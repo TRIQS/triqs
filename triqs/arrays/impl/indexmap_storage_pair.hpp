@@ -40,7 +40,7 @@ namespace triqs { namespace arrays {
 
  template <bool Const, typename IndexMapIterator, typename StorageType > class iterator_adapter;
 
- template < class V, int R, ull_t OptionFlags, ull_t TraversalOrder,  class ViewTag > struct ViewFactory;
+ template < class V, int R, ull_t OptionFlags, ull_t TraversalOrder,  class ViewTag, bool Borrowed > struct ISPViewType;
 
  template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder,  typename ViewTag >
   class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_MODEL_CONCEPT(MutableArray) {
@@ -48,7 +48,7 @@ namespace triqs { namespace arrays {
    public :
     typedef typename StorageType::value_type value_type;
     static_assert(std::is_constructible<value_type>::value, "array/array_view and const operate only on values");
-    //static_assert(!std::is_const<value_type>::value,         "no const type");
+    static_assert(!std::is_const<value_type>::value,         "no const type");
     typedef StorageType storage_type;
     typedef IndexMapType indexmap_type;
     static constexpr unsigned int rank = IndexMapType::domain_type::rank;
@@ -63,6 +63,7 @@ namespace triqs { namespace arrays {
 
     indexmap_storage_pair (const indexmap_type & IM, const storage_type & ST):
      indexmap_(IM),storage_(ST){
+      //std::cerr  << " construct ISP "<< storage_type::is_weak<< std::endl;
 #ifdef TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
       if (ST.size() != IM.domain().number_of_elements())
        TRIQS_RUNTIME_ERROR<<"index_storage_pair construction : storage and indices are not compatible";
@@ -71,12 +72,21 @@ namespace triqs { namespace arrays {
 
     indexmap_storage_pair (indexmap_type && IM, storage_type && ST):
      indexmap_(std::move(IM)),storage_(std::move(ST)){
+      //std::cerr  << " construct ISP && IM, && ST "<< storage_type::is_weak<< std::endl;
 #ifdef TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
       if (ST.size() != IM.domain().number_of_elements())
        TRIQS_RUNTIME_ERROR<<"index_storage_pair construction : storage and indices are not compatible";
 #endif
      }
 
+   indexmap_storage_pair (indexmap_type const & IM, storage_type && ST):
+     indexmap_(IM),storage_(std::move(ST)){
+      //std::cerr  << " construct ISP && ST "<< storage_type::is_weak<< std::endl;
+#ifdef TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
+      if (ST.size() != IM.domain().number_of_elements())
+       TRIQS_RUNTIME_ERROR<<"index_storage_pair construction : storage and indices are not compatible";
+#endif
+     }
 
     /// The storage is allocated from the size of IM.
     indexmap_storage_pair (const indexmap_type & IM): indexmap_(IM),storage_(){
@@ -107,7 +117,7 @@ namespace triqs { namespace arrays {
        <<"\nfrom the python object \n"<< numpy_interface::object_to_string(X)
        <<"\nThe error was :\n "<<s.what();
      }
-     //std::cout << " Leave IPS ref count = "<< X->ob_refcnt << std::endl;
+     //std::cerr << " Leave IPS ref count = "<< X->ob_refcnt << std::endl;
     }
 #endif
     // ------------------------------- swap --------------------------------------------
@@ -172,6 +182,9 @@ namespace triqs { namespace arrays {
 
     // ------------------------------- operator () --------------------------------------------
 
+    typedef typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag,false >::type view_type;
+    typedef typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag,true >::type  weak_view_type;
+
     // Evaluation and slices
     template<typename... Args>
      typename std::enable_if<
@@ -185,32 +198,82 @@ namespace triqs { namespace arrays {
      , value_type const &>::type
      operator()(Args const & ... args) const { return storage_[indexmap_(args...)]; }
 
-    template<bool is_const, typename ... Args> struct result_of_call_as_view {
+    template<bool is_const, bool ForceBorrowed, typename ... Args> struct result_of_call_as_view {
      typedef typename indexmaps::slicer<indexmap_type,Args...>::r_type IM2;
-     typedef typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type V2;
+     //typedef typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type V2;
+     typedef value_type V2;
      static_assert(IM2::domain_type::rank !=0, "Internal error");
-     typedef typename ViewFactory<V2,IM2::domain_type::rank, OptionFlags, IM2::traversal_order_in_template,  ViewTag >::type type;
+     typedef typename ISPViewType<V2,IM2::domain_type::rank, OptionFlags, IM2::traversal_order_in_template, ViewTag, ForceBorrowed || StorageType::is_weak >::type type;
     };
 
+// change here only for debug
+//#define TRIQS_ARRAYS_SLICE_DEFAUT_IS_SHARED
+#ifndef TRIQS_ARRAYS_SLICE_DEFAUT_IS_SHARED
     template<typename... Args>   // non const version
      typename boost::lazy_enable_if_c<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
-     , result_of_call_as_view<false,Args...>
+     , result_of_call_as_view<false,true,Args...>
      >::type // enable_if
-     operator()(Args const & ... args) {
-      return typename result_of_call_as_view<false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
+     operator()(Args const & ... args) & {
+      return typename result_of_call_as_view<false,true,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
 
     template<typename... Args>  // const version
      typename boost::lazy_enable_if_c<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
-     , result_of_call_as_view<true,Args...>
+     , result_of_call_as_view<true,true,Args...>
+     >::type // enable_if
+     operator()(Args const & ... args) const & {
+      return typename result_of_call_as_view<true,true,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
+
+    template<typename... Args>  // rvalue version : same value of weak as this
+     typename boost::lazy_enable_if_c<
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
+     , result_of_call_as_view<true,false,Args...>
+     >::type // enable_if
+     operator()(Args const & ... args) && {
+      //std::cerr  << "slicing a temporary"<< this->storage().is_weak<< result_of_call_as_view<true,true,Args...>::type::storage_type::is_weak << std::endl;
+      return typename result_of_call_as_view<true,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), std::move(storage())); 
+     }
+
+    /// Equivalent to make_view
+    //typename ISPViewType<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
+    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, true >::type
+     operator()() const & { return *this; }
+    
+    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, true >::type
+     operator()() & { return *this; }
+    
+    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, StorageType::is_weak >::type
+     operator()() && { return *this; }
+
+#else
+
+    template<typename... Args>   // non const version
+     typename boost::lazy_enable_if_c<
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
+     , result_of_call_as_view<false,false,Args...>
+     >::type // enable_if
+     operator()(Args const & ... args) {
+      return typename result_of_call_as_view<false,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
+
+    template<typename... Args>  // const version
+     typename boost::lazy_enable_if_c<
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
+     , result_of_call_as_view<true,false,Args...>
      >::type // enable_if
      operator()(Args const & ... args) const {
-      return typename result_of_call_as_view<true,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
+      return typename result_of_call_as_view<true,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
 
-    typedef typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type view_type;
-
-    // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
+    /// Equivalent to make_view
+    //typename ISPViewType<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
+    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, false >::type
+     operator()() const { return *this; }
+    
+    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, false >::type
+     operator()() { return *this; }
+    
+#endif
+     // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
     // NB : this is ok because indexmap_storage_pair has a shallow copy constructor ...
     // so A(i_) if A is an array will NOT copy the data....
     template< typename... Args>
@@ -222,12 +285,6 @@ namespace triqs { namespace arrays {
      }
 
     template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
-
-    /// Equivalent to make_view
-    typename ViewFactory<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
-     operator()() const { return *this; }
-    typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
-     operator()() { return *this; }
 
     // ------------------------------- Iterators --------------------------------------------
     typedef iterator_adapter<true,typename IndexMapType::iterator, StorageType> const_iterator;

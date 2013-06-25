@@ -52,8 +52,8 @@ namespace triqs { namespace arrays {
      internal_data(matmul_lazy const & P): R( P.a.dim0(), P.b.dim1()) { blas::gemm(1.0,P.a, P.b, 0.0, R); }
     };
     friend struct internal_data;
-    mutable boost::shared_ptr<internal_data> _id;
-    void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
+    mutable std::shared_ptr<internal_data> _id;
+    void activate() const { if (!_id) _id= std::make_shared<internal_data>(*this);}
 
     public:
     matmul_lazy( A const & a_, B const & b_):a(a_),b(b_){ 
@@ -83,7 +83,7 @@ namespace triqs { namespace arrays {
 
     private:   
     template<typename LHS> void assign_comp_impl (LHS & lhs, double S) const { 
-     static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix"); 
+     static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix");
      if (lhs.dim0() != dim0()) 
       TRIQS_RUNTIME_ERROR<< "Matmul : +=/-= operator : first dimension mismatch in A*B "<< lhs.dim0()<<" vs "<< dim0(); 
      if (lhs.dim1() != dim1()) 

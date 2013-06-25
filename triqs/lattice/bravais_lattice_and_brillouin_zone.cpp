@@ -65,7 +65,10 @@ namespace triqs { namespace lattice_tools {
 
  brillouin_zone::brillouin_zone( bravais_lattice const & bl_) : lattice_(bl_), K_reciprocal(3,3) {
   bravais_lattice::units_type Units(lattice().units());
+    std::cout << Units << std::endl;
   double delta = dot(Units(0,range()), cross_product(Units(1,range()),Units(2,range())));
+    std::cout << dot(Units(0,range()), cross_product(Units(1,range()),Units(2,range())))<<std::endl;
+    std::cout << cross_product(Units(1,range()),Units(2,range()))<<std::endl;
   if (abs(delta)<almost_zero) TRIQS_RUNTIME_ERROR<<"Tiling : the 3 vectors of Units are not independant";
   K_reciprocal(0,range()) = cross_product(Units(1,range()),Units(2,range())) / delta;
   K_reciprocal(1,range()) = cross_product(Units(2,range()),Units(0,range())) / delta;

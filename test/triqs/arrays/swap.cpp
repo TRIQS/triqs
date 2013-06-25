@@ -51,16 +51,14 @@ int main(int argc, char **argv) {
   triqs::arrays::vector<double> V(3),  W(4);;
   V() = 3; W()=4; 
 
-  auto VV = V(tqa::range (0,2));
-  auto VW = W(tqa::range (0,2));
-
-  std::cout << "V = "<< V << " W = " << W<< " V view "<< VV<< " W view "<< VW<< std::endl;
+  std::cout << "V = "<< V << " W = " << W<<  std::endl;
   std::swap(V,W);
-  std::cout << "V = "<< V << " W = " << W<< " V view "<< VV<< " W view "<< VW<< std::endl;
+  std::cout << "V = "<< V << " W = " << W<< std::endl;
   
   // This does NOT compile, the std::swap specialization is deleted.
+  auto VV = V(tqa::range (0,2));
+  auto VW = W(tqa::range (0,2));
   //std::swap(VV,VW);
-  //std::cout << "V = "<< V << " W = " << W<< " V view "<< VV<< " W view "<< VW<< std::endl;
 
  }
  std::cout  << "With deep_swap"<< std::endl;

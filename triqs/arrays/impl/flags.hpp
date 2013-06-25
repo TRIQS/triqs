@@ -37,7 +37,7 @@ namespace triqs { namespace arrays {
  constexpr ull_t BoundCheck   = 1ull << 0;
  constexpr ull_t TraversalOrderC       = 1ull << 1;
  constexpr ull_t TraversalOrderFortran = 1ull << 2;
- constexpr ull_t NanInit      = 1ull << 3;
+ //constexpr ull_t NanInit      = 1ull << 3;
  constexpr ull_t DefaultInit  = 1ull << 4;
 
 #define BOUND_CHECK              triqs::arrays::BoundCheck
@@ -48,12 +48,12 @@ namespace triqs { namespace arrays {
  // NB : flags MUST be insensitive to slicing ...
  // i.e. when I slice, the flags does not change.
  
- namespace flags { 
+ namespace flags {
 
 #ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
 
   constexpr ull_t get(ull_t f, ull_t a)   { return  ((f & (1ull<<a)) >> a);}
-  constexpr ull_t get2(ull_t f, ull_t a)  { return  (f & (((1ull<<a) + (1ull<< (a+1ull))) >> a) );}
+  constexpr ull_t get2(ull_t f, ull_t a)  { return  ((f & ((1ull<<a) + (1ull<< (a+1ull)))) >> a);}
 
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
   constexpr bool bound_check      (ull_t f) { return true;}
@@ -71,14 +71,14 @@ namespace triqs { namespace arrays {
 
   template<ull_t F> struct init_tag1;
   template<> struct init_tag1<0> { typedef Tag::no_init type;};
-  template<> struct init_tag1<1> { typedef Tag::nan_inf_init type;};
+  //template<> struct init_tag1<1> { typedef Tag::nan_inf_init type;};
   template<> struct init_tag1<2> { typedef Tag::default_init type;};
 
   // for the init_tag, we pass the *whole* option flag.
   template<ull_t F> struct init_tag : init_tag1 < init_mode(F)> {};
 
   template<ull_t F, ull_t To> struct assert_make_sense {
-   static constexpr bool bc = bound_check(F);;
+   static constexpr bool bc = bound_check(F);
    static constexpr bool is_c = traversal_order_c(F);
    static constexpr bool is_f = traversal_order_fortran(F);
    static constexpr bool inm = check_init_mode(F);
@@ -90,8 +90,8 @@ namespace triqs { namespace arrays {
 #else 
 
 #define TRIQS_FLAGS_GET(f,a) ((f & (1ull<<a)) >> a)
-#define TRIQS_FLAGS_GET2(f,a) (f & (((1ull<<a) + (1ull<< (a+1ull))) >> a)) 
-
+#define TRIQS_FLAGS_GET2(f,a) ((f & ((1ull<<a) + (1ull<< (a+1ull)))) >> a) 
+ 
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
   template< ull_t F> struct bound_check_trait { static constexpr bool value = true;};
 #else
@@ -105,7 +105,7 @@ namespace triqs { namespace arrays {
 
   template<ull_t F> struct init_tag1;
   template<> struct init_tag1<0> { typedef Tag::no_init type;};
-  template<> struct init_tag1<1> { typedef Tag::nan_inf_init type;};
+  //template<> struct init_tag1<1> { typedef Tag::nan_inf_init type;};
   template<> struct init_tag1<2> { typedef Tag::default_init type;};
   template<ull_t F> struct init_tag : init_tag1 < init_mode_tr<F>::value > {};
 

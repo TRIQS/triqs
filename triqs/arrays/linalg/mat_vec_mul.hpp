@@ -58,8 +58,8 @@ namespace triqs { namespace arrays {
     internal_data(mat_vec_mul_lazy const & P): R(P.M.dim0()) { blas::gemv(1,P.M,P.V,0,R); }
    };
    friend struct internal_data;
-   mutable boost::shared_ptr<internal_data> _id;
-   void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
+   mutable std::shared_ptr<internal_data> _id;
+   void activate() const { if (!_id) _id= std::make_shared<internal_data>(*this);}
 
    public:
    mat_vec_mul_lazy( MT const & M_, VT const & V_):M(M_),V(V_){

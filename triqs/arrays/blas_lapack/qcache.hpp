@@ -79,10 +79,10 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
  // first the function to take the decision
  // should be copy to call blas/lapack ? only if we have a view and if the min_stride 
  // of the matrix is not 1, otherwise we use the LD parameter of blas/lapack
- template <typename T> constexpr bool copy_is_needed (T const & A) { return false;}
+ template <typename T> constexpr TYPE_ENABLE_IFC(bool, !is_matrix_view<T>::value) copy_is_needed (T const & A) { return false;}
 
- template <typename T, ull_t Opt, ull_t To> 
-  bool copy_is_needed (matrix_view<T,Opt,To> const & A) {
+ template <typename MatrixView>
+  TYPE_ENABLE_IF(bool, is_matrix_view<MatrixView>) copy_is_needed (MatrixView const & A) {
    auto min_stride = A.indexmap().strides()[A.memory_layout_is_fortran() ? 0 : 1];
    return min_stride !=1;
   }

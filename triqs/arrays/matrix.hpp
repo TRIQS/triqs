@@ -27,7 +27,7 @@
 #include "vector.hpp"
 namespace triqs { namespace arrays {
 
- template <typename ValueType, ull_t Opt=0, ull_t TraversalOrder= 0> class matrix_view;
+ template <typename ValueType, ull_t Opt=0, ull_t TraversalOrder= 0, bool Borrowed = false> class matrix_view;
  template <typename ValueType, ull_t Opt=0, ull_t TraversalOrder= 0> class matrix;
  
  // ---------------------- matrix --------------------------------
@@ -46,13 +46,14 @@ namespace triqs { namespace arrays {
  bool memory_layout_is_fortran() const { return this->indexmap().strides()[0] < this->indexmap().strides()[1]; }
 
 #define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt,TraversalOrder>, \
- storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::matrix_view > 
+ storages::shared_block<ValueType,Borrowed>, Opt, TraversalOrder, Tag::matrix_view > 
 
- template <typename ValueType, ull_t Opt, ull_t TraversalOrder >
+ template <typename ValueType, ull_t Opt, ull_t TraversalOrder, bool Borrowed>
   class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(MutableMatrix), public IMPL_TYPE {
    public :
-    typedef matrix_view<ValueType,Opt,TraversalOrder> view_type;
-    typedef matrix<ValueType,Opt,TraversalOrder>      non_view_type;
+    typedef matrix     <ValueType,Opt,TraversalOrder>       non_view_type;
+    typedef matrix_view<ValueType,Opt,TraversalOrder>       view_type;
+    typedef matrix_view<ValueType,Opt,TraversalOrder,true>  weak_view_type;
     typedef void has_view_type_tag;
 
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
@@ -96,11 +97,15 @@ namespace triqs { namespace arrays {
 
  //---------------------------------------------------------------------
  // this traits is used by indexmap_storage_pair, when slicing to find the correct view type.
- template < class V, int R, ull_t OptionFlags, ull_t To > struct ViewFactory< V, R, OptionFlags, To, Tag::matrix_view> { 
-  typedef typename std::conditional <R == 1, vector_view<V,OptionFlags >, matrix_view<V,OptionFlags, To > >::type type;
+ template < class V, int R, ull_t OptionFlags, ull_t To, bool Borrowed	 > 
+  struct ISPViewType< V, R, OptionFlags, To, Tag::matrix_view, Borrowed> { 
+  typedef typename std::conditional <R == 1, vector_view<V,OptionFlags,Borrowed >, matrix_view<V,OptionFlags, To, Borrowed > >::type type;
  };
+#undef IMPL_TYPE
 
  // ---------------------- matrix --------------------------------
+#define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt,TraversalOrder>, \
+ storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::matrix_view > 
 
  template <typename ValueType, ull_t Opt, ull_t TraversalOrder >
   class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(MutableMatrix), public IMPL_TYPE {
@@ -108,8 +113,9 @@ namespace triqs { namespace arrays {
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
-    typedef matrix_view<ValueType,Opt,TraversalOrder> view_type;
-    typedef matrix<ValueType,Opt,TraversalOrder> non_view_type;
+    typedef matrix     <ValueType,Opt,TraversalOrder>      non_view_type;
+    typedef matrix_view<ValueType,Opt,TraversalOrder>      view_type;
+    typedef matrix_view<ValueType,Opt,TraversalOrder,true> weak_view_type;
     typedef void has_view_type_tag;
 
     /// Empty matrix.

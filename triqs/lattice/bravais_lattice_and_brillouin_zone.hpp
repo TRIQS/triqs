@@ -24,6 +24,7 @@
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/arrays/vector.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <unordered_map>
 #include <map>
 #include <string>
 #include <unordered_map>

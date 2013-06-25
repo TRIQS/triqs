@@ -22,128 +22,89 @@
 #define TRIQS_STORAGE_SHARED_POINTER_H
 #include <string.h>
 #include <limits>
-#include <boost/shared_ptr.hpp>
-#include <boost/type_traits/is_const.hpp>
-#include <boost/type_traits/add_const.hpp>
-#include <boost/type_traits/remove_const.hpp>
-#include <boost/type_traits/is_same.hpp> 
-#include <boost/serialization/shared_ptr.hpp>
-#include "../impl/make_const.hpp"
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "./mem_block.hpp"
-#else 
-#include <vector>
-//#include "basic_block.hpp"
+
+namespace triqs { namespace arrays { namespace storages {
+
+ /*
+  * This is a shared memory block, similar to a shared_ptr<mem_block>
+  * but a lot faster and adapted to model the Storage concept.  
+  */
+ template<typename ValueType, bool Weak=false>
+  class shared_block {
+   static_assert( !std::is_const<ValueType>::value, "oops : internal error : shared_block should never be instanciated with a const"); 
+
+   mem_block<ValueType> * sptr;
+   ValueType * restrict data_; // for optimization on some compilers. ?? obsolete : to be removed ?
+   size_t s;
+
+   void construct_delegate(size_t size) { 
+    s = size;
+    if (size ==0) { sptr = nullptr; data_=nullptr; }
+    else { sptr = new mem_block<ValueType>(size); data_ = sptr->p;}
+   }
+
+   public:
+   typedef ValueType value_type;
+   static constexpr bool is_weak = Weak;
+
+   ///  Construct a new block of memory of given size
+   explicit shared_block(size_t size, Tag::no_init) { construct_delegate(size); }
+
+   explicit shared_block(size_t size, Tag::default_init) {// C++11  : delegate to previous constructor when gcc 4.6 support is out. 
+    construct_delegate(size); 
+    const auto s = this->size(); for (size_t u=0; u<s; ++u) data_[u] = ValueType(); 
+   }
+
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+   explicit shared_block(PyObject * arr, bool weak): sptr(new mem_block<ValueType>(arr,weak)) { data_ = sptr->p; s= sptr->size(); }
 #endif
 
-namespace triqs { namespace arrays {
- namespace Tag {struct storage{}; struct shared_block:storage{}; }
+   explicit shared_block() { sptr =nullptr; data_=nullptr; s=0; }
 
- namespace storages {
+   shared_block(shared_block const & X) noexcept { sptr =X.sptr; data_ = X.data_; s= X.s; if (sptr) inc_ref<Weak>(sptr);  }
+   shared_block(shared_block<ValueType,!Weak> const & X) noexcept { sptr =X.sptr; data_ = X.data_; s= X.s; if (sptr) inc_ref<Weak>(sptr);  }
 
-  template <class V, class Opt> struct __init_value;
-  template <class V> struct __init_value<V, Tag::no_init> { static void invoke (V * data, size_t s) {}};
-  template <class V> struct __init_value< V, Tag::default_init> { 
-   static void invoke (V * restrict data, size_t s) { if (data!=NULL) for (size_t u=0; u<s; ++u) data[u] = V();  }
-  };
-  template <class V> struct __init_value< V, Tag::nan_inf_init> { 
-   static void invoke (V * restrict data, size_t s) {
-    static_assert ( ( std::numeric_limits<V>::has_quiet_NaN || std::numeric_limits<V>::is_integer), "type has no Nan and is not integer. This init is impossible");
-    if (data==NULL) return;
-    if (std::numeric_limits<V>::has_quiet_NaN) for (size_t u=0; u<s; ++u) data[u] = std::numeric_limits<V>::quiet_NaN();
-    if (std::numeric_limits<V>::is_integer)  for (size_t u=0; u<s; ++u) data[u] = std::numeric_limits<V>::max();
+   shared_block(shared_block && X)      noexcept { sptr =X.sptr; data_ = X.data_; s= X.s; X.sptr=nullptr; }
+
+   ~shared_block() { if (sptr) dec_ref<Weak>(sptr); }
+
+   shared_block & operator=(shared_block const & X) noexcept { 
+    if (sptr) dec_ref<Weak>(sptr); sptr =X.sptr; if (sptr) inc_ref<Weak>(sptr); 
+    data_ = X.data_; s = X.s; 
+    return *this;
+   }
+   
+   shared_block & operator=(shared_block && X) noexcept { 
+    if (sptr) dec_ref<Weak>(sptr); sptr =X.sptr; X.sptr=nullptr; 
+    data_ = X.data_; s = X.s; 
+    return *this;
+   }
+
+   /// True copy of the data
+   shared_block clone() const { 
+    shared_block res; 
+    if (!empty()) { res.sptr = new mem_block<ValueType> (*sptr); res.data_ = res.sptr->p; res.s = s;}
+    return res;
+   }
+
+   value_type & operator[](size_t i) const { return data_[i];}
+   bool empty() const {return (sptr==nullptr);}
+   size_t size() const {return s;}
+   //size_t size() const {return (empty () ? 0 : sptr->size());} 
+
+#ifdef TRIQS_WITH_PYTHON_SUPPORT    
+   PyObject * new_python_ref() const {return sptr->new_python_ref();}
+#endif
+
+   private:
+   friend class shared_block<ValueType,!Weak>;
+   friend class boost::serialization::access;
+   template<class Archive> void serialize(Archive & ar, const unsigned int version) { 
+    ar & boost::serialization::make_nvp("ptr",sptr); data_ = (sptr ? sptr->p : nullptr); s = (sptr ? sptr->size() : 0);
    }
   };
 
-  template <class V> struct __init_value< std::complex<V>, Tag::nan_inf_init> { 
-   static void invoke (std::complex<V> * restrict data, size_t s) {
-    static_assert ( ( std::numeric_limits<V>::has_quiet_NaN || std::numeric_limits<V>::is_integer), "type has no Nan and is not integer. This init is impossible");
-    if (data==NULL) return;
-    if (std::numeric_limits<V>::has_quiet_NaN) for (size_t u=0; u<s; ++u) data[u] = std::complex<V>(std::numeric_limits<V>::quiet_NaN(),std::numeric_limits<V>::quiet_NaN()) ;
-    if (std::numeric_limits<V>::is_integer)  for (size_t u=0; u<s; ++u) data[u] = std::complex<V>(std::numeric_limits<V>::max(),std::numeric_limits<V>::max());
-   }
-  };
-
-
-  /*  Storage as a shared_ptr to a basic_block
-   *  The shared pointer guarantees that the data will not be destroyed during the life of the array. 
-   *  Impl: we are not using shared_array directly because of serialization support for shared_ptr */
-  template<typename ValueType >
-   class shared_block : Tag::shared_block { 
-    typedef typename boost::add_const<ValueType>::type const_value_type;
-    typedef typename boost::remove_const<ValueType>::type non_const_value_type;
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-    typedef details::mem_block<non_const_value_type> block_type;
-#else
-    //  typedef details::basic_block<non_const_value_type> block_type;
-    typedef std::vector<non_const_value_type> block_type;
-#endif
-
-    public:
-    typedef triqs::arrays::Tag::shared_block tag;
-    typedef ValueType value_type;
-    typedef shared_block<value_type> clone_type;
-    typedef shared_block<const_value_type> const_clone_type;
-
-    ///  Construct a new block of memory of given size
-    template<typename InitOpt>
-     explicit shared_block(size_t size, InitOpt opt ): sptr(size ? new block_type(size) : NULL) {
-      init_data();
-      __init_value<value_type,InitOpt>::invoke (this-> data_, this->size());
-     }
-
-    explicit shared_block(): sptr() { init_data(); }
-
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-    ///  Construct from a numpy object
-    explicit shared_block(PyObject * arr, bool borrowed): sptr(new block_type(arr,borrowed)) { init_data();}
-#endif
-
-    /// Shallow copy
-    shared_block(const shared_block<const_value_type> & X): sptr(X.sptr) { init_data(); }
-  
-    /// Shallow copy
-    shared_block(const shared_block<non_const_value_type> & X): sptr(X.sptr) { init_data(); }
-
-    void operator=(const shared_block & X) { sptr=X.sptr; init_data(); } 
-
-    /// True copy of the data
-    clone_type clone() const { 
-     if (empty()) return clone_type ();
-#ifdef TRIQS_WITH_PYTHON_SUPPORT    
-     clone_type res; res.sptr = boost::make_shared<block_type > (*sptr); res.init_data();
-#else
-     clone_type res(this->size(), Tag::no_init() ); (*res.sptr) = (*sptr);
-#endif
-     return res;
-    }
-
-    // Make a clone forced to have const value_type
-    const_clone_type const_clone() const {return clone();} 
-
-    value_type & operator[](size_t i) const { return data_[i];}
-    bool empty() const {return (sptr.get()==NULL);}
-    size_t size() const {return (empty () ? 0 : sptr.get()->size());} 
-
-#ifdef TRIQS_WITH_PYTHON_SUPPORT    
-    PyObject * new_ref_to_guard() const {return sptr->new_ref_to_guard();}
-#endif
-
-    private:
-    boost::shared_ptr<block_type > sptr;
-    value_type * restrict data_; // for optimization on some compilers.
-    void init_data(){ data_ = (sptr ? &((*sptr)[0]) : NULL); }
-    friend class shared_block <non_const_value_type>; friend class shared_block <const_value_type>;
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("ptr",sptr); init_data(); }
-   };
- }
-
- namespace details { 
-  template<bool Const, typename T> struct make_const_type<Const,storages::shared_block<T> > { 
-   typedef storages::shared_block<typename make_const_type<Const,T>::type> type;
-  };
- }
-}}//namespace triqs::arrays 
+}}}//namespace  
 #endif
 

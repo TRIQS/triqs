@@ -33,8 +33,6 @@
 #include <sstream>
 
 #include <boost/utility/enable_if.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/not.hpp>
@@ -57,10 +55,15 @@ namespace boost { namespace serialization { class access;}}
 
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #define TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
-#define TRIQS_ARRAYS_ENFORCE_INIT_NAN_INF
 
 #else 
 #define TRIQS_ARRAYS_DEBUG_CHECK(Cond,Error) 
+#endif
+
+// In particular, gcc 4.6, 4.7 do not have "rvalue for *this", which forbid the implementation 
+// of weak references. In that we, we will revert to strong view instead. 
+#ifdef TRIQS_COMPILER_IS_OBSOLETE
+#define TRIQS_ARRAYS_SLICE_DEFAUT_IS_SHARED
 #endif
 
 namespace triqs { 

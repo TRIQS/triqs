@@ -52,12 +52,12 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    }
    if (!PyArray_Check(res)) TRIQS_RUNTIME_ERROR<<" array_view_from_numpy : internal error : the python object is not a numpy";
    PyArrayObject * arr = (PyArrayObject *)(res);
-   //PyArray_SetBaseObject(arr,  A.storage().new_ref_to_guard());
+   //PyArray_SetBaseObject(arr,  A.storage().new_python_ref());
 #ifdef TRIQS_NUMPY_VERSION_LT_17
-   arr->base =  A.storage().new_ref_to_guard();
+   arr->base =  A.storage().new_python_ref();
    assert( arr->flags == (arr->flags & ~NPY_OWNDATA));
 #else
-   int r = PyArray_SetBaseObject(arr,A.storage().new_ref_to_guard());
+   int r = PyArray_SetBaseObject(arr,A.storage().new_python_ref());
    if (r!=0) TRIQS_RUNTIME_ERROR << "Internal Error setting the guard in numpy !!!!";
    assert( PyArray_FLAGS(arr) == (PyArray_FLAGS(arr) & ~NPY_ARRAY_OWNDATA));
 #endif

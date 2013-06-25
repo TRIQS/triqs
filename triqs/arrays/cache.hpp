@@ -65,8 +65,8 @@ namespace triqs { namespace arrays {
     }
    };
    friend struct internal_data;   
-   mutable boost::shared_ptr<internal_data> _id;   
-   internal_data  & id() const { if (!_id) _id= boost::make_shared<internal_data>(*this,ml); return *_id;}
+   mutable std::shared_ptr<internal_data> _id;   
+   internal_data  & id() const { if (!_id) _id= std::make_shared<internal_data>(*this,ml); return *_id;}
 
    //exposed_view_type       & view2 ()       { if (need_copy) return id().view; else return keeper;}    
    //exposed_view_type const & view2 () const { if (need_copy) return id().view; else return keeper;} 

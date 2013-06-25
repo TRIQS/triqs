@@ -29,19 +29,20 @@
 
 namespace triqs { namespace arrays {
 
- template <typename ValueType, ull_t Opt=0> class vector_view;
+ template <typename ValueType, ull_t Opt=0, bool Borrowed =false> class vector_view;
  template <typename ValueType, ull_t Opt=0> class vector;
 
  // ---------------------- vector_view --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, Tag::vector_view >
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType,Borrowed>, Opt, 0, Tag::vector_view >
 
  /** */
- template <typename ValueType, ull_t Opt >
+ template <typename ValueType, ull_t Opt, bool Borrowed>
   class vector_view : Tag::vector_view, TRIQS_MODEL_CONCEPT(MutableVector), public  IMPL_TYPE {
   public :
-   typedef vector_view<ValueType,Opt> view_type;
-   typedef vector<ValueType,Opt> non_view_type;
+   typedef vector     <ValueType,Opt>       non_view_type;
+   typedef vector_view<ValueType,Opt,false> view_type;
+   typedef vector_view<ValueType,Opt,true>  weak_view_type;
    typedef void has_view_type_tag;
 
    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
@@ -93,9 +94,12 @@ namespace triqs { namespace arrays {
    //template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
    //template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
   };
+#undef IMPL_TYPE
 
- template < class V, int R,  ull_t OptionFlags, ull_t To > struct ViewFactory< V, R,OptionFlags,To, Tag::vector_view> { typedef vector_view<V,OptionFlags> type; };
+ template < class V, int R,  ull_t OptionFlags, ull_t To, bool Borrowed	> 
+  struct ISPViewType< V, R,OptionFlags,To, Tag::vector_view, Borrowed> { typedef vector_view<V,OptionFlags,Borrowed> type; };
  // ---------------------- vector--------------------------------
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, Tag::vector_view >
 
  template <typename ValueType, ull_t Opt>
   class vector: Tag::vector,  TRIQS_MODEL_CONCEPT(MutableVector), public IMPL_TYPE {
@@ -103,8 +107,9 @@ namespace triqs { namespace arrays {
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
-    typedef vector_view<ValueType,Opt> view_type;
-    typedef vector<ValueType,Opt> non_view_type;
+    typedef vector     <ValueType,Opt>      non_view_type;
+    typedef vector_view<ValueType,Opt>      view_type;
+    typedef vector_view<ValueType,Opt,true> weak_view_type;
     typedef void has_view_type_tag;
 
     /// Empty vector.
@@ -277,8 +282,8 @@ namespace triqs { namespace arrays {
   }
 
  // swapping 2 vector
- template <typename V, ull_t S1, ull_t S2>
-  void deep_swap(vector_view <V,S1> x, vector_view<V,S2> y) {
+ template <typename V, ull_t S1, ull_t S2, bool B1, bool B2>
+  void deep_swap(vector_view <V,S1,B1> x, vector_view<V,S2,B2> y) {
    blas::swap(x,y);
   }
 

@@ -133,8 +133,8 @@ namespace triqs { namespace arrays {
    internal_data(inverse_lazy_impl const & P):M(P.a){det_and_inverse_worker<M_view_type> worker(M); worker.inverse();}
   };
   friend struct internal_data;
-  mutable boost::shared_ptr<internal_data> _id;
-  void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
+  mutable std::shared_ptr<internal_data> _id;
+  void activate() const { if (!_id) _id= std::make_shared<internal_data>(*this);}
  };
 
  // The general case
@@ -179,8 +179,8 @@ namespace triqs { namespace arrays {
    internal_data(determinant_lazy const & P):M(P.a){det_and_inverse_worker<A_type> worker(M); det = worker.det();}
   };
   friend struct internal_data;
-  mutable boost::shared_ptr<internal_data> _id;
-  void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
+  mutable std::shared_ptr<internal_data> _id;
+  void activate() const { if (!_id) _id= std::make_shared<internal_data>(*this);}
  };
 
  }} // namespace triqs::arrays

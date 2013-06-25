@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   for (int j=0; j<3; ++j) 
    A(i,j) = 10*i+ j;
 
- array_view<long const ,2 > AA (A);
+ array_view<long,2 > AA (A);
 
  std::cout<<"A is "<<A<<std::endl;
  std::cout<<"another view : "<<AA<<std::endl;

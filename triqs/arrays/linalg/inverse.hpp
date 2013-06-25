@@ -111,7 +111,7 @@ namespace triqs { namespace arrays {
 
  // an implementation class to gather the common part to matrix and expression....
  template<typename A> struct inverse_lazy_impl : TRIQS_MODEL_CONCEPT(ImmutableMatrix) {
-  typedef typename boost::remove_const<typename A::value_type>::type value_type;
+  typedef typename std::remove_const<typename A::value_type>::type value_type;
   typedef typename A::domain_type domain_type;
   typedef typename domain_type::index_value_type index_value_type;
   typedef typename const_view_type_if_exists_else_type<A>::type A_type;
@@ -133,8 +133,8 @@ namespace triqs { namespace arrays {
    internal_data(inverse_lazy_impl const & P):M(P.a){det_and_inverse_worker<M_view_type> worker(M); worker.inverse();}
   };
   friend struct internal_data;
-  mutable boost::shared_ptr<internal_data> _id;
-  void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
+  mutable std::shared_ptr<internal_data> _id;
+  void activate() const { if (!_id) _id= std::make_shared<internal_data>(*this);}
  };
 
  // The general case
@@ -179,8 +179,8 @@ namespace triqs { namespace arrays {
    internal_data(determinant_lazy const & P):M(P.a){det_and_inverse_worker<A_type> worker(M); det = worker.det();}
   };
   friend struct internal_data;
-  mutable boost::shared_ptr<internal_data> _id;
-  void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
+  mutable std::shared_ptr<internal_data> _id;
+  void activate() const { if (!_id) _id= std::make_shared<internal_data>(*this);}
  };
 
  }} // namespace triqs::arrays
