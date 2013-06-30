@@ -173,14 +173,6 @@ namespace triqs { namespace arrays {
     //bool is_empty() const { return this->num_elements()==0;}
     bool is_empty() const { return this->storage_.empty();}
 
-#ifdef TRIQS_ARRAYS_USE_OLD_KEY_EVAL
-    //  Evaluation on keys.
-    // deprecated : only used in one example ?
-    typedef typename domain_type::index_value_type key_type;
-    template<typename KeyType> value_type const & operator[](KeyType const & key) const { return storage_[indexmap_[key]]; }
-    template<typename KeyType> value_type & operator[](KeyType const & key) { return storage_[indexmap_[key]]; }
-#endif
-
     // ------------------------------- operator () --------------------------------------------
 
     typedef typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag,false >::type view_type;
@@ -208,8 +200,6 @@ namespace triqs { namespace arrays {
      typedef typename ISPViewType<V2,IM2::domain_type::rank, OptionFlags|optmodif, IM2::traversal_order_in_template, ViewTag, ForceBorrowed || StorageType::is_weak >::type type;
     };
 
-// change here only for debug
-//#define TRIQS_ARRAYS_SLICE_DEFAUT_IS_SHARED
 #ifndef TRIQS_ARRAYS_SLICE_DEFAUT_IS_SHARED
     template<typename... Args>   // non const version
      typename boost::lazy_enable_if_c<

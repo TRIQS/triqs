@@ -20,7 +20,6 @@
  ******************************************************************************/
 #include "./common.hpp"
 #define ARRAY_DEBUG_SLICE
-#define TRIQS_ARRAYS_USE_OLD_KEY_EVAL
 
 #include "./src/array.hpp"
 #include <iostream>
@@ -32,7 +31,11 @@ using namespace triqs::arrays;
 template<typename IM, typename A>
 void print_in_indexmap_order (std::ostream & out, IM const & im, A const & a) {
  out<<"[";
- for (typename IM::iterator it(im); it; ++it) out<<a[it.indices()]<<" ";
+ //for (typename IM::iterator it(im); it; ++it) out<<a[it.indices()]<<" ";
+ for (typename IM::iterator it(im); it; ++it) {
+  auto i = it.indices();
+  out<< a(i[0],i[1],i[2])<<" ";
+ }
  out<<"]";
 }
 
