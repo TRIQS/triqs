@@ -18,34 +18,24 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_COMPILER_DETAILS_H
-#define TRIQS_COMPILER_DETAILS_H
+#include "./common.hpp"
+#include "./src/array.hpp"
+#include <iostream>
 
-#if defined __GNUC__  ||  defined  __clang__
-#define restrict __restrict__
-#endif
+using namespace triqs::arrays;
 
-#if defined __GNUC__  && ! defined  __clang__
-#define GCC_VERSION (__GNUC__ * 10000 \
-                               + __GNUC_MINOR__ * 100 \
-                               + __GNUC_PATCHLEVEL__)
-#if GCC_VERSION < 40801
-#warning "gcc compiler" GCC_VERSION
-#define TRIQS_COMPILER_IS_OBSOLETE
-// we still accept gcc 4.6 and 4.7, but only the 4.8.1 and higher is a compliant c++11
-#endif
-#endif
+int main(int argc, char **argv) {
 
+ const array<long,1> A = {1,2,3,4};
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#define TRIQS_USE_STATIC_ASSERT
-//#define USE_VARIADIC_TEMPLATES
-#endif
+ std::cerr  << A.opt_flags<<std::endl;
+ std::cerr  << A().opt_flags<<std::endl;
 
-#ifndef TRIQS_USE_STATIC_ASSERT
-#include "boost/static_assert.hpp"
-#define static_assert(X,MESS) BOOST_STATIC_ASSERT((X)) 
-#endif
+ // None of this should compile
+ //A(0) = 2;
+ //A()(0) = 2;
+ //A(range(0,2))(0) = 10;
 
-#endif
+ return 0;
+}
 

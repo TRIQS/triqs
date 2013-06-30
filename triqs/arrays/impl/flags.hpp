@@ -27,18 +27,18 @@ namespace triqs { namespace arrays {
 
  // Flags is a 64 bit unsigned int.
  // 0 is the default option.
- // Meaning of the bits : 
- // 0   -> Boundcheck
+ // Meaning of the bits :
+ // 0   -> Const
  // 1,2 -> Predefined order : 
  //    0 : None, 1 : C, 2 : Fortran 
- // 3,4 -> Init 
- //    0 : Noinit, 1 : NanInit, 2 : DefaultInit
+ // 3 -> Init the array 
+ // 5 -> Boundcheck
 
- constexpr ull_t BoundCheck   = 1ull << 0;
- constexpr ull_t TraversalOrderC       = 1ull << 1;
- constexpr ull_t TraversalOrderFortran = 1ull << 2;
- //constexpr ull_t NanInit      = 1ull << 3;
- constexpr ull_t DefaultInit  = 1ull << 4;
+ constexpr ull_t ConstView              = 1ull << 0;
+ constexpr ull_t TraversalOrderC        = 1ull << 1;
+ constexpr ull_t TraversalOrderFortran  = 1ull << 2;
+ constexpr ull_t DefaultInit            = 1ull << 3;
+ constexpr ull_t BoundCheck             = 1ull << 5;
 
 #define BOUND_CHECK              triqs::arrays::BoundCheck
 #define TRAVERSAL_ORDER_C        triqs::arrays::TraversalOrderC
@@ -55,10 +55,12 @@ namespace triqs { namespace arrays {
   constexpr ull_t get(ull_t f, ull_t a)   { return  ((f & (1ull<<a)) >> a);}
   constexpr ull_t get2(ull_t f, ull_t a)  { return  ((f & ((1ull<<a) + (1ull<< (a+1ull)))) >> a);}
 
+  constexpr bool is_const (ull_t f) { return get (f,0) !=0;}
+
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
   constexpr bool bound_check      (ull_t f) { return true;}
 #else
-  constexpr bool bound_check      (ull_t f) { return get (f, 0)!=0;}
+  constexpr bool bound_check      (ull_t f) { return get (f, 5)!=0;}
 #endif
 
   constexpr bool traversal_order_c         (ull_t f) { return get (f,1ull)!=0ull;}
@@ -66,13 +68,11 @@ namespace triqs { namespace arrays {
 
   template< ull_t F> struct bound_check_trait { static constexpr bool value = bound_check(F); }; 
 
-  constexpr ull_t init_mode        (ull_t f) { return get2 (f,3);}
-  constexpr bool check_init_mode   (ull_t f) { return get2 (f,3)!=3ull;}
+  constexpr ull_t init_mode        (ull_t f) { return get (f,3);}
 
   template<ull_t F> struct init_tag1;
   template<> struct init_tag1<0> { typedef Tag::no_init type;};
-  //template<> struct init_tag1<1> { typedef Tag::nan_inf_init type;};
-  template<> struct init_tag1<2> { typedef Tag::default_init type;};
+  template<> struct init_tag1<1> { typedef Tag::default_init type;};
 
   // for the init_tag, we pass the *whole* option flag.
   template<ull_t F> struct init_tag : init_tag1 < init_mode(F)> {};
@@ -81,21 +81,21 @@ namespace triqs { namespace arrays {
    static constexpr bool bc = bound_check(F);
    static constexpr bool is_c = traversal_order_c(F);
    static constexpr bool is_f = traversal_order_fortran(F);
-   static constexpr bool inm = check_init_mode(F);
    static_assert ( (!( is_c && is_f)), "You asked C and Fortran traversal order at the same time...");
    static_assert ( (!( (is_c || is_f) && To )), "You asked C or Fortran traversal order and gave a traversal order ...");
-   static_assert ( (inm), "You asked nan and default init at the same time...");
   };
 
 #else 
 
 #define TRIQS_FLAGS_GET(f,a) ((f & (1ull<<a)) >> a)
 #define TRIQS_FLAGS_GET2(f,a) ((f & ((1ull<<a) + (1ull<< (a+1ull)))) >> a) 
- 
+
+  constexpr bool is_const (ull_t f) { return false;} // non const view on icc 
+
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
   template< ull_t F> struct bound_check_trait { static constexpr bool value = true;};
 #else
-  template< ull_t F> struct bound_check_trait { static constexpr bool value = TRIQS_FLAGS_GET (F, 0)!=0; }; 
+  template< ull_t F> struct bound_check_trait { static constexpr bool value = TRIQS_FLAGS_GET (F, 5)!=0; }; 
 #endif
   
   template< ull_t F> struct traversal_order_c { static constexpr bool value = TRIQS_FLAGS_GET(F,1) !=0; };
@@ -105,8 +105,7 @@ namespace triqs { namespace arrays {
 
   template<ull_t F> struct init_tag1;
   template<> struct init_tag1<0> { typedef Tag::no_init type;};
-  //template<> struct init_tag1<1> { typedef Tag::nan_inf_init type;};
-  template<> struct init_tag1<2> { typedef Tag::default_init type;};
+  template<> struct init_tag1<1> { typedef Tag::default_init type;};
   template<ull_t F> struct init_tag : init_tag1 < init_mode_tr<F>::value > {};
 
   template<ull_t F, ull_t To> struct assert_make_sense { };// no check on icc

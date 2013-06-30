@@ -52,6 +52,7 @@ namespace triqs { namespace arrays {
     typedef StorageType storage_type;
     typedef IndexMapType indexmap_type;
     static constexpr unsigned int rank = IndexMapType::domain_type::rank;
+    static constexpr ull_t opt_flags = OptionFlags;
    protected:
 
     indexmap_type indexmap_;
@@ -188,7 +189,7 @@ namespace triqs { namespace arrays {
     // Evaluation and slices
     template<typename... Args>
      typename std::enable_if<
-     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0)
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && !flags::is_const(OptionFlags)
      , value_type &>::type
      operator()(Args const & ... args) {  return storage_[indexmap_(args...)]; }
 
@@ -203,7 +204,8 @@ namespace triqs { namespace arrays {
      //typedef typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type V2;
      typedef value_type V2;
      static_assert(IM2::domain_type::rank !=0, "Internal error");
-     typedef typename ISPViewType<V2,IM2::domain_type::rank, OptionFlags, IM2::traversal_order_in_template, ViewTag, ForceBorrowed || StorageType::is_weak >::type type;
+     static constexpr ull_t optmodif = (is_const ? ConstView : 0ull);
+     typedef typename ISPViewType<V2,IM2::domain_type::rank, OptionFlags|optmodif, IM2::traversal_order_in_template, ViewTag, ForceBorrowed || StorageType::is_weak >::type type;
     };
 
 // change here only for debug
@@ -211,7 +213,7 @@ namespace triqs { namespace arrays {
 #ifndef TRIQS_ARRAYS_SLICE_DEFAUT_IS_SHARED
     template<typename... Args>   // non const version
      typename boost::lazy_enable_if_c<
-     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0) && !flags::is_const(OptionFlags) 
      , result_of_call_as_view<false,true,Args...>
      >::type // enable_if
      operator()(Args const & ... args) & {
@@ -236,8 +238,7 @@ namespace triqs { namespace arrays {
      }
 
     /// Equivalent to make_view
-    //typename ISPViewType<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
-    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, true >::type
+    typename ISPViewType<value_type,domain_type::rank, OptionFlags | ConstView, TraversalOrder, ViewTag, true >::type
      operator()() const & { return *this; }
     
     typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, true >::type
