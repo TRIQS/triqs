@@ -1,0 +1,27 @@
+.. highlight:: c
+
+The HDF5 interface 
+######################
+
+
+The array classes (`array`, `matrix`, `vector`) have a simple interface to the HDF5 files.
+
+A simple example
+------------------
+
+
+Reference
+------------
+
+.. toctree::
+   :maxdepth: 1
+
+   h5_rw
+   h5_stack
+   h5_proxy
+   h5_complex
+
+You can also get the :doxy:`full C++ documentation<triqs::arrays::h5>` for these classes and functions.
+
+
+

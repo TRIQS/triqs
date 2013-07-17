@@ -1,0 +1,4 @@
+#!/bin/sh
+echo "Compiling the .py files into .pyc"
+@ALPS_PYTHON_INTERPRETER@  -mcompileall /usr/@TRIQS_PYTHON_LIB_DEST@ 2>1 > /dev/null
+

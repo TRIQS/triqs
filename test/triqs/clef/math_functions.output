@@ -1,0 +1,10 @@
+(tql::eval ( cos(x_) ,x_=2)) ---> -0.416147
+(tql::eval ( cos(2*x_+1) ,x_=2)) ---> 0.283662
+(tql::eval ( abs(2*x_-1) ,x_=2)) ---> 3
+(tql::eval ( abs(2*x_-1) ,x_=-2)) ---> 5
+(tql::eval ( floor(2*x_-1) ,x_=2.3)) ---> 3
+(tql::eval ( pow(2*x_+1,2) ,x_=2.0)) ---> 25
+(tql::eval ( foo(2*x_+1) , x_ = 2)) ---> 2
+(tql::eval ( foo(2*x_+1) , x_ = 2.0)) ---> 2.5
+(tql::eval ( bar(2*x_+1,x_ -1) , x_ = 2)) ---> 6
+(tql::eval ( inc(2*x_+1) , x_ = 2)) ---> 6

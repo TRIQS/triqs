@@ -1,0 +1,4 @@
+#!/bin/sh
+find /usr/@TRIQS_PYTHON_LIB_DEST@ -name "*.pyc" -exec rm {} \; 
+#find /usr/@TRIQS_PYTHON_LIB_DEST@ -name "*.pyc" -exec ls -l {} \; 
+

@@ -1,0 +1,218 @@
+
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2011 by O. Parcollet
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
+
+#include "./python_stuff.hpp"
+#include "./src/array.hpp"
+#include <iostream>
+
+using namespace triqs::arrays;
+using namespace indexmaps;
+using namespace storages;
+
+#include "./src/array.hpp"
+#include "./src/matrix.hpp"
+//#include "./src/vector.hpp"
+#include <boost/type_traits/is_convertible.hpp>
+ 
+namespace ExpressionTools { 
+
+  /** 
+   * Map any callable object to an array expression, elementwise
+   */
+  namespace details { 
+   template<typename Obj, typename Expr> 
+    struct map_impl : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
+     typedef typename Expr::value_type   value_type;
+     typedef typename Expr::domain_type  domain_type;
+     Expr const & a;Obj const & obj;std::string name;
+     map_impl( Obj const & obj_, Expr const & a_,std::string const & name_):a(a_),obj(obj_),name(name_){}
+     domain_type domain() const { return a.domain();}
+     template<typename ... Args>
+      value_type operator()(Args const & ... args) const  { return obj(a (args...)); }
+     //value_type operator[] (typename Expr::domain_type::index_value_type const & key) const { return obj(a [key]); }
+    };
+   template<typename Obj, typename Expr> 
+    std::ostream & operator<<(std::ostream & out, map_impl<Obj,Expr> const & x){ return out<<x.name<<"("<<x.a<<")";}
+  }
+
+  template<typename Obj, typename Expr> 
+   details::map_impl<Obj,Expr> map_expr (Obj const & obj, Expr const & x,std::string const & name="Unknown") { 
+    return details::map_impl<Obj,Expr>(obj,x,name);
+   }
+
+  /** 
+   * Transpose any array expression
+   */
+  namespace details { 
+
+   template<typename Expr> 
+    struct transpose_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
+     typedef typename Expr::value_type   value_type;
+     typedef typename Expr::domain_type  domain_type;
+     Expr const & a;
+     transpose_impl( Expr const & a_):a(a_){}
+     domain_type domain() const { return domain_type(mini_vector<size_t,2>(a.domain().lengths()[1], a.domain().lengths()[0])); } 
+     typedef typename Expr::domain_type::index_value_type K; 
+  template<typename ... Args> value_type operator()(Args const & ... args) const  { return a [ K(args...) ]; }
+  //     value_type operator[] (K const & key) const { return a [ K( key[1], key[0]) ]; }
+    };
+
+   template<typename T> 
+    std::ostream & operator<<(std::ostream & out, transpose_impl<T> const & x){ return out<<"Transpose("<<x.a<<")";}
+
+
+   template<class Expr, template <class Expr2> class Transfo>
+    struct transfo_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) ,Transfo<Expr> { //,  Tag::expression, Tag::array_algebra_expression_terminal { 
+     Expr const & a; transfo_impl( Expr const & a_):a(a_){}
+     typedef Transfo<Expr> T;
+     typename T::domain_type domain() const { return T::domain(a);}
+     typename T::value_type operator[] (typename T::domain_type::index_value_type const & key) const { return T::eval(a,key); }
+    };
+
+    template<class Expr, template <class Expr2> class Transfo>
+     std::ostream & operator<<(std::ostream & out, transfo_impl<Expr,Transfo> const & x){ return out<<Transfo<Expr>::name()<<"("<<x.a<<")";}
+
+    }
+
+   //template<typename Expr> details::transpose_impl<Expr> Transpose (Expr const & x) { return details::transpose_impl<Expr>(x);}
+
+   template<typename Expr> 
+    struct transpose_  {
+     static_assert(  ImmutableArray<Expr>::value, "transpose_ : the type of the template argument is incorrect, it does not model ImmutableArray");
+     // static checks here on Expr
+     static std::string name() { return "Transpose";}
+     typedef typename Expr::value_type   value_type;
+     typedef typename Expr::domain_type  domain_type;
+     static domain_type domain(Expr const & a) { return domain_type(mini_vector<size_t,2>(a.domain().lengths()[1], a.domain().lengths()[0])); } 
+     static value_type eval (Expr const & a, typename domain_type::index_value_type const & key) { 
+      return a [ typename domain_type::index_value_type ( key[1], key[0]) ]; 
+     }
+    };
+
+
+#define TRIQS_ARRAYS_NAME_APPLY_ARRAY_FUNCTION(Name, ArrayFunction)\
+   namespace result_of { template<typename Expr> struct Name { typedef details::transfo_impl<Expr,ArrayFunction> type; }; }\
+   template<typename Expr> typename result_of::Name<Expr>::type Name (Expr const & x) { return typename result_of::Name<Expr>::type (x);}\
+
+   TRIQS_ARRAYS_NAME_APPLY_ARRAY_FUNCTION (Transpose, transpose_)
+
+  }
+
+  using namespace ExpressionTools;
+
+  int sqr(int x) { return x*x;}
+
+  //DEFINE_ARRAY_FUNCTION1( Transpose, transpose_impl);
+
+  int main(int argc, char **argv) {
+
+   init_python_stuff(argc,argv);
+
+   {
+    array<int,1> A(3),B(3),C(3);
+    array<double,1> F(3);  
+    for (int i =0; i<3; ++i) {
+     A(i) = i;
+     B(i) = 1;
+     C(i) =  10 *i;
+     F(i) = 2.5 + i;
+    }
+
+    std::cout<<" A = "<<A<<std::endl;
+    std::cout<<" B = "<<B<<std::endl;
+    std::cout<<" C = "<<C<<std::endl;
+    std::cout<<" F = "<<F<<std::endl;
+
+    array<double,1> V1(3), V2(3);
+
+    // std::cout<< (A+B) <<std::endl;
+    // std::cout<<V1 + V2 <<std::endl;
+
+    // type computation 
+    std::cout<<" A + F = "<< array<double,1>(A+F)<<std::endl;
+
+   }
+
+   {
+    array<long,2> A (2,2), B(2,2),C(2,2);
+    for (int i =0; i<2; ++i)
+     for (int j=0; j<2; ++j) 
+     { A(i,j) = 10*i+ j;B(i,j) = i+ 2*j;}
+    std::cout<<" A = "<<A<<std::endl;
+    std::cout<<" B = "<<B<<std::endl;
+
+    matrix<double> M1(2,2);
+    //std::cout<<M1 + A<<std::endl; // this should NOT COMPILE
+
+    std::cout<< (A+2*B) <<std::endl;
+    std::cout<<"-------"<<std::endl;
+
+    std::cout<< (A+2*B).domain()<<std::endl;
+    std::cout<<"----EVAL ---"<<std::endl;
+
+    C= A + 2*B;
+    std::cout<<" C = "<<C<<std::endl;
+
+    C= std::plus<array<long,2> >()(A,B);
+    std::cout<<" C = "<<C<<std::endl;
+
+    // array multiplication 
+    C = A* B;
+    std::cout<<" C = A*B "<<C<<std::endl;
+
+    // array division
+    array<double,2> Af (2,2), Bf(2,2),Cf(2,2);
+    Af = A; Bf = B; Bf(0,0) = 1;
+    std::cout<<" Af = "<<Af<<std::endl;
+    std::cout<<" Bf = "<<Bf<<std::endl;
+    Cf = Af / Bf;
+    std::cout<<" Cf = Af/Bf "<<Cf<<std::endl;
+
+    C = A + Transpose(B);
+    std::cout<<" C = "<<C<<std::endl;
+
+    C = A + Transpose(B + B);
+    std::cout<<" C = "<<C<<std::endl;
+
+    C = Transpose(B);
+    std::cout<<" C = "<<C<<std::endl;
+
+    std::cout<<" t A"<<Transpose(A)<<std::endl;
+
+    array<double,2> F( 0.5 * A);
+    std::cout << " 0.5 * A = "<<F <<std::endl;
+
+    // non square
+    array<long,2> R(2,3),Rt(3,2);
+    for (int i =0; i<2; ++i)
+     for (int j=0; j<3; ++j) 
+     { R(i,j) = 10*i+ j;}
+
+    //std::cout<<" R = "<< 1 + R<<std::endl;
+    std::cout<<" R = "<< array<long,2>(Transpose(R)) <<std::endl;
+
+    C =  map_expr(&sqr,A);
+    std::cout<<" C = "<< map_expr(&sqr,A,"SQR")<<" = "<<C<<std::endl;
+
+   }
+   return 0;
+  }

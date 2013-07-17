@@ -1,0 +1,326 @@
+.. highlight:: c
+
+The new C++11 standard
+===============================
+
+C++11 is the new standard of the C++, voted in 2011 by the International C++ Standard Committee.
+It brings several improvements to the C++.
+The goal of this page is to highlight a few constructs, which may be useful for us in scientific computing
+in order to make C++ more accessible and ease library writing.
+
+A simple presentation of C++11 is given in `wikipedia <http://en.wikipedia.org/wiki/C%2B%2B11>`_.
+
+Implementation
+-----------------
+ 
+The first thing is to know if/whether this standard is usable, i.e. implemented in compilers.
+It turns out that recent versions of compilers (gcc, clang, icc) have already most of the features, 
+and the implementation is very rapidely progressing.
+
+A simple `page <http://wiki.apache.org/stdcxx/C%2B%2B0xCompilerSupport>`_ present what is implemented in various compilers.
+A detailed table of the implemented features with versions exists for `gcc <http://gcc.gnu.org/projects/cxx0x.html>`_
+and for `clang <http://clang.llvm.org/cxx_status.html>`_.
+
+.. note::
+  To use C++11, pass the option -std=c++0x (all compilers), or -std=c++11 (gcc >= 4.7, clang >= 3.0).
+
+Rational for using C++11
+----------------------------
+
+C++11 add some libraries (standardizing several boost libraries, e.g. shared_ptr), 
+but also and most importantly several new features in the language itself.
+Some are basically *syntactic sugar*, some have a deep effect on the programming style.
+
+Some of these features allow a much cleaner programming with : 
+
+* functionnal programming : introduction of lambda, in particular, also auto, decltype.
+* metaprogramming (variadic template, auto, decltype, etc).
+
+C++11 allows : 
+
+* Write simpler code for the User of libraries
+* A lot of simplification in the writing of libraries themselves.
+
+In my opinion the gain in clarity that one can achieve with C++11 vastly outweigh the 
+cost in portability (to old versions of compilers).
+
+There are already many articles on C++11, and soon books, so I will only focuss on
+a few examples and basic explanations.
+
+**Except when specified, the examples below compiles with gcc 4.6 (Ubuntu 12.04 LTS default) and clang 3.1 (current stable)**
+
+Rvalue references 
+-----------------------
+
+Probably one of the most useful feature is the *move semantics*, or rvalue references.
+
+The problem
+^^^^^^^^^^^^^
+
+ *How to return efficiently a big object built by a function ?*
+
+Example : I have a function that creates a new std::vector (or any array, Green functions).
+How do I return it ?
+
+A simple solution::
+
+  std::vector<T> f ( my_parameters) { 
+    std::vector<T> res( vec_size);
+    // fill res
+    res[0]=1; //...
+    return res;
+  }
+  /// usage 
+  std::vector <T> v = f(1,2); // constructed a new v from the result of f call.
+  v = f(3,2);                 // reassign an already constructed v to the result of v
+
+Normally, this solution has a major defect : *res* is **copied** when returned from the function,
+hence there is a (potentially huge) performance penalty in doing such simple code.
+Most current compilers will already elide (remove) the copy in the first case, but it is not guaranteed.
+And in the second case, there will be a copy.
+
+This situation has lead to several workarounds idioms, obscuring the coding style in C++,  like ::
+ 
+  // solution 1 : use pointers
+  std::vector<T> * f (my_parameters) {                  // <---- return a pointer
+    std::vector<T> res = new std::vector<T>(vec_size);  // <--- dynamical allocation
+    // fill res
+    (*res)[0] = 1;                                 ///  <---- not so nice to write
+    return res;
+  }
+  /// usage 
+  std::vector <T> * v = f(1,2); // <--- put this in shared_ptr ??
+  *v = f(3,2);  // <--- Oops : memory leak !
+
+This has a big pb too : who is going to take care of deallocating the pointer (see shared_ptr section) ??
+
+Another solution is ::
+
+ // solution 2 : pass by reference
+  void f( std::vector<T> & res, my_parameters) { // <---- pass a vector and change it 
+   /// fill res....
+  }
+ // usage 
+ std::vector<T> v; 
+ f(v,1,2);  // <------ not nice, not natural
+ 
+
+The C++11 solution 
+^^^^^^^^^^^^^^^^^^^^^^
+
+The **efficient** C++11 code is now **the simplest one** in this situation ::
+
+  std::vector<T> f (my_parameters) { 
+    std::vector<T> res(vec_size);
+    res[0]=1; // fill res ...
+    return res;
+  }
+
+  /// usage 
+  std::vector <T> v = f(1,2);  // no copy (copy elision)    !
+  v = f(2,3);                  // no copy (move operator =) !!
+
+In that case, there will be no useless copy. The data of the temporary will be "stolen" by v.
+Since the temporary is ... temporary, this is a good strategy. Note that :
+
+* This is transparent in this code. The user of the vector object, 
+  simply write the **simplest, natural code**. (it is a good idea still to understand the basic idea, see below).
+
+* The charge of implementing the move semantics rely on the **library writer, not the user of the class**.
+
+* Still, implementing this is not hard (see example below).
+
+* A detailed series of (readable) articles on copy elision, and move semantics by D. Abrahams
+  can be found `here <http://cpp-next.com/archive/2009/08/want-speed-pass-by-value>`_.
+
+An example of a move constructor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Let us now make a minimal vector class to illustrate the idea and how to implement move semantics.
+
+In a situation like above, the vector (or anything that provides a **move constructor**) will 
+alleviate the copy by *stealing the data from the returned temporary*.
+The temporary will be discarded, so there is no pb in stealing its data.
+
+Typically a class with move semantics will provide  : 
+
+* a copy constructor, an operator =, as in C++03.
+* a move constructor, a move operator=
+
+.. compileblock::
+
+   #include <iostream>
+   #include <string.h>
+   class my_vector  { 
+    double * data;    // a piece of memory
+    size_t size_;     // size of the piece
+    public : 
+    my_vector(int s=0): data(s>0 ? new double[s] : NULL ), size_(s){} // basic constructor. Just allocate memory
+    ~my_vector() { if (data) delete[] data;} // free the pointer
+
+    my_vector(my_vector const & x) { // copy contructor 
+     std::cout  << "copy construction"<< std::endl;
+     size_  = x.size(); data = new double[size_];
+     memcpy(this->data, x.data, x.size()*sizeof(double)); // copy data in memory (low level C)
+    }
+
+    my_vector & operator=( my_vector const & x) { // normal = operator
+     std::cout <<" normal ="<< std::endl; 
+     size_  = x.size(); if (data) delete[] data; data = new double[size_]; 
+     memcpy(this->data, x.data, x.size()*sizeof(double)); // copy data in memory (low level C)
+     return * this;
+    }
+
+    my_vector(my_vector && V) { // C++11 move constructor
+     std::cout  <<" move constructor"<< std::endl;
+     data = V.data; V.data = NULL; // swap the data with  V and let V empty !
+     size_ = V.size_; V.size_ = 0;
+    }
+
+    my_vector & operator=( my_vector && V) { // C++11 move = operator
+     std::cout <<" Move ="<< std::endl; 
+     std::swap(V.data, this->data);    // swap data
+     std::swap(V.size_, this->size_); 
+     return * this;
+    }
+    // ------ standard interface to vector (minimal) --------------------
+    double const & operator[](size_t i) const { return (data)[i];}
+    double & operator[](size_t i) { return (data)[i];}
+    size_t size() const { return size_;}
+    friend std::ostream & operator <<( std::ostream & out, my_vector const & v) { 
+     for (size_t i =0; i<v.size(); ++i)  { out << v[i] <<" ";}
+     return out;
+    }
+   };
+
+   // ------------- USAGE ----------------
+
+   my_vector make_vector(int s) {   // a function that makes a vector
+    my_vector res(s); 
+    for (int i =0; i<s; ++i) res[i] = i*10;
+    return res;
+   }
+
+   my_vector f(my_vector V) {     // another one, that take a copy of V ...
+    V[0] = - V[0];
+    std::cout  << "work done "<< std::endl;
+    return V; 
+   }
+
+   int main () {
+    my_vector A(3); A[0] = 1; A[1] =2; A[2] =3;
+    my_vector B(3); B[0] = 10; B[1] =20; B[2] =30;
+    my_vector C(A); std::cout  <<" C= "<< C << std::endl;
+    my_vector D(make_vector(4)); std::cout  <<" D= "<< D << std::endl;
+    A = f(A); std::cout  <<"A =f(A) :  A= "<< A << std::endl;
+    A = f(B); std::cout  <<"A = f(B) :  A= "<< A << "B= "<<  B<< std::endl;
+    std::swap(A,B); std::cout  <<" swap:  A= "<< A << "B= "<<  B<< std::endl;
+   }
+ 
+..  
+  .. literalinclude:: babyvector.cpp
+
+Explanation (quick) : 
+^^^^^^^^^^^^^^^^^^^^^^^
+
+* && is a new type of reference, called *rvalue reference*, that binds to (unnamed) temporaries. 
+ 
+* ... See literature...
+
+Other example
+^^^^^^^^^^^^^^^
+
+You may also explicitly ask for the move semantics, e.g. ::
+
+   { 
+     A a (...); // building a temporary a
+     b = 2*a;   // using a
+     c = std::move(a); // a is going to be destroyed. c "steals" its data ...
+   }
+
+Automatic type deduction: auto, decltype
+------------------------------------------------
+
+In many situations, the compiler knows the type (better than you ?), so you can save time by asking the compiler
+to deduce the type by itself ::
+
+  auto x = 3; // equivalent to int x= 3;
+
+This because really powerful when the type (e.g. returned by a function) is getting more complex::
+
+  auto res = my_function(1,2,3);
+  // res is of the return_type of the function for this overload.
+
+In some cases (see Expression templates, in particular), it is the *only* way to deduce a 
+type which may be internal to the compiler (e.g. lambda) or to a library, e.g.::
+
+  array<int,2> A(2,3), B(2,3); 
+  auto expr = A + 2*B; 
+
+
+for range loop
+-----------------
+
+For any object that have iterators (in fact it is more general ....), a simpler syntax to iterate on them is.
+Example ::
+
+  std::vector<int> V = {1,2,3};
+  for (auto & x : V) { 
+   // do something with x ....(it is a reference)
+  }
+
+
+Initializer list
+------------------
+
+Example ::
+
+  std::vector<int> V = {1,2,3};
+  triqs::arrays::matrix<double> M = {{1,2},{3,4}}; // not implemented yet....
+
+Lambda 
+------------
+
+As in python, C++11 now supports simple lambda functions ::
+
+ auto f = [](int) { return x+1;}
+ int u = f(3); // use as a regular function... 
+
+* It still allow inlining.
+ 
+* This is particularly useful with the STL algorithms, or similar iteration algorithms : 
+
+.. 
+  .. literalinclude:: count_if.cpp
+
+.. compileblock::
+  
+        #include <algorithm>
+        #include <iostream>
+        #include <vector>
+        
+        int main()
+        {
+         std::vector<double> v = { -1, -2, -3, 4, -4, 3, -7, 8, 9, 10 };
+         int num_items1 = std::count_if(v.begin(), v.end(), [](double i) {return i>0;});
+         std::cout << "number of >0 : " << num_items1 << '\n';
+         
+         int bound = 3;
+         num_items1 = std::count_if(v.begin(), v.end(), [&bound](double i) {return i>bound;});
+         std::cout << "number of >bound : " << num_items1 << '\n';
+        }
+
+
+Variadic template
+---------------------
+
+Improvement of the standard library
+---------------------------------------
+
+Most notably :
+
+* std::shared_ptr, and std::unique_ptr (see Smart Pointers).
+* std::unordered_map
+
+In most cases, this is a standardisation of some boost libraries.
+

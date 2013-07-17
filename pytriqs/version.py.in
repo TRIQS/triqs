@@ -1,0 +1,28 @@
+
+VersionNumber = "1.0"
+
+# if we use a git clone, then tag with the hash, else just the plain number 
+git_hash = "@GIT_HASH@"
+
+branch_info_all = [ b.strip()  for b in  """@GIT_BRANCHES@""".split('\n')]
+try : 
+    branch_info = [ b[1:].strip() for b in branch_info_all if b[0] == '*'][0]
+except : 
+    branch_info = ""
+
+revision = "branch = %s; commit = %s"%(branch_info, git_hash if git_hash else VersionNumber)
+
+def cmake_options() : 
+    return open ("@CMAKE_BINARY_DIR@/CMakeCache.txt").read()
+
+
+machine_info = """Code compiled on @myHostName@ under login @WhoAmI@ """
+
+all_info  =  """
+    Code revision : %s
+    %s
+    For all the configuration options, use cmake_options()
+    """%(revision,machine_info)
+
+greeting = """ Code revision : %s """%(revision)
+

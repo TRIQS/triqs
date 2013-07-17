@@ -1,0 +1,9 @@
+
+SET(PYTHON_SOURCES 
+  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/sumk_discrete_from_lattice.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/sumk_discrete.py
+)
+
+install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/sumk)
+

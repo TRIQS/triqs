@@ -1,0 +1,24 @@
+zero: 0 [time_pt : beta = 40 n = 0]
+beta: 40 [time_pt : beta = 40 n = 18446744073709551615]
+t1: 10 [time_pt : beta = 40 n = 4611686018427387904]
+t2: 30 [time_pt : beta = 40 n = 13835058055282163712]
+t1 + t2: 0 [time_pt : beta = 40 n = 0]
+t1 + t2 - (as double) : -40
+t1 - t2: 20 [time_pt : beta = 40 n = 9223372036854775807]
+t1 - t2 - (as double) : 40
+t1 * t2: 300
+t1 * t2 - (as double) : 0
+t1 / t2: 0.333333
+t1 / t2 - (as double) : 0
+t1 + beta: 10 [time_pt : beta = 40 n = 4611686018427387903]
+t1 - beta: 10 [time_pt : beta = 40 n = 4611686018427387904]
+ print 10
+ -t1: 30 [time_pt : beta = 40 n = 13835058055282163711]
+epsilon: 2.1684e-18 [time_pt : beta = 40 n = 1]
+- epsilon: 40 [time_pt : beta = 40 n = 18446744073709551614]
+t1 - epsilon :10 [time_pt : beta = 40 n = 4611686018427387903]
+ num limit max 18446744073709551615
+ num limit-1  18446744073709551614
+ num limit+0  18446744073709551615
+ num limit+1  0
+ num limit+2  1

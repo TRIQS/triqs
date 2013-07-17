@@ -1,0 +1,28 @@
+01
+01
+021
+2103
+1230
+ composing 021 and 021 = 012
+ composing 2103 and 2103 = 0123
+inverse of 021 = 021
+ checking 012
+inverse of 2103 = 2103
+ checking 0123
+inverse of 1230 = 3012
+ checking 0123
+ identity  :0
+ ridentity :0
+
+ identity  :01
+ ridentity :10
+
+ identity  :012
+ ridentity :210
+
+ identity  :0123
+ ridentity :3210
+
+ identity  :01234
+ ridentity :43210
+

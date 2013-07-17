@@ -1,0 +1,104 @@
+.. highlight:: c
+
+.. _arith_expression: 
+
+Arithmetic Expressions
+-------------------------------------------------
+
+* **Definition** :
+  
+  By `expression`, we mean here an object, typically representing a mathematical expression, 
+  which models the :ref:`HasImmutableArrayInterface` concept.
+
+* **Use** :
+  
+  Expression can be used : 
+   - as RHS (Right Hand Side) of various operators (=, +=, -=, ...)
+   - at any place where an `expression` is expected.
+
+* **How to make expression ?**
+
+  Expressions can be build easily in various ways : 
+
+   - Using arithmetic operators, e.g. A + 2*B
+     Examples ::
+
+      array<long,2> A (2,2), B(2,2),C;
+      C= A + 2*B;
+      array<long,2> D( A+ 2*B);
+      array<double,2> F( 0.5 * A);  // Type promotion is automatic
+     
+      // or even in C++0x : 
+      auto e =  A + 2*B;           // expression, purely formal
+      array<long,2> D(e);          // really makes the computation
+      cout<< e <<endl ;            // prints the expression
+      cout<< e(1,2) <<endl ;       // evaluates just at a point
+      cout<< e.domain() <<endl ;   // just computes the domain
+
+   - Using predefined expressions : 
+      
+       - matmul
+ 
+         The code::
+          
+          matrix<double> M1(2,2), M2(2,2), M3;
+          M3 = matmul(M1,M2);
+         
+         will do the following : 
+           -  matmul returns a lazy object modelling the :ref:`Expression` concept.
+           -  a result this is compiled as some `matmul_with_lapack(M1,M2,M3)` : **there is NO intermediate copy**.
+
+        - mat_vec_mul
+
+   - Building custom expressions. The transpose example...
+      
+      Describe the concept, what to implement, etc....
+        
+        - Transpose:: 
+
+           array<long,2> A (2,2), B(2,2),C(2,2);
+           C= A + 2*B;
+           C = A + Transpose(B);         // Transpose(X) returns a lazy object that models HasImmutableArrayInterface. 
+           C = A + Transpose(B + B);     // X can also be an expression...
+           C = Transpose(B);             //
+          
+           // non square
+           array<long,2> R(2,3),Rt(3,2);
+           cout<<" R = "<< array<long,2>(Transpose(R)) <<endl;
+          
+           // mapping any function 
+           C =  map_expr(&sqr,A);
+           cout<<" C = "<< map_expr(&sqr,A,"SQR")<<" = "<<C<<endl;
+          
+           // matmul as expression Oi are 'C' or 'F'
+           matrix<double,O1> M1(2,2); matrix<double,O2> M2(2,2); matrix<double,O3> M3;
+           // The central instruction : note that matmul returns a lazy object 
+           // that has ImmutableArray interface, and defines a specialized version assignment
+           // As a result this is equivalent to some matmul_with_lapack(M1,M2,M3) : there is NO intermediate copy.
+           M3 = matmul(M1,M2);
+    
+
+     See expression.hpp.
+     At the moment, only +,-, * and / by scalar are implemented.
+     
+     An expression models HasImmutableArrayInterface, i.e. :
+      
+     * It has a domain (computed from the expression)
+     * It can be evaluated.
+     
+     It is then easy to mix them with other objects,
+     that model the same concept. See e.g. expr2.cpp (map_expr) for examples.
+     
+     
+     * *Multiplication* : 
+     not decided, since it is not the same for array or matrices.
+     Two choices : 
+
+      * Do not add \* for array, matrices (use matmul e.g.) and allow mixing array, matrix
+        e.g. add an array<int,2> and a matrix <int>
+
+      * Add the \*, but then do different expression for array and matrix/vector,
+        then one can not mix them.
+        In that case, it is however trivial to say e.g. M + matrix_view<int>(A) if A is an array.
+     
+     

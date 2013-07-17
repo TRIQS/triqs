@@ -1,0 +1,37 @@
+.. highlight:: c
+
+Manipulations of determinants
+=============================
+
+The purpose of this little class is to regroup standard block manipulations on determinant, used in several 
+QMC.
+
+Given a function :math:`F(x,y)`, and two sets of values :math:`x_i,y_i \ 0\leq i < N`,
+we can define the square :math:`N\times N` matrix 
+
+.. math:: 
+   
+   M_{i,j} = F(x_i,y_j)
+
+When adding/removing a line and column (i.e. a value of x, y), 
+:math:`M^{-1}` and :math:`det M` can be fast updated using standard block matrix computations.
+This class implements these general operations. It contains : 
+
+* Data : 
+
+  * :math:`M^{-1}` and :math:`det M`
+  * a vector containing  :math:`x_i,y_i \ 0\leq i \leq N`
+
+* Methods to quickly update :math:`M^{-1}` and :math:`\det M` when one :  
+
+  * adds/removes a line and a column (i.e. adding or removing one x and one y)
+  * adds/removes two lines and two columns (i.e. adding or removing two x and two y)
+  * changes a line/colum, etc... 
+
+
+
+.. toctree::
+   :maxdepth: 2
+
+   det_manip
+   cookbook
