@@ -37,10 +37,10 @@ It will be used to calculate the (inverse) Fourier transform, in real/imaginary 
 
 The DFT transforms of a sequence of :math:`N` complex numbers :math:`f_0...,f_{N-1}` into a sequence of :math:`N` complex numbers :math:`\tilde f_0...,\tilde f_{N-1}` according to the formula:
        :label: _DFT
-    .. math:: \tilde f_m = \sum_{k=0}^{N-1} f_k e^{-i 2 \pi m k / N}.
+    .. math:: \tilde f_k = \sum_{n=0}^{N-1} f_n e^{-i 2 \pi k n / N}.
 The inverse DFT formula is
        :label: _inv_DFT
-    .. math:: f_k = \frac{1}{N} \sum_{m=0}^{N-1} \tilde f_m e^{i 2 \pi m k / N}.
+    .. math:: f_n = \frac{1}{N} \sum_{k=0}^{N-1} \tilde f_k e^{i 2 \pi k n / N}.
 
 
 
@@ -54,17 +54,15 @@ The times are :math:`t_k=t_{min}+k\delta t` and the frequencies :math:`\omega_m=
 
 By approximating Eq. :ref:`TF_R` by 
     .. math:: \tilde G(\omega_m) = \delta t \sum_{k=0}^{N_t} G(t_k) e^{i\omega_m t_k}, 
-we recognize a DFT (Eq. :ref:`DFT`). To calculate it using FFTW, we first need to prepare the input:
-    .. math:: f_k = G(t_k) e^{i \omega_{min}t_k},
-then to do the DFT and finally to modify the output to obtain :math:`\tilde G(\omega_m)` as
-    .. math:: \tilde G(\omega_m) = \delta t \tilde f_m e^{i t_{min}(\omega_m-\omega_{min})}.
+we recognize an inverse DFT (Eq. :ref:`inv_DFT`). To calculate it using FFTW, we first need to prepare the input :math:`\tilde f_k`, then to do the DFT and finally to modify the output to obtain :math:`\tilde G(\omega_m)` using the two formulas:
+    .. math:: \tilde f_k = G(t_k) e^{i \omega_{min}t_k},
+    .. math:: \tilde G(\omega_m) = \delta t f_m e^{i t_{min}(\omega_m-\omega_{min})}.
 
 Similarly, the inverse transformation is obtained by approximating Eq. :ref:`eq_inv_TF_R` by 
     .. math:: G(t_k)=\frac{\delta\omega}{2\pi}\sum_{m=0}^{N_\omega} \tilde G(\omega_m)e^{-i\omega_m t_k},
-we recognize an inverse DFT (Eq. :ref:`inv_DFT`). To calculate it using FFTW, we first need to prepare the input: 
-    .. math:: \tilde f_m = \tilde G(\omega_m) e^{-i t_{min}\omega_m},
-then to do the inverse DFT and finally to modify the output to obtain :math:`G(t_k)` as
-    .. math:: G(t_k) = \frac{1}{N_t \delta t}f_k e^{-i \omega_{min}(t_k-t_{min})},
+we recognize a DFT (Eq. :ref:`DFT`). To calculate it using FFTW, we first need to prepare the input :math:`f_m`, then to do the inverse DFT and finally to modify the output to obtain :math:`G(t_k)`:
+    .. math:: f_m = \tilde G(\omega_m) e^{-i t_{min}\omega_m},
+    .. math:: G(t_k) = \frac{1}{N_t \delta t}\tilde f_k e^{-i \omega_{min}(t_k-t_{min})}.
 
 
 
@@ -74,24 +72,55 @@ Implementation in imaginary time/frequency using FFTW
 
 The imaginary time mesh parameters are :math:`\beta` and :math:`N_\tau`, plus a tag ``half_bins``, ``full_bins`` or ``without_last``. 
 In the ``full_bins`` case, one point of the time GF has to be removed for the fourier transform. 
-From these parameters, we deduce :math:`\delta\tau=\beta/N_\tau`
+From these parameters, we deduce :math:`\delta\tau=\beta/N_\tau`. 
 
-CHAPTER NOT FINISHED !!!! It seems that only real GF's in time are considered (w_n is always >0)... 
-
-For the imaginary frequency mesh, they are :math:`n_{min}`, :math:`\beta` and :math:`N_\omega`. 
+For the imaginary frequency mesh, the mesh parameters are :math:`\beta`, :math:`n_{min}` and :math:`N_{\omega_n}`. 
 From them, we deduce :math:`\delta\omega=\frac{2\pi}{\beta}`. 
+
 The Fourier transform requires :math:`N_\omega=N_\tau`. 
 The times are :math:`\tau_k=\tau_{min}+k\delta\tau` and the frequencies :math:`\omega_n=\omega_{min}+n\delta \omega`. 
 :math:`\tau_{min}` is either 0 or :math:`\delta\tau/2` depending on the mesh kind.  
-:math:`\omega_{min}` is either :math:`\frac{2\pi(n_{min}+1)}{\beta}` or :math:`\frac{2\pi n_{min}}{\beta}` depending on the statistic.
+:math:`\omega_{min}` is either :math:`\frac{2\pi(n_{min}+1)}{\beta}` or :math:`\frac{2\pi n_{min}}{\beta}` depending on the statistics.
 
 We approximate the TF and its inverse by
     .. math:: \tilde G(i\omega_n) = \delta\tau \sum_{k=0}^{N_\tau} G(\tau_k)e^{i\omega_n \tau_k}
-    .. math:: G(\tau_k) = \sum_{n=0}^{N_\tau} \frac{1}{\beta} \tilde G(i\omega_n)e^{-i\omega_n \tau_k}
+    .. math:: G(\tau_k) = \sum_{n=n_{min}}^{N_\tau} \frac{1}{\beta} \tilde G(i\omega_n)e^{-i\omega_n \tau_k}
 
 We use for the TF:
-    .. math:: f_k = G(\tau_k) e^{i \omega_{min}\tau_k},
-    .. math:: \tilde G(i\omega_m) = \frac{\beta}{N_\tau} \tilde f_m e^{i \tau_{min}(\omega_m-\omega_{min})}.
+    .. math:: \tilde f_k = G(\tau_k) e^{i \omega_{min}\tau_k},
+    .. math:: \tilde G(i\omega_n) = \frac{\beta}{N_\tau} f_n e^{i \tau_{min}(\omega_n-\omega_{min})}.
+and for the inverse TF:
+    .. math:: f_m = \frac{1}{\beta}\tilde G(i\omega_n) e^{-i t_{min}\omega_n},
+    .. math:: G(t_k) = \tilde f_k e^{-i \omega_{min}(\tau_k-\tau_{min})},
+
+
+Special case of real functions in time for fermions
+----------------------------------------------------
+
+In this case, :math:`G(i\omega_n)=conj(G(i\omega_n))` and we only store the values of :math:`G(i\omega_n)` for :math:`\omega_n > 0`. 
+The Eq. :ref:`inv_DFT_I` becomes: 
+
+    :label: _inv_TF_I_real_fermion
+    .. math:: G(\tau)=\sum_{n=0}^\infty \frac{2}{\beta} \tilde G(i\omega_n)\cos(\omega_n \tau)
+
+The inverse TF formulas are in this case 
+    .. math:: f_m = \frac{2}{\beta}\tilde G(i\omega_n) e^{-i t_{min}\omega_n},
+    .. math:: G(t_k) = \tilde f_k e^{-i \omega_{min}(\tau_k-\tau_{min})},
+
+Special case of real functions in time for bosons
+--------------------------------------------------
+
+In this case, :math:`G(i\omega_n)=conj(G(i\omega_n))` and we only store the values of :math:`G(i\omega_n)` for :math:`\omega_n \ge 0`. 
+The Eq. :ref:`inv_DFT_I` becomes: 
+
+    :label: _inv_TF_I_real_bosons
+    .. math:: G(\tau)=\frac{1}{\beta} \tilde G(0)+\sum_{n=1}^\infty \frac{2}{\beta} \tilde G(i\omega_n)\cos(\omega_n \tau)
+
+The inverse TF formulas are in this case 
+    .. math:: f_0 = \frac{1}{\beta}\tilde G(0),
+    .. math:: f_m = \frac{2}{\beta}\tilde G(i\omega_n) \cos(t_{min}\omega_n),
+    .. math:: G(t_k) = \tilde f_k e^{-i \omega_{min}(\tau_k-\tau_{min})},
+
 
 Effect of a TF on the tail
 ===========================
