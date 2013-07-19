@@ -28,33 +28,57 @@
 namespace triqs { namespace gf { 
 
  // First the implementation of the fourier transform
- void fourier_impl         (gf_view<refreq> gw , gf_view<retime> const gt);
- void inverse_fourier_impl (gf_view<retime> gt,  gf_view<refreq> const gw);
-
- inline gf_view<refreq> fourier (gf_view<retime> const & gt) { 
-   double pi = std::acos(-1);
-   size_t L = gt.mesh().size();
-   double wmin = -pi * (L-1) / (L*gt.mesh().delta());
-   double wmax =  pi * (L-1) / (L*gt.mesh().delta());
-   auto gw = make_gf<refreq>(wmin, wmax, L, gt.data().shape().front_pop());
-   auto V = gw();
-   fourier_impl(V, gt);
-   return gw;
+ void fourier_impl         (gf_view<refreq,scalar_valued> gw , gf_view<retime,scalar_valued> const gt, scalar_valued);
+ void fourier_impl         (gf_view<refreq,matrix_valued> gw , gf_view<retime,matrix_valued> const gt, matrix_valued);
+ void inverse_fourier_impl (gf_view<retime,scalar_valued> gt,  gf_view<refreq,scalar_valued> const gw, scalar_valued);
+ void inverse_fourier_impl (gf_view<retime,matrix_valued> gt,  gf_view<refreq,matrix_valued> const gw, matrix_valued);
+ 
+ inline gf_view<refreq,matrix_valued> fourier (gf_view<retime, matrix_valued> const gt) { 
+  double pi = std::acos(-1);
+  size_t L = gt.mesh().size();
+  double wmin = -pi * (L-1) / (L*gt.mesh().delta());
+  double wmax =  pi * (L-1) / (L*gt.mesh().delta());
+  auto gw = make_gf<refreq,matrix_valued>(wmin, wmax, L, gt.data().shape().front_pop());
+  auto V = gw();
+  fourier_impl(V, gt, matrix_valued());
+  return gw;
  }
-
- inline gf_view<retime> inverse_fourier (gf_view<refreq> const & gw) { 
-   double pi = std::acos(-1);
-   size_t L = gw.mesh().size();
-   double tmin = -pi * (L-1) / (L*gw.mesh().delta());
-   double tmax =  pi * (L-1) / (L*gw.mesh().delta());
-   auto gt = make_gf<retime>(tmin, tmax, L, gw.data().shape().front_pop());
-   auto V = gt();
-   inverse_fourier_impl(V, gw);
-   return gt;
+ inline gf_view<refreq,scalar_valued> fourier (gf_view<retime, scalar_valued> const gt) { 
+  double pi = std::acos(-1);
+  size_t L = gt.mesh().size();
+  double wmin = -pi * (L-1) / (L*gt.mesh().delta());
+  double wmax =  pi * (L-1) / (L*gt.mesh().delta());
+  auto gw = make_gf<refreq,scalar_valued>(wmin, wmax, L);
+  auto V = gw();
+  fourier_impl(V, gt, scalar_valued());
+  return gw;
  }
-
- gf_keeper<tags::fourier,retime> lazy_fourier         (gf_view<retime> const & g);
- gf_keeper<tags::fourier,refreq> lazy_inverse_fourier (gf_view<refreq> const & g);
+ 
+ inline gf_view<retime,matrix_valued> inverse_fourier (gf_view<refreq,matrix_valued> const gw) { 
+  double pi = std::acos(-1);
+  size_t L = gw.mesh().size();
+  double tmin = -pi * (L-1) / (L*gw.mesh().delta());
+  double tmax =  pi * (L-1) / (L*gw.mesh().delta());
+  auto gt = make_gf<retime,matrix_valued>(tmin, tmax, L, gw.data().shape().front_pop());
+  auto V = gt();
+  inverse_fourier_impl(V, gw, matrix_valued());
+  return gt;
+ }
+ inline gf_view<retime,scalar_valued> inverse_fourier (gf_view<refreq,scalar_valued> const gw) { 
+  double pi = std::acos(-1);
+  size_t L = gw.mesh().size();
+  double tmin = -pi * (L-1) / (L*gw.mesh().delta());
+  double tmax =  pi * (L-1) / (L*gw.mesh().delta());
+  auto gt = make_gf<retime,scalar_valued>(tmin, tmax, L);
+  auto V = gt();
+  inverse_fourier_impl(V, gw, scalar_valued());
+  return gt;
+ }
+ 
+ inline gf_keeper<tags::fourier,retime,scalar_valued> lazy_fourier         (gf_view<retime,scalar_valued> const & g) { return g;}
+ inline gf_keeper<tags::fourier,refreq,scalar_valued> lazy_inverse_fourier (gf_view<refreq,scalar_valued> const & g) { return g;}
+ inline gf_keeper<tags::fourier,retime,matrix_valued> lazy_fourier         (gf_view<retime,matrix_valued> const & g) { return g;}
+ inline gf_keeper<tags::fourier,refreq,matrix_valued> lazy_inverse_fourier (gf_view<refreq,matrix_valued> const & g) { return g;}
 
  void triqs_gf_view_assign_delegation( gf_view<refreq> g, gf_keeper<tags::fourier,retime> const & L);
  void triqs_gf_view_assign_delegation( gf_view<retime> g, gf_keeper<tags::fourier,refreq> const & L);
