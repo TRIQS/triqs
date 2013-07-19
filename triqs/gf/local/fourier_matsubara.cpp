@@ -44,7 +44,7 @@ namespace triqs { namespace gf {
   
   tqa::vector<dcomplex> g_in, g_out;
   
-  void direct ( gf_view<imfreq,scalar_valued> &gw , gf_view<imtime,scalar_valued> const& gt) {
+  void direct (gf_view<imfreq,scalar_valued> gw, gf_view<imtime,scalar_valued> const gt) {
    using namespace impl_local_matsubara;
    auto ta = gt(freq_infty());
    //TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
@@ -80,8 +80,6 @@ namespace triqs { namespace gf {
    }
    gw.singularity() = gt.singularity();// set tail
   }
-  
-  
   
   void inverse(gf_view<imtime,scalar_valued> gt, gf_view<imfreq,scalar_valued> const gw){
    using namespace impl_local_matsubara;

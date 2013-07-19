@@ -33,14 +33,14 @@ namespace triqs { namespace gf {
  void inverse_fourier_impl (gf_view<imtime,scalar_valued> gt,  gf_view<imfreq,scalar_valued> const gw, scalar_valued);
  void inverse_fourier_impl (gf_view<imtime,matrix_valued> gt,  gf_view<imfreq,matrix_valued> const gw, matrix_valued);
  
- inline gf_view<imfreq,matrix_valued> fourier (gf_view<imtime,matrix_valued> const & gt) {
+ inline gf_view<imfreq,matrix_valued> fourier (gf_view<imtime,matrix_valued> const gt) {
   size_t L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
   auto gw = make_gf<imfreq,matrix_valued>(gt.domain().beta, gt.domain().statistic , gt.data().shape().front_pop(), L);
   auto V = gw();
   fourier_impl(V, gt, matrix_valued());
   return gw;
  }
- inline gf_view<imfreq,scalar_valued> fourier (gf_view<imtime,scalar_valued> const & gt) {
+ inline gf_view<imfreq,scalar_valued> fourier (gf_view<imtime,scalar_valued> const gt) {
   size_t L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
   auto gw = make_gf<imfreq,scalar_valued>(gt.domain().beta, gt.domain().statistic, L);
   auto V = gw();
@@ -48,7 +48,7 @@ namespace triqs { namespace gf {
   return gw;
  }
  
- inline gf_view<imtime, matrix_valued> inverse_fourier (gf_view<imfreq, matrix_valued> const & gw, mesh_kind mk = half_bins) {
+ inline gf_view<imtime, matrix_valued> inverse_fourier (gf_view<imfreq, matrix_valued> const gw, mesh_kind mk = half_bins) {
   double pi = std::acos(-1);
   size_t L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
   auto gt = make_gf<imtime,matrix_valued>(gw.domain().beta, gw.domain().statistic, gw.data().shape().front_pop(), L);
@@ -56,7 +56,7 @@ namespace triqs { namespace gf {
   inverse_fourier_impl(V, gw, matrix_valued());
   return gt;
  }
- inline gf_view<imtime,scalar_valued> inverse_fourier (gf_view<imfreq,scalar_valued> const & gw, mesh_kind mk = half_bins) {
+ inline gf_view<imtime,scalar_valued> inverse_fourier (gf_view<imfreq,scalar_valued> const gw, mesh_kind mk = half_bins) {
   double pi = std::acos(-1);
   size_t L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
   auto gt = make_gf<imtime,scalar_valued>(gw.domain().beta, gw.domain().statistic, L);
