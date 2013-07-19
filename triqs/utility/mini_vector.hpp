@@ -26,6 +26,7 @@
 #include "./exceptions.hpp"
 #include <boost/serialization/utility.hpp>
 #include <vector>
+#include <triqs/utility/tuple_tools.hpp>
 
 #define TRIQS_MINI_VECTOR_NRANK_MAX 10
 
@@ -142,6 +143,14 @@ namespace triqs { namespace utility {
    return res;
   }
 
- }}//namespace triqs::arrays 
+ struct tuple_to_mini_vector_aux { template<typename M, typename V> V * operator()(M const & m,  V * v) { *v = m; return ++v;}};
+ template<typename T, typename ... U> 
+  mini_vector<T,sizeof...(U)> tuple_to_mini_vector(std::tuple<U...> const & t) { 
+   mini_vector<T,sizeof...(U)> res;
+   triqs::tuple::fold(tuple_to_mini_vector_aux(),t,&res[0]); 
+   return res;
+  }
+
+}}//namespace triqs::arrays 
 #endif
 

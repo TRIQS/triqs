@@ -22,6 +22,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  set(compiler_group 1)
  string(REGEX REPLACE ".*([2-5]\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
+ if(compiler_version NOT VERSION_LESS "4.8.0" )
+  set(TRIQS_COMPILER_IS_C11_COMPLIANT ON)
+ endif()
+
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
  EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} --version
@@ -29,6 +33,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  set(CMAKE_COMPILER_IS_CLANG TRUE )
  set(compiler_name "clang")
  set(compiler_group 1)
+ set(TRIQS_COMPILER_IS_C11_COMPLIANT ON)
  IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # Apple which does not has the official clang version number ... 
   string(REGEX REPLACE ".*LLVM ([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})

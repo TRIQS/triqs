@@ -125,20 +125,20 @@ namespace triqs { namespace tuple {
   * t a tuple
   * Returns : f(x0,f(x1,f(....)) on the tuple
   */
- template<int pos, typename T> struct fold_impl {
+ template<int N, int pos, typename T> struct fold_impl {
   template<typename F, typename R>
    auto operator()(F && f, T & t, R && r )
-   DECL_AND_RETURN( fold_impl<pos-1,T>()(std::forward<F>(f),t, f(std::get<pos>(t), std::forward<R>(r))));
+   DECL_AND_RETURN( fold_impl<N,pos-1,T>()(std::forward<F>(f),t, f(std::get<N-1-pos>(t), std::forward<R>(r))));
  };
 
- template<typename T> struct fold_impl<-1,T> {
+ template<int N, typename T> struct fold_impl<N, -1,T> {
   template<typename F, typename R> R operator()(F && f, T & t, R && r) {return std::forward<R>(r);}
  };
 
  template<typename F, typename T, typename R>
-  auto fold (F && f,T & t, R && r) DECL_AND_RETURN( fold_impl<std::tuple_size<T>::value-1,T>()(std::forward<F>(f),t,std::forward<R>(r)));
+  auto fold (F && f,T & t, R && r) DECL_AND_RETURN( fold_impl<std::tuple_size<T>::value,std::tuple_size<T>::value-1,T>()(std::forward<F>(f),t,std::forward<R>(r)));
  template<typename F, typename T, typename R>
-  auto fold (F && f,T const & t, R && r) DECL_AND_RETURN( fold_impl<std::tuple_size<T>::value-1,T const>()(std::forward<F>(f),t,std::forward<R>(r)));
+  auto fold (F && f,T const & t, R && r) DECL_AND_RETURN( fold_impl<std::tuple_size<T>::value,std::tuple_size<T>::value-1,T const>()(std::forward<F>(f),t,std::forward<R>(r)));
 
  /**
   * fold_on_zip(f, t1, t2, init)

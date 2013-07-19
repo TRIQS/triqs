@@ -23,6 +23,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <functional>
+#include <triqs/utility/mini_vector.hpp>
 
 struct fun { 
  double operator()(int i, double x, double y, int k) {  return 6*k + i - 1.3*x + 2*y;}
@@ -97,5 +98,12 @@ int main(int argc, char **argv) {
   std::cerr  << " " << res << std::endl ;
  }
 
+ { // to mini_vector
+ 
+  auto t = std::make_tuple(1,2,3.4);
+  auto m = triqs::utility::tuple_to_mini_vector<double>(t);
+  std::cout  << m<< std::endl ;
+
+ }
 }
 
