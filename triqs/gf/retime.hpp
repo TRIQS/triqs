@@ -81,6 +81,12 @@ namespace triqs { namespace gf {
   template<typename Opt> struct factories<retime, matrix_valued,Opt> {
    typedef gf<retime,matrix_valued> gf_t;
    
+   template<typename MeshType>
+   static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const t) {
+    typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+    return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
+   }
+   
    static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
     typename gf_t::data_non_view_t A(shape.front_append(n_points)); A() =0;
     return gf_t(mesh<retime,Opt>::make(tmin, tmax, n_points,mk), std::move(A), local::tail(shape), nothing());
@@ -96,6 +102,12 @@ namespace triqs { namespace gf {
   //scalar_valued
   template<typename Opt> struct factories<retime, scalar_valued,Opt> {
    typedef gf<retime,scalar_valued> gf_t;
+   
+   template<typename MeshType>
+   static gf_t make_gf(MeshType && m, local::tail_view const t) {
+    typename gf_t::data_non_view_t A(m.size()); A() =0;
+    return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
+   }
    
    static gf_t make_gf(double tmin, double tmax, size_t n_points, mesh_kind mk) {
     typename gf_t::data_non_view_t A(n_points); A() =0;

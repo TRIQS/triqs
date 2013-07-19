@@ -70,7 +70,6 @@ namespace triqs { namespace gf {
   // matrix_valued
   template<typename Opt> struct factories<imfreq,matrix_valued,Opt> { 
     typedef gf<imfreq,matrix_valued,Opt> gf_t;
-    typedef gf_view<imfreq,matrix_valued,Opt> gf_view_t;
     
     template<typename MeshType>
     static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
@@ -91,7 +90,6 @@ namespace triqs { namespace gf {
   // scalar_valued
   template<typename Opt> struct factories<imfreq,scalar_valued,Opt> { 
    typedef gf<imfreq,scalar_valued,Opt> gf_t;
-   typedef gf_view<imfreq,scalar_valued,Opt> gf_view_t;
 
    template<typename MeshType>
    static gf_t make_gf(MeshType && m, local::tail_view const & t) {

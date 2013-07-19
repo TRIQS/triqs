@@ -78,7 +78,13 @@ namespace triqs { namespace gf {
 
   template<typename Opt> struct factories<re_im_time, scalar_valued,Opt> {
    typedef gf<re_im_time, scalar_valued,Opt> gf_t;
-   //       typedef typename mesh<re_im_time, Opt>::type mesh_t;
+   
+   template<typename MeshType>
+   static gf_t make_gf(MeshType && m) {
+    typename gf_t::data_non_view_t A(m.size());
+    A() =0;
+    return gf_t (m, std::move(A), nothing(), nothing(), nothing() ) ;
+   }
 
    static gf_t make_gf(double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) { 
     auto m =  make_gf_mesh<re_im_time,Opt>(tmin,tmax, nt, beta, S, ntau, mk);
