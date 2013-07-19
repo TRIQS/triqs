@@ -28,8 +28,9 @@ namespace triqs { namespace gf {
 
    namespace tqa = triqs::arrays;
    typedef std::complex<double> dcomplex;
-
+   
    void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L, bool direct);
+   void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L1, size_t L2, bool direct);
 
  }
 

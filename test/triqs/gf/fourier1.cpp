@@ -25,8 +25,8 @@ int main() {
  auto G3 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
  auto Gt = make_gf<imtime> (beta, Fermion, make_shape(2,2));
 
- //auto gt = inverse_fourier(G);
- //auto gw = fourier(gt);
+ auto gt = inverse_fourier(G);
+ auto gw = fourier(gt);
 
  //gw() = lazy_fourier(gt);
  G() = lazy_fourier(Gt);

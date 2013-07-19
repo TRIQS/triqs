@@ -23,6 +23,7 @@
 #include "./mesh_tools.hpp"
 #include "../domains/product.hpp"
 #include <triqs/utility/tuple_tools.hpp>
+#include <triqs/utility/mini_vector.hpp>
 namespace triqs { namespace gf {
 
  template<typename... Meshes> struct mesh_product : tag::composite {
@@ -57,6 +58,14 @@ namespace triqs { namespace gf {
    struct _aux3 { template<typename P, typename M> size_t operator()(M const & m, P const & p,size_t R) {return p.linear_index() + R * m.size();}};
    size_t mp_to_linear(m_pt_tuple_t const & mp) const { return triqs::tuple::fold_on_zip(_aux3(), m_tuple, mp, size_t(0)); }
 
+   //
+   struct _aux4 { template< typename M, typename V> V * operator()(M const & m, V * v) {*v = m.size(); return ++v;}};
+   utility::mini_vector<size_t,dim> all_size_as_mini_vector () const { 
+    utility::mini_vector<size_t,dim> res;
+    triqs::tuple::fold(_aux4(), m_tuple, &res[0] ); 
+    return res;
+   }
+
    // Same but a variadic list of mesh_point_t
    template<typename ... MP> size_t mesh_pt_components_to_linear(MP const &  ... mp) const {
     static_assert(std::is_same< std::tuple<MP...>, m_pt_tuple_t>::value, "Call incorrect ");
@@ -75,6 +84,7 @@ namespace triqs { namespace gf {
     mesh_point_t(mesh_product const & m_)                  : m(&m_), _c (triqs::tuple::apply(F1(), m_.m_tuple)), _atend(false)    {}
     m_pt_tuple_t const & components_tuple() const { return _c;}
     size_t linear_index() const { return m->mp_to_linear(_c);}
+    const mesh_product * mesh() const { return m;}
 
     typedef domain_pt_t cast_t;
     operator cast_t() const { return m->index_to_point(index);}
@@ -141,10 +151,40 @@ namespace triqs { namespace gf {
      triqs::tuple::fold(_aux_ser<Archive>(ar), m_tuple, size_t(0));
     }
 
- private:
+  private:
    m_tuple_t  m_tuple;
    domain_t _dom;
-};
+ };
+
+ //template<int pos, typename ... M> 
+ //typename std::tuple_element<pos,typename mesh_product<M...>::index_t>::type get_index1(typename mesh_product<M...>::mesh_point_t const & p) { return std::get<pos>(p.components_tuple());}
+
+ template<int pos, typename P> 
+  auto get_index(P const & p) DECL_AND_RETURN( std::get<pos>(p.components_tuple()).index());
+
+ template<int pos, typename P> 
+  auto get_point(P const & p) DECL_AND_RETURN( std::get<pos>( p.mesh()->components() ).index_to_point( std::get<pos>(p.components_tuple()).index() ) );
+ 
+ // C++14
+ //auto get_point(P const & p) { return std::get<pos> (p.mesh()->components()).index_to_point( std::get<pos>(p.components_tuple()));}
+
+ // Given a composite mesh m , and a linear array of storage A
+ // reinterpret_linear_array(m,A) returns a d-dimensionnal view of the array
+ // with indices egal to the indices of the components of the mesh.
+ // Very useful for slicing, currying functions.
+ template<typename ... Meshes, typename T, ull_t OptionsFlags >
+  arrays::array_view<T, sizeof...(Meshes),OptionsFlags, arrays::indexmaps::mem_layout::fortran_order(sizeof...(Meshes)) >
+  reinterpret_linear_array(mesh_product<Meshes...> const & m, arrays::array_view<T,1,OptionsFlags> const & A) {
+   static int constexpr rank = sizeof...(Meshes);
+   typedef arrays::array_view<T, sizeof...(Meshes),OptionsFlags, arrays::indexmaps::mem_layout::fortran_order(rank)> return_t;
+   typedef typename return_t::indexmap_type im_t;
+   auto l = m.all_size_as_mini_vector();
+   typename im_t::strides_type sv;
+   std::ptrdiff_t s= 1;
+   for (int u=0; u<rank; ++u) { sv[u] = s; s *= l[u];} // fortran type folding 
+   return return_t (im_t (l,sv,0) , A.storage());
+  }
+
 
 }}
 #endif

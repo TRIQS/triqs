@@ -34,8 +34,7 @@ void print_to_file(std::string const s, gf<imtime> const & gt){
 
 
 void test_0(){
-
- triqs::gf::freq_infty inf;
+ 
  int Ntau = 10001;
  double beta =1;
 

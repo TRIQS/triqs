@@ -385,19 +385,32 @@ namespace triqs { namespace gf {
   }
 
  // tool for lazy transformation
- template<typename Tag, typename D> struct gf_keeper{ gf_view<D> g; gf_keeper (gf_view<D> const & g_) : g(g_) {} };
+ template<typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper{ gf_view<D,Target> g; gf_keeper (gf_view<D,Target> const & g_) : g(g_) {} };
 
  // ---------------------------------- slicing ------------------------------------
-
+ 
+ //slice
  template<typename Variable, typename Target, typename Opt, bool V, typename... Args>
-  gf_view<Variable,Target,Opt> slice_target (gf_impl<Variable,Target,Opt,V> const & g, Args... args) {
-   return gf_view<Variable,Target,Opt>(g.mesh(), g.data()(tqa::range(), args... ), slice_target (g.singularity(),args...), g.symmetry());
+  gf_view<Variable,matrix_valued,Opt> slice_target (gf_impl<Variable,Target,Opt,V> const & g, Args... args) {
+   static_assert(std::is_same<Target,matrix_valued>::value, "slice_target only for matrix_valued GF's");
+   using arrays::range;
+   //auto sg=slice_target (g.singularity(),range(args,args+1)...);
+   return gf_view<Variable,matrix_valued,Opt>(g.mesh(), g.data()(tqa::range(), args... ),  slice_target (g.singularity(),args...) , g.symmetry());
   }
 
  template<typename Variable, typename Target, typename Opt, bool V, typename... Args>
-  gf_view<Variable,Target,Opt> slice_mesh (gf_impl<Variable,Target,Opt,V> const & g, Args... args) {
-   return gf_view<Variable,Target,Opt>(g.mesh().slice(args...), g.data()(g.mesh().slice_get_range(args...),arrays::ellipsis()), g.singularity(), g.symmetry());
+  gf_view<Variable,scalar_valued,Opt> slice_target_to_scalar (gf_impl<Variable,Target,Opt,V> const & g, Args... args) {
+   static_assert(std::is_same<Target,matrix_valued>::value, "slice_target only for matrix_valued GF's");
+   using arrays::range;
+   auto sg=slice_target (g.singularity(),range(args,args+1)...);
+   return gf_view<Variable,scalar_valued,Opt>(g.mesh(), g.data()(tqa::range(), args... ), sg , g.symmetry());
   }
+
+/*
+  template<typename Variable1,typename Variable2, typename Target, typename Opt, bool V, typename... Args>
+  gf_view<Variable2,Target,Opt> slice_mesh (gf_impl<Variable1,Target,Opt,V> const & g, Args... args) {
+   return gf_view<Variable2,Target,Opt>(g.mesh().slice(args...), g.data()(g.mesh().slice_get_range(args...),arrays::ellipsis()), g.singularity(), g.symmetry());
+  }*/
 
 }}
 

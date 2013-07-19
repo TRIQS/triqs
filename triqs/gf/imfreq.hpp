@@ -44,45 +44,71 @@ namespace triqs { namespace gf {
 
   //singularity
   template<typename Opt> struct singularity<imfreq,matrix_valued,Opt>  { typedef local::tail type;};
+  template<typename Opt> struct singularity<imfreq,scalar_valued,Opt>  { typedef local::tail type;};
   
   //h5 name
   template<typename Opt> struct h5_name<imfreq,matrix_valued,Opt>      { static std::string invoke(){ return "GfImFreq";}};
+  template<typename Opt> struct h5_name<imfreq,scalar_valued,Opt>      { static std::string invoke(){ return "GfImFreq_s";}};
 
   /// ---------------------------  evaluator ---------------------------------
-
-  template<typename Opt>
-   struct evaluator<imfreq,matrix_valued,Opt> {
+  template<typename Opt, typename Target>
+   struct evaluator<imfreq,Target,Opt> {
     static constexpr int arity = 1;
+    typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix_view<std::complex<double>>, std::complex<double>>::type rtype; 
     template<typename G>
-     arrays::matrix_view<std::complex<double> >  operator() (G const * g, long n)  const {return g->data()(n, arrays::range(), arrays::range()); }
+     rtype operator() (G const * g, long n)  const {return g->data()(n, arrays::ellipsis()); }
     template<typename G>
      local::tail_view operator()(G const * g, freq_infty const &) const {return g->singularity();}
    };
 
   /// ---------------------------  data access  ---------------------------------
-
   template<typename Opt> struct data_proxy<imfreq,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
+  template<typename Opt> struct data_proxy<imfreq,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
 
   // -------------------------------   Factories  --------------------------------------------------
-
+  
+  // matrix_valued
   template<typename Opt> struct factories<imfreq,matrix_valued,Opt> { 
-   typedef gf<imfreq,matrix_valued,Opt> gf_t;
+    typedef gf<imfreq,matrix_valued,Opt> gf_t;
+    typedef gf_view<imfreq,matrix_valued,Opt> gf_view_t;
+    
+    template<typename MeshType>
+    static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
+      typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+      return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
+    }
+    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
+      return make_gf(mesh<imfreq,Opt>::make(beta,S), shape, local::tail(shape));
+    }
+    static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax) {
+      return make_gf(mesh<imfreq,Opt>::make(beta,S,Nmax), shape, local::tail(shape));
+    }
+    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, local::tail_view const & t) {
+      return make_gf(mesh<imfreq,Opt>::make(beta,S,Nmax), shape, t);
+    }
+  };
+  
+  // scalar_valued
+  template<typename Opt> struct factories<imfreq,scalar_valued,Opt> { 
+   typedef gf<imfreq,scalar_valued,Opt> gf_t;
+   typedef gf_view<imfreq,scalar_valued,Opt> gf_view_t;
 
    template<typename MeshType>
-    static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-     typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
-     return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
-    }
-   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
-    return make_gf(mesh<imfreq,Opt>::make(beta,S), shape, local::tail(shape));
+   static gf_t make_gf(MeshType && m, local::tail_view const & t) {
+    typename gf_t::data_non_view_t A(m.size()); A() =0;
+    return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
    }
-   static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax) {
-    return make_gf(mesh<imfreq,Opt>::make(beta,S,Nmax), shape, local::tail(shape));
+   static gf_t make_gf(double beta, statistic_enum S) {
+     return make_gf(mesh<imfreq,Opt>::make(beta,S), local::tail(tqa::mini_vector<size_t,2> (1,1)));
    }
-   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, local::tail_view const & t) {
-    return make_gf(mesh<imfreq,Opt>::make(beta,S,Nmax), shape, t);
+   static gf_t make_gf(double beta, statistic_enum S, size_t Nmax) {
+    return make_gf(mesh<imfreq,Opt>::make(beta,S,Nmax), local::tail(tqa::mini_vector<size_t,2> (1,1)));
+   }
+   static gf_t make_gf(double beta, statistic_enum S, size_t Nmax, local::tail_view const & t) {
+    return make_gf(mesh<imfreq,Opt>::make(beta,S,Nmax), t);
    }
   };
- } // gf_implementation
+ } // gf_implementation 
+
 }}
 #endif

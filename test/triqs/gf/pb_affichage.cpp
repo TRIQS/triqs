@@ -1,6 +1,6 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-
+#include <triqs/utility/first_include.hpp>
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>

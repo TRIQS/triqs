@@ -27,29 +27,26 @@
 
 namespace triqs { namespace gf { 
 
- namespace impl_local_real {
-   dcomplex I(0,1);
-   double pi = std::acos(-1);
- }
-
  // First the implementation of the fourier transform
- void fourier_impl         (gf_view<refreq> &gw , gf_view<retime> const & gt);
- void inverse_fourier_impl (gf_view<retime> &gt,  gf_view<refreq> const & gw);
+ void fourier_impl         (gf_view<refreq> gw , gf_view<retime> const gt);
+ void inverse_fourier_impl (gf_view<retime> gt,  gf_view<refreq> const gw);
 
- gf_view<refreq> fourier (gf_view<retime> const & gt) { 
+ inline gf_view<refreq> fourier (gf_view<retime> const & gt) { 
+   double pi = std::acos(-1);
    size_t L = gt.mesh().size();
-   double wmin = -impl_local_real::pi * (L-1) / (L*gt.mesh().delta());
-   double wmax =  impl_local_real::pi * (L-1) / (L*gt.mesh().delta());
+   double wmin = -pi * (L-1) / (L*gt.mesh().delta());
+   double wmax =  pi * (L-1) / (L*gt.mesh().delta());
    auto gw = make_gf<refreq>(wmin, wmax, L, gt.data().shape().front_pop());
    auto V = gw();
    fourier_impl(V, gt);
    return gw;
  }
 
- gf_view<retime> inverse_fourier (gf_view<refreq> const & gw) { 
+ inline gf_view<retime> inverse_fourier (gf_view<refreq> const & gw) { 
+   double pi = std::acos(-1);
    size_t L = gw.mesh().size();
-   double tmin = -impl_local_real::pi * (L-1) / (L*gw.mesh().delta());
-   double tmax =  impl_local_real::pi * (L-1) / (L*gw.mesh().delta());
+   double tmin = -pi * (L-1) / (L*gw.mesh().delta());
+   double tmax =  pi * (L-1) / (L*gw.mesh().delta());
    auto gt = make_gf<retime>(tmin, tmax, L, gw.data().shape().front_pop());
    auto V = gt();
    inverse_fourier_impl(V, gw);
@@ -59,8 +56,8 @@ namespace triqs { namespace gf {
  gf_keeper<tags::fourier,retime> lazy_fourier         (gf_view<retime> const & g);
  gf_keeper<tags::fourier,refreq> lazy_inverse_fourier (gf_view<refreq> const & g);
 
- void triqs_gf_view_assign_delegation( gf_view<refreq> &g, gf_keeper<tags::fourier,retime> const & L);
- void triqs_gf_view_assign_delegation( gf_view<retime> &g, gf_keeper<tags::fourier,refreq> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<refreq> g, gf_keeper<tags::fourier,retime> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<retime> g, gf_keeper<tags::fourier,refreq> const & L);
 
 }}
 #endif

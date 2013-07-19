@@ -69,15 +69,21 @@ namespace triqs { namespace gf {
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename Opt>
-   struct evaluator<two_real_times,matrix_valued,Opt> {
+  struct evaluator<two_real_times,matrix_valued,Opt> {
     static constexpr int arity = 2;
     template<typename G>
-     arrays::matrix_view<std::complex<double> > operator() (G const * g, double t0, double t1)  const {
-      auto & m0 = std::get<0>(g->mesh().components()); 
-      double s= m0.x_max()/m0.size();
-      return g->data()(g->mesh().index_to_linear( typename G::mesh_t::index_t(t0*s, t1*s)), arrays::range(), arrays::range());//mesh.index_to_linear(mesh.point_to_index (t1,t2)));
-     } 
-   };
+    arrays::matrix<std::complex<double> > operator() (G const * g, double t0, double t1)  const {
+      auto & data = g->data();
+      auto & m = std::get<0>(g->mesh().components()); 
+      size_t n0,n1; double w0,w1; bool in;
+      std::tie(in, n0, w0) = windowing(m,t0);
+      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+      std::tie(in, n1, w1) = windowing(m,t1);
+      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+      auto gg = [g,data]( size_t n0, size_t n1) {return data(g->mesh().index_to_linear(std::tuple<size_t,size_t>{n0,n1}), arrays::ellipsis());};
+      return  w0 * ( w1*gg(n0,n1) + (1-w1)*gg(n0,n1+1) ) + (1-w0) * ( w1*gg(n0+1,n1) + (1-w1)*gg(n0+1,n1+1)); 
+    } 
+  };
 
   /// ---------------------------  data access  ---------------------------------
 
@@ -128,15 +134,16 @@ namespace triqs { namespace gf {
  } // gf_implementation
 
   // -------------------------------   Additionnal free function for this gf  --------------------------------------------------
-
+  
   // from g(t,t') and t, return g(t-t') for any t'>t 
+  // 
  gf<retime> slice (gf_view<two_real_times> const & g, double t) { 
-  auto const & m = std::get<0> (g.mesh().components());
-  long it = get_closest_mesh_pt_index(m, t);
+  auto const & m = std::get<0> (g.mesh().components());   //one-time mesh
+  long it = get_closest_mesh_pt_index(m, t);              //index of t on this mesh
   long nt = m.size() - it;
-  if (it < nt) nt = it ;
+  if (it+1 < nt) nt = it+1 ;                              //nt=length of the resulting GF's mesh
   double dt = m.delta();
-  auto res = make_gf<retime>(0, nt*dt, nt, g(t,t).shape());
+  auto res = make_gf<retime>(0, 2*(nt-1)*dt, nt, g(t,t).shape());
   res() = 0;
   auto _ = arrays::range();// everyone
   for(long sh=0; sh<nt; sh++){

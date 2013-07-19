@@ -1,5 +1,5 @@
 /*******************************************************************************
- *
+ * 
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2011 by M. Ferrero, O. Parcollet
@@ -25,18 +25,57 @@
 #include <triqs/gf/imfreq.hpp> 
 #include <triqs/gf/imtime.hpp> 
 
-namespace triqs { namespace gf { 
-
+namespace triqs { namespace gf {
+ 
  // First the implementation of the fourier transform
- void fourier_impl         (gf_view<imfreq> &gw , gf_view<imtime> const & gt);
- void inverse_fourier_impl (gf_view<imtime> &gt,  gf_view<imfreq> const & gw);
-
- gf_keeper<tags::fourier,imtime> lazy_fourier         (gf_view<imtime> const & g);
- gf_keeper<tags::fourier,imfreq> lazy_inverse_fourier (gf_view<imfreq> const & g);
-
- void triqs_gf_view_assign_delegation( gf_view<imfreq> &g, gf_keeper<tags::fourier,imtime> const & L);
- void triqs_gf_view_assign_delegation( gf_view<imtime> &g, gf_keeper<tags::fourier,imfreq> const & L);
-
+ void fourier_impl         (gf_view<imfreq,scalar_valued> gw , gf_view<imtime,scalar_valued> const gt, scalar_valued);
+ void fourier_impl         (gf_view<imfreq,matrix_valued> gw , gf_view<imtime,matrix_valued> const gt, matrix_valued);
+ void inverse_fourier_impl (gf_view<imtime,scalar_valued> gt,  gf_view<imfreq,scalar_valued> const gw, scalar_valued);
+ void inverse_fourier_impl (gf_view<imtime,matrix_valued> gt,  gf_view<imfreq,matrix_valued> const gw, matrix_valued);
+ 
+ inline gf_view<imfreq,matrix_valued> fourier (gf_view<imtime,matrix_valued> const & gt) {
+  size_t L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
+  auto gw = make_gf<imfreq,matrix_valued>(gt.domain().beta, gt.domain().statistic , gt.data().shape().front_pop(), L);
+  auto V = gw();
+  fourier_impl(V, gt, matrix_valued());
+  return gw;
+ }
+ inline gf_view<imfreq,scalar_valued> fourier (gf_view<imtime,scalar_valued> const & gt) {
+  size_t L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
+  auto gw = make_gf<imfreq,scalar_valued>(gt.domain().beta, gt.domain().statistic, L);
+  auto V = gw();
+  fourier_impl(V, gt, scalar_valued());
+  return gw;
+ }
+ 
+ inline gf_view<imtime, matrix_valued> inverse_fourier (gf_view<imfreq, matrix_valued> const & gw, mesh_kind mk = half_bins) {
+  double pi = std::acos(-1);
+  size_t L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
+  auto gt = make_gf<imtime,matrix_valued>(gw.domain().beta, gw.domain().statistic, gw.data().shape().front_pop(), L);
+  auto V = gt();
+  inverse_fourier_impl(V, gw, matrix_valued());
+  return gt;
+ }
+ inline gf_view<imtime,scalar_valued> inverse_fourier (gf_view<imfreq,scalar_valued> const & gw, mesh_kind mk = half_bins) {
+  double pi = std::acos(-1);
+  size_t L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
+  auto gt = make_gf<imtime,scalar_valued>(gw.domain().beta, gw.domain().statistic, L);
+  auto V = gt();
+  inverse_fourier_impl(V, gw,scalar_valued());
+  return gt;
+ }
+ 
+ inline gf_keeper<tags::fourier,imtime,scalar_valued> lazy_fourier         (gf_view<imtime,scalar_valued> const & g) { return g;}
+ inline gf_keeper<tags::fourier,imfreq,scalar_valued> lazy_inverse_fourier (gf_view<imfreq,scalar_valued> const & g) { return g;}
+ inline gf_keeper<tags::fourier,imtime,matrix_valued> lazy_fourier         (gf_view<imtime,matrix_valued> const & g) { return g;}
+ inline gf_keeper<tags::fourier,imfreq,matrix_valued> lazy_inverse_fourier (gf_view<imfreq,matrix_valued> const & g) { return g;}
+ 
+ void triqs_gf_view_assign_delegation( gf_view<imfreq,scalar_valued> g, gf_keeper<tags::fourier,imtime,scalar_valued> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<imfreq,matrix_valued> g, gf_keeper<tags::fourier,imtime,matrix_valued> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<imtime,scalar_valued> g, gf_keeper<tags::fourier,imfreq,scalar_valued> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<imtime,matrix_valued> g, gf_keeper<tags::fourier,imfreq,matrix_valued> const & L);
+ 
+ 
 }}
 #endif
 

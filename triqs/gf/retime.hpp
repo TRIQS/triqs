@@ -36,53 +36,80 @@ namespace triqs { namespace gf {
    typedef linear_mesh<R_domain> type;
    typedef typename type::domain_t domain_t;
 
-   static type make(double tmin, double tmax, size_t n_points, mesh_kind mk) {
-    return type(domain_t(), tmin, tmax, n_points, mk);
+   static type make(double tmin, double tmax, size_t n_points, mesh_kind mk=full_bins) {
+     return type(domain_t(), tmin, tmax, n_points, mk);
    }
+   
   };
   
+  // singularity 
   template<typename Opt> struct singularity<retime,matrix_valued,Opt>  { typedef local::tail type;};
+  template<typename Opt> struct singularity<retime,scalar_valued,Opt>  { typedef local::tail type;};
+  
+  // h5 name
   template<typename Opt> struct h5_name<retime,matrix_valued,Opt>      { static std::string invoke(){ return  "GfReTime";}};
+  template<typename Opt> struct h5_name<retime,scalar_valued,Opt>      { static std::string invoke(){ return  "GfReTime_s";}};
 
   /// ---------------------------  evaluator ---------------------------------
-
-  template<typename Opt>
-   struct evaluator<retime,matrix_valued,Opt> {
+  template<typename Opt, typename Target>
+   struct evaluator<retime,Target,Opt> {
     static constexpr int arity = 1;
+    //typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix_view<std::complex<double>>, std::complex<double>>::type rtype; 
+    typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix<std::complex<double>>, std::complex<double>>::type rtype; 
     template<typename G>
-     arrays::matrix_view<std::complex<double> >  operator() (G const * g,double t0)  const {
+      rtype operator() (G const * g,double t0)  const {
       auto & data = g->data();
       auto & mesh = g->mesh();
       size_t index; double w; bool in;
       std::tie(in, index, w) = windowing(mesh,t0);
       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-      arrays::matrix<std::complex<double> > res = w*data(mesh.index_to_linear(index), arrays::ellipsis()) + (1-w)*data(mesh.index_to_linear(index+1), arrays::ellipsis());
-      return res;
+      return 
+        (1-w) * data(mesh.index_to_linear(index  ), arrays::ellipsis() ) 
+        + w *   data(mesh.index_to_linear(index+1), arrays::ellipsis() );
      }
     template<typename G>
      local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}
    };
 
   /// ---------------------------  data access  ---------------------------------
-
-  template<typename Opt> struct data_proxy<retime,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
+   template<typename Opt> struct data_proxy<retime,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
+   template<typename Opt> struct data_proxy<retime,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
 
   // -------------------------------   Factories  --------------------------------------------------
 
+  //matrix_valued
   template<typename Opt> struct factories<retime, matrix_valued,Opt> {
-   typedef gf<retime> gf_t;
-
-   static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape) {
-    typename gf_t::data_non_view_t A(shape.front_append(n_points)); A() =0;
-    return gf_t(mesh<retime,Opt>::make(tmin, tmax, n_points, full_bins), std::move(A), local::tail(shape), nothing());
-   }
-
+   typedef gf<retime,matrix_valued> gf_t;
+   
    static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
     typename gf_t::data_non_view_t A(shape.front_append(n_points)); A() =0;
-    return gf_t(mesh<retime,Opt>::make(tmin, tmax, n_points, mk), std::move(A), local::tail(shape), nothing());
+    return gf_t(mesh<retime,Opt>::make(tmin, tmax, n_points,mk), std::move(A), local::tail(shape), nothing());
    }
-
+   
+   static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape) {
+    typename gf_t::data_non_view_t A(shape.front_append(n_points)); A() =0;
+    return gf_t(mesh<retime,Opt>::make(tmin, tmax, n_points), std::move(A), local::tail(shape), nothing());
+   }
+   
   };
+  
+  //scalar_valued
+  template<typename Opt> struct factories<retime, scalar_valued,Opt> {
+   typedef gf<retime,scalar_valued> gf_t;
+   
+   static gf_t make_gf(double tmin, double tmax, size_t n_points, mesh_kind mk) {
+    typename gf_t::data_non_view_t A(n_points); A() =0;
+    return gf_t(mesh<retime,Opt>::make(tmin, tmax, n_points,mk), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
+   }
+   
+   static gf_t make_gf(double tmin, double tmax, size_t n_points) {
+    typename gf_t::data_non_view_t A(n_points); A() =0;
+    return gf_t(mesh<retime,Opt>::make(tmin, tmax, n_points), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
+   }
+   
+  };
+  
+  
  } // gf_implementation
 }}
 #endif
