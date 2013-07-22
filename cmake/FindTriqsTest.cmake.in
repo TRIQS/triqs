@@ -43,7 +43,11 @@ macro(triqs_add_test_C_hdf testname h5diff_options)
    )
 endmacro(triqs_add_test_C_hdf)
 
+# WRITE THE run_pytriqs_for_test file
+file (WRITE ${CMAKE_BINARY_DIR}/run_pytriqs_for_test.sh  "#!/bin/bash\n export PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH\n ${TRIQS_PATH}/bin/pytriqs  $@")
+execute_process(COMMAND chmod a+x ${CMAKE_BINARY_DIR}/run_pytriqs_for_test.sh)
 
+#SET(RUN_TEST @CMAKE_INSTALL_PREFIX@/bin/pytriqs)
 SET(RUN_TEST ${CMAKE_BINARY_DIR}/run_pytriqs_for_test.sh ) 
 #if (TRIQS_BUILD_STATIC)
 # FILE(WRITE ${RUN_TEST} "PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH  ${PYTHON_INTERPRETER} $1")

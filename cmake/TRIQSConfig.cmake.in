@@ -29,7 +29,9 @@ set(TRIQS_LIBRARY_GMP     @TRIQS_LIBRARY_GMP@)
 set(TRIQS_LIBRARY_GSL     @GSL_LIBRARIES@)
 
 # Misc
+set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
 set(TRIQS_HDF5_DIFF_EXECUTABLE @TRIQS_HDF5_DIFF_EXECUTABLE@)
+set(TRIQS_PYTHON_LIB_DEST @TRIQS_PYTHON_LIB_DEST@)
 
 # for people who want to quickly add everything TRIQS has detected...
 set(TRIQS_LIBRARY_ALL ${TRIQS_LIBRARY} ${TRIQS_LIBRARY_BOOST} ${TRIQS_LIBRARY_PYTHON} ${TRIQS_LIBRARY_MPI} ${TRIQS_LIBRARY_HDF5} ${TRIQS_LIBRARY_LAPACK} ${TRIQS_LIBRARY_FFTW} ${TRIQS_LIBRARY_GMP} ${TRIQS_LIBRARY_GSL} )
@@ -80,7 +82,7 @@ macro (triqs_cython_module NickName ModuleName)
  set_target_properties(${ModuleName}  PROPERTIES PREFIX "") #eliminate the lib in front of the module name 
  target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
  if (${ARGN} MATCHES "")
-   install (TARGETS ${ModuleName} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ARGN}  )
+   install (TARGETS ${ModuleName} DESTINATION @TRIQS_PYTHON_LIB_DEST@/${ARGN}  )
  endif (${ARGN} MATCHES "")
  set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )
 
@@ -98,4 +100,15 @@ macro (triqs_add_all_subdirectories_with_cmakelist)
  endforeach ( f ${ALLSUBS}) 
 endmacro (triqs_add_all_subdirectories_with_cmakelist)
 
-
+# RPATH setting 
+macro (triqs_add_rpath_for_cxx_code)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+else()
+ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+ set(CMAKE_SKIP_BUILD_RPATH FALSE)
+ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
+endmacro()
