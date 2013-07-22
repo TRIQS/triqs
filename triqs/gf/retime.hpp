@@ -58,14 +58,11 @@ namespace triqs { namespace gf {
     typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix<std::complex<double>>, std::complex<double>>::type rtype; 
     template<typename G>
       rtype operator() (G const * g,double t0)  const {
-      auto & data = g->data();
-      auto & mesh = g->mesh();
-      size_t index; double w; bool in;
-      std::tie(in, index, w) = windowing(mesh,t0);
+      size_t n; double w; bool in;
+      std::tie(in, n, w) = windowing(g->mesh(),t0);
       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-      return 
-        (1-w) * data(mesh.index_to_linear(index  ), arrays::ellipsis() ) 
-        + w *   data(mesh.index_to_linear(index+1), arrays::ellipsis() );
+      auto gg = on_mesh(*g);
+      return (1-w) * gg(n) + w * gg(n+1);
      }
     template<typename G>
      local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}

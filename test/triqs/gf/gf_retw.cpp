@@ -7,6 +7,7 @@ namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;
 using tqa::range;
 using triqs::arrays::make_shape;
+using triqs::gf::scalar_valued;
 using triqs::gf::Fermion;
 using triqs::gf::refreq;
 using triqs::gf::retime;
@@ -17,21 +18,30 @@ using triqs::gf::make_gf;
 int main() {
 
  double beta =1;
- auto G =  make_gf<refreq> (-10, 10, 1000, make_shape(2,2));
- auto Gt = make_gf<retime> (0, 10, 1000, make_shape(2,2));
- auto Gt2 = make_gf<retime> (0, 10, 1000, make_shape(2,2));
+ double tmax=10;
+ int N=1000;
+ auto Gw = make_gf<refreq> (-10, 10, N, make_shape(2,2));
+ auto Gt = make_gf<retime> (0, tmax, N, make_shape(2,2));
+ auto Gw2 = make_gf<refreq,scalar_valued> (-10, 10, N);
+ auto Gt2 = make_gf<retime,scalar_valued> (0, tmax, N);
 
  int i =0;
- for (auto & t : Gt.mesh()) Gt(t) = 1.0*t*t;
+ for (auto & t : Gt.mesh()) Gt(t) = 1.0*t;
+ for (auto & w : Gw.mesh()) Gw(w) = 1.0*w;
  
  triqs::clef::placeholder<0> t_;
- Gt2( t_)  << 2* t_; // * t_;
-
- std::cout << Gt(3.255) << std::endl; 
- //std::cout << Gt(3.2) << std::endl; 
+ triqs::clef::placeholder<1> w_;
+ Gt2( t_) << 1.0*t_;
+ Gw2( w_) << 1.0*w_;
+ 
+ std::cout << Gt(3.255)(0,0) << std::endl; 
+ std::cout << Gt2(3.255) << std::endl; 
+ std::cout << Gw(3.255)(0,0) << std::endl; 
+ std::cout << Gw2(3.255) << std::endl; 
+ 
  // test hdf5 
  H5::H5File file("ess_gfre.h5", H5F_ACC_TRUNC );
- h5_write(file, "gt", Gt);
- h5_write(file, "gt2", Gt2);
+ h5_write(file, "gt",  Gt);
+ h5_write(file, "gw",  Gw);
 
 }

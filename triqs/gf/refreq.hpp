@@ -52,20 +52,19 @@ namespace triqs { namespace gf {
   template<typename Opt, typename Target>
    struct evaluator<refreq,Target,Opt> {
     static constexpr int arity = 1;
-    typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix_view<std::complex<double>>, std::complex<double>>::type rtype; 
+    typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix<std::complex<double> >, std::complex<double>>::type rtype; 
     template<typename G>
      rtype operator() (G const * g,double w0)  const {
-      auto & data = g->data();
-      auto & mesh = g->mesh();
-      size_t index; double w; bool in;
-      std::tie(in, index, w) = windowing(mesh,w0);
+      size_t n; double w; bool in;
+      std::tie(in, n, w) = windowing(g->mesh(),w0);
       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-      return w*data(mesh.index_to_linear(index), arrays::ellipsis()) + (1-w)*data(mesh.index_to_linear(index+1), arrays::ellipsis());
+      auto gg = on_mesh(*g);
+      return (1-w) * gg(n) + w * gg(n+1);
      }
     template<typename G>
      local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}
    };
-
+   
   /// ---------------------------  data access  ---------------------------------
   template<typename Opt> struct data_proxy<refreq,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
   template<typename Opt> struct data_proxy<refreq,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
