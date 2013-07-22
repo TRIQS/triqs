@@ -165,6 +165,9 @@ namespace triqs { namespace gf {
  template<int pos, typename P> 
   auto get_point(P const & p) DECL_AND_RETURN( std::get<pos>( p.mesh()->components() ).index_to_point( std::get<pos>(p.components_tuple()).index() ) );
  
+ template<int pos, typename P> 
+  auto get_component(P const & p) DECL_AND_RETURN( std::get<pos>(p.components_tuple()));
+ 
  // C++14
  //auto get_point(P const & p) { return std::get<pos> (p.mesh()->components()).index_to_point( std::get<pos>(p.components_tuple()));}
 
