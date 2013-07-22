@@ -56,13 +56,11 @@ namespace triqs { namespace gf {
    struct get_closest_point <two_real_times,matrix_valued,Opt> {
    typedef typename mesh<two_real_times, Opt>::type mesh_t;
     
-   // NOT FINISHED, NOT TESTED 
-    template<typename G, typename T>
-     static typename mesh_t::index_t invoke(G const * g, closest_pt_wrap<T,T> const & p) {
-      double x = (g->mesh().kind()==half_bins ? double(p.value) :  double(p.value)+ 0.5*g->mesh().delta());
-      size_t n = std::floor(x/g->mesh().delta());
-      return n;
-     }
+//    // NOT FINISHED, NOT TESTED 
+//     template<typename G, typename T>
+//      static typename mesh_t::index_t invoke(G const * g, closest_pt_wrap<T,T> const & p) {
+//       return std::floor( double(p.value) / g->mesh().delta() + 0.5);
+//      }
 
    };
 

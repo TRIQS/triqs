@@ -83,7 +83,7 @@ namespace triqs { namespace gf {
    static gf_t make_gf(MeshType && m) {
     typename gf_t::data_non_view_t A(m.size());
     A() =0;
-    return gf_t (m, std::move(A), nothing(), nothing(), nothing() ) ;
+    return gf_t (m, std::move(A), nothing(), nothing() ) ;
    }
 
    static gf_t make_gf(double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) { 
