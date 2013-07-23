@@ -37,6 +37,7 @@ namespace triqs { namespace gf {
    typedef linear_mesh<matsubara_domain<false>> type;
    typedef typename type::domain_t domain_t;
    static type make(double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk=half_bins) {
+    if(beta<0)TRIQS_RUNTIME_ERROR<<" fabrication of the Matsubara mesh not possible: beta="<< beta <<"\n";
     return type(domain_t(beta,S), 0, beta, n_time_slices, mk);
    }
   };

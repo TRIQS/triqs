@@ -37,6 +37,7 @@ namespace triqs { namespace gf {
    typedef typename type::domain_t domain_t;
 
    static type make(double beta, statistic_enum S, size_t Nmax = 1025) {
+    if(beta<0)TRIQS_RUNTIME_ERROR<<" fabrication of the Matsubara mesh not possible: beta="<< beta <<"\n";
     double m1 = std::acos(-1)/beta;
     return type( domain_t(beta,S), S==Fermion?m1:0, S==Fermion?(2*Nmax+1)*m1: 2*Nmax*m1, Nmax, without_last);
    }
