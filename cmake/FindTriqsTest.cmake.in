@@ -44,7 +44,7 @@ macro(triqs_add_test_C_hdf testname h5diff_options)
 endmacro(triqs_add_test_C_hdf)
 
 # WRITE THE run_pytriqs_for_test file
-file (WRITE ${CMAKE_BINARY_DIR}/run_pytriqs_for_test.sh  "#!/bin/bash\n export PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH\n ${TRIQS_PATH}/bin/pytriqs  $@")
+file (WRITE ${CMAKE_BINARY_DIR}/run_pytriqs_for_test.sh  "#!/bin/bash\n export PYTHONPATH=${CMAKE_BINARY_DIR}/python:$PYTHONPATH\n ${TRIQS_PATH}/bin/pytriqs  $@")
 execute_process(COMMAND chmod a+x ${CMAKE_BINARY_DIR}/run_pytriqs_for_test.sh)
 
 #SET(RUN_TEST @CMAKE_INSTALL_PREFIX@/bin/pytriqs)
@@ -63,7 +63,7 @@ SET(ExecutableNameForTest ${RUN_TEST})
 #   triqs_add_triqs_test_script(ExampleTest)
 #   where ExampleTest.py is the script and ExampleTest.output is the expected output
 #
-macro(triqs_add_triqs_test_txt testname ) 
+macro(triqs_add_test_txt testname ) 
  enable_testing()
  add_test(${testname}
   ${CMAKE_COMMAND}
@@ -73,7 +73,7 @@ macro(triqs_add_triqs_test_txt testname )
   -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output
   -P @CMAKE_INSTALL_PREFIX@/share/triqs/cmake/run_test.cmake
   )
-endmacro(triqs_add_triqs_test_txt)
+endmacro(triqs_add_test_txt)
 
 # - runs python_with_DMFT script 
 # - compares the file named testname_output.h5 
@@ -84,7 +84,7 @@ endmacro(triqs_add_triqs_test_txt)
 #   triqs_add_triqs_test_hdf(ExampleTestH5 "-r" )
 #   where ExampleTestH5.py produces to be compared with ExampleTestH5_output.h5 with option "-r" and for all objects
 #
-macro(triqs_add_triqs_test_hdf testname h5diff_options)
+macro(triqs_add_test_hdf testname h5diff_options)
  set(h5diff_objects ${ARGN}) # grab additionnal arguments !
  enable_testing()
  add_test(${testname}
@@ -99,7 +99,7 @@ macro(triqs_add_triqs_test_hdf testname h5diff_options)
   -DH5_DIFF_OBJECTS=${h5diff_objects} 
   -P @CMAKE_INSTALL_PREFIX@/share/triqs/cmake/run_test.cmake
   )
-endmacro(triqs_add_triqs_test_hdf)
+endmacro(triqs_add_test_hdf)
 
 
 
