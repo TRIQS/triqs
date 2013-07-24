@@ -26,7 +26,7 @@ macro (BuildF2pyModule target_name modulename module_pyf_name filelist1)
  # ... and a special target to build vertex.so, that depends on the sources files
  add_custom_command(OUTPUT  ${modulename}.so 
   COMMAND echo See `pwd`/f2pyBuild.log for logs
-  COMMAND ${PYTHON_INTERPRETER} temp_script.py > f2pyBuild.log 2>&1
+  COMMAND ${TRIQS_PYTHON_INTERPRETER} temp_script.py > f2pyBuild.log 2>&1
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${filelist} ${CMAKE_CURRENT_SOURCE_DIR}/${module_pyf_name} 
   )
 

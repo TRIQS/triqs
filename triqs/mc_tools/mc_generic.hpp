@@ -24,6 +24,7 @@
 #include <triqs/utility/timer.hpp>
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/parameters/parameters.hpp>
+#include "./mc_measure_aux_set.hpp"
 #include "./mc_measure_set.hpp"
 #include "./mc_move_set.hpp"
 #include "./mc_basic_step.hpp"
@@ -46,7 +47,7 @@ namespace triqs { namespace mc_tools {
       std::function<bool()> AfterCycleDuty = std::function<bool()>() ) :
      RandomGenerator(Random_Name, Random_Seed),
      AllMoves(RandomGenerator),
-     AllMeasures(),
+     AllMeasures(),AllMeasuresAux(),
      report(&std::cout, Verbosity),
      Length_MC_Cycle(Length_Cycle),
      NWarmIterations(N_Warmup_Cycles),
@@ -64,7 +65,7 @@ namespace triqs { namespace mc_tools {
       //RandomGenerator(P["Random_Generator_Name"]), P.value_or_default("Random_Seed",1)),
       report(&std::cout,int(P["Verbosity"])),
       AllMoves(RandomGenerator),
-      AllMeasures(),
+      AllMeasures(),AllMeasuresAux(),
       Length_MC_Cycle(long(P["Length_Cycle"])),     /// NOT NICE THIS EXPLICIT CAST : no unsigned in parameters, really ??
       NWarmIterations(long(P["N_Warmup_Cycles"])),
       NCycles(long(P["N_Cycles"])),
@@ -92,7 +93,16 @@ namespace triqs { namespace mc_tools {
       AllMeasures.insert(std::forward<MeasureType>(M), name);
      }
 
-    /// get the average sign (to be called after collect_results)
+     /**
+     * Register the precomputation 
+     */
+    /*template<typename MeasureAuxType>
+     MeasureAuxType * add_measure_aux(MeasureAuxType && M, std::string name) {
+      static_assert( !std::is_pointer<MeasureAuxType>::value, "add_measure_aux in mc_generic takes ONLY values !");
+      AllMeasuresAux.insert(std::forward<MeasureAuxType>(M), name);
+     }
+*/
+   /// get the average sign (to be called after collect_results)
     MCSignType average_sign() const { return sign_av; }
 
     /// get the current percents done
@@ -116,6 +126,7 @@ namespace triqs { namespace mc_tools {
       if (thermalized()) {
        nmeasures++;
        sum_sign += sign;
+       AllMeasuresAux.compute_all(); 
        AllMeasures.accumulate(sign);
       }
       // recompute fraction done
@@ -156,11 +167,14 @@ namespace triqs { namespace mc_tools {
     }
 
     // do not use direcly, use the free function it is simpler to call...
-    template<typename MeasureType> MeasureType       & get_measure(std::string const & name)       { return AllMeasures.template get<MeasureType> (name); }
-    template<typename MeasureType> MeasureType const & get_measure(std::string const & name) const { return AllMeasures.template get<MeasureType> (name); }
+    template<typename MeasureType> MeasureType       & get_measure(std::string const & name)       { return AllMeasures.template get_measure<MeasureType> (name); }
+    template<typename MeasureType> MeasureType const & get_measure(std::string const & name) const { return AllMeasures.template get_measure<MeasureType> (name); }
+ 
+    template<typename MeasureAuxType> MeasureAuxType       * get_measure_aux(std::string const & name)       { return AllMeasuresAux.template get_measure_aux<MeasureAuxType> (name); }
+    template<typename MeasureAuxType> MeasureAuxType const * get_measure_aux(std::string const & name) const { return AllMeasuresAux.template get_measure_aux<MeasureAuxType> (name); }
 
-    template<typename MoveType> MoveType       & get_move (std::string const & name)       { return AllMoves.template get<MoveType> (name); }
-    template<typename MoveType> MoveType const & get_move (std::string const & name) const { return AllMoves.template get<MoveType> (name); }
+    template<typename MoveType> MoveType       & get_move (std::string const & name)       { return AllMoves.template get_move<MoveType> (name); }
+    template<typename MoveType> MoveType const & get_move (std::string const & name) const { return AllMoves.template get_move<MoveType> (name); }
 
     /// HDF5 interface
     friend void h5_write (h5::group g, std::string const & name, mc_generic const & mc){
@@ -194,6 +208,7 @@ namespace triqs { namespace mc_tools {
     random_generator RandomGenerator;
     move_set<MCSignType> AllMoves;
     measure_set<MCSignType> AllMeasures;
+    measure_aux_set AllMeasuresAux;
     utility::report_stream report;
     uint64_t Length_MC_Cycle;/// Length of one Monte-Carlo cycle between 2 measures
     uint64_t NWarmIterations, NCycles;
@@ -212,6 +227,10 @@ namespace triqs { namespace mc_tools {
  /// Retrieve a Measure given name and type. NB : the type is checked at runtime
  template<typename M,typename T1, typename T2> M       & get_measure(mc_generic<T1,T2> & s, std::string const & name)       { return s.template get_measure<M> (name); }
  template<typename M,typename T1, typename T2> M const & get_measure(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_measure<M> (name); }
+ 
+ /// Retrieve a Measure given name and type. NB : the type is checked at runtime
+ template<typename M,typename T1, typename T2> M       * get_measure_aux(mc_generic<T1,T2> & s, std::string const & name)       { return s.template get_measure_aux<M> (name); }
+ template<typename M,typename T1, typename T2> M const * get_measure_aux(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_measure_aux<M> (name); }
 
  /// Retrieve a Move given name and type. NB : the type is checked at runtime
  template<typename M,typename T1, typename T2> M & get_move(mc_generic<T1,T2> & s, std::string const & name)             { return s.template get_move<M> (name); }
