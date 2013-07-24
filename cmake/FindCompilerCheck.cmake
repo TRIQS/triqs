@@ -22,7 +22,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  set(compiler_group 1)
  string(REGEX REPLACE ".*([2-5]\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
- if(compiler_version NOT VERSION_LESS "4.8.0" )
+ if(NOT compiler_version VERSION_LESS "4.8.0" )
   set(TRIQS_COMPILER_IS_C11_COMPLIANT ON)
  endif()
 
