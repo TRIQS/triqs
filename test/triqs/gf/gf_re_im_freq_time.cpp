@@ -54,6 +54,9 @@ int main() {
  std::cout << G_w_wn( 0.789,0.123) << std::endl; 
  std::cout << G_w_tau(0.789,0.123) << std::endl; 
  
+ //test of on_mesh()
+ std::cout << G_w_tau.on_mesh(n_re_freq/2,n_im_time/3) << std::endl; 
+ 
  // test hdf5 
  H5::H5File file("gf_re_im_freq_time.h5", H5F_ACC_TRUNC );
  h5_write(file, "g_t_tau", G_t_tau);
