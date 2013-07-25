@@ -21,6 +21,10 @@
 #ifndef TRIQS_GF_MESH_LINEAR_H
 #define TRIQS_GF_MESH_LINEAR_H
 #include "./mesh_tools.hpp"
+
+// ADDED for Krylov : to be clean and removed if necessary
+#include <algorithm>
+#include <boost/math/special_functions/round.hpp>
 namespace triqs { namespace gf { 
 
  // Three possible meshes
@@ -88,6 +92,22 @@ namespace triqs { namespace gf {
    /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}
 
+   // ADDED for krylov : to be CLEANED AND CHANGED 
+   // Find the index of the mesh point which is nearest to x
+   index_t nearest_index(domain_pt_t x) const {
+     double x_real = real_or_imag(x, std::is_base_of<std::complex<double>, domain_pt_t>());
+     using boost::math::round; using std::min; using std::max; 
+     switch(meshk) {
+      case half_bins:
+      case full_bins: return min(max(round((x_real-xmin)/del),.0),static_cast<double>(L-1));
+      case without_last: return min(max(round((x_real-xmin)/del),.0),static_cast<double>(L-2));
+     }
+   }
+   private:
+   static double real_or_imag(domain_pt_t x, std::false_type) {return x; }
+   static double real_or_imag(domain_pt_t x, std::true_type) {return imag(x); }
+   public:
+
    /// Iterating on all the points...
    typedef  mesh_pt_generator<linear_mesh> iterator;
    iterator begin() const { return iterator (this);}
@@ -101,9 +121,9 @@ namespace triqs { namespace gf {
     h5::group gr =  fg.create_group(subgroup_name);
     int k;
     switch(m.meshk) {
-       case half_bins: k=0; break;
-       case full_bins: k=1; break;
-       case without_last: k=2; break;
+     case half_bins: k=0; break;
+     case full_bins: k=1; break;
+     case without_last: k=2; break;
     }
     h5_write(gr,"domain",m.domain());
     h5_write(gr,"min",m.a_pt);
@@ -126,9 +146,9 @@ namespace triqs { namespace gf {
     h5_read(gr,"size",L);
     h5_read(gr,"kind",k);
     switch(k) {
-       case 0: mk = half_bins; break;
-       case 1: mk = full_bins; break;
-       case 2: mk = without_last; break;
+     case 0: mk = half_bins; break;
+     case 1: mk = full_bins; break;
+     case 2: mk = without_last; break;
     }
     m = linear_mesh(std::move(dom), a, b, L, mk);
    }
@@ -163,8 +183,8 @@ namespace triqs { namespace gf {
   size_t get_closest_mesh_pt_index ( linear_mesh<D> const & mesh, typename D::point_t const & x) { 
    double a = (x - mesh.x_min())/mesh.delta();
    return std::floor(a);
- }
- 
+  }
+
  /// Approximation of a point of the domain by a mesh point  
  template<typename D>
   std::tuple<bool, size_t, double>  windowing ( linear_mesh<D> const & mesh, typename D::point_t const & x) { 
@@ -174,7 +194,7 @@ namespace triqs { namespace gf {
    double w = a-i;
    //   std::cerr  << " window "<< i << " "<< in << "  "<< w<< std::endl ;
    return std::make_tuple(in, (in ? size_t(i) : 0),w);
- }
+  }
 
 }}
 #endif
