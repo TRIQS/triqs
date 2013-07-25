@@ -79,6 +79,30 @@ namespace triqs { namespace tuple {
    for_each_impl<std::tuple_size<T>::value-1>()(t, f);
   }
 
+ /* for_each_enumerate(f, t)
+  * f: a callable object
+  * t: a tuple
+  * calls f on all tuple elements: f(x,n) for all x in t
+  */
+ template<int pos> struct for_each_enumerate_impl {
+  template<typename T, typename F>
+   void operator()(T const & t, F && f) {
+    f(std::get<std::tuple_size<T>::value-1-pos>(t),std::tuple_size<T>::value-1-pos);
+    for_each_impl<pos-1>()(t, f);
+   }
+ };
+
+ template<>
+  struct for_each_enumerate_impl<0> {
+   template<typename T, typename F>
+    void operator() (T const & t, F && f) { f(std::get<std::tuple_size<T>::value-1>(t), std::tuple_size<T>::value-1); }
+  };
+
+ template<typename T, typename F>
+  void for_each_enumerate(T const & t, F && f) {
+   for_each_enumerate_impl<std::tuple_size<T>::value-1>()(t, f);
+  }
+
  /**
   * apply_on_zip(f, t1,t2)
   * f : a callable object
