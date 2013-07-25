@@ -183,6 +183,26 @@ namespace triqs { namespace tuple {
  template<typename F, typename T1, typename T2, typename R>
   auto fold_on_zip (F && f,T1 const & t1, T2 const & t2, R && r) DECL_AND_RETURN( fold_on_zip_impl<std::tuple_size<T1>::value-1,T1,T2>()(std::forward<F>(f),t1,t2,std::forward<R>(r)));
 
+ /*
+  * print a tuple 
+  */
+ template<int a, int b> struct __s {};
+ template<int L, typename T> void print_tuple_impl (std::ostream& os, T const& t, std::integral_constant<int,-1> ) {}
+ template<int L, int rpos, typename T> void print_tuple_impl (std::ostream& os, T const& t, std::integral_constant<int,rpos> ) {
+  os << std::get<L-rpos-1>(t); 
+  if (rpos>0) os << ',';
+  print_tuple_impl<L>(os, t, std::integral_constant<int,rpos-1>());
+ }
 }}
+
+namespace std { 
+ template<typename ... T> std::ostream & operator << (std::ostream & os, std::tuple<T...> const & t) { 
+  os << "(";
+  constexpr int L = sizeof...(T);
+  triqs::tuple::print_tuple_impl<L>(os,t,std::integral_constant<int,L-1>()); 
+  return os << ")";
+ }
+}
+
 #endif
 
