@@ -54,6 +54,7 @@ namespace triqs { namespace gfs {
     typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix<std::complex<double> >, std::complex<double>>::type rtype; 
     template<typename G>
      rtype operator() (G const * g,double w0)  const {
+     //auto operator() (G const * g,double w0) const -> typename decltype ((*g)[0])::non_view_type {
       size_t n; double w; bool in;
       std::tie(in, n, w) = windowing(g->mesh(),w0);
       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";

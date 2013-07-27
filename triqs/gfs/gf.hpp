@@ -102,6 +102,9 @@ namespace triqs { namespace gfs {
 
     typedef gf_desc<Variable,Target,Opt>    descriptor_t;
 
+    typedef Variable variable_t;
+    typedef Opt option_t;
+
     typedef typename gfs_implementation::mesh<Variable,Opt>::type                                mesh_t;
     typedef typename mesh_t::domain_t                                                           domain_t;
     typedef typename mesh_t::mesh_point_t                                                       mesh_point_t;

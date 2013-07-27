@@ -48,7 +48,7 @@ namespace triqs { namespace gfs {
 
    /// Conversions point <-> index <-> linear_index
    struct _aux1 { template<typename P, typename M, typename I> void operator()(P & p, M const & m, I const& i) {p = m.index_to_point(i);}};
-   typename domain_t::point_t index_to_point(index_t const & ind) const { domain_pt_t res; triqs::tuple::apply_on_zip3(_aux1(), res,m_tuple,ind); return res;}
+   typename domain_t::point_t index_to_point(index_t const & ind) const { domain_pt_t res; triqs::tuple::apply_on_zip(_aux1(), res,m_tuple,ind); return res;}
 
    // index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
    struct _aux2 { template<typename I, typename M> size_t operator()(M const & m, I const & i,size_t R) {return m.index_to_linear(i) + R * m.size();}};
