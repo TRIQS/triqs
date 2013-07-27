@@ -75,4 +75,7 @@ int main() {
  //TEST( g0("3.2") ) ;
  //TEST( GF(0)(0) ) ;
 
+ // try the loop over the block.
+ for (auto g : GF) { g.on_mesh(0) = 20;}
+
 }

@@ -48,7 +48,9 @@ namespace triqs { namespace gf {
     size_t u;
     typename MeshType::mesh_point_t pt;
     typename MeshType::mesh_point_t const & dereference() const { return pt;}
-    bool equal(mesh_pt_generator const & other) const { return ((mesh == other.mesh) && (other.u==u) );}
+    bool equal(mesh_pt_generator const & other) const { return ((other.u==u) );}
+    // do NOT check = of mesh, otherwise e.g. block iterator does not work (infinite loop...)
+    //bool equal(mesh_pt_generator const & other) const { return ((mesh == other.mesh) && (other.u==u) );}
     public:
     mesh_pt_generator( MeshType const * m=NULL, bool atEnd = false): mesh(m), u(atEnd ? m->size(): 0), pt((*m)[typename MeshType::index_t()]) {}
     void increment() { ++u; pt.advance(); }
