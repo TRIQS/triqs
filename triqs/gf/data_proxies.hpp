@@ -25,7 +25,7 @@
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/matrix_view_proxy.hpp>
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
  template<typename T, int R> struct data_proxy_array;
 

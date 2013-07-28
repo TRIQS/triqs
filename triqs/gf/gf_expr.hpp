@@ -21,9 +21,9 @@
 #ifndef TRIQS_GF_EXPR_H
 #define TRIQS_GF_EXPR_H
 #include <triqs/utility/expression_template_tools.hpp>
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
  using utility::is_in_ZRC;
- namespace gf_expr_tools { 
+ namespace gfs_expr_tools { 
   template<typename S> struct scalar_wrap {
    typedef S value_type; 
    S s; scalar_wrap(S const &s_):s(s_){} 
@@ -46,19 +46,19 @@ namespace triqs { namespace gf {
   };
 
   template<typename T> struct keeper_type : std::conditional<utility::is_in_ZRC<T>::value, scalar_wrap<T>, typename view_type_if_exists_else_type<T>::type> {};
- }// gf_expr_tools
+ }// gfs_expr_tools
 
  template<typename Descriptor, typename Tag, typename L, typename R>  struct gf_expr : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction),gf_tag<Descriptor> {
-  typedef typename gf_expr_tools::keeper_type<L>::type L_t;
-  typedef typename gf_expr_tools::keeper_type<R>::type R_t;
+  typedef typename gfs_expr_tools::keeper_type<L>::type L_t;
+  typedef typename gfs_expr_tools::keeper_type<R>::type R_t;
   typedef Descriptor  descriptor_t;
   //typedef typename std::result_of<utility::operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_t;
-  typedef typename std::remove_reference<typename std::result_of<gf_expr_tools::combine_mesh(L_t,R_t)>::type>::type        mesh_t;
+  typedef typename std::remove_reference<typename std::result_of<gfs_expr_tools::combine_mesh(L_t,R_t)>::type>::type        mesh_t;
   //typedef typename Descriptor::singularity_t::view_type    singularity_view_t;
   //typedef value_t value_type;
   L_t l; R_t r;
   template<typename LL, typename RR> gf_expr(LL && l_, RR && r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
-  mesh_t mesh() const  { return gf_expr_tools::combine_mesh()(l,r); } 
+  mesh_t mesh() const  { return gfs_expr_tools::combine_mesh()(l,r); } 
   auto data() const ->decltype( utility::operation<Tag>()(l.data(), r.data())) {  return utility::operation<Tag>()(l.data(), r.data());}
   auto singularity() const DECL_AND_RETURN (utility::operation<Tag>()(l.singularity() , r.singularity()));
   //const singularity_view_t singularity() const { return utility::operation<Tag>()(l.singularity() , r.singularity());}
@@ -71,7 +71,7 @@ namespace triqs { namespace gf {
  // -------------------------------------------------------------------
  //a special case : the unary operator !
  template<typename Descriptor, typename L>   struct gf_unary_m_expr : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction),gf_tag<Descriptor>{
-  typedef typename gf_expr_tools::keeper_type<L>::type L_t;
+  typedef typename gfs_expr_tools::keeper_type<L>::type L_t;
   typedef Descriptor  descriptor_t;
   //typedef typename L_t::value_type value_type;
   typedef typename L_t::mesh_t mesh_t;

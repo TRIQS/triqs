@@ -25,7 +25,7 @@
 #include <triqs/gf/imfreq.hpp> 
 #include <triqs/gf/imtime.hpp> 
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
  
  // First the implementation of the fourier transform
  void fourier_impl         (gf_view<imfreq,scalar_valued> gw , gf_view<imtime,scalar_valued> const gt, scalar_valued);

@@ -6,9 +6,9 @@
 #include <triqs/arrays.hpp>
 
 using triqs::arrays::make_shape;
-using triqs::gf::refreq;
-using triqs::gf::retime;
-using triqs::gf::make_gf;
+using triqs::gfs::refreq;
+using triqs::gfs::retime;
+using triqs::gfs::make_gf;
 
 double lorentzian(double w, double a){
   return 2*a / (w*w + a*a) ; 
@@ -33,7 +33,7 @@ int main() {
   double wmax=10;
   int Nw=1001;
   
-  auto Gw1 = make_gf<refreq> (-wmax, wmax, Nw, make_shape(1,1),triqs::gf::full_bins);
+  auto Gw1 = make_gf<refreq> (-wmax, wmax, Nw, make_shape(1,1),triqs::gfs::full_bins);
   double a = Gw1.mesh().delta() * sqrt( Gw1.mesh().size() );
   for(auto const & w:Gw1.mesh()) Gw1(w)=lorentzian(w,a);
   Gw1.singularity()(2)=triqs::arrays::matrix<double>{{2.0*a}};

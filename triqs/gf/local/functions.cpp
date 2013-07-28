@@ -21,7 +21,7 @@
 #include "functions.hpp"
 #include <triqs/utility/legendre.hpp>
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
 
  dcomplex F(dcomplex a,double b,double Beta) {return -a/(1+exp(-Beta*b));}
  using tqa::array;

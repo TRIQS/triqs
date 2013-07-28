@@ -24,7 +24,7 @@
 #include "../domains/product.hpp"
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/mini_vector.hpp>
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
  template<typename... Meshes> struct mesh_product : tag::composite {
    typedef domain_product<typename Meshes::domain_t ... >  domain_t;

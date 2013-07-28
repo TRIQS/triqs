@@ -22,7 +22,7 @@
 #include <fftw3.h>
 #include <algorithm>
 
-namespace triqs { namespace gf { namespace details { 
+namespace triqs { namespace gfs { namespace details { 
  
  void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L, bool direct) {
   

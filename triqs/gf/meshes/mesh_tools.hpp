@@ -22,7 +22,7 @@
 #define TRIQS_GF_MESHTOOLS_H
 #include "../tools.hpp"
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
  // Derive from this object using CRTP to provide arithmetic operation by casting the final object to C 
  template<typename Derived, typename C> struct arith_ops_by_cast {};

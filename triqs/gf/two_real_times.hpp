@@ -25,11 +25,11 @@
 #include "./retime.hpp"
 #include "./meshes/product.hpp"
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
 
  struct two_real_times {};
 
- namespace gf_implementation { 
+ namespace gfs_implementation { 
 
   // the mesh
   template<typename Opt> struct mesh<two_real_times,Opt>  { 
@@ -37,10 +37,10 @@ namespace triqs { namespace gf {
    typedef mesh_product<m1_t,m1_t> type;
    static type make (double tmax, double n_time_slices) { 
 #ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS 
-    m1_t m1({},0, tmax,n_time_slices, triqs::gf::full_bins);
+    m1_t m1({},0, tmax,n_time_slices, full_bins);
     return {m1,m1};
 #else
-    m1_t m1(typename m1_t::domain_t(),0, tmax,n_time_slices, triqs::gf::full_bins);
+    m1_t m1(typename m1_t::domain_t(),0, tmax,n_time_slices, full_bins);
     type m(m1,m1);
     return m; 
 #endif
@@ -129,7 +129,7 @@ namespace triqs { namespace gf {
   // for (auto & p : make_path(G.mesh(), make_tuple(i,j), make_tuple(di,dj) )) G(p) +=0;
   */
 
- } // gf_implementation
+ } // gfs_implementation
 
   // -------------------------------   Additionnal free function for this gf  --------------------------------------------------
   

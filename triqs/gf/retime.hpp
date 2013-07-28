@@ -26,11 +26,11 @@
 #include "./domains/R.hpp"
 #include "./meshes/linear.hpp"
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
  struct retime {};
 
- namespace gf_implementation { 
+ namespace gfs_implementation { 
 
   template<typename Opt> struct mesh<retime,Opt> { 
    typedef linear_mesh<R_domain> type;
@@ -119,7 +119,7 @@ namespace triqs { namespace gf {
   };
   
   
- } // gf_implementation
+ } // gfs_implementation
 }}
 #endif
 

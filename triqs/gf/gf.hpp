@@ -29,15 +29,16 @@
 #include "./tools.hpp"
 #include "./data_proxies.hpp"
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
  using utility::factory;
+ using arrays::make_shape;
 
  // GENERALISE matrxi TO DEFAULT
  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf;         // the value class
  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_view;    // the view class
 
  // various implementation traits
- namespace gf_implementation { // never use using of this... 
+ namespace gfs_implementation { // never use using of this... 
   // what is the mesh
   template<typename Variable, typename Opt> struct mesh;
 
@@ -68,17 +69,17 @@ namespace triqs { namespace gf {
    template<typename DataType, typename GF> static void read (h5::group g, std::string const & s, DataType & data, GF const &) { h5_read(g,"data",data);}
   };
 
- } // gf_implementation
+ } // gfs_implementation
 
  // make_gf and make_gf_view forward any args to them
  template <typename Variable, typename Target=matrix_valued, typename Opt=void, typename ... U> 
-  gf<Variable,Target,Opt> make_gf(U && ... x) { return gf_implementation::factories<Variable,Target,Opt>::make_gf(std::forward<U>(x)...);}
+  gf<Variable,Target,Opt> make_gf(U && ... x) { return gfs_implementation::factories<Variable,Target,Opt>::make_gf(std::forward<U>(x)...);}
 
  template <typename Variable, typename Target=matrix_valued, typename Opt=void, typename ... U> 
-  gf_view<Variable,Target,Opt> make_gf_view(U && ... x) { return gf_implementation::factories<Variable,Target,Opt>::make_gf_view(std::forward<U>(x)...);}
+  gf_view<Variable,Target,Opt> make_gf_view(U && ... x) { return gfs_implementation::factories<Variable,Target,Opt>::make_gf_view(std::forward<U>(x)...);}
 
  template <typename Variable, typename Opt=void, typename ... U> 
-  typename gf_implementation::mesh<Variable,Opt>::type make_gf_mesh(U && ... x) { return gf_implementation::mesh<Variable,Opt>::make(std::forward<U>(x)...);}
+  typename gfs_implementation::mesh<Variable,Opt>::type make_gf_mesh(U && ... x) { return gfs_implementation::mesh<Variable,Opt>::make(std::forward<U>(x)...);}
 
  template<typename Variable, typename Target, typename Opt> struct gf_desc{};
  template<typename Descriptor> struct gf_tag{};
@@ -99,19 +100,19 @@ namespace triqs { namespace gf {
 
     typedef gf_desc<Variable,Target,Opt>    descriptor_t;
 
-    typedef typename gf_implementation::mesh<Variable,Opt>::type                                mesh_t;
+    typedef typename gfs_implementation::mesh<Variable,Opt>::type                                mesh_t;
     typedef typename mesh_t::domain_t                                                           domain_t;
     typedef typename mesh_t::mesh_point_t                                                       mesh_point_t;
     typedef typename mesh_t::index_t                                                            mesh_index_t;
-    typedef typename gf_implementation::symmetry<Variable,Target,Opt>::type                     symmetry_t;
-    typedef gf_implementation::evaluator<Variable,Target,Opt>                                   evaluator_t;
+    typedef typename gfs_implementation::symmetry<Variable,Target,Opt>::type                     symmetry_t;
+    typedef gfs_implementation::evaluator<Variable,Target,Opt>                                   evaluator_t;
 
-    typedef gf_implementation::data_proxy<Variable,Target,Opt>                                  data_proxy_t;
+    typedef gfs_implementation::data_proxy<Variable,Target,Opt>                                  data_proxy_t;
     typedef typename data_proxy_t::storage_t                                                    data_non_view_t;
     typedef typename data_proxy_t::storage_view_t                                               data_view_t;
     typedef typename std::conditional<IsView, data_view_t, data_non_view_t>::type               data_t;
 
-    typedef typename gf_implementation::singularity<Variable,Target,Opt>::type                  singularity_non_view_t;
+    typedef typename gfs_implementation::singularity<Variable,Target,Opt>::type                  singularity_non_view_t;
     typedef typename view_type_if_exists_else_type<singularity_non_view_t>::type                singularity_view_t;
     typedef typename std::conditional<IsView, singularity_view_t, singularity_non_view_t>::type singularity_t;
 
@@ -195,9 +196,9 @@ namespace triqs { namespace gf {
     cr_type operator() (mesh_point_t const & x) const { return _data_proxy(_data, x.linear_index());}
 
     template<typename ... U>
-     r_type  operator() (closest_pt_wrap<U...> const & p)       { return _data_proxy(_data, _mesh.index_to_linear( gf_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
+     r_type  operator() (closest_pt_wrap<U...> const & p)       { return _data_proxy(_data, _mesh.index_to_linear( gfs_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
     template<typename ... U>
-     cr_type operator() (closest_pt_wrap<U...> const & p) const { return _data_proxy(_data, _mesh.index_to_linear( gf_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
+     cr_type operator() (closest_pt_wrap<U...> const & p) const { return _data_proxy(_data, _mesh.index_to_linear( gfs_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
 
     // on mesh component for composite meshes
     // enable iif the first arg is a mesh_point_t for the first component of the mesh_t
@@ -245,13 +246,13 @@ namespace triqs { namespace gf {
 
     //----------------------------- HDF5 -----------------------------
 
-    friend std::string get_triqs_hdf5_data_scheme(gf_impl const & g) { return gf_implementation::h5_name<Variable,Target,Opt>::invoke();}
+    friend std::string get_triqs_hdf5_data_scheme(gf_impl const & g) { return gfs_implementation::h5_name<Variable,Target,Opt>::invoke();}
 
     /// Write into HDF5
     friend void h5_write (h5::group fg, std::string subgroup_name, gf_impl const & g) {
      auto gr =  fg.create_group(subgroup_name);
      gr.write_triqs_hdf5_data_scheme(g); 
-     gf_implementation::h5_ops<Variable,Target,Opt>::write(gr, "data", g._data, g);//can be specialized for some descriptors (E.g. blocks)
+     gfs_implementation::h5_ops<Variable,Target,Opt>::write(gr, "data", g._data, g);//can be specialized for some descriptors (E.g. blocks)
      h5_write(gr,"singularity",g._singularity);
      h5_write(gr,"mesh",g._mesh);
      h5_write(gr,"symmetry",g._symmetry);
@@ -265,7 +266,7 @@ namespace triqs { namespace gf {
      auto tag_expected= get_triqs_hdf5_data_scheme(g);
      if (tag_file != tag_expected) 
       TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
-     gf_implementation::h5_ops<Variable,Target,Opt>::read(gr, "data", g._data, g);//can be specialized for some descriptors (E.g. blocks)
+     gfs_implementation::h5_ops<Variable,Target,Opt>::read(gr, "data", g._data, g);//can be specialized for some descriptors (E.g. blocks)
      h5_read(gr,"singularity",g._singularity);
      h5_read(gr,"mesh",g._mesh);
      h5_read(gr,"symmetry",g._symmetry);

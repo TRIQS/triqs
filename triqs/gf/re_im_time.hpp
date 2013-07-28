@@ -26,18 +26,18 @@
 #include "./imtime.hpp"
 #include "./meshes/product.hpp"
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
   
  struct re_im_time {};
 
- namespace gf_implementation { 
+ namespace gfs_implementation { 
 
   // the mesh
   template<typename Opt> struct mesh<re_im_time,Opt>  { 
    typedef typename mesh<retime,Opt>::type m1_t; 
    typedef typename mesh<imtime,Opt>::type m2_t; 
    typedef mesh_product<m1_t,m2_t> type;
-   static type make (double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, triqs::gf::mesh_kind mk=triqs::gf::full_bins) { 
+   static type make (double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) { 
     return {make_gf_mesh<retime,Opt>(tmin,tmax,nt), make_gf_mesh<imtime,Opt>(beta,S, ntau, mk)};
    }
   };
@@ -91,11 +91,11 @@ namespace triqs { namespace gf {
     typename gf_t::data_non_view_t A(m.size()); 
     A() =0;
     return gf_t (m, std::move(A), nothing(), nothing());
-    //return gf_t (m, std::move(A), triqs::gf::make_gf<retime,scalar_valued>(tmin, tmax, nt), nothing());
+    //return gf_t (m, std::move(A), make_gf<retime,scalar_valued>(tmin, tmax, nt), nothing());
    }
   };
 
- } // gf_implementation
+ } // gfs_implementation
 
  // CHANGE THIS NAME !!! 
  template<typename RHS, bool V, typename Variable, typename Target, typename Opt > 

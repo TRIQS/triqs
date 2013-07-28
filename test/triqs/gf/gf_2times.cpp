@@ -2,8 +2,8 @@
 
 #include <triqs/gf/two_real_times.hpp> 
 
-//using namespace triqs::gf::local;
-using namespace triqs::gf;
+//using namespace triqs::gfss::local;
+using namespace triqs::gfs;
 namespace tql= triqs::clef;
 //namespace tqa= triqs::arrays;
 using tqa::range;

@@ -32,7 +32,7 @@
 #include <triqs/utility/expression_template_tools.hpp>
 #include <triqs/h5.hpp>
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
  namespace tqa= triqs::arrays;
  namespace mpl=boost::mpl;
 

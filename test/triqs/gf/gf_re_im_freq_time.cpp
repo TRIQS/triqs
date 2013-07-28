@@ -8,7 +8,7 @@
 #include <triqs/arrays.hpp>
 
 namespace tql= triqs::clef;
-using namespace triqs::gf;
+using namespace triqs::gfs;
 
 int main() {
  

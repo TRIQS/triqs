@@ -22,7 +22,7 @@
 #include "fourier_real.hpp"
 #include <fftw3.h>
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
  
  namespace {
   double pi = std::acos(-1);

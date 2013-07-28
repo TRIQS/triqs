@@ -24,7 +24,7 @@
 #include <triqs/arrays.hpp>
 #include <triqs/utility/pade_approximants.hpp>
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
  typedef std::complex<double> dcomplex;
 

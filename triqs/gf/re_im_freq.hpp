@@ -26,11 +26,11 @@
 #include "./imfreq.hpp"
 #include "./meshes/product.hpp"
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
   
   struct re_im_freq {};
   
-  namespace gf_implementation {
+  namespace gfs_implementation {
     
     // the mesh
     template<typename Opt> struct mesh<re_im_freq,Opt>  { 
@@ -38,7 +38,7 @@ namespace triqs { namespace gf {
       typedef typename mesh<imfreq,Opt>::type m2_t; 
       typedef mesh_product<m1_t,m2_t> type;
       static type make (double wmin, double wmax, size_t n_freq_re, double beta, statistic_enum S, size_t n_freq_im) { 
-        return {make_gf_mesh<refreq,Opt>(wmin,wmax,n_freq_re,full_bins), make_gf_mesh<imfreq,Opt>(beta, S, n_freq_im)};
+        return {gfs::make_gf_mesh<refreq,Opt>(wmin,wmax,n_freq_re,full_bins), make_gf_mesh<imfreq,Opt>(beta, S, n_freq_im)};
       }
     };
     
@@ -79,11 +79,11 @@ namespace triqs { namespace gf {
         auto m =  make_gf_mesh<re_im_freq,Opt>(wmin, wmax, nw, beta, S, nwn);
         typename gf_t::data_non_view_t A(m.size()); 
         A() =0;
-        return gf_t (m, std::move(A), triqs::gf::make_gf<refreq,scalar_valued>(wmin, wmax, nw), nothing() ) ;
+        return gf_t (m, std::move(A), gfs::make_gf<refreq,scalar_valued>(wmin, wmax, nw), nothing() ) ;
       }
     };
     
-} // gf_implementation
+} // gfs_implementation
 
 }}
 #endif

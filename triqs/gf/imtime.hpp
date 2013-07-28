@@ -26,11 +26,11 @@
 #include "./domains/matsubara.hpp"
 #include "./meshes/linear.hpp"
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
  struct imtime {};
 
- namespace gf_implementation { 
+ namespace gfs_implementation { 
 
   // mesh type and its factories
   template<typename Opt> struct mesh<imtime,Opt> {
@@ -158,7 +158,7 @@ namespace triqs { namespace gf {
     return make_gf(mesh<imtime,Opt>::make(beta,S,Nmax,mk), t);
    }
   };
- } // gf_implementation.
+ } // gfs_implementation.
  
 }}
 #endif

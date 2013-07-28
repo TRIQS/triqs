@@ -26,7 +26,7 @@
 #include "../legendre.hpp"
 
 namespace triqs { 
- namespace gf { 
+ namespace gfs { 
 
   //-------------------------------------------------------
   // For Imaginary Matsubara Frequency functions

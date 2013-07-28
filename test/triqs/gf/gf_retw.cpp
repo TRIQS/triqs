@@ -7,11 +7,11 @@ namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;
 using tqa::range;
 using triqs::arrays::make_shape;
-using triqs::gf::scalar_valued;
-using triqs::gf::Fermion;
-using triqs::gf::refreq;
-using triqs::gf::retime;
-using triqs::gf::make_gf;
+using triqs::gfs::scalar_valued;
+using triqs::gfs::Fermion;
+using triqs::gfs::refreq;
+using triqs::gfs::retime;
+using triqs::gfs::make_gf;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 

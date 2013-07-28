@@ -26,7 +26,7 @@
 #include <triqs/gf/imtime.hpp>
 #include <triqs/gf/legendre.hpp>
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
   void legendre_matsubara_direct (gf_view<imfreq> &gw, gf_view<legendre> const &gl);
   void legendre_matsubara_inverse (gf_view<legendre> &gl, gf_view<imfreq> const &gw);

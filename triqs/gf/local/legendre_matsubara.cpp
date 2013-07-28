@@ -27,7 +27,7 @@
 
 using namespace triqs::utility;
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
 void legendre_matsubara_direct(gf_view<imfreq> & gw, gf_view<legendre> const & gl) {
 
@@ -53,9 +53,9 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imfreq> const &
   // I set Nt time bins. This is ugly, one day we must code the direct
   // transformation without going through imaginary time
   long Nt = 50000;
-  auto gt = triqs::gf::make_gf<imtime>(gw.domain().beta, gw.domain().statistic,
+  auto gt = make_gf<imtime>(gw.domain().beta, gw.domain().statistic,
     triqs::arrays::mini_vector<size_t,2>(gw.data().shape()[1],gw.data().shape()[2]),
-    Nt, triqs::gf::half_bins);
+    Nt, half_bins);
 
   // We first transform to imaginary time because it's been coded with the knowledge of the tails
   gt() = lazy_inverse_fourier(gw);

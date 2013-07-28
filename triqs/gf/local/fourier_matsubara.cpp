@@ -22,7 +22,7 @@
 #include "fourier_matsubara.hpp"
 #include <fftw3.h>
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
  
  namespace impl_local_matsubara {
   

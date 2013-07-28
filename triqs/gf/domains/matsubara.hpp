@@ -22,7 +22,7 @@
 #define TRIQS_GF_DOMAIN_MATSUBARA_H
 #include "../tools.hpp"
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
 
  /// The domain
  template<bool IsComplex>

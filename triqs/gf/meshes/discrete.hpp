@@ -23,7 +23,7 @@
 #include "./mesh_tools.hpp"
 #include "../domains/discrete.hpp"
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
 
   template<typename Domain>
   struct discrete_mesh {

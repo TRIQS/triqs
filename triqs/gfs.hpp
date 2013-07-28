@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2013 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,19 +18,17 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_DOM_PRODUCT_H
-#define TRIQS_GF_DOM_PRODUCT_H
-#include "../tools.hpp"
-namespace triqs { namespace gfs {
+#ifndef TRIQS_GFS_ALL_H
+#define TRIQS_GFS_ALL_H
 
- template<typename... Domains> 
-  struct domain_product { 
-   typedef std::tuple<typename Domains::point_t...> point_t;
-   std::tuple<Domains...> domains;
-   domain_product() = default;
-   domain_product(Domains const & ... doms) : domains(doms...) {}
-   friend bool operator == (domain_product const & D1, domain_product const & D2) { return D1.domains == D2.domains;}
-  };
+// The basic classes
+#include <triqs/gf/imtime.hpp>
+#include <triqs/gf/imfreq.hpp>
+#include <triqs/gf/retime.hpp>
+#include <triqs/gf/refreq.hpp>
+#include <triqs/gf/block.hpp>
+//#include <triqs/gf/product.hpp>
 
-}}
+
 #endif
+

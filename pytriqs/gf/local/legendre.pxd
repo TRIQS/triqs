@@ -1,4 +1,4 @@
-cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gf" : 
+cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass legendre_domain :
         size_t Nmax
@@ -6,18 +6,18 @@ cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gf" :
         statistic_enum statistic
         legendre_domain ()
 
-    #cdef cppclass mesh_legendre "triqs::gf::discrete_mesh<triqs::gf::legendre::domain_t>":
-    cdef cppclass mesh_legendre "triqs::gf::discrete_mesh<triqs::gf::legendre_domain>":
+    #cdef cppclass mesh_legendre "triqs::gfs::discrete_mesh<triqs::gfs::legendre::domain_t>":
+    cdef cppclass mesh_legendre "triqs::gfs::discrete_mesh<triqs::gfs::legendre_domain>":
         mesh_legendre ()
         mesh_legendre (mesh_legendre &)
         legendre_domain & domain()
         long size()
         bint operator == (mesh_legendre &)
 
-    cdef mesh_legendre make_mesh_legendre "triqs::gf::make_gf_mesh<triqs::gf::legendre>" (double beta, statistic_enum S, size_t n_leg)
-    #cdef mesh_legendre make_mesh_legendre "triqs::gf::gf_factories<triqs::gf::legendre>::make_mesh" (double beta, statistic_enum S, size_t n_leg)
+    cdef mesh_legendre make_mesh_legendre "triqs::gfs::make_gf_mesh<triqs::gfs::legendre>" (double beta, statistic_enum S, size_t n_leg)
+    #cdef mesh_legendre make_mesh_legendre "triqs::gfs::gf_factories<triqs::gfs::legendre>::make_mesh" (double beta, statistic_enum S, size_t n_leg)
 
-    cdef cppclass gf_legendre "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::legendre>>" :
+    cdef cppclass gf_legendre "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::legendre>>" :
         gf_legendre()
         gf_legendre(gf_legendre &)
         gf_legendre(mesh_legendre, array_view[double, THREE], nothing, nothing) #except +
@@ -40,14 +40,14 @@ cdef make_GfLegendre(gf_legendre x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Time #########################
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
+cdef extern from "triqs/gf/block.hpp" namespace "triqs::gfs" : 
 
-    cdef cppclass gf_block_legendre "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::legendre>>>" :
+    cdef cppclass gf_block_legendre "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::legendre>>>" :
         gf_block_legendre()
         gf_legendre & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_legendre  make_gf_block_legendre "triqs::gf::make_gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::legendre>>" (  vector[gf_legendre] &) 
+    cdef gf_block_legendre  make_gf_block_legendre "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::legendre>>" (  vector[gf_legendre] &) 
 
 cdef gf_block_legendre  as_gf_block_legendre (G) except +
 cdef make_BlockGfLegendre (gf_block_legendre G, block_indices_pack=*, name=*)

@@ -22,7 +22,7 @@
 #define TRIQS_GF_LOCAL_FOURIER_BASE_H
 #include <triqs/arrays/vector.hpp>
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
  namespace details {
 

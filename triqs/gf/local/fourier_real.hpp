@@ -25,7 +25,7 @@
 #include <triqs/gf/refreq.hpp> 
 #include <triqs/gf/retime.hpp> 
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
 
  // First the implementation of the fourier transform
  void fourier_impl         (gf_view<refreq,scalar_valued> gw , gf_view<retime,scalar_valued> const gt, scalar_valued);

@@ -8,10 +8,10 @@ namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;
 using tqa::range;
 using triqs::arrays::make_shape;
-using triqs::gf::Fermion;
-using triqs::gf::imfreq;
-using triqs::gf::imtime;
-using triqs::gf::make_gf;
+using triqs::gfs::Fermion;
+using triqs::gfs::imfreq;
+using triqs::gfs::imtime;
+using triqs::gfs::make_gf;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
@@ -23,7 +23,7 @@ using triqs::gf::make_gf;
 
 int main() {
 
- triqs::gf::freq_infty inf;
+ triqs::gfs::freq_infty inf;
 
  double beta =1;
  auto G =  make_gf<imfreq> (beta, Fermion, make_shape(2,2));
@@ -125,7 +125,7 @@ int main() {
  TEST( t(1));
 
  //tqa::array<double,9> A(1,2,3,4,5,6,7,8,9); A()=0;
- //auto x = local::impl::gf_impl<triqs::gf::meshes::imfreq, true>::wrap_infty (G.tail_view()) + 2.0;
+ //auto x = local::impl::gf_impl<triqs::gfs::meshes::imfreq, true>::wrap_infty (G.tail_view()) + 2.0;
 
  // test hdf5 
  H5::H5File file("ess_gf.h5", H5F_ACC_TRUNC );

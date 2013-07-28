@@ -25,7 +25,7 @@
 #include <triqs/gf/tools.hpp>
 #include <triqs/python_tools/cython_proxy.hpp>
 
-namespace triqs { namespace gf { namespace local {
+namespace triqs { namespace gfs { namespace local {
 
  namespace details {
    static constexpr double small = 1.e-10;

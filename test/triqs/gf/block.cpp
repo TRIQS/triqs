@@ -8,15 +8,15 @@ namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;
 using tqa::range;
 using triqs::arrays::make_shape;
-using triqs::gf::gf;
-using triqs::gf::gf_view;
-using triqs::gf::block_index;
-using triqs::gf::Fermion;
-using triqs::gf::imfreq;
-using triqs::gf::imtime;
-using triqs::gf::make_gf;
-using triqs::gf::make_block_gf;
-using triqs::gf::make_gf_view;
+using triqs::gfs::gf;
+using triqs::gfs::gf_view;
+using triqs::gfs::block_index;
+using triqs::gfs::Fermion;
+using triqs::gfs::imfreq;
+using triqs::gfs::imtime;
+using triqs::gfs::make_gf;
+using triqs::gfs::make_block_gf;
+using triqs::gfs::make_gf_view;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 

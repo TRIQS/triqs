@@ -9,7 +9,7 @@
 #include <triqs/gf/gf.hpp>
 #include <triqs/gf/two_real_times.hpp>
 #include <complex>
-using namespace triqs::gf;
+using namespace triqs::gfs;
 using namespace std;
 using triqs::arrays::make_shape;
 

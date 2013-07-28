@@ -26,7 +26,7 @@
 #include <triqs/gf/imfreq.hpp>
 #include <triqs/gf/refreq.hpp>
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
   void pade (gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_points, double freq_offset);
 

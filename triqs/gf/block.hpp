@@ -25,11 +25,11 @@
 #include "./local/tail.hpp"
 #include "./meshes/discrete.hpp"
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
 
  struct block_index {};
 
- namespace gf_implementation { 
+ namespace gfs_implementation { 
 
   template<typename Opt> struct mesh<block_index,Opt>                { typedef discrete_mesh<discrete_domain> type;};
   template<typename Target, typename Opt> struct h5_name<block_index,Target,Opt>      { static std::string invoke(){ return  "BlockGf";}};
@@ -115,7 +115,7 @@ namespace triqs { namespace gf {
 
    };
  
- } // gf_implementation
+ } // gfs_implementation
 
  // -------------------------------   Free function   --------------------------------------------------
 
@@ -129,7 +129,7 @@ namespace triqs { namespace gf {
 
  // experimental
  template<typename Target,  typename ... U>
-  gf<block_index, gf<Target>> make_block_gf(U && ...u) { return gf_implementation::factories<block_index,gf<Target>,void>::make_gf(std::forward<U>(u)...);}
+  gf<block_index, gf<Target>> make_block_gf(U && ...u) { return gfs_implementation::factories<block_index,gf<Target>,void>::make_gf(std::forward<U>(u)...);}
 
  // also experimental
  // an iterator over the block

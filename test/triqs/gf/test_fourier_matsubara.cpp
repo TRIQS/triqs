@@ -8,10 +8,10 @@ namespace tql= triqs::clef;
 // namespace tqa= triqs::arrays;
 // using tqa::range;
 using triqs::arrays::make_shape;
-using triqs::gf::Fermion;
-using triqs::gf::imfreq;
-using triqs::gf::imtime;
-using triqs::gf::make_gf;
+using triqs::gfs::Fermion;
+using triqs::gfs::imfreq;
+using triqs::gfs::imtime;
+using triqs::gfs::make_gf;
 using triqs::arrays::range;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
@@ -32,7 +32,7 @@ int main() {
  h5_write(file, "Gw1", Gw1);   // the original lorentzian
  
  auto Gt1 = make_gf<imtime> (beta, Fermion, make_shape(1,1), N);
- inverse_fourier_impl( Gt1, Gw1, triqs::gf::matrix_valued() );
+ inverse_fourier_impl( Gt1, Gw1, triqs::gfs::matrix_valued() );
 //  for(auto const& t:Gt1.mesh()){
 //   std::cout<<"t="<<t<<",  expected="<<exp(-E*t) * ( (t>0?-1:0)+1/(1+exp(E*beta)) )<<std::endl;
 //  }
@@ -40,7 +40,7 @@ int main() {
  
  ///verification that TF(TF^-1)=Id
  auto Gw1b = make_gf<imfreq> (beta, Fermion, make_shape(1,1), N);
- fourier_impl(Gw1b, Gt1, triqs::gf::matrix_valued());
+ fourier_impl(Gw1b, Gt1, triqs::gfs::matrix_valued());
  for(auto const& w:Gw1.mesh()){
 //   std::cout<<"w="<<std::complex<double>(w)<<",Gw1b=" << Gw1b(w)(0,0)<<std::endl;
 //   std::cout<<"w="<<std::complex<double>(w)<<",Delta Gw1b=" << Gw1b(w)(0,0)-Gw1(w)(0,0)<<std::endl;

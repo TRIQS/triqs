@@ -1,12 +1,12 @@
-cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" : 
+cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass imfreq_domain :
         double beta
         statistic_enum statistic
         imfreq_domain ()
 
-    #cdef cppclass mesh_imfreq "triqs::gf::linear_mesh<triqs::gf::imfreq::domain_t>"  :
-    cdef cppclass mesh_imfreq "triqs::gf::linear_mesh<triqs::gf::matsubara_domain<true>>"  :
+    #cdef cppclass mesh_imfreq "triqs::gfs::linear_mesh<triqs::gfs::imfreq::domain_t>"  :
+    cdef cppclass mesh_imfreq "triqs::gfs::linear_mesh<triqs::gfs::matsubara_domain<true>>"  :
         mesh_imfreq ()
         mesh_imfreq (mesh_imfreq &)
         imfreq_domain & domain()
@@ -14,10 +14,10 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         long size()
         bint operator ==( mesh_imfreq &)
 
-    cdef mesh_imfreq make_mesh_imfreq "triqs::gf::make_gf_mesh<triqs::gf::imfreq>" (double beta, statistic_enum S, size_t n_max)
-    #cdef mesh_imfreq make_mesh_imfreq "triqs::gf::gf_implementation::gf_factories<triqs::gf::imfreq,triqs::gf::matrix>::make_mesh" (double beta, statistic_enum S, size_t n_max)
+    cdef mesh_imfreq make_mesh_imfreq "triqs::gfs::make_gf_mesh<triqs::gfs::imfreq>" (double beta, statistic_enum S, size_t n_max)
+    #cdef mesh_imfreq make_mesh_imfreq "triqs::gfs::gf_implementation::gf_factories<triqs::gfs::imfreq,triqs::gfs::matrix>::make_mesh" (double beta, statistic_enum S, size_t n_max)
     
-    cdef cppclass gf_imfreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::imfreq> >" :
+    cdef cppclass gf_imfreq "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::imfreq> >" :
         gf_imfreq()
         gf_imfreq(gf_imfreq &)
         # The constructor must be no_except, or the cython code won't be correct...
@@ -42,14 +42,14 @@ cdef make_GfImFreq (gf_imfreq x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Freq #########################
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
+cdef extern from "triqs/gf/block.hpp" namespace "triqs::gfs" : 
 
-    cdef cppclass gf_block_imfreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::imfreq>>>" :
+    cdef cppclass gf_block_imfreq "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::imfreq>>>" :
         gf_block_imfreq()
         gf_imfreq & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gf::make_gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::imfreq>>" (  vector[gf_imfreq] &) 
+    cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::imfreq>>" (  vector[gf_imfreq] &) 
 
 cdef gf_block_imfreq  as_gf_block_imfreq (G) except +
 cdef make_BlockGfImFreq (gf_block_imfreq G, block_indices_pack=*, name=*)

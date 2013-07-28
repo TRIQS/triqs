@@ -26,11 +26,11 @@
 #include "./refreq.hpp"
 #include "./meshes/product.hpp"
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gfs {
   
   struct refreq_imtime {};
   
-  namespace gf_implementation { 
+  namespace gfs_implementation { 
     
     // the mesh
     template<typename Opt> struct mesh<refreq_imtime,Opt>  {
@@ -93,7 +93,7 @@ namespace triqs { namespace gf {
      }
     };
 
-  } // gf_implementation
+  } // gfs_implementation
 
   //slices
  gf_view<refreq,scalar_valued> slice_mesh_imtime (gf_view<refreq_imtime,scalar_valued> g, size_t index) { 

@@ -8,13 +8,13 @@ namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;
 using tqa::range;
 using triqs::arrays::make_shape;
-using triqs::gf::Fermion;
-using triqs::gf::gf;
-using triqs::gf::imfreq;
-using triqs::gf::imtime;
-using triqs::gf::make_gf;
-using triqs::gf::full_bins;
-using triqs::gf::half_bins;
+using triqs::gfs::Fermion;
+using triqs::gfs::gf;
+using triqs::gfs::imfreq;
+using triqs::gfs::imtime;
+using triqs::gfs::make_gf;
+using triqs::gfs::full_bins;
+using triqs::gfs::half_bins;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
@@ -96,7 +96,7 @@ void test_1(){
  size_t N2=1; 
  size_t size_ = 5;
  long order_min=-1;
- triqs::gf::local::tail t(N1,N2, size_, order_min);
+ triqs::gfs::local::tail t(N1,N2, size_, order_min);
  t(1)=1;
 
  auto Gt =  make_gf<imtime> (beta, Fermion, make_shape(1,1),100,full_bins, t);

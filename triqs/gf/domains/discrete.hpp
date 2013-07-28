@@ -23,7 +23,7 @@
 #define TRIQS_GF_DISCRETE_DOMAIN_H
 #include "../tools.hpp"
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
 
  /// The domain
  class discrete_domain {

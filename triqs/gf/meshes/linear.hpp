@@ -25,7 +25,7 @@
 // ADDED for Krylov : to be clean and removed if necessary
 #include <algorithm>
 #include <boost/math/special_functions/round.hpp>
-namespace triqs { namespace gf { 
+namespace triqs { namespace gfs { 
 
  // Three possible meshes
  enum mesh_kind { half_bins, full_bins, without_last };
