@@ -49,7 +49,8 @@ namespace triqs { namespace gfs {
     public:
     mesh_point_t( discrete_mesh const & mesh, index_t const & index_): m(&mesh), _index(index_) {}
     void advance() { ++_index;}
-    operator size_t () const { return m->index_to_point(_index);} 
+    typedef size_t cast_t;
+    operator cast_t() const { return m->index_to_point(_index);} 
     size_t linear_index() const { return _index;}
     size_t index() const { return _index;}
     bool at_end() const { return (_index == m->size());}

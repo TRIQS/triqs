@@ -20,7 +20,7 @@ int main(){
  int nt=tmax/dt;
  auto  R= make_gf<two_real_times> (tmax,nt,make_shape(1,1));//results
 
- for(auto point:R.mesh()) R(point)=0;
+ for(auto point:R.mesh()) R[point]=0;
 
  const auto rg = on_mesh(R);
  R.on_mesh(1,1) = 10;

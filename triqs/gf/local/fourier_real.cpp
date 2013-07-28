@@ -58,12 +58,12 @@ namespace triqs { namespace gfs {
    dcomplex a1 = (t1 + I * t2/a )/2., a2 = (t1 - I * t2/a )/2.;
    
    for (auto const & t : gt.mesh())
-    g_in(t.index()) = (gt(t) - (a1*th_expo(t,a) + a2*th_expo_neg(t,a))) * std::exp(I*t*wmin);
+    g_in[t.index()] = (gt[t] - (a1*th_expo(t,a) + a2*th_expo_neg(t,a))) * std::exp(I*t*wmin);
    
    details::fourier_base(g_in, g_out, L, true);
    
    for (auto const & w : gw.mesh())
-    gw(w) = gt.mesh().delta() * std::exp(I*(w-wmin)*tmin) * g_out(w.index())
+    gw[w] = gt.mesh().delta() * std::exp(I*(w-wmin)*tmin) * g_out(w.index())
     + a1*th_expo_inv(w,a) + a2*th_expo_neg_inv(w,a);
    
    gw.singularity() = gt.singularity();// set tail
@@ -90,14 +90,14 @@ namespace triqs { namespace gfs {
    g_in() = 0;
    
    for (auto const & w: gw.mesh())
-    g_in(w.index()) = (gw(w) - a1*th_expo_inv(w,a) - a2*th_expo_neg_inv(w,a)  ) * std::exp(-I*w*tmin);
+    g_in(w.index()) = (gw[w] - a1*th_expo_inv(w,a) - a2*th_expo_neg_inv(w,a)  ) * std::exp(-I*w*tmin);
    
    details::fourier_base(g_in, g_out, L, false);
    
    const double corr = 1.0/(gt.mesh().delta()*L);
    for (auto const & t : gt.mesh())
-    gt(t) = corr * std::exp(I*wmin*(tmin-t)) *
-    g_out( t.index() ) + a1 * th_expo(t,a) + a2 * th_expo_neg(t,a) ;
+    gt[t] = corr * std::exp(I*wmin*(tmin-t)) *
+    g_out[ t.index() ] + a1 * th_expo(t,a) + a2 * th_expo_neg(t,a) ;
  
    // set tail
    gt.singularity() = gw.singularity();

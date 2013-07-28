@@ -27,7 +27,7 @@ int main() {
  auto Gw1 = make_gf<imfreq> (beta, Fermion, make_shape(1,1), N);
  Gw1(om_) << 1/(om_-E);
 //  for(auto const& w:Gw1.mesh()){
-//   std::cout<<"w="<<std::complex<double>(w)<<", Gw1=" << Gw1(w)(0,0)<<std::endl;
+//   std::cout<<"w="<<std::complex<double>(w)<<", Gw1=" << Gw1[w](0,0)<<std::endl;
 //  }
  h5_write(file, "Gw1", Gw1);   // the original lorentzian
  
@@ -44,14 +44,14 @@ int main() {
  for(auto const& w:Gw1.mesh()){
 //   std::cout<<"w="<<std::complex<double>(w)<<",Gw1b=" << Gw1b(w)(0,0)<<std::endl;
 //   std::cout<<"w="<<std::complex<double>(w)<<",Delta Gw1b=" << Gw1b(w)(0,0)-Gw1(w)(0,0)<<std::endl;
-  if ( std::abs(Gw1b(w)(0,0)-Gw1(w)(0,0)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_matsubara error : w="<<std::complex<double>(w)<<" ,Gw1b="<<std::abs(Gw1b(w)(0,0))<<"\n";
+  if ( std::abs(Gw1b[w](0,0)-Gw1[w](0,0)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_matsubara error : w="<<std::complex<double>(w)<<" ,Gw1b="<<std::abs(Gw1b[w](0,0))<<"\n";
  }
  h5_write(file,"Gw1b",Gw1b); // must be 0
  
  ///verification that the TF is OK
  for(auto const & t:Gt1.mesh()){
-  Gt1(t)-= exp(-E*t) * ( (t>0?-1:0)+1/(1+exp(E*beta)) );
-  if ( std::abs(Gt1(t)(0,0)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_matsubara error : t="<<t<<" ,G1="<<std::abs(Gt1(t)(0,0))<<"\n";
+  Gt1[t]-= exp(-E*t) * ( (t>0?-1:0)+1/(1+exp(E*beta)) );
+  if ( std::abs(Gt1[t](0,0)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_matsubara error : t="<<t<<" ,G1="<<std::abs(Gt1[t](0,0))<<"\n";
  }
  h5_write(file,"Gt1b",Gt1); // must be 0
  

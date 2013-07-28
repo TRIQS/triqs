@@ -47,7 +47,7 @@ int main() {
  G_w.singularity()(2)=triqs::arrays::matrix<double>{{0}};
  auto G_w2 = slice_mesh_imtime(G_w_tau, index);
  for(auto& w:G_w.mesh())
-  if ( std::abs(G_w(w)-G_w2(w)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_slice error : w="<< w <<" ,G_w="<< G_w(w)<<" ,G_w2="<< G_w2(w) <<"\n";
+  if ( std::abs(G_w[w]-G_w2[w]) > precision) TRIQS_RUNTIME_ERROR<<" fourier_slice error : w="<< w <<" ,G_w="<< G_w[w]<<" ,G_w2="<< G_w2[w] <<"\n";
  
  //test of the interpolation
  std::cout << G_t_tau(0.789,0.123) << std::endl; 
@@ -70,6 +70,6 @@ int main() {
  auto G_t = inverse_fourier(G_w);
  auto G_t2 = inverse_fourier(slice_mesh_imtime(G_w_tau, index) );
  for(auto& t:G_t.mesh())
-  if ( std::abs(G_t(t)-G_t2(t)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_slice_re_time error : t="<< t <<" ,G_t="<< G_t(t) <<" ,G_t2="<< G_t2(t) <<"\n";  
+  if ( std::abs(G_t[t]-G_t2[t]) > precision) TRIQS_RUNTIME_ERROR<<" fourier_slice_re_time error : t="<< t <<" ,G_t="<< G_t[t] <<" ,G_t2="<< G_t2[t] <<"\n";  
   
 }

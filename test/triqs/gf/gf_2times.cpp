@@ -34,7 +34,7 @@ int main() {
  //G2(t_,tp_) << t_ + 3*tp_;
 
  TEST( G(1,1) );
- TEST( G(G.mesh()(1,1)) );
+ TEST( G[G.mesh()(1,1) ]);
  TEST( G.on_mesh(1,1));
 
  //G2(t_,tp_) << G(tp_,t_);

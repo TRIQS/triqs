@@ -57,6 +57,9 @@ namespace triqs { namespace gfs {
     typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix_view<std::complex<double>>, std::complex<double>>::type rtype; 
     template<typename G>
      rtype operator() (G const * g, long n)  const {return g->data()(n, arrays::ellipsis()); }
+    // crucial because the mesh_point is cast in a complex, not an int !
+    template<typename G>
+     rtype operator() (G const * g, linear_mesh<matsubara_domain<true>>::mesh_point_t const & p)  const { return (*this)(g,p.index());}
     template<typename G>
      local::tail_view operator()(G const * g, freq_infty const &) const {return g->singularity();}
    };

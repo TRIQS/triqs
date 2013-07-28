@@ -44,7 +44,7 @@ namespace triqs { namespace gfs {
     dcomplex d= t(1)(n1,n2) , A=t(2)(n1,n2),B = t(3)(n1,n2) ;
     double b1 = 0,b2 =1, b3 =-1;
     dcomplex a1 = d-B, a2 = (A+B)/2, a3 = (B-A)/2;
-    for (auto & w : G.mesh())  dens_part(n1,n2)+= G(w)(n1,n2)  -  (a1/(w - b1) + a2 / (w-b2) + a3/(w-b3)); 
+    for (auto & w : G.mesh())  dens_part(n1,n2)+= G[w](n1,n2)  -  (a1/(w - b1) + a2 / (w-b2) + a3/(w-b3)); 
     dens_part(n1,n2) = dens_part(n1,n2)/Beta;
     dens_tail(n1,n2) = d + F(a1,b1,Beta) + F(a2,b2,Beta)+ F(a3,b3,Beta);
     // If  the Green function are NOT complex, then one use the symmetry property
@@ -77,7 +77,7 @@ namespace triqs { namespace gfs {
    res() = 0.0;
 
    for (auto l : gl.mesh()) {
-     res -= sqrt(2*l.index()+1) * gl(l);
+     res -= sqrt(2*l.index()+1) * gl[l];
    }
    res /= gl.domain().beta;
 
@@ -95,7 +95,7 @@ namespace triqs { namespace gfs {
 
    for (int p=1; p<=t.order_max(); p++)
      for (auto l : gl.mesh())
-       t(p) += (triqs::utility::legendre_t(l.index(),p)/pow(gl.domain().beta,p)) * gl(l);
+       t(p) += (triqs::utility::legendre_t(l.index(),p)/pow(gl.domain().beta,p)) * gl[l];
 
    return t;
 
@@ -113,7 +113,7 @@ namespace triqs { namespace gfs {
 
    tqa::array<double,2> corr(disc.shape()); corr() = 0;
    for (auto l : gl.mesh()) {
-     corr += t(l.index()) * gl(l);
+     corr += t(l.index()) * gl[l];
    }
 
    tqa::range R;

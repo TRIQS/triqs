@@ -53,7 +53,7 @@ namespace triqs { namespace gfs {
       gr() = 0.0;
       for (auto om : gr.mesh()) {
         dcomplex e = om + dcomplex(0.0,1.0)*freq_offset;
-        gr(om)(n1,n2) = PA(e);
+        gr[om](n1,n2) = PA(e);
       }
 
     }

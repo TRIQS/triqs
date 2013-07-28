@@ -78,11 +78,12 @@ namespace triqs { namespace gfs {
    /// The wrapper for the mesh point
    class mesh_point_t : tag::mesh_point, public arith_ops_by_cast<mesh_point_t, domain_pt_t  > {
     linear_mesh const * m;  
-    index_t _index; 
+    index_t _index;
     public:
     mesh_point_t( linear_mesh const & mesh, index_t const & index_): m(&mesh), _index(index_) {}
     void advance() { ++_index;}
-    operator domain_pt_t () const { return m->index_to_point(_index);} 
+    typedef domain_pt_t cast_t; 
+    operator cast_t () const { return m->index_to_point(_index);} 
     size_t linear_index() const { return _index;}
     size_t index() const { return _index;}
     bool at_end() const { return (_index == m->size());}

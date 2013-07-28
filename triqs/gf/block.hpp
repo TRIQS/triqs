@@ -142,7 +142,7 @@ namespace triqs { namespace gfs {
     big_gf_t big_gf;
     mesh_iterator_t mesh_it;
 
-    typename Target::view_type const & dereference() const { return big_gf(*mesh_it);}
+    typename Target::view_type const & dereference() const { return big_gf[*mesh_it];}
     bool equal(block_gf_iterator const & other) const { return ((mesh_it == other.mesh_it));}
     public:
     block_gf_iterator(gf_view<block_index,Target,Opt> bgf, bool at_end = false): big_gf(std::move(bgf)), mesh_it(&big_gf.mesh(),at_end) {}

@@ -37,7 +37,7 @@ void legendre_matsubara_direct(gf_view<imfreq> & gw, gf_view<legendre> const & g
   // Use the transformation matrix
   for (auto om: gw.mesh()) {
     for (auto l: gl.mesh()) {
-      gw(om) += legendre_T(om.index(),l.index()) * gl(l);
+      gw[om] += legendre_T(om.index(),l.index()) * gl[l];
     }
   }
 
@@ -72,7 +72,7 @@ void legendre_matsubara_direct (gf_view<imtime> & gt, gf_view<legendre> const & 
   for (auto t : gt.mesh()) {
     L.reset( 2*t/gt.domain().beta-1 );
     for (auto l : gl.mesh()) {
-      gt(t) += sqrt(2*l.index()+1) / gt.domain().beta * gl(l) * L.next();
+      gt[t] += sqrt(2*l.index()+1) / gt.domain().beta * gl[l] * L.next();
     }
   }
 
@@ -89,7 +89,7 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imtime> const &
   for (auto t : gt.mesh()) {
     L.reset( 2*t/gt.domain().beta-1 );
     for (auto l : gl.mesh()) {
-      gl(l) += sqrt(2*l.index()+1) * L.next() * gt(t);
+      gl[l] += sqrt(2*l.index()+1) * L.next() * gt[t];
     }
   }
   gl.data() *= gt.mesh().delta();

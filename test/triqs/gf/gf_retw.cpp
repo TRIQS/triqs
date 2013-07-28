@@ -26,8 +26,8 @@ int main() {
  auto Gt2 = make_gf<retime,scalar_valued> (0, tmax, N);
 
  int i =0;
- for (auto & t : Gt.mesh()) Gt(t) = 1.0*t;
- for (auto & w : Gw.mesh()) Gw(w) = 1.0*w;
+ for (auto & t : Gt.mesh()) Gt[t] = 1.0*t;
+ for (auto & w : Gw.mesh()) Gw[w] = 1.0*w;
  
  triqs::clef::placeholder<0> t_;
  triqs::clef::placeholder<1> w_;

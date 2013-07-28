@@ -383,6 +383,20 @@ namespace triqs { namespace clef {
   { return typename result_of::make_expr_call<Obj,Args...>::type (tags::function(),std::forward<Obj>(obj), std::forward<Args>(args)...);}
 
  /* --------------------------------------------------------------------------------------------------
+  * Create a [] call (subscript) node of an object
+  * The object can be kept as a : a ref, a copy, a view
+  * --------------------------------------------------------------------------------------------------- */
+
+ namespace result_of { 
+  template< typename Obj, typename Arg> struct make_expr_subscript : 
+   std::enable_if< is_any_lazy<Arg>::value, expr<tags::subscript,typename remove_cv_ref<Obj>::type, typename remove_cv_ref<Arg>::type> > {};
+ }
+ template< typename Obj, typename Arg>
+  typename result_of::make_expr_subscript<Obj,Arg>::type 
+  make_expr_subscript(Obj&& obj, Arg && arg) 
+  { return typename result_of::make_expr_subscript<Obj,Arg>::type (tags::subscript(),std::forward<Obj>(obj), std::forward<Arg>(arg));}
+
+ /* --------------------------------------------------------------------------------------------------
   *  function class : stores any expression polymorphically
   *  f(x_,y_ ) = an expression associates this expression dynamically to f, which 
   *  can then be used as a std::function of the same signature...

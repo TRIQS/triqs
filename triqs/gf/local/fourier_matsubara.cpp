@@ -68,15 +68,15 @@ namespace triqs { namespace gfs {
    }
    if (gw.domain().statistic == Fermion){
     for (auto & t : gt.mesh())  
-     g_in(t.index()) = fact * exp(iomega*t) * ( gt(t) - ( oneFermion(a1,b1,t,beta) + oneFermion(a2,b2,t,beta)+ oneFermion(a3,b3,t,beta) ) );
+     g_in[t.index()] = fact * exp(iomega*t) * ( gt[t] - ( oneFermion(a1,b1,t,beta) + oneFermion(a2,b2,t,beta)+ oneFermion(a3,b3,t,beta) ) );
    }
    else {
     for (auto & t : gt.mesh()) 
-     g_in(t.index()) =  fact * ( gt(t) -  ( oneBoson(a1,b1,t,beta) + oneBoson(a2,b2,t,beta) + oneBoson(a3,b3,t,beta) ) );  
+     g_in[t.index()] =  fact * ( gt[t] -  ( oneBoson(a1,b1,t,beta) + oneBoson(a2,b2,t,beta) + oneBoson(a3,b3,t,beta) ) );  
    }
    details::fourier_base(g_in, g_out, L, true);
    for (auto & w : gw.mesh()) {
-    gw(w) = g_out( w.index() ) * exp(iomega2*w.index() ) + a1/(w-b1) + a2/(w-b2) + a3/(w-b3); 
+    gw[w] = g_out( w.index() ) * exp(iomega2*w.index() ) + a1/(w-b1) + a2/(w-b2) + a3/(w-b3); 
    }
    gw.singularity() = gt.singularity();// set tail
   }
@@ -110,7 +110,7 @@ namespace triqs { namespace gfs {
    }
    g_in() = 0;
    for (auto & w: gw.mesh()) {
-    g_in( w.index() ) =  fact * exp(w.index()*iomega2) * ( gw(w) - (a1/(w-b1) + a2/(w-b2) + a3/(w-b3)) );
+    g_in[ w.index() ] =  fact * exp(w.index()*iomega2) * ( gw[w] - (a1/(w-b1) + a2/(w-b2) + a3/(w-b3)) );
    }
    // for bosons GF(w=0) is divided by 2 to avoid counting it twice
    if (gw.domain().statistic == Boson && !Green_Function_Are_Complex_in_time ) g_in(0) *= 0.5;
@@ -122,13 +122,13 @@ namespace triqs { namespace gfs {
    //typedef typename gf<imtime>::mesh_type::gf_result_type gt_result_type;
    if (gw.domain().statistic == Fermion){
     for (auto & t : gt.mesh()){
-     gt(t) = convert_green<gt_result_type> ( g_out( t.index() == L ? 0 : t.index() ) * exp(-iomega*t)
+     gt[t] = convert_green<gt_result_type> ( g_out( t.index() == L ? 0 : t.index() ) * exp(-iomega*t)
      + oneFermion(a1,b1,t,beta) + oneFermion(a2,b2,t,beta)+ oneFermion(a3,b3,t,beta) );
     }
    }
    else {
     for (auto & t : gt.mesh()) 
-     gt(t) = convert_green<gt_result_type> ( g_out( t.index() == L ? 0 : t.index() )
+     gt[t] = convert_green<gt_result_type> ( g_out( t.index() == L ? 0 : t.index() )
      + oneBoson(a1,b1,t,beta) + oneBoson(a2,b2,t,beta) + oneBoson(a3,b3,t,beta) );
    }
    if (gt.mesh().kind() == full_bins)

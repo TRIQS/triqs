@@ -172,7 +172,6 @@ namespace triqs { namespace gfs {
      typename std::add_const<
      typename boost::lazy_disable_if<  // disable the template if one the following conditions it true
      boost::mpl::or_< // starting condition [OR]
-     std::is_base_of< tag::mesh_point, typename std::remove_reference<Arg0>::type>,  // Arg0 is (a & or a &&) to a mesh_point_t
      clef::is_any_lazy<Arg0, Args...>                          // One of Args is a lazy expression
       , boost::mpl::bool_<(sizeof...(Args)!= evaluator_t::arity -1 ) && (evaluator_t::arity !=-1)> // if -1 : no check
       >,                                                       // end of OR
@@ -188,18 +187,8 @@ namespace triqs { namespace gfs {
      operator()(Arg0 arg0, Args... args) const {
       return clef::make_expr_call(view_type(*this),arg0, args...);
      }
-
-    typedef typename std::result_of<data_proxy_t(data_t       &,size_t)>::type r_type;
-    typedef typename std::result_of<data_proxy_t(data_t const &,size_t)>::type cr_type;
-
-    r_type  operator() (mesh_point_t const & x)       { return _data_proxy(_data, x.linear_index());}
-    cr_type operator() (mesh_point_t const & x) const { return _data_proxy(_data, x.linear_index());}
-
-    template<typename ... U>
-     r_type  operator() (closest_pt_wrap<U...> const & p)       { return _data_proxy(_data, _mesh.index_to_linear( gfs_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
-    template<typename ... U>
-     cr_type operator() (closest_pt_wrap<U...> const & p) const { return _data_proxy(_data, _mesh.index_to_linear( gfs_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
-
+   
+    /*
     // on mesh component for composite meshes
     // enable iif the first arg is a mesh_point_t for the first component of the mesh_t
     template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
@@ -211,6 +200,30 @@ namespace triqs { namespace gfs {
      typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  cr_type>::type
      operator() (Arg0 const & arg0, Args const & ... args) const
      { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
+*/
+
+    //// [] and access to the grid point
+    typedef typename std::result_of<data_proxy_t(data_t       &,size_t)>::type r_type;
+    typedef typename std::result_of<data_proxy_t(data_t const &,size_t)>::type cr_type;
+
+    r_type  operator[] (mesh_index_t const & arg)       { return _data_proxy(_data,_mesh.index_to_linear(arg));}
+    cr_type operator[] (mesh_index_t const & arg) const { return _data_proxy(_data,_mesh.index_to_linear(arg));}
+
+    r_type  operator[] (mesh_point_t const & x)       { return _data_proxy(_data, x.linear_index());}
+    cr_type operator[] (mesh_point_t const & x) const { return _data_proxy(_data, x.linear_index());}
+
+    template<typename ... U>
+     r_type  operator[] (closest_pt_wrap<U...> const & p)       { return _data_proxy(_data, _mesh.index_to_linear( gfs_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
+    template<typename ... U>
+     cr_type operator[] (closest_pt_wrap<U...> const & p) const { return _data_proxy(_data, _mesh.index_to_linear( gfs_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
+
+    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
+    template<typename Arg>
+     typename boost::lazy_enable_if<    // enable the template if
+     clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
+     clef::result_of::make_expr_subscript<view_type,Arg>
+      >::type     // end of lazy_enable_if
+      operator[](Arg && arg) const { return clef::make_expr_subscript(view_type(*this),std::forward<Arg>(arg));}
 
     /// A direct access to the grid point
     template<typename... Args>
@@ -231,18 +244,7 @@ namespace triqs { namespace gfs {
     };
     _on_mesh_wrapper_const friend on_mesh(gf_impl const & f) { return f;}
     _on_mesh_wrapper friend on_mesh(gf_impl & f) { return f;}
-
    public:
-    r_type  operator[] (mesh_index_t const & arg)       { return _data_proxy(_data,_mesh.index_to_linear(arg));}
-    cr_type operator[] (mesh_index_t const & arg) const { return _data_proxy(_data,_mesh.index_to_linear(arg));}
-
-    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
-    template<typename Arg>
-     typename boost::lazy_enable_if<    // enable the template if
-     clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
-     clef::result_of::make_expr_call<view_type,Arg>
-      >::type     // end of lazy_enable_if
-      operator[](Arg && arg) const { return clef::make_expr_call(view_type(*this),std::forward<Arg>(arg));}
 
     //----------------------------- HDF5 -----------------------------
 
@@ -362,10 +364,11 @@ namespace triqs { namespace gfs {
 
   private:
   template<typename RHS> void triqs_clef_auto_assign_impl (RHS const & rhs, std::integral_constant<bool,false>) {
-   for (auto const & w: this->mesh()) (*this)(w) = rhs(w);
+   for (auto const & w: this->mesh()) (*this)[w] = rhs(w);
+   //for (auto const & w: this->mesh()) (*this)[w] = rhs(typename B::mesh_t::mesh_point_t::cast_t(w));
   }
   template<typename RHS> void triqs_clef_auto_assign_impl (RHS const & rhs, std::integral_constant<bool,true>) {
-   for (auto const & w: this->mesh()) (*this)(w) = triqs::tuple::apply(rhs,w.components_tuple());
+   for (auto const & w: this->mesh()) (*this)[w] = triqs::tuple::apply(rhs,w.components_tuple());
    //for (auto w: this->mesh()) triqs::tuple::apply(*this,w.components_tuple()) = triqs::tuple::apply(rhs,w.components_tuple());
   }
 
@@ -389,14 +392,14 @@ namespace triqs { namespace gfs {
  template<typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper{ gf_view<D,Target> g; gf_keeper (gf_view<D,Target> const & g_) : g(g_) {} };
 
  // ---------------------------------- slicing ------------------------------------
- 
+
  //slice
  template<typename Variable, typename Target, typename Opt, bool V, typename... Args>
   gf_view<Variable,matrix_valued,Opt> slice_target (gf_impl<Variable,Target,Opt,V> const & g, Args... args) {
    static_assert(std::is_same<Target,matrix_valued>::value, "slice_target only for matrix_valued GF's");
    using arrays::range;
    //auto sg=slice_target (g.singularity(),range(args,args+1)...);
-   return gf_view<Variable,matrix_valued,Opt>(g.mesh(), g.data()(tqa::range(), args... ),  slice_target (g.singularity(),args...) , g.symmetry());
+   return gf_view<Variable,matrix_valued,Opt>(g.mesh(), g.data()(range(), args... ),  slice_target (g.singularity(),args...) , g.symmetry());
   }
 
  template<typename Variable, typename Target, typename Opt, bool V, typename... Args>
@@ -404,14 +407,14 @@ namespace triqs { namespace gfs {
    static_assert(std::is_same<Target,matrix_valued>::value, "slice_target only for matrix_valued GF's");
    using arrays::range;
    auto sg=slice_target (g.singularity(),range(args,args+1)...);
-   return gf_view<Variable,scalar_valued,Opt>(g.mesh(), g.data()(tqa::range(), args... ), sg , g.symmetry());
+   return gf_view<Variable,scalar_valued,Opt>(g.mesh(), g.data()(range(), args... ), sg , g.symmetry());
   }
 
-/*
-  template<typename Variable1,typename Variable2, typename Target, typename Opt, bool V, typename... Args>
-  gf_view<Variable2,Target,Opt> slice_mesh (gf_impl<Variable1,Target,Opt,V> const & g, Args... args) {
-   return gf_view<Variable2,Target,Opt>(g.mesh().slice(args...), g.data()(g.mesh().slice_get_range(args...),arrays::ellipsis()), g.singularity(), g.symmetry());
-  }*/
+ /*
+    template<typename Variable1,typename Variable2, typename Target, typename Opt, bool V, typename... Args>
+    gf_view<Variable2,Target,Opt> slice_mesh (gf_impl<Variable1,Target,Opt,V> const & g, Args... args) {
+    return gf_view<Variable2,Target,Opt>(g.mesh().slice(args...), g.data()(g.mesh().slice_get_range(args...),arrays::ellipsis()), g.singularity(), g.symmetry());
+    }*/
 
 }}
 
