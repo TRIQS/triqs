@@ -102,7 +102,7 @@ namespace triqs { namespace gfs {
   void assign_from_expression (gf_impl<Variable,Target,Opt,V> const &, RHS) {}
 
  //slices
- gf_view<retime,scalar_valued> slice_mesh_imtime (gf_view<re_im_time,scalar_valued> g, size_t index) { 
+ inline gf_view<retime,scalar_valued> slice_mesh_imtime (gf_view<re_im_time,scalar_valued> g, size_t index) { 
   auto arr = reinterpret_linear_array(g.mesh(),g.data()); // view it as a 2d array
   return { std::get<0>(g.mesh().components()), arr(arrays::range(), index), local::tail(1,1), nothing() };
  }

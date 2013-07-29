@@ -40,7 +40,7 @@ namespace triqs { namespace gfs {
   };
   
   // h5 name
-  template<typename Opt> struct h5_name<legendre,matrix_valued,Opt>      { static std::string invoke(){ return  "GfLegendre";}};
+  template<typename Opt> struct h5_name<legendre,matrix_valued,Opt>      { static std::string invoke(){ return  "Legendre";}};
 
   /// ---------------------------  evaluator ---------------------------------
 

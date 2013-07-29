@@ -47,8 +47,7 @@ namespace triqs { namespace gfs {
   template<typename Opt> struct singularity<retime,scalar_valued,Opt>  { typedef local::tail type;};
   
   // h5 name
-  template<typename Opt> struct h5_name<retime,matrix_valued,Opt>      { static std::string invoke(){ return  "GfReTime";}};
-  template<typename Opt> struct h5_name<retime,scalar_valued,Opt>      { static std::string invoke(){ return  "GfReTime_s";}};
+  template<typename Opt> struct h5_name<retime,matrix_valued,Opt>      { static std::string invoke(){ return  "ReTime";}};
 
   /// ---------------------------  evaluator ---------------------------------
   template<typename Opt, typename Target>

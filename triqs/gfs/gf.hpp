@@ -64,6 +64,8 @@ namespace triqs { namespace gfs {
   // This trait contains functions to read/write in hdf5 files. Can be specialized for some descriptor (Cf block)
   template <typename Variable, typename Target, typename Opt> struct h5_name; // value is a const char *
 
+  template<typename Variable, typename Opt> struct h5_name<Variable,scalar_valued,Opt>      { static std::string invoke(){ return h5_name<Variable,matrix_valued,Opt>::invoke() + "_s";}};
+  
   template <typename Variable, typename Target, typename Opt> struct h5_ops { 
    template<typename DataType, typename GF> static void write(h5::group g, std::string const & s, DataType const & data, GF const &) { h5_write(g,"data",data); }
    template<typename DataType, typename GF> static void read (h5::group g, std::string const & s, DataType & data, GF const &) { h5_read(g,"data",data);}
@@ -248,7 +250,7 @@ namespace triqs { namespace gfs {
 
     //----------------------------- HDF5 -----------------------------
 
-    friend std::string get_triqs_hdf5_data_scheme(gf_impl const & g) { return gfs_implementation::h5_name<Variable,Target,Opt>::invoke();}
+    friend std::string get_triqs_hdf5_data_scheme(gf_impl const & g) { return "Gf" + gfs_implementation::h5_name<Variable,Target,Opt>::invoke();}
 
     /// Write into HDF5
     friend void h5_write (h5::group fg, std::string subgroup_name, gf_impl const & g) {
@@ -407,7 +409,15 @@ namespace triqs { namespace gfs {
    static_assert(std::is_same<Target,matrix_valued>::value, "slice_target only for matrix_valued GF's");
    using arrays::range;
    auto sg=slice_target (g.singularity(),range(args,args+1)...);
-   return gf_view<Variable,scalar_valued,Opt>(g.mesh(), g.data()(range(), args... ), sg , g.symmetry());
+   return gf_view<Variable,scalar_valued,Opt>(g.mesh(), g.data()(range(), args... ), sg, g.symmetry());
+  }
+
+  // a scalar_valued gf can be viewed as a 1x1 matrix
+  template<typename Variable, typename Opt, bool V, typename... Args>
+  gf_view<Variable,matrix_valued,Opt> reinterpret_scalar_valued_gf_as_matrix_valued (gf_impl<Variable,scalar_valued,Opt,V> const & g) {
+   typedef arrays::array_view<typename gfs_implementation::data_proxy<Variable,matrix_valued,Opt>::storage_t::value_type,3> a_t;
+   auto a = a_t {typename a_t::indexmap_type (arrays::mini_vector<size_t,3>(g.data().shape()[0],1,1)), g.data().storage()};
+   return gf_view<Variable,matrix_valued,Opt>(g.mesh(), a, g.singularity(), g.symmetry());
   }
 
  /*

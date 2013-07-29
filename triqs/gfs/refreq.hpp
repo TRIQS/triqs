@@ -45,8 +45,7 @@ namespace triqs { namespace gfs {
   template<typename Opt> struct singularity<refreq,scalar_valued,Opt>  { typedef local::tail type;};
   
   // h5 name
-  template<typename Opt> struct h5_name<refreq,matrix_valued,Opt>      { static std::string invoke(){ return "GfReFreq";}};
-  template<typename Opt> struct h5_name<refreq,scalar_valued,Opt>      { static std::string invoke(){ return "GfReFreq_s";}};
+  template<typename Opt> struct h5_name<refreq,matrix_valued,Opt>      { static std::string invoke(){ return "ReFreq";}};
 
   /// ---------------------------  evaluator ---------------------------------
   template<typename Opt, typename Target>
