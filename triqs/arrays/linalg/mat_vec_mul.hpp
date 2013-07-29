@@ -55,7 +55,7 @@ namespace triqs { namespace arrays {
 
    struct internal_data {
     vector_type R;
-    internal_data(mat_vec_mul_lazy const & P): R(P.M.dim0()) { blas::gemv(1,P.M,P.V,0,R); }
+    internal_data(mat_vec_mul_lazy const & P): R( first_dim(P.M) ) { blas::gemv(1,P.M,P.V,0,R); }
    };
    friend struct internal_data;
    mutable std::shared_ptr<internal_data> _id;
@@ -63,12 +63,12 @@ namespace triqs { namespace arrays {
 
    public:
    mat_vec_mul_lazy( MT const & M_, VT const & V_):M(M_),V(V_){
-    if (M.dim1() != V.size()) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in Matrix*Vector "<< M<<" "<< V; 
+    if (second_dim(M) != V.size()) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in Matrix*Vector "<< M<<" "<< V; 
    }
 
    domain_type domain() const { return mini_vector<size_t,1>(size());}
    //domain_type domain() const { return indexmaps::cuboid::domain_t<1>(mini_vector<size_t,1>(size()));}
-   size_t size() const { return M.dim0();} 
+   size_t size() const { return first_dim(M);} 
 
    template<typename KeyType> value_type operator() (KeyType const & key) const { activate(); return _id->R (key); }
 

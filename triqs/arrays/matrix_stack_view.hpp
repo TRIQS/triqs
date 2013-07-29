@@ -45,8 +45,9 @@ namespace triqs { namespace arrays {
    matrix_view<T> view(size_t i) const { return a(i,range(),range());}
    
    size_t size() const { return a.shape(0);}
-   size_t dim0() const { return a.shape(1);}
-   size_t dim1() const { return a.shape(2);}
+   // BE CAREFUL to the shift : it is 1, 2, not 0,1, because of the stack !
+   friend size_t first_dim  (matrix_stack_view const & m) { return second_dim(m.a);}
+   friend size_t second_dim (matrix_stack_view const & m) { return third_dim(m.a);}
 
    matrix_stack_view & operator +=(matrix_stack_view const & arg) { a += arg.a; return *this; }
    matrix_stack_view & operator -=(matrix_stack_view const & arg) { a -= arg.a; return *this; }
@@ -65,13 +66,13 @@ namespace triqs { namespace arrays {
    void invert() {for (size_t i=0; i<size(); ++i) { auto v = view(i); v = inverse(v);} }
 
    friend matrix_stack_view matmul_L_R ( matrix_view<T> const & L, matrix_stack_view const & M, matrix_view<T> const & R) {
-    matrix_stack_view res (typename array_view_t::regular_type (M.size(), L.dim0(), R.dim1()));
+    matrix_stack_view res (typename array_view_t::regular_type (M.size(), first_dim(L), second_dim(R)));
     for (size_t i=0; i<M.size(); ++i)  { res.view(i) = L * M.view(i) * R; }
     return res;
    }
 
    void onsite_matmul_L_R ( matrix_view<T> const & L, matrix_stack_view const & M, matrix_view<T> const & R) {
-    if ((dim0() != L.dim0()) || (dim1() != R.dim1()) || (L.dim1() != R.dim0()))
+    if ((first_dim(*this) != first_dim(L)) || (second_dim(*this) != second_dim(R)) || (second_dim(L) != first_dim(R)))
       TRIQS_RUNTIME_ERROR << "dimensions do not match!";
     for (size_t i=0; i<M.size(); ++i)  { view(i) = L * M.view(i) * R; }
    }

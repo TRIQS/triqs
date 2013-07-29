@@ -33,9 +33,7 @@ namespace triqs { namespace arrays {
  // ---------------------- matrix --------------------------------
  //
 #define _IMPL_MATRIX_COMMON \
- size_t dim0() const { return this->shape()[0];}\
- size_t dim1() const { return this->shape()[1];}\
- bool is_square() const { return dim0() == dim1();}\
+ bool is_square() const { return this->shape()[0] == this->shape()[1];}\
  \
  view_type transpose() const {\
   typename indexmap_type::lengths_type l; l[0] = this->indexmap().lengths()[1];l[1] = this->indexmap().lengths()[0];\

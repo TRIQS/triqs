@@ -38,6 +38,16 @@
 
 namespace triqs { namespace arrays {
 
+ template<typename A> auto get_shape  (A const & x) DECL_AND_RETURN(x.domain().lengths());
+
+ template<typename A> size_t first_dim   (A const & x) { return x.domain().lengths()[0];}
+ template<typename A> size_t second_dim  (A const & x) { return x.domain().lengths()[1];}
+ template<typename A> size_t third_dim   (A const & x) { return x.domain().lengths()[2];}
+ template<typename A> size_t fourth_dim  (A const & x) { return x.domain().lengths()[3];}
+ template<typename A> size_t fifth_dim   (A const & x) { return x.domain().lengths()[4];}
+ template<typename A> size_t sixth_dim   (A const & x) { return x.domain().lengths()[5];}
+ template<typename A> size_t seventh_dim (A const & x) { return x.domain().lengths()[6];}
+
  template <bool Const, typename IndexMapIterator, typename StorageType > class iterator_adapter;
 
  template <class V, int R, ull_t OptionFlags, ull_t TraversalOrder,  class ViewTag, bool Borrowed > struct ISPViewType;

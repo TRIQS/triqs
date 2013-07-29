@@ -52,7 +52,7 @@ namespace triqs { namespace arrays { namespace lapack {
   getrf (MT & A, arrays::vector<int> & ipiv, bool assert_fortran_order = false ) {
    if (assert_fortran_order && A.memory_layout_is_c()) TRIQS_RUNTIME_ERROR<< "matrix passed to getrf is not in Fortran order";
    reflexive_qcache<MT> Ca(A);
-   auto dm = std::min(Ca().dim0(), Ca().dim1());
+   auto dm = std::min(first_dim(Ca()), second_dim(Ca()));
    if (ipiv.size() < dm) ipiv.resize(dm); 
    int info;
    f77::getrf ( get_n_rows(Ca()), get_n_cols(Ca()), Ca().data_start(), get_ld(Ca()), ipiv.data_start(), info); 

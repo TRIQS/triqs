@@ -36,7 +36,6 @@ namespace triqs { namespace arrays {
  
    domain_type domain() const  { return combine_domain()(l,r); } 
    mini_vector<size_t,1> shape() const { return this->domain().lengths();} 
-   //size_t dim0() const { return this->domain().lengths()[0];} 
    size_t size() const { return this->domain().lengths()[0];} 
 
    //template<typename KeyType> value_type operator[](KeyType && key) const { return operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]);}
@@ -54,7 +53,6 @@ namespace triqs { namespace arrays {
 
    domain_type domain() const  { return l.domain(); } 
    mini_vector<size_t,1> shape() const { return this->domain().lengths();} 
-   //size_t dim0() const { return this->domain().lengths()[0];} 
    size_t size() const { return this->domain().lengths()[0];} 
 
    //template<typename KeyType> value_type operator[](KeyType&& key) const {return -l[key];} 

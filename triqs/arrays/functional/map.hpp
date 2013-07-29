@@ -67,8 +67,6 @@ namespace triqs { namespace arrays {
      A const & a; F f;
      m_result(F const & f_, A const & a_):a(a_),f(f_) {}
      domain_type domain() const { return a.domain(); } 
-     size_t dim0() const { return a.dim0();}
-     size_t dim1() const { return a.dim1();}
      template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
      //value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
      friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}

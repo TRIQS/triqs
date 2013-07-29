@@ -53,7 +53,7 @@ namespace triqs { namespace arrays { namespace lapack {
   getri (MT & A, arrays::vector<int> & ipiv) { 
    //getri (MT & A, arrays::vector<int> & ipiv, arrays::vector<typename MT::value_type> & work ) { 
    reflexive_qcache<MT> Ca(A);
-   auto dm = std::min(Ca().dim0(), Ca().dim1());
+   auto dm = std::min(first_dim(Ca()), second_dim(Ca()));
    if (ipiv.size() < dm) TRIQS_RUNTIME_ERROR << "getri : error in ipiv size : found "<<ipiv.size()<< " while it should be at least" << dm; 
    int info;
    typename MT::value_type work1[2];

@@ -39,14 +39,6 @@ namespace triqs { namespace arrays {
 
   //
   friend std::ostream & operator<<(std::ostream & out, immutable_diagonal_matrix_view const & d) { return out<<"diagonal_matrix "<<d.data;}
-  
-  // ----------------------
-  // should be remove from concept. redundant....
-  // need to clean dim0, dim1 and shape and make them free function everywhere (deduced from domain)
-  size_t dim0() const { return data.shape()[0];}
-  size_t dim1() const { return data.shape()[0];}
-  mini_vector<size_t,2> shape() const { auto s = data.shape()[0]; return mini_vector<size_t,2>(s,s);}
- 
  };
  
 }}

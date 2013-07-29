@@ -49,7 +49,7 @@ namespace triqs { namespace arrays {
 
     struct internal_data { // implementing the pattern LazyPreCompute
      matrix_type R;
-     internal_data(matmul_lazy const & P): R( P.a.dim0(), P.b.dim1()) { blas::gemm(1.0,P.a, P.b, 0.0, R); }
+     internal_data(matmul_lazy const & P): R( first_dim(P.a), second_dim(P.b)) { blas::gemm(1.0,P.a, P.b, 0.0, R); }
     };
     friend struct internal_data;
     mutable std::shared_ptr<internal_data> _id;
@@ -57,13 +57,11 @@ namespace triqs { namespace arrays {
 
     public:
     matmul_lazy( A const & a_, B const & b_):a(a_),b(b_){ 
-     if (a.dim1() != b.dim0()) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in A*B "<< a<<" "<< b; 
+     if (second_dim(a) != first_dim(b)) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in A*B "<< a<<" "<< b; 
     }
 
-    domain_type domain() const { return mini_vector<size_t,2>(a.dim0(), b.dim1());}
-    //domain_type domain() const { return indexmaps::cuboid::domain_t<2>(mini_vector<size_t,2>(a.dim0(), b.dim1()));}
-    size_t dim0() const { return a.dim0();} 
-    size_t dim1() const { return b.dim1();} 
+    domain_type domain() const { return mini_vector<size_t,2>(first_dim(a), second_dim(b));}
+    //domain_type domain() const { return indexmaps::cuboid::domain_t<2>(mini_vector<size_t,2>(first_dim(a), second_dim(b)));}
 
     template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { activate();  return _id->R(k0,k1); }
 
@@ -72,7 +70,7 @@ namespace triqs { namespace arrays {
     template<typename LHS> 
     friend void triqs_arrays_assign_delegation (LHS & lhs, matmul_lazy const & rhs)  {
      static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix");
-     resize_or_check_if_view(lhs,make_shape(rhs.dim0(),rhs.dim1()));
+     resize_or_check_if_view(lhs,make_shape(first_dim(rhs),second_dim(rhs)));
      blas::gemm(1.0,rhs.a, rhs.b, 0.0, lhs);     
     }
 
@@ -84,10 +82,10 @@ namespace triqs { namespace arrays {
     private:   
     template<typename LHS> void assign_comp_impl (LHS & lhs, double S) const { 
      static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix");
-     if (lhs.dim0() != dim0()) 
-      TRIQS_RUNTIME_ERROR<< "Matmul : +=/-= operator : first dimension mismatch in A*B "<< lhs.dim0()<<" vs "<< dim0(); 
-     if (lhs.dim1() != dim1()) 
-      TRIQS_RUNTIME_ERROR<< "Matmul : +=/-= operator : first dimension mismatch in A*B "<< lhs.dim1()<<" vs "<< dim1(); 
+     if (first_dim(lhs) != first_dim(*this)) 
+      TRIQS_RUNTIME_ERROR<< "Matmul : +=/-= operator : first dimension mismatch in A*B "<< first_dim(lhs)<<" vs "<< first_dim(*this); 
+     if (second_dim(lhs) != second_dim(*this)) 
+      TRIQS_RUNTIME_ERROR<< "Matmul : +=/-= operator : first dimension mismatch in A*B "<< second_dim(lhs)<<" vs "<< second_dim(*this); 
      blas::gemm(S,a, b, 1.0, lhs);     
     }
 

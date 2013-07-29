@@ -55,15 +55,13 @@ namespace triqs { namespace arrays {
    a_x_ty_lazy( ScalarType a_, VectorType1 const & x_, VectorType2 const & y_):a(a_),x(x_),y(y_){}
 
    domain_type domain() const { return domain_type(mini_vector<size_t,2>(x.size(), y.size()));}
-   size_t dim0() const { return x.size();} 
-   size_t dim1() const { return y.size();} 
 
    template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { return a * x(k0) * y(k1); }
 
    // Optimized implementation of =
    template<typename LHS> 
     friend void triqs_arrays_assign_delegation (LHS & lhs, a_x_ty_lazy const & rhs)  {
-     resize_or_check_if_view(lhs,make_shape(rhs.dim0(),rhs.dim1()));
+     resize_or_check_if_view(lhs,make_shape( first_dim(rhs),second_dim(rhs) ));
      lhs()=0;
      blas::ger(rhs.a,rhs.x, rhs.y, lhs);
     }

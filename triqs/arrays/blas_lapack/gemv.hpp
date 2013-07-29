@@ -65,10 +65,10 @@ namespace triqs { namespace arrays { namespace blas {
   typename std::enable_if< use_blas_gemv<MT,VT,VTOut>::value >::type
   gemv (typename MT::value_type alpha, MT const & A, VT const & X, typename MT::value_type beta, VTOut & Y) { 
    //std::cerr  << "gemm: blas call "<< std::endl ;
-   resize_or_check_if_view(Y,make_shape(A.dim0()));// first resize if necessary and possible 
+   resize_or_check_if_view(Y,make_shape(first_dim(A)));// first resize if necessary and possible 
    const_qcache<MT> Ca(A);
    const_qcache<VT> Cx(X); // mettre la condition a la main
-   if (!(Ca().dim1() == Cx().size())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemv : A : "<< Ca().shape() <<" while X : "<<Cx().shape();
+   if (!(second_dim(Ca()) == Cx().size())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemv : A : "<< get_shape(Ca()) <<" while X : "<<get_shape(Cx());
    char trans_a= get_trans(Ca(), false); 
    int m1 = get_n_rows(Ca()), m2 = get_n_cols(Ca());
    int lda = get_ld(Ca());
@@ -81,11 +81,11 @@ namespace triqs { namespace arrays { namespace blas {
   void gemv_generic (typename MT::value_type alpha, MT const & A, VT const & X, typename MT::value_type beta, VTOut & C) { 
    //std::cerr  << "gemm: generic call "<< std::endl ;
    // first resize if necessary and possible 
-   resize_or_check_if_view(C,make_shape(A.dim0()));
-   if (A.dim1() != X.size()) TRIQS_RUNTIME_ERROR << "gemm generic : dimension mismatch "<< A.dim1() << " vs " << X.size();
+   resize_or_check_if_view(C,make_shape(first_dim(A)));
+   if (second_dim(A) != X.size()) TRIQS_RUNTIME_ERROR << "gemm generic : dimension mismatch "<< second_dim(A) << " vs " << X.size();
    C() = 0;
-   for (int i=0; i<A.dim0(); ++i)
-    for (int k=0; k<A.dim1(); ++k)
+   for (int i=0; i<first_dim(A); ++i)
+    for (int k=0; k<second_dim(A); ++k)
      C(i) += A(i,k)*X(k);
   }
 

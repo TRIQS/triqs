@@ -68,9 +68,9 @@ namespace triqs { namespace arrays {
   short step; 
 
   public:
-  det_and_inverse_worker (ViewType const & a): V(a), dim(a.dim0()), ipiv(dim), step(0) { 
-   if (a.dim0()!=a.dim1()) 
-    TRIQS_RUNTIME_ERROR<<"Inverse/Det error : non-square matrix. Dimensions are : ("<<a.dim0()<<","<<a.dim1()<<")"<<"\n  ";
+  det_and_inverse_worker (ViewType const & a): V(a), dim(first_dim(a)), ipiv(dim), step(0) { 
+   if (first_dim(a)!=second_dim(a)) 
+    TRIQS_RUNTIME_ERROR<<"Inverse/Det error : non-square matrix. Dimensions are : ("<<first_dim(a)<<","<<second_dim(a)<<")"<<"\n  ";
    if (!(has_contiguous_data(a))) TRIQS_RUNTIME_ERROR<<"det_and_inverse_worker only takes a contiguous view";
   }
   VT det() { V_type W = fortran_view(V); _step1(W); _compute_det(W); return _det;}
@@ -117,11 +117,10 @@ namespace triqs { namespace arrays {
   typedef typename const_view_type_if_exists_else_type<A>::type A_type;
   const A_type a;
   inverse_lazy_impl(A const & a_):a (a_)  {
-   if (a.dim0() != a.dim1()) TRIQS_RUNTIME_ERROR<< "Inverse : matrix is not square but of size "<< a.dim0()<<" x "<< a.dim1(); 
+   if (first_dim(a) != second_dim(a)) TRIQS_RUNTIME_ERROR<< "Inverse : matrix is not square but of size "<< first_dim(a)<<" x "<< second_dim(a); 
   }
+  //typename A::shape_type shape() const { return a.shape();}
   domain_type domain() const { return a.domain(); } 
-  size_t dim0() const { return a.dim0();} 
-  size_t dim1() const { return a.dim1();} 
   template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { activate();  return _id->M(k0,k1); }
   friend std::ostream & operator<<(std::ostream & out,inverse_lazy_impl const&x){return out<<"inverse("<<x.a<<")";}
   protected: 

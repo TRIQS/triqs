@@ -106,7 +106,7 @@ namespace triqs { namespace det_manip {
      auto gr = fg.open_group(subgroup_name);
      h5_read(gr,"N",g.N);
      h5_read(gr,"mat_inv",g.mat_inv);
-     g.Nmax = g.mat_inv.dim0(); // restore Nmax
+     g.Nmax = first_dim(g.mat_inv); // restore Nmax
      g.last_try = 0; 
      h5_read(gr,"det",g.det);
      h5_read(gr,"sign",g.sign);

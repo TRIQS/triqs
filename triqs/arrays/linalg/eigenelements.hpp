@@ -59,7 +59,7 @@ namespace triqs { namespace arrays { namespace linalg {
      if (mat.is_empty())   TRIQS_RUNTIME_ERROR<<"eigenelements_worker : the matrix is empty : matrix =  "<<mat<<"  ";
      if (!mat.is_square())   TRIQS_RUNTIME_ERROR<<"eigenelements_worker : the matrix "<<mat<<" is not square ";
      if (!mat.indexmap().is_contiguous())   TRIQS_RUNTIME_ERROR<<"eigenelements_worker : the matrix "<<mat<<" is not contiguous in memory";
-     dim = mat.dim0();
+     dim = first_dim(mat);
      ev.resize(dim);
      lwork = 64*dim;
      work.resize(lwork);

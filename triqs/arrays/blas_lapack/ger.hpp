@@ -50,7 +50,7 @@ namespace triqs { namespace arrays { namespace blas {
   typename std::enable_if< is_blas_lapack_type<typename VTX::value_type>::value && have_same_value_type< VTX, VTY, MT>::value >::type 
   ger (typename VTX::value_type alpha, VTX const & X, VTY const & Y, MT & A) { 
    static_assert( is_amv_value_or_view_class<MT>::value, "ger : A must be a matrix or a matrix_view");
-   if (( A.dim0() != Y.size()) || (A.dim1() != X.size())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in ger : A : "<< A().shape() <<" while X : "<<X().shape()<<" and Y : "<<Y().shape();
+   if (( first_dim(A) != Y.size()) || (second_dim(A) != X.size())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in ger : A : "<< get_shape(A()) <<" while X : "<<get_shape(X())<<" and Y : "<<get_shape(Y());
    const_qcache<VTX> Cx(X); // mettre la condition a la main
    const_qcache<VTY> Cy(Y); // mettre la condition a la main
    reflexive_qcache<MT> Ca(A);

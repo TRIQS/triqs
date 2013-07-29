@@ -66,7 +66,7 @@ namespace triqs { namespace arrays { namespace blas {
   gemm (typename MT1::value_type alpha, MT1 const & A, MT2 const & B, typename MT1::value_type beta, MTOut & C) { 
    //std::cerr  << "gemm: blas call "<< std::endl ;
    // first resize if necessary and possible 
-   resize_or_check_if_view(C,make_shape(A.dim0(),B.dim1()));
+   resize_or_check_if_view(C,make_shape(first_dim(A),second_dim(B)));
 
    // now we use qcache instead of the matrix to make a copy if necessary ... 
    // not optimal : if stride == 1, N ---> use LDA parameters
@@ -77,16 +77,16 @@ namespace triqs { namespace arrays { namespace blas {
     // then tC = tB tA ! 
     const_qcache<MT1> Cb(A); // note the inversion  A <-> B
     const_qcache<MT2> Ca(B); // note the inversion  A <-> B
-    if (!(Ca().dim0() == Cb().dim1())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemm : A : "<< Ca().shape() <<" while B : "<<Cb().shape();
+    if (!(first_dim(Ca()) == second_dim(Cb()))) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemm : A : "<< get_shape(Ca()) <<" while B : "<<get_shape(Cb());
     char trans_a= get_trans(Ca(), true); 
     char trans_b= get_trans(Cb(), true); 
     int m = (trans_a == 'N' ? get_n_rows(Ca()) : get_n_cols(Ca()));
     int n = (trans_b == 'N' ? get_n_cols(Cb()) : get_n_rows(Cb()));
     int k = (trans_a == 'N' ? get_n_cols(Ca()) : get_n_rows(Ca()));
     //std::cerr<< " about to call GEMM"<< std::endl ;
-    //std::cerr<< "A = "<< Ca().shape()<< Ca()<< std::endl;
-    //std::cerr<< "B = "<< Cb().shape()<< Cb()<< std::endl;
-    //std::cerr<< "C c" << Cc().shape() << Cc().indexmap().strides() << std::endl;
+    //std::cerr<< "A = "<< get_shape(Ca())<< Ca()<< std::endl;
+    //std::cerr<< "B = "<< get_shape(Cb())<< Cb()<< std::endl;
+    //std::cerr<< "C c" << get_shape(Cc()) << Cc().indexmap().strides() << std::endl;
     //std::cerr<<Ca().memory_layout_is_c() <<Ca().memory_layout_is_fortran()<<std::endl;
     //std::cerr<< get_n_rows(Ca())<<get_n_cols(Cb())<<get_n_cols(Ca()) << std::endl ;
     f77::gemm(trans_a,trans_b,m,n,k,
@@ -96,7 +96,7 @@ namespace triqs { namespace arrays { namespace blas {
    else {
     const_qcache<MT1> Ca(A);
     const_qcache<MT2> Cb(B);
-    if (!(Ca().dim1() == Cb().dim0())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemm : A : "<< Ca().shape() <<" while B : "<<Cb().shape();
+    if (!(second_dim(Ca()) == first_dim(Cb()))) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemm : A : "<< get_shape(Ca()) <<" while B : "<<get_shape(Cb());
     char trans_a= get_trans(Ca(), false); 
     char trans_b= get_trans(Cb(), false); 
     int m = (trans_a == 'N' ? get_n_rows(Ca()) : get_n_cols(Ca()));
@@ -113,12 +113,12 @@ namespace triqs { namespace arrays { namespace blas {
   void gemm_generic  (typename MT1::value_type alpha, MT1 const & A, MT2 const & B, typename MT1::value_type beta, MTOut & C) { 
    //std::cerr  << "gemm: generic call "<< std::endl ;
    // first resize if necessary and possible 
-   resize_or_check_if_view(C,make_shape(A.dim0(),B.dim1()));
-   if (A.dim1() != B.dim0()) TRIQS_RUNTIME_ERROR << "gemm generic : dimension mismatch "<< A.shape() << B.shape();
+   resize_or_check_if_view(C,make_shape(first_dim(A),second_dim(B)));
+   if (second_dim(A) != first_dim(B)) TRIQS_RUNTIME_ERROR << "gemm generic : dimension mismatch "<< get_shape(A) << get_shape(B);
    C() = 0;
-   for (int i=0; i<A.dim0(); ++i)
-    for (int k=0; k<A.dim1(); ++k)
-     for (int j=0; j<B.dim1(); ++j)
+   for (int i=0; i<first_dim(A); ++i)
+    for (int k=0; k<second_dim(A); ++k)
+     for (int j=0; j<second_dim(B); ++j)
       C(i,j) += A(i,k)*B(k,j);
   }
 
