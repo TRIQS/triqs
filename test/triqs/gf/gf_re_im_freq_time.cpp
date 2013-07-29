@@ -1,10 +1,10 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/re_im_freq.hpp> 
-#include <triqs/gf/re_im_time.hpp> 
-#include <triqs/gf/refreq_imtime.hpp> 
+#include <triqs/gfs/re_im_freq.hpp> 
+#include <triqs/gfs/re_im_time.hpp> 
+#include <triqs/gfs/refreq_imtime.hpp> 
 
-#include <triqs/gf/local/fourier_real.hpp> 
+#include <triqs/gfs/local/fourier_real.hpp> 
 #include <triqs/arrays.hpp>
 
 namespace tql= triqs::clef;

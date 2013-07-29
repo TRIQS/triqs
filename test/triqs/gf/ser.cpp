@@ -1,8 +1,8 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
 #include <triqs/utility/serialization.hpp>
-#include <triqs/gf/imfreq.hpp> 
-#include <triqs/gf/imtime.hpp> 
+#include <triqs/gfs/imfreq.hpp> 
+#include <triqs/gfs/imtime.hpp> 
 
 namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;

@@ -1,4 +1,4 @@
-cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/imtime.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass imtime_domain :
         double beta
@@ -28,7 +28,7 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gfs" :
         array_view[double, THREE] data()
         tail singularity() 
 
-cdef extern from "triqs/gf/imtime.hpp"  :
+cdef extern from "triqs/gfs/imtime.hpp"  :
     cdef void h5_write (h5_group, char *, gf_imtime &)
 
 cdef extern from "triqs/utility/serialization.hpp"  :
@@ -43,7 +43,7 @@ cdef make_GfImTime (gf_imtime x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Time #########################
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" : 
 
     cdef cppclass gf_block_imtime "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::imtime>>>" :
         gf_block_imtime()

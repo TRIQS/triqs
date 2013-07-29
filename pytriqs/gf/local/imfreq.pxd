@@ -1,4 +1,4 @@
-cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/imfreq.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass imfreq_domain :
         double beta
@@ -27,7 +27,7 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gfs" :
         array_view[dcomplex, THREE] data()
         tail singularity() 
 
-cdef extern from "triqs/gf/imfreq.hpp"  :
+cdef extern from "triqs/gfs/imfreq.hpp"  :
     cdef void h5_write (h5_group, char *, gf_imfreq &)
 
 cdef extern from "triqs/utility/serialization.hpp"  :
@@ -42,7 +42,7 @@ cdef make_GfImFreq (gf_imfreq x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Freq #########################
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" : 
 
     cdef cppclass gf_block_imfreq "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::imfreq>>>" :
         gf_block_imfreq()

@@ -8,7 +8,7 @@ from h5 cimport *
 
 # -------------------- Some generic tools -------------------------------
  
-cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/tools.hpp" namespace "triqs::gfs" : 
     cdef enum statistic_enum "triqs::gfs::statistic_enum" :
         Boson,Fermion 
     
@@ -33,12 +33,12 @@ cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gfs" :
         vector[vector[std_string]] & operator()()
         bint same() 
 
-cdef extern from "triqs/gf/meshes/linear.hpp" namespace "triqs::gfs" :
+cdef extern from "triqs/gfs/meshes/linear.hpp" namespace "triqs::gfs" :
 
     cdef enum mesh_enum "triqs::gfs::mesh_kind":
         half_bins, full_bins, without_last
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass discrete_domain :
         discrete_domain ()

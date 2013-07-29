@@ -22,8 +22,8 @@
 #define TRIQS_GF_LOCAL_FOURIER_MATSU_H
 
 #include "fourier_base.hpp"
-#include <triqs/gf/imfreq.hpp> 
-#include <triqs/gf/imtime.hpp> 
+#include <triqs/gfs/imfreq.hpp> 
+#include <triqs/gfs/imtime.hpp> 
 
 namespace triqs { namespace gfs {
  

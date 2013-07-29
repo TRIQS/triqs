@@ -6,8 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <fstream>
-#include <triqs/gf/gf.hpp>
-#include <triqs/gf/two_real_times.hpp>
+#include <triqs/gfs/gf.hpp>
+#include <triqs/gfs/two_real_times.hpp>
 #include <complex>
 using namespace triqs::gfs;
 using namespace std;

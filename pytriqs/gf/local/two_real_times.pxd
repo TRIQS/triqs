@@ -1,4 +1,4 @@
-cdef extern from "triqs/gf/two_real_times.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/two_real_times.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass two_real_times_domain :
         two_real_times_domain()
@@ -30,7 +30,7 @@ cdef extern from "triqs/gf/two_real_times.hpp" namespace "triqs::gfs" :
 
     cdef gf_retime slice1d "triqs::gfs::slice" (gf_two_real_times &, double t) except +
 
-cdef extern from "triqs/gf/two_real_times.hpp"  :
+cdef extern from "triqs/gfs/two_real_times.hpp"  :
     cdef void h5_write (h5_group, char *, gf_two_real_times &)
 
 cdef extern from "triqs/utility/serialization.hpp"  :
@@ -45,7 +45,7 @@ cdef make_GfTwoRealTime (gf_two_real_times x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Time #########################
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" : 
 
     cdef cppclass gf_block_two_real_times "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::two_real_times>>>" :
         gf_block_two_real_times()

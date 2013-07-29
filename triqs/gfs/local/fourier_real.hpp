@@ -22,8 +22,8 @@
 #define TRIQS_GF_LOCAL_FOURIER_REAL_H
 
 #include "fourier_base.hpp"
-#include <triqs/gf/refreq.hpp> 
-#include <triqs/gf/retime.hpp> 
+#include <triqs/gfs/refreq.hpp> 
+#include <triqs/gfs/retime.hpp> 
 
 namespace triqs { namespace gfs { 
 

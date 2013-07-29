@@ -1,6 +1,6 @@
 from dcomplex cimport * 
 from arrays cimport *   
-cdef extern from "triqs/gf/local/tail.hpp" : 
+cdef extern from "triqs/gfs/local/tail.hpp" : 
     cdef cppclass tail "triqs::python_tools::cython_proxy<triqs::gfs::local::tail_view>"  :
         tail()
         tail(array_view[dcomplex,THREE], int, array_view[long,TWO]) except +

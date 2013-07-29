@@ -1,7 +1,7 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/refreq.hpp> 
-#include <triqs/gf/retime.hpp> 
+#include <triqs/gfs/refreq.hpp> 
+#include <triqs/gfs/retime.hpp> 
 
 namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;

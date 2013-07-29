@@ -1,8 +1,8 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/refreq.hpp> 
-#include <triqs/gf/retime.hpp> 
-#include <triqs/gf/local/fourier_real.hpp> 
+#include <triqs/gfs/refreq.hpp> 
+#include <triqs/gfs/retime.hpp> 
+#include <triqs/gfs/local/fourier_real.hpp> 
 #include <triqs/arrays.hpp>
 
 using triqs::arrays::make_shape;

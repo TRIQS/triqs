@@ -23,8 +23,8 @@
 #ifndef TRIQS_GF_LOCAL_PADE_H
 #define TRIQS_GF_LOCAL_PADE_H
 
-#include <triqs/gf/imfreq.hpp>
-#include <triqs/gf/refreq.hpp>
+#include <triqs/gfs/imfreq.hpp>
+#include <triqs/gfs/refreq.hpp>
 
 namespace triqs { namespace gfs {
 

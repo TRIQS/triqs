@@ -1,4 +1,4 @@
-cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/legendre.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass legendre_domain :
         size_t Nmax
@@ -25,7 +25,7 @@ cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gfs" :
         mesh_legendre mesh() 
         array_view[double, THREE] data()
 
-cdef extern from "triqs/gf/legendre.hpp"  :
+cdef extern from "triqs/gfs/legendre.hpp"  :
     cdef void h5_write (h5_group, char *, gf_legendre &)
 
 cdef extern from "triqs/utility/serialization.hpp"  :
@@ -40,7 +40,7 @@ cdef make_GfLegendre(gf_legendre x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Time #########################
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" : 
 
     cdef cppclass gf_block_legendre "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::legendre>>>" :
         gf_block_legendre()

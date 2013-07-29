@@ -1,4 +1,4 @@
-cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/refreq.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass refreq_domain :
         refreq_domain()
@@ -27,7 +27,7 @@ cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gfs" :
         array_view[dcomplex, THREE] data()
         tail singularity() 
 
-cdef extern from "triqs/gf/refreq.hpp"  :
+cdef extern from "triqs/gfs/refreq.hpp"  :
     cdef void h5_write (h5_group, char *, gf_refreq &)
 
 cdef extern from "triqs/utility/serialization.hpp"  :
@@ -42,7 +42,7 @@ cdef make_GfReFreq (gf_refreq x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Time #########################
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gfs" : 
+cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" : 
 
     cdef cppclass gf_block_refreq "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::refreq>>>" :
         gf_block_refreq()

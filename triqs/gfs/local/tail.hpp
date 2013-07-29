@@ -22,7 +22,7 @@
 #define TRIQS_GF_LOCAL_TAIL_H
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/algorithms.hpp>
-#include <triqs/gf/tools.hpp>
+#include <triqs/gfs/tools.hpp>
 #include <triqs/python_tools/cython_proxy.hpp>
 
 namespace triqs { namespace gfs { namespace local {

@@ -22,13 +22,13 @@
 #define TRIQS_GFS_ALL_H
 
 // The basic classes
-#include <triqs/gf/block.hpp>
-#include <triqs/gf/imtime.hpp>
-#include <triqs/gf/imfreq.hpp>
-#include <triqs/gf/retime.hpp>
-#include <triqs/gf/refreq.hpp>
-#include <triqs/gf/legendre.hpp>
-//#include <triqs/gf/product.hpp>
+#include <triqs/gfs/block.hpp>
+#include <triqs/gfs/imtime.hpp>
+#include <triqs/gfs/imfreq.hpp>
+#include <triqs/gfs/retime.hpp>
+#include <triqs/gfs/refreq.hpp>
+#include <triqs/gfs/legendre.hpp>
+//#include <triqs/gfs/product.hpp>
 
 
 #endif
