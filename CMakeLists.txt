@@ -183,9 +183,9 @@ else(BOOST_SOURCE_DIR)
   set(BOOST_VERSION 1.46)
  endif()
  if (PythonSupport)
-  find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi python serialization ) #filesystem  )
+  find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi python serialization system ) #filesystem  )
  Else()
-  find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi serialization ) #filesystem  )
+  find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi serialization system ) #filesystem  )
  endif()
  if (NOT Boost_FOUND)
   message(FATAL_ERROR "Boost not found")
@@ -298,8 +298,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 #
-## Remove the test from the build ?
-option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
 
 # 64 bits machine ?
 #if(CMAKE_SIZEOF_VOID_P EQUAL 8 OR CMAKE_GENERATOR MATCHES Win64)
@@ -413,7 +411,11 @@ endif (PythonSupport)
 #------------------------
 # tests
 #------------------------
-add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
+## Remove the test from the build ?
+option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
+if (Build_Triqs_General_Tools_Test)
+ add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
+endif()
 
 #------------------------
 # Documentation

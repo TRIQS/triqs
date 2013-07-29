@@ -79,6 +79,30 @@ namespace triqs { namespace tuple {
    for_each_impl<std::tuple_size<T>::value-1>()(t, f);
   }
 
+ /* for_each_enumerate(f, t)
+  * f: a callable object
+  * t: a tuple
+  * calls f on all tuple elements: f(x,n) for all x in t
+  */
+ template<int pos> struct for_each_enumerate_impl {
+  template<typename T, typename F>
+   void operator()(T const & t, F && f) {
+    f(std::get<std::tuple_size<T>::value-1-pos>(t),std::tuple_size<T>::value-1-pos);
+    for_each_impl<pos-1>()(t, f);
+   }
+ };
+
+ template<>
+  struct for_each_enumerate_impl<0> {
+   template<typename T, typename F>
+    void operator() (T const & t, F && f) { f(std::get<std::tuple_size<T>::value-1>(t), std::tuple_size<T>::value-1); }
+  };
+
+ template<typename T, typename F>
+  void for_each_enumerate(T const & t, F && f) {
+   for_each_enumerate_impl<std::tuple_size<T>::value-1>()(t, f);
+  }
+
  /**
   * apply_on_zip(f, t1,t2)
   * f : a callable object
@@ -159,6 +183,26 @@ namespace triqs { namespace tuple {
  template<typename F, typename T1, typename T2, typename R>
   auto fold_on_zip (F && f,T1 const & t1, T2 const & t2, R && r) DECL_AND_RETURN( fold_on_zip_impl<std::tuple_size<T1>::value-1,T1,T2>()(std::forward<F>(f),t1,t2,std::forward<R>(r)));
 
+ /*
+  * print a tuple 
+  */
+ template<int a, int b> struct __s {};
+ template<int L, typename T> void print_tuple_impl (std::ostream& os, T const& t, std::integral_constant<int,-1> ) {}
+ template<int L, int rpos, typename T> void print_tuple_impl (std::ostream& os, T const& t, std::integral_constant<int,rpos> ) {
+  os << std::get<L-rpos-1>(t); 
+  if (rpos>0) os << ',';
+  print_tuple_impl<L>(os, t, std::integral_constant<int,rpos-1>());
+ }
 }}
+
+namespace std { 
+ template<typename ... T> std::ostream & operator << (std::ostream & os, std::tuple<T...> const & t) { 
+  os << "(";
+  constexpr int L = sizeof...(T);
+  triqs::tuple::print_tuple_impl<L>(os,t,std::integral_constant<int,L-1>()); 
+  return os << ")";
+ }
+}
+
 #endif
 

@@ -8,8 +8,8 @@ from h5 cimport *
 
 # -------------------- Some generic tools -------------------------------
  
-cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gf" : 
-    cdef enum statistic_enum "triqs::gf::statistic_enum" :
+cdef extern from "triqs/gfs/tools.hpp" namespace "triqs::gfs" : 
+    cdef enum statistic_enum "triqs::gfs::statistic_enum" :
         Boson,Fermion 
     
     cdef cppclass nothing : 
@@ -18,7 +18,7 @@ cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gf" :
     cdef cppclass freq_infty: 
         freq_infty ()
 
-    cdef cppclass mesh_pt_generator "triqs::gf::mesh_pt_generator" [MeshType] :  
+    cdef cppclass mesh_pt_generator "triqs::gfs::mesh_pt_generator" [MeshType] :  
         mesh_pt_generator( MeshType * )
         mesh_pt_generator()
         complex to_point()
@@ -33,12 +33,12 @@ cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gf" :
         vector[vector[std_string]] & operator()()
         bint same() 
 
-cdef extern from "triqs/gf/meshes/linear.hpp" namespace "triqs::gf" :
+cdef extern from "triqs/gfs/meshes/linear.hpp" namespace "triqs::gfs" :
 
-    cdef enum mesh_enum "triqs::gf::mesh_kind":
+    cdef enum mesh_enum "triqs::gfs::mesh_kind":
         half_bins, full_bins, without_last
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
+cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass discrete_domain :
         discrete_domain ()

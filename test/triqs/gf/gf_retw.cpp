@@ -1,17 +1,17 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/refreq.hpp> 
-#include <triqs/gf/retime.hpp> 
+#include <triqs/gfs/refreq.hpp> 
+#include <triqs/gfs/retime.hpp> 
 
 namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;
 using tqa::range;
 using triqs::arrays::make_shape;
-using triqs::gf::scalar_valued;
-using triqs::gf::Fermion;
-using triqs::gf::refreq;
-using triqs::gf::retime;
-using triqs::gf::make_gf;
+using triqs::gfs::scalar_valued;
+using triqs::gfs::Fermion;
+using triqs::gfs::refreq;
+using triqs::gfs::retime;
+using triqs::gfs::make_gf;
 double precision=10e-12;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
@@ -27,8 +27,8 @@ int main() {
  auto Gt2 = make_gf<retime,scalar_valued> (0, tmax, N);
 
  int i =0;
- for (auto & t : Gt.mesh()) Gt(t) = 1.0*t;
- for (auto & w : Gw.mesh()) Gw(w) = 1.0*w;
+ for (auto & t : Gt.mesh()) Gt[t] = 1.0*t;
+ for (auto & w : Gw.mesh()) Gw[w] = 1.0*w;
  
  triqs::clef::placeholder<0> t_;
  triqs::clef::placeholder<1> w_;

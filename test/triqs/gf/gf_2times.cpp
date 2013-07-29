@@ -1,9 +1,9 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/two_real_times.hpp> 
+#include <triqs/gfs/two_real_times.hpp> 
 
-//using namespace triqs::gf::local;
-using namespace triqs::gf;
+//using namespace triqs::gfss::local;
+using namespace triqs::gfs;
 namespace tql= triqs::clef;
 //namespace tqa= triqs::arrays;
 using tqa::range;
@@ -13,6 +13,8 @@ using triqs::arrays::array;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 int main() {
+
+ try {
 
  //typedef gf<two_real_times> Gf_type;
  //typedef gf_view<two_real_times> Gf_view_type;
@@ -31,10 +33,12 @@ int main() {
  std::cout  <<A << std::endl ;
 
  G(t_,tp_)  << t_ - 3*tp_;
- //G2(t_,tp_) << t_ + 3*tp_;
+ G2(t_,tp_) << t_ + 3*tp_;
+  
+ G2(t_,tp_) << 2* G(tp_,t_);
 
  TEST( G(1,1) );
- TEST( G(G.mesh()(1,1)) );
+ TEST( G[G.mesh()(1,1) ]);
  TEST( G.on_mesh(1,1));
 
  //G2(t_,tp_) << G(tp_,t_);
@@ -45,4 +49,6 @@ int main() {
 
  //TEST( G2(2,1,3) ); // should not compile
  
+ }
+ catch( std::exception const &e) { std::cout  << e.what()<< std::endl;}
 }

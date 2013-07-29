@@ -1,10 +1,10 @@
-cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gf" : 
+cdef extern from "triqs/gfs/refreq.hpp" namespace "triqs::gfs" : 
   
     cdef cppclass refreq_domain :
         refreq_domain()
 
-    #cdef cppclass mesh_refreq "triqs::gf::linear_mesh<triqs::gf::refreq::domain_t>"  :
-    cdef cppclass mesh_refreq "triqs::gf::linear_mesh<triqs::gf::R_domain>"  :
+    #cdef cppclass mesh_refreq "triqs::gfs::linear_mesh<triqs::gfs::refreq::domain_t>"  :
+    cdef cppclass mesh_refreq "triqs::gfs::linear_mesh<triqs::gfs::R_domain>"  :
         mesh_refreq ()
         mesh_refreq (mesh_refreq &)
         refreq_domain & domain()
@@ -14,10 +14,10 @@ cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gf" :
         double kind()
         bint operator ==( mesh_refreq &)
 
-    cdef mesh_refreq make_mesh_refreq "triqs::gf::make_gf_mesh<triqs::gf::refreq>" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
-    #cdef mesh_refreq make_mesh_refreq "triqs::gf::gf_factories<triqs::gf::refreq>::make_mesh" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
+    cdef mesh_refreq make_mesh_refreq "triqs::gfs::make_gf_mesh<triqs::gfs::refreq>" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
+    #cdef mesh_refreq make_mesh_refreq "triqs::gfs::gf_factories<triqs::gfs::refreq>::make_mesh" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
 
-    cdef cppclass gf_refreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::refreq>>" :
+    cdef cppclass gf_refreq "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::refreq>>" :
         gf_refreq()
         gf_refreq(gf_refreq &)
         # The constructor must be no_except, or the cython code won't be correct...
@@ -27,7 +27,7 @@ cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gf" :
         array_view[dcomplex, THREE] data()
         tail singularity() 
 
-cdef extern from "triqs/gf/refreq.hpp"  :
+cdef extern from "triqs/gfs/refreq.hpp"  :
     cdef void h5_write (h5_group, char *, gf_refreq &)
 
 cdef extern from "triqs/utility/serialization.hpp"  :
@@ -42,14 +42,14 @@ cdef make_GfReFreq (gf_refreq x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Time #########################
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
+cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" : 
 
-    cdef cppclass gf_block_refreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::refreq>>>" :
+    cdef cppclass gf_block_refreq "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::refreq>>>" :
         gf_block_refreq()
         gf_refreq & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_refreq  make_gf_block_refreq "triqs::gf::make_gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::refreq>>" (  vector[gf_refreq] &) 
+    cdef gf_block_refreq  make_gf_block_refreq "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::refreq>>" (  vector[gf_refreq] &) 
 
 cdef gf_block_refreq  as_gf_block_refreq (G) except +
 cdef make_BlockGfReFreq (gf_block_refreq G, block_indices_pack=*, name=*)

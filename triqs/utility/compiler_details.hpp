@@ -30,7 +30,7 @@
                                + __GNUC_MINOR__ * 100 \
                                + __GNUC_PATCHLEVEL__)
 #if GCC_VERSION < 40801
-#warning "gcc compiler" GCC_VERSION
+//#warning "gcc compiler" GCC_VERSION
 #define TRIQS_COMPILER_IS_OBSOLETE
 // we still accept gcc 4.6 and 4.7, but only the 4.8.1 and higher is a compliant c++11
 #endif

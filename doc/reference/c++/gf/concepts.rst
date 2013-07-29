@@ -168,7 +168,8 @@ MeshPoint concept
 +------------------------------------------------+-----------------------------------------------------------------------------+
 | void reset()                                   | Reset the mesh point to the first point                                     |
 +------------------------------------------------+-----------------------------------------------------------------------------+
-| operator mesh_t::domain_t::point_t() const     | cast to the corresponding domain point                                      |
+| cast_t                                         | type of the corresponding domain point                                      |
+| operator cast_t() const                        | cast to the corresponding domain point                                      |
 +------------------------------------------------+-----------------------------------------------------------------------------+
 | Implements the basic operations on the domain  | Only for non composite mesh                                                 |
 | by using the cast operation                    |                                                                             |

@@ -6,10 +6,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <fstream>
-#include <triqs/gf/gf.hpp>
-#include <triqs/gf/two_real_times.hpp>
+#include <triqs/gfs/gf.hpp>
+#include <triqs/gfs/two_real_times.hpp>
 #include <complex>
-using namespace triqs::gf;
+using namespace triqs::gfs;
 using namespace std;
 using triqs::arrays::make_shape;
 
@@ -20,7 +20,7 @@ int main(){
  int nt=tmax/dt;
  auto  R= make_gf<two_real_times> (tmax,nt,make_shape(1,1));//results
 
- for(auto point:R.mesh()) R(point)=0;
+ for(auto point:R.mesh()) R[point]=0;
 
  const auto rg = on_mesh(R);
  R.on_mesh(1,1) = 10;

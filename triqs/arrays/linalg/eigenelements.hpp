@@ -21,6 +21,7 @@
 #ifndef TRIQS_ARRAY_EIGENELEMENTS_H
 #define TRIQS_ARRAY_EIGENELEMENTS_H
 #include <type_traits>
+#include "../array.hpp"
 #include "../matrix.hpp"
 #include "../vector.hpp"
 #include <triqs/utility/exceptions.hpp>

@@ -275,8 +275,8 @@ namespace triqs { namespace arrays {
    T a = 1/rhs; blas::scal(a,lhs);
   }
 
- template<typename T>
-  void triqs_arrays_assign_delegation(vector_view<T> & av, std::vector<T> const& vec) {
+ template<typename T, ull_t Opt, bool Borrowed>
+  void triqs_arrays_assign_delegation(vector_view<T,Opt,Borrowed> & av, std::vector<T> const& vec) {
    std::size_t size = vec.size();
    for(std::size_t n = 0; n < size; ++n) av(n) = vec[n];
   }

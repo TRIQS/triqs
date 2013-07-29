@@ -42,9 +42,9 @@ list (REMOVE_DUPLICATES TRIQS_INCLUDE_ALL)
 set (TRIQS_PYTHON_INTERPRETER @PYTHON_INTERPRETER@)
  
 # Fix the rpath
-set(CMAKE_INSTALL_RPATH "@CMAKE_INSTALL_PREFIX@/lib")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+#set(CMAKE_INSTALL_RPATH "@CMAKE_INSTALL_PREFIX@/lib")
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+#set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 message(STATUS "TRIQS : Adding C++11 compilation flags -std=c++11 ")
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")
@@ -114,6 +114,9 @@ else()
 endif()
 endmacro()
 
+macro (triqs_add_rpath_to_triqs_install)
+ link_libraries ( -Wl,-rpath,@CMAKE_INSTALL_PREFIX@/lib)
+endmacro()
 
 #
 # This macro builds the f2py module
