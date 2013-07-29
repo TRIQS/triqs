@@ -14,6 +14,8 @@ using triqs::arrays::array;
 
 int main() {
 
+ try {
+
  //typedef gf<two_real_times> Gf_type;
  //typedef gf_view<two_real_times> Gf_view_type;
 
@@ -31,7 +33,9 @@ int main() {
  std::cout  <<A << std::endl ;
 
  G(t_,tp_)  << t_ - 3*tp_;
- //G2(t_,tp_) << t_ + 3*tp_;
+ G2(t_,tp_) << t_ + 3*tp_;
+  
+ G2(t_,tp_) << 2* G(tp_,t_);
 
  TEST( G(1,1) );
  TEST( G[G.mesh()(1,1) ]);
@@ -45,4 +49,6 @@ int main() {
 
  //TEST( G2(2,1,3) ); // should not compile
  
+ }
+ catch( std::exception const &e) { std::cout  << e.what()<< std::endl;}
 }
