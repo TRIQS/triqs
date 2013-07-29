@@ -26,6 +26,22 @@
 
 namespace triqs { namespace tuple {
 
+ /**
+  * t : a tuple
+  * x : anything
+  * push_back (t,x) -> returns new tuple with x append at the end
+  */
+ template<typename T, typename X>
+ auto push_back(T const &t, X const &x) DECL_AND_RETURN ( std::tuple_cat(t,std::make_tuple(x)));
+
+ /**
+  * t : a tuple
+  * x : anything
+  * push_front (t,x) -> returns new tuple with x append at the first position
+  */
+ template<typename T, typename X>
+ auto push_front(T const &t, X const &x) DECL_AND_RETURN ( std::tuple_cat(std::make_tuple(x),t));
+
 /**
   * apply(f, t)
   * f : a callable object
@@ -164,7 +180,7 @@ namespace triqs { namespace tuple {
   auto apply_on_zip (F && f,T1 && t1, T2 && t2) DECL_AND_RETURN( apply_on_zip_impl<std::tuple_size<typename std::remove_reference<T1>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2)));
 
  /**
-  * apply_on_tuple(f, t1,t2,t3)
+  * apply_on_zip(f, t1,t2,t3)
   * f : a callable object
   * t1, t2 two tuples of the same size
   * Returns : [f(i,j) for i,j in zip(t1,t2)]
@@ -182,7 +198,31 @@ namespace triqs { namespace tuple {
  };
 
  template<typename F, typename T1, typename T2, typename T3>
-  auto apply_on_zip3 (F && f,T1 && t1, T2 && t2, T3 && t3) DECL_AND_RETURN( apply_on_zip3_impl<std::tuple_size<typename std::remove_reference<T1>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2),std::forward<T3>(t3)));
+  auto apply_on_zip (F && f,T1 && t1, T2 && t2, T3 && t3) DECL_AND_RETURN( apply_on_zip3_impl<std::tuple_size<typename std::remove_reference<T1>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2),std::forward<T3>(t3)));
+
+ /**
+  * call_on_zip(f, t1,t2,t3)
+  * f : a callable object
+  * t1, t2, t3 three tuples of the same size
+  * Returns : void
+  * Effect : calls f(i,j,k) for all(i,j,k) in zip(t1,t2,t3)]
+  */
+ template<int pos> struct call_on_zip3_impl {
+  template<typename F, typename T1, typename T2, typename T3>
+   void operator()(F && f, T1 && t1, T2 && t2, T3 && t3) { 
+      f(std::get<pos>(std::forward<T1>(t1)),std::get<pos>(std::forward<T2>(t2)),std::get<pos>(std::forward<T3>(t3)));
+      call_on_zip3_impl<pos-1>()(std::forward<F>(f),std::forward<T1>(t1), std::forward<T2>(t2), std::forward<T3>(t3));
+   } 
+ };
+
+ template<> struct call_on_zip3_impl<-1> {
+  template<typename F, typename T1, typename T2, typename T3> void operator()(F && f, T1 && t1, T2 && t2,  T3 && t3){}
+ };
+
+ template<typename F, typename T1, typename T2, typename T3>
+  void call_on_zip (F && f,T1 && t1, T2 && t2, T3 && t3) { 
+   call_on_zip3_impl<std::tuple_size<typename std::remove_reference<T1>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2),std::forward<T3>(t3));
+  }
 
  /**
   * fold(f, t1, init)
