@@ -32,7 +32,6 @@ namespace triqs { namespace tuple {
   * t a tuple
   * Returns : f(t[0], t[1], ...)
   * Equivalent to f(*t) in python ....
-  * Q : what about constructor
   */
  template<int pos,  typename T> struct apply_impl {
   template<typename F, typename ... Args>
@@ -53,6 +52,27 @@ namespace triqs { namespace tuple {
 
  template <typename T, typename ReturnType, typename... Args>
   ReturnType apply( ReturnType(*f)(Args...), T const & t) { return apply([f](Args const & ... args) { return (*f)(args...);} ,t);}
+
+ /**
+  * apply_construct<F>(t)
+  * F : a class 
+  * t a tuple
+  * Returns : F { t[0], t[1]} 
+  */
+ template<int pos, typename F, typename T> struct apply_construct_impl {
+  template<typename ... Args>
+   auto operator()(T const & t, Args && ... args)
+   DECL_AND_RETURN( apply_construct_impl<pos-1,F,T>()(t, std::get<pos>(t), std::forward<Args>(args)...));
+ };
+
+ template<typename F, typename T> struct apply_construct_impl<-1,F,T> {
+  template<typename ... Args>
+   auto operator()(T const & t, Args && ... args) DECL_AND_RETURN( F{std::forward<Args>(args)...});
+ };
+
+ template<typename F, typename T>
+  auto apply_construct (T const & t) DECL_AND_RETURN( apply_construct_impl<std::tuple_size<T>::value-1,F,T>()(t));
+
 
  /**
   * for_each(f, t)
@@ -102,6 +122,26 @@ namespace triqs { namespace tuple {
   void for_each_enumerate(T const & t, F && f) {
    for_each_enumerate_impl<std::tuple_size<T>::value-1>()(t, f);
   }
+
+ /**
+  * apply_on_tuple(f, t1,t2)
+  * f : a callable object
+  * t1, t2 two tuples of the same size
+  * Returns : [f(i,j) for i,j in zip(t1,t2)]
+  */
+ template<int pos> struct apply_on_tuple_impl {
+  template<typename F, typename T1, typename ... Args>
+   auto operator()(F && f, T1 && t1, Args && ... args)
+   DECL_AND_RETURN( apply_on_tuple_impl<pos-1>()(std::forward<F>(f),std::forward<T1>(t1),  f(std::get<pos>(t1)), std::forward<Args>(args)...));
+ };
+
+ template<> struct apply_on_tuple_impl<-1> {
+  template<typename F, typename T1, typename ... Args>
+   auto operator()(F && f, T1 && t1, Args && ... args) DECL_AND_RETURN( std::make_tuple(std::forward<Args>(args)...));
+ };
+
+ template<typename F, typename T1>
+  auto apply_on_tuple (F && f,T1 && t1) DECL_AND_RETURN( apply_on_tuple_impl<std::tuple_size<typename std::remove_reference<T1>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1)));
 
  /**
   * apply_on_zip(f, t1,t2)
