@@ -177,7 +177,7 @@ namespace triqs { namespace tuple {
  };
 
  template<typename F, typename T1, typename T2>
-  auto apply_on_zip (F && f,T1 && t1, T2 && t2) DECL_AND_RETURN( apply_on_zip_impl<std::tuple_size<typename std::remove_reference<T1>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2)));
+  auto apply_on_zip (F && f,T1 && t1, T2 && t2) DECL_AND_RETURN( apply_on_zip_impl<std::tuple_size<typename std::remove_const<typename std::remove_reference<T1>::type>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2)));
 
  /**
   * apply_on_zip(f, t1,t2,t3)
@@ -198,7 +198,7 @@ namespace triqs { namespace tuple {
  };
 
  template<typename F, typename T1, typename T2, typename T3>
-  auto apply_on_zip (F && f,T1 && t1, T2 && t2, T3 && t3) DECL_AND_RETURN( apply_on_zip3_impl<std::tuple_size<typename std::remove_reference<T1>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2),std::forward<T3>(t3)));
+  auto apply_on_zip (F && f,T1 && t1, T2 && t2, T3 && t3) DECL_AND_RETURN( apply_on_zip3_impl<std::tuple_size<typename std::remove_const<typename std::remove_reference<T1>::type>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2),std::forward<T3>(t3)));
 
  /**
   * call_on_zip(f, t1,t2,t3)
