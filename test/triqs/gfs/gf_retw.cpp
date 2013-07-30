@@ -57,12 +57,13 @@ int main() {
  if ( std::abs(Gw2(0.3352*wmax)-0.3352*wmax) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Gw2\n";  
  
  std::cout << "Git(0.3352*beta)(0,0)=" << Git(0.3352*beta)(0,0) << std::endl;
- if ( std::abs(Git(0.3352*beta)(0,0)-0.3352*beta) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git\n";  
-// if ( std::abs(Git2(0.3352*beta)-0.3352*beta) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git2\n";   
+ if ( std::abs(Git(0.3352*beta)(0,0)-0.3352*beta) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git\n"; 
+ std::cout << "Git2(0.3352*beta)=" << Git2(0.3352*beta) << std::endl; 
+ if ( std::abs(Git2(0.3352*beta)-0.3352*beta) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git2\n";   
  
- if ( std::abs(Gw2.on_mesh(N/3)-Gw2[N/3]) > precision) TRIQS_RUNTIME_ERROR<< "error in on_mesh()\n";  
- if ( std::abs(Gt2.on_mesh(N/3)-Gt2[N/3]) > precision) TRIQS_RUNTIME_ERROR<< "error in on_mesh()\n";  
- if ( std::abs(Git.on_mesh(N/3)(0,0)-Git[N/3](0,0)) > precision) TRIQS_RUNTIME_ERROR<< "error in on_mesh()\n";  
+ if ( std::abs(Gw2.on_mesh(N/3) -Gw2[N/3] ) > precision) TRIQS_RUNTIME_ERROR<< "error in on_mesh()\n";  
+ if ( std::abs(Gt2.on_mesh(N/3) -Gt2[N/3] ) > precision) TRIQS_RUNTIME_ERROR<< "error in on_mesh()\n";  
+ if ( std::abs(Git2.on_mesh(N/3)-Git2[N/3]) > precision) TRIQS_RUNTIME_ERROR<< "error in on_mesh()\n";  
  
  // test hdf5 
  H5::H5File file("ess_gfre.h5", H5F_ACC_TRUNC );

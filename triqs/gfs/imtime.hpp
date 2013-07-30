@@ -80,15 +80,14 @@ namespace triqs { namespace gfs {
     double beta = g->mesh().domain().beta;
     int p = std::floor(tau/beta);
     tau -= p*beta;
-    double a = tau/g->mesh().delta();
-    long n = std::floor(a);
-    double w = a-n;
-    assert(n < g->mesh().size()-1);
-    auto _ = arrays::ellipsis();
+    size_t n; double w; bool in;
+    std::tie(in, n, w) = windowing(g->mesh(),tau);
+    if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+    auto gg = on_mesh(*g);
     if ((g->mesh().domain().statistic == Fermion) && (p%2==1))
-     _tmp = - w*g->data()(n, _) - (1-w)*g->data()(n+1, _);
+     _tmp = - (1-w)*gg(n) - w*gg(n+1);
     else
-     _tmp =   w*g->data()(n, _) + (1-w)*g->data()(n+1, _);
+     _tmp =   (1-w)*gg(n) + w*gg(n+1);
     //else { // Speed test to redo when incoparated qview in main branch
     // _tmp(0,0) =   w*g->data()(n, 0,0) + (1-w)*g->data()(n+1, 0,0);
     // _tmp(0,1) =   w*g->data()(n, 0,1) + (1-w)*g->data()(n+1, 0,1);
