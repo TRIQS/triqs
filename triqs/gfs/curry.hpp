@@ -22,6 +22,10 @@
 #define TRIQS_GF_CURRY_H
 #include "./product.hpp"
 
+#ifndef TRIQS_COMPILER_IS_C11_COMPLIANT
+#error "This header requires a fully C++11 compliant compiler"
+#endif
+
 namespace triqs { namespace gfs { 
 
  template<typename F> struct lambda_valued {};
@@ -54,7 +58,7 @@ namespace triqs { namespace gfs {
   //   - m : returns from a CP object the corresponding tuple of meshes of the remaining meshes
   //     after partial eval (of the type computed by "type").
   // - auxiliary data : 
-  //    pos : position in the CP tuple (  CP::size-1 ->0)
+  //    pos : position in the CP tuple (CP::size-1 ->0)
   //    ip : position in the tuple of indices (for sl) 
   //    MP : accumulation of the final type metacomputed.
   //
@@ -77,7 +81,7 @@ namespace triqs { namespace gfs {
   };
 
   template<int pos, int ip, typename CP, typename MP, int ... I> struct pv_impl<pos, ip, CP, MP, pos ,I...> {
-   typedef typename cartesian_product_add_front<typename  std::tuple_element<pos,typename CP::type>::type, MP>::type MP2; 
+   typedef typename cartesian_product_add_front<typename std::tuple_element<pos,typename CP::type>::type, MP>::type MP2; 
    typedef pv_impl<pos-1,ip+1, CP,MP2,I...> B;
    typedef typename B::type type;
    template<typename T, typename IT> static auto sl (T t, IT const & it) DECL_AND_RETURN( B::sl(triqs::tuple::push_front(t,std::get<ip >(it)),it));
