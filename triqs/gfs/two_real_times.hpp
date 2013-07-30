@@ -65,7 +65,7 @@ namespace triqs { namespace gfs {
     std::tie(in, n1, w1) = windowing(std::get<1>(g->mesh().components()),t1);
     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
     auto gg = on_mesh(*g);
-    return  w0 * ( w1*gg(n0,n1) + (1-w1)*gg(n0,n1+1) ) + (1-w0) * ( w1*gg(n0+1,n1) + (1-w1)*gg(n0+1,n1+1)); 
+    return  (1-w0) * ( (1-w1) * gg(n0, n1) + w1 * gg(n0, n1+1) ) + w0 * ( (1-w1) * gg(n0+1, n1) + w1 * gg(n0+1, n1+1)); 
    } 
   };
   
