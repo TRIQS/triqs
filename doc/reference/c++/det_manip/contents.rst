@@ -1,4 +1,4 @@
-.. highlight:: c
+.. _det_manip:
 
 Manipulations of determinants
 =============================
@@ -7,11 +7,10 @@ Manipulations of determinants
 
    This library is stable, but documentation is still a bit spartan ...
 
-The purpose of this little class is to regroup standard block manipulations on determinant, used in several 
-QMC.
+The purpose of this little class is to regroup standard block manipulations on determinant, used in several algorithms.
 
 Given a function :math:`F(x,y)`, and two sets of values :math:`x_i,y_i \ 0\leq i < N`,
-we can define the square :math:`N\times N` matrix 
+we can define the :math:`N\times N` square matrix 
 
 .. math:: 
    
@@ -21,7 +20,7 @@ When adding/removing a line and column (i.e. a value of x, y),
 :math:`M^{-1}` and :math:`det M` can be fast updated using standard block matrix computations.
 This class implements these general operations. It contains : 
 
-* Data : 
+* Datas : 
 
   * :math:`M^{-1}` and :math:`det M`
   * a vector containing  :math:`x_i,y_i \ 0\leq i \leq N`
@@ -38,4 +37,5 @@ This class implements these general operations. It contains :
    :maxdepth: 2
 
    det_manip
-   cookbook
+   behind
+   cookbook/contents

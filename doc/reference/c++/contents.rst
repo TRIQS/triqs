@@ -18,4 +18,3 @@ C++
    det_manip/contents
    parameters/parameters
    utilities/contents
-
