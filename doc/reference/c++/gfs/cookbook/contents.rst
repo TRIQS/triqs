@@ -1,4 +1,4 @@
-.. _greenfunctions:
+.. highlight:: c
 
 Green's function cookbook
 ==========================

@@ -1,7 +1,5 @@
 .. highlight:: c
 
-
-
 Meshes  
 #######
 
@@ -30,8 +28,8 @@ How to access to a mesh point with its index
 
 .. compileblock::
 
-     #include <triqs/gf/refreq.hpp> 
-     using namespace triqs::gf;
+     #include <triqs/gfs/refreq.hpp> 
+     using namespace triqs::gfs;
 
      int main() {
       
@@ -59,8 +57,8 @@ In this case, we look for the closest mesh point, but can need the distance of t
 
 .. compileblock::
 
-     #include <triqs/gf/refreq.hpp> 
-     using namespace triqs::gf;
+     #include <triqs/gfs/refreq.hpp> 
+     using namespace triqs::gfs;
 
      int main() {
       double wmin = 0.0;
@@ -132,8 +130,8 @@ How to access to the closest mesh point
 
 .. compileblock::
 
-     #include <triqs/gf/two_real_times.hpp> 
-     using namespace triqs::gf;
+     #include <triqs/gfs/two_real_times.hpp> 
+     using namespace triqs::gfs;
 
      int main() {
       double tmax = 1.0;
@@ -152,8 +150,8 @@ How to access to a mesh point with its index
 
 .. compileblock::
 
-     #include <triqs/gf/two_real_times.hpp> 
-     using namespace triqs::gf;
+     #include <triqs/gfs/two_real_times.hpp> 
+     using namespace triqs::gfs;
 
      int main() {
       double tmax = 1.0;
