@@ -58,18 +58,16 @@ namespace triqs { namespace gfs {
     static constexpr int arity = 2;
     template<typename G>
      std::complex<double> operator() (G const * g, double t, double tau)  const {
-      //auto & data = g->data();
-      //auto & mesh = g->mesh();
       double beta = std::get<1>(g->mesh().components()).domain().beta;
       int p = std::floor(tau/beta);
       tau -= p*beta;
       size_t nr,ni; double wr,wi; bool in;
       std::tie(in, nr, wr) = windowing( std::get<0>(g->mesh().components()),t);
-      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds, tmax=" << std::get<0>(g->mesh().components()).x_max() << ", tmin=" << std::get<0>(g->mesh().components()).x_min() << "here, t=" <<t;
       std::tie(in, ni, wi) = windowing( std::get<1>(g->mesh().components()),tau);
-      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds, taumax=" << std::get<1>(g->mesh().components()).x_max()<< ", taumin=" << std::get<1>(g->mesh().components()).x_min() << "here, tau=" <<tau;
       auto gg = on_mesh(*g); //[g]( size_t nr, size_t ni) {return g->on_mesh(nr,ni);}; //data( g->mesh().index_to_linear(nr,ni));
-      auto res =  wr *( wi*gg(nr,ni) + (1-wi)*gg(nr,ni+1)) + (1-wr) * ( wi*gg(nr+1,ni) + (1-wi)*gg(nr+1,ni+1)); 
+      auto res =  (1-wr) * ( (1-wi) * gg(nr,ni) + wi * gg(nr,ni+1)) + wr * ( (1-wi) * gg(nr+1,ni) + wi * gg(nr+1,ni+1)); 
       return ((std::get<1>(g->mesh().components()).domain().statistic == Fermion) && (p%2==1) ? -res : res);
      } 
    };

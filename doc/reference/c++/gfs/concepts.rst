@@ -10,10 +10,10 @@ All Green functions are implemented as a gf<Descriptor> and gf_view<Descriptor> 
 * Descriptor contains everything specific to the Green function
   (number of variables, domain of definition, interpolation techniques, etc...).
 
-* The gf/gf_view class implements the generic part (hdf5, view mechanism, interaction with clef library, etc...).
+* The gfs/gf_view class implements the generic part (hdf5, view mechanism, interaction with clef library, etc...).
 
 We first present the concept of the Descriptor, and the concepts of its elements.
-In a second part, we present a more detailed description of gf/gf_view.
+In a second part, we present a more detailed description of gfs/gf_view.
 
 Pure functions on domains
 ==============================
@@ -278,10 +278,10 @@ Descriptor concept
 * S_t is singularity_t or its corresponding view type (if it exists).
   
 
-The gf/gf_view class
-====================
+The gfs/gf_view class
+======================
 
-The gf/gf_view classes are generic Green function, templated on Descriptor.
+The gfs/gf_view classes are generic Green function, templated on Descriptor.
 
 They handle : 
 
@@ -311,5 +311,5 @@ so we can dispath the make_gf. Example of use ::
 Doxygen documentation
 ======================
 
-The :doxy:`full C++ documentation<triqs::gf::gf>` is available here.
+The :doxy:`full C++ documentation<triqs::gfs::gf>` is available here.
 

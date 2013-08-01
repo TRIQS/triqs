@@ -1,6 +1,3 @@
-Cookbook
-========
-
 Basics
 ------
 
@@ -66,5 +63,6 @@ Here, an exemple of creation of a class det_manip, of use of insert and remove.
 
 
 
+Learn more in the full reference, see :ref:`det_manip`
 
 

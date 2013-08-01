@@ -1,13 +1,15 @@
+.. highlight:: c
+
 Create a real time Green function
 ---------------------------------
 
 .. compileblock:: 
 
-    #include <triqs/gf/retime.hpp>
+    #include <triqs/gfs/retime.hpp>
     #include <triqs/arrays.hpp>
     
-    using triqs::gf::make_gf;
-    using triqs::gf::retime;
+    using triqs::gfs::make_gf;
+    using triqs::gfs::retime;
     
     int main() {
       double tmin=0;
@@ -16,7 +18,7 @@ Create a real time Green function
       size_t n_times=5;
       //we want a Green function whose values are complex numbers
       auto shape = triqs::arrays::make_shape(1,1);
-      // the type of GF is triqs::gf::gf<triqs::gf::retime>
+      // the type of GF is triqs::gfs::gf<triqs::gfs::retime>
       auto GF=make_gf<retime>(tmin, tmax, n_times, shape);  
     };
 
@@ -25,10 +27,10 @@ Create a real frequency Green function
 .. compileblock:: 
 
     #include <triqs/arrays.hpp>
-    #include <triqs/gf/refreq.hpp>
+    #include <triqs/gfs/refreq.hpp>
     
-    using triqs::gf::make_gf;
-    using triqs::gf::refreq;
+    using triqs::gfs::make_gf;
+    using triqs::gfs::refreq;
 
     int main() {
       double wmin=0;
