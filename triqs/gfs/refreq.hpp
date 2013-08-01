@@ -45,8 +45,7 @@ namespace triqs { namespace gfs {
   template<typename Opt> struct singularity<refreq,scalar_valued,Opt>  { typedef local::tail type;};
   
   // h5 name
-  template<typename Opt> struct h5_name<refreq,matrix_valued,Opt>      { static std::string invoke(){ return "GfReFreq";}};
-  template<typename Opt> struct h5_name<refreq,scalar_valued,Opt>      { static std::string invoke(){ return "GfReFreq_s";}};
+  template<typename Opt> struct h5_name<refreq,matrix_valued,Opt>      { static std::string invoke(){ return "ReFreq";}};
 
   /// ---------------------------  evaluator ---------------------------------
   template<typename Opt, typename Target>
@@ -55,6 +54,7 @@ namespace triqs { namespace gfs {
     typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix<std::complex<double> >, std::complex<double>>::type rtype; 
     template<typename G>
      rtype operator() (G const * g,double w0)  const {
+     //auto operator() (G const * g,double w0) const -> typename decltype ((*g)[0])::non_view_type {
       size_t n; double w; bool in;
       std::tie(in, n, w) = windowing(g->mesh(),w0);
       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";

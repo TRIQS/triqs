@@ -414,6 +414,7 @@ endif (PythonSupport)
 ## Remove the test from the build ?
 option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
 if (Build_Triqs_General_Tools_Test)
+ message( STATUS "-------- Preparing tests  -------------")
  add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
 endif()
 

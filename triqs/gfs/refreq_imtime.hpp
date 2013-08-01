@@ -69,6 +69,9 @@ namespace triqs { namespace gfs {
        if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
        auto gg = on_mesh(*g); //[g]( size_t n1, size_t n2) {return g->on_mesh(n1,n2);};
        auto res =  w1 *( w2*gg(n1,n2) + (1-w2)*gg(n1,n2+1)) + (1-w1) * ( w2*gg(n1+1,n2) + (1-w2)*gg(n1+1,n2+1));
+   
+       //std::cout  << "eval reref imtim"<< n1 << " "<< n2 << " "<< w1 << " " << w2 << " "<< omega << " "<< tau<<  std::endl;
+
        return ((std::get<1>(g->mesh().components()).domain().statistic == Fermion) && (p%2==1) ? -res : res);
       } 
     };

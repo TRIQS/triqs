@@ -47,8 +47,7 @@ namespace triqs { namespace gfs {
   template<typename Opt> struct singularity<imtime,scalar_valued,Opt>  { typedef local::tail type;};
   
   // h5 name
-  template<typename Opt> struct h5_name<imtime,matrix_valued,Opt>      { static std::string invoke(){ return  "GfImTime";}};
-  template<typename Opt> struct h5_name<imtime,scalar_valued,Opt>      { static std::string invoke(){ return  "GfImTime_s";}};
+  template<typename Opt> struct h5_name<imtime,matrix_valued,Opt>      { static std::string invoke(){ return  "ImTime";}};
 
   /// ---------------------------  data access  ---------------------------------
 
