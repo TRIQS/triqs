@@ -7,10 +7,9 @@ Reference: C++ librairies
    learn/intro
    arrays/contents
    mctools/intro
-   det_manip/det_manip
-   gf/contents
+   det_manip/contents
+   gfs/contents
    parameters/parameters
-   gf/intro
    clef/contents
    lectures/contents
    utilities/intro.rst
