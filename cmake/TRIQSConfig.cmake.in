@@ -128,19 +128,9 @@ macro (triqs_add_rpath_to_triqs_install)
  target_link_libraries (-Wl,-rpath,@CMAKE_INSTALL_PREFIX@/lib)
 endmacro()
 
-
-
-macro(triqs_set_rpath_options)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
- set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
-else()
- set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-endif()
-endmacro()
-
 macro (triqs_set_rpath_for_target Target)
  set_target_properties(${Target} PROPERTIES LINK_FLAGS -Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib)
+ set_target_properties(${Target} PROPERTIES INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 endmacro()
 
 # A macro to create a local copy of triqs with the added python
