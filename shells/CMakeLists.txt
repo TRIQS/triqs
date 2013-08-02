@@ -17,8 +17,8 @@ else (TRIQS_ADD_PYPATHS_TO_SHELLS)
  endif (TRIQS_IPYTHON_DETECTED)
 endif (TRIQS_ADD_PYPATHS_TO_SHELLS)
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/pytriqs_for_test_shell.bash.in ${CMAKE_BINARY_DIR}/run_pytriqs_for_test.sh)
-execute_process( COMMAND chmod u+x  ${CMAKE_BINARY_DIR}/run_pytriqs_for_test.sh )
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/pytriqs_for_test_shell.bash.in ${CMAKE_BINARY_DIR}/build_pytriqs)
+execute_process( COMMAND chmod u+x  ${CMAKE_BINARY_DIR}/build_pytriqs )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pytriqs DESTINATION bin  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 
