@@ -2,7 +2,7 @@
 set(TRIQS_VERSION @TRIQS_VERSION@)
 set(TRIQS_GIT_HASH @TRIQS_GIT_HASH@)
 
-#definitions 
+# definitions 
 set(TRIQS_CXX_DEFINITIONS @TRIQS_CXX_DEFINITIONS@)
 
 # Includes
@@ -33,6 +33,12 @@ set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
 set(TRIQS_HDF5_DIFF_EXECUTABLE @TRIQS_HDF5_DIFF_EXECUTABLE@)
 set(TRIQS_PYTHON_LIB_DEST @TRIQS_PYTHON_LIB_DEST@)
 set(TRIQS_COMPILER_IS_C11_COMPLIANT @TRIQS_COMPILER_IS_C11_COMPLIANT@)
+
+# Documentation
+set(TRIQS_WITH_DOCUMENTATION @Build_Documentation@)
+set(TRIQS_SPHINXBUILD_EXECUTABLE @SPHINXBUILD_EXECUTABLE@)
+set(TRIQS_THEMES_PATH @CMAKE_INSTALL_PREFIX@/share/triqs/themes)
+set(TRIQS_MATHJAX_PATH @MATHJAX_PATH@)
 
 # for people who want to quickly add everything TRIQS has detected...
 set(TRIQS_LIBRARY_ALL ${TRIQS_LIBRARY} ${TRIQS_LIBRARY_BOOST} ${TRIQS_LIBRARY_PYTHON} ${TRIQS_LIBRARY_MPI} ${TRIQS_LIBRARY_HDF5} ${TRIQS_LIBRARY_LAPACK} ${TRIQS_LIBRARY_FFTW} ${TRIQS_LIBRARY_GMP} ${TRIQS_LIBRARY_GSL} )
@@ -71,7 +77,7 @@ endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 # ModuleName = the python name of the module 
 # ModuleDest = path in the pytriqs tree [ FOR INSTALLATION ONLY] IMPROVE MAKE THIS OPTIONAL (for test) 
 macro (triqs_cython_module NickName ModuleName)
- message(STATUS "TRIQS : Preparing cython module  ${NickName} with the interpreter ${TRIQS_PYTHON_INTERPRETER} ")
+ message(STATUS "TRIQS: Preparing cython module ${NickName} with the interpreter ${TRIQS_PYTHON_INTERPRETER} ")
  get_filename_component(CYTHON_EXECUTABLE_PATH ${TRIQS_PYTHON_INTERPRETER} PATH)
  set(CYTHON_EXECUTABLE ${CYTHON_EXECUTABLE_PATH}/cython CACHE STRING "Path to the cython executable")
  set(cython_src ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}.pyx )
@@ -108,16 +114,79 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 else()
- set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
  set(CMAKE_SKIP_BUILD_RPATH FALSE)
+ set(CMAKE_SKIP_INSTALL_RPATH FALSE)
  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 endif()
 endmacro()
 
 macro (triqs_add_rpath_to_triqs_install)
- link_libraries ( -Wl,-rpath,@CMAKE_INSTALL_PREFIX@/lib)
+ target_link_libraries (-Wl,-rpath,@CMAKE_INSTALL_PREFIX@/lib)
 endmacro()
+
+
+
+macro(triqs_set_rpath_options)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+else()
+ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
+endmacro()
+
+macro (triqs_set_rpath_for_target Target)
+ set_target_properties(${Target} PROPERTIES LINK_FLAGS -Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib)
+endmacro()
+
+# A macro to create a local copy of triqs with the added python
+macro (triqs_prepare_local_pytriqs_merged_with_my_python python_destination)
+
+file(WRITE ${CMAKE_BINARY_DIR}/build_pytriqs
+"#!/bin/bash
+export PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH
+${TRIQS_PYTHON_INTERPRETER} $@"
+)
+execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_pytriqs)
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}
+                        find . -type d -exec mkdir -p ${CMAKE_BINARY_DIR}/pytriqs/{} \;)
+execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}
+                        find . -type f -exec ln -snf ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/{} ${CMAKE_BINARY_DIR}/pytriqs/{} \;)
+execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}
+                        find . -type l -exec ln -snf ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/{} ${CMAKE_BINARY_DIR}/pytriqs/{} \;)
+
+# Create directories where python files will go and make sure there is an __init__.py all the way
+execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/pytriqs/${python_destination})
+file(WRITE ${CMAKE_BINARY_DIR}/python/__init__.py  "__all__=[]")
+set(partial_dir ${python_destination})
+while(partial_dir MATCHES "/")
+  string(REGEX REPLACE "/[^/]*$" "" partial_dir ${partial_dir})
+  execute_process(COMMAND cp -n ${CMAKE_BINARY_DIR}/python/__init__.py ${CMAKE_BINARY_DIR}/pytriqs/${partial_dir})
+endwhile(partial_dir MATCHES "/")
+
+# Set a rule to have original python files copied to their destination if modified
+FILE(GLOB_RECURSE python_sources RELATIVE ${CMAKE_SOURCE_DIR}/python *.py)
+SET(py_copy_tar ${CMAKE_BINARY_DIR}/py_copy.tar)
+add_custom_command (OUTPUT ${py_copy_tar} DEPENDS ${python_sources}
+ COMMAND cd ${CMAKE_SOURCE_DIR}/python && tar cf ${py_copy_tar} ${python_sources} &&
+         cd ${CMAKE_BINARY_DIR}/pytriqs/${python_destination} && tar xf ${py_copy_tar})
+add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
+
+# Install putting the __init__.py file everywhere
+install (FILES ${python_sources} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination})
+set(partial_dir ${python_destination})
+while(partial_dir MATCHES "/")
+  string(REGEX REPLACE "/[^/]*$" "" partial_dir ${partial_dir})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/__init__.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${partial_dir})
+endwhile(partial_dir MATCHES "/")
+
+endmacro()
+
 
 #
 # This macro builds the f2py module
