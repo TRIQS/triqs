@@ -22,18 +22,18 @@ def f(A) :
     return A
 
     #Solution 2
-    cdef placeholder[ONE] i_
-    cdef placeholder[TWO] j_
-    array_view[long,TWO] (A).call ( ph(i_), ph(j_)) << ph(i_) + ph(j_)
+    #cdef placeholder[ONE] i_
+    #cdef placeholder[TWO] j_
+    #array_view[long,TWO] (A).call ( ph(i_), ph(j_)) << ph(i_) + ph(j_)
 
     #Solution 3 ?
-    array_view[long,TWO] (A).call ( ph0(), ph1()) << ph0() + ph1()
+    #array_view[long,TWO] (A).call ( ph0(), ph1()) << ph0() + ph1()
 
     #array_view[long,TWO] (A).call ( _i(), _j()) << 3*_i() + _j()*2
 
     #array_view[long,TWO] (A)( ph(i_), ph(j_)) << ph(i_) + ph(j_)
 
-    return A
+    #return A
 
 
 
