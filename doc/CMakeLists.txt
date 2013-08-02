@@ -92,7 +92,7 @@ add_dependencies(docs_sphinx docs_doxy) # we must first have doxygen process the
 add_dependencies(docs_sphinx triqs boost_for_triqs ) # add also mpi ?
 
 # Install
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs/user_manual
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs
  FILES_MATCHING 
  PATTERN "*.html" 
  PATTERN "*.png"
@@ -109,6 +109,8 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DEST
  PATTERN ".svn" EXCLUDE 
  PATTERN "CVS" EXCLUDE
  )
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/agogo DESTINATION share/triqs/themes)
 
 # PDF documentation
 if (Build_PDF_Documentation)
