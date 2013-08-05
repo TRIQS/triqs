@@ -52,7 +52,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    domain_t (n_uple && lengths):lengths_(std::move(lengths)) {}
    domain_t (mini_vector<int,Rank> const & lengths):lengths_(lengths) {}
    domain_t (std::vector<std::size_t> const & l):lengths_() {
-    if (!(l.size()==rank)) TRIQS_RUNTIME_ERROR << "cuboid domain_t construction : vector size incorrect : got "<<l.size() <<" while expected "<< rank;
+    if (!(l.size()==Rank)) TRIQS_RUNTIME_ERROR << "cuboid domain_t construction : vector size incorrect : got "<<l.size() <<" while expected "<< Rank;
     lengths_ = n_uple(l);
    }
    domain_t (const domain_t & C) = default;
