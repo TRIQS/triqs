@@ -48,11 +48,6 @@ list (REMOVE_DUPLICATES TRIQS_INCLUDE_ALL)
 # Python specific stuff
 set (TRIQS_PYTHON_INTERPRETER @PYTHON_INTERPRETER@)
  
-# Fix the rpath
-#set(CMAKE_INSTALL_RPATH "@CMAKE_INSTALL_PREFIX@/lib")
-#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-
 message(STATUS "TRIQS : Adding C++11 compilation flags -std=c++11 ")
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")
 #add_definitions( -std=c++0x) 
@@ -109,28 +104,14 @@ macro (triqs_add_all_subdirectories_with_cmakelist)
 endmacro (triqs_add_all_subdirectories_with_cmakelist)
 
 # RPATH setting 
-macro (triqs_add_rpath_for_cxx_code)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
- set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
-else()
-
- set(CMAKE_SKIP_BUILD_RPATH FALSE)
- set(CMAKE_SKIP_INSTALL_RPATH FALSE)
- set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
- set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
- set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-endif()
-endmacro()
-
-macro (triqs_add_rpath_to_triqs_install)
- target_link_libraries (-Wl,-rpath,@CMAKE_INSTALL_PREFIX@/lib)
-endmacro()
-
 macro (triqs_set_rpath_for_target Target)
  set_target_properties(${Target} PROPERTIES LINK_FLAGS -Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib)
  set_target_properties(${Target} PROPERTIES INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+ set_target_properties(${Target} PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
+ set_target_properties(${Target} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+ set_target_properties(${Target} PROPERTIES BUILD_WITH_INSTALL_RPATH FALSE)
+ set_target_properties(${Target} PROPERTIES SKIP_BUILD_RPATH FALSE)
+ set_target_properties(${Target} PROPERTIES SKIP_INSTALL_RPATH FALSE)
 endmacro()
 
 # A macro to create a local copy of triqs with the added python
@@ -152,12 +133,20 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${TRIQS_PATH}/${TRIQS_PYTHON_L
 
 # Create directories where python files will go and make sure there is an __init__.py all the way
 execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/pytriqs/${python_destination})
+
+# Copy and install __init__.py files
 file(WRITE ${CMAKE_BINARY_DIR}/python/__init__.py  "__all__=[]")
 set(partial_dir ${python_destination})
 while(partial_dir MATCHES "/")
   string(REGEX REPLACE "/[^/]*$" "" partial_dir ${partial_dir})
-  execute_process(COMMAND cp -n ${CMAKE_BINARY_DIR}/python/__init__.py ${CMAKE_BINARY_DIR}/pytriqs/${partial_dir})
+  if(NOT EXISTS ${CMAKE_BINARY_DIR}/pytriqs/${partial_dir}/__init__.py)
+    execute_process(COMMAND cp ${CMAKE_BINARY_DIR}/python/__init__.py ${CMAKE_BINARY_DIR}/pytriqs/${partial_dir})
+    install(FILES ${CMAKE_BINARY_DIR}/python/__init__.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${partial_dir})
+  endif(NOT EXISTS ${CMAKE_BINARY_DIR}/pytriqs/${partial_dir}/__init__.py)
 endwhile(partial_dir MATCHES "/")
+
+# Install all other files
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/python/ DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination} FILES_MATCHING PATTERN *.py)
 
 # Set a rule to have original python files copied to their destination if modified
 FILE(GLOB_RECURSE python_sources RELATIVE ${CMAKE_SOURCE_DIR}/python *.py)
@@ -166,14 +155,6 @@ add_custom_command (OUTPUT ${py_copy_tar} DEPENDS ${python_sources}
  COMMAND cd ${CMAKE_SOURCE_DIR}/python && tar cf ${py_copy_tar} ${python_sources} &&
          cd ${CMAKE_BINARY_DIR}/pytriqs/${python_destination} && tar xf ${py_copy_tar})
 add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
-
-# Install putting the __init__.py file everywhere
-install (FILES ${python_sources} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination})
-set(partial_dir ${python_destination})
-while(partial_dir MATCHES "/")
-  string(REGEX REPLACE "/[^/]*$" "" partial_dir ${partial_dir})
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/__init__.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${partial_dir})
-endwhile(partial_dir MATCHES "/")
 
 endmacro()
 
