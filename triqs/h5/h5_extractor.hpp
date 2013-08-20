@@ -31,7 +31,7 @@ namespace triqs { namespace h5 {
  template<typename T> 
   struct h5_extractor { 
    typename view_type_if_exists_else_type<T>::type operator() (group fg, std::string const & subgroup_name) const { 
-    typename non_view_type_if_exists_else_type<T>::type r;
+    typename regular_type_if_exists_else_type<T>::type r;
     h5_read(fg,subgroup_name,r);
     return r;
    }

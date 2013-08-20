@@ -52,7 +52,7 @@ namespace triqs { namespace lattice_tools {
    brillouin_zone bz_;
   // deduce the return type from decltype(begin()->second)
    public: 
-   typedef typename non_view_type_if_exists_else_type< decltype(f.begin()->second)>::type return_construct_type;
+   typedef typename regular_type_if_exists_else_type< decltype(f.begin()->second)>::type return_construct_type;
    typedef typename view_type_if_exists_else_type<return_construct_type>::type return_type;
    typedef K_view_type arg_type;
 

@@ -65,7 +65,7 @@ namespace triqs { namespace gfs {
    typedef typename mesh<legendre, Opt>::type mesh_t;
 
    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t n_leg) {
-    typename gf_t::data_non_view_t A(shape.front_append(n_leg)); A() = 0;
+    typename gf_t::data_regular_t A(shape.front_append(n_leg)); A() = 0;
     return gf_t(mesh<legendre,Opt>::make(beta, S, n_leg), std::move(A), nothing(), nothing());
    }
 

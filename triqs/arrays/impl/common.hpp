@@ -75,7 +75,7 @@ namespace triqs {
  template<typename A> typename A::view_type make_view(A const & x) { return typename A::view_type(x);}
 
  /// Makes a clone
- template<typename A> typename A::non_view_type make_clone(A const & x) { return typename A::non_view_type(x);}
+ template<typename A> typename A::regular_type make_clone(A const & x) { return typename A::regular_type(x);}
 
  namespace arrays {
   using triqs::make_clone;

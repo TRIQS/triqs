@@ -65,7 +65,7 @@ namespace triqs { namespace arrays {
    void invert() {for (size_t i=0; i<size(); ++i) { auto v = view(i); v = inverse(v);} }
 
    friend matrix_stack_view matmul_L_R ( matrix_view<T> const & L, matrix_stack_view const & M, matrix_view<T> const & R) {
-    matrix_stack_view res (typename array_view_t::non_view_type (M.size(), L.dim0(), R.dim1()));
+    matrix_stack_view res (typename array_view_t::regular_type (M.size(), L.dim0(), R.dim1()));
     for (size_t i=0; i<M.size(); ++i)  { res.view(i) = L * M.view(i) * R; }
     return res;
    }

@@ -56,7 +56,7 @@ namespace triqs { namespace gfs {
 
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Target, typename Opt> struct data_proxy<block_index,Target,Opt> : data_proxy_vector <typename non_view_type_if_exists_else_type<Target>::type>{};
+  template<typename Target, typename Opt> struct data_proxy<block_index,Target,Opt> : data_proxy_vector <typename regular_type_if_exists_else_type<Target>::type>{};
 
   // -------------------------------   Factories  --------------------------------------------------
 

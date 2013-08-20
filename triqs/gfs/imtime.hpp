@@ -130,7 +130,7 @@ namespace triqs { namespace gfs {
    typedef gf<imtime,matrix_valued,Opt> gf_t;
    template<typename MeshType>
     static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-     typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+     typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
      //return gf_t ( m, std::move(A), t, nothing() ) ;
      return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing(), evaluator<imtime,matrix_valued,Opt>(shape[0],shape[1]) ) ;
     }
@@ -147,7 +147,7 @@ namespace triqs { namespace gfs {
    typedef gf<imtime,scalar_valued,Opt> gf_t;
    template<typename MeshType>
     static gf_t make_gf(MeshType && m, local::tail_view const & t) {
-     typename gf_t::data_non_view_t A(m.size()); A() =0;
+     typename gf_t::data_regular_t A(m.size()); A() =0;
      return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing());
     }
    static gf_t make_gf(double beta, statistic_enum S, size_t Nmax=1025, mesh_kind mk= half_bins) {

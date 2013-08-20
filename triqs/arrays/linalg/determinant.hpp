@@ -126,7 +126,7 @@ namespace triqs { namespace arrays {
   friend std::ostream & operator<<(std::ostream & out,inverse_lazy_impl const&x){return out<<"inverse("<<x.a<<")";}
   protected: 
   struct internal_data { // implementing the pattern LazyPreCompute
-   //typedef typename A_type::non_view_type M_type;
+   //typedef typename A_type::regular_type M_type;
    typedef matrix<value_type> M_type;
    typedef matrix_view<value_type> M_view_type;
    M_type M;
@@ -174,7 +174,7 @@ namespace triqs { namespace arrays {
   friend std::ostream & operator<<(std::ostream & out, determinant_lazy const & x){ return out<<"determinant("<<x.a<<")";}
   protected:
   struct internal_data {
-   typedef typename A_type::non_view_type M_type;
+   typedef typename A_type::regular_type M_type;
    M_type M; typename A::value_type det;
    internal_data(determinant_lazy const & P):M(P.a){det_and_inverse_worker<A_type> worker(M); det = worker.det();}
   };

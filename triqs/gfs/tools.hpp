@@ -76,7 +76,7 @@ namespace triqs { namespace gfs {
   nothing() {}
   typedef void has_view_type_tag;     // Idiom : ValueView  
   typedef nothing view_type;
-  typedef nothing non_view_type;
+  typedef nothing regular_type;
   void rebind (nothing){}
   template< typename RHS> void operator=(RHS && ) {}
   friend void h5_write (h5::group, std::string subgroup_name, nothing ) {}

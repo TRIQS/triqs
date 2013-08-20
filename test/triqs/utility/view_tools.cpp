@@ -28,7 +28,7 @@ using namespace triqs::utility;
 
 template <typename T> struct check {
  static_assert(std::is_same<typename T::view_type, typename view_type_if_exists_else_type<T>::type >::value, "err");
- static_assert(std::is_same<typename T::non_view_type, typename non_view_type_if_exists_else_type<T>::type >::value, "err");
+ static_assert(std::is_same<typename T::regular_type, typename regular_type_if_exists_else_type<T>::type >::value, "err");
 };
 
 int main(int argc, char **argv) {

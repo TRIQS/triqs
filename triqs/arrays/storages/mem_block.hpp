@@ -68,7 +68,7 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
  template<bool Weak, typename ValueType> DISABLE_IFC(Weak) dec_ref(mem_block<ValueType> * const m) {
   m->ref_count--; if (m->ref_count ==0) {
 #ifdef TRIQS_ARRAYS_CHECK_WEAK_REFS
-   std::cout  << " detroying "<< m->weak_ref_count <<std::endl;
+  //std::cout  << " detroying "<< m->weak_ref_count <<std::endl;
   if (m->weak_ref_count !=0) TRIQS_RUNTIME_ERROR << "Deleting an memory block of an array with still "<< m->weak_ref_count<< " weak references";
 #endif
    delete m;

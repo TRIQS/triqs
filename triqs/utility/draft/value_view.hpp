@@ -37,9 +37,9 @@ namespace triqs {
   public:
   typedef void has_view_type_tag; // Idiom : ValueView 
   typedef value_view<T,true>  view_type;
-  typedef value_view<T,false> non_view_type;
+  typedef value_view<T,false> regular_type;
   typedef typename std::remove_cv<typename std::remove_reference <T>::type >::type value_type;
-  value_view( non_view_type const & a) { p = a.p;}
+  value_view( regular_type const & a) { p = a.p;}
   value_view( view_type const & a) { p = a.p;}
   void rebind( view_type const &X) { p = X.p; }
 
@@ -48,7 +48,7 @@ namespace triqs {
   operator T() { return  *p;}
   operator T const() const { return *p;} 
   value_view & operator=(view_type     const & x) { if (!p) rebind(x); else { *p = *x.p;} return *this;}
-  value_view & operator=(non_view_type const & x) { if (!p) rebind(x); else { *p = *x.p;} return *this;}
+  value_view & operator=(regular_type const & x) { if (!p) rebind(x); else { *p = *x.p;} return *this;}
   value_view & operator=(T const & x) { *p = x; return *this;}
 
   friend void h5_write (arrays::h5::group_or_file fg, std::string p, value_view const & v) { h5_write(fg,p,v()); }
@@ -68,9 +68,9 @@ namespace triqs {
   public:
   typedef void has_view_type_tag; // Idiom : ValueView 
   typedef value_view<T,true>  view_type;
-  typedef value_view<T,false> non_view_type;
+  typedef value_view<T,false> regular_type;
   typedef typename std::remove_cv<typename std::remove_reference <T>::type >::type value_type;
-  value_view( non_view_type const & a) { p = std::make_shared<T>(*a.p);}
+  value_view( regular_type const & a) { p = std::make_shared<T>(*a.p);}
   value_view( view_type const & a) { p = std::make_shared<T>(*a.p);}
   template<typename... Args> explicit value_view(Args&&... args) {p = std::make_shared<T>(std::forward<Args>(args)...);}
   T & operator()() { return *p;}
@@ -78,7 +78,7 @@ namespace triqs {
   operator T() { return  *p;}
   operator T const() const { return *p;} 
   value_view& operator=(view_type     const & x) { *p = *x.p;return *this;}
-  value_view& operator=(non_view_type const & x) { *p = *x.p;return *this;}
+  value_view& operator=(regular_type const & x) { *p = *x.p;return *this;}
   value_view& operator=(T const & x)             { *p = x;   return *this;}
 
   friend void h5_write (arrays::h5::group_or_file fg, std::string p, value_view const & v) { h5_write(fg,p,v()); }

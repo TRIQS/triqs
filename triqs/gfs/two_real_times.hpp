@@ -95,7 +95,7 @@ namespace triqs { namespace gfs {
 
    static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) {
     auto m =  mesh<two_real_times,Opt>::make(tmax, n_time_slices);
-    typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+    typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
     return gf_t (m, std::move(A), nothing(), nothing() ) ;
    }
   };

@@ -98,7 +98,7 @@ namespace triqs { namespace gfs {
 
     // Pattern : ValueView
     typedef gf_view<Variable,Target,Opt> view_type;
-    typedef gf<Variable,Target,Opt>      non_view_type;
+    typedef gf<Variable,Target,Opt>      regular_type;
 
     typedef gf_desc<Variable,Target,Opt>    descriptor_t;
 
@@ -113,9 +113,9 @@ namespace triqs { namespace gfs {
     typedef gfs_implementation::evaluator<Variable,Target,Opt>                                   evaluator_t;
 
     typedef gfs_implementation::data_proxy<Variable,Target,Opt>                                  data_proxy_t;
-    typedef typename data_proxy_t::storage_t                                                    data_non_view_t;
+    typedef typename data_proxy_t::storage_t                                                    data_regular_t;
     typedef typename data_proxy_t::storage_view_t                                               data_view_t;
-    typedef typename std::conditional<IsView, data_view_t, data_non_view_t>::type               data_t;
+    typedef typename std::conditional<IsView, data_view_t, data_regular_t>::type               data_t;
 
     typedef typename gfs_implementation::singularity<Variable,Target,Opt>::type                  singularity_non_view_t;
     typedef typename view_type_if_exists_else_type<singularity_non_view_t>::type                singularity_view_t;

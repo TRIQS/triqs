@@ -81,14 +81,14 @@ namespace triqs { namespace gfs {
    
    template<typename MeshType>
    static gf_t make_gf(MeshType && m) {
-    typename gf_t::data_non_view_t A(m.size());
+    typename gf_t::data_regular_t A(m.size());
     A() =0;
     return gf_t (m, std::move(A), nothing(), nothing() ) ;
    }
 
    static gf_t make_gf(double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) { 
     auto m =  make_gf_mesh<re_im_time,Opt>(tmin,tmax, nt, beta, S, ntau, mk);
-    typename gf_t::data_non_view_t A(m.size()); 
+    typename gf_t::data_regular_t A(m.size()); 
     A() =0;
     return gf_t (m, std::move(A), nothing(), nothing());
     //return gf_t (m, std::move(A), make_gf<retime,scalar_valued>(tmin, tmax, nt), nothing());

@@ -52,15 +52,15 @@ namespace triqs { namespace gfs { namespace local {
   public :
    typedef void has_view_type_tag; // Idiom : ValueView
    typedef tail_view view_type;
-   typedef tail      non_view_type;
+   typedef tail      regular_type;
 
-   typedef arrays::array      <dcomplex,3>                         data_non_view_type;
+   typedef arrays::array      <dcomplex,3>                         data_regular_type;
    typedef arrays::array_view <dcomplex,3>                         data_view_type;
-   typedef typename mpl::if_c<IsView, data_view_type, data_non_view_type>::type  data_type;
+   typedef typename mpl::if_c<IsView, data_view_type, data_regular_type>::type  data_type;
 
-   typedef arrays::array<long,2>                                   mask_non_view_type;
+   typedef arrays::array<long,2>                                   mask_regular_type;
    typedef arrays::array_view<long,2>                              mask_view_type;
-   typedef typename mpl::if_c<IsView, mask_view_type, mask_non_view_type>::type  mask_type;
+   typedef typename mpl::if_c<IsView, mask_view_type, mask_regular_type>::type  mask_type;
 
    typedef arrays::matrix_view<dcomplex>  mv_type;
    typedef arrays::matrix_view<dcomplex>  const_mv_type;
@@ -116,13 +116,13 @@ namespace triqs { namespace gfs { namespace local {
 
    const_mv_type operator() (int n) const {
      if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ;
-     if (n<this->order_min())  { mv_type::non_view_type r(this->shape()); r()=0; return r;}
+     if (n<this->order_min())  { mv_type::regular_type r(this->shape()); r()=0; return r;}
      return this->_data(n-omin,tqa::range(), tqa::range());
    }
 
    /// same as (), but if n is too large, then returns 0 instead of raising an exception
    const_mv_type get_or_zero (int n) const {
-    if ( (n>this->order_max()) || (n<this->order_min()) ) { mv_type::non_view_type r(this->shape()); r()=0; return r;}
+    if ( (n>this->order_max()) || (n<this->order_min()) ) { mv_type::regular_type r(this->shape()); r()=0; return r;}
     return this->_data(n-omin,tqa::range(), tqa::range());
    }
 

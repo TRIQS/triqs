@@ -77,7 +77,7 @@ namespace triqs { namespace gfs {
       
       static gf_t make_gf(double wmin, double wmax, size_t nw, double beta, statistic_enum S, size_t nwn) { 
         auto m =  make_gf_mesh<re_im_freq,Opt>(wmin, wmax, nw, beta, S, nwn);
-        typename gf_t::data_non_view_t A(m.size()); 
+        typename gf_t::data_regular_t A(m.size()); 
         A() =0;
         return gf_t (m, std::move(A), gfs::make_gf<refreq,scalar_valued>(wmin, wmax, nw), nothing() ) ;
       }

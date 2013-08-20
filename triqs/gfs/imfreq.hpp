@@ -75,7 +75,7 @@ namespace triqs { namespace gfs {
     
     template<typename MeshType>
     static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-      typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+      typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
       return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
     }
     static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
@@ -95,7 +95,7 @@ namespace triqs { namespace gfs {
 
    template<typename MeshType>
    static gf_t make_gf(MeshType && m, local::tail_view const & t) {
-    typename gf_t::data_non_view_t A(m.size()); A() =0;
+    typename gf_t::data_regular_t A(m.size()); A() =0;
     return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
    }
    static gf_t make_gf(double beta, statistic_enum S) {

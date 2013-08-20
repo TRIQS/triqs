@@ -40,7 +40,7 @@ namespace triqs { namespace arrays {
  template <typename ValueType, ull_t Opt, bool Borrowed>
   class vector_view : Tag::vector_view, TRIQS_MODEL_CONCEPT(MutableVector), public  IMPL_TYPE {
   public :
-   typedef vector     <ValueType,Opt>       non_view_type;
+   typedef vector     <ValueType,Opt>       regular_type;
    typedef vector_view<ValueType,Opt,false> view_type;
    typedef vector_view<ValueType,Opt,true>  weak_view_type;
    typedef void has_view_type_tag;
@@ -107,7 +107,7 @@ namespace triqs { namespace arrays {
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
-    typedef vector     <ValueType,Opt>      non_view_type;
+    typedef vector     <ValueType,Opt>      regular_type;
     typedef vector_view<ValueType,Opt>      view_type;
     typedef vector_view<ValueType,Opt,true> weak_view_type;
     typedef void has_view_type_tag;

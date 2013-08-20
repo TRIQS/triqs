@@ -160,7 +160,7 @@ namespace triqs { namespace gfs {
     template<typename ... Meshes>
      static gf_t make_gf(Meshes && ... meshes) { 
       auto m =  make_gf_mesh<cartesian_product<Ms...>,Opt>(meshes...);
-      typename gf_t::data_non_view_t A(m.size()); 
+      typename gf_t::data_regular_t A(m.size()); 
       A() =0;
       return gf_t (m, std::move(A), nothing(), nothing());
      }

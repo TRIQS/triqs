@@ -29,7 +29,7 @@ namespace triqs { namespace python_tools {
  // This class must be friend of V, to use the private default constructor.
  template<typename V> class cython_proxy : public V {
   public:
-  cython_proxy() : V(typename V::non_view_type()) {}
+  cython_proxy() : V(typename V::regular_type()) {}
   cython_proxy(V const &v) : V(v){};
   cython_proxy(cython_proxy const & cp) : V(cp) {};
   template<typename ... Args> explicit cython_proxy(Args && ... args) : V (std::forward<Args>(args)...){}

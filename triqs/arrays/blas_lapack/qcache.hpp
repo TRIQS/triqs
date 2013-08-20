@@ -92,7 +92,7 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   const bool need_copy;
   A keeper;
   struct internal_data {
-   typename A::non_view_type copy_data;
+   typename A::regular_type copy_data;
    A view;
    internal_data(const_qcache const & P) : copy_data(P.keeper), view(copy_data) {
 #ifdef TRIQS_ARRAYS_CACHE_COPY_VERBOSE

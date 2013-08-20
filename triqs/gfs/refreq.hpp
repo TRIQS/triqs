@@ -54,7 +54,7 @@ namespace triqs { namespace gfs {
     typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix<std::complex<double> >, std::complex<double>>::type rtype; 
     template<typename G>
      rtype operator() (G const * g,double w0)  const {
-     //auto operator() (G const * g,double w0) const -> typename decltype ((*g)[0])::non_view_type {
+     //auto operator() (G const * g,double w0) const -> typename decltype ((*g)[0])::regular_type {
       size_t n; double w; bool in;
       std::tie(in, n, w) = windowing(g->mesh(),w0);
       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
@@ -77,17 +77,17 @@ namespace triqs { namespace gfs {
 
    template<typename MeshType>
     static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-     typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+     typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
      return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
     }
 
    static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) {
-    typename gf_t::data_non_view_t A(shape.front_append(n_freq)); A() =0;
+    typename gf_t::data_regular_t A(shape.front_append(n_freq)); A() =0;
     return gf_t(mesh<refreq,Opt>::make(wmin, wmax, n_freq, full_bins), std::move(A), local::tail(shape), nothing());
    }
 
    static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
-    typename gf_t::data_non_view_t A(shape.front_append(n_freq)); A() =0;
+    typename gf_t::data_regular_t A(shape.front_append(n_freq)); A() =0;
     return gf_t(mesh<refreq,Opt>::make(wmin, wmax, n_freq, mk), std::move(A), local::tail(shape), nothing());
    }
   };
@@ -98,17 +98,17 @@ namespace triqs { namespace gfs {
 
    template<typename MeshType>
     static gf_t make_gf(MeshType && m, local::tail_view const & t) {
-     typename gf_t::data_non_view_t A(m.size()); A() =0;
+     typename gf_t::data_regular_t A(m.size()); A() =0;
      return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
     }
     
     static gf_t make_gf(double wmin, double wmax, size_t n_freq) {
-     typename gf_t::data_non_view_t A(n_freq); A() =0;
+     typename gf_t::data_regular_t A(n_freq); A() =0;
      return gf_t(mesh<refreq,Opt>::make(wmin, wmax, n_freq), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
     }
 
    static gf_t make_gf(double wmin, double wmax, size_t n_freq, mesh_kind mk) {
-    typename gf_t::data_non_view_t A(n_freq); A() =0;
+    typename gf_t::data_regular_t A(n_freq); A() =0;
     return gf_t(mesh<refreq,Opt>::make(wmin, wmax, n_freq, mk), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
    }
 

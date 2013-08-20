@@ -81,7 +81,7 @@ namespace triqs { namespace arrays { namespace linalg {
    protected:
     eigenelements_worker_base ( matrix_view <T,Opt> the_matrix) :  eigenelements_worker_base <T,Opt,false>  (the_matrix) {this->compz='V'; }
    public:
-    typename matrix_view<T,Opt>::non_view_type vectors() const { 
+    typename matrix_view<T,Opt>::regular_type vectors() const { 
      if (!this->has_run)  TRIQS_RUNTIME_ERROR<<"eigenelements_worker has not been invoked !";
      return this->mat;
     }
@@ -153,7 +153,7 @@ namespace triqs { namespace arrays { namespace linalg {
   *   if true : a copy is made, M is preserved, but of course it is slower...
   */
  template<typename MatrixViewType >   
-  std::pair<array<double,1>, typename MatrixViewType::non_view_type> eigenelements( MatrixViewType const & M, bool take_copy =false) { 
+  std::pair<array<double,1>, typename MatrixViewType::regular_type> eigenelements( MatrixViewType const & M, bool take_copy =false) { 
    eigenelements_worker<typename MatrixViewType::view_type, true> W(take_copy ? MatrixViewType(make_clone(M)) : M); 
    W.invoke(); 
    return std::make_pair(W.values(),W.vectors());

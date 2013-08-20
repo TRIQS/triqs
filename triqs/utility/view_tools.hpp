@@ -30,11 +30,11 @@ namespace triqs {
 
  template<typename T> void nop(T ...){};
  template<typename T, typename Enable=void> struct has_view : std::false_type {};
- template<typename T> struct has_view<T, decltype(nop(std::declval<typename T::view_type>(),std::declval<typename T::non_view_type>()))> : std::true_type {};
+ template<typename T> struct has_view<T, decltype(nop(std::declval<typename T::view_type>(),std::declval<typename T::regular_type>()))> : std::true_type {};
 
- template<typename T, bool HasView = has_view<T>::value> struct non_view_type_if_exists_else_type;
- template<typename T> struct non_view_type_if_exists_else_type<T,false> {typedef T type;};
- template<typename T> struct non_view_type_if_exists_else_type<T,true > {typedef typename T::non_view_type type;};
+ template<typename T, bool HasView = has_view<T>::value> struct regular_type_if_exists_else_type;
+ template<typename T> struct regular_type_if_exists_else_type<T,false> {typedef T type;};
+ template<typename T> struct regular_type_if_exists_else_type<T,true > {typedef typename T::regular_type type;};
 
  template<typename T, bool HasView = has_view<T>::value> struct view_type_if_exists_else_type;
  template<typename T> struct view_type_if_exists_else_type<T,false> {typedef T type;};
@@ -47,8 +47,8 @@ namespace triqs {
 
 #else
 
- template<typename T, typename Void =void> struct non_view_type_if_exists_else_type {typedef T type;};
- template<typename T> struct non_view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef typename T::non_view_type type;};
+ template<typename T, typename Void =void> struct regular_type_if_exists_else_type {typedef T type;};
+ template<typename T> struct regular_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef typename T::regular_type type;};
 
  template<typename T, typename Void =void> struct view_type_if_exists_else_type {typedef T type;};
  template<typename T> struct view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef typename T::view_type type;};
@@ -62,7 +62,7 @@ namespace triqs {
  // replacement of std::plus for views ...
  template <class T> struct add_views : std::binary_function <T,T,T> {
   T operator() (const T& x, const T& y) const
-  { typename T::non_view_type r(x); r =r + y; return r;}
+  { typename T::regular_type r(x); r =r + y; return r;}
  };
 
 
