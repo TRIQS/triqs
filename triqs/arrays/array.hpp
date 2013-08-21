@@ -86,6 +86,13 @@ namespace triqs { namespace arrays {
   };
 
 #undef IMPL_TYPE
+
+// This alias is experiemental !! on modern compilers only.
+#ifndef TRIQS_COMPILER_IS_OBSOLETE
+ template <typename ValueType, int Rank, ull_t Opt=0, ull_t TraversalOrder=0, bool Borrowed=false>
+ using array_const_view = array_view<ValueType, Rank, Opt, TraversalOrder, Borrowed>; 
+#endif
+
  //------------------------------- array ---------------------------------------------------
 
 #define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<Rank,Opt,TraversalOrder>, \
