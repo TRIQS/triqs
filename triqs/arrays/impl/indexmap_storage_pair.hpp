@@ -166,8 +166,6 @@ namespace triqs { namespace arrays {
 
     size_t shape(size_t i) const { return domain().lengths()[i];}
 
-    size_t len(size_t i) const { return this->shape()[i]; }
-
     size_t num_elements() const { return domain().number_of_elements();}
 
     //bool is_empty() const { return this->num_elements()==0;}

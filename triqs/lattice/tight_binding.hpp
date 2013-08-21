@@ -55,8 +55,8 @@ namespace triqs { namespace lattice_tools {
      std::vector<long> V(std::forward<VectorIntType>(v)); 
      if (v.size() != bl_.dim()) TRIQS_RUNTIME_ERROR<<"tight_binding : displacement of incorrect size : got "<< v.size() << "instead of "<< bl_.dim();
      matrix<dcomplex> M(std::forward<MatrixDComplexType>(m));
-     if (M.len(0) != n_bands()) TRIQS_RUNTIME_ERROR<<"tight_binding : the first dim matrix is of size "<<  M.len(0) <<" instead of "<< n_bands();
-     if (M.len(1) != n_bands()) TRIQS_RUNTIME_ERROR<<"tight_binding : the first dim matrix is of size "<<  M.len(1) <<" instead of "<< n_bands();
+     if (M.shape(0) != n_bands()) TRIQS_RUNTIME_ERROR<<"tight_binding : the first dim matrix is of size "<<  M.shape(0) <<" instead of "<< n_bands();
+     if (M.shape(1) != n_bands()) TRIQS_RUNTIME_ERROR<<"tight_binding : the first dim matrix is of size "<<  M.shape(1) <<" instead of "<< n_bands();
      displ_value_stack.push_back(std::make_pair(std::move(V), std::move(M)));
     }
 

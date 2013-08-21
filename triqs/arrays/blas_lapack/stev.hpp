@@ -49,7 +49,7 @@ namespace triqs { namespace arrays { namespace blas {
     D(range(0,s)) = d; 
     E(range(0,s-1)) = e;
     int info;
-    f77::stev ('V',d.size(),D.data_start(),E.data_start(), Z.data_start(), Z.len(0),W.data_start(), info);
+    f77::stev ('V',d.size(),D.data_start(),E.data_start(), Z.data_start(), Z.shape(0),W.data_start(), info);
     if (info !=0) TRIQS_RUNTIME_ERROR << " Error in tridiagonal matrix diagonalization "<< info;
    }
   arrays::vector_view<double> values() const { return D(range(0,s));}

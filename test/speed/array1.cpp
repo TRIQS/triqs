@@ -137,8 +137,8 @@ struct foreach_manual_simple {
   const int u[2] = {1,0}; //=1, u1=0;
   //int u[2]; for (int i=0; i<2; ++i) u[i] = 1-i;
   for (int k =0; k<5000; ++k)
-   for (t[u[0]]=0; t[u[0]]<A.len(u[0]); ++t[u[0]])
-    for (t[u[1]] =0; t[u[1]]<A.len(u[1]); ++t[u[1]])
+   for (t[u[0]]=0; t[u[0]]<A.shape(u[0]); ++t[u[0]])
+    for (t[u[1]] =0; t[u[1]]<A.shape(u[1]); ++t[u[1]])
      A(t[u[1]],t[u[0]]) = 1876;
   //A[t] = 1876;
  }

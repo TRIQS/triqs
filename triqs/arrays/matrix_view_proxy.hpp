@@ -34,7 +34,7 @@ namespace triqs { namespace arrays {
  // to do : separate the array and the matrix case.
  // generalize with preprocessor (draft below)
 
- // write concept mutable down and clean it (dim0, dim1, len(i), ...) 
+ // write concept mutable down and clean it (dim0, dim1, shape(i), ...) 
 #ifdef DO_NOT_DEFINE_ME
  // human version of the class, the preprocessor generalisation is next..
  template<typename ArrayType > class const_matrix_view_proxy<ArrayType,2> : TRIQS_MODEL_CONCEPT(ImmutableMatrix)   {
@@ -47,9 +47,9 @@ namespace triqs { namespace arrays {
    typedef typename indexmap_type::domain_type domain_type;
    indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() , range() , range(),n, ellipsis()); }
    domain_type domain() const { return indexmap().domain();}
-   size_t len(int i) const { return A->len(i);}
-   size_t dim0() const { return A->len(0);}
-   size_t dim1() const { return A->len(1);}
+   size_t shape(int i) const { return A->shape(i);}
+   size_t dim0() const { return A->shape(0);}
+   size_t dim1() const { return A->shape(1);}
    typename ArrayType::storage_type const & storage() const { return A->storage();}
    TRIQS_DELETE_COMPOUND_OPERATORS(const_matrix_view_proxy);
    template< typename A0 , typename A1 , typename ... Args> value_type const & operator() ( A0 &&a0 , A1 &&a1 , Args && ... args) const
@@ -66,9 +66,9 @@ namespace triqs { namespace arrays {
    typedef typename indexmap_type::domain_type domain_type;
    indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() , range() , range(),n, ellipsis()); }
    domain_type domain() const { return indexmap().domain();}
-   size_t len(int i) const { return A->len(i);}
-   size_t dim0() const { return A->len(0);}
-   size_t dim1() const { return A->len(1);}
+   size_t shape(int i) const { return A->shape(i);}
+   size_t dim0() const { return A->shape(0);}
+   size_t dim1() const { return A->shape(1);}
    typename ArrayType::storage_type const & storage() const { return A->storage();}
    template<typename RHS> matrix_view_proxy & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view_proxy);
@@ -92,9 +92,9 @@ namespace triqs { namespace arrays {
    typedef typename indexmap_type::domain_type domain_type;\
    indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() BOOST_PP_ENUM_TRAILING(POS, TEXT, range()),n, ellipsis()); }\
    domain_type domain() const { return indexmap().domain();}\
-   size_t len(int i) const { return A->len(i);}\
-   size_t dim0() const { return A->len((POS+1)%3);}\
-   size_t dim1() const { return A->len((POS+2)%3);}\
+   size_t shape(int i) const { return A->shape(i);}\
+   size_t dim0() const { return A->shape((POS+1)%3);}\
+   size_t dim1() const { return A->shape((POS+2)%3);}\
    typename ArrayType::storage_type const & storage() const { return A->storage();}\
    value_type const * restrict data_start() const { return &storage()[indexmap().start_shift()];}\
    value_type * restrict data_start() { return &storage()[indexmap().start_shift()];}\
@@ -117,9 +117,9 @@ namespace triqs { namespace arrays {
    typedef typename indexmap_type::domain_type domain_type;\
   indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() BOOST_PP_ENUM_TRAILING(POS, TEXT, range()),n, ellipsis()); }\
    domain_type domain() const { return indexmap().domain();}\
-   size_t len(int i) const { return A->len(i);}\
-   size_t dim0() const { return A->len((POS+1)%3);}\
-   size_t dim1() const { return A->len((POS+2)%3);}\
+   size_t shape(int i) const { return A->shape(i);}\
+   size_t dim0() const { return A->shape((POS+1)%3);}\
+   size_t dim1() const { return A->shape((POS+2)%3);}\
    typename ArrayType::storage_type const & storage() const { return A->storage();}\
    value_type const * restrict data_start() const { return &storage()[indexmap().start_shift()];}\
    value_type * restrict data_start() { return &storage()[indexmap().start_shift()];}\

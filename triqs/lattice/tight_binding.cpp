@@ -31,8 +31,8 @@ using namespace std;
 
  array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2> const & k_stack) {
   auto TK = Fourier(TB);  
-  array<dcomplex,3> res(TB.n_bands(), TB.n_bands(), k_stack.len(1));
-  for(size_t i = 0; i<k_stack.len(1); ++i) res(range(), range(), i) = TK(k_stack(range(),i));
+  array<dcomplex,3> res(TB.n_bands(), TB.n_bands(), k_stack.shape(1));
+  for(size_t i = 0; i<k_stack.shape(1); ++i) res(range(), range(), i) = TK(k_stack(range(),i));
   return res;
  }
 
@@ -131,14 +131,14 @@ using namespace std;
 
   //const size_t ndim=TB.lattice().dim();
   //const size_t norb=TB.lattice().n_orbitals();
-  int ntri = triangles.len(0)/3;
+  int ntri = triangles.shape(0)/3;
   array<double,1> dos(neps);
 
   // Check consistency
   const size_t ndim=TB.lattice().dim();
   //const size_t norb=TB.lattice().n_orbitals();
   if (ndim !=2)  TRIQS_RUNTIME_ERROR<<"dos_patch : dimension 2 only !";
-  if (triangles.len(1) != ndim) TRIQS_RUNTIME_ERROR<<"dos_patch : the second dimension of the 'triangle' array in not "<<ndim;
+  if (triangles.shape(1) != ndim) TRIQS_RUNTIME_ERROR<<"dos_patch : the second dimension of the 'triangle' array in not "<<ndim;
 
   // Every triangle has ndiv*ndiv k points
   size_t nk = ntri*ndiv*ndiv;

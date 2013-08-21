@@ -29,7 +29,7 @@ namespace triqs { namespace lattice_tools {
  //using triqs::arrays::blas::dot;
  const double almost_zero(1E-10);
 
- bravais_lattice::bravais_lattice( units_type const & units__) : units_(3,3), dim_(units__.len(0)) { 
+ bravais_lattice::bravais_lattice( units_type const & units__) : units_(3,3), dim_(units__.shape(0)) { 
   units_(range(0,dim_),range()) = units__();
   units_(range(dim_,3),range()) = 0;
   // First complete the basis. Add some tests for safety

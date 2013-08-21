@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 
  test<vector<double> , vector<int> >();
  
- // does not work for array just because of .size() vs .len(0)...
+ // does not work for array just because of .size() vs .shape(0)...
  //test<array<double,1> , array<int,1> >();
  //test<array<double,1> , vector<int> >();
  //test<vector<double> , array<int,1>  >();
