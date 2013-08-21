@@ -29,6 +29,8 @@
 
 namespace triqs { namespace arrays {
 
+ namespace Tag {struct indexmap_storage_pair{}; }// defined here since needed below...
+ 
  namespace assignment { template<typename LHS, typename RHS, char OP, typename Enable = void>  struct impl; }
 
  // puts the contents of RHS into LHS. LHS must be an indexmap_storage_pair

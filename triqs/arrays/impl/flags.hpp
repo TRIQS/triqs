@@ -25,6 +25,8 @@ namespace triqs { namespace arrays {
 
  typedef unsigned long long ull_t;
 
+ namespace Tag {struct no_init {}; struct default_init {};}
+
  // Flags is a 64 bit unsigned int.
  // 0 is the default option.
  // Meaning of the bits :

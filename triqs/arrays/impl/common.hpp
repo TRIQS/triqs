@@ -41,7 +41,6 @@
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/type_traits/is_complex.hpp>
 #include <triqs/utility/compiler_details.hpp>
-#include "./tags.hpp"
 #include "./traits.hpp"
 #include <triqs/utility/macros.hpp>
 

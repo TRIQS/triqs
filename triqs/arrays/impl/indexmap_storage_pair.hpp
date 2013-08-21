@@ -40,7 +40,7 @@ namespace triqs { namespace arrays {
 
  template <bool Const, typename IndexMapIterator, typename StorageType > class iterator_adapter;
 
- template < class V, int R, ull_t OptionFlags, ull_t TraversalOrder,  class ViewTag, bool Borrowed > struct ISPViewType;
+ template <class V, int R, ull_t OptionFlags, ull_t TraversalOrder,  class ViewTag, bool Borrowed > struct ISPViewType;
 
  template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder,  typename ViewTag >
   class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_MODEL_CONCEPT(MutableArray) {
@@ -61,37 +61,22 @@ namespace triqs { namespace arrays {
     // ------------------------------- constructors --------------------------------------------
 
     indexmap_storage_pair() {}
-
-    indexmap_storage_pair (const indexmap_type & IM, const storage_type & ST):
-     indexmap_(IM),storage_(ST){
-      //std::cerr  << " construct ISP "<< storage_type::is_weak<< std::endl;
-#ifdef TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
-      if (ST.size() != IM.domain().number_of_elements())
-       TRIQS_RUNTIME_ERROR<<"index_storage_pair construction : storage and indices are not compatible";
-#endif
-     }
-
-    indexmap_storage_pair (indexmap_type && IM, storage_type && ST):
-     indexmap_(std::move(IM)),storage_(std::move(ST)){
-      //std::cerr  << " construct ISP && IM, && ST "<< storage_type::is_weak<< std::endl;
-#ifdef TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
-      if (ST.size() != IM.domain().number_of_elements())
-       TRIQS_RUNTIME_ERROR<<"index_storage_pair construction : storage and indices are not compatible";
-#endif
-     }
-
-   indexmap_storage_pair (indexmap_type const & IM, storage_type && ST):
-     indexmap_(IM),storage_(std::move(ST)){
-      //std::cerr  << " construct ISP && ST "<< storage_type::is_weak<< std::endl;
-#ifdef TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
-      if (ST.size() != IM.domain().number_of_elements())
-       TRIQS_RUNTIME_ERROR<<"index_storage_pair construction : storage and indices are not compatible";
-#endif
-     }
+    indexmap_storage_pair (indexmap_type const & IM, storage_type const & ST): indexmap_(IM),storage_(ST) {deleg(IM,ST);}
+    indexmap_storage_pair (indexmap_type && IM, storage_type && ST)          : indexmap_(std::move(IM)),storage_(std::move(ST)){deleg(IM,ST);}
+    indexmap_storage_pair (indexmap_type const & IM, storage_type && ST)     : indexmap_(IM),storage_(std::move(ST)) {deleg(IM,ST);}
 
     /// The storage is allocated from the size of IM.
     indexmap_storage_pair (const indexmap_type & IM): indexmap_(IM),storage_(){
      this->storage_ = StorageType(this->indexmap_.domain().number_of_elements(), typename flags::init_tag<OptionFlags>::type() );
+    }
+   
+   private : 
+    void deleg (const indexmap_type & IM, const storage_type & ST) { 
+     //std::cerr  << " construct ISP && ST "<< storage_type::is_weak<< std::endl;
+#ifdef TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
+     if (ST.size() != IM.domain().number_of_elements())
+      TRIQS_RUNTIME_ERROR<<"index_storage_pair construction : storage and indices are not compatible";
+#endif
     }
 
    public:
@@ -228,10 +213,10 @@ namespace triqs { namespace arrays {
     /// Equivalent to make_view
     typename ISPViewType<value_type,domain_type::rank, OptionFlags | ConstView, TraversalOrder, ViewTag, true >::type
      operator()() const & { return *this; }
-    
+
     typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, true >::type
      operator()() & { return *this; }
-    
+
     typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, StorageType::is_weak >::type
      operator()() && { return *this; }
 
@@ -257,12 +242,12 @@ namespace triqs { namespace arrays {
     //typename ISPViewType<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
     typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, false >::type
      operator()() const { return *this; }
-    
+
     typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, false >::type
      operator()() { return *this; }
-    
+
 #endif
-     // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
+    // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
     // NB : this is ok because indexmap_storage_pair has a shallow copy constructor ...
     // so A(i_) if A is an array will NOT copy the data....
     template< typename... Args>
