@@ -74,7 +74,6 @@ namespace triqs { namespace gfs {
  struct nothing {
   template<typename... Args> explicit nothing(Args...) {} // takes anything, do nothing..
   nothing() {}
-  typedef void has_view_type_tag;     // Idiom : ValueView  
   typedef nothing view_type;
   typedef nothing regular_type;
   void rebind (nothing){}

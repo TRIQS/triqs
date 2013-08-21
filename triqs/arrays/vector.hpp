@@ -43,7 +43,6 @@ namespace triqs { namespace arrays {
    typedef vector     <ValueType,Opt>       regular_type;
    typedef vector_view<ValueType,Opt,false> view_type;
    typedef vector_view<ValueType,Opt,true>  weak_view_type;
-   typedef void has_view_type_tag;
 
    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
    typedef typename IMPL_TYPE::storage_type storage_type;
@@ -110,7 +109,6 @@ namespace triqs { namespace arrays {
     typedef vector     <ValueType,Opt>      regular_type;
     typedef vector_view<ValueType,Opt>      view_type;
     typedef vector_view<ValueType,Opt,true> weak_view_type;
-    typedef void has_view_type_tag;
 
     /// Empty vector.
     vector(){}

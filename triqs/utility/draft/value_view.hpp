@@ -35,7 +35,6 @@ namespace triqs {
   friend class value_view<T,false>;
 
   public:
-  typedef void has_view_type_tag; // Idiom : ValueView 
   typedef value_view<T,true>  view_type;
   typedef value_view<T,false> regular_type;
   typedef typename std::remove_cv<typename std::remove_reference <T>::type >::type value_type;
@@ -66,7 +65,6 @@ namespace triqs {
   std::shared_ptr<T> p;
   friend class value_view<T,true>;
   public:
-  typedef void has_view_type_tag; // Idiom : ValueView 
   typedef value_view<T,true>  view_type;
   typedef value_view<T,false> regular_type;
   typedef typename std::remove_cv<typename std::remove_reference <T>::type >::type value_type;

@@ -50,7 +50,6 @@ namespace triqs { namespace gfs { namespace local {
  /// A common implementation class. Idiom : ValueView
  template<bool IsView> class tail_impl  {
   public :
-   typedef void has_view_type_tag; // Idiom : ValueView
    typedef tail_view view_type;
    typedef tail      regular_type;
 

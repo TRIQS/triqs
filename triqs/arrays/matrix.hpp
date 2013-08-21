@@ -54,7 +54,6 @@ namespace triqs { namespace arrays {
     typedef matrix     <ValueType,Opt,TraversalOrder>       regular_type;
     typedef matrix_view<ValueType,Opt,TraversalOrder>       view_type;
     typedef matrix_view<ValueType,Opt,TraversalOrder,true>  weak_view_type;
-    typedef void has_view_type_tag;
 
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
@@ -116,7 +115,6 @@ namespace triqs { namespace arrays {
     typedef matrix     <ValueType,Opt,TraversalOrder>      regular_type;
     typedef matrix_view<ValueType,Opt,TraversalOrder>      view_type;
     typedef matrix_view<ValueType,Opt,TraversalOrder,true> weak_view_type;
-    typedef void has_view_type_tag;
 
     /// Empty matrix.
     matrix(memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order) ):  IMPL_TYPE(indexmap_type(ml)) {}

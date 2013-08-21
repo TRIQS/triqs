@@ -20,7 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_ARRAY_H
 #define TRIQS_ARRAYS_ARRAY_H
-#include<triqs/utility/first_include.hpp>
+#include <triqs/utility/first_include.hpp>
 #include "indexmaps/cuboid/map.hpp"
 #include "indexmaps/cuboid/slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
@@ -45,7 +45,6 @@ namespace triqs { namespace arrays {
    typedef array     <ValueType,Rank,Opt,TraversalOrder>       regular_type;
    typedef array_view<ValueType,Rank,Opt,TraversalOrder>       view_type;
    typedef array_view<ValueType,Rank,Opt,TraversalOrder,true>  weak_view_type;
-   typedef void has_view_type_tag;
  
    /// Build from an IndexMap and a storage 
    template<typename S> array_view (indexmap_type const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
@@ -101,7 +100,6 @@ namespace triqs { namespace arrays {
     typedef array     <ValueType,Rank,Opt,TraversalOrder>      regular_type;
     typedef array_view<ValueType,Rank,Opt,TraversalOrder>      view_type;
     typedef array_view<ValueType,Rank,Opt,TraversalOrder,true> weak_view_type;
-    typedef void has_view_type_tag; 
 
     /// Empty array.
     explicit array(memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)) :IMPL_TYPE(ml){} 
