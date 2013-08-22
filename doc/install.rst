@@ -27,9 +27,9 @@ Complete installation instructions for standard systems
 .. toctree::
    :maxdepth: 1
      
-   Ubuntu
-   linux
-   install_on_osx_lion
+   installation/Ubuntu
+   installation/linux
+   installation/install_on_osx_lion
  
 Details
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -37,13 +37,13 @@ Details
 .. toctree::
    :maxdepth: 1
    
-   wien2k_inst
-   dependencies
-   python
-   clang
-   intel
-   install_options
-   get_started
-   changelog
+   installation/wien2k_inst
+   installation/dependencies
+   installation/python
+   installation/clang
+   installation/intel
+   installation/install_options
+   installation/get_started
+   installation/changelog
 
 

@@ -1,3 +1,5 @@
+.. _documentation:
+
 Table of contents
 =================
 
@@ -10,5 +12,3 @@ Table of contents
    reference/python/contents
    reference/c++/contents
    
-.. 
-   reference/applications/contents

@@ -61,7 +61,7 @@ autoclass_content = "both"
 mathjax_path = "@MATHJAX_PATH@/MathJax.js?config=default"
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['@TRIQS_SOURCE_DIR@/doc/_templates']
+#templates_path = ['@TRIQS_SOURCE_DIR@/doc/_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -70,7 +70,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8'
 
 # The master toctree document.
-master_doc = 'contents'
+master_doc = 'index'
 
 # General information about the project.
 project = u'TRIQS'
@@ -143,8 +143,7 @@ doxylink = { 'doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/doxy.tag', 'doxy_triqs') }
 # given in html_static_path.
 #html_style = 'default.css'
 html_theme_path = ["@TRIQS_SOURCE_DIR@/doc/themes/"]
-html_theme = "agogo"
-#html_theme = "default"
+html_theme = "triqs"
 
 #html_theme_options = { "pagewidth": "80em", "documentwidth" : "60em" }
 
@@ -182,7 +181,7 @@ html_last_updated_fmt = '%b %d, %Y'
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-html_additional_pages = { 'index':'index.html' }
+#html_additional_pages = { 'index':'index.html' }
 
 # If false, no module index is generated.
 #html_use_modindex = True
