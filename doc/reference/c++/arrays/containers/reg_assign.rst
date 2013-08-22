@@ -1,5 +1,7 @@
 .. highlight:: c
 
+.. _arr_reg_assign:
+
 Assignment 
 =========================
 

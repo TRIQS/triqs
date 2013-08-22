@@ -10,6 +10,8 @@ Two standard functional constructs are provided :
 
 * *fold* is the reduction of a function on the array. 
 
+.. _map:
+
 map
 ========================================================
 * **Purpose** :
@@ -28,11 +30,11 @@ map
    
     ReturnType map(f) ( ArrayType const & A)
    
-  where ArrayType  models the :ref:`HasImmutableArrayInterface` concept
+  where ArrayType  models the :ref:`ImmutableCuboidArray` concept
 
    * with value_type == ValueType1
 
-  and ReturnType models the :ref:`HasImmutableArrayInterface` concept
+  and ReturnType models the :ref:`ImmutableCuboidArray` concept
 
    * with the same domain as ArrayType
    * with value_type == ValueType2
@@ -89,7 +91,7 @@ fold
 
   So, if 
   
-   * A is a type which models the :ref:`HasImmutableArrayInterface` concept
+   * A is a type which models the :ref:`ImmutableCuboidArray` concept
      (e.g. an array , a matrix, a vector, an expression,  ...)
 
    * A::value_type is T
@@ -122,6 +124,10 @@ fold
    * the genericity : it is valid for any dimension of array.
    * internally, the library will rewrite it as a series of for loop, ordered in the TraversalOrder of the array
      and inline the plus operator.
+
+
+
+
 
 
 

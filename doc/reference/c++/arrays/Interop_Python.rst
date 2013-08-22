@@ -76,3 +76,21 @@ Put here the array_cython example
     _testarray.f(a)
 
 
+Memory management
+-----------------
+ 
+TO BE WRITTEN
+
+The reference counting system is *compatible* with the Python reference counting (but distinct),
+if you compile with python support of course.
+
+As long as you write pure C++ code, you are basically using a shared_ptr to your data block.
+No python is involved.
+
+But, if you return your view into a numpy array in python, ownership of your data 
+is automatically transfered to the python interpreter::
+
+The interpreter then take the responsability of destroying the data when needed (meaning here, long after f has returned,
+when the python object returned will be cleaned).
+
+

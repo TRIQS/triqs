@@ -1,4 +1,4 @@
-Reference: C++ librairies
+C++ librairies
 ##########################
 
 .. toctree::
@@ -6,11 +6,10 @@ Reference: C++ librairies
 
    learn/intro
    arrays/contents
+   gf/contents
+   clef/contents
    mctools/intro
    det_manip/det_manip
-   gf/contents
    parameters/parameters
-   gf/intro
-   clef/contents
    lectures/contents
-   utilities/intro.rst
+   utilities/contents

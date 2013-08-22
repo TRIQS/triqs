@@ -1,44 +1,11 @@
 .. highlight:: c
 
-Partial views
-==================================
+.. _arr_range:
 
-Various kind of partial views and slices can be made on arrays and matrices.
+range
+=========
 
-* A `partial view` is defined as a view of a restricted portion of the array while 
-  a `slice` is strictly speaking a partial view of a lower dimension of the original array, 
-  e.g. a column of a matrix.
-
-* Partial views uses the ( ) operator, as the evaluation of the array::
-
-   array<T,2> A(10,10);                   // defines an array
-
-   A(1, range(0,2) )                      // 1d slice
-   A(1, range())                          // 1d slice taking all the second dim
-   
-   A(range(0,10,2), range(0,10,2))        // a 2d slice viewing every each elements with even coordinates.
-   
-   array_view<T,1>  SL =  A(0,range(0,3)); // naming the view. No data copied here !
-   array_view<T,1>  SL ( A(0,range(0,3))); // same thing !
-
-   auto SL = A(0,range(0,3));              // even simpler with C++11.
-   // CAREFUL : this is a weak view !!!! -> to be explained.   
-
-* **Return type** : 
-  
-  * Partial views of array or array_view return an array_view.
-  * Partial views of vector or vector_view return an vector_view.
-  * 2d partial views of matrix or matrix_view return matrix_view.
-  * BUT : (1d) slices of matrix or matrix_view return vector_view.
-  * 0d slices of anything are converted to the `value_type` of the array.
-
-Memory Weak view
-^^^^^^^^^^^^^^^^^^^^^
-
- The `range` type
-^^^^^^^^^^^^^^^^^^^^^
-
-  `range` mimics the python `range`. It can be constructed with : 
+  `range` mimics the Python `range`. Arguments of the constructor can be : 
   
   * no argument : it then takes the whole set of indices in the dimension (like `:` in python) ::    
     
@@ -54,10 +21,12 @@ Memory Weak view
   * three arguments  : a range with a step ::
 
       A(range(0,4,2), 0) // means A(0,0), A(2,0)  
-    
+   
 
-The `ellipsis` type
-^^^^^^^^^^^^^^^^^^^^^^
+.. _arr_ellipsis:
+
+ellipsis
+===============
 
 * Ellipsis can be provided in place of `range`, as in python. The type `ellipsis` is similar to range
   except that it is implicitely repeated to as much as necessary.

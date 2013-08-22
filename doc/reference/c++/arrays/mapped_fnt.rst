@@ -5,25 +5,17 @@
 Simple functions on arrays
 ==================================
 
-The following functions are mapped
+The following functions are mapped on the array (using :ref:`map`):
 
-* abs 
-* real
-* imag
-* pow
-* cos
-* sin
-* tan
-* cosh
-* sinh
-* tanh
-* acos
-* asin
-* atan
-* exp
-* log
-* sqrt
-* floor
+`abs  real  imag  pow  cos  sin  tan  cosh  sinh  tanh  acos  asin  atan  exp  log  sqrt  floor`
+ 
+meaning that e.g. if `A` is an array,
+real(A) models :ref:`ImmutableCuboidArray`, with the same size and returns the real part of the elements.
+In other words, it applies the function term-by-term.
+
+.. note:: 
+
+  These functions do NOT compute a new array in memory, they are lazy.
 
 Example : 
 

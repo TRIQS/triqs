@@ -54,6 +54,11 @@ int main(int argc, char **argv) {
  std::cout  << d<< std::endl;
  std::cout << matrix<int>( 2* d) << std::endl;
  std::cout << matrix<int>( d * d) << std::endl;
+
+ int sum =0;
+ foreach (d, [&sum, &d](int i, int j) { sum += d(i,j);});
+ std::cout  << "sum = "<< sum << std::endl;
+
  return 0;
 }
 

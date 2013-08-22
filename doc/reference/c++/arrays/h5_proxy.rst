@@ -3,6 +3,10 @@
 h5::array_proxy : a simple proxy to the array in file
 ===========================================================
 
+.. warning::
+
+   NOT operational any more ...  : development needed
+
 The principle is that `array_proxy` is a proxy to an array, possibly big, in the h5 file.
 It has a domain, and can be assigned from/to an array and sliced.
 This allows to read/write only parts of a large array using the same slicing syntax 

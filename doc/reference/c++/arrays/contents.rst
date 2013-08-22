@@ -1,4 +1,4 @@
-Array library
+Multidimensional arrays
 *******************************************
 
 .. highlight:: c
@@ -7,30 +7,26 @@ Array library
    :maxdepth: 1
    :numbered:
 
-   cookbook
-   introduction.rst
-   view_or_not_view
-   basic_classes
-   construct
-   views
-   move_swap
+   introduction
+   concepts
+   containers/regular
+   containers/views
    shape
-   element_acces
-   slicing
+   view_or_not_view
    lazy 
-   call 
-   debug 
-   assignment
-   algebras
-   blas_lapack
+   foreach
+   map
    mapped_fnt
+   algebras
+   move_swap
+   blas_lapack
    H5
    Interop_Python
    IO
-   foreach
    STL
-   map
    group_indices
+   debug 
+   multithreading
    FAQ
-   Design/contents.rst
-   
+   implementation_notes/contents
+    

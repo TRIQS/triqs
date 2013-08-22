@@ -2,7 +2,7 @@
 
 .. _Foreach:
 
-The foreach construct
+Loops : the foreach constructs
 ========================================================
 
 foreach and its variants are a compact and efficient way to

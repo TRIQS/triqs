@@ -6,7 +6,7 @@ Operations : array and matrix/vector algebras
 Operations
 ------------
 
-Arrays and matrices can be combined in formal algebraic expressions, which models the :ref:`HasImmutableArrayInterface` concept.
+Arrays and matrices can be combined in formal algebraic expressions, which models the :ref:`ImmutableCuboidArray` concept.
 This algebraic expressions can therefore be used as RHS of assignment (SEE) or in array/matrix contructors.
 For example ; 
 
@@ -71,7 +71,7 @@ Indeed, the operations are implemented with the `expression templates` technique
 The principle is that the result of A+B is **NOT** an array, but a more complex type which stores
 the expression using the naturally recursive structure of templates.
 
-Expressions models :ref:`HasImmutableArrayInterface` concept.
+Expressions models :ref:`ImmutableCuboidArray` concept.
 They behave like an immutable array : they have a domain, they can be evaluated.
 Hence they can used *anywhere* an object modeling this concept is accepted, e.g. : 
 

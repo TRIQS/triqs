@@ -1,35 +1,43 @@
 .. highlight:: c
 
-Green functions  
+Concepts
 #################
 
-Here are the concepts and techniques related to the Green functions.
+A Green function is simply a function, which has : 
 
-All Green functions are implemented as a gf<Descriptor> and gf_view<Descriptor> where : 
+* a `domain` for its variable(s) (e.g. Matsubara/real time/frequencies, Legendre coefficients).
+* a `target` space, i.e. the value of the Green function which can be : 
+   
+   * a scalar (double, complex)
+   * a matrix, 
+   * another Green function (See below, currying Green functions ... REF ... ).
+ 
+In this section, we define the general concepts for these objects.
 
-* Descriptor contains everything specific to the Green function
-  (number of variables, domain of definition, interpolation techniques, etc...).
+First, we need to distinguish the `domain` on which the function is defined
+from its representation in a computer, which we call a `mesh`.
 
-* The gf/gf_view class implements the generic part (hdf5, view mechanism, interaction with clef library, etc...).
+.. note::
+   
+    "mesh" should be understood here in a general and abstract way,
+    as the representation of the domain in the computer.
+    In most cases, it is indeed a real mesh on a domain (e.g. a Brillouin zone), 
+    but the set of Legendre coefficients is also a mesh in our sense.
 
-We first present the concept of the Descriptor, and the concepts of its elements.
-In a second part, we present a more detailed description of gf/gf_view.
+We will therefore now formally define the concept for `domain`, for `mesh`, 
+the notion of `pure function on a domain` (i.e. a mathematical Green function)
+and the notion of `function on a grid`.
 
-Pure functions on domains
-==============================
 
-This formalize a mathematical function : 
+.. _Concept_Domain:
 
-* it has a domain of definition
-* it can be called on any point of the domain, as a *pure* function, i.e. without any side effect.
-
-Domain concept
+Domain 
 ------------------------------------------------- 
 
 * **Purpose**  : The domain of definition of a function. It is a mathematical definition of the domain,
   and does not contain any mesh, or details on its representation in a computer.
 
-* **Refines** : CopyConstructible, DefaultContructible, EqualComparable, BoostSerializable, H5-serializable.
+* **Refines** : RegularType, BoostSerializable, H5-serializable.
 
 * **Definition** : 
 
@@ -43,17 +51,22 @@ Domain concept
 
 * **Examples** :
   
-   * Matsubara frequencies (boson/fermion)
-   * Matsubara time
-   * Real frequencies
-   * Real time 
-   * Brillouin zone
+ * Matsubara frequencies (boson/fermion)
+ * Matsubara time
+ * Real frequencies
+ * Real time 
+ * Brillouin zone
+ * Cartesian product of previous domains to build multi-variable functions.
 
+.. _Concept_PureFunctionOnDomain:
 
 PureFunctionOnDomain 
 -----------------------
 
-* **Purpose**  : A function from a domain to a target space. 
+* **Purpose**  : 
+   A mathematical (pure) function from a domain to a target space. 
+       * it has a domain of definition
+       * it can be called on any point of the domain, as a *pure* function, i.e. without any side effect.
 
 * **Refines**   :
 
@@ -73,22 +86,20 @@ PureFunctionOnDomain
 * NB : Note that the return type of the function is *NOT* part of the concept, 
   it has to be deduced by the compiler (using C++11 decltype, std::result_of, eg..).
 
-Functions stored on a mesh
-================================
+.. note:: 
+   Probably domain_t should also be deduced from the return type of domain ... TO BE CORRECTED
 
-A special kind of function is those stored on a mesh.
-The mesh can be regular or not, multi-dimensionnal.
 
-We first define the concept of a mesh, and then the concept of a function discretized over that mesh.
+.. _Concept_Mesh:
 
-Mesh concept
+Mesh 
 ------------------------------------------------- 
 
 * **Purpose**  : A mesh over a domain, and more generally the practical representation of the domain in a computer.
   It does not really need to be a mesh : e.g. if the function is represented on a polynomial basis, 
   it is the parameters of this representation (max number of coordinates, e.g.)
 
-* **Refines** : CopyConstructible, DefaultContructible, EqualComparable, BoostSerializable, H5-serializable.
+* **Refines** : RegularType, HasConstIterator BoostSerializable, H5-serializable.
 
 * **Definition** : 
   
@@ -107,38 +118,23 @@ Mesh concept
 +--------------------------------------------------------------+-------------------------------------------------------------------------------+
 | size_t index_to_linear(index_t const &) const                | Flattening the index of the mesh into a contiguous linear index               |
 +--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| mesh_point_t                                                 | See below                                                                     |
+| mesh_point_t                                                 | A type modelling MeshPoint concept (see below).                               |
 +--------------------------------------------------------------+-------------------------------------------------------------------------------+
 | mesh_point_t operator[](index_t const & index ) const        | From an index, return a mesh_point_t containing this a ref to this mesh and   |
 |                                                              | the index.                                                                    |
 +--------------------------------------------------------------+-------------------------------------------------------------------------------+
+| free function                                                |                                                                               |
+| foreach ( mesh_t, lambda)                                    | ???????????????????????????????????                                           |
++--------------------------------------------------------------+-------------------------------------------------------------------------------+
 | mesh_pt_generator<mesh_t> iterator                           | A generator of all the mesh points.                                           |
 +--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| iterator begin()/end() const                                 | Standard access to iterator on the mesh                                       |
+| const_iterator begin()/end() const                           | Standard access to iterator on the mesh                                       |
+| const_iterator cbegin()/cend() const                         | Standard access to iterator on the mesh                                       |
 +--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| friend bool operator == (mesh_t const& M1, mesh_t const &M2) | Comparison between meshes                                                     |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
 
+.. _Concept_MeshPoint:
 
-* **Examples** : Some domains and the corresponding possible meshes.
-
-+-----------------------------------------------------+--------------------------------------------------------+
-| Domain Type                                         | What does the corresponding mesh type contain ?        |
-+=====================================================+========================================================+
-| Matsubara frequencies                               | Nmax, the max number of Matsubara Freq.                |
-+-----------------------------------------------------+--------------------------------------------------------+
-| Matsubara time                                      | The time slicing is on a mesh, or the Legendre mesh is |
-|                                                     | we store the function with Legendre representation.    |
-+-----------------------------------------------------+--------------------------------------------------------+
-| Real frequencies                                    | Parameters of the mesh in frequency                    |
-+-----------------------------------------------------+--------------------------------------------------------+
-| Real time                                           |                                                        |
-+-----------------------------------------------------+--------------------------------------------------------+
-| Brillouin zone                                      | parameters of the mesh over the BZ, symmetry ?         |
-+-----------------------------------------------------+--------------------------------------------------------+
-
-
-MeshPoint concept
+MeshPoint 
 ------------------------------------------------- 
 
 * **Purpose**  : Abstraction of a point on a mesh. A little more than a ref to the mesh and a index.
@@ -168,148 +164,33 @@ MeshPoint concept
 +------------------------------------------------+-----------------------------------------------------------------------------+
 | void reset()                                   | Reset the mesh point to the first point                                     |
 +------------------------------------------------+-----------------------------------------------------------------------------+
-| cast_t                                         | type of the corresponding domain point                                      |
-| operator cast_t() const                        | cast to the corresponding domain point                                      |
-+------------------------------------------------+-----------------------------------------------------------------------------+
-| Implements the basic operations on the domain  | Only for non composite mesh                                                 |
-| by using the cast operation                    |                                                                             |
+| cast_t                                         |  == mesh_t::domain_t::point_t                                               |
+| operator cast_t() const                        | *implicit* cast to the corresponding domain point                                      |
 +------------------------------------------------+-----------------------------------------------------------------------------+
 
-The MeshPoint mechanism
----------------------------
+For one dimensional mesh, we also require that the MeshPoint implement the basic arithmetic operations
+using the cast.
 
-A MeshPoint is just a storage of a reference to the mesh and the index of the point in a custom structure.
-The interest of having such a structure is that : 
+* **Discussion** : 
 
-* The gf function has a operator()(mesh_t::mesh_point_t) (see below) which is a direct access to the data on the grid.
-  Hence if MP is a such a MeshPoint, g(MP) is equivalent to something like g.data_on_grid_at_index( MP.index)
+A MeshPoint is just an index of a point on the mesh, and containers like gf can easily be overloaded for this type
+to have a direct access to the grid (Cf [] operator of gf).
 
-* MP however can be casted to a point in the domain and therefore it *is* a domain_t::point_t as well.
+However, since the MeshPoint can be implicitely casted into the domain point, simple 
+expression like  ::
 
-  As a result, g(MP) = 1/(MP + 2) makes senses iif it makes senses in the domain.
+  g[p] = 1/ (p +2)
 
-* Moreover, because of the iterator on the mesh, one can write ::
+make sense and fill the corresponding point wiht the evaluation of 1/ (p+2) in the domain.
+
+As a result, because iterating on a mesh result in a series of object modelling MeshPoint, 
+one can write naturally ::
 
     // example of g, a Green function in Matsubara frequencies w
     for (auto w : g.mesh()) 
-       g(w) = 1/(w + 2)
+       g[w] = 1/(w + 2)
     // This runs overs the mesh, and fills the function with 1/(w+2)
     // In this expression, w is casted to the domain_t::point_t, here a complex<double>
     // which allows to evaluate the function
 
-
-FunctionOnMesh concept 
------------------------------
-
-* **Purpose**  : A function from a domain to a target space, represented in a mesh.
-  This function can only be evaluated on the mesh points. 
-
-* **Refines**   : BoostSerializable, H5-serializable.
-
-* **Definition** : 
-
-+--------------------------------------------------+------------------------------------------------------------------------+
-| Elements                                         | Comment                                                                |
-+==================================================+========================================================================+
-| mesh_t                                           | Type of the mesh representing the domain.                              |
-+--------------------------------------------------+------------------------------------------------------------------------+
-| mesh_t const & mesh() const                      | Returns the mesh.                                                      |
-+--------------------------------------------------+------------------------------------------------------------------------+
-| auto operator   ( grid_pt<mesh_t> const &) const | Calling on a grid_pt gives direct access to the value on a grid point. |
-| auto & operator ( grid_pt<mesh_t> const &)       | Const and non const version.                                           |
-+--------------------------------------------------+------------------------------------------------------------------------+
-
-* **NB** : the result type of the () operator is deduced. Not needed in the concept.
-
-
-descriptors
-======================================
-
-A descriptor is a structure that contains  everything specific to the Green function
-(number of variables, domain of definition, interpolation techniques, etc...).
-
-
-Descriptor concept
----------------------------
-
-* **Purpose**  :
-
-* **Refines**   : 
- 
-* **NB** : Pure static, does NOT contains any data.
-
-* **Definition** : 
-
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| Elements                                                                           | Comment                                                                       |
-+====================================================================================+===============================================================================+
-| struct tag {};                                                                     | A tag for the gf                                                              |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| mesh_t                                                                             | Mesh for the gf, modeling Mesh concept                                        |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| storage_t                                                                          | The type of the storage of the data (array, vector, etc....)                  |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| singularity_t                                                                      | Type of object storing the singularities of the gf. It is used e.g. in the    |
-|                                                                                    | Fourier transformation, density computation, etc... For a simple g(omega),    |
-|                                                                                    | g(t), it is typically a high frequency tail. For a more complex function      |
-|                                                                                    | g(nu,nu'), it can be different.                                               |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| symmetry_t                                                                         | Type of the object storing the symmetry property of the Green function. It is |
-|                                                                                    | *nothing* by default. This type must be a value (DefaultConstructible,        |
-|                                                                                    | CopyConstructible, Assignable)                                                |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| target_indices_t                                                                   | Type of the indices of the gf, typically array<std::string,arity>             |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| static const int arity                                                             | Number of variable authorized in calling the gf (just for compile time check  |
-|                                                                                    | and nice error message, it is not really necessary)                           |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| struct evaluator { auto operator()( mesh_t const &, DATA_t const &, S_t const &,   | All the permitted const call of the gf !  (DATA_t defined below) with the     |
-| Args&&... args) .... as many overload as necessary }                               | parenthesis operator The gf<...> function create such a struct, so it can     |
-|                                                                                    | hold some data ...                                                            |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| static std::string h5_name()                                                       | Name for hdf5 naming (attribute of the tree in which the gf is stored).       |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-
-* **Values vs Views**
-  target_t, singularity_t, indices_t are expected to be *values*.
-  The corresponding views, i.e., target_view_t, singularity_view_t, indices_view_t will be deduced from the value type, and 
-  replaced by the value_type if no view is available.
-
-* S_t is singularity_t or its corresponding view type (if it exists).
-  
-
-The gf/gf_view class
-====================
-
-The gf/gf_view classes are generic Green function, templated on Descriptor.
-
-They handle : 
-
-* view/non view aspect, copy, etc...
-* hdf5 interface
-* clef interface
-* the MeshPoint mechanism as explained above.
-* perfect forwarding of all other const call of operator() to Descriptor.
-
-Constructors are limited to a minimal number :
-
-* empty one for gf (value semantics).
-* copy construction, from gf and gf_view of the same descriptor.
-* construction from the data of the GF.
-
-The other custom construction are delegated to make_gf functions::
-
-   gf<Descriptor> make_gf (Descriptor, my_favorite arguments).
-
-We use here the simplest dispatch using the fact that Descriptor is an empty struct, 
-so we can dispath the make_gf. Example of use ::
-
-   auto G = make_gf (matsubara_freq(), beta, Fermion, make_shape(2,2));
-  
-
-
-Doxygen documentation
-======================
-
-The :doxy:`full C++ documentation<triqs::gf::gf>` is available here.
 

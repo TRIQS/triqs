@@ -5,7 +5,7 @@
 
 .. _contents:
 
-Reference: Python libraries
+Python libraries
 ================================
 
 .. toctree::

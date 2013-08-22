@@ -1,50 +1,36 @@
 .. _Shape:
 
-Shape, resize 
+Shape & dimensions
 ==================================
 
-Lengths
-----------
+**Synopsis**:
+
+.. code-block:: c
+
+    template <ImmutableArray A> mini_vector<size_t,R> get_shape(A const &); // R is the rank of A 
+    
+    template<ImmutableArray A> size_t first_dim   (A const & x); 
+    template<ImmutableArray A> size_t second_dim  (A const & x);
+    template<ImmutableArray A> size_t third_dim   (A const & x);
+    template<ImmutableArray A> size_t fourth_dim  (A const & x);
+    template<ImmutableArray A> size_t fifth_dim   (A const & x);
+    template<ImmutableArray A> size_t sixth_dim   (A const & x);
+    template<ImmutableArray A> size_t seventh_dim (A const & x);
 
 
-Shape
---------------------
+The shape and dimensions of any object modeling :ref:`ImmutableCuboidArray` is obtained using get_shape and xxx_dim functions :
 
-* array, matrix and vector have a method shape() that returns a `shape_type` object
-  i.e. a mini_vector<size_t,rank>. DOCUMENT THIS ?
+.. compileblock::
+       
+     #include <triqs/arrays.hpp>
+     #include <iostream>
+     using namespace triqs::arrays;
+     int main () { 
+       auto a = array<double,2> (2,3);
+       std::cout << get_shape(a)<< std::endl;
+       std::cout << first_dim(a)<< std::endl;
+       std::cout << second_dim(a)<< std::endl;
+     }
 
-* Example::
 
-   array<double,2> A(2,3);
-   A.shape()[0] == 2;
-   A.shape()[1] == 3;
 
-Resize
---------
-
-* The value classes array, matrix and vector can be resized.
-
-* **Synopsis**:
-
-  .. cpp:function:: void resize(size_t, ..., size_t) 
-
-* **Examples** ::
-
-   array<double,2> A(2,3);
-   A.resize ( make_shape (5,5) )
-     
-   matrix<double,2> M;
-   M.resize( 3,3); 
-
-   vector<double> V;
-   V.resize(10);
-
-* Views can not be resized.
-
-resize_or_check_if_view
-----------------------------
-
-.. cpp:function:: void resize_or_check_if_view(ArrayType const & A, shape_t)
-
-* If A is a value : resize A
-* If A is a view : check that the shape if the shape_t and throw an exception if not.

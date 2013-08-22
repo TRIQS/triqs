@@ -141,8 +141,7 @@ Linear algebra
 .. compileblock::
 
     #include <triqs/arrays.hpp>
-    #include <triqs/arrays/linalg/inverse.hpp>
-    #include <triqs/arrays/linalg/determinant.hpp>
+    #include <triqs/arrays/linalg/det_and_inverse.hpp>
     
     using triqs::arrays::array;  using triqs::arrays::matrix;  using triqs::clef::placeholder;
     int main(){

@@ -1,42 +1,65 @@
 .. highlight:: c
 
-A fundamental distinction : value classes vs view classes
+.. _view_vs_regular:
+
+Regular type vs view type
 =================================================================
 
-A fundamental distinction in TRIQS is the difference between the `value class` 
-and the corresponding `view classes`.
+A fundamental distinction in TRIQS is the difference between the `regular type` 
+and the corresponding `view types`.
 
-* The **value classes** : e.g. array, matrix, vector, ... have a `value semantic` :
+* The **regular types** 
+  
+  * Following the definition of A. Stepanov, a regular type is a *value*, much like an int, a double, 
+    or a std::vector. Cf http://www.stepanovpapers.com/DeSt98.pdf (I added move semantics to the definition).
 
-  * They are default constructible.
-  * When copied, assigned, they make deep copy. 
-  * They resize themselves under assignment if necessary (like e.g.  std::vector). 
+  * It has `value semantics`, more precisely ::
 
-  In many respect, they behave like a std::vector for these matters.
+      T a;               // default constructible
+      T a = b; T a (b);  // copy constructible
+      a = b;             // assignment 
+      a == b; a != b;    // Equality.
 
-* The **view classes** : e.g. array_view, matrix_view, vector_view, ... have a `reference semantic`.
+    with the following properties ::
+      
+      T a = b; assert(a==b);
+      T a; a=b; is equivalent to  T a=b;
+      T a=c; T b=c; a=d; assert(b==c);
+
+  * When copied, assigned, it makes deep copy of the data and resizes itself if necessary (like e.g.  std::vector). 
+
+  * Examples : 
+    
+    * std::vector<T> 
+    * triqs::arrays::array<T,R>, triqs::arrays::matrix<T>, triqs::arrays::vector<T> 
+
+* The **view types** 
+  
+  * They have a `reference semantics`.
  
-  * They are just partial or complete views of the corresponding value class.
+  * They are just partial or complete views of the corresponding regular type.
   * They never make deep copy, either in copying, constructing, transforming to python, 
   * They can not be resized.
   * They are useful to work on arrays, matrices, or on some part thereof, without making copies
     (e.g. on a slice of an array, a column of a matrix).
  
+  * Examples : 
+    
+    * triqs::arrays::array_view<T,R>, triqs::arrays::matrix_view, triqs::arrays::vector_view<T> 
 
-Each class is therefore provided in two flavors, and it is crucial for the user
+Many triqs containers (array, matrix, green functions) 
+is therefore provided in two flavors, and it is crucial for the user
 to learn and understand their difference in order to use them appropriately.
 
-This distinction extends to more complex objects in TRIQS, such as Green functions.
 
-
-Behaviour comparison table between value and view classes
+Behaviour comparison table between regular and view types
 ------------------------------------------------------------
 
-A detailed comparison of the behaviour of the two type of classes is provided in the following table.
+A detailed comparison of the behaviour of the two type of types is provided in the following table.
 
 
 ===================  ======================================================================= ======================================================================================
-Topics                    value class (e.g. array, matrix, vector)                               view (e.g. array_view, matrix_view, vector_view)  
+Topics                    regular type (e.g. array, matrix, vector)                               view type (e.g. array_view, matrix_view, vector_view)  
 ===================  ======================================================================= ======================================================================================
 Contructors          - Constructors create a new fresh memory block.                         - Constructors only make another view of the data. 
 Default Contructor   - Default constructor creates an empty array                            - No default constructor (what would it view ?).   
