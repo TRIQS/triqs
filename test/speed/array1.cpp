@@ -22,8 +22,8 @@
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/linalg/matmul.hpp>
 #include <triqs/arrays/linalg/mat_vec_mul.hpp>
-#include <triqs/arrays/linalg/inverse.hpp>
-#include <triqs/arrays/linalg/determinant.hpp>
+#include <triqs/arrays/linalg/det_and_inverse.hpp>
+#include <triqs/arrays/linalg/det_and_inverse.hpp>
 
 using namespace triqs::arrays;
 using namespace triqs;

@@ -24,7 +24,7 @@
 #include "../matrix.hpp"
 #include "../linalg/matmul.hpp"
 #include "../linalg/mat_vec_mul.hpp"
-#include "../linalg/inverse.hpp"
+#include "../linalg/det_and_inverse.hpp"
 namespace triqs { namespace arrays {
 
  template<typename Tag, typename L, typename R, bool scalar_are_diagonal_matrices= false> 

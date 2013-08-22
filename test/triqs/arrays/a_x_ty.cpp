@@ -26,8 +26,8 @@
 #include "./src/matrix.hpp"
 #include "./src/linalg/matmul.hpp"
 #include "./src/linalg/mat_vec_mul.hpp"
-#include "./src/linalg/inverse.hpp"
-#include "./src/linalg/determinant.hpp"
+#include "./src/linalg/det_and_inverse.hpp"
+#include "./src/linalg/det_and_inverse.hpp"
 #include "./src/linalg/a_x_ty.hpp"
 #include "./src/blas_lapack/dot.hpp"
 

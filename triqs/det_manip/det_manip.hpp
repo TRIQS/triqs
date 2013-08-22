@@ -26,8 +26,7 @@
 #include <triqs/arrays.hpp>
 //#include <triqs/arrays/mapped_functions.hpp>
 #include <triqs/arrays/algorithms.hpp>
-#include <triqs/arrays/linalg/inverse.hpp>
-#include <triqs/arrays/linalg/determinant.hpp>
+#include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <triqs/arrays/linalg/a_x_ty.hpp>
 #include <triqs/arrays/linalg/matmul.hpp>
 #include <triqs/arrays/linalg/mat_vec_mul.hpp>

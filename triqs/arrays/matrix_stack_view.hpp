@@ -23,7 +23,7 @@
 #include "./array.hpp"
 #include "./matrix.hpp"
 #include "./matrix_view_proxy.hpp"
-#include <triqs/arrays/linalg/inverse.hpp>
+#include <triqs/arrays/linalg/det_and_inverse.hpp>
 
 namespace triqs { namespace arrays {
 

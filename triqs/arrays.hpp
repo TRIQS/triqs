@@ -34,8 +34,7 @@
 #include <triqs/arrays/h5/simple_read_write.hpp>
 
 // Linear algebra ?? Keep here ?
-//#include <triqs/arrays/linalg/inverse.hpp>
-//#include <triqs/arrays/linalg/determinant.hpp>
+//#include <triqs/arrays/linalg/det_and_inverse.hpp>
 
 #endif
 

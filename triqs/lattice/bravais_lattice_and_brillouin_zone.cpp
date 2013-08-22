@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "bravais_lattice_and_brillouin_zone.hpp"
 #include <triqs/arrays/blas_lapack/dot.hpp>
-#include <triqs/arrays/linalg/inverse.hpp>
+#include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <triqs/arrays/linalg/cross_product.hpp>
 namespace triqs { namespace lattice_tools { 
 
