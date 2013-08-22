@@ -33,24 +33,15 @@ string(REPLACE "boost_for_triqs" " " TMP "${link_libs}")
 string(REPLACE "debug" " " TMP "${TMP}")
 string(REPLACE "optimized" " " TMP "${TMP}")
 
-if(BOOST_SOURCE_DIR)
- set(  link_boost_for_triqs "-lboost_for_triqs")
- EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/foreignlibs/boost/libboost_for_triqs.so ${CMAKE_CURRENT_BINARY_DIR}")
-else(BOOST_SOURCE_DIR)
- set(  link_boost_for_triqs " ")
-endif(BOOST_SOURCE_DIR)
-
-
 set(DOC_AUTOCOMPILE_INCLUDE ${BOOST_SOURCE_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/foreignlibs ${TRIQS_INCLUDE_ALL}  )
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- set(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} ")
+ set(DOC_AUTOCOMPILE_LINK "${BOOST_LIBRARY} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} ")
  set(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 -stdlib=libc++ -I/System/Library/Frameworks/vecLib.framework/Versions/A/Headers)
 else()
- set(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
+ set(DOC_AUTOCOMPILE_LINK "${BOOST_LIBRARY} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
  set(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 )
 endif()
-set(DOC_AUTOCOMPILE_LD_LIBRARY_PATH " ${CMAKE_BINARY_DIR}/foreignlibs/boost/:${CMAKE_BINARY_DIR}/triqs ")
-# to find the triqs_config.h
+set(DOC_AUTOCOMPILE_LD_LIBRARY_PATH "${CMAKE_BINARY_DIR}/foreignlibs/boost/:${CMAKE_BINARY_DIR}/triqs")
 set(DOC_AUTOCOMPILE_DEFINITIONS ${DOC_AUTOCOMPILE_DEFINITIONS} -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config )
 
 # debug
