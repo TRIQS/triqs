@@ -293,7 +293,7 @@ namespace triqs { namespace arrays {
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
 namespace std {
- template <typename V, triqs::ull_t S> void swap( triqs::arrays::vector_view<V,S> & a , triqs::arrays::vector_view<V,S> & b)= delete;
+ template <typename V, triqs::ull_t S, bool B1, bool B2> void swap( triqs::arrays::vector_view<V,S,B1> & a , triqs::arrays::vector_view<V,S,B2> & b)= delete;
 }
 
 #include "./expression_template/vector_algebra.hpp"
