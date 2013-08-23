@@ -48,7 +48,7 @@ namespace triqs { namespace gfs {
   template<typename T> struct keeper_type : std::conditional<utility::is_in_ZRC<T>::value, scalar_wrap<T>, typename view_type_if_exists_else_type<T>::type> {};
  }// gfs_expr_tools
 
- template<typename Descriptor, typename Tag, typename L, typename R>  struct gf_expr : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction),gf_tag<Descriptor> {
+ template<typename Descriptor, typename Tag, typename L, typename R>  struct gf_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction),gf_tag<Descriptor> {
   typedef typename gfs_expr_tools::keeper_type<L>::type L_t;
   typedef typename gfs_expr_tools::keeper_type<R>::type R_t;
   typedef Descriptor  descriptor_t;
@@ -70,7 +70,7 @@ namespace triqs { namespace gfs {
 
  // -------------------------------------------------------------------
  //a special case : the unary operator !
- template<typename Descriptor, typename L>   struct gf_unary_m_expr : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction),gf_tag<Descriptor>{
+ template<typename Descriptor, typename L>   struct gf_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction),gf_tag<Descriptor>{
   typedef typename gfs_expr_tools::keeper_type<L>::type L_t;
   typedef Descriptor  descriptor_t;
   //typedef typename L_t::value_type value_type;

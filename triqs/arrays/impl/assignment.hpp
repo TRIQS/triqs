@@ -83,13 +83,11 @@ namespace triqs { namespace arrays {
 
     typedef typename LHS::value_type value_type;
     typedef typename LHS::indexmap_type indexmap_type;
-    typedef typename indexmap_type::domain_type::index_value_type index_value_type;
     LHS & lhs; const RHS & rhs; 
     typedef typename std::remove_cv<value_type>::type v_t;
     impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {} 
 
     template<typename ... Args> void operator()(Args const & ... args) const {
-     //    void operator()(value_type & p, index_value_type const & key) {
      _ops_<typename std::remove_cv<value_type>::type, typename RHS::value_type, OP>::invoke(lhs(args...), rhs(args...)) ;}
 
      void invoke ()  {
@@ -120,12 +118,10 @@ namespace triqs { namespace arrays {
       TRIQS_REJECT_ASSIGN_TO_CONST;
       TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR;
       typedef typename LHS::value_type value_type;
-      typedef typename LHS::indexmap_type::domain_type::index_value_type index_value_type;
       LHS & lhs; const RHS & rhs; 
       //value_type & restrict p;
       impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {} //, p(*(lhs_.data_start())) {}
       template<typename ... Args> void operator()(Args const & ... args) const { _ops_<value_type, typename RHS::value_type, OP>::invoke(lhs(args...),rhs(args...));}
-      ///     void operator()(value_type & p, index_value_type const & key) const {  _ops_<value_type, typename RHS::value_type, OP>::invoke(p,rhs[key]);}
       void invoke() {
 #ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
        foreach(lhs,*this);

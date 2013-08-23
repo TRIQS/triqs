@@ -110,10 +110,9 @@ namespace triqs { namespace arrays {
  //-----------------------------------------------------------
 
  // an implementation class to gather the common part to matrix and expression....
- template<typename A> struct inverse_lazy_impl : TRIQS_MODEL_CONCEPT(ImmutableMatrix) {
+ template<typename A> struct inverse_lazy_impl : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) {
   typedef typename std::remove_const<typename A::value_type>::type value_type;
   typedef typename A::domain_type domain_type;
-  typedef typename domain_type::index_value_type index_value_type;
   typedef typename const_view_type_if_exists_else_type<A>::type A_type;
   const A_type a;
   inverse_lazy_impl(A const & a_):a (a_)  {

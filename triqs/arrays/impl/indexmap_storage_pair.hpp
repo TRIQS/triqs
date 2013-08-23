@@ -53,7 +53,7 @@ namespace triqs { namespace arrays {
  template <class V, int R, ull_t OptionFlags, ull_t TraversalOrder,  class ViewTag, bool Borrowed > struct ISPViewType;
 
  template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder,  typename ViewTag >
-  class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_MODEL_CONCEPT(MutableArray) {
+  class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_CONCEPT_TAG_NAME(MutableArray) {
 
    public :
     typedef typename StorageType::value_type value_type;

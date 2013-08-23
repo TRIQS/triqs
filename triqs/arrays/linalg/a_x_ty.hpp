@@ -39,7 +39,7 @@ namespace triqs { namespace arrays {
  //------------- IMPLEMENTATION -----------------------------------
 
  template<typename ScalarType, typename VectorType1, typename VectorType2> 
-  class a_x_ty_lazy : TRIQS_MODEL_CONCEPT(ImmutableMatrix) { 
+  class a_x_ty_lazy : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) { 
    typedef typename boost::remove_const<typename VectorType1::value_type>::type V1;
    typedef typename boost::remove_const<typename VectorType2::value_type>::type V2;
    static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");

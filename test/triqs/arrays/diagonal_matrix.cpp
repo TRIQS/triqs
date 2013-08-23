@@ -23,7 +23,7 @@
 
 namespace triqs { namespace arrays { 
 
- template<typename T> class immutable_diagonal_matrix_view : TRIQS_MODEL_CONCEPT(ImmutableMatrix) { 
+ template<typename T> class immutable_diagonal_matrix_view : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) { 
   array_view<T,1> data;
   public:
 

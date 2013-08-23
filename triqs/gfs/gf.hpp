@@ -93,7 +93,7 @@ namespace triqs { namespace gfs {
 
  /// A common implementation class for gf and gf_view. They will only redefine contructor and = ...
  template<typename Variable, typename Target, typename Opt, bool IsView> class gf_impl : 
-  TRIQS_MODEL_CONCEPT(ImmutableGreenFunction), gf_tag<gf_desc<Variable,Target,Opt>> {
+  TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction), gf_tag<gf_desc<Variable,Target,Opt>> {
    public :
 
     // Pattern : ValueView

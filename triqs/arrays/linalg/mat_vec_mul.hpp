@@ -37,7 +37,7 @@ namespace triqs { namespace arrays {
  // ----------------- implementation -----------------------------------------
  
  template<typename MT, typename VT> 
-  class mat_vec_mul_lazy :  TRIQS_MODEL_CONCEPT(ImmutableVector) { 
+  class mat_vec_mul_lazy :  TRIQS_CONCEPT_TAG_NAME(ImmutableVector) { 
 
    typedef typename MT::value_type V1;
    typedef typename VT::value_type V2;

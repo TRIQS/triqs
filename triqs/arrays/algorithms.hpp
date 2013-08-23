@@ -43,9 +43,9 @@ namespace triqs { namespace arrays {
   typename A::value_type max_element(A const &a) { 
 #ifdef TRIQS_FIX_CLANG30_linux
    typedef typename A::value_type const & T;
-   return fold ( static_cast<T(*)(T,T)>(std::max<T>))  ( a, get_first_element(a)); //a[typename A::domain_type::index_value_type()]);
+   return fold ( static_cast<T(*)(T,T)>(std::max<T>))  ( a, get_first_element(a)); 
 #else  
-   return fold ( std::max<typename A::value_type const & >)  ( a, get_first_element(a)); //a[typename A::domain_type::index_value_type()]);
+   return fold ( std::max<typename A::value_type const & >)  ( a, get_first_element(a)); 
 #endif
   }
 
@@ -53,9 +53,9 @@ namespace triqs { namespace arrays {
   typename A::value_type min_element(A const &a) { 
 #ifdef TRIQS_FIX_CLANG30_linux
  typedef typename A::value_type const & T;
-   return fold ( static_cast<T(*)(T,T)>(std::min<T>))  ( a, get_first_element(a)); //a[typename A::domain_type::index_value_type()]);
+   return fold ( static_cast<T(*)(T,T)>(std::min<T>))  ( a, get_first_element(a)); 
 #else 
-   return fold ( std::min<typename A::value_type const & >)  ( a,  get_first_element(a)); //a[typename A::domain_type::index_value_type()]);
+   return fold ( std::min<typename A::value_type const & >)  ( a,  get_first_element(a)); 
 #endif
   }
 

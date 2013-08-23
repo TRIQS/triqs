@@ -32,7 +32,7 @@ namespace triqs { namespace arrays {
  
  // ----------------- implementation -----------------------------------------
  
- template<typename A, typename B> class matmul_lazy : TRIQS_MODEL_CONCEPT(ImmutableMatrix) {  
+ template<typename A, typename B> class matmul_lazy : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) {  
     typedef typename boost::remove_const<typename A::value_type>::type V1;
     typedef typename boost::remove_const<typename B::value_type>::type V2;
     //static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
@@ -61,7 +61,6 @@ namespace triqs { namespace arrays {
     }
 
     domain_type domain() const { return mini_vector<size_t,2>(first_dim(a), second_dim(b));}
-    //domain_type domain() const { return indexmaps::cuboid::domain_t<2>(mini_vector<size_t,2>(first_dim(a), second_dim(b)));}
 
     template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { activate();  return _id->R(k0,k1); }
 

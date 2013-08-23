@@ -38,7 +38,7 @@ namespace triqs { namespace arrays {
 
  /** */
  template <typename ValueType, ull_t Opt, bool Borrowed>
-  class vector_view : Tag::vector_view, TRIQS_MODEL_CONCEPT(MutableVector), public  IMPL_TYPE {
+  class vector_view : Tag::vector_view, TRIQS_CONCEPT_TAG_NAME(MutableVector), public  IMPL_TYPE {
   public :
    typedef vector     <ValueType,Opt>       regular_type;
    typedef vector_view<ValueType,Opt,false> view_type;
@@ -101,7 +101,7 @@ namespace triqs { namespace arrays {
 #define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, Tag::vector_view >
 
  template <typename ValueType, ull_t Opt>
-  class vector: Tag::vector,  TRIQS_MODEL_CONCEPT(MutableVector), public IMPL_TYPE {
+  class vector: Tag::vector,  TRIQS_CONCEPT_TAG_NAME(MutableVector), public IMPL_TYPE {
    public :
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;

@@ -25,7 +25,7 @@
 namespace triqs { namespace arrays {
 
  template<typename Tag, typename L, typename R> 
-  struct vector_expr : TRIQS_MODEL_CONCEPT(ImmutableVector) { 
+  struct vector_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableVector) { 
    typedef typename keeper_type<L>::type L_t;
    typedef typename keeper_type<R>::type R_t;
    L_t l; R_t r;
@@ -44,7 +44,7 @@ namespace triqs { namespace arrays {
   };
 
  template<typename L>  // a special case : the unary operator !
-  struct vector_unary_m_expr : TRIQS_MODEL_CONCEPT(ImmutableVector) { 
+  struct vector_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableVector) { 
    typedef typename keeper_type<L>::type L_t;
    L_t l; 
    template<typename LL> vector_unary_m_expr(LL && l_) : l(std::forward<LL>(l_)) {}

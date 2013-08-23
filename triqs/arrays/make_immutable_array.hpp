@@ -24,7 +24,7 @@
 namespace triqs { namespace arrays { 
 
  template<typename Expr, int ... ph>
-  class immutable_array_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
+  class immutable_array_impl : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
    template<int I> struct _si { typedef size_t type;};
    public : 
     immutable_array_impl(Expr e_, clef::pair<ph,range> ... p): 

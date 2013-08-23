@@ -25,19 +25,19 @@
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/type_traits/is_complex.hpp>
 
-#define TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) MyBeautifulConcept##__concept_tag
+#define TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept) MyBeautifulConcept##__concept_tag
 
-#define TRIQS_MODEL_CONCEPT(MyBeautifulConcept) TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept)
+//#define TRIQS_MODEL_CONCEPT(MyBeautifulConcept) TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept)
 
 #define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(MyBeautifulConcept) \
- struct TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) {};\
- template<typename T> struct MyBeautifulConcept : boost::is_base_of<TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) , T> {};
+ struct TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept) {};\
+ template<typename T> struct MyBeautifulConcept : boost::is_base_of<TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept) , T> {};
 
-#define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R_AUX(r, data, i, elem) BOOST_PP_COMMA_IF(i) TRIQS_CONCEPT_TAGNAME(elem) 
+#define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R_AUX(r, data, i, elem) BOOST_PP_COMMA_IF(i) TRIQS_CONCEPT_TAG_NAME(elem) 
 
 #define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MyBeautifulConcept,Rs) \
- struct TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) : BOOST_PP_SEQ_FOR_EACH_I (TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R_AUX,nil,Rs) {};\
- template<typename T> struct MyBeautifulConcept : boost::is_base_of<TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept), T> {};
+ struct TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept) : BOOST_PP_SEQ_FOR_EACH_I (TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R_AUX,nil,Rs) {};\
+ template<typename T> struct MyBeautifulConcept : boost::is_base_of<TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept), T> {};
 
 #ifdef TRIQS_COMPILE_TIME_DEBUG
 #define TRIQS_ASSERT_MODEL_CONCEPT(MyBeautifulConcept,T)  BOOST_CONCEPT_ASSERT((BCC_##MyBeautifulConcept<T>));

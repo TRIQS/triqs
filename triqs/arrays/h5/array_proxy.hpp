@@ -27,7 +27,7 @@ namespace triqs { namespace arrays {
 
   /// The array proxy
   template<typename ValueType, int Rank, int Rank_f = Rank >
-   class array_proxy : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), // WRONG ! IT does not yet implement [ ] 
+   class array_proxy : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray), // WRONG ! IT does not yet implement [ ] 
    public sliceable_object < ValueType,
    h5::index_system<Rank,Rank_f>, 
    array_proxy_option<Rank_f>,

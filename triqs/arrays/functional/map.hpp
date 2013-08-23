@@ -48,7 +48,7 @@ namespace triqs { namespace arrays {
 
   template<typename A, typename Enable = void> class m_result;
 
-  template<typename A> class m_result<A,typename boost::enable_if<ImmutableCuboidArray<A> >::type> : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
+  template<typename A> class m_result<A,typename boost::enable_if<ImmutableCuboidArray<A> >::type> : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
     public:
      typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
@@ -56,11 +56,10 @@ namespace triqs { namespace arrays {
      m_result(F const & f_, A const & a_):a(a_),f(f_) {}
      domain_type domain() const { return a.domain(); } 
      template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
-     //value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
      friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
    };
   
-  template<typename A> class m_result<A,typename boost::enable_if<ImmutableMatrix<A> >::type> : TRIQS_MODEL_CONCEPT(ImmutableMatrix) { 
+  template<typename A> class m_result<A,typename boost::enable_if<ImmutableMatrix<A> >::type> : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) { 
     public:
      typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
@@ -68,11 +67,10 @@ namespace triqs { namespace arrays {
      m_result(F const & f_, A const & a_):a(a_),f(f_) {}
      domain_type domain() const { return a.domain(); } 
      template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
-     //value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
      friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
    };
 
-  template<typename A> class m_result<A,typename boost::enable_if<ImmutableVector<A> >::type> : TRIQS_MODEL_CONCEPT(ImmutableVector) { 
+  template<typename A> class m_result<A,typename boost::enable_if<ImmutableVector<A> >::type> : TRIQS_CONCEPT_TAG_NAME(ImmutableVector) { 
     public:
      typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
@@ -81,7 +79,6 @@ namespace triqs { namespace arrays {
      domain_type domain() const { return a.domain(); } 
      size_t size() const { return a.size();}
      template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
-     //value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
      value_type operator() ( size_t i) const { return f(a(i)); }
      friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
    };
@@ -107,7 +104,7 @@ namespace triqs { namespace arrays {
   map_impl(map_impl const &) = default;
   //map_impl(map_impl &&) = default;
 
-  template<class A, class B> class m_result : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
+  template<class A, class B> class m_result : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) { 
     static_assert( (std::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
    public:
     typedef typename std::result_of<F(typename A::value_type,typename B::value_type)>::type value_type;
@@ -118,7 +115,6 @@ namespace triqs { namespace arrays {
     }
     domain_type domain() const { return a.domain(); } 
     template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...),b(args...)); }
-    //value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key],b[key]); }
     friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
   };
 

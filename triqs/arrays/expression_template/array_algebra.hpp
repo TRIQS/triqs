@@ -24,7 +24,7 @@
 namespace triqs { namespace arrays {
 
  template<typename Tag, typename L, typename R> 
-  struct array_expr : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
+  struct array_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
    typedef typename keeper_type<L>::type L_t;
    typedef typename keeper_type<R>::type R_t;
    static_assert( get_rank<R_t>::value==0 || get_rank<L_t>::value==0 || get_rank<L_t>::value == get_rank<R_t>::value, "rank mismatch in array operations");
@@ -43,7 +43,7 @@ namespace triqs { namespace arrays {
 
  // a special case : the unary operator !
 
-  template<typename L>   struct array_unary_m_expr : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
+  template<typename L>   struct array_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
    typedef typename keeper_type<L>::type L_t;
    typedef typename L_t::value_type value_type;
    typedef typename L_t::domain_type domain_type;

@@ -47,7 +47,7 @@ namespace triqs { namespace arrays {
  storages::shared_block<ValueType,Borrowed>, Opt, TraversalOrder, Tag::matrix_view > 
 
  template <typename ValueType, ull_t Opt, ull_t TraversalOrder, bool Borrowed>
-  class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(MutableMatrix), public IMPL_TYPE {
+  class matrix_view : Tag::matrix_view,  TRIQS_CONCEPT_TAG_NAME(MutableMatrix), public IMPL_TYPE {
    public :
     typedef matrix     <ValueType,Opt,TraversalOrder>       regular_type;
     typedef matrix_view<ValueType,Opt,TraversalOrder>       view_type;
@@ -105,7 +105,7 @@ namespace triqs { namespace arrays {
  storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::matrix_view > 
 
  template <typename ValueType, ull_t Opt, ull_t TraversalOrder >
-  class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(MutableMatrix), public IMPL_TYPE {
+  class matrix: Tag::matrix,  TRIQS_CONCEPT_TAG_NAME(MutableMatrix), public IMPL_TYPE {
    public :
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;

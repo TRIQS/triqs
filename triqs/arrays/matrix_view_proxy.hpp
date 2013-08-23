@@ -35,7 +35,7 @@ namespace triqs { namespace arrays {
 
 #ifdef DO_NOT_DEFINE_ME
  // human version of the class, the preprocessor generalisation is next..
- template<typename ArrayType > class const_matrix_view_proxy<ArrayType,2> : TRIQS_MODEL_CONCEPT(ImmutableMatrix)   {
+ template<typename ArrayType > class const_matrix_view_proxy<ArrayType,2> : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix)   {
    ArrayType const * A; size_t n;
   public :
    typedef typename ArrayType::value_type value_type;
@@ -51,7 +51,7 @@ namespace triqs { namespace arrays {
    { return (*A)( std::forward<A0>(a0) , std::forward<A1>(a1) , n,std::forward<Args>(args)...);}
  };
 
- template<typename ArrayType > class matrix_view_proxy<ArrayType,2> : TRIQS_MODEL_CONCEPT(MutableMatrix)   {
+ template<typename ArrayType > class matrix_view_proxy<ArrayType,2> : TRIQS_CONCEPT_TAG_NAME(MutableMatrix)   {
    ArrayType * A; size_t n;
   public :
    typedef typename ArrayType::value_type value_type;
@@ -73,7 +73,7 @@ namespace triqs { namespace arrays {
 #define AUX1(z,P,NNN) A##P && a##P,
 #define TEXT(z, n, text) text
 #define IMPL(z, POS, unused)\
- template<typename ArrayType > class const_matrix_view_proxy<ArrayType,POS> : TRIQS_MODEL_CONCEPT(ImmutableMatrix)   {\
+ template<typename ArrayType > class const_matrix_view_proxy<ArrayType,POS> : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix)   {\
    static_assert(ArrayType::rank==3, "Only array of rank 3 here");\
    ArrayType const * A; size_t n;\
   public :\
@@ -98,7 +98,7 @@ namespace triqs { namespace arrays {
   friend std::ostream & operator <<(std::ostream & out, const_matrix_view_proxy const & x) { return out << matrix_view<value_type>(x);}\
  };\
 \
- template<typename ArrayType > class matrix_view_proxy<ArrayType,POS> : TRIQS_MODEL_CONCEPT(MutableMatrix)   {\
+ template<typename ArrayType > class matrix_view_proxy<ArrayType,POS> : TRIQS_CONCEPT_TAG_NAME(MutableMatrix)   {\
    static_assert(ArrayType::rank==3, "Only array of rank 3 here");\
    ArrayType * A; size_t n;\
   public :\

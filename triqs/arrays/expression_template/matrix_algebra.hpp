@@ -28,7 +28,7 @@
 namespace triqs { namespace arrays {
 
  template<typename Tag, typename L, typename R, bool scalar_are_diagonal_matrices= false> 
-  struct matrix_expr : TRIQS_MODEL_CONCEPT(ImmutableMatrix) { 
+  struct matrix_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) { 
    typedef typename keeper_type<L,scalar_are_diagonal_matrices>::type L_t;
    typedef typename keeper_type<R,scalar_are_diagonal_matrices>::type R_t;
    static_assert( get_rank<R_t>::value==0 || get_rank<L_t>::value==0 || get_rank<L_t>::value == get_rank<R_t>::value, "rank mismatch in matrix operations");
@@ -46,7 +46,7 @@ namespace triqs { namespace arrays {
   };
 
  template<typename L>  // a special case : the unary operator !
-  struct matrix_unary_m_expr : TRIQS_MODEL_CONCEPT(ImmutableMatrix) { 
+  struct matrix_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) { 
    typedef typename keeper_type<L>::type L_t;
    typedef typename L_t::value_type value_type;
    typedef typename L_t::domain_type domain_type;
