@@ -43,27 +43,27 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    friend class boost::serialization::access;
    template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("dimensions",lengths_);}
    public :
-   //static const unsigned int rank = Rank;
    static constexpr unsigned int rank = Rank;
    typedef n_uple index_value_type;
 
-   domain_t ():lengths_(){}
-   domain_t (n_uple const & lengths):lengths_(lengths) {}
-   domain_t (n_uple && lengths):lengths_(std::move(lengths)) {}
-   domain_t (mini_vector<int,Rank> const & lengths):lengths_(lengths) {}
-   domain_t (std::vector<std::size_t> const & l):lengths_() {
-    if (!(l.size()==rank)) TRIQS_RUNTIME_ERROR << "cuboid domain_t construction : vector size incorrect : got "<<l.size() <<" while expected "<< rank;
-    lengths_ = n_uple(l);
-   }
+   domain_t () =default;
    domain_t (const domain_t & C) = default;
    domain_t (domain_t && C) { *this = std::move(C);}
    friend void swap( domain_t & a, domain_t & b) { swap(a.lengths_,b.lengths_);}
    domain_t & operator =( domain_t const &) = default;
    domain_t & operator =( domain_t && x) { swap(*this,x); return *this;}
 
+   domain_t (n_uple lengths):lengths_(std::move(lengths)) {}
+   domain_t (mini_vector<int,Rank> const & lengths):lengths_(lengths) {}
+   domain_t (std::vector<std::size_t> const & l):lengths_() {
+    if (!(l.size()==rank)) TRIQS_RUNTIME_ERROR << "cuboid domain_t construction : vector size incorrect : got "<<l.size() <<" while expected "<< rank;
+    lengths_ = n_uple(l);
+   }
+   template <typename ... T> domain_t(size_t i0, T... t): lengths_(i0, t...){}
+
    size_t number_of_elements() const { return lengths_.product_of_elements();}
    bool operator==(domain_t const & X) const { return this->lengths_ == X.lengths_;}
-   bool operator!=(domain_t const & X) const { return !(this->lengths_ == X.lengths_);}
+   bool operator!=(domain_t const & X) const { return !(*this==X);}
    n_uple const & lengths() const { return lengths_;}
 
    /** Generates the value of the indices of a cuboid_domain.  */
@@ -79,7 +79,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
      bool operator==(const gal_generator & IT2) const { assert((IT2.dom == dom)); return ((IT2.atend==atend) );}
      bool operator!=(const gal_generator & IT2) const { return (!operator==(IT2));}
      indices_type const & operator *() const { return indices_tuple;}
-     operator bool () const { return !atend;}
+     explicit operator bool () const { return !atend;}
      gal_generator & operator++(){ assert(!atend); atend = advance_impl(std::integral_constant<int,0>()); return *this;}
      private:
      template<int r> bool advance_impl(std::integral_constant<int,r>) {
@@ -120,32 +120,23 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
 
    };
  
- template<typename FntType, int R, ull_t TraversalOrder> struct foreach_impl; 
- /// Call the function F for each element of the domain, traversed in the TraversalOrder
-   template<ull_t TraversalOrder, typename FntType, int Rank>
-    void foreach(domain_t<Rank> const & d, FntType F) { foreach_impl<FntType,Rank,TraversalOrder>::invoke (d,F); }
+ // ------------------------- foreach -----------------------------------------------------
 
- // ------------------------- implementation of foreach -----------------------------------------------------
-
+ //typedef size_t foreach_int_type;
  typedef std::ptrdiff_t foreach_int_type; 
  // better to be signed here : 1) on some machine/compiler, it is a lot faster !
  // When used with clef auto assign, e.g. A(i_,j_) = i -2*j, one needs signed arithmetics
- // The clef adapters would convert, but this requires a conversion at each call....
- //typedef size_t foreach_int_type;
 
 #define AUX0(z,P,NNN) constexpr int p##P = mem_layout::memory_rank_to_index(TraversalOrder,NNN-P);
 #define AUX1(z,P,unused) for (t[p##P]=0; t[p##P]< l[p##P]; ++t[p##P])
 //#define AUX1(z,P,unused) for (foreach_int_type x##P=0; x##P< dom.lengths()[p##P]; ++x##P)
 #define AUX3(z,p,unused) BOOST_PP_COMMA_IF(p) t[p]  
 #define IMPL(z, RR, unused) \
- template<typename FntType, ull_t TraversalOrder> struct foreach_impl<FntType,RR,TraversalOrder> {\
-  static void invoke ( domain_t<RR> const & dom, FntType F) { \
+ template<ull_t TraversalOrder, typename FntType> void foreach(domain_t<RR> const & dom, FntType F) {\
     BOOST_PP_REPEAT(RR,AUX0,BOOST_PP_DEC(RR))\
    mini_vector<foreach_int_type,RR> t;\
    const mini_vector<foreach_int_type,RR>  l(dom.lengths());\
-   BOOST_PP_REPEAT(RR,AUX1,nil){\
-    F(BOOST_PP_REPEAT(RR,AUX3,nil));\
-   } }};
+   BOOST_PP_REPEAT(RR,AUX1,nil){ F(BOOST_PP_REPEAT(RR,AUX3,nil)); }}
  BOOST_PP_REPEAT_FROM_TO(1,ARRAY_NRANK_MAX , IMPL, nil);
 #undef IMPL
 #undef AUX0
