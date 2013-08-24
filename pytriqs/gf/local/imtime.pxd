@@ -5,8 +5,7 @@ cdef extern from "triqs/gfs/imtime.hpp" namespace "triqs::gfs" :
         statistic_enum statistic
         imtime_domain ()
 
-    #cdef cppclass mesh_imtime "triqs::gfs::linear_mesh<triqs::gfs::imtime::domain_t>"  :
-    cdef cppclass mesh_imtime "triqs::gfs::linear_mesh<triqs::gfs::matsubara_domain<false>>" :
+    cdef cppclass mesh_imtime "triqs::gfs::mesh<triqs::gfs::imtime>"  :
         mesh_imtime ()
         mesh_imtime (mesh_imtime &)
         imtime_domain & domain()
@@ -15,7 +14,7 @@ cdef extern from "triqs/gfs/imtime.hpp" namespace "triqs::gfs" :
         long kind()
         bint operator ==( mesh_imtime &)
 
-    cdef mesh_imtime make_mesh_imtime "triqs::gfs::make_gf_mesh<triqs::gfs::imtime>" (double beta, statistic_enum S, size_t n_time_slices, mesh_enum mk)
+    cdef mesh_imtime make_mesh_imtime "triqs::gfs::mesh<triqs::gfs::imtime>" (double beta, statistic_enum S, size_t n_time_slices, mesh_enum mk)
     #cdef mesh_imtime make_mesh_imtime "triqs::gfs::gf_factories<triqs::gfs::imtime>::make_mesh" (double beta, statistic_enum S, size_t n_time_slices, mesh_enum mk)
 
     cdef cppclass gf_imtime "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::imtime>>" :

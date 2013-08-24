@@ -30,21 +30,20 @@ namespace triqs { namespace gfs {
 
  struct imtime {};
 
+ // mesh type and its factories
+ template<typename Opt> struct mesh<imtime,Opt> : linear_mesh<matsubara_domain<false>> {
+  typedef linear_mesh<matsubara_domain<false>> B;
+  mesh() = default;
+  mesh (double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk=half_bins):
+   B( typename B::domain_t(beta,S), 0, beta, n_time_slices, mk){}
+ };
+
  namespace gfs_implementation { 
 
-  // mesh type and its factories
-  template<typename Opt> struct mesh<imtime,Opt> {
-   typedef linear_mesh<matsubara_domain<false>> type;
-   typedef typename type::domain_t domain_t;
-   static type make(double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk=half_bins) {
-    return type(domain_t(beta,S), 0, beta, n_time_slices, mk);
-   }
-  };
- 
   // singularity 
   template<typename Opt> struct singularity<imtime,matrix_valued,Opt>  { typedef local::tail type;};
   template<typename Opt> struct singularity<imtime,scalar_valued,Opt>  { typedef local::tail type;};
-  
+
   // h5 name
   template<typename Opt> struct h5_name<imtime,matrix_valued,Opt>      { static std::string invoke(){ return  "ImTime";}};
 
@@ -53,7 +52,7 @@ namespace triqs { namespace gfs {
   template<typename Opt> struct data_proxy<imtime,matrix_valued,Opt> : data_proxy_array<double,3> {};
   template<typename Opt> struct data_proxy<imtime,scalar_valued,Opt> : data_proxy_array<double,1> {};
 
-   /// ---------------------------  closest mesh point on the grid ---------------------------------
+  /// ---------------------------  closest mesh point on the grid ---------------------------------
 
   template<typename Opt, typename Target>
    struct get_closest_point <imtime,Target,Opt> {
@@ -123,7 +122,7 @@ namespace triqs { namespace gfs {
       typename G::singularity_t const & operator()(G const * g,freq_infty const &) const {return g->singularity();}
    };
 
- // -------------------------------   Factories  --------------------------------------------------
+  // -------------------------------   Factories  --------------------------------------------------
 
   // matrix_valued
   template<typename Opt> struct factories<imtime,matrix_valued,Opt> { 
@@ -135,10 +134,10 @@ namespace triqs { namespace gfs {
      return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing(), evaluator<imtime,matrix_valued,Opt>(shape[0],shape[1]) ) ;
     }
    static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax=1025, mesh_kind mk= half_bins) {
-    return make_gf(mesh<imtime,Opt>::make(beta,S,Nmax,mk), shape, local::tail(shape));
+    return make_gf(mesh<imtime,Opt>(beta,S,Nmax,mk), shape, local::tail(shape));
    }
    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_kind mk, local::tail_view const & t) {
-    return make_gf(mesh<imtime,Opt>::make(beta,S,Nmax,mk), shape, t);
+    return make_gf(mesh<imtime,Opt>(beta,S,Nmax,mk), shape, t);
    }
   };
 
@@ -151,14 +150,14 @@ namespace triqs { namespace gfs {
      return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing());
     }
    static gf_t make_gf(double beta, statistic_enum S, size_t Nmax=1025, mesh_kind mk= half_bins) {
-    return make_gf(mesh<imtime,Opt>::make(beta,S,Nmax,mk), local::tail(tqa::mini_vector<size_t,2> (1,1)));
+    return make_gf(mesh<imtime,Opt>(beta,S,Nmax,mk), local::tail(tqa::mini_vector<size_t,2> (1,1)));
    }
    static gf_t make_gf(double beta, statistic_enum S, size_t Nmax, mesh_kind mk, local::tail_view const & t) {
-    return make_gf(mesh<imtime,Opt>::make(beta,S,Nmax,mk), t);
+    return make_gf(mesh<imtime,Opt>(beta,S,Nmax,mk), t);
    }
   };
  } // gfs_implementation.
- 
+
 }}
 #endif
 

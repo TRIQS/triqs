@@ -34,13 +34,12 @@ namespace triqs { namespace gfs {
  using arrays::make_shape;
 
  // GENERALISE matrxi TO DEFAULT
+ template<typename Variable, typename Opt=void> struct mesh;
  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf;         // the value class
  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_view;    // the view class
 
  // various implementation traits
  namespace gfs_implementation { // never use using of this... 
-  // what is the mesh
-  template<typename Variable, typename Opt> struct mesh;
 
   // evaluator regroup functions to evaluate the function. Cf descriptors
   template<typename Variable, typename Target, typename Opt> struct evaluator{ static constexpr int arity = 0;};
@@ -80,9 +79,6 @@ namespace triqs { namespace gfs {
  template <typename Variable, typename Target=matrix_valued, typename Opt=void, typename ... U> 
   gf_view<Variable,Target,Opt> make_gf_view(U && ... x) { return gfs_implementation::factories<Variable,Target,Opt>::make_gf_view(std::forward<U>(x)...);}
 
- template <typename Variable, typename Opt=void, typename ... U> 
-  typename gfs_implementation::mesh<Variable,Opt>::type make_gf_mesh(U && ... x) { return gfs_implementation::mesh<Variable,Opt>::make(std::forward<U>(x)...);}
-
  template<typename Variable, typename Target, typename Opt> struct gf_desc{};
  template<typename Descriptor> struct gf_tag{};
 
@@ -105,7 +101,7 @@ namespace triqs { namespace gfs {
     typedef Variable variable_t;
     typedef Opt option_t;
 
-    typedef typename gfs_implementation::mesh<Variable,Opt>::type                                mesh_t;
+    typedef mesh<Variable,Opt>                                                                  mesh_t;
     typedef typename mesh_t::domain_t                                                           domain_t;
     typedef typename mesh_t::mesh_point_t                                                       mesh_point_t;
     typedef typename mesh_t::index_t                                                            mesh_index_t;

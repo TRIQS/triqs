@@ -30,20 +30,19 @@ namespace triqs { namespace gfs {
 
  struct refreq {};
 
+ template<typename Opt> struct mesh<refreq,Opt> : linear_mesh<R_domain> {
+  typedef linear_mesh<R_domain> B;
+  mesh() = default;
+  mesh (double wmin, double wmax, size_t n_freq, mesh_kind mk=full_bins) : 
+   B(typename B::domain_t(), wmin, wmax, n_freq, mk){}
+ };
+
  namespace gfs_implementation { 
-  
-  template<typename Opt> struct mesh<refreq,Opt>                { 
-   typedef linear_mesh<R_domain> type;
-   typedef typename type::domain_t domain_t;
-   static type make(double wmin, double wmax, size_t n_freq, mesh_kind mk=full_bins) {
-    return type(domain_t(), wmin, wmax, n_freq, mk);
-   }
-  };
-  
+
   // singularity 
   template<typename Opt> struct singularity<refreq,matrix_valued,Opt>  { typedef local::tail type;};
   template<typename Opt> struct singularity<refreq,scalar_valued,Opt>  { typedef local::tail type;};
-  
+
   // h5 name
   template<typename Opt> struct h5_name<refreq,matrix_valued,Opt>      { static std::string invoke(){ return "ReFreq";}};
 
@@ -54,67 +53,67 @@ namespace triqs { namespace gfs {
     typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix<std::complex<double> >, std::complex<double>>::type rtype; 
     template<typename G>
      rtype operator() (G const * g,double w0)  const {
-     //auto operator() (G const * g,double w0) const -> typename decltype ((*g)[0])::regular_type {
+      //auto operator() (G const * g,double w0) const -> typename decltype ((*g)[0])::regular_type {
       size_t n; double w; bool in;
       std::tie(in, n, w) = windowing(g->mesh(),w0);
       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
       auto gg = on_mesh(*g);
       return (1-w) * gg(n) + w * gg(n+1);
      }
-    template<typename G>
-     local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}
-   };
-   
-  /// ---------------------------  data access  ---------------------------------
-  template<typename Opt> struct data_proxy<refreq,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
-  template<typename Opt> struct data_proxy<refreq,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
-   
-  // -------------------------------   Factories  --------------------------------------------------
-  
-  //matrix_valued
-  template<typename Opt> struct factories<refreq, matrix_valued,Opt> {
-   typedef gf<refreq,matrix_valued> gf_t;
+     template<typename G>
+      local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}
+     };
 
-   template<typename MeshType>
-    static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-     typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
-     return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
-    }
+    /// ---------------------------  data access  ---------------------------------
+    template<typename Opt> struct data_proxy<refreq,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
+    template<typename Opt> struct data_proxy<refreq,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
 
-   static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) {
-    typename gf_t::data_regular_t A(shape.front_append(n_freq)); A() =0;
-    return gf_t(mesh<refreq,Opt>::make(wmin, wmax, n_freq, full_bins), std::move(A), local::tail(shape), nothing());
-   }
+    // -------------------------------   Factories  --------------------------------------------------
 
-   static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
-    typename gf_t::data_regular_t A(shape.front_append(n_freq)); A() =0;
-    return gf_t(mesh<refreq,Opt>::make(wmin, wmax, n_freq, mk), std::move(A), local::tail(shape), nothing());
-   }
-  };
-   
-   //scalar_valued
-  template<typename Opt> struct factories<refreq,scalar_valued,Opt> {
-   typedef gf<refreq,scalar_valued> gf_t;
+    //matrix_valued
+    template<typename Opt> struct factories<refreq, matrix_valued,Opt> {
+     typedef gf<refreq,matrix_valued> gf_t;
 
-   template<typename MeshType>
-    static gf_t make_gf(MeshType && m, local::tail_view const & t) {
-     typename gf_t::data_regular_t A(m.size()); A() =0;
-     return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
-    }
-    
-    static gf_t make_gf(double wmin, double wmax, size_t n_freq) {
-     typename gf_t::data_regular_t A(n_freq); A() =0;
-     return gf_t(mesh<refreq,Opt>::make(wmin, wmax, n_freq), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
-    }
+     template<typename MeshType>
+      static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
+       typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
+       return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
+      }
 
-   static gf_t make_gf(double wmin, double wmax, size_t n_freq, mesh_kind mk) {
-    typename gf_t::data_regular_t A(n_freq); A() =0;
-    return gf_t(mesh<refreq,Opt>::make(wmin, wmax, n_freq, mk), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
-   }
+     static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) {
+      typename gf_t::data_regular_t A(shape.front_append(n_freq)); A() =0;
+      return gf_t(mesh<refreq,Opt>(wmin, wmax, n_freq, full_bins), std::move(A), local::tail(shape), nothing());
+     }
 
-  };
- } // gfs_implementation
+     static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
+      typename gf_t::data_regular_t A(shape.front_append(n_freq)); A() =0;
+      return gf_t(mesh<refreq,Opt>(wmin, wmax, n_freq, mk), std::move(A), local::tail(shape), nothing());
+     }
+    };
 
-}}
+    //scalar_valued
+    template<typename Opt> struct factories<refreq,scalar_valued,Opt> {
+     typedef gf<refreq,scalar_valued> gf_t;
+
+     template<typename MeshType>
+      static gf_t make_gf(MeshType && m, local::tail_view const & t) {
+       typename gf_t::data_regular_t A(m.size()); A() =0;
+       return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
+      }
+
+     static gf_t make_gf(double wmin, double wmax, size_t n_freq) {
+      typename gf_t::data_regular_t A(n_freq); A() =0;
+      return gf_t(mesh<refreq,Opt>(wmin, wmax, n_freq), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
+     }
+
+     static gf_t make_gf(double wmin, double wmax, size_t n_freq, mesh_kind mk) {
+      typename gf_t::data_regular_t A(n_freq); A() =0;
+      return gf_t(mesh<refreq,Opt>(wmin, wmax, n_freq, mk), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
+     }
+
+    };
+   } // gfs_implementation
+
+ }}
 #endif
 

@@ -27,20 +27,19 @@
 #include "./meshes/product.hpp"
 
 namespace triqs { namespace gfs { 
-  
+
  struct re_im_time {};
 
- namespace gfs_implementation { 
+ // the mesh
+ template<typename Opt> struct mesh<re_im_time,Opt> :   mesh_product<mesh<retime,Opt>,mesh<imtime,Opt>>  { 
+  typedef mesh<retime,Opt> m1_t; 
+  typedef mesh<imtime,Opt> m2_t; 
+  typedef mesh_product<m1_t,m2_t> B;
+  mesh (double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) :
+   B {mesh<retime,Opt>(tmin,tmax,nt), mesh<imtime,Opt>(beta,S, ntau, mk)} {}
+ };
 
-  // the mesh
-  template<typename Opt> struct mesh<re_im_time,Opt>  { 
-   typedef typename mesh<retime,Opt>::type m1_t; 
-   typedef typename mesh<imtime,Opt>::type m2_t; 
-   typedef mesh_product<m1_t,m2_t> type;
-   static type make (double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) { 
-    return {make_gf_mesh<retime,Opt>(tmin,tmax,nt), make_gf_mesh<imtime,Opt>(beta,S, ntau, mk)};
-   }
-  };
+ namespace gfs_implementation { 
 
   // singularity
   //template<typename Opt> struct singularity<re_im_time, scalar_valued, Opt>  { typedef gf<retime,scalar_valued> type;};
@@ -78,16 +77,16 @@ namespace triqs { namespace gfs {
 
   template<typename Opt> struct factories<re_im_time, scalar_valued,Opt> {
    typedef gf<re_im_time, scalar_valued,Opt> gf_t;
-   
+
    template<typename MeshType>
-   static gf_t make_gf(MeshType && m) {
-    typename gf_t::data_regular_t A(m.size());
-    A() =0;
-    return gf_t (m, std::move(A), nothing(), nothing() ) ;
-   }
+    static gf_t make_gf(MeshType && m) {
+     typename gf_t::data_regular_t A(m.size());
+     A() =0;
+     return gf_t (m, std::move(A), nothing(), nothing() ) ;
+    }
 
    static gf_t make_gf(double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) { 
-    auto m =  make_gf_mesh<re_im_time,Opt>(tmin,tmax, nt, beta, S, ntau, mk);
+    auto m =  mesh<re_im_time,Opt>(tmin,tmax, nt, beta, S, ntau, mk);
     typename gf_t::data_regular_t A(m.size()); 
     A() =0;
     return gf_t (m, std::move(A), nothing(), nothing());

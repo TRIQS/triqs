@@ -3,8 +3,7 @@ cdef extern from "triqs/gfs/refreq.hpp" namespace "triqs::gfs" :
     cdef cppclass refreq_domain :
         refreq_domain()
 
-    #cdef cppclass mesh_refreq "triqs::gfs::linear_mesh<triqs::gfs::refreq::domain_t>"  :
-    cdef cppclass mesh_refreq "triqs::gfs::linear_mesh<triqs::gfs::R_domain>"  :
+    cdef cppclass mesh_refreq "triqs::gfs::mesh<triqs::gfs::refreq>"  :
         mesh_refreq ()
         mesh_refreq (mesh_refreq &)
         refreq_domain & domain()
@@ -14,7 +13,7 @@ cdef extern from "triqs/gfs/refreq.hpp" namespace "triqs::gfs" :
         double kind()
         bint operator ==( mesh_refreq &)
 
-    cdef mesh_refreq make_mesh_refreq "triqs::gfs::make_gf_mesh<triqs::gfs::refreq>" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
+    cdef mesh_refreq make_mesh_refreq "triqs::gfs::mesh<triqs::gfs::refreq>" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
     #cdef mesh_refreq make_mesh_refreq "triqs::gfs::gf_factories<triqs::gfs::refreq>::make_mesh" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
 
     cdef cppclass gf_refreq "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::refreq>>" :

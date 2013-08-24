@@ -116,6 +116,7 @@ namespace triqs { namespace gfs {
 
    /// Mesh comparison
    bool operator == (linear_mesh const & M) const { return ((_dom == M._dom) && (size() ==M.size()) && (std::abs(xmin - M.xmin)<1.e-15) && (std::abs(xmax - M.xmax)<1.e-15));} 
+   bool operator != (linear_mesh const & M) const { return !(operator==(M));}
 
    /// Write into HDF5
    friend void h5_write (h5::group fg, std::string subgroup_name, linear_mesh const & m) {

@@ -27,78 +27,76 @@
 #include "./meshes/product.hpp"
 
 namespace triqs { namespace gfs {
-  
-  struct refreq_imtime {};
-  
-  namespace gfs_implementation { 
-    
-    // the mesh
-    template<typename Opt> struct mesh<refreq_imtime,Opt>  {
-      typedef typename mesh<refreq,Opt>::type m1_t; 
-      typedef typename mesh<imtime,Opt>::type m2_t; 
-      typedef mesh_product<m1_t,m2_t> type;
-      static type make (double wmin, double wmax, size_t n_freq, double beta, statistic_enum S, size_t nt, mesh_kind mk=full_bins ) { 
-        return {make_gf_mesh<refreq,Opt>(wmin,wmax,n_freq), make_gf_mesh<imtime,Opt>(beta,S,nt,mk)};
-      }
-    };
-    
-    // singularity
-    //template<typename Opt> struct singularity<refreq_imtime,scalar_valued,Opt>  { typedef gf<retime,scalar_valued> type;};
-    
-    // h5 name
-    template<typename Opt> struct h5_name<refreq_imtime,scalar_valued,Opt> { static std::string invoke(){ return  "GfReFreqImTime";}};
-    
-    /// ---------------------------  data access  ---------------------------------
-    
-    template<typename Opt> struct data_proxy<refreq_imtime,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
-    
-    /// ---------------------------  evaluator ---------------------------------
-    
-    template<typename Opt>
-    struct evaluator<refreq_imtime,scalar_valued,Opt> {
-      static constexpr int arity = 2;
-      template<typename G>
-      std::complex<double> operator() (G const * g, double omega, double tau)  const {
-       double beta = std::get<1>(g->mesh().components()).domain().beta;
-       int p = std::floor(tau/beta);
-       tau -= p*beta;
-       size_t n1,n2; double w1,w2; bool in;
-       std::tie(in, n1, w1) = windowing( std::get<0>(g->mesh().components()),omega);
-       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-       std::tie(in, n2, w2) = windowing( std::get<1>(g->mesh().components()),tau);
-       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-       auto gg = on_mesh(*g); //[g]( size_t n1, size_t n2) {return g->on_mesh(n1,n2);};
-       auto res =  w1 *( w2*gg(n1,n2) + (1-w2)*gg(n1,n2+1)) + (1-w1) * ( w2*gg(n1+1,n2) + (1-w2)*gg(n1+1,n2+1));
-   
-       //std::cout  << "eval reref imtim"<< n1 << " "<< n2 << " "<< w1 << " " << w2 << " "<< omega << " "<< tau<<  std::endl;
 
-       return ((std::get<1>(g->mesh().components()).domain().statistic == Fermion) && (p%2==1) ? -res : res);
-      } 
-    };
+ struct refreq_imtime {};
 
-    // -------------------------------   Factories  --------------------------------------------------
+ // the mesh
+ template<typename Opt> struct mesh<refreq_imtime,Opt> :mesh_product<mesh<refreq,Opt>,mesh<imtime,Opt>>  {
+  typedef mesh<refreq,Opt> m1_t; 
+  typedef mesh<imtime,Opt> m2_t; 
+  typedef mesh_product<m1_t,m2_t> B;
+  mesh (double wmin, double wmax, size_t n_freq, double beta, statistic_enum S, size_t nt, mesh_kind mk=full_bins ) :
+   B {mesh<refreq,Opt>(wmin,wmax,n_freq), mesh<imtime,Opt>(beta,S,nt,mk)} {}
+ };
 
-    template<typename Opt> struct factories<refreq_imtime, scalar_valued,Opt> {
-     typedef gf<refreq_imtime, scalar_valued,Opt> gf_t;
-     
-     template<typename MeshType>
-     static gf_t make_gf(MeshType && m) {
-      typename gf_t::data_regular_t A(m.size());
-      A() =0;
-      return gf_t (m, std::move(A), nothing(), nothing() ) ;
-     }
-     
-     static gf_t make_gf(double wmin, double wmax, size_t n_freq, double beta, statistic_enum S, size_t nt, mesh_kind mk=full_bins) { 
-      auto m =  make_gf_mesh<refreq_imtime,Opt>(wmin, wmax, n_freq, beta,S, nt, mk);
-      typename gf_t::data_regular_t A(m.size()); 
-      A() =0;
-      return gf_t (m, std::move(A), nothing(), nothing() ) ;
-     }
-    };
+ namespace gfs_implementation { 
+  // singularity
+  //template<typename Opt> struct singularity<refreq_imtime,scalar_valued,Opt>  { typedef gf<retime,scalar_valued> type;};
 
-  } // gfs_implementation
+  // h5 name
+  template<typename Opt> struct h5_name<refreq_imtime,scalar_valued,Opt> { static std::string invoke(){ return  "GfReFreqImTime";}};
 
-  //slices
+  /// ---------------------------  data access  ---------------------------------
+
+  template<typename Opt> struct data_proxy<refreq_imtime,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
+
+  /// ---------------------------  evaluator ---------------------------------
+
+  template<typename Opt>
+   struct evaluator<refreq_imtime,scalar_valued,Opt> {
+    static constexpr int arity = 2;
+    template<typename G>
+     std::complex<double> operator() (G const * g, double omega, double tau)  const {
+      double beta = std::get<1>(g->mesh().components()).domain().beta;
+      int p = std::floor(tau/beta);
+      tau -= p*beta;
+      size_t n1,n2; double w1,w2; bool in;
+      std::tie(in, n1, w1) = windowing( std::get<0>(g->mesh().components()),omega);
+      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+      std::tie(in, n2, w2) = windowing( std::get<1>(g->mesh().components()),tau);
+      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+      auto gg = on_mesh(*g); //[g]( size_t n1, size_t n2) {return g->on_mesh(n1,n2);};
+      auto res =  w1 *( w2*gg(n1,n2) + (1-w2)*gg(n1,n2+1)) + (1-w1) * ( w2*gg(n1+1,n2) + (1-w2)*gg(n1+1,n2+1));
+
+      //std::cout  << "eval reref imtim"<< n1 << " "<< n2 << " "<< w1 << " " << w2 << " "<< omega << " "<< tau<<  std::endl;
+
+      return ((std::get<1>(g->mesh().components()).domain().statistic == Fermion) && (p%2==1) ? -res : res);
+     } 
+   };
+
+  // -------------------------------   Factories  --------------------------------------------------
+
+  template<typename Opt> struct factories<refreq_imtime, scalar_valued,Opt> {
+   typedef gf<refreq_imtime, scalar_valued,Opt> gf_t;
+
+   template<typename MeshType>
+    static gf_t make_gf(MeshType && m) {
+     typename gf_t::data_regular_t A(m.size());
+     A() =0;
+     return gf_t (m, std::move(A), nothing(), nothing() ) ;
+    }
+
+   static gf_t make_gf(double wmin, double wmax, size_t n_freq, double beta, statistic_enum S, size_t nt, mesh_kind mk=full_bins) { 
+    auto m =  mesh<refreq_imtime,Opt>(wmin, wmax, n_freq, beta,S, nt, mk);
+    typename gf_t::data_regular_t A(m.size()); 
+    A() =0;
+    return gf_t (m, std::move(A), nothing(), nothing() ) ;
+   }
+  };
+
+ } // gfs_implementation
+
+ //slices
  inline gf_view<refreq,scalar_valued> slice_mesh_imtime (gf_view<refreq_imtime,scalar_valued> g, size_t index) { 
   auto arr = reinterpret_linear_array(g.mesh(),g.data()); // view it as a 2d array
   return { std::get<0>(g.mesh().components()), arr(arrays::range(),index), local::tail(1,1), nothing() };

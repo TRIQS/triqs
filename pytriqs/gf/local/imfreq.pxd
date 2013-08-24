@@ -5,8 +5,7 @@ cdef extern from "triqs/gfs/imfreq.hpp" namespace "triqs::gfs" :
         statistic_enum statistic
         imfreq_domain ()
 
-    #cdef cppclass mesh_imfreq "triqs::gfs::linear_mesh<triqs::gfs::imfreq::domain_t>"  :
-    cdef cppclass mesh_imfreq "triqs::gfs::linear_mesh<triqs::gfs::matsubara_domain<true>>"  :
+    cdef cppclass mesh_imfreq "triqs::gfs::mesh<triqs::gfs::imfreq>"  :
         mesh_imfreq ()
         mesh_imfreq (mesh_imfreq &)
         imfreq_domain & domain()
@@ -14,7 +13,7 @@ cdef extern from "triqs/gfs/imfreq.hpp" namespace "triqs::gfs" :
         long size()
         bint operator ==( mesh_imfreq &)
 
-    cdef mesh_imfreq make_mesh_imfreq "triqs::gfs::make_gf_mesh<triqs::gfs::imfreq>" (double beta, statistic_enum S, size_t n_max)
+    cdef mesh_imfreq make_mesh_imfreq "triqs::gfs::mesh<triqs::gfs::imfreq>" (double beta, statistic_enum S, size_t n_max)
     #cdef mesh_imfreq make_mesh_imfreq "triqs::gfs::gf_implementation::gf_factories<triqs::gfs::imfreq,triqs::gfs::matrix>::make_mesh" (double beta, statistic_enum S, size_t n_max)
     
     cdef cppclass gf_imfreq "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::imfreq> >" :

@@ -30,15 +30,15 @@ namespace triqs { namespace gfs {
 
  struct legendre {};
 
+ // mesh type and its factories
+ template<typename Opt> struct mesh<legendre,Opt> :discrete_mesh<legendre_domain> { 
+  typedef discrete_mesh<legendre_domain> B;
+  mesh() = default;
+  mesh(double beta, statistic_enum S, size_t n_leg) : B(typename B::domain_t(beta,S,n_leg)) {}
+ };
+
  namespace gfs_implementation { 
 
-  // mesh type and its factories
-  template<typename Opt> struct mesh<legendre,Opt> { 
-   typedef discrete_mesh<legendre_domain> type;
-   typedef typename type::domain_t domain_t;
-   static type make(double beta, statistic_enum S, size_t n_leg) { return type(domain_t(beta,S,n_leg)); }
-  };
-  
   // h5 name
   template<typename Opt> struct h5_name<legendre,matrix_valued,Opt>      { static std::string invoke(){ return  "Legendre";}};
 
@@ -66,7 +66,7 @@ namespace triqs { namespace gfs {
 
    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t n_leg) {
     typename gf_t::data_regular_t A(shape.front_append(n_leg)); A() = 0;
-    return gf_t(mesh<legendre,Opt>::make(beta, S, n_leg), std::move(A), nothing(), nothing());
+    return gf_t(mesh<legendre,Opt>(beta, S, n_leg), std::move(A), nothing(), nothing());
    }
 
   };

@@ -29,9 +29,13 @@ namespace triqs { namespace gfs {
 
  struct block_index {};
 
+ template<typename Opt> struct mesh<block_index,Opt> : discrete_mesh<discrete_domain> {
+  mesh() = default;
+  mesh(size_t s) : discrete_mesh<discrete_domain>(s) {}
+ };
+
  namespace gfs_implementation { 
 
-  template<typename Opt> struct mesh<block_index,Opt>                { typedef discrete_mesh<discrete_domain> type;};
   template<typename Target, typename Opt> struct h5_name<block_index,Target,Opt>      { static std::string invoke(){ return  "BlockGf";}};
 
   /// ---------------------------  h5_rw ---------------------------------
@@ -62,7 +66,7 @@ namespace triqs { namespace gfs {
 
   template<typename Target, typename Opt>
    struct factories<block_index,Target,Opt>  { 
-    typedef typename mesh<block_index, Opt>::type mesh_t;
+    typedef mesh<block_index, Opt> mesh_t;
     typedef gf<block_index,Target> gf_t;
     typedef gf_view<block_index,Target> gf_view_t;
 
@@ -76,11 +80,11 @@ namespace triqs { namespace gfs {
      return gf_t(mesh_t(block_names), std::move(V), nothing(), nothing() );
     }
 
-   /* static gf_t make_gf(std::initializer_list<Target> const & l) { 
-      auto v = std::vector<Target> {l};
-      return make_gf(v);
-    }
-*/
+    /* static gf_t make_gf(std::initializer_list<Target> const & l) { 
+       auto v = std::vector<Target> {l};
+       return make_gf(v);
+       }
+       */
     /* template<typename... Args>
        static gf_t make_gf(size_t N, Args&& ...args)  {
        std::vector<Target> V; V.reserve(N);
@@ -114,7 +118,7 @@ namespace triqs { namespace gfs {
      static gf_view_t make_gf_view(std::vector<GF> && V)      { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
 
    };
- 
+
  } // gfs_implementation
 
  // -------------------------------   Free function   --------------------------------------------------
@@ -133,7 +137,7 @@ namespace triqs { namespace gfs {
 
  // also experimental
  // an iterator over the block
-  template<typename Target, typename Opt>
+ template<typename Target, typename Opt>
   class block_gf_iterator : 
    public boost::iterator_facade< block_gf_iterator<Target,Opt>, typename Target::view_type , boost::forward_traversal_tag, typename Target::view_type  > {
     friend class boost::iterator_core_access;
@@ -149,11 +153,11 @@ namespace triqs { namespace gfs {
     void increment() { ++mesh_it; }
     bool at_end() const { return mesh_it.at_end();}
    };
- 
-  template<typename Target, typename Opt, bool B>
+
+ template<typename Target, typename Opt, bool B>
   block_gf_iterator<Target,Opt> begin(gf_impl<block_index,Target,Opt,B> const & bgf) { return {bgf,false};}
-  
-  template<typename Target, typename Opt, bool B>
+
+ template<typename Target, typename Opt, bool B>
   block_gf_iterator<Target,Opt> end(gf_impl<block_index,Target,Opt,B> const & bgf) { return {bgf,true};}
 
 

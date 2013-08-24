@@ -6,15 +6,14 @@ cdef extern from "triqs/gfs/legendre.hpp" namespace "triqs::gfs" :
         statistic_enum statistic
         legendre_domain ()
 
-    #cdef cppclass mesh_legendre "triqs::gfs::discrete_mesh<triqs::gfs::legendre::domain_t>":
-    cdef cppclass mesh_legendre "triqs::gfs::discrete_mesh<triqs::gfs::legendre_domain>":
+    cdef cppclass mesh_legendre "triqs::gfs::mesh<triqs::gfs::legendre>"  :
         mesh_legendre ()
         mesh_legendre (mesh_legendre &)
         legendre_domain & domain()
         long size()
         bint operator == (mesh_legendre &)
 
-    cdef mesh_legendre make_mesh_legendre "triqs::gfs::make_gf_mesh<triqs::gfs::legendre>" (double beta, statistic_enum S, size_t n_leg)
+    cdef mesh_legendre make_mesh_legendre "triqs::gfs::mesh<triqs::gfs::legendre>" (double beta, statistic_enum S, size_t n_leg)
     #cdef mesh_legendre make_mesh_legendre "triqs::gfs::gf_factories<triqs::gfs::legendre>::make_mesh" (double beta, statistic_enum S, size_t n_leg)
 
     cdef cppclass gf_legendre "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::legendre>>" :

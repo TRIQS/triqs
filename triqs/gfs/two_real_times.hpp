@@ -29,24 +29,17 @@ namespace triqs { namespace gfs {
 
  struct two_real_times {};
 
+ // the mesh
+ template<typename Opt> struct mesh<two_real_times,Opt> :mesh_product<mesh<retime,Opt> ,mesh<retime,Opt> >  { 
+  typedef mesh_product<mesh<retime,Opt> ,mesh<retime,Opt> > B;
+  mesh() = default;
+  mesh (double tmax, double n_time_slices) :
+   B(mesh<retime,Opt> ( 0, tmax,n_time_slices, full_bins), 
+     mesh<retime,Opt> ( 0, tmax,n_time_slices, full_bins) ) {}
+ };
+
  namespace gfs_implementation { 
 
-  // the mesh
-  template<typename Opt> struct mesh<two_real_times,Opt>  { 
-   typedef typename mesh<retime,Opt>::type m1_t; 
-   typedef mesh_product<m1_t,m1_t> type;
-   static type make (double tmax, double n_time_slices) { 
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS 
-    m1_t m1({},0, tmax,n_time_slices, full_bins);
-    return {m1,m1};
-#else
-    m1_t m1(typename m1_t::domain_t(),0, tmax,n_time_slices, full_bins);
-    type m(m1,m1);
-    return m; 
-#endif
-   }
-  };
-  
   // h5 name
   template<typename Opt> struct h5_name<two_real_times,matrix_valued,Opt> { static std::string invoke(){ return  "GfTwoRealTime";}};
 
@@ -54,23 +47,23 @@ namespace triqs { namespace gfs {
 
   template<typename Opt>
    struct get_closest_point <two_real_times,matrix_valued,Opt> {
-   typedef typename mesh<two_real_times, Opt>::type mesh_t;
-    
-//    // NOT FINISHED, NOT TESTED 
-//     template<typename G, typename T>
-//      static typename mesh_t::index_t invoke(G const * g, closest_pt_wrap<T,T> const & p) {
-//       return std::floor( double(p.value) / g->mesh().delta() + 0.5);
-//      }
+    typedef typename mesh<two_real_times, Opt>::type mesh_t;
+
+    //    // NOT FINISHED, NOT TESTED 
+    //     template<typename G, typename T>
+    //      static typename mesh_t::index_t invoke(G const * g, closest_pt_wrap<T,T> const & p) {
+    //       return std::floor( double(p.value) / g->mesh().delta() + 0.5);
+    //      }
 
    };
 
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename Opt>
-  struct evaluator<two_real_times,matrix_valued,Opt> {
+   struct evaluator<two_real_times,matrix_valued,Opt> {
     static constexpr int arity = 2;
     template<typename G>
-    arrays::matrix<std::complex<double> > operator() (G const * g, double t0, double t1)  const {
+     arrays::matrix<std::complex<double> > operator() (G const * g, double t0, double t1)  const {
       auto & data = g->data();
       auto & m = std::get<0>(g->mesh().components()); 
       size_t n0,n1; double w0,w1; bool in;
@@ -80,8 +73,8 @@ namespace triqs { namespace gfs {
       if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
       auto gg = [g,data]( size_t n0, size_t n1) {return data(g->mesh().index_to_linear(std::tuple<size_t,size_t>{n0,n1}), arrays::ellipsis());};
       return  w0 * ( w1*gg(n0,n1) + (1-w1)*gg(n0,n1+1) ) + (1-w0) * ( w1*gg(n0+1,n1) + (1-w1)*gg(n0+1,n1+1)); 
-    } 
-  };
+     } 
+   };
 
   /// ---------------------------  data access  ---------------------------------
 
@@ -91,10 +84,10 @@ namespace triqs { namespace gfs {
 
   template<typename Opt> struct factories<two_real_times, matrix_valued,Opt> {
    typedef gf<two_real_times, matrix_valued,Opt> gf_t;
-   typedef typename mesh<two_real_times, Opt>::type mesh_t;
+   typedef mesh<two_real_times, Opt> mesh_t;
 
    static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) {
-    auto m =  mesh<two_real_times,Opt>::make(tmax, n_time_slices);
+    auto m =  mesh<two_real_times,Opt>(tmax, n_time_slices);
     typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
     return gf_t (m, std::move(A), nothing(), nothing() ) ;
    }
@@ -131,10 +124,10 @@ namespace triqs { namespace gfs {
 
  } // gfs_implementation
 
-  // -------------------------------   Additionnal free function for this gf  --------------------------------------------------
-  
-  // from g(t,t') and t, return g(t-t') for any t'>t 
-  // 
+ // -------------------------------   Additionnal free function for this gf  --------------------------------------------------
+
+ // from g(t,t') and t, return g(t-t') for any t'>t 
+ // 
  gf<retime> slice (gf_view<two_real_times> const & g, double t) { 
   auto const & m = std::get<0> (g.mesh().components());   //one-time mesh
   long it = get_closest_mesh_pt_index(m, t);              //index of t on this mesh
