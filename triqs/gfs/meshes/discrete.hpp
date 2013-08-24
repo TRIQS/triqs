@@ -61,9 +61,11 @@ namespace triqs { namespace gfs {
    mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}
 
    /// Iterating on all the points...
-   typedef  mesh_pt_generator<discrete_mesh> iterator;
-   iterator begin() const { return iterator (this);}
-   iterator end()   const { return iterator (this, true);}
+   typedef  mesh_pt_generator<discrete_mesh> const_iterator;
+   const_iterator begin() const { return const_iterator (this);}
+   const_iterator end()   const { return const_iterator (this, true);}
+   const_iterator cbegin() const { return const_iterator (this);}
+   const_iterator cend()   const { return const_iterator (this, true);}
 
    /// Mesh comparison
    bool operator == (discrete_mesh const & M) const { return (_dom == M._dom) ;} 

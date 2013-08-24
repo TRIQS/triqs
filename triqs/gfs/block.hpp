@@ -142,7 +142,7 @@ namespace triqs { namespace gfs {
    public boost::iterator_facade< block_gf_iterator<Target,Opt>, typename Target::view_type , boost::forward_traversal_tag, typename Target::view_type  > {
     friend class boost::iterator_core_access;
     typedef gf_view<block_index,Target,Opt> big_gf_t;
-    typedef typename big_gf_t::mesh_t::iterator mesh_iterator_t;
+    typedef typename big_gf_t::mesh_t::const_iterator mesh_iterator_t;
     big_gf_t big_gf;
     mesh_iterator_t mesh_it;
 

@@ -35,8 +35,8 @@ namespace triqs { namespace gfs {
 
  // GENERALISE matrxi TO DEFAULT
  template<typename Variable, typename Opt=void> struct mesh;
- template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf;         // the value class
- template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_view;    // the view class
+ template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf;         // the regular type
+ template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_view;    // the view type
 
  // various implementation traits
  namespace gfs_implementation { // never use using of this... 

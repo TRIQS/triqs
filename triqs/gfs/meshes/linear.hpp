@@ -37,6 +37,8 @@ namespace triqs { namespace gfs {
    typedef size_t index_t; 
    typedef typename domain_t::point_t  domain_pt_t;
 
+   linear_mesh () : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
+   
    linear_mesh (domain_t const & dom, double a, double b, size_t n_pts, mesh_kind mk) :
      _dom(dom), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
      switch(mk) {
@@ -56,8 +58,6 @@ namespace triqs { namespace gfs {
      }
      xmax = xmin + del*(L-1);
    }
-
-   linear_mesh () : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
 
    domain_t const & domain() const { return _dom;}
    size_t size() const { return L; }
@@ -110,9 +110,11 @@ namespace triqs { namespace gfs {
    public:
 
    /// Iterating on all the points...
-   typedef  mesh_pt_generator<linear_mesh> iterator;
-   iterator begin() const { return iterator (this);}
-   iterator end()   const { return iterator (this, true);}
+   typedef  mesh_pt_generator<linear_mesh> const_iterator;
+   const_iterator begin() const { return const_iterator (this);}
+   const_iterator end()   const { return const_iterator (this, true);}
+   const_iterator cbegin() const { return const_iterator (this);}
+   const_iterator cend()   const { return const_iterator (this, true);}
 
    /// Mesh comparison
    bool operator == (linear_mesh const & M) const { return ((_dom == M._dom) && (size() ==M.size()) && (std::abs(xmin - M.xmin)<1.e-15) && (std::abs(xmax - M.xmax)<1.e-15));} 

@@ -107,9 +107,11 @@ namespace triqs { namespace gfs {
    mesh_point_t operator()(typename Meshes::index_t ... i) const { return (*this)[std::make_tuple(i...)];}
 
    /// Iterating on all the points...
-   typedef  mesh_pt_generator<mesh_product> iterator;
-   iterator begin() const { return iterator (this);}
-   iterator end()   const { return iterator (this, true);}
+   typedef  mesh_pt_generator<mesh_product> const_iterator;
+   const_iterator begin() const { return const_iterator (this);}
+   const_iterator end()   const { return const_iterator (this, true);}
+   const_iterator cbegin() const { return const_iterator (this);}
+   const_iterator cend()   const { return const_iterator (this, true);}
 
    /// Mesh comparison
    friend bool operator == (mesh_product const & M1, mesh_product const & M2) { return M1.m_tuple==M2.m_tuple; }
