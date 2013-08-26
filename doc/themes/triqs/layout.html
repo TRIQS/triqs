@@ -34,11 +34,10 @@
 {% endblock %}
 
 {% block rootrellink %}
-      {% if hasdoc('index') %}
-        <li><a href="{{ pathto('index') }}">Home</a>&nbsp;|</li>
-        <li><a href="{{ pathto('contents') }}">Documentation</a> &raquo;</li>
+      {% if hasdoc('documentation') %}
+        <li><a href="{{ pathto('index') }}">Home</a> &raquo;</li>
       {% else %}
-        <li><a href="{{ pathto('contents') }}">Documentation</a> &raquo;</li>
+        <li><a href="{{ pathto('index') }}">Documentation</a> &raquo;</li>
       {% endif %}
 {% endblock %}
 
@@ -46,15 +45,12 @@
 <div class="pageheader">
   <ul>
     <li><a href="{{ pathto('install') }}">Install</a></li>
+    <li><a href="{{ pathto('documentation') }}">Documentation</a></li>
     <li><a href="{{ pathto('bugs') }}">Report Bugs</a></li>
     <li><a href="{{ pathto('authors') }}">Authors and Quote</a></li>
   </ul>
   <div>
-    {% if hasdoc('index') %}
-    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="{{ pathto('index') }}">TRIQS</a></h1>
-    {% else %}
-    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="{{ pathto('contents') }}">TRIQS</a></h1>
-    {% endif %}
+    <h1 style="padding:0; margin: 10px 0 0 0;"><a class="triqs" href="http://ipht.cea.fr/triqs">TRIQS</a></h1>
     <span style="font-size: 14px; margin: 0px; padding: 0px;">a Toolbox for Research on Interacting Quantum Systems</span>
   </div>
 </div>

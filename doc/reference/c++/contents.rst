@@ -1,5 +1,6 @@
-C++ librairies
-##########################
+
+C++ libraries
+=============
 
 .. toctree::
    :maxdepth: 1
@@ -13,3 +14,4 @@ C++ librairies
    parameters/parameters
    lectures/contents
    utilities/contents
+
