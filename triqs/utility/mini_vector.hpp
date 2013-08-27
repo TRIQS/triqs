@@ -144,9 +144,20 @@ namespace triqs { namespace utility {
   }
 
  struct tuple_to_mini_vector_aux { template<typename M, typename V> V * operator()(M const & m,  V * v) { *v = m; return ++v;}};
+
+ // change : the first version crash clang 3.3, but not svn version.
+ // must be a bug, corrected since then
+/* 
  template<typename T, typename ... U> 
   mini_vector<T,sizeof...(U)> tuple_to_mini_vector(std::tuple<U...> const & t) { 
    mini_vector<T,sizeof...(U)> res;
+   triqs::tuple::fold(tuple_to_mini_vector_aux(),t,&res[0]); 
+   return res;
+  }
+*/
+ template<typename T, typename TU> 
+  mini_vector<T,std::tuple_size<TU>::value> tuple_to_mini_vector(TU const & t) { 
+   mini_vector<T,std::tuple_size<TU>::value> res;
    triqs::tuple::fold(tuple_to_mini_vector_aux(),t,&res[0]); 
    return res;
   }
