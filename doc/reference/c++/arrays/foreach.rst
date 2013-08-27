@@ -8,7 +8,7 @@ Loops : the foreach constructs
 foreach and its variants are a compact and efficient way to
 perform some action of the kind 
 
-       *For all elements of the arrays, do something*
+       *For all indices of the array, do something*
 
 
 While this kind of construct is equivalent to write manually the *for* loops, it has 

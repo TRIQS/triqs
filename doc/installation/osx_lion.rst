@@ -9,8 +9,8 @@ Installing required libraries on Mac OS X
 This installation guide has been tried on Mountain Lion. It may work for older
 versions of Mac OS X but previous versions of Mac OS X are not supported.
 
-NB: The installation of TRIQS under previous versions of OS X requires installing clang (via Xcode) or gcc 4.7 (via MacPorts).
-On Mountain Lion, clang (llvm) replaces gcc 4.2 as the default C++ compiler.
+NB: The installation of TRIQS under previous versions of OS X requires installing clang (via Xcode).
+(On Mountain Lion, clang (llvm) replaces gcc 4.2 as the default C++ compiler).
 
 We strongly recommend the following installation procedure, which provides a clean way to set up all dependencies, so that all
 of them are compatible with each other. Only the installation via homebrew is supported for the Mac.
@@ -36,6 +36,9 @@ Installation of the dependencies
      brew install python
      brew install doxygen
 
+     #AFTER THE FIX IN BOOST AND BREW : IN PROGRESS
+     #brew install boost --without-single --with-mpi --with-c++11
+     
 4. Now install virtualenv: ::
 
     pip install virtualenv
@@ -61,11 +64,15 @@ yield the ones located in ``$HOME/mypython``.
     pip install numpy
     pip install h5py
     pip install scipy
-    pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
+    pip install mpi4py
+    pip install matplotlib
+    #pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
     pip install tornado
     pip install pyzmq
+    pip install jinja2
     pip install ipython
     pip install cython
+
 
 6. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax: :: 
   

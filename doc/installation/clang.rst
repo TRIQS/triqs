@@ -1,47 +1,44 @@
 .. index:: clang
 
-.. _clang:
 
 .. highlight:: bash
 
+.. _install_clang:
 Using clang compiler
 ==========================
 
-clang++ compiler is **highly recommended** for anyone developing in C++ since : 
+**clang/llvm** is one of the very best C++ compilers, with gcc.
+It is open source, on linux and OS X (where it is now the standard compiler provided by Apple).
 
-* It has very nice  and useful error messages, much nicer than intel or gcc.
-* It implements most of the new C++11 standard.
+*clang* compiler is **highly recommended** for anyone developing in C++ since : 
 
-clang/llvm is now the standard compiler on OS X, but it is open source
-and works very well on linux too.
+ * It is standard compliant (C++11).
+ * It has very nice and useful error messages, much nicer than intel or gcc (even thought gcc is catching up...).
+   It really makes little sense to develop with e.g. gcc 4.6 today, specially with a library like TRIQS, 
+   which uses a lot of metaprogramming.
 
-Version
----------
+Note however that for *production* compilations, gcc, specially recent versions, still produces in general
+a slighly more optimal code for TRIQS applications, also the difference is small.
 
-* TRIQS compiles on clang, version 3.0 and later.
+It is highly recommended to use the latest stable on linux (3.3), and the default compiler on Os X (Mountain lion).
 
-* Recommended version is 3.1 (latest stable).
+Get and install clang on linux
+---------------------------------------------
 
-Get and install clang
-------------------------
+Precompiled versions are available at the  `LLVM dowload page <http://llvm.org/releases/download.html>`_, 
+use it. Just untar them, and add the directory in your path.
 
-If you have precompiled version in the  `LLVM dowload page <http://llvm.org/releases/download.html>`_, 
-use it. E.g. on Ubuntu 12.04 LTS ::
-
- wget http://llvm.org/releases/3.1/clang+llvm-3.1-x86_64-linux-ubuntu_12.04.tar.gz
- tar xzf clang+llvm-3.1-x86_64-linux-ubuntu_12.04
- sudo mv clang+llvm-3.1-x86_64-linux-ubuntu_12.04 /opt/clang
- # add /opt/clang/bin to your path
- # use clang++...
-
-Otherwise, it is in fact quite easy to compile clang from source, just follow the 
+In any case, it is also very easy to compile clang from source, just follow the 
 `instructions <http://clang.llvm.org/get_started.html#build>`_.
 
 Usage
 --------------
 
-In the current version, when compiling with clang, say (provided clang++ is your path of course) ::
+To use clang ::
 
    CXX=clang++ cmake path_to_TRIQS_source_directory .... others options ...
 
+.. note::
+
+   On Os X, the options -std=c++11 and -stdlib=libc++ are automatically added by the TRIQS installation script.
 

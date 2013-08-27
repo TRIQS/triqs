@@ -22,10 +22,11 @@ Install the following packages which are necessary to build TRIQS and use it::
 
 Optionally, you may be interested in:
 
- * How to *simply* upgrade the ipython notebook with :ref:`virtualenv <virtualenv>` to the latest version?
+ * How to *simply* upgrade the ipython notebook and Cython with :ref:`virtualenv <virtualenv>` to the latest version?
 
- * How to use the nice :ref:`clang <clang>` C++ compiler?
+ * How to use the nice and recommended :ref:`clang <install_clang>` C++ compiler?
 
- * How to use :ref:`Intel <icc>` C++ compiler?
+..
+  * How to use :ref:`Intel <icc>` C++ compiler?
 
 .. warning:: you need the latest version of Cython (>=.17, downloadable on Cython.org). If Cython is not found, specify the location of the executable with the option -DCYTHON_EXECUTABLE.

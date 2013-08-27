@@ -3,65 +3,57 @@
 Operations : array and matrix/vector algebras 
 =======================================================
 
-Operations
-------------
+Arithmetic operations
+-----------------------------
 
 Arrays and matrices can be combined in formal algebraic expressions, which models the :ref:`ImmutableCuboidArray` concept.
-This algebraic expressions can therefore be used as RHS of assignment (SEE) or in array/matrix contructors.
-For example ; 
+This algebraic expressions can therefore be used in assignment array/matrix contructors.
+For example: 
 
 .. compileblock::
 
    #include <triqs/arrays.hpp>
-   using triqs::arrays::array; 
+   using triqs::arrays::array; using triqs::clef::placeholder;
    int main() {  
-    array<long,2> A (2,2), B(2,2), C;
-    C= A + 2*B;
-    array<long,2> D = A+ 2*B;
-    array<double,2> F = 0.5 * A;  // Type promotion is automatic
+    // init
+    placeholder<0> i_; placeholder<1> j_;
+    array<long,2> A (2,2), B(2,2);
+    A(i_,j_) <<  i_ + j_ ; 
+    B(i_,j_) <<  i_ - j_ ; 
+ 
+    // use expressions
+    array<long,2>   C = A+ 2*B;
+    array<double,2> D = 0.5 * A;  // Type promotion is automatic
+    std::cout<< "A= "<< A<< std::endl;
+    std::cout<< "B= "<< B<< std::endl;
+    std::cout<< "C= "<< C<< std::endl;
+    std::cout<< "D= "<< D<< std::endl;
    }
 
 Arrays vs matrices
 ----------------------
 
 Because their multiplication is not the same, arrays and matrices algebras can not be mixed.
-Mixing them in expression would therefore be meaningless and it is therefore not allowed ::
-
-   array<long,2> A;
-   matrix<long,2> M;
-   M + A; // --> ERROR. Rejected by the compiler.
-
-However, you can always make a matrix_view from a array of rank 2 ::
+Mixing them in expression would therefore be meaningless and it is therefore not allowed.
+However, you can always use e.g. `matrix_view` from a array of rank 2 :
   
-   A + make_matrix_view(M); //--> OK.
+.. compileblock::
+    
+    #include <triqs/arrays.hpp>
+    using namespace triqs::arrays;
+    int main() {  
+     array<long,2> A(2,2); matrix<long,2> M(2,2);
+     //M + A; // --> ERROR. Rejected by the compiler.
+     M + make_matrix_view(A); //--> OK.
+    }
 
 .. note::
 
-   Making view is cheap, it only copies the index systems. Nevertheless
-   this can still cause severe overhead in very intense loops. 
+   Making such a view is very cheap, it only copies the index systems. Nevertheless
+   this can still cause significant overhead in very intense loops by disturbing
+   optimizers.
 
    
-Compound operators (+=, -=, *=, /=)
--------------------------------------------
-
-The `value classes` and the `view classes` behaves similarly.
-We will illustrate it on the `array` class, it is the same for `matrix` and `vector`.
-
- * **Syntax** 
-
-   The syntax is natural ::
-
-    template<typename RHS> array & operator += (const RHS & X);
-    template<typename RHS> array & operator -= (const RHS & X);
-    template<typename RHS> array & operator *= (const Scalar & S);
-    template<typename RHS> array & operator /= (const Scalar & S);
-
- * **Behaviour**
-
-   - Similar to assignment, but it makes the operation
-   - For matrices, scalar is correctly interpreted as a scalar matrix.
-
-
 Performance
 ---------------------------------------------
 
@@ -92,7 +84,7 @@ is in fact rewritten by the compiler into ::
 
 instead of making a chain of temporaries (C/2, 2*B, 2*B + C/2...) that "ordinary" object-oriented programming would produce.
 As a result, the produced code is as fast as if you were writing the loop yourself,
-but with several advantages : 
+but with several advantages: 
 
 * It is more **compact** and **readable** : you don't have to write the loop, and the indices range are computed automatically.
 * It is much better for **optimization** : 
@@ -101,7 +93,9 @@ but with several advantages :
   * For example, since the traversal order of indices is decided at compile time, the library can traverse the data
     in an optimal way, allowing machine-dependent optimization.
   * The library can perform easy optimisations behind the scene when possible, e.g. for vector it can use blas.
-  
+ 
+Expressions are lazy....
+---------------------------
 Note that expressions are lazy objects. It does nothing when constructed, it just "record" the mathematical expression ::
 
    auto e =  A + 2*B;             // expression, purely formal, no computation is done
@@ -110,5 +104,4 @@ Note that expressions are lazy objects. It does nothing when constructed, it jus
    cout<< e.domain() <<endl ;     // just computes its domain
    array<long,2> D(e);            // now really makes the computation and store the result in D.
    D = 2*A +B;                    // reassign D to the evaluation of the expression.
-
 

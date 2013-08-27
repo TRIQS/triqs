@@ -1,5 +1,7 @@
 .. highlight:: c
 
+.. _arr_map_fold:
+
 Functional constructs : map & fold
 ###########################################
 
@@ -27,17 +29,15 @@ map
     ValueType2 f(ValueType1)
 
   Then map(f) is a function::
+  
+     template<ImmutableCuboidArray A> auto map(f) (A const &)
    
-    ReturnType map(f) ( ArrayType const & A)
-   
-  where ArrayType  models the :ref:`ImmutableCuboidArray` concept
+  with : 
+     * A::value_type == ValueType1
+     * The returned type of map(f) models the :ref:`ImmutableCuboidArray` concept
 
-   * with value_type == ValueType1
-
-  and ReturnType models the :ref:`ImmutableCuboidArray` concept
-
-   * with the same domain as ArrayType
-   * with value_type == ValueType2
+       * with the same domain as A
+       * with value_type == ValueType2
 
 * N.B. : Some cases require explicit cast, e.g. for the standard abs function (already defined in arrays/mapped_function.hpp) , 
   or the compiler does not know which std::abs you are talking about ::
@@ -51,7 +51,7 @@ map
 .. compileblock::
 
    #include <triqs/arrays.hpp>
-   using triqs::arrays::matrix; using triqs::clef::placeholder;
+   using triqs::arrays::matrix; using triqs::arrays::make_matrix; using triqs::clef::placeholder;
    int main() { 
     // declare and init a matrix
     placeholder<0> i_; placeholder<1> j_;
@@ -60,14 +60,10 @@ map
     // the mapped function
     auto F = triqs::arrays::map([](int i) { return i*2.5;});
 
-    matrix<double> B; 
-    B = F(A);
-    std::cout<< A << B<< std::endl;
-
-    // works also with expressions of course
-    B = F( 2*A );
-    B = B + 3* F(2*A); // ok that is just an example...
-    std::cout<< A << B<< std::endl;
+    std::cout<< "A = "        << A                        << std::endl; 
+    std::cout<< "F(A) = "     << F(A)                     << std::endl; // oops no computation done
+    std::cout<< "F(A) = "     << make_matrix(F(A))     << std::endl;
+    std::cout<< "3*F(2*A) = " << make_matrix(3*F(2*A)) << std::endl;
    }
 
 
@@ -112,11 +108,11 @@ fold
   
   Many algorithms can be written in form of map/fold.
 
-  The function *sum* which returns the sum of all the elements of the array is implemented approximately like this 
-  (this function already exists in the lib, cf ???) ::
-
+  The function :ref:`arr_fnt_sum` which returns the sum of all the elements of the array is implemented as ::
    template <class A>
    typename A::value_type sum(A const & a) { return fold ( std::plus<typename A::value_type>())  (a); }
+
+
 
   Note in this example : 
    

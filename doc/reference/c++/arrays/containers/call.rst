@@ -1,6 +1,6 @@
 .. highlight:: c
 
-.. _arr_reg_call:
+.. _arr_call:
 
 Operator()
 ==================================
@@ -14,7 +14,10 @@ Operator()
   view_type          operator()( size_t | range | ellipsis ) const           (2b) 
 
   `clef expression`  operator()( `at least a lazy argument` ) const          (3) 
-  
+
+This is valid for both the container (e.g. array), and the view (e.g. array_view).
+
+
 .. _arr_element_access:
 
 (1) Element access 

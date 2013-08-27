@@ -10,8 +10,10 @@ Installation
 Prerequisite
 ------------
 
-The TRIQS library relies on a certain number of standard libraries described in
-the :ref:`list of requirements <requirements>`. Here are instructions to install
+The TRIQS library relies on a certain number of standard libraries and tools described in
+the :ref:`list of requirements <requirements>`. Beware in particular to the :ref:`C++ compilers<require_cxx_compilers>`
+and to :ref:`Scientific Python tools<python_install>`.  
+Here are instructions to install
 these necessary libraries on two standard systems:
 
 .. toctree::
@@ -35,11 +37,20 @@ Installation steps
 
      $ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../src
 
+   If you omit CMAKE_INSTALL_PREFIX, the default `path_to_install_directory` is ./INSTALL_DIR.
+  
+   Configuration options are described :ref:`here<install_options>`.
+
 #. Compile the code, run the tests and install the library::
 
      $ make
      $ make test
      $ make install
+
+   .. note:: 
+       
+      We remind you that on multicore machine, make's option -jN (where N is the number of cores)
+      greatly speed up the compilation e.g. make -j8 on a 8 cores machine...
 
 #. After the installation TRIQS has been installed using the standard UNIX
    scheme:
@@ -53,15 +64,16 @@ Installation steps
    * shared items in ``path_to_install_directory/share/triqs``.
 
 
-Further details
----------------
-
+Further reading
+------------------
 .. toctree::
    :maxdepth: 1
    
+   installation/install_options
    installation/python
    installation/clang
-   installation/intel
-   installation/install_options
    installation/changelog
+
+..    
+   installation/intel
 

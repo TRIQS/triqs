@@ -15,10 +15,11 @@ Multidimensional arrays
    view_or_not_view
    lazy 
    foreach
+   simple_fnt
    map
-   mapped_fnt
    algebras
    move_swap
+   play_with_concept
    blas_lapack
    H5
    Interop_Python

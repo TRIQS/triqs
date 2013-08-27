@@ -44,18 +44,19 @@ ImmutableCuboidArray
    
    * NB : It does not need to be stored in memory. A formal expression, e.g. model this concept.
 
-* **Definition** ([A] denotes something optional).
+* **Definition** ([...] denotes something optional).
 
- * The class derives from : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) 
-  
- ==================================================================================================  =============================================================================
- Elements                                                                                            Comment
- ==================================================================================================  =============================================================================
- domain_type                                                                                         Type of the domain.
- domain_type [const &] domain() const                                                                Access to the domain.
- value_type                                                                                          Type of the element of the array
- value_type  [const &] operator() (size_t ... i) const                                               Evaluation. Must have exactly rank argument (checked at compiled time).
- ==================================================================================================  =============================================================================
++-------------------------------------------------------+-------------------------------------------------------------------------+
+| Members                                               | Comment                                                                 |
++=======================================================+=========================================================================+
+| domain_type == cuboid_domain<Rank>                    | Type of the domain, with rank `Rank`                                    |
++-------------------------------------------------------+-------------------------------------------------------------------------+
+| domain_type [const &] domain() const                  | Access to the domain.                                                   |
++-------------------------------------------------------+-------------------------------------------------------------------------+
+| value_type                                            | Type of the element of the array                                        |
++-------------------------------------------------------+-------------------------------------------------------------------------+
+| value_type  [const &] operator() (size_t ... i) const | Evaluation. Must have exactly rank argument (checked at compiled time). |
++-------------------------------------------------------+-------------------------------------------------------------------------+
 
 * **Examples** : 
    * array, array_view, matrix, matrix_view, vector, vector_view.
@@ -69,65 +70,102 @@ MutableCuboidArray
 * **Purpose** :   An array where the data can be modified...
 * **Refines** :  :ref:`ImmutableCuboidArray`.
 
+* **Definition** 
 
-* **Definition** ([A] denotes something optional).
-
- * The class derives from : TRIQS_CONCEPT_TAG_NAME(MutableCuboidArray) 
-  
- ==================================================================================================  =============================================================================
- Elements                                                                                            Comment
- ==================================================================================================  =============================================================================
- domain_type                                                                                         Type of the domain.
- domain_type [const &] domain() const                                                                Access to the domain.
- value_type                                                                                          Type of the element of the array
- value_type const & operator() (size_t ... i) const                                                  Element access: Must have exactly rank argument (checked at compiled time).
- value_type       & operator() (size_t ... i)                                                        Element access: Must have exactly rank argument (checked at compiled time).
- ==================================================================================================  =============================================================================
++----------------------------------------------+-----------------------------------------------------------------------------+
+| Members                                      | Comment                                                                     |
++==============================================+=============================================================================+
+| value_type  & operator() (size_t ... i)      | Element access: Must have exactly rank argument (checked at compiled time). |
++----------------------------------------------+-----------------------------------------------------------------------------+
 
 * **Examples** : 
    * array, array_view, matrix, matrix_view, vector, vector_view.
+
+.. _ImmutableArray:
+
+ImmutableArray
+-------------------------------------------------------------------
+
+* Refines :ref:`ImmutableCuboidArray`
+
+* If X is the type : 
+
+  * ImmutableArray<A> == true_type
+
+NB : this traits marks the fact that X belongs to the Array algebra.
 
 .. _ImmutableMatrix:
 
 ImmutableMatrix
 -------------------------------------------------------------------
 
-Same as :ref:`ImmutableCuboidArray`, except that : 
+* Refines :ref:`ImmutableCuboidArray`
 
- * the rank of the domain must be 2 
- * the class must derive from TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix).
+* If A is the type : 
 
+  * ImmutableMatrix<A> == true_type
+  * A::domain_type::rank ==2
+
+NB : this traits marks the fact that X belongs to the MatrixVector algebra.
 
 .. _ImmutableVector:
 
 ImmutableVector
 -------------------------------------------------------------------
 
-Same as :ref:`ImmutableCuboidArray`, except that : 
+* Refines :ref:`ImmutableCuboidArray`
 
- * the rank of the domain must be 1 
- * the class must derive from TRIQS_CONCEPT_TAG_NAME(ImmutableVector).
+* If A is the type : 
 
+  * ImmutableMatrix<A> == true_type
+  * A::domain_type::rank ==1
+
+NB : this traits marks the fact that X belongs to the MatrixVector algebra.
+
+
+.. _MutableArray:
+
+MutableArray
+-------------------------------------------------------------------
+
+* Refines :ref:`MutableCuboidArray` 
+
+* If A is the type : 
+
+  * ImmutableArray<A> == true_type
+  * MutableArray<A> == true_type
+
+NB : this traits marks the fact that X belongs to the Array algebra.
 
 .. _MutableMatrix:
 
 MutableMatrix
 -------------------------------------------------------------------
 
-Same as :ref:`MutableCuboidArray`, except that : 
+* Refines :ref:`MutableCuboidArray` 
 
- * the rank of the domain must be 2 
- * the class must derive from TRIQS_CONCEPT_TAG_NAME(MutableMatrix).
+* If A is the type : 
+
+  * ImmutableMatrix<A> == true_type
+  * MutableMatrix<A> == true_type
+  * A::domain_type::rank ==2
+
+NB : this traits marks the fact that X belongs to the MatrixVector algebra.
 
 .. _MutableVector:
 
 MutableVector
 -------------------------------------------------------------------
 
-Same as :ref:`MutableCuboidArray`, except that : 
+* Refines :ref:`MutableCuboidArray` 
 
- * the rank of the domain must be 1 
- * the class must derive from TRIQS_CONCEPT_TAG_NAME(MutableVector).
+* If A is the type : 
+
+  * ImmutableMatrix<A> == true_type
+  * MutableMatrix<A> == true_type
+  * A::domain_type::rank ==1
+
+NB : this traits marks the fact that X belongs to the MatrixVector algebra.
 
 
 Why concepts ? [Advanced]
@@ -153,7 +191,7 @@ Example :
     #include <iostream>
     namespace triqs { namespace arrays { // better to put it in this namespace for ADL... 
      
-     template<typename T> class immutable_diagonal_matrix_view : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) { 
+     template<typename T> class immutable_diagonal_matrix_view  { 
       
       array_view<T,1> data; // the diagonal stored as a 1d array
       
@@ -167,8 +205,12 @@ Example :
       typedef T value_type;
       T operator()(size_t i, size_t j) const { return (i==j ? data(i) : 0);} // just kronecker...
       
-      friend std::ostream & operator<<(std::ostream & out, immutable_diagonal_matrix_view const & d) { return out<<"diagonal_matrix "<<d.data;}
+      friend std::ostream & operator<<(std::ostream & out, immutable_diagonal_matrix_view const & d) 
+        {return out<<"diagonal_matrix "<<d.data;}
      };
+     
+     // Marking this class as belonging to the Matrix & Vector algebra. 
+     template<typename T> struct ImmutableMatrix<immutable_diagonal_matrix_view<T>> : std::true_type{};
     }}
           
     /// TESTING 
