@@ -324,7 +324,34 @@ namespace triqs { namespace det_manip {
      w1.ksi = f(x,y) - arrays::dot( w1.C(R) , w1.MB(R) );
      newdet = det*w1.ksi;
      newsign = ((i + j)%2==0 ? sign : -sign);   // since N-i0 + N-j0  = i0+j0 [2]
-     return (newdet/det)*(newsign*sign);          // sign is unity, hence 1/sign == sign
+     return w1.ksi*(newsign*sign);              // sign is unity, hence 1/sign == sign
+    } 
+    
+    //fx gives the new line coefficients, fy gives the new column coefficients and ksi is the last coeff (at the intersection of the line and the column). 
+    template<typename Fx, typename Fy>
+    value_type try_insert_from_function(size_t i, size_t j, Fx fx, Fy fy, value_type const ksi) {
+     
+     // check input and store it for complete_operation
+     assert(i<=N);  assert(j<=N); assert(i>=0); assert(j>=0);
+     if (N==Nmax) reserve(2*Nmax);
+     last_try = 1;
+     w1.i=i; w1.j=j;
+     
+     // treat empty matrix separately 
+     if (N==0) { newdet = ksi; newsign = 1; return newdet; }
+     
+     // I add the row and col and the end. If the move is rejected,
+     // no effect since N will not be changed : Minv(i,j) for i,j>=N has no meaning.
+     for (size_t k= 0; k< N; k++) {
+      w1.B(k) = fx(x_values[k]);
+      w1.C(k) = fy(y_values[k]);
+     }
+     range R(0,N);
+     w1.MB(R) = mat_inv(R,R) * w1.B(R);// CHANGE
+     w1.ksi = ksi - arrays::dot( w1.C(R) , w1.MB(R) );
+     newdet = det*w1.ksi;
+     newsign = ((i + j)%2==0 ? sign : -sign);   // since N-i0 + N-j0  = i0+j0 [2]
+     return w1.ksi*(newsign*sign);          // sign is unity, hence 1/sign == sign
     } 
 
     //------------------------------------------------------------------------------------------
