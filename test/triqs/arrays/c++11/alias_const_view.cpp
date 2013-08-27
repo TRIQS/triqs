@@ -19,8 +19,8 @@
  *
  ******************************************************************************/
 
-#include "./common.hpp"
-#include "./src/array.hpp"
+#include "../common.hpp"
+#include "../src/array.hpp"
 #include <iostream>
 
 //using std::cout; using std::endl;
