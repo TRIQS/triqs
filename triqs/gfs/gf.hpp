@@ -34,7 +34,7 @@ namespace triqs { namespace gfs {
  using arrays::make_shape;
 
  // GENERALISE matrxi TO DEFAULT
- template<typename Variable, typename Opt=void> struct mesh;
+ template<typename Variable, typename Opt=void> struct gf_mesh;
  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf;         // the regular type
  template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_view;    // the view type
 
@@ -101,7 +101,7 @@ namespace triqs { namespace gfs {
     typedef Variable variable_t;
     typedef Opt option_t;
 
-    typedef mesh<Variable,Opt>                                                                  mesh_t;
+    typedef gf_mesh<Variable,Opt>                                                               mesh_t;
     typedef typename mesh_t::domain_t                                                           domain_t;
     typedef typename mesh_t::mesh_point_t                                                       mesh_point_t;
     typedef typename mesh_t::index_t                                                            mesh_index_t;

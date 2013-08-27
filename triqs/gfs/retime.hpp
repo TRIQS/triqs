@@ -30,10 +30,10 @@ namespace triqs { namespace gfs {
 
  struct retime {};
 
- template<typename Opt> struct mesh<retime,Opt> : linear_mesh<R_domain>  { 
+ template<typename Opt> struct gf_mesh<retime,Opt> : linear_mesh<R_domain>  { 
   typedef linear_mesh<R_domain> B;
-  mesh() = default;
-  mesh(double tmin, double tmax, size_t n_points, mesh_kind mk=full_bins) : B (typename B::domain_t(), tmin, tmax, n_points, mk){}
+  gf_mesh() = default;
+  gf_mesh(double tmin, double tmax, size_t n_points, mesh_kind mk=full_bins) : B (typename B::domain_t(), tmin, tmax, n_points, mk){}
  };
 
  namespace gfs_implementation { 
@@ -81,12 +81,12 @@ namespace triqs { namespace gfs {
 
    static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
     typename gf_t::data_regular_t A(shape.front_append(n_points)); A() =0;
-    return gf_t(mesh<retime,Opt>(tmin, tmax, n_points,mk), std::move(A), local::tail(shape), nothing());
+    return gf_t(gf_mesh<retime,Opt>(tmin, tmax, n_points,mk), std::move(A), local::tail(shape), nothing());
    }
 
    static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape) {
     typename gf_t::data_regular_t A(shape.front_append(n_points)); A() =0;
-    return gf_t(mesh<retime,Opt>(tmin, tmax, n_points), std::move(A), local::tail(shape), nothing());
+    return gf_t(gf_mesh<retime,Opt>(tmin, tmax, n_points), std::move(A), local::tail(shape), nothing());
    }
 
   };
@@ -103,12 +103,12 @@ namespace triqs { namespace gfs {
 
    static gf_t make_gf(double tmin, double tmax, size_t n_points, mesh_kind mk) {
     typename gf_t::data_regular_t A(n_points); A() =0;
-    return gf_t(mesh<retime,Opt>(tmin, tmax, n_points,mk), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
+    return gf_t(gf_mesh<retime,Opt>(tmin, tmax, n_points,mk), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
    }
 
    static gf_t make_gf(double tmin, double tmax, size_t n_points) {
     typename gf_t::data_regular_t A(n_points); A() =0;
-    return gf_t(mesh<retime,Opt>(tmin, tmax, n_points), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
+    return gf_t(gf_mesh<retime,Opt>(tmin, tmax, n_points), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
    }
 
   };

@@ -119,7 +119,7 @@ namespace triqs { namespace gfs {
 	   Opt>
     curry (gf_impl<cartesian_product<Ms...>, Target,Opt,B> const & g) { 
     auto comp =  pv_<cartesian_product<Ms...>,pos...>::m(std::make_tuple(),g.mesh().components());
-    typedef mesh< typename pv_<cartesian_product<Ms...>,pos...>::type,Opt> m_t;
+    typedef gf_mesh< typename pv_<cartesian_product<Ms...>,pos...>::type,Opt> m_t;
     return {triqs::tuple::apply_construct<m_t>(comp),curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt>, pos ...>{g}, nothing(), nothing()}; 
    };
 

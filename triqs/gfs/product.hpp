@@ -32,10 +32,10 @@ namespace triqs { namespace gfs {
  };
 
  // the mesh is simply a cartesian product
- template<typename Opt, typename ... Ms> struct mesh<cartesian_product<Ms...>,Opt> : mesh_product< mesh<Ms,Opt> ... > { 
-  typedef mesh_product< mesh<Ms,Opt> ... > B;
+ template<typename Opt, typename ... Ms> struct gf_mesh<cartesian_product<Ms...>,Opt> : mesh_product< gf_mesh<Ms,Opt> ... > { 
+  typedef mesh_product< gf_mesh<Ms,Opt> ... > B;
   typedef std::tuple<Ms...> mesh_name_t;
-  mesh (mesh<Ms,Opt> ... ms) : B {std::move(ms)...} {} 
+  gf_mesh (gf_mesh<Ms,Opt> ... ms) : B {std::move(ms)...} {} 
  };
 
  namespace gfs_implementation { 
@@ -160,7 +160,7 @@ namespace triqs { namespace gfs {
 
     template<typename ... Meshes>
      static gf_t make_gf(Meshes && ... meshes) { 
-      auto m =  mesh<cartesian_product<Ms...>,Opt>(meshes...);
+      auto m =  gf_mesh<cartesian_product<Ms...>,Opt>(meshes...);
       typename gf_t::data_regular_t A(m.size()); 
       A() =0;
       return gf_t (m, std::move(A), nothing(), nothing());

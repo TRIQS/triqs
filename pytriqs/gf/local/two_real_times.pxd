@@ -3,7 +3,7 @@ cdef extern from "triqs/gfs/two_real_times.hpp" namespace "triqs::gfs" :
     cdef cppclass two_real_times_domain :
         two_real_times_domain()
 
-    cdef cppclass mesh_two_real_times "triqs::gfs::mesh<triqs::gfs::two_real_times>"  :
+    cdef cppclass mesh_two_real_times "triqs::gfs::gf_mesh<triqs::gfs::two_real_times>"  :
         mesh_two_real_times ()
         mesh_two_real_times (mesh_two_real_times &)
         two_real_times_domain & domain()
@@ -13,7 +13,7 @@ cdef extern from "triqs/gfs/two_real_times.hpp" namespace "triqs::gfs" :
         double kind()
         bint operator ==( mesh_two_real_times &)
 
-    cdef mesh_two_real_times make_mesh_two_real_times  "triqs::gfs::mesh<triqs::gfs::two_real_times>" (double t_max, double n_time_slices)
+    cdef mesh_two_real_times make_mesh_two_real_times  "triqs::gfs::gf_mesh<triqs::gfs::two_real_times>" (double t_max, double n_time_slices)
 
     cdef mesh_retime & get_1d_mesh_from_2times_mesh "triqs::gfs::get_1d_mesh_from_2times_mesh" (mesh_two_real_times &)
 

@@ -30,10 +30,10 @@ namespace triqs { namespace gfs {
 
  struct refreq {};
 
- template<typename Opt> struct mesh<refreq,Opt> : linear_mesh<R_domain> {
+ template<typename Opt> struct gf_mesh<refreq,Opt> : linear_mesh<R_domain> {
   typedef linear_mesh<R_domain> B;
-  mesh() = default;
-  mesh (double wmin, double wmax, size_t n_freq, mesh_kind mk=full_bins) : 
+  gf_mesh() = default;
+  gf_mesh (double wmin, double wmax, size_t n_freq, mesh_kind mk=full_bins) : 
    B(typename B::domain_t(), wmin, wmax, n_freq, mk){}
  };
 
@@ -82,12 +82,12 @@ namespace triqs { namespace gfs {
 
      static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) {
       typename gf_t::data_regular_t A(shape.front_append(n_freq)); A() =0;
-      return gf_t(mesh<refreq,Opt>(wmin, wmax, n_freq, full_bins), std::move(A), local::tail(shape), nothing());
+      return gf_t(gf_mesh<refreq,Opt>(wmin, wmax, n_freq, full_bins), std::move(A), local::tail(shape), nothing());
      }
 
      static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
       typename gf_t::data_regular_t A(shape.front_append(n_freq)); A() =0;
-      return gf_t(mesh<refreq,Opt>(wmin, wmax, n_freq, mk), std::move(A), local::tail(shape), nothing());
+      return gf_t(gf_mesh<refreq,Opt>(wmin, wmax, n_freq, mk), std::move(A), local::tail(shape), nothing());
      }
     };
 
@@ -103,12 +103,12 @@ namespace triqs { namespace gfs {
 
      static gf_t make_gf(double wmin, double wmax, size_t n_freq) {
       typename gf_t::data_regular_t A(n_freq); A() =0;
-      return gf_t(mesh<refreq,Opt>(wmin, wmax, n_freq), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
+      return gf_t(gf_mesh<refreq,Opt>(wmin, wmax, n_freq), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
      }
 
      static gf_t make_gf(double wmin, double wmax, size_t n_freq, mesh_kind mk) {
       typename gf_t::data_regular_t A(n_freq); A() =0;
-      return gf_t(mesh<refreq,Opt>(wmin, wmax, n_freq, mk), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
+      return gf_t(gf_mesh<refreq,Opt>(wmin, wmax, n_freq, mk), std::move(A), local::tail(tqa::mini_vector<size_t,2>(1,1)), nothing());
      }
 
     };

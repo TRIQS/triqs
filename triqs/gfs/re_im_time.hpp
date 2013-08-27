@@ -30,13 +30,13 @@ namespace triqs { namespace gfs {
 
  struct re_im_time {};
 
- // the mesh
- template<typename Opt> struct mesh<re_im_time,Opt> :   mesh_product<mesh<retime,Opt>,mesh<imtime,Opt>>  { 
-  typedef mesh<retime,Opt> m1_t; 
-  typedef mesh<imtime,Opt> m2_t; 
+ // the gf_mesh
+ template<typename Opt> struct gf_mesh<re_im_time,Opt> :   mesh_product<gf_mesh<retime,Opt>,gf_mesh<imtime,Opt>>  { 
+  typedef gf_mesh<retime,Opt> m1_t; 
+  typedef gf_mesh<imtime,Opt> m2_t; 
   typedef mesh_product<m1_t,m2_t> B;
-  mesh (double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) :
-   B {mesh<retime,Opt>(tmin,tmax,nt), mesh<imtime,Opt>(beta,S, ntau, mk)} {}
+  gf_mesh (double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) :
+   B {gf_mesh<retime,Opt>(tmin,tmax,nt), gf_mesh<imtime,Opt>(beta,S, ntau, mk)} {}
  };
 
  namespace gfs_implementation { 
@@ -86,7 +86,7 @@ namespace triqs { namespace gfs {
     }
 
    static gf_t make_gf(double tmin, double tmax, size_t nt, double beta, statistic_enum S, size_t ntau, mesh_kind mk=full_bins) { 
-    auto m =  mesh<re_im_time,Opt>(tmin,tmax, nt, beta, S, ntau, mk);
+    auto m =  gf_mesh<re_im_time,Opt>(tmin,tmax, nt, beta, S, ntau, mk);
     typename gf_t::data_regular_t A(m.size()); 
     A() =0;
     return gf_t (m, std::move(A), nothing(), nothing());

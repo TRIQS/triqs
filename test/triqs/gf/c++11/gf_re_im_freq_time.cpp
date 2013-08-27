@@ -34,11 +34,11 @@ try {
  auto G_w_tau= make_gf<refreq_imtime, scalar_valued>(wmin, wmax, n_re_freq, beta, Fermion, n_im_time);
  auto G_w= make_gf<refreq, scalar_valued>(wmin, wmax, n_re_freq);
 
- auto G_t_tau= make_gf<cartesian_product<retime,imtime>, scalar_valued>(mesh<retime>(tmin, tmax, n_re_time), mesh<imtime>(beta, Fermion, n_im_time));
+ auto G_t_tau= make_gf<cartesian_product<retime,imtime>, scalar_valued>(gf_mesh<retime>(tmin, tmax, n_re_time), gf_mesh<imtime>(beta, Fermion, n_im_time));
  //auto G_t_tau_N= make_gf<cartesian_product<retime,imtime>, scalar_valued>(  {tmin, tmax, n_re_time}, {beta, Fermion, n_im_time});
 
- auto G_w_wn2 = make_gf<cartesian_product<refreq,imfreq>, scalar_valued>( mesh<refreq>(wmin, wmax, n_re_freq), mesh<imfreq>(beta, Fermion, n_im_freq));
- auto G_w_tau2 = make_gf<cartesian_product<refreq,imtime>, scalar_valued>( mesh<refreq>(wmin, wmax, n_re_freq), mesh<imtime>(beta, Fermion, n_im_time,full_bins));
+ auto G_w_wn2 = make_gf<cartesian_product<refreq,imfreq>, scalar_valued>( gf_mesh<refreq>(wmin, wmax, n_re_freq), gf_mesh<imfreq>(beta, Fermion, n_im_freq));
+ auto G_w_tau2 = make_gf<cartesian_product<refreq,imtime>, scalar_valued>( gf_mesh<refreq>(wmin, wmax, n_re_freq), gf_mesh<imtime>(beta, Fermion, n_im_time,full_bins));
 
 
  //auto g_tau = slice_mesh1(G_w_tau(),1);

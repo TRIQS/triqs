@@ -30,12 +30,12 @@ namespace triqs { namespace gfs {
  struct two_real_times {};
 
  // the mesh
- template<typename Opt> struct mesh<two_real_times,Opt> :mesh_product<mesh<retime,Opt> ,mesh<retime,Opt> >  { 
-  typedef mesh_product<mesh<retime,Opt> ,mesh<retime,Opt> > B;
-  mesh() = default;
-  mesh (double tmax, double n_time_slices) :
-   B(mesh<retime,Opt> ( 0, tmax,n_time_slices, full_bins), 
-     mesh<retime,Opt> ( 0, tmax,n_time_slices, full_bins) ) {}
+ template<typename Opt> struct gf_mesh<two_real_times,Opt> :mesh_product<gf_mesh<retime,Opt> ,gf_mesh<retime,Opt> >  { 
+  typedef mesh_product<gf_mesh<retime,Opt> ,gf_mesh<retime,Opt> > B;
+  gf_mesh() = default;
+  gf_mesh (double tmax, double n_time_slices) :
+   B(gf_mesh<retime,Opt> ( 0, tmax,n_time_slices, full_bins), 
+     gf_mesh<retime,Opt> ( 0, tmax,n_time_slices, full_bins) ) {}
  };
 
  namespace gfs_implementation { 
@@ -47,7 +47,7 @@ namespace triqs { namespace gfs {
 
   template<typename Opt>
    struct get_closest_point <two_real_times,matrix_valued,Opt> {
-    typedef typename mesh<two_real_times, Opt>::type mesh_t;
+    typedef typename gf_mesh<two_real_times, Opt>::type mesh_t;
 
     //    // NOT FINISHED, NOT TESTED 
     //     template<typename G, typename T>
@@ -84,10 +84,10 @@ namespace triqs { namespace gfs {
 
   template<typename Opt> struct factories<two_real_times, matrix_valued,Opt> {
    typedef gf<two_real_times, matrix_valued,Opt> gf_t;
-   typedef mesh<two_real_times, Opt> mesh_t;
+   typedef gf_mesh<two_real_times, Opt> mesh_t;
 
    static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) {
-    auto m =  mesh<two_real_times,Opt>(tmax, n_time_slices);
+    auto m =  gf_mesh<two_real_times,Opt>(tmax, n_time_slices);
     typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
     return gf_t (m, std::move(A), nothing(), nothing() ) ;
    }

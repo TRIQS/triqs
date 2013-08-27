@@ -30,11 +30,11 @@ namespace triqs { namespace gfs {
 
  struct imtime {};
 
- // mesh type and its factories
- template<typename Opt> struct mesh<imtime,Opt> : linear_mesh<matsubara_domain<false>> {
+ // gf_mesh type and its factories
+ template<typename Opt> struct gf_mesh<imtime,Opt> : linear_mesh<matsubara_domain<false>> {
   typedef linear_mesh<matsubara_domain<false>> B;
-  mesh() = default;
-  mesh (double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk=half_bins):
+  gf_mesh() = default;
+  gf_mesh (double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk=half_bins):
    B( typename B::domain_t(beta,S), 0, beta, n_time_slices, mk){}
  };
 
@@ -134,10 +134,10 @@ namespace triqs { namespace gfs {
      return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing(), evaluator<imtime,matrix_valued,Opt>(shape[0],shape[1]) ) ;
     }
    static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax=1025, mesh_kind mk= half_bins) {
-    return make_gf(mesh<imtime,Opt>(beta,S,Nmax,mk), shape, local::tail(shape));
+    return make_gf(gf_mesh<imtime,Opt>(beta,S,Nmax,mk), shape, local::tail(shape));
    }
    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_kind mk, local::tail_view const & t) {
-    return make_gf(mesh<imtime,Opt>(beta,S,Nmax,mk), shape, t);
+    return make_gf(gf_mesh<imtime,Opt>(beta,S,Nmax,mk), shape, t);
    }
   };
 
@@ -150,10 +150,10 @@ namespace triqs { namespace gfs {
      return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing());
     }
    static gf_t make_gf(double beta, statistic_enum S, size_t Nmax=1025, mesh_kind mk= half_bins) {
-    return make_gf(mesh<imtime,Opt>(beta,S,Nmax,mk), local::tail(tqa::mini_vector<size_t,2> (1,1)));
+    return make_gf(gf_mesh<imtime,Opt>(beta,S,Nmax,mk), local::tail(tqa::mini_vector<size_t,2> (1,1)));
    }
    static gf_t make_gf(double beta, statistic_enum S, size_t Nmax, mesh_kind mk, local::tail_view const & t) {
-    return make_gf(mesh<imtime,Opt>(beta,S,Nmax,mk), t);
+    return make_gf(gf_mesh<imtime,Opt>(beta,S,Nmax,mk), t);
    }
   };
  } // gfs_implementation.

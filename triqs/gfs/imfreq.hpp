@@ -29,11 +29,11 @@ namespace triqs { namespace gfs {
 
  struct imfreq {};
 
- template<typename Opt> struct mesh<imfreq,Opt> : linear_mesh<matsubara_domain<true>> {
+ template<typename Opt> struct gf_mesh<imfreq,Opt> : linear_mesh<matsubara_domain<true>> {
   typedef  linear_mesh<matsubara_domain<true>> B;
   static double m1(double beta) { return std::acos(-1)/beta;}
-  mesh() = default;
-  mesh (double beta, statistic_enum S, size_t Nmax = 1025) : 
+  gf_mesh() = default;
+  gf_mesh (double beta, statistic_enum S, size_t Nmax = 1025) : 
    B(typename B::domain_t(beta,S), S==Fermion?m1(beta):0, S==Fermion?(2*Nmax+1)*m1(beta): 2*Nmax*m1(beta), Nmax, without_last){}
  };
 
@@ -76,13 +76,13 @@ namespace triqs { namespace gfs {
      return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
     }
    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
-    return make_gf(mesh<imfreq,Opt>(beta,S), shape, local::tail(shape));
+    return make_gf(gf_mesh<imfreq,Opt>(beta,S), shape, local::tail(shape));
    }
    static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax) {
-    return make_gf(mesh<imfreq,Opt>(beta,S,Nmax), shape, local::tail(shape));
+    return make_gf(gf_mesh<imfreq,Opt>(beta,S,Nmax), shape, local::tail(shape));
    }
    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, local::tail_view const & t) {
-    return make_gf(mesh<imfreq,Opt>(beta,S,Nmax), shape, t);
+    return make_gf(gf_mesh<imfreq,Opt>(beta,S,Nmax), shape, t);
    }
   };
 
@@ -96,13 +96,13 @@ namespace triqs { namespace gfs {
      return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
     }
    static gf_t make_gf(double beta, statistic_enum S) {
-    return make_gf(mesh<imfreq,Opt>(beta,S), local::tail(tqa::mini_vector<size_t,2> (1,1)));
+    return make_gf(gf_mesh<imfreq,Opt>(beta,S), local::tail(tqa::mini_vector<size_t,2> (1,1)));
    }
    static gf_t make_gf(double beta, statistic_enum S, size_t Nmax) {
-    return make_gf(mesh<imfreq,Opt>(beta,S,Nmax), local::tail(tqa::mini_vector<size_t,2> (1,1)));
+    return make_gf(gf_mesh<imfreq,Opt>(beta,S,Nmax), local::tail(tqa::mini_vector<size_t,2> (1,1)));
    }
    static gf_t make_gf(double beta, statistic_enum S, size_t Nmax, local::tail_view const & t) {
-    return make_gf(mesh<imfreq,Opt>(beta,S,Nmax), t);
+    return make_gf(gf_mesh<imfreq,Opt>(beta,S,Nmax), t);
    }
   };
  } // gfs_implementation 

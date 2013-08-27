@@ -29,9 +29,9 @@ namespace triqs { namespace gfs {
 
  struct block_index {};
 
- template<typename Opt> struct mesh<block_index,Opt> : discrete_mesh<discrete_domain> {
-  mesh() = default;
-  mesh(size_t s) : discrete_mesh<discrete_domain>(s) {}
+ template<typename Opt> struct gf_mesh<block_index,Opt> : discrete_mesh<discrete_domain> {
+  gf_mesh() = default;
+  gf_mesh(size_t s) : discrete_mesh<discrete_domain>(s) {}
  };
 
  namespace gfs_implementation { 
@@ -66,7 +66,7 @@ namespace triqs { namespace gfs {
 
   template<typename Target, typename Opt>
    struct factories<block_index,Target,Opt>  { 
-    typedef mesh<block_index, Opt> mesh_t;
+    typedef gf_mesh<block_index, Opt> mesh_t;
     typedef gf<block_index,Target> gf_t;
     typedef gf_view<block_index,Target> gf_view_t;
 

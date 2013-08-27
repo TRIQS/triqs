@@ -3,7 +3,7 @@ cdef extern from "triqs/gfs/retime.hpp" namespace "triqs::gfs" :
     cdef cppclass retime_domain :
         retime_domain()
 
-    cdef cppclass mesh_retime "triqs::gfs::mesh<triqs::gfs::retime>"  :
+    cdef cppclass mesh_retime "triqs::gfs::gf_mesh<triqs::gfs::retime>"  :
         mesh_retime ()
         mesh_retime (mesh_retime &)
         retime_domain & domain()
@@ -13,7 +13,7 @@ cdef extern from "triqs/gfs/retime.hpp" namespace "triqs::gfs" :
         double kind()
         bint operator ==( mesh_retime &)
 
-    cdef mesh_retime make_mesh_retime  "triqs::gfs::mesh<triqs::gfs::retime>" (double t_min, double t_max, size_t n_freq, mesh_enum mk)
+    cdef mesh_retime make_mesh_retime  "triqs::gfs::gf_mesh<triqs::gfs::retime>" (double t_min, double t_max, size_t n_freq, mesh_enum mk)
     #cdef mesh_retime make_mesh_retime "triqs::gfs::gf_factories<triqs::gfs::retime>::make_mesh" (double t_min, double t_max, size_t n_freq, mesh_enum mk)
 
     cdef cppclass gf_retime "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::retime>>" :

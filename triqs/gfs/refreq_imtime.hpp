@@ -31,12 +31,12 @@ namespace triqs { namespace gfs {
  struct refreq_imtime {};
 
  // the mesh
- template<typename Opt> struct mesh<refreq_imtime,Opt> :mesh_product<mesh<refreq,Opt>,mesh<imtime,Opt>>  {
-  typedef mesh<refreq,Opt> m1_t; 
-  typedef mesh<imtime,Opt> m2_t; 
+ template<typename Opt> struct gf_mesh<refreq_imtime,Opt> :mesh_product<gf_mesh<refreq,Opt>,gf_mesh<imtime,Opt>>  {
+  typedef gf_mesh<refreq,Opt> m1_t; 
+  typedef gf_mesh<imtime,Opt> m2_t; 
   typedef mesh_product<m1_t,m2_t> B;
-  mesh (double wmin, double wmax, size_t n_freq, double beta, statistic_enum S, size_t nt, mesh_kind mk=full_bins ) :
-   B {mesh<refreq,Opt>(wmin,wmax,n_freq), mesh<imtime,Opt>(beta,S,nt,mk)} {}
+  gf_mesh (double wmin, double wmax, size_t n_freq, double beta, statistic_enum S, size_t nt, mesh_kind mk=full_bins ) :
+   B {gf_mesh<refreq,Opt>(wmin,wmax,n_freq), gf_mesh<imtime,Opt>(beta,S,nt,mk)} {}
  };
 
  namespace gfs_implementation { 
@@ -87,7 +87,7 @@ namespace triqs { namespace gfs {
     }
 
    static gf_t make_gf(double wmin, double wmax, size_t n_freq, double beta, statistic_enum S, size_t nt, mesh_kind mk=full_bins) { 
-    auto m =  mesh<refreq_imtime,Opt>(wmin, wmax, n_freq, beta,S, nt, mk);
+    auto m =  gf_mesh<refreq_imtime,Opt>(wmin, wmax, n_freq, beta,S, nt, mk);
     typename gf_t::data_regular_t A(m.size()); 
     A() =0;
     return gf_t (m, std::move(A), nothing(), nothing() ) ;
