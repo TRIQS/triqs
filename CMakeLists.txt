@@ -146,6 +146,14 @@ message(STATUS "MPI_CXX_INCLUDE_PATH : ${MPI_CXX_INCLUDE_PATH}")
 
 message( STATUS "-------- Boost detection -------------")
 # Check user input for BOOST_SOURCE_DIR
+# If user has defined BOOST_SOURCE_DIR in environment variable, 
+# and not overruled in on the command line -DBOOST_SOURCE_DIR, we take it
+# If -DBOOST_SOURCE_DIR is not set, nor is the env variable BOOST_SOURCE_DIR,
+# we take the installed one.
+set (BOOST_SOURCE_DIR_ENV $ENV{BOOST_SOURCE_DIR})
+if (NOT BOOST_SOURCE_DIR AND BOOST_SOURCE_DIR_ENV)
+  set (BOOST_SOURCE_DIR ${BOOST_SOURCE_DIR_ENV})
+endif()
 if(BOOST_SOURCE_DIR)
  if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
   Message(FATAL_ERROR "You must specify an absolute path for BOOST_SOURCE_DIR.")
