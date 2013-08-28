@@ -193,6 +193,21 @@ namespace triqs { namespace arrays {
 #undef _IMPL_MATRIX_COMMON
 #undef IMPL_TYPE
 
+
+ template<typename ArrayType>
+  matrix_view<typename ArrayType::value_type, ArrayType::opt_flags, ArrayType::traversal_order>
+  make_matrix_view(ArrayType const & a) { 
+   static_assert(ArrayType::rank ==2, "make_matrix_view only works for array of rank 2");
+   return a;
+  }
+
+ template<typename ArrayType>
+  matrix<typename ArrayType::value_type, ArrayType::opt_flags, ArrayType::traversal_order>
+  make_matrix(ArrayType const & a) { 
+   static_assert(ArrayType::rank ==2, "make_matrix_view only works for array of rank 2");
+   return a;
+  }
+
 }}//namespace triqs::arrays
 
 // The std::swap is WRONG for a view because of the copy/move semantics of view.

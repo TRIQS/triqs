@@ -30,6 +30,8 @@ namespace triqs { namespace arrays {
   std::ptrdiff_t first_, last_, step_;
   public:
 
+  typedef std::ptrdiff_t index_type;
+
   range():first_(0),last_(-1),step_(1) {} // i.e. all
   range(const range& r):first_(r.first_), last_(r.last_), step_(r.step_) {}
   range(std::ptrdiff_t first__, std::ptrdiff_t last__, std::ptrdiff_t step__=1):first_(first__), last_(last__), step_(step__) {}

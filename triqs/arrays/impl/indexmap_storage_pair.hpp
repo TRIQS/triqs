@@ -63,6 +63,8 @@ namespace triqs { namespace arrays {
     typedef IndexMapType indexmap_type;
     static constexpr unsigned int rank = IndexMapType::domain_type::rank;
     static constexpr ull_t opt_flags = OptionFlags;
+    static constexpr ull_t traversal_order = TraversalOrder;
+   
    protected:
 
     indexmap_type indexmap_;

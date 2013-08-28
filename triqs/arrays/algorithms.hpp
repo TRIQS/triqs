@@ -26,8 +26,6 @@
 #include "./functional/fold.hpp"
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
-#define TRIQS_FIX_CLANG30_linux
-
 namespace triqs { namespace arrays {
 
  // get_first_element(a) returns .. the first element, i.e. a(0,0,0...)
@@ -41,22 +39,14 @@ namespace triqs { namespace arrays {
 
  template<class A>
   typename A::value_type max_element(A const &a) { 
-#ifdef TRIQS_FIX_CLANG30_linux
-   typedef typename A::value_type const & T;
-   return fold ( static_cast<T(*)(T,T)>(std::max<T>))  ( a, get_first_element(a)); 
-#else  
-   return fold ( std::max<typename A::value_type const & >)  ( a, get_first_element(a)); 
-#endif
+   //typedef typename A::value_type const & T; return fold ( static_cast<T(*)(T,T)>(std::max<T>))  ( a, get_first_element(a)); 
+   return fold (std::max<typename A::value_type const & >)  (a, get_first_element(a)); 
   }
 
  template<class A>
   typename A::value_type min_element(A const &a) { 
-#ifdef TRIQS_FIX_CLANG30_linux
- typedef typename A::value_type const & T;
-   return fold ( static_cast<T(*)(T,T)>(std::min<T>))  ( a, get_first_element(a)); 
-#else 
-   return fold ( std::min<typename A::value_type const & >)  ( a,  get_first_element(a)); 
-#endif
+   // typedef typename A::value_type const & T; return fold ( static_cast<T(*)(T,T)>(std::min<T>))  ( a, get_first_element(a)); 
+   return fold (std::min<typename A::value_type const & >)  (a, get_first_element(a)); 
   }
 
  template <class A>
@@ -65,9 +55,7 @@ namespace triqs { namespace arrays {
  template <class A>
   typename A::value_type prod(A const & a) { return fold ( std::multiplies<typename A::value_type>())  (a,1); }
 
-
 }}//namespace triqs::arrays 
-
 #endif
 
 

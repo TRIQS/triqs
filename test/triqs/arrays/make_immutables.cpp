@@ -36,5 +36,11 @@ int main(int argc, char **argv) {
  
  TEST( (tqa::array<int,2>(tqa::make_immutable_array( i_ + j_, i_= range(0,2), j_=range(0,2)))));
 
+ // or if you prefer using a lambda...
+ auto b = make_immutable_array ( [](int i, int j) { return i-j;}, range (0,2), range(0,2));
+
+ std::cerr << "b = " << b                  << std::endl;
+ std::cerr << "b = " << tqa::array<double,2>(b) << std::endl;
+
  return 0;
 }
