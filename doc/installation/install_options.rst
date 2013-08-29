@@ -4,8 +4,8 @@
 
 .. _install_options:
 
-Customizing installation : cmake options
-----------------------------------------------------
+Customizing installation: cmake options
+---------------------------------------
 
 Specifying the compiler or compile/link flags
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

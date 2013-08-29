@@ -3,10 +3,11 @@
 .. _install_on_osx_lion:
 .. highlight:: bash
 
-Installation on Mac OS X [Mountain Lion]
-==============================================
+Installing required libraries on Mac OS X
+=========================================
 
-This installation guide may work for older versions of Mac OS X. However, previous versions of Mac OS X are not supported.
+This installation guide has been tried on Mountain Lion. It may work for older
+versions of Mac OS X but previous versions of Mac OS X are not supported.
 
 NB: The installation of TRIQS under previous versions of OS X requires installing clang (via Xcode) or gcc 4.7 (via MacPorts).
 On Mountain Lion, clang (llvm) replaces gcc 4.2 as the default C++ compiler.
@@ -15,7 +16,7 @@ We strongly recommend the following installation procedure, which provides a cle
 of them are compatible with each other. Only the installation via homebrew is supported for the Mac.
 
 Installation of the dependencies
-________________________________
+--------------------------------
 
 1. Install `homebrew <http://mxcl.github.io/homebrew/>`_.
 
@@ -76,26 +77,8 @@ NB : you need pyparsing <=1.5.7 since apparently v.2.0 works only for python 3.
 
 7. Download the latest `sources of boost <http://www.boost.org/users/download/>`_  and untar them into a directory ``BOOST_SRC``.
 
-
-TRIQS installation
-__________________
-
-#. Download the TRIQS sources: ::
-
-      git clone git@github.com:TRIQS/TRIQS.git TRIQS_src
-
-#. Generate a Makefile using cmake: ::
-
-      cmake TRIQS_src -DBOOST_SOURCE_DIR=BOOST_SRC 
-
-#. Compile TRIQS, its tests and install it into INSTALL_DIR (default) (N is the number of cores of your mac): ::
-
-      make -jN && make test && make install 
-
-#. If you use Wien2TRIQS, please complete the installation as described :ref:`here <wien2k_inst>`.
-
-Possible issues:
-________________
+Possible issues
+---------------
 
 If you encounter the following error: ::
 

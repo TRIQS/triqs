@@ -9,7 +9,6 @@ Table of contents
    install
    documentation
    applications
-   bundles
-   bugs
-   authors
+   issues
+   about
 
