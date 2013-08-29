@@ -48,7 +48,7 @@ namespace triqs { namespace arrays {
 
   template<typename A, typename Enable = void> class m_result;
 
-  template<typename A> class m_result<A,typename boost::enable_if<ImmutableCuboidArray<A> >::type> : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
+  template<typename A> class m_result<A,typename boost::enable_if<ImmutableArray<A> >::type> : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) { 
     public:
      typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
@@ -88,7 +88,7 @@ namespace triqs { namespace arrays {
   template<typename This, typename A> struct result<This(A)> { typedef m_result<A> type;};
 
   template< class A > m_result<A> operator()(A const & a) const { 
-    //static_assert( (ImmutableArray<A>::value), "map : A does not model ImmutableArray");
+    //static_assert( (ImmutableCuboidArray<A>::value), "map : A does not model ImmutableCuboidArray");
     return m_result<A>(f,a);
    } 
 
@@ -104,7 +104,7 @@ namespace triqs { namespace arrays {
   map_impl(map_impl const &) = default;
   //map_impl(map_impl &&) = default;
 
-  template<class A, class B> class m_result : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) { 
+  template<class A, class B> class m_result : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
     static_assert( (std::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
    public:
     typedef typename std::result_of<F(typename A::value_type,typename B::value_type)>::type value_type;
@@ -122,8 +122,8 @@ namespace triqs { namespace arrays {
   template<typename This, typename A,typename B> struct result<This(A,B)> { typedef m_result<A,B> type;};
  
   template< class A, class B > m_result<A,B> operator()(A const & a, B const & b) { 
-    static_assert( (ImmutableArray<A>::value), "map1 : A does not model ImmutableArray");
-    static_assert( (ImmutableArray<B>::value), "map1 : B does not model ImmutableArray");
+    static_assert( (ImmutableCuboidArray<A>::value), "map1 : A does not model ImmutableCuboidArray");
+    static_assert( (ImmutableCuboidArray<B>::value), "map1 : B does not model ImmutableCuboidArray");
     return m_result<A,B>(f,a,b);
    } 
 

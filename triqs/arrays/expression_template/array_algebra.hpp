@@ -24,7 +24,7 @@
 namespace triqs { namespace arrays {
 
  template<typename Tag, typename L, typename R> 
-  struct array_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
+  struct array_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) { 
    typedef typename keeper_type<L>::type L_t;
    typedef typename keeper_type<R>::type R_t;
    static_assert( get_rank<R_t>::value==0 || get_rank<L_t>::value==0 || get_rank<L_t>::value == get_rank<R_t>::value, "rank mismatch in array operations");
@@ -43,7 +43,7 @@ namespace triqs { namespace arrays {
 
  // a special case : the unary operator !
 
-  template<typename L>   struct array_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
+  template<typename L>   struct array_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) { 
    typedef typename keeper_type<L>::type L_t;
    typedef typename L_t::value_type value_type;
    typedef typename L_t::domain_type domain_type;
@@ -64,18 +64,18 @@ namespace triqs { namespace arrays {
  typename std::enable_if<TRAIT1<A1>::value && TRAIT2 <A2>::value, array_expr<tags::TAG, A1,A2>>::type\
  operator OP (A1 const & a1, A2 const & a2) { return array_expr<tags::TAG, A1,A2>(a1,a2);} 
 
-DEFINE_OPERATOR(plus,       +, ImmutableCuboidArray,ImmutableCuboidArray);
-DEFINE_OPERATOR(minus,      -, ImmutableCuboidArray,ImmutableCuboidArray);
-DEFINE_OPERATOR(multiplies, *, ImmutableCuboidArray,ImmutableCuboidArray);
-DEFINE_OPERATOR(multiplies, *, is_in_ZRC,ImmutableCuboidArray);
-DEFINE_OPERATOR(multiplies, *, ImmutableCuboidArray,is_in_ZRC);
-DEFINE_OPERATOR(divides,    /, ImmutableCuboidArray,ImmutableCuboidArray);
-DEFINE_OPERATOR(divides,    /, is_in_ZRC,ImmutableCuboidArray);
-DEFINE_OPERATOR(divides,    /, ImmutableCuboidArray,is_in_ZRC);
+DEFINE_OPERATOR(plus,       +, ImmutableArray,ImmutableArray);
+DEFINE_OPERATOR(minus,      -, ImmutableArray,ImmutableArray);
+DEFINE_OPERATOR(multiplies, *, ImmutableArray,ImmutableArray);
+DEFINE_OPERATOR(multiplies, *, is_in_ZRC,ImmutableArray);
+DEFINE_OPERATOR(multiplies, *, ImmutableArray,is_in_ZRC);
+DEFINE_OPERATOR(divides,    /, ImmutableArray,ImmutableArray);
+DEFINE_OPERATOR(divides,    /, is_in_ZRC,ImmutableArray);
+DEFINE_OPERATOR(divides,    /, ImmutableArray,is_in_ZRC);
 #undef DEFINE_OPERATOR
 
  // the unary is special
- template<typename A1> typename std::enable_if<ImmutableCuboidArray<A1>::value, array_unary_m_expr<A1>>::type
+ template<typename A1> typename std::enable_if<ImmutableArray<A1>::value, array_unary_m_expr<A1>>::type
   operator - (A1 const & a1) { return {a1};} 
 
  template<typename Expr > array<typename Expr::value_type, Expr::domain_type::rank>

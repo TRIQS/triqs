@@ -114,7 +114,7 @@ namespace triqs { namespace arrays {
 
     // -----------------   assignment for expressions RHS --------------------------------------------------
     template<typename LHS, typename RHS, char OP>
-     struct impl<LHS,RHS,OP, ENABLE_IFC( ImmutableArray<RHS>::value && (!is_scalar_for<RHS,LHS>::value) && (!is_isp<RHS,LHS>::value)) > {
+     struct impl<LHS,RHS,OP, ENABLE_IFC( ImmutableCuboidArray<RHS>::value && (!is_scalar_for<RHS,LHS>::value) && (!is_isp<RHS,LHS>::value)) > {
       TRIQS_REJECT_ASSIGN_TO_CONST;
       TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR;
       typedef typename LHS::value_type value_type;

@@ -133,7 +133,7 @@ namespace triqs { namespace arrays {
 
     /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
     template <typename T> 
-     matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableArray<T>) ml = memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order)):
+     matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableCuboidArray<T>) ml = memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order)):
       IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
@@ -181,7 +181,7 @@ namespace triqs { namespace arrays {
      */
     template<typename RHS> 
      matrix & operator=(const RHS & X) { 
-      static_assert(  ImmutableArray<RHS>::value, "Assignment : RHS not supported");
+      static_assert(  ImmutableCuboidArray<RHS>::value, "Assignment : RHS not supported");
       IMPL_TYPE::resize(X.domain());
       triqs_arrays_assign_delegation(*this,X);
       return *this; 

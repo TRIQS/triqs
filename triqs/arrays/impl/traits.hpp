@@ -29,32 +29,21 @@
 namespace triqs { namespace arrays {
  namespace mpl=boost::mpl; 
 
- // The ImmutableArray concept 
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableArray);
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableArray,(ImmutableArray));
+ // The ImmutableCuboidArray concept 
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableCuboidArray);
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableCuboidArray,(ImmutableCuboidArray));
 
- /*template <class X> struct BCC_ImmutableArray { 
-  BOOST_CONCEPT_USAGE(BCC_ImmutableArray)
-  {
-   typename X::mc_weight_type r = i.Try();  // this is e.g. for a QMC move  
-   r = i.Accept();
-   i.Reject();
-  }
-  private: X i;
- };
-*/
-
-  // The ImmutableCuboidArray concept 
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableCuboidArray,(ImmutableArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableCuboidArray,(ImmutableCuboidArray)(MutableArray));
+  // The ImmutableArray concept 
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableArray,(ImmutableCuboidArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableArray,(ImmutableArray)(MutableCuboidArray));
  
  // The ImmutableMatrix concept 
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableMatrix,(ImmutableArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableMatrix,(ImmutableMatrix)(MutableArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableMatrix,(ImmutableCuboidArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableMatrix,(ImmutableMatrix)(MutableCuboidArray));
 
  // The ImmutableVector concept 
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableVector,(ImmutableArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableVector,(ImmutableVector)(MutableArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableVector,(ImmutableCuboidArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableVector,(ImmutableVector)(MutableCuboidArray));
 
  namespace Tag { struct array{}; struct array_view {}; }
  template <typename T> struct is_array : std::is_base_of<Tag::array,T> {};

@@ -184,5 +184,11 @@ namespace PrettyPrint_details {
 template<typename A>
 void pretty_print (std::ostream & out, A const & a ) { PrettyPrint_details::print_impl<A::domain_type::rank,A>(out,a).print();}
 
-}}}
+}
+
+template<typename ... U> 
+indexmaps::cuboid::domain_t<sizeof...(U)> make_cuboid_domain(U ... u) { return {u...};}
+//cuboid_array_domain<sizeof...(U)> make_cuboid_domain(U ... u) { return {u...};}
+
+}}
 #endif

@@ -26,7 +26,7 @@
 namespace triqs { namespace arrays { 
 
  template<typename Expr, int ... ph>
-  class immutable_array_expr_impl : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
+  class immutable_array_expr_impl : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) { 
    template<int I> struct _si { typedef size_t type;};
    public : 
     immutable_array_expr_impl(Expr e_, clef::pair<ph,range> ... p): 
@@ -46,7 +46,7 @@ namespace triqs { namespace arrays {
   * \brief Makes a lazy immutable (cuboid) array from a simple expression and a set of range...
   * \param expr The lazy expression
   * \param i_=R i_ is a placeholder, R a range. The i_=R produce a pair of i_ and R , which is the parameter.
-  * \return A lazy object implementing the ImmutableCuboidArray concept with the domain built from the ranges. 
+  * \return A lazy object implementing the ImmutableArray concept with the domain built from the ranges. 
   */
  template<typename Expr, int ... ph>
   immutable_array_expr_impl<Expr,ph...> make_immutable_array( Expr const & expr, clef::pair<ph,range> ... p) {
@@ -56,7 +56,7 @@ namespace triqs { namespace arrays {
  // if ones prefers to use a function...
 
  template<typename Function, typename ... Ranges>
-  class immutable_array_fun_impl : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
+  class immutable_array_fun_impl : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) { 
    template<int I> struct _si { typedef size_t type;};
    public : 
    immutable_array_fun_impl(Function f, Ranges ... r) : f_(std::move(f)), dom_(make_shape(r.size()...)) {};

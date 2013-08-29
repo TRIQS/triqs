@@ -29,7 +29,7 @@ namespace triqs { namespace arrays {
  template<typename A> struct get_traversal_order<A,typename A::indexmap_type::has_traversal_order_tag> : std::integral_constant<ull_t, A::indexmap_type::traversal_order>{};
 
  template <typename T, typename Function>
-  typename std::enable_if<ImmutableArray<T>::value >::type
+  typename std::enable_if<ImmutableCuboidArray<T>::value >::type
   foreach (T const & x, Function const & F) { indexmaps::cuboid::foreach<get_traversal_order<T>::value> (x.domain(), F); }
 
  template <typename T, typename Function>
@@ -40,7 +40,7 @@ namespace triqs { namespace arrays {
   };
 
  template <typename T, typename Function>
-  typename std::enable_if<MutableArray<T>::value >::type
+  typename std::enable_if<MutableCuboidArray<T>::value >::type
   assign_foreach (T & x, Function const & F) { indexmaps::cuboid::foreach<get_traversal_order<T>::value> (x.domain(),assign_foreach_adapter<T,Function>(x,F)); }
 
 }}//namespace
