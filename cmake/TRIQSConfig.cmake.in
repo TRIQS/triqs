@@ -1,5 +1,6 @@
 # version
 set(TRIQS_VERSION @TRIQS_VERSION@)
+set(TRIQS_RELEASE @TRIQS_RELEASE@)
 set(TRIQS_GIT_HASH @TRIQS_GIT_HASH@)
 
 # definitions 

@@ -1,0 +1,7 @@
+#ifndef TRIQS_VERSION_HPP
+#define TRIQS_VERSION_HPP
+
+#define TRIQS_VERSION "@TRIQS_VERSION@"
+#define TRIQS_RELEASE "@TRIQS_RELEASE@"
+
+#endif

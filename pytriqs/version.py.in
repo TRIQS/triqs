@@ -1,28 +1,26 @@
+################################################################################
+#
+# TRIQS: a Toolbox for Research in Interacting Quantum Systems
+#
+# Copyright (C) 2011 by M. Ferrero, O. Parcollet
+#
+# TRIQS is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# TRIQS. If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
 
-VersionNumber = "1.0"
+triqs_version = "@TRIQS_VERSION@"
+triqs_release = "@TRIQS_RELEASE@"
 
-# if we use a git clone, then tag with the hash, else just the plain number 
-git_hash = "@GIT_HASH@"
-
-branch_info_all = [ b.strip()  for b in  """@GIT_BRANCHES@""".split('\n')]
-try : 
-    branch_info = [ b[1:].strip() for b in branch_info_all if b[0] == '*'][0]
-except : 
-    branch_info = ""
-
-revision = "branch = %s; commit = %s"%(branch_info, git_hash if git_hash else VersionNumber)
-
-def cmake_options() : 
-    return open ("@CMAKE_BINARY_DIR@/CMakeCache.txt").read()
-
-
-machine_info = """Code compiled on @myHostName@ under login @WhoAmI@ """
-
-all_info  =  """
-    Code revision : %s
-    %s
-    For all the configuration options, use cmake_options()
-    """%(revision,machine_info)
-
-greeting = """ Code revision : %s """%(revision)
-
+def show_version():
+  print "\nYou are using the TRIQS library version %s, release %s\n"%(triqs_version, triqs_release)

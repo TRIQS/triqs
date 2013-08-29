@@ -24,6 +24,10 @@ target_link_libraries (triqs ${LINK_RT} ${TRIQS_LINK_LIBS}  )
 # Install library
 install(TARGETS triqs DESTINATION lib)
 
+# Version file
+configure_file(version.hpp.in version.hpp @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.hpp" DESTINATION "include/triqs/")
+
 # all .hpp files...
 FILE(GLOB_RECURSE ALLHEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.hpp)
 
