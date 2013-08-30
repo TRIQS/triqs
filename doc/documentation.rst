@@ -27,3 +27,12 @@ Python modules
    :maxdepth: 1
 
    reference/python/contents
+
+Version compatibility
+---------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   versions
+

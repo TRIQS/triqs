@@ -1,44 +1,46 @@
 .. index:: clang
 
-
 .. highlight:: bash
 
 .. _install_clang:
-Using clang compiler
-==========================
 
-**clang/llvm** is one of the very best C++ compilers, with gcc.
-It is open source, on linux and OS X (where it is now the standard compiler provided by Apple).
+Using the clang compiler
+========================
 
-*clang* compiler is **highly recommended** for anyone developing in C++ since : 
+**clang/llvm** is one of the very best C++ compilers, with gcc. It is open
+source on linux and OS X (where it is now the standard compiler provided by
+Apple).
 
- * It is standard compliant (C++11).
- * It has very nice and useful error messages, much nicer than intel or gcc (even thought gcc is catching up...).
-   It really makes little sense to develop with e.g. gcc 4.6 today, specially with a library like TRIQS, 
-   which uses a lot of metaprogramming.
+The **clang** compiler is *highly recommended* for anyone developing in C++ since: 
 
-Note however that for *production* compilations, gcc, specially recent versions, still produces in general
-a slighly more optimal code for TRIQS applications, also the difference is small.
+* It is standard compliant (C++11).
+* It has very nice and useful error messages, much nicer than intel or gcc (even thought gcc is catching up).
+  It really makes little sense to develop with e.g. gcc 4.6 today, especially with a library like TRIQS, 
+  which uses a lot of metaprogramming.
 
-It is highly recommended to use the latest stable on linux (3.3), and the default compiler on Os X (Mountain lion).
+Note, however, that for *production* compilations, gcc, especially recent versions, still produces in general
+a slighly more optimal code for TRIQS applications, even if the difference is small.
+
+It is highly recommended to use the latest stable version on linux (3.3), and the default compiler on OS X (Mountain lion).
 
 Get and install clang on linux
----------------------------------------------
+------------------------------
 
-Precompiled versions are available at the  `LLVM dowload page <http://llvm.org/releases/download.html>`_, 
-use it. Just untar them, and add the directory in your path.
+Precompiled versions are available at the `LLVM dowload page <http://llvm.org/releases/download.html>`_.
+Just untar them and add the directory in your path.
 
-In any case, it is also very easy to compile clang from source, just follow the 
+It is also very easy to compile **clang** from source, just follow the 
 `instructions <http://clang.llvm.org/get_started.html#build>`_.
 
 Usage
---------------
+-----
 
-To use clang ::
+In order to use clang when building TRIQS::
 
-   CXX=clang++ cmake path_to_TRIQS_source_directory .... others options ...
+   CXX=clang++ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../src + other options
 
 .. note::
 
-   On Os X, the options -std=c++11 and -stdlib=libc++ are automatically added by the TRIQS installation script.
+   On OS X, the options -std=c++11 and -stdlib=libc++ are automatically added by the TRIQS
+   installation script.
 

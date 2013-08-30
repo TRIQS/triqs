@@ -3,66 +3,69 @@
 .. _requirements:
 
 A complete list of requirements
-================================
+===============================
 
 TRIQS is built upon several python and C++ libraries, which, if not present
 already in your system, can be freely downloaded and installed. All the
-libraries and tools used by TRIQS are listed in the table:
+libraries and tools used by TRIQS are described below.
 
 .. _require_cxx_compilers:
 
-
 C++ compilers
------------------
+-------------
 
 TRIQS is written in C++, i.e. in the **C++11** standard as defined by the ISO.
 A recent compiler is therefore mandatory.
 There are 3 categories of C++ compilers.
 
-* Standard compliant C++ compilers (recommended and supported).
+* Standard compliant C++ compilers
   
-   * :ref:`clang 3.3<install_clang>` and higher. 
-   * g++ 4.8.1 and higher
+  * :ref:`clang 3.3<install_clang>` and higher
+  * g++ 4.8.1 and higher
 
-* Obsolete compilers.
+  These compilers are recommended and supported.
 
-   TRIQS compiles on them, but they lack full C++11 support. 
-   Therefore TRIQS may be slower, since some optimisations are disabled in the library
-   and they may not be supported in later release.
- 
-   * g++ 4.6.4 to 4.8.0
 
-* C++98 compilers.
+* Obsolete compilers
 
-  Compilers implementing previous version of the C++ standard (c++98) do not work, and 
-  will *never* be supported.  This includes : 
+  * g++ 4.6.3 to 4.8.0
 
-   * g++ before 4.6
-   * Intel icc 12.0 and below.
+  TRIQS can be built with these compilers but because they lack full C++11 support,
+  TRIQS may be slower (some optimisations are disabled in the library
+  and they may not be supported in later release).
+
+* C++98 compilers
+
+  * g++ before 4.6
+  * Intel icc 12.0 and below
+
+  Compilers implementing the previous version of the C++ standard (C++98) do not work and 
+  will *not* be supported.
+
 
 
 Libraries
----------------
+---------
 
 ==================    ================  ================================================================================
-Libraries/tools       Version           Comment
+Library/tool          Version           Comment
 ==================    ================  ================================================================================
-mpi                   openmpi           Parallelism
+mpi                   openmpi           Parallelism.
                                         Since standard linux distributions (and macports on OS X)
                                         now provides openmpi, even on laptops, we avoid the unnecessary complication
-                                        of maintaining a non parallel version of TRIQS
-fftw                  >= 3.2            Fourier transform
+                                        of maintaining a non-parallel version of TRIQS
+fftw                  >= 3.2            Fourier transforms
 boost                 >= 1.49           C++ librairies
 hdf5                  >= 1.8.0          File storage system. Important: the *serial* version must be installed
-python                >= 2.6.5
-scipy                                   python mathematical library
-numpy                                   python scientific library
-h5py                                    python interface to hdf5 library
-mpi4py                                  python MPI 
-sphinx                >= 1.0.1          python documentation tools (to compile documentation)
+python                >= 2.6.5          The Python interpreter
+scipy                                   Python mathematical library
+numpy                                   Python scientific library
+h5py                                    Python interface to hdf5 library
+mpi4py                                  Python MPI 
+sphinx                >= 1.0.1          Python documentation tools (to compile documentation)
 pyparsing                               Tool for sphinx (to compile documentation)
-matplotlib            >= 0.99           python 2D plotting library
-cython                >=0.17            cython package
+matplotlib            >= 0.99           Python 2D plotting library
+cython                >=0.17            A language that allows to write C extensions for the Python language
 ==================    ================  ================================================================================
 
 

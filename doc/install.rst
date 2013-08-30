@@ -37,9 +37,10 @@ Installation steps
 
      $ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../src
 
-   If you omit CMAKE_INSTALL_PREFIX, the default `path_to_install_directory` is ./INSTALL_DIR.
-  
-   Configuration options are described :ref:`here<install_options>`.
+   If you omit ``CMAKE_INSTALL_PREFIX``, the default
+   ``path_to_install_directory`` is a subdirectory ``INSTALL_DIR`` in your build
+   directory. More configuration options are described in the
+   :ref:`cmake options <install_options>`.
 
 #. Compile the code, run the tests and install the library::
 
@@ -50,7 +51,7 @@ Installation steps
    .. note:: 
        
       We remind you that on multicore machine, make's option -jN (where N is the number of cores)
-      greatly speed up the compilation e.g. make -j8 on a 8 cores machine...
+      greatly speeds up the compilation, e.g. make -j8 on an 8 core machine...
 
 #. After the installation TRIQS has been installed using the standard UNIX
    scheme:
@@ -73,7 +74,3 @@ Further reading
    installation/python
    installation/clang
    installation/changelog
-
-..    
-   installation/intel
-

@@ -18,7 +18,7 @@ Install the following packages which are necessary to build TRIQS and use it::
        openmpi-checkpoint libopenmpi-dev libblas-dev liblapack-dev libfftw3-dev libgmp-dev \
        hdf5-tools libhdf5-serial-dev python-h5py libboost1.48-all-dev python-dev \
        python-numpy python-scipy python-virtualenv python-matplotlib doxygen\
-       python-tornado python-zmq
+       python-tornado python-zmq python-mpi4py
 
 Optionally, you may be interested in:
 

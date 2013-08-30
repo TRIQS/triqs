@@ -10,9 +10,9 @@ Customizing installation: cmake options
 Specifying the compiler or compile/link flags
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To specify the compiler with cmake one may use the CXX, CXXFLAGS variables, e.g. ::
+To specify the compiler with cmake one may use the CXX, CXXFLAGS variables, e.g.::
 
-   CXX=clang++ CXXFLAGS=XXXX cmake path_to_TRIQS_source_directory  ..... 
+   CXX=clang++ CXXFLAGS=XXXX cmake path_to_TRIQS_source_directory ...
 
 Customize the installation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -21,7 +21,7 @@ You can then customize the installation options using the :program:`ccmake` prog
 
   ccmake .
 
-This opens an interface with your main installation options shown ::
+This opens an interface with your main installation options shown::
 
  BUILD_SHARED_LIBS                ON
  Build_Documentation              OFF
@@ -33,14 +33,10 @@ This opens an interface with your main installation options shown ::
  
 You can for instance change the following options:
 
-  * ``CMAKE_INSTALL_PREFIX``: This is the directory :file:`path_to_TRIQS_install_directory` where you want to install TRIQS.
-  * ``Build_CTHyb``: Build the continuous-time hybridization impurity solver.
-  * ``Build_HubbardI``: Build a simple HubbardI solver.
-  * ``Build_Wien2k``: Build the interface to **WIEN2K**. 
-  * ``Build_Documentation``: Get the documentation locally in :file:`path_to_TRIQS_install_directory/share/doc`.
+* ``CMAKE_INSTALL_PREFIX``: This is the directory :file:`path_to_install_directory` where you want to install TRIQS.
+* ``Build_Documentation``: Get the documentation locally in :file:`path_to_install_directory/share/doc`.
 
 You may change all other installation options (like locations of libraries, the choice of compilers, etc.) in the advanced mode, by typing 't' after having opened the *ccmake* interface.
 
 After having corrected your options you may build, test and install TRIQS as described in :ref:`installation`.
  
-

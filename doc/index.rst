@@ -3,49 +3,36 @@
 Welcome
 =======
 
-TRIQS is a scientific project that provides a set of tools for the study of
-interacting quantum systems. It allows to quickly implement many-body
-calculations and explore new theoretical and phenomenological ideas within a
-flexible, easy-to-use python environment (à la Matlab). 
+.. sidebar:: TRIQS 1.0
 
-Powerful c++ libraries
-----------------------
+   This is the homepage of the new TRIQS 1.0. Many things
+   have changed and been improved since the versions 0.x.
+   The format of the archives and names of some python classes
+   have changed too. So go look at our :ref:`changelog page <changelog>`
+   to find out how to upgrade to 1.0.
 
-.. code-block:: c++
+TRIQS is a scientific project providing a set of libraries to develop new tools
+for the study of interacting quantum systems. The libraries exist at two
+complementary levels: on the one hand, C++ libraries allow to quickly develop
+performant low-level codes; on the other hand python libraries implement the
+most common many-body objects, like Green's functions, that can be manipulated
+easily in python scripts.
 
-  #include <triqs/arrays.hpp>
-  #include <triqs/arrays/linalg/inverse.hpp>
-  #include <triqs/arrays/linalg/determinant.hpp>
+This duality is a real advantage in the development of new many-body tools.
+Critical parts where performance is essential can be written in C++ (like a
+quantum impurity solver) while the manipulation of the results, preparation of
+the inputs or interface with other programs can be done at the very
+user-friendly python level.
 
-  using triqs::arrays::array;  using triqs::arrays::matrix;  using triqs::clef::placeholder;
-  int main(){
-    placeholder<0> i_;
-    placeholder<1> j_;
-    matrix<double> A(2,2);
-    A(i_,j_) << i_+j_;
+Some :ref:`full-fledged applications <applications>` have been written using
+TRIQS and are maintained by the TRIQS collaboration. They allow for example to
+solve a generic quantum impurity model or to run a complete LDA+DMFT
+calculation.
 
-    matrix<double> B = inverse(A);
-    double C = determinant(A);
+Since 2005, the TRIQS library and applications have allowed to address
+questions as diverse as:
 
-    std::cout << "A^(-1) = "<< B << std::endl;
-    std::cout << "det(A) = " <<C <<std::endl;
-  }
+* Momentum-selective aspects on cuprate superconductors (with various cluster DMFT)
+* Degree of correlation in iron-based superconductors (within an LDA+DMFT approach)
+* Fermionic Mott transition and exploration of Sarma phase in cold-atoms
 
-User-friendly python interface
-------------------------------
-
-.. plot::
-   :include-source:
-   :scale: 70
-
-    from pytriqs.gf.local import *
-    g = GfReFreq(indices = ['s','d'], window = [-2,2], n_points = 1000)
-    g['d','d'] = Omega - 0.3
-    g['d','s'] = 0.2
-    g['s','d'] = 0.2
-    g['s','s'] = inverse( Wilson(1.0) )
-    g.invert()
-
-    from pytriqs.plot.mpl_interface import oplot
-    oplot( g['d','d'], '-o', RI = 'S', x_window  = (-1.8,1.8), name = "Impurity" )
-    oplot( g['s','s'], '-x', RI = 'S', x_window  = (-1.8,1.8), name = "Bath" )
