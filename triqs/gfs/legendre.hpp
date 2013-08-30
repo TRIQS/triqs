@@ -62,7 +62,7 @@ namespace triqs { namespace gfs {
 
   template<typename Opt> struct factories<legendre, matrix_valued,Opt> {
    typedef gf<legendre, matrix_valued,Opt> gf_t;
-   typedef typename gf_mesh<legendre, Opt>::type mesh_t;
+   typedef gf_mesh<legendre, Opt> mesh_t;
 
    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t n_leg) {
     typename gf_t::data_regular_t A(shape.front_append(n_leg)); A() = 0;

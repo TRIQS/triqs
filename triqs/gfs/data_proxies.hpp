@@ -92,7 +92,7 @@ namespace triqs { namespace gfs {
   template<typename RHS> static void rebind (storage_view_t & data, RHS && rhs) { data.clear(); for (auto & x : rhs.data()) data.push_back(x);}
  };
 
- //---------------------------- vector ----------------------------------
+ //---------------------------- lambda ----------------------------------
 
  template<typename F> struct data_proxy_lambda { 
 
