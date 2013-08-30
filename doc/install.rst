@@ -6,7 +6,10 @@
 
 Installation 
 ============
- 
+
+This page describes the installation of TRIQS itself. The installation of the applications based on TRIQS
+is described in their respective documentation.
+
 Prerequisite
 ------------
 
@@ -62,7 +65,7 @@ Installation steps
 
    * c++ headers in ``path_to_install_directory/include/triqs``.
  
-   * shared items in ``path_to_install_directory/share/triqs``.
+   * shared items (e.g. the documentation) in ``path_to_install_directory/share/triqs``.
 
 
 Further reading

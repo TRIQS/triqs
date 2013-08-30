@@ -37,9 +37,12 @@ message(STATUS "Installation directory is ${CMAKE_INSTALL_PREFIX}")
 
 # Forbid compilation in the source dir... to force good practice
 # and because I have not checked it (copy of various file before compilation may mess it up)
-if (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
- message(FATAL_ERROR "I am sorry, the on-site compilation is disabled at the moment. Use another directory")
-endif (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+# option ALLOW_COMPILATION_IN_SOURCES for brew...
+if (NOT ALLOW_COMPILATION_IN_SOURCES)
+ if (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+  message(FATAL_ERROR "On site compilation is not recommended. Use -DALLOW_COMPILATION_IN_SOURCES to overrule this message")
+ endif (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+endif()
 
 # nasty policy for escaping in string....
 cmake_policy(SET CMP0011 OLD)
@@ -86,8 +89,7 @@ endif()
 # #################################
 # TEST AND DEBUG THE OFF OPTION
 # option is set first time, once for all. No change.
-#option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
-set(PythonSupport NOT WithoutPython)
+option(PythonSupport "Build with Python support" ON)
 if (PythonSupport)
 
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
@@ -99,7 +101,7 @@ if (PythonSupport)
 
  set (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})
  set (TRIQS_INCLUDE_PYTHON ${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
- 
+
  include_directories(SYSTEM ${TRIQS_INCLUDE_PYTHON} )
  #include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
  link_libraries( ${TRIQS_LIBRARY_PYTHON})
@@ -153,7 +155,7 @@ message( STATUS "-------- Boost detection -------------")
 # we take the installed one.
 set (BOOST_SOURCE_DIR_ENV $ENV{BOOST_SOURCE_DIR})
 if (NOT BOOST_SOURCE_DIR AND BOOST_SOURCE_DIR_ENV)
-  set (BOOST_SOURCE_DIR ${BOOST_SOURCE_DIR_ENV})
+ set (BOOST_SOURCE_DIR ${BOOST_SOURCE_DIR_ENV})
 endif()
 if(BOOST_SOURCE_DIR)
  if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
@@ -228,7 +230,7 @@ endif (PythonSupport)
 if (CMAKE_SIZEOF_VOID_P EQUAL 8) # for 64 bits machines
  message( STATUS "64 bit machine : Adding -fpic ")
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic" )
-  set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -fpic)
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -fpic)
 endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 # #################################
@@ -249,7 +251,7 @@ set(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE S
 
 set(TRIQS_LIBRARY_LAPACK ${LAPACK_LIBS})
 if(MAC_VECLIB)
-    set(TRIQS_LIBRARY_LAPACK "-framework vecLib ${TRIQS_LIBRARY_LAPACK}")
+ set(TRIQS_LIBRARY_LAPACK "-framework vecLib ${TRIQS_LIBRARY_LAPACK}")
 endif(MAC_VECLIB) 
 message(STATUS "Lapack libraries : ${TRIQS_LIBRARY_LAPACK}")
 link_libraries(${TRIQS_LIBRARY_LAPACK})
@@ -303,7 +305,7 @@ set(TRIQS_INCLUDE_FFTW ${FFTW_INCLUDE_DIR})
 # check for clang compiler ?? on gcc, os X snow leopard, it MUST be set 
 # since _REENTRANT is mysteriously set and this leads to random stalling of the code....
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -pthread )
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -pthread )
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 #
@@ -432,10 +434,10 @@ endif()
 #------------------------
 
 if (Build_Documentation)
-message( STATUS "-------- Prepare documentation -------------")
+ message( STATUS "-------- Prepare documentation -------------")
  add_subdirectory (${TRIQS_SOURCE_DIR}/doc )
  #add_dependencies(docs_sphinx py_sources)
-message( STATUS "----------------------------------------")
+ message( STATUS "----------------------------------------")
 endif (Build_Documentation)
 
 #------------------------

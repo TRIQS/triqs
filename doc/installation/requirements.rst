@@ -14,9 +14,9 @@ libraries and tools used by TRIQS are described below.
 C++ compilers
 -------------
 
-TRIQS is written in C++, i.e. in the **C++11** standard as defined by the ISO.
+TRIQS is written in C++, i.e. in the **C++11** standard as defined by the ISO standardization committee.
 A recent compiler is therefore mandatory.
-There are 3 categories of C++ compilers.
+There are 3 categories of C++ compilers:
 
 * Standard compliant C++ compilers
   
@@ -31,8 +31,8 @@ There are 3 categories of C++ compilers.
   * g++ 4.6.3 to 4.8.0
 
   TRIQS can be built with these compilers but because they lack full C++11 support,
-  TRIQS may be slower (some optimisations are disabled in the library
-  and they may not be supported in later release).
+  TRIQS may be slower (some optimisations are disabled in the library).
+  These compilers may not be supported in later releases.
 
 * C++98 compilers
 

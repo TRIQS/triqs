@@ -35,10 +35,13 @@ Installation of the dependencies
      brew install zmq
      brew install python
      brew install doxygen
-
-     #AFTER THE FIX IN BOOST AND BREW : IN PROGRESS
-     #brew install boost --without-single --with-mpi --with-c++11
      
+     #brew formula has been repaired. Temporary using our own
+     #until this is back in the master.
+     #When 1.55 is out, the regular brew formula should work again ...
+     ### brew install boost --without-single --with-mpi --with-c++11
+     brew install  http://ipht.cea.fr/triqs/boost.rb  --without-single --with-mpi --with-c++11 -v
+
 4. Now install virtualenv: ::
 
     pip install virtualenv
@@ -66,6 +69,7 @@ yield the ones located in ``$HOME/mypython``.
     pip install scipy
     pip install mpi4py
     pip install matplotlib
+    # seems useless now...
     #pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
     pip install tornado
     pip install pyzmq

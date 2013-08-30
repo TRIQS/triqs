@@ -95,6 +95,7 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DEST
  FILES_MATCHING 
  PATTERN "*.html" 
  PATTERN "*.png"
+ PATTERN "*.jpg"
  PATTERN "*.js"
  PATTERN "_*"
  PATTERN "*.png" 
