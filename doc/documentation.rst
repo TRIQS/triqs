@@ -9,24 +9,19 @@ A quick tour
 .. toctree::
    :maxdepth: 1
 
-   overview
-   tutorials/contents
+   tutorials/python/introduction
+   tutorials/c++/contents
 
-C++ libraries
--------------
+Reference manual 
+-----------------
 
-.. toctree::
-   :maxdepth: 1
-
-   reference/c++/contents
-
-Python modules
---------------
+This is the reference manual for the Python and the C++ libraries.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    reference/python/contents
+   reference/c++/contents
 
 Version compatibility
 ---------------------

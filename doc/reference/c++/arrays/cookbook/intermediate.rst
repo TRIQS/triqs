@@ -1,6 +1,0 @@
-
-Intermediate 
-===============
-
-.. highlight:: c
-

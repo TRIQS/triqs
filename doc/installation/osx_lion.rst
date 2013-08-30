@@ -1,7 +1,8 @@
-.. index:: install_on_osx_lion
+.. index:: install_osx_lion
+
+.. highlight:: bash
 
 .. _install_on_osx_lion:
-.. highlight:: bash
 
 Installing required libraries on Mac OS X
 =========================================

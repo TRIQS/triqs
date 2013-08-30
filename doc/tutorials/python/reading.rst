@@ -1,5 +1,5 @@
 
-Recommended reading and references 
+Learning Python : recommended reading and references 
 ----------------------------------------------------------
 
 * A good set of lectures is the `Scipy lecture notes <http://scipy-lectures.github.com/>`_.   

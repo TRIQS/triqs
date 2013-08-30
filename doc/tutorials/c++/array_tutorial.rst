@@ -1,7 +1,8 @@
-Basic 
-============
+Using arrays
+===============
 
 .. highlight:: c
+
 
 
 Declaring and printing an array
@@ -34,19 +35,6 @@ Simple operations
       A()=2;B()=3;
       array<double,1> C = A+B;
       std::cout << "C = "<<C << std::endl;
-    }
-
-
-Simple functions
--------------------
-.. compileblock:: 
-
-    #include <triqs/arrays.hpp>
-    using triqs::arrays::array;
-    int main(){
-      array<double,1> A(10),B(10);
-      A()=2;B()=3;
-      ///.....
     }
 
 
@@ -185,35 +173,3 @@ Map and fold
     }
 
 
-Bound checking
----------------
-By default, there is no bound checking:
-
-.. compileblock::
-
-    #include <triqs/arrays.hpp>
-    using triqs::arrays::array;
-    int main(){
-        array<double,2> A(2,2); A() = 3;   
-        std::cout << A(0,3) << std::endl;            
-    }
-
-But one can add bound-checking by adding a preprocessor command:
-
-.. compileblock::
-
-    #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-    #include <triqs/arrays.hpp>
-    using triqs::arrays::array;
-    int main(){
-        try { 
-          array<double,2> A(2,2); A() = 3;   
-          std::cout << A(0,3) << std::endl;            
-        }
-        //catch (triqs::arrays::key_error & e) { std::cout<< e.what()<< std::endl;}
-        catch (std::exception & e) { std::cout<< e.what()<< std::endl;} // or like this : triqs::arrays::key_error derives from std::exception
-    }
-
-
-
-  

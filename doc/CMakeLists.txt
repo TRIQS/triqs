@@ -106,12 +106,15 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DEST
  PATTERN "*.py"
  PATTERN "*.txt"
  PATTERN "*.bib"
+ PATTERN "*.inv"
  PATTERN ".svn" EXCLUDE 
  PATTERN "CVS" EXCLUDE
  )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/agogo DESTINATION share/triqs/themes)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/triqs DESTINATION share/triqs/themes)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/_static DESTINATION share/triqs/export)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/_templates DESTINATION share/triqs/export)
 
 # PDF documentation
 if (Build_PDF_Documentation)

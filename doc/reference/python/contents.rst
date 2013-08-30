@@ -1,5 +1,5 @@
 
-Python libraries
+Python
 ================
 
 .. toctree::

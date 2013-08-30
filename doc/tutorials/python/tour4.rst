@@ -2,6 +2,9 @@
 Tour 4: Dynamical Mean Field Theory on a Bethe lattice
 ------------------------------------------------------
 
+  `Requires TRIQS and the application cthyb_matrix`
+  
+
 In the case of Bethe lattice the dynamical mean-field theory (DMFT) self-consistency condition takes a particularly simple form
 
 .. math::
@@ -15,7 +18,7 @@ the previous single-impurity example to the case of a bath with semi-circular de
 Here is a complete program doing this plain vanilla DMFT  on a half-filled one-band Bethe lattice:
 
 
-.. literalinclude:: ../solvers/dmft/single_site_bethe.py
+.. literalinclude:: ./single_site_bethe.py
 
 
 A general introduction to DMFT calculations with TRIQS can be found :ref:`here <dmftloop>`

@@ -21,6 +21,6 @@ Finally, the obtained bath and impurity densities of states are plotted using th
    :include-source:
    :scale: 70
 
-You will find more information on the local Green's function implementation in TRIQS in :ref:`the corresponding chapter of the manual  <green>`
+You will find more information on the local Green's function implementation in TRIQS in :doc:`the corresponding chapter of the manual  <../../reference/python/green/green>`
 
 

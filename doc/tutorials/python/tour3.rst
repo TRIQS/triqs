@@ -3,6 +3,8 @@
 Tour 3: Solving a quantum impurity model with QMC 
 ----------------------------------------------------------
 
+`[Requires TRIQS and the application cthyb_matrix]`
+
 Free electrons are nice, but the `I` in TRIQS means `interacting`.
 So let us solve a simple one-band Anderson impurity model
 
@@ -25,14 +27,14 @@ We solve this model using the hybridization expansion Continuous Time Quantum Mo
 proposed by `P. Werner et al. <http://link.aps.org/doi/10.1103/PhysRevLett.97.076405>`_
 
 To this end we first initialize the ``Solver`` class of the TRIQS CT-Hyb implementaion 
-``pytriqs.applications.impurity_solvers.ctqmc_hyb``.
+``pytriqs.applications.impurity_solvers.cthyb_matrix``.
 Then, after having constructed the non-interacting Green's function :math:`G^{-1}_{0,\sigma}`, 
-we launch the CT-Hyb calculations by calling the ``Solve`` method of the ``Solver`` class. 
+we launch the impurity solver calculations by calling the ``Solve`` method.
 Finally, the resulting interacting Green's function as well as average impurity occupancy 
 is stored in the :ref:`HDF5 format<hdf5_base>`.
 
 
-.. literalinclude:: ../solvers/aim.py
+.. literalinclude:: ./aim.py
 
 The result can be then read from the ``HDF5`` file and plotted using the ``oplot`` function:
 
@@ -43,5 +45,5 @@ The result can be then read from the ``HDF5`` file and plotted using the ``oplot
    :align: center
 
 
-We go through this example in more details in the tutorial :ref:`Anderson impurity model <aim>`
+We go through this example in more details in the documentation of the cthyb_matrix application.
 

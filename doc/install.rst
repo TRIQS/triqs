@@ -7,7 +7,11 @@
 Installation 
 ============
 
-This page describes the installation of TRIQS itself. The installation of the applications based on TRIQS
+TRIQS and its applications are provided *à la carte*: 
+after you have installed the TRIQS toolkit, you will be able to easily install 
+various TRIQS-based applications: impurity solvers, realistic DMFT tools, ...
+
+This page describes the installation of the TRIQS toolkit itself. The installation of the applications
 is described in their respective documentation.
 
 Prerequisite
@@ -41,7 +45,7 @@ Installation steps
      $ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../src
 
    If you omit ``CMAKE_INSTALL_PREFIX``, the default
-   ``path_to_install_directory`` is a subdirectory ``INSTALL_DIR`` in your build
+   ``path_to_install_directory`` is the subdirectory *INSTALL_DIR* in your build
    directory. More configuration options are described in the
    :ref:`cmake options <install_options>`.
 
