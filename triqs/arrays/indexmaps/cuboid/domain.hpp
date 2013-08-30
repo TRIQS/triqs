@@ -190,5 +190,9 @@ template<typename ... U>
 indexmaps::cuboid::domain_t<sizeof...(U)> make_cuboid_domain(U ... u) { return {u...};}
 //cuboid_array_domain<sizeof...(U)> make_cuboid_domain(U ... u) { return {u...};}
 
+typedef indexmaps::cuboid::domain_t<2> matrix_shape_t;
+typedef indexmaps::cuboid::domain_t<1> vector_shape_t;
+
+
 }}
 #endif

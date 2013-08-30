@@ -74,6 +74,10 @@ namespace triqs { namespace gfs {
 
  // make_gf and make_gf_view forward any args to them
  template <typename Variable, typename Target=matrix_valued, typename Opt=void, typename ... U> 
+  gf<Variable,Target,Opt> make_gf(gf_mesh<Variable,Opt> m, U && ... x) 
+  { return gfs_implementation::factories<Variable,Target,Opt>::make_gf(std::move(m),std::forward<U>(x)...);}
+
+ template <typename Variable, typename Target=matrix_valued, typename Opt=void, typename ... U> 
   gf<Variable,Target,Opt> make_gf(U && ... x) { return gfs_implementation::factories<Variable,Target,Opt>::make_gf(std::forward<U>(x)...);}
 
  template <typename Variable, typename Target=matrix_valued, typename Opt=void, typename ... U> 

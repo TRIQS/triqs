@@ -32,6 +32,7 @@ namespace triqs { namespace gfs {
  template<typename Opt> struct gf_mesh<block_index,Opt> : discrete_mesh<discrete_domain> {
   gf_mesh() = default;
   gf_mesh(size_t s) : discrete_mesh<discrete_domain>(s) {}
+  gf_mesh(discrete_domain const & d) : discrete_mesh<discrete_domain>(d) {}
  };
 
  namespace gfs_implementation { 
