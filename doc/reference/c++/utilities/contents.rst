@@ -7,6 +7,7 @@ Utilities
    :maxdepth: 1
    :numbered:
 
+   exceptions
    factory
    tupletools
    mini_vector

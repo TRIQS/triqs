@@ -92,6 +92,10 @@ Example
     }
 
 
+.. toctree::
+   :hidden:
+
+   range_ell
 
 .. highlight:: c
 

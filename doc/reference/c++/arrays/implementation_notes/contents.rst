@@ -13,6 +13,7 @@ in a way suitable for studying/reading/maintening...
    :numbered:
 
    concepts
+   strategy
    storage
    indexmaps
    isp
@@ -24,4 +25,6 @@ in a way suitable for studying/reading/maintening...
    hdf5
    reinterpretation
    python
+   cuboid_formula
+   slicing 
 

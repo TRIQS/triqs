@@ -52,7 +52,7 @@ NB: Rank is only present for array, since matrix have rank 2 and vector rank 1.
    :hidden:
 
    template_parameters
-
+ 
 Member types 
 --------------------------------------
 
@@ -108,7 +108,7 @@ Member functions
 
    reg_constructors
    reg_assign
-   comp_ops
+   compound_ops
    call 
    resize
    STL 
@@ -132,4 +132,4 @@ Non-member functions
    :hidden:
 
    stream
-
+   swap

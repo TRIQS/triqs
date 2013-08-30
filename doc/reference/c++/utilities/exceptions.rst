@@ -1,9 +1,11 @@
-Utilities
-##################
 
+.. highlight:: c
+
+.. _util_exceptions:
 
 Exceptions
----------------
+=============================
+
 
 TRIQS defines special exceptions, with the following characteristics :
 

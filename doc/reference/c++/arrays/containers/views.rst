@@ -38,6 +38,12 @@ where triqs::ull_t is the type defined by :
   Views offers a strong guarantee of the existence of the data, like a std::shared_ptr.
   Cf :ref:`arr_view_memory` for details.
 
+  .. toctree::
+   :hidden:
+
+   memory
+
+
 Template parameters
 ----------------------------
 

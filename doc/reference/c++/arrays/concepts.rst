@@ -18,17 +18,14 @@ i.e. whether one can or not modify a(i,j).
 * An `Immutable` array is just a pure function on the domain of definition.
   a(i,j) returns a int, or a int const &, that can not be modified (hence immutable).
 
-* A `Mutable` array is on the other hand, a piece of memory, addressed by the indices, 
-  which can be modified. a(i,j) can return a int &.
-
-The formal definition is given below
-
-.. note:: 
+* A `Mutable` array is an Immutable array, which can also be modified. Non const object return a reference, 
+  e.g. a(i,j) can return a int &. Typically this is a piece of memory, with a integer coordinate system on it.
  
-   The tag (made by derivation) is use to quickly recognize that an object
-   models a given concept, due to the current lack of concept support in C++.
- 
-   It is used e.g. to detect to which algebra (Array or Matrix/Vector) the object belongs...
+The main point here is that `Immutable` array is a much more general notion : 
+a formal expression made of array (E.g. A + 2*B) models this concept, but not the `Mutable` one.
+Most algorithms only use the `Immutable` notion, when then are pure (mathematical) function
+that returns something depending on the value of an object, without side effects.
+
 
 .. _ImmutableCuboidArray:
 
@@ -37,9 +34,9 @@ ImmutableCuboidArray
 
 * **Purpose** : 
   
-  The most abstract definition of something that behaves like an immutable array.
+  The most abstract definition of something that behaves like an immutable array on a cuboid domain.
   
-   * it has a domain (hence a rank).
+   * it has a cuboid domain (hence a rank).
    * it can be evaluated on any value of the indices in the domain
    
    * NB : It does not need to be stored in memory. A formal expression, e.g. model this concept.
@@ -220,7 +217,7 @@ Example :
      auto d = immutable_diagonal_matrix_view<int>{a};
      std::cout << "domain = " << d.domain()<< std::endl;  
      std::cout << "d   = "<< d << std::endl;
-     std::cout << "2*d = "<< matrix<int>(2*d) << std::endl;
+     std::cout << "2*d = "<< make_matrix(2*d) << std::endl;
      std::cout << "d*d = "<< matrix<int>(d*d) << std::endl;
     }
 
