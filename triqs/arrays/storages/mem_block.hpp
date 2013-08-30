@@ -21,8 +21,16 @@
 #ifndef TRIQS_MEM_BLOCK_H
 #define TRIQS_MEM_BLOCK_H
 #include "../../utility/exceptions.hpp"
+
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include <Python.h>
 #include <numpy/arrayobject.h>
+#else
+// if no python, same code but remove python parts...
+typedef void PyObject;
+#define Py_DECREF(P)
+#endif
+
 #include "./memcopy.hpp"
 #include <triqs/utility/macros.hpp>
 
@@ -34,11 +42,6 @@
 #define TRACE_MEM_DEBUG(X)
 #endif
 
-// if no python, same code but remove python parts...
-#ifndef TRIQS_WITH_PYTHON_SUPPORT
-typedef void PyObject;
-#define Py_DECREF(P)
-#endif
 
 namespace triqs { namespace arrays { namespace storages { //namespace details {
 
