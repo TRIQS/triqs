@@ -2,7 +2,9 @@
 Authors & contributors
 =========================
 
-The TRIQS library is currrently developed by O. Parcollet (IPhT, CEA-Saclay) and M. Ferrero (CPHT, Ecole Polytechique).
+The TRIQS library has been developed and is currently maintained by :
+
+ O. Parcollet (IPhT, CEA-Saclay) and M. Ferrero (CPHT, Ecole Polytechique).
 
 It is supported by ERC under Grant Number XXX.
 

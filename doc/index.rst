@@ -16,7 +16,7 @@ is a scientific project providing a set of C++ and Python libraries to develop n
 for the study of interacting quantum systems. 
 
 The goal of this toolkit is to provide condensed matter physicists with 
-high level, efficient and simple to use libraries in C++ and Python,
+some high level, efficient and simple to use libraries in C++ and Python,
 and to promote the use of modern programming techniques in our field.
 
 TRIQS is free software (GPL).

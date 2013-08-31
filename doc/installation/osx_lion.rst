@@ -43,26 +43,6 @@ Installation of the dependencies
      ### brew install boost --without-single --with-mpi --with-c++11
      brew install  http://ipht.cea.fr/triqs/boost.rb  --without-single --with-mpi --with-c++11 -v
 
-4. Now install virtualenv: ::
-
-    pip install virtualenv
-    virtualenv mypython
-
-Using virtualenv provides a clean way to set up a different python environment for each user.
-The first line in the instructions above installs the package and the second creates the virtual
-environment, which is created in ``$HOME/mypython``.
-Make sure to permanently add (prepend) ``$HOME/mypython/bin`` to your path by adding ::
-
-    export PATH = $HOME/mypython/bin:$PATH
-
-to your ``.bashrc file`` (assuming bash). Within a new shell, check that
-
-    which python
-    which pip
-    which easy_install
-
-yield the ones located in ``$HOME/mypython``.
-
 5. Install the required python packages: ::
     
     pip install numpy
@@ -70,14 +50,13 @@ yield the ones located in ``$HOME/mypython``.
     pip install scipy
     pip install mpi4py
     pip install matplotlib
-    # seems useless now...
-    #pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
     pip install tornado
     pip install pyzmq
     pip install jinja2
     pip install ipython
     pip install cython
-
+    # strangely, cython is not in bin, hence not in the path...
+    pushd /usr/local/bin && ln -s /usr/local/share/python/cython . && popd
 
 6. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax: :: 
   
@@ -87,7 +66,6 @@ yield the ones located in ``$HOME/mypython``.
 
 NB : you need pyparsing <=1.5.7 since apparently v.2.0 works only for python 3.
 
-7. Download the latest `sources of boost <http://www.boost.org/users/download/>`_  and untar them into a directory ``BOOST_SRC``.
 
 Possible issues
 ---------------
