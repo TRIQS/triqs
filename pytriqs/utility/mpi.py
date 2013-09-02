@@ -27,7 +27,7 @@ myprint_out = lambda x : sys.stdout.write("%s\n"%x)
 if 'additional_builtin_modules' in dir(sys) and 'mpi' in sys.additional_builtin_modules: #link is static
   from mpi import *
 else : 
-  from pytriqs.boost.mpi import *
+  from boost.mpi import *
 
 if rank==0 :
     myprint_err ("Starting on %s Nodes at : %s"%(size,str(datetime.datetime.now())))

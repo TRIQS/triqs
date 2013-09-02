@@ -24,11 +24,6 @@ import os,sys,datetime
 myprint_err = lambda x : sys.stderr.write("%s\n"%x)
 myprint_out = lambda x : sys.stdout.write("%s\n"%x)
 
-#if 'additional_builtin_modules' in dir(sys) and 'mpi' in sys.additional_builtin_modules: #link is static
-#  from mpi import *
-#else : 
-#  from pytriqs.boost.mpi import *
-
 from mpi4py import MPI
 
 world = MPI.COMM_WORLD

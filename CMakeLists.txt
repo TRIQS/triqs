@@ -148,85 +148,39 @@ message(STATUS "MPI_CXX_INCLUDE_PATH : ${MPI_CXX_INCLUDE_PATH}")
 # #################################
 
 message( STATUS "-------- Boost detection -------------")
-# Check user input for BOOST_SOURCE_DIR
-# If user has defined BOOST_SOURCE_DIR in environment variable, 
-# and not overruled in on the command line -DBOOST_SOURCE_DIR, we take it
-# If -DBOOST_SOURCE_DIR is not set, nor is the env variable BOOST_SOURCE_DIR,
-# we take the installed one.
-set (BOOST_SOURCE_DIR_ENV $ENV{BOOST_SOURCE_DIR})
-if (NOT BOOST_SOURCE_DIR AND BOOST_SOURCE_DIR_ENV)
- set (BOOST_SOURCE_DIR ${BOOST_SOURCE_DIR_ENV})
+
+# if static build, request static lib
+if(TRIQS_BUILD_STATIC)
+ set(Boost_USE_STATIC_LIBS        ON)
+else()
+ set(Boost_USE_STATIC_LIBS        OFF)
 endif()
-if(BOOST_SOURCE_DIR)
- if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
-  Message(FATAL_ERROR "You must specify an absolute path for BOOST_SOURCE_DIR.")
- endif(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
- STRING(REGEX MATCH "~\\/" TILDE "${BOOST_SOURCE_DIR}")
- if(TILDE)
-  Message(FATAL_ERROR "You should not use the tilde symbol ~. Please write the full absolute path for BOOST_SOURCE_DIR.")
- endif(TILDE)
 
- # compile boost if necessary
- set(ALPS_BOOST_LIBRARY_NAME "boost_for_triqs" ) 
- set(ALPS_HAVE_MPI 1)
- set(ALPS_HAVE_BOOST_MPI 1)
- set(BUILD_BOOST_MPI TRUE)
- set(BUILD_BOOST_PYTHON TRUE)
- add_subdirectory(foreignlibs/boost)
- include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
-
-else(BOOST_SOURCE_DIR)
-
- if (NOT Boost_ROOT_DIR_found)
-  set( Boost_ROOT_DIR ${BOOST_ROOT_DIR})
- endif (NOT Boost_ROOT_DIR_found)
-
- # if static build, request static lib
- if(TRIQS_BUILD_STATIC)
-  set(Boost_USE_STATIC_LIBS        ON)
- else()
-  set(Boost_USE_STATIC_LIBS        OFF)
- endif()
- # icc requires a higher version
- if(CMAKE_COMPILER_IS_ICC)
-  set(BOOST_VERSION 1.53)
- else()
-  set(BOOST_VERSION 1.46)
- endif()
- if (PythonSupport)
-  find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi python serialization system ) #filesystem  )
- Else()
-  find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi serialization system ) #filesystem  )
- endif()
- if (NOT Boost_FOUND)
-  message(FATAL_ERROR "Boost not found")
- endif()
- message(STATUS "BOOST has been detected")
- include_directories(${Boost_INCLUDE_DIRS})
- #include_directories(${BOOST_INSTALL_ROOT_DIR}/include)
- set(BOOST_LIBRARY ${Boost_LIBRARIES}) #${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
- set(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
-endif(BOOST_SOURCE_DIR)
-
-message(STATUS  "Boost include dir : ${BOOST_INCLUDE_DIR}")
-message(STATUS  "Boost libraries : ${BOOST_LIBRARY}")
-
-#------------------------
-# copy boost into pytriqs/boost
-#------------------------
+# icc requires a higher version
+if(CMAKE_COMPILER_IS_ICC)
+ set(BOOST_VERSION 1.53)
+else()
+ set(BOOST_VERSION 1.46)
+endif()
 if (PythonSupport)
- if(NOT BOOST_SOURCE_DIR)
-  if(NOT BOOST_MODULE_DIR)
-   EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
-  endif(NOT BOOST_MODULE_DIR)
-  # first create the dir, since pytriqs will be configured later
-  execute_process(COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/ )
-  execute_process(COMMAND ln -fs ${BOOST_MODULE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/)
-  install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost DESTINATION ${TRIQS_PYTHON_LIB_DEST})
- endif(NOT BOOST_SOURCE_DIR)
-endif (PythonSupport)
+ find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi python serialization system )
+else()
+ find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi serialization system )
+endif()
+if (NOT Boost_FOUND)
+ message(FATAL_ERROR "Boost not found")
+endif()
 
+include_directories(${Boost_INCLUDE_DIRS})
+set(BOOST_LIBRARY ${Boost_LIBRARIES})
+set(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
+
+message(STATUS  "Boost include dir: ${BOOST_INCLUDE_DIR}")
+message(STATUS  "Boost libraries: ${BOOST_LIBRARY}")
+
+# #################################
 # on 64 bit machines
+# #################################
 if (CMAKE_SIZEOF_VOID_P EQUAL 8) # for 64 bits machines
  message( STATUS "64 bit machine : Adding -fpic ")
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic" )
