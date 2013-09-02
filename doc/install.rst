@@ -80,4 +80,3 @@ Further reading
    installation/install_options
    installation/python
    installation/clang
-   installation/changelog

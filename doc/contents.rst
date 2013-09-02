@@ -10,5 +10,6 @@ Table of contents
    documentation
    applications
    issues
+   changelog
    about
 
