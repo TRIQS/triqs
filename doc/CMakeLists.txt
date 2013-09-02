@@ -29,27 +29,18 @@ set( link_libs " ${TRIQS_LIBRARY_ALL}")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES link_libs)
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-string(REPLACE "boost_for_triqs" " " TMP "${link_libs}")
-string(REPLACE "debug" " " TMP "${TMP}")
+string(REPLACE "debug" " " TMP "${link_libs}")
 string(REPLACE "optimized" " " TMP "${TMP}")
 
-set(DOC_AUTOCOMPILE_INCLUDE ${BOOST_SOURCE_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/foreignlibs ${TRIQS_INCLUDE_ALL}  )
+set(DOC_AUTOCOMPILE_INCLUDE ${CMAKE_SOURCE_DIR} ${TRIQS_INCLUDE_ALL})
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- if(BOOST_SOURCE_DIR)
-   set(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost -lboost_for_triqs -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} ")
- else(BOOST_SOURCE_DIR)
-   set(DOC_AUTOCOMPILE_LINK "${BOOST_LIBRARY} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} ")
- endif(BOOST_SOURCE_DIR)
+ set(DOC_AUTOCOMPILE_LINK "${TRIQS_LIBRARY_BOOST} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs ${TMP}")
  set(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 -stdlib=libc++ -I/System/Library/Frameworks/vecLib.framework/Versions/A/Headers)
 else()
- if(BOOST_SOURCE_DIR)
-   set(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost -lboost_for_triqs -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
- else(BOOST_SOURCE_DIR)
-   set(DOC_AUTOCOMPILE_LINK "${BOOST_LIBRARY} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
- endif(BOOST_SOURCE_DIR)
+ set(DOC_AUTOCOMPILE_LINK "${TRIQS_LIBRARY_BOOST} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
  set(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 )
 endif()
-set(DOC_AUTOCOMPILE_LD_LIBRARY_PATH "${CMAKE_BINARY_DIR}/foreignlibs/boost/:${CMAKE_BINARY_DIR}/triqs")
+set(DOC_AUTOCOMPILE_LD_LIBRARY_PATH "${CMAKE_BINARY_DIR}/triqs")
 set(DOC_AUTOCOMPILE_DEFINITIONS ${DOC_AUTOCOMPILE_DEFINITIONS} -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config )
 
 # debug
@@ -88,7 +79,7 @@ set(doxy_top ${CMAKE_CURRENT_BINARY_DIR}/doxy.log)
 add_custom_command (OUTPUT ${doxy_top} DEPENDS ${DOXYGEN_SOURCES} COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile > ${doxy_top} )
 add_custom_target(docs_doxy ALL DEPENDS ${doxy_top})
 add_dependencies(docs_sphinx docs_doxy) # we must first have doxygen process the sources to link to them
-add_dependencies(docs_sphinx triqs boost_for_triqs ) # add also mpi ?
+add_dependencies(docs_sphinx triqs)
 
 # Install
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs
@@ -113,12 +104,10 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DEST
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/agogo DESTINATION share/triqs/themes)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/triqs DESTINATION share/triqs/themes)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/_static DESTINATION share/triqs/export)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/_templates DESTINATION share/triqs/export)
 
 # PDF documentation
 if (Build_PDF_Documentation)
- add_dependencies(docs_sphinx_pdf_cpp triqs boost_for_triqs ) # add also mpi ?
+ add_dependencies(docs_sphinx_pdf_cpp triqs )
  install(FILES ${sphinx_top_pdf} DESTINATION share/doc/triqs/)
 endif()
 

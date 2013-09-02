@@ -177,6 +177,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(BOOST_LIBRARY ${Boost_LIBRARIES})
 set(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
 
+set(TRIQS_LIBRARY_BOOST ${Boost_LIBRARIES})
+set(TRIQS_INCLUDE_BOOST ${Boost_INCLUDE_DIRS})
+
 message(STATUS  "Boost include dir: ${BOOST_INCLUDE_DIR}")
 message(STATUS  "Boost libraries: ${BOOST_LIBRARY}")
 
