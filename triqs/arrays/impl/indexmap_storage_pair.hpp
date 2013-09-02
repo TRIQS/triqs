@@ -277,6 +277,8 @@ namespace triqs { namespace arrays {
     typedef iterator_adapter<false,typename IndexMapType::iterator, StorageType> iterator;
     const_iterator begin() const {return const_iterator(indexmap(),storage(),false);}
     const_iterator end() const {return const_iterator(indexmap(),storage(),true);}
+    const_iterator cbegin() const {return const_iterator(indexmap(),storage(),false);}
+    const_iterator cend() const {return const_iterator(indexmap(),storage(),true);}
     iterator begin() {return iterator(indexmap(),storage(),false);}
     iterator end() {return iterator(indexmap(),storage(),true);}
 
