@@ -171,6 +171,8 @@ if (NOT Boost_FOUND)
  message(FATAL_ERROR "Boost not found")
 endif()
 
+mark_as_advanced(Boost_DIR)
+
 include_directories(${Boost_INCLUDE_DIRS})
 set(BOOST_LIBRARY ${Boost_LIBRARIES})
 set(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
