@@ -1,5 +1,4 @@
-
-TRIQS as a library
+Building
 ==================
 
 .. highlight:: c
@@ -45,17 +44,12 @@ start by writing some sources:
 
 OK, our project will be just one :file:`main.cpp` file, e.g.::
 
-  #include <triqs/arrays/array.hpp>
-
-  namespace tqa = triqs::arrays;
-
+  #include <triqs/arrays.hpp>
+  using namespace triqs::arrays;
   int main(){
-
-    tqa::array<double,1> A(10), B(10);
-    A()=2; B()=3;
-    tqa::array<double,1> C = A+B;
+    array<double,1> A {1,2,3}, B{10,20,30}, C;
+    C = A+B;
     std::cout << "C = "<< C << std::endl;
-
   }
 
 As you can see, the code includes headers from TRIQS. Along with
@@ -67,26 +61,30 @@ variables, especially the include directories related to the TRIQS headers and
 the location of the TRIQS libraries. Here is what your simple
 :file:`CMakeLists.txt` can be:
 
-.. code-block :: bash
+.. code-block :: cmake
 
+  # Append triqs installed files to the cmake load path
+  list(APPEND CMAKE_MODULE_PATH ${TRIQS_PATH}/share/triqs/cmake)
+
+  # start configuration 
   cmake_minimum_required(VERSION 2.8)
-
   project(myproj CXX)
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-
   set(CMAKE_BUILD_TYPE Release)
 
-  SET(CMAKE_INSTALL_RPATH "${TRIQS_PATH}/lib")
-  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-  SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  # We use shared libraries
+  # option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
-  include(${TRIQS_PATH}/share/triqs/cmake/TRIQSConfig.cmake)
+  # Load TRIQS, including all predefined variables from TRIQS installation
+  find_package(TRIQS REQUIRED)
 
+  # We want to be installed in the TRIQS tree
+  set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
+
+  # Build the code, adding triqs in include and link flags
   add_executable(example main.cpp)
+  include_directories(${TRIQS_INCLUDE_ALL})
+  target_link_libraries(example ${TRIQS_LIBRARY_ALL})
 
-  include_directories(${TRIQS_INCLUDE} ${EXTRA_INCLUDE} ${CBLAS_INCLUDE} ${FFTW_INCLUDE})
-  target_link_libraries(example ${TRIQS_LIBRARY} ${EXTRA_LIBRARY})
 
 We're all set! Everything is ready to compile our project. If we want to build
 everything in :file:`/home/project/build`, we do as follows:

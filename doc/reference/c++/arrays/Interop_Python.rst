@@ -5,6 +5,11 @@ Interface with Python numpy arrays
 
 The array, matrix, vector and their views are fully interoperable with the numpy array objects in python.
 
+.. warning::
+
+   Doc need to be largely improved here...
+
+
 From Python to C++
 --------------------------
 

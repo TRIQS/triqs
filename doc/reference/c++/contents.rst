@@ -2,10 +2,14 @@
 C++
 =============
 
+.. warning::
+
+   This documentation is work in progress.
+
 .. toctree::
    :maxdepth: 1
 
-   learn/intro
+   using_the_lib/contents
    arrays/contents
    gf/contents
    clef/contents

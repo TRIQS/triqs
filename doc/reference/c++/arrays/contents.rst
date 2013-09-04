@@ -1,6 +1,11 @@
 Multidimensional arrays
 *******************************************
+.. warning::
 
+   This library is of stable quality, except when mentionned otherwise (for some recent features).
+   
+   Documentation is still work in progress.
+   
 .. highlight:: c
 
 .. toctree::

@@ -5,7 +5,9 @@ Clef expressions library
 
 .. warning::
 
-    This library is still a prototype, of alpha quality.  
+    This library is still a prototype, of alpha quality. 
+     
+    Documentation is not fully up to date : work in progress. 
 
 The little CLEF library (Compile time Lazy Expression and Function)
 is a simple lambda library for C++11, to store and code formal expressions

@@ -3,6 +3,10 @@
 Linear algebra 
 ===============================================
 
+.. warning::
+
+   Doc still largely to be written and updated....
+
 Several standard linear algebra operations are provided for the matrix and vector.
 Note however that matrix and vector are not the main purpose of this library, 
 hence the linear algebra support is less extended than other purely matrix library, 
@@ -21,8 +25,8 @@ The * operator map the matrix x matrix and matrix x vector product.
 
 Example : matrix * matrix and * vector ...
 
-.. compileblock::
-
+..  
+   compileblock::
    #include <triqs/arrays.hpp>
    using triqs::arrays::matrix; using triqs::clef::placeholder;
    int main() {  
@@ -30,31 +34,12 @@ Example : matrix * matrix and * vector ...
     placeholder<0> i_; placeholder<1> j_;
     matrix<double> A (2,2), B(2,2), C; 
     A(i_,j_) <<  i_ + j_ ; B(i_,j_) <<  2*i_ + j_ ;
-
-    // Making the product
     C= A*B;
-    // Note that the * returns a lazy object 
-    // that has ImmutableArray concept, and defines a specialized version assignment.
-    // compiler rewrites this as something like matmul_with_lapack (A,B,C);
-    // There are no temporary here.
-
-   std::cout<< " C = " << C<< std::endl;   
-   std::cout<< " A*B = " << A*B << std::endl; // NB A*B does not return a matrix, but 
-   // a lazy expression which is not evaluated until needed. 
+    std::cout<< " C = " << C<< std::endl;   
    }
  
 For types that lapack do not use, a generic version of the matrix product is provided.
 (same syntax, the dispatch is made at compile time depending of the type of the matrices).
-
-NB : 
-
-* The **generic** version of the product will be used if
-both matrices do not have the same type.
-**Is this reasonnable ??**.
-
-* Is the matrix's slowest index is not contiguous, blas/lapack can not be called directly.
-  So a temporary copy will be made to reorganize the matrix before calling blas/lapack.
-  Code is therefore (normally !) always correct, but this can produce a serious performance hit.
 
 
 Matrix inversion

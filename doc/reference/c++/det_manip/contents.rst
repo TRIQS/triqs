@@ -3,6 +3,10 @@
 Manipulations of determinants
 =============================
 
+.. warning::
+
+   This library is stable, but documentation is still a bit spartan ...
+
 The purpose of this little class is to regroup standard block manipulations on determinant, used in several 
 QMC.
 

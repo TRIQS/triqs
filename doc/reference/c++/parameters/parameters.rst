@@ -1,5 +1,12 @@
-parameters
+Parameters
 ===============
+
+.. warning::
+
+   Library of beta quality.
+
+   Documentation : just intro/tutorial, reference doc in progress.
+
 
 Introduction
 --------------
