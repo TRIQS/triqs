@@ -140,10 +140,10 @@ file(WRITE ${CMAKE_BINARY_DIR}/.python/__init__.py  "__all__=[]")
 set(partial_dir ${python_destination})
 while(partial_dir MATCHES "/")
   string(REGEX REPLACE "/[^/]*$" "" partial_dir ${partial_dir})
-  if(NOT EXISTS ${TRIQS_PYTHON_LIB_DEST}/${partial_dir}/__init__.py)
+  if(NOT EXISTS ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/${partial_dir}/__init__.py)
     execute_process(COMMAND cp ${CMAKE_BINARY_DIR}/.python/__init__.py ${CMAKE_BINARY_DIR}/pytriqs/${partial_dir})
     install(FILES ${CMAKE_BINARY_DIR}/.python/__init__.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${partial_dir})
-  endif(NOT EXISTS ${TRIQS_PYTHON_LIB_DEST}/${partial_dir}/__init__.py)
+  endif(NOT EXISTS ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/${partial_dir}/__init__.py)
 endwhile(partial_dir MATCHES "/")
 
 # Install all other files
