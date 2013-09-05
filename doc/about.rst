@@ -1,16 +1,16 @@
 
 Authors & contributors
-=========================
+======================
 
-The TRIQS library has been developed and is currently maintained by :
+The TRIQS library has been developed and is currently maintained by:
 
  O. Parcollet (IPhT, CEA-Saclay) and M. Ferrero (CPHT, Ecole Polytechique).
 
 It is supported by ERC under Grant Number XXX.
 
-We acknowledge contributions from an increasing number of colleagues :
+We acknowledge contributions from an increasing number of colleagues:
 
-A. Antipov, T. Ayral, H. Hafermann, I. Krivenko, L. Messio.  
+  A. Antipov, T. Ayral, H. Hafermann, I. Krivenko, L. Messio.
 
 
 License
@@ -21,18 +21,19 @@ TRIQS is published under the `GNU General Public License, version 3
 
 Note that it *implies* that applications using TRIQS must also be GPL.
 
-Quotation
-=========
+..
+  Quotation
+  =========
 
-TRIQS is a part of our scientific work and we would appreciate if
-projects using it will include a citation to the following paper.  In
-order to help you, we provide a BibTeX entry.
+  TRIQS is a part of our scientific work and we would appreciate if
+  projects using it will include a citation to the following paper.  In
+  order to help you, we provide a BibTeX entry.
 
-.. [#triqs] `AUTHORS, JOURNAL, YEAR <http://link>`_ (:download:`bibtex file <triqs.bib>`)
+  .. [#triqs] `AUTHORS, JOURNAL, YEAR <http://link>`_ (:download:`bibtex file <triqs.bib>`)
 
-If you find TRIQS useful, giving proper reference and citation is
-indeed a simple way to help convincing funding sources that such projects are
-useful for our community and should be supported.
+  If you find TRIQS useful, giving proper reference and citation is
+  indeed a simple way to help convincing funding sources that such projects are
+  useful for our community and should be supported.
 
 Disclaimer
 ==========
