@@ -61,14 +61,13 @@ namespace triqs { namespace mc_tools {
      * \param[in] AfterCycleDuty  a function bool() to be called after each QMC cycle
      */
      mc_generic(utility::parameters const & P, std::function<bool()> AfterCycleDuty = std::function<bool()>() ) :
-      RandomGenerator(std::string(P["Random_Generator_Name"]), long(P["Random_Seed"])),
-      //RandomGenerator(P["Random_Generator_Name"]), P.value_or_default("Random_Seed",1)),
-      report(&std::cout,int(P["Verbosity"])),
+      RandomGenerator(std::string(P["random_name"]), long(P["random_seed"])),
+      report(&std::cout,int(P["verbosity"])),
       AllMoves(RandomGenerator),
       AllMeasures(),AllMeasuresAux(),
-      Length_MC_Cycle(long(P["Length_Cycle"])),     /// NOT NICE THIS EXPLICIT CAST : no unsigned in parameters, really ??
-      NWarmIterations(long(P["N_Warmup_Cycles"])),
-      NCycles(long(P["N_Cycles"])),
+      Length_MC_Cycle(long(P["length_cycle"])),     /// NOT NICE THIS EXPLICIT CAST : no unsigned in parameters, really ??
+      NWarmIterations(long(P["n_warmup_cycles"])),
+      NCycles(long(P["n_cycles"])),
       after_cycle_duty(AfterCycleDuty),
       sign_av(0) {}
 
