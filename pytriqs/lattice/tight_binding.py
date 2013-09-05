@@ -31,7 +31,6 @@ from lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stac
 from pytriqs.dos import DOS
 import numpy
 
-
 # MOVE THIS BACK INTO CYTHON !!!!
 
 def dos(tight_binding, n_kpts, n_eps, name) : 
@@ -46,11 +45,11 @@ def dos(tight_binding, n_kpts, n_eps, name) :
     eps, arr = dos_c(tight_binding, n_kpts, n_eps)
     return [ DOS (eps, arr[:, i], name) for i in range (arr.shape[1]) ]
 
-def dos_patch(tight_binding, triangles, n_kpts, n_div, name) :  
+def dos_patch(tight_binding, triangles, n_eps, n_div, name) :  
     """
     To be written
     """
-    eps, arr = dos_c(tight_binding, n_kpts, eps)
+    eps, arr = dos_patch_c(tight_binding, triangles, n_eps, n_div)
     return DOS (eps, arr, name)
 
 # for backward compatibility. Not documented. 

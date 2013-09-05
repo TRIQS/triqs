@@ -21,8 +21,9 @@
 ################################################################################
 
 #from pytriqs import *
-from super_lattice import * 
+import numpy
 from pytriqs.dos import DOS
+from pytriqs.lattice.tight_binding import dos_patch
 
 class BZPatch:
     """Description of a Patch of the BZ"""
@@ -45,11 +46,7 @@ class BZPatch:
                     pnt[1] = pnt[2]
                 else:
                     pnt[np%3] = point
-   
-    def dos(self, lattice, n_bins, n_div_triangle): 
-        """ Compute the partial dos of the Patch for the Lattice lattice"""
-        assert isinstance(lattice, (Lattice, TBSuperLattice))
-        return lattice.dos_patch(self._triangles, n_bins, n_div_triangle, self.name)
 
-  
- 
+    def dos(self, TB, n_eps, n_div): 
+        """ Compute the partial dos of the Patch for the Lattice lattice"""
+        return dos_patch(TB, numpy.array(self._triangles), n_eps, n_div, self.name)
