@@ -21,17 +21,15 @@
 #ifndef TRIQS_GF_CURRY_H
 #define TRIQS_GF_CURRY_H
 #include "./product.hpp"
-
 #ifndef TRIQS_COMPILER_IS_C11_COMPLIANT
 #error "This header requires a fully C++11 compliant compiler"
 #endif
-
 namespace triqs { namespace gfs { 
 
  template<typename F> struct lambda_valued {};
 
  namespace gfs_implementation { 
-
+  
   /// ---------------------------  data access  ---------------------------------
 
   template<typename Opt, typename F, typename M> struct data_proxy<M,lambda_valued<F>,Opt> : data_proxy_lambda<F> {};
@@ -41,124 +39,63 @@ namespace triqs { namespace gfs {
   template<typename F, typename Opt, typename ... Ms>
    struct factories<cartesian_product<Ms...>, lambda_valued<F>, Opt> {};
 
-  // detail
-  template<typename M0, typename CP> struct cartesian_product_add_front;
-  template<typename M0, typename ... Ms> struct cartesian_product_add_front<M0,cartesian_product<Ms...>>{ typedef cartesian_product<M0,Ms...> type; };
+  /// ---------------------------  partial_eval ---------------------------------
+  // partial_eval<0> (g, 1) returns :  x -> g(1,x)
+  // partial_eval<1> (g, 3) returns :  x -> g(x,3)
 
-  // -------------------------------------------------
-  //   Partial evaluation of the gf
-  // -------------------------------------------------
-  //
-  // Given a cartesian_product of meshes (CP), and a compile time list of int (I) 
-  // - metacompute the list of Ms without position those at position 0,2 (type)
-  // - provide 2 runtimes functions : 
-  //   - sl : given empty tuple () and a tuple (it) of indices
-  //     return the tuple of indices and range, where range are at the position defined by I,
-  //     and the indices in other places, in order.
-  //   - m : returns from a CP object the corresponding tuple of meshes of the remaining meshes
-  //     after partial eval (of the type computed by "type").
-  // - auxiliary data : 
-  //    pos : position in the CP tuple (CP::size-1 ->0)
-  //    ip : position in the tuple of indices (for sl) 
-  //    MP : accumulation of the final type metacomputed.
-  //
-  template<int pos, int ip, typename CP, typename MP, int ... I> struct pv_impl; 
-  template<typename CP, int ... I> struct pv_ : pv_impl<CP::size-1,0,CP,cartesian_product<>,I...>{}; 
- 
-  template<typename CP, int ip, typename MP, int ... I>  struct pv_impl<-1, ip, CP, MP, I... > { 
-   // the final type is a cartesian_product<...> if there is more than one mess
-   // and otherwise the only mesh remaining... (avoiding cartesian_product<imfreq> e.g. which makes little sense).
-   typedef typename std::conditional<MP::size==1, typename std::tuple_element<0,typename MP::type>::type, MP>::type type; 
-   template<typename T, typename IT> static T sl(T t, IT const & it) {return t;}
-   template<typename T, typename MT> static T m (T t, MT const & mt) {return t;}
-  }; 
+  // a technical trait: from a tuple of mesh, return the mesh (either M if it is a tuple of size 1, or the corresponding cartesian_product<M..>).
+  template<typename ... Ms> struct cart_prod_impl;
+  template<typename ... Ms> using cart_prod = typename cart_prod_impl<Ms...>::type;
+  template<typename ... Ms> struct cart_prod_impl<std::tuple<Ms...>> { using type = cartesian_product<Ms...>;};
+  template<typename M> struct cart_prod_impl<std::tuple<M>> { typedef M type;}; //using type = M;};
 
-  template<int pos, int ip, typename CP, typename MP, int ... I> struct pv_impl {
-   typedef pv_impl<pos-1, ip, CP,MP, I...> B;
-   typedef typename B::type type;
-   template<typename T, typename IT> static auto sl (T t, IT const & it) DECL_AND_RETURN( B::sl(triqs::tuple::push_front(t,arrays::range()),it));
-   template<typename T, typename MT> static auto m  (T t, MT const & mt) DECL_AND_RETURN( B::m(t,mt));
-  };
+  template<typename M0, typename M1, typename ...M> auto rm_tuple_of_size_one(std::tuple<M0,M1,M...> const & t) DECL_AND_RETURN(t);
+  template<typename M> auto rm_tuple_of_size_one(std::tuple<M> const & t) DECL_AND_RETURN(std::get<0>(t));
 
-  template<int pos, int ip, typename CP, typename MP, int ... I> struct pv_impl<pos, ip, CP, MP, pos ,I...> {
-   typedef typename cartesian_product_add_front<typename std::tuple_element<pos,typename CP::type>::type, MP>::type MP2; 
-   typedef pv_impl<pos-1,ip+1, CP,MP2,I...> B;
-   typedef typename B::type type;
-   template<typename T, typename IT> static auto sl (T t, IT const & it) DECL_AND_RETURN( B::sl(triqs::tuple::push_front(t,std::get<ip >(it)),it));
-   template<typename T, typename MT> static auto m  (T t, MT const & mt) DECL_AND_RETURN( B::m (triqs::tuple::push_front(t,std::get<pos>(mt)),mt));
-  };
-
-  // partial_eval<0> (g, 1) : returns :  x -> g(1,x)
-  // partial_eval<1> (g, 3) : returns :  x -> g(x,3)
-  //
   template<int ... pos, typename Opt, typename Target, bool B, typename IT, typename ... Ms>
-   gf_view<typename pv_<cartesian_product<Ms...>,pos...>::type ,Target, Opt> 
+  gf_view< typename cart_prod_impl< triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>::type ,Target, Opt>
    partial_eval(gf_impl< cartesian_product<Ms...>, Target,Opt,B> const & g, IT index) { 
+    // meshes of the returned gf_view : just drop the mesh of the evaluated variables
+    auto meshes_tuple_partial = triqs::tuple::filter_out<pos...>(g.mesh().components());
+    // a view of the array of g, with the dimension sizeof...(Ms)
     auto arr = reinterpret_linear_array(g.mesh(),g.data());
-    typedef pv_<cartesian_product<Ms...>,pos...> pv_t;
-    typedef gf_view< typename pv_t::type,Target, Opt> r_t; 
-    auto comp = pv_t::m(std::make_tuple(),g.mesh().components());
-    auto arr_args = pv_t::sl(std::make_tuple(),index);
-    // generalize this get<0> ---> flatten the tuple (construct from a tuple of args...)
-    return r_t{ std::get<0>(comp), triqs::tuple::apply(arr, arr_args), typename r_t::singularity_non_view_t{}, typename r_t::symmetry_t{} };
+    // now rebuild a tuple of the size sizeof...(Ms), containing the indices and range at the position of evaluated variables.
+    auto arr_args = triqs::tuple::inverse_filter<sizeof...(Ms),pos...>(index, arrays::range());
+    // from it, we make a slice of the array of g, corresponding to the data of the returned gf_view
+    auto arr2 =  triqs::tuple::apply(arr, arr_args);
+    // finally, we build the view on this data. 
+    using r_t = gf_view< cart_prod< triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>> ,Target, Opt>;
+    return r_t{ rm_tuple_of_size_one(meshes_tuple_partial), arr2,  typename r_t::singularity_non_view_t{}, typename r_t::symmetry_t{} };
    }
 
+  /// ---------------------------  curry  ---------------------------------
+  // curry<0>(g) returns : x-> y... -> g(x,y...)
+  // curry<1>(g) returns : y-> x,z... -> g(x,y,z...)
+  
   // to adapt the partial_eval as a polymorphic lambda (replace by a lambda in c++14)
   template<typename Gview, int ... pos> struct curry_polymorphic_lambda { 
    Gview g;
-   template<typename ...I>
-    auto operator()(I ... i) const DECL_AND_RETURN( partial_eval<pos...>(g,std::make_tuple(i...)));
+   template<typename ...I> auto operator()(I ... i) const DECL_AND_RETURN(partial_eval<pos...>(g,std::make_tuple(i...)));
   };
 
-  // curry<0>(g) returns : x-> y... -> g(x,y...)
-  // curry<1>(g) returns : x-> y,z... -> g(y,x,z...)
-  // and so on
+  // curry function ...
   template<int ... pos, typename Target, typename Opt, bool B, typename ... Ms>
-   gf_view< typename pv_<cartesian_product<Ms...>,pos...>::type,
+   gf_view<cart_prod< triqs::tuple::filter_t<std::tuple<Ms...>,pos...>  >,
 	   lambda_valued<curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt>,pos...>>, 
 	   Opt>
     curry (gf_impl<cartesian_product<Ms...>, Target,Opt,B> const & g) { 
-    auto comp =  pv_<cartesian_product<Ms...>,pos...>::m(std::make_tuple(),g.mesh().components());
-    typedef gf_mesh< typename pv_<cartesian_product<Ms...>,pos...>::type,Opt> m_t;
-    return {triqs::tuple::apply_construct<m_t>(comp),curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt>, pos ...>{g}, nothing(), nothing()}; 
+    // pick up the meshed corresponding to the curryed variables
+    auto meshes_tuple = triqs::tuple::filter<pos...>(g.mesh().components());
+    // building the view
+    return {rm_tuple_of_size_one(meshes_tuple),curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt>, pos ...>{g}, nothing(), nothing()}; 
+    //using m_t = gf_mesh< cart_prod< triqs::tuple::filter_t<std::tuple<Ms...>,pos...>>>; 
+    //return {triqs::tuple::apply_construct<m_t>(meshes_tuple),curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt>, pos ...>{g}, nothing(), nothing()}; 
    };
 
  } // gf_implementation
-
  using gfs_implementation::partial_eval;
  using gfs_implementation::curry;
-
- /// ----- first implementation
- /*
- // slicing on first arg
- template<typename Opt, typename M0,  typename M1>
- gf_view<M1,scalar_valued, Opt> slice_mesh0 (gf_view< cartesian_product<M0,M1>, scalar_valued,Opt> g, size_t index) { 
- auto arr = reinterpret_linear_array(g.mesh(),g.data());
- typedef gf_view<M1,scalar_valued, Opt> r_t; 
- return { std::get<1>(g.mesh().components()), arr(index,arrays::range()), typename r_t::singularity_non_view_t{}, typename r_t::symmetry_t{} };
- }
-
- // slicing on first arg
- template<typename Opt, typename M0, typename M1>
- gf_view<M0,scalar_valued, Opt> slice_mesh1 (gf_view< cartesian_product<M0,M1>, scalar_valued,Opt> g, size_t index) { 
- auto arr = reinterpret_linear_array(g.mesh(),g.data()); 
- typedef gf_view<M0,scalar_valued, Opt> r_t; 
- return { std::get<0>(g.mesh().components()), arr(arrays::range(), index), typename r_t::singularity_non_view_t{}, typename r_t::symmetry_t{} };
- }
-
-
- template<typename Gview> struct curry_lambda0 { 
- Gview g;
- auto operator()(size_t i) const DECL_AND_RETURN( slice_mesh0(g,i));
- };
-
- template<typename Opt, bool B, typename M0, typename M1>
- gf_view<M0,lambda_valued<curry_lambda0<gf_view<cartesian_product<M0,M1>, scalar_valued,Opt>>>, Opt> 
- curry0 (gf_impl<cartesian_product<M0,M1>, scalar_valued,Opt,B> const & g) { 
- return {std::get<0>(g.mesh().components()),curry_lambda0<gf_view<cartesian_product<M0,M1>, scalar_valued,Opt>>{g}, nothing(), nothing()}; 
- };
-
-*/
 }}
 #endif
+
 

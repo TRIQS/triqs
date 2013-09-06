@@ -48,6 +48,7 @@ try {
 
  auto G_w_wn2_view = G_w_wn2();
  auto G_w_wn_sl0_a = partial_eval<0>(G_w_wn2(), std::make_tuple(8));
+ static_assert(std::is_same<typename std::remove_reference<decltype(G_w_wn_sl0_a.mesh())>::type, const gf_mesh<imfreq>>::value, "oops");
  //auto G_w_wn_curry0_a = curry0(G_w_wn2);
  //auto G_w_wn_sl0_a = slice_mesh0(G_w_wn2(), 8);
 
@@ -84,13 +85,14 @@ try {
  std::cout  << "curry no"<< G_w_wn.on_mesh(8,3) << std::endl ;
 
  auto G_w_wn_curry0 = curry<0>(G_w_wn2);
+ static_assert(std::is_same<typename std::remove_reference<decltype(G_w_wn_curry0[0].mesh())>::type, const gf_mesh<imfreq>>::value, "oops");
+ static_assert(std::is_same<typename std::remove_reference<decltype(G_w_wn_curry0.mesh())>::type, const gf_mesh<refreq>>::value, "oops");
  auto G_w_wn_curry1 = curry<1>(G_w_wn2);
  auto G_w_wn2_view2 = G_w_wn2();
 
  std::cout  << " curry "<<G_w_wn_curry0[8] << G_w_wn_curry0[8][3] << G_w_wn2_view2.on_mesh(8,3) << G_w_wn2_view2.on_mesh(8,3) <<std::endl ;
  std::cout  << " curry "<<G_w_wn_curry1[3][8] << std::endl; 
  std::cout  << "G_w_wn_sl0_a [3]"<<G_w_wn_sl0_a[3] << std::endl ;
-
 
  // test hdf5 
  H5::H5File file("gf_re_im_freq_time.h5", H5F_ACC_TRUNC );

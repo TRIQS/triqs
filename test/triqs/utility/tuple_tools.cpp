@@ -46,6 +46,9 @@ template<typename T1, typename T2>
 
 std::string my_print_str(int x, int y) { std::stringstream fs; fs << "the string is "<< x<< " " << y; return fs.str();}
 
+namespace triqs { namespace tuple { 
+
+}}
 
 int main(int argc, char **argv) {
 
@@ -99,11 +102,64 @@ int main(int argc, char **argv) {
  }
 
  { // to mini_vector
- 
+
   auto t = std::make_tuple(1,2,3.4);
   auto m = triqs::utility::tuple_to_mini_vector<double>(t);
   std::cout  << m<< std::endl ;
 
  }
+
+ { // filter
+  std::cout  << "  ----- filter ----"<< std::endl ;
+  auto t= std::make_tuple(0,1,2,3,4,"=5");
+  std::cout << "filter "<< t << triqs::tuple::filter<0,2,3>(t)<< std::endl; 
+  std::cout << "filter "<< t << triqs::tuple::filter<1,3,5>(t)<< std::endl; 
+
+  std::cout << "filter out "<< t << triqs::tuple::filter_out<0,2,3>(t)<< std::endl; 
+  std::cout << "filter out "<< t << triqs::tuple::filter_out<1,3,5>(t)<< std::endl; 
+
+  auto t2= std::make_tuple(0,1);
+  std::cout << "filter out "<< t2 << triqs::tuple::filter_out<0>(t2)<< std::endl; 
+
+  typedef typename triqs::tuple::filter_t_tr< decltype(t), 0,2,3>::type TY;
+  static_assert(std::is_same<TY, decltype(triqs::tuple::filter<0,2,3>(t))>::value, "EEE");
+ }
+
+ { // filter
+  std::cout  << "  ----- inverse filter ----"<< std::endl ;
+  auto t= std::make_tuple(1,4,5);
+  auto s = std::string{"--"};
+  {
+   auto r = triqs::tuple::inverse_filter<6,0,2,3>(t, s);
+   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,3>(r)<<std::endl; 
+  }
+  { auto r = triqs::tuple::inverse_filter<6,0,2,5>(t, s);
+   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,5>(r)<<std::endl; 
+  }
+  { auto r = triqs::tuple::inverse_filter<8,0,2,5>(t, s);
+   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,5>(r)<<std::endl; 
+  }
+  {
+   auto r = triqs::tuple::inverse_filter_out<0,2,3>(t, s);
+   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3>(r)<<std::endl; 
+  }
+  { auto r = triqs::tuple::inverse_filter_out<0,2,3,5>(t, s);
+   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3,5>(r)<<std::endl; 
+  }
+  { auto r = triqs::tuple::inverse_filter_out<0,2,3,6>(t, s);
+   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3,6>(r)<<std::endl; 
+  }
+ }
+
+
+ { // replace
+  std::cout  << "  ----- filter ----"<< std::endl ;
+  auto t= std::make_tuple(0,1,2,3,4,"=5");
+  auto s = std::string{"--"};
+  std::cout << "replace 0,2,3"<< t << triqs::tuple::replace<0,2,3>(t,s)<< std::endl; 
+  std::cout << "replace 1,3,5"<< t << triqs::tuple::replace<1,3,5>(t,s)<< std::endl; 
+ }
+
+
 }
 

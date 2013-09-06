@@ -80,8 +80,10 @@ namespace triqs { namespace gfs {
  inline gf_keeper<tags::fourier,retime,matrix_valued> lazy_fourier         (gf_view<retime,matrix_valued> const & g) { return g;}
  inline gf_keeper<tags::fourier,refreq,matrix_valued> lazy_inverse_fourier (gf_view<refreq,matrix_valued> const & g) { return g;}
 
- void triqs_gf_view_assign_delegation( gf_view<refreq> g, gf_keeper<tags::fourier,retime> const & L);
- void triqs_gf_view_assign_delegation( gf_view<retime> g, gf_keeper<tags::fourier,refreq> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<refreq,scalar_valued> g, gf_keeper<tags::fourier,retime,scalar_valued> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<refreq,matrix_valued> g, gf_keeper<tags::fourier,retime,matrix_valued> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<retime,scalar_valued> g, gf_keeper<tags::fourier,refreq,scalar_valued> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<retime,matrix_valued> g, gf_keeper<tags::fourier,refreq,matrix_valued> const & L);
 
 }}
 #endif

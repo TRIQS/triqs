@@ -74,8 +74,11 @@ namespace triqs { namespace gfs {
  void triqs_gf_view_assign_delegation( gf_view<imfreq,matrix_valued> g, gf_keeper<tags::fourier,imtime,matrix_valued> const & L);
  void triqs_gf_view_assign_delegation( gf_view<imtime,scalar_valued> g, gf_keeper<tags::fourier,imfreq,scalar_valued> const & L);
  void triqs_gf_view_assign_delegation( gf_view<imtime,matrix_valued> g, gf_keeper<tags::fourier,imfreq,matrix_valued> const & L);
- 
- 
+}}
+
+namespace triqs { namespace clef {
+TRIQS_CLEF_MAKE_FNT_LAZY (lazy_fourier);
+TRIQS_CLEF_MAKE_FNT_LAZY (lazy_inverse_fourier);
 }}
 #endif
 

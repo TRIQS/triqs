@@ -31,6 +31,9 @@ namespace triqs { namespace gfs {
   static constexpr size_t size = sizeof...(Ms); 
  };
 
+ // use alias 
+ template<typename ... Ms> struct cartesian_product <std::tuple<Ms...>> : cartesian_product<Ms...>{}; 
+
  // the mesh is simply a cartesian product
  template<typename Opt, typename ... Ms> struct gf_mesh<cartesian_product<Ms...>,Opt> : mesh_product< gf_mesh<Ms,Opt> ... > { 
   typedef mesh_product< gf_mesh<Ms,Opt> ... > B;

@@ -340,9 +340,9 @@ namespace triqs { namespace gfs {
 
   template<bool V> gf_view(gf_impl<Variable,Target,Opt,V> const & g): B(g){}
 
-  template<typename D, typename T>
+  template<typename D>
    gf_view (typename B::mesh_t const & m,
-     D const & dat,T const & t,typename B::symmetry_t const & s,
+     D const & dat,typename B::singularity_view_t const & t,typename B::symmetry_t const & s,
      typename B::evaluator_t const &e = typename B::evaluator_t ()  ) :
     B(m,factory<typename B::data_t>(dat),t,s,e) {}
 
@@ -359,13 +359,16 @@ namespace triqs { namespace gfs {
   template<typename RHS> gf_view & operator = (RHS const & rhs) { triqs_gf_view_assign_delegation(*this,rhs); return *this;}
 
   // Interaction with the CLEF library : auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
-  template<typename RHS> friend void triqs_clef_auto_assign (gf_view & g, RHS rhs) {
+  template<typename RHS> friend void triqs_clef_auto_assign (gf_view g, RHS rhs) {
    // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
    g.triqs_clef_auto_assign_impl(rhs, typename std::is_base_of<tag::composite,typename B::mesh_t>::type());
    assign_from_expression(g.singularity(),rhs);
    // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty,
    // it uses the fact that tail_non_view_t can be casted into freq_infty
   }
+
+  // enable the writing g[om_] << .... also 
+  template<typename RHS> friend void triqs_clef_auto_assign_subscript (gf_view g, RHS rhs) { triqs_clef_auto_assign(g,rhs);}
 
   private:
   template<typename RHS> void triqs_clef_auto_assign_impl (RHS const & rhs, std::integral_constant<bool,false>) {
@@ -381,14 +384,14 @@ namespace triqs { namespace gfs {
 
  // delegate = so that I can overload it for specific RHS...
  template<typename Variable, typename Target, typename Opt, typename RHS>
-  DISABLE_IF(arrays::is_scalar<RHS>) triqs_gf_view_assign_delegation( gf_view<Variable,Target,Opt> & g, RHS const & rhs) {
+  DISABLE_IF(arrays::is_scalar<RHS>) triqs_gf_view_assign_delegation( gf_view<Variable,Target,Opt> g, RHS const & rhs) {
    if (!(g.mesh()  == rhs.mesh()))  TRIQS_RUNTIME_ERROR<<"Gf Assignment in View : incompatible mesh";
    gf_view<Variable,Target,Opt>::data_proxy_t::assign_no_resize(g.data(),rhs.data()); 
    g.singularity() = rhs.singularity();
   }
 
  template<typename Variable, typename Target, typename Opt, typename T>
-  ENABLE_IF(arrays::is_scalar<T>) triqs_gf_view_assign_delegation( gf_view<Variable,Target,Opt> & g, T const & x) {
+  ENABLE_IF(arrays::is_scalar<T>) triqs_gf_view_assign_delegation( gf_view<Variable,Target,Opt> g, T const & x) {
    gf_view<Variable,Target,Opt>::data_proxy_t::assign_to_scalar(g.data(), x); 
    g.singularity() = x;
   }

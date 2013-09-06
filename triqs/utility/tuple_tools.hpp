@@ -32,7 +32,7 @@ namespace triqs { namespace tuple {
   * push_back (t,x) -> returns new tuple with x append at the end
   */
  template<typename T, typename X>
- auto push_back(T const &t, X const &x) DECL_AND_RETURN ( std::tuple_cat(t,std::make_tuple(x)));
+ auto push_back(T && t, X &&x) DECL_AND_RETURN ( std::tuple_cat(std::forward<T>(t),std::make_tuple(std::forward<X>(x))));
 
  /**
   * t : a tuple
@@ -40,7 +40,7 @@ namespace triqs { namespace tuple {
   * push_front (t,x) -> returns new tuple with x append at the first position
   */
  template<typename T, typename X>
- auto push_front(T const &t, X const &x) DECL_AND_RETURN ( std::tuple_cat(std::make_tuple(x),t));
+ auto push_front(T && t, X &&x) DECL_AND_RETURN ( std::tuple_cat(std::make_tuple(std::forward<X>(x)),std::forward<T>(t)));
 
 /**
   * apply(f, t)
@@ -264,6 +264,158 @@ namespace triqs { namespace tuple {
  template<typename F, typename T1, typename T2, typename R>
   auto fold_on_zip (F && f,T1 const & t1, T2 const & t2, R && r) DECL_AND_RETURN( fold_on_zip_impl<std::tuple_size<T1>::value-1,T1,T2>()(std::forward<F>(f),t1,t2,std::forward<R>(r)));
 
+ /** 
+  * filter<int ... I>(t) : 
+  *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are dropped.
+  */
+
+ // pos = position in the tuple, c : counter tuplesize-1 ->0, I : position to filter
+ template<int pos, int c, int ... I> struct filter_impl;
+
+ // default case where pos != the first I : increase pos
+ template<int pos, int c, int ... I> struct filter_impl : filter_impl<pos+1, c-1, I...> {};
+
+ // when pos == first I
+ template<int pos, int c, int ... I> struct filter_impl<pos, c, pos, I...> {
+  template<typename TupleIn, typename TupleOut> auto operator() (TupleIn const & t, TupleOut && out) const
+   DECL_AND_RETURN( filter_impl<pos+1,c-1, I...>() ( t, push_back(std::forward<TupleOut>(out),std::get<pos>(t))));
+ };
+
+ template<int pos, int ... I> struct filter_impl <pos,-1, I...> {
+  template<typename TupleIn, typename TupleOut>  TupleOut operator() (TupleIn const & t, TupleOut && out) const {return out;}
+ };
+
+ template<int ...I, typename Tu>
+  auto filter(Tu const & tu) DECL_AND_RETURN ( filter_impl<0,std::tuple_size<Tu>::value-1, I...>()(tu, std::make_tuple()));
+
+ template<typename Tu,int ...I> struct filter_t_tr : std::result_of< filter_impl<0,std::tuple_size<Tu>::value-1, I...>( Tu, std::tuple<>)>{};
+
+#ifdef TRIQS_COMPILER_IS_C11_COMPLIANT
+ template<typename Tu,int ...I> using filter_t = typename filter_t_tr<Tu,I...>::type;
+#endif
+
+/** 
+  * filter_out<int ... I>(t) : 
+  *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are dropped.
+  */
+
+ // pos = position in the tuple, c : counter tuplesize-1 ->0, I : position to filter
+ template<int pos, int c, int ... I> struct filter_out_impl;
+
+ // default case where pos != the first I : increase pos
+ template<int pos, int c, int ... I> struct filter_out_impl<pos, c, pos, I...> : filter_out_impl<pos+1, c-1, I...> {};
+
+ // when pos == first I
+ template<int pos, int c, int ... I> struct filter_out_impl {
+  template<typename TupleIn, typename TupleOut> auto operator() (TupleIn const & t, TupleOut && out) const
+   DECL_AND_RETURN( filter_out_impl<pos+1,c-1, I...> ()( t, push_back(std::forward<TupleOut>(out),std::get<pos>(t))));
+ };
+
+ template<int pos, int ... I> struct filter_out_impl <pos,-1, I...> {
+  template<typename TupleIn, typename TupleOut> TupleOut operator() (TupleIn const & t, TupleOut && out) const {return out;}
+ };
+
+ template<int ...I, typename Tu>
+  auto filter_out(Tu const & tu) DECL_AND_RETURN ( filter_out_impl<0,std::tuple_size<Tu>::value-1, I...>()(tu, std::make_tuple()));
+
+ template<typename Tu,int ...I> struct filter_out_t_tr : std::result_of< filter_out_impl<0,std::tuple_size<Tu>::value-1, I...>( Tu, std::tuple<>)>{};
+
+#ifdef TRIQS_COMPILER_IS_C11_COMPLIANT
+ template<typename Tu,int ...I> using filter_out_t = typename filter_out_t_tr<Tu,I...>::type;
+#endif
+
+  /** 
+  * inverse_filter<int L, int ... I>(t,x)  
+  *  Given a tuple t, and integers, returns the tuple R of size L such that filter<I...>(R) == t 
+  *  and the missing position are filled with object x.
+  *  Precondition (static_assert : sizeof...(I)==size of t)
+  *  and max (I) < L
+  */
+
+ // pos = position in the tuple, c : counter tuplesize-1 ->0, I : position to filter
+ template<int pos, int pos_in, int c, int ... I> struct inverse_filter_impl;
+
+ // default case where pos != the first I
+ template<int pos, int pos_in, int c, int ... I> struct inverse_filter_impl<pos, pos_in, c, pos, I...> {
+  template<typename TupleIn, typename TupleOut, typename X> auto operator() (TupleIn const & t, TupleOut && out, X const & x) const
+   DECL_AND_RETURN( inverse_filter_impl<pos+1,pos_in+1,c-1, I...> ()( t, push_back(std::forward<TupleOut>(out),std::get<pos_in>(t)),x));
+ };
+
+ // when pos == first I
+ template<int pos, int pos_in, int c, int ... I> struct inverse_filter_impl {
+  template<typename TupleIn, typename TupleOut, typename X> auto operator() (TupleIn const & t, TupleOut && out, X const & x) const
+   DECL_AND_RETURN( inverse_filter_impl<pos+1,pos_in,c-1, I...> ()( t, push_back(std::forward<TupleOut>(out),x), x));
+ };
+
+ template<int pos, int pos_in, int ... I> struct inverse_filter_impl <pos,pos_in, -1, I...> {
+  template<typename TupleIn, typename TupleOut, typename X> TupleOut operator() (TupleIn const &, TupleOut && out, X const &) const {return out;}
+ };
+
+ // put out for clearer error message
+ template< typename Tu, typename X, int L, int ...I> struct inverse_filter_r_type { 
+  static_assert(sizeof...(I) == std::tuple_size<Tu>::value, "inverse filter : the # of int must be equal to the tuple size !!");
+  typedef inverse_filter_impl<0,0,L-1, I...> type;
+ };
+
+ template<int L, int ...I, typename Tu, typename X>
+  auto inverse_filter(Tu const & tu, X const &x) DECL_AND_RETURN ( typename inverse_filter_r_type<Tu, X, L,  I...>::type ()(tu, std::make_tuple(),x));
+
+ /** 
+  * inverse_filter_out<int ... I>(t,x)  
+  *  Given a tuple t, and integers, returns the tuple R such that filter_out<I...>(R) == t 
+  *  and the missing position are filled with object x.
+  */
+
+ // pos = position in the tuple, c : counter tuplesize-1 ->0, I : position to filter
+ template<int pos, int pos_in, int c, int ... I> struct inverse_filter_out_impl;
+
+ // default case where pos != the first I
+ template<int pos, int pos_in, int c, int ... I> struct inverse_filter_out_impl { 
+  template<typename TupleIn, typename TupleOut, typename X> auto operator() (TupleIn const & t, TupleOut && out, X const & x) const
+   DECL_AND_RETURN( inverse_filter_out_impl<pos+1,pos_in+1,c-1, I...> ()( t, push_back(std::forward<TupleOut>(out),std::get<pos_in>(t)),x));
+ };
+
+ // when pos == first I
+ template<int pos, int pos_in, int c, int ... I> struct inverse_filter_out_impl <pos, pos_in, c, pos, I...> {
+  template<typename TupleIn, typename TupleOut, typename X> auto operator() (TupleIn const & t, TupleOut && out, X const & x) const
+   DECL_AND_RETURN( inverse_filter_out_impl<pos+1,pos_in,c-1, I...> ()( t, push_back(std::forward<TupleOut>(out),x), x));
+ };
+
+ template<int pos, int pos_in, int ... I> struct inverse_filter_out_impl <pos,pos_in, -1, I...> {
+  template<typename TupleIn, typename TupleOut, typename X> TupleOut operator() (TupleIn const &, TupleOut && out, X const &) const {return out;}
+ };
+
+ template<int ...I, typename Tu, typename X>
+  auto inverse_filter_out(Tu const & tu, X const &x) DECL_AND_RETURN ( inverse_filter_out_impl<0,0,std::tuple_size<Tu>::value+sizeof...(I)-1, I...>()(tu, std::make_tuple(),x));
+
+ /** 
+  * replace<int ... I>(t,r)  
+  *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are replaced by r
+  */
+
+ // pos = position in the tuple, c : counter tuplesize-1 ->0, I : position to filter
+ template<int pos, int c, int ... I> struct replace_impl;
+
+ // default case where pos != the first I : increase pos
+ template<int pos, int c, int ... I> struct replace_impl<pos, c, pos, I...> {
+  template<typename TupleIn, typename TupleOut, typename R> auto operator() (TupleIn const & t, TupleOut && out, R const & r) const
+   DECL_AND_RETURN( replace_impl<pos+1,c-1, I...> ()( t, push_back(std::forward<TupleOut>(out),r),r));
+ };
+
+ // when pos == first I
+ template<int pos, int c, int ... I> struct replace_impl {
+  template<typename TupleIn, typename TupleOut, typename R> auto operator() (TupleIn const & t, TupleOut && out, R const & r) const
+   DECL_AND_RETURN( replace_impl<pos+1,c-1, I...> ()( t, push_back(std::forward<TupleOut>(out),std::get<pos>(t)), r));
+ };
+
+ template<int pos, int ... I> struct replace_impl <pos,-1, I...> {
+  template<typename TupleIn, typename TupleOut, typename R> TupleOut operator() (TupleIn const & t, TupleOut && out, R const & r) const {return out;}
+ };
+
+ template<int ...I, typename Tu, typename R>
+  auto replace(Tu const & tu, R const &r) DECL_AND_RETURN ( replace_impl<0,std::tuple_size<Tu>::value-1, I...>()(tu, std::make_tuple(),r));
+
+
  /*
   * print a tuple 
   */
@@ -284,6 +436,11 @@ namespace std {
   return os << ")";
  }
 }
+
+
+
+
+
 
 #endif
 
