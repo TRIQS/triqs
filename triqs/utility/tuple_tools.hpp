@@ -49,25 +49,22 @@ namespace triqs { namespace tuple {
   * Returns : f(t[0], t[1], ...)
   * Equivalent to f(*t) in python ....
   */
- template<int pos,  typename T> struct apply_impl {
-  template<typename F, typename ... Args>
+ template<int pos> struct apply_impl {
+  template<typename F, typename T, typename ... Args>
    auto operator()(F && f, T const & t, Args && ... args)
-   DECL_AND_RETURN( apply_impl<pos-1,T>()(std::forward<F>(f),t, std::get<pos>(t), std::forward<Args>(args)...));
+   DECL_AND_RETURN( apply_impl<pos-1>()(std::forward<F>(f),t, std::get<pos>(t), std::forward<Args>(args)...));
  };
 
- template<typename T> struct apply_impl<-1,T> {
-  template<typename F, typename ... Args>
+ template<> struct apply_impl<-1> {
+  template<typename F, typename T, typename ... Args>
    auto operator()(F && f, T const & t, Args && ... args) DECL_AND_RETURN( std::forward<F>(f)(std::forward<Args>(args)...));
  };
 
  template<typename F, typename T>
-  auto apply (F && f, T const & t) DECL_AND_RETURN( apply_impl<std::tuple_size<T>::value-1,T>()(std::forward<F>(f),t));
+  auto apply (F && f, T const & t) DECL_AND_RETURN( apply_impl<std::tuple_size<T>::value-1>()(std::forward<F>(f),t));
 
- //template <typename T, typename ClassType, typename ReturnType, typename... Args>
- //ReturnType apply(ReturnType(ClassType::*f)(Args...) const, T const & t) { return apply([f](Args const & ... args) { return (*f)(args...);} ,t);}
-
- template <typename T, typename ReturnType, typename... Args>
-  ReturnType apply( ReturnType(*f)(Args...), T const & t) { return apply([f](Args const & ... args) { return (*f)(args...);} ,t);}
+ //template <typename T, typename ReturnType, typename... Args>
+  //ReturnType apply( ReturnType(*f)(Args...), T const & t) { return apply([f](Args const & ... args) { return (*f)(args...);} ,t);}
 
  /**
   * apply_construct<F>(t)
