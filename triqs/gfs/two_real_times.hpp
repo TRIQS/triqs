@@ -1,5 +1,5 @@
 /*******************************************************************************
- *
+ * 
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2012 by M. Ferrero, O. Parcollet
@@ -26,7 +26,7 @@
 #include "./meshes/product.hpp"
 
 namespace triqs { namespace gfs { 
-
+ 
  struct two_real_times {};
 
  // the mesh
@@ -39,9 +39,6 @@ namespace triqs { namespace gfs {
  };
 
  namespace gfs_implementation { 
-
-  // h5 name
-  template<typename Opt> struct h5_name<two_real_times,matrix_valued,Opt> { static std::string invoke(){ return  "GfTwoRealTime";}};
 
   /// ---------------------------  closest mesh point on the grid ---------------------------------
 
@@ -57,75 +54,62 @@ namespace triqs { namespace gfs {
 
    };
 
+   // h5 name
+  template<typename Opt> struct h5_name<two_real_times,matrix_valued,Opt> { static std::string invoke(){ return  "GfTwoRealTime";}};
+  template<typename Opt> struct h5_name<two_real_times,scalar_valued,Opt> { static std::string invoke(){ return  "GfTwoRealTime_s";}};
+  
   /// ---------------------------  evaluator ---------------------------------
-
-  template<typename Opt>
-   struct evaluator<two_real_times,matrix_valued,Opt> {
-    static constexpr int arity = 2;
-    template<typename G>
-     arrays::matrix<std::complex<double> > operator() (G const * g, double t0, double t1)  const {
-      auto & data = g->data();
-      auto & m = std::get<0>(g->mesh().components()); 
-      size_t n0,n1; double w0,w1; bool in;
-      std::tie(in, n0, w0) = windowing(m,t0);
-      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-      std::tie(in, n1, w1) = windowing(m,t1);
-      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-      auto gg = [g,data]( size_t n0, size_t n1) {return data(g->mesh().index_to_linear(std::tuple<size_t,size_t>{n0,n1}), arrays::ellipsis());};
-      return  w0 * ( w1*gg(n0,n1) + (1-w1)*gg(n0,n1+1) ) + (1-w0) * ( w1*gg(n0+1,n1) + (1-w1)*gg(n0+1,n1+1)); 
-     } 
-   };
-
+  
+  template<typename Opt, typename Target>
+  struct evaluator<two_real_times,Target,Opt> {
+   static constexpr int arity = 2;
+   typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix<std::complex<double>>, std::complex<double>>::type rtype; 
+   template<typename G>
+   rtype operator() (G const * g, double t0, double t1)  const {
+    size_t n0,n1; double w0,w1; bool in;
+    std::tie(in, n0, w0) = windowing(std::get<0>(g->mesh().components()),t0);
+    if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+    std::tie(in, n1, w1) = windowing(std::get<1>(g->mesh().components()),t1);
+    if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+    auto gg = on_mesh(*g);
+    return  (1-w0) * ( (1-w1) * gg(n0, n1) + w1 * gg(n0, n1+1) ) + w0 * ( (1-w1) * gg(n0+1, n1) + w1 * gg(n0+1, n1+1)); 
+   } 
+  };
+  
   /// ---------------------------  data access  ---------------------------------
-
+  
   template<typename Opt> struct data_proxy<two_real_times,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
-
+  template<typename Opt> struct data_proxy<two_real_times,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
+  
   // -------------------------------   Factories  --------------------------------------------------
-
+  
+  //matrix_valued
   template<typename Opt> struct factories<two_real_times, matrix_valued,Opt> {
    typedef gf<two_real_times, matrix_valued,Opt> gf_t;
    typedef gf_mesh<two_real_times, Opt> mesh_t;
-
    static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) {
     auto m =  gf_mesh<two_real_times,Opt>(tmax, n_time_slices);
     typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
     return gf_t (m, std::move(A), nothing(), nothing() ) ;
    }
   };
-
-  // -------------------------------   Path  --------------------------------------------------
-  /*
-     struct path { 
-
-     typedef typename mesh_t::index_t mesh_pt_t; 
-     typedef triqs::arrays::mini_vector<long,2> delta_t;
-
-     delta_t pt, delta;
-     size_t L;
-
-     path( mesh_t const & m, pt_t const & start_pt, delta_t const & d_) : pt(start_pt), delta(d_), L(std::get<1>(m.components()).size()){}
-
-     void advance() { pt += delta;}
-
-     bool out_of_mesh () const { return (! ( (pt[1]>=0) && ( pt[0] >= pt[1]) && (pt[0]<= L)));} 
-
-     typedef mesh_pt_generator<path> iterator;
-     iterator begin() const { return {this, false};}
-     iterator end()   const { return {this, true};}
-
-     };
-
-     path make_path ( mesh_t const & m, typename mesh_t::index_t starting_point, delta) {
-     return path(m, starting_point,delta);
-     }
-
-  // for (auto & p : make_path(G.mesh(), make_tuple(i,j), make_tuple(di,dj) )) G(p) +=0;
-  */
-
+  
+  //scalar_valued
+  template<typename Opt> struct factories<two_real_times, scalar_valued,Opt> {
+   typedef gf<two_real_times, scalar_valued,Opt> gf_t;
+   typedef gf_mesh<two_real_times, Opt> mesh_t;
+   
+   static gf_t make_gf(double tmax, double n_time_slices) {
+    auto m =  gf_mesh<two_real_times,Opt>(tmax, n_time_slices);
+    typename gf_t::data_non_view_t A(m.size()); A() =0;
+    return gf_t (m, std::move(A), nothing(), nothing() ) ;
+   }
+  };
+  
  } // gfs_implementation
-
+ 
  // -------------------------------   Additionnal free function for this gf  --------------------------------------------------
-
+ 
  // from g(t,t') and t, return g(t-t') for any t'>t 
  // 
  gf<retime> slice (gf_view<two_real_times> const & g, double t) { 
@@ -133,7 +117,7 @@ namespace triqs { namespace gfs {
   long it = get_closest_mesh_pt_index(m, t);              //index of t on this mesh
   long nt = m.size() - it;
   if (it+1 < nt) nt = it+1 ;                              //nt=length of the resulting GF's mesh
-  double dt = m.delta();
+    double dt = m.delta();
   auto res = make_gf<retime>(0, 2*(nt-1)*dt, nt, g(t,t).shape());
   res() = 0;
   auto _ = arrays::range();// everyone
@@ -142,11 +126,11 @@ namespace triqs { namespace gfs {
   }
   return res;
  }
-
+ 
  // Get the 1 time mesh from the 2 times cartesian product (for cython interface mainly)
  template<typename M> 
-  auto get_1d_mesh_from_2times_mesh(M const & m) DECL_AND_RETURN(std::get<0>(m.components()));
-
+ auto get_1d_mesh_from_2times_mesh(M const & m) DECL_AND_RETURN(std::get<0>(m.components()));
+ 
 }}
 #endif
 
