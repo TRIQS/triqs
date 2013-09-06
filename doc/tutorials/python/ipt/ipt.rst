@@ -60,11 +60,13 @@ solution evolves towards an insulator.
 
 .. literalinclude:: mott.py
 
-The result of this script is an animated gif:
+.. only:: html
 
-.. image:: mott.gif
-   :width: 700
-   :align: center
+  The result of this script is an animated gif:
+
+  .. image:: mott.gif
+     :width: 700
+     :align: center
 
 
 Journal references
