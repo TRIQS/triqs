@@ -67,9 +67,9 @@ namespace triqs { namespace arrays { namespace indexmaps {
    template<int N, int P, bool BoundCheck, int EllipsisLength, typename Arg0, typename...  Args>
     static typename std::enable_if<((EllipsisLength>1) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type
     invoke(LISILOSO, s_type & offset, Arg0 const & arg0, Args const & ... args ) {
-     constexpr bool dP  = (std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
+     //constexpr int dP  = 1;//(std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
      one_step<N,P,BoundCheck>(li,si,lo,so,offset, arg0);
-     invoke<N+1,P+dP,BoundCheck,EllipsisLength-1>(li,si,lo,so, offset, arg0, args...);
+     invoke<N+1,P+1,BoundCheck,EllipsisLength-1>(li,si,lo,so, offset, arg0, args...);
     }
 
    template<int N, int P, bool BoundCheck, int EllipsisLength> static void invoke(LISILOSO, s_type & offset ) {}
