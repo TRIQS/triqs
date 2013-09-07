@@ -36,5 +36,9 @@
 
 #define DECL_AND_RETURN(...)  -> decltype(__VA_ARGS__) { return __VA_ARGS__;}
 
+namespace triqs { 
+ template<typename T> struct remove_cv_ref : std::remove_cv< typename std::remove_reference<T>::type> {};
+};
+
 #endif
 

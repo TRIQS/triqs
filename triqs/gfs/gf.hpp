@@ -186,26 +186,31 @@ namespace triqs { namespace gfs {
       operator() (Arg0&& arg0, Args&&... args) const { return _evaluator(this,std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
 
     // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
+    //template<typename Arg0, typename ...Args>
+    // auto operator()(Arg0 arg0, Args... args) const DECL_AND_RETURN( clef::make_expr_call(view_type(*this),arg0, args...));
+ 
+    //template<typename Arg0, typename ...Args>
+    // auto operator()(Arg0 arg0, Args... args) DECL_AND_RETURN( clef::make_expr_call(view_type(*this),arg0, args...));
+
     template<typename Arg0, typename ...Args>
-     typename clef::result_of::make_expr_call<view_type,Arg0, Args...>::type
-     //typename clef::result_of::make_expr_call<gf_impl,Arg0, Args...>::type
+     typename clef::_result_of::make_expr_call<view_type,Arg0, Args...>::type
      operator()(Arg0 arg0, Args... args) const {
       return clef::make_expr_call(view_type(*this),arg0, args...);
      }
-   
+
     /*
     // on mesh component for composite meshes
     // enable iif the first arg is a mesh_point_t for the first component of the mesh_t
     template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
-     typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  r_type>::type
-     operator() (Arg0 const & arg0, Args const & ... args)
-     { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
+    typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  r_type>::type
+    operator() (Arg0 const & arg0, Args const & ... args)
+    { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
 
     template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
-     typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  cr_type>::type
-     operator() (Arg0 const & arg0, Args const & ... args) const
-     { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
-*/
+    typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  cr_type>::type
+    operator() (Arg0 const & arg0, Args const & ... args) const
+    { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
+    */
 
     //// [] and access to the grid point
     typedef typename std::result_of<data_proxy_t(data_t       &,size_t)>::type r_type;
@@ -223,14 +228,29 @@ namespace triqs { namespace gfs {
      cr_type operator[] (closest_pt_wrap<U...> const & p) const { return _data_proxy(_data, _mesh.index_to_linear( gfs_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
 
     // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
+    /* template<typename Arg>
+       typename boost::lazy_enable_if<    // enable the template if
+       clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
+       clef::_result_of::make_expr_subscript<view_type,Arg>
+       >::type     // end of lazy_enable_if
+       operator[](Arg && arg) const { return clef::make_expr_subscript(view_type(*this),std::forward<Arg>(arg));}
+       */
+
+    /*template<typename Arg>
+    //auto operator[](Arg && arg) const DECL_AND_RETURN(clef::make_expr_subscript((*this)(),std::forward<Arg>(arg)));
+    auto operator[](Arg && arg) const DECL_AND_RETURN(clef::make_expr_subscript(view_type(*this),std::forward<Arg>(arg)));
+
     template<typename Arg>
-     typename boost::lazy_enable_if<    // enable the template if
-     clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
-     clef::result_of::make_expr_subscript<view_type,Arg>
-      >::type     // end of lazy_enable_if
+    //auto operator[](Arg && arg) DECL_AND_RETURN(clef::make_expr_subscript((*this)(),std::forward<Arg>(arg)));
+    auto operator[](Arg && arg) DECL_AND_RETURN(clef::make_expr_subscript(view_type(*this),std::forward<Arg>(arg)));
+    */ 
+
+    template<typename Arg>
+     typename clef::_result_of::make_expr_subscript<view_type,Arg>::type
       operator[](Arg && arg) const { return clef::make_expr_subscript(view_type(*this),std::forward<Arg>(arg));}
 
     /// A direct access to the grid point
+ 
     template<typename... Args>
      r_type on_mesh (Args&&... args) { return _data_proxy(_data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
@@ -418,8 +438,8 @@ namespace triqs { namespace gfs {
    return gf_view<Variable,scalar_valued,Opt>(g.mesh(), g.data()(range(), args... ), sg, g.symmetry());
   }
 
-  // a scalar_valued gf can be viewed as a 1x1 matrix
-  template<typename Variable, typename Opt, bool V, typename... Args>
+ // a scalar_valued gf can be viewed as a 1x1 matrix
+ template<typename Variable, typename Opt, bool V, typename... Args>
   gf_view<Variable,matrix_valued,Opt> reinterpret_scalar_valued_gf_as_matrix_valued (gf_impl<Variable,scalar_valued,Opt,V> const & g) {
    typedef arrays::array_view<typename gfs_implementation::data_proxy<Variable,matrix_valued,Opt>::storage_t::value_type,3> a_t;
    auto a = a_t {typename a_t::indexmap_type (arrays::mini_vector<size_t,3>(g.data().shape()[0],1,1)), g.data().storage()};

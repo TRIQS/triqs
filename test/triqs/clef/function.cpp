@@ -34,5 +34,8 @@ int main() {
  TEST(tql::eval( h, y_=1) (10)); 
  TEST(h); 
 
+ auto hh = var(x_, y_) >> 2*x_ + y_;
+ std::cout  << hh (3,1) << std::endl; 
+
 }
 

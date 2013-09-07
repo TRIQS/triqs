@@ -5,13 +5,7 @@ struct F7 {
  F7(double v_): v(v_){} 
  double operator() (int i1, int i2, int i3, int i4, int i5, int i6, int i7 ) const { return 10*i1;}
  
- template< typename... Args>
-  typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<const F7>,Args...>::type
-  operator()( Args&&... args ) const { return  make_expr_call (std::ref(*this),args...);}
-
- template< typename... Args>
-  typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<F7>,Args...>::type
-  operator()( Args&&... args ) { return  make_expr_call (std::ref(*this),args...);}
+ TRIQS_CLEF_IMPLEMENT_LAZY_CALL(F7);
 
  template<typename Fnt> friend void triqs_clef_auto_assign (F7 & x, Fnt f) { x.v++; std::cerr<< " called triqs_clef_auto_assign "<< f(1,2,3,4,5,6,7)<<std::endl;}
  friend std::ostream & operator<<(std::ostream & out, F7 const & x) { return out<<"F7";}

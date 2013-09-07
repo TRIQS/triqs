@@ -1,12 +1,14 @@
 .. highlight:: c
 
-Examples
+More complex examples
 =======================
+
+.. warning::
+   
+   To be written.
 
 .. toctree::
    :maxdepth: 1
 
-   vector_and_math
    lazy_sum
-   lazy_function
 

@@ -232,6 +232,31 @@ namespace triqs { namespace arrays {
     typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, StorageType::is_weak >::type
      operator()() && { return *this; }
 
+    // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
+    // NB : this is ok because indexmap_storage_pair has a shallow copy constructor ...
+    // Correction : no copy, just a ref...
+    // so A(i_) if A is an array will NOT copy the data....
+    template< typename... Args>
+     typename clef::_result_of::make_expr_call<indexmap_storage_pair const &,Args...>::type
+     operator()( Args&&... args ) const & {
+      static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
+      return make_expr_call(*this,args...);
+     }
+
+    template< typename... Args>
+     typename clef::_result_of::make_expr_call<indexmap_storage_pair &,Args...>::type
+     operator()( Args&&... args ) & {
+      static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
+      return make_expr_call(*this,args...);
+     }
+
+    template< typename... Args>
+     typename clef::_result_of::make_expr_call<indexmap_storage_pair,Args...>::type
+     operator()( Args&&... args ) && {
+      static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
+      return make_expr_call(std::move(*this),args...);
+     }
+
 #else
 
     template<typename... Args>   // non const version
@@ -258,18 +283,25 @@ namespace triqs { namespace arrays {
     typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, false >::type
      operator()() { return *this; }
 
-#endif
     // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
     // NB : this is ok because indexmap_storage_pair has a shallow copy constructor ...
+    // Correction : no copy, just a ref...
     // so A(i_) if A is an array will NOT copy the data....
     template< typename... Args>
-     typename clef::result_of::make_expr_call<indexmap_storage_pair,Args...>::type
+     typename clef::_result_of::make_expr_call<indexmap_storage_pair const &,Args...>::type
      operator()( Args&&... args ) const {
       static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
       return make_expr_call(*this,args...);
-      //return make_expr_call( view_type(*this),args...);
      }
 
+    template< typename... Args>
+     typename clef::_result_of::make_expr_call<indexmap_storage_pair &,Args...>::type
+     operator()( Args&&... args ) {
+      static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
+      return make_expr_call(*this,args...);
+     }
+
+#endif
     template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
 
     // ------------------------------- Iterators --------------------------------------------

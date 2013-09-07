@@ -1,58 +1,70 @@
 .. highlight:: c
 
-Automatic assignment 
-=======================
+Automatic assignment of containers 
+===================================
 
-Principle
-----------------
+Another use of expression is the automatic assignment of containers.
 
-It is possible to use a subset of possible expressions as Left Hand Side (LHS) in an assignment statement, e.g. ::
+**Synopsis** : 
 
- A(x_)        = some_expression_of_x_
- A[i_]        = some_expression_of_i_
- A(x_)(i_,j_) = some_expression_of_x_i_j
- A[x_](i_,j_) = some_expression_of_x_i_j
+ If C is a container, ::
 
-* Right Hand Side (RHS) of the = statement can be any expression.
-* Left Hand Side (LHS) of the = sign. A must be a `lazy-assignable`, called by [] or (), one or several time.
+  C(x_)        << some_expression_of_x_
+  C[i_]        << some_expression_of_i_
+  C(x_)(i_,j_) << some_expression_of_x_i_j
+  C[x_](i_,j_) << some_expression_of_x_i_j
 
-This writing means that a regular function ::
-  
-  x_ -> some_expression_of_x_
+depending of course of the operator that the container support.
+The Right Hand Side (RHS) of the << statement can be any expression, 
+while Left Hand Side (LHS) of the << sign is a container supporting the operation (see below).
 
-will be given to A so that it can fill itself by evaluating this function.
-A determines the range of value of x on which the function is called.
+This statement simply will be rewritten by the CLEF library as ::
 
-Example
----------
+  triqs_clef_auto_assign (C, x_ -> some_expression_of_x_);                  // pseudo code
+  triqs_clef_auto_assign (C, [](auto x_) {return some_expression_of_x_;});  // or in C++ lambda syntax
+
+The function `triqs_clef_auto_assign` has to be overloaded for the container and the correct
+functional form, and it is expected to fill C by evaluating this function.
+
+Such a function is provided for TRIQS objects (arrays, matrix, Green function),
+and also for some STL container like std::vector.
+
+Example :
 
 .. compileblock::
 
   #include "triqs/clef.hpp"
-  #include "triqs/clef/adapters/vector.hpp"
   #include <iostream> 
+  using namespace triqs::clef;
 
   int main() { 
-  int N = 10;
+  int N = 5;
   double pi = std::acos(-1);
-  std::vector<double> V(N);
 
-  // automatic assignment of vector and use of lazy math function
-  triqs::clef::placeholder <0> k_; 
-  triqs::clef::lazy(V) [k_] << cos( (2* pi* k_)/ N );
+  // automatic assignment of vector 
+  placeholder <0> k_; 
+  std::vector<double> V(N);
+  make_expr(V) [k_] << cos( (2* pi* k_)/ N );
+
+  // chaining them ...
+  placeholder <1> i_; 
+  std::vector<std::vector<double>> W(3, std::vector<double>(N));
+  make_expr(W)[i_] [k_] << i_ + cos( (2* pi* k_)/ N );
 
   // check result... 
-  for (size_t u=0; u<V.size(); ++u) std::cout<< u << " "<<V[u]<< "  "<< cos((2*pi*u)/N)<<std::endl;
+  for (size_t u=0; u<V.size(); ++u) if (std::abs(V[u] -cos((2*pi*u)/N))> 1.e-10) throw "error!";
+  for (size_t w=0; w<W.size(); ++w) 
+   for (size_t u=0; u<W[w].size(); ++u) 
+   if (std::abs( W[w][u] - (w+cos((2*pi*u)/N)))> 1.e-10) throw "error!";
   }
 
-Implementing automatic assign for an object 
-------------------------------------------------------------
+**Details**
 
-It is sufficient to add a function ::
+The synopsis of the `triqs_clef_auto_assign` functions is ::
 
    template<typename Fnt> void triqs_clef_auto_assign (Obj & x, Fnt f);
 
-The compiler will rewrite ::
+The compiler will then rewrite ::
 
    obj(x_,y_, ...) = expression
 
@@ -60,7 +72,7 @@ into ::
 
    triqs_clef_auto_assign (obj, make_function( expression, x_, y_, ....)) 
 
-The function is found by ADL. It is therefore useful to implement it e.g. as a friend function.
+The function must be found by ADL. It is therefore useful to implement it e.g. as a friend function.
 
 Similarly, for [ ], adding a function ::
 
@@ -82,33 +94,22 @@ A complete example :
 
     #include <triqs/clef.hpp>
     #include <iostream>
+    using namespace triqs::clef;
 
     struct Obj{ 
-    double v; 
-    Obj(double v_): v(v_){}
-
-    // lazy call : cf ...
-    template< typename... Args>
-    typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<const Obj>,Args...>::type
-    operator()( Args&&... args ) const { return make_expr_call (std::ref(* this),args...);}
-
-    // The non const version (which then stores a non-const reference ....)
-    template< typename... Args>
-    typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<Obj>,Args...>::type
-    operator()( Args&&... args ) { return  make_expr_call (std::ref(* this),args...);}
-
-    template<typename Fnt> friend void triqs_clef_auto_assign (Obj & x, Fnt f) { 
-    x.v++; std::cout<< " called triqs_clef_auto_assign "<< f(100)<<std::endl;
-    }
-    friend std::ostream & triqs_clef_formal_print(std::ostream & out, Obj const & x) {return out<<"Obj";}
+     double v; 
+     TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
+     // 
+     template<typename Fnt> friend void triqs_clef_auto_assign (Obj & x, Fnt f) { 
+       std::cout<< " called triqs_clef_auto_assign "<< f(x.v++)<<std::endl;
+     }
     };
 
     int main() {
-    Obj f(2);
-    triqs::clef::placeholder<3> x_;
-    std::cout<< f.v << std::endl;
-    f(x_ ) << 8*x_ ;
-    //f(x_ + y_) = 8*x_; // leads to a compile error as expected
-    std::cout<< f.v << std::endl;
+     Obj f{2};
+     placeholder<3> x_;
+     std::cout<< f.v << std::endl;
+     f(x_ ) << 8*x_ ;
+     std::cout<< f.v << std::endl;
     }
 

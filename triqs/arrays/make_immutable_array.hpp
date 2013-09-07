@@ -30,7 +30,7 @@ namespace triqs { namespace arrays {
    template<int I> struct _si { typedef size_t type;};
    public : 
     immutable_array_expr_impl(Expr e_, clef::pair<ph,range> ... p): 
-     f(clef::make_function(e_, clef::placeholder<ph>()...)), dom_(make_shape(p.rhs().size()...)) {};
+     f(clef::make_function(e_, clef::placeholder<ph>()...)), dom_(make_shape(p.rhs.size()...)) {};
     typedef typename triqs::clef::result_of::make_function<Expr,clef::placeholder<ph>... >::type function_type;
     typedef typename std::result_of<function_type(typename _si<ph>::type...)>::type value_type;
     typedef indexmaps::cuboid::domain_t<sizeof...(ph)> domain_type;

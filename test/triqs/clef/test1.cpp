@@ -13,15 +13,10 @@ struct F1{
  F1(F1 const &) = delete; // non copyable
  double operator() (double x) const { return 10*x;}
 
- template< typename... Args>
-  typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<const F1>,Args...>::type
-  operator()( Args&&... args ) const { return  make_expr_call (std::ref(*this),args...);}
-
- template< typename... Args>
-  typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<F1>,Args...>::type
-  operator()( Args&&... args ) { return  make_expr_call (std::ref(*this),args...);}
+ TRIQS_CLEF_IMPLEMENT_LAZY_CALL(F1);
 
  template<typename Fnt> friend void triqs_clef_auto_assign (F1 & x, Fnt f) { x.v++; std::cerr<< " called triqs_clef_auto_assign "<< f(100)<<std::endl;}
+ 
  friend std::ostream & operator<<(std::ostream & out, F1 const & x) { return out<<"F1";}
 };
 

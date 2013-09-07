@@ -1,28 +1,25 @@
 .. highlight:: c
 
-Introduction
+Forming CLEF expressions
 ===========================
 
-The first step consists in forming lazy expressions, before evaluating them.
+In this section, we describe how to form CLEF expressions.
  
 Placeholders
-----------------
+-------------------
 
 Loosely speaking, a placeholder is a "variable name" used to build an expression.
-Technically, it is a trivial object, with a type but containing no data.
 Placeholders are declared as ::
 
   placeholder<Number> Name;
-
-This declares a placeholder called Name (an empty object for C++). 
 
 Example ::
 
   placeholder <1> x_; 
   placeholder <2> y_; 
 
-Note that the only thing of significance in a placeholder is its type, since it contains no data.
-In other words, a placeholder is **empty**. It contains **no value** at runtime. 
+Note that the only thing of significance in a placeholder is its type (i.e. Number).
+A placeholder is **empty** : it contains **no value** at runtime. 
    
   .. warning:: 
     
@@ -33,18 +30,62 @@ In other words, a placeholder is **empty**. It contains **no value** at runtime.
       would imply that `x_` is the same as `y_` : `x_` == `y_` will be always true.
 
 Forming an expression
--------------------------
+------------------------
 
-Using simple operators, one can form a more complex expression, e.g.::
+CLEF expressions are made of : 
+
+* Placeholders
+* Binary operations on expressions `(+, -, *, /, >, <, >=, <=, ==)`
+* Ternary conditional if_else expressions
+* Callable objects which overload the operator () for CLEF expressions, See :ref:`callable_object`.
+* Functions overloaded for CLEF expressions. For example, the header `math.hpp` contains the declaration to make 
+  the basic function of std `math.h` accept CLEF_expressions.
+* In fact, almost anything : the *make_expr* function can be called on any object to make it lazy. 
+
+Examples : 
+
+.. compileblock::
+ 
+   #include <triqs/clef.hpp>
+   #include <vector>
+   using namespace triqs::clef;
+   int main () { 
+    placeholder<0> i_; placeholder<1> x_; placeholder<2> y_;
+    std::vector<int> V;
+
+    // arithmetic
+    auto e = x_ + 2* y_;
+    
+    // simple math function
+    auto e1 = cos(2*x_+1);
+    auto e2 = abs(2*x_-1);
+    
+    // making V lazy 
+    auto e0 = make_expr(V)[i_];
+   }
+
+Note that : 
+
+* Expressions do not compute anything, they just store the expression tree.
+* There is no check of correctness here in general : an expression can be well formed, 
+  but meaningless, e.g. ::
+
+    auto e = cos(2*x_, 8); // !
+
+
+.. highlight:: c
+
+Storage of expressions [advanced]
+-----------------------------------
+
+CLEF expressions have a complicated (expression template) type encoding the structure of the expression
+at compile time::
 
   auto e = x_ + 2* y_;
-
-e has a complicated type (it is an expression template), which encodes the structure of the expression.
-Typically here something like ::
- 
+  // the type of e is something like   
   expr<tags::plus, placeholder<1>, expr<tags::multiplies, int, placeholder<2> >
 
-It is worth noting that : 
+Note that : 
 
 * As a user, one *never* has to write such a type
   One always use expression "on the fly", or use auto.
@@ -52,81 +93,27 @@ It is worth noting that :
 * Having the whole structure of the expression at compile time allows
   efficient evaluation (it is the principle of expression template : add a ref here).
 
-* Declaring an expression does not do any computation, hence the name of the library (lazy ...).
+* Declaring an expression does not do any computation.
   It just stores the expression tree (its structure in the type, and the leaves of the tree).
 
-What is allowed in clef expressions ? 
-==========================================
+* Every object in the expression tree is captured by :
 
-Expressions are composed of :
+   * reference it is an lvalue.
 
-* Placeholders
-* Binary operations on expressions `(+, -, *, /, >, <, >=, <=, ==)`
-* Conditional if_else expressions
-* Callable objects (see below) called on expressions
-
-Callable objects
---------------------
-
-* Objects can overload the operator () for lazy expressions in order to build more complex
-  expressions.
-
-* For example, the header `math.hpp` contains the declaration to make 
-  the basic function of std `math.h` accept lazy_expressions.
-  
- .. compileblock::
+   * value it is an rvalue : an rvalue (i.e. a temporary) is *moved* into the tree, using 
+     move semantics.
  
-   #include <triqs/clef.hpp>
-   int main () { 
-    triqs::clef::placeholder <1> x_; 
+   Exceptions : the following objects are always copied : placeholders, expression themselves.
 
-    auto e1 = cos(2*x_+1);
-    auto e2 = abs(2*x_-1);
-    auto e3 = floor(2*x_-1);
-    auto e4 = pow(2*x_+1,2);
-   }
+   Example :: 
 
-* To make your object callable, or to overload a function to accept lazy argument,  see :ref:`callable_object`.
+     double a = 3;
+     auto e = a + 2* x_ ;  // a is stored by reference (double &), but 2 is stored by value
 
-*lazy* function
--------------------
+   The rational is as follows : 
 
-The *lazy* function can be called on any object to make it lazy, e.g. 
-
-.. compileblock::
- 
-   #include <triqs/clef.hpp>
-   #include <vector>
-   namespace tql = triqs::clef;
-   int main () { 
-    std::vector<int> V;
-    tql::placeholder<1> i_;
-    auto e1 = tql::lazy(V)[i_];
-   }
-
-Copy policy in building expressions
----------------------------------------------------
-
-A central question when forming expressions is whether the object at the leaves of the expressions tree
-(scalar, placeholders, various callable objects, etc...) should be captured by value or by reference.
-
-In the clef library, the choice has been made to capture them **by value**, i.e. : 
-
-  *By default, all objects appearing in a clef expression are* **copied**, *rather than captured by reference*.
-
-This is necessary to store expressions (with auto like above) for future reuse, transform them into new expressions
-(e.g. make partial evaluation). Expressions are ordinary objects. 
-If the leaves of the expression tree were captured by reference, a guarantee would have to be made that 
-they will live at least as long as the expression itself, or one gets dangling references.
-
-The drawback of this approach is that it can generate useless copies of large objects.
-There are two simple solutions to this issue : 
-
-* If you *know* that the object `A` will survive the expression, so using a reference is not a problem
-  and use std::reference_wrapper<A> instead of A in the tree.
-
-* If the object has a compagnon view object (like array, array_view). In this case, 
-  one wishes to put a view of the object rather than a copy in the expression.
-
-
+   * rvalue must be moved, otherwise we would keep (dangling) reference to temporaries.
+   * for lvalue, keeping a reference is quicker. Of course, in the previous example, 
+     it is mandatory that a live longer than e ...
+    
 

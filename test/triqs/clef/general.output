@@ -46,9 +46,6 @@
  f.v before assign 7 
  f.v after assign 8 
 -------------
- fb.v before assign 7 7
- fb.v after assign 7 8
--------------
 expr = (F2(_1, _2) + (2 * _2))
 eval(expr,x_ =1, y_ =2) =  16 and it should be 16
  tmp =F2(2, _2)

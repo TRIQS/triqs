@@ -3,18 +3,13 @@
 A lazy sum
 --------------
  
-Problem : we want
-
-* a functional `sum` that sums a function f over various domains, with various methods.
-
-* that this functionnal accepts lazy expressions as arguments.
-
-This is done by the little code: 
+Here is a little functional `sum` that sums a function f over various domains
+and accepts lazy expressions as arguments.
 
 .. literalinclude:: src/sum_functional.cpp
 
-which will print :
+Compiling and running this code reads : 
   
-.. literalinclude:: src/sum_functional2.output
-
-
+.. literalinclude:: src/sum_functional.output
+ 
+ 

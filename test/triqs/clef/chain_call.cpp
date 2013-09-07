@@ -9,13 +9,12 @@ struct F2_vec {
  
  F2 const & operator()(size_t i) const { return vec[i];}
 
- template< typename... Args>
-  typename triqs::clef::result_of::make_expr_call<F2_vec,Args...>::type
-  operator()( Args&&... args ) const { return  triqs::clef::make_expr_call (*this,args...);}
+ TRIQS_CLEF_IMPLEMENT_LAZY_CALL(F2_vec);
 
  template<typename Fnt>
   friend void triqs_clef_auto_assign (F2_vec const & x, Fnt f) { 
-   for (size_t i=0; i< x.vec.size(); ++i) triqs_clef_auto_assign(x.vec[i],  f(i)); } 
+   for (size_t i=0; i< x.vec.size(); ++i) triqs_clef_auto_assign(x.vec[i],  f(i)); 
+  } 
 
  friend std::ostream & operator<<(std::ostream & out, F2_vec const & x) { return out<<"F2_vec";}
 };

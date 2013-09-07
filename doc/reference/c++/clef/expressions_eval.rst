@@ -1,7 +1,7 @@
 
 .. highlight:: c
 
-Evaluating clef expressions
+Evaluating CLEF expressions
 ===============================
 
 Forming expressions is nice, but completely useless unless one can *evaluate* them 
@@ -22,19 +22,21 @@ The evaluation can be :
 Complete evaluation
 --------------------
 
-Example ::
-
-  eval (x_  + 2*y_ , x_=1, y_ = 2)
-
-  auto e = x_  + 2*y_;
-  auto r = eval( e , x_=1, y_ = 2);
+.. compileblock::
+ 
+   #include <triqs/clef.hpp>
+   using namespace triqs::clef;
+   int main () { 
+    placeholder<1> x_; placeholder<2> y_;
+    std::cout << eval (x_  + 2*y_ , x_=1, y_ =2) << std::endl;
+    std::cout << eval (x_  + 2*y_ , y_=2, x_ =1) << std::endl;
+   }
 
 Note that : 
 
 * The order of placeholder does not matter in calling eval.
 * It is an error to put the same placeholder twice.
-* The correct version of eval is found by ADL (Argument Dependent Lookup).
-  (It if the clef::eval since arguments are defined in the clef namespace)
+* The correct version of eval is found by ADL (Argument Dependent Lookup) in the triqs::clef namespace.
 
 Partial evaluation
 --------------------

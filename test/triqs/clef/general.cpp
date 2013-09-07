@@ -58,31 +58,25 @@ int main() {
 
  { 
   // testing the LHS wrting on an object caught by ref
-  F1 f(7); 
+  F1 f(7);
+  std::cerr  << " operator(double) still ok "<< f(2) << std::endl; 
   std::cout<< " f.v before assign "<<f.v<<" "<<  std::endl;
   f(x_ ) << 8*x_ ;
-  //f(x_ + y_) = 8*x_ ;// leads to a compile error as expected
+  //f(x_ + y_) << 8*x_ ;// leads to a compile error as expected
   // test.cpp:129:14: error: no viable overloaded '='
-  // f(x_ + y_) = 8*x_ ;
+  // f(x_ + y_) << 8*x_ ;
   // ~~~~~~~~~~ ^ ~~~~
   std::cout<< " f.v after assign "<<f.v<<" "<<  std::endl;
   std::cout<<"-------------"<<std::endl;
+  std::cerr  <<F1{9}(2,x_, F1{2})<<std::endl;
+  auto expr = F1{9}(x_);
+  expr << 7*x_;
+  std::cerr  << expr << std::endl ;
+  F1{9}(x_ ) << 8*x_ ;
+  std::cerr<<"-------------"<<std::endl;
 
  }
 
-{ 
-  // testing the LHS wrting on object caught by copy
-  F1b fb(7); 
-  std::cout<< " fb.v before assign "<<fb.v<<" "<< *fb.v_ptr<< std::endl;
-  fb(x_ ) << 8*x_ ; 
-  //f(x_ + y_) = 8*x_ ;// leads to a compile error as expected
-  // test.cpp:129:14: error: no viable overloaded '='
-  // f(x_ + y_) = 8*x_ ;
-  // ~~~~~~~~~~ ^ ~~~~
-  std::cout<< " fb.v after assign "<<fb.v<<" "<< *fb.v_ptr<< std::endl;
-  std::cout<<"-------------"<<std::endl;
-
- }
  { 
   // testing fnt of 2 variables
   F2 ff;

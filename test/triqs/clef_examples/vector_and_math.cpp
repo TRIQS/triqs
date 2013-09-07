@@ -10,9 +10,9 @@ int main() {
  double pi = std::acos(-1);
  std::vector<double> V(N);
 
- // automatic assignment of vector and use of lazy math function
+ // automatic assignment of vector and use of make_expr math function
  tql::placeholder <0> k_; 
- tql::lazy(V) [k_]  << cos( (2* pi* k_)/ N );
+ tql::make_expr(V) [k_]  << cos( (2* pi* k_)/ N );
 
  // check result... 
  for (size_t u=0; u<V.size(); ++u)

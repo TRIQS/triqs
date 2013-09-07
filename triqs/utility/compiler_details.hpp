@@ -32,20 +32,11 @@
 #if GCC_VERSION < 40801
 //#warning "gcc compiler" GCC_VERSION
 #define TRIQS_COMPILER_IS_OBSOLETE
+#define TRIQS_COMPILER_OBSOLETE_GCC
 // we still accept gcc 4.6 and 4.7, but only the 4.8.1 and higher is a compliant c++11
 #endif
 #endif
 
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#define TRIQS_USE_STATIC_ASSERT
-//#define USE_VARIADIC_TEMPLATES
-#endif
-
-#ifndef TRIQS_USE_STATIC_ASSERT
-#include "boost/static_assert.hpp"
-#define static_assert(X,MESS) BOOST_STATIC_ASSERT((X)) 
-#endif
 
 #endif
 
