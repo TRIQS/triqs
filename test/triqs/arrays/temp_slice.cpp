@@ -61,6 +61,9 @@ int main(int argc, char **argv) {
    std::cerr  << " good "<< r << r.storage().is_weak << std::endl ;
   }
 
+// rm or valgrind will find the error
+//#define VALGRIND
+#ifndef VALGRIND
   {
    auto & r = bad2 ( { 1,2,3,4} );
    std::cerr  << " bad2 " << r << std::endl ;
@@ -70,6 +73,7 @@ int main(int argc, char **argv) {
    auto r = bad ( { 1,2,3,4} );
    std::cerr  << " bad " << r << r.storage().is_weak << std::endl ;
   }
+#endif
 
  }
  catch (std::exception & e) { std::cout << e.what()<<std::endl;}

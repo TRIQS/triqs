@@ -19,6 +19,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
 #include "./common.hpp"
 #include "./src/array.hpp"
@@ -69,7 +70,9 @@ int main(int argc, char **argv) {
   ia >> A>> SL;
   // archive and stream closed when destructors are called
  }
+ 
  std::cout<<"A is "<<A<<std::endl;
+ 
  std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
 
  std::cout<<"Setting A(0,0) =56 "<<std::endl;
