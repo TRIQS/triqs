@@ -323,11 +323,11 @@ namespace triqs { namespace clef {
   };
  }
 
-  template<int ... N> 
-  std::tuple<placeholder<N>...> var( placeholder<N> ...) { return std::make_tuple(placeholder<N>()...);} 
+ template<int ... N> struct ph_list {};
+ template<int ... N> ph_list<N...> var( placeholder<N> ...) { return {};}
 
-  template<typename Expr, int ... N> 
-  auto operator >> (std::tuple<placeholder<N>...>, Expr const & ex) DECL_AND_RETURN( make_function(ex, placeholder<N>()...));
+ template<typename Expr, int ... N> 
+ auto operator >> (ph_list<N...>, Expr const & ex) DECL_AND_RETURN( make_function(ex, placeholder<N>()...));
 
  /* --------------------------------------------------------------------------------------------------
   *  make_function
@@ -507,7 +507,7 @@ namespace triqs { namespace clef {
  #define TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(TY,name)\
  struct __clef_lazy_method_impl_##name { \
   TY * _x;\
-  template<typename... A> auto operator()(A&&... a) const DECL_AND_RETURN ((*_x).name(std::forward<A>(a)...));\
+  template<typename... A> auto operator()(A&&... a) const DECL_AND_RETURN (_x->name(std::forward<A>(a)...));\
   friend std::ostream & operator<<(std::ostream & out, __clef_lazy_method_impl_##name  const & x) { return out<<BOOST_PP_STRINGIZE(TY)<<"."<<BOOST_PP_STRINGIZE(name);}\
  };\
  template< typename... A> \
