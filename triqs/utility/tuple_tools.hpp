@@ -261,6 +261,8 @@ namespace triqs { namespace tuple {
  template<typename F, typename T1, typename T2, typename R>
   auto fold_on_zip (F && f,T1 const & t1, T2 const & t2, R && r) DECL_AND_RETURN( fold_on_zip_impl<std::tuple_size<T1>::value-1,T1,T2>()(std::forward<F>(f),t1,t2,std::forward<R>(r)));
 
+#ifdef TRIQS_COMPILER_IS_C11_COMPLIANT
+
  /** 
   * filter<int ... I>(t) : 
   *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are dropped.
@@ -287,9 +289,7 @@ namespace triqs { namespace tuple {
 
  template<typename Tu,int ...I> struct filter_t_tr : std::result_of< filter_impl<0,std::tuple_size<Tu>::value-1, I...>( Tu, std::tuple<>)>{};
 
-#ifdef TRIQS_COMPILER_IS_C11_COMPLIANT
  template<typename Tu,int ...I> using filter_t = typename filter_t_tr<Tu,I...>::type;
-#endif
 
 /** 
   * filter_out<int ... I>(t) : 
@@ -317,9 +317,7 @@ namespace triqs { namespace tuple {
 
  template<typename Tu,int ...I> struct filter_out_t_tr : std::result_of< filter_out_impl<0,std::tuple_size<Tu>::value-1, I...>( Tu, std::tuple<>)>{};
 
-#ifdef TRIQS_COMPILER_IS_C11_COMPLIANT
  template<typename Tu,int ...I> using filter_out_t = typename filter_out_t_tr<Tu,I...>::type;
-#endif
 
   /** 
   * inverse_filter<int L, int ... I>(t,x)  
@@ -412,6 +410,7 @@ namespace triqs { namespace tuple {
  template<int ...I, typename Tu, typename R>
   auto replace(Tu const & tu, R const &r) DECL_AND_RETURN ( replace_impl<0,std::tuple_size<Tu>::value-1, I...>()(tu, std::make_tuple(),r));
 
+#endif
 
  /*
   * print a tuple 

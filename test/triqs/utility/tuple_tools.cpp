@@ -109,6 +109,8 @@ int main(int argc, char **argv) {
 
  }
 
+#ifdef TRIQS_COMPILER_IS_C11_COMPLIANT
+
  { // filter
   std::cout  << "  ----- filter ----"<< std::endl ;
   auto t= std::make_tuple(0,1,2,3,4,"=5");
@@ -160,6 +162,7 @@ int main(int argc, char **argv) {
   std::cout << "replace 1,3,5"<< t << triqs::tuple::replace<1,3,5>(t,s)<< std::endl; 
  }
 
+#endif
 
 }
 
