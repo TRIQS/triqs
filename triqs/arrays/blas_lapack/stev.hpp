@@ -41,7 +41,7 @@ namespace triqs { namespace arrays { namespace blas {
   matrix<double> Z;
   size_t s;
   tridiag_worker (size_t n){ s=0; resize(n);}
-  void resize(size_t n) { if (s<n) {D.resize(n); E.resize(n); W.resize(n); Z.resize(n,n);} s = n; }
+  void resize(size_t n) { if (s<n) {D.resize(n); E.resize(n); W.resize(2*n+1); Z.resize(n,n);} s = n; }
   template<typename VT> 
    void operator()(VT const & d, VT const & e) { 
     if (e.size() != d.size() -1) TRIQS_RUNTIME_ERROR << " Error in tridiagonal matrix diagonalization size mismatch"; 
