@@ -107,7 +107,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/triqs DESTINATION share/tri
 
 # PDF documentation
 if (Build_PDF_Documentation)
- add_dependencies(docs_sphinx_pdf_cpp triqs )
+ add_dependencies(docs_sphinx_pdf triqs )
  install(FILES ${sphinx_top_pdf} DESTINATION share/doc/triqs/)
 endif()
 

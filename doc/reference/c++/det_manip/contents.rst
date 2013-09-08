@@ -2,7 +2,7 @@
 
 Manipulations of determinants
 =============================
-
+ 
 .. warning::
 
    This library is stable, but documentation is still a bit spartan ...
