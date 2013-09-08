@@ -1,33 +1,17 @@
-Building
-==================
-
 .. highlight:: c
 
-Let's say you want to write a new code that uses the libraries and headers of
-TRIQS but that is not meant to be a part of TRIQS. Here's how you should
-proceed in order to do that.
-
-
-Setting the stage
------------------
-
-Just to be clear, let me start by showing the directory structure
-I will use:
+A simple C++ code
+--------------------
+Basically, this structure means that you have successfully installed TRIQS in
+:file:`/home/triqs/install` and that you plan to have your new project under
+:file:`/home/project`. Obviously you can choose any other directory but this
+structure will be assumed below.
 
 .. code-block :: bash
 
    /home/triqs/install --> TRIQS is installed here
    /home/project/src --> the sources of my project
    /home/project/build --> the directory where I will compile my code
-
-Basically, this structure means that you have successfully installed TRIQS in
-:file:`/home/triqs/install` and that you plan to have your new project under
-:file:`/home/project`. Obviously you can choose any other directory but this
-structure will be assumed below.
-
-
-Start your project
-------------------
 
 As we just said, we will start our project in a directory
 :file:`/home/project`. We will have the sources in :file:`/home/project/src`
@@ -101,4 +85,10 @@ everything in :file:`/home/project/build`, we do as follows:
 That's it! You can modify your sources and then recompile with make. Obviously
 with bigger projects your :file:`CMakeLists.txt` file will change, but the
 principle remains the same.
+
+A simple C++ code, with its tests and documentation
+------------------------------------------------------
+
+A mixed C++/Python code
+------------------------------
 
