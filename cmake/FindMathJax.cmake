@@ -8,14 +8,18 @@
 # It sets up : MATHJAX_PATH
 # 
 
-SET(TRIAL_PATHS
- $ENV{MATHJAX_ROOT}
- ${MATHJAX_ROOT}
- $ENV{HOME}/MathJax
- /usr/share/javascript/mathjax
- /opt/local/share/javascript/mathjax
- )
-FIND_PATH(MATHJAX_PATH MathJax.js ${TRIAL_PATHS} DOC "Root Path of MathJax")
+if(NOT DEFINED MATHJAX_PATH)
+
+  SET(TRIAL_PATHS
+   $ENV{MATHJAX_ROOT}
+   ${MATHJAX_ROOT}
+   $ENV{HOME}/MathJax
+   /usr/share/javascript/mathjax
+   /opt/local/share/javascript/mathjax
+   )
+  FIND_PATH(MATHJAX_PATH MathJax.js ${TRIAL_PATHS} DOC "Root Path of MathJax")
+
+endif()
 
 mark_as_advanced(MATHJAX_PATH)
 
