@@ -7,7 +7,7 @@ Functional constructs : map & fold
 
 Two standard functional constructs are provided : 
 
-* *map* that promotes a function of the array element to a function of the array,  
+* *map* that promotes a function acting on the array element to an array function, acting 
   element by element.
 
 * *fold* is the reduction of a function on the array. 
@@ -26,39 +26,32 @@ map
 
   If `f` is a function, or a function object :: 
    
-    ValueType2 f(ValueType1)
+    T2 f(T1)
 
   Then map(f) is a function::
   
      template<ImmutableCuboidArray A> auto map(f) (A const &)
    
   with : 
-     * A::value_type == ValueType1
+     * A::value_type == T1
      * The returned type of map(f) models the :ref:`ImmutableCuboidArray` concept
 
        * with the same domain as A
-       * with value_type == ValueType2
-
-* N.B. : Some cases require explicit cast, e.g. for the standard abs function (already defined in arrays/mapped_function.hpp) , 
-  or the compiler does not know which std::abs you are talking about ::
-
-   auto Abs = map( std::function<double(double)>(static_cast< double (*)(double)> (std::abs)) );
-    
-* TO DO : clarify the F f or F const & : check code and put an example with std::ref.
+       * with value_type == T2
 
 * **Example** : 
 
 .. compileblock::
 
    #include <triqs/arrays.hpp>
-   using triqs::arrays::matrix; using triqs::arrays::make_matrix; using triqs::clef::placeholder;
+   using namespace triqs;
    int main() { 
     // declare and init a matrix
-    placeholder<0> i_; placeholder<1> j_;
-    matrix<int> A (2,2); A(i_,j_) <<  i_ + j_ ; 
+    clef::placeholder<0> i_; clef::placeholder<1> j_;
+    arrays::matrix<int> A (2,2); A(i_,j_) <<  i_ + j_ ; 
     
     // the mapped function
-    auto F = triqs::arrays::map([](int i) { return i*2.5;});
+    auto F = arrays::map([](int i) { return i*2.5;});
 
     std::cout<< "A = "        << A                        << std::endl; 
     std::cout<< "F(A) = "     << F(A)                     << std::endl; // oops no computation done

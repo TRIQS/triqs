@@ -1,5 +1,7 @@
 .. highlight:: c
 
+.. _clef_auto_assign:
+
 Automatic assignment of containers 
 ===================================
 

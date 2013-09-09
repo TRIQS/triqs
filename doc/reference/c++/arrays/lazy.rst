@@ -2,23 +2,19 @@
 
 .. _Lazy:
 
-Interaction with clef expressions 
+Interaction with CLEF expressions 
 ============================================
 
-* The Value and View classes (array, matrix and vector and algebraic expression of them) 
-  are ready to use with the triqs::clef library : 
+* The containers and their view classes can be used with the :doc:`../clef/contents` library : 
 
-  * They can be called on lazy expressions made of placeholders.
+  * They can be called with CLEF expressions.
+  * :doc:`Automatic assignment<../clef/assign>` has been set up.
 
-  * Automatic assignment has been set up. Cf clef lib doc ...
-
-* Using the clef library offers a quick and efficient way to fill an array with multiple advantages : 
+* Using the CLEF library offers a quick and efficient way to fill an array with multiple advantages : 
 
   * It is simpler and more readeable than a series of for loops.
-  * It is usually more optimal since the for loops are automatically written in the TraversalOrder of the 
-    array.
+  * It is usually more optimal since the for loops are automatically written in the TraversalOrder of the array.
 
-* NB : the expression can be (and are) inlined by the compilers...
 
 * **Example** : 
 
@@ -26,13 +22,11 @@ Interaction with clef expressions
 
     #include <triqs/arrays.hpp>
     using triqs::arrays::array; using triqs::clef::placeholder;
- 
     int main(){
        placeholder<0> i_; placeholder<1> j_;
        array<double,2> A(2,2), B(2,2);  
        
        A(i_,j_) <<  i_ + 2*j_ ;
-       
        B(i_,j_) <<  A(j_,i_)/2; 
        
        std::cout << "A = "<<A << std::endl;

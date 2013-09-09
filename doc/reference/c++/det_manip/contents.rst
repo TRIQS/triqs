@@ -5,7 +5,8 @@ Manipulations of determinants
  
 .. warning::
 
-   This library is stable, but documentation is still a bit spartan ...
+   This library is stable, but documentation is currently being written
+   and needs a serious rereading and cleaning
 
 The purpose of this little class is to regroup standard block manipulations on determinant, used in several algorithms.
 
