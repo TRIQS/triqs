@@ -62,7 +62,7 @@ Installation of the dependencies
   
      pip install sphinx
      easy_install pyparsing==1.5.7
-     git clone git://github.com/mathjax/MathJax.git MathJax
+     git clone https://github.com/mathjax/MathJax.git MathJax
 
 NB : you need pyparsing <=1.5.7 since apparently v.2.0 works only for python 3.
 

@@ -34,7 +34,7 @@ Installation steps
 
 #. Download the sources of TRIQS from github into a ``src`` directory::
 
-     $ git clone git@github.com:TRIQS/triqs.git src
+     $ git clone https://github.com/TRIQS/triqs.git src
 
 #. Create an empty build directory where you will compile the code::
 
