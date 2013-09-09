@@ -63,6 +63,7 @@ numpy                                   Python scientific library
 h5py                                    Python interface to hdf5 library
 mpi4py                                  Python MPI 
 sphinx                >= 1.0.1          Python documentation tools (to compile documentation)
+cmake                 >= 2.8.7          CMake is used to control the software compilation process
 pyparsing                               Tool for sphinx (to compile documentation)
 matplotlib            >= 0.99           Python 2D plotting library
 cython                >=0.17            A language that allows to write C extensions for the Python language
