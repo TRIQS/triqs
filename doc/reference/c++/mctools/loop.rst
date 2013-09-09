@@ -48,8 +48,8 @@ C++ variable names
 
 In the C++ examples, these variables will be called:
 
-  * ``N_Cycles`` :math:`= N`
-  * ``Length_Cycle`` :math:`= L`
+  * ``n_cycles`` :math:`= N`
+  * ``length_cycle`` :math:`= L`
   * ``N_Warmup_Cycle`` :math:`= W`
 
 You will also have to use these names if you will construct an ``mc_generic``

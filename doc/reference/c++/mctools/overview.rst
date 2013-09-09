@@ -87,16 +87,16 @@ but obviously you would usually want to cut this into pieces for clarity::
     if (world.rank() == 0) std::cout << "Isolated spin" << std::endl;
 
     // prepare the MC parameters
-    int N_Cycles = 5000000;
-    int Length_Cycle = 10;
-    int N_Warmup_Cycles = 10000;
-    std::string Random_Name = "";
-    int Random_Seed = 374982 + world.rank() * 273894;
-    int Verbosity = (world.rank() == 0 ? 2 : 0);
+    int n_cycles = 5000000;
+    int length_cycle = 10;
+    int n_warmup_cycles = 10000;
+    std::string random_name = "";
+    int random_seed = 374982 + world.rank() * 273894;
+    int verbosity = (world.rank() == 0 ? 2 : 0);
 
     // construct a Monte Carlo loop
-    triqs::mc_tools::mc_generic<double> SpinMC(N_Cycles, Length_Cycle, N_Warmup_Cycles,
-                                               Random_Name, Random_Seed, Verbosity);
+    triqs::mc_tools::mc_generic<double> SpinMC(n_cycles, length_cycle, n_warmup_cycles,
+                                               random_name, random_seed, verbosity);
 
     // parameters of the model
     double beta = 0.3;
@@ -140,15 +140,15 @@ The lines that follow, define the parameters of the Monte
 Carlo simulation and construct a Monte Carlo object
 called ``SpinMC``::
 
-    int N_Cycles = 5000000;
-    int Length_Cycle = 10;
-    int N_Warmup_Cycles = 10000;
-    std::string Random_Name = "";
-    int Random_Seed = 374982 + world.rank() * 273894;
-    int Verbosity = (world.rank() == 0 ? 2 : 0);
+    int n_cycles = 5000000;
+    int length_cycle = 10;
+    int n_warmup_cycles = 10000;
+    std::string random_name = "";
+    int random_seed = 374982 + world.rank() * 273894;
+    int verbosity = (world.rank() == 0 ? 2 : 0);
 
-    triqs::mc_tools::mc_generic<double> SpinMC(N_Cycles, Length_Cycle, N_Warmup_Cycles,
-                                               Random_Name, Random_Seed, Verbosity);
+    triqs::mc_tools::mc_generic<double> SpinMC(n_cycles, length_cycle, n_warmup_cycles,
+                                               random_name, random_seed, verbosity);
 
 The ``SpinMC`` is an instance of the ``mc_generic`` class. First of all, note
 that you need to include the header ``<triqs/mc_tools/mc_generic.hpp>`` in
@@ -161,14 +161,14 @@ number of measurements and the warmup length. The definition of these variables
 has been detailed earlier in :ref:`montecarloloop`.
 
 The next two define the random number generator by giving its name in
-``Random_Name`` (an empty string means the default generator, i.e. the Mersenne
+``random_name`` (an empty string means the default generator, i.e. the Mersenne
 Twister) and the random seed in ``Random_See``. As you see the seed is
 different for all node with the use of ``world.rank()``.
 
 Finally, the last parameter sets the verbosity level. 0 means no output, 1 will
 output the progress level for the current node and 2 additionally shows some
 statistics about the simulation when you call ``collect_results``. As you see,
-we have put ``Verbosity`` to 2 only for the master node and 0 for all the other
+we have put ``verbosity`` to 2 only for the master node and 0 for all the other
 ones. This way the information will be printed only by the master.
 
 Moves and measures
@@ -269,7 +269,7 @@ Let's look at ``compute_m``::
 
 
 Here only two methods are expected, ``accumulate`` and ``collect_results``.
-The method ``accumulate`` is called every ``Length_Cycle`` Monte Carlo loops.
+The method ``accumulate`` is called every ``length_cycle`` Monte Carlo loops.
 It takes one argument which is the current sign in the Monte Carlo simulation.
 Here, we sum the sign in ``Z`` (the partition function) and the magnetization
 in ``M``. The other method ``collect_results`` is usually called just once at

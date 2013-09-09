@@ -168,16 +168,16 @@ The Monte-Carlo itself can now be written::
       if (world.rank() == 0) std::cout << "Ising chain" << std::endl;
 
       // Prepare the MC parameters
-      int N_Cycles = 500000;
-      int Length_Cycle = 50;
-      int N_Warmup_Cycles = 100000;
-      std::string Random_Name = "";
-      int Random_Seed = 374982 + world.rank() * 273894;
-      int Verbosity = (world.rank() == 0 ? 2 : 0);
+      int n_cycles = 500000;
+      int length_cycle = 50;
+      int n_warmup_cycles = 100000;
+      std::string random_name = "";
+      int random_seed = 374982 + world.rank() * 273894;
+      int verbosity = (world.rank() == 0 ? 2 : 0);
 
       // Construct a Monte Carlo loop
-      triqs::mc_tools::mc_generic<double> IsingMC(N_Cycles, Length_Cycle, N_Warmup_Cycles,
-                                                  Random_Name, Random_Seed, Verbosity);
+      triqs::mc_tools::mc_generic<double> IsingMC(n_cycles, length_cycle, n_warmup_cycles,
+                                                  random_name, random_seed, verbosity);
 
       // parameters of the model
       int length = 100;

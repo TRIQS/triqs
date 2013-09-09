@@ -81,8 +81,8 @@ When you construct an instance of a Monte Carlo class ``mc_generic``, this
 instance automatically has an access to a random number generator.
 Imagine you constructed an instance::
 
-  triqs::mc_tools::mc_generic<double> SpinMC(N_Cycles, Length_Cycle, N_Warmup_Cycles,
-                                             Random_Name, Random_Seed, Verbosity);
+  triqs::mc_tools::mc_generic<double> SpinMC(n_cycles, length_cycle, n_warmup_cycles,
+                                             random_name, random_seed, verbosity);
 
 Now, you can use ``SpinMC`` to have a random number generator::
 
