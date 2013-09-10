@@ -24,16 +24,17 @@
 #include <vector>
 #include <iterator>
 #include <triqs/arrays.hpp>
-//#include <triqs/arrays/mapped_functions.hpp>
 #include <triqs/arrays/algorithms.hpp>
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
-#include <triqs/arrays/linalg/a_x_ty.hpp>
-#include <triqs/arrays/linalg/matmul.hpp>
-#include <triqs/arrays/linalg/mat_vec_mul.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp> 
+#include <triqs/arrays/blas_lapack/ger.hpp> 
+#include <triqs/arrays/blas_lapack/gemm.hpp> 
+#include <triqs/arrays/blas_lapack/gemv.hpp> 
 #include <triqs/utility/function_arg_ret_type.hpp>
 
 namespace triqs { namespace det_manip { 
+
+ namespace blas = arrays::blas;
 
  /**
   * \brief Standard matrix/det manipulations used in several QMC.
@@ -320,7 +321,8 @@ namespace triqs { namespace det_manip {
       w1.C(k) = f(x, y_values[k]);
      }
      range R(0,N);
-     w1.MB(R) = mat_inv(R,R) * w1.B(R);// CHANGE
+     //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
+     blas::gemv(1.0, mat_inv(R,R), w1.B(R),0.0,w1.MB(R));
      w1.ksi = f(x,y) - arrays::dot( w1.C(R) , w1.MB(R) );
      newdet = det*w1.ksi;
      newsign = ((i + j)%2==0 ? sign : -sign);   // since N-i0 + N-j0  = i0+j0 [2]
@@ -347,7 +349,8 @@ namespace triqs { namespace det_manip {
       w1.C(k) = fy(y_values[k]);
      }
      range R(0,N);
-     w1.MB(R) = mat_inv(R,R) * w1.B(R);// CHANGE
+     //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
+     blas::gemv(1.0, mat_inv(R,R), w1.B(R),0.0,w1.MB(R));
      w1.ksi = ksi - arrays::dot( w1.C(R) , w1.MB(R) );
      newdet = det*w1.ksi;
      newsign = ((i + j)%2==0 ? sign : -sign);   // since N-i0 + N-j0  = i0+j0 [2]
@@ -366,7 +369,8 @@ namespace triqs { namespace det_manip {
      if (N==0) { N=1; mat_inv(0,0) = 1/newdet; return; }
 
      range R1(0,N);  
-     w1.MC(R1) = mat_inv(R1,R1).transpose() * w1.C(R1); //CHANGE
+     //w1.MC(R1) = mat_inv(R1,R1).transpose() * w1.C(R1); //OPTIMIZE BELOW
+     blas::gemv(1.0, mat_inv(R1,R1).transpose(), w1.C(R1),0.0,w1.MC(R1));
      w1.MC(N) = -1;
      w1.MB(N) = -1;
 
@@ -389,7 +393,8 @@ namespace triqs { namespace det_manip {
      range R(0,N);
      mat_inv(R,N-1) = 0;
      mat_inv(N-1,R) = 0;
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi, w1.MB(R) ,w1.MC(R)) ;//mat_inv(R,R) += w1.ksi* w1.MB(R) * w1.MC(R)// CHANGE
+     //mat_inv(R,R) += w1.ksi* w1.MB(R) * w1.MC(R)// OPTIMIZE BELOW
+     blas::ger(w1.ksi, w1.MB(R) ,w1.MC(R),mat_inv(R,R));
     }
 
    public : 
@@ -440,8 +445,10 @@ namespace triqs { namespace det_manip {
       w2.C(1,k) = f(x1, y_values[k]);
      }
      range R(0,N), R2(0,2);
-     w2.MB(R,R2) = mat_inv(R,R) * w2.B(R,R2); // CHANGE
-     w2.ksi -= w2.C (R2, R) * w2.MB(R, R2); // CHANGE
+     //w2.MB(R,R2) = mat_inv(R,R) * w2.B(R,R2); // OPTIMIZE BELOW
+     blas::gemm(1.0, mat_inv(R,R) , w2.B(R,R2),0.0,w2.MB(R,R2));
+     //w2.ksi -= w2.C (R2, R) * w2.MB(R, R2); // OPTIMIZE BELOW
+     blas::gemm(-1.0, w2.C(R2,R), w2.MB(R, R2),1.0,w2.ksi);
      newdet = det * w2.det_ksi();
      newsign = ((i0 + j0 + i1 + j1)%2==0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
      return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
@@ -460,7 +467,8 @@ namespace triqs { namespace det_manip {
      if (N==0) {N=2; mat_inv(R2,R2)=inverse(w2.ksi); row_num[w2.i[1]]=1; col_num[w2.j[1]]=1; return;}
 
      range Ri(0,N);   
-     w2.MC(R2,Ri) = w2.C(R2,Ri) * mat_inv(Ri,Ri);// CHANGE 
+     //w2.MC(R2,Ri) = w2.C(R2,Ri) * mat_inv(Ri,Ri);// OPTIMIZE BELOW 
+     blas::gemm(1.0, w2.C(R2,Ri), mat_inv(Ri,Ri),0.0,w2.MC(R2,Ri));
      w2.MC(R2, range(N, N+2) ) = -1; // identity matrix 
      w2.MB(range(N,N+2), R2 ) = -1; // identity matrix ! 
 
@@ -479,7 +487,8 @@ namespace triqs { namespace det_manip {
      range R(0,N);
      mat_inv(R,range(N-2,N)) = 0;
      mat_inv(range(N-2,N),R) = 0;
-     mat_inv(R,R) += w2.MB(R,R2) * (w2.ksi * w2.MC(R2,R)); // CHANGE
+     //mat_inv(R,R) += w2.MB(R,R2) * (w2.ksi * w2.MC(R2,R)); // OPTIMIZE BELOW
+     blas::gemm(1.0, w2.MB(R,R2), (w2.ksi * w2.MC(R2,R)),1.0,mat_inv(R,R) );
     }
 
    public:
@@ -531,7 +540,8 @@ namespace triqs { namespace det_manip {
      w1.ksi = - 1/mat_inv(N,N);
      range R(0,N);
 
-     mat_inv(R,R) += arrays::a_x_ty(w1.ksi,mat_inv(R,N),mat_inv(N,R));
+     //mat_inv(R,R) += w1.ksi, * mat_inv(R,N) * mat_inv(N,R);
+     blas::ger(w1.ksi,mat_inv(R,N),mat_inv(N,R), mat_inv(R,R));
 
      // modify the permutations
      for (size_t k =w1.i; k<N; k++) {row_num[k]= row_num[k+1];}
@@ -620,7 +630,8 @@ namespace triqs { namespace det_manip {
      w2.ksi =  inverse( mat_inv(Rl,Rl));
 
      // write explicitely the second product on ksi for speed ?
-     mat_inv(Rn,Rn) -= mat_inv(Rn,Rl) * (w2.ksi * mat_inv(Rl,Rn)); // CHANGE
+     //mat_inv(Rn,Rn) -= mat_inv(Rn,Rl) * (w2.ksi * mat_inv(Rl,Rn)); // OPTIMIZE BELOW
+     blas::gemm(-1.0, mat_inv(Rn,Rl), w2.ksi * mat_inv(Rl,Rn),1.0,  mat_inv(Rn,Rn) );
 
      // modify the permutations
      for (size_t k =w2.i[0]; k<w2.i[1]-1; k++)   row_num[k] = row_num[k+1];
@@ -654,7 +665,8 @@ namespace triqs { namespace det_manip {
      // Compute the col B.
      for (size_t i= 0; i<N;i++) w1.MC(i) = f(x_values[i] , w1.y) - f(x_values[i], y_values[w1.jreal]);
      range R(0,N);
-     w1.MB(R) = mat_inv(R,R) * w1.MC(R);// CHANGE
+     //w1.MB(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
+     blas::gemv(1.0, mat_inv(R,R), w1.MC(R) ,0.0,  w1.MB(R) );
 
      // compute the newdet
      w1.ksi = (1+w1.MB(w1.jreal));
@@ -674,8 +686,9 @@ namespace triqs { namespace det_manip {
      // Cf notes : simply multiply by -w1.ksi
      w1.ksi = - 1/(1+ w1.MB(w1.jreal));
      w1.MB(w1.jreal) = 0;
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,w1.MB(R), mat_inv(w1.jreal,R)); // CHANGE
-     mat_inv(w1.jreal,R)*= -w1.ksi; // CHANGE  
+     //mat_inv(R,R) += w1.ksi * w1.MB(R) * mat_inv(w1.jreal,R)); // OPTIMIZE BELOW
+     blas::ger(w1.ksi,w1.MB(R), mat_inv(w1.jreal,R), mat_inv(R,R));
+     mat_inv(w1.jreal,R)*= -w1.ksi; 
     }
 
     //------------------------------------------------------------------------------------------
@@ -696,7 +709,8 @@ namespace triqs { namespace det_manip {
      // Compute the col B.
      for (size_t i= 0; i<N;i++) w1.MB(i) = f(w1.x, y_values[i] ) -  f(x_values[w1.ireal], y_values[i] ); 
      range R(0,N);
-     w1.MC(R) = mat_inv(R,R).transpose() * w1.MB(R); // CHANGE 
+     //w1.MC(R) = mat_inv(R,R).transpose() * w1.MB(R); // OPTIMIZE BELOW 
+     blas::gemv(1.0, mat_inv(R,R).transpose(), w1.MB(R),0.0,  w1.MC(R));
 
      // compute the newdet
      w1.ksi = (1+w1.MC(w1.ireal));
@@ -715,8 +729,9 @@ namespace triqs { namespace det_manip {
      // impl. Cf case 3
      w1.ksi = - 1/(1+ w1.MC(w1.ireal));
      w1.MC(w1.ireal) = 0;
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,mat_inv(R,w1.ireal),w1.MC(R));
-     mat_inv(R,w1.ireal) *= -w1.ksi; // CHANGE 
+     //mat_inv(R,R) += w1.ksi * mat_inv(R,w1.ireal) * w1.MC(R);
+     blas::ger(w1.ksi,mat_inv(R,w1.ireal),w1.MC(R),  mat_inv(R,R));
+     mat_inv(R,w1.ireal) *= -w1.ksi; 
     }
     //------------------------------------------------------------------------------------------
    private: 

@@ -19,13 +19,8 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/matrix.hpp"
-#include "./src/asserts.hpp"
-#include "./src/linalg/matmul.hpp"
 #include "./src/linalg/eigenelements.hpp"
 #include "./src/blas_lapack/stev.hpp"
-#include <triqs/arrays/asserts.hpp>
-#include <iostream>
 using namespace triqs::arrays;
 using namespace triqs;
 

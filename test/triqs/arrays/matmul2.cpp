@@ -19,9 +19,7 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/matrix.hpp"
-#include "./src/asserts.hpp"
-#include "./src/linalg/matmul.hpp"
+#include <triqs/arrays.hpp>
 #include <iostream>
 using namespace triqs::arrays;
 

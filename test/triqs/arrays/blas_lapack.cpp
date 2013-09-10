@@ -23,9 +23,6 @@
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
-#include "./src/linalg/matmul.hpp"
-#include "./src/linalg/mat_vec_mul.hpp"
-#include "./src/linalg/det_and_inverse.hpp"
 #include "./src/linalg/det_and_inverse.hpp"
 
 #include "./src/blas_lapack/gemm.hpp"

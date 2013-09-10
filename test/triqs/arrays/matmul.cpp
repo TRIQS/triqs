@@ -19,9 +19,7 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/matrix.hpp"
-#include "./src/asserts.hpp"
-#include "./src/linalg/matmul.hpp"
+#include <triqs/arrays.hpp>
 #include <iostream>
 using namespace triqs::arrays;
 
@@ -36,10 +34,7 @@ template<typename T, typename O1, typename O2, typename O3> void test(O1 o1, O2 
   for (int j=0; j<4; ++j)
   { M2(i,j) = 1 + i -j ; }
 
- // The central instruction : note that matmul returns a lazy object 
- // that has ImmutableArray interface, and defines a specialized version assignment
- // As a result this is equivalent to matmul_with_lapack(M1,M2,M3) : there is NO intermediate copy.
- M3 = matmul(M1,M2);
+ M3 = M1 * M2; //matmul(M1,M2);
 
  M4 = M3; 
  M4() = 0;
@@ -57,15 +52,11 @@ template<typename T, typename O1, typename O2, typename O3> void test(O1 o1, O2 
   std::cerr<<"M1 = "<<M1<<std::endl;
   std::cerr<<"M2 = "<<M2<<std::endl;
   std::cerr<<"M3 = "<<M3<<std::endl;
-  std::cerr<<"M4 = "<< matrix<T>(matmul(M1,M2)) <<std::endl;
-  std::cerr<<"M5 = "<< matrix<T>(matmul(M1,M2)) <<std::endl;
+  std::cerr<<"M4 = "<< M1*M2 <<std::endl;
+  std::cerr<<"M5 = "<< M1*M2 <<std::endl;
 
-  for (int i =0; i<2; ++i)
-   for (int j=0; j<2; ++j)
-    M3(i,j) = matmul(M1,M2)(i,j); //[mini_vector<int,2>(i,j)];
  }
 
- std::cerr<<"M3 = "<<M3<<std::endl<<"----------------"<<std::endl;
 
 }
 

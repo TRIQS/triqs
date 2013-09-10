@@ -194,17 +194,19 @@ namespace triqs { namespace arrays {
 #undef IMPL_TYPE
 
 
+ /*
  template<typename ArrayType>
   matrix_view<typename ArrayType::value_type, ArrayType::opt_flags, ArrayType::traversal_order>
   make_matrix_view(ArrayType const & a) { 
    static_assert(ArrayType::rank ==2, "make_matrix_view only works for array of rank 2");
    return a;
   }
+*/
 
  template<typename ArrayType>
-  matrix<typename ArrayType::value_type, ArrayType::opt_flags, ArrayType::traversal_order>
+  matrix<typename ArrayType::value_type> //, ArrayType::opt_flags, ArrayType::traversal_order>
   make_matrix(ArrayType const & a) { 
-   static_assert(ArrayType::rank ==2, "make_matrix_view only works for array of rank 2");
+   static_assert(ArrayType::domain_type::rank ==2, "make_matrix only works for array of rank 2");
    return a;
   }
 

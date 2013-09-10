@@ -1,12 +1,5 @@
 #include "./common.hpp"
-#include "./src/array.hpp"
-#include "./src/matrix.hpp"
-#include "./src/linalg/matmul.hpp"
-#include <iostream>
-#include <triqs/arrays/asserts.hpp>
-
 using std::cout; using std::endl;
-using namespace triqs::arrays;
 using namespace triqs::arrays;
 
 // to be extended to more complex case

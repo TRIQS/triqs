@@ -19,11 +19,7 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-
-#include "./src/array.hpp"
-#include "./src/vector.hpp"
-#include "./src/matrix.hpp"
-#include "./src/linalg/matmul.hpp"
+#include <triqs/arrays.hpp>
 #include <iostream>
 
 using std::cout; using std::endl;

@@ -18,11 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/arrays/vector.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/linalg/matmul.hpp>
-#include <triqs/arrays/linalg/mat_vec_mul.hpp>
-#include <triqs/arrays/blas_lapack/gemv.hpp>
+#include <triqs/arrays.hpp>
 
 using namespace std;
 using namespace triqs;

@@ -24,22 +24,16 @@
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
 #include "./src/linalg/det_and_inverse.hpp"
-#include "./src/linalg/matmul.hpp"
 #include <iostream>
 
 using std::cout; using std::endl;
 using namespace triqs::arrays;
-//using linalg::inverse;
-//using linalg::inverse_and_compute_det;
-//using linalg::determinant;
 
 template<typename Expr >
 matrix_view <typename Expr::value_type>
 eval_as_matrix( Expr const & e) { return matrix<typename Expr::value_type>(e);}
 
 int main(int argc, char **argv) {
- 
- 
 
  try { 
 

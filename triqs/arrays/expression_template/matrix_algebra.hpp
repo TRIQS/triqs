@@ -22,11 +22,48 @@
 #define TRIQS_ARRAYS_EXPRESSION_MATRIX_ALGEBRA_H
 #include "./vector_algebra.hpp"
 #include "../matrix.hpp"
-#include "../linalg/matmul.hpp"
-#include "../linalg/mat_vec_mul.hpp"
 #include "../linalg/det_and_inverse.hpp"
+#include "../blas_lapack/gemv.hpp"
+#include "../blas_lapack/gemm.hpp"
 namespace triqs { namespace arrays {
 
+ // matrix * matrix 
+ template<typename A, typename B, typename Enable = void>  struct _matmul_rvalue {};
+
+ template<typename A, typename B>  struct _matmul_rvalue<A,B, ENABLE_IFC(ImmutableMatrix<A>::value && ImmutableMatrix<B>::value)> { 
+  typedef typename std::remove_const<typename A::value_type>::type V1;
+  typedef typename std::remove_const<typename B::value_type>::type V2;
+  typedef matrix<typename std::decay<decltype( V1{} * V2{})>::type> type;
+ };
+
+ template<typename A, typename B> 
+  typename _matmul_rvalue<A,B>::type
+  operator * (A const & a, B const & b) { 
+   if (second_dim(a) != first_dim(b)) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in A*B "<< a<<" "<< b; 
+   auto R = typename _matmul_rvalue<A,B>::type( first_dim(a), second_dim(b));
+   blas::gemm(1.0,a, b, 0.0, R);
+   return R;
+  }
+
+ // matrix * vector
+ template<typename M, typename V, typename Enable = void>  struct _mat_vec_mul_rvalue {};
+
+ template<typename M, typename V>  struct _mat_vec_mul_rvalue<M,V, ENABLE_IFC(ImmutableMatrix<M>::value && ImmutableVector<V>::value)> { 
+  typedef typename std::remove_const<typename M::value_type>::type V1;
+  typedef typename std::remove_const<typename V::value_type>::type V2;
+  typedef vector<typename std::decay<decltype(V1{} * V2{})>::type> type;
+ };
+
+ template<typename M, typename V> 
+  typename _mat_vec_mul_rvalue<M,V>::type
+  operator * (M const & m, V const & v) { 
+   if (second_dim(m) != v.size()) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in Matrix*Vector "<< m<<" "<< v; 
+   auto R = typename _mat_vec_mul_rvalue<M,V>::type(first_dim(m));
+   blas::gemv(1.0,m,v,0.0,R);
+   return R;
+  }
+ 
+ // expression template 
  template<typename Tag, typename L, typename R, bool scalar_are_diagonal_matrices= false> 
   struct matrix_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) { 
    typedef typename keeper_type<L,scalar_are_diagonal_matrices>::type L_t;
@@ -34,7 +71,7 @@ namespace triqs { namespace arrays {
    static_assert( get_rank<R_t>::value==0 || get_rank<L_t>::value==0 || get_rank<L_t>::value == get_rank<R_t>::value, "rank mismatch in matrix operations");
    typedef typename std::result_of<operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_type;
    typedef typename std::remove_cv< typename std::remove_reference<typename std::result_of<combine_domain(L_t,R_t)>::type>::type>::type domain_type;
-   
+
    L_t l; R_t r;
    template<typename LL, typename RR> matrix_expr(LL && l_, RR && r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
 
@@ -91,16 +128,6 @@ namespace triqs { namespace arrays {
  template<typename A1> typename std::enable_if<ImmutableMatrix<A1>::value, matrix_unary_m_expr<A1>>::type
   operator - (A1 const & a1) { return {a1};} 
 
- template<typename Expr > matrix <typename Expr::value_type>
-  make_matrix( Expr const & e) { return matrix<typename Expr::value_type>(e);}
-
- template<typename M1, typename M2> // matrix * matrix
-  typename boost::enable_if< mpl::and_<ImmutableMatrix<M1>, ImmutableMatrix<M2> >, matmul_lazy<M1,M2> >::type
-  operator* (M1 const & a, M2 const & b) { return matmul_lazy<M1,M2>(a,b); }
-
- template<typename M, typename V> // matrix * vector
-  typename boost::enable_if< mpl::and_<ImmutableMatrix<M>, ImmutableVector<V> >, mat_vec_mul_lazy<M,V> >::type
-  operator* (M const & m, V const & v) { return mat_vec_mul_lazy<M,V>(m,v); }
 
  template<typename A, typename M> // anything / matrix ---> anything * inverse(matrix)
   typename boost::lazy_enable_if< ImmutableMatrix<M>, type_of_mult<A, inverse_lazy <M> > >::type
