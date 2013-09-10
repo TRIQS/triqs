@@ -180,7 +180,9 @@ namespace triqs { namespace gfs {
  template<typename ... Meshes, typename T, ull_t OptionsFlags >
   arrays::array_view<T, sizeof...(Meshes),OptionsFlags, arrays::indexmaps::mem_layout::fortran_order(sizeof...(Meshes)) >
   reinterpret_linear_array(mesh_product<Meshes...> const & m, arrays::array_view<T,1,OptionsFlags> const & A) {
-   static int constexpr rank = sizeof...(Meshes);
+   return { {m.all_size_as_mini_vector()}, A.storage()};
+  }
+  /* static int constexpr rank = sizeof...(Meshes);
    typedef arrays::array_view<T, sizeof...(Meshes),OptionsFlags, arrays::indexmaps::mem_layout::fortran_order(rank)> return_t;
    typedef typename return_t::indexmap_type im_t;
    auto l = m.all_size_as_mini_vector();
@@ -188,7 +190,11 @@ namespace triqs { namespace gfs {
    std::ptrdiff_t s= 1;
    for (int u=0; u<rank; ++u) { sv[u] = s; s *= l[u];} // fortran type folding 
    return return_t (im_t (l,sv,0) , A.storage());
-  }
+
+   // why fortran ??
+   // why compute the stride ?? just use return { {l}, A.storage()} ;
+*/
+
 
 
 }}
