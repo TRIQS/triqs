@@ -100,9 +100,15 @@ namespace triqs { namespace arrays { namespace storages {
    private:
    friend class shared_block<ValueType,!Weak>;
    friend class boost::serialization::access;
-   template<class Archive> void serialize(Archive & ar, const unsigned int version) { 
-    ar & boost::serialization::make_nvp("ptr",sptr); data_ = (sptr ? sptr->p : nullptr); s = (sptr ? sptr->size() : 0);
-   }
+   template<class Archive>
+    void save(Archive & ar, const unsigned int version) const { ar << boost::serialization::make_nvp("ptr",sptr); }
+   template<class Archive>
+    void load(Archive & ar, const unsigned int version) { 
+     if (sptr) dec_ref<Weak>(sptr); 
+     ar >> boost::serialization::make_nvp("ptr",sptr); data_ = (sptr ? sptr->p : nullptr); s = (sptr ? sptr->size() : 0);
+     if (sptr) inc_ref<Weak>(sptr);
+    }
+   BOOST_SERIALIZATION_SPLIT_MEMBER();
   };
 
 }}}//namespace  
