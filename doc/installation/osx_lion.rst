@@ -41,7 +41,7 @@ Installation of the dependencies
      #until this is back in the master.
      #When 1.55 is out, the regular brew formula should work again ...
      ### brew install boost --without-single --with-mpi --with-c++11
-     brew install  http://ipht.cea.fr/triqs/boost.rb  --without-single --with-mpi --with-c++11 -v
+     brew install  http://ipht.cea.fr/triqs/formulas/boost.rb  --without-single --with-mpi --with-c++11 -v
 
 5. Install the required python packages: ::
     
