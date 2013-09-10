@@ -79,20 +79,11 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    template<ull_t Opt2, ull_t To2> map (map<Rank,Opt2,To2> const & C):
     mydomain(C.domain()), strides_(C.strides()), start_shift_(C.start_shift()), memory_order_ (C.memory_indices_layout()) {}
 
-   // value semantics
+   // regular type
    map (map const & C) = default;
-   map (map && C) { *this = std::move(C);}
-   friend void swap(map & a, map & b) {
-    swap(a.mydomain, b.mydomain); std::swap(a.start_shift_,b.start_shift_); 
-#ifdef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
-    std::swap(a.memory_order_.value, b.memory_order_.value);// why is there a link pb on icc ? temporary fix...
-#else
-    std::swap(a.memory_order_, b.memory_order_);
-#endif
-    swap(a.strides_, b.strides_);
-   }
+   map (map && C) = default;
    map & operator = (map const & m) = default;
-   map & operator = (map && m) { swap(*this,m); return *this;}
+   map & operator = (map && m)  = default;
 
    /// Returns the shift in position of the element key.
    template <typename KeyType>
