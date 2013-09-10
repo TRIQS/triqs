@@ -39,14 +39,14 @@ namespace triqs { namespace arrays {
 
  template<class A>
   typename A::value_type max_element(A const &a) { 
-   //typedef typename A::value_type const & T; return fold ( static_cast<T(*)(T,T)>(std::max<T>))  ( a, get_first_element(a)); 
-   return fold (std::max<typename A::value_type const & >)  (a, get_first_element(a)); 
+   typedef typename A::value_type T;
+   return fold ([](T const & a, T const & b) { return std::max(a,b);} )  (a, get_first_element(a)); 
   }
 
  template<class A>
   typename A::value_type min_element(A const &a) { 
-   // typedef typename A::value_type const & T; return fold ( static_cast<T(*)(T,T)>(std::min<T>))  ( a, get_first_element(a)); 
-   return fold (std::min<typename A::value_type const & >)  (a, get_first_element(a)); 
+   typedef typename A::value_type T;
+   return fold ([](T const & a, T const & b) { return std::min(a,b);} )  (a, get_first_element(a)); 
   }
 
  template <class A>

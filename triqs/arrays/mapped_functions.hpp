@@ -22,84 +22,52 @@
 #define TRIQS_ARRAYS_MAPPED_FNT_H
 #include "./functional/map.hpp"
 #include <boost/preprocessor/seq/for_each.hpp>
-#include <boost/utility/result_of.hpp>
-
 namespace triqs { namespace arrays {
 
- using std::abs;
- struct abs_wrap { 
-   template<typename Sig> struct result;
-   template<typename This, typename A> struct result<This(A)> { typedef A type;};
-   template<typename This, typename A> struct result<This(std::complex<A>)> { typedef A type;};
-   static const int arity =1;
-   template<typename A> typename result<abs_wrap(A)>::type operator()( A const & a) const { return abs(a);}
- };
-
- template <typename A>
-  typename std::result_of<map_impl<abs_wrap>(A)>::type abs(A const & a) { return map(abs_wrap())(a); }
+ //C++14 will simply be ... 
+ //template <typename A> decltype(auto) abs(A && a) { return map( [](auto const &x) { using std::abs; return abs(a);}, std::forward<A>(a));}
 
  using std::pow;
  template<typename T> TYPE_ENABLE_IF(T, std::is_integral<T>) pow(T x, int n) { return (n==0 ? 1 : pow(x,n-1)*x);}
  struct pow_wrap { 
-   template<typename Sig> struct result;
-   template<typename This, typename A> struct result<This(A)> { typedef A type;};
-   static const int arity =1;
-   int n; pow_wrap(int n_): n(n_){}
-   template<typename A> typename result<abs_wrap(A)>::type operator()( A const & a) const { return pow(a,n);}
+   int n; 
+   template<typename A> A operator()( A const & a) const { return pow(a,n);}
  };
 
  template <typename A>
-  typename boost::result_of<map_impl<pow_wrap>(A)>::type pow(A const & a, int n) { return map(pow_wrap(n))(a); }
+  typename boost::lazy_enable_if_c<!ImmutableMatrix<A>::value,std::result_of<map_impl<pow_wrap,1>(A)>>::type
+  pow(A && a, int n) { return map(pow_wrap{n})(std::forward<A>(a)); }
 
 #define MAP_IT(FNT) \
  using std::FNT;\
- struct FNT##_wrap {\
-   template<typename Sig> struct result;\
-   template<typename This, typename A> struct result<This(A)> { typedef A type;};\
-   static const int arity =1;\
-   template<typename A> typename result<FNT##_wrap(A)>::type operator()( A const & a) const { return FNT(a);}\
- };\
- template <typename A>\
-  typename boost::result_of<map_impl<FNT##_wrap>(A)>::type FNT(A const & a) { return map(FNT##_wrap())(a); }
-
-#define TRIQS_ARRAYS_MATH_FNT1 (cos)(sin)(tan)(cosh)(sinh)(tanh)(acos)(asin)(atan)(exp)(log)(sqrt)(floor)
+ struct __triqs_##FNT##_wrap { template<typename A> auto operator()(A const & a) const DECL_AND_RETURN(FNT(a)); };\
+ template <typename A> \
+ typename boost::lazy_enable_if_c<ImmutableCuboidArray<A>::value,std::result_of<map_impl<__triqs_##FNT##_wrap,1>(A)>>::type\
+ FNT(A && a) { return map(__triqs_##FNT##_wrap{})(std::forward<A>(a)); }
+ 
+#define TRIQS_ARRAYS_MATH_FNT (abs)(real)(imag)(floor)
 
 #define AUX(r, data, elem) MAP_IT(elem)
- BOOST_PP_SEQ_FOR_EACH(AUX , nil , TRIQS_ARRAYS_MATH_FNT1);
+ BOOST_PP_SEQ_FOR_EACH(AUX , nil , TRIQS_ARRAYS_MATH_FNT);
 #undef AUX  
 #undef MAP_IT
+#undef TRIQS_ARRAYS_MATH_FNT
 
-
- using std::real;
- struct real_wrap { 
-   template<typename Sig> struct result;
-   template<typename This, typename A> struct result<This(A)> { typedef A type;};
-   template<typename This, typename A> struct result<This(std::complex<A>)> { typedef A type;};
-   static const int arity =1;
-   //   template<typename A> auto operator()( A const & a) const -> decltype(real(a)) { return real(a);}
-   template<typename A> typename result<real_wrap(A)>::type operator()( A const & a) const { return real(a);}
- };
-
- template <typename A>
-  //auto real(A const & a) -> decltype( map(real_wrap())(a)) { return map(real_wrap())(a); }
-  //  typename std::result_of<map(real_wrap)(A)>::type real(A const & a) { return map(real_wrap())(a); }
-  typename boost::result_of<map_impl<real_wrap>(A)>::type real(A const & a) { return map(real_wrap())(a); }
+// Functions only defined for vector, array but NOT for matrix. They act element wise.
+#define MAP_IT(FNT) \
+ using std::FNT;\
+ struct __triqs_##FNT##_wrap { template<typename A> auto operator()(A const & a) const DECL_AND_RETURN(FNT(a)); };\
+ template <typename A> \
+ typename boost::lazy_enable_if_c<ImmutableArray<A>::value||ImmutableVector<A>::value,std::result_of<map_impl<__triqs_##FNT##_wrap,1>(A)>>::type\
+ FNT(A && a) { return map(__triqs_##FNT##_wrap{})(std::forward<A>(a)); }
  
- using std::imag;
- struct imag_wrap { 
-   template<typename Sig> struct result;
-   template<typename This, typename A> struct result<This(A)> { typedef A type;};
-   template<typename This, typename A> struct result<This(std::complex<A>)> { typedef A type;};
-   static const int arity =1;
-   //   template<typename A> auto operator()( A const & a) const -> decltype(imag(a)) { return imag(a);}
-   template<typename A> typename result<imag_wrap(A)>::type operator()( A const & a) const { return imag(a);}
- };
+#define TRIQS_ARRAYS_MATH_FNT (exp)(cos)(sin)(tan)(cosh)(sinh)(tanh)(acos)(asin)(atan)(log)(sqrt)
 
- template <typename A>
-  //auto imag(A const & a) -> decltype( map(imag_wrap())(a)) { return map(imag_wrap())(a); }
-  //  typename std::result_of<map(imag_wrap)(A)>::type imag(A const & a) { return map(imag_wrap())(a); }
-  typename boost::result_of<map_impl<imag_wrap>(A)>::type imag(A const & a) { return map(imag_wrap())(a); }
-
+#define AUX(r, data, elem) MAP_IT(elem)
+ BOOST_PP_SEQ_FOR_EACH(AUX , nil , TRIQS_ARRAYS_MATH_FNT);
+#undef AUX  
+#undef MAP_IT
+#undef TRIQS_ARRAYS_MATH_FNT
 
 }}//namespace triqs::arrays 
 #endif

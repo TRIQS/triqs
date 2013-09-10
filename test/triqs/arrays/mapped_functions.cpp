@@ -22,13 +22,14 @@
 
 #include "./src/mapped_functions.hpp"
 #include "./src/matrix.hpp"
+#include "./src/array.hpp"
 #include <iostream>
 
-namespace tqa = triqs::arrays;
+using namespace triqs::arrays;
 
 template<typename T> void test( T val=1 ) { 
- tqa::matrix<T> A(3,3, FORTRAN_LAYOUT),B(3,3, FORTRAN_LAYOUT);
-
+ matrix<T> A(3,3, FORTRAN_LAYOUT),B(3,3, FORTRAN_LAYOUT);
+ typedef array_view<T,2> V;
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
   { A(i,j) = (i+2*j+1); B(i,j) = (i-j);}
@@ -36,8 +37,9 @@ template<typename T> void test( T val=1 ) {
  A *=val; B*=val;
  T s = 10;
  TEST(A);
- TEST(make_matrix(pow(A,2)));
- TEST(make_matrix(cosh(A)));
+
+ TEST(make_matrix(pow(V(A),2)));
+ TEST(make_matrix(cosh(V(A))));
  TEST(B);
  TEST(abs(B));
  TEST(make_matrix(abs(B)));
@@ -48,6 +50,12 @@ template<typename T> void test( T val=1 ) {
  TEST(make_matrix(real(B)));
  TEST(make_matrix(imag(B)));
 
+ auto aa = array<T,2>{ { 1,2}, {3,4}};
+ TEST(make_matrix(exp(aa)));
+
+ // does not compile, since exp is only element wise at the moment
+ // to do : implement it for matrix...
+ //TEST(make_matrix(exp( matrix<double>{{ 1,2}, {3,4}} )));
 }
 
 int main(int argc, char **argv) {

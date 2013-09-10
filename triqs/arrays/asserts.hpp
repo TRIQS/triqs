@@ -30,7 +30,7 @@ namespace triqs { namespace arrays {
  template<class ArrayType1, class ArrayType2 >
   void assert_all_close( ArrayType1 const & A, ArrayType2 const & B, double precision, bool relative = false) {
    typedef typename ArrayType1::value_type F;
-   auto Abs =  map( boost::function<double(F)> (assert_abs<F>) );
+   auto Abs =  map( std::function<double(F)> (assert_abs<F>) );
    auto r =  max_element (Abs(A-B));
    auto r2 =  max_element (Abs(A) + Abs(B));
    if ( r > (relative ? precision * r2 : precision) )

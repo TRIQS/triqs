@@ -22,6 +22,8 @@
 #define TRIQS_ARRAYS_EXPRESSION_MAP_H
 #include "../impl/common.hpp"
 #include <functional>
+//#include "../../utility/function_arg_ret_type.hpp"
+
 namespace triqs { namespace arrays { 
  
  template<class F, int arity=F::arity> class map_impl;
@@ -30,105 +32,80 @@ namespace triqs { namespace arrays {
   * Given a function f : arg_type -> result_type, map(f) is the function promoted to arrays
   * map(f) : array<arg_type, N, Opt> --> array<result_type, N, Opt> 
   */
- template<class F> map_impl<F,1> map (F const & f) { return map_impl<F,1>(f,true); }
- template<class F> map_impl<F,2> map2 (F const & f) { return map_impl<F,2>(f,true); }
+ //template<class F> map_impl<F,utility::function_arg_ret_type<F>::arity> map  (F f) { return {std::move(f),true}; }
 
+ template<class F> map_impl<F,1> map  (F f) { return {std::move(f),true}; }
+ template<class F> map_impl<F,2> map2 (F f) { return {std::move(f),true}; }
+ 
  // ----------- implementation  -------------------------------------
+
+ template<typename F, int arity, bool is_vec, typename ... A> struct map_impl_result;
+
+ template<typename F, bool is_vec, typename A> struct map_impl_result<F,1,is_vec,A> { 
+  typedef typename std::result_of<F(typename std::remove_reference<A>::type::value_type)>::type value_type;
+  typedef typename std::remove_reference<A>::type::domain_type domain_type;
+  F f; 
+  typename std::add_const<A>::type a; // A is a T or a T& : add const to them.
+  domain_type domain() const { return a.domain(); } 
+  template<typename ... Args> value_type operator() (Args && ... args) const { return f(a(std::forward<Args>(args)...)); }
+  friend std::ostream & operator<<(std::ostream & out, map_impl_result const & x){ return out<<"mapping result";}
+  // rest is only for vector 
+  template<bool vec = is_vec> 
+   TYPE_ENABLE_IFC(size_t,vec) size() const { return a.size();}
+  template<typename Args, bool vec=is_vec>  
+   TYPE_ENABLE_IFC(value_type,vec) operator[] (Args && args) const { return f(a[std::forward<Args>(args)]);}
+ };
+
+ // possible to generalize to N order using tuple techniques ...
+ template<typename F, bool is_vec, typename A, typename B> struct map_impl_result<F,2,is_vec,A,B> { 
+  typedef typename std::result_of<F(typename remove_cv_ref<A>::type::value_type, typename remove_cv_ref<B>::type::value_type)>::type value_type;
+  typedef typename remove_cv_ref<A>::type::domain_type domain_type;
+  F f; 
+  typename std::add_const<A>::type a;
+  typename std::add_const<B>::type b;
+  domain_type domain() const { return a.domain(); } 
+  template<typename ... Args> value_type operator() (Args && ... args) const { return f(a(std::forward<Args>(args)...),b(std::forward<Args>(args)...)); }
+  friend std::ostream & operator<<(std::ostream & out, map_impl_result const & x){ return out<<"mapping result";}
+  // rest is only for vector 
+  template<bool vec = is_vec> 
+   TYPE_ENABLE_IFC(size_t,vec) size() const { return a.size();}
+  template<typename Args, bool vec=is_vec>  
+   TYPE_ENABLE_IFC(value_type,vec) operator[] (Args && args) const { return f(a[std::forward<Args>(args)],b[std::forward<Args>(args)]);}
+ };
+
+ template<typename ... T> struct _and; 
+ template<typename T0, typename ... T> struct _and<T0, T...> : std::integral_constant<bool, T0::value && _and<T...>::value>{}; 
+ template<typename T> struct _and<T> : T{};
+
+ template<typename F, int arity, bool b, typename ... A> struct ImmutableCuboidArray<map_impl_result<F,arity,b,A...>> : std::true_type{};
+ 
+ template<typename F, int arity, bool b, typename ... A> struct ImmutableArray <map_impl_result<F,arity,b,A...>> : _and<typename ImmutableArray <typename std::remove_reference<A>::type>::type...>{};
+ template<typename F, int arity, bool b, typename ... A> struct ImmutableMatrix<map_impl_result<F,arity,b,A...>> : _and<typename ImmutableMatrix<typename std::remove_reference<A>::type>::type...>{};
+ template<typename F, int arity, bool b, typename ... A> struct ImmutableVector<map_impl_result<F,arity,b,A...>> : _and<typename ImmutableVector<typename std::remove_reference<A>::type>::type...>{};
+ 
+ //template<typename F, int arity, bool b, typename A> struct ImmutableArray <map_impl_result<F,arity,b,A>> : ImmutableArray <A>{};
+ //template<typename F, int arity, bool b, typename A> struct ImmutableMatrix<map_impl_result<F,arity,b,A>> : ImmutableMatrix<A>{};
+ //template<typename F, int arity, bool b, typename A> struct ImmutableVector<map_impl_result<F,arity,b,A>> : ImmutableVector<A>{};
 
  // NB The bool is to make constructor not ambiguous
  // clang on os X with lib++ has a pb otherwise (not clear what the pb is)
- template<class F> class map_impl<F,1>  { 
+ template<class F, int arity> class map_impl  { 
   F f;
   public :   
-//  map_impl(F const & f_):f(f_) {}
-  map_impl(F const & f_, bool):f(f_) {}
-  map_impl(F && f_, bool):f(f_) {}
+  map_impl(F f_, bool):f(std::move(f_)) {}
   map_impl(map_impl const &) = default;
-  //map_impl(map_impl &&) = default;
+  map_impl(map_impl &&)      = default;
+  map_impl & operator = (map_impl const &) = default;
+  map_impl & operator = (map_impl &&)      = default;
 
-  template<typename A, typename Enable = void> class m_result;
-
-  template<typename A> class m_result<A,typename boost::enable_if<ImmutableArray<A> >::type> : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) { 
-    public:
-     typedef typename std::result_of<F(typename A::value_type)>::type value_type;
-     typedef typename A::domain_type domain_type;
-     A const & a; F f;
-     m_result(F const & f_, A const & a_):a(a_),f(f_) {}
-     domain_type domain() const { return a.domain(); } 
-     template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
-     friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
-   };
-  
-  template<typename A> class m_result<A,typename boost::enable_if<ImmutableMatrix<A> >::type> : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) { 
-    public:
-     typedef typename std::result_of<F(typename A::value_type)>::type value_type;
-     typedef typename A::domain_type domain_type;
-     A const & a; F f;
-     m_result(F const & f_, A const & a_):a(a_),f(f_) {}
-     domain_type domain() const { return a.domain(); } 
-     template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
-     friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
-   };
-
-  template<typename A> class m_result<A,typename boost::enable_if<ImmutableVector<A> >::type> : TRIQS_CONCEPT_TAG_NAME(ImmutableVector) { 
-    public:
-     typedef typename std::result_of<F(typename A::value_type)>::type value_type;
-     typedef typename A::domain_type domain_type;
-     A const & a; F f;
-     m_result(F const & f_, A const & a_):a(a_),f(f_) {}
-     domain_type domain() const { return a.domain(); } 
-     size_t size() const { return a.size();}
-     template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
-     value_type operator() ( size_t i) const { return f(a(i)); }
-     friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
-   };
-  
-
-  template<typename Sig> struct result;
-  template<typename This, typename A> struct result<This(A)> { typedef m_result<A> type;};
-
-  template< class A > m_result<A> operator()(A const & a) const { 
-    //static_assert( (ImmutableCuboidArray<A>::value), "map : A does not model ImmutableCuboidArray");
-    return m_result<A>(f,a);
-   } 
+  template<typename ... A> map_impl_result<F,arity,_and<typename ImmutableVector<A>::type...>::value,A...> 
+   operator()(A&&... a) const { return {f,std::forward<A>(a)...}; } 
 
   friend std::ostream & operator<<(std::ostream & out, map_impl const & x){ return out<<"map("<<"F"<<")";}
  };
 
- // ----------- // TO DO : make this with preprocessor ....
- template<class F> class map_impl<F,2>  { 
-  F f;
-  public : 
-  map_impl(F const & f_, bool):f(f_) {}
-  map_impl(F && f_, bool):f(f_) {}
-  map_impl(map_impl const &) = default;
-  //map_impl(map_impl &&) = default;
-
-  template<class A, class B> class m_result : TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray) { 
-    static_assert( (std::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
-   public:
-    typedef typename std::result_of<F(typename A::value_type,typename B::value_type)>::type value_type;
-    typedef typename A::domain_type domain_type;
-    A const & a; B const & b; F f;
-    m_result(F const & f_, A const & a_, B const & b_):a(a_),b(b_),f(f_) {
-     if (a.domain() != b.domain()) TRIQS_RUNTIME_ERROR<<"map2 : domain mismatch";
-    }
-    domain_type domain() const { return a.domain(); } 
-    template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...),b(args...)); }
-    friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
-  };
-
-  template<typename Sig> struct result;
-  template<typename This, typename A,typename B> struct result<This(A,B)> { typedef m_result<A,B> type;};
- 
-  template< class A, class B > m_result<A,B> operator()(A const & a, B const & b) { 
-    static_assert( (ImmutableCuboidArray<A>::value), "map1 : A does not model ImmutableCuboidArray");
-    static_assert( (ImmutableCuboidArray<B>::value), "map1 : B does not model ImmutableCuboidArray");
-    return m_result<A,B>(f,a,b);
-   } 
-
-  friend std::ostream & operator<<(std::ostream & out, map_impl const & x){ return out<<"map("<<"F"<<")";}
- };
 }}//namespace triqs::arrays
 #endif
+
+
 

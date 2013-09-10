@@ -28,37 +28,24 @@
 namespace triqs { namespace arrays {
 
  template<class F> 
-  class fold_worker  { 
+  struct fold_worker  { 
    F f;
-   typedef typename boost::remove_const<typename boost::remove_reference<typename F::result_type >::type>::type result_type;
    
-   template<class A>
-    struct fold_func_adaptor { 
-     A const & b;
-     F f; result_type r;
-     fold_func_adaptor(F f_, A const & a_,typename A::value_type init ):b(a_), f(f_) { r= init;}
-     template<typename ... Args> void operator()(Args const & ... args) { r = f(r,b(args...)); }
+   template<class A, class R> struct fold_func_adaptor { 
+     F const & f; A const & a; R & r;
+     template<typename ... Args> void operator()(Args const & ... args) { r = f(r,a(args...)); }
     };
 
-   public:
-
-   fold_worker ( F const & f_):f(f_) {} 
-
-   template<class A>   
-    result_type operator() (A const & a, typename A::value_type init = typename A::value_type() )  const { 
-     fold_func_adaptor<A> func(f,a,init);
-     //fold_func_adaptor<typename A::value_type> func(f,init);
-     foreach(a,std::ref(func));
-     //foreach(a,boost::ref(func));
-     return func.r;
+   template<class A, class R>   
+    R operator() (A const & a, R init)  const { 
+     foreach(a, fold_func_adaptor<A,R> {f,a,init});
+     return init;
     }
+
+   template<class A> typename A::value_type operator() (A const & a)  const { return (*this)(a, typename A::value_type{});}
   };
 
- template<class F> fold_worker<F> fold (F const & f) { return fold_worker<F>(f);}
-
- template<typename R, typename A1> 
-  fold_worker< boost::function<R(A1,A1)> >
-  fold (R (*f)(A1,A1)) { return fold( boost::function<R(A1,A1)>(f)); } 
+ template<class F> fold_worker<F> fold (F f) { return {std::move(f)};}
 
 }}//namespace triqs::arrays
 

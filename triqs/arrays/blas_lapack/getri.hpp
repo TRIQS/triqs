@@ -42,8 +42,8 @@ namespace triqs { namespace arrays { namespace lapack {
   }
  }
 
- inline size_t r_round(double x) { return round(x);}
- inline size_t r_round(std::complex<double> x) { return round(real(x));}
+ inline size_t r_round(double x) { return std::round(x);}
+ inline size_t r_round(std::complex<double> x) { return std::round(std::real(x));}
  /**
   * Calls getri on a matrix or view
   * Takes care of making temporary copies if necessary

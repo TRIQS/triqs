@@ -5,7 +5,6 @@
 
 namespace tqa=triqs::arrays;
 namespace tql=triqs::clef;
-namespace mpl=boost::mpl;
 
 using tqa::m_index;
 
@@ -57,7 +56,9 @@ int main () {
  test<TRAVERSAL_ORDER_FORTRAN>();
  test<TRAVERSAL_ORDER_C>();
 
- // an alternative syntax ? Why to use the npl here ??
- //auto V = tqa::group_indices( A(i_,j_,k_,l_), m_index(i_,j_), m_index(k_,l_));
-
+ // template dans le namespace clef pour ADL et enable sur le concept de A ...
+ // an alternative syntax ? 
+ //auto V = group_indices( A(i_,j_,k_,l_), var(i_,j_), var(k_,l_));
+ // match A(...), deduce the int of hte ph, and make a finder for a ph in it
+ // finder<Expr>::find<i>::value --> m_index<...>
 }
