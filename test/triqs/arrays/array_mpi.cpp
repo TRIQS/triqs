@@ -24,6 +24,7 @@
 #include <boost/mpi.hpp>
 #include <iostream>
 #include <sstream>
+#include <triqs/utility/c14.hpp>
 
 using std::cout; using std::endl;
 using namespace triqs::arrays;
@@ -43,7 +44,7 @@ int main(int argc, char* argv[])
 
  if (world.rank() ==0) std::cout<<" A = "<<A<<std::endl;
 
- boost::mpi::reduce (world, A,C, std::plus<array<long,2> >(),0);
+ boost::mpi::reduce (world, A,C, std::c14::plus<>(),0);
 
  int s= world.size();
  if (world.rank() ==0) std::cout<<" C = "<<C<< "  should be "<< array<long,2>( (s*(s+1)/2) * A) <<std::endl;
