@@ -35,6 +35,8 @@ namespace triqs { namespace gfs {
   typedef gf_mesh<refreq,Opt> m1_t; 
   typedef gf_mesh<imtime,Opt> m2_t; 
   typedef mesh_product<m1_t,m2_t> B;
+  gf_mesh () = default;
+  gf_mesh(B const & x) : B(x) {}
   gf_mesh (double wmin, double wmax, size_t n_freq, double beta, statistic_enum S, size_t nt, mesh_kind mk=full_bins ) :
    B {gf_mesh<refreq,Opt>(wmin,wmax,n_freq), gf_mesh<imtime,Opt>(beta,S,nt,mk)} {}
  };

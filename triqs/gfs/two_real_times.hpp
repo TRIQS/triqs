@@ -101,7 +101,7 @@ namespace triqs { namespace gfs {
    
    static gf_t make_gf(double tmax, double n_time_slices) {
     auto m =  gf_mesh<two_real_times,Opt>(tmax, n_time_slices);
-    typename gf_t::data_non_view_t A(m.size()); A() =0;
+    typename gf_t::data_regular_t A(m.size()); A() =0;
     return gf_t (m, std::move(A), nothing(), nothing() ) ;
    }
   };
@@ -112,7 +112,7 @@ namespace triqs { namespace gfs {
  
  // from g(t,t') and t, return g(t-t') for any t'>t 
  // 
- gf<retime> slice (gf_view<two_real_times> const & g, double t) { 
+ inline gf<retime> slice (gf_view<two_real_times> const & g, double t) { 
   auto const & m = std::get<0> (g.mesh().components());   //one-time mesh
   long it = get_closest_mesh_pt_index(m, t);              //index of t on this mesh
   long nt = m.size() - it;
