@@ -90,7 +90,7 @@ namespace triqs { namespace gfs {
  local::tail_view get_tail(gf_view<legendre> const & gl, int size = 10, int omin = -1) {
 
    auto sh = gl.data().shape().front_pop();
-   local::tail t(sh, size, omin);
+   local::tail t(sh);
    t.data() = 0.0;
 
    for (int p=1; p<=t.order_max(); p++)

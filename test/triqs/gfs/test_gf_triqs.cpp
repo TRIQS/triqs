@@ -94,9 +94,7 @@ void test_1(){
  /* ----- Fourier ----- */
  size_t N1=1;
  size_t N2=1; 
- size_t size_ = 5;
- long order_min=-1;
- triqs::gfs::local::tail t(N1,N2, size_, order_min);
+ triqs::gfs::local::tail t(N1,N2);
  t(1)=1;
 
  auto Gt =  make_gf<imtime> (beta, Fermion, make_shape(1,1),100,full_bins, t);

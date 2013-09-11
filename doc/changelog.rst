@@ -6,10 +6,15 @@ Changelog
 
 This document describes the main changes in TRIQS.
 
-From TRIQS 0.x to TRIQS 1.0
----------------------------
+master (latest commit on github)
+--------------------------------
 
-There have been changes from versions 0.x to 1.0 that will most likely have
+* The tails now have fixed size avoid mpi problems
+
+version 1.0.0
+-------------
+
+There have been changes from versions 0.x to 1.0.0 that will most likely have
 consequences for your scripts and archives.
 
 Python classes

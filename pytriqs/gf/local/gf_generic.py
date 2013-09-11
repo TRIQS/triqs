@@ -238,15 +238,10 @@ class GfGeneric:
         else:
             raise RuntimeError, " argument type not recognized in += for %s"%arg
         if rhs !=None :
-            new_tail = TailGf(shape=lhs.tail.shape, size=lhs.tail.size, order_min=min(0,lhs.tail.order_min))
+            new_tail = TailGf(shape=lhs.tail.shape)
             new_tail[0][:,:] = rhs
-             # if it is add, then we CAN change the shape of the tail, and
-            # reassign it since it is a new object, just create (then use the
-            # _singularity object.
-            # otherwise we can not, since it could be view, so we use the tail
-            # and if shape is not correct, = i.e. copy_from will raise an error
-            if is_add : lhs._singularity = lhs.tail + new_tail 
-            else : lhs.tail = lhs.tail + new_tail 
+            if is_add : lhs._singularity = lhs.tail + new_tail
+            else : lhs.tail = lhs.tail + new_tail
         return lhs
  
     def __iadd__(self, arg):
@@ -275,10 +270,10 @@ class GfGeneric:
         else:
             raise RuntimeError, " argument type not recognized in -= for %s"%arg
         if rhs !=None :
-            new_tail = TailGf(shape=lhs.tail.shape, size=lhs.tail.size, order_min=min(0,lhs.tail.order_min))
+            new_tail = TailGf(shape=lhs.tail.shape)
             new_tail[0][:,:] = rhs
-            if is_sub : lhs._singularity = lhs.tail - new_tail 
-            else : lhs.tail = lhs.tail - new_tail 
+            if is_sub : lhs._singularity = lhs.tail - new_tail
+            else : lhs.tail = lhs.tail - new_tail
         return lhs
  
     def __isub__(self, arg):
@@ -336,7 +331,7 @@ class GfGeneric:
       MatrixStack(self.data).matmul_L_R(L, G.data, R)
 
       # this might be a bit slow
-      t = TailGf(shape=(N1,N2), size=G.tail.order_max-G.tail.order_min+1, order_min=G.tail.order_min)
+      t = TailGf(shape=(N1,N2))
       for o in range(t.order_min, t.order_max+1):
         t[o] = numpy.dot(L, numpy.dot(G.tail[o], R))
       self.tail = t

@@ -3,7 +3,7 @@ from arrays cimport *
 cdef extern from "triqs/gfs/local/tail.hpp" : 
     cdef cppclass tail "triqs::python_tools::cython_proxy<triqs::gfs::local::tail_view>"  :
         tail()
-        tail(array_view[dcomplex,THREE], int, array_view[long,TWO]) except +
+        tail(array_view[dcomplex,THREE], array_view[long,TWO], long) except +
         matrix_view[dcomplex] operator()(int) except +
         array_view[dcomplex,THREE] data()
         array_view[long,TWO] mask_view() except +

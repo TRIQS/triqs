@@ -5,8 +5,8 @@ cdef class TailGf:
     cdef tail _c
     def __init__(self, **d):
         """
-        TailGf ( shape, size, order_min )
-        TailGf ( data, order_min )
+        TailGf ( shape )
+        TailGf ( data, mask, order_min )
         """
         c_obj = d.pop('encapsulated_c_object', None)
         if c_obj :
@@ -18,19 +18,26 @@ cdef class TailGf:
         if bss :
             assert d == {}, "Internal error : boost_serialization_string must be the only argument"
             boost_unserialize_into(<std_string>bss,self._c) 
-            return 
+            return
 
-        omin = d.pop('order_min')
+        # default values
+        omin = -1
+        omax =  8
+
         a = d.pop('data',None)
         if a==None :
-            (N1, N2), s = d.pop('shape'), d.pop('size')
-            a = numpy.zeros((s,N1,N2), numpy.complex)
+            (N1, N2) = d.pop('shape')
+            a = numpy.zeros((omax-omin+1,N1,N2), numpy.complex)
         m = d.pop('mask',None)
         if m==None :
             m = numpy.zeros(a.shape[1:3], int)
-            m.fill(omin+a.shape[0]-1)
+            m.fill(omax)
+        o = d.pop('order_min',None)
+        if o==None: o = omin
+
         assert len(d) == 0, "Unknown parameters in TailGf constructions %s"%d.keys()
-        self._c = tail(array_view[dcomplex,THREE](a), omin, array_view[long,TWO](m))
+
+        self._c = tail(array_view[dcomplex,THREE](a), array_view[long,TWO](m), o)
     
     #-------------- Reduction -------------------------------
 
@@ -71,17 +78,22 @@ cdef class TailGf:
         def __get__(self) : return self._c.size()
     
     def copy(self) : 
-        return self.__class__(data = self.data.copy(), order_min = self.order_min, mask = self.mask.copy())
+        return self.__class__(data = self.data.copy(), mask = self.mask.copy())
 
     def copy_from(self, TailGf T) :
-        assert self.order_min <= T.order_min, "Copy_from error " 
         self._c << T._c
 
     def _make_slice(self, sl1, sl2):
-        return self.__class__(data = self.data[:,sl1,sl2], order_min = self.order_min, mask = self.mask[sl1,sl2])
+        return self.__class__(data = self.data[:,sl1,sl2], mask = self.mask[sl1,sl2])
 
     def __repr__ (self) :
-        return string.join([ "%s"%self[r]+ (" /" if r>0 else "") + " Om^%s"%(abs(r)) for r in range(self.order_min, self.order_max+1) ] , " + ")
+        omin = self.order_min
+        while ((omin <= self.order_max) and (numpy.max(numpy.abs(self.data[omin-self.order_min,:,:])) < 1e-8)):
+          omin = omin+1
+        if omin == self.order_max+1:
+          return "%s"%numpy.zeros(self.shape)
+        else:
+          return string.join([ "%s"%self[r]+ (" /" if r>0 else "") + " Om^%s"%(abs(r)) for r in range(omin, self.order_max+1) ] , " + ")
 
     def __getitem__(self,i) :
         """Returns the i-th coefficient of the expansion, or order Om^i"""
@@ -164,11 +176,11 @@ cdef class TailGf:
 
     def transpose (self) : 
         """Transpose the array : new view as in numpy"""
-        return TailGf(data=self.data.transpose(), order_min=self.order_min, mask=self.mask.transpose())
+        return TailGf(data=self.data.transpose(), mask=self.mask.transpose())
 
     def conjugate(self) : 
         """Transpose the array : new view as in numpy"""
-        return TailGf(data=self.data.conjugate(), order_min=self.order_min, mask=self.mask)
+        return TailGf(data=self.data.conjugate(), mask=self.mask)
         
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group(gr), key, self._c)

@@ -47,7 +47,7 @@ class GfReFreq ( GfGeneric, GfReFreq_cython ) :
         indicesL, indicesR = indices_pack
         N1, N2 = len(indicesL),len(indicesR)
         data = d.pop('data') if 'data' in d else numpy.zeros((len(mesh),N1,N2), self.dtype )
-        tail= d.pop('tail') if 'tail' in d else TailGf(shape = (N1,N2), size=10,  order_min=-1)
+        tail= d.pop('tail') if 'tail' in d else TailGf(shape = (N1,N2))
         symmetry = d.pop('symmetry',None)
         name = d.pop('name','g')
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys()
