@@ -1,7 +1,7 @@
 .. highlight:: c
 
-A simple C++ code
---------------------
+Writing you own C++ code with TRIQS
+------------------------------------
 Basically, this structure means that you have successfully installed TRIQS in
 :file:`/home/triqs/install` and that you plan to have your new project under
 :file:`/home/project`. Obviously you can choose any other directory but this
@@ -86,9 +86,9 @@ That's it! You can modify your sources and then recompile with make. Obviously
 with bigger projects your :file:`CMakeLists.txt` file will change, but the
 principle remains the same.
 
-A simple C++ code, with its tests and documentation
+A simple C++ project, with its tests and documentation
 ------------------------------------------------------
 
-A mixed C++/Python code
+A mixed C++/Python project
 ------------------------------
 

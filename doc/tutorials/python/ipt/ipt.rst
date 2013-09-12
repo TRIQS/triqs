@@ -1,6 +1,6 @@
 .. _ipt:
 
-Iterated perturbation theory: an extended DMFT example
+Iterated perturbation theory: an more elaborate DMFT example
 ========================================================
 
 Introduction

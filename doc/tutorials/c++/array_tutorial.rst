@@ -3,6 +3,7 @@ Using arrays
 
 .. highlight:: c
 
+TRIQS comes with a library of multidimensional arrays. This library, among others, allows for easy slicing, archiving and algebraic manipulations of multidimensional arrays. Here are a couple of simple examples showing the basic use of this class.
 
 
 Declaring and printing an array
@@ -172,4 +173,4 @@ Map and fold
       std::cout << "F(2*A) = "<<C<<std::endl;
     }
 
-
+The full reference of the array library can be found :doc:`here:  <../../reference/c++/arrays/contents>`

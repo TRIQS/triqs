@@ -8,7 +8,7 @@ C++ libraries
 .. toctree::
    :maxdepth: 1  
 
+   array_tutorial
 
 
 ..
-   array_tutorial
