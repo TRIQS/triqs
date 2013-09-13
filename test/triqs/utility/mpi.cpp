@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
  mpi::reduce_in_place_v (world, x,y,C);
 
  // more complex object
- auto ca = array< array<int,1>, 1 > { array<int,1>{1,2}, {3,4}};
+ auto ca = array< array<int,1>, 1 > { array<int,1>{1,2}, array<int,1>{3,4}};
  auto cC = ca; 
  mpi::reduce_in_place (world, cC);
  if (world.rank() ==0) std::cout<<" cC = "<<cC<< std::endl;
