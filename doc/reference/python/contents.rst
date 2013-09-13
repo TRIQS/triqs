@@ -9,4 +9,5 @@ Python
    operators/operators
    lattice/lattice
    data_analysis/contents
+   random/random
 

@@ -1,5 +1,6 @@
-.. _operators:
+.. module:: pytriqs.random 
 
+.. _operators:
 
 The Operator class
 ===================
