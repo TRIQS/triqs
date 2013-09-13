@@ -47,9 +47,9 @@ namespace triqs { namespace gfs { namespace local {
 
   // ---------------------- implementation --------------------------------
 
-  /// A common implementation class. Idiom : ValueView
+  /// A common implementation class. Idiom: ValueView
   template<bool IsView> class tail_impl  {
-    public :
+    public:
       typedef tail_view view_type;
       typedef tail      regular_type;
 
@@ -91,14 +91,14 @@ namespace triqs { namespace gfs { namespace local {
       data_type _data;
 
       // All constructors
-      tail_impl(): mask(), _data(), omin(0) {} // all arrays of zero size (empty)
-      tail_impl(size_t N1, size_t N2, long omin_, long size_):
-        omin(omin_), mask(tqa::make_shape(N1,N2)), _data(tqa::make_shape(size_,N1,N2)) {
-          mask() = omin+size_-1;
+      tail_impl(): omin(0), mask(), _data() {} // all arrays of zero size (empty)
+      tail_impl(size_t N1, size_t N2, size_t size_, long order_min):
+        omin(order_min), mask(tqa::make_shape(N1,N2)), _data(tqa::make_shape(size_,N1,N2)) {
+          mask() = order_min+size_-1;
           _data() = 0;
       }
       tail_impl(data_type const &d, mask_type const &m, long omin_): mask(m), _data(d), omin(omin_) {}
-      tail_impl(tail_impl<!IsView> const & x): mask(x.mask), _data(x._data), omin(x.omin) {}
+      tail_impl(tail_impl<!IsView> const & x): omin(x.omin), mask(x.mask), _data(x._data) {}
       tail_impl(tail_impl const &) = default;
       tail_impl(tail_impl &&) = default;
 
@@ -126,10 +126,10 @@ namespace triqs { namespace gfs { namespace local {
 
       operator freq_infty() const { return freq_infty(); }
 
-      /// Save in txt file : doc the format  ? ---> prefer serialization or hdf5 !
+      /// Save in txt file: doc the format  ? ---> prefer serialization or hdf5 !
       void save(std::string file, bool accumulate=false) const {}
 
-      /// Load from txt file : doc the format ?
+      /// Load from txt file: doc the format ?
       //void load(std::string file){}
 
       friend std::string get_triqs_hdf5_data_scheme(tail_impl const & g) { return "TailGf"; }
@@ -137,8 +137,6 @@ namespace triqs { namespace gfs { namespace local {
       ///
       friend void h5_write (h5::group fg, std::string subgroup_name, tail_impl const & t) {
         auto  gr = fg.create_group(subgroup_name);
-        // tagging the hdf5 file 
-        //gr.write_triqs_hdf5_data_scheme(t); 
         h5_write(gr,"omin",t.omin);
         h5_write(gr,"mask",t.mask);
         h5_write(gr,"data",t._data);
@@ -146,11 +144,6 @@ namespace triqs { namespace gfs { namespace local {
 
       friend void h5_read  (h5::group fg, std::string subgroup_name, tail_impl & t){
         auto gr = fg.open_group(subgroup_name);
-        // Check the attribute or throw
-        //auto tag_file = gr.read_triqs_hdf5_data_scheme();
-        //auto tag_expected= get_triqs_hdf5_data_scheme(t);
-        //if (tag_file != tag_expected) 
-        // TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
         h5_read(gr,"omin",t.omin);
         h5_read(gr,"mask",t.mask);
         h5_read(gr,"data",t._data);
@@ -175,13 +168,13 @@ namespace triqs { namespace gfs { namespace local {
 
   // -----------------------------
   // the view class
-  class tail_view : public tail_impl <true> {
+  class tail_view: public tail_impl <true> {
     typedef tail_impl <true>  B;
     friend class tail;
 
-    public :
+    public:
     template<bool V> tail_view(tail_impl<V> const & t): B(t){}
-    tail_view(B::data_type const &d, B::mask_type const &m, long order_min=-1): B(d, m, order_min) {}
+    tail_view(B::data_type const &d, B::mask_type const &m, long order_min): B(d, m, order_min) {}
     tail_view(tail_view const &) = default;
     tail_view(tail_view &&) = default;
 
@@ -205,7 +198,7 @@ namespace triqs { namespace gfs { namespace local {
     tail_view & operator = (std::complex<double> const & x) {
       _data() = 0.0;
       mv_type(_data(-omin, tqa::range(), tqa::range())) = x;
-      mask() = omin+_data.shape()[0]-1;
+      mask() = omin+size()-1;
       return *this;
     }
 
@@ -216,14 +209,14 @@ namespace triqs { namespace gfs { namespace local {
 
   // -----------------------------
   // the regular class
-  class tail : public tail_impl <false> {
+  class tail: public tail_impl <false> {
     typedef tail_impl <false>  B;
     friend class tail_view;
-    public :
+    public:
     tail():B() {}
     typedef tqa::mini_vector<size_t,2> shape_type;
-    tail(size_t N1, size_t N2, long order_min=-1, long size=10): B(N1,N2,order_min,size) {}
-    tail(shape_type const & sh, long order_min=-1, long size=10): B(sh[0],sh[1],order_min,size) {}
+    tail(size_t N1, size_t N2, size_t size_=10, long order_min=-1): B(N1,N2,size_,order_min) {}
+    tail(shape_type const & sh, size_t size_=10, long order_min=-1): B(sh[0],sh[1],size_,order_min) {}
     tail(tail const & g): B(g) {}
     tail(tail_view const & g): B(g) {}
     tail(tail &&) = default;
@@ -244,19 +237,19 @@ namespace triqs { namespace gfs { namespace local {
 
     using B::operator();
 
-    /// The simplest tail corresponding to  : omega
-    static tail_view omega(size_t N1, size_t N2) {
-      tail t(N1, N2);
+    /// The simplest tail corresponding to omega
+    static tail_view omega(size_t N1, size_t N2, size_t size_, long order_min) {
+      tail t(N1, N2, size_, order_min);
       t(-1) = 1;
       return t;
     }
 
-    /// The simplest tail corresponding to  : omega, constructed from a shape for convenience
-    static tail_view omega(tail::shape_type const & sh) { return omega(sh[0],sh[1]); }
+    /// The simplest tail corresponding to omega, constructed from a shape for convenience
+    static tail_view omega(tail::shape_type const & sh, size_t size_, long order_min) { return omega(sh[0],sh[1],size_,order_min); }
 
   };
 
-  template<typename RHS> void assign_from_expression(tail_view & t,RHS const & rhs) { t = rhs( tail::omega(t.shape()) ); }
+  template<typename RHS> void assign_from_expression(tail_view & t,RHS const & rhs) { t = rhs( tail::omega(t.shape(),t.size(),t.order_min()) ); }
 
   inline void tail_view::rebind(tail const &X) {
     omin = X.omin;
@@ -266,7 +259,7 @@ namespace triqs { namespace gfs { namespace local {
 
   inline tail_view & tail_view::operator = (const tail & rhs) {
     if ((_data.shape()[1] != rhs._data.shape()[1]) || (_data.shape()[2] != rhs._data.shape()[2]) || (omin != rhs.omin))
-      TRIQS_RUNTIME_ERROR<<"rhs has different shape";
+      TRIQS_RUNTIME_ERROR<<"tails are incompatible";
     mask = rhs.mask;
     _data = rhs._data;
     return *this;
@@ -282,8 +275,7 @@ namespace triqs { namespace gfs { namespace local {
     long omax1 = std::min(t.order_max() + 2*omin1, t.order_min()+long(t.size())-1);
     size_t si = omax1-omin1+1;
 
-    tail res(t);
-    res.data() = 0.0;
+    tail res(t.shape(), t.size(), t.order_min());
     res.mask_view() = omax1;
 
     res(omin1) = inverse(t(-omin1));
@@ -298,13 +290,13 @@ namespace triqs { namespace gfs { namespace local {
   }
 
   inline tail mult_impl(tail_view const & l, tail_view const& r) {
-    if (l.shape()[1] != r.shape()[0] || l.order_min() != r.order_min()) TRIQS_RUNTIME_ERROR<< "tail multiplication : shape mismatch";
+    if (l.shape()[1] != r.shape()[0] || l.order_min() != r.order_min() || l.size() != r.size())
+      TRIQS_RUNTIME_ERROR<< "tail multiplication: shape mismatch";
     long omin1 = l.smallest_nonzero() + r.smallest_nonzero();
-    long omax1 = std::min(r.order_max()+l.smallest_nonzero(), l.order_max()+r.smallest_nonzero());
+    long omax1 = std::min(std::min(r.order_max()+l.smallest_nonzero(), l.order_max()+r.smallest_nonzero()), r.order_min()+long(r.size())-1);
     size_t si = omax1-omin1+1;
 
-    tail res(l);
-    res.data() = 0.0;
+    tail res(l.shape(), l.size(), l.order_min());
     res.mask_view() = omax1;
 
     for (long n=res.order_min(); n<=res.order_max(); ++n) {
@@ -342,8 +334,9 @@ namespace triqs { namespace gfs { namespace local {
 
   template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<LocalTail<T1>, LocalTail<T2>>)
     operator + (T1 const & l, T2 const& r) {
-      if (l.shape() != r.shape() || l.order_min() != r.order_min()) TRIQS_RUNTIME_ERROR<< "tail addition : shape mismatch";
-      tail res(l.shape());
+      if (l.shape() != r.shape() || l.order_min() != r.order_min() || (l.size() != r.size()))
+        TRIQS_RUNTIME_ERROR<< "tail addition: shape mismatch";
+      tail res(l.shape(), l.size(), l.order_min());
       res.mask_view() = std::min(l.order_max(), r.order_max());
       for (long i = res.order_min(); i<=res.order_max(); ++i) res(i) = l(i) + r(i);
       return res;
@@ -351,8 +344,9 @@ namespace triqs { namespace gfs { namespace local {
 
   template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<LocalTail<T1>, LocalTail<T2>>)
     operator - (T1 const & l, T2 const& r) {
-      if (l.shape() != r.shape() || l.order_min() != r.order_min()) TRIQS_RUNTIME_ERROR<< "tail addition : shape mismatch";
-      tail res(l.shape());
+      if (l.shape() != r.shape() || l.order_min() != r.order_min() || (l.size() != r.size()))
+        TRIQS_RUNTIME_ERROR<< "tail addition: shape mismatch";
+      tail res(l.shape(), l.size(), l.order_min());
       res.mask_view() = std::min(l.order_max(), r.order_max());
       for (long i = res.order_min(); i<=res.order_max(); ++i) res(i) = l(i) - r(i);
       return res;
