@@ -118,44 +118,68 @@ endmacro()
 # A macro to create a local copy of triqs with the added python
 macro (triqs_prepare_local_pytriqs_merged_with_my_python python_destination)
 
-file(WRITE ${CMAKE_BINARY_DIR}/build_pytriqs
-"#!/bin/bash
-export PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH
-${TRIQS_PYTHON_INTERPRETER} $@"
-)
-execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_pytriqs)
+  # Create the local build_pytriqs executable
+  file(WRITE ${CMAKE_BINARY_DIR}/build_pytriqs
+  "#!/bin/bash
+  export PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH
+  ${TRIQS_PYTHON_INTERPRETER} $@"
+  )
+  execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_pytriqs)
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}
-                        find . -type d -exec mkdir -p ${CMAKE_BINARY_DIR}/pytriqs/{} \;)
-execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}
-                        find . -type f -exec ln -snf ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/{} ${CMAKE_BINARY_DIR}/pytriqs/{} \;)
-execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}
-                        find . -type l -exec ln -snf ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/{} ${CMAKE_BINARY_DIR}/pytriqs/{} \;)
+  # Get a list of all local py and pyx files
+  file(GLOB_RECURSE relative_local RELATIVE ${CMAKE_SOURCE_DIR}/python *.py *.pyx)
+  foreach(f IN LISTS relative_local)
+    string(REGEX REPLACE "pyx" "so" new_f ${f})
+    list(APPEND local_files "${python_destination}/${new_f}")
+  endforeach()
 
-# Create directories where python files will go and make sure there is an __init__.py all the way
-execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/pytriqs/${python_destination})
+  # Get a list of all installed python files and then
+  # remove the local ones from that list
+  file(GLOB_RECURSE remote_files RELATIVE ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST} ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/*)
+  foreach(f IN LISTS local_files)
+    list(REMOVE_ITEM remote_files ${f})
+  endforeach()
 
-# Copy and install __init__.py files
-file(WRITE ${CMAKE_BINARY_DIR}/.python/__init__.py  "__all__=[]")
-set(partial_dir ${python_destination})
-while(partial_dir MATCHES "/")
-  string(REGEX REPLACE "/[^/]*$" "" partial_dir ${partial_dir})
-  if(NOT EXISTS ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/${partial_dir}/__init__.py)
-    execute_process(COMMAND cp ${CMAKE_BINARY_DIR}/.python/__init__.py ${CMAKE_BINARY_DIR}/pytriqs/${partial_dir})
-    install(FILES ${CMAKE_BINARY_DIR}/.python/__init__.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${partial_dir})
-  endif(NOT EXISTS ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/${partial_dir}/__init__.py)
-endwhile(partial_dir MATCHES "/")
+  # Get the remote directory structure, remove duplicates
+  foreach(f IN LISTS remote_files)
+    get_filename_component(d ${f} PATH)
+    list(APPEND remote_dirs "${d}")
+  endforeach()
+  list(REMOVE_DUPLICATES remote_dirs)
+  list(REMOVE_ITEM remote_dirs "")
 
-# Install all other files
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/python/ DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination} FILES_MATCHING PATTERN *.py)
+  # Create locally the remote directory structure and add the python_destination
+  foreach(d IN LISTS remote_dirs)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/pytriqs/${d})
+  endforeach()
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/pytriqs/${python_destination})
 
-# Set a rule to have original python files copied to their destination if modified
-FILE(GLOB_RECURSE python_sources RELATIVE ${CMAKE_SOURCE_DIR}/python *.py)
-SET(py_copy_tar ${CMAKE_BINARY_DIR}/py_copy.tar)
-add_custom_command (OUTPUT ${py_copy_tar} DEPENDS ${python_sources}
- COMMAND cd ${CMAKE_SOURCE_DIR}/python && tar cf ${py_copy_tar} ${python_sources} &&
-         cd ${CMAKE_BINARY_DIR}/pytriqs/${python_destination} && tar xf ${py_copy_tar})
-add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
+  # Do all symbolic links for the files
+  foreach(f IN LISTS remote_files)
+    execute_process(COMMAND ln -snf ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/${f} ${CMAKE_BINARY_DIR}/pytriqs/${f})
+  endforeach()
+
+  # Copy and install the __init__.py files
+  file(WRITE ${CMAKE_BINARY_DIR}/.python/__init__.py  "__all__=[]")
+  set(partial_dir ${python_destination})
+  while(partial_dir MATCHES "/")
+    string(REGEX REPLACE "/[^/]*$" "" partial_dir ${partial_dir})
+    if(NOT EXISTS ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/${partial_dir}/__init__.py)
+      execute_process(COMMAND cp ${CMAKE_BINARY_DIR}/.python/__init__.py ${CMAKE_BINARY_DIR}/pytriqs/${partial_dir})
+      install(FILES ${CMAKE_BINARY_DIR}/.python/__init__.py DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${partial_dir})
+    endif(NOT EXISTS ${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/${partial_dir}/__init__.py)
+  endwhile(partial_dir MATCHES "/")
+
+  # Install all other files
+  install(DIRECTORY ${CMAKE_SOURCE_DIR}/python/ DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination} FILES_MATCHING PATTERN *.py)
+
+  # Set a rule to have original python files copied to their destination if modified
+  FILE(GLOB_RECURSE python_sources RELATIVE ${CMAKE_SOURCE_DIR}/python *.py)
+  SET(py_copy_tar ${CMAKE_BINARY_DIR}/py_copy.tar)
+  add_custom_command (OUTPUT ${py_copy_tar} DEPENDS ${python_sources}
+   COMMAND cd ${CMAKE_SOURCE_DIR}/python && tar cf ${py_copy_tar} ${python_sources} &&
+           cd ${CMAKE_BINARY_DIR}/pytriqs/${python_destination} && tar xf ${py_copy_tar})
+  add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
 
 endmacro()
 
