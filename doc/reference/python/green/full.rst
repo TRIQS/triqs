@@ -36,10 +36,10 @@ and group these blocks into a full Green's function `G` with::
 
 where:
 
-* `NameList` is the ordered list of the names of the blocks. 
-* `BlockList` is the corresponding list of block Green's function. 
-* `Copy` lets you specify if the blocks of the full Green's function are **copies** of the blocks given in
-* `BlockList` of if they are **views** of these blocks, see :ref:`below<fullgreencopypolicy>`
+* `name_list` is the ordered list of the names of the blocks. 
+* `block_list` is the corresponding list of block Green's function. 
+* `make_copies` lets you specify if the blocks of the full Green's function are **copies** of the blocks given in
+  `block_list` or if they are **views** of these blocks, see :ref:`below<fullgreencopypolicy>`
 
 These names will be used when we try to access a particular block, for example ::
 
@@ -76,7 +76,7 @@ The full Green's functions support various simple operations, that are simply do
 * inversion, e.g. ::
   
    inv = inverse(g)
-   g2=inverse(inverse( g ) - sigma) # this is a Dyson equation
+   g2 = inverse(inverse(g) - sigma) # this is a Dyson equation
 
 Block access
 ----------------
@@ -124,13 +124,14 @@ makes a partial view of some of the blocks selected by the `Test` condition.
    The order in which the blocks appear is guaranteed to be the same as in the constructor.
    This is why the Green's function is similar to an **ordered** dictionary, not a simple dict.
 
-View or copies ?
----------------------
 .. _fullgreencopypolicy:
+
+View or copies?
+---------------------
 
 The Green's function is to be thought like a dict, hence accessing the 
 block returns references. When constructing the Green's function BlockGf, 
-the parameter `Copy` tells whether a copy of the block must be made before 
+the parameter `make_copies` tells whether a copy of the block must be made before 
 putting them in the Green function or not.
 
 .. note::
@@ -189,10 +190,11 @@ Green's functions are `pickable`, i.e. they support the standard python serializ
 
 * It can be sent/broadcasted/reduced over mpi ::
 
-     from pytriqs.utility import MPI
+     from pytriqs.utility import mpi
      mpi.send (G, destination)
 
 .. warning::
+
    Shelve is not a portable format, it may change from python version to another (and it does).
    For portability, we recommend using the HDF5 interface for storing data on disks.
 

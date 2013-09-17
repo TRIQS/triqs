@@ -86,11 +86,11 @@ Imagine you constructed an instance::
 
 Now, you can use ``SpinMC`` to have a random number generator::
 
-  triqs::mc_tools::random_generator RNG = SpinMC.RandomGenerator;
+  triqs::mc_tools::random_generator RNG = SpinMC.rng();
 
 Typically, this generator will be passed as a argument to your
 implementation of a move::
 
-  SpinMC.add_move(mymove(config, SpinMC.RandomGenerator, ...), "my move")
+  SpinMC.add_move(mymove(config, SpinMC.rng(), ...), "my move")
 
 

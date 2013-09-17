@@ -1,7 +1,6 @@
 
-
-Tour 1: Manipulations with local Green functions 
-------------------------------------------------
+Manipulating local Green's functions 
+------------------------------------
 
 Let us start with a problem of free electrons: an impurity `d`
 level embedded in a flat conduction bath :math:`\Delta` of `s`-electrons.

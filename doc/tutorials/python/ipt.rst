@@ -1,7 +1,7 @@
 .. _ipt:
 
-Iterated perturbation theory: an more elaborate DMFT example
-========================================================
+Iterated perturbation theory: a simple DMFT solver
+==================================================
 
 Introduction
 ------------
@@ -28,41 +28,34 @@ The success of IPT is caused by the fact that it becomes exact not only in the
 weak coupling limit (by construction), but also reproduces an atomic-limit
 expression for :math:`\Sigma(i\omega_n)` as :math:`U` grows large [#ipt2]_.
 
-Our sample implementation of IPT includes two files: `ipt.py` and
-`mott.py`.
+IPT solver
+----------
 
-IPT solver and self-consistency loop
-------------------------------------
+We start by writing an IPT solver that implements the weak-coupling
+perturbation theory for a symmetric single-band Anderson model.
+All Green's functions in the calculations have just one index because
+*up* and *down* components are the same.
 
-The file `ipt.py` implements the weak coupling perturbation theory for a 
-symmetric single-band Anderson model (`Solver` class) and obeys
-:ref:`the solver concept<solver_concept>`. It also runs a DMFT loop with this
-solver and with a self-consistency condition provided from outside (function `run`).
-
-All Green's functions in the calculations consist of one Matsubara block
-(there is no need for spin indices, since only paramagnetic solutions are sought).
-
-.. literalinclude:: ipt.py
+.. literalinclude:: ipt_solver.py
 
 Visualization of a Mott transition
 ----------------------------------
 
-In `mott.py` the IPT module is used to run DMFT many times and scan a range of 
-values of :math:`U`. On every run the resulting data are saved in 
-an :ref:`HDF5 archive<hdf5_base>` and the density of states is plotted into
-a PNG file using the :ref:`TRIQS matplotlib interface<plotting>`
-(:math:`G(i\omega_n)` is analytically continued to the real axis by the
-:ref:`Padé approximant<GfReFreq>`). 
+We can now use this solver to run DMFT calculations and scan a range of
+values of :math:`U`. At every iteration the resulting data is plotted
+and saved into PNG files using the :ref:`TRIQS matplotlib interface<plotting>`.
+Not that :math:`G(i\omega_n)` is analytically continued to the real axis using
+:ref:`Padé approximant<GfReFreq>`.
 
 At the end of the script an external utility `convert` is invoked to join the
 DOS plots into a single animated GIF file which illustrates how a metallic
 solution evolves towards an insulator.
 
-.. literalinclude:: mott.py
+.. literalinclude:: ipt_dmft.py
 
 .. only:: html
 
-  The result of this script is an animated gif:
+  The result of this script is the following animated gif:
 
   .. image:: mott.gif
      :width: 700

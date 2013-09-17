@@ -1,7 +1,7 @@
 
 
-Tour 2: A tight-binding model on a square lattice
--------------------------------------------------
+A tight-binding model on a square lattice
+-----------------------------------------
 
 Let us now consider free fermions on a Bravais lattice. 
 We will set up a square lattice with the nearest

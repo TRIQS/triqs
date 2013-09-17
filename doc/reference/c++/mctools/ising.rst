@@ -189,7 +189,7 @@ The Monte-Carlo itself can now be written::
       configuration config(length, beta, J, field);
 
       // add moves and measures
-      IsingMC.add_move(flip(config, IsingMC.RandomGenerator), "spin flip");
+      IsingMC.add_move(flip(config, IsingMC.rng()), "spin flip");
       IsingMC.add_measure(compute_m(config), "measure magnetization");
 
       // Run and collect results

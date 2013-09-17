@@ -1,7 +1,7 @@
 
  
-Tour 3: Solving a quantum impurity model with QMC 
-----------------------------------------------------------
+Solving a quantum impurity model with CTQMC 
+-------------------------------------------
 
 `[Requires TRIQS and the application cthyb_matrix]`
 
@@ -40,7 +40,7 @@ The result can be then read from the ``HDF5`` file and plotted using the ``oplot
 
 .. literalinclude::  aim_plot.py
 
-.. image:: aim_plot1.png
+.. image:: aim_plot.png
    :width: 700
    :align: center
 

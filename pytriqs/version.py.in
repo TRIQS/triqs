@@ -19,8 +19,16 @@
 #
 ################################################################################
 
-triqs_version = "@TRIQS_VERSION@"
-triqs_release = "@TRIQS_RELEASE@"
+version = "@TRIQS_VERSION@"
+release = "@TRIQS_RELEASE@"
+git_hash = "@GIT_HASH@"
 
 def show_version():
-  print "\nYou are using the TRIQS library version %s, release %s\n"%(triqs_version, triqs_release)
+  print "\nYou are using the TRIQS library version %s, release %s\n"%(version, release)
+
+def show_git_hash():
+  print "\nYou are using the git hash %s\n"%(git_hash)
+
+def show_machine_info():
+  print "\nCode compiled on @myHostName@ under login @WhoAmI@\n"
+

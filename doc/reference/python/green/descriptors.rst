@@ -4,8 +4,8 @@
 
 .. _descriptors:
    
-descriptors
-------------
+Descriptors
+-----------
 
 descriptors are simple objects that describe a function of frequencies 
 and permits to compute it with its high frequencies expansion.
@@ -18,7 +18,7 @@ Example:
 
 
 Reference
-^^^^^^^^^^^^^
+^^^^^^^^^
 
 .. class::  pytriqs.gf.local.descriptors.Omega
 

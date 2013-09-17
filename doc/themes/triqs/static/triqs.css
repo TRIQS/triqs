@@ -395,6 +395,10 @@ div.warning ul, div.warning ol {
     padding: 0;
 }
 
+div.admonition .highlight, div.warning .highlight {
+    background-color: #f7f7f7;
+}
+
 .viewcode-back {
     font-family: 'Open Sans', 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva',
                  'Verdana', sans-serif;

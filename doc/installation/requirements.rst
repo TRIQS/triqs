@@ -1,4 +1,4 @@
-.. index:: required libraries
+.. index:: Required libraries
 
 .. _requirements:
 

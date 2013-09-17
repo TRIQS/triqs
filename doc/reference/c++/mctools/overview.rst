@@ -162,7 +162,7 @@ has been detailed earlier in :ref:`montecarloloop`.
 
 The next two define the random number generator by giving its name in
 ``random_name`` (an empty string means the default generator, i.e. the Mersenne
-Twister) and the random seed in ``Random_See``. As you see the seed is
+Twister) and the random seed in ``random_seed``. As you see the seed is
 different for all node with the use of ``world.rank()``.
 
 Finally, the last parameter sets the verbosity level. 0 means no output, 1 will
@@ -298,10 +298,10 @@ of the very first *configuration* of the simulation. Because the
 to determine the sign of all generated configurations.
 
 The second argument is used to decide if the simulation must be stopped for
-some reason before it reaches the full number of cycles ``N_cycles``. For
+some reason before it reaches the full number of cycles ``n_cycles``. For
 example, you might be running your code on a cluster that only allows for 1
 hour simulations. In that case, you would want your simulation to stop, say
-after 55 minutes, even if it didn't manage to do the ``N_cycles`` cycles.
+after 55 minutes, even if it didn't manage to do the ``n_cycles`` cycles.
 
 In practice, the second argument is a ``boost::function<bool ()>`` which is
 called at the end of every cycle. If it returns 0 the simulation goes on, if it
@@ -312,7 +312,7 @@ simulation will last at most 10 minutes.
 
 Note that the simulation would end cleanly. The rest of the code can
 safely gather results from the statistics that has been accumulated, even
-if there have been less than ``N_cycles`` cycles.
+if there have been less than ``n_cycles`` cycles.
 
 
 End of the simulation - gathering results
@@ -340,7 +340,7 @@ is how to generate random numbers. Actually, as soon as you have generated an
 instance of a ``mc_generic`` class, like ``SpinMC`` above, you automatically
 have an acces to a random number generator with::
 
-  triqs::mc_tools::random_generator RNG = SpinMC.RandomGenerator;
+  triqs::mc_tools::random_generator RNG = SpinMC.rng();
 
 ``RNG`` is an instance of a ``random_generator``. If you want to
 generate a ``double`` number on the interval :math:`[0,1[`, you just have to

@@ -9,7 +9,7 @@ A quick tour
 .. toctree::
    :maxdepth: 1
 
-   tutorials/python/introduction
+   tutorials/python/contents
    tutorials/c++/contents
 
 Reference manual 

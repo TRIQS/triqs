@@ -27,30 +27,23 @@ and lets you organize your work as you wish.
 
 
 TRIQS code version
-----------------------
+------------------
 
-The tiny module `pytriqs.version` 
-contains various pieces of information configured automatically at compile time ::
+The tiny module ``pytriqs.version`` contains various pieces of information
+configured automatically at compile time ::
 
- import pytriqs.version as V
+ from pytriqs.version import *
 
- V.revision           # The branch and the git_hash commit number or version number
- V.git_hash           # The commit number if under git, or ""
- V.branch             # the branch on which the code was compiled
+ version    # The version of the TRIQS library
+ release    # The release number of the library
+ git_hash   # The git commit used at compilation
 
- # publishing these informations may lead to a security issue....
- V.cmake_options()    # returns the contents of the CMakeCache.txt file 
- V.machine_info       # Hostname and login of the compilation
- V.all_info           # a print of most info (except Cache)
+ # publishing this information may lead to a security issue....
+ show_machine_info()   # Hostname and login of the compilation
 
-.. warning:: 
- 
-  While the informations of the configurations, the machine, and login may be useful for *you* to 
-  reproduce the computation, publishing them is not recommended since it contains informations on your machine, your login.
-  For public data, just use V.revision.
 
 Saving the script in the data archive
--------------------------------------------
+-------------------------------------
 
 It is actually very simple to  save the script 
 (hence the parameters) along with the data, 

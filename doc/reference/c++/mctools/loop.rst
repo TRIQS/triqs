@@ -50,7 +50,7 @@ In the C++ examples, these variables will be called:
 
   * ``n_cycles`` :math:`= N`
   * ``length_cycle`` :math:`= L`
-  * ``N_Warmup_Cycle`` :math:`= W`
+  * ``n_warmup_cycle`` :math:`= W`
 
 You will also have to use these names if you will construct an ``mc_generic``
 instance from a dictonary (see full reference below).
