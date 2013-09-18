@@ -1,3 +1,7 @@
+.. meta::
+   :description: TRIQS: a Toolbox for Research on Interacting Quantum Systems
+   :keywords: triqs quantum interacting systems toolbox research
+
 .. _welcome:
   
 Welcome
