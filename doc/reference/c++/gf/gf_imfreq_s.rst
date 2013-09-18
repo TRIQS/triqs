@@ -16,15 +16,6 @@ Singularity
 
 :ref:`gf_tail`.
 
-Factories
--------------
-
-
-The factories are  ::
-
-  make_gf(mesh<imfreq,Opt> m,                                 local::tail_view t = local::tail({1,1}) )
-  make_gf(double beta, statistic_enum S,  size_t Nmax = 1025, local::tail_view t = local::tail({1,1}) )
-
 
 Interpolation method
 ---------------------
@@ -50,30 +41,26 @@ Examples
 
 .. compileblock:: 
 
-    #include <triqs/gfs/imfreq.hpp>
-    using namespace triqs::gfs;
-    int main() {
-      double beta=1;   // inverse temperature
-      size_t n_freq=5; // we will have 5 points including iw=0 and iw=beta
-      
-      auto GF = make_gf<imfreq,scalar_valued>(beta, Fermion, n_freq);  
-    };
-
-
-An alternative declaration with an explicit construction of the underlying mesh:
-
-.. compileblock:: 
-
- 
-    #include <triqs/gfs/imfreq.hpp>
-    using namespace triqs::gfs;
+    #include <triqs/gfs.hpp>
+    using namespace triqs::gfs; using triqs::clef::placeholder;
     int main(){
      double beta=10;
      int Nfreq =100;
-     
-     auto GF  = make_gf<imfreq,scalar_valued>(gf_mesh<imfreq>{beta,Fermion,Nfreq});
-     // auto GF2 = make_gf<imfreq,scalar_valued>({beta,Fermion,Nfreq});
+
+     // First give information to build the mesh, second to build the target
+     auto GF1  = gf<imfreq,scalar_valued> { {beta,Fermion,Nfreq} };
+     // or a more verbose/explicit form ...
+     auto GF2  = gf<imfreq,scalar_valued> { gf_mesh<imfreq>{beta,Fermion,Nfreq} };
+
+     // Filling the gf with something...
+     placeholder<0> wn_;
+     GF1(wn_) << 1/ (wn_ + 2);
+
+     // evaluation at n=3
+     std::cout << GF1(3) << " == "<<  1/ ( 1_j * std::acos(-1) / beta  * (2*3+1) + 2) << std::endl;
+     // the high frequency expansion was automatically computed.
+     std::cout << GF1.singularity() << std::endl;
     }
 
 
-
+ 

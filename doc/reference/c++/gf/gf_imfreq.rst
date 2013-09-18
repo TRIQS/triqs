@@ -5,26 +5,17 @@
 gf<imfreq>
 ==========================================================
 
+
 This is a specialisation of :ref:`gf_and_view` for imaginary Matsubara frequencies.
  
 Domain & mesh
 ----------------
 
 
-
 Singularity
 -------------
 
 :ref:`gf_tail`.
-
-Factories
--------------
-
-
-The factories are  ::
-
-  make_gf(gf_mesh<imfreq,Opt> m,         matrix_shape_t shape,                     local::tail_view t = local::tail(shape) )
-  make_gf(double beta, statistic_enum S, matrix_shape_t shape, size_t Nmax = 1025, local::tail_view t = local::tail(shape) )
 
 
 Interpolation method
@@ -51,30 +42,25 @@ Examples
 
 .. compileblock:: 
 
-    #include <triqs/gfs/imfreq.hpp>
-    using namespace triqs::gfs;
-    int main() {
-      double beta=1;   // inverse temperature
-      size_t n_freq=5; // we will have 5 points including iw=0 and iw=beta
-      
-      auto GF = make_gf<imfreq>(beta, Fermion, make_shape(1,1), n_freq);  
-    };
-
-
-An alternative declaration with an explicit construction of the underlying mesh:
-
-.. compileblock:: 
-
- 
-    #include <triqs/gfs/imfreq.hpp>
-    using namespace triqs::gfs;
+    #include <triqs/gfs.hpp>
+    using namespace triqs::gfs; using triqs::clef::placeholder;
     int main(){
      double beta=10;
      int Nfreq =100;
-     
-     auto GF  = make_gf<imfreq>(gf_mesh<imfreq>{beta,Fermion,Nfreq}, make_shape(1,1), local::tail(1,1));
-     // or even simpler 
-     auto GF2 = make_gf<imfreq>({beta,Fermion,Nfreq}, make_shape(1,1), local::tail(1,1));
+
+     // First give information to build the mesh, second to build the target
+     auto GF1  = gf<imfreq> { {beta,Fermion,Nfreq}, {1,1} };
+     // or a more verbose/explicit form ...
+     auto GF2  = gf<imfreq> { gf_mesh<imfreq>{beta,Fermion,Nfreq}, make_shape(1,1) };
+
+     // Filling the gf with something...
+     placeholder<0> wn_;
+     GF1(wn_) << 1/ (wn_ + 2);
+
+     // evaluation at n=3
+     std::cout << GF1(3) << " == "<<  1/ ( 1_j * std::acos(-1) / beta  * (2*3+1) + 2) << std::endl;
+     // the high frequency expansion was automatically computed.
+     std::cout << GF1.singularity() << std::endl;
     }
 
 

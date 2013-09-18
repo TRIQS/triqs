@@ -14,3 +14,5 @@ Compound assignment operators (+=, -=, * =, /=)
 
 The containers and the view have compound operators.
 
+*NB* : These operators make no sense for const views, and result in a compile error.
+

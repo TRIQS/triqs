@@ -15,6 +15,8 @@ various Green functions.
 
    intro
    gf_and_view
+   gf_part_eval_curry
+   slicing
    concepts
    meshes
    tail

@@ -13,18 +13,26 @@ Views
     template <typename ValueType,           ull_t OptionsFlags=0, ull_t TraversalOrder=0> class matrix_view;
     template <typename ValueType,           ull_t OptionsFlags=0>                         class vector_view;
 
+    template <typename ValueType, int Rank, ull_t OptionsFlags=0, ull_t TraversalOrder=0> class array_const_view;
+    template <typename ValueType,           ull_t OptionsFlags=0, ull_t TraversalOrder=0> class matrix_const_view;
+    template <typename ValueType,           ull_t OptionsFlags=0>                         class vector_const_view;
+
+
 where triqs::ull_t is the type defined by :
 
 .. code-block:: c
 
     typedef unsigned long long ull_t;
 
-* The view type of X (= array, matrix, vector) is called X_view, with the same template parameters as the regular type.
+* The view types of X (= array, matrix, vector) are called X_view, and X_const_view, with the same template parameters as the regular type.
 
 * A `view` is give access to a restricted portion of the array, matrix or vector, i.e. a `partial view` of the data.
   The view can also be `complete` (i.e. show all the container).
 
 * The views model the :ref:`MutableCuboidArray`, :ref:`MutableMatrix`, :ref:`MutableVector`, like the corresponding regular type.
+
+* The const views are similar to view, except that theirs contents can not be modified.
+  They model  the :ref:`ImmutableCuboidArray`, :ref:`ImmutableMatrix`, :ref:`ImmutableVector`, like the corresponding *const* regular type.
 
 * Views have `view semantics`, i.e. their behave like a reference to the data, they are not regular type.
   In particular, they never make copy of the data.
@@ -32,6 +40,8 @@ where triqs::ull_t is the type defined by :
 
 * Views are largely interoperable : it is easy and quick to take a matrix_view of an array, or vice versa.
   Cf constructors belows.
+
+* Const views can be constructed from a view, but the reverse is not true (Cf constructors).
 
 * **Memory Management**
 
@@ -70,15 +80,17 @@ NB: Rank is only present for array, since matrix have rank 2 and vector rank 1.
 Member types 
 --------------------------------------
 
-+--------------+----------------------------------------------------------+
-| Member type  | Definitions                                              |
-+==============+==========================================================+
-| value_type   | ValueType                                                |
-+--------------+----------------------------------------------------------+
-| view_type    | The corresponding view type, i.e. the view itself        |
-+--------------+----------------------------------------------------------+
-| regular_type | The corresponding regular type                           |
-+--------------+----------------------------------------------------------+
++-----------------+-----------------------------------+
+| Member type     | Definitions                       |
++=================+===================================+
+| value_type      | ValueType                         |
++-----------------+-----------------------------------+
+| view_type       | The corresponding view type       |
++-----------------+-----------------------------------+
+| const_view_type | The corresponding const view type |
++-----------------+-----------------------------------+
+| regular_type    | The corresponding regular type    |
++-----------------+-----------------------------------+
 
 Member constexpr
 --------------------------------------
@@ -92,7 +104,7 @@ Member constexpr
 +--------+------+-------------------------------+
 
 Member functions
----------------------
+------------------
 
 +-------------------------------------------+------------------------------------------+
 | Member function                           | Meaning                                  |
@@ -101,11 +113,11 @@ Member functions
 +-------------------------------------------+------------------------------------------+
 | (destructor)                              |                                          |
 +-------------------------------------------+------------------------------------------+
+| :ref:`operator ()<arr_call>`              | element of access/views/lazy expressions |
++-------------------------------------------+------------------------------------------+
 | :ref:`operator =<arr_view_assign>`        | assigns values to the container          |
 +-------------------------------------------+------------------------------------------+
 | :ref:`operator +=,-=,*=,/=<arr_comp_ops>` | compound assignment operators            |
-+-------------------------------------------+------------------------------------------+
-| :ref:`operator ()<arr_call>`              | element of access/views/lazy expressions |
 +-------------------------------------------+------------------------------------------+
 | begin/cbegin                              | returns iterator to the beginning        |
 +-------------------------------------------+------------------------------------------+
@@ -132,7 +144,6 @@ Member functions
 
 Non-member functions
 ------------------------
-
 
 +---------------------------------+-------------------------------------------+
 | Member function                 | Meaning                                   |

@@ -18,14 +18,15 @@ Efficient techniques which were considered before as complex and reserved to pro
 are now becoming simple to implement, like e.g. expression templates.
 
 The implementation of most of the TRIQS library (e.g. clef, arrays) would be either impossible or at least 
-much more complex and time consuming (with a lot of abstruse boost-like construction)
+much more complex and time consuming (with a lot of abstruse boost-like constructions)
 in previous versions of C++.
 
-Besides, this evolution is not finished.
+Besides, this evolution is not finished (in fact it seems to accelerate !).
 The new coming standard, C++14, expected to be adopted and implemented very soon, 
-will still make it a lot better. In particular, the concept support (template constraints)
+will still make it a lot better. In particular, the concept support (template constraints TS)
 will hopefully solve the most problematic issue with metaprogramming techniques, i.e. the lack of concept
-check at compile time, resulting in long and obscur error messages from the compiler when *using* the library.
+check at compile time, resulting in long and obscur error messages from the compiler when *using* the library,
+which can leave the non-C++-expert user quite clueless...
 Hence, TRIQS will move to C++14 as soon as compilers are available.
 
 Notation

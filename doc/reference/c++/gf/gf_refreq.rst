@@ -14,47 +14,37 @@ Domain & mesh
 Singularity
 -------------
 
-Factories
--------------
-
-code ::
-
-  make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t)
-  make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape)
-  make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape, mesh_kind mk)
-
-
-
-
 Interpolation method
 ---------------------
+
+Linear interpolation on the mesh.
 
 Data storage
 ---------------
 
+* `data_t` : 3d array (C ordered) of complex<double>.
+
+* g.data()(i, range(), range()) is the value of g for the i-th point of the mesh.
 
 HDF5 storage convention
 ---------------------------
 
-
+h5 tag : `ReFreq`
 
 Examples
 ---------
 
-
 .. compileblock:: 
 
-    #include <triqs/gfs/retime.hpp>
+    #include <triqs/gfs/refreq.hpp>
     using namespace triqs::gfs;
-    
+
     int main() {
-      double tmin=0;
-      double tmax=10;
-      //we will have 5 points
-      size_t n_times=5;
-      //we want a Green function whose values are complex numbers
-      auto shape = triqs::arrays::make_shape(1,1);
-      // the type of GF is triqs::gfs::gf<triqs::gfs::retime>
-      auto GF=make_gf<retime>(tmin, tmax, n_times, shape);  
+      double wmin=0, wmax=10;  // Frequencies interval
+      auto n_freq=100;         // Number of points
+
+      // We want a 2x2 matrix valued function on this mesh...
+      auto g = gf<refreq> { {wmin, wmax, n_freq}, {2,2} };
     };
+
 

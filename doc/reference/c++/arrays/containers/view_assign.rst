@@ -7,8 +7,9 @@ Assignment to views
 
 **Synopsis** : 
 
-    template<typename RHS> 
-    array_view & operator=(RHS const & X);
+    template<typename RHS> array_view & operator=(RHS const & X);
+
+*NB: The assignment operator is deleted for const_views.*
 
 The `view classes` have a quite general assignment operator.
 We will illustrate it on the `array_view` class, it is the same for `matrix` and `vector`.
@@ -21,31 +22,30 @@ We will illustrate it on the `array_view` class, it is the same for `matrix` and
       e.g. : array, array_view, matrix, matrix_view, 
       but also formal expression (See , e.g. A+B), or any custom object of your choice.
 
-      `Effect` :  all the elements viewed by the view are replaced
-      by the evaluation of RHS.
+      *Effect* :  
+        Every elements viewed by the view are replaced by the evaluation of RHS.
       
-      .. warning::
-        
-         The shape of the view and of RHS must match exactly or behaviour is undefined.
+      *Precondition*
+       
+        The shape of the view and of RHS must match exactly or behaviour is undefined.
 
-      If the debug macro, :ref:`TRIQS_ARRAYS_ENFORCE_BOUNDCHECK<arr_debug_macro>` is defined, 
-      this condition is checked at runtime.
+        If the debug macro, :ref:`TRIQS_ARRAYS_ENFORCE_BOUNDCHECK<arr_debug_macro>` is defined, 
+        this condition is checked at runtime.
 
-      .. note:: 
-
-         We could lower this condition, since we don't need a domain here, just the evaluation 
-         on the indices...
+        NB : We could lower this condition, since we don't need a domain here, just the evaluation on the indices...
 
   * A scalar.
 
-      `Effect` : all elements viewed by the view are set to this scalar.
+      *Effect* : 
+        Every elements viewed by the view are set to this scalar, except for the matrix_view,
+        where the matrix is set to the identity.
      
      
-NB : no move assign operator
+NB : no move assignment operator
 ---------------------------------------
 
-Note that **there is no move assign operators for views**.
-If RHS is an rvalue reference, the regular operator = is called, that 
+Note that **there is no move assignment operators for views**.
+If RHS is an rvalue reference, the regular operator= (view const &) is called, that 
 makes a copy of the data of RHS into the elements viewed by the view.
 
 This behaviour is consistent with the fact that views are *not* regular types.

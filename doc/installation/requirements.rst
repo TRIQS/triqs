@@ -16,28 +16,23 @@ C++ compilers
 
 TRIQS is written in C++, i.e. in the **C++11** standard as defined by the ISO standardization committee.
 A recent compiler is therefore mandatory.
-There are 3 categories of C++ compilers:
 
-* Standard compliant C++ compilers
+* Standard compliant C++ compilers (recommended and supported).
   
-  * :ref:`clang 3.3<install_clang>` and higher
+  * :ref:`clang 3.2<install_clang>` and higher (in particular the default clang on OS X 10.8).
   * g++ 4.8.1 and higher
 
-  These compilers are recommended and supported.
-
-
-* Obsolete compilers
-
-  * g++ 4.6.3 to 4.8.0
-
-  TRIQS can be built with these compilers but because they lack full C++11 support,
-  TRIQS may be slower (some optimisations are disabled in the library).
-  These compilers may not be supported in later releases.
+  * The intel icc 14.0 is close to be C++11 compliant, but presents currently too many bugs to be supported 
+    at present. It compiles 99% of TRIQS, but we do not have the ressources to write and 
+    maintains all necessary workarounds.
+    
+    Besides, for *our codes*, icc does not provide a significant speed gain (unlike MKL), 
+    so we do not recommend it for TRIQS.
 
 * C++98 compilers
 
-  * g++ before 4.6
-  * Intel icc 12.0 and below
+  * g++ before 4.8.1
+  * Intel icc 13.0 and below
 
   Compilers implementing the previous version of the C++ standard (C++98) do not work and 
   will *not* be supported.

@@ -99,7 +99,7 @@ Mesh
   It does not really need to be a mesh : e.g. if the function is represented on a polynomial basis, 
   it is the parameters of this representation (max number of coordinates, e.g.)
 
-* **Refines** : RegularType, HasConstIterator BoostSerializable, H5-serializable.
+* **Refines** : RegularType, HasConstIterator BoostSerializable, H5-serializable, Printable.
 
 * **Definition** : 
   
@@ -165,7 +165,7 @@ MeshPoint
 | void reset()                                   | Reset the mesh point to the first point                                     |
 +------------------------------------------------+-----------------------------------------------------------------------------+
 | cast_t                                         |  == mesh_t::domain_t::point_t                                               |
-| operator cast_t() const                        | *implicit* cast to the corresponding domain point                                      |
+| operator cast_t() const                        | *implicit* cast to the corresponding domain point                           |
 +------------------------------------------------+-----------------------------------------------------------------------------+
 
 For one dimensional mesh, we also require that the MeshPoint implement the basic arithmetic operations
