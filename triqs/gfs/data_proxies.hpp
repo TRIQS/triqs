@@ -42,9 +42,7 @@ namespace triqs { namespace gfs {
   arrays::matrix_view_proxy<storage_view_t,0>       operator()(storage_view_t       & data, size_t i) const { return arrays::matrix_view_proxy<storage_view_t,0>(data,i); } 
   arrays::const_matrix_view_proxy<storage_view_t,0> operator()(storage_view_t const & data, size_t i) const { return arrays::const_matrix_view_proxy<storage_view_t,0>(data,i); } 
 
-  template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs)           { data() = std::forward<RHS>(rhs);}
   template<typename S, typename RHS> static void assign_to_scalar (S & data, RHS && rhs)           { data() = std::forward<RHS>(rhs);}
-  template<typename RHS>             static void assign_with_resize (storage_t & data, RHS && rhs) { data = std::forward<RHS>(rhs);}
   template<typename RHS>             static void rebind (storage_view_t & data, RHS && rhs)        { data.rebind(rhs.data()); }
  };
 
@@ -61,9 +59,7 @@ namespace triqs { namespace gfs {
   auto operator()(storage_view_t       & data,size_t i) const -> decltype(data(i)) { return data(i);}
   auto operator()(storage_view_t const & data,size_t i) const -> decltype(data(i)) { return data(i);}
 
-  template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs)           { data() = std::forward<RHS>(rhs);}
   template<typename S, typename RHS> static void assign_to_scalar (S & data, RHS && rhs)           { data() = std::forward<RHS>(rhs);}
-  template<typename RHS>             static void assign_with_resize (storage_t & data, RHS && rhs) { data = std::forward<RHS>(rhs);}
   template<typename RHS>             static void rebind (storage_view_t & data, RHS && rhs)        { data.rebind(rhs.data()); }
  };
 
@@ -82,12 +78,6 @@ namespace triqs { namespace gfs {
   Tv       &  operator()(storage_view_t &       data, size_t i)       { return data[i];}
   Tv const &  operator()(storage_view_t const & data, size_t i) const { return data[i];}
 
-  template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs) {
-   //auto r = make_vector(rhs);
-   if (data.size() !=rhs.size()) TRIQS_RUNTIME_ERROR << "Size mismatch in gf assignment";
-   for (size_t i =0; i<data.size(); ++i) data[i] = rhs[i];
-  }
-  template<typename S, typename RHS> static void assign_with_resize (S & data, RHS && rhs) {data = utility::factory<storage_t>(rhs);}
   template<typename S, typename RHS> static void assign_to_scalar   (S & data, RHS && rhs) {for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
   template<typename RHS> static void rebind (storage_view_t & data, RHS && rhs) { data.clear(); for (auto & x : rhs.data()) data.push_back(x);}
  };
@@ -104,8 +94,6 @@ namespace triqs { namespace gfs {
   auto operator()(storage_t  &           data, size_t i)       DECL_AND_RETURN( data(i));
   auto operator()(storage_t      const & data, size_t i) const DECL_AND_RETURN( data(i));
 
-  template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs) { data() = std::forward<RHS>(rhs);}
-  template<typename S, typename RHS> static void assign_with_resize (S & data, RHS && rhs) = delete;
   template<typename S, typename RHS> static void assign_to_scalar   (S & data, RHS && rhs) = delete;
   template<typename RHS> static void rebind (storage_view_t & data, RHS && rhs) = delete;// { data = std::forward<RHS>(rhs);}
  };
