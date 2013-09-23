@@ -43,6 +43,7 @@ cdef class Parameters:
         if extract_strict[array_view[double,THREE]]().is_possible(_o) : return extract_strict[array_view[double,THREE]]().invoke(_o).to_python()
        
         if extract_strict[vector[std_string]]().is_possible(_o) : return extract_strict[vector[std_string]]().invoke(_o)
+        if extract_strict[vector[long]]().is_possible(_o) : return extract_strict[vector[long]]().invoke(_o)
         
         raise ValueError, "Can not extract the key %s"%key
 
@@ -55,6 +56,8 @@ cdef class Parameters:
         elif isinstance(rhs, list) or isinstance(rhs,tuple) :
             if set([type(x) for x in rhs]) == set([type('')]) : # list or tuple of string
                 inserter_in_map[parameters,vector[std_string]](self._c)(key, rhs)
+            elif set([type(x) for x in rhs]) == set([type(1)]) : # list or tuple of int
+                inserter_in_map[parameters,vector[long]](self._c)(key, rhs)
             else : 
                 raise TypeError, "List and tuple are not supported by Parameters. Please use numpy arrays"
         elif isinstance(rhs, np.ndarray) :
