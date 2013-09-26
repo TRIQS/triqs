@@ -6,7 +6,7 @@ class MatrixStack:
         """
         """
         self.data = A
-        self.is_double = A.dtype in [numpy.float, numpy.float64, numpy.float128, numpy.float, numpy.float_]
+        self.is_double = A.dtype in [numpy.float, numpy.float32, numpy.float64, numpy.float_]
 
     def add(self, M):
         if self.is_double:
