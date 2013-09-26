@@ -64,8 +64,12 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    size_t number_of_elements() const { return lengths_.product_of_elements();}
    bool operator==(domain_t const & X) const { return this->lengths_ == X.lengths_;}
    bool operator!=(domain_t const & X) const { return !(*this==X);}
-   n_uple const & lengths() const { return lengths_;}
-
+#ifdef TRIQS_COMPILER_IS_C11_COMPLIANT
+   n_uple const & lengths() const & { return lengths_;}
+   n_uple lengths() && { return lengths_;}
+#else
+   n_uple lengths() const { return lengths_;}
+#endif
    /** Generates the value of the indices of a cuboid_domain.  */
    static constexpr ull_t iteration_order_default = permutations::identity(Rank);
    template <ull_t IterationOrder= iteration_order_default >
