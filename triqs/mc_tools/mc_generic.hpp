@@ -148,20 +148,18 @@ namespace triqs { namespace mc_tools {
      boost::mpi::reduce(c, nmeasures, nmeasures_tot, std::plus<uint64_t>(), 0);
      boost::mpi::reduce(c, sum_sign, sum_sign_tot, std::plus<MCSignType>(), 0);
 
-     sign_av = sum_sign_tot / double(nmeasures_tot);
-
-     report(3) << "[Node "<<c.rank()<<"] Acceptance rate for all moves:" << std::endl << std::endl;
-     report(3) << "[Node "<<c.rank()<<"]"<< AllMoves.get_statistics(c) << std::endl;
+     report(3) << "[Node "<<c.rank()<<"] Acceptance rate for all moves:\n" << AllMoves.get_statistics(c);
      report(3) << "[Node "<<c.rank()<<"] Simulation lasted: " << double(Timer) << " seconds" << std::endl;
      report(3) << "[Node "<<c.rank()<<"] Number of measures: " << nmeasures  << std::endl;
      report(3) << "[Node "<<c.rank()<<"] Average sign: " << sum_sign / double(nmeasures) << std::endl << std::endl << std::flush;
   
      if (c.rank()==0) {
+      sign_av = sum_sign_tot / double(nmeasures_tot);
       report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
       report(2) << "Average sign: " << sign_av << std::endl << std::endl << std::flush;
      }
       
-    AllMeasures.collect_results(c);
+     AllMeasures.collect_results(c);
 
     }
 
