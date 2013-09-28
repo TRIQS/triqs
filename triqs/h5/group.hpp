@@ -27,11 +27,13 @@ namespace triqs { namespace h5 {
   *  Rational : use ADL for h5_read/h5_write, catch and rethrow exception, add some policy for opening/creating 
   */
  class group {
-   H5::Group _g;
+   H5::Group _g, _parent;
+   std::string _name_in_parent;
   public:
    group() = default;
-   group( group const & ) = default;
-   group (H5::Group g) : _g(g) {} 
+   group(group const &) = default;
+   group(H5::Group g) : _g(g) {} 
+   group(H5::Group g, H5::Group parent, std::string name_in_parent) : _g(g), _parent(parent), _name_in_parent(name_in_parent) {} 
    
    /// Takes the "/" group at the top of the file.
    group (H5::H5File f) : _g(f.openGroup("/")) {} // can not fail, right ?
@@ -42,6 +44,9 @@ namespace triqs { namespace h5 {
     if (is_group) { _g.setId(id_); }
     else { H5::H5File f; f.setId(id_); *this = group(f); }
    }
+
+   bool has_parent() const { return _name_in_parent != "";}
+
    ///  Write the triqs tag of the group if it is an object.
    template<typename T>  void write_triqs_hdf5_data_scheme (T const & obj) {  
     h5::write_string_attribute( &_g, "TRIQS_HDF5_data_scheme" , get_triqs_hdf5_data_scheme(obj).c_str() ) ;
@@ -56,7 +61,7 @@ namespace triqs { namespace h5 {
    group open_group(std::string const & key) const { 
     if (!has_key(key))  TRIQS_RUNTIME_ERROR << "no subgroup "<<key <<" in the group";
     group res; 
-    try { res = _g.openGroup(key.c_str());} 
+    try { res = group( _g.openGroup(key.c_str()), _g, key) ;} // has a parent 
     catch (H5::GroupIException const & e){ TRIQS_RUNTIME_ERROR << "Error in opening the subgroup "<< key <<"\n H5 error message : \n "<< e.getCDetailMsg(); } 
     return res;
    }
@@ -75,7 +80,7 @@ namespace triqs { namespace h5 {
     */
    group create_group(std::string const & key, bool delete_if_exists = true) const {
     unlink_key_if_exists(key); 
-    return _g.createGroup(key.c_str());
+    return group(_g.createGroup(key.c_str()),_g, key);
    }
    /** 
     * \brief Create a dataset.
@@ -95,8 +100,18 @@ namespace triqs { namespace h5 {
    /// Returns all names of subgroup of key in G
    std::vector<std::string> get_all_subgroup_names(std::string const & key) const;
 
+   std::vector<std::string> get_all_subgroup_names() const {
+    if (!has_parent()) TRIQS_RUNTIME_ERROR << "Group hdf5 : parent not found";
+    return group(_parent).get_all_subgroup_names(_name_in_parent);
+   }
+
    /// Returns all names of dataset of key in G
    std::vector<std::string> get_all_dataset_names(std::string const & key) const;
+
+   std::vector<std::string> get_all_dataset_names() const {
+    if (!has_parent()) TRIQS_RUNTIME_ERROR << "Group hdf5 : parent not found";
+    return group(_parent).get_all_dataset_names(_name_in_parent);
+   }
 
    void write_string_attribute (std::string const & obj_name, std::string const & attr_name, std::string const & value){ 
     herr_t err =  H5LTset_attribute_string(_g.getId(),obj_name.c_str(),attr_name.c_str(), value.c_str() ) ;
