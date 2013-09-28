@@ -133,6 +133,11 @@ namespace triqs { namespace arrays {
     // Move
     explicit array(array && X) { this->swap_me(X); } 
 
+    // from a temporary storage and an indexmap. Used for reshaping a temporary array
+    explicit array(typename indexmap_type::domain_type const & dom, storage_type && sto,
+      memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)):
+     IMPL_TYPE(indexmap_type(dom,ml), std::move(sto)){}
+
     /** 
      * Build a new array from X.domain() and fill it with by evaluating X. X can be : 
      *  - another type of array, array_view, matrix,.... (any <IndexMap, Storage> pair)
