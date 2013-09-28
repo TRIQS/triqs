@@ -41,7 +41,7 @@ struct print_t {
 
 struct A {
 template<typename T1, typename T2>  
-  std::string str(T1 const & x, T2 const &y) const { std::stringstream fs; fs << "the string is "<< x<<" " << y; return fs.str();}
+  std::string str(T1 const & x, T2 const &y) const { std::stringstream fs; fs << "A : the string is "<< x<<" " << y; return fs.str();}
 };
 
 std::string my_print_str(int x, int y) { std::stringstream fs; fs << "the string is "<< x<< " " << y; return fs.str();}
@@ -62,6 +62,11 @@ int main(int argc, char **argv) {
  }
 
  {
+  triqs::tuple::for_each(reverse(t), print_t());
+  std::cerr << std::endl;
+ }
+
+ {
   auto res = triqs::tuple::apply(fun(),t);
   std::cerr  << " f(t) =" << res << std::endl ;
   if ( std::abs((res -  fun()(1,2.3,4.3,8))) > 1.e-13) throw std::runtime_error(" ");
@@ -76,10 +81,24 @@ int main(int argc, char **argv) {
    << std::get<3>(r) << std::endl;
  }
 
+  std::cerr  << "  ----- fold ----"<< std::endl ;
+ 
  {
   auto res = triqs::tuple::fold([](double x,double r) { return x+r;}, t, 0);
   std::cerr  << " " << res << std::endl ;
   if ( std::abs((res -  15.6)) > 1.e-13) throw std::runtime_error(" ");
+ }
+
+ {
+  auto res = triqs::tuple::fold([](double x,double y) { return x+2*y;}, t, 0);
+  std::cerr  << " " << res << std::endl ;
+  if ( std::abs((res -  33.8)) > 1.e-13) throw std::runtime_error(" ");
+ }
+
+{
+  auto res = triqs::tuple::fold([](double x,double y) { return x+2*y;}, reverse(t), 0);
+  std::cerr  << " " << res << std::endl ;
+  if ( std::abs((res -  86.8)) > 1.e-13) throw std::runtime_error(" ");
  }
 
  {
@@ -88,8 +107,11 @@ int main(int argc, char **argv) {
   if ( std::abs((res -  35.6)) > 1.e-13) throw std::runtime_error(" ");
  }
 
+  std::cerr  << "  ----- apply ----"<< std::endl ;
  {
   auto res = triqs::tuple::apply(my_print_str, std::make_tuple(1,2));
+  std::cerr  << " " << res << std::endl ;
+  res = triqs::tuple::apply(my_print_str, reverse(std::make_tuple(1,2)));
   std::cerr  << " " << res << std::endl ;
  }
 

@@ -65,7 +65,7 @@ namespace triqs { namespace utility {
    }
 
    mini_vector & operator=(const mini_vector & x){ for (int i=0;i<Rank; ++i) _data[i] = x._data[i]; return *this;}
-   mini_vector & operator=(mini_vector && x){ swap(*this,x); return *this;}
+   mini_vector & operator=(mini_vector && x) = default; 
 
    friend void swap(mini_vector & a, mini_vector & b) { std::swap(a._data, b._data);}
 

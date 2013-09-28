@@ -24,6 +24,22 @@
 #include <tuple>
 #include <sstream>
 
+// adding to the std lib the reversed lazy tuple...
+// overloading & specializing only the functions needed here.
+namespace std {
+  template<typename TU> struct _triqs_reversed_tuple {TU _x;};
+
+  template<typename ... T> _triqs_reversed_tuple<std::tuple<T...>>        reverse(std::tuple<T...> && x) { return {move(x)};}
+  template<typename ... T> _triqs_reversed_tuple<std::tuple<T...>&>       reverse(std::tuple<T...> & x) { return {x};}
+  template<typename ... T> _triqs_reversed_tuple<std::tuple<T...>const &> reverse(std::tuple<T...> const & x) { return {x};}
+
+  template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> const & t) DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_reference<TU>::type>::value-1-pos>(t._x));
+  template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> & t)       DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_reference<TU>::type>::value-1-pos>(t._x));
+  template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> && t)      DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_reference<TU>::type>::value-1-pos>(move(t)._x));
+
+  template<typename TU> struct tuple_size<_triqs_reversed_tuple<TU>>         : tuple_size<typename std::remove_reference<TU>::type>{};
+}
+
 namespace triqs { namespace tuple {
 
  /**
@@ -32,7 +48,7 @@ namespace triqs { namespace tuple {
   * push_back (t,x) -> returns new tuple with x append at the end
   */
  template<typename T, typename X>
- auto push_back(T && t, X &&x) DECL_AND_RETURN ( std::tuple_cat(std::forward<T>(t),std::make_tuple(std::forward<X>(x))));
+  auto push_back(T && t, X &&x) DECL_AND_RETURN ( std::tuple_cat(std::forward<T>(t),std::make_tuple(std::forward<X>(x))));
 
  /**
   * t : a tuple
@@ -40,9 +56,9 @@ namespace triqs { namespace tuple {
   * push_front (t,x) -> returns new tuple with x append at the first position
   */
  template<typename T, typename X>
- auto push_front(T && t, X &&x) DECL_AND_RETURN ( std::tuple_cat(std::make_tuple(std::forward<X>(x)),std::forward<T>(t)));
+  auto push_front(T && t, X &&x) DECL_AND_RETURN ( std::tuple_cat(std::make_tuple(std::forward<X>(x)),std::forward<T>(t)));
 
-/**
+ /**
   * apply(f, t)
   * f : a callable object
   * t a tuple
@@ -64,7 +80,7 @@ namespace triqs { namespace tuple {
   auto apply (F && f, T const & t) DECL_AND_RETURN( apply_impl<std::tuple_size<T>::value-1>()(std::forward<F>(f),t));
 
  //template <typename T, typename ReturnType, typename... Args>
-  //ReturnType apply( ReturnType(*f)(Args...), T const & t) { return apply([f](Args const & ... args) { return (*f)(args...);} ,t);}
+ //ReturnType apply( ReturnType(*f)(Args...), T const & t) { return apply([f](Args const & ... args) { return (*f)(args...);} ,t);}
 
  /**
   * apply_construct<F>(t)
@@ -207,8 +223,8 @@ namespace triqs { namespace tuple {
  template<int pos> struct call_on_zip3_impl {
   template<typename F, typename T1, typename T2, typename T3>
    void operator()(F && f, T1 && t1, T2 && t2, T3 && t3) { 
-      f(std::get<pos>(std::forward<T1>(t1)),std::get<pos>(std::forward<T2>(t2)),std::get<pos>(std::forward<T3>(t3)));
-      call_on_zip3_impl<pos-1>()(std::forward<F>(f),std::forward<T1>(t1), std::forward<T2>(t2), std::forward<T3>(t3));
+    f(std::get<pos>(std::forward<T1>(t1)),std::get<pos>(std::forward<T2>(t2)),std::get<pos>(std::forward<T3>(t3)));
+    call_on_zip3_impl<pos-1>()(std::forward<F>(f),std::forward<T1>(t1), std::forward<T2>(t2), std::forward<T3>(t3));
    } 
  };
 
@@ -225,7 +241,7 @@ namespace triqs { namespace tuple {
   * fold(f, t1, init)
   * f : a callable object
   * t a tuple
-  * Returns : f(x0,f(x1,f(....)) on the tuple
+  * Returns : f(xN,f(x_N-1,...f(x0,r)) on the tuple
   */
  template<int N, int pos, typename T> struct fold_impl {
   template<typename F, typename R>
@@ -291,7 +307,7 @@ namespace triqs { namespace tuple {
 
  template<typename Tu,int ...I> using filter_t = typename filter_t_tr<Tu,I...>::type;
 
-/** 
+ /** 
   * filter_out<int ... I>(t) : 
   *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are dropped.
   */
@@ -319,7 +335,7 @@ namespace triqs { namespace tuple {
 
  template<typename Tu,int ...I> using filter_out_t = typename filter_out_t_tr<Tu,I...>::type;
 
-  /** 
+ /** 
   * inverse_filter<int L, int ... I>(t,x)  
   *  Given a tuple t, and integers, returns the tuple R of size L such that filter<I...>(R) == t 
   *  and the missing position are filled with object x.
@@ -432,11 +448,6 @@ namespace std {
   return os << ")";
  }
 }
-
-
-
-
-
 
 #endif
 
