@@ -43,12 +43,13 @@ namespace triqs { namespace arrays {
   * It keeps view of the object A if it a matrix, a copy if it is a formal expression.
   */ 
  template<typename A, class Enable = void> struct inverse_lazy;
+ template<typename A> struct inverse_lazy_impl;//debug ony
  
  ///
  template<typename A> struct determinant_lazy;
  
  /// Lazy inversion 
- template<class A> inverse_lazy<A> inverse (A const & a) { return inverse_lazy<A>(a); }
+ template<class A> inverse_lazy<typename utility::remove_rvalue_ref<A>::type> inverse (A && a) { return {std::forward<A>(a)}; }
  
  /// Lazy computation of det
  template<typename A> determinant_lazy<A> determinant (A const & a) { return determinant_lazy<A>(a); }
@@ -111,58 +112,67 @@ namespace triqs { namespace arrays {
 
  // an implementation class to gather the common part to matrix and expression....
  template<typename A> struct inverse_lazy_impl : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) {
-  typedef typename std::remove_const<typename A::value_type>::type value_type;
-  typedef typename A::domain_type domain_type;
-  typedef typename const_view_type_if_exists_else_type<A>::type A_type;
-  const A_type a;
-  inverse_lazy_impl(A const & a_):a (a_)  {
+  public:
+  
+  typedef typename std::remove_reference<A>::type A_t;
+  typedef typename std::remove_const<typename A_t::value_type>::type value_type;
+  typedef typename A_t::domain_type domain_type;
+  A a;
+  template<typename AA> inverse_lazy_impl(AA && a_):a (std::forward<AA>(a_))  {
    if (first_dim(a) != second_dim(a)) TRIQS_RUNTIME_ERROR<< "Inverse : matrix is not square but of size "<< first_dim(a)<<" x "<< second_dim(a); 
   }
-  //typename A::shape_type shape() const { return a.shape();}
   domain_type domain() const { return a.domain(); } 
-  template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { activate();  return _id->M(k0,k1); }
+  template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { activate(); return _id->M(k0,k1); }
   friend std::ostream & operator<<(std::ostream & out,inverse_lazy_impl const&x){return out<<"inverse("<<x.a<<")";}
   protected: 
   struct internal_data { // implementing the pattern LazyPreCompute
-   //typedef typename A_type::regular_type M_type;
    typedef matrix<value_type> M_type;
    typedef matrix_view<value_type> M_view_type;
    M_type M;
-   internal_data(inverse_lazy_impl const & P):M(P.a){det_and_inverse_worker<M_view_type> worker(M); worker.inverse();}
+   internal_data(inverse_lazy_impl const & P):M(P.a){
+    det_and_inverse_worker<M_view_type> worker(M);
+    worker.inverse();
+   }
   };
   friend struct internal_data;
   mutable std::shared_ptr<internal_data> _id;
-  void activate() const { if (!_id) _id= std::make_shared<internal_data>(*this);}
+  void activate() const {  if (!_id) _id= std::make_shared<internal_data>(*this);}
  };
 
  // The general case
  template<typename A>
-  struct inverse_lazy<A,typename boost::disable_if< is_matrix_or_view<A> >::type > : inverse_lazy_impl<A> { 
-   inverse_lazy(A const & a):inverse_lazy_impl<A>(a) { }
+  struct inverse_lazy<A, DISABLE_IF(is_matrix_or_view<typename std::remove_reference<A>::type>) > : inverse_lazy_impl<A> { 
+  template<typename AA> inverse_lazy(AA && a_):inverse_lazy_impl<A>(std::forward<AA>(a_)) {}
   };
 
  // for matrix and matrix_views, we have more optimisation possible ....
  template<typename A>
-  struct inverse_lazy<A,typename boost::enable_if< is_matrix_or_view<A> >::type >:inverse_lazy_impl<A>{
-   inverse_lazy(A const & a):inverse_lazy_impl<A>(a) { }
+  struct inverse_lazy<A, ENABLE_IF(is_matrix_or_view<typename std::remove_reference<A>::type>) >:inverse_lazy_impl<A>{
+  template<typename AA> inverse_lazy(AA && a_):inverse_lazy_impl<A>(std::forward<AA>(a_)) {}
 
    template<typename MT> // Optimized implementation of =
     friend void triqs_arrays_assign_delegation (MT & lhs, inverse_lazy const & rhs)  {
+     //std::cerr  << " DELEGATING1"<< lhs <<std::endl; 
+     std::cerr  << " DELEGATING2"<< rhs <<  rhs.a<<std::endl; 
      static_assert(is_matrix_or_view<MT>::value, "Internal error");
+     //std::cerr  << " DELEGATING"<< lhs << std::endl;
      if ((lhs.indexmap().memory_indices_layout()  !=rhs.a.indexmap().memory_indices_layout())|| 
        (lhs.data_start() != rhs.a.data_start()) || !(has_contiguous_data(lhs))) { rhs.activate(); lhs = rhs._id->M;} 
      else {// if M = inverse(M) with the SAME object, then we do not need to copy the data
+      //std::cerr  << " DELEGATING"<< lhs << std::endl; 
       blas_lapack_tools::reflexive_qcache<MT> C(lhs);// a reflexive cache will use a temporary "regrouping" copy if and only if needed
       det_and_inverse_worker<typename MT::view_type> W(C());// the worker to make the inversion of the lhs... 
       W.inverse(); // worker is working ...
+      //std::cerr  << " DELEGATING"<< lhs << std::endl; 
      }
+     //std::cerr << " okok "<< lhs << std::endl;
     }
    friend std::ostream & operator<<(std::ostream & out,inverse_lazy const&x){return out<<"inverse("<<x.a<<")";}
   };
 
  //------------------- det   ----------------------------------------
 
- template<typename A> struct determinant_lazy  { // : { Tag::expression_terminal, Tag::scalar_expression_terminal {
+ template<typename A> struct determinant_lazy  { 
   typedef typename A::value_type value_type;
   typedef typename const_view_type_if_exists_else_type<A>::type A_type;
   A_type a;

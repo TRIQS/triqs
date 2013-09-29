@@ -30,14 +30,15 @@ using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 template<typename Expr >
-matrix_view <typename Expr::value_type>
-eval_as_matrix( Expr const & e) { return matrix<typename Expr::value_type>(e);}
+matrix <typename Expr::value_type>
+eval_as_matrix( Expr const & e) { return e;}
 
 int main(int argc, char **argv) {
 
  try { 
 
  triqs::arrays::matrix<double> W(3,3,FORTRAN_LAYOUT),Wi(3,3,FORTRAN_LAYOUT),Wkeep(3,3,FORTRAN_LAYOUT),A(FORTRAN_LAYOUT);
+ //triqs::arrays::matrix<double> W(3,3),Wi(3,3),Wkeep(3,3),A{};
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
    W(i,j) = (i>j ? i+2.5*j : i*0.8-j);
@@ -64,9 +65,10 @@ int main(int argc, char **argv) {
     assert ( (abs(should_be_one(i,j) - (i==j ? 1 : 0))) <1.e-10 );
 
  std::cerr<< "W* inverse(W)" << " = "<< triqs::arrays::matrix<double > (W*Wi)<<std::endl<<std::endl;
+
  W=  inverse(W);
  std::cout<< " invert of W= "<< W<<std::endl<<std::endl;
- 
+
  A=  inverse(W);
  std::cerr<< " A = inv W= "<< A<<std::endl<<std::endl;
  for (int i =0; i<3; ++i)
@@ -94,9 +96,7 @@ int main(int argc, char **argv) {
 
 
  }
- catch (std::string ERR) { std::cout<<"ERROR : "<< ERR<<std::endl;}
-
- return 0;
+ TRIQS_CATCH_AND_ABORT;
 
 }
 

@@ -319,7 +319,8 @@ namespace triqs { namespace arrays {
     // ------------------------------- resize --------------------------------------------
     //
     void resize (domain_type const & d) {
-     this->indexmap_ = IndexMapType(d);// build a new one with the lengths of IND
+     this->indexmap_ = IndexMapType(d,this->indexmap_.memory_indices_layout());
+     // build a new one with the lengths of IND BUT THE SAME layout !
      // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
      if (this->storage_.size() != this->indexmap_.domain().number_of_elements())
       this->storage_ = StorageType(this->indexmap_.domain().number_of_elements(), typename flags::init_tag<OptionFlags>::type()  );

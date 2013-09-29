@@ -72,15 +72,15 @@ int main(int argc, char **argv) {
   std::cout<<" matrix( Af * (Bf + Cf) )"<<matrix<double>(Af*(Bf+ Cf))<<std::endl;
 
   TEST (A);  
-  TEST (tqa::make_matrix( 2*A ));
+  TEST (make_matrix( 2*A ));
   TEST (A+ 2);
-  TEST (tqa::make_matrix(A+2 ));
+  TEST (make_matrix(A+2 ));
   TEST (make_matrix(1 + A ));
 
   //  test the vector ops : scalar * vector, vector + vector, ...
   tqa::vector<double> V(3); V(0) = 1; V(1)= 2; V(2) = 3;
   tqa::vector<double> V2(3); V2(0) = 10; V2(1)= 20; V2(2) = 30;
-  TEST (tqa::make_vector( V2 + 2.0 *V));
+  TEST (make_vector( V2 + 2.0 *V));
  
   // test the division by a matrix
   TEST(Af);

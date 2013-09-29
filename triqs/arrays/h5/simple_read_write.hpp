@@ -116,11 +116,12 @@ namespace triqs { namespace arrays {
      mini_vector<hsize_t,Rank> dims_out;
      //int ndims = dataspace.getSimpleExtentDims( &dims_out[0], NULL);
      dataspace.getSimpleExtentDims( &dims_out[0], NULL);
-     mini_vector<size_t,ArrayType::rank > d2; for (size_t u=0; u<ArrayType::rank ; ++u) d2[u] = dims_out[u];
-     resize_or_check(A, d2 );
+     mini_vector<size_t,ArrayType::rank > d2; 
+     for (size_t u=0; u<ArrayType::rank ; ++u) d2[u] = dims_out[u];
+     resize_or_check(A, d2);
      if (C_reorder) { read_array(g,name, cache<ArrayType,typename ArrayType::regular_type>(A).view(),false);}
      //if (C_reorder) { read_array(g,name, make_cache(A).view(),false);}
-     ds.read( get_array_data_ptr(A), h5::data_type_memory<typename ArrayType::value_type>(), data_space(A) , dataspace );
+     else ds.read( get_array_data_ptr(A), h5::data_type_memory<typename ArrayType::value_type>(), data_space(A) , dataspace );
     }
     TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
    }
