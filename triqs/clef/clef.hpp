@@ -46,21 +46,23 @@ namespace triqs { namespace clef {
  template<typename T> struct force_copy_in_expr<T const> : force_copy_in_expr<T>{};
 
  template< class T > struct expr_storage_t      {typedef T type;};
- template< class T > struct expr_storage_t<T&>  : std::conditional<force_copy_in_expr<T>::value, T ,std::reference_wrapper<T>>{};
+ template< class T > struct expr_storage_t<T&>  : std::conditional<force_copy_in_expr<T>::value, typename std::remove_const<T>::type ,std::reference_wrapper<T>>{};
  template< class T > struct expr_storage_t<T&&> {typedef T type;};
- 
+ template< class T > struct expr_storage_t<const T&&> {typedef T type;};
+ template< class T > struct expr_storage_t<const T> {typedef T type;};
+
  /* ---------------------------------------------------------------------------------------------------
   *  Placeholder and corresponding traits
   *  --------------------------------------------------------------------------------------------------- */
  template<int i, typename T> class pair; // forward
 
-  // a placeholder is an empty struct, labelled by an int.
+ // a placeholder is an empty struct, labelled by an int.
  template<int N> struct placeholder {
   static_assert( (N>=0) && (N<64) , "Placeholder number limited to [0,63]");
   static constexpr int index = N;
   template <typename RHS> pair<N,RHS> operator = (RHS && rhs) { return {std::forward<RHS>(rhs)};} 
  };
- 
+
  // placeholder will always be copied (they are empty anyway).
  template< int N > struct force_copy_in_expr<placeholder<N>> : std::true_type{};
 
@@ -90,11 +92,11 @@ namespace triqs { namespace clef {
   std::integral_constant<bool, is_any_lazy<T>::value || is_any_lazy<Args...>::value> {}; 
 
  template<typename T>
- constexpr bool ClefExpression() { return is_any_lazy<T>::value;}
+  constexpr bool ClefExpression() { return is_any_lazy<T>::value;}
 
  template<typename T> struct is_clef_expression : is_any_lazy<T>{};
 
-/* ---------------------------------------------------------------------------------------------------
+ /* ---------------------------------------------------------------------------------------------------
   * Node of the expression tree
   *  --------------------------------------------------------------------------------------------------- */
  template<typename Tag, typename... T> struct expr {
@@ -136,7 +138,7 @@ namespace triqs { namespace clef {
  template<typename Tag> struct operation;
 
  // a little function to clean the reference_wrapper
- template<typename U> U & _cl(U & x) { return x;}
+ template<typename U> U  _cl(U && x) { return std::forward<U>(x);}
  template<typename U> U & _cl(std::reference_wrapper<U> x) { return x.get();}
 
  /// Terminal 
@@ -156,7 +158,7 @@ namespace triqs { namespace clef {
 #define TRIQS_CLEF_OPERATION(TAG,OP)\
  namespace tags { struct TAG : binary_op { static const char * name() { return BOOST_PP_STRINGIZE(OP);} };}\
  template<> struct operation<tags::TAG> {\
-  template<typename L, typename R> auto operator()(L  const & l, R  const & r) const DECL_AND_RETURN ( _cl(l) OP _cl(r));\
+  template<typename L, typename R> auto operator()(L && l, R && r) const DECL_AND_RETURN ( _cl(std::forward<L>(l)) OP _cl(std::forward<R>(r)));\
  };\
  template<typename L, typename R>\
  typename std::enable_if<is_any_lazy<L,R>::value, expr<tags::TAG,typename expr_storage_t<L>::type,typename expr_storage_t<R>::type> >::type \
@@ -189,7 +191,9 @@ namespace triqs { namespace clef {
 
  /// the only ternary node :  expression if
  template<> struct operation<tags::if_else> { 
-  template<typename C, typename A, typename B> auto operator()(C const & c, A const & a, B const & b) const DECL_AND_RETURN (_cl(c) ? _cl(a): _cl(b));
+  // A and B MUST be the same 
+  template<typename C, typename A, typename B> A operator()(C const & c, A const & a, B const & b) const {return _cl(c) ? _cl(a): _cl(b);}
+  //template<typename C, typename A, typename B> auto operator()(C const & c, A const & a, B const & b) const DECL_AND_RETURN (_cl(c) ? _cl(a): _cl(b));
  };
  // operator is : if_else( Condition, A, B)
  template<typename C, typename A, typename B> 
@@ -199,79 +203,76 @@ namespace triqs { namespace clef {
  /* ---------------------------------------------------------------------------------------------------
   * Evaluation of the expression tree.
   *  --------------------------------------------------------------------------------------------------- */
+ template<typename ... T> struct _or; 
+ template<typename T0, typename ... T> struct _or<T0,T...> : std::integral_constant<bool,T0::value || _or<T...>::value>{}; 
+ template<> struct _or<> : std::false_type{};
 
- template<typename Tag, bool IsLazy,  typename... Args> struct operation2;
- template<typename Tag, typename... Args> struct operation2<Tag, true, Args...> { 
-  typedef expr<Tag,typename remove_cv_ref<Args>::type ...> rtype;
-  rtype operator()(Args const & ...  args) const  {return rtype {Tag(), args...};} 
- };
- template<typename Tag, typename... Args> struct operation2<Tag, false, Args...> { 
-  typedef typename std::remove_reference<typename std::result_of<operation<Tag>(Args...)>::type>::type rtype;
-  // remove the reference because of ternary if_else in which decltype returns a ref...
-  rtype operator()(Args const & ... args) const  {return operation<Tag>()(args...); } 
- };
-
- // Generic case : do nothing (for the leaf of the tree except placeholder)
+ // Generic case : do nothing (for the leaf of the tree including placeholder)
  template<typename T, typename ... Pairs> struct evaluator{
-  typedef T rtype;
-  rtype operator()(T const & k, Pairs const &... pairs) {return k;}
+  typedef is_any_lazy<T> is_lazy;
+  T operator()(T const & k, Pairs const &... pairs) { return k;}
  };
 
  // placeholder
  template<int N, int i, typename T, typename... Pairs> struct evaluator< placeholder<N>, pair<i,T>, Pairs... > {
   typedef evaluator< placeholder<N>, Pairs...> eval_t;
-  typedef typename eval_t::rtype rtype;
-  rtype operator()(placeholder<N>, pair<i,T> const &, Pairs const& ... pairs) { return eval_t()(placeholder<N>(), pairs...);} 
+  typedef typename eval_t::is_lazy is_lazy;
+  auto operator()(placeholder<N>, pair<i,T> const &, Pairs const& ... pairs) DECL_AND_RETURN( eval_t()(placeholder<N>(), pairs...)); 
  };
+
  template<int N, typename T, typename... Pairs> struct evaluator< placeholder<N>, pair<N,T>, Pairs... > {
-  typedef T const & rtype;
-  //typedef typename pair<N,T>::value_type const & rtype;
-  rtype operator()(placeholder<N>, pair<N,T> const & p, Pairs const& ...) { return p.rhs;}
+  typedef std::false_type is_lazy;
+  T operator()(placeholder<N>, pair<N,T> const & p, Pairs const& ...) { return p.rhs;}
+ };
+
+ template<typename Tag, bool IsLazy> struct operation2;
+ template<typename Tag> struct operation2<Tag, true> { 
+  template<typename... Args> 
+   expr<Tag,typename remove_cv_ref<Args>::type ...> operator()(Args && ...  args) const  {
+    return {Tag(), std::forward<Args>(args)...};
+   } 
+ };
+ template<typename Tag> struct operation2<Tag, false> { 
+  template<typename... Args> 
+   auto operator()(Args && ... args) const DECL_AND_RETURN( operation<Tag>()(std::forward<Args>(args)...));
+  void operator() (...) const {}
  };
 
  // general expr node
- template<typename Tag, typename... Childs, typename... Pairs> struct evaluator<expr<Tag, Childs...>, Pairs...> {
-  typedef operation2<Tag, is_any_lazy<typename evaluator<Childs, Pairs...>::rtype... >::value, typename evaluator<Childs, Pairs...>::rtype... > OPTYPE;
-  typedef typename OPTYPE::rtype rtype;
+ template<int arity, typename Expr, typename... Pairs> struct evaluator_node_gal;
 
-  // first done manually for clearer error messages ... 
-  template< int arity = sizeof...(Childs)>
-  typename std::enable_if< arity==1, rtype>::type
-  operator()(expr<Tag, Childs...> const & ex, Pairs const & ... pairs) const
-  { return OPTYPE()(eval(std::get<0>(ex.childs),pairs...) );}
- 
-  template< int arity = sizeof...(Childs)>
-  typename std::enable_if< arity==2, rtype>::type
-  operator()(expr<Tag, Childs...> const & ex, Pairs const & ... pairs) const
-  { return OPTYPE()(eval(std::get<0>(ex.childs),pairs...),eval(std::get<1>(ex.childs),pairs...) );}
- 
+ template<typename Tag, typename... Childs, typename... Pairs> struct evaluator_node_gal<1, expr<Tag, Childs...>, Pairs...> {
+  typedef _or<typename evaluator<Childs, Pairs...>::is_lazy... > is_lazy;
+  typedef operation2<Tag, is_lazy::value > OPTYPE;
+  auto operator()(expr<Tag, Childs...> const & ex, Pairs const & ... pairs) const
+   DECL_AND_RETURN (OPTYPE()(eval(std::get<0>(ex.childs),pairs...)));
+ };
+
+ template<typename Tag, typename... Childs, typename... Pairs> struct evaluator_node_gal<2, expr<Tag, Childs...>, Pairs...> {
+  typedef _or<typename evaluator<Childs, Pairs...>::is_lazy... > is_lazy;
+  typedef operation2<Tag, is_lazy::value > OPTYPE;
+  auto operator()(expr<Tag, Childs...> const & ex, Pairs const & ... pairs) const
+   DECL_AND_RETURN (OPTYPE()(eval(std::get<0>(ex.childs),pairs...),eval(std::get<1>(ex.childs),pairs...)));
+ };
+
 #define AUX(z,p,unused)  eval(std::get<p>(ex.childs),pairs...) 
 #define IMPL(z, NN, unused)  \
-  template< int arity = sizeof...(Childs)>\
-  typename std::enable_if< arity==NN, rtype>::type\
-  operator()(expr<Tag, Childs...> const & ex, Pairs const & ... pairs) const\
-  { return OPTYPE()(BOOST_PP_ENUM(NN,AUX,nil));}
-  BOOST_PP_REPEAT_FROM_TO(3,BOOST_PP_INC(TRIQS_CLEF_MAXNARGS), IMPL, nil);
+ template<typename Tag, typename... Childs, typename... Pairs> struct evaluator_node_gal<NN, expr<Tag, Childs...>, Pairs...> {\
+  typedef _or<typename evaluator<Childs, Pairs...>::is_lazy... > is_lazy;\
+  typedef operation2<Tag, is_lazy::value > OPTYPE;\
+  auto operator()(expr<Tag, Childs...> const & ex, Pairs const & ... pairs) const\
+  DECL_AND_RETURN ( OPTYPE()(BOOST_PP_ENUM(NN,AUX,nil)));\
+ };
+ BOOST_PP_REPEAT_FROM_TO(3,BOOST_PP_INC(TRIQS_CLEF_MAXNARGS), IMPL, nil);
 #undef AUX
 #undef IMPL 
- }; 
 
-#ifdef TRIQS_CLEF_EVAL_SHORT_CIRCUIT
- // A short circuit if intersection of ph and is 0, no need to evaluate the whole tree......
- // Seems useless, && the second eval is not correct if hte expression is a terminal. 
- template<typename T, typename... Pairs> 
-  typename std::enable_if< (ph_set<T>::value & ph_set<Pairs...>::value) !=0, typename evaluator<T,Pairs...>::rtype > ::type
-  eval (T const & ex, Pairs const &... pairs) { return evaluator<T, Pairs...>()(ex, pairs...); }
+ template<typename Tag, typename... Childs, typename... Pairs> 
+  struct evaluator<expr<Tag, Childs...>, Pairs...> : evaluator_node_gal<sizeof...(Childs), expr<Tag, Childs...>, Pairs...>{};
 
- template<typename T, typename... Pairs> 
-  typename std::enable_if< (ph_set<T>::value & ph_set<Pairs...>::value) ==0, T const &> ::type
-  eval (T const & ex, Pairs const &... pairs) { return ex;}
-#else
  // The general eval function for expressions
  template<typename T, typename... Pairs> 
-  typename evaluator<T,Pairs...>::rtype 
-  eval (T const & ex, Pairs const &... pairs) { return evaluator<T, Pairs...>()(ex, pairs...); }
-#endif
+  auto eval (T const & ex, Pairs const &... pairs) DECL_AND_RETURN( evaluator<T, Pairs...>()(ex, pairs...));
 
  /* ---------------------------------------------------------------------------------------------------
   * make_function : transform an expression to a function  
@@ -284,17 +285,15 @@ namespace triqs { namespace clef {
   // gcc 4.6 crashes (!!!) on the first variant
 #ifndef TRIQS_COMPILER_OBSOLETE_GCC
   template<typename... Args> 
-   typename evaluator<Expr,pair<Is,Args>...>::rtype 
-   operator()(Args &&... args) const 
-   { return evaluator<Expr,pair<Is,Args>...>() ( ex, pair<Is,Args>{std::forward<Args>(args)}...); }
+   auto operator()(Args &&... args) const 
+   DECL_AND_RETURN( evaluator<Expr,pair<Is,Args>...>() ( ex, pair<Is,Args>{std::forward<Args>(args)}...));
 #else
   template<typename... Args> struct __eval { 
    typedef evaluator<Expr,pair<Is,Args>...> eval_t;
-   typedef typename eval_t::rtype rtype;
-   rtype operator()(Expr const &ex , Args &&... args) const { return eval_t() ( ex, pair<Is,Args>{std::forward<Args>(args)}...); }
+   auto operator()(Expr const &ex , Args &&... args) const DECL_AND_RETURN( return eval_t() ( ex, pair<Is,Args>{std::forward<Args>(args)}...));
   };
   template<typename... Args> 
-   typename __eval<Args...>::rtype operator()(Args &&... args) const { return __eval<Args...>() ( ex, std::forward<Args>(args)...); } 
+   auto operator()(Args &&... args) const DECL_AND_RETURN(return __eval<Args...>() ( ex, std::forward<Args>(args)...));
 #endif
  };
 
@@ -307,12 +306,6 @@ namespace triqs { namespace clef {
  template< typename Expr, int... Is> struct is_any_lazy<make_fun_impl<Expr,Is...> > : std::integral_constant<bool,ph_set<make_fun_impl<Expr,Is...>>::value !=0>{};
  template< typename Expr, int... Is> struct force_copy_in_expr<make_fun_impl<Expr,Is...> > : std::true_type{};
 
- template< typename Expr, int... Is,typename... Pairs> struct evaluator<make_fun_impl<Expr,Is...>, Pairs...> {
-  typedef evaluator<Expr,Pairs...> e_t;
-  typedef make_fun_impl<typename e_t::rtype, Is...> rtype;
-  rtype operator()(make_fun_impl<Expr,Is...> const & f, Pairs const & ... pairs) const { return rtype( e_t()(f.ex, pairs...));}
- };
-
  template< typename Expr, typename ... Phs> 
   make_fun_impl<typename remove_cv_ref <Expr>::type,Phs::index...> 
   make_function(Expr && ex, Phs...) { return {ex}; }
@@ -323,11 +316,17 @@ namespace triqs { namespace clef {
   };
  }
 
+ template< typename Expr, int... Is,typename... Pairs> struct evaluator<make_fun_impl<Expr,Is...>, Pairs...> {
+  typedef evaluator<Expr,Pairs...> e_t;
+  typedef std::integral_constant<bool, ph_set< make_fun_impl<Expr,Is...> >::value != ph_set<Pairs...>::value> is_lazy;
+  auto operator()(make_fun_impl<Expr,Is...> const & f, Pairs const & ... pairs) const DECL_AND_RETURN( make_function( e_t()(f.ex, pairs...),placeholder<Is>()...));
+ };
+
  template<int ... N> struct ph_list {};
  template<int ... N> ph_list<N...> var( placeholder<N> ...) { return {};}
 
  template<typename Expr, int ... N> 
- auto operator >> (ph_list<N...>, Expr const & ex) DECL_AND_RETURN( make_function(ex, placeholder<N>()...));
+  auto operator >> (ph_list<N...>, Expr const & ex) DECL_AND_RETURN( make_function(ex, placeholder<N>()...));
 
  /* --------------------------------------------------------------------------------------------------
   *  make_function
@@ -400,15 +399,15 @@ namespace triqs { namespace clef {
   void operator<<(expr<tags::subscript, F, placeholder<Is>...> const & ex, RHS && rhs) { 
    triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
   }
-  template<typename F, typename RHS, int... Is> 
+ template<typename F, typename RHS, int... Is> 
   void operator<<(expr<tags::subscript, F, placeholder<Is>...> && ex, RHS && rhs) { 
    triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
   }
 
-  template<typename F, typename RHS, typename... T> 
+ template<typename F, typename RHS, typename... T> 
   void operator<<(expr<tags::subscript, F, T...> && ex, RHS && rhs) = delete;
 
-  template<typename F, typename RHS, typename... T> 
+ template<typename F, typename RHS, typename... T> 
   void operator<<(expr<tags::subscript, F, T...> const & ex, RHS && rhs) = delete;
 
  /* --------------------------------------------------------------------------------------------------
@@ -433,7 +432,7 @@ namespace triqs { namespace clef {
  namespace _result_of { 
   template< typename Obj, typename... Args > struct make_expr_call : 
    std::enable_if< is_any_lazy<Args...>::value, expr<tags::function,typename expr_storage_t<Obj>::type, typename expr_storage_t<Args>::type ...> > {
-   static_assert (((arity<Obj>::value==-1) || (arity<Obj>::value == sizeof...(Args))), "Object called with a wrong number of arguments"); 
+    static_assert (((arity<Obj>::value==-1) || (arity<Obj>::value == sizeof...(Args))), "Object called with a wrong number of arguments"); 
    };
  }
  template< typename Obj, typename... Args >
@@ -477,7 +476,7 @@ namespace triqs { namespace clef {
    auto operator()( Args&&... args ) const DECL_AND_RETURN(make_expr_call (*this,std::forward<Args>(args)...));
 #else
   template< typename... Args>
-  typename _result_of::make_expr_call<function const & ,Args...>::type
+   typename _result_of::make_expr_call<function const & ,Args...>::type
    operator()( Args&&... args ) const { return make_expr_call (*this,args...);}
 #endif
 
@@ -488,7 +487,7 @@ namespace triqs { namespace clef {
 
  };
  template<typename F> struct force_copy_in_expr <function<F>> : std::true_type{};
-  
+
  /* --------------------------------------------------------------------------------------------------
   *  The macro to make any function lazy
   *  TRIQS_CLEF_MAKE_FNT_LAZY (Arity,FunctionName ) : creates a new function in the triqs::lazy namespace 
@@ -504,7 +503,7 @@ namespace triqs { namespace clef {
 
 #ifndef TRIQS_COMPILER_OBSOLETE_GCC
 
- #define TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(TY,name)\
+#define TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(TY,name)\
  struct __clef_lazy_method_impl_##name { \
   TY * _x;\
   template<typename... A> auto operator()(A&&... a) const DECL_AND_RETURN (_x->name(std::forward<A>(a)...));\
