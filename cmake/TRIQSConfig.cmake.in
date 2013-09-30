@@ -106,9 +106,9 @@ endmacro (triqs_add_all_subdirectories_with_cmakelist)
 
 # RPATH setting 
 macro (triqs_set_rpath_for_target Target)
- set_target_properties(${Target} PROPERTIES LINK_FLAGS -Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib)
- set_target_properties(${Target} PROPERTIES INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
- set_target_properties(${Target} PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
+ set_target_properties(${Target} PROPERTIES LINK_FLAGS -Wl,-rpath,${TRIQS_PATH}/lib)
+ set_target_properties(${Target} PROPERTIES INSTALL_NAME_DIR ${TRIQS_PATH}/lib)
+ set_target_properties(${Target} PROPERTIES INSTALL_RPATH ${TRIQS_PATH}/lib)
  set_target_properties(${Target} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
  set_target_properties(${Target} PROPERTIES BUILD_WITH_INSTALL_RPATH FALSE)
  set_target_properties(${Target} PROPERTIES SKIP_BUILD_RPATH FALSE)
