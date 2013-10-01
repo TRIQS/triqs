@@ -21,18 +21,14 @@
 #ifndef TRIQS_GFS_ALL_H
 #define TRIQS_GFS_ALL_H
 
-// The basic classes
 #include <triqs/gfs/block.hpp>
 #include <triqs/gfs/imtime.hpp>
 #include <triqs/gfs/imfreq.hpp>
 #include <triqs/gfs/retime.hpp>
 #include <triqs/gfs/refreq.hpp>
 #include <triqs/gfs/legendre.hpp>
-
-#ifndef TRIQS_COMPILER_IS_OBSOLETE
 #include <triqs/gfs/product.hpp>
 #include <triqs/gfs/curry.hpp>
-#endif
 
 #endif
 

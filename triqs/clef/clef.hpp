@@ -281,20 +281,10 @@ namespace triqs { namespace clef {
  template< typename Expr, int... Is> struct make_fun_impl { 
   Expr ex; // keep a copy of the expression
   make_fun_impl(Expr const & ex_) : ex(ex_) {} 
-
-  // gcc 4.6 crashes (!!!) on the first variant
-#ifndef TRIQS_COMPILER_OBSOLETE_GCC
+  
   template<typename... Args> 
    auto operator()(Args &&... args) const 
    DECL_AND_RETURN( evaluator<Expr,pair<Is,Args>...>() ( ex, pair<Is,Args>{std::forward<Args>(args)}...));
-#else
-  template<typename... Args> struct __eval { 
-   typedef evaluator<Expr,pair<Is,Args>...> eval_t;
-   auto operator()(Expr const &ex , Args &&... args) const DECL_AND_RETURN( return eval_t() ( ex, pair<Is,Args>{std::forward<Args>(args)}...));
-  };
-  template<typename... Args> 
-   auto operator()(Args &&... args) const DECL_AND_RETURN(return __eval<Args...>() ( ex, std::forward<Args>(args)...));
-#endif
  };
 
  // values of the ph, excluding the Is ...
@@ -471,14 +461,8 @@ namespace triqs { namespace clef {
 
   ReturnType operator()(T const &... t) const { return (*_fnt_ptr)(t...);}
 
-#ifndef TRIQS_COMPILER_OBSOLETE_GCC
   template< typename... Args>
    auto operator()( Args&&... args ) const DECL_AND_RETURN(make_expr_call (*this,std::forward<Args>(args)...));
-#else
-  template< typename... Args>
-   typename _result_of::make_expr_call<function const & ,Args...>::type
-   operator()( Args&&... args ) const { return make_expr_call (*this,args...);}
-#endif
 
   template<typename RHS> friend void triqs_clef_auto_assign (function const & x, RHS rhs) {
    * (x._fnt_ptr) =  std_function_type (rhs);
@@ -501,8 +485,6 @@ namespace triqs { namespace clef {
  template< typename... A> \
  auto name( A&& ... a) DECL_AND_RETURN(make_expr_call(name##_lazy_impl(),std::forward<A>(a)...));
 
-#ifndef TRIQS_COMPILER_OBSOLETE_GCC
-
 #define TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(TY,name)\
  struct __clef_lazy_method_impl_##name { \
   TY * _x;\
@@ -521,29 +503,6 @@ namespace triqs { namespace clef {
  \
  template< typename... Args>\
  auto operator()(Args&&... args ) && DECL_AND_RETURN(make_expr_call (std::move(*this),std::forward<Args>(args)...));\
-
-#else
-
-#define TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(TY,name,RETURN_TYPE)\
- struct __clef_lazy_method_impl_##name { \
-  TY * _x;\
-  template<typename... A> RETURN_TYPE operator()(A&&... a) const {return ((*_x).name(std::forward<A>(a)...));}\
-  friend std::ostream & operator<<(std::ostream & out, __clef_lazy_method_impl_##name  const & x) { return out<<BOOST_PP_STRINGIZE(TY)<<"."<<BOOST_PP_STRINGIZE(name);}\
- };\
- template< typename... A> \
- typename _result_of::make_expr_call<__clef_lazy_method_impl_##name, A...>::type\
- name( A&& ... a) {return make_expr_call(__clef_lazy_method_impl_##name{this},std::forward<A>(a)...);}
-
-#define TRIQS_CLEF_IMPLEMENT_LAZY_CALL(TY)\
- template< typename... Args>\
- typename triqs::clef::_result_of::make_expr_call<TY const &,Args...>::type\
- operator()(Args&&... args ) const {return make_expr_call (*this,std::forward<Args>(args)...);}\
- \
- template< typename... Args>\
- typename triqs::clef::_result_of::make_expr_call<TY &,Args...>::type\
- operator()(Args&&... args ) {return make_expr_call (*this,std::forward<Args>(args)...);}
-
-#endif
 
 }} //  namespace triqs::clef
 #endif 

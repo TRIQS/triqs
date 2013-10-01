@@ -11,7 +11,6 @@ int main() {
   auto G2 = G1;
   auto G3 = G2;
 
-#ifndef TRIQS_COMPILER_IS_OBSOLETE
   // construct some block functions
   auto B0 = block_gf<imfreq> (3); 
   auto B1 = make_block_gf<imfreq> (3, G1); 
@@ -35,7 +34,6 @@ int main() {
   B1[0][0] = 98;
   //not implemented yet
   //B3["a"][0] = 98;
-#endif
 
   auto View =  make_block_gf_view(G1,G2,G3);
 

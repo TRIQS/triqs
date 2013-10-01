@@ -21,9 +21,6 @@
 #ifndef TRIQS_GF_CURRY_H
 #define TRIQS_GF_CURRY_H
 #include "./product.hpp"
-#ifndef TRIQS_COMPILER_IS_C11_COMPLIANT
-#error "This header requires a fully C++11 compliant compiler"
-#endif
 namespace triqs { namespace gfs { 
 
  template<typename F> struct lambda_valued {};

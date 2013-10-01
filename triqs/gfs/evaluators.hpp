@@ -65,13 +65,7 @@ namespace triqs { namespace gfs {
    public :
     static constexpr int arity = 1;
     evaluator_one_var() = default;
-#ifndef TRIQS_COMPILER_OBSOLETE_GCC    
- template<typename G> auto operator()(G const * g, double x) const DECL_AND_RETURN(evaluator_fnt_on_mesh<Variable> (g->mesh(),x)(on_mesh(*g)));
-#else
- // needed on old gcc ?
- // template<typename G> auto operator()(G const * g, double x) const DECL_AND_RETURN(evaluator_fnt_on_mesh<Variable> (g->mesh(),x)(typename G::_on_mesh_wrapper_const(*g)));
-#endif
-
+    template<typename G> auto operator()(G const * g, double x) const DECL_AND_RETURN(evaluator_fnt_on_mesh<Variable> (g->mesh(),x)(on_mesh(*g)));
     template<typename G> typename G::singularity_t const & operator()(G const * g,freq_infty const &) const {return g->singularity();}
   };
 

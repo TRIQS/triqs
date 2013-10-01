@@ -17,14 +17,14 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  
  EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} --version  
   OUTPUT_VARIABLE _compiler_output RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
- set(compiler_version_min "4.6.3")
+ set(compiler_version_min "4.8.1")
  set(compiler_name "gcc")
  set(compiler_group 1)
  string(REGEX REPLACE ".*([2-5]\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
- if(NOT compiler_version VERSION_LESS "4.8.0" )
-  set(TRIQS_COMPILER_IS_C11_COMPLIANT ON)
- endif()
+ #if(compiler_version VERSION_LESS "4.8.0" )
+ # set(compiler_is_obsolete_gcc ON)
+ #endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
@@ -33,7 +33,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  set(CMAKE_COMPILER_IS_CLANG TRUE )
  set(compiler_name "clang")
  set(compiler_group 1)
- set(TRIQS_COMPILER_IS_C11_COMPLIANT ON)
  IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # Apple which does not has the official clang version number ... 
   string(REGEX REPLACE ".*LLVM ([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
@@ -48,7 +47,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion  
   OUTPUT_VARIABLE compiler_version RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
  set(CMAKE_COMPILER_IS_ICC TRUE )
- set(compiler_version_min "13.0.0")
+ set(compiler_version_min "14.0.0")
  set(compiler_name "Intel icc")
  set(compiler_group 3)
  #string(REGEX REPLACE "[^0-9]*([0-9]+\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})

@@ -60,12 +60,6 @@ namespace boost { namespace serialization { class access;}}
 #define TRIQS_ARRAYS_DEBUG_CHECK(Cond,Error) 
 #endif
 
-// In particular, gcc 4.6, 4.7 do not have "rvalue for *this", which forbid the implementation 
-// of weak references. In that case, we will revert to strong view instead. 
-#ifdef TRIQS_COMPILER_IS_OBSOLETE
-#define TRIQS_ARRAYS_SLICE_DEFAUT_IS_SHARED
-#endif
-
 namespace triqs { 
 
  typedef unsigned long long ull_t;

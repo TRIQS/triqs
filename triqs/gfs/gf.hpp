@@ -227,8 +227,6 @@ namespace triqs { namespace gfs {
     // First, a simple () returns a view, like for an array...
     view_type operator()() const { return *this;}
 
-#ifndef TRIQS_COMPILER_OBSOLETE_GCC    
-
     /// Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
     /// there is at least one lazy argument ...
     template<typename Arg0, typename... Args >    // match any argument list, picking out the first type : () is not permitted
@@ -262,8 +260,6 @@ namespace triqs { namespace gfs {
       return clef::make_expr_call(std::move(*this),std::forward<Arg0>(arg0), std::forward<Args>(args)...);
      }
 
-#endif
-
     /*
     // on mesh component for composite meshes
     // enable iif the first arg is a mesh_point_t for the first component of the mesh_t
@@ -293,7 +289,6 @@ namespace triqs { namespace gfs {
     template<typename ... U>
      cr_type operator[] (closest_pt_wrap<U...> const & p) const { return _data_proxy(_data, _mesh.index_to_linear( gfs_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
 
-#ifndef TRIQS_COMPILER_OBSOLETE_GCC    
     template<typename Arg>
      typename clef::_result_of::make_expr_subscript<gf_impl const &,Arg>::type
      operator[](Arg && arg) const & { return clef::make_expr_subscript(*this,std::forward<Arg>(arg));}
@@ -305,7 +300,6 @@ namespace triqs { namespace gfs {
     template<typename Arg>
      typename clef::_result_of::make_expr_subscript<gf_impl,Arg>::type
      operator[](Arg && arg) && { return clef::make_expr_subscript(std::move(*this),std::forward<Arg>(arg));}
-#endif
 
     /// A direct access to the grid point
     template<typename... Args>
@@ -314,9 +308,7 @@ namespace triqs { namespace gfs {
     template<typename... Args>
      cr_type on_mesh (Args&&... args) const { return _data_proxy(_data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
-#ifndef TRIQS_COMPILER_OBSOLETE_GCC    
    private:
-#endif
     struct _on_mesh_wrapper_const {
      gf_impl const & f; _on_mesh_wrapper_const (gf_impl const & _f) : f(_f) {}
      template <typename... Args> cr_type operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}

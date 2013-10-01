@@ -145,11 +145,8 @@ namespace triqs { namespace gfs {
  template<typename T> size_t n_blocks (gf<block_index,T> const & g)      { return g.mesh().size();}
  template<typename T> size_t n_blocks (gf_view<block_index,T> const & g) { return g.mesh().size();}
 
-#ifndef TRIQS_COMPILER_IS_OBSOLETE
  template<typename T> using block_gf = gf<block_index, gf<T>>;
-#endif
 
- // also experimental
  // an iterator over the block
  template<typename Target, typename Opt>
   class block_gf_iterator : 

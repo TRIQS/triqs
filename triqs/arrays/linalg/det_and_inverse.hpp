@@ -191,11 +191,9 @@ namespace arrays {
  }
 }
 
-#ifndef TRIQS_COMPILER_OBSOLETE_GCC
 namespace clef {
  TRIQS_CLEF_MAKE_FNT_LAZY(determinant);
 }
-#endif
 
 } // namespace triqs::arrays
 #endif
