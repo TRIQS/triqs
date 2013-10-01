@@ -55,7 +55,7 @@ struct test {
    D.inverse_matrix() << D.matrix() << triqs::arrays::matrix<std::complex<double>>(inverse(D.matrix()))<<  std::endl;
   std::cerr << "det_old = " << det_old << "detratio = "<< detratio<< " determin "<< D.determinant() <<std::endl;
 #endif
-  assert_close(D.determinant() , long(1)/determinant(D.inverse_matrix())(), PRECISION); 
+  assert_close(D.determinant() , long(1)/determinant(D.inverse_matrix()), PRECISION); 
   triqs::arrays::assert_all_close( inverse(D.matrix()) , D.inverse_matrix(), PRECISION, true);
   assert_close( det_old * detratio , D.determinant(), PRECISION);
  }

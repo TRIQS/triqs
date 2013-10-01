@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
     assert ( (abs(A(i,j) - Wkeep(i,j))) <1.e-10 );
 
  double det = determinant(W);
- std::cout<<"determinant "<<determinant(W)<< " = "<< det<< std::endl<<std::endl;
+ std::cout<<"determinant"<< " = "<< det<< std::endl<<std::endl;
 
  //
  matrix_view<double> V(W(range(0,3,2), range(0,3,2)));

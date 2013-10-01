@@ -71,9 +71,8 @@ int main() {
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
- // tail 
- BOOST_AUTO( t, G(inf));
- //local::gf<meshes::tail> t2 = t + 2.4;
+  // tail 
+  auto  t = G(inf);
 
  TEST(t.order_min()); 
  TEST( t( 2) ) ;
