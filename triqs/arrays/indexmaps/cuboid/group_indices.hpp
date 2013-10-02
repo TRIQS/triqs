@@ -43,11 +43,7 @@ namespace triqs { namespace arrays {
  // given a m_index of indices, a metafunction to map to their position into memory
  template<ull_t ML, typename CTL> struct index_group_to_mem_pos_list;
  template<ull_t ML,int ... Is> struct index_group_to_mem_pos_list<ML,m_index<Is...>> {
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
   typedef m_index < indexmaps::mem_layout::index_to_memory_rank(ML,Is)...> type; 
-#else
-  typedef m_index < indexmaps::mem_layout::index_to_memory_rank_tr<ML,Is>::value ... > type; 
-#endif
   static_assert( get_min_max<type>::max - get_min_max<type>::min + 1 == sizeof...(Is), "Indices not contiguous in memory");
  };
 

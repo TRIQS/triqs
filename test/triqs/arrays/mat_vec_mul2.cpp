@@ -32,8 +32,6 @@ using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
-
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
  
  matrix<int>  Ai= {{ 1,2}, {3,4}}; 
  matrix<double>  A= {{ 1,2}, {3,4}}; 
@@ -49,8 +47,6 @@ int main(int argc, char **argv) {
  assert_all_close(A*B, A*Bd, 1.e-13);
 
  return 0;
-
-#endif
 
 }
 

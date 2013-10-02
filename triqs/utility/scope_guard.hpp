@@ -34,13 +34,7 @@ class scope_guard {
  void dismiss() { active_ = false; }
  bool active() const { return active_;}
  scope_guard() = delete;
-#ifdef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
- private:
- scope_guard(const scope_guard&) = default;
- public:
-#else
  scope_guard(const scope_guard&) = delete;
-#endif
  scope_guard(scope_guard&& rhs) : f_(std::move(rhs.f_)) , active_(rhs.active_) { rhs.dismiss(); }
  scope_guard& operator=(const scope_guard&) = delete;
  scope_guard& operator=(scope_guard&& rhs) { using std::swap; swap(f_,rhs.f_); swap(active_, rhs.active_); return *this;}

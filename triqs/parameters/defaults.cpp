@@ -24,29 +24,12 @@ namespace triqs { namespace utility {
    
  std::vector<std::vector<std::string>> parameter_defaults:: generate_help() const{
      std::vector<std::vector<std::string>> str;
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
      str.push_back({"parameter:", "status:", "type",  "default value:", "description:"});
      for (auto const &s : object_map){
        std::string key=s.first; std::ostringstream val; val << s.second;
        if(is_required(key)) str.push_back({key, "required", s.second.type_name(), "-", doc(key)});
        else str.push_back({key, "optional", s.second.type_name(), val.str(), doc(key)});
      }
-#else
-     std::vector<std::string> v;
-     v.push_back("parameter:"); v.push_back("status:"); v.push_back("default value:"); v.push_back("description:");
-     str.push_back(v);
-     for (auto const &s : object_map){
-      std::string key=s.first; std::ostringstream val; val << s.second;
-       v.clear();
-      if(is_required(key)) {
-       v.push_back(key); v.push_back("required"); v.push_back("-"); v.push_back(doc(key));
-      }
-      else {
-       v.push_back(key); v.push_back("optional"); v.push_back(val.str()); v.push_back(doc(key));
-      }
-      str.push_back(v);
-     }
-#endif
      return str; 
    }
 

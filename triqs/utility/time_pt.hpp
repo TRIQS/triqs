@@ -47,11 +47,7 @@ namespace triqs { namespace utility {
   time_pt (time_pt const &) = default;
   time_pt (time_pt && x) = default;
   time_pt & operator = (time_pt const &) = default ;
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
   time_pt & operator = (time_pt && x) = default;
-#else
-  time_pt & operator = (time_pt && x) noexcept { using std::swap; swap(n,x.n); swap(beta, x.beta); swap(val, x.val); return *this;}
-#endif
 
   //this is also dangerous for reproducibility
   time_pt & operator = (double v) = delete;

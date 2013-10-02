@@ -52,8 +52,6 @@ namespace triqs { namespace arrays {
  
  namespace flags {
 
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
-
   constexpr ull_t get(ull_t f, ull_t a)   { return  ((f & (1ull<<a)) >> a);}
   constexpr ull_t get2(ull_t f, ull_t a)  { return  ((f & ((1ull<<a) + (1ull<< (a+1ull)))) >> a);}
 
@@ -86,34 +84,6 @@ namespace triqs { namespace arrays {
    static_assert ( (!( is_c && is_f)), "You asked C and Fortran traversal order at the same time...");
    static_assert ( (!( (is_c || is_f) && To )), "You asked C or Fortran traversal order and gave a traversal order ...");
   };
-
-#else 
-
-#define TRIQS_FLAGS_GET(f,a) ((f & (1ull<<a)) >> a)
-#define TRIQS_FLAGS_GET2(f,a) ((f & ((1ull<<a) + (1ull<< (a+1ull)))) >> a) 
-
-  constexpr bool is_const (ull_t f) { return false;} // non const view on icc 
-
-#ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-  template< ull_t F> struct bound_check_trait { static constexpr bool value = true;};
-#else
-  template< ull_t F> struct bound_check_trait { static constexpr bool value = TRIQS_FLAGS_GET (F, 5)!=0; }; 
-#endif
-  
-  template< ull_t F> struct traversal_order_c { static constexpr bool value = TRIQS_FLAGS_GET(F,1) !=0; };
-  template< ull_t F> struct traversal_order_fortran { static constexpr bool value = TRIQS_FLAGS_GET(F,2) !=0; };
-
-  template< ull_t F> struct init_mode_tr { static constexpr int value = TRIQS_FLAGS_GET(F,3); };
-
-  template<ull_t F> struct init_tag1;
-  template<> struct init_tag1<0> { typedef Tag::no_init type;};
-  template<> struct init_tag1<1> { typedef Tag::default_init type;};
-  template<ull_t F> struct init_tag : init_tag1 < init_mode_tr<F>::value > {};
-
-  template<ull_t F, ull_t To> struct assert_make_sense { };// no check on icc
-#undef TRIQS_FLAGS_GET
-#undef TRIQS_FLAGS_GET2
-#endif
 
  }
 }}//namespace triqs::arrays 

@@ -34,9 +34,6 @@ namespace triqs { namespace arrays { namespace permutations {
   return res;
  }
 
- // icc 13.0 has a big bug in constexpr.
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
-
  //  sum_{k=0}^{n-1} k a^k =  ( (n-1) * a**(n+1) - n * a**n + a)/(a-1)**2
  //  sum_{k=0}^{n-1} k a^(n-k-1) =  ( (n-1)  - n * a + a**n)/(a-1)**2
  //  with a = 16, a**n = 1<<4n
@@ -55,37 +52,6 @@ namespace triqs { namespace arrays { namespace permutations {
 
   constexpr ull inverse_impl(ull p, ull c) { return (c << (4*apply(p,c))) + (c>0 ? inverse_impl(p,c-1): 0 ); }
   constexpr ull inverse(ull p) { return size(p) + 0x10ull*inverse_impl(p,size(p)-1);}
- 
-#else
-
- constexpr ull _identity(ull n) { return  ( (n-1ull)*(1ull<<(4*(n+1))) +(1ull<<4)- n *(1ull<<(4*n))) /( (1ull<<4) -1ull) /((1ull<<4) -1ull); } 
- constexpr ull identity(ull n) { return n + 0x10 * _identity(n);}
-
- constexpr ull _ridentity(ull n) { return  ( (n-1ull) - n* (1ull<<4) + (1ull<<(4*n))) /( (1ull<<4) -1ull) /((1ull<<4) -1ull); } 
- constexpr ull ridentity(ull n) { return n + 0x10 *_ridentity(n); }
-
- // todo generalize with preproc...
- constexpr ull make_perm_impl(ull i0) { return i0;} 
- constexpr ull make_perm_impl(ull i0, ull i1) { return i0 + 0x10ull * i1;} 
- constexpr ull make_perm_impl(ull i0, ull i1, ull i2) { return i0 + 0x10ull *make_perm_impl(i1,i2);} 
- constexpr ull make_perm_impl(ull i0, ull i1, ull i2, ull i3) { return i0 + 0x10ull *make_perm_impl(i1,i2,i3);} 
- constexpr ull make_perm_impl(ull i0, ull i1, ull i2, ull i3, ull i4) { return i0 + 0x10ull * make_perm_impl(i1,i2,i3,i4); } 
-
- constexpr ull permutation(ull i0) { return 1ull +  0x10ull *make_perm_impl(i0);} 
- constexpr ull permutation(ull i0, ull i1) { return 2ull +  0x10ull *make_perm_impl(i0,i1);}
- constexpr ull permutation(ull i0, ull i1, ull i2) { return 3ull +  0x10ull *make_perm_impl(i0,i1,i2);}
- constexpr ull permutation(ull i0, ull i1, ull i2, ull i3)  { return 4ull +  0x10ull *make_perm_impl(i0,i1,i2,i3);}
- constexpr ull permutation(ull i0, ull i1, ull i2, ull i3, ull i4) { return 5ull +  0x10ull *make_perm_impl(i0,i1,i2,i3,i4);}
-
- template<int c> struct _compose { static constexpr ull invoke(ull p1, ull p2) { return apply(p2, apply(p1,c)) + 16ull * _compose<c+1>::invoke(p1,p2); } };
- template<> struct _compose<15> { static constexpr ull invoke(ull p1, ull p2) { return 0ull; } };
- constexpr ull compose(ull p1, ull p2) { return size(p1) + 0x10ull* (_compose<0>::invoke(p1,p2) & ((1ull<<4*size(p1)) -1ull));}
-
- template<int c> struct _inverse { static constexpr ull invoke(ull p) { return (ull(c) << (4*apply(p,c))) + _inverse<c+1>::invoke(p);} };
- template<> struct _inverse<15> { static constexpr ull invoke(ull p) { return 0ull; } };
- constexpr ull inverse(ull p) { return size(p) + 0x10ull*( _inverse<0>::invoke(p) - 7ull*15ull + size(p)*(size(p)-1ull)/2ull);}
-
-#endif
  
  inline void print( std::ostream & out, ull perm) { 
   out << "(";

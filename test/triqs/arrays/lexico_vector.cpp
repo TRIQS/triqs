@@ -31,8 +31,6 @@ using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
-
  {
   vector<double> a = { 1,3,2}, b= {2,3,1};
   assert_is_true  (std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
@@ -51,10 +49,6 @@ int main(int argc, char **argv) {
   vector<int> a = {1,3,2}, b=a;
   assert_is_false (a<b); 
  }
-
-
-#endif
-
 }
 
 

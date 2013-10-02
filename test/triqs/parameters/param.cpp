@@ -14,11 +14,7 @@ struct my_obj {
  my_obj() { i=0;}
  my_obj(my_obj const & x) { i = x.i;}
  my_obj(my_obj && x) { std::swap(i,x.i);}
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
  my_obj & operator = (my_obj && x)= default;
-#else
- my_obj & operator = (my_obj && x) { i = x.i; return *this;}
-#endif
 
  // h5 operation 
  friend std::string get_triqs_hdf5_data_scheme( my_obj const&) { return "myobject_is_nice";} 

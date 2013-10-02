@@ -89,19 +89,7 @@ namespace triqs { namespace mc_tools {
    move(move &rhs) {*this = rhs;} // to avoid clash with tempalte construction  !
    move(move && rhs) { *this = std::move(rhs);}
    move & operator = (move const & rhs) { *this = rhs.clone_(); return *this;}
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
    move & operator = (move && rhs) = default;
-#else
-   move & operator = (move && rhs) { // how painful is icc  !
-    using std::swap;
-#define SW(X) swap(X,rhs.X)
-    SW(impl_); SW(hash_); SW(type_name_); SW(clone_);
-    SW(attempt_); SW(accept_); SW(reject_); SW(h5_r); SW(h5_w);
-    SW(NProposed);SW(Naccepted); SW(acceptance_rate_);
-#undef SW
-    return *this;
-   }
-#endif
 
    MCSignType attempt(){ NProposed++; return attempt_();}
    MCSignType accept() { Naccepted++; return accept_(); }
@@ -155,19 +143,8 @@ namespace triqs { namespace mc_tools {
    move_set(move_set const &) = default;
    move_set(move_set &&) = default;
    move_set& operator = (move_set const &) = default;
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
    move_set& operator = (move_set &&) = default;
-#else
-   move_set& operator = (move_set && rhs) {
-    using std::swap;
-#define SW(X) swap(X,rhs.X)
-    SW(move_vec); SW(names_); SW(current); SW(current_move_number); SW(RNG);
-    SW(Proba_Moves); SW(Proba_Moves_Acc_Sum); SW(try_sign_ratio); SW(debug_counter);
-#undef SW
-    return *this;
-   }
-#endif
-
+   
    /**
     * Add move M with its probability of being proposed.
     * NB : the proposition_probability needs to be >0 but does not need to be

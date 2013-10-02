@@ -42,8 +42,6 @@ namespace triqs { namespace arrays {
    * All these computations can be done *at compile time* (constexpr)
    */
 
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
-
   constexpr int memory_rank_to_index(ull_t p, int r) { return permutations::apply(p, r);} 
   constexpr int index_to_memory_rank(ull_t p, int r) { return permutations::apply(permutations::inverse(p), r);} 
 
@@ -65,27 +63,6 @@ namespace triqs { namespace arrays {
     (flags::traversal_order_fortran(fl)  ? fortran_order(rank) : (to==0 ? c_order(rank) : to )));}
   
   template< int rank, ull_t fl, ull_t to> struct get_traversal_order { static constexpr ull_t value = _get_traversal_order (rank,fl,to); };
-#else
-
-  constexpr int memory_rank_to_index(ull_t p, int r) { return permutations::apply(p, r);} 
-  constexpr int index_to_memory_rank(ull_t p, int r) { return permutations::apply(permutations::inverse(p), r);} 
-
-  template<ull_t p, int r> struct index_to_memory_rank_tr {  static constexpr ull_t value = permutations::apply(permutations::inverse(p), r);};
-
-  constexpr bool is_fortran (ull_t p){ return p == permutations::identity(permutations::size(p));}
-  constexpr bool is_c       (ull_t p){ return p == permutations::ridentity(permutations::size(p));}
-
-  constexpr ull_t fortran_order (int n){ return permutations::identity(n);}
-  constexpr ull_t c_order       (int n){ return permutations::ridentity(n);}
-
-  template<int n> struct fortran_order_tr { static constexpr ull_t value = permutations::identity(n);};
-  template<int n> struct c_order_tr       { static constexpr ull_t value = permutations::ridentity(n);};
-
-  template< int rank, ull_t fl, ull_t to> struct get_traversal_order {
-   static constexpr ull_t value = (flags::traversal_order_c<fl>::value ? c_order_tr<rank>::value :
-     (flags::traversal_order_fortran<fl>::value ?  fortran_order_tr<rank>::value : (to==0 ?  c_order_tr<rank>::value : to )));
-  };
-#endif
  }}
 
 

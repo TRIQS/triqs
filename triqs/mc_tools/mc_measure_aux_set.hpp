@@ -63,18 +63,7 @@ namespace triqs { namespace mc_tools {
    //measure_aux(measure_aux &rhs) {*this = rhs;} // or it will use the template  = bug
    measure_aux(measure_aux && rhs)  = default ; //{ *this = std::move(rhs);}
    measure_aux & operator = (measure_aux const & rhs) { *this = rhs.clone_(); return *this;}
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
    measure_aux & operator = (measure_aux && rhs) =default;
-#else
-   measure_aux & operator = (measure_aux && rhs) noexcept {
-    using std::swap;
-#define SW(X) swap(X,rhs.X)
-    SW(impl_); SW(hash_); SW(type_name_); SW(clone_);
-    SW(call_); 
-#undef SW
-    return *this;
-   }
-#endif
 
    void operator()(){ call_();}
 
@@ -102,15 +91,7 @@ namespace triqs { namespace mc_tools {
    measure_aux_set(measure_aux_set &&) = default;
 
    measure_aux_set& operator = (measure_aux_set const &) = default;
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
    measure_aux_set& operator = (measure_aux_set &&) = default;
-#else
-   measure_aux_set& operator = (measure_aux_set && rhs) {
-    using std::swap;
-    swap(m_map,rhs.m_map);
-    return *this;
-   }
-#endif
 
    /**
     * Register the auxiliary M with a name

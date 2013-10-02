@@ -80,19 +80,7 @@ namespace triqs { namespace mc_tools {
    measure(measure &rhs) {*this = rhs;} // or it will use the template  = bug
    measure(measure && rhs) { *this = std::move(rhs);}
    measure & operator = (measure const & rhs) { *this = rhs.clone_(); return *this;}
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
    measure & operator = (measure && rhs) =default;
-#else
-   measure & operator = (measure && rhs) {
-    using std::swap;
-#define SW(X) swap(X,rhs.X)
-    SW(impl_); SW(hash_); SW(type_name_); SW(clone_);
-    SW(accumulate_); SW(collect_results_); SW(h5_r); SW(h5_w);
-    SW(count_);
-#undef SW
-    return *this;
-   }
-#endif
 
    void accumulate(MCSignType signe){ assert(impl_); count_++; accumulate_(signe); }
    void collect_results (boost::mpi::communicator const & c ) { collect_results_(c);}
@@ -126,16 +114,7 @@ namespace triqs { namespace mc_tools {
    measure_set(measure_set &&) = default;
 
    measure_set& operator = (measure_set const &) = default;
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
    measure_set& operator = (measure_set &&) = default;
-
-#else
-   measure_set& operator = (measure_set && rhs) {
-    using std::swap;
-    swap(m_map,rhs.m_map);
-    return *this;
-   }
-#endif
 
    /**
     * Register the Measure M with a name
