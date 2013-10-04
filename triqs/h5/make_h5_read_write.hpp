@@ -28,7 +28,7 @@
 namespace triqs { namespace h5 {
 
  template<typename T, typename Enable=void> struct has_h5_read                                                                    : std::false_type {};
- template<typename T> struct has_h5_read<T, decltype(h5_read(std::declval<h5::group>(), std::string(), (T&)(std::declval<T>())))> : std::true_type {};
+ template<typename T> struct has_h5_read<T, decltype(h5_read(std::declval<h5::group>(), std::string(), *(std::declval<T*>())))> : std::true_type {};
 
  template<typename T, typename Enable=void> struct has_h5_write                                                                    : std::false_type {};
  template<typename T> struct has_h5_write<T, decltype(h5_write(std::declval<h5::group>(), std::string(), std::declval<const T>()))> : std::true_type {};
