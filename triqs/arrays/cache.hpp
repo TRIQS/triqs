@@ -45,20 +45,19 @@ namespace triqs { namespace arrays {
  template<typename A1, typename A2, typename Enable =void > struct need_copy_ct : mpl::true_{};
  template<typename A1, typename A2> struct need_copy_ct<A1,A2, ENABLE_IF(is_amv_value_or_view_class<A1>)> :  
   mpl::not_<std::is_same< typename A1::value_type, typename A2::value_type> > {};
-  //mpl::not_<indexmaps::IndexOrder::same_order<typename A1::indexmap_type::index_order_type, typename A2::indexmap_type::index_order_type> >{};
  
- template<typename DataType, typename CacheType> class const_cache {
+ template<typename DataType, typename CacheType, bool IsConst> class cache_impl {
   protected:
    typedef memory_layout< DataType::domain_type::rank> ml_t;
    const ml_t ml;
-   typename view_type_if_exists_else_type<DataType>::type keeper;
+   typename std::conditional<IsConst, typename const_view_type_if_exists_else_type<DataType>::type, typename view_type_if_exists_else_type<DataType>::type>::type keeper;
    static const bool CT_need_copy = need_copy_ct<DataType,CacheType>::value;
    const bool need_copy;
-   typedef typename CacheType::view_type exposed_view_type;
+   typedef typename std::conditional<IsConst, typename CacheType::const_view_type, typename CacheType::view_type>::type exposed_view_type;
    struct internal_data {
     CacheType copy;
     exposed_view_type view;
-    internal_data(const_cache const & P,ml_t ml) : copy(CacheType(P.keeper,ml)), view(copy) {
+    internal_data(cache_impl const & P,ml_t ml) : copy(CacheType(P.keeper,ml)), view(copy) {
 #ifdef TRIQS_ARRAYS_CACHE_COPY_VERBOSE
      std::cerr<< " Cache : copy made "<< std::endl<< " -- TRACE = --" << std::endl << triqs::utility::stack_trace() << std::endl;
 #endif
@@ -68,18 +67,10 @@ namespace triqs { namespace arrays {
    mutable std::shared_ptr<internal_data> _id;   
    internal_data  & id() const { if (!_id) _id= std::make_shared<internal_data>(*this,ml); return *_id;}
 
-   //exposed_view_type       & view2 ()       { if (need_copy) return id().view; else return keeper;}    
-   //exposed_view_type const & view2 () const { if (need_copy) return id().view; else return keeper;} 
-
    // avoid compiling the transformation keeper-> exposed_view_type when it does not make sense
-   exposed_view_type       & view1 (mpl::false_)       { if (need_copy) return id().view; else return keeper; }    
-   exposed_view_type const & view1 (mpl::false_) const { if (need_copy) return id().view; else return keeper;} 
-
-   exposed_view_type       & view1 (mpl::true_)       { return id().view; }     
-   exposed_view_type const & view1 (mpl::true_) const { return id().view; } 
-
-   exposed_view_type       & view2 ()       { return view1(mpl::bool_<CT_need_copy>());}
-   exposed_view_type const & view2 () const { return view1(mpl::bool_<CT_need_copy>());}
+   exposed_view_type view1 (mpl::false_) const { if (need_copy) return id().view; else return keeper;} 
+   exposed_view_type view1 (mpl::true_) const { return id().view; } 
+   exposed_view_type view2 () const { return view1(mpl::bool_<CT_need_copy>());}
 
    template<typename D> 
     typename std::enable_if< ! is_amv_value_or_view_class<D>::value, bool>::type 
@@ -90,27 +81,31 @@ namespace triqs { namespace arrays {
     need_copy_dynamic ( D const & x) const { return (x.indexmap().memory_indices_layout() != ml );}
 
   public :
-   const_cache (DataType const & x, ml_t ml_ = ml_t()): 
+   cache_impl (DataType const & x, ml_t ml_ = ml_t()): 
     ml(ml_),keeper (x), 
     need_copy ( CT_need_copy || need_copy_dynamic(x)  || (!has_contiguous_data(x)) ) {}
    void update() { if (need_copy && _id) id().view = keeper;} 
-   exposed_view_type     const & view () const { return view2();}
-   operator exposed_view_type const & () const { return view2();}
+   exposed_view_type  view () const { return view2();}
+   operator exposed_view_type  () const { return view2();}
+ };
+
+ // Const case : just add the back copy in the destructor 
+ template<typename DataType, typename CacheType> class const_cache : public cache_impl<DataType,CacheType,true> { 
+  typedef cache_impl<DataType,CacheType,true> B;
+  typedef typename B::ml_t ml_t;
+  public :
+  const_cache (DataType const & x, ml_t ml = ml_t() ): B(x,ml) {}
  };
 
  // Non const case : just add the back copy in the destructor 
- template<typename DataType, typename CacheType> class cache : const_cache<DataType,CacheType> { 
+ template<typename DataType, typename CacheType> class cache : public cache_impl<DataType,CacheType,false> { 
   static_assert( is_amv_value_or_view_class<DataType>::value, "non const cache only for regular classes and views, not expressions");
-  typedef const_cache<DataType,CacheType> B;
+  typedef cache_impl<DataType,CacheType,false> B;
   typedef typename B::ml_t ml_t;
   public :
   cache (DataType const & x, ml_t ml = ml_t() ): B(x,ml) {}
   ~cache() { back_update(); }
   void back_update() { if (this->need_copy) this->keeper = this->id().view;}
-  typename B::exposed_view_type &       view ()           {return B::view2();}
-  typename B::exposed_view_type const & view () const     {return B::view2();}
-  operator typename B::exposed_view_type & ()             {return B::view2();}
-  operator typename B::exposed_view_type const & () const {return B::view2();}
  };
 }}//namespace triqs::arrays 
 #endif

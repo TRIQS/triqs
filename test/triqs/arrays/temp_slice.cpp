@@ -28,7 +28,7 @@ auto bad (array<long,1> const & a) DECL_AND_RETURN (a(range(0,3)));
 
 auto bad2 (array<long,1> const & a) DECL_AND_RETURN (a(0)); 
 
-array_view<long,1> good(array<long,1> const & a) {return a(range(0,3));}
+array_const_view<long,1> good(array<long,1> const & a) {return a(range(0,3));}
 
 
 int main(int argc, char **argv) {

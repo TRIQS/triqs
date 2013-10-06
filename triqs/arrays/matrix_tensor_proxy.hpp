@@ -38,6 +38,8 @@ namespace arrays {
                                                      TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray)>::type {
 
   typedef typename std::remove_reference<A>::type A_t;
+  static constexpr bool is_const = true;
+  
   A a;
   long n;
 
@@ -45,8 +47,8 @@ namespace arrays {
   typedef indexmaps::slicer<typename A_t::indexmap_type, long, ellipsis> slicer_t;
   typedef typename slicer_t::r_type indexmap_type;
   typedef typename indexmap_type::domain_type domain_type;
-  typedef typename std::conditional<IsMatrix, matrix_view<value_type>,
-                                    array_view<value_type, domain_type::rank>>::type view_type;
+  typedef typename std::conditional<IsMatrix, matrix_const_view<value_type>,
+                                    array_const_view<value_type, domain_type::rank>>::type view_type;
 
   template <typename AA> const_matrix_tensor_proxy(AA &&a_, long n_) : a(std::forward<AA>(a_)), n(n_) {}
 
@@ -83,6 +85,8 @@ namespace arrays {
                                                TRIQS_CONCEPT_TAG_NAME(MutableCuboidArray)>::type {
 
   typedef typename std::remove_reference<A>::type A_t;
+  static constexpr bool is_const = false;
+
   A a;
   long n;
 

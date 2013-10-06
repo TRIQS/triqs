@@ -54,6 +54,8 @@ namespace triqs { namespace gfs {
    // index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
    struct _aux2 { template<typename I, typename M> size_t operator()(M const & m, I const & i,size_t R) {return m.index_to_linear(i) + R * m.size();}};
    size_t index_to_linear(index_t const & ii) const { return triqs::tuple::fold_on_zip(_aux2(), reverse(m_tuple), reverse(ii), size_t(0)); }
+//    size_t index_to_linear(index_t const & ii) const { return triqs::tuple::fold_on_zip([](auto const &m, auto const &i, auto R){return m.index_to_linear(i) + R * m.size();} , m_tuple, ii, size_t(0)); }
+
 
    // Same but a tuple of mesh_point_t
    struct _aux3 { template<typename P, typename M> size_t operator()(M const & m, P const & p,size_t R) {return p.linear_index() + R * m.size();}};

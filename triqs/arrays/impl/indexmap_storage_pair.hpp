@@ -50,10 +50,10 @@ namespace triqs { namespace arrays {
 
  template <bool Const, typename IndexMapIterator, typename StorageType > class iterator_adapter;
 
- template <class V, int R, ull_t OptionFlags, ull_t TraversalOrder,  class ViewTag, bool Borrowed > struct ISPViewType;
+ template <class V, int R, ull_t OptionFlags, ull_t TraversalOrder, class ViewTag, bool Borrowed, bool IsConst> struct ISPViewType;
 
- template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder,  typename ViewTag >
-  class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_CONCEPT_TAG_NAME(MutableCuboidArray) {
+ template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder, bool IsConst, typename ViewTag>
+ class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_CONCEPT_TAG_NAME(MutableCuboidArray) {
 
    public :
     typedef typename StorageType::value_type value_type;
@@ -64,7 +64,8 @@ namespace triqs { namespace arrays {
     static constexpr unsigned int rank = IndexMapType::domain_type::rank;
     static constexpr ull_t opt_flags = OptionFlags;
     static constexpr ull_t traversal_order = TraversalOrder;
-   
+    static constexpr bool is_const = IsConst;
+
    protected:
 
     indexmap_type indexmap_;
@@ -170,13 +171,13 @@ namespace triqs { namespace arrays {
 
     // ------------------------------- operator () --------------------------------------------
 
-    typedef typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag,false >::type view_type;
-    typedef typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag,true >::type  weak_view_type;
+    typedef typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag,false, IsConst >::type view_type;
+    typedef typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag,true , IsConst>::type  weak_view_type;
 
     // Evaluation and slices
     template<typename... Args>
      typename std::enable_if<
-     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && !flags::is_const(OptionFlags)
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && (!IsConst)
      , value_type &>::type
      operator()(Args const & ... args) {  return storage_[indexmap_(args...)]; }
 
@@ -191,17 +192,18 @@ namespace triqs { namespace arrays {
      //typedef typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type V2;
      typedef value_type V2;
      static_assert(IM2::domain_type::rank !=0, "Internal error");
-     static constexpr ull_t optmodif = (is_const ? ConstView : 0ull);
-     typedef typename ISPViewType<V2,IM2::domain_type::rank, OptionFlags|optmodif, IM2::traversal_order_in_template, ViewTag, ForceBorrowed || StorageType::is_weak >::type type;
+     typedef typename ISPViewType<V2,IM2::domain_type::rank, OptionFlags, IM2::traversal_order_in_template, ViewTag, ForceBorrowed || StorageType::is_weak, is_const >::type type;
     };
 
+    // simplify this ?
 #ifndef TRIQS_ARRAYS_SLICE_DEFAUT_IS_SHARED
     template<typename... Args>   // non const version
      typename boost::lazy_enable_if_c<
-     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0) && !flags::is_const(OptionFlags) 
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0) && (!IsConst)
      , result_of_call_as_view<false,true,Args...>
      >::type // enable_if
      operator()(Args const & ... args) & {
+      // simplify
       return typename result_of_call_as_view<false,true,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
 
     template<typename... Args>  // const version
@@ -215,21 +217,21 @@ namespace triqs { namespace arrays {
     template<typename... Args>  // rvalue version : same value of weak as this
      typename boost::lazy_enable_if_c<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
-     , result_of_call_as_view<true,false,Args...>
+     , result_of_call_as_view<false,false,Args...>
      >::type // enable_if
      operator()(Args const & ... args) && {
       //std::cerr  << "slicing a temporary"<< this->storage().is_weak<< result_of_call_as_view<true,true,Args...>::type::storage_type::is_weak << std::endl;
-      return typename result_of_call_as_view<true,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), std::move(storage())); 
+      return typename result_of_call_as_view<false,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), std::move(storage())); 
      }
 
     /// Equivalent to make_view
-    typename ISPViewType<value_type,domain_type::rank, OptionFlags | ConstView, TraversalOrder, ViewTag, true >::type
+    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, true, true >::type
      operator()() const & { return *this; }
 
-    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, true >::type
+    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, true, IsConst >::type
      operator()() & { return *this; }
 
-    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, StorageType::is_weak >::type
+    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, StorageType::is_weak,IsConst >::type
      operator()() && { return *this; }
 
     // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression

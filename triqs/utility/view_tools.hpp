@@ -38,7 +38,7 @@ namespace triqs {
 
  template<typename T, bool HasView = has_view<T>::value> struct const_view_type_if_exists_else_type;
  template<typename T> struct const_view_type_if_exists_else_type<T,false> {typedef T type;};
- template<typename T> struct const_view_type_if_exists_else_type<T,true>  {typedef const typename T::view_type type;};
+ template<typename T> struct const_view_type_if_exists_else_type<T,true>  {typedef const typename T::const_view_type type;};
 
  /*
  // replacement of std::plus for views ...

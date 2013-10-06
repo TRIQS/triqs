@@ -50,7 +50,7 @@ namespace triqs { namespace utility {
    }
 
    template <typename VectorType>
-    static TYPE_ENABLE_IF(R,ImmutableStdVector<VectorType>) invoke( VectorType const & v) {
+    static TYPE_ENABLE_IF(R,ImmutableStdVector<VectorType>) invoke( VectorType & v) {
      static_assert(std::is_constructible<T,decltype(v[0])>::value, "Can not make std::vector<T> from the proposed type");
      R r; r.reserve(v.size());
      for(size_t i=0; i<v.size(); ++i) r.push_back(T(v[i]));

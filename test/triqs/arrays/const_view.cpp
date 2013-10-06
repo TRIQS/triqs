@@ -24,18 +24,37 @@
 
 using namespace triqs::arrays;
 
+
+template <typename U, ull_t opt, ull_t to, bool B> void f(array_view<U, 2, opt, to, B, true> const &a) {
+ std::cout << a << std::endl;
+}
+
+void f2(array_const_view<long, 2> const &a) { std::cout << a << std::endl; }
+
 int main(int argc, char **argv) {
 
- const array<long,1> A = {1,2,3,4};
+ {
+  array<long, 2> A(2, 3);
+  A() = 3;
+  auto const &AA = A;
+  f2(A());
 
- std::cerr  << A.opt_flags<<std::endl;
- std::cerr  << A().opt_flags<<std::endl;
 
- // None of this should compile
- //A(0) = 2;
- //A()(0) = 2;
- //A(range(0,2))(0) = 10;
+  array_const_view<long,2> Vc = A();
+  //array_view<long,2> V = Vc;
+ }
 
+//#define SHOULD_NOT_COMPILE
+#ifdef SHOULD_NOT_COMPILE
+ {
+  const array<long, 1> A = {1, 2, 3, 4};
+
+  // None of this should compile
+  A(0) = 2;
+  A()(0) = 2;
+  A(range(0,2))(0) = 10;
+ }
+#endif
  return 0;
 }
 

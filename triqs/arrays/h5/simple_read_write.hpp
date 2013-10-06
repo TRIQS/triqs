@@ -28,6 +28,7 @@
 namespace triqs { namespace arrays { 
  namespace h5_impl {
 
+  template <typename T, int R> const void * get_array_data_cptr ( array_const_view<T,R> const & A) { return h5::get_data_ptr(&(A.storage()[0]));}
   template <typename T, int R> const void * get_array_data_cptr ( array_view<T,R> const & A) { return h5::get_data_ptr(&(A.storage()[0]));}
   template <typename T, int R> const void * get_array_data_cptr ( array<T,R> const & A) { return h5::get_data_ptr(&(A.storage()[0]));}
   //template <typename T, int R> void * get_array_data_ptr ( array_view<T,R> & A) { return h5::get_data_ptr(&(A.storage()[0]));}
@@ -76,7 +77,7 @@ namespace triqs { namespace arrays {
    * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
    */
   template <typename T, int R>
-   void write_array (h5::group g, std::string const & name, array_view <T,R> const & A, bool C_reorder = true) {
+   void write_array (h5::group g, std::string const & name, array_const_view <T,R> const & A, bool C_reorder = true) {
     static_assert( !std::is_base_of<std::string, T>::value, " Not implemented");// 1d is below
     if (C_reorder) { write_array(g,name, make_const_cache(A).view(),false); return; }
     try {
@@ -90,6 +91,8 @@ namespace triqs { namespace arrays {
  
   template <typename T, int R>
    void write_array (h5::group g, std::string const & name, array <T,R> const & A, bool C_reorder = true) { write_array(g,name,A(),C_reorder);}
+  template <typename T, int R>
+   void write_array (h5::group g, std::string const & name, array_view <T,R> const & A, bool C_reorder = true) { write_array(g,name,A(),C_reorder);}
  
   /*********************************** READ array ****************************************************************/
   /**
@@ -102,8 +105,9 @@ namespace triqs { namespace arrays {
    *        cache of the data to reorder them in memory. If false, the array is stored as it [if you know what you are doing]
    * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
    */
-  template <typename ArrayType>
-   void read_array (h5::group g, std::string const & name,  ArrayType & A, bool C_reorder = true) {
+  template <typename ArrayType1>
+   void read_array (h5::group g, std::string const & name,  ArrayType1 && A, bool C_reorder = true) {
+    typedef typename std::remove_reference<ArrayType1>::type ArrayType;
     static_assert( !std::is_base_of<std::string, typename ArrayType::value_type>::value, " Not implemented");// 1d is below
     typedef typename ArrayType::value_type V;
     try {
@@ -127,12 +131,12 @@ namespace triqs { namespace arrays {
    }
 
   // overload : special treatment for arrays of strings (one dimension only).
-  inline void write_array (h5::group f, std::string const & name, vector_view<std::string> const & V) {
+  inline void write_array (h5::group f, std::string const & name, vector_const_view<std::string> V) {
    h5::detail::write_1darray_vector_of_string_impl(f,name,V);
   }
 
-  inline void write_array (h5::group f, std::string const & name, array_view<std::string,1> const & V) {
-   write_array(f,name,vector_view<std::string>(V));
+  inline void write_array (h5::group f, std::string const & name, array_const_view<std::string,1> V) {
+   write_array(f,name,vector_const_view<std::string>(V));
   }
 
   inline void read_array (h5::group f, std::string const & name, arrays::vector<std::string> & V) {
@@ -187,7 +191,7 @@ namespace triqs { namespace arrays {
  template <typename ArrayType>
   //ENABLE_IF(is_amv_value_or_view_class<ArrayType>)
   ENABLE_IFC(is_amv_value_or_view_class<ArrayType>::value && has_scalar_or_string_value_type<ArrayType>::value) 
-  h5_write (h5::group fg, std::string const & name,  ArrayType const & A) { h5_impl::write_array(fg,name, array_view<typename ArrayType::value_type, ArrayType::rank>(A));}
+  h5_write (h5::group fg, std::string const & name,  ArrayType const & A) { h5_impl::write_array(fg,name, array_const_view<typename ArrayType::value_type, ArrayType::rank>(A));}
 
 }}
 #endif

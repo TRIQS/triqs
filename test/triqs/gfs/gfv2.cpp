@@ -29,7 +29,7 @@ int main() {
   TEST( G( 0) ) ;
   Gv.on_mesh(0) = 0;
 
-  auto Gv2 = slice_target(G,range(0,1),range(0,1));
+  auto Gv2 = slice_target(G(),range(0,1),range(0,1));
   TEST( Gv2( 0) ) ;
   Gv2.on_mesh(0) = 10;
   TEST( Gv2( 0) ) ;

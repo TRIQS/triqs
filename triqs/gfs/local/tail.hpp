@@ -266,7 +266,8 @@ namespace triqs { namespace gfs { namespace local {
   }
 
   /// Slice in orbital space
-  template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) {
+  //template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) {
+  inline tail_view slice_target(tail_view t, tqa::range R1, tqa::range R2) {
     return tail_view(t.data()(tqa::range(),R1,R2), t.mask_view()(R1,R2), t.order_min());
   }
 

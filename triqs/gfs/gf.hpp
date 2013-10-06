@@ -479,16 +479,16 @@ namespace triqs { namespace gfs {
  // ---------------------------------- slicing ------------------------------------
 
  //slice
- template<typename Variable, typename Target, typename Opt, bool V, typename... Args>
-  gf_view<Variable,matrix_valued,Opt> slice_target (gf_impl<Variable,Target,Opt,V> const & g, Args&& ... args) {
+ template<typename Variable, typename Target, typename Opt, typename... Args>
+  gf_view<Variable,matrix_valued,Opt> slice_target (gf_view<Variable,Target,Opt> g, Args&& ... args) {
    static_assert(std::is_same<Target,matrix_valued>::value, "slice_target only for matrix_valued GF's");
    using arrays::range;
    //auto sg=slice_target (g.singularity(),range(args,args+1)...);
    return gf_view<Variable,matrix_valued,Opt>(g.mesh(), g.data()(range(), std::forward<Args>(args)... ), slice_target (g.singularity(), std::forward<Args>(args)...) , g.symmetry());
   }
 
- template<typename Variable, typename Target, typename Opt, bool V, typename... Args>
-  gf_view<Variable,scalar_valued,Opt> slice_target_to_scalar (gf_impl<Variable,Target,Opt,V> const & g, Args&& ... args) {
+ template<typename Variable, typename Target, typename Opt, typename... Args>
+  gf_view<Variable,scalar_valued,Opt> slice_target_to_scalar (gf_view<Variable,Target,Opt> g, Args&& ... args) {
    static_assert(std::is_same<Target,matrix_valued>::value, "slice_target only for matrix_valued GF's");
    using arrays::range;
    auto sg=slice_target (g.singularity(),range(args,args+1)...);
@@ -496,8 +496,8 @@ namespace triqs { namespace gfs {
   }
 
  // a scalar_valued gf can be viewed as a 1x1 matrix
- template<typename Variable, typename Opt, bool V, typename... Args>
-  gf_view<Variable,matrix_valued,Opt> reinterpret_scalar_valued_gf_as_matrix_valued (gf_impl<Variable,scalar_valued,Opt,V> const & g) {
+ template<typename Variable, typename Opt, typename... Args>
+  gf_view<Variable,matrix_valued,Opt> reinterpret_scalar_valued_gf_as_matrix_valued (gf_view<Variable,scalar_valued,Opt> g) {
    typedef typename gf_view<Variable,matrix_valued,Opt>::data_view_t a_t;
    auto a = a_t {typename a_t::indexmap_type (join(g.data().shape(),make_shape(1,1))), g.data().storage()};
    return gf_view<Variable,matrix_valued,Opt>(g.mesh(), a, g.singularity(), g.symmetry());

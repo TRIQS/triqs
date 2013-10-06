@@ -28,7 +28,7 @@
 
 using namespace triqs::arrays;
 
-void f( array_view<long,2> & A, long u) { 
+void f( array_view<long,2>  A, long u) { 
  A(0,0) = u;
 }
 

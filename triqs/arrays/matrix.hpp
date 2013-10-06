@@ -27,7 +27,7 @@
 #include "vector.hpp"
 namespace triqs { namespace arrays {
 
- template <typename ValueType, ull_t Opt=0, ull_t TraversalOrder= 0, bool Borrowed = false> class matrix_view;
+ template <typename ValueType, ull_t Opt=0, ull_t TraversalOrder= 0, bool Borrowed = false, bool IsConst=false> class matrix_view;
  template <typename ValueType, ull_t Opt=0, ull_t TraversalOrder= 0> class matrix;
  
  // ---------------------- matrix --------------------------------
@@ -44,13 +44,14 @@ namespace triqs { namespace arrays {
  bool memory_layout_is_fortran() const { return this->indexmap().strides()[0] < this->indexmap().strides()[1]; }
 
 #define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt,TraversalOrder>, \
- storages::shared_block<ValueType,Borrowed>, Opt, TraversalOrder, Tag::matrix_view > 
+ storages::shared_block<ValueType,Borrowed>, Opt, TraversalOrder, IsConst, Tag::matrix_view > 
 
- template <typename ValueType, ull_t Opt, ull_t TraversalOrder, bool Borrowed>
+ template <typename ValueType, ull_t Opt, ull_t TraversalOrder, bool Borrowed, bool IsConst>
   class matrix_view : Tag::matrix_view,  TRIQS_CONCEPT_TAG_NAME(MutableMatrix), public IMPL_TYPE {
    public :
     typedef matrix     <ValueType,Opt,TraversalOrder>       regular_type;
     typedef matrix_view<ValueType,Opt,TraversalOrder>       view_type;
+    typedef matrix_view<ValueType, Opt, TraversalOrder, false, true> const_view_type;
     typedef matrix_view<ValueType,Opt,TraversalOrder,true>  weak_view_type;
 
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
@@ -94,15 +95,19 @@ namespace triqs { namespace arrays {
 
  //---------------------------------------------------------------------
  // this traits is used by indexmap_storage_pair, when slicing to find the correct view type.
- template < class V, int R, ull_t OptionFlags, ull_t To, bool Borrowed	 > 
-  struct ISPViewType< V, R, OptionFlags, To, Tag::matrix_view, Borrowed> { 
-  typedef typename std::conditional <R == 1, vector_view<V,OptionFlags,Borrowed >, matrix_view<V,OptionFlags, To, Borrowed > >::type type;
+ template < class V, int R, ull_t OptionFlags, ull_t To, bool Borrowed, bool IsConst> 
+  struct ISPViewType< V, R, OptionFlags, To, Tag::matrix_view, Borrowed,IsConst> {
+  typedef typename std::conditional<R == 1, vector_view<V, OptionFlags, Borrowed, IsConst>,
+                                    matrix_view<V, OptionFlags, To, Borrowed, IsConst>>::type type;
  };
 #undef IMPL_TYPE
 
+ template <typename ValueType, ull_t Opt = 0, ull_t TraversalOrder = 0, bool Borrowed = false>
+ using matrix_const_view = matrix_view<ValueType, Opt, TraversalOrder, Borrowed, true>;
+
  // ---------------------- matrix --------------------------------
 #define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt,TraversalOrder>, \
- storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::matrix_view > 
+ storages::shared_block<ValueType>, Opt, TraversalOrder, false, Tag::matrix_view > 
 
  template <typename ValueType, ull_t Opt, ull_t TraversalOrder >
   class matrix: Tag::matrix,  TRIQS_CONCEPT_TAG_NAME(MutableMatrix), public IMPL_TYPE {
@@ -112,6 +117,7 @@ namespace triqs { namespace arrays {
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
     typedef matrix     <ValueType,Opt,TraversalOrder>      regular_type;
     typedef matrix_view<ValueType,Opt,TraversalOrder>      view_type;
+    typedef matrix_view<ValueType, Opt, TraversalOrder, false, true> const_view_type;
     typedef matrix_view<ValueType,Opt,TraversalOrder,true> weak_view_type;
 
     /// Empty matrix.
@@ -215,8 +221,8 @@ namespace triqs { namespace arrays {
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
 namespace std { 
- template <typename V, triqs::ull_t Opt, triqs::ull_t To, bool B1, bool B2>
-  void swap( triqs::arrays::matrix_view<V,Opt,To,B1> & a , triqs::arrays::matrix_view<V,Opt,To,B2> & b)= delete;
+ template <typename V, triqs::ull_t Opt, triqs::ull_t To, bool B1, bool B2, bool C1, bool C2>
+  void swap( triqs::arrays::matrix_view<V,Opt,To,B1,C1> & a , triqs::arrays::matrix_view<V,Opt,To,B2,C2> & b)= delete;
 }
 #include "./expression_template/matrix_algebra.hpp"
 #endif

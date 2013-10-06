@@ -29,19 +29,20 @@
 
 namespace triqs { namespace arrays {
 
- template <typename ValueType, ull_t Opt=0, bool Borrowed =false> class vector_view;
+ template <typename ValueType, ull_t Opt=0, bool Borrowed =false, bool IsConst=false> class vector_view;
  template <typename ValueType, ull_t Opt=0> class vector;
 
  // ---------------------- vector_view --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType,Borrowed>, Opt, 0, Tag::vector_view >
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType,Borrowed>, Opt, 0, IsConst, Tag::vector_view >
 
  /** */
- template <typename ValueType, ull_t Opt, bool Borrowed>
+ template <typename ValueType, ull_t Opt, bool Borrowed, bool IsConst>
   class vector_view : Tag::vector_view, TRIQS_CONCEPT_TAG_NAME(MutableVector), public  IMPL_TYPE {
   public :
    typedef vector     <ValueType,Opt>       regular_type;
    typedef vector_view<ValueType,Opt,false> view_type;
+   typedef vector_view<ValueType, Opt, false, true> const_view_type;
    typedef vector_view<ValueType,Opt,true>  weak_view_type;
 
    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
@@ -95,10 +96,14 @@ namespace triqs { namespace arrays {
   };
 #undef IMPL_TYPE
 
- template < class V, int R,  ull_t OptionFlags, ull_t To, bool Borrowed	> 
-  struct ISPViewType< V, R,OptionFlags,To, Tag::vector_view, Borrowed> { typedef vector_view<V,OptionFlags,Borrowed> type; };
+ template < class V, int R,  ull_t OptionFlags, ull_t To, bool Borrowed, bool IsConst> 
+  struct ISPViewType< V, R,OptionFlags,To, Tag::vector_view, Borrowed, IsConst> { typedef vector_view<V,OptionFlags,Borrowed,IsConst> type; };
+
+ template <typename ValueType, ull_t Opt = 0, bool Borrowed = false>
+ using vector_const_view = vector_view<ValueType, Opt, Borrowed, true>;
+
  // ---------------------- vector--------------------------------
-#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, Tag::vector_view >
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, false,Tag::vector_view >
 
  template <typename ValueType, ull_t Opt>
   class vector: Tag::vector,  TRIQS_CONCEPT_TAG_NAME(MutableVector), public IMPL_TYPE {
@@ -106,9 +111,10 @@ namespace triqs { namespace arrays {
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
-    typedef vector     <ValueType,Opt>      regular_type;
-    typedef vector_view<ValueType,Opt>      view_type;
-    typedef vector_view<ValueType,Opt,true> weak_view_type;
+    typedef vector<ValueType, Opt> regular_type;
+    typedef vector_view<ValueType, Opt> view_type;
+    typedef vector_view<ValueType, Opt, false, true> const_view_type;
+    typedef vector_view<ValueType, Opt, true> weak_view_type;
 
     /// Empty vector.
     vector(){}
@@ -293,7 +299,8 @@ namespace triqs { namespace arrays {
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
 namespace std {
- template <typename V, triqs::ull_t S, bool B1, bool B2> void swap( triqs::arrays::vector_view<V,S,B1> & a , triqs::arrays::vector_view<V,S,B2> & b)= delete;
+template <typename V, triqs::ull_t S, bool B1, bool B2, bool C1, bool C2>
+void swap(triqs::arrays::vector_view<V, S, B1, C1>& a, triqs::arrays::vector_view<V, S, B2,C2>& b) = delete;
 }
 
 #include "./expression_template/vector_algebra.hpp"

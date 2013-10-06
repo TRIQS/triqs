@@ -36,7 +36,6 @@ namespace triqs { namespace arrays {
  // 3 -> Init the array 
  // 5 -> Boundcheck
 
- constexpr ull_t ConstView              = 1ull << 0;
  constexpr ull_t TraversalOrderC        = 1ull << 1;
  constexpr ull_t TraversalOrderFortran  = 1ull << 2;
  constexpr ull_t DefaultInit            = 1ull << 3;
@@ -54,8 +53,6 @@ namespace triqs { namespace arrays {
 
   constexpr ull_t get(ull_t f, ull_t a)   { return  ((f & (1ull<<a)) >> a);}
   constexpr ull_t get2(ull_t f, ull_t a)  { return  ((f & ((1ull<<a) + (1ull<< (a+1ull)))) >> a);}
-
-  constexpr bool is_const (ull_t f) { return get (f,0) !=0;}
 
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
   constexpr bool bound_check      (ull_t f) { return true;}
