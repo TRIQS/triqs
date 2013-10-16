@@ -48,7 +48,8 @@ cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" :
         gf_retime & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_retime  make_gf_block_retime "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::retime>>" (  vector[gf_retime] &) 
+    cdef gf_block_retime  make_gf_block_retime "triqs::gfs::make_block_gf_view_from_vector<triqs::gfs::gf<triqs::gfs::retime>>" (vector[gf_retime] &) 
+    #cdef gf_block_retime  make_gf_block_retime "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::retime>>" (  vector[gf_retime] &) 
 
 cdef gf_block_retime  as_gf_block_retime (G) except +
 cdef make_BlockGfReTime (gf_block_retime G, block_indices_pack=*, name=*)

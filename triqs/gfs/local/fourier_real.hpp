@@ -35,20 +35,20 @@ namespace triqs { namespace gfs {
  
  inline gf_view<refreq,matrix_valued> fourier (gf_view<retime, matrix_valued> const gt) { 
   double pi = std::acos(-1);
-  size_t L = gt.mesh().size();
+  int L = gt.mesh().size();
   double wmin = -pi * (L-1) / (L*gt.mesh().delta());
   double wmax =  pi * (L-1) / (L*gt.mesh().delta());
-  auto gw = make_gf<refreq,matrix_valued>(wmin, wmax, L, gt.data().shape().front_pop());
+  auto gw = gf<refreq,matrix_valued>{ {wmin, wmax, L}, gt.data().shape().front_pop()};
   auto V = gw();
   fourier_impl(V, gt, matrix_valued());
   return gw;
  }
  inline gf_view<refreq,scalar_valued> fourier (gf_view<retime, scalar_valued> const gt) { 
   double pi = std::acos(-1);
-  size_t L = gt.mesh().size();
+  int L = gt.mesh().size();
   double wmin = -pi * (L-1) / (L*gt.mesh().delta());
   double wmax =  pi * (L-1) / (L*gt.mesh().delta());
-  auto gw = make_gf<refreq,scalar_valued>(wmin, wmax, L);
+  auto gw = gf<refreq,scalar_valued>{ {wmin, wmax, L} };
   auto V = gw();
   fourier_impl(V, gt, scalar_valued());
   return gw;
@@ -56,20 +56,20 @@ namespace triqs { namespace gfs {
  
  inline gf_view<retime,matrix_valued> inverse_fourier (gf_view<refreq,matrix_valued> const gw) { 
   double pi = std::acos(-1);
-  size_t L = gw.mesh().size();
+  int L = gw.mesh().size();
   double tmin = -pi * (L-1) / (L*gw.mesh().delta());
   double tmax =  pi * (L-1) / (L*gw.mesh().delta());
-  auto gt = make_gf<retime,matrix_valued>(tmin, tmax, L, gw.data().shape().front_pop());
+  auto gt = gf<retime,matrix_valued>{{ tmin, tmax, L} , gw.data().shape().front_pop()};
   auto V = gt();
   inverse_fourier_impl(V, gw, matrix_valued());
   return gt;
  }
  inline gf_view<retime,scalar_valued> inverse_fourier (gf_view<refreq,scalar_valued> const gw) { 
   double pi = std::acos(-1);
-  size_t L = gw.mesh().size();
+  int L = gw.mesh().size();
   double tmin = -pi * (L-1) / (L*gw.mesh().delta());
   double tmax =  pi * (L-1) / (L*gw.mesh().delta());
-  auto gt = make_gf<retime,scalar_valued>(tmin, tmax, L);
+  auto gt = gf<retime,scalar_valued>{ {tmin, tmax, L} };
   auto V = gt();
   inverse_fourier_impl(V, gw, scalar_valued());
   return gt;

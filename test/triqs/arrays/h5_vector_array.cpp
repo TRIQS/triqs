@@ -31,7 +31,6 @@ using namespace tqa;
 
 int main(int argc, char **argv) {
 
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
  try { 
 
   std::vector <double> v {1.1,2.2,3.3,4.5};
@@ -56,9 +55,6 @@ int main(int argc, char **argv) {
   for (int i = 0; i <v.size(); ++i) assert_close(v[i],v2[i]); 
   for (int i = 0; i <vc.size(); ++i) assert_close(vc[i],vc2[i]); 
  }
- catch(std::exception const &e) { std::cerr << e.what() << std::endl ;}
-#endif
-
- return 0;
+ TRIQS_CATCH_AND_ABORT;
 }
 

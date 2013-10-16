@@ -1,19 +1,9 @@
-//#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-
-#include <triqs/gfs/imfreq.hpp> 
-#include <triqs/gfs/imtime.hpp> 
-#include <triqs/gfs/local/fourier_matsubara.hpp> 
-
-namespace tql= triqs::clef;
-// namespace tqa= triqs::arrays;
-// using tqa::range;
-using triqs::arrays::make_shape;
-using triqs::gfs::Fermion;
-using triqs::gfs::imfreq;
-using triqs::gfs::imtime;
-using triqs::gfs::make_gf;
-using triqs::arrays::range;
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#include <triqs/gfs.hpp> 
+using namespace triqs::gfs;
+using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
+#include <triqs/gfs/local/fourier_matsubara.hpp> 
 
 int main() {
  
@@ -24,14 +14,14 @@ int main() {
  int N=10000;
  double E=1;
  
- auto Gw1 = make_gf<imfreq> (beta, Fermion, make_shape(1,1), N);
+ auto Gw1 = gf<imfreq> {{beta, Fermion, N}, {1,1}};
  Gw1(om_) << 1/(om_-E);
 //  for(auto const& w:Gw1.mesh()){
 //   std::cout<<"w="<<std::complex<double>(w)<<", Gw1=" << Gw1[w](0,0)<<std::endl;
 //  }
  h5_write(file, "Gw1", Gw1);   // the original lorentzian
  
- auto Gt1 = make_gf<imtime> (beta, Fermion, make_shape(1,1), N);
+ auto Gt1 = gf<imtime> {{beta, Fermion, N}, {1,1}};
  inverse_fourier_impl( Gt1, Gw1, triqs::gfs::matrix_valued() );
 //  for(auto const& t:Gt1.mesh()){
 //   std::cout<<"t="<<t<<",  expected="<<exp(-E*t) * ( (t>0?-1:0)+1/(1+exp(E*beta)) )<<std::endl;
@@ -39,7 +29,7 @@ int main() {
  h5_write(file, "Gt1", Gt1);   // the lorentzian TF : lorentzian_inverse
  
  ///verification that TF(TF^-1)=Id
- auto Gw1b = make_gf<imfreq> (beta, Fermion, make_shape(1,1), N);
+ auto Gw1b = gf<imfreq> {{beta, Fermion, N}, {1,1}};
  fourier_impl(Gw1b, Gt1, triqs::gfs::matrix_valued());
  for(auto const& w:Gw1.mesh()){
 //   std::cout<<"w="<<std::complex<double>(w)<<",Gw1b=" << Gw1b(w)(0,0)<<std::endl;
@@ -56,7 +46,7 @@ int main() {
  h5_write(file,"Gt1b",Gt1); // must be 0
  
  ///to verify that lazy_fourier computes
- auto Gw2 = make_gf<imfreq> (beta, Fermion, make_shape(1,1));
+ auto Gw2 = gf<imfreq> {{beta, Fermion}, {1,1}};
  Gw2() = lazy_fourier(Gt1);
  
 }

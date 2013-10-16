@@ -23,6 +23,7 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./meshes/product.hpp"
+#include "./evaluators.hpp"
 
 namespace triqs { namespace gfs { 
 
@@ -38,10 +39,13 @@ namespace triqs { namespace gfs {
  template<typename Opt, typename ... Ms> struct gf_mesh<cartesian_product<Ms...>,Opt> : mesh_product< gf_mesh<Ms,Opt> ... > { 
   typedef mesh_product< gf_mesh<Ms,Opt> ... > B;
   typedef std::tuple<Ms...> mesh_name_t;
+  gf_mesh() = default;
   gf_mesh (gf_mesh<Ms,Opt> ... ms) : B {std::move(ms)...} {} 
  };
 
  namespace gfs_implementation { 
+
+  /// ---------------------------  hdf5 ---------------------------------
 
   // h5 name : name1_x_name2_.....
   template<typename Opt, typename ... Ms> struct h5_name<cartesian_product<Ms...>,matrix_valued,Opt>  { 
@@ -52,50 +56,41 @@ namespace triqs { namespace gfs {
       std::string());
    }
   };
+  template<typename Opt, int R, typename ... Ms> struct h5_name<cartesian_product<Ms...>,tensor_valued<R>,Opt> :  h5_name<cartesian_product<Ms...>,matrix_valued,Opt> {};
+
+  // a slight difference with the generic case : reinterpret the data array to avoid flattening the variables
+  template <typename Opt, bool IsView, int R, typename ... Ms> 
+   struct h5_rw<cartesian_product<Ms...>,tensor_valued<R>,Opt,IsView>  {
+    typedef gf_impl<cartesian_product<Ms...>,tensor_valued<R>,Opt,IsView> g_t;
+
+    static void write (h5::group gr, g_t const & g) {
+     h5_write(gr,"data",reinterpret_linear_array(g.mesh(), g().data()));
+     h5_write(gr,"singularity",g._singularity);
+     h5_write(gr,"mesh",g._mesh);
+     h5_write(gr,"symmetry",g._symmetry);
+    }
+
+    static void read (h5::group gr, g_t & g) {
+     h5_read(gr,"mesh",g._mesh);
+     auto arr = arrays::array<typename g_t::data_t::value_type, sizeof...(Ms)+ R>{};
+     h5_read(gr,"data",arr);
+     auto sh = arr.shape();
+     arrays::mini_vector<size_t,R+1> sh2;
+     sh2[0] = g._mesh.size();
+     for (int u=1; u<R+1; ++u) sh2[u] = sh[sizeof...(Ms)-1+u];
+     g._data = arrays::array<typename g_t::data_t::value_type, R+1>{sh2, std::move(arr.storage())};
+     h5_read(gr,"singularity",g._singularity);
+     h5_read(gr,"symmetry",g._symmetry);
+    }
+   };
 
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Opt, typename ... Ms> struct data_proxy<cartesian_product<Ms...>,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
-  template<typename Opt, typename ... Ms> struct data_proxy<cartesian_product<Ms...>,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
+  template<typename Opt, typename ... Ms>        struct data_proxy<cartesian_product<Ms...>,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
+  template<typename Opt, typename ... Ms>        struct data_proxy<cartesian_product<Ms...>,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
+  template<int R, typename Opt, typename ... Ms> struct data_proxy<cartesian_product<Ms...>,tensor_valued<R>,Opt> : data_proxy_array<std::complex<double>,R+1> {};
 
   /// ---------------------------  evaluator ---------------------------------
-
-  struct evaluator_grid_simple { 
-   size_t n; 
-   evaluator_grid_simple() = default;
-
-   template<typename MeshType, typename PointType> 
-    evaluator_grid_simple (MeshType const & m, PointType const & p) { n=p; }
-   template<typename F> auto operator()(F const & f) const DECL_AND_RETURN(f (n));
-  };
-
-  struct evaluator_grid_linear_interpolation { 
-   double w1, w2; size_t n1, n2; 
-
-   evaluator_grid_linear_interpolation() = default;
-
-   template<typename MeshType, typename PointType> 
-    evaluator_grid_linear_interpolation (MeshType const & m, PointType const & p, double prefactor=1) { // delegate !
-     bool in; double w;
-     std::tie(in, n1, w) = windowing(m,p);
-     //std::cout  << in << " "<< n1 << " "<< w << " " << p << std::endl;
-     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-     w1 = prefactor * w; w2 = prefactor *(1-w); n2 = n1 +1;
-    }
-
-   template<typename F> auto operator()(F const & f) const DECL_AND_RETURN(w1 * f(n1) + w2 * f (n2));
-  };
-
-  template<typename MeshType> struct evaluator_fnt_on_mesh;
-
-  // can not use inherited constructors, too recent...
-#define TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(NEWCLASS,CLASS) : CLASS { template<typename ...T> NEWCLASS(T &&... t) : CLASS(std::forward<T>(t)...){};}; 
-
-  template<> struct evaluator_fnt_on_mesh<imfreq> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh, evaluator_grid_simple);
-  template<> struct evaluator_fnt_on_mesh<imtime> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh, evaluator_grid_linear_interpolation);
-  template<> struct evaluator_fnt_on_mesh<retime> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh, evaluator_grid_linear_interpolation);
-  template<> struct evaluator_fnt_on_mesh<refreq> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh, evaluator_grid_linear_interpolation);
-
 
   /** 
    * This the multi-dimensional evaluator.
@@ -147,7 +142,11 @@ namespace triqs { namespace gfs {
     };
 
     template<typename G, typename ... Args>
-     std::complex<double> operator() (G const * g, Args && ... args)  const {
+     //std::complex<double> operator() (G const * g, Args && ... args) const {
+     auto operator() (G const * g, Args && ... args) const 
+     -> decltype (std::get<sizeof...(Args)-1>(evals) (make_binder<sizeof...(Args)-2> (g, std::make_tuple(), evals) ))
+     // when do we get C++14 decltype(auto) ...!?
+     {
       static constexpr int R = sizeof...(Args);
       // build the evaluators, as a tuple of ( evaluator<Ms> ( mesh_component, args))
       triqs::tuple::call_on_zip(_poly_lambda(), evals, g->mesh().components(), std::make_tuple(args...));
@@ -155,23 +154,7 @@ namespace triqs { namespace gfs {
      } 
    };
 
-  // -------------------------------   Factories  --------------------------------------------------
-
-  template<typename Opt, typename ... Ms>
-   struct factories<cartesian_product<Ms...>, scalar_valued,Opt> {
-    typedef gf<cartesian_product<Ms...>, scalar_valued,Opt> gf_t;
-
-    template<typename ... Meshes>
-     static gf_t make_gf(Meshes && ... meshes) { 
-      auto m =  gf_mesh<cartesian_product<Ms...>,Opt>(meshes...);
-      typename gf_t::data_regular_t A(m.size()); 
-      A() =0;
-      return gf_t (m, std::move(A), nothing(), nothing());
-     }
-   };
-
- } // gf_implementation
-
-}}
+   } // gf_implementation
+ }}
 #endif
 

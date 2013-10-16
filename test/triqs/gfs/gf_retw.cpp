@@ -1,22 +1,9 @@
-//#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-
-#include <triqs/gfs/refreq.hpp> 
-#include <triqs/gfs/retime.hpp> 
-#include <triqs/gfs/imfreq.hpp> 
-#include <triqs/gfs/imtime.hpp> 
-
-using triqs::gfs::refreq;
-using triqs::gfs::retime;
-using triqs::gfs::imfreq;
-using triqs::gfs::imtime;
-using triqs::gfs::make_gf;
-using triqs::gfs::scalar_valued;
-using triqs::gfs::Fermion;
-using triqs::arrays::make_shape;
-using triqs::arrays::range;
-double precision=10e-12;
-
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#include <triqs/gfs.hpp> 
+using namespace triqs::gfs;
+using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
+double precision=10e-12;
 
 int main() {
 
@@ -25,14 +12,14 @@ int main() {
  double wmax=10;
  int N=1000;
  
- auto Gw = make_gf<refreq> (-wmax, wmax, N, make_shape(2,2));
- auto Gt = make_gf<retime> (0, tmax, N, make_shape(2,2));
- auto Gw2 = make_gf<refreq,scalar_valued> (-wmax, wmax, N);
- auto Gt2 = make_gf<retime,scalar_valued> (0, tmax, N);
- auto Giw = make_gf<imfreq> (beta, Fermion, make_shape(2,2), N);
- auto Git = make_gf<imtime> (beta, Fermion, make_shape(2,2), N);
- auto Giw2 = make_gf<imfreq,scalar_valued> (beta, Fermion, N);
- auto Git2 = make_gf<imtime,scalar_valued> (beta, Fermion, N);
+ auto Gw = gf<refreq> {{-wmax, wmax, N},{2,2}};
+ auto Gt = gf<retime> {{0, tmax, N}, {2,2}};
+ auto Gw2 = gf<refreq,scalar_valued> {{-wmax, wmax, N}};
+ auto Gt2 = gf<retime,scalar_valued> {{0, tmax, N}};
+ auto Giw = gf<imfreq> {{beta, Fermion,N}, {2,2}};
+ auto Git = gf<imtime> {{beta, Fermion,N},  {2,2}};
+ auto Giw2 = gf<imfreq,scalar_valued> {{beta, Fermion, N}};
+ auto Git2 = gf<imtime,scalar_valued> {{beta, Fermion, N}};
 
  int i =0;
  for (auto & t : Gt.mesh()) Gt[t] = 1.0*t;

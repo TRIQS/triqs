@@ -48,7 +48,8 @@ cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" :
         gf_refreq & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_refreq  make_gf_block_refreq "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::refreq>>" (  vector[gf_refreq] &) 
+    cdef gf_block_refreq  make_gf_block_refreq "triqs::gfs::make_block_gf_view_from_vector<triqs::gfs::gf<triqs::gfs::refreq>>" (vector[gf_refreq] &) 
+    #cdef gf_block_refreq  make_gf_block_refreq "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::refreq>>" (  vector[gf_refreq] &) 
 
 cdef gf_block_refreq  as_gf_block_refreq (G) except +
 cdef make_BlockGfReFreq (gf_block_refreq G, block_indices_pack=*, name=*)

@@ -66,7 +66,7 @@ namespace triqs { namespace gfs {
    typedef typename std::conditional < std::is_same<Target, matrix_valued>::value, arrays::matrix<std::complex<double>>, std::complex<double>>::type rtype; 
    template<typename G>
    rtype operator() (G const * g, double t0, double t1)  const {
-    size_t n0,n1; double w0,w1; bool in;
+    int n0,n1; double w0,w1; bool in;
     std::tie(in, n0, w0) = windowing(std::get<0>(g->mesh().components()),t0);
     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
     std::tie(in, n1, w1) = windowing(std::get<1>(g->mesh().components()),t1);
@@ -87,7 +87,9 @@ namespace triqs { namespace gfs {
   template<typename Opt> struct factories<two_real_times, matrix_valued,Opt> {
    typedef gf<two_real_times, matrix_valued,Opt> gf_t;
    typedef gf_mesh<two_real_times, Opt> mesh_t;
-   static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) {
+   typedef tqa::mini_vector<int,2> target_shape_t;
+   
+   static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<int,2> shape) {
     auto m =  gf_mesh<two_real_times,Opt>(tmax, n_time_slices);
     typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
     return gf_t (m, std::move(A), nothing(), nothing() ) ;
@@ -98,6 +100,7 @@ namespace triqs { namespace gfs {
   template<typename Opt> struct factories<two_real_times, scalar_valued,Opt> {
    typedef gf<two_real_times, scalar_valued,Opt> gf_t;
    typedef gf_mesh<two_real_times, Opt> mesh_t;
+   struct target_shape_t {};
    
    static gf_t make_gf(double tmax, double n_time_slices) {
     auto m =  gf_mesh<two_real_times,Opt>(tmax, n_time_slices);
@@ -114,14 +117,14 @@ namespace triqs { namespace gfs {
  // 
  inline gf<retime> slice (gf_view<two_real_times> const & g, double t) { 
   auto const & m = std::get<0> (g.mesh().components());   //one-time mesh
-  long it = get_closest_mesh_pt_index(m, t);              //index of t on this mesh
-  long nt = m.size() - it;
+  int it = get_closest_mesh_pt_index(m, t);              //index of t on this mesh
+  int nt = m.size() - it;
   if (it+1 < nt) nt = it+1 ;                              //nt=length of the resulting GF's mesh
     double dt = m.delta();
-  auto res = make_gf<retime>(0, 2*(nt-1)*dt, nt, g(t,t).shape());
+  auto res = gf<retime>{{0, 2*(nt-1)*dt, nt}, g(t,t).shape()};
   res() = 0;
   auto _ = arrays::range();// everyone
-  for(long sh=0; sh<nt; sh++){
+  for(int sh=0; sh<nt; sh++){
    res.data()(sh,_,_) = g.data()(g.mesh().index_to_linear(std::make_tuple( it+sh, it-sh) ),_,_);
   }
   return res;

@@ -158,8 +158,5 @@ int main() {
    
   //std::cout  << triqs::deserialize<array<array<int,2>,1>>(utility::extract<std::string>(P4["aa"])) << std::endl ;
  }
- catch(triqs::runtime_error const &e) { std::cout  << "exception occurred "<< e.what()<< std::endl ;}
- //catch(std::exception const &e) { std::cout  << "exception occurred "<< e.what()<< std::endl ;}
-
- return 0;
+ TRIQS_CATCH_AND_ABORT;
 }

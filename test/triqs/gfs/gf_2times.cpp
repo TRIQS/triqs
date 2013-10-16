@@ -1,30 +1,19 @@
-//#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-
-#include <triqs/gfs/two_real_times.hpp> 
-
-//using namespace triqs::gfss::local;
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#include <triqs/gfs.hpp> 
 using namespace triqs::gfs;
-namespace tql= triqs::clef;
-//namespace tqa= triqs::arrays;
-using tqa::range;
-using triqs::arrays::make_shape;
-using triqs::arrays::array;
-
+using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 int main() {
 
  try {
 
- //typedef gf<two_real_times> Gf_type;
- //typedef gf_view<two_real_times> Gf_view_type;
+ auto m = gf_mesh<retime>{0,10,99,full_bins};
+ auto G  = gf<cartesian_product<retime,retime>> { {m,m}, {2,2}};
+ auto G2 = G;
 
- auto G  = make_gf<two_real_times>( 10,100,make_shape(2,2));
- auto G2 = make_gf<two_real_times>( 10,100,make_shape(2,2));
-
- //Gf_type G   (two_real_times::mesh_t(10,100),make_shape(2,2));
- //Gf_type G2  (two_real_times::mesh_t(10,100),make_shape(2,2));
-
+ auto gg  = gf<retime> { {m}, {2,2}};
+ 
  triqs::clef::placeholder<0> t_;
  triqs::clef::placeholder<1> tp_;
 
@@ -32,10 +21,32 @@ int main() {
  A(t_,tp_)  << t_ - 3*tp_;
  std::cout  <<A << std::endl ;
 
- G(t_,tp_)  << t_ - 3*tp_;
- G2(t_,tp_) << t_ + 3*tp_;
+ std::cout  << G.data().shape() << 2*G(0,0)<<std::endl;
+
+ auto xx =eval ( G(t_,tp_), t_=2, tp_=1.2);
+//xx =0;
+ std::cout  << eval ( gg(t_), t_=2)<< std::endl ;
+
+ double beta = 1;
+ double wmin=0.;
+ double wmax=1.0;
+ int n_im_freq=100;
+ 
+ auto G_w_wn2 = gf<cartesian_product<imfreq,imfreq>>( {gf_mesh<imfreq>(beta, Fermion, n_im_freq), gf_mesh<imfreq>(beta, Fermion, n_im_freq)}, {2,2});
+
+ auto zz = G_w_wn2(t_,tp_);
+ //std::cout  << std::get<0>(zz.childs).data() << std::endl ;
+ auto yy = eval ( zz, t_=2, tp_=3);
+ std::cout  << yy.indexmap()<< std::endl ;
+ std::cout  << yy << std::endl ;
+ //std::cout  << eval ( zz, t_=2, tp_=3)<< std::endl ;
+ //std::cout  << eval ( G_w_wn2(t_,tp_), t_=2, tp_=3)<< std::endl ;
+
+ //std::cout  << eval ( G(t_,tp_), t_=2, tp_=1.2)<< std::endl ;
+ //G(t_,tp_)  << t_ - 3*tp_;
+ //G2(t_,tp_) << t_ + 3*tp_;
   
- G2(t_,tp_) << 2* G(tp_,t_);
+ //G2(t_,tp_) << 2* G(t_,tp_);
 
  TEST( G(1,1) );
  TEST( G[G.mesh()(1,1) ]);
@@ -50,5 +61,5 @@ int main() {
  //TEST( G2(2,1,3) ); // should not compile
  
  }
- catch( std::exception const &e) { std::cout  << e.what()<< std::endl;}
+ TRIQS_CATCH_AND_ABORT;
 }

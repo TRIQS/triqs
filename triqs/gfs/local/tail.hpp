@@ -249,7 +249,7 @@ namespace triqs { namespace gfs { namespace local {
 
   };
 
-  template<typename RHS> void assign_from_expression(tail_view & t,RHS const & rhs) { t = rhs( tail::omega(t.shape(),t.size(),t.order_min()) ); }
+  template<typename RHS> void assign_from_expression(tail_view t,RHS const & rhs) { t = rhs( tail::omega(t.shape(),t.size(),t.order_min()) ); }
 
   inline void tail_view::rebind(tail const &X) {
     omin = X.omin;
@@ -288,6 +288,8 @@ namespace triqs { namespace gfs { namespace local {
     }
     return res;
   }
+  
+  inline tail inverse(tail const & t) { return inverse(tail_view(t));}
 
   inline tail mult_impl(tail_view const & l, tail_view const& r) {
     if (l.shape()[1] != r.shape()[0] || l.order_min() != r.order_min() || l.size() != r.size())

@@ -76,6 +76,8 @@ namespace triqs { namespace gfs {
   template<typename Gview, int ... pos> struct curry_polymorphic_lambda { 
    Gview g;
    template<typename ...I> auto operator()(I ... i) const DECL_AND_RETURN(partial_eval<pos...>(g,std::make_tuple(i...)));
+   friend int get_shape(curry_polymorphic_lambda const&) { return 0;}// no shape here, but needed for compilation
+   //void resize(int){}
   };
 
   // curry function ...

@@ -52,10 +52,8 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imfreq> const &
   // Construct a temporary imaginary-time Green's function gt
   // I set Nt time bins. This is ugly, one day we must code the direct
   // transformation without going through imaginary time
-  long Nt = 50000;
-  auto gt = make_gf<imtime>(gw.domain().beta, gw.domain().statistic,
-    triqs::arrays::mini_vector<size_t,2>(gw.data().shape()[1],gw.data().shape()[2]),
-    Nt, half_bins);
+  int Nt = 50000;
+  auto gt = gf<imtime>{ {gw.domain(),Nt, half_bins}, gw.data().shape().front_pop() };
 
   // We first transform to imaginary time because it's been coded with the knowledge of the tails
   gt() = lazy_inverse_fourier(gw);

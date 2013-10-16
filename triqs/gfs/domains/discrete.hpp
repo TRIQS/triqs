@@ -22,24 +22,31 @@
 #ifndef TRIQS_GF_DISCRETE_DOMAIN_H
 #define TRIQS_GF_DISCRETE_DOMAIN_H
 #include "../tools.hpp"
-
+#include <map>
 namespace triqs { namespace gfs { 
 
  /// The domain
  class discrete_domain {
   size_t Nmax;
   std::vector<std::string> _names;// name of the points (e.g. for block)
+  std::map<std::string,int> _inv_names;
+  void init_inv() { 
+   for (size_t i =0; i<Nmax; ++i) {  _inv_names[_names[i]]=i;}
+  }   
   public:
   typedef long point_t;
   size_t size() const { return Nmax;};
   discrete_domain (size_t Nmax_=1) : Nmax(Nmax_) { 
    for (size_t i =0; i<Nmax; ++i) { std::stringstream fs; fs<<i; _names.push_back(fs.str());}
+   init_inv();
   }
 
-  discrete_domain (std::vector<std::string> && Names) : Nmax(Names.size()), _names(Names) { }
-  discrete_domain (std::vector<std::string> const & Names) : Nmax(Names.size()), _names(Names) { }
+  discrete_domain (std::vector<std::string> && Names) : Nmax(Names.size()), _names(Names) {init_inv(); }
+  discrete_domain (std::vector<std::string> const & Names) : Nmax(Names.size()), _names(Names) { init_inv();}
+  discrete_domain (std::initializer_list<std::string> const & Names) : Nmax(Names.size()), _names(Names) { init_inv();}
 
   std::vector<std::string> const & names() const { return _names;}
+  int index_from_name(std::string const & s) const { return _inv_names.at(s);}
  
   bool operator == (discrete_domain const & D) const { return (Nmax == D.Nmax);}
 

@@ -76,6 +76,7 @@ namespace triqs { namespace gfs {
 
   template<typename Opt> struct factories<re_im_time, scalar_valued,Opt> {
    typedef gf<re_im_time, scalar_valued,Opt> gf_t;
+    struct target_shape_t {};
 
    template<typename MeshType>
     static gf_t make_gf(MeshType && m) {

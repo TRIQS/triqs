@@ -59,6 +59,7 @@ namespace triqs { namespace gfs {
 
    /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}
+   mesh_point_t operator[](std::string const & s) const { return mesh_point_t (*this,_dom.index_from_name(s));}
 
    /// Iterating on all the points...
    typedef  mesh_pt_generator<discrete_mesh> const_iterator;
@@ -90,6 +91,8 @@ namespace triqs { namespace gfs {
     void serialize(Archive & ar, const unsigned int version) {
      ar & boost::serialization::make_nvp("domain",_dom);
     }
+
+   friend std::ostream &operator <<(std::ostream &sout, discrete_mesh const & m){return sout << "Discrete Mesh"; }
 
    private:
    domain_t _dom;

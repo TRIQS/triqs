@@ -1,14 +1,9 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-
-#include <triqs/gfs/refreq.hpp> 
-#include <triqs/gfs/retime.hpp> 
+#include <triqs/gfs.hpp> 
+using namespace triqs::gfs;
+using namespace triqs::arrays;
+#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/fourier_real.hpp> 
-#include <triqs/arrays.hpp>
-
-using triqs::arrays::make_shape;
-using triqs::gfs::refreq;
-using triqs::gfs::retime;
-using triqs::gfs::make_gf;
 
 double lorentzian(double w, double a){
   return 2*a / (w*w + a*a) ; 
@@ -22,7 +17,6 @@ double theta(double x){
 
 int main() {
  
-
   double precision=10e-10;
   H5::H5File file("fourier_real_time.h5",H5F_ACC_TRUNC);
 
@@ -33,7 +27,7 @@ int main() {
   double wmax=10;
   int Nw=1001;
   
-  auto Gw1 = make_gf<refreq> (-wmax, wmax, Nw, make_shape(1,1),triqs::gfs::full_bins);
+  auto Gw1 = gf<refreq> {{-wmax, wmax, Nw,full_bins}, {1,1}};
   double a = Gw1.mesh().delta() * sqrt( Gw1.mesh().size() );
   for(auto const & w:Gw1.mesh()) Gw1[w]=lorentzian(w,a);
   Gw1.singularity()(2)=triqs::arrays::matrix<double>{{2.0*a}};
@@ -64,7 +58,7 @@ int main() {
   double tmax=10.;
   int Nt=501;
   
-  auto Gt2 = make_gf<retime> (-tmax, tmax, Nt, make_shape(1,1));
+  auto Gt2 = gf<retime> {{-tmax, tmax, Nt}, {1,1}};
   a = 2*acos(-1.) / ( Gt2.mesh().delta() *sqrt( Gt2.mesh().size() ) );
   for(auto const & t:Gt2.mesh()) Gt2[t] = 0.5 *I * ( lorentzian_inverse(-t,a)*theta(-t)-lorentzian_inverse(t,a)*theta(t) );
   //for(auto const & t:Gt2.mesh()) Gt2[t] = 0.5_j * ( lorentzian_inverse(-t,a)*theta(-t)-lorentzian_inverse(t,a)*theta(t) );
@@ -87,7 +81,7 @@ int main() {
   
   tmax=4*acos(-1.);
   
-  auto Gt3 = make_gf<retime> (-tmax, tmax, Nt, make_shape(1,1));
+  auto Gt3 = gf<retime> {{-tmax, tmax, Nt}, {1,1}};
   for(auto const & t:Gt3.mesh()) Gt3[t] = 1.0 * std::cos(10*t) + 0.25*std::sin(4*t) + 0.5 * I*std::sin(8*t+0.3*acos(-1.)) ;
   //for(auto const & t:Gt3.mesh()) Gt3[t] = 1.0 * std::cos(10*t) + 0.25*std::sin(4*t) + 0.5_j*std::sin(8*t+0.3*acos(-1.)) ;
   h5_write(file,"Gt3",Gt3);

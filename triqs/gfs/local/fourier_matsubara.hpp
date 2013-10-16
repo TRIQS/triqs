@@ -34,15 +34,15 @@ namespace triqs { namespace gfs {
  void inverse_fourier_impl (gf_view<imtime,matrix_valued> gt,  gf_view<imfreq,matrix_valued> const gw, matrix_valued);
  
  inline gf_view<imfreq,matrix_valued> fourier (gf_view<imtime,matrix_valued> const gt) {
-  size_t L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
-  auto gw = make_gf<imfreq,matrix_valued>(gt.domain().beta, gt.domain().statistic , gt.data().shape().front_pop(), L);
+  int L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
+  auto gw = gf<imfreq,matrix_valued>{ {gt.domain(),L}, gt.data().shape().front_pop() };
   auto V = gw();
   fourier_impl(V, gt, matrix_valued());
   return gw;
  }
  inline gf_view<imfreq,scalar_valued> fourier (gf_view<imtime,scalar_valued> const gt) {
-  size_t L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
-  auto gw = make_gf<imfreq,scalar_valued>(gt.domain().beta, gt.domain().statistic, L);
+  int L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
+  auto gw = gf<imfreq,scalar_valued>{ {gt.domain(),L} };
   auto V = gw();
   fourier_impl(V, gt, scalar_valued());
   return gw;
@@ -50,16 +50,16 @@ namespace triqs { namespace gfs {
  
  inline gf_view<imtime, matrix_valued> inverse_fourier (gf_view<imfreq, matrix_valued> const gw, mesh_kind mk = half_bins) {
   double pi = std::acos(-1);
-  size_t L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
-  auto gt = make_gf<imtime,matrix_valued>(gw.domain().beta, gw.domain().statistic, gw.data().shape().front_pop(), L);
+  int L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
+  auto gt = gf<imtime,matrix_valued>{ {gw.domain(),L}, gw.data().shape().front_pop()};
   auto V = gt();
   inverse_fourier_impl(V, gw, matrix_valued());
   return gt;
  }
  inline gf_view<imtime,scalar_valued> inverse_fourier (gf_view<imfreq,scalar_valued> const gw, mesh_kind mk = half_bins) {
   double pi = std::acos(-1);
-  size_t L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
-  auto gt = make_gf<imtime,scalar_valued>(gw.domain().beta, gw.domain().statistic, L);
+  int L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
+  auto gt = gf<imtime,scalar_valued>{ {gw.domain(),L} };
   auto V = gt();
   inverse_fourier_impl(V, gw,scalar_valued());
   return gt;

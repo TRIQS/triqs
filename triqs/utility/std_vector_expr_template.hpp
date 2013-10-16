@@ -58,7 +58,6 @@ namespace triqs { namespace utility {
    auto make_vector(V const & v) -> std::vector<typename std::remove_reference<decltype(v[0])>::type> { 
    //auto make_vector(V const & v) -> std::vector<typename std::remove_reference<decltype(static_cast<V const &>(v)[0])>::type> { 
    std::vector<typename std::remove_reference<decltype(v[0])>::type> res;
-   std::cout  << "makeVector"<< std::endl; 
    res.reserve(v.size());
    for (size_t i =0; i<v.size(); ++i) res.push_back(v[i]);
    return res;

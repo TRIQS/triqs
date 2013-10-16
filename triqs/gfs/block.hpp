@@ -30,34 +30,34 @@ namespace triqs { namespace gfs {
  struct block_index {};
 
  template<typename Opt> struct gf_mesh<block_index,Opt> : discrete_mesh<discrete_domain> {
+  typedef discrete_mesh<discrete_domain> B;
   gf_mesh() = default;
-  gf_mesh(size_t s) : discrete_mesh<discrete_domain>(s) {}
-  gf_mesh(discrete_domain const & d) : discrete_mesh<discrete_domain>(d) {}
+  gf_mesh(int s) : B(s) {}
+  gf_mesh(discrete_domain const & d) : B(d) {}
+  gf_mesh(std::initializer_list<std::string> const & s) : B(s){}
  };
 
- namespace gfs_implementation { 
+ namespace gfs_implementation {
+
+  /// ---------------------------  hdf5 ---------------------------------
 
   template<typename Target, typename Opt> struct h5_name<block_index,Target,Opt>      { static std::string invoke(){ return  "BlockGf";}};
 
-  /// ---------------------------  h5_rw ---------------------------------
+  template <typename Target, typename Opt, bool IsView> struct h5_rw<block_index,Target,Opt,IsView>  {
 
-  template <typename Target,typename Opt> struct h5_ops<block_index,Target,Opt> { 
+   static void write (h5::group gr, gf_impl<block_index,Target,Opt,IsView> const & g) {
+    for (size_t i =0; i<g.mesh().size(); ++i) h5_write(gr,g.mesh().domain().names()[i],g._data[i]);
+    //h5_write(gr,"symmetry",g._symmetry);
+   }
 
-   template<typename DataType, typename GF> 
-    static void write(h5::group g, std::string const & s, DataType const & data, GF const & gf) {
-     auto gr =  g.create_group(s);
-     for (size_t i =0; i<gf.mesh().size(); ++i) h5_write(gr,gf.mesh().domain().names()[i],data[i]);
-    }
-
-   template<typename DataType,typename GF> 
-    static void read(h5::group g, std::string const & s, DataType & data, GF const & gf) {
-     auto gr =  g.create_group(s);
-     for (size_t i =0; i<gf.mesh().size(); ++i) h5_read(gr,gf.mesh().domain().names()[i],data[i]);
-    }
+   static void read (h5::group gr, gf_impl<block_index,Target,Opt,IsView> & g) {
+    // does not work : need to read the block name and remake the mesh...
+    g._mesh = gf_mesh<block_index,Opt> (gr.get_all_subgroup_names());
+    g._data.resize(g._mesh.size());
+    for (size_t i =0; i<g.mesh().size(); ++i) h5_read(gr,g.mesh().domain().names()[i],g._data[i]);
+    //h5_read(gr,"symmetry",g._symmetry);
+   }
   };
-
-  /// ---------------------------  evaluator ---------------------------------
-
 
   /// ---------------------------  data access  ---------------------------------
 
@@ -70,71 +70,84 @@ namespace triqs { namespace gfs {
     typedef gf_mesh<block_index, Opt> mesh_t;
     typedef gf<block_index,Target> gf_t;
     typedef gf_view<block_index,Target> gf_view_t;
+    struct target_shape_t{};
 
-    static gf_t make_gf(std::vector<Target> const & V)  { return gf_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
-    static gf_t make_gf(std::vector<Target> && V)       { return gf_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
-
-    static gf_t make_gf(std::vector<std::string> const & block_names, std::vector<Target> const & V) {
-     return gf_t(mesh_t(block_names), V, nothing(), nothing() );
-    }
-    static gf_t make_gf(std::vector<std::string> const & block_names, std::vector<Target> && V) {
-     return gf_t(mesh_t(block_names), std::move(V), nothing(), nothing() );
-    }
-
-    /* static gf_t make_gf(std::initializer_list<Target> const & l) { 
-       auto v = std::vector<Target> {l};
-       return make_gf(v);
-       }
-       */
-    /* template<typename... Args>
-       static gf_t make_gf(size_t N, Args&& ...args)  {
-       std::vector<Target> V; V.reserve(N);
-       for (size_t i=0; i<N; ++i) V.push_back( Target::make_gf (std::forward<Args>(args...)));
-       return make_gf(V);
-       }
-       */
-    static gf_t make_gf(int N, Target const & g)  {
-     std::vector<Target> V; V.reserve(N);
-     for (size_t i=0; i<N; ++i)  V.push_back(g);
-     return make_gf(V);
-    }
-
-    static gf_t make_gf(std::vector<std::string> const & block_names, Target const & g)  {
-     std::vector<Target> V; V.reserve(block_names.size());
-     for (size_t i=0; i<block_names.size(); ++i)  V.push_back(g);
-     return make_gf(block_names,V);
-    }
-
-    /*  template<typename... Args>
-	static gf_t make_gf(std::vector<std::string> const & block_names, Args&& ...args)  {
-	std::vector<Target> V; V.reserve(block_names.size());
-	for (size_t i=0; i<block_names.size(); ++i)  V.push_back( Target::make_gf (std::forward<Args>(args...)));
-	return make_gf(block_names,V);
-	}
-	*/
-
-    template<typename GF>
-     static gf_view_t make_gf_view(std::vector<GF> const & V) { return gf_view_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
-    template<typename GF>
-     static gf_view_t make_gf_view(std::vector<GF> && V)      { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
-
+    static typename gf_t::data_t make_data(mesh_t const & m, target_shape_t) { return std::vector<Target> (m.size()); }
+    static typename gf_t::singularity_t make_singularity (mesh_t const & m, target_shape_t) { return {};}
    };
 
  } // gfs_implementation
 
- // -------------------------------   Free function   --------------------------------------------------
+ // -------------------------------   Free Factories for regular type  --------------------------------------------------
+
+ template<typename G0, typename ... G> 
+  gf_view<block_index, typename std::remove_reference<G0>::type::view_type> make_block_gf_view(G0 && g0, G && ... g) { 
+   auto V = std::vector<typename std::remove_reference<G0>::type::view_type>{std::forward<G0>(g0), std::forward<G>(g)...};
+   return { {int(V.size())}, std::move(V), nothing{}, nothing{} } ;
+   //return { gf_mesh<block_index, Opt> {int(V.size())}, std::move(V), nothing{}, nothing{} } ;
+  }
+
+ // from a number and a gf to be copied
+ template<typename Variable, typename Target, typename Opt>
+  gf<block_index,gf<Variable,Target,Opt>> 
+  make_block_gf(int n, gf<Variable,Target,Opt> g) {
+   auto V = std::vector<gf<Variable,Target,Opt>>{};
+   for (int i =0; i<n; ++i) V.push_back(g);
+   return { {n}, std::move(V), nothing{}, nothing{}};
+  }
+
+ // from a vector of gf (moving directly)
+ template<typename Variable, typename Target, typename Opt, typename GF2>
+  gf<block_index,gf<Variable,Target,Opt>> 
+  make_block_gf(std::vector<gf<Variable,Target,Opt>> && V) { 
+   return { {int(V.size())}, std::move(V), nothing{}, nothing{}}; 
+  }
+
+ // from a vector of gf : generalized to have a different type of gf in the vector (e.g. views...)
+ template<typename Variable, typename Target, typename Opt, typename GF2>
+  gf<block_index,gf<Variable,Target,Opt>> 
+  make_block_gf(std::vector<GF2> const & V) { 
+   auto V2 = std::vector<gf<Variable,Target,Opt>>{};
+   for (auto const & g : V) V2.push_back(g);
+   return { {int(V.size())}, std::move(V2), nothing{}, nothing{}}; 
+  }
+
+ // from a init list of GF with the correct type
+ template<typename Variable, typename Target, typename Opt>
+  gf<block_index,gf<Variable,Target,Opt>> 
+  make_block_gf(std::initializer_list<gf<Variable,Target,Opt>> const & V) { return { {int(V.size())}, V, nothing{}, nothing{}} ; }
+
+ // from vector<string>, vector<gf>
+ template<typename Variable, typename Target, typename Opt>
+  gf<block_index,gf<Variable,Target,Opt>> 
+  make_block_gf(std::vector<std::string> const & block_names, std::vector<gf<Variable,Target,Opt>> V)  {
+   if (block_names.size()!=V.size()) TRIQS_RUNTIME_ERROR << "make_block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
+   return { {block_names}, std::move(V), nothing{}, nothing{}}; 
+  }
+
+ // from vector<string>, init_list<GF>
+ template<typename Variable, typename Target, typename Opt>
+  gf<block_index,gf<Variable,Target,Opt>>
+  make_block_gf(std::vector<std::string> const & block_names, std::initializer_list<gf<Variable,Target,Opt>> const & V)  { 
+   if (block_names.size()!=V.size()) TRIQS_RUNTIME_ERROR << "make_block_gf(vector<string>, init_list) : size mismatch !";
+   return { {block_names}, V, nothing{}, nothing{}}; 
+  }
+
+ // -------------------------------   Free Factories for view type  --------------------------------------------------
+
+ template<typename GF, typename GF2>
+  gf_view<block_index,GF> 
+  make_block_gf_view_from_vector (std::vector<GF2> V) { return { {int(V.size())}, std::move(V), nothing{}, nothing{}} ; }
+
+ // -------------------------------   Free functions   --------------------------------------------------
 
  // a simple function to get the number of blocks
  template<typename T> size_t n_blocks (gf<block_index,T> const & g)      { return g.mesh().size();}
  template<typename T> size_t n_blocks (gf_view<block_index,T> const & g) { return g.mesh().size();}
 
-
- // template alias
- //template<typename T> using block_gf = gf<block_index, gf<T>>;
-
- // experimental
- template<typename Target,  typename ... U>
-  gf<block_index, gf<Target>> make_block_gf(U && ...u) { return gfs_implementation::factories<block_index,gf<Target>,void>::make_gf(std::forward<U>(u)...);}
+#ifndef TRIQS_COMPILER_IS_OBSOLETE
+ template<typename T> using block_gf = gf<block_index, gf<T>>;
+#endif
 
  // also experimental
  // an iterator over the block
@@ -160,9 +173,6 @@ namespace triqs { namespace gfs {
 
  template<typename Target, typename Opt, bool B>
   block_gf_iterator<Target,Opt> end(gf_impl<block_index,Target,Opt,B> const & bgf) { return {bgf,true};}
-
-
-
 
 }}
 #endif

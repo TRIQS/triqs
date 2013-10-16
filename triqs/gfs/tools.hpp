@@ -38,9 +38,10 @@ namespace triqs { namespace gfs {
 
  namespace tag  { struct composite{}; struct mesh_point{};} 
  
- struct matrix_valued {};
  struct scalar_valued {};
- 
+ template<int R> struct tensor_valued {static_assert( R>0, "tensor_valued only for rank >0");};
+ struct matrix_valued{};
+
  //------------------------------------------------------
 
  typedef std::complex<double> dcomplex; 
@@ -72,7 +73,7 @@ namespace triqs { namespace gfs {
  //------------------------------------------------------
 
  struct nothing {
-  template<typename... Args> explicit nothing(Args...) {} // takes anything, do nothing..
+  template<typename... Args> explicit nothing(Args&&...) {} // takes anything, do nothing..
   nothing() {}
   typedef nothing view_type;
   typedef nothing regular_type;

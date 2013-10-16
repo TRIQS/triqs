@@ -28,8 +28,11 @@
 #include <triqs/gfs/retime.hpp>
 #include <triqs/gfs/refreq.hpp>
 #include <triqs/gfs/legendre.hpp>
-//#include <triqs/gfs/product.hpp>
 
+#ifndef TRIQS_COMPILER_IS_OBSOLETE
+#include <triqs/gfs/product.hpp>
+#include <triqs/gfs/curry.hpp>
+#endif
 
 #endif
 

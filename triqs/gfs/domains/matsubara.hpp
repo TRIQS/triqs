@@ -33,6 +33,8 @@ namespace triqs { namespace gfs {
   matsubara_domain (double Beta=1, statistic_enum s = Fermion): beta(Beta), statistic(s){
     if(beta<0)TRIQS_RUNTIME_ERROR<<"Matsubara domain construction :  beta <0 : beta ="<< beta <<"\n";
   }
+  matsubara_domain(matsubara_domain const &) = default;
+  matsubara_domain(matsubara_domain<!IsComplex> const &x): beta(x.beta), statistic(x.statistic) {}
   bool operator == (matsubara_domain const & D) const { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
 
   /// Write into HDF5

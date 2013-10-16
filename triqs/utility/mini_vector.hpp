@@ -46,7 +46,7 @@ namespace triqs { namespace utility {
 
 #define AUX(z,p,unused)  _data[p] = x_##p; 
 #define IMPL(z, NN, unused)                                \
-   explicit mini_vector (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T x_)){ \
+   mini_vector (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T x_)){ \
     static_assert(Rank-1==NN,"mini_vector : incorrect number of variables in constructor");\
     BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX,nil) }
    BOOST_PP_REPEAT(TRIQS_MINI_VECTOR_NRANK_MAX , IMPL, nil);

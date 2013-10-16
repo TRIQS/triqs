@@ -49,7 +49,8 @@ cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" :
         gf_imtime & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_imtime  make_gf_block_imtime "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::imtime>>" (  vector[gf_imtime] &) 
+    cdef gf_block_imtime  make_gf_block_imtime "triqs::gfs::make_block_gf_view_from_vector<triqs::gfs::gf<triqs::gfs::imtime>>" (vector[gf_imtime] &) 
+    #cdef gf_block_imtime  make_gf_block_imtime "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::imtime>>" (  vector[gf_imtime] &) 
 
 cdef gf_block_imtime  as_gf_block_imtime (G) except +
 cdef make_BlockGfImTime (gf_block_imtime G, block_indices_pack=*, name=*)

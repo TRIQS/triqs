@@ -46,7 +46,8 @@ cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" :
         gf_legendre & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_legendre  make_gf_block_legendre "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::legendre>>" (  vector[gf_legendre] &) 
+    cdef gf_block_legendre  make_gf_block_legendre "triqs::gfs::make_block_gf_view_from_vector<triqs::gfs::gf<triqs::gfs::legendre>>" (vector[gf_legendre] &) 
+    #cdef gf_block_legendre  make_gf_block_legendre "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::legendre>>" (  vector[gf_legendre] &) 
 
 cdef gf_block_legendre  as_gf_block_legendre (G) except +
 cdef make_BlockGfLegendre (gf_block_legendre G, block_indices_pack=*, name=*)

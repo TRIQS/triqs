@@ -25,6 +25,7 @@
 #include "./local/tail.hpp"
 #include "./domains/matsubara.hpp"
 #include "./meshes/linear.hpp"
+#include "./evaluators.hpp"
 
 namespace triqs { namespace gfs {
 
@@ -34,7 +35,10 @@ namespace triqs { namespace gfs {
  template<typename Opt> struct gf_mesh<imtime,Opt> : linear_mesh<matsubara_domain<false>> {
   typedef linear_mesh<matsubara_domain<false>> B;
   gf_mesh() = default;
-  gf_mesh (double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk=half_bins):
+  gf_mesh (typename B::domain_t d, int n_time_slices, mesh_kind mk=half_bins):
+   B( d, 0, d.beta, n_time_slices, mk){}
+   gf_mesh (double beta, statistic_enum S, int n_time_slices, mesh_kind mk=half_bins):
+   //gf_mesh( {beta,S}, n_time_slices, mk){}
    B( typename B::domain_t(beta,S), 0, beta, n_time_slices, mk){}
  };
 
@@ -56,107 +60,41 @@ namespace triqs { namespace gfs {
 
   template<typename Opt, typename Target>
    struct get_closest_point <imtime,Target,Opt> {
-    // index_t is size_t
+    // index_t is int
     template<typename G, typename T>
-     static size_t invoke(G const * g, closest_pt_wrap<T> const & p) {
+     static int invoke(G const * g, closest_pt_wrap<T> const & p) {
       double x = (g->mesh().kind()==half_bins ? double(p.value) :  double(p.value)+ 0.5*g->mesh().delta());
-      size_t n = std::floor(x/g->mesh().delta());
+      int n = std::floor(x/g->mesh().delta());
       return n;
      }
    };
 
-
   /// ---------------------------  evaluator ---------------------------------
 
-  // NOT TESTED
-  // TEST THE SPPED when q_view are incorporated...
-  // true evaluator with interpolation ...
-  template<typename G, typename ReturnType>
-   ReturnType evaluator_imtime_impl (G const * g, double tau, ReturnType && _tmp) {
-    // interpolate between n and n+1, with weight
-    double beta = g->mesh().domain().beta;
-    int p = std::floor(tau/beta);
-    tau -= p*beta;
-    size_t n; double w; bool in;
-    std::tie(in, n, w) = windowing(g->mesh(),tau);
-    if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-    auto gg = on_mesh(*g);
-    if ((g->mesh().domain().statistic == Fermion) && (p%2==1))
-     _tmp = - (1-w)*gg(n) - w*gg(n+1);
-    else
-     _tmp =   (1-w)*gg(n) + w*gg(n+1);
-    //else { // Speed test to redo when incoparated qview in main branch
-    // _tmp(0,0) =   w*g->data()(n, 0,0) + (1-w)*g->data()(n+1, 0,0);
-    // _tmp(0,1) =   w*g->data()(n, 0,1) + (1-w)*g->data()(n+1, 0,1);
-    // _tmp(1,0) =   w*g->data()(n, 1,0) + (1-w)*g->data()(n+1, 1,0);
-    // _tmp(1,1) =   w*g->data()(n, 1,1) + (1-w)*g->data()(n+1, 1,1);
-    // }
-    return _tmp;
-   }
+  // this one is specific because of the beta-antiperiodicity for fermions
+  template<>
+   struct  evaluator_fnt_on_mesh<imtime>  { 
+    double w1, w2; long n; 
 
-  template<typename Opt>
-   struct evaluator<imtime,matrix_valued,Opt> {
-    private:
-     mutable arrays::matrix<double> _tmp;
-    public :
-     static constexpr int arity = 1;
-     evaluator() = default;
-     evaluator(size_t n1, size_t n2) : _tmp(n1,n2) {} // WHAT happen in resize ??
+    evaluator_fnt_on_mesh() = default;
 
-     template<typename G>
-      arrays::matrix<double> const & operator()(G const * g, double tau) const { return evaluator_imtime_impl(g, tau, _tmp);}
+    evaluator_fnt_on_mesh (gf_mesh<imtime> const & m, double tau) {
+     double beta = m.domain().beta;
+     int p = std::floor(tau/beta);
+     tau -= p*beta;
+     double w; bool in;
+     std::tie(in, n, w) = windowing(m,tau);
+     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+     if ((m.domain().statistic == Fermion) && (p%2==1)) {w2 = -w; w1 = w-1;} else { w2 = w; w1 = 1-w;}
+    }
 
-     template<typename G>
-      typename G::singularity_t const & operator()(G const * g,freq_infty const &) const {return g->singularity();}
+    template<typename F> auto operator()(F const & f) const DECL_AND_RETURN(w1 * f(n) + w2 * f (n+1));
    };
 
-  template<typename Opt>
-   struct evaluator<imtime,scalar_valued,Opt> {
-    public :
-     static constexpr int arity = 1;
+   // now evaluator
+   template<typename Opt, typename Target> struct evaluator<imtime,Target,Opt> : evaluator_one_var<imtime>{};
 
-     template<typename G> double operator()(G const * g, double tau) const { return evaluator_imtime_impl(g, tau, 0.0);}
-
-     template<typename G>
-      typename G::singularity_t const & operator()(G const * g,freq_infty const &) const {return g->singularity();}
-   };
-
-  // -------------------------------   Factories  --------------------------------------------------
-
-  // matrix_valued
-  template<typename Opt> struct factories<imtime,matrix_valued,Opt> { 
-   typedef gf<imtime,matrix_valued,Opt> gf_t;
-   template<typename MeshType>
-    static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-     typename gf_t::data_regular_t A(shape.front_append(m.size())); A() =0;
-     //return gf_t ( m, std::move(A), t, nothing() ) ;
-     return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing(), evaluator<imtime,matrix_valued,Opt>(shape[0],shape[1]) ) ;
-    }
-   static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax=1025, mesh_kind mk= half_bins) {
-    return make_gf(gf_mesh<imtime,Opt>(beta,S,Nmax,mk), shape, local::tail(shape));
-   }
-   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_kind mk, local::tail_view const & t) {
-    return make_gf(gf_mesh<imtime,Opt>(beta,S,Nmax,mk), shape, t);
-   }
-  };
-
-  // scalar_valued 
-  template<typename Opt> struct factories<imtime,scalar_valued,Opt> { 
-   typedef gf<imtime,scalar_valued,Opt> gf_t;
-   template<typename MeshType>
-    static gf_t make_gf(MeshType && m, local::tail_view const & t) {
-     typename gf_t::data_regular_t A(m.size()); A() =0;
-     return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing());
-    }
-   static gf_t make_gf(double beta, statistic_enum S, size_t Nmax=1025, mesh_kind mk= half_bins) {
-    return make_gf(gf_mesh<imtime,Opt>(beta,S,Nmax,mk), local::tail(tqa::mini_vector<size_t,2> (1,1)));
-   }
-   static gf_t make_gf(double beta, statistic_enum S, size_t Nmax, mesh_kind mk, local::tail_view const & t) {
-    return make_gf(gf_mesh<imtime,Opt>(beta,S,Nmax,mk), t);
-   }
-  };
  } // gfs_implementation.
-
 }}
 #endif
 

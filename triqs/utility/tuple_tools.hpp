@@ -33,11 +33,16 @@ namespace std {
   template<typename ... T> _triqs_reversed_tuple<std::tuple<T...>&>       reverse(std::tuple<T...> & x) { return {x};}
   template<typename ... T> _triqs_reversed_tuple<std::tuple<T...>const &> reverse(std::tuple<T...> const & x) { return {x};}
 
-  template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> const & t) DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_reference<TU>::type>::value-1-pos>(t._x));
-  template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> & t)       DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_reference<TU>::type>::value-1-pos>(t._x));
-  template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> && t)      DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_reference<TU>::type>::value-1-pos>(move(t)._x));
+  template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> const & t) 
+   DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_const<typename std::remove_reference<TU>::type>::type>::value-1-pos>(t._x));
+  
+  template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> & t)       
+   DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_const<typename std::remove_reference<TU>::type>::type>::value-1-pos>(t._x));
+  
+  template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> && t)      
+   DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_const<typename std::remove_reference<TU>::type>::type>::value-1-pos>(move(t)._x));
 
-  template<typename TU> struct tuple_size<_triqs_reversed_tuple<TU>>         : tuple_size<typename std::remove_reference<TU>::type>{};
+  template<typename TU> struct tuple_size<_triqs_reversed_tuple<TU>>         : tuple_size<typename std::remove_const<typename std::remove_reference<TU>::type>::type>{};
 }
 
 namespace triqs { namespace tuple {

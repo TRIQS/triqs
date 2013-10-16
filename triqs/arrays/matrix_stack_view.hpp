@@ -22,12 +22,13 @@
 #define TRIQS_ARRAYS_MATRIX_STACK_VIEW_H
 #include "./array.hpp"
 #include "./matrix.hpp"
-#include "./matrix_view_proxy.hpp"
+#include "./matrix_tensor_proxy.hpp"
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 
 namespace triqs { namespace arrays {
 
  template<typename T> class matrix_stack_view { 
+   array_view<T,3>  a;
   public:
    typedef array_view<T,3> array_view_t;
 
@@ -39,9 +40,11 @@ namespace triqs { namespace arrays {
    explicit matrix_stack_view (PyObject * X):a(typename array_view_t::view_type (X)){}
 #endif
 
-   matrix_view_proxy      <array_view_t,0> operator()(size_t i)       { return matrix_view_proxy       <array_view_t,0>(a,i);}
-   const_matrix_view_proxy<array_view_t,0> operator()(size_t i) const { return const_matrix_view_proxy <array_view_t,0>(a,i);}
- 
+   //matrix_view_proxy      <array_view_t,0> operator()(size_t i)       { return matrix_view_proxy       <array_view_t,0>(a,i);}
+   //const_matrix_view_proxy<array_view_t,0> operator()(size_t i) const { return const_matrix_view_proxy <array_view_t,0>(a,i);}
+   auto operator()(long i) DECL_AND_RETURN(make_matrix_proxy(this->a, i));
+   auto operator()(long i) const DECL_AND_RETURN(make_const_matrix_proxy(this->a, i));
+
    matrix_view<T> view(size_t i) const { return a(i,range(),range());}
    
    size_t size() const { return a.shape(0);}
@@ -76,9 +79,6 @@ namespace triqs { namespace arrays {
       TRIQS_RUNTIME_ERROR << "dimensions do not match!";
     for (size_t i=0; i<M.size(); ++i)  { view(i) = L * M.view(i) * R; }
    }
-
-  private:
-   array_view_t a;
  };
 
 }}

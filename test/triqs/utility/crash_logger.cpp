@@ -59,6 +59,7 @@ int main(int argc, char **argv) {
  try {
   f();
  }
+ // ok we have to catch something, don't change this to TRIQS_CATCH_AND_ABORT
  catch(std::exception const & e) { std::cerr  << e.what() << std::endl ;}
 
 }

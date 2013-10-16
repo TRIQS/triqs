@@ -44,34 +44,21 @@ namespace triqs { namespace gfs {
 
   /// ---------------------------  evaluator ---------------------------------
 
+  // Not finished, not tested
   template<typename Opt>
    struct evaluator<legendre,matrix_valued,Opt> {
     static constexpr int arity = 1;
     //ERROR : give a double and interpolate
     template<typename G>
      arrays::matrix_view<double >  operator() (G const * g,long n)  const {return g->data()(n, arrays::range(), arrays::range()); }
-    template<typename G>
-     local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}
    };
 
   /// ---------------------------  data access  ---------------------------------
 
   template<typename Opt> struct data_proxy<legendre,matrix_valued,Opt> : data_proxy_array<double,3> {};
+  template<typename Opt> struct data_proxy<legendre,scalar_valued,Opt> : data_proxy_array<double,1> {};
 
-  // -------------------------------   Factories  --------------------------------------------------
-
-  template<typename Opt> struct factories<legendre, matrix_valued,Opt> {
-   typedef gf<legendre, matrix_valued,Opt> gf_t;
-   typedef gf_mesh<legendre, Opt> mesh_t;
-
-   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t n_leg) {
-    typename gf_t::data_regular_t A(shape.front_append(n_leg)); A() = 0;
-    return gf_t(gf_mesh<legendre,Opt>(beta, S, n_leg), std::move(A), nothing(), nothing());
-   }
-
-  };
  } // gfs_implementation
-
 }}
 #endif
 

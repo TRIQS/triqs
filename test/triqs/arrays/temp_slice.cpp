@@ -61,9 +61,8 @@ int main(int argc, char **argv) {
    std::cerr  << " good "<< r << r.storage().is_weak << std::endl ;
   }
 
-// rm or valgrind will find the error
-//#define VALGRIND
-#ifndef VALGRIND
+// rm or sanitizer will detect this ...
+#ifdef MAKE_IT_WRONG
   {
    auto & r = bad2 ( { 1,2,3,4} );
    std::cerr  << " bad2 " << r << std::endl ;
@@ -76,7 +75,6 @@ int main(int argc, char **argv) {
 #endif
 
  }
- catch (std::exception & e) { std::cout << e.what()<<std::endl;}
- return 0;
+TRIQS_CATCH_AND_ABORT;
 }
 

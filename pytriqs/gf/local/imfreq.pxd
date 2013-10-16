@@ -48,7 +48,8 @@ cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" :
         gf_imfreq & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::imfreq>>" (  vector[gf_imfreq] &) 
+    cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gfs::make_block_gf_view_from_vector<triqs::gfs::gf<triqs::gfs::imfreq>>" (vector[gf_imfreq] &) 
+    #cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::imfreq>>" (  vector[gf_imfreq] &) 
 
 cdef gf_block_imfreq  as_gf_block_imfreq (G) except +
 cdef make_BlockGfImFreq (gf_block_imfreq G, block_indices_pack=*, name=*)
