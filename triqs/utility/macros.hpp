@@ -40,5 +40,7 @@ namespace triqs {
  template<typename T> struct remove_cv_ref : std::remove_cv< typename std::remove_reference<T>::type> {};
 };
 
+#define TRIQS_CATCH_AND_ABORT catch(std::exception const & e) { std::cout  << e.what()<< std::endl; return 1;}
+
 #endif
 
