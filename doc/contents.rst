@@ -3,7 +3,7 @@ Table of contents
 =================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
 
    index
    install

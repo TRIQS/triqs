@@ -2,6 +2,7 @@
 
 Writing you own C++ code with TRIQS
 ------------------------------------
+
 Basically, this structure means that you have successfully installed TRIQS in
 :file:`/home/triqs/install` and that you plan to have your new project under
 :file:`/home/project`. Obviously you can choose any other directory but this
@@ -47,28 +48,24 @@ the location of the TRIQS libraries. Here is what your simple
 
 .. code-block :: cmake
 
-  # Append triqs installed files to the cmake load path
-  list(APPEND CMAKE_MODULE_PATH ${TRIQS_PATH}/share/triqs/cmake)
+    # Append triqs installed files to the cmake load path
+    list(APPEND CMAKE_MODULE_PATH ${TRIQS_PATH}/share/triqs/cmake)
 
-  # start configuration 
-  cmake_minimum_required(VERSION 2.8)
-  project(myproj CXX)
-  set(CMAKE_BUILD_TYPE Release)
+    # Start configuration 
+    cmake_minimum_required(VERSION 2.8)
+    project(myproj CXX)
+    set(CMAKE_BUILD_TYPE Release)
 
-  # We use shared libraries
-  # option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+    # Load TRIQS, including all predefined variables from TRIQS installation
+    find_package(TRIQS REQUIRED)
 
-  # Load TRIQS, including all predefined variables from TRIQS installation
-  find_package(TRIQS REQUIRED)
+    # Linking and include info
+    link_libraries(${TRIQS_LIBRARY_ALL})
+    include_directories(${TRIQS_INCLUDE_ALL})
 
-  # We want to be installed in the TRIQS tree
-  set(CMAKE_INSTALL_PREFIX ${TRIQS_PATH})
-
-  # Build the code, adding triqs in include and link flags
-  add_executable(example main.cpp)
-  include_directories(${TRIQS_INCLUDE_ALL})
-  target_link_libraries(example ${TRIQS_LIBRARY_ALL})
-
+    # Create executable
+    add_executable(example main.cpp)
+    triqs_set_rpath_for_target(example)
 
 We're all set! Everything is ready to compile our project. If we want to build
 everything in :file:`/home/project/build`, we do as follows:

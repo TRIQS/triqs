@@ -6,10 +6,15 @@ Changelog
 
 This document describes the main changes in TRIQS.
 
-master (latest commit on github)
---------------------------------
+version 1.1.0
+-------------
 
-* The tails now have fixed size avoid mpi problems
+* New constructors for the gf [api change]
+* Fix for gf expression templates
+* The gf tails now have fixed size to avoid mpi problems
+* Fixes in gf expression templates
+* New python random generator interface
+* Fixes for issues #11, #18, #25
 
 version 1.0.0
 -------------
