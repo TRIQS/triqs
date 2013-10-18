@@ -37,7 +37,7 @@ namespace triqs { namespace gfs {
   
   tqa::vector<dcomplex> g_in, g_out;
   
-  void direct (gf_view<refreq,scalar_valued> gw, gf_view<retime,scalar_valued> const gt){
+  void direct (gf_view<refreq,scalar_valued> gw, gf_const_view<retime,scalar_valued> gt){
    
    size_t L = gt.mesh().size();
    if (gw.mesh().size() != L) TRIQS_RUNTIME_ERROR << "Meshes are different";
@@ -70,7 +70,7 @@ namespace triqs { namespace gfs {
    
   }
   
-  void inverse(gf_view<retime,scalar_valued> gt, gf_view<refreq,scalar_valued> const gw){
+  void inverse(gf_view<retime,scalar_valued> gt, gf_const_view<refreq,scalar_valued> gw){
    
    size_t L = gw.mesh().size();
    if ( L != gt.mesh().size()) TRIQS_RUNTIME_ERROR << "Meshes are different";
@@ -108,12 +108,12 @@ namespace triqs { namespace gfs {
   
  //--------------------------------------------------------------------------------------
  
- void fourier_impl(gf_view<refreq,scalar_valued> gw, gf_view<retime,scalar_valued> const gt, scalar_valued){
+ void fourier_impl(gf_view<refreq,scalar_valued> gw, gf_const_view<retime,scalar_valued> gt, scalar_valued){
   impl_worker w;
   w.direct(gw, gt);
  }
  
- void fourier_impl(gf_view<refreq,matrix_valued> gw, gf_view<retime,matrix_valued> const gt, matrix_valued){
+ void fourier_impl(gf_view<refreq,matrix_valued> gw, gf_const_view<retime,matrix_valued> gt, matrix_valued){
   impl_worker w;
   for (size_t n1=0; n1<gw.data().shape()[1];n1++)
    for (size_t n2=0; n2<gw.data().shape()[2];n2++) {
@@ -125,12 +125,12 @@ namespace triqs { namespace gfs {
  
  //---------------------------------------------------------------------------
  
- void inverse_fourier_impl (gf_view<retime,scalar_valued> gt, gf_view<refreq,scalar_valued> const gw, scalar_valued){ 
+ void inverse_fourier_impl (gf_view<retime,scalar_valued> gt, gf_const_view<refreq,scalar_valued> gw, scalar_valued){ 
   impl_worker w;
   w.inverse(gt,gw);
  }
  
- void inverse_fourier_impl (gf_view<retime,matrix_valued> gt, gf_view<refreq,matrix_valued> const gw, matrix_valued){ 
+ void inverse_fourier_impl (gf_view<retime,matrix_valued> gt, gf_const_view<refreq,matrix_valued> gw, matrix_valued){ 
   impl_worker w;
   for (size_t n1=0; n1<gt.data().shape()[1];n1++) 
    for (size_t n2=0; n2<gt.data().shape()[2];n2++) {

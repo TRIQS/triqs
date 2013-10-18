@@ -49,9 +49,9 @@ namespace triqs { namespace gfs {
   template<typename M0, typename M1, typename ...M> auto rm_tuple_of_size_one(std::tuple<M0,M1,M...> const & t) DECL_AND_RETURN(t);
   template<typename M> auto rm_tuple_of_size_one(std::tuple<M> const & t) DECL_AND_RETURN(std::get<0>(t));
 
-  template<int ... pos, typename Opt, typename Target, bool B, typename IT, typename ... Ms>
-  gf_view< typename cart_prod_impl< triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>::type ,Target, Opt>
-   partial_eval(gf_impl< cartesian_product<Ms...>, Target,Opt,B> const & g, IT index) { 
+  template<int ... pos, typename Opt, typename Target, bool B, bool IsConst, typename IT, typename ... Ms>
+  gf_view< typename cart_prod_impl< triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>::type ,Target, Opt,IsConst>
+   partial_eval(gf_impl< cartesian_product<Ms...>, Target,Opt,B,IsConst> const & g, IT index) { 
     // meshes of the returned gf_view : just drop the mesh of the evaluated variables
     auto meshes_tuple_partial = triqs::tuple::filter_out<pos...>(g.mesh().components());
     // a view of the array of g, with the dimension sizeof...(Ms)
@@ -61,7 +61,7 @@ namespace triqs { namespace gfs {
     // from it, we make a slice of the array of g, corresponding to the data of the returned gf_view
     auto arr2 =  triqs::tuple::apply(arr, arr_args);
     // finally, we build the view on this data. 
-    using r_t = gf_view< cart_prod< triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>> ,Target, Opt>;
+    using r_t = gf_view< cart_prod< triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>> ,Target, Opt,IsConst>;
     return r_t{ rm_tuple_of_size_one(meshes_tuple_partial), arr2,  typename r_t::singularity_non_view_t{}, typename r_t::symmetry_t{} };
    }
 
@@ -78,18 +78,23 @@ namespace triqs { namespace gfs {
   };
 
   // curry function ...
-  template<int ... pos, typename Target, typename Opt, bool B, typename ... Ms>
-   gf_view<cart_prod< triqs::tuple::filter_t<std::tuple<Ms...>,pos...>  >,
-	   lambda_valued<curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt>,pos...>>, 
-	   Opt>
-    curry (gf_impl<cartesian_product<Ms...>, Target,Opt,B> const & g) { 
+  template <int... pos, typename Target, typename Opt, bool IsConst, typename... Ms>
+  gf_view<cart_prod<triqs::tuple::filter_t<std::tuple<Ms...>, pos...>>,
+                lambda_valued<curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target, Opt,IsConst>, pos...>>, Opt, IsConst>
+  curry(gf_view<cartesian_product<Ms...>, Target, Opt, IsConst> g) {
     // pick up the meshed corresponding to the curryed variables
     auto meshes_tuple = triqs::tuple::filter<pos...>(g.mesh().components());
     // building the view
-    return {rm_tuple_of_size_one(meshes_tuple),curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt>, pos ...>{g}, nothing(), nothing()}; 
+    return {rm_tuple_of_size_one(meshes_tuple),curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt,IsConst>, pos ...>{g}, nothing(), nothing()}; 
     //using m_t = gf_mesh< cart_prod< triqs::tuple::filter_t<std::tuple<Ms...>,pos...>>>; 
     //return {triqs::tuple::apply_construct<m_t>(meshes_tuple),curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt>, pos ...>{g}, nothing(), nothing()}; 
    };
+  
+  template <int... pos, typename Target, typename Opt, typename... Ms>
+  auto curry(gf<cartesian_product<Ms...>, Target, Opt> & g) DECL_AND_RETURN(curry<pos...>(g()));
+  
+  template <int... pos, typename Target, typename Opt, typename... Ms>
+  auto curry(gf<cartesian_product<Ms...>, Target, Opt> const & g) DECL_AND_RETURN(curry<pos...>(g()));
 
  } // gf_implementation
  using gfs_implementation::partial_eval;

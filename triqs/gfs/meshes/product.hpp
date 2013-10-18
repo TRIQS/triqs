@@ -176,9 +176,9 @@ namespace triqs { namespace gfs {
  // reinterpret_linear_array(m,A) returns a d-dimensionnal view of the array
  // with indices egal to the indices of the components of the mesh.
  // Very useful for slicing, currying functions.
- template<typename ... Meshes, typename T, ull_t OptionsFlags, int R >
-  arrays::array_view<T, sizeof...(Meshes)+ R-1,OptionsFlags>
-  reinterpret_linear_array(mesh_product<Meshes...> const & m, arrays::array_view<T,R,OptionsFlags> const & A) {
+ template<typename ... Meshes, typename T, ull_t OptionsFlags, ull_t To, int R , bool B, bool C>
+  arrays::array_view<T, sizeof...(Meshes)+ R-1,OptionsFlags,To,true,C>
+  reinterpret_linear_array(mesh_product<Meshes...> const & m, arrays::array_view<T,R,OptionsFlags,To,B,C> A) {
    return { {join (m.all_size_as_mini_vector(), get_shape(A).front_pop())}, A.storage()};
   }
 

@@ -33,12 +33,23 @@ namespace triqs { namespace gfs {
  using utility::factory;
  using arrays::make_shape;
 
- template<typename T> long get_shape(std::vector<T> const & x) {return x.size();}
+ template <typename T> long get_shape(std::vector<T> const &x) { return x.size(); }
 
- template<typename Variable, typename Opt=void> struct gf_mesh;
- template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf;         // the regular type
- template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_view;    // the view type
- template<typename Variable, typename Target, typename Opt, bool IsView> class gf_impl;
+ // the gf mesh
+ template <typename Variable, typename Opt = void> struct gf_mesh;
+
+ // The regular type
+ template <typename Variable, typename Target = matrix_valued, typename Opt = void> class gf; 
+
+ // The view type
+ template <typename Variable, typename Target = matrix_valued, typename Opt = void, bool IsConst = false> class gf_view;
+
+ // The const view type
+ template <typename Variable, typename Target = matrix_valued, typename Opt = void>
+ using gf_const_view = gf_view<Variable, Target, Opt, true>;
+
+ // the implementation class
+ template<typename Variable, typename Target, typename Opt, bool IsView, bool IsConst> class gf_impl;
 
  // various implementation traits
  namespace gfs_implementation { // never use using of this...
@@ -63,23 +74,24 @@ namespace triqs { namespace gfs {
   template <typename Variable, typename Target, typename Opt> struct h5_name; // value is a const char *
 
   template<typename Variable, typename Opt> struct h5_name<Variable,scalar_valued,Opt>      { static std::string invoke(){ return h5_name<Variable,matrix_valued,Opt>::invoke() + "_s";}};
- 
-  // the h5 write and read of gf members, so that we can specialize it e.g. for block gf
-  template <typename Variable, typename Target, typename Opt, bool IsView> struct h5_rw {
 
-   static void write (h5::group gr, gf_impl<Variable,Target,Opt,IsView> const & g) {
+  // the h5 write and read of gf members, so that we can specialize it e.g. for block gf
+  template <typename Variable, typename Target, typename Opt> struct h5_rw {
+
+   static void write (h5::group gr, gf_const_view<Variable,Target,Opt> g) {
     h5_write(gr,"data",g._data);
     h5_write(gr,"singularity",g._singularity);
     h5_write(gr,"mesh",g._mesh);
     h5_write(gr,"symmetry",g._symmetry);
    }
 
-   static void read (h5::group gr, gf_impl<Variable,Target,Opt,IsView> & g) {
-    h5_read(gr,"data",g._data);
-    h5_read(gr,"singularity",g._singularity);
-    h5_read(gr,"mesh",g._mesh);
-    h5_read(gr,"symmetry",g._symmetry);
-   }
+   template<bool B>
+    static void read (h5::group gr, gf_impl<Variable,Target,Opt,B,false> & g) {
+     h5_read(gr,"data",g._data);
+     h5_read(gr,"singularity",g._singularity);
+     h5_read(gr,"mesh",g._mesh);
+     h5_read(gr,"symmetry",g._symmetry);
+    }
   };
 
   // factories regroup all factories (constructors..) for all types of gf.
@@ -112,7 +124,7 @@ namespace triqs { namespace gfs {
 
    static typename gf_t::singularity_t make_singularity(mesh_t const & m, target_shape_t shape) { return typename gf_t::singularity_t(shape); }
   };
-  
+
   template<typename Var, typename Opt> struct factories<Var,scalar_valued,Opt> { 
    typedef gf<Var,scalar_valued,Opt> gf_t;
    struct target_shape_t {};
@@ -149,10 +161,13 @@ namespace triqs { namespace gfs {
  // ---------------------- implementation --------------------------------
 
  /// A common implementation class for gf and gf_view. They will only redefine contructor and = ...
- template<typename Variable, typename Target, typename Opt, bool IsView> class gf_impl : 
+ template<typename Variable, typename Target, typename Opt, bool IsView, bool IsConst> class gf_impl : 
   TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction){
+   static_assert(!( !IsView && IsConst), "Internal error");
    public :
-    typedef gf_view<Variable,Target,Opt> view_type;
+    typedef gf_view<Variable,Target,Opt> mutable_view_type;
+    typedef gf_const_view<Variable,Target,Opt> const_view_type;
+    typedef typename std::conditional <IsConst, const_view_type, mutable_view_type>::type view_type;
     typedef gf<Variable,Target,Opt>      regular_type;
 
     typedef Variable variable_t;
@@ -169,7 +184,9 @@ namespace triqs { namespace gfs {
     typedef gfs_implementation::data_proxy<Variable,Target,Opt>                                 data_proxy_t;
     typedef typename data_proxy_t::storage_t                                                    data_regular_t;
     typedef typename data_proxy_t::storage_view_t                                               data_view_t;
-    typedef typename std::conditional<IsView, data_view_t, data_regular_t>::type                data_t;
+    typedef typename data_proxy_t::storage_const_view_t                                         data_const_view_t;
+    typedef typename std::conditional<IsView, typename std::conditional<IsConst, data_const_view_t, data_view_t>::type,
+	    data_regular_t>::type data_t;
 
     typedef typename gfs_implementation::singularity<Variable,Target,Opt>::type                 singularity_non_view_t;
     typedef typename view_type_if_exists_else_type<singularity_non_view_t>::type                singularity_view_t;
@@ -207,8 +224,9 @@ namespace triqs { namespace gfs {
 
    protected:
 
-    gf_impl(gf_impl<Variable,Target,Opt,!IsView> const & x): _mesh(x.mesh()), _data(factory<data_t>(x.data())),
-    _singularity(factory<singularity_t>(x.singularity())), _symmetry(x.symmetry()), _evaluator(x.get_evaluator()){}
+    template<typename G>
+     gf_impl(G && x, bool): _mesh(x.mesh()), _data(factory<data_t>(x.data())),
+     _singularity(factory<singularity_t>(x.singularity())), _symmetry(x.symmetry()), _evaluator(x.get_evaluator()){}
 
     template<typename M, typename D, typename S, typename SY, typename EV> 
      gf_impl(M && m, D && dat, S && sing, SY && sy, EV && ev) : 
@@ -225,7 +243,8 @@ namespace triqs { namespace gfs {
     // ------------- All the call operators -----------------------------
 
     // First, a simple () returns a view, like for an array...
-    view_type operator()() const { return *this;}
+    const_view_type operator()() const { return *this;}
+    view_type operator()() { return *this; }
 
     /// Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
     /// there is at least one lazy argument ...
@@ -241,7 +260,6 @@ namespace triqs { namespace gfs {
       >::type // end of add_Const
       operator() (Arg0&& arg0, Args&&... args) const { return _evaluator(this,std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
 
-    // WHY SEPARATE ARg0 ?
     template<typename Arg0, typename ...Args>
      typename clef::_result_of::make_expr_call<gf_impl &,Arg0, Args...>::type
      operator()(Arg0 &&arg0, Args&&... args) & {
@@ -259,20 +277,6 @@ namespace triqs { namespace gfs {
      operator()(Arg0 &&arg0, Args&&... args) && {
       return clef::make_expr_call(std::move(*this),std::forward<Arg0>(arg0), std::forward<Args>(args)...);
      }
-
-    /*
-    // on mesh component for composite meshes
-    // enable iif the first arg is a mesh_point_t for the first component of the mesh_t
-    template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
-    typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  r_type>::type
-    operator() (Arg0 const & arg0, Args const & ... args)
-    { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
-
-    template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
-    typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  cr_type>::type
-    operator() (Arg0 const & arg0, Args const & ... args) const
-    { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
-    */
 
     //// [] and access to the grid point
     typedef typename std::result_of<data_proxy_t(data_t       &,size_t)>::type r_type;
@@ -325,13 +329,13 @@ namespace triqs { namespace gfs {
 
     friend std::string get_triqs_hdf5_data_scheme(gf_impl const & g) { return "Gf" + gfs_implementation::h5_name<Variable,Target,Opt>::invoke();}
 
-    friend class gfs_implementation::h5_rw<Variable,Target,Opt,IsView>;
+    friend class gfs_implementation::h5_rw<Variable,Target,Opt>;
 
     /// Write into HDF5
     friend void h5_write (h5::group fg, std::string subgroup_name, gf_impl const & g) {
      auto gr =  fg.create_group(subgroup_name);
      gr.write_triqs_hdf5_data_scheme(g); 
-     gfs_implementation::h5_rw<Variable,Target,Opt,IsView>::write(gr, g);
+     gfs_implementation::h5_rw<Variable,Target,Opt>::write(gr, g);
     }
 
     /// Read from HDF5
@@ -342,7 +346,7 @@ namespace triqs { namespace gfs {
      auto tag_expected= get_triqs_hdf5_data_scheme(g);
      if (tag_file != tag_expected) 
       TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
-     gfs_implementation::h5_rw<Variable,Target,Opt,IsView>::read(gr, g);
+     gfs_implementation::h5_rw<Variable,Target,Opt>::read(gr, g);
     }
 
     //-----------------------------  BOOST Serialization -----------------------------
@@ -360,7 +364,7 @@ namespace triqs { namespace gfs {
     friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_impl const & x) { return out<<(IsView ? "gf_view": "gf");}
 
     // Interaction with the CLEF library : auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
-    template<typename RHS> friend void triqs_clef_auto_assign (gf_impl & g, RHS const & rhs) {
+    template <typename RHS> friend void triqs_clef_auto_assign(gf_impl &g, RHS const &rhs) {
      // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
      g.triqs_clef_auto_assign_impl(rhs, typename std::is_base_of<tag::composite,mesh_t>::type());
      assign_from_expression(g.singularity(),rhs);
@@ -376,12 +380,9 @@ namespace triqs { namespace gfs {
      for (auto const & w: this->mesh()) (*this)[w] = rhs(w);
      //for (auto const & w: this->mesh()) (*this)[w] = rhs(typename B::mesh_t::mesh_point_t::cast_t(w));
     }
-    template<typename RHS> void triqs_clef_auto_assign_impl (RHS const & rhs, std::integral_constant<bool,true>) {
+    template <typename RHS> void triqs_clef_auto_assign_impl(RHS const &rhs, std::integral_constant<bool, true>) {
      for (auto const & w: this->mesh())  {
-      //std::cout  << "abot "<<w.components_tuple()<<std::endl ;
-      //std::cout  << "eefef "<< triqs::tuple::apply(rhs,w.components_tuple()) << std::endl ; 
       (*this)[w] = triqs::tuple::apply(rhs,w.components_tuple());
-      //std::cout  << "done "<<std::endl ;
      }
      //for (auto w: this->mesh()) triqs::tuple::apply(*this,w.components_tuple()) = triqs::tuple::apply(rhs,w.components_tuple());
     }
@@ -389,15 +390,15 @@ namespace triqs { namespace gfs {
 
  // ---------------------------------------------------------------------------------
  ///The regular class of GF
- template<typename Variable, typename Target, typename Opt> class gf : public gf_impl<Variable,Target,Opt,false> {
-  typedef gf_impl<Variable,Target,Opt,false> B;
+ template<typename Variable, typename Target, typename Opt> class gf : public gf_impl<Variable,Target,Opt,false, false> {
+  typedef gf_impl<Variable,Target,Opt,false,false> B;
   typedef gfs_implementation::factories<Variable,Target,Opt> factory;
   public :
 
   gf():B() {}
   gf(gf const & g): B(g){}
   gf(gf && g) noexcept : B(std::move(g)){}
-  gf(gf_view<Variable,Target,Opt> const & g): B(g){}
+  gf(gf_view<Variable,Target,Opt> const & g): B(g, bool() ){}
   template<typename GfType> gf(GfType const & x,typename std::enable_if<ImmutableGreenFunction<GfType>::value>::type *dummy =0 ): B() { *this = x;}
 
   gf(typename B::mesh_t m,
@@ -431,14 +432,50 @@ namespace triqs { namespace gfs {
  };
 
  // ---------------------------------------------------------------------------------
- ///The View class of GF
- template<typename Variable, typename Target, typename Opt> class gf_view : public gf_impl<Variable,Target,Opt,true> {
-  typedef gf_impl<Variable,Target,Opt,true> B;
+ ///The const View class of GF
+ template<typename Variable, typename Target, typename Opt> class gf_view<Variable,Target,Opt,true> : public gf_impl<Variable,Target,Opt,true,true> {
+  typedef gf_impl<Variable,Target,Opt,true,true> B;
   public :
+  gf_view() = delete;
   gf_view(gf_view const & g): B(g){}
   gf_view(gf_view && g) noexcept : B(std::move(g)){}
 
-  template<bool V> gf_view(gf_impl<Variable,Target,Opt,V> const & g): B(g){}
+  gf_view(gf_impl<Variable,Target,Opt,true,true> const & g) : B(g, bool()){}  // from a const_view
+  gf_view(gf_impl<Variable,Target,Opt,true,false> const & g): B(g, bool()){}  // from a view
+  gf_view(gf_impl<Variable,Target,Opt,false,false> const & g): B(g, bool()){} // from a const gf 
+  gf_view(gf_impl<Variable,Target,Opt,false,false> & g): B(g, bool()){}       // from a gf &
+  gf_view(gf_impl<Variable,Target,Opt,false,false> && g) noexcept: B(std::move(g), bool()){} // from a gf &&
+
+  template<typename D>
+   gf_view (typename B::mesh_t const & m,
+     D const & dat,typename B::singularity_view_t const & t,typename B::symmetry_t const & s,
+     typename B::evaluator_t const &e = typename B::evaluator_t ()  ) :
+    B(m,factory<typename B::data_t>(dat),t,s,e) {}
+
+  void rebind (gf_view const &X) noexcept {
+   this->_mesh = X._mesh; this->_symmetry = X._symmetry; 
+   this->_data_proxy.rebind(this->_data,X); 
+   this->_singularity.rebind(X._singularity);
+  }
+  gf_view & operator = (gf_view const & ) = delete;
+
+ }; // class gf_const_view
+
+ // ---------------------------------------------------------------------------------
+ ///The View class of GF
+ template<typename Variable, typename Target, typename Opt> class gf_view<Variable,Target,Opt,false> : public gf_impl<Variable,Target,Opt,true,false> {
+  typedef gf_impl<Variable,Target,Opt,true,false> B;
+  public :
+  gf_view() = delete;
+  gf_view(gf_view const & g): B(g){}
+  gf_view(gf_view && g) noexcept : B(std::move(g)){}
+
+  gf_view(gf_impl<Variable,Target,Opt,true,true> const & g) = delete; // from a const view : impossible
+  gf_view(gf_impl<Variable,Target,Opt,true,false> const & g): B(g, bool()){} // from a view
+  gf_view(gf_impl<Variable,Target,Opt,false,false> const & g) = delete; // from a const gf : impossible
+  //gf_view(gf_impl<Variable,Target,Opt,false,false> const & g): B(g, bool()){} // from a gf &
+  gf_view(gf_impl<Variable,Target,Opt,false,false> & g): B(g, bool()){} // from a gf &
+  gf_view(gf_impl<Variable,Target,Opt,false,false> && g) noexcept: B(std::move(g), bool()){} // from a gf &&
 
   template<typename D>
    gf_view (typename B::mesh_t const & m,
@@ -474,33 +511,67 @@ namespace triqs { namespace gfs {
   }
 
  // tool for lazy transformation
- template<typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper{ gf_view<D,Target> g; gf_keeper (gf_view<D,Target> const & g_) : g(g_) {} };
+  template <typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper {
+   gf_const_view<D, Target> g;
+  };
 
  // ---------------------------------- slicing ------------------------------------
 
- //slice
- template<typename Variable, typename Target, typename Opt, typename... Args>
-  gf_view<Variable,matrix_valued,Opt> slice_target (gf_view<Variable,Target,Opt> g, Args&& ... args) {
-   static_assert(std::is_same<Target,matrix_valued>::value, "slice_target only for matrix_valued GF's");
-   using arrays::range;
-   //auto sg=slice_target (g.singularity(),range(args,args+1)...);
-   return gf_view<Variable,matrix_valued,Opt>(g.mesh(), g.data()(range(), std::forward<Args>(args)... ), slice_target (g.singularity(), std::forward<Args>(args)...) , g.symmetry());
-  }
+ // slice
+ template <typename Variable, typename Target, typename Opt, bool IsConst, typename... Args>
+ gf_view<Variable, matrix_valued, Opt,IsConst> slice_target(gf_view<Variable, Target, Opt, IsConst> g, Args &&... args) {
+  static_assert(std::is_same<Target, matrix_valued>::value, "slice_target only for matrix_valued GF's");
+  using arrays::range;
+  return {g.mesh(),                                                   g.data()(range(), std::forward<Args>(args)...),
+          slice_target(g.singularity(), std::forward<Args>(args)...), g.symmetry()};
+ }
 
- template<typename Variable, typename Target, typename Opt, typename... Args>
-  gf_view<Variable,scalar_valued,Opt> slice_target_to_scalar (gf_view<Variable,Target,Opt> g, Args&& ... args) {
-   static_assert(std::is_same<Target,matrix_valued>::value, "slice_target only for matrix_valued GF's");
-   using arrays::range;
-   auto sg=slice_target (g.singularity(),range(args,args+1)...);
-   return gf_view<Variable,scalar_valued,Opt>(g.mesh(), g.data()(range(), std::forward<Args>(args)... ), sg, g.symmetry());
-  }
+ template <typename Variable, typename Target, typename Opt, typename... Args>
+ gf_view<Variable, matrix_valued, Opt> slice_target(gf<Variable, Target, Opt> & g, Args &&... args) {
+  return slice_target(g(), std::forward<Args>(args)...);
+ }
+
+ template <typename Variable, typename Target, typename Opt, typename... Args>
+ gf_const_view<Variable, matrix_valued, Opt> slice_target(gf<Variable, Target, Opt> const &g, Args &&... args) {
+  return slice_target(g(), std::forward<Args>(args)...);
+ }
+
+ // slice to scalar
+ template <typename Variable, typename Target, typename Opt, bool IsConst, typename... Args>
+ gf_view<Variable, scalar_valued, Opt, IsConst> slice_target_to_scalar(gf_view<Variable, Target, Opt, IsConst> g,
+                                                                       Args &&... args) {
+  static_assert(std::is_same<Target, matrix_valued>::value, "slice_target only for matrix_valued GF's");
+  using arrays::range;
+  return {g.mesh(),                                                g.data()(range(), std::forward<Args>(args)...),
+          slice_target(g.singularity(), range(args, args + 1)...), g.symmetry()};
+ }
+
+ template <typename Variable, typename Target, typename Opt, typename... Args>
+ gf_view<Variable, scalar_valued, Opt> slice_target_to_scalar(gf<Variable, Target, Opt> & g, Args &&... args) {
+  return slice_target_to_scalar(g(), std::forward<Args>(args)...);
+ }
+
+ template <typename Variable, typename Target, typename Opt, typename... Args>
+ gf_const_view<Variable, scalar_valued, Opt> slice_target_to_scalar(gf<Variable, Target, Opt> const &g, Args &&... args) {
+  return slice_target_to_scalar(g(), std::forward<Args>(args)...);
+ }
 
  // a scalar_valued gf can be viewed as a 1x1 matrix
- template<typename Variable, typename Opt, typename... Args>
-  gf_view<Variable,matrix_valued,Opt> reinterpret_scalar_valued_gf_as_matrix_valued (gf_view<Variable,scalar_valued,Opt> g) {
-   typedef typename gf_view<Variable,matrix_valued,Opt>::data_view_t a_t;
+ template<typename Variable, typename Opt, bool IsConst, typename... Args>
+  gf_view<Variable,matrix_valued,Opt,IsConst> reinterpret_scalar_valued_gf_as_matrix_valued (gf_view<Variable,scalar_valued,Opt,IsConst> g) {
+   typedef typename gf_view<Variable,matrix_valued,Opt,IsConst>::data_view_t a_t;
    auto a = a_t {typename a_t::indexmap_type (join(g.data().shape(),make_shape(1,1))), g.data().storage()};
-   return gf_view<Variable,matrix_valued,Opt>(g.mesh(), a, g.singularity(), g.symmetry());
+   return {g.mesh(), a, g.singularity(), g.symmetry()};
+  }
+
+ template<typename Variable, typename Opt, typename... Args>
+  gf_view<Variable,matrix_valued,Opt> reinterpret_scalar_valued_gf_as_matrix_valued (gf<Variable,scalar_valued,Opt> & g) { 
+   return reinterpret_scalar_valued_gf_as_matrix_valued(g());
+  }
+
+ template<typename Variable, typename Opt, typename... Args>
+  gf_const_view<Variable,matrix_valued,Opt> reinterpret_scalar_valued_gf_as_matrix_valued (gf<Variable,scalar_valued,Opt> const & g) { 
+   return reinterpret_scalar_valued_gf_as_matrix_valued(g());
   }
 
  /*

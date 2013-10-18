@@ -59,29 +59,32 @@ namespace triqs { namespace gfs {
   template<typename Opt, int R, typename ... Ms> struct h5_name<cartesian_product<Ms...>,tensor_valued<R>,Opt> :  h5_name<cartesian_product<Ms...>,matrix_valued,Opt> {};
 
   // a slight difference with the generic case : reinterpret the data array to avoid flattening the variables
-  template <typename Opt, bool IsView, int R, typename ... Ms> 
-   struct h5_rw<cartesian_product<Ms...>,tensor_valued<R>,Opt,IsView>  {
-    typedef gf_impl<cartesian_product<Ms...>,tensor_valued<R>,Opt,IsView> g_t;
+  template <typename Opt, int R, typename ... Ms> 
+   struct h5_rw<cartesian_product<Ms...>,tensor_valued<R>,Opt>  {
+    typedef gf<cartesian_product<Ms...>,tensor_valued<R>,Opt> g_t;
 
-    static void write (h5::group gr, g_t const & g) {
+    static void write (h5::group gr, typename g_t::const_view_type g) {
      h5_write(gr,"data",reinterpret_linear_array(g.mesh(), g().data()));
      h5_write(gr,"singularity",g._singularity);
      h5_write(gr,"mesh",g._mesh);
      h5_write(gr,"symmetry",g._symmetry);
     }
 
-    static void read (h5::group gr, g_t & g) {
+    template<bool IsView>
+    static void read (h5::group gr, gf_impl<cartesian_product<Ms...>,tensor_valued<R>,Opt,IsView,false> & g) {
+     using G_t= gf_impl<cartesian_product<Ms...>,tensor_valued<R>,Opt,IsView,false> ;
      h5_read(gr,"mesh",g._mesh);
-     auto arr = arrays::array<typename g_t::data_t::value_type, sizeof...(Ms)+ R>{};
+     auto arr = arrays::array<typename G_t::data_t::value_type, sizeof...(Ms)+ R>{};
      h5_read(gr,"data",arr);
      auto sh = arr.shape();
      arrays::mini_vector<size_t,R+1> sh2;
      sh2[0] = g._mesh.size();
      for (int u=1; u<R+1; ++u) sh2[u] = sh[sizeof...(Ms)-1+u];
-     g._data = arrays::array<typename g_t::data_t::value_type, R+1>{sh2, std::move(arr.storage())};
+     g._data = arrays::array<typename G_t::data_t::value_type, R+1>{sh2, std::move(arr.storage())};
      h5_read(gr,"singularity",g._singularity);
      h5_read(gr,"symmetry",g._symmetry);
     }
+   
    };
 
   /// ---------------------------  data access  ---------------------------------

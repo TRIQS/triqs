@@ -87,7 +87,7 @@ namespace triqs { namespace gfs {
 
  // compute a tail from the Legendre GF
  // this is Eq. 8 of our paper
- local::tail_view get_tail(gf_view<legendre> const & gl, int size = 10, int omin = -1) {
+ local::tail_view get_tail(gf_const_view<legendre> gl, int size = 10, int omin = -1) {
 
    auto sh = gl.data().shape().front_pop();
    local::tail t(sh, size, omin);

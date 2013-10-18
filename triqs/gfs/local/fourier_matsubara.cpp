@@ -44,7 +44,7 @@ namespace triqs { namespace gfs {
   
   tqa::vector<dcomplex> g_in, g_out;
   
-  void direct (gf_view<imfreq,scalar_valued> gw, gf_view<imtime,scalar_valued> const gt) {
+  void direct (gf_view<imfreq,scalar_valued> gw, gf_const_view<imtime,scalar_valued> gt) {
    using namespace impl_local_matsubara;
    auto ta = gt(freq_infty());
    //TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
@@ -81,7 +81,7 @@ namespace triqs { namespace gfs {
    gw.singularity() = gt.singularity();// set tail
   }
   
-  void inverse(gf_view<imtime,scalar_valued> gt, gf_view<imfreq,scalar_valued> const gw){
+  void inverse(gf_view<imtime,scalar_valued> gt, gf_const_view<imfreq,scalar_valued> gw){
    using namespace impl_local_matsubara;
    static bool Green_Function_Are_Complex_in_time = false;
    // If the Green function are NOT complex, then one use the symmetry property
@@ -139,12 +139,12 @@ namespace triqs { namespace gfs {
   
  };
  
- void fourier_impl  (gf_view<imfreq,scalar_valued> gw , gf_view<imtime,scalar_valued> const gt, scalar_valued){
+ void fourier_impl  (gf_view<imfreq,scalar_valued> gw , gf_const_view<imtime,scalar_valued> gt, scalar_valued){
   impl_worker w;
   w.direct(gw,gt);
  }
  
- void fourier_impl  (gf_view<imfreq,matrix_valued> gw , gf_view<imtime,matrix_valued> const gt, matrix_valued){
+ void fourier_impl  (gf_view<imfreq,matrix_valued> gw , gf_const_view<imtime,matrix_valued> gt, matrix_valued){
   impl_worker w;
   for (size_t n1=0; n1<gt.data().shape()[1];n1++)
    for (size_t n2=0; n2<gt.data().shape()[2];n2++){
@@ -158,12 +158,12 @@ namespace triqs { namespace gfs {
  
  //---------------------------------------------------------------------------
  
- void inverse_fourier_impl  (gf_view<imtime,scalar_valued> gt , gf_view<imfreq,scalar_valued> const gw, scalar_valued){ 
+ void inverse_fourier_impl  (gf_view<imtime,scalar_valued> gt , gf_const_view<imfreq,scalar_valued> gw, scalar_valued){ 
   impl_worker w;
   w.inverse(gt,gw);
  }
  
- void inverse_fourier_impl  (gf_view<imtime,matrix_valued> gt , gf_view<imfreq,matrix_valued> const gw, matrix_valued){
+ void inverse_fourier_impl  (gf_view<imtime,matrix_valued> gt , gf_const_view<imfreq,matrix_valued> gw, matrix_valued){
   impl_worker w;
   for (size_t n1=0; n1<gw.data().shape()[1];n1++)
    for (size_t n2=0; n2<gw.data().shape()[2];n2++){

@@ -29,7 +29,7 @@ using namespace triqs::utility;
 
 namespace triqs { namespace gfs {
 
-void legendre_matsubara_direct(gf_view<imfreq> & gw, gf_view<legendre> const & gl) {
+void legendre_matsubara_direct(gf_view<imfreq> & gw, gf_const_view<legendre>  gl) {
 
   gw() = 0.0;
   triqs::arrays::range R;
@@ -45,7 +45,7 @@ void legendre_matsubara_direct(gf_view<imfreq> & gw, gf_view<legendre> const & g
 
 }
 
-void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imfreq> const & gw) {
+void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_const_view<imfreq>  gw) {
 
   gl() = 0.0;
 
@@ -62,7 +62,7 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imfreq> const &
 }
 
 
-void legendre_matsubara_direct (gf_view<imtime> & gt, gf_view<legendre> const & gl) {
+void legendre_matsubara_direct (gf_view<imtime> & gt, gf_const_view<legendre>  gl) {
 
   gt() = 0.0;
   legendre_generator L;
@@ -78,7 +78,7 @@ void legendre_matsubara_direct (gf_view<imtime> & gt, gf_view<legendre> const & 
 
 }
 
-void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imtime> const & gt) {
+void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_const_view<imtime>  gt) {
 
   gl() = 0.0;
   legendre_generator L;
@@ -95,10 +95,10 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imtime> const &
 }
 
 
-gf_keeper<tags::legendre,legendre> lazy_legendre_imfreq (gf_view<legendre> const & gl) { return gl; }
-gf_keeper<tags::legendre,legendre> lazy_legendre_imtime (gf_view<legendre> const & gl) { return gl; }
-gf_keeper<tags::legendre,imfreq>   lazy_imfreq_legendre (gf_view<imfreq> const & gw) { return gw; }
-gf_keeper<tags::legendre,imtime>   lazy_imtime_legendre (gf_view<imtime> const & gt) { return gt; }
+gf_keeper<tags::legendre,legendre> lazy_legendre_imfreq (gf_const_view<legendre>  gl) { return {gl}; }
+gf_keeper<tags::legendre,legendre> lazy_legendre_imtime (gf_const_view<legendre>  gl) { return {gl}; }
+gf_keeper<tags::legendre,imfreq>   lazy_imfreq_legendre (gf_const_view<imfreq>  gw) { return {gw}; }
+gf_keeper<tags::legendre,imtime>   lazy_imtime_legendre (gf_const_view<imtime>  gt) { return {gt}; }
 
 void triqs_gf_view_assign_delegation( gf_view<imfreq> &gw, gf_keeper<tags::legendre,legendre> const & L) {
   legendre_matsubara_direct(gw, L.g);

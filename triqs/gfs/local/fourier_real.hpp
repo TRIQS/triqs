@@ -28,12 +28,12 @@
 namespace triqs { namespace gfs { 
 
  // First the implementation of the fourier transform
- void fourier_impl         (gf_view<refreq,scalar_valued> gw , gf_view<retime,scalar_valued> const gt, scalar_valued);
- void fourier_impl         (gf_view<refreq,matrix_valued> gw , gf_view<retime,matrix_valued> const gt, matrix_valued);
- void inverse_fourier_impl (gf_view<retime,scalar_valued> gt,  gf_view<refreq,scalar_valued> const gw, scalar_valued);
- void inverse_fourier_impl (gf_view<retime,matrix_valued> gt,  gf_view<refreq,matrix_valued> const gw, matrix_valued);
+ void fourier_impl         (gf_view<refreq,scalar_valued> gw , gf_const_view<retime,scalar_valued> gt, scalar_valued);
+ void fourier_impl         (gf_view<refreq,matrix_valued> gw , gf_const_view<retime,matrix_valued> gt, matrix_valued);
+ void inverse_fourier_impl (gf_view<retime,scalar_valued> gt,  gf_const_view<refreq,scalar_valued> gw, scalar_valued);
+ void inverse_fourier_impl (gf_view<retime,matrix_valued> gt,  gf_const_view<refreq,matrix_valued> gw, matrix_valued);
  
- inline gf_view<refreq,matrix_valued> fourier (gf_view<retime, matrix_valued> const gt) { 
+ inline gf_view<refreq,matrix_valued> fourier (gf_const_view<retime, matrix_valued> gt) { 
   double pi = std::acos(-1);
   int L = gt.mesh().size();
   double wmin = -pi * (L-1) / (L*gt.mesh().delta());
@@ -43,7 +43,7 @@ namespace triqs { namespace gfs {
   fourier_impl(V, gt, matrix_valued());
   return gw;
  }
- inline gf_view<refreq,scalar_valued> fourier (gf_view<retime, scalar_valued> const gt) { 
+ inline gf_view<refreq,scalar_valued> fourier (gf_const_view<retime, scalar_valued> gt) { 
   double pi = std::acos(-1);
   int L = gt.mesh().size();
   double wmin = -pi * (L-1) / (L*gt.mesh().delta());
@@ -54,7 +54,7 @@ namespace triqs { namespace gfs {
   return gw;
  }
  
- inline gf_view<retime,matrix_valued> inverse_fourier (gf_view<refreq,matrix_valued> const gw) { 
+ inline gf_view<retime,matrix_valued> inverse_fourier (gf_const_view<refreq,matrix_valued> gw) { 
   double pi = std::acos(-1);
   int L = gw.mesh().size();
   double tmin = -pi * (L-1) / (L*gw.mesh().delta());
@@ -64,7 +64,7 @@ namespace triqs { namespace gfs {
   inverse_fourier_impl(V, gw, matrix_valued());
   return gt;
  }
- inline gf_view<retime,scalar_valued> inverse_fourier (gf_view<refreq,scalar_valued> const gw) { 
+ inline gf_view<retime,scalar_valued> inverse_fourier (gf_const_view<refreq,scalar_valued> gw) { 
   double pi = std::acos(-1);
   int L = gw.mesh().size();
   double tmin = -pi * (L-1) / (L*gw.mesh().delta());
@@ -74,11 +74,11 @@ namespace triqs { namespace gfs {
   inverse_fourier_impl(V, gw, scalar_valued());
   return gt;
  }
- 
- inline gf_keeper<tags::fourier,retime,scalar_valued> lazy_fourier         (gf_view<retime,scalar_valued> const & g) { return g;}
- inline gf_keeper<tags::fourier,refreq,scalar_valued> lazy_inverse_fourier (gf_view<refreq,scalar_valued> const & g) { return g;}
- inline gf_keeper<tags::fourier,retime,matrix_valued> lazy_fourier         (gf_view<retime,matrix_valued> const & g) { return g;}
- inline gf_keeper<tags::fourier,refreq,matrix_valued> lazy_inverse_fourier (gf_view<refreq,matrix_valued> const & g) { return g;}
+
+ inline gf_keeper<tags::fourier, retime, scalar_valued> lazy_fourier(gf_const_view<retime, scalar_valued> g) { return {g}; }
+ inline gf_keeper<tags::fourier, refreq, scalar_valued> lazy_inverse_fourier(gf_const_view<refreq, scalar_valued> g) { return {g}; }
+ inline gf_keeper<tags::fourier, retime, matrix_valued> lazy_fourier(gf_const_view<retime, matrix_valued> g) { return {g}; }
+ inline gf_keeper<tags::fourier, refreq, matrix_valued> lazy_inverse_fourier(gf_const_view<refreq, matrix_valued> g) { return {g}; }
 
  void triqs_gf_view_assign_delegation( gf_view<refreq,scalar_valued> g, gf_keeper<tags::fourier,retime,scalar_valued> const & L);
  void triqs_gf_view_assign_delegation( gf_view<refreq,matrix_valued> g, gf_keeper<tags::fourier,retime,matrix_valued> const & L);
