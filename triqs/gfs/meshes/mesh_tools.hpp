@@ -22,20 +22,31 @@
 #define TRIQS_GF_MESHTOOLS_H
 #include "../tools.hpp"
 
-namespace triqs { namespace gfs {
+namespace triqs {
+namespace gfs {
 
- // Derive from this object using CRTP to provide arithmetic operation by casting the final object to C 
- template<typename Derived, typename C> struct arith_ops_by_cast {};
-#define IMPL_OP(OP)\
- template<typename D, typename C, typename T> \
- auto operator OP(arith_ops_by_cast<D,C> const & x, T const & y) -> decltype( std::declval<C>() OP y) {return C(static_cast<D const& >(x)) OP y;}\
- template<typename D, typename C, typename T> \
- auto operator OP( T const & y, arith_ops_by_cast<D,C> const & x) -> TYPE_DISABLE_IF(decltype (y OP std::declval<C>()), std::is_same<T,D>)  {return y OP C(static_cast<D const& >(x));}
- IMPL_OP(+); IMPL_OP(-); IMPL_OP(*); IMPL_OP(/);
+ // Derive from this object using CRTP to provide arithmetic operation by casting the final object to C
+ // by not forwarding x, I assume the cast is a simple value, not a matrix, but this is ok
+ template <typename Derived, typename C> struct arith_ops_by_cast {};
+
+#define IMPL_OP(OP)                                                                                                              \
+ template <typename D, typename C, typename Y>                                                                                   \
+ auto operator OP(arith_ops_by_cast<D, C> const& x, Y&& y)->decltype(std::declval<C>() OP std::forward<Y>(y)) {                  \
+  return C(static_cast<D const&>(x)) OP std::forward<Y>(y);                                                                      \
+ }                                                                                                                               \
+ template <typename D, typename C, typename Y>                                                                                   \
+ auto operator OP(Y&& y, arith_ops_by_cast<D, C> const& x)                                                                       \
+     ->TYPE_DISABLE_IF(decltype(std::forward<Y>(y) OP std::declval<C>()),                                                        \
+                       std::is_same<typename std::remove_cv<typename std::remove_reference<Y>::type>::type, D>) {                \
+  return std::forward<Y>(y) OP C(static_cast<D const&>(x));                                                                      \
+ }
+
+ IMPL_OP(+);
+ IMPL_OP(-);
+ IMPL_OP(*);
+ IMPL_OP(/ );
 #undef IMPL_OP
- 
- //TYPE_DISABLE_IF(decltype (std::declval<T>() OP std::declval<C>()), std::is_same<T,D>)\
- //operator OP( T const & y, arith_ops_by_cast<D,C> const & x)  {return y OP C(static_cast<D const& >(x));}
+
 
  //------------------------------------------------------
 
