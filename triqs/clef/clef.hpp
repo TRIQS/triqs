@@ -235,7 +235,7 @@ namespace triqs { namespace clef {
  template<typename Tag> struct operation2<Tag, false> { 
   template<typename... Args> 
    auto operator()(Args && ... args) const DECL_AND_RETURN( operation<Tag>()(std::forward<Args>(args)...));
-  void operator() (...) const {}
+  //void operator() (...) const {}
  };
 
  // general expr node
