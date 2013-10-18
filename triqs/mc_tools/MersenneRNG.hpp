@@ -121,8 +121,8 @@ class RandMT {
   }
   
   uint32 reloadMT(void) {
-    register uint32 *p0=state, *p2=state+2, *pM=state+M, s0, s1;
-    register int    j;
+     uint32 *p0=state, *p2=state+2, *pM=state+M, s0, s1;
+     int    j;
 
     if(left < -1)
         seedMT(initseed);
@@ -209,8 +209,8 @@ public:
     //
     initseed = seed;
 
-    register uint32 x = (seed | 1U) & 0xFFFFFFFFU, *s = state;
-    register int    j;
+     uint32 x = (seed | 1U) & 0xFFFFFFFFU, *s = state;
+     int    j;
     left = 0;
     for(*s++=x, j=N; --j; *s++ = (x*=69069U) & 0xFFFFFFFFU);
   }
