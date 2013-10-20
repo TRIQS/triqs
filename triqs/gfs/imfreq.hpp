@@ -36,10 +36,7 @@ namespace triqs { namespace gfs {
   gf_mesh() = default;
   gf_mesh (typename B::domain_t const & d, int Nmax = 1025) : 
    B(d, d.statistic==Fermion?m1(d.beta):0, d.statistic==Fermion?(2*Nmax+1)*m1(d.beta): 2*Nmax*m1(d.beta), Nmax, without_last){}
-  // use delegating...
-  gf_mesh (double beta, statistic_enum S, int Nmax = 1025) :
-   //gf_mesh({beta,S}, Nmax){} 
-   B(typename B::domain_t(beta,S), S==Fermion?m1(beta):0, S==Fermion?(2*Nmax+1)*m1(beta): 2*Nmax*m1(beta), Nmax, without_last){}
+  gf_mesh (double beta, statistic_enum S, int Nmax = 1025) : gf_mesh({beta,S}, Nmax){} 
  };
 
  namespace gfs_implementation { 
