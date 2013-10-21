@@ -62,6 +62,8 @@ namespace arrays {
   view_type operator()() const { return *this; }
   template <typename... Args> value_type const &operator()(Args &&... args) const { return a(n, std::forward<Args>(args)...); }
 
+  template <typename RHS> const_matrix_tensor_proxy &operator=(const RHS &X) =delete; // can not assign to a const 
+
   TRIQS_DELETE_COMPOUND_OPERATORS(const_matrix_tensor_proxy);
   friend std::ostream &operator<<(std::ostream &out, const_matrix_tensor_proxy const &x) { return out << view_type(x); }
  };
