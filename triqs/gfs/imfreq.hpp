@@ -60,14 +60,11 @@ namespace triqs { namespace gfs {
     public :
      static constexpr int arity = 1;
      template<typename G> 
-      auto operator()(G const * g, int n) 
-      //const DECL_AND_RETURN(g->data()(n, arrays::ellipsis()));
-      // hidden bug : should not need the ().... to investigate
-      const DECL_AND_RETURN((*g)[n]());
+      auto operator()(G const * g, int n) const DECL_AND_RETURN((*g)[n]);
 
      template<typename G>
       auto operator() (G const * g, linear_mesh<matsubara_domain<true>>::mesh_point_t const & p)  
-      const DECL_AND_RETURN((*g)[p.index()]());
+      const DECL_AND_RETURN((*g)[p.index()]);
      
      template<typename G> 
       typename G::singularity_t const & operator()(G const * g,freq_infty const &) const {return g->singularity();}
