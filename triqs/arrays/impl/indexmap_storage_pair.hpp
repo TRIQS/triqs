@@ -195,8 +195,6 @@ namespace triqs { namespace arrays {
      typedef typename ISPViewType<V2,IM2::domain_type::rank, OptionFlags, IM2::traversal_order_in_template, ViewTag, ForceBorrowed || StorageType::is_weak, is_const >::type type;
     };
 
-    // simplify this ?
-#ifndef TRIQS_ARRAYS_SLICE_DEFAUT_IS_SHARED
     template<typename... Args>   // non const version
      typename boost::lazy_enable_if_c<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0) && (!IsConst)
@@ -259,51 +257,6 @@ namespace triqs { namespace arrays {
       return make_expr_call(std::move(*this),args...);
      }
 
-#else
-
-    template<typename... Args>   // non const version
-     typename boost::lazy_enable_if_c<
-     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
-     , result_of_call_as_view<false,false,Args...>
-     >::type // enable_if
-     operator()(Args const & ... args) {
-      return typename result_of_call_as_view<false,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
-
-    template<typename... Args>  // const version
-     typename boost::lazy_enable_if_c<
-     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
-     , result_of_call_as_view<true,false,Args...>
-     >::type // enable_if
-     operator()(Args const & ... args) const {
-      return typename result_of_call_as_view<true,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
-
-    /// Equivalent to make_view
-    //typename ISPViewType<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
-    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, false >::type
-     operator()() const { return *this; }
-
-    typename ISPViewType<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag, false >::type
-     operator()() { return *this; }
-
-    // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
-    // NB : this is ok because indexmap_storage_pair has a shallow copy constructor ...
-    // Correction : no copy, just a ref...
-    // so A(i_) if A is an array will NOT copy the data....
-    template< typename... Args>
-     typename clef::_result_of::make_expr_call<indexmap_storage_pair const &,Args...>::type
-     operator()( Args&&... args ) const {
-      static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-      return make_expr_call(*this,args...);
-     }
-
-    template< typename... Args>
-     typename clef::_result_of::make_expr_call<indexmap_storage_pair &,Args...>::type
-     operator()( Args&&... args ) {
-      static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-      return make_expr_call(*this,args...);
-     }
-
-#endif
     template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
 
     // ------------------------------- Iterators --------------------------------------------

@@ -24,9 +24,6 @@
 #include "../indexmaps/cuboid/foreach.hpp"
 #include "../storages/memcopy.hpp"
 
-// two ways of doing things... optimal one depends on compiler ? To be checked...
-#define TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
-
 namespace triqs { namespace arrays {
 
  namespace Tag {struct indexmap_storage_pair{}; }// defined here since needed below...
@@ -97,18 +94,7 @@ namespace triqs { namespace arrays {
       if (( (OP=='E') && indexmaps::raw_copy_possible(lhs.indexmap(), rhs.indexmap()))) {
        storages::memcopy(lhs.data_start(), rhs.data_start(), rhs.indexmap().domain().number_of_elements());
       }
-      else {
-#ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
-       foreach(lhs,*this);
-       //indexmaps::foreach_v(*this,lhs);
-#else
-       typename RHS::const_iterator it_rhs = rhs.begin();
-       typedef typename RHS::const_iterator::indexmap_iterator_type RHS_mapit;
-       typedef typename LHS::indexmap_type::iterator IT;
-       iterator_adapter<false, IT, typename LHS::storage_type > it_lhs(lhs.indexmap(),lhs.storage());
-       for (;it_lhs; ++it_lhs, ++it_rhs) { assert(it_rhs);  _ops_<value_type, typename RHS::value_type, OP>::invoke(*it_lhs , *it_rhs); }
-#endif
-      }
+      else { foreach(lhs,*this); }
      }
     };
 
@@ -119,17 +105,9 @@ namespace triqs { namespace arrays {
       TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR;
       typedef typename LHS::value_type value_type;
       LHS & lhs; const RHS & rhs; 
-      //value_type & restrict p;
       impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {} //, p(*(lhs_.data_start())) {}
       template<typename ... Args> void operator()(Args const & ... args) const { _ops_<value_type, typename RHS::value_type, OP>::invoke(lhs(args...),rhs(args...));}
-      void invoke() {
-#ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
-       foreach(lhs,*this);
-#else
-       typename LHS::storage_type & S(lhs.storage());
-       for (auto it= lhs.indexmap();it; ++it)  _ops_<value_type, typename RHS::value_type, OP>::invoke(S[*it] , rhs[it.indices()] );
-#endif
-      }
+      void invoke() { foreach(lhs,*this); }
      };
 
     // -----------------   assignment for scalar RHS, except some matrix case --------------------------------------------------
@@ -138,17 +116,9 @@ namespace triqs { namespace arrays {
       TRIQS_REJECT_ASSIGN_TO_CONST;
       typedef typename LHS::value_type value_type;
       LHS & lhs; const RHS & rhs; 
-      //value_type & restrict p;
       impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){}//, p(*(lhs_.data_start())) {}
       template<typename ... Args> void operator()(Args const & ...args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), rhs);}
-      void invoke() {
-#ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
-       foreach(lhs,*this);  // if contiguous : plain loop else foreach...
-#else
-       typename LHS::storage_type & S(lhs.storage());
-       for (auto it = lhs.indexmap();it; ++it) _ops_<value_type, RHS, OP>::invoke(S[*it], rhs);
-#endif
-      }
+      void invoke() { foreach(lhs,*this);  }
      };
 
     // -----------------   assignment for scalar RHS for Matrices --------------------------------------------------
@@ -162,7 +132,6 @@ namespace triqs { namespace arrays {
       TRIQS_REJECT_ASSIGN_TO_CONST;
       typedef typename LHS::value_type value_type;
       LHS & lhs; const RHS & rhs; 
-      //value_type & restrict p;
       impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){} //, p(*(lhs_.data_start())) {}
       template<typename ... Args>
        void operator()(Args const & ... args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), (kronecker(args...) ? rhs : RHS()));}
