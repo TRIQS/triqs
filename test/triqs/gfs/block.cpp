@@ -12,7 +12,8 @@ int main() {
   auto G3 = G2;
 
   // construct some block functions
-  auto B0 = block_gf<imfreq> (3); 
+  auto B0 = block_gf<imfreq> (3);
+
   auto B1 = make_block_gf<imfreq> (3, G1); 
   auto B2 = make_block_gf<imfreq> ({G1,G1,G1});
   auto B3 = make_block_gf<imfreq> ({"a","b","c"}, {G1,G1,G1}); 
@@ -57,7 +58,8 @@ int main() {
   TEST( View[0](0) ) ;
 
   // try the loop over the block.
-  for (auto g : View) { g[0] = 20;}
+  for (auto & g : View) { g[0] = 20;}
+  for (auto & g : B1) { g[0] = 20;}
 
  }
 TRIQS_CATCH_AND_ABORT;
