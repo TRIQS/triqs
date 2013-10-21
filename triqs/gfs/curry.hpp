@@ -49,15 +49,21 @@ namespace triqs { namespace gfs {
   template<typename M0, typename M1, typename ...M> auto rm_tuple_of_size_one(std::tuple<M0,M1,M...> const & t) DECL_AND_RETURN(t);
   template<typename M> auto rm_tuple_of_size_one(std::tuple<M> const & t) DECL_AND_RETURN(std::get<0>(t));
 
+  // as_tuple leaves a tuple intact and wrap everything else in a tuple...
+  template<typename T> std::tuple<T> as_tuple(T && x) { return std::tuple<T> {std::forward<T>(x)};}
+  template<typename ... T> std::tuple<T...> as_tuple(std::tuple<T...> && x) { return std::forward<T...>(x);}
+  template<typename ... T> std::tuple<T...> const &  as_tuple(std::tuple<T...> const & x) { return x;}
+  template<typename ... T> std::tuple<T...> & as_tuple(std::tuple<T...> & x) { return x;}
+
   template<int ... pos, typename Opt, typename Target, bool B, bool IsConst, typename IT, typename ... Ms>
   gf_view< typename cart_prod_impl< triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>::type ,Target, Opt,IsConst>
    partial_eval(gf_impl< cartesian_product<Ms...>, Target,Opt,B,IsConst> const & g, IT index) { 
     // meshes of the returned gf_view : just drop the mesh of the evaluated variables
     auto meshes_tuple_partial = triqs::tuple::filter_out<pos...>(g.mesh().components());
     // a view of the array of g, with the dimension sizeof...(Ms)
-    auto arr = reinterpret_linear_array(g.mesh(),g.data());
+    auto arr = reinterpret_linear_array(g.mesh(),g.data()); // NO the second () forces a view
     // now rebuild a tuple of the size sizeof...(Ms), containing the indices and range at the position of evaluated variables.
-    auto arr_args = triqs::tuple::inverse_filter<sizeof...(Ms),pos...>(index, arrays::range());
+    auto arr_args = triqs::tuple::inverse_filter<sizeof...(Ms),pos...>(as_tuple(index), arrays::range());
     // from it, we make a slice of the array of g, corresponding to the data of the returned gf_view
     auto arr2 =  triqs::tuple::apply(arr, arr_args);
     // finally, we build the view on this data. 
