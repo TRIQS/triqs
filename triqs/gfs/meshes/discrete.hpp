@@ -29,13 +29,12 @@ namespace triqs { namespace gfs {
   struct discrete_mesh {
 
    typedef Domain domain_t;
-   typedef size_t index_t; 
+   typedef size_t index_t;
 
-   discrete_mesh (domain_t && dom) : _dom(dom){}
-   discrete_mesh (domain_t const & dom) : _dom(dom){} //icc has a bug 
-   discrete_mesh () : _dom(){}
- 
-   domain_t const & domain() const { return _dom;}
+   discrete_mesh(domain_t dom) : _dom(std::move(dom)) {}
+   discrete_mesh() = default;
+
+   domain_t const &domain() const { return _dom; }
    size_t size() const {return _dom.size();}
 
    /// Conversions point <-> index <-> discrete_index
@@ -70,6 +69,7 @@ namespace triqs { namespace gfs {
 
    /// Mesh comparison
    bool operator == (discrete_mesh const & M) const { return (_dom == M._dom) ;} 
+   bool operator != (discrete_mesh const & M) const { return !(operator==(M)); }
 
    /// Write into HDF5
    friend void h5_write (h5::group fg, std::string subgroup_name, discrete_mesh const & m) {

@@ -25,184 +25,211 @@
 // ADDED for Krylov : to be clean and removed if necessary
 #include <algorithm>
 #include <boost/math/special_functions/round.hpp>
-namespace triqs { namespace gfs { 
+namespace triqs {
+namespace gfs {
 
  // Three possible meshes
- enum mesh_kind { half_bins, full_bins, without_last };
+ enum mesh_kind {
+  half_bins,
+  full_bins,
+  without_last
+ };
 
- template<typename Domain>
-  struct linear_mesh {
+ template <typename Domain> struct linear_mesh {
 
-   typedef Domain domain_t;
-   typedef size_t index_t; 
-   typedef typename domain_t::point_t  domain_pt_t;
+  typedef Domain domain_t;
+  typedef size_t index_t;
+  typedef typename domain_t::point_t domain_pt_t;
 
-   linear_mesh () : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
-   
-   linear_mesh (domain_t const & dom, double a, double b, size_t n_pts, mesh_kind mk) :
-     _dom(dom), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
-     switch(mk) {
-       case half_bins: del = (b-a)/L; xmin = a+0.5*del; break;
-       case full_bins: del = (b-a)/(L-1); xmin = a; break;
-       case without_last: del = (b-a)/L; xmin = a; break;
-     }
-     xmax = xmin + del*(L-1);
+  linear_mesh() : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
+
+  linear_mesh(domain_t dom, double a, double b, size_t n_pts, mesh_kind mk)
+     : _dom(std::move(dom)), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
+   switch (mk) {
+    case half_bins:
+     del = (b - a) / L;
+     xmin = a + 0.5 * del;
+     break;
+    case full_bins:
+     del = (b - a) / (L - 1);
+     xmin = a;
+     break;
+    case without_last:
+     del = (b - a) / L;
+     xmin = a;
+     break;
    }
+   xmax = xmin + del * (L - 1);
+  }
 
-   linear_mesh (domain_t && dom, double a, double b, size_t n_pts, mesh_kind mk) :
-     _dom(dom), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
-     switch(mk) {
-       case half_bins: del = (b-a)/L; xmin = a+0.5*del; break;
-       case full_bins: del = (b-a)/(L-1); xmin = a; break;
-       case without_last: del = (b-a)/L; xmin = a; break;
-     }
-     xmax = xmin + del*(L-1);
-   }
+  domain_t const &domain() const { return _dom; }
+  size_t size() const { return L; }
+  double delta() const { return del; }
+  double x_max() const { return xmax; }
+  double x_min() const { return xmin; }
+  mesh_kind kind() const { return meshk; }
 
-   domain_t const & domain() const { return _dom;}
-   size_t size() const { return L; }
-   double delta() const { return del; }
-   double x_max() const { return xmax; }
-   double x_min() const { return xmin; }
-   mesh_kind kind() const { return meshk; }
+  /// Conversions point <-> index <-> linear_index
+  domain_pt_t index_to_point(index_t ind) const {
+   return embed(xmin + ind * del, std::integral_constant<bool, std::is_base_of<std::complex<double>, domain_pt_t>::value>());
+  }
 
-   /// Conversions point <-> index <-> linear_index
-   domain_pt_t  index_to_point (index_t ind) const {return embed(xmin + ind * del, mpl::bool_<boost::is_base_of<std::complex<double>, domain_pt_t>::value >()) ;}
-   private : // multiply by I is the type is a complex ....
-   domain_pt_t embed( double x, mpl::bool_<false> ) const { return x;}
-   domain_pt_t embed( double x, mpl::bool_<true> ) const { return std::complex<double>(0,x);}
-   public : 
+  private: // multiply by I is the type is a complex ....
+  domain_pt_t embed(double x, std::false_type) const { return x; }
+  domain_pt_t embed(double x, std::true_type) const { return std::complex<double>(0, x); }
 
-   size_t  index_to_linear(index_t ind) const {return ind;}   
- 
-   /// The wrapper for the mesh point
-   class mesh_point_t : tag::mesh_point, public arith_ops_by_cast<mesh_point_t, domain_pt_t  > {
-    linear_mesh const * m;  
-    index_t _index;
-    public:
-    mesh_point_t( linear_mesh const & mesh, index_t const & index_): m(&mesh), _index(index_) {}
-    void advance() { ++_index;}
-    typedef domain_pt_t cast_t; 
-    operator cast_t () const { return m->index_to_point(_index);} 
-    size_t linear_index() const { return _index;}
-    size_t index() const { return _index;}
-    bool at_end() const { return (_index == m->size());}
-    void reset() {_index =0;}
-   };
+  public:
+  size_t index_to_linear(index_t ind) const { return ind; }
 
-   /// Accessing a point of the mesh
-   mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}
+  /// The wrapper for the mesh point
+  class mesh_point_t : tag::mesh_point, public arith_ops_by_cast<mesh_point_t, domain_pt_t> {
+   linear_mesh const *m;
+   index_t _index;
 
-   // ADDED for krylov : to be CLEANED AND CHANGED 
-   // Find the index of the mesh point which is nearest to x
-   index_t nearest_index(domain_pt_t x) const {
-     double x_real = real_or_imag(x, std::is_base_of<std::complex<double>, domain_pt_t>());
-     using boost::math::round; using std::min; using std::max; 
-     switch(meshk) {
-      case half_bins:
-      case full_bins: return min(max(round((x_real-xmin)/del),.0),static_cast<double>(L-1));
-      case without_last: return min(max(round((x_real-xmin)/del),.0),static_cast<double>(L-2));
-     }
-   }
-   private:
-   static double real_or_imag(domain_pt_t x, std::false_type) {return x; }
-   static double real_or_imag(domain_pt_t x, std::true_type) {return imag(x); }
    public:
-
-   /// Iterating on all the points...
-   typedef  mesh_pt_generator<linear_mesh> const_iterator;
-   const_iterator begin() const { return const_iterator (this);}
-   const_iterator end()   const { return const_iterator (this, true);}
-   const_iterator cbegin() const { return const_iterator (this);}
-   const_iterator cend()   const { return const_iterator (this, true);}
-
-   /// Mesh comparison
-   bool operator == (linear_mesh const & M) const { return ((_dom == M._dom) && (size() ==M.size()) && (std::abs(xmin - M.xmin)<1.e-15) && (std::abs(xmax - M.xmax)<1.e-15));} 
-   bool operator != (linear_mesh const & M) const { return !(operator==(M));}
-
-   /// Write into HDF5
-   friend void h5_write (h5::group fg, std::string subgroup_name, linear_mesh const & m) {
-    h5::group gr =  fg.create_group(subgroup_name);
-    int k;
-    switch(m.meshk) {
-     case half_bins: k=0; break;
-     case full_bins: k=1; break;
-     case without_last: k=2; break;
-    }
-    h5_write(gr,"domain",m.domain());
-    h5_write(gr,"min",m.a_pt);
-    h5_write(gr,"max",m.b_pt);
-    h5_write(gr,"size",m.size());
-    h5_write(gr,"kind",k);
-   }
-
-   /// Read from HDF5
-   friend void h5_read  (h5::group fg, std::string subgroup_name, linear_mesh & m){
-    h5::group gr = fg.open_group(subgroup_name);
-    typename linear_mesh::domain_t dom;
-    double a,b;
-    size_t L; 
-    int k;
-    mesh_kind mk;
-    h5_read(gr,"domain",dom);
-    h5_read(gr,"min",a);
-    h5_read(gr,"max",b);
-    h5_read(gr,"size",L);
-    h5_read(gr,"kind",k);
-    switch(k) {
-     case 0: mk = half_bins; break;
-     case 1: mk = full_bins; break;
-     case 2: mk = without_last; break;
-    }
-    m = linear_mesh(std::move(dom), a, b, L, mk);
-   }
-
-   //  BOOST Serialization
-   friend class boost::serialization::access;
-   template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-     ar & boost::serialization::make_nvp("domain",_dom);
-     ar & boost::serialization::make_nvp("a_pt",a_pt);
-     ar & boost::serialization::make_nvp("b_pt",b_pt);
-     ar & boost::serialization::make_nvp("xmin",xmin);
-     ar & boost::serialization::make_nvp("xmax",xmax);
-     ar & boost::serialization::make_nvp("del",del);
-     ar & boost::serialization::make_nvp("size",L);
-     ar & boost::serialization::make_nvp("kind",meshk);
-    }
-
-   friend std::ostream &operator <<(std::ostream &sout, linear_mesh const & m){return sout << "Linear Mesh of size "<< m.L; }
-
-   private:
-   domain_t _dom;
-   size_t L; 
-   double a_pt, b_pt;
-   double xmin, xmax;
-   double del;
-   mesh_kind meshk;
+   mesh_point_t(linear_mesh const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
+   void advance() { ++_index; }
+   typedef domain_pt_t cast_t;
+   operator cast_t() const { return m->index_to_point(_index); }
+   size_t linear_index() const { return _index; }
+   size_t index() const { return _index; }
+   bool at_end() const { return (_index == m->size()); }
+   void reset() { _index = 0; }
   };
 
+  /// Accessing a point of the mesh
+  mesh_point_t operator[](index_t i) const { return mesh_point_t(*this, i); }
 
- // UNUSED 
- /// Simple approximation of a point of the domain by a mesh point. No check  
- template<typename D>
-  size_t get_closest_mesh_pt_index ( linear_mesh<D> const & mesh, typename D::point_t const & x) { 
-   double a = (x - mesh.x_min())/mesh.delta();
-   return std::floor(a);
+  // ADDED for krylov : to be CLEANED AND CHANGED
+  // Find the index of the mesh point which is nearest to x
+  index_t nearest_index(domain_pt_t x) const {
+   double x_real = real_or_imag(x, std::is_base_of<std::complex<double>, domain_pt_t>());
+   using boost::math::round;
+   using std::min;
+   using std::max;
+   switch (meshk) {
+    case half_bins:
+    case full_bins:
+     return min(max(round((x_real - xmin) / del), .0), static_cast<double>(L - 1));
+    case without_last:
+     return min(max(round((x_real - xmin) / del), .0), static_cast<double>(L - 2));
+   }
   }
 
- /// Approximation of a point of the domain by a mesh point  
- template<typename D>
-  std::tuple<bool, long, double> windowing (linear_mesh<D> const & mesh, typename D::point_t const & x) { 
-   double a = (x - mesh.x_min())/mesh.delta();
-   long i = std::floor(a), imax = long(mesh.size())-1;
-   bool in = (i>=0) && (i<imax);
-   double w = a-i;
-   if (i==imax) { --i; in = (std::abs(w)< 1.e-14); w=1.0;}
-   return std::make_tuple(in,i,w);
-   //return std::make_tuple(in, (in ? i : 0),w);
+  private:
+  static double real_or_imag(domain_pt_t x, std::false_type) { return x; }
+  static double real_or_imag(domain_pt_t x, std::true_type) { return imag(x); }
+
+  public:
+  /// Iterating on all the points...
+  typedef mesh_pt_generator<linear_mesh> const_iterator;
+  const_iterator begin() const { return const_iterator(this); }
+  const_iterator end() const { return const_iterator(this, true); }
+  const_iterator cbegin() const { return const_iterator(this); }
+  const_iterator cend() const { return const_iterator(this, true); }
+
+  /// Mesh comparison
+  bool operator==(linear_mesh const &M) const {
+   return ((_dom == M._dom) && (size() == M.size()) && (std::abs(xmin - M.xmin) < 1.e-15) && (std::abs(xmax - M.xmax) < 1.e-15));
+  }
+  bool operator!=(linear_mesh const &M) const { return !(operator==(M)); }
+
+  /// Write into HDF5
+  friend void h5_write(h5::group fg, std::string subgroup_name, linear_mesh const &m) {
+   h5::group gr = fg.create_group(subgroup_name);
+   int k;
+   switch (m.meshk) {
+    case half_bins:
+     k = 0;
+     break;
+    case full_bins:
+     k = 1;
+     break;
+    case without_last:
+     k = 2;
+     break;
+   }
+   h5_write(gr, "domain", m.domain());
+   h5_write(gr, "min", m.a_pt);
+   h5_write(gr, "max", m.b_pt);
+   h5_write(gr, "size", m.size());
+   h5_write(gr, "kind", k);
   }
 
-}}
+  /// Read from HDF5
+  friend void h5_read(h5::group fg, std::string subgroup_name, linear_mesh &m) {
+   h5::group gr = fg.open_group(subgroup_name);
+   typename linear_mesh::domain_t dom;
+   double a, b;
+   size_t L;
+   int k;
+   mesh_kind mk;
+   h5_read(gr, "domain", dom);
+   h5_read(gr, "min", a);
+   h5_read(gr, "max", b);
+   h5_read(gr, "size", L);
+   h5_read(gr, "kind", k);
+   switch (k) {
+    case 0:
+     mk = half_bins;
+     break;
+    case 1:
+     mk = full_bins;
+     break;
+    case 2:
+     mk = without_last;
+     break;
+   }
+   m = linear_mesh(std::move(dom), a, b, L, mk);
+  }
+
+  //  BOOST Serialization
+  friend class boost::serialization::access;
+  template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+   ar &boost::serialization::make_nvp("domain", _dom);
+   ar &boost::serialization::make_nvp("a_pt", a_pt);
+   ar &boost::serialization::make_nvp("b_pt", b_pt);
+   ar &boost::serialization::make_nvp("xmin", xmin);
+   ar &boost::serialization::make_nvp("xmax", xmax);
+   ar &boost::serialization::make_nvp("del", del);
+   ar &boost::serialization::make_nvp("size", L);
+   ar &boost::serialization::make_nvp("kind", meshk);
+  }
+
+  friend std::ostream &operator<<(std::ostream &sout, linear_mesh const &m) { return sout << "Linear Mesh of size " << m.L; }
+
+  private:
+  domain_t _dom;
+  size_t L;
+  double a_pt, b_pt;
+  double xmin, xmax;
+  double del;
+  mesh_kind meshk;
+ };
+
+
+ // UNUSED
+ /// Simple approximation of a point of the domain by a mesh point. No check
+ template <typename D> size_t get_closest_mesh_pt_index(linear_mesh<D> const &mesh, typename D::point_t const &x) {
+  double a = (x - mesh.x_min()) / mesh.delta();
+  return std::floor(a);
+ }
+
+ /// Approximation of a point of the domain by a mesh point
+ template <typename D> std::tuple<bool, long, double> windowing(linear_mesh<D> const &mesh, typename D::point_t const &x) {
+  double a = (x - mesh.x_min()) / mesh.delta();
+  long i = std::floor(a), imax = long(mesh.size()) - 1;
+  bool in = (i >= 0) && (i < imax);
+  double w = a - i;
+  if (i == imax) {
+   --i;
+   in = (std::abs(w) < 1.e-14);
+   w = 1.0;
+  }
+  return std::make_tuple(in, i, w);
+  // return std::make_tuple(in, (in ? i : 0),w);
+ }
+}
+}
 #endif
 

@@ -399,6 +399,8 @@ namespace triqs { namespace gfs {
   gf(gf const & g): B(g){}
   gf(gf && g) noexcept : B(std::move(g)){}
   gf(gf_view<Variable,Target,Opt> const & g): B(g, bool() ){}
+  gf(gf_const_view<Variable,Target,Opt> const & g): B(g, bool() ){}
+  
   template<typename GfType> gf(GfType const & x,typename std::enable_if<ImmutableGreenFunction<GfType>::value>::type *dummy =0 ): B() { *this = x;}
 
   gf(typename B::mesh_t m,

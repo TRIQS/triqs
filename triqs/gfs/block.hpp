@@ -98,7 +98,7 @@ namespace triqs { namespace gfs {
  }
 
  // from a vector of gf (moving directly)
- template <typename Variable, typename Target, typename Opt, typename GF2>
+ template <typename Variable, typename Target, typename Opt>
  block_gf<Variable, Target, Opt> make_block_gf(std::vector<gf<Variable, Target, Opt>> &&V) {
   return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
  }
@@ -161,29 +161,79 @@ namespace triqs { namespace gfs {
  template<typename T> size_t n_blocks (gf<block_index,T> const & g)      { return g.mesh().size();}
  template<typename T> size_t n_blocks (gf_view<block_index,T> const & g) { return g.mesh().size();}
 
- // an iterator over the block
- template<typename Target, typename Opt>
-  class block_gf_iterator : 
-   public boost::iterator_facade< block_gf_iterator<Target,Opt>, typename Target::view_type , boost::forward_traversal_tag, typename Target::view_type  > {
-    friend class boost::iterator_core_access;
-    typedef gf_view<block_index,Target,Opt> big_gf_t;
-    typedef typename big_gf_t::mesh_t::const_iterator mesh_iterator_t;
-    big_gf_t big_gf;
-    mesh_iterator_t mesh_it;
+ // -------------------------------   an iterator over the blocks --------------------------------------------------
 
-    typename Target::view_type const & dereference() const { return big_gf[*mesh_it];}
-    bool equal(block_gf_iterator const & other) const { return ((mesh_it == other.mesh_it));}
-    public:
-    block_gf_iterator(gf_view<block_index,Target,Opt> bgf, bool at_end = false): big_gf(std::move(bgf)), mesh_it(&big_gf.mesh(),at_end) {}
-    void increment() { ++mesh_it; }
-    bool at_end() const { return mesh_it.at_end();}
-   };
+ // iterator
+ template <typename Target, typename Opt>
+ class block_gf_iterator : public boost::iterator_facade<block_gf_iterator<Target, Opt>, typename Target::view_type,
+                                                         boost::forward_traversal_tag, typename Target::view_type> {
+  friend class boost::iterator_core_access;
+  typedef gf_view<block_index, Target, Opt> big_gf_t;
+  typedef typename big_gf_t::mesh_t::const_iterator mesh_iterator_t;
+  big_gf_t big_gf;
+  mesh_iterator_t mesh_it;
 
- template<typename Target, typename Opt, bool B, bool C>
-  block_gf_iterator<Target,Opt> begin(gf_impl<block_index,Target,Opt,B,C> const & bgf) { return {bgf,false};}
+  typename Target::view_type const &dereference() const { return big_gf[*mesh_it]; }
+  bool equal(block_gf_iterator const &other) const { return ((mesh_it == other.mesh_it)); }
 
- template<typename Target, typename Opt, bool B, bool C>
-  block_gf_iterator<Target,Opt> end(gf_impl<block_index,Target,Opt,B,C> const & bgf) { return {bgf,true};}
+  public:
+  block_gf_iterator(gf_view<block_index, Target, Opt> bgf, bool at_end = false)
+     : big_gf(std::move(bgf)), mesh_it(&big_gf.mesh(), at_end) {}
+  void increment() { ++mesh_it; }
+  bool at_end() const { return mesh_it.at_end(); }
+ };
+
+ //------------ 
+ template <typename Target, typename Opt, bool B, bool C>
+ block_gf_iterator<Target, Opt> begin(gf_impl<block_index, Target, Opt, B, C> &bgf) {
+  return {bgf, false};
+ }
+
+ //------------  
+ template <typename Target, typename Opt, bool B, bool C>
+ block_gf_iterator<Target, Opt> end(gf_impl<block_index, Target, Opt, B, C> &bgf) {
+  return {bgf, true};
+ }
+
+ //----- const iterator 
+ template <typename Target, typename Opt>
+ class block_gf_const_iterator : public boost::iterator_facade<block_gf_iterator<Target, Opt>, typename Target::const_view_type,
+                                                         boost::forward_traversal_tag, typename Target::const_view_type> {
+  friend class boost::iterator_core_access;
+  typedef gf_const_view<block_index, Target, Opt> big_gf_t;
+  typedef typename big_gf_t::mesh_t::const_iterator mesh_iterator_t;
+  big_gf_t big_gf;
+  mesh_iterator_t mesh_it;
+
+  typename Target::const_view_type const &dereference() const { return big_gf[*mesh_it]; }
+  bool equal(block_gf_const_iterator const &other) const { return ((mesh_it == other.mesh_it)); }
+
+  public:
+  block_gf_const_iterator(gf_const_view<block_index, Target, Opt> bgf, bool at_end = false)
+     : big_gf(std::move(bgf)), mesh_it(&big_gf.mesh(), at_end) {}
+  void increment() { ++mesh_it; }
+  bool at_end() const { return mesh_it.at_end(); }
+ };
+
+ template <typename Target, typename Opt, bool B, bool C>
+ block_gf_iterator<Target, Opt> begin(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+  return {bgf, false};
+ }
+
+ template <typename Target, typename Opt, bool B, bool C>
+ block_gf_iterator<Target, Opt> end(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+  return {bgf, true};
+ }
+
+ template <typename Target, typename Opt, bool B, bool C>
+ block_gf_iterator<Target, Opt> cbegin(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+  return {bgf, false};
+ }
+
+ template <typename Target, typename Opt, bool B, bool C>
+ block_gf_iterator<Target, Opt> cend(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+  return {bgf, true};
+ }
 
 }}
 #endif
