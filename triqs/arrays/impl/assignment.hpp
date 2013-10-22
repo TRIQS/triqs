@@ -33,10 +33,16 @@ namespace triqs { namespace arrays {
  // puts the contents of RHS into LHS. LHS must be an indexmap_storage_pair
  // it is specialized in various cases for optimisation.
  template<typename LHS, typename RHS>
-  void triqs_arrays_assign_delegation (LHS & lhs, const RHS & rhs )  { assignment::impl<LHS,RHS,'E'>(lhs,rhs).invoke();}
+  void triqs_arrays_assign_delegation (LHS & lhs, const RHS & rhs )  { 
+   static_assert( !LHS::is_const, "Can not assign to a const view !");
+   assignment::impl<LHS, RHS, 'E'>(lhs, rhs).invoke();
+ }
 
  template<typename LHS, typename RHS, char OP>
-  void triqs_arrays_compound_assign_delegation  (LHS & lhs, const RHS & rhs, mpl::char_<OP> ) { assignment::impl<LHS,RHS,OP>(lhs,rhs).invoke();}
+  void triqs_arrays_compound_assign_delegation  (LHS & lhs, const RHS & rhs, mpl::char_<OP> ) { 
+   static_assert( !LHS::is_const, "Can not apply a compound operator to a const view !");
+   assignment::impl<LHS, RHS, OP>(lhs, rhs).invoke();
+ }
 
 #define TRIQS_DEFINE_COMPOUND_OPERATORS(MYTYPE)\
  template<typename RHS> MYTYPE & operator +=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'A'>()); return *this;}\

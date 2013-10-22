@@ -72,7 +72,16 @@ namespace triqs { namespace arrays {
    friend void swap( vector_view & A, vector_view & B) { A.swap_me(B);}
 
    /// Rebind the view
-   void rebind (vector_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
+   void rebind(vector_view const& X) {
+    this->indexmap_ = X.indexmap_;
+    this->storage_ = X.storage_;
+   }
+
+   // rebind the other view, iif this is const, and the other is not.
+   template <bool C = IsConst> ENABLE_IFC(C) rebind(vector_view<ValueType, Opt, Borrowed, !IsConst> const& X) {
+    this->indexmap_ = X.indexmap_;
+    this->storage_ = X.storage_;
+   }
 
    /** Assignment.  The size of the array MUST match exactly.  */
    template<typename RHS> vector_view & operator=(const RHS & X) { triqs_arrays_assign_delegation(*this,X); return *this; }

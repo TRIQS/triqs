@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2011-2013 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -73,7 +73,16 @@ namespace triqs { namespace arrays {
    friend void swap( array_view & A, array_view & B) { A.swap_me(B);}
 
    /// Rebind the view
-   void rebind (array_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
+   void rebind(array_view const& X) {
+    this->indexmap_ = X.indexmap_;
+    this->storage_ = X.storage_;
+   }
+
+   // rebind the other view, iif this is const, and the other is not.
+   template <bool C = IsConst> ENABLE_IFC(C) rebind(array_view<ValueType, Rank, Opt, TraversalOrder, Borrowed, !IsConst> const& X) {
+    this->indexmap_ = X.indexmap_;
+    this->storage_ = X.storage_;
+   }
 
    /// Assignment. The size of the array MUST match exactly, except in the empty case 
    template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
