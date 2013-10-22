@@ -459,6 +459,9 @@ namespace triqs { namespace gfs {
    this->_data_proxy.rebind(this->_data,X); 
    this->_singularity.rebind(X._singularity);
   }
+
+  void rebind (gf_view<Variable,Target,Opt,false> const &X) noexcept { rebind (gf_view{X});}
+
   gf_view & operator = (gf_view const & ) = delete;
 
  }; // class gf_const_view
@@ -584,5 +587,10 @@ namespace triqs { namespace gfs {
 
 }}
 
+// same as for arrays : views can not be swapped by the std::swap. Delete it
+namespace std {
+template <typename Variable, typename Target, typename Opt, bool C1, bool C2>
+void swap(triqs::gfs::gf_view<Variable, Target, Opt, C1> &a, triqs::gfs::gf_view<Variable, Target, Opt, C2> &b) = delete;
+}
 #include "./gf_expr.hpp"
 #endif
