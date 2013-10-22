@@ -32,14 +32,14 @@ namespace triqs { namespace gfs {
  struct imtime {};
 
  // gf_mesh type and its factories
- template<typename Opt> struct gf_mesh<imtime,Opt> : linear_mesh<matsubara_domain<false>> {
+ template <typename Opt> struct gf_mesh<imtime, Opt> : linear_mesh<matsubara_domain<false>> {
   typedef linear_mesh<matsubara_domain<false>> B;
   gf_mesh() = default;
   gf_mesh(typename B::domain_t d, int n_time_slices, mesh_kind mk = half_bins) : B(d, 0, d.beta, n_time_slices, mk) {}
-   gf_mesh (double beta, statistic_enum S, int n_time_slices, mesh_kind mk=half_bins): gf_mesh( {beta,S}, n_time_slices, mk){}
+  gf_mesh(double beta, statistic_enum S, int n_time_slices, mesh_kind mk = half_bins) : gf_mesh({beta, S}, n_time_slices, mk) {}
  };
 
- namespace gfs_implementation { 
+ namespace gfs_implementation {
 
   // singularity 
   template<typename Opt> struct singularity<imtime,matrix_valued,Opt>  { typedef local::tail type;};
