@@ -8,22 +8,22 @@ cdef extern from "triqs/gfs/local/functions.hpp":
 ###############  Fourier  #########################
 
 cdef extern from "triqs/gfs/local/fourier_matsubara.hpp" : 
-    gf_imfreq lazy_fourier          (gf_imtime & )
-    gf_imtime lazy_inverse_fourier  (gf_imfreq & )
+    gf_imfreq fourier          (gf_imtime & )
+    gf_imtime inverse_fourier  (gf_imfreq & )
 
 cdef extern from "triqs/gfs/local/fourier_real.hpp" :
-    gf_refreq lazy_fourier          (gf_retime & )
-    gf_retime lazy_inverse_fourier  (gf_refreq & ) 
-    gf_refreq fourier               (gf_retime & ) except +
-    gf_retime inverse_fourier       (gf_refreq & ) except +
+    gf_refreq fourier          (gf_retime & )
+    gf_retime inverse_fourier  (gf_refreq & ) 
+    #gf_refreq fourier               (gf_retime & ) except +
+    #gf_retime inverse_fourier       (gf_refreq & ) except +
 
 ###############  Legendre  #########################
 
 cdef extern from "triqs/gfs/local/legendre_matsubara.hpp" : 
-    gf_imfreq lazy_legendre_imfreq    (gf_legendre &) 
-    gf_imtime lazy_legendre_imtime    (gf_legendre &)
-    gf_legendre lazy_imfreq_legendre  (gf_imfreq &) 
-    gf_legendre lazy_imtime_legendre  (gf_imtime &) 
+    gf_imfreq legendre_to_imfreq    (gf_legendre &) 
+    gf_imtime legendre_to_imtime    (gf_legendre &)
+    gf_legendre imfreq_to_legendre  (gf_imfreq &) 
+    gf_legendre imtime_to_legendre  (gf_imtime &) 
 
 ###############  Pade  #########################
 

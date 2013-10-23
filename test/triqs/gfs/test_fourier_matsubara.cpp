@@ -5,6 +5,14 @@ using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/fourier_matsubara.hpp> 
 
+namespace triqs { namespace gfs { 
+ // defined in the cpp file
+ void fourier_impl         (gf_view<imfreq,scalar_valued> gw , gf_const_view<imtime,scalar_valued> gt, scalar_valued);
+ void fourier_impl         (gf_view<imfreq,matrix_valued> gw , gf_const_view<imtime,matrix_valued> gt, matrix_valued);
+ void inverse_fourier_impl (gf_view<imtime,scalar_valued> gt,  gf_const_view<imfreq,scalar_valued> gw, scalar_valued);
+void inverse_fourier_impl (gf_view<imtime,matrix_valued> gt,  gf_const_view<imfreq,matrix_valued> gw, matrix_valued);
+}}
+
 int main() {
  
  double precision=10e-9;
@@ -45,9 +53,9 @@ int main() {
  }
  h5_write(file,"Gt1b",Gt1); // must be 0
  
- ///to verify that lazy_fourier computes
+ ///to verify that fourier computes
  auto Gw2 = gf<imfreq> {{beta, Fermion}, {1,1}};
- Gw2() = lazy_fourier(Gt1);
+ Gw2() = fourier(Gt1);
  
 }
 

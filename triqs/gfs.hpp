@@ -30,5 +30,8 @@
 #include <triqs/gfs/product.hpp>
 #include <triqs/gfs/curry.hpp>
 
+#include <triqs/gfs/local/fourier_matsubara.hpp>
+#include <triqs/gfs/local/fourier_real.hpp>
+#include <triqs/gfs/local/legendre_matsubara.hpp>
 #endif
 

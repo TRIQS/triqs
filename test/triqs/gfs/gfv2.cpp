@@ -20,7 +20,7 @@ int main() {
   auto G =  gf<imfreq>{ {beta, Fermion}, {2,2} };
   auto Gc = gf<imfreq>{ {beta, Fermion}, {2,2} };
   auto G3 = gf<imfreq>{ {beta, Fermion}, {2,2} };
-  auto Gt = gf<imtime>{ {beta, Fermion}, {2,2} };
+  auto Gt = gf<imtime>{ {beta, Fermion,100}, {2,2} };
 
   auto Gv = G();
   TEST( G( 0) ) ;

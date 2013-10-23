@@ -1,5 +1,5 @@
 /*******************************************************************************
- * 
+ *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2011 by M. Ferrero, O. Parcollet
@@ -18,67 +18,62 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_FOURIER_MATSU_H 
+#ifndef TRIQS_GF_LOCAL_FOURIER_MATSU_H
 #define TRIQS_GF_LOCAL_FOURIER_MATSU_H
 
 #include "fourier_base.hpp"
-#include <triqs/gfs/imfreq.hpp> 
-#include <triqs/gfs/imtime.hpp> 
+#include <triqs/gfs/imfreq.hpp>
+#include <triqs/gfs/imtime.hpp>
 
-namespace triqs { namespace gfs {
- 
- // First the implementation of the fourier transform
- void fourier_impl         (gf_view<imfreq,scalar_valued> gw , gf_const_view<imtime,scalar_valued> gt, scalar_valued);
- void fourier_impl         (gf_view<imfreq,matrix_valued> gw , gf_const_view<imtime,matrix_valued> gt, matrix_valued);
- void inverse_fourier_impl (gf_view<imtime,scalar_valued> gt,  gf_const_view<imfreq,scalar_valued> gw, scalar_valued);
- void inverse_fourier_impl (gf_view<imtime,matrix_valued> gt,  gf_const_view<imfreq,matrix_valued> gw, matrix_valued);
- 
- inline gf_view<imfreq,matrix_valued> fourier (gf_const_view<imtime,matrix_valued> gt) {
-  int L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
-  auto gw = gf<imfreq,matrix_valued>{ {gt.domain(),L}, gt.data().shape().front_pop() };
-  auto V = gw();
-  fourier_impl(V, gt, matrix_valued());
+namespace triqs {
+namespace gfs {
+
+ template <typename Target, typename Opt, bool V, bool C>
+ gf_keeper<tags::fourier, imtime, Target> fourier(gf_impl<imtime, Target, Opt, V, C> const& g) {
+  return {g};
+ }
+ template <typename Target, typename Opt, bool V, bool C>
+ gf_keeper<tags::fourier, imfreq, Target> inverse_fourier(gf_impl<imfreq, Target, Opt, V, C> const& g) {
+  return {g};
+ }
+
+ void triqs_gf_view_assign_delegation(gf_view<imfreq, scalar_valued> g, gf_keeper<tags::fourier, imtime, scalar_valued> const& L);
+ void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued> g, gf_keeper<tags::fourier, imtime, matrix_valued> const& L);
+ void triqs_gf_view_assign_delegation(gf_view<imtime, scalar_valued> g, gf_keeper<tags::fourier, imfreq, scalar_valued> const& L);
+ void triqs_gf_view_assign_delegation(gf_view<imtime, matrix_valued> g, gf_keeper<tags::fourier, imfreq, matrix_valued> const& L);
+
+ template <typename Opt> gf_mesh<imfreq, Opt> make_mesh_fourier_compatible(gf_mesh<imtime, Opt> const& m) {
+  int L = m.size() - (m.kind() == full_bins ? 1 : 0);
+  return {m.domain(), L};
+ }
+
+ template <typename Opt>
+ gf_mesh<imtime, Opt> make_mesh_fourier_compatible(gf_mesh<imfreq, Opt> const& m, mesh_kind mk = full_bins) {
+  int L = m.size() + (mk == full_bins ? 1 : 0);
+  return {m.domain(), L};
+ }
+
+ template <typename Target, typename Opt, bool V, bool C>
+ gf_view<imfreq, Target> make_gf_from_fourier(gf_impl<imtime, Target, Opt, V, C> const& gt) {
+  auto gw = gf<imfreq, Target>{make_mesh_fourier_compatible(gt.mesh()), get_target_shape(gt)};
+  gw() = fourier(gt);
   return gw;
  }
- inline gf_view<imfreq,scalar_valued> fourier (gf_const_view<imtime,scalar_valued> gt) {
-  int L = (gt.mesh().kind() == full_bins ? gt.mesh().size()-1 : gt.mesh().size() );
-  auto gw = gf<imfreq,scalar_valued>{ {gt.domain(),L} };
-  auto V = gw();
-  fourier_impl(V, gt, scalar_valued());
-  return gw;
- }
- 
- inline gf_view<imtime, matrix_valued> inverse_fourier (gf_const_view<imfreq, matrix_valued> gw, mesh_kind mk = half_bins) {
-  double pi = std::acos(-1);
-  int L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
-  auto gt = gf<imtime,matrix_valued>{ {gw.domain(),L}, gw.data().shape().front_pop()};
-  auto V = gt();
-  inverse_fourier_impl(V, gw, matrix_valued());
-  return gt;
- }
- inline gf_view<imtime,scalar_valued> inverse_fourier (gf_const_view<imfreq,scalar_valued> gw, mesh_kind mk = half_bins) {
-  double pi = std::acos(-1);
-  int L = (mk == full_bins ? gw.mesh().size()+1 : gw.mesh().size() );
-  auto gt = gf<imtime,scalar_valued>{ {gw.domain(),L} };
-  auto V = gt();
-  inverse_fourier_impl(V, gw,scalar_valued());
-  return gt;
- }
- 
- inline gf_keeper<tags::fourier,imtime,scalar_valued> lazy_fourier         (gf_const_view<imtime,scalar_valued> g) { return {g};}
- inline gf_keeper<tags::fourier,imfreq,scalar_valued> lazy_inverse_fourier (gf_const_view<imfreq,scalar_valued> g) { return {g};}
- inline gf_keeper<tags::fourier,imtime,matrix_valued> lazy_fourier         (gf_const_view<imtime,matrix_valued> g) { return {g};}
- inline gf_keeper<tags::fourier,imfreq,matrix_valued> lazy_inverse_fourier (gf_const_view<imfreq,matrix_valued> g) { return {g};}
- 
- void triqs_gf_view_assign_delegation( gf_view<imfreq,scalar_valued> g, gf_keeper<tags::fourier,imtime,scalar_valued> const & L);
- void triqs_gf_view_assign_delegation( gf_view<imfreq,matrix_valued> g, gf_keeper<tags::fourier,imtime,matrix_valued> const & L);
- void triqs_gf_view_assign_delegation( gf_view<imtime,scalar_valued> g, gf_keeper<tags::fourier,imfreq,scalar_valued> const & L);
- void triqs_gf_view_assign_delegation( gf_view<imtime,matrix_valued> g, gf_keeper<tags::fourier,imfreq,matrix_valued> const & L);
-}}
 
-namespace triqs { namespace clef {
-TRIQS_CLEF_MAKE_FNT_LAZY (lazy_fourier);
-TRIQS_CLEF_MAKE_FNT_LAZY (lazy_inverse_fourier);
-}}
+ template <typename Target, typename Opt, bool V, bool C>
+ gf_view<imtime, Target> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Opt, V, C> const& gw, mesh_kind mk = full_bins) {
+  auto gt = gf<imtime, Target>{make_mesh_fourier_compatible(gw.mesh(), mk), get_target_shape(gw)};
+  gt() = inverse_fourier(gw);
+  return gt;
+ }
+}
+}
+
+namespace triqs {
+namespace clef {
+ TRIQS_CLEF_MAKE_FNT_LAZY(fourier);
+ TRIQS_CLEF_MAKE_FNT_LAZY(inverse_fourier);
+}
+}
 #endif
 

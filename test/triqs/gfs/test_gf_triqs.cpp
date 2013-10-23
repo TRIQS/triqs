@@ -33,7 +33,7 @@ void test_0(){
 
  /* ---------- Fourier transform ---------------------*/
  auto Gt = gf<imtime> {{beta, Fermion, Ntau, full_bins}, {1,1}};
- Gt() = lazy_inverse_fourier(G);
+ Gt() = inverse_fourier(G);
 
  TEST(Gt(0.0));
 
@@ -52,7 +52,7 @@ void test_1(){
  auto Gw =  gf<imfreq> {{beta, Fermion, 100}, {1,1}};
  Gw.singularity()(1) = 1;
 
- Gt() = lazy_inverse_fourier(Gw);
+ Gt() = inverse_fourier(Gw);
 }
 
 int main() {

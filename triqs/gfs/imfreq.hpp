@@ -23,6 +23,7 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
+#include "./local/no_tail.hpp"
 #include "./domains/matsubara.hpp"
 #include "./meshes/linear.hpp"
 #include "./evaluators.hpp"
@@ -34,16 +35,17 @@ namespace triqs { namespace gfs {
   typedef  linear_mesh<matsubara_domain<true>> B;
   static double m1(double beta) { return std::acos(-1)/beta;}
   gf_mesh() = default;
+  gf_mesh(B const &x) : B(x) {} // enables also construction from another Opt
   gf_mesh (typename B::domain_t const & d, int Nmax = 1025) : 
    B(d, d.statistic==Fermion?m1(d.beta):0, d.statistic==Fermion?(2*Nmax+1)*m1(d.beta): 2*Nmax*m1(d.beta), Nmax, without_last){}
-  gf_mesh (double beta, statistic_enum S, int Nmax = 1025) : gf_mesh({beta,S}, Nmax){} 
+  gf_mesh (double beta, statistic_enum S, int Nmax = 1025) : gf_mesh({beta,S}, Nmax){}
  };
 
  namespace gfs_implementation { 
 
   //singularity
-  template<typename Opt> struct singularity<imfreq,matrix_valued,Opt>  { typedef local::tail type;};
-  template<typename Opt> struct singularity<imfreq,scalar_valued,Opt>  { typedef local::tail type;};
+  template<> struct singularity<imfreq,matrix_valued,void>  { typedef local::tail type;};
+  template<> struct singularity<imfreq,scalar_valued,void>  { typedef local::tail type;};
 
   //h5 name
   template<typename Opt> struct h5_name<imfreq,matrix_valued,Opt>      { static std::string invoke(){ return "ImFreq";}};

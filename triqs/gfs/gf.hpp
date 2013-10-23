@@ -94,6 +94,9 @@ namespace triqs { namespace gfs {
 
  template <typename G> auto get_gf_data_shape(G const &g) DECL_AND_RETURN(g.get_data_shape());
 
+ template <typename Variable, typename Target, typename Opt, bool IsView, bool IsConst>
+ auto get_target_shape(gf_impl<Variable, Target, Opt, IsView, IsConst> const &g) DECL_AND_RETURN(g.data().shape().front_pop());
+
  // ---------------------- implementation --------------------------------
 
  // overload get_shape for a vector to simplify code below in gf block case.
@@ -334,8 +337,10 @@ namespace triqs { namespace gfs {
     template<typename RHS> friend void triqs_clef_auto_assign_subscript (gf_impl & g, RHS rhs) { triqs_clef_auto_assign(g,rhs);}
 
    private:
-    template<typename RHS> void triqs_clef_auto_assign_impl (RHS const & rhs, std::integral_constant<bool,false>) {
-     for (auto const & w: this->mesh()) (*this)[w] = rhs(w);
+   template <typename RHS> void triqs_clef_auto_assign_impl(RHS const &rhs, std::integral_constant<bool, false>) {
+    for (auto const &w : this->mesh()) {
+     (*this)[w] = rhs(w);
+    }
      //for (auto const & w: this->mesh()) (*this)[w] = rhs(typename B::mesh_t::mesh_point_t::cast_t(w));
     }
     template <typename RHS> void triqs_clef_auto_assign_impl(RHS const &rhs, std::integral_constant<bool, true>) {
@@ -582,7 +587,11 @@ namespace triqs { namespace gfs {
 
   template <typename Var, typename Opt> struct factories<Var, scalar_valued, Opt> {
    typedef gf<Var, scalar_valued, Opt> gf_t;
-   struct target_shape_t {};
+   struct target_shape_t {
+    target_shape_t front_pop() const { // this make the get_target_shape function works in this case...
+     return {};
+    }
+   };
    typedef typename gf_t::mesh_t mesh_t;
 
    static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t shape) {
@@ -619,6 +628,7 @@ namespace triqs { namespace gfs {
    }
   };
  } // gfs_implementation
+
 
 }}
 

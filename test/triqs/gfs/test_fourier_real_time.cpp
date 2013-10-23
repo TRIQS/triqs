@@ -33,11 +33,11 @@ int main() {
   Gw1.singularity()(2)=triqs::arrays::matrix<double>{{2.0*a}};
   h5_write(file,"Gw1",Gw1);   // the original lorentzian
   
-  auto Gt1 = inverse_fourier(Gw1);  
+  auto Gt1 = make_gf_from_inverse_fourier(Gw1);  
   h5_write(file,"Gt1",Gt1);   // the lorentzian TF : lorentzian_inverse
   
   // verification that TF(TF^-1)=Id
-  auto Gw1b = fourier(Gt1);
+  auto Gw1b = make_gf_from_fourier(Gt1);
   for(auto const & w:Gw1b.mesh()){
     Gw1b[w]-=Gw1[w];
     if ( std::abs(Gw1b[w](0,0)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_real_time error : w="<<w<<" ,G1="<<std::abs(Gw1b[w](0,0))<<"\n";
@@ -65,7 +65,7 @@ int main() {
   Gt2.singularity()(1)=triqs::arrays::matrix<double>{{1.0}};
   h5_write(file,"Gt2",Gt2);
   
-  auto Gw2 = fourier(Gt2);
+  auto Gw2 = make_gf_from_fourier(Gt2);
   h5_write(file,"Gw2",Gw2);
   
   for(auto const & w:Gw2.mesh()){
@@ -86,7 +86,7 @@ int main() {
   //for(auto const & t:Gt3.mesh()) Gt3[t] = 1.0 * std::cos(10*t) + 0.25*std::sin(4*t) + 0.5_j*std::sin(8*t+0.3*acos(-1.)) ;
   h5_write(file,"Gt3",Gt3);
   
-  auto Gw3 = fourier(Gt3);
+  auto Gw3 = make_gf_from_fourier(Gt3);
   h5_write(file,"Gw3",Gw3);
   
 }

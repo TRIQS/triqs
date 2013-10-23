@@ -12,11 +12,11 @@ cdef class GfImFreq_cython:
 
     def set_from_fourier(self,GfImTime_cython gt) :
         """Fills self with the Fourier transform of gt"""
-        self._c << lazy_fourier( gt._c )
+        self._c << fourier( gt._c )
 
     def set_from_legendre(self, GfLegendre_cython gl) :
         """Fills self with the Legendre transform of gl"""
-        self._c << lazy_legendre_imfreq(gl._c)
+        self._c << legendre_to_imfreq(gl._c)
 
     def density(self):
         return density(self._c).to_python()

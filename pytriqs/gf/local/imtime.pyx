@@ -12,11 +12,11 @@ cdef class GfImTime_cython:
 
     def set_from_inverse_fourier(self,GfImFreq_cython gw) :
         """Fills self with the Inverse Fourier transform of gw"""        
-        self._c << lazy_inverse_fourier( gw._c)
+        self._c << inverse_fourier( gw._c)
 
     def set_from_legendre(self, GfLegendre_cython gl) :
         """Fills self with the Legendre transform of gl"""
-        self._c << lazy_legendre_imtime(gl._c)
+        self._c << legendre_to_imtime(gl._c)
 
     def __dealloc__ (self):
         pass

@@ -10,11 +10,11 @@ cdef class GfLegendre_cython:
 
     def set_from_imtime(self, GfImTime_cython gt) :
         """Fills self with the Legendre transform of gt"""
-        self._c << lazy_imtime_legendre(gt._c)
+        self._c << imtime_to_legendre(gt._c)
 
     def set_from_imfreq(self, GfImFreq_cython gw) :
         """Fills self with the Legendre transform of gw"""
-        self._c << lazy_imfreq_legendre(gw._c)
+        self._c << imfreq_to_legendre(gw._c)
 
     def density(self):
         return density(self._c).to_python()

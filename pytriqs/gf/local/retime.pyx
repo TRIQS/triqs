@@ -8,12 +8,13 @@ cdef class GfReTime_cython:
     def __write_hdf5_cython__ (self, gr , char * key) :
         h5_write (make_h5_group(gr), key, self._c)
 
-    def fourier(self):
-        return make_GfReFreq(fourier(self._c))
+    # Put it back ?
+    #def fourier(self):
+    #    return make_GfReFreq(fourier(self._c))
 
     def set_from_inverse_fourier(self, GfReFreq_cython gw) :
         """Fills self with the Inverse Fourier transform of gw"""
-        self._c << lazy_inverse_fourier( gw._c)
+        self._c << inverse_fourier( gw._c)
 
     def __dealloc__ (self):
         pass

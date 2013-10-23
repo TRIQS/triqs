@@ -43,7 +43,7 @@ namespace gfs {
 
   linear_mesh() : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
 
-  linear_mesh(domain_t dom, double a, double b, size_t n_pts, mesh_kind mk)
+  explicit linear_mesh(domain_t dom, double a, double b, size_t n_pts, mesh_kind mk)
      : _dom(std::move(dom)), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
    switch (mk) {
     case half_bins:

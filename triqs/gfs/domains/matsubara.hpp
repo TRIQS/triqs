@@ -30,7 +30,8 @@ namespace triqs { namespace gfs {
   typedef typename mpl::if_c<IsComplex, std::complex<double>, double>::type point_t;
   double beta;
   statistic_enum statistic;
-  matsubara_domain (double Beta=1, statistic_enum s = Fermion): beta(Beta), statistic(s){
+  matsubara_domain() = default;
+  matsubara_domain (double Beta, statistic_enum s): beta(Beta), statistic(s){
     if(beta<0)TRIQS_RUNTIME_ERROR<<"Matsubara domain construction :  beta <0 : beta ="<< beta <<"\n";
   }
   matsubara_domain(matsubara_domain const &) = default;

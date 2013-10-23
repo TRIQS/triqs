@@ -50,6 +50,8 @@ namespace triqs { namespace gfs {
 
  struct freq_infty{}; // the point at infinity
 
+ //------------------------------------------------------
+
  inline  std::vector<std::string> split(const std::string &s, char delim){
   std::vector<std::string> elems;
   std::stringstream ss(s);

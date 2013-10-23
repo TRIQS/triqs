@@ -35,11 +35,11 @@ try {
  auto G_w_wn_curry0 = curry<0>(G_w_wn);
  auto G_w_tau_curry0 = curry<0>(G_w_tau);
 
- for (auto const & w : G_w_wn_curry0.mesh()) G_w_wn_curry0[w] =  lazy_fourier(G_w_tau_curry0[w]);
+ for (auto const & w : G_w_wn_curry0.mesh()) G_w_wn_curry0[w] =  fourier(G_w_tau_curry0[w]);
  
- G_w_wn_curry0[w_] << lazy_fourier(G_w_tau_curry0[w_]);
+ G_w_wn_curry0[w_] << fourier(G_w_tau_curry0[w_]);
  
- curry<0>(G_w_wn) [w_] << lazy_fourier(curry<0>(G_w_tau)[w_]);
+ curry<0>(G_w_wn) [w_] << fourier(curry<0>(G_w_tau)[w_]);
 }
 // temp fix : THE TEST DOES NOT RUN !!
 //TRIQS_CATCH_AND_ABORT;

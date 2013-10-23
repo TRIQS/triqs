@@ -1,9 +1,8 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by L. Boehnke, M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2014 by L. Boehnke, M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -27,25 +26,63 @@
 
 using namespace triqs::utility;
 
-namespace triqs { namespace gfs {
+namespace triqs {
+namespace gfs {
 
-void legendre_matsubara_direct(gf_view<imfreq> & gw, gf_const_view<legendre>  gl) {
+ // ----------------------------
+
+ void legendre_matsubara_direct(gf_view<imfreq> gw, gf_const_view<legendre> gl) {
 
   gw() = 0.0;
   triqs::arrays::range R;
 
   // Use the transformation matrix
-  for (auto om: gw.mesh()) {
-    for (auto l: gl.mesh()) {
-      gw[om] += legendre_T(om.index(),l.index()) * gl[l];
-    }
+  for (auto om : gw.mesh()) {
+   for (auto l : gl.mesh()) {
+    gw[om] += legendre_T(om.index(), l.index()) * gl[l];
+   }
   }
 
   gw.singularity() = get_tail(gl, gw.singularity().size(), gw.singularity().order_min());
+ }
 
-}
+ // ----------------------------
 
-void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_const_view<imfreq>  gw) {
+ void legendre_matsubara_direct(gf_view<imtime> gt, gf_const_view<legendre> gl) {
+
+  gt() = 0.0;
+  legendre_generator L;
+
+  for (auto t : gt.mesh()) {
+   L.reset(2 * t / gt.domain().beta - 1);
+   for (auto l : gl.mesh()) {
+    gt[t] += sqrt(2 * l.index() + 1) / gt.domain().beta * gl[l] * L.next();
+   }
+  }
+
+  gt.singularity() = get_tail(gl, gt.singularity().size(), gt.singularity().order_min());
+ }
+
+ // ----------------------------
+
+ void legendre_matsubara_inverse(gf_view<legendre> gl, gf_const_view<imtime> gt) {
+
+  gl() = 0.0;
+  legendre_generator L;
+
+  // Do the integral over imaginary time
+  for (auto t : gt.mesh()) {
+   L.reset(2 * t / gt.domain().beta - 1);
+   for (auto l : gl.mesh()) {
+    gl[l] += sqrt(2 * l.index() + 1) * L.next() * gt[t];
+   }
+  }
+  gl.data() *= gt.mesh().delta();
+ }
+
+ // ----------------------------
+
+ void legendre_matsubara_inverse(gf_view<legendre> gl, gf_const_view<imfreq> gw) {
 
   gl() = 0.0;
 
@@ -53,64 +90,25 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_const_view<imfreq>  
   // I set Nt time bins. This is ugly, one day we must code the direct
   // transformation without going through imaginary time
   int Nt = 50000;
-  auto gt = gf<imtime>{ {gw.domain(),Nt, half_bins}, gw.data().shape().front_pop() };
+  auto gt = gf<imtime>{{gw.domain(), Nt, half_bins}, gw.data().shape().front_pop()};
 
   // We first transform to imaginary time because it's been coded with the knowledge of the tails
-  gt() = lazy_inverse_fourier(gw);
+  gt() = inverse_fourier(gw);
   legendre_matsubara_inverse(gl, gt());
-
-}
-
-
-void legendre_matsubara_direct (gf_view<imtime> & gt, gf_const_view<legendre>  gl) {
-
-  gt() = 0.0;
-  legendre_generator L;
-
-  for (auto t : gt.mesh()) {
-    L.reset( 2*t/gt.domain().beta-1 );
-    for (auto l : gl.mesh()) {
-      gt[t] += sqrt(2*l.index()+1) / gt.domain().beta * gl[l] * L.next();
-    }
-  }
-
-  gt.singularity() = get_tail(gl, gt.singularity().size(), gt.singularity().order_min());
-
-}
-
-void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_const_view<imtime>  gt) {
-
-  gl() = 0.0;
-  legendre_generator L;
-
-  // Do the integral over imaginary time
-  for (auto t : gt.mesh()) {
-    L.reset( 2*t/gt.domain().beta-1 );
-    for (auto l : gl.mesh()) {
-      gl[l] += sqrt(2*l.index()+1) * L.next() * gt[t];
-    }
-  }
-  gl.data() *= gt.mesh().delta();
-
-}
+ }
 
 
-gf_keeper<tags::legendre,legendre> lazy_legendre_imfreq (gf_const_view<legendre>  gl) { return {gl}; }
-gf_keeper<tags::legendre,legendre> lazy_legendre_imtime (gf_const_view<legendre>  gl) { return {gl}; }
-gf_keeper<tags::legendre,imfreq>   lazy_imfreq_legendre (gf_const_view<imfreq>  gw) { return {gw}; }
-gf_keeper<tags::legendre,imtime>   lazy_imtime_legendre (gf_const_view<imtime>  gt) { return {gt}; }
-
-void triqs_gf_view_assign_delegation( gf_view<imfreq> &gw, gf_keeper<tags::legendre,legendre> const & L) {
+ void triqs_gf_view_assign_delegation(gf_view<imfreq> gw, gf_keeper<tags::legendre, legendre> const& L) {
   legendre_matsubara_direct(gw, L.g);
-}
-void triqs_gf_view_assign_delegation( gf_view<imtime> &gt, gf_keeper<tags::legendre,legendre> const & L) {
+ }
+ void triqs_gf_view_assign_delegation(gf_view<imtime> gt, gf_keeper<tags::legendre, legendre> const& L) {
   legendre_matsubara_direct(gt, L.g);
-}
-void triqs_gf_view_assign_delegation( gf_view<legendre> &gl, gf_keeper<tags::legendre,imfreq> const & L) {
+ }
+ void triqs_gf_view_assign_delegation(gf_view<legendre> gl, gf_keeper<tags::legendre, imfreq> const& L) {
   legendre_matsubara_inverse(gl, L.g);
-}
-void triqs_gf_view_assign_delegation( gf_view<legendre> &gl, gf_keeper<tags::legendre,imtime> const & L) {
+ }
+ void triqs_gf_view_assign_delegation(gf_view<legendre> gl, gf_keeper<tags::legendre, imtime> const& L) {
   legendre_matsubara_inverse(gl, L.g);
+ }
 }
-
-}}
+}

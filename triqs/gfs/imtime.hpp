@@ -23,6 +23,7 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
+#include "./local/no_tail.hpp"
 #include "./domains/matsubara.hpp"
 #include "./meshes/linear.hpp"
 #include "./evaluators.hpp"
@@ -35,15 +36,16 @@ namespace triqs { namespace gfs {
  template <typename Opt> struct gf_mesh<imtime, Opt> : linear_mesh<matsubara_domain<false>> {
   typedef linear_mesh<matsubara_domain<false>> B;
   gf_mesh() = default;
+  gf_mesh(B const &x) : B(x) {} // enables also construction from another Opt
   gf_mesh(typename B::domain_t d, int n_time_slices, mesh_kind mk = half_bins) : B(d, 0, d.beta, n_time_slices, mk) {}
   gf_mesh(double beta, statistic_enum S, int n_time_slices, mesh_kind mk = half_bins) : gf_mesh({beta, S}, n_time_slices, mk) {}
  };
 
  namespace gfs_implementation {
 
-  // singularity 
-  template<typename Opt> struct singularity<imtime,matrix_valued,Opt>  { typedef local::tail type;};
-  template<typename Opt> struct singularity<imtime,scalar_valued,Opt>  { typedef local::tail type;};
+  // singularity. If no_tail is given, then it is the default (nothing)
+  template<> struct singularity<imtime,matrix_valued,void>  { typedef local::tail type;};
+  template<> struct singularity<imtime,scalar_valued,void>  { typedef local::tail type;};
 
   // h5 name
   template<typename Opt> struct h5_name<imtime,matrix_valued,Opt>      { static std::string invoke(){ return  "ImTime";}};
@@ -92,6 +94,7 @@ namespace triqs { namespace gfs {
    template<typename Opt, typename Target> struct evaluator<imtime,Target,Opt> : evaluator_one_var<imtime>{};
 
  } // gfs_implementation.
+
 }}
 #endif
 
