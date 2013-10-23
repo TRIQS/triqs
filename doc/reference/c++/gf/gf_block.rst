@@ -42,7 +42,7 @@ The factories for the regular type *gf* are ::
  // From a vector of gf (moving directly)
  template <typename Variable, typename Target, typename Opt>
  block_gf<Variable, Target, Opt> 
- make_block_gf(std::vector<gf<Variable, Target, Opt>> &&V);
+ make_block_gf(std::vector<gf<Variable, Target, Opt>> V);
 
  // From a vector of gf or views (a gf must be contructible from GF2)
  template <typename Variable, typename Target, typename Opt, typename GF2>
@@ -57,19 +57,17 @@ The factories for the regular type *gf* are ::
  // From vector<string> and a gf to be copied
  template <typename Variable, typename Target, typename Opt>
  block_gf<Variable, Target, Opt> 
- make_block_gf(std::vector<std::string> const &block_names,
-               gf<Variable, Target, Opt> const &g);
+ make_block_gf(std::vector<std::string> block_names, gf<Variable, Target, Opt> const &g);
  
  // From vector<string>, vector<gf>
  template <typename Variable, typename Target, typename Opt>
  block_gf<Variable, Target, Opt> 
- make_block_gf(std::vector<std::string> const &block_names,
-               std::vector<gf<Variable, Target, Opt>> V);
+ make_block_gf(std::vector<std::string> block_names, std::vector<gf<Variable, Target, Opt>> V);
 
  // From vector<string>, init_list<GF>
  template <typename Variable, typename Target, typename Opt>
  block_gf<Variable, Target, Opt> 
- make_block_gf(std::vector<std::string> const &block_names,
+ make_block_gf(std::vector<std::string> block_names,
                std::initializer_list<gf<Variable, Target, Opt>> const &V);
 
 

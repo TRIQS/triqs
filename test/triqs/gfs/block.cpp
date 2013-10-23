@@ -17,7 +17,7 @@ int main() {
   auto B1 = make_block_gf<imfreq> (3, G1); 
   auto B2 = make_block_gf<imfreq> ({G1,G1,G1});
   auto B3 = make_block_gf<imfreq> ({"a","b","c"}, {G1,G1,G1}); 
-  auto B4 = block_gf<imfreq> (1); 
+  auto B4 = block_gf<imfreq> (1);
 
   // test hdf5 
   {
