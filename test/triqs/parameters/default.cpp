@@ -9,24 +9,21 @@ int main() {
  parameters P,P2;
  parameter_defaults pdef;
 
- pdef.required 
-  ( "A", int(), "really ?")
-  ;
+ pdef.required ( "A", int(), "really ?") ;
 
- pdef.optional 
-  ( "B", short(0), " short ")
-  ( "C", 1u, " unsigned short ")
-  ( "D", int(2), " int ")
-  ( "E", 3u, " unsigned int ")
-  ( "F", long(4), " long ")
-  ( "G", 5ll, " long ")
-  ( "H", float(6), " float ")
-  ( "I", double(7.8), " doube ")
- // ( "K", std::complex<double>(12), " double complex ")
-  ( "L", std::string("13"), " string ")
- // ( "M", std::vector<double> { 1,4 }, " vector ")
-  ( "N", double(15), "")
-  ( "W", int(16), "")
+ pdef.optional( "B", short(0), " short ")
+  .optional( "C", 1u, " unsigned short ")
+  .optional( "D", int(2), " int ")
+  .optional( "E", 3u, " unsigned int ")
+  .optional( "F", long(4), " long ")
+  .optional( "G", 5ll, " long ")
+  .optional( "H", float(6), " float ")
+  .optional( "I", double(7.8), " doube ")
+  .optional( "K", std::complex<double>(12), " double complex ")
+  .optional( "L", std::string("13"), " string ")
+  .optional( "M", std::vector<double> { 1,4 }, " vector ")
+  .optional( "N", double(15), "")
+  .optional( "W", int(16), "")
   ;
 
  P["a"] = long(1);

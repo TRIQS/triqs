@@ -49,18 +49,12 @@ namespace triqs { namespace utility {
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("object_map",object_map); }
 
-   struct _inserter {
-    parameter_defaults * p; bool opt;
-    _inserter(parameter_defaults *p_, bool opt_) : p(p_), opt(opt_) {}
-    template<typename T> _inserter operator()(std::string const & key, T && def_val, std::string const & doc) {
-     p->object_map[key] = std::forward<T>(def_val);
-     p->documentation[key] = doc;
-     p->is_optional[key] = opt;
-     return *this;
-    }
-
-   };
-   friend struct _inserter;
+   template<typename T> parameter_defaults & insert(std::string const & key, T && def_val, std::string const & doc, bool opt) {
+    object_map[key] = std::forward<T>(def_val);
+    documentation[key] = doc;
+    is_optional[key] = opt;
+    return *this;
+   }
 
    template<typename T> const T getter(std::map<std::string,T> const & m, std::string const & key) const {
     auto it = m.find(key); assert(it !=m.end()); return it->second;
@@ -79,19 +73,19 @@ namespace triqs { namespace utility {
    bool is_required(std::string const & key) const { return (has_key(key) && (! getter(this->is_optional,key)));}
    std::string doc(std::string const & key) const { return (has_key(key) ? getter(this->documentation,key) : "");}
 
-   ///inserter for optional parameters;
-   ///calls can be chained for multiple parameters
-   template<typename T>
-    _inserter optional (std::string const & key, T && def_val, std::string const & doc) {
-     return _inserter(this, true)(key,std::forward<T>(def_val), doc);
-    }
+   /// inserter for optional parameters;
+   /// calls can be chained for multiple parameters
+   template <typename T> parameter_defaults &optional(std::string const &key, T &&def_val, std::string const &doc) {
+    insert(key, std::forward<T>(def_val), doc, true);
+    return *this;
+   }
 
-   ///inserter for required parameters;
-   ///calls can be chained for multiple parameters
-   template<typename T>
-    _inserter required (std::string const & key, T && def_val, std::string const & doc) {
-     return _inserter(this, false)(key,std::forward<T>(def_val), doc);
-    }
+   /// inserter for required parameters;
+   /// calls can be chained for multiple parameters
+   template <typename T> parameter_defaults &required(std::string const &key, T &&def_val, std::string const &doc) {
+    insert(key, std::forward<T>(def_val), doc, false);
+    return *this;
+   }
 
    ///parameters class-like element access
    _object const & operator[](std::string const & key) const {
