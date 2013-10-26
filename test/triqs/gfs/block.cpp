@@ -61,6 +61,15 @@ int main() {
   for (auto & g : View) { g[0] = 20;}
   for (auto & g : B1) { g[0] = 20;}
 
+ // check chaining of clef
+  clef::placeholder<0> b_;
+  clef::placeholder<1> om_;
+  B1[b_][om_] << b_ / ( om_ + 2);
+
+ // does not work
+ //std::vector<gf<imfreq>> green_v;
+ //green_v.emplace_back({beta, Fermion}, {2,2} ); 
+
  }
 TRIQS_CATCH_AND_ABORT;
 }

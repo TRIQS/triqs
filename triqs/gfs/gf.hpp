@@ -324,32 +324,53 @@ namespace triqs { namespace gfs {
     friend std::ostream & operator << (std::ostream & out, gf_impl const & x) { return out<<(IsView ? "gf_view": "gf");}
     friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_impl const & x) { return out<<(IsView ? "gf_view": "gf");}
 
-    // Interaction with the CLEF library : auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
-    template <typename RHS> friend void triqs_clef_auto_assign(gf_impl &g, RHS const &rhs) {
-     // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
-     g.triqs_clef_auto_assign_impl(rhs, typename std::is_base_of<tag::composite,mesh_t>::type());
-     assign_from_expression(g.singularity(),rhs);
-     // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty,
-     // it uses the fact that tail_non_view_t can be casted into freq_infty
-    }
+ };
 
-    // enable the writing g[om_] << .... also 
-    template<typename RHS> friend void triqs_clef_auto_assign_subscript (gf_impl & g, RHS rhs) { triqs_clef_auto_assign(g,rhs);}
+ // -------------------------Interaction with the CLEF library : auto assignement implemnetation--------------------------------------
+ // auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
 
-   private:
-   template <typename RHS> void triqs_clef_auto_assign_impl(RHS const &rhs, std::integral_constant<bool, false>) {
-    for (auto const &w : this->mesh()) {
-     (*this)[w] = rhs(w);
-    }
-     //for (auto const & w: this->mesh()) (*this)[w] = rhs(typename B::mesh_t::mesh_point_t::cast_t(w));
-    }
-    template <typename RHS> void triqs_clef_auto_assign_impl(RHS const &rhs, std::integral_constant<bool, true>) {
-     for (auto const & w: this->mesh())  {
-      (*this)[w] = triqs::tuple::apply(rhs,w.components_tuple());
-     }
-     //for (auto w: this->mesh()) triqs::tuple::apply(*this,w.components_tuple()) = triqs::tuple::apply(rhs,w.components_tuple());
-    }
-  };
+  template <typename RHS, typename Variable, typename Target, typename Opt, bool IsView>
+  void triqs_clef_auto_assign(gf_impl<Variable, Target, Opt, IsView, false> &g, RHS const &rhs) {
+   triqs_clef_auto_assign_impl(g, rhs, typename std::is_base_of<tag::composite, gf_mesh<Variable,Opt>>::type());
+   assign_from_expression(g.singularity(), rhs);
+   // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
+   // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty,
+   // it uses the fact that tail_non_view_t can be casted into freq_infty
+  }
+
+  // enable the writing g[om_] << .... also
+  template <typename RHS, typename Variable, typename Target, typename Opt, bool IsView>
+  void triqs_clef_auto_assign_subscript(gf_impl<Variable, Target, Opt, IsView, false> &g, RHS const &rhs) {
+   triqs_clef_auto_assign(g, rhs);
+  }
+
+  template <bool B, typename G, typename RHS>
+  void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, RHS &&rhs, std::integral_constant<bool, B>) {
+   std::forward<G>(g) = std::forward<RHS>(rhs);
+  }
+
+  template <typename G, bool B, typename Expr, int... Is>
+  void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, clef::make_fun_impl<Expr, Is...> &&rhs, std::integral_constant<bool, B>) {
+   triqs_clef_auto_assign_impl(std::forward<G>(g), std::forward<clef::make_fun_impl<Expr, Is...>>(rhs), std::integral_constant<bool, B>());
+  }
+
+  template <typename RHS, typename Variable, typename Target, typename Opt, bool IsView>
+  void triqs_clef_auto_assign_impl(gf_impl<Variable, Target, Opt, IsView, false> &g, RHS const &rhs,
+                                   std::integral_constant<bool, false>) {
+   for (auto const &w : g.mesh()) {
+    triqs_gf_clef_auto_assign_impl_aux_assign(g[w], rhs(w), std::integral_constant<bool, false>());
+    //(*this)[w] = rhs(w);
+   }
+  }
+
+  template <typename RHS, typename Variable, typename Target, typename Opt, bool IsView>
+  void triqs_clef_auto_assign_impl(gf_impl<Variable, Target, Opt, IsView, false> &g, RHS const &rhs,
+                                   std::integral_constant<bool, true>) {
+   for (auto const &w : g.mesh()) {
+     triqs_gf_clef_auto_assign_impl_aux_assign(g[w], triqs::tuple::apply(rhs, w.components_tuple()), std::integral_constant<bool, true>());
+     //(*this)[w] = triqs::tuple::apply(rhs, w.components_tuple());
+   }
+  }
 
  // -------------------------The regular class of GF --------------------------------------------------------
  
