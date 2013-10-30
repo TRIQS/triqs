@@ -179,7 +179,7 @@ namespace triqs { namespace clef {
 #define TRIQS_CLEF_OPERATION(TAG,OP)\
  namespace tags { struct TAG : unary_op { static const char * name() { return BOOST_PP_STRINGIZE(OP);} };}\
  template<> struct operation<tags::TAG> {\
-  template<typename L> auto operator()(L const & l) const DECL_AND_RETURN (OP _cl(l));\
+  template<typename L> auto operator()(L && l) const DECL_AND_RETURN (OP _cl(std::forward<L>(l)));\
  };\
  template<typename L>\
  typename std::enable_if<is_any_lazy<L>::value, expr<tags::TAG,typename expr_storage_t<L>::type> >::type \
