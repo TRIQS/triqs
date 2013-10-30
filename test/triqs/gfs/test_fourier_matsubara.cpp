@@ -5,12 +5,12 @@ using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/fourier_matsubara.hpp> 
 
-namespace triqs { namespace gfs { 
+namespace triqs { namespace gfs {
  // defined in the cpp file
- void fourier_impl         (gf_view<imfreq,scalar_valued> gw , gf_const_view<imtime,scalar_valued> gt, scalar_valued);
- void fourier_impl         (gf_view<imfreq,matrix_valued> gw , gf_const_view<imtime,matrix_valued> gt, matrix_valued);
- void inverse_fourier_impl (gf_view<imtime,scalar_valued> gt,  gf_const_view<imfreq,scalar_valued> gw, scalar_valued);
-void inverse_fourier_impl (gf_view<imtime,matrix_valued> gt,  gf_const_view<imfreq,matrix_valued> gw, matrix_valued);
+ void inverse_fourier_impl(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw);
+ void inverse_fourier_impl(gf_view<imtime, matrix_valued> gt, gf_const_view<imfreq, matrix_valued> gw);
+ template <typename Opt> void fourier_impl(gf_view<imfreq, scalar_valued, Opt> gw, gf_const_view<imtime, scalar_valued, Opt> gt);
+ template <typename Opt> void fourier_impl(gf_view<imfreq, matrix_valued, Opt> gw, gf_const_view<imtime, matrix_valued, Opt> gt);
 }}
 
 int main() {
@@ -30,7 +30,7 @@ int main() {
  h5_write(file, "Gw1", Gw1);   // the original lorentzian
  
  auto Gt1 = gf<imtime> {{beta, Fermion, N}, {1,1}};
- inverse_fourier_impl( Gt1, Gw1, triqs::gfs::matrix_valued() );
+ inverse_fourier_impl(Gt1, Gw1);
 //  for(auto const& t:Gt1.mesh()){
 //   std::cout<<"t="<<t<<",  expected="<<exp(-E*t) * ( (t>0?-1:0)+1/(1+exp(E*beta)) )<<std::endl;
 //  }
@@ -38,7 +38,7 @@ int main() {
  
  ///verification that TF(TF^-1)=Id
  auto Gw1b = gf<imfreq> {{beta, Fermion, N}, {1,1}};
- fourier_impl(Gw1b, Gt1, triqs::gfs::matrix_valued());
+ fourier_impl<void>(Gw1b, Gt1);
  for(auto const& w:Gw1.mesh()){
 //   std::cout<<"w="<<std::complex<double>(w)<<",Gw1b=" << Gw1b(w)(0,0)<<std::endl;
 //   std::cout<<"w="<<std::complex<double>(w)<<",Delta Gw1b=" << Gw1b(w)(0,0)-Gw1(w)(0,0)<<std::endl;

@@ -50,7 +50,10 @@ namespace gfs {
    gw.singularity() = gt.singularity(); // set tail
   }
 
-  void direct(gf_view<imfreq, scalar_valued,no_tail> gw, gf_const_view<imtime, scalar_valued,no_tail> gt) =delete;
+  void direct(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt) {
+   auto ta = local::tail();
+   direct_impl(gw, gt, ta);
+  }
   
   //-------------------------------------
 
@@ -166,12 +169,14 @@ namespace gfs {
 
  //--------------------------------------------
 
- void fourier_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, scalar_valued) {
+ template <typename Opt>
+ void fourier_impl(gf_view<imfreq, scalar_valued, Opt> gw, gf_const_view<imtime, scalar_valued, Opt> gt) {
   impl_worker w;
   w.direct(gw, gt);
  }
 
- void fourier_impl(gf_view<imfreq, matrix_valued> gw, gf_const_view<imtime, matrix_valued> gt, matrix_valued) {
+ template <typename Opt>
+ void fourier_impl(gf_view<imfreq, matrix_valued, Opt> gw, gf_const_view<imtime, matrix_valued, Opt> gt) {
   impl_worker w;
   for (size_t n1 = 0; n1 < gt.data().shape()[1]; n1++)
    for (size_t n2 = 0; n2 < gt.data().shape()[2]; n2++) {
@@ -183,12 +188,12 @@ namespace gfs {
 
  //---------------------------------------------------------------------------
 
- void inverse_fourier_impl(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw, scalar_valued) {
+ void inverse_fourier_impl(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw) {
   impl_worker w;
   w.inverse(gt, gw);
  }
 
- void inverse_fourier_impl(gf_view<imtime, matrix_valued> gt, gf_const_view<imfreq, matrix_valued> gw, matrix_valued) {
+ void inverse_fourier_impl(gf_view<imtime, matrix_valued> gt, gf_const_view<imfreq, matrix_valued> gw) {
   impl_worker w;
   for (size_t n1 = 0; n1 < gw.data().shape()[1]; n1++)
    for (size_t n2 = 0; n2 < gw.data().shape()[2]; n2++) {
@@ -201,19 +206,27 @@ namespace gfs {
  //---------------------------------------------------------------------------
  void triqs_gf_view_assign_delegation(gf_view<imfreq, scalar_valued> g,
                                       gf_keeper<tags::fourier, imtime, scalar_valued> const& L) {
-  fourier_impl(g, L.g, scalar_valued());
+  fourier_impl(g, L.g);
  }
  void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued> g,
                                       gf_keeper<tags::fourier, imtime, matrix_valued> const& L) {
-  fourier_impl(g, L.g, matrix_valued());
+  fourier_impl(g, L.g);
  }
  void triqs_gf_view_assign_delegation(gf_view<imtime, scalar_valued> g,
                                       gf_keeper<tags::fourier, imfreq, scalar_valued> const& L) {
-  inverse_fourier_impl(g, L.g, scalar_valued());
+  inverse_fourier_impl(g, L.g);
  }
  void triqs_gf_view_assign_delegation(gf_view<imtime, matrix_valued> g,
                                       gf_keeper<tags::fourier, imfreq, matrix_valued> const& L) {
-  inverse_fourier_impl(g, L.g, matrix_valued());
+  inverse_fourier_impl(g, L.g);
+ }
+ void triqs_gf_view_assign_delegation(gf_view<imfreq, scalar_valued, no_tail> g,
+                                      gf_keeper<tags::fourier, imtime, scalar_valued, no_tail> const& L) {
+  fourier_impl(g, L.g);
+ }
+ void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued, no_tail> g,
+                                      gf_keeper<tags::fourier, imtime, matrix_valued, no_tail> const& L) {
+  fourier_impl(g, L.g);
  }
 }
 }

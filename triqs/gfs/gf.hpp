@@ -500,8 +500,8 @@ namespace triqs { namespace gfs {
   }
 
  // tool for lazy transformation
-  template <typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper {
-   gf_const_view<D, Target> g;
+  template <typename Tag, typename D, typename Target = matrix_valued, typename Opt=void> struct gf_keeper {
+   gf_const_view<D, Target, Opt> g;
   };
 
  // ---------------------------------- slicing ------------------------------------

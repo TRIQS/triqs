@@ -90,18 +90,18 @@ namespace triqs { namespace gfs {
    }
   friend nothing operator +( nothing, nothing) { return nothing();}
   template<typename RHS> friend void assign_from_expression(nothing & ,RHS) {}
-}; 
 
- template<typename T> nothing operator+(nothing, T const &) { return nothing();}
- template<typename T> nothing operator-(nothing, T const &) { return nothing();}
- template<typename T> nothing operator*(nothing, T const &) { return nothing();}
- template<typename T> nothing operator/(nothing, T const &) { return nothing();}
- template<typename T> TYPE_DISABLE_IF(nothing, std::is_same<T,nothing>) operator+(T const &, nothing) { return nothing();}
- template<typename T> TYPE_DISABLE_IF(nothing, std::is_same<T,nothing>) operator-(T const &, nothing) { return nothing();}
- template<typename T> TYPE_DISABLE_IF(nothing, std::is_same<T,nothing>) operator*(T const &, nothing) { return nothing();}
- template<typename T> TYPE_DISABLE_IF(nothing, std::is_same<T,nothing>) operator/(T const &, nothing) { return nothing();}
-  
- //------------------------------------------------------
+};
+
+template <typename... T> nothing slice_target(nothing, T...) { return nothing(); }
+template <typename T> nothing operator+(nothing, T const &) { return nothing(); }
+template <typename T> nothing operator-(nothing, T const &) { return nothing(); }
+template <typename T> nothing operator*(nothing, T const &) { return nothing(); }
+template <typename T> nothing operator/(nothing, T const &) { return nothing(); }
+template <typename T> TYPE_DISABLE_IF(nothing, std::is_same<T, nothing>) operator+(T const &, nothing) { return nothing(); }
+template <typename T> TYPE_DISABLE_IF(nothing, std::is_same<T, nothing>) operator-(T const &, nothing) { return nothing(); }
+template <typename T> TYPE_DISABLE_IF(nothing, std::is_same<T, nothing>) operator*(T const &, nothing) { return nothing(); }
+template <typename T> TYPE_DISABLE_IF(nothing, std::is_same<T, nothing>) operator/(T const &, nothing) { return nothing(); }
 
 }}
 #endif

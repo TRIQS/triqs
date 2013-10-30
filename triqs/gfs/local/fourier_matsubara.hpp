@@ -29,18 +29,23 @@ namespace triqs {
 namespace gfs {
 
  template <typename Target, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, imtime, Target> fourier(gf_impl<imtime, Target, Opt, V, C> const& g) {
+ gf_keeper<tags::fourier, imtime, Target, Opt> fourier(gf_impl<imtime, Target, Opt, V, C> const& g) {
   return {g};
  }
  template <typename Target, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, imfreq, Target> inverse_fourier(gf_impl<imfreq, Target, Opt, V, C> const& g) {
+ gf_keeper<tags::fourier, imfreq, Target, Opt> inverse_fourier(gf_impl<imfreq, Target, Opt, V, C> const& g) {
   return {g};
  }
 
+ // The fourier transform with the tail
  void triqs_gf_view_assign_delegation(gf_view<imfreq, scalar_valued> g, gf_keeper<tags::fourier, imtime, scalar_valued> const& L);
  void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued> g, gf_keeper<tags::fourier, imtime, matrix_valued> const& L);
  void triqs_gf_view_assign_delegation(gf_view<imtime, scalar_valued> g, gf_keeper<tags::fourier, imfreq, scalar_valued> const& L);
  void triqs_gf_view_assign_delegation(gf_view<imtime, matrix_valued> g, gf_keeper<tags::fourier, imfreq, matrix_valued> const& L);
+
+ // The version without tail : only possible in one direction
+ void triqs_gf_view_assign_delegation(gf_view<imfreq, scalar_valued, no_tail> g, gf_keeper<tags::fourier, imtime, scalar_valued, no_tail> const& L);
+ void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued, no_tail> g, gf_keeper<tags::fourier, imtime, matrix_valued, no_tail> const& L);
 
  template <typename Opt> gf_mesh<imfreq, Opt> make_mesh_fourier_compatible(gf_mesh<imtime, Opt> const& m) {
   int L = m.size() - (m.kind() == full_bins ? 1 : 0);
@@ -54,15 +59,16 @@ namespace gfs {
  }
 
  template <typename Target, typename Opt, bool V, bool C>
- gf_view<imfreq, Target> make_gf_from_fourier(gf_impl<imtime, Target, Opt, V, C> const& gt) {
-  auto gw = gf<imfreq, Target>{make_mesh_fourier_compatible(gt.mesh()), get_target_shape(gt)};
+ gf_view<imfreq, Target, Opt> make_gf_from_fourier(gf_impl<imtime, Target, Opt, V, C> const& gt) {
+  auto gw = gf<imfreq, Target, Opt>{make_mesh_fourier_compatible(gt.mesh()), get_target_shape(gt)};
   gw() = fourier(gt);
   return gw;
  }
 
  template <typename Target, typename Opt, bool V, bool C>
- gf_view<imtime, Target> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Opt, V, C> const& gw, mesh_kind mk = full_bins) {
-  auto gt = gf<imtime, Target>{make_mesh_fourier_compatible(gw.mesh(), mk), get_target_shape(gw)};
+ gf_view<imtime, Target, Opt> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Opt, V, C> const& gw,
+                                                           mesh_kind mk = full_bins) {
+  auto gt = gf<imtime, Target, Opt>{make_mesh_fourier_compatible(gw.mesh(), mk), get_target_shape(gw)};
   gt() = inverse_fourier(gw);
   return gt;
  }
