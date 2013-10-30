@@ -612,7 +612,10 @@ namespace triqs { namespace gfs {
     target_shape_t front_pop() const { // this make the get_target_shape function works in this case...
      return {};
     }
+    target_shape_t() = default;
+    template <typename T> target_shape_t(utility::mini_vector<T, 0>) {}
    };
+   
    typedef typename gf_t::mesh_t mesh_t;
 
    static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t shape) {
