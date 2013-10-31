@@ -51,7 +51,7 @@ namespace gfs {
   }
 
   void direct(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt) {
-   auto ta = local::tail();
+   auto ta = local::tail{1,1};
    direct_impl(gw, gt, ta);
   }
   
