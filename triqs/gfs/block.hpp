@@ -153,8 +153,35 @@ namespace gfs {
   // return { gf_mesh<block_index, Opt> {int(V.size())}, std::move(V), nothing{}, nothing{} } ;
  }
 
- template <typename GF, typename GF2> gf_view<block_index, GF> make_block_gf_view_from_vector(std::vector<GF2> V) {
+ template <typename GF> gf_view<block_index, typename GF::regular_type> make_block_gf_view_from_vector(std::vector<GF> V) {
   return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
+ }
+
+ // for cython proxy only. do not document.
+ template <typename GF, typename GF2> gf_view<block_index, GF> make_block_gf_view_from_vector_of_cython_proxy(std::vector<GF2> V) {
+  return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
+ }
+
+ // ------------------------------- Extend reinterpret_scalar_valued_gf_as_matrix_valued for block gf   ------
+
+ template <typename Variable, typename Opt, typename Opt2, bool IsConst>
+ gf_view<block_index, gf<Variable, matrix_valued, Opt>, Opt2, IsConst>
+ reinterpret_scalar_valued_gf_as_matrix_valued(gf_view<block_index, gf<Variable, scalar_valued, Opt>, Opt2, IsConst> bg) {
+  std::vector<gf_view<Variable, matrix_valued, Opt>> V;
+  for (auto &g : bg) V.push_back(reinterpret_scalar_valued_gf_as_matrix_valued(g));
+  return make_block_gf_view_from_vector(std::move(V));
+ }
+
+ template <typename Variable, typename Opt, typename Opt2>
+ gf_const_view<block_index, gf<Variable, matrix_valued, Opt>, Opt2>
+ reinterpret_scalar_valued_gf_as_matrix_valued(gf<block_index, gf<Variable, scalar_valued, Opt>, Opt2> const &bg) {
+  return reinterpret_scalar_valued_gf_as_matrix_valued(bg());
+ }
+
+ template <typename Variable, typename Opt, typename Opt2>
+ gf_view<block_index, gf<Variable, matrix_valued, Opt>, Opt2>
+ reinterpret_scalar_valued_gf_as_matrix_valued(gf<block_index, gf<Variable, scalar_valued, Opt>, Opt2> &bg) {
+  return reinterpret_scalar_valued_gf_as_matrix_valued(bg());
  }
 
  // -------------------------------   Free functions   --------------------------------------------------
@@ -165,17 +192,19 @@ namespace gfs {
 
  // -------------------------------   an iterator over the blocks --------------------------------------------------
 
+ template<typename T> using __get_target = typename std::remove_reference<decltype(std::declval<T>()[0])>::type;
+
  // iterator
- template <typename Target, typename Opt, bool B, bool C>
+ template <typename G>
  class block_gf_iterator
-     : public boost::iterator_facade<block_gf_iterator<Target, Opt, B, C>, Target, boost::forward_traversal_tag, Target &> {
+     : public boost::iterator_facade<block_gf_iterator<G>, __get_target<G>, boost::forward_traversal_tag, __get_target<G> &> {
   friend class boost::iterator_core_access;
-  typedef gf_impl<block_index, Target, Opt, B, C> big_gf_t;
+  typedef typename std::remove_reference<G>::type big_gf_t;
   big_gf_t &big_gf;
   typedef typename big_gf_t::mesh_t::const_iterator mesh_iterator_t;
   mesh_iterator_t mesh_it;
 
-  Target &dereference() const { return big_gf[*mesh_it]; }
+  __get_target<G> &dereference() const { return big_gf[*mesh_it]; }
   bool equal(block_gf_iterator const &other) const { return ((mesh_it == other.mesh_it)); }
 
   public:
@@ -186,27 +215,27 @@ namespace gfs {
 
  //------------
  template <typename Target, typename Opt, bool B, bool C>
- block_gf_iterator<Target, Opt, B, C> begin(gf_impl<block_index, Target, Opt, B, C> &bgf) {
+ block_gf_iterator<gf_impl<block_index, Target, Opt, B, C>> begin(gf_impl<block_index, Target, Opt, B, C> &bgf) {
   return {bgf, false};
  }
 
  //------------
  template <typename Target, typename Opt, bool B, bool C>
- block_gf_iterator<Target, Opt, B, C> end(gf_impl<block_index, Target, Opt, B, C> &bgf) {
+ block_gf_iterator<gf_impl<block_index, Target, Opt, B, C>> end(gf_impl<block_index, Target, Opt, B, C> &bgf) {
   return {bgf, true};
  }
 
  //----- const iterator
- template <typename Target, typename Opt, bool B, bool C>
- class block_gf_const_iterator : public boost::iterator_facade<block_gf_const_iterator<Target, Opt, B, C>, Target,
-                                                               boost::forward_traversal_tag, Target const &> {
+ template <typename G>
+ class block_gf_const_iterator
+     : public boost::iterator_facade<block_gf_const_iterator<G>, __get_target<G>, boost::forward_traversal_tag, __get_target<G> const &> {
   friend class boost::iterator_core_access;
-  typedef gf_impl<block_index, Target, Opt, B, C> big_gf_t;
+  typedef typename std::remove_reference<G>::type big_gf_t;
   big_gf_t const &big_gf;
   typedef typename big_gf_t::mesh_t::const_iterator mesh_iterator_t;
   mesh_iterator_t mesh_it;
 
-  Target const &dereference() const { return big_gf[*mesh_it]; }
+  __get_target<G> const &dereference() const { return big_gf[*mesh_it]; }
   bool equal(block_gf_const_iterator const &other) const { return ((mesh_it == other.mesh_it)); }
 
   public:
@@ -216,22 +245,22 @@ namespace gfs {
  };
 
  template <typename Target, typename Opt, bool B, bool C>
- block_gf_const_iterator<Target, Opt, B, C> begin(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+ block_gf_const_iterator<gf_impl<block_index, Target, Opt, B, C>> begin(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
   return {bgf, false};
  }
 
  template <typename Target, typename Opt, bool B, bool C>
- block_gf_const_iterator<Target, Opt, B, C> end(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+ block_gf_const_iterator<gf_impl<block_index, Target, Opt, B, C>> end(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
   return {bgf, true};
  }
 
  template <typename Target, typename Opt, bool B, bool C>
- block_gf_const_iterator<Target, Opt, B, C> cbegin(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+ block_gf_const_iterator<gf_impl<block_index, Target, Opt, B, C>> cbegin(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
   return {bgf, false};
  }
 
  template <typename Target, typename Opt, bool B, bool C>
- block_gf_const_iterator<Target, Opt, B, C> cend(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+ block_gf_const_iterator<gf_impl<block_index, Target, Opt, B, C>> cend(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
   return {bgf, true};
  }
 }

@@ -546,7 +546,7 @@ namespace triqs { namespace gfs {
   }
 
   // a scalar_valued gf can be viewed as a 1x1 matrix
-  template <typename Variable, typename Opt, bool IsConst, typename... Args>
+  template <typename Variable, typename Opt, bool IsConst>
   gf_view<Variable, matrix_valued, Opt, IsConst>
   reinterpret_scalar_valued_gf_as_matrix_valued(gf_view<Variable, scalar_valued, Opt, IsConst> g) {
    typedef typename gf_view<Variable, matrix_valued, Opt, IsConst>::data_view_t a_t;
@@ -554,12 +554,12 @@ namespace triqs { namespace gfs {
    return {g.mesh(), a, g.singularity(), g.symmetry()};
   }
 
-  template <typename Variable, typename Opt, typename... Args>
+  template <typename Variable, typename Opt>
   gf_view<Variable, matrix_valued, Opt> reinterpret_scalar_valued_gf_as_matrix_valued(gf<Variable, scalar_valued, Opt> &g) {
    return reinterpret_scalar_valued_gf_as_matrix_valued(g());
   }
 
-  template <typename Variable, typename Opt, typename... Args>
+  template <typename Variable, typename Opt>
   gf_const_view<Variable, matrix_valued, Opt>
   reinterpret_scalar_valued_gf_as_matrix_valued(gf<Variable, scalar_valued, Opt> const &g) {
    return reinterpret_scalar_valued_gf_as_matrix_valued(g());
@@ -574,6 +574,8 @@ namespace triqs { namespace gfs {
  namespace gfs_implementation { // implement some default traits
 
   // -------------------------  default factories ---------------------
+
+  // ----- tensor_valued
   template <int R, typename Var, typename Opt> struct factories<Var, tensor_valued<R>, Opt> {
    typedef gf<Var, tensor_valued<R>, Opt> gf_t;
    typedef tqa::mini_vector<size_t, R> target_shape_t;
@@ -590,6 +592,7 @@ namespace triqs { namespace gfs {
    }
   };
 
+  // ----- matrix_valued
   template <typename Var, typename Opt> struct factories<Var, matrix_valued, Opt> {
    typedef gf<Var, matrix_valued, Opt> gf_t;
    typedef tqa::mini_vector<size_t, 2> target_shape_t;
@@ -606,6 +609,7 @@ namespace triqs { namespace gfs {
    }
   };
 
+  // ----- scalar_valued
   template <typename Var, typename Opt> struct factories<Var, scalar_valued, Opt> {
    typedef gf<Var, scalar_valued, Opt> gf_t;
    struct target_shape_t {

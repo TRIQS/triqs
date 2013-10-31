@@ -139,19 +139,21 @@ namespace triqs { namespace clef {
 
  // a little function to clean the reference_wrapper
  template<typename U> U  _cl(U && x) { return std::forward<U>(x);}
- template<typename U> U & _cl(std::reference_wrapper<U> x) { return x.get();}
+ template<typename U> auto _cl(std::reference_wrapper<U> x) DECL_AND_RETURN(x.get());
 
  /// Terminal 
  template<> struct operation<tags::terminal> { template<typename L> L operator()(L&& l) const { return std::forward<L>(l);} };
 
  /// Function call 
- template<> struct operation<tags::function> { 
-  template<typename F, typename... Args> auto operator()(F const & f, Args const & ... args) const DECL_AND_RETURN(_cl(f)(_cl(args)...));
+ template<> struct operation<tags::function> {
+  template <typename F, typename... Args>
+  auto operator()(F&& f, Args&&... args) const DECL_AND_RETURN(_cl(std::forward<F>(f))(_cl(std::forward<Args>(args))...));
  };
 
  /// [ ] Call
  template<> struct operation<tags::subscript> { 
-  template<typename F, typename Args> auto operator()(F const & f, Args const & args) const DECL_AND_RETURN(_cl(f)[_cl(args)]);
+  template <typename F, typename Args>
+  auto operator()(F&& f, Args&& args) const DECL_AND_RETURN(_cl(std::forward<F>(f))[_cl(std::forward<Args>(args))]);
  };
 
  // all binary operators....
@@ -228,7 +230,7 @@ namespace triqs { namespace clef {
  template<typename Tag, bool IsLazy> struct operation2;
  template<typename Tag> struct operation2<Tag, true> { 
   template<typename... Args> 
-   expr<Tag,typename remove_cv_ref<Args>::type ...> operator()(Args && ...  args) const  {
+   expr<Tag,typename expr_storage_t<Args>::type ...> operator()(Args && ...  args) const  {
     return {Tag(), std::forward<Args>(args)...};
    } 
  };

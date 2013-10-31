@@ -51,7 +51,7 @@ cdef extern from "triqs/gfs/block.hpp" namespace "triqs::gfs" :
         gf_two_real_times & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_two_real_times  make_gf_block_two_real_times "triqs::gfs::make_block_gf_view_from_vector<triqs::gfs::gf<triqs::gfs::two_real_times>>" (  vector[gf_two_real_times] &) 
+    cdef gf_block_two_real_times  make_gf_block_two_real_times "triqs::gfs::make_block_gf_view_from_vector_of_cython_proxy<triqs::gfs::gf<triqs::gfs::two_real_times>>" (  vector[gf_two_real_times] &) 
     #cdef gf_block_two_real_times  make_gf_block_two_real_times "triqs::gfs::make_gf_view<triqs::gfs::block_index,triqs::gfs::gf<triqs::gfs::two_real_times>>" (  vector[gf_two_real_times] &) 
 
 cdef gf_block_two_real_times  as_gf_block_two_real_times (G) except +
