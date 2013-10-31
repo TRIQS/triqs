@@ -35,7 +35,7 @@ namespace triqs { namespace mpi {
 #undef D
 
  // ok that is simple ...
- void barrier(communicator _c) { MPI_Barrier(_c);}
+ inline void barrier(communicator _c) { MPI_Barrier(_c);}
 
  // a struct to specialize for the implementation for various types...
  template<typename T, typename Enable=void> struct mpi_impl;
@@ -47,7 +47,7 @@ namespace triqs { namespace mpi {
  // reduce  : first the in_place version
  template<typename T> void reduce_in_place(communicator _c, T & a, int root=0) { mpi_impl<T>::reduce_in_place(_c,a,root); }
 
- void reduce_in_place_v(communicator _c) {}
+ inline void reduce_in_place_v(communicator _c) {}
  
  // try a variadic one. Does not cost much more to code...
  template<typename T0, typename ... T> void reduce_in_place_v(communicator _c, T0 & a0, T& ... a) { 
