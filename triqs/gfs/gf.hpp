@@ -488,7 +488,7 @@ namespace triqs { namespace gfs {
  // delegate = so that I can overload it for specific RHS...
  template<typename Variable, typename Target, typename Opt, typename RHS>
   DISABLE_IF(arrays::is_scalar<RHS>) triqs_gf_view_assign_delegation( gf_view<Variable,Target,Opt> g, RHS const & rhs) {
-   if (!(g.mesh() == rhs.mesh()))  TRIQS_RUNTIME_ERROR<<"Gf Assignment in View : incompatible mesh";
+   if (!(g.mesh() == rhs.mesh()))  TRIQS_RUNTIME_ERROR<<"Gf Assignment in View : incompatible mesh"<<g.mesh() << " vs "<< rhs.mesh();
    for (auto const & w: g.mesh()) g[w] = rhs[w];
    g.singularity() = rhs.singularity();
   }
