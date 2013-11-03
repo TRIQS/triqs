@@ -73,10 +73,10 @@ Doxygen documentation
 
 The :doxy:`full C++ documentation<triqs::mc_tools::mc_generic>` is available here.
 
-.. : 
-   Breathe Documentation 
-   *********************
-   .. doxygenclass:: triqs::mc_tools::mc_generic
-      :project: doxy
-      :members:
-   
+
+Breathe Documentation 
+*********************
+.. doxygenclass:: triqs::mc_tools::mc_generic
+   :project: mc_tools
+   :members:
+

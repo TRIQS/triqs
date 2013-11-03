@@ -21,14 +21,15 @@ import sys, os
 # General configuration
 # ---------------------
 
-sys.path +=["@CMAKE_BINARY_DIR@/doc/breathe",
+sys.path +=[ #"@CMAKE_BINARY_DIR@/doc/breathe",
 "@CMAKE_BINARY_DIR@/doc/mpl","@CMAKE_BINARY_DIR@/doc/autocompile",
 "@CMAKE_BINARY_DIR@/doc/sandbox","@CMAKE_BINARY_DIR@/doc"]
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 #extensions = ['sphinx.ext.autodoc','sphinx.ext.pngmath']
-extensions = ['sphinx.ext.autodoc','sphinx.ext.@SPHINX_MATH_GENERATOR@','breathe','doxylink']
+#extensions = ['sphinx.ext.autodoc','sphinx.ext.@SPHINX_MATH_GENERATOR@','breathe','sphinxcontrib.doxylink']
+extensions = ['sphinx.ext.autodoc','sphinx.ext.@SPHINX_MATH_GENERATOR@','sphinxcontrib.doxylink']
 
 # adding support for matplotlib plots
 extensions += [
@@ -121,12 +122,12 @@ pygments_style = 'sphinx'
 # Options for breathe extension
 # -----------------------------
 
-breathe_projects = {
-        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
-        "arrays":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
-        }
-
-breathe_default_project = "mc_tools"
+#breathe_projects = {
+#        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
+#        "arrays":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
+#        "doxy":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
+#        }
+#breathe_default_project = "mc_tools"
 
 # Options for doxylink extension
 # -----------------------------

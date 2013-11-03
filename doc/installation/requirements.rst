@@ -42,26 +42,25 @@ A recent compiler is therefore mandatory.
 Libraries
 ---------
 
-==================    ================  ================================================================================
-Library/tool          Version           Comment
-==================    ================  ================================================================================
-mpi                   openmpi           Parallelism.
-                                        Since standard linux distributions (and macports on OS X)
-                                        now provides openmpi, even on laptops, we avoid the unnecessary complication
-                                        of maintaining a non-parallel version of TRIQS
-fftw                  >= 3.2            Fourier transforms
-boost                 >= 1.49           C++ librairies
-hdf5                  >= 1.8.0          File storage system. Important: the *serial* version must be installed
-python                >= 2.6.5          The Python interpreter
-scipy                                   Python mathematical library
-numpy                                   Python scientific library
-h5py                                    Python interface to hdf5 library
-mpi4py                                  Python MPI 
-sphinx                >= 1.0.1          Python documentation tools (to compile documentation)
-cmake                 >= 2.8.7          CMake is used to control the software compilation process
-pyparsing                               Tool for sphinx (to compile documentation)
-matplotlib            >= 0.99           Python 2D plotting library
-cython                >=0.17            A language that allows to write C extensions for the Python language
-==================    ================  ================================================================================
++------------------------+----------+------------------------------------------------------------------------+
+| Library/tool           | Version  | Comment                                                                |
++========================+==========+========================================================================+
+| mpi                    | openmpi  | Parallelism (1).                                                       |
+| fftw                   | >= 3.2   | Fourier transforms                                                     |
+| boost                  | >= 1.49  | C++ librairies                                                         |
+| hdf5                   | >= 1.8.0 | File storage system. Important: the *serial* version must be installed |
+| python                 | >= 2.6.5 | The Python interpreter                                                 |
+| scipy                  | >= ?     | Python mathematical library                                            |
+| numpy                  | >= ?     | Python scientific library                                              |
+| h5py                   | >= ?     | Python interface to hdf5 library                                       |
+| mpi4py                 | >= ?     | Python MPI                                                             |
+| sphinx                 | >= 1.0.1 | Python documentation tools (to compile documentation)                  |
+| cmake                  | >= 2.8.7 | CMake is used to control the software compilation process              |
+| pyparsing              | >= ?     | Tool for sphinx (to compile documentation)                             |
+| sphinxcontrib-doxylink | >= ?     | Tool for sphinx (to compile documentation)                             |
+| matplotlib             | >= 0.99  | Python 2D plotting library                                             |
+| cython                 | >=0.17   | A language that allows to write C extensions for the Python language   |
++------------------------+----------+------------------------------------------------------------------------+
 
-
+(1)  Since standard linux distributions (and macports on OS X) now provides openmpi, even on laptops, we avoid the unnecessary complication of maintaining a non-parallel version of TRIQS
+ 

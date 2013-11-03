@@ -7,14 +7,21 @@
 Installing required libraries on Mac OS X
 =========================================
 
-This installation guide has been tried on Mountain Lion. It may work for older
+This is an installation guide for Os X Mountain Lion. 
+It may work for older
 versions of Mac OS X but previous versions of Mac OS X are not supported.
 
 NB: The installation of TRIQS under previous versions of OS X requires installing clang (via Xcode).
-(On Mountain Lion, clang (llvm) replaces gcc 4.2 as the default C++ compiler).
+(On Mountain Lion, clang (llvm) replaces gcc as the default C++ compiler).
 
 We strongly recommend the following installation procedure, which provides a clean way to set up all dependencies, so that all
 of them are compatible with each other. Only the installation via homebrew is supported for the Mac.
+
+.. warning::
+
+   Because brew evolve with time, there is no notion of distribution on Mac, like e.g. Ubuntu.
+   So, while the procedure worked at some point, there can be no guarantee that it still does.
+  
 
 Installation of the dependencies
 --------------------------------
@@ -50,6 +57,8 @@ Installation of the dependencies
     pip install scipy
     pip install mpi4py
     pip install matplotlib
+    pip install breathe
+    pip install sphinxcontrib-doxylink
     pip install tornado
     pip install pyzmq
     pip install jinja2
