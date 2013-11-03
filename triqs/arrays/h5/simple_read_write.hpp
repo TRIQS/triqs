@@ -119,7 +119,8 @@ namespace arrays {
     for (size_t u = 0; u < ArrayType::rank; ++u) d2[u] = dims_out[u];
     resize_or_check(A, d2);
     if (C_reorder) {
-     read_array(g, name, cache<ArrayType, typename ArrayType::regular_type>(A).view(), false);
+     read_array(g, name, make_cache(A).view(), false);
+     //read_array(g, name, cache<ArrayType, typename ArrayType::regular_type>(A).view(), false);
     } else
      ds.read(__get_array_data_ptr(A), h5::data_type_memory<typename ArrayType::value_type>(), data_space(A), dataspace);
    }

@@ -73,10 +73,11 @@ namespace triqs { namespace arrays {
    TYPE_ENABLE_IFC(value_type,vec) operator[] (Args && args) const { return f(a[std::forward<Args>(args)],b[std::forward<Args>(args)]);}
  };
 
+ /* already defined in traist
  template<typename ... T> struct _and; 
  template<typename T0, typename ... T> struct _and<T0, T...> : std::integral_constant<bool, T0::value && _and<T...>::value>{}; 
  template<typename T> struct _and<T> : T{};
-
+*/
  template<typename F, int arity, bool b, typename ... A> struct ImmutableCuboidArray<map_impl_result<F,arity,b,A...>> : std::true_type{};
  
  template<typename F, int arity, bool b, typename ... A> struct ImmutableArray <map_impl_result<F,arity,b,A...>> : _and<typename ImmutableArray <typename std::remove_reference<A>::type>::type...>{};

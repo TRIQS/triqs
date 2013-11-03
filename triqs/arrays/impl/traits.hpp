@@ -20,55 +20,60 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_IMPL_TRAITS_H
 #define TRIQS_ARRAYS_IMPL_TRAITS_H
-#include <boost/mpl/or.hpp>
-#include <boost/mpl/and.hpp>
-#include <boost/mpl/not.hpp>
-#include <boost/concept_check.hpp>
 #include <triqs/utility/concept_tools.hpp>
+#include <triqs/utility/traits.hpp>
 
-namespace triqs { namespace arrays {
- namespace mpl=boost::mpl; 
+namespace triqs {
+namespace arrays {
+ namespace mpl = boost::mpl;
 
- // The ImmutableCuboidArray concept 
+ // The ImmutableCuboidArray concept
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableCuboidArray);
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableCuboidArray,(ImmutableCuboidArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableCuboidArray, (ImmutableCuboidArray));
 
-  // The ImmutableArray concept 
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableArray,(ImmutableCuboidArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableArray,(ImmutableArray)(MutableCuboidArray));
- 
- // The ImmutableMatrix concept 
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableMatrix,(ImmutableCuboidArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableMatrix,(ImmutableMatrix)(MutableCuboidArray));
+ // The ImmutableArray concept
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableArray, (ImmutableCuboidArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableArray, (ImmutableArray)(MutableCuboidArray));
 
- // The ImmutableVector concept 
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableVector,(ImmutableCuboidArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableVector,(ImmutableVector)(MutableCuboidArray));
+ // The ImmutableMatrix concept
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableMatrix, (ImmutableCuboidArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableMatrix, (ImmutableMatrix)(MutableCuboidArray));
 
- namespace Tag { struct array{}; struct array_view {}; }
- template <typename T> struct is_array : std::is_base_of<Tag::array,T> {};
- template <typename T> struct is_array_view : std::is_base_of<Tag::array_view,T> {};
- template <typename T> struct is_array_or_view : boost::mpl::or_< is_array<T>, is_array_view<T> > {};
+ // The ImmutableVector concept
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableVector, (ImmutableCuboidArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableVector, (ImmutableVector)(MutableCuboidArray));
 
- namespace Tag { struct vector{}; struct vector_view {};}
- template <typename T> struct is_vector : std::is_base_of<Tag::vector,T> {};
- template <typename T> struct is_vector_view : std::is_base_of<Tag::vector_view,T> {};
- template <typename T> struct is_vector_or_view : boost::mpl::or_< is_vector<T>, is_vector_view<T> > {};
+ namespace Tag {
+  struct array {};
+  struct array_view {};
+  struct vector {};
+  struct vector_view {};
+  struct matrix_view {};
+  struct matrix {};
+ }
+ template <typename T> struct is_array : std::is_base_of<Tag::array, T> {};
+ template <typename T> struct is_array_view : std::is_base_of<Tag::array_view, T> {};
+ template <typename T> struct is_array_or_view : _or<is_array<T>, is_array_view<T>> {};
 
- namespace Tag { struct matrix_view {}; struct matrix {}; }
- template <typename T> struct is_matrix : std::is_base_of<Tag::matrix,T> {};
- template <typename T> struct is_matrix_view : std::is_base_of<Tag::matrix_view,T> {};
- template <typename T> struct is_matrix_or_view : boost::mpl::or_< is_matrix<T>, is_matrix_view<T> > {};
+ template <typename T> struct is_vector : std::is_base_of<Tag::vector, T> {};
+ template <typename T> struct is_vector_view : std::is_base_of<Tag::vector_view, T> {};
+ template <typename T> struct is_vector_or_view : _or<is_vector<T>, is_vector_view<T>> {};
 
- template <class T> struct is_amv_value_class : boost::mpl::or_< is_array<T>, is_matrix<T>, is_vector<T> > {};
- template <class T> struct is_amv_view_class : boost::mpl::or_< is_array_view<T>, is_matrix_view<T>, is_vector_view<T> > {};
- template <class T> struct is_amv_value_or_view_class : boost::mpl::or_< is_amv_value_class<T>, is_amv_view_class<T> > {};
+ template <typename T> struct is_matrix : std::is_base_of<Tag::matrix, T> {};
+ template <typename T> struct is_matrix_view : std::is_base_of<Tag::matrix_view, T> {};
+ template <typename T> struct is_matrix_or_view : _or<is_matrix<T>, is_matrix_view<T>> {};
 
- template <class S> struct is_scalar : boost::mpl::or_<std::is_arithmetic<S > , boost::is_complex<S> > {};
- 
- template<class S, class A> struct is_scalar_for : 
-  boost::mpl::if_<is_scalar<typename A::value_type > , is_scalar<S>,boost::is_same<S,typename A::value_type > >::type {};
+ template <class T> struct is_amv_value_class : _or<is_array<T>, is_matrix<T>, is_vector<T>> {};
+ template <class T> struct is_amv_view_class : _or<is_array_view<T>, is_matrix_view<T>, is_vector_view<T>> {};
+ template <class T> struct is_amv_value_or_view_class : _or<is_amv_value_class<T>, is_amv_view_class<T>> {};
 
-}}//namespace triqs::arrays
+ template <class S> struct is_scalar : _or<std::is_arithmetic<S>, boost::is_complex<S>> {};
+
+ template <class S, class A>
+ struct is_scalar_for
+     : std::conditional<is_scalar<typename A::value_type>::value, is_scalar<S>, boost::is_same<S, typename A::value_type>>::type {
+ };
+}
+} // namespace triqs::arrays
 #endif
 

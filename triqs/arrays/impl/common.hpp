@@ -32,17 +32,14 @@
 #include <triqs/utility/exceptions.hpp>
 #include <sstream>
 
-#include <boost/utility/enable_if.hpp>
-#include <boost/mpl/or.hpp>
-#include <boost/mpl/and.hpp>
-#include <boost/mpl/not.hpp>
-#include <boost/mpl/if.hpp>
 #include <boost/mpl/char.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/type_traits/is_complex.hpp>
 #include <triqs/utility/compiler_details.hpp>
-#include "./traits.hpp"
 #include <triqs/utility/macros.hpp>
+// LEADS to an error on OS X???
+//#include <triqs/utility/c14.hpp>
+#include "./traits.hpp"
 
 namespace boost { namespace serialization { class access;}}
 
@@ -74,18 +71,18 @@ namespace triqs {
   using triqs::make_clone;
 
   /// Is the data contiguous
-  template<typename A> typename boost::disable_if<is_amv_value_or_view_class<A>,bool>::type has_contiguous_data(A const &) {return false;}
-  template<typename A> typename boost::enable_if<is_amv_value_class<A>,bool>::type has_contiguous_data(A const &) {return true;}
-  template<typename A> typename boost::enable_if<is_amv_view_class<A>, bool>::type has_contiguous_data(A const & v){return v.indexmap().is_contiguous();}
+  template<typename A> TYPE_DISABLE_IFC(bool, is_amv_value_or_view_class<A>::value) has_contiguous_data(A const &) {return false;}
+  template<typename A> TYPE_ENABLE_IFC(bool, is_amv_value_class<A>::value) has_contiguous_data(A const &) {return true;}
+  template<typename A> TYPE_ENABLE_IFC(bool, is_amv_view_class<A>::value) has_contiguous_data(A const & v){return v.indexmap().is_contiguous();}
 
   template< typename A> 
-   typename boost::enable_if<is_amv_view_class<A> >::type 
+   ENABLE_IF(is_amv_view_class<A>)
    resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { 
     if (a.shape()!=sha) TRIQS_RUNTIME_ERROR<< "Size mismatch : view class shape = "<<a.shape() << " expected "<<sha;
    }
 
   template< typename A> 
-   typename boost::enable_if<is_amv_value_class<A> >::type 
+   ENABLE_IF(is_amv_value_class<A>)
    resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { if (a.shape()!=sha) a.resize(sha); }
  }}//namespace triqs::arrays
 #endif

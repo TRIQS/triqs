@@ -21,12 +21,17 @@
 #ifndef TRIQS_C14_FIX_H
 #define TRIQS_C14_FIX_H
 #include <memory>
-#include <functional>
+//#include <functional>
+#include <tuple>
 
 // a few that will be C++14, use in advance....
 
 namespace std { 
- namespace c14 { 
+ namespace c14 {
+
+  // helpers
+  template <bool B, class T, class F> using conditional_t = typename conditional<B, T, F>::type;
+  template <class T> using remove_reference_t = typename remove_reference<T>::type;
 
   // use simply std::c14::plus<>() ...
   template<typename T = void> struct plus: std::plus<T>{};
