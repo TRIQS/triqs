@@ -29,11 +29,11 @@ namespace triqs { namespace h5 {
  class group {
    H5::Group _g, _parent;
    std::string _name_in_parent;
+   group(H5::Group g, H5::Group parent, std::string name_in_parent) : _g(g), _parent(parent), _name_in_parent(name_in_parent) {} 
   public:
    group() = default;
    group(group const &) = default;
    group(H5::Group g) : _g(g) {} 
-   group(H5::Group g, H5::Group parent, std::string name_in_parent) : _g(g), _parent(parent), _name_in_parent(name_in_parent) {} 
    
    /// Takes the "/" group at the top of the file.
    group (H5::H5File f) : _g(f.openGroup("/")) {} // can not fail, right ?
@@ -75,8 +75,8 @@ namespace triqs { namespace h5 {
    }
    /** 
     * \brief Create a subgroup.
-    * \param key : the name of the subgroup
-    * \param delete_if_exists : unlink the group if it exists 
+    * \param key  The name of the subgroup
+    * \param delete_if_exists  Unlink the group if it exists 
     */
    group create_group(std::string const & key, bool delete_if_exists = true) const {
     unlink_key_if_exists(key); 
@@ -84,9 +84,10 @@ namespace triqs { namespace h5 {
    }
    /** 
     * \brief Create a dataset.
-    * \param key : the name of the subgroup
-    * \param all others are forwarded to H5::Group
-    * It unlinks the dataset if it exists.
+    * \param key The name of the subgroup
+    * \param args  Other parameters are forwarded to H5::Group
+    * 
+    * NB : It unlinks the dataset if it exists.
     */
    template<typename ... Args>
     H5::DataSet create_dataset(std::string const & key, Args && ... args) const {
