@@ -20,11 +20,11 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_RE_IM_TIMES_H
 #define TRIQS_GF_RE_IM_TIMES_H
-#include "./tools.hpp"
-#include "./gf.hpp"
-#include "./retime.hpp"
-#include "./imtime.hpp"
-#include "./meshes/product.hpp"
+#include "../tools.hpp"
+#include "../gf.hpp"
+#include "../retime.hpp"
+#include "../imtime.hpp"
+#include "../meshes/product.hpp"
 
 namespace triqs { namespace gfs { 
 
@@ -97,8 +97,8 @@ namespace triqs { namespace gfs {
  } // gfs_implementation
 
  // CHANGE THIS NAME !!! 
- template<typename RHS, bool V, typename Variable, typename Target, typename Opt > 
-  void assign_from_expression (gf_impl<Variable,Target,Opt,V> const &, RHS) {}
+ template<typename RHS, bool V, bool C,  typename Variable, typename Target, typename Opt > 
+  void assign_from_expression (gf_impl<Variable,Target,Opt,V,C> const &, RHS) {}
 
  //slices
  inline gf_view<retime,scalar_valued> slice_mesh_imtime (gf_view<re_im_time,scalar_valued> g, size_t index) { 

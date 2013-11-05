@@ -20,10 +20,10 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_TWO_TIMES_H
 #define TRIQS_GF_TWO_TIMES_H
-#include "./tools.hpp"
-#include "./gf.hpp"
-#include "./retime.hpp"
-#include "./meshes/product.hpp"
+#include "../tools.hpp"
+#include "../gf.hpp"
+#include "../retime.hpp"
+#include "../meshes/product.hpp"
 
 namespace triqs { namespace gfs { 
  
