@@ -24,56 +24,105 @@
 #include "./gf.hpp"
 #include "./local/tail.hpp"
 #include "./local/no_tail.hpp"
-#include "./domains/matsubara.hpp"
-#include "./meshes/linear.hpp"
+#include "./meshes/matsubara_freq.hpp"
 #include "./evaluators.hpp"
-namespace triqs { namespace gfs {
+namespace triqs {
+namespace gfs {
 
  struct imfreq {};
 
- template<typename Opt> struct gf_mesh<imfreq,Opt> : linear_mesh<matsubara_domain<true>> {
-  typedef  linear_mesh<matsubara_domain<true>> B;
-  static double m1(double beta) { return std::acos(-1)/beta;}
+ template <typename Opt> struct gf_mesh<imfreq, Opt> : matsubara_freq_mesh {
+  using B = matsubara_freq_mesh;
+  static double m1(double beta) { return std::acos(-1) / beta; }
   gf_mesh() = default;
   gf_mesh(B const &x) : B(x) {} // enables also construction from another Opt
-  gf_mesh (typename B::domain_t const & d, int Nmax = 1025) : 
-   B(d, d.statistic==Fermion?m1(d.beta):0, d.statistic==Fermion?(2*Nmax+1)*m1(d.beta): 2*Nmax*m1(d.beta), Nmax, without_last){}
-  gf_mesh (double beta, statistic_enum S, int Nmax = 1025) : gf_mesh({beta,S}, Nmax){}
+  gf_mesh(typename B::domain_t const &d, int Nmax = 1025) : B(d, Nmax, true) {}
+  gf_mesh(double beta, statistic_enum S, int Nmax = 1025) : gf_mesh({beta, S}, Nmax) {}
  };
 
- namespace gfs_implementation { 
+ namespace gfs_implementation {
 
-  //singularity
-  template<> struct singularity<imfreq,matrix_valued,void>  { typedef local::tail type;};
-  template<> struct singularity<imfreq,scalar_valued,void>  { typedef local::tail type;};
+  // singularity
+  template <> struct singularity<imfreq, matrix_valued, void> {
+   typedef local::tail type;
+  };
+  template <> struct singularity<imfreq, scalar_valued, void> {
+   typedef local::tail type;
+  };
 
-  //h5 name
-  template<typename Opt> struct h5_name<imfreq,matrix_valued,Opt>      { static std::string invoke(){ return "ImFreq";}};
+  // h5 name
+  template <typename Opt> struct h5_name<imfreq, matrix_valued, Opt> {
+   static std::string invoke() { return "ImFreq"; }
+  };
 
   /// ---------------------------  evaluator ---------------------------------
 
- template<> struct evaluator_fnt_on_mesh<imfreq> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh, evaluator_grid_simple);
+  // simple evaluation : take the point on the grid...
+  template <> struct evaluator_fnt_on_mesh<imfreq> {
+   long n;
+   evaluator_fnt_on_mesh() = default;
+   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, long p) { n = p; }
+   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, matsubara_freq_mesh::mesh_point_t const &p) { n = p.n; }
+   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(f(n));
+  };
 
-  template<typename Opt, typename Target>
-   struct evaluator<imfreq,Target,Opt> { // factorize and template on the long instead of double ?
-    public :
-     static constexpr int arity = 1;
-     template<typename G> 
-      auto operator()(G const * g, int n) const DECL_AND_RETURN((*g)[n]);
+  // ------------- evaluator  -------------------
+  // handle the case where the matsu. freq is out of grid...
+  template <typename Target, typename Opt> struct evaluator<imfreq, Target, Opt> {
+   static constexpr int arity = 1;
+   template <typename G> auto operator()(G const *g, int n) const DECL_AND_RETURN((*g)[n]);
+   template <typename G>
+   auto operator()(G const *g, matsubara_freq_mesh::mesh_point_t const &p) const DECL_AND_RETURN((*g)[p.index()]);
 
-     template<typename G>
-      auto operator() (G const * g, linear_mesh<matsubara_domain<true>>::mesh_point_t const & p)  
-      const DECL_AND_RETURN((*g)[p.index()]);
-     
-     template<typename G> 
-      typename G::singularity_t const & operator()(G const * g,freq_infty const &) const {return g->singularity();}
-   };
+   // dispatch for 2x2 cases : matrix/scalar and tail/no_tail ( true means no_tail)
+   template <typename G>
+   std::complex<double> _call_impl(G const *g, matsubara_freq const &f, scalar_valued, std::false_type) const {
+    if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
+    if ((f.n < 0) && (-f.n < g->mesh().size())) return conj((*g)[-f.n]);
+    return g->singularity().evaluate(f)(0, 0);
+   }
+
+   template <typename G>
+   std::complex<double> _call_impl(G const *g, matsubara_freq const &f, scalar_valued, std::true_type) const {
+    if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
+    if ((f.n < 0) && (-f.n < g->mesh().size())) return conj((*g)[-f.n]);
+    return 0;
+   }
+
+   template <typename G>
+   arrays::matrix_const_view<std::complex<double>> _call_impl(G const *g, matsubara_freq const &f, matrix_valued,
+                                                              std::false_type) const {
+    if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
+    if ((f.n < 0) && (-f.n < g->mesh().size()))
+     return arrays::matrix<std::complex<double>>{conj((*g)[-f.n]())};
+    else
+     return g->singularity().evaluate(f);
+   }
+
+   template <typename G>
+   arrays::matrix_const_view<std::complex<double>> _call_impl(G const *g, matsubara_freq const &f, matrix_valued,
+                                                              std::true_type) const {
+    if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
+    if ((f.n < 0) && (-f.n < g->mesh().size())) return arrays::matrix<std::complex<double>>{conj((*g)[-f.n]())};
+    auto r = arrays::matrix<std::complex<double>>{get_target_shape(*g)};
+    r() = 0;
+    return r;
+   }
+
+   template <typename G>
+   auto operator()(G const *g, matsubara_freq const &f) const
+       DECL_AND_RETURN(_call_impl(g, f, Target{}, std::integral_constant<bool, std::is_same<Opt, no_tail>::value>{}));
+
+   template <typename G> typename G::singularity_t const &operator()(G const *g, freq_infty const &) const {
+    return g->singularity();
+   }
+  };
 
   /// ---------------------------  data access  ---------------------------------
-  template<typename Opt> struct data_proxy<imfreq,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
-  template<typename Opt> struct data_proxy<imfreq,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
+  template <typename Opt> struct data_proxy<imfreq, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
+  template <typename Opt> struct data_proxy<imfreq, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
 
- } // gfs_implementation 
-
-}}
+ } // gfs_implementation
+}
+}
 #endif

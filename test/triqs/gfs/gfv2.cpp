@@ -36,6 +36,7 @@ int main() {
   TEST( G( 0) ) ;
 
   triqs::clef::placeholder<0> om_;
+  triqs::clef::placeholder<1> nu_;
 
   TEST( G(om_) ) ;
   TEST( eval(G(om_), om_=0) ) ;
@@ -121,6 +122,25 @@ int main() {
   H5::H5File file("ess_gf.h5", H5F_ACC_TRUNC );
   h5_write(file, "g", G);
 
+  //
+  {
+   auto G0w = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};
+   auto D0w = gf<imfreq, scalar_valued>{{beta, Boson, 100}};
+   auto Sigma_w = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};
+   G0w(om_) << 1 / (om_ - 3);
+
+   for (auto const& nu : D0w.mesh()) Sigma_w(om_) << 2 * G0w(om_ - nu);
+  }
+
+  //
+  {
+   auto G0w = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {1,1}};
+   auto D0w = gf<imfreq, matrix_valued>{{beta, Boson, 100}, {1,1}};
+   auto Sigma_w = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {1,1}} ;
+   G0w(om_) << 1 / (om_ - 3);
+
+   for (auto const& nu : D0w.mesh()) Sigma_w(om_) << 2 * G0w(om_ - nu);
+  }
  }
  TRIQS_CATCH_AND_ABORT;
 

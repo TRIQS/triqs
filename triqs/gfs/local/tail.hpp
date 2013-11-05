@@ -126,6 +126,20 @@ namespace triqs { namespace gfs { namespace local {
 
       operator freq_infty() const { return freq_infty(); }
 
+      /// Evaluate the tail to  sum_{n=order_min}^ordermax M_n/omega^n 
+      arrays::matrix<dcomplex> evaluate(dcomplex const &omega) const {
+       auto r = arrays::matrix<dcomplex>{this->shape()};
+       r() = 0;
+       auto omin = this->order_min();
+       auto omax = this->order_max(); // precompute since long to do...
+       auto _ = arrays::range{};
+       for (int u = omax; u >= omin; --u)
+        r = r / omega +
+            const_mv_type{this->_data(u - omin, _, _)}; // need to make a matrix view because otherwise + is not defined
+       r /= pow(omega, omin);
+       return r;
+      }
+
       /// Save in txt file: doc the format  ? ---> prefer serialization or hdf5 !
       void save(std::string file, bool accumulate=false) const {}
 
