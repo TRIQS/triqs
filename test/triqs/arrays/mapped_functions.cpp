@@ -53,6 +53,8 @@ template<typename T> void test( T val=1 ) {
  auto aa = array<T,2>{ { 1,2}, {3,4}};
  TEST(make_matrix(exp(aa)));
 
+ TEST(make_matrix(conj(A)));
+ 
  // does not compile, since exp is only element wise at the moment
  // to do : implement it for matrix...
  //TEST(make_matrix(exp( matrix<double>{{ 1,2}, {3,4}} )));
@@ -60,7 +62,7 @@ template<typename T> void test( T val=1 ) {
 
 int main(int argc, char **argv) {
 
- 
+ conj (8); 
  test<int>();
  test<long>();
  test<double>();

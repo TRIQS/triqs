@@ -24,6 +24,11 @@
 #include <boost/preprocessor/seq/for_each.hpp>
 namespace triqs { namespace arrays {
 
+ // complex conjugation for integers
+ inline int conj(int const& x) { return x; }
+ inline long conj(long const& x) { return x; }
+ inline long long conj(long long const& x) { return x; }
+
  //C++14 will simply be ... 
  //template <typename A> decltype(auto) abs(A && a) { return map( [](auto const &x) { using std::abs; return abs(a);}, std::forward<A>(a));}
 
@@ -45,7 +50,7 @@ namespace triqs { namespace arrays {
  typename boost::lazy_enable_if_c<ImmutableCuboidArray<A>::value,std::result_of<map_impl<__triqs_##FNT##_wrap,1>(A)>>::type\
  FNT(A && a) { return map(__triqs_##FNT##_wrap{})(std::forward<A>(a)); }
  
-#define TRIQS_ARRAYS_MATH_FNT (abs)(real)(imag)(floor)
+#define TRIQS_ARRAYS_MATH_FNT (abs)(real)(imag)(floor)(conj)
 
 #define AUX(r, data, elem) MAP_IT(elem)
  BOOST_PP_SEQ_FOR_EACH(AUX , nil , TRIQS_ARRAYS_MATH_FNT);
