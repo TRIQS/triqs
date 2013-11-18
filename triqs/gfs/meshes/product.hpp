@@ -83,6 +83,7 @@ namespace triqs { namespace gfs {
     struct F2 { template<typename M> typename M::mesh_point_t operator()(M const & m, typename M::index_t const & i) const { return m[i];}};
     struct F1 { template<typename M> typename M::mesh_point_t operator()(M const & m) const { return m[typename M::index_t()];}};
     public :
+    mesh_point_t() = default;
     mesh_point_t(mesh_product const & m_, index_t index_ ) : m(&m_), _c (triqs::tuple::apply_on_zip(F2(), m_.m_tuple, index_)), _atend(false) {}
     mesh_point_t(mesh_product const & m_)                  : m(&m_), _c (triqs::tuple::apply(F1(), m_.m_tuple)), _atend(false)    {}
     m_pt_tuple_t const & components_tuple() const { return _c;}

@@ -87,6 +87,7 @@ namespace gfs {
    index_t _index;
 
    public:
+   mesh_point_t() : m(nullptr) {}
    mesh_point_t(linear_mesh const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
    void advance() { ++_index; }
    typedef domain_pt_t cast_t;

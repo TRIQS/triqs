@@ -46,6 +46,7 @@ namespace triqs { namespace gfs {
     discrete_mesh const * m;  
     index_t _index;
     public:
+    mesh_point_t() = default;
     mesh_point_t( discrete_mesh const & mesh, index_t const & index_): m(&mesh), _index(index_) {}
     void advance() { ++_index;}
     typedef size_t cast_t;
