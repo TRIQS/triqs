@@ -66,7 +66,7 @@ try {
 
  //test of the interpolation
  std::cout << G_t_tau(0.789,0.123) << std::endl; 
- std::cout << "G_w_wn( 0.789,0.123) "<<G_w_wn( 0.789,0.123) << std::endl; 
+ std::cout << "G_w_wn( 0.789,3) "<<G_w_wn( 0.789,3) << std::endl; 
  std::cout << "G_w_tau(0.789,0.123)" << G_w_tau(0.789,0.123) << std::endl; 
 
  // test curry

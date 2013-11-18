@@ -187,7 +187,7 @@ void pretty_print (std::ostream & out, A const & a ) { PrettyPrint_details::prin
 }
 
 template<typename ... U> 
-indexmaps::cuboid::domain_t<sizeof...(U)> make_cuboid_domain(U ... u) { return {u...};}
+indexmaps::cuboid::domain_t<sizeof...(U)> make_cuboid_domain(U ... u) { return {size_t(u)...};}
 //cuboid_array_domain<sizeof...(U)> make_cuboid_domain(U ... u) { return {u...};}
 
 typedef indexmaps::cuboid::domain_t<2> matrix_shape_t;

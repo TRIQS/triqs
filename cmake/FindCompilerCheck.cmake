@@ -39,6 +39,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   #set( compiler_version_min "3.2")
  else()
  string(REGEX REPLACE ".*([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
+ message(STATUS "Compiler version = ${compiler_version}")
  endif()
  set( compiler_version_min "3.2")
 
@@ -69,7 +70,7 @@ MESSAGE( STATUS "Compiler is ${compiler_name} with version ${compiler_version}")
 # Check version 
 if(compiler_version VERSION_LESS ${compiler_version_min} )
  set(line_of_star "\n************************** FATAL ERROR ************************************\n")
- MESSAGE( FATAL_ERROR "${line_of_star}You are using the ${compiler_name} compiler but your compiler is too old :\n TRIQS requires version >= ${compiler_version_min} while you have ${compiler_version}\n  ${line_of_star}")
+ # MESSAGE( FATAL_ERROR "${line_of_star}You are using the ${compiler_name} compiler but your compiler is too old :\n TRIQS requires version >= ${compiler_version_min} while you have ${compiler_version}\n  ${line_of_star}")
 endif(compiler_version VERSION_LESS ${compiler_version_min} )
 
 # Now add some definitions ...
