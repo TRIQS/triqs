@@ -142,9 +142,9 @@ Parameter default value example
 
 .. compileblock:: c
    
-     #include <triqs/parameters/parameters.hpp>
-     #include <triqs/parameters/defaults.hpp>
-     using namespace triqs::utility;
+     #include <triqs/parameters.hpp>
+     using triqs::utility::parameters;
+     using triqs::utility::parameter_defaults;
   
      int main() {
      
@@ -152,14 +152,10 @@ Parameter default value example
       P["Beta"] = 3.14;
   
       parameter_defaults pdef;
-      pdef.required
-        ( "Beta", double(), "Inverse temperature")
-      ; 
-      pdef.optional
-        ( "Alpha", int(1000), "An integer")
-        ( "Gamma", double(0.9), "A double")
-      ; 
-  
+      pdef.required("Beta", double(), "Inverse temperature")
+          .optional("Alpha", int(1000), "An integer")
+          .optional("Gamma", double(0.9), "A double");
+
       std::cout<<pdef<<std::endl; // print a comprehensive list of parameters:
       std::cout<<P<<std::endl;
       P.update(pdef); // check whether required parameters are present and update optional ones
