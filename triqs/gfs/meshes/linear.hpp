@@ -82,7 +82,7 @@ namespace gfs {
   size_t index_to_linear(index_t ind) const { return ind; }
 
   /// The wrapper for the mesh point
-  class mesh_point_t : tag::mesh_point, public arith_ops_by_cast<mesh_point_t, domain_pt_t> {
+  class mesh_point_t : tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point_t, domain_pt_t> {
    linear_mesh const *m;
    index_t _index;
 

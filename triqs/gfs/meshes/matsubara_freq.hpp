@@ -49,22 +49,14 @@ namespace gfs {
   size_t index_to_linear(index_t ind) const { return ind; }
 
   /// The wrapper for the mesh point
-  struct mesh_point_t : tag::mesh_point, public arith_ops_by_cast<mesh_point_t, matsubara_freq> {
-   index_t n;
-   double beta;
-   statistic_enum statistic;
+  struct mesh_point_t : tag::mesh_point, matsubara_freq {
    index_t n_max;
-
-   mesh_point_t()= default;
+   mesh_point_t() = default;
    mesh_point_t(matsubara_freq_mesh const &mesh, index_t const &index_)
-      : n(index_), beta(mesh.domain().beta), statistic(mesh.domain().statistic), n_max(mesh.size()) {}
+      : matsubara_freq(index_, mesh.domain().beta, mesh.domain().statistic), n_max(mesh.size()) {}
    mesh_point_t(index_t const &index_, double beta_, statistic_enum stat_, index_t n_max_)
-      : n(index_), beta(beta_), statistic(stat_), n_max(n_max_) {}
+      : matsubara_freq(index_, beta_, stat_), n_max(n_max_) {}
    void advance() { ++n; }
-   using cast_t = domain_pt_t;
-   operator cast_t() const { return 1_j * M_PI * (2 * n + (statistic == Fermion ? 1 : 0)) / beta; }
-   using cast1_t = matsubara_freq;
-   operator cast1_t() const { return {n,beta,statistic};}
    size_t linear_index() const { return n; }
    size_t index() const { return n; }
    bool at_end() const { return (n == n_max); }
@@ -92,7 +84,7 @@ namespace gfs {
    h5::group gr = fg.create_group(subgroup_name);
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "size", m.size());
-   //h5_write(gr, "start_at_0", m._positive_only);
+   // h5_write(gr, "start_at_0", m._positive_only);
    // kept for backward compatibility
    auto beta = m.domain().beta;
    h5_write(gr, "min", Fermion ? M_PI / beta : 0);
@@ -108,7 +100,7 @@ namespace gfs {
    bool s = true;
    h5_read(gr, "domain", dom);
    h5_read(gr, "size", L);
-   //h5_read(gr, "start_at_0", s);
+   // h5_read(gr, "start_at_0", s);
    m = matsubara_freq_mesh{std::move(dom), L, s};
   }
 
@@ -129,7 +121,6 @@ namespace gfs {
   int n_max;
   bool _positive_only;
  };
-
- }
+}
 }
 

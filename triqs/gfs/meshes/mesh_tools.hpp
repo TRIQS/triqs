@@ -21,34 +21,10 @@
 #ifndef TRIQS_GF_MESHTOOLS_H
 #define TRIQS_GF_MESHTOOLS_H
 #include "../tools.hpp"
+#include <triqs/utility/arithmetic_ops_by_cast.hpp>
 
 namespace triqs {
 namespace gfs {
-
- // Derive from this object using CRTP to provide arithmetic operation by casting the final object to C
- // by not forwarding x, I assume the cast is a simple value, not a matrix, but this is ok
- template <typename Derived, typename C> struct arith_ops_by_cast {};
-
-#define IMPL_OP(OP)                                                                                                              \
- template <typename D, typename C, typename Y>                                                                                   \
- auto operator OP(arith_ops_by_cast<D, C> const& x, Y&& y)->decltype(std::declval<C>() OP std::forward<Y>(y)) {                  \
-  return C(static_cast<D const&>(x)) OP std::forward<Y>(y);                                                                      \
- }                                                                                                                               \
- template <typename D, typename C, typename Y>                                                                                   \
- auto operator OP(Y&& y, arith_ops_by_cast<D, C> const& x)                                                                       \
-     ->TYPE_DISABLE_IF(decltype(std::forward<Y>(y) OP std::declval<C>()),                                                        \
-                       std::is_same<typename std::remove_cv<typename std::remove_reference<Y>::type>::type, D>) {                \
-  return std::forward<Y>(y) OP C(static_cast<D const&>(x));                                                                      \
- }
-
- IMPL_OP(+);
- IMPL_OP(-);
- IMPL_OP(*);
- IMPL_OP(/ );
-#undef IMPL_OP
-
-
- //------------------------------------------------------
 
  template<typename MeshType>
   class mesh_pt_generator : 
@@ -69,7 +45,6 @@ namespace gfs {
     bool at_end() const { return (u>=mesh->size());}
     typename MeshType::domain_t::point_t to_point() const { return pt;}    
    };
-
 
 }}
 #endif

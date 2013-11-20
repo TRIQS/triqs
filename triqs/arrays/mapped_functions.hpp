@@ -25,9 +25,10 @@
 namespace triqs { namespace arrays {
 
  // complex conjugation for integers
- inline int conj(int const& x) { return x; }
- inline long conj(long const& x) { return x; }
- inline long long conj(long long const& x) { return x; }
+ inline int conj(int x) { return x; }
+ inline long conj(long x) { return x; }
+ inline long long conj(long long x) { return x; }
+ inline double conj(double x) { return x; }
 
  //C++14 will simply be ... 
  //template <typename A> decltype(auto) abs(A && a) { return map( [](auto const &x) { using std::abs; return abs(a);}, std::forward<A>(a));}

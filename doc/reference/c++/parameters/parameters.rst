@@ -60,13 +60,9 @@ required and optional parameters. Default values are provided for optional param
 .. code-block:: c
    
    parameter_defaults pdef;
-   pdef.required
-      ( "Beta", double(), "Inverse temperature")
-    ;
-
-    pdef.optional
-      ( "N_time", int(100), "Number of time points")
-      ( "N_freq", int(200), "Number of frequencies")
+   pdef.required("Beta", double(), "Inverse temperature")
+       .optional("N_time", int(100), "Number of time points")
+       .optional("N_freq", int(200), "Number of frequencies")
     ; 
 
 The default_parameters object serves two main purposes: Firstly, the input parameters can

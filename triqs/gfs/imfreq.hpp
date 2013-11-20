@@ -109,9 +109,26 @@ namespace gfs {
     return r;
    }
 
+   // does not work on gcc 4.8.1 ???
+   /* template <typename G>
+      auto operator()(G const *g, matsubara_freq const &f) const
+      DECL_AND_RETURN(_call_impl(g, f, Target{}, std::integral_constant<bool, std::is_same<Opt, no_tail>::value>{}));
+      */
+
    template <typename G>
-   auto operator()(G const *g, matsubara_freq const &f) const
-       DECL_AND_RETURN(_call_impl(g, f, Target{}, std::integral_constant<bool, std::is_same<Opt, no_tail>::value>{}));
+   typename std::conditional<std::is_same<Target, matrix_valued>::value, arrays::matrix_const_view<std::complex<double>>,
+                             std::complex<double>>::type
+   operator()(G const *g, matsubara_freq const &f) const {
+    return _call_impl(g, f, Target{}, std::integral_constant<bool, std::is_same<Opt, no_tail>::value>{});
+   }
+
+#ifdef __clang__
+   // to generate a clearer error message ? . Only ok on clang ?
+   template<int n> struct error { static_assert(n>0, "Green function can not be evaluated on a complex number !");};
+
+   template <typename G>
+    error<0> operator()(G const *g, std::complex<double>) const { return {};}
+#endif
 
    template <typename G> typename G::singularity_t const &operator()(G const *g, freq_infty const &) const {
     return g->singularity();

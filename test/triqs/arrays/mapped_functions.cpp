@@ -62,7 +62,6 @@ template<typename T> void test( T val=1 ) {
 
 int main(int argc, char **argv) {
 
- conj (8); 
  test<int>();
  test<long>();
  test<double>();

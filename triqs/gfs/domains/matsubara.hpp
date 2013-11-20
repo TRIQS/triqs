@@ -21,7 +21,7 @@
 #ifndef TRIQS_GF_DOMAIN_MATSUBARA_H
 #define TRIQS_GF_DOMAIN_MATSUBARA_H
 #include "../tools.hpp"
-#include "../meshes/mesh_tools.hpp"
+#include <triqs/utility/arithmetic_ops_by_cast.hpp>
 
 namespace triqs {
 namespace gfs {
@@ -29,10 +29,11 @@ namespace gfs {
  // --------------- One matsubara frequency, with its arithmetics -------------------------
  // all operations are done by casting to complex, except addition and substraction of matsubara_freq
 
- struct matsubara_freq :  public arith_ops_by_cast<matsubara_freq, std::complex<double>>  {
+ struct matsubara_freq : public utility::arithmetic_ops_by_cast_disable_same_type<matsubara_freq, std::complex<double>> {
   int n;
   double beta;
   statistic_enum statistic;
+  matsubara_freq() : n(0), beta(1), statistic(Fermion) {}
   matsubara_freq(int const &n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
   using cast_t = std::complex<double>;
   operator cast_t() const {
@@ -40,42 +41,17 @@ namespace gfs {
   }
  };
 
-  inline matsubara_freq operator+(matsubara_freq const &x, matsubara_freq const &y) {
+ inline matsubara_freq operator+(matsubara_freq const &x, matsubara_freq const &y) {
   return {x.n + y.n + (x.statistic & y.statistic), x.beta, ((x.statistic ^ y.statistic) == 1 ? Fermion : Boson)};
  }
 
  inline matsubara_freq operator-(matsubara_freq const &x, matsubara_freq const &y) {
-  // std::cout  << x.n - y.n - (~x.statistic & y.statistic)<< std::endl;
   return {x.n - y.n - (~x.statistic & y.statistic), x.beta, ((x.statistic ^ y.statistic) == 1 ? Fermion : Boson)};
  }
 
- /*
-#define IMPL_OP(OP)                                                                                                              \
- template <typename Y> auto operator OP(matsubara_freq const &x, Y &&y)->decltype(std::complex<double>{}) {                      \
-  return std::complex<double>(x) OP std::forward<Y>(y);                                                                          \
- }                                                                                                                               \
- template <typename Y>                                                                                                           \
- auto operator OP(Y &&y, matsubara_freq const &x)->decltype(std::forward<Y>(y) OP std::complex<double>{}) {                      \
-  return std::forward<Y>(y) OP std::complex<double>(x);                                                                          \
+ inline matsubara_freq operator-(matsubara_freq const &mp) {
+  return {-(mp.n + mp.statistic==Fermion ? 1: 0), mp.beta, mp.statistic};
  }
- IMPL_OP(+);
- IMPL_OP(-);
- IMPL_OP(*);
- IMPL_OP(/ );
-#undef IMPL_OP
-*/
-
-/*
- * template <typename Y> auto operator OP(matsubara_freq const &x, Y &&y)->decltype(std::complex<double>{}) {                        \
-  return std::complex<double>(x) OP std::forward<Y>(y);                                                                          \
- }                                                                                                                               \
- template <typename Y>                                                                                                           \
- auto operator OP(Y &&y, matsubara_freq const &x)                                                                                \
-     ->TYPE_DISABLE_IF(decltype(std::forward<Y>(y) OP std::complex<double>{}),                                                   \
-                       std::is_same<typename std::remove_cv<typename std::remove_reference<Y>::type>::type, matsubara_freq>) {   \
-  return std::forward<Y>(y) OP std::complex<double>(x);                                                                          \
- }
-*/
 
  //---------------------------------------------------------------------------------------------------------
  /// The domain
