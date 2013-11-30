@@ -5,14 +5,6 @@ using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/fourier_matsubara.hpp> 
 
-namespace triqs { namespace gfs {
- // defined in the cpp file
- void inverse_fourier_impl(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw);
- void inverse_fourier_impl(gf_view<imtime, matrix_valued> gt, gf_const_view<imfreq, matrix_valued> gw);
- template <typename Opt> void fourier_impl(gf_view<imfreq, scalar_valued, Opt> gw, gf_const_view<imtime, scalar_valued, Opt> gt);
- template <typename Opt> void fourier_impl(gf_view<imfreq, matrix_valued, Opt> gw, gf_const_view<imtime, matrix_valued, Opt> gt);
-}}
-
 int main() {
  
  double precision=10e-9;
@@ -24,24 +16,16 @@ int main() {
  
  auto Gw1 = gf<imfreq> {{beta, Fermion, N}, {1,1}};
  Gw1(om_) << 1/(om_-E);
-//  for(auto const& w:Gw1.mesh()){
-//   std::cout<<"w="<<std::complex<double>(w)<<", Gw1=" << Gw1[w](0,0)<<std::endl;
-//  }
  h5_write(file, "Gw1", Gw1);   // the original lorentzian
  
  auto Gt1 = gf<imtime> {{beta, Fermion, N}, {1,1}};
- inverse_fourier_impl(Gt1, Gw1);
-//  for(auto const& t:Gt1.mesh()){
-//   std::cout<<"t="<<t<<",  expected="<<exp(-E*t) * ( (t>0?-1:0)+1/(1+exp(E*beta)) )<<std::endl;
-//  }
+ Gt1() = inverse_fourier(Gw1);
  h5_write(file, "Gt1", Gt1);   // the lorentzian TF : lorentzian_inverse
  
  ///verification that TF(TF^-1)=Id
  auto Gw1b = gf<imfreq> {{beta, Fermion, N}, {1,1}};
- fourier_impl<void>(Gw1b, Gt1);
+ Gw1b() = fourier(Gt1);
  for(auto const& w:Gw1.mesh()){
-//   std::cout<<"w="<<std::complex<double>(w)<<",Gw1b=" << Gw1b(w)(0,0)<<std::endl;
-//   std::cout<<"w="<<std::complex<double>(w)<<",Delta Gw1b=" << Gw1b(w)(0,0)-Gw1(w)(0,0)<<std::endl;
   if ( std::abs(Gw1b[w](0,0)-Gw1[w](0,0)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_matsubara error : w="<<std::complex<double>(w)<<" ,Gw1b="<<std::abs(Gw1b[w](0,0))<<"\n";
  }
  h5_write(file,"Gw1b",Gw1b); // must be 0
