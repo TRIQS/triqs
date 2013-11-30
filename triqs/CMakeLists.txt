@@ -1,7 +1,3 @@
-# Add C11 flag
-# leave it here because boost has to be compiled without the flags because of boost python ??
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-
 # all .cpp files to get the dependencies
 FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 FOREACH(CPP ${ALLSOURCES})

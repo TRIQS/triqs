@@ -62,6 +62,9 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # First check the C++ compiler
 find_package(CompilerCheck)
 
+# Add C11 flag
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 # Include TRIQS cmake macros
 find_package(TriqsMacros)
 
