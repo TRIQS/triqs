@@ -62,7 +62,7 @@ namespace gfs {
    long n;
    evaluator_fnt_on_mesh() = default;
    template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, long p) { n = p; }
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, matsubara_freq_mesh::mesh_point_t const &p) { n = p.n; }
+   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, matsubara_freq const &p) { n = p.n; }
    template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(f(n));
   };
 
