@@ -62,8 +62,14 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # First check the C++ compiler
 find_package(CompilerCheck)
 
-# Add C11 flag
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+# Add C11 or C14 flag depending on compiler detection
+if (NOT compiler_is_c14)
+ MESSAGE(STATUS "Compiling in C++11 mode")
+ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else()
+ MESSAGE(STATUS "Compiling in C++14 mode")
+ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
+endif()
 
 # Include TRIQS cmake macros
 find_package(TriqsMacros)

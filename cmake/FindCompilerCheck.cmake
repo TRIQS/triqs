@@ -19,12 +19,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
   OUTPUT_VARIABLE _compiler_output RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
  set(compiler_version_min "4.8.1")
  set(compiler_name "gcc")
- set(compiler_group 1)
  string(REGEX REPLACE ".*([2-5]\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
- #if(compiler_version VERSION_LESS "4.8.0" )
- # set(compiler_is_obsolete_gcc ON)
- #endif()
+ if(NOT compiler_version VERSION_LESS "4.9.0")
+  set (compiler_is_c14 ON)
+ endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
@@ -32,16 +31,20 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   OUTPUT_VARIABLE _compiler_output RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
  set(CMAKE_COMPILER_IS_CLANG TRUE )
  set(compiler_name "clang")
- set(compiler_group 1)
  IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # Apple which does not has the official clang version number ... 
   string(REGEX REPLACE ".*LLVM ([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
-  #set( compiler_version_min "3.2")
  else()
- string(REGEX REPLACE ".*([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
- message(STATUS "Compiler version = ${compiler_version}")
+  string(REGEX REPLACE ".*([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
  endif()
+ #message(STATUS "Compiler --version output = ${_compiler_output}")
+ message(STATUS "Compiler version = ${compiler_version}")
  set( compiler_version_min "3.2")
+
+ # does not always work ... To be fixed when clang 3.4 officially released and on OS X.
+ if(NOT compiler_version VERSION_LESS "3.4")
+  set (compiler_is_c14 ON)
+ endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  
@@ -50,7 +53,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  set(CMAKE_COMPILER_IS_ICC TRUE )
  set(compiler_version_min "14.0.0")
  set(compiler_name "Intel icc")
- set(compiler_group 3)
  #string(REGEX REPLACE "[^0-9]*([0-9]+\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
  # for intel 14.0 /test 
