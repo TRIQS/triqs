@@ -23,11 +23,11 @@
 #ifndef TRIQS_TOOLS_MC_CALLBACKS_H
 #define TRIQS_TOOLS_MC_CALLBACKS_H
 #include <triqs/utility/first_include.hpp>
-#include <boost/function.hpp>
+#include <functional>
 
 namespace triqs { namespace utility { 
  
- boost::function<bool ()> clock_callback(int time_in_seconds);
+ std::function<bool ()> clock_callback(int time_in_seconds);
 
 }}
 #endif
