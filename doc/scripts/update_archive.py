@@ -42,7 +42,7 @@ def sanitize_imfreq(origin, dest):
     dest["indices"].create_dataset(name="right", data=indR)
 
     dest.create_group(name="singularity")
-    dest["singularity"].create_dataset(name="data", data=origin["Tail"]["array"].value.transpose((2,0,1,3)))
+    dest["singularity"].create_dataset(name="data", data=origin["Tail"]["array"].value)
     dest["singularity"]["data"].attrs.create('__complex__', "1")
     dest["singularity"].create_dataset(name="omin", data=origin["Tail"]["OrderMinMIN"].value)
     mask = numpy.zeros( dest["singularity"]["data"].shape[0:2], numpy.integer )
@@ -77,7 +77,7 @@ def sanitize_imtime(origin, dest):
     dest["indices"].create_dataset(name="right", data=indR)
 
     dest.create_group(name="singularity")
-    dest["singularity"].create_dataset(name="data", data=origin["Tail"]["array"].value.transpose((2,0,1,3)))
+    dest["singularity"].create_dataset(name="data", data=origin["Tail"]["array"].value)
     dest["singularity"]["data"].attrs.create('__complex__', "1")
     dest["singularity"].create_dataset(name="omin", data=origin["Tail"]["OrderMinMIN"].value)
     mask = numpy.zeros( dest["singularity"]["data"].shape[0:2], numpy.integer )
@@ -139,7 +139,7 @@ def sanitize_refreq(origin, dest):
     dest["indices"].create_dataset(name="right", data=indR)
 
     dest.create_group(name="singularity")
-    dest["singularity"].create_dataset(name="data", data=origin["Tail"]["array"].value.transpose((2,0,1,3)))
+    dest["singularity"].create_dataset(name="data", data=origin["Tail"]["array"].value)
     dest["singularity"]["data"].attrs.create('__complex__', "1")
     dest["singularity"].create_dataset(name="omin", data=origin["Tail"]["OrderMinMIN"].value)
     mask = numpy.zeros( dest["singularity"]["data"].shape[0:2], numpy.integer )
