@@ -93,7 +93,8 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
 
        # Change the order_max
        # It is assumed that any known_coef will start at order -1
-       self.tail = TailGf(shape = (self.N1,self.N2))
+       self.tail.zero()
+       self.tail.mask.fill(order_max)
 
        # Fill up two arrays with the frequencies and values over the range of interest
        ninit, nstop = 0, -1
