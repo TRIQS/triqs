@@ -79,9 +79,11 @@ Doxygen documentation
 The :doxy:`full C++ documentation<triqs::det_manip::det_manip>` is available here.
 
 Example  
--------------
+---------
 
-.. code-block:: c
+.. compileblock::
+
+ #include <triqs/det_manip/det_manip.hpp>
 
  struct fun {
 
@@ -89,7 +91,7 @@ Example
   typedef double argument_type;
 
   double operator()(double x, double y) const { 
-    const double pi = acos(-1); 
+    const double pi = acos(-1.); 
     const double beta = 10.0; 
     const double epsi = 0.1; 
     double tau = x-y;
@@ -103,14 +105,18 @@ Example
  int main() { 
 
    fun f;
-   triqs::det_manip::det_manip<fun> D;
+   triqs::det_manip::det_manip<fun> D(f,100);
 
-   /// ....
-   double x=2, y=9, detratio; 
-   detratio = D.try_insert(1,3, x,y); 
+   /// insertions of 3 lines and 3 columns
+   double x=2., y=9., detratio; 
+   detratio = D.try_insert(0, 0, x,  y ); 
+   D.complete_operation();
+   detratio = D.try_insert(0, 1, 2., 3.); 
+   D.complete_operation();
+   detratio = D.try_insert(0, 0, 4., 5.); 
    D.complete_operation();
    
-   ///...
+   /// removal of a line (the 3rd) and a column (the 2nd)
    detratio = D.try_remove(2,1);
    D.complete_operation();
   }
