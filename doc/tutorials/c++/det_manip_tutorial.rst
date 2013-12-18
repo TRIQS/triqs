@@ -1,3 +1,18 @@
+Det_manip cookbook
+===================
+
+.. highlight:: c
+
+.. toctree::
+   :maxdepth: 1
+
+TRIQS comes with a class called det_manip to easily perform operations on a special type of matrices 
+(see  :doc:`here  <../../reference/c++/det_manip/contents>`). 
+This library, among others, allows to easily add or remove lines or columns to the matrix, to calculate the determinant and the inverse. 
+Here are a couple of simple examples showing the basic use of this class.
+
+
+
 Creation of an empty det_manip class
 -------------------------------------
 
@@ -108,7 +123,7 @@ Add a line and a column
       double x0 = 2.1, y0 = 7;
       int i = 2, j = 0; // number of the added line and column
       std::cout<<"We want to add a line and a column for i="<<i<<", j="<<j
-      <<", x="<<x0<<", y="<<y0<<" (f(x,y)="<<f(x0,y0)<<")."<<std::endl;
+      <<", x="<<x0<<", y="<<y0<<"."<<std::endl;
       // (try of) insertion of a line and a column at position (3,1) in the matrix
       // with x[i]=x0, y[j]=y0. 
       double detratio = D.try_insert(i, j, x0, y0); // the ratio between new and old determinants

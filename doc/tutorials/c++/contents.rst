@@ -9,6 +9,6 @@ C++ libraries
    :maxdepth: 1  
 
    array_tutorial
-
+   det_manip_tutorial
 
 ..
