@@ -331,10 +331,9 @@ class GfGeneric:
       MatrixStack(self.data).matmul_L_R(L, G.data, R)
 
       # this might be a bit slow
-      t = TailGf(shape=(N1,N2))
-      for o in range(t.order_min, t.order_max+1):
-        t[o] = numpy.dot(L, numpy.dot(G.tail[o], R))
-      self.tail = t
+      for o in range(G.tail.order_min, G.tail.order_max+1):
+        self.tail[o] = numpy.dot(L, numpy.dot(G.tail[o], R))
+      self.tail.mask.fill(G.tail.order_max)
 
     def __idiv__(self, arg):
         """ If arg is a scalar, simple scalar multiplication
