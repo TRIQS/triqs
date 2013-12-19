@@ -136,6 +136,6 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
              self.tail[order-1][n1,n2] = numpy.array([[ known_coef[n1][n2][order] ]])
            for order, moment in enumerate(sol[0]):
              self.tail[len(known_coef[n1][n2])+order-1][n1,n2] = numpy.array([[ moment ]])
-
+       self.tail.mask.fill(order_max)
        # Replace then end of the Green's function by the tail
        if replace_tail: self.replace_by_tail(ninit);
