@@ -24,11 +24,14 @@
 #include <boost/preprocessor/seq/for_each.hpp>
 namespace triqs { namespace arrays {
 
+ // not for libc++ (already defined)
+#if !defined(_LIBCPP_VERSION)
  // complex conjugation for integers
  inline int conj(int x) { return x; }
  inline long conj(long x) { return x; }
  inline long long conj(long long x) { return x; }
- inline double conj(double x) { return x; }
+ inline std::complex<double> conj(double x) { return x; }
+#endif
 
  //C++14 will simply be ... 
  //template <typename A> decltype(auto) abs(A && a) { return map( [](auto const &x) { using std::abs; return abs(a);}, std::forward<A>(a));}
