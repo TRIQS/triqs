@@ -10,7 +10,6 @@ Multidimensional arrays
 
 .. toctree::
    :maxdepth: 1
-   :numbered:
 
    introduction
    concepts
@@ -35,4 +34,4 @@ Multidimensional arrays
    multithreading
    FAQ
    implementation_notes/contents
-    
+   ./../../../tutorials/c++/array_tutorial

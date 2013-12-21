@@ -206,7 +206,7 @@ namespace triqs { namespace det_manip {
      * \param X, Y : container for X,Y. 
      */
     template<typename ArgumentContainer1, typename ArgumentContainer2>
-     det_manip(FunctionType F, ArgumentContainer1 const & X, ArgumentContainer2 const & Y) : f(std::move(F)) { 
+    det_manip(FunctionType F, ArgumentContainer1 const & X, ArgumentContainer2 const & Y) : f(std::move(F)), Nmax(0) { 
       if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR<< " X.size != Y.size";
       _construct_common();
       N =X.size(); 

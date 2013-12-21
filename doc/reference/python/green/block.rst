@@ -183,7 +183,7 @@ behaves like
 
 .. math::
 
-  g(z) \sim ... + M_{-1} z + M_0 + \frac{M_1}{z} + \frac{M_2}{z} + ...
+  g(z) \sim ... + M_{-1} z + M_0 + \frac{M_1}{z} + \frac{M_2}{z^2} + ...
 
 where :math:`M_i` are matrices with the same dimensions as :math:`g`. 
 

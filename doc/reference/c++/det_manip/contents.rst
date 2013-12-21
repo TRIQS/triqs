@@ -39,4 +39,4 @@ This class implements these general operations. It contains :
 
    det_manip
    behind
-   cookbook/contents
+   ./../../../tutorials/c++/det_manip_tutorial
