@@ -32,6 +32,7 @@
 namespace triqs { namespace gfs {
  using utility::factory;
  using arrays::make_shape;
+ using triqs::make_clone;
 
  // the gf mesh
  template <typename Variable, typename Opt = void> struct gf_mesh;

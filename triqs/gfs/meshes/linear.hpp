@@ -21,10 +21,6 @@
 #ifndef TRIQS_GF_MESH_LINEAR_H
 #define TRIQS_GF_MESH_LINEAR_H
 #include "./mesh_tools.hpp"
-
-// ADDED for Krylov : to be clean and removed if necessary
-#include <algorithm>
-#include <boost/math/special_functions/round.hpp>
 namespace triqs {
 namespace gfs {
 
@@ -100,22 +96,6 @@ namespace gfs {
 
   /// Accessing a point of the mesh
   mesh_point_t operator[](index_t i) const { return mesh_point_t(*this, i); }
-
-  // ADDED for krylov : to be CLEANED AND CHANGED
-  // Find the index of the mesh point which is nearest to x
-  index_t nearest_index(domain_pt_t x) const {
-   double x_real = real_or_imag(x, std::is_base_of<std::complex<double>, domain_pt_t>());
-   using boost::math::round;
-   using std::min;
-   using std::max;
-   switch (meshk) {
-    case half_bins:
-    case full_bins:
-     return min(max(round((x_real - xmin) / del), .0), static_cast<double>(L - 1));
-    case without_last:
-     return min(max(round((x_real - xmin) / del), .0), static_cast<double>(L - 2));
-   }
-  }
 
   private:
   static double real_or_imag(domain_pt_t x, std::false_type) { return x; }
