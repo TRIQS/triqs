@@ -184,6 +184,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
  
         if '__write_hdf5__' in dir(val) : # simplest protocol
             val.__write_hdf5__(self._group,key)
+            self.cached_keys.append(key) # I need to do this here
             SUB = HDFArchiveGroup(self,key)
             write_attributes(SUB)
         elif '__reduce_to_dict__' in dir(val) : # Is it a HDF_compliant object 
