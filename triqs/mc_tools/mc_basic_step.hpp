@@ -26,26 +26,34 @@
 #include <boost/mpi.hpp>
 #include "mc_move_set.hpp"
 
-namespace triqs { namespace mc_tools { namespace Step { 
+namespace triqs {
+namespace mc_tools {
+ namespace Step {
 
- // Performs one Metropolis step
- template<typename MCSignType>
-  struct Metropolis {  
-   static void do_it (move_set<MCSignType> & MoveGroup, random_generator & RNG, MCSignType & signe){
-    double  r = MoveGroup.attempt();
-    if (RNG() < std::min(1.0,r)) { 
-     signe *= MoveGroup.accept();
-#ifdef DEBUG
-     std::cerr<<"   Metropolis sign = "<< signe <<std::endl;
+  // Performs one Metropolis step
+  template <typename MCSignType> struct Metropolis {
+   static void do_it(move_set<MCSignType>& MoveGroup, random_generator& RNG, MCSignType& signe) {
+    double r = MoveGroup.attempt();
+    if (RNG() < std::min(1.0, r)) {
+#ifdef TRIQS_MCTOOLS_DEBUG
+     std::cerr << " Move accepted " << std::endl;
 #endif
+     signe *= MoveGroup.accept();
+#ifdef TRIQS_MCTOOLS_DEBUG
+     std::cerr << " New sign = " << signe << std::endl;
+#endif
+    } else {
+#ifdef TRIQS_MCTOOLS_DEBUG
+     std::cerr << " Move rejected " << std::endl;
+#endif
+     MoveGroup.reject();
     }
-    else MoveGroup.reject();
    }
   };
 
- // Put heat Bath here ....
-
-}}}
+  // Put heat Bath here ....
+ }
+}
+}
 #endif
-
 
