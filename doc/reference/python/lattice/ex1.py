@@ -30,11 +30,3 @@ oplot(d,'-o')
 plt.xlim ( -5,5 )
 plt.ylim ( 0, 0.4)
 
-
-
-
-
-plt.savefig("./ex1.png") 
-
-
-
