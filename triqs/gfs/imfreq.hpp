@@ -36,7 +36,7 @@ namespace gfs {
   static double m1(double beta) { return std::acos(-1) / beta; }
   gf_mesh() = default;
   gf_mesh(B const &x) : B(x) {} // enables also construction from another Opt
-  gf_mesh(typename B::domain_t const &d, int Nmax = 1025) : B(d, Nmax, true) {}
+  gf_mesh(typename B::domain_t const &d, int Nmax = 1025, bool positive_only = true) : B(d, Nmax, positive_only) {}
   gf_mesh(double beta, statistic_enum S, int Nmax = 1025) : gf_mesh({beta, S}, Nmax) {}
  };
 
