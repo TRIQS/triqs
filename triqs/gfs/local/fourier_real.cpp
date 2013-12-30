@@ -35,7 +35,7 @@ namespace triqs { namespace gfs {
  
  struct impl_worker {
   
-  tqa::vector<dcomplex> g_in, g_out;
+  arrays::vector<dcomplex> g_in, g_out;
   
   void direct (gf_view<refreq,scalar_valued> gw, gf_const_view<retime,scalar_valued> gt){
    
@@ -83,7 +83,7 @@ namespace triqs { namespace gfs {
    const double a = gw.mesh().delta() * sqrt( double(L) );
    
    auto ta = gw(freq_infty());
-   tqa::vector<dcomplex> g_in(L), g_out(L);
+   arrays::vector<dcomplex> g_in(L), g_out(L);
    
    dcomplex t1 = ta(1)(0,0), t2 = ta.get_or_zero(2)(0,0);
    dcomplex a1 = (t1 + I * t2/a )/2., a2 = (t1 - I * t2/a )/2.;

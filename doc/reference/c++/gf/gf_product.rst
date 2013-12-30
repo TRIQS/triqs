@@ -2,8 +2,8 @@
 
 .. _gf_product: 
 
-Green functions on cartesian product domains
-===================================================
+Multiple variables 
+===================
 
 .. warning::
 
@@ -41,7 +41,18 @@ HDF5 storage convention
 For convenience, in hdf5 files, the arrays has higher dimension,
 so that the first indices are *not* flatten. EXPLAIN.
 
+Functional techniques
+------------------------
 
+See : 
+
+.. toctree::
+  
+   :maxdepth: 1
+
+   gf_part_eval_curry
+
+ 
 Examples
 ---------
 .. compileblock::
@@ -74,15 +85,6 @@ Examples
      H5::H5File file("test_product_gf.h5", H5F_ACC_TRUNC );
      h5_write(file, "g", g);
     }
-
-
-See also : 
-
-.. toctree::
-  
-   :maxdepth: 1
-
-   gf_part_eval_curry
 
 
 

@@ -32,9 +32,9 @@ namespace triqs {
   // For Imaginary Matsubara Frequency functions
   // ------------------------------------------------------
 
-  tqa::matrix<double> density(gf_view<imfreq> const & g);
+  arrays::matrix<double> density(gf_view<imfreq> const & g);
 
-  tqa::matrix<double> density(gf_view<legendre> const & g);
+  arrays::matrix<double> density(gf_view<legendre> const & g);
 
   local::tail_view get_tail(gf_const_view<legendre> gl, int size, int omin);
 
@@ -43,7 +43,7 @@ namespace triqs {
   // For anything that has the ImmutableGfMatsubaraFreq concept, create such a function and compute
   // Here I choose to create G and call the function to avoid creating one code for each expression...
   //template<typename GfType>
-   //TYPE_ENABLE_IF (tqa::matrix<double>, ImmutableGfMatsubaraFreq<GfType>) 
+   //TYPE_ENABLE_IF (arrays::matrix<double>, ImmutableGfMatsubaraFreq<GfType>) 
    //density( GfType const & G) { return density( gf_view<imfreq>(G));} 
 
  }

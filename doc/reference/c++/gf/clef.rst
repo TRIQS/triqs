@@ -5,18 +5,17 @@
 Interaction with CLEF expressions 
 ============================================
 
-* The gf containers and their view classes can be used with the :doc:`../clef/contents` library : 
+The gf containers and their view classes can be used with the :doc:`../clef/contents` library : 
 
-  * They can be called with CLEF expressions.
-  * :doc:`Automatic assignment<../clef/assign>` has been set up.
+* They can be called with CLEF expressions.
+* :doc:`Automatic assignment<../clef/assign>` has been set up.
 
-* Using the CLEF library offers a quick and efficient way to fill an array with multiple advantages : 
+Using the CLEF library offers a quick and efficient way to fill an array with multiple advantages : 
 
-  * It is simpler and more readeable than a series of for loops.
-  * It is usually more optimal since the for loops are automatically written in the TraversalOrder of the array.
+* It is simpler and more readeable than a series of for loops.
+* It is more optimal since the loops are automatically written in the best order for memory traversal.
 
-
-* **Example** : 
+**Example** : 
 
 .. compileblock::
 
@@ -35,9 +34,6 @@ Interaction with CLEF expressions
     }
 
 .. note:: 
-
-   The syntax uses a <<, not = since the array is not assigned to an expression
-   but filled by the evaluation thereof.
 
    The LHS uses () and not brackets, even though it is on the mesh, because of the strange C++ limitation 
    that [] can not be overloaded for several variables...

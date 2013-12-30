@@ -18,26 +18,33 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_DOMAIN_MATSUBARA_H
-#define TRIQS_GF_DOMAIN_MATSUBARA_H
+#pragma once
 #include "../tools.hpp"
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 
 namespace triqs {
 namespace gfs {
 
- // --------------- One matsubara frequency, with its arithmetics -------------------------
- // all operations are done by casting to complex, except addition and substraction of matsubara_freq
-
+ /** 
+  * A matsubara frequency, i.e. 
+  *   * n : int, the index
+  *   * beta : double, the temperature inverse
+  *   * statistic : Fermion or Boson
+  *
+  * * Can be casted into a complex.
+  *
+  * * Every operations is done by casting to complex, except addition and substraction of matsubara_freq, which return matsubara_freq
+  *   and work on the index
+  **/
  struct matsubara_freq : public utility::arithmetic_ops_by_cast_disable_same_type<matsubara_freq, std::complex<double>> {
   int n;
   double beta;
   statistic_enum statistic;
   matsubara_freq() : n(0), beta(1), statistic(Fermion) {}
-  matsubara_freq(int const &n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
+  matsubara_freq(int n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
   using cast_t = std::complex<double>;
   operator cast_t() const {
-   return {0, M_PI * (2 * n + (statistic == Fermion ? 1 : 0)) / beta};
+   return {0, M_PI * (2 * n + statistic) / beta};
   }
  };
 
@@ -50,7 +57,7 @@ namespace gfs {
  }
 
  inline matsubara_freq operator-(matsubara_freq const &mp) {
-  return {-(mp.n + mp.statistic==Fermion ? 1: 0), mp.beta, mp.statistic};
+  return {-(mp.n + mp.statistic == Fermion ? 1 : 0), mp.beta, mp.statistic};
  }
 
  //---------------------------------------------------------------------------------------------------------
@@ -59,12 +66,12 @@ namespace gfs {
   using point_t = typename std::conditional<IsFreq, std::complex<double>, double>::type;
   double beta;
   statistic_enum statistic;
-  matsubara_domain() = default;
-  matsubara_domain(double Beta, statistic_enum s) : beta(Beta), statistic(s) {
+  matsubara_domain(double beta, statistic_enum s) : beta(beta), statistic(s) {
    if (beta < 0) TRIQS_RUNTIME_ERROR << "Matsubara domain construction :  beta <0 : beta =" << beta << "\n";
   }
+  matsubara_domain() : matsubara_domain(1, Fermion) {}
   matsubara_domain(matsubara_domain const &) = default;
-  matsubara_domain(matsubara_domain<!IsFreq> const &x) : beta(x.beta), statistic(x.statistic) {}
+  matsubara_domain(matsubara_domain<!IsFreq> const &x) : matsubara_domain(x.beta, x.statistic) {}
   bool operator==(matsubara_domain const &D) const { return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic)); }
 
   /// Write into HDF5
@@ -91,7 +98,9 @@ namespace gfs {
    ar &boost::serialization::make_nvp("statistic", statistic);
   }
  };
+
+ using matsubara_freq_domain = matsubara_domain<true>;
+ using matsubara_time_domain = matsubara_domain<false>;
 }
 }
-#endif
 

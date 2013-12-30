@@ -25,47 +25,75 @@
 namespace triqs {
 namespace gfs {
 
- //----------------------------------- The mesh -----------------------------------------
  struct matsubara_freq_mesh {
 
+  ///
   using domain_t = matsubara_domain<true>;
-  using index_t = int;
+  ///
+  using index_t = long;
+  ///
   using domain_pt_t = typename domain_t::point_t;
 
+  /// Constructor
   matsubara_freq_mesh() : _dom(), n_max(0), _positive_only(true) {}
 
-  explicit matsubara_freq_mesh(domain_t dom, int n_pts, bool positive_only = true)
+  /// Constructor
+  matsubara_freq_mesh(domain_t dom, int n_pts=1025, bool positive_only = true)
      : _dom(std::move(dom)), n_max(n_pts), _positive_only(positive_only) {}
 
+  /// Constructor
+  matsubara_freq_mesh(double beta, statistic_enum S, int Nmax = 1025, bool positive_only = true)
+     : matsubara_freq_mesh({beta, S}, Nmax, positive_only) {}
+
+  /// Copy constructor 
+  matsubara_freq_mesh(matsubara_freq_mesh const &) = default;
+
+  /// The corresponding domain
   domain_t const &domain() const { return _dom; }
+
+  /** \brief First value of the index
+   *
+   *  0 if positive_only is true
+   *  else : 
+   *    For fermions : -Nmax +1
+   *    For Bosons : -Nmax
+   **/ 
   int index_start() const { return -(_positive_only ? 0 : n_max + (_dom.statistic == Fermion)); }
-  size_t size() const { return (_positive_only ? n_max : 2 * n_max + (_dom.statistic == Boson ? 1 : 2)); }
 
-  /// Conversions point <-> index <-> linear_index
-  domain_pt_t index_to_point(index_t ind) const {
-   return 1_j * M_PI * (2 * ind + (_dom.statistic == Fermion ? 1 : 0)) / _dom.beta;
-  }
+  /// Size (linear) of the mesh
+  long size() const { return (_positive_only ? n_max : 2 * n_max + (_dom.statistic == Boson ? 1 : 2)); }
 
-  public:
-  int index_to_linear(index_t ind) const { return ind + index_start(); }
+  /// From an index of a point in the mesh, returns the corresponding point in the domain
+  domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind + _dom.statistic == Fermion) / _dom.beta; }
 
-  /// The mesh point
+  /// Flatten the index in the positive linear index for memory storage (almost trivial here).
+  long index_to_linear(index_t ind) const { return ind + index_start(); }
+
+  /**
+   *  The mesh point
+   *  
+   *  * NB : the mesh point is also in this case a matsubara_freq.
+  **/
   struct mesh_point_t : tag::mesh_point, matsubara_freq {
-   index_t index_start, index_stop;
    mesh_point_t() = default;
    mesh_point_t(matsubara_freq_mesh const &mesh, index_t const &index_)
       : matsubara_freq(index_, mesh.domain().beta, mesh.domain().statistic),
         index_start(mesh.index_start()),
         index_stop(mesh.index_start() + mesh.size() - 1) {}
    void advance() { ++n; }
-   size_t linear_index() const { return n; }
-   size_t index() const { return n; }
+   long linear_index() const { return n; }
+   long index() const { return n; }
    bool at_end() const { return (n == index_stop); }
    void reset() { n = index_start; }
+
+   private:
+   index_t index_start, index_stop;
   };
 
-  /// Accessing a point of the mesh
-  mesh_point_t operator[](index_t i) const { return mesh_point_t(*this, i); }
+  /// Accessing a point of the mesh from its index
+  mesh_point_t operator[](index_t i) const {
+   return {*this, i};
+  }
 
   /// Iterating on all the points...
   using const_iterator = mesh_pt_generator<matsubara_freq_mesh>;
@@ -74,7 +102,6 @@ namespace gfs {
   const_iterator cbegin() const { return const_iterator(this); }
   const_iterator cend() const { return const_iterator(this, true); }
 
-  /// Mesh comparison
   bool operator==(matsubara_freq_mesh const &M) const {
    return (std::make_tuple(_dom, n_max, _positive_only, n_max) == std::make_tuple(M._dom, M.n_max, M._positive_only, n_max));
   }
@@ -86,8 +113,7 @@ namespace gfs {
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "size", m.size());
    if (m._positive_only) {
-    // h5_write(gr, "start_at_0", m._positive_only);
-    // kept for backward compatibility
+    // kept ONLY for backward compatibility of archives
     auto beta = m.domain().beta;
     h5_write(gr, "min", Fermion ? M_PI / beta : 0);
     h5_write(gr, "max", ((Fermion ? 1 : 0) + 2 * m.size()) * M_PI / beta);
@@ -109,14 +135,15 @@ namespace gfs {
    m = matsubara_freq_mesh{std::move(dom), L, s};
   }
 
-  //  BOOST Serialization
   friend class boost::serialization::access;
+  ///  BOOST Serialization
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    ar &boost::serialization::make_nvp("domain", _dom);
    ar &boost::serialization::make_nvp("size", n_max);
    ar &boost::serialization::make_nvp("kind", _positive_only);
   }
 
+  /// Simple print (just blabla and the size)
   friend std::ostream &operator<<(std::ostream &sout, matsubara_freq_mesh const &m) {
    return sout << "Matsubara Freq Mesh of size " << m.size();
   }
@@ -126,6 +153,19 @@ namespace gfs {
   int n_max;
   bool _positive_only;
  };
+
+ //-------------------------------------------------------
+
+ /** \brief foreach for this mesh
+  *
+  *  @param m : a mesh
+  *  @param F : a function of synopsis auto F (matsubara_freq_mesh::mesh_point_t)
+  *
+  *  Calls F on each point of the mesh, in arbitrary order.
+  **/
+ template <typename Lambda> void foreach(matsubara_freq_mesh const &m, Lambda F) {
+  for (auto const &w : m) F(w);
+ }
 }
 }
 

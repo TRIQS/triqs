@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,60 +18,59 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LEGENDRE_DOMAIN_H
-#define TRIQS_GF_LEGENDRE_DOMAIN_H
-
+#pragma once
 #include "../tools.hpp"
 
-namespace triqs { namespace gfs { 
+namespace triqs {
+namespace gfs {
 
- /// The domain
  class legendre_domain {
 
   public:
-
   double beta;
   statistic_enum statistic;
   size_t Nmax;
 
-  typedef long point_t;
-  size_t size() const { return Nmax;};
+  using point_t = long;
+  size_t size() const {
+   return Nmax;
+  };
 
-  legendre_domain (double beta_ = 1, statistic_enum stat_ = Fermion, size_t Nmax_=1) : beta(beta_), statistic(stat_), Nmax(Nmax_) {}
+  legendre_domain(double beta_ = 1, statistic_enum stat_ = Fermion, size_t Nmax_ = 1)
+     : beta(beta_), statistic(stat_), Nmax(Nmax_) {}
 
-  bool operator == (legendre_domain const & D) const {
-    return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic) && (Nmax == D.Nmax));
+  bool operator==(legendre_domain const& D) const {
+   return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic) && (Nmax == D.Nmax));
   }
 
   /// Write into HDF5
-  friend void h5_write (h5::group fg, std::string subgroup_name, legendre_domain const & d) {
-   h5::group gr =  fg.create_group(subgroup_name);
-   h5_write(gr,"n_max",d.Nmax);
-   h5_write(gr,"beta",d.beta);
-   h5_write(gr,"statistic",(d.statistic==Fermion ? "F" : "B"));
+  friend void h5_write(h5::group fg, std::string subgroup_name, legendre_domain const& d) {
+   h5::group gr = fg.create_group(subgroup_name);
+   h5_write(gr, "n_max", d.Nmax);
+   h5_write(gr, "beta", d.beta);
+   h5_write(gr, "statistic", (d.statistic == Fermion ? "F" : "B"));
   }
 
   /// Read from HDF5
-  friend void h5_read  (h5::group fg, std::string subgroup_name, legendre_domain & d){
+  friend void h5_read(h5::group fg, std::string subgroup_name, legendre_domain& d) {
    h5::group gr = fg.open_group(subgroup_name);
-   long n; double beta; std::string statistic;
-   h5_read(gr,"n_max",n);
-   h5_read(gr,"beta",beta);
-   h5_read(gr,"statistic",statistic);
-   d = legendre_domain(beta,(statistic=="F" ? Fermion : Boson),n);
+   long n;
+   double beta;
+   std::string statistic;
+   h5_read(gr, "n_max", n);
+   h5_read(gr, "beta", beta);
+   h5_read(gr, "statistic", statistic);
+   d = legendre_domain(beta, (statistic == "F" ? Fermion : Boson), n);
   }
 
   //  BOOST Serialization
   friend class boost::serialization::access;
-  template<class Archive>
-  void serialize(Archive & ar, const unsigned int version) {
-    ar & boost::serialization::make_nvp("n_max",Nmax);
-    ar & boost::serialization::make_nvp("beta",beta);
-    ar & boost::serialization::make_nvp("statistic",statistic);
+  template <class Archive> void serialize(Archive& ar, const unsigned int version) {
+   ar& boost::serialization::make_nvp("n_max", Nmax);
+   ar& boost::serialization::make_nvp("beta", beta);
+   ar& boost::serialization::make_nvp("statistic", statistic);
   }
-
  };
-
-}}
-#endif
+}
+}
 

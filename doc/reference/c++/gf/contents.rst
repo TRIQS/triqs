@@ -3,7 +3,7 @@
 Green functions 
 =================
 
-The TRIQS library provides a generic container `gf` and its view `gf_view`, to store and manipulate
+The TRIQS library provides a generic container `gf` and its views `gf_view` and `gf_const_view`, to store and manipulate
 various Green functions.
 
 .. warning::
@@ -15,11 +15,11 @@ various Green functions.
 
    intro
    gf_and_view
-   gf_part_eval_curry
-   slicing
-   concepts
-   meshes
+   gf_special
+   clef
    tail
    fourier
-   gf_misc
+   concepts
    implementation_notes
+
+

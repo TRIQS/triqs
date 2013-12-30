@@ -19,9 +19,9 @@ TRIQS (**T**\oolbox for **R**\esearch on **I**\nteracting **Q**\uantum **S**\yst
 is a scientific project providing a set of C++ and Python libraries to develop new tools
 for the study of interacting quantum systems. 
 
-The goal of this toolkit is to provide condensed matter physicists with 
+The goal of this toolkit is to provide our team with 
 some high level, efficient and simple to use libraries in C++ and Python,
-and to promote the use of modern programming techniques in our field.
+and to promote the use of modern programming techniques.
 
 TRIQS is free software (GPL).
 
@@ -29,7 +29,7 @@ TRIQS applications
 -----------------------
 
 Based on the TRIQS toolkit, several :ref:`full-fledged applications <applications>`
-are also maintained by the TRIQS collaboration. They allow for example to
+are also available. They allow for example to
 solve a generic quantum impurity model or to run a complete LDA+DMFT
 calculation.
 

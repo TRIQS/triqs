@@ -24,20 +24,20 @@
 namespace triqs { namespace gfs { 
 
  dcomplex F(dcomplex a,double b,double Beta) {return -a/(1+exp(-Beta*b));}
- using tqa::array;
+ using arrays::array;
 
  //-------------------------------------------------------
  // For Imaginary Matsubara Frequency functions
  // ------------------------------------------------------
- tqa::matrix<double> density( gf_view<imfreq> const & G) { 
+ arrays::matrix<double> density( gf_view<imfreq> const & G) { 
   dcomplex I(0,1);
   auto sh = G.data().shape().front_pop();
   auto Beta = G.domain().beta;
   local::tail_view t = G(freq_infty());
   if (!t.is_decreasing_at_infinity())  TRIQS_RUNTIME_ERROR<<" density computation : Green Function is not as 1/omega or less !!!";
   const size_t N1=sh[0], N2 = sh[1];
-  tqa::array<dcomplex,2> dens_part(sh), dens_tail(sh), dens(sh);
-  tqa::matrix<double> res(sh);
+  arrays::array<dcomplex,2> dens_part(sh), dens_tail(sh), dens(sh);
+  arrays::matrix<double> res(sh);
   dens_part()=0;dens()=0;dens_tail()=0;
   for (size_t n1=0; n1<N1;n1++) 
    for (size_t n2=0; n2<N2;n2++) {
@@ -70,10 +70,10 @@ namespace triqs { namespace gfs {
  }
 
 
- tqa::matrix<double> density( gf_view<legendre> const & gl) { 
+ arrays::matrix<double> density( gf_view<legendre> const & gl) { 
 
    auto sh = gl.data().shape().front_pop();
-   tqa::matrix<double> res(sh);
+   arrays::matrix<double> res(sh);
    res() = 0.0;
 
    for (auto l : gl.mesh()) {
@@ -102,21 +102,21 @@ namespace triqs { namespace gfs {
  }
 
  // Impose a discontinuity G(\tau=0)-G(\tau=\beta)
- void enforce_discontinuity(gf_view<legendre> & gl, tqa::array_view<double,2> disc) {
+ void enforce_discontinuity(gf_view<legendre> & gl, arrays::array_view<double,2> disc) {
 
    double norm = 0.0;
-   tqa::vector<double> t(gl.data().shape()[0]);
+   arrays::vector<double> t(gl.data().shape()[0]);
    for (int i=0; i<t.size(); ++i) {
      t(i) = triqs::utility::legendre_t(i,1) / gl.domain().beta;
      norm += t(i)*t(i);
    }
 
-   tqa::array<double,2> corr(disc.shape()); corr() = 0;
+   arrays::array<double,2> corr(disc.shape()); corr() = 0;
    for (auto l : gl.mesh()) {
      corr += t(l.index()) * gl[l];
    }
 
-   tqa::range R;
+   arrays::range R;
    for (auto l : gl.mesh()) {
      gl.data()(l.index(),R,R) += (disc - corr) * t(l.index()) / norm;
    }

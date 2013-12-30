@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2012-2013 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_MATSUBARA_FREQ_H
-#define TRIQS_GF_MATSUBARA_FREQ_H
+#pragma once
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
@@ -32,22 +31,18 @@ namespace gfs {
  struct imfreq {};
 
  template <typename Opt> struct gf_mesh<imfreq, Opt> : matsubara_freq_mesh {
-  using B = matsubara_freq_mesh;
-  static double m1(double beta) { return std::acos(-1) / beta; }
-  gf_mesh() = default;
-  gf_mesh(B const &x) : B(x) {} // enables also construction from another Opt
-  gf_mesh(typename B::domain_t const &d, int Nmax = 1025, bool positive_only = true) : B(d, Nmax, positive_only) {}
-  gf_mesh(double beta, statistic_enum S, int Nmax = 1025) : gf_mesh({beta, S}, Nmax) {}
+  template <typename... T> gf_mesh(T &&... x) : matsubara_freq_mesh(std::forward<T>(x)...) {}
+  //using matsubara_freq_mesh::matsubara_freq_mesh;
  };
 
  namespace gfs_implementation {
 
   // singularity
   template <> struct singularity<imfreq, matrix_valued, void> {
-   typedef local::tail type;
+   using type = local::tail;
   };
   template <> struct singularity<imfreq, scalar_valued, void> {
-   typedef local::tail type;
+   using type = local::tail;
   };
 
   // h5 name
@@ -124,10 +119,13 @@ namespace gfs {
 
 #ifdef __clang__
    // to generate a clearer error message ? . Only ok on clang ?
-   template<int n> struct error { static_assert(n>0, "Green function can not be evaluated on a complex number !");};
+   template <int n> struct error {
+    static_assert(n > 0, "Green function can not be evaluated on a complex number !");
+   };
 
-   template <typename G>
-    error<0> operator()(G const *g, std::complex<double>) const { return {};}
+   template <typename G> error<0> operator()(G const *g, std::complex<double>) const {
+    return {};
+   }
 #endif
 
    template <typename G> typename G::singularity_t const &operator()(G const *g, freq_infty const &) const {
@@ -142,4 +140,3 @@ namespace gfs {
  } // gfs_implementation
 }
 }
-#endif

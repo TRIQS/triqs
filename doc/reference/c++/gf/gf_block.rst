@@ -2,15 +2,15 @@
 
 .. _gf_block: 
 
-block_gf<G> (alias of gf<block_index, G>) 
-===================================================
+Block Green functions
+=======================
 
 This is a specialisation of :ref:`gf_and_view` for block functions.
 
 A block Green function is nothing but Green function on a discrete domain representing the 
-block indices, and whose value is a Green function itself.
+block indices, and whose value is itself a Green function.
 
-For convenience, for following aliases are provided ::
+For convenience, the following aliases are provided ::
     
    template<typename ... T> using block_gf            = gf           <block_index, gf<T...>>;
    template<typename ... T> using block_gf_view       = gf_view      <block_index, gf<T...>>;

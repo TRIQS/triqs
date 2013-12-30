@@ -1,5 +1,5 @@
 /*******************************************************************************
- *
+ * 
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2012 by M. Ferrero, O. Parcollet
@@ -19,17 +19,25 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../tools.hpp"
-namespace triqs {
-namespace gfs {
+#include "../gf.hpp"
 
- template <typename... Domains> struct domain_product {
-  using point_t = std::tuple<typename Domains::point_t...>;
-  std::tuple<Domains...> domains;
-  domain_product() = default;
-  domain_product(Domains const&... doms) : domains(doms...) {}
-  friend bool operator==(domain_product const& D1, domain_product const& D2) { return D1.domains == D2.domains; }
-  // implement boost serializable, hdf5 if needed... (done at the mesh level).
- };
-}
-}
+namespace triqs { namespace gfs {
+
+ // make_gf and make_gf_view forward any args to them
+ template <typename Variable, typename Target = matrix_valued, typename Opt = void, typename... U>
+ gf<Variable, Target, Opt> make_gf(gf_mesh<Variable, Opt> m, U &&... x) {
+  return gfs_implementation::factories<Variable, Target, Opt>::make_gf(std::move(m), std::forward<U>(x)...);
+ }
+
+ template <typename Variable, typename Target = matrix_valued, typename Opt = void, typename... U>
+ gf<Variable, Target, Opt> make_gf(U &&... x) {
+  return gfs_implementation::factories<Variable, Target, Opt>::make_gf(std::forward<U>(x)...);
+ }
+
+ template <typename Variable, typename Target = matrix_valued, typename Opt = void, typename... U>
+ gf_view<Variable, Target, Opt> make_gf_view(U &&... x) {
+  return gfs_implementation::factories<Variable, Target, Opt>::make_gf_view(std::forward<U>(x)...);
+ }
+
+}}
+

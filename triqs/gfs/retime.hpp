@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2012-2013 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,44 +18,50 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_ONE_REAL_TIME_H
-#define TRIQS_GF_ONE_REAL_TIME_H
+#pragma once
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
 #include "./domains/R.hpp"
-#include "./meshes/linear.hpp"
+#include "./meshes/segment.hpp"
 #include "./evaluators.hpp"
 
-namespace triqs { namespace gfs {
+namespace triqs {
+namespace gfs {
 
  struct retime {};
 
- template<typename Opt> struct gf_mesh<retime,Opt> : linear_mesh<R_domain>  { 
-  typedef linear_mesh<R_domain> B;
-  gf_mesh() = default;
-  gf_mesh(double tmin, double tmax, int n_points, mesh_kind mk=full_bins) : B (typename B::domain_t(), tmin, tmax, n_points, mk){}
+ template <typename Opt> struct gf_mesh<retime, Opt> : segment_mesh {
+  template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
+  //using segment_mesh::segment_mesh;
  };
 
- namespace gfs_implementation { 
+ namespace gfs_implementation {
 
-  // singularity 
-  template<typename Opt> struct singularity<retime,matrix_valued,Opt>  { typedef local::tail type;};
-  template<typename Opt> struct singularity<retime,scalar_valued,Opt>  { typedef local::tail type;};
+  // singularity
+  template <typename Opt> struct singularity<retime, matrix_valued, Opt> {
+   using type = local::tail;
+  };
+  template <typename Opt> struct singularity<retime, scalar_valued, Opt> {
+   using type = local::tail;
+  };
 
   // h5 name
-  template<typename Opt> struct h5_name<retime,matrix_valued,Opt>      { static std::string invoke(){ return  "ReTime";}};
+  template <typename Opt> struct h5_name<retime, matrix_valued, Opt> {
+   static std::string invoke() { return "ReTime"; }
+  };
 
   /// ---------------------------  evaluator ---------------------------------
- template<> struct evaluator_fnt_on_mesh<retime> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh, evaluator_grid_linear_interpolation);
+  template <>
+  struct evaluator_fnt_on_mesh<retime> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh,
+                                                                             evaluator_grid_linear_interpolation);
 
- template<typename Opt, typename Target> struct evaluator<retime,Target,Opt> : evaluator_one_var<retime>{};
+  template <typename Opt, typename Target> struct evaluator<retime, Target, Opt> : evaluator_one_var<retime> {};
 
   /// ---------------------------  data access  ---------------------------------
-  template<typename Opt> struct data_proxy<retime,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
-  template<typename Opt> struct data_proxy<retime,scalar_valued,Opt> : data_proxy_array<std::complex<double>,1> {};
+  template <typename Opt> struct data_proxy<retime, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
+  template <typename Opt> struct data_proxy<retime, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
 
  } // gfs_implementation
-}}
-#endif
-
+}
+}

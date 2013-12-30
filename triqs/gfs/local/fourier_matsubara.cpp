@@ -32,7 +32,7 @@ namespace gfs {
 
  struct impl_worker {
 
-  tqa::vector<dcomplex> g_in, g_out;
+  arrays::vector<dcomplex> g_in, g_out;
 
   dcomplex oneFermion(dcomplex a, double b, double tau, double beta) {
    return -a * (b >= 0 ? exp(-b * tau) / (1 + exp(-beta * b)) : exp(b * (beta - tau)) / (1 + exp(beta * b)));

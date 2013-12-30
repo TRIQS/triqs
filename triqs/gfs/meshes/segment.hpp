@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2013 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,22 +18,32 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#pragma once 
-#include "../tools.hpp"
+#pragma once
+#include "./mesh_tools.hpp"
+#include "./linear.hpp"
 
 namespace triqs {
 namespace gfs {
 
- /// The domain
- struct R_domain {
-  using point_t = double;
-  bool operator==(R_domain const& D) const { return true; }
-  friend void h5_write(h5::group fg, std::string subgroup_name, R_domain const& d) {}
-  friend void h5_read(h5::group fg, std::string subgroup_name, R_domain& d) {}
-  friend class boost::serialization::access;
-  template <class Archive> void serialize(Archive& ar, const unsigned int version) {}
+ /** A linear mesh on a segment on R */
+ struct segment_mesh : linear_mesh<R_domain> {
+  using B = linear_mesh<R_domain>;
+  segment_mesh() = default;
+  segment_mesh(double x_min, double x_max, int n_freq, mesh_kind mk = full_bins) : B(typename B::domain_t(), x_min, x_max, n_freq, mk) {}
  };
-}
-}
 
+ //-------------------------------------------------------
+
+ /** \brief foreach for this mesh
+  *
+  *  @param m : a mesh
+  *  @param F : a function of synopsis auto F (matsubara_time_mesh::mesh_point_t)
+  *
+  *  Calls F on each point of the mesh, in arbitrary order.
+  **/
+ template <typename Lambda> void foreach(segment_mesh const &m, Lambda F) {
+  for (auto const &w : m) F(w);
+ }
+}
+}
 

@@ -37,22 +37,21 @@ Domain
 * **Purpose**  : The domain of definition of a function. It is a mathematical definition of the domain,
   and does not contain any mesh, or details on its representation in a computer.
 
-* **Refines** : RegularType, BoostSerializable, H5-serializable.
+* **Refines** : RegularType.
 
 * **Definition** : 
 
-+----------------------------------------------------------------------------+---------------------------------------------------------------------+
-| Elements                                                                   | Comment                                                             |
-+============================================================================+=====================================================================+
-| point_t                                                                    | Type of element in the domain (int, int, double, k_vector, ...) as  |
-|                                                                            | in the call of  a function over this domain. In particular, in      |
-|                                                                            | Matsubara, it is a complex.                                         |
-+----------------------------------------------------------------------------+---------------------------------------------------------------------+
++----------+--------------------------------------------------------------------+
+| Elements | Comment                                                            |
++==========+====================================================================+
+| point_t  | Type of element in the domain (int, int, double, k_vector, ...) as |
+|          | in the call of  a function over this domain.                       |
++----------+--------------------------------------------------------------------+
 
 * **Examples** :
   
- * Matsubara frequencies (boson/fermion)
  * Matsubara time
+ * Matsubara frequencies (boson/fermion) : in this case, point_t is `matsubara_freq`, a simple type containing (n, beta, statistics).
  * Real frequencies
  * Real time 
  * Brillouin zone
@@ -75,9 +74,7 @@ PureFunctionOnDomain
 +--------------------------------------+----------------------------------------------------------+
 | Elements                             | Comment                                                  |
 +======================================+==========================================================+
-| domain_t                             | Type of the Domain represented, modelling Domain concept |
-+--------------------------------------+----------------------------------------------------------+
-| domain_t const & domain() const      | Returns the domain                                       |
+| domain_t const & domain() const      | Returns the domain (deduced as domain_t)                 |
 +--------------------------------------+----------------------------------------------------------+
 | operator (domain_t::point_t) const   | Calling for all elements of the Domain (including infty  |
 |                                      | if it is in the domain...                                |
@@ -99,38 +96,44 @@ Mesh
   It does not really need to be a mesh : e.g. if the function is represented on a polynomial basis, 
   it is the parameters of this representation (max number of coordinates, e.g.)
 
-* **Refines** : RegularType, HasConstIterator BoostSerializable, H5-serializable, Printable.
+* **Refines** : RegularType,  H5-serializable, Printable.
 
 * **Definition** : 
   
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| Elements                                                     | Comment                                                                       |
-+==============================================================+===============================================================================+
-| domain_t                                                     | Type of the Domain represented, modeling the Domain concept                   |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| domain_t const & domain() const                              | Access to the domain                                                          |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| index_t                                                      | Type of indices of a point on the grid. Typically a tuple of long or a long   |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| size_t size() const                                          | The number of points in the mesh.                                             |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| domain_t::point_t index_to_point(index_t) const              | From the index of a mesh point, compute the corresponding point in the domain |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| size_t index_to_linear(index_t const &) const                | Flattening the index of the mesh into a contiguous linear index               |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| mesh_point_t                                                 | A type modelling MeshPoint concept (see below).                               |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| mesh_point_t operator[](index_t const & index ) const        | From an index, return a mesh_point_t containing this a ref to this mesh and   |
-|                                                              | the index.                                                                    |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| free function                                                |                                                                               |
-| foreach ( mesh_t, lambda)                                    | ???????????????????????????????????                                           |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| mesh_pt_generator<mesh_t> iterator                           | A generator of all the mesh points.                                           |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
-| const_iterator begin()/end() const                           | Standard access to iterator on the mesh                                       |
-| const_iterator cbegin()/cend() const                         | Standard access to iterator on the mesh                                       |
-+--------------------------------------------------------------+-------------------------------------------------------------------------------+
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| Elements                                              | Comment                                                                       |
++=======================================================+===============================================================================+
+| domain_t                                              | Type of the Domain represented, modeling the Domain concept                   |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| domain_t const & domain() const                       | Access to the domain                                                          |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| index_t                                               | Type of indices of a point on the grid. Typically a tuple of long or a long   |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| long size() const                                     | The number of points in the mesh.                                             |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| domain_t::point_t index_to_point(index_t) const       | From the index of a mesh point, compute the corresponding point in the domain |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| long index_to_linear(index_t const &) const           | Flattening the index of the mesh into a contiguous linear index               |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| mesh_point_t                                          | A type modeling MeshPoint concept (see below).                                |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| mesh_point_t operator[](index_t const & index ) const | From an index, return a mesh_point_t containing this a ref to this mesh and   |
+|                                                       | the index.                                                                    |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| mesh_pt_generator<mesh_t> const_iterator              | A generator of all the mesh points.                                           |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+| const_iterator begin()/end() const                    | Standard access to iterator on the mesh Standard access to iterator on the    |
+| cbegin()/cend() const                                 | mesh                                                                          |
++-------------------------------------------------------+-------------------------------------------------------------------------------+
+
+
++---------------------------+-----------------------------------------------------------+
+| Free functions            | Comment                                                   |
++===========================+===========================================================+
+| void  foreach (mesh_t, F) | If F is a function of synopsis                            |
+|                           | auto F( mesh_t::mesh_point_t)                             |
+|                           | it calls F for each point on the mesh, in arbitrary order |
++---------------------------+-----------------------------------------------------------+
 
 .. _Concept_MeshPoint:
 
@@ -192,5 +195,4 @@ one can write naturally ::
     // This runs overs the mesh, and fills the function with 1/(w+2)
     // In this expression, w is casted to the domain_t::point_t, here a complex<double>
     // which allows to evaluate the function
-
 

@@ -1,9 +1,10 @@
 .. highlight:: c
 
+Domains & Meshes  
+##################
 
 
-Meshes  
-#######
+The :doxy:`full C++ documentation<triqs::gfs::matsubara_freq_mesh>` is available here.
 
 
 The linear meshes
@@ -98,23 +99,6 @@ Real frequency
 
 The domain is the set of real numbers. 
 By default, the mesh kind is ``full_bins``. 
-
-
-Matsubara time
----------------
-
-The domain is (approximatively) the set of real numbers between 0 and :math:`\beta`. 
-In fact, other points are also in the domain, but the values at these points are given by the values on this restricted domain. 
-:math:`G(\tau+\beta)=-G(\tau)` for fermions, :math:`G(\tau+\beta)=G(\tau)` for bosons.
-
-The limits from above or below at these both points can be different. 
-Depending on what one needs, we can choose ``full_bins``,  ``half_bins``  or ``without_last``.
-
-
-Matsubara frequency
---------------------
-
-The domain is discrete. The Matsubara frequencies are :math:`\omega_n=\frac{(2n+1)\pi}{\beta}` for fermions and :math:`\omega_n=\frac{2n\pi}{\beta}` for bosons. 
 
 
 

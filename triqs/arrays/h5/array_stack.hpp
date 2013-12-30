@@ -27,9 +27,7 @@
 namespace triqs {
 namespace arrays {
 
- /**
-  * The implementation class
-  */
+ /// The implementation class
  template <typename T, int R> class array_stack_impl {
   static const size_t dim = R;
   static const bool base_is_array = dim > 0;

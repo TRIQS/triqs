@@ -24,6 +24,7 @@
 #include "../gf.hpp"
 #include "../retime.hpp"
 #include "../meshes/product.hpp"
+#include "./tool.hpp"
 
 namespace triqs { namespace gfs { 
  
