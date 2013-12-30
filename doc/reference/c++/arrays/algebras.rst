@@ -46,7 +46,7 @@ However, you can always use e.g. `matrix_view` from a array of rank 2 :
      //M + A; // --> ERROR. Rejected by the compiler.
      M + make_matrix_view(A); //--> OK.
     }
-
+ 
 .. note::
 
    Making such a view is very cheap, it only copies the index systems. Nevertheless
