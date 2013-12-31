@@ -14,7 +14,7 @@ the blocks it is made of.
 
 Most properties of this object can be remembered by the simple sentence:
 
-`A full Green's function is an ordered dictionary name -> block, or equivalently a list of tuples (name, block).`
+`A full Green's function is an ordered dictionary {name -> block}, or equivalently a list of tuples (name, block).`
 
 The blocks can be any of the matrix-valued Green's functions described :ref:`above<blockgreen>`.
 The role of this object is to gather them, and simplify the code writing
@@ -110,12 +110,12 @@ In the example above ::
 
 As a result ::
         
-    BlockGf( name_block_generator= G, copy=False) 
+    BlockGf( name_block_generator= G, make_copies=False) 
     
 generates a new Green's function `G`, viewing the same blocks.
 More interestingly ::
       
-    BlockGf( name_block_generator= [ (index,g) for (index,g) in G if Test(index), copy=False)]
+    BlockGf( name_block_generator= [ (index,g) for (index,g) in G if Test(index), make_copies=False)]
 
 
 makes a partial view of some of the blocks selected by the `Test` condition.
@@ -131,8 +131,8 @@ View or copies?
 
 The Green's function is to be thought like a dict, hence accessing the 
 block returns references. When constructing the Green's function BlockGf, 
-the parameter `make_copies` tells whether a copy of the block must be made before 
-putting them in the Green function or not.
+the parameter `make_copies` determines if a copy of the blocks must be made 
+before putting them in the Green's function.
 
 .. note::
    This is the standard behaviour in python for a list of a dict.
@@ -145,9 +145,9 @@ Example:
 
   .. note:: 
  
-    Copy is optional, False is the default value. We keep it here for clarity.
+    `make_copies` is optional; its default value is False. We keep it here for clarity.
 
-  The ``Copy = False`` implies that the blocks of ``G`` are *references* ``g1`` and ``g2``.
+  The ``make_copies = False`` implies that the blocks of ``G`` are *references* ``g1`` and ``g2``.
   So, if you modify ``g1``, say by putting it to zero with ``g1.zero()``, then the
   first block of G will also be put to zero. Similarly, imagine you define two
   Green's functions like this::
@@ -155,7 +155,7 @@ Example:
    G1 = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
    G2 = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
 
-  Here G1 and G2 are exactly the same object, because they both have blocks
+  Then, G1 and G2 are exactly the same object, because they both have blocks
   which are views of ``g1`` and ``g2``. 
 
 * Instead, if you write::
@@ -172,7 +172,7 @@ Example:
   Here ``G1`` and ``G2`` are different objects, both having made copies
   of ``g1`` and ``g2`` for their blocks.
 
-  An equivalent writing is ::
+  An equivalent definition would be ::
 
     G1 = BlockGf(name_list = ('eg','t2g'), block_list = (g1.copy(),g2.copy()))
     G2 = BlockGf(name_list = ('eg','t2g'), block_list = (g1.copy(),g2.copy()))
@@ -180,7 +180,7 @@ Example:
 shelve / pickle 
 ---------------------
 
-Green's functions are `pickable`, i.e. they support the standard python serialization techniques.
+Green's functions are `picklable`, i.e. they support the standard python serialization techniques.
 
 * It can be used with the `shelve <http://docs.python.org/library/shelve.html>`_ and `pickle <http://docs.python.org/library/pickle.html>`_  module::
   

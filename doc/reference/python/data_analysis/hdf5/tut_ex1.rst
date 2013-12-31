@@ -24,9 +24,9 @@ This show the tree structure of the file.  We see that :
 
 * `mu` is stored at the root `/`
 * `S` is a subgroup, containing `a` and `b`.
-* For each leave, the type (scalar or array) is given.
+* For each leaf, the type (scalar or array) is given.
 
-To dump the content of the file use e.g. (Cf HDF5 documentation for more informations) ::
+To dump the content of the file use, for example, the following: (see the HDF5 documentation for more information) ::
 
  MyComputer:~>h5dump myfile.h5 
  HDF5 "myfile.h5" {

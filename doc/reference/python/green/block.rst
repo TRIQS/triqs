@@ -124,7 +124,7 @@ can be evaluated, can compute the high-frequency expansion, and so on. For examp
 shelve / pickle 
 ---------------
 
-Green's functions are `pickable`, i.e. they support the standard python serialization techniques.
+Green's functions are `picklable`, i.e. they support the standard python serialization techniques.
 
 * It can be used with the `shelve <http://docs.python.org/library/shelve.html>`_ and `pickle <http://docs.python.org/library/pickle.html>`_  module::
   
@@ -169,7 +169,6 @@ Data points can be accessed via the properties ``data`` and ``tail`` respectivel
   Be careful when manipulating data directly to keep consistency between
   the function and the tail. 
   Basic operations do this automatically, so use them as much as possible.
-  The little _ header is there to remind you that maybe you should consider another option.
 
 
 .. _greentails:
@@ -204,7 +203,7 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
 * Fortunately, in all basic operations on the blocks, these tails are computed automatically.
   For example, when adding two Green functions, the tails are added, and so on.
 
-* However, if you modify the ``data`` or the ``tail`` manually, you loose this guarantee.
+* However, if you modify the ``data`` or the ``tail`` manually, you lose this guarantee.
   So you have to set the tail properly yourself (or be sure that you will not need it later).
   For example::
 
@@ -214,8 +213,9 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
    g.tail[1] = numpy.array( [[3.0,0.0], [0.0,3.0]] )
 
   The third line sets all the :math:`M_i` to zero, while the second puts :math:`M_1 = diag(3)`. With
-  the tails set correctly, this Green's function can be used safely. 
+  the tail set correctly, this Green's function can be used safely. 
   
 .. warning::
-  The library will not be able detect, if tails are set wrong. Calculations may also be wrong in this case.
+  The library will not be able detect tails that are incorrectly set.
+Calculations *may* be wrong in this case.
 

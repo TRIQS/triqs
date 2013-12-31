@@ -21,8 +21,8 @@ classes will act. We write this class in a file :file:`configuration.hpp`::
     // The configuration of the system
     struct configuration {
 
-      // N is the length of the chain, M the total magnetization
-      // beta the inverse temperature, J the coupling , field the magnetic field and energy the energy of the configuration
+      // N is the length of the chain, M the total magnetization,
+      // beta the inverse temperature, J the coupling,
       // field the magnetic field and energy the energy of the configuration
       int N, M;
       double beta, J, field, energy;
@@ -67,7 +67,7 @@ The move class should have three methods: `attempt()`, `accept()` and `reject()`
         // pick a random site
         site = RNG(config->N);
 
-        // find the neighbors with periodicity
+        // find the neighbours with periodicity
         int left = (site==0 ? config->N-1 : site-1);
         int right = (site==config->N-1 ? 0 : site+1);
 

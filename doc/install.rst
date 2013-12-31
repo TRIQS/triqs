@@ -14,8 +14,8 @@ various TRIQS-based applications: impurity solvers, realistic DMFT tools, ...
 This page describes the installation of the TRIQS toolkit itself. The installation of the applications
 is described in their respective documentation.
 
-Prerequisite
-------------
+Prerequisites
+-------------
 
 The TRIQS library relies on a certain number of standard libraries and tools described in
 the :ref:`list of requirements <requirements>`. Beware in particular to the :ref:`C++ compilers<require_cxx_compilers>`

@@ -12,7 +12,7 @@ The best picture of a hdf5 file is that of a **tree**, where :
 * **Leaves** of the tree are basic types : scalars (int, long, double, string) and rectangular arrays of these scalars (any dimension : 1,2,3,4...).
 * Subtrees (branches) are called **groups**
 * Groups and leaves have a name, so an element of the tree has naturally a **path** : 
-  e.g. /group1/subgroup2/leave1 and so on.
+  e.g. /group1/subgroup2/leaf1 and so on.
 * Any path (groups, leaves) can be optionally tagged with an **attribute**, in addition to their name,
   typically a string (or any scalar)
 
@@ -33,8 +33,8 @@ Using HDF5 format has several advantages :
 * Most basic objects of TRIQS, like Green function, are hdf-compliant.
 * TRIQS provides a **simple and intuitive interface HDFArchive** to manipulate them.
 * HDF5 is **standard**, well maintained and widely used.
-* HDF5 is **portable** from various machines (32-bits, 64-bits, various OS, etc...)
-* HDF5 can be read and written in **many langages** (python, C/C++, F90, etc...), beyond TRIQS. One is not tied to a particular program.
+* HDF5 is **portable** from various machines (32-bits, 64-bits, various OSs, etc)
+* HDF5 can be read and written in **many langages** (python, C/C++, F90, etc), beyond TRIQS. One is not tied to a particular program.
 * Simple operations to explore and manipulate the tree are provided by simple unix shell commands (e.g. h5ls, h5diff).
 * It is a binary format, hence it is compact and has compression options.
 * It is to a large extent **auto-documented** : the structure of the data speaks for itself.

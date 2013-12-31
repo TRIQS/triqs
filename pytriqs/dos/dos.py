@@ -29,7 +29,6 @@ class DOS :
 * Stores a density of state of fermions  
 
 .. math::
-   :center: 
 
  \rho (\epsilon) \equiv \sum'_k \delta( \epsilon - \epsilon_k)
 

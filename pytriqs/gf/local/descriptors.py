@@ -61,12 +61,12 @@ class Function (Base):
     r"""   
        Stores a python function and a tail.
        
-       If the Green's function is defined on an array of points:math:`x_i`, then it will be initialized to:math:`F(x_i)`.
+       If the Green's function is defined on an array of points :math:`x_i`, then it will be initialized to :math:`F(x_i)`.
     """
     def __init__ (self, function, tail=None): 
         r"""
-        :param function: the function:math:`\omega \rightarrow function(\omega)`
-        :param tail: The tail. Use None if you don't use any tail (will be put to 0)
+        :param function: the function :math:`\omega \rightarrow function(\omega)`
+        :param tail: The tail. Use None if you do not wish to use a tail (will be put to 0)
         """
         Base.__init__(self, function=function, tail=tail)
         
@@ -193,17 +193,18 @@ def semi(x):
 ##################################################
 
 class SemiCircular (Base):
-    r"""Hilbert transform of a semi circular density of state, i.e.
+    r"""Hilbert transform of a semicircular density of states, i.e.
 
      .. math::
         g(z) = \int \frac{A(\omega)}{z-\omega} d\omega
         
-    where :math:`A(\omega) = \theta( D - |\omega|) 2 \sqrt{ D^2 - \omega^2}/(\pi D^2)` 
+    where :math:`A(\omega) = \theta( D - |\omega|) 2 \sqrt{ D^2 - \omega^2}/(\pi D^2)`.
       
-     (only works in combination with frequency Green's functions).
+    (Only works in combination with frequency Green's functions.)
     """
     def __init__ (self, half_bandwidth):
-        """:param half_bandwidth: :math:`D`, the half bandwidth of the semicircular"""
+        """:param half_bandwidth: :math:`D`, the half bandwidth of the
+semicircular density of states"""
         Base.__init__(self, half_bandwidth=half_bandwidth)
 
     def __str__(self): return "SemiCircular(%s)"%self.half_bandwidth 
@@ -242,9 +243,9 @@ class Wilson (Base):
     .. math::
         g(z) = \int \frac{A(\omega)}{z-\omega} d\omega
         
-    where :math:`A(\omega) = \theta( D^2 - \omega^2)/(2D)` 
+    where :math:`A(\omega) = \theta( D^2 - \omega^2)/(2D)`.
       
-    (only works in combination with frequency Green's functions).
+    (Only works in combination with frequency Green's functions.)
     """
     def __init__ (self, half_bandwidth):
         """:param half_bandwidth: :math:`D`, the half bandwidth """

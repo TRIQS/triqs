@@ -12,19 +12,22 @@ returning the element type of the array, e.g. int, double.
 Indeed, if a is an two dimensionnal array of int, 
 it is expected that a(i,j) returns an int or a reference to an int, for i,j integers in some domain.
 
-We distinguish two separate notions, whether this function is `pure` or not, 
-i.e. whether one can or not modify a(i,j).
+We distinguish two separate notions based on whether this function is `pure` 
+or not, i.e. whether one can or not modify a(i,j).
 
-* An `Immutable` array is just a pure function on the domain of definition.
+* An `Immutable` array is simply a pure function on the domain of definition.
   a(i,j) returns a int, or a int const &, that can not be modified (hence immutable).
 
-* A `Mutable` array is an Immutable array, which can also be modified. Non const object return a reference, 
-  e.g. a(i,j) can return a int &. Typically this is a piece of memory, with a integer coordinate system on it.
+* A `Mutable` array is an Immutable array that *can* be modified. The non-const
+object returns a reference, e.g. a(i,j) can return a int &. Typically this is 
+a piece of memory, with a integer coordinate system on it.
  
-The main point here is that `Immutable` array is a much more general notion : 
-a formal expression made of array (E.g. A + 2*B) models this concept, but not the `Mutable` one.
-Most algorithms only use the `Immutable` notion, when then are pure (mathematical) function
-that returns something depending on the value of an object, without side effects.
+The main point here is that an `Immutable` array is a much more general notion: 
+a formal expression consisting of arrays (e.g. A + 2*B) models this concept, 
+but not the `Mutable` one.
+Most algorithms only use the `Immutable` array notion, where they are pure 
+(mathematical) functions that return something depending on the value of an 
+object, without side effects.
 
 
 .. _ImmutableCuboidArray:
@@ -39,7 +42,7 @@ ImmutableCuboidArray
    * it has a cuboid domain (hence a rank).
    * it can be evaluated on any value of the indices in the domain
    
-   * NB : It does not need to be stored in memory. A formal expression, e.g. model this concept.
+   * NB : It does not need to be stored in memory. For example, a formal expression models this concept.
 
 * **Definition** ([...] denotes something optional).
 
@@ -64,7 +67,7 @@ ImmutableCuboidArray
 MutableCuboidArray 
 -------------------------
 
-* **Purpose** :   An array where the data can be modified...
+* **Purpose** :   An array where the data can be modified.
 * **Refines** :  :ref:`ImmutableCuboidArray`.
 
 * **Definition** 
@@ -85,7 +88,7 @@ ImmutableArray
 
 * Refines :ref:`ImmutableCuboidArray`
 
-* If X is the type : 
+* If X is the type: 
 
   * ImmutableArray<A> == true_type
 
@@ -101,7 +104,7 @@ ImmutableMatrix
 * If A is the type : 
 
   * ImmutableMatrix<A> == true_type
-  * A::domain_type::rank ==2
+  * A::domain_type::rank == 2
 
 NB : this traits marks the fact that X belongs to the MatrixVector algebra.
 
@@ -115,7 +118,7 @@ ImmutableVector
 * If A is the type : 
 
   * ImmutableMatrix<A> == true_type
-  * A::domain_type::rank ==1
+  * A::domain_type::rank == 1
 
 NB : this traits marks the fact that X belongs to the MatrixVector algebra.
 
@@ -168,17 +171,18 @@ NB : this traits marks the fact that X belongs to the MatrixVector algebra.
 Why concepts ? [Advanced]
 -----------------------------
 
-Why is it useful to define those concepts ?
+Why is it useful to define these concepts ?
 
-Simply because of lot of the library algorithms only use those concepts, and can be used 
-for an array, or any custom class that model the concept.
+Simply because of lot of the library algorithms only use these concepts,
+and such algorithms can be used for any array or custom class that models
+the concept.
 
-Example : 
+For example: 
 
 * Problem: we want to quickly assemble a small class to store a diagonal matrix.
-  We want this class to operate with other matrices, e.g. be part of expression, be printed, 
-  or whatever.
-  But we only want to store the diagonal element.
+  We want this class to operate with other matrices, e.g. be part of an 
+  expression, be printed, etc.
+  However, we only want to store the diagonal element.
 
 * A simple solution :
 

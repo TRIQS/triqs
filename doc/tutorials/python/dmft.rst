@@ -21,7 +21,3 @@ Here is a complete program doing this plain-vanilla DMFT  on a half-filled one-b
 .. literalinclude:: ./dmft.py
 
 
-A general introduction to DMFT calculations with TRIQS can be found :ref:`here <dmftloop>`.
-
-Chapter :ref:`Wien2TRIQS <Wien2k>` discusses the TRIQS implementation for DMFT calculations of real materials and the interface between TRIQS and the Wien2k band structure code.
-

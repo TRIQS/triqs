@@ -228,7 +228,7 @@ In our example this ratio is
 
   T = \frac{e^{\beta h -\sigma }}{e^{\beta h \sigma}} = e^{ - 2 \beta h \sigma }
 
-With this ratio, the Monte Carlo loop decides wether this proposed move should
+With this ratio, the Monte Carlo loop decides whether this proposed move should
 be rejected, or accepted. If the move is accepted, the Monte Carlo calls the
 ``accept`` method of the move, otherwise it calls the ``reject`` method.  The
 ``accept`` method should always return 1.0 unless you want to correct the sign

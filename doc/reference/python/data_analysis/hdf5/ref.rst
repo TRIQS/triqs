@@ -137,19 +137,18 @@ HDFArchiveInert
 .. class:: HDFArchiveInert
  
    :class:`HDFArchive` and :class:`HDFArchiveGroup` do **NOT** handle parallelism.
-   In general, one wish to write/read only on master node, which is a good practice
-   cluster : reading from all nodes may lead to communication problems.
+   In general, it is good practive to write/read only on the master node. Reading from all nodes on a cluster may lead to communication problems.
 
    To simplify the writing of code, the simple HDFArchiveInert class may be useful.
    It is basically inert but does not fail.
 
    .. describe:: H[key]
 
-      Return H and never raise exception so e.g. H['a']['b']  never raise exception...
+      Return H and never raise exception. E.g. H['a']['b'] never raises an exception.
 
    .. describe:: H[key] = value
        
-      Does nothing
+      Does nothing.
 
    Usage in a mpi code, e.g. ::
 
@@ -205,8 +204,8 @@ The function is
 
 .. _HDF_Protocol_details:
 
-How to become hdf-compliant ?
------------------------------------
+How does a class become hdf-compliant ?
+---------------------------------------
 
 There are two ways in which a class can become hdf-compliant: 
 

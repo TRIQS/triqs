@@ -18,8 +18,8 @@ Example ::
   placeholder <1> x_; 
   placeholder <2> y_; 
 
-Note that the only thing of significance in a placeholder is its type (i.e. Number).
-A placeholder is **empty** : it contains **no value** at runtime. 
+Note that the only thing of significance in a placeholder is its type (i.e.
+a number). A placeholder is **empty** : it contains **no value** at runtime. 
    
   .. warning:: 
     
@@ -87,11 +87,11 @@ at compile time::
 
 Note that : 
 
-* As a user, one *never* has to write such a type
+* As a user, one *never* has to write such a type.
   One always use expression "on the fly", or use auto.
 
 * Having the whole structure of the expression at compile time allows
-  efficient evaluation (it is the principle of expression template : add a ref here).
+  efficient evaluation (it is the principle of expression template: add a ref here).
 
 * Declaring an expression does not do any computation.
   It just stores the expression tree (its structure in the type, and the leaves of the tree).

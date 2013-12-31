@@ -7,18 +7,19 @@ Hence, like any other kind of calculations, according to the basic principles of
 everyone should be able to reproduce them, reuse or modify them.
 Therefore, the detailed instructions leading to results or figures 
 should be published along with them.
-To achieve these goals, in practice we need to be able to do simply the following things : 
+To achieve these goals, in practice we need to be able to do simply the following things: 
 
-* Store along with the data the version of the code used to produced them (or even the code itself !), 
+* Store along with the data the version of the code used to produced them (or even the code itself!), 
   and the configuration options of this code.
 
 * Keep with the figures all the instructions (i.e. the script) that have produced it.
 
-* We want to do that **easily, at no cost in human time**, hence 
-  without adding a new layer of tools (which means new things to learn, which takes time,  etc...). 
-  Indeed this task is important but admittedly extremely boring for physicists...
+* We want to do that **easily at no cost in human time**, and hence 
+  without adding a new layer of tools (which means new things to learn,
+  which takes time, etc.). 
+  Indeed this task is important but admittedly extremely boring for physicists!
 
-Fortunately, python helps solving these issues easily and efficiently.
+Fortunately, python helps solve these issues easily and efficiently.
 
 TRIQS adds very little to the standard python tools here.
 So this page should be viewed more as a wiki page of examples.
@@ -56,7 +57,7 @@ simply by putting it in the HDFArchive, e.g. ::
   import sys, pytriqs.version as version
   Results.create_group("log")
   log = Results["log"]
-  log["code_version"] = version.revision
+  log["code_version"] = version.release
   log["script"] = open(sys.argv[0]).read() # read myself !
    
 The script that is currently being executed will be copied into the file `solution.h5`, under the subgroup `/log/script`.
@@ -75,7 +76,7 @@ In such situation, one can simply use the `inspect` module of the python standar
    # Ok, I need to save common too !
    import inspect,sys, pytriqs.version as version
    log = Results.create_group("log")
-   log["code_version"] = version.revision()
+   log["code_version"] = version.release
    log["script"] = open(sys.argv[0]).read()
    log["common"] = inspect.getsource(common) # This retrieves the source of the module in a string
 

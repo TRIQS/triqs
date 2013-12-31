@@ -19,22 +19,22 @@ A thin layer above matplotlib
 TRIQS defines a function *oplot*, similar to the standard matplotlib pyplot.plot function,
 but that can plot TRIQS objects (in fact *any* object, see below).
 
-We can reproduce the first example of the Green function tutorial :
+We can reproduce the first example of the Green function tutorial:
 
 .. plot:: reference/python/green/example.py
    :include-source:
    :scale: 70
 
-The *oplot* function takes :
+The *oplot* function takes:
 
 * as arguments any object that implements the :ref:`plot protocol <plot_protocol>`, 
-  for example Green function, Density of state : in fact any object where plotting is reasonable and has been defined ...
+  for example Green functions, density of states, and in fact, any object where plotting is reasonable and has been defined ...
 
 * string formats following objects, as in regular matplotlib, like in the example above.
 
 * regular options of the matplotlib *pyplot.plot* function 
 
-* options specific to the object to be plotted : here the `x_window` tells the Green function to plot itself in a reduced window of :math:`\omega_n`.
+* options specific to the object to be plotted: here the `x_window` tells the Green function to plot itself in a reduced window of :math:`\omega_n`.
   
 Multiple panels figures
 =================================
@@ -42,7 +42,7 @@ Multiple panels figures
 `Only valid for matplotlib v>=1.0`.
 
 While one can use the regular matplotlib subfigure to make multi-panel figures, 
-subplots makes it a bit more pythonic :
+subplots makes it a bit more pythonic:
 
 .. plot:: reference/python/data_analysis/plotting/example.py
    :include-source:
@@ -64,7 +64,7 @@ See example below.
 
 .. function:: _plot_( OptionsDict )
 
-  * OptionDict is a dictionnary of options.
+  * OptionDict is a dictionary of options.
 
   .. warning:: 
      * The method _plot_ must consume the options it uses (using  e.g. the pop method of dict).
@@ -75,9 +75,9 @@ See example below.
     * *xdata* : A 1-dimensional numpy array describing the x-axis points
     * *ydata* : A 1-dimensional numpy array describing the y-axis points
     * *label* : Label of the curve for the legend of the graph
-    * *type* : a string : currently "XY" [ optional] 
+    * *type* : a string: currently "XY" [ optional] 
 
-   and optionally : 
+   and optionally: 
     
     * *xlabel* : a label for the x axis. The last object plotted will overrule the previous ones.
     * *ylabel* : a label for the y axis. The last object plotted will overrule the previous ones.
