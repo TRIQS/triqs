@@ -18,3 +18,4 @@ C++
    det_manip/contents
    parameters/parameters
    utilities/contents
+   using_the_lib/profiling

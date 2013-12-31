@@ -19,7 +19,7 @@ This is done with the code :
 
 .. plot:: reference/python/green/example.py
    :include-source:
-   :scale: 70
+   :scale: 50
 
 In this very simple example, the Green's function is just a 1x1 block. Let's go through
 the different steps of the example:

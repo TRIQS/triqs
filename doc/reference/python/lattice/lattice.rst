@@ -32,7 +32,7 @@ Reference manual
 .. toctree::
 
   bravais
-  tightbinding
+  tightbinding_and_example
   dos
   hilbert
   sumk
