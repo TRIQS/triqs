@@ -64,7 +64,7 @@ namespace gfs {
   long size() const { return (_positive_only ? n_max : 2 * n_max + (_dom.statistic == Boson ? 1 : 2)); }
 
   /// From an index of a point in the mesh, returns the corresponding point in the domain
-  domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind + _dom.statistic == Fermion) / _dom.beta; }
+  domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind + ((_dom.statistic == Fermion)?1:0)) / _dom.beta; }
 
   /// Flatten the index in the positive linear index for memory storage (almost trivial here).
   long index_to_linear(index_t ind) const { return ind + index_start(); }
