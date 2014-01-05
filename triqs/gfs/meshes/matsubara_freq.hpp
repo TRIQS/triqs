@@ -67,7 +67,7 @@ namespace gfs {
   domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind + (_dom.statistic == Fermion)) / _dom.beta; }
 
   /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-  long index_to_linear(index_t ind) const { return ind + index_start(); }
+  long index_to_linear(index_t ind) const { return ind - index_start(); }
 
   /**
    *  The mesh point
@@ -80,8 +80,9 @@ namespace gfs {
       : matsubara_freq(index_, mesh.domain().beta, mesh.domain().statistic),
         index_start(mesh.index_start()),
         index_stop(mesh.index_start() + mesh.size() - 1) {}
+   mesh_point_t(matsubara_freq_mesh const &mesh) : mesh_point_t(mesh, mesh.index_start()) {}
    void advance() { ++n; }
-   long linear_index() const { return n; }
+   long linear_index() const { return n - index_start; }
    long index() const { return n; }
    bool at_end() const { return (n == index_stop); }
    void reset() { n = index_start; }

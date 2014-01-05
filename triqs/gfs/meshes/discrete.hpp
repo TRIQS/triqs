@@ -47,6 +47,7 @@ namespace gfs {
    public:
    mesh_point_t() = default;
    mesh_point_t(discrete_mesh const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
+   mesh_point_t(discrete_mesh const &mesh) : mesh_point_t(mesh, 0){}
    void advance() { ++_index; }
    using cast_t = long;
    operator cast_t() const { return m->index_to_point(_index); }
