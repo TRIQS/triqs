@@ -55,10 +55,14 @@ namespace gfs {
   // simple evaluation : take the point on the grid...
   template <> struct evaluator_fnt_on_mesh<imfreq> {
    long n;
+   double w;
    evaluator_fnt_on_mesh() = default;
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, long p) { n = p; }
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, matsubara_freq const &p) { n = p.n; }
-   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(f(n));
+   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, long p) { n = p; w=1; } 
+   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, matsubara_freq const &p) { 
+    if ((p.n >= m.index_start()) && (p.n < m.size()+m.index_start())) {w=1; n =p.n;}
+    else {w=0; n=0;}
+   }
+   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(w*f(n));
   };
 
   // ------------- evaluator  -------------------

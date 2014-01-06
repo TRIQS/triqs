@@ -37,7 +37,7 @@ int main() {
  auto zz = G_w_wn2(t_,tp_);
  //std::cout  << std::get<0>(zz.childs).data() << std::endl ;
  auto yy = eval ( zz, t_=2, tp_=3);
- std::cout  << yy.indexmap()<< std::endl ;
+ //std::cout  << yy.indexmap()<< std::endl ;
  std::cout  << yy << std::endl ;
  //std::cout  << eval ( zz, t_=2, tp_=3)<< std::endl ;
  //std::cout  << eval ( G_w_wn2(t_,tp_), t_=2, tp_=3)<< std::endl ;

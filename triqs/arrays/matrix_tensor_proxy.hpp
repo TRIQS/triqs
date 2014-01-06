@@ -35,7 +35,7 @@ namespace arrays {
  // tensor const
  template <typename A, bool IsMatrix>
  struct const_matrix_tensor_proxy : std::conditional<IsMatrix, TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix),
-                                                     TRIQS_CONCEPT_TAG_NAME(ImmutableCuboidArray)>::type {
+                                                     TRIQS_CONCEPT_TAG_NAME(ImmutableArray)>::type {
 
   typedef typename std::remove_reference<A>::type A_t;
   static constexpr bool is_const = true;
@@ -84,7 +84,7 @@ namespace arrays {
  // tensor no const
  template <typename A, bool IsMatrix>
  struct matrix_tensor_proxy : std::conditional<IsMatrix, TRIQS_CONCEPT_TAG_NAME(MutableMatrix),
-                                               TRIQS_CONCEPT_TAG_NAME(MutableCuboidArray)>::type {
+                                               TRIQS_CONCEPT_TAG_NAME(MutableArray)>::type {
 
   typedef typename std::remove_reference<A>::type A_t;
   static constexpr bool is_const = false;
