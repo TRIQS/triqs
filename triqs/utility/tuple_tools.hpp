@@ -175,7 +175,7 @@ namespace triqs { namespace tuple {
  };
 
  template<typename F, typename T1>
-  auto apply_on_tuple (F && f,T1 && t1) DECL_AND_RETURN( apply_on_tuple_impl<std::tuple_size<typename std::remove_reference<T1>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1)));
+  auto apply_on_tuple (F && f,T1 && t1) DECL_AND_RETURN( apply_on_tuple_impl<std::tuple_size<typename std::remove_const<typename std::remove_reference<T1>::type>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1)));
 
  /**
   * apply_on_zip(f, t1,t2)
