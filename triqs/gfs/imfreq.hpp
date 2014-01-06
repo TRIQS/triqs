@@ -72,33 +72,53 @@ namespace gfs {
    // dispatch for 2x2 cases : matrix/scalar and tail/no_tail ( true means no_tail)
    template <typename G>
    std::complex<double> _call_impl(G const *g, matsubara_freq const &f, scalar_valued, std::false_type) const {
-    if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
-    if ((f.n < 0) && (-f.n < g->mesh().size())) return conj((*g)[-f.n]);
+    if (g->mesh().index_start()==0){//only positive Matsubara frequencies
+     if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
+     if ((f.n < 0) && (-f.n < g->mesh().size())) return conj((*g)[-f.n]);
+    }
+    else{
+     if ((f.n >= g->mesh().index_start()) && (f.n < g->mesh().size()+g->mesh().index_start())) return (*g)[f.n];
+    }
     return g->singularity().evaluate(f)(0, 0);
    }
 
    template <typename G>
    std::complex<double> _call_impl(G const *g, matsubara_freq const &f, scalar_valued, std::true_type) const {
-    if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
-    if ((f.n < 0) && (-f.n < g->mesh().size())) return conj((*g)[-f.n]);
+    if (g->mesh().index_start()==0){//only positive Matsubara frequencies
+     if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
+     if ((f.n < 0) && (-f.n < g->mesh().size())) return conj((*g)[-f.n]);
+    }
+    else{
+     if ((f.n >= g->mesh().index_start()) && (f.n < g->mesh().size()+g->mesh().index_start())) return (*g)[f.n];
+    }
     return 0;
    }
 
    template <typename G>
    arrays::matrix_const_view<std::complex<double>> _call_impl(G const *g, matsubara_freq const &f, matrix_valued,
                                                               std::false_type) const {
-    if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
-    if ((f.n < 0) && (-f.n < g->mesh().size()))
-     return arrays::matrix<std::complex<double>>{conj((*g)[-f.n]())};
-    else
-     return g->singularity().evaluate(f);
+    if (g->mesh().index_start()==0){//only positive Matsubara frequencies
+     if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
+     if ((f.n < 0) && (-f.n < g->mesh().size()))
+      return arrays::matrix<std::complex<double>>{conj((*g)[-f.n]())};
+    }
+    else{
+     if ((f.n >= g->mesh().index_start()) && (f.n < g->mesh().size()+g->mesh().index_start())) return (*g)[f.n];
+    }
+    return g->singularity().evaluate(f);
    }
 
    template <typename G>
    arrays::matrix_const_view<std::complex<double>> _call_impl(G const *g, matsubara_freq const &f, matrix_valued,
                                                               std::true_type) const {
-    if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
-    if ((f.n < 0) && (-f.n < g->mesh().size())) return arrays::matrix<std::complex<double>>{conj((*g)[-f.n]())};
+    if (g->mesh().index_start()==0){//only positive Matsubara frequencies
+     if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
+     if ((f.n < 0) && (-f.n < g->mesh().size()))
+      return arrays::matrix<std::complex<double>>{conj((*g)[-f.n]())};
+    }
+    else{
+     if ((f.n >= g->mesh().index_start()) && (f.n < g->mesh().size()+g->mesh().index_start())) return (*g)[f.n];
+    }
     auto r = arrays::matrix<std::complex<double>>{get_target_shape(*g)};
     r() = 0;
     return r;
