@@ -1,8 +1,8 @@
 cdef class MeshImFreq: 
     cdef mesh_imfreq  _c
 
-    def __init__(self, beta, stat, int n_max): 
-        self._c =  make_mesh_imfreq(beta,{'F' :Fermion, 'B' : Boson}[stat], n_max)
+    def __init__(self, beta, stat, int n_pts, bint positive_only=True): 
+        self._c =  make_mesh_imfreq(beta,{'F' :Fermion, 'B' : Boson}[stat], n_pts, positive_only)
     
     def __len__ (self) : return self._c.size()
     
@@ -28,6 +28,6 @@ cdef class MeshImFreq:
 
 # C -> Python 
 cdef inline make_MeshImFreq (mesh_imfreq x) :
-    return MeshImFreq( x.domain().beta, 'F' if x.domain().statistic==Fermion else 'B', x.size() )
+    return MeshImFreq( x.domain().beta, 'F' if x.domain().statistic==Fermion else 'B', x.size(), x.positive_only() )
 
 

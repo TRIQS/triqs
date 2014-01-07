@@ -18,6 +18,7 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
               * ``indices``:  a list of indices names of the block
               * ``beta``:  Inverse Temperature
               * ``statistic``:  'F' or 'B'
+              * ``positive_only``:  True or False
               * ``n_points``:  Number of Matsubara frequencies
               * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_points) representing the value of the Green function on the mesh.
               * ``tail``:  the tail
@@ -40,9 +41,10 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
         if mesh is None :
             if 'beta' not in d : raise ValueError, "beta not provided"
             beta = float(d.pop('beta'))
-            n_max = d.pop('n_points',1025)
+            n_points = d.pop('n_points',1025)
             stat = d.pop('statistic','F')
-            mesh = MeshImFreq(beta,stat,n_max)
+            positive_only = d.pop('positive_only',True)
+            mesh = MeshImFreq(beta,stat,n_points, positive_only)
 
         self.dtype = numpy.complex_
         indices_pack = get_indices_in_dict(d)

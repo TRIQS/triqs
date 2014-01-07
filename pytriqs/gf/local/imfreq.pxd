@@ -11,9 +11,10 @@ cdef extern from "triqs/gfs/imfreq.hpp" namespace "triqs::gfs" :
         imfreq_domain & domain()
         double x_min()
         long size()
+        bint positive_only()
         bint operator ==( mesh_imfreq &)
 
-    cdef mesh_imfreq make_mesh_imfreq "triqs::gfs::gf_mesh<triqs::gfs::imfreq>" (double beta, statistic_enum S, size_t n_max)
+    cdef mesh_imfreq make_mesh_imfreq "triqs::gfs::gf_mesh<triqs::gfs::imfreq>" (double beta, statistic_enum S, size_t n_max, bint positive_only)
     #cdef mesh_imfreq make_mesh_imfreq "triqs::gfs::gf_implementation::gf_factories<triqs::gfs::imfreq,triqs::gfs::matrix>::make_mesh" (double beta, statistic_enum S, size_t n_max)
     
     cdef cppclass gf_imfreq "triqs::python_tools::cython_proxy<triqs::gfs::gf_view<triqs::gfs::imfreq> >" :

@@ -35,15 +35,15 @@ namespace gfs {
   using domain_pt_t = typename domain_t::point_t;
 
   /// Constructor
-  matsubara_freq_mesh() : _dom(), n_max(0), _positive_only(true) {}
+  matsubara_freq_mesh() : _dom(), _n_pts(0), _positive_only(true) {}
 
   /// Constructor
   matsubara_freq_mesh(domain_t dom, int n_pts=1025, bool positive_only = true)
-     : _dom(std::move(dom)), n_max(n_pts), _positive_only(positive_only) {}
+     : _dom(std::move(dom)), _n_pts(n_pts), _positive_only(positive_only) {}
 
   /// Constructor
-  matsubara_freq_mesh(double beta, statistic_enum S, int Nmax = 1025, bool positive_only = true)
-     : matsubara_freq_mesh({beta, S}, Nmax, positive_only) {}
+  matsubara_freq_mesh(double beta, statistic_enum S, int n_pts = 1025, bool positive_only = true)
+     : matsubara_freq_mesh({beta, S}, n_pts, positive_only) {}
 
   /// Copy constructor 
   matsubara_freq_mesh(matsubara_freq_mesh const &) = default;
@@ -55,13 +55,13 @@ namespace gfs {
    *
    *  0 if positive_only is true
    *  else : 
-   *    For fermions : -Nmax +1
+   *    For fermions : -Nmax - 1
    *    For Bosons : -Nmax
    **/ 
-  int index_start() const { return -(_positive_only ? 0 : n_max + (_dom.statistic == Fermion)); }
+  int index_start() const { return -(_positive_only ? 0 : n_max() + (_dom.statistic == Fermion)); }
 
   /// Size (linear) of the mesh
-  long size() const { return (_positive_only ? n_max : 2 * n_max + (_dom.statistic == Boson ? 1 : 2)); }
+  long size() const { return _n_pts;}
 
   /// From an index of a point in the mesh, returns the corresponding point in the domain
   domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind + (_dom.statistic == Fermion)) / _dom.beta; }
@@ -107,7 +107,7 @@ namespace gfs {
   const_iterator cend() const { return const_iterator(this, true); }
 
   bool operator==(matsubara_freq_mesh const &M) const {
-   return (std::make_tuple(_dom, n_max, _positive_only, n_max) == std::make_tuple(M._dom, M.n_max, M._positive_only, n_max));
+   return (std::make_tuple(_dom, _n_pts, _positive_only) == std::make_tuple(M._dom, M._n_pts, M._positive_only));
   }
   bool operator!=(matsubara_freq_mesh const &M) const { return !(operator==(M)); }
 
@@ -143,7 +143,7 @@ namespace gfs {
   ///  BOOST Serialization
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    ar &boost::serialization::make_nvp("domain", _dom);
-   ar &boost::serialization::make_nvp("size", n_max);
+   ar &boost::serialization::make_nvp("size", _n_pts);
    ar &boost::serialization::make_nvp("kind", _positive_only);
   }
 
@@ -154,7 +154,8 @@ namespace gfs {
 
   private:
   domain_t _dom;
-  int n_max;
+  int _n_pts;
+  long n_max() const { return (_positive_only ? _n_pts : (_n_pts - (_dom.statistic == Boson ? 1 : 2))/2);}
   bool _positive_only;
  };
 

@@ -48,6 +48,8 @@ namespace gfs {
   }
  };
 
+ inline std::ostream &operator<<(std::ostream &out, matsubara_freq const &y) { return out << std::complex<double>(y); }
+
  inline matsubara_freq operator+(matsubara_freq const &x, matsubara_freq const &y) {
   return {x.n + y.n + (x.statistic & y.statistic), x.beta, ((x.statistic ^ y.statistic) == 1 ? Fermion : Boson)};
  }
