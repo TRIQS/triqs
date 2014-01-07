@@ -58,7 +58,7 @@ namespace triqs { namespace mc_tools {
 
    template<typename MoveType>
     void construct_delegation (MoveType * p) {
-     impl_= std::shared_ptr<void> (p);
+     impl_= std::shared_ptr<MoveType> (p);
      hash_ = typeid(MoveType).hash_code();
      type_name_ =  typeid(MoveType).name();
      clone_   = [p](){return MoveType(*p);};

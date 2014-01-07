@@ -101,7 +101,7 @@ namespace triqs { namespace utility {
 
   private:
   template<typename T> void delegate_constructor( T * obj, std::string const & name) {
-   p = std::shared_ptr<void> (obj);
+   p = std::shared_ptr<T> (obj);
    type_code_ = type_code<T>();
    name_ = name;
    clone_ =  [obj,name]() { return _object( *obj, name);} ;

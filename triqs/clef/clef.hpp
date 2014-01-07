@@ -458,8 +458,9 @@ namespace triqs { namespace clef {
   public:
   function():_fnt_ptr{std::make_shared<std_function_type> ()}{}
 
-  template<typename Expr, typename...  X>
-   explicit function(Expr const & _e, X... x) : _exp(new Expr(_e)),_fnt_ptr(new std_function_type(make_function(_e, x...))){} 
+  template <typename Expr, typename... X>
+  explicit function(Expr const& _e, X... x)
+     : _exp(std::make_shared<Expr>(_e)), _fnt_ptr(new std_function_type(make_function(_e, x...))) {}
 
   ReturnType operator()(T const &... t) const { return (*_fnt_ptr)(t...);}
 
@@ -468,7 +469,7 @@ namespace triqs { namespace clef {
 
   template<typename RHS> friend void triqs_clef_auto_assign (function const & x, RHS rhs) {
    * (x._fnt_ptr) =  std_function_type (rhs);
-   x._exp = std::shared_ptr <void> (new typename std::remove_cv<decltype(rhs.ex)>::type (rhs.ex));
+   x._exp = std::make_shared<typename std::remove_cv<decltype(rhs.ex)>::type> (rhs.ex);
   }
 
  };

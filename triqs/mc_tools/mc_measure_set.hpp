@@ -54,7 +54,7 @@ namespace triqs { namespace mc_tools {
 
    template<typename MeasureType>
     void construct_delegation (MeasureType * p) {
-     impl_= std::shared_ptr<void> (p);
+     impl_= std::shared_ptr<MeasureType> (p);
      clone_ =  [p]() { return MeasureType(*p);} ;
      hash_ = typeid(MeasureType).hash_code();
      type_name_ =  typeid(MeasureType).name();
