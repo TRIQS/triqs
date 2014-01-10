@@ -604,7 +604,7 @@ namespace gfs {
   // ----- tensor_valued
   template <int R, typename Var, typename Opt> struct factories<Var, tensor_valued<R>, Opt> {
    using gf_t = gf<Var, tensor_valued<R>, Opt>;
-   using target_shape_t = arrays::mini_vector<size_t, R>;
+   using target_shape_t = arrays::mini_vector<int, R>;
    using mesh_t = typename gf_t::mesh_t;
 
    static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t shape) {
@@ -621,7 +621,7 @@ namespace gfs {
   // ----- matrix_valued
   template <typename Var, typename Opt> struct factories<Var, matrix_valued, Opt> {
    using gf_t = gf<Var, matrix_valued, Opt>;
-   using target_shape_t = arrays::mini_vector<size_t, 2>;
+   using target_shape_t = arrays::mini_vector<int, 2>;
    using mesh_t = typename gf_t::mesh_t;
 
    static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t shape) {
