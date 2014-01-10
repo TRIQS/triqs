@@ -10,6 +10,9 @@ int main() {
  double beta =1;
  double tmax=10;
  double wmax=10;
+ double it0=0.3352*beta;
+ double t0=0.3352*tmax;
+ double w0=0.3352*wmax;
  int N=1000;
  
  auto Gw = gf<refreq> {{-wmax, wmax, N},{2,2}};
@@ -34,19 +37,25 @@ int main() {
  Git2( t_) << 1.0*t_;
  Giw2( w_) << 1.0*w_;
  
- std::cout << "Gt(0.3352*tmax)(0,0)=" << Gt(0.3352*tmax)(0,0) << std::endl;
- if ( std::abs(Gt(0.3352*tmax)(0,0)-0.3352*tmax) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Gt\n";  
- std::cout << "Gt2(0.3352*tmax)=" << Gt2(0.3352*tmax) << std::endl;
- if ( std::abs(Gt2(0.3352*tmax)-0.3352*tmax) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Gt2\n";  
- std::cout << "Gw(0.3352*wmax)(0,0)=" << Gw(0.3352*wmax)(0,0) << std::endl;
- if ( std::abs(Gw(0.3352*wmax)(0,0)-0.3352*wmax) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Gw\n";  
- std::cout << "Gw2(0.3352*wmax)=" << Gw2(0.3352*wmax) << std::endl;
- if ( std::abs(Gw2(0.3352*wmax)-0.3352*wmax) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Gw2\n";  
+ std::cout << "Gt(t0)(0,0)=" << Gt(t0)(0,0) << std::endl;
+ if ( std::abs(Gt(t0)(0,0)-t0) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Gt\n";  
+ std::cout << "Gt2(t0)=" << Gt2(t0) << std::endl;
+ if ( std::abs(Gt2(t0)-t0) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Gt2\n";  
+ std::cout << "Gw(w0)(0,0)=" << Gw(w0)(0,0) << std::endl;
+ if ( std::abs(Gw(w0)(0,0)-w0) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Gw\n";  
+ std::cout << "Gw2(w0)=" << Gw2(w0) << std::endl;
+ if ( std::abs(Gw2(w0)-w0) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Gw2\n";  
  
- std::cout << "Git(0.3352*beta)(0,0)=" << Git(0.3352*beta)(0,0) << std::endl;
- if ( std::abs(Git(0.3352*beta)(0,0)-0.3352*beta) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git\n"; 
- std::cout << "Git2(0.3352*beta)=" << Git2(0.3352*beta) << std::endl; 
- if ( std::abs(Git2(0.3352*beta)-0.3352*beta) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git2\n";   
+ std::cout << "Git(it0)(0,0)=" << Git(it0)(0,0) << std::endl;
+ if ( std::abs(Git(it0)(0,0)-it0) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git\n"; 
+ std::cout << "Git2(it0)=" << Git2(it0) << std::endl; 
+ if ( std::abs(Git2(it0)-it0) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git2\n";   
+ 
+ //verification of windowing for imaginary times outside from [0,beta]
+ std::cout << "Git2(5*beta+it0)=" << Git2(it0+5*beta) << std::endl; 
+ if ( std::abs(Git2(1.3352*beta)+it0) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git3\n";   
+ std::cout << "Git2(it0-beta)=" << Git2(it0-beta) << std::endl; 
+ if ( std::abs(Git2(it0-beta)+it0) > precision) TRIQS_RUNTIME_ERROR<< "evaluator error in Git3\n";  
  
  if ( std::abs(Gw2.on_mesh(N/3) -Gw2[N/3] ) > precision) TRIQS_RUNTIME_ERROR<< "error in on_mesh()\n";  
  if ( std::abs(Gt2.on_mesh(N/3) -Gt2[N/3] ) > precision) TRIQS_RUNTIME_ERROR<< "error in on_mesh()\n";  
