@@ -10,5 +10,6 @@ C++ libraries
 
    array_tutorial
    det_manip_tutorial
+   gfs_tutorial
 
 ..
