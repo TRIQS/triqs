@@ -222,6 +222,16 @@ namespace triqs { namespace arrays {
    return a;
   }
 
+  template <typename M>
+  TYPE_ENABLE_IF(typename M::value_type, ImmutableMatrix<M>) trace(M const &m) {
+    auto r = typename M::value_type{};
+    if (first_dim(m) != second_dim(m))
+      TRIQS_RUNTIME_ERROR << " Trace of a non square matrix";
+    auto d = first_dim(m);
+    for (int i = 0; i < d; ++i)
+      r += m(i, i);
+    return r;
+  }
 }}//namespace triqs::arrays
 
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
