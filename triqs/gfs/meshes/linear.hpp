@@ -25,9 +25,9 @@ namespace gfs {
 
  // Three possible meshes
  enum mesh_kind {
-  half_bins,
-  full_bins,
-  without_last
+  half_bins,   //0
+  full_bins,   //1
+  without_last //2
  };
 
  /**
@@ -195,17 +195,35 @@ namespace gfs {
  /// Approximation of a point of the domain by a mesh point
  template <typename D> std::tuple<bool, long, double> windowing(linear_mesh<D> const &mesh, typename D::point_t const &x) {
   double a = (x - mesh.x_min()) / mesh.delta();
-  long i = std::floor(a), imax = long(mesh.size()) - 1;
+  // index of the bin
+  long i = std::floor(a);
+  long imax = long(mesh.size()) - 1;
   bool in = (i >= 0) && (i < imax);
   double w = a - i;
-  if (i == imax) {
-   --i;
-   in = (std::abs(w) < 1.e-14);
-   w = 1.0;
+  switch (mesh.kind()) {
+   case half_bins:
+    if( i == -1){
+     ++i;
+     in = ( (w-0.5) > -1.e-14 );
+     w = 0;
+    }
+    else if (i == imax) {
+     --i;
+     in = ( w-0.5 < 1.e-14 );
+     w = 1.0;
+    }
+    break;
+   case without_last:
+    if (i == imax) {
+     --i;
+     in = ( std::abs(w) < 1.e-14 );
+     w = 1.0;
+    }
+    break;
+   default:
+    break;
   }
   return std::make_tuple(in, i, w);
-  // return std::make_tuple(in, (in ? i : 0),w);
  }
 }
 }
-
