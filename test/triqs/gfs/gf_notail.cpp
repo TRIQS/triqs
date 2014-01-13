@@ -32,7 +32,18 @@ int main() {
   // rebuilding a new gf...
   auto g3 = make_gf_from_g_and_tail(vw, gw.singularity());
   // need to test all this....
-  
+ 
+  //test antiperiodicity
+  auto Gt = gf<imtime, scalar_valued, no_tail>{ { beta, Fermion, 1000 }, {  } };
+  Gt(tau_) << exp(-tau_);
+
+  TEST(Gt(0.01));
+  TEST(Gt(.5));
+  TEST(Gt(.9));
+  TEST(Gt(-.1));//should be equal to line above
+
+
+
  }
  TRIQS_CATCH_AND_ABORT;
 }
