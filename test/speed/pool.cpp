@@ -1,3 +1,4 @@
+#include <triqs/utility/first_include.hpp>
 #include <vector>
 #include <map>
 #include <boost/pool/pool_alloc.hpp>

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -22,7 +21,7 @@
 
 #ifndef POLYMORPH_RANDOM_GENERATOR_H
 #define POLYMORPH_RANDOM_GENERATOR_H
-
+#include <triqs/utility/first_include.hpp>
 #include <boost/scoped_ptr.hpp>
 #include "../utility/exceptions.hpp"
 #include "./generator.hpp"
