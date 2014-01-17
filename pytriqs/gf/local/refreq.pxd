@@ -10,7 +10,7 @@ cdef extern from "triqs/gfs/refreq.hpp" namespace "triqs::gfs" :
         double x_min()
         double x_max()
         long size()
-        double kind()
+        long kind()
         bint operator ==( mesh_refreq &)
 
     cdef mesh_refreq make_mesh_refreq "triqs::gfs::gf_mesh<triqs::gfs::refreq>" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)

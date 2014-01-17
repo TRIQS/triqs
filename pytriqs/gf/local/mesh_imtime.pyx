@@ -12,7 +12,7 @@ cdef class MeshImTime:
 
     property kind : 
         """Inverse temperature"""
-        def __get__(self): return self._c.kind()
+        def __get__(self): return {half_bins: 'H', full_bins: 'F', without_last: 'W'}[self._c.kind()]
     
     property statistic : 
         def __get__(self): return 'F' if self._c.domain().statistic==Fermion else 'B'
