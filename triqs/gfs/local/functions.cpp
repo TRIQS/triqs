@@ -69,7 +69,10 @@ namespace triqs { namespace gfs {
   return res;
  }
 
-
+  double density(gf_view<imfreq, scalar_valued> const & g){
+    return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0,0);
+  }
+ 
  arrays::matrix<double> density( gf_view<legendre> const & gl) { 
 
    auto sh = gl.data().shape().front_pop();
