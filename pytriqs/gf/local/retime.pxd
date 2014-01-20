@@ -10,7 +10,7 @@ cdef extern from "triqs/gfs/retime.hpp" namespace "triqs::gfs" :
         double x_min()
         double x_max()
         long size()
-        double kind()
+        long kind()
         bint operator ==( mesh_retime &)
 
     cdef mesh_retime make_mesh_retime  "triqs::gfs::gf_mesh<triqs::gfs::retime>" (double t_min, double t_max, size_t n_freq, mesh_enum mk)

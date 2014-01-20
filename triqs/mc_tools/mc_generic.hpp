@@ -20,6 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_TOOLS_MC_GENERIC_H
 #define TRIQS_TOOLS_MC_GENERIC_H
+#include <triqs/utility/first_include.hpp>
 #include <math.h>
 #include <triqs/utility/timer.hpp>
 #include <triqs/utility/report_stream.hpp>

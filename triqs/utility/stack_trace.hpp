@@ -22,6 +22,7 @@
 
 #ifndef TRIQS_UTILITY_TRACE_H 
 #define TRIQS_UTILITY_TRACE_H
+#include <triqs/utility/first_include.hpp>
 #include <string>
 #include <sstream>
 

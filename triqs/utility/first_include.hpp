@@ -21,6 +21,12 @@
 #ifndef TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 #define TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 
+// clang but not libc++
+#if defined(__clang__) and !defined(_LIBCPP_VERSION)
+// workaround an error in gcc stdlib
+typedef long double max_align_t;
+#endif
+
 #ifdef TRIQS_BUILDING_LIBRARY
 #include <triqs_config.h>
 #else

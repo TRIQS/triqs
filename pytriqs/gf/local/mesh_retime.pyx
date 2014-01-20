@@ -11,7 +11,7 @@ cdef class MeshReTime:
         def __get__(self): return self._c.x_max()
 
     property kind:
-        def __get__(self): return self._c.kind()
+        def __get__(self): return {half_bins: 'H', full_bins: 'F', without_last: 'W'}[self._c.kind()]
 
     def __len__ (self) : return self._c.size()
     
