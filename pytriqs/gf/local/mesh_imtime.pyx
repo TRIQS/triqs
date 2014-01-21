@@ -28,10 +28,10 @@ cdef class MeshImTime:
             return self._c == other._c
 
     def __reduce__(self):
-        return self.__class__, (self.beta, self.statistic, len(self), {half_bins: 'H', full_bins: 'F', without_last: 'W'}[self.kind])
+        return self.__class__, (self.beta, self.statistic, len(self), self.kind)
 
 # C -> Python 
 cdef inline make_MeshImTime ( mesh_imtime x) :
     return MeshImTime( x.domain().beta, 'F' if x.domain().statistic==Fermion else 'B',
-                       x.size(), {half_bins: 'H', full_bins: 'F', without_last: 'W'}[x.kind()] )
+                       x.size(), x.kind() )
 
