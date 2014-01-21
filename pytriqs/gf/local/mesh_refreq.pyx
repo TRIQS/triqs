@@ -30,5 +30,5 @@ cdef class MeshReFreq:
 
 # C -> Python 
 cdef inline make_MeshReFreq ( mesh_refreq x) :
-    return MeshReFreq( x.x_min(), x.x_max(), x.size(), x.kind() )
+    return MeshReFreq( x.x_min(), x.x_max(), x.size(), {half_bins: 'H', full_bins: 'F', without_last: 'W'}[x.kind()] )
 
