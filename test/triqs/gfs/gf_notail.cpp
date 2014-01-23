@@ -42,8 +42,13 @@ int main() {
   TEST(Gt(.9));
   TEST(Gt(-.1));//should be equal to line above
 
-
-
+  //fourier
+   triqs::gfs::local::tail t(1,1);
+  gw_n (tau_) << 1/(tau_-1.);
+  auto gt_with_full_tail = make_gf_from_inverse_fourier(make_gf_from_g_and_tail(gw_n, gw.singularity()));
+  auto gt_tail_with_one_term = make_gf_from_inverse_fourier(make_gf_from_g_and_tail(gw_n, t));
+  TEST(gt_with_full_tail(.5));
+  TEST(gt_tail_with_one_term(.5));
  }
  TRIQS_CATCH_AND_ABORT;
 }
