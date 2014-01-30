@@ -59,7 +59,7 @@ namespace gfs {
  }
 
  inline matsubara_freq operator-(matsubara_freq const &mp) {
-  return {-(mp.n + mp.statistic == Fermion ? 1 : 0), mp.beta, mp.statistic};
+  return {-(mp.n + (mp.statistic == Fermion ? 1 : 0)), mp.beta, mp.statistic};
  }
 
  //---------------------------------------------------------------------------------------------------------
