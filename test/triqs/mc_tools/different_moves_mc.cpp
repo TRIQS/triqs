@@ -43,7 +43,7 @@ struct move_right {
 struct compute_histo{
   configuration *config;
   triqs::arrays::array<double,1> H;  // an histogram
-  int tot, xmax;
+  int xmax, tot;
   compute_histo(configuration &config_, triqs::arrays::array<double,1> &H_, int xmax_) : config(&config_), H(H_), xmax(xmax_), tot(0) {}
   void accumulate(double sign) {
    if( config->x+xmax>=0 && config->x-xmax<0){

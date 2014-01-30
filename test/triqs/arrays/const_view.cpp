@@ -36,7 +36,6 @@ int main(int argc, char **argv) {
  {
   array<long, 2> A(2, 3);
   A() = 3;
-  auto const &AA = A;
   f2(A());
 
 

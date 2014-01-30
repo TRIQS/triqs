@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_C14_FIX_H
-#define TRIQS_C14_FIX_H
+#pragma once
 #include <memory>
 //#include <functional>
 #include <tuple>
@@ -57,11 +56,7 @@ namespace std {
  template<int i, typename ... Args>
   auto get(c14::tuple<Args...> const & t) DECL_AND_RETURN( std::get<i>(static_cast<std::tuple<Args...>>(t)));
 
- template<typename ... Args> struct tuple_size<c14::tuple<Args...>>: tuple_size<std::tuple<Args...>>{};
-
+ template<typename ... Args> class tuple_size<c14::tuple<Args...>>: public tuple_size<std::tuple<Args...>>{};
 
 }
-
-
-#endif
 

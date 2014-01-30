@@ -54,7 +54,7 @@ namespace triqs { namespace clef {
  /* ---------------------------------------------------------------------------------------------------
   *  Placeholder and corresponding traits
   *  --------------------------------------------------------------------------------------------------- */
- template<int i, typename T> class pair; // forward
+ template<int i, typename T> struct pair; // forward
 
  // a placeholder is an empty struct, labelled by an int.
  template<int N> struct placeholder {

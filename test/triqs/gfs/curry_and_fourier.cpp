@@ -13,13 +13,10 @@ using namespace triqs::gfs;
 int main() {
 
 try { 
- double beta =1.;
- double tmin=0.;
  double tmax=10;
  double wmin=0.;
  double wmax=1.0;
  int n_re_freq=100;
- int n_im_freq=100;
  int Nt=100;
  
  triqs::clef::placeholder<0> w_;

@@ -293,7 +293,7 @@ namespace gfs {
    return "Gf" + gfs_implementation::h5_name<Variable, Target, Opt>::invoke();
   }
 
-  friend class gfs_implementation::h5_rw<Variable, Target, Opt>;
+  friend struct gfs_implementation::h5_rw<Variable, Target, Opt>;
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_impl const &g) {

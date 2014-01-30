@@ -10,7 +10,6 @@ int main() {
 
 try { 
 
- double precision=10e-9;
  double beta =1.;
   
  double tmin=0.;

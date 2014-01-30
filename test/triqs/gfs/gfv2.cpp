@@ -36,7 +36,6 @@ int main() {
   TEST( G( 0) ) ;
 
   triqs::clef::placeholder<0> om_;
-  triqs::clef::placeholder<1> nu_;
 
   TEST( G(om_) ) ;
   TEST( eval(G(om_), om_=0) ) ;

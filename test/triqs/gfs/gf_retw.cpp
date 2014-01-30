@@ -24,7 +24,6 @@ int main() {
  auto Giw2 = gf<imfreq,scalar_valued> {{beta, Fermion, N}};
  auto Git2 = gf<imtime,scalar_valued> {{beta, Fermion, N}};
 
- int i =0;
  for (auto & t : Gt.mesh()) Gt[t] = 1.0*t;
  for (auto & w : Gw.mesh()) Gw[w] = 1.0*w;
  for (auto & it : Git.mesh()) Git[it] = 1.0*it;

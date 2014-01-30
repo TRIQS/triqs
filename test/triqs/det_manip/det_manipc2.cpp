@@ -66,7 +66,6 @@ struct test {
    std::cerr<<" ------------------------------------------------"<<std::endl;
    std::cerr <<" i = "<< i << " size = "<< D.size() << std::endl; 
    // choose a move
-   int mn = RNG(4);
    size_t s = D.size();
    size_t i0,j0,i1,j1;
    det_old = D.determinant();
