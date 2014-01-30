@@ -31,6 +31,10 @@ namespace triqs { namespace arrays {
  template<typename A> struct get_call_const_return_type<A,3> { typedef decltype(std::declval<A const>()(0,0,0)) type; };
  template<typename A> struct get_call_const_return_type<A,4> { typedef decltype(std::declval<A const>()(0,0,0,0)) type; };
  template<typename A> struct get_call_const_return_type<A,5> { typedef decltype(std::declval<A const>()(0,0,0,0,0)) type; };
+ template<typename A> struct get_call_const_return_type<A,6> { typedef decltype(std::declval<A const>()(0,0,0,0,0,0)) type; };
+ template<typename A> struct get_call_const_return_type<A,7> { typedef decltype(std::declval<A const>()(0,0,0,0,0,0,0)) type; };
+ template<typename A> struct get_call_const_return_type<A,8> { typedef decltype(std::declval<A const>()(0,0,0,0,0,0,0,0)) type; };
+ template<typename A> struct get_call_const_return_type<A,9> { typedef decltype(std::declval<A const>()(0,0,0,0,0,0,0,0,0)) type; };
 
  template<typename Tag, typename L, typename R> 
   struct array_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) { 
