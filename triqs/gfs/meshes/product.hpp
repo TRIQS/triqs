@@ -105,7 +105,7 @@ namespace gfs {
   };
 
   public:
-  utility::mini_vector<size_t, dim> all_size_as_mini_vector() const {
+  utility::mini_vector<size_t, dim> shape() const {
    utility::mini_vector<size_t, dim> res;
    triqs::tuple::fold(_aux4(), m_tuple, &res[0]);
    return res;
@@ -265,7 +265,7 @@ namespace gfs {
  template <typename... Meshes, typename T, ull_t OptionsFlags, ull_t To, int R, bool B, bool C>
  arrays::array_view<T, sizeof...(Meshes) + R - 1, OptionsFlags, To, true, C>
  reinterpret_linear_array(mesh_product<Meshes...> const &m, arrays::array_view<T, R, OptionsFlags, To, B, C> A) {
-  return {{join(m.all_size_as_mini_vector(), get_shape(A).front_pop())}, A.storage()};
+  return {{join(m.shape(), get_shape(A).front_pop())}, A.storage()};
  }
 }
 }
