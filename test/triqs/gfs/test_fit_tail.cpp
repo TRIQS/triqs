@@ -7,8 +7,7 @@ using triqs::arrays::make_shape;
 using namespace triqs::gfs;
 using triqs::gfs::local::tail;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
-
-int main() {
+void test_0(){
 
  double precision=10e-9;
 
@@ -29,9 +28,7 @@ int main() {
 
  gw(iom_) << c(0)/iom_ + c(1)/iom_/iom_ + c(2)/iom_/iom_/iom_; 
 
- //show tail
-// std::cout<< "before fitting:" <<std::endl;
-// for(auto &i : gw.singularity().data()) std::cout << i << std::endl;
+ TEST(gw.singularity());
 
  //erase tail
  for(auto &i : gw.singularity().data()) i = 0.0;
@@ -43,13 +40,12 @@ int main() {
  //restore tail
  set_tail_from_fit(gw, known_moments, n_moments, wn_min, wn_max);
 
-// std::cout<< "after fitting:" <<std::endl; 
-// for(auto &i : gw.singularity().data()) std::cout << i << std::endl;
+ TEST(gw.singularity());
 
  for(size_t i=0; i<first_dim(c); i++){
-   double diff = std::abs( c(i) - gw.singularity().data()(i,0,0) );
-   //std::cout<< "diff: " << diff <<std::endl;
-   if (diff > precision) TRIQS_RUNTIME_ERROR<<" fit_tail error : diff="<<diff<<"\n";
+  double diff = std::abs( c(i) - gw.singularity().data()(i,0,0) );
+  //std::cout<< "diff: " << diff <<std::endl;
+  if (diff > precision) TRIQS_RUNTIME_ERROR<<" fit_tail error : diff="<<diff<<"\n";
  }
 
 
@@ -64,14 +60,37 @@ int main() {
  known_moments(1)=1.;//set the first moment
  set_tail_from_fit(gw, known_moments, n_moments, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
 
+ TEST(gw.singularity());
 
  for(size_t i=0; i<first_dim(c); i++){
-   double diff = std::abs( c(i) - gw.singularity().data()(i,0,0) );
-   //std::cout<< "diff: " << diff <<std::endl;
-   if (diff > precision) TRIQS_RUNTIME_ERROR<<" fit_tail error : diff="<<diff<<"\n";
+  double diff = std::abs( c(i) - gw.singularity().data()(i,0,0) );
+  //std::cout<< "diff: " << diff <<std::endl;
+  if (diff > precision) TRIQS_RUNTIME_ERROR<<" fit_tail error : diff="<<diff<<"\n";
  }
+}
+void test_1(){
+ //real life test: find tails of 1/(iom -1)
+ triqs::clef::placeholder<0> iom_;
+ double beta =10;
+ int N=100;
 
+ auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
+ gw(iom_) << 1/(iom_-1);
 
+ size_t wn_min=50; //frequency to start the fit
+ size_t wn_max=90; //final fitting frequency (included)
+ int n_moments=4;  //number of moments in the final tail (including known ones)
+ int  size=1; //means that we know one moment
+ int order_min=1; //means that the first moment in the final tail will be the first moment
+ auto known_moments = tail(make_shape(1,1), size, order_min); //length is 0, first moment to fit is order_min
+ known_moments(1)=1.;//set the first moment
+ set_tail_from_fit(gw, known_moments, n_moments, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
+ TEST(gw.singularity());
+}
+
+int main() {
+ test_0();
+ test_1();
 }
 
 
