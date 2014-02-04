@@ -147,7 +147,10 @@ namespace triqs { namespace arrays {
     storage_type & storage() {return storage_;}
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-    PyObject * to_python() const { return numpy_interface::array_view_to_python(*this);}
+  PyObject *to_python() const {
+   if (is_empty()) TRIQS_RUNTIME_ERROR << "Error : trying to return an empty array/matrix/vector to python";
+   return numpy_interface::array_view_to_python(*this);
+  }
 #endif
 
     /// data_start is the starting point of the data of the object

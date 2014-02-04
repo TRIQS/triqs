@@ -8,7 +8,7 @@ cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::ar
         array operator -( array_view &) 
         array operator *( array_view &) 
         array operator /( array_view &) 
-        object to_python()
+        object to_python() except +
 
     cdef cppclass array_view "triqs::arrays::array_c" [T,R] : 
         array_view() 
@@ -18,7 +18,7 @@ cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::ar
         array_view operator *( array_view &) 
         array_view operator /( array_view &) 
         void operator << (array_view &)
-        object to_python()
+        object to_python() except +
         int shape(int)
         # bug in cython
         #_lazy_expr operator()(_lazy_expr&)
@@ -36,7 +36,7 @@ cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::ar
         matrix_view(matrix) 
         matrix_view(object)  except +
         void operator << (matrix_view &)
-        object to_python()
+        object to_python() except +
 
     cdef cppclass matrix "triqs::arrays::matrix" [T] :
         matrix()
@@ -44,7 +44,7 @@ cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::ar
         matrix operator +( matrix_view &)
         matrix operator -( matrix_view &)
         matrix operator /( matrix_view &)
-        object to_python()
+        object to_python() except +
         
     cdef matrix_view operator +( matrix_view & , matrix_view &)
     cdef matrix_view operator -( matrix_view & , matrix_view &)
@@ -58,7 +58,7 @@ cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::ar
         tqa_vector operator -( tqa_vector_view &)
         tqa_vector operator *( tqa_vector_view &)
         tqa_vector operator /( tqa_vector_view &)
-        object to_python()
+        object to_python() except +
 
     cdef cppclass tqa_vector_view "triqs::arrays::vector_c" [T] :
         tqa_vector_view() 
@@ -68,5 +68,5 @@ cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::ar
         tqa_vector_view operator *(tqa_vector_view &)
         tqa_vector_view operator /(tqa_vector_view &)
         void operator << (tqa_vector_view &)
-        object to_python()
+        object to_python() except +
 
