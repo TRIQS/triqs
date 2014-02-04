@@ -46,3 +46,23 @@
  ...  Order 4 = 
 [[(0.998655,0)]]
 
+(gw.singularity()) ---> tail/tail_view: min/smallest/max = 1 1 4
+ ...  Order 1 = 
+[[(1,0)]]
+ ...  Order 2 = 
+[[(1,0)]]
+ ...  Order 3 = 
+[[(0.999251,0)]]
+ ...  Order 4 = 
+[[(0.998655,0)]]
+
+(gw.singularity()) ---> tail/tail_view: min/smallest/max = 1 1 4
+ ...  Order 1 = 
+[[(1,0)]]
+ ...  Order 2 = 
+[[(1,0)]]
+ ...  Order 3 = 
+[[(0.999236,0)]]
+ ...  Order 4 = 
+[[(0.998631,0)]]
+
