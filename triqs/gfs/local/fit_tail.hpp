@@ -46,11 +46,11 @@ namespace gfs {
   // the input gf<imfreq> Green's function: gf
   // the known moments in the form of a tail(_view): known_moments
   // the TOTAL number of desired moments (including the known ones): n_moments
-  // the index of the first and last frequency to fit (the last one is included): wn_min, wn_max
+  // the index of the first and last frequency to fit (the last one is included): n_min, n_max
 
   // output: returns the tail obtained by fitting
 
-  tail fit_tail_impl(gf<imfreq> &gf, const tail_view known_moments, int n_moments, int wn_min, int wn_max) {
+  tail fit_tail_impl(gf<imfreq> &gf, const tail_view known_moments, int n_moments, int n_min, int n_max) {
 
    tail res(get_target_shape(gf), n_moments, known_moments.order_min());
    if (known_moments.size())
@@ -73,7 +73,7 @@ namespace gfs {
    if (n_unknown_moments % 2 != 0 && omin % 2 == 0) size_even += 1;
    int size_odd = n_unknown_moments - size_even;
 
-   int size1 = wn_max - wn_min + 1;
+   int size1 = n_max - n_min + 1;
    // size2 is the number of moments
 
    arrays::matrix<double, 2> A(size1, std::max(size_even, size_odd), FORTRAN_LAYOUT);
@@ -89,10 +89,10 @@ namespace gfs {
      // S.resize(size_odd);
      // A.resize(size1,size_odd); //when resizing, gelss segfaults
      for (int k = 0; k < size1; k++) {
-      auto n = wn_min + k;
-      auto iw = std::complex<double>(0.0, (2 * n + 1) * M_PI / beta);
+      auto n = n_min + k;
+      auto iw = std::complex<double>(gf.mesh().index_to_point(n));
 
-      B(k, 0) = imag(gf.data()(n, i, j));
+      B(k, 0) = imag(gf.data()(gf.mesh().index_to_linear(n), i, j));
       // subtract known tail if present
       if (known_moments.size() > 0)
        B(k, 0) -= imag(slice_target(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)).evaluate(iw)(0, 0));
@@ -112,10 +112,10 @@ namespace gfs {
      // S.resize(size_even);
      // A.resize(size1,size_even); //when resizing, gelss segfaults
      for (int k = 0; k < size1; k++) {
-      auto n = wn_min + k;
-      auto iw = std::complex<double>(0.0, (2 * n + 1) * M_PI / beta);
-
-      B(k, 0) = real(gf.data()(n, i, j));
+      auto n = n_min + k;
+      auto iw = std::complex<double>(gf.mesh().index_to_point(n));
+      
+      B(k, 0) = real(gf.data()(gf.mesh().index_to_linear(n), i, j));
       // subtract known tail if present
       if (known_moments.size() > 0)
        B(k, 0) -= real(slice_target(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)).evaluate(iw)(0, 0));
@@ -137,26 +137,26 @@ namespace gfs {
   }
 
 
-  void set_tail_from_fit(gf<imfreq> &gf, tail_view known_moments, int n_moments, size_t wn_min, size_t wn_max,
+  void set_tail_from_fit(gf<imfreq> &gf, tail_view known_moments, int n_moments, size_t n_min, size_t n_max,
                          bool replace_by_fit = false) {
    if (get_target_shape(gf) != known_moments.shape()) TRIQS_RUNTIME_ERROR << "shape of tail does not match shape of gf";
-   gf.singularity() = fit_tail_impl(gf, known_moments, n_moments, wn_min, wn_max);
+   gf.singularity() = fit_tail_impl(gf, known_moments, n_moments, n_min, n_max);
 
    if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
     size_t i = 0;
-    for (auto iw : gf.mesh()) { // (arrays::range(wn_min,wn_max+1)) {
-     if ((i >= wn_min) && (i <= wn_max)) gf[iw] = gf.singularity().evaluate(iw);
+    for (auto iw : gf.mesh()) { // (arrays::range(n_min,n_max+1)) {
+     if ((i >= n_min) && (i <= n_max)) gf[iw] = gf.singularity().evaluate(iw);
      i++;
     }
    }
   }
 
 
-  void set_tail_from_fit(gf<block_index, gf<imfreq>> &block_gf, tail_view known_moments, int n_moments, size_t wn_min,
-                         size_t wn_max, bool replace_by_fit = false) {
-   // for(auto &gf : block_gf) set_tail_from_fit(gf, known_moments, n_moments, wn_min, wn_max, replace_by_fit);
+  void set_tail_from_fit(gf<block_index, gf<imfreq>> &block_gf, tail_view known_moments, int n_moments, size_t n_min,
+                         size_t n_max, bool replace_by_fit = false) {
+   // for(auto &gf : block_gf) set_tail_from_fit(gf, known_moments, n_moments, n_min, n_max, replace_by_fit);
    for (size_t i = 0; i < block_gf.mesh().size(); i++)
-    set_tail_from_fit(block_gf[i], known_moments, n_moments, wn_min, wn_max, replace_by_fit);
+    set_tail_from_fit(block_gf[i], known_moments, n_moments, n_min, n_max, replace_by_fit);
   }
  }
 }
