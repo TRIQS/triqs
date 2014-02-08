@@ -20,8 +20,9 @@
  ******************************************************************************/
 #pragma once
 #include <memory>
-//#include <functional>
+#include <functional>
 #include <tuple>
+#include "./macros.hpp"
 
 // a few that will be C++14, use in advance....
 
@@ -30,7 +31,10 @@ namespace std {
 
   // helpers
   template <bool B, class T, class F> using conditional_t = typename conditional<B, T, F>::type;
+  template <class T> using result_of_t = typename result_of<T>::type;
   template <class T> using remove_reference_t = typename remove_reference<T>::type;
+  template <class T> using add_const_t = typename add_const<T>::type;
+  template <class T> using remove_const_t = typename remove_const<T>::type;
 
   // use simply std::c14::plus<>() ...
   template<typename T = void> struct plus: std::plus<T>{};
@@ -50,6 +54,7 @@ namespace std {
      template<typename ... Args2>
      tuple(Args2 && ... args2) : std::tuple<Args...> (std::forward<Args2>(args2)...){}
    };
+
  }
 
  // minimal hack to get the metaprogramming work with this tuple too....
