@@ -134,6 +134,8 @@ namespace triqs { namespace clef {
  // if we want that subexpression are copied ?
  template<typename Tag, typename... T> struct force_copy_in_expr< expr<Tag,T... > > : std::true_type{};
 
+ template <typename Tag, typename... T> using expr_node_t = expr<Tag, expr_storage_t<T>...>;
+
  /* ---------------------------------------------------------------------------------------------------
   * The basic operations put in a template.... 
   *  --------------------------------------------------------------------------------------------------- */
@@ -233,6 +235,10 @@ namespace triqs { namespace clef {
   T const & operator()(T const& k, Pairs const&... pairs) const { return k; }
  };
 
+ // The general eval function for expressions : declaration only
+ template<typename T, typename... Pairs> 
+  auto eval (T const & ex, Pairs const &... pairs) ->decltype( evaluator<T, Pairs...>()(ex, pairs...));
+
  // placeholder
  template <int N, int i, typename T, typename... Pairs> struct evaluator<placeholder<N>, pair<i, T>, Pairs...> {
   using eval_t = evaluator<placeholder<N>, Pairs...>;
@@ -248,9 +254,9 @@ namespace triqs { namespace clef {
 
  // any object hold by reference wrapper is redirected to the evaluator of the object
  template <typename T, typename... Contexts> struct evaluator<std::reference_wrapper<T>, Contexts...> {
-  using ev_t = evaluator<T, Contexts...>;
-  static constexpr bool is_lazy = ev_t::is_lazy;
-  auto operator()(std::reference_wrapper<T> const& x, Contexts const&... contexts) const DECL_AND_RETURN(ev_t {}(x.get(), contexts...));
+  //using ev_t = evaluator<T, Contexts...>;
+  static constexpr bool is_lazy = false;//ev_t::is_lazy;
+  auto operator()(std::reference_wrapper<T> const& x, Contexts const&... contexts) const DECL_AND_RETURN(eval(x.get(), contexts...));
  };
 
  // dispatching the evaluation : if lazy, we make a new clef expression, if not we call the operation

@@ -33,7 +33,7 @@ namespace triqs { namespace clef {
 #define AUX(r, data, elem) TRIQS_CLEF_MAKE_STD_FNT_LAZY(elem)
  BOOST_PP_SEQ_FOR_EACH(AUX , nil , TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY);
 #undef AUX  
-#undef TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY
+//#undef TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY
  
 }}
 
