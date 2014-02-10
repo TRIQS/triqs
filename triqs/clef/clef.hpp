@@ -23,6 +23,8 @@
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/macros.hpp>
 #include <triqs/utility/compiler_details.hpp>
+#include <triqs/utility/tuple_tools.hpp>
+#include <triqs/utility/c14.hpp>
 #include <tuple>
 #include <type_traits>
 #include <functional>
@@ -318,13 +320,32 @@ namespace triqs { namespace clef {
   struct evaluator<expr<Tag, Childs...>, Pairs...> : evaluator_node_gal<sizeof...(Childs), expr<Tag, Childs...>, Pairs...>{};
 #endif
 
-
  // The general eval function for expressions
- template<typename T, typename... Pairs> 
-  auto eval (T const & ex, Pairs const &... pairs) DECL_AND_RETURN( evaluator<T, Pairs...>()(ex, pairs...));
+ template <typename T, typename... Pairs>
+ auto eval(T const& ex, Pairs const&... pairs) DECL_AND_RETURN(evaluator<T, Pairs...>()(ex, pairs...));
 
  /* ---------------------------------------------------------------------------------------------------
-  * make_function : transform an expression to a function  
+ * Apply a function object to all the leaves of the expression tree
+ *  --------------------------------------------------------------------------------------------------- */
+
+ template <typename F> struct apply_on_each_leaf_impl {
+  F f;
+  template <typename T> std::c14::enable_if_t<is_clef_expression<T>::value> operator()(T const& ex) {
+   tuple::for_each(ex.childs, *this);
+  }
+  template <typename T> std::c14::enable_if_t<!is_clef_expression<T>::value> operator()(T const& x) { f(x); }
+  template <typename T> std::c14::enable_if_t<!is_clef_expression<T>::value> operator()(std::reference_wrapper<T> const& x) {
+   f(x.get());
+  }
+ };
+
+ template <typename F, typename Expr> void apply_on_each_leaf(F&& f, Expr const& ex) {
+  auto impl = apply_on_each_leaf_impl<F>{std::forward<F>(f)};
+  impl(ex);
+ }
+
+ /* ---------------------------------------------------------------------------------------------------
+  * make_function : transform an expression to a function
   *  --------------------------------------------------------------------------------------------------- */
 
  template< typename Expr, int... Is> struct make_fun_impl { 
@@ -535,6 +556,12 @@ namespace triqs { namespace clef {
  };                                                                                                                              \
  template <typename... A> auto name(A&&... a) DECL_AND_RETURN(make_expr_call(name##_lazy_impl(), std::forward<A>(a)...));        \
  template <typename... A> auto name##_lazy_impl::operator()(A&&... a) const DECL_AND_RETURN(name(std::forward<A>(a)...));
+
+#define TRIQS_CLEF_EXTEND_FNT_LAZY(FUN, TRAIT)                                                                                   \
+ template <typename A>                                                                                                           \
+ std::c14::enable_if_t<TRAIT<A>::value, clef::expr_node_t<clef::tags::function, clef::FUN##_lazy_impl, A>> FUN(A&& a) {          \
+  return {clef::tags::function{}, clef::FUN##_lazy_impl{}, std::forward<A>(a)};                                                  \
+ }
 
 #define TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(TY, name)                                                                               \
  struct __clef_lazy_method_impl_##name {                                                                                         \

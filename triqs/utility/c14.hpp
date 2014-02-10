@@ -23,6 +23,7 @@
 #include <functional>
 #include <tuple>
 #include "./macros.hpp"
+#include "./tuple_tools.hpp"
 
 // a few that will be C++14, use in advance....
 
