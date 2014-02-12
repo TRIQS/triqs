@@ -139,8 +139,12 @@ namespace triqs { namespace arrays {
       typedef typename LHS::value_type value_type;
       LHS & lhs; const RHS & rhs; 
       impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){} //, p(*(lhs_.data_start())) {}
+      // we MUST make off_diag like this, if value_type is a complicated type (i.e. gf, matrix) with a size
+      // off diagonal element is 0*rhs, i.e. a 0, but with the SAME SIZE as the diagonal part.
+      // otherwise further operation may fail later.
+      // TO DO : look at performance issue ?? (we can remote the multiplication by 0 using an auxiliary function)
       template<typename ... Args>
-       void operator()(Args const & ... args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), (kronecker(args...) ? rhs : RHS()));}
+       void operator()(Args const & ... args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), (kronecker(args...) ? rhs : RHS{0*rhs}));}
       void invoke() { foreach(lhs,*this); }
      };
 
