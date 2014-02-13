@@ -92,7 +92,7 @@ int main() {
   C = extract<decltype(C)>(P["B"]);
   std::cout  << "C" << C << std::endl;
 
-  array<array<int,2>, 1> aa(3);
+  array<array<int,2>, 1> aa(2);
   aa(0) = A; aa(1) = 2*A;
   P["aa"] = aa;
 
@@ -143,6 +143,7 @@ int main() {
 
   parameters P4;
   parameters::register_type<triqs::arrays::array<double,1>>();
+  //parameters::register_type<triqs::arrays::array<int,2>>();
   std::cout << "P4 before : "<< P4<< std::endl ;
   {
    H5::H5File file( "ess.h5", H5F_ACC_RDONLY );

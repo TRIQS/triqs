@@ -41,7 +41,7 @@ namespace triqs { namespace utility {
    public : 
 
    typedef T value_type;
-
+ 
    mini_vector(){init();} 
 
 #define AUX(z,p,unused)  _data[p] = x_##p; 
@@ -68,6 +68,8 @@ namespace triqs { namespace utility {
    mini_vector & operator=(mini_vector && x) = default; 
 
    friend void swap(mini_vector & a, mini_vector & b) { std::swap(a._data, b._data);}
+
+   int size() const { return Rank;}
 
    template<typename T2>
    mini_vector & operator=(const mini_vector<T2,Rank> & x){ for (int i=0;i<Rank; ++i) _data[i] = x[i]; return *this;}
