@@ -1,0 +1,10 @@
+Autocorrelation time
+=====================
+
+Synopsis
+---------
+
+
+
+Example
+--------
