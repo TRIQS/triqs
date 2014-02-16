@@ -208,6 +208,14 @@ namespace triqs { namespace arrays {
 #undef _IMPL_MATRIX_COMMON
 #undef IMPL_TYPE
 
+
+ template<typename V>
+  matrix <V> make_unit_matrix(int dim) {
+  matrix<V> r(dim, dim);
+  r() = 1;
+  return r;
+  }
+
  template<typename ArrayType>
   matrix_view<typename ArrayType::value_type, ArrayType::opt_flags, ArrayType::traversal_order>
   make_matrix_view(ArrayType const & a) { 

@@ -223,6 +223,20 @@ namespace triqs { namespace arrays {
 #include "./blas_lapack/axpy.hpp"
 namespace triqs { namespace arrays {
 
+ // norm2 squared
+ template <typename V> typename std::enable_if<ImmutableVector<V>::value, typename V::value_type>::type norm2_sqr(V const& a) {
+  int dim = a.size();
+  auto r = typename V::value_type{};
+  for (int i = 0; i < dim; ++i) r += a(i) * a(i);
+  return r;
+ }
+ 
+ // norm2
+ template <typename V> typename std::enable_if<ImmutableVector<V>::value, typename V::value_type>::type norm2(V const& a) {
+  using std::sqrt;
+  return sqrt(norm2(a));
+ }
+
  // lexicographical comparison operators
  template<typename V1, typename V2>
   typename std::enable_if< ImmutableVector<V1>::value &&  ImmutableVector<V2>::value , bool>::type
