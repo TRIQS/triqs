@@ -23,6 +23,7 @@
 #include <triqs/utility/std_vector_expr_template.hpp>
 #include <triqs/utility/factory.hpp>
 #include <triqs/utility/tuple_tools.hpp>
+#include <triqs/utility/c14.hpp>
 #include <triqs/arrays/h5.hpp>
 #include <vector>
 #include "./tools.hpp"
@@ -124,12 +125,11 @@ namespace gfs {
   using data_regular_t = typename data_proxy_t::storage_t;
   using data_view_t = typename data_proxy_t::storage_view_t;
   using data_const_view_t = typename data_proxy_t::storage_const_view_t;
-  using data_t = typename std::conditional<IsView, typename std::conditional<IsConst, data_const_view_t, data_view_t>::type,
-                                           data_regular_t>::type;
+  using data_t = std14::conditional_t<IsView, std14::conditional_t<IsConst, data_const_view_t, data_view_t>, data_regular_t>;
 
   using singularity_non_view_t = typename gfs_implementation::singularity<Variable, Target, Opt>::type;
   using singularity_view_t = typename view_type_if_exists_else_type<singularity_non_view_t>::type;
-  using singularity_t = typename std::conditional<IsView, singularity_view_t, singularity_non_view_t>::type;
+  using singularity_t = std14::conditional_t<IsView, singularity_view_t, singularity_non_view_t>;
 
   mesh_t const &mesh() const { return _mesh; }
   domain_t const &domain() const { return _mesh.domain(); }
