@@ -10,19 +10,17 @@ from cython.operator cimport dereference as deref, preincrement as inc #derefere
 
 import numpy
 
-cdef extern from "triqs/lattice/bravais_lattice_and_brillouin_zone.hpp" namespace "triqs::gf" : 
-    cdef cppclass bravais_lattice_c " triqs::lattice_tools::bravais_lattice" : 
-        bravais_lattice_c(matrix[double] & units)
+cdef extern from "triqs/lattice/brillouin_zone.hpp" : 
+    cdef cppclass bravais_lattice_c " triqs::lattice::bravais_lattice" : 
+        bravais_lattice_c(matrix[double] & units, vector[tqa_vector[double]] &,  vector[std_string] &) except +
         int n_orbitals()
         matrix[double] units()
         int dim()
-        void push_back(std_string &, tqa_vector[double] &)
         tqa_vector[double] lattice_to_real_coordinates (tqa_vector_view[double] &)
 
 cdef extern from "triqs/lattice/tight_binding.hpp" namespace "triqs::gf" : 
-    cdef cppclass tight_binding " triqs::lattice_tools::tight_binding" : 
-        tight_binding(bravais_lattice_c & units)
-        void push_back (vector[long] &, matrix[double] &) 
+    cdef cppclass tight_binding " triqs::lattice::tight_binding" : 
+        tight_binding(bravais_lattice_c & units, vector[vector[long]] &, vector[matrix[dcomplex]] &) except +
 
     #Fix the name conflict pv wiht a pxd, cf doc....?
     array_view[complex,THREE] hopping_stack_c "hopping_stack" (tight_binding  & TB, array_view[double,TWO] & k_stack)
@@ -37,10 +35,13 @@ cdef class BravaisLattice :
     cdef bravais_lattice_c * _c
     def __init__(self, units, orbital_positions = None ) :
         """  """
-        self._c = new bravais_lattice_c( matrix[double](units))
+        cdef vector[std_string] names
+        cdef vector[tqa_vector[double]] atom_pos 
         orbital_positions  = orbital_positions if orbital_positions else dict ("", (0,0,0) )
         for name, pos in orbital_positions.items():
-            self._c.push_back( name, tqa_vector[double](pos))
+            names.push_back(name)
+            atom_pos.push_back(tqa_vector[double](pos))
+        self._c = new bravais_lattice_c( matrix[double](units),atom_pos, names)
 
     def __dealloc__(self):
         del self._c
@@ -69,11 +70,16 @@ cdef class TightBinding:
     cdef tight_binding * _c
     def __init__(self, BravaisLattice bravais_lattice, hopping ) : 
         """  """
-        self._c = new tight_binding(deref(bravais_lattice._c))
-        cdef vector[long] d
+        #self._c = new tight_binding(deref(bravais_lattice._c))
+        #cdef vector[long] d
+        cdef vector[matrix[dcomplex]] mats
+        cdef vector[vector[long]] displs
         for displ, mat in hopping.items() :
-            d = displ
-            self._c.push_back( d,  matrix[double] (numpy.array(mat, dtype =float)))
+            displs.push_back(displ)
+            #d = displ
+            mats.push_back(matrix[dcomplex] (numpy.array(mat, dtype =float)))
+            #self._c.push_back( d,  matrix[double] (numpy.array(mat, dtype =float)))
+        self._c = new tight_binding(deref(bravais_lattice._c), displs, mats)
 
     def __dealloc__(self):
         del self._c
