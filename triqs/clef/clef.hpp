@@ -552,6 +552,13 @@ namespace triqs { namespace clef {
   * --------------------------------------------------------------------------------------------------- */
 #define TRIQS_CLEF_MAKE_FNT_LAZY(name)                                                                                           \
  struct name##_lazy_impl {                                                                                                       \
+  template <typename... A> auto operator()(A&&... a) const DECL_AND_RETURN(name(std::forward<A>(a)...));                         \
+ };                                                                                                                              \
+ template <typename... A> auto name(A&&... a) DECL_AND_RETURN(make_expr_call(name##_lazy_impl(), std::forward<A>(a)...));
+
+
+#define TRIQS_CLEF_MAKE_FNT_LAZY_BIS(name)                                                                                       \
+ struct name##_lazy_impl {                                                                                                       \
   template <typename... A> auto operator()(A&&... a) const -> decltype(name(std::forward<A>(a)...));                             \
  };                                                                                                                              \
  template <typename... A> auto name(A&&... a) DECL_AND_RETURN(make_expr_call(name##_lazy_impl(), std::forward<A>(a)...));        \
