@@ -57,8 +57,6 @@ namespace triqs { namespace gfs {  namespace local {
   // if known_moments.size()==0, the lowest order to be obtained from the fit is determined by order_min in known_moments
   // if known_moments.size()==0, the lowest order is the one following order_max in known_moments
 
-  const double beta = gf.mesh().domain().beta;
-
   int n_unknown_moments = n_moments - known_moments.size();
   if (n_unknown_moments < 1) return known_moments;
 

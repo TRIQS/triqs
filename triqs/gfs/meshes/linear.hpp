@@ -200,7 +200,12 @@ namespace gfs {
   double w = a - i;
   if (i == imax) {
    --i;
-   in = (std::abs(w) < 1.e-14);
+   in = (std::abs(w) < 1.e-12);
+   w = 1.0;
+  }
+  if (i == -1) {
+   i = 0;
+   in = (std::abs(1 - w) < 1.e-12);
    w = 1.0;
   }
   return std::make_tuple(in, i, w);

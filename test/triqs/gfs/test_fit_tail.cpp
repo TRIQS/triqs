@@ -9,8 +9,6 @@ using triqs::gfs::local::tail;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 void test_0(){
 
- double precision=10e-9;
-
  triqs::clef::placeholder<0> iom_;
  double beta =10;
  int N=100;
