@@ -21,9 +21,7 @@
 #pragma once
 #include <memory>
 #include <functional>
-#include <tuple>
 #include "./macros.hpp"
-#include "./tuple_tools.hpp"
 
 // a few that will be C++14, use in advance....
 
@@ -36,6 +34,7 @@ namespace std {
   template <class T> using remove_reference_t = typename remove_reference<T>::type;
   template <class T> using add_const_t = typename add_const<T>::type;
   template <class T> using remove_const_t = typename remove_const<T>::type;
+  template <class T> using decay_t = typename decay<T>::type;
   template <bool B, class T = void> using enable_if_t = typename enable_if<B, T>::type;
 
   // use simply std::c14::plus<>() ...
@@ -49,21 +48,9 @@ namespace std {
   template<typename T, typename... Args>
    std::unique_ptr<T> make_unique(Args&&... args) { return std::unique_ptr<T>(new T(std::forward<Args>(args)...)); }
 
-  // a little helper class to wait for the correction that tuple construct is NOT explicit
-  template<typename ... Args>
-   class tuple : public std::tuple<Args...> { 
-    public : 
-     template<typename ... Args2>
-     tuple(Args2 && ... args2) : std::tuple<Args...> (std::forward<Args2>(args2)...){}
-   };
-
  }
-
- // minimal hack to get the metaprogramming work with this tuple too....
- template<int i, typename ... Args>
-  auto get(c14::tuple<Args...> const & t) DECL_AND_RETURN( std::get<i>(static_cast<std::tuple<Args...>>(t)));
-
- template<typename ... Args> class tuple_size<c14::tuple<Args...>>: public tuple_size<std::tuple<Args...>>{};
-
 }
 
+namespace std14 { 
+ using namespace std::c14;
+}

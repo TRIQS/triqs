@@ -22,6 +22,7 @@
 #define TRIQS_UTILITY_TUPLE_TOOLS_H
 #include<triqs/utility/macros.hpp>
 #include <tuple>
+#include "./c14.hpp"
 #include <sstream>
 
 // adding to the std lib the reversed lazy tuple...
@@ -44,6 +45,7 @@ namespace std {
 
   template<typename TU> class tuple_size<_triqs_reversed_tuple<TU>>         : public tuple_size<typename std::remove_const<typename std::remove_reference<TU>::type>::type>{};
 }
+
 
 namespace triqs { namespace tuple {
 
@@ -140,21 +142,21 @@ namespace triqs { namespace tuple {
   */
  template<int pos> struct for_each_enumerate_impl {
   template<typename T, typename F>
-   void operator()(T const & t, F && f) {
-    f(std::get<std::tuple_size<T>::value-1-pos>(t),std::tuple_size<T>::value-1-pos);
-    for_each_impl<pos-1>()(t, f);
+   void operator()(T & t, F && f) {
+    f(std::get<std::tuple_size<std::c14::decay_t<T>>::value-1-pos>(t),std::tuple_size<T>::value-1-pos);
+    for_each_enumerate_impl<pos-1>()(t, f);
    }
  };
 
  template<>
   struct for_each_enumerate_impl<0> {
    template<typename T, typename F>
-    void operator() (T const & t, F && f) { f(std::get<std::tuple_size<T>::value-1>(t), std::tuple_size<T>::value-1); }
+    void operator() (T & t, F && f) { f(std::get<std::tuple_size<std::c14::decay_t<T>>::value-1>(t), std::tuple_size<std::c14::decay_t<T>>::value-1); }
   };
 
  template<typename T, typename F>
-  void for_each_enumerate(T const & t, F && f) {
-   for_each_enumerate_impl<std::tuple_size<T>::value-1>()(t, f);
+  void for_each_enumerate(T & t, F && f) {
+   for_each_enumerate_impl<std::tuple_size<std::c14::decay_t<T>>::value-1>()(t, f);
   }
 
  /**
@@ -250,18 +252,18 @@ namespace triqs { namespace tuple {
   */
  template<int N, int pos, typename T> struct fold_impl {
   template<typename F, typename R>
-   auto operator()(F && f, T & t, R && r )
-   DECL_AND_RETURN( fold_impl<N,pos-1,T>()(std::forward<F>(f),t, f(std::get<N-1-pos>(t), std::forward<R>(r))));
+   auto operator()(F && f, T && t, R && r )
+   DECL_AND_RETURN( fold_impl<N,pos-1,T>()(std::forward<F>(f),std::forward<T>(t), f(std::get<N-1-pos>(t), std::forward<R>(r))));
  };
 
  template<int N, typename T> struct fold_impl<N, -1,T> {
-  template<typename F, typename R> R operator()(F && f, T & t, R && r) {return std::forward<R>(r);}
+  template<typename F, typename R> R operator()(F && f, T && t, R && r) {return std::forward<R>(r);}
  };
 
  template<typename F, typename T, typename R>
-  auto fold (F && f,T & t, R && r) DECL_AND_RETURN( fold_impl<std::tuple_size<T>::value,std::tuple_size<T>::value-1,T>()(std::forward<F>(f),t,std::forward<R>(r)));
- template<typename F, typename T, typename R>
-  auto fold (F && f,T const & t, R && r) DECL_AND_RETURN( fold_impl<std::tuple_size<T>::value,std::tuple_size<T>::value-1,T const>()(std::forward<F>(f),t,std::forward<R>(r)));
+  auto fold (F && f,T && t, R && r) DECL_AND_RETURN( fold_impl<std::tuple_size<std::c14::decay_t<T>>::value,std::tuple_size<std::c14::decay_t<T>>::value-1,T>()(std::forward<F>(f),std::forward<T>(t),std::forward<R>(r)));
+ //template<typename F, typename T, typename R>
+ // auto fold (F && f,T const & t, R && r) DECL_AND_RETURN( fold_impl<std::tuple_size<T>::value,std::tuple_size<T>::value-1,T const>()(std::forward<F>(f),t,std::forward<R>(r)));
 
  /**
   * fold_on_zip(f, t1, t2, init)
@@ -449,6 +451,24 @@ namespace std {
   triqs::tuple::print_tuple_impl<L>(os,t,std::integral_constant<int,L-1>()); 
   return os << ")";
  }
+}
+
+namespace std {
+namespace c14 {
+
+   // a little helper class to wait for the correction that tuple construct is NOT explicit
+   template <typename... Args> class tuple : public std::tuple<Args...> {
+    public:
+    template <typename... Args2> tuple(Args2 &&... args2) : std::tuple<Args...>(std::forward<Args2>(args2)...) {}
+   };
+  }
+
+  // minimal hack to get the metaprogramming work with this tuple too....
+  template <int i, typename... Args>
+  auto get(c14::tuple<Args...> const &t) DECL_AND_RETURN(std::get<i>(static_cast<std::tuple<Args...>>(t)));
+
+  template <typename... Args> class tuple_size<c14::tuple<Args...>> : public tuple_size<std::tuple<Args...>> {};
+
 }
 
 #endif
