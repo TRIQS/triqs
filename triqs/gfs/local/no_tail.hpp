@@ -35,6 +35,8 @@ namespace gfs {
 
  template <typename Variable, typename Target, bool V, bool C>
  gf_view<Variable, Target> make_gf_from_g_and_tail(gf_impl<Variable, Target, no_tail, V, C> const &g, local::tail t) {
+  if (t.shape() != get_target_shape(g))
+   TRIQS_RUNTIME_ERROR << "make_gf_from_g_and_tail: Shape of the gf target and of the tail mismatch";
   auto g2 = gf<Variable, Target, no_tail>{g}; // copy the function without tail
   return {std::move(g2.mesh()), std::move(g2.data()), std::move(t), g2.symmetry()};
  }
@@ -42,6 +44,8 @@ namespace gfs {
  template <typename Variable, typename Target, bool V, bool C>
  gf_view<Variable, Target, void, C> make_gf_view_from_g_and_tail(gf_impl<Variable, Target, no_tail, V, C> const &g,
                                                                  local::tail_view t) {
+  if (t.shape() != get_target_shape(g))
+   TRIQS_RUNTIME_ERROR << "make_gf_from_g_and_tail: Shape of the gf target and of the tail mismatch";
   return {g.mesh(), g.data(), t, g.symmetry()};
  }
 }
