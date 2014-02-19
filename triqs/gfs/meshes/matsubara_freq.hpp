@@ -57,8 +57,13 @@ namespace gfs {
    *  else : 
    *    For fermions : -Nmax - 1
    *    For Bosons : -Nmax
-   **/ 
-  int index_start() const { return -(_positive_only ? 0 : n_max() + (_dom.statistic == Fermion)); }
+   **/
+
+  /// last Matsubara index 
+  int last_index() const { return (_positive_only ? _n_pts : (_n_pts - (_dom.statistic == Boson ? 1 : 2))/2);}
+
+  /// first Matsubara index
+  int first_index() const { return -(_positive_only ? 0 : last_index() + (_dom.statistic == Fermion)); }
 
   /// Size (linear) of the mesh
   long size() const { return _n_pts;}
@@ -67,7 +72,7 @@ namespace gfs {
   domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind + (_dom.statistic == Fermion)) / _dom.beta; }
 
   /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-  long index_to_linear(index_t ind) const { return ind - index_start(); }
+  long index_to_linear(index_t ind) const { return ind - first_index(); }
 
   /// Is the mesh only for positive omega_n (G(tau) real))
   bool positive_only() const { return _positive_only;}
@@ -81,17 +86,17 @@ namespace gfs {
    mesh_point_t() = default;
    mesh_point_t(matsubara_freq_mesh const &mesh, index_t const &index_)
       : matsubara_freq(index_, mesh.domain().beta, mesh.domain().statistic),
-        index_start(mesh.index_start()),
-        index_stop(mesh.index_start() + mesh.size() - 1) {}
-   mesh_point_t(matsubara_freq_mesh const &mesh) : mesh_point_t(mesh, mesh.index_start()) {}
+        first_index(mesh.first_index()),
+        index_stop(mesh.first_index() + mesh.size() - 1) {}
+   mesh_point_t(matsubara_freq_mesh const &mesh) : mesh_point_t(mesh, mesh.first_index()) {}
    void advance() { ++n; }
-   long linear_index() const { return n - index_start; }
+   long linear_index() const { return n - first_index; }
    long index() const { return n; }
    bool at_end() const { return (n == index_stop); }
-   void reset() { n = index_start; }
+   void reset() { n = first_index; }
 
    private:
-   index_t index_start, index_stop;
+   index_t first_index, index_stop;
   };
 
   /// Accessing a point of the mesh from its index
@@ -155,7 +160,6 @@ namespace gfs {
   private:
   domain_t _dom;
   int _n_pts;
-  long n_max() const { return (_positive_only ? _n_pts : (_n_pts - (_dom.statistic == Boson ? 1 : 2))/2);}
   bool _positive_only;
  };
 
