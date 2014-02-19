@@ -78,8 +78,8 @@ namespace triqs { namespace gfs {  namespace local {
   const double rcond = 0.0;
   int rank;
 
-  for (size_t i = 0; i < get_target_shape(gf)[0]; i++) {
-   for (size_t j = 0; j < get_target_shape(gf)[1]; j++) {
+  for (int i = 0; i < get_target_shape(gf)[0]; i++) {
+   for (int j = 0; j < get_target_shape(gf)[1]; j++) {
 
     // fit the odd moments
     // S.resize(size_odd);
@@ -132,12 +132,12 @@ namespace triqs { namespace gfs {  namespace local {
   return res; // return tail
  }
 
- void set_tail_from_fit(gf_view<imfreq> gf, tail_view known_moments, int n_moments, size_t n_min, size_t n_max,
+ void set_tail_from_fit(gf_view<imfreq> gf, tail_view known_moments, int n_moments, int n_min, int n_max,
    bool replace_by_fit = false) {
   if (get_target_shape(gf) != known_moments.shape()) TRIQS_RUNTIME_ERROR << "shape of tail does not match shape of gf";
   gf.singularity() = fit_tail_impl(gf, known_moments, n_moments, n_min, n_max);
   if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
-   size_t i = 0;
+   int i = 0;
    for (auto iw : gf.mesh()) { // (arrays::range(n_min,n_max+1)) {
     if ((i >= n_min) && (i <= n_max)) gf[iw] = gf.singularity().evaluate(iw);
     i++;
@@ -145,13 +145,13 @@ namespace triqs { namespace gfs {  namespace local {
    }
   }
 
-  void set_tail_from_fit(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, size_t n_min,
-    size_t n_max, bool replace_by_fit = false) {
+  void set_tail_from_fit(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, int n_min,
+    int n_max, bool replace_by_fit = false) {
    // for(auto &gf : block_gf) set_tail_from_fit(gf, known_moments, n_moments, n_min, n_max, replace_by_fit);
-   for (size_t i = 0; i < block_gf.mesh().size(); i++)
+   for (int i = 0; i < block_gf.mesh().size(); i++)
     set_tail_from_fit(block_gf[i], known_moments, n_moments, n_min, n_max, replace_by_fit);
   }
- void set_tail_from_fit(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, size_t n_min, size_t n_max, bool replace_by_fit = false) {
+ void set_tail_from_fit(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = false) {
   set_tail_from_fit(reinterpret_scalar_valued_gf_as_matrix_valued(gf), known_moments, n_moments, n_min, n_max, replace_by_fit );
  }
 

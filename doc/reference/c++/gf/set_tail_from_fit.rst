@@ -22,9 +22,9 @@ where
 +------------+----------------+----------------------------------------------------------------------+---------+
 | int        | n_moments      | number of moments in the final tail (including known ones)           | no      |
 +------------+----------------+----------------------------------------------------------------------+---------+
-| size_t     | n_min          | linear index on mesh to start the fit                                | no      |
+| size_t     | n_min          | Matsubara index on mesh to start the fit                             | no      |
 +------------+----------------+----------------------------------------------------------------------+---------+
-| size_t     | n_max          | final linear index for fit (included)                                | no      |
+| size_t     | n_max          | final Matsubara index for fit (included)                             | no      |
 +------------+----------------+----------------------------------------------------------------------+---------+
 | bool       | replace_by_fit | if true, replace the gf data in the fitting range by the tail values | true    |
 +------------+----------------+----------------------------------------------------------------------+---------+
