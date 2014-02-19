@@ -116,7 +116,7 @@ namespace gfs {
      p.reset();
      return false;
     };
-    triqs::tuple::fold(l, _c, false);
+    _atend = !(triqs::tuple::fold(l, _c, false));
    }
 
    // index_t index() const { return _index;} // not implemented yet

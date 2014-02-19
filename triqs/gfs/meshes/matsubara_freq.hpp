@@ -92,7 +92,7 @@ namespace gfs {
    void advance() { ++n; }
    long linear_index() const { return n - first_index; }
    long index() const { return n; }
-   bool at_end() const { return (n == index_stop); }
+   bool at_end() const { return (n == index_stop + 1); } // at_end means " one after the last one", as in STL
    void reset() { n = first_index; }
 
    private:

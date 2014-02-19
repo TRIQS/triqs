@@ -156,7 +156,7 @@ namespace gfs {
    };
 
    public:
-   void advance() { triqs::tuple::fold(_aux1(), _c, false); }
+   void advance() { _atend = ! (triqs::tuple::fold(_aux1(), _c, false)) ; }
 
    // index_t index() const { return _index;} // not implemented yet
    bool at_end() const { return _atend; }
