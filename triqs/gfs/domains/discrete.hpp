@@ -21,6 +21,7 @@
 #pragma once
 #include "../tools.hpp"
 #include <map>
+#include <boost/serialization/map.hpp>
 namespace triqs {
 namespace gfs {
 
