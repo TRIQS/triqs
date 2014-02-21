@@ -431,6 +431,15 @@ namespace gfs {
   }
  };
 
+ // in most expression, the gf_impl version is enough.
+ // But in chained clef expression, A(i_)(om_) where A is an array of gf
+ // we need to call it with the gf, not gf_impl (or the template resolution find the deleted funciton in clef).
+ // Another fix is to make gf, gf_view in the expression tree, but this requires using CRPT in gf_impl...
+ template <typename RHS, typename Variable, typename Target, typename Opt>
+ void triqs_clef_auto_assign(gf<Variable, Target, Opt> &g, RHS const &rhs) {
+  triqs_clef_auto_assign( static_cast<gf_impl<Variable, Target, Opt, false, false>&>(g), rhs);
+ }
+ 
  // --------------------------The const View class of GF -------------------------------------------------------
 
  template <typename Variable, typename Target, typename Opt>

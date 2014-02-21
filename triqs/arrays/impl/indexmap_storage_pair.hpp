@@ -260,7 +260,24 @@ namespace triqs { namespace arrays {
       return make_expr_call(std::move(*this),args...);
      }
 
-    template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
+     // ------------------------------- clef auto assign --------------------------------------------
+
+     // For simple cases, it is assign_foreach. But when f(args...) is a function from a clef expression
+     // we make a chain call like cf clef vector adapter
+     template <typename Function> struct _worker {
+      indexmap_storage_pair &A;
+      Function const &f;
+      template <typename T, typename RHS> void assign(T &x, RHS &&rhs) { x = std::forward<RHS>(rhs); }
+      template <typename Expr, int... Is, typename T> void assign(T &x, clef::make_fun_impl<Expr, Is...> &&rhs) {
+       triqs_clef_auto_assign(x, std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
+      }
+      template <typename... Args> void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
+     };
+
+     template <typename Fnt> friend void triqs_clef_auto_assign(indexmap_storage_pair &x, Fnt f) {
+      foreach(x, _worker<Fnt>{x, f});
+     }
+     // template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
 
     // ------------------------------- Iterators --------------------------------------------
     typedef iterator_adapter<true,typename IndexMapType::iterator, StorageType> const_iterator;
