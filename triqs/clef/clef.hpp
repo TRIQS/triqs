@@ -294,10 +294,8 @@ namespace triqs { namespace clef {
 
  template <typename Tag, typename... Childs, typename... Pairs> struct evaluator_node_gal<2, expr<Tag, Childs...>, Pairs...> {
   static constexpr bool is_lazy = __or(evaluator<Childs, Pairs...>::is_lazy...);
-  decltype(auto) operator()(expr<Tag, Childs...> const &ex,
-                            Pairs const &... pairs) const {
-    return op_dispatch<Tag, is_lazy> {}(eval(std::get<0>(ex.childs), pairs...), eval(std::get<1>(ex.childs), pairs...));
-  }
+  auto operator()(expr<Tag, Childs...> const& ex, Pairs const&... pairs) const
+     DECL_AND_RETURN(op_dispatch<Tag, is_lazy> {}(eval(std::get<0>(ex.childs), pairs...), eval(std::get<1>(ex.childs), pairs...)));
  };
 
 // the general case for more than 2 nodes. I put 1 and 2 nodes apart, just because it is the most frequent

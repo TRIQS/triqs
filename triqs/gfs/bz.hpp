@@ -55,8 +55,8 @@ namespace gfs {
    template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::k_t const &k) { 
     n = m.locate_neighbours(k); // TO BE IMPROVED
    }
-   //template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(f(k));
-   template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
+   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(f(n));
+   //template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
   };
 
   // ------------- evaluator  -------------------
