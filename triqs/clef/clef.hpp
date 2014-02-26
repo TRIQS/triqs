@@ -170,8 +170,7 @@ namespace triqs { namespace clef {
   };                                                                                                                             \
  }                                                                                                                               \
  template <typename L, typename R>                                                                                               \
- typename std::enable_if<is_any_lazy<L, R>::value, expr<tags::TAG, expr_storage_t<L>, expr_storage_t<R>>>::type operator OP(     \
-     L&& l, R&& r) {                                                                                                             \
+ std14::enable_if_t<is_any_lazy<L, R>::value, expr<tags::TAG, expr_storage_t<L>, expr_storage_t<R>>> operator OP(L&& l, R&& r) { \
   return {tags::TAG(), std::forward<L>(l), std::forward<R>(r)};                                                                  \
  }                                                                                                                               \
  template <> struct operation<tags::TAG> {                                                                                       \
@@ -198,7 +197,7 @@ namespace triqs { namespace clef {
   };                                                                                                                             \
  }                                                                                                                               \
  template <typename L>                                                                                                           \
- typename std::enable_if<is_any_lazy<L>::value, expr<tags::TAG, expr_storage_t<L>>>::type operator OP(L&& l) {                   \
+ std14::enable_if_t<is_any_lazy<L>::value, expr<tags::TAG, expr_storage_t<L>>> operator OP(L&& l) {                   \
   return {tags::TAG(), std::forward<L>(l)};                                                                                      \
  }                                                                                                                               \
  template <> struct operation<tags::TAG> {                                                                                       \
@@ -223,11 +222,7 @@ namespace triqs { namespace clef {
  /* ---------------------------------------------------------------------------------------------------
   * Evaluation of the expression tree.
   *  --------------------------------------------------------------------------------------------------- */
- //template<typename ... T> struct _or; 
- //template<typename T0, typename ... T> struct _or<T0,T...> : std::integral_constant<bool,T0::value || _or<T...>::value>{}; 
- //template<> struct _or<> : std::false_type{};
 
- // just to try
  constexpr bool __or() { return false;}
  template<typename  ... B> constexpr bool __or(bool b, B... bs) { return b || __or(bs...); }
 
@@ -283,8 +278,8 @@ namespace triqs { namespace clef {
   static constexpr bool is_lazy = __or(evaluator<Childs, Pairs...>::is_lazy...);
 
   auto operator()(expr<Tag, Childs...> const& ex, Pairs const&... pairs) const {
-   auto eval_in_context = [&pairs](auto const& _child) { return eval(_child, pairs); };
-   return triqs::tuple::apply_compose(op_dispatch<Tag, is_lazy>{}, eval_in_context, ex.childs);
+   auto eval_in_context = [&pairs...](auto const& _child) { return eval(_child, pairs...); };
+   return tuple::apply_compose(op_dispatch<Tag, is_lazy>{}, eval_in_context, ex.childs);
   }
  };
 #else
@@ -299,8 +294,10 @@ namespace triqs { namespace clef {
 
  template <typename Tag, typename... Childs, typename... Pairs> struct evaluator_node_gal<2, expr<Tag, Childs...>, Pairs...> {
   static constexpr bool is_lazy = __or(evaluator<Childs, Pairs...>::is_lazy...);
-  auto operator()(expr<Tag, Childs...> const& ex, Pairs const&... pairs) const DECL_AND_RETURN(op_dispatch<Tag, is_lazy> {
-  }(eval(std::get<0>(ex.childs), pairs...), eval(std::get<1>(ex.childs), pairs...)));
+  decltype(auto) operator()(expr<Tag, Childs...> const &ex,
+                            Pairs const &... pairs) const {
+    return op_dispatch<Tag, is_lazy> {}(eval(std::get<0>(ex.childs), pairs...), eval(std::get<1>(ex.childs), pairs...));
+  }
  };
 
 // the general case for more than 2 nodes. I put 1 and 2 nodes apart, just because it is the most frequent

@@ -35,15 +35,15 @@ namespace std {
   template<typename ... T> _triqs_reversed_tuple<std::tuple<T...>const &> reverse(std::tuple<T...> const & x) { return {x};}
 
   template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> const & t) 
-   DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_const<typename std::remove_reference<TU>::type>::type>::value-1-pos>(t._x));
+   DECL_AND_RETURN(std::get<std::tuple_size<std14::decay_t<TU>>::value-1-pos>(t._x));
   
   template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> & t)       
-   DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_const<typename std::remove_reference<TU>::type>::type>::value-1-pos>(t._x));
+   DECL_AND_RETURN(std::get<std::tuple_size<std14::decay_t<TU>>::value-1-pos>(t._x));
   
   template<int pos, typename TU> auto get(_triqs_reversed_tuple<TU> && t)      
-   DECL_AND_RETURN(std::get<std::tuple_size<typename std::remove_const<typename std::remove_reference<TU>::type>::type>::value-1-pos>(move(t)._x));
+   DECL_AND_RETURN(std::get<std::tuple_size<std14::decay_t<TU>>::value-1-pos>(move(t)._x));
 
-  template<typename TU> class tuple_size<_triqs_reversed_tuple<TU>>         : public tuple_size<typename std::remove_const<typename std::remove_reference<TU>::type>::type>{};
+  template<typename TU> class tuple_size<_triqs_reversed_tuple<TU>>         : public tuple_size<std14::decay_t<TU>>{};
 }
 
 
@@ -177,7 +177,7 @@ namespace triqs { namespace tuple {
  };
 
  template<typename F, typename T1>
-  auto apply_on_tuple (F && f,T1 && t1) DECL_AND_RETURN( apply_on_tuple_impl<std::tuple_size<typename std::remove_const<typename std::remove_reference<T1>::type>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1)));
+  auto apply_on_tuple (F && f,T1 && t1) DECL_AND_RETURN( apply_on_tuple_impl<std::tuple_size<std14::decay_t<T1>>::value-1>()(std::forward<F>(f),std::forward<T1>(t1)));
 
  /**
   * apply_on_zip(f, t1,t2)
@@ -197,7 +197,7 @@ namespace triqs { namespace tuple {
  };
 
  template<typename F, typename T1, typename T2>
-  auto apply_on_zip (F && f,T1 && t1, T2 && t2) DECL_AND_RETURN( apply_on_zip_impl<std::tuple_size<typename std::remove_const<typename std::remove_reference<T1>::type>::type>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2)));
+  auto apply_on_zip (F && f,T1 && t1, T2 && t2) DECL_AND_RETURN( apply_on_zip_impl<std::tuple_size<std14::decay_t<T1>>::value-1>()(std::forward<F>(f),std::forward<T1>(t1),std::forward<T2>(t2)));
 
  /**
   * apply_on_zip(f, t1,t2,t3)

@@ -50,10 +50,13 @@ namespace gfs {
 
   // simple evaluation : take the point on the grid...
   template <> struct evaluator_fnt_on_mesh<bz> {
-   lattice::k_t k;
+   size_t n;
    evaluator_fnt_on_mesh() = default;
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::k_t const &k_) { k = k_; }
-   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(f(k));
+   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::k_t const &k) { 
+    n = m.locate_neighbours(k); // TO BE IMPROVED
+   }
+   //template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(f(k));
+   template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
   };
 
   // ------------- evaluator  -------------------

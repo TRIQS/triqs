@@ -45,7 +45,7 @@ namespace lattice {
    }
    pos++;
   }
-  return pos;
+  return pos_min;
  }
 
  /// Write into HDF5
