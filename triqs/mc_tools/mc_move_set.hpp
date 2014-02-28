@@ -96,6 +96,8 @@ namespace triqs { namespace mc_tools {
    void reject() { reject_(); }
 
    double acceptance_rate() const { return acceptance_rate_;}
+   uint64_t n_proposed_config () const { return NProposed;}
+   uint64_t n_accepted_config () const { return Naccepted;}
 
    void collect_statistics(boost::mpi::communicator const & c) {
     uint64_t nacc_tot=0, nprop_tot=1;
