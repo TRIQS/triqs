@@ -64,6 +64,10 @@ namespace statistics {
   value_type operator[](int i) const { return binned[i]; }
   int size() const { return binned.size(); }
 
+  std::vector<value_type> const & data() const & { return binned;}
+  std::vector<value_type> const & data() & { return binned;}
+  std::vector<value_type> data() && { return std::move(binned);}
+
   using const_iterator = typename std::vector<ValueType>::const_iterator;
   const_iterator begin() const { return binned.begin(); }
   const_iterator end() const { return binned.end(); }
@@ -170,6 +174,8 @@ namespace statistics {
 
   public:
   observable() { _series.reserve(1000); }
+
+  observable(binned_series<T> && s):_series(std::move(s).data()){}
 
   observable& operator<<(T x) { // copy and move : check speed ... or overload const &, &&
    _series.push_back(std::move(x));
