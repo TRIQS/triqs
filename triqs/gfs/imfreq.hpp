@@ -70,8 +70,6 @@ namespace gfs {
   template <typename Target, typename Opt> struct evaluator<imfreq, Target, Opt> {
    static constexpr int arity = 1;
    template <typename G> auto operator()(G const *g, int n) const DECL_AND_RETURN((*g)[n]);
-   template <typename G>
-   auto operator()(G const *g, matsubara_freq_mesh::mesh_point_t const &p) const DECL_AND_RETURN((*g)[p.index()]);
 
    // dispatch for 2x2 cases : matrix/scalar and tail/no_tail ( true means no_tail)
    template <typename G>
