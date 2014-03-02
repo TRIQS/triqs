@@ -21,6 +21,7 @@
 #pragma once
 #include "../tools.hpp"
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
+#include <triqs/utility/kronecker.hpp>
 
 namespace triqs {
 namespace gfs {
@@ -103,6 +104,11 @@ namespace gfs {
 
  using matsubara_freq_domain = matsubara_domain<true>;
  using matsubara_time_domain = matsubara_domain<false>;
+
+
+ // ----- kronecker function : overload for matsubara_freq 
+ inline bool kronecker(matsubara_freq const & freq) { return freq.n == 0; }
+ inline bool kronecker(matsubara_freq const & f1, matsubara_freq const &f2) { return f1.n == f2.n; }
 }
 }
 
