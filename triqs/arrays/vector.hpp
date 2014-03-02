@@ -34,7 +34,7 @@ namespace triqs { namespace arrays {
 
  // ---------------------- vector_view --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType,Borrowed>, Opt, 0, IsConst, Tag::vector_view >
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType,Borrowed>, Opt, 0, IsConst, true, Tag::vector_view >
 
  /** */
  template <typename ValueType, ull_t Opt, bool Borrowed, bool IsConst>
@@ -97,11 +97,8 @@ namespace triqs { namespace arrays {
    TRIQS_DEFINE_COMPOUND_OPERATORS(vector_view);
 
    // to make interface similar to std::vector : forward [] to ()
-   template<typename Arg> typename std::result_of<const IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
-   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg)       { return (*this) (std::forward<Arg>(arg));}
-   // gcc 4.6 does not like this one...
-   //template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
-   //template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
   };
 #undef IMPL_TYPE
 
@@ -112,7 +109,7 @@ namespace triqs { namespace arrays {
  using vector_const_view = vector_view<ValueType, Opt, Borrowed, true>;
 
  // ---------------------- vector--------------------------------
-#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, false,Tag::vector_view >
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, false, false,Tag::vector_view >
 
  template <typename ValueType, ull_t Opt>
   class vector: Tag::vector,  TRIQS_CONCEPT_TAG_NAME(MutableVector), public IMPL_TYPE {
@@ -206,11 +203,9 @@ namespace triqs { namespace arrays {
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(vector);
 
-    // to make interface similar to std::vector : forward [] to ()
-   template<typename Arg> typename std::result_of<const IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
-   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg)       { return (*this) (std::forward<Arg>(arg));}
-   //template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
-   //template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   // to make interface similar to std::vector : forward [] to ()
+   template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
 
   };//vector class
 }}//namespace triqs::arrays

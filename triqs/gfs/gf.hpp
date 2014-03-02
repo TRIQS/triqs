@@ -202,13 +202,12 @@ namespace gfs {
   /// Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
   /// there is at least one lazy argument ...
   template <typename... Args> // match any argument list, picking out the first type : () is not permitted
-  typename std::add_const<typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
+  typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
       (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value ||
           ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
       ,
       std::result_of<evaluator_t(gf_impl *, Args...)> // what is the result type of call
       >::type                                         // end of lazy_disable_if
-                          >::type                     // end of add_Const
   operator()(Args &&... args) const {
    return _evaluator(this, std::forward<Args>(args)...);
   }

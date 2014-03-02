@@ -261,6 +261,8 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
 
   size_t size() const {return size_;}
 
+  bool is_unique() const { return (ref_count + weak_ref_count) == 1; }
+
   template<class Archive>
    void save(Archive & ar, const unsigned int version) const {
     ar << boost::serialization::make_nvp("size",size_);

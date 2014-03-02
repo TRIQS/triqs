@@ -44,7 +44,7 @@ namespace triqs { namespace arrays {
  bool memory_layout_is_fortran() const { return this->indexmap().strides()[0] < this->indexmap().strides()[1]; }
 
 #define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt,TraversalOrder>, \
- storages::shared_block<ValueType,Borrowed>, Opt, TraversalOrder, IsConst, Tag::matrix_view > 
+ storages::shared_block<ValueType,Borrowed>, Opt, TraversalOrder, IsConst, true, Tag::matrix_view > 
 
  template <typename ValueType, ull_t Opt, ull_t TraversalOrder, bool Borrowed, bool IsConst>
   class matrix_view : Tag::matrix_view,  TRIQS_CONCEPT_TAG_NAME(MutableMatrix), public IMPL_TYPE {
@@ -116,7 +116,7 @@ namespace triqs { namespace arrays {
 
  // ---------------------- matrix --------------------------------
 #define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt,TraversalOrder>, \
- storages::shared_block<ValueType>, Opt, TraversalOrder, false, Tag::matrix_view > 
+ storages::shared_block<ValueType>, Opt, TraversalOrder, false, false, Tag::matrix_view > 
 
  template <typename ValueType, ull_t Opt, ull_t TraversalOrder >
   class matrix: Tag::matrix,  TRIQS_CONCEPT_TAG_NAME(MutableMatrix), public IMPL_TYPE {

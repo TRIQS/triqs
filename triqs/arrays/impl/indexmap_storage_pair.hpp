@@ -52,7 +52,7 @@ namespace triqs { namespace arrays {
 
  template <class V, int R, ull_t OptionFlags, ull_t TraversalOrder, class ViewTag, bool Borrowed, bool IsConst> struct ISPViewType;
 
- template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder, bool IsConst, typename ViewTag>
+ template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder, bool IsConst, bool IsView, typename ViewTag>
  class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_CONCEPT_TAG_NAME(MutableCuboidArray) {
 
    public :
@@ -182,13 +182,33 @@ namespace triqs { namespace arrays {
      typename std::enable_if<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && (!IsConst)
      , value_type &>::type
-     operator()(Args const & ... args) {  return storage_[indexmap_(args...)]; }
+     operator()(Args const & ... args)  & {  return storage_[indexmap_(args...)]; }
 
     template<typename... Args>
      typename std::enable_if<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0)
      , value_type const &>::type
-     operator()(Args const & ... args) const { return storage_[indexmap_(args...)]; }
+     operator()(Args const & ... args) const & { return storage_[indexmap_(args...)]; }
+
+    // && : return a & iif it is a non const view 
+    template<typename... Args>
+     typename std::enable_if<
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && (!IsConst&&IsView)
+     , value_type &>::type
+     operator()(Args const & ... args) && {
+      // add here a security check in case it is a view, unique. For a regular type, move the result... 
+#ifdef TRIQS_ARRAYS_DEBUG
+      if (storage_.is_unique()) TRIQS_RUNTIME_ERROR <<"BUG : array : rvalue ref for an array...";
+#endif
+      return storage_[indexmap_(args...)]; 
+     }
+
+    // && return a value if this is not a view (regular class) or it is a const_view
+    template<typename... Args>
+     typename std::enable_if<
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && (!(!IsConst&&IsView))
+     , value_type>::type
+     operator()(Args const & ... args) && { return storage_[indexmap_(args...)]; }
 
     template<bool is_const, bool ForceBorrowed, typename ... Args> struct result_of_call_as_view {
      typedef typename indexmaps::slicer<indexmap_type,Args...>::r_type IM2;

@@ -81,6 +81,8 @@ namespace triqs { namespace arrays { namespace storages {
     return *this;
    }
 
+   bool is_unique() const { return sptr && sptr->is_unique();}
+
    /// True copy of the data
    shared_block clone() const { 
     shared_block res; 
