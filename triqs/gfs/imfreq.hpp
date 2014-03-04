@@ -69,8 +69,6 @@ namespace gfs {
   // handle the case where the matsu. freq is out of grid...
   template <typename Target, typename Opt> struct evaluator<imfreq, Target, Opt> {
    static constexpr int arity = 1;
-   // TO BE REMOVED 
-   template <typename G> auto operator()(G const *g, int n) const DECL_AND_RETURN((*g)[n]);
 
    private:
    template <typename G> int sh(G const * g) const { return (g->mesh().domain().statistic == Fermion ? 1 : 0);}
@@ -143,6 +141,9 @@ namespace gfs {
    operator()(G const *g, matsubara_freq const &f) const {
     return _call_impl(g, f, Target{}, std::integral_constant<bool, std::is_same<Opt, no_tail>::value>{});
    }
+
+   // int -> replace by matsubara_freq
+   template <typename G> auto operator()(G const *g, int n) const DECL_AND_RETURN((*g)(matsubara_freq(n,g->mesh().domain().beta,g->mesh().domain().statistic)));
 
 #ifdef __clang__
    // to generate a clearer error message ? . Only ok on clang ?
