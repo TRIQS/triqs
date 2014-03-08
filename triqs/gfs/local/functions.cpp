@@ -55,9 +55,8 @@ namespace triqs { namespace gfs {
    }
   
   for (size_t n1=0; n1<N1;n1++) 
-   for (size_t n2=0; n2<N2;n2++) {
+   for (size_t n2=n1; n2<N2;n2++) {
     dens_part(n1,n2) = dens_part(n1,n2) + (G.mesh().positive_only()? ( real(dens_part(n2,n1)) - I * imag(dens_part(n2,n1)) ) : 0) + dens_tail(n1,n2);
-    // ?? STRANGE ??
     dens_part(n2,n1) = real(dens_part(n1,n2)) - I * imag(dens_part(n1,n2));
    }
 
