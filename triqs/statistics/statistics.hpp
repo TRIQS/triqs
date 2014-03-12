@@ -437,7 +437,7 @@ namespace statistics {
 
  // ------  Auto-correlation time from binning --------------------
 
- template <typename TimeSeries> double autocorrelation_time_from_binning(TimeSeries const& A) {
+ template <typename TimeSeries> double autocorrelation_time_from_binning2(TimeSeries const& A) {
 
   auto size = make_immutable_time_series(A).size();
   double var1 = empirical_variance(make_immutable_time_series(A));
@@ -461,6 +461,37 @@ namespace statistics {
    autocorr_time = t_cor_new;
   }
   return empirical_average(t);
+ }
+
+ template<typename TimeSeries>
+ double t_cor(TimeSeries const & A, int bin_size, double var1){
+   double var = empirical_variance(A);
+   return .5 * var / var1 * bin_size; 
+ }
+
+ template <typename TimeSeries> double autocorrelation_time_from_binning(TimeSeries const& A) {
+
+  auto size = make_immutable_time_series(A).size();
+  double var1 = empirical_variance(make_immutable_time_series(A));
+
+  int B = 2;
+  auto Ab=make_binned_series(A,2);
+  double autocorr_time = t_cor(Ab, B, var1);
+  double slope = 1.;
+  int small_slope_count = 0;
+  std::vector<double> t;
+  while (small_slope_count < 5 && B < size / 10) {
+   B*=2;
+   Ab=make_binned_series(Ab,2);
+   double t_cor_new = t_cor(Ab, B, var1);
+   slope = (std::abs(t_cor_new - autocorr_time) / autocorr_time);
+   if (slope < .5*1e-1) small_slope_count++;
+   if (small_slope_count > 0) t.push_back(t_cor_new);
+   autocorr_time = t_cor_new;
+   //std::cout << B << "\t" << t_cor_new << "\t" << slope << std::endl;
+  }
+  if (t.size()>0)  {return empirical_average(t);}
+  else{ std::cout << "autocorrelation time not converged!!" << std::endl; return autocorr_time;}
  }
 } // namespace statistics
 } // triqs

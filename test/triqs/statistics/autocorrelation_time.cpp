@@ -2,6 +2,7 @@
 #include <triqs/statistics.hpp>
 #include "./correlated_gaussian.hpp"
 #include <iostream>
+#include <ctime>
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 using namespace triqs::statistics;
 
@@ -31,13 +32,20 @@ void test_1(int argc, char ** argv){
  correlated_gaussian_vector(A, seed, L);
  double intrinsic_variance = 1;
 
+ auto t1 = clock();
  TEST( autocorrelation_time(A));
+ //std::cout << "time = " << double( clock()-t1)/CLOCKS_PER_SEC << std::endl;
+ //t1 = clock();
  TEST( autocorrelation_time_from_binning(A,intrinsic_variance));
  TEST( autocorrelation_time_from_binning(A));
+ //std::cout << "time = " << double( clock()-t1)/CLOCKS_PER_SEC << std::endl;
+ //t1 = clock();
+ //TEST( autocorrelation_time_from_binning2(A));
+ //std::cout << "time = " << double( clock()-t1)/CLOCKS_PER_SEC << std::endl;
 }
 
 void test_2(int argc, char ** argv){
- int N=10000, L=40;
+ int N=100000, L=40;
  if(argc==3){
   N = atoi(argv[1]); //size
   L = atoi(argv[2]); //autocorrelation time
@@ -50,6 +58,8 @@ void test_2(int argc, char ** argv){
  observable<double> V;
  for (auto & x:A) V << x;
  TEST(autocorrelation_time(V));
+ TEST(autocorrelation_time_from_binning(V));
+ //TEST(autocorrelation_time_from_binning2(V));
  TEST(autocorrelation_time(V*V)); 
 }
 
