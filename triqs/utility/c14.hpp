@@ -39,10 +39,22 @@ namespace std {
 
   // use simply std::c14::plus<>() ...
   template<typename T = void> struct plus: std::plus<T>{};
-
   template<> struct plus<void> {
    template<typename T, typename U> 
     auto operator()( T&& t, U&& u) const DECL_AND_RETURN(std::forward<T>(t) + std::forward<U>(u));
+  };
+
+   // use simply std::c14::plus<>() ...
+  template<typename T = void> struct greater: std::greater<T>{};
+  template<> struct greater<void> {
+   template<typename T, typename U> 
+    auto operator()( T&& t, U&& u) const DECL_AND_RETURN(std::forward<T>(t) > std::forward<U>(u));
+  };
+
+  template<typename T = void> struct less: std::less<T>{};
+  template<> struct less<void> {
+   template<typename T, typename U> 
+    auto operator()( T&& t, U&& u) const DECL_AND_RETURN(std::forward<T>(t) < std::forward<U>(u));
   };
 
   template<typename T, typename... Args>
