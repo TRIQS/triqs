@@ -35,8 +35,8 @@ namespace triqs { namespace gfs {  namespace local {
    for (int j = 0; j < get_target_shape(gf)[1]; j++) {
 
     // fit the odd moments
-    // S.resize(size_odd);
-    // A.resize(size1,size_odd); //when resizing, gelss segfaults
+    S.resize(size_odd);
+    A.resize(size1,size_odd); //when resizing, gelss segfaults
     for (int k = 0; k < size1; k++) {
      auto n = n_min + k;
      auto iw = std::complex<double>(gf.mesh().index_to_point(n));
@@ -58,8 +58,8 @@ namespace triqs { namespace gfs {  namespace local {
     }
 
     // fit the even moments
-    // S.resize(size_even);
-    // A.resize(size1,size_even); //when resizing, gelss segfaults
+    S.resize(size_even);
+    A.resize(size1,size_even); //when resizing, gelss segfaults
     for (int k = 0; k < size1; k++) {
      auto n = n_min + k;
      auto iw = std::complex<double>(gf.mesh().index_to_point(n));

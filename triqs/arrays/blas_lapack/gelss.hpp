@@ -82,6 +82,8 @@ namespace triqs { namespace arrays { namespace lapack {
 
    f77::gelss ( get_n_rows(Ca()), get_n_cols(Ca()), nrhs , Ca().data_start(), get_ld(Ca()),
                 Cb().data_start(), get_ld(Cb()), Cs().data_start(), rcond, rank, work.data_start(), lwork, info); 
+   
+   if (info) TRIQS_RUNTIME_ERROR << "Error in gelss : info = "<< info;
    return info;
   }
 
