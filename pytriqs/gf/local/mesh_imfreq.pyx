@@ -13,6 +13,9 @@ cdef class MeshImFreq:
     property statistic : 
         def __get__(self): return 'F' if self._c.domain().statistic==Fermion else 'B'
     
+    property positive_only :
+        def __get__(self): return  self._c.positive_only()
+
     def __iter__(self) : # I use the C++ generator !
         cdef mesh_pt_generator[mesh_imfreq ] g = mesh_pt_generator[mesh_imfreq ](&self._c)
         while not g.at_end() : 
