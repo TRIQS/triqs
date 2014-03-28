@@ -263,21 +263,21 @@ namespace triqs { namespace arrays {
      typename clef::_result_of::make_expr_call<indexmap_storage_pair const &,Args...>::type
      operator()( Args&&... args ) const & {
       static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-      return make_expr_call(*this,args...);
+      return make_expr_call(*this,std::forward<Args>(args)...);
      }
 
     template< typename... Args>
      typename clef::_result_of::make_expr_call<indexmap_storage_pair &,Args...>::type
      operator()( Args&&... args ) & {
       static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-      return make_expr_call(*this,args...);
+      return make_expr_call(*this,std::forward<Args>(args)...);
      }
 
     template< typename... Args>
      typename clef::_result_of::make_expr_call<indexmap_storage_pair,Args...>::type
      operator()( Args&&... args ) && {
       static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-      return make_expr_call(std::move(*this),args...);
+      return make_expr_call(std::move(*this),std::forward<Args>(args)...);
      }
 
      // ------------------------------- clef auto assign --------------------------------------------
