@@ -162,6 +162,20 @@ namespace triqs { namespace mc_tools {
      normaliseProba();// ready to run after each add !
     }
 
+    private:
+    bool attempt_treat_infinite_ratio(std::complex<double>, double &) { return true; }
+
+    bool attempt_treat_infinite_ratio(double rate_ratio, double &abs_rate_ratio) {
+     bool is_inf = std::isinf(rate_ratio);
+     if (is_inf) {                                          // in case the ratio is infinite
+      abs_rate_ratio = 100;                                 // 1.e30; // >1 for metropolis
+      try_sign_ratio = (std::signbit(rate_ratio) ? -1 : 1); // signbit -> true iif the number is negative
+     }
+     return !is_inf;
+    }
+
+   public:
+
    /**
     *  - Picks up one of the move at random (weighted by their proposition probability),
     *  - Call attempt method of that move
@@ -184,15 +198,12 @@ namespace triqs { namespace mc_tools {
 #endif
     MCSignType rate_ratio = current->attempt();
     double abs_rate_ratio;
-    if (std::isinf(rate_ratio)) { // in case the ratio is infinite
-     abs_rate_ratio = 100; //1.e30; // >1 for metropolis
-     try_sign_ratio = (std::signbit(rate_ratio) ? -1 : 1); // signbit -> true iif the number is negative
-    } else {
+    if (attempt_treat_infinite_ratio(rate_ratio, abs_rate_ratio)) { // in case the ratio is infinite
      if (!std::isfinite(std::abs(rate_ratio)))
       TRIQS_RUNTIME_ERROR << "Monte Carlo Error : the rate is not finite in move " << name_of_currently_selected();
      abs_rate_ratio = std::abs(rate_ratio);
 #ifdef TRIQS_TOOLS_MC_DEBUG
-     std::cerr << " Metropolis ratio " << rate_ratio << ". Abs(Metropolis ratio) " << abs_rate_ratio << std::endl;
+    std::cerr << " Metropolis ratio " << rate_ratio << ". Abs(Metropolis ratio) " << abs_rate_ratio << std::endl;
 #endif
     assert((abs_rate_ratio >= 0));
     try_sign_ratio = (abs_rate_ratio > 1.e-14 ? rate_ratio / abs_rate_ratio : 1); // keep the sign
