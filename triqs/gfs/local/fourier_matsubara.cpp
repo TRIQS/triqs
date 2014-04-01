@@ -160,7 +160,8 @@ namespace gfs {
      gt[t] = convert_green<gt_result_type>(g_out(t.index() == L ? 0 : t.index()) + oneBoson(a1, b1, t, beta) +
                                            oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta));
    }
-   if (gt.mesh().kind() == full_bins) gt.on_mesh(L) = -gt.on_mesh(0) - convert_green<gt_result_type>(ta(1)(0, 0));
+   double pm = (gw.domain().statistic == Fermion ? -1.0 : 1.0);
+   if (gt.mesh().kind() == full_bins) gt.on_mesh(L) = pm * (gt.on_mesh(0) + convert_green<gt_result_type>(ta(1)(0, 0)));
    // set tail
    gt.singularity() = gw.singularity();
   }
