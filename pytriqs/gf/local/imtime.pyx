@@ -21,6 +21,9 @@ cdef class GfImTime_cython:
     def __dealloc__ (self):
         pass
 
+    def __call__ (self, float tau) : 
+        return matrix[double](self._c (tau)).to_python()
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfImTime(gr, key):

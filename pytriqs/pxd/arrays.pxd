@@ -41,6 +41,7 @@ cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::ar
     cdef cppclass matrix "triqs::arrays::matrix" [T] :
         matrix()
         matrix(object)  except +
+        matrix(matrix_view)  except +
         matrix operator +( matrix_view &)
         matrix operator -( matrix_view &)
         matrix operator /( matrix_view &)
@@ -50,7 +51,7 @@ cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::ar
     cdef matrix_view operator -( matrix_view & , matrix_view &)
     cdef matrix_view operator *( matrix_view & , matrix_view &)
     cdef matrix_view operator /( matrix_view & , matrix_view &)
- 
+
     cdef cppclass tqa_vector "triqs::arrays::vector" [T] :
         tqa_vector()
         tqa_vector(object)  except +
