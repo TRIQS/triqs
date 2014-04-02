@@ -33,7 +33,13 @@ namespace boost{
                     buf->fill();
                 return *cur++;
             }
-            generator(generator<R> const & rhs)
+            inline R const preview() {
+                if (cur == end)
+                    buf->fill();
+                return *cur;
+            }
+
+	     generator(generator<R> const & rhs)
                 : 
                  buf(new buffer (*rhs.buf))
                 , cur(buf->cur)
