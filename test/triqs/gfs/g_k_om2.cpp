@@ -11,8 +11,8 @@ using namespace triqs::arrays;
 using namespace triqs::lattice;
 template <typename Function, typename Mesh>
 // requires ( is_function_on_mesh<Function,Mesh>())
-auto  sum(Function const &f, Mesh const &m) ->decltype(make_matrix(0*f(*(m.begin())))) {
- //auto sum(Function const &f, Mesh const &m) {
+auto  sum_gf(Function const &f, Mesh const &m) ->decltype(make_matrix(0*f(*(m.begin())))) {
+ //auto sum_gf(Function const &f, Mesh const &m) {
  //auto res = typename triqs::regular_type_if_exists_else_type<decltype(f(typename Mesh::mesh_point_t{}))>::type (f(m.begin()));
  auto res = make_matrix(0*f(*(m.begin())));
  for (auto const &x : m) res = res + f(x);
@@ -20,7 +20,7 @@ auto  sum(Function const &f, Mesh const &m) ->decltype(make_matrix(0*f(*(m.begin
 }
 namespace triqs {
  namespace clef {
-  TRIQS_CLEF_MAKE_FNT_LAZY(sum);
+  TRIQS_CLEF_MAKE_FNT_LAZY(sum_gf);
   TRIQS_CLEF_MAKE_FNT_LAZY(conj);
  }
 }
@@ -49,8 +49,8 @@ int main() {
 
   auto r = G_k_iom(k_t{0, 0}, matsubara_freq{0, beta, Fermion});
 
-  auto r5 = sum(k_ >> G_k_iom(k_,0), g_eps.mesh());
-  G_loc(w_) << sum(k_ >> G_k_iom(k_,w_), g_eps.mesh());
+  auto r5 = sum_gf(k_ >> G_k_iom(k_,0), g_eps.mesh());
+  G_loc(w_) << sum_gf(k_ >> G_k_iom(k_,w_), g_eps.mesh());
 
   TEST(G_loc(0));
 

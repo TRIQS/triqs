@@ -585,5 +585,31 @@ namespace triqs { namespace clef {
                                                                                                                                  \
  template <typename... Args>                                                                                                     \
      auto operator()(Args&&... args) && DECL_AND_RETURN(make_expr_call(std::move(*this), std::forward<Args>(args)...));
+
+/* --------------------------------------------------------------------------------------------------
+   *  sum of expressions
+   * --------------------------------------------------------------------------------------------------- */
+
+ // sum a function f on a domain D, using a simple foreach
+ template <typename F, typename D>
+ auto sum_f_domain_impl(F const& f, D const& d)
+     -> std::c14::enable_if_t<!triqs::clef::is_any_lazy<F, D>::value, decltype(f(*(d.begin())))> {
+  auto res = decltype(f(*(d.begin()))) {};
+  using p_t = typename std::decay<decltype(*(d.begin()))>::type;
+  foreach(d, [&res, &f](p_t const& x) { res = res + f(x); });
+  return res;
+ }
+
+ TRIQS_CLEF_MAKE_FNT_LAZY(sum_f_domain_impl);
+
+ // sum( expression, i = domain)
+ template <typename Expr, int N, typename D> auto sum(Expr const& f, clef::pair<N, D> const& d) 
+  DECL_AND_RETURN(sum_f_domain_impl(make_function(f, clef::placeholder<N>()), d.rhs));
+
+ // two or more indices : sum recursively
+ template <typename Expr, typename D0, int N0, typename D1, int N1, typename... D, int... N>
+ auto sum(Expr const& f, clef::pair<N0, D0> const& d0, clef::pair<N1, D1> const& d1, clef::pair<N, D> const&... d) 
+  DECL_AND_RETURN(sum(sum(f, d0), d1,  d...));
+
 }} //  namespace triqs::clef
 #endif 
