@@ -566,15 +566,14 @@ namespace triqs { namespace clef {
  }
 
 #define TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(TY, name)                                                                               \
- struct __clef_lazy_method_impl_##name {                                                                                         \
-  TY* _x;                                                                                                                        \
-  template <typename... A> auto operator()(A&&... a) const DECL_AND_RETURN(_x -> name(std::forward<A>(a)...));                   \
-  friend std::ostream& operator<<(std::ostream& out, __clef_lazy_method_impl_##name const& x) {                                  \
-   return out << BOOST_PP_STRINGIZE(TY) << "." << BOOST_PP_STRINGIZE(name);                                                      \
+ struct __clef_lazy_method_impl_##TY##_##name {                                                                                  \
+  template <typename X, typename... A> auto operator()(X&& x, A&&... a) const DECL_AND_RETURN(x.name(std::forward<A>(a)...));    \
+  friend std::ostream& operator<<(std::ostream& out, __clef_lazy_method_impl_##TY##_##name const& x) {                           \
+   return out << "apply_method:"<< BOOST_PP_STRINGIZE(name);                                                      \
   }                                                                                                                              \
  };                                                                                                                              \
  template <typename... A>                                                                                                        \
- auto name(A&&... a) DECL_AND_RETURN(make_expr_call(__clef_lazy_method_impl_##name{this}, std::forward<A>(a)...));
+ auto name(A&&... a) DECL_AND_RETURN(make_expr_call(__clef_lazy_method_impl_##TY##_##name{}, *this, std::forward<A>(a)...));
 
 #define TRIQS_CLEF_IMPLEMENT_LAZY_CALL(...)                                                                                      \
  template <typename... Args>                                                                                                     \

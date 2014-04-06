@@ -1,1 +1,4 @@
-(eval( f.my_method(x_), x_ = 10)) ---> 20
+Clef expression     : (apply_method:my_method(Obj, _2) + (2 * _1))
+Complete evaluation : 4
+Partial evaluation  : (2 + (2 * _1))
+Complete evalution  : 8
