@@ -345,22 +345,20 @@ namespace gfs {
   triqs_clef_auto_assign(g, rhs);
  }
 
- template <bool B, typename G, typename RHS>
- void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, RHS &&rhs, std::integral_constant<bool, B>) {
+ template <typename G, typename RHS> void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, RHS &&rhs) {
   std::forward<G>(g) = std::forward<RHS>(rhs);
  }
 
- template <typename G, bool B, typename Expr, int... Is>
- void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, clef::make_fun_impl<Expr, Is...> &&rhs, std::integral_constant<bool, B>) {
-  triqs_clef_auto_assign_impl(std::forward<G>(g), std::forward<clef::make_fun_impl<Expr, Is...>>(rhs),
-                              std::integral_constant<bool, B>());
+ template <typename G, typename Expr, int... Is>
+ void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, clef::make_fun_impl<Expr, Is...> &&rhs) {
+  triqs_clef_auto_assign(std::forward<G>(g), std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
  }
 
  template <typename RHS, typename Variable, typename Target, typename Opt, bool IsView>
  void triqs_clef_auto_assign_impl(gf_impl<Variable, Target, Opt, IsView, false> &g, RHS const &rhs,
                                   std::integral_constant<bool, false>) {
   for (auto const &w : g.mesh()) {
-   triqs_gf_clef_auto_assign_impl_aux_assign(g[w], rhs(w), std::integral_constant<bool, false>());
+   triqs_gf_clef_auto_assign_impl_aux_assign(g[w], rhs(w));
    //(*this)[w] = rhs(w);
   }
  }
@@ -369,8 +367,7 @@ namespace gfs {
  void triqs_clef_auto_assign_impl(gf_impl<Variable, Target, Opt, IsView, false> &g, RHS const &rhs,
                                   std::integral_constant<bool, true>) {
   for (auto const &w : g.mesh()) {
-   triqs_gf_clef_auto_assign_impl_aux_assign(g[w], triqs::tuple::apply(rhs, w.components_tuple()),
-                                             std::integral_constant<bool, true>());
+   triqs_gf_clef_auto_assign_impl_aux_assign(g[w], triqs::tuple::apply(rhs, w.components_tuple()));
    //(*this)[w] = triqs::tuple::apply(rhs, w.components_tuple());
   }
  }

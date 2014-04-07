@@ -120,6 +120,8 @@ namespace arrays {
   friend std::ostream &operator<<(std::ostream &out, matrix_tensor_proxy const &x) {
    return out << view_type{x};
   }
+
+  template <typename F> friend void triqs_clef_auto_assign(matrix_tensor_proxy x, F &&f) { foreach(x(), std::forward<F>(f)); }
  };
 
  template <typename A, bool IsMatrix>
