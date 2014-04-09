@@ -25,29 +25,40 @@
 #include <boost/function.hpp>
 #include "../array.hpp"
 
-namespace triqs { namespace arrays {
+namespace triqs {
+namespace arrays {
 
- template<class F> 
-  struct fold_worker  { 
-   F f;
-   
-   template<class A, class R> struct fold_func_adaptor { 
-     F const & f; A const & a; R & r;
-     template<typename ... Args> void operator()(Args const & ... args) { r = f(r,a(args...)); }
-    };
+ template <class F> struct fold_worker {
+  F f;
 
-   template<class A, class R>   
-    R operator() (A const & a, R init)  const { 
-     foreach(a, fold_func_adaptor<A,R> {f,a,init});
-     return init;
-    }
-
-   template<class A> typename A::value_type operator() (A const & a)  const { return (*this)(a, typename A::value_type{});}
+  template <class A, class R> struct fold_func_adaptor {
+   F const& f;
+   A const& a;
+   R& r;
+   template <typename... Args> void operator()(Args const&... args) { r = f(r, a(args...)); }
   };
 
- template<class F> fold_worker<F> fold (F f) { return {std::move(f)};}
+  template <class A, class R>
+  auto operator()(A const& a,
+                  R init) const -> typename std::decay<typename std::result_of<F(typename A::value_type, R)>::type>::type {
+   // to take into account that f may be double,double -> double, while one passes 0 (an int...)
+   // R = int, R2= double in such case, and the result will be a double, or narrowing will occur
+   using R2 = typename std::decay<typename std::result_of<F(typename A::value_type, R)>::type>::type;
+   R2 r2 = init;
+   foreach(a, fold_func_adaptor<A, R2>{f, a, r2});
+   return r2;
+  }
 
-}}//namespace triqs::arrays
+  template <class A> typename A::value_type operator()(A const& a) const {
+   return (*this)(a, typename A::value_type{});
+  }
+ };
+
+ template <class F> fold_worker<F> fold(F f) {
+  return {std::move(f)};
+ }
+}
+} // namespace triqs::arrays
 
 #endif
 
