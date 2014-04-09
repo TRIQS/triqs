@@ -573,7 +573,8 @@ namespace triqs { namespace clef {
   }                                                                                                                              \
  };                                                                                                                              \
  template <typename... A>                                                                                                        \
- auto name(A&&... a) DECL_AND_RETURN(make_expr_call(__clef_lazy_method_impl_##TY##_##name{}, *this, std::forward<A>(a)...));
+ auto name(A&&... a) const -> typename _result_of::make_expr_call<__clef_lazy_method_impl_##TY##_##name,const Obj&,A...>::type  \
+ { return make_expr_call(__clef_lazy_method_impl_##TY##_##name{}, *this, std::forward<A>(a)...);}
 
 #define TRIQS_CLEF_IMPLEMENT_LAZY_CALL(...)                                                                                      \
  template <typename... Args>                                                                                                     \
