@@ -287,6 +287,13 @@ namespace statistics {
   return l.res;
  }
 
+ // -------------  A trait to get the value_type of an expression of observables----------
+
+ template <typename ObservableExpr> struct _get_value_type {
+  using type = decltype(eval(std::declval<ObservableExpr>(), 0));
+ };
+ template <typename ObservableExpr> using get_value_type = typename _get_value_type<ObservableExpr>::type;
+
  /* *********************************************************
   *
   *  Average and error
@@ -355,14 +362,14 @@ namespace statistics {
  }
 
  template <typename ObservableExpr>
- std::c14::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, value_and_error_bar<double>>
+ std::c14::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, value_and_error_bar<get_value_type<ObservableExpr>>>
  average_and_error(ObservableExpr const& obs) {
   auto expr_jack = eval(obs, repl_by_jack{}); // replace every TS leaf by a jacknifed version
   return empirical_average_and_error(make_immutable_time_series(expr_jack));
  }
 
  template <typename ObservableExpr>
- std::c14::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, value_and_error_bar<double>>
+ std::c14::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, value_and_error_bar<get_value_type<ObservableExpr>>>
  average_and_error(ObservableExpr const& obs, int bin_size) {
   auto expr_bin_jack = eval(obs, bin_and_repl_by_jack{bin_size});
   return empirical_average_and_error(make_immutable_time_series(expr_bin_jack));
@@ -420,7 +427,8 @@ namespace statistics {
 
   auto t_cor = [&](int b) {
    auto A_binned = make_binned_series(make_immutable_time_series(A), b);
-   double var = empirical_variance(A_binned);
+   using std::abs;
+   double var = abs(empirical_variance(A_binned));
    return 0.5 * (b * var / intrinsic_variance - 1.);
   };
 
@@ -463,27 +471,28 @@ namespace statistics {
   return empirical_average(t);
  }
 
- template<typename TimeSeries>
- double t_cor(TimeSeries const & A, int bin_size, double var1){
-   double var = empirical_variance(A);
-   return .5 * var / var1 * bin_size; 
- }
-
  template <typename TimeSeries> double autocorrelation_time_from_binning(TimeSeries const& A) {
-
+  using std::abs;
   auto size = make_immutable_time_series(A).size();
-  double var1 = empirical_variance(make_immutable_time_series(A));
+  double var1 = abs(empirical_variance(make_immutable_time_series(A)));
 
   int B = 2;
   auto Ab=make_binned_series(A,2);
-  double autocorr_time = t_cor(Ab, B, var1);
+
+  auto t_cor = [&Ab](int bin_size, double var1) {
+   using std::abs;
+   double var = abs(empirical_variance(Ab));
+   return .5 * var / var1 * bin_size;
+  };
+
+  double autocorr_time = t_cor(B, var1);
   double slope = 1.;
   int small_slope_count = 0;
   std::vector<double> t;
   while (small_slope_count < 5 && B < size / 10) {
    B*=2;
    Ab=make_binned_series(Ab,2);
-   double t_cor_new = t_cor(Ab, B, var1);
+   double t_cor_new = t_cor(B, var1);
    slope = (std::abs(t_cor_new - autocorr_time) / autocorr_time);
    if (slope < .5*1e-1) small_slope_count++;
    if (small_slope_count > 0) t.push_back(t_cor_new);
