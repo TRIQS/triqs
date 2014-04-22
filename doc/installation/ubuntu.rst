@@ -29,4 +29,9 @@ Optionally, you may be interested in:
 ..
   * How to use :ref:`Intel <icc>` C++ compiler?
 
+If you wish to compile the documentation locally, you additionally need to install the following package: ::
+
+    pip install sphinxcontrib-doxylink
+
+
 .. warning:: you need the latest version of Cython (>=.17, downloadable on Cython.org). If Cython is not found, specify the location of the executable with the option -DCYTHON_EXECUTABLE.
