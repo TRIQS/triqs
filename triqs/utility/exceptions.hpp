@@ -30,19 +30,26 @@
 
 namespace triqs { 
 
- class runtime_error : public std::exception {
-  std::string acc;
+ class exception : public std::exception {
+  std::string acc, trace;
   public:
-  runtime_error() throw() :std::exception() {}
-  virtual ~runtime_error() throw() {}
-  template<typename T> runtime_error & operator  <<( T const & x) { std::stringstream f; f<<acc<<x; acc = f.str(); return *this;}
-  runtime_error & operator  <<( const char * mess ) { (*this) << std::string(mess); return *this;}// to limit code size
+  exception() throw() :std::exception() { trace = utility::stack_trace();}
+  virtual ~exception() throw() {}
+  template<typename T> exception & operator  <<( T const & x) { std::stringstream f; f<<acc<<x; acc = f.str(); return *this;}
+  exception & operator  <<( const char * mess ) { (*this) << std::string(mess); return *this;}// to limit code size
   virtual const char* what() const throw() { return acc.c_str();}
+ };
+ 
+ class runtime_error : public exception {
+  public:
+  runtime_error() throw() : exception() {}
+  virtual ~runtime_error() throw() {}
+  template<typename T> runtime_error & operator  <<( T && x) { exception::operator<<(x); return *this; }
  };
 
 }
 
-#define TRIQS_ERROR(CLASS,NAME) throw CLASS()<<" Triqs "<<NAME<<" at "<<__FILE__<< " : "<<__LINE__<<"\n\n Trace is :\n\n"<<triqs::utility::stack_trace()<<"\n"
+#define TRIQS_ERROR(CLASS,NAME) throw CLASS()<<" Triqs "<<NAME<<" at "<<__FILE__<< " : "<<__LINE__<<"\n\n"
 #define TRIQS_RUNTIME_ERROR TRIQS_ERROR(triqs::runtime_error,"runtime error")
 
 #endif
