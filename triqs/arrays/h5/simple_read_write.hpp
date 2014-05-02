@@ -42,7 +42,7 @@ namespace arrays {
     if (S1[u] <= 0) TRIQS_RUNTIME_ERROR << " negative strides not permitted in h5";
     S[u] = 1;
    }
-   static const bool is_complex = boost::is_complex<typename ArrayType::value_type>::value;
+   static const bool is_complex = triqs::is_complex<typename ArrayType::value_type>::value;
    return h5::dataspace_from_LS<R, is_complex>(A.indexmap().domain().lengths(), A.indexmap().domain().lengths(), S);
   }
 
@@ -82,7 +82,7 @@ namespace arrays {
     H5::DataSet ds = g.create_dataset(name, h5::data_type_file<T>(), data_space(A));
     ds.write(__get_array_data_cptr(A), h5::data_type_memory<T>(), data_space(A));
     // if complex, to be python compatible, we add the __complex__ attribute
-    if (boost::is_complex<T>::value) h5::write_string_attribute(&ds, "__complex__", "1");
+    if (triqs::is_complex<T>::value) h5::write_string_attribute(&ds, "__complex__", "1");
    }
    TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
   }
@@ -108,7 +108,7 @@ namespace arrays {
    try {
     H5::DataSet ds = g.open_dataset(name);
     H5::DataSpace dataspace = ds.getSpace();
-    static const unsigned int Rank = ArrayType::rank + (boost::is_complex<typename ArrayType::value_type>::value ? 1 : 0);
+    static const unsigned int Rank = ArrayType::rank + (triqs::is_complex<typename ArrayType::value_type>::value ? 1 : 0);
     int rank = dataspace.getSimpleExtentNdims();
     if (rank != Rank)
      TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : the array has rank = " << Rank

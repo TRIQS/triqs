@@ -75,9 +75,9 @@ namespace gfs {
   //  BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-   ar& boost::serialization::make_nvp("n_max", Nmax);
-   ar& boost::serialization::make_nvp("names", _names);
-   ar& boost::serialization::make_nvp("names_inv", _inv_names);
+   ar& TRIQS_MAKE_NVP("n_max", Nmax);
+   ar& TRIQS_MAKE_NVP("names", _names);
+   ar& TRIQS_MAKE_NVP("names_inv", _inv_names);
   }
  };
 }

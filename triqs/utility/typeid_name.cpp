@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,26 +18,40 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#ifndef TRIQS_H5_EXCEPTIONS_H 
-#define TRIQS_H5_EXCEPTIONS_H
-
-#include <Python.h>
-#include <boost/python.hpp>
-#include <H5Cpp.h>
+#include <triqs/utility/first_include.hpp>
+#include "./typeid_name.hpp"
 #include <sstream>
 
-namespace triqs { namespace utility {
-
- // transcription of H5 error
- inline void translatorH5Error(H5::Exception const& x) {
-  std::stringstream f; f<< " H5 exception\n"<<x.getCDetailMsg()<<"\n in function "<< x.getCFuncName()<<"\n";
-  PyErr_SetString(PyExc_RuntimeError, f.str().c_str() ); 
- };
-
- void register_h5_exception() { boost::python::register_exception_translator<H5::Exception>(translatorH5Error);}
-
-}}
-
+#ifdef __GNUC__
+#include <cxxabi.h> 
 #endif
 
+#include <boost/algorithm/string/erase.hpp>
+
+namespace triqs { namespace utility { 
+
+ std::string demangle(const char * name) { 
+  std::stringstream fs;
+#ifdef __GNUC__
+  int status;
+  char * demangled = abi::__cxa_demangle(name, NULL, NULL, &status);
+  if (!status) { 
+   std::string res(demangled);
+   boost::erase_all(res,", boost::tuples::null_type");   
+   boost::erase_all(res,", -1");   
+   boost::erase_all(res,", void");   
+   fs<< res; 
+   free(demangled); 
+  } else fs<< name; 
+  //fs<<abi::__cxa_demangle(typeid(A).name(), 0, 0, &status);
+#else 
+  fs<<name;
+#endif
+  return fs.str();
+ }
+
+ std::string demangle(std::string const & name) { return demangle (name.c_str());}
+
+ std::string get_name(std::type_info const &info) { return demangle(info.name());}
+
+}}

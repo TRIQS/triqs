@@ -235,7 +235,7 @@ namespace gfs {
    template <typename M> size_t operator()(M &m, size_t N) {
     std::stringstream fs;
     fs << "MeshComponent" << N;
-    ar &boost::serialization::make_nvp(fs.str().c_str(), m);
+    ar &TRIQS_MAKE_NVP(fs.str().c_str(), m);
     return N + 1;
    }
   };

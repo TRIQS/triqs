@@ -247,25 +247,25 @@ namespace triqs { namespace arrays {
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_vector_or_view <RHS > >::type
-  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) {
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, char_<'A'>) {
    T a =  1.0; blas::axpy(a,rhs,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_vector_or_view <RHS > >::type
-  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) {
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, char_<'S'>) {
    T a = -1.0; blas::axpy(a,rhs,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_scalar_for<RHS,vector<T,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) {
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, char_<'M'>) {
    T a = rhs; blas::scal(a,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_scalar_for<RHS,vector<T,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) {
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, char_<'D'>) {
    T a = 1/rhs; blas::scal(a,lhs);
   }
 
@@ -275,25 +275,25 @@ namespace triqs { namespace arrays {
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_vector_or_view <RHS > >::type
-  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) {
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, char_<'A'>) {
    T a =  1.0; blas::axpy(a,rhs,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_vector_or_view <RHS > >::type
-  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) {
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, char_<'S'>) {
    T a = -1.0; blas::axpy(a,rhs,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_scalar_for<RHS,vector_view<T,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) {
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, char_<'M'>) {
    T a = rhs; blas::scal(a,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_scalar_for<RHS,vector_view<T,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) {
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, char_<'D'>) {
    T a = 1/rhs; blas::scal(a,lhs);
   }
 

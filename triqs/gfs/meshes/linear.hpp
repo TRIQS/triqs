@@ -165,14 +165,14 @@ namespace gfs {
   //  BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   ar &boost::serialization::make_nvp("domain", _dom);
-   ar &boost::serialization::make_nvp("a_pt", a_pt);
-   ar &boost::serialization::make_nvp("b_pt", b_pt);
-   ar &boost::serialization::make_nvp("xmin", xmin);
-   ar &boost::serialization::make_nvp("xmax", xmax);
-   ar &boost::serialization::make_nvp("del", del);
-   ar &boost::serialization::make_nvp("size", L);
-   ar &boost::serialization::make_nvp("kind", meshk);
+   ar &TRIQS_MAKE_NVP("domain", _dom);
+   ar &TRIQS_MAKE_NVP("a_pt", a_pt);
+   ar &TRIQS_MAKE_NVP("b_pt", b_pt);
+   ar &TRIQS_MAKE_NVP("xmin", xmin);
+   ar &TRIQS_MAKE_NVP("xmax", xmax);
+   ar &TRIQS_MAKE_NVP("del", del);
+   ar &TRIQS_MAKE_NVP("size", L);
+   ar &TRIQS_MAKE_NVP("kind", meshk);
   }
 
   friend std::ostream &operator<<(std::ostream &sout, linear_mesh const &m) { return sout << "Linear Mesh of size " << m.L; }

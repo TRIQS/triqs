@@ -265,8 +265,8 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
 
   template<class Archive>
    void save(Archive & ar, const unsigned int version) const {
-    ar << boost::serialization::make_nvp("size",size_);
-    for (size_t i=0; i<size_; ++i) ar << boost::serialization::make_nvp("data",p[i]);
+    ar << TRIQS_MAKE_NVP("size",size_);
+    for (size_t i=0; i<size_; ++i) ar << TRIQS_MAKE_NVP("data",p[i]);
    }
 
   template<class Archive>

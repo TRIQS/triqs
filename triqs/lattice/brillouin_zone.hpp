@@ -55,7 +55,7 @@ namespace lattice {
   //  BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-   ar& boost::serialization::make_nvp("bravais_lattice", lattice_);
+   ar& TRIQS_MAKE_NVP("bravais_lattice", lattice_);
   }
 
   private:

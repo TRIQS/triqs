@@ -32,6 +32,7 @@
 #include <triqs/utility/serialization.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/python_tools/array_interface.hpp>
+#include <triqs/h5/make_h5_read_write.hpp>
 
 namespace triqs { namespace utility {
 
@@ -171,14 +172,14 @@ namespace triqs { namespace utility {
   template<class Archive>
    void save(Archive & ar, const unsigned int version) const {
     std::string s = serialize_();
-    ar << boost::serialization::make_nvp("type_name", type_code_to_type_name[type_code_]);
-    ar << boost::serialization::make_nvp("seria_str", s);
+    ar << TRIQS_MAKE_NVP("type_name", type_code_to_type_name[type_code_]);
+    ar << TRIQS_MAKE_NVP("seria_str", s);
    }
   template<class Archive>
    void load(Archive & ar, const unsigned int version) {
     std::string s, tnn;
-    ar >> boost::serialization::make_nvp("type_name", tnn);
-    ar >> boost::serialization::make_nvp("seria_str", s);
+    ar >> TRIQS_MAKE_NVP("type_name", tnn);
+    ar >> TRIQS_MAKE_NVP("seria_str", s);
     auto it = type_name_to_type_code.find(tnn);
     if (it== type_name_to_type_code.end())
      TRIQS_RUNTIME_ERROR << " Can not deserialize the type "<< tnn<< "\n Did you forget to register it ?";

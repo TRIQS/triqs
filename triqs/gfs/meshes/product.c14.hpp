@@ -159,7 +159,7 @@ namespace gfs {
   /// BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   auto l = [&ar](auto &m, int N) { ar &boost::serialization::make_nvp("MeshComponent" + std::to_string(N), m); };
+   auto l = [&ar](auto &m, int N) { ar &TRIQS_MAKE_NVP("MeshComponent" + std::to_string(N), m); };
    triqs::tuple::for_each_enumerate(m_tuple, l);
   }
 

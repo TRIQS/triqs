@@ -94,7 +94,7 @@ namespace triqs { namespace mpi {
  // ------------------------------
  // overload for basic types
  // ------------------------------
- template<typename A> struct mpi_impl<A,ENABLE_IFC(std::is_arithmetic<A>::value || boost::is_complex<A>::value)> {
+ template<typename A> struct mpi_impl<A,ENABLE_IFC(std::is_arithmetic<A>::value || triqs::is_complex<A>::value)> {
 
   static void reduce_in_place (communicator _c, A & a, int root) {
    MPI_Reduce ((_c.rank()==root ? MPI_IN_PLACE:&a),&a,1, mpi_datatype<A>::invoke(), MPI_SUM, root, _c);

@@ -89,7 +89,7 @@ namespace gfs {
   //  BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   ar &boost::serialization::make_nvp("domain", _dom);
+   ar &TRIQS_MAKE_NVP("domain", _dom);
   }
 
   friend std::ostream &operator<<(std::ostream &sout, discrete_mesh const &m) { return sout << "Discrete Mesh"; }

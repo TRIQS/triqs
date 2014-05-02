@@ -24,7 +24,7 @@
 #include <type_traits>
 #include <H5Cpp.h>
 #include "hdf5_hl.h"
-#include <boost/type_traits/is_complex.hpp>
+#include <triqs/utility/is_complex.hpp>
 
 namespace triqs { 
 
@@ -97,14 +97,14 @@ namespace triqs {
 
   //------------- compute void * pointer to the data ----------------------------------
   template <typename S>
-   typename std::enable_if< boost::is_complex<S>::value, typename std::conditional<std::is_const<S>::value, const void *, void *>::type >::type 
+   typename std::enable_if< triqs::is_complex<S>::value, typename std::conditional<std::is_const<S>::value, const void *, void *>::type >::type 
     get_data_ptr (S * p) { 
      typedef typename std::conditional<std::is_const<S>::value, const typename S::value_type, typename S::value_type>::type T; 
      return reinterpret_cast<T*>(p); 
     }
 
   template <typename S >
-   typename std::enable_if< !boost::is_complex<S>::value, typename std::conditional<std::is_const<S>::value, const void *, void *>::type >::type 
+   typename std::enable_if< !triqs::is_complex<S>::value, typename std::conditional<std::is_const<S>::value, const void *, void *>::type >::type 
    get_data_ptr (S * p) {return p;}
 
   // dataspace from lengths and strides. Correct for the complex. strides must be >0

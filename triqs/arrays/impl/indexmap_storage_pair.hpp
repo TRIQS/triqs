@@ -28,8 +28,6 @@
 #include "triqs/utility/exceptions.hpp"
 #include "triqs/utility/typeid_name.hpp"
 #include "triqs/utility/view_tools.hpp"
-#include <boost/serialization/utility.hpp>
-#include <boost/serialization/vector.hpp>
 #include <type_traits>
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../python/numpy_extractor.hpp"
@@ -328,8 +326,8 @@ namespace triqs { namespace arrays {
     friend class boost::serialization::access;
     template<class Archive>
      void serialize(Archive & ar, const unsigned int version) {
-      ar & boost::serialization::make_nvp("storage",this->storage_);
-      ar & boost::serialization::make_nvp("indexmap",this->indexmap_);
+      ar & TRIQS_MAKE_NVP("storage",this->storage_);
+      ar & TRIQS_MAKE_NVP("indexmap",this->indexmap_);
      }
 
     // pretty print of the array

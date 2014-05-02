@@ -147,9 +147,9 @@ namespace gfs {
   friend class boost::serialization::access;
   ///  BOOST Serialization
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   ar &boost::serialization::make_nvp("domain", _dom);
-   ar &boost::serialization::make_nvp("size", _n_pts);
-   ar &boost::serialization::make_nvp("kind", _positive_only);
+   ar &TRIQS_MAKE_NVP("domain", _dom);
+   ar &TRIQS_MAKE_NVP("size", _n_pts);
+   ar &TRIQS_MAKE_NVP("kind", _positive_only);
   }
 
   /// Simple print (just blabla and the size)

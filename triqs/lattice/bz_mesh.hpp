@@ -94,8 +94,8 @@ namespace lattice {
   //  BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   ar &boost::serialization::make_nvp("domain", bz);
-   ar &boost::serialization::make_nvp("k_pt_stack", k_pt_stack);
+   ar &TRIQS_MAKE_NVP("domain", bz);
+   ar &TRIQS_MAKE_NVP("k_pt_stack", k_pt_stack);
   }
 
   friend std::ostream &operator<<(std::ostream &sout, bz_mesh const &m) { return sout << "Mesh over BZ "; }

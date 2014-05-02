@@ -25,18 +25,22 @@
 #include "./compiler_details.hpp"
 #include "./exceptions.hpp"
 #include <boost/serialization/utility.hpp>
+#include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
 #include <vector>
 #include <triqs/utility/tuple_tools.hpp>
 
 #define TRIQS_MINI_VECTOR_NRANK_MAX 10
 
+#define TRIQS_MAKE_NVP(NAME,X) X
+//#define TRIQS_MAKE_NVP(NAME,X) boost::serialization::make_nvp(NAME,X)
 namespace triqs { namespace utility { 
 
  template <typename T, int Rank> 
   class mini_vector { 
    T _data[Rank];
    friend class boost::serialization::access;
-   template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("_data",_data); }
+   template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & TRIQS_MAKE_NVP("_data",_data); }
    void init() { for (int i=0;i<Rank; ++i) _data[i] = 0;}
    public : 
 

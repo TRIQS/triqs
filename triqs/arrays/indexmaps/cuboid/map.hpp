@@ -133,9 +133,9 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    //  BOOST Serialization
    friend class boost::serialization::access;
    template<class Archive> void serialize(Archive & ar, const unsigned int version) {
-    ar & boost::serialization::make_nvp("domain",mydomain);
-    ar & boost::serialization::make_nvp("strides",strides_);
-    ar & boost::serialization::make_nvp("start_shift",start_shift_);
+    ar & TRIQS_MAKE_NVP("domain",mydomain);
+    ar & TRIQS_MAKE_NVP("strides",strides_);
+    ar & TRIQS_MAKE_NVP("start_shift",start_shift_);
    }
    // for construction
    void compute_stride_compact() {

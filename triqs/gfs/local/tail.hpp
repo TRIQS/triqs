@@ -167,9 +167,9 @@ namespace triqs { namespace gfs { namespace local {
       friend class boost::serialization::access;
       template<class Archive>
         void serialize(Archive & ar, const unsigned int version) {
-          ar & boost::serialization::make_nvp("omin",omin);
-          ar & boost::serialization::make_nvp("mask",mask);
-          ar & boost::serialization::make_nvp("data",_data);
+          ar & TRIQS_MAKE_NVP("omin",omin);
+          ar & TRIQS_MAKE_NVP("mask",mask);
+          ar & TRIQS_MAKE_NVP("data",_data);
         }
 
       friend std::ostream & operator << (std::ostream & out, tail_impl const & x) {

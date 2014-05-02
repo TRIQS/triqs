@@ -1,9 +1,8 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,18 +18,13 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_MAKE_CONST_H
-#define TRIQS_ARRAYS_MAKE_CONST_H
+#pragma once
+#include <complex>
+#include <type_traits>
 
-namespace triqs { namespace arrays {
+namespace triqs { 
+ template<typename T> struct is_complex : std::false_type{};
+ template<typename T> struct is_complex<std::complex<T>> : std::true_type{};
+}
 
- namespace details { 
-  /*
-   * make_const_type : make the type constant.
-   * For a storage, it transforms it into a storage<const Valuetype>
-   */
-  template<bool Const, typename T> struct make_const_type : std::conditional<Const, typename std::add_const<T>::type, T> {};
- }
-}}//namespace triqs::arrays 
-#endif
 

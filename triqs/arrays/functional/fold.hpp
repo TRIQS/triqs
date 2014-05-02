@@ -20,9 +20,6 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_EXPRESSION_FOLD_H
 #define TRIQS_ARRAYS_EXPRESSION_FOLD_H 
-#include <boost/type_traits/remove_const.hpp>
-#include <boost/type_traits/remove_reference.hpp>
-#include <boost/function.hpp>
 #include "../array.hpp"
 
 namespace triqs {

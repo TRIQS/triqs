@@ -39,16 +39,16 @@ namespace triqs { namespace arrays {
  }
 
  template<typename LHS, typename RHS, char OP>
-  void triqs_arrays_compound_assign_delegation  (LHS & lhs, const RHS & rhs, mpl::char_<OP> ) { 
+  void triqs_arrays_compound_assign_delegation  (LHS & lhs, const RHS & rhs, char_<OP> ) { 
    static_assert( !LHS::is_const, "Can not apply a compound operator to a const view !");
    assignment::impl<LHS, RHS, OP>(lhs, rhs).invoke();
  }
 
 #define TRIQS_DEFINE_COMPOUND_OPERATORS(MYTYPE)\
- template<typename RHS> MYTYPE & operator +=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'A'>()); return *this;}\
- template<typename RHS> MYTYPE & operator -=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'S'>()); return *this;}\
- template<typename RHS> MYTYPE & operator *=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'M'>()); return *this;}\
- template<typename RHS> MYTYPE & operator /=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'D'>()); return *this;}
+ template<typename RHS> MYTYPE & operator +=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, char_<'A'>()); return *this;}\
+ template<typename RHS> MYTYPE & operator -=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, char_<'S'>()); return *this;}\
+ template<typename RHS> MYTYPE & operator *=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, char_<'M'>()); return *this;}\
+ template<typename RHS> MYTYPE & operator /=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, char_<'D'>()); return *this;}
 
 #define TRIQS_DELETE_COMPOUND_OPERATORS(MYTYPE)\
  template<typename RHS> MYTYPE & operator +=(RHS const & rhs) = delete;\

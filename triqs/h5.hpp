@@ -24,6 +24,6 @@
 #include "./h5/scalar.hpp"
 #include "./h5/vector.hpp"
 #include "./h5/string.hpp"
-#include "./h5/make_h5_read_write.hpp"
+//#include "./h5/make_h5_read_write.hpp"
 #endif
 

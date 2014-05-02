@@ -316,10 +316,10 @@ namespace gfs {
   //-----------------------------  BOOST Serialization -----------------------------
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   ar &boost::serialization::make_nvp("data", _data);
-   ar &boost::serialization::make_nvp("singularity", _singularity);
-   ar &boost::serialization::make_nvp("mesh", _mesh);
-   ar &boost::serialization::make_nvp("symmetry", _symmetry);
+   ar &TRIQS_MAKE_NVP("data", _data);
+   ar &TRIQS_MAKE_NVP("singularity", _singularity);
+   ar &TRIQS_MAKE_NVP("mesh", _mesh);
+   ar &TRIQS_MAKE_NVP("symmetry", _symmetry);
   }
 
   /// print

@@ -55,7 +55,7 @@ namespace triqs {
   // Boost serialization. Can I use std::shared_ptr directly ? Or use boost::shared_ptr
   friend class boost::serialization::access;
   template<class Archive>
-   void save(Archive & ar, const unsigned int version) const { ar << boost::serialization::make_nvp("data",*p); }
+   void save(Archive & ar, const unsigned int version) const { ar << TRIQS_MAKE_NVP("data",*p); }
   template<class Archive>
    void load(Archive & ar, const unsigned int version) { T x; ar >> x; p = std::make_shared<T>(x); }
   BOOST_SERIALIZATION_SPLIT_MEMBER();
@@ -85,7 +85,7 @@ namespace triqs {
   // Boost serialization. Can I use std::shared_ptr directly ? Or use boost::shared_ptr
   friend class boost::serialization::access;
   template<class Archive>
-   void save(Archive & ar, const unsigned int version) const { ar << boost::serialization::make_nvp("data",*p); }
+   void save(Archive & ar, const unsigned int version) const { ar << TRIQS_MAKE_NVP("data",*p); }
   template<class Archive>
    void load(Archive & ar, const unsigned int version) { T x; ar >> x; p = std::make_shared<T>(x); }
   BOOST_SERIALIZATION_SPLIT_MEMBER();
