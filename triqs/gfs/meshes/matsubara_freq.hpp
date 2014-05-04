@@ -129,7 +129,7 @@ namespace gfs {
     h5_write(gr, "max", ((Fermion ? 1 : 0) + 2 * m.size()) * M_PI / beta);
     h5_write(gr, "kind", 2);
    } else { // A strange way : to preserve backward compatibility for old archive.
-    h5_write(gr, "start_at_0", m._positive_only);
+    h5_write(gr, "start_at_0", (m._positive_only?1:0));
    }
   }
 
@@ -138,11 +138,11 @@ namespace gfs {
    h5::group gr = fg.open_group(subgroup_name);
    typename matsubara_freq_mesh::domain_t dom;
    int L;
-   bool s = true;
+   int s = 1;
    h5_read(gr, "domain", dom);
    h5_read(gr, "size", L);
    if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", s);
-   m = matsubara_freq_mesh{std::move(dom), L, s};
+   m = matsubara_freq_mesh{std::move(dom), L, (s==1)};
   }
 
   friend class boost::serialization::access;

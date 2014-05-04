@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2013 by O. Parcollet
+ * Copyright (C) 2011-2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,12 +18,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_H5_BASE_H
-#define TRIQS_H5_BASE_H
+#pragma once
 #include <triqs/utility/mini_vector.hpp>
 #include <type_traits>
 #include <H5Cpp.h>
-#include "hdf5_hl.h"
 #include <triqs/utility/is_complex.hpp>
 
 namespace triqs { 
@@ -108,21 +106,9 @@ namespace triqs {
    get_data_ptr (S * p) {return p;}
 
   // dataspace from lengths and strides. Correct for the complex. strides must be >0
-  template<int R, bool IsComplex> 
-   H5::DataSpace dataspace_from_LS (  
-     mini_vector<hsize_t, R> const & Ltot, 
-     mini_vector<hsize_t, R> const & L, 
-     mini_vector<hsize_t, R> const & S, 
-     mini_vector<hsize_t, R> const & offset = mini_vector<hsize_t,R>() ) 
-   { 
-    static const unsigned int rank = R + (IsComplex ? 1 : 0);
-    hsize_t totdimsf[rank], dimsf [rank], stridesf[rank], offsetf[rank];  // dataset dimensions
-    for (size_t u=0; u<R ; ++u) { offsetf[u] = offset[u]; dimsf[u] = L[u]; totdimsf[u] = Ltot[u]; stridesf[u] = S[u]; }
-    if (IsComplex) { offsetf[rank-1]=0; dimsf[rank-1]=2; totdimsf[rank-1] = 2; stridesf[rank-1]=1; }
-    H5::DataSpace ds ( rank, totdimsf );
-    ds.selectHyperslab (H5S_SELECT_SET , dimsf, offsetf, stridesf);
-    return ds;
-   }
+  // used in array and vectors
+  H5::DataSpace dataspace_from_LS(int R, bool is_complex, hsize_t const *Ltot, hsize_t const *L, hsize_t const *S,
+                                  hsize_t const *offset = NULL);
 
 #define TRIQS_ARRAYS_H5_CATCH_EXCEPTION \
   catch( triqs::runtime_error const & error)  { throw triqs::runtime_error() << error.what();}\
@@ -138,47 +124,12 @@ namespace triqs {
   catch( H5::ReferenceException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 ReferenceException error"; }\
   catch(...) { TRIQS_RUNTIME_ERROR<<"H5 unknown error";} 
 
-  /****************** Write string attribute *********************************************/
+  /****************** Read/Write string attribute *********************************************/
 
-  inline void write_string_attribute ( H5::H5Object const * obj, std::string name, std::string value ) { 
-   H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
-   // Create new string datatype for attribute
-   H5::StrType strdatatype(H5::PredType::C_S1, value.size()); 
-   // Set up write buffer for attribute
-   //const H5std_string strwritebuf (value);
-   // Create attribute and write to it
-   H5::Attribute myatt_in = obj->createAttribute(name.c_str(), strdatatype, attr_dataspace);
-   //myatt_in.write(strdatatype, strwritebuf);
-   myatt_in.write(strdatatype, (void *)(value.c_str()));
-  } 
+  void write_string_attribute(H5::H5Object const *obj, std::string name, std::string value);
 
-
-  /****************** Read string attribute *********************************************/
-
-  /// Return the attribute name of obj, and "" if the attribute does not exist.
-  inline std::string read_string_attribute (H5::H5Object const * obj, std::string name ) { 
-   std::string value ="";
-   H5::Attribute attr;
-   if (H5LTfind_attribute(obj -> getId(), name.c_str() )==0)  return value;// not present
-   // can not find how to get the size with hl. Using full interface 
-   //herr_t err2 =  H5LTget_attribute_string(gr.getId(), x.c_str(), name.c_str() , &(buf.front())  ) ;
-   //value.append( &(buf.front()) );
-   try { attr= obj->openAttribute(name.c_str());}
-   catch (H5::AttributeIException) { return value;}
-   try { 
-    H5::DataSpace dataspace = attr.getSpace();
-    int rank = dataspace.getSimpleExtentNdims();
-    if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a string attribute and got rank !=0";
-    size_t size = attr.getStorageSize();
-    H5::StrType strdatatype(H5::PredType::C_S1, size+1);
-    std::vector<char> buf(size+1, 0x00);
-    attr.read(strdatatype, (void *)(&buf[0])); 
-    value.append( &(buf.front()) );
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
-   return value;
-  } 
+  /// Returns the attribute name of obj, and "" if the attribute does not exist.
+  std::string read_string_attribute(H5::H5Object const *obj, std::string name);
 
  }}
-#endif
 

@@ -27,6 +27,18 @@
 namespace triqs {
 namespace arrays {
 
+ // to be cleaned
+ namespace h5_impl { 
+  template <typename A> void* __get_array_data_ptr(A& x) { return h5::get_data_ptr(&(x.storage()[0])); }
+
+  H5::DataSpace data_space_impl(array_stride_info info, bool is_complex);
+
+  template <typename ArrayType> H5::DataSpace data_space(ArrayType const& A) {
+   if (!A.indexmap().is_contiguous()) TRIQS_RUNTIME_ERROR << " h5 : internal error : array not contiguous";
+   return data_space_impl(array_stride_info{A}, triqs::is_complex<typename ArrayType::value_type>::value);
+  }
+ }
+ 
  /// The implementation class
  template <typename T, int R> class array_stack_impl {
   static const size_t dim = R;

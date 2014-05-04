@@ -18,39 +18,29 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_H5_SCALAR_H
-#define TRIQS_H5_SCALAR_H
+#pragma once
 #include "./group.hpp"
 namespace triqs { namespace h5 {
 
- template <typename S> 
-  typename std::enable_if<std::is_arithmetic<S>::value>::type
-  h5_write (group g, std::string const & name, S const & A) {
-   try {
-    g.unlink_key_if_exists(name);
-    H5::DataSet ds = g.create_dataset( name, data_type_file<S>(), H5::DataSpace() );
-    ds.write( (void *)(&A), data_type_memory<S>(), H5::DataSpace() );
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
-  }
+ // Issue several types are *implicitly* convertible to bool 
+ // it could be confusing. Better to use int in hdf5 files. 
+ void h5_write(group g, std::string const &name, int const &x);
+ void h5_write(group g, std::string const &name, long const &x);
+ void h5_write(group g, std::string const &name, size_t const &x);
+ void h5_write(group g, std::string const &name, bool const &x); 
+ void h5_write(group g, std::string const &name, char const &x);
+ void h5_write(group g, std::string const &name, double const &x);
+ void h5_write(group g, std::string const &name, std::complex<double> const &x);
 
- template <typename S> 
-  typename std::enable_if<std::is_arithmetic<S>::value>::type
-  h5_read (group g, std::string const & name,  S & A) {
-   try {
-    H5::DataSet ds = g.open_dataset(name);
-    H5::DataSpace dataspace = ds.getSpace();
-    int rank = dataspace.getSimpleExtentNdims();
-    if (rank != 0) TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : expecting a scalar (rank =0)"
-     <<" while the array stored in the hdf5 file has rank = "<<rank;
-    ds.read( (void *)(&A), data_type_memory<S>(), H5::DataSpace() , H5::DataSpace() );
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
-  }
+ void h5_read(group g, std::string const &name, int &x);
+ void h5_read(group g, std::string const &name, long &x);
+ void h5_read(group g, std::string const &name, size_t &x);
+ void h5_read(group g, std::string const &name, bool &x);
+ void h5_read(group g, std::string const &name, char &x);
+ void h5_read(group g, std::string const &name, double &x);
+ void h5_read(group g, std::string const &name, std::complex<double> &x);
 
- // the complex number is missing here...
-}}
-#endif
-
-
+ // the implementation complex number is missing ...
+}
+}
 

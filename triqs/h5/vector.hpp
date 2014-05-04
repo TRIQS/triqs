@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_H5_VECTOR_H
-#define TRIQS_H5_VECTOR_H
+#pragma once
 #include "./group.hpp"
 #include "./string.hpp"
 #include <vector>
@@ -28,72 +27,23 @@ namespace triqs {
 
  inline std::string get_triqs_hdf5_data_scheme(std::vector<std::string> const & ) { return "vector<string>";}
 
- template <typename T>
-  std::string get_triqs_hdf5_data_scheme(std::vector<T> const&) { 
-   using triqs::get_triqs_hdf5_data_scheme;// for the basic types, not found by ADL
-   std::stringstream fs; 
-   fs<<"std::vector<"<<get_triqs_hdf5_data_scheme(T())<<">";
-   return fs.str();
-  } 
+ template <typename T> std::string get_triqs_hdf5_data_scheme(std::vector<T> const&) {
+  using triqs::get_triqs_hdf5_data_scheme; // for the basic types, not found by ADL
+  return "std::vector<" + get_triqs_hdf5_data_scheme(T()) + ">";
+ }
 
  namespace h5 {
 
-  // special case of vector of string
-  inline void h5_write (group f, std::string const & name, std::vector<std::string> const & V) {
-   detail::write_1darray_vector_of_string_impl(f,name,V);
-  }
+  void h5_write (group f, std::string const & name, std::vector<std::string> const & V);
+  void h5_read (group f, std::string const & name, std::vector<std::string> & V);
 
-  inline void h5_read (group f, std::string const & name, std::vector<std::string> & V) {
-   detail::read_1darray_vector_of_string_impl(f,name,V);
-  }
+  void h5_write (group f, std::string const & name, std::vector<double> const & V); 
+  void h5_write (group f, std::string const & name, std::vector<std::complex<double>> const & V);
 
-  // implementation for vector of double and complex
-  namespace vector_impl { 
-
-   // the dataspace corresponding to the array. Contiguous data only...
-   template <typename T>
-    H5::DataSpace data_space_for_vector (std::vector<T> const & V) { 
-     mini_vector<hsize_t,1> L,S; S[0]=1;L[0] = V.size();
-     return h5::dataspace_from_LS<1, triqs::is_complex<T>::value > (L,L,S);
-    }
-
-   template<typename T>
-    inline void h5_write_vector_impl (group g, std::string const & name, std::vector<T> const & V) {
-     try {
-      H5::DataSet ds = g.create_dataset(name, h5::data_type_file<T>(), data_space_for_vector(V) );
-      ds.write( &V[0],  h5::data_type_memory<T>(), data_space_for_vector(V) );
-      // if complex, to be python compatible, we add the __complex__ attribute
-      if (triqs::is_complex<T>::value)  h5::write_string_attribute(&ds,"__complex__","1");
-     }
-     TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
-    }
-
-   template<typename T>
-    inline void h5_read_impl (group g, std::string const & name, std::vector<T> & V) {
-     try {
-      H5::DataSet ds = g.open_dataset(name);
-      H5::DataSpace dataspace = ds.getSpace();
-      static const unsigned int Rank =  1 + (triqs::is_complex<T>::value ? 1 : 0);
-      int rank = dataspace.getSimpleExtentNdims();
-      if (rank != Rank) TRIQS_RUNTIME_ERROR << "triqs : h5 : read vector. Rank mismatch : the array stored in the hdf5 file has rank = "<<rank;
-      mini_vector<hsize_t,Rank> dims_out;
-      dataspace.getSimpleExtentDims( &dims_out[0], NULL);
-      V.resize(dims_out[0]);
-      ds.read( &V[0], h5::data_type_memory<T>(), data_space_for_vector(V) , dataspace );
-     }
-     TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
-    }
-  }// impl namespace
-
-
-  inline void h5_write (group f, std::string const & name, std::vector<double> const & V)          { vector_impl::h5_write_vector_impl(f,name,V);}
-  inline void h5_write (group f, std::string const & name, std::vector<std::complex<double>> const & V) { vector_impl::h5_write_vector_impl(f,name,V);}
-
-  inline void h5_read (group f, std::string const & name, std::vector<double>  & V)         { vector_impl::h5_read_impl(f,name,V);}
-  inline void h5_read (group f, std::string const & name, std::vector<std::complex<double>> & V) { vector_impl::h5_read_impl(f,name,V);}
+  void h5_read (group f, std::string const & name, std::vector<double>  & V);
+  void h5_read (group f, std::string const & name, std::vector<std::complex<double>> & V);
 
  }
 } 
-#endif
 
 
