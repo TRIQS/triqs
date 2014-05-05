@@ -21,6 +21,7 @@
  ******************************************************************************/
 #pragma once
 #include <string>
+#include <typeinfo>
 
 namespace triqs { namespace utility { 
 
