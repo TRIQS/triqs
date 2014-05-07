@@ -5,6 +5,7 @@ using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/fourier_matsubara.hpp> 
 #include<fstream>
+#include <stdexcept>
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 void print_to_file(std::string const s, gf<imtime> const & gt){

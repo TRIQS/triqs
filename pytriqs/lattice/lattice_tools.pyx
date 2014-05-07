@@ -27,6 +27,7 @@ cdef extern from "triqs/lattice/tight_binding.hpp" namespace "triqs::gf" :
     pair [array[double,ONE],array[double,TWO]]  dos_c "dos" (tight_binding & TB, size_t nkpts, size_t neps)
     pair [array[double,ONE],array[double,ONE]]  dos_patch_c "dos_patch" (tight_binding & TB, array_view[double,TWO] & triangles, size_t neps, size_t ndiv)
     array_view[double,TWO] energies_on_bz_path_c "energies_on_bz_path" (tight_binding & TB, tqa_vector[double] & K1, tqa_vector[double] &  K2, size_t n_pts)
+    array_view[complex,THREE] energy_matrix_on_bz_path_c "energy_matrix_on_bz_path" (tight_binding & TB, tqa_vector[double] & K1, tqa_vector[double] &  K2, size_t n_pts)
     array_view[double,TWO] energies_on_bz_grid_c "energies_on_bz_grid" (tight_binding & TB, size_t n_pts)
 
 cdef class BravaisLattice :
@@ -103,6 +104,10 @@ def dos_patch ( TightBinding TB, triangles,  int neps, int ndiv):
 def energies_on_bz_path ( TightBinding TB, K1, K2, n_pts) : 
     """ """
     return energies_on_bz_path_c (deref(TB._c), tqa_vector[double](K1), tqa_vector[double] (K2), n_pts).to_python()  
+
+def energy_matrix_on_bz_path ( TightBinding TB, K1, K2, n_pts) : 
+    """ """
+    return energy_matrix_on_bz_path_c (deref(TB._c), tqa_vector[double](K1), tqa_vector[double] (K2), n_pts).to_python()  
 
 def energies_on_bz_grid ( TightBinding TB, n_pts) : 
     """ """ 
