@@ -20,14 +20,14 @@
 #
 ################################################################################
 
-__all__ = ['BravaisLattice', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path',
+__all__ = ['BravaisLattice', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
            'hopping_stack', 'TBLattice']
 
 from lattice_tools import BravaisLattice as BravaisLattice
 from lattice_tools import TightBinding as TightBinding
 from lattice_tools import dos_patch as dos_patch_c
 from lattice_tools import dos as dos_c
-from lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stack
+from lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stack, energy_matrix_on_bz_path
 from pytriqs.dos import DOS
 import numpy
 

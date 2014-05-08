@@ -65,6 +65,19 @@ namespace lattice {
  }
 
  //------------------------------------------------------
+ array<dcomplex, 3> energy_matrix_on_bz_path(tight_binding const& TB, k_t const& K1, k_t const& K2, int n_pts) {
+  auto TK = fourier(TB);
+  int norb = TB.lattice().n_orbitals();
+  int ndim = TB.lattice().dim();
+  array<dcomplex, 3> eval(norb,norb,n_pts);
+  k_t dk = (K2 - K1) / double(n_pts), k = K1;
+  for (int i = 0; i < n_pts; ++i, k += dk) {
+   eval(range(),range(),i) = TK(k(range(0, ndim)))();
+  }
+  return eval;
+ }
+
+ //------------------------------------------------------
  array<double, 2> energies_on_bz_grid(tight_binding const& TB, int n_pts) {
 
   auto TK = fourier(TB);
