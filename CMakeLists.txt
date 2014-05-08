@@ -376,7 +376,7 @@ endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 # pytriqs modules
 #------------------------
 if (PythonSupport)
- message( STATUS "-------- Preparing Cython modules  -------------")
+ message( STATUS "-------- Preparing python modules  -------------")
  add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
 endif (PythonSupport)
 
