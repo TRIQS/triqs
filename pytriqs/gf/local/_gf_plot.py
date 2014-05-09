@@ -31,8 +31,8 @@ def plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
                 'xlabel' : xlabel,
                 'ylabel' : ylabel (self.name),
                 'xdata' : X[sl],
-                'label' : Name if Name else prefix + B.name ,
-                'ydata' : f( B.data[sl,0,0] ) } for (i,j,B) in self ]
+                'label' : Name if Name else prefix + "%s_%s"%(i,j), 
+                'ydata' : f( self.data[sl,i,j] ) } for i in range(self.target_shape[0]) for j in range(self.target_shape[1])]
 
     if use_ris :
         ris = opt_dict.pop('RI','RI')
@@ -51,3 +51,25 @@ def plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
 
     if NamePrefix: self.name = name_save
     return res
+
+#------------------
+
+def x_data_view(self, x_window = None, flatten_y = False):
+    """
+    :param x_window: the window of x variable (omega/omega_n/t/tau) for which data is requested
+                      if None, take the full window
+    :param flatten_y: If the Green function is of size (1, 1) flatten the array as a 1d array
+    :rtype: a tuple (X, data) where
+             * X is a 1d numpy of the x variable inside the window requested
+             * data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data
+               If flatten_y is True and dim is (1, 1, *), returns a 1d numpy
+    """
+    X = [x.imag for x in self.mesh] if type(self.mesh) == MeshImFreq else [x for x in self.mesh]
+    X, data = numpy.array(X), self.data
+    if x_window:
+      sl = clip_array (X, *x_window) if x_window else slice(len(X)) # the slice due to clip option x_window
+      X, data = X[sl],  data[sl,:,:]
+    if flatten_y and data.shape[1:3]==(1, 1): data = data[:,0,0]
+    return X, data
+
+

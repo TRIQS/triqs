@@ -191,13 +191,13 @@ class GfGeneric:
 
     #--------  LAZY expression system -----------------------------------------
 
-    def __lazy_expr_eval_context__(self):
+    def _lazy_expr_eval_context_(self):
         return LazyCTX(self)
 
     def __eq__(self, other):
         raise RuntimeError, " Operator not defined "
 
-    def __ilshift__(self, A):
+    def _ilshift_(self, A):
         """ A can be two things:
           * G <<= any_init will init the GFBloc with the initializer
           * G <<= g2 where g2 is a GFBloc will copy g2 into self

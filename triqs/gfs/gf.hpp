@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
+#define TRIQS_GF_INCLUDED
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/std_vector_expr_template.hpp>
 #include <triqs/utility/factory.hpp>
