@@ -40,6 +40,8 @@ namespace arrays {
   range(std::ptrdiff_t first__, std::ptrdiff_t last__, std::ptrdiff_t step__ = 1)
      : first_(first__), last_(last__), step_(step__) {}
 
+  range(std::ptrdiff_t i) : range (i,i+1,1){}
+  
   std::ptrdiff_t first() const { return first_; }
   std::ptrdiff_t last() const { return last_; }
   std::ptrdiff_t step() const { return step_; }

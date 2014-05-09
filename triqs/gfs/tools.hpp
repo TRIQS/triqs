@@ -74,6 +74,73 @@ namespace gfs {
  template <typename... T> closest_pt_wrap<T...> closest_mesh_pt(T &&... x) {
   return closest_pt_wrap<T...>{std::forward<T>(x)...};
  }
+ //------------------------------------------------------
+
+ // A simple indice struct
+ // Replace empty state by optional ?
+ struct indices_2 {
+
+  std::vector<std::vector<std::string>> ind;
+
+  indices_2() = default;
+  indices_2(std::vector<std::vector<std::string>> _ind) : ind(std::move(_ind)) {}
+
+  bool is_empty() const { return ind.size() == 0; }
+
+  template <typename G> bool check_size(G *g) const {
+   return (is_empty() ||
+           ((ind.size() == 2) && (ind[0].size() == get_target_shape(*g)[0]) && (ind[1].size() == get_target_shape(*g)[1])));
+  }
+
+  std::vector<std::string> operator[](int i) const {
+   if (is_empty())
+    return {};
+   else
+    return ind[i];
+  }
+
+  arrays::range convert_index(std::string const &s, int l_r) const {
+   if (!is_empty()) {
+    auto b = ind[l_r].begin(), e = ind[l_r].end();
+    auto it = std::find(b, e, s);
+    if (it != e) return it - b;
+   }
+   TRIQS_RUNTIME_ERROR << "There are no string indices for this Green function";
+  }
+
+  friend class boost::serialization::access;
+  template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("ind", ind); }
+
+  friend void h5_write(h5::group fg, std::string subgroup_name, indices_2 const &g) {
+   if (g.is_empty()) return;
+   auto gr = fg.create_group(subgroup_name);
+   h5_write(gr, "left", g.ind[0]);
+   h5_write(gr, "right", g.ind[1]);
+  }
+
+  friend void h5_read(h5::group fg, std::string subgroup_name, indices_2 &g) {
+   h5::group gr;
+   try {
+    gr = fg.open_group(subgroup_name);
+   }
+   catch (...) {
+    g = indices_2{}; // empty, no file
+    return;
+   }
+   h5_read(gr, "left", g.ind[0]);
+   h5_read(gr, "right", g.ind[1]);
+  }
+ };
+
+ // inline indices_2 slice(indices_2 const & ind, arrays::range rl, arrays::range rr) {
+ // return {};
+ // }
+
+ inline indices_2 slice(indices_2 const &ind, arrays::range rl, arrays::range rr) {
+  if (ind.is_empty()) return {};
+  return {}; // MODIFY : slice the indices !!!
+  TRIQS_RUNTIME_ERROR << "Not implemented : slice of string indices";
+ }
 
  //------------------------------------------------------
 
@@ -87,10 +154,12 @@ namespace gfs {
   template <typename RHS> void operator=(RHS &&) {}
   friend void h5_write(h5::group, std::string subgroup_name, nothing) {}
   friend void h5_read(h5::group, std::string subgroup_name, nothing) {}
+  template <typename... A> friend nothing slice(nothing, A...) { return nothing(); }
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {}
   friend nothing operator+(nothing, nothing) { return nothing(); }
   template <typename RHS> friend void assign_from_expression(nothing &, RHS) {}
+  template<typename A> bool check_size(A) {return true;}
  };
 
  template <typename... T> nothing slice_target(nothing, T...) { return nothing(); }

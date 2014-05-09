@@ -72,6 +72,15 @@ namespace gfs {
    using type = nothing;
   };
 
+  // indices 
+  template <typename Target, typename Opt> struct indices {
+   using type = nothing;
+  };
+
+  template <typename Opt> struct indices<matrix_valued, Opt> {
+   using type = indices_2;
+  };
+
   // data_proxy contains function to manipulate the data array, but no data itself.
   // this is used to specialize this part of the code to array of dim 3 (matrix gf), dim 1 (scalar gf) and vector (e.g. block gf,
   // ...)
@@ -119,6 +128,7 @@ namespace gfs {
   using mesh_point_t = typename mesh_t::mesh_point_t;
   using mesh_index_t = typename mesh_t::index_t;
   using symmetry_t = typename gfs_implementation::symmetry<Variable, Target, Opt>::type;
+  using indices_t = typename gfs_implementation::indices<Target, Opt>::type;
   using evaluator_t = gfs_implementation::evaluator<Variable, Target, Opt>;
 
   using data_proxy_t = gfs_implementation::data_proxy<Variable, Target, Opt>;
@@ -138,6 +148,7 @@ namespace gfs {
   singularity_t &singularity() { return _singularity; }
   singularity_t const &singularity() const { return _singularity; }
   symmetry_t const &symmetry() const { return _symmetry; }
+  indices_t const &indices() const { return _indices; }
   evaluator_t const &get_evaluator() const { return _evaluator; }
 
   auto get_data_shape() const DECL_AND_RETURN(get_shape(this -> data()));
@@ -147,6 +158,10 @@ namespace gfs {
   data_t _data;
   singularity_t _singularity;
   symmetry_t _symmetry;
+  indices_t _indices;
+  public : 
+  std::string name;
+  protected : 
   evaluator_t _evaluator;
   data_proxy_t _data_proxy;
 
@@ -160,6 +175,8 @@ namespace gfs {
        _data(factory<data_t>(x.data())),
        _singularity(factory<singularity_t>(x.singularity())),
        _symmetry(x.symmetry()),
+       _indices(x.indices()),
+       name(x.name),
        _evaluator(x._evaluator) {}
 
   gf_impl(gf_impl &&) = default;
@@ -171,15 +188,21 @@ namespace gfs {
         _data(factory<data_t>(x.data())),
         _singularity(factory<singularity_t>(x.singularity())),
         _symmetry(x.symmetry()),
+        _indices(x.indices()),
+        name(x.name),
         _evaluator(x.get_evaluator()) {}
 
   template <typename M, typename D, typename S, typename SY, typename EV>
-  gf_impl(M &&m, D &&dat, S &&sing, SY &&sy, EV &&ev)
-     : _mesh(std::forward<M>(m)),
-       _data(std::forward<D>(dat)),
-       _singularity(std::forward<S>(sing)),
-       _symmetry(std::forward<SY>(sy)),
-       _evaluator(std::forward<EV>(ev)) {}
+  gf_impl(M &&m, D &&dat, S &&sing, SY &&sy, indices_t ind, std::string name, EV &&ev)
+     : _mesh(std::forward<M>(m))
+     , _data(std::forward<D>(dat))
+     , _singularity(std::forward<S>(sing))
+     , _symmetry(std::forward<SY>(sy))
+     , _indices(std::move(ind))
+     , name(name)
+     , _evaluator(std::forward<EV>(ev)) {
+   if (!_indices.check_size(this)) TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
+  }
 
   void operator=(gf_impl const &rhs) = delete; // done in derived class.
 
@@ -189,6 +212,8 @@ namespace gfs {
    swap(this->_data, b._data);
    swap(this->_singularity, b._singularity);
    swap(this->_symmetry, b._symmetry);
+   swap(this->_indices, b._indices);
+   swap(this->name, b.name);
    swap(this->_evaluator, b._evaluator);
   }
 
@@ -320,6 +345,8 @@ namespace gfs {
    ar &TRIQS_MAKE_NVP("singularity", _singularity);
    ar &TRIQS_MAKE_NVP("mesh", _mesh);
    ar &TRIQS_MAKE_NVP("symmetry", _symmetry);
+   ar &TRIQS_MAKE_NVP("indices", _indices);
+   ar &TRIQS_MAKE_NVP("name", name);
   }
 
   /// print
@@ -391,17 +418,19 @@ namespace gfs {
    *this = x;
   }
 
-  gf(typename B::mesh_t m, typename B::data_t dat, typename B::singularity_view_t const &si, typename B::symmetry_t const &s)
-     : B(std::move(m), std::move(dat), si, s, typename B::evaluator_t{}) {}
+  gf(typename B::mesh_t m, typename B::data_t dat, typename B::singularity_view_t const &si, typename B::symmetry_t const &s,
+     typename B::indices_t const &ind, std::string name = "")
+     : B(std::move(m), std::move(dat), si, s, ind, name, typename B::evaluator_t{}) {}
 
   using target_shape_t = typename factory::target_shape_t;
 
-  gf(typename B::mesh_t m, target_shape_t shape = target_shape_t{})
-     : B(std::move(m), factory::make_data(m, shape), factory::make_singularity(m, shape), typename B::symmetry_t{},
+  gf(typename B::mesh_t m, target_shape_t shape = target_shape_t{}, typename B::indices_t const &ind = typename B::indices_t{})
+     : B(std::move(m), factory::make_data(m, shape), factory::make_singularity(m, shape), typename B::symmetry_t{}, ind, {}, // clean unncessary types
          typename B::evaluator_t{}) {}
 
   friend void swap(gf &a, gf &b) noexcept { a.swap_impl(b); }
 
+  // CLEAN THIS : one op only gf rhs, + move 
   gf &operator=(gf const &rhs) {
    *this = gf(rhs);
    return *this;
@@ -424,6 +453,7 @@ namespace gfs {
    this->_singularity = rhs.singularity();
    // to be implemented : there is none in the gf_expr in particular....
    // this->_symmetry = rhs.symmetry();
+   // indices and name are not affected by it ???
   }
  };
 
@@ -454,14 +484,17 @@ namespace gfs {
   gf_view(gf_impl<Variable, Target, Opt, false, false> &&g) noexcept : B(std::move(g), bool {}) {} // from a gf &&
 
   template <typename D>
-  gf_view(typename B::mesh_t const &m, D const &dat, typename B::singularity_view_t const &t, typename B::symmetry_t const &s)
-     : B(m, factory<typename B::data_t>(dat), t, s, typename B::evaluator_t{}) {}
+  gf_view(typename B::mesh_t const &m, D const &dat, typename B::singularity_view_t const &t, typename B::symmetry_t const &s,
+          typename B::indices_t const &ind, std::string name = "")
+     : B(m, factory<typename B::data_t>(dat), t, s, ind, name, typename B::evaluator_t{}) {}
 
   void rebind(gf_view const &X) noexcept {
    this->_mesh = X._mesh;
    this->_symmetry = X._symmetry;
    this->_data_proxy.rebind(this->_data, X);
    this->_singularity.rebind(X._singularity);
+   this->_indices = X._indices;
+   this->name = X.name;
   }
 
   void rebind(gf_view<Variable, Target, Opt, false> const &X) noexcept {
@@ -489,8 +522,9 @@ namespace gfs {
   gf_view(gf_impl<Variable, Target, Opt, false, false> &&g) noexcept : B(std::move(g), bool {}) {} // from a gf &&
 
   template <typename D>
-  gf_view(typename B::mesh_t const &m, D const &dat, typename B::singularity_view_t const &t, typename B::symmetry_t const &s)
-     : B(m, factory<typename B::data_t>(dat), t, s, typename B::evaluator_t{}) {}
+  gf_view(typename B::mesh_t const &m, D const &dat, typename B::singularity_view_t const &t, typename B::symmetry_t const &s,
+          typename B::indices_t const &ind = typename B::indices_t{}, std::string name = "")
+    : B(m, factory<typename B::data_t>(dat), t, s, ind, name, typename B::evaluator_t{}) {}
 
   friend void swap(gf_view &a, gf_view &b) noexcept { a.swap_impl(b); }
 
@@ -499,6 +533,8 @@ namespace gfs {
    this->_symmetry = X._symmetry;
    this->_data_proxy.rebind(this->_data, X);
    this->_singularity.rebind(X._singularity);
+   this->_indices = X._indices;
+   this->name = X.name;
   }
 
   gf_view &operator=(gf_view const &rhs) {
@@ -540,7 +576,7 @@ namespace gfs {
   static_assert(std::is_same<Target, matrix_valued>::value, "slice_target only for matrix_valued GF's");
   using arrays::range;
   return {g.mesh(),                                                   g.data()(range(), std::forward<Args>(args)...),
-          slice_target(g.singularity(), std::forward<Args>(args)...), g.symmetry()};
+          slice_target(g.singularity(), std::forward<Args>(args)...), g.symmetry(), slice(g.indices(),std::forward<Args>(args)...), g.name };
  }
 
  template <typename Variable, typename Target, typename Opt, typename... Args>
@@ -560,7 +596,7 @@ namespace gfs {
   static_assert(std::is_same<Target, matrix_valued>::value, "slice_target only for matrix_valued GF's");
   using arrays::range;
   return {g.mesh(),                                                g.data()(range(), std::forward<Args>(args)...),
-          slice_target(g.singularity(), range(args, args + 1)...), g.symmetry()};
+          slice_target(g.singularity(), range(args, args + 1)...), g.symmetry(), {}, g.name};
  }
 
  template <typename Variable, typename Target, typename Opt, typename... Args>
@@ -573,6 +609,15 @@ namespace gfs {
   return slice_target_to_scalar(g(), std::forward<Args>(args)...);
  }
 
+ /*// slice with string arguments, for python mainly.
+ template <typename Variable, typename Target, typename Opt>
+ gf_view<Variable, matrix_valued, Opt> slice_target_string_indices(gf_view<Variable, Target, Opt> g, std::string const & a1, std::string const & a2) {
+  int n1 = g.indices().convert_index(a1,0);
+  int n2 = g.indices().convert_index(a2,1);
+  return slice_target (g, n1, n2); // the slice will have no indices. Ok ?
+ }
+*/
+
  // ---------------------------------- target reinterpretation ------------------------------------
  
  // a scalar_valued gf can be viewed as a 1x1 matrix
@@ -581,7 +626,7 @@ namespace gfs {
  reinterpret_scalar_valued_gf_as_matrix_valued(gf_view<Variable, scalar_valued, Opt, IsConst> g) {
   using a_t = typename gf_view<Variable, matrix_valued, Opt, IsConst>::data_view_t;
   auto a = a_t{typename a_t::indexmap_type(join(g.data().shape(), make_shape(1, 1))), g.data().storage()};
-  return {g.mesh(), a, g.singularity(), g.symmetry()};
+  return {g.mesh(), a, g.singularity(), g.symmetry(), {} , g.name};
  }
 
  template <typename Variable, typename Opt>
@@ -677,6 +722,8 @@ namespace gfs {
     h5_write(gr, "singularity", g._singularity);
     h5_write(gr, "mesh", g._mesh);
     h5_write(gr, "symmetry", g._symmetry);
+    h5_write(gr, "indices", g._indices);
+    //h5_write(gr, "name", g.name);
    }
 
    template <bool B> static void read(h5::group gr, gf_impl<Variable, Target, Opt, B, false> &g) {
@@ -684,6 +731,8 @@ namespace gfs {
     h5_read(gr, "singularity", g._singularity);
     h5_read(gr, "mesh", g._mesh);
     h5_read(gr, "symmetry", g._symmetry);
+    h5_read(gr, "indices", g._indices);
+    //h5_read(gr, "name", g.name);
    }
   };
  } // gfs_implementation
