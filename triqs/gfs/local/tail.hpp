@@ -31,7 +31,9 @@ namespace triqs { namespace gfs { namespace local {
     static constexpr double small = 1.e-10;
   }
 
-  namespace tqa= triqs::arrays; namespace tql= triqs::clef;  namespace mpl= boost::mpl;
+  using arrays::matrix_view;
+  using arrays::matrix;
+  namespace tqa= triqs::arrays; //namespace tql= triqs::clef;  namespace mpl= boost::mpl;
   typedef std::complex<double> dcomplex;
 
   class tail;                            // the value class
@@ -40,7 +42,6 @@ namespace triqs { namespace gfs { namespace local {
   template<typename G> struct LocalTail  : mpl::false_{};  // a boolean trait to identify the objects modelling the concept LocalTail
   template<> struct LocalTail<tail >     : mpl::true_{};
   template<> struct LocalTail<tail_view >: mpl::true_{};
-  template<> struct LocalTail<python_tools::cython_proxy<tail_view>>: mpl::true_{};
 
   // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
   template <typename T> struct is_scalar_or_element : mpl::or_< tqa::ImmutableMatrix<T>, utility::is_in_ZRC<T> > {};
@@ -80,8 +81,6 @@ namespace triqs { namespace gfs { namespace local {
 
       typedef tqa::mini_vector<size_t,2> shape_type;
       shape_type shape() const { return shape_type(_data.shape()[1], _data.shape()[2]);}
-      size_t shape(int i) const { return _data.shape()[i];}
-
       bool is_decreasing_at_infinity() const { return (smallest_nonzero() >=1);}
 
     protected:
@@ -231,6 +230,7 @@ namespace triqs { namespace gfs { namespace local {
     typedef tqa::mini_vector<size_t,2> shape_type;
     tail(size_t N1, size_t N2, size_t size_=10, long order_min=-1): B(N1,N2,size_,order_min) {}
     tail(shape_type const & sh, size_t size_=10, long order_min=-1): B(sh[0],sh[1],size_,order_min) {}
+    tail(B::data_type const &d, B::mask_type const &m, long order_min): B(d, m, order_min) {}
     tail(tail const & g): B(g) {}
     tail(tail_view const & g): B(g) {}
     tail(tail &&) = default;
@@ -279,6 +279,8 @@ namespace triqs { namespace gfs { namespace local {
     return *this;
   }
 
+  inline tail conj(tail_view t) { return {conj(t.data()), t.mask_view(),t.order_min()};}
+
   /// Slice in orbital space
   //template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) {
   inline tail_view slice_target(tail_view t, tqa::range R1, tqa::range R2) {
@@ -326,19 +328,24 @@ namespace triqs { namespace gfs { namespace local {
     return res;
   }
 
-  template<typename T1, typename T2>
-    TYPE_ENABLE_IF(tail,mpl::and_<LocalTail<T1>, LocalTail<T2>>)
-    operator* (T1 const & a, T2 const & b) { return mult_impl(a,b); }
+  template <typename T1, typename T2>
+  TYPE_ENABLE_IF(tail, mpl::and_<LocalTail<T1>, LocalTail<T2>>) operator*(T1 const &a, T2 const &b) {
+   return mult_impl(a, b);
+  }
 
-  template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<tqa::ImmutableMatrix<T1>, LocalTail<T2>>)
-    operator* (T1 const & a, T2 const & b) {
-      tail res(b); for (long n=res.order_min(); n<=res.order_max(); ++n) res(n)=a*res(n); return res;
-    }
+  template <typename T1, typename T2>
+  TYPE_ENABLE_IF(tail, mpl::and_<tqa::ImmutableMatrix<T1>, LocalTail<T2>>) operator*(T1 const &a, T2 const &b) {
+   auto res = tail{first_dim(a), b.shape()[1], b.size(), b.order_min()};
+   for (int n = res.order_min(); n <= res.order_max(); ++n) res(n) = a * b(n);
+   return res;
+  }
 
-  template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<LocalTail<T1>, tqa::ImmutableMatrix<T2>>)
-    operator* (T1 const & a, T2 const & b) {
-      tail res(a); for (long n=res.order_min(); n<=res.order_max(); ++n) res(n)=res(n)*b; return res;
-    }
+  template <typename T1, typename T2>
+  TYPE_ENABLE_IF(tail, mpl::and_<LocalTail<T1>, tqa::ImmutableMatrix<T2>>) operator*(T1 const &a, T2 const &b) {
+   auto res = tail{a.shape()[0], second_dim(b), a.size(), a.order_min()};
+   for (int n = res.order_min(); n <= res.order_max(); ++n) res(n) = a(n) * b;
+   return res;
+  }
 
   inline tail operator * (dcomplex a, tail_view const & r) { tail res(r); res.data()*=a; return res;}
   inline tail operator * (tail_view const & r, dcomplex a) { return a*r; }

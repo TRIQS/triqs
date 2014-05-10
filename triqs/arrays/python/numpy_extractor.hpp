@@ -106,7 +106,10 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
 
    // do several checks
    if (!numpy_obj) {// The convertion of X to a numpy has failed !
-    if (PyErr_Occurred()) {PyErr_Print();PyErr_Clear();}
+    if (PyErr_Occurred()) {
+     //PyErr_Print();
+     PyErr_Clear();
+    }
     TRIQS_RUNTIME_ERROR<<"numpy interface : the python object  is not convertible to a numpy. ";
    }
    assert (PyArray_Check(numpy_obj)); assert((numpy_obj->ob_refcnt==1) || ((numpy_obj ==X)));

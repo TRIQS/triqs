@@ -28,11 +28,16 @@
 #include <vector>
 #include "./tools.hpp"
 #include "./data_proxies.hpp"
+#include "./local/tail.hpp"
 
 namespace triqs {
 namespace gfs {
  using utility::factory;
  using arrays::make_shape;
+ using arrays::array;
+ using arrays::array_view;
+ using arrays::matrix;
+ using arrays::matrix_view;
  using triqs::make_clone;
 
  // the gf mesh
@@ -424,8 +429,8 @@ namespace gfs {
 
   using target_shape_t = typename factory::target_shape_t;
 
-  gf(typename B::mesh_t m, target_shape_t shape = target_shape_t{}, typename B::indices_t const &ind = typename B::indices_t{})
-     : B(std::move(m), factory::make_data(m, shape), factory::make_singularity(m, shape), typename B::symmetry_t{}, ind, {}, // clean unncessary types
+  gf(typename B::mesh_t m, target_shape_t shape = target_shape_t{}, typename B::indices_t const &ind = typename B::indices_t{}, std::string name = "")
+     : B(std::move(m), factory::make_data(m, shape), factory::make_singularity(m, shape), typename B::symmetry_t{}, ind, name, // clean unncessary types
          typename B::evaluator_t{}) {}
 
   friend void swap(gf &a, gf &b) noexcept { a.swap_impl(b); }
@@ -646,6 +651,91 @@ namespace gfs {
     return gf_view<Variable2,Target,Opt>(g.mesh().slice(args...), g.data()(g.mesh().slice_get_range(args...),arrays::ellipsis()),
     g.singularity(), g.symmetry());
     }*/
+
+ // ---------------------------------- some functions : invert, conjugate, transpose, ... ------------------------------------
+
+ //  ---- inversion 
+ // auxiliary function : invert the data : one function for all matrix valued gf (save code).
+ template <typename A3> void _gf_invert_data_in_place(A3 && a) {
+  for (int i = 0; i < first_dim(a); ++i) {// Rely on the ordering 
+   auto v = a(i, arrays::range(), arrays::range());
+   v = inverse(v);
+  }
+ }
+
+ template <typename Variable, typename Opt>
+ void invert_in_place(gf_view<Variable, matrix_valued, Opt> g) {
+  _gf_invert_data_in_place(g.data());
+  g.singularity() = inverse(g.singularity()); 
+ }
+
+ template <typename Variable, typename Opt> gf<Variable, matrix_valued, Opt> inverse(gf_view<Variable, matrix_valued, Opt> g) {
+  auto res = gf<Variable, matrix_valued, Opt>(g);
+  invert_in_place(res);
+  return res;
+ }
+
+ //  ---- transpose : a new view
+/*
+ template <typename Variable, typename Opt>
+ gf_view<Variable, matrix_valued, Opt> invert_in_place(gf_view<Variable, matrix_valued, Opt> g) {
+  return { g.mesh(), transpose( g.data(), xxxx),  transpose(g.singularity()), g.symmetry(), g.indices() XXX, g.name};
+ }
+*/
+
+ //  ---- conjugate : always a new function -> changelog 
+
+ template <typename Variable, typename Opt> gf<Variable, matrix_valued, Opt> conj(gf_view<Variable, matrix_valued, Opt> g) {
+  return {g.mesh(), conj(g.data()), conj(g.singularity()), g.symmetry(), g.indices(), g.name};
+ }
+
+ //  ---- matrix mult R and L
+
+ template <typename A3, typename T> void _gf_data_mul_R(A3 &&a, matrix<T> const &r) {
+  for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
+   matrix_view<T> v = a(i, arrays::range(), arrays::range());
+   v = v * r;
+  }
+ }
+
+ template <typename A3, typename T> void _gf_data_mul_L(matrix<T> const &l, A3 &&a) {
+  for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
+   matrix_view<T>  v = a(i, arrays::range(), arrays::range());
+   v = l * v;
+  }
+ }
+
+ template <typename A3, typename T> typename A3::regular_type _gf_data_mul_LR(matrix<T> const &l, A3 &a, matrix<T> const &r) {
+  auto res = typename A3::regular_type(first_dim(a), first_dim(l), second_dim(r));
+  for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
+   auto _ = arrays::range{};
+   res(i, _, _) = l * make_matrix_view(a(i, _, _))* r;
+  }
+  return res;
+ }
+
+ template <typename Variable, typename Opt, typename T>
+ gf<Variable, matrix_valued, Opt> operator*(gf<Variable, matrix_valued, Opt> g, matrix<T> r) {
+  _gf_data_mul_R(g.data(), r);
+  g.singularity() = g.singularity() * r;
+  return g;
+ }
+
+ template <typename Variable, typename Opt, typename T>
+ gf<Variable, matrix_valued, Opt> operator*(matrix<T> l, gf<Variable, matrix_valued, Opt> g) {
+  _gf_data_mul_L(l, g.data());
+  g.singularity() = l * g.singularity();
+  return g;
+ }
+
+ template <typename Variable, typename Opt, typename T>
+ gf<Variable, matrix_valued, Opt> L_G_R(matrix<T> l, gf<Variable, matrix_valued, Opt> g, matrix<T> r) {
+  auto res = gf<Variable, matrix_valued, Opt>{g.mesh(), {first_dim(l), second_dim(r)}};
+  res.data() = _gf_data_mul_LR(l, g.data(), r);
+  res.singularity() = l * g.singularity() * r;
+  return res;
+ }
+
 
  namespace gfs_implementation { // implement some default traits
 
