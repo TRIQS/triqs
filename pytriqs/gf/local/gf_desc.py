@@ -202,8 +202,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False) :
             arithmetic = ("algebra",data_type)
             )
 
-    g.add_constructor(signature = "(gf_mesh<%s> mesh, mini_vector<size_t,2> shape, std::vector<std::vector<std::string>> indices = {}, std::string name = "")"%c_tag,
-                      python_precall = "pytriqs.gf.local._gf_%s.init"%c_tag)
+    g.add_constructor(signature = "(gf_mesh<%s> mesh, mini_vector<size_t,2> shape, std::vector<std::vector<std::string>> indices = std::vector<std::vector<std::string>>{}, std::string name = "")"%c_tag, python_precall = "pytriqs.gf.local._gf_%s.init"%c_tag)
 
     g.add_method_copy()
     g.add_method_copy_from()

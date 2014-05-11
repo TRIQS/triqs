@@ -94,7 +94,7 @@ namespace gfs {
 
   std::vector<std::string> operator[](int i) const {
    if (is_empty())
-    return {};
+    return std::vector<std::string> {};
    else
     return ind[i];
   }
