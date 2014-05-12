@@ -70,7 +70,7 @@ fold
 
   If `f` is a function, or a function object of synopsis (T, R being 2 types) ::
 
-       R f ( T, R )
+       R f (R , T)
   
   then  ::
 
@@ -87,7 +87,7 @@ fold
 
   then ::
 
-    fold (f) ( A, R init = R() ) = f( f( f( ... f( a(0,1), f(a(0,0), init))))) 
+    fold (f) ( A, R init = R() ) = f(f(f(f(init, a(0,0)), a(0,1)),a(0,2)),a(0,3), ....) 
           
   Note that : 
    
@@ -102,9 +102,39 @@ fold
   Many algorithms can be written in form of map/fold.
 
   The function :ref:`arr_fnt_sum` which returns the sum of all the elements of the array is implemented as ::
-   template <class A>
-   typename A::value_type sum(A const & a) { return fold ( std::plus<typename A::value_type>())  (a); }
 
+   template <class A>
+   typename A::value_type sum(A const & a) { return fold ( std::plus<>())  (a); }
+
+  or the Frobenius norm of a matrix, 
+  
+  .. math::  
+      \sum_{i=0}^{N-1}  \sum_{j=0}^{N-1} | a_{ij} | ^2 
+
+  reads :
+
+  .. compileblock::
+
+   #include <triqs/arrays.hpp>
+   #include <triqs/arrays/functional/fold.hpp>
+   using namespace triqs;
+
+   double frobenius_norm (arrays::matrix<double> const& a) {
+    auto l= [](double r, double x) {
+     auto ab = std::abs(x);
+     return r + ab * ab;
+    };
+    return std::sqrt(arrays::fold(l)(a,0));
+   }
+   
+   int main() { 
+    // declare and init a matrix
+    clef::placeholder<0> i_; clef::placeholder<1> j_;
+    arrays::matrix<double> A (2,2); A(i_,j_) <<  i_ + j_/2.0; 
+
+    std::cout<< "A = "        << A                        << std::endl; 
+    std::cout<< "||A|| = "     << frobenius_norm(A) << std::endl;
+   }
 
 
   Note in this example : 
@@ -112,7 +142,7 @@ fold
    * the simplicity of the code
    * the genericity : it is valid for any dimension of array.
    * internally, the library will rewrite it as a series of for loop, ordered in the TraversalOrder of the array
-     and inline the plus operator.
+     and inline the lambda.
 
 
 

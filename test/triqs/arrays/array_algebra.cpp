@@ -43,6 +43,7 @@ int main() {
 
 
  auto x  = A + B + 2*A;
+ std::cerr << x << std::endl;
 
   C =  A+2*A+3*A - 2*A+A -A+A+A*3+A+A+A+A+A+A+A+A+A+A+A+A+A; 
  std::cout  << C << std::endl ; 

@@ -59,7 +59,7 @@ namespace gfs {
    evaluator_fnt_on_mesh() = default;
    template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, long p) { n = p; w=1; } 
    template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, matsubara_freq const &p) { 
-    if ((p.n >= m.index_start()) && (p.n < m.size()+m.index_start())) {w=1; n =p.n;}
+    if ((p.n >= m.first_index()) && (p.n < m.size()+m.first_index())) {w=1; n =p.n;}
     else {w=0; n=0;}
    }
    template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(w*f(n));
@@ -69,31 +69,31 @@ namespace gfs {
   // handle the case where the matsu. freq is out of grid...
   template <typename Target, typename Opt> struct evaluator<imfreq, Target, Opt> {
    static constexpr int arity = 1;
-   template <typename G> auto operator()(G const *g, int n) const DECL_AND_RETURN((*g)[n]);
-   template <typename G>
-   auto operator()(G const *g, matsubara_freq_mesh::mesh_point_t const &p) const DECL_AND_RETURN((*g)[p.index()]);
+
+   private:
+   template <typename G> int sh(G const * g) const { return (g->mesh().domain().statistic == Fermion ? 1 : 0);}
 
    // dispatch for 2x2 cases : matrix/scalar and tail/no_tail ( true means no_tail)
    template <typename G>
    std::complex<double> _call_impl(G const *g, matsubara_freq const &f, scalar_valued, std::false_type) const {
-    if (g->mesh().index_start()==0){//only positive Matsubara frequencies
+    if (g->mesh().positive_only()){//only positive Matsubara frequencies
      if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
-     if ((f.n < 0) && (-f.n < g->mesh().size())) return conj((*g)[-f.n]);
+     if ((f.n < 0) && ((-f.n-sh(g)) < g->mesh().size())) return conj((*g)[-f.n-sh(g)]);
     }
     else{
-     if ((f.n >= g->mesh().index_start()) && (f.n < g->mesh().size()+g->mesh().index_start())) return (*g)[f.n];
+     if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size()+g->mesh().first_index())) return (*g)[f.n];
     }
     return g->singularity().evaluate(f)(0, 0);
    }
 
    template <typename G>
    std::complex<double> _call_impl(G const *g, matsubara_freq const &f, scalar_valued, std::true_type) const {
-    if (g->mesh().index_start()==0){//only positive Matsubara frequencies
+    if (g->mesh().positive_only()){//only positive Matsubara frequencies
      if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
-     if ((f.n < 0) && (-f.n < g->mesh().size())) return conj((*g)[-f.n]);
+     if ((f.n < 0) && ((-f.n-sh(g)) < g->mesh().size())) return conj((*g)[-f.n-sh(g)]);
     }
     else{
-     if ((f.n >= g->mesh().index_start()) && (f.n < g->mesh().size()+g->mesh().index_start())) return (*g)[f.n];
+     if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size()+g->mesh().first_index())) return (*g)[f.n];
     }
     return 0;
    }
@@ -101,13 +101,13 @@ namespace gfs {
    template <typename G>
    arrays::matrix_const_view<std::complex<double>> _call_impl(G const *g, matsubara_freq const &f, matrix_valued,
                                                               std::false_type) const {
-    if (g->mesh().index_start()==0){//only positive Matsubara frequencies
+    if (g->mesh().positive_only()){//only positive Matsubara frequencies
      if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
-     if ((f.n < 0) && (-f.n < g->mesh().size()))
-      return arrays::matrix<std::complex<double>>{conj((*g)[-f.n]())};
+     if ((f.n < 0) && ((-f.n-sh(g)) < g->mesh().size()))
+      return arrays::matrix<std::complex<double>>{conj((*g)[-f.n-sh(g)]())};
     }
     else{
-     if ((f.n >= g->mesh().index_start()) && (f.n < g->mesh().size()+g->mesh().index_start())) return (*g)[f.n];
+     if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size()+g->mesh().first_index())) return (*g)[f.n];
     }
     return g->singularity().evaluate(f);
    }
@@ -115,13 +115,13 @@ namespace gfs {
    template <typename G>
    arrays::matrix_const_view<std::complex<double>> _call_impl(G const *g, matsubara_freq const &f, matrix_valued,
                                                               std::true_type) const {
-    if (g->mesh().index_start()==0){//only positive Matsubara frequencies
+    if (g->mesh().positive_only()){//only positive Matsubara frequencies
      if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
-     if ((f.n < 0) && (-f.n < g->mesh().size()))
-      return arrays::matrix<std::complex<double>>{conj((*g)[-f.n]())};
+     if ((f.n < 0) && ((-f.n-sh(g)) < g->mesh().size()))
+      return arrays::matrix<std::complex<double>>{conj((*g)[-f.n-sh(g)]())};
     }
     else{
-     if ((f.n >= g->mesh().index_start()) && (f.n < g->mesh().size()+g->mesh().index_start())) return (*g)[f.n];
+     if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size()+g->mesh().first_index())) return (*g)[f.n];
     }
     auto r = arrays::matrix<std::complex<double>>{get_target_shape(*g)};
     r() = 0;
@@ -133,6 +133,7 @@ namespace gfs {
       auto operator()(G const *g, matsubara_freq const &f) const
       DECL_AND_RETURN(_call_impl(g, f, Target{}, std::integral_constant<bool, std::is_same<Opt, no_tail>::value>{}));
       */
+   public:
 
    template <typename G>
    typename std::conditional<std::is_same<Target, matrix_valued>::value, arrays::matrix_const_view<std::complex<double>>,
@@ -140,6 +141,9 @@ namespace gfs {
    operator()(G const *g, matsubara_freq const &f) const {
     return _call_impl(g, f, Target{}, std::integral_constant<bool, std::is_same<Opt, no_tail>::value>{});
    }
+
+   // int -> replace by matsubara_freq
+   template <typename G> auto operator()(G const *g, int n) const DECL_AND_RETURN((*g)(matsubara_freq(n,g->mesh().domain().beta,g->mesh().domain().statistic)));
 
 #ifdef __clang__
    // to generate a clearer error message ? . Only ok on clang ?

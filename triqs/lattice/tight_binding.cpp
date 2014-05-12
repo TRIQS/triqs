@@ -22,170 +22,186 @@
 #include <triqs/arrays/algorithms.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 #include "grid_generator.hpp"
-#include "functors.hpp"
-namespace triqs { namespace lattice_tools { 
-using namespace std;
- using namespace tqa;
+namespace triqs {
+namespace lattice {
+
+ using namespace arrays;
+
+ tight_binding::tight_binding(bravais_lattice const& bl, std::vector<std::vector<long>> all_disp,
+                              std::vector<matrix<dcomplex>> all_matrices)
+    : bl_(bl), all_disp(std::move(all_disp)), all_matrices(std::move(all_matrices)) {
+
+  // checking inputs
+  if (all_disp.size() != all_matrices.size()) TRIQS_RUNTIME_ERROR << " Number of displacements != Number of matrices";
+  for (int i = 0; i < all_disp.size(); ++i) {
+   if (all_disp[i].size() != bl_.dim())
+    TRIQS_RUNTIME_ERROR << "displacement of incorrect size : got " << all_disp[i].size() << "instead of " << bl_.dim();
+   if (first_dim(all_matrices[i]) != n_bands())
+    TRIQS_RUNTIME_ERROR << "the first dim matrix is of size " << first_dim(all_matrices[i]) << " instead of " << n_bands();
+   if (second_dim(all_matrices[i]) != n_bands())
+    TRIQS_RUNTIME_ERROR << "the second dim matrix is of size " << second_dim(all_matrices[i]) << " instead of " << n_bands();
+  }
+ }
 
  //------------------------------------------------------
-
- array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2> const & k_stack) {
-  auto TK = Fourier(TB);  
-  array<dcomplex,3> res(TB.n_bands(), TB.n_bands(), k_stack.shape(1));
-  for(size_t i = 0; i<k_stack.shape(1); ++i) res(range(), range(), i) = TK(k_stack(range(),i));
+ array<dcomplex, 3> hopping_stack(tight_binding const& TB, arrays::array_const_view<double, 2> k_stack) {
+  auto TK = fourier(TB);
+  array<dcomplex, 3> res(TB.n_bands(), TB.n_bands(), k_stack.shape(1));
+  for (int i = 0; i < k_stack.shape(1); ++i) res(range(), range(), i) = TK(k_stack(range(), i));
   return res;
  }
 
  //------------------------------------------------------
-
- array_view<double,2> energies_on_bz_path(tight_binding const & TB, K_view_type K1, K_view_type K2, size_t n_pts) {
-  auto TK = Fourier(TB);
-  const size_t norb=TB.lattice().n_orbitals();
-  const size_t ndim=TB.lattice().dim();
-  array<double,2> eval(norb,n_pts);
-  K_type dk = (K2 - K1)/double(n_pts), k = K1;
-  for (size_t i =0; i<n_pts; ++i, k += dk) {
-   eval(range(),i) = linalg::eigenvalues( TK( k (range(0,ndim))), false);
+ array<double, 2> energies_on_bz_path(tight_binding const& TB, k_t const& K1, k_t const& K2, int n_pts) {
+  auto TK = fourier(TB);
+  int norb = TB.lattice().n_orbitals();
+  int ndim = TB.lattice().dim();
+  array<double, 2> eval(norb, n_pts);
+  k_t dk = (K2 - K1) / double(n_pts), k = K1;
+  for (int i = 0; i < n_pts; ++i, k += dk) {
+   eval(range(), i) = linalg::eigenvalues(TK(k(range(0, ndim)))(), false);
   }
   return eval;
  }
 
  //------------------------------------------------------
- array_view<double,2> energies_on_bz_grid(tight_binding const & TB, size_t n_pts) {
+ array<double, 2> energies_on_bz_grid(tight_binding const& TB, int n_pts) {
 
-  auto TK = Fourier(TB);
-  const size_t norb=TB.lattice().n_orbitals();
-  const size_t ndim=TB.lattice().dim();
-  grid_generator grid(ndim,n_pts);
-  array<double,2> eval(norb,grid.size());
-  for (; grid ; ++grid)  {
-   eval(range(),grid.index()) = linalg::eigenvalues( TK( (*grid) (range(0,ndim))), false);
+  auto TK = fourier(TB);
+  int norb = TB.lattice().n_orbitals();
+  int ndim = TB.lattice().dim();
+  grid_generator grid(ndim, n_pts);
+  array<double, 2> eval(norb, grid.size());
+  for (; grid; ++grid) {
+   eval(range(), grid.index()) = linalg::eigenvalues(TK((*grid)(range(0, ndim)))(), false);
   }
   return eval;
  }
 
  //------------------------------------------------------
 
- std::pair<array<double,1>, array<double,2> > dos(tight_binding const & TB, size_t nkpts, size_t neps) {
+ std::pair<array<double, 1>, array<double, 2>> dos(tight_binding const& TB, int nkpts, int neps) {
 
-  // The Fourier transform of TK
-  // auto TK = Fourier(TB); // C++0x .... 
-  auto TK = Fourier(TB);
+  // The fourier transform of TK
+  auto TK = fourier(TB);
 
   // loop on the BZ
-  const size_t ndim=TB.lattice().dim();
-  const size_t norb=TB.lattice().n_orbitals();
-  grid_generator grid(ndim,nkpts);
-  array<double,1> tempeval(norb);
-  array<dcomplex,3> evec(norb,norb,grid.size());
-  array<double,2> eval(norb,grid.size());
-  if (norb ==1) 
-   for (; grid ; ++grid)  {
-    double ee = real(TK( (*grid) (range(0,ndim)))(0,0));
-    eval(0,grid.index()) =ee;
-    evec(0,0,grid.index()) =1;
+  int ndim = TB.lattice().dim();
+  int norb = TB.lattice().n_orbitals();
+  grid_generator grid(ndim, nkpts);
+  array<double, 1> tempeval(norb);
+  array<dcomplex, 3> evec(norb, norb, grid.size());
+  array<double, 2> eval(norb, grid.size());
+  if (norb == 1)
+   for (; grid; ++grid) {
+    double ee = real(TK((*grid)(range(0, ndim)))(0, 0));
+    eval(0, grid.index()) = ee;
+    evec(0, 0, grid.index()) = 1;
    }
-  else 
-   for (; grid ; ++grid)  {
-    //cerr<<" index = "<<grid.index()<<endl;
-    array_view <double,1> eval_sl = eval(range(),grid.index());
-    array_view <dcomplex,2> evec_sl =  evec(range(),range(),grid.index());
-    std::tie (eval_sl,evec_sl) = linalg::eigenelements( TK( (*grid) (range(0,ndim)))); //,  true);
-    //cerr<< " point "<< *grid <<  " value "<< eval_sl<< endl; //" "<< (*grid) (range(0,ndim)) << endl;
+  else
+   for (; grid; ++grid) {
+    // cerr<<" index = "<<grid.index()<<endl;
+    array_view<double, 1> eval_sl = eval(range(), grid.index());
+    array_view<dcomplex, 2> evec_sl = evec(range(), range(), grid.index());
+    std::tie(eval_sl, evec_sl) = linalg::eigenelements(TK((*grid)(range(0, ndim)))); //,  true);
+    // cerr<< " point "<< *grid <<  " value "<< eval_sl<< endl; //" "<< (*grid) (range(0,ndim)) << endl;
    }
 
   // define the epsilon mesh, etc.
-  array<double,1> epsilon(neps); 
-  double epsmax = tqa::max_element(eval);
-  double epsmin = tqa::min_element(eval);
-  double deps=(epsmax-epsmin)/neps;
-  //for (size_t i =0; i< neps; ++i) epsilon(i)= epsmin+i/(neps-1.0)*(epsmax-epsmin);
-  for (size_t i =0; i< neps; ++i) epsilon(i)=epsmin+(i+0.5)*deps;
+  array<double, 1> epsilon(neps);
+  double epsmax = max_element(eval);
+  double epsmin = min_element(eval);
+  double deps = (epsmax - epsmin) / neps;
+  // for (int i =0; i< neps; ++i) epsilon(i)= epsmin+i/(neps-1.0)*(epsmax-epsmin);
+  for (int i = 0; i < neps; ++i) epsilon(i) = epsmin + (i + 0.5) * deps;
 
   // bin the eigenvalues according to their energy
   // NOTE: a is defined as an integer. it is the index for the DOS.
-  //REPORT <<"Starting Binning ...."<<endl;
-  array<double,2> rho (neps,norb);rho()=0;
-  for(size_t l=0;l<norb;l++){
-   for (size_t j=0;j<grid.size();j++){
-    for (size_t k=0;k<norb;k++){
-     int a=int((eval(k,j)-epsmin)/deps);
-     if(a==int(neps)) a=a-1;
-     rho(a,l) += real(conj(evec(l,k,j))*evec(l,k,j));
-     //dos(a) +=  real(conj(evec(l,k,j))*evec(l,k,j));
+  // REPORT <<"Starting Binning ...."<<endl;
+  array<double, 2> rho(neps, norb);
+  rho() = 0;
+  for (int l = 0; l < norb; l++) {
+   for (int j = 0; j < grid.size(); j++) {
+    for (int k = 0; k < norb; k++) {
+     int a = int((eval(k, j) - epsmin) / deps);
+     if (a == int(neps)) a = a - 1;
+     rho(a, l) += real(conj(evec(l, k, j)) * evec(l, k, j));
+     // dos(a) +=  real(conj(evec(l,k,j))*evec(l,k,j));
     }
    }
   }
-  //rho = rho / double(grid.size()*deps);
-  rho /= grid.size()*deps;
-  return std::make_pair( epsilon, rho);
+  // rho = rho / double(grid.size()*deps);
+  rho /= grid.size() * deps;
+  return std::make_pair(epsilon, rho);
  }
 
  //----------------------------------------------------------------------------------
 
- std::pair<array<double,1>, array<double,1> > dos_patch(tight_binding const & TB, const array<double,2> & triangles, size_t neps, size_t ndiv) {
+ std::pair<array<double, 1>, array<double, 1>> dos_patch(tight_binding const& TB, const array<double, 2>& triangles, int neps,
+                                                         int ndiv) {
   // WARNING: This version only works for a single band Hamiltonian in 2 dimensions!!!!
   // triangles is an array of points defining the triangles of the patch
   // neps in the number of bins in energy
   // ndiv in the number of divisions used to divide the triangles
 
-  //const size_t ndim=TB.lattice().dim();
-  //const size_t norb=TB.lattice().n_orbitals();
-  int ntri = triangles.shape(0)/3;
-  array<double,1> dos(neps);
+  // int ndim=TB.lattice().dim();
+  // int norb=TB.lattice().n_orbitals();
+  int ntri = triangles.shape(0) / 3;
+  array<double, 1> dos(neps);
 
   // Check consistency
-  const size_t ndim=TB.lattice().dim();
-  //const size_t norb=TB.lattice().n_orbitals();
-  if (ndim !=2)  TRIQS_RUNTIME_ERROR<<"dos_patch : dimension 2 only !";
-  if (triangles.shape(1) != ndim) TRIQS_RUNTIME_ERROR<<"dos_patch : the second dimension of the 'triangle' array in not "<<ndim;
+  int ndim = TB.lattice().dim();
+  // int norb=TB.lattice().n_orbitals();
+  if (ndim != 2) TRIQS_RUNTIME_ERROR << "dos_patch : dimension 2 only !";
+  if (triangles.shape(1) != ndim)
+   TRIQS_RUNTIME_ERROR << "dos_patch : the second dimension of the 'triangle' array in not " << ndim;
 
   // Every triangle has ndiv*ndiv k points
-  size_t nk = ntri*ndiv*ndiv;
-  size_t k_index = 0;
-  double epsmax=-100000,epsmin=100000;
-  array<dcomplex,2> thop(1,1);
-  array<double,1> energ(nk), weight(nk);
+  int nk = ntri * ndiv * ndiv;
+  int k_index = 0;
+  double epsmax = -100000, epsmin = 100000;
+  array<dcomplex, 2> thop(1, 1);
+  array<double, 1> energ(nk), weight(nk);
 
   // a, b, c are the corners of the triangle
   // g the center of gravity taken from a
-  array<double,1> a(ndim), b(ndim), c(ndim), g(ndim), rv(ndim);
+  array<double, 1> a(ndim), b(ndim), c(ndim), g(ndim), rv(ndim);
   int pt = 0;
   double s, t;
 
-  // The Fourier transform of TK
-  auto TK = Fourier(TB); 
+  // The fourier transform of TK
+  auto TK = fourier(TB);
 
   // loop over the triangles
   for (int tri = 0; tri < ntri; tri++) {
-   a = triangles(pt,range());
+   a = triangles(pt, range());
    pt++;
-   b = triangles(pt,range());
+   b = triangles(pt, range());
    pt++;
-   c = triangles(pt,range());
+   c = triangles(pt, range());
    pt++;
-   g = ((a+b+c)/3.0-a)/double(ndiv);
+   g = ((a + b + c) / 3.0 - a) / double(ndiv);
 
    // the area around a k point might be different from one triangle to the other
    // so I use it to weight the sum in the dos
-   double area = abs(0.5*((b(0)-a(0))*(c(1)-a(1))-(b(1)-a(1))*(c(0)-a(0)))/(ndiv*ndiv));
+   double area = abs(0.5 * ((b(0) - a(0)) * (c(1) - a(1)) - (b(1) - a(1)) * (c(0) - a(0))) / (ndiv * ndiv));
 
-   for (size_t i = 0; i<ndiv; i++) {
-    s = i/double(ndiv);
-    for (size_t j = 0; j<ndiv-i; j++) {
-     t = j/double(ndiv);
-     for (size_t k = 0; k<2; k++) {
+   for (int i = 0; i < ndiv; i++) {
+    s = i / double(ndiv);
+    for (int j = 0; j < ndiv - i; j++) {
+     t = j / double(ndiv);
+     for (int k = 0; k < 2; k++) {
 
-      rv = a+s*(b-a)+t*(c-a)+(k+1.0)*g;
+      rv = a + s * (b - a) + t * (c - a) + (k + 1.0) * g;
 
-      if(k==0 || j < ndiv-i-1) {
+      if (k == 0 || j < ndiv - i - 1) {
 
-       energ(k_index)  = real(TK(rv)(0,0)); 
-       //compute(rv);
-       //energ(k_index) = real(tk_for_eval(1,1)); //tk_for_eval is Fortran array
+       energ(k_index) = real(TK(rv)(0, 0));
+       // compute(rv);
+       // energ(k_index) = real(tk_for_eval(1,1)); //tk_for_eval is Fortran array
        weight(k_index) = area;
-       if (energ(k_index)>epsmax) epsmax=energ(k_index);
-       if (energ(k_index)<epsmin) epsmin=energ(k_index);
+       if (energ(k_index) > epsmax) epsmax = energ(k_index);
+       if (energ(k_index) < epsmin) epsmin = energ(k_index);
        k_index++;
       }
      }
@@ -196,27 +212,23 @@ using namespace std;
   assert(k_index == nk);
 
   // define the epsilon mesh, etc.
-  array<double,1> epsilon(neps); 
-  double deps=(epsmax-epsmin)/neps;
-  for (size_t i =0; i< neps; ++i) epsilon(i)= epsmin+i/(neps-1.0)*(epsmax-epsmin);
+  array<double, 1> epsilon(neps);
+  double deps = (epsmax - epsmin) / neps;
+  for (int i = 0; i < neps; ++i) epsilon(i) = epsmin + i / (neps - 1.0) * (epsmax - epsmin);
 
   // bin the eigenvalues according to their energy
   int ind;
   double totalweight(0.0);
   dos() = 0.0;
-  for (size_t j = 0; j < nk; j++) {
-   ind=int((energ(j)-epsmin)/deps);
+  for (int j = 0; j < nk; j++) {
+   ind = int((energ(j) - epsmin) / deps);
    if (ind == int(neps)) ind--;
    dos(ind) += weight(j);
    totalweight += weight(j);
   }
-  dos /= deps;// Normalize the DOS
-  return std::make_pair(epsilon, dos);
+  dos /= deps; // Normalize the DOS
+  return {std::move(epsilon), std::move(dos)};
  }
-
-
-
-
-
- }}
+}
+}
 

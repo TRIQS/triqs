@@ -2,7 +2,7 @@
 
 .. _gf_imfreq: 
 
-Matsubara frequencies
+Green function on Matsubara frequencies
 ==========================================================
 
 This is a specialisation of :ref:`gf<gf_and_view>` for imaginary Matsubara frequencies.
@@ -31,7 +31,7 @@ The domain is :doxy:`matsubara_freq_domain<triqs::gfs::matsubara_domain>`.
 
 The Matsubara frequencies are :math:`\omega_n=\frac{(2n+1)\pi}{\beta}` for fermions and :math:`\omega_n=\frac{2n\pi}{\beta}` for bosons. 
 
-The mesh is :doxy:`matsubara_freq_mesh<triqs::gfs::matsubara_freq_mesh>`.
+The mesh is :doc:`matsubara_freq_mesh<matsubara_freq_mesh>`. 
 
 
 Singularity

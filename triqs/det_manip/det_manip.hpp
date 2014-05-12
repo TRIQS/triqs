@@ -51,7 +51,7 @@ namespace triqs { namespace det_manip {
 
     typedef typename f_tr::template decay_arg<0>::type xy_type;
     typedef typename f_tr::result_type                 value_type;
-    static_assert( std::is_floating_point<value_type>::value || boost::is_complex<value_type>::value, "det_manip : the function must return a floating number or a complex number");
+    static_assert( std::is_floating_point<value_type>::value || triqs::is_complex<value_type>::value, "det_manip : the function must return a floating number or a complex number");
 
     typedef arrays::vector<value_type>                 vector_type;
     typedef arrays::matrix<value_type>                 matrix_type;
@@ -78,13 +78,12 @@ namespace triqs { namespace det_manip {
     friend class boost::serialization::access;
     template<class Archive>
      void serialize(Archive & ar) {
-      using boost::serialization::make_nvp;
-      ar & make_nvp("Nmax",Nmax) & make_nvp("N",N) 
-       & make_nvp("n_opts",n_opts) & make_nvp("n_opts_max_before_check",n_opts_max_before_check) 
-       & make_nvp("det",det) & make_nvp("sign",sign) 
-       & make_nvp("Minv",mat_inv) 
-       & make_nvp("row_num",row_num) & make_nvp("col_num",col_num) 
-       & make_nvp("x_values",x_values) & make_nvp("y_values",y_values); 
+      ar & TRIQS_MAKE_NVP("Nmax",Nmax) & TRIQS_MAKE_NVP("N",N) 
+       & TRIQS_MAKE_NVP("n_opts",n_opts) & TRIQS_MAKE_NVP("n_opts_max_before_check",n_opts_max_before_check) 
+       & TRIQS_MAKE_NVP("det",det) & TRIQS_MAKE_NVP("sign",sign) 
+       & TRIQS_MAKE_NVP("Minv",mat_inv) 
+       & TRIQS_MAKE_NVP("row_num",row_num) & TRIQS_MAKE_NVP("col_num",col_num) 
+       & TRIQS_MAKE_NVP("x_values",x_values) & TRIQS_MAKE_NVP("y_values",y_values); 
      }
 
     /// Write into HDF5

@@ -6,8 +6,6 @@ using namespace triqs::gfs;
 
 int main() {
 
- triqs::gfs::freq_infty inf;
-
  double beta =1;
  auto G =  gf<imfreq> {{beta, Fermion}, {2,2}};
  auto Gc = G;

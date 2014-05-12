@@ -1,5 +1,6 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/gfs.hpp> 
+#include <boost/serialization/complex.hpp>
 using namespace triqs::gfs;
 using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;

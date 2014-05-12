@@ -54,7 +54,7 @@ namespace triqs {
    template <typename T>
     H5::DataSpace data_space_for_vector (std::vector<T> const & V) { 
      mini_vector<hsize_t,1> L,S; S[0]=1;L[0] = V.size();
-     return h5::dataspace_from_LS<1, boost::is_complex<T>::value > (L,L,S);
+     return h5::dataspace_from_LS<1, triqs::is_complex<T>::value > (L,L,S);
     }
 
    template<typename T>
@@ -63,7 +63,7 @@ namespace triqs {
       H5::DataSet ds = g.create_dataset(name, h5::data_type_file<T>(), data_space_for_vector(V) );
       ds.write( &V[0],  h5::data_type_memory<T>(), data_space_for_vector(V) );
       // if complex, to be python compatible, we add the __complex__ attribute
-      if (boost::is_complex<T>::value)  h5::write_string_attribute(&ds,"__complex__","1");
+      if (triqs::is_complex<T>::value)  h5::write_string_attribute(&ds,"__complex__","1");
      }
      TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
     }
@@ -73,7 +73,7 @@ namespace triqs {
      try {
       H5::DataSet ds = g.open_dataset(name);
       H5::DataSpace dataspace = ds.getSpace();
-      static const unsigned int Rank =  1 + (boost::is_complex<T>::value ? 1 : 0);
+      static const unsigned int Rank =  1 + (triqs::is_complex<T>::value ? 1 : 0);
       int rank = dataspace.getSimpleExtentNdims();
       if (rank != Rank) TRIQS_RUNTIME_ERROR << "triqs : h5 : read vector. Rank mismatch : the array stored in the hdf5 file has rank = "<<rank;
       mini_vector<hsize_t,Rank> dims_out;

@@ -18,74 +18,82 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_LATTICE_TIGHTBINDINGS_H
-#define TRIQS_LATTICE_TIGHTBINDINGS_H
-#include "bravais_lattice_and_brillouin_zone.hpp"
+#pragma once
+#include "brillouin_zone.hpp"
+#include <triqs/utility/complex_ops.hpp>
 
-namespace triqs { namespace lattice_tools { 
+namespace triqs {
+namespace lattice {
 
  /**
    For tightbinding Hamiltonian with fully localised orbitals
-   Model the ShortRangeFunctionOnBravaisLattice concept.
-   Overlap between orbital is taken as unit matrix. 
+   Overlap between orbital is taken as unit matrix.
   */
- class tight_binding { 
-   typedef std::vector<std::pair<std::vector<long>, matrix<dcomplex>>> displ_value_stack_t;
-   displ_value_stack_t displ_value_stack;
-   bravais_lattice bl_;
-  public : 
-   typedef std::vector<long>                                      arg_type;
+ class tight_binding {
 
-   ///
-   tight_binding (bravais_lattice const & bl) : bl_(bl) {};
-  
-   /// Underlying lattice 
-   bravais_lattice const & lattice() const { return bl_;}
+  bravais_lattice bl_;
+  std::vector<std::vector<long>> all_disp;
+  std::vector<matrix<dcomplex>> all_matrices;
 
-   /// Number of bands, i.e. size of the matrix t(k)
-   size_t n_bands() const { return bl_.n_orbitals();}
-   
-   /**
-    * Push_back mechanism of a pair displacement -> matrix
-    * VectorIntType is anything from which a std::vector<long> can be constructed
-    * MatrixDComplexType is anything from which a matrix<dcomplex> can be constructed
-    */
-   template<typename VectorIntType, typename MatrixDComplexType>
-    void push_back(VectorIntType && v, MatrixDComplexType && m) {
-     std::vector<long> V(std::forward<VectorIntType>(v)); 
-     if (v.size() != bl_.dim()) TRIQS_RUNTIME_ERROR<<"tight_binding : displacement of incorrect size : got "<< v.size() << "instead of "<< bl_.dim();
-     matrix<dcomplex> M(std::forward<MatrixDComplexType>(m));
-     if (first_dim(M) != n_bands()) TRIQS_RUNTIME_ERROR<<"tight_binding : the first dim matrix is of size "<<  first_dim(M) <<" instead of "<< n_bands();
-     if (second_dim(M) != n_bands()) TRIQS_RUNTIME_ERROR<<"tight_binding : the first dim matrix is of size "<<  second_dim(M) <<" instead of "<< n_bands();
-     displ_value_stack.push_back(std::make_pair(std::move(V), std::move(M)));
-    }
+  public:
+  ///
+  tight_binding(bravais_lattice const& bl, std::vector<std::vector<long>> all_disp, std::vector<matrix<dcomplex>> all_matrices);
 
-   void reserve(size_t n) { displ_value_stack.reserve(n);}
+  /// Underlying lattice
+  bravais_lattice const& lattice() const { return bl_; }
 
-   // iterators
-   typedef displ_value_stack_t::const_iterator const_iterator; 
-   typedef displ_value_stack_t::iterator iterator; 
-   const_iterator begin() const { return displ_value_stack.begin();} 
-   const_iterator end() const   { return displ_value_stack.end();} 
-   iterator begin() { return displ_value_stack.begin();} 
-   iterator end()   { return displ_value_stack.end();} 
- };
+  /// Number of bands, i.e. size of the matrix t(k)
+  int n_bands() const { return bl_.n_orbitals(); }
+
+  // calls F(R, t(R)) for all R
+  template <typename F> friend void foreach(tight_binding const& tb, F f) {
+   int n = tb.all_disp.size();
+   for (int i = 0; i < n; ++i) f(tb.all_disp[i], tb.all_matrices[i]);
+  }
+
+  // a simple function on the domain brillouin_zone
+  struct fourier_impl {
+   tight_binding const& tb;
+   const int nb;
+
+   using domain_t = brillouin_zone;
+   brillouin_zone domain() const {
+    return {tb.lattice()};
+   }
+
+   template <typename K> matrix<dcomplex> operator()(K const& k) {
+    matrix<dcomplex> res(nb, nb);
+    res() = 0;
+    foreach(tb, [&](std::vector<long> const& displ, matrix<dcomplex> const& m) {
+     double dot_prod = 0;
+     int imax = displ.size();
+     for (int i = 0; i < imax; ++i) dot_prod += k(i) * displ[i];
+     //double dot_prod = k(0) * displ[0] + k(1) * displ[1];
+     res += m * exp(2_j * M_PI * dot_prod);
+    });
+    return res;
+   }
+  };
+
+  fourier_impl friend fourier(tight_binding const& tb) {
+   return {tb, tb.n_bands()};
+  }
+
+ }; // tight_binding
 
  /**
    Factorized version of hopping (for speed)
    k_in[:,n] is the nth vector
    In the result, R[:,:,n] is the corresponding hopping t(k)
    */
- array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2> const & k_stack);
+ array<dcomplex, 3> hopping_stack(tight_binding const& TB, arrays::array_const_view<double, 2> k_stack);
  // not optimal ordering here
 
- std::pair<array<double,1>, array<double,2> > dos(tight_binding const & TB, size_t nkpts, size_t neps); 
- std::pair<array<double,1>, array<double,1> > dos_patch(tight_binding const & TB, const array<double,2> & triangles, size_t neps, size_t ndiv);
- array_view<double,2> energies_on_bz_path(tight_binding const & TB, K_view_type K1, K_view_type K2, size_t n_pts);
- array_view<double,2> energies_on_bz_grid(tight_binding const & TB, size_t n_pts);
-
-}}
-
-#endif
-
+ std::pair<array<double, 1>, array<double, 2>> dos(tight_binding const& TB, int nkpts, int neps);
+ std::pair<array<double, 1>, array<double, 1>> dos_patch(tight_binding const& TB, const array<double, 2>& triangles, int neps,
+                                                         int ndiv);
+ array<double, 2> energies_on_bz_path(tight_binding const& TB, k_t const& K1, k_t const& K2, int n_pts);
+ array<double, 2> energies_on_bz_grid(tight_binding const& TB, int n_pts);
+}
+}
 

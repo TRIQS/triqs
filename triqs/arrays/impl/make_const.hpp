@@ -19,11 +19,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_MAKE_CONST_H
 #define TRIQS_ARRAYS_MAKE_CONST_H
-#include <boost/mpl/if.hpp>
-#include <boost/type_traits/add_const.hpp>
 
 namespace triqs { namespace arrays {
 
@@ -32,7 +29,7 @@ namespace triqs { namespace arrays {
    * make_const_type : make the type constant.
    * For a storage, it transforms it into a storage<const Valuetype>
    */
-  template<bool Const, typename T> struct make_const_type : boost::mpl::if_c<Const, typename boost::add_const<T>::type, T> {};
+  template<bool Const, typename T> struct make_const_type : std::conditional<Const, typename std::add_const<T>::type, T> {};
  }
 }}//namespace triqs::arrays 
 #endif

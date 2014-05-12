@@ -32,7 +32,7 @@ namespace arrays {
   static const size_t dim = R;
   static const bool base_is_array = dim > 0;
   size_t bufsize_, step, _size;
-  static const bool T_is_complex = boost::is_complex<T>::value;
+  static const bool T_is_complex = triqs::is_complex<T>::value;
   static const unsigned int RANK = dim + 1 + (T_is_complex ? 1 : 0);
   utility::mini_vector<hsize_t, RANK> dims, offset, maxdims, dim_chunk, buffer_dim, zero;
   H5::DataSet dataset;
@@ -67,7 +67,7 @@ namespace arrays {
    cparms.setChunk(RANK, dim_chunk.ptr()); // Modify dataset creation properties, i.e. enable chunking.
    try {
     dataset = g.create_dataset(name, h5::native_type_from_C(typename h5::remove_complex<T>::type()), mspace1, cparms);
-    if (boost::is_complex<T>::value) h5::write_string_attribute(&dataset, "__complex__", "1");
+    if (triqs::is_complex<T>::value) h5::write_string_attribute(&dataset, "__complex__", "1");
    }
    TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
   }

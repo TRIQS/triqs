@@ -33,6 +33,7 @@ namespace triqs {
   // ------------------------------------------------------
 
   arrays::matrix<double> density(gf_view<imfreq> const & g);
+  double density(gf_view<imfreq, scalar_valued> const & g);
 
   arrays::matrix<double> density(gf_view<legendre> const & g);
 

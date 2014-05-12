@@ -68,11 +68,11 @@ namespace triqs { namespace arrays { namespace blas {
   }
 
  template< bool Star, typename T>
-  typename std::enable_if<boost::is_complex<T>::value && Star,T>::type
+  typename std::enable_if<triqs::is_complex<T>::value && Star,T>::type
   _conj(T && x) { return conj(std::forward<T>(x));}
 
  template< bool Star, typename T>
-  typename std::enable_if<!( boost::is_complex<T>::value && Star),T>::type
+  typename std::enable_if<!( triqs::is_complex<T>::value && Star),T>::type
   _conj(T && x) { return std::forward<T>(x);}
 
  /**

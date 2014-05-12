@@ -76,6 +76,12 @@ namespace arrays {
   const_iterator cend() const { return const_iterator(this, true); }
  };
 
+ // foreach
+  template <typename F> void foreach(range const& r, F const& f) {
+   std::ptrdiff_t i = r.first(), last = r.last(), step = r.step();
+   for (; i < last; i += step) f(i);
+  }
+
  /**
   */
  class ellipsis : public range {

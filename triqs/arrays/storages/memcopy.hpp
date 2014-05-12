@@ -25,7 +25,7 @@
 namespace triqs { namespace arrays { namespace storages {
 
  // beware : complex is not a pod
- template <class S> struct is_scalar_or_pod : std::integral_constant<bool, std::is_arithmetic<S>::value || boost::is_complex<S>::value || std::is_pod<S>::value > {};
+ template <class S> struct is_scalar_or_pod : std::integral_constant<bool, std::is_arithmetic<S>::value || triqs::is_complex<S>::value || std::is_pod<S>::value > {};
 
  // copy such that it is a fast memcpy for scalar / pod objects
  // when not a scalar object, loop on elements

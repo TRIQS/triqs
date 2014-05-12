@@ -18,11 +18,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_C14_FIX_H
-#define TRIQS_C14_FIX_H
+#pragma once
 #include <memory>
-//#include <functional>
-#include <tuple>
+#include <functional>
+#include "./macros.hpp"
 
 // a few that will be C++14, use in advance....
 
@@ -31,37 +30,39 @@ namespace std {
 
   // helpers
   template <bool B, class T, class F> using conditional_t = typename conditional<B, T, F>::type;
+  template <class T> using result_of_t = typename result_of<T>::type;
   template <class T> using remove_reference_t = typename remove_reference<T>::type;
+  template <class T> using add_const_t = typename add_const<T>::type;
+  template <class T> using remove_const_t = typename remove_const<T>::type;
+  template <class T> using decay_t = typename decay<T>::type;
+  template <bool B, class T = void> using enable_if_t = typename enable_if<B, T>::type;
 
   // use simply std::c14::plus<>() ...
   template<typename T = void> struct plus: std::plus<T>{};
-
   template<> struct plus<void> {
    template<typename T, typename U> 
     auto operator()( T&& t, U&& u) const DECL_AND_RETURN(std::forward<T>(t) + std::forward<U>(u));
   };
 
+   // use simply std::c14::plus<>() ...
+  template<typename T = void> struct greater: std::greater<T>{};
+  template<> struct greater<void> {
+   template<typename T, typename U> 
+    auto operator()( T&& t, U&& u) const DECL_AND_RETURN(std::forward<T>(t) > std::forward<U>(u));
+  };
+
+  template<typename T = void> struct less: std::less<T>{};
+  template<> struct less<void> {
+   template<typename T, typename U> 
+    auto operator()( T&& t, U&& u) const DECL_AND_RETURN(std::forward<T>(t) < std::forward<U>(u));
+  };
+
   template<typename T, typename... Args>
    std::unique_ptr<T> make_unique(Args&&... args) { return std::unique_ptr<T>(new T(std::forward<Args>(args)...)); }
 
-  // a little helper class to wait for the correction that tuple construct is NOT explicit
-  template<typename ... Args>
-   class tuple : public std::tuple<Args...> { 
-    public : 
-     template<typename ... Args2>
-     tuple(Args2 && ... args2) : std::tuple<Args...> (std::forward<Args2>(args2)...){}
-   };
  }
-
- // minimal hack to get the metaprogramming work with this tuple too....
- template<int i, typename ... Args>
-  auto get(c14::tuple<Args...> const & t) DECL_AND_RETURN( std::get<i>(static_cast<std::tuple<Args...>>(t)));
-
- template<typename ... Args> struct tuple_size<c14::tuple<Args...>>: tuple_size<std::tuple<Args...>>{};
-
-
 }
 
-
-#endif
-
+namespace std14 { 
+ using namespace std::c14;
+}

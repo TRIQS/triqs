@@ -22,6 +22,8 @@
 #define TRIQS_ARRAYS_IMPL_TRAITS_H
 #include <triqs/utility/concept_tools.hpp>
 #include <triqs/utility/traits.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/not.hpp>
 
 namespace triqs {
 namespace arrays {
@@ -67,11 +69,11 @@ namespace arrays {
  template <class T> struct is_amv_view_class : _or<is_array_view<T>, is_matrix_view<T>, is_vector_view<T>> {};
  template <class T> struct is_amv_value_or_view_class : _or<is_amv_value_class<T>, is_amv_view_class<T>> {};
 
- template <class S> struct is_scalar : _or<std::is_arithmetic<S>, boost::is_complex<S>> {};
+ template <class S> struct is_scalar : _or<std::is_arithmetic<S>, triqs::is_complex<S>> {};
 
  template <class S, class A>
  struct is_scalar_for
-     : std::conditional<is_scalar<typename A::value_type>::value, is_scalar<S>, boost::is_same<S, typename A::value_type>>::type {
+     : std::conditional<is_scalar<typename A::value_type>::value, is_scalar<S>, std::is_same<S, typename A::value_type>>::type {
  };
 }
 } // namespace triqs::arrays

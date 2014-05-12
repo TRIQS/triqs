@@ -60,7 +60,12 @@ namespace arrays {
   value_type *restrict data_start() { return &storage()[indexmap().start_shift()]; }
 
   view_type operator()() const { return *this; }
-  template <typename... Args> value_type const &operator()(Args &&... args) const { return a(n, std::forward<Args>(args)...); }
+
+  template <typename... Args>
+  std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, value_type const &> operator()(Args &&... args) const {
+   return a(n, std::forward<Args>(args)...);
+  }
+  TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
 
   template <typename RHS> const_matrix_tensor_proxy &operator=(const RHS &X) =delete; // can not assign to a const 
 
@@ -109,7 +114,13 @@ namespace arrays {
   value_type *restrict data_start() { return &storage()[indexmap().start_shift()]; }
 
   view_type operator()() const { return *this; }
-  template <typename... Args> value_type &operator()(Args &&... args) const { return a(n, std::forward<Args>(args)...); }
+
+  template <typename... Args>
+  std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, value_type &> operator()(Args &&... args) const {
+   return a(n, std::forward<Args>(args)...);
+  }
+
+  TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
 
   template <typename RHS> matrix_tensor_proxy &operator=(const RHS &X) {
    triqs_arrays_assign_delegation(*this, X);
@@ -120,6 +131,8 @@ namespace arrays {
   friend std::ostream &operator<<(std::ostream &out, matrix_tensor_proxy const &x) {
    return out << view_type{x};
   }
+
+  template <typename F> friend void triqs_clef_auto_assign(matrix_tensor_proxy x, F &&f) { foreach(x(), std::forward<F>(f)); }
  };
 
  template <typename A, bool IsMatrix>

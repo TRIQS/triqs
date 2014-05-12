@@ -60,6 +60,9 @@ namespace mc_tools {
 #undef INTEGER_OVERLOAD
 
   /// Returns a double in [0,1[ with flat distribution
+  double preview() { return gen->preview();} 
+
+  /// Returns a double in [0,1[ with flat distribution
   double operator()() { return ((*gen)());} 
 
   /// Returns a double in [0,x[ with flat distribution

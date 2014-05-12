@@ -3,7 +3,9 @@
 Solving a quantum impurity model with CTQMC 
 -------------------------------------------
 
-`[Requires TRIQS and the application cthyb_matrix]`
+.. note::
+  
+   Requires TRIQS and the :doc:`application cthyb_matrix <../../applications>`
 
 Free electrons are nice, but the `I` in TRIQS means `interacting`.
 So let us solve a simple one-band Anderson impurity model

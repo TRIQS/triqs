@@ -97,7 +97,7 @@ namespace triqs { namespace gfs { namespace local {
           mask() = order_min+size_-1;
           _data() = 0;
       }
-      tail_impl(data_type const &d, mask_type const &m, long omin_): mask(m), _data(d), omin(omin_) {}
+      tail_impl(data_type const &d, mask_type const &m, long omin_) : omin(omin_), mask(m), _data(d) {}
       tail_impl(tail_impl<!IsView> const & x): omin(x.omin), mask(x.mask), _data(x._data) {}
       tail_impl(tail_impl const &) = default;
       tail_impl(tail_impl &&) = default;
@@ -167,9 +167,9 @@ namespace triqs { namespace gfs { namespace local {
       friend class boost::serialization::access;
       template<class Archive>
         void serialize(Archive & ar, const unsigned int version) {
-          ar & boost::serialization::make_nvp("omin",omin);
-          ar & boost::serialization::make_nvp("mask",mask);
-          ar & boost::serialization::make_nvp("data",_data);
+          ar & TRIQS_MAKE_NVP("omin",omin);
+          ar & TRIQS_MAKE_NVP("mask",mask);
+          ar & TRIQS_MAKE_NVP("data",_data);
         }
 
       friend std::ostream & operator << (std::ostream & out, tail_impl const & x) {
@@ -309,9 +309,9 @@ namespace triqs { namespace gfs { namespace local {
   inline tail mult_impl(tail_view const & l, tail_view const& r) {
     if (l.shape()[1] != r.shape()[0] || l.order_min() != r.order_min() || l.size() != r.size())
       TRIQS_RUNTIME_ERROR<< "tail multiplication: shape mismatch";
-    long omin1 = l.smallest_nonzero() + r.smallest_nonzero();
+    //long omin1 = l.smallest_nonzero() + r.smallest_nonzero();
     long omax1 = std::min(std::min(r.order_max()+l.smallest_nonzero(), l.order_max()+r.smallest_nonzero()), r.order_min()+long(r.size())-1);
-    size_t si = omax1-omin1+1;
+    //size_t si = omax1-omin1+1;
 
     tail res(l.shape(), l.size(), l.order_min());
     res.mask_view() = omax1;

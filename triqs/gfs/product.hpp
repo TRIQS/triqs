@@ -92,7 +92,10 @@ namespace gfs {
   struct data_proxy<cartesian_product<Ms...>, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
   template <int R, typename Opt, typename... Ms>
   struct data_proxy<cartesian_product<Ms...>, tensor_valued<R>, Opt> : data_proxy_array<std::complex<double>, R + 1> {};
-
+ 
+  template <typename Opt, typename M0>
+  struct data_proxy<cartesian_product<M0,imtime>, matrix_valued, Opt> : data_proxy_array<double, 3> {};
+  
   /// ---------------------------  evaluator ---------------------------------
 
   /**

@@ -34,7 +34,7 @@ namespace triqs { namespace arrays {
 
  // ---------------------- vector_view --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType,Borrowed>, Opt, 0, IsConst, Tag::vector_view >
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType,Borrowed>, Opt, 0, IsConst, true, Tag::vector_view >
 
  /** */
  template <typename ValueType, ull_t Opt, bool Borrowed, bool IsConst>
@@ -97,11 +97,8 @@ namespace triqs { namespace arrays {
    TRIQS_DEFINE_COMPOUND_OPERATORS(vector_view);
 
    // to make interface similar to std::vector : forward [] to ()
-   template<typename Arg> typename std::result_of<const IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
-   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg)       { return (*this) (std::forward<Arg>(arg));}
-   // gcc 4.6 does not like this one...
-   //template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
-   //template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
   };
 #undef IMPL_TYPE
 
@@ -112,7 +109,7 @@ namespace triqs { namespace arrays {
  using vector_const_view = vector_view<ValueType, Opt, Borrowed, true>;
 
  // ---------------------- vector--------------------------------
-#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, false,Tag::vector_view >
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, false, false,Tag::vector_view >
 
  template <typename ValueType, ull_t Opt>
   class vector: Tag::vector,  TRIQS_CONCEPT_TAG_NAME(MutableVector), public IMPL_TYPE {
@@ -206,11 +203,9 @@ namespace triqs { namespace arrays {
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(vector);
 
-    // to make interface similar to std::vector : forward [] to ()
-   template<typename Arg> typename std::result_of<const IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
-   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg)       { return (*this) (std::forward<Arg>(arg));}
-   //template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
-   //template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   // to make interface similar to std::vector : forward [] to ()
+   template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
 
   };//vector class
 }}//namespace triqs::arrays
@@ -222,6 +217,20 @@ namespace triqs { namespace arrays {
 #include "./blas_lapack/swap.hpp"
 #include "./blas_lapack/axpy.hpp"
 namespace triqs { namespace arrays {
+
+ // norm2 squared
+ template <typename V> typename std::enable_if<ImmutableVector<V>::value, typename V::value_type>::type norm2_sqr(V const& a) {
+  int dim = a.size();
+  auto r = typename V::value_type{};
+  for (int i = 0; i < dim; ++i) r += a(i) * a(i);
+  return r;
+ }
+ 
+ // norm2
+ template <typename V> typename std::enable_if<ImmutableVector<V>::value, typename V::value_type>::type norm2(V const& a) {
+  using std::sqrt;
+  return sqrt(norm2(a));
+ }
 
  // lexicographical comparison operators
  template<typename V1, typename V2>
@@ -238,25 +247,25 @@ namespace triqs { namespace arrays {
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_vector_or_view <RHS > >::type
-  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) {
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, char_<'A'>) {
    T a =  1.0; blas::axpy(a,rhs,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_vector_or_view <RHS > >::type
-  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) {
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, char_<'S'>) {
    T a = -1.0; blas::axpy(a,rhs,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_scalar_for<RHS,vector<T,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) {
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, char_<'M'>) {
    T a = rhs; blas::scal(a,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_scalar_for<RHS,vector<T,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) {
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, char_<'D'>) {
    T a = 1/rhs; blas::scal(a,lhs);
   }
 
@@ -266,25 +275,25 @@ namespace triqs { namespace arrays {
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_vector_or_view <RHS > >::type
-  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) {
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, char_<'A'>) {
    T a =  1.0; blas::axpy(a,rhs,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_vector_or_view <RHS > >::type
-  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) {
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, char_<'S'>) {
    T a = -1.0; blas::axpy(a,rhs,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_scalar_for<RHS,vector_view<T,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) {
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, char_<'M'>) {
    T a = rhs; blas::scal(a,lhs);
   }
 
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_scalar_for<RHS,vector_view<T,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) {
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, char_<'D'>) {
    T a = 1/rhs; blas::scal(a,lhs);
   }
 

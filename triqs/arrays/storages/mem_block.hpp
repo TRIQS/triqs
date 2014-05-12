@@ -134,7 +134,7 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
 #endif
 
   //Construct to state 0
-  mem_block():size_(0),p(nullptr),py_numpy(nullptr), py_guard(nullptr), ref_count(1), weak_ref_count(0){}
+   mem_block() : size_(0), p(nullptr), ref_count(1), weak_ref_count(0), py_numpy(nullptr), py_guard(nullptr) {}
 
   // construct to state 1 with a given size.
   mem_block (size_t s):size_(s),py_numpy(nullptr), py_guard(nullptr){
@@ -261,10 +261,12 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
 
   size_t size() const {return size_;}
 
+  bool is_unique() const { return (ref_count + weak_ref_count) == 1; }
+
   template<class Archive>
    void save(Archive & ar, const unsigned int version) const {
-    ar << boost::serialization::make_nvp("size",size_);
-    for (size_t i=0; i<size_; ++i) ar << boost::serialization::make_nvp("data",p[i]);
+    ar << TRIQS_MAKE_NVP("size",size_);
+    for (size_t i=0; i<size_; ++i) ar << TRIQS_MAKE_NVP("data",p[i]);
    }
 
   template<class Archive>

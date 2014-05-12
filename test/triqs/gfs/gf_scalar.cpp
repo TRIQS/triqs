@@ -1,5 +1,6 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/gfs.hpp> 
+#include <triqs/gfs/local/functions.hpp> 
 using namespace triqs::gfs;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
@@ -11,6 +12,9 @@ int main() {
   std::cout << G.singularity() << std::endl ;
   triqs::clef::placeholder<0> om_;
   G(om_) << 1/(om_ + 2.3);
+
+  auto n = triqs::gfs::density(G);
+  TEST(n);
 
   // test hdf5 
   H5::H5File file("gf_scalar.h5", H5F_ACC_TRUNC);

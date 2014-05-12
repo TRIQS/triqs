@@ -18,79 +18,106 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "bravais_lattice_and_brillouin_zone.hpp"
+#include "./bravais_lattice.hpp"
+#include "./brillouin_zone.hpp"
 #include <triqs/arrays/blas_lapack/dot.hpp>
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <triqs/arrays/linalg/cross_product.hpp>
-namespace triqs { namespace lattice_tools { 
+namespace triqs {
+namespace lattice {
 
- using namespace tqa;
- using namespace std;
- //using triqs::arrays::blas::dot;
- const double almost_zero(1E-10);
+ const double almost_zero = 1e-10;
 
- bravais_lattice::bravais_lattice( units_type const & units__) : units_(3,3), dim_(units__.shape(0)) { 
-  units_(range(0,dim_),range()) = units__();
-  units_(range(dim_,3),range()) = 0;
+ bravais_lattice::bravais_lattice(matrix<double> const& units__, std::vector<r_t> atom_orb_pos_,
+                                  std::vector<std::string> atom_orb_name_)
+    : units_(3, 3), atom_orb_pos(atom_orb_pos_), atom_orb_name(atom_orb_name_) {
+  dim_ = first_dim(units__);
+  if ((dim_ < 1) || (dim_ > 3)) TRIQS_RUNTIME_ERROR << " units matrix must be square matrix of size 1, 2 or 3";
+  using arrays::range;
+  auto r = range(0, dim_);
+  units_() = 0;
+  units_(r, r) = units__(r, r);
   // First complete the basis. Add some tests for safety
-  tqa::vector<double> ux(3),uy(3),uz(3); 
-  assert(dim_==2);
+  arrays::vector<double> ux(3), uy(3), uz(3);
+  double delta;
+  auto _ = range{};
   switch (dim_) {
-   case 1:      
-    ux = units_(0,range());
-    uz() = 0; uz(1) = 1 ;
-    uz = uz - dot(uz,ux)* ux;
+   case 1:
+    ux = units_(0, _);
+    uz() = 0;
+    uz(1) = 1;
+    uz = uz - dot(uz, ux) * ux;
     // no luck, ux was parallel to z, another one must work
-    if (sqrt(dot(uz,uz))<almost_zero) {
-     uz() = 0; uz(2) = 1; // 0,0,1;
-     uz = uz - dot(uz,ux)* ux;
+    if (sqrt(dot(uz, uz)) < almost_zero) {
+     uz() = 0;
+     uz(2) = 1; // 0,0,1;
+     uz = uz - dot(uz, ux) * ux;
     }
-    uz /= sqrt(dot(uz,uz));
-    uy = cross_product(uz,ux);
-    uy = uy/sqrt(dot(uy,uy)); // uy can not be 0
-    units_(1,range()) = uz;
-    units_(2,range()) = uy;
+    uz /= sqrt(dot(uz, uz));
+    uy = cross_product(uz, ux);
+    uy = uy / sqrt(dot(uy, uy)); // uy can not be 0
+    units_(1, _) = uz;
+    units_(2, _) = uy;
     break;
    case 2:
-    uy() = 0; uy(2) = 1 ;
-    uy = cross_product(units_(0,range()),units_(1,range()));
-    double delta = sqrt(dot(uy,uy));
-    if (abs(delta)<almost_zero) TRIQS_RUNTIME_ERROR<<"Tiling : the 2 vectors of unit are not independent";
-    units_(2,range()) = uy /delta;
+    uy() = 0;
+    uy(2) = 1;
+    uy = cross_product(units_(0, _), units_(1, _));
+    delta = sqrt(dot(uy, uy));
+    if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : the 2 vectors of unit are not independent : " << units__;
+    units_(2, _) = uy / delta;
+    break;
+   case 3:
+    TRIQS_RUNTIME_ERROR << " 3d bravais lattice not implemented";
+    break;
   }
- //cerr<<" Units = "<< units_<<endl; 
+ }
+ //------------------------------------------------------------------------------------
+
+ /// Write into HDF5
+ void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const& bl) {
+  h5::group gr = fg.create_group(subgroup_name);
+  h5_write(gr, "units", bl.units_); // NOT COMPLETE
+ }
+
+ /// Read from HDF5
+ void h5_read(h5::group fg, std::string subgroup_name, bravais_lattice& bl) {
+  h5::group gr = fg.open_group(subgroup_name);
+  matrix<double> u;
+  h5_read(gr, "units", u);
+  bl = bravais_lattice{u}; // NOT COMPLETE
  }
 
  //------------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------------
 
- brillouin_zone::brillouin_zone( bravais_lattice const & bl_) : lattice_(bl_), K_reciprocal(3,3) {
-  bravais_lattice::units_type Units(lattice().units());
-    std::cout << Units << std::endl;
-  double delta = dot(Units(0,range()), cross_product(Units(1,range()),Units(2,range())));
-    std::cout << dot(Units(0,range()), cross_product(Units(1,range()),Units(2,range())))<<std::endl;
-    std::cout << cross_product(Units(1,range()),Units(2,range()))<<std::endl;
-  if (abs(delta)<almost_zero) TRIQS_RUNTIME_ERROR<<"Tiling : the 3 vectors of Units are not independant";
-  K_reciprocal(0,range()) = cross_product(Units(1,range()),Units(2,range())) / delta;
-  K_reciprocal(1,range()) = cross_product(Units(2,range()),Units(0,range())) / delta;
-  K_reciprocal(2,range()) = cross_product(Units(0,range()),Units(1,range())) / delta;
-  //for (size_t i =0; i< lattice().dim();i++) std::cerr << " K_reciprocal(" << i << ")/(2pi) =  " << K_reciprocal(i,range())<< std::endl;
-  const double pi = acos(-1.0);
-  K_reciprocal = K_reciprocal*2*pi;
-  K_reciprocal_inv =  inverse(K_reciprocal);
+ brillouin_zone::brillouin_zone(bravais_lattice const& bl_) : lattice_(bl_), K_reciprocal(3, 3) {
+  using arrays::range;
+  auto _ = range{};
+  auto Units = lattice().units();
+  double delta = dot(Units(0, _), cross_product(Units(1, _), Units(2, _)));
+  if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Brillouin Zone : the 3 vectors of Units are not independant" << Units;
+  K_reciprocal(0, _) = cross_product(Units(1, _), Units(2, _)) / delta;
+  K_reciprocal(1, _) = cross_product(Units(2, _), Units(0, _)) / delta;
+  K_reciprocal(2, _) = cross_product(Units(0, _), Units(1, _)) / delta;
+  K_reciprocal = K_reciprocal * 2 * M_PI;
+  K_reciprocal_inv = inverse(K_reciprocal);
  }
 
- K_view_type brillouin_zone::lattice_to_real_coordinates (K_view_type const & k) const { 
-  if (k.size()!=lattice().dim()) TRIQS_RUNTIME_ERROR<<"latt_to_real_k : dimension of k must be "<<lattice().dim();
-  K_type res(3); res()=0; int dim = lattice().dim();
-  for (int i =0; i< dim;i++) res += k (i) * K_reciprocal(i,range());
-  return(res);
+ //------------------------------------------------------------------------------------
+ /// Write into HDF5
+ void h5_write(h5::group fg, std::string subgroup_name, brillouin_zone const& bz) {
+  h5::group gr = fg.create_group(subgroup_name);
+  h5_write(gr, "bravais_lattice", bz.lattice_);
  }
 
- K_view_type brillouin_zone::real_to_lattice_coordinates (K_view_type const & k) const {
-  if (k.size()!=lattice().dim()) TRIQS_RUNTIME_ERROR<<"latt_to_real_k : dimension of k must be "<<lattice().dim();
-  K_type res(3);res()=0; int dim = lattice().dim();
-  for (int i =0; i< dim;i++) res += k (i) * K_reciprocal_inv(i,range());
-  return(res);
+ /// Read from HDF5
+ void h5_read(h5::group fg, std::string subgroup_name, brillouin_zone& bz) {
+  h5::group gr = fg.open_group(subgroup_name);
+  bravais_lattice bl;
+  h5_read(gr, "bravais_lattice", bl);
+  bz = brillouin_zone{bl};
  }
-}}//namespaces
+}
+} // namespaces
 

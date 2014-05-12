@@ -95,10 +95,11 @@ Example :
     TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
 
     // a method
-    double my_method(double x) { return 2*x;}
+    double my_method(double x) const { return 2*x;}
    
     // CLEF overload
-    //TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(Obj,my_method);
+    // WARNING : the method MUST be const
+    TRIQS_CLEF_IMPLEMENT_LAZY_METHOD(Obj,my_method);
      
     // Just to print itself nicely in the expressions
     friend std::ostream & operator<<(std::ostream & out, Obj const & x) { return out<<"Obj";}
@@ -113,11 +114,10 @@ Example :
     std::cout << "Partial evaluation  : "<< eval(f(y_) + 2*x_, y_=1) << std::endl ; 
     std::cout << "Complete evalution  : "<< eval(f(y_) + 2*x_, x_=3, y_=1) << std::endl<<std::endl ; 
 
-    // not implemented on all compilers
-    //std::cout << "Clef expression     : "<<  f.my_method(y_) + 2*x_ << std::endl ; 
-    //std::cout << "Complete evaluation : "<< eval(f.my_method(x_) + 2*x_, x_=1) << std::endl ; 
-    //std::cout << "Partial evaluation  : "<< eval(f.my_method(y_) + 2*x_, y_=1) << std::endl ; 
-    //std::cout << "Complete evalution  : "<< eval(f.my_method(y_) + 2*x_, x_=3, y_=1) << std::endl ; 
+    std::cout << "Clef expression     : "<<  f.my_method(y_) + 2*x_ << std::endl ; 
+    std::cout << "Complete evaluation : "<< eval(f.my_method(x_) + 2*x_, x_=1) << std::endl ; 
+    std::cout << "Partial evaluation  : "<< eval(f.my_method(y_) + 2*x_, y_=1) << std::endl ; 
+    std::cout << "Complete evalution  : "<< eval(f.my_method(y_) + 2*x_, x_=3, y_=1) << std::endl ; 
     }
  
 **NB**  When the method or the non CLEF operator() is already a template, 

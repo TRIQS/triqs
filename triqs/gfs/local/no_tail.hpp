@@ -33,8 +33,22 @@ namespace gfs {
   return {g.mesh(), g.data(), {}, g.symmetry()};
  }
 
+ namespace details { // dispatch the test for scalar_valued and matrix_valued
+  using arrays::mini_vector;
+
+  inline void _equal_or_throw(mini_vector<size_t, 2> const &s_t, mini_vector<size_t, 2> const &g_t) {
+   if (s_t != g_t) TRIQS_RUNTIME_ERROR << "make_gf_from_g_and_tail: Shape of the gf target and of the tail mismatch";
+  }
+
+  inline void _equal_or_throw(mini_vector<size_t, 2> const &s_t, mini_vector<size_t, 0> const &g_t) {
+   if (s_t != mini_vector<size_t, 2>{1, 1})
+    TRIQS_RUNTIME_ERROR << "make_gf_from_g_and_tail: tail shape must be 1x1 for a scalar gf";
+  }
+ }
+
  template <typename Variable, typename Target, bool V, bool C>
  gf_view<Variable, Target> make_gf_from_g_and_tail(gf_impl<Variable, Target, no_tail, V, C> const &g, local::tail t) {
+  details::_equal_or_throw(t.shape(), get_target_shape(g));
   auto g2 = gf<Variable, Target, no_tail>{g}; // copy the function without tail
   return {std::move(g2.mesh()), std::move(g2.data()), std::move(t), g2.symmetry()};
  }
@@ -42,6 +56,7 @@ namespace gfs {
  template <typename Variable, typename Target, bool V, bool C>
  gf_view<Variable, Target, void, C> make_gf_view_from_g_and_tail(gf_impl<Variable, Target, no_tail, V, C> const &g,
                                                                  local::tail_view t) {
+  details::_equal_or_throw(t.shape(), get_target_shape(g));
   return {g.mesh(), g.data(), t, g.symmetry()};
  }
 }

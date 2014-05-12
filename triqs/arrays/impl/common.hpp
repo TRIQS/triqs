@@ -31,10 +31,11 @@
 #include <assert.h>
 #include <triqs/utility/exceptions.hpp>
 #include <sstream>
+#include <type_traits>
 
-#include <boost/mpl/char.hpp>
-#include <boost/type_traits/is_arithmetic.hpp>
-#include <boost/type_traits/is_complex.hpp>
+template<char C> using char_ = std::integral_constant<char,C>;
+
+#include <triqs/utility/is_complex.hpp>
 #include <triqs/utility/compiler_details.hpp>
 #include <triqs/utility/macros.hpp>
 // LEADS to an error on OS X???

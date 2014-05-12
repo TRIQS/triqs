@@ -24,12 +24,11 @@ int main() {
  std::cout  << G.data().shape() << 2*G(0,0)<<std::endl;
 
  auto xx =eval ( G(t_,tp_), t_=2, tp_=1.2);
-//xx =0;
+ std::cerr << xx << std::endl;
+ //xx =0;
  std::cout  << eval ( gg(t_), t_=2)<< std::endl ;
 
  double beta = 1;
- double wmin=0.;
- double wmax=1.0;
  int n_im_freq=100;
  
  auto G_w_wn2 = gf<cartesian_product<imfreq,imfreq>>( {gf_mesh<imfreq>(beta, Fermion, n_im_freq), gf_mesh<imfreq>(beta, Fermion, n_im_freq)}, {2,2});

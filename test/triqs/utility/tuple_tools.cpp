@@ -23,6 +23,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <functional>
+#include <string>
 #include <triqs/utility/mini_vector.hpp>
 
 struct fun { 
@@ -107,6 +108,24 @@ int main(int argc, char **argv) {
   if ( std::abs((res -  35.6)) > 1.e-13) throw std::runtime_error(" ");
  }
 
+ {
+  // ex of real code
+  auto fl = [](int i, std::string s) {
+   auto r = std::to_string(i);
+   return s.empty() ? r : r + "_" + s;
+  };
+#ifdef __cpp_generic_lambdas
+  auto _name = [fl](auto... is) {
+   auto t = std::make_tuple(is...);
+   return triqs::tuple::fold(fl, t, std::string{});
+  };
+  auto r= _name(1,2,3);
+#else
+  auto r = triqs::tuple::fold(fl, reverse(std::make_tuple(1,2,3)), std::string{});
+#endif
+  std::cerr << r << std::endl;
+ }
+
   std::cerr  << "  ----- apply ----"<< std::endl ;
  {
   auto res = triqs::tuple::apply(my_print_str, std::make_tuple(1,2));
@@ -181,6 +200,9 @@ int main(int argc, char **argv) {
   std::cout << "replace 0,2,3"<< t << triqs::tuple::replace<0,2,3>(t,s)<< std::endl; 
   std::cout << "replace 1,3,5"<< t << triqs::tuple::replace<1,3,5>(t,s)<< std::endl; 
  }
+
+ 
+
 
 }
 

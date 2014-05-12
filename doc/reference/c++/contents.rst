@@ -17,5 +17,6 @@ C++
    mctools/intro
    det_manip/contents
    parameters/parameters
+   statistics/contents
    utilities/contents
    using_the_lib/profiling

@@ -1,0 +1,16 @@
+0.125 +/- 0.426956
+0.0763889 +/- 0.174719
+N = 100000
+L = 100
+(autocorrelation_time(A)) ---> 89
+
+(autocorrelation_time_from_binning(A,intrinsic_variance)) ---> 80.2806
+
+(autocorrelation_time_from_binning(A)) ---> 95.7671
+
+(autocorrelation_time(V)) ---> 40
+
+(autocorrelation_time_from_binning(V)) ---> 38.0031
+
+(autocorrelation_time(V*V)) ---> 37
+

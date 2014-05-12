@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_TOOLS_MC_GENERIC_H
-#define TRIQS_TOOLS_MC_GENERIC_H
+#pragma once
 #include <triqs/utility/first_include.hpp>
 #include <math.h>
 #include <triqs/utility/timer.hpp>
@@ -96,13 +95,9 @@ namespace triqs { namespace mc_tools {
      /**
      * Register the precomputation 
      */
-    /*template<typename MeasureAuxType>
-     MeasureAuxType * add_measure_aux(MeasureAuxType && M, std::string name) {
-      static_assert( !std::is_pointer<MeasureAuxType>::value, "add_measure_aux in mc_generic takes ONLY values !");
-      AllMeasuresAux.insert(std::forward<MeasureAuxType>(M), name);
-     }
-*/
-   /// get the average sign (to be called after collect_results)
+     template <typename MeasureAuxType> void add_measure_aux(std::shared_ptr<MeasureAuxType> p) { AllMeasuresAux.emplace_back(p); }
+
+     /// get the average sign (to be called after collect_results)
     MCSignType average_sign() const { return sign_av; }
 
     /// get the current percents done
@@ -126,7 +121,7 @@ namespace triqs { namespace mc_tools {
       if (thermalized()) {
        nmeasures++;
        sum_sign += sign;
-       AllMeasuresAux.compute_all(); 
+       for (auto &x : AllMeasuresAux) x();
        AllMeasures.accumulate(sign);
       }
       // recompute fraction done
@@ -168,9 +163,6 @@ namespace triqs { namespace mc_tools {
     template<typename MeasureType> MeasureType       & get_measure(std::string const & name)       { return AllMeasures.template get_measure<MeasureType> (name); }
     template<typename MeasureType> MeasureType const & get_measure(std::string const & name) const { return AllMeasures.template get_measure<MeasureType> (name); }
  
-    template<typename MeasureAuxType> MeasureAuxType       * get_measure_aux(std::string const & name)       { return AllMeasuresAux.template get_measure_aux<MeasureAuxType> (name); }
-    template<typename MeasureAuxType> MeasureAuxType const * get_measure_aux(std::string const & name) const { return AllMeasuresAux.template get_measure_aux<MeasureAuxType> (name); }
-
     template<typename MoveType> MoveType       & get_move (std::string const & name)       { return AllMoves.template get_move<MoveType> (name); }
     template<typename MoveType> MoveType const & get_move (std::string const & name) const { return AllMoves.template get_move<MoveType> (name); }
 
@@ -206,7 +198,7 @@ namespace triqs { namespace mc_tools {
     random_generator RandomGenerator;
     move_set<MCSignType> AllMoves;
     measure_set<MCSignType> AllMeasures;
-    measure_aux_set AllMeasuresAux;
+    std::vector<measure_aux> AllMeasuresAux;
     utility::report_stream report;
     uint64_t Length_MC_Cycle;/// Length of one Monte-Carlo cycle between 2 measures
     uint64_t NWarmIterations, NCycles;
@@ -235,5 +227,4 @@ namespace triqs { namespace mc_tools {
  template<typename M,typename T1, typename T2> M const & get_move(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_move<M> (name); }
 
 }}// end namespace
-#endif
 

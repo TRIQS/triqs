@@ -22,8 +22,6 @@
 #define TRIQS_UTILITY_CONCEPT_TOOLS_H
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/seq/for_each_i.hpp>
-#include <boost/type_traits/is_base_of.hpp>
-#include <boost/type_traits/is_complex.hpp>
 
 #define TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept) MyBeautifulConcept##__concept_tag
 
@@ -31,7 +29,7 @@
 
 #define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(MyBeautifulConcept) \
  struct TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept) {};\
- template<typename T> struct MyBeautifulConcept : boost::is_base_of<TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept) , T> {};\
+ template<typename T> struct MyBeautifulConcept : std::is_base_of<TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept) , T> {};\
  template<typename T> struct MyBeautifulConcept<const T> : MyBeautifulConcept<T>{};\
  template<typename T> struct MyBeautifulConcept<T&> : MyBeautifulConcept<T>{};\
  template<typename T> struct MyBeautifulConcept<T&&> : MyBeautifulConcept<T>{};
@@ -41,7 +39,7 @@
 
 #define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MyBeautifulConcept,Rs) \
  struct TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept) : BOOST_PP_SEQ_FOR_EACH_I (TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R_AUX,nil,Rs) {};\
- template<typename T> struct MyBeautifulConcept : boost::is_base_of<TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept), T> {};\
+ template<typename T> struct MyBeautifulConcept : std::is_base_of<TRIQS_CONCEPT_TAG_NAME(MyBeautifulConcept), T> {};\
  template<typename T> struct MyBeautifulConcept<const T>  : MyBeautifulConcept<T>{};\
  template<typename T> struct MyBeautifulConcept<T&>  : MyBeautifulConcept<T>{};\
  template<typename T> struct MyBeautifulConcept<T&&>  : MyBeautifulConcept<T>{};

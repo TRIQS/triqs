@@ -2,7 +2,9 @@
 Dynamical mean-field theory on a Bethe lattice
 ----------------------------------------------
 
-  `Requires TRIQS and the application cthyb_matrix`
+.. note::
+  
+   Requires TRIQS and the :doc:`application cthyb_matrix <../../applications>`
   
 
 In the case of Bethe lattice the dynamical mean-field theory (DMFT) self-consistency condition takes a particularly simple form

@@ -81,6 +81,8 @@ namespace triqs { namespace arrays { namespace storages {
     return *this;
    }
 
+   bool is_unique() const { return sptr && sptr->is_unique();}
+
    /// True copy of the data
    shared_block clone() const { 
     shared_block res; 
@@ -101,11 +103,11 @@ namespace triqs { namespace arrays { namespace storages {
    friend class shared_block<ValueType,!Weak>;
    friend class boost::serialization::access;
    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const { ar << boost::serialization::make_nvp("ptr",sptr); }
+    void save(Archive & ar, const unsigned int version) const { ar << TRIQS_MAKE_NVP("ptr",sptr); }
    template<class Archive>
     void load(Archive & ar, const unsigned int version) { 
      if (sptr) dec_ref<Weak>(sptr); 
-     ar >> boost::serialization::make_nvp("ptr",sptr); data_ = (sptr ? sptr->p : nullptr); s = (sptr ? sptr->size() : 0);
+     ar >> TRIQS_MAKE_NVP("ptr",sptr); data_ = (sptr ? sptr->p : nullptr); s = (sptr ? sptr->size() : 0);
      if (sptr) inc_ref<Weak>(sptr);
     }
    BOOST_SERIALIZATION_SPLIT_MEMBER();

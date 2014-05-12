@@ -47,12 +47,11 @@ struct test {
    std::cerr<<" ------------------------------------------------"<<std::endl;
    std::cerr <<" i = "<< i << " size = "<< D.size() << std::endl; 
    // choose a move
-   int mn = RNG(4);
    size_t s = D.size();
    size_t w,w1;
    det_old = D.determinant();
    detratio =1;
-   double x,y,x1; 
+   double x,x1; 
 
    switch(RNG(( i>10 ? 4 : 1))) {
     case 0 :

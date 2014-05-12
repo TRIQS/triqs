@@ -84,6 +84,7 @@ namespace gfs {
     double w;
     bool in;
     std::tie(in, n, w) = windowing(m, tau);
+    if (!in) TRIQS_RUNTIME_ERROR << " Evaluation out of bounds";
     if ((m.domain().statistic == Fermion) && (p % 2 != 0)) {
      w2 = -w;
      w1 = w - 1;

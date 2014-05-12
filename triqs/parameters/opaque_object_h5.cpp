@@ -48,7 +48,8 @@ namespace triqs { namespace utility {
      size_t type_hash_element = type_hash;
      auto it2= _object::code_element_rank_to_code_array.find(std::make_pair(type_hash_element,rank));
      if (it2 == _object::code_element_rank_to_code_array.end())
-      TRIQS_RUNTIME_ERROR << " code_element_rank_to_code_array : type not found" << rank;
+      TRIQS_RUNTIME_ERROR << " code_element_rank_to_code_array : type not found : " << name << "  " << type_hash_element << " "
+                          << rank;
      type_hash = it2->second;
     }
    }

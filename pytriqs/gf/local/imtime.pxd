@@ -25,6 +25,7 @@ cdef extern from "triqs/gfs/imtime.hpp" namespace "triqs::gfs" :
         void operator << (gf_imtime &)
         mesh_imtime mesh() 
         array_view[double, THREE] data()
+        matrix_view[double] operator()(double)
         tail singularity() 
 
 cdef extern from "triqs/gfs/imtime.hpp"  :

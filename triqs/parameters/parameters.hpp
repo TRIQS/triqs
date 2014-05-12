@@ -49,7 +49,7 @@ namespace triqs { namespace utility {
 
    friend class boost::serialization::access;
    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("object_map",object_map); }
+    void serialize(Archive & ar, const unsigned int version) { ar & TRIQS_MAKE_NVP("object_map",object_map); }
 
   public:
 

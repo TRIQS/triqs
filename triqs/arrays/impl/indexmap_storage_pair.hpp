@@ -28,8 +28,6 @@
 #include "triqs/utility/exceptions.hpp"
 #include "triqs/utility/typeid_name.hpp"
 #include "triqs/utility/view_tools.hpp"
-#include <boost/serialization/utility.hpp>
-#include <boost/serialization/vector.hpp>
 #include <type_traits>
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../python/numpy_extractor.hpp"
@@ -52,7 +50,7 @@ namespace triqs { namespace arrays {
 
  template <class V, int R, ull_t OptionFlags, ull_t TraversalOrder, class ViewTag, bool Borrowed, bool IsConst> struct ISPViewType;
 
- template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder, bool IsConst, typename ViewTag>
+ template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder, bool IsConst, bool IsView, typename ViewTag>
  class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_CONCEPT_TAG_NAME(MutableCuboidArray) {
 
    public :
@@ -147,7 +145,10 @@ namespace triqs { namespace arrays {
     storage_type & storage() {return storage_;}
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-    PyObject * to_python() const { return numpy_interface::array_view_to_python(*this);}
+  PyObject *to_python() const {
+   if (is_empty()) TRIQS_RUNTIME_ERROR << "Error : trying to return an empty array/matrix/vector to python";
+   return numpy_interface::array_view_to_python(*this);
+  }
 #endif
 
     /// data_start is the starting point of the data of the object
@@ -179,13 +180,33 @@ namespace triqs { namespace arrays {
      typename std::enable_if<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && (!IsConst)
      , value_type &>::type
-     operator()(Args const & ... args) {  return storage_[indexmap_(args...)]; }
+     operator()(Args const & ... args)  & {  return storage_[indexmap_(args...)]; }
 
     template<typename... Args>
      typename std::enable_if<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0)
      , value_type const &>::type
-     operator()(Args const & ... args) const { return storage_[indexmap_(args...)]; }
+     operator()(Args const & ... args) const & { return storage_[indexmap_(args...)]; }
+
+    // && : return a & iif it is a non const view 
+    template<typename... Args>
+     typename std::enable_if<
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && (!IsConst&&IsView)
+     , value_type &>::type
+     operator()(Args const & ... args) && {
+      // add here a security check in case it is a view, unique. For a regular type, move the result... 
+#ifdef TRIQS_ARRAYS_DEBUG
+      if (storage_.is_unique()) TRIQS_RUNTIME_ERROR <<"BUG : array : rvalue ref for an array...";
+#endif
+      return storage_[indexmap_(args...)]; 
+     }
+
+    // && return a value if this is not a view (regular class) or it is a const_view
+    template<typename... Args>
+     typename std::enable_if<
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && (!(!IsConst&&IsView))
+     , value_type>::type
+     operator()(Args const & ... args) && { return storage_[indexmap_(args...)]; }
 
     template<bool is_const, bool ForceBorrowed, typename ... Args> struct result_of_call_as_view {
      typedef typename indexmaps::slicer<indexmap_type,Args...>::r_type IM2;
@@ -240,24 +261,41 @@ namespace triqs { namespace arrays {
      typename clef::_result_of::make_expr_call<indexmap_storage_pair const &,Args...>::type
      operator()( Args&&... args ) const & {
       static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-      return make_expr_call(*this,args...);
+      return make_expr_call(*this,std::forward<Args>(args)...);
      }
 
     template< typename... Args>
      typename clef::_result_of::make_expr_call<indexmap_storage_pair &,Args...>::type
      operator()( Args&&... args ) & {
       static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-      return make_expr_call(*this,args...);
+      return make_expr_call(*this,std::forward<Args>(args)...);
      }
 
     template< typename... Args>
      typename clef::_result_of::make_expr_call<indexmap_storage_pair,Args...>::type
      operator()( Args&&... args ) && {
       static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-      return make_expr_call(std::move(*this),args...);
+      return make_expr_call(std::move(*this),std::forward<Args>(args)...);
      }
 
-    template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
+     // ------------------------------- clef auto assign --------------------------------------------
+
+     // For simple cases, it is assign_foreach. But when f(args...) is a function from a clef expression
+     // we make a chain call like cf clef vector adapter
+     template <typename Function> struct _worker {
+      indexmap_storage_pair &A;
+      Function const &f;
+      template <typename T, typename RHS> void assign(T &x, RHS &&rhs) { x = std::forward<RHS>(rhs); }
+      template <typename Expr, int... Is, typename T> void assign(T &x, clef::make_fun_impl<Expr, Is...> &&rhs) {
+       triqs_clef_auto_assign(x, std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
+      }
+      template <typename... Args> void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
+     };
+
+     template <typename Fnt> friend void triqs_clef_auto_assign(indexmap_storage_pair &x, Fnt f) {
+      foreach(x, _worker<Fnt>{x, f});
+     }
+     // template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
 
     // ------------------------------- Iterators --------------------------------------------
     typedef iterator_adapter<true,typename IndexMapType::iterator, StorageType> const_iterator;
@@ -288,8 +326,8 @@ namespace triqs { namespace arrays {
     friend class boost::serialization::access;
     template<class Archive>
      void serialize(Archive & ar, const unsigned int version) {
-      ar & boost::serialization::make_nvp("storage",this->storage_);
-      ar & boost::serialization::make_nvp("indexmap",this->indexmap_);
+      ar & TRIQS_MAKE_NVP("storage",this->storage_);
+      ar & TRIQS_MAKE_NVP("indexmap",this->indexmap_);
      }
 
     // pretty print of the array

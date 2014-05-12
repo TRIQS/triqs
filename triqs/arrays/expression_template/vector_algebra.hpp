@@ -29,10 +29,12 @@ namespace triqs { namespace arrays {
    typedef typename std::remove_reference<L>::type L_t;
    typedef typename std::remove_reference<R>::type R_t;
    static_assert( get_rank<R_t>::value==0 || get_rank<L_t>::value==0 || get_rank<L_t>::value == get_rank<R_t>::value, "rank mismatch in array operations");
-   typedef typename std::result_of<utility::operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_type;
+   //typedef typename std::result_of<utility::operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_type;
    typedef typename std::remove_reference<typename std::result_of<combine_domain(L_t,R_t)>::type>::type domain_type;
    
    L l; R r;
+   using value_type = decltype(utility::operation<Tag>()(l(0), r(0)));
+
    template<typename LL, typename RR> vector_expr(LL && l_, RR && r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
  
    domain_type domain() const  { return combine_domain()(l,r); } 

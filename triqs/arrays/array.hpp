@@ -34,7 +34,7 @@ namespace triqs { namespace arrays {
  // ---------------------- array_view  --------------------------------
 
 #define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<Rank,Opt,TraversalOrder>, \
- storages::shared_block<ValueType, Borrowed>, Opt, TraversalOrder, IsConst, Tag::array_view > 
+ storages::shared_block<ValueType, Borrowed>, Opt, TraversalOrder, IsConst, true, Tag::array_view > 
 
  template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder, bool Borrowed, bool IsConst>
   class array_view: Tag::array_view, TRIQS_CONCEPT_TAG_NAME(MutableArray), public IMPL_TYPE {
@@ -106,7 +106,7 @@ namespace triqs { namespace arrays {
  //------------------------------- array ---------------------------------------------------
 
 #define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<Rank,Opt,TraversalOrder>, \
- storages::shared_block<ValueType>, Opt, TraversalOrder, false, Tag::array_view > 
+ storages::shared_block<ValueType>, Opt, TraversalOrder, false, false, Tag::array_view > 
 
  template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
   class array: Tag::array,  TRIQS_CONCEPT_TAG_NAME(MutableArray), public IMPL_TYPE {

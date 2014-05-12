@@ -42,7 +42,7 @@ namespace arrays {
     if (S1[u] <= 0) TRIQS_RUNTIME_ERROR << " negative strides not permitted in h5";
     S[u] = 1;
    }
-   static const bool is_complex = boost::is_complex<typename ArrayType::value_type>::value;
+   static const bool is_complex = triqs::is_complex<typename ArrayType::value_type>::value;
    return h5::dataspace_from_LS<R, is_complex>(A.indexmap().domain().lengths(), A.indexmap().domain().lengths(), S);
   }
 
@@ -82,7 +82,7 @@ namespace arrays {
     H5::DataSet ds = g.create_dataset(name, h5::data_type_file<T>(), data_space(A));
     ds.write(__get_array_data_cptr(A), h5::data_type_memory<T>(), data_space(A));
     // if complex, to be python compatible, we add the __complex__ attribute
-    if (boost::is_complex<T>::value) h5::write_string_attribute(&ds, "__complex__", "1");
+    if (triqs::is_complex<T>::value) h5::write_string_attribute(&ds, "__complex__", "1");
    }
    TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
   }
@@ -108,7 +108,7 @@ namespace arrays {
    try {
     H5::DataSet ds = g.open_dataset(name);
     H5::DataSpace dataspace = ds.getSpace();
-    static const unsigned int Rank = ArrayType::rank + (boost::is_complex<typename ArrayType::value_type>::value ? 1 : 0);
+    static const unsigned int Rank = ArrayType::rank + (triqs::is_complex<typename ArrayType::value_type>::value ? 1 : 0);
     int rank = dataspace.getSimpleExtentNdims();
     if (rank != Rank)
      TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : the array has rank = " << Rank
@@ -147,7 +147,7 @@ namespace arrays {
    V = res;
   }
 
- } // namespace h5impl
+ } // namespace h5_impl
 
  // a trait to detect if A::value_type exists and is a scalar or a string
  // used to exclude array<array<..>>
@@ -192,7 +192,88 @@ namespace arrays {
  template <typename ArrayType>
  ENABLE_IFC(is_amv_value_or_view_class<ArrayType>::value&& has_scalar_or_string_value_type<ArrayType>::value)
      h5_write(h5::group g, std::string const& name, ArrayType const& A) {
+  if (A.is_empty()) TRIQS_RUNTIME_ERROR << " Can not save an empty array into hdf5";
   h5_impl::write_array(g, name, array_const_view<typename ArrayType::value_type, ArrayType::rank>(A));
+ }
+
+ // details for generic save/read of arrays.
+ namespace h5_impl {
+  inline std::string _h5_name() { return ""; }
+
+  template <typename T0, typename... Ts> std::string _h5_name(T0 const& t0, Ts const&... ts) {
+   auto r = std::to_string(t0);
+   auto r1 = _h5_name(ts...);
+   if (r1 != "") r += "_" + r1;
+   return r;
+  }
+
+#ifndef __cpp_generic_lambdas
+  template <typename ArrayType> struct _save_lambda {
+   ArrayType const& a;
+   h5::group g;
+   template <typename... Is> void operator()(Is const&... is) const { h5_write(g, _h5_name(is...), a(is...)); }
+  };
+
+  template <typename ArrayType> struct _load_lambda {
+   ArrayType& a;
+   h5::group g;
+   template <typename... Is> void operator()(Is const&... is) { h5_read(g, _h5_name(is...), a(is...)); }
+  };
+#endif
+ } // details
+ 
+ /*
+   * Write an array or a view into an hdf5 file when type is not fundamental
+   * ArrayType The type of the array/matrix/vector, etc..
+   * g The h5 group
+   * name The name of the hdf5 array in the file/group where the stack will be stored
+   * A The array to be stored
+   * The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
+   */
+ template <typename ArrayType>
+ std::c14::enable_if_t<is_amv_value_or_view_class<ArrayType>::value && !has_scalar_or_string_value_type<ArrayType>::value>
+ h5_write(h5::group gr, std::string name, ArrayType const& a) {
+  if (a.is_empty()) TRIQS_RUNTIME_ERROR << " Can not save an empty array into hdf5";
+  auto gr2 = gr.create_group(name);
+  gr2.write_triqs_hdf5_data_scheme(a);
+  // save the shape
+  array<int, 1> sha(ArrayType::rank);
+  for (int u = 0; u < ArrayType::rank; ++u) sha(u) = a.shape()[u];
+  h5_write(gr2, "shape", sha);
+#ifndef __cpp_generic_lambdas
+  foreach(a, h5_impl::_save_lambda<ArrayType>{a, gr2});
+#else
+  foreach(a, [&](auto... is) { h5_write(gr2, h5_impl::_h5_name(is...), a(is...)); });
+#endif
+ }
+
+ /*
+   * Read an array or a view from an hdf5 file when type is not fundamental
+   * ArrayType The type of the array/matrix/vector, etc..
+   * g The h5 group
+   * name The name of the hdf5 array in the file/group where the stack will be stored
+   * A The array to be stored
+   * The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
+   */
+ template <typename ArrayType>
+ std::c14::enable_if_t<is_amv_value_or_view_class<ArrayType>::value && !has_scalar_or_string_value_type<ArrayType>::value>
+ h5_read(h5::group gr, std::string name, ArrayType& a) {
+  static_assert(!std::is_const<ArrayType>::value, "Can not read in const object");
+  auto gr2 = gr.open_group(name);
+  // TODO checking scheme...
+  // load the shape
+  auto sha2 = a.shape();
+  array<int, 1> sha;
+  h5_read(gr2, "shape", sha);
+  if (first_dim(sha) != sha2.size())
+   TRIQS_RUNTIME_ERROR << " array<array<...>> load : rank mismatch. Expected " << sha2.size()<< " Got " << first_dim(sha);
+  for (int u = 0; u < sha2.size(); ++u) sha2[u] = sha(u);
+  if (a.shape() != sha2) a.resize(sha2);
+#ifndef __cpp_generic_lambdas
+  foreach(a, h5_impl::_load_lambda<ArrayType>{a, gr2});
+#else
+  foreach(a, [&](auto... is) { h5_read(gr2, h5_impl::_h5_name(is...), a(is...)); });
+#endif
  }
 }
 }

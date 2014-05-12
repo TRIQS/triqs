@@ -50,7 +50,7 @@ struct expression_template {
 
   MM B(A), C(A), D(A);
 
-  auto ex =  B + 3* C+ D;
+  //auto ex =  B + 3* C+ D;
   for (int u =0; u<5000; ++u)
     A = B + 3*C + D;
  }
@@ -84,7 +84,7 @@ struct expression_template_big {
 
   MM B(A), C(A), D(A);
 
-  auto ex =  B + 3* C+ D;
+  //auto ex =  B + 3* C+ D;
   for (int u =0; u<500; ++u)
     A = B + 3*C + D;
  }

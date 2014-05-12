@@ -23,6 +23,7 @@
 #include <triqs/utility/std_vector_expr_template.hpp>
 #include <triqs/utility/factory.hpp>
 #include <triqs/utility/tuple_tools.hpp>
+#include <triqs/utility/c14.hpp>
 #include <triqs/arrays/h5.hpp>
 #include <vector>
 #include "./tools.hpp"
@@ -124,12 +125,11 @@ namespace gfs {
   using data_regular_t = typename data_proxy_t::storage_t;
   using data_view_t = typename data_proxy_t::storage_view_t;
   using data_const_view_t = typename data_proxy_t::storage_const_view_t;
-  using data_t = typename std::conditional<IsView, typename std::conditional<IsConst, data_const_view_t, data_view_t>::type,
-                                           data_regular_t>::type;
+  using data_t = std14::conditional_t<IsView, std14::conditional_t<IsConst, data_const_view_t, data_view_t>, data_regular_t>;
 
   using singularity_non_view_t = typename gfs_implementation::singularity<Variable, Target, Opt>::type;
   using singularity_view_t = typename view_type_if_exists_else_type<singularity_non_view_t>::type;
-  using singularity_t = typename std::conditional<IsView, singularity_view_t, singularity_non_view_t>::type;
+  using singularity_t = std14::conditional_t<IsView, singularity_view_t, singularity_non_view_t>;
 
   mesh_t const &mesh() const { return _mesh; }
   domain_t const &domain() const { return _mesh.domain(); }
@@ -202,13 +202,12 @@ namespace gfs {
   /// Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
   /// there is at least one lazy argument ...
   template <typename... Args> // match any argument list, picking out the first type : () is not permitted
-  typename std::add_const<typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
+  typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
       (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value ||
           ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
       ,
       std::result_of<evaluator_t(gf_impl *, Args...)> // what is the result type of call
       >::type                                         // end of lazy_disable_if
-                          >::type                     // end of add_Const
   operator()(Args &&... args) const {
    return _evaluator(this, std::forward<Args>(args)...);
   }
@@ -293,7 +292,7 @@ namespace gfs {
    return "Gf" + gfs_implementation::h5_name<Variable, Target, Opt>::invoke();
   }
 
-  friend class gfs_implementation::h5_rw<Variable, Target, Opt>;
+  friend struct gfs_implementation::h5_rw<Variable, Target, Opt>;
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_impl const &g) {
@@ -317,10 +316,10 @@ namespace gfs {
   //-----------------------------  BOOST Serialization -----------------------------
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   ar &boost::serialization::make_nvp("data", _data);
-   ar &boost::serialization::make_nvp("singularity", _singularity);
-   ar &boost::serialization::make_nvp("mesh", _mesh);
-   ar &boost::serialization::make_nvp("symmetry", _symmetry);
+   ar &TRIQS_MAKE_NVP("data", _data);
+   ar &TRIQS_MAKE_NVP("singularity", _singularity);
+   ar &TRIQS_MAKE_NVP("mesh", _mesh);
+   ar &TRIQS_MAKE_NVP("symmetry", _symmetry);
   }
 
   /// print
@@ -346,22 +345,20 @@ namespace gfs {
   triqs_clef_auto_assign(g, rhs);
  }
 
- template <bool B, typename G, typename RHS>
- void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, RHS &&rhs, std::integral_constant<bool, B>) {
+ template <typename G, typename RHS> void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, RHS &&rhs) {
   std::forward<G>(g) = std::forward<RHS>(rhs);
  }
 
- template <typename G, bool B, typename Expr, int... Is>
- void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, clef::make_fun_impl<Expr, Is...> &&rhs, std::integral_constant<bool, B>) {
-  triqs_clef_auto_assign_impl(std::forward<G>(g), std::forward<clef::make_fun_impl<Expr, Is...>>(rhs),
-                              std::integral_constant<bool, B>());
+ template <typename G, typename Expr, int... Is>
+ void triqs_gf_clef_auto_assign_impl_aux_assign(G &&g, clef::make_fun_impl<Expr, Is...> &&rhs) {
+  triqs_clef_auto_assign(std::forward<G>(g), std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
  }
 
  template <typename RHS, typename Variable, typename Target, typename Opt, bool IsView>
  void triqs_clef_auto_assign_impl(gf_impl<Variable, Target, Opt, IsView, false> &g, RHS const &rhs,
                                   std::integral_constant<bool, false>) {
   for (auto const &w : g.mesh()) {
-   triqs_gf_clef_auto_assign_impl_aux_assign(g[w], rhs(w), std::integral_constant<bool, false>());
+   triqs_gf_clef_auto_assign_impl_aux_assign(g[w], rhs(w));
    //(*this)[w] = rhs(w);
   }
  }
@@ -370,8 +367,7 @@ namespace gfs {
  void triqs_clef_auto_assign_impl(gf_impl<Variable, Target, Opt, IsView, false> &g, RHS const &rhs,
                                   std::integral_constant<bool, true>) {
   for (auto const &w : g.mesh()) {
-   triqs_gf_clef_auto_assign_impl_aux_assign(g[w], triqs::tuple::apply(rhs, w.components_tuple()),
-                                             std::integral_constant<bool, true>());
+   triqs_gf_clef_auto_assign_impl_aux_assign(g[w], triqs::tuple::apply(rhs, w.components_tuple()));
    //(*this)[w] = triqs::tuple::apply(rhs, w.components_tuple());
   }
  }
@@ -431,6 +427,15 @@ namespace gfs {
   }
  };
 
+ // in most expression, the gf_impl version is enough.
+ // But in chained clef expression, A(i_)(om_) where A is an array of gf
+ // we need to call it with the gf, not gf_impl (or the template resolution find the deleted funciton in clef).
+ // Another fix is to make gf, gf_view in the expression tree, but this requires using CRPT in gf_impl...
+ template <typename RHS, typename Variable, typename Target, typename Opt>
+ void triqs_clef_auto_assign(gf<Variable, Target, Opt> &g, RHS const &rhs) {
+  triqs_clef_auto_assign( static_cast<gf_impl<Variable, Target, Opt, false, false>&>(g), rhs);
+ }
+ 
  // --------------------------The const View class of GF -------------------------------------------------------
 
  template <typename Variable, typename Target, typename Opt>

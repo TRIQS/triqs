@@ -33,3 +33,7 @@ First, run your script (``my_test.py``): ::
 Then, analyze the results (stored in `my_test.py.prof`) with ``google-pprof``: ::
 
    google-pprof --text my_test.py my_test.py.prof | less 
+
+Alternatively, to view the results more graphically, run : ::
+
+   google-pprof --web my_test.py my_test.py.prof
