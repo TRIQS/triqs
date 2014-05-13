@@ -211,7 +211,7 @@ namespace statistics {
 
  template <typename T>
  auto eval(observable<T> const& obs, bin_and_repl_by_jack info)
-     DECL_AND_RETURN(make_jackknife(make_binned_series(obs), info.bin_size));
+     DECL_AND_RETURN(make_jackknife(make_binned_series(obs, info.bin_size)));
 
  template <typename TS> auto eval(TS const& obs, int i) -> std::c14::enable_if_t<is_time_series<TS>::value, decltype(obs[i])> {
   return obs[i];
@@ -320,18 +320,19 @@ namespace statistics {
  }
 
  ///
- template <typename TimeSeries> typename TimeSeries::value_type empirical_variance(TimeSeries const& t) {
+ template <typename TimeSeries> double empirical_variance(TimeSeries const& t) {
   auto si = t.size();
-  if (si == 0) return typename TimeSeries::value_type{};
+  if (si == 0) return 0.0;//typename TimeSeries::value_type{};
   auto avg = t[0];
-  decltype(avg) sum = t[0] * t[0]; // also valid if t[0] is an array e.g., i.e. no trivial contructor...
+  using std::abs;
+  double sum = abs(t[0] * t[0]); // also valid if t[0] is an array e.g., i.e. no trivial contructor...
   for (int i = 1; i < si; ++i) {
-   sum += t[i] * t[i];
+   sum += abs(t[i] * t[i]);
    avg += t[i];
   }
   avg /= t.size();
   sum /= t.size();
-  return sum - avg * avg;
+  return sum - abs(avg * avg);
  }
 
 
@@ -427,8 +428,7 @@ namespace statistics {
 
   auto t_cor = [&](int b) {
    auto A_binned = make_binned_series(make_immutable_time_series(A), b);
-   using std::abs;
-   double var = abs(empirical_variance(A_binned));
+   double var = empirical_variance(A_binned);
    return 0.5 * (b * var / intrinsic_variance - 1.);
   };
 
@@ -480,8 +480,7 @@ namespace statistics {
   auto Ab=make_binned_series(A,2);
 
   auto t_cor = [&Ab](int bin_size, double var1) {
-   using std::abs;
-   double var = abs(empirical_variance(Ab));
+   double var = empirical_variance(Ab);
    return .5 * var / var1 * bin_size;
   };
 
