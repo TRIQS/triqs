@@ -93,6 +93,7 @@ namespace lattice {
  std::pair<array<double, 1>, array<double, 1>> dos_patch(tight_binding const& TB, const array<double, 2>& triangles, int neps,
                                                          int ndiv);
  array<double, 2> energies_on_bz_path(tight_binding const& TB, k_t const& K1, k_t const& K2, int n_pts);
+ array<dcomplex, 3> energy_matrix_on_bz_path(tight_binding const& TB, k_t const& K1, k_t const& K2, int n_pts);
  array<double, 2> energies_on_bz_grid(tight_binding const& TB, int n_pts);
 }
 }

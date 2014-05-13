@@ -73,6 +73,7 @@ namespace gfs {
 
   /// Flatten the index in the positive linear index for memory storage (almost trivial here).
   long index_to_linear(index_t ind) const { return ind - first_index(); }
+  index_t linear_to_index(long lind) const { return lind + first_index(); }
 
   /// Is the mesh only for positive omega_n (G(tau) real))
   bool positive_only() const { return _positive_only;}
