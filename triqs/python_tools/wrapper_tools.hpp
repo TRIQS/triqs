@@ -1,6 +1,10 @@
 #pragma once
 #include <Python.h>
 #include "structmember.h"
+#include <string>
+#include <complex>
+#include <vector>
+#include <triqs/utility/exceptions.hpp>
 
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
 #pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
@@ -48,11 +52,12 @@ class pyref {
  static pyref string(std::string const &s) { return PyString_FromString(s.c_str());} 
 };
 
- pyref borrowed(PyObject * ob) { Py_XINCREF(ob); return {ob};}
+ inline pyref borrowed(PyObject * ob) { Py_XINCREF(ob); return {ob};}
 
 //---------------------  py_converters -----------------------------
 
 template<typename T> struct py_converter {
+ static void ** init();
  static PyObject * c2py(T const & x);
  static T py2c(PyObject * ob);
  static bool is_convertible(PyObject * ob, bool raise_exception);
@@ -60,12 +65,12 @@ template<typename T> struct py_converter {
 
 // We only use these functions in the code, not converter
 // TODO : Does c2py return NULL in failure ? Or is it undefined...
-template <typename T> PyObject *convert_to_python(T &&x) {
+template <typename T> static PyObject *convert_to_python(T &&x) {
  return py_converter<typename std::decay<T>::type>::c2py(std::forward<T>(x));
 }
 // can convert_from_python raise a triqs exception ? NO
-template<typename T> auto convert_from_python(PyObject * ob) DECL_AND_RETURN(py_converter<T>::py2c(ob));
-template <typename T> bool convertible_from_python(PyObject *ob, bool raise_exception) {
+template<typename T> static auto convert_from_python(PyObject * ob) -> decltype(py_converter<T>::py2c(ob)) { return py_converter<T>::py2c(ob);}
+template <typename T> static bool convertible_from_python(PyObject *ob, bool raise_exception) {
  return py_converter<T>::is_convertible(ob, raise_exception);
 }
 
@@ -133,7 +138,6 @@ template <typename T> static int converter_for_parser(PyObject *ob, T *p) {
  }
  static bool is_convertible(PyObject *ob, bool raise_exception) { return true;}
 };
-
 
 // -----------------------------------
 //       basic types 
@@ -216,6 +220,16 @@ template <> struct py_converter<std::string> {
  }
 };
 
+template <> struct py_converter<const char *> {
+ static PyObject *c2py(const char *x) { return PyString_FromString(x); }
+ static const char * py2c(PyObject *ob) { return PyString_AsString(ob); }
+ static bool is_convertible(PyObject *ob, bool raise_exception) {
+  if (PyString_Check(ob)) return true;
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to string");}
+  return false;
+ }
+};
+
 // ---  h5 group of h5py into a triqs::h5 group
 
 template <> struct py_converter<triqs::h5::group> {
@@ -282,9 +296,6 @@ template <typename T> struct py_converter<std::vector<T>> {
  }
 };
 
-// in CPP file ?
-pyref py_converter<triqs::h5::group>::group_type;
-
 // --- mini_vector<T,N>---
 // via std::vector
 template <typename T, int N> struct py_converter<triqs::utility::mini_vector<T,N>> {
@@ -305,7 +316,7 @@ template <typename T, int N> struct py_converter<triqs::utility::mini_vector<T,N
 template <typename ArrayType> struct py_converter_array {
  static PyObject *c2py(ArrayType const &x) { return x.to_python(); }
  static ArrayType py2c(PyObject *ob) {
-  return ArrayType {ob};
+  return ArrayType (ob);
  }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   try {
@@ -400,12 +411,6 @@ template <> struct _make_index_seq<4> { using type = index_seq<0, 1, 2, 3>; };
 template <> struct _make_index_seq<5> { using type = index_seq<0, 1, 2, 3, 4>; };
 
 template <int N> struct make_format { static const char * value;};
-template <> const char * make_format<0>::value = "";
-template <> const char * make_format<1>::value = "O&";
-template <> const char * make_format<2>::value = "O&O&";
-template <> const char * make_format<3>::value = "O&O&O&";
-template <> const char * make_format<4>::value = "O&O&O&O&";
-template <> const char * make_format<5>::value = "O&O&O&O&O&";
 
 template <typename R, typename... T> struct py_converter<std::function<R(T...)>> {
 

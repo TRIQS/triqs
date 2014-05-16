@@ -6,21 +6,30 @@ include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 # ModuleName = the python name of the module 
 # ModuleDest = path in the pytriqs tree [ FOR INSTALLATION ONLY] IMPROVE MAKE THIS OPTIONAL (for test) 
 
+#EXECUTE_PROCESS(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/pytriqs/converters/)
+include_directories( ${CMAKE_BINARY_DIR}) 
+
 macro (triqs_python_extension ModuleName)
- message(STATUS "TRIQS: Preparing extension module ${ModuleName} with the interpreter ${TRIQS_PYTHON_INTERPRETER} ")
+ message(STATUS "Preparing extension module ${ModuleName}")
 
  SET(wrap_name  ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_wrap.cpp)
+ SET(converter_name  ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_converter.cpp)
 
  # Adjust pythonpath so that pytriqs is visible and the wrap_generator too...
  # pytriqs needed since we import modules with pure python method to extract the doc.. 
- add_custom_command(OUTPUT ${wrap_name} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py 
-  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/pytriqs/wrap_generator:${CMAKE_BINARY_DIR}/ ${PYTHON_INTERPRETER} ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py ${CMAKE_SOURCE_DIR}/pytriqs/wrap_generator/wrapper.mako.cpp ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_wrap.cpp )
+ add_custom_command(OUTPUT ${wrap_name} ${converter_name} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py 
+  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/pytriqs/wrap_generator:${CMAKE_BINARY_DIR}/ ${PYTHON_INTERPRETER} ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py ${CMAKE_SOURCE_DIR}/pytriqs/wrap_generator/wrapper.mako.cpp ${wrap_name} ${CMAKE_SOURCE_DIR}/pytriqs/wrap_generator/py_converter_wrapper.mako.hpp ${converter_name} )
 
- add_custom_target(python_wrap_${ModuleName} ALL DEPENDS ${wrap_name})
- add_dependencies(python_wrap_${ModuleName} py_copy)
+ set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_CPP_LIST "${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_converter.cpp")
+ set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_TARGETS "python_wrap_${ModuleName}")
+ 
+ add_custom_target(python_wrap_${ModuleName} ALL DEPENDS ${wrap_name} ${converter_name})
+ #//add_custom_target(${ModuleName}_converter.cpp ALL DEPENDS ${wrap_name})
+
+ add_dependencies(python_wrap_${ModuleName} py_copy ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py )
 
  add_library(${ModuleName} MODULE ${wrap_name})
- set_target_properties(${ModuleName}  PROPERTIES PREFIX "") #eliminate the lib in front of the module name 
+ set_target_properties(${ModuleName} PROPERTIES PREFIX "") #eliminate the lib in front of the module name 
  target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
  
  if (${ARGN} MATCHES "")

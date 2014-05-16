@@ -1,6 +1,7 @@
 from wrap_generator import *
 
 module = module_(full_name = "pytriqs.gf.local.gf", doc = "Local Green functions ...")
+module.add_include("<typeindex>")
 module.add_include("<triqs/gfs.hpp>")
 module.add_include("<triqs/gfs/local/functions.hpp>")
 module.add_include("<triqs/gfs/local/pade.hpp>")
@@ -302,8 +303,12 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False) :
                  signature = "void()",
                  doc = "Put the Green function to 0")
 
-   # Pure python methods
+    # Pure python methods
     g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%c_tag, py_name = "_plot_")
+
+    g.add_method(py_name = "_as_C_pointer", 
+                 calling_pattern = 'auto result = PyCapsule_New(new std::pair<void *,std::type_index>(&self_c,typeid(self_c)),NULL,NULL)',
+                 signature = "PyObject*()")
 
     return g
 
@@ -391,4 +396,5 @@ module.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<re
 
 if __name__ == '__main__' :
    module.generate_code(mako_template = sys.argv[1], wrap_file = sys.argv[2])
-
+   module.generate_py_converter_header(mako_template = sys.argv[3], wrap_file = sys.argv[4])
+  

@@ -126,28 +126,28 @@ struct A {
 };
 
 /// some function using A
-void print_a(A const & a) { 
+inline void print_a(A const & a) { 
     std::cout << "my a is " << a.x << std::endl;
 }
 
 /// function with an error
-void print_err(A const &a) { 
+inline void print_err(A const &a) { 
     TRIQS_RUNTIME_ERROR << "hum does not look good" << a;
 }
 
 /// DOC make_vector...
-std::vector<int> make_vector(int size) {
+inline std::vector<int> make_vector(int size) {
   std::vector<int> r(size, 0);
   for (int i = 0; i < size; ++i)
     r[i] = i;
   return r;
 }
 
-std::vector<std::vector<int> > make_vector2(int size) {
+inline std::vector<std::vector<int> > make_vector2(int size) {
   return { make_vector(size), make_vector(size + 1) };
 }
 
-std::vector<int> vector_x2(std::vector<int> const &v) {
+inline std::vector<int> vector_x2(std::vector<int> const &v) {
   auto r = v;
   for (auto &x : r)
     x *= 2;
@@ -159,35 +159,35 @@ using triqs::arrays::array;
 using triqs::arrays::range;
 using namespace triqs::arrays;
 
-void iter_on_range(range r){ 
+inline void iter_on_range(range r){ 
  foreach(r, [](int i) { std::cout  << i << std::endl;});
 }
 
-matrix<double> make_matrix(int size) { return make_unit_matrix<double>(size); }
+inline matrix<double> make_matrix(int size) { return make_unit_matrix<double>(size); }
 
-void print_matrix(matrix<double> const &M) {
+inline void print_matrix(matrix<double> const &M) {
   // std::cout  << M <<std::endl;
 }
 
 
-std::function<int(int,int)>  make_fnt_ii() {
+inline std::function<int(int,int)>  make_fnt_ii() {
  return [](int i, int j) { return i + 2*j;}; 
 }
 
-std::function<int(int,int,double)>  make_fnt_iid() {
+inline std::function<int(int,int,double)>  make_fnt_iid() {
  return [](int i, int j, double a) { return a+ i + 2*j;}; 
 }
 
 
-void use_fnt_ii(std::function<int(int,int)> f) { 
+inline void use_fnt_ii(std::function<int(int,int)> f) { 
  std::cout  << "use_fnt ii \n"<< f(1,2) << std::endl;
 }
 
-void use_fnt_iid(std::function<int(int,int,double)> f) { 
+inline void use_fnt_iid(std::function<int(int,int,double)> f) { 
  std::cout  << "use_fnt iid \n"<< f(1,2,4.5) << std::endl;
 }
 
 
-std::function<void(int,int)>  make_fnt_void() {
+inline std::function<void(int,int)>  make_fnt_void() {
  return [](int i, int j) { std::cout  << " I am a C++ lambda : "<<i <<" "<< j << std::endl;}; 
 }

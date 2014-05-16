@@ -2,7 +2,7 @@ from wrap_generator import *
 
 # The module
 module = module_(full_name = "pytriqs.wrap_test.my_module", doc = " Doc of my_module ")
-module.add_include("./a.hpp") 
+module.add_include("<triqs/../pytriqs/wrap_test/a.hpp>") 
 module.add_include("<triqs/arrays.hpp>")
 
 # one class
@@ -101,4 +101,5 @@ module.add_python_function(f1)
 
 if __name__ == '__main__' : 
    module.generate_code(mako_template = sys.argv[1], wrap_file = sys.argv[2])
+   module.generate_py_converter_header(mako_template = sys.argv[3], wrap_file = sys.argv[4])
 

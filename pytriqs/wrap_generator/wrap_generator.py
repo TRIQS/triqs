@@ -66,6 +66,8 @@ class cfunction :
           self.rtype = kw.pop("rtype", None)
           args = kw.pop('args',())
       for a in args: # put back the default if there is none
+        if a[0] == 'const' : a = [' '.join(a[:2])] + list(a[2:]) 
+        if a[1] == '*' : a = [' '.join(a[:2])] + list(a[2:]) 
         if len(a) == 2 : (t,n),d = a,None
         elif len(a) == 3 : t,n,d = a
         else : raise RuntimeError, "Syntax error in overload: args = %s"%args
@@ -265,15 +267,17 @@ class class_ :
       # expect a tuple : "algebra", "scalar1", "scalar2", etc...
       self.number_protocol = {}
       if arithmetic :
+          add =  arithmetic[0] in ("algebra", "abelian_group", "vector_space", "only_add")
           abelian_group = arithmetic[0] in ("algebra", "abelian_group", "vector_space")
           vector_space = arithmetic[0] in ("algebra", "vector_space")
           algebra = arithmetic[0] in ("algebra")
-          if abelian_group :
+          if add :
             # add
             add = pyfunction(py_name ="__add__")
             add.arity = 2
             add.add_overload (calling_pattern = "+", args = [(self.c_type,'x'), (self.c_type,'y')], rtype = self.c_type)
             self.number_protocol['add'] = add
+          if abelian_group :
             #sub
             sub = pyfunction(py_name ="__sub__")
             sub.arity = 2
@@ -424,7 +428,6 @@ class module_ :
        Representation of a module
        Data :
         - name : name of the module
-        - imported_modules : name of the modules to import (with their wrapped type converters)
         - doc : the doc string.
         - classes : dict : string -> class_. Key is the Python type
         - c_types : dict : string -> string. Correspondance Python type -> C++ type
@@ -433,7 +436,7 @@ class module_ :
     """
     wrapped_types = {}
 
-    def __init__(self, full_name,  imported_modules = (), doc = '') : 
+    def __init__(self, full_name,  doc = '') : 
       self.full_name = full_name
       self.name = full_name.rsplit('.',1)[-1]
       self.doc = doc 
@@ -441,17 +444,11 @@ class module_ :
       self.functions = {}
       self.include_list = []
       self.wrapped_types_by_me = {}
-      self.imported_wrapped_types = {}
       self.enums = []
       self.using =[]
       self.python_functions = {}
       self.hidden_python_functions = {}
      
-      assert type(imported_modules) in [type(()), type([])]
-      for m_desc in imported_modules:
-        m = importlib.import_module("%s_desc"%m_desc)
-        self.imported_wrapped_types[m_desc] = m.module.wrapped_types
- 
     def add_class(self, cls):
         if cls.py_type in self.classes : raise IndexError, "The class %s already exists"%cls.py_type
         self.classes[cls.py_type] = cls
@@ -510,3 +507,15 @@ class module_ :
         rendered = tpl.render(module=self, regular_type_if_view_else_type= regular_type_if_view_else_type, is_type_a_view = is_type_a_view)
         with open(wrap_file,'w') as f:
            f.write(rendered)
+
+    def generate_py_converter_header(self, mako_template, wrap_file) :
+        self.prepare_for_generation()
+        tpl = Template(filename=mako_template)
+        rendered = tpl.render(module=self)
+        with open(wrap_file,'w') as f:
+           f.write(rendered)
+
+    #def generate_code_and_header(self, arglist) : 
+    #    self.generate_code(mako_template = arglist.argv[0], wrap_file = arglist.argv[1])
+    #    self.generate_py_converter_header(mako_template = arglist.argv[2], wrap_file = arglist.argv[3])
+ 

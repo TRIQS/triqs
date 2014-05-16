@@ -27,7 +27,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utility/mpi.py.in ${CMAKE_CURRENT_BIN
 
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
 
+# All subdirs
 add_all_subdirectories_with_cmakelist()
 
+# 
 add_custom_target(wrap_clean COMMAND find ${CMAKE_BINARY_DIR} -name \"*.cpp\" |xargs rm)
 

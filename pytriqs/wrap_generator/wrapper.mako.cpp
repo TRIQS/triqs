@@ -23,32 +23,6 @@ using namespace triqs::py_tools;
 static PyObject * _module_hidden_python_function = NULL;
 %endif
 
-//--------------------- Reconnect the types wrapped in exported modules -----------------------------
-
-%for m, t_dic in module.imported_wrapped_types.items() :
-
-static void ** _imported_wrapped_convert_fnt_from_${m}; // initialized in init function
-
- %for n,t in enumerate(t_dic) :
-
-namespace triqs { namespace py_tools { 
-  
-template<> struct py_converter<${t}> {
- static PyObject * c2py(${t} const & x){
-  return ((PyObject * (*)(${t} const &)) _imported_wrapped_convert_fnt_from_${m}[3*${n}])(x);
- }
- static ${t}& py2c(PyObject * ob){
-  return ((${t}& (*)(PyObject *)) _imported_wrapped_convert_fnt_from_${m}[3*${n}+1])(ob);
- }
- static bool is_convertible(PyObject *ob, bool raise_exception) {
-  return ((bool (*)(PyObject *,bool)) _imported_wrapped_convert_fnt_from_${m}[3*${n}+2])(ob,raise_exception);
- }
-};
-
-}}
- %endfor
-%endfor
-
 // We use the order, in the following order (which is necessary for compilation : we need the converters in the implementations)
 // - function/method declaration
 // - implement type, and all tables
@@ -1006,15 +980,9 @@ init${module.name}(void)
      %endfor
 
     /* Create a Capsule containing the API pointer array's address */
-    PyObject *c_api_object = PyCapsule_New((void *)_exported_wrapped_convert_fnt, "${module.name}._exported_wrapper_convert_fnt", NULL);
+    PyObject *c_api_object = PyCapsule_New((void *)_exported_wrapped_convert_fnt, "${module.full_name}._exported_wrapper_convert_fnt", NULL);
     if (c_api_object != NULL) PyModule_AddObject(m, "_exported_wrapper_convert_fnt", c_api_object);
 %endif
-
-    // Now import wrappers from other modules, if any
-   %for m in module.imported_wrapped_types :
-    _imported_wrapped_convert_fnt_from_${m} = (void **)PyCapsule_Import("${m}._exported_wrapper_convert_fnt", 0);
-    //if (_imported_wrapped_convert_fnt_from_${m} ==NULL) // Nothing, the interpreter has raised an error already.
-   %endfor
 
    %if len(module.python_functions) + len(module.hidden_python_functions) > 0 : 
      

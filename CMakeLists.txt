@@ -335,9 +335,9 @@ enable_testing()
 option(Build_Documentation "Build the documentation ?" OFF)
 option(Build_PDF_Documentation "Build the pdf documentation ?" OFF)
 
-#------------------------
+#------------------------------------------------------
 # link libs for shared libs or for pytriqs 
-#------------------------
+#------------------------------------------------------
 
 set(TRIQS_LINK_LIBS 
  ${TRIQS_LIBRARY_PYTHON}
@@ -351,15 +351,29 @@ set(TRIQS_LINK_LIBS
 # remove this dep to C++
 include_directories(${TRIQS_SOURCE_DIR})
 
-#------------------------
-# General triqs libraries
-#------------------------
+#--------------------------------
+# General C++ compilation flags
+#--------------------------------
 
-message( STATUS "TRIQS_CXX_DEFINITIONS = ${TRIQS_CXX_DEFINITIONS}")
+#message( STATUS "TRIQS_CXX_DEFINITIONS = ${TRIQS_CXX_DEFINITIONS}")
 
 # needed for utility/first_include.hpp that includes either the triqs_config.h installed in the proper directory
 # (Case of an installed lib) or the triqs_config.h just generated in the built dir (when compiling the lib itself).
 add_definitions ( ${TRIQS_CXX_DEFINITIONS} -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config)
+
+#---------------------------------------------------------------------
+# pytriqs modules : MUST be before TRIQS, to have the py_converters
+#---------------------------------------------------------------------
+
+if (PythonSupport)
+ message( STATUS "-------- Preparing python extension modules  -------------")
+ add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
+endif (PythonSupport)
+
+#------------------------
+# General triqs libraries
+#------------------------
+
 add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -367,23 +381,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 #------------------------
-# Applications
-#------------------------
-
-#add_subdirectory(${TRIQS_SOURCE_DIR}/applications )
-
-#------------------------
-# pytriqs modules
-#------------------------
-if (PythonSupport)
- message( STATUS "-------- Preparing python modules  -------------")
- add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
-endif (PythonSupport)
-
-#------------------------
 # tests
 #------------------------
-## Remove the test from the build ?
+
 option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
 if (Build_Triqs_General_Tools_Test)
  message( STATUS "-------- Preparing tests  -------------")
