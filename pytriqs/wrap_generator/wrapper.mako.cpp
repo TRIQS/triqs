@@ -133,7 +133,7 @@ static PyObject * ${c.py_type}_${op_name} (PyObject* v, PyObject *w);
 // start class : ${c.py_type}
 // ----------------------------
 
-//--------------------- define all the types and the py_converters -----------------------------
+//--------------------- define all the types and the converter functions -----------------------------
 
 
  // the python type
@@ -354,7 +354,7 @@ static PyTypeObject ${c.py_type}Type = {
 };
 
 
-//--------------------- py_converter of the class c -----------------------------
+//--------------------- converters for the class c -----------------------------
 
 namespace triqs { namespace py_tools { 
 
@@ -370,14 +370,15 @@ template <> struct py_converter<${c.c_type}> {
  }
  
  static ${c.c_type} & py2c(PyObject * ob){ return *(((${c.py_type}*)ob)->_c);}
-
+ 
  static bool is_convertible(PyObject *ob, bool raise_exception){  
- if (PyObject_TypeCheck(ob, & ${c.py_type}Type)) return true;
- if (raise_exception) PyErr_SetString(PyExc_TypeError, "Python object is not a ${c.py_type}");
- return false;
-}
+  if (PyObject_TypeCheck(ob, & ${c.py_type}Type)) return true;
+  if (raise_exception) PyErr_SetString(PyExc_TypeError, "Python object is not a ${c.py_type}");
+  return false;
+ }
 };
 
+// TO BE MOVED IN GENERAL HPP
 %if c.implement_regular_type_converter : 
  // ${c.py_type} is wrapping a view, we are also implementing the converter of the associated regular type
  template<> struct py_converter<${c.regular_type}> {
@@ -450,23 +451,22 @@ template <> struct py_converter<${en.c_name}> {
 // return 1 (success), 0 (failure). If fails, also set the python exception which will be analyzed later.
 template<typename T>
  static int converter_for_parser_non_wrapped_type(PyObject * ob, T * p) {
-  if (!py_converter<T>::is_convertible(ob,true)) return 0;
-  *p = py_converter<T>::py2c(ob); 
+  if (!convertible_from_python<T>(ob,true)) return 0;
+  *p = convert_from_python<T>(ob); 
   return 1;
  }
 template<typename T>
  static int converter_for_parser_wrapped_type(PyObject * ob, T ** p) {
-  if (!py_converter<T>::is_convertible(ob,true)) return 0;
+  if (!convertible_from_python<T>(ob,true)) return 0;
   *p = &(convert_from_python<T>(ob)); // wrapped types are manipulated by pointers.
   return 1;
  }
 template<typename T>
  static int converter_for_parser_view_type(PyObject * ob, T * p) {
-  if (!py_converter<T>::is_convertible(ob,true)) return 0;
+  if (!convertible_from_python<T>(ob,true)) return 0;
   p->rebind(convert_from_python<T>(ob));
   return 1;
  }
-
 
 //--------------------- define all functions/methods with args, kwds, including constructors -----------------------------
 
@@ -630,11 +630,10 @@ static PyObject * ${c.py_type}__get_member_${m.py_name} (PyObject *self, void *c
 %if not m.read_only:
 static int ${c.py_type}__set_member_${m.py_name} (PyObject *self, PyObject *value, void *closure) {
   if (value == NULL) { PyErr_SetString(PyExc_TypeError, "Cannot delete the attribute ${m.py_name}"); return -1; }
-  using conv = py_converter<${m.c_type}>;
-  if (!conv::is_convertible(value, true)) return -1;// exception is set by the converter
+  if (!convertible_from_python<${m.c_type}>(value, true)) return -1;// exception is set by the converter
   auto & self_c = convert_from_python<${c.c_type}>(self);
   try {
-   self_c.${m.c_name} = conv::py2c(value);
+   self_c.${m.c_name} = convert_from_python<${m.c_type}>(value);
   }
   CATCH_AND_RETURN("in setting the attribute '${m.py_name}'",-1);
   return 0;
@@ -661,11 +660,10 @@ static PyObject * ${c.py_type}__get_prop_${p.name} (PyObject *self, void *closur
 %if p.setter :
 static int ${c.py_type}__set_prop_${p.name} (PyObject *self, PyObject *value, void *closure) {
   if (value == NULL) { PyErr_SetString(PyExc_AttributeError, "Cannot delete the attribute ${p.name}"); return -1; }
-  using conv = py_converter<${p.setter.args[0][0]}>;
-  if (!conv::is_convertible(value, true)) return -1;
+  if (!convertible_from_python<${p.setter.args[0][0]}>(value, true)) return -1;
   auto & self_c = convert_from_python<${c.c_type}>(self);
   try {
-   self_c.${p.setter.c_name} (conv::py2c(value));
+   self_c.${p.setter.c_name} (convert_from_python<${p.setter.args[0][0]}>(value));
   }
   CATCH_AND_RETURN("in setting the attribute '${m.py_name}'",-1);
   return 0;
@@ -849,7 +847,7 @@ static PyObject * ${c.py_type}_${op_name} (PyObject* v, PyObject *w){
  %endif
 
   %for overload in op.overloads :
-  if (py_converter<${overload.args[0][0]}>::is_convertible(v,false) && py_converter<${overload.args[1][0]}>::is_convertible(w,false)) {
+  if (convertible_from_python<${overload.args[0][0]}>(v,false) && convertible_from_python<${overload.args[1][0]}>(w,false)) {
    try {
     ${regular_type_if_view_else_type(overload.rtype)} r = convert_from_python<${overload.args[0][0]}>(v) ${overload.calling_pattern()} convert_from_python<${overload.args[1][0]}>(w);
     return convert_to_python(std::move(r)); // in two steps to force type for expression templates in C++
