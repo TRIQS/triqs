@@ -7,7 +7,7 @@
 #include <triqs/utility/exceptions.hpp>
 
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
-#pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 
 // I can use the trace in triqs::exception
 #define CATCH_AND_RETURN(MESS,RET)\
