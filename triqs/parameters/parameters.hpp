@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./_field.hpp"
+
 namespace triqs {
 namespace params {
 
@@ -100,7 +101,6 @@ namespace params {
   p1.update(p2);
   return p1;
  }
-
  // can only be implemented after complete declaration of parameters
  template <typename... T> _field& _field::add_field(T&&... x) {
   auto* pp = dynamic_cast<_data_impl<parameters>*>(p.get());
@@ -108,7 +108,6 @@ namespace params {
   pp->x.add_field(std::forward<T>(x)...);
   return *this;
  }
-
-
 }
 }
+#include <pytriqs/converters/parameters.hpp>

@@ -1,4 +1,5 @@
 //--------------------- includes and using  -------------------------------------
+#define TRIQS_PYTHON_WRAPPER_MODULE_${module.name}
 
 %for file in module.include_list :
 %if file.startswith('<'):
@@ -966,15 +967,15 @@ init${module.name}(void)
     register_h5_reader_for_${c.py_type}();
 %endfor
 
-%if len(module.wrapped_types_by_me) >0 :
+%if len(module.classes) >0 :
      // declare the exported wrapper functions
-     static void * _exported_wrapped_convert_fnt[3*${len(module.wrapped_types_by_me)}];
+     static void * _exported_wrapped_convert_fnt[3*${len(module.classes)}];
 
      // init the array with the function pointers
-     %for n,t in enumerate(module.wrapped_types_by_me) :
-       _exported_wrapped_convert_fnt[3*${n}] = (void *)convert_to_python<${t}>;
-       _exported_wrapped_convert_fnt[3*${n}+1] = (void *)convert_from_python<${t}>;
-       _exported_wrapped_convert_fnt[3*${n}+2] = (void *)convertible_from_python<${t}>;
+     %for n,c in enumerate(module.classes.values()) :
+       _exported_wrapped_convert_fnt[3*${n}] = (void *)convert_to_python<${c.c_type_absolute}>;
+       _exported_wrapped_convert_fnt[3*${n}+1] = (void *)convert_from_python<${c.c_type_absolute}>;
+       _exported_wrapped_convert_fnt[3*${n}+2] = (void *)convertible_from_python<${c.c_type_absolute}>;
      %endfor
 
     /* Create a Capsule containing the API pointer array's address */

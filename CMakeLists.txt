@@ -350,6 +350,9 @@ set(TRIQS_LINK_LIBS
 # General include header
 # remove this dep to C++
 include_directories(${TRIQS_SOURCE_DIR})
+# for the generated headers for python convertions
+include_directories(${CMAKE_BINARY_DIR}/include/)
+# Add it to triqs definitions
 
 #--------------------------------
 # General C++ compilation flags

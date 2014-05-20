@@ -57,12 +57,11 @@ class pyref {
 //---------------------  py_converters -----------------------------
 
 // default version for a wrapped type. To be specialized later.
-template<typename T> struct py_converter {
- static void ** init();
- static PyObject * c2py(T const & x);
- static T & py2c(PyObject * ob);
- static bool is_convertible(PyObject * ob, bool raise_exception);
-};
+template<typename T> struct py_converter;
+ //static PyObject * c2py(T const & x);
+ //static T & py2c(PyObject * ob);
+ //static bool is_convertible(PyObject * ob, bool raise_exception);
+ //
 
 // We only use these functions in the code, not converter
 // TODO : Does c2py return NULL in failure ? Or is it undefined...

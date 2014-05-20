@@ -6,21 +6,20 @@ include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 # ModuleName = the python name of the module 
 # ModuleDest = path in the pytriqs tree [ FOR INSTALLATION ONLY] IMPROVE MAKE THIS OPTIONAL (for test) 
 
-#EXECUTE_PROCESS(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/pytriqs/converters/)
+EXECUTE_PROCESS(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/include/pytriqs/converters/)
 include_directories( ${CMAKE_BINARY_DIR}) 
 
 macro (triqs_python_extension ModuleName)
  message(STATUS "Preparing extension module ${ModuleName}")
 
  SET(wrap_name  ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_wrap.cpp)
- SET(converter_name  ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_converter.cpp)
+ SET(converter_name  ${CMAKE_BINARY_DIR}/include/pytriqs/converters/${ModuleName}.hpp)
 
  # Adjust pythonpath so that pytriqs is visible and the wrap_generator too...
  # pytriqs needed since we import modules with pure python method to extract the doc.. 
  add_custom_command(OUTPUT ${wrap_name} ${converter_name} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py 
   COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/pytriqs/wrap_generator:${CMAKE_BINARY_DIR}/ ${PYTHON_INTERPRETER} ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py ${CMAKE_SOURCE_DIR}/pytriqs/wrap_generator/wrapper.mako.cpp ${wrap_name} ${CMAKE_SOURCE_DIR}/pytriqs/wrap_generator/py_converter_wrapper.mako.hpp ${converter_name} )
 
- set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_CPP_LIST "${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_converter.cpp")
  set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_TARGETS "python_wrap_${ModuleName}")
  
  add_custom_target(python_wrap_${ModuleName} ALL DEPENDS ${wrap_name} ${converter_name})
@@ -33,6 +32,7 @@ macro (triqs_python_extension ModuleName)
  target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
  
  if (${ARGN} MATCHES "")
+   install (FILES ${converter_name} DESTINATION "include/pytriqs/converters")
    install (TARGETS ${ModuleName} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ARGN}  )
  endif (${ARGN} MATCHES "")
  #set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )

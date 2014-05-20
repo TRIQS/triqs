@@ -1,7 +1,6 @@
 from wrap_generator import *
 
 module = module_(full_name = "pytriqs.gf.local.gf", doc = "Local Green functions ...")
-module.add_include("<typeindex>")
 module.add_include("<triqs/gfs.hpp>")
 module.add_include("<triqs/gfs/local/functions.hpp>")
 module.add_include("<triqs/gfs/local/pade.hpp>")
@@ -16,6 +15,7 @@ module.add_using("triqs::utility::mini_vector")
 
 t = class_( py_type = "TailGf",
         c_type = "local::tail_view",
+        c_type_absolute = "triqs::gfs::local::tail_view",
         serializable= "tuple",
         is_printable= True,
         arithmetic = ("algebra","double")
@@ -85,9 +85,11 @@ module.add_class(t)
 ########################
 
 module.add_enum(c_name = "statistic_enum",
+                c_name_absolute = "triqs::gfs::statistic_enum",
                 values = ["Fermion","Boson"])
 
 module.add_enum(c_name = "mesh_kind",
+                c_name_absolute = "triqs::gfs::mesh_kind",
                 values = ["half_bins","full_bins","without_last"])
 
 ########################
@@ -97,6 +99,7 @@ module.add_enum(c_name = "mesh_kind",
 def make_mesh( py_type, c_tag, has_kind=True, is_im=False) :
     m = class_( py_type = py_type,
             c_type = "gf_mesh<%s>"%c_tag,
+            c_type_absolute = "triqs::gfs::gf_mesh<triqs::gfs::%s>"%c_tag,
             serializable= "tuple",
             is_printable= True,
            )
@@ -196,6 +199,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False) :
     g = class_(
             py_type = py_type,
             c_type = "gf_view<%s>"%c_tag,
+            c_type_absolute = "triqs::gfs::gf_view<triqs::gfs::%s>"%c_tag,
             #serializable= "boost",
             serializable= "tuple",
             is_printable= True,
@@ -305,10 +309,6 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False) :
 
     # Pure python methods
     g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%c_tag, py_name = "_plot_")
-
-    g.add_method(py_name = "_as_C_pointer", 
-                 calling_pattern = 'auto result = PyCapsule_New(new std::pair<void *,std::type_index>(&self_c,typeid(self_c)),NULL,NULL)',
-                 signature = "PyObject*()")
 
     return g
 

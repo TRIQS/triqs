@@ -60,7 +60,7 @@ namespace triqs { namespace mc_tools {
      * \param[in] P  dictionary parameters
      * \param[in] AfterCycleDuty  a function bool() to be called after each QMC cycle
      */
-     mc_generic(utility::parameters const & P, std::function<bool()> AfterCycleDuty = std::function<bool()>() ) :
+     mc_generic(params::parameters const & P, std::function<bool()> AfterCycleDuty = std::function<bool()>() ) :
       RandomGenerator(std::string(P["random_name"]), long(P["random_seed"])),
       report(&std::cout,int(P["verbosity"])),
       AllMoves(RandomGenerator),

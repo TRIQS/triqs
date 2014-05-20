@@ -1,7 +1,7 @@
 from wrap_generator import *
 
 # The module
-module = module_(full_name = "pytriqs.parameters.parameters.my_module", doc = " Doc of my_module ")
+module = module_(full_name = "pytriqs.parameters.parameters", doc = "TO BE WRITTEN")
 module.add_include("<triqs/parameters/parameters.hpp>")
 module.add_include("<triqs/utility/formatted_output.hpp>")
 module.add_using("namespace triqs::params")
@@ -9,7 +9,7 @@ module.add_using("namespace triqs::params")
 # one class
 g = class_(
         py_type = "Parameters",
-        c_type = "parameters",
+        c_type = "triqs::params::parameters",
         #serializable= "tuple",
         is_printable= True,
         hdf5 = True,

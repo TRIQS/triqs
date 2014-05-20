@@ -235,6 +235,8 @@ class class_ :
        Representation of a wrapped type
        Data :
         - c_type : C++ type to be wrapped.
+        - c_type_absolute : full path of c_type, no using, no alias (need for
+          the py_converter hpp file)
         - py_type : Name given in Python
         - doc : the doc string.
         - c_type_is_view : boolean
@@ -244,11 +246,14 @@ class class_ :
         - members : a dict : string -> member_
     """
     hidden_python_function = {} # global dict of the python function to add to the module, hidden for the user, for precompute and so on
-    def __init__(self, c_type, py_type, hdf5 = False, arithmetic = None, serializable = None, is_printable = False, doc = '' ) :
+    def __init__(self, c_type, py_type, c_type_absolute = None, hdf5 = False, arithmetic = None, serializable = None, is_printable = False, doc = '' ) :
       self.c_type = c_type
+      self.c_type_absolute = c_type_absolute or c_type
       self.c_type_is_view = is_type_a_view(c_type)
       self.implement_regular_type_converter = self.c_type_is_view # by default, it will also make the converter of the associated regular type
-      if self.c_type_is_view : self.regular_type = 'typename ' +  self.c_type + '::regular_type'
+      if self.c_type_is_view : 
+          self.regular_type = 'typename ' +  self.c_type + '::regular_type'
+          self.regular_type_absolute = 'typename ' +  self.c_type_absolute  + '::regular_type'
       self.py_type = py_type
       c_to_py_type[self.c_type] = self.py_type # register the name translation for the doc generation
       self.hdf5 = hdf5
@@ -420,8 +425,8 @@ class enum_ :
         - values : list of string representing the enumerated
         - doc : the doc string.
     """
-    def __init__(self, c_name, values, doc = '') : 
-      self.c_name, self.values, self.doc = c_name, values, doc
+    def __init__(self, c_name, values, c_name_absolute = None, doc = '') : 
+      self.c_name, self.c_name_absolute, self.values, self.doc = c_name, c_name_absolute or c_name, values, doc
  
 class module_ :
     """
@@ -443,7 +448,6 @@ class module_ :
       self.classes = {}
       self.functions = {}
       self.include_list = []
-      self.wrapped_types_by_me = {}
       self.enums = []
       self.using =[]
       self.python_functions = {}
@@ -452,8 +456,8 @@ class module_ :
     def add_class(self, cls):
         if cls.py_type in self.classes : raise IndexError, "The class %s already exists"%cls.py_type
         self.classes[cls.py_type] = cls
-        self.wrapped_types[cls.c_type] = cls.py_type
-        self.wrapped_types_by_me[cls.c_type] = cls.py_type
+        self.wrapped_types[cls.c_type] = cls
+        self.wrapped_types[cls.c_type_absolute] = cls # we can call is by its name or its absolute name
 
     def add_function(self, **kw):
         if "name" in kw :
