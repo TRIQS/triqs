@@ -6,4 +6,5 @@ SET(PYTHON_SOURCES
 
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators)
 
+triqs_python_extension(operators2 operators)
 
