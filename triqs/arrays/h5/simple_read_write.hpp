@@ -74,6 +74,7 @@ namespace arrays {
   template <typename T> void read_array_impl(h5::group g, std::string const& name, T* start, array_stride_info info);
 
   template <typename A> void read_array(h5::group g, std::string const& name, A&& a, bool C_reorder = true) {
+   // mini_vector... : useless on 4.9 and clang, there seems to be a bug (??) on 4.8.
    resize_or_check(a, mini_vector<size_t, std::c14::decay_t<A>::rank> (get_array_lengths(a.rank, g, name, triqs::is_complex<typename std::c14::decay_t<A>::value_type>::value)));
    if (C_reorder) {
     {

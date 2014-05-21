@@ -110,7 +110,7 @@ namespace arrays {
     std::vector<size_t> d2(R);
     hsize_t dims_out[rank];
     dataspace.getSimpleExtentDims(&dims_out[0], NULL);
-    for (size_t u = 0; u < R; ++u) d2[u] = dims_out[u];
+    for (int u = 0; u < R; ++u) d2[u] = dims_out[u];
     return d2;
    }
    TRIQS_ARRAYS_H5_CATCH_EXCEPTION;

@@ -52,8 +52,8 @@ int main(int argc, char **argv) {
   h5_read(top2,"vdouble",v2);
   h5_read(top2,"vcomplex",vc2);
 
-  for (int i = 0; i <v.size(); ++i) assert_close(v[i],v2[i]); 
-  for (int i = 0; i <vc.size(); ++i) assert_close(vc[i],vc2[i]); 
+  for (size_t i = 0; i <v.size(); ++i) assert_close(v[i],v2[i]); 
+  for (size_t i = 0; i <vc.size(); ++i) assert_close(vc[i],vc2[i]); 
  }
  TRIQS_CATCH_AND_ABORT;
 }
