@@ -25,5 +25,16 @@
 #include "./h5/vector.hpp"
 #include "./h5/string.hpp"
 //#include "./h5/make_h5_read_write.hpp"
+
+// in some old version, the macro is not defined.
+#ifndef H5_VERSION_GE
+
+#define H5_VERSION_GE(Maj,Min,Rel) \
+       (((H5_VERS_MAJOR==Maj) && (H5_VERS_MINOR==Min) && (H5_VERS_RELEASE>=Rel)) || \
+        ((H5_VERS_MAJOR==Maj) && (H5_VERS_MINOR>Min)) || \
+        (H5_VERS_MAJOR>Maj))
+
+#endif
+
 #endif
 

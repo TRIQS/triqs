@@ -19,10 +19,13 @@
  *
  ******************************************************************************/
 #include <triqs/arrays.hpp>
-#include <triqs/h5/serialization.hpp>
 #include <iostream>
 
-#if H5_VERSION_GE(1, 8, 9)
+#if not H5_VERSION_GE(1,8,9)
+int main() {}
+#else
+
+#include <triqs/h5/serialization.hpp>
 
 using triqs::h5::serialize;
 using triqs::h5::deserialize;
@@ -52,6 +55,6 @@ int main() {
 
  std::cout << "a = " << a << " == " << b << std::endl;
 
-#endif
 }
+#endif
 
