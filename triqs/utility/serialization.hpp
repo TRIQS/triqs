@@ -20,14 +20,14 @@
  ******************************************************************************/
 #pragma once
 
-#if defined(TRIQS_SERIALIZATION_USE_BOOST) or not H5_VERSION_GE(1,8,9)
+#if defined(TRIQS_SERIALIZATION_DO_NOT_USE_HDF5) or not H5_VERSION_GE(1,8,9)
+
+#define TRIQS_SERIALIZATION_WITH_HDF5_IMPOSSIBLE
 #include "./boost_serialization.hpp"
 
-#define TRIQS_SERIALIZATION_WITH_BOOST
 #else 
-#include "../h5/serialization.hpp"
-#define TRIQS_SERIALIZATION_WITH_HDF5
 
+#include "../h5/serialization.hpp"
 namespace triqs { 
  using h5::serialize;
  using h5::deserialize;

@@ -31,14 +31,14 @@ namespace params {
   * DOC to be written.
   *
   * Provide a form for program parameters.
-  * 
+  *
   * Fields of the form can be added with add_field method (only in C++), with a name, a type, a doc, and optionally a default value.
-  * 
+  *
   * They can be retrieved from and put into the form, using the [] operator, in C++ and python.
-  * 
-  * The data is stored with a strict type checking at runtime, with some type collapse (all integers into a long, 
+  *
+  * The data is stored with a strict type checking at runtime, with some type collapse (all integers into a long,
   *  all string, const char * into a std::string, etc).
-  * 
+  *
   * Basic type cast to basic types are provided.
   *
   * The class is boost-serializable and implements hdf5 I/O operations.
@@ -48,9 +48,11 @@ namespace params {
    std::string key;
    _field f;
    std::string doc;
+#ifdef TRIQS_SERIALIZATION_WITH_HDF5_IMPOSSIBLE
    template <class Archive> void serialize(Archive& ar, const unsigned int version) {
     ar& TRIQS_MAKE_NVP("key", key) & TRIQS_MAKE_NVP("f", f) & TRIQS_MAKE_NVP("doc", doc);
    }
+#endif
   };
   using _data_t = std::vector<_data_elem>;
   _data_t _data;
@@ -59,7 +61,23 @@ namespace params {
   _data_t::const_iterator find(std::string const& key) const;
 
   friend class boost::serialization::access;
-  template <class Archive> void serialize(Archive& ar, const unsigned int version) { ar& TRIQS_MAKE_NVP("_data", _data); }
+#ifdef TRIQS_SERIALIZATION_WITH_HDF5_IMPOSSIBLE
+  template <class Archive> void serialize(Archive& ar, const unsigned int version) {
+   ar& TRIQS_MAKE_NVP("_data", _data);
+  }
+#else
+  // do it at once, with one buffer only.
+  template <class Archive> void save(Archive &ar, const unsigned int version) const {
+   std::string s = h5::serialize(*this);
+   ar << TRIQS_MAKE_NVP("seria_str", s);
+  }
+  template <class Archive> void load(Archive &ar, const unsigned int version) {
+   std::string s;
+   ar >> TRIQS_MAKE_NVP("seria_str", s);
+   *this = h5::deserialize<parameters>(s);
+  }
+  BOOST_SERIALIZATION_SPLIT_MEMBER();
+#endif
 
   public:
   parameters();
@@ -88,13 +106,13 @@ namespace params {
   /// Does the form have the key ?
   bool has_key(std::string const& key) const;
 
-  /** 
+  /**
    * Access the parameter key.
    * Key must be a valid key or a TRIQS_RUNTIME_ERROR is thrown.
    */
   _field& operator[](const char * key);
 
-  /** 
+  /**
    * Access the parameter key.
    * Key must be a valid key or a TRIQS_RUNTIME_ERROR is thrown.
    */
@@ -103,14 +121,14 @@ namespace params {
   /// generate help in form of a table of strings containing a list of required and optional parameters
   std::vector<std::vector<std::string>> generate_help(bool with_header = true) const;
 
-  /// help as a string 
+  /// help as a string
   std::string help() const;
 
   /// hdf5
   friend std::string get_triqs_hdf5_data_scheme(parameters const &) { return ""; }
   friend void h5_write(h5::group F, std::string const& subgroup_name, parameters const& p);
   friend void h5_read(h5::group F, std::string const& subgroup_name, parameters& p);
-  
+
   /// Ostream
   friend std::ostream& operator<<(std::ostream& out, parameters const& p);
 

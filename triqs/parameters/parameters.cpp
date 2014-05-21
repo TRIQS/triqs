@@ -4,6 +4,7 @@
 #include <triqs/utility/serialization.hpp>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
+#include <iomanip>
 
 namespace triqs {
 namespace params {

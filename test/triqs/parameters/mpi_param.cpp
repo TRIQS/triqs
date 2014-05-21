@@ -26,12 +26,9 @@ int main(int argc, char* argv[]) {
   P["d"] = 2.7;
   P["s"] = std::string("-14.3");
  }
-/*
- * WITH SERIALIZATION
  std::cout << "Before bcast rank " << world.rank() << " : "  << P << std::endl ;
  boost::mpi::broadcast(world,P,0);
  std::cout << "After bcast rank " << world.rank() << " : "  << P << std::endl ;
-*/
  return 0;
 }
 

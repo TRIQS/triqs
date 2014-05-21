@@ -48,7 +48,7 @@ namespace params {
 #define TRIQS_UTIL_OPAQUE_OBJECT_PREDEFINED_CAST                                                                                 \
  (int)(long)(long long)(unsigned int)(unsigned long)(unsigned long long)(double)(bool)(std::string)
 
- // the type actually stored 
+ // the type actually stored
  template <typename T, typename Enable = void> struct storage_t_impl : std::conditional<std::is_integral<T>::value, long, T>{};
  template <typename T> using storage_t = typename storage_t_impl<std::c14::decay_t<T>>::type;
 
@@ -109,14 +109,14 @@ namespace params {
   std::string name_; // for_error_messages
   bool modified = false;
   bool no_default_value = false;
-  
+
   // only parameters will construct _field
   template <typename T>
   _field(T obj, std::string n, bool without_default_value)
      : index(typeid(storage_t<T>)), p(new _data_impl<storage_t<T>>{std::move(obj)}), name_(n), no_default_value(without_default_value) {
    type_names.insert({index, get_triqs_hdf5_data_scheme(storage_t<T>{})});
   }
-  
+
   std::string type_name() const { return type_name(index); }
   static std::string type_name(std::type_index i);
 
@@ -125,8 +125,8 @@ namespace params {
   template <typename T> bool has_type() const { return index == typeid(T); }
 
   public:
-#ifdef TRIQS_SERIALIZATION_WITH_BOOST
-  _field() : index(typeid(void)) {} // BREAKS invariant : only used for BOOST serialization.
+#ifdef TRIQS_SERIALIZATION_WITH_HDF5_IMPOSSIBLE
+  _field() : index(typeid(void)) {} // BREAKS invariant : only used for BOOST serialization failsafe mode.
 #endif
   _field(_field &&c) = default;
   _field(_field const &x) : index(x.index), p(x.p ? x.p->clone() : nullptr), name_(x.name_), modified(x.modified), no_default_value(x.no_default_value) {} // regular type
@@ -137,7 +137,7 @@ namespace params {
   template <typename RHS> _field &operator=(RHS rhs) { // pass by value (sink)
    modified = true;
    using S_t = storage_t<RHS>;
-   if (index != typeid(S_t)) { 
+   if (index != typeid(S_t)) {
     TRIQS_RUNTIME_ERROR << "Field "<< name_<<" is of type "<< type_name(index)<<". I can not put a " << type_name(typeid(S_t)) << " into it.";
    }
    p.reset(new _data_impl<S_t>{std::move(rhs)});
@@ -145,7 +145,7 @@ namespace params {
   }
 
   // rewrite a few cases for practical convenience ...
-  _field &operator=(int rhs) { // a special case where we can correct : int -> double 
+  _field &operator=(int rhs) { // a special case where we can correct : int -> double
    if (index == typeid(double)) return operator=(double(rhs));
    return operator=(long(rhs));// beware infinite loop! Works because int != long ... Clean this ...
   }
@@ -169,7 +169,7 @@ namespace params {
 
   /// Is a modification required for this field
   bool is_modification_required() const { return no_default_value && (!modified); }
- 
+
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
   /// Convertions python <-> C++
   bool from_python_convertible(PyObject *ob) const { return p->from_python_convertible(ob); }
@@ -182,6 +182,7 @@ namespace params {
   BOOST_PP_SEQ_FOR_EACH(CAST_OPERATOR, nil, TRIQS_UTIL_OPAQUE_OBJECT_PREDEFINED_CAST);
 #undef CAST_OPERATOR
 
+#ifdef TRIQS_SERIALIZATION_WITH_HDF5_IMPOSSIBLE
   // ----- Boost serialisation
 
   template <class Archive> void save(Archive &ar, const unsigned int version) const {
@@ -194,6 +195,7 @@ namespace params {
    p->deserialize(s);
   }
   BOOST_SERIALIZATION_SPLIT_MEMBER();
+#endif
 
   friend std::ostream &operator<<(std::ostream &out, _field const &ob) { return ob.p->print(out); }
 
