@@ -115,6 +115,8 @@ static PyObject* ${c.py_type}___str__ (PyObject *self);
 % for op_name, op in c.number_protocol.items():
 %if op.arity == 2:
 static PyObject * ${c.py_type}_${op_name} (PyObject* v, PyObject *w);
+%elif op.arity ==1:
+static PyObject * ${c.py_type}_${op_name} (PyObject *v);
 %endif
 %endfor
 
@@ -234,6 +236,8 @@ static PyNumberMethods ${c.py_type}_as_number = {
 %for op_name in ["add", "subtract", "multiply", "divide", "remainder", "divmod", "power", "negative", "positive", "absolute", "nonzero", "invert", "lshift", "rshift", "and", "xor", "or", "coerce", "int", "long", "float", "oct", "hex", "inplace_add", "inplace_subtract", "inplace_multiply", "inplace_divide", "inplace_remainder", "inplace_power", "inplace_lshift", "inplace_rshift", "inplace_and", "inplace_xor", "inplace_or", "floor_divide ", "true_divide ", "inplace_floor_divide ", "inplace_true_divide ", "index "] :
 % if op_name in c.number_protocol and c.number_protocol[op_name].arity==2 :
  (binaryfunc)${c.py_type}_${op_name}, /*nb_${op_name}*/
+%elif op_name in c.number_protocol and c.number_protocol[op_name].arity==1 :
+ (unaryfunc)${c.py_type}_${op_name}, /*nb_${op_name}*/
 %else :
  0, /*nb_${op_name}*/
 %endif
@@ -859,6 +863,23 @@ static PyObject * ${c.py_type}_${op_name} (PyObject* v, PyObject *w){
   PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload.calling_pattern()} ");
   return NULL;
 }
+
+%elif op.arity == 1:
+static PyObject * ${c.py_type}_${op_name} (PyObject *v){
+
+  %for overload in op.overloads :
+  if (py_converter<${overload.args[0][0]}>::is_convertible(v,false)) {
+   try {
+    ${regular_type_if_view_else_type(overload.rtype)} r = ${overload.calling_pattern()}(convert_from_python<${overload.args[0][0]}>(v));
+    return convert_to_python(std::move(r)); // in two steps to force type for expression templates in C++
+   }
+   CATCH_AND_RETURN("in calling C++ overload \n  ${overload.c_signature()} \nin implementation of operator ${overload.calling_pattern()} ", NULL)
+  }
+  %endfor
+  PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload.calling_pattern()} ");
+  return NULL;
+}
+
 %endif
 
 %endfor
