@@ -45,18 +45,10 @@ namespace params {
   if (obj.has_type<std::string>()) {
    return lex_cast_from_string<double>(obj);
   }
-#define TRANSFORM_TYPE(T)                                                                                                        \
- if (obj.has_type<T>()) return extract<T>(obj)
-  TRANSFORM_TYPE(int);
-  // TRANSFORM_TYPE(unsigned int);
-  TRANSFORM_TYPE(long);
-  // TRANSFORM_TYPE(unsigned long);
-  TRANSFORM_TYPE(short);
-  // TRANSFORM_TYPE(unsigned short);
-  TRANSFORM_TYPE(long long);
-// TRANSFORM_TYPE(unsigned long long);
-// TRANSFORM_TYPE(float);
-#undef TRANSFORM_TYPE
+  try {
+   if (obj.has_type<long>()) return extract<long>(obj);
+  }
+  catch(...){}
   TRIQS_RUNTIME_ERROR << "extraction of " << obj.name() << " impossible : type mismatch. Got " << obj.type_name()
                       << ", while I am supposed to extract a double";
  }

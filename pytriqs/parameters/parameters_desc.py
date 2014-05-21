@@ -3,7 +3,6 @@ from wrap_generator import *
 # The module
 module = module_(full_name = "pytriqs.parameters.parameters", doc = "TO BE WRITTEN")
 module.add_include("<triqs/parameters/parameters.hpp>")
-module.add_include("<triqs/utility/formatted_output.hpp>")
 module.add_using("namespace triqs::params")
 
 # one class
@@ -20,7 +19,7 @@ g = class_(
 #add a constructor
 #g.add_constructor(doc = "DOC of constructor", args = [])
 
-g.add_method(py_name = "help", calling_pattern = "auto result = triqs::utility::print_formatted(self_c.generate_help())", signature = "std::string()", doc = "help")
+g.add_method(py_name = "help", calling_pattern = "auto result = self_c.help()", signature = "std::string()", doc = "help")
 
 # add getitem/setitem ...
 g.add_getitem(signature = "PyObject *(const char * key)", 

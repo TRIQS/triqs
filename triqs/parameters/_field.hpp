@@ -19,32 +19,28 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/first_include.hpp>
+#include <triqs/arrays.hpp>
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+#include <triqs/python_tools/wrapper_tools.hpp>
+#endif
 #include <string>
 #include <complex>
 #include <memory>
 #include <map>
 #include <typeindex>
 #include <boost/preprocessor/seq/for_each.hpp>
-
-//#include <triqs/utility/serialization.hpp>
-
-#include <triqs/arrays.hpp>
-#include <triqs/python_tools/wrapper_tools.hpp>
+// serialization will use hdf5 with a failsafe to boost for old hdf5 libs.
+#include <triqs/utility/serialization.hpp>
 
 namespace triqs {
 namespace params {
 
- using triqs::get_triqs_hdf5_data_scheme;
+ using triqs::get_triqs_hdf5_data_scheme; // bring it into name resolution
 
  template <typename T> std::ostream &operator<<(std::ostream &out, std::vector<T> const &v) {
   out << "[";
-  if (v.size() > 3)
-   out << v[0] << ", ..., " << v[v.size()-1];
-  else {
-   int c = 0;
-   for (auto const &x : v) out << (c++ ? ", " : "") << x;
-  }
+  int c = 0;
+  for (auto const &x : v) out << (c++ ? ", " : "") << x;
   return out << "]";
  }
 
@@ -52,21 +48,13 @@ namespace params {
 #define TRIQS_UTIL_OPAQUE_OBJECT_PREDEFINED_CAST                                                                                 \
  (int)(long)(long long)(unsigned int)(unsigned long)(unsigned long long)(double)(bool)(std::string)
 
- // a trait to compute the type actually stored in the opaque object.
- // T except for integers, which are all stored as long
- template <typename T, typename Enable = void> struct storage_t_impl {
-  using type = T;
- };
+ // the type actually stored 
+ template <typename T, typename Enable = void> struct storage_t_impl : std::conditional<std::is_integral<T>::value, long, T>{};
  template <typename T> using storage_t = typename storage_t_impl<std::c14::decay_t<T>>::type;
 
- template <typename T> struct storage_t_impl<T, std::c14::enable_if_t<std::is_integral<T>::value>> {
-  using type = long;
- };
- // differentiate value and view ?
  template <typename A> struct storage_t_impl<A, std::c14::enable_if_t<arrays::is_amv_value_or_view_class<A>::value>> {
   using type = arrays::array<typename A::value_type, A::rank>;
  };
-
  template<> struct storage_t_impl<const char *> {using type = std::string;};
  template<> struct storage_t_impl<char *> {using type = std::string;};
 
@@ -80,14 +68,14 @@ namespace params {
    virtual _data *clone() const = 0;
    virtual void h5_write_(h5::group, std::string const &) const = 0;
    virtual void h5_read_(h5::group, std::string const &) = 0;
-   
-   //virtual std::string serialize() const = 0;
-   //virtual void deserialize(std::string const &) = 0;
-   
+   virtual std::string serialize() const = 0;
+   virtual void deserialize(std::string const &) = 0;
    virtual std::ostream &print(std::ostream &out) const = 0;
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
    virtual bool from_python_convertible(PyObject *) const = 0;
    virtual void set_from_python(PyObject *) = 0;
    virtual PyObject *to_python() const = 0;
+#endif
   };
 
   template <typename T> struct _data_impl : _data {
@@ -101,19 +89,18 @@ namespace params {
    virtual _data *clone() const override { return new _data_impl(*this); }
    virtual void h5_write_(h5::group f, std::string const &name) const override { h5_write(f, name, x); }
    virtual void h5_read_(h5::group f, std::string const &name) override { h5_read(f, name, x); }
-  
-   /*
    virtual std::string serialize() const override { return triqs::serialize(x); }
    virtual void deserialize(std::string const &s) override {
     x = triqs::deserialize<T>(s);
    };
-   */
    virtual std::ostream &print(std::ostream &out) const override { return out << x; }
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
    virtual bool from_python_convertible(PyObject *ob) const override {
     return py_tools::py_converter<T>::is_convertible(ob, true);
    }
    virtual void set_from_python(PyObject *ob) override { x = py_tools::py_converter<T>::py2c(ob); }
    virtual PyObject *to_python() const override { return py_tools::py_converter<T>::c2py(x); }
+#endif
   };
 
   std::type_index index;
@@ -121,18 +108,28 @@ namespace params {
   static std::map<std::type_index, std::string> type_names;
   std::string name_; // for_error_messages
   bool modified = false;
-
+  bool no_default_value = false;
+  
   // only parameters will construct _field
   template <typename T>
-  _field(T obj, std::string n, bool modification_required)
-     : index(typeid(storage_t<T>)), p(new _data_impl<storage_t<T>>{std::move(obj)}), name_(n), modified(!modification_required) {
+  _field(T obj, std::string n, bool without_default_value)
+     : index(typeid(storage_t<T>)), p(new _data_impl<storage_t<T>>{std::move(obj)}), name_(n), no_default_value(without_default_value) {
    type_names.insert({index, get_triqs_hdf5_data_scheme(storage_t<T>{})});
   }
+  
+  std::string type_name() const { return type_name(index); }
+  static std::string type_name(std::type_index i);
+
+  const void *get() const { return (p ? p->get() : nullptr); }
+  template <typename T> friend T extract(_field const &ob);
+  template <typename T> bool has_type() const { return index == typeid(T); }
 
   public:
-  //_field() : index(typeid(void)) {} // BREAKS invariant : only used for BOOST serialization...
+#ifdef TRIQS_SERIALIZATION_WITH_BOOST
+  _field() : index(typeid(void)) {} // BREAKS invariant : only used for BOOST serialization.
+#endif
   _field(_field &&c) = default;
-  _field(_field const &x) : index(x.index), p(x.p ? x.p->clone() : nullptr), name_(x.name_), modified(x.modified) {} // regular type
+  _field(_field const &x) : index(x.index), p(x.p ? x.p->clone() : nullptr), name_(x.name_), modified(x.modified), no_default_value(x.no_default_value) {} // regular type
 
   _field &operator=(_field &&c) = default;
   _field &operator=(_field const &x) { return operator=(_field(x)); }
@@ -147,33 +144,38 @@ namespace params {
    return *this;
   }
 
-  // rewrite a few cases for convenience ...
+  // rewrite a few cases for practical convenience ...
   _field &operator=(int rhs) { // a special case where we can correct : int -> double 
    if (index == typeid(double)) return operator=(double(rhs));
-   return operator=(long(rhs));// beware infinite loop!
+   return operator=(long(rhs));// beware infinite loop! Works because int != long ... Clean this ...
   }
-
-  // special treatment for const char *: fall back to string
   _field &operator=(const char *rhs) { return operator=(std::string(rhs)); }
 
-  // for subgroups only : implemented after parameters. Check type at runtime
+  // In the case where the data is itself a parameters (used to implement subgroups)
+  // we suplement _field with a few parameters methods
+  // Implemented after parameters (we need the type).
+  // Strict check type at runtime.
   template <typename... T> _field &add_field(T &&... x);
   _field &operator[](const char * key);
   _field const &operator[](const char * key) const;
   friend bool is_parameter(_field const & f);
   _field& add_group(std::string const& key, std::string const& doc);
 
-  std::string type_name() const { return type_name(index); }
-
+  /// Name of the field
   std::string const &name() const { return name_; }
-  bool is_modified() const { return modified; }
-  const void *get() const { return (p ? p->get() : nullptr); }
-  template <typename T> bool has_type() const { return index == typeid(T); }
-  static std::string type_name(std::type_index i);
 
+  /// Has the field been modified
+  bool is_modified() const { return modified; }
+
+  /// Is a modification required for this field
+  bool is_modification_required() const { return no_default_value && (!modified); }
+ 
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+  /// Convertions python <-> C++
   bool from_python_convertible(PyObject *ob) const { return p->from_python_convertible(ob); }
   void set_from_python(PyObject *ob) { p->set_from_python(ob); }
   PyObject *to_python() const { return p->to_python(); }
+#endif
 
 // implemented later, since it needs the extract function ...
 #define CAST_OPERATOR(r, data, T) operator T() const;
@@ -181,20 +183,17 @@ namespace params {
 #undef CAST_OPERATOR
 
   // ----- Boost serialisation
-/*
-   template<class Archive>
-    void save(Archive & ar, const unsigned int version) const {
-     std::string s = p->serialize();
-     ar << TRIQS_MAKE_NVP("seria_str", s);
-    }
-   template<class Archive>
-    void load(Archive & ar, const unsigned int version) {
-     std::string s;
-     ar >> TRIQS_MAKE_NVP("seria_str", s);
-     p->deserialize(s);
-    }
-   BOOST_SERIALIZATION_SPLIT_MEMBER();
-*/
+
+  template <class Archive> void save(Archive &ar, const unsigned int version) const {
+   std::string s = p->serialize();
+   ar << TRIQS_MAKE_NVP("seria_str", s);
+  }
+  template <class Archive> void load(Archive &ar, const unsigned int version) {
+   std::string s;
+   ar >> TRIQS_MAKE_NVP("seria_str", s);
+   p->deserialize(s);
+  }
+  BOOST_SERIALIZATION_SPLIT_MEMBER();
 
   friend std::ostream &operator<<(std::ostream &out, _field const &ob) { return ob.p->print(out); }
 
