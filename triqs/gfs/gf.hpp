@@ -528,9 +528,9 @@ namespace gfs {
   gf_view(gf_impl<Variable, Target, Opt, false, false> &&g) noexcept : B(std::move(g), bool {}) {} // from a gf &&
 
   template <typename D>
-  gf_view(typename B::mesh_t const &m, D const &dat, typename B::singularity_view_t const &t, typename B::symmetry_t const &s,
+  gf_view(typename B::mesh_t const &m, D &&dat, typename B::singularity_view_t const &t, typename B::symmetry_t const &s,
           typename B::indices_t const &ind = typename B::indices_t{}, std::string name = "")
-    : B(m, factory<typename B::data_t>(dat), t, s, ind, name, typename B::evaluator_t{}) {}
+    : B(m, factory<typename B::data_t>(std::forward<D>(dat)), t, s, ind, name, typename B::evaluator_t{}) {}
 
   friend void swap(gf_view &a, gf_view &b) noexcept { a.swap_impl(b); }
 

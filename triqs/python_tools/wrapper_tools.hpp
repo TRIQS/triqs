@@ -25,7 +25,7 @@ namespace triqs { namespace py_tools {
 
 //--------------------- pyref -----------------------------
 
-// a little class to hold an owned ref, make sure it is decref at desctruction
+// a little class to hold an owned ref, make sure it is decref at destruction
 // with some useful factories.
 class pyref {
  PyObject * ob = NULL;
@@ -272,7 +272,12 @@ template <> struct py_converter<triqs::h5::group> {
 template <typename T> struct py_converter<std::vector<T>> {
  static PyObject * c2py(std::vector<T> const &v) {
   PyObject * list = PyList_New(0);
-  for (auto const & x : v) if (PyList_Append(list, py_converter<T>::c2py(x)) == -1) { Py_DECREF(list); return NULL;} // error
+  for (auto & x : v) if (PyList_Append(list, py_converter<T>::c2py(x)) == -1) { Py_DECREF(list); return NULL;} // error
+  return list;
+ }
+  static PyObject * c2py(std::vector<T> &v) {
+  PyObject * list = PyList_New(0);
+  for (auto & x : v) if (PyList_Append(list, py_converter<T>::c2py(x)) == -1) { Py_DECREF(list); return NULL;} // error
   return list;
  }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
@@ -374,6 +379,7 @@ template <> struct py_converter<triqs::arrays::range> {
 };
 */
 
+
 // --- nothing  <--> None ----
 #ifdef TRIQS_GF_INCLUDED
 
@@ -391,6 +397,52 @@ template<> struct py_converter<triqs::gfs::nothing> {
 template<> struct py_converter<triqs::gfs::indices_2> : py_converter_from_reductor<triqs::gfs::indices_2>{};
 template<bool B> struct py_converter<triqs::gfs::matsubara_domain<B>> : py_converter_from_reductor<triqs::gfs::matsubara_domain<B>>{};
 template<> struct py_converter<triqs::gfs::R_domain> : py_converter_from_reductor<triqs::gfs::R_domain>{};
+
+// Converter for Block gf
+template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::block_index, triqs::gfs::gf<T...>>> {
+
+ using gf_type = triqs::gfs::gf<T...>;
+ using gf_view_type = triqs::gfs::gf_view<T...>;
+ using c_type = triqs::gfs::gf_view<triqs::gfs::block_index, gf_type>;
+
+ static PyObject *c2py(c_type &&g) { return c2py(g);}
+
+ static PyObject *c2py(c_type &g) {
+  // rm the view_proxy
+  std::vector<gf_view_type> vg; 
+  vg.reserve(g.data().size());
+  for (auto const & x : g.data()) vg.push_back(x);
+  pyref v_gf = convert_to_python(vg);
+  pyref v_names = convert_to_python(g.mesh().domain().names());
+  pyref cls = pyref::module("pytriqs.gf.local").attr("BlockGf");
+  if (cls.is_null()) TRIQS_RUNTIME_ERROR <<"Can not find the pytriqs.gf.local.BlockGf";
+  pyref kw = PyDict_New();
+  PyDict_SetItemString(kw, "name_list", v_names);
+  PyDict_SetItemString(kw, "block_list", v_gf);
+  pyref empty_tuple = PyTuple_New(0);
+  return PyObject_Call(cls, empty_tuple, kw);
+ }
+
+ static bool is_convertible(PyObject *ob, bool raise_exception) {
+  pyref cls = pyref::module("pytriqs.gf.local").attr("BlockGf");
+  if (cls.is_null()) TRIQS_RUNTIME_ERROR <<"Can not find the pytriqs.gf.local.BlockGf";
+  int i = PyObject_IsInstance(ob, cls);
+  if (i == -1) { // an error has occurred
+   i = 0;
+   if (!raise_exception) PyErr_Clear();
+  }
+  if ((i == 0) && (raise_exception)) PyErr_SetString(PyExc_TypeError, "The object is not a BlockGf");
+  return i;
+ }
+
+ static c_type py2c(PyObject *ob) {
+  pyref x = borrowed(ob);
+  pyref names = x.attr("_BlockGf__indices");
+  pyref gfs = x.attr("_BlockGf__GFlist");
+  return make_block_gf_view_from_vector(convert_from_python<std::vector<std::string>>(names),
+                                        convert_from_python<std::vector<gf_view_type>>(gfs));
+ }
+};
 
 #endif
 

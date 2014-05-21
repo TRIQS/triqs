@@ -157,9 +157,10 @@ namespace gfs {
   return {{int(V.size())}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
- // for cython proxy only. do not document.
- template <typename GF, typename GF2> gf_view<block_index, GF> make_block_gf_view_from_vector_of_cython_proxy(std::vector<GF2> V) {
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}, nothing{}};
+ template <typename GF>
+ gf_view<block_index, typename GF::regular_type> make_block_gf_view_from_vector(std::vector<std::string> block_names,
+                                                                                std::vector<GF> V) {
+  return {{std::move(block_names)}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // ------------------------------- Extend reinterpret_scalar_valued_gf_as_matrix_valued for block gf   ------

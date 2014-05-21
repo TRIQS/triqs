@@ -71,8 +71,6 @@ template<> struct py_converter<${c.c_type_absolute}> {
 
 %for en in module.enums :
 
-namespace triqs { namespace py_tools { 
-
 template <> struct py_converter<${en.c_name_absolute}> {
  static PyObject * c2py(${en.c_name_absolute} x) {
    %for n,val in enumerate(en.values[:-1]) :
@@ -104,7 +102,6 @@ template <> struct py_converter<${en.c_name_absolute}> {
  }
 };
 
-}}
 %endfor
 
 }}
