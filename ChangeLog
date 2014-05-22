@@ -1,0 +1,10 @@
+
+From version 1.0 to 1.2
+
+Python
+----------
+
+gf:
+ 
+ * transpose method now returns a NEW green function, like conjugate, etc...
+

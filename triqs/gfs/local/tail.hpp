@@ -281,6 +281,8 @@ namespace triqs { namespace gfs { namespace local {
 
   inline tail conj(tail_view t) { return {conj(t.data()), t.mask_view(),t.order_min()};}
 
+  inline tail transpose(tail_view t) { return {transposed_view(t.data(),0,2,1), transposed_view(t.mask_view(),1,0),t.order_min()};}
+
   /// Slice in orbital space
   //template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) {
   inline tail_view slice_target(tail_view t, tqa::range R1, tqa::range R2) {

@@ -142,6 +142,16 @@ namespace gfs {
   TRIQS_RUNTIME_ERROR << "Not implemented : slice of string indices";
  }
 
+ inline indices_2 transpose(indices_2 const &x) {
+  auto ind2 = x.ind;
+  if (x.ind.size() > 0) {
+   int im = x.ind.size(), jm = x.ind[0].size();
+   for (int i = 0; i < im; ++i)
+    for (int j = 0; j < jm; ++j) ind2[i][j] = x.ind[j][i];
+  }
+  return indices_2(std::move(ind2));
+ }
+
  //------------------------------------------------------
 
  // A simple replacement of tail when there is none to maintain generic code simple...
@@ -162,6 +172,7 @@ namespace gfs {
   template<typename A> bool check_size(A) {return true;}
  };
 
+ inline nothing transpose(nothing) { return {};}
  template <typename... T> nothing slice_target(nothing, T...) { return nothing(); }
  template <typename T> nothing operator+(nothing, T const &) { return nothing(); }
  template <typename T> nothing operator-(nothing, T const &) { return nothing(); }

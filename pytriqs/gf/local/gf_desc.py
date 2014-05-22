@@ -20,7 +20,7 @@ t = class_( py_type = "TailGf",
         is_printable= True,
         arithmetic = ("algebra","double")
        )
-  
+
 t.add_constructor(signature = "(int N1, int N2, int size=10, int order_min=-1)",
                   doc = "DOC of constructor")
 #t.add_constructor(doc = "DOC of constructor", signature = "(array_view<dcomplex,3> d, array_view<long,2> m, long i)", python_precall = "tail_aux.tail_construct")
@@ -68,7 +68,7 @@ t.add_call(calling_pattern = "auto result = self_c.evaluate(u)",
 
 t.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "tail(matrix<dcomplex> x,tail_view y)") #'x'), (self.c_type,'y')], rtype = self.c_type)
 t.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "tail(tail_view x,matrix<dcomplex> y)") #'x'), (self.c_type,'y')], rtype = self.c_type)
- 
+
 # ok, but MISSING CHECK SIZE
 t.add_getitem(c_name = "operator()",
               signature = "matrix_view<dcomplex>(int i)",
@@ -122,13 +122,9 @@ def make_mesh( py_type, c_tag, has_kind=True, is_im=False) :
                getter = cfunction(calling_pattern="mesh_kind result = self_c.kind()", signature = "mesh_kind()"),
                doc = "")
 
-
     #def __richcmp__(MeshImFreq self, MeshImFreq other,int op) :
     #    if op ==2 : # ==
     #        return self._c == other._c
-
-    #def __reduce__(self):
-    #    return self.__class__, (self.beta, self.statistic, len(self))
 
     return m
 
@@ -290,18 +286,23 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False) :
     g.number_protocol['inplace_lshift'] = pyfunction(py_name ="__inplace_lshift__", python_precall = "pytriqs.gf.local._gf_common._ilshift_", arity = 2)
 
     g.add_method(py_name = "invert", calling_pattern = "invert_in_place(self_c)" , signature = "void()", doc = "Invert (in place)")
-    
-    if c_tag != "imtime" : 
+
+    g.add_method(py_name = "transpose",
+                 calling_pattern = "auto result = transpose(self_c)",
+                 signature = "gf<%s>()"%c_tag,
+                 doc = "Returns a NEW gf, with transposed data...")
+
+    if c_tag != "imtime" :
         g.add_method(py_name = "conjugate", calling_pattern = "auto result = conj(self_c)" , signature = "gf<%s>()"%c_tag, doc = "Return a new function, conjugate of self.")
 
     g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag)) #'x'), (self.c_type,'y')], rtype = self.c_type)
     g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type)) #'x'), (self.c_type,'y')], rtype = self.c_type)
-   
-    g.add_method(py_name = "from_L_G_R", 
-                 calling_pattern = "self_c = L_G_R(l,g,r)", 
-                 signature = "void(matrix<%s> l,gf<%s> g,matrix<%s> r)"%(data_type,c_tag,data_type), 
+
+    g.add_method(py_name = "from_L_G_R",
+                 calling_pattern = "self_c = L_G_R(l,g,r)",
+                 signature = "void(matrix<%s> l,gf<%s> g,matrix<%s> r)"%(data_type,c_tag,data_type),
                  doc = "self <<= l * g * r")
-   
+
     g.add_method(py_name = "zero",
                  calling_pattern = "self_c = 0",
                  signature = "void()",
@@ -353,6 +354,9 @@ g.add_method(py_name = "set_from_inverse_fourier",
              calling_pattern = "self_c = inverse_fourier(*gw)",
              doc = """Fills self with the Inverse Fourier transform of gw""")
 
+# add the call operator using the interpolation
+g.add_call(signature = "matrix<double>(double tau)", doc = "G(tau) using interpolation")
+
 module.add_class(g)
 
 ########################
@@ -397,4 +401,4 @@ module.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<re
 if __name__ == '__main__' :
    module.generate_code(mako_template = sys.argv[1], wrap_file = sys.argv[2])
    module.generate_py_converter_header(mako_template = sys.argv[3], wrap_file = sys.argv[4])
-  
+

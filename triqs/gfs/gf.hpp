@@ -676,14 +676,13 @@ namespace gfs {
   return res;
  }
 
- //  ---- transpose : a new view
-/*
- template <typename Variable, typename Opt>
- gf_view<Variable, matrix_valued, Opt> invert_in_place(gf_view<Variable, matrix_valued, Opt> g) {
-  return { g.mesh(), transpose( g.data(), xxxx),  transpose(g.singularity()), g.symmetry(), g.indices() XXX, g.name};
- }
-*/
+ //  ---- transpose : a new gf
 
+ template <typename Variable, typename Opt>
+ gf<Variable, matrix_valued, Opt> transpose(gf_view<Variable, matrix_valued, Opt> g) {
+  return {g.mesh(), transposed_view(g.data(), 0, 2, 1), transpose(g.singularity()), g.symmetry(), transpose(g.indices()), g.name};
+ }
+ 
  //  ---- conjugate : always a new function -> changelog 
 
  template <typename Variable, typename Opt> gf<Variable, matrix_valued, Opt> conj(gf_view<Variable, matrix_valued, Opt> g) {

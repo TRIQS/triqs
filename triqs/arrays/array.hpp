@@ -95,8 +95,11 @@ namespace triqs { namespace arrays {
    TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
    // to forbid serialization of views...
    //template<class Archive> void serialize(Archive & ar, const unsigned int version) = delete;
-  
-  };
+
+   template <typename... INT> friend array_view transposed_view(array_view const& a, INT... is) {
+    return array_view{transpose(a.indexmap_, is...), a.storage_};
+   }
+ };
 
 #undef IMPL_TYPE
 
@@ -212,6 +215,13 @@ namespace triqs { namespace arrays {
      }
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(array);
+
+    template <typename... INT> friend const_view_type transposed_view(array const& a, INT... is) {
+     return view_type{transpose(a.indexmap_, is...), a.storage_};
+    };
+    template <typename... INT> friend view_type transposed_view(array& a, INT... is) {
+     return view_type{transpose(a.indexmap_, is...), a.storage_};
+    };
 
   };//array class
 
