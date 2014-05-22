@@ -238,7 +238,7 @@ if(NOT HDF5_FOUND)
  message(FATAL_ERROR "Require hdf5 1.8.2 or higher. Set HDF5_HOME")
 endif()
 if(HDF5_IS_PARALLEL)
- message(FATAL "parallel(MPI) hdf5 is detected. The standard version is preferred.")
+ message(FATAL_ERROR "parallel(MPI) hdf5 is detected. The standard version is preferred.")
 endif(HDF5_IS_PARALLEL)
 message( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES} ")
 mark_as_advanced(HDF5_DIR) # defined somewhere else ? what is it ?
@@ -249,6 +249,11 @@ set(TRIQS_LIBRARY_HDF5  ${HDF5_LIBRARIES})
 set(TRIQS_INCLUDE_HDF5 ${HDF5_INCLUDE_DIR})
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} ${HDF5_DEFINITIONS})
 set(TRIQS_HDF5_DIFF_EXECUTABLE ${HDF5_DIFF_EXECUTABLE})
+
+# Get hdf5 version and add a definition HDF5_LT_189 if version < 1.8.9
+execute_process(COMMAND ${HDF5_DIFF_EXECUTABLE} --version OUTPUT_VARIABLE diff_output)
+string(REGEX MATCHALL "[0-9].[0-9].[0-9]" HDF5_VERSION "${diff_output}")
+message(STATUS "hdf5 version: ${HDF5_VERSION}")
 
 # #################################
 # Other libs
