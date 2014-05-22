@@ -1,5 +1,4 @@
-
-    #pragma once
+#pragma once
 #include <Python.h>
 #include "structmember.h"
 #include <string>
@@ -27,7 +26,6 @@ namespace triqs { namespace py_tools {
 //--------------------- pyref -----------------------------
 
 // a little class to hold an owned ref, make sure it is decref at destruction
-// with some useful factories.
 class pyref {
  PyObject * ob = NULL;
  public:
@@ -46,9 +44,6 @@ class pyref {
  pyref(pyref && p){ ob = p.ob; p.ob=NULL;}
  pyref& operator =(pyref const&) = delete;
  pyref& operator =(pyref &&p) {ob = p.ob; p.ob=NULL; return *this;}
- // factories. No public constructor.
- // The point is that PyObject is borrowed or new, depending on the function that produced it
- // Need to check in the API doc for each case.
  static pyref module(std::string const &module_name) { return PyImport_ImportModule(module_name.c_str()); }
  static pyref string(std::string const &s) { return PyString_FromString(s.c_str());} 
 };
@@ -58,18 +53,19 @@ class pyref {
 //---------------------  py_converters -----------------------------
 
 // default version for a wrapped type. To be specialized later.
+// py2c behaviour is undefined is is_convertible return false
 template<typename T> struct py_converter;
- //static PyObject * c2py(T const & x);
- //static T & py2c(PyObject * ob);
- //static bool is_convertible(PyObject * ob, bool raise_exception);
- //
+ //{ 
+ //  static PyObject * c2py(T const & x);
+ //  static T & py2c(PyObject * ob);
+ //  static bool is_convertible(PyObject * ob, bool raise_exception);
+ //}
 
 // We only use these functions in the code, not converter
 // TODO : Does c2py return NULL in failure ? Or is it undefined...
 template <typename T> static PyObject *convert_to_python(T &&x) {
  return py_converter<typename std::decay<T>::type>::c2py(std::forward<T>(x));
 }
-// can convert_from_python raise a triqs exception ? NO
 template<typename T> static auto convert_from_python(PyObject * ob) -> decltype(py_converter<T>::py2c(ob)) { return py_converter<T>::py2c(ob);}
 template <typename T> static bool convertible_from_python(PyObject *ob, bool raise_exception) {
  return py_converter<T>::is_convertible(ob, raise_exception);
@@ -371,19 +367,6 @@ template <> struct py_converter<triqs::arrays::range> {
  }
 };
 
-// --- gf<U...> ----
-/*template <typename ...U > struct py_converter<triqs::gfs::gf<U...>> {
- using conv = py_converter<triqs::gfs::gf_view<U...>>;
- static PyObject *c2py(triqs::gfs::gf<U...> &g) { return conv::c2py(g); }
- static PyObject *c2py(triqs::gfs::gf<U...> &&g) { return conv::c2py(g); }
- static bool is_convertible(PyObject *ob, bool raise_exception) {
-  return conv::is_convertible(ob,raise_exception);
- }
- static triqs::gfs::gf<U...> py2c(PyObject *ob) { return conv::py2c(ob); }
-};
-*/
-
-
 // --- nothing  <--> None ----
 #ifdef TRIQS_GF_INCLUDED
 
@@ -409,9 +392,7 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
  using gf_view_type = triqs::gfs::gf_view<T...>;
  using c_type = triqs::gfs::gf_view<triqs::gfs::block_index, gf_type>;
 
- static PyObject *c2py(c_type &&g) { return c2py(g);}
-
- static PyObject *c2py(c_type &g) {
+ static PyObject *c2py(c_type g) {
   // rm the view_proxy
   std::vector<gf_view_type> vg; 
   vg.reserve(g.data().size());
@@ -445,6 +426,29 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
   pyref gfs = x.attr("_BlockGf__GFlist");
   return make_block_gf_view_from_vector(convert_from_python<std::vector<std::string>>(names),
                                         convert_from_python<std::vector<gf_view_type>>(gfs));
+ }
+};
+
+// Converter for scalar_valued gf : reinterpreted as 1x1 matrix
+template <typename Variable, typename Opt> struct py_converter<triqs::gfs::gf_view<Variable, triqs::gfs::scalar_valued, Opt>>{
+
+ using conv = py_converter<triqs::gfs::gf_view<Variable, triqs::gfs::matrix_valued, Opt>>;
+ using c_t = triqs::gfs::gf_view<Variable, triqs::gfs::scalar_valued, Opt>;
+
+ static PyObject *c2py(c_t g) {
+  return conv::c2py(reinterpret_scalar_valued_gf_as_matrix_valued(g));
+ }
+
+ static bool is_convertible(PyObject *ob, bool raise_exception) {
+  if (!conv::is_convertible(ob,raise_exception)) return false;
+  auto g = conv::py2c(ob); // matrix view
+  if (get_target_shape(g) == make_shape(1,1)) return true;
+  if (raise_exception) PyErr_SetString(PyExc_RuntimeError,"The green function is not of dimension 1x1 : can not be reinterpreted as a scalar_valued Green function");
+  return false;
+ }
+
+ static c_t py2c(PyObject *ob) {
+  return slice_target_to_scalar(conv::py2c(ob),0,0);
  }
 };
 
