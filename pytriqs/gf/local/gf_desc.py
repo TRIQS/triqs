@@ -4,6 +4,7 @@ module = module_(full_name = "pytriqs.gf.local.gf", doc = "Local Green functions
 module.add_include("<triqs/gfs.hpp>")
 module.add_include("<triqs/gfs/local/functions.hpp>")
 module.add_include("<triqs/gfs/local/pade.hpp>")
+module.add_include("<triqs/gfs/local/legendre_matsubara.hpp>")
 module.add_using("namespace triqs::arrays")
 module.add_using("namespace triqs::gfs")
 module.add_using("namespace triqs::gfs::local")
@@ -147,6 +148,15 @@ m.add_constructor(signature = "(double beta, statistic_enum S, int n_max, mesh_k
 module.add_class(m)
 
 ########################
+##   MeshLegendre
+########################
+
+m = make_mesh( py_type = "MeshLegendre", c_tag = "legendre", has_kind = False, is_im = True)
+m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
+
+module.add_class(m)
+
+########################
 ##   MeshReFreq
 ########################
 
@@ -188,7 +198,7 @@ module.add_class(m)
 ##   Gf Generic : common to all 5 one variable gf
 ########################
 
-def make_gf( py_type, c_tag, is_complex_data = True, is_im = False) :
+def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = True) :
 
     data_type = "std::complex<double>" if is_complex_data else "double"
 
@@ -232,9 +242,10 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False) :
                    getter = cfunction(calling_pattern="auto result = get_target_shape(self_c)", signature = "shape_type()"),
                    doc = "")
 
-    g.add_property(name = "tail",
-                   getter = cfunction(c_name="singularity", signature = "local::tail_view()"),
-                   doc ="The high frequency tail")
+    if has_tail:
+        g.add_property(name = "tail",
+                       getter = cfunction(c_name="singularity", signature = "local::tail_view()"),
+                       doc ="The high frequency tail")
 
     g.add_property(name = "indices",
                    getter = cfunction(calling_pattern="auto result = self_c.indices()[0]", signature = "std::vector<std::string>()"),
@@ -292,7 +303,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False) :
                  signature = "gf<%s>()"%c_tag,
                  doc = "Returns a NEW gf, with transposed data...")
 
-    if c_tag != "imtime" :
+    if c_tag not in [ "imtime", "legendre"] :
         g.add_method(py_name = "conjugate", calling_pattern = "auto result = conj(self_c)" , signature = "gf<%s>()"%c_tag, doc = "Return a new function, conjugate of self.")
 
     g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag)) #'x'), (self.c_type,'y')], rtype = self.c_type)
@@ -337,6 +348,11 @@ g.add_method(py_name = "set_from_fourier",
              calling_pattern = "self_c = fourier(*gt)",
              doc = """Fills self with the Fourier transform of gt""")
 
+g.add_method(py_name = "set_from_legendre",
+             signature = "void(gf_view<legendre> gl)",
+             calling_pattern = "self_c = legendre_to_imfreq(*gl)",
+             doc = """Fills self with the legendre transform of gl""")
+ 
 # Pure python methods
 g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail")
 g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.fit_tail")
@@ -354,8 +370,56 @@ g.add_method(py_name = "set_from_inverse_fourier",
              calling_pattern = "self_c = inverse_fourier(*gw)",
              doc = """Fills self with the Inverse Fourier transform of gw""")
 
+g.add_method(py_name = "set_from_legendre",
+             signature = "void(gf_view<legendre> gl)",
+             calling_pattern = "self_c = legendre_to_imtime(*gl)",
+             doc = """Fills self with the legendre transform of gl""")
+ 
 # add the call operator using the interpolation
 g.add_call(signature = "matrix<double>(double tau)", doc = "G(tau) using interpolation")
+
+module.add_class(g)
+
+########################
+##   GfLegendre
+########################
+
+# the domain
+dom = class_( py_type = "GfLegendreDomain",
+        c_type = "legendre_domain",
+        c_type_absolute = "triqs::gfs::legendre_domain",
+        serializable= "tuple",
+       )
+
+dom.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
+module.add_class(dom)
+
+g = make_gf(py_type = "GfLegendre", c_tag = "legendre", is_im = True, is_complex_data = False, has_tail =False)
+
+g.add_method(py_name = "density",
+             calling_pattern = "auto result = density(self_c)",
+             signature = "matrix_view<double>()",
+             doc = "Density, as a matrix, computed from a Matsubara sum")
+
+g.add_method(py_name = "total_density",
+             calling_pattern = "auto result = trace(density(self_c))",
+             signature = "double()",
+             doc = "Trace of density")
+
+g.add_method(py_name = "set_from_imtime",
+             signature = "void(gf_view<imtime> gt)",
+             calling_pattern = "self_c = imtime_to_legendre(*gt)",
+             doc = """Fills self with the legendre transform of gt""")
+
+g.add_method(py_name = "set_from_imfreq",
+             signature = "void(gf_view<imfreq> gw)",
+             calling_pattern = "self_c = imfreq_to_legendre(*gw)",
+             doc = """Fills self with the legendre transform of gw""")
+
+g.add_method(py_name = "enforce_discontinuity",
+             signature = "void(matrix_view<double> disc)",
+             calling_pattern = "enforce_discontinuity(self_c, disc)",
+             doc = """Modify the coefficient to adjust discontinuity""")
 
 module.add_class(g)
 
@@ -373,7 +437,7 @@ g.add_method(py_name = "set_from_fourier",
 g.add_method(py_name = "set_from_pade",
              signature = "void(gf_view<imfreq> gw, int n_points = 100, double freq_offset = 0.0)",
              calling_pattern = "pade(self_c,*gw,n_points, freq_offset)",
-             doc = """ TO BE WRITTEN""")
+             doc = """TO BE WRITTEN""")
 
 module.add_class(g)
 

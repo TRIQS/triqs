@@ -173,6 +173,8 @@ namespace gfs {
  };
 
  inline nothing transpose(nothing) { return {};}
+ inline nothing inverse(nothing) { return {};}
+ inline nothing conj(nothing) { return {};}
  template <typename... T> nothing slice_target(nothing, T...) { return nothing(); }
  template <typename T> nothing operator+(nothing, T const &) { return nothing(); }
  template <typename T> nothing operator-(nothing, T const &) { return nothing(); }
