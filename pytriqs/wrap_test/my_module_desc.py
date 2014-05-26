@@ -39,6 +39,9 @@ g.add_method(py_name = "sm", c_name = "sm", signature = "int (int u)", is_static
 # older syntax, giving rtype and args (better for automatic scripts).
 g.add_method(py_name = "m1f", c_name = "m1", rtype = "double", doc = "DOC of mm", args = [("int","u"), ("double","y",3)])
 
+g.add_method(py_name = "long_fnt", c_name = "long_fnt", signature = "void()", release_GIL_and_enable_signal = True)
+g.add_member(c_name = "count", c_type = "int",read_only=True)
+
 # add the call operator 
 g.add_call(signature = "int(int u)", doc = "call op")
 

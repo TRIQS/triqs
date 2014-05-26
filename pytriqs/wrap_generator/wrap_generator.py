@@ -42,8 +42,16 @@ class cfunction :
               auto result = self_c.method_name(a,b,c).
               INCOMPATIBLE with c_name.
               If c_name is given, the default calling_pattern is made.
+        - release_GIL_and_enable_signal [expert only] :
+          For long functions in pure C++.
+          If true the GIL is released in the call of the C++ function and restored after the call.
+          It also saves the signal handler of python and restore it after the call,
+          and enable the C++ triqs signal_handler.
+          This allows e.g. to intercept Ctrl-C during the long C++ function.
+          The requirement is that the function wrapped must be pure C++, i.e.
+          no call whatsoever to the python C API, directly or indirectly.
     """
-    def __init__(self, doc = '', is_method = False, no_self_c = False, is_static = False, **kw) :
+    def __init__(self, doc = '', is_method = False, no_self_c = False, is_static = False, release_GIL_and_enable_signal = False, **kw) :
       """ Use keywords to build, from the data. Cf doc of class"""
       self.c_name = kw.pop("c_name", None)
       self._calling_pattern = kw.pop("calling_pattern", None)
@@ -54,6 +62,7 @@ class cfunction :
       self.doc = doc
       self.is_method = is_method
       self.is_static = is_static
+      self.release_GIL_and_enable_signal = release_GIL_and_enable_signal
       self.args = []
       if 'signature' in kw :
         assert 'rtype' not in kw and 'args' not in kw, "signature and rtype/args are not compatible"
@@ -511,7 +520,6 @@ class module_ :
                the wrapped_type list
         """
         f = None
-        print "argv", sys.argv
         for path in module_path_list : 
           hppfile = path + '/' +  modulename + '.hpp'
           if os.path.exists(hppfile) : 

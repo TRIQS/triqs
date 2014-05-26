@@ -1,9 +1,8 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,38 +18,30 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "signal_handler.hpp"
-//#include <time.h>
 #include <signal.h>
 #include <string.h>
-//#include <stdlib.h>
-//#include <unistd.h>
-// volatile sig_atomic_t signal_handler::keep_going;
-
-
+#include <vector>
+#include <iostream>
 namespace triqs {
+namespace signal_handler {
 
- /*
-    namespace signal_details { 
- // The signal handler just clears the flag and re-enables itself. 
- // to replace with settimer if needed 
- void catch_alarm (int sig)
- {
- MySignalHandler::keep_going = 0;
- signal (sig, Catch_alarm);
- }
- }
- */
- std::vector<int> signal_handler::signals_list;
+ namespace {
 
- signal_handler::signal_handler() {
-  static bool initialized;
-  if (initialized)  return;
-  //keep_going = 1; /* Establish a handler for SIGALRM signals. */  
+  std::vector<int> signals_list;
+  bool initialized = false;
+
+  void slot(int signal) {
+   std::cerr << "TRIQS : Received signal " << signal << std::endl;
+   signals_list.push_back(signal);
+  }
+ }
+
+ void start() {
+  if (initialized) return;
   static struct sigaction action;
   memset(&action, 0, sizeof(action));
-  action.sa_handler = &signal_handler::slot;
+  action.sa_handler = slot;
   sigaction(SIGINT, &action, NULL);
   sigaction(SIGTERM, &action, NULL);
   sigaction(SIGXCPU, &action, NULL);
@@ -58,15 +49,23 @@ namespace triqs {
   sigaction(SIGUSR1, &action, NULL);
   sigaction(SIGUSR2, &action, NULL);
   sigaction(SIGSTOP, &action, NULL);
-  //signal (SIGALRM, _MYSIGNAL::Catch_alarm);
-  //alarm (0);  
   initialized = true;
  }
 
- void signal_handler::slot(int signal) {
-  std::cerr << "Received signal " << signal << std::endl;
-  signals_list.push_back(signal);
+ void stop() {
+  signals_list.clear();
+  initialized = false;
  }
 
+ bool received(bool pop_) {
+  if (!initialized) start();
+  bool r = signals_list.size() != 0;
+  if (r && pop_) pop();
+  return r;
+ }
+
+ int last() { return signals_list.back(); }
+ void pop() { return signals_list.pop_back(); }
+}
 }
 

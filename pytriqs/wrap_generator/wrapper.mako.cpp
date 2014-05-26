@@ -16,6 +16,7 @@ using ${ns};
 %endfor
 
 #include <triqs/python_tools/wrapper_tools.hpp>
+#include <triqs/utility/signal_handler.hpp>
 using namespace triqs::py_tools;
 
 //--------------------- a dict of python function used in the module but not exposed to user (cf init function) ----------------
@@ -547,7 +548,26 @@ template<typename T>
        using self_class = ${self_c_type};
       %endif
       try {
+        %if overload.release_GIL_and_enable_signal :
+         PyOS_sighandler_t sig = PyOS_getsig(SIGINT);
+         triqs::signal_handler::start(); // start the C++ signal handler
+         Py_BEGIN_ALLOW_THREADS;
+	 try {
+        %endif
         ${overload.calling_pattern()}; // the call is here. It sets up "result" : sets up in the python layer.
+        %if overload.release_GIL_and_enable_signal :
+	 }
+	 catch(...) {
+	   // an error has occurred : clean GIL, handler and rethrow
+           Py_BLOCK_THREADS; // cf python include, ceval.h, line 72 comments and below.
+           triqs::signal_handler::stop(); // stop the C++ signal handler
+           PyOS_setsig(SIGINT, sig);
+           throw; //
+	 }
+         Py_END_ALLOW_THREADS;
+         triqs::signal_handler::stop();
+         PyOS_setsig(SIGINT, sig);
+        %endif
         %if not overload.is_constructor :
  	 %if overload.rtype != "void" :
          py_result = convert_to_python(std::move(result));
@@ -572,7 +592,7 @@ template<typename T>
      }
   %endif
     } // end overload ${overload.c_signature()}
-  % endfor # overload
+  %endfor # overload
 
   %if has_overloads :
    // finally, no overload was successful. Composing a detailed error message, with the reason of failure of all overload !

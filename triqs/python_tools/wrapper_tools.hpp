@@ -11,7 +11,10 @@
 
 // I can use the trace in triqs::exception
 #define CATCH_AND_RETURN(MESS,RET)\
-catch(triqs::exception const & e) {\
+ catch(triqs::keyboard_interrupt const & e) {\
+ PyErr_SetString(PyExc_KeyboardInterrupt, e.what());\
+ return RET; }\
+ catch(triqs::exception const & e) {\
  auto err = std::string("Error " MESS "\nC++ error was : \n") + e.what();\
  PyErr_SetString(PyExc_RuntimeError, err.c_str());\
  return RET; }\

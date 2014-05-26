@@ -4,7 +4,7 @@
 #include <ostream>
 #include <triqs/arrays.hpp>
 //#include <triqs/h5.hpp>
-
+#include <triqs/utility/signal_handler.hpp>
 namespace triqs { namespace py_tools { 
  class reductor;
  class reconstructor;
@@ -39,26 +39,18 @@ struct A {
   }
 
   static int sm(int i) { return i*2;}
-
+  
   int count =0;
 
   void long_fnt() {
 
-   PyOS_sighandler_t sig = PyOS_getsig(SIGINT);
-   Py_BEGIN_ALLOW_THREADS;
    for (int u = 0; u < 101; u +=10) {
     sleep(1);
-    if (!triqs::signal_handler().empty()) goto _end;
+    if (triqs::signal_handler::received(true)) TRIQS_KEYBOARD_INTERRUPT;
     count = u;
     std::cout << " inner count " << count << std::endl;
    }
    std::cout << " completed" << std::endl;
-  _end:
-
-   Py_END_ALLOW_THREADS;
-   PyOS_setsig(SIGINT, sig);
-
-   // PyErr_SetString(PyExc_KeyboardInterrupt, " ended long_fnt");
   }
 
   double m1(int u) const {
