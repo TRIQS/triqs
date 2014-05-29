@@ -60,8 +60,7 @@ Usage
 * You can install any python package for this local python installation, e.g. ::
 
    easy_install --upgrade ipython
-   easy_install --upgrade cython
 
-  and you have the latest ipython notebook, and cython
+  and you have the latest ipython notebook.
 
 

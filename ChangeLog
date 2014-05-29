@@ -1,10 +1,25 @@
 
 From version 1.0 to 1.2
 
+C++
+----
+
+* new wrapping of boost random generators. No effect on API.
+
+
+
 Python
 ----------
+
+* New wrapper tool to glue C++ and python. Cython is gone.
 
 gf:
  
  * transpose method now returns a NEW green function, like conjugate, etc...
+
+tail : 
+
+ * Suppress the possibility to save/load in h5 for a tail alone (must be part
+   of a gf). [ok ?]
+
 

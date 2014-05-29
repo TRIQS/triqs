@@ -7,7 +7,7 @@ The array, matrix, vector and their views are fully interoperable with the numpy
 
 .. warning::
 
-   Doc need to be largely improved here...
+   TO BE FULLY REWRITTEN
 
 
 From Python to C++
@@ -55,30 +55,10 @@ To be more precise, two cases must be distinguished.
   Python will *automatically* release the memory allocated by the C++ routine 
   when the array in no longer needed.
 
-Cython
-------------
-
-TRIQS main tool for interacing python/C++ code is Cython.
-We provide in pytriqs/pxd the cython interface arrays.pxd for the array classes.
-
 Examples
 -----------------
 
 Split in several files. --> also the theory above.
-
-Put here the array_cython example
-
-- a routine that take a view
-- a routine that take an array (beware to the copy).
-- a wrapped class.
-- a function that returns a new array from C++. Check references....
-
-
-.. code-block:: python 
-
-    import numpy,_testarray 
-    a=numpy.array([[1.0,2],[3,4]]) 
-    _testarray.f(a)
 
 
 Memory management

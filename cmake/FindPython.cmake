@@ -113,13 +113,6 @@ mark_as_advanced(PYTHON_SITE_PKG)
  mark_as_advanced(PYTHON_LIBRARY)
 
  #
- # Cython
- #
- EXEC_PYTHON_SCRIPT("from Cython.Compiler import Version as V;print V.version.split('.')[1]" PYTHON_CYTHON_VERSION )
- MESSAGE(STATUS "Found cython 0.${PYTHON_CYTHON_VERSION}.xxx")
- # check version here 
-
- #
  # libraries which must be linked in when embedding
  #
  EXEC_PYTHON_SCRIPT ("from distutils.sysconfig import * ;print (str(get_config_var('LOCALMODLIBS')) + ' ' + str(get_config_var('LIBS'))).strip()"

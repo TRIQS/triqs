@@ -83,9 +83,6 @@ on 10.8 and 10.9, (at least on the Mac of one of the developer !).
     pip install pyzmq
     pip install jinja2
     pip install ipython
-    pip install cython
-    # strangely, cython is not in bin, hence not in the path...
-    pushd /usr/local/bin && ln -s /usr/local/share/python/cython . && popd
 
 6. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax: :: 
   

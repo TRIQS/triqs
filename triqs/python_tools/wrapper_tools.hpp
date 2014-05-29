@@ -478,7 +478,7 @@ template <typename Variable, typename Opt> struct py_converter<triqs::gfs::gf_vi
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (!conv::is_convertible(ob,raise_exception)) return false;
   auto g = conv::py2c(ob); // matrix view
-  if (get_target_shape(g) == make_shape(1,1)) return true;
+  if (get_target_shape(g) == triqs::arrays::make_shape(1,1)) return true;
   if (raise_exception) PyErr_SetString(PyExc_RuntimeError,"The green function is not of dimension 1x1 : can not be reinterpreted as a scalar_valued Green function");
   return false;
  }

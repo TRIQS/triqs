@@ -27,7 +27,7 @@ for numerical computations with the following characteristics/goals :
 
    * work on a view of a numpy, 
    * create a array in C++, and return it as a numpy.
-   * mix the various kind of arrays transparently in C++ expressions and in cython code.
+   * mix the various kind of arrays transparently in C++ expressions.
 
 * **HDF5** : simple interface to hdf5 library to ease storing/retrieving into/from HDF5 files.
 

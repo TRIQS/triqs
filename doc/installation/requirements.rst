@@ -73,8 +73,6 @@ Libraries
 +------------------------+----------+------------------------------------------------------------------------+
 | matplotlib             | >= 0.99  | Python 2D plotting library                                             |
 +------------------------+----------+------------------------------------------------------------------------+
-| cython                 | >=0.17   | A language that allows to write C extensions for the Python language   |
-+------------------------+----------+------------------------------------------------------------------------+
 
 (1)  Since standard linux distributions (and macports on OS X) now provides openmpi, even on laptops, we avoid the unnecessary complication of maintaining a non-parallel version of TRIQS
  

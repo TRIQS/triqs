@@ -77,31 +77,43 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  endif ()
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
+################################################################
 # This function add the target to build a python module
-#
-# NickName =  
-# ModuleName = the python name of the module 
-# ModuleDest = path in the pytriqs tree [ FOR INSTALLATION ONLY] IMPROVE MAKE THIS OPTIONAL (for test) 
-macro (triqs_cython_module NickName ModuleName)
- message(STATUS "TRIQS: Preparing cython module ${NickName} with the interpreter ${TRIQS_PYTHON_INTERPRETER} ")
- get_filename_component(CYTHON_EXECUTABLE_PATH ${TRIQS_PYTHON_INTERPRETER} PATH)
- set(CYTHON_EXECUTABLE ${CYTHON_EXECUTABLE_PATH}/cython CACHE STRING "Path to the cython executable")
- set(cython_src ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}.pyx )
- FILE(GLOB all_pyx_src RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.pyx *.pxd )
- set(cython_wrap  ${CMAKE_CURRENT_BINARY_DIR}/wrap_${NickName}_by_cython.cpp)
- add_custom_command (OUTPUT ${cython_wrap} DEPENDS ${all_pyx_src} COMMAND ${CYTHON_EXECUTABLE} ${cython_src} -I ${CMAKE_CURRENT_SOURCE_DIR}/ -I@CMAKE_INSTALL_PREFIX@/include/pytriqs/  -I@CMAKE_INSTALL_PREFIX@/include/ -X embedsignature=True --cplus -o ${cython_wrap}  )
- add_custom_target(cython_${NickName} ALL DEPENDS ${cython_wrap})
+macro (triqs_python_extension ModuleName)
+ message(STATUS "Preparing extension module ${ModuleName}")
 
- add_library(${ModuleName} MODULE ${cython_wrap}  )
- set_target_properties(${ModuleName}  PROPERTIES PREFIX "") #eliminate the lib in front of the module name 
+ EXECUTE_PROCESS(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/include/pytriqs/converters/)
+
+ SET(wrap_name  ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_wrap.cpp)
+ SET(converter_name  ${CMAKE_BINARY_DIR}/include/pytriqs/converters/${ModuleName}.hpp)
+
+ # Adjust pythonpath so that pytriqs is visible and the wrap_generator too...
+ # pytriqs needed since we import modules with pure python method to extract the doc..
+ add_custom_command(OUTPUT ${wrap_name} ${converter_name} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py
+  COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py ${CMAKE_CURRENT_BINARY_DIR} && 
+          PYTHONPATH=@CMAKE_INSTALL_PREFIX@/share/triqs/wrap_generator:${CMAKE_BINARY_DIR}/ ${TRIQS_PYTHON_INTERPRETER} ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py
+   @CMAKE_INSTALL_PREFIX@/share/triqs/wrap_generator/wrapper.mako.cpp
+   ${wrap_name}
+   @CMAKE_INSTALL_PREFIX@/share/triqs/wrap_generator/py_converter_wrapper.mako.hpp
+   ${converter_name} )
+
+ #set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_TARGETS "python_wrap_${ModuleName}")
+
+ add_custom_target(python_wrap_${ModuleName} ALL DEPENDS ${wrap_name} ${converter_name})
+ add_dependencies(python_wrap_${ModuleName} py_copy ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py )
+
+ add_library(${ModuleName} MODULE ${wrap_name})
+ set_target_properties(${ModuleName} PROPERTIES PREFIX "") #eliminate the lib in front of the module name
  target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
+
  if (${ARGN} MATCHES "")
+   install (FILES ${converter_name} DESTINATION @TRIQS_PYTHON_LIB_DEST@/include/pytriqs/converters)
    install (TARGETS ${ModuleName} DESTINATION @TRIQS_PYTHON_LIB_DEST@/${ARGN}  )
  endif (${ARGN} MATCHES "")
- set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )
 
-endmacro (triqs_cython_module)
+endmacro (triqs_python_extension)
 
+################################################################
 
 # Also duplicate from the FindTriqsMacro.... ? Include ?
 macro (triqs_add_all_subdirectories_with_cmakelist)

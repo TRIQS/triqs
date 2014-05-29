@@ -66,6 +66,3 @@ useful links to learn python, ipython, scipy.
 
   * `SymPy <http://sympy.org/>`_ provides some formal computing capabilities.
 
-  * `Cython <http://cython.org/>`_ is a quick way to build simple `C` modules in
-    computationally intense case.
-    
