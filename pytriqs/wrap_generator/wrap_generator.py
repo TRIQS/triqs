@@ -57,10 +57,11 @@ class cfunction :
         def f(): # analyse the argument, be careful that , can also be in type, like A<B,C>, so we count the < >
             acc = ''
             for s in args.split(',') :
-                acc += (',' if acc else '') + s
+                acc += (',' if acc else '') + s.strip()
                 if acc.count('<') == acc.count('>') :
                     r, acc = acc,''
                     yield r
+        
         args = [ re.sub('=',' ',x).split() for x in f() if x] # list of (type, name, default) or (type, name)
       else:
           self.rtype = kw.pop("rtype", None)
@@ -351,12 +352,17 @@ class class_ :
         All arguments passed by keywords to function_ construction
         """
         assert 'c_name' not in kw, "No c_name here"
-        assert 'calling_pattern' not in kw, "No calling_pattern here"
-        f = cfunction(c_name = "__init__", is_constructor = True, **kw)
+        #assert 'calling_pattern' not in kw, "No calling_pattern here"
+        if  'calling_pattern' not in kw : kw['c_name'] = "__init__"
+        f = cfunction(is_constructor = True, **kw)
         build_type = regular_type_if_view_else_type(self.c_type) if self.c_type_is_view and build_from_regular_type else self.c_type
         all_args = ",".join([ ('*' if t in module_.wrapped_types else '') + n  for t,n,d in f.args])
         #all_args = ",".join([ ('*' if t in module_.wrapped_types else '') + n + (' = ' + d if d else '') for t,n,d in f.args])
-        f._calling_pattern = "((%s *)self)->_c ->"%self.py_type + ('operator =' if not self.c_type_is_view else 'rebind') + " (%s (%s));"%(build_type,all_args)
+        if  'calling_pattern' not in kw :
+           f._calling_pattern = "((%s *)self)->_c ->"%self.py_type + ('operator =' if not self.c_type_is_view else 'rebind') + " (%s (%s));"%(build_type,all_args)
+        else : 
+            f._calling_pattern = kw['calling_pattern'] + "\n ((%s *)self)->_c ->"%self.py_type + ('operator =' if not self.c_type_is_view else 'rebind') + " (std::move(result));"
+
         if not self.constructor : 
             self.constructor = pyfunction(py_name = "__init__", **kw)
             self.constructor.is_constructor = True

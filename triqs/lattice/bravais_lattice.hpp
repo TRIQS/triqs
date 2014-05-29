@@ -44,7 +44,7 @@ namespace lattice {
   bravais_lattice(matrix<double> const& units, std::vector<r_t> atom_orb_pos)
      : bravais_lattice(units, atom_orb_pos, std::vector<std::string>(atom_orb_pos.size(), "")) {}
   bravais_lattice(matrix<double> const& units) : bravais_lattice(units, std::vector<r_t>{{0, 0, 0}}) {}
-  bravais_lattice() : bravais_lattice(arrays::make_unit_matrix<double>(3)) {}
+  bravais_lattice() : bravais_lattice(arrays::make_unit_matrix<double>(2)) {}
 
   int n_orbitals() const { return atom_orb_name.size(); }
   arrays::matrix_const_view<double> units() const { return units_; }

@@ -150,11 +150,18 @@ static PyObject* ${c.py_type}_new(PyTypeObject *type, PyObject *args, PyObject *
   ${c.py_type} *self;
   self = (${c.py_type} *)type->tp_alloc(type, 0);
   if (self != NULL) {
+   try {
    %if not c.c_type_is_view :
     self->_c = new ${c.c_type}{};
    %else :
     self->_c = new ${c.c_type}{typename ${c.c_type}::regular_type{}}; // no default constructor for views
    %endif
+   }
+   catch (std::exception const & e) { 
+    std::cout  << e.what()<<std::endl;
+    PyErr_SetString(PyExc_RuntimeError, "Default constructor of class ${c.py_type} is throwing an exception !");
+    return NULL;
+   }
   }
   return (PyObject *)self;
 }
