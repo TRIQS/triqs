@@ -22,15 +22,14 @@ t = class_( py_type = "TailGf",
         arithmetic = ("algebra","double")
        )
 
-t.add_constructor(signature = "(int N1, int N2, int size=10, int order_min=-1)",
-                  doc = "DOC of constructor")
-#t.add_constructor(doc = "DOC of constructor", signature = "(array_view<dcomplex,3> d, array_view<long,2> m, long i)", python_precall = "tail_aux.tail_construct")
+t.add_constructor(signature = "(int N1, int N2, int n_order=10, int order_min=-1)",
+                  doc = "Constructs a new tail, of matrix size N1xN2, with n_order expansion starting at order_min")
 
 t.add_property(name = "data",
                getter = cfunction(c_name="data", signature = "array_view<dcomplex,3>()"),
                doc = "Access to the data array")
 
-##tail.add_property(name = "shape", getter = cfunction(c_name="shape", signature = "int()", doc = "Shape"))
+#t.add_property(name = "shape", getter = cfunction(c_name="shape", signature = "int()", doc = "Shape"))
 t.add_property(getter = cfunction(c_name="size", signature = "int()"),
                doc = "size")
 
@@ -80,6 +79,16 @@ t.add_setitem(calling_pattern = "self_c(i) = m",
               doc = "Sets the i-th coefficient of the expansion, or order Om^i")
 
 module.add_class(t)
+
+# Change C++ to make the same 
+#   def __repr__ (self) :
+#        omin = self.order_min
+#        while ((omin <= self.order_max) and (numpy.max(numpy.abs(self.data[omin-self.order_min,:,:])) < 1e-8)):
+#          omin = omin+1
+#        if omin == self.order_max+1:
+#          return "%s"%numpy.zeros(self.shape)
+#        else:
+#          return string.join([ "%s"%self[r]+ (" /" if r>0 else "") + " Om^%s"%(abs(r)) for r in range(omin, self.order_max+1) ] , " + ")
 
 ########################
 ##   enums
@@ -254,19 +263,19 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
     # backward compatibility
     g.add_property(name = "N1",
                    getter = cfunction(calling_pattern="int result = get_target_shape(self_c)[0]", signature = "int()"),
-                   doc = "")
+                   doc = "[Deprecated] equivalent to target_shape[0]")
     g.add_property(name = "N2",
                    getter = cfunction(calling_pattern="int result = get_target_shape(self_c)[1]", signature = "int()"),
-                   doc = "")
+                   doc = "[Deprecated] equivalent to target_shape[1]")
 
     # []
     g.add_getitem(signature = "gf_view<%s>(range r1, range r2)"%c_tag,
                   calling_pattern= "auto result = slice_target(self_c,r1,r2)",
-                  doc = " DOC to be written ")
+                  doc = "Returns a sliced view of the Green function")
 
     g.add_getitem(signature = "gf_view<%s>(std::string i1, std::string i2)"%c_tag,
                   calling_pattern= "auto result = slice_target(self_c,self_c.indices().convert_index(i1,0),self_c.indices().convert_index(i2,1))",
-                  doc = " DOC to be written ")
+                  doc = "Returns a sliced view of the Green function")
 
     g.add_setitem(signature = "void(PyObject* r1, PyObject* r2, PyObject* val)",
                   calling_pattern=
@@ -275,7 +284,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
                    pyref res = PyNumber_InPlaceLshift(gs_py,val);                      // gs <<= val
                   """,
                   no_self_c = True, # avoid a warning
-                  doc = " doc [] set ")
+                  doc = "g[....] <<= what_ever : fills the slice of the Green function with what_ever")
 
     # Plot
     g.add_property(name = "real",
@@ -289,6 +298,9 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
     # Lazy system
     g.add_pure_python_method("pytriqs.gf.local._gf_common.LazyCTX", py_name = "__lazy_expr_eval_context__")
 
+    # For basic ops, if the other operand is a lazy expression, build a lazy
+    # expression : this is done by this little external functions, for backward
+    # compatibility
     g.number_protocol['add'].python_precall      = "pytriqs.gf.local._gf_common.add_precall"
     g.number_protocol['subtract'].python_precall = "pytriqs.gf.local._gf_common.sub_precall"
     g.number_protocol['multiply'].python_precall = "pytriqs.gf.local._gf_common.mul_precall"
@@ -301,13 +313,13 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
     g.add_method(py_name = "transpose",
                  calling_pattern = "auto result = transpose(self_c)",
                  signature = "gf<%s>()"%c_tag,
-                 doc = "Returns a NEW gf, with transposed data...")
+                 doc = "Returns a NEW gf, with transposed data, i.e. it is NOT a transposed view.")
 
     if c_tag not in [ "imtime", "legendre"] :
         g.add_method(py_name = "conjugate", calling_pattern = "auto result = conj(self_c)" , signature = "gf<%s>()"%c_tag, doc = "Return a new function, conjugate of self.")
 
-    g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag)) #'x'), (self.c_type,'y')], rtype = self.c_type)
-    g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type)) #'x'), (self.c_type,'y')], rtype = self.c_type)
+    g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag)) 
+    g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type)) 
 
     g.add_method(py_name = "from_L_G_R",
                  calling_pattern = "self_c = L_G_R(l,g,r)",
@@ -329,9 +341,6 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
 ########################
 
 g = make_gf(py_type = "GfImFreq", c_tag = "imfreq", is_im = True)
-
-#g.add_method(py_name = "set_from_fourier", c_name = "fourier", signature = "void()", doc = "Fills self with the Fourier transform of gt")
-#g.add_method(py_name = "set_from_legendre", c_name = "fourier", signature = "void()", doc = "Fills self with the Legendre transform of gl")
 
 g.add_method(py_name = "density",
              calling_pattern = "auto result = density(self_c)",
@@ -455,6 +464,7 @@ g.add_method(py_name = "set_from_inverse_fourier",
 module.add_class(g)
 
 # EXPERIMENTAL : global fourier functions....
+# To be replaced by make_gf(fourier...)).
 
 module.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<retime>(gf_view<refreq> gw)", doc ="")
 
