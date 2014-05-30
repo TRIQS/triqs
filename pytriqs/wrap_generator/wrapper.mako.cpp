@@ -151,11 +151,12 @@ static PyObject* ${c.py_type}_new(PyTypeObject *type, PyObject *args, PyObject *
   self = (${c.py_type} *)type->tp_alloc(type, 0);
   if (self != NULL) {
    try {
-   %if not c.c_type_is_view :
-    self->_c = new ${c.c_type}{};
-   %else :
-    self->_c = new ${c.c_type}{typename ${c.c_type}::regular_type{}}; // no default constructor for views
-   %endif
+   self->_c = NULL;
+   ##//%if not c.c_type_is_view :
+   ##// self->_c = new ${c.c_type}{};
+   ##//%else :
+   ##// self->_c = new ${c.c_type}{typename ${c.c_type}::regular_type{}}; // no default constructor for views
+   ##//%endif
    }
    catch (std::exception const & e) { 
     std::cout  << e.what()<<std::endl;
@@ -168,7 +169,7 @@ static PyObject* ${c.py_type}_new(PyTypeObject *type, PyObject *args, PyObject *
 
 // dealloc
 static void ${c.py_type}_dealloc(${c.py_type}* self) {
-  delete self->_c;
+  if (self->_c != NULL) delete self->_c; // should never be null, but I protect it anyway
   self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -365,7 +366,6 @@ static PyTypeObject ${c.py_type}Type = {
     ${c.py_type}_new,                 /* tp_new */
 };
 
-
 //--------------------- converters for the class c -----------------------------
 
 namespace triqs { namespace py_tools { 
@@ -381,10 +381,18 @@ template <> struct py_converter<${c.c_type}> {
   return (PyObject *)self;
  }
  
- static ${c.c_type} & py2c(PyObject * ob){ return *(((${c.py_type}*)ob)->_c);}
+ static ${c.c_type} & py2c(PyObject * ob){
+  auto *_c = ((${c.py_type} *)ob)->_c;
+  if (_c == NULL) TRIQS_RUNTIME_ERROR << "Severe internal error : _c is null in py2c for type ${c.c_type} !";
+  return *_c;
+ }
  
  static bool is_convertible(PyObject *ob, bool raise_exception){  
-  if (PyObject_TypeCheck(ob, & ${c.py_type}Type)) return true;
+  if (PyObject_TypeCheck(ob, & ${c.py_type}Type)) {
+   if (((${c.py_type} *)ob)->_c != NULL) return true;
+   if (raise_exception) PyErr_SetString(PyExc_TypeError, "Severe internal error : Python object of ${c.py_type} has a _c NULL pointer !!");
+   return false;
+  }
   if (raise_exception) PyErr_SetString(PyExc_TypeError, "Python object is not a ${c.py_type}");
   return false;
  }

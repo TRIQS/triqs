@@ -276,7 +276,6 @@ class class_ :
       # Init arithmetic
       # expect a tuple : "algebra", "scalar1", "scalar2", etc...
       self.number_protocol = {}
-      if not isinstance(arithmetic, tuple) : arithmetic = (arithmetic,)
       if arithmetic :
           if not isinstance(arithmetic, tuple) : arithmetic = (arithmetic,)
           add =  arithmetic[0] in ("algebra", "abelian_group", "vector_space", "only_add")
@@ -361,15 +360,25 @@ class class_ :
         #assert 'calling_pattern' not in kw, "No calling_pattern here"
         if  'calling_pattern' not in kw : kw['c_name'] = "__init__"
         f = cfunction(is_constructor = True, **kw)
-        build_type = regular_type_if_view_else_type(self.c_type) if self.c_type_is_view and build_from_regular_type else self.c_type
         all_args = ",".join([ ('*' if t in module_.wrapped_types else '') + n  for t,n,d in f.args])
-        #all_args = ",".join([ ('*' if t in module_.wrapped_types else '') + n + (' = ' + d if d else '') for t,n,d in f.args])
-        if  'calling_pattern' not in kw :
-           f._calling_pattern = "((%s *)self)->_c ->"%self.py_type + ('operator =' if not self.c_type_is_view else 'rebind') + " (%s (%s));"%(build_type,all_args)
-        else : 
-            f._calling_pattern = kw['calling_pattern'] + "\n ((%s *)self)->_c ->"%self.py_type + ('operator =' if not self.c_type_is_view else 'rebind') + " (std::move(result));"
+        ##all_args = ",".join([ ('*' if t in module_.wrapped_types else '') + n + (' = ' + d if d else '') for t,n,d in f.args])
+        # First version, where _new method use the default constructor
+        #build_type = regular_type_if_view_else_type(self.c_type) if self.c_type_is_view and build_from_regular_type else self.c_type
+        #if  'calling_pattern' not in kw :
+        #   f._calling_pattern = "((%s *)self)->_c ->"%self.py_type + ('operator =' if not self.c_type_is_view else 'rebind') + " (%s (%s));"%(build_type,all_args)
+        #else :
+        #    f._calling_pattern = kw['calling_pattern'] + "\n ((%s *)self)->_c ->"%self.py_type + ('operator =' if not self.c_type_is_view else 'rebind') + " (std::move(result));"
+        # Second version : using no default construction, but leaving the
+        # pointer null after _new
+        f._calling_pattern = ''
+        if  'calling_pattern' in kw :
+          f._calling_pattern, all_args = kw['calling_pattern'] + '\n', "std::move(result)"
+        if self.c_type_is_view and build_from_regular_type :
+          f._calling_pattern += "((%s *)self)->_c = new %s(%s (%s));"%(self.py_type, self.c_type,regular_type_if_view_else_type(self.c_type),all_args)
+        else :
+          f._calling_pattern += "((%s *)self)->_c = new %s (%s);"%(self.py_type, self.c_type,all_args)
 
-        if not self.constructor : 
+        if not self.constructor :
             self.constructor = pyfunction(py_name = "__init__", **kw)
             self.constructor.is_constructor = True
         self.constructor.overloads.append(f)
