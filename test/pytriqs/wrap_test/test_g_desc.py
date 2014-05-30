@@ -2,7 +2,7 @@ from wrap_generator import *
 
 # The module
 module = module_(full_name = "pytriqs.wrap_test.test_g", doc = " Doc of my_module ")
-module.add_include("<triqs/../pytriqs/wrap_test/g.hpp>") 
+module.add_include("<triqs/../test/pytriqs/wrap_test/g.hpp>") 
 module.add_include("<pytriqs/converters/gf.hpp>")
 
 module.add_function (name = "make_bgf", signature = "block_gf_view<imfreq> (double a)", doc = "DOC of print_a")

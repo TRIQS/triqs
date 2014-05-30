@@ -1,8 +1,8 @@
 from wrap_generator import *
 
 # The module
-module = module_(full_name = "pytriqs.wrap_test.my_module", doc = " Doc of my_module ")
-module.add_include("<triqs/../pytriqs/wrap_test/a.hpp>") 
+module = module_(full_name = "my_module", doc = " Doc of my_module ")
+module.add_include("<triqs/../test/pytriqs/wrap_test/a.hpp>") 
 module.add_include("<triqs/arrays.hpp>")
 
 # one class
@@ -25,7 +25,7 @@ g.add_method(py_name = "m1", c_name = "m1", signature = "double (int u)", doc = 
 g.add_method(py_name = "m1", c_name = "m2", signature = "double (double u)", doc = "DOC of m1...")
 
 # another version of the method, with some pre/post processing written in python
-g.add_method(py_name = "m1p", c_name = "m1", signature = "double (int u, double y = 3)", doc = "DOC of mm", python_precall = "pytriqs.wrap_test.aux.ffg", python_postcall = "pytriqs.wrap_test.aux.post1")
+g.add_method(py_name = "m1p", c_name = "m1", signature = "double (int u, double y = 3)", doc = "DOC of mm", python_precall = "aux.ffg", python_postcall = "aux.post1")
 
 # demo of adding a simple piece of C++ code, there is no C++ method corresponding
 g.add_method(py_name = "m1_x", calling_pattern = "bool result = (self_c.x >0) && (self_c.x < 10)" , signature = "bool()", doc = "A method which did not exist in C++")

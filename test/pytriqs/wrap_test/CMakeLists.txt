@@ -18,5 +18,7 @@ add_dependencies(python_wrap_my_moduleB python_wrap_my_module)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
-install (FILES ${CMAKE_SOURCE_DIR}/pytriqs/__init__.py.template DESTINATION "include/pytriqs/gf/local" RENAME __init__.py)
+# A sample test with text output
+add_triqs_test_txt(wrap_a)
+
 
