@@ -8,7 +8,8 @@ module.add_using("namespace triqs::params")
 # one class
 g = class_(
         py_type = "Parameters",
-        c_type = "triqs::params::parameters",
+        c_type = "parameters",
+        c_type_absolute = "triqs::params::parameters",
         #serializable= "tuple",
         is_printable= True,
         hdf5 = True,
@@ -35,6 +36,5 @@ g.add_setitem(signature = "void(const char * key, PyObject * ob)",
 module.add_class(g)
 
 if __name__ == '__main__' : 
-   module.generate_code(mako_template = sys.argv[1], wrap_file = sys.argv[2])
-   module.generate_py_converter_header(mako_template = sys.argv[3], wrap_file = sys.argv[4])
+   module.generate_code()
 

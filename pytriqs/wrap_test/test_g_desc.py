@@ -13,6 +13,5 @@ module.add_function (name = "pass_sgf", signature = "void (gf_view<imfreq,scalar
 
 
 if __name__ == '__main__' : 
-   module.generate_code(mako_template = sys.argv[1], wrap_file = sys.argv[2])
-   module.generate_py_converter_header(mako_template = sys.argv[3], wrap_file = sys.argv[4])
+   module.generate_code()
 

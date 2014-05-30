@@ -4,6 +4,11 @@ import os
 from mako.template import Template
 import importlib
 
+# the xxx_desc.py will always be called by cmake command, with the proper arguments
+# analyse sys.argv right now : we need it early for the use_module
+wrapper_mako, wrapper_target, header_mako, header_target = sys.argv[1:5]
+module_path_list = sys.argv[5:]
+
 # the correspondance c type -> py_type
 c_to_py_type = {'void' : 'None', 'int' : 'int', 'long' : 'int', 'double' : "float", "std::string" : "str"}
 
@@ -461,7 +466,7 @@ class module_ :
         - functions : dict : string -> function_. Modules functions. Key is the python name.
         - include_list : a list of files to include for compilation
     """
-    wrapped_types = {}
+    wrapped_types = []
 
     def __init__(self, full_name,  doc = '') : 
       self.full_name = full_name
@@ -474,12 +479,12 @@ class module_ :
       self.using =[]
       self.python_functions = {}
       self.hidden_python_functions = {}
-     
+      self.module_path_list = []
+
     def add_class(self, cls):
         if cls.py_type in self.classes : raise IndexError, "The class %s already exists"%cls.py_type
         self.classes[cls.py_type] = cls
-        self.wrapped_types[cls.c_type] = cls
-        self.wrapped_types[cls.c_type_absolute] = cls # we can call is by its name or its absolute name
+        self.wrapped_types += [cls.c_type, cls.c_type_absolute]  # we can call is by its name or its absolute name
 
     def add_function(self, **kw):
         if "name" in kw :
@@ -498,6 +503,30 @@ class module_ :
             self.python_functions[name or f.__name__] = python_function(name or f.__name__, f)
         else : 
             self.hidden_python_functions[name or f.__name__] = python_function(name or f.__name__, f)
+
+    def use_module(self,modulename) :
+        """ From the name of the module : 
+             - add the header file generated for this module to the include list
+             - read this file, extract the list of wrapped_types, and add it to
+               the wrapped_type list
+        """
+        f = None
+        print "argv", sys.argv
+        for path in module_path_list : 
+          hppfile = path + '/' +  modulename + '.hpp'
+          if os.path.exists(hppfile) : 
+              f = open(hppfile ,'r')
+              break
+        if not f : raise RuntimeError, "Can not find the module %s.\n  ... module_path_list = %s"%(modulename, self.module_path_list)
+
+        while f.readline().strip() != "// WrappedTypeList" : 
+            pass
+        l = f.readline()[3:] # // strip "// "
+        self.wrapped_types += eval(l)
+        self.add_include(hppfile)
+        print "Loading triqs wrapped module %s"%modulename
+        print " ...  found C++ header file %s"%hppfile
+        print " ...  found wrapped types %s"%l
 
     def add_include(self, *path) :
         self.include_list.extend(path)
@@ -527,7 +556,7 @@ class module_ :
         for n,f in class_.hidden_python_function.items() : 
             self.add_python_function(f,name = n, hidden=True)
 
-    def generate_code(self, mako_template, wrap_file) :
+    def generate_wrapper_code(self, mako_template, wrap_file) :
         self.prepare_for_generation()
         tpl = Template(filename=mako_template)
         rendered = tpl.render(module=self, regular_type_if_view_else_type= regular_type_if_view_else_type, is_type_a_view = is_type_a_view)
@@ -541,7 +570,8 @@ class module_ :
         with open(wrap_file,'w') as f:
            f.write(rendered)
 
-    #def generate_code_and_header(self, arglist) : 
-    #    self.generate_code(mako_template = arglist.argv[0], wrap_file = arglist.argv[1])
-    #    self.generate_py_converter_header(mako_template = arglist.argv[2], wrap_file = arglist.argv[3])
+    def generate_code(self) : 
+        self.generate_wrapper_code(mako_template = wrapper_mako, wrap_file = wrapper_target)
+        self.generate_py_converter_header(mako_template = header_mako, wrap_file = header_target)
  
+

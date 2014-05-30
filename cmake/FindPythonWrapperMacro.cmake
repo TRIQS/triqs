@@ -22,7 +22,9 @@ macro (triqs_python_extension ModuleName)
    ${CMAKE_SOURCE_DIR}/pytriqs/wrap_generator/wrapper.mako.cpp
    ${wrap_name}
    ${CMAKE_SOURCE_DIR}/pytriqs/wrap_generator/py_converter_wrapper.mako.hpp
-   ${converter_name} )
+   ${converter_name} 
+   ${CMAKE_BINARY_DIR}/include/pytriqs/converters/
+   )
 
  set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_TARGETS "python_wrap_${ModuleName}")
 

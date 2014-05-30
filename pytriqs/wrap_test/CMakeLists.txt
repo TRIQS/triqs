@@ -13,6 +13,9 @@ triqs_python_extension(my_moduleB wrap_test)
 triqs_python_extension(test_g wrap_test)
 # ??triqs_set_rpath_for_target(my_module)
 
+# the module B must be generated AFTER my_module since it uses some wrapped types...
+add_dependencies(python_wrap_my_moduleB python_wrap_my_module)
+
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 install (FILES ${CMAKE_SOURCE_DIR}/pytriqs/__init__.py.template DESTINATION "include/pytriqs/gf/local" RENAME __init__.py)

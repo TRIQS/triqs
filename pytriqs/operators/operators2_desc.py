@@ -51,6 +51,5 @@ module.add_function(name = "c_dag", signature="many_body_operator<double>(int i,
 
 # to generate the module code
 if __name__ == '__main__' : 
-   module.generate_code(mako_template = sys.argv[1], wrap_file = sys.argv[2])
-   module.generate_py_converter_header(mako_template = sys.argv[3], wrap_file = sys.argv[4])
+   module.generate_code()
 
