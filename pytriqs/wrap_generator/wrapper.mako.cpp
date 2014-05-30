@@ -302,7 +302,7 @@ static PyGetSetDef ${c.py_type}_getseters[] = {
 static PyMethodDef ${c.py_type}_methods[] = {
    %for meth_name, meth in c.methods.items():
     %if not meth_name.startswith('__') :
-    {"${meth_name}", (PyCFunction)${c.py_type}_${meth_name}, METH_VARARGS| METH_KEYWORDS, "${c.methods[meth_name].generate_doc()}" },
+    {"${meth_name}", (PyCFunction)${c.py_type}_${meth_name}, METH_VARARGS| METH_KEYWORDS ${"|METH_STATIC" if meth.is_static else ""}, "${c.methods[meth_name].generate_doc()}" },
     %endif
    %endfor
 %if c.serializable :
@@ -532,8 +532,11 @@ template<typename T>
      static char *kwlist[] = {${",".join([ '"%s"'%n for t,n,d in overload.args] + ["NULL"])}};
      static const char * format = "${overload.format()}";
      if (PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist ${"".join([ module.get_proper_converter(t) + ' ,&%s'%n for t,n,d in overload.args])})) {
-      %if overload.is_method and not overload.is_constructor and not overload.no_self_c :
+      %if overload.is_method and not overload.is_constructor and not overload.no_self_c and not overload.is_static :
       auto & self_c = convert_from_python<${self_c_type}>(self);
+      %endif
+      %if overload.is_static :
+       using self_class = ${self_c_type};
       %endif
       try {
         ${overload.calling_pattern()}; // the call is here. It sets up "result" : sets up in the python layer.

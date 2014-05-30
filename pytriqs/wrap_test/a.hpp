@@ -38,6 +38,28 @@ struct A {
     return x + 2 * u + 3 * y;
   }
 
+  static int sm(int i) { return i*2;}
+
+  int count =0;
+
+  void long_fnt() {
+
+   PyOS_sighandler_t sig = PyOS_getsig(SIGINT);
+   Py_BEGIN_ALLOW_THREADS;
+   for (int u = 0; u < 101; u +=10) {
+    sleep(1);
+    if (!triqs::signal_handler().empty()) goto _end;
+    count = u;
+    std::cout << " inner count " << count << std::endl;
+   }
+   std::cout << " completed" << std::endl;
+  _end:
+
+   Py_END_ALLOW_THREADS;
+   PyOS_setsig(SIGINT, sig);
+
+   // PyErr_SetString(PyExc_KeyboardInterrupt, " ended long_fnt");
+  }
 
   double m1(int u) const {
     std::cout << " calling m1 one arg " << u << std::endl;

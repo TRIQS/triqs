@@ -38,7 +38,7 @@ class cfunction :
               INCOMPATIBLE with c_name.
               If c_name is given, the default calling_pattern is made.
     """
-    def __init__(self, doc = '', is_method = False, no_self_c = False, **kw) :
+    def __init__(self, doc = '', is_method = False, no_self_c = False, is_static = False, **kw) :
       """ Use keywords to build, from the data. Cf doc of class"""
       self.c_name = kw.pop("c_name", None)
       self._calling_pattern = kw.pop("calling_pattern", None)
@@ -48,6 +48,7 @@ class cfunction :
       assert not(self.c_name and self._calling_pattern), "You can not specify c_name and calling_pattern"
       self.doc = doc
       self.is_method = is_method
+      self.is_static = is_static
       self.args = []
       if 'signature' in kw :
         assert 'rtype' not in kw and 'args' not in kw, "signature and rtype/args are not compatible"
@@ -81,7 +82,9 @@ class cfunction :
     def calling_pattern(self) :
         if self._calling_pattern : return self._calling_pattern
         s= "%s result = "%self.rtype if self.rtype != "void" else ""
-        self_c = "self_c." if self.is_method else ""
+        self_c = ""
+        if self.is_method: 
+            self_c = "self_c." if not self.is_static else "self_class::"
         # the wrapped types are called by pointer !
         # do we want to keep it this way ?
         return "%s %s%s(%s)"%(s,self_c, self.c_name , ",".join([ ('*' if t in module_.wrapped_types else '') + n for t,n,d in self.args]))
@@ -128,12 +131,13 @@ class pyfunction :
                            The function must take a python object, and return one...
         - module : module path to the function [pure python only]
     """
-    def __init__(self, py_name, is_method = False, doc = '', python_precall = None, python_postcall = None, arity = None, **unused) : 
+    def __init__(self, py_name, is_method = False, is_static = False, doc = '', python_precall = None, python_postcall = None, arity = None, **unused) : 
       """ Use keywords to build, from the data. Cf doc of class"""
       self.py_name =py_name       # name given in python 
       self.doc = doc        
       self.arity = arity
       self.is_method = is_method  # can be a method, a function...
+      self.is_static = is_static  # 
       self.python_precall, self.python_postcall  = python_precall, python_postcall
       self.overloads = [] # List of all C++ overloads
       self.do_implement = True # in some cases, we do not want to implement it automatically, (special methods).

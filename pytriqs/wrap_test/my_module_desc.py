@@ -30,6 +30,9 @@ g.add_method(py_name = "m1p", c_name = "m1", signature = "double (int u, double 
 # demo of adding a simple piece of C++ code, there is no C++ method corresponding
 g.add_method(py_name = "m1_x", calling_pattern = "bool result = (self_c.x >0) && (self_c.x < 10)" , signature = "bool()", doc = "A method which did not exist in C++")
 
+#
+g.add_method(py_name = "sm", c_name = "sm", signature = "int (int u)", is_static = True, doc = "a static method")
+
 # alternative syntax 
 #g.add_method(py_name = "m1", python_precall = "aux.ffg", python_postcall = "aux.post1").add_overload(c_name = "m1", rtype = "double", doc = "DOC of mm", args = [("int","u"), ("double","y",3)])
 
