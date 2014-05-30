@@ -173,7 +173,10 @@ namespace params {
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
   /// Convertions python <-> C++
   bool from_python_convertible(PyObject *ob) const { return p->from_python_convertible(ob); }
-  void set_from_python(PyObject *ob) { p->set_from_python(ob); }
+  void set_from_python(PyObject *ob) {
+   p->set_from_python(ob);
+   modified = true;
+  }
   PyObject *to_python() const { return p->to_python(); }
 #endif
 

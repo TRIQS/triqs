@@ -25,7 +25,7 @@ namespace triqs {
 
  void h5_write (group g, std::string const & name, std::string const & value) {
   try {
-   H5::StrType strdatatype(H5::PredType::C_S1, value.size());
+   H5::StrType strdatatype(H5::PredType::C_S1, value.size() + 1); // +1 for the 0 terminating char
    H5::DataSet ds = g.create_dataset(name, strdatatype, H5::DataSpace());
    ds.write((void*)(value.c_str()), strdatatype );
   }

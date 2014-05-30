@@ -74,6 +74,8 @@ int main(int argc, char **argv) {
  h5_write(top,"C",C);
  h5_write(top,"D",D);
 
+ h5_write(top,"S","");
+ 
  // testing scalar
  double x=2.3;
  h5_write(top, "x",x);

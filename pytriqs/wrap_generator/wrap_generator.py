@@ -276,6 +276,7 @@ class class_ :
       # Init arithmetic
       # expect a tuple : "algebra", "scalar1", "scalar2", etc...
       self.number_protocol = {}
+      if not isinstance(arithmetic, tuple) : arithmetic = (arithmetic,)
       if arithmetic :
           if not isinstance(arithmetic, tuple) : arithmetic = (arithmetic,)
           add =  arithmetic[0] in ("algebra", "abelian_group", "vector_space", "only_add")
