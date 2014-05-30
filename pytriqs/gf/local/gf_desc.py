@@ -95,11 +95,11 @@ module.add_class(t)
 ########################
 
 module.add_enum(c_name = "statistic_enum",
-                c_name_absolute = "triqs::gfs::statistic_enum",
+                c_namespace = "triqs::gfs",
                 values = ["Fermion","Boson"])
 
 module.add_enum(c_name = "mesh_kind",
-                c_name_absolute = "triqs::gfs::mesh_kind",
+                c_namespace = "triqs::gfs",
                 values = ["half_bins","full_bins","without_last"])
 
 ########################

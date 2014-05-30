@@ -277,6 +277,7 @@ class class_ :
       # expect a tuple : "algebra", "scalar1", "scalar2", etc...
       self.number_protocol = {}
       if arithmetic :
+          if not isinstance(arithmetic, tuple) : arithmetic = (arithmetic,)
           add =  arithmetic[0] in ("algebra", "abelian_group", "vector_space", "only_add")
           abelian_group = arithmetic[0] in ("algebra", "abelian_group", "vector_space")
           vector_space = arithmetic[0] in ("algebra", "vector_space")
@@ -435,9 +436,10 @@ class enum_ :
         - values : list of string representing the enumerated
         - doc : the doc string.
     """
-    def __init__(self, c_name, values, c_name_absolute = None, doc = '') : 
-      self.c_name, self.c_name_absolute, self.values, self.doc = c_name, c_name_absolute or c_name, values, doc
- 
+    def __init__(self, c_name, values, c_namespace ="", doc = '') : 
+        self.c_name, self.c_namespace, self.values, self.doc = c_name, c_namespace + "::", values, doc
+        self.c_name_absolute = self.c_namespace + self.c_name 
+
 class module_ :
     """
        Representation of a module
