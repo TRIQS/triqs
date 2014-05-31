@@ -37,7 +37,7 @@ static PyObject * _module_hidden_python_function = NULL;
 
 //--------------------- all functions/methods with args, kwds, including constructors -----------------------------
 
-%for py_meth, module_or_class_name, self_c_type in module.all_args_kw_functions() :
+%for py_meth, module_or_class_name, self_c_type in module._all_args_kw_functions() :
  static ${'PyObject*' if not py_meth.is_constructor else 'int'} ${module_or_class_name}_${py_meth.py_name}(PyObject *self, PyObject *args, PyObject *keywds);
 %endfor
 
@@ -89,7 +89,7 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v);
 
 //--------------------- reduce  -----------------------------
 
-%if c.serializable == "boost" :
+%if c.serializable == "via_string" :
  static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds);
 %endif
 
@@ -304,7 +304,7 @@ static PyGetSetDef ${c.py_type}_getseters[] = {
 static PyMethodDef ${c.py_type}_methods[] = {
    %for meth_name, meth in c.methods.items():
     %if not meth_name.startswith('__') :
-    {"${meth_name}", (PyCFunction)${c.py_type}_${meth_name}, METH_VARARGS| METH_KEYWORDS ${"|METH_STATIC" if meth.is_static else ""}, "${c.methods[meth_name].generate_doc()}" },
+    {"${meth_name}", (PyCFunction)${c.py_type}_${meth_name}, METH_VARARGS| METH_KEYWORDS ${"|METH_STATIC" if meth.is_static else ""}, "${c.methods[meth_name]._generate_doc()}" },
     %endif
    %endfor
 %if c.serializable :
@@ -467,7 +467,7 @@ template <> struct py_converter<${en.c_name}> {
 //  - wrapped types : we handle them by pointer
 //  - non wrapped_type : by value
 //  - view : needs to be rebinded, not assigned.
-// Selection of the converter for each type is done later,  Cf get_proper_converter.
+// Selection of the converter for each type is done later,  Cf _get_proper_converter.
 // take the object a pointer to the place into which convert the object.
 // return 1 (success), 0 (failure). If fails, also set the python exception which will be analyzed later.
 template<typename T>
@@ -491,7 +491,7 @@ template<typename T>
 
 //--------------------- define all functions/methods with args, kwds, including constructors -----------------------------
 
-%for py_meth, module_or_class_name, self_c_type in module.all_args_kw_functions() :
+%for py_meth, module_or_class_name, self_c_type in module._all_args_kw_functions() :
 
  static ${'PyObject*' if not py_meth.is_constructor else 'int'} ${module_or_class_name}_${py_meth.py_name}(PyObject *self, PyObject *args, PyObject *keywds) {
 
@@ -526,11 +526,11 @@ template<typename T>
 
   // If no overload, we avoid the err_list and let the error go through (to save some code).
   %for n_overload, overload in enumerate(py_meth.overloads) :
-    {// overload ${overload.c_signature()}
+    {// overload ${overload._get_c_signature()}
      // define the variable to be filled by the parsing method
      // wrapped types are converted to a pointer, other converted types to a value or a view
      %for t,n,d in overload.args :
-       %if t in module.wrapped_types :
+       %if t in module._wrapped_types :
        ${t}* ${n} = NULL; // ${t} is a wrapped type
        %elif is_type_a_view(t):
        ${t} ${n}  = typename ${t}::regular_type{}; // ${t} is a view, but not wrapped       	
@@ -539,8 +539,8 @@ template<typename T>
        %endif	
      %endfor
      static char *kwlist[] = {${",".join([ '"%s"'%n for t,n,d in overload.args] + ["NULL"])}};
-     static const char * format = "${overload.format()}";
-     if (PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist ${"".join([ module.get_proper_converter(t) + ' ,&%s'%n for t,n,d in overload.args])})) {
+     static const char * format = "${overload._parsing_format()}";
+     if (PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist ${"".join([ module._get_proper_converter(t) + ' ,&%s'%n for t,n,d in overload.args])})) {
       %if overload.is_method and not overload.is_constructor and not overload.no_self_c and not overload.is_static :
       auto & self_c = convert_from_python<${self_c_type}>(self);
       %endif
@@ -554,7 +554,7 @@ template<typename T>
          Py_BEGIN_ALLOW_THREADS;
 	 try {
         %endif
-        ${overload.calling_pattern()}; // the call is here. It sets up "result" : sets up in the python layer.
+        ${overload._get_calling_pattern()}; // the call is here. It sets up "result" : sets up in the python layer.
         %if overload.release_GIL_and_enable_signal :
 	 }
 	 catch(...) {
@@ -579,9 +579,9 @@ template<typename T>
         goto post_treatment; // eject, computation is done
       }
       %if not py_meth.is_constructor:
-      CATCH_AND_RETURN("calling C++ overload \n ${overload.c_signature()} \nin implementation of ${'method' if py_meth.is_method else 'function'} ${module_or_class_name}.${py_meth.py_name}", NULL);
+      CATCH_AND_RETURN("calling C++ overload \n ${overload._get_c_signature()} \nin implementation of ${'method' if py_meth.is_method else 'function'} ${module_or_class_name}.${py_meth.py_name}", NULL);
       %else:
-      CATCH_AND_RETURN ("in calling C++ overload of constructor :\n${overload.c_signature()}",-1);
+      CATCH_AND_RETURN ("in calling C++ overload of constructor :\n${overload._get_c_signature()}",-1);
       %endif
      }
   %if has_overloads :
@@ -591,7 +591,7 @@ template<typename T>
       Py_XDECREF(ptype); Py_XDECREF(ptraceback);
      }
   %endif
-    } // end overload ${overload.c_signature()}
+    } // end overload ${overload._get_c_signature()}
   %endfor # overload
 
   %if has_overloads :
@@ -599,7 +599,7 @@ template<typename T>
    {
     std::string err_list = "Error: no suitable C++ overload found in implementation of ${'method' if py_meth.is_method else 'function'} ${module_or_class_name}.${py_meth.py_name}\n";
     %for n_overload, overload in enumerate(py_meth.overloads) :
-      err_list += "\n ${overload.c_signature()} \n failed with the error : \n  ";
+      err_list += "\n ${overload._get_c_signature()} \n failed with the error : \n  ";
       if (errors[${n_overload}])err_list += PyString_AsString(errors[${n_overload}]);
       err_list +="\n";
       Py_XDECREF(errors[${n_overload}]);
@@ -695,7 +695,7 @@ static PyObject * ${c.py_type}__get_prop_${p.name} (PyObject *self, void *closur
     return py_fnt(self).new_ref();
   %else:
     auto & self_c = convert_from_python<${c.c_type}>(self);
-    ${p.getter.calling_pattern()}; // defines result, which can not be void (property would return None ??)
+    ${p.getter._get_calling_pattern()}; // defines result, which can not be void (property would return None ??)
     return convert_to_python(result);
   %endif
 }
@@ -721,10 +721,10 @@ static int ${c.py_type}__set_prop_${p.name} (PyObject *self, PyObject *value, vo
 static Py_ssize_t ${c.py_type}___len__(PyObject *self) {
  auto & self_c = convert_from_python<${c.c_type}>(self);
  try {
-  ${c.methods['__len__impl'].overloads[0].calling_pattern()};
+  ${c.methods['__len__impl'].overloads[0]._get_calling_pattern()};
   return result;
  }
- CATCH_AND_RETURN("in calling C++ function for __len__  :\n${overload.c_signature()}", -1);
+ CATCH_AND_RETURN("in calling C++ function for __len__  :\n${overload._get_c_signature()}", -1);
 }
 %endif
 
@@ -748,7 +748,7 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) 
 
 //--------------------- reduce  -----------------------------
 
-%if c.serializable == "boost" :
+%if c.serializable == "via_string" :
  // we make the unserialize function using the convertion of a C++ lambda !
  static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds) {
   static PyObject* pyfoo = NULL; // never need to decref it, it is static
@@ -892,13 +892,13 @@ static PyObject * ${c.py_type}_${op_name} (PyObject* v, PyObject *w){
   %for overload in op.overloads :
   if (convertible_from_python<${overload.args[0][0]}>(v,false) && convertible_from_python<${overload.args[1][0]}>(w,false)) {
    try {
-    ${regular_type_if_view_else_type(overload.rtype)} r = convert_from_python<${overload.args[0][0]}>(v) ${overload.calling_pattern()} convert_from_python<${overload.args[1][0]}>(w);
+    ${regular_type_if_view_else_type(overload.rtype)} r = convert_from_python<${overload.args[0][0]}>(v) ${overload._get_calling_pattern()} convert_from_python<${overload.args[1][0]}>(w);
     return convert_to_python(std::move(r)); // in two steps to force type for expression templates in C++
    }
-   CATCH_AND_RETURN("in calling C++ overload \n  ${overload.c_signature()} \nin implementation of operator ${overload.calling_pattern()} ", NULL)
+   CATCH_AND_RETURN("in calling C++ overload \n  ${overload._get_c_signature()} \nin implementation of operator ${overload._get_calling_pattern()} ", NULL)
   }
   %endfor
-  PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload.calling_pattern()} ");
+  PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload._get_calling_pattern()} ");
   return NULL;
 }
 
@@ -908,13 +908,13 @@ static PyObject * ${c.py_type}_${op_name} (PyObject *v){
   %for overload in op.overloads :
   if (py_converter<${overload.args[0][0]}>::is_convertible(v,false)) {
    try {
-    ${regular_type_if_view_else_type(overload.rtype)} r = ${overload.calling_pattern()}(convert_from_python<${overload.args[0][0]}>(v));
+    ${regular_type_if_view_else_type(overload.rtype)} r = ${overload._get_calling_pattern()}(convert_from_python<${overload.args[0][0]}>(v));
     return convert_to_python(std::move(r)); // in two steps to force type for expression templates in C++
    }
-   CATCH_AND_RETURN("in calling C++ overload \n  ${overload.c_signature()} \nin implementation of operator ${overload.calling_pattern()} ", NULL)
+   CATCH_AND_RETURN("in calling C++ overload \n  ${overload._get_c_signature()} \nin implementation of operator ${overload._get_calling_pattern()} ", NULL)
   }
   %endfor
-  PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload.calling_pattern()} ");
+  PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload._get_calling_pattern()} ");
   return NULL;
 }
 
@@ -968,7 +968,7 @@ PyObject* ${c.py_type}___iter__(PyObject *self) {
 // the table of the function of the module...
 static PyMethodDef module_methods[] = {
 %for pyf in module.functions.values():
-    {"${pyf.py_name}", (PyCFunction)${module.name}_${pyf.py_name}, METH_VARARGS| METH_KEYWORDS, "${pyf.generate_doc()}"},
+    {"${pyf.py_name}", (PyCFunction)${module.name}_${pyf.py_name}, METH_VARARGS| METH_KEYWORDS, "${pyf._generate_doc()}"},
 %endfor
 
 %for c in module.classes.values() :

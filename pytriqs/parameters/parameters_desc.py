@@ -20,7 +20,7 @@ g = class_(
 #add a constructor
 #g.add_constructor(doc = "DOC of constructor", args = [])
 
-g.add_method(py_name = "help", calling_pattern = "auto result = self_c.help()", signature = "std::string()", doc = "help")
+g.add_method(signature = "std::string help()", doc = "help")
 
 # add getitem/setitem ...
 g.add_getitem(signature = "PyObject *(const char * key)", 

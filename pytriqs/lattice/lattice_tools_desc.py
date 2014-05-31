@@ -26,24 +26,18 @@ bl.add_constructor(signature = "(matrix<double> units)",
 bl.add_constructor(signature = "()",
                    doc = "")
 
-bl.add_property(getter = cfunction(c_name="dim", signature = "int()"),
-                doc = "Dimension of the lattice")
+bl.add_property(getter = cfunction("int dim()"), doc = "Dimension of the lattice")
+bl.add_property(getter = cfunction("int n_orbitals()"), doc = "Number of orbitals")
+bl.add_property(getter = cfunction("matrix_const_view<double> units()"), doc = "Base vectors of the lattice")
 
-bl.add_property(getter = cfunction(c_name="n_orbitals", signature = "int()"),
-                doc = "Number of orbitals")
-
-bl.add_property(getter = cfunction(c_name="units", signature = "matrix_const_view<double>()"),
-                doc = "Base vectors of the lattice")
-
-bl.add_method(py_name = "lattice_to_real_coordinates", 
-              c_name = "lattice_to_real_coordinates",
-              signature = "r_t(r_t x)",
+bl.add_method(name = "lattice_to_real_coordinates", 
+              signature = "r_t lattice_to_real_coordinates(r_t x)",
               doc = "Transform into real coordinates.")
 
 module.add_class(bl)
 
 # ---------   TightBinding ----------------------------------
-tb = class_( py_type = "TightBinding",
+tb = class_(py_type = "TightBinding",
         c_type = "tight_binding",
         c_type_absolute = "triqs::lattice::tight_binding",
         #serializable= "tuple",
