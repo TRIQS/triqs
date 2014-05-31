@@ -470,6 +470,5 @@ module.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<re
 ##   Code generation
 ########################
 
-if __name__ == '__main__' :
-   module.generate_code()
+module.generate_code()
 

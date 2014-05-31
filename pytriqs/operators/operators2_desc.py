@@ -28,7 +28,5 @@ for name, doc in [ ("c","annihilation operator"), ("c_dag","creation operator")]
             ]:
         module.add_function(name = name, signature="many_body_operator<double>(%s)"%sign, doc=doc)
 
-# to generate the module code
-if __name__ == '__main__' :
-   module.generate_code()
+module.generate_code()
 

@@ -449,7 +449,7 @@ class class_ :
               otherwise the behaviour is undefined.
        """
         f = cfunction(signature, calling_pattern = calling_pattern, no_self_c = no_self_c, is_constructor = False,
-             is_method = True,  is_static = is_static, release_GIL_and_enable_signal = release_GIL_and_enable_signal, doc = doc, c_name = c_name)
+             is_method = True,  is_static = is_static, release_GIL_and_enable_signal = release_GIL_and_enable_signal, doc = doc, c_name = c_name or name)
         name = name or f.c_name
         if name not in self.methods :
             self.methods[name] = pyfunction(name = name, is_method = True, is_static = is_static, doc = doc, python_precall = python_precall, python_postcall = python_postcall)
