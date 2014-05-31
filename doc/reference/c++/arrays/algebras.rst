@@ -10,26 +10,7 @@ Arrays and matrices can be combined in formal algebraic expressions, which model
 This algebraic expressions can therefore be used in assignment array/matrix contructors.
 For example: 
 
-.. compileblock::
-
-   #include <triqs/arrays.hpp>
-   using triqs::arrays::array; using triqs::clef::placeholder;
-   int main() {  
-    // init
-    placeholder<0> i_; placeholder<1> j_;
-    array<long,2> A (2,2), B(2,2);
-    A(i_,j_) <<  i_ + j_ ; 
-    B(i_,j_) <<  i_ - j_ ; 
- 
-    // use expressions
-    array<long,2>   C = A+ 2*B;
-    array<double,2> D = 0.5 * A;  // Type promotion is automatic
-    std::cout<< "A= "<< A<< std::endl;
-    std::cout<< "B= "<< B<< std::endl;
-    std::cout<< "C= "<< C<< std::endl;
-    std::cout<< "D= "<< D<< std::endl;
-   }
-
+.. triqs_example:: ./algebras_0.cpp
 Arrays vs matrices
 ----------------------
 
@@ -37,16 +18,7 @@ Because their multiplication is not the same, arrays and matrices algebras can n
 Mixing them in expression would therefore be meaningless and it is therefore not allowed.
 However, you can always use e.g. `matrix_view` from a array of rank 2 :
   
-.. compileblock::
-    
-    #include <triqs/arrays.hpp>
-    using namespace triqs::arrays;
-    int main() {  
-     array<long,2> A(2,2); matrix<long,2> M(2,2);
-     //M + A; // --> ERROR. Rejected by the compiler.
-     M + make_matrix_view(A); //--> OK.
-    }
- 
+.. triqs_example:: ./algebras_1.cpp
 .. note::
 
    Making such a view is very cheap, it only copies the index systems. Nevertheless

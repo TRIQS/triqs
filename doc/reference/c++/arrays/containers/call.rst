@@ -30,19 +30,7 @@ It must be called with exactly `rank` size_t (or it is a compile time error).
 Example
 ^^^^^^^^^
 
-.. compileblock:: 
-
-    #include <triqs/arrays.hpp>
-    using namespace triqs::arrays;
-    int main(){
-       array<double,2> A(2,3);
-       A() = 0; //  assign 0 to A
-       A(0,0) = 5;  
-       A(1,1) = 2 * A(0,0); 
-       std::cout <<"A = "<< A << std::endl;
-    }
-
-
+.. triqs_example:: ./call_0.cpp
 Another ::
 
    A(1, range(0,2) )                      // 1d slice
@@ -78,20 +66,7 @@ The return type of the () operator is :
 Example
 ^^^^^^^^^^^^
 
-.. compileblock:: 
-
-    #include <triqs/arrays.hpp>
-    using namespace triqs::arrays; 
-    int main(){
-       array<double,2> A(4,4);
-       for(int i=0; i<4; ++i) for(int j=0; j<4; ++j)  A(i,j) = i+ 10*j; 
-       array_view<double,2> V = A(range(0,2), range(0,2)); 
-       std::cout <<"V = "<< V << std::endl;
-       V = -V;
-       std::cout <<"A = "<< A << std::endl;
-    }
-
-
+.. triqs_example:: ./call_1.cpp
 .. toctree::
    :hidden:
 
@@ -117,22 +92,7 @@ Example
 
 * **Example** : 
 
-.. compileblock::
-
-    #include <triqs/arrays.hpp>
-    using triqs::arrays::array; using triqs::clef::placeholder;
- 
-    int main(){
-       placeholder<0> i_; placeholder<1> j_;
-       array<double,2> A(2,2), B(2,2);  
-       
-       A(i_,j_) <<  i_ + 2*j_ ;
-       B(i_,j_) <<  A(j_,i_)/2; 
-       
-       std::cout << "A = "<<A << std::endl;
-       std::cout << "B = "<<B << std::endl;
-    }
-
+.. triqs_example:: ./call_2.cpp
 .. note:: 
    The syntax uses a <<, not = since the array is not assigned to an expression
    but filled by the evaluation thereof.

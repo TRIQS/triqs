@@ -29,19 +29,7 @@ apply
 
 *Solution* :
 
-.. compileblock::
-        
-    #include <triqs/utility/tuple_tools.hpp>
-    #include <iostream>
-    int main() {
-     
-    auto fun= [](int i, double x, double y, int k) {return 6*k + i - 1.3*x + 2*y;};
-    auto t = std::make_tuple(1,2.3,4.3,8);
-   
-    auto res = triqs::tuple::apply(fun,t);
-    std::cout  << " f(t) =" << res << std::endl ;
-    }
-
+.. triqs_example:: ./tupletools_0.cpp
 for_each 
 -------------------------------------------------------------------------
 
@@ -58,20 +46,4 @@ for_each
  
 *Solution* :
 
-.. compileblock::
-        
-    #include <triqs/utility/tuple_tools.hpp>
-    #include <iostream>
-    
-    struct print_t { template<typename T> void operator()(T x) { std::cout << x << " "; } };
-
-    int main() {
-     auto t = std::make_tuple(1,2.3,4.3,8, "hello");
-     triqs::tuple::for_each(t, print_t());
-
-     // C++14 solution : with generic lambda, there is no need to define a print_t ...
-     // triqs::tuple::for_each(t, [](auto x) { std::cout<<x<<" ";});
-    }
-
-
-
+.. triqs_example:: ./tupletools_1.cpp

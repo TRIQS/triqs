@@ -33,18 +33,7 @@ ellipsis
 
 * Example:
 
-  .. compileblock ::
-
-     #include <triqs/arrays.hpp>
-     using triqs::arrays::array; using triqs::arrays::ellipsis; 
-     int main(){
-      array<long,4> B(2,3,4,5) ;
-      B(0,ellipsis(),3)  ; // same as  B(0, range(),range(), 3 ) 
-      B(0,ellipsis(),2,3); // same as  B(0, range(), 2, 3 ) 
-      B(ellipsis(),2,3)  ; // same as  B( range(),range(),  2, 3 ) 
-     }
-
-
+  .. triqs_example:: ./range_ell_0.cpp
 * NB : there can be at most one ellipsis per expression (otherwise it would be meaningless).
 
 * Example of usage : 
@@ -52,25 +41,4 @@ ellipsis
   Ellipsis are useful to write generic algorithms. For example, imagine that you want to sum 
   arrays on their first index :
 
-  .. compileblock ::
-        
-      #include <triqs/arrays.hpp>
-      using triqs::arrays::array; using triqs::arrays::ellipsis; 
-      
-      // a generic function that sum array, array_view or in fact anything 
-      // with the right concept on its first dimension
-      template<typename ArrayType>
-       array<typename ArrayType::value_type, ArrayType::rank-1> sum0 (ArrayType const & A) {
-       array<typename ArrayType::value_type, ArrayType::rank-1> res = A(0,ellipsis());
-       for (size_t u =1; u< first_dim(A); ++u) res += A(u,ellipsis());
-       return res;
-       }
-
-      // test
-      int main(){
-        array<double,2> A(5,2); A()=2;
-        array<double,3> B(5,2,3); B() = 1;
-        std::cout<< sum0(A) << sum0(B) <<std::endl;
-      }
-
-
+  .. triqs_example:: ./range_ell_1.cpp

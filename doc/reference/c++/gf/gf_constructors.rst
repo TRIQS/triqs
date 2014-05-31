@@ -40,15 +40,4 @@ Examples
 There are more examples for each specializations in the corresponding pages.
 
 
-.. compileblock::
-
-    #include <triqs/gfs.hpp>
-    using namespace triqs::gfs;
-    int main(){
-     auto beta = 10.0;  
-     gf<imfreq> gf {  {beta, Fermion}, {1,1}};
-    }
-   
-
-
-
+.. triqs_example:: ./gf_constructors_0.cpp
