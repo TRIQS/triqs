@@ -591,6 +591,7 @@ class module_ :
         self.python_functions = {}
         self.hidden_python_functions = {}
         self.module_path_list = []
+        self._preamble = ''
 
     def add_class(self, cls):
         """
@@ -665,6 +666,12 @@ class module_ :
         Add the using statement into the generated wrapper (and NOT the header).
         """
         self.using.append(ns)
+
+    def add_preamble(self, preamble) :
+        """
+        Add the using statement into the generated wrapper (and NOT the header).
+        """
+        self._preamble += preamble + '\n'
 
     def use_module(self, modulename) :
         """

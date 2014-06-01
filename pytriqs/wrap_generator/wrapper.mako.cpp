@@ -19,6 +19,8 @@ using ${ns};
 #include <triqs/utility/signal_handler.hpp>
 using namespace triqs::py_tools;
 
+${module._preamble}
+
 //--------------------- a dict of python function used in the module but not exposed to user (cf init function) ----------------
 
 %if len(module.python_functions) + len(module.hidden_python_functions) > 0 : 
