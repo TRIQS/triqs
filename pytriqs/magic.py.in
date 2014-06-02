@@ -17,6 +17,7 @@ from IPython.utils.path import get_ipython_cache_dir
 __version__ = '0.1.0'
 
 triqs_path = "@CMAKE_INSTALL_PREFIX@"
+cxx_compiler = "@CMAKE_CXX_COMPILER@"
 converter_include_path = triqs_path + "/include/pytriqs/converters/"
 generator_path = triqs_path + "/share/triqs/wrap_generator"
 
@@ -32,6 +33,7 @@ add_library(ext MODULE ext_wrap.cpp)
 #add_library(ext MODULE ext.cpp ext_wrap.cpp)
 set_target_properties(ext PROPERTIES PREFIX "") #eliminate the lib in front of the module name
 target_link_libraries(ext ${TRIQS_LIBRARY_ALL})
+triqs_set_rpath_for_target(ext)
 """%triqs_path
 
 mod_dict = {
@@ -153,6 +155,7 @@ class TriqsMagics(Magics):
             os.mkdir(module_dirname)
         except :
             pass
+        #print "dir", module_dirname
 
         old_cwd = os.getcwd()
         try:
@@ -181,7 +184,8 @@ class TriqsMagics(Magics):
             if args.verbosity>0 : print "---------- Wrapper generator ------", out_generator
 
             # Call cmake
-            command_cmake = "cmake . -DTRIQS_PATH=" + triqs_path
+            #command_cmake = "CXX =" + cxx_compiler+ "  cmake . -DTRIQS_PATH=" + triqs_path
+            command_cmake = "cmake .  -DCMAKE_CXX_COMPILER="+ cxx_compiler+ " -DTRIQS_PATH=" + triqs_path
 
             try :
               out_cmake = subprocess.check_output(command_cmake, stderr=subprocess.STDOUT, shell=True)
