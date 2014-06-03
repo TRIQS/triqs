@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2013 by O. Parcollet
+ * Copyright (C) 2011 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,24 +18,39 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_H5_FULL_H
-#define TRIQS_H5_FULL_H
-#include "./h5/group.hpp"
-#include "./h5/scalar.hpp"
-#include "./h5/vector.hpp"
-#include "./h5/map.hpp"
-#include "./h5/string.hpp"
-//#include "./h5/make_h5_read_write.hpp"
+#pragma once
 
-// in some old version, the macro is not defined.
-#ifndef H5_VERSION_GE
+#include "group.hpp"
+#include "string.hpp"
+#include <map>
 
-#define H5_VERSION_GE(Maj,Min,Rel) \
-       (((H5_VERS_MAJOR==Maj) && (H5_VERS_MINOR==Min) && (H5_VERS_RELEASE>=Rel)) || \
-        ((H5_VERS_MAJOR==Maj) && (H5_VERS_MINOR>Min)) || \
-        (H5_VERS_MAJOR>Maj))
+namespace triqs {
 
-#endif
+ template <typename T>
+ std::string get_triqs_hdf5_data_scheme(std::map<std::string,T> const&) {
+  using triqs::get_triqs_hdf5_data_scheme;
+  return "std::map<string," + get_triqs_hdf5_data_scheme(T()) + ">";
+ }
 
-#endif
+ namespace h5 {
+
+  template<typename T>
+  void h5_write (group f, std::string const & name, std::map<std::string,T> const & M) {
+    auto gr = f.create_group(name);
+    for (auto& pvp : M) h5_write(gr, pvp.first, pvp.second);
+  }
+
+  template<typename T>
+  void h5_read (group f, std::string const & name, std::map<std::string,T> & M) {
+    auto gr = f.open_group(name);
+    M.clear();
+    T value;
+    for (auto const & x: gr.get_all_dataset_names()) {
+      h5_read(gr, x, value);
+      M.emplace(x, value);
+    }
+  }
+
+ }
+}
 
