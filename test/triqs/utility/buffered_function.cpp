@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 
  // a function that generates all the square ....
  int x = 0;
- auto f = [x]() mutable { return x * (x++); };
+ auto f = [x]() mutable { auto res=x*x; x++; return res; };
 
  // C++14 : init-capture 
  // auto f = [x=0]() mutable { return x*(x++);};
