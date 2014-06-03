@@ -4,6 +4,7 @@ from wrap_generator import *
 op = class_(
         py_type = "Operator",
         c_type = "many_body_operator<double>",
+        c_type_absolute = "triqs::utility::many_body_operator<double>",
         is_printable= True,
         arithmetic = ("algebra","with_unit","with_unary_minus","double")
         )
