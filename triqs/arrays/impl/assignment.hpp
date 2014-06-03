@@ -72,6 +72,9 @@ namespace triqs { namespace arrays {
   template<class RHS,class LHS> struct is_isp :
    std::integral_constant<bool, std::is_base_of<Tag::indexmap_storage_pair,RHS>::value && (!is_scalar_for<RHS,LHS>::value) > {};
 
+  /// RHS is special type that defines its own specialization of assign
+  template<class RHS,class LHS> struct is_special : std::false_type {};
+
 #define TRIQS_REJECT_ASSIGN_TO_CONST \
   static_assert( (!std::is_const<typename LHS::value_type>::value ), "Assignment : The value type of the LHS is const and cannot be assigned to !");
 #define TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR\
@@ -106,7 +109,7 @@ namespace triqs { namespace arrays {
 
     // -----------------   assignment for expressions RHS --------------------------------------------------
     template<typename LHS, typename RHS, char OP>
-     struct impl<LHS,RHS,OP, ENABLE_IFC( ImmutableCuboidArray<RHS>::value && (!is_scalar_for<RHS,LHS>::value) && (!is_isp<RHS,LHS>::value)) > {
+     struct impl<LHS,RHS,OP, ENABLE_IFC( ImmutableCuboidArray<RHS>::value && (!is_scalar_for<RHS,LHS>::value) && (!is_isp<RHS,LHS>::value)&& (!is_special<LHS,RHS>::value)) > {
       TRIQS_REJECT_ASSIGN_TO_CONST;
       TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR;
       typedef typename LHS::value_type value_type;

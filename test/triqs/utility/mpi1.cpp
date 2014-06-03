@@ -21,7 +21,7 @@
 #include <iostream>
 #include <type_traits>
 #include <triqs/arrays.hpp>
-#include <triqs/utility/mpi.hpp>
+#include <triqs/utility/mpi1.hpp>
 #include <iostream>
 #include <sstream>
 
