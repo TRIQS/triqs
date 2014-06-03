@@ -17,29 +17,29 @@ g = class_(
         )
 
 # add a constructor
-g.add_constructor(doc = "DOC of constructor", args = [])
+g.add_constructor(signature="()", doc = "DOC of constructor")
 
 # add a method m1, with 3 overloads in C++ : dispatch is done on the type of the arguments 
-g.add_method(py_name = "m1", c_name = "m1", signature = "double (int u, double y = 3)", doc = "DOC of m1")
-g.add_method(py_name = "m1", c_name = "m1", signature = "double (int u)", doc = "DOC of m1...")
-g.add_method(py_name = "m1", c_name = "m2", signature = "double (double u)", doc = "DOC of m1...")
+g.add_method(name = "m1", c_name = "m1", signature = "double (int u, double y = 3)", doc = "DOC of m1")
+g.add_method(name = "m1", c_name = "m1", signature = "double (int u)", doc = "DOC of m1...")
+g.add_method(name = "m1", c_name = "m2", signature = "double (double u)", doc = "DOC of m1...")
 
 # another version of the method, with some pre/post processing written in python
-g.add_method(py_name = "m1p", c_name = "m1", signature = "double (int u, double y = 3)", doc = "DOC of mm", python_precall = "aux.ffg", python_postcall = "aux.post1")
+g.add_method(name = "m1p", c_name = "m1", signature = "double (int u, double y = 3)", doc = "DOC of mm", python_precall = "aux.ffg", python_postcall = "aux.post1")
 
 # demo of adding a simple piece of C++ code, there is no C++ method corresponding
-g.add_method(py_name = "m1_x", calling_pattern = "bool result = (self_c.x >0) && (self_c.x < 10)" , signature = "bool()", doc = "A method which did not exist in C++")
+g.add_method(name = "m1_x", calling_pattern = "bool result = (self_c.x >0) && (self_c.x < 10)" , signature = "bool()", doc = "A method which did not exist in C++")
 
 #
-g.add_method(py_name = "sm", c_name = "sm", signature = "int (int u)", is_static = True, doc = "a static method")
+g.add_method(name = "sm", c_name = "sm", signature = "int (int u)", is_static = True, doc = "a static method")
 
 # alternative syntax 
-#g.add_method(py_name = "m1", python_precall = "aux.ffg", python_postcall = "aux.post1").add_overload(c_name = "m1", rtype = "double", doc = "DOC of mm", args = [("int","u"), ("double","y",3)])
+#g.add_method(name = "m1", python_precall = "aux.ffg", python_postcall = "aux.post1").add_overload(c_name = "m1", rtype = "double", doc = "DOC of mm", args = [("int","u"), ("double","y",3)])
 
 # older syntax, giving rtype and args (better for automatic scripts).
-g.add_method(py_name = "m1f", c_name = "m1", rtype = "double", doc = "DOC of mm", args = [("int","u"), ("double","y",3)])
+g.add_method(name = "m1f", c_name = "m1", signature = "double(int u, double y=3)", doc = "DOC of mm")
 
-g.add_method(py_name = "long_fnt", c_name = "long_fnt", signature = "void()", release_GIL_and_enable_signal = True)
+g.add_method(name = "long_fnt", c_name = "long_fnt", signature = "void()", release_GIL_and_enable_signal = True)
 g.add_member(c_name = "count", c_type = "int",read_only=True)
 
 # add the call operator 
@@ -88,9 +88,9 @@ module.add_function (name = "make_matrix", signature = "matrix_view<double>(int 
 
 module.add_function (name = "iter_on_range", signature = "void (range r)" , doc = "DOC ....")
 
-module.add_function (name = "make_fnt_ii", rtype = "std::function<int(int,int)>", doc = "....", args = [])
-module.add_function (name = "make_fnt_iid", rtype = "std::function<int(int,int,double)>", doc = "....", args = [])
-module.add_function (name = "make_fnt_void", rtype = "std::function<void(int,int)>", doc = "....", args = [])
+module.add_function (name = "make_fnt_ii", signature = {'c_name': 'make_fnt_ii', 'rtype': "std::function<int(int,int)>", 'args': []}, doc = "....")
+module.add_function (name = "make_fnt_iid", signature = {'c_name': 'make_fnt_iid', 'rtype': "std::function<int(int,int,double)>", 'args': []}, doc = "....")
+module.add_function (name = "make_fnt_void", signature = {'c_name': 'make_fnt_void', 'rtype': "std::function<void(int,int)>", 'args': []}, doc = "....")
 
 module.add_function (name = "use_fnt_ii", signature = "void(std::function<int(int,int)> f)", doc = "....")
 module.add_function (name = "use_fnt_iid", signature = "void(std::function<int(int,int,double)> f)", doc = "....")
