@@ -1,24 +1,13 @@
 
-SET(PYTHON_SOURCES 
-  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/aux.py
-)
-
-# Install python sources
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/wrap_test)
-
 # Build C extension module 
-triqs_python_extension(my_module wrap_test)
-triqs_python_extension(my_moduleB wrap_test)
-triqs_python_extension(test_g wrap_test)
-# ??triqs_set_rpath_for_target(my_module)
+triqs_python_extension(my_module)
+triqs_python_extension(my_moduleB)
+triqs_python_extension(test_g)
 
 # the module B must be generated AFTER my_module since it uses some wrapped types...
 add_dependencies(python_wrap_my_moduleB python_wrap_my_module)
-
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 # A sample test with text output
 add_triqs_test_txt(wrap_a)
-
 
