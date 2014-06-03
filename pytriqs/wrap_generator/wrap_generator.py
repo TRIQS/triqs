@@ -498,7 +498,7 @@ class class_ :
                raise
            self.pure_python_methods[rename or name] = pure_pyfunction_from_module(name = name, module = module), 'module', process_doc(doc)
         elif callable(f) :
-           assert name == None
+           assert rename == None
            self.hidden_python_function[f.__name__] = f
            self.pure_python_methods[f.__name__] = f.__name__, 'inline', process_doc(f.__doc__)
         else : raise ValueError, "argument f must be callable or a string"
@@ -692,9 +692,9 @@ class module_ :
         l = f.readline()[3:] # // strip "// "
         self._wrapped_types += eval(l)
         self.add_include(hppfile)
-        print "Loading triqs wrapped module %s"%modulename
-        print " ...  found C++ header file %s"%hppfile
-        print " ...  found wrapped types %s"%l
+        #print "Loading triqs wrapped module %s"%modulename
+        #print " ...  found C++ header file %s"%hppfile
+        #print " ...  found wrapped types %s"%l
 
     class _enum :
         def __init__(self, c_name, values, c_namespace, doc) :
