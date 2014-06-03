@@ -33,6 +33,7 @@ use_fnt_iid(fc2)
 fp2 = lambda i,j,a : a+ i + 20*j
 use_fnt_iid(fp2)
 
+print map_to_mapvec({'a':1, "b":2, "sjkdf":5})
 
 from pytriqs.archive import *
 import pytriqs.archive.hdf_archive_schemes

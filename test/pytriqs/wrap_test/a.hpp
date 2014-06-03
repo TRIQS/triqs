@@ -184,6 +184,11 @@ inline void print_matrix(matrix<double> const &M) {
   // std::cout  << M <<std::endl;
 }
 
+inline std::map<std::string,std::vector<int>> map_to_mapvec(std::map<std::string,int> const &m) {
+  std::map<std::string,std::vector<int>> mm;
+  for(auto const &x: m) mm.emplace(x.first, std::vector<int>{x.second, 3, 5});
+  return mm;
+}
 
 inline std::function<int(int,int)>  make_fnt_ii() {
  return [](int i, int j) { return i + 2*j;}; 
