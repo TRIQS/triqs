@@ -40,6 +40,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 link_libraries( ${link_libs} triqs)
 
+find_package(TestCSimple)
 macro(all_tests )
 FILE(GLOB ExampleList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 FOREACH(example ${ExampleList}) 
