@@ -37,6 +37,9 @@ try {
 
  auto G_w_wn_view = G_w_wn();
  auto G_w_wn_sl0_a = partial_eval<0>(G_w_wn(), 8);
+ 
+ //decltype(G_w_wn_sl0_a.mesh())::zozo();
+
  static_assert(std::is_same<typename std::remove_reference<decltype(G_w_wn_sl0_a.mesh())>::type, const gf_mesh<imfreq>>::value, "oops");
  //auto G_w_wn_curry0_a = curry0(G_w_wn);
  //auto G_w_wn_sl0_a = slice_mesh0(G_w_wn(), 8);

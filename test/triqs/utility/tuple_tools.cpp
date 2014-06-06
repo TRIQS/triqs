@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #include <triqs/utility/tuple_tools.hpp>
-#include <iostream>
 #include <cmath>
 #include <stdexcept>
 #include <functional>
@@ -28,10 +27,6 @@
 
 struct fun { 
  double operator()(int i, double x, double y, int k) {  return 6*k + i - 1.3*x + 2*y;}
-};
-
-struct fun2 { 
- double operator()(double x, double y) {  return x+y;}
 };
 
 struct print_t {
@@ -74,12 +69,8 @@ int main(int argc, char **argv) {
  }
 
  {
-  auto r = triqs::tuple::apply_on_zip(fun2(),t1,t2);
-  std::cerr  << " [f(a,b) for (a,b) in zip(t1,t2)] =" 
-   << std::get<0>(r) << " "
-   << std::get<1>(r) << " "
-   << std::get<2>(r) << " "
-   << std::get<3>(r) << std::endl;
+  auto r = triqs::tuple::map_on_zip_v2([](double x, double y) { return x + y; }, t1, t2);
+  std::cerr  << " [f(a,b) for (a,b) in zip(t1,t2)] =" << r << std::endl; 
  }
 
   std::cerr  << "  ----- fold ----"<< std::endl ;
@@ -103,7 +94,7 @@ int main(int argc, char **argv) {
  }
 
  {
-  auto res = triqs::tuple::fold_on_zip([](double x, double y, double r) { return x+ 2*y +r;}, t1,t2, 0);
+  auto res = triqs::tuple::fold([](double x, double y, double r) { return x+ 2*y +r;}, t1,t2,0);
   std::cerr  << " " << res << std::endl ;
   if ( std::abs((res -  35.6)) > 1.e-13) throw std::runtime_error(" ");
  }
@@ -161,9 +152,6 @@ int main(int argc, char **argv) {
 
   auto t2= std::make_tuple(0,1);
   std::cout << "filter out "<< t2 << triqs::tuple::filter_out<0>(t2)<< std::endl; 
-
-  typedef typename triqs::tuple::filter_t_tr< decltype(t), 0,2,3>::type TY;
-  static_assert(std::is_same<TY, decltype(triqs::tuple::filter<0,2,3>(t))>::value, "EEE");
  }
 
  { // filter

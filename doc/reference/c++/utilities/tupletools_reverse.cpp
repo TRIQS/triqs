@@ -6,5 +6,6 @@ int main() {
  auto l = [](double x) { std::cout << x << " "; };
 
  triqs::tuple::for_each(t, l);
+ std::cout << std::endl;
+ triqs::tuple::for_each(reverse(t), l);
 }
-

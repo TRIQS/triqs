@@ -26,6 +26,33 @@
 // backward compat. C++11 compilers.
 // new stuff in 
 
+// C++14 detection in gcc (4.9 like recent clang).
+#if __cplusplus > 201103L
+
+#ifndef __cpp_generic_lambdas
+#define __cpp_generic_lambdas
+#endif
+
+#ifndef __cpp_decltype_auto
+#define __cpp_decltype_auto
+#endif
+
+#ifndef __cpp_return_type_deduction 
+#define __cpp_return_type_deduction 
+#endif
+
+#endif
+
+// C++11 workaround
+#if not defined(__cpp_return_type_deduction) or not defined(__cpp_decltype_auto)
+#define TRIQS_C11
+#define AUTO_DECL auto
+#define RETURN(X,...) ->decltype(X) { __VA_ARGS__; return X;}
+#else
+#define AUTO_DECL decltype(auto)
+#define RETURN(X,...) { __VA_ARGS__; return X;}
+#endif 
+
 namespace std { 
  namespace c14 {
 
@@ -130,3 +157,6 @@ namespace std {
 namespace std14 { 
  using namespace std::c14;
 }
+
+
+

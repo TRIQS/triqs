@@ -3,8 +3,10 @@
 
 int main() {
  auto t = std::make_tuple(1, 2.3, 4.3, 8);
- auto l = [](double x) { std::cout << x << " "; };
+ auto l = [](double x) { return -x; };
 
- triqs::tuple::for_each(t, l);
+ auto res = triqs::tuple::map(l, t);
+
+ std::cout << res << std::endl;
 }
 

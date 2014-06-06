@@ -164,7 +164,7 @@ namespace gfs {
    {
     static constexpr int R = sizeof...(Args);
     // build the evaluators, as a tuple of ( evaluator<Ms> ( mesh_component, args))
-    triqs::tuple::call_on_zip(_poly_lambda(), evals, g->mesh().components(), std::make_tuple(args...));
+    triqs::tuple::for_each_zip(_poly_lambda(), evals, g->mesh().components(), std::make_tuple(args...));
     return std::get<R - 1>(evals)(make_binder<R - 2>(g, std::make_tuple(), evals));
    }
   };
