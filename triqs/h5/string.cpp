@@ -19,33 +19,44 @@
  *
  ******************************************************************************/
 #include "./string.hpp"
-namespace triqs { 
- 
- namespace h5 {
+#include "./base.hpp"
+namespace triqs {
 
- void h5_write (group g, std::string const & name, std::string const & value) {
-  try {
-   H5::StrType strdatatype(H5::PredType::C_S1, value.size() + 1); // +1 for the 0 terminating char
-   H5::DataSet ds = g.create_dataset(name, strdatatype, H5::DataSpace());
-   ds.write((void*)(value.c_str()), strdatatype );
-  }
-  TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+namespace h5 {
+
+ void h5_write(group g, std::string const& name, std::string const& value) {
+
+  datatype strdatatype = H5Tcopy(H5T_C_S1);
+  // auto status = H5Tset_size (strdatatype, H5T_VARIABLE);
+  auto status = H5Tset_size(strdatatype, value.size() + 1);
+
+  dataspace space = H5Screate(H5S_SCALAR);
+  dataset ds = g.create_dataset(name, strdatatype, space);
+
+  auto err = H5Dwrite(ds, strdatatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)(value.c_str()));
+  if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the string named" << name << " in the group" << g.name();
  }
 
- void h5_read (group g, std::string const & name, std::string & value) {
-  try {
-   H5::DataSet ds = g.open_dataset(name);
-   H5::DataSpace dataspace = ds.getSpace();
-   int rank = dataspace.getSimpleExtentNdims();
-   if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a string and got rank !=0";
-   size_t size = ds.getStorageSize();
-   H5::StrType strdatatype(H5::PredType::C_S1, size);
-   std::vector<char> buf(size+1, 0x00);
-   ds.read( (void *)(&buf[0]), strdatatype, H5::DataSpace(), H5::DataSpace() );
-   value = ""; value.append( &(buf.front()) );
-  }
-  TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
- }
+ // ------------
 
-}}
+ void h5_read(group g, std::string const& name, std::string& value) {
+  dataset ds = g.open_dataset(name);
+  h5::dataspace d_space = H5Dget_space(ds);
+  int rank = H5Sget_simple_extent_ndims(d_space);
+  if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a string and got rank !=0";
+  size_t size = H5Dget_storage_size(ds);
+
+  datatype strdatatype = H5Tcopy(H5T_C_S1);
+  auto status = H5Tset_size(strdatatype, size);
+  // auto status = H5Tset_size (strdatatype, H5T_VARIABLE);
+
+  std::vector<char> buf(size + 1, 0x00);
+  auto err = H5Dread(ds, strdatatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, &buf[0]);
+  if (err < 0) TRIQS_RUNTIME_ERROR << "Error reading the string named" << name << " in the group" << g.name();
+
+  value = "";
+  value.append(&(buf.front()));
+ }
+}
+}
 

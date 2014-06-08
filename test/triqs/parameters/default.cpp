@@ -4,6 +4,7 @@
 
 using namespace triqs::params;
 using namespace triqs::arrays;
+namespace h5 = triqs::h5;
 
 int main() {
  try {  
@@ -76,20 +77,20 @@ int main() {
 
  // hdf5 
  {
-   H5::H5File file( "ess.h5", H5F_ACC_TRUNC );
+   h5::file file( "ess.h5", H5F_ACC_TRUNC );
    h5_write( file, "Parameters", P);
  }
 
   {
-   H5::H5File file( "ess.h5", H5F_ACC_RDONLY );
-   h5_read( file.openGroup("/"), "Parameters", P_vide);
+   h5::file file( "ess.h5", H5F_ACC_RDONLY );
+   h5_read( file, "Parameters", P_vide);
   }
 
   std::cout << P_vide << std::endl;
 
    {
-   H5::H5File file( "ess.h5", H5F_ACC_RDONLY );
-   h5_read( file.openGroup("/"), "Parameters", P);
+   h5::file file( "ess.h5", H5F_ACC_RDONLY );
+   h5_read( file, "Parameters", P);
   }
 
  //std::cout  << P << std::endl;

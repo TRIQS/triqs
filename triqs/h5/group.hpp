@@ -19,33 +19,40 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./base.hpp"
+#include "./file.hpp"
 
 namespace triqs {
 namespace h5 {
-
- // using hid_t = int;
 
  /**
   *  \brief A local derivative of Group.
   *  Rational : use ADL for h5_read/h5_write, catch and rethrow exception, add some policy for opening/creating
   */
- class group {
-  // hid_t _g_id, _parent_id;
-  H5::Group _g, _parent;
-  std::string _name_in_parent;
-  group(H5::Group g, H5::Group parent, std::string name_in_parent);
-  void _write_triqs_hdf5_data_scheme(const char *a);
+ class group : public h5_object {
+  void _write_triqs_hdf5_data_scheme(const char *a); // impl.
 
   public:
-  group() = default;
-  group(group const &) = default;
-  group(H5::Group g) : _g(g) {}
-  group(H5::H5File f); /// Takes the "/" group at the top of the file
-  group(std::string const &filename, int flag);
-  group(hid_t id_, bool is_group);
+  group() = default; // for python converter only
 
-  bool has_parent() const { return _name_in_parent != ""; }
+  ///
+  group(group const &) = default;
+
+  /// Takes the "/" group at the top of the file
+  group(h5::file f);
+
+  /**
+   * Takes ownership of the id [expert only]
+   * id can be :
+   *  - a file : in this case, make a group on /
+   *  - a group : in this case, take the id of the group. DOES NOT take ownership of the ref
+   */
+  group(hid_t id_);
+
+  // [expert only]. If not present, the obj is casted to hid_t and there is a ref. leak
+  group(h5_object obj);
+
+  /// Name of the group
+  std::string name() const;
 
   ///  Write the triqs tag of the group if it is an object.
   template <typename T> void write_triqs_hdf5_data_scheme(T const &obj) {
@@ -57,15 +64,15 @@ namespace h5 {
 
   ///
   bool has_key(std::string const &key) const;
-  ///
 
+  ///
   void unlink_key_if_exists(std::string const &key) const;
 
   /// Open a subgroup. Throw it if does not exists
   group open_group(std::string const &key) const;
 
   /// Open an existing DataSet. Throw it if does not exists
-  H5::DataSet open_dataset(std::string const &key) const;
+  dataset open_dataset(std::string const &key) const;
 
   /**
    * \brief Create a subgroup.
@@ -73,29 +80,20 @@ namespace h5 {
    * \param delete_if_exists  Unlink the group if it exists
    */
   group create_group(std::string const &key, bool delete_if_exists = true) const;
-  
+
   /**
    * \brief Create a dataset.
    * \param key The name of the subgroup
    *
    * NB : It unlinks the dataset if it exists.
    */
-  H5::DataSet create_dataset(std::string const &key, const H5::DataType &data_type, const H5::DataSpace &data_space,
-                             const H5::DSetCreatPropList &create_plist= H5::DSetCreatPropList::DEFAULT) const;
-
-  /// Returns all names of subgroup of key in G
-  std::vector<std::string> get_all_subgroup_names(std::string const &key) const;
+  dataset create_dataset(std::string const &key, datatype ty, dataspace sp, hid_t pl = H5P_DEFAULT) const;
 
   /// Returns all names of subgroup of  G
   std::vector<std::string> get_all_subgroup_names() const;
 
-  /// Returns all names of dataset of key in G
-  std::vector<std::string> get_all_dataset_names(std::string const &key) const;
-
   /// Returns all names of dataset of G
   std::vector<std::string> get_all_dataset_names() const;
-
-  void write_string_attribute (std::string const & obj_name, std::string const & attr_name, std::string const & value);
  };
 }
 }

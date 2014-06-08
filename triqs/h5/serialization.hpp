@@ -19,9 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-//#include <hdf5.h>
-#include <triqs/h5.hpp>
-#include <triqs/utility/view_tools.hpp>
+#include "./base.hpp"
 
 //#define CHECK_OR_THROW(Cond, Mess)
 #define CHECK_OR_THROW(Cond, Mess)                                                                                               \
@@ -32,61 +30,51 @@ namespace h5 {
 
  template <typename T> std::string serialize(T const &x) {
 
-  hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
-  CHECK_OR_THROW((fapl_id >= 0), "creating fapl");
+  proplist fapl = H5Pcreate(H5P_FILE_ACCESS);
+  CHECK_OR_THROW((fapl >= 0), "creating fapl");
 
-  auto err = H5Pset_fapl_core(fapl_id, (size_t)(64 * 1024), false);
+  auto err = H5Pset_fapl_core(fapl, (size_t)(64 * 1024), false);
   CHECK_OR_THROW((err >= 0), "setting core file driver in fapl.");
 
-  hid_t file_id = H5Fcreate("serialization", 0, H5P_DEFAULT, fapl_id);
-  CHECK_OR_THROW((file_id >= 0), "created core file");
+  h5::file f = H5Fcreate("serialization", 0, H5P_DEFAULT, fapl);
+  CHECK_OR_THROW((f.is_valid()), "created core file");
 
-  auto gr = triqs::h5::group(file_id, false);
+  auto gr = triqs::h5::group(f);
   h5_write(gr, "object", x);
 
-  err = H5Fflush(file_id, H5F_SCOPE_GLOBAL);
+  err = H5Fflush(f, H5F_SCOPE_GLOBAL);
   CHECK_OR_THROW((err >= 0), "flushed core file.");
 
-  ssize_t image_len = H5Fget_file_image(file_id, NULL, (size_t)0);
+  ssize_t image_len = H5Fget_file_image(f, NULL, (size_t)0);
   CHECK_OR_THROW((image_len > 0), "got image file size");
 
   std::string buf(image_len, 0);
 
-  ssize_t bytes_read = H5Fget_file_image(file_id, (void *)&buf[0], (size_t)image_len);
+  ssize_t bytes_read = H5Fget_file_image(f, (void *)&buf[0], (size_t)image_len);
   CHECK_OR_THROW(bytes_read == image_len, "wrote file into image buffer");
-
-  err = H5Fclose(file_id);
-  CHECK_OR_THROW((err >= 0), "closed core file(1).");
-
-  err = H5Pclose(fapl_id);
-  CHECK_OR_THROW((err >= 0), "closed fapl(1).");
 
   return buf;
  }
 
+ // -----------------------------
+
  template <typename T> T deserialize(std::string const &buf) {
   T res;
 
-  hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
-  CHECK_OR_THROW((fapl_id >= 0), "creating fapl");
+  proplist fapl = H5Pcreate(H5P_FILE_ACCESS);
+  CHECK_OR_THROW((fapl >= 0), "creating fapl");
 
-  auto err = H5Pset_fapl_core(fapl_id, (size_t)(64 * 1024), false);
+  auto err = H5Pset_fapl_core(fapl, (size_t)(64 * 1024), false);
   CHECK_OR_THROW((err >= 0), "setting core file driver in fapl.");
 
-  err = H5Pset_file_image(fapl_id, (void *)&buf[0], buf.size());
+  err = H5Pset_file_image(fapl, (void *)&buf[0], buf.size());
   CHECK_OR_THROW((err >= 0), "set file image in fapl.");
 
-  hid_t file_id = H5Fopen("serialization", H5F_ACC_RDONLY, fapl_id);
-  CHECK_OR_THROW((file_id >= 0), "opened received file image file");
+  h5::file f = H5Fopen("serialization", H5F_ACC_RDONLY, fapl);
+  CHECK_OR_THROW((f.is_valid()), "opened received file image file");
 
-  auto gr = triqs::h5::group(file_id, false);
+  auto gr = triqs::h5::group(f);
   h5_read(gr, "object", res);
-
-  err = H5Fclose(file_id);
-  CHECK_OR_THROW((err >= 0), "closed core file(1).");
-
-  err = H5Pclose(fapl_id);
-  CHECK_OR_THROW((err >= 0), "closed fapl(1).");
 
   return res;
  }

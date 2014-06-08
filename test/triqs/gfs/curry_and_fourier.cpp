@@ -9,6 +9,7 @@
 #include <triqs/arrays.hpp>
 
 using namespace triqs::gfs;
+namespace h5 = triqs::h5;
 
 int main() {
 

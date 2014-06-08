@@ -22,18 +22,17 @@
 #include "./group.hpp"
 #include <cstring>
 
-namespace triqs { 
- 
+namespace triqs {
+
  inline std::string get_triqs_hdf5_data_scheme(std::string const & ) { return "string";}
- 
+
  namespace h5 {
 
  /**
   * \brief Write a string  into an hdf5 file
-  * \param f The h5 file or group of type H5::H5File or H5::Group
+  * \param f The h5 file or group
   * \param name The name of the hdf5 array in the file/group where the stack will be stored
   * \param value The string
-  * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
   */
  void h5_write (group g, std::string const & name, std::string const & value);
 
@@ -41,14 +40,13 @@ namespace triqs {
 
  /**
   * \brief Read a string from an hdf5 file
-  * \param f The h5 file or group of type H5::H5File or H5::Group
+  * \param f The h5 file or group
   * \param name The name of the hdf5 array in the file/group where the stack will be stored
   * \param value The string to fill
-  * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
   */
  void h5_read (group g, std::string const & name, std::string & value);
 
  inline void h5_read (group g, std::string const & name, char * s) = delete;
- 
+
 }}
 

@@ -19,36 +19,47 @@
  *
  ******************************************************************************/
 #include "./scalar.hpp"
-namespace triqs { namespace h5 {
+#include "./base.hpp"
+
+namespace triqs {
+namespace h5 {
 
  namespace {
 
- // TODO : Fix complex number ....
- 
- // S must be scalar 
- template <typename S> 
-  void h5_write_impl (group g, std::string const & name, S const & A) {
-   try {
-    g.unlink_key_if_exists(name);
-    H5::DataSet ds = g.create_dataset( name, data_type_file<S>(), H5::DataSpace() );
-    ds.write( (void *)(&A), data_type_memory<S>(), H5::DataSpace() );
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+  // TODO : Fix complex number ....
+
+  // S must be scalar
+  template <typename S> void h5_write_impl(group g, std::string const &key, S a) {
+
+   g.unlink_key_if_exists(key);
+
+   dataspace space = H5Screate(H5S_SCALAR);
+   auto ds = g.create_dataset(key, data_type_file<S>(), space);
+
+   auto err = H5Dwrite(ds, data_type_memory<S>(), H5S_ALL, H5S_ALL, H5P_DEFAULT, (void *)(&a));
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the scalar dataset " << key << " in the group" << g.name();
   }
 
- template <typename S> 
-  void h5_read_impl (group g, std::string const & name,  S & A) {
-   try {
-    H5::DataSet ds = g.open_dataset(name);
-    H5::DataSpace dataspace = ds.getSpace();
-    int rank = dataspace.getSimpleExtentNdims();
-    if (rank != 0) TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : expecting a scalar (rank =0)"
-     <<" while the array stored in the hdf5 file has rank = "<<rank;
-    ds.read( (void *)(&A), data_type_memory<S>(), H5::DataSpace() , H5::DataSpace() );
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+  //-------------------------------------------------------------
+
+  template <typename S> void h5_read_impl(group g, std::string const &name, S &A) {
+
+   dataset ds = g.open_dataset(name);
+   dataspace d_space = H5Dget_space(ds);
+
+   // check that rank is 0, it is a scalar.
+   int rank = H5Sget_simple_extent_ndims(d_space);
+   if (rank != 0)
+    TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : expecting a scalar (rank =0)"
+                        << " while the array stored in the hdf5 file has rank = " << rank;
+
+   herr_t err = H5Dread(ds, data_type_memory<S>(), H5S_ALL, H5S_ALL, H5P_DEFAULT, (void *)(&A));
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Error reading the scalar dataset " << name << " in the group" << g.name();
   }
  }
+
+// template <> void h5_write_impl(group g, std::string const &key, std::complex<double> a);
+// template <> void h5_read_impl(group g, std::string const &key, std::complex<double> &a);
 
  void h5_write(group g, std::string const &name, int const &x) { h5_write_impl(g, name, x); }
  void h5_write(group g, std::string const &name, long const &x) { h5_write_impl(g, name, x); }
@@ -58,7 +69,6 @@ namespace triqs { namespace h5 {
  void h5_write(group g, std::string const &name, double const &x) { h5_write_impl(g, name, x); }
  void h5_write(group g, std::string const &name, std::complex<double> const &x) { h5_write_impl(g, name, x); }
 
-
  void h5_read(group g, std::string const &name, int &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, long &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, size_t &x) { h5_read_impl(g, name, x); }
@@ -66,9 +76,6 @@ namespace triqs { namespace h5 {
  void h5_read(group g, std::string const &name, bool &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, double &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, std::complex<double> &x) { h5_read_impl(g, name, x); }
-
-
-}}
-
-
+}
+}
 

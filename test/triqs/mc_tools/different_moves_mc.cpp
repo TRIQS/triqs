@@ -7,6 +7,7 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
+namespace h5 = triqs::h5;
 
 triqs::arrays::array<std::complex<double>,1> make_array( std::complex<double> c){return {c}; };
 
@@ -54,7 +55,7 @@ struct compute_histo{
   }
   void collect_results(boost::mpi::communicator const &c) {
    H/=tot;
-   H5::H5File file("histo.h5",H5F_ACC_TRUNC);
+   h5::file file("histo.h5",H5F_ACC_TRUNC);
    h5_write(file,"H",H);
   }
 };
@@ -81,7 +82,7 @@ int main(int argc, char* argv[]) {
   int xmax=floor(4*sqrt(Length_Cycle) ); //max of the position registered in the histogram
   double pl=1.5, pr=1;  //non normalized probabilities for proposing a left or right move
 
-  H5::H5File file("params.h5",H5F_ACC_TRUNC);
+  h5::file file("params.h5",H5F_ACC_TRUNC);
   h5_write(file,"pr",make_array(pr));
   h5_write(file,"pl",make_array(pl));
   h5_write(file,"xmax",make_array(xmax));

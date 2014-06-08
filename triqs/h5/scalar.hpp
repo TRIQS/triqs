@@ -20,14 +20,15 @@
  ******************************************************************************/
 #pragma once
 #include "./group.hpp"
+#include <complex>
 namespace triqs { namespace h5 {
 
- // Issue several types are *implicitly* convertible to bool 
- // it could be confusing. Better to use int in hdf5 files. 
+ // Issue several types are *implicitly* convertible to bool
+ // it could be confusing. Better to use int in hdf5 files.
  void h5_write(group g, std::string const &name, int const &x);
  void h5_write(group g, std::string const &name, long const &x);
  void h5_write(group g, std::string const &name, size_t const &x);
- void h5_write(group g, std::string const &name, bool const &x); 
+ void h5_write(group g, std::string const &name, bool const &x);
  void h5_write(group g, std::string const &name, char const &x);
  void h5_write(group g, std::string const &name, double const &x);
  void h5_write(group g, std::string const &name, std::complex<double> const &x);

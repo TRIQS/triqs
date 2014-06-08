@@ -23,7 +23,7 @@ ${module._preamble}
 
 //--------------------- a dict of python function used in the module but not exposed to user (cf init function) ----------------
 
-%if len(module.python_functions) + len(module.hidden_python_functions) > 0 : 
+%if len(module.python_functions) + len(module.hidden_python_functions) > 0 :
 static PyObject * _module_hidden_python_function = NULL;
 %endif
 
@@ -63,7 +63,7 @@ static PyObject * ${c.py_type}__get_member_${m.py_name} (PyObject *self, void *c
 %if not m.read_only:
 static int ${c.py_type}__set_member_${m.py_name} (PyObject *self, PyObject *value, void *closure);
 %endif
-%endfor 
+%endfor
 
 //--------------------- all properties  -----------------------------
 
@@ -72,7 +72,7 @@ static PyObject * ${c.py_type}__get_prop_${p.name} (PyObject *self, void *closur
 %if p.setter :
 static int ${c.py_type}__set_prop_${p.name} (PyObject *self, PyObject *value, void *closure);
 %endif
-%endfor 
+%endfor
 
 //--------------------- [] -----------------------------
 
@@ -81,7 +81,7 @@ static Py_ssize_t ${c.py_type}___len__(PyObject *self);
 %endif
 
 %if "__getitem__impl" in c.methods :
-static PyObject* ${c.py_type}___getitem__(PyObject *self, PyObject *key); 
+static PyObject* ${c.py_type}___getitem__(PyObject *self, PyObject *key);
 %endif
 
 %if "__setitem__impl" in c.methods :
@@ -161,7 +161,7 @@ static PyObject* ${c.py_type}_new(PyTypeObject *type, PyObject *args, PyObject *
    ##// self->_c = new ${c.c_type}{typename ${c.c_type}::regular_type{}}; // no default constructor for views
    ##//%endif
    }
-   catch (std::exception const & e) { 
+   catch (std::exception const & e) {
     std::cout  << e.what()<<std::endl;
     PyErr_SetString(PyExc_RuntimeError, "Default constructor of class ${c.py_type} is throwing an exception !");
     return NULL;
@@ -241,7 +241,7 @@ PyObject* ${c.py_type}___iter__(PyObject *self);
 
 //--------------------- Register as_number  -----------------------------
 
-%if c.number_protocol : 
+%if c.number_protocol :
 static PyNumberMethods ${c.py_type}_as_number = {
 
 %for op_name in ["add", "subtract", "multiply", "divide", "remainder", "divmod", "power", "negative", "positive", "absolute", "nonzero", "invert", "lshift", "rshift", "and", "xor", "or", "coerce", "int", "long", "float", "oct", "hex", "inplace_add", "inplace_subtract", "inplace_multiply", "inplace_divide", "inplace_remainder", "inplace_power", "inplace_lshift", "inplace_rshift", "inplace_and", "inplace_xor", "inplace_or", "floor_divide ", "true_divide ", "inplace_floor_divide ", "inplace_true_divide ", "index "] :
@@ -371,7 +371,7 @@ static PyTypeObject ${c.py_type}Type = {
 
 //--------------------- converters for the class c -----------------------------
 
-namespace triqs { namespace py_tools { 
+namespace triqs { namespace py_tools {
 
 template <> struct py_converter<${c.c_type}> {
 
@@ -383,14 +383,14 @@ template <> struct py_converter<${c.c_type}> {
   }
   return (PyObject *)self;
  }
- 
+
  static ${c.c_type} & py2c(PyObject * ob){
   auto *_c = ((${c.py_type} *)ob)->_c;
   if (_c == NULL) TRIQS_RUNTIME_ERROR << "Severe internal error : _c is null in py2c for type ${c.c_type} !";
   return *_c;
  }
- 
- static bool is_convertible(PyObject *ob, bool raise_exception){  
+
+ static bool is_convertible(PyObject *ob, bool raise_exception){
   if (PyObject_TypeCheck(ob, & ${c.py_type}Type)) {
    if (((${c.py_type} *)ob)->_c != NULL) return true;
    if (raise_exception) PyErr_SetString(PyExc_TypeError, "Severe internal error : Python object of ${c.py_type} has a _c NULL pointer !!");
@@ -402,7 +402,7 @@ template <> struct py_converter<${c.c_type}> {
 };
 
 // TO BE MOVED IN GENERAL HPP
-%if c.implement_regular_type_converter : 
+%if c.implement_regular_type_converter :
  // ${c.py_type} is wrapping a view, we are also implementing the converter of the associated regular type
  template<> struct py_converter<${c.regular_type}> {
  using regular_type = ${c.regular_type};
@@ -426,7 +426,7 @@ template <> struct py_converter<${c.c_type}> {
 
 %for en in module.enums :
 
-namespace triqs { namespace py_tools { 
+namespace triqs { namespace py_tools {
 
 template <> struct py_converter<${en.c_name}> {
  static PyObject * c2py(${en.c_name} x) {
@@ -475,7 +475,7 @@ template <> struct py_converter<${en.c_name}> {
 template<typename T>
  static int converter_for_parser_non_wrapped_type(PyObject * ob, T * p) {
   if (!convertible_from_python<T>(ob,true)) return 0;
-  *p = convert_from_python<T>(ob); 
+  *p = convert_from_python<T>(ob);
   return 1;
  }
 template<typename T>
@@ -535,10 +535,10 @@ template<typename T>
        %if t in module._wrapped_types :
        ${t}* ${n} = NULL; // ${t} is a wrapped type
        %elif is_type_a_view(t):
-       ${t} ${n}  = typename ${t}::regular_type{}; // ${t} is a view, but not wrapped       	
-       %else: 
+       ${t} ${n}  = typename ${t}::regular_type{}; // ${t} is a view, but not wrapped
+       %else:
        ${t} ${n} ${'=%s'%d if d else ''}; //  ${t} is a regular type
-       %endif	
+       %endif
      %endfor
      static char *kwlist[] = {${",".join([ '"%s"'%n for t,n,d in overload.args] + ["NULL"])}};
      static const char * format = "${overload._parsing_format()}";
@@ -653,7 +653,7 @@ static PyObject* ${c.py_type}_${f_name} (PyObject *self, PyObject *args, PyObjec
   PyObject * ret = PyObject_Call(py_fnt, args2,keywds);
   return ret;
 }
- %else : 
+ %else :
   // The methods with inline code in the module
 static PyObject* ${c.py_type}_${f_name} (PyObject *self, PyObject *args, PyObject *keywds) {
   pyref args2 = PySequence_Concat(PyTuple_Pack(1,self),args);
@@ -692,7 +692,7 @@ static int ${c.py_type}__set_member_${m.py_name} (PyObject *self, PyObject *valu
 
 static PyObject * ${c.py_type}__get_prop_${p.name} (PyObject *self, void *closure) {
   %if isinstance(p.getter, str):
-    // pure python call 
+    // pure python call
     static pyref py_fnt = pyref::module("${p.getter.rsplit('.',1)[0]}").attr("${p.getter.rsplit('.',1)[1]}");
     return py_fnt(self).new_ref();
   %else:
@@ -1047,11 +1047,11 @@ init${module.name}(void)
     if (c_api_object != NULL) PyModule_AddObject(m, "_exported_wrapper_convert_fnt", c_api_object);
 %endif
 
-   %if len(module.python_functions) + len(module.hidden_python_functions) > 0 : 
-     
+   %if len(module.python_functions) + len(module.hidden_python_functions) > 0 :
+
     PyObject* main_module = PyImport_AddModule("__main__"); //borrowed
     PyObject* global_dict = PyModule_GetDict(main_module); //borrowed
-  
+
     // load and compile the module function defined in pure python
    %for f in module.python_functions.values() :
     if (!PyRun_String( _module_python_function_code_${f.name},Py_file_input, global_dict, PyModule_GetDict(m) )) return;
@@ -1061,7 +1061,7 @@ init${module.name}(void)
     _module_hidden_python_function = PyModule_New("hidden_functions");
     // if we wish to still see the functions...
     PyModule_AddObject(m, "__hidden_fnt", _module_hidden_python_function);
-   
+
     PyObject * d = PyModule_GetDict(_module_hidden_python_function); //borrowed
     %for f in module.hidden_python_functions.values() :
      if (!PyRun_String( _module_hidden_python_function_code_${f.name}, Py_file_input, global_dict ,d)) return;

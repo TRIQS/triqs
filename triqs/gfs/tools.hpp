@@ -121,7 +121,7 @@ namespace gfs {
   }
 
   friend void h5_read(h5::group fg, std::string subgroup_name, indices_2 &g) {
-   h5::group gr;
+   h5::group gr = fg; // no default construction
    try {
     gr = fg.open_group(subgroup_name);
    }

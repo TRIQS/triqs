@@ -19,15 +19,15 @@
  *
  ******************************************************************************/
 #include "./base.hpp"
-#include <hdf5_hl.h>
 
 namespace triqs {
-
 namespace h5 {
 
+ //------------------------------------------------
+
  // dataspace from lengths and strides. Correct for the complex. strides must be >0
- H5::DataSpace dataspace_from_LS(int R, bool is_complex, hsize_t const *Ltot, hsize_t const *L, hsize_t const *S,
-                                 hsize_t const *offset) {
+ dataspace dataspace_from_LS(int R, bool is_complex, hsize_t const *Ltot, hsize_t const *L, hsize_t const *S,
+                             hsize_t const *offset) {
   int rank = R + (is_complex ? 1 : 0);
   hsize_t totdimsf[rank], dimsf[rank], stridesf[rank], offsetf[rank]; // dataset dimensions
   for (size_t u = 0; u < R; ++u) {
@@ -42,54 +42,60 @@ namespace h5 {
    totdimsf[rank - 1] = 2;
    stridesf[rank - 1] = 1;
   }
-  H5::DataSpace ds(rank, totdimsf);
-  ds.selectHyperslab(H5S_SELECT_SET, dimsf, offsetf, stridesf);
+
+  dataspace ds = H5Screate_simple(rank, totdimsf, NULL);
+  if (!ds.is_valid()) TRIQS_RUNTIME_ERROR << "Can not create the dataset";
+
+  herr_t err = H5Sselect_hyperslab(ds, H5S_SELECT_SET, offsetf, stridesf, dimsf, NULL);
+  if (err < 0) TRIQS_RUNTIME_ERROR << "Can not set hyperslab";
+
   return ds;
  }
 
  /****************** Write string attribute *********************************************/
 
- void write_string_attribute(H5::H5Object const *obj, std::string name, std::string value) {
-  H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
-  // Create new string datatype for attribute
-  H5::StrType strdatatype(H5::PredType::C_S1, value.size());
-  // Set up write buffer for attribute
-  // const H5std_string strwritebuf (value);
-  // Create attribute and write to it
-  H5::Attribute myatt_in = obj->createAttribute(name.c_str(), strdatatype, attr_dataspace);
-  // myatt_in.write(strdatatype, strwritebuf);
-  myatt_in.write(strdatatype, (void *)(value.c_str()));
+ void write_string_attribute(hid_t id, std::string name, std::string value) {
+
+  datatype strdatatype = H5Tcopy(H5T_C_S1);
+  auto status = H5Tset_size(strdatatype, value.size() + 1);
+  // auto status = H5Tset_size(strdatatype, H5T_VARIABLE);
+  if (status < 0) TRIQS_RUNTIME_ERROR << "Internal error in H5Tset_size";
+
+  dataspace space = H5Screate(H5S_SCALAR);
+
+  attribute attr = H5Acreate2(id, name.c_str(), strdatatype, space, H5P_DEFAULT, H5P_DEFAULT);
+  if (!attr.is_valid()) TRIQS_RUNTIME_ERROR << "Can not create the attribute " << name;
+
+  status = H5Awrite(attr, strdatatype, (void *)(value.c_str()));
+  if (status < 0) TRIQS_RUNTIME_ERROR << "Can not write the attribute " << name;
  }
 
 
  /****************** Read string attribute *********************************************/
 
  /// Return the attribute name of obj, and "" if the attribute does not exist.
- std::string read_string_attribute(H5::H5Object const *obj, std::string name) {
-  std::string value = "";
-  H5::Attribute attr;
-  if (H5LTfind_attribute(obj->getId(), name.c_str()) == 0) return value; // not present
-  // can not find how to get the size with hl. Using full interface
-  // herr_t err2 =  H5LTget_attribute_string(gr.getId(), x.c_str(), name.c_str() , &(buf.front())  ) ;
-  // value.append( &(buf.front()) );
-  try {
-   attr = obj->openAttribute(name.c_str());
-  }
-  catch (H5::AttributeIException) {
-   return value;
-  }
-  try {
-   H5::DataSpace dataspace = attr.getSpace();
-   int rank = dataspace.getSimpleExtentNdims();
-   if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a string attribute and got rank !=0";
-   size_t size = attr.getStorageSize();
-   H5::StrType strdatatype(H5::PredType::C_S1, size + 1);
-   std::vector<char> buf(size + 1, 0x00);
-   attr.read(strdatatype, (void *)(&buf[0]));
-   value.append(&(buf.front()));
-  }
-  TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
-  return value;
+ std::string read_string_attribute(hid_t id, std::string name) {
+
+  // if the attribute is not present, return 0
+  if (H5LTfind_attribute(id, name.c_str()) == 0) return ""; // not present
+
+  attribute attr = H5Aopen(id, name.c_str(), H5P_DEFAULT);
+  if (!attr.is_valid()) TRIQS_RUNTIME_ERROR << "Can not open the attribute " << name;
+
+  dataspace space = H5Aget_space(attr);
+
+  int rank = H5Sget_simple_extent_ndims(space);
+  if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a string attribute and got rank !=0";
+
+  datatype strdatatype = H5Aget_type(attr);
+
+  std::vector<char> buf(H5Aget_storage_size(attr) + 1, 0x00);
+  auto err = H5Aread(attr, strdatatype, (void *)(&buf[0]));
+  if (err < 0) TRIQS_RUNTIME_ERROR << "Can not read the attribute" << name;
+
+  std::string ret = "";
+  ret.append(&(buf.front()));
+  return ret;
  }
 }
 }

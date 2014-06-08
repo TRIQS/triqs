@@ -22,6 +22,7 @@
 #include "./group.hpp"
 #include "./string.hpp"
 #include <vector>
+#include <complex>
 
 namespace triqs {
 
@@ -37,13 +38,13 @@ namespace triqs {
   void h5_write (group f, std::string const & name, std::vector<std::string> const & V);
   void h5_read (group f, std::string const & name, std::vector<std::string> & V);
 
-  void h5_write (group f, std::string const & name, std::vector<double> const & V); 
+  void h5_write (group f, std::string const & name, std::vector<double> const & V);
   void h5_write (group f, std::string const & name, std::vector<std::complex<double>> const & V);
 
   void h5_read (group f, std::string const & name, std::vector<double>  & V);
   void h5_read (group f, std::string const & name, std::vector<std::complex<double>> & V);
 
  }
-} 
+}
 
 

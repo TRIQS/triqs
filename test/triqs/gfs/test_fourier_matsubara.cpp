@@ -2,13 +2,14 @@
 #include <triqs/gfs.hpp> 
 using namespace triqs::gfs;
 using namespace triqs::arrays;
+namespace h5 = triqs::h5;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/fourier_matsubara.hpp> 
 
 int main() {
  
  double precision=10e-9;
- H5::H5File file("test_fourier_matsubara.h5",H5F_ACC_TRUNC);
+ h5::file file("test_fourier_matsubara.h5",H5F_ACC_TRUNC);
  triqs::clef::placeholder<0> om_;
  double beta =1;
  int N=10000;

@@ -230,9 +230,9 @@ link_libraries(${TRIQS_LIBRARY_LAPACK})
 message( STATUS "-------- HDF5 detection -------------")
 # on weiss, it is 2.8.2 and we should not put HL, on 12.04 we need to put it...
 if ( ${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
- find_package(HDF5 REQUIRED C CXX )
+ find_package(HDF5 REQUIRED C )
 else(${CMAKE_VERSION} VERSION_LESS "2.8.6")
- find_package(HDF5 REQUIRED C CXX HL )
+ find_package(HDF5 REQUIRED C HL)
 endif(${CMAKE_VERSION} VERSION_LESS "2.8.6")
 if(NOT HDF5_FOUND)
  message(FATAL_ERROR "Require hdf5 1.8.2 or higher. Set HDF5_HOME")
@@ -244,7 +244,7 @@ message( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES} ")
 mark_as_advanced(HDF5_DIR) # defined somewhere else ? what is it ?
 
 include_directories (SYSTEM ${HDF5_INCLUDE_DIR})
-link_libraries (${HDF5_LIBRARIES} ) #${HDF5_CXX_LIBRARIES} )
+link_libraries (${HDF5_LIBRARIES}) 
 set(TRIQS_LIBRARY_HDF5  ${HDF5_LIBRARIES})
 set(TRIQS_INCLUDE_HDF5 ${HDF5_INCLUDE_DIR})
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} ${HDF5_DEFINITIONS})

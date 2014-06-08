@@ -25,14 +25,14 @@
  return RET; }\
  catch(...) { PyErr_SetString(PyExc_RuntimeError,"Unknown error " MESS ); return RET; }\
 
-namespace triqs { namespace py_tools { 
+namespace triqs { namespace py_tools {
 
 //---------------------  py_converters -----------------------------
 
 // default version for a wrapped type. To be specialized later.
 // py2c behaviour is undefined is is_convertible return false
 template<typename T> struct py_converter;
- //{ 
+ //{
  //  static PyObject * c2py(T const & x);
  //  static T & py2c(PyObject * ob);
  //  static bool is_convertible(PyObject * ob, bool raise_exception);
@@ -84,7 +84,7 @@ template <typename T> static int converter_for_parser(PyObject *ob, T *p) {
   }
   public:
   template <typename T> reductor & operator&(T &x) { elem.push_back(convert_to_python(x)); return *this;}
-  template<typename T> 
+  template<typename T>
   PyObject * apply_to(T & x) { x.serialize(*this,0); return as_tuple();}
  };
 
@@ -104,7 +104,7 @@ template <typename T> static int converter_for_parser(PyObject *ob, T *p) {
  // no protection for convertion !
  template <typename T> struct py_converter_from_reductor {
  template<typename U> static PyObject *c2py(U && x) { return reductor{}.apply_to(x); }
- static T py2c(PyObject *ob) { 
+ static T py2c(PyObject *ob) {
   T res;
   auto r = reconstructor{ob};
   res.serialize(r, 0);
@@ -114,17 +114,17 @@ template <typename T> static int converter_for_parser(PyObject *ob, T *p) {
 };
 
 // -----------------------------------
-//       basic types 
+//       basic types
 // -----------------------------------
 
-// PyObject * 
+// PyObject *
 template <> struct py_converter<PyObject *> {
  static PyObject *c2py(PyObject *ob) { return ob; }
  static PyObject *py2c(PyObject *ob) { return ob; }
  static bool is_convertible(PyObject *ob, bool raise_exception) { return true;}
 };
 
-// --- bool 
+// --- bool
 template <> struct py_converter<bool> {
  static PyObject *c2py(bool b) {
   if (b)
@@ -185,7 +185,7 @@ template <> struct py_converter<std::complex<double>> {
  }
 };
 
-// --- string 
+// --- string
 
 template <> struct py_converter<std::string> {
  static PyObject *c2py(std::string const &x) { return PyString_FromString(x.c_str()); }
@@ -210,39 +210,51 @@ template <> struct py_converter<const char *> {
 // ---  h5 group of h5py into a triqs::h5 group
 
 template <> struct py_converter<triqs::h5::group> {
- 
+
  static PyObject *c2py(std::string const &x) =delete;
- 
+
  static pyref group_type;
+
+ //-------
 
  static triqs::h5::group py2c (PyObject * ob) {
   int id = PyInt_AsLong(borrowed(ob).attr("id").attr("id"));
-  int cmp = PyObject_RichCompareBool((PyObject *)ob->ob_type, group_type, Py_EQ);
-  return triqs::h5::group (id, (cmp==1));
+  // id can be a file or a group. If it is a file, we open its root group '/'
+  if (H5Iget_type(id) == H5I_FILE) {
+   id = H5Gopen2(id, "/", H5P_DEFAULT);
+   if (id < 0) TRIQS_RUNTIME_ERROR << "Internal error : Can not open the root group / in the file !"; // should never happen
+  }
+  else { // must be a group, because check in convertible
+   H5Iinc_ref(id); // we did not have ownership of the id
+  }
+  return triqs::h5::group (id);
  }
- 
+
+ //-------
+
+#define RAISE(MESS)                                                                                                              \
+ {                                                                                                                               \
+  if (raise_exception) PyErr_SetString(PyExc_TypeError, MESS);                                                                   \
+  return false;                                                                                                                  \
+ }
+
  static bool is_convertible(PyObject *ob, bool raise_exception) {
-  if (group_type.is_null()) { 
+  if (group_type.is_null()) {
    group_type = pyref::module("h5py").attr("highlevel").attr("Group");
    if (PyErr_Occurred()) TRIQS_RUNTIME_ERROR << "Can not load h5py module and find the group in it";
   }
   int cmp = PyObject_RichCompareBool((PyObject *)ob->ob_type, group_type, Py_EQ);
-  if (cmp<0) {
-   if (raise_exception) { 
-      PyErr_SetString(PyExc_TypeError, "hd5 : internal : comparison to group type has failed !!");
-   }
-   return false;
-  }
+  if (cmp < 0) RAISE("hd5 : internal : comparison to group type has failed !!");
   pyref id_py = borrowed(ob).attr("id").attr("id");
-  if ((!id_py) ||(!PyInt_Check((PyObject*)id_py))) {
-    if (raise_exception) { 
-      PyErr_SetString(PyExc_TypeError, "hd5 : INTERNAL : group id.id is not an int !!");
-   }
-   return false;
-  }
-  return true; 
+  if ((!id_py) || (!PyInt_Check((PyObject *)id_py))) RAISE("hd5 : INTERNAL : group id.id is not an int !!");
+  int id = PyInt_AsLong(borrowed(ob).attr("id").attr("id"));
+  if (!H5Iis_valid(id)) RAISE("Internal error : invalid id from h5py !");
+  if (!((H5Iget_type(id) == H5I_FILE) || (H5Iget_type(id) == H5I_GROUP)))
+   RAISE("h5py object is neither an hdf5 group or an hdf5 file");
+  return true;
  }
-};
+ };
+#undef RAISE
 
 // --- vector ---
 
@@ -265,7 +277,7 @@ template <typename T> struct py_converter<std::vector<T>> {
    for (int i = 0; i < len; i++) if (!py_converter<T>::is_convertible(PySequence_Fast_GET_ITEM((PyObject*)seq, i),raise_exception)) goto _false; //borrowed ref
    return true;
   }
-  _false: 
+  _false:
   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to std::vector");}
   return false;
  }
@@ -337,7 +349,7 @@ template <typename T1, typename T2> struct py_converter<std::pair<T1,T2>> {
    if (!py_converter<T2>::is_convertible(PySequence_Fast_GET_ITEM((PyObject*)seq, 1),raise_exception)) goto _false; //borrowed ref
    return true;
   }
-  _false: 
+  _false:
   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to std::pair");}
   return false;
  }
@@ -420,7 +432,7 @@ template <> struct py_converter<triqs::arrays::range> {
  }
  static triqs::arrays::range py2c(PyObject *ob) {
   if (PyInt_Check(ob)) {
-    int i = PyInt_AsLong(ob); 
+    int i = PyInt_AsLong(ob);
     return {i,i+1,1};
   }
   int len = 4; // no clue what this len is ??
@@ -440,7 +452,7 @@ template <> struct py_converter<triqs::arrays::range> {
 
 template<> struct py_converter<triqs::gfs::nothing> {
  static PyObject *c2py(triqs::gfs::nothing g) { Py_RETURN_NONE;}
- static bool is_convertible(PyObject *ob, bool raise_exception) { 
+ static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (ob ==Py_None) return true;
   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to triqs::gfs::nothing : can only convert None");}
   return false;
@@ -462,7 +474,7 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
 
  static PyObject *c2py(c_type g) {
   // rm the view_proxy
-  std::vector<gf_view_type> vg; 
+  std::vector<gf_view_type> vg;
   vg.reserve(g.data().size());
   for (auto const & x : g.data()) vg.push_back(x);
   pyref v_gf = convert_to_python(vg);
@@ -544,7 +556,7 @@ template <typename R, typename... T> struct py_converter<std::function<R(T...)>>
 
  static_assert(sizeof...(T) < 5, "More than 5 variables not implemented");
   typedef struct {
-    PyObject_HEAD 
+    PyObject_HEAD
     std::function<R(T...)> *_c;
   } std_function;
 
@@ -552,7 +564,7 @@ template <typename R, typename... T> struct py_converter<std::function<R(T...)>>
   std_function *self;
   self = (std_function *)type->tp_alloc(type, 0);
   if (self != NULL) {
-    self->_c = new std::function<R(T...)>{}; 
+    self->_c = new std::function<R(T...)>{};
   }
   return (PyObject *)self;
  }
@@ -570,7 +582,7 @@ template <typename R, typename... T> struct py_converter<std::function<R(T...)>>
  static PyObject *_call_and_treat_return(nop<RR>, std_function *pyf, TU const &tu, index_seq<Is...>) {
   return py_converter<RR>::c2py(pyf->_c->operator()(std::get<Is>(tu)...));
  }
- template <typename TU, int... Is> 
+ template <typename TU, int... Is>
  static PyObject *_call_and_treat_return(nop<void>, std_function *pyf, TU const &tu, index_seq<Is...>) {
   pyf->_c->operator()(std::get<Is>(tu)...);
   Py_RETURN_NONE;
@@ -591,7 +603,7 @@ template <typename R, typename... T> struct py_converter<std::function<R(T...)>>
  // the call function object ...
  // TODO : ADD THE REF AND POINTERS  in x ??
  static PyObject *std_function_call(PyObject *self, PyObject *args, PyObject *kwds) {
-  arg_tuple_t x; 
+  arg_tuple_t x;
   if (!_parse(_int_max(), args,  x)) return NULL;
    try {
     return _call_and_treat_return(nop<R>(), (std_function *)self, x, make_index_seq<sizeof...(T)>());
@@ -654,14 +666,14 @@ template <typename R, typename... T> struct py_converter<std::function<R(T...)>>
    std_function *self;
    static PyTypeObject Type;
    static bool ready = false;
-   ensure_type_ready(Type, ready); 
+   ensure_type_ready(Type, ready);
    self = (std_function *)Type.tp_alloc(&Type, 0);
    if (self != NULL) {
      self->_c = new std::function<R(T...)>{ std::forward<U>(x) };
    }
    return (PyObject *)self;
  }
- 
+
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (PyCallable_Check(ob)) return true;
   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to std::function a non callable object");}
@@ -672,11 +684,11 @@ template <typename R, typename... T> struct py_converter<std::function<R(T...)>>
   static PyTypeObject Type;
   static bool ready = false;
   ensure_type_ready(Type, ready);
-  // If we convert a wrapped std::function, just extract it. 
+  // If we convert a wrapped std::function, just extract it.
   if (PyObject_TypeCheck(ob, &Type)) { return *(((std_function *)ob)->_c);}
   // otherwise, we build a new std::function around the python function
   pyref py_fnt = borrowed(ob);
-  auto l = [py_fnt](T... x) mutable -> R { // py_fnt is a pyref, it will keep the ref and manage the ref counting... 
+  auto l = [py_fnt](T... x) mutable -> R { // py_fnt is a pyref, it will keep the ref and manage the ref counting...
    pyref ret  = PyObject_CallFunctionObjArgs(py_fnt,  (PyObject*)pyref(convert_to_python(x))...,NULL);
    return py_converter<R>::py2c(ret);
   };

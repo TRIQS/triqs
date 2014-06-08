@@ -2,6 +2,7 @@
 #include <triqs/gfs.hpp> 
 using namespace triqs::gfs;
 using namespace triqs::arrays;
+namespace h5 = triqs::h5;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/functions.hpp> 
 
@@ -118,7 +119,7 @@ int main() {
   //auto x = local::impl::gf_impl<triqs::gfs::meshes::imfreq, true>::wrap_infty (G.tail_view()) + 2.0;
 
   // test hdf5 
-  H5::H5File file("ess_gf.h5", H5F_ACC_TRUNC );
+  h5::file file("ess_gf.h5", H5F_ACC_TRUNC );
   h5_write(file, "g", G);
 
   //

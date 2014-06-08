@@ -5,6 +5,7 @@
 
 namespace tql= triqs::clef;
 using namespace triqs::gfs;
+namespace h5 = triqs::h5;
 
 int main() {
 
@@ -84,7 +85,7 @@ try {
  std::cout  << " curry "<<G_w_wn_curry1[3][8] << std::endl; 
  std::cout  << "G_w_wn_sl0_a [3]"<<G_w_wn_sl0_a[3] << std::endl ;
  // test hdf5 
- H5::H5File file("gf_re_im_freq_time.h5", H5F_ACC_TRUNC );
+ h5::file file("gf_re_im_freq_time.h5", H5F_ACC_TRUNC );
  h5_write(file, "g_t_tau", G_t_tau);
  h5_write(file, "g_w_wn", G_w_wn);
  h5_write(file, "g_w_tau", G_w_tau);

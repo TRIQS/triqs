@@ -26,22 +26,24 @@ namespace h5 = triqs::h5;
 
 int main(int argc, char **argv) {
 
- try { 
+ try {
 
   // write
   std::map<std::string, int> m = { {"a",1}, {"b",2} };
   std::map<std::string, std::vector<double>> mv = { {"a",{1.0, 2.0}}, {"b",{2.0, 3.0, 4.0}} };
 
-  H5::H5File file1("test_map.h5", H5F_ACC_TRUNC);
-  h5::group top1(file1);
-  h5_write(top1, "map_int", m);
-  h5_write(top1, "map_vec", mv);
+  {
+   h5::file file1("test_map.h5", H5F_ACC_TRUNC);
+   h5::group top1(file1);
+   h5_write(top1, "map_int", m);
+   h5_write(top1, "map_vec", mv);
+  }
 
   // read
   std::map<std::string, int> mm = { {"c",1} };
   std::map<std::string, std::vector<double>> mmv = { {"c",{1.0}} };
 
-  H5::H5File file2("test_map.h5", H5F_ACC_RDONLY);
+  h5::file file2("test_map.h5", H5F_ACC_RDONLY);
   h5::group top2(file2);
   h5_read(top2, "map_int", mm);
   h5_read(top2, "map_vec", mmv);

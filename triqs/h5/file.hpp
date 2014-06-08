@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2011-2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,38 +19,37 @@
  *
  ******************************************************************************/
 #pragma once
-
-#include "group.hpp"
-#include "string.hpp"
-#include <map>
+#include "./base_public.hpp"
 
 namespace triqs {
+namespace h5 {
 
- template <typename T>
- std::string get_triqs_hdf5_data_scheme(std::map<std::string,T> const&) {
-  using triqs::get_triqs_hdf5_data_scheme;
-  return "std::map<string," + get_triqs_hdf5_data_scheme(T()) + ">";
- }
+ /**
+  *  \brief A little handler for the file
+  */
+ class file: public h5_object {
 
- namespace h5 {
+  public:
 
-  template<typename T>
-  void h5_write (group f, std::string const & name, std::map<std::string,T> const & M) {
-    auto gr = f.create_group(name);
-    for (auto& pvp : M) h5_write(gr, pvp.first, pvp.second);
-  }
+  /**
+   * Open the file name.
+   * Flags can be :
+   *   - H5F_ACC_RDWR
+   *   - H5F_ACC_RDONLY
+   *   - H5F_ACC_TRUNC
+   *   - H5F_ACC_EXCL
+   */
+  file(const char * name, unsigned flags);
 
-  template<typename T>
-  void h5_read (group f, std::string const & name, std::map<std::string,T> & M) {
-    auto gr = f.open_group(name);
-    M.clear();
-    for (auto const & x: gr.get_all_dataset_names()) {
-      T value;
-      h5_read(gr, x, value);
-      M.emplace(x, std::move(value));
-    }
-  }
+  /// Cf previous constructor
+  file(std::string const &name, unsigned flags) : file(name.c_str(), flags) {}
 
- }
+  /// Internal : from an hdf5 id.
+  file (hid_t id);
+  file(h5_object obj);
+
+  /// Name of the file
+  std::string name() const;
+ };
 }
-
+}

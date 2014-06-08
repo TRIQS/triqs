@@ -1,6 +1,7 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/gfs.hpp> 
 using namespace triqs::gfs;
+namespace h5 = triqs::h5;
 using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 double precision=10e-12;
@@ -61,7 +62,7 @@ int main() {
  if ( std::abs(Git2.on_mesh(N/3)-Git2[N/3]) > precision) TRIQS_RUNTIME_ERROR<< "error in on_mesh()\n";  
  
  // test hdf5 
- H5::H5File file("ess_gfre.h5", H5F_ACC_TRUNC );
+ h5::file file("ess_gfre.h5", H5F_ACC_TRUNC );
  h5_write(file, "gt",  Gt);
  h5_write(file, "gw",  Gw);
  h5_write(file, "git",  Git);

@@ -10,7 +10,7 @@ block_gf_view<imfreq> make_bgf(double a) {
  auto B1 = make_block_gf<imfreq>(3, G1);
 
  {
-  H5::H5File file("ess_test_g1.h5", H5F_ACC_TRUNC);
+  h5::file file("ess_test_g1.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", B1);
  }
 
@@ -20,7 +20,7 @@ block_gf_view<imfreq> make_bgf(double a) {
 void pass_bgf(block_gf_view<imfreq> g) {
 
  {
-  H5::H5File file("ess_test_g2.h5", H5F_ACC_TRUNC);
+  h5::file file("ess_test_g2.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", g);
  }
 }
@@ -31,7 +31,7 @@ gf_view<imfreq,scalar_valued> make_sgf(double a) {
  double beta = 1;
  auto G1 = gf<imfreq, scalar_valued>({beta, Fermion});
 {
-  H5::H5File file("ess_test_g3a.h5", H5F_ACC_TRUNC);
+  h5::file file("ess_test_g3a.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", G1);
  }
  return G1;
@@ -40,7 +40,7 @@ gf_view<imfreq,scalar_valued> make_sgf(double a) {
 void pass_sgf(gf_view<imfreq,scalar_valued> g) {
 
  {
-  H5::H5File file("ess_test_g3b.h5", H5F_ACC_TRUNC);
+  h5::file file("ess_test_g3b.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", g);
  }
 }

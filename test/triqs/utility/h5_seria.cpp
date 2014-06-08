@@ -32,6 +32,7 @@ using triqs::h5::deserialize;
 
 int main() {
 
+ try{
  using triqs::arrays::array;
 
  auto a = array<double, 1>{1, 2, 3, 4, 5};
@@ -54,7 +55,8 @@ int main() {
  auto b = deserialize<array<double, 1>>(s1);
 
  std::cout << "a = " << a << " == " << b << std::endl;
-
+ }
+ catch(std::exception const & e) { std::cout  << e.what()<<std::endl;}
 }
 #endif
 

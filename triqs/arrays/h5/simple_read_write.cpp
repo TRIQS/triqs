@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #include "./simple_read_write.hpp"
+#include "./../../h5/base.hpp"
 
 using dcomplex = std::complex<double>;
 namespace triqs {
@@ -26,7 +27,7 @@ namespace arrays {
  namespace h5_impl {
 
   // the dataspace corresponding to the array. Contiguous data only...
-  H5::DataSpace data_space_impl(array_stride_info info, bool is_complex) { 
+  h5::dataspace data_space_impl(array_stride_info info, bool is_complex) {
    hsize_t L[info.R], S[info.R];
    for (int u = 0; u < info.R; ++u) {
     if (info.strides[u] <= 0) TRIQS_RUNTIME_ERROR << " negative strides not permitted in h5";
@@ -37,24 +38,24 @@ namespace arrays {
   }
 
   /// --------------------------- WRITE ---------------------------------------------
-  
+
   template <typename T> void write_array_impl(h5::group g, std::string const& name, const T* start, array_stride_info info) {
    static_assert(!std::is_base_of<std::string, T>::value, " Not implemented"); // 1d is below
    bool is_complex = triqs::is_complex<T>::value;
-   try {
-    H5::DataSet ds = g.create_dataset(name, h5::data_type_file<T>(), data_space_impl(info, is_complex));
-    ds.write(h5::get_data_ptr(start), h5::data_type_memory<T>(), data_space_impl(info, is_complex));
-    // if complex, to be python compatible, we add the __complex__ attribute
-    if (is_complex) h5::write_string_attribute(&ds, "__complex__", "1");
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+   h5::dataset ds = g.create_dataset(name, h5::data_type_file<T>(), data_space_impl(info, is_complex));
+
+   auto err =
+       H5Dwrite(ds, h5::data_type_memory<T>(), data_space_impl(info, is_complex), H5S_ALL, H5P_DEFAULT, h5::get_data_ptr(start));
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the scalar dataset " << name << " in the group" << g.name();
+
+   // if complex, to be python compatible, we add the __complex__ attribute
+   if (is_complex) h5::write_string_attribute(ds, "__complex__", "1");
   }
 
   template void write_array_impl<int>(h5::group g, std::string const& name, const int* start, array_stride_info info);
   template void write_array_impl<long>(h5::group g, std::string const& name, const long* start, array_stride_info info);
   template void write_array_impl<double>(h5::group g, std::string const& name, const double* start, array_stride_info info);
   template void write_array_impl<dcomplex>(h5::group g, std::string const& name, const dcomplex* start, array_stride_info info);
-
 
   // overload : special treatment for arrays of strings (one dimension only).
   void write_array(h5::group g, std::string const& name, vector_const_view<std::string> V) {
@@ -70,61 +71,31 @@ namespace arrays {
   }
 
   /// --------------------------- READ ---------------------------------------------
- 
- 
-/* template <typename ArrayType1> void read_array(h5::group g, std::string const& name, ArrayType1&& A, bool C_reorder = true) {
-   typedef typename std::remove_reference<ArrayType1>::type ArrayType;
-   static_assert(!std::is_base_of<std::string, typename ArrayType::value_type>::value, " Not implemented"); // 1d is below
-   try {
-    H5::DataSet ds = g.open_dataset(name);
-    H5::DataSpace dataspace = ds.getSpace();
-    static const unsigned int Rank = ArrayType::rank + (triqs::is_complex<typename ArrayType::value_type>::value ? 1 : 0);
-    int rank = dataspace.getSimpleExtentNdims();
-    if (rank != Rank)
-     TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : the array has rank = " << Rank
-                         << " while the array stored in the hdf5 file has rank = " << rank;
-    mini_vector<hsize_t, Rank> dims_out;
-    dataspace.getSimpleExtentDims(&dims_out[0], NULL);
-    mini_vector<size_t, ArrayType::rank> d2;
-    for (size_t u = 0; u < ArrayType::rank; ++u) d2[u] = dims_out[u];
-    resize_or_check(A, d2);
-    if (C_reorder) {
-     read_array(g, name, make_cache(A).view(), false);
-     //read_array(g, name, cache<ArrayType, typename ArrayType::regular_type>(A).view(), false);
-    } else
-     ds.read(__get_array_data_ptr(A), h5::data_type_memory<typename ArrayType::value_type>(), data_space(A), dataspace);
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
-  }
-*/
- 
-  std::vector<size_t> get_array_lengths(int R, h5::group g, std::string const& name, bool is_complex) { 
-   try {
-    H5::DataSet ds = g.open_dataset(name);
-    H5::DataSpace dataspace = ds.getSpace();
-    int Rank = R + (is_complex ? 1 : 0);
-    int rank = dataspace.getSimpleExtentNdims();
-    if (rank != Rank)
-     TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : the array has rank = " << Rank
-                         << " while the array stored in the hdf5 file has rank = " << rank;
-    std::vector<size_t> d2(R);
-    hsize_t dims_out[rank];
-    dataspace.getSimpleExtentDims(&dims_out[0], NULL);
-    for (int u = 0; u < R; ++u) d2[u] = dims_out[u];
-    return d2;
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+
+  std::vector<size_t> get_array_lengths(int R, h5::group g, std::string const& name, bool is_complex) {
+   h5::dataset ds = g.open_dataset(name);
+   h5::dataspace d_space = H5Dget_space(ds);
+   int Rank = R + (is_complex ? 1 : 0);
+   int rank = H5Sget_simple_extent_ndims(d_space);
+   if (rank != Rank)
+    TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : the array has rank = " << Rank
+                        << " while the array stored in the hdf5 file has rank = " << rank;
+   std::vector<size_t> d2(R);
+   hsize_t dims_out[rank];
+   H5Sget_simple_extent_dims(d_space, dims_out, NULL);
+   for (int u = 0; u < R; ++u) d2[u] = dims_out[u];
+   return d2;
   }
 
-  template <typename T> void read_array_impl(h5::group g, std::string const& name, T* start, array_stride_info info) { 
+  template <typename T> void read_array_impl(h5::group g, std::string const& name, T* start, array_stride_info info) {
    static_assert(!std::is_base_of<std::string, T>::value, " Not implemented"); // 1d is below
    bool is_complex = triqs::is_complex<T>::value;
-   try {
-    H5::DataSet ds = g.open_dataset(name);
-    H5::DataSpace dataspace = ds.getSpace();
-    ds.read(h5::get_data_ptr(start), h5::data_type_memory<T>(), data_space_impl(info, is_complex), dataspace);
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+   h5::dataset ds = g.open_dataset(name);
+   h5::dataspace d_space = H5Dget_space(ds);
+
+   herr_t err =
+       H5Dread(ds, h5::data_type_memory<T>(), data_space_impl(info, is_complex), d_space, H5P_DEFAULT, h5::get_data_ptr(start));
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Error reading the scalar dataset " << name << " in the group" << g.name();
   }
 
   template void read_array_impl<int>(h5::group g, std::string const& name, int* start, array_stride_info info);

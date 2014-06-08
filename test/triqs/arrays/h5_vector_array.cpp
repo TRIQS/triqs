@@ -40,13 +40,13 @@ int main(int argc, char **argv) {
   std::vector <std::complex<double>> vc2;
 
   {
-   H5::H5File file1( "test_std_vector.h5", H5F_ACC_TRUNC );
+   h5::file file1( "test_std_vector.h5", H5F_ACC_TRUNC );
    h5::group top(file1);
    h5_write(top,"vdouble",v);
    h5_write(top,"vcomplex",vc);
   }
 
-  H5::H5File file2( "test_std_vector.h5", H5F_ACC_RDONLY );
+  h5::file file2( "test_std_vector.h5", H5F_ACC_RDONLY );
   h5::group top2(file2);
 
   h5_read(top2,"vdouble",v2);

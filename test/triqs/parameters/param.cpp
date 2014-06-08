@@ -120,18 +120,18 @@ int main() {
   std::cout  << P << std::endl;
 
   {
-   H5::H5File file( "ess.h5", H5F_ACC_TRUNC );
+   h5::file file( "ess.h5", H5F_ACC_TRUNC );
    h5_write( file, "Parameters", P);
   }
 
   auto P4 = P;
   {
-   H5::H5File file( "ess.h5", H5F_ACC_RDONLY );
-   h5_read( file.openGroup("/"), "Parameters", P4);
+   h5::file file( "ess.h5", H5F_ACC_RDONLY );
+   h5_read( file, "Parameters", P4);
   }
   {
-   H5::H5File file( "ess_relo.h5", H5F_ACC_TRUNC );
-   h5_write( file.openGroup("/"), "Parameters", P4);
+   h5::file file( "ess_relo.h5", H5F_ACC_TRUNC );
+   h5_write( file, "Parameters", P4);
   }
   std::cout << "P4 after : \n"<< P4<< std::endl ;
 

@@ -1,6 +1,7 @@
 #include <triqs/gfs.hpp>
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl << std::endl;
 
+namespace h5 = triqs::h5;
 using namespace triqs::gfs;
 using namespace triqs::arrays;
 
@@ -21,17 +22,17 @@ int main(int argc, char* argv[]) {
   bb = aa;
   
   { 
-   H5::H5File file("ess_array_gf.h5", H5F_ACC_TRUNC);
+   h5::file file("ess_array_gf.h5", H5F_ACC_TRUNC);
    h5_write(file, "Agf", agf);
    h5_write(file, "aa", aa);
   }
   {
-   H5::H5File file("ess_array_gf.h5", H5F_ACC_RDONLY);
+   h5::file file("ess_array_gf.h5", H5F_ACC_RDONLY);
    h5_read(file, "Agf", bgf);
    h5_read(file, "aa", bb);
   }
   {
-   H5::H5File file("ess_array_gf2.h5", H5F_ACC_TRUNC);
+   h5::file file("ess_array_gf2.h5", H5F_ACC_TRUNC);
    h5_write(file, "Agf", bgf);
    h5_write(file, "aa", bb);
   }

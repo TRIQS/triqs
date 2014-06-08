@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
  V1.push_back("de");
 
  // writing 
- H5::H5File file( "test_array_string.h5", H5F_ACC_TRUNC );
+ h5::file file( "test_array_string.h5", H5F_ACC_TRUNC );
  h5::group top(file);
 
  h5_write(top,"A",A);

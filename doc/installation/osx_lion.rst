@@ -29,7 +29,7 @@ in the way scientific librairies are installed.
 (e.g. currently the default version of mpi and hdf5 installed by brew are in conflict : 
 the simple mpi "Hello World"  crashes when linked with hdf5_cpp).
 
-Moreover, because there is no notion of "distribution" (except in Enthought, which unfortunately is incomplete),
+Moreover, because there is no notion of "distribution" 
 the versions of the libraries are always changing e.g. in brew.
 As a result, the installation instructions may work on one day, and suddenly stop to work
 the day after.
@@ -58,15 +58,14 @@ on 10.8 and 10.9, (at least on the Mac of one of the developer !).
      brew tap homebrew/science  
      brew install cmake
      brew install gfortran
-     brew install  --enable-cxx hdf5 
+     brew install hdf5 
      brew install gsl
      brew install fftw
      brew install open-mpi
      brew install zmq
      brew install python
 
-     #brew formula has been repaired, since boost installation of mpi.python is a complete mess
-     #which needs to be fixed manually (except in Debian/Ubuntu where it is correct).
+     #brew formula has been repaired
      ### brew install boost --without-single --with-mpi --with-c++11
      brew install  http://ipht.cea.fr/triqs/formulas/boost.rb  --without-single --with-mpi --with-c++11 -v
 
@@ -77,7 +76,6 @@ on 10.8 and 10.9, (at least on the Mac of one of the developer !).
     pip install scipy
     pip install mpi4py
     pip install matplotlib
-    pip install breathe
     pip install sphinxcontrib-doxylink
     pip install tornado
     pip install pyzmq
@@ -91,17 +89,8 @@ on 10.8 and 10.9, (at least on the Mac of one of the developer !).
      easy_install pyparsing==1.5.7
      git clone https://github.com/mathjax/MathJax.git MathJax
 
-NB : you need pyparsing <=1.5.7 since apparently v.2.0 works only for python 3.
+NB : you need pyparsing <=1.5.7 since apparently v.2.0 works only for python 3. (? still true ?)
 
-7. If you wish to build the documentation locally, 
-   configure TRIQS with the option -DPython_use_mpi4py=ON    (workaround boost.mpi.python bug).
-
-8. **Set up** the environment variable, e.g. in your ~/.bash_profile (workaround for issue #43) ::
-     
-     export HDF5_DEBUG="all"
-
-    or your code will crash when launched without mpirun 
-    (due to a bug in hdf5 C++/ openmpi, nothing to do with TRIQS, so we can not fix it). 
 
 Possible issues
 ---------------

@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2013 by O. Parcollet
+ * Copyright (C) 2011-2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -69,7 +69,7 @@ namespace arrays {
   void write_array(h5::group g, std::string const& name, array_const_view<std::string, 1> V);
 
   /*********************************** READ array ****************************************************************/
-  
+
   std::vector<size_t> get_array_lengths(int R, h5::group g, std::string const& name, bool is_complex);
   template <typename T> void read_array_impl(h5::group g, std::string const& name, T* start, array_stride_info info);
 
@@ -78,12 +78,8 @@ namespace arrays {
    resize_or_check(a, mini_vector<size_t, std::c14::decay_t<A>::rank> (get_array_lengths(a.rank, g, name, triqs::is_complex<typename std::c14::decay_t<A>::value_type>::value)));
    if (C_reorder) {
     {
-     // read_array(g, name, make_cache(a).view(), false);
-     // return ;
      auto b = make_cache(a);
-     // auto b = make_cache(a).view();
      read_array_impl(g, name, b.view().data_start(), array_stride_info{b.view()});
-     // read_array_impl(g, name, b.data_start(), array_stride_info{b});
     }
    } else
     read_array_impl(g, name, a.data_start(), array_stride_info{a});
@@ -104,7 +100,7 @@ namespace arrays {
             typename A::value_type>()))> : std::integral_constant<bool, is_scalar<typename A::value_type>::value ||
                                                                             std::is_base_of<std::string,
                                                                                             typename A::value_type>::value> {};
- // get_triqs_hdf5_data_scheme 
+ // get_triqs_hdf5_data_scheme
  template <typename ArrayType>
  TYPE_ENABLE_IFC(std::string, is_amv_value_or_view_class<ArrayType>::value) get_triqs_hdf5_data_scheme(ArrayType const&) {
   using triqs::get_triqs_hdf5_data_scheme; // for the basic types, not found by ADL
