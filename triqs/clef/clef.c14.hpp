@@ -380,7 +380,8 @@ namespace triqs { namespace clef {
  template<int ... N> ph_list<N...> var( placeholder<N> ...) { return {};}
 
  template<typename Expr, int ... N> 
-  decltype(auto) operator >> (ph_list<N...>, Expr const & ex)  { return  make_function(ex, placeholder<N>()...);}
+  auto operator >> (ph_list<N...> &&, Expr const & ex) ->decltype(make_function(ex, placeholder<N>()...)) { return  make_function(ex, placeholder<N>()...);}
+  // add trailing as a workaround around a clang bug here on xcode 5.1.1 (?)
 
  /* --------------------------------------------------------------------------------------------------
   *  make_function

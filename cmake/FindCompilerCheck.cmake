@@ -47,7 +47,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
  # does not always work ... To be fixed when clang 3.4 officially released and on OS X.
  if(NOT compiler_version VERSION_LESS "3.4")
-  #set (compiler_is_c14 ON)
+  set (compiler_is_c14 ON)
  endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
