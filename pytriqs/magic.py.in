@@ -6,7 +6,7 @@ Triqs magic
 {TRIQS_DOC}
 
 """
-import imp,os,sys,subprocess, hashlib
+import imp,os,sys,subprocess, hashlib,re
 from IPython.core.error import UsageError
 from IPython.core.magic import Magics, magics_class, line_magic, cell_magic
 from IPython.core import display, magic_arguments
@@ -53,6 +53,7 @@ def desc_file(c_decl, use) :
 from wrap_generator import *
 module = module_(full_name = "ext", doc = "")
 module.add_include("<triqs/arrays.hpp>")
+module.add_include("<triqs/python_tools/py_stream.hpp>")
 module.add_using("namespace triqs::arrays")
 module.add_preamble('#include "./ext.cpp"')
 """
@@ -137,9 +138,16 @@ class TriqsMagics(Magics):
         if '-v' in line:
             self.triqs.parser.set_defaults(verbosity=0)
 
+        ## Add GIL argument ?
+        use_GIL = False
         args = magic_arguments.parse_argstring(self.triqs, line)
 
         code = cell if cell.endswith('\n') else cell + '\n'
+
+        #if not GIL, we replace std::cout by triqs::py_out for capture in the notebook
+        if not use_GIL :
+            code = re.sub("std::cout", "triqs::py_stream()", code)
+
         key = code, line, sys.version_info, sys.executable
 
         c_decl = self.extract_signature(code)

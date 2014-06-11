@@ -25,7 +25,7 @@
 
 //#define CHECK_OR_THROW(Cond, Mess)
 #define CHECK_OR_THROW(Cond, Mess)                                                                                               \
- if (!Cond) TRIQS_RUNTIME_ERROR << "Error in h5 (de)serialization " << Mess;
+ if (!(Cond)) TRIQS_RUNTIME_ERROR << "Error in h5 (de)serialization " << Mess;
 
 namespace triqs {
 namespace h5 {
