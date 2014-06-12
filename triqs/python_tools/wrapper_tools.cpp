@@ -1,3 +1,4 @@
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
 
 // REMOVE THIS 
 #include <triqs/arrays.hpp>
@@ -16,3 +17,6 @@ template <> const char * make_format<5>::value = "O&O&O&O&O&";
 pyref py_converter<triqs::h5::group>::group_type;
 
 }}
+
+#endif
+

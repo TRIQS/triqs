@@ -18,6 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #define TRIQS_LIB_CPP
 #include "./py_stream.hpp"
 #include "../utility/exceptions.hpp"
@@ -37,3 +38,6 @@ py_stream::py_stream() {
 
 void py_stream::_write(const char* s) { pyref res = PyObject_CallMethod(sys_out, "write", "s", s); }
 }
+
+#endif
+
