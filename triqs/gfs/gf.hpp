@@ -736,7 +736,7 @@ namespace gfs {
 
  template <typename Variable, typename Opt, typename T>
  gf<Variable, matrix_valued, Opt> L_G_R(matrix<T> l, gf<Variable, matrix_valued, Opt> g, matrix<T> r) {
-  auto res = gf<Variable, matrix_valued, Opt>{g.mesh(), {first_dim(l), second_dim(r)}};
+  auto res = gf<Variable, matrix_valued, Opt>{g.mesh(), {int(first_dim(l)), int(second_dim(r))}};
   res.data() = _gf_data_mul_LR(l, g.data(), r);
   res.singularity() = l * g.singularity() * r;
   return res;
