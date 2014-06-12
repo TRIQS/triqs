@@ -22,6 +22,9 @@
 #include "./py_stream.hpp"
 #include "../utility/exceptions.hpp"
 
+#pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+
 namespace triqs {
 
 using py_tools::pyref;
