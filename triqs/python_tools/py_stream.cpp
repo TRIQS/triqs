@@ -18,6 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include <triqs/utility/first_include.hpp>
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #define TRIQS_LIB_CPP
 #include "./py_stream.hpp"

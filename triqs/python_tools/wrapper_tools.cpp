@@ -1,3 +1,4 @@
+#include <triqs/utility/first_include.hpp>
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 
 // REMOVE THIS 
