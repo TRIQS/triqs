@@ -130,7 +130,7 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
   static_assert(!std::is_const<ValueType>::value, "internal error");
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-  static void import_numpy_array() { if (_import_array()!=0) TRIQS_RUNTIME_ERROR <<"Internal Error in importing numpy";}
+  static void import_numpy_array() {}// if (_import_array()!=0) TRIQS_RUNTIME_ERROR <<"Internal Error in importing numpy";}
 #endif
 
   //Construct to state 0

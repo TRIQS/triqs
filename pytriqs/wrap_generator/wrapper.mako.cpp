@@ -1001,6 +1001,9 @@ ${f.code};
 PyMODINIT_FUNC
 init${module.name}(void)
 {
+    // import numpy
+    import_array();
+
     PyObject* m;
 
 %for c in module.classes.values() :

@@ -366,14 +366,27 @@ template <typename T, int N> struct py_converter<triqs::utility::mini_vector<T,N
  }
 };
 
-// --- array 
+// --- array
+
+inline void import_numpy() {
+  static bool init = false;
+  if (!init) {
+    _import_array();
+    std::cerr << "importing array"<<std::endl;
+    init = true;
+  }
+}
 
 template <typename ArrayType> struct py_converter_array {
- static PyObject *c2py(ArrayType const &x) { return x.to_python(); }
+ static PyObject *c2py(ArrayType const &x) {
+  import_numpy();
+  return x.to_python();
+ }
  static ArrayType py2c(PyObject *ob) {
   return ArrayType (ob);
  }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
+  import_numpy();
   try {
    py2c(ob);
    return true;
