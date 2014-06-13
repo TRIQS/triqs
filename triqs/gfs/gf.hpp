@@ -676,10 +676,15 @@ namespace gfs {
   g.singularity() = inverse(g.singularity()); 
  }
 
- template <typename Variable, typename Opt> gf<Variable, matrix_valued, Opt> inverse(gf_view<Variable, matrix_valued, Opt> g) {
-  auto res = gf<Variable, matrix_valued, Opt>(g);
-  invert_in_place(res);
+ template <typename Variable, typename Opt> gf<Variable, matrix_valued, Opt> inverse(gf<Variable, matrix_valued, Opt> const & g) {
+  auto res = g;
+  gf_view<Variable, matrix_valued, Opt> v = res;
+  invert_in_place(v);
   return res;
+ }
+
+ template <typename Variable, typename Opt, bool B> gf<Variable, matrix_valued, Opt> inverse(gf_view<Variable, matrix_valued, Opt, B> g) {
+  return inverse(gf<Variable, matrix_valued, Opt>(g));
  }
 
  //  ---- transpose : a new gf
