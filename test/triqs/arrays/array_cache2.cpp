@@ -21,9 +21,9 @@
 
 #include "./common.hpp"
 
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #define TRIQS_ARRAYS_CACHE_COPY_VERBOSE
-#include "./src/cache.hpp"
+#include <triqs/arrays/cache.hpp>
 #include <iostream>
 
 using namespace triqs::arrays;

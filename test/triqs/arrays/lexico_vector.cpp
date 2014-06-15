@@ -22,10 +22,10 @@
 #include <iostream>
 #include <algorithm>
 
-#include "./src/array.hpp"
-#include "./src/vector.hpp"
-#include "./src/matrix.hpp"
-#include "./src/asserts.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/vector.hpp>
+#include <triqs/arrays/matrix.hpp>
+#include <triqs/arrays/asserts.hpp>
 
 using namespace triqs::arrays;
 

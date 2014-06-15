@@ -21,9 +21,9 @@
  ******************************************************************************/
 #include "./common.hpp"
 
-#include "./src/array.hpp"
-#include "./src/vector.hpp"
-#include "./src/matrix.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/vector.hpp>
+#include <triqs/arrays/matrix.hpp>
 #include <iostream>
 
 using std::cout; using std::endl;

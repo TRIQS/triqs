@@ -22,7 +22,7 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
 #include "./common.hpp"
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <iostream>
 #include <fstream>
 

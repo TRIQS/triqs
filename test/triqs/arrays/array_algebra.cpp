@@ -20,7 +20,7 @@
  ******************************************************************************/
 
 #include "./common.hpp"
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <iostream>
 #include <type_traits>
 

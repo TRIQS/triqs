@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "./common.hpp"
 #include <iostream>
-#include "./src/asserts.hpp"
+#include <triqs/arrays/asserts.hpp>
 #include <triqs/h5.hpp>
 
 using std::cout; using std::endl;

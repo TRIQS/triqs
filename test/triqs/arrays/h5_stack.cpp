@@ -19,10 +19,10 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/h5/array_stack.hpp"
-#include "./src/h5/simple_read_write.hpp"
+#include <triqs/arrays/h5/array_stack.hpp>
+#include <triqs/arrays/h5/simple_read_write.hpp>
 #include <iostream>
-#include "./src/asserts.hpp"
+#include <triqs/arrays/asserts.hpp>
 
 using std::cout; using std::endl;
 using namespace triqs::arrays;

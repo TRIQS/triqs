@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/vector.hpp"
+#include <triqs/arrays/vector.hpp>
 #include <iostream>
 using std::cout; using std::endl;
 using namespace triqs::arrays;

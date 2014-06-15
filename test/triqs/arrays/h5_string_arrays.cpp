@@ -19,10 +19,10 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <iostream>
-#include "./src/h5/simple_read_write.hpp"
-#include "./src/asserts.hpp"
+#include <triqs/arrays/h5/simple_read_write.hpp>
+#include <triqs/arrays/asserts.hpp>
 #include <triqs/h5.hpp>
 
 using std::cout; using std::endl;

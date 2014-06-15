@@ -19,9 +19,9 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/array.hpp"
-#include "./src/matrix.hpp"
-#include "./src/vector.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/matrix.hpp>
+#include <triqs/arrays/vector.hpp>
 #include <iostream>
 
 using namespace triqs::arrays;

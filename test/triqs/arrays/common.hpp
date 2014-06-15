@@ -21,10 +21,10 @@
  ******************************************************************************/
 #ifndef COMMON_TEST_ARRAY_H
 #define COMMON_TEST_ARRAY_H
-#include <iostream>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/asserts.hpp>
 #include<sstream>
+#include <iostream>
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl;
 

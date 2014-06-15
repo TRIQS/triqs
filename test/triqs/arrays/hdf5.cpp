@@ -19,9 +19,9 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <iostream>
-#include "./src/h5/simple_read_write.hpp"
+#include <triqs/arrays/h5/simple_read_write.hpp>
 
 using std::cout; using std::endl;
 namespace tqa = triqs::arrays;
