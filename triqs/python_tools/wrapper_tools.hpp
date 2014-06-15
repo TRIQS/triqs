@@ -368,7 +368,7 @@ template <typename T, int N> struct py_converter<triqs::utility::mini_vector<T,N
 
 // --- array
 
-inline void import_numpy() {
+inline static void import_numpy() {
   static bool init = false;
   if (!init) {
     _import_array();
@@ -383,6 +383,7 @@ template <typename ArrayType> struct py_converter_array {
   return x.to_python();
  }
  static ArrayType py2c(PyObject *ob) {
+  import_numpy();
   return ArrayType (ob);
  }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
