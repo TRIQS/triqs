@@ -87,6 +87,8 @@ namespace gfs {
 
   bool is_empty() const { return ind.size() == 0; }
 
+  void resize(int s) { ind.resize(s);}
+
   template <typename G> bool check_size(G *g) const {
    return (is_empty() ||
            ((ind.size() == 2) && (ind[0].size() == get_target_shape(*g)[0]) && (ind[1].size() == get_target_shape(*g)[1])));
@@ -127,6 +129,7 @@ namespace gfs {
     g = indices_2{}; // empty, no file
     return;
    }
+   g.resize(2);
    h5_read(gr, "left", g.ind[0]);
    h5_read(gr, "right", g.ind[1]);
   }
