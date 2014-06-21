@@ -372,7 +372,7 @@ inline static void import_numpy() {
   static bool init = false;
   if (!init) {
     _import_array();
-    std::cerr << "importing array"<<std::endl;
+    //std::cerr << "importing array"<<std::endl;
     init = true;
   }
 }
