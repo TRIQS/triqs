@@ -84,14 +84,14 @@ namespace h5 {
  //------------- compute void * pointer to the data ----------------------------------
  // 2 cases : complex or not. Complex are reinterpreted according to doc, as N+1 dim double array
  template <typename S>
- std::enable_if_t<triqs::is_complex<S>::value, std14::conditional_t<std::is_const<S>::value, const void *, void *>>
+ std14::enable_if_t<triqs::is_complex<S>::value, std14::conditional_t<std::is_const<S>::value, const void *, void *>>
  get_data_ptr(S *p) {
   using T = std14::conditional_t<std::is_const<S>::value, const typename S::value_type, typename S::value_type>;
   return reinterpret_cast<T *>(p);
  }
 
  template <typename S>
- std::enable_if_t<!triqs::is_complex<S>::value, std14::conditional_t<std::is_const<S>::value, const void *, void *>>
+ std14::enable_if_t<!triqs::is_complex<S>::value, std14::conditional_t<std::is_const<S>::value, const void *, void *>>
  get_data_ptr(S *p) {
   return p;
  }
