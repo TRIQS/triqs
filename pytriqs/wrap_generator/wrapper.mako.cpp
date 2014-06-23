@@ -710,7 +710,7 @@ static int ${c.py_type}__set_prop_${p.name} (PyObject *self, PyObject *value, vo
   try {
    self_c.${p.setter.c_name} (convert_from_python<${p.setter.args[0][0]}>(value));
   }
-  CATCH_AND_RETURN("in setting the attribute '${m.py_name}'",-1);
+  CATCH_AND_RETURN("in setting the property '${p.name}'",-1);
   return 0;
 }
 %endif
