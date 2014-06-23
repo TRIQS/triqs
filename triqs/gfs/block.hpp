@@ -103,7 +103,8 @@ namespace gfs {
  // from a vector of gf (moving directly)
  template <typename Variable, typename Target, typename Opt>
  block_gf<Variable, Target, Opt> make_block_gf(std::vector<gf<Variable, Target, Opt>> V) {
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}, nothing{}};
+  int s = V.size(); // DO NOT use V.size in next statement, the V is moved and the order of arg. evaluation is undefined.
+  return {{s}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // from a vector of gf : generalized to have a different type of gf in the vector (e.g. views...)
@@ -154,7 +155,8 @@ namespace gfs {
  }
 
  template <typename GF> gf_view<block_index, typename GF::regular_type> make_block_gf_view_from_vector(std::vector<GF> V) {
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}, nothing{}};
+  int s = V.size();
+  return {{s}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  template <typename GF>
