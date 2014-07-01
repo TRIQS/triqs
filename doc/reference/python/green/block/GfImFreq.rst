@@ -11,7 +11,7 @@ This object stores a matrix valued Green function in imaginary frequencies
 in the Matsubara formalism : 
 
 .. math::
-  G_{\alpha \beta} (i \omega_n) \equiv \int_0^\beta G_{\alpha \beta} ( \tau) e^{-i \omega_n \tau}
+  G_{\alpha \beta} (i \omega_n) \equiv \int_0^\beta G_{\alpha \beta} ( \tau) e^{i \omega_n \tau}
 
 where :math:`G(\tau)` is the :ref:`Matsubara Green function in imaginary time <GfImTime>`.
 
