@@ -66,10 +66,11 @@ namespace gfs {
    dcomplex a1, a2, a3;
    double beta = gt.mesh().domain().beta;
    auto L = (gt.mesh().kind() == full_bins ? gt.mesh().size() - 1 : gt.mesh().size());
-   double fact = beta / gt.mesh().size();
+   if (L < 2*gw.mesh().size()) TRIQS_RUNTIME_ERROR << "The time mesh mush be at least twice as long as the freq mesh";
+   double fact = beta / L;
    dcomplex iomega = dcomplex(0.0, 1.0) * std::acos(-1) / beta;
    dcomplex iomega2 = iomega * 2 * gt.mesh().delta() * (gt.mesh().kind() == half_bins ? 0.5 : 0.0);
-   g_in.resize(gt.mesh().size());
+   g_in.resize(L);
    g_out.resize(gw.mesh().size());
    if (gw.domain().statistic == Fermion) {
     b1 = 0;
@@ -88,11 +89,15 @@ namespace gfs {
    }
    if (gw.domain().statistic == Fermion) {
     for (auto& t : gt.mesh())
-     g_in[t.index()] = fact * exp(iomega * t) *
-                       (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
+     if(t.index() < L) {
+       g_in[t.index()] = fact * exp(iomega * t) *
+                         (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
+     }
    } else {
     for (auto& t : gt.mesh())
-     g_in[t.index()] = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
+     if(t.index() < L) {
+       g_in[t.index()] = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
+     }
    }
    details::fourier_base(g_in, g_out, L, true);
    for (auto& w : gw.mesh()) {
@@ -116,11 +121,12 @@ namespace gfs {
    double beta = gw.domain().beta;
    size_t L = gt.mesh().size() - (gt.mesh().kind() == full_bins ? 1 : 0); // L can be different from gt.mesh().size() (depending
                                                                           // on the mesh kind) and is given to the FFT algorithm
+   if (L < 2*gw.mesh().size()) TRIQS_RUNTIME_ERROR << "The time mesh mush be at least twice as long as the freq mesh";
    dcomplex iomega = dcomplex(0.0, 1.0) * std::acos(-1) / beta;
    dcomplex iomega2 = -iomega * 2 * gt.mesh().delta() * (gt.mesh().kind() == half_bins ? 0.5 : 0.0);
    double fact = (Green_Function_Are_Complex_in_time ? 1 : 2) / beta;
    g_in.resize(gw.mesh().size());
-   g_out.resize(gt.mesh().size());
+   g_out.resize(L);
 
    if (gw.domain().statistic == Fermion) {
     b1 = 0;
@@ -151,14 +157,18 @@ namespace gfs {
    // typedef typename gf<imtime>::mesh_type::gf_result_type gt_result_type;
    if (gw.domain().statistic == Fermion) {
     for (auto& t : gt.mesh()) {
-     gt[t] =
-         convert_green<gt_result_type>(g_out(t.index() == L ? 0 : t.index()) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) +
+     if (t.index() < L) {
+       gt[t] =
+         convert_green<gt_result_type>(g_out(t.index()) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) +
                                        oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta));
+     }
     }
    } else {
     for (auto& t : gt.mesh())
-     gt[t] = convert_green<gt_result_type>(g_out(t.index() == L ? 0 : t.index()) + oneBoson(a1, b1, t, beta) +
+     if (t.index() < L) {
+       gt[t] = convert_green<gt_result_type>(g_out(t.index()) + oneBoson(a1, b1, t, beta) +
                                            oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta));
+     }
    }
    double pm = (gw.domain().statistic == Fermion ? -1.0 : 1.0);
    if (gt.mesh().kind() == full_bins) gt.on_mesh(L) = pm * (gt.on_mesh(0) + convert_green<gt_result_type>(ta(1)(0, 0)));
