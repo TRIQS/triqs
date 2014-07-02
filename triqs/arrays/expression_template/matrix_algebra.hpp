@@ -105,8 +105,6 @@ namespace triqs { namespace arrays {
 
  DEFINE_OPERATOR(plus,       +, ImmutableMatrix,ImmutableMatrix);
  DEFINE_OPERATOR(minus,      -, ImmutableMatrix,ImmutableMatrix);
- DEFINE_OPERATOR(minus,      -, ImmutableMatrix,is_in_ZRC);
- DEFINE_OPERATOR(minus,      -, is_in_ZRC,ImmutableMatrix);
  DEFINE_OPERATOR(multiplies, *, is_in_ZRC,ImmutableMatrix);
  DEFINE_OPERATOR(multiplies, *, ImmutableMatrix,is_in_ZRC);
  DEFINE_OPERATOR(divides,    /, ImmutableMatrix,is_in_ZRC);

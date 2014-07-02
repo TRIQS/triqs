@@ -109,7 +109,7 @@ namespace triqs { namespace gfs {
   
   auto mesh() const DECL_AND_RETURN(l.mesh()); 
   auto singularity() const DECL_AND_RETURN(l.singularity());
-  auto get_data_shape() const DECL_AND_RETURN (get_data_shape(l));
+  AUTO_DECL get_data_shape() const RETURN (get_gf_data_shape(l));
   
   template<typename KeyType> auto operator[](KeyType&& key) const DECL_AND_RETURN( -l[key]); 
   template<typename ... Args> auto operator()(Args && ... args) const DECL_AND_RETURN( -l(std::forward<Args>(args)...));

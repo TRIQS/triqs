@@ -22,6 +22,7 @@ void print_to_file(std::string const s, gf<imtime> const & gt){
 }
 
 void test_0(){
+ try { 
  
  int Ntau = 10001;
  double beta =1;
@@ -41,11 +42,15 @@ void test_0(){
  TEST(Gt.data());
  TEST(Gt.mesh().index_to_point(0));
  TEST(Gt.mesh().index_to_point(1));
+ }
+
+ catch(std::exception const & e) { std::cout  << e.what()<< std::endl;}
 
 }
 
 void test_1(){
 
+ try { 
 
  double beta=10;
  /* ----- Fourier ----- */
@@ -54,6 +59,9 @@ void test_1(){
  Gw.singularity()(1) = 1;
 
  Gt() = inverse_fourier(Gw);
+ }
+catch(std::exception const & e) { std::cout  << e.what()<< std::endl;}
+
 }
 
 int main() {
