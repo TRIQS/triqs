@@ -13,11 +13,11 @@ int main() {
 
   // construct
   auto gw_n = gf<imfreq, matrix_valued, no_tail>{{beta, Fermion}, {2, 2}};
-  auto gt_n = gf<imtime, matrix_valued, no_tail>{{beta, Fermion, 100}, {2, 2}};
+  auto gt_n = gf<imtime, matrix_valued, no_tail>{{beta, Fermion, 10000}, {2, 2}};
 
   // make a view from a g with a tail
   auto gw = gf<imfreq, matrix_valued>{{beta, Fermion}, {2, 2}};
-  auto gt = gf<imtime, matrix_valued>{gf_mesh<imtime>{beta, Fermion, 100}, {2, 2}};
+  auto gt = gf<imtime, matrix_valued>{gf_mesh<imtime>{beta, Fermion, 10000}, {2, 2}};
 
   auto vw = make_gf_view_without_tail(gw);
   auto vt = make_gf_view_without_tail(gt);
@@ -36,7 +36,7 @@ int main() {
   // need to test all this....
  
   //test antiperiodicity
-  auto Gt = gf<imtime, scalar_valued, no_tail>{ { beta, Fermion, 1000 }, {  } };
+  auto Gt = gf<imtime, scalar_valued, no_tail>{ { beta, Fermion, 10000 }, {  } };
   Gt(tau_) << exp(-tau_);
 
   TEST(Gt(0.01));

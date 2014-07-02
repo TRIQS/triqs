@@ -19,7 +19,7 @@ int main() {
  Gw1(om_) << 1/(om_-E);
  h5_write(file, "Gw1", Gw1);   // the original lorentzian
  
- auto Gt1 = gf<imtime> {{beta, Fermion, N}, {1,1}};
+ auto Gt1 = gf<imtime> {{beta, Fermion, 2*N}, {1,1}};
  Gt1() = inverse_fourier(Gw1);
  h5_write(file, "Gt1", Gt1);   // the lorentzian TF : lorentzian_inverse
  
