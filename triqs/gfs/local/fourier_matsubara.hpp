@@ -50,13 +50,13 @@ namespace gfs {
                                       gf_keeper<tags::fourier, imtime, matrix_valued, no_tail> const& L);
 
  template <typename Opt> gf_mesh<imfreq, Opt> make_mesh_fourier_compatible(gf_mesh<imtime, Opt> const& m) {
-  int L = m.size() - (m.kind() == full_bins ? 1 : 0);
+  int L = (m.size() - (m.kind() == full_bins ? 1 : 0))/2;
   return {m.domain(), L};
  }
 
  template <typename Opt>
  gf_mesh<imtime, Opt> make_mesh_fourier_compatible(gf_mesh<imfreq, Opt> const& m, mesh_kind mk = full_bins) {
-  int L = m.size() + (mk == full_bins ? 1 : 0);
+  int L = 2*m.size() + (mk == full_bins ? 1 : 0);
   return {m.domain(), L};
  }
 
