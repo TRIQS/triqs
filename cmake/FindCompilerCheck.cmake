@@ -21,9 +21,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  set(compiler_name "gcc")
  string(REGEX REPLACE ".*([2-5]\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
- if(NOT compiler_version VERSION_LESS "4.9.0")
-  set (compiler_is_c14 ON)
- endif()
+ #if(NOT compiler_version VERSION_LESS "4.9.0")
+ # set (compiler_is_c14 ON)
+ #endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
@@ -46,9 +46,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  set( compiler_version_min "3.2")
 
  # does not always work ... To be fixed when clang 3.4 officially released and on OS X.
- if(NOT compiler_version VERSION_LESS "3.4")
-  set (compiler_is_c14 ON)
- endif()
+ #if(NOT compiler_version VERSION_LESS "3.4")
+ # set (compiler_is_c14 ON)
+ #endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  

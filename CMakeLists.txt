@@ -63,12 +63,15 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 find_package(CompilerCheck)
 
 # Add C11 or C14 flag depending on compiler detection
-if (NOT compiler_is_c14)
+option(USE_CPP14 "Use C++14 mode " OFF)
+if (NOT USE_CPP14)
  MESSAGE(STATUS "Compiling in C++11 mode")
- SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -std=c++11 ")
+ #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 else()
  MESSAGE(STATUS "Compiling in C++14 mode")
- SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -std=c++1y ")
+ #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 endif()
 
 # Include TRIQS cmake macros
@@ -392,8 +395,8 @@ endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 # tests
 #------------------------
 
-option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
-if (Build_Triqs_General_Tools_Test)
+option(Build_Tests "Build the tests of the library " ON)
+if (Build_Tests)
  message( STATUS "-------- Preparing tests  -------------")
  add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
 endif()

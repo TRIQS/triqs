@@ -1,4 +1,4 @@
-option(Python_use_mpi4py "Use mpi4py (if OFF, use boost.mpi)" OFF)
+option(Python_use_mpi4py "Use mpi4py (if OFF, use boost.mpi)" ON)
 if (Python_use_mpi4py) 
  SET (TRIQS_PYTHON_MPI_USE_MPI4PY 1)
 else()
