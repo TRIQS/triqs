@@ -162,44 +162,6 @@ class cfunction :
         doc = "\n".join([ "   " + x.strip() for x in self.doc.split('\n')])
         return "Signature : %s\n%s"%( self._get_signature(),doc)
 
-class pyfunction :
-    """
-       Representation of one python function of the extension
-       It is basically :
-         - a python name
-         - a list of overload
-         - possibly some preprocessing/postprocessing python code.
-    """
-    def __init__(self, name, arity = None, is_method = False, is_static = False, doc = '', python_precall = None, python_postcall = None):
-      """
-        - name : name given in Python
-        - arity : arity of the function
-        - is_method : boolean
-        - is_static : boolean. Is is a static method
-        - doc : the doc string.
-        - overloads : a list of cfunction objects representing the various C++ overloads of the function
-        - python_precall : a python function_ to be called before the call of the C++ function
-                           The function must take  F(*args, **kw) and return (args, kw)
-        - python_postcall : a python function_ to be called after the call of the C++ function
-                           The function must take a python object, and return one...
-      """
-      self.py_name =name       # name given in python
-      self.arity = arity
-      self.is_method = is_method  # can be a method, a function...
-      self.is_static = is_static  #
-      self.doc = doc
-      self.python_precall, self.python_postcall  = python_precall, python_postcall
-      self.overloads = [] # List of all C++ overloads
-      self.do_implement = True # in some cases, we do not want to implement it automatically, (special methods).
-      self.is_constructor = False
-
-    def add_overload(self, **kw) :
-        self.overloads.append(cfunction(**kw))
-
-    def _generate_doc(self) :
-        s = "\n".join([self.doc, "\n"] + [f._generate_doc() for f in self.overloads])
-        return repr(s)[1:-1] # remove the ' ' made by repr
-
 class pure_pyfunction_from_module :
     """
        Representation of one python function defined in Python code in an external module.
@@ -234,6 +196,46 @@ class python_function:
         import inspect as ins
         self.code = "\n".join(['"%s\\n"'%line.rstrip().replace('"', '\\"') for line in ins.getsourcelines(self.f)[0]])
         self.doc = f.__doc__ # UNUSED AT THE MOMENT ??? REALLY ???
+
+class pyfunction :
+    """
+       Representation of one python function of the extension
+       It is basically :
+         - a python name
+         - a list of overload
+         - possibly some preprocessing/postprocessing python code.
+    """
+    def __init__(self, name, arity = None, is_method = False, is_static = False, doc = '', python_precall = None, python_postcall = None):
+      """
+        - name : name given in Python
+        - arity : arity of the function
+        - is_method : boolean
+        - is_static : boolean. Is is a static method
+        - doc : the doc string.
+        - overloads : a list of cfunction objects representing the various C++ overloads of the function
+        - python_precall : a python function_ to be called before the call of the C++ function
+                           The function must take  F(*args, **kw) and return (args, kw)
+        - python_postcall : a python function_ to be called after the call of the C++ function
+                           The function must take a python object, and return one...
+      """
+      self.py_name =name       # name given in python
+      self.arity = arity
+      self.is_method = is_method  # can be a method, a function...
+      self.is_static = is_static  #
+      self.doc = doc
+      def analyse(f):
+          return python_function(f.__name__, f) if callable(f) else f
+      self.python_precall, self.python_postcall  = analyse(python_precall), analyse(python_postcall)
+      self.overloads = [] # List of all C++ overloads
+      self.do_implement = True # in some cases, we do not want to implement it automatically, (special methods).
+      self.is_constructor = False
+
+    def add_overload(self, **kw) :
+        self.overloads.append(cfunction(**kw))
+
+    def _generate_doc(self) :
+        s = "\n".join([self.doc, "\n"] + [f._generate_doc() for f in self.overloads])
+        return repr(s)[1:-1] # remove the ' ' made by repr
 
 def _is_type_a_view(c_type) :
     return c_type.split('<', 1)[0].endswith("_view") # A bit basic ?
@@ -734,7 +736,7 @@ class module_ :
     def _generate_wrapper_code(self, mako_template, wrap_file) :
         self._prepare_for_generation()
         tpl = Template(filename=mako_template)
-        rendered = tpl.render(module=self, regular_type_if_view_else_type= _regular_type_if_view_else_type, is_type_a_view = _is_type_a_view)
+        rendered = tpl.render(module=self, regular_type_if_view_else_type= _regular_type_if_view_else_type, is_type_a_view = _is_type_a_view, python_function = python_function)
         with open(wrap_file,'w') as f:
            f.write(rendered)
 

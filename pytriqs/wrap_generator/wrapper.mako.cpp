@@ -510,13 +510,32 @@ template<typename T>
 
   %if py_meth.python_precall :
     pyref res_py; // the intermediate result of the pretreatment
-    // get the module where the function is
-    static pyref module = pyref::module("${py_meth.python_precall.rsplit('.',1)[0]}");
-    if (module.is_null()) goto error_return;
-    // get the function (only once)
-    static pyref py_fnt = module.attr("${py_meth.python_precall.rsplit('.',1)[1]}");
-    // call the function : return must be a tuple args, kw to replace the current args, kw
-    res_py = PyObject_Call(py_fnt, args, keywds);
+
+    %if isinstance(py_meth.python_precall,python_function) :
+
+     /// A precall function where the code is given
+     static const char * _precall_code = ${py_meth.python_precall.code};
+     static pyref _precall_py_fnt, _precall_py_dict; // keep the function, contained in a specific local dict
+     if (_precall_py_fnt.is_null()) { // first init
+       PyObject* main_module = PyImport_AddModule("__main__"); //borrowed
+       PyObject* global_dict = PyModule_GetDict(main_module); //borrowed
+       _precall_py_dict = PyDict_New(); // new ref
+       if (!PyRun_String(_precall_code, Py_file_input, global_dict, _precall_py_dict)) goto error_return;
+       _precall_py_fnt = borrowed(PyDict_GetItemString(_precall_py_dict,"${py_meth.python_precall.name}"));
+     }
+
+    %else:
+
+      // get the module where the function is
+      static pyref module = pyref::module("${py_meth.python_precall.rsplit('.',1)[0]}");
+      if (module.is_null()) goto error_return;
+      // get the function (only once)
+      static pyref _precall_py_fnt = module.attr("${py_meth.python_precall.rsplit('.',1)[1]}");
+      // call the function : return must be a tuple args, kw to replace the current args, kw
+
+    %endif
+
+    res_py = PyObject_Call(_precall_py_fnt, args, keywds);
     if (PyErr_Occurred()) goto error_return;
     if (!PyTuple_Check(res_py) || (PyTuple_Size(res_py)!=2))
         { PyErr_SetString(PyExc_RuntimeError,"${py_meth.python_precall} must return a tuple (args,kw) "); goto error_return; }
@@ -613,10 +632,29 @@ template<typename T>
 
   post_treatment:
    %if py_meth.python_postcall :
-   if (py_result) { // should always be true
+    if (py_result) { // should always be true
+
+    %if isinstance(py_meth.python_postcall,python_function) :
+
+     /// A postcall function where the code is given
+     static const char * _postcall_code = ${py_meth.python_postcall.code};
+     static pyref _postcall_py_fnt, _postcall_py_dict; // keep the function, contained in a specific local dict
+     if (_postcall_py_fnt.is_null()) { // first init
+       PyObject* main_module = PyImport_AddModule("__main__"); //borrowed
+       PyObject* global_dict = PyModule_GetDict(main_module); //borrowed
+       _postcall_py_dict = PyDict_New(); // new ref
+       if (!PyRun_String(_postcall_code, Py_file_input, global_dict, _postcall_py_dict)) goto error_return;
+       _postcall_py_fnt = borrowed(PyDict_GetItemString(_postcall_py_dict,"${py_meth.python_postcall.name}"));
+     }
+
+    %else:
+
      static pyref module2 = pyref::module("${py_meth.python_postcall.rsplit('.',1)[0]}");
-     static pyref py_fnt2 = module.attr("${py_meth.python_postcall.rsplit('.',1)[1]}");
-     PyObject * res_final =  PyObject_CallFunctionObjArgs(py_fnt2, py_result, NULL);
+     static pyref _postcall_py_fnt = module2.attr("${py_meth.python_postcall.rsplit('.',1)[1]}");
+
+    %endif
+
+     PyObject * res_final =  PyObject_CallFunctionObjArgs(_postcall_py_fnt, py_result, NULL);
      Py_XDECREF(py_result);
      py_result = res_final; // stealing the ref
    }

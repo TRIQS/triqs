@@ -25,7 +25,21 @@ g.add_method(name = "m1", c_name = "m1", signature = "double (int u)", doc = "DO
 g.add_method(name = "m1", c_name = "m2", signature = "double (double u)", doc = "DOC of m1...")
 
 # another version of the method, with some pre/post processing written in python
-g.add_method(name = "m1p", c_name = "m1", signature = "double (int u, double y = 3)", doc = "DOC of mm", python_precall = "aux.ffg", python_postcall = "aux.post1")
+
+def ffg( *args, **kw) : 
+    """ my doc of ffg in module """
+    print "calling ffg, with :"
+    print args
+    print kw
+    return tuple(2*x for x in args), kw
+
+def post1(res) :
+    #print "calling post1 inline"
+    return [res]
+
+# First version uses the external module version, second inline
+#g.add_method(name = "m1p", c_name = "m1", signature = "double (int u, double y = 3)", doc = "DOC of mm", python_precall = "aux.ffg", python_postcall = "aux.post1")
+g.add_method(name = "m1p", c_name = "m1", signature = "double (int u, double y = 3)", doc = "DOC of mm", python_precall = ffg, python_postcall = post1)
 
 # demo of adding a simple piece of C++ code, there is no C++ method corresponding
 g.add_method(name = "m1_x", calling_pattern = "bool result = (self_c.x >0) && (self_c.x < 10)" , signature = "bool()", doc = "A method which did not exist in C++")
@@ -80,7 +94,7 @@ module.add_class(g)
 # various module functions....
 module.add_function (name = "print_a", signature = "void(A a)", doc = "DOC of print_a")
 module.add_function (name = "print_err", signature = "void(A a)", doc = "DOC of print_a")
-module.add_function (name = "make_vector", signature = "std::vector<int>(int size)", doc = "DOC of print_a")
+module.add_function ("std::vector<int> make_vector(int size)", doc = "DOC of print_a")
 module.add_function (name = "make_vector2", signature = "std::vector<std::vector<int>>(int size)", doc = "DOC ....")
 module.add_function (name = "vector_x2", signature = "std::vector<int>(std::vector<int> v)", doc = "DOC of print_a")
 
