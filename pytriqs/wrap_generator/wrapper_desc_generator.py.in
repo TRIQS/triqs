@@ -1,0 +1,84 @@
+#!@PYTHON_INTERPRETER@
+
+from clang_parser import parse
+import sys, os
+from mako.template import Template
+
+# --- Parsing the arguments of the script and options
+import argparse
+
+parser = argparse.ArgumentParser(description='C++/Python wrapper desc file generator from C++ header code')
+
+parser.add_argument('filename', help = "Name of the file")
+parser.add_argument('--modulename',  help='Name of the Python module', default = '')
+parser.add_argument('--libclang_location', help='Location of the libclang', default = '@TRIQS_LIBCLANG_LOCATION@')
+parser.add_argument('--compiler_options', nargs ='*', help='Options to pass to clang')
+parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
+parser.add_argument('--properties', '-p',  action='store_true', 
+        help="""Transforms i) every method with no arguments into read-only property
+                ii) every method get_X into read-only property
+                iii) every couple of methods get_X, set_X into rw property
+              """)
+
+args = parser.parse_args()
+args.includes = (args.includes or []) +  '@TRIQS_INCLUDE_ALL@'.split(';')
+
+triqs_install_location = '@CMAKE_INSTALL_PREFIX@'
+args.includes.insert(0, triqs_install_location + '/include')
+
+#------------
+
+modulename = args.modulename or os.path.split(args.filename)[1].split('.',1)[0]
+
+class property_ : 
+    def __init__ (self, **kw) : 
+        self.__dict__.update(kw)
+
+if __name__ == '__main__' : 
+
+    compiler_options = args.compiler_options or [] 
+  
+
+    compiler_options += ['-I%s'%x for x in args.includes]
+
+
+    functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, where_is_libclang = args.libclang_location)
+  
+    print "Generating the wrapper ..."
+
+    if args.properties :    
+        print "making properties"
+
+        for cls in classes : 
+            cls.proplist, exclude =[], []
+            m_by_names =dict( (m.name,m) for m in cls.methods)
+            # Find all the couples get_X, set_X
+            for m in cls.methods : 
+                if  m.is_template or m.name.startswith('operator') or m.name in ['begin','end'] : 
+                    exclude.append(m)
+                elif m.name.startswith('get_') : 
+                    X = m.name[4:]
+                    set_m = m_by_names.get('set_' + X, None) 
+                    if set_m and set_m.rtype == "void" and len(set_m.params_decay) ==1 :
+                        if set_m.params_decay[0][0] == m.rtype : 
+                          cls.proplist.append(property_(name= X, doc = m.doc, getter = m, setter = set_m))
+                          exclude += [m,set_m]
+                        else : 
+                            print "Warning :"
+                            print "   in get_%s/set_%s" %(X,X)
+                            print "     The type taken from set_%s is not the return type of get_%s"%(X,X)
+                            print "     I am not transforming to property"
+
+                elif len(m.params) == 0 and not m.is_static : # it is a property not starting with get_, pure getter
+                    cls.proplist.append(property_(name= m.name, doc = m.doc, getter = m, setter = None))
+                    exclude.append(m)
+            cls.methods = [m for m in cls.methods if m not in exclude]
+
+    tpl = Template(filename=triqs_install_location + '/share/triqs/wrap_generator/wrap_desc.mako.py')
+    rendered = tpl.render(classes = classes, functions = functions, modulename=modulename, args = args )
+
+    with open("{modulename}_desc.py".format(modulename=modulename), "w") as f:
+        f.write(rendered)
+       
+    print "... done"
+

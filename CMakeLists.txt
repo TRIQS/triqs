@@ -372,6 +372,16 @@ include_directories(${CMAKE_BINARY_DIR}/include/)
 # (Case of an installed lib) or the triqs_config.h just generated in the built dir (when compiling the lib itself).
 add_definitions ( ${TRIQS_CXX_DEFINITIONS} -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config)
 
+#------------------------
+# Not used in the main code, only in TRIQSConfig and wrapper_desc_generator configuration
+#------------------------
+# for people who want to quickly add everything TRIQS has detected...
+set(TRIQS_LIBRARY_ALL ${TRIQS_LIBRARY} ${TRIQS_LIBRARY_BOOST} ${TRIQS_LIBRARY_PYTHON} ${TRIQS_LIBRARY_MPI} ${TRIQS_LIBRARY_HDF5} ${TRIQS_LIBRARY_LAPACK} ${TRIQS_LIBRARY_FFTW} ${TRIQS_LIBRARY_GMP} ${TRIQS_LIBRARY_GSL} )
+set(TRIQS_INCLUDE_ALL ${TRIQS_INCLUDE} ${TRIQS_INCLUDE_BOOST} ${TRIQS_INCLUDE_PYTHON} ${TRIQS_INCLUDE_MPI} ${TRIQS_INCLUDE_HDF5} ${TRIQS_INCLUDE_LAPACK} ${TRIQS_INCLUDE_FFTW} ${TRIQS_INCLUDE_GMP} ${TRIQS_INCLUDE_GSL} )
+list (REMOVE_DUPLICATES TRIQS_INCLUDE_ALL)
+
+set(TRIQS_LIBCLANG_LOCATION "/usr/lib/libclang.dylib" CACHE STRING "Location of the libclang library")
+
 #---------------------------------------------------------------------
 # pytriqs modules : MUST be before TRIQS, to have the py_converters
 #---------------------------------------------------------------------
