@@ -320,7 +320,8 @@ namespace gfs {
   //----------------------------- HDF5 -----------------------------
 
   friend std::string get_triqs_hdf5_data_scheme(gf_impl const &g) {
-   return "Gf" + gfs_implementation::h5_name<Variable, Target, Opt>::invoke();
+   auto s = gfs_implementation::h5_name<Variable, Target, Opt>::invoke();
+   return (s == "BlockGf" ? s : "Gf" + s);
   }
 
   friend struct gfs_implementation::h5_rw<Variable, Target, Opt>;

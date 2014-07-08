@@ -253,7 +253,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             except KeyError : 
                 raise RuntimeError, "I can not find the class %s to reconstruct the object !"%r_class_name
             if r_readfun :
-                res = r_readfun(self._group,key) 
+                res = r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
             elif "__factory_from_dict__" in dir(r_class) : 
                 f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
                 values = dict( (self._key_decipher(K),f(K)) for K in SUB )
