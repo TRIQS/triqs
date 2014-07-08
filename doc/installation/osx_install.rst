@@ -1,8 +1,8 @@
-.. index:: install_osx_lion
+.. index:: install_osx
 
 .. highlight:: bash
 
-.. _install_on_osx_lion:
+.. _install_osx:
 
 Installing required libraries on Mac OS X [EXPERIMENTAL]
 ==============================================================
@@ -10,64 +10,53 @@ Installing required libraries on Mac OS X [EXPERIMENTAL]
 Disclaimer
 -------------
 
-We provide here some instructions to install and use TRIQS on OS X.
+Here we provide the installation instructions in order to use TRIQS on OS X.
 
 While the installation of TRIQS itself is as straightforward as on Linux systems, 
 the installation of the standard scientific libraries used by TRIQS 
 (mpi, hdf5, boost, fftw, ipython, ....) is not as simple as in e.g. Debian/Ubuntu, 
 where they are packaged with the distribution itself (i.e. "part of the system").
 
-This general problem of scientific computing on OS X is clearly
-illustrated by the large number of third-party attempts
-to provide "easy" installation of scientific libraries : 
-brew, macports, fink, Enthought Python distribution.
+This general problem of scientific computing on OS X is clearly illustrated by the
+large number of third-party attempts to provide "easy" installation of scientific libraries,
+such as brew, macports, fink, or the Enthought Python distribution.
 
-In our experience, none of this solution is perfect, nor complete or stable : they are still 
+In our experience, none of these solutions is perfect, nor complete or stable: they are still 
 very far from the quality and stability of a Linux distribution like Debian/Ubuntu.
-It *almost* works, but at the end, there are some issues, sometimes severe,
-in the way scientific librairies are installed.
-(e.g. currently the default version of mpi and hdf5 installed by brew are in conflict : 
-the simple mpi "Hello World"  crashes when linked with hdf5_cpp).
+It *almost* works, but at the end, there are some issues, sometimes severe, in the way
+scientific librairies are installed.
 
-Moreover, because there is no notion of "distribution" 
-the versions of the libraries are always changing e.g. in brew.
-As a result, the installation instructions may work on one day, and suddenly stop to work
-the day after.
+Moreover, because there is no notion of "distribution", the versions of the libraries are
+always changing e.g. in brew. As a result, the installation instructions may work on one day,
+and suddenly stop to work the day after.
 
 While this has a priori **nothing to do with TRIQS** and its applications, it clearly impacts its installation and usage.
 We are looking for a more robust solution to this OS X installation mess; **help welcome !**.
 
-In the following, we describe an installation procedure which worked (at least one day),
-on 10.8 and 10.9 (at least on the Mac of one of the developer !).
-
-
 Installation of the dependencies
 --------------------------------
 
-We describe an installation procedure which is known to have worked at least one day,
-on 10.8 and 10.9, (at least on the Mac of one of the developer !).
+The following installation instructions are for Mac OS X 10.9 (Mavericks). They may work (possibly with some
+modifications) for earlier versions of OS X.
 
 1. Install `homebrew <http://mxcl.github.io/homebrew/>`_.
 
   Run ``brew doctor`` and resolve potential conflicts before continuing.
 
-2. Install XCode (directly from the Mac store). In Preferences/Downloads, install "Command Line tools".
+2. We recommend using the clang compiler. When using it the first time, you will be prompted to
+   install the clang command line tools. After this is done, proceed to step 3.
 
 3. Install several packages which are needed: ::
         
      brew tap homebrew/science  
      brew install cmake
-     brew install gfortran
+     brew install --with-mpi --with-python --without-single boost
      brew install hdf5 
      brew install gsl
      brew install fftw
-     brew install open-mpi
+     brew install open-mpi #will install gcc as a dependency, which contains the required gfortran
      brew install zmq
      brew install python
-
-     #brew formula has been repaired
-     ### brew install boost --without-single --with-mpi --with-c++11
-     brew install  http://ipht.cea.fr/triqs/formulas/boost.rb  --without-single --with-mpi --with-c++11 -v
 
 5. Install the required python packages: ::
     
@@ -81,19 +70,24 @@ on 10.8 and 10.9, (at least on the Mac of one of the developer !).
     pip install pyzmq
     pip install jinja2
     pip install ipython
+    pip install mako
 
 6. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax: :: 
   
      brew install doxygen
      pip install sphinx
-     easy_install pyparsing==1.5.7
+     pip install pyparsing
      git clone https://github.com/mathjax/MathJax.git MathJax
-
-NB : you need pyparsing <=1.5.7 since apparently v.2.0 works only for python 3. (? still true ?)
-
 
 Possible issues
 ---------------
+
+* If you experience ImportErrors in Python, make sure that ::
+
+    /usr/local/bin
+
+  occurs before /usr/bin in your path. Otherwise you may be using the system's default version of Python.
+  As a result, some packages, although previously installed with ``pip install``, may not be found.
 
 * If you encounter the following error: ::
 
@@ -103,6 +97,16 @@ Possible issues
   with the header file and pass the include path through ``CPPFLAGS``: ::
 
     CPPFLAGS=-I/usr/X11/include/freetype2/ pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
+
+* When building the doc, you may experience the following sphinx error: ::
+
+    ValueError: unknown locale: UTF-8
+
+  In this case, make sure to add the following lines to your ``.bash_profile``: ::
+
+    export lc_all=en_us.utf-8 
+    export lang=en_us.utf-8 
+
 
 
 
