@@ -169,7 +169,7 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
    else { if (p) delete[] p; } // state 2 or state 0
   }
 
-  // can not be copied or moved.
+  // cannot be copied or moved.
   mem_block & operator=(mem_block const & X) = delete;
   mem_block & operator=(mem_block && X) = delete;
   mem_block(mem_block && X) noexcept {

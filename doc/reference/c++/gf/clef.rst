@@ -21,7 +21,7 @@ Using the CLEF library offers a quick and efficient way to fill an array with mu
 .. note:: 
 
    The LHS uses () and not brackets, even though it is on the mesh, because of the strange C++ limitation 
-   that [] can not be overloaded for several variables...
+   that [] cannot be overloaded for several variables...
 
 
 

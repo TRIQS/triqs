@@ -83,7 +83,7 @@ class crash_logger {
     h5::file(this->filename_.c_str(), H5F_ACC_TRUNC); // create the file
    }
   }
-  catch(...) {} // just in case ... destructor can not throw
+  catch(...) {} // just in case ... destructor cannot throw
  }
  ///
  void dismiss() {for (auto & g : guards) g.dismiss();}

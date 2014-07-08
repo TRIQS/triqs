@@ -6,7 +6,7 @@ namespace h5 {
 
  group::group(h5::file f) : h5_object() {
   id = H5Gopen2(f, "/", H5P_DEFAULT);
-  if (id < 0) TRIQS_RUNTIME_ERROR << "Can not open the root group / in the file " << f.name();
+  if (id < 0) TRIQS_RUNTIME_ERROR << "Cannot open the root group / in the file " << f.name();
  }
 
  group::group(h5_object obj) : h5_object(std::move(obj)) {
@@ -36,7 +36,7 @@ namespace h5 {
   if (!has_key(key)) return;
   //auto err = H5Gunlink(id, key.c_str()); // deprecated function
   auto err = H5Ldelete(id, key.c_str(),H5P_DEFAULT);
-  if (err < 0) TRIQS_RUNTIME_ERROR << "Can not unlink object " << key << " in group " << name();
+  if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot unlink object " << key << " in group " << name();
  }
 
  group group::open_group(std::string const &key) const {
@@ -50,7 +50,7 @@ namespace h5 {
  dataset group::open_dataset(std::string const &key) const {
   if (!has_key(key)) TRIQS_RUNTIME_ERROR << "no dataset " << key << " in the group";
   dataset ds = H5Dopen2(id, key.c_str(), H5P_DEFAULT);
-  if (!ds.is_valid()) TRIQS_RUNTIME_ERROR << "Can not open dataset " << key << " in the group" << name();
+  if (!ds.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot open dataset " << key << " in the group" << name();
   return ds;
  }
 
@@ -62,7 +62,7 @@ namespace h5 {
  group group::create_group(std::string const &key, bool delete_if_exists) const {
   unlink_key_if_exists(key);
   hid_t id_g = H5Gcreate2(id, key.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-  if (id_g < 0) TRIQS_RUNTIME_ERROR << "Can not create the subgroup " << key << " of the group" << name();
+  if (id_g < 0) TRIQS_RUNTIME_ERROR << "Cannot create the subgroup " << key << " of the group" << name();
   return group(id_g);
  }
 
@@ -75,7 +75,7 @@ namespace h5 {
  dataset group::create_dataset(std::string const &key, datatype ty, dataspace sp, hid_t pl) const {
   unlink_key_if_exists(key);
   dataset ds = H5Dcreate2(id, key.c_str(), ty, sp, H5P_DEFAULT, pl, H5P_DEFAULT);
-  if (!ds.is_valid()) TRIQS_RUNTIME_ERROR << "Can not create the dataset " << key << " in the group" << name();
+  if (!ds.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot create the dataset " << key << " in the group" << name();
   return ds;
  }
 

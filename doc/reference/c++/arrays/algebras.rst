@@ -14,7 +14,7 @@ For example:
 Arrays vs matrices
 ----------------------
 
-Because their multiplication is not the same, arrays and matrices algebras can not be mixed.
+Because their multiplication is not the same, arrays and matrices algebras cannot be mixed.
 Mixing them in expression would therefore be meaningless and it is therefore not allowed.
 However, you can always use e.g. `matrix_view` from a array of rank 2 :
   

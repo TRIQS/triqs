@@ -679,12 +679,12 @@ template<typename T>
 static PyObject* ${c.py_type}_${f_name} (PyObject *self, PyObject *args, PyObject *keywds) {
   static pyref module = pyref::module("${f.module}");
   if (module.is_null()) {
-     PyErr_SetString(PyExc_ImportError,"Can not import module ${f.module}");
+     PyErr_SetString(PyExc_ImportError,"Cannot import module ${f.module}");
      return NULL;
   }
   static pyref py_fnt = module.attr("${f.py_name}");
   if (py_fnt.is_null()) {
-     PyErr_SetString(PyExc_ImportError,"Can not import function ${f.py_name} in module ${f.module}");
+     PyErr_SetString(PyExc_ImportError,"Cannot import function ${f.py_name} in module ${f.module}");
      return NULL;
   }
   pyref args2 = PySequence_Concat(PyTuple_Pack(1,self),args);
@@ -735,7 +735,7 @@ static PyObject * ${c.py_type}__get_prop_${p.name} (PyObject *self, void *closur
     return py_fnt(self).new_ref();
   %else:
     auto & self_c = convert_from_python<${c.c_type}>(self);
-    ${p.getter._get_calling_pattern()}; // defines result, which can not be void (property would return None ??)
+    ${p.getter._get_calling_pattern()}; // defines result, which cannot be void (property would return None ??)
     return convert_to_python(result);
   %endif
 }
@@ -820,7 +820,7 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) 
   pyref r = pyref::module("${module.full_name}").attr("__reduce_reconstructor__${c.py_type}");
   if (r.is_null()) {
    PyErr_SetString(PyExc_ImportError,
-                   "Can not find the reconstruction function ${module.full_name}.__reduce_reconstructor__${c.py_type}");
+                   "Cannot find the reconstruction function ${module.full_name}.__reduce_reconstructor__${c.py_type}");
    return NULL;
   }
   return Py_BuildValue("(NN)", r.new_ref() , reductor{}.apply_to(self_c)); // pyfoo ref ++ by Py_BuildValue
@@ -971,9 +971,9 @@ static PyObject * ${c.py_type}_${op_name} (PyObject *v){
   auto * self_c = (${c.py_type}__iterator *)self;
   if (self_c->iter != self_c->end) {
     %if c.iterator.c_cast_type:
-    PyObject *res = convert_to_python((${c.iterator.c_cast_type})(*(self_c->iter)));// make a COPY, I can not wrap a ref in python !
+    PyObject *res = convert_to_python((${c.iterator.c_cast_type})(*(self_c->iter)));// make a COPY, I cannot wrap a ref in python !
     %else:
-    PyObject *res = convert_to_python(*(self_c->iter));// make a COPY, I can not wrap a ref in python !
+    PyObject *res = convert_to_python(*(self_c->iter));// make a COPY, I cannot wrap a ref in python !
     %endif
     ++self_c->iter;
     return res;

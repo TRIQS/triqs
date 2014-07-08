@@ -55,7 +55,7 @@ namespace lattice {
     }
     uz /= sqrt(dot(uz, uz));
     uy = cross_product(uz, ux);
-    uy = uy / sqrt(dot(uy, uy)); // uy can not be 0
+    uy = uy / sqrt(dot(uy, uy)); // uy cannot be 0
     units_(1, _) = uz;
     units_(2, _) = uy;
     break;

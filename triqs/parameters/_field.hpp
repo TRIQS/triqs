@@ -138,7 +138,7 @@ namespace params {
    modified = true;
    using S_t = storage_t<RHS>;
    if (index != typeid(S_t)) {
-    TRIQS_RUNTIME_ERROR << "Field "<< name_<<" is of type "<< type_name(index)<<". I can not put a " << type_name(typeid(S_t)) << " into it.";
+    TRIQS_RUNTIME_ERROR << "Field "<< name_<<" is of type "<< type_name(index)<<". I cannot put a " << type_name(typeid(S_t)) << " into it.";
    }
    p.reset(new _data_impl<S_t>{std::move(rhs)});
    return *this;

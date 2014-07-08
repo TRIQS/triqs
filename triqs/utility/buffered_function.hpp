@@ -68,7 +68,7 @@ namespace utility {
   size_t index;
   std::vector<R> buffer;
   std::function<void(buffered_function *)> refill; // this refills the buffer and reset index of a buffered_function.
-  // NB : can not capture this in refill because we want the object to be copyable and movable
+  // NB : cannot capture this in refill because we want the object to be copyable and movable
  };
 }
 }

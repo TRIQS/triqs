@@ -34,7 +34,7 @@ namespace params {
    return boost::lexical_cast<T>(s);
   }
   catch (boost::bad_lexical_cast &) {
-   TRIQS_RUNTIME_ERROR << " extraction : can not read the string " << s << " into a " << typeid(T).name();
+   TRIQS_RUNTIME_ERROR << " extraction : cannot read the string " << s << " into a " << typeid(T).name();
   }
  }
 

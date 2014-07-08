@@ -108,7 +108,7 @@ if (PythonSupport)
 
  find_package(Python REQUIRED)
  if (NOT PYTHONLIBS_FOUND)
-  message (FATAL_ERROR "Can not find python. You can use -DWithoutPython to build a pure C++ version.")
+  message (FATAL_ERROR "Cannot find python. You can use -DWithoutPython to build a pure C++ version.")
  endif()
 
  set (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})

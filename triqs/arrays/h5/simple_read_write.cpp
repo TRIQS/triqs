@@ -110,7 +110,7 @@ namespace arrays {
    std::copy(begin(tmp), end(tmp), begin(V));
   }
 
-  // I can not use the generic code, just because the resize of the array take a shape,  not a size_t as std::vector and vector
+  // I cannot use the generic code, just because the resize of the array take a shape,  not a size_t as std::vector and vector
   void read_array(h5::group f, std::string const& name, arrays::array<std::string, 1>& V) {
    arrays::vector<std::string> res;
    read_array(f, name, res);

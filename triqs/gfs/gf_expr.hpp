@@ -81,8 +81,8 @@ namespace triqs { namespace gfs {
   typedef typename gfs_expr_tools::_or_<typename L_t::variable_t,typename R_t::variable_t>::type variable_t;
   typedef typename gfs_expr_tools::_or_<typename L_t::target_t,typename R_t::target_t>::type target_t;
   typedef typename gfs_expr_tools::_or_<typename L_t::option_t,typename R_t::option_t>::type option_t;
-  static_assert(!std::is_same<variable_t,void>::value, "Can not combine two gf expressions with different variables");
-  static_assert(!std::is_same<target_t,void>::value, "Can not combine two gf expressions with different target");
+  static_assert(!std::is_same<variable_t,void>::value, "Cannot combine two gf expressions with different variables");
+  static_assert(!std::is_same<target_t,void>::value, "Cannot combine two gf expressions with different target");
  
   L l; R r;
   template<typename LL, typename RR> gf_expr(LL && l_, RR && r_):l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}

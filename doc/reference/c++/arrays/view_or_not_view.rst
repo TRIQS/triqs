@@ -39,7 +39,7 @@ and the corresponding `view types`.
  
   * They are just partial or complete views of the corresponding regular type.
   * They never make deep copy, either in copying, constructing, transforming to python, 
-  * They can not be resized.
+  * They cannot be resized.
   * They are useful to work on arrays, matrices, or on some part thereof, without making copies
     (e.g. on a slice of an array, a column of a matrix).
  

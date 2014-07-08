@@ -148,7 +148,7 @@ namespace gfs {
 #ifdef __clang__
    // to generate a clearer error message ? . Only ok on clang ?
    template <int n> struct error {
-    static_assert(n > 0, "Green function can not be evaluated on a complex number !");
+    static_assert(n > 0, "Green function cannot be evaluated on a complex number !");
    };
 
    template <typename G> error<0> operator()(G const *g, std::complex<double>) const {

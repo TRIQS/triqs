@@ -135,7 +135,7 @@ template <> struct py_converter<bool> {
  static bool py2c(PyObject *ob) { return ob == Py_True; }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (PyBool_Check(ob)) return true;
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to bool");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to bool");}
   return false;
  }
 };
@@ -147,7 +147,7 @@ template <> struct py_converter<long> {
  static long py2c(PyObject *ob) { return PyInt_AsLong(ob); }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (PyInt_Check(ob)) return true;
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to long");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to long");}
   return false;
  }
 };
@@ -162,7 +162,7 @@ template <> struct py_converter<double> {
  static double py2c(PyObject *ob) { return PyFloat_AsDouble(ob); }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (PyFloat_Check(ob) || PyInt_Check(ob)) return true;
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to double");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to double");}
   return false;
  }
 };
@@ -180,7 +180,7 @@ template <> struct py_converter<std::complex<double>> {
  }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (PyComplex_Check(ob) || PyFloat_Check(ob) || PyInt_Check(ob)) return true;
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to complex");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to complex");}
   return false;
  }
 };
@@ -192,7 +192,7 @@ template <> struct py_converter<std::string> {
  static std::string py2c(PyObject *ob) { return PyString_AsString(ob); }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (PyString_Check(ob)) return true;
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to string");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to string");}
   return false;
  }
 };
@@ -202,7 +202,7 @@ template <> struct py_converter<const char *> {
  static const char * py2c(PyObject *ob) { return PyString_AsString(ob); }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (PyString_Check(ob)) return true;
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to string");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to string");}
   return false;
  }
 };
@@ -222,7 +222,7 @@ template <> struct py_converter<triqs::h5::group> {
   // id can be a file or a group. If it is a file, we open its root group '/'
   if (H5Iget_type(id) == H5I_FILE) {
    id = H5Gopen2(id, "/", H5P_DEFAULT);
-   if (id < 0) TRIQS_RUNTIME_ERROR << "Internal error : Can not open the root group / in the file !"; // should never happen
+   if (id < 0) TRIQS_RUNTIME_ERROR << "Internal error : Cannot open the root group / in the file !"; // should never happen
   }
   else { // must be a group, because check in convertible
    H5Iinc_ref(id); // we did not have ownership of the id
@@ -241,7 +241,7 @@ template <> struct py_converter<triqs::h5::group> {
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (group_type.is_null()) {
    group_type = pyref::module("h5py").attr("highlevel").attr("Group");
-   if (PyErr_Occurred()) TRIQS_RUNTIME_ERROR << "Can not load h5py module and find the group in it";
+   if (PyErr_Occurred()) TRIQS_RUNTIME_ERROR << "Cannot load h5py module and find the group in it";
   }
   int cmp = PyObject_RichCompareBool((PyObject *)ob->ob_type, group_type, Py_EQ);
   if (cmp < 0) RAISE("hd5 : internal : comparison to group type has failed !!");
@@ -278,7 +278,7 @@ template <typename T> struct py_converter<std::vector<T>> {
    return true;
   }
   _false:
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to std::vector");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to std::vector");}
   return false;
  }
  static std::vector<T> py2c(PyObject * ob) {
@@ -316,7 +316,7 @@ template <typename K, typename V> struct py_converter<std::map<K,V>> {
    return true;
   }
   _false:
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to std::map");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to std::map");}
   return false;
  }
  static std::map<K,V> py2c(PyObject * ob) {
@@ -350,7 +350,7 @@ template <typename T1, typename T2> struct py_converter<std::pair<T1,T2>> {
    return true;
   }
   _false:
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to std::pair");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to std::pair");}
   return false;
  }
 
@@ -405,7 +405,7 @@ template <typename ArrayType> struct py_converter_array {
    return true;
   }
   catch (...) {
-   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to array/matrix/vector");}
+   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to array/matrix/vector");}
    return false;
   }
  }
@@ -442,7 +442,7 @@ template <> struct py_converter<triqs::arrays::range> {
  }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (PySlice_Check(ob) || PyInt_Check(ob)) return true;
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to python slice");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to python slice");}
   return false;
  }
 };
@@ -454,7 +454,7 @@ template<> struct py_converter<triqs::gfs::nothing> {
  static PyObject *c2py(triqs::gfs::nothing g) { Py_RETURN_NONE;}
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (ob ==Py_None) return true;
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to triqs::gfs::nothing : can only convert None");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to triqs::gfs::nothing : can only convert None");}
   return false;
  }
  static triqs::gfs::nothing py2c(PyObject *ob) { return {}; }
@@ -480,7 +480,7 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
   pyref v_gf = convert_to_python(vg);
   pyref v_names = convert_to_python(g.mesh().domain().names());
   pyref cls = pyref::module("pytriqs.gf.local").attr("BlockGf");
-  if (cls.is_null()) TRIQS_RUNTIME_ERROR <<"Can not find the pytriqs.gf.local.BlockGf";
+  if (cls.is_null()) TRIQS_RUNTIME_ERROR <<"Cannot find the pytriqs.gf.local.BlockGf";
   pyref kw = PyDict_New();
   PyDict_SetItemString(kw, "name_list", v_names);
   PyDict_SetItemString(kw, "block_list", v_gf);
@@ -490,7 +490,7 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
 
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   pyref cls = pyref::module("pytriqs.gf.local").attr("BlockGf");
-  if (cls.is_null()) TRIQS_RUNTIME_ERROR <<"Can not find the pytriqs.gf.local.BlockGf";
+  if (cls.is_null()) TRIQS_RUNTIME_ERROR <<"Cannot find the pytriqs.gf.local.BlockGf";
   int i = PyObject_IsInstance(ob, cls);
   if (i == -1) { // an error has occurred
    i = 0;
@@ -523,7 +523,7 @@ template <typename Variable, typename Opt> struct py_converter<triqs::gfs::gf_vi
   if (!conv::is_convertible(ob,raise_exception)) return false;
   auto g = conv::py2c(ob); // matrix view
   if (get_target_shape(g) == triqs::arrays::make_shape(1,1)) return true;
-  if (raise_exception) PyErr_SetString(PyExc_RuntimeError,"The green function is not of dimension 1x1 : can not be reinterpreted as a scalar_valued Green function");
+  if (raise_exception) PyErr_SetString(PyExc_RuntimeError,"The green function is not of dimension 1x1 : cannot be reinterpreted as a scalar_valued Green function");
   return false;
  }
 
@@ -676,7 +676,7 @@ template <typename R, typename... T> struct py_converter<std::function<R(T...)>>
 
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (PyCallable_Check(ob)) return true;
-  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Can not convert to std::function a non callable object");}
+  if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to std::function a non callable object");}
   return false;
  }
 

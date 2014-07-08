@@ -31,7 +31,7 @@ where triqs::ull_t is the type defined by :
 
 * The views model the :ref:`MutableCuboidArray`, :ref:`MutableMatrix`, :ref:`MutableVector`, like the corresponding regular type.
 
-* The const views are similar to view, except that theirs contents can not be modified.
+* The const views are similar to view, except that theirs contents cannot be modified.
   They model  the :ref:`ImmutableCuboidArray`, :ref:`ImmutableMatrix`, :ref:`ImmutableVector`, like the corresponding *const* regular type.
 
 * Views have `view semantics`, i.e. their behave like a reference to the data, they are not regular type.
@@ -130,7 +130,7 @@ Member functions
 
 .. note:: 
    
-   views can not be resized.
+   views cannot be resized.
 
 .. toctree::
    :hidden:

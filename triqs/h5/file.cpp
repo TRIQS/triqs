@@ -8,19 +8,19 @@ namespace h5 {
 
   if ((flags == H5F_ACC_RDWR) || (flags == H5F_ACC_RDONLY)) {
    id = H5Fopen(name, flags, H5P_DEFAULT);
-   if (id < 0) TRIQS_RUNTIME_ERROR << "HDF5 : can not open file" << name;
+   if (id < 0) TRIQS_RUNTIME_ERROR << "HDF5 : cannot open file " << name;
    return;
   }
 
   if (flags == H5F_ACC_TRUNC) {
    id = H5Fcreate(name, flags, H5P_DEFAULT, H5P_DEFAULT);
-   if (id < 0) TRIQS_RUNTIME_ERROR << "HDF5 : can not create file " << name;
+   if (id < 0) TRIQS_RUNTIME_ERROR << "HDF5 : cannot create file " << name;
    return;
   }
 
   if (flags == H5F_ACC_EXCL) {
    id = H5Fcreate(name, flags, H5P_DEFAULT, H5P_DEFAULT);
-   if (id < 0) TRIQS_RUNTIME_ERROR << "HDF5 : can not create file " << name << ". Does it exists ?";
+   if (id < 0) TRIQS_RUNTIME_ERROR << "HDF5 : cannot create file " << name << ". Does it exists ?";
    return;
   }
 

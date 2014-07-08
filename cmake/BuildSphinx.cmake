@@ -13,7 +13,7 @@ FIND_PROGRAM(SPHINXBUILD_EXECUTABLE
  )
 
 if (NOT SPHINXBUILD_EXECUTABLE)
- MESSAGE(FATAL_ERROR "I can not find sphinx to build the triqs documentation")
+ MESSAGE(FATAL_ERROR "I cannot find sphinx to build the triqs documentation")
 else (NOT SPHINXBUILD_EXECUTABLE)
  MESSAGE(STATUS "sphinx-build program found at ${SPHINXBUILD_EXECUTABLE} ")
 endif (NOT SPHINXBUILD_EXECUTABLE)

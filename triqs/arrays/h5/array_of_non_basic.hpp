@@ -64,7 +64,7 @@ namespace arrays {
  template <typename ArrayType>
  std::c14::enable_if_t<is_amv_value_or_view_class<ArrayType>::value && !has_scalar_or_string_value_type<ArrayType>::value>
  h5_write(h5::group gr, std::string name, ArrayType const& a) {
-  if (a.is_empty()) TRIQS_RUNTIME_ERROR << " Can not save an empty array into hdf5";
+  if (a.is_empty()) TRIQS_RUNTIME_ERROR << " Cannot save an empty array into hdf5";
   auto gr2 = gr.create_group(name);
   gr2.write_triqs_hdf5_data_scheme(a);
   // save the shape
@@ -89,7 +89,7 @@ namespace arrays {
  template <typename ArrayType>
  std::c14::enable_if_t<is_amv_value_or_view_class<ArrayType>::value && !has_scalar_or_string_value_type<ArrayType>::value>
  h5_read(h5::group gr, std::string name, ArrayType& a) {
-  static_assert(!std::is_const<ArrayType>::value, "Can not read in const object");
+  static_assert(!std::is_const<ArrayType>::value, "Cannot read in const object");
   auto gr2 = gr.open_group(name);
   // TODO checking scheme...
   // load the shape

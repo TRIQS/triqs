@@ -180,7 +180,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
      template<int v> inline void inc_ind_impl(std::integral_constant<int,v>) {
       constexpr size_t p = mem_layout::memory_rank_to_index(traversal_order, rank-v);
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-      if (atend) TRIQS_RUNTIME_ERROR << "Iterator in cuboid can not be pushed after end !";
+      if (atend) TRIQS_RUNTIME_ERROR << "Iterator in cuboid cannot be pushed after end !";
 #endif
       if (indices_tuple[p] < im->lengths()[p]-1) { ++(indices_tuple[p]); pos += im->strides()[p]; return; }
       indices_tuple[p] = 0;

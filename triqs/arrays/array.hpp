@@ -56,7 +56,7 @@ namespace triqs { namespace arrays {
    /// Build from anything that has an indexmap and a storage compatible with this class
    template<typename ISP> array_view(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {
     // to be activated 
-    static_assert(IsConst || (!ISP::is_const), "Can not construct a non const view from a const one !");
+    static_assert(IsConst || (!ISP::is_const), "Cannot construct a non const view from a const one !");
    }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT

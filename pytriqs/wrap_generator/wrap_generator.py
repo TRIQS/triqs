@@ -179,7 +179,7 @@ class pure_pyfunction_from_module :
           f = getattr(m,name)
           self.doc = f.__doc__ # get the doc and check the function can be loaded.
       except :
-          print " I can not import the function %s from the module %s"%(name,module)
+          print " I cannot import the function %s from the module %s"%(name,module)
           raise
 
     def _generate_doc(self) :
@@ -569,7 +569,7 @@ class class_ :
     def _prepare_for_generation(self) :
         """Internal :  Called just before the code generation"""
         self.has_mapping_protocol = '__getitem__impl' in self.methods or '__len__impl' in self.methods
-        if '__setitem__impl' in self.methods and not  '__getitem__impl' in self.methods : raise RuntimeError, "Can not generate a class with a setter and no getter"
+        if '__setitem__impl' in self.methods and not  '__getitem__impl' in self.methods : raise RuntimeError, "Cannot generate a class with a setter and no getter"
 
 class module_ :
     """
@@ -687,7 +687,7 @@ class module_ :
           if os.path.exists(hppfile) :
               f = open(hppfile ,'r')
               break
-        if not f : raise RuntimeError, "Can not find the module %s.\n  ... module_path_list = %s"%(modulename, self.module_path_list)
+        if not f : raise RuntimeError, "Cannot find the module %s.\n  ... module_path_list = %s"%(modulename, self.module_path_list)
 
         while f.readline().strip() != "// WrappedTypeList" :
             pass

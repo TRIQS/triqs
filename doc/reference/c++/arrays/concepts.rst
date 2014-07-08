@@ -16,7 +16,7 @@ We distinguish two separate notions based on whether this function is `pure`
 or not, i.e. whether one can or not modify a(i,j).
 
 * An `Immutable` array is simply a pure function on the domain of definition.
-  a(i,j) returns a int, or a int const &, that can not be modified (hence immutable).
+  a(i,j) returns a int, or a int const &, that cannot be modified (hence immutable).
 
 * A `Mutable` array is an Immutable array that *can* be modified. The non-const
 object returns a reference, e.g. a(i,j) can return a int &. Typically this is 

@@ -109,7 +109,7 @@ class HilbertTransform :
             try : 
                 result += field
             except : 
-                assert 0, "field can not be added to the Green function blocks !. Cf Doc"
+                assert 0, "field cannot be added to the Green function blocks !. Cf Doc"
 
         def HT(res) : 
             # First compute the eps_hat array

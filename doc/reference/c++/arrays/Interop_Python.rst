@@ -42,7 +42,7 @@ To be more precise, two cases must be distinguished.
  
   In this case, the array_view's storage is the numpy array, and it keeps a
   (owned) reference to the python array all along its existence.
-  This means that Python can not destroy the array as long as the view exists.
+  This means that Python cannot destroy the array as long as the view exists.
   
   The to_python method simply returns a new reference to this numpy array.
 

@@ -19,7 +19,7 @@ def plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
     """
     Name = opt_dict.pop('name', '' )  # consume it
     NamePrefix = opt_dict.pop('NamePrefix', '' )  # consume it
-    if Name and NamePrefix : raise ValueError, 'Name and NamePrefix can not be used at the same time'
+    if Name and NamePrefix : raise ValueError, 'Name and NamePrefix cannot be used at the same time'
     if NamePrefix : name_save, self.name = self.name, Name or NamePrefix
 
     rx = opt_dict.pop('x_window',None ) # consume it

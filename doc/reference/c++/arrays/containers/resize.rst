@@ -19,7 +19,7 @@ resize
 .. triqs_example:: ./resize_0.cpp
 .. note::
   
-   Views can not be resized.
+   Views cannot be resized.
 
 * **Invalidation** :
 

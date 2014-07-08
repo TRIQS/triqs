@@ -67,7 +67,7 @@ namespace arrays {
   }
   TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
 
-  template <typename RHS> const_matrix_tensor_proxy &operator=(const RHS &X) =delete; // can not assign to a const 
+  template <typename RHS> const_matrix_tensor_proxy &operator=(const RHS &X) =delete; // cannot assign to a const 
 
   TRIQS_DELETE_COMPOUND_OPERATORS(const_matrix_tensor_proxy);
   friend std::ostream &operator<<(std::ostream &out, const_matrix_tensor_proxy const &x) { return out << view_type(x); }

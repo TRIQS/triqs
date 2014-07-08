@@ -133,9 +133,9 @@ namespace arrays {
    h5::dataspace mspace = h5_impl::data_space(buffer);
 
    err = H5Sselect_hyperslab(fspace1, H5S_SELECT_SET, offset.ptr(), NULL, buffer_dim.ptr(), NULL);
-   if (err < 0) TRIQS_RUNTIME_ERROR << "Can not set hyperslab";
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot set hyperslab";
    err = H5Sselect_hyperslab(mspace, H5S_SELECT_SET, zero.ptr(), NULL, buffer_dim.ptr(), NULL);
-   if (err < 0) TRIQS_RUNTIME_ERROR << "Can not set hyperslab";
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot set hyperslab";
 
    err = H5Dwrite(d_set, h5::data_type_memory<T>(), mspace, fspace1, H5P_DEFAULT, h5_impl::__get_array_data_ptr(buffer));
    if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the array_stack buffer";

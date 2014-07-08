@@ -841,7 +841,7 @@ namespace gfs {
 }
 }
 
-// same as for arrays : views can not be swapped by the std::swap. Delete it
+// same as for arrays : views cannot be swapped by the std::swap. Delete it
 namespace std {
 template <typename Variable, typename Target, typename Opt, bool C1, bool C2>
 void swap(triqs::gfs::gf_view<Variable, Target, Opt, C1> &a, triqs::gfs::gf_view<Variable, Target, Opt, C2> &b) = delete;

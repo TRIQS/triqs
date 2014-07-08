@@ -48,7 +48,7 @@ mark_as_advanced(TRIQS_LIBRARIES)
 
 if (NOT TRIQS_CONFIG_FILE)
  MESSAGE(FATAL_ERROR " ${TRIQS_PATH} $ENV{TRIQS_PATH}")
- MESSAGE(FATAL_ERROR " Can not find the TRIQS config file")
+ MESSAGE(FATAL_ERROR " Cannot find the TRIQS config file")
 endif()
 # include prepare variables
 
