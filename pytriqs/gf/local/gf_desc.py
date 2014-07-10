@@ -258,6 +258,14 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
                    getter = cfunction(calling_pattern="auto result = self_c.indices()[0]", signature = "std::vector<std::string>()"),
                    doc ="The indices(L)")
 
+    g.add_property(name = "indicesL",
+                   getter = cfunction(calling_pattern="auto result = self_c.indices()[0]", signature = "std::vector<std::string>()"),
+                   doc ="The indices(L)")
+
+    g.add_property(name = "indicesR",
+                   getter = cfunction(calling_pattern="auto result = self_c.indices()[1]", signature = "std::vector<std::string>()"),
+                   doc ="The indices(R)")
+
     # backward compatibility
     g.add_property(name = "N1",
                    getter = cfunction(calling_pattern="int result = get_target_shape(self_c)[0]", signature = "int()"),
