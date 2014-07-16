@@ -38,7 +38,11 @@ namespace mpi {
   }
 
   // -----------
-  static void broadcast(communicator c, std::vector<T> &a, int root) { MPI_Bcast(a.data(), a.size(), D(), root, c.get()); }
+  static void broadcast(communicator c, std::vector<T> &a, int root) {
+   size_t s=a.size();
+   MPI_Bcast(&s, 1, mpi_datatype<size_t>::invoke(), root, c.get());
+   if(c.rank() != root) a.resize(s);
+ MPI_Bcast(a.data(), a.size(), D(), root, c.get()); }
 
   // -----------
   static std::vector<T> invoke(tag::reduce, communicator c, T const &a, int root) {
@@ -91,7 +95,7 @@ namespace mpi {
   // -----------
 
   static std::vector<T> invoke(tag::allgather, communicator c, std::vector<T> const &a, int root) {
-   long size = reduce(a.size(), c, root);
+   long size = allreduce(a.size(), c, root);
    std::vector<T> b(size);
 
    auto recvcounts = std::vector<int>(c.size());

@@ -116,7 +116,7 @@ namespace mpi {
 
   static T invoke(tag::allreduce, communicator c, T a, int root) {
    T b;
-   MPI_Allreduce(&a, &b, 1, D(), MPI_SUM, root, c.get());
+   MPI_Allreduce(&a, &b, 1, D(), MPI_SUM, c.get());
    return b;
   }
 
