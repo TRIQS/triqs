@@ -54,7 +54,7 @@ modifications) for earlier versions of OS X.
      brew install hdf5 
      brew install gsl
      brew install fftw
-     brew install open-mpi #will install gcc as a dependency, which contains the required gfortran
+     brew install open-mpi
      brew install zmq
      brew install python
 
@@ -65,7 +65,6 @@ modifications) for earlier versions of OS X.
     pip install scipy
     pip install mpi4py
     pip install matplotlib
-    pip install sphinxcontrib-doxylink
     pip install tornado
     pip install pyzmq
     pip install jinja2
@@ -76,6 +75,7 @@ modifications) for earlier versions of OS X.
   
      brew install doxygen
      pip install sphinx
+     pip install sphinxcontrib-doxylink
      pip install pyparsing
      git clone https://github.com/mathjax/MathJax.git MathJax
 

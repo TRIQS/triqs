@@ -29,7 +29,8 @@ macro (triqs_python_extension ModuleName)
  set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_TARGETS "python_wrap_${ModuleName}")
 
  add_custom_target(python_wrap_${ModuleName} ALL DEPENDS ${wrap_name} ${converter_name})
- add_dependencies(python_wrap_${ModuleName} py_copy ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py )
+ add_dependencies(python_wrap_${ModuleName} py_copy)
+ #add_dependencies(python_wrap_${ModuleName} ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py )
 
  add_library(${ModuleName} MODULE ${wrap_name})
  set_target_properties(${ModuleName} PROPERTIES PREFIX "") #eliminate the lib in front of the module name

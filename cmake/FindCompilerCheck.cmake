@@ -59,9 +59,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  set(compiler_name "Intel icc")
  #string(REGEX REPLACE "[^0-9]*([0-9]+\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
- # for intel 14.0 /test 
- link_libraries( -lomp_db )
-
 else ()
  set(compiler_version_min "0.0")
  set(compiler_group 0)
