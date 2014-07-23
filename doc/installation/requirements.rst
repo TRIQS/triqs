@@ -19,16 +19,13 @@ A recent compiler is therefore mandatory.
 
 * Standard compliant C++ compilers (recommended and supported).
   
-  * :ref:`clang 3.2<install_clang>` and higher (in particular the default clang on OS X 10.8).
+  * :ref:`clang 3.3<install_clang>` and higher (in particular the default clang on OS X >= 10.8).
   * g++ 4.8.1 and higher
 
-  * The intel icc 14.0 is close to be C++11 compliant, but presents currently too many bugs to be supported 
+  * The intel icc 15.0 is close to be C++11 compliant, but presents currently too many bugs to be supported 
     at present. It compiles 99% of TRIQS, but we do not have the ressources to write and 
     maintains all necessary workarounds.
     
-    Besides, for *our codes*, icc does not provide a significant speed gain (unlike MKL), 
-    so we do not recommend it for TRIQS.
-
 * C++98 compilers
 
   * g++ before 4.8.1
@@ -67,11 +64,15 @@ Libraries
 +------------------------+----------+------------------------------------------------------------------------+
 | cmake                  | >= 2.8.7 | CMake is used to control the software compilation process              |
 +------------------------+----------+------------------------------------------------------------------------+
+| mako                   | >= 0.9.1 | mako templates are used to generate the C++/python wrapper             |
++------------------------+----------+------------------------------------------------------------------------+
 | pyparsing              | >= ?     | Tool for sphinx (to compile documentation)                             |
 +------------------------+----------+------------------------------------------------------------------------+
 | sphinxcontrib-doxylink | >= ?     | Tool for sphinx (to compile documentation)                             |
 +------------------------+----------+------------------------------------------------------------------------+
 | matplotlib             | >= 0.99  | Python 2D plotting library                                             |
++------------------------+----------+------------------------------------------------------------------------+
+| libclang               | 3.4      | python bindings of the clang lib (for TRIQS developers ONLY)           |
 +------------------------+----------+------------------------------------------------------------------------+
 
 (1)  Since standard linux distributions (and macports on OS X) now provides openmpi, even on laptops, we avoid the unnecessary complication of maintaining a non-parallel version of TRIQS

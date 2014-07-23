@@ -45,3 +45,23 @@ In order to use clang when building TRIQS::
    On OS X, the options -std=c++11 and -stdlib=libc++ are automatically added by the TRIQS
    installation script.
 
+libclang
+----------
+
+Some tools for developers (e.g. automatically C++/Python wrapper generation), use libclang
+(delivered with clang), and its python bindings (usually not given).
+
+The latest version is necessary.
+
+A pip package, updated to the latest version, is on github.
+Install it simply with ::
+
+  pip install -e git+https://github.com/parcollet/python-clang.git#egg=clang
+
+To uninstall it (or another version) ::
+
+  pip uninstall clang
+
+
+  
+
