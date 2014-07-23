@@ -6,6 +6,12 @@ Changelog
 
 This document describes the main changes in TRIQS.
 
+version 1.2.0
+-------------
+
+* New C++/Python wrapper generator.
+* HDF5 cleaned, now using only C library (not C++) for simpler installation.
+
 version 1.1.0
 -------------
 
