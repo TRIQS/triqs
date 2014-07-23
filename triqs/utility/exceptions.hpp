@@ -31,13 +31,14 @@
 namespace triqs { 
 
  class exception : public std::exception {
-  std::string acc, trace;
+  std::string acc, _trace;
   public:
-  exception() throw() :std::exception() { trace = utility::stack_trace();}
+  exception() throw() :std::exception() { _trace = utility::stack_trace();}
   virtual ~exception() throw() {}
   template<typename T> exception & operator  <<( T const & x) { std::stringstream f; f<<acc<<x; acc = f.str(); return *this;}
   exception & operator  <<( const char * mess ) { (*this) << std::string(mess); return *this;}// to limit code size
   virtual const char* what() const throw() { return acc.c_str();}
+  virtual const char* trace() const throw() { return _trace.c_str();}
  };
  
  class runtime_error : public exception {

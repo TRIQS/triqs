@@ -6,9 +6,16 @@
 #include <vector>
 #include <triqs/utility/exceptions.hpp>
 #include "./pyref.hpp"
+#include <time.h>
 
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+
+inline char *get_current_time() { // helper function to print the time in the CATCH_AND_RETURN macro
+ time_t rawtime;
+ time(&rawtime);
+ return ctime(&rawtime);
+}
 
 // I can use the trace in triqs::exception
 #define CATCH_AND_RETURN(MESS,RET)\
@@ -16,11 +23,11 @@
  PyErr_SetString(PyExc_KeyboardInterrupt, e.what());\
  return RET; }\
  catch(triqs::exception const & e) {\
- auto err = std::string("Error " MESS "\nC++ error was : \n") + e.what();\
+ auto err = std::string("Error occurred at ") + get_current_time() + "\nError " + MESS + "\nC++ error was : \n"  + e.what();\
  PyErr_SetString(PyExc_RuntimeError, err.c_str());\
  return RET; }\
  catch(std::exception const & e) {\
- auto err = std::string("Error " MESS "\nC++ error was : \n") + e.what();\
+ auto err = std::string("Error occurred at ") + get_current_time() + "\nError " + MESS + "\nC++ error was : \n"  + e.what();\
  PyErr_SetString(PyExc_RuntimeError, err.c_str());\
  return RET; }\
  catch(...) { PyErr_SetString(PyExc_RuntimeError,"Unknown error " MESS ); return RET; }\
