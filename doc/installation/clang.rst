@@ -19,9 +19,10 @@ The **clang** compiler is *highly recommended* for anyone developing in C++ sinc
   which uses a lot of metaprogramming.
 
 Note, however, that for *production* compilations, gcc, especially recent versions, still produces in general
-a slighly more optimal code for TRIQS applications, even if the difference is small.
+a slighly more optimal code for TRIQS applications, even if the differences are small. In fact, a bug in the
+compiler was recently found and reported.
 
-It is highly recommended to use the latest stable version on linux (3.3), and the default compiler on OS X (Mountain lion).
+It is highly recommended to use the latest stable version on Linux (3.4), and the default compiler on OS X (Mountain lion).
 
 Get and install clang on linux
 ------------------------------
