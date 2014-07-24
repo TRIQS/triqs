@@ -83,7 +83,23 @@ namespace gfs {
   std::vector<std::vector<std::string>> ind;
 
   indices_2() = default;
+
   indices_2(std::vector<std::vector<std::string>> _ind) : ind(std::move(_ind)) {}
+
+  // from a size
+  indices_2(int L) : indices_2(arrays::mini_vector<int, 2>{L, L}) {};
+
+  // from a shape
+  indices_2(arrays::mini_vector<int, 2> const & shape) : ind(2) {
+   for (int i = 0; i < shape[0]; ++i) ind[0].push_back(std::to_string(i));
+   for (int i = 0; i < shape[1]; ++i) ind[1].push_back(std::to_string(i));
+  }
+
+  // indices from a vector<T> : L and R are the same.
+  template <typename T> indices_2(std::vector<T> const & _ind) : ind(2) {
+   for (auto const &i : _ind) ind[0].push_back(std::to_string(i));
+   ind[1] = ind[0];
+  }
 
   bool is_empty() const { return ind.size() == 0; }
 
@@ -173,6 +189,7 @@ namespace gfs {
   friend nothing operator+(nothing, nothing) { return nothing(); }
   template <typename RHS> friend void assign_from_expression(nothing &, RHS) {}
   template<typename A> bool check_size(A) {return true;}
+  bool is_empty() const { return false;}
  };
 
  inline nothing transpose(nothing) { return {};}

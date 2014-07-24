@@ -433,7 +433,9 @@ namespace gfs {
 
   gf(typename B::mesh_t m, target_shape_t shape = target_shape_t{}, typename B::indices_t const &ind = typename B::indices_t{}, std::string name = "")
      : B(std::move(m), factory::make_data(m, shape), factory::make_singularity(m, shape), typename B::symmetry_t{}, ind, name, // clean unncessary types
-         typename B::evaluator_t{}) {}
+         typename B::evaluator_t{}) {
+   if (this->_indices.is_empty()) this->_indices = typename B::indices_t(shape);
+  }
 
   friend void swap(gf &a, gf &b) noexcept { a.swap_impl(b); }
 
