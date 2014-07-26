@@ -1,4 +1,4 @@
-# This module defines the function parse that 
+# This module defines the function parse that
 # call libclang to parse a C++ file, and retrieve
 # from the clang AST the classes, functions, methods, members (including
 # template).
@@ -33,6 +33,10 @@ class member_(object):
     def namespace(self) : 
         return "::".join(self.ns)
 
+class type_(object):
+    def __init__(self, cursor):
+        self.name, self.canonical_name = cursor.spelling, cursor.get_canonical().spelling
+
 class Function(object):
     def __init__(self, cursor, is_constructor = False, ns=() ): #, template_list  =()):
         loc = cursor.location.file.name
@@ -43,35 +47,33 @@ class Function(object):
         self.name = cursor.spelling
         self.annotations = get_annotations(cursor)
         self.access = cursor.access_specifier
-        self.params = []
-        self.params_decay = []
+        self.params = [] # a list of tuple (type, name, default_value or None).
         self.template_list = []  #template_list
         self.is_constructor = is_constructor
         self.is_static = cursor.is_static_method()
 
-        def decay(s) : 
-            s = re.sub('const','',s)
-            s = re.sub('&&','',s)
-            s = re.sub('&','',s)
-            return s.strip()
         for c in cursor.get_children():
             if c.kind == clang.cindex.CursorKind.TEMPLATE_TYPE_PARAMETER : 
                  self.template_list.append(c.spelling)
             elif (c.kind == clang.cindex.CursorKind.PARM_DECL) :
-                self.params.append ( (c.type.spelling, c.spelling))
-                self.params_decay.append ( (decay(c.type.spelling), c.spelling))
-            #else : 
+                default_value = None
+                for ch in c.get_children() :
+                    # TODO : string literal do not work.. needs to use location ? useful ?
+                    if ch.kind in [clang.cindex.CursorKind.INTEGER_LITERAL, clang.cindex.CursorKind.FLOATING_LITERAL, 
+                                   clang.cindex.CursorKind.CHARACTER_LITERAL, clang.cindex.CursorKind.STRING_LITERAL] :
+                        default_value =  ch.get_tokens().next().spelling 
+                t = type_(c.type)
+                self.params.append ( (t, c.spelling, default_value ))
+              #else : 
             #    print " node in fun ", c.kind
-        # self.rtype = cursor.result_type.get_canonical().spelling
-        self.rtype = cursor.result_type.spelling if not is_constructor else None
-        #print 'params for ', self.name,  self.params_decay
+        self.rtype = type_(cursor.result_type) if not is_constructor else None
 
     def namespace(self) : 
         return "::".join(self.ns)
 
     def signature_cpp(self) :
         s = "{name} ({args})" if not self.is_constructor else "{rtype} {name} ({args})"
-        s = s.format(args = ', '.join( ["%s %s"%t_n for t_n in self.params]), **self.__dict__) 
+        s = s.format(args = ', '.join( ["%s %s"%(t.name,n) + "="%d if d else "" for t,n,d in self.params]), **self.__dict__) 
         if self.template_list : 
             s = "template<" + ', '.join(['typename ' + x for x in self.template_list]) + ">  " + s
         if self.is_static : s = "static " + s

@@ -37,10 +37,11 @@ class property_ :
 if __name__ == '__main__' : 
 
     compiler_options = args.compiler_options or [] 
-  
 
     compiler_options += ['-I%s'%x for x in args.includes]
-
+    add_opts = '@TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS@'.strip()
+    if add_opts:
+        compiler_options.append(add_opts)
 
     functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, where_is_libclang = args.libclang_location)
   
