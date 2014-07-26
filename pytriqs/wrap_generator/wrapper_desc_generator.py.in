@@ -76,7 +76,7 @@ if __name__ == '__main__' :
             cls.methods = [m for m in cls.methods if m not in exclude]
 
     tpl = Template(filename=triqs_install_location + '/share/triqs/wrap_generator/wrap_desc.mako.py')
-    rendered = tpl.render(classes = classes, functions = functions, modulename=modulename, args = args )
+    rendered = tpl.render(classes = classes, functions = functions, modulename=modulename, args = args, shell_command= ' '.join(sys.argv) )
 
     with open("{modulename}_desc.py".format(modulename=modulename), "w") as f:
         f.write(rendered)

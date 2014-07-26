@@ -151,6 +151,25 @@ macro (triqs_prepare_local_pytriqs_merged_with_my_python python_destination)
   )
   execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_pytriqs)
 
+  # the ipython -> just replace python by ipython, keep the same path
+  STRING (REPLACE "python" "ipython" TRIQS_IPYTHON_INTERPRETER ${TRIQS_PYTHON_INTERPRETER})
+
+  # Create the local build_ipytriqs executable
+  file(WRITE ${CMAKE_BINARY_DIR}/build_ipytriqs
+  "#!/bin/bash
+  export PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH
+  ${TRIQS_IPYTHON_INTERPRETER} $@"
+  )
+  execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_ipytriqs)
+
+  # Create the local build_ipytriqs_notebook executable
+  file(WRITE ${CMAKE_BINARY_DIR}/build_ipytriqs_notebook
+  "#!/bin/bash
+  export PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH
+  ${TRIQS_IPYTHON_INTERPRETER} notebook --pylab=inline $@"
+  )
+  execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_ipytriqs_notebook)
+
   # Get a list of all local py and pyx files
   file(GLOB_RECURSE relative_local RELATIVE ${CMAKE_SOURCE_DIR}/python *.py *.pyx)
   foreach(f IN LISTS relative_local)

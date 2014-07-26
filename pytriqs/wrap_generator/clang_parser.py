@@ -158,12 +158,13 @@ def build_functions_and_classes(cursor, namespaces=[]):
 
 def parse(filename, debug, compiler_options, where_is_libclang): 
 
-  compiler_options =  [ '-std=c++11', '-stdlib=libc++', '-D__CODE_GENERATOR__'] + compiler_options
+  compiler_options =  [ '-std=c++11', '-stdlib=libc++'] + compiler_options
 
   clang.cindex.Config.set_library_file(where_is_libclang)
   index = clang.cindex.Index.create()
+  print "Parsing the C++ file (may take a few seconds) ..."
   translation_unit = index.parse(filename, ['-x', 'c++'] + compiler_options)
-  print "Parsing done. \nExtracting ..."
+  print "... done. \nExtracting ..."
  
   # If clang encounters errors, we report and stop
   errors = [d for d in translation_unit.diagnostics if d.severity >= 3]

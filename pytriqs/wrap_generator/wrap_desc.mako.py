@@ -28,6 +28,8 @@
         for m in c.methods :
             for t,n,d in m.params : analyse(t)
             analyse(m.rtype)
+        for p in c.proplist :
+            analyse(p.getter.rtype)
 
     for f in functions :
         for t,n,d in f.params : analyse(t)
@@ -51,7 +53,8 @@
 %>
 ##
 ##
-# Generated automatically using libclang
+# Generated automatically using libclang using the command : 
+# ${shell_command}
 from wrap_generator import *
 
 # The module
@@ -69,7 +72,7 @@ module.add_include("${args.filename}")
 module.add_preamble("""
 // using namespace XXX;
 """)
-##
+
 ##
 %for c in classes :
 # The class ${c.name}
