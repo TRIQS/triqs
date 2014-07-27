@@ -10,6 +10,9 @@
 # 
 find_package(PackageHandleStandardArgs)
 
+# Transform in particular the ~/.... into absolute name
+get_filename_component(TRIQS_PATH ${TRIQS_PATH} ABSOLUTE)
+
 SET(TRIAL_PATHS
  $ENV{TRIQS_PATH}/include/triqs
  ${TRIQS_PATH}/include/triqs
