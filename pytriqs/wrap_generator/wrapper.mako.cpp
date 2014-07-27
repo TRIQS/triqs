@@ -148,6 +148,8 @@ typedef struct {
     ${c.c_type} * _c;
 } ${c.py_type};
 
+## The new function, only if there is constructor
+%if c.constructor:
 // the new
 static PyObject* ${c.py_type}_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
   ${c.py_type} *self;
@@ -169,6 +171,7 @@ static PyObject* ${c.py_type}_new(PyTypeObject *type, PyObject *args, PyObject *
   }
   return (PyObject *)self;
 }
+%endif
 
 // dealloc
 static void ${c.py_type}_dealloc(${c.py_type}* self) {
@@ -366,7 +369,11 @@ static PyTypeObject ${c.py_type}Type = {
     0,                         /* tp_dictoffset */
     ${"(initproc)%s___init__"%c.py_type if c.constructor else 0},      /* tp_init */
     0,                         /* tp_alloc */
-    ${c.py_type}_new,                 /* tp_new */
+%if c.constructor:
+ ${c.py_type}_new,           /* tp_new */
+%else:
+ 0,                          /* tp_new */
+%endif
 };
 
 //--------------------- converters for the class c -----------------------------
