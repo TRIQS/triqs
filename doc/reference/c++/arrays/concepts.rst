@@ -16,7 +16,7 @@ We distinguish two separate notions based on whether this function is `pure`
 or not, i.e. whether one can or not modify a(i,j).
 
 * An `Immutable` array is simply a pure function on the domain of definition.
-  a(i,j) returns a int, or a int const &, that can not be modified (hence immutable).
+  a(i,j) returns a int, or a int const &, that cannot be modified (hence immutable).
 
 * A `Mutable` array is an Immutable array that *can* be modified. The non-const
 object returns a reference, e.g. a(i,j) can return a int &. Typically this is 
@@ -186,46 +186,7 @@ For example:
 
 * A simple solution :
 
-  .. compileblock ::
-
-    #include <triqs/arrays.hpp>
-    #include <iostream>
-    namespace triqs { namespace arrays { // better to put it in this namespace for ADL... 
-     
-     template<typename T> class immutable_diagonal_matrix_view  { 
-      
-      array_view<T,1> data; // the diagonal stored as a 1d array
-      
-      public:
-     
-      immutable_diagonal_matrix_view(array_view<T,1> v) : data (v) {} // constructor
-         
-      // the ImmutableMatrix concept 
-      typedef indexmaps::cuboid::domain_t<2> domain_type;
-      domain_type domain() const { auto s = data.shape()[0]; return {s,s}; }
-      typedef T value_type;
-      T operator()(size_t i, size_t j) const { return (i==j ? data(i) : 0);} // just kronecker...
-      
-      friend std::ostream & operator<<(std::ostream & out, immutable_diagonal_matrix_view const & d) 
-        {return out<<"diagonal_matrix "<<d.data;}
-     };
-     
-     // Marking this class as belonging to the Matrix & Vector algebra. 
-     template<typename T> struct ImmutableMatrix<immutable_diagonal_matrix_view<T>> : std::true_type{};
-    }}
-          
-    /// TESTING 
-    using namespace triqs::arrays;
-    int main(int argc, char **argv) {
-     auto a = array<int,1> {1,2,3,4};
-     auto d = immutable_diagonal_matrix_view<int>{a};
-     std::cout << "domain = " << d.domain()<< std::endl;  
-     std::cout << "d   = "<< d << std::endl;
-     std::cout << "2*d = "<< make_matrix(2*d) << std::endl;
-     std::cout << "d*d = "<< matrix<int>(d*d) << std::endl;
-    }
-
-
+  .. triqs_example:: ./concepts_0.cpp
 * Discussion
 
   * Of course, this solution is not perfect. Several algorithms could be optimised if we know that a matrix is diagonal.

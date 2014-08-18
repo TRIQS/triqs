@@ -19,8 +19,8 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/linalg/eigenelements.hpp"
-#include "./src/blas_lapack/stev.hpp"
+#include <triqs/arrays/linalg/eigenelements.hpp>
+#include <triqs/arrays/blas_lapack/stev.hpp>
 using namespace triqs::arrays;
 using namespace triqs;
 

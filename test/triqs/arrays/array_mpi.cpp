@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "./common.hpp"
 // order of include in horrible : on mac + clang, array (in fact boost::tuple) must come before boost::mpi
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <boost/mpi.hpp>
 #include <iostream>
 #include <sstream>

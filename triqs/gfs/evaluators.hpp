@@ -58,7 +58,7 @@ namespace gfs {
   // the evaluator for various types.
   template <typename MeshType> struct evaluator_fnt_on_mesh;
 
-// can not use inherited constructors, too recent...
+// cannot use inherited constructors, too recent...
 #define TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(NEWCLASS, CLASS) : CLASS {                                                          \
   template <typename... T> NEWCLASS(T &&... t) : CLASS(std::forward<T>(t)...) {};                                                \
  };

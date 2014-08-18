@@ -20,10 +20,10 @@
  ******************************************************************************/
 
 #include "./common.hpp"
-#include "./src/array.hpp"
-#include "./src/matrix.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/matrix.hpp>
 #include <iostream>
-#include "./src/asserts.hpp"
+#include <triqs/arrays/asserts.hpp>
 
 
 using namespace triqs::arrays;

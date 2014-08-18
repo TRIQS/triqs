@@ -8,3 +8,6 @@ set_property(GLOBAL APPEND PROPERTY DOXYGEN_SOURCES
  ${TRIQS_GFS_SRC_DIR}/refreq.hpp 
  ${TRIQS_GFS_SRC_DIR}/domains/matsubara.hpp
  )
+
+all_tests()
+

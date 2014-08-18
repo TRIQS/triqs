@@ -30,7 +30,7 @@ Example::
 Weak views [Advanced]
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Unfortunately this can not be the end of the story, at least on current C++11 compilers.
+Unfortunately this cannot be the end of the story, at least on current C++11 compilers.
 It turns out that, in very performance sensitive loops, increasing this tiny 
 reference counter can break a lot of optimisations in almost all compilers, including the most
 recent ones (gcc 4.8, clang 3.3).

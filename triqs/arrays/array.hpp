@@ -56,7 +56,7 @@ namespace triqs { namespace arrays {
    /// Build from anything that has an indexmap and a storage compatible with this class
    template<typename ISP> array_view(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {
     // to be activated 
-    static_assert(IsConst || (!ISP::is_const), "Can not construct a non const view from a const one !");
+    static_assert(IsConst || (!ISP::is_const), "Cannot construct a non const view from a const one !");
    }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
@@ -95,8 +95,11 @@ namespace triqs { namespace arrays {
    TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
    // to forbid serialization of views...
    //template<class Archive> void serialize(Archive & ar, const unsigned int version) = delete;
-  
-  };
+
+   template <typename... INT> friend array_view transposed_view(array_view const& a, INT... is) {
+    return array_view{transpose(a.indexmap_, is...), a.storage_};
+   }
+ };
 
 #undef IMPL_TYPE
 
@@ -212,6 +215,13 @@ namespace triqs { namespace arrays {
      }
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(array);
+
+    template <typename... INT> friend const_view_type transposed_view(array const& a, INT... is) {
+     return view_type{transpose(a.indexmap_, is...), a.storage_};
+    };
+    template <typename... INT> friend view_type transposed_view(array& a, INT... is) {
+     return view_type{transpose(a.indexmap_, is...), a.storage_};
+    };
 
   };//array class
 

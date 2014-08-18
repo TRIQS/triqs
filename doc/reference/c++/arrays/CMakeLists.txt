@@ -8,3 +8,7 @@ set_property(GLOBAL APPEND PROPERTY DOXYGEN_SOURCES
  #${TRIQS_SOURCE_DIR}/triqs/arrays/vector.hpp
  )
 
+all_tests()
+add_subdirectory(containers)
+
+

@@ -41,25 +41,7 @@ map
 
 * **Example** : 
 
-.. compileblock::
-
-   #include <triqs/arrays.hpp>
-   using namespace triqs;
-   int main() { 
-    // declare and init a matrix
-    clef::placeholder<0> i_; clef::placeholder<1> j_;
-    arrays::matrix<int> A (2,2); A(i_,j_) <<  i_ + j_ ; 
-    
-    // the mapped function
-    auto F = arrays::map([](int i) { return i*2.5;});
-
-    std::cout<< "A = "        << A                        << std::endl; 
-    std::cout<< "F(A) = "     << F(A)                     << std::endl; // oops no computation done
-    std::cout<< "F(A) = "     << make_matrix(F(A))     << std::endl;
-    std::cout<< "3*F(2*A) = " << make_matrix(3*F(2*A)) << std::endl;
-   }
-
-
+.. triqs_example:: ./map_0.cpp
 fold
 ========================================================
 
@@ -113,30 +95,7 @@ fold
 
   reads :
 
-  .. compileblock::
-
-   #include <triqs/arrays.hpp>
-   #include <triqs/arrays/functional/fold.hpp>
-   using namespace triqs;
-
-   double frobenius_norm (arrays::matrix<double> const& a) {
-    auto l= [](double r, double x) {
-     auto ab = std::abs(x);
-     return r + ab * ab;
-    };
-    return std::sqrt(arrays::fold(l)(a,0));
-   }
-   
-   int main() { 
-    // declare and init a matrix
-    clef::placeholder<0> i_; clef::placeholder<1> j_;
-    arrays::matrix<double> A (2,2); A(i_,j_) <<  i_ + j_/2.0; 
-
-    std::cout<< "A = "        << A                        << std::endl; 
-    std::cout<< "||A|| = "     << frobenius_norm(A) << std::endl;
-   }
-
-
+  .. triqs_example:: ./map_1.cpp
   Note in this example : 
    
    * the simplicity of the code

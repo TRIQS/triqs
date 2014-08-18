@@ -66,7 +66,7 @@ int main() {
   //TEST(G_k_tau[{0,0}]);
 
   // hdf5 
-  //H5::H5File file("ess_g_k_om.h5", H5F_ACC_TRUNC );
+  //h5::file file("ess_g_k_om.h5", H5F_ACC_TRUNC );
   //h5_write(file, "g", G);
 
  

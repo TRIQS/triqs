@@ -1,33 +1,34 @@
 .. index:: Random number generator
 
-.. module:: pytriqs.random
+.. module:: pytriqs.random_generator
 
 .. _random_generator:
 
 Random generator class
 ======================
 
-TRIQS has a simple random number generator class called ``RandomGenerator``. It is based on boost
-just like the C++ random generator provided by TRIQS.
+TRIQS exposes to python the random number generators used in C++, 
+in the module ``RandomGenerator``. 
+The generators are the boost random generators.
 
 Usage
 -----
 
-The generator is constructed from a name and a seed::
+The generator is constructed from a name (the name of the boost generator) and a seed::
 
-  from pytriqs.random import *
+  from pytriqs.random_generator import *
   r = RandomGenerator("mt19937", 237849)
 
-A list of possible random generator names is obtained with::
+A list of available random generators is obtained with::
 
-  print available_generator_names()
+  print random_generator_names_list()
 
-Then you can either generate float number on the interval :math:`[0,1[` using
-the ``rand()`` method or integer numbers in the inverval :math:`[0,N-1]` using
-``int_rand(N)``::
+Then you can either generate float number on the interval :math:`[0,1[` 
+simply by calling the generator, or integer numbers in the inverval :math:`[0,N-1]` by calling 
+it with `N` ::
 
-  print r.rand()
-  print r.int_rand(10)
+  print r()
+  print r(10)
 
 Example
 -------
@@ -42,7 +43,7 @@ Here's a simple example showing how to use the generator.
 Complete reference
 ------------------
 
-.. autoclass:: pytriqs.random.RandomGenerator
+.. autoclass:: pytriqs.random_generator.RandomGenerator
   :members:
 
-.. autofunction:: pytriqs.random.available_generator_names
+.. autofunction:: pytriqs.random_generator.random_generator_names_list

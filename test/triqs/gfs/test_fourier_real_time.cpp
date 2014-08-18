@@ -2,6 +2,7 @@
 #include <triqs/gfs.hpp> 
 using namespace triqs::gfs;
 using namespace triqs::arrays;
+namespace h5 = triqs::h5;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/fourier_real.hpp> 
 
@@ -18,7 +19,7 @@ double theta(double x){
 int main() {
  
   double precision=10e-10;
-  H5::H5File file("fourier_real_time.h5",H5F_ACC_TRUNC);
+  h5::file file("fourier_real_time.h5",H5F_ACC_TRUNC);
 
   std::complex<double> I(0,1);  
   

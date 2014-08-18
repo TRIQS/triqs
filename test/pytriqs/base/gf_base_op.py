@@ -61,17 +61,11 @@ h['ga2'] = ga2
 Gc = G.conjugate()
 h['Gc'] = Gc
 
-# Some tail stuff:
-tailtempl={}
-for sig,g in G: 
-    tailtempl[sig] = copy.deepcopy(g.tail)
-h['tt'] = tailtempl
-
-
 # tranpose
 g = G['a']
-gt = G['a'].transpose()
-gt.data[3,0,1] = 100
-assert g.data[3,1,0] == 100
+if 0 : 
+    gt = G['a'].transpose()
+    gt.data[3,0,1] = 100
+    assert g.data[3,1,0] == 100
 
 del h

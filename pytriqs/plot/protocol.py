@@ -63,7 +63,7 @@ def plot_protocol_apply(ob, opt_dict, xlims):
         try: # generator x,y
             X, Y = izip (*ob)
         except: 
-            raise RuntimeError, "Object can not be plotted"
+            raise RuntimeError, "Object cannot be plotted"
 
     name = opt_dict.pop('name','') 
     if not name: name = str(ob)

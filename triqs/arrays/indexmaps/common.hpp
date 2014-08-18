@@ -32,12 +32,6 @@ namespace triqs { namespace arrays {
  using utility::mini_vector;
 
  // make_shape
- // generalize with preproc or variadic template
-//#define IMPL(z, NN, unused)                                \
-// template <typename T> mini_vector<size_t,BOOST_PP_INC(NN)> make_shape(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T I_)) \
-// { return mini_vector<size_t,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_));} 
-// BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
-//#undef IMPL
  template<typename... T> 
   mini_vector<size_t, sizeof...(T)+1> make_shape(size_t x0, T... args) { return  mini_vector<size_t, sizeof...(T)+1> (x0,args...);}
 

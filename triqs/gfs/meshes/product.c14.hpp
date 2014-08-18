@@ -53,25 +53,25 @@ namespace gfs {
   typename domain_t::point_t index_to_point(index_t const &ind) const {
    domain_pt_t res;
    auto l = [](auto &p, auto const &m, auto const &i) { p = m.index_to_point(i); };
-   triqs::tuple::apply_on_zip(l, res, m_tuple, ind);
+   triqs::tuple::map_on_zip(l, res, m_tuple, ind);
    return res;
   }
 
   /// Flattening index to linear :  index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
   size_t index_to_linear(index_t const &ii) const {
    auto l = [](auto const &m, auto const &i, size_t R) { return m.index_to_linear(i) + R * m.size(); };
-   return triqs::tuple::fold_on_zip(l,reverse(m_tuple), reverse(ii), size_t(0));
+   return triqs::tuple::fold(l, reverse(m_tuple), reverse(ii), size_t(0));
   }
   
   /// Flattening index to linear :  index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
   size_t mp_to_linear(m_pt_tuple_t const &mp) const {
    auto l = [](auto const &m, auto const &p, size_t R) { return p.linear_index() + R * m.size(); };
-   return triqs::tuple::fold_on_zip(l, reverse(m_tuple), reverse(mp), size_t(0));
+   return triqs::tuple::fold(l, reverse(m_tuple), reverse(mp), size_t(0));
   }
 
   utility::mini_vector<size_t, dim> shape() const {
    utility::mini_vector<size_t, dim> res;
-   auto l = [&res](auto const &m, int i) mutable { res[i] = m.size(); };
+   auto l = [&res](int i, auto const &m) mutable { res[i] = m.size(); };
    triqs::tuple::for_each_enumerate(m_tuple, l);
    return res;
   }
@@ -97,9 +97,9 @@ namespace gfs {
    mesh_point_t() = default;
    mesh_point_t(mesh_product const &m_, index_t index_)
       : m(&m_)
-      , _c(triqs::tuple::apply_on_zip([](auto const & m, auto const & i) { return m[i]; }, m_.m_tuple, index_))
+      , _c(triqs::tuple::map_on_zip([](auto const & m, auto const & i) { return m[i]; }, m_.m_tuple, index_))
       , _atend(false) {}
-   mesh_point_t(mesh_product const &m_) : m(&m_), _c(triqs::tuple::apply_on_tuple(F1(), m_.m_tuple)), _atend(false) {}
+   mesh_point_t(mesh_product const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.m_tuple)), _atend(false) {}
    m_pt_tuple_t const &components_tuple() const { return _c; }
    size_t linear_index() const { return m->mp_to_linear(_c); }
    const mesh_product *mesh() const { return m; }
@@ -145,21 +145,21 @@ namespace gfs {
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, mesh_product const &m) {
    h5::group gr = fg.create_group(subgroup_name);
-   auto l = [gr](auto const &m, int N) { h5_write(gr, "MeshComponent" + std::to_string(N), m); };
+   auto l = [gr](int N, auto const &m) { h5_write(gr, "MeshComponent" + std::to_string(N), m); };
    triqs::tuple::for_each_enumerate(m.components(), l);
   }
 
   /// Read from HDF5
   friend void h5_read(h5::group fg, std::string subgroup_name, mesh_product &m) {
    h5::group gr = fg.open_group(subgroup_name);
-   auto l = [gr](auto &m, int N) { h5_read(gr, "MeshComponent" + std::to_string(N), m); };
+   auto l = [gr](int N, auto &m) { h5_read(gr, "MeshComponent" + std::to_string(N), m); };
    triqs::tuple::for_each_enumerate(m.components(), l);
   }
 
   /// BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   auto l = [&ar](auto &m, int N) { ar &TRIQS_MAKE_NVP("MeshComponent" + std::to_string(N), m); };
+   auto l = [&ar](int N, auto &m) { ar &TRIQS_MAKE_NVP("MeshComponent" + std::to_string(N), m); };
    triqs::tuple::for_each_enumerate(m_tuple, l);
   }
 

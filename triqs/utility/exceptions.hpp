@@ -31,13 +31,14 @@
 namespace triqs { 
 
  class exception : public std::exception {
-  std::string acc, trace;
+  std::string acc, _trace;
   public:
-  exception() throw() :std::exception() { trace = utility::stack_trace();}
+  exception() throw() :std::exception() { _trace = utility::stack_trace();}
   virtual ~exception() throw() {}
   template<typename T> exception & operator  <<( T const & x) { std::stringstream f; f<<acc<<x; acc = f.str(); return *this;}
   exception & operator  <<( const char * mess ) { (*this) << std::string(mess); return *this;}// to limit code size
   virtual const char* what() const throw() { return acc.c_str();}
+  virtual const char* trace() const throw() { return _trace.c_str();}
  };
  
  class runtime_error : public exception {
@@ -47,10 +48,17 @@ namespace triqs {
   template<typename T> runtime_error & operator  <<( T && x) { exception::operator<<(x); return *this; }
  };
 
+ class keyboard_interrupt : public exception {
+  public:
+  keyboard_interrupt() throw() : exception() {}
+  virtual ~keyboard_interrupt() throw() {}
+  template<typename T> keyboard_interrupt & operator  <<( T && x) { exception::operator<<(x); return *this; }
+ };
 }
 
 #define TRIQS_ERROR(CLASS,NAME) throw CLASS()<<" Triqs "<<NAME<<" at "<<__FILE__<< " : "<<__LINE__<<"\n\n"
 #define TRIQS_RUNTIME_ERROR TRIQS_ERROR(triqs::runtime_error,"runtime error")
+#define TRIQS_KEYBOARD_INTERRUPT TRIQS_ERROR(triqs::keyboard_interrupt,"Ctrl-C")
 
 #endif
 

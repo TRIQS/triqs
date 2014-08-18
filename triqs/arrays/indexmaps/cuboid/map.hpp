@@ -60,30 +60,35 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    typedef domain_t<Rank> domain_type;
    domain_type const & domain() const { return mydomain;}
 
-   // basic construction
-   map (memory_layout<Rank> const & ml = memory_layout<Rank>(traversal_order)):mydomain(), start_shift_(0), memory_order_(ml) {}
-   map(domain_type const & C): mydomain(C), start_shift_(0), memory_order_(traversal_order) {compute_stride_compact();}
-   map(domain_type const & C, memory_layout<Rank> ml): mydomain(C), start_shift_(0), memory_order_(ml) {compute_stride_compact();}
-
-   /// Construction from the length, the stride, start_shift
-   map(lengths_type const & Lengths, strides_type const & strides, std::ptrdiff_t start_shift ):
-    mydomain(Lengths), strides_(strides), start_shift_(start_shift),
-    memory_order_ (memory_layout_from_strides(strides_)) {}
-
-   /// Construction from the length, the stride, start_shift
-   map(lengths_type && Lengths, strides_type && strides, std::ptrdiff_t start_shift ):
-    mydomain(std::move(Lengths)), strides_(std::move(strides)), start_shift_(start_shift),
-    memory_order_ (memory_layout_from_strides(strides_)) {}
-
-   /// Construction from another map with the same order (used in grouping indices)
-   template<ull_t Opt2, ull_t To2> map (map<Rank,Opt2,To2> const & C):
-    mydomain(C.domain()), strides_(C.strides()), start_shift_(C.start_shift()), memory_order_ (C.memory_indices_layout()) {}
-
-   // regular type
+   // semi-regular type
+   map (): start_shift_(0), memory_order_(memory_layout<Rank>(traversal_order)) {}
    map (map const & C) = default;
    map (map && C) = default;
    map & operator = (map const & m) = default;
    map & operator = (map && m)  = default;
+
+   // basic construction
+   map(memory_layout<Rank> const & ml):mydomain(), start_shift_(0), memory_order_(ml) {}
+   map(domain_type const & C): mydomain(C), start_shift_(0), memory_order_(traversal_order) {compute_stride_compact();}
+   map(domain_type const & C, memory_layout<Rank> ml): mydomain(C), start_shift_(0), memory_order_(ml) {compute_stride_compact();}
+
+   /// Construction from the length, the stride, start_shift
+   map(lengths_type Lengths, strides_type strides, std::ptrdiff_t start_shift ):
+    mydomain(std::move(Lengths)), strides_(std::move(strides)), start_shift_(start_shift),
+    memory_order_ (memory_layout_from_strides(strides_)) {}
+
+   /// Construction from the length, the stride, start_shift, ml
+   map(lengths_type Lengths, strides_type strides, std::ptrdiff_t start_shift, memory_layout<Rank> const & ml ):
+    mydomain(std::move(Lengths)), strides_(std::move(strides)), start_shift_(start_shift), memory_order_ (ml) {}
+
+  /// Construction from another map with the same order (used in grouping indices)
+   template<ull_t Opt2, ull_t To2> map (map<Rank,Opt2,To2> const & C):
+    mydomain(C.domain()), strides_(C.strides()), start_shift_(C.start_shift()), memory_order_ (C.memory_indices_layout()) {}
+
+   // transposition
+   template <typename... INT> friend map transpose(map const& m, INT... is) {
+    return map{{m.domain().lengths()[is]...}, {m.strides_[is]...}, m.start_shift_, transpose(m.memory_order_, is...)};
+   }
 
    /// Returns the shift in position of the element key.
    template <typename KeyType>
@@ -175,7 +180,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
      template<int v> inline void inc_ind_impl(std::integral_constant<int,v>) {
       constexpr size_t p = mem_layout::memory_rank_to_index(traversal_order, rank-v);
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-      if (atend) TRIQS_RUNTIME_ERROR << "Iterator in cuboid can not be pushed after end !";
+      if (atend) TRIQS_RUNTIME_ERROR << "Iterator in cuboid cannot be pushed after end !";
 #endif
       if (indices_tuple[p] < im->lengths()[p]-1) { ++(indices_tuple[p]); pos += im->strides()[p]; return; }
       indices_tuple[p] = 0;
@@ -192,6 +197,9 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    };
 
   }; //------------- end class ---------------------
+
+
+ 
 }//namespace cuboid
 
 template<int R1, int R2, ull_t OptFlags1, ull_t OptFlags2, ull_t To1, ull_t To2>

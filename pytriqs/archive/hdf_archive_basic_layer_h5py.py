@@ -37,7 +37,7 @@ class HDFArchiveGroupBasicLayer :
         try : 
             fich = h5py.File(LocalFileName, open_flag)
         except : 
-            print "Can not open the HDF file %s"%LocalFileName
+            print "Cannot open the HDF file %s"%LocalFileName
             raise
         # checking the version
         if open_flag not in ['r','r+','a'] : 

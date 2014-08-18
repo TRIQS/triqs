@@ -21,12 +21,12 @@ int main() {
 
   // test hdf5
   {
-   H5::H5File file("ess_gf.h5", H5F_ACC_TRUNC);
+   h5::file file("ess_gf.h5", H5F_ACC_TRUNC);
    h5_write(file, "B3", B3);
   }
 
   {
-   H5::H5File file("ess_gf.h5", H5F_ACC_RDONLY);
+   h5::file file("ess_gf.h5", H5F_ACC_RDONLY);
    std::cout << "B4 mesh" << B4.mesh().size() << std::endl;
    h5_read(file, "B3", B4);
    std::cout << "B4 mesh" << B4.mesh().size() << std::endl;

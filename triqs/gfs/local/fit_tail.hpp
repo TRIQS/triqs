@@ -23,7 +23,6 @@
 #include <triqs/gfs/block.hpp>
 #include <triqs/gfs/local/tail.hpp>
 #include <triqs/arrays/blas_lapack/gelss.hpp>
-#include <triqs/python_tools/cython_proxy.hpp>
 
 namespace triqs { namespace gfs {  namespace local {
 

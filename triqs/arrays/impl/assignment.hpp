@@ -34,13 +34,13 @@ namespace triqs { namespace arrays {
  // it is specialized in various cases for optimisation.
  template<typename LHS, typename RHS>
   void triqs_arrays_assign_delegation (LHS & lhs, const RHS & rhs )  { 
-   static_assert( !LHS::is_const, "Can not assign to a const view !");
+   static_assert( !LHS::is_const, "Cannot assign to a const view !");
    assignment::impl<LHS, RHS, 'E'>(lhs, rhs).invoke();
  }
 
  template<typename LHS, typename RHS, char OP>
   void triqs_arrays_compound_assign_delegation  (LHS & lhs, const RHS & rhs, char_<OP> ) { 
-   static_assert( !LHS::is_const, "Can not apply a compound operator to a const view !");
+   static_assert( !LHS::is_const, "Cannot apply a compound operator to a const view !");
    assignment::impl<LHS, RHS, OP>(lhs, rhs).invoke();
  }
 
@@ -76,7 +76,7 @@ namespace triqs { namespace arrays {
   template<class RHS,class LHS> struct is_special : std::false_type {};
 
 #define TRIQS_REJECT_ASSIGN_TO_CONST \
-  static_assert( (!std::is_const<typename LHS::value_type>::value ), "Assignment : The value type of the LHS is const and can not be assigned to !");
+  static_assert( (!std::is_const<typename LHS::value_type>::value ), "Assignment : The value type of the LHS is const and cannot be assigned to !");
 #define TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR\
   static_assert( (!((OP=='M' || OP=='D') && MutableMatrix<LHS>::value && (!is_scalar_for<RHS,LHS>::value))),\
     "*= and /= operator for non scalar RHS are deleted for a type modeling MutableMatrix (e.g. matrix, matrix_view) matrix, because this is ambiguous");

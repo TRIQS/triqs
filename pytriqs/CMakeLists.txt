@@ -1,4 +1,4 @@
-option(Python_use_mpi4py "Use mpi4py instead of boost.mpi" OFF)
+option(Python_use_mpi4py "Use mpi4py (if OFF, use boost.mpi)" ON)
 if (Python_use_mpi4py) 
  SET (TRIQS_PYTHON_MPI_USE_MPI4PY 1)
 else()
@@ -12,19 +12,24 @@ add_custom_command (OUTPUT ${py_copy_tar} DEPENDS ${all_py_files}
  COMMAND cd ${CMAKE_SOURCE_DIR}/pytriqs && tar cf ${py_copy_tar} ${all_py_files} && cd ${CMAKE_BINARY_DIR}/pytriqs && tar xf ${py_copy_tar} )
 add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
 
-find_package(CythonModuleMacro)
+find_package(PythonWrapperMacro)
 
 SET(PYTHON_SOURCES 
  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
  ${CMAKE_CURRENT_BINARY_DIR}/version.py
+ ${CMAKE_CURRENT_BINARY_DIR}/magic.py
  )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in ${CMAKE_CURRENT_BINARY_DIR}/version.py)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utility/mpi.py.in ${CMAKE_CURRENT_BINARY_DIR}/utility/mpi.py)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/magic.py.in ${CMAKE_CURRENT_BINARY_DIR}/magic.py @ONLY)
 
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
+install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
 
+# All subdirs
 add_all_subdirectories_with_cmakelist()
 
+# 
 add_custom_target(wrap_clean COMMAND find ${CMAKE_BINARY_DIR} -name \"*.cpp\" |xargs rm)
 

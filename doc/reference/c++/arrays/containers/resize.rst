@@ -16,24 +16,10 @@ resize
 
 * **Examples** :
 
-.. compileblock::
-
-   #include <triqs/arrays.hpp>
-   using namespace triqs::arrays;
-   int main() { 
-    array<double,2> A(2,3);
-    A.resize (make_shape (5,5));
-
-    matrix<double,2> M;
-    M.resize(3,3); 
-
-    vector<double> V;
-    V.resize(10);
-   }
-
+.. triqs_example:: ./resize_0.cpp
 .. note::
   
-   Views can not be resized.
+   Views cannot be resized.
 
 * **Invalidation** :
 
@@ -46,18 +32,7 @@ resize
 
   Illustration :
 
-.. compileblock::
-
-   #include <triqs/arrays.hpp>
-   using namespace triqs::arrays;
-   int main() { 
-    array<double,2> A(2,3); A()= 9;
-    array_view<double,2> V = A();
-    A.resize (make_shape (5,5)); A()=0;
-    std::cout<< V<< std::endl;
-   }
-
-
+.. triqs_example:: ./resize_1.cpp
 .. _arr_resize_ch:
 
 resize_or_check_if_view

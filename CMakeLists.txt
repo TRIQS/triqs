@@ -63,12 +63,15 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 find_package(CompilerCheck)
 
 # Add C11 or C14 flag depending on compiler detection
-if (NOT compiler_is_c14)
+option(USE_CPP14 "Use C++14 mode " OFF)
+if (NOT USE_CPP14)
  MESSAGE(STATUS "Compiling in C++11 mode")
- SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -std=c++11 ")
+ #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 else()
  MESSAGE(STATUS "Compiling in C++14 mode")
- SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -std=c++1y ")
+ #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 endif()
 
 # Include TRIQS cmake macros
@@ -105,7 +108,7 @@ if (PythonSupport)
 
  find_package(Python REQUIRED)
  if (NOT PYTHONLIBS_FOUND)
-  message (FATAL_ERROR "Can not find python. You can use -DWithoutPython to build a pure C++ version.")
+  message (FATAL_ERROR "Cannot find python. You can use -DWithoutPython to build a pure C++ version.")
  endif()
 
  set (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})
@@ -230,25 +233,30 @@ link_libraries(${TRIQS_LIBRARY_LAPACK})
 message( STATUS "-------- HDF5 detection -------------")
 # on weiss, it is 2.8.2 and we should not put HL, on 12.04 we need to put it...
 if ( ${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
- find_package(HDF5 REQUIRED C CXX )
+ find_package(HDF5 REQUIRED C )
 else(${CMAKE_VERSION} VERSION_LESS "2.8.6")
- find_package(HDF5 REQUIRED C CXX HL )
+ find_package(HDF5 REQUIRED C HL)
 endif(${CMAKE_VERSION} VERSION_LESS "2.8.6")
 if(NOT HDF5_FOUND)
  message(FATAL_ERROR "Require hdf5 1.8.2 or higher. Set HDF5_HOME")
 endif()
 if(HDF5_IS_PARALLEL)
- message(FATAL "parallel(MPI) hdf5 is detected. The standard version is preferred.")
+ message(FATAL_ERROR "parallel(MPI) hdf5 is detected. The standard version is preferred.")
 endif(HDF5_IS_PARALLEL)
 message( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES} ")
 mark_as_advanced(HDF5_DIR) # defined somewhere else ? what is it ?
 
 include_directories (SYSTEM ${HDF5_INCLUDE_DIR})
-link_libraries (${HDF5_LIBRARIES} ) #${HDF5_CXX_LIBRARIES} )
+link_libraries (${HDF5_LIBRARIES}) 
 set(TRIQS_LIBRARY_HDF5  ${HDF5_LIBRARIES})
 set(TRIQS_INCLUDE_HDF5 ${HDF5_INCLUDE_DIR})
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} ${HDF5_DEFINITIONS})
 set(TRIQS_HDF5_DIFF_EXECUTABLE ${HDF5_DIFF_EXECUTABLE})
+
+# Get hdf5 version and add a definition HDF5_LT_189 if version < 1.8.9
+execute_process(COMMAND ${HDF5_DIFF_EXECUTABLE} --version OUTPUT_VARIABLE diff_output)
+string(REGEX MATCHALL "[0-9].[0-9].[0-9]" HDF5_VERSION "${diff_output}")
+message(STATUS "hdf5 version: ${HDF5_VERSION}")
 
 # #################################
 # Other libs
@@ -335,9 +343,9 @@ enable_testing()
 option(Build_Documentation "Build the documentation ?" OFF)
 option(Build_PDF_Documentation "Build the pdf documentation ?" OFF)
 
-#------------------------
+#------------------------------------------------------
 # link libs for shared libs or for pytriqs 
-#------------------------
+#------------------------------------------------------
 
 set(TRIQS_LINK_LIBS 
  ${TRIQS_LIBRARY_PYTHON}
@@ -350,16 +358,44 @@ set(TRIQS_LINK_LIBS
 # General include header
 # remove this dep to C++
 include_directories(${TRIQS_SOURCE_DIR})
+# for the generated headers for python convertions
+include_directories(${CMAKE_BINARY_DIR}/include/)
+# Add it to triqs definitions
+
+#--------------------------------
+# General C++ compilation flags
+#--------------------------------
+
+#message( STATUS "TRIQS_CXX_DEFINITIONS = ${TRIQS_CXX_DEFINITIONS}")
+
+# needed for utility/first_include.hpp that includes either the triqs_config.h installed in the proper directory
+# (Case of an installed lib) or the triqs_config.h just generated in the built dir (when compiling the lib itself).
+add_definitions ( ${TRIQS_CXX_DEFINITIONS} -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config)
+
+#------------------------
+# Not used in the main code, only in TRIQSConfig and wrapper_desc_generator configuration
+#------------------------
+# for people who want to quickly add everything TRIQS has detected...
+set(TRIQS_LIBRARY_ALL ${TRIQS_LIBRARY} ${TRIQS_LIBRARY_BOOST} ${TRIQS_LIBRARY_PYTHON} ${TRIQS_LIBRARY_MPI} ${TRIQS_LIBRARY_HDF5} ${TRIQS_LIBRARY_LAPACK} ${TRIQS_LIBRARY_FFTW} ${TRIQS_LIBRARY_GMP} ${TRIQS_LIBRARY_GSL} )
+set(TRIQS_INCLUDE_ALL ${TRIQS_INCLUDE} ${TRIQS_INCLUDE_BOOST} ${TRIQS_INCLUDE_PYTHON} ${TRIQS_INCLUDE_MPI} ${TRIQS_INCLUDE_HDF5} ${TRIQS_INCLUDE_LAPACK} ${TRIQS_INCLUDE_FFTW} ${TRIQS_INCLUDE_GMP} ${TRIQS_INCLUDE_GSL} )
+list (REMOVE_DUPLICATES TRIQS_INCLUDE_ALL)
+
+set(TRIQS_LIBCLANG_LOCATION "/usr/lib/libclang.dylib" CACHE STRING "Location of the libclang library")
+set(TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS "" CACHE STRING "Additional flags to be passed to libclang when parsing with clang")
+
+#---------------------------------------------------------------------
+# pytriqs modules : MUST be before TRIQS, to have the py_converters
+#---------------------------------------------------------------------
+
+if (PythonSupport)
+ message( STATUS "-------- Preparing python extension modules  -------------")
+ add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
+endif (PythonSupport)
 
 #------------------------
 # General triqs libraries
 #------------------------
 
-message( STATUS "TRIQS_CXX_DEFINITIONS = ${TRIQS_CXX_DEFINITIONS}")
-
-# needed for utility/first_include.hpp that includes either the triqs_config.h installed in the proper directory
-# (Case of an installed lib) or the triqs_config.h just generated in the built dir (when compiling the lib itself).
-add_definitions ( ${TRIQS_CXX_DEFINITIONS} -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config)
 add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -367,25 +403,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 #------------------------
-# Applications
-#------------------------
-
-#add_subdirectory(${TRIQS_SOURCE_DIR}/applications )
-
-#------------------------
-# pytriqs modules
-#------------------------
-if (PythonSupport)
- message( STATUS "-------- Preparing Cython modules  -------------")
- add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
-endif (PythonSupport)
-
-#------------------------
 # tests
 #------------------------
-## Remove the test from the build ?
-option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
-if (Build_Triqs_General_Tools_Test)
+
+option(Build_Tests "Build the tests of the library " ON)
+if (Build_Tests)
  message( STATUS "-------- Preparing tests  -------------")
  add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
 endif()
@@ -419,7 +441,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 else()
  configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig1.cmake @ONLY )
  find_package(Python) # even in the case we use no python, cf issue #40 
- EXEC_PYTHON_SCRIPT( "import re;open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))", ConfigFile)
+ EXEC_PYTHON_SCRIPT( "import re;open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))" , ConfigFile)
 endif()
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/triqs/cmake)

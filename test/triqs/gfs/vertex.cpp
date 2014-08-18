@@ -5,6 +5,7 @@
 
 using namespace triqs::gfs;
 using  triqs::clef::placeholder;
+namespace h5 = triqs::h5;
 
 int main() {
 
@@ -38,19 +39,19 @@ int main() {
   
   //saving 
   {
-   H5::H5File file("vertex1.h5", H5F_ACC_TRUNC );
+   h5::file file("vertex1.h5", H5F_ACC_TRUNC );
    h5_write(file, "v", vertex);
   }
 
   // loading
   {
-   H5::H5File file("vertex1.h5", H5F_ACC_RDONLY );
+   h5::file file("vertex1.h5", H5F_ACC_RDONLY );
    h5_read(file, "v", vertex2);
   }
 
   //resaving 
   {
-   H5::H5File file("vertex1b.h5", H5F_ACC_TRUNC );
+   h5::file file("vertex1b.h5", H5F_ACC_TRUNC );
    h5_write(file, "v", vertex2);
   }
 
@@ -63,19 +64,19 @@ int main() {
 
   //saving 
   {
-   H5::H5File file("vertex3.h5", H5F_ACC_TRUNC );
+   h5::file file("vertex3.h5", H5F_ACC_TRUNC );
    h5_write(file, "v", vertex3);
   }
 
   // loading
   {
-   H5::H5File file("vertex3.h5", H5F_ACC_RDONLY );
+   h5::file file("vertex3.h5", H5F_ACC_RDONLY );
    h5_read(file, "v", vertex3b);
   }
 
   //resaving 
   {
-   H5::H5File file("vertex3b.h5", H5F_ACC_TRUNC );
+   h5::file file("vertex3b.h5", H5F_ACC_TRUNC );
    h5_write(file, "v", vertex3b);
   }
 

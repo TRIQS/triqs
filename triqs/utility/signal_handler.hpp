@@ -3,7 +3,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,25 +19,23 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#pragma once
+namespace triqs {
+namespace signal_handler {
 
-#ifndef TRIQS_SIGNAL_HANDLER_H
-#define TRIQS_SIGNAL_HANDLER_H
-#include <iostream>
-#include <assert.h>
-#include <vector>
+ /// Start the signal handler
+ void start();
 
-namespace triqs { 
+ /// Stop it. ?
+ void stop();
+ 
+ /// A signal has been received. If pop, and there is a signal, pop it.
+ bool received(bool pop = false);
 
- class signal_handler {
-  static std::vector<int> signals_list;
-  //static volatile sig_atomic_t keep_going;
-  public:
-  signal_handler();
-  bool empty(){ return (signals_list.size() ==0); }
-  int top(){ return signals_list.back(); }
-  void pop(){ return signals_list.pop_back(); }
-  static void slot(int signal);
- };
+ /// Last received.
+ int last();
+
+ /// pop the last signal
+ void pop();
 }
-
-#endif
+}

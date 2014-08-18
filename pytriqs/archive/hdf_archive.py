@@ -102,7 +102,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             ok = eval(r) == key 
         except : 
             ok =False
-        if not ok :  raise KeyError, "The Key *%s*can not be serialized properly by repr !"%key
+        if not ok :  raise KeyError, "The Key *%s*cannot be serialized properly by repr !"%key
         return r
 
     #-------------------------------------------------------------------------
@@ -251,9 +251,9 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             try :
                 exec("from %s import %s as r_class" %(r_module_name,r_class_name)) in globals(), locals()
             except KeyError : 
-                raise RuntimeError, "I can not find the class %s to reconstruct the object !"%r_class_name
+                raise RuntimeError, "I cannot find the class %s to reconstruct the object !"%r_class_name
             if r_readfun :
-                res = r_readfun(self._group,key) 
+                res = r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
             elif "__factory_from_dict__" in dir(r_class) : 
                 f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
                 values = dict( (self._key_decipher(K),f(K)) for K in SUB )

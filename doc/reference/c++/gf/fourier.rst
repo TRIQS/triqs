@@ -22,10 +22,18 @@ Synopsis
  gf<imfreq, Target, Opt> make_gf_from_fourier(gf<imtime, Target, Opt>            const&);
  gf<imfreq, Target, Opt> make_gf_from_fourier(gf_view<imtime, Target, Opt>       const&);
  gf<imfreq, Target, Opt> make_gf_from_fourier(gf_const_view<imtime, Target, Opt> const&);
- 
+
+ gf<imfreq, Target, Opt> make_gf_from_fourier(gf<imtime, Target, Opt>            const&, int n_iw);
+ gf<imfreq, Target, Opt> make_gf_from_fourier(gf_view<imtime, Target, Opt>       const&, int n_iw);
+ gf<imfreq, Target, Opt> make_gf_from_fourier(gf_const_view<imtime, Target, Opt> const&, int n_iw);
+  
  gf<imtime, Target, Opt> make_gf_from_inverse_fourier(gf<imfreq, Target, Opt>            const&);
  gf<imtime, Target, Opt> make_gf_from_inverse_fourier(gf_view<imfreq, Target, Opt>       const&);
  gf<imtime, Target, Opt> make_gf_from_inverse_fourier(gf_const_view<imfreq, Target, Opt> const&);
+
+ gf<imtime, Target, Opt> make_gf_from_inverse_fourier(gf<imfreq, Target, Opt>            const&, int n_tau);
+ gf<imtime, Target, Opt> make_gf_from_inverse_fourier(gf_view<imfreq, Target, Opt>       const&, int n_tau);
+ gf<imtime, Target, Opt> make_gf_from_inverse_fourier(gf_const_view<imfreq, Target, Opt> const&, int n_tau);
 
 
 **fourier, inverse_fourier**
@@ -57,35 +65,12 @@ We therefore use *a view* as LHS::
 **make_gf_from_fourier, make_gf_from_inverse_fourier**
 
 In the case where we want to create a *new* container from the fourier transform of gt, 
-we can use the function make_gf_from_fourier, in which choice is explicitly made to generate a new gf with the same number of points in the mesh.
-(Cf example below).
-
-DOC TO BE FINISHED.
+we can use the function make_gf_from_fourier.
 
 Example
 =========
 
-.. compileblock::
-
-  #include <triqs/gfs.hpp>
-  using namespace triqs::gfs;
-  int main() {
-    double beta =1, a=1;
-    int N=10000;
-    auto gw = gf<imfreq> {{beta, Fermion, N}, {1,1}};
-    auto gt = gf<imtime> {{beta, Fermion, N}, {1,1}};
-    
-    triqs::clef::placeholder<0> om_;
-    gw (om_) << 1/(om_-a);
-
-    // fills a full *view* of gt with the contents of the FFT
-    // NB : the mesh of gt *must* have the same size as the mesh of gw.
-    gt() = inverse_fourier(gw); 
-
-    // make a new fresh gf, with the same size mesh, from the FFT of gt
-    auto gw2 = make_gf_from_fourier(gt);
-  }
-
+.. triqs_example:: ./fourier_0.cpp
 Convention 
 ===========
 

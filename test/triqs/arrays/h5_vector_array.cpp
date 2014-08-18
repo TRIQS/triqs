@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "./common.hpp"
 #include <iostream>
-#include "./src/asserts.hpp"
+#include <triqs/arrays/asserts.hpp>
 #include <triqs/h5.hpp>
 
 using std::cout; using std::endl;
@@ -40,20 +40,20 @@ int main(int argc, char **argv) {
   std::vector <std::complex<double>> vc2;
 
   {
-   H5::H5File file1( "test_std_vector.h5", H5F_ACC_TRUNC );
+   h5::file file1( "test_std_vector.h5", H5F_ACC_TRUNC );
    h5::group top(file1);
    h5_write(top,"vdouble",v);
    h5_write(top,"vcomplex",vc);
   }
 
-  H5::H5File file2( "test_std_vector.h5", H5F_ACC_RDONLY );
+  h5::file file2( "test_std_vector.h5", H5F_ACC_RDONLY );
   h5::group top2(file2);
 
   h5_read(top2,"vdouble",v2);
   h5_read(top2,"vcomplex",vc2);
 
-  for (int i = 0; i <v.size(); ++i) assert_close(v[i],v2[i]); 
-  for (int i = 0; i <vc.size(); ++i) assert_close(vc[i],vc2[i]); 
+  for (size_t i = 0; i <v.size(); ++i) assert_close(v[i],v2[i]); 
+  for (size_t i = 0; i <vc.size(); ++i) assert_close(vc[i],vc2[i]); 
  }
  TRIQS_CATCH_AND_ABORT;
 }

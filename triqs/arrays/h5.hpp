@@ -18,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_H5_H
-#define TRIQS_ARRAYS_H5_H
+#pragma once
 #include "./h5/simple_read_write.hpp"
-#endif
+#include "./h5/array_of_non_basic.hpp"

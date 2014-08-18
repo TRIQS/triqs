@@ -21,11 +21,11 @@
 #include "./common.hpp"
 #include <iostream>
 
-#include "./src/array.hpp"
-#include "./src/vector.hpp"
-#include "./src/matrix.hpp"
-#include "./src/blas_lapack/dot.hpp"
-#include "./src/asserts.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/vector.hpp>
+#include <triqs/arrays/matrix.hpp>
+#include <triqs/arrays/blas_lapack/dot.hpp>
+#include <triqs/arrays/asserts.hpp>
 
 using namespace triqs::arrays;
 

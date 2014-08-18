@@ -19,12 +19,12 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/array.hpp"
-#include "./src/matrix.hpp"
-#include "./src/vector.hpp"
-#include "./src/asserts.hpp"
-#include "./src/algorithms.hpp"
-#include "./src/mapped_functions.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/matrix.hpp>
+#include <triqs/arrays/vector.hpp>
+#include <triqs/arrays/asserts.hpp>
+#include <triqs/arrays/algorithms.hpp>
+#include <triqs/arrays/mapped_functions.hpp>
 #include <iostream>
 
 using namespace triqs::arrays;

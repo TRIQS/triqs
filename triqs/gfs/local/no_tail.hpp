@@ -30,7 +30,7 @@ namespace gfs {
 
  template <typename Variable, typename Target, bool V, bool C>
  gf_view<Variable, Target, no_tail, C> make_gf_view_without_tail(gf_impl<Variable, Target, void, V, C> const &g) {
-  return {g.mesh(), g.data(), {}, g.symmetry()};
+  return {g.mesh(), g.data(), {}, g.symmetry(), g.indices(), g.name};
  }
 
  namespace details { // dispatch the test for scalar_valued and matrix_valued

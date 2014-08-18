@@ -55,7 +55,7 @@ namespace triqs { namespace arrays { namespace permutations {
  
  inline void print( std::ostream & out, ull perm) { 
   out << "(";
-  for (int i =0; i< permutations::size(perm); ++i) { out << (i!=0 ? " " : "") << apply(perm,i);}
+  for (int i =0; i< int(permutations::size(perm)); ++i) { out << (i!=0 ? " " : "") << apply(perm,i);}
   out << ")";
  }
 }

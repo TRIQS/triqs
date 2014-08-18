@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -22,7 +21,7 @@
 
 from itertools import izip
 import operator
-from impl_plot import PlotWrapperPartialReduce
+from _gf_plot import PlotWrapperPartialReduce
 
 def call_factory_from_dict (cl,dic) :
     """Given a class cl and a dict dic, it calls cl.__factory_from_dict__(dic)"""

@@ -44,17 +44,13 @@ Basic ``TailGf`` object
 
     from pytriqs.gf.local import *
     
-    t = TailGf(shape=(1,1))
+    t = TailGf(N1=1, N2=1)
     print "t = ",t
     print "t.data.shape = ",t.data.shape
     print "t.order_min = ",t.order_min
     print "t.order_max = ",t.order_max
     print "t.mask = ",t.mask
     print "t[1] = ",t[1]
-    t[1]=[1]
-    print "t = ",t
-    t[-1]=.25
-    print "t = ",t
     print "t(100) = ",t(100)
 
 
@@ -101,6 +97,7 @@ coefficients :math:`(\mathbf{a}_{-1})_{00} = 0`\ ,
 .. runblock:: python
 
     from pytriqs.gf.local import *
+    import numpy
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
     g <<= inverse( iOmega_n + 0.5 )
     g.tail.zero()

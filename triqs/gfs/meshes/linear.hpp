@@ -40,7 +40,7 @@ namespace gfs {
   using domain_pt_t = typename domain_t::point_t;
 
   static_assert(!std::is_base_of<std::complex<double>, domain_pt_t>::value,
-                "Internal error : can not use Linear Mesh in this case");
+                "Internal error : cannot use Linear Mesh in this case");
 
   linear_mesh() : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
 

@@ -108,7 +108,7 @@ namespace triqs { namespace arrays {
        <<"\n   T = "<< triqs::utility::typeid_name(value_type())
        // lead to a nasty link pb ???
        // linker search for IndexMapType::domain_type::rank in triqs.so
-       // and can not resolve it ???
+       // and cannot resolve it ???
        //<<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
        <<"\n   OptionFlags = "<< OptionFlags
        <<"\nfrom the python object \n"<< numpy_interface::object_to_string(X)

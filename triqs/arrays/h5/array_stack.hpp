@@ -23,9 +23,22 @@
 #include "../array.hpp"
 #include <triqs/h5.hpp>
 #include "./simple_read_write.hpp"
+#include <triqs/h5/base.hpp>
 
 namespace triqs {
 namespace arrays {
+
+ // to be cleaned
+ namespace h5_impl {
+  template <typename A> void* __get_array_data_ptr(A& x) { return h5::get_data_ptr(&(x.storage()[0])); }
+
+  h5::dataspace data_space_impl(array_stride_info info, bool is_complex);
+
+  template <typename ArrayType> h5::dataspace data_space(ArrayType const& A) {
+   if (!A.indexmap().is_contiguous()) TRIQS_RUNTIME_ERROR << " h5 : internal error : array not contiguous";
+   return data_space_impl(array_stride_info{A}, triqs::is_complex<typename ArrayType::value_type>::value);
+  }
+ }
 
  /// The implementation class
  template <typename T, int R> class array_stack_impl {
@@ -35,7 +48,7 @@ namespace arrays {
   static const bool T_is_complex = triqs::is_complex<T>::value;
   static const unsigned int RANK = dim + 1 + (T_is_complex ? 1 : 0);
   utility::mini_vector<hsize_t, RANK> dims, offset, maxdims, dim_chunk, buffer_dim, zero;
-  H5::DataSet dataset;
+  h5::dataset d_set;
   array<T, dim + 1> buffer;
 
   public:
@@ -62,14 +75,11 @@ namespace arrays {
     s[i] = buffer_dim[i];
    }
    buffer.resize(s);
-   H5::DataSpace mspace1(RANK, dims.ptr(), maxdims.ptr());
-   H5::DSetCreatPropList cparms;
-   cparms.setChunk(RANK, dim_chunk.ptr()); // Modify dataset creation properties, i.e. enable chunking.
-   try {
-    dataset = g.create_dataset(name, h5::native_type_from_C(typename h5::remove_complex<T>::type()), mspace1, cparms);
-    if (triqs::is_complex<T>::value) h5::write_string_attribute(&dataset, "__complex__", "1");
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+   h5::dataspace mspace1 = H5Screate_simple(RANK, dims.ptr(), maxdims.ptr());
+   h5::proplist cparms = H5Pcreate(H5P_DATASET_CREATE);
+   auto err = H5Pset_chunk(cparms, RANK, dim_chunk.ptr());
+   d_set = g.create_dataset(name, h5::native_type_from_C(T()), mspace1, cparms);
+   if (triqs::is_complex<T>::value) h5::write_string_attribute(d_set, "__complex__", "1");
   }
 
   ///
@@ -116,27 +126,32 @@ namespace arrays {
    if (step == 0) return;
    dims[0] += step;
    buffer_dim[0] = step;
-   dataset.extend(dims.ptr());
-   H5::DataSpace fspace1 = dataset.getSpace(), mspace = h5_impl::data_space(buffer);
-   fspace1.selectHyperslab(H5S_SELECT_SET, buffer_dim.ptr(), offset.ptr());
-   mspace.selectHyperslab(H5S_SELECT_SET, buffer_dim.ptr(), zero.ptr());
-   try {
-    dataset.write(h5_impl::__get_array_data_ptr(buffer), h5::data_type_memory<T>(), mspace, fspace1);
-   }
-   TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+
+   herr_t err= H5Dset_extent(d_set,dims.ptr());  // resize the data_space
+
+   h5::dataspace fspace1 = H5Dget_space(d_set);
+   h5::dataspace mspace = h5_impl::data_space(buffer);
+
+   err = H5Sselect_hyperslab(fspace1, H5S_SELECT_SET, offset.ptr(), NULL, buffer_dim.ptr(), NULL);
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot set hyperslab";
+   err = H5Sselect_hyperslab(mspace, H5S_SELECT_SET, zero.ptr(), NULL, buffer_dim.ptr(), NULL);
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot set hyperslab";
+
+   err = H5Dwrite(d_set, h5::data_type_memory<T>(), mspace, fspace1, H5P_DEFAULT, h5_impl::__get_array_data_ptr(buffer));
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the array_stack buffer";
    offset[0] += step;
   }
  };
 
  // ------------------------- User classes ------------------------------
- 
+
  // The simple case, 1d
  template <typename T> class array_stack : public array_stack_impl<T, 0> {
   static_assert((is_scalar<T>::value), "Only available for a scalar type");
   public:
   /**
-   * \brief Constructor 
-   *  \param g The h5 group 
+   * \brief Constructor
+   *  \param g The h5 group
    *  \param name The name of the hdf5 array in the file/group where the stack will be stored
    *  \param bufsize The size of the buffer
    *  \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with stackstrace, cf doc).
@@ -150,7 +165,7 @@ namespace arrays {
   public:
    /**
     * \brief Constructor
-    *  \param g The h5 group 
+    *  \param g The h5 group
     *  \param name The name of the hdf5 array in the file/group where the stack will be stored
     *  \param base_element_shape The shape of the base array of the stack.
     *  \param bufsize The size of the buffer

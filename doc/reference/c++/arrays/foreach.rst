@@ -50,16 +50,7 @@ in the order specified by the TraversalOrder flag of the array.
 
 Example : 
 
-.. compileblock::
-
-    #include <triqs/arrays.hpp>
-    using triqs::arrays::array; 
-    int main(){
-     array<long,2> A (2,3);
-     foreach (A, [&A](size_t i, size_t j) { A(i,j) = i+j;});
-     std::cout<<" A "<< A << std::endl;
-    } 
-
+.. triqs_example:: ./foreach_0.cpp
 .. note::
    You *can* pass a std::function as Function, but it is not recommended in critical parts of the code.
     
@@ -91,15 +82,6 @@ Synopsis::
 * The for loop are automatically organised to optimize the traversal order of A
   using the TraversalOrder flag of the array. 
 
-.. compileblock::
-
-    #include <triqs/arrays.hpp>
-    using triqs::arrays::array; 
-    int main(){
-     array<long,2> A (2,3);
-     assign_foreach (A, [](size_t i, size_t j) { return i+j;});
-     std::cout<<" A "<< A << std::endl;
-    } 
-
+.. triqs_example:: ./foreach_1.cpp
 .. note::
    Cf the note of the *foreach* function.

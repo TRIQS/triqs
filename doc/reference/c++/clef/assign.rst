@@ -33,33 +33,7 @@ and also for some STL container like std::vector.
 
 Example :
 
-.. compileblock::
-
-  #include "triqs/clef.hpp"
-  #include <iostream> 
-  using namespace triqs::clef;
-
-  int main() { 
-  int N = 5;
-  double pi = std::acos(-1);
-
-  // automatic assignment of vector 
-  placeholder <0> k_; 
-  std::vector<double> V(N);
-  make_expr(V) [k_] << cos( (2* pi* k_)/ N );
-
-  // chaining them ...
-  placeholder <1> i_; 
-  std::vector<std::vector<double>> W(3, std::vector<double>(N));
-  make_expr(W)[i_] [k_] << i_ + cos( (2* pi* k_)/ N );
-
-  // check result... 
-  for (size_t u=0; u<V.size(); ++u) if (std::abs(V[u] -cos((2*pi*u)/N))> 1.e-10) throw "error!";
-  for (size_t w=0; w<W.size(); ++w) 
-   for (size_t u=0; u<W[w].size(); ++u) 
-   if (std::abs( W[w][u] - (w+cos((2*pi*u)/N)))> 1.e-10) throw "error!";
-  }
-
+.. triqs_example:: ./assign_0.cpp
 **Details**
 
 The synopsis of the `triqs_clef_auto_assign` functions is ::
@@ -92,26 +66,4 @@ into ::
 
 A complete example : 
 
-.. compileblock::
-
-    #include <triqs/clef.hpp>
-    #include <iostream>
-    using namespace triqs::clef;
-
-    struct Obj{ 
-     double v; 
-     TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
-     // 
-     template<typename Fnt> friend void triqs_clef_auto_assign (Obj & x, Fnt f) { 
-       std::cout<< " called triqs_clef_auto_assign "<< f(x.v++)<<std::endl;
-     }
-    };
-
-    int main() {
-     Obj f{2};
-     placeholder<3> x_;
-     std::cout<< f.v << std::endl;
-     f(x_ ) << 8*x_ ;
-     std::cout<< f.v << std::endl;
-    }
-
+.. triqs_example:: ./assign_1.cpp

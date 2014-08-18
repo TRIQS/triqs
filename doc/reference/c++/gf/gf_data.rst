@@ -44,6 +44,6 @@ symmetry
 
   .. cpp:function:: symmetry_t const & () const 
 
-  Access to the symmetry type. Can not be modifed after construction. *(why ?)*.
+  Access to the symmetry type. Cannot be modifed after construction. *(why ?)*.
 
 

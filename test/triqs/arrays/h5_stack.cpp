@@ -19,10 +19,10 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/h5/array_stack.hpp"
-#include "./src/h5/simple_read_write.hpp"
+#include <triqs/arrays/h5/array_stack.hpp>
+#include <triqs/arrays/h5/simple_read_write.hpp>
 #include <iostream>
-#include "./src/asserts.hpp"
+#include <triqs/arrays/asserts.hpp>
 
 using std::cout; using std::endl;
 using namespace triqs::arrays;
@@ -31,7 +31,7 @@ using namespace triqs;
 template < class T>
 void test(std::string filename, T init) { 
 
- H5::H5File file( filename.c_str(), H5F_ACC_TRUNC );
+ h5::file file( filename.c_str(), H5F_ACC_TRUNC );
  h5::group top (file);
 
  const size_t N = 12, bufsize = 5, d= 2;
@@ -75,7 +75,7 @@ void test(std::string filename, T init) {
 
  // now we read the file and compare
 
- H5::H5File file2( filename.c_str() ,H5F_ACC_RDONLY );
+ h5::file file2( filename.c_str() ,H5F_ACC_RDONLY );
  h5::group top2(file2);
 
  h5_read (top2, "A",A_stack_compare); 

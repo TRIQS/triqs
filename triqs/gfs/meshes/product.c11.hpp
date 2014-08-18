@@ -63,7 +63,7 @@ namespace gfs {
   /// Conversions point <-> index <-> linear_index
   typename domain_t::point_t index_to_point(index_t const &ind) const {
    domain_pt_t res;
-   triqs::tuple::apply_on_zip(_aux1(), res, m_tuple, ind);
+   triqs::tuple::map_on_zip(_aux1(), res, m_tuple, ind);
    return res;
   }
 
@@ -77,10 +77,8 @@ namespace gfs {
   public:
   /// Flattening index to linear :  index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
   size_t index_to_linear(index_t const &ii) const {
-   return triqs::tuple::fold_on_zip(_aux2(), reverse(m_tuple), reverse(ii), size_t(0));
+   return triqs::tuple::fold(_aux2(), reverse(m_tuple), reverse(ii), size_t(0));
   }
-  // size_t index_to_linear(index_t const & ii) const { return triqs::tuple::fold_on_zip([](auto const &m, auto const &i, auto R)
-  //{return m.index_to_linear(i) + R * m.size();} , m_tuple, ii, size_t(0)); }
 
   private:
   struct _aux3 {
@@ -92,7 +90,7 @@ namespace gfs {
   public:
   /// Flattening index to linear :  index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
   size_t mp_to_linear(m_pt_tuple_t const &mp) const {
-   return triqs::tuple::fold_on_zip(_aux3(), reverse(m_tuple), reverse(mp), size_t(0));
+   return triqs::tuple::fold(_aux3(), reverse(m_tuple), reverse(mp), size_t(0));
   }
 
   //
@@ -134,8 +132,8 @@ namespace gfs {
    public:
    mesh_point_t() = default;
    mesh_point_t(mesh_product const &m_, index_t index_)
-      : m(&m_), _c(triqs::tuple::apply_on_zip(F2(), m_.m_tuple, index_)), _atend(false) {}
-   mesh_point_t(mesh_product const &m_) : m(&m_), _c(triqs::tuple::apply_on_tuple(F1(), m_.m_tuple)), _atend(false) {}
+      : m(&m_), _c(triqs::tuple::map_on_zip(F2(), m_.m_tuple, index_)), _atend(false) {}
+   mesh_point_t(mesh_product const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.m_tuple)), _atend(false) {}
    m_pt_tuple_t const &components_tuple() const { return _c; }
    size_t linear_index() const { return m->mp_to_linear(_c); }
    const mesh_product *mesh() const { return m; }

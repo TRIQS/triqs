@@ -48,10 +48,9 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
 
    domain_t () =default;
    domain_t (const domain_t & C) = default;
-   domain_t (domain_t && C) { *this = std::move(C);}
-   friend void swap( domain_t & a, domain_t & b) { swap(a.lengths_,b.lengths_);}
+   domain_t (domain_t && C) = default;
    domain_t & operator =( domain_t const &) = default;
-   domain_t & operator =( domain_t && x) { swap(*this,x); return *this;}
+   domain_t & operator =( domain_t && x)= default;
 
    domain_t (n_uple lengths):lengths_(std::move(lengths)) {}
    domain_t (mini_vector<int,Rank> const & lengths):lengths_(lengths) {}

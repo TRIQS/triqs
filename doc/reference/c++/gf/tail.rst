@@ -24,53 +24,14 @@ Implementation
 In TRIQS, the tail is implemented as an object ``tail``. Here is a simple example of use: 
 
 
-.. compileblock:: 
-
-  #include <Python.h>
-  #include <iostream>
-  #include <triqs/gfs/local/tail.hpp>
-  int main(){
-   int N1=1, N2=1;
-   triqs::gfs::local::tail t(N1,N2);
-   t.mask_view() = 5;//only coeffs from -1 to 5 are meaningful
-   std::cout << t(0) << std::endl;
-   t(2) = .5;
-   std::cout << t << std::endl;
-  }
-
-
-
+.. triqs_example:: ./tail_0.cpp
 Fitting the tail of a Green's function
 ---------------------------------------
 
 Given an imaginary-frequency Green's function, one can compute the moments of its high-frequency tail with the function ``set_tail_from_fit``:
 
 
-.. compileblock:: 
-
-  #include <triqs/gfs.hpp>
-  #include <triqs/gfs/local/fit_tail.hpp>
-  using namespace triqs::gfs; 
-  int main(){
-   triqs::clef::placeholder<0> iom_;
-   double beta =10;
-   int N=100;
-
-   auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
-   gw(iom_) << 1/(iom_-1);
-
-   size_t n_min=50; //linear index on mesh to start the fit
-   size_t n_max=90; //final linear index for fit (included)
-   int n_moments=4;  //number of moments in the final tail (including known ones)
-   int  size=1; //means that we know one moment
-   int order_min=1; //means that the first moment in the final tail will be the first moment
-   auto known_moments = local::tail(make_shape(1,1), size, order_min); //length is 0, first moment to fit is order_min
-   known_moments(1)=1.;//set the first moment
-   set_tail_from_fit(gw, known_moments, n_moments, n_min, n_max, true);//true replace the gf data in the fitting range by the tail values
-   std::cout << gw.singularity() << std::endl;
-  }
-
-
+.. triqs_example:: ./tail_1.cpp
 The full documentation of ``set_tail_from_fit`` is :doc:`here<set_tail_from_fit>`.
 
 API

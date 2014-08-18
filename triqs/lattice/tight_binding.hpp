@@ -38,7 +38,7 @@ namespace lattice {
   public:
   ///
   tight_binding(bravais_lattice const& bl, std::vector<std::vector<long>> all_disp, std::vector<matrix<dcomplex>> all_matrices);
-
+ 
   /// Underlying lattice
   bravais_lattice const& lattice() const { return bl_; }
 

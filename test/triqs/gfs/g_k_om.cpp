@@ -2,6 +2,7 @@
 #include <triqs/gfs.hpp>
 #include <triqs/gfs/bz.hpp>
 
+namespace h5 = triqs::h5;
 using namespace triqs::gfs;
 using namespace triqs::clef;
 using namespace triqs::arrays;
@@ -27,7 +28,7 @@ int main() {
   G(k_, w_) << 1 / (w_ - eps(k_) - 1 / (w_ + 2));
 
   // hdf5 
-  H5::H5File file("ess_g_k_om.h5", H5F_ACC_TRUNC );
+  h5::file file("ess_g_k_om.h5", H5F_ACC_TRUNC );
   h5_write(file, "g", G);
 
  

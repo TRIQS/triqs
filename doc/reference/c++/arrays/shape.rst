@@ -20,17 +20,4 @@ Shape & dimensions
 
 The shape and dimensions of any object modeling :ref:`ImmutableCuboidArray` is obtained using get_shape and xxx_dim functions :
 
-.. compileblock::
-       
-     #include <triqs/arrays.hpp>
-     #include <iostream>
-     using namespace triqs::arrays;
-     int main () { 
-       auto a = array<double,2> (2,3);
-       std::cout << get_shape(a)<< std::endl;
-       std::cout << first_dim(a)<< std::endl;
-       std::cout << second_dim(a)<< std::endl;
-     }
-
-
-
+.. triqs_example:: ./shape_0.cpp

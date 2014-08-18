@@ -55,7 +55,7 @@ For example ::
   A(range(0,2), range(0,2)) = any_function_returning_a_new_2x2_array(....);
 
 In this case, the expected behaviour is that the part of A views by view at l.h.s
-is filled by the result of the function. There can not be any move semantics here.
+is filled by the result of the function. There cannot be any move semantics here.
 
 As a result, std::swap algorithm does not work properly for view, hence it has
 been explicitely *deleted*. A swap function (found by ADL) is provided instead.

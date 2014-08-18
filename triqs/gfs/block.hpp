@@ -97,13 +97,14 @@ namespace gfs {
  block_gf<Variable, Target, Opt> make_block_gf(int n, gf<Variable, Target, Opt> const &g) {
   auto V = std::vector<gf<Variable, Target, Opt>>{};
   for (int i = 0; i < n; ++i) V.push_back(g);
-  return {{n}, std::move(V), nothing{}, nothing{}};
+  return {{n}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // from a vector of gf (moving directly)
  template <typename Variable, typename Target, typename Opt>
  block_gf<Variable, Target, Opt> make_block_gf(std::vector<gf<Variable, Target, Opt>> V) {
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
+  int s = V.size(); // DO NOT use V.size in next statement, the V is moved and the order of arg. evaluation is undefined.
+  return {{s}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // from a vector of gf : generalized to have a different type of gf in the vector (e.g. views...)
@@ -111,13 +112,13 @@ namespace gfs {
  block_gf<Variable, Target, Opt> make_block_gf(std::vector<GF2> const &V) {
   auto V2 = std::vector<gf<Variable, Target, Opt>>{};
   for (auto const &g : V) V2.push_back(g);
-  return {{int(V.size())}, std::move(V2), nothing{}, nothing{}};
+  return {{int(V.size())}, std::move(V2), nothing{}, nothing{}, nothing{}};
  }
 
  // from a init list of GF with the correct type
  template <typename Variable, typename Target, typename Opt>
  block_gf<Variable, Target, Opt> make_block_gf(std::initializer_list<gf<Variable, Target, Opt>> const &V) {
-  return {{int(V.size())}, V, nothing{}, nothing{}};
+  return {{int(V.size())}, V, nothing{}, nothing{}, nothing{}};
  }
 
  // from vector<string> and a gf to be copied
@@ -125,7 +126,7 @@ namespace gfs {
  block_gf<Variable, Target, Opt> make_block_gf(std::vector<std::string> block_names, gf<Variable, Target, Opt> const &g) {
   auto V = std::vector<gf<Variable, Target, Opt>>{};
   for (int i = 0; i < block_names.size(); ++i) V.push_back(g);
-  return {{block_names}, std::move(V), nothing{}, nothing{}};
+  return {{block_names}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // from vector<string>, vector<gf>
@@ -133,7 +134,7 @@ namespace gfs {
  block_gf<Variable, Target, Opt> make_block_gf(std::vector<std::string> block_names, std::vector<gf<Variable, Target, Opt>> V) {
   if (block_names.size() != V.size())
    TRIQS_RUNTIME_ERROR << "make_block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
-  return {{block_names}, std::move(V), nothing{}, nothing{}};
+  return {{block_names}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // from vector<string>, init_list<GF>
@@ -141,7 +142,7 @@ namespace gfs {
  block_gf<Variable, Target, Opt> make_block_gf(std::vector<std::string> block_names,
                                                std::initializer_list<gf<Variable, Target, Opt>> const &V) {
   if (block_names.size() != V.size()) TRIQS_RUNTIME_ERROR << "make_block_gf(vector<string>, init_list) : size mismatch !";
-  return {{block_names}, V, nothing{}, nothing{}};
+  return {{block_names}, V, nothing{}, nothing{}, nothing{}};
  }
 
  // -------------------------------   Free Factories for view type  --------------------------------------------------
@@ -149,17 +150,19 @@ namespace gfs {
  template <typename G0, typename... G>
  gf_view<block_index, typename std::remove_reference<G0>::type::view_type> make_block_gf_view(G0 &&g0, G &&... g) {
   auto V = std::vector<typename std::remove_reference<G0>::type::view_type>{std::forward<G0>(g0), std::forward<G>(g)...};
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
+  return {{int(V.size())}, std::move(V), nothing{}, nothing{}, nothing{}};
   // return { gf_mesh<block_index, Opt> {int(V.size())}, std::move(V), nothing{}, nothing{} } ;
  }
 
  template <typename GF> gf_view<block_index, typename GF::regular_type> make_block_gf_view_from_vector(std::vector<GF> V) {
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
+  int s = V.size();
+  return {{s}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
- // for cython proxy only. do not document.
- template <typename GF, typename GF2> gf_view<block_index, GF> make_block_gf_view_from_vector_of_cython_proxy(std::vector<GF2> V) {
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
+ template <typename GF>
+ gf_view<block_index, typename GF::regular_type> make_block_gf_view_from_vector(std::vector<std::string> block_names,
+                                                                                std::vector<GF> V) {
+  return {{std::move(block_names)}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // ------------------------------- Extend reinterpret_scalar_valued_gf_as_matrix_valued for block gf   ------

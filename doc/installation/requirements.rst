@@ -51,9 +51,9 @@ Libraries
 +------------------------+----------+------------------------------------------------------------------------+
 | boost                  | >= 1.49  | C++ librairies                                                         |
 +------------------------+----------+------------------------------------------------------------------------+
-| hdf5                   | >= 1.8.0 | File storage system. Important: the *serial* version must be installed |
+| hdf5                   | >= 1.8.2 | File storage system. Important: the *serial* version must be installed |
 +------------------------+----------+------------------------------------------------------------------------+
-| python                 | >= 2.6.5 | The Python interpreter                                                 |
+| python                 | >= 2.7   | The Python interpreter                                                 |
 +------------------------+----------+------------------------------------------------------------------------+
 | scipy                  | >= ?     | Python mathematical library                                            |
 +------------------------+----------+------------------------------------------------------------------------+
@@ -72,8 +72,6 @@ Libraries
 | sphinxcontrib-doxylink | >= ?     | Tool for sphinx (to compile documentation)                             |
 +------------------------+----------+------------------------------------------------------------------------+
 | matplotlib             | >= 0.99  | Python 2D plotting library                                             |
-+------------------------+----------+------------------------------------------------------------------------+
-| cython                 | >=0.17   | A language that allows to write C extensions for the Python language   |
 +------------------------+----------+------------------------------------------------------------------------+
 
 (1)  Since standard linux distributions (and macports on OS X) now provides openmpi, even on laptops, we avoid the unnecessary complication of maintaining a non-parallel version of TRIQS

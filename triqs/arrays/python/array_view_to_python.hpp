@@ -31,7 +31,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
 
  template<typename ArrayViewType >
   PyObject * array_view_to_python ( ArrayViewType const & A, bool copy=false) {
-   _import_array();
+   //_import_array();
    typedef typename ArrayViewType::value_type value_type;
    static const int rank = ArrayViewType::rank;
    const int elementsType (numpy_to_C_type<typename boost::remove_const<value_type>::type>::arraytype);

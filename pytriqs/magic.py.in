@@ -1,0 +1,229 @@
+"""
+=====================
+Triqs magic
+=====================
+
+{TRIQS_DOC}
+
+"""
+import imp,os,sys,subprocess, hashlib,re
+from IPython.core.error import UsageError
+from IPython.core.magic import Magics, magics_class, line_magic, cell_magic
+from IPython.core import display, magic_arguments
+from IPython.utils import py3compat
+from IPython.utils.io import capture_output
+from IPython.utils.path import get_ipython_cache_dir
+
+__version__ = '0.1.0'
+
+triqs_path = "@CMAKE_INSTALL_PREFIX@"
+cxx_compiler = "@CMAKE_CXX_COMPILER@"
+converter_include_path = triqs_path + "/include/pytriqs/converters/"
+generator_path = triqs_path + "/share/triqs/wrap_generator"
+
+cmakelist = """
+list(APPEND CMAKE_MODULE_PATH %s/share/triqs/cmake)
+cmake_minimum_required(VERSION 2.8)
+project(triqs_magic CXX)
+set(CMAKE_BUILD_TYPE Release)
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+find_package(TRIQS REQUIRED)
+include_directories(${CMAKE_SOURCE_DIR} ${TRIQS_INCLUDE_ALL})
+add_library(ext MODULE ext_wrap.cpp)
+#add_library(ext MODULE ext.cpp ext_wrap.cpp)
+set_target_properties(ext PROPERTIES PREFIX "") #eliminate the lib in front of the module name
+target_link_libraries(ext ${TRIQS_LIBRARY_ALL})
+triqs_set_rpath_for_target(ext)
+"""%triqs_path
+
+mod_dict = {
+ 'gf' :
+"""
+module.use_module('gf')
+module.add_using('namespace triqs::gfs')
+""",
+ 'parameters' :
+"""
+module.use_module('parameters')
+module.add_using('namespace triqs::params')
+""",}
+
+def desc_file(c_decl, use) :
+   s = """
+from wrap_generator import *
+module = module_(full_name = "ext", doc = "")
+module.add_include("<triqs/arrays.hpp>")
+module.add_include("<triqs/python_tools/py_stream.hpp>")
+module.add_using("namespace triqs::arrays")
+module.add_preamble('#include "./ext.cpp"')
+"""
+
+   mod_list = sum((x.split(',') for x in use), [])
+   for m in mod_list :
+       s+= mod_dict[m]
+
+   for f in c_decl :
+       s+= 'module.add_function("%s")\n'%f
+
+   return s + "module.generate_code()\n"
+
+@magics_class
+class TriqsMagics(Magics):
+
+    def __init__(self, shell):
+        super(TriqsMagics, self).__init__(shell=shell)
+        self._reloads = {}
+        self._code_cache = {}
+        self._lib_dir = os.path.join(get_ipython_cache_dir(), 'triqs')
+        if not os.path.exists(self._lib_dir):
+            os.makedirs(self._lib_dir)
+
+    def _import_all(self, module, verbosity=0):
+        imported = []
+        for k, v in module.__dict__.items():
+            if not k.startswith('__'):
+                self.shell.push({k: v})
+                imported.append(k)
+        if verbosity > 0 and imported:
+            print("\nOk. The following objects are ready to use: %s" % ", ".join(imported))
+
+    def extract_signature(self,code):
+        acc = []
+        for l in code.splitlines() :
+            ll = l.strip()
+            if ll.startswith("#") or ll.startswith("using") : continue
+            acc.append(l)
+            if l.count('{') : break
+        s = ''.join(acc).split('{',1)[0] # everything before {
+        #print "signature", s
+        return [s]
+
+    @magic_arguments.magic_arguments()
+    @magic_arguments.argument(
+            "-v", "--verbosity", action="count", default=0,
+            help="increase output verbosity"
+        )
+    @magic_arguments.argument(
+            '-u', "--use", action='append', default=[],
+            help="""Modules used"""
+        )
+    @cell_magic
+    def triqs(self, line, cell=None):
+        """Compile and import everything from a Triqs code cell.
+
+        The content of the cell is written to a `.cpp` file in the
+        directory `IPYTHONDIR/triqs` using a filename with the hash of the
+        code. A python wrapper is then generated from the function signature.
+        Those files are then compiled.
+        The resulting module is imported and all of its symbols are injected into the user's namespace.
+
+        Usage
+        =====
+        Prepend ``%%triqs`` to your triqs code in a cell::
+
+        ``%%triqs
+
+        ! put your code here.
+        ``
+        """
+        try:
+            # custom saved arguments
+            saved_defaults = vars(
+                magic_arguments.parse_argstring(self.triqs,
+                                                self.shell.db['triqs']))
+            self.triqs.parser.set_defaults(**saved_defaults)
+        except KeyError:
+            saved_defaults = {'verbosity': 0}
+
+        if '-v' in line:
+            self.triqs.parser.set_defaults(verbosity=0)
+
+        ## Add GIL argument ?
+        use_GIL = False
+        args = magic_arguments.parse_argstring(self.triqs, line)
+
+        code = cell if cell.endswith('\n') else cell + '\n'
+
+        #if not GIL, we replace std::cout by triqs::py_out for capture in the notebook
+        if not use_GIL :
+            code = re.sub("std::cout", "triqs::py_stream()", code)
+
+        key = code, line, sys.version_info, sys.executable
+
+        c_decl = self.extract_signature(code)
+        if args.verbosity>1 :
+          print "Found function of signature"
+          for f in c_decl :
+              print f
+
+        module_name = "ext"
+        module_dirname = os.path.join(self._lib_dir, "_triqs_magic_" + hashlib.md5(str(key).encode('utf-8')).hexdigest())
+        module_path = os.path.join(module_dirname, 'ext.so')
+        try :
+            os.mkdir(module_dirname)
+        except :
+            pass
+        #print "dir", module_dirname
+
+        old_cwd = os.getcwd()
+        try:
+            os.chdir(module_dirname)
+
+            with open('ext_desc.py', 'w') as f:
+                f.write(desc_file(c_decl, args.use))
+
+            with open('CMakeLists.txt', 'w') as f:
+                f.write(cmakelist)
+
+            with open('ext.cpp', 'w') as f:
+                f.write(code)
+
+            # Call the wrapper generator
+            command_generator = """
+            PYTHONPATH={generator_path} python ext_desc.py {generator_path}/wrapper.mako.cpp ext_wrap.cpp {generator_path}/py_converter_wrapper.mako.hpp conv.hpp {converter_include_path}
+            """.format(**globals())
+
+            try :
+              out_generator = subprocess.check_output(command_generator, stderr=subprocess.STDOUT, shell=True)
+            except subprocess.CalledProcessError as E :
+               print '---------- Wrapper generator error -------\n' + E.output
+               return
+
+            if args.verbosity>0 : print "---------- Wrapper generator ------", out_generator
+
+            # Call cmake
+            #command_cmake = "CXX =" + cxx_compiler+ "  cmake . -DTRIQS_PATH=" + triqs_path
+            command_cmake = "cmake .  -DCMAKE_CXX_COMPILER="+ cxx_compiler+ " -DTRIQS_PATH=" + triqs_path
+
+            try :
+              out_cmake = subprocess.check_output(command_cmake, stderr=subprocess.STDOUT, shell=True)
+            except subprocess.CalledProcessError as E :
+               print '----------  Cmake error -------\n' + E.output
+               return
+
+            if args.verbosity>0 : print "---------- Cmake ------", out_cmake
+
+            # Call make
+            command_make = "make -j2"
+
+            try :
+              out_make = subprocess.check_output(command_make, stderr=subprocess.STDOUT, shell=True)
+            except subprocess.CalledProcessError as E :
+               print '----------  Make error -------\n' + E.output
+               return
+
+            if args.verbosity>0 : print "---------- Make ------", out_make
+
+        finally:
+            os.chdir(old_cwd)
+
+        self._code_cache[key] = module_path
+        module = imp.load_dynamic(module_name, module_path)
+        self._import_all(module, verbosity=args.verbosity)
+
+__doc__ = __doc__.format(TRIQS_DOC=' ' * 8 + TriqsMagics.triqs.__doc__)
+
+def load_ipython_extension(ip):
+    """Load the extension in IPython."""
+    ip.register_magics(TriqsMagics)
+

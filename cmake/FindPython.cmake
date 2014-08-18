@@ -54,10 +54,14 @@ IF (PYTHON_VERSION_NOT_OK)
  MESSAGE(FATAL_ERROR "Python intepreter version is ${PYTHON_VERSION} . It should be >= ${PYTHON_MINIMAL_VERSION}")
 ENDIF (PYTHON_VERSION_NOT_OK)
 
+EXEC_PYTHON_SCRIPT ("import mako.template" nulle) # check that Mako is there...
 EXEC_PYTHON_SCRIPT ("import distutils " nulle) # check that distutils is there...
 EXEC_PYTHON_SCRIPT ("import numpy" nulle) # check that numpy is there...
 EXEC_PYTHON_SCRIPT ("import h5py" nulle) # check that h5py is there...
 EXEC_PYTHON_SCRIPT ("import scipy" nulle) # check that scipy is there...
+if (Python_use_mpi4py)
+EXEC_PYTHON_SCRIPT ("import mpi4py" nulle) # check that mpi4py is there...
+endif()
 MESSAGE(STATUS "Python interpreter and modules are ok : version ${PYTHON_VERSION}" )
 
 #
@@ -110,13 +114,6 @@ mark_as_advanced(PYTHON_SITE_PKG)
  ENDIF(BUILD_SHARED_LIBS)
  MESSAGE(STATUS "PYTHON_LIBRARY = ${PYTHON_LIBRARY}" )
  mark_as_advanced(PYTHON_LIBRARY)
-
- #
- # Cython
- #
- EXEC_PYTHON_SCRIPT("from Cython.Compiler import Version as V;print V.version.split('.')[1]" PYTHON_CYTHON_VERSION )
- MESSAGE(STATUS "Found cython 0.${PYTHON_CYTHON_VERSION}.xxx")
- # check version here 
 
  #
  # libraries which must be linked in when embedding

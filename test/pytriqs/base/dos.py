@@ -23,7 +23,7 @@
 from pytriqs.lattice.tight_binding import *
 
 # Define the Bravais Lattice : a square lattice in 2d
-BL = BravaisLattice(units = [(1,0,0) , (0,1,0) ], orbital_positions= {"" :  (0,0,0)} ) 
+BL = BravaisLattice(units = [(1,0,0) , (0,1,0) ])
 
 # Prepare a nearest neighbour hopping on BL
 t   = -1.00                # First neighbour Hopping

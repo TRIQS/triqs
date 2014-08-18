@@ -65,8 +65,6 @@ namespace triqs { namespace arrays {
   template< int rank, ull_t fl, ull_t to> struct get_traversal_order { static constexpr ull_t value = _get_traversal_order (rank,fl,to); };
  }}
 
-
-
  struct memory_layout_fortran {};
  struct memory_layout_c {};
 
@@ -90,18 +88,23 @@ namespace triqs { namespace arrays {
      static_assert( sizeof...(in)==Rank-2, "Error");
     }
    memory_layout (const memory_layout & C) = default; 
-   memory_layout (memory_layout && C) { *this = std::move(C);}
-   friend void swap( memory_layout & a, memory_layout & b){ std::swap(a.value,b.value);}
+   memory_layout (memory_layout && C) = default; 
    memory_layout & operator =( memory_layout const &) = default;
-   memory_layout & operator =( memory_layout && x) { swap(*this,x); return *this;}
+   memory_layout & operator =( memory_layout && x) = default; 
 
    bool operator ==( memory_layout const & ml) const { return value == ml.value;}
    bool operator !=( memory_layout const & ml) const { return value != ml.value;}
 
-   friend std::ostream & operator <<( std::ostream & out, memory_layout const &  s) { permutations::print(out,s.value); return out;}
+   friend std::ostream &operator<<(std::ostream &out, memory_layout const &s) {
+    permutations::print(out, s.value);
+    return out;
+
+   }
   };
 
- //template<int Rank> void swap( memory_layout<Rank> & a, memory_layout<Rank> & b) { std::swap(a.value,b.value);}
-
+  template <int R, typename... INT> memory_layout<R> transpose(memory_layout<R> ml, INT... is) {
+   static_assert(sizeof...(INT)==R, "!");
+   return memory_layout<R>{permutations::compose(ml.value, permutations::inverse(permutations::permutation(is...)))};
+  }
 }}//namespace triqs::arrays 
 #endif

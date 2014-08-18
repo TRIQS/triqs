@@ -21,7 +21,7 @@
 #include "./common.hpp"
 #define ARRAY_DEBUG_SLICE
 
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <iostream>
 
 using std::cout; using std::endl;
