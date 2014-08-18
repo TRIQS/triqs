@@ -513,6 +513,12 @@ namespace gfs {
   gf_view &operator=(gf_view const &) = delete;
  }; // class gf_const_view
 
+ // Cf gf
+ template <typename RHS, typename Variable, typename Target, typename Opt>
+ void triqs_clef_auto_assign(gf_view<Variable, Target, Opt> &g, RHS const &rhs) {
+  triqs_clef_auto_assign( static_cast<gf_impl<Variable, Target, Opt, true, false>&>(g), rhs);
+ }
+
  // -------------------------  The View class of GF  -------------------------------------------------------
 
  template <typename Variable, typename Target, typename Opt>
