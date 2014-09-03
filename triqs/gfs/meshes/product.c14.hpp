@@ -39,6 +39,7 @@ namespace gfs {
 
   mesh_product() {}
   mesh_product(Meshes const &... meshes) : m_tuple(meshes...), _dom(meshes.domain()...) {}
+  mesh_product(mesh_product const &) = default;
 
   domain_t const &domain() const { return _dom; }
   m_tuple_t const &components() const { return m_tuple; }
@@ -47,6 +48,20 @@ namespace gfs {
   /// size of the mesh is the product of size
   size_t size() const {
    return triqs::tuple::fold([](auto const &m, size_t R) { return R * m.size(); }, m_tuple, 1);
+  }
+
+  /// Scatter the first mesh over the communicator c
+  friend mesh_product mpi_scatter(mesh_product const &m, mpi::communicator c, int root) {
+   auto r = m; // same domain, but mesh with a window. Ok ?
+   std::get<0>(r.m_tuple) = mpi_scatter(std::get<0>(r.m_tuple), c, root);
+   return r;
+  }
+
+  /// Opposite of scatter : rebuild the original mesh, without a window
+  friend matsubara_freq_mesh mpi_gather(matsubara_freq_mesh m, mpi::communicator c, int root) {
+   auto r = m; // same domain, but mesh with a window. Ok ?
+   std::get<0>(r.m_tuple) = mpi_gather(std::get<0>(r.m_tuple), c, root);
+   return r;
   }
 
   /// Conversions point <-> index <-> linear_index

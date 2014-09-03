@@ -22,8 +22,19 @@
 #include "./base.hpp"
 #include <boost/mpi.hpp>
 
+#define TRIQS_MPI_IMPLEMENTED_VIA_BOOST using triqs_mpi_via_boost = void;
+
 namespace triqs {
 namespace mpi {
+
+ // implement the communicator cast
+ inline communicator::operator boost::mpi::communicator() const {
+  return boost::mpi::communicator(_com, boost::mpi::comm_duplicate); 
+  // duplicate policy : cf http://www.boost.org/doc/libs/1_56_0/doc/html/boost/mpi/comm_create_kind.html
+ }
+
+ // reverse : construct (implicit) the communicator from the boost one.
+ inline communicator::communicator(boost::mpi::communicator c) :_com(c) {}
 
  /** ------------------------------------------------------------
    *  Type which we use boost::mpi
@@ -39,7 +50,7 @@ namespace mpi {
 
   static T invoke(tag::allreduce, communicator c, T const &a, int root) {
    T b;
-   boost::mpi::all_reduce(c, a, b, std::c14::plus<>(), root);
+   boost::mpi::all_reduce(c, a, b, std::c14::plus<>());
    return b;
   }
 
@@ -51,8 +62,8 @@ namespace mpi {
   static void allgather(communicator c, T const &, int root) = delete;
  };
 
- // default
- //template <typename T> struct mpi_impl<T> : mpi_impl_boost_mpi<T> {};
+ // If type T has a mpi_implementation nested struct, then it is mpi_impl<T>.
+ template <typename T> struct mpi_impl<T, typename T::triqs_mpi_via_boost> : mpi_impl_boost_mpi<T> {};
 
 }}//namespace
 

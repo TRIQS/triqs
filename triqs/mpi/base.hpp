@@ -23,6 +23,12 @@
 //#include <triqs/utility/tuple_tools.hpp>
 #include <mpi.h>
 
+namespace boost { // forward declare in case we do not include boost.
+namespace mpi {
+ class communicator;
+}
+}
+
 namespace triqs {
 namespace mpi {
 
@@ -40,6 +46,11 @@ namespace mpi {
   communicator() = default;
 
   MPI_Comm get() const { return _com; }
+
+  inline communicator(boost::mpi::communicator);
+
+  /// Cast to the boost mpi communicator
+  inline operator boost::mpi::communicator () const;
 
   int rank() const {
    int num;
@@ -67,6 +78,13 @@ namespace mpi {
 
  /// The implementation of mpi ops for each type
  template <typename T, typename Enable = void> struct mpi_impl;
+ 
+ /// A small lazy tagged class 
+ template <typename Tag, typename T> struct mpi_lazy {
+  T const &ref;
+  int root;
+  communicator c;
+ };
 
  // ----------------------------------------
  // ------- top level functions -------
@@ -136,6 +154,26 @@ namespace mpi {
  struct mpi_impl<T, std14::enable_if_t<std::is_arithmetic<T>::value || triqs::is_complex<T>::value>> : mpi_impl_basic<T> {};
 
  //------------ Some helper function
+
+ // Given a range [first, last], slice it regularly for a node of rank 'rank' among n_nodes.
+ // If the range is not dividable in n_nodes equal parts,
+ // the first nodes have one more elements than the last ones.
+ inline std::pair<long, long> slice_range(long first, long last, int n_nodes, int rank) {
+  long chunk = (last - first + 1) / n_nodes;
+  long n_large_nodes = (last - first + 1) - n_nodes * chunk;
+  if (rank <= n_large_nodes - 1) // first, larger nodes, use chunk + 1
+   return {first + rank * (chunk + 1), first + (rank + 1) * (chunk + 1) - 1};
+  else // others nodes : shift the first by 1*n_large_nodes, used chunk
+   return {first + n_large_nodes + rank * chunk, first + n_large_nodes + (rank + 1) * chunk - 1};
+ }
+
+ // TODO RECHECK TEST 
+ inline long slice_length(long imax, int n_nodes, int rank) {
+  auto r = slice_range(0, imax, n_nodes, rank);
+  return r.second - r.first + 1;
+ }
+
+ /*
  inline long slice_length(size_t imax, communicator c, int r) {
   auto imin = 0;
   long j = (imax - imin + 1) / c.size();
@@ -143,6 +181,7 @@ namespace mpi {
   auto r_min = (r <= i - 1 ? imin + r * (j + 1) : imin + r * j + i);
   auto r_max = (r <= i - 1 ? imin + (r + 1) * (j + 1) - 1 : imin + (r + 1) * j + i - 1);
   return r_max - r_min + 1;
- };
+ }
+ */
 }
 }

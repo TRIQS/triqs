@@ -40,8 +40,12 @@ namespace mpi {
    auto dims = ref.shape();
    long slow_size = first_dim(ref);
    
+   if (std::is_same<Tag, tag::reduce>::value) {
+    // optionally check all dims are the same ?
+   }
+ 
    if (std::is_same<Tag, tag::scatter>::value) {
-    dims[0] = slice_length(slow_size - 1, c, c.rank());
+    dims[0] = mpi::slice_length(slow_size - 1, c.size(), c.rank());
    }
    
    if (std::is_same<Tag, tag::gather>::value) {
@@ -87,7 +91,7 @@ namespace mpi {
   static void allreduce_in_place(communicator c, A &a, int root) {
    check_is_contiguous(a);
    // assume arrays have the same size on all nodes...
-   MPI_Allreduce(MPI_IN_PLACE, a.data_start(), a.domain().number_of_elements(), D(), MPI_SUM, root, c.get());
+   MPI_Allreduce(MPI_IN_PLACE, a.data_start(), a.domain().number_of_elements(), D(), MPI_SUM, c.get());
   }
 
   //---------
@@ -138,6 +142,18 @@ namespace arrays {
    static MPI_Datatype D() { return mpi::mpi_datatype<typename A::value_type>::invoke(); }
 
    //---------------------------------
+   void _invoke(triqs::mpi::tag::reduce) {
+    lhs.resize(laz.domain());
+    MPI_Reduce((void *)laz.ref.data_start(), (void *)lhs.data_start(), laz.ref.domain().number_of_elements(), D(), MPI_SUM, laz.root, laz.c.get());
+   }
+
+   //---------------------------------
+   void _invoke(triqs::mpi::tag::allreduce) {
+    lhs.resize(laz.domain());
+    MPI_Allreduce((void *)laz.ref.data_start(), (void *)lhs.data_start(), laz.ref.domain().number_of_elements(), D(), MPI_SUM, laz.c.get());
+   }
+
+   //---------------------------------
    void _invoke(triqs::mpi::tag::scatter) {
     lhs.resize(laz.domain());
 
@@ -146,10 +162,10 @@ namespace arrays {
     auto slow_stride = laz.ref.indexmap().strides()[0];
     auto sendcounts = std::vector<int>(c.size());
     auto displs = std::vector<int>(c.size() + 1, 0);
-    int recvcount = slice_length(slow_size - 1, c, c.rank()) * slow_stride;
+    int recvcount = mpi::slice_length(slow_size - 1, c.size(), c.rank()) * slow_stride;
 
     for (int r = 0; r < c.size(); ++r) {
-     sendcounts[r] = slice_length(slow_size - 1, c, r) * slow_stride;
+     sendcounts[r] = mpi::slice_length(slow_size - 1, c.size(), r) * slow_stride;
      displs[r + 1] = sendcounts[r] + displs[r];
     }
 

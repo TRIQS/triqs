@@ -35,11 +35,21 @@ namespace gfs {
   using domain_pt_t = typename domain_t::point_t;
 
   /// Constructor
-  matsubara_freq_mesh() : _dom(), _n_pts(0), _positive_only(true) {}
+  matsubara_freq_mesh(domain_t dom, long n_pts = 1025, bool positive_only = true)
+     : _dom(std::move(dom)), _n_pts(n_pts), _positive_only(positive_only) {
+   if (_positive_only) {
+    _first_index = 0;
+    _last_index = n_pts - 1; // CORRECTION
+   } else {
+    _last_index = (_n_pts - (_dom.statistic == Boson ? 1 : 2)) / 2;
+    _first_index = -(_last_index + (_dom.statistic == Fermion));
+   }
+   _first_index_window = _first_index;
+   _last_index_window = _last_index;
+  }
 
   /// Constructor
-  matsubara_freq_mesh(domain_t dom, int n_pts=1025, bool positive_only = true)
-     : _dom(std::move(dom)), _n_pts(n_pts), _positive_only(positive_only) {}
+  matsubara_freq_mesh() : matsubara_freq_mesh(domain_t(), 0, true){}
 
   /// Constructor
   matsubara_freq_mesh(double beta, statistic_enum S, int n_pts = 1025, bool positive_only = true)
@@ -47,6 +57,17 @@ namespace gfs {
 
   /// Copy constructor 
   matsubara_freq_mesh(matsubara_freq_mesh const &) = default;
+
+  /// Scatter a mesh over the communicator c
+  friend matsubara_freq_mesh mpi_scatter(matsubara_freq_mesh m, mpi::communicator c, int root) {
+   auto m2 = matsubara_freq_mesh{m.domain(), m.size(), m.positive_only()};
+   std::tie(m2._first_index_window, m2._last_index_window) = mpi::slice_range(m2._first_index, m2._last_index, c.size(), c.rank());
+   return m2;
+  }
+
+  friend matsubara_freq_mesh mpi_gather(matsubara_freq_mesh m, mpi::communicator c, int root) {
+   return matsubara_freq_mesh{m.domain(), m.size(), m.positive_only()};
+  }
 
   /// The corresponding domain
   domain_t const &domain() const { return _dom; }
@@ -60,20 +81,29 @@ namespace gfs {
    **/
 
   /// last Matsubara index 
-  int last_index() const { return (_positive_only ? _n_pts : (_n_pts - (_dom.statistic == Boson ? 1 : 2))/2);}
+  int last_index() const { return _last_index;}
 
   /// first Matsubara index
-  int first_index() const { return -(_positive_only ? 0 : last_index() + (_dom.statistic == Fermion)); }
+  int first_index() const { return _first_index;}
+
+  /// last Matsubara index of the window 
+  int last_index_window() const { return _last_index_window;}
+
+  /// first Matsubara index of the window
+  int first_index_window() const { return _first_index_window;}
 
   /// Size (linear) of the mesh
-  long size() const { return _n_pts;}
+  //long size() const { return _n_pts;}
+
+  /// Size (linear) of the mesh of the window
+  long size() const { return _last_index_window - _first_index_window + 1; }
 
   /// From an index of a point in the mesh, returns the corresponding point in the domain
   domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind + (_dom.statistic == Fermion)) / _dom.beta; }
 
   /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-  long index_to_linear(index_t ind) const { return ind - first_index(); }
-  index_t linear_to_index(long lind) const { return lind + first_index(); }
+  long index_to_linear(index_t ind) const { return ind - first_index_window(); }
+  index_t linear_to_index(long lind) const { return lind + first_index_window(); }
 
   /// Is the mesh only for positive omega_n (G(tau) real))
   bool positive_only() const { return _positive_only;}
@@ -86,20 +116,20 @@ namespace gfs {
   struct mesh_point_t : tag::mesh_point, matsubara_freq {
    mesh_point_t() = default;
    mesh_point_t(matsubara_freq_mesh const &mesh, index_t const &index_)
-      : matsubara_freq(index_, mesh.domain().beta, mesh.domain().statistic),
-        first_index(mesh.first_index()),
-        index_stop(mesh.first_index() + mesh.size() - 1) {}
-   mesh_point_t(matsubara_freq_mesh const &mesh) : mesh_point_t(mesh, mesh.first_index()) {}
+      : matsubara_freq(index_, mesh.domain().beta, mesh.domain().statistic)
+      , first_index_window(mesh.first_index_window())
+      , last_index_window(mesh.last_index_window()) {}
+   mesh_point_t(matsubara_freq_mesh const &mesh) : mesh_point_t(mesh, mesh.first_index_window()) {}
    void advance() { ++n; }
-   long linear_index() const { return n - first_index; }
+   long linear_index() const { return n - first_index_window; }
    long index() const { return n; }
-   bool at_end() const { return (n == index_stop + 1); } // at_end means " one after the last one", as in STL
-   void reset() { n = first_index; }
+   bool at_end() const { return (n == last_index_window + 1); } // at_end means " one after the last one", as in STL
+   void reset() { n = first_index_window; }
 
    private:
-   index_t first_index, index_stop;
+   index_t first_index_window, last_index_window;
   };
-
+ 
   /// Accessing a point of the mesh from its index
   mesh_point_t operator[](index_t i) const {
    return {*this, i};
@@ -164,6 +194,7 @@ namespace gfs {
   domain_t _dom;
   int _n_pts;
   bool _positive_only;
+  long _first_index, _last_index, _first_index_window, _last_index_window;
  };
 
  //-------------------------------------------------------

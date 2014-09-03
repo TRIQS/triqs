@@ -26,6 +26,7 @@
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/c14.hpp>
 #include <triqs/arrays/h5.hpp>
+#include <triqs/mpi/gf.hpp>
 #include <vector>
 #include "./tools.hpp"
 #include "./data_proxies.hpp"
@@ -424,6 +425,9 @@ namespace gfs {
      : B() {
    *this = x;
   }
+ 
+  // mpi lazy 
+  template <typename Tag> gf(mpi::mpi_lazy<Tag, gf> x) : gf() { operator=(x); }
 
   gf(typename B::mesh_t m, typename B::data_t dat, typename B::singularity_view_t const &si, typename B::symmetry_t const &s,
      typename B::indices_t const &ind, std::string name = "")
@@ -451,6 +455,13 @@ namespace gfs {
   gf &operator=(gf &&rhs) noexcept {
    swap(*this, rhs);
    return *this;
+  }
+
+  friend struct mpi::mpi_impl_triqs_gfs<gf>; //allowed to modify mesh
+
+  // 
+  template <typename Tag> void operator=(mpi::mpi_lazy<Tag, gf> x) {
+   mpi::mpi_impl_triqs_gfs<gf>::complete_operation(*this, x);
   }
 
   template <typename RHS> void operator=(RHS &&rhs) {
@@ -841,6 +852,17 @@ namespace gfs {
   };
  } // gfs_implementation
 }
+
+namespace mpi { 
+
+  template <typename Variable, typename Target, typename Opt>
+ struct mpi_impl<gfs::gf<Variable, Target, Opt>, void> : mpi_impl_triqs_gfs<gfs::gf<Variable, Target, Opt>> {};
+
+ template <typename Variable, typename Target, typename Opt, bool IsConst>
+ struct mpi_impl<gfs::gf_view<Variable, Target, Opt, IsConst>, void> : mpi_impl_triqs_gfs<gfs::gf_view<Variable, Target, Opt, IsConst>> {};
+
+}
+
 }
 
 // same as for arrays : views cannot be swapped by the std::swap. Delete it

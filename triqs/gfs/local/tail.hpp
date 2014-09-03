@@ -18,11 +18,12 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_TAIL_H
-#define TRIQS_GF_LOCAL_TAIL_H
+#pragma once
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/algorithms.hpp>
 #include <triqs/gfs/tools.hpp>
+#include <triqs/mpi/boost.hpp>
+#include <boost/serialization/complex.hpp>
 
 namespace triqs { namespace gfs { namespace local {
 
@@ -50,6 +51,7 @@ namespace triqs { namespace gfs { namespace local {
   /// A common implementation class. Idiom: ValueView
   template<bool IsView> class tail_impl  {
     public:
+      TRIQS_MPI_IMPLEMENTED_VIA_BOOST;
       typedef tail_view view_type;
       typedef tail      regular_type;
 
@@ -171,8 +173,9 @@ namespace triqs { namespace gfs { namespace local {
         }
 
       friend std::ostream & operator << (std::ostream & out, tail_impl const & x) {
+        if (x.data().is_empty()) return out << "empty tail"<<std::endl;
         out <<"tail/tail_view: min/smallest/max = "<< x.order_min() << " " << x.smallest_nonzero() << " "<< x.order_max();
-        for (long u = x.order_min(); u <= x.order_max(); ++u) out <<"\n ...  Order "<<u << " = " << x(u);
+	for (long u = x.order_min(); u <= x.order_max(); ++u) out <<"\n ...  Order "<<u << " = " << x(u);
         return out;
       }
 
@@ -283,7 +286,7 @@ namespace triqs { namespace gfs { namespace local {
   inline tail transpose(tail_view t) { return {transposed_view(t.data(),0,2,1), transposed_view(t.mask_view(),1,0),t.order_min()};}
 
   /// Slice in orbital space
-  //template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) {
+  //template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) 
   inline tail_view slice_target(tail_view t, tqa::range R1, tqa::range R2) {
     return tail_view(t.data()(tqa::range(),R1,R2), t.mask_view()(R1,R2), t.order_min());
   }
@@ -407,7 +410,5 @@ namespace triqs { namespace gfs { namespace local {
 
 #undef DEFINE_OPERATOR
 
-  
-
-}}}
-#endif
+}}
+}

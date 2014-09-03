@@ -23,24 +23,29 @@
 #include <triqs/utility/tuple_tools.hpp>
 
 #define TRIQS_MPI_IMPLEMENTED_AS_TUPLEVIEW using triqs_mpi_as_tuple = void;
+#define TRIQS_MPI_IMPLEMENTED_AS_TUPLEVIEW_NO_LAZY using triqs_mpi_as_tuple_no_lazy = void;
 namespace triqs {
 namespace mpi {
-
- template <typename Tag, typename T> struct mpi_lazy {
-  T const &ref;
-  int root;
-  communicator c;
- };
 
  /** ------------------------------------------------------------
   *  Type which are recursively treated by reducing them to a tuple
   *  of smaller objects.
   *  ----------------------------------------------------------  **/
- template <typename T> struct mpi_impl_tuple {
+ template <typename T, bool with_lazy> struct mpi_impl_tuple {
 
   mpi_impl_tuple() = default;
-  template <typename Tag> static mpi_lazy<Tag, T> invoke(Tag, communicator c, T const &a, int root) {
+
+  /// invoke
+  template <typename Tag> static mpi_lazy<Tag, T> invoke_impl(std::true_type, Tag, communicator c, T const &a, int root) {
    return {a, root, c};
+  }
+  
+  template <typename Tag> static T &invoke_impl(std::false_type, Tag, communicator c, T const &a, int root) {
+   return complete_operation(a, {a, root, c});
+  }
+
+  template <typename Tag> static mpi_lazy<Tag, T> invoke(Tag, communicator c, T const &a, int root) {
+   return invoke_impl(std::integral_constant<bool, with_lazy>(), Tag(), c, a, root);
   }
 
 #ifdef __cpp_generic_lambdas
@@ -57,6 +62,7 @@ namespace mpi {
    triqs::tuple::for_each_zip(l, view_as_tuple(target), view_as_tuple(laz.ref));
    return target;
   }
+
 #else
 
   struct aux1 {
@@ -89,15 +95,17 @@ namespace mpi {
    }
   };
 
-  template <typename Tag> static void complete_operation(T &target, mpi_lazy<Tag, T> laz) {
+  template <typename Tag> static T& complete_operation(T &target, mpi_lazy<Tag, T> laz) {
    auto l = aux3<Tag>{laz};
    triqs::tuple::for_each_zip(l, view_as_tuple(target), view_as_tuple(laz.ref));
+   return target;
   }
 #endif
  };
 
  // If type T has a mpi_implementation nested struct, then it is mpi_impl<T>.
- template <typename T> struct mpi_impl<T, typename T::triqs_mpi_as_tuple> : mpi_impl_tuple<T> {};
+ template <typename T> struct mpi_impl<T, typename T::triqs_mpi_as_tuple> : mpi_impl_tuple<T, true> {};
+ template <typename T> struct mpi_impl<T, typename T::triqs_mpi_as_tuple_no_lazy> : mpi_impl_tuple<T, false> {};
 }
 } // namespace
 

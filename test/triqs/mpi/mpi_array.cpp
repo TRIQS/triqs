@@ -45,7 +45,10 @@ int main(int argc, char* argv[]) {
 
  A(i_, j_) << i_ + 10 * j_;
 
+ //std::cerr << "B0 "<< B <<std::endl;
  B = mpi::scatter(A, world);
+ std::cerr << "B "<< B <<std::endl;
+
  ARR C = mpi::scatter(A, world);
 
  std::ofstream out("node" + std::to_string(world.rank()));
@@ -66,5 +69,14 @@ int main(int argc, char* argv[]) {
 
  AA = mpi::allgather(B, world);
  out << " AA = " << AA << std::endl;
+
+ ARR r1 = mpi::reduce(A, world);
+ out <<" Reduce "<< std::endl;
+ out << " r1 = " << r1 << std::endl;
+
+ ARR r2 = mpi::allreduce(A, world);
+ out <<" AllReduce "<< std::endl;
+ out << " r2 = " << r2 << std::endl;
+
 }
 

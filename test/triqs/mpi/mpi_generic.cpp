@@ -49,7 +49,7 @@ struct my_object {
 
  // assigment is almost done already...
  template <typename Tag> my_object &operator=(mpi_lazy<Tag, my_object> x) {
-  return mpi_impl_tuple<my_object>::complete_operation(*this, x);
+  return mpi_impl<my_object>::complete_operation(*this, x);
  }
 };
 
