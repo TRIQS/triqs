@@ -59,7 +59,7 @@ namespace lattice {
   array<double, 2> eval(norb, n_pts);
   k_t dk = (K2 - K1) / double(n_pts), k = K1;
   for (int i = 0; i < n_pts; ++i, k += dk) {
-   eval(range(), i) = linalg::eigenvalues(TK(k(range(0, ndim)))(), false);
+   eval(range(), i) = linalg::eigenvalues(TK(k(range(0, ndim)))());
   }
   return eval;
  }
@@ -86,7 +86,7 @@ namespace lattice {
   grid_generator grid(ndim, n_pts);
   array<double, 2> eval(norb, grid.size());
   for (; grid; ++grid) {
-   eval(range(), grid.index()) = linalg::eigenvalues(TK((*grid)(range(0, ndim)))(), false);
+   eval(range(), grid.index()) = linalg::eigenvalues(TK((*grid)(range(0, ndim)))());
   }
   return eval;
  }

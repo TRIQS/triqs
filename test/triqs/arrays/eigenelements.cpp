@@ -19,57 +19,109 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/vector.hpp>
-#include <triqs/arrays/matrix.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
+#include <triqs/utility/complex_ops.hpp>
 
 #include <iostream>
 
 using namespace triqs::arrays;
 using namespace triqs::arrays::linalg;
+using dcomplex = std::complex<double>;
+
+template <typename T> void check_eig(matrix<T> M, matrix<T> vectors, array<double, 1> values) {
+  auto _ = range();
+ for (auto i : range(0,first_dim(M)))  {
+  std::cerr << "check "<< i << std::endl;
+  std::cerr  << (M  -values(i))* vectors(i, _)<<std::endl;
+  assert_all_close(M * vectors(i, _), values(i) * vectors(i, _), 1.e-14);
+ }}
+
+template<typename M> void test(M A) { 
+  auto w = eigenelements(make_clone(A));
+  std::cerr << "A = " << A << std::endl;
+  std::cerr << " values = " <<w.first << std::endl;
+  std::cerr << " vectors = " << w.second << std::endl;
+  check_eig (A, w.second, w.first);
+}
 
 int main(int argc, char **argv) {
 
- 
+ {
+  matrix<double> A(3, 3);
 
- matrix<double> A(3,3);
+  for (int i = 0; i < 3; ++i)
+   for (int j = 0; j <= i; ++j) {
+    A(i, j) = (i > j ? i + 2 * j : i - j);
+    A(j, i) = A(i, j);
+   }
+  std::cerr << "A = " << A << std::endl;
+  
+  auto B = A;
+  auto w = eigenelements(B);
+  std::cout << "A = " << B << std::endl;
+  std::cout << " vectors = " << w.first << std::endl;
+  std::cout << " values = " << w.second << std::endl;
+  check_eig (A, w.second, w.first);
+ }
 
- for (int i =0; i<3; ++i)
-  for (int j=0; j<=i; ++j)
-  { A(i,j) = (i>j ? i+2*j : i-j); A(j,i) = A(i,j);}
+ {
+  matrix<double> A(3, 3);
+  A() = 0;
+  A(0, 1) = 1;
+  A(1, 0) = 1;
+  A(2, 2) = 8;
+  A(0, 2) = 2;
+  A(2, 0) = 2;
 
- std::cerr<<"A = "<<A<<std::endl;
- eigenelements_worker< matrix_view <double>, true> w (A());
- w.invoke();
- std::cout<<"A = "<<A<<std::endl;
- std::cout<<" vectors = "<< w.values()<<std::endl;
- std::cout<<" values = "<< w.vectors()<<std::endl;
+  auto B = A;
+  std::cout << "A = " << A << std::endl;
+  auto w =  eigenelements(B);
+  std::cout << " values = " <<w.first << std::endl;
+  std::cout << " vectors = " << w.second << std::endl;
+  check_eig (A, w.second, w.first);
+ }
 
- A() =0;
- A(0,1) = 1;
- A(1,0) = 1;
- A(2,2) = 8;
- A(0,2) = 2;
- A(2,0) = 2;
+ {
+  matrix<double> A(3, 3);
 
- std::cout<<"A = "<<A<<std::endl;
- std::cout<<" values = "<< eigenelements(A(),true).first<<std::endl;
- std::cout<<" vectors = "<< eigenelements(A(),true).second<<std::endl;
+  A() = 0;
+  A(0, 1) = 1;
+  A(1, 0) = 1;
+  A(2, 2) = 8;
 
- A() =0;
- A(0,1) = 1;
- A(1,0) = 1;
- A(2,2) = 8;
+  auto B = A;
+  std::cout << "A = " << A << std::endl;
+  auto w =  eigenelements(B);
+  std::cout << " vectors = " << w.second << std::endl;
+  std::cout << " values = " <<w.first << std::endl;
+  std::cout << "A = " << A << std::endl;
+  check_eig (A, w.second, w.first);
+ }
 
- std::cout<<"A = "<<A<<std::endl;
- std::cout<<" vectors = "<< eigenelements(A(),true).second<<std::endl;
- std::cout<<" values = "<< eigenelements(A(),true).first<<std::endl;
- std::cout<<"A = "<<A<<std::endl;
+ { // the complex case
+
+  matrix<dcomplex> M(2, 2);
+
+  M(0, 0) = 1;
+  M(0, 1) = 1.0_j;
+  M(1, 0) = -1.0_j;
+  M(1, 1) = 2;
+
+  test(M);
+ }
+
+{ // the complex case
+
+  matrix<dcomplex> M(2, 2, FORTRAN_LAYOUT);
+
+  M(0, 0) = 1;
+  M(0, 1) = 1.0_j;
+  M(1, 0) = -1.0_j;
+  M(1, 1) = 2;
+
+  test(M);
+ }
 
  return 0;
-
 }
-
-
 

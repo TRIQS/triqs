@@ -43,13 +43,12 @@ int main(int argc, char **argv) {
  for (size_t i=0; i<4; ++i) { A(i,i+1) = DD(i); A(i+1,i) = DD(i);} 
 
  std::cerr<<"A = "<<A<<std::endl;
- linalg::eigenelements_worker< matrix_view <double>, true> w2 (A());
- w2.invoke();
- std::cerr<<" check values = "<< w2.values()<<std::endl;
- std::cerr<<" check vectors = "<< w2.vectors()<<std::endl;
+ auto eig = linalg::eigenelements(A());
+ std::cerr<<" check values = "<< eig.first<<std::endl;
+ std::cerr<<" check vectors = "<< eig.second<<std::endl;
 
- assert_all_close(w.vectors()(R,R), w2.vectors(), 1.e-10);
- assert_all_close(array_view<double,1>(w.values()), w2.values(), 1.e-10);
+ assert_all_close(w.vectors()(R,R), eig.second, 1.e-10);
+ assert_all_close(array_view<double,1>(w.values()), eig.first, 1.e-10);
 
  return 0;
 }
