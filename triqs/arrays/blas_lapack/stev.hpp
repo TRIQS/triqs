@@ -75,7 +75,7 @@ namespace triqs { namespace arrays { namespace blas {
     U(0) = 1.0;
     for(size_t n=0; n<s-1; ++n){
      double abs_e = abs(e(n));
-     U(n+1) = U(n)*(abs_e<1e-10 ? 1.0 : conj(e(n))/abs_e);
+     U(n+1) = U(n)*(std::isnormal(abs_e) ? conj(e(n))/abs_e : 1.0);
      E(n) = (e(n)*conj(U(n))*U(n+1)).real();
     }
     int info;
@@ -83,9 +83,7 @@ namespace triqs { namespace arrays { namespace blas {
     if (info !=0) TRIQS_RUNTIME_ERROR << " Error in tridiagonal matrix diagonalization "<< info;
 
     // Back-transform the eigenvectors
-    for(size_t n1=0; n1<s; ++n1)
-     for(size_t n2=0; n2<s; ++n2)
-      V(n1,n2) = Z(n1,n2)*conj(U(n1))*U(n2);
+    assign_foreach(V, [this](size_t i, size_t j) { return Z(i,j)*conj(U(i))*U(j); });
    }
   arrays::vector_view<double> values() const { return D(range(0,s));}
   matrix_view<std::complex<double>> vectors() const { return V(range(0,s),range(0,s));}
