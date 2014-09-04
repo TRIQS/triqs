@@ -29,19 +29,20 @@ using namespace triqs::arrays::linalg;
 using dcomplex = std::complex<double>;
 
 template <typename T> void check_eig(matrix<T> M, matrix<T> vectors, array<double, 1> values) {
-  auto _ = range();
- for (auto i : range(0,first_dim(M)))  {
-  std::cerr << "check "<< i << std::endl;
-  std::cerr  << (M  -values(i))* vectors(i, _)<<std::endl;
+ auto _ = range();
+ for (auto i : range(0, first_dim(M))) {
+  std::cerr << "check " << i << std::endl;
+  std::cerr << (M - values(i)) * vectors(i, _) << std::endl;
   assert_all_close(M * vectors(i, _), values(i) * vectors(i, _), 1.e-14);
- }}
+ }
+}
 
-template<typename M> void test(M A) { 
-  auto w = eigenelements(make_clone(A));
-  std::cerr << "A = " << A << std::endl;
-  std::cerr << " values = " <<w.first << std::endl;
-  std::cerr << " vectors = " << w.second << std::endl;
-  check_eig (A, w.second, w.first);
+template <typename M> void test(M A) {
+ auto w = eigenelements(make_clone(A));
+ std::cerr << "A = " << A << std::endl;
+ std::cerr << " values = " << w.first << std::endl;
+ std::cerr << " vectors = " << w.second << std::endl;
+ check_eig(A, w.second, w.first);
 }
 
 int main(int argc, char **argv) {
@@ -54,18 +55,8 @@ int main(int argc, char **argv) {
     A(i, j) = (i > j ? i + 2 * j : i - j);
     A(j, i) = A(i, j);
    }
-  std::cerr << "A = " << A << std::endl;
-  
-  auto B = A;
-  auto w = eigenelements(B);
-  std::cout << "A = " << B << std::endl;
-  std::cout << " vectors = " << w.first << std::endl;
-  std::cout << " values = " << w.second << std::endl;
-  check_eig (A, w.second, w.first);
- }
+  test(A);
 
- {
-  matrix<double> A(3, 3);
   A() = 0;
   A(0, 1) = 1;
   A(1, 0) = 1;
@@ -73,31 +64,15 @@ int main(int argc, char **argv) {
   A(0, 2) = 2;
   A(2, 0) = 2;
 
-  auto B = A;
-  std::cout << "A = " << A << std::endl;
-  auto w =  eigenelements(B);
-  std::cout << " values = " <<w.first << std::endl;
-  std::cout << " vectors = " << w.second << std::endl;
-  check_eig (A, w.second, w.first);
- }
-
- {
-  matrix<double> A(3, 3);
+  test(A);
 
   A() = 0;
   A(0, 1) = 1;
   A(1, 0) = 1;
   A(2, 2) = 8;
 
-  auto B = A;
-  std::cout << "A = " << A << std::endl;
-  auto w =  eigenelements(B);
-  std::cout << " vectors = " << w.second << std::endl;
-  std::cout << " values = " <<w.first << std::endl;
-  std::cout << "A = " << A << std::endl;
-  check_eig (A, w.second, w.first);
+  test(A);
  }
-
  { // the complex case
 
   matrix<dcomplex> M(2, 2);
@@ -110,7 +85,7 @@ int main(int argc, char **argv) {
   test(M);
  }
 
-{ // the complex case
+ { // the complex case
 
   matrix<dcomplex> M(2, 2, FORTRAN_LAYOUT);
 
