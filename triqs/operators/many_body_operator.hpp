@@ -150,7 +150,7 @@ namespace utility {
   //friend many_body_operator operator/ (many_body_operator const & op, scalar_t alpha) { return op/alpha; }
 
   many_body_operator& operator*=(scalar_t alpha) {
-   if (numeric_ops<scalar_t>::is_zero(alpha)) {
+   if (triqs::utility::is_zero(alpha)) {
     monomials.clear();
    } else {
     for (auto& m : monomials) m.second *= alpha;
@@ -222,7 +222,7 @@ namespace utility {
   // dagger
   friend many_body_operator dagger(many_body_operator const& op) {
    many_body_operator res;
-   for (auto const& x : op) res.monomials.insert({_dagger(x.monomial), numeric_ops<scalar_t>::conj(x.coef)});
+   for (auto const& x : op) res.monomials.insert({_dagger(x.monomial), triqs::utility::_conj(x.coef)});
    return res;
   }
 
@@ -277,7 +277,7 @@ namespace utility {
 
   // Erase a monomial with a close-to-zero coefficient.
   static void erase_zero_monomial(monomials_map_t& m, typename monomials_map_t::iterator& it) {
-   if (numeric_ops<scalar_t>::is_zero(it->second)) m.erase(it);
+   if (triqs::utility::is_zero(it->second)) m.erase(it);
   }
 
   struct print_visitor : public boost::static_visitor<> {
