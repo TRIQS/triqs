@@ -67,19 +67,23 @@ namespace triqs { namespace arrays { namespace blas {
   tridiag_worker (size_t n){ s=0; resize(n);}
   void resize(size_t n) { if (s<n) {D.resize(n); E.resize(n); W.resize(2*n+1); Z.resize(n,n); U.resize(n); V.resize(n,n);} s = n; }
   template<typename VTd, typename VTe>
-   void operator()(VTd const & d, VTe const & e /* superdiagonal */) {
-    if (e.size() != d.size() -1) TRIQS_RUNTIME_ERROR << " Error in tridiagonal matrix diagonalization size mismatch";
-    resize(d.size());
-    D(range(0,s)) = d;
-    // construct transformed off-diagonal elements
-    U(0) = 1.0;
-    for(size_t n=0; n<s-1; ++n){
-     double abs_e = abs(e(n));
-     U(n+1) = U(n)*(std::isnormal(abs_e) ? conj(e(n))/abs_e : 1.0);
-     E(n) = (e(n)*conj(U(n))*U(n+1)).real();
+   void operator()(VTd const & diag, VTe const & supdiag /* superdiagonal */) {
+    if (supdiag.size() != diag.size() -1) TRIQS_RUNTIME_ERROR << " Error in tridiagonal matrix diagonalization size mismatch";
+    resize(diag.size());
+    D(range(0,s)) = diag;
+    // construct transformed off-diagonal elements;
+    auto U_it = std::begin(U);
+    auto E_it = std::begin(E);
+    *U_it = 1.0;
+    for(auto e : supdiag){
+      auto U_old = *U_it;
+      ++U_it;
+      *U_it = U_old*(std::isnormal(abs(e)) ? conj(e)/abs(e) : 1.0);
+      *E_it = std::real(e*conj(U_old)*(*U_it));
+      ++E_it;
     }
     int info;
-    f77::stev ('V',d.size(),D.data_start(),E.data_start(), Z.data_start(), Z.shape(0),W.data_start(), info);
+    f77::stev ('V',diag.size(),D.data_start(),E.data_start(), Z.data_start(), Z.shape(0),W.data_start(), info);
     if (info !=0) TRIQS_RUNTIME_ERROR << " Error in tridiagonal matrix diagonalization "<< info;
 
     // Back-transform the eigenvectors
