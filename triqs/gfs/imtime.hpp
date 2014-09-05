@@ -37,18 +37,18 @@ namespace gfs {
   // using matsubara_time_mesh::matsubara_time_mesh;
  };
 
+ // singularity
+ template <> struct gf_default_singularity<imtime, matrix_valued> {
+  using type = local::tail;
+ };
+ template <> struct gf_default_singularity<imtime, scalar_valued> {
+  using type = local::tail;
+ };
+
  namespace gfs_implementation {
 
-  // singularity. If no_tail is given, then it is the default (nothing)
-  template <> struct singularity<imtime, matrix_valued, void> {
-   using type = local::tail;
-  };
-  template <> struct singularity<imtime, scalar_valued, void> {
-   using type = local::tail;
-  };
-
   // h5 name
-  template <typename Opt> struct h5_name<imtime, matrix_valued, Opt> {
+  template <typename Singularity, typename Opt> struct h5_name<imtime, matrix_valued, Singularity, Opt> {
    static std::string invoke() { return "ImTime"; }
   };
 
@@ -59,7 +59,7 @@ namespace gfs {
 
   /// ---------------------------  closest mesh point on the grid ---------------------------------
 
-  template <typename Opt, typename Target> struct get_closest_point<imtime, Target, Opt> {
+  template <typename Singularity, typename Opt, typename Target> struct get_closest_point<imtime, Target, Singularity, Opt> {
    // index_t is int
    template <typename G, typename T> static int invoke(G const *g, closest_pt_wrap<T> const &p) {
     double x = (g->mesh().kind() == half_bins ? double(p.value) : double(p.value) + 0.5 * g->mesh().delta());
@@ -98,7 +98,8 @@ namespace gfs {
   };
 
   // now evaluator
-  template <typename Opt, typename Target> struct evaluator<imtime, Target, Opt> : evaluator_one_var<imtime> {};
+  template <typename Singularity, typename Opt, typename Target>
+  struct evaluator<imtime, Target, Singularity, Opt> : evaluator_one_var<imtime> {};
 
  } // gfs_implementation.
 }

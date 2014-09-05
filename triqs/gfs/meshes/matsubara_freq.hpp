@@ -21,6 +21,7 @@
 #pragma once
 #include "./mesh_tools.hpp"
 #include "../domains/matsubara.hpp"
+#include <triqs/mpi.hpp>
 
 namespace triqs {
 namespace gfs {
@@ -31,6 +32,7 @@ namespace gfs {
   using domain_t = matsubara_domain<true>;
   ///
   using index_t = long;
+  using linear_index_t = long;
   ///
   using domain_pt_t = typename domain_t::point_t;
 
@@ -97,6 +99,11 @@ namespace gfs {
 
   /// Size (linear) of the mesh of the window
   long size() const { return _last_index_window - _first_index_window + 1; }
+
+  ///
+  utility::mini_vector<size_t, 1> size_of_components() const {
+   return {size_t(size())};
+  }
 
   /// From an index of a point in the mesh, returns the corresponding point in the domain
   domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind + (_dom.statistic == Fermion)) / _dom.beta; }

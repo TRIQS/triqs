@@ -35,18 +35,18 @@ namespace gfs {
   //using segment_mesh::segment_mesh;
  };
 
+ // singularity
+ template <> struct gf_default_singularity<retime, matrix_valued> {
+  using type = local::tail;
+ };
+ template <> struct gf_default_singularity<retime, scalar_valued> {
+  using type = local::tail;
+ };
+
  namespace gfs_implementation {
 
-  // singularity
-  template <typename Opt> struct singularity<retime, matrix_valued, Opt> {
-   using type = local::tail;
-  };
-  template <typename Opt> struct singularity<retime, scalar_valued, Opt> {
-   using type = local::tail;
-  };
-
   // h5 name
-  template <typename Opt> struct h5_name<retime, matrix_valued, Opt> {
+  template <typename Singularity, typename Opt> struct h5_name<retime, matrix_valued, Singularity, Opt> {
    static std::string invoke() { return "ReTime"; }
   };
 
@@ -55,7 +55,7 @@ namespace gfs {
   struct evaluator_fnt_on_mesh<retime> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh,
                                                                              evaluator_grid_linear_interpolation);
 
-  template <typename Opt, typename Target> struct evaluator<retime, Target, Opt> : evaluator_one_var<retime> {};
+  template <typename Singularity, typename Opt, typename Target> struct evaluator<retime, Target, Singularity, Opt> : evaluator_one_var<retime> {};
 
   /// ---------------------------  data access  ---------------------------------
   template <typename Opt> struct data_proxy<retime, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};

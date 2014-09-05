@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_FOURIER_MATSU_H
-#define TRIQS_GF_LOCAL_FOURIER_MATSU_H
+#pragma once
 
 #include "fourier_base.hpp"
 #include <triqs/gfs/imfreq.hpp>
@@ -28,12 +27,12 @@
 namespace triqs {
 namespace gfs {
 
- template <typename Target, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, imtime, Target, Opt> fourier(gf_impl<imtime, Target, Opt, V, C> const& g) {
+ template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf_keeper<tags::fourier, imtime, Target, Singularity, Opt> fourier(gf_impl<imtime, Target, Singularity, Opt, V, C> const& g) {
   return {g};
  }
- template <typename Target, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, imfreq, Target, Opt> inverse_fourier(gf_impl<imfreq, Target, Opt, V, C> const& g) {
+ template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf_keeper<tags::fourier, imfreq, Target, Singularity, Opt> inverse_fourier(gf_impl<imfreq, Target, Singularity, Opt, V, C> const& g) {
   return {g};
  }
 
@@ -49,30 +48,30 @@ namespace gfs {
  void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued, no_tail> g,
                                       gf_keeper<tags::fourier, imtime, matrix_valued, no_tail> const& L);
 
- template <typename Target, typename Opt, bool V, bool C>
- gf<imfreq, Target, Opt> make_gf_from_fourier(gf_impl<imtime, Target, Opt, V, C> const& gt, int n_iw) {
+ template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf<imfreq, Target, Singularity, Opt> make_gf_from_fourier(gf_impl<imtime, Target, Singularity, Opt, V, C> const& gt, int n_iw) {
   auto m = gf_mesh<imfreq, Opt>{gt.mesh().domain(), n_iw};
-  auto gw = gf<imfreq, Target, Opt>{m, get_target_shape(gt)};
+  auto gw = gf<imfreq, Target, Singularity, Opt>{m, get_target_shape(gt)};
   gw() = fourier(gt);
   return gw;
  }
 
- template <typename Target, typename Opt, bool V, bool C>
- gf<imfreq, Target, Opt> make_gf_from_fourier(gf_impl<imtime, Target, Opt, V, C> const& gt) {
+ template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf<imfreq, Target, Singularity, Opt> make_gf_from_fourier(gf_impl<imtime, Target, Singularity, Opt, V, C> const& gt) {
   return make_gf_from_fourier(gt, (gt.mesh().size() - (gt.mesh().kind() == full_bins ? 1 : 0)) / 2);
  }
 
- template <typename Target, typename Opt, bool V, bool C>
- gf<imtime, Target, Opt> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Opt, V, C> const& gw, int n_tau,
+ template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf<imtime, Target, Singularity, Opt> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Singularity, Opt, V, C> const& gw, int n_tau,
                                                       mesh_kind mk = full_bins) {
   auto m = gf_mesh<imtime, Opt>{gw.mesh().domain(), n_tau};
-  auto gt = gf<imtime, Target, Opt>{m, get_target_shape(gw)};
+  auto gt = gf<imtime, Target, Singularity, Opt>{m, get_target_shape(gw)};
   gt() = inverse_fourier(gw);
   return gt;
  }
 
- template <typename Target, typename Opt, bool V, bool C>
- gf<imtime, Target, Opt> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Opt, V, C> const& gw, mesh_kind mk = full_bins) {
+ template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf<imtime, Target, Singularity, Opt> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Singularity, Opt, V, C> const& gw, mesh_kind mk = full_bins) {
   return make_gf_from_inverse_fourier(gw, 2 * gw.mesh().size() + (mk == full_bins ? 1 : 0), mk);
  }
 }
@@ -82,5 +81,4 @@ namespace clef {
  TRIQS_CLEF_MAKE_FNT_LAZY(inverse_fourier);
 }
 }
-#endif
 

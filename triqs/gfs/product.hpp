@@ -35,6 +35,7 @@ namespace gfs {
  // use alias
  template <typename... Ms> struct cartesian_product<std::tuple<Ms...>> : cartesian_product<Ms...> {};
 
+ /// TODO : Put inheriting constructor, simpler...
  // the mesh is simply a cartesian product
  template <typename Opt, typename... Ms> struct gf_mesh<cartesian_product<Ms...>, Opt> : mesh_product<gf_mesh<Ms, Opt>...> {
   // using mesh_product< gf_mesh<Ms,Opt> ... >::mesh_product< gf_mesh<Ms,Opt> ... > ;
@@ -45,57 +46,37 @@ namespace gfs {
 
  namespace gfs_implementation {
 
-  /// ---------------------------  hdf5 ---------------------------------
-
-  // h5 name : name1_x_name2_.....
-  template <typename Opt, typename... Ms> struct h5_name<cartesian_product<Ms...>, matrix_valued, Opt> {
-   static std::string invoke() {
-    return triqs::tuple::fold([](std::string a, std::string b) { return a + std::string(b.empty() ? "" : "_x_") + b; },
-                              std::make_tuple(h5_name<Ms, matrix_valued, Opt>::invoke()...), std::string());
-   }
-  };
-  template <typename Opt, int R, typename... Ms>
-  struct h5_name<cartesian_product<Ms...>, tensor_valued<R>, Opt> : h5_name<cartesian_product<Ms...>, matrix_valued, Opt> {};
-
-  // a slight difference with the generic case : reinterpret the data array to avoid flattening the variables
-  template <typename Opt, int R, typename... Ms> struct h5_rw<cartesian_product<Ms...>, tensor_valued<R>, Opt> {
-   using g_t = gf<cartesian_product<Ms...>, tensor_valued<R>, Opt>;
-
-   static void write(h5::group gr, typename g_t::const_view_type g) {
-    h5_write(gr, "data", reinterpret_linear_array(g.mesh(), g().data()));
-    h5_write(gr, "singularity", g._singularity);
-    h5_write(gr, "mesh", g._mesh);
-    h5_write(gr, "symmetry", g._symmetry);
-   }
-
-   template <bool IsView>
-   static void read(h5::group gr, gf_impl<cartesian_product<Ms...>, tensor_valued<R>, Opt, IsView, false> &g) {
-    using G_t = gf_impl<cartesian_product<Ms...>, tensor_valued<R>, Opt, IsView, false>;
-    h5_read(gr, "mesh", g._mesh);
-    auto arr = arrays::array<typename G_t::data_t::value_type, sizeof...(Ms) + R>{};
-    h5_read(gr, "data", arr);
-    auto sh = arr.shape();
-    arrays::mini_vector<size_t, R + 1> sh2;
-    sh2[0] = g._mesh.size();
-    for (int u = 1; u < R + 1; ++u) sh2[u] = sh[sizeof...(Ms) - 1 + u];
-    g._data = arrays::array<typename G_t::data_t::value_type, R + 1>{sh2, std::move(arr.storage())};
-    h5_read(gr, "singularity", g._singularity);
-    h5_read(gr, "symmetry", g._symmetry);
-   }
-  };
-
   /// ---------------------------  data access  ---------------------------------
 
   template <typename Opt, typename... Ms>
-  struct data_proxy<cartesian_product<Ms...>, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
+  struct data_proxy<cartesian_product<Ms...>, scalar_valued, Opt> : data_proxy_array_multivar<std::complex<double>,
+                                                                                              sizeof...(Ms)> {};
+
   template <typename Opt, typename... Ms>
-  struct data_proxy<cartesian_product<Ms...>, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
+  struct data_proxy<cartesian_product<Ms...>, matrix_valued, Opt> : data_proxy_array_multivar_matrix_valued<std::complex<double>,
+                                                                                                            2 + sizeof...(Ms)> {};
+
   template <int R, typename Opt, typename... Ms>
-  struct data_proxy<cartesian_product<Ms...>, tensor_valued<R>, Opt> : data_proxy_array<std::complex<double>, R + 1> {};
- 
+  struct data_proxy<cartesian_product<Ms...>, tensor_valued<R>, Opt> : data_proxy_array_multivar<std::complex<double>,
+                                                                                                 R + sizeof...(Ms)> {};
+
+  // special case ? Or make a specific container....
   template <typename Opt, typename M0>
-  struct data_proxy<cartesian_product<M0,imtime>, matrix_valued, Opt> : data_proxy_array<double, 3> {};
-  
+  struct data_proxy<cartesian_product<M0, imtime>, matrix_valued, Opt> : data_proxy_array_multivar_matrix_valued<double, 2 + 2> {
+  };
+
+  /// ---------------------------  hdf5 ---------------------------------
+
+  // h5 name : name1_x_name2_.....
+  template <typename Opt, typename... Ms> struct h5_name<cartesian_product<Ms...>, matrix_valued, nothing, Opt> {
+   static std::string invoke() {
+    return triqs::tuple::fold([](std::string a, std::string b) { return a + std::string(b.empty() ? "" : "_x_") + b; },
+                              std::make_tuple(h5_name<Ms, matrix_valued, nothing, Opt>::invoke()...), std::string());
+   }
+  };
+  template <typename Opt, int R, typename... Ms>
+  struct h5_name<cartesian_product<Ms...>, tensor_valued<R>, nothing, Opt> : h5_name<cartesian_product<Ms...>, matrix_valued, nothing, Opt> {};
+
   /// ---------------------------  evaluator ---------------------------------
 
   /**
@@ -146,7 +127,7 @@ namespace gfs {
   };
 
   // now the multi d evaluator itself.
-  template <typename Target, typename Opt, typename... Ms> struct evaluator<cartesian_product<Ms...>, Target, Opt> {
+  template <typename Target, typename Opt, typename... Ms> struct evaluator<cartesian_product<Ms...>, Target, nothing, Opt> {
    static constexpr int arity = sizeof...(Ms);
    mutable std::tuple<evaluator_fnt_on_mesh<Ms>...> evals;
 

@@ -68,6 +68,25 @@ namespace std {
 
 namespace triqs { namespace tuple {
 
+ /// Repeat an element
+ template<typename T, int R> struct make_tuple_repeat_impl;
+ 
+ template <typename T> struct make_tuple_repeat_impl<T,1> {
+  static std::tuple<T> invoke(T&&x) { return {x};}
+ };
+ template <typename T> struct make_tuple_repeat_impl<T,2> {
+  static std::tuple<T,T> invoke(T&&x) { return {x,x};}
+ };
+ template <typename T> struct make_tuple_repeat_impl<T,3> {
+  static std::tuple<T,T,T> invoke(T&&x) { return {x,x,x};}
+ };
+
+ template <typename T> struct make_tuple_repeat_impl<T, 4> {
+  static std::tuple<T,T,T,T> invoke(T &&x) { return {x, x, x, x}; }
+ };
+
+ template <int R, typename T> auto make_tuple_repeat(T &&x) { return make_tuple_repeat_impl<T, R>::invoke(std::forward<T>(x)); }
+
  /// _get_seq<T>() : from a tuple T, return the index sequence of the tuple length
  template <typename T> std14::make_index_sequence<std::tuple_size<std14::decay_t<T>>::value> _get_seq() {
   return {};
@@ -119,6 +138,18 @@ namespace triqs { namespace tuple {
 
  template <typename C, typename T>
  AUTO_DECL apply_construct(T &&t) RETURN(apply_construct_impl<C>(std::forward<T>(t), _get_seq<T>()));
+
+ /**
+  * apply_construct_parenthesis<C>(t)
+  * C : a class
+  * t a tuple
+  * Returns : C(t0, t1, ....)
+  */
+ template <typename C, typename T, size_t... Is>
+ AUTO_DECL apply_construct_parenthesis_impl(T &&t, std14::index_sequence<Is...>) RETURN(C(std::get<Is>(std::forward<T>(t))...));
+
+ template <typename C, typename T>
+ AUTO_DECL apply_construct_parenthesis(T &&t) RETURN(apply_construct_parenthesis_impl<C>(std::forward<T>(t), _get_seq<T>()));
 
  /**
   * called_on_tuple(f)
@@ -455,7 +486,7 @@ namespace triqs { namespace tuple {
  /*
  * print a tuple
  */
- inline void _triqs_print_tuple_impl(std::ostream &os) {}
+ /*inline void _triqs_print_tuple_impl(std::ostream &os) {}
  template <typename T0, typename... T> void _triqs_print_tuple_impl(std::ostream &os, T0 const &x0, T const &... x) {
   os << x0;
   if (sizeof...(T) > 0) os << ',';
@@ -466,6 +497,8 @@ namespace triqs { namespace tuple {
  void _triqs_print_tuple(std::ostream &os, std::tuple<T...> const &t, std14::index_sequence<Is...>) {
   _triqs_print_tuple_impl(os, std::get<Is>(t)...);
  }
+*/
+
 }
 }
 
@@ -473,7 +506,8 @@ namespace std {
 
 template <typename... T> std::ostream &operator<<(std::ostream &os, std::tuple<T...> const &t) {
  os << "(";
- triqs::tuple::_triqs_print_tuple(os, t, std14::make_index_sequence<sizeof...(T)>());
+ triqs::tuple::for_each(t, [&os, c=0](auto & x) mutable {if (c++) os << ','; os << x;});
+ //triqs::tuple::_triqs_print_tuple(os, t, std14::make_index_sequence<sizeof...(T)>());
  return os << ")";
 }
 

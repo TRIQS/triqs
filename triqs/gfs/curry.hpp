@@ -18,12 +18,15 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_CURRY_H
-#define TRIQS_GF_CURRY_H
+#pragma once
 #include "./product.hpp"
 namespace triqs { namespace gfs { 
 
  template<typename F> struct lambda_valued {};
+
+ template <typename Var, typename M, typename L> gf_view<Var, lambda_valued<L>> make_gf_view_lambda_valued(M m, L l) {
+  return {std::move(m), l, nothing(), nothing(), {}};
+ }
 
  namespace gfs_implementation { 
   
@@ -34,7 +37,7 @@ namespace triqs { namespace gfs {
   /// ---------------------------  Factories ---------------------------------
 
   template<typename F, typename Opt, typename ... Ms>
-   struct factories<cartesian_product<Ms...>, lambda_valued<F>, Opt> {};
+   struct factories<cartesian_product<Ms...>, lambda_valued<F>, nothing, Opt> {};
 
   /// ---------------------------  partial_eval ---------------------------------
   // partial_eval<0> (g, 1) returns :  x -> g(1,x)
@@ -42,82 +45,85 @@ namespace triqs { namespace gfs {
 
   // a technical trait: from a tuple of mesh, return the mesh (either M if it is a tuple of size 1, or the corresponding cartesian_product<M..>).
   template<typename ... Ms> struct cart_prod_impl;
-  template<typename ... Ms> using cart_prod = typename cart_prod_impl<Ms...>::type;
   template<typename ... Ms> struct cart_prod_impl<std::tuple<Ms...>> { using type = cartesian_product<Ms...>;};
   template<typename M> struct cart_prod_impl<std::tuple<M>> { using type = M;};
+  template<typename ... Ms> using cart_prod = typename cart_prod_impl<Ms...>::type;
 
-  template<typename M0, typename M1, typename ...M> auto rm_tuple_of_size_one(std::tuple<M0,M1,M...> const & t) DECL_AND_RETURN(t);
-  template<typename M> auto rm_tuple_of_size_one(std::tuple<M> const & t) DECL_AND_RETURN(std::get<0>(t));
+  // The implementation (can be overloaded for some types), so put in a struct to have partial specialization
+  template <typename Variable, typename Target, typename Singularity, typename Opt, bool IsConst> struct partial_eval_impl;
 
-  // as_tuple leaves a tuple intact and wrap everything else in a tuple...
-  template<typename T> std::tuple<T> as_tuple(T && x) { return std::tuple<T> {std::forward<T>(x)};}
-  template<typename ... T> std::tuple<T...> as_tuple(std::tuple<T...> && x) { return std::forward<T...>(x);}
-  template<typename ... T> std::tuple<T...> const &  as_tuple(std::tuple<T...> const & x) { return x;}
-  template<typename ... T> std::tuple<T...> & as_tuple(std::tuple<T...> & x) { return x;}
-
-  template <int... pos, typename Opt, typename Target, bool IsConst, typename IT, typename... Ms>
-  gf_view<cart_prod<triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>, Target, Opt, IsConst>
-  partial_eval(gf_view<cartesian_product<Ms...>, Target, Opt, IsConst> g, IT index) {
-    // meshes of the returned gf_view : just drop the mesh of the evaluated variables
-    auto meshes_tuple_partial = triqs::tuple::filter_out<pos...>(g.mesh().components());
-    // a view of the array of g, with the dimension sizeof...(Ms)
-    auto arr = reinterpret_linear_array(g.mesh(),g.data()); // NO the second () forces a view
-    // now rebuild a tuple of the size sizeof...(Ms), containing the indices and range at the position of evaluated variables.
-    auto arr_args = triqs::tuple::inverse_filter<sizeof...(Ms),pos...>(as_tuple(index), arrays::range());
-    // from it, we make a slice of the array of g, corresponding to the data of the returned gf_view
-    auto arr2 =  triqs::tuple::apply(arr, std::tuple_cat(arr_args, std::make_tuple(arrays::ellipsis{})));
-    // finally, we build the view on this data. 
-    using r_t = gf_view< cart_prod< triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>> ,Target, Opt,IsConst>;
-    return r_t{ rm_tuple_of_size_one(meshes_tuple_partial), arr2,  typename r_t::singularity_non_view_t{}, typename r_t::symmetry_t{} };
-   }
-
-  template <int... pos, typename Opt, typename Target, typename IT, typename... Ms>
-  gf_view<cart_prod<triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>, Target, Opt, false>
-  partial_eval(gf<cartesian_product<Ms...>, Target, Opt> & g, IT index) {
-   return partial_eval<pos...>(g(),index);
+  // The user function
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt, bool C, typename... T>
+  auto partial_eval(gf_view<Variable, Target, Singularity, Opt, C> g, T&&... x) {
+   return partial_eval_impl<Variable, Target, Singularity, Opt, C>::template invoke<pos...>(g(), std::forward<T>(x)...);
   }
 
-  template <int... pos, typename Opt, typename Target, typename IT, typename... Ms>
-  gf_view<cart_prod<triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>, Target, Opt, true>
-  partial_eval(gf<cartesian_product<Ms...>, Target, Opt> const& g, IT index) {
-   return partial_eval<pos...>(g(),index);
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt, typename... T>
+  auto partial_eval(gf<Variable, Target, Singularity, Opt>& g, T&&... x) {
+   return partial_eval_impl<Variable, Target, Singularity, Opt, false>::template invoke<pos...>(g(), std::forward<T>(x)...);
   }
- 
+
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt, typename... T>
+  auto partial_eval(gf<Variable, Target, Singularity, Opt> const& g, T&&... x) {
+   return partial_eval_impl<Variable, Target, Singularity, Opt, true>::template invoke<pos...>(g(), std::forward<T>(x)...);
+  }
+
   /// ---------------------------  curry  ---------------------------------
   // curry<0>(g) returns : x-> y... -> g(x,y...)
   // curry<1>(g) returns : y-> x,z... -> g(x,y,z...)
-  
-  // to adapt the partial_eval as a polymorphic lambda (replace by a lambda in c++14)
-  template<typename Gview, int ... pos> struct curry_polymorphic_lambda { 
-   Gview g;
-   template<typename ...I> auto operator()(I ... i) const DECL_AND_RETURN(partial_eval<pos...>(g,std::make_tuple(i...)));
-   friend int get_shape(curry_polymorphic_lambda const&) { return 0;}// no shape here, but needed for compilation
-   //void resize(int){}
+
+  // The implementation (can be overloaded for some types)
+  template <int... pos, typename Target, typename Singularity, typename Opt, bool IsConst, typename... Ms>
+  auto curry_impl(gf_view<cartesian_product<Ms...>, Target, Singularity, Opt, IsConst> g) {
+   // pick up the meshed corresponding to the curryed variables
+   auto meshes_tuple = triqs::tuple::filter<pos...>(g.mesh().components());
+   using var_t = cart_prod<triqs::tuple::filter_t<std::tuple<Ms...>, pos...>>;
+   auto m = triqs::tuple::apply_construct<gf_mesh<var_t>>(meshes_tuple);
+   auto l = [g](auto&&... x) { return partial_eval<pos...>(g, x...); };
+   return make_gf_view_lambda_valued<var_t>(m, l);
   };
 
-  // curry function ...
-  template <int... pos, typename Target, typename Opt, bool IsConst, typename... Ms>
-  gf_view<cart_prod<triqs::tuple::filter_t<std::tuple<Ms...>, pos...>>,
-                lambda_valued<curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target, Opt,IsConst>, pos...>>, Opt, IsConst>
-  curry(gf_view<cartesian_product<Ms...>, Target, Opt, IsConst> g) {
-    // pick up the meshed corresponding to the curryed variables
-    auto meshes_tuple = triqs::tuple::filter<pos...>(g.mesh().components());
-    // building the view
-    return {rm_tuple_of_size_one(meshes_tuple),curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt,IsConst>, pos ...>{g}, nothing(), nothing()}; 
-    //using m_t = gf_mesh< cart_prod< triqs::tuple::filter_t<std::tuple<Ms...>,pos...>>>; 
-    //return {triqs::tuple::apply_construct<m_t>(meshes_tuple),curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target,Opt>, pos ...>{g}, nothing(), nothing()}; 
-   };
-  
-  template <int... pos, typename Target, typename Opt, typename... Ms>
-  auto curry(gf<cartesian_product<Ms...>, Target, Opt> & g) DECL_AND_RETURN(curry<pos...>(g()));
-  
-  template <int... pos, typename Target, typename Opt, typename... Ms>
-  auto curry(gf<cartesian_product<Ms...>, Target, Opt> const & g) DECL_AND_RETURN(curry<pos...>(g()));
+  // The user function
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt, bool IsConst>
+  auto curry(gf_view<Variable, Target, Singularity, Opt, IsConst> g) {
+   return curry_impl<pos...>(g());
+  }
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt>
+  auto curry(gf<Variable, Target, Singularity, Opt>& g) {
+   return curry_impl<pos...>(g());
+  }
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt>
+  auto curry(gf<Variable, Target, Singularity, Opt> const& g) {
+   return curry_impl<pos...>(g());
+  }
+
+ //---------------------------------------------
+
+  // A generic impl. for cartesian product
+  template <typename Target, typename Singularity, typename Opt, bool IsConst, typename... Ms>
+  struct partial_eval_impl<cartesian_product<Ms...>, Target, Singularity, Opt, IsConst> {
+
+   template <int... pos, typename... T>
+   static auto invoke(gf_view<cartesian_product<Ms...>, Target, Singularity, Opt, IsConst> g, T const&... x) {
+    using var_t = cart_prod<triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>;
+    // meshes of the returned gf_view : just drop the mesh of the evaluated variables
+    auto meshes_tuple_partial = triqs::tuple::filter_out<pos...>(g.mesh().components());
+    auto m = triqs::tuple::apply_construct<gf_mesh<var_t>>(meshes_tuple_partial);
+    // now rebuild a tuple of the size sizeof...(Ms), containing the indices and range at the position of evaluated variables.
+    auto arr_args = triqs::tuple::inverse_filter<sizeof...(Ms), pos...>(std::make_tuple(x...), arrays::range());
+    // from it, we make a slice of the array of g, corresponding to the data of the returned gf_view
+    auto arr2 = triqs::tuple::apply(g.data(), std::tuple_cat(arr_args, std::make_tuple(arrays::ellipsis{})));
+    auto singv = partial_eval<pos...>(g.singularity(), x...);
+    using r_sing_t = typename decltype(singv)::regular_type;
+    // finally, we build the view on this data.
+    using r_t = gf_view<var_t, Target, r_sing_t, Opt, IsConst>;
+    return r_t{m, arr2, singv, {}, {}};
+   }
+  };
 
  } // gf_implementation
  using gfs_implementation::partial_eval;
  using gfs_implementation::curry;
 }}
-#endif
 
 

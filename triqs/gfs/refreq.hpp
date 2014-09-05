@@ -35,18 +35,18 @@ namespace gfs {
   //using segment_mesh::segment_mesh;
  };
 
- namespace gfs_implementation {
+ // singularity
+ template <> struct gf_default_singularity<refreq, matrix_valued> {
+  using type = local::tail;
+ };
+ template <> struct gf_default_singularity<refreq, scalar_valued> {
+  using type = local::tail;
+ };
 
-  // singularity
-  template <typename Opt> struct singularity<refreq, matrix_valued, Opt> {
-   using type = local::tail;
-  };
-  template <typename Opt> struct singularity<refreq, scalar_valued, Opt> {
-   using type = local::tail;
-  };
+  namespace gfs_implementation {
 
   // h5 name
-  template <typename Opt> struct h5_name<refreq, matrix_valued, Opt> {
+  template <typename Singularity, typename Opt> struct h5_name<refreq, matrix_valued, Singularity, Opt> {
    static std::string invoke() { return "ReFreq"; }
   };
 
@@ -56,7 +56,7 @@ namespace gfs {
   struct evaluator_fnt_on_mesh<refreq> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh,
                                                                              evaluator_grid_linear_interpolation);
 
-  template <typename Opt, typename Target> struct evaluator<refreq, Target, Opt> : evaluator_one_var<refreq> {};
+  template <typename Singularity, typename Opt, typename Target> struct evaluator<refreq, Target, Singularity, Opt> : evaluator_one_var<refreq> {};
 
 
   /// ---------------------------  data access  ---------------------------------

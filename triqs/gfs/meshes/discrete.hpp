@@ -29,12 +29,18 @@ namespace gfs {
 
   using domain_t = Domain;
   using index_t = long;
+  using linear_index_t = long;
 
   discrete_mesh(domain_t dom) : _dom(std::move(dom)) {}
   discrete_mesh() = default;
 
   domain_t const &domain() const { return _dom; }
-  long size() const { return _dom.size(); }
+  size_t size() const { return _dom.size(); }
+ 
+  ///
+  utility::mini_vector<size_t, 1> size_of_components() const {
+   return {size()};
+  }
 
   /// Conversions point <-> index <-> discrete_index
   long index_to_point(index_t ind) const { return ind; }

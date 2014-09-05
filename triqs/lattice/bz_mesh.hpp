@@ -30,6 +30,7 @@ namespace lattice {
 
   using domain_t = brillouin_zone;
   using index_t = long;
+  using linear_index_t = long;
   using domain_pt_t = typename domain_t::point_t;
 
   bz_mesh() = default;
@@ -37,7 +38,12 @@ namespace lattice {
   bz_mesh(brillouin_zone const &bz, std::vector<k_t> k_pt_stack) : bz(bz), k_pt_stack(std::move(k_pt_stack)) {}
 
   domain_t const &domain() const { return bz; }
-  long size() const { return k_pt_stack.size(); }
+  size_t size() const { return k_pt_stack.size(); }
+
+  ///
+  utility::mini_vector<size_t, 1> size_of_components() const {
+   return {size()};
+  }
 
   /// Conversions point <-> index <-> linear_index
   domain_pt_t const &index_to_point(index_t i) const { return k_pt_stack[i]; }

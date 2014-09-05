@@ -53,6 +53,7 @@ namespace triqs { namespace gfs { namespace local {
     public:
       TRIQS_MPI_IMPLEMENTED_VIA_BOOST;
       typedef tail_view view_type;
+      typedef tail_view const_view_type; // not nice
       typedef tail      regular_type;
 
       typedef arrays::array      <dcomplex,3>                         data_regular_type;
@@ -232,6 +233,7 @@ namespace triqs { namespace gfs { namespace local {
     typedef tqa::mini_vector<size_t,2> shape_type;
     tail(size_t N1, size_t N2, size_t size_=10, long order_min=-1): B(N1,N2,size_,order_min) {}
     tail(shape_type const & sh, size_t size_=10, long order_min=-1): B(sh[0],sh[1],size_,order_min) {}
+    tail(tqa::mini_vector<int,0>) : tail(1,1) {}
     tail(B::data_type const &d, B::mask_type const &m, long order_min): B(d, m, order_min) {}
     tail(tail const & g): B(g) {}
     tail(tail_view const & g): B(g) {}

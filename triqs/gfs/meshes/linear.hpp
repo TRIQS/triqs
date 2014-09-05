@@ -37,6 +37,7 @@ namespace gfs {
 
   using domain_t = Domain;
   using index_t = long;
+  using linear_index_t = long;
   using domain_pt_t = typename domain_t::point_t;
 
   static_assert(!std::is_base_of<std::complex<double>, domain_pt_t>::value,
@@ -64,7 +65,12 @@ namespace gfs {
   }
 
   domain_t const &domain() const { return _dom; }
-  long size() const { return L; }
+  size_t size() const { return L; }
+  
+  utility::mini_vector<size_t, 1> size_of_components() const {
+   return {size()};
+  }
+
   double delta() const { return del; }
   double x_max() const { return xmax; }
   double x_min() const { return xmin; }

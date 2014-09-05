@@ -1,4 +1,4 @@
-//#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/gfs.hpp> 
 #include <triqs/gfs/local/functions.hpp> 
 using namespace triqs::gfs;

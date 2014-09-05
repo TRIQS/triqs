@@ -38,7 +38,7 @@ namespace triqs { namespace utility {
 
  template <typename T, int Rank> 
   class mini_vector { 
-   T _data[Rank];
+   T _data[(Rank!=0 ? Rank : 1)];
    friend class boost::serialization::access;
    template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & TRIQS_MAKE_NVP("_data",_data); }
    void init() { for (int i=0;i<Rank; ++i) _data[i] = 0;}
@@ -126,6 +126,16 @@ namespace triqs { namespace utility {
    friend std::stringstream & operator << ( std::stringstream & out, mini_vector const & v ) { out<<v.to_string(); return out;}
   }; // class mini_vector
 
+ // ------------ specialization for size 0 ------------- 
+  template <typename T> class mini_vector<T, 0> {
+   T _data[1];
+   public:
+   T & operator[](size_t i) { return _data[i];}
+   const T & operator[](size_t i) const { return _data[i];}
+   };
+
+ // ------------- Comparison -------------------------------------- 
+ 
  template <typename T, int R> 
   bool operator ==(mini_vector<T,R> const & v1, mini_vector<T,R> const & v2) {
    for (int i=0;i<R; ++i) { if (v1[i]!=v2[i]) return false;}
@@ -134,14 +144,16 @@ namespace triqs { namespace utility {
 
  template <typename T, int R> bool operator !=(mini_vector<T,R> const & v1, mini_vector<T,R> const & v2) { return (!(v1==v2));}
 
- template <typename T, int R1, int R2> 
-  mini_vector<T, R1+R2> join (mini_vector<T,R1> const & v1, mini_vector<T,R2> const & v2) {
-   mini_vector<T, R1+R2> res;
+ // ------------- join  -------------------------------------- 
+ template <typename T1, typename T2,  int R1, int R2> 
+  mini_vector<T1, R1+R2> join (mini_vector<T1,R1> const & v1, mini_vector<T2,R2> const & v2) {
+   mini_vector<T1, R1+R2> res;
    for (int i=0;i<R1; ++i)  res[i]=v1[i];
    for (int i=0;i<R2; ++i)  res[R1+i]=v2[i];
    return res;
   }
 
+ // ------------- dot -------------------------------------- 
  template <typename T1, typename T2, int Rank> 
   T1 dot_product(mini_vector<T1,Rank> const & v1, mini_vector<T2,Rank> const & v2) {
    T1 res=0;
@@ -149,25 +161,21 @@ namespace triqs { namespace utility {
    return res;
   }
 
- struct tuple_to_mini_vector_aux { template<typename M, typename V> V * operator()(M const & m,  V * v) { *v = m; return ++v;}};
+#ifndef TRIQS_C11
+  // ------------- transform a tuple into a minivector --------------------------------------
 
- // change : the first version crash clang 3.3, but not svn version.
- // must be a bug, corrected since then
-/* 
- template<typename T, typename ... U> 
-  mini_vector<T,sizeof...(U)> tuple_to_mini_vector(std::tuple<U...> const & t) { 
-   mini_vector<T,sizeof...(U)> res;
-   triqs::tuple::fold(tuple_to_mini_vector_aux(),t,&res[0]); 
-   return res;
+  template <typename T, typename TU> mini_vector<T, std::tuple_size<TU>::value> tuple_to_mini_vector(TU const &t) {
+   return tuple::apply_construct_parenthesis<mini_vector<T, std::tuple_size<TU>::value>>(t);
   }
-*/
- template<typename T, typename TU> 
-  mini_vector<T,std::tuple_size<TU>::value> tuple_to_mini_vector(TU const & t) { 
-   mini_vector<T,std::tuple_size<TU>::value> res;
-   triqs::tuple::fold(tuple_to_mini_vector_aux(),t,&res[0]); 
-   return res;
-  }
+#endif
 
 }}//namespace triqs::arrays 
+
+namespace std { // overload std::get to work with it
+
+template <int i, typename T, int R> AUTO_DECL get(triqs::utility::mini_vector<T, R> &v) RETURN(v[i]);
+template <int i, typename T, int R> AUTO_DECL get(triqs::utility::mini_vector<T, R> const &v) RETURN(v[i]);
+}
+
 #endif
 

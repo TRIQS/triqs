@@ -37,7 +37,7 @@ namespace gfs {
  namespace gfs_implementation {
 
   // h5 name
-  template <typename Opt> struct h5_name<bz, matrix_valued, Opt> {
+  template <typename Singularity, typename Opt> struct h5_name<bz, matrix_valued, Singularity, Opt> {
    static std::string invoke() { return "BZ"; }
   };
 
@@ -60,7 +60,7 @@ namespace gfs {
 
   // ------------- evaluator  -------------------
   // handle the case where the matsu. freq is out of grid...
-  template <typename Target, typename Opt> struct evaluator<bz, Target, Opt> {
+  template <typename Target, typename Singularity, typename Opt> struct evaluator<bz, Target, Singularity, Opt> {
    static constexpr int arity = 1;
 
    template <typename G>

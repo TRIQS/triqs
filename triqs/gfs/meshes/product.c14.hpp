@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012-2013 by O. Parcollet
+ * Copyright (C) 2012-2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -34,6 +34,7 @@ namespace gfs {
   using m_tuple_t = std::tuple<Meshes...>;
   using m_pt_tuple_t = std::tuple<typename Meshes::mesh_point_t...>;
   using domain_pt_t = typename domain_t::point_t;
+  using linear_index_t = std::tuple<typename Meshes::linear_index_t...>;
 
   static constexpr int dim = sizeof...(Meshes);
 
@@ -49,7 +50,7 @@ namespace gfs {
   size_t size() const {
    return triqs::tuple::fold([](auto const &m, size_t R) { return R * m.size(); }, m_tuple, 1);
   }
-
+/*
   /// Scatter the first mesh over the communicator c
   friend mesh_product mpi_scatter(mesh_product const &m, mpi::communicator c, int root) {
    auto r = m; // same domain, but mesh with a window. Ok ?
@@ -58,10 +59,18 @@ namespace gfs {
   }
 
   /// Opposite of scatter : rebuild the original mesh, without a window
-  friend matsubara_freq_mesh mpi_gather(matsubara_freq_mesh m, mpi::communicator c, int root) {
+  friend mesh_product mpi_gather(mesh_product m, mpi::communicator c, int root) {
    auto r = m; // same domain, but mesh with a window. Ok ?
    std::get<0>(r.m_tuple) = mpi_gather(std::get<0>(r.m_tuple), c, root);
    return r;
+  */
+
+   /// The sizes of all mesh components
+  utility::mini_vector<size_t, dim> size_of_components() const {
+   utility::mini_vector<size_t, dim> res;
+   auto l = [&res](int i, auto const &m) mutable { res[i] = m.size(); };
+   triqs::tuple::for_each_enumerate(m_tuple, l);
+   return res;
   }
 
   /// Conversions point <-> index <-> linear_index
@@ -72,32 +81,23 @@ namespace gfs {
    return res;
   }
 
-  /// Flattening index to linear :  index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
-  size_t index_to_linear(index_t const &ii) const {
-   auto l = [](auto const &m, auto const &i, size_t R) { return m.index_to_linear(i) + R * m.size(); };
-   return triqs::tuple::fold(l, reverse(m_tuple), reverse(ii), size_t(0));
+  /// The linear_index is the tuple of the linear_index of the components
+  linear_index_t index_to_linear(index_t const &ind) const {
+   auto l = [](auto const &m, auto const &i) { return m.index_to_linear(i); };
+   return triqs::tuple::map_on_zip(l, m_tuple, ind);
   }
   
-  /// Flattening index to linear :  index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
-  size_t mp_to_linear(m_pt_tuple_t const &mp) const {
-   auto l = [](auto const &m, auto const &p, size_t R) { return p.linear_index() + R * m.size(); };
-   return triqs::tuple::fold(l, reverse(m_tuple), reverse(mp), size_t(0));
-  }
-
-  utility::mini_vector<size_t, dim> shape() const {
-   utility::mini_vector<size_t, dim> res;
-   auto l = [&res](int i, auto const &m) mutable { res[i] = m.size(); };
-   triqs::tuple::for_each_enumerate(m_tuple, l);
-   return res;
+  /// 
+  linear_index_t mp_to_linear(m_pt_tuple_t const &mp) const {
+   auto l = [](auto const &p) { return p.linear_index(); };
+   return triqs::tuple::map(l, mp);
   }
 
   // Same but a variadic list of mesh_point_t
   template <typename... MP> size_t mesh_pt_components_to_linear(MP const &... mp) const {
    static_assert(std::is_same<std::tuple<MP...>, m_pt_tuple_t>::value, "Call incorrect ");
-   // static_assert(std::is_same< std::tuple<typename std::remove_cv<typename std::remove_reference<MP>::type>::type...>,
-   // m_pt_tuple_t>::value, "Call incorrect ");
    return mp_to_linear(std::forward_as_tuple(mp...));
-  } // speed test ? or make a variadic fold...
+  } 
 
   /// The wrapper for the mesh point
   class mesh_point_t : tag::mesh_point {
@@ -116,7 +116,7 @@ namespace gfs {
       , _atend(false) {}
    mesh_point_t(mesh_product const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.m_tuple)), _atend(false) {}
    m_pt_tuple_t const &components_tuple() const { return _c; }
-   size_t linear_index() const { return m->mp_to_linear(_c); }
+   linear_index_t linear_index() const { return m->mp_to_linear(_c); }
    const mesh_product *mesh() const { return m; }
 
    using cast_t = domain_pt_t;
@@ -193,14 +193,5 @@ namespace gfs {
 
  template <int pos, typename P> decltype(auto) get_component(P const &p) { return std::get<pos>(p.components_tuple()); }
 
- // Given a composite mesh m , and a linear array of storage A
- // reinterpret_linear_array(m,A) returns a d-dimensionnal view of the array
- // with indices egal to the indices of the components of the mesh.
- // Very useful for slicing, currying functions.
- template <typename... Meshes, typename T, ull_t OptionsFlags, ull_t To, int R, bool B, bool C>
- arrays::array_view<T, sizeof...(Meshes) + R - 1, OptionsFlags, To, true, C>
- reinterpret_linear_array(mesh_product<Meshes...> const &m, arrays::array_view<T, R, OptionsFlags, To, B, C> A) {
-  return {{join(m.shape(), get_shape(A).front_pop())}, A.storage()};
- }
 }
 }

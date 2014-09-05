@@ -41,9 +41,15 @@ namespace arrays {
   */
  template <typename A> struct inverse_lazy;
 
- template <class A> inverse_lazy<typename utility::remove_rvalue_ref<A>::type> inverse(A &&a) {
+ template <class A>
+ std14::enable_if_t<ImmutableMatrix<std14::remove_reference_t<A>>::value,
+                    inverse_lazy<typename utility::remove_rvalue_ref<A>::type>>
+ inverse(A &&a) {
   return {std::forward<A>(a)};
  }
+
+ template <class A>
+ std14::enable_if_t<ImmutableArray<std14::remove_reference_t<A>>::value> inverse(A &&a) = delete; // arrays can not be inverted.
 
  // ----------------- implementation -----------------------------------------
 

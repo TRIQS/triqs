@@ -25,8 +25,8 @@ namespace triqs { namespace gfs {  namespace local {
   int size1 = n_max - n_min + 1;
   // size2 is the number of moments
 
-  arrays::matrix<double, 2> A(size1, std::max(size_even, size_odd), FORTRAN_LAYOUT);
-  arrays::matrix<double, 2> B(size1, 1, FORTRAN_LAYOUT);
+  arrays::matrix<double> A(size1, std::max(size_even, size_odd), FORTRAN_LAYOUT);
+  arrays::matrix<double> B(size1, 1, FORTRAN_LAYOUT);
   arrays::vector<double> S(std::max(size_even, size_odd));
   const double rcond = 0.0;
   int rank;

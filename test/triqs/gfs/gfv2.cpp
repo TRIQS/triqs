@@ -76,6 +76,8 @@ int main() {
   TEST( G( 0) ) ;
   TEST( Gc( 0) ) ;
 
+  // error
+  //TEST (G(1.0_j));
 
   // operations on gf
   G3 = G +2* Gc;

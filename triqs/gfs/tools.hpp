@@ -186,6 +186,7 @@ namespace gfs {
   bool is_empty() const { return false;}
  };
 
+ template<int ... pos, typename ...T> nothing partial_eval(nothing, T&&...) { return {};}
  inline nothing transpose(nothing) { return {};}
  inline nothing inverse(nothing) { return {};}
  inline nothing conj(nothing) { return {};}

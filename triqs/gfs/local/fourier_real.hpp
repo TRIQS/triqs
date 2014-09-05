@@ -18,21 +18,19 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_FOURIER_REAL_H 
-#define TRIQS_GF_LOCAL_FOURIER_REAL_H
-
+#pragma once
 #include "fourier_base.hpp"
 #include <triqs/gfs/refreq.hpp> 
 #include <triqs/gfs/retime.hpp> 
 
 namespace triqs { namespace gfs { 
 
-  template <typename Target, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, retime, Target> fourier(gf_impl<retime, Target, Opt, V, C> const& g) {
+  template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf_keeper<tags::fourier, retime, Target, Singularity> fourier(gf_impl<retime, Target, Singularity, Opt, V, C> const& g) {
   return {g};
  }
- template <typename Target, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, refreq, Target> inverse_fourier(gf_impl<refreq, Target, Opt, V, C> const& g) {
+ template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf_keeper<tags::fourier, refreq, Target, Singularity> inverse_fourier(gf_impl<refreq, Target, Singularity, Opt, V, C> const& g) {
   return {g};
  }
 
@@ -58,20 +56,19 @@ namespace triqs { namespace gfs {
   return {tmin, tmax, L};
  }
 
-  template <typename Target, typename Opt, bool V, bool C>
- gf_view<refreq, Target> make_gf_from_fourier(gf_impl<retime, Target, Opt, V, C> const& gt) {
+  template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf_view<refreq, Target> make_gf_from_fourier(gf_impl<retime, Target, Singularity, Opt, V, C> const& gt) {
   auto gw = gf<refreq, Target>{make_mesh_fourier_compatible(gt.mesh()), get_target_shape(gt)};
   gw() = fourier(gt);
   return gw;
  }
 
- template <typename Target, typename Opt, bool V, bool C>
- gf_view<retime, Target> make_gf_from_inverse_fourier(gf_impl<refreq, Target, Opt, V, C> const& gw) {
+ template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ gf_view<retime, Target> make_gf_from_inverse_fourier(gf_impl<refreq, Target, Singularity, Opt, V, C> const& gw) {
   auto gt = gf<retime, Target>{make_mesh_fourier_compatible(gw.mesh()), get_target_shape(gw)};
   gt() = inverse_fourier(gw);
   return gt;
  }
 
 }}
-#endif
 
