@@ -103,7 +103,7 @@ namespace utility {
   static many_body_operator make_canonical(bool is_dag, indices_t indices) {
    many_body_operator res;
    auto m = monomial_t{canonical_ops_t{is_dag, indices}};
-   res.monomials.insert({m, 1.0});
+   res.monomials.insert({m, scalar_t(1.0)});
    return res;
   }
 
