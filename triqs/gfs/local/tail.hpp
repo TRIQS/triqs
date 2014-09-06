@@ -393,5 +393,19 @@ namespace triqs { namespace gfs { namespace local {
   template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<LocalTail<T1>, is_scalar_or_element<T2>>)
     operator - (T1 const & t, T2 const & a) { return (-a) + t;}
 
+// inplace operators
+#define DEFINE_OPERATOR(OP1, OP2)                                                                                                \
+ template <typename T> void operator OP1(tail_view g, T &&x) { g = g OP2 x; }                                                    \
+ template <typename T> void operator OP1(tail &g, T &&x) { g = g OP2 x; }
+
+ DEFINE_OPERATOR(+=, +);
+ DEFINE_OPERATOR(-=, -);
+ DEFINE_OPERATOR(*=, *);
+ DEFINE_OPERATOR(/=, / );
+
+#undef DEFINE_OPERATOR
+
+  
+
 }}}
 #endif

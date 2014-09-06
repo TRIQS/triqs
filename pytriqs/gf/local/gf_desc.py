@@ -218,7 +218,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
             serializable= "tuple",
             is_printable= True,
             hdf5 = True,
-            arithmetic = ("algebra",data_type)
+            arithmetic = ("algebra",data_type, "with_inplace_operators")
             )
 
     g.add_constructor(signature = "(gf_mesh<%s> mesh, mini_vector<size_t,2> shape, std::vector<std::vector<std::string>> indices = std::vector<std::vector<std::string>>{}, std::string name = "")"%c_tag, python_precall = "pytriqs.gf.local._gf_%s.init"%c_tag)
@@ -371,6 +371,11 @@ g.add_method(name = "set_from_legendre",
 # Pure python methods
 g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail")
 g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.fit_tail")
+
+# For legacy Python code : authorize g + Matrix
+#g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(gf<imfreq> x,matrix<std:complex<double>> y)")
+g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<imfreq> x,matrix<std::complex<double>> y)")
+g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<imfreq> x,matrix<std::complex<double>> y)")
 
 module.add_class(g)
 

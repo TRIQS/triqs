@@ -166,5 +166,17 @@ namespace gfs {
   template <typename Opt> struct data_proxy<imfreq, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
 
  } // gfs_implementation
+
+ // specific operations (for legacy python code).
+ // +=, -= with a matrix
+ inline void operator+=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> m) {
+  for (int u = 0; u < first_dim(g.data()); ++u) g.data()(u, arrays::ellipsis()) += m;
+  g.singularity()(0) += m;
+ }
+
+ inline void operator-=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> m) {
+  for (int u = 0; u < first_dim(g.data()); ++u) g.data()(u, arrays::ellipsis()) -= m;
+  g.singularity()(0) -= m;
+ }
 }
 }

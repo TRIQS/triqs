@@ -269,6 +269,11 @@ class class_ :
                           - with_unit :  +/- of an element with a scalar (injection of the scalar with the unit)
                           - with_unary_minus  : implement unary minus
                  - "add_only" : implements only +
+                 - with_inplace_operators  : option to deduce the +=, -=, ...
+                   operators from +,-, .. It deduces the possibles terms to put at the rhs, looking at the
+                   case of the +,- operators where the lhs is of the type of self.
+                   NB : The operator is mapped to the corresponding C++ operators (for some objects, this may be faster)
+                   so it has to be defined in C++ as well....
                  - .... more to be defined.
         - serializable : Whether and how the object is to be serialized.  Possible values are :
              - "tuple" : reduce it to a tuple of smaller objects, using the
@@ -309,6 +314,7 @@ class class_ :
           # read the with_... option and clean them for the list
           with_unary_minus = 'with_unary_minus' in arithmetic
           with_unit = 'with_unit' in arithmetic
+          with_inplace_operators = 'with_inplace_operators' in arithmetic
           arithmetic = [x for x in arithmetic if not x.startswith("with_")]
           add =  arithmetic[0] in ("algebra", "abelian_group", "vector_space", "only_add")
           abelian_group = arithmetic[0] in ("algebra",  "abelian_group", "vector_space")
@@ -358,6 +364,23 @@ class class_ :
                 neg = pyfunction(name = "__neg__", arity = 1)
                 neg.add_overload (calling_pattern = "-", signature = {'args' :[(self.c_type,'x')], 'rtype' : self.c_type})
                 self.number_protocol['negative'] = neg
+
+          if with_inplace_operators : self.deduce_inplace_arithmetic()
+
+    def deduce_inplace_arithmetic(self) :
+        """Deduce all the +=, -=, *=, /= operators from the +, -, *, / operators"""
+        def one_op(op, name, iname) :
+            if name not in self.number_protocol : return
+            impl = pyfunction(name = iname, arity = 2)
+            for overload in self.number_protocol[name].overloads :
+                x_t,y_t = overload.args[0][0], overload.args[1][0]
+                if x_t == self.c_type : # only when first the object
+                  impl.add_overload (calling_pattern = op+"=", signature = {'args' : [(x_t,'x'), (y_t,'y')], 'rtype' :overload.rtype})
+            self.number_protocol['inplace_'+name] = impl
+        one_op('+',"add","__iadd__")
+        one_op('-',"subtract","__isub__")
+        one_op('*',"multiply","__imul__")
+        one_op('/',"divide","__idiv__")
 
     def add_constructor(self, signature, calling_pattern = None, python_precall = None, python_postcall = None, build_from_regular_type_if_view = True, doc = ''):
         """

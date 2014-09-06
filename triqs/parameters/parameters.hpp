@@ -146,6 +146,11 @@ namespace params {
   return p1;
  }
 
+ inline parameters & operator+=(parameters & p1, parameters const& p2) {
+  p1.update(p2);
+  return p1;
+ }
+
  // can only be implemented after complete declaration of parameters
  template <typename... T> _field& _field::add_field(T&&... x) {
   auto* pp = dynamic_cast<_data_impl<parameters>*>(p.get());

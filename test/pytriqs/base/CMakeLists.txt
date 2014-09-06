@@ -17,3 +17,7 @@ add_triqs_test_hdf(dos " -d 1.e-6")
 
 # Pade approximation
 add_triqs_test_hdf(pade " -d 1.e-6")
+
+# Bug fix #112
+add_triqs_test_txt(gf_inplace_112)
+

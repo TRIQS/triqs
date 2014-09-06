@@ -142,6 +142,26 @@ namespace triqs { namespace gfs {
    >::type
    operator - (A1 && a1) { return {std::forward<A1>(a1)};} 
 
+// Now the inplace operator. Because of expression template, there are useless for speed
+// we implement them trivially.
+
+#define DEFINE_OPERATOR(OP1, OP2)                                                                                                \
+ template <typename Variable, typename Target, typename Opt, typename T>                                                         \
+ void operator OP1(gf_view<Variable, Target, Opt> g, T const &x) {                                                               \
+  g = g OP2 x;                                                                                                                   \
+ }                                                                                                                               \
+ template <typename Variable, typename Target, typename Opt, typename T>                                                         \
+ void operator OP1(gf<Variable, Target, Opt> &g, T const &x) {                                                                   \
+  g = g OP2 x;                                                                                                                   \
+ }
+
+ DEFINE_OPERATOR(+=, +);
+ DEFINE_OPERATOR(-=, -);
+ DEFINE_OPERATOR(*=, *);
+ DEFINE_OPERATOR(/=, / );
+
+#undef DEFINE_OPERATOR
+
 }}//namespace triqs::gf
 #endif
 
