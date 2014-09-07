@@ -41,7 +41,7 @@ struct plain {
 struct lazy {
  void operator()() {
   tql::placeholder<0> i_;   tql::placeholder<1> j_;  
-  triqs::arrays::array<double,2,TRAVERSAL_ORDER_FORTRAN> A (N1,N2,FORTRAN_LAYOUT);
+  triqs::arrays::array<double,2> A (N1,N2,FORTRAN_LAYOUT);
   for (int u =0; u<5000; ++u)
    A(i_,j_) << i_+ 2*j_;
  }
@@ -49,7 +49,7 @@ struct lazy {
 
 struct foreach_lambda {
  void operator()() {
-  triqs::arrays::array<double,2,TRAVERSAL_ORDER_FORTRAN> A (N1,N2,FORTRAN_LAYOUT);
+  triqs::arrays::array<double,2> A (N1,N2,FORTRAN_LAYOUT);
   for (int u =0; u<5000; ++u)
    //assign_foreach(A, [](size_t i, size_t j) { return i + 2.0*j;});
    assign_foreach(A, [](long i, long j) { return i + 2.0*j;});

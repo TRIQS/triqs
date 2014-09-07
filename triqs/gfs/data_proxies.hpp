@@ -25,7 +25,7 @@
 #include <triqs/arrays.hpp>
 #include "../arrays/matrix_tensor_proxy.hpp"
 
-#define TRIQS_GF_DATA_PROXIES_WITH_SIMPLE_VIEWS
+//#define TRIQS_GF_DATA_PROXIES_WITH_SIMPLE_VIEWS
 
 namespace triqs { namespace gfs {
 
@@ -51,12 +51,12 @@ namespace triqs { namespace gfs {
 #ifdef TRIQS_GF_DATA_PROXIES_WITH_SIMPLE_VIEWS
   template <typename S> auto operator()(S& data, long i) const DECL_AND_RETURN(data(i, arrays::ellipsis()));
 #else
-  auto operator()(B::storage_t& data, long i) const DECL_AND_RETURN(arrays::make_tensor_proxy(data, i));
-  auto operator()(B::storage_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
-  auto operator()(B::storage_view_t& data, long i) const DECL_AND_RETURN(arrays::make_tensor_proxy(data, i));
-  auto operator()(B::storage_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
-  auto operator()(B::storage_const_view_t& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
-  auto operator()(B::storage_const_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
+  auto operator()(typename B::storage_t& data, long i) const DECL_AND_RETURN(arrays::make_tensor_proxy(data, i));
+  auto operator()(typename B::storage_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
+  auto operator()(typename B::storage_view_t& data, long i) const DECL_AND_RETURN(arrays::make_tensor_proxy(data, i));
+  auto operator()(typename B::storage_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
+  auto operator()(typename B::storage_const_view_t& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
+  auto operator()(typename B::storage_const_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
 #endif
  };
 
@@ -68,12 +68,12 @@ namespace triqs { namespace gfs {
   template <typename S> auto operator()(S & data, long i) const RETURN(make_matrix_view(data(i, arrays::ellipsis())));
 #else
   /// The data access
-  auto operator()(B::storage_t& data, long i) const DECL_AND_RETURN(arrays::make_matrix_proxy(data, i));
-  auto operator()(B::storage_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
-  auto operator()(B::storage_view_t& data, long i) const DECL_AND_RETURN(arrays::make_matrix_proxy(data, i));
-  auto operator()(B::storage_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
-  auto operator()(B::storage_const_view_t& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
-  auto operator()(B::storage_const_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
+  auto operator()(typename B::storage_t& data, long i) const DECL_AND_RETURN(arrays::make_matrix_proxy(data, i));
+  auto operator()(typename B::storage_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
+  auto operator()(typename B::storage_view_t& data, long i) const DECL_AND_RETURN(arrays::make_matrix_proxy(data, i));
+  auto operator()(typename B::storage_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
+  auto operator()(typename B::storage_const_view_t& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
+  auto operator()(typename B::storage_const_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
 #endif
 
  };

@@ -21,6 +21,7 @@
 
 #include "./common.hpp"
 #include <triqs/arrays/array.hpp>
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/arrays/matrix.hpp>
 #include <iostream>
 #include <triqs/arrays/asserts.hpp>

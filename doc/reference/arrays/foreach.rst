@@ -16,9 +16,8 @@ several advantages:
 
 * it is more compact, less error prone (one does not need to specify the bounds in the loop).
 
-* the library orders the for loop in the most efficient way to traverse the memory.
-  Hence if one change the TraversalOrder for some arrays, there is no need to change the for loop
-  ordering to obtain a better performance, just recompile...
+* The library orders the loops in way specified by the template parameters TraversalOrder (by default, the standard C order), 
+  to obtain the most efficient way to traverse the memory.
 
 * it is easier to write generic code for array of several dimensions.
 
@@ -26,7 +25,7 @@ foreach
 ------------
 
 The *foreach* function call a given function *f* successively on the indices of an array *A*,
-in the order specified by the TraversalOrder flag of the array.
+in the order specified by the TraversalOrder of the array.
 
 * Synopsis::
       
@@ -44,7 +43,7 @@ in the order specified by the TraversalOrder flag of the array.
    for (i,j,k...) F(i,j,k...)
 
 * The for loop are automatically organised to optimize the traversal order of A
-  using the TraversalOrder flag of the array. 
+  using the TraversalOrder of the array. 
 
 * As a result this is always equally or more optimized than a manually written loop.
 
@@ -80,7 +79,7 @@ Synopsis::
    for (i,j,k...) A(i,j,k...) = F(i,j,k...)
 
 * The for loop are automatically organised to optimize the traversal order of A
-  using the TraversalOrder flag of the array. 
+  using the TraversalOrder of the array. 
 
 .. triqs_example:: ./foreach_1.cpp
 .. note::

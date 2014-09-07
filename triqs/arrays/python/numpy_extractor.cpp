@@ -20,7 +20,6 @@
  ******************************************************************************/
 #include "../impl/common.hpp"
 #include "../impl/traits.hpp"
-#include "../impl/flags.hpp"
 #include "../../utility/mini_vector.hpp"
 #include "./numpy_extractor.hpp"
 #ifdef TRIQS_WITH_PYTHON_SUPPORT

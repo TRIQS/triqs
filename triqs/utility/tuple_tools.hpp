@@ -23,6 +23,7 @@
 #include "./c14.hpp"
 #include <tuple>
 #include <ostream>
+#include "./mini_vector.hpp"
 
 // adding to the std lib the reversed lazy tuple...
 // overloading & specializing only the functions needed here.

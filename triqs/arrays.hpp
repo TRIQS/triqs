@@ -21,6 +21,8 @@
 #ifndef TRIQS_ARRAYS_ALL_H
 #define TRIQS_ARRAYS_ALL_H
 
+#define TRIQS_ARRAYS_INCLUDED
+
 // The basic classes
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
@@ -35,6 +37,9 @@
 
 // HDF5 interface
 #include <triqs/arrays/h5/simple_read_write.hpp>
+
+// Regrouping indices
+#include <triqs/arrays/group_indices.hpp>
 
 // Linear algebra ?? Keep here ?
 //#include <triqs/arrays/linalg/det_and_inverse.hpp>

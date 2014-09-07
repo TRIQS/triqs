@@ -49,12 +49,12 @@ namespace triqs { namespace arrays { namespace storages {
    static constexpr bool is_weak = Weak;
 
    ///  Construct a new block of memory of given size
-   explicit shared_block(size_t size, Tag::no_init) { construct_delegate(size); }
+   explicit shared_block(size_t size) { construct_delegate(size); }
 
-   explicit shared_block(size_t size, Tag::default_init) {// C++11  : delegate to previous constructor when gcc 4.6 support is out. 
-    construct_delegate(size); 
-    const auto s = this->size(); for (size_t u=0; u<s; ++u) data_[u] = ValueType(); 
-   }
+   //explicit shared_block(size_t size, Tag::default_init) {// C++11  : delegate to previous constructor when gcc 4.6 support is out. 
+   // construct_delegate(size); 
+   // const auto s = this->size(); for (size_t u=0; u<s; ++u) data_[u] = ValueType(); 
+   // }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
    explicit shared_block(PyObject * arr, bool weak): sptr(new mem_block<ValueType>(arr,weak)) { data_ = sptr->p; s= sptr->size(); }

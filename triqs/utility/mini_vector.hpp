@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2011-2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -22,13 +22,14 @@
 #define TRIQS_ARRAYS_MINI_VECTOR_H 
 #include "./first_include.hpp"
 #include <iostream>
+#include "./macros.hpp"
+#include "./c14.hpp"
 #include "./compiler_details.hpp"
 #include "./exceptions.hpp"
 #include <boost/serialization/utility.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <vector>
-#include <triqs/utility/tuple_tools.hpp>
 
 #define TRIQS_MINI_VECTOR_NRANK_MAX 10
 
@@ -36,6 +37,8 @@
 //#define TRIQS_MAKE_NVP(NAME,X) boost::serialization::make_nvp(NAME,X)
 namespace triqs { namespace utility { 
 
+ struct no_init_tag{};
+ 
  template <typename T, int Rank> 
   class mini_vector { 
    T _data[(Rank!=0 ? Rank : 1)];
@@ -45,17 +48,107 @@ namespace triqs { namespace utility {
    public : 
 
    typedef T value_type;
- 
-   mini_vector(){init();} 
 
-#define AUX(z,p,unused)  _data[p] = x_##p; 
-#define IMPL(z, NN, unused)                                \
-   mini_vector (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T x_)){ \
-    static_assert(Rank-1==NN,"mini_vector : incorrect number of variables in constructor");\
-    BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX,nil) }
-   BOOST_PP_REPEAT(TRIQS_MINI_VECTOR_NRANK_MAX , IMPL, nil);
-#undef IMPL
-#undef AUX
+   mini_vector(){init();} 
+   
+   mini_vector(no_init_tag){}
+
+   mini_vector(T x_0) {
+    static_assert(Rank == 1, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+   }
+   mini_vector(T x_0, T x_1) {
+    static_assert(Rank == 2, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+    _data[1] = x_1;
+   }
+   mini_vector(T x_0, T x_1, T x_2) {
+    static_assert(Rank == 3, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+    _data[1] = x_1;
+    _data[2] = x_2;
+   }
+   mini_vector(T x_0, T x_1, T x_2, T x_3) {
+    static_assert(Rank == 4, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+    _data[1] = x_1;
+    _data[2] = x_2;
+    _data[3] = x_3;
+   }
+   mini_vector(T x_0, T x_1, T x_2, T x_3, T x_4) {
+    static_assert(Rank == 5, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+    _data[1] = x_1;
+    _data[2] = x_2;
+    _data[3] = x_3;
+    _data[4] = x_4;
+   }
+   mini_vector(T x_0, T x_1, T x_2, T x_3, T x_4, T x_5) {
+    static_assert(Rank == 6, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+    _data[1] = x_1;
+    _data[2] = x_2;
+    _data[3] = x_3;
+    _data[4] = x_4;
+    _data[5] = x_5;
+   }
+   mini_vector(T x_0, T x_1, T x_2, T x_3, T x_4, T x_5, T x_6) {
+    static_assert(Rank == 7, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+    _data[1] = x_1;
+    _data[2] = x_2;
+    _data[3] = x_3;
+    _data[4] = x_4;
+    _data[5] = x_5;
+    _data[6] = x_6;
+   }
+   mini_vector(T x_0, T x_1, T x_2, T x_3, T x_4, T x_5, T x_6, T x_7) {
+    static_assert(Rank == 8, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+    _data[1] = x_1;
+    _data[2] = x_2;
+    _data[3] = x_3;
+    _data[4] = x_4;
+    _data[5] = x_5;
+    _data[6] = x_6;
+    _data[7] = x_7;
+   }
+   mini_vector(T x_0, T x_1, T x_2, T x_3, T x_4, T x_5, T x_6, T x_7, T x_8) {
+    static_assert(Rank == 9, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+    _data[1] = x_1;
+    _data[2] = x_2;
+    _data[3] = x_3;
+    _data[4] = x_4;
+    _data[5] = x_5;
+    _data[6] = x_6;
+    _data[7] = x_7;
+    _data[8] = x_8;
+   }
+   mini_vector(T x_0, T x_1, T x_2, T x_3, T x_4, T x_5, T x_6, T x_7, T x_8, T x_9) {
+    static_assert(Rank == 10, "mini_vector : incorrect number of variables in constructor");
+    _data[0] = x_0;
+    _data[1] = x_1;
+    _data[2] = x_2;
+    _data[3] = x_3;
+    _data[4] = x_4;
+    _data[5] = x_5;
+    _data[6] = x_6;
+    _data[7] = x_7;
+    _data[8] = x_8;
+    _data[9] = x_9;
+   };
+
+   /*
+ #define AUX(z,p,unused)  _data[p] = x_##p;
+ #define IMPL(z, NN, unused)                                \
+    mini_vector (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T x_)){ \
+     static_assert(Rank-1==NN,"mini_vector : incorrect number of variables in constructor");\
+     BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX,nil) }
+    BOOST_PP_REPEAT(TRIQS_MINI_VECTOR_NRANK_MAX , IMPL, nil);
+ #undef IMPL
+ #undef AUX
+    */
 
    mini_vector(const mini_vector & x){ *this = x; }
    mini_vector(mini_vector && x){ *this = std::move(x); }
@@ -77,7 +170,12 @@ namespace triqs { namespace utility {
 
    template<typename T2>
    mini_vector & operator=(const mini_vector<T2,Rank> & x){ for (int i=0;i<Rank; ++i) _data[i] = x[i]; return *this;}
-   
+
+   mini_vector &operator=(T x) {
+    for (int i = 0; i < Rank; ++i) _data[i] = x;
+    return *this;
+   }
+
    T & operator[](size_t i) { return _data[i];}
    const T & operator[](size_t i) const { return _data[i];}
    
@@ -130,9 +228,15 @@ namespace triqs { namespace utility {
   template <typename T> class mini_vector<T, 0> {
    T _data[1];
    public:
+   mini_vector(){} 
+   mini_vector(no_init_tag){} 
+
    T & operator[](size_t i) { return _data[i];}
    const T & operator[](size_t i) const { return _data[i];}
-   };
+   T * restrict ptr() { return _data;}
+   const T * restrict ptr() const { return _data;}
+   friend std::ostream & operator << ( std::ostream & out, mini_vector const & v ) {return out<<"[]";}
+  };
 
  // ------------- Comparison -------------------------------------- 
  
@@ -161,13 +265,13 @@ namespace triqs { namespace utility {
    return res;
   }
 
-#ifndef TRIQS_C11
-  // ------------- transform a tuple into a minivector --------------------------------------
-
-  template <typename T, typename TU> mini_vector<T, std::tuple_size<TU>::value> tuple_to_mini_vector(TU const &t) {
-   return tuple::apply_construct_parenthesis<mini_vector<T, std::tuple_size<TU>::value>>(t);
-  }
-#endif
+//#ifndef TRIQS_C11
+//  // ------------- transform a tuple into a minivector --------------------------------------
+//
+//  template <typename T, typename TU> mini_vector<T, std::tuple_size<TU>::value> tuple_to_mini_vector(TU const &t) {
+//   return tuple::apply_construct_parenthesis<mini_vector<T, std::tuple_size<TU>::value>>(t);
+//  }
+//#endif
 
 }}//namespace triqs::arrays 
 
@@ -175,6 +279,8 @@ namespace std { // overload std::get to work with it
 
 template <int i, typename T, int R> AUTO_DECL get(triqs::utility::mini_vector<T, R> &v) RETURN(v[i]);
 template <int i, typename T, int R> AUTO_DECL get(triqs::utility::mini_vector<T, R> const &v) RETURN(v[i]);
+template<typename T, int R> struct tuple_size<triqs::utility::mini_vector<T, R>>: std::integral_constant<size_t,R>{};
+
 }
 
 #endif

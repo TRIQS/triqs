@@ -17,17 +17,17 @@ int main() {
  // a vector of double
  vector<double> V(10);
 
- // arrays with custom TraversalOrder
+ // arrays with custom memory layout
 
  // C-style
- array<long, 3, 0, permutation(2, 1, 0)> A0(2, 3, 4);
- array<long, 3, 0> A0b; // same type but empty
+ array<long, 3> A0(2, 3, 4);
+ array<long, 3> A0b; // same type but empty
 
  // Fortran-style
- array<long, 3, TRAVERSAL_ORDER_FORTRAN> A4(2, 3, 4);
- array<long, 3, 0, permutation(0, 1, 2)> A1b; // same type but empty
+ array<long, 3> A4(2, 3, 4, FORTRAN_LAYOUT);
+ array<long, 3> A1b(FORTRAN_LAYOUT); // same type but empty
 
  // custom :  (i,j,k)  : index j is fastest, then k, then i
- array<long, 3, 0, permutation(1, 0, 2)> A2(2, 3, 4);
+ array<long, 3> A2(2, 3, 4, triqs::arrays::make_memory_layout(1, 0, 2));
 }
 

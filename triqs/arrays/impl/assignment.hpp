@@ -114,9 +114,19 @@ namespace triqs { namespace arrays {
       TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR;
       typedef typename LHS::value_type value_type;
       LHS & lhs; const RHS & rhs; 
-      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {} //, p(*(lhs_.data_start())) {}
+      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
       template<typename ... Args> void operator()(Args const & ... args) const { _ops_<value_type, typename RHS::value_type, OP>::invoke(lhs(args...),rhs(args...));}
-      void invoke() { foreach(lhs,*this); }
+      FORCEINLINE void invoke() { foreach(lhs,*this); }
+     };
+
+     // help compiler : in the most common case, less things to inline..
+     template<typename LHS, typename RHS>
+     struct impl<LHS,RHS,'E', ENABLE_IFC( ImmutableCuboidArray<RHS>::value && (!is_scalar_for<RHS,LHS>::value) && (!is_isp<RHS,LHS>::value)&& (!is_special<LHS,RHS>::value)) > {
+      TRIQS_REJECT_ASSIGN_TO_CONST;
+      typedef typename LHS::value_type value_type;
+      LHS & lhs; const RHS & rhs;
+      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
+      FORCEINLINE void invoke() { assign_foreach(lhs, rhs); }
      };
 
     // -----------------   assignment for scalar RHS, except some matrix case --------------------------------------------------

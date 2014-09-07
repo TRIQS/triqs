@@ -22,40 +22,20 @@
 #include <triqs/arrays.hpp>
 #include <iostream>
 
-namespace triqs { namespace arrays { 
+namespace triqs { namespace arrays {
 
-/* template <typename V, int R, ull_t Opt, ull_t To, typename ... I>  
-  array_view<V, sizeof...(I), Opt> reinterpret_array_view (array<V,R,Opt,To> const & a, I ... index) { 
-   //static int constexpr rank = sizeof...(I);
-   typedef array_view<V, sizeof...(I), Opt, indexmaps::mem_layout::c_order(rank)> return_t;
-   //typedef array_view<V, rank, Opt, indexmaps::mem_layout::c_order(rank)> return_t;
-   return return_t { make_shape(index...), a.storage() };
-   //return return_t (typename return_t::indexmap_type (mini_vector<size_t,rank>(index...)) , a.storage());
-  }
-*/
 
- template <typename V, int R, ull_t Opt, ull_t To, typename ... I>  
-  array_view<V, sizeof...(I), Opt> reinterpret (array<V,R,Opt,To> const & a, I ... index) { 
+ template <typename V, int R, typename To, typename... I>
+ array_view<V, sizeof...(I)> reinterpret(array<V, R, To> const &a, I... index) {
    return { {make_shape(index...)}, a.storage() };
   }
 
  // wrong for views
- template <typename V, int R, ull_t Opt, ull_t To, bool B, typename ... I>  
-  array_view<V, sizeof...(I), Opt,indexmaps::mem_layout::c_order(sizeof...(I))> reinterpret_array_view (array_view<V,R,Opt,To,B> const & a, I ... index) { 
+ template <typename V, int R, bool B, typename To, typename ... I>  
+  array_view<V, sizeof...(I)> reinterpret_array_view (array_view<V,R,To,B> const & a, I ... index) { 
    if (!has_contiguous_data(a)) TRIQS_RUNTIME_ERROR << "reinterpretation failure : data of the view are not contiguous";
    return { {make_shape(index...)}, a.storage() };
   }
-/*
- template <typename V, int R, ull_t Opt, ull_t To, typename ... I>  
-  array_view<V, sizeof...(I), Opt,indexmaps::mem_layout::c_order(sizeof...(I))> reinterpret_array_view_c (matrix<V,Opt,To> const & a, I ... index) { 
-   return { {make_shape(index...)}, a.storage() };
-  }
-
-template <typename V, int R, ull_t Opt, ull_t To, typename ... I>  
-  array_view<V, sizeof...(I), Opt,indexmaps::mem_layout::c_order(sizeof...(I))> reinterpret_array_view_c (vector<V,Opt> const & a, I ... index) { 
-   return { {make_shape(index...)}, a.storage() };
-  }
-*/
 
 }}
 

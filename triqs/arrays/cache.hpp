@@ -64,7 +64,7 @@ namespace arrays {
   exposed_view_type view2() const { return view1(bool_constant<is_amv_value_or_view_class<DataType>::value>()); }
 
   bool need_copy_dynamic(DataType const& x, std::false_type) const { return false; }
-  bool need_copy_dynamic(DataType const& x, std::true_type) const { return (x.indexmap().memory_indices_layout() != ml); }
+  bool need_copy_dynamic(DataType const& x, std::true_type) const { return (x.indexmap().get_memory_layout() != ml); }
 
   void back_update(std::true_type) {}
   void back_update(std::false_type) {
@@ -98,12 +98,12 @@ namespace arrays {
  template <typename DataType> using const_cache = cache_impl<DataType, true>;
 
  template <typename D>
- const_cache<D> make_const_cache(D const& x, memory_layout<D::domain_type::rank> ml = memory_layout<D::domain_type::rank>{'C'}) {
+ const_cache<D> make_const_cache(D const& x, memory_layout<D::domain_type::rank> ml = memory_layout<D::domain_type::rank>{}) {
   return {x, ml};
  }
 
  template <typename D>
- cache<D> make_cache(D const& x, memory_layout<D::domain_type::rank> ml = memory_layout<D::domain_type::rank>{'C'}) {
+ cache<D> make_cache(D const& x, memory_layout<D::domain_type::rank> ml = memory_layout<D::domain_type::rank>{}) {
   return {x, ml};
  }
 }

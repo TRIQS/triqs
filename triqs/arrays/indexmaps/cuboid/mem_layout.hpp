@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by O. Parcollet
+ * Copyright (C) 2011-2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,93 +18,110 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_INDEXMAP_MEMORY_LAYOUT_H
-#define TRIQS_ARRAYS_INDEXMAP_MEMORY_LAYOUT_H
-#include "../permutation.hpp"
-#include "../../impl/flags.hpp"
+#pragma once
+namespace triqs {
+namespace arrays {
 
-namespace triqs { namespace arrays {
+ struct __mem_layout_fortran_order {};
+ struct __mem_layout_c_order {};
+#define C_LAYOUT (triqs::arrays::__mem_layout_c_order())
+#define FORTRAN_LAYOUT (triqs::arrays::__mem_layout_fortran_order())
 
- namespace indexmaps { namespace mem_layout {
-  /* The storage order is given by a permutation P stored in a ull_t (unsigned long long) as in permutations::..
-   *   P[0] : the fastest index,
-   *   P[RANK-1] : the slowest index
-   *   Example : 
-   *   012 : Fortran, the first index is the fastest
-   *   210:  C the last index is the fastest
-   *   120 : storage (i,j,k) is : index j is fastest, then k, then i 
-   * 
-   * index_to_memory_rank  : i ---> r : to the index (0,1, ... etc), associates the rank in memory
-   *                         e.g. r=0 : fastest index, r = RANK-1 : the slowest
-   * memory_rank_to_index  : the inverse mapping : r---> i : 
-   *                         0-> the fastest index, etc..
-   *
-   * All these computations can be done *at compile time* (constexpr)
-   */
+ enum class memory_order_type {
+  C,
+  Fortran,
+  Custom
+ };
 
-  constexpr int memory_rank_to_index(ull_t p, int r) { return permutations::apply(p, r);} 
-  constexpr int index_to_memory_rank(ull_t p, int r) { return permutations::apply(permutations::inverse(p), r);} 
+ /* The storage order is given by a permutation P
+  *   P[0] : the slowest index,
+  *   P[Rank-1] : the fastest index
+  *   Example :
+  *   210 : Fortran, the first index is the fastest
+  *   012 : C the last index is the fastest
+  *   120 : storage (i,j,k) is : index j is slowest, then k, then i
+  */
+ template <int Rank> class memory_layout {
 
-  constexpr bool is_fortran (ull_t p){ return p == permutations::identity(permutations::size(p));}
-  constexpr bool is_c       (ull_t p){ return p == permutations::ridentity(permutations::size(p));}
+  memory_order_type order = memory_order_type::C;
+  mini_vector<int, Rank> p = utility::no_init_tag{};
 
-  constexpr ull_t fortran_order (int n){ return permutations::identity(n);}
-  constexpr ull_t c_order       (int n){ return permutations::ridentity(n);}
- 
-  template<int n> struct fortran_order_tr { static constexpr ull_t value = permutations::identity(n);};
-  template<int n> struct c_order_tr       { static constexpr ull_t value = permutations::ridentity(n);};
+  public:
+  static const int rank = Rank;
 
- // From the flag in the template definition to the real traversal_order
-  // 0 -> C order
-  // 1 -> Fortran Order
-  // Any other number interpreted as a permutation ?
-  
-  constexpr ull_t _get_traversal_order (int rank, ull_t fl, ull_t to) { return (flags::traversal_order_c(fl) ? c_order(rank) : 
-    (flags::traversal_order_fortran(fl)  ? fortran_order(rank) : (to==0 ? c_order(rank) : to )));}
-  
-  template< int rank, ull_t fl, ull_t to> struct get_traversal_order { static constexpr ull_t value = _get_traversal_order (rank,fl,to); };
- }}
-
- struct memory_layout_fortran {};
- struct memory_layout_c {};
-
-#define FORTRAN_LAYOUT (triqs::arrays::memory_layout_fortran())
-#define C_LAYOUT (triqs::arrays::memory_layout_fortran())
-
- // stores the layout == order of the indices in memory
- // wrapped into a little type to make constructor unambigous.
- template<int Rank>
-  struct memory_layout { 
-   ull_t value; 
-   explicit memory_layout (ull_t v) : value(v) {assert((permutations::size(v)==Rank));} 
-   explicit memory_layout (char ml='C') {
-    assert( (ml=='C') || (ml == 'F'));
-    value = (ml=='F' ? indexmaps::mem_layout::fortran_order(Rank) : indexmaps::mem_layout::c_order(Rank));
-   }
-   memory_layout (memory_layout_fortran) { value = indexmaps::mem_layout::fortran_order(Rank); }
-   memory_layout (memory_layout_c) { value = indexmaps::mem_layout::c_order(Rank); }
-   template<typename ... INT>
-    explicit memory_layout(int i0, int i1, INT ... in) : value (permutations::permutation(i0,i1,in...)){
-     static_assert( sizeof...(in)==Rank-2, "Error");
-    }
-   memory_layout (const memory_layout & C) = default; 
-   memory_layout (memory_layout && C) = default; 
-   memory_layout & operator =( memory_layout const &) = default;
-   memory_layout & operator =( memory_layout && x) = default; 
-
-   bool operator ==( memory_layout const & ml) const { return value == ml.value;}
-   bool operator !=( memory_layout const & ml) const { return value != ml.value;}
-
-   friend std::ostream &operator<<(std::ostream &out, memory_layout const &s) {
-    permutations::print(out, s.value);
-    return out;
-
-   }
-  };
-
-  template <int R, typename... INT> memory_layout<R> transpose(memory_layout<R> ml, INT... is) {
-   static_assert(sizeof...(INT)==R, "!");
-   return memory_layout<R>{permutations::compose(ml.value, permutations::inverse(permutations::permutation(is...)))};
+  explicit memory_layout() {
+   for (int u = 0; u < Rank; ++u) p[u] = u;
   }
-}}//namespace triqs::arrays 
-#endif
+
+  memory_layout(__mem_layout_fortran_order) {
+   order = memory_order_type::Fortran;
+   for (int u = 0; u < Rank; ++u) p[u] = Rank - u - 1;
+  }
+
+  memory_layout(__mem_layout_c_order) : memory_layout() {}
+
+  // internal use only : no check , we KNOW the order is not C or Fortran
+  template <typename T> explicit memory_layout(mini_vector<T, Rank> v, bool) : p(std::move(v)) {
+   order = memory_order_type::Custom;
+  }
+
+  // For the user : we find out whether it is C or Fortran
+  template <typename T> explicit memory_layout(mini_vector<T, Rank> v) : p(std::move(v)) {
+   bool c = true, f = true;
+   for (int u = 0; u < Rank; ++u) {
+    c = c && (v[u] == u);
+    f = f && (v[u] == Rank - u - 1);
+   }
+   if (c) return;
+   order = (f ? memory_order_type::Fortran : memory_order_type::Custom);
+  }
+
+  template <typename... INT>
+  explicit memory_layout(int i0, INT... in)
+     : memory_layout(mini_vector<int, sizeof...(INT) + 1>{i0, in...}) {}
+
+  bool operator==(memory_layout const &ml) const { return p == ml.p; }
+  bool operator!=(memory_layout const &ml) const { return !operator==(ml); }
+
+  int operator[](int u) const { return p[u]; }
+
+  bool is_c() const { return order == memory_order_type::C; }
+  bool is_fortran() const { return order == memory_order_type::Fortran; }
+
+  mini_vector<int, Rank> get_memory_positions() const {
+   auto r = mini_vector<int, Rank>(utility::no_init_tag{});
+   for (int u = 0; u < Rank; ++u) r[p[u]] = u;
+   return r;
+  }
+
+  mini_vector<int, Rank> get_indices_in_order() const { return p; }
+
+  friend std::ostream &operator<<(std::ostream &out, memory_layout const &s) { return out << s.p; }
+ };
+
+ // ------------------------- functions -------------------------------------
+
+ /// Make a memory_layout from the indices
+ template <typename... T> memory_layout<sizeof...(T)> make_memory_layout(T... x) { return memory_layout<sizeof...(T)>(x...); }
+
+ /// Make a memory_layout from the strides
+ template <int Rank> memory_layout<Rank> memory_layout_from_strides(mini_vector<std::ptrdiff_t, Rank> const &strides) {
+  mini_vector<int, Rank> c; // rely on init to 0 by default of mini_vector
+  for (int i = 0; i < Rank; ++i)
+   for (int j = i + 1; j < Rank; ++j)
+    if (strides[i] > strides[j])
+     c[i]++;
+    else
+     c[j]++;
+  // we computed the map : index -> memory_rank, which is the inverse map, cf mem_layout
+  return memory_layout<Rank>{c};
+ }
+
+ /// Apply a permutation to the indices
+ template <int R> memory_layout<R> transpose(memory_layout<R> const &ml, mini_vector<int, R> const &perm) {
+  mini_vector<int, R> res;
+  for (int u = 0; u < R; ++u) res[u] = perm[ml[u]];
+  return memory_layout<R>{res};
+ }
+}
+} // namespace triqs::arrays

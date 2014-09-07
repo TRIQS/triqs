@@ -27,6 +27,7 @@
 #include <iostream>
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl;
+#define TEST_ERR(X) std::cerr << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl;
 
 #define TEST_ASSERT(X)  if(!bool(X)) { std::stringstream fs; fs<< "Failed Assertion line "<< __LINE__<< " of file "<< __FILE__<<" :\n"<<BOOST_PP_STRINGIZE((X)); std::cout << fs.str()<< std::endl ; TRIQS_RUNTIME_ERROR<< fs.str();}
 

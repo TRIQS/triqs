@@ -154,11 +154,14 @@ namespace triqs { namespace mpi {
  template<typename A> struct mpi_impl<A,ENABLE_IFC(!mpi_datatype<typename A::value_type>::ok && arrays::is_amv_value_or_view_class<A>::value)> : boost_mpi_impl<A>{};
  
  // overload for views rvalues (created on the fly)
- template <typename V, int R, ull_t Opt, ull_t To, bool W> 
-  void reduce_in_place( communicator _c, arrays::array_view<V,R,Opt,To, W> && a, int root =0) { reduce_in_place(_c,a,root);}
+ template <typename V, int R, typename To, bool W> void reduce_in_place(communicator _c, arrays::array_view<V, R, To, W>&& a, int root = 0) {
+  reduce_in_place(_c, a, root);
+ }
 
- template <typename A, typename V, int R, ull_t Opt, ull_t To, bool W> 
-  void reduce( communicator _c, A const & a, arrays::array_view<V,R,Opt,To, W> && b, int root =0) { reduce(_c,a,b,root);}
+ template <typename A, typename V, int R, typename To, bool W>
+ void reduce(communicator _c, A const& a, arrays::array_view<V, R, To, W>&& b, int root = 0) {
+  reduce(_c, a, b, root);
+ }
 
  // to be implemented : scatter, gather for arrays
 

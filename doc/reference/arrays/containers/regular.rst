@@ -7,15 +7,9 @@ array, matrix & vector
 
 .. code-block:: c
 
-    template <typename ValueType, int Rank, ull_t OptionsFlags=0, ull_t TraversalOrder=0> class array;
-    template <typename ValueType,           ull_t OptionsFlags=0, ull_t TraversalOrder=0> class matrix;
-    template <typename ValueType,           ull_t OptionsFlags=0>                         class vector;
-
-where triqs::ull_t is the type defined by :
-
-.. code-block:: c
-
-  typedef unsigned long long ull_t;
+    template <typename ValueType, int Rank, typename TraversalOrder=void> class array;
+    template <typename ValueType,           typename TraversalOrder=void> class matrix;
+    template <typename ValueType>                                         class vector;
 
 
 * The library provides three basic containers: 
@@ -41,9 +35,8 @@ Template parameters
 +-----------------------------------------+-------------------------------+-------------------------------+--------------------------------------+
 | Rank                                    | int                           | rank                          | The rank of the array                |
 +-----------------------------------------+-------------------------------+-------------------------------+--------------------------------------+
-| :ref:`OptionsFlags<arr_templ_par_opt>`  | ull_t                         | opt_flags                     | Compile time options                 |
-+-----------------------------------------+-------------------------------+-------------------------------+--------------------------------------+
-| :ref:`TraversalOrder<arr_templ_par_to>` | ull_t                         |                               | Traversal Order for all loops        |
+| :ref:`TraversalOrder<arr_templ_par_to>` | ull_t                         |                               | Traversal Order for loops and        |
+|                                         |                               |                               | iterators                            |
 +-----------------------------------------+-------------------------------+-------------------------------+--------------------------------------+
 
 NB: Rank is only present for array, since matrix have rank 2 and vector rank 1.

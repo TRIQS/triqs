@@ -44,6 +44,7 @@ namespace arrays {
   long n;
 
   typedef typename A_t::value_type value_type;
+  using traversal_order_t = typename A_t::traversal_order_t;
   typedef indexmaps::slicer<typename A_t::indexmap_type, long, ellipsis> slicer_t;
   typedef typename slicer_t::r_type indexmap_type;
   typedef typename indexmap_type::domain_type domain_type;
@@ -98,6 +99,7 @@ namespace arrays {
   long n;
 
   typedef typename A_t::value_type value_type;
+  using traversal_order_t = typename A_t::traversal_order_t;
   typedef indexmaps::slicer<typename A_t::indexmap_type, long, ellipsis> slicer_t;
   typedef typename slicer_t::r_type indexmap_type;
   typedef typename indexmap_type::domain_type domain_type;

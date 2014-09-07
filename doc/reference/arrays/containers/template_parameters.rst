@@ -1,51 +1,41 @@
 Template parameters of the containers and views
 ======================================================
 
-.. _arr_templ_par_opt:
-
-OptionFlags
-----------------------------
-
-* OptionFlags is a series of flags determining various options at compile time.
-  The possible flags are accessible via a constexpr ull_t in triqs::arrays or a macro: 
- 
-  ======================== =======================================  
-  Macro                    constexpr equivalent
-  ======================== =======================================  
-  BOUND_CHECK              triqs::arrays::BoundCheck
-  TRAVERSAL_ORDER_C        triqs::arrays::TraversalOrderC
-  TRAVERSAL_ORDER_FORTRAN  triqs::arrays::TraversalOrderFortran
-  DEFAULT_INIT             triqs::arrays::DefaultInit
-  ======================== =======================================  
-
-  
-  Defaults can be modified with the macros: 
-
-  * `TRIQS_ARRAYS_ENFORCE_BOUNDCHECK`  : enforce BoundCheck by default (slows down codes ! Use only for debugging purposes).
-  
 .. _arr_templ_par_to:
 
 TraversalOrder
 ----------------------------
 
-* TraversalOrder is a coding of the optimal ordering of indices, given by a permutation
-  evaluated at **compile time**. 
-  The traversal of the arrays (iterators, foreach loop) will be written and optimised for this 
+* TraversalOrder is a type encoding of the optimal traversal in memory.
+  Default is void, corresponding to  as regular C-style ordering (slowest index first).
+
+* The traversal of the arrays (iterators, foreach loop) will be written and optimised for this 
   order.
 
-  The default (0) is understood as regular C-style ordering (slowest index first).
+* It is indeed sometimes necessary to know *at compile time* the traversal order to generate
+  an optimal code. The default (C-style) is sufficient is most cases, but not always...
 
-  Note that an array can use any index ordering in memory, and that decision is take at run time
-  (this is necessary for interfacing with python numpy arrays, see below). 
-  The code will be correct for any order, but optimised for the TraversalOrder.
+* More explanations here...
+
+* Note that this notion is completely independent of the real memory layout of the array, 
+  which is a runtime parameter.
+
+  The code will be correct for any order, but may be faster for the TraversalOrder.
   
-  For a few very specials operations (e.g. regrouping of indices), the indices ordering in memory and TraversalOrder
-  must coincide. This will be explicitely said below. By default, it is not necessary (but can be suboptimal).
+* TraversalOrder is not present for vector since there is only one possibility in 1d.
 
-  The permutation P encodes the position of the index:  P[0] is the fastest index, P[rank - 1]  the slowest index 
-  (see examples below).
+* TODO : document the various possibility beyond C style.
 
-  TraversalOrder is not present for vector since there is only one possibility in 1d.
-
++--------------------------+------------------------------------------------------------+
+| TraversalOrder           | Meaning                                                    |
++==========================+============================================================+
+| void                     | C style traversal (lowest index first).                    |
++--------------------------+------------------------------------------------------------+
+| _traversal_fortran       | Fortran style traversal (last index first)                 |
++--------------------------+------------------------------------------------------------+
+| _traversal_dynamical     | Traverse in the order specified by the memory layout       |
++--------------------------+------------------------------------------------------------+
+| _traversal_custom<2,1,0> | Traverse in the order specified by the permutation (2,1,0) |
++--------------------------+------------------------------------------------------------+
 
 

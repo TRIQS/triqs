@@ -31,10 +31,10 @@ int main(int argc, char **argv) {
 
  
 
- array<long,2, BoundCheck > A (2,3);
+ array<long,2> A (2,3);
  array<long,2 > B (2,3);
  array<long,1 > C(2);
- array<long,2, BoundCheck > Af (2,3, FORTRAN_LAYOUT);
+ array<long,2> Af (2,3, FORTRAN_LAYOUT);
 
  try { 
 

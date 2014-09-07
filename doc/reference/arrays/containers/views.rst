@@ -9,20 +9,13 @@ Views
 
 .. code-block:: c
 
-    template <typename ValueType, int Rank, ull_t OptionsFlags=0, ull_t TraversalOrder=0> class array_view;
-    template <typename ValueType,           ull_t OptionsFlags=0, ull_t TraversalOrder=0> class matrix_view;
-    template <typename ValueType,           ull_t OptionsFlags=0>                         class vector_view;
+    template <typename ValueType, int Rank, typename TraversalOrder=void> class array_view;
+    template <typename ValueType,           typename TraversalOrder=void> class matrix_view;
+    template <typename ValueType>                                         class vector_view;
 
-    template <typename ValueType, int Rank, ull_t OptionsFlags=0, ull_t TraversalOrder=0> class array_const_view;
-    template <typename ValueType,           ull_t OptionsFlags=0, ull_t TraversalOrder=0> class matrix_const_view;
-    template <typename ValueType,           ull_t OptionsFlags=0>                         class vector_const_view;
-
-
-where triqs::ull_t is the type defined by :
-
-.. code-block:: c
-
-    typedef unsigned long long ull_t;
+    template <typename ValueType, int Rank, typename TraversalOrder=void> class array_const_view;
+    template <typename ValueType,           typename TraversalOrder=void> class matrix_const_view;
+    template <typename ValueType>                                         class vector_const_view;
 
 * The view types of X (= array, matrix, vector) are called X_view, and X_const_view, with the same template parameters as the regular type.
 
@@ -64,8 +57,6 @@ Template parameters
 |                                         | scalar).                      |                               |                                      |
 +-----------------------------------------+-------------------------------+-------------------------------+--------------------------------------+
 | Rank                                    | int                           | rank                          | The rank of the array                |
-+-----------------------------------------+-------------------------------+-------------------------------+--------------------------------------+
-| :ref:`OptionsFlags<arr_templ_par_opt>`  | ull_t                         | opt_flags                     | Compile time options                 |
 +-----------------------------------------+-------------------------------+-------------------------------+--------------------------------------+
 | :ref:`TraversalOrder<arr_templ_par_to>` | ull_t                         |                               | Traversal Order for all loops        |
 +-----------------------------------------+-------------------------------+-------------------------------+--------------------------------------+
