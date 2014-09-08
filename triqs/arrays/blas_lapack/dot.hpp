@@ -67,13 +67,10 @@ namespace triqs { namespace arrays { namespace blas {
    //return f77::dot(X.size(), Cx().data_start(), Cx().stride(), Cy().data_start(), Cy().stride());
   }
 
- template< bool Star, typename T>
-  typename std::enable_if<triqs::is_complex<T>::value && Star,T>::type
-  _conj(T && x) { return conj(std::forward<T>(x));}
-
- template< bool Star, typename T>
-  typename std::enable_if<!( triqs::is_complex<T>::value && Star),T>::type
-  _conj(T && x) { return std::forward<T>(x);}
+  template <bool Star> std::complex<double> _conj(std::complex<double> const& x);
+  template <> std::complex<double> _conj<true>(std::complex<double> const& x) { return conj(x); }
+  template <> std::complex<double> _conj<false>(std::complex<double> const& x) { return x;}
+  template <bool Star> double _conj(double x) { return x; }
 
  /**
   * Calls dot product of 2 vectors.
@@ -94,7 +91,7 @@ namespace triqs { namespace arrays { namespace blas {
    auto * restrict X_ = X.data_start();
    auto * restrict Y_ = Y.data_start();
    if ((incx==1) && (incy==1)) {
-    for (size_t i=0; i<N; ++i) res += _conj<Star>(X_[i]) * Y_[i];
+    for (size_t i = 0; i < N; ++i) res += _conj<Star>(X_[i]) * Y_[i];
    }
    else { // code for unequal increments or equal increments  not equal to 1
     for (size_t i=0, ix=0, iy=0; i<N; ++i, ix += incx, iy +=incy) {res += _conj<Star>(X_[ix]) * Y_[iy]; }
