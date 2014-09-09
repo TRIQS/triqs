@@ -67,10 +67,10 @@ namespace triqs { namespace arrays { namespace blas {
    //return f77::dot(X.size(), Cx().data_start(), Cx().stride(), Cy().data_start(), Cy().stride());
   }
 
-  template <bool Star> std::complex<double> _conj(std::complex<double> const& x);
-  template <> std::complex<double> _conj<true>(std::complex<double> const& x) { return conj(x); }
-  template <> std::complex<double> _conj<false>(std::complex<double> const& x) { return x;}
-  template <bool Star> double _conj(double x) { return x; }
+  template <bool Star> inline std::complex<double> _conj(std::complex<double> const& x);
+  template <> inline std::complex<double> _conj<true>(std::complex<double> const& x) { return conj(x); }
+  template <> inline std::complex<double> _conj<false>(std::complex<double> const& x) { return x;}
+  template <bool Star> inline double _conj(double x) { return x; }
 
  /**
   * Calls dot product of 2 vectors.
