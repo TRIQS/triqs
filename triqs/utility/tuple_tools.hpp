@@ -71,19 +71,19 @@ namespace triqs { namespace tuple {
  /*
  /// Repeat an element
  template<typename T, int R> struct make_tuple_repeat_impl;
- 
- template <typename T> struct make_tuple_repeat_impl<T,1> {
-  static std::tuple<T> invoke(T&&x) { return {x};}
+
+ template <typename T> struct make_tuple_repeat_impl<T, 1> {
+  static std::tuple<T> invoke(T &&x) { return std::make_tuple(x); }
  };
- template <typename T> struct make_tuple_repeat_impl<T,2> {
-  static std::tuple<T,T> invoke(T&&x) { return {x,x};}
+ template <typename T> struct make_tuple_repeat_impl<T, 2> {
+  static std::tuple<T, T> invoke(T &&x) { return std::make_tuple(x, x); }
  };
- template <typename T> struct make_tuple_repeat_impl<T,3> {
-  static std::tuple<T,T,T> invoke(T&&x) { return {x,x,x};}
+ template <typename T> struct make_tuple_repeat_impl<T, 3> {
+  static std::tuple<T, T, T> invoke(T &&x) { return std::make_tuple(x, x, x); }
  };
 
  template <typename T> struct make_tuple_repeat_impl<T, 4> {
-  static std::tuple<T,T,T,T> invoke(T &&x) { return {x, x, x, x}; }
+  static std::tuple<T, T, T, T> invoke(T &&x) { return std::make_tuple(x, x, x, x); }
  };
 
  template <int R, typename T> auto make_tuple_repeat(T &&x) { return make_tuple_repeat_impl<T, R>::invoke(std::forward<T>(x)); }
