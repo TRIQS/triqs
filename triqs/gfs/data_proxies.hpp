@@ -104,19 +104,6 @@ namespace triqs { namespace gfs {
   AUTO_DECL operator()(S& data, Tu const& tu) const RETURN(_impl(data, tu, triqs::tuple::_get_seq<Tu>()));
  };
 
- //---------------------------- multi variable with index mixer----------------------------------
- template <typename T, int Nvar, int TargetDim, typename IndexMixer>
- struct data_proxy_array_index_mixer : data_proxy_array_common<T, Nvar + TargetDim> {
-
-  template <typename S1, typename S2> static utility::mini_vector<int, Nvar + TargetDim> join_shape(S1 const& s1, S2 const& s2) {
-   return tuple::apply_construct_parenthesis<utility::mini_vector<int, Nvar + TargetDim>>(IndexMixer::invoke(s1, s2));
-  }
-
-  template <typename S, typename Tu> auto operator()(S& data, Tu const& tu) const {
-   return tuple::apply(data, IndexMixer::invoke(tu, tuple::make_tuple_repeat<TargetDim>(arrays::range())));
-  }
- };
-
  //---------------------------- vector ----------------------------------
 
  template<typename V> struct view_proxy : public V { 
@@ -141,15 +128,6 @@ namespace triqs { namespace gfs {
 
   /// The data access
   template <typename S> AUTO_DECL operator()(S& data, size_t i) const  RETURN(data[i]);
-
-  /*
-  T        &  operator()(storage_t  &           data, size_t i) { return data[i];}
-  T  const &  operator()(storage_t      const & data, size_t i) const { return data[i];}
-  Tv       &  operator()(storage_view_t &       data, size_t i)       { return data[i];}
-  Tv const &  operator()(storage_view_t const & data, size_t i) const { return data[i];}
-  Tcv       &  operator()(storage_const_view_t &       data, size_t i)       { return data[i];}
-  Tcv const &  operator()(storage_const_view_t const & data, size_t i) const { return data[i];}
-*/
 
   template<typename S, typename RHS> static void assign_to_scalar   (S & data, RHS && rhs) {for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
   template <typename ST, typename RHS> static void rebind(ST& data, RHS&& rhs) { data.clear(); for (auto & x : rhs.data()) data.push_back(x);}

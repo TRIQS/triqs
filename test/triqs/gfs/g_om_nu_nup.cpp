@@ -12,8 +12,8 @@ int main() {
  try {
   double beta = 1;
 
-  /*
-  auto G = gf<imfreq_bff, tensor_valued<4>>{{{beta, Boson, 3}, {beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2, 2, 2}};
+  auto G = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>>{
+      {{beta, Boson, 3}, {beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2, 2, 2}};
 
   // try to assign to expression 
   placeholder<2> om_;
@@ -38,7 +38,6 @@ int main() {
   //h5_write(file, "g[0]c", gg);
   h5_write(file, "g[0]", g0);
 
- */
   }
  TRIQS_CATCH_AND_ABORT;
 }

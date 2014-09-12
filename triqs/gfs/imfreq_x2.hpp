@@ -24,6 +24,8 @@
 namespace triqs {
 namespace gfs {
 
+ DEAD CODE
+
  struct matrix_operations {};
 
  // in this version, we store all frequencies, to be able to write matrix operation simply.

@@ -23,7 +23,9 @@
 #include "./meshes/matsubara_freq.hpp"
 namespace triqs {
 namespace gfs {
+ 
 
+ WRONGE CODE 
  // short cut. Here only the change compare to default multi var implementation
  using imfreq_bff = cartesian_product<imfreq, imfreq, imfreq>;
  //struct imfreq_bff {}; // = cartesian_product<imfreq, imfreq, imfreq>;

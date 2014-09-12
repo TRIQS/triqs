@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-#define TRIQS_GF_INCLUDED
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/std_vector_expr_template.hpp>
 #include <triqs/utility/factory.hpp>
@@ -72,6 +71,8 @@ namespace gfs {
  template <typename Variable, typename Target = gf_default_target_t<Variable>,
            typename Singularity = gf_default_singularity_t<Variable, Target>, typename Opt = void>
  using gf_const_view = gf_view<Variable, Target, Singularity, Opt, true>;
+
+ template<typename Variable> constexpr int get_n_variables(Variable) { return 1;} // default.
 
  // the implementation class
  template <typename Variable, typename Target, typename Singularity, typename Opt, bool IsView, bool IsConst> class gf_impl;
@@ -462,8 +463,20 @@ namespace gfs {
 
   using target_shape_t = typename factory::target_shape_t;
 
-  gf(typename B::mesh_t m, target_shape_t shape = target_shape_t{}, typename B::indices_t const &ind = typename B::indices_t{}, std::string name = "")
-     : B(std::move(m), factory::make_data(m, shape), factory::make_singularity(m, shape), typename B::symmetry_t{}, ind, name, // clean unncessary types
+  // with aux, and indices
+  gf(typename B::mesh_t m, target_shape_t shape, typename factory::aux_t aux,
+     typename B::indices_t const &ind = typename B::indices_t{}, std::string name = "")
+     : B(std::move(m), factory::make_data(m, shape, aux), factory::make_singularity(m, shape), typename B::symmetry_t{}, ind,
+         name, // clean unncessary types
+         typename B::evaluator_t{}) {
+   if (this->_indices.is_empty()) this->_indices = typename B::indices_t(shape);
+  }
+
+  // without the aux (defaulted)
+  gf(typename B::mesh_t m, target_shape_t shape = target_shape_t{}, typename B::indices_t const &ind = typename B::indices_t{},
+     std::string name = "")
+     : B(std::move(m), factory::make_data(m, shape, typename factory::aux_t{}), factory::make_singularity(m, shape),
+         typename B::symmetry_t{}, ind, name, // clean unncessary types
          typename B::evaluator_t{}) {
    if (this->_indices.is_empty()) this->_indices = typename B::indices_t(shape);
   }
@@ -805,9 +818,10 @@ namespace gfs {
    using gf_t = gf<Var, Target, Singularity, Opt>;
    using target_shape_t = arrays::mini_vector<int, VarDim>;
    using mesh_t = typename gf_t::mesh_t;
+   using aux_t = arrays::memory_layout< get_n_variables(Var{}) + VarDim>;
    //
-   static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t shape) {
-    typename gf_t::data_t A(gf_t::data_proxy_t::join_shape(m.size_of_components(), shape));
+   static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t shape, aux_t ml) {
+    typename gf_t::data_t A(gf_t::data_proxy_t::join_shape(m.size_of_components(), shape), ml);
     A() = 0;
     return A;
    }

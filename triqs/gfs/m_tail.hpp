@@ -73,8 +73,9 @@ namespace gfs {
    using gf_t=gf<Variable, local::tail> ;
    //using gf_view_t=gf_view<block_index, Target> ;
    struct target_shape_t {};
+   using aux_t = nothing;
 
-   static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t) { return std::vector<local::tail>(m.size()); }
+   static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t, aux_t) { return std::vector<local::tail>(m.size()); }
    static nothing make_singularity(mesh_t const &m, target_shape_t) {
     return {};
    }

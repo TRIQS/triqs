@@ -21,6 +21,8 @@
 #ifndef TRIQS_GFS_ALL_H
 #define TRIQS_GFS_ALL_H
 
+#define TRIQS_GF_INCLUDED
+
 #include <triqs/gfs/block.hpp>
 #include <triqs/gfs/imtime.hpp>
 #include <triqs/gfs/imfreq.hpp>
