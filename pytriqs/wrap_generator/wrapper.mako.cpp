@@ -954,8 +954,9 @@ static PyObject * ${c.py_type}_${op_name} (PyObject* v, PyObject *w){
    CATCH_AND_RETURN("in calling C++ overload \n  ${overload._get_c_signature()} \nin implementation of operator ${overload._get_calling_pattern()} ", NULL)
   }
   %endfor
-  PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload._get_calling_pattern()} ");
-  return NULL;
+  //PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload._get_calling_pattern()} ");
+  Py_INCREF(Py_NotImplemented);
+  return Py_NotImplemented;
 }
 
 %elif op.arity == 1:
@@ -970,8 +971,9 @@ static PyObject * ${c.py_type}_${op_name} (PyObject *v){
    CATCH_AND_RETURN("in calling C++ overload \n  ${overload._get_c_signature()} \nin implementation of operator ${overload._get_calling_pattern()} ", NULL)
   }
   %endfor
-  PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload._get_calling_pattern()} ");
-  return NULL;
+  //PyErr_SetString(PyExc_RuntimeError,"Error: no C++ overload found in implementation of operator ${overload._get_calling_pattern()} ");
+  Py_INCREF(Py_NotImplemented);
+  return Py_NotImplemented;
 }
 
 %endif
