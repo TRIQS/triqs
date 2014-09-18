@@ -23,12 +23,16 @@ int main() {
   // try to assign to expression 
   placeholder<0> k_;
   placeholder<1> w_;
-  auto eps = make_expr( [](k_t const& k) { return -2 * (cos(k(0)) + cos(k(1))); }) ;
 
-  G(k_, w_) << 1 / (w_ - eps(k_) - 1 / (w_ + 2));
+  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
+  G(k_, w_) << 1 / (w_ - eps_k - 1 / (w_ + 2));
 
-  // hdf5 
-  h5::file file("ess_g_k_om.h5", H5F_ACC_TRUNC );
+  // same
+  // auto eps = make_expr( [](k_t const& k) { return -2 * (cos(k(0)) + cos(k(1))); }) ;
+  // G(k_, w_) << 1 / (w_ - eps(k_) - 1 / (w_ + 2));
+
+  // hdf5
+  h5::file file("ess_g_k_om.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", G);
 
  

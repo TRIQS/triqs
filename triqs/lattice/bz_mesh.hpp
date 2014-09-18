@@ -68,6 +68,8 @@ namespace lattice {
    long index() const { return _index; }
    bool at_end() const { return (_index == m->size()); }
    void reset() { _index = 0; }
+   double operator()(int i) const { return m->index_to_point(_index)(i);}
+   double operator[](int i) const { return m->index_to_point(_index)(i);}
   };
 
   /// Accessing a point of the mesh

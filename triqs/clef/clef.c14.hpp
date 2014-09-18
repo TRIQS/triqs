@@ -58,12 +58,19 @@ namespace triqs { namespace clef {
   *  Placeholder and corresponding traits
   *  --------------------------------------------------------------------------------------------------- */
  template<int i, typename T> struct pair; // forward
+ template<typename Tag, typename... T> struct expr; //forward
 
  // a placeholder is an empty struct, labelled by an int.
  template<int N> struct placeholder {
   static_assert( (N>=0) && (N<64) , "Placeholder number limited to [0,63]");
   static constexpr int index = N;
-  template <typename RHS> pair<N,RHS> operator = (RHS && rhs) { return {std::forward<RHS>(rhs)};} 
+  template <typename RHS> pair<N,RHS> operator = (RHS && rhs) { return {std::forward<RHS>(rhs)};}
+  template <typename... T> expr<tags::function, placeholder, expr_storage_t<T>...> operator()(T&&... x) const {
+   return {tags::function{}, *this, std::forward<T>(x)...};
+  }
+  template <typename T> expr<tags::subscript, placeholder, expr_storage_t<T>> operator[](T&& x) const {
+   return {tags::subscript{}, *this, std::forward<T>(x)};
+  }
  };
 
  // placeholder will always be copied (they are empty anyway).
