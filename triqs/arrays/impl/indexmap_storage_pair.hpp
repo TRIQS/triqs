@@ -97,10 +97,9 @@ namespace triqs { namespace arrays {
    protected:
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-    indexmap_storage_pair (PyObject * X, bool allow_copy, const char * name ) {
-     //std::cout << " Enter IPS ref count = "<< X->ob_refcnt << std::endl;
+    indexmap_storage_pair (PyObject * X, bool enforce_copy, const char * name ) {
      try {
-      numpy_interface::numpy_extractor<indexmap_type,value_type> E(X, allow_copy);
+      numpy_interface::numpy_extractor<indexmap_type,value_type> E(X, enforce_copy);
       this->indexmap_ = E.indexmap(); this->storage_  = E.storage();
      }
      catch(numpy_interface::copy_exception s){// intercept only this one...

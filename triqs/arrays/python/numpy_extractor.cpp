@@ -27,9 +27,8 @@
 
 namespace triqs { namespace arrays { namespace numpy_interface  {
 
-
- PyObject * numpy_extractor_impl ( PyObject * X, bool allow_copy, std::string type_name, 
-   int elementsType, int rank, size_t * lengths, std::ptrdiff_t * strides, size_t size_of_ValueType) {
+  PyObject *numpy_extractor_impl(PyObject *X, bool enforce_copy, std::string type_name, int elementsType, int rank,
+                                 size_t *lengths, std::ptrdiff_t *strides, size_t size_of_ValueType) {
 
   PyObject * numpy_obj;
 
@@ -38,7 +37,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
 
   static const char * error_msg = "   A deep copy of the object would be necessary while views are supposed to guarantee to present a *view* of the python data.\n";
 
-  if (!allow_copy) {
+  if (!enforce_copy) {
    if (!PyArray_Check(X)) throw copy_exception () << error_msg<<"   Indeed the object was not even an array !\n";
    if ( elementsType != PyArray_TYPE((PyArrayObject*)X))
     throw copy_exception () << error_msg<<"   The deep copy is caused by a type mismatch of the elements. Expected "<< type_name<< " and found XXX \n";
@@ -64,12 +63,14 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
 
    //bool ForceCast = false;// Unless FORCECAST is present in flags, this call will generate an error if the data type cannot be safely obtained from the object.
    int flags = 0; //(ForceCast ? NPY_FORCECAST : 0) ;// do NOT force a copy | (make_copy ?  NPY_ENSURECOPY : 0);
-   if (!(PyArray_Check(X) ))
+   //if (!(PyArray_Check(X) ))
     //flags |= ( IndexMapType::traversal_order == indexmaps::mem_layout::c_order(rank) ? NPY_C_CONTIGUOUS : NPY_F_CONTIGUOUS); //impose mem order
 #ifdef TRIQS_NUMPY_VERSION_LT_17
-    flags |= (NPY_C_CONTIGUOUS); //impose mem order
+   flags |= (NPY_C_CONTIGUOUS); //impose mem order
+   flags |= (NPY_ENSURECOPY);
 #else
-    flags |= (NPY_ARRAY_C_CONTIGUOUS); //impose mem order
+   flags |= (NPY_ARRAY_C_CONTIGUOUS); // impose mem order
+   flags |= (NPY_ARRAY_ENSURECOPY);
 #endif
    numpy_obj= PyArray_FromAny(X,PyArray_DescrFromType(elementsType), rank,rank, flags , NULL );
 
