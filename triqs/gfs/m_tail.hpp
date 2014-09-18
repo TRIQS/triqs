@@ -22,83 +22,141 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./meshes/discrete.hpp"
 
 namespace triqs {
 namespace gfs {
 
+ template <typename Var, typename RHS, bool IsView>
+ void assign_singularity_from_function(gf_impl<Var, tail, nothing, void, IsView, false> &s, RHS const &rhs) {
+  auto t = tail_omega(s.get_from_linear_index(0));
+  // a bit faster to first replace (some part of expression are precomputed).
+  clef::placeholder<0> x_;
+  //auto expr = rhs(x_, t);
+  //for (auto x : s.mesh()) s[x] = eval(expr, x_ = x);
+  for (auto x : s.mesh()) s[x] = rhs(x, t);
+ }
+
+ /// ---------------------------  singularity ---------------------------------
+
+ template <typename V1, typename V2, typename Target> struct gf_default_singularity<cartesian_product<V1, V2>, Target> {
+  using S1 = typename gf_default_singularity<V1, Target>::type;
+  using S2 = typename gf_default_singularity<V2, Target>::type;
+  // type is nothing unless S1 is nothing and S2 is not, or 1 <-> 2
+  using type = std14::conditional_t < is_nothing<S1>() && (!is_nothing<S2>()), gf<V1, S2>,
+        std14::conditional_t < is_nothing<S2>() && (!is_nothing<S1>()), gf<V2, S1>, nothing >>
+      ;
+ };
+
  namespace gfs_implementation {
 
-  /*template <typename T> constexpr bool has_a_singularity() {
-   return std::is_same<typename singularity<V1, Target>::type, local::tail>::value;
-  }
-
-  /// ---------------------------  singularity ---------------------------------
-
-  template <typename V1, typename V2, typename Target, typename Opt> struct singularity<cartesian_product<V1,V2>, Target, Opt> {
-   using type = std14::conditional_t < (!has_a_singularity<V1>()) && has_a_singularity<V2>(), gf<V1, local::tail>, nothing > ;
-  };
-  */
   /// ---------------------------  hdf5 ---------------------------------
- 
-  template <typename Variable, typename Opt> struct h5_name<Variable, local::tail, nothing, Opt> {
+
+  template <typename Variable, typename Opt> struct h5_name<Variable, tail, nothing, Opt> {
    static std::string invoke() { return "xxxxx"; }
   };
 
-  template <typename Variable, typename Opt> struct h5_rw<Variable, local::tail, nothing, Opt> {
+  template <typename Variable, typename Opt> struct h5_rw<Variable, tail, nothing, Opt> {
 
-   static void write(h5::group gr, gf_const_view<Variable, local::tail, nothing, Opt> g) {
-    for (size_t i = 0; i < g.mesh().size(); ++i) h5_write(gr, std::to_string(i), g._data[i]);
+   static void write(h5::group gr, gf_const_view<Variable, tail, nothing, Opt> g) {
+    // for (size_t i = 0; i < g.mesh().size(); ++i) h5_write(gr, std::to_string(i), g._data[i]);
     // h5_write(gr,"symmetry",g._symmetry);
    }
 
-   template <bool IsView> static void read(h5::group gr, gf_impl<Variable, local::tail, nothing, Opt, IsView, false> &g) {
+   template <bool IsView> static void read(h5::group gr, gf_impl<Variable, tail, nothing, Opt, IsView, false> &g) {
     // does not work : need to read the block name and remake the mesh...
-    //g._mesh = gf_mesh<block_index, Opt>(gr.get_all_subgroup_names());
-    //g._data.resize(g._mesh.size());
+    // g._mesh = gf_mesh<block_index, Opt>(gr.get_all_subgroup_names());
+    // g._data.resize(g._mesh.size());
     // if (g._data.size() != g._mesh.size()) TRIQS_RUNTIME_ERROR << "h5 read block gf : number of block mismatch";
-    //for (size_t i = 0; i < g.mesh().size(); ++i) h5_read(gr, g.mesh().domain().names()[i], g._data[i]);
+    // for (size_t i = 0; i < g.mesh().size(); ++i) h5_read(gr, g.mesh().domain().names()[i], g._data[i]);
     // h5_read(gr,"symmetry",g._symmetry);
    }
   };
 
-  /// ---------------------------  data access  ---------------------------------
+  // ---------------------------  data access  ---------------------------------
 
-  template <typename Variable, typename Opt> struct data_proxy<Variable, local::tail, Opt> : data_proxy_vector<local::tail> {};
+  template <typename Variable, typename Opt> struct data_proxy<Variable, tail, Opt> {
 
-  // -------------------------------   Factories  --------------------------------------------------
+   struct storage_t {
+    arrays::array<dcomplex, 4> data;
+    arrays::array<int, 2> mask;
+    int omin;
+   };
 
-  template <typename Variable, typename Opt> struct factories<Variable, local::tail, nothing, Opt> {
-   using mesh_t=gf_mesh<Variable, Opt> ;
-   using gf_t=gf<Variable, local::tail> ;
-   //using gf_view_t=gf_view<block_index, Target> ;
-   struct target_shape_t {};
-   using aux_t = nothing;
+   struct storage_view_t {
+    arrays::array_view<dcomplex, 4> data;
+    arrays::array_view<int, 2> mask;
+    int omin;
+    template<typename S> storage_view_t(S &s): data(s.data), mask(s.mask), omin(s.omin){}
+   };
 
-   static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t, aux_t) { return std::vector<local::tail>(m.size()); }
-   static nothing make_singularity(mesh_t const &m, target_shape_t) {
-    return {};
+   struct storage_const_view_t {
+    arrays::array_const_view<dcomplex, 4> data;
+    arrays::array_const_view<int, 2> mask;
+    int omin;
+    template<typename S> storage_const_view_t(S &s): data(s.data), mask(s.mask), omin(s.omin){}
+   };
+
+   // from the shape of the mesh and the target, make the shape of the array. default is to glue them
+   // template <typename S1, typename S2> static auto join_shape(S1 const &s1, S2 const &s2) { return make_shape(join(s1, s2); }
+
+   template <typename S, typename RHS> static void assign_to_scalar(S &data, RHS &&rhs) { data() = std::forward<RHS>(rhs); }
+   template <typename ST, typename RHS> static void rebind(ST &data, RHS &&rhs) { data.rebind(rhs.data()); }
+
+   template <typename S> tail_view operator()(S &data, int i) const {
+    return {data.data(i, arrays::ellipsis()), data.mask, data.omin};
+   }
+
+   template <typename S> tail_const_view operator()(S const &data, int i) const {
+    return {data.data(i, arrays::ellipsis()), data.mask, data.omin};
    }
   };
 
-  // partial_eval
-  template <typename Variable, typename Opt, bool IsConst> struct partial_eval_impl<Variable, local::tail, nothing, Opt, IsConst> {
+  // -------------------------------   Factory for data  --------------------------------------------------
 
-   using gv_t = gf_view<Variable, local::tail, nothing, Opt, IsConst>;
+  template <typename Variable, typename Opt> struct data_factory<Variable, tail, nothing, Opt> {
+   using mesh_t = gf_mesh<Variable, Opt>;
+   using gf_t = gf<Variable, tail>;
+   using target_shape_t = arrays::mini_vector<int, 2>;
+   // struct target_shape_t {};
+   using aux_t = nothing;
+
+   static typename gf_t::data_t make(mesh_t const &m, target_shape_t sh, aux_t) {
+    auto t = tail(sh); // build a defaut tail
+    // and duplicate it over the mesh size
+    return {arrays::array<dcomplex, 4>{t.data().shape().front_append(m.size())}, arrays::array<int, 2>{t.shape()},
+            t.order_min()};
+   }
+  };
+
+  // -------------------------------   Factory for singularity  --------------------------------------------------
+  
+  template <typename V1, typename V2, typename Target, typename Opt>
+  struct singularity_factory<cartesian_product<V1, V2>, Target, gf<V1, tail, nothing, void>, Opt> {
+   template <typename TargetShape>
+   static gf<V1, tail> make(gf_mesh<cartesian_product<V1, V2>, Opt> const &m, TargetShape shape) {
+    return {std::get<0>(m.components()), shape};
+   }
+  };
+
+  // -------------------------------   partial_eval  --------------------------------------------------
+
+  template <typename Variable, typename Opt, bool IsConst>
+  struct partial_eval_impl<Variable, tail, nothing, Opt, IsConst> {
+
+   using gv_t = gf_view<Variable, tail, nothing, Opt, IsConst>;
    template <int... pos, typename... T> static auto invoke(gv_t g, T const &... x) {
     return invoke_impl(g, std14::index_sequence<pos...>(), x...);
    }
 
-   template <typename T> static local::tail_view invoke_impl(gv_t g, std14::index_sequence<0>, T const &x) {
-    return g[g.mesh().index_to_linear(x)];
+   template <typename T> static tail_view invoke_impl(gv_t g, std14::index_sequence<0>, T const &x) {
+    return g.get_from_linear_index(x); 
    }
 
-   template <typename T> static nothing invoke_impl(gv_t g, std14::index_sequence<1>, T const &x) {
-    return {};
+   template <typename T> static gv_t invoke_impl(gv_t g, std14::index_sequence<1>, T const &x) {
+    return g;
    }
   };
 
  } // gfs_implementation
-
 
 }}

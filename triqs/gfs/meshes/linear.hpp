@@ -65,10 +65,10 @@ namespace gfs {
   }
 
   domain_t const &domain() const { return _dom; }
-  size_t size() const { return L; }
+  long size() const { return L; }
   
   utility::mini_vector<size_t, 1> size_of_components() const {
-   return {size()};
+   return {size_t(size())};
   }
 
   double delta() const { return del; }
@@ -79,7 +79,6 @@ namespace gfs {
   /// Conversions point <-> index <-> linear_index
   domain_pt_t index_to_point(index_t ind) const { return xmin + ind * del; }
 
-  public:
   long index_to_linear(index_t ind) const { return ind; }
 
   /// The wrapper for the mesh point

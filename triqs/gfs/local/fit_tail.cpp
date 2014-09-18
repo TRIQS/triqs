@@ -1,5 +1,5 @@
 #include "./fit_tail.hpp"
-namespace triqs { namespace gfs {  namespace local {
+namespace triqs { namespace gfs {  
 
  tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int n_moments, int n_min, int n_max) {
 
@@ -44,7 +44,7 @@ namespace triqs { namespace gfs {  namespace local {
      B(k, 0) = imag(gf.data()(gf.mesh().index_to_linear(n), i, j));
      // subtract known tail if present
      if (known_moments.size() > 0)
-      B(k, 0) -= imag(slice_target(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)).evaluate(iw)(0, 0));
+      B(k, 0) -= imag(evaluate(slice_target(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)), iw)(0, 0));
 
      for (int l = 0; l < size_odd; l++) {
       int order = omin_odd + 2 * l;
@@ -67,7 +67,7 @@ namespace triqs { namespace gfs {  namespace local {
      B(k, 0) = real(gf.data()(gf.mesh().index_to_linear(n), i, j));
      // subtract known tail if present
      if (known_moments.size() > 0)
-      B(k, 0) -= real(slice_target(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)).evaluate(iw)(0, 0));
+      B(k, 0) -= real(evaluate(slice_target(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)), iw)(0, 0));
 
      for (int l = 0; l < size_even; l++) {
       int order = omin_even + 2 * l;
@@ -81,7 +81,7 @@ namespace triqs { namespace gfs {  namespace local {
     }
    }
   }
-  res.mask_view()=n_moments;
+  res.mask()()=n_moments;
   return res; // return tail
  }
 
@@ -92,7 +92,7 @@ namespace triqs { namespace gfs {  namespace local {
   if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
    int i = 0;
    for (auto iw : gf.mesh()) { // (arrays::range(n_min,n_max+1)) {
-    if (i >= n_min) gf[iw] = gf.singularity().evaluate(iw);
+    if (i >= n_min) gf[iw] = evaluate(gf.singularity(),iw);
     i++;
    }
    }
@@ -109,4 +109,4 @@ namespace triqs { namespace gfs {  namespace local {
    fit_tail(reinterpret_scalar_valued_gf_as_matrix_valued(gf), known_moments, n_moments, n_min, n_max, replace_by_fit );
   }
 
- }}} // namespace
+ }} // namespace

@@ -5,7 +5,7 @@
 
 using triqs::arrays::make_shape;
 using namespace triqs::gfs;
-using triqs::gfs::local::tail;
+using triqs::gfs::tail;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 void test_0(){
 

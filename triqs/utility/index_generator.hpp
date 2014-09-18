@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,30 +19,43 @@
  *
  ******************************************************************************/
 #pragma once
+#include "./mini_vector.hpp"
 
-// for python code generator, we need to know what to include...
-#define TRIQS_ARRAYS_INCLUDED
+namespace triqs {
+namespace utility {
 
-// The basic classes
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/vector.hpp>
+ class index3_generator {
+  mini_vector<long, 3> i, d; // rely on mini_vector initialization
+  long i_flat =0;
+  bool _at_end = false;
 
-//
-#include <triqs/arrays/functional/map.hpp>
-#include <triqs/arrays/mapped_functions.hpp>
-#include <triqs/arrays/algorithms.hpp>
-
-#include <triqs/arrays/functional/fold.hpp>
-#include <triqs/arrays/algorithms.hpp>
-
-// HDF5 interface
-#include <triqs/arrays/h5/simple_read_write.hpp>
-
-// Regrouping indices
-#include <triqs/arrays/group_indices.hpp>
-
-// Linear algebra ?? Keep here ?
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-
+  public:
+  index3_generator() = default;
+  index3_generator(mini_vector<long, 3> const& dims, mini_vector<long, 3> const &i) : d(dims),i(i) {}
+  void advance() {
+   ++i_flat;
+   ++i[2];
+   if (i[2] < d[2]) return;
+   i[2] = 0;
+   ++i[1];
+   if (i[1] < d[1]) return;
+   i[1] = 0;
+   ++i[0];
+   if (i[0] < d[0]) return;
+   // i[0]=0;
+   _at_end = true;
+  }
+  AUTO_DECL index() const { return i; }
+  long linear_index() const { return i_flat;}
+  bool at_end() const { return _at_end; }
+  void reset() {
+   _at_end = false;
+   i_flat =0;
+   i[0] = 0;
+   i[1] = 0;
+   i[2] = 0;
+  }
+ };
+}
+}
 

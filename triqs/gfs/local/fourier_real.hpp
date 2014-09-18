@@ -34,11 +34,10 @@ namespace triqs { namespace gfs {
   return {g};
  }
 
- void triqs_gf_view_assign_delegation(gf_view<refreq, scalar_valued> g, gf_keeper<tags::fourier, retime, scalar_valued> const& L);
- void triqs_gf_view_assign_delegation(gf_view<refreq, matrix_valued> g, gf_keeper<tags::fourier, retime, matrix_valued> const& L);
- void triqs_gf_view_assign_delegation(gf_view<retime, scalar_valued> g, gf_keeper<tags::fourier, refreq, scalar_valued> const& L);
- void triqs_gf_view_assign_delegation(gf_view<retime, matrix_valued> g, gf_keeper<tags::fourier, refreq, matrix_valued> const& L);
+ void _fourier_impl(gf_view<refreq, scalar_valued> gw, gf_const_view<retime, scalar_valued> gt);
+ void _fourier_impl(gf_view<retime, scalar_valued> gt, gf_const_view<refreq, scalar_valued> gw);
 
+ // helper functions
  template <typename Opt> gf_mesh<refreq, Opt> make_mesh_fourier_compatible(gf_mesh<retime, Opt> const& m) {
   int L = m.size();
   double pi = std::acos(-1);

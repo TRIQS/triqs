@@ -49,7 +49,7 @@ namespace triqs { namespace gfs {
    //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
    const double a = gw.mesh().delta() * sqrt( double(L) );
    
-   auto ta = gt(freq_infty());
+   auto ta = gt.singularity();
    g_in.resize(L);
    g_in() = 0;
    g_out.resize(L);
@@ -82,7 +82,7 @@ namespace triqs { namespace gfs {
    //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
    const double a = gw.mesh().delta() * sqrt( double(L) );
    
-   auto ta = gw(freq_infty());
+   auto ta = gw.singularity();
    arrays::vector<dcomplex> g_in(L), g_out(L);
    
    dcomplex t1 = ta(1)(0,0), t2 = ta.get_or_zero(2)(0,0);
@@ -104,47 +104,17 @@ namespace triqs { namespace gfs {
   }
   
  };
-  
-  
+
  //--------------------------------------------------------------------------------------
- 
- void fourier_impl(gf_view<refreq,scalar_valued> gw, gf_const_view<retime,scalar_valued> gt, scalar_valued){
+
+ void _fourier_impl(gf_view<refreq, scalar_valued> gw, gf_const_view<retime, scalar_valued> gt) {
   impl_worker w;
   w.direct(gw, gt);
  }
- 
- void fourier_impl(gf_view<refreq,matrix_valued> gw, gf_const_view<retime,matrix_valued> gt, matrix_valued){
+
+ void _fourier_impl(gf_view<retime, scalar_valued> gt, gf_const_view<refreq, scalar_valued> gw) {
   impl_worker w;
-  for (size_t n1=0; n1<gw.data().shape()[1];n1++)
-   for (size_t n2=0; n2<gw.data().shape()[2];n2++) {
-    auto gw_sl=slice_target_to_scalar(gw, n1, n2);
-    auto gt_sl=slice_target_to_scalar(gt, n1, n2);
-    w.direct(gw_sl, gt_sl);
-   }
+  w.inverse(gt, gw);
  }
- 
- //---------------------------------------------------------------------------
- 
- void inverse_fourier_impl (gf_view<retime,scalar_valued> gt, gf_const_view<refreq,scalar_valued> gw, scalar_valued){ 
-  impl_worker w;
-  w.inverse(gt,gw);
- }
- 
- void inverse_fourier_impl (gf_view<retime,matrix_valued> gt, gf_const_view<refreq,matrix_valued> gw, matrix_valued){ 
-  impl_worker w;
-  for (size_t n1=0; n1<gt.data().shape()[1];n1++) 
-   for (size_t n2=0; n2<gt.data().shape()[2];n2++) {
-    auto gt_sl=slice_target_to_scalar(gt, n1, n2);
-    auto gw_sl=slice_target_to_scalar(gw, n1, n2);
-    w.inverse(gt_sl, gw_sl);    
-   }
- }
- 
- //---------------------------------------------------------------------------
- 
- void triqs_gf_view_assign_delegation( gf_view<refreq,matrix_valued> g, gf_keeper<tags::fourier,retime,matrix_valued> const & L) { fourier_impl (g,L.g, matrix_valued());}
- void triqs_gf_view_assign_delegation( gf_view<refreq,scalar_valued> g, gf_keeper<tags::fourier,retime,scalar_valued> const & L) { fourier_impl (g,L.g, scalar_valued());}
- void triqs_gf_view_assign_delegation( gf_view<retime,matrix_valued> g, gf_keeper<tags::fourier,refreq,matrix_valued> const & L) { inverse_fourier_impl(g,L.g, matrix_valued());}
- void triqs_gf_view_assign_delegation( gf_view<retime,scalar_valued> g, gf_keeper<tags::fourier,refreq,scalar_valued> const & L) { inverse_fourier_impl(g,L.g, scalar_valued());}
- 
-}}
+}
+}

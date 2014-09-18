@@ -37,7 +37,7 @@ namespace triqs { namespace gfs {
   /// ---------------------------  Factories ---------------------------------
 
   template<typename F, typename Opt, typename ... Ms>
-   struct factories<cartesian_product<Ms...>, lambda_valued<F>, nothing, Opt> {};
+   struct data_factory<cartesian_product<Ms...>, lambda_valued<F>, nothing, Opt> {};
 
   /// ---------------------------  partial_eval ---------------------------------
   // partial_eval<0> (g, 1) returns :  x -> g(1,x)

@@ -14,7 +14,6 @@ namespace h5 = triqs::h5;
 
 int main() {
  try { 
-  triqs::gfs::freq_infty inf;
 
   double beta =1;
 
@@ -48,15 +47,15 @@ int main() {
 
   Gv(om_) << (0.2 + om_ + 2.1);
   TEST(G(0));
-  TEST(G(inf));
+  TEST(G.singularity());
 
   std::cout  <<"-------------lazy assign 2 ------------------"<<std::endl;
 
   G(om_) << 1/(om_ + 2.3);
 
   TEST(G(0));
-  TEST(G(inf));
-  TEST(inverse(G(inf)));
+  TEST(G.singularity());
+  TEST(inverse(G.singularity()));
 
   std::cout  <<"-----------------   3 --------------------"<<std::endl;
 
@@ -64,12 +63,12 @@ int main() {
   TEST( eval(Gv(om_), om_=0) ) ;
 
   // tail 
-  auto  t = G(inf);
+  auto  t = G.singularity();
 
   TEST(t.order_min()); 
   TEST( t( 2) ) ;
 
-  TEST( Gv2(inf)( 2) ) ;
+  TEST( Gv2.singularity()( 2) ) ;
 
   // copy 
   Gc = G;
@@ -110,10 +109,10 @@ int main() {
   }
 #endif
   TEST( G( 0) ) ;
-  TEST(G(inf)(2));
+  TEST(G.singularity()(2));
 
-  TEST( ( G(inf) + G(inf) )  (2));
-  TEST( ( G(inf) * G(inf) )  (4));
+  TEST( ( G.singularity() + G.singularity() )  (2));
+  TEST( ( G.singularity() * G.singularity() )  (4));
 
   TEST( t(1));
 

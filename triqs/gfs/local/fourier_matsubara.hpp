@@ -27,6 +27,8 @@
 namespace triqs {
 namespace gfs {
 
+ // only a few functions allowed:
+ 
  template <typename Target, typename Singularity, typename Opt, bool V, bool C>
  gf_keeper<tags::fourier, imtime, Target, Singularity, Opt> fourier(gf_impl<imtime, Target, Singularity, Opt, V, C> const& g) {
   return {g};
@@ -36,18 +38,12 @@ namespace gfs {
   return {g};
  }
 
- // The fourier transform with the tail
- void triqs_gf_view_assign_delegation(gf_view<imfreq, scalar_valued> g, gf_keeper<tags::fourier, imtime, scalar_valued> const& L);
- void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued> g, gf_keeper<tags::fourier, imtime, matrix_valued> const& L);
- void triqs_gf_view_assign_delegation(gf_view<imtime, scalar_valued> g, gf_keeper<tags::fourier, imfreq, scalar_valued> const& L);
- void triqs_gf_view_assign_delegation(gf_view<imtime, matrix_valued> g, gf_keeper<tags::fourier, imfreq, matrix_valued> const& L);
+ /// 
+ void _fourier_impl(gf_view<imfreq, scalar_valued, tail> gw, gf_const_view<imtime, scalar_valued, tail> gt);
+ void _fourier_impl(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt);
+ void _fourier_impl(gf_view<imtime, scalar_valued, tail> gt, gf_const_view<imfreq, scalar_valued, tail> gw);
 
- // The version without tail : only possible in one direction
- void triqs_gf_view_assign_delegation(gf_view<imfreq, scalar_valued, no_tail> g,
-                                      gf_keeper<tags::fourier, imtime, scalar_valued, no_tail> const& L);
- void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued, no_tail> g,
-                                      gf_keeper<tags::fourier, imtime, matrix_valued, no_tail> const& L);
-
+ /// A few helper functions
  template <typename Target, typename Singularity, typename Opt, bool V, bool C>
  gf<imfreq, Target, Singularity, Opt> make_gf_from_fourier(gf_impl<imtime, Target, Singularity, Opt, V, C> const& gt, int n_iw) {
   auto m = gf_mesh<imfreq, Opt>{gt.mesh().domain(), n_iw};

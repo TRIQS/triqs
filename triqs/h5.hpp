@@ -40,6 +40,13 @@ namespace h5 {
  template <typename T>
  struct has_h5_write<T, decltype(h5_write(std::declval<h5::group>(), std::string(), std::declval<const T>()))> : std::true_type {
  };
+
+// A generic read
+ template <typename T> T h5_read(group gr, std::string const& name) {
+  T x;
+  h5_read(gr, name, x);
+  return x;
+ }
 }
 }
 

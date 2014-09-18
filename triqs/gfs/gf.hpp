@@ -39,6 +39,7 @@ namespace gfs {
  using arrays::array_view;
  using arrays::matrix;
  using arrays::matrix_view;
+ using arrays::matrix_const_view;
  using triqs::make_clone;
 
  // The default target, for each Variable.
@@ -111,8 +112,9 @@ namespace gfs {
   template <typename Variable, typename Target, typename Singularity, typename Opt> struct h5_name; // value is a const char
   template <typename Variable, typename Target, typename Singularity, typename Opt> struct h5_rw;
 
-  // factories regroup all factories (constructors..) for all types of gf. Defaults implemented below.
-  template <typename Variable, typename Target, typename Singularity, typename Opt> struct factories;
+  // factories (constructors..) for all types of gf. Defaults implemented below.
+  template <typename Variable, typename Target, typename Singularity, typename Opt> struct data_factory;
+  template <typename Variable, typename Target, typename Singularity, typename Opt> struct singularity_factory;
 
  } // gfs_implementation
 
@@ -156,6 +158,7 @@ namespace gfs {
   using domain_t = typename mesh_t::domain_t;
   using mesh_point_t = typename mesh_t::mesh_point_t;
   using mesh_index_t = typename mesh_t::index_t;
+  using linear_mesh_index_t = typename mesh_t::linear_index_t;
   using symmetry_t = typename gfs_implementation::symmetry<Variable, Target, Singularity, Opt>::type;
   using indices_t = typename gfs_implementation::indices<Target, Opt>::type;
   using evaluator_t = gfs_implementation::evaluator<Variable, Target, Singularity, Opt>;
@@ -166,12 +169,11 @@ namespace gfs {
   using data_const_view_t = typename data_proxy_t::storage_const_view_t;
   using data_t = std14::conditional_t<IsView, std14::conditional_t<IsConst, data_const_view_t, data_view_t>, data_regular_t>;
 
-  //using singularity_non_view_t = typename gfs_implementation::singularity<Variable, Target, Opt>::type;
-  using singularity_non_view_t = Singularity; 
-  using singularity_view_t = typename view_type_if_exists_else_type<singularity_non_view_t>::type;
-  using singularity_t = std14::conditional_t<IsView, singularity_view_t, singularity_non_view_t>;
-
-  //using is_container_t = void; // a tag to recognize the container
+  using singularity_regular_t = typename Singularity::regular_type;
+  using singularity_view_t = typename Singularity::view_type;
+  using singularity_const_view_t = typename Singularity::const_view_type;
+  using singularity_t = std14::conditional_t<IsView, std14::conditional_t<IsConst, singularity_const_view_t, singularity_view_t>,
+                                             singularity_regular_t>;
 
   mesh_t const &mesh() const { return _mesh; }
   domain_t const &domain() const { return _mesh.domain(); }
@@ -314,6 +316,15 @@ namespace gfs {
   }
 
   /// --------------------- A direct access to the grid point --------------------------
+
+  template <typename... Args> r_type get_from_linear_index(Args &&... args) {
+   return _data_proxy(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+  }
+
+  template <typename... Args> cr_type get_from_linear_index(Args &&... args) const {
+   return _data_proxy(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+  }
+
   template <typename... Args> r_type on_mesh(Args &&... args) {
    return _data_proxy(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
   }
@@ -391,10 +402,9 @@ namespace gfs {
  template <typename RHS, typename Variable, typename Target, typename Singularity, typename Opt, bool IsView>
  void triqs_clef_auto_assign(gf_impl<Variable, Target, Singularity, Opt, IsView, false> &g, RHS const &rhs) {
   triqs_clef_auto_assign_impl(g, rhs, typename std::is_base_of<tag::composite, gf_mesh<Variable, Opt>>::type());
-  assign_from_expression(g.singularity(), rhs);
+  assign_singularity_from_function(g.singularity(), rhs);
   // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
-  // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty,
-  // it uses the fact that tail_non_view_t can be casted into freq_infty
+  // if f is an expression, replace the placeholder with a simple tail. 
  }
 
  // enable the writing g[om_] << .... also
@@ -436,7 +446,8 @@ namespace gfs {
 
  template <typename Variable, typename Target, typename Singularity, typename Opt> class gf : public gf_impl<Variable, Target, Singularity, Opt, false, false> {
   using B = gf_impl<Variable, Target, Singularity, Opt, false, false>;
-  using factory = gfs_implementation::factories<Variable, Target, Singularity, Opt>;
+  using data_factory = gfs_implementation::data_factory<Variable, Target, Singularity, Opt>;
+  using singularity_factory = gfs_implementation::singularity_factory<Variable, Target, Singularity, Opt>;
 
   public:
   gf() : B() {}
@@ -458,12 +469,12 @@ namespace gfs {
      typename B::indices_t const &ind, std::string name = "")
      : B(std::move(m), std::move(dat), si, s, ind, name, typename B::evaluator_t{}) {}
 
-  using target_shape_t = typename factory::target_shape_t;
+  using target_shape_t = typename data_factory::target_shape_t;
 
   // with aux, and indices
-  gf(typename B::mesh_t m, target_shape_t shape, typename factory::aux_t aux,
+  gf(typename B::mesh_t m, target_shape_t shape, typename data_factory::aux_t aux,
      typename B::indices_t const &ind = typename B::indices_t{}, std::string name = "")
-     : B(std::move(m), factory::make_data(m, shape, aux), factory::make_singularity(m, shape), typename B::symmetry_t{}, ind,
+     : B(std::move(m), data_factory::make(m, shape, aux), singularity_factory::make(m, shape), typename B::symmetry_t{}, ind,
          name, // clean unncessary types
          typename B::evaluator_t{}) {
    if (this->_indices.is_empty()) this->_indices = typename B::indices_t(shape);
@@ -472,7 +483,7 @@ namespace gfs {
   // without the aux (defaulted)
   gf(typename B::mesh_t m, target_shape_t shape = target_shape_t{}, typename B::indices_t const &ind = typename B::indices_t{},
      std::string name = "")
-     : B(std::move(m), factory::make_data(m, shape, typename factory::aux_t{}), factory::make_singularity(m, shape),
+     : B(std::move(m), data_factory::make(m, shape, typename data_factory::aux_t{}), singularity_factory::make(m, shape),
          typename B::symmetry_t{}, ind, name, // clean unncessary types
          typename B::evaluator_t{}) {
    if (this->_indices.is_empty()) this->_indices = typename B::indices_t(shape);
@@ -800,7 +811,7 @@ namespace gfs {
  }
 
  template <typename Variable, typename Singularity, typename Opt, typename T>
- gf<Variable, matrix_valued, Singularity, Opt> L_G_R(matrix<T> l, gf<Variable, matrix_valued, Singularity, Opt> g, matrix<T> r) {
+ gf<Variable, matrix_valued, Singularity, Opt> L_G_R(matrix<T> l, gf_view<Variable, matrix_valued, Singularity, Opt> g, matrix<T> r) {
   auto res = gf<Variable, matrix_valued, Singularity, Opt>{g.mesh(), {int(first_dim(l)), int(second_dim(r))}};
   res.data() = _gf_data_mul_LR(l, g.data(), r);
   res.singularity() = l * g.singularity() * r;
@@ -811,31 +822,35 @@ namespace gfs {
 
   // -------------------------  default factories ---------------------
 
-  template <typename Var, typename Target, int VarDim, typename Singularity, typename Opt> struct factories_default_impl {
+  // Factory for the data
+  template <typename Var, typename Target, int VarDim, typename Singularity, typename Opt> struct data_factory_default_impl {
    using gf_t = gf<Var, Target, Singularity, Opt>;
    using target_shape_t = arrays::mini_vector<int, VarDim>;
    using mesh_t = typename gf_t::mesh_t;
    using aux_t = arrays::memory_layout< get_n_variables(Var{}) + VarDim>;
    //
-   static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t shape, aux_t ml) {
+   static typename gf_t::data_t make(mesh_t const &m, target_shape_t shape, aux_t ml) {
     typename gf_t::data_t A(gf_t::data_proxy_t::join_shape(m.size_of_components(), shape), ml);
     A() = 0;
     return A;
    }
-   //
-   static typename gf_t::singularity_t make_singularity(mesh_t const &m, target_shape_t shape) {
-    return typename gf_t::singularity_t{shape};
-   }
   };
 
   template <int R, typename Var, typename Singularity, typename Opt>
-  struct factories<Var, tensor_valued<R>, Singularity, Opt> : factories_default_impl<Var, tensor_valued<R>, R, Singularity, Opt> {};
+  struct data_factory<Var, tensor_valued<R>, Singularity, Opt> : data_factory_default_impl<Var, tensor_valued<R>, R, Singularity, Opt> {};
 
   template <typename Var, typename Singularity, typename Opt>
-  struct factories<Var, matrix_valued, Singularity, Opt> : factories_default_impl<Var, matrix_valued, 2, Singularity, Opt> {};
+  struct data_factory<Var, matrix_valued, Singularity, Opt> : data_factory_default_impl<Var, matrix_valued, 2, Singularity, Opt> {};
 
   template <typename Var, typename Singularity, typename Opt>
-  struct factories<Var, scalar_valued, Singularity, Opt> : factories_default_impl<Var, scalar_valued, 0, Singularity, Opt> {};
+  struct data_factory<Var, scalar_valued, Singularity, Opt> : data_factory_default_impl<Var, scalar_valued, 0, Singularity, Opt> {};
+
+  // Factory for the singularity
+  template <typename Var, typename Target, typename Singularity, typename Opt> struct singularity_factory {
+   template <typename TargetShape> static Singularity make(gf_mesh<Var, Opt> const &m, TargetShape shape) {
+    return Singularity{shape};
+   }
+  };
 
   // ---------------------   hdf5 ---------------------------------------
   // scalar function : just add a _s

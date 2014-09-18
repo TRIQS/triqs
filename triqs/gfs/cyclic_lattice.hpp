@@ -23,50 +23,48 @@
 #include "./gf.hpp"
 #include "./local/tail.hpp"
 #include "./domains/R.hpp"
-#include "../lattice/regular_bz_mesh.hpp"
+#include "../lattice/cyclic_lattice.hpp"
 #include "./evaluators.hpp"
 
 namespace triqs {
 namespace gfs {
 
- struct bz {};
+ struct cyclic_lattice {};
 
- template <typename Opt> struct gf_mesh<bz, Opt> : lattice::regular_bz_mesh {
-  template <typename... T> gf_mesh(T &&... x) : lattice::regular_bz_mesh(std::forward<T>(x)...) {}
+ template <typename Opt> struct gf_mesh<cyclic_lattice, Opt> : lattice::cyclic_lattice_mesh {
+  template <typename... T> gf_mesh(T &&... x) : lattice::cyclic_lattice_mesh(std::forward<T>(x)...) {}
  };
 
  namespace gfs_implementation {
 
   // h5 name
-  template <typename Singularity, typename Opt> struct h5_name<bz, matrix_valued, Singularity, Opt> {
-   static std::string invoke() { return "BZ"; }
+  template <typename Singularity, typename Opt> struct h5_name<cyclic_lattice, matrix_valued, Singularity, Opt> {
+   static std::string invoke() { return "R"; }
   };
 
   /// ---------------------------  data access  ---------------------------------
-  template <typename Opt> struct data_proxy<bz, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
-  template <typename Opt> struct data_proxy<bz, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
+  template <typename Opt> struct data_proxy<cyclic_lattice, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
+  template <typename Opt> struct data_proxy<cyclic_lattice, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
 
   /// ---------------------------  evaluator ---------------------------------
 
   // simple evaluation : take the point on the grid...
-  template <> struct evaluator_fnt_on_mesh<bz> {
-   // lattice::regular_bz_mesh::index_t n;
+  template <> struct evaluator_fnt_on_mesh<cyclic_lattice> {
    size_t n;
    evaluator_fnt_on_mesh() = default;
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::k_t const &k) {
-    // n = m.locate_neighbours(k).index();
-    n = m.locate_neighbours(k).linear_index();
+   template <typename MeshType, typename R> evaluator_fnt_on_mesh(MeshType const &m, R const &r) { 
+    n = m.modulo_reduce(r).linear_index(); 
    }
    template <typename F> AUTO_DECL operator()(F const &f) const RETURN(f(n));
-   // template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
+   //template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
   };
 
   // --------------------------------------------------------------
-  template <typename Target, typename Singularity, typename Opt> struct evaluator<bz, Target, Singularity, Opt> {
+  template <typename Target, typename Singularity, typename Opt> struct evaluator<cyclic_lattice, Target, Singularity, Opt> {
    static constexpr int arity = 1;
 
-   template <typename G> auto operator()(G const *g, lattice::k_t const &k) const {
-    auto n = g->mesh().locate_neighbours(k);
+   template <typename G, typename R> auto operator()(G const *g, R const &r) const {
+    auto n = g->mesh().modulo_reduce(r); 
     return (*g)[n];
    }
   };

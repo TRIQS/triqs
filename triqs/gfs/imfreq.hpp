@@ -37,10 +37,10 @@ namespace gfs {
 
  // singularity
  template <> struct gf_default_singularity<imfreq, matrix_valued> {
-  using type = local::tail;
+  using type = tail;
  };
  template <> struct gf_default_singularity<imfreq, scalar_valued> {
-  using type = local::tail;
+  using type = tail;
  };
 
  namespace gfs_implementation {
@@ -68,7 +68,7 @@ namespace gfs {
     if ((p.n >= m.first_index()) && (p.n < m.size()+m.first_index())) {w=1; n =p.n;}
     else {w=0; n=0;}
    }
-   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(w*f(n));
+   template <typename F> AUTO_DECL operator()(F const &f) const RETURN(w*f(n));
   };
 
   // ------------- evaluator  -------------------
@@ -83,14 +83,15 @@ namespace gfs {
    AUTO_DECL operator()(G const *g, int n) const
        RETURN((*g)(matsubara_freq(n, g->mesh().domain().beta, g->mesh().domain().statistic)));
 
-   template <typename G> typename G::singularity_t const &operator()(G const *g, freq_infty const &) const {
-    return g->singularity();
+   template <typename G> typename G::singularity_t operator()(G const *g, tail_view t) const {
+    return compose(g->singularity(),t);
+    //return g->singularity();
    }
   };
   // --- various 4 specializations
 
   // scalar_valued, tail
-  template <typename Opt> struct evaluator<imfreq, scalar_valued, local::tail, Opt> : _eval_imfreq_base_impl {
+  template <typename Opt> struct evaluator<imfreq, scalar_valued, tail, Opt> : _eval_imfreq_base_impl {
  
    using _eval_imfreq_base_impl::operator();
 
@@ -101,7 +102,7 @@ namespace gfs {
     } else {
      if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size() + g->mesh().first_index())) return (*g)[f.n];
     }
-    return g->singularity().evaluate(f)(0, 0);
+    return evaluate(g->singularity(),f)(0, 0);
    }
   };
 
@@ -122,7 +123,7 @@ namespace gfs {
   };
 
   // matrix_valued, tail
-  template <typename Opt> struct evaluator<imfreq, matrix_valued, local::tail, Opt> : _eval_imfreq_base_impl {
+  template <typename Opt> struct evaluator<imfreq, matrix_valued, tail, Opt> : _eval_imfreq_base_impl {
 
    using _eval_imfreq_base_impl::operator();
 
@@ -134,7 +135,7 @@ namespace gfs {
     } else {
      if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size() + g->mesh().first_index())) return (*g)[f.n];
     }
-    return g->singularity().evaluate(f);
+    return evaluate(g->singularity(), f);
    }
   };
 

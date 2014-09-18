@@ -60,6 +60,7 @@ namespace lattice {
 
   /// The wrapper for the mesh point
   class mesh_point_t : gfs::tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point_t, domain_pt_t> {
+   public : 
    bz_mesh const *m;
    index_t _index;
 

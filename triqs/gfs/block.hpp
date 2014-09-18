@@ -69,18 +69,14 @@ namespace gfs {
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  template <typename Target> struct factories<block_index, Target, nothing, void> {
+  template <typename Target> struct data_factory<block_index, Target, nothing, void> {
    using mesh_t = gf_mesh<block_index>;
    using gf_t = gf<block_index, Target>;
    using gf_view_t = gf_view<block_index, Target>;
    using aux_t = nothing;
-
    struct target_shape_t {};
 
-   static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t, aux_t) { return std::vector<Target>(m.size()); }
-   static typename gf_t::singularity_t make_singularity(mesh_t const &m, target_shape_t) {
-    return {};
-   }
+   static typename gf_t::data_t make(mesh_t const &m, target_shape_t, aux_t) { return std::vector<Target>(m.size()); }
   };
 
  } // gfs_implementation

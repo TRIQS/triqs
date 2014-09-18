@@ -70,14 +70,14 @@ namespace gfs {
   /// ---------------------------  hdf5 ---------------------------------
 
   // h5 name : name1_x_name2_.....
-  template <typename Opt, typename... Ms> struct h5_name<cartesian_product<Ms...>, matrix_valued, nothing, Opt> {
+  template <typename Opt, typename S, typename... Ms> struct h5_name<cartesian_product<Ms...>, matrix_valued, S, Opt> {
    static std::string invoke() {
     return triqs::tuple::fold([](std::string a, std::string b) { return a + std::string(b.empty() ? "" : "_x_") + b; },
-                              std::make_tuple(h5_name<Ms, matrix_valued, nothing, Opt>::invoke()...), std::string());
+                              reverse(std::make_tuple(h5_name<Ms, matrix_valued, nothing, Opt>::invoke()...)), std::string());
    }
   };
-  template <typename Opt, int R, typename... Ms>
-  struct h5_name<cartesian_product<Ms...>, tensor_valued<R>, nothing, Opt> : h5_name<cartesian_product<Ms...>, matrix_valued, nothing, Opt> {};
+  template <typename Opt, typename S, int R, typename... Ms>
+  struct h5_name<cartesian_product<Ms...>, tensor_valued<R>, S, Opt> : h5_name<cartesian_product<Ms...>, matrix_valued, S, Opt> {};
 
   /// ---------------------------  evaluator ---------------------------------
 
@@ -110,22 +110,27 @@ namespace gfs {
   template <typename G, typename Tn, typename Ev, int pos> struct binder;
 
   template <int pos, typename G, typename Tn, typename Ev> binder<G, Tn, Ev, pos> make_binder(G const *g, Tn tn, Ev const &ev) {
-   return binder<G, Tn, Ev, pos>{g, std::move(tn), ev};
+   return {g, std::move(tn), ev};
   }
 
   template <typename G, typename Tn, typename Ev, int pos> struct binder {
    G const *g;
    Tn tn;
    Ev const &evals;
-   auto operator()(size_t p) const
-       DECL_AND_RETURN(std::get<pos>(evals)(make_binder<pos - 1>(g, triqs::tuple::push_front(tn, p), evals)));
+   template <size_t... Is> decltype(auto) impl(size_t p, std14::index_sequence<Is...>) const {
+    return std::get<pos>(evals)(make_binder<pos - 1>(g, std::make_tuple(p, std::get<Is>(tn)...), evals));
+   }
+   decltype(auto) operator()(size_t p) const { return impl(p, std14::make_index_sequence<std::tuple_size<Tn>::value>()); }
   };
 
   template <typename G, typename Tn, typename Ev> struct binder<G, Tn, Ev, -1> {
    G const *g;
    Tn tn;
    Ev const &evals;
-   auto operator()(size_t p) const DECL_AND_RETURN(triqs::tuple::apply(on_mesh(*g), triqs::tuple::push_front(tn, p)));
+   template <size_t... Is> decltype(auto) impl(size_t p, std14::index_sequence<Is...>) const {
+    return g->get_from_linear_index(p, std::get<Is>(tn)...);
+   }
+   decltype(auto) operator()(size_t p) const { return impl(p, std14::make_index_sequence<std::tuple_size<Tn>::value>()); }
   };
 
   // now the multi d evaluator itself.
@@ -133,21 +138,11 @@ namespace gfs {
    static constexpr int arity = sizeof...(Ms);
    mutable std::tuple<evaluator_fnt_on_mesh<Ms>...> evals;
 
-   struct _poly_lambda { // replace by a polymorphic lambda in C++14
-    template <typename A, typename B, typename C> void operator()(A &a, B const &b, C const &c) const {
-     a = A{b, c};
-    }
-   };
-
-   template <typename G, typename... Args>
-   // std::complex<double> operator() (G const * g, Args && ... args) const {
-   auto operator()(G const *g, Args &&... args)
-       const -> decltype(std::get<sizeof...(Args) - 1>(evals)(make_binder<sizeof...(Args) - 2>(g, std::make_tuple(), evals)))
-       // when do we get C++14 decltype(auto) ...!?
-   {
+   template <typename G, typename... Args> decltype(auto) operator()(G const *g, Args &&... args) const {
     static constexpr int R = sizeof...(Args);
     // build the evaluators, as a tuple of ( evaluator<Ms> ( mesh_component, args))
-    triqs::tuple::for_each_zip(_poly_lambda(), evals, g->mesh().components(), std::make_tuple(args...));
+    auto l = [](auto &a, auto &b, auto &c) { a = std14::decay_t<decltype(a)>{b, c}; };
+    triqs::tuple::for_each_zip(l, evals, g->mesh().components(), std::make_tuple(args...));
     return std::get<R - 1>(evals)(make_binder<R - 2>(g, std::make_tuple(), evals));
    }
   };

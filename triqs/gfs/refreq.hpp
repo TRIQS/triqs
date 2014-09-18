@@ -37,10 +37,10 @@ namespace gfs {
 
  // singularity
  template <> struct gf_default_singularity<refreq, matrix_valued> {
-  using type = local::tail;
+  using type = tail;
  };
  template <> struct gf_default_singularity<refreq, scalar_valued> {
-  using type = local::tail;
+  using type = tail;
  };
 
   namespace gfs_implementation {

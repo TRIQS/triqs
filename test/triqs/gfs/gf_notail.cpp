@@ -48,7 +48,7 @@ int main() {
   gw_n (tau_) << 1/(tau_-1.);
   auto gt_with_full_tail = make_gf_from_inverse_fourier(make_gf_from_g_and_tail(gw_n, gw.singularity()));
   TEST(gt_with_full_tail(.5));
-  triqs::gfs::local::tail t(2,2);
+  triqs::gfs::tail t(2,2);
   t(1)=1;
   TEST(t);
   auto gt_tail_with_one_term = make_gf_from_inverse_fourier(make_gf_from_g_and_tail(gw_n, t));

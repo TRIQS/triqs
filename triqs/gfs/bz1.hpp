@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2014 by O. Parcollet
+ * Copyright (C) 2012-2013 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,7 +23,7 @@
 #include "./gf.hpp"
 #include "./local/tail.hpp"
 #include "./domains/R.hpp"
-#include "../lattice/regular_bz_mesh.hpp"
+#include "../lattice/bz_mesh.hpp"
 #include "./evaluators.hpp"
 
 namespace triqs {
@@ -31,8 +31,8 @@ namespace gfs {
 
  struct bz {};
 
- template <typename Opt> struct gf_mesh<bz, Opt> : lattice::regular_bz_mesh {
-  template <typename... T> gf_mesh(T &&... x) : lattice::regular_bz_mesh(std::forward<T>(x)...) {}
+ template <typename Opt> struct gf_mesh<bz, Opt> : lattice::bz_mesh {
+  template <typename... T> gf_mesh(T &&... x) : lattice::bz_mesh(std::forward<T>(x)...) {}
  };
 
  namespace gfs_implementation {
@@ -50,23 +50,25 @@ namespace gfs {
 
   // simple evaluation : take the point on the grid...
   template <> struct evaluator_fnt_on_mesh<bz> {
-   // lattice::regular_bz_mesh::index_t n;
    size_t n;
    evaluator_fnt_on_mesh() = default;
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::k_t const &k) {
-    // n = m.locate_neighbours(k).index();
-    n = m.locate_neighbours(k).linear_index();
+   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::k_t const &k) { 
+    n = m.locate_neighbours(k); // TO BE IMPROVED
    }
-   template <typename F> AUTO_DECL operator()(F const &f) const RETURN(f(n));
-   // template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
+   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(f(n));
+   //template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
   };
 
-  // --------------------------------------------------------------
+  // ------------- evaluator  -------------------
+  // handle the case where the matsu. freq is out of grid...
   template <typename Target, typename Singularity, typename Opt> struct evaluator<bz, Target, Singularity, Opt> {
    static constexpr int arity = 1;
 
-   template <typename G> auto operator()(G const *g, lattice::k_t const &k) const {
-    auto n = g->mesh().locate_neighbours(k);
+   template <typename G>
+   std::c14::conditional_t<std::is_same<Target, matrix_valued>::value, arrays::matrix_const_view<std::complex<double>>,
+                          std::complex<double>>
+   operator()(G const *g, lattice::k_t const &k) const {
+    auto n = g->mesh().locate_neighbours(k); // TO BE IMPROVED
     return (*g)[n];
    }
   };

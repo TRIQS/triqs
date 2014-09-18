@@ -70,8 +70,9 @@ namespace gfs {
    evaluator_one_var() = default;
    template <typename G>
    auto operator()(G const *g, double x) const DECL_AND_RETURN(evaluator_fnt_on_mesh<Variable>(g -> mesh(), x)(on_mesh(*g)));
-   template <typename G> typename G::singularity_t const &operator()(G const *g, freq_infty const &) const {
-    return g->singularity();
+  
+   template <typename G> typename G::singularity_t operator()(G const *g, tail_view t) const {
+    return compose(g->singularity(), t);
    }
   };
  }

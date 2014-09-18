@@ -8,7 +8,6 @@ module.add_include("<triqs/gfs/local/pade.hpp>")
 module.add_include("<triqs/gfs/local/legendre_matsubara.hpp>")
 module.add_using("namespace triqs::arrays")
 module.add_using("namespace triqs::gfs")
-module.add_using("namespace triqs::gfs::local")
 module.add_using("triqs::utility::mini_vector")
 
 ########################
@@ -16,8 +15,8 @@ module.add_using("triqs::utility::mini_vector")
 ########################
 
 t = class_( py_type = "TailGf",
-        c_type = "local::tail_view",
-        c_type_absolute = "triqs::gfs::local::tail_view",
+        c_type = "tail_view",
+        c_type_absolute = "triqs::gfs::tail_view",
         serializable= "tuple",
         is_printable= True,
         arithmetic = ("algebra","double")
@@ -41,7 +40,7 @@ t.add_property(getter = cfunction("int order_max()"),
                doc = "Max order of the expansion")
 
 t.add_property(name = "mask",
-               getter = cfunction("array_view<long,2> mask_view()"),
+               getter = cfunction("array_view<int,2> mask()"),
                doc = "Access to the mask")
 
 t.add_method(name = "has_coef",
@@ -51,7 +50,7 @@ t.add_method(name = "has_coef",
 
 # strange, I should not quality : ADL ??
 t.add_method(name = "invert",
-             calling_pattern = "self_c = local::inverse(self_c)",
+             calling_pattern = "self_c = inverse(self_c)",
              signature = "void()",
              doc = "Invert")
 
@@ -63,7 +62,7 @@ t.add_method(name = "zero",
 t.add_method_copy()
 t.add_method_copy_from()
 
-t.add_call(calling_pattern = "auto result = self_c.evaluate(u)",
+t.add_call(calling_pattern = "auto result = evaluate(self_c,u)",
            signature = "dcomplex(dcomplex u)",
            doc = "")
 
@@ -252,7 +251,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
 
     if has_tail:
         g.add_property(name = "tail",
-                       getter = cfunction(c_name="singularity", signature = "local::tail_view()"),
+                       getter = cfunction(c_name="singularity", signature = "tail_view()"),
                        doc ="The high frequency tail")
 
     g.add_property(name = "indices",
@@ -332,7 +331,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
     g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type)) 
 
     g.add_method(name = "from_L_G_R",
-                 calling_pattern = "self_c = L_G_R(l,g,r)",
+                 calling_pattern = "self_c = L_G_R(l,g(),r)",
                  signature = "void(matrix<%s> l,gf<%s> g,matrix<%s> r)"%(data_type,c_tag,data_type),
                  doc = "self <<= l * g * r")
 

@@ -150,7 +150,7 @@ namespace gfs {
   const_iterator cend() const { return const_iterator(this, true); }
 
   bool operator==(matsubara_freq_mesh const &M) const {
-   return (std::make_tuple(_dom, _n_pts, _positive_only) == std::make_tuple(M._dom, M._n_pts, M._positive_only));
+   return (std::tie(_dom, _n_pts, _positive_only) == std::tie(M._dom, M._n_pts, M._positive_only));
   }
   bool operator!=(matsubara_freq_mesh const &M) const { return !(operator==(M)); }
 

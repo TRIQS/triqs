@@ -24,13 +24,11 @@
 #include <triqs/gfs/local/tail.hpp>
 #include <triqs/arrays/blas_lapack/gelss.hpp>
 
-namespace triqs { namespace gfs {  namespace local {
+namespace triqs { namespace gfs { 
 
  using triqs::gfs::imfreq;
  using triqs::gfs::block_index;
  using triqs::gfs::block_index;
-
- namespace tgl = triqs::gfs::local;
 
  // routine for fitting the tail (singularity) of a Matsubara Green's function
  // this is a *linear* least squares problem (with non-linear basis functions)

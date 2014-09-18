@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2014 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,28 +18,42 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_FOURIER_BASE_H
-#define TRIQS_GF_LOCAL_FOURIER_BASE_H
+#pragma once
 #include <triqs/arrays/vector.hpp>
+#include <triqs/gfs/gf.hpp>
 
 namespace triqs { namespace gfs {
 
  namespace details {
 
    namespace tqa = triqs::arrays;
-   typedef std::complex<double> dcomplex;
-   
+   using dcomplex = std::complex<double>;
+
    void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L, bool direct);
    void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L1, size_t L2, bool direct);
-
  }
 
  namespace tags { struct fourier{}; }
 
+ // -------------------------------------------------------------------
+
+ // TO BE REPLACED BY A DIRECT CALL to many_fft in fftw, like for lattice case.
+ // The implementation of the Fourier transformation
+ // Reduce Matrix case to the scalar case.
+ template <typename X, typename Y, typename S>
+ void _fourier_impl(gf_view<X, matrix_valued, S> gw, gf_const_view<Y, matrix_valued, S> gt) {
+  if (gt.data().shape().front_pop() != gw.data().shape().front_pop())
+   TRIQS_RUNTIME_ERROR << "Fourier : matrix size of target mismatch";
+  for (size_t n1 = 0; n1 < gt.data().shape()[1]; n1++)
+   for (size_t n2 = 0; n2 < gt.data().shape()[2]; n2++) {
+    auto gw_sl = slice_target_to_scalar(gw, n1, n2);
+    auto gt_sl = slice_target_to_scalar(gt, n1, n2);
+    _fourier_impl(gw_sl, gt_sl);
+   }
+ }
+
+ template <typename X, typename Y, typename T, typename S>
+ void triqs_gf_view_assign_delegation(gf_view<X, T, S> g, gf_keeper<tags::fourier, Y, T, S> const &L) {
+  _fourier_impl(g, L.g);
+  }
 }}
-
-
-
-#endif
-
-

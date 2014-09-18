@@ -1,43 +1,71 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#include <triqs/gfs.hpp>
+#include <triqs/gfs/bz.hpp>
+#include <triqs/gfs/m_tail.hpp>
 
-#include <triqs/gfs.hpp> 
-#include <triqs/gfs/product.hpp> 
-#include <triqs/gfs/curry.hpp> 
-
-#include <triqs/gfs/local/fourier_real.hpp> 
-#include <triqs/gfs/local/fourier_matsubara.hpp> 
-#include <triqs/arrays.hpp>
-
-using namespace triqs::gfs;
 namespace h5 = triqs::h5;
+using namespace triqs::gfs;
+using namespace triqs::clef;
+using namespace triqs::arrays;
+using namespace triqs::lattice;
+
+template<typename T>
+void assert_equal(T const& x, T const& y, std::string mess) {
+ if (std::abs(x - y) > 1.e-13) TRIQS_RUNTIME_ERROR << mess;
+}
+
+template<typename T1, typename T2>
+void assert_equal_array(T1 const& x, T2 const& y, std::string mess) {
+ if (max_element(abs(x - y)) > 1.e-13) TRIQS_RUNTIME_ERROR << mess << "\n" << x << "\n" << y << "\n" << max_element(abs(x - y));
+}
+
+#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl << std::endl;
 
 int main() {
+ try {
+  double beta = 1;
+  auto bz_ = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
-try { 
- double tmax=10;
- double wmin=0.;
- double wmax=1.0;
- int n_re_freq=100;
- int Nt=100;
+  int n_freq = 100;
+  int n_times = n_freq * 2;
+  int n_bz = 50;
+  auto gkw = gf<cartesian_product<bz, imfreq>>{{{bz_, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
+  auto gkt = gf<cartesian_product<bz, imtime>>{{{bz_, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
+
+  placeholder<0> k_;
+  placeholder<1> w_;
+  placeholder<2> wn_;
+  placeholder<3> tau_;
+
+  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
+  gkw(k_, w_) << 1 / (w_ - eps_k - 1 / (w_ + 2));
+
+  auto gk_w = curry<0>(gkw);
+  auto gk_t = curry<0>(gkt);
+
+  gk_t[k_] << inverse_fourier(gk_w[k_]);
+
+  // works also, but uses the evaluator which return to the same point
+  // gk_t(k_) << inverse_fourier(gk_w(k_));
+  // check last assertion
+  for (auto k : gk_t.mesh()) assert_equal(k.linear_index(), gk_t.mesh().locate_neighbours(k).linear_index(), "k location point");
  
- triqs::clef::placeholder<0> w_;
- triqs::clef::placeholder<1> wn_;
- triqs::clef::placeholder<2> tau_;
-   
- auto G_w_wn =  gf<cartesian_product<refreq,refreq>, scalar_valued>( {gf_mesh<refreq>(wmin, wmax, n_re_freq), gf_mesh<refreq>(wmin, wmax, n_re_freq)});
- auto G_w_tau = gf<cartesian_product<refreq,retime>, scalar_valued>( {gf_mesh<refreq>(wmin, wmax, n_re_freq), gf_mesh<retime>(-tmax, tmax, Nt)});
+  /// Testing the result
+  auto gk_w_test = gf<imfreq>{{beta, Fermion, n_freq}, {1, 1}};
+  auto gk_t_test = gf<imtime>{{beta, Fermion, n_times}, {1, 1}};
+  assert_equal_array(gkt.singularity().data().data, gkw.singularity().data().data, "Error 05");
+  for (auto & k : std::get<0>(gkw.mesh().components())) {
+   gk_w_test(w_) << 1 / (w_ - eval(eps_k, k_ = k) - 1 / (w_ + 2));
+   gk_t_test() = inverse_fourier(gk_w_test);
+   assert_equal_array(gk_w_test.singularity().data(), gk_w[k].singularity().data(), "Error 0");
+   assert_equal_array(gk_t_test.singularity().data(), gk_t[k].singularity().data(), "Error 0s");
+   assert_equal_array(gk_w_test.data(), gk_w[k].data(), "Error 1");
+   assert_equal_array(gk_t_test.data(), gk_t[k].data(), "Error 2");
+  }
 
- G_w_wn(w_,wn_)<<1/(wn_-1)/( pow(w_,3) );
- G_w_tau(w_,tau_)<< exp( -2*tau_ ) / (w_*w_ + 1 );
- 
- auto G_w_wn_curry0 = curry<0>(G_w_wn);
- auto G_w_tau_curry0 = curry<0>(G_w_tau);
-
- //for (auto const & w : G_w_wn_curry0.mesh()) G_w_wn_curry0[w] =  fourier(G_w_tau_curry0[w]);
- //G_w_wn_curry0[w_] << fourier(G_w_tau_curry0[w_]);
- //curry<0>(G_w_wn) [w_] << fourier(curry<0>(G_w_tau)[w_]);
-}
-// temp fix : THE TEST DOES NOT RUN !!
-//TRIQS_CATCH_AND_ABORT;
-catch(std::exception const & e ) { std::cout  << "error "<< e.what()<< std::endl;}
+  // hdf5
+  h5::file file("ess_g_k_om.h5", H5F_ACC_TRUNC);
+  h5_write(file, "g", gkw);
+ }
+ TRIQS_CATCH_AND_ABORT;
 }
