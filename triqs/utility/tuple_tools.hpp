@@ -68,6 +68,7 @@ namespace std {
 
 namespace triqs { namespace tuple {
 
+ /*
  /// Repeat an element
  template<typename T, int R> struct make_tuple_repeat_impl;
  
@@ -86,6 +87,7 @@ namespace triqs { namespace tuple {
  };
 
  template <int R, typename T> auto make_tuple_repeat(T &&x) { return make_tuple_repeat_impl<T, R>::invoke(std::forward<T>(x)); }
+*/
 
  /// _get_seq<T>() : from a tuple T, return the index sequence of the tuple length
  template <typename T> std14::make_index_sequence<std::tuple_size<std14::decay_t<T>>::value> _get_seq() {
@@ -286,13 +288,16 @@ namespace triqs { namespace tuple {
  auto map_on_zip(F &&f, T0 &&t0, T1 &&t1, T2 &&t2)
      RETURN(_map_impl(std::forward<F>(f), std::forward<T0>(t0), std::forward<T1>(t1), std::forward<T2>(t2), _get_seq<T0>()));
 
+#ifdef TRIQS_C11
+}}
+#else
+
 /**
  * fold(f, t1, r_init)
  * f : a callable object : f(x,r) -> r'
  * t a tuple
  * Returns : f(xN,f(x_N-1,...f(x0,r_init)) on the tuple
  */
-#ifndef TRIQS_C11
  template <int pos, typename F, typename T, typename R> decltype(auto) fold_impl(_int<pos>, F &&f, T &&t, R &&r) {
   return fold_impl(_int<pos - 1>(), std::forward<F>(f), std::forward<T>(t),
                    f(std::get<_get_seq_len<T>() - 1 - pos>(t), std::forward<R>(r)));
@@ -302,26 +307,6 @@ namespace triqs { namespace tuple {
  template <typename F, typename T, typename R> decltype(auto) fold(F &&f, T &&t, R &&r) {
   return fold_impl(_int<_get_seq_len<T>() - 1>(), std::forward<F>(f), std::forward<T>(t), std::forward<R>(r));
  }
-#else
- // old implementation, not modified for C++11
-
- template <int N, int pos, typename T> struct fold_impl {
-  template <typename F, typename R>
-  auto operator()(F &&f, T &&t,
-                  R &&r)DECL_AND_RETURN(fold_impl<N, pos - 1, T>()(std::forward<F>(f), std::forward<T>(t),
-                                                                   f(std::get<N - 1 - pos>(t), std::forward<R>(r))));
- };
-
- template <int N, typename T> struct fold_impl<N, -1, T> {
-  template <typename F, typename R> R operator()(F &&f, T &&t, R &&r) { return std::forward<R>(r); }
- };
-
- template <typename F, typename T, typename R>
- auto fold(F &&f, T &&t, R &&r)
-     DECL_AND_RETURN(fold_impl<std::tuple_size<std::c14::decay_t<T>>::value, std::tuple_size<std::c14::decay_t<T>>::value - 1,
-                               T>()(std::forward<F>(f), std::forward<T>(t), std::forward<R>(r)));
-
-#endif
 
  /**
   * fold(f, r_init, t1, t2)
@@ -330,7 +315,6 @@ namespace triqs { namespace tuple {
   * Returns : f(x0,y0,f(x1,y1,,f(....)) for t1 = (x0,x1 ...) and t2 = (y0,y1...).
   */
 
-#ifndef TRIQS_C11
  template <int pos, typename F, typename T0, typename T1, typename R>
  decltype(auto) fold_impl(_int<pos>, F &&f, T0 &&t0, T1 &&t1, R &&r) {
   constexpr int n = _get_seq_len<T0>() - 1 - pos;
@@ -346,24 +330,6 @@ namespace triqs { namespace tuple {
   return fold_impl(_int<_get_seq_len<T0>() - 1>(), std::forward<F>(f), std::forward<T0>(t0), std::forward<T1>(t1),
                    std::forward<R>(r));
  }
-#else
-// old implementation, not modified for C++11
-
- template <int pos, typename T1, typename T2> struct fold_on_zip_impl {
-  template <typename F, typename R>
-  auto operator()(F &&f, T1 const &t1, T2 const &t2, R &&r)DECL_AND_RETURN(fold_on_zip_impl<pos - 1, T1, T2>()(
-      std::forward<F>(f), t1, t2, f(std::get<pos>(t1), std::get<pos>(t2), std::forward<R>(r))));
- };
-
- template <typename T1, typename T2> struct fold_on_zip_impl<-1, T1, T2> {
-  template <typename F, typename R> R operator()(F &&f, T1 const &t1, T2 const &t2, R &&r) { return std::forward<R>(r); }
- };
-
- template <typename F, typename T1, typename T2, typename R>
- auto fold(F &&f, T1 const &t1, T2 const &t2, R &&r)
-     DECL_AND_RETURN(fold_on_zip_impl<std::tuple_size<T1>::value - 1, T1, T2>()(std::forward<F>(f), t1, t2, std::forward<R>(r)));
-
-#endif
 
  /**
   * replace<int ... I>(t,r)
@@ -527,4 +493,4 @@ auto get(c14::tuple<Args...> const &t) DECL_AND_RETURN(std::get<i>(static_cast<s
 
 template <typename... Args> class tuple_size<c14::tuple<Args...>> : public tuple_size<std::tuple<Args...>> {};
 }
-
+#endif

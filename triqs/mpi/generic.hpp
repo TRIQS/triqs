@@ -48,7 +48,6 @@ namespace mpi {
    return invoke_impl(std::integral_constant<bool, with_lazy>(), Tag(), c, a, root);
   }
 
-#ifdef __cpp_generic_lambdas
   static void reduce_in_place(communicator c, T &a, int root) {
    tuple::for_each(view_as_tuple(a), [c, root](auto &x) { triqs::mpi::reduce_in_place(x, c, root); });
   }
@@ -62,45 +61,6 @@ namespace mpi {
    triqs::tuple::for_each_zip(l, view_as_tuple(target), view_as_tuple(laz.ref));
    return target;
   }
-
-#else
-
-  struct aux1 {
-   communicator c;
-   int root;
-
-   template <typename T1> void operator()(T1 &x) const { triqs::mpi::reduce_in_place(c, x, root); }
-  };
-
-  static void reduce_in_place(communicator c, T &a, int root) {
-   tuple::for_each(aux1{c, root}, view_as_tuple(a));
-  }
-
-  struct aux2 {
-   communicator c;
-   int root;
-
-   template <typename T2> void operator()(T2 &x) const { triqs::mpi::broadcast(c, x, root); }
-  };
-
-  static void broadcast(communicator c, T &a, int root) {
-   tuple::for_each(aux2{c, root}, view_as_tuple(a));
-  }
-
-  template <typename Tag> struct aux3 {
-   mpi_lazy<Tag, T> laz;
-
-   template <typename T1, typename T2> void operator()(T1 &t, T2 &s) const {
-    t = triqs::mpi::mpi_impl<T2>::invoke(Tag(), laz.c, laz.s);
-   }
-  };
-
-  template <typename Tag> static T& complete_operation(T &target, mpi_lazy<Tag, T> laz) {
-   auto l = aux3<Tag>{laz};
-   triqs::tuple::for_each_zip(l, view_as_tuple(target), view_as_tuple(laz.ref));
-   return target;
-  }
-#endif
  };
 
  // If type T has a mpi_implementation nested struct, then it is mpi_impl<T>.

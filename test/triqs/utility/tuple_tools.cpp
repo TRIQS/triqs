@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
   if ( std::abs((res -  fun()(1,2.3,4.3,8))) > 1.e-13) throw std::runtime_error(" ");
  }
 
+#ifndef TRIQS_C11
  {
   auto r = triqs::tuple::map_on_zip_v2([](double x, double y) { return x + y; }, t1, t2);
   std::cerr  << " [f(a,b) for (a,b) in zip(t1,t2)] =" << r << std::endl; 
@@ -189,7 +190,7 @@ int main(int argc, char **argv) {
   std::cout << "replace 1,3,5"<< t << triqs::tuple::replace<1,3,5>(t,s)<< std::endl; 
  }
 
- 
+#endif
 
 
 }

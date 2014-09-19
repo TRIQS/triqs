@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2014 by O. Parcollet
+ * Copyright (C) 2014 by I. Krivenko, O. Parcollet, M. Ferrero
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,12 +19,9 @@
  *
  ******************************************************************************/
 #pragma once
-
-#include "./mpi/arrays.hpp"
-#include "./mpi/vector.hpp"
-
-#ifndef TRIQS_C11
-#include "./mpi/generic.hpp"
-#endif
+#include <triqs/operators/many_body_operator.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/variant.hpp>
 
 

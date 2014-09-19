@@ -88,11 +88,6 @@ namespace gfs {
   // closest_point mechanism
   template <typename Variable, typename Target, typename Singularity, typename Opt> struct get_closest_point;
 
-  // singularity
-  //template <typename Variable, typename Target, typename Opt> struct singularity {
-  // using type = nothing;
-  //};
-
   // symmetry
   template <typename Variable, typename Target, typename Singularity, typename Opt> struct symmetry {
    using type = nothing;
@@ -426,6 +421,7 @@ namespace gfs {
   }
  }
 
+//#ifndef TRIQS_CPP11 
  template <typename RHS, typename Variable, typename Target, typename Singularity, typename Opt, bool IsView>
  void triqs_clef_auto_assign_impl(gf_impl<Variable, Target, Singularity, Opt, IsView, false> &g, RHS const &rhs,
                                   std::integral_constant<bool, true>) {
@@ -434,6 +430,7 @@ namespace gfs {
    //(*this)[w] = triqs::tuple::apply(rhs, w.components_tuple());
   }
  }
+//#endif
 
  // -------------------------The regular class of GF --------------------------------------------------------
 

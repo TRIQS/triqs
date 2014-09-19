@@ -20,7 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include "./base.hpp"
-#include <triqs/mpi/generic.hpp>
 
 namespace triqs {
 namespace mpi {

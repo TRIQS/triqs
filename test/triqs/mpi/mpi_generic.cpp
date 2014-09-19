@@ -61,6 +61,7 @@ auto view_as_tuple(my_object &x) RETURN(std::tie(x.a, x.b));
 
 int main(int argc, char *argv[]) {
 
+#ifdef TRIQS_C11
  mpi::environment env(argc, argv);
  mpi::communicator world;
  
@@ -93,5 +94,6 @@ int main(int argc, char *argv[]) {
  out << " allgather b = " << ob.b << std::endl;
 
  out << "----------------------------"<< std::endl;
+#endif
 }
 

@@ -417,6 +417,10 @@ endif()
 #------------------------
 
 if (Build_Documentation)
+ if (NOT USE_CPP14) 
+  message(FATAL_ERROR " The documentation can only be compiled in C++14 mode")
+ endif()
+
  message( STATUS "-------- Prepare documentation -------------")
  add_subdirectory (${TRIQS_SOURCE_DIR}/doc )
  #add_dependencies(docs_sphinx py_sources)
