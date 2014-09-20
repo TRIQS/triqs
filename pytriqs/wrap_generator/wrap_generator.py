@@ -79,6 +79,7 @@ class cfunction :
       self.doc = doc
       self.is_method = is_method
       self.is_static = is_static
+      self._dict_call =  None
       if is_static : assert is_method, "is_static only works with method"
       self.release_GIL_and_enable_signal = release_GIL_and_enable_signal
       assert isinstance(signature, str) or isinstance(signature, dict), "Signature must be a string of a dict: cf doc"
@@ -95,7 +96,10 @@ class cfunction :
             if not is_constructor and len(spl)> 1 and '>' not in spl[-1] :
                 self.rtype, self.c_name = spl
                 if self.c_name == '__operator_call' : self.c_name = "operator()"
-
+        if args.strip().startswith("**") : # special case : dict call
+            assert calling_pattern is None, "When ** is given as argument, no calling pattern can be provided"
+            self._dict_call =  args[2:]
+            args, self.args = '','' # no argument
         def f(): # analyse the argument, be careful that , can also be in type, like A<B,C>, so we count the < >
             acc = ''
             for s in args.split(',') :
@@ -103,7 +107,14 @@ class cfunction :
                 if acc.count('<') == acc.count('>') :
                     r, acc = acc,''
                     yield r
-        args = [ re.sub('=',' ',x).split() for x in f() if x] # list of (type, name, default) or (type, name)
+        def g(a) : 
+            if '=' in a : 
+              l,r = a.split('=')
+              return l.strip().rsplit(' ') + [r]
+            else : 
+              return a.rsplit(' ',1)
+        #args = [ re.sub('=',' ',x).split() for x in f() if x] # list of (type, name, default) or (type, name)
+        args = [ g(x) for x in f() if x] # list of (type, name, default) or (type, name)
       else :
           self.rtype = signature.pop("rtype", None)
           args = signature.pop('args',())
@@ -116,7 +127,7 @@ class cfunction :
         if len(a) == 2 : (t,n),d = a,None
         elif len(a) == 3 : t,n,d = a
         else : raise RuntimeError, "Syntax error in overload: args = %s"%args
-        self.args.append([t,n,d])
+        self.args.append([t.strip(),n.strip(),d])
       # end analyze signature
       assert self.c_name or self._calling_pattern or self.is_constructor, "You must specify a calling_pattern or the signature must contain the name of the function"
       if self.is_constructor :
@@ -126,12 +137,15 @@ class cfunction :
     def _get_calling_pattern(self) :
         """Generation only: gets the calling_pattern or synthesize the default"""
         if self._calling_pattern : return self._calling_pattern
-        s= "%s result = "%self.rtype if self.rtype != "void" else ""
+        s1 = '' if self._dict_call is None else "if (!convertible_from_python<%s>(keywds,true)) goto error_return;\n"%self._dict_call
+        s = "%s result = "%self.rtype if self.rtype != "void" else ""
         self_c = ""
         if self.is_method:
             self_c = "self_c." if not self.is_static else "self_class::"
         # the wrapped types are called by pointer
-        return "%s %s%s(%s)"%(s,self_c, self.c_name , ",".join([ ('*' if t in module_._wrapped_types else '') + n for t,n,d in self.args]))
+        args = ",".join([ ('*' if t in module_._wrapped_types else '') + n for t,n,d in self.args])
+        args = args if self._dict_call is None else "convert_from_python<%s>(keywds)"%self._dict_call # call with the keywds argument
+        return "%s %s %s%s(%s)"%(s1, s,self_c, self.c_name , args)
 
     def _get_signature (self):
         """Signature for the python doc"""
@@ -160,6 +174,9 @@ class cfunction :
 
     def _generate_doc(self) :
         doc = "\n".join([ "   " + x.strip() for x in self.doc.split('\n')])
+        doc = doc.replace('"',"'") # the " are replaced by \"r. 
+        #doc = doc.replace('"',r'\"') # the " are replaced by \"r. Does not work, makes \\"
+        if self._dict_call is not None : return doc
         return "Signature : %s\n%s"%( self._get_signature(),doc)
 
 class pure_pyfunction_from_module :
@@ -234,7 +251,10 @@ class pyfunction :
         self.overloads.append(cfunction(**kw))
 
     def _generate_doc(self) :
-        s = "\n".join([self.doc, "\n"] + [f._generate_doc() for f in self.overloads])
+        if len(self.overloads) == 1 : #only one overload
+            s = "\n".join([f._generate_doc() for f in self.overloads])
+        else : 
+            s = "\n".join([self.doc, "\n"] + [f._generate_doc() for f in self.overloads])
         return repr(s)[1:-1] # remove the ' ' made by repr
 
 def _is_type_a_view(c_type) :
@@ -417,7 +437,7 @@ class class_ :
         all_args = ",".join([ ('*' if t in module_._wrapped_types else '') + n  for t,n,d in f.args])
         f._calling_pattern = ''
         if calling_pattern is not None :
-          f._calling_pattern, all_args = calling_pattern + '\n', "std::move(result)"
+          f._calling_pattern, all_args = calling_pattern + ';\n', "std::move(result)"
         if self.c_type_is_view and build_from_regular_type_if_view :
           f._calling_pattern += "((%s *)self)->_c = new %s(%s (%s));"%(self.py_type, self.c_type,_regular_type_if_view_else_type(self.c_type),all_args)
         else :

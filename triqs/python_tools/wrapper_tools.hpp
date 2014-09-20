@@ -516,6 +516,10 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
  }
 };
 
+// Treat the block_gf as view
+template <typename... T> struct py_converter<triqs::gfs::gf<triqs::gfs::block_index, triqs::gfs::gf<T...>>> :
+py_converter<triqs::gfs::gf_view<triqs::gfs::block_index, triqs::gfs::gf<T...>>> {};
+
 // Converter for scalar_valued gf : reinterpreted as 1x1 matrix
 template <typename Variable, typename Opt> struct py_converter<triqs::gfs::gf_view<Variable, triqs::gfs::scalar_valued, Opt>>{
 

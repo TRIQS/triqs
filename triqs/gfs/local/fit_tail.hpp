@@ -53,4 +53,4 @@ namespace triqs { namespace gfs {
    int n_max, bool replace_by_fit = false) ;
 
  void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = false) ;
-}}} // namespace
+}} // namespace

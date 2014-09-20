@@ -555,6 +555,7 @@ template<typename T>
   // If no overload, we avoid the err_list and let the error go through (to save some code).
   %for n_overload, overload in enumerate(py_meth.overloads) :
     {// overload ${overload._get_c_signature()}
+     %if not overload._dict_call : 
      // define the variable to be filled by the parsing method
      // wrapped types are converted to a pointer, other converted types to a value or a view
      %for t,n,d in overload.args :
@@ -568,7 +569,9 @@ template<typename T>
      %endfor
      static char *kwlist[] = {${",".join([ '"%s"'%n for t,n,d in overload.args] + ["NULL"])}};
      static const char * format = "${overload._parsing_format()}";
-     if (PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist ${"".join([ module._get_proper_converter(t) + ' ,&%s'%n for t,n,d in overload.args])})) {
+     if (PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist ${"".join([ module._get_proper_converter(t) + ' ,&%s'%n for t,n,d in overload.args])})) 
+     %endif
+     {
       %if overload.is_method and not overload.is_constructor and not overload.no_self_c and not overload.is_static :
       auto & self_c = convert_from_python<${self_c_type}>(self);
       %endif
