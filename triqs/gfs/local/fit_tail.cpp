@@ -92,7 +92,7 @@ namespace triqs { namespace gfs {  namespace local {
   if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
    int i = 0;
    for (auto iw : gf.mesh()) { // (arrays::range(n_min,n_max+1)) {
-    if ((i >= n_min) && (i <= n_max)) gf[iw] = gf.singularity().evaluate(iw);
+    if (i >= n_min) gf[iw] = gf.singularity().evaluate(iw);
     i++;
    }
    }

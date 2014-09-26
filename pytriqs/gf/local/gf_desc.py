@@ -3,6 +3,7 @@ from wrap_generator import *
 module = module_(full_name = "pytriqs.gf.local.gf", doc = "Local Green functions ...")
 module.add_include("<triqs/gfs.hpp>")
 module.add_include("<triqs/gfs/local/functions.hpp>")
+module.add_include("<triqs/gfs/local/fit_tail.hpp>")
 module.add_include("<triqs/gfs/local/pade.hpp>")
 module.add_include("<triqs/gfs/local/legendre_matsubara.hpp>")
 module.add_using("namespace triqs::arrays")
@@ -367,6 +368,11 @@ g.add_method(name = "set_from_legendre",
              signature = "void(gf_view<legendre> gl)",
              calling_pattern = "self_c = legendre_to_imfreq(*gl)",
              doc = """Fills self with the legendre transform of gl""")
+
+g.add_method(name = "set_tail_from_fit",
+             signature = "void(tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = true)",
+             calling_pattern = "set_tail_from_fit(self_c, known_moments, n_moments, n_min, n_max, replace_by_fit)",
+             doc = """Set the tail by fitting""")
  
 # Pure python methods
 g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail")
