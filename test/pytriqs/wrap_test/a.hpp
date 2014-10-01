@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <set>
 #include <ostream>
 #include <triqs/arrays.hpp>
 //#include <triqs/h5.hpp>
@@ -188,6 +189,12 @@ inline std::map<std::string,std::vector<int>> map_to_mapvec(std::map<std::string
   std::map<std::string,std::vector<int>> mm;
   for(auto const &x: m) mm.emplace(x.first, std::vector<int>{x.second, 3, 5});
   return mm;
+}
+
+inline std::set<int> set_to_set(std::set<std::string> const &s) {
+  std::set<int> ss;
+  for(auto const &x: s) ss.insert(x.size());
+  return ss;
 }
 
 inline std::function<int(int,int)>  make_fnt_ii() {
