@@ -85,7 +85,7 @@ namespace triqs { namespace gfs {  namespace local {
   return res; // return tail
  }
 
- void set_tail_from_fit(gf_view<imfreq> gf, tail_view known_moments, int n_moments, int n_min, int n_max,
+ void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int n_moments, int n_min, int n_max,
    bool replace_by_fit ) {
   if (get_target_shape(gf) != known_moments.shape()) TRIQS_RUNTIME_ERROR << "shape of tail does not match shape of gf";
   gf.singularity() = fit_tail_impl(gf, known_moments, n_moments, n_min, n_max);
@@ -98,15 +98,15 @@ namespace triqs { namespace gfs {  namespace local {
    }
   }
 
-  void set_tail_from_fit(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, int n_min,
+  void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, int n_min,
     int n_max, bool replace_by_fit ) {
-   // for(auto &gf : block_gf) set_tail_from_fit(gf, known_moments, n_moments, n_min, n_max, replace_by_fit);
+   // for(auto &gf : block_gf) fit_tail(gf, known_moments, n_moments, n_min, n_max, replace_by_fit);
    for (int i = 0; i < block_gf.mesh().size(); i++)
-    set_tail_from_fit(block_gf[i], known_moments, n_moments, n_min, n_max, replace_by_fit);
+    fit_tail(block_gf[i], known_moments, n_moments, n_min, n_max, replace_by_fit);
   }
 
-  void set_tail_from_fit(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit ) {
-   set_tail_from_fit(reinterpret_scalar_valued_gf_as_matrix_valued(gf), known_moments, n_moments, n_min, n_max, replace_by_fit );
+  void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit ) {
+   fit_tail(reinterpret_scalar_valued_gf_as_matrix_valued(gf), known_moments, n_moments, n_min, n_max, replace_by_fit );
   }
 
  }}} // namespace

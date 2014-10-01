@@ -369,14 +369,14 @@ g.add_method(name = "set_from_legendre",
              calling_pattern = "self_c = legendre_to_imfreq(*gl)",
              doc = """Fills self with the legendre transform of gl""")
 
-g.add_method(name = "set_tail_from_fit",
+g.add_method(name = "fit_tail",
              signature = "void(tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = true)",
-             calling_pattern = "set_tail_from_fit(self_c, known_moments, n_moments, n_min, n_max, replace_by_fit)",
+             calling_pattern = "fit_tail(self_c, known_moments, n_moments, n_min, n_max, replace_by_fit)",
              doc = """Set the tail by fitting""")
  
 # Pure python methods
-g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail")
-g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.fit_tail")
+g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail_depr")
+g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.fit_tail_depr")
 
 # For legacy Python code : authorize g + Matrix
 #g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(gf<imfreq> x,matrix<std:complex<double>> y)")

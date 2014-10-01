@@ -28,11 +28,11 @@ In TRIQS, the tail is implemented as an object ``tail``. Here is a simple exampl
 Fitting the tail of a Green's function
 ---------------------------------------
 
-Given an imaginary-frequency Green's function, one can compute the moments of its high-frequency tail with the function ``set_tail_from_fit``:
+Given an imaginary-frequency Green's function, one can compute the moments of its high-frequency tail with the function ``fit_tail``:
 
 
 .. triqs_example:: ./tail_1.cpp
-The full documentation of ``set_tail_from_fit`` is :doc:`here<set_tail_from_fit>`.
+The full documentation of ``fit_tail`` is :doc:`here<fit_tail>`.
 
 API
 ****

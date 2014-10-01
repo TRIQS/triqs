@@ -48,11 +48,11 @@ namespace triqs { namespace gfs {  namespace local {
 
  tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int n_moments, int n_min, int n_max) ;
 
- void set_tail_from_fit(gf_view<imfreq> gf, tail_view known_moments, int n_moments, int n_min, int n_max,
+ void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int n_moments, int n_min, int n_max,
    bool replace_by_fit = false) ;
 
- void set_tail_from_fit(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, int n_min,
+ void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, int n_min,
    int n_max, bool replace_by_fit = false) ;
 
- void set_tail_from_fit(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = false) ;
+ void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = false) ;
 }}} // namespace

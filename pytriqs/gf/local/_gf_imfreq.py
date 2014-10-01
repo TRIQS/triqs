@@ -41,13 +41,13 @@ def plot(self, opt_dict):
 
 #--------------   OTHER OPERATIONS -----------------------------------------------------
 
-def replace_by_tail(self,start) :
+def replace_by_tail_depr(self,start) :
     d = self.data
     t = self.tail
     for n, om in enumerate(self.mesh) :
         if n >= start : d[n,:,:] = t(om)
 
-def fit_tail(self, fixed_coef, order_max, fit_start, fit_stop, replace_tail = True):
+def fit_tail_depr(self, fixed_coef, order_max, fit_start, fit_stop, replace_tail = True):
    """
    Fit the tail of the Green's function
    Input:
@@ -109,4 +109,4 @@ def fit_tail(self, fixed_coef, order_max, fit_start, fit_stop, replace_tail = Tr
          self.tail[len(known_coef[n1][n2])+order-1][n1,n2] = numpy.array([[ moment ]])
    self.tail.mask.fill(order_max)
    # Replace then end of the Green's function by the tail
-   if replace_tail: self.replace_by_tail(ninit);
+   if replace_tail: self.replace_by_tail_depr(ninit);

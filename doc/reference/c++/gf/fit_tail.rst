@@ -6,9 +6,9 @@ API
 
 The tail of a given ``gf<imfreq>/gf<block_index, gf<imfreq>> gw`` can be fitted using the two following functions:
 
- ``void set_tail_from_fit(gf<imfreq> &gf, tail_view known_moments, int n_moments, size_t n_min, size_t n_max, bool replace_by_fit = false);``
+ ``void fit_tail(gf<imfreq> &gf, tail_view known_moments, int n_moments, size_t n_min, size_t n_max, bool replace_by_fit = false);``
 
- ``void set_tail_from_fit(gf<block_index, gf<imfreq>> &block_gf, tail_view known_moments, int n_moments, size_t n_min,  size_t n_max, bool replace_by_fit = false);``
+ ``void fit_tail(gf<block_index, gf<imfreq>> &block_gf, tail_view known_moments, int n_moments, size_t n_min,  size_t n_max, bool replace_by_fit = false);``
 
 
 where
@@ -33,7 +33,7 @@ where
 Example
 ~~~~~~~~
 
-.. triqs_example:: ./set_tail_from_fit_0.cpp
+.. triqs_example:: ./fit_tail_0.cpp
 Implementation
 ~~~~~~~~~~~~~~~
 
