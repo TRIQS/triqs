@@ -135,15 +135,13 @@ namespace lattice {
   rho() = 0;
   for (int l = 0; l < norb; l++) {
    for (int j = 0; j < grid.size(); j++) {
+    int a = int((eval(l, j) - epsmin) / deps);
+    if (a == int(neps)) a = a - 1;
     for (int k = 0; k < norb; k++) {
-     int a = int((eval(k, j) - epsmin) / deps);
-     if (a == int(neps)) a = a - 1;
      rho(a, l) += real(conj(evec(l, k, j)) * evec(l, k, j));
-     // dos(a) +=  real(conj(evec(l,k,j))*evec(l,k,j));
     }
    }
   }
-  // rho = rho / double(grid.size()*deps);
   rho /= grid.size() * deps;
   return std::make_pair(epsilon, rho);
  }
