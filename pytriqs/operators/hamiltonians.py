@@ -122,7 +122,7 @@ def get_mkind(off_diag):
     if off_diag:
         mkind = lambda sn, on: (sn, on)
     else:
-        mkind = lambda sn, on: (sn+'_'+on, 0)
+        mkind = lambda sn, on: (sn+'_%s'%on, 0)
 
     return mkind
 
@@ -131,9 +131,9 @@ def set_operator_structure(spin_names,orb_names,off_diag):
     gf_struct = {}
     if off_diag: # outer blocks are spin blocks
         for sn in spin_names:
-            gf_struct[sn] = [int(i) for i in orb_names]
+            gf_struct[sn] = [on for on in orb_names]
     else: # outer blocks are spin-orbital blocks
-        for sn, an in product(spin_names,orb_names):
-            gf_struct[sn+'_'+an] = [0]
+        for sn, on in product(spin_names,orb_names):
+            gf_struct[sn+'_%s'%on] = [0]
 
     return gf_struct
