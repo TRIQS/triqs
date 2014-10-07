@@ -337,6 +337,7 @@ namespace triqs { namespace gfs { namespace local {
   template <typename T1, typename T2>
   TYPE_ENABLE_IF(tail, mpl::and_<tqa::ImmutableMatrix<T1>, LocalTail<T2>>) operator*(T1 const &a, T2 const &b) {
    auto res = tail{first_dim(a), b.shape()[1], b.size(), b.order_min()};
+   res.mask_view() = b.order_max();
    for (int n = res.order_min(); n <= res.order_max(); ++n) res(n) = a * b(n);
    return res;
   }
@@ -344,6 +345,7 @@ namespace triqs { namespace gfs { namespace local {
   template <typename T1, typename T2>
   TYPE_ENABLE_IF(tail, mpl::and_<LocalTail<T1>, tqa::ImmutableMatrix<T2>>) operator*(T1 const &a, T2 const &b) {
    auto res = tail{a.shape()[0], second_dim(b), a.size(), a.order_min()};
+   res.mask_view() = a.order_max();
    for (int n = res.order_min(); n <= res.order_max(); ++n) res(n) = a(n) * b;
    return res;
   }
