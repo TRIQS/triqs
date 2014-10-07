@@ -29,24 +29,16 @@ It is imported with the command::
 from gf import *
 
 from inverse import inverse
-#from gf_imfreq import GfImFreq
-#from gf_imtime import GfImTime
-#from gf_refreq import GfReFreq
-#from gf_retime import GfReTime
-#from gf_two_real_times import GfTwoRealTime
-#from gf_legendre import GfLegendre
 from block_gf import BlockGf
 from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
+from functions import delta
 
-#__all__ = ['TailGf','GfImFreq','MeshImFreq']
-
-__all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGf',
+__all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
+           'lazy_expressions','TailGf',
            'GfImFreq','MeshImFreq',
            'GfImTime', 'MeshImTime',
            'GfReFreq', 'MeshReFreq',
            'GfReTime', 'MeshReTime',
            'make_gf_from_inverse_fourier',
-           'BlockGf','inverse'] #,'GfTwoRealTime']
-
-#__all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGf','GfImFreq','GfImTime','GfReFreq','GfReTime','GfLegendre','BlockGf','inverse'] #,'GfTwoRealTime']
-
+           'BlockGf','inverse',
+           'delta']

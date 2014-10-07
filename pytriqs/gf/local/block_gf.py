@@ -364,11 +364,6 @@ class BlockGf(object):
        self.__check_attr("invert")
        for i,g in self : g.invert()
 
-    def delta(self) :
-       """Compute delta from G0"""
-       self.__check_attr("delta")
-       return self.__class__( name_block_generator = [ (n, g.delta()) for n,g in self], make_copies=False)
-
     def transpose(self):
        """Transpose of the BlockGf"""
        self.__check_attr("transpose")

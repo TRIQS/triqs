@@ -9,12 +9,12 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_legendre.py
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_refreq.py
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_retime.py
-  #${CMAKE_CURRENT_SOURCE_DIR}/gf_two_real_times.py
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_plot.py
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_common.py
   ${CMAKE_CURRENT_SOURCE_DIR}/inverse.py
   ${CMAKE_CURRENT_SOURCE_DIR}/lazy_expressions.py
   ${CMAKE_CURRENT_SOURCE_DIR}/tools.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/functions.py
 )
 
 # Install python sources
