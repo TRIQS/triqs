@@ -22,7 +22,6 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./domains/R.hpp"
 #include "./meshes/segment.hpp"
 #include "./evaluators.hpp"
 

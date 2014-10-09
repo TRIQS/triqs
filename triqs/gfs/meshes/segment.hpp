@@ -21,6 +21,7 @@
 #pragma once
 #include "./mesh_tools.hpp"
 #include "./linear.hpp"
+#include "../domains/R.hpp"
 
 namespace triqs {
 namespace gfs {
