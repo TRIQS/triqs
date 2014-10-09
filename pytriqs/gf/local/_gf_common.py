@@ -125,15 +125,16 @@ def invert(self):
 
 #---------------------------------------------------
 
-def transpose(self):
-    """Transposes the GF Bloc: return a new transposed view"""
-    ### WARNING: this depends on the C++ layering ....
-    return self.__class__(
-            indices = list(self.indices),
-            mesh = self.mesh,
-            data = self.data.transpose( (0, 2, 1) ),
-            tail = self.tail.transpose(),
-            name = self.name+'(t)')
+# FIXME NEVER USED CLEAN UP
+#def transpose(self):
+#    """Transposes the GF Bloc: return a new transposed view"""
+#    ### WARNING: this depends on the C++ layering ....
+#    return self.__class__(
+#            indices = list(self.indices),
+#            mesh = self.mesh,
+#            data = self.data.transpose( (0, 2, 1) ),
+#            tail = self.tail.transpose(),
+#            name = self.name+'(t)')
 
 #---------------------------------------------------
 
