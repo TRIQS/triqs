@@ -313,6 +313,9 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
     g.number_protocol['multiply'].python_precall = "pytriqs.gf.local._gf_common.mul_precall"
     g.number_protocol['divide'].python_precall   = "pytriqs.gf.local._gf_common.div_precall"
 
+    g.number_protocol['lshift'] = pyfunction(name ="__lshift__", python_precall = "pytriqs.gf.local._gf_common._lshift_", arity = 2)
+
+    # For backward compatibility
     g.number_protocol['inplace_lshift'] = pyfunction(name ="__inplace_lshift__", python_precall = "pytriqs.gf.local._gf_common._ilshift_", arity = 2)
 
     g.add_method(name = "invert", calling_pattern = "invert_in_place(self_c)" , signature = "void()", doc = "Invert (in place)")

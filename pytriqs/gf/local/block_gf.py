@@ -232,6 +232,17 @@ class BlockGf(object):
     def __le__(self, other) : 
         raise RuntimeError, " Operator <= not defined "
 
+    def __lshift__(self, A): 
+        """ A can be 2 things :
+          * G << any_init will init all the BlockGf with the initializer
+          * G << g2 where g2 is a BlockGf will copy g2 into self
+          """
+        if isinstance(A, self.__class__):
+           for (i,g) in self : g.copy_from(A[i])
+        else: 
+           for i,g in self:  g << A
+        return self
+
     def __ilshift__(self, A): 
         """ A can be 2 things :
           * G <<= any_init will init all the BlockGf with the initializer

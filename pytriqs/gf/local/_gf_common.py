@@ -73,6 +73,9 @@ def mul_precall (self, y):
 
 def div_precall (self, y):
     if descriptor_base.is_lazy(y): return lazy_expressions.make_lazy(self) / y
+
+def _lshift_(self, A):
+    return _ilshift_(self, A)
  
 def _ilshift_(self, A):
     """ A can be two things:
