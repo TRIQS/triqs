@@ -43,19 +43,21 @@ namespace triqs { namespace mc_tools {
     /**
      * Constructor from a set of parameters
      */
-    mc_generic(uint64_t N_Cycles, uint64_t Length_Cycle, uint64_t N_Warmup_Cycles, std::string Random_Name, int Random_Seed, int Verbosity,
-      std::function<bool()> AfterCycleDuty = std::function<bool()>() ) :
-     RandomGenerator(Random_Name, Random_Seed),
-     AllMoves(RandomGenerator),
-     AllMeasures(),AllMeasuresAux(),
-     report(&std::cout, Verbosity),
-     Length_MC_Cycle(Length_Cycle),
-     NWarmIterations(N_Warmup_Cycles),
-     NCycles(N_Cycles),
-     after_cycle_duty(AfterCycleDuty),
-     sign_av(0) {}
+   mc_generic(uint64_t n_cycles, uint64_t length_cycle, uint64_t n_warmup_cycles, std::string random_name, int random_seed,
+              int verbosity, std::function<bool()> AfterCycleDuty = std::function<bool()>())
+      : RandomGenerator(random_name, random_seed)
+      , AllMoves(RandomGenerator)
+      , AllMeasures()
+      , AllMeasuresAux()
+      , report(&std::cout, verbosity)
+      , Length_MC_Cycle(length_cycle)
+      , NWarmIterations(n_warmup_cycles)
+      , NCycles(n_cycles)
+      , after_cycle_duty(AfterCycleDuty)
+      , sign_av(0) {}
 
-    /**
+     // TO BE REMOVED WITH PARAMETERS 
+    /*
      * Constructor from a dictionnary
      * \param[in] P  dictionary parameters
      * \param[in] AfterCycleDuty  a function bool() to be called after each QMC cycle
@@ -159,13 +161,6 @@ namespace triqs { namespace mc_tools {
 
     }
 
-    // do not use direcly, use the free function it is simpler to call...
-    template<typename MeasureType> MeasureType       & get_measure(std::string const & name)       { return AllMeasures.template get_measure<MeasureType> (name); }
-    template<typename MeasureType> MeasureType const & get_measure(std::string const & name) const { return AllMeasures.template get_measure<MeasureType> (name); }
- 
-    template<typename MoveType> MoveType       & get_move (std::string const & name)       { return AllMoves.template get_move<MoveType> (name); }
-    template<typename MoveType> MoveType const & get_move (std::string const & name) const { return AllMoves.template get_move<MoveType> (name); }
-
     /// HDF5 interface
     friend void h5_write (h5::group g, std::string const & name, mc_generic const & mc){
      auto gr = g.create_group(name);
@@ -212,19 +207,6 @@ namespace triqs { namespace mc_tools {
     bool thermalized() const { return (NC>= NWarmIterations);}
     bool converged() const { return false;}
   };
-
-
- /// Retrieve a Measure given name and type. NB : the type is checked at runtime
- template<typename M,typename T1, typename T2> M       & get_measure(mc_generic<T1,T2> & s, std::string const & name)       { return s.template get_measure<M> (name); }
- template<typename M,typename T1, typename T2> M const & get_measure(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_measure<M> (name); }
- 
- /// Retrieve a Measure given name and type. NB : the type is checked at runtime
- template<typename M,typename T1, typename T2> M       * get_measure_aux(mc_generic<T1,T2> & s, std::string const & name)       { return s.template get_measure_aux<M> (name); }
- template<typename M,typename T1, typename T2> M const * get_measure_aux(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_measure_aux<M> (name); }
-
- /// Retrieve a Move given name and type. NB : the type is checked at runtime
- template<typename M,typename T1, typename T2> M & get_move(mc_generic<T1,T2> & s, std::string const & name)             { return s.template get_move<M> (name); }
- template<typename M,typename T1, typename T2> M const & get_move(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_move<M> (name); }
 
 }}// end namespace
 
