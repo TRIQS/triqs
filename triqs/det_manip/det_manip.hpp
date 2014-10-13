@@ -239,13 +239,19 @@ namespace triqs { namespace det_manip {
     //----------------------- READ ACCESS TO DATA ----------------------------------
 
     /// Current size of the matrix
-    size_t size() const { return N;}
+    size_t size() const { return N; }
 
     /// Returns the i-th values of x
-    xy_type const & get_x(size_t i) const { return x_values[row_num[i]];}
+    xy_type const & get_x(size_t i) const { return x_values[row_num[i]]; }
+
+    /// Returns the vector of x values
+    std::vector<xy_type> const & get_x_values() const { return x_values; }
 
     /// Returns the j-th values of y
-    xy_type const & get_y(size_t j) const { return y_values[col_num[j]];}
+    xy_type const & get_y(size_t j) const { return y_values[col_num[j]]; }
+
+    /// Returns the vector of y values
+    std::vector<xy_type> const & get_y_values() const { return y_values; }
 
     /** det M of the current state of the matrix.  */
     value_type determinant() const {return sign*det;}
@@ -807,7 +813,7 @@ namespace triqs { namespace det_manip {
     }
 
     ///
-    enum RollDirection {None,Up, Down,Left,Right};
+    enum RollDirection {None,Up,Down,Left,Right};
 
     /**
      * "Cyclic Rolling" of the determinant.
