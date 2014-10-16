@@ -37,7 +37,8 @@ if(not_successful)
  message(SEND_ERROR "error runing test '${name}': ${err}; command ${cmd}  : shell output: ${not_successful}!")
 endif(not_successful)
 
-MESSAGE( "About to compare with ${COM}")
+string (REPLACE ";" " " COM_STR "${COM}")
+MESSAGE( "About to compare with ${COM_STR}")
 
 if (NOT H5_DIFF_EXECUTABLE)
  # Little fix to turn -0 into 0 (--0 is not replaced)
