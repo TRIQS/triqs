@@ -27,8 +27,11 @@
 #include <triqs/arrays/vector.hpp>
 
 //
-//#include <triqs/arrays/functional/map.hpp>
+#include <triqs/arrays/functional/map.hpp>
 #include <triqs/arrays/mapped_functions.hpp>
+
+#include <triqs/arrays/functional/fold.hpp>
+#include <triqs/arrays/algorithms.hpp>
 
 // HDF5 interface
 #include <triqs/arrays/h5/simple_read_write.hpp>
