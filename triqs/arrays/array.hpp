@@ -26,9 +26,6 @@
 #include "impl/indexmap_storage_pair.hpp"
 #include "impl/assignment.hpp"
 #include "impl/flags.hpp"
-#include "algorithms.hpp"
-#include "functional/fold.hpp"
-#include "functional/map.hpp"
 namespace triqs { namespace arrays {
 
  template <typename ValueType, int Rank, ull_t Opt=0, ull_t TraversalOrder= 0, bool Borrowed=false, bool IsConst=false > class array_view;
