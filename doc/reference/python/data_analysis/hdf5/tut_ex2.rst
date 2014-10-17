@@ -1,4 +1,3 @@
-
 .. _hdf5_tut_ex2:
 
 
@@ -8,13 +7,34 @@ Example 2 : A Green function
 What about more complex objects ?
 The good news is that **hdf-compliant** objects can be stored easily as well.
 
-We can store a Green function in an hdf5 file :download:`[file] <./tut_ex2.py>`:
+We can store a Green function in an hdf5 file:
 
-.. literalinclude:: tut_ex2.py
+.. runblock:: python
 
-Of course, we can retrieve G as easily :download:`[file] <./tut_ex2b.py>`:
+   from pytriqs.archive import HDFArchive
+   from pytriqs.gf.local import GfImFreq
 
-.. literalinclude:: tut_ex2b.py
+   # Define a Green function 
+   G = GfImFreq ( indices = [1], beta = 10, n_points = 1000)
+         
+   # Opens the file myfile.h5, in read/write mode
+   R = HDFArchive('myfile.h5', 'w')
+   # Store the object G under the name 'g1' and mu
+   R['g1'] = G
+   R['mu'] = 1.29
+   del R # closing the files (optional : file is closed when the R reference is deleted)
+
+Of course, we can retrieve G as easily:
+
+.. runblock:: python
+
+   from pytriqs.archive import HDFArchive
+   from pytriqs.gf.local import GfImFreq
+
+   R = HDFArchive('myfile.h5', 'r')  # Opens the file myfile.h5 in readonly mode 
+   G = R['g1'] # Retrieve the object named g1 in the file as G
+
+   # ... ok now I can work with G
 
 The structure of the HDF file is this time ::
 

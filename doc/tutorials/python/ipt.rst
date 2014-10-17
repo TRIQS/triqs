@@ -36,13 +36,47 @@ perturbation theory for a symmetric single-band Anderson model.
 All Green's functions in the calculations have just one index because
 *up* and *down* components are the same.
 
-.. literalinclude:: ipt_solver.py
+.. runblock:: python
+
+   from pytriqs.gf.local import *
+
+   class IPTSolver:
+
+       def __init__(self, **params):
+
+           self.U = params['U']
+           self.beta = params['beta']
+
+           # Matsubara frequency
+           self.g = GfImFreq(indices=[0], beta=self.beta)
+           self.g0 = self.g.copy()
+           self.sigma = self.g.copy()
+
+           # Imaginary time
+           self.g0t = GfImTime(indices=[0], beta = self.beta)
+           self.sigmat = self.g0t.copy()
+
+       def solve(self):
+
+           self.g0t <<= InverseFourier(self.g0)
+           self.sigmat <<= (self.U**2) * self.g0t * self.g0t * self.g0t
+           self.sigma <<= Fourier(self.sigmat)
+
+           # Dyson equation to get G
+           self.g <<= inverse(inverse(self.g0) - self.sigma)
+
 
 Visualization of a Mott transition
 ----------------------------------
 
 We can now use this solver to run DMFT calculations and scan a range of
-values of :math:`U`. At every iteration the resulting data is plotted
+values of :math:`U`. 
+
+.. plot:: tutorials/python/ipt_full.py
+   :include-source:
+   :scale: 70
+
+Alternatively, in this :download:`script <./ipt_dmft.py>`, at every iteration the resulting data is plotted
 and saved into PNG files using the :ref:`TRIQS matplotlib interface<plotting>`.
 Not that :math:`G(i\omega_n)` is analytically continued to the real axis using
 :ref:`Padé approximant<GfReFreq>`.
@@ -50,12 +84,7 @@ Not that :math:`G(i\omega_n)` is analytically continued to the real axis using
 At the end of the script an external utility `convert` is invoked to join the
 DOS plots into a single animated GIF file which illustrates how a metallic
 solution evolves towards an insulator.
-
-.. literalinclude:: ipt_dmft.py
-
-.. only:: html
-
-  The result of this script is the following animated gif:
+The result of this script is the following animated gif:
 
   .. image:: mott.gif
      :width: 700
