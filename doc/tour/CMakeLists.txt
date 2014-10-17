@@ -1,2 +1,1 @@
 all_tests()
-

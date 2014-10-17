@@ -53,8 +53,9 @@ ENDFOREACH()
 endmacro()
 
 # Dive and find the doxygen sources
-add_subdirectory(reference/c++)
-add_subdirectory(tutorials/c++)
+add_subdirectory(reference/)
+add_subdirectory(tutorials/)
+add_subdirectory(tour/)
 
 # Build the doxygen 
 set(DOXYGEN_HTML_OUTPUT ./html/doxy_triqs)

@@ -124,7 +124,7 @@ pygments_style = 'sphinx'
 # Options for doxylink extension
 # -----------------------------
 
-doxylink = { 'doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/doxy.tag', 'doxy_triqs') }
+doxylink = { 'doxy': ('@CMAKE_CURRENT_BINARY_DIR@/doxy.tag', 'doxy_triqs') }
 
 
 # Options for HTML output
@@ -146,7 +146,7 @@ html_context = {'header_title': 'triqs',
                                  ['About TRIQS', 'about']
                                                        ]}
 
-#html_theme_options = { "pagewidth": "80em", "documentwidth" : "60em" }
+#html_theme_options = { "pagewidth": "80em", "documentwidth": "60em" }
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
