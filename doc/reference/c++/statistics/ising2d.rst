@@ -4,8 +4,5 @@ Full example: Monte-Carlo simulation of the 2D Ising model
 ===========================================================
 
 
-.. literalinclude:: src/ising2d.cpp
+.. triqs_example:: ising2d_0.cpp
 
-The output is
-
-.. literalinclude:: src/ising2d.output

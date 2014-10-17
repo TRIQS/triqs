@@ -41,11 +41,11 @@ Tutorial
 
 A simple example with a stack of double: 
 
-.. literalinclude:: examples_code/h5_stack_ex_sca.cpp
+.. triqs_example:: examples_code/h5_stack_ex_sca.cpp
 
 A simple example with a stack of array of rank 2 :
 
-.. literalinclude:: examples_code/h5_stack_ex.cpp
+.. triqs_example:: examples_code/h5_stack_ex.cpp
 
 
 

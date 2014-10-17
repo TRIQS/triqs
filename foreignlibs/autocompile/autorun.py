@@ -74,10 +74,11 @@ class RunBlock(Directive):
         stdout,stderr = proc.communicate(code)
 
         # Process output 
+        out =''
         if stdout:
-            out = ''.join(stdout).decode(output_encoding)
+            out += ''.join(stdout).decode(output_encoding)
         if stderr:
-            out = ''.join(stderr).decode(output_encoding)
+            out += ''.join(stderr).decode(output_encoding)
         
         # Get the original code with prefixes
         if show_source:

@@ -9,7 +9,17 @@ represents the tree structure of the file in a way similar to a dictionary.
 
 Let us start with a very simple example :download:`[file] <./tut_ex1.py>`:
 
-.. literalinclude:: tut_ex1.py
+.. runblock:: python
+
+   from pytriqs.archive import *
+   import numpy
+   R = HDFArchive('myfile.h5', 'w')    # Opens the file myfile.h5, in read/write mode
+   R['mu'] = 1.29
+   R.create_group('S')
+   S= R['S']
+   S['a'] = "a string"
+   S['b'] = numpy.array([1,2,3])
+   del R,S # closing the files (optional : file is closed when the references to R and subgroup are deleted)
 
 Run this and say ::
  
