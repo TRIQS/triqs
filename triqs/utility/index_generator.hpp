@@ -25,7 +25,7 @@ namespace triqs {
 namespace utility {
 
  class index3_generator {
-  mini_vector<long, 3> i, d; // rely on mini_vector initialization
+  mini_vector<long, 3> d, i; // rely on mini_vector initialization
   long i_flat =0;
   bool _at_end = false;
 

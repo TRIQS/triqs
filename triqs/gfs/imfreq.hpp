@@ -163,12 +163,12 @@ namespace gfs {
  // specific operations (for legacy python code).
  // +=, -= with a matrix
  inline void operator+=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> m) {
-  for (int u = 0; u < first_dim(g.data()); ++u) g.data()(u, arrays::ellipsis()) += m;
+  for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) += m;
   g.singularity()(0) += m;
  }
 
  inline void operator-=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> m) {
-  for (int u = 0; u < first_dim(g.data()); ++u) g.data()(u, arrays::ellipsis()) -= m;
+  for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) -= m;
   g.singularity()(0) -= m;
  }
 }

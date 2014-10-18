@@ -31,9 +31,9 @@ namespace gfs {
   auto t = tail_omega(s.get_from_linear_index(0));
   // a bit faster to first replace (some part of expression are precomputed).
   clef::placeholder<0> x_;
-  //auto expr = rhs(x_, t);
-  //for (auto x : s.mesh()) s[x] = eval(expr, x_ = x);
-  for (auto x : s.mesh()) s[x] = rhs(x, t);
+  auto expr = rhs(x_, t);
+  for (auto x : s.mesh()) s[x] = eval(expr, x_ = x);
+  //for (auto x : s.mesh()) s[x] = rhs(x, t);
  }
 
  /// ---------------------------  singularity ---------------------------------

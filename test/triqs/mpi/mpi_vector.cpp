@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
  VEC A(7), B(7), AA(7);
 
  clef::placeholder<0> i_;
- clef::placeholder<1> j_;
+ //clef::placeholder<1> j_;
 
  triqs::clef::make_expr(A)[i_] << i_+1;
 

@@ -28,7 +28,8 @@ namespace h5 {
 
   datatype strdatatype = H5Tcopy(H5T_C_S1);
   // auto status = H5Tset_size (strdatatype, H5T_VARIABLE);
-  auto status = H5Tset_size(strdatatype, value.size() + 1);
+  //auto status = H5Tset_size(strdatatype, value.size() + 1);
+  H5Tset_size(strdatatype, value.size() + 1);
 
   dataspace space = H5Screate(H5S_SCALAR);
   dataset ds = g.create_dataset(name, strdatatype, space);
@@ -47,7 +48,8 @@ namespace h5 {
   size_t size = H5Dget_storage_size(ds);
 
   datatype strdatatype = H5Tcopy(H5T_C_S1);
-  auto status = H5Tset_size(strdatatype, size);
+  H5Tset_size(strdatatype, size);
+  //auto status = H5Tset_size(strdatatype, size);
   // auto status = H5Tset_size (strdatatype, H5T_VARIABLE);
 
   std::vector<char> buf(size + 1, 0x00);

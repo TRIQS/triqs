@@ -32,7 +32,7 @@ void test_1(int argc, char ** argv){
  correlated_gaussian_vector(A, seed, L);
  double intrinsic_variance = 1;
 
- auto t1 = clock();
+ //auto t1 = clock();
  TEST( autocorrelation_time(A));
  //std::cout << "time = " << double( clock()-t1)/CLOCKS_PER_SEC << std::endl;
  //t1 = clock();

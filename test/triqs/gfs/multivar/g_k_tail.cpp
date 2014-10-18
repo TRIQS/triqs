@@ -15,7 +15,6 @@ using namespace triqs::lattice;
 
 int main() {
  try {
-  double beta = 1;
   auto bz_ = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
   auto t = tail{1,1};

@@ -29,7 +29,8 @@ namespace h5 {
   for (auto &x : V) s = std::max(s, x.size());
 
   datatype strdatatype = H5Tcopy (H5T_C_S1);
-  auto status = H5Tset_size (strdatatype, s);
+  H5Tset_size (strdatatype, s);
+  //auto status = H5Tset_size (strdatatype, s);
   //auto status = H5Tset_size (strdatatype, H5T_VARIABLE);
 
   const size_t n = V.size();
@@ -65,7 +66,8 @@ namespace h5 {
   size_t size = H5Dget_storage_size(ds);
 
   datatype strdatatype = H5Tcopy (H5T_C_S1);
-  auto status = H5Tset_size (strdatatype, size);
+  H5Tset_size (strdatatype, size);
+  //auto status = H5Tset_size (strdatatype, size);
   //auto status = H5Tset_size (strdatatype, H5T_VARIABLE);
 
   std::vector<char> buf(Len * (size + 1), 0x00);

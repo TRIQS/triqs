@@ -14,11 +14,10 @@ using namespace triqs::lattice;
 
 int main() {
  try {
-  double beta = 1;
   int N = 10;
   int S = 2;
   placeholder<0> k_;
-  placeholder<1> r_;
+  //placeholder<1> r_;
 
   auto bz_ = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
   auto gk = gf<bz>{{bz_, N}, {S, S}};

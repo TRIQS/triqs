@@ -59,7 +59,6 @@ namespace gfs {
   r() = 0;
   auto omin = t.order_min();
   auto omax = t.order_max(); // precompute since long to do...
-  auto _ = arrays::range{};
   for (int u = omax; u >= omin; --u)
    r = r / omega + matrix_view<dcomplex>{t.data()(u - omin, ellipsis())}; // need to make a matrix view because otherwise + is not defined
   r /= pow(omega, omin);
