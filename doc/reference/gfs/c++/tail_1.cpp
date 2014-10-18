@@ -14,7 +14,7 @@ int main() {
  int n_moments = 4; // number of moments in the final tail (including known ones)
  int size = 1; // means that we know one moment
  int order_min = 1; // means that the first moment in the final tail will be the first moment
- auto known_moments = local::tail(make_shape(1, 1), size, order_min); // length is 0, first moment to fit is order_min
+ auto known_moments = tail(make_shape(1, 1), size, order_min); // length is 0, first moment to fit is order_min
  known_moments(1) = 1.; // set the first moment
  fit_tail(gw, known_moments, n_moments, n_min, n_max, true); // true replace the gf data in the fitting range by the tail values
  std::cout << gw.singularity() << std::endl;
