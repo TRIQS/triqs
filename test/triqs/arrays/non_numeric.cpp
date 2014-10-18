@@ -25,6 +25,8 @@ using namespace triqs::arrays;
 struct S {
  double x = 0, y = 0;
  int i = 0;
+ S() = default;
+ S(double x, double y, int k):x(x),y(y),i(k) {}
 };
 
 std::ostream &operator<<(std::ostream &out, S const &s) { return out << "(" << s.x << " " << s.y << " " << s.i << ")"; }
