@@ -65,10 +65,12 @@ namespace gfs {
   template <typename Target, typename Singularity, typename Opt> struct evaluator<bz, Target, Singularity, Opt> {
    static constexpr int arity = 1;
 
-   template <typename G> auto operator()(G const *g, lattice::k_t const &k) const {
+   template <typename G> auto operator()(G const *g, lattice::k_t const &k) const RETURN((*g)[g -> mesh().locate_neighbours(k)]);
+
+   /*template <typename G> auto operator()(G const *g, lattice::k_t const &k) const {
     auto n = g->mesh().locate_neighbours(k);
     return (*g)[n];
-   }
+   }*/
   };
  }
 }

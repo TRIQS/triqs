@@ -63,10 +63,12 @@ namespace gfs {
   template <typename Target, typename Singularity, typename Opt> struct evaluator<cyclic_lattice, Target, Singularity, Opt> {
    static constexpr int arity = 1;
 
-   template <typename G, typename R> auto operator()(G const *g, R const &r) const {
-    auto n = g->mesh().modulo_reduce(r); 
-    return (*g)[n];
-   }
+   template <typename G, typename R> auto operator()(G const *g, R const &r) const RETURN((*g)[g->mesh().modulo_reduce(r)]);
+
+   //template <typename G, typename R> auto operator()(G const *g, R const &r) const {
+   // auto n = g->mesh().modulo_reduce(r); 
+   // return (*g)[n];
+  // }
   };
  }
 }

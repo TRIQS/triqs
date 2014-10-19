@@ -58,7 +58,11 @@ namespace arrays {
    for (int u = 0; u < Rank; ++u) p[u] = Rank - u - 1;
   }
 
-  memory_layout(__mem_layout_c_order) : memory_layout() {}
+  // Does not compile on gcc 4.8, probably a bug ?
+  //memory_layout(__mem_layout_c_order) : memory_layout() {}
+  memory_layout(__mem_layout_c_order) {
+   for (int u = 0; u < Rank; ++u) p[u] = u;
+  }
 
   // internal use only : no check , we KNOW the order is not C or Fortran
   template <typename T> explicit memory_layout(mini_vector<T, Rank> v, bool) : p(std::move(v)) {
