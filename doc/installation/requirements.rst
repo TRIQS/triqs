@@ -15,17 +15,25 @@ C++ compilers
 -------------
 
 TRIQS is written in C++, i.e. in the **C++11** standard as defined by the ISO standardization committee.
+Some advanced parts of the library (multivariable Green functions) require some features of the most recent **C++14** standard.
 A recent compiler is therefore mandatory.
 
-* Standard compliant C++ compilers (recommended and supported).
+* Standard compliant C++ compilers (supported).
   
-  * :ref:`clang 3.3<install_clang>` and higher (in particular the default clang on OS X >= 10.8).
-  * g++ 4.8.1 and higher
+  * in C++14 mode (recommended):
 
-  * The intel icc 15.0 is close to be C++11 compliant, but presents currently too many bugs to be supported 
-    at present. It compiles 99% of TRIQS, but we do not have the ressources to write and 
-    maintains all necessary workarounds.
-    
+     * :ref:`clang 3.4<install_clang>` and higher (in particular the default clang on OS X >= 10.8).
+     * g++ 4.9.1 and higher.
+
+  * in C++11 mode only:
+
+     * g++ 4.8.2 and higher (there seems to be a bug in 4.8.1).
+  
+     * The intel icc 15.0 is close to be C++11 compliant, but presents currently too many bugs to be supported 
+       at present. It compiles 99% of TRIQS, but we do not have the ressources to write and 
+       maintains all necessary workarounds.
+       The intel icl on OS X (with the clang front end) seems to be working.  
+
 * C++98 compilers
 
   * g++ before 4.8.1
