@@ -31,11 +31,11 @@ int main() {
  try {
   double beta = 1;
 
-  auto bz_ = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
-  auto g_eps = gf<bz>{{bz_, 20}, {1, 1}};
+  auto g_eps = gf<brillouin_zone>{{bz, 20}, {1, 1}};
 
-  auto G_k_iom = gf<cartesian_product<bz, imfreq>>{{{bz_, 20}, {beta, Fermion, 100}}, {1, 1}};
+  auto G_k_iom = gf<cartesian_product<brillouin_zone, imfreq>>{{{bz, 20}, {beta, Fermion, 100}}, {1, 1}};
 
   // try to assign to expression 
   placeholder<0> k_;
@@ -53,7 +53,7 @@ int main() {
 
   TEST(G_loc(0));
 
-  auto G_k_tau = gf<cartesian_product<bz, imtime>>{{{bz_, 20}, {beta, Fermion, 100}}, {1, 1}};
+  auto G_k_tau = gf<cartesian_product<brillouin_zone, imtime>>{{{bz, 20}, {beta, Fermion, 100}}, {1, 1}};
   
   //auto r3 = partial_eval<0>(G_k_iom,0);
   //auto r4 = partial_eval<0>(G_k_tau,0);

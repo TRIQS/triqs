@@ -33,16 +33,16 @@ namespace gfs {
  }
  
  template <typename Target, typename Singularity, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, bz, Target, Singularity> inverse_fourier(gf_impl<bz, Target, Singularity, Opt, V, C> const& g) {
+ gf_keeper<tags::fourier, brillouin_zone, Target, Singularity> inverse_fourier(gf_impl<brillouin_zone, Target, Singularity, Opt, V, C> const& g) {
   return {g};
  }
 
  // implementation 
- void _fourier_impl(gf_view<bz, scalar_valued> gk, gf_const_view<cyclic_lattice, scalar_valued> gr);
- void _fourier_impl(gf_view<bz, matrix_valued> gk, gf_const_view<cyclic_lattice, matrix_valued> gr);
+ void _fourier_impl(gf_view<brillouin_zone, scalar_valued> gk, gf_const_view<cyclic_lattice, scalar_valued> gr);
+ void _fourier_impl(gf_view<brillouin_zone, matrix_valued> gk, gf_const_view<cyclic_lattice, matrix_valued> gr);
  
- void _fourier_impl(gf_view<cyclic_lattice, scalar_valued> gr, gf_const_view<bz, scalar_valued> gk);
- void _fourier_impl(gf_view<cyclic_lattice, matrix_valued> gr, gf_const_view<bz, matrix_valued> gk);
+ void _fourier_impl(gf_view<cyclic_lattice, scalar_valued> gr, gf_const_view<brillouin_zone, scalar_valued> gk);
+ void _fourier_impl(gf_view<cyclic_lattice, matrix_valued> gr, gf_const_view<brillouin_zone, matrix_valued> gk);
 
 }}
 

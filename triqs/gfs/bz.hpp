@@ -29,27 +29,28 @@
 namespace triqs {
 namespace gfs {
 
- struct bz {};
-
- template <typename Opt> struct gf_mesh<bz, Opt> : lattice::regular_bz_mesh {
+ // struct bz {};
+ using lattice::brillouin_zone;
+ 
+ template <typename Opt> struct gf_mesh<brillouin_zone, Opt> : lattice::regular_bz_mesh {
   template <typename... T> gf_mesh(T &&... x) : lattice::regular_bz_mesh(std::forward<T>(x)...) {}
  };
 
  namespace gfs_implementation {
 
   // h5 name
-  template <typename Singularity, typename Opt> struct h5_name<bz, matrix_valued, Singularity, Opt> {
+  template <typename Singularity, typename Opt> struct h5_name<brillouin_zone, matrix_valued, Singularity, Opt> {
    static std::string invoke() { return "BZ"; }
   };
 
   /// ---------------------------  data access  ---------------------------------
-  template <typename Opt> struct data_proxy<bz, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
-  template <typename Opt> struct data_proxy<bz, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
+  template <typename Opt> struct data_proxy<brillouin_zone, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
+  template <typename Opt> struct data_proxy<brillouin_zone, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
 
   /// ---------------------------  evaluator ---------------------------------
 
   // simple evaluation : take the point on the grid...
-  template <> struct evaluator_fnt_on_mesh<bz> {
+  template <> struct evaluator_fnt_on_mesh<brillouin_zone> {
    // lattice::regular_bz_mesh::index_t n;
    size_t n;
    evaluator_fnt_on_mesh() = default;
@@ -62,7 +63,7 @@ namespace gfs {
   };
 
   // --------------------------------------------------------------
-  template <typename Target, typename Singularity, typename Opt> struct evaluator<bz, Target, Singularity, Opt> {
+  template <typename Target, typename Singularity, typename Opt> struct evaluator<brillouin_zone, Target, Singularity, Opt> {
    static constexpr int arity = 1;
 
    template <typename G> auto operator()(G const *g, lattice::k_t const &k) const RETURN((*g)[g -> mesh().locate_neighbours(k)]);

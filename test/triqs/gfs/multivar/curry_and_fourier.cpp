@@ -24,13 +24,13 @@ void assert_equal_array(T1 const& x, T2 const& y, std::string mess) {
 int main() {
  try {
   double beta = 1;
-  auto bz_ = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
   int n_freq = 100;
   int n_times = n_freq * 2;
   int n_bz = 50;
-  auto gkw = gf<cartesian_product<bz, imfreq>>{{{bz_, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
-  auto gkt = gf<cartesian_product<bz, imtime>>{{{bz_, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
+  auto gkw = gf<cartesian_product<brillouin_zone, imfreq>>{{{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
+  auto gkt = gf<cartesian_product<brillouin_zone, imtime>>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
   placeholder<0> k_;
   placeholder<1> w_;

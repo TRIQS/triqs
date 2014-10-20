@@ -28,12 +28,12 @@ namespace gfs {
 
  // We rewrite the scalar in term of the matrix 
  // We will change this for other FFT later when this FFT on lattice is checked.
- void _fourier_impl(gf_view<bz, scalar_valued> gk, gf_const_view<cyclic_lattice, scalar_valued> gr) {
+ void _fourier_impl(gf_view<brillouin_zone, scalar_valued> gk, gf_const_view<cyclic_lattice, scalar_valued> gr) {
   _fourier_impl(reinterpret_scalar_valued_gf_as_matrix_valued(gk), reinterpret_scalar_valued_gf_as_matrix_valued(gr));
  }
  //--------------------------------------------------------------------------------------
 
- void _fourier_impl(gf_view<cyclic_lattice, scalar_valued> gr, gf_const_view<bz, scalar_valued> gk) {
+ void _fourier_impl(gf_view<cyclic_lattice, scalar_valued> gr, gf_const_view<brillouin_zone, scalar_valued> gk) {
   _fourier_impl(reinterpret_scalar_valued_gf_as_matrix_valued(gr), reinterpret_scalar_valued_gf_as_matrix_valued(gk));
  }
 
@@ -76,12 +76,12 @@ namespace gfs {
 
  //--------------------------------------------------------------------------------------
 
- void _fourier_impl(gf_view<bz, matrix_valued> gk, gf_const_view<cyclic_lattice, matrix_valued> gr) {
+ void _fourier_impl(gf_view<brillouin_zone, matrix_valued> gk, gf_const_view<cyclic_lattice, matrix_valued> gr) {
   __impl(FFTW_BACKWARD, gk, gr);
  }
 
  //--------------------------------------------------------------------------------------
- void _fourier_impl(gf_view<cyclic_lattice, matrix_valued> gr, gf_const_view<bz, matrix_valued> gk) {
+ void _fourier_impl(gf_view<cyclic_lattice, matrix_valued> gr, gf_const_view<brillouin_zone, matrix_valued> gk) {
   __impl(FFTW_FORWARD, gr, gk);
   gr.data() /= gk.mesh().size();
  }

@@ -19,8 +19,8 @@ int main() {
   placeholder<0> k_;
   //placeholder<1> r_;
 
-  auto bz_ = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto gk = gf<bz>{{bz_, N}, {S, S}};
+  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto gk = gf<brillouin_zone>{{bz, N}, {S, S}};
 
   gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
 

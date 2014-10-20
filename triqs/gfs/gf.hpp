@@ -73,7 +73,8 @@ namespace gfs {
            typename Singularity = gf_default_singularity_t<Variable, Target>, typename Opt = void>
  using gf_const_view = gf_view<Variable, Target, Singularity, Opt, true>;
 
- template<typename Variable> constexpr int get_n_variables(Variable) { return 1;} // default.
+ //template<typename Variable> constexpr int get_n_variables(Variable) { return 1;} // default.
+ template<typename Variable> struct get_n_variables { static const int value = 1;};
 
  // the implementation class
  template <typename Variable, typename Target, typename Singularity, typename Opt, bool IsView, bool IsConst> class gf_impl;
@@ -827,7 +828,7 @@ namespace gfs {
    using gf_t = gf<Var, Target, Singularity, Opt>;
    using target_shape_t = arrays::mini_vector<int, VarDim>;
    using mesh_t = typename gf_t::mesh_t;
-   using aux_t = arrays::memory_layout< get_n_variables(Var{}) + VarDim>;
+   using aux_t = arrays::memory_layout< get_n_variables<Var>::value + VarDim>;
    //
    static typename gf_t::data_t make(mesh_t const &m, target_shape_t shape, aux_t ml) {
     typename gf_t::data_t A(gf_t::data_proxy_t::join_shape(m.size_of_components(), shape), ml);

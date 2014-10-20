@@ -19,20 +19,20 @@ void assert_equal(T1 const& x, T2 const& y, std::string mess) {
 int main() {
  try {
   double beta = 1;
-  auto bz_ = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
+  auto bz = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
 
-  auto g_eps = gf<bz>{{bz_, 100}, {1, 1}};
+  auto g_eps = gf<brillouin_zone>{{bz, 100}, {1, 1}};
 
   // Default, with a tail.
-  auto G = gf<cartesian_product<bz, imfreq>>{{{bz_, 100}, {beta, Fermion, 100}}, {1, 1}};
+  auto G = gf<cartesian_product<brillouin_zone, imfreq>>{{{bz, 100}, {beta, Fermion, 100}}, {1, 1}};
 
   // Same : the gf_default_singularity is the same
-  static_assert(std::is_same<std14::decay_t<decltype(G.singularity())>, gf<bz, tail>>::value, "!!");
+  static_assert(std::is_same<std14::decay_t<decltype(G.singularity())>, gf<brillouin_zone, tail>>::value, "!!");
   
-  // auto G = gf<cartesian_product<bz, imfreq>, matrix_valued, gf<bz, tail>>{{{bz_, 100}, {beta, Fermion, 100}}, {1, 1}};
+  // auto G = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued, gf<brillouin_zone, tail>>{{{bz, 100}, {beta, Fermion, 100}}, {1, 1}};
 
   // The variant without tail
-  auto G_no_tail = gf<cartesian_product<bz, imfreq>, matrix_valued, no_tail>{{{bz_, 100}, {beta, Fermion, 100}}, {1, 1}};
+  auto G_no_tail = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued, no_tail>{{{bz, 100}, {beta, Fermion, 100}}, {1, 1}};
 
   // try to assign to expression
   placeholder<0> k_;

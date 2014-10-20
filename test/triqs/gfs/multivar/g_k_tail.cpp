@@ -11,14 +11,12 @@ using namespace triqs::lattice;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl << std::endl;
 
-// THE NAME bz is TOO SHORT
-
 int main() {
  try {
-  auto bz_ = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
   auto t = tail{1,1};
-  auto G = gf<bz, tail>{{bz_, 100}, {1,1}};
+  auto G = gf<brillouin_zone, tail>{{bz, 100}, {1,1}};
 
   placeholder<0> k_;
   G(k_) << -2 * (cos(k_(0)) + cos(k_(1))) * t;

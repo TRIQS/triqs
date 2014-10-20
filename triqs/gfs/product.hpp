@@ -32,7 +32,8 @@ namespace gfs {
   static constexpr size_t size = sizeof...(Ms);
  };
 
- template <typename... Ms>  constexpr int get_n_variables(cartesian_product<Ms...>) { return sizeof...(Ms);} 
+ //template <typename... Ms>  constexpr int get_n_variables(cartesian_product<Ms...>) { return sizeof...(Ms);} 
+ template <typename... Ms>  struct get_n_variables<cartesian_product<Ms...>> { static const int value = sizeof...(Ms);}; 
  
  // use alias
  template <typename... Ms> struct cartesian_product<std::tuple<Ms...>> : cartesian_product<Ms...> {};
