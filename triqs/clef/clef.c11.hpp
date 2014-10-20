@@ -610,7 +610,7 @@ namespace triqs { namespace clef {
      -> std::c14::enable_if_t<!triqs::clef::is_any_lazy<F, D>::value, decltype(f(*(d.begin())))> {
   auto res = decltype(f(*(d.begin()))) {};
   //foreach(d, [&res, &f](auto const& x) { res = res + f(x); });
-  auto l = sum_f_domain_impl__lambda{res,f};
+  auto l = sum_f_domain_impl__lambda<decltype(res),F>{res,f};
   foreach(d, l);
   return res;
  }
