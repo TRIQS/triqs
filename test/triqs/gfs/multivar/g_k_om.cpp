@@ -38,7 +38,6 @@ int main() {
   placeholder<0> k_;
   placeholder<1> w_;
 
-  /// The calculation is 3x longer with the tail !!
   auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
   G(k_, w_) << 1 / (w_ - eps_k - 1 / (w_ + 2));
 

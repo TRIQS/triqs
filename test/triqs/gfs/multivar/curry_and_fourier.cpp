@@ -43,7 +43,7 @@ int main() {
   auto gk_t = curry<0>(gkt);
 
   gk_t[k_] << inverse_fourier(gk_w[k_]);
-
+ 
   // works also, but uses the evaluator which return to the same point
   // gk_t(k_) << inverse_fourier(gk_w(k_));
   // check last assertion

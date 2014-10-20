@@ -29,11 +29,13 @@
 #include <triqs/gfs/retime.hpp>
 #include <triqs/gfs/refreq.hpp>
 #include <triqs/gfs/legendre.hpp>
+#include <triqs/gfs/bz.hpp>
 
 // multivariable gf in C++14 only
 #ifndef TRIQS_C11
 #include <triqs/gfs/product.hpp>
 #include <triqs/gfs/curry.hpp>
+#include <triqs/gfs/m_tail.hpp>
 #endif
 
 #include <triqs/gfs/local/fourier_matsubara.hpp>

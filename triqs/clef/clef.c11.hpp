@@ -597,13 +597,21 @@ namespace triqs { namespace clef {
    *  sum of expressions
    * --------------------------------------------------------------------------------------------------- */
 
+ // write manually the polymorphic lambda
+ template<typename R, typename F> struct sum_f_domain_impl__lambda {
+  R& res;
+  F& f;
+  template <typename T> void operator()(T const& x) const { res = res + f(x); }
+ };
+
  // sum a function f on a domain D, using a simple foreach
  template <typename F, typename D>
  auto sum_f_domain_impl(F const& f, D const& d)
      -> std::c14::enable_if_t<!triqs::clef::is_any_lazy<F, D>::value, decltype(f(*(d.begin())))> {
   auto res = decltype(f(*(d.begin()))) {};
-  using p_t = typename std::decay<decltype(*(d.begin()))>::type;
-  foreach(d, [&res, &f](p_t const& x) { res = res + f(x); });
+  //foreach(d, [&res, &f](auto const& x) { res = res + f(x); });
+  auto l = sum_f_domain_impl__lambda{res,f};
+  foreach(d, l);
   return res;
  }
 

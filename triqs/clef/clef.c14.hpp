@@ -595,8 +595,7 @@ namespace triqs { namespace clef {
  auto sum_f_domain_impl(F const& f, D const& d)
      -> std::c14::enable_if_t<!triqs::clef::is_any_lazy<F, D>::value, decltype(f(*(d.begin())))> {
   auto res = decltype(f(*(d.begin()))) {};
-  using p_t = typename std::decay<decltype(*(d.begin()))>::type;
-  foreach(d, [&res, &f](p_t const& x) { res = res + f(x); });
+  foreach(d, [&res, &f](auto const& x) { res = res + f(x); });
   return res;
  }
 
