@@ -16,7 +16,7 @@ Install the following packages which are necessary to build TRIQS and use it::
 
   sudo apt-get install cmake git g++ libgfortran3 gfortran openmpi-bin openmpi-common \
        openmpi-checkpoint libopenmpi-dev libblas-dev liblapack-dev libfftw3-dev libgmp-dev \
-       hdf5-tools libhdf5-serial-dev python-h5py python-dev python-numpy python-scipy \
+       hdf5-tools libhdf5-serial-dev python-h5py python-dev python-numpy python-scipy python-jinja2 \
        python-virtualenv python-matplotlib doxygen python-tornado python-zmq python-mpi4py python-mako \
 
 Install the boost library on pre-14.04 Ubuntu versions by::
