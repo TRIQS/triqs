@@ -22,6 +22,7 @@
 
 #include "./mpi/arrays.hpp"
 #include "./mpi/vector.hpp"
+#include "./mpi/gf.hpp"
 
 #ifndef TRIQS_C11
 #include "./mpi/generic.hpp"

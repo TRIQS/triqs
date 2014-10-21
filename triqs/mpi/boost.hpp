@@ -48,7 +48,7 @@ namespace mpi {
    return b;
   }
 
-  static T invoke(tag::allreduce, communicator c, T const &a, int root) {
+  static T invoke(tag::all_reduce, communicator c, T const &a, int root) {
    T b;
    boost::mpi::all_reduce(c, a, b, std::c14::plus<>());
    return b;

@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./base.hpp"
+#include "./arrays.hpp"
 
 namespace triqs {
 namespace mpi {
@@ -36,9 +37,9 @@ namespace mpi {
   }
 
   //---------
-  /*static void allreduce_in_place(communicator c, G &g, int root) {
-   triqs::mpi::allreduce_in_place(c, g.data(), root);
-   triqs::mpi::allreduce_in_place(c, g.singularity(), root);
+  /*static void all_reduce_in_place(communicator c, G &g, int root) {
+   triqs::mpi::all_reduce_in_place(c, g.data(), root);
+   triqs::mpi::all_reduce_in_place(c, g.singularity(), root);
   }
 */
 
@@ -60,10 +61,10 @@ namespace mpi {
    return target;
   }
 
-  //---- allreduce ----
-  static G &complete_operation(G &target, mpi_lazy<tag::allreduce, G> laz) {
-   target._data = mpi::allreduce(laz.ref.data(), laz.c, laz.root);
-   target._singularity = mpi::allreduce(laz.ref.singularity(), laz.c, laz.root);
+  //---- all_reduce ----
+  static G &complete_operation(G &target, mpi_lazy<tag::all_reduce, G> laz) {
+   target._data = mpi::all_reduce(laz.ref.data(), laz.c, laz.root);
+   target._singularity = mpi::all_reduce(laz.ref.singularity(), laz.c, laz.root);
    return target;
   }
 

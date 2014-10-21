@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
  
  { 
   out<< "all reduction "<< std::endl;
-  gf<imfreq> g2 = mpi::allreduce(g1, world);
+  gf<imfreq> g2 = mpi::all_reduce(g1, world);
   out << g2.data()<<std::endl;
   out << g2.singularity() << std::endl;
  }

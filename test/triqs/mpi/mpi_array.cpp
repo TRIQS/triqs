@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
  out <<" Reduce "<< std::endl;
  out << " r1 = " << r1 << std::endl;
 
- ARR r2 = mpi::allreduce(A, world);
+ ARR r2 = mpi::all_reduce(A, world);
  out <<" AllReduce "<< std::endl;
  out << " r2 = " << r2 << std::endl;
 

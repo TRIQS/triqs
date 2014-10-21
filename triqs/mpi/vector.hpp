@@ -33,7 +33,7 @@ namespace mpi {
    MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : a.data()), a.data(), a.size(), D(), MPI_SUM, root, c.get());
   }
 
-  static void allreduce_in_place(communicator c, std::vector<T> &a, int root) {
+  static void all_reduce_in_place(communicator c, std::vector<T> &a, int root) {
    MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), D(), MPI_SUM, root, c.get());
   }
 
@@ -52,7 +52,7 @@ namespace mpi {
   }
 
   // -----------
-  static std::vector<T> invoke(tag::allreduce, communicator c, std::vector<T> const &a, int root) {
+  static std::vector<T> invoke(tag::all_reduce, communicator c, std::vector<T> const &a, int root) {
    std::vector<T> b(a.size());
    MPI_Allreduce(a.data(), b.data(), a.size(), D(), MPI_SUM, root, c.get());
    return b;
@@ -95,7 +95,7 @@ namespace mpi {
   // -----------
 
   static std::vector<T> invoke(tag::allgather, communicator c, std::vector<T> const &a, int root) {
-   long size = allreduce(a.size(), c, root);
+   long size = all_reduce(a.size(), c, root);
    std::vector<T> b(size);
 
    auto recvcounts = std::vector<int>(c.size());

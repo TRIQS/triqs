@@ -70,7 +70,7 @@ namespace mpi {
  /// a tag for each operation
  namespace tag {
   struct reduce {};
-  struct allreduce {};
+  struct all_reduce {};
   struct scatter {};
   struct gather {};
   struct allgather {};
@@ -99,7 +99,7 @@ namespace mpi {
  template <typename T>
  AUTO_DECL gather(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::gather(), c, x, root));
  template <typename T>
- AUTO_DECL allreduce(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::allreduce(), c, x, root));
+ AUTO_DECL all_reduce(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::all_reduce(), c, x, root));
  template <typename T>
  AUTO_DECL allgather(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::allgather(), c, x, root));
 
@@ -132,7 +132,7 @@ namespace mpi {
    return b;
   }
 
-  static T invoke(tag::allreduce, communicator c, T a, int root) {
+  static T invoke(tag::all_reduce, communicator c, T a, int root) {
    T b;
    MPI_Allreduce(&a, &b, 1, D(), MPI_SUM, c.get());
    return b;
@@ -142,7 +142,7 @@ namespace mpi {
    MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : &a), &a, 1, D(), MPI_SUM, root, c.get());
   }
 
-  static void allreduce_in_place(communicator c, T &a, int root) {
+  static void all_reduce_in_place(communicator c, T &a, int root) {
    MPI_Allreduce(MPI_IN_PLACE, &a, 1, D(), MPI_SUM, root, c.get());
   }
 
