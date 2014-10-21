@@ -76,9 +76,31 @@ namespace mpi {
   struct allgather {};
  }
 
- /// The implementation of mpi ops for each type
- template <typename T, typename Enable = void> struct mpi_impl;
- 
+ // The implementation of mpi ops for each type
+ // To be specialized later
+ template <typename T, typename Enable = void> struct mpi_impl {
+
+  // Reduces a on site
+  static void reduce_in_place(communicator c, T &a, int root);
+
+  // Reduces with all_reduce a on site
+  static void all_reduce_in_place(communicator c, T &a, int root);
+
+  // Broadcast a
+  static void broadcast(communicator c, T &a, int root);
+
+  // For all tags : return a T or a lazy object
+  // Tag = reduce, all_reduce, scatter, gather, allgather
+  template<typename Tag>
+  static auto invoke(Tag, communicator c, T const &a, int root);
+
+  // invoke2 (lhs, Tag, c, a, root) is the same as lhs = invoke(Tag, c, a, root);
+  // it implements the operation
+  template <typename Tag> static void invoke2(T &lhs, Tag, communicator c, T const &a, int root);
+ };
+
+ // -----------------------------
+  
  /// A small lazy tagged class 
  template <typename Tag, typename T> struct mpi_lazy {
   T const &ref;
@@ -103,9 +125,14 @@ namespace mpi {
  template <typename T>
  AUTO_DECL allgather(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::allgather(), c, x, root));
 
+ // impl. detail : internal use only, to deduce T
+ template <typename T, typename Tag>
+ AUTO_DECL _invoke2(T &lhs, Tag, communicator c, T const &rhs,  int root) RETURN(mpi_impl<T>::invoke2(lhs, Tag(), c, rhs, root));
+
  // ----- functions that cannot be lazy -------
 
  template <typename T> void reduce_in_place(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::reduce_in_place(c, x, root); }
+ template <typename T> void all_reduce_in_place(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::all_reduce_in_place(c, x, root); }
  template <typename T> void broadcast(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::broadcast(c, x, root); }
 
  // transformation type -> mpi types
@@ -124,8 +151,10 @@ namespace mpi {
 
  template <typename T> struct mpi_impl_basic {
 
+  private:
   static MPI_Datatype D() { return mpi_datatype<T>::invoke(); }
 
+  public : 
   static T invoke(tag::reduce, communicator c, T a, int root) {
    T b;
    MPI_Reduce(&a, &b, 1, D(), MPI_SUM, root, c.get());
@@ -147,6 +176,10 @@ namespace mpi {
   }
 
   static void broadcast(communicator c, T &a, int root) { MPI_Bcast(&a, 1, D(), root, c.get()); }
+
+  template<typename Tag>
+  static void invoke2(T &lhs, Tag, communicator c, T a, int root) { lhs = invoke(Tag(), c, a, root); }
+
  };
 
  // mpl_impl_basic is the mpi_impl<T> is T is a number (including complex)

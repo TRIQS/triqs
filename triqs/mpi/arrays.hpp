@@ -109,6 +109,11 @@ namespace mpi {
    return {a, root, c};
   }
 
+  //---------
+  template <typename Tag> static void invoke2(A & lhs, Tag, communicator c, A const &a, int root) {
+   lhs = invoke(Tag(), c, a, root);
+  }
+
  };
 
  template <typename A>

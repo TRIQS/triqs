@@ -25,9 +25,9 @@
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/c14.hpp>
 #include <triqs/arrays/h5.hpp>
+#include "./tools.hpp"
 #include <triqs/mpi/gf.hpp>
 #include <vector>
-#include "./tools.hpp"
 #include "./data_proxies.hpp"
 #include "./local/tail.hpp"
 

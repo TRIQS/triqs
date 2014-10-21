@@ -37,11 +37,10 @@ namespace mpi {
   }
 
   //---------
-  /*static void all_reduce_in_place(communicator c, G &g, int root) {
+  static void all_reduce_in_place(communicator c, G &g, int root) {
    triqs::mpi::all_reduce_in_place(c, g.data(), root);
    triqs::mpi::all_reduce_in_place(c, g.singularity(), root);
   }
-*/
 
   //---------
   static void broadcast(communicator c, G &g, int root) {
@@ -54,45 +53,63 @@ namespace mpi {
    return {g, root, c};
   }
 
+  //---------
+  template <typename Tag> static void complete_operation(G &lhs, mpi_lazy<Tag, G> laz) {
+   invoke2(lhs, Tag(), laz.c, laz.ref, laz.root);
+  }
+
   //---- reduce ----
-  static G &complete_operation(G &target, mpi_lazy<tag::reduce, G> laz) {
-   target._data = mpi::reduce(laz.ref.data(), laz.c, laz.root);
-   target._singularity = mpi::reduce(laz.ref.singularity(), laz.c, laz.root);
-   return target;
+  static void invoke2(G &lhs, tag::reduce, communicator c, G const &g, int root) {
+   lhs._mesh = g._mesh;
+   mpi::_invoke2(lhs._data, tag::reduce(), c, g.data(), root);
+   mpi::_invoke2(lhs._singularity, tag::reduce(), c, g.singularity(), root);
+   // lhs._data = mpi::reduce(g.data(), c, root);
+   // lhs._singularity = mpi::reduce(g.singularity(), c, root);
   }
 
   //---- all_reduce ----
-  static G &complete_operation(G &target, mpi_lazy<tag::all_reduce, G> laz) {
-   target._data = mpi::all_reduce(laz.ref.data(), laz.c, laz.root);
-   target._singularity = mpi::all_reduce(laz.ref.singularity(), laz.c, laz.root);
-   return target;
+  static void invoke2(G &lhs, tag::all_reduce, communicator c, G const &g, int root) {
+   mpi::_invoke2(lhs._data, tag::all_reduce(), c, g.data(), root);
+   mpi::_invoke2(lhs._singularity, tag::all_reduce(), c, g.singularity(), root);
   }
 
   //---- scatter ----
-  static G &complete_operation(G &target, mpi_lazy<tag::scatter, G> laz) {
-   target._mesh = mpi_scatter(laz.ref.mesh(), laz.c, laz.root); 
-   target._data = mpi::scatter(laz.ref.data(), laz.c, laz.root); // HERE ADD OPTION FOR CHUNCK
-   target._singularity = laz.ref.singularity();
-   //mpi::broadcast(target._singularity, laz.c, laz.root);
-   return target;
+  static void invoke2(G &lhs, tag::scatter, communicator c, G const &g, int root) {
+   lhs._mesh = mpi_scatter(g.mesh(), c, root);
+   mpi::_invoke2(lhs._data, tag::scatter(), c, g.data(), root);
+   lhs._singularity = g.singularity();
+   // mpi::broadcast(lhs._singularity, c, root);
   }
- 
+
   //---- gather ----
-  static G &complete_operation(G &target, mpi_lazy<tag::gather, G> laz) {
-   target._mesh = mpi_gather(laz.ref.mesh(), laz.c, laz.root); 
-   target._data = mpi::gather(laz.ref.data(), laz.c, laz.root); // HERE ADD OPTION FOR CHUNCK
+  static void invoke2(G &lhs, tag::gather, communicator c, G const &g, int root) {
+   mpi::_invoke2(lhs._data, tag::scatter(), c, g.data(), root);
+   lhs._mesh = mpi_gather(g.mesh(), c, root);
+   mpi::_invoke2(lhs._data, tag::gather(), c, g.data(), root);
    // do nothing for singularity
-   return target;
   }
 
   //---- allgather ----
-  static G &complete_operation(G &target, mpi_lazy<tag::allgather, G> laz) {
-   target._data = mpi::allgather(laz.ref.data(), laz.c, laz.root); // HERE ADD OPTION FOR CHUNCK
+  static void invoke2(G &lhs, tag::allgather, communicator c, G const &g, int root) {
+   mpi::_invoke2(lhs._data, tag::allgather(), c, g.data(), root);
    // do nothing for singularity
-   return target;
   }
-
  };
 
-} // mpi namespace 
+ // ---------------------------------------------------------------------------------------
+ //  Do nothing for nothing...
+ // ---------------------------------------------------------------------------------------
+ template <> struct mpi_impl<gfs::nothing> {
+  template <typename Tag> static void invoke2(gfs::nothing &lhs, Tag, communicator c, gfs::nothing const &a, int root) {}
+  static gfs::nothing invoke(tag::reduce, communicator c, gfs::nothing const &a, int root) {
+   return {};
+  }
+  static gfs::nothing invoke(tag::all_reduce, communicator c, gfs::nothing const &a, int root) {
+   return {};
+  }
+  static void reduce_in_place(communicator c, gfs::nothing &a, int root) {}
+  static void broadcast(communicator c, gfs::nothing &a, int root) {}
+ };
+
+} // mpi namespace
 } // namespace triqs

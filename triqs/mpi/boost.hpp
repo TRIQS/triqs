@@ -42,6 +42,11 @@ namespace mpi {
 
  template <typename T> struct mpi_impl_boost_mpi {
 
+  template<typename Tag>
+  static void invoke2(T & lhs, Tag, communicator c, T const &a, int root) {
+   lhs = invoke(Tag(), c, a, root);
+  }
+  
   static T invoke(tag::reduce, communicator c, T const &a, int root) {
    T b;
    boost::mpi::reduce(c, a, b, std::c14::plus<>(), root);

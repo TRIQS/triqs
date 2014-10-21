@@ -85,6 +85,23 @@ int main(int argc, char* argv[]) {
  }
 
  {
+  out << "reduce with block Green's function" << std::endl;
+  block_gf<imfreq> bgf = make_block_gf({g1, g1, g1});
+
+  block_gf<imfreq> bgf2;
+  //auto bgf2=bgf;
+  
+  // TODO : Fix the mesh
+  //bgf2 = mpi::scatter(bgf);
+  //bgf = mpi::allgather(bgf2);
+
+  bgf2 = mpi::reduce(bgf);
+
+  out << bgf[0].data() << std::endl;
+  out << bgf2[0].data() << std::endl;
+ }
+
+ {
   out << "Building directly scattered, and gather" << std::endl;
   auto m = mpi_scatter(gf_mesh<imfreq>{beta, Fermion, Nfreq}, world, 0);
   auto g3 = gf<imfreq>{m, {1, 1}}; 
