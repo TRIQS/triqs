@@ -4,6 +4,13 @@ from wrap_generator import *
 module = module_(full_name = "my_module", doc = " Doc of my_module ")
 module.add_include("<triqs/../test/pytriqs/wrap_test/a.hpp>") 
 module.add_include("<triqs/arrays.hpp>")
+module.add_include("<triqs/python_tools/converters/string.hpp>")
+module.add_include("<triqs/python_tools/converters/arrays.hpp>")
+module.add_include("<triqs/python_tools/converters/h5.hpp>")
+module.add_include("<triqs/python_tools/converters/vector.hpp>")
+module.add_include("<triqs/python_tools/converters/function.hpp>")
+module.add_include("<triqs/python_tools/converters/gf.hpp>")
+module.add_include("<triqs/python_tools/converters/map.hpp>")
 
 # one class
 g = class_(

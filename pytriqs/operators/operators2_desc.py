@@ -4,6 +4,7 @@ from wrap_generator import *
 module = module_(full_name = "pytriqs.operators.operators2", doc = "Doc to be written")
 module.add_include("<triqs/operators/many_body_operator.hpp>")
 module.add_include("<triqs/arrays.hpp>")
+module.add_include("<triqs/python_tools/converters/string.hpp>")
 module.add_using("namespace triqs::utility")
 
 

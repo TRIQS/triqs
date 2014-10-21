@@ -1,5 +1,6 @@
 //--------------------- includes and using  -------------------------------------
 #define TRIQS_PYTHON_WRAPPER_MODULE_${module.name}
+#include <triqs/utility/first_include.hpp>
 
 %for file in module.include_list :
 %if file.startswith('<'):
@@ -9,6 +10,7 @@
 %endif
 %endfor
 
+#include<complex>
 using dcomplex = std::complex<double>;
 
 %for ns in module.using:
@@ -16,6 +18,10 @@ using ${ns};
 %endfor
 
 #include <triqs/python_tools/wrapper_tools.hpp>
+
+// always included
+#include <triqs/python_tools/converters/string.hpp>
+
 #include <triqs/utility/signal_handler.hpp>
 using namespace triqs::py_tools;
 
@@ -1057,8 +1063,10 @@ ${f.code};
 PyMODINIT_FUNC
 init${module.name}(void)
 {
+#ifdef TRIQS_IMPORTED_CONVERTERS_ARRAYS
     // import numpy
     import_array();
+#endif
 
     PyObject* m;
 

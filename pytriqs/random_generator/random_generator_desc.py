@@ -6,6 +6,9 @@ module.add_using("namespace triqs::mc_tools")
 # Not needed. Reorganize the hpp wrapper tool 
 module.add_include("<triqs/h5.hpp>")
 module.add_include("<triqs/arrays.hpp>")
+module.add_include("<triqs/python_tools/converters/string.hpp>")
+module.add_include("<triqs/python_tools/converters/arrays.hpp>")
+module.add_include("<triqs/python_tools/converters/vector.hpp>")
 
 # ---------  RandomGenerator  ----------------------------------
 

@@ -5,6 +5,8 @@
 #include <triqs/arrays.hpp>
 
 #include "./wrapper_tools.hpp"
+#include "./converters/function.hpp"
+#include "./converters/h5.hpp"
 namespace triqs { namespace py_tools { 
 
 template <> const char * make_format<0>::value = "";

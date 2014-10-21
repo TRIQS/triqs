@@ -6,6 +6,7 @@
 
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/utility/callbacks.hpp>
+#include <triqs/arrays.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
 namespace h5 = triqs::h5;
 

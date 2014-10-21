@@ -3,6 +3,12 @@ from wrap_generator import *
 module = module_(full_name = "pytriqs.lattice_tools", doc = "Lattice tools (to be improved)")
 module.add_include("<triqs/lattice/brillouin_zone.hpp>")
 module.add_include("<triqs/lattice/tight_binding.hpp>")
+module.add_include("<triqs/python_tools/converters/pair.hpp>")
+module.add_include("<triqs/python_tools/converters/string.hpp>")
+module.add_include("<triqs/python_tools/converters/arrays.hpp>")
+#module.add_include("<triqs/python_tools/converters/h5.hpp>")
+module.add_include("<triqs/python_tools/converters/vector.hpp>")
+
 module.add_using("namespace triqs::lattice")
 module.add_using("namespace triqs::arrays")
 module.add_using("namespace triqs")

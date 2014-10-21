@@ -23,7 +23,6 @@
 #include <math.h>
 #include <triqs/utility/timer.hpp>
 #include <triqs/utility/report_stream.hpp>
-#include <triqs/parameters/parameters.hpp>
 #include "./mc_measure_aux_set.hpp"
 #include "./mc_measure_set.hpp"
 #include "./mc_move_set.hpp"
@@ -55,23 +54,6 @@ namespace triqs { namespace mc_tools {
       , NCycles(n_cycles)
       , after_cycle_duty(AfterCycleDuty)
       , sign_av(0) {}
-
-     // TO BE REMOVED WITH PARAMETERS 
-    /*
-     * Constructor from a dictionnary
-     * \param[in] P  dictionary parameters
-     * \param[in] AfterCycleDuty  a function bool() to be called after each QMC cycle
-     */
-     mc_generic(params::parameters const & P, std::function<bool()> AfterCycleDuty = std::function<bool()>() ) :
-      RandomGenerator(std::string(P["random_name"]), long(P["random_seed"])),
-      report(&std::cout,int(P["verbosity"])),
-      AllMoves(RandomGenerator),
-      AllMeasures(),AllMeasuresAux(),
-      Length_MC_Cycle(long(P["length_cycle"])),     /// NOT NICE THIS EXPLICIT CAST : no unsigned in parameters, really ??
-      NWarmIterations(long(P["n_warmup_cycles"])),
-      NCycles(long(P["n_cycles"])),
-      after_cycle_duty(AfterCycleDuty),
-      sign_av(0) {}
 
     /**
      * Register move M with its probability of being proposed.
