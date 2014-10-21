@@ -91,8 +91,9 @@ namespace mpi {
 
   // For all tags : return a T or a lazy object
   // Tag = reduce, all_reduce, scatter, gather, allgather
-  template<typename Tag>
-  static auto invoke(Tag, communicator c, T const &a, int root);
+  // comment because does not compile on C++11
+  //template<typename Tag>
+  //static auto invoke(Tag, communicator c, T const &a, int root);
 
   // invoke2 (lhs, Tag, c, a, root) is the same as lhs = invoke(Tag, c, a, root);
   // it implements the operation
