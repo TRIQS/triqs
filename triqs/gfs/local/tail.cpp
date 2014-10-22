@@ -57,6 +57,7 @@ namespace gfs {
  matrix<dcomplex> evaluate(tail_const_view t, dcomplex const &omega) {
   auto r = arrays::matrix<dcomplex>{t.shape()};
   r() = 0;
+  if (t.data().is_empty()) return r;
   auto omin = t.order_min();
   auto omax = t.order_max(); // precompute since long to do...
   for (int u = omax; u >= omin; --u)
@@ -67,6 +68,7 @@ namespace gfs {
 
  /// Evaluate the tail to  sum_{n=order_min}^ordermax M_n/omega^n
  tail compose(tail_const_view x, tail_const_view t) {
+  if (x.data().is_empty()) return x;
   auto r = tail(x.shape(), x.size(), x.order_min()); // a new tail of same size, init to 0
   auto t_inv = inverse(t);
   auto omin = x.order_min();
@@ -181,12 +183,14 @@ namespace gfs {
 
  tail operator*(dcomplex a, tail_const_view const &r) {
   tail res(r);
+  if (r.data().is_empty()) return r;
   res.data() *= a;
   return res;
  }
 
  tail operator/(tail_const_view const &r, dcomplex a) {
   tail res(r);
+  if (r.data().is_empty()) return r;
   res.data() /= a;
   return res;
  }

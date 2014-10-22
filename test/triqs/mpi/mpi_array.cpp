@@ -21,7 +21,6 @@
 #include <iostream>
 #include <type_traits>
 #include <triqs/arrays.hpp>
-#include <triqs/mpi.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -47,7 +46,7 @@ int main(int argc, char* argv[]) {
 
  //std::cerr << "B0 "<< B <<std::endl;
  B = mpi::scatter(A, world);
- std::cerr << "B "<< B <<std::endl;
+ //std::cerr << "B "<< B <<std::endl;
 
  ARR C = mpi::scatter(A, world);
 

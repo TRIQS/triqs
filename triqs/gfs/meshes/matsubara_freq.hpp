@@ -21,7 +21,6 @@
 #pragma once
 #include "./mesh_tools.hpp"
 #include "../domains/matsubara.hpp"
-#include <triqs/mpi.hpp>
 
 namespace triqs {
 namespace gfs {

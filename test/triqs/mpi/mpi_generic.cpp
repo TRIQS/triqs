@@ -21,10 +21,10 @@
 #include <iostream>
 #include <type_traits>
 #include <triqs/arrays.hpp>
-#include <triqs/mpi.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <triqs/mpi/generic.hpp>
 
 using namespace triqs;
 using namespace triqs::arrays;

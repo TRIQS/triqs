@@ -44,7 +44,7 @@ namespace mpi {
   // -----------
   static void broadcast(communicator c, V &a, int root) {
    size_t s = a.size();
-   MPI_Bcast(&s, 1, mpi_datatype<size_t>::invoke(), root, c.get());
+   mpi::broadcast(s, c, root);
    if (c.rank() != root) a.resize(s);
    MPI_Bcast(a.data(), a.size(), D(), root, c.get());
   }
@@ -88,8 +88,8 @@ namespace mpi {
 
   // -----------
   static V invoke(tag::gather, communicator c, V const &a, int root) {
-   long size = reduce(a.size(), c, root);
-   V b(size);
+   long size = mpi::reduce(a.size(), c, root);
+   V b((c.rank() == root ? size : 0));
 
    auto recvcounts = std::vector<int>(c.size());
    auto displs = std::vector<int>(c.size() + 1, 0);
@@ -136,6 +136,8 @@ namespace mpi {
   }
 
   static void broadcast(communicator c, V &v, int root) {
+   size_t s = mpi::broadcast(v.size());
+   if (c.rank() != root) v.resize(s);
    for (auto &x : v) mpi::broadcast(c, x, root);
   }
 
@@ -143,17 +145,18 @@ namespace mpi {
    return {g, root, c};
   }
 
+  template <typename Tag> static void complete_operation(V &lhs, mpi_lazy<Tag, V> laz) {
+   invoke2(lhs, Tag(), laz.c, laz.ref, laz.root);
+  }
+
   template <typename Tag> static void invoke2(V &lhs, Tag, communicator c, V const &a, int root) {
    int s = a.size();
    lhs.resize(s);
    for (auto i = 0; i < s; ++i) mpi::_invoke2(lhs[i], Tag(), c, a[i], root);
   }
-
-  template <typename Tag> static void complete_operation(V &lhs, mpi_lazy<Tag, V> laz) {
-   invoke2(lhs, Tag(), laz.c, laz.ref, laz.root);
-  }
  };
 
+ // dispatch : vector of basic types vs vector of generic type
  template <typename T>
  struct mpi_impl<std::vector<T>, std14::enable_if_t<std::is_arithmetic<T>::value ||
                                                     triqs::is_complex<T>::value>> : mpi_impl_std_vector_basic<T> {};

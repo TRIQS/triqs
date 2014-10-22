@@ -20,7 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/c14.hpp>
-//#include <triqs/utility/tuple_tools.hpp>
 #include <mpi.h>
 
 namespace boost { // forward declare in case we do not include boost.
@@ -34,6 +33,8 @@ namespace mpi {
 
  /// Environment
  struct environment {
+  // MPICH does not allow Init without argc, argv, so we do not allow default constructors
+  // for portability, cf #133
   environment(int argc, char *argv[]) { MPI_Init(&argc, &argv); }
   ~environment() { MPI_Finalize(); }
  };
@@ -69,6 +70,7 @@ namespace mpi {
 
  /// a tag for each operation
  namespace tag {
+  struct broadcast {};
   struct reduce {};
   struct all_reduce {};
   struct scatter {};
@@ -79,25 +81,23 @@ namespace mpi {
  // The implementation of mpi ops for each type
  // To be specialized later
  template <typename T, typename Enable = void> struct mpi_impl {
-
   // Reduces a on site
-  static void reduce_in_place(communicator c, T &a, int root);
+  // static void reduce_in_place(communicator c, T &a, int root);
 
   // Reduces with all_reduce a on site
-  static void all_reduce_in_place(communicator c, T &a, int root);
+  // static void all_reduce_in_place(communicator c, T &a, int root);
 
   // Broadcast a
-  static void broadcast(communicator c, T &a, int root);
+  // static void broadcast(communicator c, T &a, int root);
 
   // For all tags : return a T or a lazy object
   // Tag = reduce, all_reduce, scatter, gather, allgather
-  // comment because does not compile on C++11
-  //template<typename Tag>
-  //static auto invoke(Tag, communicator c, T const &a, int root);
+  // template<typename Tag>
+  // static auto invoke(Tag, communicator c, T const &a, int root);
 
   // invoke2 (lhs, Tag, c, a, root) is the same as lhs = invoke(Tag, c, a, root);
   // it implements the operation
-  template <typename Tag> static void invoke2(T &lhs, Tag, communicator c, T const &a, int root);
+  // template <typename Tag> static void invoke2(T &lhs, Tag, communicator c, T const &a, int root);
  };
 
  // -----------------------------
@@ -113,7 +113,13 @@ namespace mpi {
  // ------- top level functions -------
  // ----------------------------------------
 
- // ----- functions that can be lazy -------
+ // ----- functions that never return lazy object -------
+
+ template <typename T> void reduce_in_place(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::reduce_in_place(c, x, root); }
+ template <typename T> void all_reduce_in_place(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::all_reduce_in_place(c, x, root); }
+ template <typename T> void broadcast(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::broadcast(c, x, root); }
+
+ // ----- functions that can return lazy object -------
 
  template <typename T>
  AUTO_DECL reduce(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::reduce(), c, x, root));
@@ -130,20 +136,17 @@ namespace mpi {
  template <typename T, typename Tag>
  AUTO_DECL _invoke2(T &lhs, Tag, communicator c, T const &rhs,  int root) RETURN(mpi_impl<T>::invoke2(lhs, Tag(), c, rhs, root));
 
- // ----- functions that cannot be lazy -------
+ /** ------------------------------------------------------------
+   *  transformation type -> mpi types
+   *  ----------------------------------------------------------  **/
 
- template <typename T> void reduce_in_place(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::reduce_in_place(c, x, root); }
- template <typename T> void all_reduce_in_place(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::all_reduce_in_place(c, x, root); }
- template <typename T> void broadcast(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::broadcast(c, x, root); }
-
- // transformation type -> mpi types
  template <class T> struct mpi_datatype;
 #define D(T, MPI_TY)                                                                                                             \
  template <> struct mpi_datatype<T> {                                                                                            \
   static MPI_Datatype invoke() { return MPI_TY; }                                                                                \
  };
  D(int, MPI_INT) D(long, MPI_LONG) D(double, MPI_DOUBLE) D(float, MPI_FLOAT) D(std::complex<double>, MPI_DOUBLE_COMPLEX);
- D(unsigned long, MPI_UNSIGNED_LONG);
+ D(unsigned long, MPI_UNSIGNED_LONG); D(unsigned int, MPI_UNSIGNED);
 #undef D
 
  /** ------------------------------------------------------------
@@ -201,21 +204,10 @@ namespace mpi {
    return {first + n_large_nodes + rank * chunk, first + n_large_nodes + (rank + 1) * chunk - 1};
  }
 
- // TODO RECHECK TEST 
  inline long slice_length(long imax, int n_nodes, int rank) {
   auto r = slice_range(0, imax, n_nodes, rank);
   return r.second - r.first + 1;
  }
 
- /*
- inline long slice_length(size_t imax, communicator c, int r) {
-  auto imin = 0;
-  long j = (imax - imin + 1) / c.size();
-  long i = imax - imin + 1 - c.size() * j;
-  auto r_min = (r <= i - 1 ? imin + r * (j + 1) : imin + r * j + i);
-  auto r_max = (r <= i - 1 ? imin + (r + 1) * (j + 1) - 1 : imin + (r + 1) * j + i - 1);
-  return r_max - r_min + 1;
- }
- */
 }
 }

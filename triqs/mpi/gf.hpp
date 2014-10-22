@@ -21,6 +21,7 @@
 #pragma once
 #include "./base.hpp"
 #include "./arrays.hpp"
+#include "./vector.hpp"
 
 namespace triqs {
 namespace mpi {
@@ -44,6 +45,7 @@ namespace mpi {
 
   //---------
   static void broadcast(communicator c, G &g, int root) {
+   // Shall we bcast mesh ?
    triqs::mpi::broadcast(c, g.data(), root);
    triqs::mpi::broadcast(c, g.singularity(), root);
   }
@@ -63,12 +65,11 @@ namespace mpi {
    lhs._mesh = g._mesh;
    mpi::_invoke2(lhs._data, tag::reduce(), c, g.data(), root);
    mpi::_invoke2(lhs._singularity, tag::reduce(), c, g.singularity(), root);
-   // lhs._data = mpi::reduce(g.data(), c, root);
-   // lhs._singularity = mpi::reduce(g.singularity(), c, root);
   }
 
   //---- all_reduce ----
   static void invoke2(G &lhs, tag::all_reduce, communicator c, G const &g, int root) {
+   lhs._mesh = g._mesh;
    mpi::_invoke2(lhs._data, tag::all_reduce(), c, g.data(), root);
    mpi::_invoke2(lhs._singularity, tag::all_reduce(), c, g.singularity(), root);
   }
@@ -77,13 +78,12 @@ namespace mpi {
   static void invoke2(G &lhs, tag::scatter, communicator c, G const &g, int root) {
    lhs._mesh = mpi_scatter(g.mesh(), c, root);
    mpi::_invoke2(lhs._data, tag::scatter(), c, g.data(), root);
-   lhs._singularity = g.singularity();
+   if (c.rank() == root) lhs._singularity = g.singularity();
    // mpi::broadcast(lhs._singularity, c, root);
   }
 
   //---- gather ----
   static void invoke2(G &lhs, tag::gather, communicator c, G const &g, int root) {
-   mpi::_invoke2(lhs._data, tag::scatter(), c, g.data(), root);
    lhs._mesh = mpi_gather(g.mesh(), c, root);
    mpi::_invoke2(lhs._data, tag::gather(), c, g.data(), root);
    // do nothing for singularity
@@ -91,6 +91,7 @@ namespace mpi {
 
   //---- allgather ----
   static void invoke2(G &lhs, tag::allgather, communicator c, G const &g, int root) {
+   lhs._mesh = mpi_gather(g.mesh(), c, root);
    mpi::_invoke2(lhs._data, tag::allgather(), c, g.data(), root);
    // do nothing for singularity
   }
@@ -101,12 +102,7 @@ namespace mpi {
  // ---------------------------------------------------------------------------------------
  template <> struct mpi_impl<gfs::nothing> {
   template <typename Tag> static void invoke2(gfs::nothing &lhs, Tag, communicator c, gfs::nothing const &a, int root) {}
-  static gfs::nothing invoke(tag::reduce, communicator c, gfs::nothing const &a, int root) {
-   return {};
-  }
-  static gfs::nothing invoke(tag::all_reduce, communicator c, gfs::nothing const &a, int root) {
-   return {};
-  }
+  template <typename Tag> static gfs::nothing invoke(Tag, communicator c, gfs::nothing const &a, int root) { return gfs::nothing(); }
   static void reduce_in_place(communicator c, gfs::nothing &a, int root) {}
   static void broadcast(communicator c, gfs::nothing &a, int root) {}
  };

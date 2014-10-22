@@ -39,27 +39,21 @@ namespace mpi {
   domain_type domain() const {
    auto dims = ref.shape();
    long slow_size = first_dim(ref);
-   
-   if (std::is_same<Tag, tag::reduce>::value) {
-    // optionally check all dims are the same ?
-   }
+
+   // tag::reduce and all_reduce : do nothing
  
    if (std::is_same<Tag, tag::scatter>::value) {
+    mpi::broadcast(slow_size, c, root);
     dims[0] = mpi::slice_length(slow_size - 1, c.size(), c.rank());
    }
    
    if (std::is_same<Tag, tag::gather>::value) {
-    long slow_size_total = 0;
-    MPI_Reduce(&slow_size, &slow_size_total, 1, mpi_datatype<long>::invoke(), MPI_SUM, root, c.get());
-    dims[0] = slow_size_total;
-    // valid only on root
+    auto s = mpi::reduce(slow_size, c, root); 
+    dims[0] = (c.rank()==root ? s : 1); // valid only on root
    }
    
    if (std::is_same<Tag, tag::allgather>::value) {
-    long slow_size_total = 0;
-    MPI_Allreduce(&slow_size, &slow_size_total, 1, mpi_datatype<long>::invoke(), MPI_SUM, c.get());
-    dims[0] = slow_size_total;
-    // in this case, it is valid on all nodes
+    dims[0] = mpi::all_reduce(slow_size, c, root); // in this case, it is valid on all nodes
    }
    
    return domain_type{dims};
@@ -148,12 +142,13 @@ namespace arrays {
 
    //---------------------------------
    void _invoke(triqs::mpi::tag::reduce) {
-    lhs.resize(laz.domain());
+    if (laz.c.rank() == laz.root) lhs.resize(laz.domain());
     MPI_Reduce((void *)laz.ref.data_start(), (void *)lhs.data_start(), laz.ref.domain().number_of_elements(), D(), MPI_SUM, laz.root, laz.c.get());
    }
 
    //---------------------------------
    void _invoke(triqs::mpi::tag::all_reduce) {
+    // ADD debug check under macro that all nodes have same size
     lhs.resize(laz.domain());
     MPI_Allreduce((void *)laz.ref.data_start(), (void *)lhs.data_start(), laz.ref.domain().number_of_elements(), D(), MPI_SUM, laz.c.get());
    }
@@ -180,7 +175,8 @@ namespace arrays {
 
    //---------------------------------
    void _invoke(triqs::mpi::tag::gather) {
-    lhs.resize(laz.domain());
+    auto d = laz.domain();
+    if (laz.c.rank() == laz.root) lhs.resize(d);
 
     auto c = laz.c;
     auto recvcounts = std::vector<int>(c.size());

@@ -3,8 +3,8 @@
 using triqs::arrays::array;
 using triqs::clef::placeholder;
 
-int main() {
- boost::mpi::environment env; // argc, argv);
+int main(int argc, char **argv) {
+ boost::mpi::environment env(argc, argv);
  boost::mpi::communicator world;
 
  array<long, 2> A(2, 2), B(2, 2), C(2, 2);

@@ -22,7 +22,6 @@
 #include <iostream>
 #include <type_traits>
 #include <triqs/gfs.hpp>
-#include <triqs/mpi.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -78,7 +77,13 @@ int main(int argc, char* argv[]) {
   out << "scatter-allgather test with construction" << std::endl;
 
   gf<imfreq> g2 = mpi::scatter(g1);
-  g2(w_) << g2(w_) * (1 + world.rank());
+  //std::cout << " bo 1 "<< g2.mesh().size() << g2.data() << g2.singularity().data() << " rank = " <<  world.rank() << std::endl;
+  //std::cout << g2(g2.singularity()) *2 << std::endl;
+  // Fix this issue...
+  g2.singularity() = g1.singularity();
+  g2(w_) << g2(w_)  * (1 + world.rank());
+  //std::cout << " bo 2 "<< world.rank() << std::endl;
+
   g1 = mpi::allgather(g2);
 
   out << g1.data() << std::endl;
