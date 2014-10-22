@@ -160,16 +160,46 @@ namespace gfs {
 
  } // gfs_implementation
 
+ // FOR LEGACY PYTHON CODE ONLY
+ // THIS MUST be kept for python operations 
  // specific operations (for legacy python code).
  // +=, -= with a matrix
- inline void operator+=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> m) {
+ inline void operator+=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
   for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) += m;
   g.singularity()(0) += m;
  }
 
- inline void operator-=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> m) {
+ inline void operator-=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
   for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) -= m;
   g.singularity()(0) -= m;
+ }
+
+ inline void operator+=(gf_view<imfreq> g, std::complex<double> a) {
+  operator+=(g, arrays::make_unit_matrix(get_target_shape(g)[0], a));
+ }
+ inline void operator-=(gf_view<imfreq> g, std::complex<double> a) {
+  operator-=(g, arrays::make_unit_matrix(get_target_shape(g)[0], a));
+ }
+
+
+ inline gf<imfreq> operator+(gf<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
+  g() += m;
+  return g;
+ }
+
+ inline gf<imfreq> operator+(gf<imfreq> g, std::complex<double> const &m) {
+  g() += m; // () is critical of infinite loop -> segfault
+  return g;
+ }
+
+ inline gf<imfreq> operator-(gf<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
+  g() -= m;
+  return g;
+ }
+
+ inline gf<imfreq> operator-(gf<imfreq> g, std::complex<double> const &m) {
+  g() -= m;
+  return g;
  }
 }
 }

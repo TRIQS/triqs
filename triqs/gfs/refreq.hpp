@@ -63,6 +63,48 @@ namespace gfs {
   template <typename Opt> struct data_proxy<refreq, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
   template <typename Opt> struct data_proxy<refreq, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
  }
+
+ // FOR LEGACY PYTHON CODE ONLY
+ // THIS MUST be kept for python operations
+ // specific operations (for legacy python code).
+ // +=, -= with a matrix
+ inline void operator+=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
+  for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) += m;
+  g.singularity()(0) += m;
+ }
+
+ inline void operator-=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
+  for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) -= m;
+  g.singularity()(0) -= m;
+ }
+
+ inline void operator+=(gf_view<refreq> g, std::complex<double> a) {
+  operator+=(g, arrays::make_unit_matrix(get_target_shape(g)[0], a));
+ }
+ inline void operator-=(gf_view<refreq> g, std::complex<double> a) {
+  operator-=(g, arrays::make_unit_matrix(get_target_shape(g)[0], a));
+ }
+
+
+ inline gf<refreq> operator+(gf<refreq> g, arrays::matrix<std::complex<double>> const &m) {
+  g() += m;
+  return g;
+ }
+
+ inline gf<refreq> operator+(gf<refreq> g, std::complex<double> const &m) {
+  g() += m; // () is critical of infinite loop -> segfault
+  return g;
+ }
+
+ inline gf<refreq> operator-(gf<refreq> g, arrays::matrix<std::complex<double>> const &m) {
+  g() -= m;
+  return g;
+ }
+
+ inline gf<refreq> operator-(gf<refreq> g, std::complex<double> const &m) {
+  g() -= m;
+  return g;
+ }
 }
 }
 

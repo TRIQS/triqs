@@ -381,9 +381,16 @@ g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail_depr")
 g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.fit_tail_depr")
 
 # For legacy Python code : authorize g + Matrix
-#g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(gf<imfreq> x,matrix<std:complex<double>> y)")
 g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<imfreq> x,matrix<std::complex<double>> y)")
 g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<imfreq> x,matrix<std::complex<double>> y)")
+
+g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<imfreq> x,std::complex<double> y)")
+g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<imfreq> x,std::complex<double> y)")
+
+g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(gf<imfreq> x,matrix<std::complex<double>> y)")
+g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(gf<imfreq> x,std::complex<double> y)")
+g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(gf<imfreq> x,matrix<std::complex<double>> y)")
+g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(gf<imfreq> x,std::complex<double> y)")
 
 module.add_class(g)
 
@@ -466,6 +473,18 @@ g.add_method(name = "set_from_pade",
              signature = "void(gf_view<imfreq> gw, int n_points = 100, double freq_offset = 0.0)",
              calling_pattern = "pade(self_c,*gw,n_points, freq_offset)",
              doc = """TO BE WRITTEN""")
+
+# For legacy Python code : authorize g + Matrix
+g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<refreq> x,matrix<std::complex<double>> y)")
+g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<refreq> x,matrix<std::complex<double>> y)")
+
+g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<refreq> x,std::complex<double> y)")
+g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<refreq> x,std::complex<double> y)")
+
+g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(gf<refreq> x,matrix<std::complex<double>> y)")
+g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(gf<refreq> x,std::complex<double> y)")
+g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(gf<refreq> x,matrix<std::complex<double>> y)")
+g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(gf<refreq> x,std::complex<double> y)")
 
 module.add_class(g)
 
