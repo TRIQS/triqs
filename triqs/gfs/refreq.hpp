@@ -96,6 +96,9 @@ namespace gfs {
   return g;
  }
 
+ inline gf<refreq> operator+(std::complex<double> const &m, gf<refreq> g) { return g + m; }
+ inline gf<refreq> operator+(arrays::matrix<std::complex<double>> const &m, gf<refreq> g) { return g + m; }
+
  inline gf<refreq> operator-(gf<refreq> g, arrays::matrix<std::complex<double>> const &m) {
   g() -= m;
   return g;
@@ -103,6 +106,18 @@ namespace gfs {
 
  inline gf<refreq> operator-(gf<refreq> g, std::complex<double> const &m) {
   g() -= m;
+  return g;
+ }
+
+ inline gf<refreq> operator-(std::complex<double> const &m, gf<refreq> g) { 
+  g *= -1;
+  g+=m;
+  return g;
+  }
+
+ inline gf<refreq> operator-(arrays::matrix<std::complex<double>> const &m, gf<refreq> g) { 
+  g *= -1;
+  g+=m;
   return g;
  }
 }
