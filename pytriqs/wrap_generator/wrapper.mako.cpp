@@ -286,19 +286,19 @@ NULL     /* mp_ass_subscript*/
 static PyGetSetDef ${c.py_type}_getseters[] = {
 
 %for mb in [m for m in c.members if not m.read_only] :
-{"${mb.py_name}", (getter)${c.py_type}__get_member_${mb.py_name}, ${c.py_type}__set_member_${mb.py_name}, "${mb.doc}", NULL},
+{"${mb.py_name}", (getter)${c.py_type}__get_member_${mb.py_name}, ${c.py_type}__set_member_${mb.py_name}, "${mb._generate_doc()}", NULL},
 %endfor
 
 %for mb in [m for m in c.members if m.read_only] :
-{"${mb.py_name}", (getter)${c.py_type}__get_member_${mb.py_name}, NULL, "${mb.doc}", NULL},
+{"${mb.py_name}", (getter)${c.py_type}__get_member_${mb.py_name}, NULL, "${mb._generate_doc()}", NULL},
 %endfor
 
 %for p in [p for p in c.properties if p.setter ] :
-{"${p.name}", (getter)${c.py_type}__get_prop_${p.name}, ${c.py_type}__set_prop_${p.name}, "${p.doc}", NULL},
+{"${p.name}", (getter)${c.py_type}__get_prop_${p.name}, ${c.py_type}__set_prop_${p.name}, "${p._generate_doc()}", NULL},
 %endfor
 
 %for p in [p for p in c.properties if not p.setter ] :
-{"${p.name}", (getter)${c.py_type}__get_prop_${p.name}, NULL, "${p.doc}", NULL},
+{"${p.name}", (getter)${c.py_type}__get_prop_${p.name}, NULL, "${p._generate_doc()}", NULL},
 %endfor
 
 {NULL}  /* Sentinel */

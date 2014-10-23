@@ -255,6 +255,7 @@ class pyfunction :
             s = "\n".join([f._generate_doc() for f in self.overloads])
         else : 
             s = "\n".join([self.doc, "\n"] + [f._generate_doc() for f in self.overloads])
+        s=s.replace('@{','').replace('@}','')
         return repr(s)[1:-1] # remove the ' ' made by repr
 
 def _is_type_a_view(c_type) :
@@ -552,6 +553,11 @@ class class_ :
         def __init__(self, c_name, c_type, py_name, read_only, doc) :
           self.c_name, self.c_type, self.py_name, self.doc, self.read_only = c_name, c_type, py_name or c_name, doc, read_only
 
+        def _generate_doc(self) :
+          doc = "\n".join([ "   " + x.strip() for x in self.doc.split('\n')])
+          doc = doc.replace('@{','').replace('@}','')
+          return repr(doc)[1:-1] # remove the ' ' made by repr
+
     def add_member(self, c_name, c_type, py_name = None, read_only = False, doc = ''):
         """
         Add a class member
@@ -567,6 +573,11 @@ class class_ :
     class _property :
         def __init__(self, name, getter, setter, doc) :
           self.name, self.getter, self.setter, self.doc = name, getter, setter, doc
+ 
+        def _generate_doc(self) :
+          doc = "\n".join([ "   " + x.strip() for x in self.doc.split('\n')])
+          doc = doc.replace('@{','').replace('@}','')
+          return repr(doc)[1:-1] # remove the ' ' made by repr
 
     def add_property(self,  getter, setter = None, name = None, doc = ''):
         """
