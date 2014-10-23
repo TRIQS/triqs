@@ -28,7 +28,6 @@
 namespace triqs {
 namespace utility {
 
-using namespace std;
 using triqs::is_complex;
 
 // Useful numeric operations which have to be implemented separately for different categories of builtin types.
@@ -37,31 +36,31 @@ using triqs::is_complex;
 // Zero value tests
 //
 template<typename T> // Integral types
-typename enable_if<is_integral<typename decay<T>::type>::value,bool>::type is_zero(T && x) {
+typename std::enable_if<std::is_integral<typename std::decay<T>::type>::value,bool>::type is_zero(T && x) {
  return x==0;
 }
 
 template<typename T> // Floating-point types
-typename enable_if<is_floating_point<typename decay<T>::type>::value,bool>::type is_zero(T && x,
-             typename decay<T>::type tolerance = 100*numeric_limits<typename decay<T>::type>::epsilon()) {
- return abs(x) < tolerance;
+typename std::enable_if<std::is_floating_point<typename std::decay<T>::type>::value,bool>::type is_zero(T && x,
+             typename std::decay<T>::type tolerance = 100*std::numeric_limits<typename std::decay<T>::type>::epsilon()) {
+ return std::abs(x) < tolerance;
 }
 
 template<typename T> // std::complex
-typename enable_if<is_complex<typename decay<T>::type>::value,bool>::type is_zero(T && x) {
- return is_zero(real(x)) && is_zero(imag(x));
+typename std::enable_if<is_complex<typename std::decay<T>::type>::value,bool>::type is_zero(T && x) {
+ return is_zero(std::real(x)) && is_zero(std::imag(x));
 }
 
 //
 // Complex conjugate
 //
 template<typename T> // Integral types
-typename enable_if<is_integral<typename decay<T>::type>::value,typename decay<T>::type>::type _conj(T && x) { return x; }
+typename std::enable_if<std::is_integral<typename std::decay<T>::type>::value,typename std::decay<T>::type>::type _conj(T && x) { return x; }
 
 template<typename T> // Floating-point types
-typename enable_if<is_floating_point<typename decay<T>::type>::value,typename decay<T>::type>::type _conj(T && x) { return x; }
+typename std::enable_if<std::is_floating_point<typename std::decay<T>::type>::value,typename std::decay<T>::type>::type _conj(T && x) { return x; }
 
 template<typename T> // std::complex
-typename enable_if<is_complex<typename decay<T>::type>::value,typename decay<T>::type>::type _conj(T && x) { return conj(x); }
+typename std::enable_if<is_complex<typename std::decay<T>::type>::value,typename std::decay<T>::type>::type _conj(T && x) { return std::conj(x); }
 
 }}
