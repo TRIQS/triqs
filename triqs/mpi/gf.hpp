@@ -79,21 +79,21 @@ namespace mpi {
    lhs._mesh = mpi_scatter(g.mesh(), c, root);
    mpi::_invoke2(lhs._data, tag::scatter(), c, g.data(), root);
    if (c.rank() == root) lhs._singularity = g.singularity();
-   // mpi::broadcast(lhs._singularity, c, root);
+   mpi::broadcast(lhs._singularity, c, root);
   }
 
   //---- gather ----
   static void invoke2(G &lhs, tag::gather, communicator c, G const &g, int root) {
    lhs._mesh = mpi_gather(g.mesh(), c, root);
    mpi::_invoke2(lhs._data, tag::gather(), c, g.data(), root);
-   // do nothing for singularity
+   if (c.rank() == root) lhs._singularity = g.singularity();
   }
 
   //---- allgather ----
   static void invoke2(G &lhs, tag::allgather, communicator c, G const &g, int root) {
    lhs._mesh = mpi_gather(g.mesh(), c, root);
    mpi::_invoke2(lhs._data, tag::allgather(), c, g.data(), root);
-   // do nothing for singularity
+   lhs._singularity = g.singularity();
   }
  };
 
