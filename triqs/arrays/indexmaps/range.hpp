@@ -30,21 +30,22 @@ namespace arrays {
  /**
   */
  class range {
-  std::ptrdiff_t first_, last_, step_;
+  std::ptrdiff_t first_ = 0, last_ = -1, step_ = 1;
 
   public:
-  typedef std::ptrdiff_t index_type;
+  using index_type = std::ptrdiff_t;
 
-  range() : first_(0), last_(-1), step_(1) {} // i.e. all
-  range(const range& r) : first_(r.first_), last_(r.last_), step_(r.step_) {}
+  range() = default;
+
   range(std::ptrdiff_t first__, std::ptrdiff_t last__, std::ptrdiff_t step__ = 1)
      : first_(first__), last_(last__), step_(step__) {}
 
-  range(std::ptrdiff_t i) : range (i,i+1,1){}
-  
+  range(std::ptrdiff_t i) : range(i, i + 1, 1) {}
+
   std::ptrdiff_t first() const { return first_; }
   std::ptrdiff_t last() const { return last_; }
   std::ptrdiff_t step() const { return step_; }
+  
   size_t size() const {
    std::ptrdiff_t r = (last_ - first_ + 1) / step_;
    if (r < 0) TRIQS_RUNTIME_ERROR << " range with negative size";
