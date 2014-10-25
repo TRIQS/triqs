@@ -80,31 +80,15 @@ namespace gfs {
   domain_pt_t index_to_point(index_t ind) const { return xmin + ind * del; }
 
   long index_to_linear(index_t ind) const { return ind; }
-
-  /// The wrapper for the mesh point
-  class mesh_point_t : tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point_t, domain_pt_t> {
-   linear_mesh const *m;
-   index_t _index;
-
-   public:
-   mesh_point_t() : m(nullptr) {}
-   mesh_point_t(linear_mesh const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
-   mesh_point_t(linear_mesh const &mesh) : mesh_point_t(mesh,0) {}
-   void advance() { ++_index; }
-   using cast_t = domain_pt_t;
-   operator cast_t() const { return m->index_to_point(_index); }
-   long linear_index() const { return _index; }
-   long index() const { return _index; }
-   bool at_end() const { return (_index == m->size()); }
-   void reset() { _index = 0; }
-  };
+ 
+  /// Type of the mesh point
+  using mesh_point_t = mesh_point<linear_mesh>;
 
   /// Accessing a point of the mesh
   mesh_point_t operator[](index_t i) const {
    return {*this, i};
   }
 
-  public:
   /// Iterating on all the points...
   using const_iterator = mesh_pt_generator<linear_mesh>;
   const_iterator begin() const { return const_iterator(this); }
@@ -189,13 +173,37 @@ namespace gfs {
   mesh_kind meshk;
  };
 
+ // ---------------------------------------------------------------------------
+ //                     The mesh point
+ // ---------------------------------------------------------------------------
+
+ template <typename Domain>
+ struct mesh_point<linear_mesh<Domain>> : public utility::arithmetic_ops_by_cast<mesh_point<linear_mesh<Domain>>,
+                                                                                 typename Domain::point_t> {
+  using mesh_t = linear_mesh<Domain>;
+  using index_t = typename mesh_t::index_t;
+  mesh_t const *m;
+  index_t _index;
+
+  public:
+  mesh_point() : m(nullptr) {}
+  mesh_point(mesh_t const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
+  mesh_point(mesh_t const &mesh) : mesh_point(mesh, 0) {}
+  void advance() { ++_index; }
+  using cast_t = typename Domain::point_t;
+  operator cast_t() const { return m->index_to_point(_index); }
+  long linear_index() const { return _index; }
+  long index() const { return _index; }
+  bool at_end() const { return (_index == m->size()); }
+  void reset() { _index = 0; }
+ };
 
  // UNUSED, only in deprecated code...
  /// Simple approximation of a point of the domain by a mesh point. No check
- template <typename D> long get_closest_mesh_pt_index(linear_mesh<D> const &mesh, typename D::point_t const &x) {
-  double a = (x - mesh.x_min()) / mesh.delta();
-  return std::floor(a);
- }
+ //template <typename D> long get_closest_mesh_pt_index(linear_mesh<D> const &mesh, typename D::point_t const &x) {
+ // double a = (x - mesh.x_min()) / mesh.delta();
+//  return std::floor(a);
+// }
 
  /// Approximation of a point of the domain by a mesh point
  template <typename D> std::tuple<bool, long, double> windowing(linear_mesh<D> const &mesh, typename D::point_t const &x) {

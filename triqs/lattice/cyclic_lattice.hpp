@@ -25,9 +25,11 @@
 //#include <vector>
 
 namespace triqs {
-namespace lattice {
+namespace gfs {
 
- class cyclic_lattice_mesh {
+ struct cyclic_lattice {};
+
+ template <typename Opt> struct gf_mesh<cyclic_lattice, Opt> { 
 
   utility::mini_vector<int, 3> dims;          // the size in each dimension
   size_t _size = dims[0] * dims[1] * dims[2]; // total size
@@ -40,7 +42,7 @@ namespace lattice {
   }
 
   public:
-  cyclic_lattice_mesh(int L1 = 1, int L2 = 1, int L3 = 1) : dims{L1, L2, L3} {}
+  gf_mesh(int L1 = 1, int L2 = 1, int L3 = 1) : dims{L1, L2, L3} {}
 
   int rank() const { return (dims[2] > 1 ? 3 : (dims[1] > 1 ? 2 : 1)); }
 
@@ -50,7 +52,7 @@ namespace lattice {
   using point_t = arrays::vector<int>; // domain concept. PUT on STACK
 
   /// ----------- Model the mesh concept  ----------------------
-  using domain_t = cyclic_lattice_mesh;
+  using domain_t = gf_mesh;
   domain_t const& domain() const { return *this; }
 
   using index_t = utility::mini_vector<long, 3>;
@@ -72,35 +74,23 @@ namespace lattice {
   }
   // linear_index_t index_to_linear(index_t const& i) const { return i[0] + i[1] * s1 + i[2] * s2; }
 
-  /// The wrapper for the mesh point
-  class mesh_point_t : public utility::index3_generator, public utility::arithmetic_ops_by_cast<mesh_point_t, point_t> {
-   cyclic_lattice_mesh const* m = nullptr;
+  using mesh_point_t = mesh_point<gf_mesh>;
 
-   public:
-   mesh_point_t() = default;
-   // explicit is important for g[ {1,2}] to disambiguate the mesh_point_t and the mesh_index_t
-   explicit mesh_point_t(cyclic_lattice_mesh const& mesh, index_t const& index)
-      : index3_generator(mesh.get_dimensions(), index), m(&mesh) {}
-   mesh_point_t(cyclic_lattice_mesh const& mesh) : mesh_point_t(mesh, {0, 0, 0}) {}
-   operator point_t() const { return m->index_to_point(index()); }
-   // linear_index_t linear_index() const { return m->index_to_linear(index()); }
-   // The mesh point behaves like a vector
-   long operator()(int i) const { return index()[i]; }
-   long operator[](int i) const { return operator()(i); }
-   friend std::ostream& operator<<(std::ostream& out, mesh_point_t const& x) { return out << x.index(); }
-  };
-
-  /// Accessing a point of the mesh
+   /// Accessing a point of the mesh
   mesh_point_t operator[](index_t i) const {
    return mesh_point_t{*this, i};
   }
 
   /// Iterating on all the points...
-  using const_iterator = gfs::mesh_pt_generator<cyclic_lattice_mesh>;
+  using const_iterator = gfs::mesh_pt_generator<gf_mesh>;
   const_iterator begin() const { return const_iterator(this); }
   const_iterator end() const { return const_iterator(this, true); }
   const_iterator cbegin() const { return const_iterator(this); }
   const_iterator cend() const { return const_iterator(this, true); }
+
+  /// Mesh comparison
+  bool operator==(gf_mesh const& M) const { return ((dims == M.dims)); }
+  bool operator!=(gf_mesh const &M) const { return !(operator==(M)); }
 
   /// ----------- End mesh concept  ----------------------
 
@@ -109,17 +99,19 @@ namespace lattice {
    return mesh_point_t{*this, {_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}};
   }
 
+ // mesh_point_t const & modulo_reduce(mesh_point_t const& r) const { return r;}
+
   /// Write into HDF5
-  friend void h5_write(h5::group fg, std::string subgroup_name, cyclic_lattice_mesh const& m) {
+  friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const& m) {
    h5::group gr = fg.create_group(subgroup_name);
    h5_write(gr, "dims", m.dims.to_vector());
   }
 
   /// Read from HDF5
-  friend void h5_read(h5::group fg, std::string subgroup_name, cyclic_lattice_mesh& m) {
+  friend void h5_read(h5::group fg, std::string subgroup_name, gf_mesh& m) {
    h5::group gr = fg.open_group(subgroup_name);
    auto dims = h5::h5_read<std::vector<int>>(gr, "dims");
-   m = cyclic_lattice_mesh(dims[0], dims[1], dims[2]);
+   m = gf_mesh(dims[0], dims[1], dims[2]);
   }
 
   //  BOOST Serialization
@@ -129,6 +121,37 @@ namespace lattice {
    ar& TRIQS_MAKE_NVP("_size", _size);
    ar& TRIQS_MAKE_NVP("s2", s2);
    ar& TRIQS_MAKE_NVP("s1", s1);
+  }
+
+  friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) { return sout << "cyclic_lattice of size " << m.dims; }
+  
+ };
+
+ // ---------------------------------------------------------------------------
+ //                     The mesh point
+ // ---------------------------------------------------------------------------
+ template <>
+ class mesh_point<gf_mesh<cyclic_lattice>> : public utility::index3_generator,
+                                             public utility::arithmetic_ops_by_cast<mesh_point<gf_mesh<cyclic_lattice>>,
+                                                                                    typename gf_mesh<cyclic_lattice>::point_t> {
+  using mesh_t = gf_mesh<cyclic_lattice>;
+  mesh_t const* m = nullptr;
+
+  public:
+  mesh_point() = default;
+  // explicit is important for g[ {1,2}] to disambiguate the mesh_point_t and the mesh_index_t
+  explicit mesh_point(mesh_t const& mesh, mesh_t::index_t const& index)
+     : index3_generator(mesh.get_dimensions(), index), m(&mesh) {}
+  mesh_point(mesh_t const& mesh) : mesh_point(mesh, {0, 0, 0}) {}
+  operator mesh_t::point_t() const { return m->index_to_point(index()); }
+  operator mesh_t::index_t() const { return index(); }
+  // linear_index_t linear_index() const { return m->index_to_linear(index()); }
+  // The mesh point behaves like a vector
+  long operator()(int i) const { return index()[i]; }
+  long operator[](int i) const { return operator()(i); }
+  friend std::ostream& operator<<(std::ostream& out, mesh_point const& x) { return out << x.index(); }
+  mesh_point operator-() const {
+   return mesh_point{*m, {m->_modulo(-index()[0], 0), m->_modulo(-index()[1], 1), m->_modulo(-index()[2], 2)}};
   }
  };
 }

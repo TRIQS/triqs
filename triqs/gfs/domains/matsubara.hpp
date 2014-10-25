@@ -76,6 +76,7 @@ namespace gfs {
   matsubara_domain(matsubara_domain const &) = default;
   matsubara_domain(matsubara_domain<!IsFreq> const &x) : matsubara_domain(x.beta, x.statistic) {}
   bool operator==(matsubara_domain const &D) const { return ((std::abs(beta - D.beta) < 1.e-15) && (statistic == D.statistic)); }
+  bool operator!=(matsubara_domain const &x) const { return !(operator==(x)); }
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, matsubara_domain const &d) {
@@ -104,7 +105,6 @@ namespace gfs {
 
  using matsubara_freq_domain = matsubara_domain<true>;
  using matsubara_time_domain = matsubara_domain<false>;
-
 
  // ----- kronecker function : overload for matsubara_freq 
  inline bool kronecker(matsubara_freq const & freq) { return freq.n == 0; }

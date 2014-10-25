@@ -26,18 +26,18 @@
 namespace triqs {
 namespace gfs {
 
- struct matsubara_time_mesh : linear_mesh<matsubara_time_domain> {
+ struct imtime {};
+
+ template <typename Opt> struct gf_mesh<imtime, Opt> : linear_mesh<matsubara_time_domain> {
   private:
   using B = linear_mesh<matsubara_time_domain>;
 
   public:
-  matsubara_time_mesh() = default;
-  matsubara_time_mesh(matsubara_time_mesh const &x)  = default;
-  matsubara_time_mesh(matsubara_time_domain d, int n_time_slices, mesh_kind mk = half_bins) : B(d, 0, d.beta, n_time_slices, mk) {}
-  matsubara_time_mesh(double beta, statistic_enum S, int n_time_slices, mesh_kind mk = half_bins)
-     : matsubara_time_mesh({beta, S}, n_time_slices, mk) {}
+  gf_mesh() = default;
+  gf_mesh(gf_mesh const &x)  = default;
+  gf_mesh(matsubara_time_domain d, int n_time_slices, mesh_kind mk = half_bins) : B(d, 0, d.beta, n_time_slices, mk) {}
+  gf_mesh(double beta, statistic_enum S, int n_time_slices, mesh_kind mk = half_bins) : gf_mesh({beta, S}, n_time_slices, mk) {}
  };
-
 
  //-------------------------------------------------------
 
@@ -48,7 +48,7 @@ namespace gfs {
   *
   *  Calls F on each point of the mesh, in arbitrary order.
   **/
- template <typename Lambda> void foreach(matsubara_time_mesh const &m, Lambda F) {
+ template <typename Lambda> void foreach(gf_mesh<imtime> const &m, Lambda F) {
   for (auto const &w : m) F(w);
  }
 }

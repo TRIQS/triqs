@@ -32,7 +32,9 @@ namespace triqs { namespace gfs {
   
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Opt, typename F, typename M> struct data_proxy<M,lambda_valued<F>,Opt> : data_proxy_lambda<F> {};
+  template<typename Opt, typename F, typename M> struct data_proxy<M,lambda_valued<F>,Opt> : data_proxy_lambda<F, false> {};
+  template <typename Opt, typename F, typename... Ms>
+  struct data_proxy<cartesian_product<Ms...>, lambda_valued<F>, Opt> : data_proxy_lambda<F, true> {};
 
   /// ---------------------------  Factories ---------------------------------
 

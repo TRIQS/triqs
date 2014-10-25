@@ -45,7 +45,7 @@ namespace utility {
    // i[0]=0;
    _at_end = true;
   }
-  AUTO_DECL index() const RETURN(i);
+  mini_vector<long, 3> const& index() const { return i; }
   long linear_index() const { return i_flat;}
   bool at_end() const { return _at_end; }
   void reset() {

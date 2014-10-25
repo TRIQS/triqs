@@ -14,8 +14,10 @@ using namespace triqs::lattice;
 
 int main() {
  try {
-  int N = 16;
+  int N = 4; // 16; // too long, 30 s
   int S = 1;
+  int nw =10;
+
   placeholder<0> k_;
   placeholder<1> q_;
   placeholder<2> r_;
@@ -38,31 +40,23 @@ int main() {
   */
   // Default, with a tail.
 
+  auto chi0q = gf<cartesian_product<imfreq, imfreq, brillouin_zone>>{{{beta, Fermion, nw}, {beta, Boson, nw}, {bz, N}}, {1, 1}};
+  auto chi0r = gf<cartesian_product<imfreq, imfreq, cyclic_lattice>>{{{beta, Fermion, nw}, {beta, Boson, nw}, {N,  N}}, {1, 1}};
 
-
-  auto chi0q = gf<cartesian_product<imfreq, imfreq, brillouin_zone>>{{{beta, Fermion, 100}, {beta, Boson, 100}, {bz, N}}, {1, 1}};
-  auto chi0r = gf<cartesian_product<imfreq, imfreq, cyclic_lattice>>{{{beta, Fermion, 100}, {beta, Boson, 100}, {N,  N}}, {1, 1}};
-
-  auto Gk = gf<cartesian_product<imfreq, brillouin_zone>,matrix_valued,no_tail>{{{beta, Fermion, 100}, {bz, N}}, {1, 1}};
-  auto Gr = gf<cartesian_product<imfreq, cyclic_lattice>,matrix_valued,no_tail>{{{beta, Fermion, 100}, {N,  N}}, {1, 1}};
-//  auto G = gf<cartesian_product<brillouin_zone, imfreq>,no_tail>{{ {bz, N},{beta, Fermion, 100}}, {1, 1}};
+  auto Gk = gf<cartesian_product<imfreq, brillouin_zone>,matrix_valued,no_tail>{{{beta, Fermion, nw}, {bz, N}}, {1, 1}};
+  auto Gr = gf<cartesian_product<imfreq, cyclic_lattice>,matrix_valued,no_tail>{{{beta, Fermion, nw}, {N,  N}}, {1, 1}};
+//  auto G = gf<cartesian_product<brillouin_zone, imfreq>,no_tail>{{ {bz, N},{beta, Fermion, nw}}, {1, 1}};
   auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
   Gk(inu_, k_) << 1 / (inu_ + mu - eps_k_);
 
-  auto Gmesh = std::get<1>(Gk.mesh().components());
-  chi0q(inu_, iw_, q_) << sum( Gk(inu_,k_)*Gk(inu_+iw_,k_+q_), k_=Gmesh )/Gmesh.size(); 
+  auto Gmesh = std::get<1>(Gk.mesh()); // std::get is overloaded, mesh like a tuple of meshes...
+  chi0q(inu_, iw_, q_) << sum(Gk(inu_, k_) * Gk(inu_ + iw_, k_ + q_), k_ = Gmesh) / Gmesh.size();
 
   curry<0>(Gr)[inu_] << inverse_fourier(curry<0>(Gk)[inu_]);
 
-  // some mesh problem here?
-  //chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_+iw_, -r_);
+  chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_+iw_, -r_);
 
-  // Currying w.r.t. two variables works? How to specify the placeholder? X_?
-  // curry<0,1>(chi0r)(inu_, iw_) instead?
-  //curry<0,1>(chi0r)(X_) << inverse_fourier(curry<0,1>(chi0k)(X_));
-
-
-  
+  curry<0,1>(chi0r)(inu_, iw_) << inverse_fourier(curry<0,1>(chi0q)(inu_, iw_));
 
   // hdf5
   h5::file file("ess_g_r_k.h5", H5F_ACC_TRUNC);

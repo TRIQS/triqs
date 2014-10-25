@@ -45,10 +45,10 @@ int main() {
 
   auto G_loc = gf<imfreq, matrix_valued, no_tail>{{beta, Fermion, 100}, {1, 1}};
 
-  //auto r = G_k_iom(k_t{0, 0, 0}, matsubara_freq{0, beta, Fermion});
+  auto r = G_k_iom(k_t{0, 0, 0}, matsubara_freq{0, beta, Fermion});
 
-  //auto r5 = sum_gf(k_ >> G_k_iom(k_,0), g_eps.mesh());
-  //G_loc(w_) << sum_gf(k_ >> G_k_iom(k_,w_), g_eps.mesh());
+  auto r5 = sum_gf(k_ >> G_k_iom(k_,0), g_eps.mesh());
+  G_loc(w_) << sum_gf(k_ >> G_k_iom(k_,w_), g_eps.mesh());
 
   TEST(G_loc(0));
 

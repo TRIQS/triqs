@@ -28,13 +28,6 @@
 namespace triqs {
 namespace gfs {
 
- struct imfreq {};
-
- template <typename Opt> struct gf_mesh<imfreq, Opt> : matsubara_freq_mesh {
-  template <typename... T> gf_mesh(T &&... x) : matsubara_freq_mesh(std::forward<T>(x)...) {}
-  // using matsubara_freq_mesh::matsubara_freq_mesh;
- };
-
  // singularity
  template <> struct gf_default_singularity<imfreq, matrix_valued> {
   using type = tail;
@@ -63,8 +56,8 @@ namespace gfs {
    long n;
    double w;
    evaluator_fnt_on_mesh() = default;
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, long p) { n = p; w=1; } 
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, matsubara_freq const &p) { 
+   template <typename MeshType> void reset(MeshType const &m, long p) { n = p; w=1; } 
+   template <typename MeshType> void reset(MeshType const &m, matsubara_freq const &p) { 
     if ((p.n >= m.first_index()) && (p.n < m.size()+m.first_index())) {w=1; n =p.n;}
     else {w=0; n=0;}
    }

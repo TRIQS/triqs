@@ -29,13 +29,6 @@
 namespace triqs {
 namespace gfs {
 
- // struct bz {};
- using lattice::brillouin_zone;
- 
- template <typename Opt> struct gf_mesh<brillouin_zone, Opt> : lattice::regular_bz_mesh {
-  template <typename... T> gf_mesh(T &&... x) : lattice::regular_bz_mesh(std::forward<T>(x)...) {}
- };
-
  namespace gfs_implementation {
 
   // h5 name
@@ -51,11 +44,9 @@ namespace gfs {
 
   // simple evaluation : take the point on the grid...
   template <> struct evaluator_fnt_on_mesh<brillouin_zone> {
-   // lattice::regular_bz_mesh::index_t n;
    size_t n;
    evaluator_fnt_on_mesh() = default;
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::k_t const &k) {
-    // n = m.locate_neighbours(k).index();
+   template <typename MeshType> void reset(MeshType const &m, lattice::k_t const &k) {
     n = m.locate_neighbours(k).linear_index();
    }
    template <typename F> AUTO_DECL operator()(F const &f) const RETURN(f(n));
@@ -65,13 +56,7 @@ namespace gfs {
   // --------------------------------------------------------------
   template <typename Target, typename Singularity, typename Opt> struct evaluator<brillouin_zone, Target, Singularity, Opt> {
    static constexpr int arity = 1;
-
    template <typename G> auto operator()(G const *g, lattice::k_t const &k) const RETURN((*g)[g -> mesh().locate_neighbours(k)]);
-
-   /*template <typename G> auto operator()(G const *g, lattice::k_t const &k) const {
-    auto n = g->mesh().locate_neighbours(k);
-    return (*g)[n];
-   }*/
   };
  }
 }

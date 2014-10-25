@@ -30,10 +30,11 @@ namespace gfs {
  void assign_singularity_from_function(gf_impl<Var, tail, nothing, void, IsView, false> &s, RHS const &rhs) {
   auto t = tail_omega(s.get_from_linear_index(0));
   // a bit faster to first replace (some part of expression are precomputed).
-  clef::placeholder<0> x_;
+  clef::placeholder<5> x_;
   auto expr = rhs(x_, t);
-  for (auto x : s.mesh()) s[x] = eval(expr, x_ = x);
-  //for (auto x : s.mesh()) s[x] = rhs(x, t);
+  // need to quality the eval on gcc... why ?
+  for (auto & y : s.mesh()) { s[y] = clef::eval(expr, x_ = y); }
+  //for (auto & x : s.mesh()) s[x] = rhs(x, t);
  }
 
  /// ---------------------------  singularity ---------------------------------
@@ -52,23 +53,21 @@ namespace gfs {
   /// ---------------------------  hdf5 ---------------------------------
 
   template <typename Variable, typename Opt> struct h5_name<Variable, tail, nothing, Opt> {
-   static std::string invoke() { return "xxxxx"; }
+   static std::string invoke() { return "V_TailGf"; }
   };
 
   template <typename Variable, typename Opt> struct h5_rw<Variable, tail, nothing, Opt> {
 
    static void write(h5::group gr, gf_const_view<Variable, tail, nothing, Opt> g) {
-    // for (size_t i = 0; i < g.mesh().size(); ++i) h5_write(gr, std::to_string(i), g._data[i]);
-    // h5_write(gr,"symmetry",g._symmetry);
+    h5_write(gr, "omin", g._data.omin);
+    h5_write(gr, "mask", g._data.mask);
+    h5_write(gr, "data", g._data.data);
    }
 
    template <bool IsView> static void read(h5::group gr, gf_impl<Variable, tail, nothing, Opt, IsView, false> &g) {
-    // does not work : need to read the block name and remake the mesh...
-    // g._mesh = gf_mesh<block_index, Opt>(gr.get_all_subgroup_names());
-    // g._data.resize(g._mesh.size());
-    // if (g._data.size() != g._mesh.size()) TRIQS_RUNTIME_ERROR << "h5 read block gf : number of block mismatch";
-    // for (size_t i = 0; i < g.mesh().size(); ++i) h5_read(gr, g.mesh().domain().names()[i], g._data[i]);
-    // h5_read(gr,"symmetry",g._symmetry);
+    h5_read(gr, "omin", g._data.omin);
+    h5_read(gr, "mask", g._data.mask);
+    h5_read(gr, "data", g._data.data);
    }
   };
 

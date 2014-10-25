@@ -185,6 +185,8 @@ namespace gfs {
   domain_t _dom;
  };
 
+ // -- end of class
+
  template <int pos, typename P> decltype(auto) get_index(P const &p) {return std::get<pos>(p.components_tuple()).index();}
 
  template <int pos, typename P> decltype(auto) get_point(P const &p) {
@@ -195,3 +197,14 @@ namespace gfs {
 
 }
 }
+
+/// std::get (mesh) return the component...
+namespace std {
+
+template <int pos, typename... M> decltype(auto) get(triqs::gfs::mesh_product<M...> const &m) {
+ return std::get<pos>(m.components());
+}
+
+}
+
+

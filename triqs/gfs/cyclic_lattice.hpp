@@ -29,11 +29,12 @@
 namespace triqs {
 namespace gfs {
 
- struct cyclic_lattice {};
+ /*struct cyclic_lattice {};
 
  template <typename Opt> struct gf_mesh<cyclic_lattice, Opt> : lattice::cyclic_lattice_mesh {
   template <typename... T> gf_mesh(T &&... x) : lattice::cyclic_lattice_mesh(std::forward<T>(x)...) {}
  };
+*/
 
  namespace gfs_implementation {
 
@@ -52,9 +53,22 @@ namespace gfs {
   template <> struct evaluator_fnt_on_mesh<cyclic_lattice> {
    size_t n;
    evaluator_fnt_on_mesh() = default;
-   template <typename MeshType, typename R> evaluator_fnt_on_mesh(MeshType const &m, R const &r) { 
+   /*template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::cyclic_lattice_mesh::index_t const &r) {
     n = m.modulo_reduce(r).linear_index(); 
    }
+
+   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::cyclic_lattice_mesh::mesh_point_t const &r) {
+    n = r.linear_index(); 
+   }
+*/
+    template <typename MeshType> void reset(MeshType const &m, typename gf_mesh<cyclic_lattice>::index_t const &r) {
+    n = m.modulo_reduce(r).linear_index(); 
+   }
+
+   template <typename MeshType> void reset(MeshType const &m, mesh_point<gf_mesh<cyclic_lattice>> const &r) {
+    n = r.linear_index(); 
+   }
+
    template <typename F> AUTO_DECL operator()(F const &f) const RETURN(f(n));
    //template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
   };

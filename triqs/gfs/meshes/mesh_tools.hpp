@@ -26,6 +26,8 @@
 namespace triqs {
 namespace gfs {
 
+ template<typename MeshType> struct mesh_point;
+
  template<typename MeshType>
   class mesh_pt_generator : 
    public boost::iterator_facade< mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t , boost::forward_traversal_tag, 

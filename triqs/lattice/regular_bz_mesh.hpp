@@ -26,9 +26,11 @@
 #include "../gfs/meshes/mesh_tools.hpp"
 
 namespace triqs {
-namespace lattice {
+namespace gfs {
 
- class regular_bz_mesh {
+ using lattice::brillouin_zone;
+ 
+ template <typename Opt> struct gf_mesh<brillouin_zone, Opt>  { 
 
   brillouin_zone bz;                             //
   utility::mini_vector<int, 3> dims = {1, 1, 1}; // the size in each dimension
@@ -37,10 +39,11 @@ namespace lattice {
   long s2 = dims[0] * dims[1];                   // stride
   utility::mini_vector<double, 3> step = {2 * M_PI / dims[0], 2 * M_PI / dims[1], 2 * M_PI / dims[2]};
 
+  using k_t = lattice::k_t;
   public:
-  regular_bz_mesh() = default;
+  gf_mesh() = default;
 
-  regular_bz_mesh(brillouin_zone const& bz, int n_l)
+  gf_mesh(brillouin_zone const& bz, int n_l)
      : bz(bz), dims{n_l, (bz.lattice().dim() >= 2 ? n_l : 1), (bz.lattice().dim() >= 3 ? n_l : 1)} {}
 
   int rank() const { return (dims[2] > 1 ? 3 : (dims[1] > 1 ? 2 : 1)); }
@@ -70,29 +73,14 @@ namespace lattice {
   linear_index_t index_to_linear(index_t const& i) const { return i[0] + i[1] * s1 + i[2] * s2; }
 
   // f (k) -> void where k is a k_t, a point in the BZ
-  template <typename F> friend void foreach(regular_bz_mesh const& m, F f) {
+  template <typename F> friend void foreach(gf_mesh const& m, F f) {
    k_t k = {0,0,0}; //{0.5 * m.step[0], 0.5 * m.step[1], 0.5 * m.step[2]};
    for (long i2 = 0; i2 < m.dims[2]; ++i2, k(2) += m.step[2])
     for (long i1 = 0; i1 < m.dims[1]; ++i1, k(1) += m.step[1])
      for (long i0 = 0; i0 < m.dims[0]; ++i0, k(0) += m.step[0]) f(k);
   }
 
-  /// The wrapper for the mesh point
-  class mesh_point_t : public utility::index3_generator, public utility::arithmetic_ops_by_cast<mesh_point_t, domain_pt_t> {
-   regular_bz_mesh const* m = nullptr;
-
-   public:
-   mesh_point_t() = default;
-   mesh_point_t(regular_bz_mesh const& mesh, index_t const& index) : index3_generator(mesh.get_dimensions(), index), m(&mesh) {}
-   mesh_point_t(regular_bz_mesh const& mesh) : mesh_point_t(mesh, {0,0,0}) {}
-   operator domain_pt_t() const { return m->index_to_point(index()); }
-   linear_index_t linear_index() const { return m->index_to_linear(index()); }
-   // The mesh point behaves like a vector // NOT GOOD : take the ith componenet, this is SLOW
-   double operator()(int i) const { return index()[i] * m->step[i]; }
-   //double operator()(int i) const { return (index()[i] + 0.5) * m->step[i]; }
-   double operator[](int i) const { return operator()(i);}
-   friend std::ostream& operator<<(std::ostream& out, mesh_point_t const& x) { return out << (domain_pt_t)x; }
-  };
+  using mesh_point_t = mesh_point<gf_mesh>;
 
   /// Accessing a point of the mesh
   mesh_point_t operator[](index_t i) const {
@@ -100,11 +88,16 @@ namespace lattice {
   }
 
   /// Iterating on all the points...
-  using const_iterator = gfs::mesh_pt_generator<regular_bz_mesh>;
+  using const_iterator = gfs::mesh_pt_generator<gf_mesh>;
   const_iterator begin() const { return const_iterator(this); }
   const_iterator end() const { return const_iterator(this, true); }
   const_iterator cbegin() const { return const_iterator(this); }
   const_iterator cend() const { return const_iterator(this, true); }
+
+  /// Mesh comparison
+  //bool operator==(gf_mesh const& M) const { return ((bz == M.bz) && (dims == M.dims)); }
+  bool operator==(gf_mesh const& M) const { return ((dims == M.dims)); }
+  bool operator!=(gf_mesh const &M) const { return !(operator==(M)); }
 
   /// ----------- End mesh concept  ----------------------
 
@@ -118,7 +111,7 @@ namespace lattice {
   }
 
   /// Write into HDF5
-  friend void h5_write(h5::group fg, std::string subgroup_name, regular_bz_mesh const& m) {
+  friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const& m) {
    h5::group gr = fg.create_group(subgroup_name);
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "n_pts", m.dims[2]);
@@ -126,13 +119,13 @@ namespace lattice {
   }
 
   /// Read from HDF5
-  friend void h5_read(h5::group fg, std::string subgroup_name, regular_bz_mesh& m) {
+  friend void h5_read(h5::group fg, std::string subgroup_name, gf_mesh& m) {
    h5::group gr = fg.open_group(subgroup_name);
    auto bz = h5::h5_read<brillouin_zone>(gr, "domain");
    auto dims = h5::h5_read<int>(gr, "n_pts");
-   m = regular_bz_mesh(bz, dims);
+   m = gf_mesh(bz, dims);
    //auto dims = h5::h5_read<std::vector<int>>(gr, "dims");
-   //m = regular_bz_mesh(bz, {dims[0], dims[1], dims[2]}); // NOT CORRECT IN GENERAL
+   //m = gf_mesh(bz, {dims[0], dims[1], dims[2]}); // NOT CORRECT IN GENERAL
   }
 
   //  BOOST Serialization
@@ -144,7 +137,41 @@ namespace lattice {
    ar& TRIQS_MAKE_NVP("s1", s1);
    ar& TRIQS_MAKE_NVP("step", step);
   }
+  
+  friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) { return sout << "gf_mesh "; }
  };
+
+ // ---------------------------------------------------------------------------
+ //                     The mesh point
+ // ---------------------------------------------------------------------------
+ template <>
+ class mesh_point<gf_mesh<brillouin_zone>> : public utility::index3_generator,
+                                             public utility::arithmetic_ops_by_cast<
+                                                 mesh_point<gf_mesh<brillouin_zone>>,
+                                                 typename gf_mesh<brillouin_zone>::domain_pt_t> {
+  using mesh_t = gf_mesh<brillouin_zone>;
+  using index_t = mesh_t::index_t;
+  using linear_index_t = mesh_t::linear_index_t;
+  using domain_pt_t = mesh_t::domain_pt_t;
+  mesh_t const* m = nullptr;
+
+  public:
+  mesh_point() = default;
+  mesh_point(mesh_t const& mesh, index_t const& index) : index3_generator(mesh.get_dimensions(), index), m(&mesh) {}
+  mesh_point(mesh_t const& mesh) : mesh_point(mesh, {0, 0, 0}) {}
+  operator domain_pt_t() const { return m->index_to_point(index()); }
+  linear_index_t linear_index() const { return m->index_to_linear(index()); }
+  // The mesh point behaves like a vector // NOT GOOD : take the ith componenet, this is SLOW
+  double operator()(int i) const { return index()[i] * m->step[i]; }
+  // double operator()(int i) const { return (index()[i] + 0.5) * m->step[i]; }
+  double operator[](int i) const { return operator()(i); }
+  friend std::ostream& operator<<(std::ostream& out, mesh_point const& x) { return out << (domain_pt_t)x; }
+ };
+
+ // for backward compat
+ // SHOULD REMOVE THIS 
+ using regular_bz_mesh = gf_mesh<brillouin_zone>;
+
 }
 }
 

@@ -42,7 +42,7 @@ namespace gfs {
    evaluator_grid_linear_interpolation() = default;
 
    template <typename MeshType, typename PointType>
-   evaluator_grid_linear_interpolation(MeshType const &m, PointType const &p, double prefactor = 1) {
+   void reset(MeshType const &m, PointType const &p, double prefactor = 1) {
     bool in;
     double w;
     std::tie(in, n1, w) = windowing(m, p);
@@ -52,7 +52,7 @@ namespace gfs {
     n2 = n1 + 1;
    }
 
-   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(w1 *f(n1) + w2 *f(n2));
+   template <typename F> auto operator()(F const &f) const RETURN(w1 *f(n1) + w2 *f(n2));
   };
 
   // the evaluator for various types.
@@ -65,12 +65,21 @@ namespace gfs {
 
   //
   template <typename Variable> struct evaluator_one_var {
+   mutable evaluator_fnt_on_mesh<Variable> ev;
+
    public:
    static constexpr int arity = 1;
    evaluator_one_var() = default;
-   template <typename G>
-   auto operator()(G const *g, double x) const DECL_AND_RETURN(evaluator_fnt_on_mesh<Variable>(g -> mesh(), x)(on_mesh(*g)));
-  
+
+#ifndef TRIQS_C11
+   template <typename G> auto operator()(G const *g, double x) const {
+#else
+   template <typename G> auto operator()(G const *g, double x) const -> decltype(ev(on_mesh(*g))){
+#endif
+    ev.reset(g->mesh(), x);
+    return ev(on_mesh(*g));
+   }
+
    template <typename G> typename G::singularity_t operator()(G const *g, tail_view t) const {
     return compose(g->singularity(), t);
    }

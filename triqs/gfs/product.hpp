@@ -110,13 +110,13 @@ namespace gfs {
   // NB : the tuple is build in reverse with respect to the previous comment.
   template <typename G, typename Tn, typename Ev, int pos> struct binder;
 
-  template <int pos, typename G, typename Tn, typename Ev> binder<G, Tn, Ev, pos> make_binder(G const *g, Tn tn, Ev const &ev) {
-   return {g, std::move(tn), ev};
+  template <int pos, typename G, typename Tn, typename Ev> binder<G, Tn, Ev, pos> make_binder(G const *g, Tn const &tn, Ev const &ev) {
+   return {g, tn, ev};
   }
 
   template <typename G, typename Tn, typename Ev, int pos> struct binder {
    G const *g;
-   Tn tn;
+   Tn const &tn;
    Ev const &evals;
    template <size_t... Is> decltype(auto) impl(size_t p, std14::index_sequence<Is...>) const {
     return std::get<pos>(evals)(make_binder<pos - 1>(g, std::make_tuple(p, std::get<Is>(tn)...), evals));
@@ -126,7 +126,7 @@ namespace gfs {
 
   template <typename G, typename Tn, typename Ev> struct binder<G, Tn, Ev, -1> {
    G const *g;
-   Tn tn;
+   Tn const &tn;
    Ev const &evals;
    template <size_t... Is> decltype(auto) impl(size_t p, std14::index_sequence<Is...>) const {
     return g->get_from_linear_index(p, std::get<Is>(tn)...);
@@ -135,19 +135,29 @@ namespace gfs {
   };
 
   // now the multi d evaluator itself.
-  template <typename Target, typename Opt, typename... Ms> struct evaluator<cartesian_product<Ms...>, Target, nothing, Opt> {
+  template <typename Target, typename Sing, typename Opt, typename... Ms> struct evaluator<cartesian_product<Ms...>, Target, Sing, Opt> {
    static constexpr int arity = sizeof...(Ms);
    mutable std::tuple<evaluator_fnt_on_mesh<Ms>...> evals;
 
    template <typename G, typename... Args> decltype(auto) operator()(G const *g, Args &&... args) const {
+    auto args_are_mesh_points = std::is_same<std::tuple<std14::decay_t<Args>...>, std::tuple<mesh_point<gf_mesh<Ms>>...>>();
+    return __call(args_are_mesh_points, g, std::forward<Args>(args)...);
+   }
+
+   template <typename G, typename... Args> decltype(auto) __call(std::false_type, G const *g, Args &&... args) const {
     static constexpr int R = sizeof...(Args);
-    // build the evaluators, as a tuple of ( evaluator<Ms> ( mesh_component, args))
-    auto l = [](auto &a, auto &b, auto &c) { a = std14::decay_t<decltype(a)>{b, c}; };
+    auto l = [](auto &a, auto const &b, auto const &c) { a.reset(b, c); };
     triqs::tuple::for_each_zip(l, evals, g->mesh().components(), std::make_tuple(args...));
     return std::get<R - 1>(evals)(make_binder<R - 2>(g, std::make_tuple(), evals));
    }
-  };
 
+   template <typename G>
+   decltype(auto) __call(std::true_type, G const *g, mesh_point<gf_mesh<Ms>> const &... p) const {
+    return g->get_from_linear_index(p.linear_index()...);
+    //return (*g)[std::make_tuple(p.index()...)];
+   }
+
+  };
  } // gf_implementation
 }
 }

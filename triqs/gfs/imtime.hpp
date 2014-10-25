@@ -30,13 +30,6 @@
 namespace triqs {
 namespace gfs {
 
- struct imtime {};
-
- template <typename Opt> struct gf_mesh<imtime, Opt> : matsubara_time_mesh { 
-  template <typename... T> gf_mesh(T &&... x) : matsubara_time_mesh(std::forward<T>(x)...) {}
-  // using matsubara_time_mesh::matsubara_time_mesh;
- };
-
  // singularity
  template <> struct gf_default_singularity<imtime, matrix_valued> {
   using type = tail;
@@ -77,7 +70,7 @@ namespace gfs {
 
    evaluator_fnt_on_mesh() = default;
 
-   evaluator_fnt_on_mesh(gf_mesh<imtime> const &m, double tau) {
+   void reset(gf_mesh<imtime> const &m, double tau) {
     double beta = m.domain().beta;
     int p = std::floor(tau / beta);
     tau -= p * beta;
