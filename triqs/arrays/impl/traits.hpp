@@ -70,10 +70,13 @@ namespace arrays {
  template <class T> struct is_amv_value_or_view_class : _or<is_amv_value_class<T>, is_amv_view_class<T>> {};
 
  template <class S> struct is_scalar : _or<std::is_arithmetic<S>, triqs::is_complex<S>> {};
+ template <class S>
+ struct is_scalar_or_convertible
+     : std::integral_constant<bool, is_scalar<S>::value || std::is_constructible<std::complex<double>, S>::value> {};
 
  template <class S, class A>
  struct is_scalar_for
-     : std::conditional<is_scalar<typename A::value_type>::value, is_scalar<S>, std::is_same<S, typename A::value_type>>::type {
+     : std::conditional<is_scalar<typename A::value_type>::value, is_scalar_or_convertible<S>, std::is_same<S, typename A::value_type>>::type {
  };
 }
 } // namespace triqs::arrays
