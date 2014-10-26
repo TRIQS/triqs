@@ -22,7 +22,8 @@
 #define TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 
 // clang but not libc++
-#if defined(__clang__) and !defined(_LIBCPP_VERSION) and (__clang_major__ <= 3) and (__clang_minor__ <= 5)  and (__clang_patchlevel__ < 2) 
+//#if defined(__clang__) and !defined(_LIBCPP_VERSION) and (__clang_major__ <= 3) and (__clang_minor__ <= 5)  and (__clang_patchlevel__ < 2) 
+#ifdef TRIQS_ADD_MAX_ALIGN_T_WORKAROUND
 // workaround an error in gcc stdlib, but corrected in clang 3.4.2
 typedef long double max_align_t;
 #endif

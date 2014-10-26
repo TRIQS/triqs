@@ -192,6 +192,17 @@ message(STATUS  "Boost include dir: ${BOOST_INCLUDE_DIR}")
 message(STATUS  "Boost libraries: ${BOOST_LIBRARY}")
 
 # #################################
+# max_align_t bug detection 
+# #################################
+try_compile(_max_align_t_is_correct ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/max_align_t_test.cpp COMPILE_DEFINITIONS  -std=c++11 )
+if (NOT _max_align_t_is_correct)
+  MESSAGE(STATUS "Adding workaround for max_align_t bug (in clang normally)")
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  -DTRIQS_ADD_MAX_ALIGN_T_WORKAROUND )
+else ()
+  MESSAGE(STATUS "Checked max_align_t. No workaround needed")
+endif()
+
+# #################################
 # on 64 bit machines
 # #################################
 if (CMAKE_SIZEOF_VOID_P EQUAL 8) # for 64 bits machines
