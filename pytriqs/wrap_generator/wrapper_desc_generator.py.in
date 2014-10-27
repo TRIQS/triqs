@@ -52,7 +52,10 @@ if __name__ == '__main__' :
 
     compiler_options = args.compiler_options or [] 
 
-    if "@USE_CPP14@" == "ON" : compiler_options.append("-std=c++1y")
+    if "@USE_CPP14@" == "ON":
+        compiler_options.append("-std=c++1y")
+    else:
+        compiler_options.append("-DTRIQS_CPP11")
 
     compiler_options += ['-I%s'%x for x in args.includes]
     add_opts = '@TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS@'.strip()
