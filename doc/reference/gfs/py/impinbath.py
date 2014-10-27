@@ -1,13 +1,13 @@
 from pytriqs.gf.local import GfReFreq, Omega, Wilson, inverse
 import numpy
 
-eps_d,V  = 0.3, 0.2
+eps_d,t  = 0.3, 0.2
 
 # Create the real-frequency Green's function and initialize it
 g = GfReFreq(indices = ['s','d'], window = (-2, 2), n_points = 1000, name = "s+d")
 g['d','d'] = Omega - eps_d
-g['d','s'] = V
-g['s','d'] = V
+g['d','s'] = t
+g['s','d'] = t
 g['s','s'] = inverse( Wilson(1.0) )
 g.invert()
 

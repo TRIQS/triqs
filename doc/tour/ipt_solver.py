@@ -8,19 +8,19 @@ class IPTSolver:
         self.beta = params['beta']
 
         # Matsubara frequency
-        self.g = GfImFreq(indices=[0], beta=self.beta)
-        self.g0 = self.g.copy()
-        self.sigma = self.g.copy()
+        self.g_iw = GfImFreq(indices=[0], beta=self.beta)
+        self.g0_iw = self.g_iw.copy()
+        self.sigma_iw = self.g_iw.copy()
 
         # Imaginary time
-        self.g0t = GfImTime(indices=[0], beta = self.beta)
-        self.sigmat = self.g0t.copy()
+        self.g0_tau = GfImTime(indices=[0], beta = self.beta)
+        self.sigma_tau = self.g0_tau.copy()
 
     def solve(self):
 
-        self.g0t <<= InverseFourier(self.g0)
-        self.sigmat <<= (self.U**2) * self.g0t * self.g0t * self.g0t
-        self.sigma <<= Fourier(self.sigmat)
+        self.g0_tau <<= InverseFourier(self.g0_iw)
+        self.sigma_tau <<= (self.U**2) * self.g0_tau * self.g0_tau * self.g0_tau
+        self.sigma_iw <<= Fourier(self.sigma_tau)
 
         # Dyson equation to get G
-        self.g <<= self.g0 * inverse(1.0 - self.sigma * self.g0)
+        self.g_iw <<= inverse(inverse(self.g0_iw) - self.sigma_iw)

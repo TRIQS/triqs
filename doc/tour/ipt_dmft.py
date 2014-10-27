@@ -14,16 +14,16 @@ for U in arange(0.0, 4.05, 0.10):
 
     # Construct the IPT solver and set initial G
     S = IPTSolver(U = U, beta = beta)
-    S.g <<= SemiCircular(2*t)
+    S.g_iw <<= SemiCircular(2*t)
 
     # Do the DMFT loop
     for i in range(n_loops):
-        S.g0 <<= inverse( iOmega_n - t**2 * S.g )
+        S.g0_iw <<= inverse( iOmega_n - t**2 * S.g_iw )
         S.solve()
 
     # Get the real-axis with Pade approximants
     greal = GfReFreq(indices = [1], window = (-4.0,4.0), n_points = 400)
-    greal.set_from_pade(S.g, 201, 0.0)
+    greal.set_from_pade(S.g_iw, 201, 0.0)
     
     # Generate the plot
     fig = plt.figure(figsize=(6,6))

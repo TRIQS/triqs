@@ -161,7 +161,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         key= self._key_cipher(key)# first look if key is a string or key
        
         if key in self.keys() : 
-            if self.options['do_not_overwrite_entries'] : raise KeyError, "key %s already exists"%key 
+            if self.options['do_not_overwrite_entries'] : raise KeyError, "key %s already exist."%key 
             self._clean_key(key) # clean things 
 
         # Transform list, dict, etc... into a wrapped type that will allow HDF reduction
@@ -229,7 +229,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
        
         if key not in self : 
             key = self._key_cipher(key)
-            if key not in self  : raise KeyError, "Key %s does not exists"%key
+            if key not in self  : raise KeyError, "Key %s does not exist."%key
  
         if self.is_group(key) :
             SUB = HDFArchiveGroup(self,key) # View of the subgroup

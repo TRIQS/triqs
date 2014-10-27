@@ -46,7 +46,7 @@ namespace h5 {
   return group(sg);
  }
 
- /// Open an existing DataSet. Throw it if does not exists
+ /// Open an existing DataSet. Throw if it does not exist.
  dataset group::open_dataset(std::string const &key) const {
   if (!has_key(key)) TRIQS_RUNTIME_ERROR << "no dataset " << key << " in the group";
   dataset ds = H5Dopen2(id, key.c_str(), H5P_DEFAULT);

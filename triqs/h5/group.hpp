@@ -68,16 +68,16 @@ namespace h5 {
   ///
   void unlink_key_if_exists(std::string const &key) const;
 
-  /// Open a subgroup. Throw it if does not exists
+  /// Open a subgroup. Throw if it does not exist.
   group open_group(std::string const &key) const;
 
-  /// Open an existing DataSet. Throw it if does not exists
+  /// Open an existing DataSet. Throw if it does not exist.
   dataset open_dataset(std::string const &key) const;
 
   /**
    * \brief Create a subgroup.
    * \param key  The name of the subgroup
-   * \param delete_if_exists  Unlink the group if it exists
+   * \param delete_if_exists  Unlink the group if it exists.
    */
   group create_group(std::string const &key, bool delete_if_exists = true) const;
 

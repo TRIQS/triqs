@@ -59,7 +59,7 @@ namespace params {
 
  _field const& parameters::operator[](const char * key) const {
   auto it = find(key);
-  if (it == _data.end()) TRIQS_RUNTIME_ERROR << "Parameters : the key : " << key << " does not exists";
+  if (it == _data.end()) TRIQS_RUNTIME_ERROR << "Parameters : the key : " << key << " does not exist.";
   return it->f;
  }
 

@@ -17,19 +17,15 @@ inputs to full-fledged LDA+DMFT calculations in a few lines!
 
 *Homepage:* `<http://ipht.cea.fr/triqs/1.2/applications/dft_tools/>`_
 
-Hybridization-expansion matrix solver
--------------------------------------
+Hybridization-expansion solver
+------------------------------
 
-.. warning::
-
-   TO BE REPLACED BY THE NEW CTHYB HERE
-
-The hybridization-expansion matrix solver allows to solve the generic problem
+The hybridization-expansion solver allows to solve the generic problem
 of a quantum impurity embedded in a conduction bath. It is based on a quantum
 Monte Carlo algorithm that stochastically samples the diagrams of a
 hybridization expansion of the partition function.
 
-*Homepage:* `<http://ipht.cea.fr/triqs/1.2/applications/cthyb_matrix/>`_
+*Homepage:* `<http://ipht.cea.fr/triqs/1.2/applications/cthyb/>`_
 
 Hubbard I solver
 ----------------
