@@ -391,6 +391,12 @@ list (REMOVE_DUPLICATES TRIQS_INCLUDE_ALL)
 set(TRIQS_LIBCLANG_LOCATION "/usr/lib/libclang.dylib" CACHE STRING "Location of the libclang library")
 set(TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS "" CACHE STRING "Additional flags to be passed to libclang when parsing with clang")
 
+# Using clang?
+# Try to set TRIQS_LIBCLANG_LOCATION and TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS automatically
+if(${CMAKE_COMPILER_IS_CLANG})
+find_package(LibClang)
+endif(${CMAKE_COMPILER_IS_CLANG})
+
 #---------------------------------------------------------------------
 # pytriqs modules : MUST be before TRIQS, to have the py_converters
 #---------------------------------------------------------------------
