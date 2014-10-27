@@ -128,6 +128,11 @@ namespace arrays {
    triqs_arrays_assign_delegation(*this, X);
    return *this;
   }
+  // same for the same class (not captured by the template).
+  matrix_tensor_proxy &operator=(matrix_tensor_proxy const &X) {
+   triqs_arrays_assign_delegation(*this, X);
+   return *this;
+  }
 
   TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_tensor_proxy);
   friend std::ostream &operator<<(std::ostream &out, matrix_tensor_proxy const &x) {

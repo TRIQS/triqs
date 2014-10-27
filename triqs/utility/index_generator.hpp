@@ -31,7 +31,9 @@ namespace utility {
 
   public:
   index3_generator() = default;
-  index3_generator(mini_vector<long, 3> const& dims, mini_vector<long, 3> const &i) : d(dims),i(i) {}
+  index3_generator(mini_vector<long, 3> const& dims, mini_vector<long, 3> const &i) : d(dims),i(i) {
+   i_flat = i[2] + (i[1] + i[0] * d[1]) * d[2];
+  }
   void advance() {
    ++i_flat;
    ++i[2];
