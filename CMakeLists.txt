@@ -395,9 +395,21 @@ set(TRIQS_LIBRARY_ALL ${TRIQS_LIBRARY} ${TRIQS_LIBRARY_BOOST} ${TRIQS_LIBRARY_PY
 set(TRIQS_INCLUDE_ALL ${TRIQS_INCLUDE} ${TRIQS_INCLUDE_BOOST} ${TRIQS_INCLUDE_PYTHON} ${TRIQS_INCLUDE_MPI} ${TRIQS_INCLUDE_HDF5} ${TRIQS_INCLUDE_LAPACK} ${TRIQS_INCLUDE_FFTW} ${TRIQS_INCLUDE_GMP} ${TRIQS_INCLUDE_GSL} )
 list (REMOVE_DUPLICATES TRIQS_INCLUDE_ALL)
 
-set(TRIQS_LIBCLANG_LOCATION "/usr/lib/libclang.dylib" CACHE STRING "Location of the libclang library")
+#---------------------------------------------------------------------
+# LIBCLANG
+#---------------------------------------------------------------------
+MESSAGE(STATUS "-------- LibClang detection -------------")
+
 set(TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS "" CACHE STRING "Additional flags to be passed to libclang when parsing with clang")
 
+if( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+set(TRIQS_LIBCLANG_LOCATION "/usr/lib/libclang.dylib" CACHE STRING "Location of the libclang library")
+else()
+# Try to set TRIQS_LIBCLANG_LOCATION and TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS automatically
+find_package(LibClang)
+endif()
+MESSAGE(STATUS "LibClang location: ${TRIQS_LIBCLANG_LOCATION}")
+MESSAGE(STATUS "LibClang additional flags: ${TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS}")
 #---------------------------------------------------------------------
 # pytriqs modules : MUST be before TRIQS, to have the py_converters
 #---------------------------------------------------------------------
