@@ -31,7 +31,7 @@ namespace arrays {
    struct array_stride_info {
    int R;
    size_t const* lengths;
-   long const* strides;
+   std::ptrdiff_t const* strides;
    template<typename A> explicit array_stride_info(A && a) {
     R = std::c14::decay_t<A>::rank;
     lengths = a.indexmap().domain().lengths().ptr();
