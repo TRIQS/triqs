@@ -712,7 +712,10 @@ namespace gfs {
  gf_view<Variable, matrix_valued, Singularity, Opt, IsConst>
  reinterpret_scalar_valued_gf_as_matrix_valued(gf_view<Variable, scalar_valued, Singularity, Opt, IsConst> g) {
   using a_t = typename gf_view<Variable, matrix_valued, Singularity, Opt, IsConst>::data_view_t;
-  auto a = a_t{typename a_t::indexmap_type(join(g.data().shape(), make_shape(1, 1))), g.data().storage()};
+  auto & imap = g.data().indexmap();
+  typename a_t::indexmap_type index_map(join(imap.lengths(), make_shape(1, 1)), join(imap.strides(), make_shape(1, 1)),
+                                        imap.start_shift());
+  auto a = a_t{index_map, g.data().storage()};
   return {g.mesh(), a, g.singularity(), g.symmetry(), {}, g.name};
  }
 
