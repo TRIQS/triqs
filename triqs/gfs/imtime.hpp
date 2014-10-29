@@ -41,18 +41,18 @@ namespace gfs {
  namespace gfs_implementation {
 
   // h5 name
-  template <typename Singularity, typename Opt> struct h5_name<imtime, matrix_valued, Singularity, Opt> {
+  template <typename Singularity> struct h5_name<imtime, matrix_valued, Singularity> {
    static std::string invoke() { return "ImTime"; }
   };
 
   /// ---------------------------  data access  ---------------------------------
 
-  template <typename Opt> struct data_proxy<imtime, matrix_valued, Opt> : data_proxy_array<double, 3> {};
-  template <typename Opt> struct data_proxy<imtime, scalar_valued, Opt> : data_proxy_array<double, 1> {};
+  template <> struct data_proxy<imtime, matrix_valued> : data_proxy_array<double, 3> {};
+  template <> struct data_proxy<imtime, scalar_valued> : data_proxy_array<double, 1> {};
 
   /// ---------------------------  closest mesh point on the grid ---------------------------------
 
-  template <typename Singularity, typename Opt, typename Target> struct get_closest_point<imtime, Target, Singularity, Opt> {
+  template <typename Singularity, typename Target> struct get_closest_point<imtime, Target, Singularity, void> {
    // index_t is int
    template <typename G, typename T> static int invoke(G const *g, closest_pt_wrap<T> const &p) {
     double x = (g->mesh().kind() == half_bins ? double(p.value) : double(p.value) + 0.5 * g->mesh().delta());
@@ -64,18 +64,18 @@ namespace gfs {
   /// ---------------------------  evaluator ---------------------------------
 
   // this one is specific because of the beta-antiperiodicity for fermions
-  template <> struct evaluator_fnt_on_mesh<imtime> {
-   double w1, w2;
-   long n;
-
-   evaluator_fnt_on_mesh() = default;
-
-   void reset(gf_mesh<imtime> const &m, double tau) {
+  template <> struct evaluator_of_clef_expression<imtime> {
+   template <typename Expr, int N> auto operator()(Expr const &expr, clef::placeholder<N>, gf_mesh<imtime> const &m, double tau) 
+#ifdef TRIQS_CPP11
+-> decltype(1.0 * clef::eval(expr, clef::placeholder<N>() = no_cast(m[1l])) + 1.0 * clef::eval(expr, clef::placeholder<N>() = no_cast(m[0l])))
+#endif
+   {
     double beta = m.domain().beta;
     int p = std::floor(tau / beta);
     tau -= p * beta;
-    double w;
+    double w, w1, w2;
     bool in;
+    long n;
     std::tie(in, n, w) = windowing(m, tau);
     if (!in) TRIQS_RUNTIME_ERROR << " Evaluation out of bounds";
     if ((m.domain().statistic == Fermion) && (p % 2 != 0)) {
@@ -85,14 +85,14 @@ namespace gfs {
      w2 = w;
      w1 = 1 - w;
     }
+    return w1 * clef::eval(expr, clef::placeholder<N>() = no_cast(m[n])) + w2 * clef::eval(expr, clef::placeholder<N>() = no_cast(m[n + 1]));
    }
-
-   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(w1 *f(n) + w2 *f(n + 1));
   };
 
   // now evaluator
-  template <typename Singularity, typename Opt, typename Target>
-  struct evaluator<imtime, Target, Singularity, Opt> : evaluator_one_var<imtime> {};
+  template <typename Singularity, typename Target> struct evaluator<imtime, Target, Singularity> : evaluator_one_var<imtime> {
+   template <typename G> evaluator(G *) {};
+  };
 
  } // gfs_implementation.
 }

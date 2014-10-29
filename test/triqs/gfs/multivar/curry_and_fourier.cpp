@@ -20,8 +20,10 @@ int main() {
   int n_freq = 100;
   int n_times = n_freq * 2;
   int n_bz = 50;
-  auto gkw = gf<cartesian_product<brillouin_zone, imfreq>>{{{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
-  auto gkt = gf<cartesian_product<brillouin_zone, imtime>>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
+  auto gkw = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued, m_tail<brillouin_zone>>{
+      {{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
+  auto gkt = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued, m_tail<brillouin_zone>>{
+      {{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
   placeholder<0> k_;
   placeholder<1> w_;

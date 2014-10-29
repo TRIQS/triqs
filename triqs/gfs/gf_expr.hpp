@@ -84,7 +84,6 @@ namespace triqs { namespace gfs {
   using R_t = typename std::remove_reference<R>::type;
   using variable_t = typename gfs_expr_tools::_or_<typename L_t::variable_t, typename R_t::variable_t>::type;
   using target_t = typename gfs_expr_tools::_or_<typename L_t::target_t, typename R_t::target_t>::type;
-  using option_t = typename gfs_expr_tools::_or_<typename L_t::option_t, typename R_t::option_t>::type;
   static_assert(!std::is_same<variable_t, void>::value, "Cannot combine two gf expressions with different variables");
   static_assert(!std::is_same<target_t, void>::value, "Cannot combine two gf expressions with different target");
 
@@ -115,7 +114,6 @@ namespace triqs { namespace gfs {
   using L_t = typename std::remove_reference<L>::type;
   using variable_t = typename L_t::variable_t;
   using target_t = typename L_t::target_t;
-  using option_t = typename L_t::option_t;
 
   L l;
   template<typename LL> gf_unary_m_expr(LL && l_) : l(std::forward<LL>(l_)) {}
@@ -158,12 +156,12 @@ namespace triqs { namespace gfs {
 // we implement them trivially.
 
 #define DEFINE_OPERATOR(OP1, OP2)                                                                                                \
- template <typename Variable, typename Target, typename Opt, typename T>                                                         \
- void operator OP1(gf_view<Variable, Target, Opt> g, T const &x) {                                                               \
+ template <typename Variable, typename Target, typename Evaluator, typename T>                                                   \
+ void operator OP1(gf_view<Variable, Target, Evaluator> g, T const &x) {                                                         \
   g = g OP2 x;                                                                                                                   \
  }                                                                                                                               \
- template <typename Variable, typename Target, typename Opt, typename T>                                                         \
- void operator OP1(gf<Variable, Target, Opt> &g, T const &x) {                                                                   \
+ template <typename Variable, typename Target, typename Evaluator, typename T>                                                   \
+ void operator OP1(gf<Variable, Target, Evaluator> &g, T const &x) {                                                             \
   g = g OP2 x;                                                                                                                   \
  }
 

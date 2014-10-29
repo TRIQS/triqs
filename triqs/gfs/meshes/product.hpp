@@ -27,18 +27,36 @@
 namespace triqs {
 namespace gfs {
 
+ // a function that take the index for the mesh_point and let the rest pass through
+ // used below in index_t constructor
+ template <typename T> decltype(auto) __get_index(T &&x) { return std::forward<T>(x); }
+ template <typename T> auto __get_index(mesh_point<T> const &x) { return x.index(); }
+ template <typename T> auto __get_index(mesh_point<T> &&x) { return x.index(); }
+ template <typename T> auto __get_index(mesh_point<T> &x) { return x.index(); }
+
  /** Cartesian product of meshes */
  template <typename... Meshes> struct mesh_product : tag::composite {
   using domain_t = domain_product<typename Meshes::domain_t...>;
-  using index_t = std::c14::tuple<typename Meshes::index_t...>;
   using m_tuple_t = std::tuple<Meshes...>;
   using m_pt_tuple_t = std::tuple<typename Meshes::mesh_point_t...>;
   using domain_pt_t = typename domain_t::point_t;
   using linear_index_t = std::tuple<typename Meshes::linear_index_t...>;
+  
+  struct index_t {
+   std::tuple<typename Meshes::index_t...> _i;
+   // construct with at least 2 arguments
+   // The mesh point are replaced by their index.
+   template <typename Arg0, typename Arg1, typename... Args>
+   index_t(Arg0 &&arg0, Arg1 &&arg1, Args &&... args)
+      : _i(__get_index(std::forward<Arg0>(arg0)), __get_index(std::forward<Arg1>(arg1)),
+           __get_index(std::forward<Args>(args))...) {}
+   index_t(index_t const &) = default;
+   index_t(index_t &&) = default;
+  };
 
   static constexpr int dim = sizeof...(Meshes);
 
-  mesh_product() {}
+  mesh_product() = default;
   mesh_product(Meshes const &... meshes) : m_tuple(meshes...), _dom(meshes.domain()...) {}
   mesh_product(mesh_product const &) = default;
 
@@ -84,7 +102,7 @@ namespace gfs {
   /// The linear_index is the tuple of the linear_index of the components
   linear_index_t index_to_linear(index_t const &ind) const {
    auto l = [](auto const &m, auto const &i) { return m.index_to_linear(i); };
-   return triqs::tuple::map_on_zip(l, m_tuple, ind);
+   return triqs::tuple::map_on_zip(l, m_tuple, ind._i);
   }
   
   /// 
@@ -97,7 +115,13 @@ namespace gfs {
   template <typename... MP> size_t mesh_pt_components_to_linear(MP const &... mp) const {
    static_assert(std::is_same<std::tuple<MP...>, m_pt_tuple_t>::value, "Call incorrect ");
    return mp_to_linear(std::forward_as_tuple(mp...));
-  } 
+  }
+
+  /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
+  template <typename... Args> bool is_within_boundary(Args const &... args) const {
+   return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple,
+                             std::tie(args...), true);
+  }
 
   /// The wrapper for the mesh point
   class mesh_point_t : tag::mesh_point {
@@ -112,9 +136,10 @@ namespace gfs {
    mesh_point_t() = default;
    mesh_point_t(mesh_product const &m_, index_t index_)
       : m(&m_)
-      , _c(triqs::tuple::map_on_zip([](auto const & m, auto const & i) { return m[i]; }, m_.m_tuple, index_))
+      , _c(triqs::tuple::map_on_zip([](auto const & m, auto const & i) { return m[i]; }, m_.m_tuple, index_._i))
       , _atend(false) {}
    mesh_point_t(mesh_product const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.m_tuple)), _atend(false) {}
+   //mesh_point_t(typename Meshes::mesh_point_t const &...mp) : _c (mp...), _atend(false)
    m_pt_tuple_t const &components_tuple() const { return _c; }
    linear_index_t linear_index() const { return m->mp_to_linear(_c); }
    const mesh_product *mesh() const { return m; }
@@ -144,8 +169,8 @@ namespace gfs {
   }; // end mesh_point_t
 
   /// Accessing a point of the mesh
-  mesh_point_t operator[](index_t i) const { return mesh_point_t(*this, i); }
-  mesh_point_t operator()(typename Meshes::index_t... i) const { return (*this)[std::make_tuple(i...)]; }
+  mesh_point_t operator[](index_t const &i) const { return mesh_point_t(*this, i); }
+  mesh_point_t operator()(typename Meshes::index_t... i) const { return (*this)[index_t{i...}]; }
 
   /// Iterating on all the points...
   using const_iterator = mesh_pt_generator<mesh_product>;

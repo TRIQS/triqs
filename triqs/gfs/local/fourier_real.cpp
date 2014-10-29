@@ -24,6 +24,22 @@
 
 namespace triqs { namespace gfs { 
  
+ gf_mesh<refreq> make_mesh_fourier_compatible(gf_mesh<retime> const& m) {
+  int L = m.size();
+  double pi = std::acos(-1);
+  double wmin = -pi * (L - 1) / (L * m.delta());
+  double wmax = pi * (L - 1) / (L * m.delta());
+  return {wmin, wmax, L};
+ }
+
+ gf_mesh<retime> make_mesh_fourier_compatible(gf_mesh<refreq> const& m, mesh_kind mk ) {
+  double pi = std::acos(-1);
+  int L = m.size();
+  double tmin = -pi * (L-1) / (L*m.delta());
+  double tmax =  pi * (L-1) / (L*m.delta());
+  return {tmin, tmax, L};
+ }
+
  namespace {
   double pi = std::acos(-1);
   dcomplex I(0,1);

@@ -30,7 +30,7 @@ namespace gfs {
 
  using lattice::brillouin_zone;
  
- template <typename Opt> struct gf_mesh<brillouin_zone, Opt>  { 
+ template <> struct gf_mesh<brillouin_zone>  { 
 
   brillouin_zone bz;                             //
   utility::mini_vector<int, 3> dims = {1, 1, 1}; // the size in each dimension
@@ -80,19 +80,20 @@ namespace gfs {
      for (long i0 = 0; i0 < m.dims[0]; ++i0, k(0) += m.step[0]) f(k);
   }
 
+  /// Is the point in the mesh ? Always true
+  bool is_within_boundary(domain_pt_t const &) const { return true;}
+ 
   using mesh_point_t = mesh_point<gf_mesh>;
 
-  /// Accessing a point of the mesh
-  mesh_point_t operator[](index_t i) const {
-   return {*this, i};
-  }
+  /// Accessing a point of the mesh from its index
+  inline mesh_point_t operator[](index_t i) const; //impl below
 
   /// Iterating on all the points...
-  using const_iterator = gfs::mesh_pt_generator<gf_mesh>;
-  const_iterator begin() const { return const_iterator(this); }
-  const_iterator end() const { return const_iterator(this, true); }
-  const_iterator cbegin() const { return const_iterator(this); }
-  const_iterator cend() const { return const_iterator(this, true); }
+  using const_iterator = mesh_pt_generator<gf_mesh>;
+  inline const_iterator begin() const;  // impl below
+  inline const_iterator end() const;    
+  inline const_iterator cbegin() const; 
+  inline const_iterator cend() const;   
 
   /// Mesh comparison
   //bool operator==(gf_mesh const& M) const { return ((bz == M.bz) && (dims == M.dims)); }
@@ -102,13 +103,7 @@ namespace gfs {
   /// ----------- End mesh concept  ----------------------
 
   /// locate the closest point 
-  mesh_point_t locate_neighbours(k_t const& k) const {
-   auto l = [&](int i) {
-    long r = std::lround(k(i) / step[i]) % dims[i];
-    return (r >= 0 ? r : r + dims[i]);
-   };
-   return {*this, {l(0), l(1), l(2)}};
-  }
+  inline mesh_point_t locate_neighbours(k_t const& k) const;
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const& m) {
@@ -172,6 +167,24 @@ namespace gfs {
  // SHOULD REMOVE THIS 
  using regular_bz_mesh = gf_mesh<brillouin_zone>;
 
+ /// impl...
+ inline mesh_point<gf_mesh<brillouin_zone>> gf_mesh<brillouin_zone>::operator[](index_t i) const {
+  return {*this, i};
+ }
+
+ inline gf_mesh<brillouin_zone>::const_iterator gf_mesh<brillouin_zone>::begin() const { return const_iterator(this); }
+ inline gf_mesh<brillouin_zone>::const_iterator gf_mesh<brillouin_zone>::end() const { return const_iterator(this, true); }
+ inline gf_mesh<brillouin_zone>::const_iterator gf_mesh<brillouin_zone>::cbegin() const { return const_iterator(this); }
+ inline gf_mesh<brillouin_zone>::const_iterator gf_mesh<brillouin_zone>::cend() const { return const_iterator(this, true); }
+
+ /// locate the closest point
+ inline gf_mesh<brillouin_zone>::mesh_point_t gf_mesh<brillouin_zone>::locate_neighbours(k_t const& k) const {
+  auto l = [&](int i) {
+   long r = std::lround(k(i) / step[i]) % dims[i];
+   return (r >= 0 ? r : r + dims[i]);
+  };
+  return {*this, {l(0), l(1), l(2)}};
+ }
 }
 }
 

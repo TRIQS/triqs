@@ -40,6 +40,9 @@ namespace triqs {
  template<typename T> struct const_view_type_if_exists_else_type<T,false> {typedef T type;};
  template<typename T> struct const_view_type_if_exists_else_type<T,true>  {typedef const typename T::const_view_type type;};
 
+  /// Transform to the regular type
+ template <typename A> typename regular_type_if_exists_else_type<A>::type make_regular(A const &x) { return x; }
+
  /*
  // replacement of std::plus for views ...
  template <class T> struct add_views : std::binary_function <T,T,T> {

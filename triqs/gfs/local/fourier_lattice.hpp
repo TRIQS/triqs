@@ -26,14 +26,14 @@
 namespace triqs {
 namespace gfs {
 
- template <typename Target, typename Singularity, typename Opt, bool V, bool C>
+ template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
  gf_keeper<tags::fourier, cyclic_lattice, Target, Singularity>
- fourier(gf_impl<cyclic_lattice, Target, Singularity, Opt, V, C> const& g) {
+ fourier(gf_impl<cyclic_lattice, Target, Singularity, Evaluator, V, C> const& g) {
   return {g};
  }
  
- template <typename Target, typename Singularity, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, brillouin_zone, Target, Singularity> inverse_fourier(gf_impl<brillouin_zone, Target, Singularity, Opt, V, C> const& g) {
+ template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
+ gf_keeper<tags::fourier, brillouin_zone, Target, Singularity> inverse_fourier(gf_impl<brillouin_zone, Target, Singularity, Evaluator, V, C> const& g) {
   return {g};
  }
 

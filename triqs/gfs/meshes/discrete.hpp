@@ -46,6 +46,10 @@ namespace gfs {
   long index_to_point(index_t ind) const { return ind; }
   long index_to_linear(index_t ind) const { return ind; }
 
+  /// Is the point in the mesh ?
+  bool is_within_boundary(index_t const &p) const { return ((p >= 0) && (p < size())); }
+  //bool is_within_boundary(index_t const &p) const { return ((p >= first_index_window()) && (p <= last_index_window())); }
+
   /// The wrapper for the mesh point
   class mesh_point_t : tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point_t, long> {
    discrete_mesh const *m;

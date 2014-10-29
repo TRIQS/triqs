@@ -44,8 +44,8 @@ int main() {
 
   auto chi0q_from_r = chi0q;
 
-  auto Gk = gf<cartesian_product<imfreq, brillouin_zone>,scalar_valued,no_tail>{{{beta, Fermion, nw}, {bz, N}}};
-  auto Gr = gf<cartesian_product<imfreq, cyclic_lattice>,scalar_valued,no_tail>{{{beta, Fermion, nw}, {N,  N}}};
+  auto Gk = gf<cartesian_product<imfreq, brillouin_zone>,scalar_valued>{{{beta, Fermion, nw}, {bz, N}}};
+  auto Gr = gf<cartesian_product<imfreq, cyclic_lattice>,scalar_valued>{{{beta, Fermion, nw}, {N,  N}}};
 
   auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
   Gk(inu_, k_) << 1 / (inu_ + mu - eps_k_);
@@ -58,6 +58,7 @@ int main() {
   chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_ + iw_, -r_);
 
   curry<0,1>(chi0q_from_r)(inu_, iw_) << fourier(curry<0,1>(chi0r)(inu_, iw_));
+  //curry<0,1>(chi0q_from_r)(inu_, iw_) << fourier(on_mesh(curry<0,1>(chi0r))(inu_, iw_));
 
   std::cout << chi0q.data() << std::endl;
   std::cout << chi0q_from_r.data() << std::endl;

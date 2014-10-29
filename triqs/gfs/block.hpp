@@ -29,7 +29,7 @@ namespace gfs {
 
  struct block_index {};
 
- template <typename Opt> struct gf_mesh<block_index, Opt> : discrete_mesh<discrete_domain> {
+ template <> struct gf_mesh<block_index> : discrete_mesh<discrete_domain> {
   using B = discrete_mesh<discrete_domain>;
   gf_mesh() = default;
   gf_mesh(int s) : B(s) {}
@@ -41,13 +41,13 @@ namespace gfs {
 
   /// ---------------------------  hdf5 ---------------------------------
 
-  template <typename Target> struct h5_name<block_index, Target, nothing, void> {
+  template <typename Target> struct h5_name<block_index, Target, nothing> {
    static std::string invoke() { return "BlockGf"; }
   };
 
   template <typename Target> struct h5_rw<block_index, Target, nothing, void> {
 
-   static void write(h5::group gr, gf_const_view<block_index, Target, nothing, void> g) {
+   static void write(h5::group gr, gf_const_view<block_index, Target> g) {
     for (size_t i = 0; i < g.mesh().size(); ++i) h5_write(gr, g.mesh().domain().names()[i], g._data[i]);
     // h5_write(gr,"symmetry",g._symmetry);
    }
@@ -69,7 +69,7 @@ namespace gfs {
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  template <typename Target> struct data_factory<block_index, Target, nothing, void> {
+  template <typename Target> struct data_factory<block_index, Target, nothing> {
    using mesh_t = gf_mesh<block_index>;
    using gf_t = gf<block_index, Target>;
    using gf_view_t = gf_view<block_index, Target>;
@@ -104,9 +104,9 @@ namespace gfs {
 
  /*
  // from a vector of gf : generalized to have a different type of gf in the vector (e.g. views...)
- template <typename Variable, typename Target, typename Singularity, typename Opt, typename GF2>
- block_gf<Variable, Target, Singularity, Opt> make_block_gf(std::vector<GF2> const &V) {
-  auto V2 = std::vector<gf<Variable, Target, Singularity, Opt>>{};
+ template <typename Variable, typename Target, typename Singularity, typename Evaluator, typename GF2>
+ block_gf<Variable, Target, Singularity, Evaluator> make_block_gf(std::vector<GF2> const &V) {
+  auto V2 = std::vector<gf<Variable, Target, Singularity, Evaluator>>{};
   for (auto const &g : V) V2.push_back(g);
   return {{int(V.size())}, std::move(V2), nothing{}, nothing{}, nothing{}};
  }
@@ -160,24 +160,24 @@ namespace gfs {
  // ------------------------------- Extend reinterpret_scalar_valued_gf_as_matrix_valued for block gf   ------
 
  // TODO simplify ?
- template <typename Variable, typename Singularity, typename Opt, bool IsConst>
- gf_view<block_index, gf<Variable, matrix_valued, Singularity, Opt>, nothing, void, IsConst>
+ template <typename Variable, typename Singularity, typename Evaluator, bool IsConst>
+ gf_view<block_index, gf<Variable, matrix_valued, Singularity, void>, nothing, void, IsConst>
  reinterpret_scalar_valued_gf_as_matrix_valued(
-     gf_view<block_index, gf<Variable, scalar_valued, Singularity, Opt>, nothing, void, IsConst> bg) {
-  std::vector<gf_view<Variable, matrix_valued, Singularity, Opt>> V;
+     gf_view<block_index, gf<Variable, scalar_valued, Singularity, Evaluator>, nothing, void, IsConst> bg) {
+  std::vector<gf_view<Variable, matrix_valued, Singularity, void>> V;
   for (auto &g : bg) V.push_back(reinterpret_scalar_valued_gf_as_matrix_valued(g));
   return make_block_gf_view_from_vector(std::move(V));
  }
 
- template <typename Variable, typename Singularity, typename Opt>
- block_gf_const_view<Variable, matrix_valued, Singularity, Opt>
- reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Variable, scalar_valued, Singularity, Opt> const &bg) {
+ template <typename Variable, typename Singularity, typename Evaluator>
+ block_gf_const_view<Variable, matrix_valued, Singularity, void>
+ reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Variable, scalar_valued, Singularity, Evaluator> const &bg) {
   return reinterpret_scalar_valued_gf_as_matrix_valued(bg());
  }
 
- template <typename Variable, typename Singularity, typename Opt>
- block_gf_view<Variable, matrix_valued, Singularity, Opt>
- reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Variable, scalar_valued, Singularity, Opt> &bg) {
+ template <typename Variable, typename Singularity, typename Evaluator>
+ block_gf_view<Variable, matrix_valued, Singularity, void>
+ reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Variable, scalar_valued, Singularity, Evaluator> &bg) {
   return reinterpret_scalar_valued_gf_as_matrix_valued(bg());
  }
 
@@ -211,16 +211,16 @@ namespace gfs {
  };
 
  //------------
- template <typename Target, typename Singularity, typename Opt, bool B, bool C>
- block_gf_iterator<gf_impl<block_index, Target, Singularity, Opt, B, C>>
- begin(gf_impl<block_index, Target, Singularity, Opt, B, C> &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ begin(gf_impl<block_index, Target, Singularity, Evaluator, B, C> &bgf) {
   return {bgf, false};
  }
 
  //------------
- template <typename Target, typename Singularity, typename Opt, bool B, bool C>
- block_gf_iterator<gf_impl<block_index, Target, Singularity, Opt, B, C>>
- end(gf_impl<block_index, Target, Singularity, Opt, B, C> &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ end(gf_impl<block_index, Target, Singularity, Evaluator, B, C> &bgf) {
   return {bgf, true};
  }
 
@@ -243,27 +243,27 @@ namespace gfs {
   bool at_end() const { return mesh_it.at_end(); }
  };
 
- template <typename Target, typename Singularity, typename Opt, bool B, bool C>
- block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Opt, B, C>>
- begin(gf_impl<block_index, Target, Singularity, Opt, B, C> const &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ begin(gf_impl<block_index, Target, Singularity, Evaluator, B, C> const &bgf) {
   return {bgf, false};
  }
 
- template <typename Target, typename Singularity, typename Opt, bool B, bool C>
- block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Opt, B, C>>
- end(gf_impl<block_index, Target, Singularity, Opt, B, C> const &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ end(gf_impl<block_index, Target, Singularity, Evaluator, B, C> const &bgf) {
   return {bgf, true};
  }
 
- template <typename Target, typename Singularity, typename Opt, bool B, bool C>
- block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Opt, B, C>>
- cbegin(gf_impl<block_index, Target, Singularity, Opt, B, C> const &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ cbegin(gf_impl<block_index, Target, Singularity, Evaluator, B, C> const &bgf) {
   return {bgf, false};
  }
 
- template <typename Target, typename Singularity, typename Opt, bool B, bool C>
- block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Opt, B, C>>
- cend(gf_impl<block_index, Target, Singularity, Opt, B, C> const &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ cend(gf_impl<block_index, Target, Singularity, Evaluator, B, C> const &bgf) {
   return {bgf, true};
  }
 }

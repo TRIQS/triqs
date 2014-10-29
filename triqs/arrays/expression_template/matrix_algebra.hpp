@@ -80,7 +80,15 @@ namespace triqs { namespace arrays {
    domain_type domain() const  { return combine_domain()(l,r); } 
    template<typename ... Args> value_type operator()(Args && ... args) const { return utility::operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...));}
    friend std::ostream &operator <<(std::ostream &sout, matrix_expr const &expr){return sout << "("<<expr.l << " "<<utility::operation<Tag>::name << " "<<expr.r<<")" ; }
-  };
+
+   friend matrix<value_type> make_regular(matrix_expr const &x) { return make_matrix(x); }
+   friend matrix_const_view<value_type> make_const_view(matrix_expr const &x) { return make_matrix(x); }
+
+   // just for better error messages
+   template <typename T> void operator=(T &&x) = delete; // can not assign to an expression template !
+   template <typename T> void operator+=(T &&x) = delete;// can not += into an expression template !
+   template <typename T> void operator-=(T &&x) = delete;// can not -= into an expression template !
+   };
 
  template<typename L>  // a special case : the unary operator !
   struct matrix_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) { 
@@ -94,7 +102,15 @@ namespace triqs { namespace arrays {
    domain_type domain() const  { return l.domain(); } 
    template<typename ... Args> value_type operator()(Args && ... args) const { return -l(std::forward<Args>(args)...);}
    friend std::ostream &operator <<(std::ostream &sout, matrix_unary_m_expr const &expr){return sout << '-'<<expr.l; }
-  };
+
+   friend matrix<value_type> make_regular(matrix_unary_m_expr const &x) { return make_matrix(x); }
+   friend matrix_const_view<value_type> make_const_view(matrix_unary_m_expr const &x) { return make_matrix(x); }
+ 
+   // just for better error messages
+   template <typename T> void operator=(T &&x) = delete; // can not assign to an expression template !
+   template <typename T> void operator+=(T &&x) = delete;// can not += into an expression template !
+   template <typename T> void operator-=(T &&x) = delete;// can not -= into an expression template !
+   };
 
  // Now we can define all the C++ operators ...
 #define DEFINE_OPERATOR(TAG, OP, TRAIT1, TRAIT2) \

@@ -80,7 +80,12 @@ namespace gfs {
   domain_pt_t index_to_point(index_t ind) const { return xmin + ind * del; }
 
   long index_to_linear(index_t ind) const { return ind; }
- 
+
+  /// Is the point in mesh ?
+  bool is_within_boundary(index_t const &p) const { return ((p >= x_min()) && (p <= x_max())); }
+  // ADAPT for window
+  //bool is_within_boundary(index_t const &p) const { return ((p >= first_index_window()) && (p <= last_index_window())); }
+
   /// Type of the mesh point
   using mesh_point_t = mesh_point<linear_mesh>;
 

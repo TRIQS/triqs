@@ -32,7 +32,7 @@ namespace gfs {
  struct legendre {};
 
  // mesh type and its factories
- template <typename Opt> struct gf_mesh<legendre, Opt> : discrete_mesh<legendre_domain> {
+ template <> struct gf_mesh<legendre> : discrete_mesh<legendre_domain> {
   typedef discrete_mesh<legendre_domain> B;
   gf_mesh() = default;
   gf_mesh(double beta, statistic_enum S, size_t n_leg) : B(typename B::domain_t(beta, S, n_leg)) {}
@@ -41,14 +41,15 @@ namespace gfs {
  namespace gfs_implementation {
 
   // h5 name
-  template <typename Opt> struct h5_name<legendre, matrix_valued, nothing, Opt> {
+  template <> struct h5_name<legendre, matrix_valued, nothing> {
    static std::string invoke() { return "Legendre"; }
   };
 
   /// ---------------------------  evaluator ---------------------------------
 
   // Not finished, not tested
-  template <typename Opt> struct evaluator<legendre, matrix_valued, nothing, Opt> {
+  template <> struct evaluator<legendre, matrix_valued, nothing> {
+   template <typename G> evaluator(G *) {};
    static constexpr int arity = 1;
    // ERROR : give a double and interpolate
    template <typename G> arrays::matrix_view<double> operator()(G const* g, long n) const {
@@ -58,8 +59,8 @@ namespace gfs {
 
   /// ---------------------------  data access  ---------------------------------
 
-  template <typename Opt> struct data_proxy<legendre, matrix_valued, Opt> : data_proxy_array<double, 3> {};
-  template <typename Opt> struct data_proxy<legendre, scalar_valued, Opt> : data_proxy_array<double, 1> {};
+  template <> struct data_proxy<legendre, matrix_valued> : data_proxy_array<double, 3> {};
+  template <> struct data_proxy<legendre, scalar_valued> : data_proxy_array<double, 1> {};
 
  } // gfs_implementation
 }

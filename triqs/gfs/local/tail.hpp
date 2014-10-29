@@ -67,7 +67,7 @@ namespace gfs {
   public:
   TRIQS_MPI_IMPLEMENTED_VIA_BOOST;
   using view_type = tail_view;
-  using const_view_type = tail_view;
+  using const_view_type = tail_const_view;
   using regular_type = tail;
 
   using data_type = get_rvc<RVC, array<dcomplex, 3>>;
@@ -179,8 +179,9 @@ namespace gfs {
   tail_const_view(B::data_type d, B::mask_type m, int order_min) : B(std::move(d), std::move(m), order_min) {}
   tail_const_view(tail_const_view const &) = default;
   tail_const_view(tail_const_view &&) = default;
-  tail_const_view(tail_impl<Regular> const &t) : B(t) {}
+  tail_const_view(tail_impl<ConstView> const &t) : B(t) {}
   tail_const_view(tail_impl<View> const &t) : B(t) {}
+  tail_const_view(tail_impl<Regular> const &t) : B(t) {}
 
   void rebind(tail_const_view const &X);
  };
@@ -195,6 +196,7 @@ namespace gfs {
   tail_view(tail_view const &) = default;
   tail_view(tail_view &&) = default;
   tail_view(tail_impl<Regular> const &t) : B(t) {}
+  tail_view(tail_impl<View> const &t) : B(t) {}
 
   void rebind(tail_view const &X);
 

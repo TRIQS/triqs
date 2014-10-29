@@ -32,8 +32,8 @@ int main() {
 
   auto chi0q_from_r = chi0q;
 
-  auto Gk = gf<cartesian_product<imfreq, brillouin_zone>,matrix_valued,no_tail>{{{beta, Fermion, nw}, {bz, N}}, {1, 1}};
-  auto Gr = gf<cartesian_product<imfreq, cyclic_lattice>,matrix_valued,no_tail>{{{beta, Fermion, nw}, {N,  N}}, {1, 1}};
+  auto Gk = gf<cartesian_product<imfreq, brillouin_zone>,matrix_valued>{{{beta, Fermion, nw}, {bz, N}}, {1, 1}};
+  auto Gr = gf<cartesian_product<imfreq, cyclic_lattice>,matrix_valued>{{{beta, Fermion, nw}, {N,  N}}, {1, 1}};
 
   auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
   Gk(inu_, k_) << 1 / (inu_ + mu - eps_k_);
@@ -45,7 +45,8 @@ int main() {
 
   chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_ + iw_, -r_);
 
-  curry<0,1>(chi0q_from_r)(inu_, iw_) << fourier(curry<0,1>(chi0r)(inu_, iw_));
+  curry<0,1>(chi0q_from_r)(inu_, iw_) << fourier(on_mesh(curry<0,1>(chi0r))(inu_, iw_));
+  //curry<0,1>(chi0q_from_r)(inu_, iw_) << fourier(curry<0,1>(chi0r)(inu_, iw_));
 
   if (max_element(abs(chi0q_from_r.data() - chi0q.data())) > 1.e-13) TRIQS_RUNTIME_ERROR << "fourier pb";
 

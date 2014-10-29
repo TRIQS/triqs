@@ -32,31 +32,35 @@ namespace gfs {
  namespace gfs_implementation {
 
   // h5 name
-  template <typename Singularity, typename Opt> struct h5_name<brillouin_zone, matrix_valued, Singularity, Opt> {
+  template <typename Singularity> struct h5_name<brillouin_zone, matrix_valued, Singularity> {
    static std::string invoke() { return "BZ"; }
   };
 
   /// ---------------------------  data access  ---------------------------------
-  template <typename Opt> struct data_proxy<brillouin_zone, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
-  template <typename Opt> struct data_proxy<brillouin_zone, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
+  template <> struct data_proxy<brillouin_zone, matrix_valued> : data_proxy_array<std::complex<double>, 3> {};
+  template <> struct data_proxy<brillouin_zone, scalar_valued> : data_proxy_array<std::complex<double>, 1> {};
 
   /// ---------------------------  evaluator ---------------------------------
 
+#ifndef TRIQS_CPP11
   // simple evaluation : take the point on the grid...
-  template <> struct evaluator_fnt_on_mesh<brillouin_zone> {
-   size_t n;
-   evaluator_fnt_on_mesh() = default;
-   template <typename MeshType> void reset(MeshType const &m, lattice::k_t const &k) {
-    n = m.locate_neighbours(k).linear_index();
+  template <> struct evaluator_of_clef_expression<brillouin_zone> {
+   template <typename Expr, int N>
+   auto operator()(Expr const &expr, clef::placeholder<N>, gf_mesh<brillouin_zone> const &m, lattice::k_t const &k) {
+    auto n = m.locate_neighbours(k).index();
+    return clef::eval(expr, clef::placeholder<N>() = no_cast(m[n]));
    }
-   template <typename F> AUTO_DECL operator()(F const &f) const RETURN(f(n));
-   // template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
   };
+#endif
 
   // --------------------------------------------------------------
-  template <typename Target, typename Singularity, typename Opt> struct evaluator<brillouin_zone, Target, Singularity, Opt> {
+  template <typename Target, typename Singularity> struct evaluator<brillouin_zone, Target, Singularity> {
    static constexpr int arity = 1;
+   template <typename G> evaluator(G *) {};
    template <typename G> auto operator()(G const *g, lattice::k_t const &k) const RETURN((*g)[g -> mesh().locate_neighbours(k)]);
+
+   template <typename G> auto operator()(G const *g, __no_cast<typename gf_mesh<brillouin_zone>::mesh_point_t> const & p) const RETURN((*g)[p.value]);
+   
   };
  }
 }

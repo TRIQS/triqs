@@ -29,8 +29,8 @@ namespace gfs {
  //struct no_tail {};
  using no_tail = nothing;
 
- template <typename Variable, typename Target, typename S, typename Opt, bool V, bool C>
- gf_view<Variable, Target, no_tail, Opt, C> make_gf_view_without_tail(gf_impl<Variable, Target, S, Opt, V, C> const &g) {
+ template <typename Variable, typename Target, typename S, typename Evaluator, bool V, bool C>
+ gf_view<Variable, Target, no_tail, Evaluator, C> make_gf_view_without_tail(gf_impl<Variable, Target, S, Evaluator, V, C> const &g) {
   return {g.mesh(), g.data(), {}, g.symmetry(), g.indices(), g.name};
  }
 
@@ -47,15 +47,15 @@ namespace gfs {
   }
  }
 
- template <typename Variable, typename Target, typename S, typename Opt, bool V, bool C>
- gf_view<Variable, Target> make_gf_from_g_and_tail(gf_impl<Variable, Target, S, Opt, V, C> const &g, tail t) {
+ template <typename Variable, typename Target, typename S, typename Evaluator, bool V, bool C>
+ gf_view<Variable, Target> make_gf_from_g_and_tail(gf_impl<Variable, Target, S, Evaluator, V, C> const &g, tail t) {
   details::_equal_or_throw(t.shape(), get_target_shape(g));
   auto g2 = gf<Variable, Target, no_tail>{g}; // copy the function without tail
   return {std::move(g2.mesh()), std::move(g2.data()), std::move(t), g2.symmetry()};
  }
 
- template <typename Variable, typename Target, typename S, typename Opt, bool V, bool C>
- gf_view<Variable, Target, tail, Opt, C> make_gf_view_from_g_and_tail(gf_impl<Variable, Target, no_tail, Opt, V, C> const &g,
+ template <typename Variable, typename Target, typename S, typename Evaluator, bool V, bool C>
+ gf_view<Variable, Target, tail, Evaluator, C> make_gf_view_from_g_and_tail(gf_impl<Variable, Target, no_tail, Evaluator, V, C> const &g,
                                                                  tail_view t) {
   details::_equal_or_throw(t.shape(), get_target_shape(g));
   return {g.mesh(), g.data(), t, g.symmetry()};

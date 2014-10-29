@@ -28,7 +28,7 @@ namespace gfs {
 
  struct imtime {};
 
- template <typename Opt> struct gf_mesh<imtime, Opt> : linear_mesh<matsubara_time_domain> {
+ template <> struct gf_mesh<imtime> : linear_mesh<matsubara_time_domain> {
   private:
   using B = linear_mesh<matsubara_time_domain>;
 

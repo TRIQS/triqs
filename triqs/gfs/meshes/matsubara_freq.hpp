@@ -26,13 +26,14 @@ namespace triqs {
 namespace gfs {
 
  struct imfreq {};
+ template <> struct mesh_point<gf_mesh<imfreq>>; //forward
 
  // ---------------------------------------------------------------------------
  //                     The mesh point
  //  NB : the mesh point is also in this case a matsubara_freq.
  // ---------------------------------------------------------------------------
  
- template <typename Opt> struct gf_mesh<imfreq, Opt> {
+ template <> struct gf_mesh<imfreq> {
   using domain_t = matsubara_domain<true>;
   using index_t = long;
   using linear_index_t = long;
@@ -119,20 +120,22 @@ namespace gfs {
   /// Is the mesh only for positive omega_n (G(tau) real))
   bool positive_only() const { return _positive_only;}
 
+  /// Is the frequency in mesh ?
+  bool is_within_boundary(long n) const { return ((n >= first_index_window()) && (n <= last_index_window())); }
+  bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n);}
+
   /// Type of the mesh point
   using mesh_point_t = mesh_point<gf_mesh>;
 
   /// Accessing a point of the mesh from its index
-  mesh_point_t operator[](index_t i) const {
-   return {*this, i};
-  }
+  inline mesh_point_t operator[](index_t i) const; //impl below
 
   /// Iterating on all the points...
   using const_iterator = mesh_pt_generator<gf_mesh>;
-  const_iterator begin() const { return const_iterator(this); }
-  const_iterator end() const { return const_iterator(this, true); }
-  const_iterator cbegin() const { return const_iterator(this); }
-  const_iterator cend() const { return const_iterator(this, true); }
+  inline const_iterator begin() const;  // impl below
+  inline const_iterator end() const;    
+  inline const_iterator cbegin() const; 
+  inline const_iterator cend() const;   
 
   bool operator==(gf_mesh const &M) const {
    return (std::tie(_dom, _n_pts, _positive_only) == std::tie(M._dom, M._n_pts, M._positive_only));
@@ -215,6 +218,16 @@ namespace gfs {
   private:
   index_t first_index_window, last_index_window;
  };
+
+ /// impl...
+ inline mesh_point<gf_mesh<imfreq>> gf_mesh<imfreq>::operator[](index_t i) const {
+  return {*this, i};
+ }
+
+ inline gf_mesh<imfreq>::const_iterator gf_mesh<imfreq>::begin() const { return const_iterator(this); }
+ inline gf_mesh<imfreq>::const_iterator gf_mesh<imfreq>::end() const { return const_iterator(this, true); }
+ inline gf_mesh<imfreq>::const_iterator gf_mesh<imfreq>::cbegin() const { return const_iterator(this); }
+ inline gf_mesh<imfreq>::const_iterator gf_mesh<imfreq>::cend() const { return const_iterator(this, true); }
 
  //-------------------------------------------------------
 

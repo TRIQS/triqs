@@ -23,14 +23,15 @@
 #include <triqs/gfs/refreq.hpp> 
 #include <triqs/gfs/retime.hpp> 
 
-namespace triqs { namespace gfs { 
+namespace triqs { namespace gfs {
 
-  template <typename Target, typename Singularity, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, retime, Target, Singularity> fourier(gf_impl<retime, Target, Singularity, Opt, V, C> const& g) {
+ template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
+ gf_keeper<tags::fourier, retime, Target, Singularity> fourier(gf_impl<retime, Target, Singularity, Evaluator, V, C> const& g) {
   return {g};
  }
- template <typename Target, typename Singularity, typename Opt, bool V, bool C>
- gf_keeper<tags::fourier, refreq, Target, Singularity> inverse_fourier(gf_impl<refreq, Target, Singularity, Opt, V, C> const& g) {
+ template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
+ gf_keeper<tags::fourier, refreq, Target, Singularity>
+ inverse_fourier(gf_impl<refreq, Target, Singularity, Evaluator, V, C> const& g) {
   return {g};
  }
 
@@ -38,32 +39,18 @@ namespace triqs { namespace gfs {
  void _fourier_impl(gf_view<retime, scalar_valued> gt, gf_const_view<refreq, scalar_valued> gw);
 
  // helper functions
- template <typename Opt> gf_mesh<refreq, Opt> make_mesh_fourier_compatible(gf_mesh<retime, Opt> const& m) {
-  int L = m.size();
-  double pi = std::acos(-1);
-  double wmin = -pi * (L - 1) / (L * m.delta());
-  double wmax = pi * (L - 1) / (L * m.delta());
-  return {wmin, wmax, L};
- }
+ gf_mesh<refreq> make_mesh_fourier_compatible(gf_mesh<retime> const& m);
+ gf_mesh<retime> make_mesh_fourier_compatible(gf_mesh<refreq> const& m, mesh_kind mk = full_bins);
 
- template <typename Opt>
- gf_mesh<retime, Opt> make_mesh_fourier_compatible(gf_mesh<refreq, Opt> const& m, mesh_kind mk = full_bins) {
-  double pi = std::acos(-1);
-  int L = m.size();
-  double tmin = -pi * (L-1) / (L*m.delta());
-  double tmax =  pi * (L-1) / (L*m.delta());
-  return {tmin, tmax, L};
- }
-
-  template <typename Target, typename Singularity, typename Opt, bool V, bool C>
- gf_view<refreq, Target> make_gf_from_fourier(gf_impl<retime, Target, Singularity, Opt, V, C> const& gt) {
+  template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
+ gf_view<refreq, Target> make_gf_from_fourier(gf_impl<retime, Target, Singularity, Evaluator, V, C> const& gt) {
   auto gw = gf<refreq, Target>{make_mesh_fourier_compatible(gt.mesh()), get_target_shape(gt)};
   gw() = fourier(gt);
   return gw;
  }
 
- template <typename Target, typename Singularity, typename Opt, bool V, bool C>
- gf_view<retime, Target> make_gf_from_inverse_fourier(gf_impl<refreq, Target, Singularity, Opt, V, C> const& gw) {
+ template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
+ gf_view<retime, Target> make_gf_from_inverse_fourier(gf_impl<refreq, Target, Singularity, Evaluator, V, C> const& gw) {
   auto gt = gf<retime, Target>{make_mesh_fourier_compatible(gw.mesh()), get_target_shape(gw)};
   gt() = inverse_fourier(gw);
   return gt;

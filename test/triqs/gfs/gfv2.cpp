@@ -6,12 +6,6 @@ namespace h5 = triqs::h5;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/functions.hpp> 
 
- // example 
- //template<typename T> using block_gf = gf<block_index, gf<T>>;
- // block_gf<imtime> ... 
- // but not on gcc 4.6 !
- //
-
 int main() {
  try { 
 

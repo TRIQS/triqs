@@ -29,56 +29,44 @@
 namespace triqs {
 namespace gfs {
 
- /*struct cyclic_lattice {};
-
- template <typename Opt> struct gf_mesh<cyclic_lattice, Opt> : lattice::cyclic_lattice_mesh {
-  template <typename... T> gf_mesh(T &&... x) : lattice::cyclic_lattice_mesh(std::forward<T>(x)...) {}
- };
-*/
-
  namespace gfs_implementation {
 
   // h5 name
-  template <typename Singularity, typename Opt> struct h5_name<cyclic_lattice, matrix_valued, Singularity, Opt> {
+  template <typename Singularity> struct h5_name<cyclic_lattice, matrix_valued, Singularity> {
    static std::string invoke() { return "R"; }
   };
 
   /// ---------------------------  data access  ---------------------------------
-  template <typename Opt> struct data_proxy<cyclic_lattice, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
-  template <typename Opt> struct data_proxy<cyclic_lattice, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
+  template <> struct data_proxy<cyclic_lattice, matrix_valued> : data_proxy_array<std::complex<double>, 3> {};
+  template <> struct data_proxy<cyclic_lattice, scalar_valued> : data_proxy_array<std::complex<double>, 1> {};
 
   /// ---------------------------  evaluator ---------------------------------
 
+#ifndef TRIQS_CPP11
   // simple evaluation : take the point on the grid...
-  template <> struct evaluator_fnt_on_mesh<cyclic_lattice> {
-   size_t n;
-   evaluator_fnt_on_mesh() = default;
-   /*template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::cyclic_lattice_mesh::index_t const &r) {
-    n = m.modulo_reduce(r).linear_index(); 
-   }
+  template <> struct evaluator_of_clef_expression<cyclic_lattice> {
+   using mesh_t = gf_mesh<cyclic_lattice>;
+   private :
+   auto __as_meshpt(mesh_t const &m, typename mesh_t::index_t const &r) { return m.modulo_reduce(r); }
+   auto __as_meshpt(mesh_t const &m, mesh_point<mesh_t> const &r) { return r; }
 
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::cyclic_lattice_mesh::mesh_point_t const &r) {
-    n = r.linear_index(); 
+   public:
+   template <typename Expr, int N, typename Arg>
+   auto operator()(Expr const &expr, clef::placeholder<N>, gf_mesh<cyclic_lattice> const &m, Arg const &k) {
+    //return clef::eval(expr, clef::placeholder<N>() = __as_meshpt(m,k));
+    return clef::eval(expr, clef::placeholder<N>() = no_cast(__as_meshpt(m,k)));
    }
-*/
-    template <typename MeshType> void reset(MeshType const &m, typename gf_mesh<cyclic_lattice>::index_t const &r) {
-    n = m.modulo_reduce(r).linear_index(); 
-   }
-
-   template <typename MeshType> void reset(MeshType const &m, mesh_point<gf_mesh<cyclic_lattice>> const &r) {
-    n = r.linear_index(); 
-   }
-
-   template <typename F> AUTO_DECL operator()(F const &f) const RETURN(f(n));
-   //template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
   };
+#endif
 
   // --------------------------------------------------------------
-  template <typename Target, typename Singularity, typename Opt> struct evaluator<cyclic_lattice, Target, Singularity, Opt> {
+  template <typename Target, typename Singularity> struct evaluator<cyclic_lattice, Target, Singularity> {
    static constexpr int arity = 1;
+   template <typename G> evaluator(G *) {};
 
    template <typename G> AUTO_DECL operator()(G const *g, typename gf_mesh<cyclic_lattice>::index_t const &r) const RETURN((*g)[g->mesh().modulo_reduce(r)]);
    template <typename G> AUTO_DECL operator()(G const *g, mesh_point<gf_mesh<cyclic_lattice>> const &r) const RETURN((*g)[r]);
+   template <typename G> AUTO_DECL operator()(G const *g, __no_cast<mesh_point<gf_mesh<cyclic_lattice>>> const &r) const RETURN((*g)[r.value]);
 
   };
  }

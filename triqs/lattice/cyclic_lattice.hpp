@@ -29,7 +29,7 @@ namespace gfs {
 
  struct cyclic_lattice {};
 
- template <typename Opt> struct gf_mesh<cyclic_lattice, Opt> { 
+ template <> struct gf_mesh<cyclic_lattice> { 
 
   utility::mini_vector<int, 3> dims;          // the size in each dimension
   size_t _size = dims[0] * dims[1] * dims[2]; // total size
@@ -74,30 +74,29 @@ namespace gfs {
   }
   // linear_index_t index_to_linear(index_t const& i) const { return i[0] + i[1] * s1 + i[2] * s2; }
 
+  /// Is the point in the mesh ? Always true
+  bool is_within_boundary(point_t const &) const { return true;}
+ 
   using mesh_point_t = mesh_point<gf_mesh>;
 
-   /// Accessing a point of the mesh
-  mesh_point_t operator[](index_t i) const {
-   return mesh_point_t{*this, i};
-  }
+  /// Accessing a point of the mesh from its index
+  inline mesh_point_t operator[](index_t i) const; //impl below
 
   /// Iterating on all the points...
-  using const_iterator = gfs::mesh_pt_generator<gf_mesh>;
-  const_iterator begin() const { return const_iterator(this); }
-  const_iterator end() const { return const_iterator(this, true); }
-  const_iterator cbegin() const { return const_iterator(this); }
-  const_iterator cend() const { return const_iterator(this, true); }
+  using const_iterator = mesh_pt_generator<gf_mesh>;
+  inline const_iterator begin() const;  // impl below
+  inline const_iterator end() const;    
+  inline const_iterator cbegin() const; 
+  inline const_iterator cend() const;   
 
-  /// Mesh comparison
+   /// Mesh comparison
   bool operator==(gf_mesh const& M) const { return ((dims == M.dims)); }
   bool operator!=(gf_mesh const &M) const { return !(operator==(M)); }
 
   /// ----------- End mesh concept  ----------------------
 
   /// Reduce point modulo to the lattice.
-  mesh_point_t modulo_reduce(index_t const& r) const {
-   return mesh_point_t{*this, {_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}};
-  }
+  inline mesh_point_t modulo_reduce(index_t const& r) const;
 
  // mesh_point_t const & modulo_reduce(mesh_point_t const& r) const { return r;}
 
@@ -154,5 +153,20 @@ namespace gfs {
    return mesh_point{*m, {m->_modulo(-index()[0], 0), m->_modulo(-index()[1], 1), m->_modulo(-index()[2], 2)}};
   }
  };
+
+ // impl
+ inline mesh_point<gf_mesh<cyclic_lattice>> gf_mesh<cyclic_lattice>::operator[](index_t i) const {
+  return mesh_point<gf_mesh<cyclic_lattice>>{*this, i};
+ }
+
+ inline gf_mesh<cyclic_lattice>::const_iterator gf_mesh<cyclic_lattice>::begin() const { return const_iterator(this); }
+ inline gf_mesh<cyclic_lattice>::const_iterator gf_mesh<cyclic_lattice>::end() const { return const_iterator(this, true); }
+ inline gf_mesh<cyclic_lattice>::const_iterator gf_mesh<cyclic_lattice>::cbegin() const { return const_iterator(this); }
+ inline gf_mesh<cyclic_lattice>::const_iterator gf_mesh<cyclic_lattice>::cend() const { return const_iterator(this, true); }
+
+ /// Reduce point modulo to the lattice.
+ inline gf_mesh<cyclic_lattice>::mesh_point_t gf_mesh<cyclic_lattice>::modulo_reduce(index_t const& r) const {
+  return mesh_point_t{*this, {_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}};
+ }
 }
 }

@@ -220,6 +220,13 @@ namespace triqs { namespace utility {
     return res;
    }
 
+   template<int N>
+   mini_vector<T, Rank-N> front_mpop () const { 
+    mini_vector<T, Rank-N> res;
+    for (int i=N;i<Rank; ++i)  res[i-N]=_data[i];
+    return res;
+   }
+
    friend std::ostream & operator << ( std::ostream & out, mini_vector const & v ) {return out<<v.to_string();}
    friend std::stringstream & operator << ( std::stringstream & out, mini_vector const & v ) { out<<v.to_string(); return out;}
   }; // class mini_vector

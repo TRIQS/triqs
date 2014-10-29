@@ -30,7 +30,7 @@ namespace gfs {
 
  struct refreq {};
 
- template <typename Opt> struct gf_mesh<refreq, Opt> : segment_mesh {
+ template <> struct gf_mesh<refreq> : segment_mesh {
   template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
   //using segment_mesh::segment_mesh;
  };
@@ -46,22 +46,21 @@ namespace gfs {
   namespace gfs_implementation {
 
   // h5 name
-  template <typename Singularity, typename Opt> struct h5_name<refreq, matrix_valued, Singularity, Opt> {
+  template <typename Singularity> struct h5_name<refreq, matrix_valued, Singularity> {
    static std::string invoke() { return "ReFreq"; }
   };
 
   /// ---------------------------  evaluator ---------------------------------
 
-  template <>
-  struct evaluator_fnt_on_mesh<refreq> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh,
-                                                                             evaluator_grid_linear_interpolation);
+  template <> struct evaluator_of_clef_expression<refreq> : evaluator_grid_linear_interpolation {};
 
-  template <typename Singularity, typename Opt, typename Target> struct evaluator<refreq, Target, Singularity, Opt> : evaluator_one_var<refreq> {};
-
+  template <typename Singularity, typename Target> struct evaluator<refreq, Target, Singularity> : evaluator_one_var<refreq> {
+   template <typename G> evaluator(G *) {};
+  };
 
   /// ---------------------------  data access  ---------------------------------
-  template <typename Opt> struct data_proxy<refreq, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
-  template <typename Opt> struct data_proxy<refreq, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
+  template <> struct data_proxy<refreq, matrix_valued> : data_proxy_array<std::complex<double>, 3> {};
+  template <> struct data_proxy<refreq, scalar_valued> : data_proxy_array<std::complex<double>, 1> {};
  }
 
  // FOR LEGACY PYTHON CODE ONLY

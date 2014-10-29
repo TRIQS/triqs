@@ -24,7 +24,7 @@ int main() {
   auto g_eps = gf<brillouin_zone>{{bz, 100}, {1, 1}};
 
   // Default, with a tail.
-  auto G = gf<cartesian_product<brillouin_zone, imfreq>>{{{bz, 100}, {beta, Fermion, 100}}, {1, 1}};
+  auto G = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued, m_tail<brillouin_zone>>{{{bz, 100}, {beta, Fermion, 100}}, {1, 1}};
 
   // Same : the gf_default_singularity is the same
   static_assert(std::is_same<std14::decay_t<decltype(G.singularity())>, gf<brillouin_zone, tail>>::value, "!!");

@@ -40,29 +40,37 @@ namespace gfs {
 
   /// ---------------------------  hdf5 ---------------------------------
   
-  template <typename S, typename Opt> struct h5_name<imfreq, matrix_valued, S, Opt> {
+  template <typename S> struct h5_name<imfreq, matrix_valued, S> {
    static std::string invoke() { return "ImFreq"; }
   };
 
   /// ---------------------------  data access  ---------------------------------
 
-  template <typename Opt> struct data_proxy<imfreq, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
-  template <typename Opt> struct data_proxy<imfreq, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
+  template <> struct data_proxy<imfreq, matrix_valued> : data_proxy_array<std::complex<double>, 3> {};
+  template <> struct data_proxy<imfreq, scalar_valued> : data_proxy_array<std::complex<double>, 1> {};
 
   /// ---------------------------  evaluator ---------------------------------
 
+#ifndef TRIQS_CPP11
   // simple evaluation : take the point on the grid...
-  template <> struct evaluator_fnt_on_mesh<imfreq> {
-   long n;
-   double w;
-   evaluator_fnt_on_mesh() = default;
-   template <typename MeshType> void reset(MeshType const &m, long p) { n = p; w=1; } 
-   template <typename MeshType> void reset(MeshType const &m, matsubara_freq const &p) { 
-    if ((p.n >= m.first_index()) && (p.n < m.size()+m.first_index())) {w=1; n =p.n;}
-    else {w=0; n=0;}
+  template <> struct evaluator_of_clef_expression<imfreq> {
+   private : 
+    long __as_long(long p) { return p; }
+    long __as_long(matsubara_freq const &p) { return p.n; }
+
+   public:
+   //template <typename Arg> bool is_in_mesh(gf_mesh<imfreq> const &m, Arg const &p) {
+   // long n = __as_long(p);
+   // return ((n >= m.first_index()) && (n < m.size() + m.first_index()));
+   // }
+
+  template <typename Expr, int N, typename Arg>
+   auto operator()(Expr const &expr, clef::placeholder<N>, gf_mesh<imfreq> const &m, Arg const &p) {
+    long n = __as_long(p);
+    return clef::eval(expr, clef::placeholder<N>() = no_cast(m[n]));
    }
-   template <typename F> AUTO_DECL operator()(F const &f) const RETURN(w*f(n));
   };
+#endif
 
   // ------------- evaluator  -------------------
   // handle the case where the matsu. freq is out of grid...
@@ -76,6 +84,9 @@ namespace gfs {
    AUTO_DECL operator()(G const *g, int n) const
        RETURN((*g)(matsubara_freq(n, g->mesh().domain().beta, g->mesh().domain().statistic)));
 
+   template <typename G>
+   auto operator()(G const *g, __no_cast<typename gf_mesh<imfreq>::mesh_point_t> const &p) const RETURN((*g)[p.value]);
+
    template <typename G> typename G::singularity_t operator()(G const *g, tail_view t) const {
     return compose(g->singularity(),t);
     //return g->singularity();
@@ -84,8 +95,9 @@ namespace gfs {
   // --- various 4 specializations
 
   // scalar_valued, tail
-  template <typename Opt> struct evaluator<imfreq, scalar_valued, tail, Opt> : _eval_imfreq_base_impl {
+  template <> struct evaluator<imfreq, scalar_valued, tail> : _eval_imfreq_base_impl {
  
+   template <typename G> evaluator(G *) {};
    using _eval_imfreq_base_impl::operator();
 
    template <typename G> std::complex<double> operator()(G const *g, matsubara_freq const &f) const {
@@ -100,8 +112,9 @@ namespace gfs {
   };
 
   // scalar_valued, no tail
-  template <typename Opt> struct evaluator<imfreq, scalar_valued, nothing, Opt> : _eval_imfreq_base_impl {
+  template <> struct evaluator<imfreq, scalar_valued, nothing> : _eval_imfreq_base_impl {
 
+   template <typename G> evaluator(G *) {};
    using _eval_imfreq_base_impl::operator();
 
    template <typename G> std::complex<double> operator()(G const *g, matsubara_freq const &f) const {
@@ -111,13 +124,15 @@ namespace gfs {
     } else {
      if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size() + g->mesh().first_index())) return (*g)[f.n];
     }
+    TRIQS_RUNTIME_ERROR<< "evaluation out of mesh";
     return 0;
    }
   };
 
   // matrix_valued, tail
-  template <typename Opt> struct evaluator<imfreq, matrix_valued, tail, Opt> : _eval_imfreq_base_impl {
+  template <> struct evaluator<imfreq, matrix_valued, tail> : _eval_imfreq_base_impl {
 
+   template <typename G> evaluator(G *) {};
    using _eval_imfreq_base_impl::operator();
 
    template <typename G> arrays::matrix_const_view<std::complex<double>> operator()(G const *g, matsubara_freq const &f) const {
@@ -133,8 +148,9 @@ namespace gfs {
   };
 
   // matrix_valued, no tail
-  template <typename Opt> struct evaluator<imfreq, matrix_valued, nothing, Opt> : _eval_imfreq_base_impl {
+  template <> struct evaluator<imfreq, matrix_valued, nothing> : _eval_imfreq_base_impl {
 
+   template <typename G> evaluator(G *) {};
    using _eval_imfreq_base_impl::operator();
 
    template <typename G> arrays::matrix_const_view<std::complex<double>> operator()(G const *g, matsubara_freq const &f) const {
@@ -145,6 +161,7 @@ namespace gfs {
     } else {
      if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size() + g->mesh().first_index())) return (*g)[f.n];
     }
+    TRIQS_RUNTIME_ERROR<< "evaluation out of mesh";
     auto r = arrays::matrix<std::complex<double>>{get_target_shape(*g)};
     r() = 0;
     return r;

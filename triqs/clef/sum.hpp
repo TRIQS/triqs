@@ -20,9 +20,12 @@
  ******************************************************************************/
 #pragma once
 #include "../clef.hpp"
+#include "../utility/view_tools.hpp"
 
 namespace triqs {
 namespace clef {
+
+ using triqs::make_regular;
 
  //--------------------------------------------------------------------------------------------------
  //  sum of expressions
@@ -32,10 +35,10 @@ namespace clef {
  template <typename F, typename D>
  // requires(!triqs::clef::is_any_lazy<F, D>::value)
  auto sum_f_domain_impl(F const& f, D const& d)
-     -> std::c14::enable_if_t<!triqs::clef::is_any_lazy<F, D>::value, std14::decay_t<decltype(f(*(d.begin())))>> {
+     -> std::c14::enable_if_t<!triqs::clef::is_any_lazy<F, D>::value, std14::decay_t<decltype(make_regular(f(*(d.begin()))))>> {
   auto it = d.begin(), ite = d.end();
   if (it == ite) TRIQS_RUNTIME_ERROR << "Sum over an empty domain";
-  auto res = f(*it);
+  auto res = make_regular(f(*it));
   ++it;
   for (; it != ite; ++it) res = res + f(*it);
   return res;

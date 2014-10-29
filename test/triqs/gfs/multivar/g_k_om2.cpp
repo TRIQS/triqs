@@ -30,11 +30,12 @@ int main() {
  try {
   double beta = 1;
 
+  using gf_bz_imfreq_mat_tail = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued, m_tail<brillouin_zone>>;
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
   auto g_eps = gf<brillouin_zone>{{bz, 20}, {1, 1}};
 
-  auto G_k_iom = gf<cartesian_product<brillouin_zone, imfreq>>{{{bz, 20}, {beta, Fermion, 100}}, {1, 1}};
+  auto G_k_iom = gf_bz_imfreq_mat_tail{{{bz, 20}, {beta, Fermion, 100}}, {1, 1}};
 
   // try to assign to expression 
   placeholder<0> k_;

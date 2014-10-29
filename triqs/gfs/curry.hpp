@@ -32,14 +32,14 @@ namespace triqs { namespace gfs {
   
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Opt, typename F, typename M> struct data_proxy<M,lambda_valued<F>,Opt> : data_proxy_lambda<F, false> {};
-  template <typename Opt, typename F, typename... Ms>
-  struct data_proxy<cartesian_product<Ms...>, lambda_valued<F>, Opt> : data_proxy_lambda<F, true> {};
+  template <typename F, typename M> struct data_proxy<M, lambda_valued<F>> : data_proxy_lambda<F, false> {};
+  template <typename F, typename... Ms>
+  struct data_proxy<cartesian_product<Ms...>, lambda_valued<F>> : data_proxy_lambda<F, true> {};
 
   /// ---------------------------  Factories ---------------------------------
 
-  template<typename F, typename Opt, typename ... Ms>
-   struct data_factory<cartesian_product<Ms...>, lambda_valued<F>, nothing, Opt> {};
+  template<typename F, typename ... Ms>
+   struct data_factory<cartesian_product<Ms...>, lambda_valued<F>, nothing> {};
 
   /// ---------------------------  partial_eval ---------------------------------
   // partial_eval<0> (g, 1) returns :  x -> g(1,x)
@@ -52,22 +52,22 @@ namespace triqs { namespace gfs {
   template<typename ... Ms> using cart_prod = typename cart_prod_impl<Ms...>::type;
 
   // The implementation (can be overloaded for some types), so put in a struct to have partial specialization
-  template <typename Variable, typename Target, typename Singularity, typename Opt, bool IsConst> struct partial_eval_impl;
+  template <typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsConst> struct partial_eval_impl;
 
   // The user function
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt, bool C, typename... T>
-  auto partial_eval(gf_view<Variable, Target, Singularity, Opt, C> g, T&&... x) {
-   return partial_eval_impl<Variable, Target, Singularity, Opt, C>::template invoke<pos...>(g(), std::forward<T>(x)...);
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool C, typename... T>
+  auto partial_eval(gf_view<Variable, Target, Singularity, Evaluator, C> g, T&&... x) {
+   return partial_eval_impl<Variable, Target, Singularity, Evaluator, C>::template invoke<pos...>(g(), std::forward<T>(x)...);
   }
 
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt, typename... T>
-  auto partial_eval(gf<Variable, Target, Singularity, Opt>& g, T&&... x) {
-   return partial_eval_impl<Variable, Target, Singularity, Opt, false>::template invoke<pos...>(g(), std::forward<T>(x)...);
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, typename... T>
+  auto partial_eval(gf<Variable, Target, Singularity, Evaluator>& g, T&&... x) {
+   return partial_eval_impl<Variable, Target, Singularity, Evaluator, false>::template invoke<pos...>(g(), std::forward<T>(x)...);
   }
 
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt, typename... T>
-  auto partial_eval(gf<Variable, Target, Singularity, Opt> const& g, T&&... x) {
-   return partial_eval_impl<Variable, Target, Singularity, Opt, true>::template invoke<pos...>(g(), std::forward<T>(x)...);
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, typename... T>
+  auto partial_eval(gf<Variable, Target, Singularity, Evaluator> const& g, T&&... x) {
+   return partial_eval_impl<Variable, Target, Singularity, Evaluator, true>::template invoke<pos...>(g(), std::forward<T>(x)...);
   }
 
   /// ---------------------------  curry  ---------------------------------
@@ -75,8 +75,8 @@ namespace triqs { namespace gfs {
   // curry<1>(g) returns : y-> x,z... -> g(x,y,z...)
 
   // The implementation (can be overloaded for some types)
-  template <int... pos, typename Target, typename Singularity, typename Opt, bool IsConst, typename... Ms>
-  auto curry_impl(gf_view<cartesian_product<Ms...>, Target, Singularity, Opt, IsConst> g) {
+  template <int... pos, typename Target, typename Singularity, typename Evaluator, bool IsConst, typename... Ms>
+  auto curry_impl(gf_view<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsConst> g) {
    // pick up the meshed corresponding to the curryed variables
    auto meshes_tuple = triqs::tuple::filter<pos...>(g.mesh().components());
    using var_t = cart_prod<triqs::tuple::filter_t<std::tuple<Ms...>, pos...>>;
@@ -86,27 +86,31 @@ namespace triqs { namespace gfs {
   };
 
   // The user function
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt, bool IsConst>
-  auto curry(gf_view<Variable, Target, Singularity, Opt, IsConst> g) {
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
+  auto curry(gf_impl<Variable, Target, Singularity, Evaluator, IsView, IsConst> const &g) {
    return curry_impl<pos...>(g());
   }
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt>
-  auto curry(gf<Variable, Target, Singularity, Opt>& g) {
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsConst>
+  auto curry(gf_view<Variable, Target, Singularity, Evaluator, IsConst> g) {
    return curry_impl<pos...>(g());
   }
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Opt>
-  auto curry(gf<Variable, Target, Singularity, Opt> const& g) {
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator>
+  auto curry(gf<Variable, Target, Singularity, Evaluator>& g) {
+   return curry_impl<pos...>(g());
+  }
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator>
+  auto curry(gf<Variable, Target, Singularity, Evaluator> const& g) {
    return curry_impl<pos...>(g());
   }
 
  //---------------------------------------------
 
   // A generic impl. for cartesian product
-  template <typename Target, typename Singularity, typename Opt, bool IsConst, typename... Ms>
-  struct partial_eval_impl<cartesian_product<Ms...>, Target, Singularity, Opt, IsConst> {
+  template <typename Target, typename Singularity, typename Evaluator, bool IsConst, typename... Ms>
+  struct partial_eval_impl<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsConst> {
 
    template <int... pos, typename... T>
-   static auto invoke(gf_view<cartesian_product<Ms...>, Target, Singularity, Opt, IsConst> g, T const&... x) {
+   static auto invoke(gf_view<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsConst> g, T const&... x) {
     using var_t = cart_prod<triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>;
     // meshes of the returned gf_view : just drop the mesh of the evaluated variables
     auto meshes_tuple_partial = triqs::tuple::filter_out<pos...>(g.mesh().components());
@@ -118,7 +122,7 @@ namespace triqs { namespace gfs {
     auto singv = partial_eval<pos...>(g.singularity(), x...);
     using r_sing_t = typename decltype(singv)::regular_type;
     // finally, we build the view on this data.
-    using r_t = gf_view<var_t, Target, r_sing_t, Opt, IsConst>;
+    using r_t = gf_view<var_t, Target, r_sing_t, void, IsConst>;
     return r_t{m, arr2, singv, {}, {}};
    }
   };
