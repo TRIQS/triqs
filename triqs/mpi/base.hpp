@@ -19,54 +19,10 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/c14.hpp>
-#include <mpi.h>
-
-namespace boost { // forward declare in case we do not include boost.
-namespace mpi {
- class communicator;
-}
-}
+#include "./communicator.hpp"
 
 namespace triqs {
 namespace mpi {
-
- /// Environment
- struct environment {
-  // MPICH does not allow Init without argc, argv, so we do not allow default constructors
-  // for portability, cf #133
-  environment(int argc, char *argv[]) { MPI_Init(&argc, &argv); }
-  ~environment() { MPI_Finalize(); }
- };
-
- /// The communicator. Todo : add more constructors.
- class communicator {
-  MPI_Comm _com = MPI_COMM_WORLD;
-
-  public:
-  communicator() = default;
-
-  MPI_Comm get() const { return _com; }
-
-  inline communicator(boost::mpi::communicator);
-
-  /// Cast to the boost mpi communicator
-  inline operator boost::mpi::communicator () const;
-
-  int rank() const {
-   int num;
-   MPI_Comm_rank(_com, &num);
-   return num;
-  }
-
-  int size() const {
-   int num;
-   MPI_Comm_size(_com, &num);
-   return num;
-  }
-
-  void barrier() const { MPI_Barrier(_com); }
- };
 
  /// a tag for each operation
  namespace tag {

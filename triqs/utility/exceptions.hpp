@@ -19,10 +19,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#pragma once
 
-#ifndef TRIQS_EXCEPTIONS_H 
-#define TRIQS_EXCEPTIONS_H
-
+#include "../mpi/communicator.hpp"
 #include "./stack_trace.hpp"
 #include <exception>
 #include <string>
@@ -37,7 +36,13 @@ namespace triqs {
   virtual ~exception() throw() {}
   template<typename T> exception & operator  <<( T const & x) { std::stringstream f; f<<acc<<x; acc = f.str(); return *this;}
   exception & operator  <<( const char * mess ) { (*this) << std::string(mess); return *this;}// to limit code size
-  virtual const char* what() const throw() { return acc.c_str();}
+  virtual const char* what() const throw() {
+   std::stringstream out;
+   out << acc << "\n Error occurred on node ";
+   if (mpi::is_initialized()) out << mpi::communicator().rank()<<"\n"; 
+   out << " C++ trace is : " << trace();
+   return out.str().c_str();
+  }
   virtual const char* trace() const throw() { return _trace.c_str();}
  };
  
@@ -60,5 +65,4 @@ namespace triqs {
 #define TRIQS_RUNTIME_ERROR TRIQS_ERROR(triqs::runtime_error,"runtime error")
 #define TRIQS_KEYBOARD_INTERRUPT TRIQS_ERROR(triqs::keyboard_interrupt,"Ctrl-C")
 
-#endif
 
