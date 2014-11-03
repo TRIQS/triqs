@@ -19,12 +19,7 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/vector.hpp>
-#include <triqs/arrays/asserts.hpp>
-#include <triqs/arrays/algorithms.hpp>
-#include <triqs/arrays/mapped_functions.hpp>
+#include <triqs/arrays.hpp>
 #include <iostream>
 
 using namespace triqs::arrays;
@@ -32,8 +27,6 @@ using namespace indexmaps;
 using namespace storages;
 
 int main(int argc, char **argv) {
-
- 
 
  {
   array<double,1> A(3),B(3);

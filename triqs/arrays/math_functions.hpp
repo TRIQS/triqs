@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_MAPPED_FNT_H
-#define TRIQS_ARRAYS_MAPPED_FNT_H
+#pragma once
 #include "./functional/map.hpp"
 #include <boost/preprocessor/seq/for_each.hpp>
 namespace triqs { namespace arrays {
@@ -78,6 +77,14 @@ namespace triqs { namespace arrays {
 #undef MAP_IT
 #undef TRIQS_ARRAYS_MATH_FNT
 
+ // --------------- Computation of the matrix norm --> move into triqs::arrays ------------------------
+
+ inline double frobenius_norm(matrix<double> const& a) {
+  return std::sqrt(fold([](double r, double x)->double {
+   auto ab = std::abs(x);
+   return r + ab * ab;
+  })(a));
+ }
+
 }}//namespace triqs::arrays 
-#endif
 

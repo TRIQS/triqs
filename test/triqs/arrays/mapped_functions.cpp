@@ -19,10 +19,7 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-
-#include <triqs/arrays/mapped_functions.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/array.hpp>
+#include <triqs/arrays.hpp>
 #include <iostream>
 
 using namespace triqs::arrays;
