@@ -31,6 +31,7 @@ namespace triqs {
 
  class exception : public std::exception {
   std::string acc, _trace;
+  mutable std::string _what;
   public:
   exception() throw() :std::exception() { _trace = utility::stack_trace();}
   virtual ~exception() throw() {}
@@ -39,13 +40,16 @@ namespace triqs {
   virtual const char* what() const throw() {
    std::stringstream out;
    out << acc << "\n Error occurred on node ";
-   if (mpi::is_initialized()) out << mpi::communicator().rank()<<"\n"; 
-   out << " C++ trace is : " << trace();
-   return out.str().c_str();
+   if (mpi::is_initialized()) out << mpi::communicator().rank() << "\n";
+#ifdef TRIQS_EXCEPTION_SHOW_CPP_TRACE
+   out << " C++ trace is : " << trace() << "\n";
+#endif
+   _what = out.str();
+   return _what.c_str();
   }
-  virtual const char* trace() const throw() { return _trace.c_str();}
+  virtual const char* trace() const throw() { return _trace.c_str(); }
  };
- 
+
  class runtime_error : public exception {
   public:
   runtime_error() throw() : exception() {}
