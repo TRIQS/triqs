@@ -175,6 +175,10 @@ namespace gfs {
    //ar &TRIQS_MAKE_NVP("domain", _dom);
    ar &TRIQS_MAKE_NVP("size", _n_pts);
    ar &TRIQS_MAKE_NVP("kind", _positive_only);
+   ar &TRIQS_MAKE_NVP("_first_index", _first_index);
+   ar &TRIQS_MAKE_NVP("_last_index", _last_index);
+   ar &TRIQS_MAKE_NVP("_first_index_window", _first_index_window);
+   ar &TRIQS_MAKE_NVP("_last_index_window", _last_index_window);
   }
 
   /// Simple print (just blabla and the size)
