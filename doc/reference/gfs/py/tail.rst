@@ -97,18 +97,17 @@ coefficients :math:`(\mathbf{a}_{-1})_{00} = 0`\ ,
 .. runblock:: python
 
     from pytriqs.gf.local import *
-    import numpy
+    from numpy import array
+    
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
-    g <<= inverse( iOmega_n + 0.5 )
+    g << inverse( iOmega_n + 0.5 )
     g.tail.zero()
-    fixed_coeff=numpy.zeros([1,1,3],float)
-    fixed_coeff[0,0,0]=0.
-    fixed_coeff[0,0,1]=0.
-    fixed_coeff[0,0,2]=1.
-    order_max = 4
-    fit_start = 10.
-    fit_stop = 20.
-    g.fit_tail(fixed_coeff, order_max, fit_start, fit_stop)
+    fixed_coeff = TailGf(1,1,3,0)
+    fixed_coeff[0] = array([[0.]])
+    fixed_coeff[1] = array([[0.]])
+    fixed_coeff[2] = array([[1.]])
+    fit_n_moments = 4
+    fit_start = 10
+    fit_stop = 20
+    g.fit_tail(fixed_coeff, fit_n_moments, fit_start, fit_stop)
     print "g.tail = ", g.tail
-
-
