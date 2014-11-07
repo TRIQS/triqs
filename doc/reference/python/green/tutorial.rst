@@ -28,35 +28,35 @@ the different steps of the example:
    :lines: 1-2
 
 This imports all the necessary classes to manipulate Green's functions. In this example it allows
-to use ``GfImFreq``, ``BlockGf`` :
+to use ``GfImFreq``:
 
 .. literalinclude:: example.py
    :lines: 4-5
 
 This creates a **block** Green's function which has just one index
-(1). ``Beta`` is the inverse temperature, ``NFreqMatsubara`` the number of
-Matsubara frequencies. 
+(1). ``beta`` is the inverse temperature, ``n_points`` the number of
+Matsubara frequencies.
 
 .. literalinclude:: example.py
    :lines: 6-6
 
 This initializes the block with :math:`1/(i \omega_n + 0.5)`.
-Two points are worth noting here : 
+Two points are worth noting here :
 
-* The right hand side (RHS) of this statement is a *lazy* expression : its evaluation is delayed until 
+* The right hand side (RHS) of this statement is a *lazy* expression : its evaluation is delayed until
   it is needed to fill the Green function.
 
-* The funny *<<=* operator means "set from". It fills the Green function with the evaluation of the expression 
-  at the right. 
-  
+* The funny *<<=* operator means "set from". It fills the Green function with the evaluation of the expression
+  at the right.
+
 
 .. literalinclude:: example.py
    :lines: 9-10
-  
+
 These lines plot the block Green's function (both the real and imaginary parts) using
 the matplotlib plotter. More details can be found in the section
 :ref:`plotting`.
-  
+
 A slightly more complicated example
 --------------------------------------------------
 
@@ -66,9 +66,9 @@ construct the corresponding 2x2 Green's function:
 
 .. math::
 
-  \hat{G}^\mathrm{s+d} (i \omega_n) = \begin{pmatrix} i\omega_n - \epsilon_d & V \\ V & \Delta^{-1} \end{pmatrix}^{-1}
+  \hat{G}^\mathrm{s+d} (\omega) = \begin{pmatrix} \omega - \epsilon_d & V \\ V & \Delta^{-1} \end{pmatrix}^{-1}
 
-This is done with the code : 
+This is done with the code :
 
 .. plot:: reference/python/green/impinbath.py
    :include-source:
@@ -83,7 +83,7 @@ this example:
 
 In this constructor for the block Green's function, we specify that there are two indices s and d.
 Because it is a real-frequency Green's function we need to define the mesh on which it is
-computed. This is done with the ``MeshArray`` option.
+computed. This is done with the ``window`` option.
 
 .. literalinclude:: impinbath.py
    :lines: 8-11
