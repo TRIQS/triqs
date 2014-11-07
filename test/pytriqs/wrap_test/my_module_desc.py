@@ -111,6 +111,8 @@ module.add_function (name = "use_fnt_iid", signature = "void(std::function<int(i
 
 module.add_function (name = "map_to_mapvec", signature = "std::map<std::string,std::vector<int>>(std::map<std::string,int> m)", doc = "DOC of print_map")
 
+module.add_function (name = "set_to_set", signature = "std::set<int>(std::set<std::string> s)", doc = "DOC of print_map")
+
 def f1(x,y):
     print " I am in f1 ", x,y
     print y + 1/0.2
