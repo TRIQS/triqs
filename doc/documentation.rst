@@ -77,3 +77,11 @@ Version compatibility
 
    versions
 
+FAQs and useful code snippets
+-----------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   faqs
+
