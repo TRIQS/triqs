@@ -34,16 +34,30 @@ namespace gfs {
  template <typename T> auto __get_index(mesh_point<T> &&x) { return x.index(); }
  template <typename T> auto __get_index(mesh_point<T> &x) { return x.index(); }
 
+ template <typename... Ms> struct cartesian_product {
+  using type = std::tuple<Ms...>;
+  static constexpr size_t size = sizeof...(Ms);
+ };
+
+ // template <typename... Ms>  constexpr int get_n_variables(cartesian_product<Ms...>) { return sizeof...(Ms);}
+ template <typename... Ms> struct get_n_variables<cartesian_product<Ms...>> {
+  static const int value = sizeof...(Ms);
+ };
+
+ // alias
+ template <typename... Ms> struct cartesian_product<std::tuple<Ms...>> : cartesian_product<Ms...> {};
+
  /** Cartesian product of meshes */
- template <typename... Meshes> struct mesh_product : tag::composite {
-  using domain_t = domain_product<typename Meshes::domain_t...>;
-  using m_tuple_t = std::tuple<Meshes...>;
-  using m_pt_tuple_t = std::tuple<typename Meshes::mesh_point_t...>;
+ // the mesh is simply a cartesian product
+ template <typename... Ms> struct gf_mesh<cartesian_product<Ms...>> : tag::composite {
+  using domain_t = domain_product<typename gf_mesh<Ms>::domain_t...>;
+  using m_tuple_t = std::tuple<gf_mesh<Ms>...>;
+  using m_pt_tuple_t = std::tuple<typename gf_mesh<Ms>::mesh_point_t...>;
   using domain_pt_t = typename domain_t::point_t;
-  using linear_index_t = std::tuple<typename Meshes::linear_index_t...>;
+  using linear_index_t = std::tuple<typename gf_mesh<Ms>::linear_index_t...>;
   
   struct index_t {
-   std::tuple<typename Meshes::index_t...> _i;
+   std::tuple<typename gf_mesh<Ms>::index_t...> _i;
    // construct with at least 2 arguments
    // The mesh point are replaced by their index.
    template <typename Arg0, typename Arg1, typename... Args>
@@ -54,11 +68,11 @@ namespace gfs {
    index_t(index_t &&) = default;
   };
 
-  static constexpr int dim = sizeof...(Meshes);
+  static constexpr int dim = sizeof...(Ms);
 
-  mesh_product() = default;
-  mesh_product(Meshes const &... meshes) : m_tuple(meshes...), _dom(meshes.domain()...) {}
-  mesh_product(mesh_product const &) = default;
+  gf_mesh() = default;
+  gf_mesh(gf_mesh<Ms> const &... meshes) : m_tuple(meshes...), _dom(meshes.domain()...) {}
+  gf_mesh(gf_mesh const &) = default;
 
   domain_t const &domain() const { return _dom; }
   m_tuple_t const &components() const { return m_tuple; }
@@ -68,20 +82,20 @@ namespace gfs {
   size_t size() const {
    return triqs::tuple::fold([](auto const &m, size_t R) { return R * m.size(); }, m_tuple, 1);
   }
-/*
+
   /// Scatter the first mesh over the communicator c
-  friend mesh_product mpi_scatter(mesh_product const &m, mpi::communicator c, int root) {
+  friend gf_mesh mpi_scatter(gf_mesh const &m, mpi::communicator c, int root) {
    auto r = m; // same domain, but mesh with a window. Ok ?
    std::get<0>(r.m_tuple) = mpi_scatter(std::get<0>(r.m_tuple), c, root);
    return r;
   }
 
   /// Opposite of scatter : rebuild the original mesh, without a window
-  friend mesh_product mpi_gather(mesh_product m, mpi::communicator c, int root) {
+  friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
    auto r = m; // same domain, but mesh with a window. Ok ?
    std::get<0>(r.m_tuple) = mpi_gather(std::get<0>(r.m_tuple), c, root);
    return r;
-  */
+  }
 
    /// The sizes of all mesh components
   utility::mini_vector<size_t, dim> size_of_components() const {
@@ -125,7 +139,7 @@ namespace gfs {
 
   /// The wrapper for the mesh point
   class mesh_point_t : tag::mesh_point {
-   const mesh_product *m;
+   const gf_mesh *m;
    m_pt_tuple_t _c;
    bool _atend;
    struct F1 {
@@ -134,15 +148,15 @@ namespace gfs {
 
    public:
    mesh_point_t() = default;
-   mesh_point_t(mesh_product const &m_, index_t index_)
+   mesh_point_t(gf_mesh const &m_, index_t index_)
       : m(&m_)
       , _c(triqs::tuple::map_on_zip([](auto const & m, auto const & i) { return m[i]; }, m_.m_tuple, index_._i))
       , _atend(false) {}
-   mesh_point_t(mesh_product const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.m_tuple)), _atend(false) {}
+   mesh_point_t(gf_mesh const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.m_tuple)), _atend(false) {}
    //mesh_point_t(typename Meshes::mesh_point_t const &...mp) : _c (mp...), _atend(false)
    m_pt_tuple_t const &components_tuple() const { return _c; }
    linear_index_t linear_index() const { return m->mp_to_linear(_c); }
-   const mesh_product *mesh() const { return m; }
+   const gf_mesh *mesh() const { return m; }
 
    using cast_t = domain_pt_t;
    operator cast_t() const { return m->index_to_point(index); }
@@ -170,27 +184,27 @@ namespace gfs {
 
   /// Accessing a point of the mesh
   mesh_point_t operator[](index_t const &i) const { return mesh_point_t(*this, i); }
-  mesh_point_t operator()(typename Meshes::index_t... i) const { return (*this)[index_t{i...}]; }
+  mesh_point_t operator()(typename gf_mesh<Ms>::index_t... i) const { return (*this)[index_t{i...}]; }
 
   /// Iterating on all the points...
-  using const_iterator = mesh_pt_generator<mesh_product>;
+  using const_iterator = mesh_pt_generator<gf_mesh>;
   const_iterator begin() const { return const_iterator(this); }
   const_iterator end() const { return const_iterator(this, true); }
   const_iterator cbegin() const { return const_iterator(this); }
   const_iterator cend() const { return const_iterator(this, true); }
 
   /// Mesh comparison
-  friend bool operator==(mesh_product const &M1, mesh_product const &M2) { return M1.m_tuple == M2.m_tuple; }
+  friend bool operator==(gf_mesh const &M1, gf_mesh const &M2) { return M1.m_tuple == M2.m_tuple; }
 
   /// Write into HDF5
-  friend void h5_write(h5::group fg, std::string subgroup_name, mesh_product const &m) {
+  friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const &m) {
    h5::group gr = fg.create_group(subgroup_name);
    auto l = [gr](int N, auto const &m) { h5_write(gr, "MeshComponent" + std::to_string(N), m); };
    triqs::tuple::for_each_enumerate(m.components(), l);
   }
 
   /// Read from HDF5
-  friend void h5_read(h5::group fg, std::string subgroup_name, mesh_product &m) {
+  friend void h5_read(h5::group fg, std::string subgroup_name, gf_mesh &m) {
    h5::group gr = fg.open_group(subgroup_name);
    auto l = [gr](int N, auto &m) { h5_read(gr, "MeshComponent" + std::to_string(N), m); };
    triqs::tuple::for_each_enumerate(m.components(), l);
@@ -203,7 +217,7 @@ namespace gfs {
    triqs::tuple::for_each_enumerate(m_tuple, l);
   }
 
-  friend std::ostream &operator<<(std::ostream &sout, mesh_product const &m) { return sout << "Product Mesh"; }
+  friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) { return sout << "Product Mesh"; }
 
   private:
   m_tuple_t m_tuple;
@@ -225,11 +239,8 @@ namespace gfs {
 
 /// std::get (mesh) return the component...
 namespace std {
-
-template <int pos, typename... M> decltype(auto) get(triqs::gfs::mesh_product<M...> const &m) {
+template <int pos, typename... M> decltype(auto) get(triqs::gfs::gf_mesh<M...> const &m) {
  return std::get<pos>(m.components());
 }
-
 }
-
 

@@ -28,26 +28,6 @@
 namespace triqs {
 namespace gfs {
 
- template <typename... Ms> struct cartesian_product {
-  using type = std::tuple<Ms...>;
-  static constexpr size_t size = sizeof...(Ms);
- };
-
- // template <typename... Ms>  constexpr int get_n_variables(cartesian_product<Ms...>) { return sizeof...(Ms);}
- template <typename... Ms> struct get_n_variables<cartesian_product<Ms...>> {
-  static const int value = sizeof...(Ms);
- };
-
- // use alias
- template <typename... Ms> struct cartesian_product<std::tuple<Ms...>> : cartesian_product<Ms...> {};
-
- // the mesh is simply a cartesian product
- template <typename... Ms> struct gf_mesh<cartesian_product<Ms...>> : mesh_product<gf_mesh<Ms>...> {
-  using B = mesh_product<gf_mesh<Ms>...>;
-  gf_mesh() = default;
-  gf_mesh(gf_mesh<Ms>... ms) : B{std::move(ms)...} {}
- };
-
  // special case : we need to pop for all the variables
  template <typename... Ms, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
  auto get_target_shape(gf_impl<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsView, IsConst> const &g) {

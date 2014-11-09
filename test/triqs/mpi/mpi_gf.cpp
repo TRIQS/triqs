@@ -24,7 +24,6 @@
 #include <triqs/gfs.hpp>
 #include <iostream>
 #include <fstream>
-#include <sstream>
 
 using namespace triqs;
 using namespace triqs::arrays;

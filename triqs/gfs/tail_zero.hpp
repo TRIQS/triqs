@@ -64,4 +64,19 @@ namespace gfs {
  template <typename T> TYPE_DISABLE_IF(tail_zero, std::is_same<T, tail_zero>) operator*(T const &, tail_zero) { return tail_zero(); }
  template <typename T> TYPE_DISABLE_IF(tail_zero, std::is_same<T, tail_zero>) operator/(T const &, tail_zero) { return tail_zero(); }
 }
+
+namespace mpi {
+
+ // ---------------------------------------------------------------------------------------
+ //  Do nothing for tail_zero...
+ // ---------------------------------------------------------------------------------------
+ template <> struct mpi_impl<gfs::tail_zero> {
+  template <typename Tag> static void invoke2(gfs::tail_zero &lhs, Tag, communicator c, gfs::tail_zero const &a, int root) {}
+  template <typename Tag> static gfs::tail_zero invoke(Tag, communicator c, gfs::tail_zero const &a, int root) {
+   return gfs::tail_zero();
+  }
+  static void reduce_in_place(communicator c, gfs::tail_zero &a, int root) {}
+  static void broadcast(communicator c, gfs::tail_zero &a, int root) {}
+ };
+}
 }
