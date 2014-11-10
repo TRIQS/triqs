@@ -12,23 +12,34 @@
    # compute used_module_list
     recognized_namespace_for_using = {
         'triqs::gfs::' : 'gf',
-        'triqs::params::' : 'parameters',
         'triqs::utility::many_body_operator' : 'operators2',
         }
 
     using_needed_for_modules = {
         'gf' : 'namespace triqs::gfs',
-        'parameters' : 'namespace triqs::params',
         'operators2' : 'triqs::utility::many_body_operator',
         }
 
-    used_module_list = []
+    converters_to_include = { 
+        'std::map' : 'map',
+        'std::vector' : 'vector',
+        'std::string' : 'string',
+        'std::function' : 'function',
+        'std::pair' : 'pair',
+        }
+
+    used_module_list, converters_list = [], []
     def analyse(t) :
         if t is None :return
         #global used_module_list
         for ns, mod in recognized_namespace_for_using.items() :
           if decay(t.canonical_name).startswith(ns) :
             used_module_list.append(mod)
+
+        for ns, mod in converters_to_include.items() :
+          # on OS X, strange __1 name ?
+          if decay(t.canonical_name.replace('std::__1::','std::')).startswith(ns) :
+            converters_list.append(mod)
 
     for c in classes :
         for m in c.constructors :
@@ -88,6 +99,9 @@ module.add_include("${args.filename}")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
+%for conv in converters_list :
+#include <triqs/python_tools/converters/${conv}.hpp>
+%endfor
 %for ns in using_list :
 using ${ns};
 %endfor
