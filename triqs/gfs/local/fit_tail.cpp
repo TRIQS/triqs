@@ -1,7 +1,12 @@
+#define TRIQS_EXCEPTION_SHOW_CPP_TRACE
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include "./fit_tail.hpp"
 namespace triqs { namespace gfs {  
 
  tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int n_moments, int n_min, int n_max) {
+
+  // precondition : check that n_max is not too large
+  n_max = std::min(n_max, int(gf.mesh().size()-1));
 
   tail res(get_target_shape(gf));
   if (known_moments.size())
