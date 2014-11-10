@@ -167,7 +167,7 @@ def copy_and_correct(origin, dest):
   # copy attributes in destination archive
   for at in origin.attrs.keys():
 
-    # figure if the group is a TRIQS scheme
+    # determine if the group is a TRIQS scheme
     if at == 'TRIQS_HDF5_data_scheme':
 
       scheme = origin.attrs['TRIQS_HDF5_data_scheme']
