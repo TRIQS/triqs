@@ -25,11 +25,12 @@
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/c14.hpp>
 #include <triqs/arrays/h5.hpp>
-#include "./tools.hpp"
+#include "gf_indices.hpp"
+#include "tools.hpp"
 #include <triqs/mpi/gf.hpp>
 #include <vector>
-#include "./data_proxies.hpp"
-#include "./local/tail.hpp"
+#include "data_proxies.hpp"
+#include "local/tail.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -103,7 +104,7 @@ namespace gfs {
   };
 
   template <> struct indices<matrix_valued> {
-   using type = indices_2;
+   using type = gf_indices_pair;
   };
 
   // data_proxy contains function to manipulate the data array, but no data itself.

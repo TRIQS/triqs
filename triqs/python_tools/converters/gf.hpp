@@ -19,7 +19,29 @@ template<> struct py_converter<triqs::gfs::nothing> {
 };
 
 // indices
-template<> struct py_converter<triqs::gfs::indices_2> : py_converter_from_reductor<triqs::gfs::indices_2>{};
+template<> struct py_converter<triqs::gfs::gf_indices> {
+ static PyObject *c2py(triqs::gfs::gf_indices indices) {
+  return py_converter<std::vector<std::string>>::c2py(indices.ind);
+ }
+ static bool is_convertible(PyObject *ob, bool raise_exception) {
+  return py_converter<std::vector<std::string>>::is_convertible(ob, raise_exception) ||
+         py_converter<std::vector<int>>::is_convertible(ob, raise_exception);
+ }
+ static triqs::gfs::gf_indices py2c(PyObject *ob) {
+  if (py_converter<std::vector<std::string>>::is_convertible(ob, false)) {
+   return py_converter<std::vector<std::string>>::py2c(ob);
+  }
+  if (py_converter<std::vector<int>>::is_convertible(ob, false)) {
+   auto vec_int = py_converter<std::vector<int>>::py2c(ob);
+   std::vector<std::string> vec_string;
+   for (int i: vec_int) vec_string.push_back(std::to_string(i));
+   return vec_string;
+  }
+ }
+};
+template<> struct py_converter<triqs::gfs::gf_indices_pair> : py_converter_from_reductor<triqs::gfs::gf_indices_pair>{};
+
+// domains
 template<bool B> struct py_converter<triqs::gfs::matsubara_domain<B>> : py_converter_from_reductor<triqs::gfs::matsubara_domain<B>>{};
 template<> struct py_converter<triqs::gfs::R_domain> : py_converter_from_reductor<triqs::gfs::R_domain>{};
 

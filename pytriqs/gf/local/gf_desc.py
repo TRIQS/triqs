@@ -261,15 +261,15 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
                        doc ="The high frequency tail")
 
     g.add_property(name = "indices",
-                   getter = cfunction(calling_pattern="auto result = self_c.indices()[0]", signature = "std::vector<std::string>()"),
+                   getter = cfunction(calling_pattern="auto result = self_c.indices()[0]", signature = "gf_indices()"),
                    doc ="The indices(L)")
 
     g.add_property(name = "indicesL",
-                   getter = cfunction(calling_pattern="auto result = self_c.indices()[0]", signature = "std::vector<std::string>()"),
+                   getter = cfunction(calling_pattern="auto result = self_c.indices()[0]", signature = "gf_indices()"),
                    doc ="The indices(L)")
 
     g.add_property(name = "indicesR",
-                   getter = cfunction(calling_pattern="auto result = self_c.indices()[1]", signature = "std::vector<std::string>()"),
+                   getter = cfunction(calling_pattern="auto result = self_c.indices()[1]", signature = "gf_indices()"),
                    doc ="The indices(R)")
 
     # backward compatibility
