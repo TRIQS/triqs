@@ -28,9 +28,6 @@
 typedef long double max_align_t;
 #endif
 
-// silence some gcc warning
-#pragma GCC diagnostic ignored "-Wliteral-suffix"
-
 #ifdef TRIQS_BUILDING_LIBRARY
 #include <triqs_config.h>
 #else
