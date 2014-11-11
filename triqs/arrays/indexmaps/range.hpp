@@ -47,7 +47,7 @@ namespace arrays {
   std::ptrdiff_t step() const { return step_; }
   
   size_t size() const {
-   std::ptrdiff_t r = (last_ - first_ + 1) / step_;
+   std::ptrdiff_t r = (last_ - first_) / step_;
    if (r < 0) TRIQS_RUNTIME_ERROR << " range with negative size";
    return size_t(r);
   }
