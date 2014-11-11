@@ -6,5 +6,5 @@ Total number of measures: 100000
 Average sign: 1
 
 @Beta:	0.5	Magnetization:	-0.909722
-average_and_error(M) = -363.889 +/- 0.0392374
+average_and_error(M) = -363.889 +/- 0.0553269
 #Beta:	0.5	Autocorr_time:	30.3271
