@@ -1,4 +1,4 @@
-from pytriqs.operators.operators2 import *
+from pytriqs.operators import *
 from itertools import product
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density

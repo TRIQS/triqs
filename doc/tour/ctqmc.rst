@@ -42,7 +42,7 @@ function as well as the average impurity occupancy is stored in the
 .. runblock:: python
 
    from pytriqs.gf.local import *
-   from pytriqs.operators.operators2 import *
+   from pytriqs.operators import *
    from pytriqs.applications.impurity_solvers.cthyb import Solver
    
    # Parameters

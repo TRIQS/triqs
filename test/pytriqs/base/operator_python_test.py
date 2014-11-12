@@ -1,4 +1,4 @@
-from pytriqs.operators.operators2 import *
+from pytriqs.operators import *
 import itertools
 
 C_list = [c(1,0),c(2,0),c(3,0)]
