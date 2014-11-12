@@ -66,7 +66,7 @@ construct the corresponding 2x2 Green's function:
 
 .. math::
 
-  \hat{G}^\mathrm{s+d} (i \omega_n) = \begin{pmatrix} i\omega_n - \epsilon_d & V \\ V & \Delta^{-1} \end{pmatrix}^{-1}
+  \hat{G}^\mathrm{s+d} (\omega_n) = \begin{pmatrix} \omega_n - \epsilon_d & V \\ V & \Delta^{-1} \end{pmatrix}^{-1}
 
 This is done with the code: 
 
