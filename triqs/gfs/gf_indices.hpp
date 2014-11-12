@@ -46,6 +46,12 @@ namespace gfs {
    TRIQS_RUNTIME_ERROR << "Cannot find this string index for the Green's function";
   }
 
+  // the iterator on gf_indices just gives the vector of strings
+  std::vector<std::string>::const_iterator begin() { return ind.begin(); }
+  std::vector<std::string>::const_iterator end() { return ind.end(); }
+  std::vector<std::string>::const_iterator cbegin() { return ind.cbegin(); }
+  std::vector<std::string>::const_iterator cend() { return ind.cend(); }
+
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("ind", ind); }
 
@@ -60,6 +66,8 @@ namespace gfs {
   gf_indices_pair(): ind_pair(2) {}
 
   gf_indices_pair(gf_indices r, gf_indices l): ind_pair({r,l}) {}
+
+  gf_indices_pair(gf_indices r): ind_pair({r,r}) {}
 
   gf_indices_pair(std::vector<std::vector<std::string>> _ind): ind_pair({_ind[0], _ind[1]}) {}
 
