@@ -22,6 +22,7 @@
 
     converters_to_include = { 
         'std::map' : 'map',
+        'std::set' : 'set',
         'std::vector' : 'vector',
         'std::string' : 'string',
         'std::function' : 'function',

@@ -190,6 +190,12 @@ inline std::map<std::string,std::vector<int>> map_to_mapvec(std::map<std::string
   return mm;
 }
 
+inline std::set<int> set_to_set(std::set<std::string> const &s) {
+ std::set<int> ss;
+ for(auto const &x: s) ss.insert(x.size());
+ return ss;
+}
+
 inline std::function<int(int,int)>  make_fnt_ii() {
  return [](int i, int j) { return i + 2*j;}; 
 }
