@@ -77,7 +77,7 @@ namespace triqs { namespace arrays {
 #undef MAP_IT
 #undef TRIQS_ARRAYS_MATH_FNT
 
- // --------------- Computation of the matrix norm --> move into triqs::arrays ------------------------
+ // --------------- Computation of the matrix norm ------------------------
 
  inline double frobenius_norm(matrix<double> const& a) {
   return std::sqrt(fold([](double r, double x)->double {

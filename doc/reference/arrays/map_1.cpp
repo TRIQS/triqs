@@ -2,7 +2,9 @@
 #include <triqs/arrays/functional/fold.hpp>
 using namespace triqs;
 
-double frobenius_norm(arrays::matrix<double> const& a) {
+// FIXME change this function for another function that is not implemented?
+
+double frobenius_norm_of_array(arrays::matrix<double> const& a) {
  auto l = [](double r, double x) {
   auto ab = std::abs(x);
   return r + ab * ab;
@@ -18,6 +20,6 @@ int main() {
  A(i_, j_) << i_ + j_ / 2.0;
 
  std::cout << "A = " << A << std::endl;
- std::cout << "||A|| = " << frobenius_norm(A) << std::endl;
+ std::cout << "||A|| = " << frobenius_norm_of_array(A) << std::endl;
 }
 
