@@ -2,7 +2,6 @@ from wrap_generator import *
 
 # The module
 module = module_(full_name = "my_module", doc = " Doc of my_module ")
-module.add_include("<triqs/../test/pytriqs/wrap_test/a.hpp>") 
 module.add_include("<triqs/arrays.hpp>")
 module.add_include("<triqs/python_tools/converters/string.hpp>")
 module.add_include("<triqs/python_tools/converters/arrays.hpp>")
@@ -11,6 +10,8 @@ module.add_include("<triqs/python_tools/converters/vector.hpp>")
 module.add_include("<triqs/python_tools/converters/function.hpp>")
 module.add_include("<triqs/python_tools/converters/gf.hpp>")
 module.add_include("<triqs/python_tools/converters/map.hpp>")
+module.add_include("<triqs/python_tools/converters/set.hpp>")
+module.add_include("<triqs/../test/pytriqs/wrap_test/a.hpp>")
 
 # one class
 g = class_(
@@ -117,6 +118,8 @@ module.add_function (name = "use_fnt_ii", signature = "void(std::function<int(in
 module.add_function (name = "use_fnt_iid", signature = "void(std::function<int(int,int,double)> f)", doc = "....")
 
 module.add_function (name = "map_to_mapvec", signature = "std::map<std::string,std::vector<int>>(std::map<std::string,int> m)", doc = "DOC of print_map")
+
+module.add_function (name = "set_to_set", signature = "std::set<int>(std::set<std::string> s)", doc = "DOC of set_to_set")
 
 def f1(x,y):
     print " I am in f1 ", x,y

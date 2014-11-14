@@ -35,6 +35,8 @@ use_fnt_iid(fp2)
 
 print map_to_mapvec({'a':1, "b":2, "sjkdf":5})
 
+print set_to_set(set(['abcd','2','345','klmn']))
+
 from pytriqs.archive import *
 import pytriqs.archive.hdf_archive_schemes
 

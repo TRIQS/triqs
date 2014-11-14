@@ -2,6 +2,7 @@
 #include "../wrapper_tools.hpp"
 #include <boost/variant.hpp>
 
+
 namespace triqs {
 namespace py_tools {
 
@@ -11,27 +12,61 @@ struct index_visitor: public boost::static_visitor<PyObject *> {
   PyObject * operator()(T i) { return py_converter<T>::c2py(i); }
 };
 
-// boost::variant<U,V> converter
-// note: this converter is restricted to the case of two possible types
-template<typename U, typename V> struct py_converter<boost::variant<U,V>> {
+// boost::variant<Types...> converter
+template<typename... Types> struct py_converter<boost::variant<Types...>> {
 
- static PyObject *c2py(boost::variant<U,V> index) {
+ using variant_t = boost::variant<Types...>;
+ using types_t = typename variant_t::types;
+ using begin_t = typename boost::mpl::begin<types_t>::type;
+ using end_t = typename boost::mpl::end<types_t>::type;
+
+private:
+
+// Implementation details
+template<typename Iter, typename IterEnd> struct is_convertible_impl {
+ static bool apply(PyObject *ob, bool raise_exception) {
+  return py_converter<typename boost::mpl::deref<Iter>::type>::is_convertible(ob, raise_exception) ||
+         is_convertible_impl<typename boost::mpl::next<Iter>::type,IterEnd>::apply(ob, raise_exception);
+ }
+};
+
+template<typename Iter> struct is_convertible_impl<Iter,Iter> {
+ static bool apply(PyObject *ob, bool raise_exception) { return false; }
+};
+
+template<typename Iter, typename IterEnd> struct py2c_impl {
+ static variant_t apply(PyObject *ob) {
+  if(py_converter<typename boost::mpl::deref<Iter>::type>::is_convertible(ob, false))
+   return py_converter<typename boost::mpl::deref<Iter>::type>::py2c(ob);
+  else
+   return py2c_impl<typename boost::mpl::next<Iter>::type,IterEnd>::apply(ob);
+ }
+};
+
+template<typename Iter> struct py2c_impl<Iter,Iter> {
+ static variant_t apply(PyObject *ob) {
+  // Should never be reached
+  return typename boost::mpl::deref<begin_t>::type();
+ }
+};
+
+public:
+
+ static PyObject *c2py(variant_t index) {
   index_visitor iv;
   return boost::apply_visitor(iv, index);
  }
 
  static bool is_convertible(PyObject *ob, bool raise_exception) {
-  if (py_converter<V>::is_convertible(ob, false) ||
-      py_converter<U>::is_convertible(ob, false)) return true;
+  if (is_convertible_impl<begin_t,end_t>::apply(ob, false)) return true;
   if (raise_exception) {
     PyErr_SetString(PyExc_TypeError, "Cannot convert to variant");
   }
   return false;
  }
 
- static boost::variant<U,V> py2c(PyObject *ob) {
-  if (py_converter<V>::is_convertible(ob, false)) return py_converter<V>::py2c(ob);
-  if (py_converter<U>::is_convertible(ob, false)) return py_converter<U>::py2c(ob);
+ static variant_t py2c(PyObject *ob) {
+  return py2c_impl<begin_t,end_t>::apply(ob);
  }
 
 };
