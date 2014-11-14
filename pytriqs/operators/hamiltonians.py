@@ -3,12 +3,12 @@ from itertools import product
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 
-def h_loc_slater(spin_names,orb_names,off_diag,U_matrix,H_dump=None):
+def h_loc_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None):
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
     H = Operator()
-    mkind = get_mkind(off_diag)
+    mkind = get_mkind(off_diag,map_operator_structure)
     for s1, s2 in product(spin_names,spin_names):
         for a1, a2, a3, a4 in product(orb_names,orb_names,orb_names,orb_names):
             U_val = U_matrix[orb_names.index(a1),orb_names.index(a2),orb_names.index(a3),orb_names.index(a4)]
@@ -28,12 +28,12 @@ def h_loc_slater(spin_names,orb_names,off_diag,U_matrix,H_dump=None):
 
     return H
 
-def h_loc_kanamori(spin_names,orb_names,off_diag,U,Uprime,J_hund,H_dump=None):
+def h_loc_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operator_structure=None,H_dump=None):
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
     H = Operator()
-    mkind = get_mkind(off_diag)
+    mkind = get_mkind(off_diag,map_operator_structure)
 
     # density terms:
     for s1, s2 in product(spin_names,spin_names):
@@ -93,12 +93,12 @@ def h_loc_kanamori(spin_names,orb_names,off_diag,U,Uprime,J_hund,H_dump=None):
 
     return H
 
-def h_loc_density(spin_names,orb_names,off_diag,U,Uprime,H_dump=None):
+def h_loc_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_structure=None,H_dump=None):
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
     H = Operator()
-    mkind = get_mkind(off_diag)
+    mkind = get_mkind(off_diag,map_operator_structure)
     for s1, s2 in product(spin_names,spin_names):
         for a1, a2 in product(orb_names,orb_names):
             if (s1==s2):
@@ -118,11 +118,18 @@ def h_loc_density(spin_names,orb_names,off_diag,U,Uprime,H_dump=None):
     return H
 
 # Set function to make index for GF blocks given spin sn and orbital name on
-def get_mkind(off_diag):
-    if off_diag:
-        mkind = lambda sn, on: (sn, on)
+def get_mkind(off_diag,map_operator_structure):
+
+    if (off_diag is None) and (map_operator_structure is None):
+        raise ValueError("hamiltonians: provide either off_diag or map_operator_structure.")
+
+    if map_operator_structure is None:
+        if off_diag:
+            mkind = lambda sn, on: (sn, on)
+        else:
+            mkind = lambda sn, on: (sn+'_%s'%on, 0)
     else:
-        mkind = lambda sn, on: (sn+'_%s'%on, 0)
+        mkind = lambda sn, on: map_operator_structure[(sn,on)]
 
     return mkind
 
