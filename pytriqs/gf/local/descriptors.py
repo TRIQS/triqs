@@ -133,13 +133,13 @@ class Wilson (Base):
         Id = numpy.identity(G.N1,numpy.complex_)
 
         if type(G.mesh) == MeshImFreq:
-            f = lambda om: (-1/(2.0*D)) * numpy.log((om-D)/(om+D)) * Id
+            f = lambda om: (-1/(2.0*D)) * numpy.log(numpy.divide(om-D,om+D)) * Id
         elif type(G.mesh) == MeshReFreq:
             def f(om):
               if (om.real > -D) and (om.real < D):
-                return -numpy.log(abs(om-D)/abs(om+D))*Id/(2*D) - 1j*pi*Id/(2*D)
+                return -numpy.log(numpy.divide(abs(om-D),abs(om+D)))*Id/(2*D) - 1j*pi*Id/(2*D)
               else:
-                return -numpy.log(abs(om-D)/abs(om+D))*Id/(2*D)
+                return -numpy.log(numpy.divide(abs(om-D),abs(om+D)))*Id/(2*D)
         else:
             raise TypeError, "This initializer is only correct in frequency"
 
@@ -151,7 +151,11 @@ class Wilson (Base):
         G.tail[5][:,:] = D**4/5.0*Id
         G.tail.mask.fill(6)
 
+        # Silence "RuntimeWarning: divide by zero encountered in divide"
+        old_err = numpy.seterr(divide='ignore')
+
         Function(f,None)(G)
+        numpy.seterr(**old_err)
         return G
 
 
