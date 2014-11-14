@@ -22,14 +22,13 @@
 #include <triqs/utility/dressed_iterator.hpp>
 
 #include <ostream>
-#include <limits>
 #include <cmath>
-#include <complex>
 #include <boost/variant.hpp>
 #include <boost/operators.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/variant.hpp>
+#include <triqs/utility/draft/numeric_ops.hpp>
 
 namespace triqs {
 namespace utility {
@@ -46,8 +45,6 @@ namespace utility {
      //boost::subtractable2_left<many_body_operator<scalar_t>, scalar_t>, // a-op
      boost::multipliable<many_body_operator<scalar_t>, scalar_t>, // op*a a*op op/a
      boost::dividable<many_body_operator<scalar_t>, scalar_t> {
-
-  static constexpr scalar_t threshold = std::numeric_limits<scalar_t>::epsilon();
 
   public:
   /// The indices of the C, C^+ operators are a vector of int/string
@@ -106,7 +103,7 @@ namespace utility {
   static many_body_operator make_canonical(bool is_dag, indices_t indices) {
    many_body_operator res;
    auto m = monomial_t{canonical_ops_t{is_dag, indices}};
-   res.monomials.insert({m, 1.0});
+   res.monomials.insert({m, scalar_t(1.0)});
    return res;
   }
 
@@ -153,7 +150,7 @@ namespace utility {
   //friend many_body_operator operator/ (many_body_operator const & op, scalar_t alpha) { return op/alpha; }
 
   many_body_operator& operator*=(scalar_t alpha) {
-   if (std::abs(alpha) < 100*std::abs(threshold)) {
+   if (triqs::utility::is_zero(alpha)) {
     monomials.clear();
    } else {
     for (auto& m : monomials) m.second *= alpha;
@@ -210,8 +207,6 @@ namespace utility {
   // implementation details of dagger
   //
   private:
-  static double _dagger(double x) { return x; }
-  static std::complex<double> _dagger(std::complex<double> x) { return conj(x); }
 
   static canonical_ops_t _dagger(canonical_ops_t const& cop) {
    return {!cop.dagger, cop.indices};
@@ -227,7 +222,7 @@ namespace utility {
   // dagger
   friend many_body_operator dagger(many_body_operator const& op) {
    many_body_operator res;
-   for (auto const& x : op) res.monomials.insert({_dagger(x.monomial), _dagger(x.coef)});
+   for (auto const& x : op) res.monomials.insert({_dagger(x.monomial), triqs::utility::_conj(x.coef)});
    return res;
   }
 
@@ -282,7 +277,7 @@ namespace utility {
 
   // Erase a monomial with a close-to-zero coefficient.
   static void erase_zero_monomial(monomials_map_t& m, typename monomials_map_t::iterator& it) {
-   if (std::abs(it->second) < 100*std::abs(threshold)) m.erase(it);
+   if (triqs::utility::is_zero(it->second)) m.erase(it);
   }
 
   struct print_visitor : public boost::static_visitor<> {
@@ -329,17 +324,17 @@ namespace utility {
  // ---- factories --------------
 
  // Free functions to make creation/annihilation operators
- template <typename... IndexTypes> many_body_operator<double> c(IndexTypes... indices) {
-  return many_body_operator<double>::make_canonical(false, many_body_operator<double>::indices_t{indices...});
+ template <typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> c(IndexTypes... indices) {
+  return many_body_operator<scalar_t>::make_canonical(false, typename many_body_operator<scalar_t>::indices_t{indices...});
   // need to put many_body_operator<double>::indices_t because {} constructor is explicit !?
  }
 
- template <typename... IndexTypes> many_body_operator<double> c_dag(IndexTypes... indices) {
-  return many_body_operator<double>::make_canonical(true, many_body_operator<double>::indices_t{indices...});
+ template <typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> c_dag(IndexTypes... indices) {
+  return many_body_operator<scalar_t>::make_canonical(true, typename many_body_operator<scalar_t>::indices_t{indices...});
  }
 
- template <typename... IndexTypes> many_body_operator<double> n(IndexTypes... indices) {
-  return c_dag(indices...) * c(indices...);
+ template <typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> n(IndexTypes... indices) {
+  return c_dag<scalar_t>(indices...) * c<scalar_t>(indices...);
  }
 }
 }
