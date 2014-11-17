@@ -24,8 +24,12 @@ template<> struct py_converter<triqs::gfs::gf_indices> {
   return py_converter<std::vector<std::string>>::c2py(indices.ind);
  }
  static bool is_convertible(PyObject *ob, bool raise_exception) {
-  return py_converter<std::vector<std::string>>::is_convertible(ob, raise_exception) ||
-         py_converter<std::vector<int>>::is_convertible(ob, raise_exception);
+  if (py_converter<std::vector<std::string>>::is_convertible(ob, false) ||
+      py_converter<std::vector<int>>::is_convertible(ob, false)) return true;
+  if (raise_exception) {
+    PyErr_SetString(PyExc_TypeError, "Cannot convert to triqs::gfs::gf_indices");
+  }
+  return false;
  }
  static triqs::gfs::gf_indices py2c(PyObject *ob) {
   if (py_converter<std::vector<std::string>>::is_convertible(ob, false)) {
@@ -37,6 +41,8 @@ template<> struct py_converter<triqs::gfs::gf_indices> {
    for (int i: vec_int) vec_string.push_back(std::to_string(i));
    return vec_string;
   }
+  TRIQS_RUNTIME_ERROR << "Internal error: py2c called for a Python object incompatible with gf_indices";
+  return {};
  }
 };
 template<> struct py_converter<triqs::gfs::gf_indices_pair> : py_converter_from_reductor<triqs::gfs::gf_indices_pair>{};
