@@ -45,8 +45,7 @@ template<typename Iter, typename IterEnd> struct py2c_impl {
 
 template<typename Iter> struct py2c_impl<Iter,Iter> {
  static variant_t apply(PyObject *ob) {
-  // Should never be reached
-  return typename boost::mpl::deref<begin_t>::type();
+  TRIQS_RUNTIME_ERROR << "Internal error: py2c called for a Python object incompatible with boost::variant";
  }
 };
 
