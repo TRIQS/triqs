@@ -73,7 +73,7 @@ namespace gfs {
   auto t_inv = inverse(t);
   auto omin = x.order_min();
   auto omax = x.order_max(); // precompute since long to do...
-  if ((omin<=0) && (omax>=0)) r = t * x(0);
+  if ((omin<=0) && (omax>=0)) r(0) = x(0);
   tail z = t;
   for (int u = -1; u >= omin; --u) {
    r += x(u) * z;
