@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -20,13 +19,5 @@
 #
 ################################################################################
 
-__all__ = ['archive', 'dos', 'fit', 'gf', 'lattice', 'plot', 'sumk', 'utility', 'parameters', 'wrap_generator']
-
-import sys
-if 'additional_builtin_modules' in dir(sys) :
-
-    from version import greeting
-    import utility.mpi as mpi
-    if (mpi.world.rank == 0) :  sys.stderr.write(greeting)
-
+hdf5_command_path = "@TRIQS_HDF5_COMMAND_PATH@"
 

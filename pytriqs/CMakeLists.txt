@@ -17,9 +17,11 @@ find_package(PythonWrapperMacro)
 SET(PYTHON_SOURCES 
  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
  ${CMAKE_CURRENT_BINARY_DIR}/version.py
+ ${CMAKE_CURRENT_BINARY_DIR}/cmake_info.py
  ${CMAKE_CURRENT_BINARY_DIR}/magic.py
  )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake_info.py.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_info.py)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in ${CMAKE_CURRENT_BINARY_DIR}/version.py)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utility/mpi.py.in ${CMAKE_CURRENT_BINARY_DIR}/utility/mpi.py)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/magic.py.in ${CMAKE_CURRENT_BINARY_DIR}/magic.py @ONLY)
