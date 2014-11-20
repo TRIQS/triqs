@@ -18,6 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+// This test does not like the macro check , we only check memory_layout, no data here
+#ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#undef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#endif
+
 #include "./common.hpp"
 #include <iostream>
 #include <triqs/arrays.hpp>
@@ -26,6 +31,8 @@ using namespace triqs::arrays;
 using namespace triqs::arrays::indexmaps;
 
 template <typename ML1, typename ML2, typename... Args> void test(ML1 ml1, ML2 ml2, Args... x) {
+
+ try { 
 
  cuboid::map<ML2::rank> m(ml2);
  slicer<cuboid::map<ML2::rank>, Args...> S;
@@ -38,6 +45,9 @@ template <typename ML1, typename ML2, typename... Args> void test(ML1 ml1, ML2 m
   exit(1);
  }
  std::cout << "----------------------" << std::endl;
+
+ }
+ catch (std::exception const &e) { std::cout  << " error "<< e.what() << std::endl;} 
 }
 
 
