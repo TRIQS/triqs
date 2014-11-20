@@ -245,7 +245,7 @@ class BlockGf(object):
         return self
 
     def __ilshift__(self, A): 
-        """ A can be 2 things :
+        """ A can be 2 things:
           * G << any_init will init all the BlockGf with the initializer
           * G << g2 where g2 is a BlockGf will copy g2 into self
           """

@@ -9,7 +9,7 @@ print " van plot"
 oplot (g,     '-o', x_window = (0,3) )     
 
 print "plot done"
-g<< inverse( iOmega_n + 0.5 )
+g << inverse( iOmega_n + 0.5 )
  
 print "ok ----------------------"
 
