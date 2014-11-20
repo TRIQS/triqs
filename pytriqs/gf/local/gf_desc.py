@@ -292,11 +292,12 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
     g.add_setitem(signature = "void(PyObject* r1, PyObject* r2, PyObject* val)",
                   calling_pattern=
                   """
-                   pyref gs_py = PyObject_GetItem(self,Py_BuildValue("(NN)", r1,r2));  // gs = self[r1,r2]
-                   pyref res = PyNumber_InPlaceLshift(gs_py,val);                      // gs <<= val
+                   pyref __arg = Py_BuildValue("(OO)", r1,r2);
+                   pyref gs_py = PyObject_GetItem(self, __arg);  // gs = self[r1,r2]
+                   pyref res = PyNumber_Lshift(gs_py, val);      // gs << val
                   """,
                   no_self_c = True, # avoid a warning
-                  doc = "g[....] <<= what_ever : fills the slice of the Green function with what_ever")
+                  doc = "g[....] << what_ever : fills the slice of the Green function with what_ever")
 
     # Plot
     g.add_property(name = "real",
