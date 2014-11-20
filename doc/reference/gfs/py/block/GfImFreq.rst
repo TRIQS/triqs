@@ -33,9 +33,9 @@ Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
 Mesh                        MeshGf                       The mesh
 Tail                        TailGf                       The tail
-Data                        3d numpy of complex          Data[i1,i2,n] is the element of the Green function where :
-                                                          * i1, i2 are the indices
+Data                        3d numpy of complex          Data[n,i1,i2] is the element of the Green function where:
                                                           * n is the Matsubara index 
+                                                          * i1, i2 are the indices
                                                          
                                                          For real GF in time, we store only starting from n=0 and the
                                                          rest is deduced by symmetry

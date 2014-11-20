@@ -30,9 +30,9 @@ Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
 Mesh                        MeshGf                       The mesh
 Tail                        TailGf                       The tail
-Data                        3d numpy of complex          Data[i1,i2,n] is the element of the Green function where :
-                                                          * i1, i2 are the indices
+Data                        3d numpy of complex          Data[n,i1,i2] is the element of the Green function where:
                                                           * n is the index of the time slice
+                                                          * i1, i2 are the indices
 IndicesL,IndicesR           string                       The Python repr of the indices, e.g. (1,2), or (1,)
                                                          repr(this_string) reproduces the indices 
 Name                        string                       Name of the Green function block
