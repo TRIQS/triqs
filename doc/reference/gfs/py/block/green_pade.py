@@ -24,13 +24,13 @@ def G(z):
 
 # Matsubara GF
 gm = GfImFreq(indices = [0], beta = beta, name = "gm")
-gm <<= Function(G)
+gm << Function(G)
 gm.tail.zero()
 gm.tail[1] = numpy.array([[1.0]])
 
 # Real frequency BlockGf(reference)
 gr = GfReFreq(indices = [0], window = (-5.995, 5.995), n_points = 1200, name = "gr")
-gr <<= Function(G)
+gr << Function(G)
 gr.tail.zero()
 gr.tail[1] = numpy.array([[1.0]])
 

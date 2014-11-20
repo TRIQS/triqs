@@ -2,7 +2,7 @@ from pytriqs.plot.mpl_interface import oplot
 from pytriqs.gf.local import GfImFreq, Omega, inverse
 
 g = GfImFreq(indices = [0], beta = 300, n_points = 1000, name = "g")
-g <<= inverse( Omega + 0.5 )
+g << inverse( Omega + 0.5 )
 
 # the data we want to fit...
 # The green function for omega \in [0,0.2]

@@ -8,8 +8,8 @@ def print_err(*x) : print (*x, file= sys.stderr)
 g_up = GfImFreq(indices = [0], beta = 1)
 g_dn = GfImFreq(indices = [0], beta = 1)
 
-g_up <<= iOmega_n
-g_dn <<= iOmega_n
+g_up << iOmega_n
+g_dn << iOmega_n
 
 G = BlockGf(name_list=['up','dn'], block_list=[g_up,g_dn], make_copies=False)
 

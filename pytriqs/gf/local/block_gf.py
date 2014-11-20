@@ -225,7 +225,7 @@ class BlockGf(object):
             g = self.__me_as_dict[key]
         except KeyError : 
             raise IndexError, "bloc index '" + repr(key) + "' incorrect. Possible indices are : "+ repr(self.__indices)
-        g <<= val
+        g << val
        
     # -------------- Various operations -------------------------------------
 
@@ -245,13 +245,13 @@ class BlockGf(object):
 
     def __ilshift__(self, A): 
         """ A can be 2 things :
-          * G <<= any_init will init all the BlockGf with the initializer
-          * G <<= g2 where g2 is a BlockGf will copy g2 into self
+          * G << any_init will init all the BlockGf with the initializer
+          * G << g2 where g2 is a BlockGf will copy g2 into self
           """
         if isinstance(A, self.__class__):
            for (i,g) in self : g.copy_from(A[i])
         else: 
-           for i,g in self:  g <<= A
+           for i,g in self:  g << A
         return self
    
     def __iadd__(self,arg):

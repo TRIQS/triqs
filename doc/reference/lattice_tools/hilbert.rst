@@ -35,7 +35,7 @@ TRIQS comes with a Hilbert transform. Let us look at an example:
    #fill a Green function
    G = GfImFreq(indices = ['up','down'], beta = 20)
    Sigma0 = GfImFreq(indices = ['up','down'], beta = 20); Sigma0.zero()
-   G <<= H(Sigma = Sigma0,mu=0.)
+   G << H(Sigma = Sigma0,mu=0.)
 
 Given a density of states `d` (here for a tight-binding model), the Hilbert transform `H` is defined is defined in the following way::
 
@@ -45,7 +45,7 @@ To construct a Green's function::
 
     G = GfImFreq(indices = ['up','down'], beta = 20)
     Sigma0 = GfImFreq(indices = ['up','down'], beta = 20); Sigma0.zero()
-    G <<= H(Sigma = Sigma0, mu=0.)
+    G << H(Sigma = Sigma0, mu=0.)
 
 
 .. autoclass:: pytriqs.dos.HilbertTransform

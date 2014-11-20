@@ -46,7 +46,7 @@ Two points are worth noting here:
 * The right hand side (RHS) of this statement is a *lazy* expression: its evaluation is delayed until 
   it is needed to fill the Green function.
 
-* The funny *<<=* operator means "set from". It fills the Green function with the evaluation of the expression 
+* The funny *<<* operator means "set from". It fills the Green function with the evaluation of the expression 
   at the right. 
   
 

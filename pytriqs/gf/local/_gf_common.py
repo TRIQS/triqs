@@ -48,7 +48,7 @@ def __getitem__(self, key):
 
 def __setitem__(self, key, val):
     g = self.__getitem__(key)
-    g <<= val
+    g << val
 
 #--------------   PLOT   ---------------------------------------
 
@@ -74,13 +74,15 @@ def mul_precall (self, y):
 def div_precall (self, y):
     if descriptor_base.is_lazy(y): return lazy_expressions.make_lazy(self) / y
 
-def _lshift_(self, A):
-    return _ilshift_(self, A)
- 
 def _ilshift_(self, A):
+    import warnings
+    warnings.warn("The operator <<= is deprecated : update your code to use << instead", UserWarning, stacklevel=2)
+    return _lshift_(self, A)
+ 
+def _lshift_(self, A):
     """ A can be two things:
-      * G <<= any_init will init the GFBloc with the initializer
-      * G <<= g2 where g2 is a GFBloc will copy g2 into self
+      * G << any_init will init the GFBloc with the initializer
+      * G << g2 where g2 is a GFBloc will copy g2 into self
     """
     import descriptors
     if isinstance(A, self.__class__):
@@ -93,10 +95,10 @@ def _ilshift_(self, A):
             x(tmp)
             return tmp
         self.copy_from (lazy_expressions.eval_expr_with_context(e_t, A2) )
-    elif isinstance(A, lazy_expressions.LazyExprTerminal): #e.g. g<<= SemiCircular (...)
-        self <<= lazy_expressions.LazyExpr(A)
+    elif isinstance(A, lazy_expressions.LazyExprTerminal): #e.g. g<< SemiCircular (...)
+        self << lazy_expressions.LazyExpr(A)
     elif descriptors.is_scalar(A): #in the case it is a scalar ....
-        self <<= lazy_expressions.LazyExpr(A)
+        self << lazy_expressions.LazyExpr(A)
     else:
-        raise RuntimeError, " <<= operator: RHS  not understood"
+        raise RuntimeError, " << operator: RHS  not understood"
     return self

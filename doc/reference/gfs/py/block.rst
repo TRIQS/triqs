@@ -64,14 +64,14 @@ The syntax is the regular python/numpy syntax, so a simple example will be enoug
   GfImFreq imp:  Beta = 50.000; IndicesL = [2], IndicesR = [2] 
 
 
-Assignment: <<= or = operator
+Assignment: << or = operator
 --------------------------------------------
 
 Because python always uses references, one cannot simply use the = operator
 to assign some expression into a Green's function.
-Therefore, we introduced the <<= operator ::
+Therefore, we introduced the << operator ::
 
-  g <<= RHS
+  g << RHS
 
 This sets the data and tail of g with the RHS.
 
@@ -79,7 +79,7 @@ This sets the data and tail of g with the RHS.
   * If RHS is a formal expression, it must be of the same size
 
 To simplify the notation, in the case where one accesses the Green's function with a [ ] operation, 
-the = sign is possible and equivalent to the `<<=` operator.
+the = sign is possible and equivalent to the `<<` operator.
 
 .. warning::
    Don't use the = operator without the brackets: it has its normal python meaning, i.e.
@@ -91,7 +91,7 @@ the = sign is possible and equivalent to the `<<=` operator.
     # Create the Matsubara-frequency Green's function 
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
     
-    g    <<= inverse( Omega + 0.5 )   # correct 
+    g    << inverse( Omega + 0.5 )   # correct 
     g[1,1] = inverse( Omega + 0.5 )   # correct (it uses __setitem__).
    
     
@@ -190,7 +190,7 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
   to have access to :math:`M_i`, one uses the bracket. For example::
 
    >>> g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
-   >>> g <<= 2.0
+   >>> g << 2.0
    >>> print g.tail[0]
 
      TO BE UPDATED
@@ -208,7 +208,7 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
   For example::
 
    g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
-   g <<= Function(lambda x: 3/x)
+   g << Function(lambda x: 3/x)
    g.tail.zero()
    g.tail[1] = numpy.array( [[3.0,0.0], [0.0,3.0]] )
 

@@ -1,7 +1,7 @@
 from pytriqs.gf.local import *
 from pytriqs.gf.local.descriptors import Omega
 g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "g")
-g <<= inverse( Omega + 0.5 )
+g << inverse( Omega + 0.5 )
 
 # open 2 panels top (t) and bottom (b) 
 from pytriqs.plot.mpl_interface import subplots

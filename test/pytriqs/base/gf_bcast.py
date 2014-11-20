@@ -3,7 +3,7 @@ from pytriqs.gf.local import GfImFreq, iOmega_n, inverse
 
 # Create the Matsubara-frequency Green's function and initialize it
 g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
-g <<= inverse( iOmega_n + 0.5 )
+g << inverse( iOmega_n + 0.5 )
 
 import pytriqs.utility.mpi as mpi
 
@@ -27,11 +27,11 @@ from pytriqs.gf.local import *
 
 # A Green's function on the Matsubara axis set to a semicircular
 gw = GfImFreq(indices = [1], beta = 50)
-gw <<= SemiCircular(half_bandwidth = 1)
+gw << SemiCircular(half_bandwidth = 1)
 
 # Create an imaginary-time Green's function and plot it
 gt = GfImTime(indices = [1], beta = 50)
-gt <<= InverseFourier(gw)
+gt << InverseFourier(gw)
 
 mpi.bcast(gt)
 
@@ -46,6 +46,6 @@ print gt2.tail.order_max
 print gt2.tail.order_min
 
 gw2 = GfImFreq(indices = [1], beta = 50)
-gw2 <<= Fourier(gt2)
+gw2 << Fourier(gt2)
 
 

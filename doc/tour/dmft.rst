@@ -47,9 +47,9 @@ Here is a complete program doing this plain-vanilla DMFT on a half-filled one-ba
    
    # Initalize the Green's function to a semi-circular density of states
    g0_iw = GfImFreq(indices = [0], beta = 100)
-   g0_iw <<= SemiCircular(half_bandwidth)
+   g0_iw << SemiCircular(half_bandwidth)
    for name, g0block in S.G_tau:
-       g0block <<= InverseFourier(g0_iw)
+       g0block << InverseFourier(g0_iw)
    
    # Now do the DMFT loop
    for IterationNumber in range(n_loops):
@@ -57,7 +57,7 @@ Here is a complete program doing this plain-vanilla DMFT on a half-filled one-ba
        # Compute S.G0_iw with the self-consistency condition while imposing paramagnetism
        g = 0.5 * Fourier( S.G_tau['up'] + S.G_tau['down'] )
        for name, g0 in S.G0_iw:
-           g0 <<= inverse( iOmega_n + chemical_potential - (half_bandwidth/2.0)**2  * g )
+           g0 << inverse( iOmega_n + chemical_potential - (half_bandwidth/2.0)**2  * g )
    
        # Run the solver
        S.solve(h_loc = U * n('up',0) * n('down',0), \**params)

@@ -31,11 +31,11 @@ gb = GfImFreq(indices = [1,2], beta = 50, n_points = 100, name = "b1Block")
 
 G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
 
-G <<= iOmega_n + 2.0
+G << iOmega_n + 2.0
 h['G1'] = G
 
 # inverse:
-G <<= inverse(G)
+G << inverse(G)
 
 #  Density:
 dens = G.total_density()

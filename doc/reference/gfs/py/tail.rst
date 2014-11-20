@@ -67,7 +67,7 @@ Basic access
     
     # Create the Matsubara-frequency Green's function and initialize it
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
-    g <<= inverse( iOmega_n + 0.5 )
+    g << inverse( iOmega_n + 0.5 )
     
     print "g.tail = ", g.tail
     print "g.tail[2] = ",g.tail[2]

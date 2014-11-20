@@ -10,7 +10,7 @@ def delta(g) :
     elif type(g) == GfImFreq:
     	g0_iw_inv = inverse(g)
     	delta_iw = g0_iw_inv.copy()
-    	delta_iw <<= A_Omega_Plus_B(g0_iw_inv.tail[-1], g0_iw_inv.tail[0])
+    	delta_iw << A_Omega_Plus_B(g0_iw_inv.tail[-1], g0_iw_inv.tail[0])
     	delta_iw -= g0_iw_inv
         return delta_iw
     else:

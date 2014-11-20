@@ -29,21 +29,21 @@ import numpy
 h=HDFArchive('gf_init.output.h5','w')
 
 g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 100, name = "egBlock")
-g['eg1','eg1'] <<= SemiCircular(half_bandwidth = 1)
-g['eg2','eg2'] <<= SemiCircular(half_bandwidth = 2)
+g['eg1','eg1'] << SemiCircular(half_bandwidth = 1)
+g['eg2','eg2'] << SemiCircular(half_bandwidth = 2)
 
 
 h['g1'] = g
 
-g <<= numpy.array([[1,2],[2,3]])
+g << numpy.array([[1,2],[2,3]])
 
 h['g2'] = g
 
 some_mesh = numpy.arange(-5,5,0.1)
 g = GfReFreq(indices = ['eg1','eg2'], window = (-5, 4.9), n_points = 100, name = "egBlock")
 
-g['eg1','eg1'] <<= iOmega_n - 1.0
-g['eg2','eg2'] <<= iOmega_n + 1.0
+g['eg1','eg1'] << iOmega_n - 1.0
+g['eg2','eg2'] << iOmega_n + 1.0
 
 h['g3'] = g
 
