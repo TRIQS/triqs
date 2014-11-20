@@ -150,13 +150,15 @@ namespace gfs {
 
  tail operator*(matrix<dcomplex> const &a, tail_const_view const &b) {
   auto res = tail(first_dim(a), b.shape()[1], b.size(), b.order_min()); // no {} constructor to avoid narrowing:...
-  for (int n = res.order_min(); n <= res.order_max(); ++n) res(n) = a * b(n);
+  for (int n = b.order_min(); n <= b.order_max(); ++n) res(n) = a * b(n);
+  res.mask()() = b.order_max();
   return res;
  }
 
  tail operator*(tail_const_view const &a, matrix<dcomplex> const &b) {
   auto res = tail(a.shape()[0], second_dim(b), a.size(), a.order_min());
-  for (int n = res.order_min(); n <= res.order_max(); ++n) res(n) = a(n) * b;
+  for (int n = a.order_min(); n <= a.order_max(); ++n) res(n) = a(n) * b;
+  res.mask()() = a.order_max();
   return res;
  }
 
