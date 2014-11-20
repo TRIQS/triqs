@@ -88,7 +88,7 @@ def _lshift_(self, A):
     if isinstance(A, self.__class__):
         if self is not A: self.copy_from(A) # otherwise it is useless AND does not work !!
     elif isinstance(A, lazy_expressions.LazyExpr): # A is a lazy_expression made of GF, scalars, descriptors
-        A2= descriptors.convert_scalar_to_const(A)
+        A2 = descriptors.convert_scalar_to_const(A)
         def e_t (x):
             if not isinstance(x, descriptors.Base): return x
             tmp = self.copy()

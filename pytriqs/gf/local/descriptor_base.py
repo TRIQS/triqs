@@ -35,7 +35,7 @@ def is_scalar(x):
 def convert_scalar_to_const(expr): 
 
   # if the expression is a pure scalar, replace it by Const
-  t= expr.get_terminal()
+  t = expr.get_terminal()
   if is_scalar(t): return LazyExpr( Const(t) )
 
   # otherwise: replace all scalar appearing in +/- operations by Const
@@ -92,7 +92,7 @@ class Const(Base):
         if not isinstance(C,numpy.ndarray): 
             assert G.N1==G.N2, "Const only applies to square G"
             C = C*numpy.identity(G.N1) 
-        if C.shape !=(G.N1,G.N2): raise RuntimeError, "Size of constant incorrect"
+        if C.shape != (G.N1,G.N2): raise RuntimeError, "Size of constant incorrect"
 
         G.tail.zero()
         G.tail[0][:,:] = C
@@ -125,7 +125,7 @@ iOmega_n = Omega_()
 
 class A_Omega_Plus_B(Base):
     "deprecated. do not use"
-    def __init__ (self, A=1, B=0, Invert= False):
+    def __init__ (self, A=1, B=0, Invert=False):
         Base.__init__(self, A=A, B=B,Invert=Invert)
          
     def __call__(self,G):
@@ -135,8 +135,8 @@ class A_Omega_Plus_B(Base):
 
         if not isinstance(A,numpy.ndarray): A = A*numpy.identity(G.N1) 
         if not isinstance(B,numpy.ndarray): B = B*numpy.identity(G.N1) 
-        if A.shape !=(G.N1,G.N2): raise RuntimeError, "Size of A incorrect"
-        if B.shape !=(G.N1,G.N2): raise RuntimeError, "Size of B incorrect"
+        if A.shape != (G.N1,G.N2): raise RuntimeError, "Size of A incorrect"
+        if B.shape != (G.N1,G.N2): raise RuntimeError, "Size of B incorrect"
 
         G.tail.zero()
         G.tail[-1][:,:] = A

@@ -15,8 +15,8 @@ class LazyCTX:
         x(tmp)
         return tmp
 
-def get_indices_in_dict( d): 
-    if not ( ('indicesL' in d and 'indicesR' in d) or 'indices' in d) : return ()
+def get_indices_in_dict(d): 
+    if not ( ('indicesL' in d and 'indicesR' in d) or 'indices' in d): return ()
 
     indicesL = list ( d.pop('indicesL',()) or d.pop('indices',()) )
     indicesR = list ( d.pop('indicesR',()) or indicesL  )

@@ -67,11 +67,11 @@ class LazyExpr (__aux):
 
     def is_terminal(self): 
         """Returns true iif the expression is a terminal  """
-        return self.tag=="T"
+        return self.tag == "T"
  
     def get_terminal(self): 
         """Returns the terminal if the expression is a terminal else None """
-        return self.childs[0] if self.tag=="T" else None
+        return self.childs[0] if self.tag == "T" else None
  
     def __aux_print(self, F): 
         op_priority = {'T': 100, "+": 1 , '-': 1, '*': 2, '/': 2}
@@ -94,7 +94,7 @@ def eval_expr_with_context(eval_term, expr ):
     if expr.tag == "T": return eval_term(expr.childs[0]) #eval the terminals
 
     if expr.tag == "F":
-        f= expr.childs[0].get_terminal()[1]
+        f = expr.childs[0].get_terminal()[1]
         return f (*map(lambda e:eval_expr_with_context(eval_term, e) , expr.childs[1:]) ) 
       
     # Binary operations: 
@@ -165,15 +165,15 @@ if __name__ == "__main__":
         d =  { "g1": 10, "g2": 100}
         return d[x.name] if isinstance(x, T) else x
 
-    assert eval_expr_with_context(e_t, a) ==58
+    assert eval_expr_with_context(e_t, a) == 58
 
     def find_sca(tag, childs): 
-        if tag =="+":
+        if tag == "+":
             t = childs[1].get_terminal()
             if t: childs[1] =  T("$$" + str(childs[1]))
         return (tag, childs)
 
-    b= transform(a, find_sca) 
+    b = transform(a, find_sca) 
     print b
 
     # a lazy function: 

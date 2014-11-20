@@ -3,7 +3,7 @@ from block_gf import BlockGf
 from gf import GfImFreq
 from descriptor_base import A_Omega_Plus_B
 
-def delta(g) :
+def delta(g):
     """Compute delta from G0"""
     if type(g) == BlockGf:
     	return BlockGf(name_block_generator = [ (n, delta(g0)) for n,g0 in g], make_copies=False)

@@ -27,7 +27,7 @@ from gf import MeshImFreq, MeshReFreq
 #######################################
 
 class OneFermionInTime(Base):
-    def __init__ (self, l =0):
+    def __init__ (self, l = 0):
          Base.__init__(self, L=l)
          
     def __call__(self,G):
@@ -84,7 +84,7 @@ semicircular density of states"""
     def __str__(self): return "SemiCircular(%s)"%self.half_bandwidth 
 
     def __call__(self,G):
-        D= self.half_bandwidth
+        D = self.half_bandwidth
         Id = numpy.identity(G.N1,numpy.complex_)
         if type(G.mesh) == MeshImFreq:
             f = lambda om: (om  - 1j*copysign(1,om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id

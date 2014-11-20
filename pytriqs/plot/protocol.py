@@ -67,6 +67,8 @@ def plot_protocol_apply(ob, opt_dict, xlims):
 
     name = opt_dict.pop('name','') 
     if not name: name = str(ob)
+    if opt_dict: raise ValueError, "Plot: Unused parameters %s were passed."%opt_dict.keys()
+
     if numpy.iscomplexobj(Y): 
         return( [  {'type': "XY", 'xdata':X, 'ydata':Y.real, 'label': "Re " + name} , 
                    {'type': "XY", 'xdata':X, 'ydata':Y.imag, 'label': "Im " + name} ] )
