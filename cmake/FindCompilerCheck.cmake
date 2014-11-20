@@ -19,6 +19,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
   OUTPUT_VARIABLE _compiler_output RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
  set(compiler_version_min "4.8.1")
  set(compiler_name "gcc")
+ set(CMAKE_COMPILER_IS_GCC TRUE )
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -Wno-literal-suffix ")
  string(REGEX REPLACE ".*([2-5]\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
  #if(NOT compiler_version VERSION_LESS "4.9.0")
