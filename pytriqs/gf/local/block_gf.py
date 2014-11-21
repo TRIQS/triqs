@@ -62,7 +62,6 @@ class BlockGf(object):
         else: 
             raise RuntimeError, "BlockGf construction: error in parameters, see the documentation"
         if kwargs['make_copies']: GFlist = [g.copy() for g in GFlist]
-        if kwargs: raise ValueError, "BlockGf: Unused parameters %s were passed."%kwargs.keys()
 
         # First a few checks
         assert GFlist !=[], "Empty list of blocks !"
