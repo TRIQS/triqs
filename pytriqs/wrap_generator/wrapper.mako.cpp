@@ -762,7 +762,12 @@ static int ${c.py_type}__set_prop_${p.name} (PyObject *self, PyObject *value, vo
   if (!convertible_from_python<${p.setter.args[0][0]}>(value, true)) return -1;
   auto & self_c = convert_from_python<${c.c_type}>(self);
   try {
-   self_c.${p.setter.c_name} (convert_from_python<${p.setter.args[0][0]}>(value));
+   %if p.setter._calling_pattern is None:
+    self_c.${p.setter.c_name} (convert_from_python<${p.setter.args[0][0]}>(value));
+   %else:
+    auto value_c = convert_from_python<${p.setter.args[0][0]}>(value);
+    ${p.setter._get_calling_pattern()}; // the argument must be called value_c
+   %endif
   }
   CATCH_AND_RETURN("in setting the property '${p.name}'",-1);
   return 0;

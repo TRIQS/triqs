@@ -258,6 +258,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
     if has_tail:
         g.add_property(name = "tail",
                        getter = cfunction(c_name="singularity", signature = "tail_view()"),
+                       setter = cfunction(signature = "void(tail_view value)", calling_pattern="self_c.singularity() = value_c"),
                        doc ="The high frequency tail")
 
     g.add_property(name = "indices",
