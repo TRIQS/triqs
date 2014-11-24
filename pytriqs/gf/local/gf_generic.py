@@ -51,7 +51,7 @@ class GfGeneric:
         self.name = name
         self._derived = derived
 
-        self.indicesR, self.indicesL = indices_pack
+        self.indicesL, self.indicesR = indices_pack
 
         copy_reg.pickle(derived, reductor, builder_cls_with_dict_arg )
 
