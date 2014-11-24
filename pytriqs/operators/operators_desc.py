@@ -34,5 +34,7 @@ for name, doc in [("c","annihilation operator"), ("c_dag","creation operator"), 
             ]:
         module.add_function(name = name, signature="many_body_operator<double>(%s)"%sign, doc=doc)
 
+module.add_function("many_body_operator<double> dagger(many_body_operator<double> Op)", doc= "Return the dagger of the operator")
+
 module.generate_code()
 

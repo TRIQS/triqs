@@ -24,5 +24,5 @@ from operators import *
 from hamiltonians import *
 
 __all__ = ['Operator', 'c', 'c_dag', 'n', 'h_loc_slater','h_loc_kanamori',
-           'h_loc_density','get_mkind','set_operator_structure']
+           'h_loc_density','get_mkind','set_operator_structure', 'dagger']
 
