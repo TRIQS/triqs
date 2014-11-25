@@ -23,6 +23,7 @@
 
 #include <triqs/utility/first_include.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <type_traits>
 
 #define TYPE_ENABLE_IF(Type,...)    typename boost::enable_if < __VA_ARGS__ , Type >::type
 #define TYPE_ENABLE_IFC(Type,...)   typename boost::enable_if_c < __VA_ARGS__ , Type >::type
@@ -37,7 +38,7 @@
 #define DECL_AND_RETURN(...)  -> decltype(__VA_ARGS__) { return __VA_ARGS__;}
 
 namespace triqs { 
- template<typename T> struct remove_cv_ref : std::remove_cv< typename std::remove_reference<T>::type> {};
+ template<typename T> struct remove_cv_ref : std::remove_cv<typename std::remove_reference<T>::type> {};
 };
 
 #define TRIQS_CATCH_AND_ABORT catch(std::exception const & e) { std::cout  << e.what()<< std::endl; return 1;}
