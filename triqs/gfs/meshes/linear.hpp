@@ -1,5 +1,5 @@
 /*******************************************************************************
- *
+ * 
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2012 by M. Ferrero, O. Parcollet
@@ -22,28 +22,28 @@
 #include "./mesh_tools.hpp"
 namespace triqs {
 namespace gfs {
-
+ 
  // Three possible meshes
  enum mesh_kind {
   half_bins,
   full_bins,
   without_last
  };
-
+ 
  /**
   * Linear mesh
-  */ 
+  */
  template <typename Domain> struct linear_mesh {
-
+  
   using domain_t = Domain;
   using index_t = long;
   using domain_pt_t = typename domain_t::point_t;
-
+  
   static_assert(!std::is_base_of<std::complex<double>, domain_pt_t>::value,
                 "Internal error : can not use Linear Mesh in this case");
-
+  
   linear_mesh() : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
-
+  
   explicit linear_mesh(domain_t dom, double a, double b, long n_pts, mesh_kind mk)
      : _dom(std::move(dom)), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
    switch (mk) {
@@ -62,26 +62,26 @@ namespace gfs {
    }
    xmax = xmin + del * (L - 1);
   }
-
+  
   domain_t const &domain() const { return _dom; }
   long size() const { return L; }
   double delta() const { return del; }
   double x_max() const { return xmax; }
   double x_min() const { return xmin; }
   mesh_kind kind() const { return meshk; }
-
+  
   /// Conversions point <-> index <-> linear_index
   domain_pt_t index_to_point(index_t ind) const { return xmin + ind * del; }
-
+  
   public:
   long index_to_linear(index_t ind) const { return ind; }
-
+  
   /// The wrapper for the mesh point
   class mesh_point_t : tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point_t, domain_pt_t> {
    linear_mesh const *m;
    index_t _index;
-
-   public:
+   
+  public:
    mesh_point_t() : m(nullptr) {}
    mesh_point_t(linear_mesh const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
    mesh_point_t(linear_mesh const &mesh) : mesh_point_t(mesh,0) {}
@@ -93,26 +93,26 @@ namespace gfs {
    bool at_end() const { return (_index == m->size()); }
    void reset() { _index = 0; }
   };
-
+  
   /// Accessing a point of the mesh
   mesh_point_t operator[](index_t i) const {
    return {*this, i};
   }
-
-  public:
+  
+ public:
   /// Iterating on all the points...
   using const_iterator = mesh_pt_generator<linear_mesh>;
   const_iterator begin() const { return const_iterator(this); }
   const_iterator end() const { return const_iterator(this, true); }
   const_iterator cbegin() const { return const_iterator(this); }
   const_iterator cend() const { return const_iterator(this, true); }
-
+  
   /// Mesh comparison
   bool operator==(linear_mesh const &M) const {
    return ((_dom == M._dom) && (size() == M.size()) && (std::abs(xmin - M.xmin) < 1.e-15) && (std::abs(xmax - M.xmax) < 1.e-15));
   }
   bool operator!=(linear_mesh const &M) const { return !(operator==(M)); }
-
+  
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, linear_mesh const &m) {
    h5::group gr = fg.create_group(subgroup_name);
@@ -134,7 +134,7 @@ namespace gfs {
    h5_write(gr, "size", m.size());
    h5_write(gr, "kind", k);
   }
-
+  
   /// Read from HDF5
   friend void h5_read(h5::group fg, std::string subgroup_name, linear_mesh &m) {
    h5::group gr = fg.open_group(subgroup_name);
@@ -161,8 +161,8 @@ namespace gfs {
    }
    m = linear_mesh(std::move(dom), a, b, L, mk);
   }
-
-  //  BOOST Serialization
+  
+  // BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    ar &TRIQS_MAKE_NVP("domain", _dom);
@@ -174,24 +174,24 @@ namespace gfs {
    ar &TRIQS_MAKE_NVP("size", L);
    ar &TRIQS_MAKE_NVP("kind", meshk);
   }
-
+  
   friend std::ostream &operator<<(std::ostream &sout, linear_mesh const &m) { return sout << "Linear Mesh of size " << m.L; }
-
-  private:
+  
+ private:
   domain_t _dom;
   long L;
   double a_pt, b_pt, xmin, xmax, del;
   mesh_kind meshk;
  };
-
-
+ 
+ 
  // UNUSED, only in deprecated code...
  /// Simple approximation of a point of the domain by a mesh point. No check
  template <typename D> long get_closest_mesh_pt_index(linear_mesh<D> const &mesh, typename D::point_t const &x) {
   double a = (x - mesh.x_min()) / mesh.delta();
   return std::floor(a);
  }
-
+ 
  /// Approximation of a point of the domain by a mesh point
  template <typename D> std::tuple<bool, long, double> windowing(linear_mesh<D> const &mesh, typename D::point_t const &x) {
   double a = (x - mesh.x_min()) / mesh.delta();
@@ -213,4 +213,3 @@ namespace gfs {
  }
 }
 }
-
