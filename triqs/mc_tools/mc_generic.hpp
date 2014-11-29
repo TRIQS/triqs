@@ -138,7 +138,7 @@ namespace triqs { namespace mc_tools {
       report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
       report(2) << "Average sign: " << sign_av << std::endl << std::endl << std::flush;
      }
-      
+     boost::mpi::broadcast(c, sign_av, 0);
      AllMeasures.collect_results(c);
 
     }
