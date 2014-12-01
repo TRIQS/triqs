@@ -8,6 +8,21 @@ SET(RUN_TEST ${CMAKE_BINARY_DIR}/build_pytriqs )
 
 SET(ExecutableNameForTest ${RUN_TEST})
  
+# runs pytriqs script 
+# Example: 
+#   add_triqs_test_script(ExampleTest)
+#
+macro(add_triqs_test testname ) 
+ enable_testing()
+ add_test(${testname}
+  ${CMAKE_COMMAND}
+  -Dname=${testname}
+  -Dcmd=${ExecutableNameForTest}
+  -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
+  -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
+  )
+endmacro(add_triqs_test)
+
 # runs pytriqs script > output 
 # and compares output with script.output
 # Example: 

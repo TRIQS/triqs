@@ -41,7 +41,7 @@ class PythonListWrap:
     def __reduce_to_dict__(self) : 
         return dict( [ (_my_str(n),v) for (n,v) in  enumerate (self.ob)])
     @classmethod
-    def __factory_from_dict__(cls,D) :
+    def __factory_from_dict__(cls, name, D) :
         return [x for (n,x) in sorted(D.items())]
 
 class PythonTupleWrap:
@@ -50,7 +50,7 @@ class PythonTupleWrap:
     def __reduce_to_dict__(self) : 
         return dict( [ (_my_str(n),v) for (n,v) in  enumerate (self.ob)])
     @classmethod
-    def __factory_from_dict__(cls,D) :
+    def __factory_from_dict__(cls, name, D) :
         return tuple([x for (n,x) in sorted(D.items())])
 
 class PythonDictWrap:
@@ -59,7 +59,7 @@ class PythonDictWrap:
     def __reduce_to_dict__(self) : 
         return dict( [ (str(n),v) for (n,v) in self.ob.items()])
     @classmethod
-    def __factory_from_dict__(cls,D) :
+    def __factory_from_dict__(cls, name, D) :
         return dict([(n,x) for (n,x) in D.items()])
 
 register_class (PythonListWrap)
@@ -257,7 +257,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             elif "__factory_from_dict__" in dir(r_class) : 
                 f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
                 values = dict( (self._key_decipher(str(K)),f(K)) for K in SUB )  # str transforms unicode string to regular python string
-                res = r_class.__factory_from_dict__(values) 
+                res = r_class.__factory_from_dict__(key,values) 
             else : 
                 raise ValueError, "Impossible to reread the class %s for group %s and key %s"%(r_class_name,self, key)
             return res

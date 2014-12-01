@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,11 +18,9 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-
 from pytriqs.archive import *
 from pytriqs.gf.local import *
 import numpy
-
 
 
 h=HDFArchive('gf_init.output.h5','w')

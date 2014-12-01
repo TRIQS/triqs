@@ -37,6 +37,9 @@ if(not_successful)
  message(SEND_ERROR "error runing test '${name}': ${err}; command ${cmd}  : shell output: ${not_successful}!")
 endif(not_successful)
 
+# if no reference file, stop here
+if (reference) 
+
 string (REPLACE ";" " " COM_STR "${COM}")
 MESSAGE( "About to compare with ${COM_STR}")
 
@@ -59,6 +62,8 @@ if(not_successful)
  message(SEND_ERROR "output does not match for '${name}': ${err}; ${out}; shell output: ${not_successful}!")
 endif(not_successful)
 #endif(output)
+
+endif()
 
 #file(REMOVE ${output_new})
 

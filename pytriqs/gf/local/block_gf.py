@@ -22,6 +22,7 @@
 from itertools import izip
 import operator
 from _gf_plot import PlotWrapperPartialReduce
+import numpy as np
 
 def call_factory_from_dict(cl,dic):
     """Given a class cl and a dict dic, it calls cl.__factory_from_dict__(dic)"""
@@ -68,6 +69,7 @@ class BlockGf(object):
         for ind in BlockNameList: assert str(ind)[0:2] !='__', "indices should not start with __"
         assert len(set(BlockNameList)) == len(BlockNameList),"Bloc indices of the Green Function are not unique"
         assert len(BlockNameList) == len(GFlist), "Number of indices and of Green Function Blocks differ"
+        assert 'block_names' not in BlockNameList, "'block_names' is a reserved keyword. It is not authorized as a block name ! "
 
         # All blocks are compatible for binary operation
         # --> correction: All blocks have the same type
@@ -184,18 +186,18 @@ class BlockGf(object):
                 if not(no_exception): raise  
     
     def __reduce__(self):
-        return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())
+        return call_factory_from_dict, (self.__class__,self.name, self.__reduce_to_dict__())
 
     def __reduce_to_dict__(self):
-        val = {'name': self.name, "note": self.note, "indices": repr(self.__indices) }
-        val.update( dict(self ) )
-        return val 
+        d = dict(self)
+        d['block_names'] = np.array(list(self.indices))
+        return d
 
     @classmethod
-    def __factory_from_dict__(cls,value):
-        exec "ind=%s"%value['indices']
-        res = cls(name_list = ind, block_list = [value[i] for i in ind], make_copies=False, name=value['name'])
-        res.note = value['note']
+    def __factory_from_dict__(cls, name, d):
+        keys = d.pop('block_names')
+        assert sorted(keys) == sorted(d.keys()), "Reload mismatch: the indices and the group names do not corresponds"
+        res = cls(name_list = keys, block_list = [d[k] for k in keys], make_copies=False, name=name)
         return res
 
     #--------------  Pretty print -------------------------

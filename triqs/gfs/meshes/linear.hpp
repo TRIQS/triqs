@@ -89,7 +89,7 @@ namespace gfs {
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "min", m.xmin);
    h5_write(gr, "max", m.xmax);
-   h5_write(gr, "size", m.size());
+   h5_write(gr, "size", long(m.size()));
   }
 
   /// Read from HDF5

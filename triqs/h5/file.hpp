@@ -33,6 +33,15 @@ namespace h5 {
 
   /**
    * Open the file name.
+   * Flag char can be :
+   *   - 'a' H5F_ACC_RDWR
+   *   - 'r' H5F_ACC_RDONLY
+   *   - 'w' H5F_ACC_TRUNC
+   */
+  file(const char * name, char flags);
+
+  /**
+   * Open the file name.
    * Flags can be :
    *   - H5F_ACC_RDWR
    *   - H5F_ACC_RDONLY

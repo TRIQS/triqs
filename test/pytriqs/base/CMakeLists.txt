@@ -12,7 +12,7 @@ add_triqs_test_hdf(hdf5_io " -p 1.e-6")
 
 # Greens functions:
 add_triqs_test_hdf(gf_init " -d 1.e-6")
-add_triqs_test_hdf(gf_base_op " -d 1.e-6")
+add_triqs_test(gf_base_op " -d 1.e-6")
 
 # a simple dos on square lattice
 add_triqs_test_hdf(dos " -d 1.e-6")

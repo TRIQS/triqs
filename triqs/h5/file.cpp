@@ -4,7 +4,20 @@
 namespace triqs {
 namespace h5 {
 
- file::file(const char* name, unsigned flags) {
+  namespace { 
+    unsigned h5_char_to_int(char fl) {
+     switch (fl) {
+      case 'r' : return H5F_ACC_RDONLY;
+      case 'w' : return H5F_ACC_TRUNC;
+      case 'a' : return H5F_ACC_RDWR;
+     }
+     TRIQS_RUNTIME_ERROR << " Internal error";
+    }
+  }
+
+  file::file(const char* name, char flags) : file(name, h5_char_to_int(flags)) {}
+
+  file::file(const char* name, unsigned flags) {
 
   if ((flags == H5F_ACC_RDWR) || (flags == H5F_ACC_RDONLY)) {
    id = H5Fopen(name, flags, H5P_DEFAULT);
