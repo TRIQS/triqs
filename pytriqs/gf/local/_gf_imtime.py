@@ -11,8 +11,7 @@ def init( mesh = None, shape = None, name = 'g', **kwargs):
         beta = float(kwargs.pop('beta'))
         n_max = kwargs.pop('n_points',10000)
         stat = kwargs.pop('statistic','Fermion')
-        kind = kwargs.pop('kind','half_bins') 
-        mesh = MeshImTime(beta,stat,n_max,kind)
+        mesh = MeshImTime(beta,stat,n_max)
     
     indices_pack = get_indices_in_dict(kwargs)
     if not shape: 

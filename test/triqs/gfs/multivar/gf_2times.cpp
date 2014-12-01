@@ -8,7 +8,7 @@ int main() {
 
  try {
 
- auto m = gf_mesh<retime>{0,10,99,full_bins};
+ auto m = gf_mesh<retime>{0,10,99};
  auto G  = gf<cartesian_product<retime,retime>> { {m,m}, {2,2}};
  auto G2 = G;
 

@@ -10,8 +10,8 @@ int main() {
   // double beta = 1;
   double wmax = 10;
   int N = 10;
-  auto G1 = gf<refreq>{{-wmax, wmax, N, full_bins}, {1, 1}};
-  auto G2 = gf<refreq>{{-wmax, wmax, N*2, full_bins}, {1, 1}};
+  auto G1 = gf<refreq>{{-wmax, wmax, N}, {1, 1}};
+  auto G2 = gf<refreq>{{-wmax, wmax, N*2}, {1, 1}};
 
   triqs::clef::placeholder<0> om_;
 

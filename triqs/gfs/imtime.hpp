@@ -55,7 +55,7 @@ namespace gfs {
   template <typename Singularity, typename Target> struct get_closest_point<imtime, Target, Singularity, void> {
    // index_t is int
    template <typename G, typename T> static int invoke(G const *g, closest_pt_wrap<T> const &p) {
-    double x = (g->mesh().kind() == half_bins ? double(p.value) : double(p.value) + 0.5 * g->mesh().delta());
+    double x = double(p.value) + 0.5 * g->mesh().delta();
     int n = std::floor(x / g->mesh().delta());
     return n;
    }

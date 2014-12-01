@@ -28,7 +28,7 @@ try {
  auto G_t_tau= gf<cartesian_product<retime,imtime>, scalar_valued>({ gf_mesh<retime>(tmin, tmax, n_re_time), gf_mesh<imtime>(beta, Fermion, n_im_time)} );
 
  auto G_w_wn = gf<cartesian_product<refreq,imfreq>, scalar_valued>( {gf_mesh<refreq>(wmin, wmax, n_re_freq), gf_mesh<imfreq>(beta, Fermion, n_im_freq)});
- auto G_w_tau =gf<cartesian_product<refreq,imtime>, scalar_valued>( {gf_mesh<refreq>(wmin, wmax, n_re_freq), gf_mesh<imtime>(beta, Fermion, n_im_time,full_bins)});
+ auto G_w_tau =gf<cartesian_product<refreq,imtime>, scalar_valued>( {gf_mesh<refreq>(wmin, wmax, n_re_freq), gf_mesh<imtime>(beta, Fermion, n_im_time)});
 
 
  //auto g_tau = slice_mesh1(G_w_tau(),1);

@@ -19,7 +19,7 @@ int main() {
  Gw1(om_) << 1/(om_-E);
  h5_write(file, "Gw1", Gw1);   // the original lorentzian
  
- auto Gt1 = gf<imtime> {{beta, Fermion, 2*N}, {1,1}};
+ auto Gt1 = gf<imtime> {{beta, Fermion, 2*N+1}, {1,1}};
  Gt1() = inverse_fourier(Gw1);
  h5_write(file, "Gt1", Gt1);   // the lorentzian TF : lorentzian_inverse
  
@@ -33,7 +33,7 @@ int main() {
  
  ///verification that the TF is OK
  for(auto const & t:Gt1.mesh()){
-  Gt1[t]-= exp(-E*t) * ( (t>0?-1:0)+1/(1+exp(E*beta)) );
+  Gt1[t]-= exp(-E*t) * ( (t>=0?-1:0)+1/(1+exp(E*beta)) );
   if ( std::abs(Gt1[t](0,0)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_matsubara error : t="<<t<<" ,G1="<<std::abs(Gt1[t](0,0))<<"\n";
  }
  h5_write(file,"Gt1b",Gt1); // must be 0

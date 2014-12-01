@@ -34,7 +34,7 @@ void test_0(){
  G(om_) << 1./(om_ - 2.1);
 
  /* ---------- Fourier transform ---------------------*/
- auto Gt = gf<imtime> {{beta, Fermion, Ntau, full_bins}, {1,1}};
+ auto Gt = gf<imtime> {{beta, Fermion, Ntau}, {1,1}};
  Gt() = inverse_fourier(G);
 
  TEST(Gt(0.0));
@@ -54,7 +54,7 @@ void test_1(){
 
  double beta=10;
  /* ----- Fourier ----- */
- auto Gt =  gf<imtime> {{beta, Fermion, 201, full_bins}, {1,1}};
+ auto Gt =  gf<imtime> {{beta, Fermion, 201}, {1,1}};
  auto Gw =  gf<imfreq> {{beta, Fermion, 100}, {1,1}};
  Gw.singularity()(1) = 1;
 

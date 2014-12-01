@@ -32,7 +32,7 @@ namespace triqs { namespace gfs {
   return {wmin, wmax, L};
  }
 
- gf_mesh<retime> make_mesh_fourier_compatible(gf_mesh<refreq> const& m, mesh_kind mk ) {
+ gf_mesh<retime> make_mesh_fourier_compatible(gf_mesh<refreq> const& m) {
   double pi = std::acos(-1);
   int L = m.size();
   double tmin = -pi * (L-1) / (L*m.delta());

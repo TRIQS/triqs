@@ -103,15 +103,11 @@ module.add_enum(c_name = "statistic_enum",
                 c_namespace = "triqs::gfs",
                 values = ["Fermion","Boson"])
 
-module.add_enum(c_name = "mesh_kind",
-                c_namespace = "triqs::gfs",
-                values = ["half_bins","full_bins","without_last"])
-
 ########################
 ##   Mesh generic
 ########################
 
-def make_mesh( py_type, c_tag, has_kind=True, is_im=False) :
+def make_mesh( py_type, c_tag, is_im=False) :
     m = class_( py_type = py_type,
             c_type = "gf_mesh<%s>"%c_tag,
             c_type_absolute = "triqs::gfs::gf_mesh<triqs::gfs::%s>"%c_tag,
@@ -132,22 +128,13 @@ def make_mesh( py_type, c_tag, has_kind=True, is_im=False) :
     m.add_len(calling_pattern = "int result = self_c.size()", doc = "Size of the mesh")
     m.add_iterator(c_cast_type = "dcomplex")
 
-    if has_kind :
-        m.add_property(name = "kind",
-               getter = cfunction(calling_pattern="mesh_kind result = self_c.kind()", signature = "mesh_kind()"),
-               doc = "")
-
-    #def __richcmp__(MeshImFreq self, MeshImFreq other,int op) :
-    #    if op ==2 : # ==
-    #        return self._c == other._c
-
     return m
 
 ########################
 ##   MeshImFreq
 ########################
 
-m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq", has_kind = False, is_im = True)
+m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq", is_im = True)
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025, bool positive_only=true)")
 
 module.add_class(m)
@@ -157,7 +144,7 @@ module.add_class(m)
 ########################
 
 m = make_mesh(py_type = "MeshImTime", c_tag = "imtime", is_im = True)
-m.add_constructor(signature = "(double beta, statistic_enum S, int n_max, mesh_kind kind)")
+m.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 
 module.add_class(m)
 
@@ -165,7 +152,7 @@ module.add_class(m)
 ##   MeshLegendre
 ########################
 
-m = make_mesh( py_type = "MeshLegendre", c_tag = "legendre", has_kind = False, is_im = True)
+m = make_mesh( py_type = "MeshLegendre", c_tag = "legendre", is_im = True)
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
 
 module.add_class(m)
@@ -175,7 +162,7 @@ module.add_class(m)
 ########################
 
 m = make_mesh(py_type = "MeshReFreq", c_tag = "refreq")
-m.add_constructor(signature = "(double omega_min, double omega_max, int n_max, mesh_kind kind)")
+m.add_constructor(signature = "(double omega_min, double omega_max, int n_max)")
 
 m.add_property(name = "omega_min",
                getter = cfunction(calling_pattern="double result = self_c.x_min()",
@@ -194,7 +181,7 @@ module.add_class(m)
 ########################
 
 m = make_mesh(py_type = "MeshReTime", c_tag = "retime")
-m.add_constructor(signature = "(double t_min, double t_max, int n_max, mesh_kind kind)")
+m.add_constructor(signature = "(double t_min, double t_max, int n_max)")
 
 m.add_property(name = "t_min",
                getter = cfunction(calling_pattern="double result = self_c.x_min()",

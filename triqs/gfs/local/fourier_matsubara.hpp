@@ -54,12 +54,11 @@ namespace gfs {
 
  template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
  gf<imfreq, Target, Singularity, Evaluator> make_gf_from_fourier(gf_impl<imtime, Target, Singularity, Evaluator, V, C> const& gt) {
-  return make_gf_from_fourier(gt, (gt.mesh().size() - (gt.mesh().kind() == full_bins ? 1 : 0)) / 2);
+  return make_gf_from_fourier(gt, (gt.mesh().size() - 1) / 2);
  }
 
  template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf<imtime, Target, Singularity, Evaluator> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Singularity, Evaluator, V, C> const& gw, int n_tau,
-                                                      mesh_kind mk = full_bins) {
+ gf<imtime, Target, Singularity, Evaluator> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Singularity, Evaluator, V, C> const& gw, int n_tau) {
   auto m = gf_mesh<imtime>{gw.mesh().domain(), n_tau};
   auto gt = gf<imtime, Target, Singularity, Evaluator>{m, get_target_shape(gw)};
   gt() = inverse_fourier(gw);
@@ -67,8 +66,8 @@ namespace gfs {
  }
 
  template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf<imtime, Target, Singularity, Evaluator> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Singularity, Evaluator, V, C> const& gw, mesh_kind mk = full_bins) {
-  return make_gf_from_inverse_fourier(gw, 2 * gw.mesh().size() + (mk == full_bins ? 1 : 0), mk);
+ gf<imtime, Target, Singularity, Evaluator> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Singularity, Evaluator, V, C> const& gw) {
+  return make_gf_from_inverse_fourier(gw, 2 * gw.mesh().size() + 1);
  }
 }
 

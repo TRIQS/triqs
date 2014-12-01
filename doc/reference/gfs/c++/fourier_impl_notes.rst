@@ -44,8 +44,8 @@ Implementation in imaginary time/frequency using FFTW
 ---------------------------------------------------------------
 
 
-The imaginary time mesh parameters are :math:`\beta` and :math:`N_\tau`, plus a tag ``half_bins``, ``full_bins`` or ``without_last``. 
-In the ``full_bins`` case, one point of the time GF has to be removed for the fourier transform. 
+The imaginary time mesh parameters are :math:`\beta` and :math:`N_\tau`. There is a point both at the beginning
+and at the end of the interval and therefore that last point has to be removed for the fourier transform. 
 From these parameters, we deduce :math:`\delta\tau=\beta/N_\tau`. 
 
 For the imaginary frequency mesh, the mesh parameters are :math:`\beta`, :math:`n_{min}` and :math:`N_{\omega_n}`. 

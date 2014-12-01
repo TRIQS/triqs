@@ -28,7 +28,7 @@ int main() {
   double wmax=10;
   int Nw=1001;
   
-  auto Gw1 = gf<refreq> {{-wmax, wmax, Nw,full_bins}, {1,1}};
+  auto Gw1 = gf<refreq> {{-wmax, wmax, Nw}, {1,1}};
   double a = Gw1.mesh().delta() * sqrt( Gw1.mesh().size() );
   for(auto const & w:Gw1.mesh()) Gw1[w]=lorentzian(w,a);
   Gw1.singularity()(2)=triqs::arrays::matrix<double>{{2.0*a}};

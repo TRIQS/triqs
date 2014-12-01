@@ -64,11 +64,10 @@ namespace gfs {
    double b1 = 0, b2 = 0, b3 = 0;
    dcomplex a1, a2, a3;
    double beta = gt.mesh().domain().beta;
-   auto L = (gt.mesh().kind() == full_bins ? gt.mesh().size() - 1 : gt.mesh().size());
+   auto L = gt.mesh().size() - 1;
    if (L < 2*gw.mesh().size()) TRIQS_RUNTIME_ERROR << "The time mesh mush be at least twice as long as the freq mesh";
    double fact = beta / L;
    dcomplex iomega = dcomplex(0.0, 1.0) * std::acos(-1) / beta;
-   dcomplex iomega2 = iomega * 2 * gt.mesh().delta() * (gt.mesh().kind() == half_bins ? 0.5 : 0.0);
    g_in.resize(L);
    g_out.resize(gw.mesh().size());
    if (gw.domain().statistic == Fermion) {
@@ -100,7 +99,7 @@ namespace gfs {
    }
    details::fourier_base(g_in, g_out, L, true);
    for (auto& w : gw.mesh()) {
-    gw[w] = g_out(w.index()) * exp(iomega2 * w.index()) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
+    gw[w] = g_out(w.index()) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
    }
   }
 
@@ -118,11 +117,9 @@ namespace gfs {
    dcomplex a1, a2, a3;
 
    double beta = gw.domain().beta;
-   size_t L = gt.mesh().size() - (gt.mesh().kind() == full_bins ? 1 : 0); // L can be different from gt.mesh().size() (depending
-                                                                          // on the mesh kind) and is given to the FFT algorithm
+   size_t L = gt.mesh().size() - 1;
    if (L < 2*gw.mesh().size()) TRIQS_RUNTIME_ERROR << "The time mesh mush be at least twice as long as the freq mesh";
    dcomplex iomega = dcomplex(0.0, 1.0) * std::acos(-1) / beta;
-   dcomplex iomega2 = -iomega * 2 * gt.mesh().delta() * (gt.mesh().kind() == half_bins ? 0.5 : 0.0);
    double fact = (Green_Function_Are_Complex_in_time ? 1 : 2) / beta;
    g_in.resize(gw.mesh().size());
    g_out.resize(L);
@@ -144,7 +141,7 @@ namespace gfs {
    }
    g_in() = 0;
    for (auto& w : gw.mesh()) {
-    g_in[w.index()] = fact * exp(w.index() * iomega2) * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
+    g_in[w.index()] = fact * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
    }
    // for bosons GF(w=0) is divided by 2 to avoid counting it twice
    if (gw.domain().statistic == Boson && !Green_Function_Are_Complex_in_time) g_in(0) *= 0.5;
@@ -170,7 +167,7 @@ namespace gfs {
      }
    }
    double pm = (gw.domain().statistic == Fermion ? -1.0 : 1.0);
-   if (gt.mesh().kind() == full_bins) gt.on_mesh(L) = pm * (gt.on_mesh(0) + convert_green<gt_result_type>(ta(1)(0, 0)));
+   gt.on_mesh(L) = pm * (gt.on_mesh(0) + convert_green<gt_result_type>(ta(1)(0, 0)));
    // set tail
    gt.singularity() = gw.singularity();
   }

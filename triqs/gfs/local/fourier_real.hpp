@@ -40,7 +40,7 @@ namespace triqs { namespace gfs {
 
  // helper functions
  gf_mesh<refreq> make_mesh_fourier_compatible(gf_mesh<retime> const& m);
- gf_mesh<retime> make_mesh_fourier_compatible(gf_mesh<refreq> const& m, mesh_kind mk = full_bins);
+ gf_mesh<retime> make_mesh_fourier_compatible(gf_mesh<refreq> const& m);
 
   template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
  gf_view<refreq, Target> make_gf_from_fourier(gf_impl<retime, Target, Singularity, Evaluator, V, C> const& gt) {

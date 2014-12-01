@@ -43,7 +43,7 @@ h['dens'] = dens
 
 # FT:
 f = lambda g,L : GfImTime(indices = g.indices, beta = g.mesh.beta, n_points =L )
-gt = BlockGf(name_block_generator = [ (n,f(g,200) ) for n,g in G], make_copies=False, name='gt')
+gt = BlockGf(name_block_generator = [ (n,f(g,201) ) for n,g in G], make_copies=False, name='gt')
 for (i,gtt) in gt : gtt.set_from_inverse_fourier(G[i])
 
 h['gt'] = gt

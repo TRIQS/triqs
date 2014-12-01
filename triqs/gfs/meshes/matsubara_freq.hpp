@@ -147,15 +147,7 @@ namespace gfs {
    h5::group gr = fg.create_group(subgroup_name);
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "size", m.size());
-   if (m._positive_only) {
-    // kept ONLY for backward compatibility of archives
-    auto beta = m.domain().beta;
-    h5_write(gr, "min", Fermion ? M_PI / beta : 0);
-    h5_write(gr, "max", ((Fermion ? 1 : 0) + 2 * m.size()) * M_PI / beta);
-    h5_write(gr, "kind", 2);
-   } else { // A strange way : to preserve backward compatibility for old archive.
-    h5_write(gr, "start_at_0", (m._positive_only?1:0));
-   }
+   h5_write(gr, "start_at_0", (m._positive_only?1:0));
   }
 
   /// Read from HDF5

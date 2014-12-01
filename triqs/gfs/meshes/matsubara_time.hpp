@@ -35,8 +35,8 @@ namespace gfs {
   public:
   gf_mesh() = default;
   gf_mesh(gf_mesh const &x)  = default;
-  gf_mesh(matsubara_time_domain d, int n_time_slices, mesh_kind mk = half_bins) : B(d, 0, d.beta, n_time_slices, mk) {}
-  gf_mesh(double beta, statistic_enum S, int n_time_slices, mesh_kind mk = half_bins) : gf_mesh({beta, S}, n_time_slices, mk) {}
+  gf_mesh(matsubara_time_domain d, int n_time_slices) : B(d, 0, d.beta, n_time_slices) {}
+  gf_mesh(double beta, statistic_enum S, int n_time_slices) : gf_mesh({beta, S}, n_time_slices) {}
  };
 
  //-------------------------------------------------------

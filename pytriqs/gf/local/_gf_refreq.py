@@ -11,8 +11,7 @@ def init( mesh = None, shape = None, name = 'g', **kwargs):
         omega_min = window[0]
         omega_max = window[1]
         n_max = kwargs.pop('n_points',10000)
-        kind = kwargs.pop('kind','full_bins')
-        mesh = MeshReFreq(omega_min, omega_max, n_max, kind)
+        mesh = MeshReFreq(omega_min, omega_max, n_max)
 
     indices_pack = get_indices_in_dict(kwargs)
     if not shape: 

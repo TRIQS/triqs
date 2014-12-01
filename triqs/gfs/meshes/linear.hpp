@@ -23,13 +23,6 @@
 namespace triqs {
 namespace gfs {
 
- // Three possible meshes
- enum mesh_kind {
-  half_bins,
-  full_bins,
-  without_last
- };
-
  /**
   * Linear mesh
   */ 
@@ -43,26 +36,10 @@ namespace gfs {
   static_assert(!std::is_base_of<std::complex<double>, domain_pt_t>::value,
                 "Internal error : cannot use Linear Mesh in this case");
 
-  linear_mesh() : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
+  linear_mesh() : _dom(), L(0), xmin(0), xmax(0), del(0) {}
 
-  explicit linear_mesh(domain_t dom, double a, double b, long n_pts, mesh_kind mk)
-     : _dom(std::move(dom)), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
-   switch (mk) {
-    case half_bins:
-     del = (b - a) / L;
-     xmin = a + 0.5 * del;
-     break;
-    case full_bins:
-     del = (b - a) / (L - 1);
-     xmin = a;
-     break;
-    case without_last:
-     del = (b - a) / L;
-     xmin = a;
-     break;
-   }
-   xmax = xmin + del * (L - 1);
-  }
+  explicit linear_mesh(domain_t dom, double a, double b, long n_pts)
+     : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del((b-a)/(L-1)) {}
 
   domain_t const &domain() const { return _dom; }
   long size() const { return L; }
@@ -74,7 +51,6 @@ namespace gfs {
   double delta() const { return del; }
   double x_max() const { return xmax; }
   double x_min() const { return xmin; }
-  mesh_kind kind() const { return meshk; }
 
   /// Conversions point <-> index <-> linear_index
   domain_pt_t index_to_point(index_t ind) const { return xmin + ind * del; }
@@ -110,23 +86,10 @@ namespace gfs {
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, linear_mesh const &m) {
    h5::group gr = fg.create_group(subgroup_name);
-   int k;
-   switch (m.meshk) {
-    case half_bins:
-     k = 0;
-     break;
-    case full_bins:
-     k = 1;
-     break;
-    case without_last:
-     k = 2;
-     break;
-   }
    h5_write(gr, "domain", m.domain());
-   h5_write(gr, "min", m.a_pt);
-   h5_write(gr, "max", m.b_pt);
+   h5_write(gr, "min", m.xmin);
+   h5_write(gr, "max", m.xmax);
    h5_write(gr, "size", m.size());
-   h5_write(gr, "kind", k);
   }
 
   /// Read from HDF5
@@ -135,38 +98,21 @@ namespace gfs {
    typename linear_mesh::domain_t dom;
    double a, b;
    long L;
-   int k;
-   mesh_kind mk;
    h5_read(gr, "domain", dom);
    h5_read(gr, "min", a);
    h5_read(gr, "max", b);
    h5_read(gr, "size", L);
-   h5_read(gr, "kind", k);
-   switch (k) {
-    case 0:
-     mk = half_bins;
-     break;
-    case 1:
-     mk = full_bins;
-     break;
-    case 2:
-     mk = without_last;
-     break;
-   }
-   m = linear_mesh(std::move(dom), a, b, L, mk);
+   m = linear_mesh(std::move(dom), a, b, L);
   }
 
   //  BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    ar &TRIQS_MAKE_NVP("domain", _dom);
-   ar &TRIQS_MAKE_NVP("a_pt", a_pt);
-   ar &TRIQS_MAKE_NVP("b_pt", b_pt);
    ar &TRIQS_MAKE_NVP("xmin", xmin);
    ar &TRIQS_MAKE_NVP("xmax", xmax);
    ar &TRIQS_MAKE_NVP("del", del);
    ar &TRIQS_MAKE_NVP("size", L);
-   ar &TRIQS_MAKE_NVP("kind", meshk);
   }
 
   friend std::ostream &operator<<(std::ostream &sout, linear_mesh const &m) { return sout << "Linear Mesh of size " << m.L; }
@@ -174,8 +120,7 @@ namespace gfs {
   private:
   domain_t _dom;
   long L;
-  double a_pt, b_pt, xmin, xmax, del;
-  mesh_kind meshk;
+  double xmin, xmax, del;
  };
 
  // ---------------------------------------------------------------------------
