@@ -132,7 +132,7 @@ namespace mpi {
   }
 
   static void all_reduce_in_place(communicator c, T &a, int root) {
-   MPI_Allreduce(MPI_IN_PLACE, &a, 1, D(), MPI_SUM, root, c.get());
+   MPI_Allreduce(MPI_IN_PLACE, &a, 1, D(), MPI_SUM, c.get());
   }
 
   static void broadcast(communicator c, T &a, int root) { MPI_Bcast(&a, 1, D(), root, c.get()); }

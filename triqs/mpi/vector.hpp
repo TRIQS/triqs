@@ -38,7 +38,7 @@ namespace mpi {
   }
 
   static void all_reduce_in_place(communicator c, V &a, int root) {
-   MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), D(), MPI_SUM, root, c.get());
+   MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), D(), MPI_SUM, c.get());
   }
 
   // -----------
