@@ -50,7 +50,6 @@ def plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
         res = mdic( '', lambda x : x)
 
     if NamePrefix: self.name = name_save
-    if opt_dict: raise ValueError, "Plot: Unused parameters %s were passed."%opt_dict.keys()
 
     return res
 
