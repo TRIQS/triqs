@@ -256,7 +256,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
                 res = r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
             elif "__factory_from_dict__" in dir(r_class) : 
                 f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
-                values = dict( (self._key_decipher(K),f(K)) for K in SUB )
+                values = dict( (self._key_decipher(str(K)),f(K)) for K in SUB )  # str transforms unicode string to regular python string
                 res = r_class.__factory_from_dict__(values) 
             else : 
                 raise ValueError, "Impossible to reread the class %s for group %s and key %s"%(r_class_name,self, key)
