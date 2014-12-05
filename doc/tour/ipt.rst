@@ -17,7 +17,7 @@ the impurity self-energy. For the particle-hole symmetric case it reads
 .. math::
 
     \Sigma(i\omega_n) \approx \frac{U}{2} +
-        U^2 \int_0^\beta d\tau e^{i\omega_n\tau} G_0(\tau)^3
+        U^2 \int_0^\beta d\tau e^{i\omega_n\tau} G_0(\tau)^3.
 
 A Hartree-Fock contribution :math:`U/2` in the self-energy cancels with a term
 from :math:`G_0(i\omega_n)^{-1}` when the functions are substituted into the
@@ -42,7 +42,7 @@ All Green's functions in the calculations have just one index because
 
    class IPTSolver:
 
-       def __init__(self, \**params):
+       def __init__(self, **params):
 
            self.U = params['U']
            self.beta = params['beta']
@@ -78,7 +78,7 @@ values of :math:`U`.
 
 Alternatively, in this :download:`script <./ipt_dmft.py>`, at every iteration the resulting data is plotted
 and saved into PNG files using the :ref:`TRIQS matplotlib interface<plotting>`.
-Not that :math:`G(i\omega_n)` is analytically continued to the real axis using
+Note that :math:`G(i\omega_n)` is analytically continued to the real axis using
 :ref:`Padé approximant<GfReFreq>`.
 
 At the end of the script an external utility `convert` is invoked to join the

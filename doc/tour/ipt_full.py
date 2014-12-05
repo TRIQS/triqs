@@ -55,7 +55,7 @@ for U in arange(Umin, Umax, 0.51):
 
     # Get the real-axis with Pade approximants
     greal = GfReFreq(indices = [1], window = (-4.0,4.0), n_points = 400)
-    greal.set_from_pade(S.g_iw, 201, 0.0)
+    greal.set_from_pade(S.g_iw, 150, 0.0)
 
     r=(U-Umin)/(Umax-Umin) #for color
     oplot((-1/pi*greal).imag, lw=3,RI='S', color=(r,1.-r,1.-r), label = "U=%1.1f"%U)

@@ -5,7 +5,6 @@ Solving a quantum impurity model with CTQMC
 
 .. note::
  
-   Requires TRIQS and the :doc:`application cthyb_matrix <../../applications>`
    Requires TRIQS and the :doc:`application cthyb <../../applications>`
 
 Free electrons are nice, but the `I` in TRIQS stands for `interacting`, so 
@@ -65,7 +64,7 @@ function as well as the average impurity occupancy is stored in the
    params['measure_g_l'] = True                # Measure G in legendre
    
    # Run the solver. The result will be stored in S.G_tau.
-   S.solve(h_loc = U * n('up',0) * n('down',0), \*\*params)
+   S.solve(h_loc = U * n('up',0) * n('down',0), **params)
    
    # Save the results in an hdf5 file (only on the master node).
    from pytriqs.archive import HDFArchive
@@ -88,5 +87,6 @@ The result can be then read from the ``HDF5`` file and plotted using the ``oplot
 We go through this example in more detail in the documentation of the cthyb application. 
  
 FIXME: 
-* add link
-* add comment that the qns are automatically determined.
+    * add link
+    * add comment that the qns are automatically determined
+    * recheck link to the HDF5 tutorial/reference

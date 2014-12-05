@@ -13,6 +13,4 @@ density of states (DOS) and then plot it by using again the ``oplot`` function.
     :include-source:
     :scale: 70
 
-More information on the lattice tools implemeted in TRIQS can be :doc:`found here <../../reference/lattice_tools/lattice>`
-
-FIXME -- broken link
+More information on the lattice tools implemeted in TRIQS can be :doc:`found here <../reference/lattice_tools/contents>`.

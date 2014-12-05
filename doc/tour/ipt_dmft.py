@@ -24,7 +24,7 @@ for U in arange(0.0, 4.05, 0.10):
     # Get the real-axis with Pade approximants
     greal = GfReFreq(indices = [1], window = (-4.0,4.0), n_points = 400)
     greal.set_from_pade(S.g_iw, 201, 0.0)
-    
+
     # Generate the plot
     fig = plt.figure(figsize=(6,6))
     oplot(greal, lw=3, RI='S', figure = fig, label = "DOS")

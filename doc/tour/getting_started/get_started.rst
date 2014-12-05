@@ -60,7 +60,7 @@ links to learn about Python and associated libraries.
     very rich.
 
   * `Numpy <http://docs.scipy.org/doc/numpy/user>`_  allows to manipulate
-    multidimensionnal arrays (cf also the `tutorial
+    multidimensional arrays (cf also the `tutorial
     <http://www.scipy.org/Tentative_NumPy_Tutorial>`_).
 
   * `Scipy <http://www.scipy.org>`_ includes many packages for scientific
