@@ -86,6 +86,14 @@ principle remains the same.
 A simple C++ project, with its tests and documentation
 ------------------------------------------------------
 
+.. warning::
+
+  TO BE WRITTEN
+
 A mixed C++/Python project
 ------------------------------
+
+.. warning::
+
+  TO BE WRITTEN
 
