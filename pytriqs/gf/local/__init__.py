@@ -35,10 +35,11 @@ from functions import delta
 
 __all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
            'lazy_expressions','TailGf',
-           'GfImFreq','MeshImFreq',
+           'GfImFreq', 'MeshImFreq',
            'GfImTime', 'MeshImTime',
            'GfReFreq', 'MeshReFreq',
            'GfReTime', 'MeshReTime',
+           'GfLegendre', 'MeshLegendre',
            'make_gf_from_inverse_fourier',
            'BlockGf','inverse',
            'delta']
