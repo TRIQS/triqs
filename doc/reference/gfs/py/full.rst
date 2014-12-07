@@ -44,12 +44,12 @@ where:
 These names will be used when we try to access a particular block, for example ::
 
   >>> G
-  Green's Function  composed of 2 blocks at inverse temperature Beta = 50.0: 
-  GfImFreq eg:  Beta = 50.000; IndicesL = ['eg1', 'eg2'], IndicesR = ['eg1', 'eg2']  
-  GfImFreq t2g:  Beta = 50.000; IndicesL = ['t2g1', 't2g2', 't2g3'], IndicesR = ['t2g1', 't2g2', 't2g3'] 
-  
+ Green Function G composed of 2 blocks:
+  gf_view
+  gf_view
+
   >>> G['eg']
-  GfImFreq eg:  Beta = 50.000; IndicesL = ['eg1', 'eg2'], IndicesR = ['eg1', 'eg2'] 
+  gf_view
 
 
 Reference 
@@ -57,7 +57,7 @@ Reference
 
 .. autoclass:: pytriqs.gf.local.BlockGf
   :members: copy, copy_from
- 
+
 
 Operations
 ---------------
@@ -70,11 +70,11 @@ The full Green's functions support various simple operations, that are simply do
 * compound operators, `+=`, `-=`, `*=`, `\=`: RHS can be a Green's function of the same type or an expression
 
 * arithmetic operations: `+`, `-`, `*`, `/`, e.g. ::
-   
+
    G = G1 + 2*G2
 
 * inversion, e.g. ::
-  
+
    inv = inverse(g)
    g2 = inverse(inverse(g) - sigma) # this is a Dyson equation
 
@@ -82,13 +82,13 @@ Block access
 ----------------
 
 Blocks can be accessed like in a `dict` :
-  
+
 These names will be used when we try to access a particular block, for example ::
-    
+
   G['eg']
 
 The generic way to access a Green's function element :math:`G^a_{i j}` is therefore ::
-  
+
   G[a][i,j]
 
 Iterator
@@ -100,23 +100,21 @@ One can iterate on the blocks ::
       do_something()
 
 In the example above ::
-  
+
   >>> for name, g in G:
   ...  print name, g
-  
-  eg GfImFreq eg:  Beta = 50.000; IndicesL = ['eg1', 'eg2'], IndicesR = ['eg1', 'eg2'] 
-  t2g GfImFreq t2g:  Beta = 50.000; IndicesL = ['t2g1', 't2g2', 't2g3'], IndicesR = ['t2g1', 't2g2', 't2g3'] 
 
+  eg gf_view
+  t2g gf_view
 
 As a result ::
-        
-    BlockGf( name_block_generator= G, make_copies=False) 
-    
+
+    BlockGf(name_block_generator = G, make_copies = False)
+
 generates a new Green's function `G`, viewing the same blocks.
 More interestingly ::
-      
-    BlockGf( name_block_generator= [ (index,g) for (index,g) in G if Test(index), make_copies=False)]
 
+    BlockGf(name_block_generator = [(name,g) for (name,g) in G if Test(name), make_copies = False)]
 
 makes a partial view of some of the blocks selected by the `Test` condition.
 
@@ -135,7 +133,7 @@ the parameter `make_copies` determines if a copy of the blocks must be made
 before putting them in the Green's function.
 
 .. note::
-   This is the standard behaviour in python for a list of a dict.
+   This is the standard behaviour in python for a list or a dict.
 
 Example: 
 
@@ -162,7 +160,7 @@ Example:
 
    G = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = True)
 
-  The ``Copy = True`` ensures that the blocks of G are new copies of ``g1``
+  The ``make_copies = True`` ensures that the blocks of ``G`` are new copies of ``g1``
   and ``g2``. If you then modify ``g1`` it will not have any effect on G.
   Clearly if you define::
 
@@ -191,7 +189,7 @@ Green's functions are `picklable`, i.e. they support the standard python seriali
 * It can be sent/broadcasted/reduced over mpi ::
 
      from pytriqs.utility import mpi
-     mpi.send (G, destination)
+     mpi.send(G, destination)
 
 .. warning::
 
@@ -209,9 +207,9 @@ The BlockGf(TRIQS_HDF5_data_scheme = "BlockGf") is decomposed in the following o
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
-__BlockIndicesList          string                       The python repr of the list of blocks, e.g.  ('up', 'down')
-__Name                      string                       Name of the Green's function block
-__Note                      string                       Note 
+indices                     string                       The python repr of the list of blocks, e.g.  ('up', 'down')
+name                        string                       Name of the Green's function block
+note                        string                       Note 
 For each block name         type of the block            The Block Green's function 
 =========================   ===========================  ===========================================================================
 
@@ -228,6 +226,4 @@ Example::
  /Gtau/up                 Group
  /Gtau/up/Data            Dataset {1, 1, 1000}
  /Gtau/up/ ...
-
-
 

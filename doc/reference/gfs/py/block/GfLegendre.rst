@@ -25,7 +25,10 @@ Reference
 
 .. autoclass:: pytriqs.gf.local.GfLegendre
   :members: density, enforce_discontinuity
- 
+
+.. warning::
+
+    Arguments of ``__init__()`` must be documented.
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^

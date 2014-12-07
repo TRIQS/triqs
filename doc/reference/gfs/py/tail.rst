@@ -29,7 +29,7 @@ following members:
 -  ``N1`` and ``N2`` give the size of each tail coefficient
    :math:`\mathbf{a}_{i}`: :math:`N_1\times N_2`
 -  ``size`` is the number of coefficients of the tail.
--  ``__getitem__``and ``__setitem__`` operators: access and set the ith
+-  ``__getitem__`` and ``__setitem__`` operators: access and set the `i`-th
    coefficient :math:`\mathbf{a}_{i}` with the bracket operator
 -  ``__call__`` operator: evaluate the tail at a given frequency
 
@@ -43,7 +43,7 @@ Basic ``TailGf`` object
 .. runblock:: python
 
     from pytriqs.gf.local import *
-    
+
     t = TailGf(N1=1, N2=1)
     print "t = ",t
     print "t.data.shape = ",t.data.shape
@@ -98,14 +98,14 @@ coefficients :math:`(\mathbf{a}_{-1})_{00} = 0`\ ,
 
     from pytriqs.gf.local import *
     from numpy import array
-    
+
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
     g << inverse( iOmega_n + 0.5 )
     g.tail.zero()
-    fixed_coeff = TailGf(1,1,3,0)
+    fixed_coeff = TailGf(1,1,3,-1)
+    fixed_coeff[-1] = array([[0.]])
     fixed_coeff[0] = array([[0.]])
-    fixed_coeff[1] = array([[0.]])
-    fixed_coeff[2] = array([[1.]])
+    fixed_coeff[1] = array([[1.]])
     fit_n_moments = 4
     fit_start = 10
     fit_stop = 20

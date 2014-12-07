@@ -4,7 +4,7 @@ import numpy
 eps_d,t  = 0.3, 0.2
 
 # Create the real-frequency Green's function and initialize it
-g = GfReFreq(indices = ['s','d'], window = (-2, 2), n_points = 1000, name = "s+d")
+g = GfReFreq(indices = ['s','d'], window = (-2, 2), n_points = 1000, name = "$G_\mathrm{s+d}$")
 g['d','d'] = Omega - eps_d
 g['d','s'] = t
 g['s','d'] = t

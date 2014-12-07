@@ -7,12 +7,12 @@
 Matsubara Green's function in imaginary time (GfImTime)
 ==============================================================================
 
-This object stores a matrix valued Green function in imaginary time
+This object stores a matrix-valued Green function in imaginary time
 in the Matsubara formalism: 
 
 .. math::
 
-  G_{\alpha \beta} (\tau) \equiv - \mathcal{T} <c_{\alpha}(\tau) c^{\dagger}_{\beta} (0)> \qquad \text{ for } 0 \leq \tau \leq \beta
+  G_{\alpha \beta} (\tau) \equiv - \mathcal{T} \langle c_{\alpha}(\tau) c^{\dagger}_{\beta} (0)\rangle \qquad \text{ for } 0 \leq \tau \leq \beta
 
  
 Reference
@@ -21,6 +21,9 @@ Reference
 .. autoclass:: pytriqs.gf.local.GfImTime
   :members: set_from_inverse_fourier, set_from_legendre, transpose, conjugate
 
+.. warning::
+
+    Arguments of ``__init__()`` must be documented.
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^

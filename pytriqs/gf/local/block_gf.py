@@ -29,24 +29,24 @@ def call_factory_from_dict(cl,dic):
 
 class BlockGf(object):
     """
-    Generic Green Function by Block. 
+    Generic Green's Function by Block.
     """
-    # not implemented as a dictionnary since we want to be sure of the order !).
-    def __init__(self, **kwargs): 
+    # not implemented as a dictionary since we want to be sure of the order !).
+    def __init__(self, **kwargs):
         """
    * There are several possible constructors, which accept only keyword arguments.
-            
+
             * BlockGf(name_list = list of names, block_list = list of blocks, make_copies = False, name = '')
-                   
-                   * ``name_list``: list of the name of the blocks, e.g. ["up","down"].
-                   * ``block_list``: list of blocks of Green functions.
-                   * ``make_copies``: If True, it makes a copy of the blocks and build the Green function from these copies.
-            
+
+                   * ``name_list``: list of the names of the blocks, e.g. ["up","down"].
+                   * ``block_list``: list of blocks of Green's functions.
+                   * ``make_copies``: If True, it makes a copy of the blocks and build the Green's function from these copies.
+
             * BlockGf(name_block_generator, make_copies = False, name = '')
-                   
-                   * ``name_block_generator``: a generator of (index, block)
-                   * ``make_copies``: If True, it makes a copy of the blocks and build the Green function from these copies.
-                     
+
+                   * ``name_block_generator``: a generator of (name, block)
+                   * ``make_copies``: If True, it makes a copy of the blocks and build the Green's function from these copies.
+
           """
         # first extract the optional name argument
         self.name = kwargs.pop('name','G')
@@ -93,9 +93,9 @@ class BlockGf(object):
     #------------ copy and construction -----------------------------------------------
 
     def copy(self,*args):
-       """Returns a (deep) copy of self (i.e. new independant Blocks initialised with self) """
+       """Returns a (deep) copy of self (i.e. new independent Blocks initialised with self) """
        return self.__class__ (name_list = self.__indices[:], block_list = [ g.copy(*args) for g in self.__GFlist],make_copies=False)
-    
+
     def view_selected_blocks(self, selected_blocks):
         """Returns a VIEW of the selected blocks of self, in the same order as self."""
         for b in selected_blocks: assert b in self.__indices,"Selected Blocks must be existing blocks"
@@ -105,9 +105,9 @@ class BlockGf(object):
         """Returns a COPY of the selected blocks of self, in the same order as self."""
         for b in selected_blocks: assert b in self.__indices,"Selected Blocks must be existing blocks"
         return self.__class__ ( name_block_generator = [(n,g) for n,g in G if n in selected_blocks ],make_copies=True)
- 
+
     def copy_from(self, G2):
-        """Copy the green function from G2: G2 MUST have the same structure !!""" 
+        """Copy the Green's function from G2: G2 MUST have the same structure!"""
         assert isinstance(G2, BlockGf)
         for (i,g),(i2,g2) in itertools.izip(self,G2): 
            if  (g.N1,g.N2) != (g2.N1,g2.N2): 

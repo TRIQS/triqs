@@ -18,7 +18,7 @@ in time (frequency). Here's a simple example:
    :include-source:
    :scale: 70
 
-The same command can be used for real-time, real-frequency transformations.
+The same command can be used for real-time <-> real-frequency transformations.
 
 Legendre to Matsubara
 ---------------------

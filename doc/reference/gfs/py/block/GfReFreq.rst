@@ -7,7 +7,7 @@
 Retarded Green's function in real frequencies (GfReFreq)
 =====================================================================================
 
-This object stores a matrix valued Green function in real frequencies: 
+This object stores a matrix-valued Green function in real frequencies:
 
 .. math::
   G_{\alpha \beta} (\omega) \equiv \int_{-\infty}^{\infty} G_{\alpha \beta} ( t ) e^{-i \omega t}
@@ -20,8 +20,10 @@ Reference
 
 .. autoclass:: pytriqs.gf.local.GfReFreq
   :members: set_from_fourier, inverse_fourier, transpose, conjugate, set_from_pade
- 
 
+.. warning::
+
+    Arguments of ``__init__()`` must be documented.
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -54,7 +56,7 @@ Note that `g` is a **retarded** Green's function.
 
 
 The next example demonstrates how a real frequency Green's function can be
-reconstructed from an imaginary frequency counterpart using set_from_pade()
+reconstructed from an imaginary frequency counterpart using ``set_from_pade()``
 method.
 
 .. plot:: reference/gfs/py/block/green_pade.py

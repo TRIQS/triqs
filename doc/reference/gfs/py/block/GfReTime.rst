@@ -7,10 +7,10 @@
 Retarded Green's function in real time (GfReTime)
 =====================================================================================
 
-This object stores a retarded matrix valued Green function in real time: 
+This object stores a retarded matrix-valued Green function in real time:
 
 .. math::
-  G_{\alpha \beta} (t) \equiv - \theta(t) <\{c_{\alpha}(t) c^{\dagger}_{\beta} (0)\}> 
+  G_{\alpha \beta} (t) \equiv - \theta(t) \langle\{c_{\alpha}(t) c^{\dagger}_{\beta} (0)\}\rangle
 
 
 Reference
@@ -18,7 +18,10 @@ Reference
 
 .. autoclass:: pytriqs.gf.local.GfReTime
   :members: set_from_inverse_fourier, fourier, transpose, conjugate
- 
+
+.. warning::
+
+    Arguments of ``__init__()`` must be documented.
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -46,4 +49,4 @@ Example
 .. plot:: reference/gfs/py/block/green_retime.py
    :include-source:
    :scale: 70
-  
+

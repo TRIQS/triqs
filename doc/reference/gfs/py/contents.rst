@@ -16,7 +16,7 @@ that Green's functions have a **block** structure:
 
 .. math::
 
-  G^a_{\alpha_a \beta_a} (\tau) = - \mathcal{T} <c^a_{\alpha_a}(\tau) c^{a \dagger}_{\beta_a} (0)>
+  G^a_{\alpha_a \beta_a} (\tau) = - \mathcal{T} \langle c^a_{\alpha_a}(\tau) c^{a \dagger}_{\beta_a} (0)\rangle.
 
 Here, :math:`a` labels a block, while :math:`\alpha_a, \beta_a` are indices
 **within** the block :math:`a`. In other words, there can be off-diagonal

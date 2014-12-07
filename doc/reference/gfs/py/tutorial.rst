@@ -34,7 +34,7 @@ to use ``GfImFreq``, ``BlockGf`` :
    :lines: 4-5
 
 This creates a **block** Green's function which has just one index
-(1). ``Beta`` is the inverse temperature, ``NFreqMatsubara`` the number of
+(1). ``beta`` is the inverse temperature, ``n_points`` is the number of
 Matsubara frequencies. 
 
 .. literalinclude:: example.py
@@ -83,15 +83,15 @@ this example:
 
 In this constructor for the block Green's function, we specify that there are two indices s and d.
 Because it is a real-frequency Green's function we need to define the mesh on which it is
-computed. This is done with the ``MeshArray`` option.
+computed. This is done with the ``window`` and ``n_points`` options.
 
 .. literalinclude:: impinbath.py
    :lines: 8-11
 
 These lines initialize specific entries of the block Green's function. Note how the elements are
 accessed with ``[index1,index2]``. These lines also show how to initialize a Green's function
-to a constant or to the inverse of a Wilson bath (constant spectral function on an interval [-D,D], with
-D=1.0 in our example).
+to a constant or to the inverse of a Wilson bath (constant spectral function on an interval :math:`[-D,D]`, with
+:math:`D=1.0` in our example).
 
 .. literalinclude:: impinbath.py
    :lines: 12-12

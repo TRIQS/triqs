@@ -7,7 +7,7 @@
 Matsubara Green's function in imaginary frequencies (GfImFreq)
 =====================================================================================
 
-This object stores a matrix valued Green function in imaginary frequencies
+This object stores a matrix-valued Green function in imaginary frequencies
 in the Matsubara formalism: 
 
 .. math::
@@ -21,7 +21,10 @@ Reference
 
 .. autoclass:: pytriqs.gf.local.GfImFreq
   :members: density, set_from_fourier, set_from_legendre
- 
+
+.. warning::
+
+    Arguments of ``__init__()`` must be documented.
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^

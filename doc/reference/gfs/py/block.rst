@@ -55,13 +55,13 @@ The syntax is the regular python/numpy syntax, so a simple example will be enoug
   >>> from pytriqs.gf.local import *
   >>> g = GfImFreq(indices = [1,2,3], beta = 50, n_points = 1000, name = "imp")
   >>> g[1:3:,1:3]
-  GfImFreq imp:  Beta = 50.000; IndicesL = [1, 2], IndicesR = [1, 2] 
+  gf_view
 
   >>> g[1,1]
-  GfImFreq imp:  Beta = 50.000; IndicesL = [1], IndicesR = [1] 
+  gf_view
 
   >>> g[2:3,2:3]
-  GfImFreq imp:  Beta = 50.000; IndicesL = [2], IndicesR = [2] 
+  gf_view
 
 
 Assignment: << or = operator
@@ -83,20 +83,20 @@ the = sign is possible and equivalent to the `<<` operator.
 
 .. warning::
    Don't use the = operator without the brackets: it has its normal python meaning, i.e.
-   reaffecting the reference.
-   
+   reassigning the reference.
+
    Let us illustrate this issue on a simple example::
-  
+
     from pytriqs.gf.local import *
     # Create the Matsubara-frequency Green's function 
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
-    
+
     g    << inverse( Omega + 0.5 )   # correct 
     g[1,1] = inverse( Omega + 0.5 )   # correct (it uses __setitem__).
-   
-    
+
+
    However, the following line is almost certainly NOT what you have in mind::
-    
+
     g = inverse( Omega + 0.5 )  
 
    * The reference g is reassigned to the object `inverse( Omega + 0.5 )`, which is not a block Green's function but a lazy expression. 
@@ -113,7 +113,7 @@ assembled with basic operations.
 can be evaluated, can compute the high-frequency expansion, and so on. For example:
 
  * `Omega`: is the function :math:`f(\omega) = \omega`. 
- * `SemiCircular(D)`: is a Green's function corresponding to free fermions with a semi circular density of states of half-bandwith `D`.
+ * `SemiCircular(D)`: is a Green's function corresponding to free fermions with a semicircular density of states of half-bandwith `D`.
  * `Wilson`: is a Green's function corresponding to fermions with a flat density of states of half-bandwidth `D`.
 
 .. toctree::
@@ -129,13 +129,13 @@ Green's functions are `picklable`, i.e. they support the standard python seriali
 * It can be used with the `shelve <http://docs.python.org/library/shelve.html>`_ and `pickle <http://docs.python.org/library/pickle.html>`_  module::
   
      import shelve
-     s = shelve.open('myfile','w')
-     s['G'] = G  # G is stored in the file.
+     s = shelve.open('myfile','c')
+     s['G'] = g  # g is stored in the file.
 
 * It can be sent/broadcasted/reduced over mpi ::
 
-     from pytriqs.utility import MPI
-     mpi.send (G, destination)
+     from pytriqs.utility import mpi
+     mpi.send (g, destination)
 
 .. warning::
    Shelve is not a portable format, it may change from python version to another (and it actually does).
@@ -191,9 +191,11 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
 
    >>> g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
    >>> g << 2.0
-   >>> print g.tail[0]
+   gf_view
 
-     TO BE UPDATED
+   >>> print g.tail[0]
+   [[ 2.+0.j  0.+0.j]
+    [ 0.+0.j  2.+0.j]]
 
   Here ``g.tail[0]`` is a diagonal matrix with 2 on the diagonal, corresponding to :math:`M_0`.
 
@@ -212,10 +214,10 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
    g.tail.zero()
    g.tail[1] = numpy.array( [[3.0,0.0], [0.0,3.0]] )
 
-  The third line sets all the :math:`M_i` to zero, while the second puts :math:`M_1 = diag(3)`. With
+  The third line sets all the :math:`M_i` to zero, while the fourth puts :math:`M_1 = diag(3)`. With
   the tail set correctly, this Green's function can be used safely. 
   
 .. warning::
   The library will not be able detect tails that are incorrectly set.
-Calculations *may* be wrong in this case.
+  Calculations *may* be wrong in this case.
 
