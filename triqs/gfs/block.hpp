@@ -187,6 +187,26 @@ namespace gfs {
  template <typename... T> size_t n_blocks(gf<block_index, T...> const &g) { return g.mesh().size(); }
  template <typename... T> size_t n_blocks(gf_view<block_index, T...> const &g) { return g.mesh().size(); }
 
+ // -------------------------------   Map functions   --------------------------------------------------
+
+ template <typename F, typename T> std::vector<std14::result_of_t<F(T)>> _map(F &&f, std::vector<T> const &V) {
+  std::vector<std14::result_of_t<F(T)>> res;
+  res.reserve(V.size());
+  for (auto &x : V) res.emplace_back(f(x));
+  return res;
+ }
+
+ /// Build the block function made of f(b) if b are the blocks of g
+ template <typename F, typename G> gf<block_index, std14::result_of_t<F(G)>> map(F &&f, gf<block_index, G> const &g) {
+  return make_block_gf(_map(f, g.data()));
+ }
+ template <typename F, typename G> gf<block_index, std14::result_of_t<F(G)>> map(F &&f, gf_view<block_index, G> g) {
+  return make_block_gf(_map(f, g.data()));
+ }
+ template <typename F, typename G> gf<block_index, std14::result_of_t<F(G)>> map(F &&f, gf_const_view<block_index, G> g) {
+  return make_block_gf(_map(f, g.data()));
+ }
+
  // -------------------------------   an iterator over the blocks --------------------------------------------------
 
  template <typename T> using __get_target = std14::remove_reference_t<decltype(std::declval<T>()[0])>;
