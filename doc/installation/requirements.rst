@@ -30,18 +30,14 @@ A recent compiler is therefore mandatory.
      * g++ 4.8.2 and higher (there seems to be a bug in 4.8.1).
   
      * The intel icc 15.0 is close to be C++11 compliant, but presents currently too many bugs to be supported 
-       at present. It compiles 99% of TRIQS, but we do not have the ressources to write and 
+       at present. It compiles 99% of TRIQS, but we do not have the resources to write and 
        maintains all necessary workarounds.
        The intel icl on OS X (with the clang front end) seems to be working.  
 
-* C++98 compilers
+* C++98 compilers do not work and will *not* be supported.
 
   * g++ before 4.8.1
   * Intel icc 13.0 and below
-
-  Compilers implementing the previous version of the C++ standard (C++98) do not work and 
-  will *not* be supported.
-
 
 
 Libraries
@@ -66,21 +62,21 @@ Libraries
 +------------------------+----------+------------------------------------------------------------------------+
 | h5py                   | >= ?     | Python interface to hdf5 library                                       |
 +------------------------+----------+------------------------------------------------------------------------+
-| mpi4py                 | >= ?     | Python MPI                                                             |
+| matplotlib             | >= 0.99  | Python 2D plotting library                                             |
 +------------------------+----------+------------------------------------------------------------------------+
-| sphinx                 | >= 1.0.1 | Python documentation tools (to compile documentation)                  |
+| mpi4py                 | >= ?     | Python MPI                                                             |
 +------------------------+----------+------------------------------------------------------------------------+
 | cmake                  | >= 2.8.7 | CMake is used to control the software compilation process              |
 +------------------------+----------+------------------------------------------------------------------------+
 | mako                   | >= 0.9.1 | mako templates are used to generate the C++/python wrapper             |
 +------------------------+----------+------------------------------------------------------------------------+
-| pyparsing              | >= ?     | Tool for sphinx (to compile documentation)                             |
+| sphinx                 | >= 1.0.1 | Python documentation tools (to compile documentation, for developers)  |
 +------------------------+----------+------------------------------------------------------------------------+
-| sphinxcontrib-doxylink | >= ?     | Tool for sphinx (to compile documentation)                             |
+| pyparsing              | >= ?     | Tool for sphinx (to compile documentation, for developers)             |
 +------------------------+----------+------------------------------------------------------------------------+
-| matplotlib             | >= 0.99  | Python 2D plotting library                                             |
+| sphinxcontrib-doxylink | >= ?     | Tool for sphinx (to compile documentation, for developers)             |
 +------------------------+----------+------------------------------------------------------------------------+
-| libclang               | 3.4      | python bindings of the clang lib (for TRIQS developers ONLY)           |
+| libclang               | 3.4      | python bindings of the clang lib (for developers)                      |
 +------------------------+----------+------------------------------------------------------------------------+
 
 (1)  Since standard linux distributions (and macports on OS X) now provides openmpi, even on laptops, we avoid the unnecessary complication of maintaining a non-parallel version of TRIQS

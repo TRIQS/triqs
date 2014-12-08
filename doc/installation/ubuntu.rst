@@ -39,5 +39,5 @@ Optionally, you may be interested in:
 
 If you wish to compile the documentation locally, you additionally need to install the following package: ::
 
-    pip install sphinxcontrib-doxylink
+    sudo pip install sphinxcontrib-doxylink
 

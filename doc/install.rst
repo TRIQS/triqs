@@ -8,20 +8,22 @@ Installation
 ============
 
 TRIQS and its applications are provided *à la carte*: 
-after you have installed the TRIQS toolkit, you will be able to easily install 
+after you have installed the TRIQS library, you will be able to easily install 
 various TRIQS-based applications: impurity solvers, realistic DMFT tools, ...
 
-This page describes the installation of the TRIQS toolkit itself. The installation of the applications
-is described in their respective documentation.
+This page describes the installation of the TRIQS library itself. The
+installation procedure of the applications is described on their respective
+sites, under 'Install'.
 
 Prerequisites
 -------------
 
-The TRIQS library relies on a certain number of standard libraries and tools described in
-the :ref:`list of requirements <requirements>`. Beware in particular to the :ref:`C++ compilers<require_cxx_compilers>`
-and to :ref:`Scientific Python tools<python_install>`.  
-Here are instructions to install
-these necessary libraries on two standard systems:
+The TRIQS library relies on a certain number of standard libraries and tools
+described in the :ref:`list of requirements <requirements>`. Please pay
+particular attention to the :ref:`C++ compilers<require_cxx_compilers>` and to
+:ref:`Python and the scientific python tools<python_install>`.  Here are instructions to
+install these necessary libraries on two standard systems (FIXME NO PAGE FOR
+OSX_LION!):
 
 .. toctree::
    :maxdepth: 1
@@ -57,8 +59,8 @@ Installation steps
 
    .. note:: 
        
-      We remind you that on multicore machine, make's option -jN (where N is the number of cores)
-      greatly speeds up the compilation, e.g. make -j8 on an 8 core machine...
+      We remind you that on multicore machine, the make option -jN (where N is the number of cores)
+      greatly speeds up the compilation, e.g. make -j8 on an 8 core machine.
 
 #. After the installation TRIQS has been installed using the standard UNIX
    scheme:
