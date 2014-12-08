@@ -8,12 +8,13 @@ construct new tools for the study of quantum systems. Some full-fledged
 applications have readily been developed and are maintained by the TRIQS
 collaboration.
 
-Wien2TRIQS
-----------
+DFT tools
+---------
 
-Wien2TRIQS is an interface to Wien2k for LDA+DMFT calculation. It allows
-you to turn band-structure calculations obtained from the Wien2k package to
-inputs to full-fledged LDA+DMFT calculations in a few lines!
+DFT tools provides an interface to DFT packages such as Wien2k for LDA+DMFT
+calculation. It allows you to turn band-structure calculations obtained from
+the Wien2k package to inputs to full-fledged LDA+DMFT calculations in a few
+lines!
 
 *Homepage:* `<http://ipht.cea.fr/triqs/1.2/applications/dft_tools/>`_
 

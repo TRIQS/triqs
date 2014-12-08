@@ -2,8 +2,8 @@
 
 .. _operators:
 
-Second-quantization operators for many-body Hamiltonians
-===========================================================
+Many-body operators
+===================
 
 The TRIQS solvers need to know several operators in order to solve the impurity
 problem. For example, they must know what the local Hamiltonian is, but also its
@@ -19,11 +19,11 @@ A simple example
 .. runblock:: python
 
     from pytriqs.operators import *
-    H = C('up',1) * Cdag('up',2) + C('up',2) * Cdag('up',1)
+    H = c('up',1) * c_dag('up',2) + c('up',2) * c_dag('up',1)
     print H
     print H - H.dagger()
-    print anti_commutator(C('up'),Cdag('up'))
-    print anti_commutator(C('up'),0.5*Cdag('down'))
+    print anti_commutator(c('up'),c_dag('up'))
+    print anti_commutator(c('up'),0.5*c_dag('down'))
 
 
 Full reference
