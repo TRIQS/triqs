@@ -2,6 +2,7 @@
 add_triqs_test_txt(test_example)
 add_triqs_test_txt(operator_python_test)
 add_triqs_test_txt(gf_fourier)
+add_triqs_test_txt(gf_slicing)
 
 # A sample test with hdf5 output
 add_triqs_test_hdf(h5_example " -p 1.e-6")
