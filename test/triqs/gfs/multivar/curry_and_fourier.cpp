@@ -18,7 +18,7 @@ int main() {
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
   int n_freq = 100;
-  int n_times = n_freq * 2;
+  int n_times = n_freq * 2 + 1;
   int n_bz = 50;
   auto gkw = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued, m_tail<brillouin_zone>>{
       {{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};

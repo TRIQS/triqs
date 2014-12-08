@@ -98,9 +98,28 @@ namespace gfs {
      }
    }
    details::fourier_base(g_in, g_out, L, true);
+
+   // We manually remove half of the first time point contribution and add half
+   // of the last time point contribution. This is necessary to make sure that
+   // no symmetry is lost
+   if (gw.domain().statistic == Fermion) {
+     for (auto& w : gw.mesh()) {
+       g_out(w.index()) -= 0.5*fact*(   gt[0] - (oneFermion(a1, b1, 0, beta) + oneFermion(a2, b2, 0, beta) + oneFermion(a3, b3, 0, beta))
+                                      + gt[L] - (oneFermion(a1, b1, beta, beta) + oneFermion(a2, b2, beta, beta) + oneFermion(a3, b3, beta, beta)) );
+     }
+   } else {
+     for (auto& w : gw.mesh()) {
+       g_out(w.index()) += 0.5*fact*(   gt[L] - (oneBoson(a1, b1, beta, beta) + oneBoson(a2, b2, beta, beta) + oneBoson(a3, b3, beta, beta))
+                                      - gt[0] + (oneBoson(a1, b1, 0, beta) + oneBoson(a2, b2, 0, beta) + oneBoson(a3, b3, 0, beta)) );
+     }
+   }
+
    for (auto& w : gw.mesh()) {
     gw[w] = g_out(w.index()) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
    }
+
+
+
   }
 
   public:
