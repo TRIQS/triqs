@@ -12,7 +12,7 @@ For example, to simply save the imaginary part of the self-energy::
     import numpy as np
     np.savetxt(textfilename,sigma_iw.data.imag)
 
-A more complicated example where the mesh informations is also stored is::
+A more complicated example where the mesh information is also stored is::
 
     from pytriqs.gf.local import *
     import numpy as np

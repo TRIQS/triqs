@@ -25,7 +25,7 @@ Principle
 virtualenv is a python package that allow you to install in your home a simple copy (or mirror)
 or python, and install and upgrade some packages for you, without touching the systems.
 
-.. warning:: This works as long as the other dependencies of the packages on e.g. C++ libraries are satisfied.
+.. note:: This works as long as the other dependencies of the packages on e.g. C++ libraries are satisfied.
 
 Usage 
 ^^^^^

@@ -6,7 +6,7 @@ The TRIQS library has been developed and is currently maintained by:
 
  O. Parcollet (IPhT, CEA-Saclay) and M. Ferrero (CPHT, Ecole Polytechique).
 
-It is supported by ERC under Grant Number XXX.
+It is supported by ERC under Grant Number 278472.
 
 We acknowledge contributions from an increasing number of colleagues:
 
@@ -31,14 +31,15 @@ Note that it *implies* that applications using TRIQS must also be GPL.
 
   .. [#triqs] `AUTHORS, JOURNAL, YEAR <http://link>`_ (:download:`bibtex file <triqs.bib>`)
 
-  If you find TRIQS useful, giving proper reference and citation is
-  indeed a simple way to help convincing funding sources that such projects are
-  useful for our community and should be supported.
+  If you find TRIQS useful, giving proper reference and citation is indeed a
+  simple way to help convincing funding sources that such projects are useful for
+  our community and should be supported.
 
 Disclaimer
 ==========
 
-As stated by the License, the program is provided as is, i.e. WITHOUT ANY WARRANTY of any kind, as
-stated in the license.  In particular, its authors and contributors will take
-no responsability for any possible bugs or any improper use of these programs,
-including those resulting in incorrect scientific publications.
+As stated by the License, the program is provided as is, i.e. WITHOUT ANY
+WARRANTY of any kind, as stated in the license.  In particular, its authors and
+contributors will take no responsability for any possible bugs or any improper
+use of these programs, including those resulting in incorrect scientific
+publications.

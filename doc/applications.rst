@@ -30,14 +30,14 @@ hybridization expansion of the partition function.
 
 Hubbard I solver
 ----------------
-
 .. warning::
 
+   FIXME
    MERGE THIS INTO DFTTOOLS
 
 
 This solver gives the Hubbard I solution of a quantum impurity problem,
-i.e. it solves the atomic limit. This simple approximation allows to have
-very quick answer even for large multiband systems.
+i.e. it solves the atomic limit. This simple approximation allows for 
+very quick answers even for large multiband systems.
 
 *Homepage:* `<http://ipht.cea.fr/triqs/1.2/applications/hubbardI/>`_

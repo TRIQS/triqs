@@ -22,14 +22,15 @@ The TRIQS library relies on a certain number of standard libraries and tools
 described in the :ref:`list of requirements <requirements>`. Please pay
 particular attention to the :ref:`C++ compilers<require_cxx_compilers>` and to
 :ref:`Python and the scientific python tools<python_install>`.  Here are instructions to
-install these necessary libraries on two standard systems (FIXME NO PAGE FOR
-OSX_LION!):
+install these necessary libraries on two standard systems:
 
 .. toctree::
    :maxdepth: 1
      
    installation/ubuntu
-   installation/osx_lion
+   installation/osx_install
+
+.. note:: Please ensure that you have all the dependencies installed before proceeding further!
 
 Installation steps
 ------------------
@@ -38,11 +39,11 @@ Installation steps
 
      $ git clone https://github.com/TRIQS/triqs.git src
 
-#. Create an empty build directory where you will compile the code::
+#. Create an empty ``build`` directory where you will compile the code::
 
      $ mkdir build && cd build
 
-#. In the build directory call cmake specifying where the TRIQS library should be installed::
+#. In the build directory call ``cmake`` specifying where the TRIQS library should be installed::
 
      $ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../src
 
@@ -59,7 +60,7 @@ Installation steps
 
    .. note:: 
        
-      We remind you that on multicore machine, the make option -jN (where N is the number of cores)
+      On multicore machine, the make option -jN (where N is the number of cores)
       greatly speeds up the compilation, e.g. make -j8 on an 8 core machine.
 
 #. After the installation TRIQS has been installed using the standard UNIX
