@@ -18,15 +18,21 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_FUNCTIONS_H
-#define TRIQS_GF_LOCAL_FUNCTIONS_H
+#pragma once
 
 #include "../gf.hpp"
+#include "../imtime.hpp"
 #include "../imfreq.hpp"
 #include "../legendre.hpp"
 
 namespace triqs { 
  namespace gfs { 
+
+  //-------------------------------------------------------
+  // For Imaginary Time functions
+  // ------------------------------------------------------
+
+  gf<imtime> rebinning_tau(gf_const_view<imtime> const & g, int new_n_tau);
 
   //-------------------------------------------------------
   // For Imaginary Matsubara Frequency functions
@@ -36,6 +42,10 @@ namespace triqs {
   double density(gf_view<imfreq, scalar_valued> const & g);
 
   arrays::matrix<double> density(gf_view<legendre> const & g);
+
+  //-------------------------------------------------------
+  // For Legendre functions
+  // ------------------------------------------------------
 
   tail_view get_tail(gf_const_view<legendre> gl, int size, int omin);
 
@@ -53,6 +63,3 @@ namespace triqs {
   TRIQS_CLEF_MAKE_FNT_LAZY (density);
  }
 }
-
-#endif
-

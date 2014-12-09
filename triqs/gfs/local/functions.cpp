@@ -26,6 +26,37 @@ namespace triqs { namespace gfs {
  dcomplex F(dcomplex a,double b,double Beta) {return -a/(1+exp(-Beta*b));}
  using arrays::array;
 
+  //-------------------------------------------------------
+  // For Imaginary Time functions
+  // ------------------------------------------------------
+  gf<imtime> rebinning_tau(gf_const_view<imtime> const & g, int new_n_tau) {
+
+   auto const& old_m = g.mesh();
+   gf<imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau}, get_target_shape(g)};
+   auto const& new_m = new_gf.mesh();
+
+   new_gf.data()() = 0;
+
+   long prev_index = 0;
+   long norm = 0;
+   for(auto tau : old_m){
+       long index = std::round((double(tau) - new_m.x_min()) / new_m.delta());
+       if(index == prev_index) {
+        norm++;
+       } else {
+        new_gf[index-1] /= double(norm);
+        prev_index = index;
+        norm = 1;
+       }
+       new_gf[index] += g[tau];
+   }
+   if(norm != 1) new_gf[new_m.size()-1] /= norm;
+
+   new_gf.singularity() = g.singularity();
+
+   return new_gf;
+  }
+
  //-------------------------------------------------------
  // For Imaginary Matsubara Frequency functions
  // ------------------------------------------------------
@@ -86,6 +117,10 @@ namespace triqs { namespace gfs {
    return res;
 
  }
+
+ //-------------------------------------------------------
+ // For Legendre functions
+ // ------------------------------------------------------
 
  // compute a tail from the Legendre GF
  // this is Eq. 8 of our paper
