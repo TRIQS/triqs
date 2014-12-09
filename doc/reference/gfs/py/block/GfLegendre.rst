@@ -5,20 +5,7 @@
 .. _GfLegendre:
 
 Matsubara Green's function with Legendre polynomials (GfLegendre)
-=====================================================================================
-
-This object stores a matrix-valued Matsubara Green's function in imaginary time using
-Legendre polynomials. It is connected to the usual imaginary-time Matsubara Green's
-function through:
-
-.. math::
-  G_{l, \alpha \beta} = \sqrt{2l+1} \int_0^\beta d\tau P_l (x(\tau)) G_{\alpha \beta}(\tau),
-
-
-where :math:`x(\tau) = 2\tau/\beta -1` and the :math:`P_l` are the Legendre
-polynomials.  :math:`G_{\alpha \beta}(\tau)` is the :ref:`Matsubara Green's
-function in imaginary time <GfImTime>`.
-
+===================================================================
 
 Reference
 ---------------

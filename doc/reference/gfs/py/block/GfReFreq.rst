@@ -5,15 +5,7 @@
 .. _GfReFreq:
 
 Retarded Green's function in real frequencies (GfReFreq)
-=====================================================================================
-
-This object stores a matrix-valued Green function in real frequencies:
-
-.. math::
-  G_{\alpha \beta} (\omega) \equiv \int_{-\infty}^{\infty} G_{\alpha \beta} ( t ) e^{-i \omega t}
-
-where :math:`G(t)` is the :ref:`Green function in real time <GfReTime>`.
-
+==========================================================
 
 Reference
 ---------------

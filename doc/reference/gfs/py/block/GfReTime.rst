@@ -5,13 +5,7 @@
 .. _GfReTime:
 
 Retarded Green's function in real time (GfReTime)
-=====================================================================================
-
-This object stores a retarded matrix-valued Green function in real time:
-
-.. math::
-  G_{\alpha \beta} (t) \equiv - \theta(t) \langle\{c_{\alpha}(t) c^{\dagger}_{\beta} (0)\}\rangle
-
+=================================================
 
 Reference
 ---------------

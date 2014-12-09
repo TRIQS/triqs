@@ -7,14 +7,6 @@
 Matsubara Green's function in imaginary time (GfImTime)
 ==============================================================================
 
-This object stores a matrix-valued Green function in imaginary time
-in the Matsubara formalism: 
-
-.. math::
-
-  G_{\alpha \beta} (\tau) \equiv - \mathcal{T} \langle c_{\alpha}(\tau) c^{\dagger}_{\beta} (0)\rangle \qquad \text{ for } 0 \leq \tau \leq \beta
-
- 
 Reference
 ---------------
 

@@ -13,7 +13,7 @@ and permits to compute it with its high frequencies expansion.
 They can be combined into simple expressions.
 Example:
 
-.. literalinclude:: ../../../gfs/impinbath.py
+.. literalinclude:: impinbath.py
    :lines: 1-13
 
 

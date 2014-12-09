@@ -27,10 +27,10 @@ interval :math:`[-1,1]` and hybridizes  with the impurity with the amplitude
 :math:`V`.
 
 We solve this model using the hybridization expansion Continuous Time Quantum
-Monte Carlo method (CT-Hyb) proposed by `P. Werner et al
+Monte Carlo method (CT-HYB) proposed by `P. Werner et al
 <http://link.aps.org/doi/10.1103/PhysRevLett.97.076405>`_.
 
-To this end we first initialize the ``Solver`` class of the TRIQS CT-Hyb
+To this end we first initialize the ``Solver`` class of the TRIQS CT-HYB
 implementaion ``pytriqs.applications.impurity_solvers.cthyb``.
 Then, after having constructed the non-interacting Green's function
 :math:`G^{-1}_{0,\sigma}`, we launch the impurity solver calculations by

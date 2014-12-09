@@ -10,7 +10,7 @@ Green's functions
 .. toctree::
    :maxdepth: 2
 
+   basic_notions/contents
    py/contents
    c++/contents
-   fourier/fourier
    tail/tail
