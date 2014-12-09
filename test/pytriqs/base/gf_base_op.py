@@ -38,6 +38,16 @@ def assert_array_equal(a, b) :
 def assert_array_equal_to_scalar(a, x) : 
     assert_array_equal(a, np.identity(a.shape[0])*(x))
 
+def assert_gf_equal(g1,g2) : 
+   assert type (g1) == type(g2), "internal error : comparing 2 different types"
+   if type(g1) == BlockGf : 
+       assert (list(g1.indices) == list(g2.indices)), "indices mismatch"
+       for n in g1.indices :
+           assert_gf_equal(g1[n], g2[n])
+   else :
+      assert_array_equal(g1.data, g2.data)
+      assert_array_equal(g1.tail.data, g2.tail.data)
+
 # --- start test
 
 ga = GfImFreq(indices = [1,2], beta = beta, n_points = 100, name = "a1Block")
@@ -121,4 +131,15 @@ assert_array_equal(Gc['a'].data[:3], res)
 with HDFArchive('gf_base_op_test.h5','w') as h : 
    h['g'] = G
    h['gt'] = gt
-  
+ 
+# Pickle (also use in mpi, etc...)
+import pickle
+
+def check_pickle(g): 
+  s = pickle.dumps(g)
+  g2 = pickle.loads(s)
+  assert_gf_equal(g,g2)
+
+check_pickle(G)
+check_pickle(gt)
+

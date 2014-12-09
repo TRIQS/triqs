@@ -24,9 +24,9 @@ import operator
 from _gf_plot import PlotWrapperPartialReduce
 import numpy as np
 
-def call_factory_from_dict(cl,dic):
+def call_factory_from_dict(cl,name, dic):
     """Given a class cl and a dict dic, it calls cl.__factory_from_dict__(dic)"""
-    return cl.__factory_from_dict__(dic)
+    return cl.__factory_from_dict__(name, dic)
 
 class BlockGf(object):
     """
