@@ -2,10 +2,8 @@
 #define TRIQS_UTILITY_COMPLEX_OPS_H
 #include <complex> 
 
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_14_BUGS   
 inline  std::complex<double> operator"" _j ( long double x ) { return std::complex<double>(0,x); }
 inline  std::complex<double> operator"" _j ( unsigned long long x ) { return std::complex<double>(0,x); }
-#endif
 
 namespace std { // has to be in the right namespace for ADL !
 

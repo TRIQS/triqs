@@ -40,8 +40,8 @@ int main(int argc, char **argv) {
  
  check<array<int,1>> ();
  check<array_view<int,1>>();
- check<matrix<int,1>>();
- check<matrix_view<int,1>>();
+ check<matrix<int>>();
+ check<matrix_view<int>>();
 
  return 0;
 }

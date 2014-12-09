@@ -41,7 +41,7 @@ class PythonListWrap:
     def __reduce_to_dict__(self) : 
         return dict( [ (_my_str(n),v) for (n,v) in  enumerate (self.ob)])
     @classmethod
-    def __factory_from_dict__(cls,D) :
+    def __factory_from_dict__(cls, name, D) :
         return [x for (n,x) in sorted(D.items())]
 
 class PythonTupleWrap:
@@ -50,7 +50,7 @@ class PythonTupleWrap:
     def __reduce_to_dict__(self) : 
         return dict( [ (_my_str(n),v) for (n,v) in  enumerate (self.ob)])
     @classmethod
-    def __factory_from_dict__(cls,D) :
+    def __factory_from_dict__(cls, name, D) :
         return tuple([x for (n,x) in sorted(D.items())])
 
 class PythonDictWrap:
@@ -59,7 +59,7 @@ class PythonDictWrap:
     def __reduce_to_dict__(self) : 
         return dict( [ (str(n),v) for (n,v) in self.ob.items()])
     @classmethod
-    def __factory_from_dict__(cls,D) :
+    def __factory_from_dict__(cls, name, D) :
         return dict([(n,x) for (n,x) in D.items()])
 
 register_class (PythonListWrap)
@@ -102,7 +102,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             ok = eval(r) == key 
         except : 
             ok =False
-        if not ok :  raise KeyError, "The Key *%s*can not be serialized properly by repr !"%key
+        if not ok :  raise KeyError, "The Key *%s*cannot be serialized properly by repr !"%key
         return r
 
     #-------------------------------------------------------------------------
@@ -161,7 +161,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         key= self._key_cipher(key)# first look if key is a string or key
        
         if key in self.keys() : 
-            if self.options['do_not_overwrite_entries'] : raise KeyError, "key %s already exists"%key 
+            if self.options['do_not_overwrite_entries'] : raise KeyError, "key %s already exist."%key 
             self._clean_key(key) # clean things 
 
         # Transform list, dict, etc... into a wrapped type that will allow HDF reduction
@@ -229,7 +229,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
        
         if key not in self : 
             key = self._key_cipher(key)
-            if key not in self  : raise KeyError, "Key %s does not exists"%key
+            if key not in self  : raise KeyError, "Key %s does not exist."%key
  
         if self.is_group(key) :
             SUB = HDFArchiveGroup(self,key) # View of the subgroup
@@ -251,13 +251,13 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             try :
                 exec("from %s import %s as r_class" %(r_module_name,r_class_name)) in globals(), locals()
             except KeyError : 
-                raise RuntimeError, "I can not find the class %s to reconstruct the object !"%r_class_name
+                raise RuntimeError, "I cannot find the class %s to reconstruct the object !"%r_class_name
             if r_readfun :
-                res = r_readfun(self._group,key) 
+                res = r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
             elif "__factory_from_dict__" in dir(r_class) : 
                 f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
-                values = dict( (self._key_decipher(K),f(K)) for K in SUB )
-                res = r_class.__factory_from_dict__(values) 
+                values = dict( (self._key_decipher(str(K)),f(K)) for K in SUB )  # str transforms unicode string to regular python string
+                res = r_class.__factory_from_dict__(key,values) 
             else : 
                 raise ValueError, "Impossible to reread the class %s for group %s and key %s"%(r_class_name,self, key)
             return res

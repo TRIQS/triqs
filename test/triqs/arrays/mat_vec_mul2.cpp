@@ -20,12 +20,12 @@
  ******************************************************************************/
 #include "./common.hpp"
 
-#include "./src/array.hpp"
-#include "./src/vector.hpp"
-#include "./src/matrix.hpp"
-#include "./src/asserts.hpp"
-#include "./src/linalg/det_and_inverse.hpp"
-#include "./src/linalg/det_and_inverse.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/vector.hpp>
+#include <triqs/arrays/matrix.hpp>
+#include <triqs/arrays/asserts.hpp>
+#include <triqs/arrays/linalg/det_and_inverse.hpp>
+#include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <iostream>
 
 using std::cout; using std::endl;

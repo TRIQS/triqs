@@ -41,9 +41,15 @@ namespace arrays {
   */
  template <typename A> struct inverse_lazy;
 
- template <class A> inverse_lazy<typename utility::remove_rvalue_ref<A>::type> inverse(A &&a) {
+ template <class A>
+ std14::enable_if_t<ImmutableMatrix<std14::remove_reference_t<A>>::value,
+                    inverse_lazy<typename utility::remove_rvalue_ref<A>::type>>
+ inverse(A &&a) {
   return {std::forward<A>(a)};
  }
+
+ template <class A>
+ std14::enable_if_t<ImmutableArray<std14::remove_reference_t<A>>::value> inverse(A &&a) = delete; // arrays can not be inverted.
 
  // ----------------- implementation -----------------------------------------
 
@@ -169,7 +175,7 @@ namespace arrays {
   ENABLE_IF(is_matrix_or_view<typename std::remove_reference<A>::type>)
   triqs_arrays_assign_delegation(MT &lhs, inverse_lazy<A> const &rhs) {
    static_assert(is_matrix_or_view<MT>::value, "Can only assign an inverse matrix to a matrix or a matrix_view");
-   bool M_eq_inverse_M = ((lhs.indexmap().memory_indices_layout() == rhs.input().indexmap().memory_indices_layout()) &&
+   bool M_eq_inverse_M = ((lhs.indexmap().get_memory_layout() == rhs.input().indexmap().get_memory_layout()) &&
      (lhs.data_start() == rhs.input().data_start()) && (has_contiguous_data(lhs)));
    if (!M_eq_inverse_M) {
     lhs = rhs();

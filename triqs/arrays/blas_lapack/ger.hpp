@@ -74,8 +74,8 @@ namespace triqs { namespace arrays { namespace blas {
 
   // to allow ger (alpha, x,y, M(..., ...)) i.e. a temporary view, which is not matched by previos templates
  // which require an lvalue
- template< typename A, typename VTX, typename VTY, typename V, ull_t Opt, ull_t To, bool W> 
- void ger (A alpha, VTX const & x, VTY const & y, matrix_view<V,Opt,To,W> && r) { ger(alpha,x,y,r);}
+ template< typename A, typename VTX, typename VTY, typename V, typename To, bool W> 
+ void ger (A alpha, VTX const & x, VTY const & y, matrix_view<V,To,W> && r) { ger(alpha,x,y,r);}
 
 }}}// namespace
 #endif

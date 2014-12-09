@@ -59,7 +59,7 @@ namespace lattice {
   array<double, 2> eval(norb, n_pts);
   k_t dk = (K2 - K1) / double(n_pts), k = K1;
   for (int i = 0; i < n_pts; ++i, k += dk) {
-   eval(range(), i) = linalg::eigenvalues(TK(k(range(0, ndim)))(), false);
+   eval(range(), i) = linalg::eigenvalues(TK(k(range(0, ndim)))());
   }
   return eval;
  }
@@ -86,7 +86,7 @@ namespace lattice {
   grid_generator grid(ndim, n_pts);
   array<double, 2> eval(norb, grid.size());
   for (; grid; ++grid) {
-   eval(range(), grid.index()) = linalg::eigenvalues(TK((*grid)(range(0, ndim)))(), false);
+   eval(range(), grid.index()) = linalg::eigenvalues(TK((*grid)(range(0, ndim)))());
   }
   return eval;
  }
@@ -135,15 +135,13 @@ namespace lattice {
   rho() = 0;
   for (int l = 0; l < norb; l++) {
    for (int j = 0; j < grid.size(); j++) {
+    int a = int((eval(l, j) - epsmin) / deps);
+    if (a == int(neps)) a = a - 1;
     for (int k = 0; k < norb; k++) {
-     int a = int((eval(k, j) - epsmin) / deps);
-     if (a == int(neps)) a = a - 1;
      rho(a, l) += real(conj(evec(l, k, j)) * evec(l, k, j));
-     // dos(a) +=  real(conj(evec(l,k,j))*evec(l,k,j));
     }
    }
   }
-  // rho = rho / double(grid.size()*deps);
   rho /= grid.size() * deps;
   return std::make_pair(epsilon, rho);
  }

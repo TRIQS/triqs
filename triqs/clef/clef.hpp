@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#if defined(__cpp_generic_lambdas) && defined (__cpp_decltype_auto) && defined(__cpp_return_type_deduction)
+#ifndef TRIQS_CPP11
 // simplest code, in c++14
 #include "./clef.c14.hpp"
 #else

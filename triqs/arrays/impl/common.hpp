@@ -22,7 +22,7 @@
 #define TRIQS_ARRAYS_IMPL_COMMON_H
 #include <triqs/utility/first_include.hpp>
 #include <triqs/clef.hpp>
-#define TRIQS_ARRAYS_ALREADY_INCLUDED
+//#define TRIQS_ARRAYS_ALREADY_INCLUDED
 
 /// Maximum dimension of the arrays
 #define ARRAY_NRANK_MAX 10
@@ -64,6 +64,7 @@ namespace triqs {
  
  /// Makes a view
  template<typename A> typename A::view_type make_view(A const & x) { return typename A::view_type(x);}
+ template<typename A> typename A::const_view_type make_const_view(A const & x) { return typename A::const_view_type(x);}
 
  /// Makes a clone
  template<typename A> typename A::regular_type make_clone(A const & x) { return typename A::regular_type(x);}

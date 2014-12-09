@@ -22,7 +22,7 @@ import sys, os
 # ---------------------
 
 sys.path +=[ #"@CMAKE_BINARY_DIR@/doc/breathe",
-"@CMAKE_BINARY_DIR@/doc/mpl","@CMAKE_BINARY_DIR@/doc/autocompile",
+"@CMAKE_BINARY_DIR@/doc/mpl", "@CMAKE_BINARY_DIR@/doc/autorun", "@CMAKE_BINARY_DIR@/doc/triqs_example",
 "@CMAKE_BINARY_DIR@/doc/sandbox","@CMAKE_BINARY_DIR@/doc"]
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
@@ -40,15 +40,7 @@ extensions += [
        # 'inheritance_diagram',
         'numpydoc']
 
-extensions += ['autocompile','autorun']
-
-##options for autocompile module: c++ execution
-autocompile_opts = dict(compiler = "@CMAKE_CXX_COMPILER@",
-        link = "@DOC_AUTOCOMPILE_LINK@".replace(';',' '),
-        ld_library_path = "@DOC_AUTOCOMPILE_LD_LIBRARY_PATH@".replace(';',' '),
-        include =''.join([ " -I%s"%arg for arg in "@DOC_AUTOCOMPILE_INCLUDE@".split(';')] ),
-        definitions =''.join([ " %s"%arg for arg in "@DOC_AUTOCOMPILE_DEFINITIONS@".split(';')] )
-        )
+extensions += ['autorun', 'triqs_example']
 
 ##options for autorun module: python execution
 autorun_languages = {}
@@ -132,7 +124,7 @@ pygments_style = 'sphinx'
 # Options for doxylink extension
 # -----------------------------
 
-doxylink = { 'doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/doxy.tag', 'doxy_triqs') }
+doxylink = { 'doxy': ('@CMAKE_CURRENT_BINARY_DIR@/doxy.tag', 'doxy_triqs') }
 
 
 # Options for HTML output
@@ -154,7 +146,7 @@ html_context = {'header_title': 'triqs',
                                  ['About TRIQS', 'about']
                                                        ]}
 
-#html_theme_options = { "pagewidth": "80em", "documentwidth" : "60em" }
+#html_theme_options = { "pagewidth": "80em", "documentwidth": "60em" }
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

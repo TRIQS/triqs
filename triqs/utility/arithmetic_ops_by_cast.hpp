@@ -44,6 +44,8 @@ namespace utility {
  IMPL_OP(/ );
 #undef IMPL_OP
 
+template <typename D, typename C> C operator-(arithmetic_ops_by_cast<D, C> const &x) { return  -C(static_cast<D const &>(x));}
+ 
  // Same thing, but disallow the operations with the type itself
  template <typename Derived, typename C> struct arithmetic_ops_by_cast_disable_same_type {};
 #define IMPL_OP(OP)                                                                                                              \
@@ -64,6 +66,10 @@ namespace utility {
  IMPL_OP(*);
  IMPL_OP(/ );
 #undef IMPL_OP
+
+ template <typename D, typename C>
+ C operator-(arithmetic_ops_by_cast_disable_same_type<D, C> const &x) { return -C(static_cast<D const &>(x));}
+
 }
 }
 

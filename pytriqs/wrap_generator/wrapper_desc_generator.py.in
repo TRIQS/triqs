@@ -1,0 +1,123 @@
+#!@PYTHON_INTERPRETER@
+
+from clang_parser import parse, decay
+import sys, os
+from mako.template import Template
+
+# the instruction that created this file
+shell_command = ' '.join( [ sys.argv[0].rsplit('/')[-1]] + [x if ' ' not in x else '"%s"'%x for x in sys.argv[1:]])
+
+#
+print "Welcome to the wrapper desc file generator of TRIQS, based on libclang !"
+
+# macro vim to replace the old param class ...
+# :'<,'>s/\s*\.add_field("\(.\{-}\)",\s*\(.\{-}\)(\(.\{-}\)),\s*"\(.\{-}\)")/\/\/\/\4\r\2 \1 = \3;\r/g
+
+# --- Parsing the arguments of the script and options
+import argparse
+
+parser = argparse.ArgumentParser(description="""
+Generate the C++/Python wrapper desc file from C++ header code
+""")
+
+parser.add_argument('filename', help = "Name of the file")
+parser.add_argument('--outputname', '-o',  help="Name of the xxx_desc.py file [default is same as the filename]", default = '')
+parser.add_argument('--modulename', '-m',  help="Name of the Python module [default ='', it will take the name of file", default = '')
+parser.add_argument('--moduledoc',  help="Documentation of the module", default = '')
+parser.add_argument('--properties', '-p',  action='store_true', 
+        help="""Transforms i) every method with no arguments into read-only property
+                ii) every method get_X into read-only property
+                iii) every couple of methods get_X, set_X into rw property
+              """)
+parser.add_argument('--libclang_location', help='Location of the libclang', default = '@TRIQS_LIBCLANG_LOCATION@')
+parser.add_argument('--compiler_options', nargs ='*', help='Options to pass to clang')
+parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
+
+args = parser.parse_args()
+args.includes = (args.includes or []) +  '@TRIQS_INCLUDE_ALL@'.split(';')
+
+triqs_install_location = '@CMAKE_INSTALL_PREFIX@'
+args.includes.insert(0, triqs_install_location + '/include')
+
+#------------
+
+modulename = args.modulename or os.path.split(args.filename)[1].split('.',1)[0]
+output_name = args.outputname or os.path.split(args.filename)[1].split('.',1)[0]
+
+class property_ : 
+    def __init__ (self, **kw) : 
+        self.__dict__.update(kw)
+
+if __name__ == '__main__' : 
+
+    compiler_options = args.compiler_options or [] 
+
+    if "@USE_CPP14@" == "ON":
+        compiler_options.append("-std=c++1y")
+    else:
+        compiler_options.append("-DTRIQS_CPP11")
+
+    compiler_options += ['-I%s'%x for x in args.includes]
+    add_opts = '@TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS@'.strip()
+    if add_opts:
+        compiler_options += add_opts.split()
+
+    functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, where_is_libclang = args.libclang_location)
+  
+    print "Generating the wrapper ..."
+
+    if args.properties :    
+        print "making properties"
+
+        for cls in classes : 
+            cls.proplist, exclude =[], []
+            m_by_names =dict( (m.name,m) for m in cls.methods)
+            # Find all the couples get_X, set_X
+            for m in cls.methods : 
+                if  m.is_template or m.name.startswith('operator') or m.name in ['begin','end'] : # or m.rtype.name=="void" : 
+                    exclude.append(m)
+                elif len(m.params) == 0 and not m.is_static : # it is a property 
+                    X = m.name[4:] if m.name.startswith('get_') else m.name # remove the get_ if present
+                    set_m = m_by_names.get('set_' + X, None)
+                    if set_m and set_m.rtype.name == "void" and len(set_m.params) ==1 :
+                        if decay(set_m.params[0][0].name) == m.rtype.name : 
+                          exclude.append(set_m)
+                        else : 
+                            print "Warning :"
+                            print "   in get_%s/set_%s" %(X,X)
+                            print "     The type taken from set_%s is not the return type of get_%s"%(X,X)
+                            print "    Expected ",m.rtype.name  
+                            print "    Got ", decay(set_m.params[0][0].name)  
+                            print "     I am not adding the setter to the property"
+                            set_m = None
+                    cls.proplist.append(property_(name= X, doc = m.doc, getter = m, setter = set_m))
+                    print "Property : ", m.name, set_m.name if set_m else ''
+                    exclude.append(m)
+            cls.methods = [m for m in cls.methods if m not in exclude]
+    
+    # all classes used as parameters needs to be converted from / to Python
+    classes_of_parameters = [m.parameter_arg for m in sum((c.methods for c in classes),[]) if m.parameter_arg != None]
+    classes_of_parameters = dict(((c.name,c) for c in classes_of_parameters)).values() # make unique
+    if classes_of_parameters : 
+        print "Generating the converters for parameters classes : " + ', '.join([c.name for c in classes_of_parameters])
+        # Generate the converter code for all the classes.
+        tpl = Template(filename=triqs_install_location + '/share/triqs/wrap_generator/converters.mako.hxx')
+        rendered = tpl.render(classes = classes_of_parameters, args = args, shell_command= shell_command )
+
+        #with open(args.filename.replace('.hpp',".hxx"), "w") as f:
+        with open("converters.hxx", "w") as f:
+            f.write(rendered)
+
+        print "... done"
+
+    # Making the desc file 
+    tpl = Template(filename=triqs_install_location + '/share/triqs/wrap_generator/wrap_desc.mako.py')
+    rendered = tpl.render(classes = classes, functions = functions, modulename=modulename,  moduledoc=args.moduledoc, args = args, 
+                 shell_command= shell_command, classes_of_parameters = classes_of_parameters  )
+
+    with open("{output_name}_desc.py".format(output_name=output_name), "w") as f:
+        f.write(rendered)
+
+    print "... done"
+     
+

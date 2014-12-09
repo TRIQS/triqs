@@ -61,10 +61,10 @@ class TBLattice:
         def reg(k) : return tuple( int(x) for x in k) 
         self._hop = dict ( ( reg(k), numpy.array(v)) for k, v in hopping.items())
         orb = dict ( (str(i), orb) for (i, orb) in enumerate(orbital_positions ))
-        self.bl = BravaisLattice(units, orb)
+        self.bl = BravaisLattice(units, orbital_positions)
         self.tb = TightBinding(self.bl, self._hop) #, orbital_positions )
         self.dim = self.bl.dim
-        self.NOrbitalsInUnitCell = self.bl.n_orbitals()
+        self.NOrbitalsInUnitCell = self.bl.n_orbitals
         self.Units = units
         self.OrbitalPositions = orbital_positions 
         self.OrbitalNames = orbital_names

@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_BLOCK_H
-#define TRIQS_GF_BLOCK_H
+#pragma once
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
@@ -30,8 +29,8 @@ namespace gfs {
 
  struct block_index {};
 
- template <typename Opt> struct gf_mesh<block_index, Opt> : discrete_mesh<discrete_domain> {
-  typedef discrete_mesh<discrete_domain> B;
+ template <> struct gf_mesh<block_index> : discrete_mesh<discrete_domain> {
+  using B = discrete_mesh<discrete_domain>;
   gf_mesh() = default;
   gf_mesh(int s) : B(s) {}
   gf_mesh(discrete_domain const &d) : B(d) {}
@@ -42,44 +41,42 @@ namespace gfs {
 
   /// ---------------------------  hdf5 ---------------------------------
 
-  template <typename Target, typename Opt> struct h5_name<block_index, Target, Opt> {
+  template <typename Target> struct h5_name<block_index, Target, nothing> {
    static std::string invoke() { return "BlockGf"; }
   };
 
-  template <typename Target, typename Opt> struct h5_rw<block_index, Target, Opt> {
+  template <typename Target> struct h5_rw<block_index, Target, nothing, void> {
 
-   static void write(h5::group gr, gf_const_view<block_index, Target, Opt> g) {
+   static void write(h5::group gr, gf_const_view<block_index, Target> g) {
     for (size_t i = 0; i < g.mesh().size(); ++i) h5_write(gr, g.mesh().domain().names()[i], g._data[i]);
-    // h5_write(gr,"symmetry",g._symmetry);
+    h5_write(gr, "block_names", g.mesh().domain().names());
    }
 
-   template <bool IsView> static void read(h5::group gr, gf_impl<block_index, Target, Opt, IsView, false> &g) {
-    // does not work : need to read the block name and remake the mesh...
-    g._mesh = gf_mesh<block_index, Opt>(gr.get_all_subgroup_names());
+   template <bool IsView> static void read(h5::group gr, gf_impl<block_index, Target, nothing, void, IsView, false> &g) {
+    auto block_names = h5::h5_read<std::vector<std::string>>  (gr, "block_names");
+    g._mesh = gf_mesh<block_index>(block_names);
+    //auto check_names = gr.get_all_subgroup_names();
+    // sort both and check ?
     g._data.resize(g._mesh.size());
-    // if (g._data.size() != g._mesh.size()) TRIQS_RUNTIME_ERROR << "h5 read block gf : number of block mismatch";
     for (size_t i = 0; i < g.mesh().size(); ++i) h5_read(gr, g.mesh().domain().names()[i], g._data[i]);
-    // h5_read(gr,"symmetry",g._symmetry);
    }
   };
 
   /// ---------------------------  data access  ---------------------------------
 
-  template <typename Target, typename Opt>
-  struct data_proxy<block_index, Target, Opt> : data_proxy_vector<typename regular_type_if_exists_else_type<Target>::type> {};
+  template <typename Target>
+  struct data_proxy<block_index, Target, void> : data_proxy_vector<typename regular_type_if_exists_else_type<Target>::type> {};
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  template <typename Target, typename Opt> struct factories<block_index, Target, Opt> {
-   typedef gf_mesh<block_index, Opt> mesh_t;
-   typedef gf<block_index, Target> gf_t;
-   typedef gf_view<block_index, Target> gf_view_t;
+  template <typename Target> struct data_factory<block_index, Target, nothing> {
+   using mesh_t = gf_mesh<block_index>;
+   using gf_t = gf<block_index, Target>;
+   using gf_view_t = gf_view<block_index, Target>;
+   using aux_t = nothing;
    struct target_shape_t {};
 
-   static typename gf_t::data_t make_data(mesh_t const &m, target_shape_t) { return std::vector<Target>(m.size()); }
-   static typename gf_t::singularity_t make_singularity(mesh_t const &m, target_shape_t) {
-    return {};
-   }
+   static typename gf_t::data_t make(mesh_t const &m, target_shape_t, aux_t) { return std::vector<Target>(m.size()); }
   };
 
  } // gfs_implementation
@@ -93,115 +90,135 @@ namespace gfs {
  // -------------------------------   Free Factories for regular type  --------------------------------------------------
 
  // from a number and a gf to be copied
- template <typename Variable, typename Target, typename Opt>
- block_gf<Variable, Target, Opt> make_block_gf(int n, gf<Variable, Target, Opt> const &g) {
-  auto V = std::vector<gf<Variable, Target, Opt>>{};
+ template <typename... A> block_gf<A...> make_block_gf(int n, gf<A...> const &g) {
+  auto V = std::vector<gf<A...>>{};
   for (int i = 0; i < n; ++i) V.push_back(g);
-  return {{n}, std::move(V), nothing{}, nothing{}};
+  return {{n}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // from a vector of gf (moving directly)
- template <typename Variable, typename Target, typename Opt>
- block_gf<Variable, Target, Opt> make_block_gf(std::vector<gf<Variable, Target, Opt>> V) {
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
+ template <typename... A> block_gf<A...> make_block_gf(std::vector<gf<A...>> V) {
+  int s = V.size(); // DO NOT use V.size in next statement, the V is moved and the order of arg. evaluation is undefined.
+  return {{s}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
+ /*
  // from a vector of gf : generalized to have a different type of gf in the vector (e.g. views...)
- template <typename Variable, typename Target, typename Opt, typename GF2>
- block_gf<Variable, Target, Opt> make_block_gf(std::vector<GF2> const &V) {
-  auto V2 = std::vector<gf<Variable, Target, Opt>>{};
+ template <typename Variable, typename Target, typename Singularity, typename Evaluator, typename GF2>
+ block_gf<Variable, Target, Singularity, Evaluator> make_block_gf(std::vector<GF2> const &V) {
+  auto V2 = std::vector<gf<Variable, Target, Singularity, Evaluator>>{};
   for (auto const &g : V) V2.push_back(g);
-  return {{int(V.size())}, std::move(V2), nothing{}, nothing{}};
+  return {{int(V.size())}, std::move(V2), nothing{}, nothing{}, nothing{}};
  }
+*/
 
  // from a init list of GF with the correct type
- template <typename Variable, typename Target, typename Opt>
- block_gf<Variable, Target, Opt> make_block_gf(std::initializer_list<gf<Variable, Target, Opt>> const &V) {
-  return {{int(V.size())}, V, nothing{}, nothing{}};
+ template <typename... A> block_gf<A...> make_block_gf(std::initializer_list<gf<A...>> const &V) {
+  return {{int(V.size())}, V, nothing{}, nothing{}, nothing{}};
  }
 
  // from vector<string> and a gf to be copied
- template <typename Variable, typename Target, typename Opt>
- block_gf<Variable, Target, Opt> make_block_gf(std::vector<std::string> block_names, gf<Variable, Target, Opt> const &g) {
-  auto V = std::vector<gf<Variable, Target, Opt>>{};
+ template <typename... A> block_gf<A...> make_block_gf(std::vector<std::string> block_names, gf<A...> const &g) {
+  auto V = std::vector<gf<A...>>{};
   for (int i = 0; i < block_names.size(); ++i) V.push_back(g);
-  return {{block_names}, std::move(V), nothing{}, nothing{}};
+  return {{block_names}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // from vector<string>, vector<gf>
- template <typename Variable, typename Target, typename Opt>
- block_gf<Variable, Target, Opt> make_block_gf(std::vector<std::string> block_names, std::vector<gf<Variable, Target, Opt>> V) {
+ template <typename... A> block_gf<A...> make_block_gf(std::vector<std::string> block_names, std::vector<gf<A...>> V) {
   if (block_names.size() != V.size())
    TRIQS_RUNTIME_ERROR << "make_block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
-  return {{block_names}, std::move(V), nothing{}, nothing{}};
+  return {{block_names}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // from vector<string>, init_list<GF>
- template <typename Variable, typename Target, typename Opt>
- block_gf<Variable, Target, Opt> make_block_gf(std::vector<std::string> block_names,
-                                               std::initializer_list<gf<Variable, Target, Opt>> const &V) {
+ template <typename... A>
+ block_gf<A...> make_block_gf(std::vector<std::string> block_names, std::initializer_list<gf<A...>> const &V) {
   if (block_names.size() != V.size()) TRIQS_RUNTIME_ERROR << "make_block_gf(vector<string>, init_list) : size mismatch !";
-  return {{block_names}, V, nothing{}, nothing{}};
+  return {{block_names}, V, nothing{}, nothing{}, nothing{}};
  }
 
  // -------------------------------   Free Factories for view type  --------------------------------------------------
 
  template <typename G0, typename... G>
- gf_view<block_index, typename std::remove_reference<G0>::type::view_type> make_block_gf_view(G0 &&g0, G &&... g) {
-  auto V = std::vector<typename std::remove_reference<G0>::type::view_type>{std::forward<G0>(g0), std::forward<G>(g)...};
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
-  // return { gf_mesh<block_index, Opt> {int(V.size())}, std::move(V), nothing{}, nothing{} } ;
+ gf_view<block_index, typename std14::decay_t<G0>::view_type> make_block_gf_view(G0 &&g0, G &&... g) {
+  auto V = std::vector<typename std14::decay_t<G0>::view_type>{std::forward<G0>(g0), std::forward<G>(g)...};
+  return {{int(V.size())}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  template <typename GF> gf_view<block_index, typename GF::regular_type> make_block_gf_view_from_vector(std::vector<GF> V) {
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
+  int s = V.size();
+  return {{s}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
- // for cython proxy only. do not document.
- template <typename GF, typename GF2> gf_view<block_index, GF> make_block_gf_view_from_vector_of_cython_proxy(std::vector<GF2> V) {
-  return {{int(V.size())}, std::move(V), nothing{}, nothing{}};
+ template <typename GF>
+ gf_view<block_index, typename GF::regular_type> make_block_gf_view_from_vector(std::vector<std::string> block_names,
+                                                                                std::vector<GF> V) {
+  return {{std::move(block_names)}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // ------------------------------- Extend reinterpret_scalar_valued_gf_as_matrix_valued for block gf   ------
 
- template <typename Variable, typename Opt, typename Opt2, bool IsConst>
- gf_view<block_index, gf<Variable, matrix_valued, Opt>, Opt2, IsConst>
- reinterpret_scalar_valued_gf_as_matrix_valued(gf_view<block_index, gf<Variable, scalar_valued, Opt>, Opt2, IsConst> bg) {
-  std::vector<gf_view<Variable, matrix_valued, Opt>> V;
+ // TODO simplify ?
+ template <typename Variable, typename Singularity, typename Evaluator, bool IsConst>
+ gf_view<block_index, gf<Variable, matrix_valued, Singularity, void>, nothing, void, IsConst>
+ reinterpret_scalar_valued_gf_as_matrix_valued(
+     gf_view<block_index, gf<Variable, scalar_valued, Singularity, Evaluator>, nothing, void, IsConst> bg) {
+  std::vector<gf_view<Variable, matrix_valued, Singularity, void>> V;
   for (auto &g : bg) V.push_back(reinterpret_scalar_valued_gf_as_matrix_valued(g));
   return make_block_gf_view_from_vector(std::move(V));
  }
 
- template <typename Variable, typename Opt, typename Opt2>
- gf_const_view<block_index, gf<Variable, matrix_valued, Opt>, Opt2>
- reinterpret_scalar_valued_gf_as_matrix_valued(gf<block_index, gf<Variable, scalar_valued, Opt>, Opt2> const &bg) {
+ template <typename Variable, typename Singularity, typename Evaluator>
+ block_gf_const_view<Variable, matrix_valued, Singularity, void>
+ reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Variable, scalar_valued, Singularity, Evaluator> const &bg) {
   return reinterpret_scalar_valued_gf_as_matrix_valued(bg());
  }
 
- template <typename Variable, typename Opt, typename Opt2>
- gf_view<block_index, gf<Variable, matrix_valued, Opt>, Opt2>
- reinterpret_scalar_valued_gf_as_matrix_valued(gf<block_index, gf<Variable, scalar_valued, Opt>, Opt2> &bg) {
+ template <typename Variable, typename Singularity, typename Evaluator>
+ block_gf_view<Variable, matrix_valued, Singularity, void>
+ reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Variable, scalar_valued, Singularity, Evaluator> &bg) {
   return reinterpret_scalar_valued_gf_as_matrix_valued(bg());
  }
 
  // -------------------------------   Free functions   --------------------------------------------------
 
  // a simple function to get the number of blocks
- template <typename T> size_t n_blocks(gf<block_index, T> const &g) { return g.mesh().size(); }
- template <typename T> size_t n_blocks(gf_view<block_index, T> const &g) { return g.mesh().size(); }
+ template <typename... T> size_t n_blocks(gf<block_index, T...> const &g) { return g.mesh().size(); }
+ template <typename... T> size_t n_blocks(gf_view<block_index, T...> const &g) { return g.mesh().size(); }
+
+ // -------------------------------   Map functions   --------------------------------------------------
+
+ template <typename F, typename T> std::vector<std14::result_of_t<F(T)>> _map(F &&f, std::vector<T> const &V) {
+  std::vector<std14::result_of_t<F(T)>> res;
+  res.reserve(V.size());
+  for (auto &x : V) res.emplace_back(f(x));
+  return res;
+ }
+
+ /// Build the block function made of f(b) if b are the blocks of g
+ template <typename F, typename G> gf<block_index, std14::result_of_t<F(G)>> map(F &&f, gf<block_index, G> const &g) {
+  return make_block_gf(_map(f, g.data()));
+ }
+ template <typename F, typename G> gf<block_index, std14::result_of_t<F(G)>> map(F &&f, gf_view<block_index, G> g) {
+  return make_block_gf(_map(f, g.data()));
+ }
+ template <typename F, typename G> gf<block_index, std14::result_of_t<F(G)>> map(F &&f, gf_const_view<block_index, G> g) {
+  return make_block_gf(_map(f, g.data()));
+ }
 
  // -------------------------------   an iterator over the blocks --------------------------------------------------
 
- template<typename T> using __get_target = typename std::remove_reference<decltype(std::declval<T>()[0])>::type;
+ template <typename T> using __get_target = std14::remove_reference_t<decltype(std::declval<T>()[0])>;
 
  // iterator
  template <typename G>
  class block_gf_iterator
      : public boost::iterator_facade<block_gf_iterator<G>, __get_target<G>, boost::forward_traversal_tag, __get_target<G> &> {
   friend class boost::iterator_core_access;
-  typedef typename std::remove_reference<G>::type big_gf_t;
+  using big_gf_t = typename std::remove_reference<G>::type;
   big_gf_t &big_gf;
-  typedef typename big_gf_t::mesh_t::const_iterator mesh_iterator_t;
+  using mesh_iterator_t = typename big_gf_t::mesh_t::const_iterator;
   mesh_iterator_t mesh_it;
 
   __get_target<G> &dereference() const { return big_gf[*mesh_it]; }
@@ -214,25 +231,27 @@ namespace gfs {
  };
 
  //------------
- template <typename Target, typename Opt, bool B, bool C>
- block_gf_iterator<gf_impl<block_index, Target, Opt, B, C>> begin(gf_impl<block_index, Target, Opt, B, C> &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ begin(gf_impl<block_index, Target, Singularity, Evaluator, B, C> &bgf) {
   return {bgf, false};
  }
 
  //------------
- template <typename Target, typename Opt, bool B, bool C>
- block_gf_iterator<gf_impl<block_index, Target, Opt, B, C>> end(gf_impl<block_index, Target, Opt, B, C> &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ end(gf_impl<block_index, Target, Singularity, Evaluator, B, C> &bgf) {
   return {bgf, true};
  }
 
  //----- const iterator
  template <typename G>
- class block_gf_const_iterator
-     : public boost::iterator_facade<block_gf_const_iterator<G>, __get_target<G>, boost::forward_traversal_tag, __get_target<G> const &> {
+ class block_gf_const_iterator : public boost::iterator_facade<block_gf_const_iterator<G>, __get_target<G>,
+                                                               boost::forward_traversal_tag, __get_target<G> const &> {
   friend class boost::iterator_core_access;
-  typedef typename std::remove_reference<G>::type big_gf_t;
+  using big_gf_t = std14::remove_reference_t<G>;
   big_gf_t const &big_gf;
-  typedef typename big_gf_t::mesh_t::const_iterator mesh_iterator_t;
+  using mesh_iterator_t = typename big_gf_t::mesh_t::const_iterator;
   mesh_iterator_t mesh_it;
 
   __get_target<G> const &dereference() const { return big_gf[*mesh_it]; }
@@ -244,26 +263,29 @@ namespace gfs {
   bool at_end() const { return mesh_it.at_end(); }
  };
 
- template <typename Target, typename Opt, bool B, bool C>
- block_gf_const_iterator<gf_impl<block_index, Target, Opt, B, C>> begin(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ begin(gf_impl<block_index, Target, Singularity, Evaluator, B, C> const &bgf) {
   return {bgf, false};
  }
 
- template <typename Target, typename Opt, bool B, bool C>
- block_gf_const_iterator<gf_impl<block_index, Target, Opt, B, C>> end(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ end(gf_impl<block_index, Target, Singularity, Evaluator, B, C> const &bgf) {
   return {bgf, true};
  }
 
- template <typename Target, typename Opt, bool B, bool C>
- block_gf_const_iterator<gf_impl<block_index, Target, Opt, B, C>> cbegin(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ cbegin(gf_impl<block_index, Target, Singularity, Evaluator, B, C> const &bgf) {
   return {bgf, false};
  }
 
- template <typename Target, typename Opt, bool B, bool C>
- block_gf_const_iterator<gf_impl<block_index, Target, Opt, B, C>> cend(gf_impl<block_index, Target, Opt, B, C> const &bgf) {
+ template <typename Target, typename Singularity, typename Evaluator, bool B, bool C>
+ block_gf_const_iterator<gf_impl<block_index, Target, Singularity, Evaluator, B, C>>
+ cend(gf_impl<block_index, Target, Singularity, Evaluator, B, C> const &bgf) {
   return {bgf, true};
  }
 }
 }
-#endif
 

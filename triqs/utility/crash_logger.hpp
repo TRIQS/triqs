@@ -68,8 +68,7 @@ class crash_logger {
   names.push_back(name);
   guards.emplace_back([&obj,this, name](){
     using triqs::h5::h5_write; // to have the proper overload for scalar type !!
-    try { h5_write( h5::group(H5::H5File(this->filename_.c_str(),H5F_ACC_RDWR)), name, obj); }
-    catch(H5::Exception const & e) { std::cerr  << "An hdf5 exception has occurred in crash_logger : I can not recover : error is " <<std::endl ; e.printError();}
+    try { h5_write( h5::group(h5::file(this->filename_.c_str(),H5F_ACC_RDWR)), name, obj); }
     catch(...) { std::cerr  << "An exception has occurred in crash_logger for an object of type " << typeid_name(obj) << " named " << name<< std::endl ; }
     }); //end lambda
   return *this;
@@ -81,10 +80,10 @@ class crash_logger {
     std::cerr << "crash_logger : I am destroyed without being dismissed. Dumping the objects : ";
     for (auto & x : names) std::cerr<< "\""<< x <<"\" ";
     std::cerr<< std::endl;
-    H5::H5File(this->filename_.c_str(),H5F_ACC_TRUNC); // create the file
+    h5::file(this->filename_.c_str(), H5F_ACC_TRUNC); // create the file
    }
   }
-  catch(...) {} // just in case ... destructor can not throw
+  catch(...) {} // just in case ... destructor cannot throw
  }
  ///
  void dismiss() {for (auto & g : guards) g.dismiss();}

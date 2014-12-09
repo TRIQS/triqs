@@ -18,8 +18,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_ALL_H
-#define TRIQS_ARRAYS_ALL_H
+#pragma once
+
+// for python code generator, we need to know what to include...
+#define TRIQS_ARRAYS_INCLUDED
 
 // The basic classes
 #include <triqs/arrays/array.hpp>
@@ -27,14 +29,19 @@
 #include <triqs/arrays/vector.hpp>
 
 //
-//#include <triqs/arrays/functional/map.hpp>
-#include <triqs/arrays/mapped_functions.hpp>
+#include <triqs/arrays/functional/map.hpp>
+#include <triqs/arrays/functional/fold.hpp>
+#include <triqs/arrays/math_functions.hpp>
+#include <triqs/arrays/algorithms.hpp>
 
 // HDF5 interface
 #include <triqs/arrays/h5/simple_read_write.hpp>
 
-// Linear algebra ?? Keep here ?
-//#include <triqs/arrays/linalg/det_and_inverse.hpp>
+// Regrouping indices
+#include <triqs/arrays/group_indices.hpp>
 
-#endif
+// Linear algebra ?? Keep here ?
+#include <triqs/arrays/linalg/det_and_inverse.hpp>
+
+#include <triqs/mpi/arrays.hpp>
 

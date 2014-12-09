@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2011-2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,88 +18,107 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_INDEXMAP_CUBOID_MAP_H
-#define TRIQS_ARRAYS_INDEXMAP_CUBOID_MAP_H
+#pragma once
 #include "./domain.hpp"
 #include "./mem_layout.hpp"
-#include "../../impl/flags.hpp"
 #include <vector>
 #include <boost/iterator/iterator_facade.hpp>
 
-namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
+namespace triqs { namespace arrays {
 
- template< bool BC, class D, class K> struct _chk;
- template< class D, class K> struct _chk<true, D, K>  { static void invoke (D const & d, K const & k) {d.assert_key_in_domain(k);} };
- template< class D, class K> struct _chk<false, D, K> { static void invoke (D const & d, K const & k) {} };
+ struct _traversal_c {};
+ struct _traversal_fortran {};
+ struct _traversal_dynamical {};
+ template <int... Is> struct _traversal_custom {};
 
- template< bool BC, class D, class ... K> struct _chk_v;
- template< class D, class ... K> struct _chk_v<true, D, K...>  { static void invoke (D const & d, K const & ... k) {d.assert_key_in_domain_v(k...);} };
- template< class D, class ... K> struct _chk_v<false, D, K...> { static void invoke (D const & d, K const & ... k) {} };
+ template <typename T> struct _get_traversal_order_t {
+  using type = T;
+ };
+ template <> struct _get_traversal_order_t<void> {
+  using type = _traversal_c;
+ };
 
- template<int Rank> ull_t memory_layout_from_strides(mini_vector<std::ptrdiff_t, Rank> const & strides) {
-  int c[Rank]; for (size_t i=0; i<Rank; ++i) c[i]=0;
-  for (size_t i=0; i<Rank; ++i)
-   for (size_t j=i+1; j<Rank; ++j)
-    if (strides[i] > strides[j]) c[i]++; else c[j]++;
-  // we computed the map : index -> memory_rank, which is the inverse map, cf mem_layout
-  return permutations::inverse(permutations::permutation_from_array(c, Rank));
+ constexpr ull_t _get_traversal_order_permutation(int R, _traversal_c) { return permutations::identity(R); }
+ constexpr ull_t _get_traversal_order_permutation(int R, _traversal_fortran) { return permutations::ridentity(R); }
+ template <int... Is> constexpr ull_t _get_traversal_order_permutation(int R,_traversal_custom<Is...>) {
+  static_assert(sizeof...(Is) == R, " Rank mismatch");
+  return permutations::permutation(Is...);
  }
+
+ namespace indexmaps { namespace cuboid {
 
  /** Standard hyper_rectangular arrays, implementing the IndexMap concept.
  */
- template<int Rank, ull_t OptionsFlags, ull_t TraversalOrder >
-  class map {
+ template <int Rank, typename TraversalOrder=void> class map {
    public :
-   static constexpr bool CheckBounds = flags::bound_check_trait<OptionsFlags>::value;
-   static constexpr ull_t traversal_order_in_template = TraversalOrder;
-   static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order<Rank, OptionsFlags, TraversalOrder>::value;
-   typedef void has_traversal_order_tag;
-   static const unsigned int rank = Rank;
-   typedef mini_vector<size_t,rank> lengths_type;
-   typedef mini_vector<std::ptrdiff_t, rank> strides_type;
-   typedef domain_t<Rank> domain_type;
-   domain_type const & domain() const { return mydomain;}
+   static const int rank = Rank;
+   using lengths_type=mini_vector<size_t,rank> ;
+   using strides_type=mini_vector<std::ptrdiff_t, rank> ;
+   using domain_type = domain_t<Rank>;
+   using traversal_order_in_template = TraversalOrder;
+   using has_traversal_order_tag = void;
+   domain_type const& domain() const { return mydomain; }
 
-   // basic construction
-   map (memory_layout<Rank> const & ml = memory_layout<Rank>(traversal_order)):mydomain(), start_shift_(0), memory_order_(ml) {}
-   map(domain_type const & C): mydomain(C), start_shift_(0), memory_order_(traversal_order) {compute_stride_compact();}
-   map(domain_type const & C, memory_layout<Rank> ml): mydomain(C), start_shift_(0), memory_order_(ml) {compute_stride_compact();}
-
-   /// Construction from the length, the stride, start_shift
-   map(lengths_type const & Lengths, strides_type const & strides, std::ptrdiff_t start_shift ):
-    mydomain(Lengths), strides_(strides), start_shift_(start_shift),
-    memory_order_ (memory_layout_from_strides(strides_)) {}
-
-   /// Construction from the length, the stride, start_shift
-   map(lengths_type && Lengths, strides_type && strides, std::ptrdiff_t start_shift ):
-    mydomain(std::move(Lengths)), strides_(std::move(strides)), start_shift_(start_shift),
-    memory_order_ (memory_layout_from_strides(strides_)) {}
-
-   /// Construction from another map with the same order (used in grouping indices)
-   template<ull_t Opt2, ull_t To2> map (map<Rank,Opt2,To2> const & C):
-    mydomain(C.domain()), strides_(C.strides()), start_shift_(C.start_shift()), memory_order_ (C.memory_indices_layout()) {}
-
-   // regular type
+   // semi-regular type
+   map (): start_shift_(0), memory_order_() {}
    map (map const & C) = default;
    map (map && C) = default;
    map & operator = (map const & m) = default;
    map & operator = (map && m)  = default;
 
+   // basic construction
+   map(memory_layout<Rank> const & ml):mydomain(), start_shift_(0), memory_order_(ml) {}
+   map(domain_type const & C): mydomain(C), start_shift_(0), memory_order_() {compute_stride_compact();}
+   map(domain_type const & C, memory_layout<Rank> ml): mydomain(C), start_shift_(0), memory_order_(std::move(ml)) {compute_stride_compact();}
+
+   /// Construction from the length, the stride, start_shift
+   map(lengths_type Lengths, strides_type strides, std::ptrdiff_t start_shift ):
+    mydomain(std::move(Lengths)), strides_(std::move(strides)), start_shift_(start_shift),
+    memory_order_ (memory_layout_from_strides(strides_)) {}
+
+   /// Construction from the length, the stride, start_shift, ml
+   map(lengths_type Lengths, strides_type strides, std::ptrdiff_t start_shift, memory_layout<Rank> const & ml ):
+    mydomain(std::move(Lengths)), strides_(std::move(strides)), start_shift_(start_shift), memory_order_ (ml) {}
+
+   /// Construction from another map with the same order
+   template <typename To2>
+   map(map<Rank, To2> const& C)
+      : mydomain(C.domain()), strides_(C.strides()), start_shift_(C.start_shift()), memory_order_(C.get_memory_layout()) {}
+
+   template <typename To2> map& operator=(map<Rank, To2> const& m) {
+    *this = map{m};
+   }
+
+   // transposition
+   friend map transpose(map const& m, mini_vector<int, Rank> const & perm) {
+    lengths_type l;
+    strides_type s;
+    for (int u = 0; u < Rank; ++u) {
+     l[perm[u]] = m.domain().lengths()[u];
+     s[perm[u]] = m.strides_[u];
+    }
+    return map{l, s, m.start_shift_, transpose(m.memory_order_, perm)};
+   }
+
    /// Returns the shift in position of the element key.
-   template <typename KeyType>
-    size_t operator[] (KeyType const & key ) const {
-     _chk<CheckBounds, domain_type, KeyType>::invoke (this->domain(),key);
-     return start_shift_ + dot_product(key,this->strides());
+   template <typename KeyType> size_t operator[](KeyType const& key) const {
+#ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+     this->domain().assert_key_in_domain(key);
+#endif
+     return start_shift_ + dot_product(key, this->strides());
     }
 
    friend std::ostream & operator << (std::ostream & out, const map & P) {
-    return out <<"  ordering = {"<<P.memory_indices_layout()<<"}"<<std::endl
+    return out <<"  ordering = {"<<P.get_memory_layout()<<"}"<<std::endl
      <<"  Lengths  :  "<<P.lengths() << std::endl
      <<"  Stride  : "<<P.strides_ << std::endl;
    }
 
+   /// TODO: replace by a tuple call....
    template<typename ... Args> size_t operator()(Args const & ... args) const {
-    _chk_v<CheckBounds, domain_type, Args...>::invoke (this->domain(),args...);
+#ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+     this->domain().assert_key_in_domain_v(args...);
+#endif
     return start_shift_ + _call_impl<0>(args...);
    }
    private :
@@ -110,19 +129,17 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
 
    ///
    bool is_contiguous() const {
-    const size_t last_index = mem_layout::memory_rank_to_index(memory_order_.value, rank-1);
-    return (strides()[last_index] * this->lengths()[last_index] == mydomain.number_of_elements());
+    int slowest_index = memory_order_[0];
+    return (strides()[slowest_index] * this->lengths()[slowest_index] == mydomain.number_of_elements());
    }
 
    size_t start_shift() const { return start_shift_;}
    lengths_type const & lengths() const { return mydomain.lengths();}
    strides_type const & strides() const { return this->strides_;}
 
-   memory_layout<Rank> const & memory_indices_layout() const { return memory_order_;}
-   memory_layout<Rank> traversal_order_indices_layout() const { return memory_layout<Rank>(traversal_order);}
-   ull_t memory_indices_layout_ull() const { return memory_order_.value;}
-   bool memory_layout_is_c() const { return memory_indices_layout().value == mem_layout::c_order(Rank);}
-   bool memory_layout_is_fortran() const { return memory_indices_layout().value == mem_layout::fortran_order(Rank);}
+   memory_layout<Rank> const & get_memory_layout() const { return memory_order_;}
+   bool memory_layout_is_c() const { return get_memory_layout().is_c();}
+   bool memory_layout_is_fortran() const { return get_memory_layout().is_fortran();}
 
    private :
    domain_type mydomain;
@@ -138,19 +155,30 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
     ar & TRIQS_MAKE_NVP("start_shift",start_shift_);
    }
    // for construction
+   // TODO : use tupletools
    void compute_stride_compact() {
     size_t str = 1;
-    csc_impl(memory_order_.value, str, std::integral_constant<int,rank>());
+    csc_impl(memory_order_, str, std::integral_constant<int,rank>());
     assert(this->domain().number_of_elements()==str);
    }
-   template<int v>
-    void csc_impl(ull_t order, size_t & str, std::integral_constant<int,v>) {
-     size_t u = mem_layout::memory_rank_to_index(order, rank-v);
-     this->strides_[u]  = str;
-     str *= this->lengths() [u];
-     csc_impl(order, str, std::integral_constant<int,v-1>());
-    }
-   void csc_impl(ull_t order,size_t & str, std::integral_constant<int,0>) {}
+   // call for indices fastest (rank -1) to slowest (0)
+   template <int v> void csc_impl(memory_layout<Rank> const& ml, size_t& str, std::integral_constant<int, v>) {
+    // size_t u = mem_layout::memory_rank_to_index(order, rank-v);
+    int u = ml[v - 1];
+    this->strides_[u] = str;
+    str *= this->lengths()[u];
+    csc_impl(ml, str, std::integral_constant<int, v - 1>());
+   }
+   void csc_impl(memory_layout<Rank> const&, size_t&, std::integral_constant<int, 0>) {}
+
+   // iterator helper impl.
+   static constexpr int __iter_get_p(int p, map const * im, _traversal_c) { return p;}
+   static constexpr int __iter_get_p(int p, map const* im, _traversal_fortran) { return Rank - p - 1; }
+   static int __iter_get_p(int p, map const* im, _traversal_dynamical) { return im->get_memory_layout()[p]; }
+   template <int... Is> static constexpr int __iter_get_p(int p, map const* im, _traversal_custom<Is...>) {
+    return permutations::apply(_get_traversal_order_permutation(Rank, _traversal_custom<Is...>{}),
+                               p);
+   }
 
    public:
 
@@ -161,9 +189,9 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
     */
    class iterator : public boost::iterator_facade< iterator, const std::ptrdiff_t, boost::forward_traversal_tag > {
     public:
-     typedef map indexmap_type;
-     typedef typename domain_type::index_value_type indices_type;
-     typedef const std::ptrdiff_t return_type;
+     using indexmap_type=map ;
+     using indices_type=typename domain_type::index_value_type ;
+     using return_type=const std::ptrdiff_t ;
      iterator (): im(NULL), pos(0),atend(true) {}
      iterator (const map & P, bool atEnd=false, ull_t iteration_order=0):
       im(&P), pos(im->start_shift()),atend(atEnd) {}
@@ -173,9 +201,9 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
      friend class boost::iterator_core_access;
      void increment(){ inc_ind_impl (std::integral_constant<int,Rank>()); }
      template<int v> inline void inc_ind_impl(std::integral_constant<int,v>) {
-      constexpr size_t p = mem_layout::memory_rank_to_index(traversal_order, rank-v);
+      int p = __iter_get_p(v - 1, im, typename _get_traversal_order_t<TraversalOrder>::type{});
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-      if (atend) TRIQS_RUNTIME_ERROR << "Iterator in cuboid can not be pushed after end !";
+      if (atend) TRIQS_RUNTIME_ERROR << "Iterator in cuboid cannot be pushed after end !";
 #endif
       if (indices_tuple[p] < im->lengths()[p]-1) { ++(indices_tuple[p]); pos += im->strides()[p]; return; }
       indices_tuple[p] = 0;
@@ -192,16 +220,18 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    };
 
   }; //------------- end class ---------------------
+ 
 }//namespace cuboid
 
-template<int R1, int R2, ull_t OptFlags1, ull_t OptFlags2, ull_t To1, ull_t To2>
-bool compatible_for_assignment (const cuboid::map<R1,OptFlags1,To1> & X1, const cuboid::map<R2,OptFlags2,To2> & X2) { return X1.lengths() == X2.lengths();}
+template <int R1, int R2, typename To1, typename To2>
+bool compatible_for_assignment(const cuboid::map<R1, To1>& X1, const cuboid::map<R2, To2>& X2) {
+ return X1.lengths() == X2.lengths();
+}
 
-template<int R1, int R2, ull_t OptFlags1, ull_t OptFlags2, ull_t To1, ull_t To2>
- bool raw_copy_possible (const cuboid::map<R1,OptFlags1,To1> & X1,const cuboid::map<R2,OptFlags2,To2> & X2) {
-  return ( (X1.memory_indices_layout() == X2.memory_indices_layout())
+template <int R1, int R2, typename To1, typename To2>
+bool raw_copy_possible(const cuboid::map<R1, To1>& X1, const cuboid::map<R2, To2>& X2) {
+  return ( (X1.get_memory_layout() == X2.get_memory_layout())
     && X1.is_contiguous() && X2.is_contiguous()
     && (X1.domain().number_of_elements()==X2.domain().number_of_elements()));
  }
 }}}//namespace triqs::arrays::indexmaps
-#endif

@@ -20,10 +20,11 @@
  ******************************************************************************/
 
 #include "./common.hpp"
-#include "./src/array.hpp"
-#include "./src/matrix.hpp"
+#include <triqs/arrays/array.hpp>
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+#include <triqs/arrays/matrix.hpp>
 #include <iostream>
-#include "./src/asserts.hpp"
+#include <triqs/arrays/asserts.hpp>
 
 
 using namespace triqs::arrays;

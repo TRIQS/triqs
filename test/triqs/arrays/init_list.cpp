@@ -21,16 +21,14 @@
 #include "./common.hpp"
 #include <iostream>
 
-#include "./src/array.hpp"
-#include "./src/vector.hpp"
-#include "./src/matrix.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/vector.hpp>
+#include <triqs/arrays/matrix.hpp>
 
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
-// only for icc 13.x
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS 
  array<double,1> A = {1,2,3,4};
  std::cout  << A<< A.shape()<<std::endl ;
 
@@ -42,9 +40,6 @@ int main(int argc, char **argv) {
 
  matrix<double> M = {{1,2},{3,4}, {5,6}};
  std::cout  << M<< M.shape()<<std::endl ;
-
-
-#endif
 
 }
 

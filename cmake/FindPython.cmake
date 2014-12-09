@@ -54,10 +54,14 @@ IF (PYTHON_VERSION_NOT_OK)
  MESSAGE(FATAL_ERROR "Python intepreter version is ${PYTHON_VERSION} . It should be >= ${PYTHON_MINIMAL_VERSION}")
 ENDIF (PYTHON_VERSION_NOT_OK)
 
+EXEC_PYTHON_SCRIPT ("import mako.template" nulle) # check that Mako is there...
 EXEC_PYTHON_SCRIPT ("import distutils " nulle) # check that distutils is there...
 EXEC_PYTHON_SCRIPT ("import numpy" nulle) # check that numpy is there...
 EXEC_PYTHON_SCRIPT ("import h5py" nulle) # check that h5py is there...
 EXEC_PYTHON_SCRIPT ("import scipy" nulle) # check that scipy is there...
+if (Python_use_mpi4py)
+EXEC_PYTHON_SCRIPT ("import mpi4py" nulle) # check that mpi4py is there...
+endif()
 MESSAGE(STATUS "Python interpreter and modules are ok : version ${PYTHON_VERSION}" )
 
 #
@@ -100,23 +104,17 @@ mark_as_advanced(PYTHON_SITE_PKG)
  #EXEC_PYTHON_SCRIPT ("import string; from distutils.sysconfig import * ;print string.join(get_config_vars('VERSION'))"  PYTHON_VERSION_MAJOR_MINOR)         
  EXEC_PYTHON_SCRIPT ("import string; from distutils.sysconfig import *; print '%s/config' % get_python_lib(0,1)" PYTHON_LIBRARY_BASE_PATH)
  EXEC_PYTHON_SCRIPT ("import string; from distutils.sysconfig import *; print 'libpython%s' % string.join(get_config_vars('VERSION'))" PYTHON_LIBRARY_BASE_FILE)
+ set( PYTHON_LIBRARY_SEARCH_PATH ${PYTHON_LIBRARY_BASE_PATH} /usr/lib/python2.7/config-x86_64-linux-gnu/ /usr/lib/i386-linux-gnu/)
  IF(BUILD_SHARED_LIBS)
-  FIND_FILE(PYTHON_LIBRARY NAMES "${PYTHON_LIBRARY_BASE_FILE}.so" PATHS ${PYTHON_LIBRARY_BASE_PATH})
+  FIND_FILE(PYTHON_LIBRARY NAMES "${PYTHON_LIBRARY_BASE_FILE}.so" PATHS ${PYTHON_LIBRARY_SEARCH_PATH})
   IF(NOT PYTHON_LIBRARY)
-   FIND_FILE(PYTHON_LIBRARY NAMES "${PYTHON_LIBRARY_BASE_FILE}.a" PATHS ${PYTHON_LIBRARY_BASE_PATH})
+   FIND_FILE(PYTHON_LIBRARY NAMES "${PYTHON_LIBRARY_BASE_FILE}.a" PATHS ${PYTHON_LIBRARY_SEARCH_PATH})
   ENDIF(NOT PYTHON_LIBRARY)
  ELSE(BUILD_SHARED_LIBS)
-  FIND_FILE(PYTHON_LIBRARY NAMES "${PYTHON_LIBRARY_BASE_FILE}.a" PATHS ${PYTHON_LIBRARY_BASE_PATH})
+  FIND_FILE(PYTHON_LIBRARY NAMES "${PYTHON_LIBRARY_BASE_FILE}.a" PATHS ${PYTHON_LIBRARY_SEARCH_PATH})
  ENDIF(BUILD_SHARED_LIBS)
  MESSAGE(STATUS "PYTHON_LIBRARY = ${PYTHON_LIBRARY}" )
  mark_as_advanced(PYTHON_LIBRARY)
-
- #
- # Cython
- #
- EXEC_PYTHON_SCRIPT("from Cython.Compiler import Version as V;print V.version.split('.')[1]" PYTHON_CYTHON_VERSION )
- MESSAGE(STATUS "Found cython 0.${PYTHON_CYTHON_VERSION}.xxx")
- # check version here 
 
  #
  # libraries which must be linked in when embedding

@@ -28,10 +28,10 @@ numbering: three-digit release numbers and two-digit version numbers.  The
 compatibility rule is then simply that *an application is compatible with the
 TRIQS library if it has the same version number*.
 
-How to figure the version of the installed TRIQS library
---------------------------------------------------------
+How to determine the version of the installed TRIQS library
+------------------------------------------------------------
 
-In order to figure the version of an installed TRIQS library, you can
+In order to determine the version of an installed TRIQS library, you can
 either:
 
 * Read the content of the ``version.hpp`` file which is in the

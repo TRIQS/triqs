@@ -15,28 +15,29 @@ C++ compilers
 -------------
 
 TRIQS is written in C++, i.e. in the **C++11** standard as defined by the ISO standardization committee.
+Some advanced parts of the library (multivariable Green functions) require some features of the most recent **C++14** standard.
 A recent compiler is therefore mandatory.
 
-* Standard compliant C++ compilers (recommended and supported).
+* Standard compliant C++ compilers (supported).
   
-  * :ref:`clang 3.2<install_clang>` and higher (in particular the default clang on OS X 10.8).
-  * g++ 4.8.1 and higher
+  * in C++14 mode (recommended):
 
-  * The intel icc 14.0 is close to be C++11 compliant, but presents currently too many bugs to be supported 
-    at present. It compiles 99% of TRIQS, but we do not have the ressources to write and 
-    maintains all necessary workarounds.
-    
-    Besides, for *our codes*, icc does not provide a significant speed gain (unlike MKL), 
-    so we do not recommend it for TRIQS.
+     * :ref:`clang 3.4<install_clang>` and higher (in particular the default clang on OS X >= 10.8).
+     * g++ 4.9.1 and higher.
 
-* C++98 compilers
+  * in C++11 mode only:
+
+     * g++ 4.8.2 and higher (there seems to be a bug in 4.8.1).
+  
+     * The intel icc 15.0 is close to be C++11 compliant, but presents currently too many bugs to be supported 
+       at present. It compiles 99% of TRIQS, but we do not have the resources to write and 
+       maintains all necessary workarounds.
+       The intel icl on OS X (with the clang front end) seems to be working.  
+
+* C++98 compilers do not work and will *not* be supported.
 
   * g++ before 4.8.1
   * Intel icc 13.0 and below
-
-  Compilers implementing the previous version of the C++ standard (C++98) do not work and 
-  will *not* be supported.
-
 
 
 Libraries
@@ -51,9 +52,9 @@ Libraries
 +------------------------+----------+------------------------------------------------------------------------+
 | boost                  | >= 1.49  | C++ librairies                                                         |
 +------------------------+----------+------------------------------------------------------------------------+
-| hdf5                   | >= 1.8.0 | File storage system. Important: the *serial* version must be installed |
+| hdf5                   | >= 1.8.2 | File storage system. Important: the *serial* version must be installed |
 +------------------------+----------+------------------------------------------------------------------------+
-| python                 | >= 2.6.5 | The Python interpreter                                                 |
+| python                 | >= 2.7   | The Python interpreter                                                 |
 +------------------------+----------+------------------------------------------------------------------------+
 | scipy                  | >= ?     | Python mathematical library                                            |
 +------------------------+----------+------------------------------------------------------------------------+
@@ -61,19 +62,21 @@ Libraries
 +------------------------+----------+------------------------------------------------------------------------+
 | h5py                   | >= ?     | Python interface to hdf5 library                                       |
 +------------------------+----------+------------------------------------------------------------------------+
-| mpi4py                 | >= ?     | Python MPI                                                             |
+| matplotlib             | >= 0.99  | Python 2D plotting library                                             |
 +------------------------+----------+------------------------------------------------------------------------+
-| sphinx                 | >= 1.0.1 | Python documentation tools (to compile documentation)                  |
+| mpi4py                 | >= ?     | Python MPI                                                             |
 +------------------------+----------+------------------------------------------------------------------------+
 | cmake                  | >= 2.8.7 | CMake is used to control the software compilation process              |
 +------------------------+----------+------------------------------------------------------------------------+
-| pyparsing              | >= ?     | Tool for sphinx (to compile documentation)                             |
+| mako                   | >= 0.9.1 | mako templates are used to generate the C++/python wrapper             |
 +------------------------+----------+------------------------------------------------------------------------+
-| sphinxcontrib-doxylink | >= ?     | Tool for sphinx (to compile documentation)                             |
+| sphinx                 | >= 1.0.1 | Python documentation tools (to compile documentation, for developers)  |
 +------------------------+----------+------------------------------------------------------------------------+
-| matplotlib             | >= 0.99  | Python 2D plotting library                                             |
+| pyparsing              | >= ?     | Tool for sphinx (to compile documentation, for developers)             |
 +------------------------+----------+------------------------------------------------------------------------+
-| cython                 | >=0.17   | A language that allows to write C extensions for the Python language   |
+| sphinxcontrib-doxylink | >= ?     | Tool for sphinx (to compile documentation, for developers)             |
++------------------------+----------+------------------------------------------------------------------------+
+| libclang               | 3.4      | python bindings of the clang lib (for developers)                      |
 +------------------------+----------+------------------------------------------------------------------------+
 
 (1)  Since standard linux distributions (and macports on OS X) now provides openmpi, even on laptops, we avoid the unnecessary complication of maintaining a non-parallel version of TRIQS

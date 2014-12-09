@@ -20,8 +20,8 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/functional/map.hpp"
-#include "./src/matrix.hpp"
+#include <triqs/arrays/functional/map.hpp>
+#include <triqs/arrays/matrix.hpp>
 #include <iostream>
 #include <algorithm>
 

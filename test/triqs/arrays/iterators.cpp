@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <iostream>
 
 using std::cout; using std::endl;
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 
 
  std::cout<<" F order : traversal"<<std::endl; 
- array<long,2,TRAVERSAL_ORDER_FORTRAN> Af (2,3);
+ array<long,2,_traversal_fortran> Af (2,3, FORTRAN_LAYOUT);
 
  for (auto it = Af.begin(); it; ++it) { 
   *it =it.indices()[0] + 10 *it.indices()[1] ;

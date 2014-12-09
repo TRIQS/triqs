@@ -34,13 +34,13 @@ namespace triqs { namespace arrays {
  // it is specialized in various cases for optimisation.
  template<typename LHS, typename RHS>
   void triqs_arrays_assign_delegation (LHS & lhs, const RHS & rhs )  { 
-   static_assert( !LHS::is_const, "Can not assign to a const view !");
+   static_assert( !LHS::is_const, "Cannot assign to a const view !");
    assignment::impl<LHS, RHS, 'E'>(lhs, rhs).invoke();
  }
 
  template<typename LHS, typename RHS, char OP>
   void triqs_arrays_compound_assign_delegation  (LHS & lhs, const RHS & rhs, char_<OP> ) { 
-   static_assert( !LHS::is_const, "Can not apply a compound operator to a const view !");
+   static_assert( !LHS::is_const, "Cannot apply a compound operator to a const view !");
    assignment::impl<LHS, RHS, OP>(lhs, rhs).invoke();
  }
 
@@ -76,7 +76,7 @@ namespace triqs { namespace arrays {
   template<class RHS,class LHS> struct is_special : std::false_type {};
 
 #define TRIQS_REJECT_ASSIGN_TO_CONST \
-  static_assert( (!std::is_const<typename LHS::value_type>::value ), "Assignment : The value type of the LHS is const and can not be assigned to !");
+  static_assert( (!std::is_const<typename LHS::value_type>::value ), "Assignment : The value type of the LHS is const and cannot be assigned to !");
 #define TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR\
   static_assert( (!((OP=='M' || OP=='D') && MutableMatrix<LHS>::value && (!is_scalar_for<RHS,LHS>::value))),\
     "*= and /= operator for non scalar RHS are deleted for a type modeling MutableMatrix (e.g. matrix, matrix_view) matrix, because this is ambiguous");
@@ -114,9 +114,19 @@ namespace triqs { namespace arrays {
       TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR;
       typedef typename LHS::value_type value_type;
       LHS & lhs; const RHS & rhs; 
-      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {} //, p(*(lhs_.data_start())) {}
+      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
       template<typename ... Args> void operator()(Args const & ... args) const { _ops_<value_type, typename RHS::value_type, OP>::invoke(lhs(args...),rhs(args...));}
-      void invoke() { foreach(lhs,*this); }
+      FORCEINLINE void invoke() { foreach(lhs,*this); }
+     };
+
+     // help compiler : in the most common case, less things to inline..
+     template<typename LHS, typename RHS>
+     struct impl<LHS,RHS,'E', ENABLE_IFC( ImmutableCuboidArray<RHS>::value && (!is_scalar_for<RHS,LHS>::value) && (!is_isp<RHS,LHS>::value)&& (!is_special<LHS,RHS>::value)) > {
+      TRIQS_REJECT_ASSIGN_TO_CONST;
+      typedef typename LHS::value_type value_type;
+      LHS & lhs; const RHS & rhs;
+      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
+      FORCEINLINE void invoke() { assign_foreach(lhs, rhs); }
      };
 
     // -----------------   assignment for scalar RHS, except some matrix case --------------------------------------------------
@@ -125,31 +135,52 @@ namespace triqs { namespace arrays {
       TRIQS_REJECT_ASSIGN_TO_CONST;
       typedef typename LHS::value_type value_type;
       LHS & lhs; const RHS & rhs; 
-      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){}//, p(*(lhs_.data_start())) {}
+      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){}
       template<typename ... Args> void operator()(Args const & ...args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), rhs);}
       void invoke() { foreach(lhs,*this);  }
      };
 
     // -----------------   assignment for scalar RHS for Matrices --------------------------------------------------
 
-    template <typename T, int R> bool kronecker(mini_vector<T,R> const & key) { return ( (R==2) && (key[0]==key[1]));}
+    //template <typename T, int R> bool kronecker(mini_vector<T,R> const & key) { return ( (R==2) && (key[0]==key[1]));}
     template <typename T> bool kronecker(T const & x0, T const & x1) { return ( (x0==x1));}
 
+    // CONCEPT : reunifiy the 2 class, put require on operator() for the 2 cases
     // Specialisation for Matrix Classes : scalar is a unity matrix, and operation is E, A, S, but NOT M, D
-    template<typename LHS, typename RHS, char OP>
-     struct impl<LHS,RHS,OP, ENABLE_IFC(is_scalar_for<RHS,LHS>::value && (MutableMatrix<LHS>::value && (OP=='A'||OP=='S'||OP=='E')))> {
-      TRIQS_REJECT_ASSIGN_TO_CONST;
-      typedef typename LHS::value_type value_type;
-      LHS & lhs; const RHS & rhs; 
-      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){} //, p(*(lhs_.data_start())) {}
-      // we MUST make off_diag like this, if value_type is a complicated type (i.e. gf, matrix) with a size
-      // off diagonal element is 0*rhs, i.e. a 0, but with the SAME SIZE as the diagonal part.
-      // otherwise further operation may fail later.
-      // TO DO : look at performance issue ?? (we can remote the multiplication by 0 using an auxiliary function)
-      template<typename ... Args>
-       void operator()(Args const & ... args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), (kronecker(args...) ? rhs : RHS{0*rhs}));}
-      void invoke() { foreach(lhs,*this); }
-     };
+    // First case : when it is a true scalar or convertible to 
+    template <typename LHS, typename RHS, char OP>
+    struct impl<LHS, RHS, OP, ENABLE_IFC(is_scalar_for<RHS, LHS>::value&& is_scalar_or_convertible<RHS>::value&&(
+                                  MutableMatrix<LHS>::value&&(OP == 'A' || OP == 'S' || OP == 'E')))> {
+     TRIQS_REJECT_ASSIGN_TO_CONST;
+     using value_type = typename LHS::value_type;
+     static_assert(is_scalar<value_type>::value, "Internal error");
+     LHS& lhs;
+     const RHS& rhs;
+     impl(LHS& lhs_, const RHS& rhs_) : lhs(lhs_), rhs(rhs_) {}
+     template <typename... Args> void operator()(Args const&... args) const {
+      if (kronecker(args...))
+       _ops_<value_type, RHS, OP>::invoke(lhs(args...), rhs);
+      else
+       _ops_<value_type, value_type, OP>::invoke(lhs(args...), 0);
+     }
+     void invoke() { foreach(lhs, *this); }
+    };
+
+    // Specialisation for Matrix Classes : scalar is a unity matrix, and operation is E, A, S, but NOT M, D
+    // Second generic case : we should introduce make_zero function ?
+    template <typename LHS, typename RHS, char OP>
+    struct impl<LHS, RHS, OP, ENABLE_IFC(is_scalar_for<RHS, LHS>::value&&(!is_scalar_or_convertible<RHS>::value) &&
+                                         (MutableMatrix<LHS>::value&&(OP == 'A' || OP == 'S' || OP == 'E')))> {
+     TRIQS_REJECT_ASSIGN_TO_CONST;
+     typedef typename LHS::value_type value_type;
+     LHS& lhs;
+     const RHS& rhs;
+     impl(LHS& lhs_, const RHS& rhs_) : lhs(lhs_), rhs(rhs_) {}
+     template <typename... Args> void operator()(Args const&... args) const {
+      _ops_<value_type, RHS, OP>::invoke(lhs(args...), (kronecker(args...) ? rhs : RHS{0 * rhs}));
+     }
+     void invoke() { foreach(lhs, *this); }
+    };
 
 #undef TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR
 #undef TRIQS_REJECT_ASSIGN_TO_CONST

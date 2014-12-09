@@ -109,7 +109,7 @@ class HilbertTransform :
             try : 
                 result += field
             except : 
-                assert 0, "field can not be added to the Green function blocks !. Cf Doc"
+                assert 0, "field cannot be added to the Green function blocks !. Cf Doc"
 
         def HT(res) : 
             # First compute the eps_hat array
@@ -124,7 +124,7 @@ class HilbertTransform :
 
             # Perform the sum over eps[i]
             tmp, tmp2 = res.copy(), res.copy()
-            tmp <<= iOmega_n + mu + eta * 1j
+            tmp << iOmega_n + mu + eta * 1j
             if not(Sigma_fnt) :
                 tmp -= Sigma
             if field != None : tmp -= field
@@ -140,7 +140,7 @@ class HilbertTransform :
             # sum the res GF of all nodes and returns the results on all nodes...
             # Cf Boost.mpi.python, collective communicator for documentation.
             # The point is that res is pickable, hence can be transmitted between nodes without further code...
-            res <<= mpi.all_reduce(mpi.world, res, lambda x, y : x+y)
+            res << mpi.all_reduce(mpi.world, res, lambda x, y : x+y)
             mpi.barrier()
         # END of HT
 

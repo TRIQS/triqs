@@ -18,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "fourier_base.hpp"
 #include "fourier_matsubara.hpp"
 #include <fftw3.h>
 
@@ -45,13 +44,13 @@ namespace gfs {
   //-------------------------------------
 
   void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt) {
-   auto ta = gt(freq_infty());
+   auto ta = gt.singularity();
    direct_impl(make_gf_view_without_tail(gw), make_gf_view_without_tail(gt), ta);
    gw.singularity() = gt.singularity(); // set tail
   }
 
   void direct(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt) {
-   auto ta = local::tail{1,1};
+   auto ta = tail{1,1};
    direct_impl(gw, gt, ta);
   }
   
@@ -59,17 +58,17 @@ namespace gfs {
 
   private:
   void direct_impl(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt,
-                   local::tail const& ta) {
+                   tail const& ta) {
    // TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
    dcomplex d = ta(1)(0, 0), A = ta.get_or_zero(2)(0, 0), B = ta.get_or_zero(3)(0, 0);
    double b1 = 0, b2 = 0, b3 = 0;
    dcomplex a1, a2, a3;
    double beta = gt.mesh().domain().beta;
-   auto L = (gt.mesh().kind() == full_bins ? gt.mesh().size() - 1 : gt.mesh().size());
-   double fact = beta / gt.mesh().size();
+   auto L = gt.mesh().size() - 1;
+   if (L < 2*gw.mesh().size()) TRIQS_RUNTIME_ERROR << "The time mesh mush be at least twice as long as the freq mesh";
+   double fact = beta / L;
    dcomplex iomega = dcomplex(0.0, 1.0) * std::acos(-1) / beta;
-   dcomplex iomega2 = iomega * 2 * gt.mesh().delta() * (gt.mesh().kind() == half_bins ? 0.5 : 0.0);
-   g_in.resize(gt.mesh().size());
+   g_in.resize(L);
    g_out.resize(gw.mesh().size());
    if (gw.domain().statistic == Fermion) {
     b1 = 0;
@@ -88,16 +87,39 @@ namespace gfs {
    }
    if (gw.domain().statistic == Fermion) {
     for (auto& t : gt.mesh())
-     g_in[t.index()] = fact * exp(iomega * t) *
-                       (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
+     if(t.index() < L) {
+       g_in[t.index()] = fact * exp(iomega * t) *
+                         (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
+     }
    } else {
     for (auto& t : gt.mesh())
-     g_in[t.index()] = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
+     if(t.index() < L) {
+       g_in[t.index()] = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
+     }
    }
    details::fourier_base(g_in, g_out, L, true);
-   for (auto& w : gw.mesh()) {
-    gw[w] = g_out(w.index()) * exp(iomega2 * w.index()) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
+
+   // We manually remove half of the first time point contribution and add half
+   // of the last time point contribution. This is necessary to make sure that
+   // no symmetry is lost
+   if (gw.domain().statistic == Fermion) {
+     for (auto& w : gw.mesh()) {
+       g_out(w.index()) -= 0.5*fact*(   gt[0] - (oneFermion(a1, b1, 0, beta) + oneFermion(a2, b2, 0, beta) + oneFermion(a3, b3, 0, beta))
+                                      + gt[L] - (oneFermion(a1, b1, beta, beta) + oneFermion(a2, b2, beta, beta) + oneFermion(a3, b3, beta, beta)) );
+     }
+   } else {
+     for (auto& w : gw.mesh()) {
+       g_out(w.index()) += 0.5*fact*(   gt[L] - (oneBoson(a1, b1, beta, beta) + oneBoson(a2, b2, beta, beta) + oneBoson(a3, b3, beta, beta))
+                                      - gt[0] + (oneBoson(a1, b1, 0, beta) + oneBoson(a2, b2, 0, beta) + oneBoson(a3, b3, 0, beta)) );
+     }
    }
+
+   for (auto& w : gw.mesh()) {
+    gw[w] = g_out(w.index()) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
+   }
+
+
+
   }
 
   public:
@@ -107,20 +129,19 @@ namespace gfs {
    static bool Green_Function_Are_Complex_in_time = false;
    // If the Green function are NOT complex, then one use the symmetry property
    // fold the sum and get a factor 2
-   auto ta = gw(freq_infty());
+   auto ta = gw.singularity();
    // TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
    dcomplex d = ta(1)(0, 0), A = ta.get_or_zero(2)(0, 0), B = ta.get_or_zero(3)(0, 0);
    double b1, b2, b3;
    dcomplex a1, a2, a3;
 
    double beta = gw.domain().beta;
-   size_t L = gt.mesh().size() - (gt.mesh().kind() == full_bins ? 1 : 0); // L can be different from gt.mesh().size() (depending
-                                                                          // on the mesh kind) and is given to the FFT algorithm
+   size_t L = gt.mesh().size() - 1;
+   if (L < 2*gw.mesh().size()) TRIQS_RUNTIME_ERROR << "The time mesh mush be at least twice as long as the freq mesh";
    dcomplex iomega = dcomplex(0.0, 1.0) * std::acos(-1) / beta;
-   dcomplex iomega2 = -iomega * 2 * gt.mesh().delta() * (gt.mesh().kind() == half_bins ? 0.5 : 0.0);
    double fact = (Green_Function_Are_Complex_in_time ? 1 : 2) / beta;
    g_in.resize(gw.mesh().size());
-   g_out.resize(gt.mesh().size());
+   g_out.resize(L);
 
    if (gw.domain().statistic == Fermion) {
     b1 = 0;
@@ -139,7 +160,7 @@ namespace gfs {
    }
    g_in() = 0;
    for (auto& w : gw.mesh()) {
-    g_in[w.index()] = fact * exp(w.index() * iomega2) * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
+    g_in[w.index()] = fact * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
    }
    // for bosons GF(w=0) is divided by 2 to avoid counting it twice
    if (gw.domain().statistic == Boson && !Green_Function_Are_Complex_in_time) g_in(0) *= 0.5;
@@ -151,17 +172,21 @@ namespace gfs {
    // typedef typename gf<imtime>::mesh_type::gf_result_type gt_result_type;
    if (gw.domain().statistic == Fermion) {
     for (auto& t : gt.mesh()) {
-     gt[t] =
-         convert_green<gt_result_type>(g_out(t.index() == L ? 0 : t.index()) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) +
+     if (t.index() < L) {
+       gt[t] =
+         convert_green<gt_result_type>(g_out(t.index()) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) +
                                        oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta));
+     }
     }
    } else {
     for (auto& t : gt.mesh())
-     gt[t] = convert_green<gt_result_type>(g_out(t.index() == L ? 0 : t.index()) + oneBoson(a1, b1, t, beta) +
+     if (t.index() < L) {
+       gt[t] = convert_green<gt_result_type>(g_out(t.index()) + oneBoson(a1, b1, t, beta) +
                                            oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta));
+     }
    }
    double pm = (gw.domain().statistic == Fermion ? -1.0 : 1.0);
-   if (gt.mesh().kind() == full_bins) gt.on_mesh(L) = pm * (gt.on_mesh(0) + convert_green<gt_result_type>(ta(1)(0, 0)));
+   gt.on_mesh(L) = pm * (gt.on_mesh(0) + convert_green<gt_result_type>(ta(1)(0, 0)));
    // set tail
    gt.singularity() = gw.singularity();
   }
@@ -170,64 +195,21 @@ namespace gfs {
 
  //--------------------------------------------
 
- template <typename Opt>
- void fourier_impl(gf_view<imfreq, scalar_valued, Opt> gw, gf_const_view<imtime, scalar_valued, Opt> gt) {
+ // Direct transformation imtime -> imfreq, with a tail
+ void _fourier_impl(gf_view<imfreq, scalar_valued, tail> gw, gf_const_view<imtime, scalar_valued, tail> gt) {
   impl_worker w;
   w.direct(gw, gt);
  }
 
- template <typename Opt>
- void fourier_impl(gf_view<imfreq, matrix_valued, Opt> gw, gf_const_view<imtime, matrix_valued, Opt> gt) {
+ void _fourier_impl(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt) {
   impl_worker w;
-  for (size_t n1 = 0; n1 < gt.data().shape()[1]; n1++)
-   for (size_t n2 = 0; n2 < gt.data().shape()[2]; n2++) {
-    auto gw_sl = slice_target_to_scalar(gw, n1, n2);
-    auto gt_sl = slice_target_to_scalar(gt, n1, n2);
-    w.direct(gw_sl, gt_sl);
-   }
+  w.direct(gw, gt);
  }
 
- //---------------------------------------------------------------------------
-
- void inverse_fourier_impl(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw) {
+ // Inverse transformation imfreq -> imtime: tail is mandatory
+ void _fourier_impl(gf_view<imtime, scalar_valued, tail> gt, gf_const_view<imfreq, scalar_valued, tail> gw) {
   impl_worker w;
   w.inverse(gt, gw);
- }
-
- void inverse_fourier_impl(gf_view<imtime, matrix_valued> gt, gf_const_view<imfreq, matrix_valued> gw) {
-  impl_worker w;
-  for (size_t n1 = 0; n1 < gw.data().shape()[1]; n1++)
-   for (size_t n2 = 0; n2 < gw.data().shape()[2]; n2++) {
-    auto gt_sl = slice_target_to_scalar(gt, n1, n2);
-    auto gw_sl = slice_target_to_scalar(gw, n1, n2);
-    w.inverse(gt_sl, gw_sl);
-   }
- }
-
- //---------------------------------------------------------------------------
- void triqs_gf_view_assign_delegation(gf_view<imfreq, scalar_valued> g,
-                                      gf_keeper<tags::fourier, imtime, scalar_valued> const& L) {
-  fourier_impl(g, L.g);
- }
- void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued> g,
-                                      gf_keeper<tags::fourier, imtime, matrix_valued> const& L) {
-  fourier_impl(g, L.g);
- }
- void triqs_gf_view_assign_delegation(gf_view<imtime, scalar_valued> g,
-                                      gf_keeper<tags::fourier, imfreq, scalar_valued> const& L) {
-  inverse_fourier_impl(g, L.g);
- }
- void triqs_gf_view_assign_delegation(gf_view<imtime, matrix_valued> g,
-                                      gf_keeper<tags::fourier, imfreq, matrix_valued> const& L) {
-  inverse_fourier_impl(g, L.g);
- }
- void triqs_gf_view_assign_delegation(gf_view<imfreq, scalar_valued, no_tail> g,
-                                      gf_keeper<tags::fourier, imtime, scalar_valued, no_tail> const& L) {
-  fourier_impl(g, L.g);
- }
- void triqs_gf_view_assign_delegation(gf_view<imfreq, matrix_valued, no_tail> g,
-                                      gf_keeper<tags::fourier, imtime, matrix_valued, no_tail> const& L) {
-  fourier_impl(g, L.g);
  }
 }
 }

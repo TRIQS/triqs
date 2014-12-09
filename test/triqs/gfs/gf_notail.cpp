@@ -2,6 +2,8 @@
 #include <triqs/gfs.hpp>
 using namespace triqs::gfs;
 using namespace triqs::arrays;
+namespace h5 = triqs::h5;
+
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl << std::endl;
 #include <triqs/gfs/local/functions.hpp>
 
@@ -11,11 +13,11 @@ int main() {
 
   // construct
   auto gw_n = gf<imfreq, matrix_valued, no_tail>{{beta, Fermion}, {2, 2}};
-  auto gt_n = gf<imtime, matrix_valued, no_tail>{{beta, Fermion, 100}, {2, 2}};
+  auto gt_n = gf<imtime, matrix_valued, no_tail>{{beta, Fermion, 10000}, {2, 2}};
 
   // make a view from a g with a tail
   auto gw = gf<imfreq, matrix_valued>{{beta, Fermion}, {2, 2}};
-  auto gt = gf<imtime, matrix_valued>{gf_mesh<imtime>{beta, Fermion, 100}, {2, 2}};
+  auto gt = gf<imtime, matrix_valued>{gf_mesh<imtime>{beta, Fermion, 10000}, {2, 2}};
 
   auto vw = make_gf_view_without_tail(gw);
   auto vt = make_gf_view_without_tail(gt);
@@ -26,7 +28,7 @@ int main() {
   vt(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 
   // test hdf5
-  H5::H5File file("ess_g_notail.h5", H5F_ACC_TRUNC);
+  h5::file file("ess_g_notail.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", vt);
 
   // rebuilding a new gf...
@@ -34,7 +36,7 @@ int main() {
   // need to test all this....
  
   //test antiperiodicity
-  auto Gt = gf<imtime, scalar_valued, no_tail>{ { beta, Fermion, 1000 }, {  } };
+  auto Gt = gf<imtime, scalar_valued, no_tail>{ { beta, Fermion, 10000 }, {  } };
   Gt(tau_) << exp(-tau_);
 
   TEST(Gt(0.01));
@@ -46,7 +48,7 @@ int main() {
   gw_n (tau_) << 1/(tau_-1.);
   auto gt_with_full_tail = make_gf_from_inverse_fourier(make_gf_from_g_and_tail(gw_n, gw.singularity()));
   TEST(gt_with_full_tail(.5));
-  triqs::gfs::local::tail t(2,2);
+  triqs::gfs::tail t(2,2);
   t(1)=1;
   TEST(t);
   auto gt_tail_with_one_term = make_gf_from_inverse_fourier(make_gf_from_g_and_tail(gw_n, t));

@@ -19,11 +19,13 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
   OUTPUT_VARIABLE _compiler_output RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
  set(compiler_version_min "4.8.1")
  set(compiler_name "gcc")
+ set(CMAKE_COMPILER_IS_GCC TRUE )
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -Wno-literal-suffix ")
  string(REGEX REPLACE ".*([2-5]\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
- if(NOT compiler_version VERSION_LESS "4.9.0")
-  set (compiler_is_c14 ON)
- endif()
+ #if(NOT compiler_version VERSION_LESS "4.9.0")
+ # set (compiler_is_c14 ON)
+ #endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
@@ -46,9 +48,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  set( compiler_version_min "3.2")
 
  # does not always work ... To be fixed when clang 3.4 officially released and on OS X.
- if(NOT compiler_version VERSION_LESS "3.4")
-  #set (compiler_is_c14 ON)
- endif()
+ #if(NOT compiler_version VERSION_LESS "3.4")
+ # set (compiler_is_c14 ON)
+ #endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  
@@ -58,9 +60,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  set(compiler_version_min "14.0.0")
  set(compiler_name "Intel icc")
  #string(REGEX REPLACE "[^0-9]*([0-9]+\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
-
- # for intel 14.0 /test 
- link_libraries( -lomp_db )
 
 else ()
  set(compiler_version_min "0.0")
@@ -84,9 +83,10 @@ endif(compiler_version VERSION_LESS ${compiler_version_min} )
 # on OS X : for clang, add the infamous -stdlib=libc++
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  if (CMAKE_COMPILER_IS_CLANG) 
-  set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ ")
+  #set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ ")
+  set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -stdlib=libc++  -Wno-deprecated-writable-strings ")
   MESSAGE(STATUS "Adding compilation flags -stdlib=libc++ ")
-  set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-writable-strings ")
+  set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ ")
  else (CMAKE_COMPILER_IS_CLANG) 
   MESSAGE( WARNING "${line_of_star}You are on Os X but your are not using clang. This is NOT recommended...${line_of_star}") 
  endif (CMAKE_COMPILER_IS_CLANG) 

@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012-2013 by O. Parcollet
+ * Copyright (C) 2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,54 +23,44 @@
 #include "./gf.hpp"
 #include "./local/tail.hpp"
 #include "./domains/R.hpp"
-#include "../lattice/bz_mesh.hpp"
+#include "../lattice/regular_bz_mesh.hpp"
 #include "./evaluators.hpp"
 
 namespace triqs {
 namespace gfs {
 
- struct bz {};
-
- template <typename Opt> struct gf_mesh<bz, Opt> : lattice::bz_mesh {
-  template <typename... T> gf_mesh(T &&... x) : lattice::bz_mesh(std::forward<T>(x)...) {}
- };
-
  namespace gfs_implementation {
 
   // h5 name
-  template <typename Opt> struct h5_name<bz, matrix_valued, Opt> {
+  template <typename Singularity> struct h5_name<brillouin_zone, matrix_valued, Singularity> {
    static std::string invoke() { return "BZ"; }
   };
 
   /// ---------------------------  data access  ---------------------------------
-  template <typename Opt> struct data_proxy<bz, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
-  template <typename Opt> struct data_proxy<bz, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
+  template <> struct data_proxy<brillouin_zone, matrix_valued> : data_proxy_array<std::complex<double>, 3> {};
+  template <> struct data_proxy<brillouin_zone, scalar_valued> : data_proxy_array<std::complex<double>, 1> {};
 
   /// ---------------------------  evaluator ---------------------------------
 
+#ifndef TRIQS_CPP11
   // simple evaluation : take the point on the grid...
-  template <> struct evaluator_fnt_on_mesh<bz> {
-   size_t n;
-   evaluator_fnt_on_mesh() = default;
-   template <typename MeshType> evaluator_fnt_on_mesh(MeshType const &m, lattice::k_t const &k) { 
-    n = m.locate_neighbours(k); // TO BE IMPROVED
+  template <> struct evaluator_of_clef_expression<brillouin_zone> {
+   template <typename Expr, int N>
+   auto operator()(Expr const &expr, clef::placeholder<N>, gf_mesh<brillouin_zone> const &m, lattice::k_t const &k) {
+    auto n = m.locate_neighbours(k).index();
+    return clef::eval(expr, clef::placeholder<N>() = no_cast(m[n]));
    }
-   template <typename F> auto operator()(F const &f) const DECL_AND_RETURN(f(n));
-   //template <typename F> decltype(auto) operator()(F const &f) const { return f(n); }
   };
+#endif
 
-  // ------------- evaluator  -------------------
-  // handle the case where the matsu. freq is out of grid...
-  template <typename Target, typename Opt> struct evaluator<bz, Target, Opt> {
+  // --------------------------------------------------------------
+  template <typename Target, typename Singularity> struct evaluator<brillouin_zone, Target, Singularity> {
    static constexpr int arity = 1;
+   template <typename G> evaluator(G *) {};
+   template <typename G> auto operator()(G const *g, lattice::k_t const &k) const RETURN((*g)[g -> mesh().locate_neighbours(k)]);
 
-   template <typename G>
-   std::c14::conditional_t<std::is_same<Target, matrix_valued>::value, arrays::matrix_const_view<std::complex<double>>,
-                          std::complex<double>>
-   operator()(G const *g, lattice::k_t const &k) const {
-    auto n = g->mesh().locate_neighbours(k); // TO BE IMPROVED
-    return (*g)[n];
-   }
+   template <typename G> auto operator()(G const *g, __no_cast<typename gf_mesh<brillouin_zone>::mesh_point_t> const & p) const RETURN((*g)[p.value]);
+   
   };
  }
 }

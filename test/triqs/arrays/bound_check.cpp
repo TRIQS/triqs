@@ -21,8 +21,8 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
 #include "./common.hpp"
-#include "./src/array.hpp"
-#include "./src/matrix.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/matrix.hpp>
 #include <iostream>
 
 using namespace triqs::arrays;
@@ -31,10 +31,10 @@ int main(int argc, char **argv) {
 
  
 
- array<long,2, BoundCheck > A (2,3);
+ array<long,2> A (2,3);
  array<long,2 > B (2,3);
  array<long,1 > C(2);
- array<long,2, BoundCheck > Af (2,3, FORTRAN_LAYOUT);
+ array<long,2> Af (2,3, FORTRAN_LAYOUT);
 
  try { 
 

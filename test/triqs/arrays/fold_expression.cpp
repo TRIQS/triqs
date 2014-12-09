@@ -20,10 +20,10 @@
  ******************************************************************************/
 #include "./common.hpp"
 
-#include "./src/matrix.hpp"
-#include "./src/functional/fold.hpp"
-#include "./src/functional/map.hpp"
-#include "./src/algorithms.hpp"
+#include <triqs/arrays/matrix.hpp>
+#include <triqs/arrays/functional/fold.hpp>
+#include <triqs/arrays/functional/map.hpp>
+#include <triqs/arrays/algorithms.hpp>
 #include <iostream>
 
 using namespace triqs::arrays;

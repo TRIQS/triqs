@@ -19,13 +19,13 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <iostream>
 
 using namespace triqs::arrays;
 
 
-template <typename U, ull_t opt, ull_t to, bool B> void f(array_view<U, 2, opt, to, B, true> const &a) {
+template <typename U, typename To, bool B> void f(array_view<U, 2, To, B, true> const &a) {
  std::cout << a << std::endl;
 }
 

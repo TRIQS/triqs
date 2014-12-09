@@ -37,7 +37,7 @@ struct plain_for_no_ptr_const {
 
 struct assign_to_const {
  void operator()() {
-  triqs::arrays::array<double,2,TRAVERSAL_ORDER_FORTRAN> A (N1,N2,FORTRAN_LAYOUT);
+  triqs::arrays::array<double,2> A (N1,N2,FORTRAN_LAYOUT);
   auto V = make_view(A);
   for (int u =0; u<2500000; ++u)
    //make_view(A) = 1867;
@@ -58,8 +58,8 @@ struct plain_for_no_ptr {
 //typedef double value_type;
 //typedef triqs::arrays::matrix<double>::indexmap_type::domain_type::index_value_type index_value_type;
 struct F {
- triqs::arrays::matrix<double,TRAVERSAL_ORDER_FORTRAN > & a;
- F(triqs::arrays::matrix<double,TRAVERSAL_ORDER_FORTRAN > & a_): a(a_){}
+ triqs::arrays::matrix<double> & a;
+ F(triqs::arrays::matrix<double> & a_): a(a_){}
  //void operator()(value_type & p, index_value_type const & key) const { p=key[0]*10 + key[1] ;}
  //void operator()(value_type & p, value_type const & x0, value_type const & x1) const { p=x0*10 + x1 ;}
  template<typename X0, typename X1> void operator()( X0 const & x0, X1 const & x1) const { a(x0,x1) =x0*10 + x1 ;}
@@ -67,7 +67,7 @@ struct F {
 
 struct with_foreach  {
  void operator()() {
-  triqs::arrays::matrix<double,TRAVERSAL_ORDER_FORTRAN > A (N1,N2,FORTRAN_LAYOUT);
+  triqs::arrays::matrix<double> A (N1,N2,FORTRAN_LAYOUT);
   // triqs::arrays::indexmaps::
   for (int u =0; u<2500000; ++u) foreach(A,F(A));
   // for (int u =0; u<5000; ++u)    make_view(A) = 1867;

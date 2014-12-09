@@ -55,8 +55,6 @@ namespace gfs {
   Fermion
  };
 
- struct freq_infty {}; // the point at infinity
-
  //------------------------------------------------------
 
  template <typename... T> struct closest_pt_wrap;
@@ -81,18 +79,30 @@ namespace gfs {
  struct nothing {
   template <typename... Args> explicit nothing(Args &&...) {} // takes anything, do nothing..
   nothing() {}
+  using const_view_type = nothing;
   using view_type = nothing;
   using regular_type = nothing;
   void rebind(nothing) {}
   template <typename RHS> void operator=(RHS &&) {}
   friend void h5_write(h5::group, std::string subgroup_name, nothing) {}
   friend void h5_read(h5::group, std::string subgroup_name, nothing) {}
+  template <typename... A> friend nothing slice(nothing, A...) { return nothing(); }
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {}
   friend nothing operator+(nothing, nothing) { return nothing(); }
-  template <typename RHS> friend void assign_from_expression(nothing &, RHS) {}
+  template <typename RHS> friend void assign_singularity_from_function(nothing &, RHS) {}
+  template<typename A> bool check_size(A) {return true;}
+  bool is_empty() const { return false;}
  };
 
+ // Check if T is nothing
+ template <typename T> constexpr bool is_nothing() { return std::is_same<nothing, T>::value; }
+
+ template<int ... pos, typename ...T> nothing partial_eval(nothing, T&&...) { return {};}
+ inline nothing transpose(nothing) { return {};}
+ inline nothing inverse(nothing) { return {};}
+ inline nothing conj(nothing) { return {};}
+ template <typename T> nothing compose(nothing,T&) { return {};}
  template <typename... T> nothing slice_target(nothing, T...) { return nothing(); }
  template <typename T> nothing operator+(nothing, T const &) { return nothing(); }
  template <typename T> nothing operator-(nothing, T const &) { return nothing(); }

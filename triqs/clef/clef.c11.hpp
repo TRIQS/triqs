@@ -59,12 +59,19 @@ namespace triqs { namespace clef {
   *  Placeholder and corresponding traits
   *  --------------------------------------------------------------------------------------------------- */
  template<int i, typename T> struct pair; // forward
+ template<typename Tag, typename... T> struct expr; //forward
 
  // a placeholder is an empty struct, labelled by an int.
  template<int N> struct placeholder {
   static_assert( (N>=0) && (N<64) , "Placeholder number limited to [0,63]");
   static constexpr int index = N;
-  template <typename RHS> pair<N,RHS> operator = (RHS && rhs) { return {std::forward<RHS>(rhs)};} 
+  template <typename RHS> pair<N,RHS> operator = (RHS && rhs) const { return {std::forward<RHS>(rhs)};} 
+  template <typename... T> expr<tags::function, placeholder, expr_storage_t<T>...> operator()(T&&... x) const {
+   return {tags::function{}, *this, std::forward<T>(x)...};
+  }
+  template <typename T> expr<tags::subscript, placeholder, expr_storage_t<T>> operator[](T&& x) const {
+   return {tags::subscript{}, *this, std::forward<T>(x)};
+  }
  };
 
  // placeholder will always be copied (they are empty anyway).
@@ -271,18 +278,6 @@ namespace triqs { namespace clef {
  };
 
  // general expr node
-
-#ifdef TRIQS_USE_C14_DRAFT__
- template <typename Tag, typename... Childs, typename... Pairs> struct evaluator<expr<Tag, Childs...>, Pairs...> {
-
-  static constexpr bool is_lazy = __or(evaluator<Childs, Pairs...>::is_lazy...);
-
-  auto operator()(expr<Tag, Childs...> const& ex, Pairs const&... pairs) const {
-   auto eval_in_context = [&pairs...](auto const& _child) { return eval(_child, pairs...); };
-   return tuple::apply_compose(op_dispatch<Tag, is_lazy>{}, eval_in_context, ex.childs);
-  }
- };
-#else
  // WORKAROUND FOR C++11 compilers
  template<int arity, typename Expr, typename... Pairs> struct evaluator_node_gal;
 
@@ -313,7 +308,6 @@ namespace triqs { namespace clef {
 
  template<typename Tag, typename... Childs, typename... Pairs> 
   struct evaluator<expr<Tag, Childs...>, Pairs...> : evaluator_node_gal<sizeof...(Childs), expr<Tag, Childs...>, Pairs...>{};
-#endif
 
  // The general eval function for expressions
  template <typename T, typename... Pairs>
@@ -585,31 +579,6 @@ namespace triqs { namespace clef {
                                                                                                                                  \
  template <typename... Args>                                                                                                     \
      auto operator()(Args&&... args) && DECL_AND_RETURN(make_expr_call(std::move(*this), std::forward<Args>(args)...));
-
-/* --------------------------------------------------------------------------------------------------
-   *  sum of expressions
-   * --------------------------------------------------------------------------------------------------- */
-
- // sum a function f on a domain D, using a simple foreach
- template <typename F, typename D>
- auto sum_f_domain_impl(F const& f, D const& d)
-     -> std::c14::enable_if_t<!triqs::clef::is_any_lazy<F, D>::value, decltype(f(*(d.begin())))> {
-  auto res = decltype(f(*(d.begin()))) {};
-  using p_t = typename std::decay<decltype(*(d.begin()))>::type;
-  foreach(d, [&res, &f](p_t const& x) { res = res + f(x); });
-  return res;
- }
-
- TRIQS_CLEF_MAKE_FNT_LAZY(sum_f_domain_impl);
-
- // sum( expression, i = domain)
- template <typename Expr, int N, typename D> auto sum(Expr const& f, clef::pair<N, D> const& d) 
-  DECL_AND_RETURN(sum_f_domain_impl(make_function(f, clef::placeholder<N>()), d.rhs));
-
- // two or more indices : sum recursively
- template <typename Expr, typename D0, int N0, typename D1, int N1, typename... D, int... N>
- auto sum(Expr const& f, clef::pair<N0, D0> const& d0, clef::pair<N1, D1> const& d1, clef::pair<N, D> const&... d) 
-  DECL_AND_RETURN(sum(sum(f, d0), d1,  d...));
 
 }} //  namespace triqs::clef
 #endif 

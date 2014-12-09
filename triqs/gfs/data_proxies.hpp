@@ -23,96 +23,85 @@
 #include <triqs/utility/first_include.hpp>
 #include <utility>
 #include <triqs/arrays.hpp>
-//#include "./matrix_view_proxy.hpp"
 #include "../arrays/matrix_tensor_proxy.hpp"
+
+//#define TRIQS_GF_DATA_PROXIES_WITH_SIMPLE_VIEWS
 
 namespace triqs { namespace gfs {
 
- //---------------------------- generic case array of dim R----------------------------------
- 
- template<typename T, int R> struct data_proxy_array { 
-  /// The storage
-  typedef arrays::array<T, R> storage_t;
-  typedef typename storage_t::view_type storage_view_t;
-  typedef typename storage_t::const_view_type storage_const_view_t;
+ //---------------------------- common stuff for array proxies ----------------------------------
 
-  /// The data access 
-  auto operator()(storage_t& data, long i) const DECL_AND_RETURN(arrays::make_tensor_proxy(data, i));
-  auto operator()(storage_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
-  auto operator()(storage_view_t& data, long i) const DECL_AND_RETURN(arrays::make_tensor_proxy(data, i));
-  auto operator()(storage_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
-  auto operator()(storage_const_view_t& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
-  auto operator()(storage_const_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
+ template <typename T, int D> struct data_proxy_array_common {
+  using storage_t = arrays::array<T, D>;
+  using storage_view_t = typename storage_t::view_type;
+  using storage_const_view_t = typename storage_t::const_view_type;
 
-#ifdef TRIQS_GF_DATA_PROXIES_WITH_SIMPLE_VIEWS
-  auto operator()(storage_t            & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-  auto operator()(storage_t const      & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-  auto operator()(storage_view_t       & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-  auto operator()(storage_view_t const & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-  auto operator()(storage_const_view_t       & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-  auto operator()(storage_const_view_t const & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-#endif
+  // from the shape of the mesh and the target, make the shape of the array. default is to glue them
+  template <typename S1, typename S2> static auto join_shape(S1 const& s1, S2 const& s2) RETURN(join(s1, s2));
 
   template<typename S, typename RHS> static void assign_to_scalar (S & data, RHS && rhs)           { data() = std::forward<RHS>(rhs);}
   template <typename ST, typename RHS> static void rebind(ST& data, RHS&& rhs) { data.rebind(rhs.data()); }
  };
 
- //---------------------------- 3d array : returns matrices in this case ! ----------------------------------
- 
- template<typename T> struct data_proxy_array<T,3> { 
-  /// The storage
-  typedef arrays::array<T,3>             storage_t;
-  typedef typename storage_t::view_type  storage_view_t;
-  typedef typename storage_t::const_view_type storage_const_view_t;
+ //---------------------------- generic case array of dim R----------------------------------
 
-  /// The data access
-  auto operator()(storage_t& data, long i) const DECL_AND_RETURN(arrays::make_matrix_proxy(data, i));
-  auto operator()(storage_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
-  auto operator()(storage_view_t& data, long i) const DECL_AND_RETURN(arrays::make_matrix_proxy(data, i));
-  auto operator()(storage_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
-  auto operator()(storage_const_view_t& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
-  auto operator()(storage_const_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
-
-#ifdef TRIQS_DATA_PROXIES_OLD_MATRIX_VIEW_PROXY
-  arrays::matrix_view_proxy<storage_t,0>            operator()(storage_t       & data, size_t i) const { return arrays::matrix_view_proxy<storage_t,0>(data,i); } 
-  arrays::const_matrix_view_proxy<storage_t,0>      operator()(storage_t const & data, size_t i) const { return arrays::const_matrix_view_proxy<storage_t,0>(data,i); } 
-  arrays::matrix_view_proxy<storage_view_t,0>       operator()(storage_view_t       & data, size_t i) const { return arrays::matrix_view_proxy<storage_view_t,0>(data,i); } 
-  arrays::const_matrix_view_proxy<storage_view_t,0> operator()(storage_view_t const & data, size_t i) const { return arrays::const_matrix_view_proxy<storage_view_t,0>(data,i); } 
-#endif
-
+ template <typename T, int R> struct data_proxy_array : data_proxy_array_common<T, R> {
+  using B = data_proxy_array_common<T, R>;
+/// The data access
 #ifdef TRIQS_GF_DATA_PROXIES_WITH_SIMPLE_VIEWS
-  auto operator()(storage_t            & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-  auto operator()(storage_t const      & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
+  template <typename S> auto operator()(S& data, long i) const DECL_AND_RETURN(data(i, arrays::ellipsis()));
+#else
+  auto operator()(typename B::storage_t& data, long i) const DECL_AND_RETURN(arrays::make_tensor_proxy(data, i));
+  auto operator()(typename B::storage_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
+  auto operator()(typename B::storage_view_t& data, long i) const DECL_AND_RETURN(arrays::make_tensor_proxy(data, i));
+  auto operator()(typename B::storage_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
+  auto operator()(typename B::storage_const_view_t& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
+  auto operator()(typename B::storage_const_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_tensor_proxy(data, i));
+#endif
+ };
 
-  auto operator()(storage_view_t       & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-  auto operator()(storage_view_t const & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-  
-  auto operator()(storage_const_view_t       & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
-  auto operator()(storage_const_view_t const & data, size_t i) const DECL_AND_RETURN(data(i,arrays::ellipsis()));
+ //---------------------------- 3d array : returns matrices in this case ! ----------------------------------
+
+ template <typename T> struct data_proxy_array<T, 3> : data_proxy_array_common<T, 3> {
+  using B = data_proxy_array_common<T, 3>;
+#ifdef TRIQS_GF_DATA_PROXIES_WITH_SIMPLE_VIEWS
+  template <typename S> auto operator()(S & data, long i) const RETURN(make_matrix_view(data(i, arrays::ellipsis())));
+#else
+  /// The data access
+  auto operator()(typename B::storage_t& data, long i) const DECL_AND_RETURN(arrays::make_matrix_proxy(data, i));
+  auto operator()(typename B::storage_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
+  auto operator()(typename B::storage_view_t& data, long i) const DECL_AND_RETURN(arrays::make_matrix_proxy(data, i));
+  auto operator()(typename B::storage_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
+  auto operator()(typename B::storage_const_view_t& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
+  auto operator()(typename B::storage_const_view_t const& data, long i) const DECL_AND_RETURN(arrays::make_const_matrix_proxy(data, i));
 #endif
 
-  template <typename S, typename RHS> static void assign_to_scalar(S& data, RHS&& rhs) { data() = std::forward<RHS>(rhs); }
-  template <typename ST, typename RHS> static void rebind(ST& data, RHS&& rhs) { data.rebind(rhs.data()); }
  };
 
  //---------------------------- 1d array ----------------------------------
 
- template<typename T> struct data_proxy_array<T,1>{ 
-  /// The storage
-  typedef arrays::array<T,1>             storage_t;
-  typedef typename storage_t::view_type  storage_view_t;
-  typedef typename storage_t::const_view_type storage_const_view_t;
+ template <typename T> struct data_proxy_array<T, 1> : data_proxy_array_common<T, 1> {
+  template <typename S> AUTO_DECL operator()(S& data, long i) const RETURN(data(i));
+ };
 
-  /// The data access 
-  auto operator()(storage_t       & data,size_t i) const -> decltype(data(i)) { return data(i);}
-  auto operator()(storage_t const & data,size_t i) const -> decltype(data(i)) { return data(i);}
-  auto operator()(storage_view_t       & data,size_t i) const -> decltype(data(i)) { return data(i);}
-  auto operator()(storage_view_t const & data,size_t i) const -> decltype(data(i)) { return data(i);}
-  auto operator()(storage_const_view_t       & data,size_t i) const -> decltype(data(i)) { return data(i);}
-  auto operator()(storage_const_view_t const & data,size_t i) const -> decltype(data(i)) { return data(i);}
+ //---------------------------- multi variable ----------------------------------
 
-  template<typename S, typename RHS> static void assign_to_scalar (S & data, RHS && rhs)           { data() = std::forward<RHS>(rhs);}
-  template <typename ST, typename RHS> static void rebind(ST& data, RHS&& rhs) { data.rebind(rhs.data()); }
+ template <typename T, int TotalDim> struct data_proxy_array_multivar : data_proxy_array_common<T, TotalDim> {
+  // using the standard technique from tuple::apply with a sequence
+  template <typename S, typename Tu, size_t... Is>
+  AUTO_DECL _impl(S& data, Tu const& tu, std14::index_sequence<Is...>) const RETURN(data(std::get<Is>(tu)..., arrays::ellipsis()));
+  template <typename S, typename Tu>
+  AUTO_DECL operator()(S& data, Tu const& tu) const RETURN(_impl(data, tu, triqs::tuple::_get_seq<Tu>()));
+ };
+
+ //---------------------------- multi variable ----------------------------------
+
+ template <typename T, int TotalDim> struct data_proxy_array_multivar_matrix_valued : data_proxy_array_common<T, TotalDim> {
+  // using the standard technique from tuple::apply with a sequence
+  template <typename S, typename Tu, size_t... Is>
+  AUTO_DECL _impl(S& data, Tu const& tu, std14::index_sequence<Is...>) const RETURN(make_matrix_view(data(std::get<Is>(tu)..., arrays::range(), arrays::range())));
+  template <typename S, typename Tu>
+  AUTO_DECL operator()(S& data, Tu const& tu) const RETURN(_impl(data, tu, triqs::tuple::_get_seq<Tu>()));
  };
 
  //---------------------------- vector ----------------------------------
@@ -128,27 +117,17 @@ namespace triqs { namespace gfs {
   //template<typename X> view_proxy & operator = (X && x) { V::operator=( std::forward<X>(x) ); return *this;} 
  };
 
- template<typename T> struct data_proxy_vector { 
-  typedef typename T::view_type Tv;
-  typedef typename T::const_view_type Tcv;
+ template <typename T> struct data_proxy_vector {
+  using Tv = typename T::view_type;
+  using Tcv = typename T::const_view_type;
 
   /// The storage
-  typedef std::vector<T> storage_t;
-  typedef std::vector<view_proxy<Tv>> storage_view_t;
-  typedef std::vector<view_proxy<Tcv>> storage_const_view_t;
+  using storage_t = std::vector<T>;
+  using storage_view_t = std::vector<view_proxy<Tv>>;
+  using storage_const_view_t = std::vector<view_proxy<Tcv>>;
 
-  /// The data access 
-  T        &  operator()(storage_t  &           data, size_t i) { return data[i];}
-  T  const &  operator()(storage_t      const & data, size_t i) const { return data[i];}
-  Tv       &  operator()(storage_view_t &       data, size_t i)       { return data[i];}
-  Tv const &  operator()(storage_view_t const & data, size_t i) const { return data[i];}
-  Tcv       &  operator()(storage_const_view_t &       data, size_t i)       { return data[i];}
-  Tcv const &  operator()(storage_const_view_t const & data, size_t i) const { return data[i];}
-/*Tv operator()(storage_view_t &       data, size_t i) const      { return data[i];}
-  Tv operator()(storage_view_t const & data, size_t i) const { return data[i];}
-  Tcv operator()(storage_const_view_t &       data, size_t i) const      { return data[i];}
-  Tcv operator()(storage_const_view_t const & data, size_t i) const { return data[i];}
-*/
+  /// The data access
+  template <typename S> AUTO_DECL operator()(S& data, size_t i) const  RETURN(data[i]);
 
   template<typename S, typename RHS> static void assign_to_scalar   (S & data, RHS && rhs) {for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
   template <typename ST, typename RHS> static void rebind(ST& data, RHS&& rhs) { data.clear(); for (auto & x : rhs.data()) data.push_back(x);}
@@ -156,19 +135,24 @@ namespace triqs { namespace gfs {
 
  //---------------------------- lambda ----------------------------------
 
- template<typename F> struct data_proxy_lambda { 
+ template <typename F, bool tupleargs> struct data_proxy_lambda;
+ template <typename F> struct data_proxy_lambda<F,false> {
 
   /// The storage
-  typedef F storage_t;
-  typedef F storage_view_t;
-  typedef F storage_const_view_t;
+  using storage_t = F;
+  using storage_view_t = F;
+  using storage_const_view_t = F;
 
-  /// The data access 
-  auto operator()(storage_t  &           data, size_t i)       DECL_AND_RETURN( data(i));
-  auto operator()(storage_t      const & data, size_t i) const DECL_AND_RETURN( data(i));
+  /// The data access
+  template <typename S, typename ... I> AUTO_DECL operator()(S& data, I const& ...i) const RETURN(data(i...));
 
   template<typename S, typename RHS> static void assign_to_scalar   (S & data, RHS && rhs) = delete;
   template <typename ST, typename RHS> static void rebind(ST& data, RHS&& rhs) = delete;
+ };
+
+ // If tuple args, flatten the tuple before calling
+ template <typename F> struct data_proxy_lambda<F, true> : data_proxy_lambda<F, false> {
+  template <typename S, typename Tu> AUTO_DECL operator()(S& data, Tu const& tu) const RETURN(tuple::apply(data,tu));
  };
 
 

@@ -37,7 +37,7 @@ namespace triqs {
 
   arrays::matrix<double> density(gf_view<legendre> const & g);
 
-  local::tail_view get_tail(gf_const_view<legendre> gl, int size, int omin);
+  tail_view get_tail(gf_const_view<legendre> gl, int size, int omin);
 
   void enforce_discontinuity(gf_view<legendre> & gl, triqs::arrays::array_view<double,2> disc);
 

@@ -19,9 +19,9 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <iostream>
-#include "./src/h5/simple_read_write.hpp"
+#include <triqs/arrays/h5/simple_read_write.hpp>
 
 using std::cout; using std::endl;
 namespace tqa = triqs::arrays;
@@ -66,14 +66,15 @@ int main(int argc, char **argv) {
  std::cout<<" C= "<<C<<std::endl;
  std::cout<<" Arange(0,1),range(1,3)  = "<< A(range(),range(1,3))<<std::endl;
 
- H5::H5File file( "ess.h5", H5F_ACC_TRUNC );
+ h5::file file( "ess.h5", H5F_ACC_TRUNC );
  h5::group top(file);
 
  h5_write(top,"A",A);
  h5_write(top,"Af",Af);
  h5_write(top,"C",C);
  h5_write(top,"D",D);
-
+ h5_write(top,"S","");
+ 
  // testing scalar
  double x=2.3;
  h5_write(top, "x",x);
@@ -99,6 +100,7 @@ int main(int argc, char **argv) {
  //tqa::array<long,1> E; h5_read (top, "A",E);   std::cout<< "E = "<< E<<std::endl;
 
  } 
+ catch(std::exception const&  err) { std::cout<<err.what()<<std::endl;}
  catch( const char * err) { std::cout<<err<<std::endl;}
 
  return 0;

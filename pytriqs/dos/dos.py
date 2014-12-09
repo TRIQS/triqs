@@ -73,11 +73,11 @@ name : string
         return self.__class__, (self.eps,self.rho, self.name)
 
     def __reduce_to_dict__(self) :
-        return {'epsilon' : self.eps, 'rho': self.rho, 'name' : self.name}
+        return {'epsilon' : self.eps, 'rho': self.rho}
 
     @classmethod
-    def __factory_from_dict__(cls,D) :
-        return cls(D['epsilon'],D['rho'], D['name'])
+    def __factory_from_dict__(cls,name, D) :
+        return cls(D['epsilon'],D['rho'], name)
  
     def __repr__(self) : 
         return  """

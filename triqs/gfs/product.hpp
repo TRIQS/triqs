@@ -23,152 +23,169 @@
 #include "./gf.hpp"
 #include "./meshes/product.hpp"
 #include "./evaluators.hpp"
+#include "./tail_zero.hpp"
 
 namespace triqs {
 namespace gfs {
 
- template <typename... Ms> struct cartesian_product {
-  using type = std::tuple<Ms...>;
-  static constexpr size_t size = sizeof...(Ms);
+ // special case : we need to pop for all the variables
+ template <typename... Ms, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
+ auto get_target_shape(gf_impl<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsView, IsConst> const &g) {
+  return g.data().shape().template front_mpop<sizeof...(Ms)>();
+ }
+
+ // The default singularity, for each Variable.
+ template <typename... Ms> struct gf_default_singularity<cartesian_product<Ms...>, scalar_valued> {
+  using type = tail_zero;
+ };
+ template <typename... Ms> struct gf_default_singularity<cartesian_product<Ms...>, matrix_valued> {
+  using type = tail_zero;
+ };
+ template <typename... Ms, int R> struct gf_default_singularity<cartesian_product<Ms...>, tensor_valued<R>> {
+  using type = tail_zero;
  };
 
- // use alias
- template <typename... Ms> struct cartesian_product<std::tuple<Ms...>> : cartesian_product<Ms...> {};
-
- // the mesh is simply a cartesian product
- template <typename Opt, typename... Ms> struct gf_mesh<cartesian_product<Ms...>, Opt> : mesh_product<gf_mesh<Ms, Opt>...> {
-  // using mesh_product< gf_mesh<Ms,Opt> ... >::mesh_product< gf_mesh<Ms,Opt> ... > ;
-  using B = mesh_product<gf_mesh<Ms, Opt>...>;
-  gf_mesh() = default;
-  gf_mesh(gf_mesh<Ms, Opt>... ms) : B{std::move(ms)...} {}
- };
+ // forward declaration, Cf m_tail
+ template <typename Variable, typename... Args> auto evaluate(gf_const_view<Variable, tail> const &g, Args const &... args);
+ template <typename Variable, typename... Args> auto evaluate(gf<Variable, tail> const &g, Args const &... args);
+ template <typename Variable, typename... Args> auto evaluate(gf_view<Variable, tail> const &g, Args const &... args);
 
  namespace gfs_implementation {
+
+  /// ---------------------------  data access  ---------------------------------
+
+  template <typename... Ms>
+  struct data_proxy<cartesian_product<Ms...>, scalar_valued> : data_proxy_array_multivar<std::complex<double>, sizeof...(Ms)> {};
+
+  template <typename... Ms>
+  struct data_proxy<cartesian_product<Ms...>, matrix_valued> : data_proxy_array_multivar_matrix_valued<std::complex<double>,
+                                                                                                       2 + sizeof...(Ms)> {};
+
+  template <int R, typename... Ms>
+  struct data_proxy<cartesian_product<Ms...>, tensor_valued<R>> : data_proxy_array_multivar<std::complex<double>,
+                                                                                            R + sizeof...(Ms)> {};
+
+  // special case ? Or make a specific container....
+  template <typename M0>
+  struct data_proxy<cartesian_product<M0, imtime>, matrix_valued> : data_proxy_array_multivar_matrix_valued<double, 2 + 2> {};
 
   /// ---------------------------  hdf5 ---------------------------------
 
   // h5 name : name1_x_name2_.....
-  template <typename Opt, typename... Ms> struct h5_name<cartesian_product<Ms...>, matrix_valued, Opt> {
+  template <typename S, typename... Ms> struct h5_name<cartesian_product<Ms...>, matrix_valued, S> {
    static std::string invoke() {
     return triqs::tuple::fold([](std::string a, std::string b) { return a + std::string(b.empty() ? "" : "_x_") + b; },
-                              std::make_tuple(h5_name<Ms, matrix_valued, Opt>::invoke()...), std::string());
+                              reverse(std::make_tuple(h5_name<Ms, matrix_valued, nothing>::invoke()...)), std::string());
    }
   };
-  template <typename Opt, int R, typename... Ms>
-  struct h5_name<cartesian_product<Ms...>, tensor_valued<R>, Opt> : h5_name<cartesian_product<Ms...>, matrix_valued, Opt> {};
-
-  // a slight difference with the generic case : reinterpret the data array to avoid flattening the variables
-  template <typename Opt, int R, typename... Ms> struct h5_rw<cartesian_product<Ms...>, tensor_valued<R>, Opt> {
-   using g_t = gf<cartesian_product<Ms...>, tensor_valued<R>, Opt>;
-
-   static void write(h5::group gr, typename g_t::const_view_type g) {
-    h5_write(gr, "data", reinterpret_linear_array(g.mesh(), g().data()));
-    h5_write(gr, "singularity", g._singularity);
-    h5_write(gr, "mesh", g._mesh);
-    h5_write(gr, "symmetry", g._symmetry);
-   }
-
-   template <bool IsView>
-   static void read(h5::group gr, gf_impl<cartesian_product<Ms...>, tensor_valued<R>, Opt, IsView, false> &g) {
-    using G_t = gf_impl<cartesian_product<Ms...>, tensor_valued<R>, Opt, IsView, false>;
-    h5_read(gr, "mesh", g._mesh);
-    auto arr = arrays::array<typename G_t::data_t::value_type, sizeof...(Ms) + R>{};
-    h5_read(gr, "data", arr);
-    auto sh = arr.shape();
-    arrays::mini_vector<size_t, R + 1> sh2;
-    sh2[0] = g._mesh.size();
-    for (int u = 1; u < R + 1; ++u) sh2[u] = sh[sizeof...(Ms) - 1 + u];
-    g._data = arrays::array<typename G_t::data_t::value_type, R + 1>{sh2, std::move(arr.storage())};
-    h5_read(gr, "singularity", g._singularity);
-    h5_read(gr, "symmetry", g._symmetry);
-   }
+  template <typename S, int R, typename... Ms>
+  struct h5_name<cartesian_product<Ms...>, tensor_valued<R>, S> : h5_name<cartesian_product<Ms...>, matrix_valued, S> {
   };
 
-  /// ---------------------------  data access  ---------------------------------
-
-  template <typename Opt, typename... Ms>
-  struct data_proxy<cartesian_product<Ms...>, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
-  template <typename Opt, typename... Ms>
-  struct data_proxy<cartesian_product<Ms...>, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
-  template <int R, typename Opt, typename... Ms>
-  struct data_proxy<cartesian_product<Ms...>, tensor_valued<R>, Opt> : data_proxy_array<std::complex<double>, R + 1> {};
- 
-  template <typename Opt, typename M0>
-  struct data_proxy<cartesian_product<M0,imtime>, matrix_valued, Opt> : data_proxy_array<double, 3> {};
-  
   /// ---------------------------  evaluator ---------------------------------
 
-  /**
-   * This the multi-dimensional evaluator.
-   * It combine the evaluator of each components, as long as they are  a linear form
-   * eval(g, x) = \sum_i w_i g( n_i(x)) , with w some weight and n_i some points on the grid.
-   * Mathematically, it is written as (example of evaluating g(x1,x2,x3,x4)).
-   * Notation : eval(X)  : g -> g(X)
-   * eval(x1,x2,x3,x4) (g) = eval (x1) ( binder ( g, (),  (x2,x3,x4)) )
-   * binder( g, (), (x2,x3,x4)) (p1) = eval(x2)(binder (g,(p1),(x3,x4)))
-   * binder( g, (p1), (x3,x4))  (p2) = eval(x3)(binder (g,(p1,p2),(x4)))
-   * binder( g, (p1,p2), (x4))  (p3) = eval(x4)(binder (g,(p1,p2,p3),()))
-   * binder( g, (p1,p2,p3),())  (p4) = g[p1,p2,p3,p4]
-   *
-   * p_i are points on the grids, x_i points in the domain.
-   *
-   * Unrolling the formula gives (for 2 variables, with 2 points interpolation)
-   * eval(xa,xb) (g) = eval (xa) ( binder ( g, (),  (xb)) ) =
-   *    w_1(xa)  binder ( g, (),  (xb))( n_1(xa)) + w_2(xa)  binder ( g, (), (xb))( n_2(xa))
-   *  =  w_1(xa) ( eval(xb)(  binder ( g, (n_1(xa) ),  ())))  + 1 <-> 2
-   *  =  w_1(xa) ( W_1(xb) *  binder ( g, (n_1(xa) ),  ())(N_1(xb)) + 1<->2 )  + 1 <-> 2
-   *  =  w_1(xa) ( W_1(xb) *  g[n_1(xa), N_1(xb)] + 1<->2 )  + 1 <-> 2
-   *  =  w_1(xa) ( W_1(xb) *  g[n_1(xa), N_1(xb)] + W_2(xb) *  g[n_1(xa), N_2(xb)] )  + 1 <-> 2
-   *  which is the expected formula
-   */
-  // implementation : G = gf, Tn : tuple of n points, Ev : tuple of evaluators (the evals functions),
-  // pos = counter from #args-1 =>0
-  // NB : the tuple is build in reverse with respect to the previous comment.
-  template <typename G, typename Tn, typename Ev, int pos> struct binder;
+  // forward declaration, cf curry
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
+  auto curry(gf_impl<Variable, Target, Singularity, Evaluator, IsView, IsConst> const &g);
 
-  template <int pos, typename G, typename Tn, typename Ev> binder<G, Tn, Ev, pos> make_binder(G const *g, Tn tn, Ev const &ev) {
-   return binder<G, Tn, Ev, pos>{g, std::move(tn), ev};
+  // helper function : from a callable object F, return the expression of calling it with placeholders.
+  template <typename F, size_t... Is> auto __make_lazy_call(F &f, std14::index_sequence<Is...>) {
+   return f(clef::placeholder<Is>()...);
   }
 
-  template <typename G, typename Tn, typename Ev, int pos> struct binder {
-   G const *g;
-   Tn tn;
-   Ev const &evals;
-   auto operator()(size_t p) const
-       DECL_AND_RETURN(std::get<pos>(evals)(make_binder<pos - 1>(g, triqs::tuple::push_front(tn, p), evals)));
-  };
+  // ... to move in array lib ?
+  inline dcomplex _make_from_shape(mini_vector<size_t, 0> const &) { return 0; }
+  template <int R> arrays::array<dcomplex, R> _make_from_shape(mini_vector<size_t, R> const &sh) {
+   auto r = arrays::array<dcomplex, R>{sh};
+   r() = 0;
+   return r;
+  }
 
-  template <typename G, typename Tn, typename Ev> struct binder<G, Tn, Ev, -1> {
-   G const *g;
-   Tn tn;
-   Ev const &evals;
-   auto operator()(size_t p) const DECL_AND_RETURN(triqs::tuple::apply(on_mesh(*g), triqs::tuple::push_front(tn, p)));
-  };
+  using triqs::make_const_view;
+  inline dcomplex make_const_view(dcomplex z) { return z; }
+
+  // shortcut
+  template <int n> using __int = std::integral_constant<int, n>;
+  // template <bool B> using __bool = std::integral_constant<bool, B>;
 
   // now the multi d evaluator itself.
-  template <typename Target, typename Opt, typename... Ms> struct evaluator<cartesian_product<Ms...>, Target, Opt> {
+  template <typename Target, typename Sing, typename... Ms> struct evaluator<cartesian_product<Ms...>, Target, Sing> {
+
+   template <typename G> evaluator(G *) {};
+
    static constexpr int arity = sizeof...(Ms);
-   mutable std::tuple<evaluator_fnt_on_mesh<Ms>...> evals;
 
-   struct _poly_lambda { // replace by a polymorphic lambda in C++14
-    template <typename A, typename B, typename C> void operator()(A &a, B const &b, C const &c) const {
-     a = A{b, c};
-    }
-   };
+   // dispatch the call :
+   // Case 1 : if all points are mesh_point_t, we call directly the memory point
+   // Case 2 : call evaluator
+   template <typename G, typename... Args> decltype(auto) operator()(G const *g, Args &&... args) const {
+    static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
+    static constexpr int allmp =
+        std::is_same<std::tuple<std14::decay_t<Args>...>, std::tuple<__no_cast<typename gf_mesh<Ms>::mesh_point_t>...>>::value;
+    static constexpr int _t = std::is_same<Sing, nothing>::value ? 2 : (std::is_same<Sing, tail_zero>::value ? 3 : 1);
+    // _int : 0 -> mp, >0 -> no mp, 1 : tail, 2 : nothing, 3 : tail_zero
+    return __call(__int<(1 - allmp) * _t>(), g, std::forward<Args>(args)...);
+   }
 
-   template <typename G, typename... Args>
-   // std::complex<double> operator() (G const * g, Args && ... args) const {
-   auto operator()(G const *g, Args &&... args)
-       const -> decltype(std::get<sizeof...(Args) - 1>(evals)(make_binder<sizeof...(Args) - 2>(g, std::make_tuple(), evals)))
-       // when do we get C++14 decltype(auto) ...!?
-   {
-    static constexpr int R = sizeof...(Args);
-    // build the evaluators, as a tuple of ( evaluator<Ms> ( mesh_component, args))
-    triqs::tuple::call_on_zip(_poly_lambda(), evals, g->mesh().components(), std::make_tuple(args...));
-    return std::get<R - 1>(evals)(make_binder<R - 2>(g, std::make_tuple(), evals));
+   private:
+   template <int N> using _get_Ms = std14::tuple_element_t<N, std::tuple<Ms...>>;
+   using mesh_t = gf_mesh<cartesian_product<Ms...>>;
+
+   // Case 1 : if all points are mesh_point_t, we call directly the memory point
+   template <typename G, typename... MP> decltype(auto) __call(__int<0>, G const *g, __no_cast<MP> const &... p) const {
+    return g->get_from_linear_index(p.value.linear_index()...);
+   }
+
+   // Case 2 : the real evaluator
+   // We evaluate the argument recursively, when done we get an expression
+   // made of g( mesh_points...), which is then back to case 1
+   // This case is subdivided into 3, depending on the type of the singularity.
+   
+   // First : a normal singularity, we just evaluate it
+   // The issue is to get the same return type for both return 
+   template <typename G, typename... Args> auto __call(__int<1>, G const *g, Args &&... args) const {
+    using rt = std14::decay_t<decltype(make_const_view(__call1(g, std::forward<Args>(args)...)))>;
+    if (g->mesh().is_within_boundary(args...))
+     return make_const_view(__call1(g, std::forward<Args>(args)...));
+    else
+     return rt{evaluate(g->singularity(), args...)};
+   }
+
+   // In this case, the tail is 0, we need to build the proper tensor, init to 0 and correct size
+   // and return the same view type in both. 
+   template <typename G, typename... Args> auto __call(__int<3>, G const *g, Args &&... args) const {
+    using rt = std14::decay_t<decltype(make_const_view(__call1(g, std::forward<Args>(args)...)))>;
+    if (g->mesh().is_within_boundary(args...))
+     return make_const_view(__call1(g, std::forward<Args>(args)...));
+    else
+     return rt{_make_from_shape(get_target_shape(*g))};
+   }
+
+   // No singularity : if we are not in the mesh, we throw.
+   template <typename G, typename... Args> auto __call(__int<2>, G const *g, Args &&... args) const {
+    if (!g->mesh().is_within_boundary(args...)) TRIQS_RUNTIME_ERROR << "Trying to evaluate out the mesh, and Singularity is None";
+    return __call1(g, std::forward<Args>(args)...);
+   }
+
+   // to save code, impl details.
+   template <typename G, typename... Args> auto __call1(G const *g, Args &&... args) const {
+    return __partial_eval(__int<arity - 1>(), __make_lazy_call(*g, std14::make_index_sequence<arity>()),
+                                          g->mesh(), std::tie(args...));
+   }
+   // implementation
+   template <int N, typename Expr, typename ArgTuple>
+   auto __partial_eval(__int<N>, Expr &&expr, mesh_t const &mesh, ArgTuple const &tu) const {
+    return __partial_eval(__int<N - 1>(),
+                          evaluator_of_clef_expression<_get_Ms<N>>()(std::forward<Expr>(expr), clef::placeholder<N>(),
+                                                                     std::get<N>(mesh), std::get<N>(tu)),
+                          mesh, tu);
+   }
+   // end recursion : -1 : do nothing
+   template <typename Expr, typename ArgTuple>
+   auto __partial_eval(__int<-1>, Expr &&expr, mesh_t const &mesh, ArgTuple const &tu) const {
+    return std::forward<Expr>(expr);
    }
   };
-
  } // gf_implementation
 }
 }

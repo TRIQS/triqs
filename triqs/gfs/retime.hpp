@@ -22,7 +22,6 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./domains/R.hpp"
 #include "./meshes/segment.hpp"
 #include "./evaluators.hpp"
 
@@ -31,36 +30,35 @@ namespace gfs {
 
  struct retime {};
 
- template <typename Opt> struct gf_mesh<retime, Opt> : segment_mesh {
+ template <> struct gf_mesh<retime> : segment_mesh {
   template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
-  //using segment_mesh::segment_mesh;
+ };
+
+ // singularity
+ template <> struct gf_default_singularity<retime, matrix_valued> {
+  using type = tail;
+ };
+ template <> struct gf_default_singularity<retime, scalar_valued> {
+  using type = tail;
  };
 
  namespace gfs_implementation {
 
-  // singularity
-  template <typename Opt> struct singularity<retime, matrix_valued, Opt> {
-   using type = local::tail;
-  };
-  template <typename Opt> struct singularity<retime, scalar_valued, Opt> {
-   using type = local::tail;
-  };
-
   // h5 name
-  template <typename Opt> struct h5_name<retime, matrix_valued, Opt> {
+  template <typename Singularity> struct h5_name<retime, matrix_valued, Singularity> {
    static std::string invoke() { return "ReTime"; }
   };
 
   /// ---------------------------  evaluator ---------------------------------
-  template <>
-  struct evaluator_fnt_on_mesh<retime> TRIQS_INHERIT_AND_FORWARD_CONSTRUCTOR(evaluator_fnt_on_mesh,
-                                                                             evaluator_grid_linear_interpolation);
+  template <> struct evaluator_of_clef_expression<retime> : evaluator_grid_linear_interpolation {};
 
-  template <typename Opt, typename Target> struct evaluator<retime, Target, Opt> : evaluator_one_var<retime> {};
+  template <typename Singularity, typename Target> struct evaluator<retime, Target, Singularity> : evaluator_one_var<retime> {
+   template <typename G> evaluator(G *) {};
+  };
 
   /// ---------------------------  data access  ---------------------------------
-  template <typename Opt> struct data_proxy<retime, matrix_valued, Opt> : data_proxy_array<std::complex<double>, 3> {};
-  template <typename Opt> struct data_proxy<retime, scalar_valued, Opt> : data_proxy_array<std::complex<double>, 1> {};
+  template <> struct data_proxy<retime, matrix_valued> : data_proxy_array<std::complex<double>, 3> {};
+  template <> struct data_proxy<retime, scalar_valued> : data_proxy_array<std::complex<double>, 1> {};
 
  } // gfs_implementation
 }

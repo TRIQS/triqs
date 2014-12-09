@@ -19,49 +19,9 @@ else (Sphinx_Math_Generator_MathJax)
 endif (Sphinx_Math_Generator_MathJax)
 
 # the local extensions....
-file(COPY ../foreignlibs/breathe ../foreignlibs/doxylink ../foreignlibs/mpl ../foreignlibs/autocompile DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ../foreignlibs/breathe ../foreignlibs/doxylink ../foreignlibs/mpl ../foreignlibs/autorun ../foreignlibs/triqs_example DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-# The compiler flags for autocompile
-set(TRIQS_LIBRARY_ALL ${TRIQS_LIBRARY_BOOST} ${TRIQS_LIBRARY_PYTHON} ${TRIQS_LIBRARY_MPI} ${TRIQS_LIBRARY_HDF5} ${TRIQS_LIBRARY_LAPACK} ${TRIQS_LIBRARY_FFTW} ${TRIQS_LIBRARY_GMP} ${TRIQS_LIBRARY_GSL} )
-set(TRIQS_INCLUDE_ALL ${TRIQS_INCLUDE_BOOST} ${TRIQS_INCLUDE_PYTHON} ${TRIQS_INCLUDE_MPI} ${TRIQS_INCLUDE_HDF5} ${TRIQS_INCLUDE_LAPACK} ${TRIQS_INCLUDE_FFTW} ${TRIQS_INCLUDE_GMP} ${TRIQS_INCLUDE_GSL} )
-
-set( link_libs " ${TRIQS_LIBRARY_ALL}")
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- list (REMOVE_DUPLICATES link_libs)
-endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-string(REPLACE "debug" " " TMP "${link_libs}")
-string(REPLACE "optimized" " " TMP "${TMP}")
-
-set(DOC_AUTOCOMPILE_INCLUDE ${CMAKE_SOURCE_DIR} ${TRIQS_INCLUDE_ALL})
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- set(DOC_AUTOCOMPILE_LINK "${TRIQS_LIBRARY_BOOST} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs ${TMP}")
- set(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 -stdlib=libc++ -I/System/Library/Frameworks/vecLib.framework/Versions/A/Headers)
-else()
- set(DOC_AUTOCOMPILE_LINK "${TRIQS_LIBRARY_BOOST} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
- set(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 )
-endif()
-set(DOC_AUTOCOMPILE_LD_LIBRARY_PATH "${CMAKE_BINARY_DIR}/triqs")
-set(DOC_AUTOCOMPILE_DEFINITIONS ${DOC_AUTOCOMPILE_DEFINITIONS} -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config )
-
-# debug
-#message( " Link libs ${DOC_AUTOCOMPILE_LINK}")
-
-EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs.so ${CMAKE_CURRENT_BINARY_DIR}")
-
-# Dive and find the doxygen sources
-add_subdirectory(reference/c++)
-
-# Build the doxygen 
-set(DOXYGEN_HTML_OUTPUT ./html/doxy_triqs)
-find_package(Doxygen REQUIRED)
-
-# debug 
-get_property(DOXYGEN_SOURCES GLOBAL PROPERTY DOXYGEN_SOURCES)
-string(REPLACE ";" "  " DOXYGEN_SOURCES_LIST "${DOXYGEN_SOURCES}")
-#message(STATUS "Doxygen sources are ${DOXYGEN_SOURCES}") 
-
-# Prepare the Doxyfile
-configure_file(${TRIQS_SOURCE_DIR}/cmake/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+#EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs.so ${CMAKE_CURRENT_BINARY_DIR}")
 
 # Generate the conf.py
 FILE(GLOB_RECURSE SOURCES *.rst)
@@ -69,6 +29,43 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR
 EXECUTE_PROCESS(COMMAND sh -c "mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/html")
 set(DOC_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
 include(${TRIQS_SOURCE_DIR}/cmake/BuildSphinx.cmake)
+
+# for the C++ compilation of tests
+include_directories( ${CMAKE_SOURCE_DIR} )
+
+#set( link_libs " ${TRIQS_LIBRARY_ALL}")
+SET( link_libs ${LAPACK_LIBS}  ${BOOST_LIBRARY} )
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ list (REMOVE_DUPLICATES link_libs)
+ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+link_libraries( ${link_libs} triqs)
+
+find_package(TestCSimple)
+macro(all_tests )
+FILE(GLOB ExampleList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+FOREACH(example ${ExampleList}) 
+  STRING(REPLACE ".cpp" "" example_short ${example})
+  add_executable( doc_${example_short}  ${CMAKE_CURRENT_SOURCE_DIR}/${example})
+  add_dependencies(docs_sphinx doc_${example_short}) ## so that all code examples are compiled before the doc
+  add_test_C_simple( doc_${example_short} )
+  #add_test ( ${example_short} ${example_short})
+ENDFOREACH()
+endmacro()
+
+# Dive and find the doxygen sources
+add_subdirectory(reference/)
+add_subdirectory(tutorials/)
+add_subdirectory(tour/)
+
+# Build the doxygen 
+set(DOXYGEN_HTML_OUTPUT ./html/doxy_triqs)
+find_package(Doxygen REQUIRED)
+get_property(DOXYGEN_SOURCES GLOBAL PROPERTY DOXYGEN_SOURCES)
+string(REPLACE ";" "  " DOXYGEN_SOURCES_LIST "${DOXYGEN_SOURCES}")
+#message(STATUS "Doxygen sources are ${DOXYGEN_SOURCES}") 
+
+# Prepare the Doxyfile
+configure_file(${TRIQS_SOURCE_DIR}/cmake/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
 # Set dependencies
 GET_PROPERTY(PYTHON_DYNAMIC_MODULES_LIST GLOBAL PROPERTY PYTHON_DYNAMIC_MODULES_LIST)

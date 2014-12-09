@@ -23,15 +23,12 @@
 #include <triqs/gfs/block.hpp>
 #include <triqs/gfs/local/tail.hpp>
 #include <triqs/arrays/blas_lapack/gelss.hpp>
-#include <triqs/python_tools/cython_proxy.hpp>
 
-namespace triqs { namespace gfs {  namespace local {
+namespace triqs { namespace gfs { 
 
  using triqs::gfs::imfreq;
  using triqs::gfs::block_index;
  using triqs::gfs::block_index;
-
- namespace tgl = triqs::gfs::local;
 
  // routine for fitting the tail (singularity) of a Matsubara Green's function
  // this is a *linear* least squares problem (with non-linear basis functions)
@@ -49,11 +46,11 @@ namespace triqs { namespace gfs {  namespace local {
 
  tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int n_moments, int n_min, int n_max) ;
 
- void set_tail_from_fit(gf_view<imfreq> gf, tail_view known_moments, int n_moments, int n_min, int n_max,
+ void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int n_moments, int n_min, int n_max,
    bool replace_by_fit = false) ;
 
- void set_tail_from_fit(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, int n_min,
+ void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, int n_min,
    int n_max, bool replace_by_fit = false) ;
 
- void set_tail_from_fit(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = false) ;
-}}} // namespace
+ void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = false) ;
+}} // namespace

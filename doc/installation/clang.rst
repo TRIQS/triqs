@@ -19,9 +19,10 @@ The **clang** compiler is *highly recommended* for anyone developing in C++ sinc
   which uses a lot of metaprogramming.
 
 Note, however, that for *production* compilations, gcc, especially recent versions, still produces in general
-a slighly more optimal code for TRIQS applications, even if the difference is small.
+a slighly more optimal code for TRIQS applications, even if the differences are small. In fact, a bug in the
+compiler was recently found and reported.
 
-It is highly recommended to use the latest stable version on linux (3.3), and the default compiler on OS X (Mountain lion).
+It is highly recommended to use the latest stable version on Linux (3.4), and the default compiler on OS X (Mountain lion).
 
 Get and install clang on linux
 ------------------------------
@@ -43,4 +44,24 @@ In order to use clang when building TRIQS::
 
    On OS X, the options -std=c++11 and -stdlib=libc++ are automatically added by the TRIQS
    installation script.
+
+libclang
+----------
+
+Some tools for developers (e.g. automatically C++/Python wrapper generation), use libclang
+(delivered with clang), and its python bindings (usually not given).
+
+The latest version is necessary.
+
+A pip package, updated to the latest version, is on github.
+Install it simply with ::
+
+  pip install -e git+https://github.com/parcollet/python-clang.git#egg=clang
+
+To uninstall it (or another version) ::
+
+  pip uninstall clang
+
+
+  
 

@@ -324,14 +324,20 @@ namespace statistics {
   auto si = t.size();
   if (si == 0) return typename TimeSeries::value_type{};
   auto avg = t[0];
-  decltype(avg) sum = t[0] * t[0]; // also valid if t[0] is an array e.g., i.e. no trivial contructor...
+  //decltype(avg) sum = t[0] * t[0]; // also valid if t[0] is an array e.g., i.e. no trivial contructor...
   for (int i = 1; i < si; ++i) {
-   sum += t[i] * t[i];
+   //sum += t[i] * t[i];
    avg += t[i];
   }
   avg /= t.size();
-  sum /= t.size();
-  return sum - avg * avg;
+  //sum /= t.size();
+  decltype(avg) sum2 = (t[0]-avg) * (t[0]-avg) ; // also valid if t[0] is an array e.g., i.e. no trivial contructor...
+  for (int i = 1; i < si; ++i) {
+   sum2 += (t[i]-avg) * (t[i]-avg);
+  }
+  sum2 /= t.size();
+  //return sum - avg * avg;
+  return sum2;
  }
 
 

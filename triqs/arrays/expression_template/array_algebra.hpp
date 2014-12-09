@@ -54,7 +54,11 @@ namespace triqs { namespace arrays {
 
    friend std::ostream &operator <<(std::ostream &sout, array_expr const &expr){return sout << "("<<expr.l << " "<<utility::operation<Tag>::name << " "<<expr.r<<")" ; }
    friend array<value_type, domain_type::rank> make_array(array_expr const & e) { return e;}
-  };
+   // just for better error messages
+   template <typename T> void operator=(T &&x) = delete; // can not assign to an expression template !
+   template <typename T> void operator+=(T &&x) = delete;// can not += into an expression template !
+   template <typename T> void operator-=(T &&x) = delete;// can not -= into an expression template !
+   };
 
  // a special case : the unary operator !
  template<typename L>   
@@ -71,7 +75,11 @@ namespace triqs { namespace arrays {
 
   friend std::ostream &operator <<(std::ostream &sout, array_unary_m_expr const &expr){return sout << '-'<<expr.l; }
   friend array<value_type, domain_type::rank> make_array(array_unary_m_expr const & e) { return e;}
- };
+  // just for better error messages
+  template <typename T> void operator=(T &&x) = delete;  // can not assign to an expression template !
+  template <typename T> void operator+=(T &&x) = delete; // can not += into an expression template !
+  template <typename T> void operator-=(T &&x) = delete; // can not -= into an expression template !
+  };
 
  // Now we can define all the C++ operators ...
 #define DEFINE_OPERATOR(TAG, OP, TRAIT1, TRAIT2) \

@@ -23,7 +23,7 @@ int main() {
   TEST(n_pos_only);
 
   // test hdf5 
-  //H5::H5File file("gf_scalar.h5", H5F_ACC_TRUNC);
+  //h5::file file("gf_scalar.h5", H5F_ACC_TRUNC);
   //h5_write(file, "g", G);
   //h5_write(file, "gm", reinterpret_scalar_valued_gf_as_matrix_valued(G));
 

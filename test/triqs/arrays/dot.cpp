@@ -21,11 +21,11 @@
 #include "./common.hpp"
 #include <iostream>
 
-#include "./src/array.hpp"
-#include "./src/vector.hpp"
-#include "./src/matrix.hpp"
-#include "./src/blas_lapack/dot.hpp"
-#include "./src/asserts.hpp"
+#include <triqs/arrays/array.hpp>
+#include <triqs/arrays/vector.hpp>
+#include <triqs/arrays/matrix.hpp>
+#include <triqs/arrays/blas_lapack/dot.hpp>
+#include <triqs/arrays/asserts.hpp>
 
 using namespace triqs::arrays;
 
@@ -33,7 +33,7 @@ template<typename Vd, typename Vi>
 void test() {
  Vd a(2),aa(2),c(2) ;a()=2.0; c() = 1;
  Vi b(2);b()=3;
- std::cout << blas::dot<false>(a,b) << std::endl;
+ std::cerr << blas::dot<false>(a,b) << std::endl;
 
  aa = 2*a;
 
@@ -51,7 +51,19 @@ void test() {
 int main(int argc, char **argv) {
 
  test<vector<double> , vector<int> >();
- 
+
+ /// Added by I. Krivenko, #122
+ /// test the complex version, specially with the zdotu workaround on Os X.
+ vector<std::complex<double>> v(2);
+ v(0) = 0;
+ v(1) = {0, 1};
+
+ std::cerr << v << std::endl;
+ std::cerr << blas::dot<false>(v, v) << std::endl;
+ std::cerr << blas::dot<true>(v, v) << std::endl;
+ assert_close( dot(v,v), -1);
+ assert_close( dotc(v,v), 1);
+
  // does not work for array just because of .size() vs .shape(0)...
  //test<array<double,1> , array<int,1> >();
  //test<array<double,1> , vector<int> >();

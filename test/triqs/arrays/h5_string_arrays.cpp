@@ -19,10 +19,10 @@
  *
  ******************************************************************************/
 #include "./common.hpp"
-#include "./src/array.hpp"
+#include <triqs/arrays/array.hpp>
 #include <iostream>
-#include "./src/h5/simple_read_write.hpp"
-#include "./src/asserts.hpp"
+#include <triqs/arrays/h5/simple_read_write.hpp>
+#include <triqs/arrays/asserts.hpp>
 #include <triqs/h5.hpp>
 
 using std::cout; using std::endl;
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
  V1.push_back("de");
 
  // writing 
- H5::H5File file( "test_array_string.h5", H5F_ACC_TRUNC );
+ h5::file file( "test_array_string.h5", H5F_ACC_TRUNC );
  h5::group top(file);
 
  h5_write(top,"A",A);

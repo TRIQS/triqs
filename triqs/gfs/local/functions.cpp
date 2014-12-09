@@ -33,7 +33,7 @@ namespace triqs { namespace gfs {
   dcomplex I(0,1);
   auto sh = G.data().shape().front_pop();
   auto Beta = G.domain().beta;
-  local::tail_view t = G(freq_infty());
+  tail_view t = G.singularity();
   if (!t.is_decreasing_at_infinity())  TRIQS_RUNTIME_ERROR<<" density computation : Green Function is not as 1/omega or less !!!";
   const size_t N1=sh[0], N2 = sh[1];
   arrays::array<dcomplex,2> dens_part(sh), dens_tail(sh), dens(sh);
@@ -89,11 +89,11 @@ namespace triqs { namespace gfs {
 
  // compute a tail from the Legendre GF
  // this is Eq. 8 of our paper
- local::tail_view get_tail(gf_const_view<legendre> gl, int size = 10, int omin = -1) {
+ tail_view get_tail(gf_const_view<legendre> gl, int size = 10, int omin = -1) {
 
    auto sh = gl.data().shape().front_pop();
-   local::tail t(sh, size, omin);
-   t.data() = 0.0;
+   tail t(sh, size, omin);
+   t.data()() = 0.0;
 
    for (int p=1; p<=t.order_max(); p++)
      for (auto l : gl.mesh())

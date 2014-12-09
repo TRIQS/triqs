@@ -2,18 +2,12 @@
 #include <triqs/gfs.hpp> 
 using namespace triqs::gfs;
 using namespace triqs::arrays;
+namespace h5 = triqs::h5;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 #include <triqs/gfs/local/functions.hpp> 
 
- // example 
- //template<typename T> using block_gf = gf<block_index, gf<T>>;
- // block_gf<imtime> ... 
- // but not on gcc 4.6 !
- //
-
 int main() {
  try { 
-  triqs::gfs::freq_infty inf;
 
   double beta =1;
 
@@ -47,15 +41,15 @@ int main() {
 
   Gv(om_) << (0.2 + om_ + 2.1);
   TEST(G(0));
-  TEST(G(inf));
+  TEST(G.singularity());
 
   std::cout  <<"-------------lazy assign 2 ------------------"<<std::endl;
 
   G(om_) << 1/(om_ + 2.3);
 
   TEST(G(0));
-  TEST(G(inf));
-  TEST(inverse(G(inf)));
+  TEST(G.singularity());
+  TEST(inverse(G.singularity()));
 
   std::cout  <<"-----------------   3 --------------------"<<std::endl;
 
@@ -63,18 +57,20 @@ int main() {
   TEST( eval(Gv(om_), om_=0) ) ;
 
   // tail 
-  auto  t = G(inf);
+  auto  t = G.singularity();
 
   TEST(t.order_min()); 
   TEST( t( 2) ) ;
 
-  TEST( Gv2(inf)( 2) ) ;
+  TEST( Gv2.singularity()( 2) ) ;
 
   // copy 
   Gc = G;
   TEST( G( 0) ) ;
   TEST( Gc( 0) ) ;
 
+  // error
+  //TEST (G(1.0_j));
 
   // operations on gf
   G3 = G +2* Gc;
@@ -107,10 +103,10 @@ int main() {
   }
 #endif
   TEST( G( 0) ) ;
-  TEST(G(inf)(2));
+  TEST(G.singularity()(2));
 
-  TEST( ( G(inf) + G(inf) )  (2));
-  TEST( ( G(inf) * G(inf) )  (4));
+  TEST( ( G.singularity() + G.singularity() )  (2));
+  TEST( ( G.singularity() * G.singularity() )  (4));
 
   TEST( t(1));
 
@@ -118,7 +114,7 @@ int main() {
   //auto x = local::impl::gf_impl<triqs::gfs::meshes::imfreq, true>::wrap_infty (G.tail_view()) + 2.0;
 
   // test hdf5 
-  H5::H5File file("ess_gf.h5", H5F_ACC_TRUNC );
+  h5::file file("ess_gf.h5", H5F_ACC_TRUNC );
   h5_write(file, "g", G);
 
   //

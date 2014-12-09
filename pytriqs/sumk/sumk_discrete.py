@@ -117,7 +117,7 @@ class SumkDiscrete:
         G.zero()
         tmp,tmp2 = G.copy(),G.copy()
         mupat = mu * numpy.identity(no, numpy.complex_)
-        tmp <<= iOmega_n
+        tmp << iOmega_n
         if field != None : tmp -= field 
         if Sigma_Nargs==0: tmp -= Sigma  # substract Sigma once for all
 
@@ -125,7 +125,7 @@ class SumkDiscrete:
         for w, k, eps_k in izip(*[mpi.slice_array(A) for A in [self.BZ_weights, self.BZ_Points, self.Hopping]]):
 
             eps_hat = epsilon_hat(eps_k) if epsilon_hat else eps_k
-            tmp2 <<= tmp
+            tmp2 << tmp
             tmp2 -= tmp2.n_blocks * [eps_hat - mupat]
 
             if Sigma_Nargs == 1: tmp2 -= Sigma (k)
@@ -135,7 +135,7 @@ class SumkDiscrete:
             tmp2 *= w
             G += tmp2
 
-        G <<= mpi.all_reduce(mpi.world,G,lambda x,y : x+y)
+        G << mpi.all_reduce(mpi.world,G,lambda x,y : x+y)
         mpi.barrier()
 
         return Gres

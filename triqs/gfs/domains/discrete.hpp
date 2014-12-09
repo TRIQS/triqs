@@ -56,11 +56,12 @@ namespace gfs {
 
   bool operator==(discrete_domain const& D) const { return (Nmax == D.Nmax); }
 
+  /*
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, discrete_domain const& d) {
    h5::group gr = fg.create_group(subgroup_name);
    h5_write(gr, "n_max", d.Nmax);
-   // THE NAME ARE MISSING
+   // Do not write the names
   }
 
   /// Read from HDF5
@@ -71,6 +72,7 @@ namespace gfs {
    d = discrete_domain(n);
    // NAME ARE MISSING
   }
+  */
 
   //  BOOST Serialization
   friend class boost::serialization::access;

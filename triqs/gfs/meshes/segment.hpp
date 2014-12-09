@@ -21,6 +21,7 @@
 #pragma once
 #include "./mesh_tools.hpp"
 #include "./linear.hpp"
+#include "../domains/R.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -29,7 +30,7 @@ namespace gfs {
  struct segment_mesh : linear_mesh<R_domain> {
   using B = linear_mesh<R_domain>;
   segment_mesh() = default;
-  segment_mesh(double x_min, double x_max, int n_freq, mesh_kind mk = full_bins) : B(typename B::domain_t(), x_min, x_max, n_freq, mk) {}
+  segment_mesh(double x_min, double x_max, int n_freq) : B(typename B::domain_t(), x_min, x_max, n_freq) {}
  };
 
  //-------------------------------------------------------
