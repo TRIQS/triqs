@@ -42,4 +42,4 @@ __all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier'
            'GfLegendre', 'MeshLegendre',
            'make_gf_from_inverse_fourier',
            'BlockGf','inverse',
-           'delta']
+           'delta','rebinning_tau']

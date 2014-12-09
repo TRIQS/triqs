@@ -421,6 +421,10 @@ g.add_call(signature = "matrix<double>(double tau)", doc = "G(tau) using interpo
 
 module.add_class(g)
 
+module.add_function(name = "rebinning_tau",
+                    signature = "gf<imtime>(gf_view<imtime> g, int new_n_tau)",
+                    doc = "Rebins the data of a GfImTime on a sparser mesh")
+
 ########################
 ##   GfLegendre
 ########################
