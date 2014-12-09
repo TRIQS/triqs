@@ -147,7 +147,7 @@ namespace gfs {
    h5::group gr = fg.create_group(subgroup_name);
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "size", long(m.size()));
-   h5_write(gr, "start_at_0", (m._positive_only?1:0));
+   h5_write(gr, "positive_freq_only", (m._positive_only?1:0));
   }
 
   /// Read from HDF5
@@ -159,6 +159,7 @@ namespace gfs {
    h5_read(gr, "domain", dom);
    h5_read(gr, "size", L);
    // backward compatibility : older file do not have this flags, default is true. 
+   if (gr.has_key("positive_freq_only")) h5_read(gr, "positive_freq_only", s);
    if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", s);
    m = gf_mesh{std::move(dom), L, (s==1)};
   }
