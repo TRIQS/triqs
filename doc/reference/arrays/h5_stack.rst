@@ -3,6 +3,9 @@
 h5::array_stack: stacking arrays or scalars 
 ================================================================
 
+.. warning::
+  Doc in construction!
+
 h5::array_stack writes a sequences of arrays of the same shape (or of scalars) into an hdf5 array with one more dimension, unlimited in the stacking direction.
 
 It is typically used to store a Monte-Carlo data series for later analysis.

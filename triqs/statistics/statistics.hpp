@@ -485,10 +485,10 @@ namespace statistics {
   int B = 2;
   auto Ab=make_binned_series(A,2);
 
+  using std::abs;
   auto t_cor = [&Ab](int bin_size, double var1) {
-   using std::abs;
    double var = abs(empirical_variance(Ab));
-   return .5 * var / var1 * bin_size;
+   return .5 * (var / var1 * bin_size-1);
   };
 
   double autocorr_time = t_cor(B, var1);
@@ -505,8 +505,8 @@ namespace statistics {
    autocorr_time = t_cor_new;
    //std::cout << B << "\t" << t_cor_new << "\t" << slope << std::endl;
   }
-  if (t.size()>0)  {return empirical_average(t);}
-  else{ std::cout << "autocorrelation time not converged!!" << std::endl; return autocorr_time;}
+  if (t.size()>0)  {return abs(empirical_average(t));}
+  else{ std::cout << "autocorrelation time not converged!!" << std::endl; return abs(autocorr_time);}
  }
 } // namespace statistics
 } // triqs

@@ -1,5 +1,5 @@
-Tools for statistical analysis: binning and jackknife
-======================================================
+Tools for statistical analysis: binning, jackknife and autocorrelation time
+=============================================================================
 
 Introduction
 -------------
@@ -53,11 +53,11 @@ An object has the concept of a TimeSeries if it has the following member functio
 
 and the following member type:
 
-+-------------+------------------------------------------+
-|  Name       | Property                                 |
-+=============+==========================================+
-|  value_type | belong to an algebra (has +,- operators) |
-+-------------+------------------------------------------+
++-------------+--------------------------------------------+
+|  Name       | Property                                   |
++=============+============================================+
+|  value_type | belong to an algebra (has +,-,* operators) |
++-------------+--------------------------------------------+
 
 Observable
 ~~~~~~~~~~~
@@ -76,8 +76,10 @@ Example
 --------
 
 .. triqs_example:: ./contents_0.cpp
+
 .. toctree::
    binning
    jackknife
    autocorrelation_time   
+   green_function
    ising2d
