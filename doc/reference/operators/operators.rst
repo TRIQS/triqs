@@ -122,25 +122,29 @@ Returns the Hermitian conjugate of ``op``.
 Iteration over monomials
 ------------------------
 
-The aim of ``many_body_operator`` is to have a class, which allows to encode different operator expressions in C++ in the form closest to the mathematical notation.
-But at the same time, one would like to explicitly extract the structure of a defined operator (to calculate its matrix elements, for example).
+The aim of ``many_body_operator`` is to have a class allowing to encode different operator expressions in C++ in the form closest to the mathematical notation.
+At the same time, one would like to explicitly extract the structure of a defined operator (to calculate its matrix elements, for instance).
 For this purpose ``many_body_operator`` exposes the following part of its interface:
+
+- ``using indices_t = std::vector<boost::variant<int, std::string>>;``
+    A vector of indices. Each index is a variant type with two options: ``int`` or ``std::string``.
 
 - ``struct canonical_ops_t``
     This structure represents an elementary operator (basis element of the algebra).
     ::
 
         struct canonical_ops_t { 
-            bool dagger;    // true = creation, false = annihilation
-            std::tuple<IndexTypes...> indices; // values of indices
+            bool dagger;       // true = creation, false = annihilation
+            indices_t indices; // values of indices
+            ...
         };
 
-- ``typedef ... monomial_t;``
-    An ordered sequence of elementary operators (monomial).
+- ``using monomial_t = std::vector<canonical_ops_t>;``
+    A *normally ordered* sequence of elementary operators (*monomial*).
 
-- ``typedef ... const_iterator;``
+- ``using const_iterator = ...;``
     A bidirectional constant iterator to the list of monomials.
-    It can be dereferenced into a special proxy object, which carries two data members: ``coef`` and ``monomial``.
+    It can be dereferenced into a special proxy object, which carries two data members: ``scalar_t coef`` and ``monomial_t const& monomial``.
 
 - ``begin()``/``cbegin()``
     Returns ``const_iterator`` pointing at the first monomial.
@@ -150,17 +154,17 @@ For this purpose ``many_body_operator`` exposes the following part of its interf
 
 Here is an example of use: ::
 
-    typedef many_body_operator<double> Op;
+    using Op = many_body_operator<double>;
     Op H = -0.5*(n(0) + n(1)) + n(0)*n(1);
 
     for(Op::const_iterator it = H.begin(); it != H.end(); ++it){
         double coef = it->coef;
-        Op::monomial_t monomial = it->monomial;
+        auto monomial = it->monomial;
 
         std::cout << "Coefficient: " << coef << std::endl;
         std::cout << "Monomial: " << std::endl;
         for(auto const& o : monomial){
-            std::cout << "dagger: " << o.dagger << " index: " << std::get<0>(o.indices) << " "; // only 1 index per elementary operator 
+            std::cout << "dagger: " << o.dagger << " index: " << o.indices[0] << " "; // only 1 index per elementary operator
         }
         std::cout << std::endl;
     }
@@ -184,21 +188,56 @@ Serialization & HDF5
 Objects of ``many_body_operator`` are ready to be serialized/deserialized with Boost.Serialization.
 It also allows to transparently send/receive them through Boost.MPI calls.
 
-``many_body_operator`` is a fully HDF-compliant class.
+.. warning::
+
+    Storing ``many_body_operator`` in HDF5 is not yet implemented.
 
 Python
 ------
 
 .. highlight:: python
 
-This class can be cimported from Cython: ::
+Python wrapper for ``many_body_operator`` class is called ``Operator``. It is found in module ``pytriqs.operators.operators`` : ::
 
-    from many_body_operator cimport many_body_operator
+    from pytriqs.operators.operators import Operator, c, c_dag, n
 
-It corresponds to a specialized version of ``many_body_operator``: ``double`` as the scalar type and two indices of type ``std::string``.
-There are also an extension type ``Operator`` and three factory function to be imported from Python: ::
-
-    from many_body_operator import Operator, C, C_dag, N
-
+It corresponds to a specialized version of ``many_body_operator``: ``double`` as the scalar type and two indices.
 All arithmetic operations implemented in C++ are also available in Python as well as special methods ``__repr__()`` and ``__str__()``.
-The factory functions accept two arguments of any types and convert them into strings using Python operator ``str()``.
+
+.. runblock:: python
+
+    from pytriqs.operators.operators import *
+    from itertools import product
+
+    C_list = [c(1,0),c(2,0)]
+    Cd_list = [c_dag(1,0), c_dag(2,0)]
+
+    print "Anticommutators:"
+    for Cd,C in product(Cd_list,C_list):
+        print "{", Cd, ",", C, "} =", Cd*C + C*Cd
+
+    print "Commutators:"
+    for Cd,C in product(Cd_list,C_list):
+        print "[", Cd, ",", C, "] =", Cd*C - C*Cd
+
+    x = c('A',0)
+    y = c_dag('B',0)
+    print "x =", x
+    print "y =", y
+
+    print "Algebra:"
+
+    print "-x =", -x
+    print "x + 2.0 =", x + 2.0
+    print "2.0 + x =", 2.0 + x
+    print "x - 2.0 =", x - 2.0
+    print "2.0 - x =", 2.0 - x
+    print "3.0*y =", 3.0*y
+    print "y*3.0 =", y*3.0
+    print "x + y =", x + y
+    print "x - y =", x - y
+    print "(x + y)*(x - y) =", (x + y)*(x - y)
+
+    print "x*x is zero:", (x*x).is_zero()
+    print "dagger(x) = ", dagger(x)
+
