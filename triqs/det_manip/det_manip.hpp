@@ -417,7 +417,7 @@ namespace triqs { namespace det_manip {
      assert(i0!=i1); assert(j0!=j1);assert(i0<=N);  assert(j0<=N); assert(i0>=0); assert(j0>=0);
      assert(i1<=N+1);  assert(j1<=N+1); assert(i1>=0); assert(j1>=0);
 
-     if (N >= Nmax) reserve(2*Nmax); // check this resize ... we add 2 lines
+     if (N >= Nmax-1) reserve(2*Nmax);
      last_try = 10;
      w2.i[0]=i0;w2.i[1]=i1; w2.j[0]=j0;w2.j[1]=j1;
      w2.x[0] = x0;w2.y[0] = y0; w2.x[1] = x1;w2.y[1] = y1;
