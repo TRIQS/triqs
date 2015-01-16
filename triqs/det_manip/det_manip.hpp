@@ -743,8 +743,9 @@ namespace triqs { namespace det_manip {
       for (size_t j=0; j<N;j++)
        res(i,j) = f(x_values[i], y_values[j]);
      res = inverse(res); 
-     double r = max_element (abs(res - mat_inv(range(0,N),range(0,N))));
-     double r2= max_element (abs(res + mat_inv(range(0,N),range(0,N))));
+     range R(0,N);
+     double r = max_element (abs(res - mat_inv(R,R)));
+     double r2= max_element (abs(res + mat_inv(R,R)));
      //value_type r = max_element (abs(res - mat_inv(range(0,N),range(0,N))));
      //value_type r2= max_element (abs(res + mat_inv(range(0,N),range(0,N))));
      //#define TRIQS_DET_MANIP_VERBOSE_CHECK
@@ -763,8 +764,9 @@ namespace triqs { namespace det_manip {
       << "\n   precision*max(abs(M^-1 + M^-1_true)) = "<< (relative ? precision_warning * r2 : precision_warning)<< " "<< std::endl;
      if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! " ;
 
-     // since we have the proper inverse, replace the matrix 
-     mat_inv(range(0,N),range(0,N)) = res;
+     // since we have the proper inverse, replace the matrix and the det
+     mat_inv(R,R) = res;
+     det = arrays::determinant(mat_inv(R,R));
     }
 
     //------------------------------------------------------------------------------------------
