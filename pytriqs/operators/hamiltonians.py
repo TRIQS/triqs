@@ -7,6 +7,8 @@ def h_loc_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
+        H_dump_file.write("Slater Hamiltonian:" + '\n')
+
     H = Operator()
     mkind = get_mkind(off_diag,map_operator_structure)
     for s1, s2 in product(spin_names,spin_names):
@@ -20,10 +22,10 @@ def h_loc_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
 
             # Dump terms of H
             if H_dump and not H_term.is_zero():
-                H_dump_file.write(mkind(s1,a1)[0] + '\t')
-                H_dump_file.write(mkind(s2,a2)[0] + '\t')
-                H_dump_file.write(mkind(s2,a3)[0] + '\t')
-                H_dump_file.write(mkind(s1,a4)[0] + '\t')
+                H_dump_file.write('%s'%(mkind(s1,a1),) + '\t')
+                H_dump_file.write('%s'%(mkind(s2,a2),) + '\t')
+                H_dump_file.write('%s'%(mkind(s2,a3),) + '\t')
+                H_dump_file.write('%s'%(mkind(s1,a4),) + '\t')
                 H_dump_file.write(str(U_val.real) + '\n')
 
     return H
@@ -32,10 +34,13 @@ def h_loc_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
+        H_dump_file.write("Kanamori Hamiltonian:" + '\n')
+
     H = Operator()
     mkind = get_mkind(off_diag,map_operator_structure)
 
     # density terms:
+    if H_dump: H_dump_file.write("Density-density terms:" + '\n')
     for s1, s2 in product(spin_names,spin_names):
         for a1, a2 in product(orb_names,orb_names):
             if (s1==s2):
@@ -48,12 +53,12 @@ def h_loc_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
 
             # Dump terms of H
             if H_dump and not H_term.is_zero():
-                H_dump_file.write("Density-density terms" + '\n')
-                H_dump_file.write(mkind(s1,a1)[0] + '\t')
-                H_dump_file.write(mkind(s2,a2)[0] + '\t')
+                H_dump_file.write('%s'%(mkind(s1,a1),) + '\t')
+                H_dump_file.write('%s'%(mkind(s2,a2),) + '\t')
                 H_dump_file.write(str(U_val) + '\n')
 
     # spin-flip terms:
+    if H_dump: H_dump_file.write("Spin-flip terms:" + '\n')
     for s1, s2 in product(spin_names,spin_names):
         if (s1==s2):
             continue
@@ -65,14 +70,12 @@ def h_loc_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
 
             # Dump terms of H
             if H_dump and not H_term.is_zero():
-                H_dump_file.write("Spin-flip terms" + '\n')
-                H_dump_file.write(mkind(s1,a1)[0] + '\t')
-                H_dump_file.write(mkind(s2,a2)[0] + '\t')
-                H_dump_file.write(mkind(s2,a3)[0] + '\t')
-                H_dump_file.write(mkind(s1,a4)[0] + '\t')
+                H_dump_file.write('%s'%(mkind(s1,a1),) + '\t')
+                H_dump_file.write('%s'%(mkind(s2,a2),) + '\t')
                 H_dump_file.write(str(-J_hund) + '\n')
 
     # pair-hopping terms:
+    if H_dump: H_dump_file.write("Pair-hopping terms:" + '\n')
     for s1, s2 in product(spin_names,spin_names):
         if (s1==s2):
             continue
@@ -84,11 +87,8 @@ def h_loc_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
 
             # Dump terms of H
             if H_dump and not H_term.is_zero():
-                H_dump_file.write("Pair-hopping terms" + '\n')
-                H_dump_file.write(mkind(s1,a1)[0] + '\t')
-                H_dump_file.write(mkind(s2,a2)[0] + '\t')
-                H_dump_file.write(mkind(s2,a3)[0] + '\t')
-                H_dump_file.write(mkind(s1,a4)[0] + '\t')
+                H_dump_file.write('%s'%(mkind(s1,a1),) + '\t')
+                H_dump_file.write('%s'%(mkind(s2,a2),) + '\t')
                 H_dump_file.write(str(-J_hund) + '\n')
 
     return H
@@ -97,8 +97,11 @@ def h_loc_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
+        H_dump_file.write("Density-density Hamiltonian:" + '\n')
+
     H = Operator()
     mkind = get_mkind(off_diag,map_operator_structure)
+    if H_dump: H_dump_file.write("Density-density terms:" + '\n')
     for s1, s2 in product(spin_names,spin_names):
         for a1, a2 in product(orb_names,orb_names):
             if (s1==s2):
@@ -111,8 +114,8 @@ def h_loc_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
 
             # Dump terms of H
             if H_dump and not H_term.is_zero():
-                H_dump_file.write(mkind(s1,a1)[0] + '\t')
-                H_dump_file.write(mkind(s2,a2)[0] + '\t')
+                H_dump_file.write('%s'%(mkind(s1,a1),) + '\t')
+                H_dump_file.write('%s'%(mkind(s2,a2),) + '\t')
                 H_dump_file.write(str(U_val) + '\n')
 
     return H
