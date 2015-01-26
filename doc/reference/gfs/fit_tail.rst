@@ -1,6 +1,10 @@
 Fitting the tail of a Matsubara Green's function
 #################################################
 
+.. warning::
+
+  To be continued.
+
 API
 ~~~~~
 
