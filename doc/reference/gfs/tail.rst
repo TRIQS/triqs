@@ -112,7 +112,7 @@ following way:
    fit the data
 
 In the following example, the Green's function ``g`` defined above is
-fitted between :math:`\omega_10` and :math:`\omega_20` with fixed
+fitted between :math:`\omega_{10}` and :math:`\omega_{20}` with fixed
 coefficients :math:`(\mathbf{a}_{-1})_{00} = 0`\ ,
 :math:`(\mathbf{a}_{0})_{00} = 0` and :math:`(\mathbf{a}_{1})_{00} = 1`
 
