@@ -14,7 +14,6 @@ various Green functions.
    gf_and_view
    gf_special
    clef
-   fourier
    concepts
    implementation_notes
 

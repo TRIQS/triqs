@@ -1,13 +1,10 @@
 .. _hdf5_tut_ex2:
 
 
-Example 2: A Green function
+Example 2: Storing Green's functions
 ----------------------------------------------
 
-What about more complex objects ?
-The good news is that **hdf-compliant** objects can be stored easily as well.
-
-We can store a Green function in an hdf5 file:
+What about more complex objects? The good news is that **hdf-compliant** objects, such as Green's functions, can be stored easily as well:
 
 .. runblock:: python
 
@@ -36,9 +33,9 @@ Of course, we can retrieve G as easily:
 
    # ... ok now I can work with G
 
-The structure of the HDF file is this time ::
+This time, the structure of the HDF file is ::
 
- MAC:~>h5ls -r  myfile.h5 
+ $>h5ls -r  myfile.h5 
  /                        Group
  /g1                      Group
  /g1/Data                 Dataset {2, 2, 1000}

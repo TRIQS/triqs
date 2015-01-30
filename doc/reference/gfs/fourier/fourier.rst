@@ -1,13 +1,69 @@
 .. highlight:: c
 
-Fourier transforms
-###################
+Fourier and Legendre transforms
+#################################
 
 The Fourier transforms from real and imaginary frequencies to times, and inverse, are currently implemented,
 along with the analogous transformation from the Legendre expansion to imaginary time and frequencies.
 
-Synopsis 
-=========
+
+.. warning::
+   This doc needs to be overhauled.
+
+
+Mathematical definition
+=========================
+
+For real time/frequency:
+
+    .. math:: \tilde G(\omega)=\int_{-\infty}^\infty dt G(t)e^{i\omega t}
+
+    .. math:: G(t)=\int_{-\infty}^\infty \frac{d\omega}{2\pi} \tilde G(\omega)e^{-i\omega t}
+
+For Matsubara (imaginary) time/frequency:
+
+    .. math:: \tilde G(i\omega_n)=\int_{0}^\beta d\tau G(t)e^{i\omega_n \tau}
+
+    .. math:: G(\tau)=\sum_{n=-\infty}^\infty \frac{1}{\beta} \tilde G(i\omega_n)e^{-i\omega_n \tau}
+
+The :math:`\omega_n`'s are :math:`\frac{(2n+1)\pi}{\beta}` for fermions, :math:`\frac{2n\pi}{\beta}` for bosons (as :math:`G(\tau+\beta)=-G(\tau)` for fermions, :math:`G(\tau)` for bosons). 
+
+
+
+Python interface
+============================================
+
+Here are the different ways to transform Green's functions of one type into a different type.
+
+Time to frequency
+-----------------
+
+The command ``Fourier`` (``InverseFourier``) allows you to initialize a block
+Green's function defined in frequency (time) from a block Green's function defined
+in time (frequency). Here's a simple example:
+
+.. plot:: reference/gfs/fourier/fourier.py
+   :include-source:
+   :scale: 70
+
+The same command can be used for real-time <-> real-frequency transformations.
+
+Legendre to Matsubara
+---------------------
+
+The commands ``MatsubaraToLegendre`` and ``LegendreToMatsubara`` allow to
+initialize a Matsubara Green's function (either in imaginary time or in
+imaginary frequencies) from a Legendre Green's function and conversely.
+Example:
+
+.. plot:: reference/gfs/py/legendre.py
+   :include-source:
+   :scale: 70
+
+
+
+C++ interface
+==============
 
 **Synopsis** :: 
 
@@ -67,27 +123,10 @@ We therefore use *a view* as LHS::
 In the case where we want to create a *new* container from the fourier transform of gt, 
 we can use the function make_gf_from_fourier.
 
-Example
-=========
+A c++ example
+==============
 
 .. triqs_example:: ./fourier_0.cpp
-Convention 
-===========
-
-For real time/frequency:
-
-    .. math:: \tilde G(\omega)=\int_{-\infty}^\infty dt G(t)e^{i\omega t}
-
-    .. math:: G(t)=\int_{-\infty}^\infty \frac{d\omega}{2\pi} \tilde G(\omega)e^{-i\omega t}
-
-For Matsubara (imaginary) time/frequency:
-
-    .. math:: \tilde G(i\omega_n)=\int_{0}^\beta d\tau G(t)e^{i\omega_n \tau}
-
-    .. math:: G(\tau)=\sum_{n=-\infty}^\infty \frac{1}{\beta} \tilde G(i\omega_n)e^{-i\omega_n \tau}
-
-The :math:`\omega_n`'s are :math:`\frac{(2n+1)\pi}{\beta}` for fermions, :math:`\frac{2n\pi}{\beta}` for bosons (as :math:`G(\tau+\beta)=-G(\tau)` for fermions, :math:`G(\tau)` for bosons). 
-
 
 
 .. toctree::

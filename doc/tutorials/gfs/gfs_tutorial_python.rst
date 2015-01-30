@@ -1,7 +1,7 @@
 .. index:: Green's functions
 
-A little tutorial
-#########################
+Green's functions manipulations in Python
+#########################################
 
 In this first part, we present a couple of examples in the form of a tutorial.
 The full reference is presented in the next sections.
@@ -17,7 +17,7 @@ As a first example, we construct and plot the following Matsubara Green's functi
 
 This is done with the code :
 
-.. plot:: reference/gfs/py/example.py
+.. plot:: tutorials/gfs/example.py
    :include-source:
    :scale: 50
 
@@ -69,7 +69,7 @@ construct the corresponding 2x2 Green's function:
 
 This is done with the code: 
 
-.. plot:: reference/gfs/py/impinbath.py
+.. plot:: tutorials/gfs/impinbath.py
    :include-source:
    :scale: 70
 

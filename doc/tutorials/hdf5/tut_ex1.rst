@@ -1,8 +1,7 @@
-
 .. _hdf5_tut_ex1:
 
-Example 1: A basic example
---------------------------------
+Example 1: Storing basic data types
+----------------------------------------
 
 The simplest way to interact with HDF5 files is to use the TRIQS HDFArchive class, which 
 represents the tree structure of the file in a way similar to a dictionary.
@@ -30,7 +29,7 @@ Run this and say ::
  /S/b                     Dataset {3}
  /mu                      Dataset {SCALAR}
  
-This show the tree structure of the file.  We see that :
+This shows the tree structure of the file.  We see that :
 
 * `mu` is stored at the root `/`
 * `S` is a subgroup, containing `a` and `b`.

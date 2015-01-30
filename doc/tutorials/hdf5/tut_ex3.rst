@@ -1,7 +1,7 @@
 
 .. _hdf5_tut_ex3:
 
-Example 3: Use the dictionary interface of the archive
+Example 3: Using the dictionary interface of the archive
 --------------------------------------------------------------------
 
 The archive is like a dictionary, persistent on disk.

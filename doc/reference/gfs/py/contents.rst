@@ -33,5 +33,4 @@ and then proceed with the general Green's function and its block structure.
 
   tutorial
   block
-  transforms
   full

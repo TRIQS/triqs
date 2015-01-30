@@ -27,9 +27,11 @@ Learn how to use TRIQS step by step, both in Python and c++ !
 .. toctree::
    :maxdepth: 1
 
-   tutorials/gfs_tutorial
-   tutorials/array_tutorial
-   tutorials/det_manip_tutorial
+   tutorials/gfs/gfs_tutorial_python
+   tutorials/gfs/gfs_tutorial_cpp
+   tutorials/arrays/array_tutorial
+   tutorials/det_manip/det_manip_tutorial
+   tutorials/hdf5/contents
 
 
 Reference manual 

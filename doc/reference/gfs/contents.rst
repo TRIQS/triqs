@@ -12,4 +12,5 @@ Green's functions
 
    py/contents
    c++/contents
-   tail
+   fourier/fourier
+   tail/tail

@@ -16,7 +16,7 @@ The Green's function is generated using classes of the ``gf.local`` module by se
 :math:`\left[\hat{G}^\mathrm{s+d}\right]^{-1}` and inverting it.
 Finally, the obtained bath and impurity densities of states are plotted using the TRIQS function ``oplot``: 
 
-.. plot:: reference/gfs/py/impinbath.py
+.. plot:: tutorials/gfs/impinbath.py
    :include-source:
    :scale: 70
 
