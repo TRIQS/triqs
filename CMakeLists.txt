@@ -111,6 +111,9 @@ if (PythonSupport)
   message (FATAL_ERROR "Cannot find python. You can use -DWithoutPython to build a pure C++ version.")
  endif()
 
+ # added from issue 181
+ separate_arguments(PYTHON_EXTRA_LIBS)
+
  set (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})
  set (TRIQS_INCLUDE_PYTHON ${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
 
