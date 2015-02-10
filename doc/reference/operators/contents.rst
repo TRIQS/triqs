@@ -1,33 +1,20 @@
-.. module:: pytriqs.random 
+.. index:: Second-quantization operators
+
+.. module:: pytriqs.operators
 
 .. _operators:
 
-Many-body operators
-===================
+Second-quantization operators and many-body Hamiltonians
+========================================================
 
-The TRIQS solvers need to know several operators in order to solve the impurity
-problem. For example, they must know what the local Hamiltonian is, but also its
-quantum numbers (that can be used to improve the speed), possibly some
-operators to be averaged, aso.
+The TRIQS-based solvers need to know several operators in order to solve the impurity
+problem. For example, they must know what the local Hamiltonian is, and optionally its
+quantum numbers (that can be used to improve the speed). Possibly some operators of observables to be measured, also.
 
-In order to deal with these objects, TRIQS provides a class that allows to
-manipulate operators.
+In order to deal with these objects, TRIQS provides a class that allows to manipulate operators.
 
-A simple example
------------------
+.. toctree::
+   :maxdepth: 2
 
-.. runblock:: python
-
-    from pytriqs.operators import *
-    H = c('up',1) * c_dag('up',2) + c('up',2) * c_dag('up',1)
-    print H
-    print H - H.dagger()
-    print anti_commutator(c('up'),c_dag('up'))
-    print anti_commutator(c('up'),0.5*c_dag('down'))
-
-
-Full reference
-------------------------
-
-.. autoclass:: pytriqs.operators.Operator
-  :members:
+   operators
+   hamiltonians
