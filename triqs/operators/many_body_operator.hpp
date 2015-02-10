@@ -113,6 +113,12 @@ namespace utility {
    monomial_t const& monomial;
    scalar_t coef;
    _cdress(typename monomials_map_t::const_iterator _it) : monomial(_it->first), coef(_it->second) {}
+   operator std::pair<std::vector<std::pair<bool,indices_t>>,scalar_t>() {
+    std::vector<std::pair<bool,indices_t>> tmp_monomial;
+    tmp_monomial.reserve(monomial.size());
+    for(auto cop : monomial) tmp_monomial.emplace_back(cop.dagger,cop.indices);
+    return {tmp_monomial,coef};
+   }
   };
   using const_iterator = utility::dressed_iterator<typename monomials_map_t::const_iterator, _cdress>;
 
