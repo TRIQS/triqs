@@ -111,8 +111,12 @@ if (PythonSupport)
   message (FATAL_ERROR "Cannot find python. You can use -DWithoutPython to build a pure C++ version.")
  endif()
 
- # added from issue 181
+ # added from issue 181. Does not work on Mac, because of -framework CoreFoundation.
+ MESSAGE( ${PYTHON_EXTRA_LIBS})
+ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  separate_arguments(PYTHON_EXTRA_LIBS)
+endif()
+MESSAGE( ${PYTHON_EXTRA_LIBS})
 
  set (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})
  set (TRIQS_INCLUDE_PYTHON ${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
