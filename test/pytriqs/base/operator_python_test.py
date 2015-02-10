@@ -40,3 +40,6 @@ N = n(0,'up') + n(0,'dn')
 N3 = N*N*N
 print "N =", N
 print "N^3 =", N3
+
+print "Monomials of N^3:"
+for monomial, coef in N3: print monomial, coef
