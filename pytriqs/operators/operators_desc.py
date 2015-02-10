@@ -3,8 +3,9 @@ from wrap_generator import *
 # The many_body_operators module
 module = module_(full_name = "pytriqs.operators.operators", doc = "Doc to be written")
 module.add_include("<triqs/operators/many_body_operator.hpp>")
-module.add_include("<triqs/arrays.hpp>")
-module.add_include("<triqs/python_tools/converters/string.hpp>")
+module.add_include("<triqs/python_tools/converters/pair.hpp>")
+module.add_include("<triqs/python_tools/converters/vector.hpp>")
+module.add_include("<triqs/python_tools/converters/variant.hpp>")
 module.add_using("namespace triqs::utility")
 
 
@@ -19,6 +20,7 @@ op = class_(
 
 op.add_constructor(signature="()", doc="create zero operator")
 op.add_method("bool is_zero()", doc = "Boolean : is the operator null ?")
+op.add_iterator(c_cast_type="std::pair<std::vector<std::pair<bool,many_body_operator<double>::indices_t>>,double>")
 
 module.add_class(op)
 
