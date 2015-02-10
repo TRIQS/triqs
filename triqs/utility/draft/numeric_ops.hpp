@@ -23,12 +23,11 @@
 #include <complex>
 #include <limits>
 #include <type_traits>
+#include <triqs/utility/c14.hpp>
 #include <triqs/utility/is_complex.hpp>
 
 namespace triqs {
 namespace utility {
-
-using triqs::is_complex;
 
 // Useful numeric operations which have to be implemented separately for different categories of builtin types.
 
@@ -36,18 +35,18 @@ using triqs::is_complex;
 // Zero value tests
 //
 template<typename T> // Integral types
-typename std::enable_if<std::is_integral<typename std::decay<T>::type>::value,bool>::type is_zero(T && x) {
+typename std14::enable_if_t<std::is_integral<std14::decay_t<T>>::value,bool> is_zero(T && x) {
  return x==0;
 }
 
 template<typename T> // Floating-point types
-typename std::enable_if<std::is_floating_point<typename std::decay<T>::type>::value,bool>::type is_zero(T && x,
-             typename std::decay<T>::type tolerance = 100*std::numeric_limits<typename std::decay<T>::type>::epsilon()) {
+typename std14::enable_if_t<std::is_floating_point<std14::decay_t<T>>::value,bool> is_zero(T && x,
+             std14::decay_t<T> tolerance = 100*std::numeric_limits<std14::decay_t<T>>::epsilon()) {
  return std::abs(x) < tolerance;
 }
 
 template<typename T> // std::complex
-typename std::enable_if<is_complex<typename std::decay<T>::type>::value,bool>::type is_zero(T && x) {
+typename std14::enable_if_t<triqs::is_complex<std14::decay_t<T>>::value,bool> is_zero(T && x) {
  return is_zero(std::real(x)) && is_zero(std::imag(x));
 }
 
@@ -55,12 +54,12 @@ typename std::enable_if<is_complex<typename std::decay<T>::type>::value,bool>::t
 // Complex conjugate
 //
 template<typename T> // Integral types
-typename std::enable_if<std::is_integral<typename std::decay<T>::type>::value,typename std::decay<T>::type>::type _conj(T && x) { return x; }
+typename std14::enable_if_t<std::is_integral<std14::decay_t<T>>::value,std14::decay_t<T>> _conj(T && x) { return x; }
 
 template<typename T> // Floating-point types
-typename std::enable_if<std::is_floating_point<typename std::decay<T>::type>::value,typename std::decay<T>::type>::type _conj(T && x) { return x; }
+typename std14::enable_if_t<std::is_floating_point<std14::decay_t<T>>::value,std14::decay_t<T>> _conj(T && x) { return x; }
 
 template<typename T> // std::complex
-typename std::enable_if<is_complex<typename std::decay<T>::type>::value,typename std::decay<T>::type>::type _conj(T && x) { return std::conj(x); }
+typename std14::enable_if_t<triqs::is_complex<std14::decay_t<T>>::value,std14::decay_t<T>> _conj(T && x) { return std::conj(x); }
 
 }}
