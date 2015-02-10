@@ -25,3 +25,6 @@ add_triqs_test_txt(gf_inplace_112)
 
 # Bug fix #134
 add_triqs_test_txt(gf_transpose)
+
+# Add evaluator for g
+add_triqs_test_txt(gf_eval)

@@ -268,6 +268,12 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
                    getter = cfunction(calling_pattern="int result = get_target_shape(self_c)[1]", signature = "int()"),
                    doc = "[Deprecated] equivalent to target_shape[1]")
 
+    # ()
+    g.add_method(name = "__call__",
+                 calling_pattern = "matrix<dcomplex> result = self_c(n)",
+                 signature = "matrix<dcomplex>(double n)",
+                 doc = "Call operator")
+
     # []
     g.add_getitem(signature = "gf_view<%s>(range r1, range r2)"%c_tag,
                   calling_pattern= "auto result = slice_target(self_c,r1,r2)",
