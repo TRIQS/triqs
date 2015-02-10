@@ -9,7 +9,7 @@
 using namespace triqs::hilbert_space;
 
 int main() {
-
+ try { 
   std::cout << std::endl << "Part I: the fundamental_operator_set class" << std::endl << std::endl;
 
   fundamental_operator_set f1(std::vector<int>(2,4));
@@ -44,8 +44,8 @@ int main() {
   std::cout << "fock state 256 is here: " << h.has_state(256) << std::endl;
   std::cout << "fock state for index 120 = " << h.get_fock_state(120) << std::endl;
   std::cout << "index of fock state 120 = " << h.get_state_index(h.get_fock_state(120)) << std::endl;
-  std::cout << "fock state for vacuum = " << h.get_fock_state(f1,{}) << std::endl;
-  std::cout << "fock state for c^+(0,1)c^+(1,3)|vac> = " << h.get_fock_state(f1,{{0,1},{1,3}}) << std::endl;
+  std::cout << "fock state for vacuum = " << h.get_fock_state(f1, std::set<fundamental_operator_set::indices_t>{}) << std::endl;
+  std::cout << "fock state for c^+(0,1)c^+(1,3)|vac> = " << h.get_fock_state(f1,std::set<fundamental_operator_set::indices_t>{{0,1},{1,3}}) << std::endl;
   hilbert_space h2;
   h2 = h;
   std::cout << "dim = " << h.size() << std::endl;
@@ -184,7 +184,10 @@ int main() {
   auto proj_st = project<state<sub_hilbert_space,double,false>>(st,hs);
   std::cout << "projected state: " << proj_st << std::endl;
   }
-
-  return 0;
+ }
+ catch(std::exception const & e) { 
+  std::cout  << e.what() << std::endl;
+ }
+ return 0;
 
 }

@@ -222,6 +222,8 @@ std::ostream& operator<<(std::ostream& os, state<HilbertSpace, ScalarType, Based
  return os;
 }
 
+#define TRIQS_WORKAROUND_CLANG34_BUG
+#ifndef TRIQS_WORKAROUND_CLANG34_BUG
 template<typename TargetState, typename OriginalState>
 TargetState project(OriginalState const& psi, hilbert_space const& proj_hs) {
  TargetState proj_psi(proj_hs);
@@ -242,5 +244,40 @@ TargetState project(OriginalState const& psi, sub_hilbert_space const& proj_hs) 
  });
  return proj_psi;
 }
+#else
+// workaround for clang 3.4. Bug 
+// Not needed for clang 3.5
+template<typename A, typename B> struct __lambda1 { 
+ A& proj_psi; B const & hs;
+ template<typename VT> void operator()(int i, VT const & v) { 
+ proj_psi(hs.get_fock_state(i)) = v; 
+ }
+};
+template<typename A, typename B, typename C> struct __lambda2 { 
+ A& proj_psi; B const & proj_hs; C const & hs;
+ template<typename VT> void operator()(int i, VT const & v) { 
+  auto f = hs.get_fock_state(i);
+  if (proj_hs.has_state(f)) proj_psi(proj_hs.get_state_index(f)) = v;
+ }
+};
 
+template<typename TargetState, typename OriginalState>
+TargetState project(OriginalState const& psi, hilbert_space const& proj_hs) {
+ TargetState proj_psi(proj_hs);
+ auto const& hs = psi.get_hilbert();
+ auto f = __lambda1<TargetState,hilbert_space> {proj_psi, hs};
+ foreach(psi, f);
+ return proj_psi;
+}
+
+template<typename TargetState, typename OriginalState>
+TargetState project(OriginalState const& psi, sub_hilbert_space const& proj_hs) {
+ TargetState proj_psi(proj_hs);
+ auto const& hs = psi.get_hilbert();
+ auto f = __lambda2<TargetState,sub_hilbert_space,hilbert_space> {proj_psi, proj_hs, hs};
+ foreach(psi,f);
+ return proj_psi;
+}
+
+#endif
 }}
