@@ -35,17 +35,17 @@ namespace utility {
 // Zero value tests
 //
 template<typename T> // Integral types
-std14::enable_if_t<std::is_integral<T>::value,bool> is_zero(T x) {
+std14::enable_if_t<std::is_integral<T>::value,bool> is_zero(T const& x) {
  return x==0;
 }
 
 template<typename T> // Floating-point types
-std14::enable_if_t<std::is_floating_point<T>::value,bool> is_zero(T x, T tolerance = 100*std::numeric_limits<T>::epsilon()) {
+std14::enable_if_t<std::is_floating_point<T>::value,bool> is_zero(T const& x, T tolerance = 100*std::numeric_limits<T>::epsilon()) {
  return std::abs(x) < tolerance;
 }
 
 template<typename T> // std::complex
-std14::enable_if_t<triqs::is_complex<T>::value,bool> is_zero(T x) {
+std14::enable_if_t<triqs::is_complex<T>::value,bool> is_zero(T const& x) {
  return is_zero(std::real(x)) && is_zero(std::imag(x));
 }
 
@@ -53,12 +53,12 @@ std14::enable_if_t<triqs::is_complex<T>::value,bool> is_zero(T x) {
 // Complex conjugate
 //
 template<typename T> // Integral types
-std14::enable_if_t<std::is_integral<T>::value,T> _conj(T x) { return x; }
+std14::enable_if_t<std::is_integral<T>::value,T> _conj(T const& x) { return x; }
 
 template<typename T> // Floating-point types
-std14::enable_if_t<std::is_floating_point<T>::value,T> _conj(T x) { return x; }
+std14::enable_if_t<std::is_floating_point<T>::value,T> _conj(T const& x) { return x; }
 
 template<typename T> // std::complex
-std14::enable_if_t<triqs::is_complex<T>::value,T> _conj(T x) { return std::conj(x); }
+std14::enable_if_t<triqs::is_complex<T>::value,T> _conj(T const& x) { return std::conj(x); }
 
 }}
