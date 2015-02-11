@@ -35,18 +35,17 @@ namespace utility {
 // Zero value tests
 //
 template<typename T> // Integral types
-typename std14::enable_if_t<std::is_integral<std14::decay_t<T>>::value,bool> is_zero(T && x) {
+std14::enable_if_t<std::is_integral<T>::value,bool> is_zero(T x) {
  return x==0;
 }
 
 template<typename T> // Floating-point types
-typename std14::enable_if_t<std::is_floating_point<std14::decay_t<T>>::value,bool> is_zero(T && x,
-             std14::decay_t<T> tolerance = 100*std::numeric_limits<std14::decay_t<T>>::epsilon()) {
+std14::enable_if_t<std::is_floating_point<T>::value,bool> is_zero(T x, T tolerance = 100*std::numeric_limits<T>::epsilon()) {
  return std::abs(x) < tolerance;
 }
 
 template<typename T> // std::complex
-typename std14::enable_if_t<triqs::is_complex<std14::decay_t<T>>::value,bool> is_zero(T && x) {
+std14::enable_if_t<triqs::is_complex<T>::value,bool> is_zero(T x) {
  return is_zero(std::real(x)) && is_zero(std::imag(x));
 }
 
@@ -54,12 +53,12 @@ typename std14::enable_if_t<triqs::is_complex<std14::decay_t<T>>::value,bool> is
 // Complex conjugate
 //
 template<typename T> // Integral types
-typename std14::enable_if_t<std::is_integral<std14::decay_t<T>>::value,std14::decay_t<T>> _conj(T && x) { return x; }
+std14::enable_if_t<std::is_integral<T>::value,T> _conj(T x) { return x; }
 
 template<typename T> // Floating-point types
-typename std14::enable_if_t<std::is_floating_point<std14::decay_t<T>>::value,std14::decay_t<T>> _conj(T && x) { return x; }
+std14::enable_if_t<std::is_floating_point<T>::value,T> _conj(T x) { return x; }
 
 template<typename T> // std::complex
-typename std14::enable_if_t<triqs::is_complex<std14::decay_t<T>>::value,std14::decay_t<T>> _conj(T && x) { return std::conj(x); }
+std14::enable_if_t<triqs::is_complex<T>::value,T> _conj(T x) { return std::conj(x); }
 
 }}
