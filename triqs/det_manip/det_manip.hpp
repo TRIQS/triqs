@@ -769,6 +769,20 @@ namespace triqs { namespace det_manip {
      det = arrays::determinant(mat_inv(R,R));
     }
 
+  //------------------------------------------------------------------------------------------
+   public: 
+
+    void regenerate () { 
+     if (N==0) return;
+     matrix_type res(N,N);
+     for (size_t i=0; i<N;i++)
+      for (size_t j=0; j<N;j++)
+       res(i,j) = f(x_values[i], y_values[j]);
+     det = arrays::determinant(res);
+     res = inverse(res); 
+     mat_inv(range(0,N),range(0,N)) = res;
+    }
+
     //------------------------------------------------------------------------------------------
    public:
     /**
@@ -806,6 +820,34 @@ namespace triqs { namespace det_manip {
      last_try =0;
      ++n_opts;
      if (n_opts > n_opts_max_before_check) { check_mat_inv(); n_opts=0;}
+    }
+
+    // ----------------- A few short cuts   -----------------
+
+    /// Insert (try_insert + complete)
+    value_type insert(size_t i, size_t j, xy_type const& x, xy_type const& y) {
+     auto r = try_insert(i, j, x, y);
+     complete_operation();
+     return r;
+    }
+
+    /// Insert (try_insert + complete)
+    value_type insert_at_end(xy_type const& x, xy_type const& y) {
+     auto N = size();
+     return insert(N, N, x, y);
+    }
+
+    /// Remove (try_remove + complete)
+    value_type remove(size_t i, size_t j) {
+     auto r = try_remove(i, j);
+     complete_operation();
+     return r;
+    }
+
+    /// Change one line and one col
+    void change_one_line_and_one_col( size_t i, size_t j, xy_type const& x, xy_type const& y) {
+      remove(i,j);
+      insert(i,j,x,y);
     }
 
     ///
