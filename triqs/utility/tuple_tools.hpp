@@ -59,7 +59,7 @@ namespace std {
   template <size_t I, typename... T>
   AUTO_DECL get(_triqs_zipped_tuple<T...> const &tu) RETURN(tu.template _get<I>(std14::make_index_sequence<sizeof...(T)>()));
 
-  template <typename T0, typename... T> struct tuple_size<_triqs_zipped_tuple<T0, T...>> : public std::tuple_size<std14::decay_t<T0>> {};
+  template <typename T0, typename... T> class tuple_size<_triqs_zipped_tuple<T0, T...>> : public std::tuple_size<std14::decay_t<T0>> {};
 
   template <typename... T> _triqs_zipped_tuple<T...> zip(T &&... x) {
    return {std::forward<T>(x)...};
