@@ -93,6 +93,7 @@ namespace utility {
   many_body_operator& operator=(many_body_operator&&) = default;
 
   template <typename S> many_body_operator(many_body_operator<S> const& x) { *this = x; }
+  explicit many_body_operator(scalar_t const& x) { monomials.insert({{},x}); }
 
   template <typename S> many_body_operator& operator=(many_body_operator<S> const& x) {
    monomials.clear();
