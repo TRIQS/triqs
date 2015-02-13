@@ -95,6 +95,7 @@ endif (TRIQS_BUILD_STATIC)
 # RPATH setting (before compiling boost)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+ set(CMAKE_MACOSX_RPATH 1) # new for cmake 3.x
 else()
  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
  set(CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -119,7 +120,9 @@ if (PythonSupport)
 
  # added from issue 181. Does not work on Mac, because of -framework CoreFoundation.
  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  #MESSAGE( ${PYTHON_EXTRA_LIBS})
  separate_arguments(PYTHON_EXTRA_LIBS)
+ #MESSAGE( ${PYTHON_EXTRA_LIBS})
 endif()
 
  set (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})
@@ -240,7 +243,7 @@ set(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE S
 
 set(TRIQS_LIBRARY_LAPACK ${LAPACK_LIBS})
 if(MAC_VECLIB)
- set(TRIQS_LIBRARY_LAPACK "-framework vecLib ${TRIQS_LIBRARY_LAPACK}")
+ set(TRIQS_LIBRARY_LAPACK "-framework Accelerate ${TRIQS_LIBRARY_LAPACK}")
 endif(MAC_VECLIB) 
 message(STATUS "Lapack libraries : ${TRIQS_LIBRARY_LAPACK}")
 link_libraries(${TRIQS_LIBRARY_LAPACK})
