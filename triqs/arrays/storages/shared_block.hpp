@@ -108,7 +108,7 @@ namespace triqs { namespace arrays { namespace storages {
     void load(Archive & ar, const unsigned int version) { 
      if (sptr) dec_ref<Weak>(sptr); 
      ar >> TRIQS_MAKE_NVP("ptr",sptr); data_ = (sptr ? sptr->p : nullptr); s = (sptr ? sptr->size() : 0);
-     if (sptr) inc_ref<Weak>(sptr);
+     //if (sptr) inc_ref<Weak>(sptr);
     }
    BOOST_SERIALIZATION_SPLIT_MEMBER();
   };
