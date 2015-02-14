@@ -97,10 +97,10 @@ namespace triqs { namespace utility {
   }
 
   /// Write into HDF5
-  friend void h5_write (h5::group fg, std::string name, time_pt const & g) = delete; // not implemented
+  //friend void h5_write (h5::group fg, std::string name, time_pt const & g) = delete; // not implemented
 
   /// Read from HDF5
-  friend void h5_read(h5::group fg, std::string name, time_pt &g) = delete; // not implemented
+  //friend void h5_read(h5::group fg, std::string name, time_pt &g) = delete; // not implemented
  };
 
  // all operations below decay to double
