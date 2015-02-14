@@ -52,7 +52,8 @@ namespace gfs {
    using rv_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix_view<dcomplex>>;
 
    template <typename S> auto _evaluate_sing(matrix_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f));
-   template <typename S> auto _evaluate_sing(scalar_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f)(0, 0));
+   template <typename S>
+   auto _evaluate_sing(scalar_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f)(0, 0));
    rv_t _evaluate_sing(Target, nothing, matsubara_freq const &f) const {
     TRIQS_RUNTIME_ERROR << "Evaluation out of mesh";
     return r_t{};
@@ -60,12 +61,12 @@ namespace gfs {
 
    // evaluator
    template <typename G> rv_t operator()(G const &g, matsubara_freq const &f) const {
+    if (g.mesh().is_within_boundary(f.n)) return g[f.n];
     if (g.mesh().positive_only()) { // only positive Matsubara frequencies
-     if ((f.n >= 0) && (f.n < g.mesh().size())) return g[f.n];
+     // if ((f.n >= 0) && (f.n < g.mesh().size())) return g[f.n];
      int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
-     if ((f.n < 0) && ((-f.n - sh) < g.mesh().size())) return r_t{conj(g[-f.n - sh])};
-    } else {
-     if ((f.n >= g.mesh().first_index()) && (f.n < g.mesh().size() + g.mesh().first_index())) return g[f.n];
+     if (g.mesh().is_within_boundary(-f.n - sh)) return r_t{conj(g[-f.n - sh])};
+     // if ((f.n < 0) && ((-f.n - sh) < g.mesh().size())) return r_t{conj(g[-f.n - sh])};
     }
     return _evaluate_sing(Target{}, g.singularity(), f);
    }

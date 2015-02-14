@@ -74,6 +74,9 @@ namespace gfs {
   /// Size (linear) of the mesh of the window
   long size() const { return _last_index_window - _first_index_window + 1; }
   
+  /// Size (linear) of the mesh of the window
+  long full_size() const { return _last_index - _first_index + 1; }
+
   /// 
   utility::mini_vector<size_t, 1> size_of_components() const {
    return {size_t(size())};
@@ -147,7 +150,7 @@ namespace gfs {
 
   /// Opposite of scatter
   friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
-   return gf_mesh{m.domain(), m.size(), m.positive_only()};
+   return gf_mesh{m.domain(), m.full_size(), m.positive_only()};
   }
 
   // -------------------- HDF5 -------------------

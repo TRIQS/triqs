@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2014 by O. Parcollet
+ * Copyright (C) 2015 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,133 +19,119 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./communicator.hpp"
+#include <triqs/utility/c14.hpp>
 #include <triqs/utility/is_complex.hpp>
+#include <mpi.h>
+
+// forward declare in case we do not include boost.
+namespace boost { namespace mpi { class communicator; }}
 
 namespace triqs {
 namespace mpi {
 
- /// a tag for each operation
- namespace tag {
-  struct broadcast {};
-  struct reduce {};
-  struct all_reduce {};
-  struct scatter {};
-  struct gather {};
-  struct allgather {};
+ inline bool is_initialized() noexcept { 
+  int flag;
+  MPI_Initialized(&flag);
+  return flag;
  }
 
- // The implementation of mpi ops for each type
- // To be specialized later
- template <typename T, typename Enable = void> struct mpi_impl {
-  // Reduces a on site
-  // static void reduce_in_place(communicator c, T &a, int root);
+ // ------------------------------------------------------------
 
-  // Reduces with all_reduce a on site
-  // static void all_reduce_in_place(communicator c, T &a, int root);
+ struct environment {
 
-  // Broadcast a
-  // static void broadcast(communicator c, T &a, int root);
-
-  // For all tags : return a T or a lazy object
-  // Tag = reduce, all_reduce, scatter, gather, allgather
-  // template<typename Tag>
-  // static auto invoke(Tag, communicator c, T const &a, int root);
-
-  // invoke2 (lhs, Tag, c, a, root) is the same as lhs = invoke(Tag, c, a, root);
-  // it implements the operation
-  // template <typename Tag> static void invoke2(T &lhs, Tag, communicator c, T const &a, int root);
+  // MPICH does not allow Init without argc, argv, so we do not allow default constructors
+  // for portability, cf #133
+  environment(int argc, char *argv[]) {
+   if (!is_initialized()) MPI_Init(&argc, &argv);
+  }
+  ~environment() { MPI_Finalize(); }
  };
 
- // -----------------------------
-  
- /// A small lazy tagged class 
- template <typename Tag, typename T> struct mpi_lazy {
-  T const &ref;
-  int root;
+ // ------------------------------------------------------------
+
+ /// The communicator. Todo : add more constructors.
+ class communicator {
+  MPI_Comm _com = MPI_COMM_WORLD;
+
+  public:
+  communicator() = default;
+
+  MPI_Comm get() const { return _com; }
+
+  // defined in boost.hpp if included
+  inline communicator(boost::mpi::communicator);
+
+  /// Cast to the boost mpi communicator:  defined in boost.hpp
+  inline operator boost::mpi::communicator() const;
+
+  int rank() const {
+   int num;
+   MPI_Comm_rank(_com, &num);
+   return num;
+  }
+
+  int size() const {
+   int num;
+   MPI_Comm_size(_com, &num);
+   return num;
+  }
+
+  void barrier() const { MPI_Barrier(_com); }
+ };
+
+ // ------------------------------------------------------------
+
+ namespace tag {
+  struct reduce {};
+  struct scatter {};
+  struct gather {};
+ }
+
+ // A small lazy tagged class
+ template <typename Tag, typename T> struct lazy {
+  T const &rhs;
   communicator c;
+  int root;
+  bool all;
  };
 
- // ----------------------------------------
- // ------- top level functions -------
- // ----------------------------------------
+// ----------------------------------------
+// ------- general functions -------
+// ----------------------------------------
 
- // ----- functions that never return lazy object -------
+#ifndef TRIQS_CPP11
+ template <typename T> auto mpi_all_reduce(T &x, communicator c = {}, int root = 0) { return mpi_reduce(x, c, root, true); }
+ template <typename T> auto mpi_all_gather(T &x, communicator c = {}, int root = 0) { return mpi_gather(x, c, root, true); }
+#else
+ template <typename T> auto mpi_all_reduce(T &x, communicator c = {}, int root = 0) RETURN(mpi_reduce(x, c, root, true));
+ template <typename T> auto mpi_all_gather(T &x, communicator c = {}, int root = 0) RETURN(mpi_gather(x, c, root, true));
+#endif
 
- template <typename T> void reduce_in_place(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::reduce_in_place(c, x, root); }
- template <typename T> void all_reduce_in_place(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::all_reduce_in_place(c, x, root); }
- template <typename T> void broadcast(T &x, communicator c = {}, int root = 0) { mpi_impl<T>::broadcast(c, x, root); }
+ // backward compatibility. Do not document.
+ template <typename... T> void broadcast(T &&... x) { mpi_broadcast(std::forward<T>(x)...); }
+#ifndef TRIQS_CPP11
+ template <typename... T> auto reduce(T &&... x) { return mpi_reduce(std::forward<T>(x)...); }
+#else
+ template <typename... T> auto reduce(T &&... x) RETURN(mpi_reduce(std::forward<T>(x)...));
+#endif
 
- // ----- functions that can return lazy object -------
+ /* -----------------------------------------------------------
+  *   transformation type -> mpi types
+  * ---------------------------------------------------------- */
 
- template <typename T>
- AUTO_DECL reduce(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::reduce(), c, x, root));
- template <typename T>
- AUTO_DECL scatter(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::scatter(), c, x, root));
- template <typename T>
- AUTO_DECL gather(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::gather(), c, x, root));
- template <typename T>
- AUTO_DECL all_reduce(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::all_reduce(), c, x, root));
- template <typename T>
- AUTO_DECL allgather(T const &x, communicator c = {}, int root = 0) RETURN(mpi_impl<T>::invoke(tag::allgather(), c, x, root));
-
- // impl. detail : internal use only, to deduce T
- template <typename T, typename Tag>
- AUTO_DECL _invoke2(T &lhs, Tag, communicator c, T const &rhs,  int root) RETURN(mpi_impl<T>::invoke2(lhs, Tag(), c, rhs, root));
-
- /** ------------------------------------------------------------
-   *  transformation type -> mpi types
-   *  ----------------------------------------------------------  **/
-
- template <class T> struct mpi_datatype;
+ template <class T> inline MPI_Datatype mpi_datatype();
 #define D(T, MPI_TY)                                                                                                             \
- template <> struct mpi_datatype<T> {                                                                                            \
-  static MPI_Datatype invoke() { return MPI_TY; }                                                                                \
- };
- D(int, MPI_INT) D(long, MPI_LONG) D(double, MPI_DOUBLE) D(float, MPI_FLOAT) D(std::complex<double>, MPI_DOUBLE_COMPLEX);
- D(unsigned long, MPI_UNSIGNED_LONG); D(unsigned int, MPI_UNSIGNED);
+ template <> inline MPI_Datatype mpi_datatype<T>() { return MPI_TY; }
+ D(int, MPI_INT) 
+ D(long, MPI_LONG)
+ D(long long, MPI_LONG_LONG)
+ D(double, MPI_DOUBLE) 
+ D(float, MPI_FLOAT) 
+ D(std::complex<double>, MPI_DOUBLE_COMPLEX);
+ D(unsigned long, MPI_UNSIGNED_LONG);
+ D(unsigned int, MPI_UNSIGNED);
+ D(unsigned long long, MPI_UNSIGNED_LONG_LONG);
 #undef D
-
- /** ------------------------------------------------------------
-   *  basic types
-   *  ----------------------------------------------------------  **/
-
- template <typename T> struct mpi_impl_basic {
-
-  private:
-  static MPI_Datatype D() { return mpi_datatype<T>::invoke(); }
-
-  public : 
-  static T invoke(tag::reduce, communicator c, T a, int root) {
-   T b;
-   MPI_Reduce(&a, &b, 1, D(), MPI_SUM, root, c.get());
-   return b;
-  }
-
-  static T invoke(tag::all_reduce, communicator c, T a, int root) {
-   T b;
-   MPI_Allreduce(&a, &b, 1, D(), MPI_SUM, c.get());
-   return b;
-  }
-
-  static void reduce_in_place(communicator c, T &a, int root) {
-   MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : &a), &a, 1, D(), MPI_SUM, root, c.get());
-  }
-
-  static void all_reduce_in_place(communicator c, T &a, int root) {
-   MPI_Allreduce(MPI_IN_PLACE, &a, 1, D(), MPI_SUM, c.get());
-  }
-
-  static void broadcast(communicator c, T &a, int root) { MPI_Bcast(&a, 1, D(), root, c.get()); }
-
-  template<typename Tag>
-  static void invoke2(T &lhs, Tag, communicator c, T a, int root) { lhs = invoke(Tag(), c, a, root); }
-
- };
-
- // mpl_impl_basic is the mpi_impl<T> is T is a number (including complex)
- template <typename T>
- struct mpi_impl<T, std14::enable_if_t<std::is_arithmetic<T>::value || triqs::is_complex<T>::value>> : mpi_impl_basic<T> {};
 
  //------------ Some helper function
 
@@ -165,6 +151,33 @@ namespace mpi {
   auto r = slice_range(0, imax, n_nodes, rank);
   return r.second - r.first + 1;
  }
+
+ /* -----------------------------------------------------------
+  *  basic types
+  * ---------------------------------------------------------- */
+
+ template <typename T>
+ struct is_basic : std::integral_constant<bool, std::is_arithmetic<T>::value || triqs::is_complex<T>::value> {};
+
+#define REQUIRES_IS_BASIC(T, U) std14::enable_if_t<is_basic<T>::value, U>
+
+ template <typename T> REQUIRES_IS_BASIC(T, void) mpi_broadcast(T &a, communicator c = {}, int root = 0) {
+  MPI_Bcast(&a, 1, mpi_datatype<T>(), root, c.get());
+ }
+
+ // Here send, recv
+
+ template <typename T> REQUIRES_IS_BASIC(T, T) mpi_reduce(T a, communicator c = {}, int root = 0, bool all = false) {
+  T b;
+  auto d = mpi_datatype<T>();
+  if (!all)
+   MPI_Reduce(&a, &b, 1, d, MPI_SUM, root, c.get());
+  else
+   MPI_Allreduce(&a, &b, 1, d, MPI_SUM, c.get());
+  return b;
+ }
+
+#undef REQUIRES_IS_BASIC
 
 }
 }

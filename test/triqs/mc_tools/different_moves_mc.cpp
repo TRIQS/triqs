@@ -12,7 +12,7 @@
 #include <triqs/arrays.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
 namespace h5 = triqs::h5;
-
+namespace mpi = triqs::mpi;
 triqs::arrays::array<std::complex<double>,1> make_array( std::complex<double> c){return {c}; };
 
 struct configuration {
@@ -58,7 +58,7 @@ struct compute_histo{
    }
    config->x=0; // the walker returns to zero. 
   }
-  void collect_results(boost::mpi::communicator const &c) {
+  void collect_results(triqs::mpi::communicator c) {
    H/=tot;
    h5::file file("histo.h5",H5F_ACC_TRUNC);
    h5_write(file,"H",H);
@@ -71,8 +71,8 @@ struct compute_histo{
 int main(int argc, char* argv[]) {
 
   // initialize mpi
-  boost::mpi::environment env(argc, argv);
-  boost::mpi::communicator world;
+  mpi::environment env(argc, argv);
+  mpi::communicator world;
 
   // greeting
   if (world.rank() == 0) std::cout << "Random walk calculation" << std::endl;

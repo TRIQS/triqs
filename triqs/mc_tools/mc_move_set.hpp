@@ -18,12 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_TOOLS_MC_MOVE_SET2_H
-#define TRIQS_TOOLS_MC_MOVE_SET2_H
+#pragma once
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/mpi/base.hpp>
 #include <functional>
-#include <boost/mpi.hpp>
 #include "./random_generator.hpp"
 #include "./impl_tools.hpp"
 
@@ -99,10 +98,9 @@ namespace triqs { namespace mc_tools {
    uint64_t n_proposed_config () const { return NProposed;}
    uint64_t n_accepted_config () const { return Naccepted;}
 
-   void collect_statistics(boost::mpi::communicator const & c) {
-    uint64_t nacc_tot=0, nprop_tot=1;
-    boost::mpi::reduce(c, Naccepted, nacc_tot,  std::plus<uint64_t>(), 0);
-    boost::mpi::reduce(c, NProposed, nprop_tot, std::plus<uint64_t>(), 0);
+   void collect_statistics(mpi::communicator const & c) {
+    uint64_t nacc_tot = mpi::reduce(Naccepted, c);
+    uint64_t nprop_tot = mpi::reduce(NProposed, c);
     acceptance_rate_ = nacc_tot/static_cast<double>(nprop_tot);
    }
 
@@ -240,7 +238,7 @@ namespace triqs { namespace mc_tools {
    }
 
    /// Pretty printing of the acceptance probability of the moves.
-   std::string get_statistics(boost::mpi::communicator const & c, int shift = 0) {
+   std::string get_statistics(mpi::communicator const & c, int shift = 0) {
     std::ostringstream s;
     for (unsigned int u =0; u< move_vec.size(); ++u) {
      move_vec[u].collect_statistics(c);
@@ -304,5 +302,4 @@ namespace triqs { namespace mc_tools {
   };// class move_set
 
 }}// end namespace
-#endif
 

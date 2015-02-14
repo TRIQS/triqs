@@ -52,6 +52,9 @@ namespace gfs {
 
   template<typename ... X> friend ReturnType evaluate(tail_zero const &t, X...) { return t.zero;} 
 
+  friend tail_zero mpi_reduce(tail_zero t, mpi::communicator c= {}, int root=0, bool all = false) { return t; }
+  friend void mpi_broadcast(tail_zero, mpi::communicator c= {}, int root=0) {}
+ 
   private: 
   ReturnType zero;
   template<typename S> void _init(S const & s, dcomplex & z) { z=0;} 
@@ -76,7 +79,7 @@ namespace gfs {
   TYPE_DISABLE_IF(tail_zero<T>, std::is_same<X, tail_zero<T>>) operator/(X const &, tail_zero<T>const & t) { return t;}
 }
 
-namespace mpi {
+/*namespace mpi {
 
  // ---------------------------------------------------------------------------------------
  //  Do nothing for tail_zero...
@@ -87,5 +90,6 @@ namespace mpi {
   static void reduce_in_place(communicator c, gfs::tail_zero<T> &a, int root) {}
   static void broadcast(communicator c, gfs::tail_zero<T> &a, int root) {}
  };
-}
+ }
+*/
 }

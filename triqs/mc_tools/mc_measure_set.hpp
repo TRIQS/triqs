@@ -18,13 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_TOOLS_MC_MEASURE2_H
-#define TRIQS_TOOLS_MC_MEASURE2_H
-
-#include <functional>
-#include <boost/mpi.hpp>
-#include <map>
+#pragma once
+#include <triqs/mpi/base.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <functional>
+#include <map>
 #include "./impl_tools.hpp"
 
 namespace triqs { namespace mc_tools {
@@ -34,7 +32,7 @@ namespace triqs { namespace mc_tools {
  template<typename MCSignType, typename T> struct has_accumulate <MCSignType, T, decltype(std::declval<T>().accumulate(MCSignType()))> : std::true_type {};
 
  template<typename T, typename Enable=void> struct has_collect_result : std::false_type {};
- template<typename T> struct has_collect_result < T, decltype(std::declval<T>().collect_results(std::declval<boost::mpi::communicator>()))> : std::true_type {};
+ template<typename T> struct has_collect_result < T, decltype(std::declval<T>().collect_results(std::declval<triqs::mpi::communicator>()))> : std::true_type {};
 
  //--------------------------------------------------------------------
 
@@ -47,7 +45,7 @@ namespace triqs { namespace mc_tools {
    std::string type_name_;
 
    std::function<void (MCSignType const & ) > accumulate_;
-   std::function<void (boost::mpi::communicator const & )> collect_results_;
+   std::function<void (mpi::communicator const & )> collect_results_;
    std::function<void(h5::group, std::string const &)> h5_r, h5_w;
 
    uint64_t count_;
@@ -60,7 +58,7 @@ namespace triqs { namespace mc_tools {
      type_name_ =  typeid(MeasureType).name();
      accumulate_ = [p](MCSignType const & x) { p->accumulate(x);};
      count_ = 0;
-     collect_results_ = [p] ( boost::mpi::communicator const & c) { p->collect_results(c);};
+     collect_results_ = [p] (mpi::communicator const & c) { p->collect_results(c);};
      h5_r = make_h5_read(p);
      h5_w = make_h5_write(p);
     }
@@ -83,7 +81,7 @@ namespace triqs { namespace mc_tools {
    measure & operator = (measure && rhs) =default;
 
    void accumulate(MCSignType signe){ assert(impl_); count_++; accumulate_(signe); }
-   void collect_results (boost::mpi::communicator const & c ) { collect_results_(c);}
+   void collect_results (mpi::communicator const & c ) { collect_results_(c);}
 
    uint64_t count() const { return count_;}
 
@@ -104,6 +102,7 @@ namespace triqs { namespace mc_tools {
 
  template<typename MCSignType>
   class measure_set  {
+
    typedef measure<MCSignType> measure_type;
    std::map<std::string, measure<MCSignType>> m_map;
    public :
@@ -138,7 +137,7 @@ namespace triqs { namespace mc_tools {
    }
 
    // gather result for all measure, on communicator c
-   void collect_results (boost::mpi::communicator const & c ) { for (auto & nmp : m_map) nmp.second.collect_results(c); }
+   void collect_results (mpi::communicator const & c ) { for (auto & nmp : m_map) nmp.second.collect_results(c); }
 
    // HDF5 interface
    friend void h5_write (h5::group g, std::string const & name, measure_set const & ms){
@@ -168,5 +167,4 @@ namespace triqs { namespace mc_tools {
   };
 
 }}// end namespace
-#endif
 

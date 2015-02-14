@@ -23,10 +23,6 @@
 //#include <triqs/arrays/algorithms.hpp>
 #include <triqs/gfs/impl/tools.hpp>
 
-// TO BE SEPARATED
-#include <triqs/mpi/boost.hpp>
-#include <boost/serialization/complex.hpp>
-
 namespace triqs {
 namespace gfs {
 
@@ -67,7 +63,6 @@ namespace gfs {
  /// A common implementation class.
  template <rvc_enum RVC> class tail_impl {
   public:
-  TRIQS_MPI_IMPLEMENTED_VIA_BOOST;
   using view_type = tail_view;
   using const_view_type = tail_const_view;
   using regular_type = tail;
@@ -170,6 +165,17 @@ namespace gfs {
    ar &TRIQS_MAKE_NVP("mask", _mask);
    ar &TRIQS_MAKE_NVP("data", _data);
   }
+
+  // mpi operations
+  //friend void mpi_broadcast( tail_impl &t, mpi::communicator c = {}, int root=0) { mpi::mpi_broadcast(t._data);}
+  //friend tail mpi_reduce( tail_impl const &t, mpi::communicator c, int root, bool all);
+  friend void mpi_broadcast(tail_impl & t, mpi::communicator c={}, int root=0) { 
+    using mpi::mpi_broadcast;
+    mpi_broadcast(t.omin);
+    mpi_broadcast(t._data);
+    mpi_broadcast(t._mask);
+  }
+
  };
 
  // -----------------------------
@@ -257,8 +263,10 @@ namespace gfs {
 
  std::ostream &operator<<(std::ostream &out, tail_const_view);
 
+ // ---- MPI  -------------
+ tail mpi_reduce(tail_const_view t, mpi::communicator c={}, int root=0, bool all= false);
+  
  // ----  -------------
-
  //
  template <typename RHS> void assign_singularity_from_function(tail_view t, RHS const &rhs) {
   t = rhs(tail_omega(t.shape(), t.size(), t.order_min()));

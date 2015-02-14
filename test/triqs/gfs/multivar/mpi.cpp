@@ -36,13 +36,13 @@ int main(int argc, char* argv[]) {
 
   {
    out << "reduction " << std::endl;
-   g2 = mpi::reduce(g, world);
+   g2 = mpi_reduce(g, world);
    out << g2.data() << std::endl;
   }
 
   {
    out << "all reduction " << std::endl;
-   g2 = mpi::all_reduce(g, world);
+   g2 = mpi_all_reduce(g, world);
    out << g2.data() << std::endl;
   }
 
@@ -50,9 +50,9 @@ int main(int argc, char* argv[]) {
    out << "scatter-gather test with =" << std::endl;
    auto g2b = g;
 
-   g2 = mpi::scatter(g);
+   g2 = mpi_scatter(g);
    g2(iw_, inu_, inup_) << g2(iw_, inu_, inup_) * (1 + world.rank());
-   g2b = mpi::gather(g2);
+   g2b = mpi_gather(g2);
 
    for (int i = 0; i < nw; ++i)
     for (int j = 0; j < nw; ++j) out << g2b.data()(range(), i, j) << std::endl;

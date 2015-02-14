@@ -21,7 +21,7 @@
  ******************************************************************************/
 #pragma once
 
-#include "../mpi/communicator.hpp"
+#include "../mpi/base.hpp"
 #include "./stack_trace.hpp"
 #include <exception>
 #include <string>

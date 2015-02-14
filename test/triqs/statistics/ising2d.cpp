@@ -10,6 +10,7 @@
 // H = -J \sum_<ij> s_i s_j - h \sum_i s_i 
 // theoretical T_c = 2/log(1+sqrt(2)) for J = 1.0
 using namespace triqs::statistics;
+namespace mpi = triqs::mpi;
 /**************
  * config 
  **************/
@@ -111,11 +112,10 @@ struct compute_m {
  }
 
  // get final answer M / (Z*N)
- void collect_results(boost::mpi::communicator const &c) {
+ void collect_results(mpi::communicator const &c) {
 
-  double sum_Z, sum_M;
-  boost::mpi::reduce(c, Z, sum_Z, std::plus<double>(), 0);
-  boost::mpi::reduce(c, M, sum_M, std::plus<double>(), 0);
+  double sum_Z = mpi_reduce(Z,c);
+  double sum_M = mpi_reduce(M,c);
 
   if (c.rank() == 0) {
    std::cout << "@Beta:\t"<<config->beta<<"\tMagnetization:\t" << sum_M / (sum_Z*(config->N*config->N)) << std::endl ;
@@ -133,8 +133,8 @@ struct compute_m {
 int main(int argc, char* argv[]) {
 
  // initialize mpi
- boost::mpi::environment env(argc, argv);
- boost::mpi::communicator world;
+ mpi::environment env(argc, argv);
+ mpi::communicator world;
 
  double H=0.0,B=0.5;
  int N=20;

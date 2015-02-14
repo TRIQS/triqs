@@ -44,5 +44,5 @@
 // Linear algebra ?? Keep here ?
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 
-#include <triqs/mpi/arrays.hpp>
+#include <triqs/arrays/mpi.hpp>
 

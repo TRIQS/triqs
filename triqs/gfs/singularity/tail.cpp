@@ -44,7 +44,16 @@ namespace gfs {
   return *this;
  }
 
-  /// --- functions
+ /// --- MPI
+ tail mpi_reduce(tail_const_view t, mpi::communicator c, int root, bool all) { 
+  tail r{t};
+  r.data() = mpi_reduce(t.data(),c,root, all); 
+  // SECURITY IS NEEDED HERE !! 
+  // omin, mask are supposed to be the same ?
+  return r;
+ } 
+
+ /// --- functions
 
  std::ostream &operator<<(std::ostream &out, tail_const_view x) {
   if (x.data().is_empty()) return out << "empty tail" << std::endl;

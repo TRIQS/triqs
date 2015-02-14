@@ -41,6 +41,5 @@ x - y = -1*C^+(1) + 1*C(0)
 N^3:
 N = 1*C^+(dn)C(dn) + 1*C^+(up)C(up)
 N^3 = 1*C^+(dn)C(dn) + 1*C^+(up)C(up) + 6*C^+(dn)C^+(up)C(up)C(dn)
-New N^3 = 1*C^+(dn)C(dn) + 1*C^+(up)C(up) + 6*C^+(dn)C^+(up)C(up)C(dn)
 X = -1*C^+(1)C^+(2)C(4)C(3)
 dagger(X) = -1*C^+(3)C^+(4)C(2)C(1)

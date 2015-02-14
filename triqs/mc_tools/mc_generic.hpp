@@ -24,6 +24,7 @@
 #include <triqs/utility/timer.hpp>
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/signal_handler.hpp>
+#include <triqs/mpi/base.hpp>
 #include "./mc_measure_aux_set.hpp"
 #include "./mc_measure_set.hpp"
 #include "./mc_move_set.hpp"
@@ -148,26 +149,17 @@ namespace triqs { namespace mc_tools {
     }
 
     /// Reduce the results of the measures, and reports some statistics
-    void collect_results(boost::mpi::communicator const & c) {
+    void collect_results(mpi::communicator const & c) {
 
-     uint64_t nmeasures_tot;
-     MCSignType sum_sign_tot;
-     boost::mpi::reduce(c, nmeasures, nmeasures_tot, std::plus<uint64_t>(), 0);
-     boost::mpi::reduce(c, sum_sign, sum_sign_tot, std::plus<MCSignType>(), 0);
+     uint64_t nmeasures_tot = mpi::reduce(nmeasures,c);
 
      report(3) << "[Node "<<c.rank()<<"] Acceptance rate for all moves:\n" << AllMoves.get_statistics(c);
      report(3) << "[Node "<<c.rank()<<"] Simulation lasted: " << double(Timer) << " seconds" << std::endl;
      report(3) << "[Node "<<c.rank()<<"] Number of measures: " << nmeasures  << std::endl;
-     report(3) << "[Node "<<c.rank()<<"] Average sign: " << sum_sign / double(nmeasures) << std::endl << std::endl << std::flush;
-  
-     if (c.rank()==0) {
-      sign_av = sum_sign_tot / double(nmeasures_tot);
-      report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
-      report(2) << "Average sign: " << sign_av << std::endl << std::endl << std::flush;
-     }
-     boost::mpi::broadcast(c, sign_av, 0);
-     AllMeasures.collect_results(c);
 
+     if (c.rank() == 0) report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
+     mpi::broadcast(sign_av, c);
+     AllMeasures.collect_results(c);
     }
 
     /// HDF5 interface

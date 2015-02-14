@@ -1,9 +1,8 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2015 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,11 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#ifndef MC_STEPS_H
-#define MC_STEPS_H
-
-#include <boost/mpi.hpp>
+#pragma once
 #include "mc_move_set.hpp"
 
 namespace triqs {
@@ -55,5 +50,4 @@ namespace mc_tools {
  }
 }
 }
-#endif
 

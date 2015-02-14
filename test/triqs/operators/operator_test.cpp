@@ -23,8 +23,8 @@
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <iostream>
 #include <vector>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+//#include <boost/archive/text_oarchive.hpp>
+//#include <boost/archive/text_iarchive.hpp>
 #include <sstream>
 
 
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     std::cout << "N = " << N << std::endl;
     std::cout << "N^3 = " << N3 << std::endl; 
 
-    // Serialization
+/*    // Serialization
     std::stringstream ss;
     boost::archive::text_oarchive oa(ss);
     oa & N3;
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     ia & new_N3;
     
     std::cout << "New N^3 = " << new_N3 << std::endl; 
-   
+*/   
     auto X = c_dag(1) * c_dag(2) * c(3) * c(4);
     std::cout  << "X = "<< X<<std::endl; 
     std::cout  << "dagger(X) = "<< dagger(X)<<std::endl; 

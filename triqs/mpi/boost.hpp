@@ -22,8 +22,6 @@
 #include "./base.hpp"
 #include <boost/mpi.hpp>
 
-#define TRIQS_MPI_IMPLEMENTED_VIA_BOOST using triqs_mpi_via_boost = void;
-
 namespace triqs {
 namespace mpi {
 
@@ -36,41 +34,7 @@ namespace mpi {
  // reverse : construct (implicit) the communicator from the boost one.
  inline communicator::communicator(boost::mpi::communicator c) :_com(c) {}
 
- /** ------------------------------------------------------------
-   *  Type which we use boost::mpi
-   *  ----------------------------------------------------------  **/
-
- template <typename T> struct mpi_impl_boost_mpi {
-
-  template<typename Tag>
-  static void invoke2(T & lhs, Tag, communicator c, T const &a, int root) {
-   lhs = invoke(Tag(), c, a, root);
-  }
-  
-  static T invoke(tag::reduce, communicator c, T const &a, int root) {
-   T b;
-   boost::mpi::reduce(c, a, b, std::c14::plus<>(), root);
-   return b;
-  }
-
-  static T invoke(tag::all_reduce, communicator c, T const &a, int root) {
-   T b;
-   boost::mpi::all_reduce(c, a, b, std::c14::plus<>());
-   return b;
-  }
-
-  static void reduce_in_place(communicator c, T &a, int root) { boost::mpi::reduce(c, a, a, std::c14::plus<>(), root); }
-  static void broadcast(communicator c, T &a, int root) { boost::mpi::broadcast(c, a, root); }
-
-  static void scatter(communicator c, T const &, int root) = delete;
-  static void gather(communicator c, T const &, int root) = delete;
-  static void allgather(communicator c, T const &, int root) = delete;
- };
-
- // If type T has a mpi_implementation nested struct, then it is mpi_impl<T>.
- template <typename T> struct mpi_impl<T, typename T::triqs_mpi_via_boost> : mpi_impl_boost_mpi<T> {};
-
-}}//namespace
+ }}//namespace
 
 
 

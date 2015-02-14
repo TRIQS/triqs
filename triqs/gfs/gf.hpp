@@ -30,7 +30,7 @@
 #include "./singularity/nothing.hpp"
 #include "./singularity/tail_zero.hpp"
 #include "./impl/data_proxies.hpp"
-#include <triqs/mpi/gf.hpp>
+#include <triqs/mpi/vector.hpp>
 #include <vector>
 
 namespace triqs {
@@ -86,6 +86,12 @@ namespace gfs {
  using gf_const_view = gf_view<Variable, Target, Singularity, Evaluator, true>;
 
  template<typename Variable> struct get_n_variables { static const int value = 1;};
+
+ // a trait
+ template<typename T> struct is_gfs_or_view : std::false_type{};
+ template <typename V, typename T, typename S, typename E, bool C>
+ struct is_gfs_or_view<gf_view<V, T, S, E, C>> : std::true_type {};
+ template <typename V, typename T, typename S, typename E> struct is_gfs_or_view<gf<V, T, S, E>> : std::true_type {};
 
  // the implementation class
  template <typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst> class gf_impl;
@@ -431,9 +437,56 @@ namespace gfs {
    ar &TRIQS_MAKE_NVP("name", name);
   }
 
-  /// print
+  //----------------------------- print  -----------------------------
+
   friend std::ostream &operator<<(std::ostream &out, gf_impl const &x) { return out << (IsView ? "gf_view" : "gf"); }
   friend std::ostream &triqs_nvl_formal_print(std::ostream &out, gf_impl const &x) { return out << (IsView ? "gf_view" : "gf"); }
+
+  //----------------------------- MPI  -----------------------------
+
+  friend void mpi_broadcast(gf_impl &g, mpi::communicator c = {}, int root = 0) {
+   // Shall we bcast mesh ?
+   mpi_broadcast(g.data(), c, root);
+   mpi_broadcast(g.singularity(), c, root);
+  }
+
+  friend mpi::lazy<mpi::tag::reduce, gf_impl> mpi_reduce(gf_impl const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
+   return {a, c, root, all};
+  }
+  friend mpi::lazy<mpi::tag::reduce, gf_impl> mpi_all_reduce(gf_impl const &a, mpi::communicator c = {}, int root = 0) {
+   return {a, c, root, true};
+  }
+  friend mpi::lazy<mpi::tag::scatter, gf_impl> mpi_scatter(gf_impl const &a, mpi::communicator c = {}, int root = 0) {
+   return {a, c, root, true};
+  }
+  friend mpi::lazy<mpi::tag::gather, gf_impl> mpi_gather(gf_impl const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
+   return {a, c, root, all};
+  }
+  friend mpi::lazy<mpi::tag::gather, gf_impl> mpi_all_gather(gf_impl const &a, mpi::communicator c = {}, int root = 0) {
+   return {a, c, root, true};
+  }
+  //---- reduce ----
+  void operator=(mpi::lazy<mpi::tag::reduce, gf_impl> l) {
+   _mesh = l.rhs._mesh;
+   _data = mpi_reduce(l.rhs.data(), l.c, l.root, l.all);
+   _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all);
+  }
+
+  //---- scatter ----
+  void operator=(mpi::lazy<mpi::tag::scatter, gf_impl> l) {
+   _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
+   _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
+   if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
+   mpi_broadcast(_singularity, l.c, l.root);
+  }
+
+  //---- gather ----
+  void operator=(mpi::lazy<mpi::tag::gather, gf_impl> l) {
+   _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
+   _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
+   if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
+  }
+
  };
 
  // -------------------------Interaction with the CLEF library : auto assignement implementation -----------------
@@ -501,7 +554,7 @@ namespace gfs {
   }
  
   // mpi lazy 
-  template <typename Tag> gf(mpi::mpi_lazy<Tag, gf> x) : gf() { operator=(x); }
+  template <typename Tag> gf(mpi::lazy<Tag, B> x) : gf() { B::operator=(x); }
 
   gf(typename B::mesh_t m, typename B::data_t dat, typename B::singularity_t const &si, typename B::symmetry_t const &s,
      typename B::indices_t const &ind, std::string name = "")
@@ -541,12 +594,7 @@ namespace gfs {
    return *this;
   }
 
-  friend struct mpi::mpi_impl_triqs_gfs<gf>; //allowed to modify mesh
-
-  // 
-  template <typename Tag> void operator=(mpi::mpi_lazy<Tag, gf> x) {
-   mpi::mpi_impl_triqs_gfs<gf>::complete_operation(*this, x);
-  }
+  template<typename Tag> gf & operator=(mpi::lazy<Tag,B> l) { B::operator =(l); return *this;}
 
   template <typename RHS> void operator=(RHS &&rhs) {
    this->_mesh = rhs.mesh();
@@ -645,6 +693,8 @@ namespace gfs {
    triqs_gf_view_assign_delegation(*this, rhs);
    return *this;
   }
+
+  template<typename Tag> gf_view & operator=(mpi::lazy<Tag, B> l) { B::operator =(l); return *this;}
 
   template <typename RHS> gf_view &operator=(RHS const &rhs) {
    triqs_gf_view_assign_delegation(*this, rhs);
@@ -903,17 +953,6 @@ template <typename G1, typename G2, typename M>
   };
  } // gfs_implementation
 }
-
-namespace mpi {
-
- template <typename Variable, typename Target, typename Singularity, typename Evaluator>
- struct mpi_impl<gfs::gf<Variable, Target, Singularity, Evaluator>,
-                 void> : mpi_impl_triqs_gfs<gfs::gf<Variable, Target, Singularity, Evaluator>> {};
-
- template <typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsConst>
- struct mpi_impl<gfs::gf_view<Variable, Target, Singularity, Evaluator, IsConst>,
-                 void> : mpi_impl_triqs_gfs<gfs::gf_view<Variable, Target, Singularity, Evaluator, IsConst>> {};
-}
 }
 
 // same as for arrays : views cannot be swapped by the std::swap. Delete it
@@ -923,3 +962,4 @@ void swap(triqs::gfs::gf_view<Variable, Target, Singularity, Evaluator, C1> &a,
           triqs::gfs::gf_view<Variable, Target, Singularity, Evaluator, C2> &b) = delete;
 }
 #include "./impl/gf_expr.hpp"
+
