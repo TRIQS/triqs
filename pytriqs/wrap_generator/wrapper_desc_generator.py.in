@@ -1,7 +1,7 @@
 #!@PYTHON_INTERPRETER@
 
 from clang_parser import parse, decay
-import sys, os
+import sys, os, re
 from mako.template import Template
 
 # the instruction that created this file
@@ -47,6 +47,11 @@ output_name = args.outputname or os.path.split(args.filename)[1].split('.',1)[0]
 class property_ : 
     def __init__ (self, **kw) : 
         self.__dict__.update(kw)
+
+def clean_end_white_char(s):
+    """ remove the space at the end of the lines (for clean git diff...)"""
+    reg = re.compile(r"[ \t\r\f\v]+$",re.MULTILINE)
+    return re.sub(reg,'',s.strip())
 
 if __name__ == '__main__' : 
 
@@ -106,7 +111,7 @@ if __name__ == '__main__' :
 
         #with open(args.filename.replace('.hpp',".hxx"), "w") as f:
         with open("converters.hxx", "w") as f:
-            f.write(rendered)
+            f.write(clean_end_white_char(rendered))
 
         print "... done"
 
@@ -116,7 +121,7 @@ if __name__ == '__main__' :
                  shell_command= shell_command, classes_of_parameters = classes_of_parameters  )
 
     with open("{output_name}_desc.py".format(output_name=output_name), "w") as f:
-        f.write(rendered)
+        f.write(clean_end_white_char(rendered))
 
     print "... done"
      
