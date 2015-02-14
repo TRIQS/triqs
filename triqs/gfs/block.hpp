@@ -186,15 +186,11 @@ namespace gfs {
  // a simple function to get the number of blocks
  template <typename... T> size_t n_blocks(gf<block_index, T...> const &g) { return g.mesh().size(); }
  template <typename... T> size_t n_blocks(gf_view<block_index, T...> const &g) { return g.mesh().size(); }
- template <typename... T> size_t n_blocks(gf_const_view<block_index, T...> const &g) { return g.mesh().size(); }
 
  template <typename... T> std::vector<std::string> const &get_block_names(gf<block_index, T...> const &g) {
   return g.mesh().domain().names();
  }
  template <typename... T> std::vector<std::string> const &get_block_names(gf_view<block_index, T...> const &g) {
-  return g.mesh().domain().names();
- }
- template <typename... T> std::vector<std::string> const &get_block_names(gf_const_view<block_index, T...> const &g) {
   return g.mesh().domain().names();
  }
 
