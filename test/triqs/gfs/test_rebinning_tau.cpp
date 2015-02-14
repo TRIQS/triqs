@@ -45,6 +45,9 @@ int main() {
  std::cout << "bgf_new_dn:" << std::endl;
  print(res[1]);
 
+ if (get_block_names(res) != std::vector<std::string>{"up","dn"}) TRIQS_RUNTIME_ERROR<< "Block names are wrong";
+ std::cerr << " block_names : " << get_block_names(res)[0] <<  "  "<<std::endl;
+
  return 0;
 }
 

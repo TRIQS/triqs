@@ -186,8 +186,19 @@ namespace gfs {
  // a simple function to get the number of blocks
  template <typename... T> size_t n_blocks(gf<block_index, T...> const &g) { return g.mesh().size(); }
  template <typename... T> size_t n_blocks(gf_view<block_index, T...> const &g) { return g.mesh().size(); }
+ template <typename... T> size_t n_blocks(gf_const_view<block_index, T...> const &g) { return g.mesh().size(); }
 
- // -------------------------------   Map functions   --------------------------------------------------
+ template <typename... T> std::vector<std::string> const &get_block_names(gf<block_index, T...> const &g) {
+  return g.mesh().domain().names();
+ }
+ template <typename... T> std::vector<std::string> const &get_block_names(gf_view<block_index, T...> const &g) {
+  return g.mesh().domain().names();
+ }
+ template <typename... T> std::vector<std::string> const &get_block_names(gf_const_view<block_index, T...> const &g) {
+  return g.mesh().domain().names();
+ }
+
+  // -------------------------------   Map functions   --------------------------------------------------
 
  template <typename F, typename T> std::vector<std14::result_of_t<F(T)>> _map(F &&f, std::vector<T> const &V) {
   std::vector<std14::result_of_t<F(T)>> res;
@@ -198,13 +209,13 @@ namespace gfs {
 
  /// Build the block function made of f(b) if b are the blocks of g
  template <typename F, typename G> gf<block_index, std14::result_of_t<F(G)>> map(F &&f, gf<block_index, G> const &g) {
-  return make_block_gf(_map(f, g.data()));
+  return make_block_gf(get_block_names(g), _map(f, g.data()));
  }
  template <typename F, typename G> gf<block_index, std14::result_of_t<F(G)>> map(F &&f, gf_view<block_index, G> g) {
-  return make_block_gf(_map(f, g.data()));
+  return make_block_gf(get_block_names(g), _map(f, g.data()));
  }
  template <typename F, typename G> gf<block_index, std14::result_of_t<F(G)>> map(F &&f, gf_const_view<block_index, G> g) {
-  return make_block_gf(_map(f, g.data()));
+  return make_block_gf(get_block_names(g), _map(f, g.data()));
  }
 
  // -------------------------------   an iterator over the blocks --------------------------------------------------
