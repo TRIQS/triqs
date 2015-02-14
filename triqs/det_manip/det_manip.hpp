@@ -305,7 +305,7 @@ namespace triqs { namespace det_manip {
     value_type try_insert(size_t i, size_t j, xy_type const & x, xy_type const & y) {
 
      // check input and store it for complete_operation
-     assert(i<=N);  assert(j<=N); assert(i>=0); assert(j>=0);
+     TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
      if (N==Nmax) reserve(2*Nmax);
      last_try = 1;
      w1.i=i; w1.j=j; w1.x=x; w1.y = y;
@@ -333,7 +333,7 @@ namespace triqs { namespace det_manip {
     value_type try_insert_from_function(size_t i, size_t j, Fx fx, Fy fy, value_type const ksi) {
      
      // check input and store it for complete_operation
-     assert(i<=N);  assert(j<=N); assert(i>=0); assert(j>=0);
+     TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
      if (N==Nmax) reserve(2*Nmax);
      last_try = 1;
      w1.i=i; w1.j=j;
@@ -412,10 +412,19 @@ namespace triqs { namespace det_manip {
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
 
-    value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, xy_type const & x0, xy_type const & x1, xy_type const & y0, xy_type const & y1) {
+    value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, xy_type const & x0_, xy_type const & x1_, xy_type const & y0_, xy_type const & y1_) {
+
+     // first make sure i0<i1 and j0<j1
+     xy_type const& x0((i0 < i1) ? x0_ : x1_);
+     xy_type const& x1((i0 < i1) ? x1_ : x0_);
+     xy_type const& y0((j0 < j1) ? y0_ : y1_);
+     xy_type const& y1((j0 < j1) ? y1_ : y0_);
+     if (i0 > i1) std::swap(i0, i1);
+     if (j0 > j1) std::swap(j0, j1);
+
      // check input and store it for complete_operation
-     assert(i0!=i1); assert(j0!=j1);assert(i0<=N);  assert(j0<=N); assert(i0>=0); assert(j0>=0);
-     assert(i1<=N+1);  assert(j1<=N+1); assert(i1>=0); assert(j1>=0);
+     TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);TRIQS_ASSERT(i0<=N);  TRIQS_ASSERT(j0<=N); TRIQS_ASSERT(i0>=0); TRIQS_ASSERT(j0>=0);
+     TRIQS_ASSERT(i1<=N+1);  TRIQS_ASSERT(j1<=N+1); TRIQS_ASSERT(i1>=0); TRIQS_ASSERT(j1>=0);
 
      if (N >= Nmax-1) reserve(2*Nmax);
      last_try = 10;
@@ -500,7 +509,7 @@ namespace triqs { namespace det_manip {
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
     value_type try_remove(size_t i, size_t j){
-     assert(i<N);  assert(j<N); assert(i>=0); assert(j>=0);
+     TRIQS_ASSERT(i<N);  TRIQS_ASSERT(j<N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
      w1.i=i;w1.j=j;last_try = 2;
      w1.jreal = col_num[w1.j];
      w1.ireal = row_num[w1.i];
@@ -565,9 +574,13 @@ namespace triqs { namespace det_manip {
      */
     value_type try_remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
 
-     assert(N>=2); assert(i0!=i1); assert(j0!=j1);
-     assert(i0<N);  assert(j0<N); assert(i0>=0); assert(j0>=0); 
-     assert(i1<N+1);  assert(j1<N+1);assert(i1>=0); assert(j1>=0);  
+     // first make sure i0<i1 and j0<j1
+     if (i0 > i1) std::swap(i0, i1);
+     if (j0 > j1) std::swap(j0, j1);
+
+     TRIQS_ASSERT(N>=2); TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);
+     TRIQS_ASSERT(i0<N);  TRIQS_ASSERT(j0<N); TRIQS_ASSERT(i0>=0); TRIQS_ASSERT(j0>=0); 
+     TRIQS_ASSERT(i1<N+1);  TRIQS_ASSERT(j1<N+1);TRIQS_ASSERT(i1>=0); TRIQS_ASSERT(j1>=0);  
 
      last_try =11;
 
@@ -656,7 +669,7 @@ namespace triqs { namespace det_manip {
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
     value_type try_change_col(size_t j, xy_type const & y) {
-     assert(j<N); assert(j>=0);
+     TRIQS_ASSERT(j<N); TRIQS_ASSERT(j>=0);
      w1.j=j;last_try = 3;
      w1.jreal = col_num[j];
      w1.y = y;
@@ -700,7 +713,7 @@ namespace triqs { namespace det_manip {
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
     value_type try_change_row(size_t i, xy_type const & x) {
-     assert(i<N); assert(i>=0);
+     TRIQS_ASSERT(i<N); TRIQS_ASSERT(i>=0);
      w1.i=i;last_try = 4;
      w1.ireal = row_num[i];
      w1.x = x;
