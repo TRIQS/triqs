@@ -32,6 +32,7 @@ print "y*3.0 =", y*3.0
 print "x + y =", x + y
 print "x - y =", x - y
 print "(x + y)*(x - y) =", (x + y)*(x - y)
+print "Operator(3.14) =", Operator(3.14)
 
 # N^3
 print

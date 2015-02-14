@@ -34,28 +34,32 @@ int main(int argc, char **argv)
     // Operators without indices
     auto op_with_no_indices = c() + c_dag() - n();
     std::cout << "op_with_no_indices = " << op_with_no_indices << std::endl;
-    
+
     // Operators with many indices
     auto op_with_many_indices = c(1,2,"a",true,-2) +
                             c_dag(3,15,"b",false,-5);
     std::cout << "op_with_many_indices = " << op_with_many_indices << std::endl;
-                            
+
+    // Constant operator
+    many_body_operator<double> const_op(3.14);
+    std::cout << "const_op = " << const_op << std::endl;
+
     // Commutation relations
     std::vector<many_body_operator<double> > C = {c(1), c(2), c(3)};
     std::vector<many_body_operator<double> > Cd = {c_dag(1), c_dag(2), c_dag(3)};
-    
+
     std::cout << std::endl << "Anticommutators:" << std::endl;
     for(auto const& cdi : Cd)
     for(auto const& ci : C){
         std::cout << "{" << cdi << ", " << ci << "} = " << cdi*ci + ci*cdi << std::endl;
     }
-    
+
     std::cout << std::endl << "Commutators:" << std::endl;
     for(auto const& cdi : Cd)
     for(auto const& ci : C){
         std::cout << "[" << cdi << ", " << ci << "] = " << cdi*ci - ci*cdi << std::endl;
     }
-    
+
     // Algebra
     auto x = c(0);
     auto y = c_dag(1);
@@ -81,7 +85,7 @@ int main(int argc, char **argv)
     auto N3 = N*N*N;
     std::cout << "N = " << N << std::endl;
     std::cout << "N^3 = " << N3 << std::endl; 
-        
+
     // Serialization
     std::stringstream ss;
     boost::archive::text_oarchive oa(ss);

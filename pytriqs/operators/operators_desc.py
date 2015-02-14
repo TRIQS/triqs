@@ -19,6 +19,7 @@ op = class_(
         )
 
 op.add_constructor(signature="()", doc="create zero operator")
+op.add_constructor(signature="(double x)", doc="create a constant operator")
 op.add_method("bool is_zero()", doc = "Boolean : is the operator null ?")
 op.add_iterator(c_cast_type="std::pair<std::vector<std::pair<bool,many_body_operator<double>::indices_t>>,double>")
 

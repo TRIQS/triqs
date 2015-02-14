@@ -1,5 +1,6 @@
 op_with_no_indices = 1*C^+() + 1*C() + -1*C^+()C()
 op_with_many_indices = 1*C^+(3,15,b,0,-5) + 1*C(1,2,a,1,-2)
+const_op = 3.14
 
 Anticommutators:
 {1*C^+(1), 1*C(1)} = 1
