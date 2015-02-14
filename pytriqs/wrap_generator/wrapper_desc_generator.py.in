@@ -32,6 +32,8 @@ parser.add_argument('--properties', '-p',  action='store_true',
 parser.add_argument('--libclang_location', help='Location of the libclang', default = '@TRIQS_LIBCLANG_LOCATION@')
 parser.add_argument('--compiler_options', nargs ='*', help='Options to pass to clang')
 parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
+parser.add_argument('--only_converters',  action='store_true',
+        help="[Experts only] Do not generate the desc file, just the converters if there are")
 
 args = parser.parse_args()
 args.includes = (args.includes or []) +  '@TRIQS_INCLUDE_ALL@'.split(';')
@@ -69,10 +71,10 @@ if __name__ == '__main__' :
 
     functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, where_is_libclang = args.libclang_location)
   
-    print "Generating the wrapper ..."
+    print "Parsing C++ code. Generating the wrapper and converters ..."
 
     if args.properties :    
-        print "making properties"
+        print "Transforming no argument accessors into Python properties"
 
         for cls in classes : 
             cls.proplist, exclude =[], []
@@ -115,13 +117,16 @@ if __name__ == '__main__' :
 
         print "... done"
 
-    # Making the desc file 
-    tpl = Template(filename=triqs_install_location + '/share/triqs/wrap_generator/wrap_desc.mako.py')
-    rendered = tpl.render(classes = classes, functions = functions, modulename=modulename,  moduledoc=args.moduledoc, args = args, 
-                 shell_command= shell_command, classes_of_parameters = classes_of_parameters  )
+    # Making the desc file
+    if not args.only_converters:
+        tpl = Template(filename=triqs_install_location + '/share/triqs/wrap_generator/wrap_desc.mako.py')
+        rendered = tpl.render(classes = classes, functions = functions, modulename=modulename,  moduledoc=args.moduledoc, args = args,
+                     shell_command= shell_command, classes_of_parameters = classes_of_parameters  )
 
-    with open("{output_name}_desc.py".format(output_name=output_name), "w") as f:
-        f.write(clean_end_white_char(rendered))
+        with open("{output_name}_desc.py".format(output_name=output_name), "w") as f:
+            f.write(clean_end_white_char(rendered))
+    else:
+        print "Do not generate the wrapper, only the converters.hxx file"
 
     print "... done"
      
