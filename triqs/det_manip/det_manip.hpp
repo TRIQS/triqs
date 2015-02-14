@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2013 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2015 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -77,7 +77,7 @@ namespace triqs { namespace det_manip {
     //  What about f ? Not serialized at the moment.
     friend class boost::serialization::access;
     template<class Archive>
-     void serialize(Archive & ar) {
+     void serialize(Archive & ar, const unsigned int version) {
       ar & TRIQS_MAKE_NVP("Nmax",Nmax) & TRIQS_MAKE_NVP("N",N) 
        & TRIQS_MAKE_NVP("n_opts",n_opts) & TRIQS_MAKE_NVP("n_opts_max_before_check",n_opts_max_before_check) 
        & TRIQS_MAKE_NVP("det",det) & TRIQS_MAKE_NVP("sign",sign) 
@@ -93,8 +93,8 @@ namespace triqs { namespace det_manip {
      h5_write(gr,"mat_inv",g.mat_inv);
      h5_write(gr,"det",g.det);
      h5_write(gr,"sign",g.sign);
-     //h5_write(gr,"row_num",g.row_num);
-     //h5_write(gr,"col_num",g.col_num);
+     h5_write(gr,"row_num",g.row_num);
+     h5_write(gr,"col_num",g.col_num);
      h5_write(gr,"x_values",g.x_values);
      h5_write(gr,"y_values",g.y_values);
      h5_write(gr,"n_opts",g.n_opts);
@@ -110,8 +110,8 @@ namespace triqs { namespace det_manip {
      g.last_try = 0; 
      h5_read(gr,"det",g.det);
      h5_read(gr,"sign",g.sign);
-     //h5_read(gr,"row_num",g.row_num);
-     //h5_read(gr,"col_num",g.col_num);
+     h5_read(gr,"row_num",g.row_num);
+     h5_read(gr,"col_num",g.col_num);
      h5_read(gr,"x_values",g.x_values);
      h5_read(gr,"y_values",g.y_values);
      h5_read(gr,"n_opts",g.n_opts);

@@ -18,10 +18,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_TIME_PT_HPP
-#define TRIQS_TIME_PT_HPP
-
+#pragma once
 #include <triqs/utility/first_include.hpp>
+#include <triqs/h5.hpp>
 #include <limits>
 #include <iostream>
 #include <cmath>
@@ -89,9 +88,19 @@ namespace triqs { namespace utility {
   static constexpr uint64_t Nmax = std::numeric_limits<uint64_t>::max();
 
   private:
-
   uint64_t n;
   double val, beta;
+
+  friend class boost::serialization::access;
+  template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+   ar &TRIQS_MAKE_NVP("n", n) & TRIQS_MAKE_NVP("val", val) & TRIQS_MAKE_NVP("beta", beta);
+  }
+
+  /// Write into HDF5
+  friend void h5_write (h5::group fg, std::string name, time_pt const & g) = delete; // not implemented
+
+  /// Read from HDF5
+  friend void h5_read(h5::group fg, std::string name, time_pt &g) = delete; // not implemented
  };
 
  // all operations below decay to double
@@ -108,25 +117,18 @@ namespace triqs { namespace utility {
  // a segment [0, beta[ in time
  struct time_segment {
 
-   const double beta;
+  const double beta;
 
-   time_segment(double beta_): beta(beta_) {}
+  time_segment(double beta_) : beta(beta_) {}
 
-   // get a random point in [0, tp[
-   template<typename RNG>
-   time_pt get_random_pt(RNG & rng, time_pt tp) const { return time_pt(rng(tp.n), beta, true); }
-   template<typename RNG>
-   time_pt get_random_pt(RNG & rng) const { return time_pt(rng(time_pt::Nmax), beta, true); }
+  // get a random point in [0, tp[
+  template <typename RNG> time_pt get_random_pt(RNG &rng, time_pt tp) const { return time_pt(rng(tp.n), beta, true); }
+  template <typename RNG> time_pt get_random_pt(RNG &rng) const { return time_pt(rng(time_pt::Nmax), beta, true); }
 
-   // get special points
-   time_pt get_upper_pt() const { return time_pt(time_pt::Nmax, beta, true); }
-   time_pt get_lower_pt() const { return time_pt(0, beta, true); }
-   time_pt get_epsilon() const { return time_pt(1, beta, true); }
-
+  // get special points
+  time_pt get_upper_pt() const { return time_pt(time_pt::Nmax, beta, true); }
+  time_pt get_lower_pt() const { return time_pt(0, beta, true); }
+  time_pt get_epsilon() const { return time_pt(1, beta, true); }
  };
-
-
-
 }}
-#endif
 

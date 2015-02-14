@@ -55,4 +55,9 @@ typedef long double max_align_t;
 #define TRIQS_WRAP_ARG_AS_DICT  
 #endif
 
+// boost serialization declaration...
+namespace boost { namespace serialization { class access; }} //forward
+#define TRIQS_MAKE_NVP(NAME,X) X
+//#define TRIQS_MAKE_NVP(NAME,X) boost::serialization::make_nvp(NAME,X)
+
 #endif

@@ -33,8 +33,6 @@
 
 #define TRIQS_MINI_VECTOR_NRANK_MAX 10
 
-#define TRIQS_MAKE_NVP(NAME,X) X
-//#define TRIQS_MAKE_NVP(NAME,X) boost::serialization::make_nvp(NAME,X)
 namespace triqs { namespace utility { 
 
  struct no_init_tag{};
