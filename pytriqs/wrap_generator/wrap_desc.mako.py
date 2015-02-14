@@ -29,7 +29,7 @@
         'std::pair' : 'pair',
         }
 
-    used_module_list, converters_list = [], []
+    used_module_list, converters_list = [], set()
     def analyse(t) :
         if t is None :return
         #global used_module_list
@@ -38,9 +38,9 @@
             used_module_list.append(mod)
 
         for ns, mod in converters_to_include.items() :
-          # on OS X, strange __1 name ?
-          if decay(t.canonical_name.replace('std::__1::','std::')).startswith(ns) :
-            converters_list.append(mod)
+          tname = t.canonical_name.replace('std::__1::','std::') # on OS X, strange __1 name ?
+          if ns in decay(tname):
+            converters_list.add(mod)
 
     for c in classes :
         for m in c.constructors :
