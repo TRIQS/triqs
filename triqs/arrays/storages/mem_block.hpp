@@ -20,6 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_MEM_BLOCK_H
 #define TRIQS_MEM_BLOCK_H
+#include "../impl/common.hpp"
 #include "../../utility/exceptions.hpp"
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
@@ -37,7 +38,7 @@ typedef void PyObject;
 //#define TRIQS_ARRAYS_DEBUG_TRACE_MEM
 #ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
 #include <iostream>
-#define TRACE_MEM_DEBUG(X) std::cerr<< X << std::endl;
+#define TRACE_MEM_DEBUG(X) std::cerr<< "[triqs:mem_block]"<< X << std::endl;
 #else
 #define TRACE_MEM_DEBUG(X)
 #endif
@@ -77,6 +78,24 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
    delete m;
   }
  }
+
+#ifdef TRIQS_ARRAYS_DEBUG_COUNT_MEMORY
+ // For debug purpose only: a counter of the memory allocated
+ struct __global_memory_allocated_from_c_t {
+  size_t count = 0;
+  __global_memory_allocated_from_c_t();
+  ~__global_memory_allocated_from_c_t();
+ };
+ extern __global_memory_allocated_from_c_t __global_memory_allocated_from_c;
+#define TRIQS_MEMORY_USED_INC(s)                                                                                                 \
+ __global_memory_allocated_from_c.count += s;                                                                                    \
+ TRACE_MEM_DEBUG("Total memblock allocated from C++ : " << __global_memory_allocated_from_c.count);
+#define TRIQS_PRINT_MEMORY_USED                                                                                                  \
+ std::cerr << "[triqs:mem_block]" << triqs::arrays::storages::__global_memory_allocated_from_c.count << std::endl;         
+ #else
+#define TRIQS_MEMORY_USED_INC(s)
+#define TRIQS_PRINT_MEMORY_USED
+#endif
 
  /**
   *  This is a block of memory (pointer p and size size_).
@@ -139,7 +158,9 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
   // construct to state 1 with a given size.
   mem_block (size_t s):size_(s),py_numpy(nullptr), py_guard(nullptr){
    try { p = new ValueType[s];}
-   catch (std::bad_alloc& ba) { TRIQS_RUNTIME_ERROR<< "Memory allocation error : bad_alloc : "<< ba.what();}
+   catch (std::bad_alloc& ba) { TRIQS_RUNTIME_ERROR<< "Memory allocation error in memblock construction. Size :"<<s << "  bad_alloc error : "<< ba.what();}
+   TRACE_MEM_DEBUG("Allocating from C++ a block of size "<< s << " at address " <<p);
+   TRIQS_MEMORY_USED_INC(s);
    ref_count=1;
    weak_ref_count =0;
   }
@@ -163,10 +184,17 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
 
   // destructor : release memory only in state 1. This should NEVER be called in state 3 (first need to get back to 1).
   ~mem_block(){ // delete memory manually iif py_obj is not set. Otherwise the python interpreter will do that for us.
-   TRACE_MEM_DEBUG("deleting mem block p ="<<p<< "  py_obj = "<< py_obj << "    ref of py obj if exists"<<(py_obj ? py_obj->ob_refcnt: -1));
+   TRACE_MEM_DEBUG("deleting mem block p ="<<p<< "  py_obj = "<< py_numpy << "    ref of py obj if exists"<<(py_numpy ? py_numpy->ob_refcnt: -1));
    assert(ref_count<=1); assert(py_guard==nullptr);// state 3 forbidden
-   if (py_numpy) Py_DECREF(py_numpy); // state 1
-   else { if (p) delete[] p; } // state 2 or state 0
+   if (py_numpy)
+    Py_DECREF(py_numpy); // state 1
+   else {
+    if (p) { // state 2 or state 0
+     TRACE_MEM_DEBUG("Desallocating from C++ a block of size " << this->size_ << " at address " << p);
+     TRIQS_MEMORY_USED_INC(-size_);
+     delete[] p;
+    }
+   }
   }
 
   // cannot be copied or moved.
@@ -188,8 +216,10 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
   // This is a choice, even if X is state 2 (a numpy).
   // We copy a numpy into a regular C++ array, which can then be used at max speed.
   mem_block (mem_block const & X): size_(X.size()), py_numpy(nullptr), py_guard(nullptr) {
-   try { p = new ValueType[X.size()];}
-   catch (std::bad_alloc& ba) { TRIQS_RUNTIME_ERROR<< "Memory allocation error : bad_alloc : "<< ba.what();}
+  try { p = new ValueType[X.size()];}
+   catch (std::bad_alloc& ba) { TRIQS_RUNTIME_ERROR<< "Memory allocation error in memblock copy construction. Size :"<<X.size() << "  bad_alloc error : "<< ba.what();}
+   TRACE_MEM_DEBUG("Allocating from C++ a block of size "<< X.size() << " at address " <<p);
+   TRIQS_MEMORY_USED_INC(X.size());
    ref_count=1;
    weak_ref_count =0;
    // now we copy the data
@@ -273,7 +303,15 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
    void load(Archive & ar, const unsigned int version) {
     ar >> size_;
     assert (p==nullptr);
-    p = new ValueType[size_];
+    try {
+     p = new ValueType[size_];
+    }
+    catch (std::bad_alloc& ba) {
+     TRIQS_RUNTIME_ERROR << "Memory allocation error in memblock deserialization. Size :" << size_
+                         << "  bad_alloc error : " << ba.what();
+    }
+    TRACE_MEM_DEBUG("Allocating from C++ a block of size " << size_ << " at address " << p);
+    TRIQS_MEMORY_USED_INC(size_);
     for (size_t i=0; i<size_; ++i) ar >> p[i];
    }
   BOOST_SERIALIZATION_SPLIT_MEMBER();
