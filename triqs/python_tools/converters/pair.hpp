@@ -8,11 +8,13 @@ namespace py_tools {
  template <typename T1, typename T2> struct py_converter<std::pair<T1, T2>> {
   static PyObject *c2py(std::pair<T1, T2> const &p) {
    PyObject *list = PyList_New(0);
-   if (PyList_Append(list, py_converter<T1>::c2py(std::get<0>(p))) == -1) {
+   pyref x1 = py_converter<T1>::c2py(std::get<0>(p));
+   pyref x2 = py_converter<T2>::c2py(std::get<1>(p));
+   if (PyList_Append(list, x1) == -1) {
     Py_DECREF(list);
     return NULL;
    } // error
-   if (PyList_Append(list, py_converter<T2>::c2py(std::get<1>(p))) == -1) {
+   if (PyList_Append(list, x2) == -1) {
     Py_DECREF(list);
     return NULL;
    } // error

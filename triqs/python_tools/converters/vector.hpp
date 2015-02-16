@@ -5,16 +5,25 @@
 namespace triqs { namespace py_tools {
 
 template <typename T> struct py_converter<std::vector<T>> {
- static PyObject * c2py(std::vector<T> const &v) {
-  PyObject * list = PyList_New(0);
-  for (auto & x : v) if (PyList_Append(list, py_converter<T>::c2py(x)) == -1) { Py_DECREF(list); return NULL;} // error
+ static PyObject *c2py(std::vector<T> const &v) {
+  PyObject *list = PyList_New(0);
+  for (auto &x : v) {
+   pyref y = py_converter<T>::c2py(x);
+   if (PyList_Append(list, y) == -1) {
+    Py_DECREF(list);
+    return NULL;
+   } // error
+  }
   return list;
  }
-  static PyObject * c2py(std::vector<T> &v) {
+ /* static PyObject * c2py(std::vector<T> &v) {
   PyObject * list = PyList_New(0);
-  for (auto & x : v) if (PyList_Append(list, py_converter<T>::c2py(x)) == -1) { Py_DECREF(list); return NULL;} // error
+  for (auto & x : v) {
+   pyref y = py_converter<T>::c2py(x);
+   if (PyList_Append(list, y) == -1) { Py_DECREF(list); return NULL;} // error
+  }
   return list;
- }
+ }*/
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (!PySequence_Check(ob)) goto _false;
   {

@@ -5,16 +5,27 @@
 namespace triqs { namespace py_tools {
 
 template <typename K, typename V> struct py_converter<std::map<K,V>> {
- static PyObject * c2py(std::map<K,V> const &m) {
-  PyObject * d = PyDict_New();
-  for (auto & x : m) if (PyDict_SetItem(d, py_converter<K>::c2py(x.first), py_converter<V>::c2py(x.second)) == -1) { Py_DECREF(d); return NULL;} // error
+ static PyObject *c2py(std::map<K, V> const &m) {
+  PyObject *d = PyDict_New();
+  for (auto &x : m) {
+   pyref k = py_converter<K>::c2py(x.first);
+   pyref v = py_converter<V>::c2py(x.second);
+   if (PyDict_SetItem(d, k, v) == -1) {
+    Py_DECREF(d);
+    return NULL;
+   } // error
+  }
   return d;
  }
- static PyObject * c2py(std::map<K,V> &m) {
+ /*static PyObject * c2py(std::map<K,V> &m) {
   PyObject * d = PyDict_New();
-  for (auto & x : m) if (PyDict_SetItem(d, py_converter<K>::c2py(x.first), py_converter<V>::c2py(x.second)) == -1) { Py_DECREF(d); return NULL;} // error
+  for (auto & x : m) {
+   pyref k = py_converter<K>::c2py(x.first);
+   pyref v = py_converter<V>::c2py(x.second);   
+   if (PyDict_SetItem(d,k,v) == -1) { Py_DECREF(d); return NULL;} // error
+  }
   return d;
- }
+ }*/
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (!PyDict_Check(ob)) goto _false;
   {
