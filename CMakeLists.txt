@@ -74,6 +74,12 @@ else()
  #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 endif()
 
+# Turn the memory check
+option(CHECK_MEMORY "Turn on memory check" OFF)
+if (CHECK_MEMORY)
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} " -DTRIQS_ARRAYS_DEBUG_COUNT_MEMORY")
+endif()
+
 # Include TRIQS cmake macros
 find_package(TriqsMacros)
 
@@ -112,11 +118,9 @@ if (PythonSupport)
  endif()
 
  # added from issue 181. Does not work on Mac, because of -framework CoreFoundation.
- MESSAGE( ${PYTHON_EXTRA_LIBS})
  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  separate_arguments(PYTHON_EXTRA_LIBS)
 endif()
-MESSAGE( ${PYTHON_EXTRA_LIBS})
 
  set (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})
  set (TRIQS_INCLUDE_PYTHON ${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
