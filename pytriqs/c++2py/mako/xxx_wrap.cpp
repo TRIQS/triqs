@@ -801,7 +801,7 @@ static PyObject* ${c.py_type}___getitem__(PyObject *self, PyObject *key) {
 %if "__setitem__impl" in c.methods :
 static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) {
  pyref args =  (PyTuple_Check(key) ? borrowed(key) : pyref(PyTuple_Pack(1,key)));
- pyref args2 = PySequence_Concat(args,   PyTuple_Pack(1,v));
+ pyref args2 = PySequence_Concat(args, pyref(PyTuple_Pack(1,v)));
  pyref res =  ${c.py_type}___setitem__impl(self,args2,NULL);
  return (res.is_null() ? -1 : 0); // the function will return None, we want to change to an int
 }
