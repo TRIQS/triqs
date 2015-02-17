@@ -8,7 +8,6 @@ link_libraries( ${link_libs} triqs)
 
 if (NOT compiler_is_obsolete_gcc)
 add_subdirectory(triqs)
-add_subdirectory(speed)
 endif()
 if (PythonSupport)
  add_subdirectory(pytriqs)
