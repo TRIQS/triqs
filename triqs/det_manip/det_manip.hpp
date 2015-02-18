@@ -779,7 +779,7 @@ namespace triqs { namespace det_manip {
 
      // since we have the proper inverse, replace the matrix and the det
      mat_inv(R,R) = res;
-     det = arrays::determinant(mat_inv(R,R));
+     det = 1/arrays::determinant(mat_inv(R,R)); // the det is the det of the matrix, hence inverse of mat_inv
     }
 
   //------------------------------------------------------------------------------------------
