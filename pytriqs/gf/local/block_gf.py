@@ -101,12 +101,12 @@ class BlockGf(object):
     def view_selected_blocks(self, selected_blocks):
         """Returns a VIEW of the selected blocks of self, in the same order as self."""
         for b in selected_blocks: assert b in self.__indices,"Selected Blocks must be existing blocks"
-        return self.__class__ ( name_block_generator = [(n,g) for n,g in G if n in selected_blocks ],make_copies=False)
+        return self.__class__ ( name_block_generator = [(n,g) for n,g in self if n in selected_blocks ],make_copies=False)
 
     def copy_selected_blocks(self, selected_blocks):
         """Returns a COPY of the selected blocks of self, in the same order as self."""
         for b in selected_blocks: assert b in self.__indices,"Selected Blocks must be existing blocks"
-        return self.__class__ ( name_block_generator = [(n,g) for n,g in G if n in selected_blocks ],make_copies=True)
+        return self.__class__ ( name_block_generator = [(n,g) for n,g in self if n in selected_blocks ],make_copies=True)
 
     def copy_from(self, G2):
         """Copy the Green's function from G2: G2 MUST have the same structure!"""
