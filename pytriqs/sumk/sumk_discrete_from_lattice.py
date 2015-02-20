@@ -23,26 +23,26 @@
 from sumk_discrete import SumkDiscrete
 from pytriqs.lattice.tight_binding import TBLattice
 
-class SumkDiscreteFromLattice (SumkDiscrete) :
+class SumkDiscreteFromLattice (SumkDiscrete):
     r"""
-      * Computes 
-      
+      * Computes
+
        .. math::
-         G \leftarrow \sum_k (\omega + \mu - \epsilon_k - \Sigma(k,\omega))^{-1} 
-     
+         G \leftarrow \sum_k (\omega + \mu - \epsilon_k - \Sigma(k,\omega))^{-1}
+
        for GF functions with blocks of the size of the matrix eps_k with a discrete sum.
-      
+
       * The object contains the discretized hoppings and points in the arrays
-        Hopping, BZ_Points,BZ_weights,Mu_Pattern,Overlap (IF non orthogonal)
+        hopping, bz_points,bz_weights,mu_pattern,overlap (IF non orthogonal)
         It can also generate a grid (ReComputeGrid) for a regular grid or a Gauss-Legendre sum
         for the whole Brillouin Zone or a patch of the BZ.
     """
-    
-    def __init__(self, lattice, patch = None, n_points = 8, method = "Riemann") : 
-	"""   
+
+    def __init__(self, lattice, patch = None, n_points = 8, method = "Riemann"):
+	"""
         :param lattice: The underlying pytriqs.lattice or pytriqs.super_lattice provinding t(k)
         :param n_points:  Number of points in the BZ in EACH direction
-        :param method: Riemann (default) or 'Gauss' (not checked) 
+        :param method: Riemann (default) or 'Gauss' (not checked)
         """
         assert isinstance(lattice,TBLattice), "lattice must be a TBLattice instance"
         self.SL = lattice
@@ -53,30 +53,30 @@ class SumkDiscreteFromLattice (SumkDiscrete) :
 
      #-------------------------------------------------------------
 
-    def __reduce__(self) : 
-        return self.__class__,  (self.SL, self.patch, self.BZ_weights.shape[0],self.method) 
+    def __reduce__(self):
+        return self.__class__,  (self.SL, self.patch, self.bz_weights.shape[0],self.method)
 
      #-------------------------------------------------------------
 
-    def Recompute_Grid (self, n_points, method="Riemann", Q=None) :
-        """(Re)Computes the grid on the patch given at construction : 
-        
-        * n_points :  Number of points in the BZ in EACH direction
-        * method  : Riemann (default) or 'Gauss' (not checked) 
-        * Q : anything from which a 1d-array can be computed.
+    def Recompute_Grid (self, n_points, method="Riemann", Q=None):
+        """(Re)Computes the grid on the patch given at construction:
+
+        * n_points:  Number of points in the BZ in EACH direction
+        * method: Riemann (default) or 'Gauss' (not checked)
+        * Q: anything from which a 1d-array can be computed.
               computes t(k+Q) instead of t(k) (useful for bare chi_0)
         """
         assert method in ["Riemann","Gauss"], "method %s is not recognized"%method
         self.method = method
         self.resize_arrays(n_points)
-        if self.patch : 
+        if self.patch:
             self.__Compute_Grid_One_patch(self.patch, n_points , method, Q)
-        else : 
+        else:
             self.__Compute_Grid(n_points, method, Q)
 
      #-------------------------------------------------------------
 
-    def __Compute_Grid (self, n_bz,  method="Riemann", Q=None) :
+    def __Compute_Grid (self, n_bz,  method="Riemann", Q=None):
 	"""
         Internal
 	"""
@@ -86,57 +86,57 @@ class SumkDiscreteFromLattice (SumkDiscrete) :
         self.resize_arrays(nk)
 
 	# compute the points where to evaluate the function in the BZ and with the weights
-	def pts1d(N): 
-	    for n in range(N) :
+	def pts1d(N):
+	    for n in range(N):
 		yield (n - N/2 +1.0) / N
 
-	if method=="Riemann" : 
-	    BZ_weights=1.0/nk
+	if method=="Riemann":
+	    bz_weights=1.0/nk
 	    k_index =0
-	    for nz in pts1d(n_bz_C) : 
-		for ny in pts1d(n_bz_B) :
-		    for nx in pts1d(n_bz_A) : 
-			self.BZ_Points[k_index,:] = (nx,ny,nz)[0:self.dim]
+	    for nz in pts1d(n_bz_C):
+		for ny in pts1d(n_bz_B):
+		    for nx in pts1d(n_bz_A):
+			self.bz_points[k_index,:] = (nx,ny,nz)[0:self.dim]
 			k_index +=1
 
-	elif method=="Gauss" : 
-	    assert 0, "Gauss : NR gauleg not checked"
+	elif method=="Gauss":
+	    assert 0, "Gauss: NR gauleg not checked"
 	    k_index =0
-	    for wa,ptsa in NR.Gauleg(-pi,pi,n_bz_A) :
-		for wb,ptsb in NR.Gauleg(-pi,pi,n_bz_B) :
-		    for wc,ptsc in NR.Gauleg(-pi,pi,n_bz_C) :
-			self.BZ_Points[k_index,:] = (ptsa,ptsb,ptsc)[0:self.dim] /(2*pi) 
-			self.BZ_weights[k_index] = wa * wb * wc
+	    for wa,ptsa in NR.Gauleg(-pi,pi,n_bz_A):
+		for wb,ptsb in NR.Gauleg(-pi,pi,n_bz_B):
+		    for wc,ptsc in NR.Gauleg(-pi,pi,n_bz_C):
+			self.bz_points[k_index,:] = (ptsa,ptsb,ptsc)[0:self.dim] /(2*pi)
+			self.bz_weights[k_index] = wa * wb * wc
 			k_index +=1
-	else :
+	else:
 	    raise IndexError, "Summation method unknown"
 
-	# A shift 
-	if Q :
-            try : 
+	# A shift
+	if Q:
+            try:
                 Q = numpy.array(Q)
                 assert len(Q.shape) ==1
-            except :
+            except:
                 raise RuntimeError, "Q is not of correct type"
-	    for k_index in range(self.N_kpts()) : 
-		self.BZ_Points[k_index,:] +=Q
+	    for k_index in range(self.N_kpts()):
+		self.bz_points[k_index,:] +=Q
 
 	# Compute the discretized hoppings from the Superlattice
-	self.Hopping[:,:,:] = self.SL.hopping(self.BZ_Points.transpose()).transpose(2,0,1)
+	self.hopping[:,:,:] = self.SL.hopping(self.bz_points.transpose()).transpose(2,0,1)
 
-	if self.orthogonal_basis: 
-            self.Mu_Pattern[:,:] =  self.SL.MuPattern[:,:]
-	else :
+	if self.orthogonal_basis:
+            self.mu_pattern[:,:] =  self.SL.MuPattern[:,:]
+	else:
 	    assert 0 , "not checked"
-	    self.Overlap[:,:,:] = self.SL.Overlap(BZ_Points.transpose())
-	    mupat = self.SL.Mu_Pattern()
-	    for k_index in range(self.N_kpts()) : 
-		self.Mu_Pattern[:,:,k_index] = Num.dot( mupat ,self.Overlap[:,:,k_index])
+	    self.overlap[:,:,:] = self.SL.Overlap(bz_points.transpose())
+	    mupat = self.SL.MuPattern()
+	    for k_index in range(self.N_kpts()):
+		self.mu_pattern[:,:,k_index] = Num.dot( mupat ,self.Overlap[:,:,k_index])
 
     #-------------------------------------------------------------
 
 
-    def __Compute_Grid_One_patch(self, patch, n_bz, method = "Riemann", Q=None) :
+    def __Compute_Grid_One_patch(self, patch, n_bz, method = "Riemann", Q=None):
 	"""
 	Internal
 	"""
@@ -161,18 +161,18 @@ class SumkDiscreteFromLattice (SumkDiscrete) :
               for k in range(2):
                 rv = a+s*(b-a)+t*(c-a)+(k+1)*g
                 if k == 0 or j < n_bz-i-1:
-	          self.BZ_Points[k_index]  = rv
-	          self.BZ_weights[k_index] = w/(n_bz*n_bz)
-                  total_weight += self.BZ_weights[k_index]
+	          self.bz_points[k_index]  = rv
+	          self.bz_weights[k_index] = w/(n_bz*n_bz)
+                  total_weight += self.bz_weights[k_index]
                   k_index = k_index+1
 
         # Normalize weights so that they sum up to 1
-        self.BZ_weights /= total_weight
+        self.bz_weights /= total_weight
 
 	# Compute the discretized hoppings from the Superlattice
-	self.Hopping[:,:,:] = self.SL.hopping(self.BZ_Points.transpose()).transpose(2,0,1)
+	self.hopping[:,:,:] = self.SL.hopping(self.bz_points.transpose()).transpose(2,0,1)
 
-	if self.orthogonal_basis: 
-            self.Mu_Pattern[:,:] =  self.SL.MuPattern[:,:]
-	else :
+	if self.orthogonal_basis:
+            self.mu_pattern[:,:] =  self.SL.MuPattern[:,:]
+	else:
 	    assert 0 , "not checked"
