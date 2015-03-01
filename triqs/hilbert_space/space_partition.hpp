@@ -26,7 +26,6 @@
 #include <utility>
 #include <triqs/utility/draft/numeric_ops.hpp>
 #include <boost/pending/disjoint_sets.hpp>
-#include <boost/timer/timer.hpp>
 
 namespace triqs {
 namespace hilbert_space {
@@ -49,7 +48,6 @@ template <typename StateType, typename OperatorType> class space_partition {
 
  space_partition(state_t const& st, operator_t const& H, bool store_matrix_elements = true)
     : subspaces(st.size()), tmp_state(make_zero_state(st)) {
-  boost::timer::auto_cpu_timer timer("space_partition::space_partition(): %ws wall, %us user + %ss system = %ts CPU (%p%)\n");
   auto size = tmp_state.size();
 
   // Iteration over all initial basis states
@@ -76,8 +74,6 @@ template <typename StateType, typename OperatorType> class space_partition {
 
  std::pair<matrix_element_map_t, matrix_element_map_t> merge_subspaces(operator_t const& Cd, operator_t const& C,
                                                                        bool store_matrix_elements = true) {
-
-  boost::timer::auto_cpu_timer timer("space_partition::merge_subspaces(): %ws wall, %us user + %ss system = %ts CPU (%p%)\n");
 
   matrix_element_map_t Cd_elements, C_elements;
   std::multimap<index_t,index_t> Cd_connections, C_connections;
