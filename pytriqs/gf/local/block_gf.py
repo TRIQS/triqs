@@ -261,7 +261,7 @@ class BlockGf(object):
    
     def __iadd__(self,arg):
         if isinstance(arg, self.__class__):
-            for (i,g),(i2,g2) in izip(self,arg): g += g2
+            for (n,g) in self: g += arg[n]
         elif operator.isSequenceType(arg):
             assert len(arg) == len(self.__GFlist), "list of incorrect length"
             for l,g in izip(arg,self.__GFlist): g +=l 
@@ -278,7 +278,7 @@ class BlockGf(object):
 
     def __isub__(self,arg):
         if isinstance(arg, self.__class__):
-           for (i,g),(i2,g2) in izip(self,arg): g -= g2
+           for (n,g) in self: g -= arg[n]
         elif operator.isSequenceType(arg):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l,g in izip(arg,self.__GFlist): g -=l 
@@ -298,7 +298,7 @@ class BlockGf(object):
 
     def __imul__(self,arg):
         if isinstance(arg, BlockGf): 
-            for (i,g),(i2,g2) in izip(self,arg): g *= g2
+            for (n,g) in self: g *= arg[n]
         elif operator.isSequenceType(arg):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l,g in izip(arg,self.__GFlist): g*=l 
