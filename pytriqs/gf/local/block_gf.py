@@ -197,7 +197,8 @@ class BlockGf(object):
     def __factory_from_dict__(cls, name, d):
         # indices : for backward compatibility. indices is str repr of the
         # indices list and we need to  drop name and note ... 
-        keys = d.pop('block_names') if 'block_names' in d else eval(d.pop('indices'))
+        # block_names in str-mapped just to make sure that the key are python str (they could be numpy.string_, see __reduce_to_dict__)
+        keys = map(str,d.pop('block_names')) if 'block_names' in d else eval(d.pop('indices'))
         assert (sorted(keys) == sorted(d.keys())) or (sorted(keys + ['note',
             'name']) == sorted(d.keys())),  "Reload mismatch: the indices and the group names do not corresponds"
         res = cls(name_list = keys, block_list = [d[k] for k in keys], make_copies=False, name=name)
