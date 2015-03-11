@@ -4,8 +4,8 @@
 
 .. _fullgreen:
 
-The complete Green's function (BlockGf) 
-=======================================
+The complete Green's function (``BlockGf``) 
+===========================================
 
 As mentioned in the introduction, due to the symmetry, a local Green's function usually
 has a block structure.

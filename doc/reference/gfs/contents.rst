@@ -13,4 +13,3 @@ Green's functions
    basic_notions/contents
    py/contents
    c++/contents
-   tail/tail
