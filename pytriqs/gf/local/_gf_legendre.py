@@ -7,8 +7,9 @@ def init( mesh = None, shape = None, name = 'g', **kwargs):
     """
     if mesh is None: 
       if 'beta' not in kwargs: raise ValueError, "beta not provided"
+      from gf import MeshLegendre
       beta = float(kwargs.pop('beta'))
-      stat = kwargs.pop('statistic','F') 
+      stat = kwargs.pop('statistic','Fermion') 
       n_max = kwargs.pop('n_points',30)
       mesh = MeshLegendre(beta,stat,n_max)
 
