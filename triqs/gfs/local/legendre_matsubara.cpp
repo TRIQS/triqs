@@ -69,12 +69,16 @@ namespace gfs {
 
   gl() = 0.0;
   legendre_generator L;
+  auto N = gt.mesh().size() - 1;
+  double coef;
 
   // Do the integral over imaginary time
   for (auto t : gt.mesh()) {
+   if (t.index()==0 || t.index()==N) coef = 0.5;
+   else coef = 1.0;
    L.reset(2 * t / gt.domain().beta - 1);
    for (auto l : gl.mesh()) {
-    gl[l] += sqrt(2 * l.index() + 1) * L.next() * gt[t];
+    gl[l] += coef * sqrt(2 * l.index() + 1) * L.next() * gt[t];
    }
   }
   gl.data() *= gt.mesh().delta();
