@@ -1,7 +1,7 @@
 
 .. _hdf5_tutorial:
 
-Tutorial 
+Python Tutorial 
 ##############################
 
 Let us consider a few examples, with increasing difficulty.

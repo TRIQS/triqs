@@ -11,11 +11,12 @@ In the following subsections, we give a very quick tutorial on HDF5 archives. Lo
 .. toctree::
    :maxdepth: 5
 
-   tutorial
+   py_tutorial
+   cpp_tutorial
 
 
 .. note::
-   Note that the keys of dicts written to hdf5 files in python are currently
+   The keys of dictionaries written to hdf5 files in Python are currently
    assumed to be strings. Undesirable behaviour may occur for other 
    dictionaries with non-string keys! Should you need support for more general
    dictionaries, please contact us.
