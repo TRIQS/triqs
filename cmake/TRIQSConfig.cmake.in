@@ -46,6 +46,12 @@ set(TRIQS_SPHINXBUILD_EXECUTABLE @SPHINXBUILD_EXECUTABLE@)
 set(TRIQS_THEMES_PATH @CMAKE_INSTALL_PREFIX@/share/triqs/themes)
 set(TRIQS_MATHJAX_PATH @MATHJAX_PATH@)
 
+# Mac specific, on new cmake
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(CMAKE_INSTALL_NAME_DIR "${TRIQS_PATH}/lib")
+ set(CMAKE_MACOSX_RPATH 1) # new for cmake 3.x
+endif()
+
 # Git
 set(TRIQS_GIT_EXECUTABLE @GIT_EXECUTABLE@)
 macro(triqs_get_git_hash DIR PREFIX)
@@ -137,9 +143,11 @@ endmacro (triqs_add_all_subdirectories_with_cmakelist)
 # RPATH setting 
 macro (triqs_set_rpath_for_target Target)
  set_target_properties(${Target} PROPERTIES LINK_FLAGS -Wl,-rpath,${TRIQS_PATH}/lib)
+ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  set_target_properties(${Target} PROPERTIES INSTALL_NAME_DIR ${TRIQS_PATH}/lib)
  set_target_properties(${Target} PROPERTIES INSTALL_RPATH ${TRIQS_PATH}/lib)
  set_target_properties(${Target} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+ endif()
  set_target_properties(${Target} PROPERTIES BUILD_WITH_INSTALL_RPATH FALSE)
  set_target_properties(${Target} PROPERTIES SKIP_BUILD_RPATH FALSE)
  set_target_properties(${Target} PROPERTIES SKIP_INSTALL_RPATH FALSE)
