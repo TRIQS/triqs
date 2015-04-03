@@ -4,10 +4,7 @@ export PYTHONPATH=@CMAKE_INSTALL_PREFIX@/@TRIQS_PYTHON_LIB_DEST_ROOT@:$PYTHONPAT
 @PYTHON_INTERPRETER@ -c "
 import sys
 import IPython
-if IPython.__version__ >= '0.11' : 
-   from IPython.frontend.terminal.ipapp import launch_new_instance
-   sys.exit(launch_new_instance())
-else:
-  import IPython.Shell
-  IPython.Shell.start().mainloop()
+assert IPython.__version__ >= '2' , 'ipython version too low: need 2.x or higher for the notebook' 
+from IPython.frontend.terminal.ipapp import launch_new_instance
+sys.exit(launch_new_instance())
 " $@
