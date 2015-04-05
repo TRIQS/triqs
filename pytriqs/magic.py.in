@@ -37,16 +37,17 @@ triqs_set_rpath_for_target(ext)
 """%triqs_path
 
 mod_dict = {
+ 'stl' :
+"""
+module.add_include("<triqs/python_tools/converters/pair.hpp>")
+module.add_include("<triqs/python_tools/converters/vector.hpp>")
+""",
  'gf' :
 """
 module.use_module('gf')
 module.add_using('namespace triqs::gfs')
 """,
- 'parameters' :
-"""
-module.use_module('parameters')
-module.add_using('namespace triqs::params')
-""",}
+}
 
 def desc_file(c_decl, use) :
    s = """
