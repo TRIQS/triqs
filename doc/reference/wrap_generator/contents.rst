@@ -7,7 +7,8 @@
 C++/Python wrapper generator
 =======================================
 
-Reference doc. Intro. to be written.
+.. warning:: This part of the documentation contains only the reference doc, from python autodoc. 
+             Introduction to be written.
 
 .. toctree::
    :maxdepth: 1

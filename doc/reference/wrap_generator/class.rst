@@ -1,7 +1,7 @@
 The class_ class
 -----------------------
 
-.. autoclass:: pytriqs.wrap_generator.wrap_generator.class_
+.. autoclass:: pytriqs.cpp2py.wrap_generator.class_
    :members:
    :undoc-members:
  
