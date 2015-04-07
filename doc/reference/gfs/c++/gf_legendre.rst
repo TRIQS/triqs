@@ -7,6 +7,9 @@ Legendre representation
 
 This is a specialisation of :ref:`gf<gf_and_view>` for Legendre polynomial expansion.
 
+.. warning::
+  TO BE COMPLETED
+
 Synopsis
 ------------
 

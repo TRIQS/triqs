@@ -7,7 +7,7 @@ Green's functions manipulations in C++
    :maxdepth: 1
 
 The gfs class of TRIQS contains objects representing Green functions over real or imaginary times, real or imaginary frequencies...  that can be easily manipulated
-(see  :doc:`here <../reference/gfs/c++/contents>`).
+(see  :doc:`here <../../reference/gfs/c++/contents>`).
 Here are a couple of simple examples showing the basic use of this class.
 
 Creation of a real time GF

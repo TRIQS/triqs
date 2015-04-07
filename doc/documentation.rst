@@ -41,6 +41,7 @@ Reference manual
    :maxdepth: 1
 
    reference/using_the_lib/contents
+   reference/provenance/contents
 
 Code reference
 ~~~~~~~~~~~~~~~~

@@ -53,9 +53,11 @@ It was therefore decided to introduce `weak views`.
 
 * It is however necessary for the advanced user to know about this implementation detail, 
   because in some convolved cases, the memory guarantee may not hold. 
-  Example ::
+  Example:
 
-   TO BE WRITTEN
+.. warning::
+   
+ TO BE WRITTEN
 
 
 

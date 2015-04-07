@@ -21,6 +21,8 @@ such as Fourier transforms.
 
 This section is organized as follows: 
 
-TO BE WRITTEN 
+.. warning::
+   
+    TO BE WRITTEN 
 
 

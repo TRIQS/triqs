@@ -63,8 +63,9 @@ Split in several files. --> also the theory above.
 
 Memory management
 -----------------
- 
-TO BE WRITTEN
+.. warning:: 
+   
+   TO BE WRITTEN
 
 The reference counting system is *compatible* with the Python reference counting (but distinct),
 if you compile with python support of course.

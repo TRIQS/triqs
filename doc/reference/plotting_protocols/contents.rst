@@ -22,5 +22,4 @@ of the standard scientific python libraries
    hdf5/contents
    plotting/plotting
    fit/fit
-   provenance
 

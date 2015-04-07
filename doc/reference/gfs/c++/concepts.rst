@@ -155,9 +155,9 @@ MeshPoint
 +------------------------------------------------+--------------------------------------------------------------------+
 | mesh_t::index_t index                          | The index of the point                                             |
 +------------------------------------------------+--------------------------------------------------------------------+
-| mesh_point_t( mesh_t const &, index_t const &) | Constructor: a mesh point at the given index                      |
+| mesh_point_t( mesh_t const &, index_t const &) | Constructor: a mesh point at the given index                       |
 +------------------------------------------------+--------------------------------------------------------------------+
-| mesh_point_t( mesh_t const &)                  | Constructor: the first mesh point                                 |
+| mesh_point_t( mesh_t const &)                  | Constructor: the first mesh point                                  |
 +------------------------------------------------+--------------------------------------------------------------------+
 | mesh_t::index_t [const &,] index() const       | The index corresponding to the point                               |
 +------------------------------------------------+--------------------------------------------------------------------+

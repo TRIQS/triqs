@@ -36,7 +36,10 @@ Matrix inversion
 The inverse function return a lazy inverse of any object which has ImmutableMatrix concept
 and can therefore be mixed with any other matrix expression.
 
-Example: TO BE WRITTEN
+Example:
+.. warning::
+
+ TO BE WRITTEN
 
 
 LU decomposition
