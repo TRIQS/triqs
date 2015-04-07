@@ -1,5 +1,4 @@
 #include <triqs/arrays.hpp>
-#include <triqs/mpi.hpp>
 #include <iostream>
 
 using namespace triqs;
