@@ -779,7 +779,17 @@ namespace triqs { namespace det_manip {
 
      // since we have the proper inverse, replace the matrix and the det
      mat_inv(R,R) = res;
+
+     // find the sign (there must be a better way...)
+     double s = 1.0;
+     arrays::matrix<double> m(N,N);
+     m() = 0.0; for (int i=0; i<N; i++) m(i,row_num[i]) = 1;
+     s *= arrays::determinant(m);
+     m() = 0.0; for (int i=0; i<N; i++) m(i,col_num[i]) = 1;
+     s *= arrays::determinant(m);
+
      det = 1/arrays::determinant(mat_inv(R,R)); // the det is the det of the matrix, hence inverse of mat_inv
+     sign = (s > 0 ? 1 : -1);
     }
 
   //------------------------------------------------------------------------------------------
