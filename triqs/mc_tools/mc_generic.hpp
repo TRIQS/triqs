@@ -43,7 +43,7 @@ namespace triqs { namespace mc_tools {
      * Constructor from a set of parameters
      */
    mc_generic(uint64_t n_cycles, uint64_t length_cycle, uint64_t n_warmup_cycles, std::string random_name, int random_seed,
-              int verbosity, std::function<bool()> AfterCycleDuty = std::function<bool()>())
+              int verbosity, std::function<void()> AfterCycleDuty = std::function<void()>())
       : RandomGenerator(random_name, random_seed)
       , AllMoves(RandomGenerator)
       , AllMeasures()
@@ -54,6 +54,9 @@ namespace triqs { namespace mc_tools {
       , NCycles(n_cycles)
       , after_cycle_duty(AfterCycleDuty)
       , sign_av(0) {}
+
+    /// Set function after_cycle_duty
+    void set_after_cycle_duty(std::function<void()> AfterCycleDuty){ after_cycle_duty = AfterCycleDuty; }
 
     /**
      * Register move M with its probability of being proposed.
@@ -90,6 +93,12 @@ namespace triqs { namespace mc_tools {
     // An access to the random number generator
     random_generator & rng(){ return RandomGenerator;}
 
+    // An access to the current cycle number 
+    int current_cycle_number(){ return NC; }
+
+    bool thermalized() const { return (NC>= NWarmIterations);}
+    bool converged() const { return false;}
+
     /// Start the Monte Carlo
     bool start(MCSignType sign_init, std::function<bool ()> const & stop_callback) {
      assert(stop_callback);
@@ -99,7 +108,7 @@ namespace triqs { namespace mc_tools {
      bool stop_it=false, finished = false;
      uint64_t NCycles_tot = NCycles+ NWarmIterations;
      report << std::endl << std::flush;
-     for (NC =0; !stop_it; ++NC) {
+     for (NC = 0; !stop_it; ++NC) {
       for (uint64_t k=1; (k<=Length_MC_Cycle); k++) { MCStepType::do_it(AllMoves,RandomGenerator,sign); }
       if (after_cycle_duty) {after_cycle_duty();}
       if (thermalized()) {
@@ -182,12 +191,9 @@ namespace triqs { namespace mc_tools {
     uint64_t nmeasures;
     MCSignType sum_sign;
     utility::timer Timer;
-    std::function<bool()> after_cycle_duty;
+    std::function<void()> after_cycle_duty;
     MCSignType sign, sign_av;
     uint64_t NC,done_percent;// NC = number of the cycle
-
-    bool thermalized() const { return (NC>= NWarmIterations);}
-    bool converged() const { return false;}
   };
 
 }}// end namespace
