@@ -5,7 +5,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mako/py_converter.hpp  DESTINATION  sh
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mako/xxx_wrap.cpp      DESTINATION  share/triqs/c++2py/mako)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mako/xxx_desc.py       DESTINATION  share/triqs/c++2py/mako)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mako/converters.hxx    DESTINATION  share/triqs/c++2py/mako)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mako/parameters.rst    DESTINATION  share/triqs/c++2py/mako)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mako/parameters_doc.rst    DESTINATION  share/triqs/c++2py/mako)
 
 # The desc_file generator from libclang ...
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/c++2py.py.in ${CMAKE_CURRENT_BINARY_DIR}/c++2py.py @ONLY)
