@@ -107,9 +107,13 @@ if __name__ == '__main__' :
         # Generate the converter code for all the classes.
         tpl = Template(filename=triqs_install_location + '/share/triqs/c++2py/mako/converters.hxx')
         rendered = tpl.render(classes = classes_of_parameters, args = args, shell_command= shell_command )
-
-        #with open(args.filename.replace('.hpp',".hxx"), "w") as f:
         with open("converters.hxx", "w") as f:
+            f.write(clean_end_white_char(rendered))
+
+        # Generate the rst file of the doc
+        tpl = Template(filename=triqs_install_location + '/share/triqs/c++2py/mako/parameters_doc.rst')
+        rendered = tpl.render(classes = classes_of_parameters, args = args, shell_command= shell_command )
+        with open("parameters_doc.rst", "w") as f:
             f.write(clean_end_white_char(rendered))
 
         print "... done"
