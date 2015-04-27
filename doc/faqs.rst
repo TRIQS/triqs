@@ -32,3 +32,17 @@ A more complicated example where the mesh information is also stored is::
     mesh_and_data = np.hstack((mesh,data))
 
     np.savetxt("test.dat",mesh_and_data)
+
+Q: How do I save the triqs hash and script for debugging purposes?
+------------------------------------------------------------------
+
+A: Simply add this to your script::
+    from pytriqs import version
+    if mpi.is_master_node():
+      Results = HDFArchive(filename+".h5",'a')
+      if "log" not in Results: Results.create_group("log")
+      log = Results["log"]
+      log["version"] = version.release
+      log["git_hash"] = version.git_hash
+      log["script"] = open(sys.argv[0]).read() # read myself !
+      del Results
