@@ -3,9 +3,9 @@ import math
 from pytriqs.lattice.tight_binding import *
 
 # Define the Bravais Lattice : a square lattice in 2d
-BL_1 = BravaisLattice(units = [(1,0,0) , (0,1,0) ], orbital_positions= {"":  (0,0,0)} )
-BL_2 = BravaisLattice(units = [(1,1,0) , (-1,1,0) ], orbital_positions= {"A":  (0,0,0), "B":  (.5,.5,0)} )
-BL_4 = BravaisLattice(units = [(2,0,0) , (0,2,0) ], orbital_positions= {"A":  (0,0,0), "B":  (0,.5,0), "C":  (.5,0,0), "D":  (.5,.5,0)} )
+BL_1 = BravaisLattice(units = [(1,0,0), (0,1,0) ], orbital_positions= [(0,0,0)] )
+BL_2 = BravaisLattice(units = [(1,1,0) , (-1,1,0) ], orbital_positions= [ (0,0,0),(.5,.5,0)] )
+BL_4 = BravaisLattice(units = [(2,0,0) , (0,2,0) ], orbital_positions= [(0,0,0),(0,.5,0), (.5,0,0), (.5,.5,0)] )
 
 # Hopping dictionaries
 t = .25; tp = -.1;

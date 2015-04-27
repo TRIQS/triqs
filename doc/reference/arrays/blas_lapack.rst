@@ -51,6 +51,9 @@ Diagonalization
 -------------------
 Done. doc to be written
 
+.. triqs_example:: ./diagonalization_0.cpp
+
+
 SVD decomposition
 -------------------
 
