@@ -35,6 +35,7 @@ namespace triqs { namespace gfs {
 
   // copy the tail. it doesn't need to conform to the pade approximant
   gr.singularity() = gw.singularity();
+  gr() = 0.0;
 
   auto sh = gw.data().shape().front_pop();
   int N1 = sh[0], N2 = sh[1];
@@ -43,14 +44,12 @@ namespace triqs { namespace gfs {
 
       arrays::vector<dcomplex> z_in(n_points); // complex points
       arrays::vector<dcomplex> u_in(n_points); // values at these points
-      arrays::vector<dcomplex> a(n_points);    // corresponding Pade coefficients
 
       for (int i=0; i < n_points; ++i) z_in(i) = gw.mesh()[i];
       for (int i=0; i < n_points; ++i) u_in(i) = gw.on_mesh(i)(n1,n2);
 
       triqs::utility::pade_approximant PA(z_in,u_in);
 
-      gr() = 0.0;
       for (auto om : gr.mesh()) {
         dcomplex e = om + dcomplex(0.0,1.0)*freq_offset;
         gr[om](n1,n2) = PA(e);
