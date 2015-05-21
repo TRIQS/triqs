@@ -122,10 +122,10 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  void set_hilbert(HilbertSpace const& hs_) { hs = &hs_; }
 
  private:
- void prune(double tolerance = 10e-10) {
+ void prune() {
   for(auto it=ampli.begin(); it!=ampli.end();)
   {
-   if (triqs::utility::is_zero(it->second,tolerance))
+   if (triqs::utility::is_zero(it->second))
     it = ampli.erase(it);
    else
     ++it;
