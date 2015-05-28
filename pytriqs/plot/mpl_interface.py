@@ -35,33 +35,34 @@ except:
 figsize_default = (12,8)
 
 
-def oplot (*ob_list, **opt_dict) : 
+def oplot (*ob_list, **opt_dict) :
     """
     A thin layer above pyplot.plot function that allows plotting objects with
-    plot protocol as well as arrays. 
+    plot protocol as well as arrays.
     Options are the same as for the pyplot.plot function.
     """
-    plt.figure(1, figsize = opt_dict.pop('figsize', figsize_default ) )
+    plt.figure(num=opt_dict.pop('num', 1),
+               figsize=opt_dict.pop('figsize', figsize_default))
     __oplot_impl(plt.plot, plt.xlabel,plt.ylabel,plt.legend, *ob_list,**opt_dict)
     # remove this in the notebook...
     #if hasattr(plt.figure(1), "show") : plt.figure(1).show()
 
 mpl.axes.Axes.oplot = lambda self, *ob_list, **opt_dict : __oplot_impl(self.plot,self.set_xlabel, self.set_ylabel, self.legend, *ob_list,**opt_dict)
 
-def __oplot_impl (plot_fct, xlabel_fct, ylabel_fct, legend_fct, *ob_list, **opt_dict) : 
+def __oplot_impl (plot_fct, xlabel_fct, ylabel_fct, legend_fct, *ob_list, **opt_dict) :
     """
     A thin layer above pyplot.plot function that allows plotting objects with
-    plot protocol as well as arrays. 
+    plot protocol as well as arrays.
     Options are the same as for the pyplot.plot function.
     """
 
-    def objs() : # filter the arguments for the format strings ... 
+    def objs() : # filter the arguments for the format strings ...
         i, l = 0, []
-        while i< len (ob_list) : 
-            if i < len(ob_list) - 1 and type(ob_list[i+1]) == type("") : 
+        while i< len (ob_list) :
+            if i < len(ob_list) - 1 and type(ob_list[i+1]) == type("") :
                 res = ob_list[i], [ ob_list[i+1] ]
                 i+=2
-            else :  
+            else :
                 res =  ob_list[i], [ ]
                 i+=1
             yield res
@@ -69,21 +70,21 @@ def __oplot_impl (plot_fct, xlabel_fct, ylabel_fct, legend_fct, *ob_list, **opt_
     for ob, OptionsList in objs() :
         opt = opt_dict.copy() # the plot protocol will consume the dict....
         #ob2 = eval_expr_or_pass (ob) # if it is a lazy_expr, it is time to evaluate it !
-        for curvedata in plot_protocol_apply(ob, opt, plt.xlim ) : 
+        for curvedata in plot_protocol_apply(ob, opt, plt.xlim ) :
             X,Y = curvedata['xdata'],curvedata['ydata']
-            d = { 'label' :  curvedata['label'] } 
+            d = { 'label' :  curvedata['label'] }
             d.update(opt)
-            try : 
+            try :
                 plot_fct(X,Y,*OptionsList,**d)
             except TypeError, e:
                 import re
                 m = re.search('(?<=There is no line property )"(.*)"', str(e) )
-                if m : 
+                if m :
                    raise RuntimeError, "Option %s is not understood in plot function : it is not an option of the object to be plotted, nor a matplotlib option"%m.group(0)
-                else : 
-                   raise 
-            if 'xlabel' in curvedata : xlabel_fct(curvedata['xlabel'], fontsize=20) 
-            if 'ylabel' in curvedata : ylabel_fct(curvedata['ylabel'], fontsize=20) 
+                else :
+                   raise
+            if 'xlabel' in curvedata : xlabel_fct(curvedata['xlabel'], fontsize=20)
+            if 'ylabel' in curvedata : ylabel_fct(curvedata['ylabel'], fontsize=20)
 
     legend_fct(loc = 1) #legend is built from the label
 
