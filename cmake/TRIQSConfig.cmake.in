@@ -34,6 +34,7 @@ set(TRIQS_LIBRARY_GSL     @GSL_LIBRARIES@)
 set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
 set(TRIQS_HDF5_DIFF_EXECUTABLE @TRIQS_HDF5_DIFF_EXECUTABLE@)
 set(TRIQS_HDF5_COMMAND_PATH @TRIQS_HDF5_COMMAND_PATH@)
+set(TRIQS_PYTHON_LIB_DEST_ROOT @TRIQS_PYTHON_LIB_DEST_ROOT@)
 set(TRIQS_PYTHON_LIB_DEST @TRIQS_PYTHON_LIB_DEST@)
 
 # for people who want to quickly add everything TRIQS has detected...
@@ -240,6 +241,69 @@ macro (triqs_prepare_local_pytriqs_merged_with_my_python python_destination)
 
 endmacro()
 
+# A macro to create a local copy of triqs with the added python
+macro (triqs_prepare_local_pytriqs python_destination)
+
+  # Create the local build_pytriqs executable
+  file(WRITE ${CMAKE_BINARY_DIR}/build_pytriqs
+  "#!/bin/bash
+export PYTHONPATH=${CMAKE_BINARY_DIR}:${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST_ROOT}:$PYTHONPATH
+${TRIQS_PYTHON_INTERPRETER} $@"
+  )
+  execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_pytriqs)
+
+  # Create the local build_ipytriqs executable
+  file(WRITE ${CMAKE_BINARY_DIR}/build_ipytriqs
+  "#!/bin/bash
+export PYTHONPATH=${CMAKE_BINARY_DIR}:${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST_ROOT}:$PYTHONPATH
+
+${TRIQS_PYTHON_INTERPRETER} -c \"
+import sys
+import IPython
+assert IPython.__version__ >= '2' , 'ipython version too low: need 2.x or higher for the notebook'
+from IPython.terminal.ipapp import launch_new_instance
+sys.exit(launch_new_instance())
+\" $@"
+  )
+  execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_ipytriqs)
+
+  # Create the local build_ipytriqs_notebook executable
+  file(WRITE ${CMAKE_BINARY_DIR}/build_ipytriqs_notebook
+  "#!/bin/bash
+export PYTHONPATH=${CMAKE_BINARY_DIR}:${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST_ROOT}:$PYTHONPATH
+
+${TRIQS_PYTHON_INTERPRETER} -c \"
+import sys
+sys.argv.insert(1, 'notebook')
+import IPython
+assert IPython.__version__ >= '2' , 'ipython version too low: need 2.x or higher for the notebook'
+# pylab=inline is REMOVED in 3.x version of IPython.
+if IPython.__version__ < '3.0.0':
+  sys.argv.insert(2, '--pylab=inline')
+  sys.argv.insert(3, '--MappingKernelManager.time_to_dead=3600')
+else:
+  sys.argv.insert(2, '--MappingKernelManager.time_to_dead=3600')
+from IPython.terminal.ipapp import launch_new_instance
+sys.exit(launch_new_instance())
+\" $@"
+  )
+  execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_ipytriqs_notebook)
+
+  # Create sitecustomize.py file
+  # It will redirect import requests from pytriqs/${python_destination} to python dir
+  string(REPLACE "/" "." python_destination_with_dots ${python_destination})
+  file(WRITE ${CMAKE_BINARY_DIR}/sitecustomize.py
+  "package_name = 'pytriqs.${python_destination_with_dots}'
+def application_pytriqs_import(name,*args,**kwargs):
+  if name.startswith(package_name):
+    name = 'python' + name[len(package_name):]
+  return builtin_import(name,*args,**kwargs)
+
+import __builtin__
+__builtin__.__import__, builtin_import = application_pytriqs_import, __builtin__.__import__"
+  )
+
+endmacro(triqs_prepare_local_pytriqs)
 
 #
 # This macro builds the f2py module
