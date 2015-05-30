@@ -477,10 +477,25 @@ install (FILES ${CMAKE_SOURCE_DIR}/cmake/FindTRIQS.cmake DESTINATION share/triqs
 message( STATUS "-------- Making TRIQSConfig.cmake -------------")
 get_property(ALL_DEFS GLOBAL PROPERTY TRIQS_COMPIL_DEFINITIONS)
 configure_file(./cmake/triqs_config.h.in Config/triqs_config.h @ONLY)
+
+file(READ ${CMAKE_SOURCE_DIR}/shells/pytriqs.bash.in BUILD_PYTRIQS_SCRIPT)
+file(READ ${CMAKE_SOURCE_DIR}/shells/ipytriqs.bash.in BUILD_IPYTRIQS_SCRIPT)
+file(READ ${CMAKE_SOURCE_DIR}/shells/ipytriqs_notebook.bash.in BUILD_IPYTRIQS_NOTEBOOK_SCRIPT)
+
+set(EXPORT_PYTHONPATH
+    "export PYTHONPATH=\${CMAKE_BINARY_DIR}:\${TRIQS_PATH}/\${TRIQS_PYTHON_LIB_DEST_ROOT}:\$PYTHONPATH")
+string(CONFIGURE "${BUILD_PYTRIQS_SCRIPT}" BUILD_PYTRIQS_SCRIPT @ONLY)
+string(REPLACE "\"" "\\\"" BUILD_PYTRIQS_SCRIPT "${BUILD_PYTRIQS_SCRIPT}")
+string(CONFIGURE "${BUILD_IPYTRIQS_SCRIPT}" BUILD_IPYTRIQS_SCRIPT @ONLY)
+string(REPLACE "\"" "\\\"" BUILD_IPYTRIQS_SCRIPT "${BUILD_IPYTRIQS_SCRIPT}")
+string(CONFIGURE "${BUILD_IPYTRIQS_NOTEBOOK_SCRIPT}" BUILD_IPYTRIQS_NOTEBOOK_SCRIPT @ONLY)
+string(REPLACE "\"" "\\\"" BUILD_IPYTRIQS_NOTEBOOK_SCRIPT "${BUILD_IPYTRIQS_NOTEBOOK_SCRIPT}")
+unset(EXPORT_PYTHONPATH)
+
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake @ONLY)
 else()
- configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig1.cmake @ONLY )
+ configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig1.cmake @ONLY)
  find_package(Python) # even in the case we use no python, cf issue #40 
  EXEC_PYTHON_SCRIPT( "import re;open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))" , ConfigFile)
 endif()
