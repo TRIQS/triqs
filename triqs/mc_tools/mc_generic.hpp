@@ -94,7 +94,7 @@ namespace triqs { namespace mc_tools {
     random_generator & rng(){ return RandomGenerator;}
 
     // An access to the current cycle number 
-    int current_cycle_number(){ return NC; }
+    int current_cycle_number() const { return NC; }
 
     bool thermalized() const { return (NC>= NWarmIterations);}
     bool converged() const { return false;}
