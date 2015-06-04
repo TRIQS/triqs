@@ -45,6 +45,10 @@ Remove/add the one/two last lines and columns
 ---------------------------------------------
 
 .. triqs_example:: ./det_manip_tutorial_7.cpp
+Replace one line and column
+---------------------------------------------
+
+.. triqs_example:: ./det_manip_tutorial_8.cpp
 Learn more in the full reference, see :ref:`det_manip`
 
 
