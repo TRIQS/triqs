@@ -37,6 +37,7 @@ Q: How do I save the triqs hash and script for debugging purposes?
 ------------------------------------------------------------------
 
 A: Simply add this to your script::
+
     from pytriqs import version
     if mpi.is_master_node():
       Results = HDFArchive(filename+".h5",'a')
