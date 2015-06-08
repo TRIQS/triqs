@@ -65,7 +65,8 @@ namespace triqs { namespace det_manip {
 
     // serialized data. There are all VALUES.
     value_type det;
-    size_t Nmax,N, last_try;
+    size_t Nmax,N;
+    size_t last_try; // keep in memory the last operation not completed
     std::vector<size_t> row_num,col_num;
     std::vector<xy_type> x_values,y_values;
     int sign;
@@ -121,8 +122,11 @@ namespace triqs { namespace det_manip {
    private:
     // temporary work data, not saved, serialized, etc....
     struct work_data_type1 {
-     xy_type x, y;
-     vector_type MB,MC, B, C;
+     xy_type x, y; 
+     // MB = A^(-1)*B, 
+     // MC = C*A^(-1)
+     vector_type MB, MC, B, C;
+     // ksi = newdet/det
      value_type ksi;
      size_t i,j,ireal,jreal;
      void reserve(size_t s) { B.resize(s); C.resize(s); MB.resize(s); MC.resize(s); MB()=0; MC()=0; }
@@ -130,7 +134,9 @@ namespace triqs { namespace det_manip {
 
     struct work_data_type2 {
      xy_type x[2], y[2];
-     matrix_type MB,MC, B, C,ksi;
+     // MB = A^(-1)*B, 
+     // MC = C*A^(-1)
+     matrix_type MB, MC, B, C, ksi;
      size_t i[2],j[2],ireal[2],jreal[2];
      void reserve(size_t s) { MB.resize(s,2); MC.resize(2,s); B.resize(s,2), C.resize(2,s); ksi.resize(2,2); MB() = 0; MC() = 0; }
      value_type det_ksi() const { return ksi(0,0) * ksi(1,1) - ksi(1,0)* ksi(0,1);}
@@ -311,7 +317,11 @@ namespace triqs { namespace det_manip {
      w1.i=i; w1.j=j; w1.x=x; w1.y = y;
 
      // treat empty matrix separately
-     if (N==0) { newdet = f(x,y); newsign = 1; return newdet; }
+     if (N==0) {
+       newdet = f(x,y); 
+       newsign = 1; 
+       return newdet; 
+    }
 
      // I add the row and col and the end. If the move is rejected,
      // no effect since N will not be changed : Minv(i,j) for i,j>=N has no meaning.
@@ -413,7 +423,7 @@ namespace triqs { namespace det_manip {
      */
 
     value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, xy_type const & x0_, xy_type const & x1_, xy_type const & y0_, xy_type const & y1_) {
-
+      
      // first make sure i0<i1 and j0<j1
      xy_type const& x0((i0 < i1) ? x0_ : x1_);
      xy_type const& x1((i0 < i1) ? x1_ : x0_);
@@ -473,18 +483,27 @@ namespace triqs { namespace det_manip {
     void complete_insert2 () {
      // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
      for (int k=0; k<2; ++k) {
-      x_values.push_back(w2.x[k]); y_values.push_back(w2.y[k]);
-      row_num.push_back(0); col_num.push_back(0);
+      x_values.push_back(w2.x[k]); 
+      y_values.push_back(w2.y[k]);
+      row_num.push_back(0); 
+      col_num.push_back(0);
      }
 
      range R2(0,2);
-     if (N==0) {N=2; mat_inv(R2,R2)=inverse(w2.ksi); row_num[w2.i[1]]=1; col_num[w2.j[1]]=1; return;}
+     // treat empty matrix separately
+     if (N==0) {
+       N=2; 
+       mat_inv(R2,R2)=inverse(w2.ksi); 
+       row_num[w2.i[1]]=1; 
+       col_num[w2.j[1]]=1; 
+       return;
+     }
 
      range Ri(0,N);
      //w2.MC(R2,Ri) = w2.C(R2,Ri) * mat_inv(Ri,Ri);// OPTIMIZE BELOW
      blas::gemm(1.0, w2.C(R2,Ri), mat_inv(Ri,Ri),0.0,w2.MC(R2,Ri));
-     w2.MC(R2, range(N, N+2) ) = -1; // identity matrix
-     w2.MB(range(N,N+2), R2 ) = -1; // identity matrix !
+     w2.MC(R2, range(N, N+2) ) = -1; // -identity matrix
+     w2.MB(range(N,N+2), R2 ) = -1; // -identity matrix !
 
      // keep the real position of the row/col
      // since we insert a col/row, we have first to push the col at the right
@@ -503,6 +522,7 @@ namespace triqs { namespace det_manip {
      mat_inv(range(N-2,N),R) = 0;
      //mat_inv(R,R) += w2.MB(R,R2) * (w2.ksi * w2.MC(R2,R)); // OPTIMIZE BELOW
      blas::gemm(1.0, w2.MB(R,R2), (w2.ksi * w2.MC(R2,R)),1.0,mat_inv(R,R) );
+     
     }
 
    public:
@@ -516,7 +536,7 @@ namespace triqs { namespace det_manip {
      */
     value_type try_remove(size_t i, size_t j){
      TRIQS_ASSERT(i<N);  TRIQS_ASSERT(j<N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
-     w1.i=i;w1.j=j;last_try = 2;
+     w1.i = i; w1.j = j; last_try = 2;
      w1.jreal = col_num[w1.j];
      w1.ireal = row_num[w1.i];
      // compute the newdet
@@ -899,17 +919,31 @@ namespace triqs { namespace det_manip {
       complete_operation();
       return r;
     }
-
+    
     /// Remove2_at_end (try_remove2 + complete)
     value_type remove2_at_end() {
      auto N = size();
      return remove2(N-1, N-2, N-1, N-2);
     }
+    
+    /// change_col (try_change_col + complete)
+    value_type change_col(size_t j, xy_type const& y) {
+     auto r = try_change_col(j, y);
+     complete_operation();
+     return r;
+    }
+    
+    /// change_row (try_change_row + complete)
+    value_type change_row(size_t i, xy_type const& x) {
+     auto r = try_change_row(i, x);
+     complete_operation();
+     return r;
+    }
 
     /// Change one line and one col
     void change_one_line_and_one_col( size_t i, size_t j, xy_type const& x, xy_type const& y) {
-      remove(i,j);
-      insert(i,j,x,y);
+     change_col(j,y);
+     change_row(i,x);
     }
 
     ///
