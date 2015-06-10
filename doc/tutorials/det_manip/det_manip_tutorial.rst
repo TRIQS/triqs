@@ -1,14 +1,14 @@
-Manipulation of determinants for Continuous-Time Monte-Carlo algorithms
-=======================================================================
+Manipulation of determinants for Continuous-Time Monte-Carlo algorithms in C++
+==============================================================================
 
 .. highlight:: c
 
 .. toctree::
    :maxdepth: 1
 
-TRIQS comes with a class called det_manip to easily perform operations on a special type of matrices 
+TRIQS comes with a class called det_manip to easily perform operations on a special type of matrices
 (see :doc:`here <../reference/determinant_manipulation/contents>`).
-This library, among others, allows to easily add or remove lines or columns to the matrix, to calculate the determinant and the inverse. 
+This library, among others, allows to easily add or remove lines or columns to the matrix, to calculate the determinant and the inverse.
 Here are a couple of simple examples showing the basic use of this class.
 
 
@@ -41,6 +41,14 @@ Remove two lines and two columns
 --------------------------------
 
 .. triqs_example:: ./det_manip_tutorial_6.cpp
+Remove/add the one/two last lines and columns
+---------------------------------------------
+
+.. triqs_example:: ./det_manip_tutorial_7.cpp
+Replace one line and column
+---------------------------------------------
+
+.. triqs_example:: ./det_manip_tutorial_8.cpp
 Learn more in the full reference, see :ref:`det_manip`
 
 
