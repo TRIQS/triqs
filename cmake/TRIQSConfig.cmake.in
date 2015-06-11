@@ -303,18 +303,32 @@ import __builtin__
 __builtin__.__import__, builtin_import = application_pytriqs_import, __builtin__.__import__"
   )
 
- # Install all other files
- install(DIRECTORY ${CMAKE_SOURCE_DIR}/python/ DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination} FILES_MATCHING PATTERN *.py)
+  # Install the __init__.py files
+  set(INIT_PY_INSTALLATION_SCRIPT
+  "
+set(partial_dir \"${python_destination}\")
+while(partial_dir MATCHES \"/\")
+  string(REGEX REPLACE \"/[^/]*$\" \"\" partial_dir \${partial_dir})
+  set(init_py_path \"${TRIQS_PATH}/${TRIQS_PYTHON_LIB_DEST}/\${partial_dir}/__init__.py\")
+  if(NOT EXISTS \"\${init_py_path}\")
+    message(STATUS \"Generating: \${init_py_path}\")
+    file(WRITE \${init_py_path} \"__all__=[]\")
+  endif()
+endwhile()")
+  install(CODE ${INIT_PY_INSTALLATION_SCRIPT})
 
- # Set a rule to have original python files copied to their destination if modified
- file(GLOB_RECURSE python_sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
- set(py_copy_tar ${CMAKE_CURRENT_BINARY_DIR}/py_copy.tar)
- add_custom_command(OUTPUT ${py_copy_tar}
+  # Install all other files
+  install(DIRECTORY ${CMAKE_SOURCE_DIR}/python/ DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${python_destination} FILES_MATCHING PATTERN *.py)
+
+  # Set a rule to have original python files copied to their destination if modified
+  file(GLOB_RECURSE python_sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
+  set(py_copy_tar ${CMAKE_CURRENT_BINARY_DIR}/py_copy.tar)
+  add_custom_command(OUTPUT ${py_copy_tar}
      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} tar cf ${py_copy_tar} ${python_sources}
      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar xf ${py_copy_tar}
      COMMAND ${CMAKE_COMMAND} -E remove ${py_copy_tar}
      DEPENDS ${python_sources})
- add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
+  add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
 
 endmacro(triqs_prepare_local_pytriqs)
 
