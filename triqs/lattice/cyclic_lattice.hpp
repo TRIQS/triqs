@@ -75,8 +75,8 @@ namespace gfs {
   // linear_index_t index_to_linear(index_t const& i) const { return i[0] + i[1] * s1 + i[2] * s2; }
 
   /// Is the point in the mesh ? Always true
-  bool is_within_boundary(point_t const &) const { return true;}
- 
+  template <typename T> bool is_within_boundary(T const&) const { return true; }
+
   using mesh_point_t = mesh_point<gf_mesh>;
 
   /// Accessing a point of the mesh from its index

@@ -85,7 +85,8 @@ namespace gfs {
      w2 = w;
      w1 = 1 - w;
     }
-    return w1 * clef::eval(expr, clef::placeholder<N>() = no_cast(m[n])) + w2 * clef::eval(expr, clef::placeholder<N>() = no_cast(m[n + 1]));
+    return std::move(w1) * clef::eval(expr, clef::placeholder<N>() = no_cast(m[n])) +
+           std::move(w2) * clef::eval(expr, clef::placeholder<N>() = no_cast(m[n + 1]));
    }
   };
 
