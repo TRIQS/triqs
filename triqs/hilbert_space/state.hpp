@@ -265,7 +265,7 @@ template<typename TargetState, typename OriginalState>
 TargetState project(OriginalState const& psi, hilbert_space const& proj_hs) {
  TargetState proj_psi(proj_hs);
  auto const& hs = psi.get_hilbert();
- auto f = __lambda1<TargetState,hilbert_space> {proj_psi, hs};
+ auto f = __lambda1<TargetState,decltype(hs)> {proj_psi, hs};
  foreach(psi, f);
  return proj_psi;
 }
@@ -274,7 +274,7 @@ template<typename TargetState, typename OriginalState>
 TargetState project(OriginalState const& psi, sub_hilbert_space const& proj_hs) {
  TargetState proj_psi(proj_hs);
  auto const& hs = psi.get_hilbert();
- auto f = __lambda2<TargetState,sub_hilbert_space,hilbert_space> {proj_psi, proj_hs, hs};
+ auto f = __lambda2<TargetState,sub_hilbert_space,decltype(hs)> {proj_psi, proj_hs, hs};
  foreach(psi,f);
  return proj_psi;
 }
