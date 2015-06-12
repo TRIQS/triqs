@@ -102,7 +102,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  friend value_type dot_product(state const& s1, state const& s2) {
   value_type res = 0.0;
   for (auto const& a : s1.ampli) {
-   if (s2.ampli.count(a.first) == 1) res += conj_(a.second) * s2.ampli.at(a.first);
+   if (s2.ampli.count(a.first) == 1) res += triqs::utility::_conj(a.second) * s2.ampli.at(a.first);
   }
   return res;
  }
