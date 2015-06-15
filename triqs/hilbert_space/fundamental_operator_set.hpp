@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/operators/many_body_operator.hpp>
+#include <triqs/utility/exceptions.hpp>
 #include <vector>
 #include <set>
 #include <map>
@@ -64,7 +65,18 @@ class fundamental_operator_set {
  int size() const { return map_index_n.size(); }
 
  // flatten (a,alpha) --> n
- int operator[](indices_t const& t) const { return map_index_n.at(t); }
+ int operator[](indices_t const& t) const {
+  try {
+   return map_index_n.at(t);
+  } catch(std::out_of_range &) {
+   std::stringstream msg;
+   msg << "Operator with indices (";
+   int u = 0;
+   for(auto const& i : t) { if (u++) msg << ","; msg << i; }
+   msg << ") does not belong to this fundamental set!";
+   TRIQS_RUNTIME_ERROR << msg.str();
+  }
+ }
 
  // iterator on the tuples
  // for (auto & x : fops) { x.linear_index is linear_index, while x.index is the C multi-index.
