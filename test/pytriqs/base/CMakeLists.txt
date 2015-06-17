@@ -28,3 +28,6 @@ add_triqs_test_txt(gf_transpose)
 
 # Add evaluator for g
 add_triqs_test_txt(gf_eval)
+
+# U_matrix:
+add_triqs_test_hdf(U_mat " -d 1.e-6" )

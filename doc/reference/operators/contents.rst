@@ -12,9 +12,10 @@ problem. For example, they must know what the local Hamiltonian is, and optional
 quantum numbers (that can be used to improve the speed). Possibly some operators of observables to be measured, also.
 
 In order to deal with these objects, TRIQS provides a class that allows to manipulate operators.
+A class with commonly-used quantities such as Hamiltonians is also provided.
 
 .. toctree::
    :maxdepth: 2
 
    operators
-   hamiltonians
+   util

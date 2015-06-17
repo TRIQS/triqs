@@ -1,9 +1,40 @@
 from pytriqs.operators import *
+from op_struct import *
 from itertools import product
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 
 def h_loc_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None):
+    r"""
+    Create a Slater Hamiltonian using fully rotationally-invariant 4-index interactions:
+
+    .. math:: H = \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
+
+    Parameters
+    ----------
+    spin_names : list of strings
+                 Names of the spins, e.g. ['up','down'].
+    orb_names : list of strings or int       
+                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+    U_matrix : 4D matrix or array
+               The fully rotationally-invariant 4-index interaction :math:`U_{ijkl}`.
+    off_diag : boolean
+               Do we have (orbital) off-diagonal elements?
+               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
+               otherwise by ('spin_orbital',0).
+    map_operator_structure : dict 
+                             Mapping of names of GF blocks names from one convention to another, 
+                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
+                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
+    H_dump : string
+             Name of the file to which the Hamiltonian should be written.
+
+    Returns
+    -------
+    H : Operator
+        The Hamiltonian.
+
+    """
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -31,6 +62,43 @@ def h_loc_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
     return H
 
 def h_loc_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operator_structure=None,H_dump=None):
+    r"""
+    Create a Kanamori Hamiltonian using the density-density, spin-fip and pair-hopping interactions.
+
+    .. math::
+        H = \frac{1}{2} \sum_{(i \sigma) \neq (j \sigma')} U_{i j}^{\sigma \sigma'} n_{i \sigma} n_{j \sigma'}
+            - \sum_{i \neq j} J a^\dagger_{i \uparrow} a_{i \downarrow} a^\dagger_{j \downarrow} a_{j \uparrow}
+            + \sum_{i \neq j} J a^\dagger_{i \uparrow} a^\dagger_{i \downarrow} a_{j \downarrow} a_{j \uparrow}.
+
+    Parameters
+    ----------
+    spin_names : list of strings
+                 Names of the spins, e.g. ['up','down'].
+    orb_names : list of strings or int       
+                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+    U : 2D matrix or array
+        :math:`U_{ij}^{\sigma \sigma} (same spins)`
+    Uprime : 2D matrix or array
+             :math:`U_{ij}^{\sigma \bar{\sigma}} (opposite spins)`
+    J_hund : scalar
+             :math:`J`
+    off_diag : boolean
+               Do we have (orbital) off-diagonal elements?
+               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
+               otherwise by ('spin_orbital',0).
+    map_operator_structure : dict 
+                             Mapping of names of GF blocks names from one convention to another, 
+                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
+                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
+    H_dump : string
+             Name of the file to which the Hamiltonian should be written.
+
+    Returns
+    -------
+    H : Operator
+        The Hamiltonian.
+
+    """
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -94,6 +162,39 @@ def h_loc_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
     return H
 
 def h_loc_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_structure=None,H_dump=None):
+    r"""
+    Create a density-density Hamiltonian.
+
+    .. math::
+        H = \frac{1}{2} \sum_{(i \sigma) \neq (j \sigma')} U_{i j}^{\sigma \sigma'} n_{i \sigma} n_{j \sigma'}.
+
+    Parameters
+    ----------
+    spin_names : list of strings
+                 Names of the spins, e.g. ['up','down'].
+    orb_names : list of strings or int       
+                Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
+    U : 2D matrix or array
+        :math:`U_{ij}^{\sigma \sigma} (same spins)`
+    Uprime : 2D matrix or array
+             :math:`U_{ij}^{\sigma \bar{\sigma}} (opposite spins)`
+    off_diag : boolean
+               Do we have (orbital) off-diagonal elements?
+               If yes, the operators and blocks are denoted by ('spin', 'orbital'),
+               otherwise by ('spin_orbital',0).
+    map_operator_structure : dict 
+                             Mapping of names of GF blocks names from one convention to another, 
+                             e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
+                             If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
+    H_dump : string
+             Name of the file to which the Hamiltonian should be written.
+
+    Returns
+    -------
+    H : Operator
+        The Hamiltonian.
+
+    """
 
     if H_dump:
         H_dump_file = open(H_dump,'w')
@@ -119,31 +220,3 @@ def h_loc_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
                 H_dump_file.write(str(U_val) + '\n')
 
     return H
-
-# Set function to make index for GF blocks given spin sn and orbital name on
-def get_mkind(off_diag,map_operator_structure):
-
-    if (off_diag is None) and (map_operator_structure is None):
-        raise ValueError("hamiltonians: provide either off_diag or map_operator_structure.")
-
-    if map_operator_structure is None:
-        if off_diag:
-            mkind = lambda sn, on: (sn, on)
-        else:
-            mkind = lambda sn, on: (sn+'_%s'%on, 0)
-    else:
-        mkind = lambda sn, on: map_operator_structure[(sn,on)]
-
-    return mkind
-
-# Set block structure of GF
-def set_operator_structure(spin_names,orb_names,off_diag):
-    gf_struct = {}
-    if off_diag: # outer blocks are spin blocks
-        for sn in spin_names:
-            gf_struct[sn] = [on for on in orb_names]
-    else: # outer blocks are spin-orbital blocks
-        for sn, on in product(spin_names,orb_names):
-            gf_struct[sn+'_%s'%on] = [0]
-
-    return gf_struct
