@@ -23,7 +23,7 @@ import numpy
 import lazy_expressions, descriptor_base
 #from gf import MeshImFreq
 from types import IntType, SliceType, StringType
-from tools import LazyCTX #, IndicesConverter, get_indices_in_dict, py_deserialize
+from _imp_tools import LazyCTX #, IndicesConverter, get_indices_in_dict, py_deserialize
 from _gf_plot import PlotWrapperPartialReduce
 #from gf import TailGf
 

@@ -27,11 +27,9 @@ It is imported with the command::
 """
 
 from gf import *
-
-from inverse import inverse
 from block_gf import BlockGf
 from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
-from functions import delta
+from tools import *
 
 __all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
            'lazy_expressions','TailGf',
@@ -42,4 +40,5 @@ __all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier'
            'GfLegendre', 'MeshLegendre',
            'make_gf_from_inverse_fourier',
            'BlockGf','inverse',
-           'delta','rebinning_tau']
+           'delta','dyson','tail_fit',
+           'rebinning_tau']
