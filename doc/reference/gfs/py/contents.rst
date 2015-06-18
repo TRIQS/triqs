@@ -17,3 +17,4 @@ Python documentation
   full
   transforms
   tail
+  tools

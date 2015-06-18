@@ -26,6 +26,9 @@ from descriptor_base import A_Omega_Plus_B
 import numpy as np
 
 def inverse(x):
+    """
+    Compute the inverse of a Green's function and return this.
+    """
     if descriptors.is_lazy(x):
         return lazy_expressions.lazy_function("inverse", inverse) (x)
     assert hasattr(x,'invert') and hasattr(x,'copy')
@@ -35,7 +38,19 @@ def inverse(x):
 
 
 def delta(g):
-    """Compute delta from G0"""
+    """
+    Compute Delta_iw from G0_iw.
+
+    Parameters
+    ----------
+    g : BlockGf (of GfImFreq) or GfImFreq
+        Non-interacting Green's function.
+
+    Returns
+    -------
+    delta_iw : BlockGf (of GfImFreq) or GfImFreq
+               Hybridization function.
+    """
     if type(g) == BlockGf:
     	return BlockGf(name_block_generator = [ (n, delta(g0)) for n,g0 in g], make_copies=False)
     elif type(g) == GfImFreq:
@@ -101,6 +116,13 @@ def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min
                     Number of moments to fit in the tail of Sigma_iw.
     fit_known_moments : dict{str:TailGf object}, optional, default = {block_name: TailGf(dim1, dim2, n_moments, order_min)}
                         Known moments of Sigma_iw, given as a TailGf object.
+
+    Returns
+    -------
+    Sigma_iw : Gf
+               Self-energy.
+    G_iw : Gf, optional
+           Interacting Green's function.
     """
 
     # Define default tail quantities
