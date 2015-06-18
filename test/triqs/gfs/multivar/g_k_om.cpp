@@ -8,6 +8,7 @@ using namespace triqs::gfs;
 using namespace triqs::clef;
 using namespace triqs::arrays;
 using namespace triqs::lattice;
+using triqs::utility::mindex;
 
 template<typename T1, typename T2>
 void assert_equal(T1 const& x, T2 const& y, std::string mess) {
@@ -73,7 +74,7 @@ int main() {
    }
 
    for (auto k : gk.mesh()) {
-    auto p = partial_eval<0>(G, 0);
+    auto p = partial_eval<0>(G, mindex(0,0,0));
     assert_equal(gk[k].singularity()(1)(0, 0), 1, "should be 1/omega");
     assert_equal(gk[k].singularity()(2)(0, 0), eval(eps_k, k_ = k), "should be eps_k/omega^2");
    }

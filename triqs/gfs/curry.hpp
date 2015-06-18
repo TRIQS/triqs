@@ -54,20 +54,38 @@ namespace triqs { namespace gfs {
   // The implementation (can be overloaded for some types), so put in a struct to have partial specialization
   template <typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsConst> struct partial_eval_impl;
 
-  // The user function
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool C, typename... T>
-  auto partial_eval(gf_view<Variable, Target, Singularity, Evaluator, C> g, T&&... x) {
-   return partial_eval_impl<Variable, Target, Singularity, Evaluator, C>::template invoke<pos...>(g(), std::forward<T>(x)...);
+  // The user function when the indices is already a linear index.
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool C, typename T>
+  auto partial_eval_linear_index(gf_view<Variable, Target, Singularity, Evaluator, C> g, T const& x) {
+   return partial_eval_impl<Variable, Target, Singularity, Evaluator, C>::template invoke<pos...>(g(), x);
   }
 
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, typename... T>
-  auto partial_eval(gf<Variable, Target, Singularity, Evaluator>& g, T&&... x) {
-   return partial_eval_impl<Variable, Target, Singularity, Evaluator, false>::template invoke<pos...>(g(), std::forward<T>(x)...);
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, typename T>
+  auto partial_eval_linear_index(gf<Variable, Target, Singularity, Evaluator>& g, T const& x) {
+   return partial_eval_impl<Variable, Target, Singularity, Evaluator, false>::template invoke<pos...>(g(), x);
   }
 
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, typename... T>
-  auto partial_eval(gf<Variable, Target, Singularity, Evaluator> const& g, T&&... x) {
-   return partial_eval_impl<Variable, Target, Singularity, Evaluator, true>::template invoke<pos...>(g(), std::forward<T>(x)...);
+  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, typename T>
+  auto partial_eval_linear_index(gf<Variable, Target, Singularity, Evaluator> const& g, T const& x) {
+   return partial_eval_impl<Variable, Target, Singularity, Evaluator, true>::template invoke<pos...>(g(), x);
+  }
+
+  /// ------------------------------------------------------------
+  // a little helper function that takes a cartesian product mesh m, a x ... pack and return the tuple of m[i](x[i])...
+  // if true_type. If false_type do nothing
+  template <typename Ms, typename Xs, size_t... Is> auto _zip_mesh_x(Ms const& ms, Xs const& xs, std14::index_sequence<Is...>) {
+   return std::make_tuple(std::get<Is>(ms).index_to_linear(std::get<Is>(xs))...);
+  }
+
+  template <int... pos, typename G, typename... T> auto _indices_to_linear(G const& g, T&&... x) {
+   auto meshes_tuple_evaluated = triqs::tuple::filter<pos...>(g.mesh().components());
+   // x are supposed to be index_t, and are converted to a linear index by their respective mesh
+   return _zip_mesh_x(meshes_tuple_evaluated, std::make_tuple(x...), std14::make_index_sequence<sizeof...(T)>{});
+  }
+
+  // top level user function 
+  template <int... pos, typename G, typename... T> auto partial_eval(G&& g, T&&... x) {
+   return partial_eval_linear_index<pos...>(std::forward<G>(g), _indices_to_linear<pos...>(g, std::forward<T>(x)...));
   }
 
   /// ---------------------------  curry  ---------------------------------
@@ -81,7 +99,7 @@ namespace triqs { namespace gfs {
    auto meshes_tuple = triqs::tuple::filter<pos...>(g.mesh().components());
    using var_t = cart_prod<triqs::tuple::filter_t<std::tuple<Ms...>, pos...>>;
    auto m = triqs::tuple::apply_construct<gf_mesh<var_t>>(meshes_tuple);
-   auto l = [g](auto&&... x) { return partial_eval<pos...>(g, x...); };
+   auto l = [g](auto&&... x) { return partial_eval_linear_index<pos...>(g, std::make_tuple(x...)); };
    return make_gf_view_lambda_valued<var_t>(m, l);
   };
 
@@ -103,23 +121,25 @@ namespace triqs { namespace gfs {
    return curry_impl<pos...>(g());
   }
 
- //---------------------------------------------
+  //---------------------------------------------
 
   // A generic impl. for cartesian product
   template <typename Target, typename Singularity, typename Evaluator, bool IsConst, typename... Ms>
   struct partial_eval_impl<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsConst> {
 
-   template <int... pos, typename... T>
-   static auto invoke(gf_view<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsConst> g, T const&... x) {
+   template <int... pos, typename XTuple>
+   static auto invoke(gf_view<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsConst> g, XTuple const& x_tuple) {
     using var_t = cart_prod<triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>;
     // meshes of the returned gf_view : just drop the mesh of the evaluated variables
     auto meshes_tuple_partial = triqs::tuple::filter_out<pos...>(g.mesh().components());
+    // The mesh of the resulting function
     auto m = triqs::tuple::apply_construct<gf_mesh<var_t>>(meshes_tuple_partial);
-    // now rebuild a tuple of the size sizeof...(Ms), containing the indices and range at the position of evaluated variables.
-    auto arr_args = triqs::tuple::inverse_filter<sizeof...(Ms), pos...>(std::make_tuple(x...), arrays::range());
+    // rebuild a tuple of the size sizeof...(Ms), containing the linear indices and range at the position of evaluated variables.
+    auto arr_args = triqs::tuple::inverse_filter<sizeof...(Ms), pos...>(x_tuple, arrays::range());
     // from it, we make a slice of the array of g, corresponding to the data of the returned gf_view
     auto arr2 = triqs::tuple::apply(g.data(), std::tuple_cat(arr_args, std::make_tuple(arrays::ellipsis{})));
-    auto singv = partial_eval<pos...>(g.singularity(), x...);
+    // We now also partial_eval the singularity
+    auto singv = partial_eval_linear_index<pos...>(g.singularity(), x_tuple);
     using r_sing_t = typename decltype(singv)::regular_type;
     // finally, we build the view on this data.
     using r_t = gf_view<var_t, Target, r_sing_t, void, IsConst>;
@@ -129,6 +149,7 @@ namespace triqs { namespace gfs {
 
  } // gf_implementation
  using gfs_implementation::partial_eval;
+ using gfs_implementation::partial_eval_linear_index;
  using gfs_implementation::curry;
 }}
 

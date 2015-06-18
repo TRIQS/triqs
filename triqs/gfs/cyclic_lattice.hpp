@@ -67,7 +67,6 @@ namespace gfs {
    template <typename G> AUTO_DECL operator()(G const *g, typename gf_mesh<cyclic_lattice>::index_t const &r) const RETURN((*g)[g->mesh().modulo_reduce(r)]);
    template <typename G> AUTO_DECL operator()(G const *g, mesh_point<gf_mesh<cyclic_lattice>> const &r) const RETURN((*g)[r]);
    template <typename G> AUTO_DECL operator()(G const *g, __no_cast<mesh_point<gf_mesh<cyclic_lattice>>> const &r) const RETURN((*g)[r.value]);
-
   };
  }
 }

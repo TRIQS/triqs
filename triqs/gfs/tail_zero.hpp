@@ -49,7 +49,7 @@ namespace gfs {
  // Check if T is tail_zero
  //template <typename T> constexpr bool is_tail_zero() { return std::is_same<tail_zero, T>::value; }
 
- template<int ... pos, typename ...T> nothing partial_eval(tail_zero, T&&...) { return {};}
+ template<int ... pos, typename ...T> nothing partial_eval_linear_index(tail_zero, T&&...) { return {};}
  inline tail_zero transpose(tail_zero) { return {};}
  inline tail_zero inverse(tail_zero) { return {};}
  inline tail_zero conj(tail_zero) { return {};}

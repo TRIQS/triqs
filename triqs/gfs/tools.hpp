@@ -98,7 +98,7 @@ namespace gfs {
  // Check if T is nothing
  template <typename T> constexpr bool is_nothing() { return std::is_same<nothing, T>::value; }
 
- template<int ... pos, typename ...T> nothing partial_eval(nothing, T&&...) { return {};}
+ template<int ... pos, typename ...T> nothing partial_eval_linear_index(nothing, T&&...) { return {};}
  inline nothing transpose(nothing) { return {};}
  inline nothing inverse(nothing) { return {};}
  inline nothing conj(nothing) { return {};}

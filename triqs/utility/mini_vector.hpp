@@ -137,17 +137,6 @@ namespace triqs { namespace utility {
     _data[9] = x_9;
    };
 
-   /*
- #define AUX(z,p,unused)  _data[p] = x_##p;
- #define IMPL(z, NN, unused)                                \
-    mini_vector (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T x_)){ \
-     static_assert(Rank-1==NN,"mini_vector : incorrect number of variables in constructor");\
-     BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX,nil) }
-    BOOST_PP_REPEAT(TRIQS_MINI_VECTOR_NRANK_MAX , IMPL, nil);
- #undef IMPL
- #undef AUX
-    */
-
    mini_vector(const mini_vector & x){ *this = x; }
    mini_vector(mini_vector && x){ *this = std::move(x); }
    
@@ -270,13 +259,17 @@ namespace triqs { namespace utility {
    return res;
   }
 
-//#ifndef TRIQS_C11
-//  // ------------- transform a tuple into a minivector --------------------------------------
-//
-//  template <typename T, typename TU> mini_vector<T, std::tuple_size<TU>::value> tuple_to_mini_vector(TU const &t) {
-//   return tuple::apply_construct_parenthesis<mini_vector<T, std::tuple_size<TU>::value>>(t);
-//  }
-//#endif
+ // ------- index maker ----------------
+
+ constexpr bool __and() { return true;}
+ template <typename... B> constexpr bool __and(bool b, B... bs) { return b && __and(bs...); }
+
+ template<typename ... U>
+ mini_vector<long,sizeof...(U)> mindex(U ... x) {
+  static constexpr bool is_all_ints = __and(std::is_integral<U>::value...);
+  static_assert(is_all_ints, "Every argument of the mindex function must be an integer type");
+  return mini_vector<long,sizeof...(U)>(x...); // better error message than with { }
+ }
 
 }}//namespace triqs::arrays 
 

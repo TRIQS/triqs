@@ -9,6 +9,7 @@ using namespace triqs::gfs;
 using namespace triqs::clef;
 using namespace triqs::arrays;
 using namespace triqs::lattice;
+using triqs::utility::mindex;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl << std::endl;
 
@@ -45,9 +46,8 @@ int main() {
   h5::file file("ess_g_x_t.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", gxt);
 
-
-  std::cout << gxt(triqs::utility::mini_vector<long, 3>{0,0,0},0.0)<<std::endl;
-  std::cout << gxt(triqs::utility::mini_vector<long, 3>{0,0,0},0.0)(0,0)<<std::endl;
+  std::cout << gxt(mindex(0,0,0),0.0)<<std::endl;
+  std::cout << gxt(mindex(0,0,0),0.0)(0,0)<<std::endl;
  }
  TRIQS_CATCH_AND_ABORT;
 }

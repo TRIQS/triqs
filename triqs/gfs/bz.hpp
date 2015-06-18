@@ -57,10 +57,10 @@ namespace gfs {
   template <typename Target, typename Singularity> struct evaluator<brillouin_zone, Target, Singularity> {
    static constexpr int arity = 1;
    template <typename G> evaluator(G *) {};
+  
+   template <typename G> auto operator()(G const *g, gf_mesh<brillouin_zone>::index_t const &mi) const RETURN((*g)[mi]);
    template <typename G> auto operator()(G const *g, lattice::k_t const &k) const RETURN((*g)[g -> mesh().locate_neighbours(k)]);
-
    template <typename G> auto operator()(G const *g, __no_cast<typename gf_mesh<brillouin_zone>::mesh_point_t> const & p) const RETURN((*g)[p.value]);
-   
   };
  }
 }

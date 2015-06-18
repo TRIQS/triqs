@@ -161,15 +161,15 @@ namespace gfs {
   struct partial_eval_impl<Variable, tail, nothing, void, IsConst> {
 
    using gv_t = gf_view<Variable, tail, nothing, void, IsConst>;
-   template <int... pos, typename... T> static auto invoke(gv_t g, T const &... x) {
-    return invoke_impl(g, std14::index_sequence<pos...>(), x...);
+   template <int... pos, typename T> static auto invoke(gv_t g, T const & x_tuple) {
+    return invoke_impl(g, std14::index_sequence<pos...>(), x_tuple);
    }
 
-   template <typename T> static auto invoke_impl(gv_t g, std14::index_sequence<0>, T const &x) {
-    return g.get_from_linear_index(x); 
+   template <typename T> static auto invoke_impl(gv_t g, std14::index_sequence<0>, T const &x_tuple) {
+    return g.get_from_linear_index(std::get<0>(x_tuple)); 
    }
 
-   template <typename T> static nothing invoke_impl(gv_t g, std14::index_sequence<1>, T const &x) { return nothing(); }
+   template <typename T> static nothing invoke_impl(gv_t g, std14::index_sequence<1>, T) { return nothing(); }
   };
 
  } // gfs_implementation
