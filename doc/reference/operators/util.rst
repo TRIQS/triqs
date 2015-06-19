@@ -9,7 +9,7 @@ Namely, three standard interacting local Hamiltonians are implemented: Slater, (
 The Hamiltonians can be written for any set of spin and orbital names. Note that there is no actual notion of spin, the spin names
 simply identify a division of the GF structure into non-hybridizing blocks.
 
-.. automodule:: pytriqs.operators.utils.hamiltonians
+.. automodule:: pytriqs.operators.util.hamiltonians
    :members:
 
 U matrix construction
@@ -17,11 +17,11 @@ U matrix construction
 
 Tools to construct the U matrices above are provided in the ``pytriqs.operators.util.U_matrix`` module.
 
-.. automodule:: pytriqs.operators.utils.U_matrix
+.. automodule:: pytriqs.operators.util.U_matrix
    :members:
 
 Helper functions
 ================
 
-.. automodule:: pytriqs.operators.utils.op_struct
+.. automodule:: pytriqs.operators.util.op_struct
    :members:
