@@ -12,6 +12,7 @@ g['s','s'] = inverse( Wilson(1.0) )
 g.invert()
 
 # Plot it with matplotlib. 'S' means: spectral function ( -1/pi Imag (g) )
-from pytriqs.plot.mpl_interface import oplot
+from pytriqs.plot.mpl_interface import *
 oplot( g['d','d'], '-o', RI = 'S', x_window  = (-1.8,1.8), name = "Impurity" )
 oplot( g['s','s'], '-x', RI = 'S', x_window  = (-1.8,1.8), name = "Bath" )
+plt.show()
