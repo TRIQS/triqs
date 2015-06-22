@@ -60,7 +60,7 @@ Here is a complete program doing this plain-vanilla DMFT on a half-filled one-ba
            g0 << inverse( iOmega_n + chemical_potential - (half_bandwidth/2.0)**2  * g )
 
        # Run the solver
-       S.solve(h_loc = U * n('up',0) * n('down',0), **params)
+       S.solve(h_int = U * n('up',0) * n('down',0), **params)
 
        # Some intermediate saves
        if mpi.is_master_node():

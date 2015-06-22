@@ -4,7 +4,7 @@ from itertools import product
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 
-def h_loc_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None):
+def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None):
     r"""
     Create a Slater Hamiltonian using fully rotationally-invariant 4-index interactions:
 
@@ -61,7 +61,7 @@ def h_loc_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
 
     return H
 
-def h_loc_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operator_structure=None,H_dump=None):
+def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operator_structure=None,H_dump=None):
     r"""
     Create a Kanamori Hamiltonian using the density-density, spin-fip and pair-hopping interactions.
 
@@ -161,7 +161,7 @@ def h_loc_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
 
     return H
 
-def h_loc_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_structure=None,H_dump=None):
+def h_int_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_structure=None,H_dump=None):
     r"""
     Create a density-density Hamiltonian.
 
