@@ -46,8 +46,13 @@ int main() {
   h5::file file("ess_g_x_t.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", gxt);
 
-  std::cout << gxt(mindex(0,0,0),0.0)<<std::endl;
-  std::cout << gxt(mindex(0,0,0),0.0)(0,0)<<std::endl;
+  std::cout << gxt(mindex(0, 0, 0), 0.0) << std::endl;
+  std::cout << gxt(mindex(0, 0, 0), 0.0)(0, 0) << std::endl;
+
+  std::cout << gxt(mindex(1, 0, 0), 0.0) << std::endl;
+  std::cout << gxt(mindex(1, 0, 0) - mindex(1, 0, 0), 0.0) << std::endl;
+  std::cout << gxt(mindex(2, 0, 0), 0.0) << std::endl;
+  std::cout << gxt(mindex(1, 0, 0) + mindex(1, 0, 0), 0.0) << std::endl;
  }
  TRIQS_CATCH_AND_ABORT;
 }

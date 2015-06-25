@@ -232,7 +232,21 @@ namespace triqs { namespace utility {
    friend std::ostream & operator << ( std::ostream & out, mini_vector const & v ) {return out<<"[]";}
   };
 
- // ------------- Comparison -------------------------------------- 
+  // ------------- + ou - --------------------------------------
+
+  template <typename T, int R> mini_vector<T, R> operator+(mini_vector<T, R> const &v1, mini_vector<T, R> const &v2) {
+   mini_vector<T, R> r(no_init_tag{});
+   for (int i = 0; i < R; ++i) r[i] = v1[i] + v2[i];
+   return r;
+  }
+
+  template <typename T, int R> mini_vector<T, R> operator-(mini_vector<T, R> const &v1, mini_vector<T, R> const &v2) {
+   mini_vector<T, R> r(no_init_tag{});
+   for (int i = 0; i < R; ++i) r[i] = v1[i] - v2[i];
+   return r;
+  }
+
+  // ------------- Comparison -------------------------------------- 
  
  template <typename T, int R> 
   bool operator ==(mini_vector<T,R> const & v1, mini_vector<T,R> const & v2) {
