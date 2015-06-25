@@ -267,7 +267,7 @@ def spherical_to_cubic(l, convention=''):
         T[0,0] = 1.0/sqrt(2);    T[0,6] = -1.0/sqrt(2)
         T[1,1] = 1.0/sqrt(2);    T[1,5] = 1.0/sqrt(2)
         T[2,2] = 1.0/sqrt(2);    T[2,4] = -1.0/sqrt(2)
-        T[3,5] = 1.0
+        T[3,3] = 1.0
         T[4,2] = 1j/sqrt(2);   T[4,4] = 1j/sqrt(2)
         T[5,1] = 1j/sqrt(2);   T[5,5] = -1j/sqrt(2)
         T[6,0] = 1j/sqrt(2);   T[6,6] = 1j/sqrt(2)
