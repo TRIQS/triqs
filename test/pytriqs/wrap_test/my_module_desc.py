@@ -11,6 +11,7 @@ module.add_include("<triqs/python_tools/converters/function.hpp>")
 module.add_include("<triqs/python_tools/converters/gf.hpp>")
 module.add_include("<triqs/python_tools/converters/map.hpp>")
 module.add_include("<triqs/python_tools/converters/set.hpp>")
+module.add_include("<triqs/python_tools/converters/tuple.hpp>")
 module.add_include("<triqs/../test/pytriqs/wrap_test/a.hpp>")
 
 # one class
@@ -120,6 +121,12 @@ module.add_function (name = "use_fnt_iid", signature = "void(std::function<int(i
 module.add_function (name = "map_to_mapvec", signature = "std::map<std::string,std::vector<int>>(std::map<std::string,int> m)", doc = "DOC of print_map")
 
 module.add_function (name = "set_to_set", signature = "std::set<int>(std::set<std::string> s)", doc = "DOC of set_to_set")
+
+for i in range(0,4):
+    name = "tuple_to_tuple_%i"%i
+    tt = ','.join(('int','double','std::string')[:i])
+    signature = "std::tuple<%s>(std::tuple<%s> t)" % (tt,tt)
+    module.add_function(name = name, signature = signature, doc = "DOC of tuple_to_tuple_%i"%i)
 
 def f1(x,y):
     print " I am in f1 ", x,y

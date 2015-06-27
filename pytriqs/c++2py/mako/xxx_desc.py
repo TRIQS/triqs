@@ -27,6 +27,8 @@
         'std::string' : 'string',
         'std::function' : 'function',
         'std::pair' : 'pair',
+        'std::tuple' : 'tuple',
+        'boost::variant' : 'variant'
         }
 
     used_module_list, converters_list = [], set()
@@ -60,6 +62,7 @@
         analyse(f.rtype)
 
     used_module_list = set(used_module_list) # makes unique
+    converters_list = set(converters_list)
     using_list = [using_needed_for_modules[m] for m in used_module_list]
 
     def cls(t) :
