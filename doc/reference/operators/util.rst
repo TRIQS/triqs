@@ -20,6 +20,12 @@ Tools to construct the U matrices above are provided in the ``pytriqs.operators.
 .. automodule:: pytriqs.operators.util.U_matrix
    :members:
 
+Observables
+===========
+
+.. automodule:: pytriqs.operators.util.observables
+   :members:
+
 Helper functions
 ================
 
