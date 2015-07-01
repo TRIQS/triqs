@@ -78,6 +78,8 @@ int main(int argc, char **argv) {
  // testing scalar
  double x=2.3;
  h5_write(top, "x",x);
+ std::complex<double> xx(2,3);
+ h5_write(top, "xx",xx);
 
  h5_write(top, "s", std::string("a nice chain"));
  top.create_group("G");
@@ -91,7 +93,7 @@ int main(int argc, char **argv) {
  h5_read (top, "D",D2);  std::cout<< "D = "<< D2<<std::endl;
  h5_read (top, "C",C2);  std::cout<< "C = "<< C2<<std::endl;
 
- double xx =0; h5_read(top, "x",xx); TEST(xx);
+ double xxx =0; h5_read(top, "x",xxx); TEST(xxx);
 
  std::string s2 ("----------------------------------");
  h5_read(top, "s", s2);
