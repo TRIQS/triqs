@@ -12,7 +12,8 @@ namespace py_tools {
 
   // c2py implementation
   template<int N, typename T, typename... Tail> static void c2py_impl(PyObject *list, tuple_t const& t, bool& ok) {
-   int res = PyList_Append(list,py_converter<T>::c2py(std::get<N>(t)));
+   pyref e = py_converter<T>::c2py(std::get<N>(t));
+   int res = PyList_Append(list,e);
    ok = (res != -1);
    if(ok) c2py_impl<N+1,Tail...>(list,t,ok);
   }
