@@ -3,6 +3,19 @@
 <%
   def doc_format(member_list) : 
    h= ['Parameter Name', 'Type', 'Default', 'Documentation']
+   # Doc post-processing
+   for m in member_list:
+       m.doc, doc_lines = "", [l.lstrip() for l in m.doc.splitlines()]
+       for l in doc_lines:
+           if l.startswith('type:'):
+              # Override 'Type' field
+              m.ctype = l[5:].lstrip()
+              continue
+           if l.startswith('default:'):
+              # Override 'Default' field
+              m.initializer = l[8:].lstrip()
+              continue
+           m.doc += l + ' '
    n_lmax = max(len(h[0]), max(len(m.name) for m in member_list))
    type_lmax = max(len(h[1]), max(len(m.ctype) for m in member_list))
    opt_lmax = max(len(h[2]), max(len(m.initializer) for m in member_list if m.initializer))
