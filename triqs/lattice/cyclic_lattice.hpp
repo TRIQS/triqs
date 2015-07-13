@@ -33,8 +33,8 @@ namespace gfs {
 
   utility::mini_vector<int, 3> dims;          // the size in each dimension
   size_t _size = dims[0] * dims[1] * dims[2]; // total size
-  long s1 = dims[0];                          // stride
-  long s2 = dims[0] * dims[1];                // stride
+  long s1 = dims[2];                          // stride
+  long s2 = dims[1] * dims[2];                // stride
 
   long _modulo(long r, int i) const {
    long res = r % dims[i];
@@ -70,7 +70,7 @@ namespace gfs {
 
   /// flatten the index
   linear_index_t index_to_linear(index_t const& i) const {
-   return _modulo(i[0], 0) + _modulo(i[1], 1) * s1 + _modulo(i[2], 2) * s2;
+   return _modulo(i[0], 0) * s2 + _modulo(i[1], 1) * s1 + _modulo(i[2], 2);
   }
   // linear_index_t index_to_linear(index_t const& i) const { return i[0] + i[1] * s1 + i[2] * s2; }
 
