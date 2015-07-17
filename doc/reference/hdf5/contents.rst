@@ -8,6 +8,8 @@ The HDF5 format
 
 In TRIQS, the main data storage format is `HDF5 <http://www.hdfgroup.org/HDF5/>`_ (Hierarchical Data Format v5).
 
+HDF5 ("*Hierarchical Data Format*") is a portable scientific data format. It is used to store data such as the Green's functions produced during a simulation either in c++ or in python. Irrespective of the language used to produce it, the data stored in an HDF5 archive can be loaded in Python or c++, or even dumped to a text file for a quick glimpse. The HDF5 format also allows for data **compression**. 
+
 .. note::
 
 	Using HDF5 format has several advantages :
@@ -21,6 +23,11 @@ In TRIQS, the main data storage format is `HDF5 <http://www.hdfgroup.org/HDF5/>`
 	* It is a binary format, hence it is compact and has compression options.
 	* It is to a large extent **auto-documented**: the structure of the data speaks for itself.
 
+.. note::
+   The keys of dictionaries written to hdf5 files in Python are currently
+   assumed to be strings. Undesirable behaviour may occur for other 
+   dictionaries with non-string keys! Should you need support for more general
+   dictionaries, please contact us.
 
 An hdf5 file can be thought of as a file-system. As such, its structure is that of a **tree**, where: 
 
@@ -47,5 +54,6 @@ and new subgroup for other hdf-compliant data.
    :maxdepth: 5
 
    ref
+   ./../../tutorials/hdf5/hdf5_tutorial
 
 

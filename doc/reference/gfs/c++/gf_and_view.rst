@@ -118,8 +118,7 @@ Member functions
 
 
 .. toctree::
-
-  :hidden:
+   :hidden:
 
    gf_constructors
    gf_data

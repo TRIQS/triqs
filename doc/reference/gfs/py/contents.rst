@@ -3,7 +3,7 @@
 
 .. module:: pytriqs.gf.local
 
-.. _green:
+.. _green_py:
 
 
 Python documentation
@@ -12,7 +12,6 @@ Python documentation
 .. toctree::
   :maxdepth: 2
 
-  tutorial
   block
   full
   transforms

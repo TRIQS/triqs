@@ -26,8 +26,8 @@ blocks for the Green's functions.
 Types of Green's functions
 ==========================
 
-Matsubara Green's function in imaginary time (GfImTime)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:ref:`Matsubara Green's function in imaginary time <GfImTime>` <GfImTime>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This object stores a matrix-valued Green function in imaginary time
 in the Matsubara formalism:
@@ -37,8 +37,8 @@ in the Matsubara formalism:
   G_{\alpha \beta} (\tau) \equiv - \mathcal{T} \langle c_{\alpha}(\tau) c^{\dagger}_{\beta} (0)\rangle \qquad \text{ for } 0 \leq \tau \leq \beta
 
  
-Matsubara Green's function in imaginary frequencies (GfImFreq)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:ref:`Matsubara Green's function in imaginary frequencies <GfImFreq>` <GfImFreq>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This object stores a matrix-valued Green function in imaginary frequencies
 in the Matsubara formalism:
@@ -46,11 +46,11 @@ in the Matsubara formalism:
 .. math::
   G_{\alpha \beta} (i \omega_n) \equiv \int_0^\beta G_{\alpha \beta} ( \tau) e^{i \omega_n \tau}
 
-where :math:`G(\tau)` is the :ref:`Matsubara Green function in imaginary time <GfImTime>`.
+where :math:`G(\tau)` is the Matsubara Green function in imaginary time <GfImTime>.
 
 
-Matsubara Green's function with Legendre polynomials (GfLegendre)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:ref:`Matsubara Green's function with Legendre polynomials <GfLegendre>` <GfLegendre>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This object stores a matrix-valued Matsubara Green's function in imaginary time using
 Legendre polynomials. It is connected to the usual imaginary-time Matsubara Green's
@@ -61,28 +61,27 @@ function through:
 
 
 where :math:`x(\tau) = 2\tau/\beta -1` and the :math:`P_l` are the Legendre
-polynomials.  :math:`G_{\alpha \beta}(\tau)` is the :ref:`Matsubara Green's
-function in imaginary time <GfImTime>`.
+polynomials.  :math:`G_{\alpha \beta}(\tau)` is the Matsubara Green's function in imaginary time <GfImTime>.
 
 
-Retarded Green's function in real time (GfReTime)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:ref:`Green function in real time <GfReTime>` <GfReTime>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This object stores a retarded matrix-valued Green function in real time:
+This object stores a matrix-valued Green function in real time, for example a retarded GF:
 
 .. math::
   G_{\alpha \beta} (t) \equiv - \theta(t) \langle\{c_{\alpha}(t) c^{\dagger}_{\beta} (0)\}\rangle
 
 
-Retarded Green's function in real frequencies (GfReFreq)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:ref:`Retarded Green's function in real frequencies <GfReFreq>` <GfReFreq>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This object stores a matrix-valued Green function in real frequencies:
 
 .. math::
   G_{\alpha \beta} (\omega) \equiv \int_{-\infty}^{\infty} G_{\alpha \beta} ( t ) e^{-i \omega t}
 
-where :math:`G(t)` is the :ref:`Green function in real time <GfReTime>`.
+where :math:`G_{\alpha \beta}(t)` is the Green function in real time <GfReTime>.
 
 
 

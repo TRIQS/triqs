@@ -1,7 +1,8 @@
 .. index:: Green's functions
 
-Green's functions manipulations in Python
-#########################################
+Tutorial on Green's functions in python
+========================================
+
 
 In this first part, we present a couple of examples in the form of a tutorial.
 The full reference is presented in the next sections.
