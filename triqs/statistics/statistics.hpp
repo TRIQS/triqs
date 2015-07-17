@@ -506,7 +506,7 @@ namespace statistics {
    //std::cout << B << "\t" << t_cor_new << "\t" << slope << std::endl;
   }
   if (t.size()>0)  {return abs(empirical_average(t));}
-  else{ std::cout << "autocorrelation time not converged!!" << std::endl; return abs(autocorr_time);}
+  else {TRIQS_RUNTIME_ERROR << "autocorrelation time not converged!!" ;}
  }
 } // namespace statistics
 } // triqs
