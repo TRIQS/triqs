@@ -39,7 +39,10 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
-#include <boost/algorithm/string.hpp>
+#include <string>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
 #include "./typeid_name.hpp"
 
 namespace triqs { namespace utility {
@@ -77,10 +80,11 @@ namespace triqs { namespace utility {
    char * * symbols = backtrace_symbols(stack, depth);
    for (std::size_t i = 1; i < depth; ++i) {
     std::string symbol = symbols[i];
-    std::vector<std::string> strs;
-    boost::split(strs, symbol, boost::is_any_of("\t ()+"), boost::token_compress_on);
-    for (std::vector<std::string>::const_iterator it = strs.begin(); it !=strs.end(); ++it)
-     buffer << " "<<triqs::utility::demangle(*it);
+    std::istringstream iss(symbol);
+    std::vector<std::string> strs{std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}}; 
+    //std::vector<std::string> strs;
+    //boost::split(strs, symbol, boost::is_any_of("\t ()+"), boost::token_compress_on);
+    for (auto const & x : strs) buffer << " "<<triqs::utility::demangle(x);
     buffer << std::endl;
     //buffer << ": " << symbol << std::endl;
    }
