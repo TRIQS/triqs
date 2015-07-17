@@ -13,3 +13,4 @@ Green's functions
    basic_notions/contents
    py/contents
    c++/contents
+   ./../../tutorials/gfs/gfs_tutorial

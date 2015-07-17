@@ -12,7 +12,6 @@ Python documentation
 .. toctree::
   :maxdepth: 2
 
-  tutorial
   block
   full
   transforms

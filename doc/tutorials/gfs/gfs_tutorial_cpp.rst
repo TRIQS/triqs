@@ -1,5 +1,5 @@
-Green's functions manipulations in C++
-=======================================
+Tutorial on Green's functions in C++
+=====================================
 
 .. highlight:: c
 

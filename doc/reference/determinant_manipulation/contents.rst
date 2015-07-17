@@ -38,5 +38,5 @@ This class implements these general operations. It contains:
    :maxdepth: 2
 
    det_manip
-   behind
-   ./../../../tutorials/c++/det_manip_tutorial
+   implementation_notes
+   ./../../../tutorials/det_manip/det_manip_tutorial

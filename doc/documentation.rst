@@ -3,8 +3,8 @@
 Documentation
 =============
 
-A quick tour
-------------
+A quick tour in python
+----------------------
 
 A little tour of some aspects of TRIQS and its applications, at the Python level. 
 
@@ -19,20 +19,26 @@ A little tour of some aspects of TRIQS and its applications, at the Python level
    tour/ipt
 
 
-Tutorials
-----------
-
-Learn how to use TRIQS step by step, both in Python and c++ !
+Tutorials in python
+--------------------
 
 .. toctree::
    :maxdepth: 1
 
    tutorials/gfs/gfs_tutorial_python
-   tutorials/gfs/gfs_tutorial_cpp
-   tutorials/arrays/array_tutorial
-   tutorials/det_manip/det_manip_tutorial
-   tutorials/hdf5/contents
+   tutorials/hdf5/hdf5_tutorial_python
 
+
+Tutorials in C++
+-----------------
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/gfs/gfs_tutorial_cpp
+   tutorials/arrays/array_tutorial_cpp
+   tutorials/det_manip/det_manip_tutorial_cpp
+   tutorials/hdf5/hdf5_tutorial_cpp
 
 Reference manual 
 -----------------
@@ -42,6 +48,7 @@ Reference manual
 
    reference/using_the_lib/contents
    reference/provenance/contents
+   reference/hdf5/contents
 
 Code reference
 ~~~~~~~~~~~~~~~~
