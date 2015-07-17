@@ -97,7 +97,7 @@ namespace lattice {
   auto _ = range{};
   auto Units = lattice().units();
   double delta = dot(Units(0, _), cross_product(Units(1, _), Units(2, _)));
-  if (abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Brillouin Zone : the 3 vectors of Units are not independant" << Units;
+  if (std::abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Brillouin Zone : the 3 vectors of Units are not independant" << Units;
   K_reciprocal(0, _) = cross_product(Units(1, _), Units(2, _)) / delta;
   K_reciprocal(1, _) = cross_product(Units(2, _), Units(0, _)) / delta;
   K_reciprocal(2, _) = cross_product(Units(0, _), Units(1, _)) / delta;
