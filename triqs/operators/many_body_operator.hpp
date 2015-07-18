@@ -287,19 +287,13 @@ namespace utility {
    if (triqs::utility::is_zero(it->second)) m.erase(it);
   }
 
-  struct print_visitor : public boost::static_visitor<> {
-   std::ostream& os;
-   print_visitor(std::ostream& os_) : os(os_) {}
-   template <typename T> void operator()(T const& x) const { os << x; }
-  };
-
   friend std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
    if (op.dagger) os << "^+";
    os << "(";
    int u = 0;
    for (auto const& i : op.indices) {
     if (u++) os << ",";
-    boost::apply_visitor(print_visitor{os}, i);
+    os << i;
    }
    return os << ")";
   }
