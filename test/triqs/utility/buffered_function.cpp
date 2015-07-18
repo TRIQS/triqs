@@ -19,19 +19,19 @@
  *
  ******************************************************************************/
 #include <triqs/utility/buffered_function.hpp>
-#include <iostream>
+#include "../test_tools.hpp"
 
-int main(int argc, char **argv) {
+TEST(BufferedFunction, All) {
 
+#ifdef TRIQS_CPP11
  // a function that generates all the square ....
  int x = 0;
  auto f = [x]() mutable { auto res=x*x; x++; return res; };
-
- // C++14 : init-capture 
- // auto f = [x=0]() mutable { return x*(x++);};
+#else
+  auto f = [x=0]() mutable { auto res = x*x; x++; return res;};
+#endif
 
  auto gen = triqs::utility::buffered_function<double>(f, 5);
-
- for (int u = 0; u < 22; ++u)
-  if (gen() != u * u) throw "Error";
+ for (int u = 0; u < 22; ++u) EXPECT_EQ(gen(), u * u);
 }
+MAKE_MAIN;

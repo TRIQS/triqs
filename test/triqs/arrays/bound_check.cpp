@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2015 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,71 +19,19 @@
  *
  ******************************************************************************/
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-
-#include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <iostream>
-
+#include "test_tools.hpp"
+#include <triqs/arrays.hpp>
 using namespace triqs::arrays;
+namespace h5 = triqs::h5;
 
-int main(int argc, char **argv) {
+TEST(Array, BoundCheck) {
 
- 
+ array<long, 2> A(2, 3);
 
- array<long,2> A (2,3);
- array<long,2 > B (2,3);
- array<long,1 > C(2);
- array<long,2> Af (2,3, FORTRAN_LAYOUT);
-
- try { 
-
-  for (int i =0; i<2; ++i)
-   for (int j=0; j<4; ++j) 
-    B(i,j) = 10*i+ j;
- }
-
- catch ( triqs::arrays::key_error & e) { 
-  std::cout<< " catching key error in B "<< std::endl ;
-  std::cerr << e.what() <<std::endl ;
- }
-
- try { 
-
-  for (int i =0; i<2; ++i)
-   for (int j=0; j<4; ++j) 
-    A(i,j) = 10*i+ j;
- }
-
- catch ( triqs::arrays::key_error & e) { 
-  std::cout<< " catching key error in A "<< std::endl ;
-  std::cerr << e.what() <<std::endl ;
- }
-
- try { 
-  std::cout  << A( range(0,4),2) << std::endl ;
- }
- catch ( triqs::arrays::key_error & e) { 
-  std::cout<< " catching key error in slice "<< std::endl ;
-  std::cerr << e.what() <<std::endl ;
- }
-
- try { 
-  std::cout  << A( range(10,14),2) << std::endl ;
- }
- catch ( triqs::arrays::key_error & e) { 
-  std::cout<< " catching key error in slice "<< std::endl ;
-  std::cerr << e.what() <<std::endl ;
- }
-
- try { 
-  std::cout  << A( range(),5) << std::endl ;
- }
- catch ( triqs::arrays::key_error & e) { 
-  std::cout<< " catching key error in slice "<< std::endl ;
-  std::cerr << e.what() <<std::endl ;
- }
-
- return 0;
+ EXPECT_THROW(A(0, 3), key_error);
+ EXPECT_THROW(A(range(0, 4), 2), key_error);
+ EXPECT_THROW(A(range(10, 14), 2), key_error);
+ EXPECT_THROW(A(range(), 5), key_error);
+ EXPECT_THROW(A(0, 3), key_error);
 }
-
+MAKE_MAIN;

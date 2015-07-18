@@ -18,94 +18,100 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <iostream>
-#include <triqs/arrays/h5/simple_read_write.hpp>
-
-using std::cout; using std::endl;
-namespace tqa = triqs::arrays;
+#include "test_tools.hpp"
+#include <triqs/arrays.hpp>
+using namespace triqs::arrays;
 namespace h5 = triqs::h5;
-using tqa::range;
 
-template <typename T> 
-std::ostream & operator << (std::ostream & out, std::vector<T> const & v) { 
-for (size_t i =0; i<v.size(); ++i) out<< v[i];
-return out;
+/*template<typename T>
+class H5Test : ::testing::test { 
+ public : 
+  T value;
+};
+
+
+TYPED_TEST_P(H5Test, RW) {
+   TypeParam n = 0;
+ Construction pb...
 }
+*/
 
-int main(int argc, char **argv) {
- 
-  
 
- try { 
 
- tqa::array<long,2> A (2,3),B,vc;
- tqa::array<double,2> D (2,3), D2;
+TEST(Array, H5) {
 
- tqa::array<long,2> Af(FORTRAN_LAYOUT),Bf(FORTRAN_LAYOUT),vf(FORTRAN_LAYOUT);
+ array<long, 2> A(2, 3), B, Af(FORTRAN_LAYOUT), Bf(FORTRAN_LAYOUT);
+ array<double, 2> D(2, 3), D2;
+ array<std::complex<double>, 1> C(5), C2;
+ std::complex<double> z(1, 2);
 
- tqa::array<std::complex<double>,1> C(5), C2;
- std::complex<double> z(1,2);
+ for (int i = 0; i < 5; ++i) C(i) = std::complex<double>(i, i);
 
- for (int i =0; i<5; ++i) {
-  C(i) = std::complex<double>(i,i);
- }
-
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-    { 
-     A(i,j) = 10*i+ j;
-     D (i,j) = A(i,j) / 10.0;
-    }
-
+ for (int i = 0; i < 2; ++i)
+  for (int j = 0; j < 3; ++j) {
+   A(i, j) = 10 * i + j;
+   D(i, j) = A(i, j) / 10.0;
+  }
  Af = A;
 
- std::cout<<" A= "<<A<<std::endl;
- std::cout<<" D= "<<D<<std::endl;
- std::cout<<" C= "<<C<<std::endl;
- std::cout<<" Arange(0,1),range(1,3)  = "<< A(range(),range(1,3))<<std::endl;
+ // WRITE the file
+ {
+  h5::file file("ess.h5", H5F_ACC_TRUNC);
+  h5::group top(file);
 
- h5::file file( "ess.h5", H5F_ACC_TRUNC );
- h5::group top(file);
+  h5_write(top, "A", A);
+  h5_write(top, "Af", Af);
+  h5_write(top, "C", C);
+  h5_write(top, "D", D);
+  h5_write(top, "S", "");
+  h5_write(top,"A_slice",A(range(),range(1,3)));
 
- h5_write(top,"A",A);
- h5_write(top,"Af",Af);
- h5_write(top,"C",C);
- h5_write(top,"D",D);
- h5_write(top,"S","");
- 
- // testing scalar
- double x=2.3;
- h5_write(top, "x",x);
- std::complex<double> xx(2,3);
- h5_write(top, "xx",xx);
+  // scalar
+  double x = 2.3;
+  h5_write(top, "x", x);
 
- h5_write(top, "s", std::string("a nice chain"));
- top.create_group("G");
- h5_write(top,"G/A",A);
+  // std::complex<double> xx(2, 3);
+  // h5_write(top, "xx", xx);
 
- auto G = top.open_group("G");
- h5_write(G, "A2",A);
+  h5_write(top, "s", std::string("a nice chain"));
 
- h5_read (top, "A",B);   std::cout<< "B = "<< B<<std::endl;
- h5_read (top, "Af",Bf); std::cout<< "Bf = "<< Bf<<std::endl;
- h5_read (top, "D",D2);  std::cout<< "D = "<< D2<<std::endl;
- h5_read (top, "C",C2);  std::cout<< "C = "<< C2<<std::endl;
+  top.create_group("G");
+  h5_write(top, "G/A", A);
 
- double xxx =0; h5_read(top, "x",xxx); TEST(xxx);
+  auto G = top.open_group("G");
+  h5_write(G, "A2", A);
+ }
 
- std::string s2 ("----------------------------------");
- h5_read(top, "s", s2);
- TEST(s2);
+ // READ the file
+ {
+  h5::file file("ess.h5", 'r');
+  h5::group top(file);
 
- //tqa::array<long,1> E; h5_read (top, "A",E);   std::cout<< "E = "<< E<<std::endl;
+  h5_read(top, "A", B);
+  EXPECT_EQ_ARRAY(A, B);
 
- } 
- catch(std::exception const&  err) { std::cout<<err.what()<<std::endl;}
- catch( const char * err) { std::cout<<err<<std::endl;}
+  h5_read(top, "Af", Bf);
+  EXPECT_EQ_ARRAY(Af, Bf);
 
- return 0;
+  h5_read(top, "D", D2);
+  EXPECT_CLOSE_ARRAY(D, D2);
+
+  h5_read(top, "C", C2);
+  EXPECT_CLOSE_ARRAY(C, C2);
+
+  array<long,2> a_sli;
+  h5_read(top, "A_slice", a_sli);
+  EXPECT_EQ_ARRAY(a_sli, A(range(), range(1, 3)));
+
+  double xxx = 0;
+  h5_read(top, "x", xxx);
+  EXPECT_DOUBLE_EQ(xxx, 2.3);
+
+  std::string s2("----------------------------------");
+  h5_read(top, "s", s2);
+  EXPECT_EQ(s2, "a nice chain");
+ }
 }
 
+MAKE_MAIN;
 

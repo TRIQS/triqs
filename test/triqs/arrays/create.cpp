@@ -18,30 +18,28 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <iostream>
-
-
+#include "test_tools.hpp"
+#include <triqs/arrays.hpp>
 using namespace triqs::arrays;
+using namespace triqs::utility;
 
-int main(int argc, char **argv) {
- 
- 
+#include <type_traits>
+static_assert(!std::is_pod<triqs::arrays::array<long, 2>>::value, "POD pb");
 
- array<long,2> A ;
- A.resize(make_shape(3,3));
+TEST(Array, Resize) {
 
- std::cout << A.shape() <<std::endl;
-   
+ array<long, 2> A;
+ A.resize(make_shape(3, 3));
+ EXPECT_EQ(A.shape(), (mini_vector<size_t, 2>{3, 3}));
+
  matrix<double> M;
- M.resize( 3,3); 
- triqs::arrays::vector<double> V;
+ M.resize(3, 3);
+
+ EXPECT_EQ(M.shape(), (mini_vector<size_t, 2>{3, 3}));
+
+ vector<double> V;
  V.resize(10);
 
-
- return 0;
+ EXPECT_EQ(V.shape(), (mini_vector<size_t, 1>{10}));
 }
-
+MAKE_MAIN;

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,29 +18,21 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./common.hpp"
-
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/vector.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <iostream>
-
-using std::cout; using std::endl;
+#include "test_tools.hpp"
+#include <triqs/arrays.hpp>
 using namespace triqs::arrays;
 
-int main(int argc, char **argv) {
+TEST(Array, ScalarAssign) {
 
- 
-
- triqs::arrays::matrix<double> A(5,5,FORTRAN_LAYOUT);
-
+ int N = 5;
+ matrix<int> A(N, N, FORTRAN_LAYOUT);
  A() = 2;
- std::cout<<"A = "<<A<<std::endl;
+ for (int i = 0; i < N; ++i)
+  for (int j = 0; j < N; ++j) EXPECT_EQ(A(i, j), (i == j ? 2 : 0));
 
- array_view<double,2> AA(A); AA = 2;
- std::cout<<"A = "<<A<<std::endl;
-
+ array_view<int, 2> AA(A);
+ AA = 2;
+ for (int i = 0; i < N; ++i)
+  for (int j = 0; j < N; ++j) EXPECT_EQ(A(i, j), 2);
 }
-
-
-
+MAKE_MAIN;

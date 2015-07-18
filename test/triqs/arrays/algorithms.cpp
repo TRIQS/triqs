@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2015 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,31 +18,27 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./common.hpp"
-#include <triqs/arrays/algorithms.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <iostream>
+#include "test_tools.hpp"
+#include <triqs/arrays.hpp>
+using namespace triqs::arrays;
 
-namespace tqa = triqs::arrays;
+TEST(Array, AlgoStd) {
 
-int main(int argc, char **argv) {
- 
- tqa::matrix<double> A(3,3, FORTRAN_LAYOUT),B(3,3,FORTRAN_LAYOUT);
+ matrix<double> A(3, 3, FORTRAN_LAYOUT), B(3, 3, FORTRAN_LAYOUT);
 
- A() = -2;
+ for (int i = 0; i < 3; ++i)
+  for (int j = 0; j < 3; ++j) {
+   A(i, j) = i + 2 * j + 1;
+   B(i, j) = i - j;
+  }
 
- for (int i =0; i<3; ++i)
-  for (int j=0; j<3; ++j)
-  { A(i,j) = i+2*j+1; B(i,j) = i-j;}
-
- TEST(A);
- TEST(max_element(A));
- TEST(sum(A));
- TEST(B);
- TEST(min_element(B));
- TEST(sum(B));
- TEST(make_matrix(A+10*B));
- TEST(max_element(A+10*B));
-
- return 0;
+ EXPECT_EQ(max_element(A), 7);
+ EXPECT_EQ(sum(A), 36);
+ EXPECT_EQ(min_element(B), -2);
+ EXPECT_EQ(sum(B), 0);
+ EXPECT_EQ(make_matrix(A + 10 * B), (matrix<double>{{1, -7, -15}, {12, 4, -4}, {23, 15, 7}}));
+ EXPECT_EQ(max_element(A + 10 * B), 23);
 }
+
+MAKE_MAIN;
+

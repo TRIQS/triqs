@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
+#include <triqs/h5.hpp>
 
 #if defined(TRIQS_SERIALIZATION_DO_NOT_USE_HDF5) or not H5_VERSION_GE(1,8,9)
 
