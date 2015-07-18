@@ -65,6 +65,7 @@ def x_data_view(self, x_window = None, flatten_y = False):
              * data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data
                If flatten_y is True and dim is (1, 1, *), returns a 1d numpy
     """
+    from pytriqs.gf.local.gf import MeshImFreq
     X = [x.imag for x in self.mesh] if type(self.mesh) == MeshImFreq else [x for x in self.mesh]
     X, data = numpy.array(X), self.data
     if x_window:

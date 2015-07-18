@@ -343,6 +343,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
 
     # Pure python methods
     g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%c_tag, rename = "_plot_")
+    g.add_pure_python_method("pytriqs.gf.local._gf_plot.x_data_view", rename = "x_data_view")
 
     return g
 
