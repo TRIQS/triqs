@@ -37,6 +37,11 @@ print map_to_mapvec({'a':1, "b":2, "sjkdf":5})
 
 print set_to_set(set(['abcd','2','345','klmn']))
 
+print tuple_to_tuple_0([])
+print tuple_to_tuple_1((9,))
+print tuple_to_tuple_2((9,2.5))
+print tuple_to_tuple_3((9,2.5,'hi'))
+
 from pytriqs.archive import *
 import pytriqs.archive.hdf_archive_schemes
 

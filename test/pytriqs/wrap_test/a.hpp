@@ -196,6 +196,22 @@ inline std::set<int> set_to_set(std::set<std::string> const &s) {
  return ss;
 }
 
+inline std::tuple<> tuple_to_tuple_0(std::tuple<> const& t) {
+ return std::make_tuple();
+}
+
+inline std::tuple<int> tuple_to_tuple_1(std::tuple<int> const& t) {
+ return std::make_tuple(2*std::get<0>(t));
+}
+
+inline std::tuple<int,double> tuple_to_tuple_2(std::tuple<int,double> const& t) {
+ return std::make_tuple(2*std::get<0>(t),1/std::get<1>(t));
+}
+
+inline std::tuple<int,double,std::string> tuple_to_tuple_3(std::tuple<int,double,std::string> const& t) {
+ return std::make_tuple(2*std::get<0>(t),1/std::get<1>(t),"*" + std::get<2>(t) + "*");
+}
+
 inline std::function<int(int,int)>  make_fnt_ii() {
  return [](int i, int j) { return i + 2*j;}; 
 }
