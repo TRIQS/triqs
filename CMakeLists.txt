@@ -92,7 +92,7 @@ else (TRIQS_BUILD_STATIC)
  message(STATUS "DYNAMIC Built ")
 endif (TRIQS_BUILD_STATIC) 
 
-# RPATH setting (before compiling boost)
+# RPATH setting
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
  set(CMAKE_MACOSX_RPATH 1) # new for cmake 3.x

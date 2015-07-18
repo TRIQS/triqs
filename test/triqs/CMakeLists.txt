@@ -3,7 +3,15 @@ enable_testing()
 
 option (TESTS_C_WITH_VALGRIND "Run all the tests also through valgrind" OFF)
 
-macro(all_tests )
+# Compile gtest lib and add include to its header. 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_library(gtest gtest/gtest-all)
+link_libraries (gtest)
+install(TARGETS gtest DESTINATION lib)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/gtest/gtest.h" DESTINATION "include/gtest")
+
+#
+macro(all_tests)
 
  FILE(GLOB TestList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
  FOREACH( TestName1  ${TestList} )

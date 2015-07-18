@@ -1,0 +1,6 @@
+Google Test (from versino 1.7.0, using fusing file, cf 
+https://code.google.com/p/googletest/wiki/AdvancedGuide#Fusing_Google_Test_Source_Files).
+
+It is the test system used in TRIQS for C++.
+We provide it in the source to simplify dependencies of the project.
+
