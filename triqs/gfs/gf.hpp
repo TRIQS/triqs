@@ -24,12 +24,14 @@
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/c14.hpp>
 #include <triqs/arrays/h5.hpp>
-#include "gf_indices.hpp"
-#include "tools.hpp"
+#include "./impl/gf_indices.hpp"
+#include "./impl/tools.hpp"
+#include "./singularity/tail.hpp"
+#include "./singularity/nothing.hpp"
+#include "./singularity/tail_zero.hpp"
+#include "./impl/data_proxies.hpp"
 #include <triqs/mpi/gf.hpp>
 #include <vector>
-#include "data_proxies.hpp"
-#include "local/tail.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -60,6 +62,14 @@ namespace gfs {
  // the gf mesh
  template <typename Variable> struct gf_mesh;
 
+ // Interpolation policies
+ namespace interpol_t {
+  struct None{};
+  struct Product{};
+  struct Linear1d{};
+  struct Linear2d{};
+ }
+
  // The regular type
  template <typename Variable, typename Target = gf_default_target_t<Variable>,
            typename Singularity = gf_default_singularity_t<Variable, Target>, typename Evaluator = void>
@@ -84,9 +94,17 @@ namespace gfs {
  namespace gfs_implementation { // never use using of this...
 
   // evaluator regroup functions to evaluate the function.
+  // default : one variable. Will be specialized in more complex cases.
   template <typename Variable, typename Target, typename Singularity> struct evaluator {
-   static constexpr int arity = 0;
+   static constexpr int arity = 1;
    template <typename G> evaluator(G *) {};
+
+   template <typename G, typename X>
+   auto operator()(G const &g, X x) const RETURN((g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, x)));
+
+   template <typename G> typename G::singularity_t operator()(G const &g, tail_view t) const {
+    return compose(g.singularity(), t);
+   }
   };
 
   // closest_point mechanism
@@ -111,8 +129,11 @@ namespace gfs {
   // ...)
   template <typename Variable, typename Target, typename Enable = void> struct data_proxy;
 
+  template <typename V> struct data_proxy<V, matrix_valued> : data_proxy_array<dcomplex, 3> {};
+  template <typename V> struct data_proxy<V, scalar_valued> : data_proxy_array<dcomplex, 1> {};
+ 
   // Traits to read/write in hdf5 files. Can be specialized for some case (Cf block). Defined below
-  template <typename Variable, typename Target, typename Singularity> struct h5_name; // value is a const char
+  template <typename Variable, typename Target, typename Singularity> struct h5_name; 
   template <typename Variable, typename Target, typename Singularity, typename Evaluator> struct h5_rw;
 
   // factories (constructors..) for all types of gf. Defaults implemented below.
@@ -266,10 +287,10 @@ namespace gfs {
       (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value ||
           ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
       ,
-      std::result_of<evaluator_t(gf_impl *, Args...)> // what is the result type of call
+      std::result_of<evaluator_t(gf_impl, Args...)> // what is the result type of call
       >::type                                         // end of lazy_disable_if
   operator()(Args &&... args) const {
-   return _evaluator(this, std::forward<Args>(args)...);
+   return _evaluator(*this, std::forward<Args>(args)...);
   }
 
   template <typename... Args> typename clef::_result_of::make_expr_call<gf_impl &, Args...>::type operator()(Args &&... args) & {
@@ -833,29 +854,20 @@ template <typename G1, typename G2, typename M>
   // -------------------------  default factories ---------------------
 
   // Factory for the data
-  template <typename Var, typename Target, int VarDim, typename Singularity> struct data_factory_default_impl {
+  template <typename Var, typename Target, typename Singularity> struct data_factory {
    using gf_t = gf<Var, Target, Singularity>;
-   using target_shape_t = arrays::mini_vector<int, VarDim>;
-   using mesh_t = gf_mesh<Var>; //typename gf_t::mesh_t;
-   using aux_t = arrays::memory_layout< get_n_variables<Var>::value + VarDim>;
+   using target_shape_t = arrays::mini_vector<int, Target::dim>;
+   using mesh_t = gf_mesh<Var>; 
+   using aux_t = arrays::memory_layout< get_n_variables<Var>::value + Target::dim>;
    using data_t = typename gfs_implementation::data_proxy<Var, Target>::storage_t;
 
    //
    static data_t make(mesh_t const &m, target_shape_t shape, aux_t ml) {
-    data_t A(gf_t::data_proxy_t::join_shape(m.size_of_components(), shape), ml);
+    data_t A(join(m.size_of_components(), shape), ml);
     A() = 0;
     return A;
    }
   };
-
-  template <int R, typename Var, typename Singularity>
-  struct data_factory<Var, tensor_valued<R>, Singularity> : data_factory_default_impl<Var, tensor_valued<R>, R, Singularity> {};
-
-  template <typename Var, typename Singularity>
-  struct data_factory<Var, matrix_valued, Singularity> : data_factory_default_impl<Var, matrix_valued, 2, Singularity> {};
-
-  template <typename Var, typename Singularity>
-  struct data_factory<Var, scalar_valued, Singularity> : data_factory_default_impl<Var, scalar_valued, 0, Singularity> {};
 
   // Factory for the singularity
   template <typename Var, typename Target, typename Singularity> struct singularity_factory {
@@ -879,7 +891,6 @@ template <typename G1, typename G2, typename M>
     h5_write(gr, "mesh", g._mesh);
     h5_write(gr, "symmetry", g._symmetry);
     h5_write(gr, "indices", g._indices);
-    // h5_write(gr, "name", g.name);
    }
 
    template<bool B> static void read(h5::group gr, gf_impl<Variable, Target, Singularity, Evaluator, B, false> &g) {
@@ -888,7 +899,6 @@ template <typename G1, typename G2, typename M>
     h5_read(gr, "mesh", g._mesh);
     h5_read(gr, "symmetry", g._symmetry);
     h5_read(gr, "indices", g._indices);
-    // h5_read(gr, "name", g.name);
    }
   };
  } // gfs_implementation
@@ -912,4 +922,4 @@ template <typename Variable, typename Target, typename Singularity, typename Eva
 void swap(triqs::gfs::gf_view<Variable, Target, Singularity, Evaluator, C1> &a,
           triqs::gfs::gf_view<Variable, Target, Singularity, Evaluator, C2> &b) = delete;
 }
-#include "./gf_expr.hpp"
+#include "./impl/gf_expr.hpp"

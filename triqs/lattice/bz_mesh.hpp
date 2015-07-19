@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2015 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -20,22 +20,24 @@
  ******************************************************************************/
 #pragma once
 #include "./brillouin_zone.hpp"
-#include "../gfs/tools.hpp"
+#include "../gfs/gf.hpp"
 #include "../gfs/meshes/mesh_tools.hpp"
 
 namespace triqs {
-namespace lattice {
+namespace gfs {
 
  struct bz_mesh {
 
-  using domain_t = brillouin_zone;
+  using domain_t = lattice::brillouin_zone;
+  using k_t = lattice::k_t;
   using index_t = long;
   using linear_index_t = long;
   using domain_pt_t = typename domain_t::point_t;
+  using default_interpol_policy = interpol_t::None; // DO BETTER HERE...
 
   bz_mesh() = default;
-  bz_mesh(brillouin_zone const &bz, int n_l);
-  bz_mesh(brillouin_zone const &bz, std::vector<k_t> k_pt_stack) : bz(bz), k_pt_stack(std::move(k_pt_stack)) {}
+  bz_mesh(domain_t const &bz, int n_l);
+  bz_mesh(domain_t const &bz, std::vector<k_t> k_pt_stack) : bz(bz), k_pt_stack(std::move(k_pt_stack)) {}
 
   domain_t const &domain() const { return bz; }
   size_t size() const { return k_pt_stack.size(); }
@@ -56,7 +58,7 @@ namespace lattice {
   }
 
   // locate the closest point : VERY PRIMITIVE : TO BE IMPROVED (kd-tree ?) 
-  long locate_neighbours(k_t k) const;
+  index_t locate_neighbours(k_t k) const;
 
   /// The wrapper for the mesh point
   class mesh_point_t : gfs::tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point_t, domain_pt_t> {
@@ -94,6 +96,24 @@ namespace lattice {
   //bool operator==(bz_mesh const &M) const { return ((bz == M.bz) && (size() == M.size())); }
   bool operator!=(bz_mesh const &M) const { return !(operator==(M)); }
 
+  // -------------- Evaluation of a function on the grid --------------------------
+  using interpol_data_t = index_t;
+ 
+  interpol_data_t get_interpolation_data(default_interpol_policy, k_t const &k) const {
+   return locate_neighbours(k);
+  }
+
+  template<typename F>
+  auto evaluate(default_interpol_policy, F const & f, lattice::k_t const &k) const 
+#ifdef TRIQS_CPP11 
+->std14::decay_t<decltype(f[0])> 
+#endif
+  {
+   auto id = get_interpolation_data(default_interpol_policy{}, k);
+   return f[id];
+  }
+
+  // -------------- HDF5  --------------------------
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, bz_mesh const &m);
 

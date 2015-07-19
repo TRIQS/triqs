@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../tools.hpp"
+#include "../impl/tools.hpp"
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 #include <triqs/utility/kronecker.hpp>
 

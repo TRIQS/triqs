@@ -21,7 +21,7 @@
 
 #include "legendre_matsubara.hpp"
 #include "fourier_matsubara.hpp"
-#include "functions.hpp"
+#include "../functions/functions.hpp"
 #include <triqs/utility/legendre.hpp>
 
 using namespace triqs::utility;

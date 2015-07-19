@@ -19,9 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/gfs/imfreq.hpp>
-#include <triqs/gfs/block.hpp>
-#include <triqs/gfs/local/tail.hpp>
+#include <triqs/gfs.hpp>
 #include <triqs/arrays/blas_lapack/gelss.hpp>
 
 namespace triqs { namespace gfs { 

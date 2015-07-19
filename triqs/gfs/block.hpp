@@ -19,9 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./tools.hpp"
 #include "./gf.hpp"
-#include "./local/tail.hpp"
 #include "./meshes/discrete.hpp"
 
 namespace triqs {

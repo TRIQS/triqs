@@ -18,12 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_DATA_PROXIES_H
-#define TRIQS_GF_DATA_PROXIES_H
+#pragma once
 #include <triqs/utility/first_include.hpp>
 #include <utility>
 #include <triqs/arrays.hpp>
-#include "../arrays/matrix_tensor_proxy.hpp"
+#include <triqs/arrays/matrix_tensor_proxy.hpp>
 
 //#define TRIQS_GF_DATA_PROXIES_WITH_SIMPLE_VIEWS
 
@@ -35,9 +34,6 @@ namespace triqs { namespace gfs {
   using storage_t = arrays::array<T, D>;
   using storage_view_t = typename storage_t::view_type;
   using storage_const_view_t = typename storage_t::const_view_type;
-
-  // from the shape of the mesh and the target, make the shape of the array. default is to glue them
-  template <typename S1, typename S2> static auto join_shape(S1 const& s1, S2 const& s2) RETURN(join(s1, s2));
 
   template<typename S, typename RHS> static void assign_to_scalar (S & data, RHS && rhs)           { data() = std::forward<RHS>(rhs);}
   template <typename ST, typename RHS> static void rebind(ST& data, RHS&& rhs) { data.rebind(rhs.data()); }
@@ -155,7 +151,5 @@ namespace triqs { namespace gfs {
   template <typename S, typename Tu> AUTO_DECL operator()(S& data, Tu const& tu) const RETURN(tuple::apply(data,tu));
  };
 
-
 }}
-#endif
 

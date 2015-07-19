@@ -3,7 +3,6 @@
 using namespace triqs::gfs;
 using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
-#include <triqs/gfs/local/fourier_matsubara.hpp> 
 #include<fstream>
 #include <stdexcept>
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;

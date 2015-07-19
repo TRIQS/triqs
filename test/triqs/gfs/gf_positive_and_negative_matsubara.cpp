@@ -1,6 +1,6 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/gfs.hpp> 
-#include <triqs/gfs/local/functions.hpp> 
+#include <triqs/gfs/functions/functions.hpp> 
 using namespace triqs::gfs;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 

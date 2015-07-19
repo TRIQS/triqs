@@ -19,11 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./tools.hpp"
 #include "./gf.hpp"
-#include "./local/tail.hpp"
 #include "./meshes/segment.hpp"
-#include "./evaluators.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -43,81 +40,12 @@ namespace gfs {
   using type = tail;
  };
 
-  namespace gfs_implementation {
+ namespace gfs_implementation {
 
   // h5 name
   template <typename Singularity> struct h5_name<refreq, matrix_valued, Singularity> {
    static std::string invoke() { return "ReFreq"; }
   };
-
-  /// ---------------------------  evaluator ---------------------------------
-
-  template <> struct evaluator_of_clef_expression<refreq> : evaluator_grid_linear_interpolation {};
-
-  template <typename Singularity, typename Target> struct evaluator<refreq, Target, Singularity> : evaluator_one_var<refreq> {
-   template <typename G> evaluator(G *) {};
-  };
-
-  /// ---------------------------  data access  ---------------------------------
-  template <> struct data_proxy<refreq, matrix_valued> : data_proxy_array<std::complex<double>, 3> {};
-  template <> struct data_proxy<refreq, scalar_valued> : data_proxy_array<std::complex<double>, 1> {};
- }
-
- // FOR LEGACY PYTHON CODE ONLY
- // THIS MUST be kept for python operations
- // specific operations (for legacy python code).
- // +=, -= with a matrix
- inline void operator+=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-  for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) += m;
-  g.singularity()(0) += m;
- }
-
- inline void operator-=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-  for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) -= m;
-  g.singularity()(0) -= m;
- }
-
- inline void operator+=(gf_view<refreq> g, std::complex<double> a) {
-  operator+=(g, arrays::make_unit_matrix(get_target_shape(g)[0], a));
- }
- inline void operator-=(gf_view<refreq> g, std::complex<double> a) {
-  operator-=(g, arrays::make_unit_matrix(get_target_shape(g)[0], a));
- }
-
-
- inline gf<refreq> operator+(gf<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-  g() += m;
-  return g;
- }
-
- inline gf<refreq> operator+(gf<refreq> g, std::complex<double> const &m) {
-  g() += m; // () is critical of infinite loop -> segfault
-  return g;
- }
-
- inline gf<refreq> operator+(std::complex<double> const &m, gf<refreq> g) { return g + m; }
- inline gf<refreq> operator+(arrays::matrix<std::complex<double>> const &m, gf<refreq> g) { return g + m; }
-
- inline gf<refreq> operator-(gf<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-  g() -= m;
-  return g;
- }
-
- inline gf<refreq> operator-(gf<refreq> g, std::complex<double> const &m) {
-  g() -= m;
-  return g;
- }
-
- inline gf<refreq> operator-(std::complex<double> const &m, gf<refreq> g) { 
-  g *= -1;
-  g+=m;
-  return g;
-  }
-
- inline gf<refreq> operator-(arrays::matrix<std::complex<double>> const &m, gf<refreq> g) { 
-  g *= -1;
-  g+=m;
-  return g;
  }
 }
 }

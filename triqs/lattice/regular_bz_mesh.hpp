@@ -22,7 +22,7 @@
 #include <triqs/utility/index_generator.hpp>
 #include <triqs/h5/vector.hpp>
 #include "./brillouin_zone.hpp"
-#include "../gfs/tools.hpp"
+#include "../gfs/gf.hpp"
 #include "../gfs/meshes/mesh_tools.hpp"
 
 namespace triqs {
@@ -57,6 +57,7 @@ namespace gfs {
 
   using index_t = utility::mini_vector<long, 3>;
   using linear_index_t = long;
+  using default_interpol_policy = interpol_t::None; // DO BETTER HERE...
 
   size_t size() const { return _size; }
 
@@ -103,8 +104,26 @@ namespace gfs {
   /// ----------- End mesh concept  ----------------------
 
   /// locate the closest point 
-  inline mesh_point_t locate_neighbours(k_t const& k) const;
+  inline index_t locate_neighbours(k_t const& k) const;
 
+  // -------------- Evaluation of a function on the grid --------------------------
+  using interpol_data_t = index_t;
+ 
+  interpol_data_t get_interpolation_data(default_interpol_policy, k_t const &k) const {
+   return locate_neighbours(k);
+  }
+
+  template<typename F>
+  auto evaluate(default_interpol_policy, F const & f, lattice::k_t const &k) const 
+#ifdef TRIQS_CPP11 
+->std14::decay_t<decltype(f[0])> 
+#endif
+  {
+   auto id = get_interpolation_data(default_interpol_policy{}, k);
+   return f[id];
+  }
+
+  // -------------- HDF5  --------------------------
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const& m) {
    h5::group gr = fg.create_group(subgroup_name);
@@ -178,12 +197,12 @@ namespace gfs {
  inline gf_mesh<brillouin_zone>::const_iterator gf_mesh<brillouin_zone>::cend() const { return const_iterator(this, true); }
 
  /// locate the closest point
- inline gf_mesh<brillouin_zone>::mesh_point_t gf_mesh<brillouin_zone>::locate_neighbours(k_t const& k) const {
+ inline gf_mesh<brillouin_zone>::index_t gf_mesh<brillouin_zone>::locate_neighbours(k_t const& k) const {
   auto l = [&](int i) {
    long r = std::lround(k(i) / step[i]) % dims[i];
    return (r >= 0 ? r : r + dims[i]);
   };
-  return {*this, {l(0), l(1), l(2)}};
+  return {l(0), l(1), l(2)};
  }
 }
 }

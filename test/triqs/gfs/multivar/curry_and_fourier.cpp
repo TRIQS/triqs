@@ -1,7 +1,5 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/gfs.hpp>
-#include <triqs/gfs/bz.hpp>
-#include <triqs/gfs/m_tail.hpp>
 #include "../common.hpp"
 
 namespace h5 = triqs::h5;
@@ -40,7 +38,7 @@ int main() {
   // works also, but uses the evaluator which return to the same point
   // gk_t(k_) << inverse_fourier(gk_w(k_));
   // check last assertion
-  for (auto k : gk_t.mesh()) assert_equal(k.linear_index(), gk_t.mesh().locate_neighbours(k).linear_index(), "k location point");
+  for (auto k : gk_t.mesh()) assert_equal(k.linear_index(), gk_t.mesh().index_to_linear(gk_t.mesh().locate_neighbours(k)), "k location point");
  
   /// Testing the result
   auto gk_w_test = gf<imfreq>{{beta, Fermion, n_freq}, {1, 1}};

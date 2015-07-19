@@ -24,15 +24,19 @@
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/mini_vector.hpp>
 #include <triqs/utility/c14.hpp>
+#include "./multivar_eval.hpp"
+
 namespace triqs {
 namespace gfs {
 
- // a function that take the index for the mesh_point and let the rest pass through
- // used below in index_t constructor
- template <typename T> decltype(auto) __get_index(T &&x) { return std::forward<T>(x); }
- template <typename T> auto __get_index(mesh_point<T> const &x) { return x.index(); }
- template <typename T> auto __get_index(mesh_point<T> &&x) { return x.index(); }
- template <typename T> auto __get_index(mesh_point<T> &x) { return x.index(); }
+ namespace detail {
+  // a function that take the index for the mesh_point and let the rest pass through
+  // used below in index_t constructor
+  template <typename T> decltype(auto) get_index(T &&x) { return std::forward<T>(x); }
+  template <typename T> auto get_index(mesh_point<T> const &x) { return x.index(); }
+  template <typename T> auto get_index(mesh_point<T> &&x) { return x.index(); }
+  template <typename T> auto get_index(mesh_point<T> &x) { return x.index(); }
+ }
 
  template <typename... Ms> struct cartesian_product {
   using type = std::tuple<Ms...>;
@@ -44,9 +48,6 @@ namespace gfs {
   static const int value = sizeof...(Ms);
  };
 
- // alias
- template <typename... Ms> struct cartesian_product<std::tuple<Ms...>> : cartesian_product<Ms...> {};
-
  /** Cartesian product of meshes */
  // the mesh is simply a cartesian product
  template <typename... Ms> struct gf_mesh<cartesian_product<Ms...>> : tag::composite {
@@ -55,49 +56,42 @@ namespace gfs {
   using m_pt_tuple_t = std::tuple<typename gf_mesh<Ms>::mesh_point_t...>;
   using domain_pt_t = typename domain_t::point_t;
   using linear_index_t = std::tuple<typename gf_mesh<Ms>::linear_index_t...>;
-  
+  using default_interpol_policy = interpol_t::Product;
+  static constexpr int dim = sizeof...(Ms);
+ 
+  /// The index 
   struct index_t {
    std::tuple<typename gf_mesh<Ms>::index_t...> _i;
    // construct with at least 2 arguments
    // The mesh point are replaced by their index.
    template <typename Arg0, typename Arg1, typename... Args>
    index_t(Arg0 &&arg0, Arg1 &&arg1, Args &&... args)
-      : _i(__get_index(std::forward<Arg0>(arg0)), __get_index(std::forward<Arg1>(arg1)),
-           __get_index(std::forward<Args>(args))...) {}
+      : _i(detail::get_index(std::forward<Arg0>(arg0)), detail::get_index(std::forward<Arg1>(arg1)),
+           detail::get_index(std::forward<Args>(args))...) {}
    index_t(index_t const &) = default;
    index_t(index_t &&) = default;
   };
 
-  static constexpr int dim = sizeof...(Ms);
+  // -------------------- Constructors -------------------
 
   gf_mesh() = default;
   gf_mesh(gf_mesh<Ms> const &... meshes) : m_tuple(meshes...), _dom(meshes.domain()...) {}
   gf_mesh(gf_mesh const &) = default;
 
+  /// Mesh comparison
+  bool operator==(gf_mesh const &m) { return m_tuple == m.m_tuple; }
+  bool operator!=(gf_mesh const &m) const { return !(operator==(m)); }
+
+  // -------------------- Accessors (from concept) -------------------
+
   domain_t const &domain() const { return _dom; }
-  m_tuple_t const &components() const { return m_tuple; }
-  m_tuple_t &components() { return m_tuple; }
 
   /// size of the mesh is the product of size
   size_t size() const {
    return triqs::tuple::fold([](auto const &m, size_t R) { return R * m.size(); }, m_tuple, 1);
   }
 
-  /// Scatter the first mesh over the communicator c
-  friend gf_mesh mpi_scatter(gf_mesh const &m, mpi::communicator c, int root) {
-   auto r = m; // same domain, but mesh with a window. Ok ?
-   std::get<0>(r.m_tuple) = mpi_scatter(std::get<0>(r.m_tuple), c, root);
-   return r;
-  }
-
-  /// Opposite of scatter : rebuild the original mesh, without a window
-  friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
-   auto r = m; // same domain, but mesh with a window. Ok ?
-   std::get<0>(r.m_tuple) = mpi_gather(std::get<0>(r.m_tuple), c, root);
-   return r;
-  }
-
-   /// The sizes of all mesh components
+  /// The sizes of all mesh components
   utility::mini_vector<size_t, dim> size_of_components() const {
    utility::mini_vector<size_t, dim> res;
    auto l = [&res](int i, auto const &m) mutable { res[i] = m.size(); };
@@ -118,7 +112,12 @@ namespace gfs {
    auto l = [](auto const &m, auto const &i) { return m.index_to_linear(i); };
    return triqs::tuple::map_on_zip(l, m_tuple, ind._i);
   }
-  
+
+  // -------------------- Accessors (other) -------------------
+
+  m_tuple_t const &components() const { return m_tuple; }
+  m_tuple_t &components() { return m_tuple; }
+
   /// 
   linear_index_t mp_to_linear(m_pt_tuple_t const &mp) const {
    auto l = [](auto const &p) { return p.linear_index(); };
@@ -131,11 +130,7 @@ namespace gfs {
    return mp_to_linear(std::forward_as_tuple(mp...));
   }
 
-  /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
-  template <typename... Args> bool is_within_boundary(Args const &... args) const {
-   return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple,
-                             std::tie(args...), true);
-  }
+  // -------------------- mesh_point -------------------
 
   /// The wrapper for the mesh point
   class mesh_point_t : tag::mesh_point {
@@ -172,7 +167,6 @@ namespace gfs {
     };
     _atend = !(triqs::tuple::fold(l, _c, false));
    }
-
    // index_t index() const { return _index;} // not implemented yet
    bool at_end() const { return _atend; }
 
@@ -193,8 +187,39 @@ namespace gfs {
   const_iterator cbegin() const { return const_iterator(this); }
   const_iterator cend() const { return const_iterator(this, true); }
 
-  /// Mesh comparison
-  friend bool operator==(gf_mesh const &M1, gf_mesh const &M2) { return M1.m_tuple == M2.m_tuple; }
+  // -------------- Evaluation of a function on the grid --------------------------
+  
+  /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
+  template <typename... Args> bool is_within_boundary(Args const &... args) const {
+   return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple,
+                             std::tie(args...), true);
+  }
+
+  // not implemented
+  long get_interpolation_data(interpol_t::None, long n) = delete;
+
+  template <typename F, typename... Args> auto evaluate(interpol_t::Product, F const &f, Args &&... args) const {
+   multivar_eval<typename gf_mesh<Ms>::default_interpol_policy...> ev;
+   return ev(f, std::forward<Args>(args)...);
+  } 
+
+  // -------------------- MPI -------------------
+ 
+  /// Scatter the first mesh over the communicator c
+  friend gf_mesh mpi_scatter(gf_mesh const &m, mpi::communicator c, int root) {
+   auto r = m; // same domain, but mesh with a window. 
+   std::get<0>(r.m_tuple) = mpi_scatter(std::get<0>(r.m_tuple), c, root);
+   return r;
+  }
+
+  /// Opposite of scatter : rebuild the original mesh, without a window
+  friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
+   auto r = m; // same domain, but mesh with a window. 
+   std::get<0>(r.m_tuple) = mpi_gather(std::get<0>(r.m_tuple), c, root);
+   return r;
+  }
+
+  // -------------------- HDF5 -------------------
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const &m) {
@@ -210,32 +235,24 @@ namespace gfs {
    triqs::tuple::for_each_enumerate(m.components(), l);
   }
 
-  /// BOOST Serialization
+  // -------------------- boost serialization -------------------
+
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    auto l = [&ar](int N, auto &m) { ar &TRIQS_MAKE_NVP("MeshComponent" + std::to_string(N), m); };
    triqs::tuple::for_each_enumerate(m_tuple, l);
   }
 
+  // -------------------- print  -------------------
+
   friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) { return sout << "Product Mesh"; }
 
+  // ------------------------------------------------
   private:
   m_tuple_t m_tuple;
   domain_t _dom;
- };
-
- // -- end of class
-
- template <int pos, typename P> decltype(auto) get_index(P const &p) {return std::get<pos>(p.components_tuple()).index();}
-
- template <int pos, typename P> decltype(auto) get_point(P const &p) {
-  return std::get<pos>(p.mesh()->components()).index_to_point(std::get<pos>(p.components_tuple()).index());
- }
-
- template <int pos, typename P> decltype(auto) get_component(P const &p) { return std::get<pos>(p.components_tuple()); }
-
-}
-}
+ }; //end of class
+}}
 
 /// std::get (mesh) return the component...
 namespace std {

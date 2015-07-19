@@ -4,7 +4,6 @@ using namespace triqs::gfs;
 using namespace triqs::arrays;
 namespace h5 = triqs::h5;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
-#include <triqs/gfs/local/fourier_real.hpp> 
 
 double lorentzian(double w, double a){
   return 2*a / (w*w + a*a) ; 

@@ -19,11 +19,9 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./tools.hpp"
 #include "./gf.hpp"
 #include "./meshes/product.hpp"
-#include "./evaluators.hpp"
-#include "./tail_zero.hpp"
+#include "./singularity/tail_zero.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -36,13 +34,13 @@ namespace gfs {
 
  // The default singularity, for each Variable.
  template <typename... Ms> struct gf_default_singularity<cartesian_product<Ms...>, scalar_valued> {
-  using type = tail_zero;
+  using type = tail_zero<dcomplex>;
  };
  template <typename... Ms> struct gf_default_singularity<cartesian_product<Ms...>, matrix_valued> {
-  using type = tail_zero;
+  using type = tail_zero<matrix<dcomplex>>;
  };
  template <typename... Ms, int R> struct gf_default_singularity<cartesian_product<Ms...>, tensor_valued<R>> {
-  using type = tail_zero;
+  using type = tail_zero<array<dcomplex,R>>;
  };
 
  // forward declaration, Cf m_tail
@@ -84,108 +82,38 @@ namespace gfs {
 
   /// ---------------------------  evaluator ---------------------------------
 
-  // forward declaration, cf curry
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
-  auto curry(gf_impl<Variable, Target, Singularity, Evaluator, IsView, IsConst> const &g);
-
-  // helper function : from a callable object F, return the expression of calling it with placeholders.
-  template <typename F, size_t... Is> auto __make_lazy_call(F &f, std14::index_sequence<Is...>) {
-   return f(clef::placeholder<Is>()...);
-  }
-
-  // ... to move in array lib ?
-  inline dcomplex _make_from_shape(mini_vector<size_t, 0> const &) { return 0; }
-  template <int R> arrays::array<dcomplex, R> _make_from_shape(mini_vector<size_t, R> const &sh) {
-   auto r = arrays::array<dcomplex, R>{sh};
-   r() = 0;
-   return r;
-  }
-
   using triqs::make_const_view;
   inline dcomplex make_const_view(dcomplex z) { return z; }
-
-  // shortcut
-  template <int n> using __int = std::integral_constant<int, n>;
-  // template <bool B> using __bool = std::integral_constant<bool, B>;
-
+ 
   // now the multi d evaluator itself.
   template <typename Target, typename Sing, typename... Ms> struct evaluator<cartesian_product<Ms...>, Target, Sing> {
 
+   static constexpr int arity = sizeof...(Ms); // METTRE ARITY DANS LA MESH ! 
    template <typename G> evaluator(G *) {};
 
-   static constexpr int arity = sizeof...(Ms);
-
-   // dispatch the call :
-   // Case 1 : if all points are mesh_point_t, we call directly the memory point
-   // Case 2 : call evaluator
-   template <typename G, typename... Args> decltype(auto) operator()(G const *g, Args &&... args) const {
+   template <typename G, typename... Args> auto operator()(G const &g, Args &&... args) const {
     static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
-    static constexpr int allmp =
-        std::is_same<std::tuple<std14::decay_t<Args>...>, std::tuple<__no_cast<typename gf_mesh<Ms>::mesh_point_t>...>>::value;
-    static constexpr int _t = std::is_same<Sing, nothing>::value ? 2 : (std::is_same<Sing, tail_zero>::value ? 3 : 1);
-    // _int : 0 -> mp, >0 -> no mp, 1 : tail, 2 : nothing, 3 : tail_zero
-    return __call(__int<(1 - allmp) * _t>(), g, std::forward<Args>(args)...);
-   }
-
-   private:
-   template <int N> using _get_Ms = std14::tuple_element_t<N, std::tuple<Ms...>>;
-   using mesh_t = gf_mesh<cartesian_product<Ms...>>;
-
-   // Case 1 : if all points are mesh_point_t, we call directly the memory point
-   template <typename G, typename... MP> decltype(auto) __call(__int<0>, G const *g, __no_cast<MP> const &... p) const {
-    return g->get_from_linear_index(p.value.linear_index()...);
-   }
-
-   // Case 2 : the real evaluator
-   // We evaluate the argument recursively, when done we get an expression
-   // made of g( mesh_points...), which is then back to case 1
-   // This case is subdivided into 3, depending on the type of the singularity.
-   
-   // First : a normal singularity, we just evaluate it
-   // The issue is to get the same return type for both return 
-   template <typename G, typename... Args> auto __call(__int<1>, G const *g, Args &&... args) const {
-    using rt = std14::decay_t<decltype(make_const_view(__call1(g, std::forward<Args>(args)...)))>;
-    if (g->mesh().is_within_boundary(args...))
-     return make_const_view(__call1(g, std::forward<Args>(args)...));
-    else
-     return rt{evaluate(g->singularity(), args...)};
-   }
-
-   // In this case, the tail is 0, we need to build the proper tensor, init to 0 and correct size
-   // and return the same view type in both. 
-   template <typename G, typename... Args> auto __call(__int<3>, G const *g, Args &&... args) const {
-    using rt = std14::decay_t<decltype(make_const_view(__call1(g, std::forward<Args>(args)...)))>;
-    if (g->mesh().is_within_boundary(args...))
-     return make_const_view(__call1(g, std::forward<Args>(args)...));
-    else
-     return rt{_make_from_shape(get_target_shape(*g))};
-   }
-
-   // No singularity : if we are not in the mesh, we throw.
-   template <typename G, typename... Args> auto __call(__int<2>, G const *g, Args &&... args) const {
-    if (!g->mesh().is_within_boundary(args...)) TRIQS_RUNTIME_ERROR << "Trying to evaluate out the mesh, and Singularity is None";
-    return __call1(g, std::forward<Args>(args)...);
-   }
-
-   // to save code, impl details.
-   template <typename G, typename... Args> auto __call1(G const *g, Args &&... args) const {
-    return __partial_eval(__int<arity - 1>(), __make_lazy_call(*g, std14::make_index_sequence<arity>()),
-                                          g->mesh(), std::tie(args...));
-   }
-   // implementation
-   template <int N, typename Expr, typename ArgTuple>
-   auto __partial_eval(__int<N>, Expr &&expr, mesh_t const &mesh, ArgTuple const &tu) const {
-    return __partial_eval(__int<N - 1>(),
-                          evaluator_of_clef_expression<_get_Ms<N>>()(std::forward<Expr>(expr), clef::placeholder<N>(),
-                                                                     std::get<N>(mesh), std::get<N>(tu)),
-                          mesh, tu);
-   }
-   // end recursion : -1 : do nothing
-   template <typename Expr, typename ArgTuple>
-   auto __partial_eval(__int<-1>, Expr &&expr, mesh_t const &mesh, ArgTuple const &tu) const {
-    return std::forward<Expr>(expr);
+    if (g.mesh().is_within_boundary(args...))
+     return make_const_view(g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, std::forward<Args>(args)...));
+    using rt = std14::decay_t<decltype(
+        make_const_view(g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, std::forward<Args>(args)...)))>;
+    return rt{evaluate(g.singularity(), args...)};
    }
   };
+
+  // special case when the tail is nothing
+  template <typename Target, typename... Ms> struct evaluator<cartesian_product<Ms...>, Target, nothing> {
+
+   static constexpr int arity = sizeof...(Ms); // METTRE ARITY DANS LA MESH !
+   template <typename G> evaluator(G *) {};
+
+   template <typename G, typename... Args> auto operator()(G const &g, Args &&... args) const {
+    static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
+    if (!g.mesh().is_within_boundary(args...)) TRIQS_RUNTIME_ERROR << "Evaluation out of the mesh";
+    return g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, std::forward<Args>(args)...);
+   }
+  };
+
  } // gf_implementation
 }
 }

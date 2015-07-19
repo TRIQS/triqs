@@ -18,9 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_MESHTOOLS_H
-#define TRIQS_GF_MESHTOOLS_H
-#include "../tools.hpp"
+#pragma once
+#include "../impl/tools.hpp"
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 
 namespace triqs {
@@ -52,4 +51,3 @@ namespace gfs {
    };
 
 }}
-#endif

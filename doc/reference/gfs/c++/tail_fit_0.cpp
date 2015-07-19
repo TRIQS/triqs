@@ -1,5 +1,5 @@
 #include <triqs/gfs.hpp>
-#include <triqs/gfs/local/fit_tail.hpp>
+#include <triqs/gfs/singularity/fit_tail.hpp>
 using namespace triqs::gfs;
 int main() {
  triqs::clef::placeholder<0> iom_;

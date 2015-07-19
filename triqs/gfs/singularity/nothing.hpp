@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,61 +19,9 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/arrays.hpp>
-#include "triqs/utility/complex_ops.hpp"
-#include <triqs/utility/view_tools.hpp>
-#include <triqs/utility/expression_template_tools.hpp>
-#include <utility>
-#include <boost/iterator/iterator_facade.hpp>
 
 namespace triqs {
 namespace gfs {
- namespace mpl = boost::mpl;
-
- namespace tag {
-  struct composite {};
-  struct mesh_point {};
- }
-
- // scalar_valued, matrix_valued, tensor_valued
- struct scalar_valued {};
-
- template <int R> struct tensor_valued {
-  static_assert(R > 0, "tensor_valued only for rank >0");
- };
-
- struct matrix_valued {};
-
- //------------------------------------------------------
-
- using dcomplex = std::complex<double>;
-
- /** The statistics : Boson or Fermion
-  */
- enum statistic_enum {
-  Boson,
-  Fermion
- };
-
- //------------------------------------------------------
-
- template <typename... T> struct closest_pt_wrap;
-
- template <typename T> struct closest_pt_wrap<T> : tag::mesh_point {
-  T value;
-  template <typename U> explicit closest_pt_wrap(U &&x) : value(std::forward<U>(x)) {}
- };
-
- template <typename T1, typename T2, typename... Ts> struct closest_pt_wrap<T1, T2, Ts...> : tag::mesh_point {
-  std::tuple<T1, T2, Ts...> value_tuple;
-  template <typename... U> explicit closest_pt_wrap(U &&... x) : value_tuple(std::forward<U>(x)...) {}
- };
-
- template <typename... T> closest_pt_wrap<T...> closest_mesh_pt(T &&... x) {
-  return closest_pt_wrap<T...>{std::forward<T>(x)...};
- }
-
- //------------------------------------------------------
 
  // A simple replacement of tail when there is none to maintain generic code simple...
  struct nothing {
@@ -112,5 +60,6 @@ namespace gfs {
  template <typename T> TYPE_DISABLE_IF(nothing, std::is_same<T, nothing>) operator-(T const &, nothing) { return nothing(); }
  template <typename T> TYPE_DISABLE_IF(nothing, std::is_same<T, nothing>) operator*(T const &, nothing) { return nothing(); }
  template <typename T> TYPE_DISABLE_IF(nothing, std::is_same<T, nothing>) operator/(T const &, nothing) { return nothing(); }
-}
+
+ }
 }

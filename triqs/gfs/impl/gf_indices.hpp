@@ -19,23 +19,20 @@
  *
  ******************************************************************************/
 #pragma once
-#include<triqs/arrays.hpp>
+#include <triqs/arrays.hpp>
 
 namespace triqs {
 namespace gfs {
 
-
  struct gf_indices {
-
-  std::vector<std::string> ind;
 
   gf_indices() = default;
 
   gf_indices(int L) {
-   for (int i=0; i<L; ++i) ind.push_back(std::to_string(i));
+   for (int i = 0; i < L; ++i) ind.push_back(std::to_string(i));
   }
 
-  gf_indices(std::vector<std::string> _ind): ind(std::move(_ind)) {}
+  gf_indices(std::vector<std::string> _ind) : ind(std::move(_ind)) {}
 
   int size() const { return ind.size(); }
 
@@ -55,6 +52,8 @@ namespace gfs {
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("ind", ind); }
 
+  //private:
+  std::vector<std::string> ind;
  };
 
 
@@ -63,33 +62,30 @@ namespace gfs {
 
   std::vector<gf_indices> ind_pair;
 
-  gf_indices_pair(): ind_pair(2) {}
+  gf_indices_pair() : ind_pair(2) {}
 
-  gf_indices_pair(gf_indices r, gf_indices l): ind_pair({r,l}) {}
+  gf_indices_pair(gf_indices r, gf_indices l) : ind_pair({r, l}) {}
 
-  gf_indices_pair(gf_indices r): ind_pair({r,r}) {}
+  gf_indices_pair(gf_indices r) : ind_pair({r, r}) {}
 
-  gf_indices_pair(std::vector<std::vector<std::string>> _ind): ind_pair({_ind[0], _ind[1]}) {}
+  gf_indices_pair(std::vector<std::vector<std::string>> _ind) : ind_pair({_ind[0], _ind[1]}) {}
 
   // from a shape
-  gf_indices_pair(arrays::mini_vector<int, 2> const & shape): ind_pair({gf_indices(shape[0]), gf_indices(shape[1])}) {}
+  gf_indices_pair(arrays::mini_vector<int, 2> const &shape) : ind_pair({gf_indices(shape[0]), gf_indices(shape[1])}) {}
 
   // from a size
-  gf_indices_pair(int L): gf_indices_pair(arrays::mini_vector<int, 2>{L, L}) {}
+  gf_indices_pair(int L) : gf_indices_pair(arrays::mini_vector<int, 2>{L, L}) {}
 
   bool is_empty() const { return (ind_pair[0].size() == 0) && (ind_pair[1].size() == 0); }
 
   template <typename G> bool check_size(G *g) const {
-   return (is_empty() ||
-           ( (ind_pair[0].size() == get_target_shape(*g)[0]) && (ind_pair[1].size() == get_target_shape(*g)[1]) ));
+   return (is_empty() || ((ind_pair[0].size() == get_target_shape(*g)[0]) && (ind_pair[1].size() == get_target_shape(*g)[1])));
   }
 
   arrays::range convert_index(std::string const &s, int i) const { return ind_pair[i].convert_index(s); }
 
   // access to one of the index list
-  gf_indices operator[](int i) const {
-    return ind_pair[i];
-  }
+  gf_indices operator[](int i) const { return ind_pair[i]; }
 
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_indices_pair const &g) {
    if (g.is_empty()) return;
@@ -113,33 +109,23 @@ namespace gfs {
 
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("ind_pair", ind_pair); }
-
  };
 
  inline gf_indices_pair slice(gf_indices_pair const &ind_pair, arrays::range rl, arrays::range rr) {
   if (ind_pair.is_empty()) return {};
   std::vector<std::string> vl, vr;
-  for (auto i: rl) { vl.push_back(ind_pair[0].ind[i]); }
-  for (auto i: rr) { vr.push_back(ind_pair[1].ind[i]); }
-  return {vl,vr};
+  for (auto i : rl) {
+   vl.push_back(ind_pair[0].ind[i]);
+  }
+  for (auto i : rr) {
+   vr.push_back(ind_pair[1].ind[i]);
+  }
+  return {vl, vr};
  }
 
  inline gf_indices_pair transpose(gf_indices_pair const &x) {
   return {x.ind_pair[1], x.ind_pair[0]};
  }
-
-
 }
 }
-
-
-  /*
-  // indices from a vector<T> : L and R are the same.
-  template <typename T> indices_2(std::vector<T> const & _ind) : ind(2) {
-   for (auto const &i : _ind) ind[0].push_back(std::to_string(i));
-   ind[1] = ind[0];
-  }
-
-
-  */
 

@@ -4,7 +4,8 @@
 using namespace triqs::gfs;
 using namespace triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
-#include <triqs/gfs/local/functions.hpp> 
+#include <triqs/gfs/functions/functions.hpp> 
+
 #include <boost/mpi.hpp>
 
 int main(int argc, char* argv[]) {

@@ -36,12 +36,12 @@
 #ifndef TRIQS_C11
 #include <triqs/gfs/product.hpp>
 #include <triqs/gfs/curry.hpp>
-#include <triqs/gfs/m_tail.hpp>
+#include <triqs/gfs/singularity/m_tail.hpp>
 #endif
 
-#include <triqs/gfs/local/fourier_matsubara.hpp>
-#include <triqs/gfs/local/fourier_real.hpp>
-#include <triqs/gfs/local/fourier_lattice.hpp>
-#include <triqs/gfs/local/legendre_matsubara.hpp>
+#include <triqs/gfs/transform/fourier_matsubara.hpp>
+#include <triqs/gfs/transform/fourier_real.hpp>
+#include <triqs/gfs/transform/fourier_lattice.hpp>
+#include <triqs/gfs/transform/legendre_matsubara.hpp>
 #endif
 

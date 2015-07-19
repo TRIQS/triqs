@@ -1,7 +1,5 @@
 
-#include <triqs/gfs/block.hpp>
-#include <triqs/gfs/imtime.hpp>
-#include <triqs/gfs/imfreq.hpp>
+#include <triqs/gfs.hpp>
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 using namespace triqs::gfs;

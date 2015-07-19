@@ -19,49 +19,19 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./tools.hpp"
 #include "./gf.hpp"
-#include "./local/tail.hpp"
 #include "./domains/R.hpp"
 #include "../lattice/regular_bz_mesh.hpp"
-#include "./evaluators.hpp"
 
 namespace triqs {
 namespace gfs {
 
  namespace gfs_implementation {
 
-  // h5 name
   template <typename Singularity> struct h5_name<brillouin_zone, matrix_valued, Singularity> {
    static std::string invoke() { return "BZ"; }
   };
 
-  /// ---------------------------  data access  ---------------------------------
-  template <> struct data_proxy<brillouin_zone, matrix_valued> : data_proxy_array<std::complex<double>, 3> {};
-  template <> struct data_proxy<brillouin_zone, scalar_valued> : data_proxy_array<std::complex<double>, 1> {};
-
-  /// ---------------------------  evaluator ---------------------------------
-
-#ifndef TRIQS_CPP11
-  // simple evaluation : take the point on the grid...
-  template <> struct evaluator_of_clef_expression<brillouin_zone> {
-   template <typename Expr, int N>
-   auto operator()(Expr const &expr, clef::placeholder<N>, gf_mesh<brillouin_zone> const &m, lattice::k_t const &k) {
-    auto n = m.locate_neighbours(k).index();
-    return clef::eval(expr, clef::placeholder<N>() = no_cast(m[n]));
-   }
-  };
-#endif
-
-  // --------------------------------------------------------------
-  template <typename Target, typename Singularity> struct evaluator<brillouin_zone, Target, Singularity> {
-   static constexpr int arity = 1;
-   template <typename G> evaluator(G *) {};
-  
-   template <typename G> auto operator()(G const *g, gf_mesh<brillouin_zone>::index_t const &mi) const RETURN((*g)[mi]);
-   template <typename G> auto operator()(G const *g, lattice::k_t const &k) const RETURN((*g)[g -> mesh().locate_neighbours(k)]);
-   template <typename G> auto operator()(G const *g, __no_cast<typename gf_mesh<brillouin_zone>::mesh_point_t> const & p) const RETURN((*g)[p.value]);
-  };
  }
 }
 }

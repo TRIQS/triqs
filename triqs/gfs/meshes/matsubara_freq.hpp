@@ -26,6 +26,7 @@ namespace triqs {
 namespace gfs {
 
  struct imfreq {};
+
  template <> struct mesh_point<gf_mesh<imfreq>>; //forward
 
  // ---------------------------------------------------------------------------
@@ -37,15 +38,16 @@ namespace gfs {
   using domain_t = matsubara_domain<true>;
   using index_t = long;
   using linear_index_t = long;
+  using default_interpol_policy = interpol_t::None;
   using domain_pt_t = typename domain_t::point_t;
 
-  // ----- constructors -------------------
+  // -------------------- Constructors -------------------
 
   gf_mesh(domain_t dom, long n_pts = 1025, bool positive_only = true)
      : _dom(std::move(dom)), _n_pts(n_pts), _positive_only(positive_only) {
    if (_positive_only) {
     _first_index = 0;
-    _last_index = n_pts - 1; // CORRECTION
+    _last_index = n_pts - 1; 
    } else {
     _last_index = (_n_pts - (_dom.statistic == Boson ? 1 : 2)) / 2;
     _first_index = -(_last_index + (_dom.statistic == Fermion));
@@ -59,51 +61,20 @@ namespace gfs {
   gf_mesh(double beta, statistic_enum S, int n_pts = 1025, bool positive_only = true)
      : gf_mesh({beta, S}, n_pts, positive_only) {}
 
-  //gf_mesh(gf_mesh const &) = default;
-
-  //  ------ MPI ------
-
-  /// Scatter a mesh over the communicator c
-  friend gf_mesh mpi_scatter(gf_mesh m, mpi::communicator c, int root) {
-   auto m2 = gf_mesh{m.domain(), m.size(), m.positive_only()};
-   std::tie(m2._first_index_window, m2._last_index_window) = mpi::slice_range(m2._first_index, m2._last_index, c.size(), c.rank());
-   return m2;
+  bool operator==(gf_mesh const &M) const {
+   return (std::tie(_dom, _n_pts, _positive_only) == std::tie(M._dom, M._n_pts, M._positive_only));
   }
+  bool operator!=(gf_mesh const &M) const { return !(operator==(M)); }
 
-  friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
-   return gf_mesh{m.domain(), m.size(), m.positive_only()};
-  }
+  // -------------------- Accessors (from concept) -------------------
 
   /// The corresponding domain
   domain_t const &domain() const { return _dom; }
 
-  /** \brief First value of the index
-   *
-   *  0 if positive_only is true
-   *  else : 
-   *    For fermions : -Nmax - 1
-   *    For Bosons : -Nmax
-   **/
-
-  /// last Matsubara index 
-  int last_index() const { return _last_index;}
-
-  /// first Matsubara index
-  int first_index() const { return _first_index;}
-
-  /// last Matsubara index of the window 
-  int last_index_window() const { return _last_index_window;}
-
-  /// first Matsubara index of the window
-  int first_index_window() const { return _first_index_window;}
-
-  /// Size (linear) of the mesh
-  //long size() const { return _n_pts;}
-
   /// Size (linear) of the mesh of the window
   long size() const { return _last_index_window - _first_index_window + 1; }
-
-  ///
+  
+  /// 
   utility::mini_vector<size_t, 1> size_of_components() const {
    return {size_t(size())};
   }
@@ -114,15 +85,24 @@ namespace gfs {
   /// Flatten the index in the positive linear index for memory storage (almost trivial here).
   long index_to_linear(index_t ind) const { return ind - first_index_window(); }
 
-  /// Reverse of index_to_linear
-  index_t linear_to_index(long lind) const { return lind + first_index_window(); }
+  // -------------------- Accessors (other) -------------------
 
-  /// Is the mesh only for positive omega_n (G(tau) real))
+  /// first Matsubara index
+  int first_index() const { return _first_index;}
+  
+  /// last Matsubara index 
+  int last_index() const { return _last_index;}
+
+  /// first Matsubara index of the window
+  int first_index_window() const { return _first_index_window;}
+  
+  /// last Matsubara index of the window 
+  int last_index_window() const { return _last_index_window;}
+
+ /// Is the mesh only for positive omega_n (G(tau) real))
   bool positive_only() const { return _positive_only;}
 
-  /// Is the frequency in mesh ?
-  bool is_within_boundary(long n) const { return ((n >= first_index_window()) && (n <= last_index_window())); }
-  bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n);}
+  // -------------------- mesh_point -------------------
 
   /// Type of the mesh point
   using mesh_point_t = mesh_point<gf_mesh>;
@@ -137,11 +117,41 @@ namespace gfs {
   inline const_iterator cbegin() const; 
   inline const_iterator cend() const;   
 
-  bool operator==(gf_mesh const &M) const {
-   return (std::tie(_dom, _n_pts, _positive_only) == std::tie(M._dom, M._n_pts, M._positive_only));
-  }
-  bool operator!=(gf_mesh const &M) const { return !(operator==(M)); }
+ // -------------- Evaluation of a function on the grid --------------------------
 
+  /// Is the point in mesh ?
+  bool is_within_boundary(long n) const { return ((n >= first_index_window()) && (n <= last_index_window())); }
+  bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n);}
+
+  long get_interpolation_data(interpol_t::None, long n) const { return n;}
+  long get_interpolation_data(interpol_t::None, matsubara_freq n) const { return n.n;}
+ 
+#ifndef TRIQS_CPP11 
+  template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const { return f[n]; }
+  template <typename F> auto evaluate(interpol_t::None, F const &f, matsubara_freq n) const { return f[n.n]; }
+#else
+  template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const RETURN(f[n]);
+  template <typename F> auto evaluate(interpol_t::None, F const &f, matsubara_freq n) const RETURN(f[n.n]);
+#endif
+
+  // -------------------- MPI -------------------
+
+  /// Scatter a mesh over the communicator c
+  //In practice, the same mesh, with a different window.
+  //the window can only be set by these 2 operations
+  friend gf_mesh mpi_scatter(gf_mesh m, mpi::communicator c, int root) {
+   auto m2 = gf_mesh{m.domain(), m.size(), m.positive_only()};
+   std::tie(m2._first_index_window, m2._last_index_window) = mpi::slice_range(m2._first_index, m2._last_index, c.size(), c.rank());
+   return m2;
+  }
+
+  /// Opposite of scatter
+  friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
+   return gf_mesh{m.domain(), m.size(), m.positive_only()};
+  }
+
+  // -------------------- HDF5 -------------------
+ 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const &m) {
    h5::group gr = fg.create_group(subgroup_name);
@@ -164,12 +174,12 @@ namespace gfs {
    m = gf_mesh{std::move(dom), L, (s==1)};
   }
 
+  // -------------------- boost serialization -------------------
+
   friend class boost::serialization::access;
-  ///  BOOST Serialization
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    ar &TRIQS_MAKE_NVP("beta", _dom.beta);
    ar &TRIQS_MAKE_NVP("statistic", _dom.statistic);
-   //ar &TRIQS_MAKE_NVP("domain", _dom);
    ar &TRIQS_MAKE_NVP("size", _n_pts);
    ar &TRIQS_MAKE_NVP("kind", _positive_only);
    ar &TRIQS_MAKE_NVP("_first_index", _first_index);
@@ -178,11 +188,13 @@ namespace gfs {
    ar &TRIQS_MAKE_NVP("_last_index_window", _last_index_window);
   }
 
-  /// Simple print (just blabla and the size)
+  // -------------------- print  -------------------
+  
   friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
    return sout << "Matsubara Freq Mesh of size " << m.size();
   }
 
+  // ------------------------------------------------
   private:
   domain_t _dom;
   int _n_pts;
@@ -213,7 +225,7 @@ namespace gfs {
   index_t first_index_window, last_index_window;
  };
 
- /// impl...
+ // ------------------- implementations -----------------------------
  inline mesh_point<gf_mesh<imfreq>> gf_mesh<imfreq>::operator[](index_t i) const {
   return {*this, i};
  }

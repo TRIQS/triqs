@@ -28,6 +28,9 @@ namespace triqs { namespace gfs {
   return {std::move(m), l, nothing(), nothing(), {}};
  }
 
+ // simplify the code below ... 
+ template <typename... Ms> struct cartesian_product<std::tuple<Ms...>> : cartesian_product<Ms...> {};
+
  namespace gfs_implementation { 
   
   /// ---------------------------  data access  ---------------------------------

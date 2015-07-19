@@ -23,44 +23,69 @@
 namespace triqs {
 namespace gfs {
 
- /**
-  * Linear mesh
-  */ 
  template <typename Domain> struct linear_mesh {
 
   using domain_t = Domain;
   using index_t = long;
   using linear_index_t = long;
+  using default_interpol_policy = interpol_t::Linear1d;
   using domain_pt_t = typename domain_t::point_t;
 
   static_assert(!std::is_base_of<std::complex<double>, domain_pt_t>::value,
                 "Internal error : cannot use Linear Mesh in this case");
 
-  linear_mesh() : _dom(), L(0), xmin(0), xmax(0), del(0) {}
+  // -------------------- Constructors -------------------
 
   explicit linear_mesh(domain_t dom, double a, double b, long n_pts)
-     : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del((b-a)/(L-1)) {}
+     : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del((b - a) / (L - 1)) {
+   //_first_index_window = 0;
+   //_last_index_window = L - 1;
+  }
 
+  linear_mesh() : linear_mesh(domain_t{}, 0, 1, 2) {}
+
+  /// Mesh comparison
+  bool operator==(linear_mesh const &M) const {
+   return ((_dom == M._dom) && (size() == M.size()) && (std::abs(xmin - M.xmin) < 1.e-15) && (std::abs(xmax - M.xmax) < 1.e-15));
+  }
+  bool operator!=(linear_mesh const &M) const { return !(operator==(M)); }
+
+  // -------------------- Accessors (from concept) -------------------
+
+  /// The corresponding domain
   domain_t const &domain() const { return _dom; }
+
+  /// Size (linear) of the mesh of the window
   long size() const { return L; }
   
   utility::mini_vector<size_t, 1> size_of_components() const {
    return {size_t(size())};
   }
 
-  double delta() const { return del; }
-  double x_max() const { return xmax; }
-  double x_min() const { return xmin; }
-
-  /// Conversions point <-> index <-> linear_index
+  /// From an index of a point in the mesh, returns the corresponding point in the domain
   domain_pt_t index_to_point(index_t ind) const { return xmin + ind * del; }
 
+  /// Flatten the index in the positive linear index for memory storage (almost trivial here).
   long index_to_linear(index_t ind) const { return ind; }
 
-  /// Is the point in mesh ?
-  bool is_within_boundary(index_t const &p) const { return ((p >= x_min()) && (p <= x_max())); }
-  // ADAPT for window
-  //bool is_within_boundary(index_t const &p) const { return ((p >= first_index_window()) && (p <= last_index_window())); }
+  // -------------------- Accessors (other) -------------------
+
+  /// Step of the mesh
+  double delta() const { return del; }
+  
+  /// Min of the mesh
+  double x_min() const { return xmin; }
+
+  /// Max of the mesh
+  double x_max() const { return xmax; }
+  
+  /// Min of the window of the mesh
+  //double x_min_window() const { return xmin + _first_index_window *del; }
+
+  /// Max of the window of the mesh
+  //double x_max_window() const { return xmin + _last_index_window * del; }
+
+  // -------------------- mesh_point -------------------
 
   /// Type of the mesh point
   using mesh_point_t = mesh_point<linear_mesh>;
@@ -77,12 +102,74 @@ namespace gfs {
   const_iterator cbegin() const { return const_iterator(this); }
   const_iterator cend() const { return const_iterator(this, true); }
 
-  /// Mesh comparison
-  bool operator==(linear_mesh const &M) const {
-   return ((_dom == M._dom) && (size() == M.size()) && (std::abs(xmin - M.xmin) < 1.e-15) && (std::abs(xmax - M.xmax) < 1.e-15));
-  }
-  bool operator!=(linear_mesh const &M) const { return !(operator==(M)); }
+  // -------------- Evaluation of a function on the grid --------------------------
 
+  /// Approximation of a point of the domain by a mesh point
+  std::tuple<bool, long, double> windowing(double x) const {
+   double a = (x - x_min()) / delta();
+   long i = std::floor(a), imax = long(size()) - 1;
+   bool in = (i >= 0) && (i < imax);
+   double w = a - i;
+   if (i == imax) {
+    --i;
+    in = (std::abs(w) < 1.e-12);
+    w = 1.0;
+   }
+   if (i == -1) {
+    i = 0;
+    in = (std::abs(1 - w) < 1.e-12);
+    w = 1.0;
+   }
+   return std::make_tuple(in, i, w);
+  }
+
+  /// Is the point in mesh ?
+  bool is_within_boundary(double x) const { return ((x >= x_min()) && (x <= x_max())); }
+  //bool is_within_boundary(double x) const { return ((x >= x_min_window()) && (x <= x_max_window())); }
+
+  struct interpol_data_t {
+   double w0, w1;
+   long i0, i1;
+  };
+
+  interpol_data_t get_interpolation_data(interpol_t::Linear1d, double x) const {
+   double w;
+   long i;
+   bool in;
+   std::tie(in, i, w) = windowing(x);
+   if (!in) TRIQS_RUNTIME_ERROR <<"out of window";
+   return {1- w, w, i, i + 1};
+  }
+
+  template<typename F>
+  auto evaluate(interpol_t::Linear1d, F const & f, double x) const 
+#ifdef TRIQS_CPP11 
+  ->decltype(0.0*f[0] + 1.0*f[0]) 
+#endif
+  {
+   auto id = get_interpolation_data(default_interpol_policy{}, x);
+   return id.w0 * f[id.i0] + id.w1 * f[id.i1];
+  }
+
+  // -------------------- MPI -------------------
+
+  /*
+   RETURNS gf_mesh ? or linear_mesh ?
+  /// Scatter a mesh over the communicator c
+  //In practice, the same mesh, with a different window.
+  //the window can only be set by these 2 operations
+  friend gf_mesh mpi_scatter(gf_mesh m, mpi::communicator c, int root) {
+   auto m2 = gf_mesh{m.domain(), m.x_min(), m.x_max(), m.size()};
+   std::tie(m2._first_index_window, m2._last_index_window) = mpi::slice_range(0, m2.size() - 1, c.size(), c.rank());
+   return m2;
+  }
+
+  /// Opposite of scatter
+  friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
+   return gf_mesh{m.domain(), m.x_min(), m.x_max(), m.size()};
+  }
+*/
+  // -------------- HDF5  --------------------------
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, linear_mesh const &m) {
    h5::group gr = fg.create_group(subgroup_name);
@@ -105,7 +192,8 @@ namespace gfs {
    m = linear_mesh(std::move(dom), a, b, L);
   }
 
-  //  BOOST Serialization
+  // -------------------- boost serialization -------------------
+
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    ar &TRIQS_MAKE_NVP("domain", _dom);
@@ -115,8 +203,11 @@ namespace gfs {
    ar &TRIQS_MAKE_NVP("size", L);
   }
 
+  // -------------------- print  -------------------
+
   friend std::ostream &operator<<(std::ostream &sout, linear_mesh const &m) { return sout << "Linear Mesh of size " << m.L; }
 
+  // ------------------------------------------------
   private:
   domain_t _dom;
   long L;
@@ -148,32 +239,6 @@ namespace gfs {
   void reset() { _index = 0; }
  };
 
- // UNUSED, only in deprecated code...
- /// Simple approximation of a point of the domain by a mesh point. No check
- //template <typename D> long get_closest_mesh_pt_index(linear_mesh<D> const &mesh, typename D::point_t const &x) {
- // double a = (x - mesh.x_min()) / mesh.delta();
-//  return std::floor(a);
-// }
-
- /// Approximation of a point of the domain by a mesh point
- template <typename D> std::tuple<bool, long, double> windowing(linear_mesh<D> const &mesh, typename D::point_t const &x) {
-  double a = (x - mesh.x_min()) / mesh.delta();
-  long i = std::floor(a), imax = long(mesh.size()) - 1;
-  bool in = (i >= 0) && (i < imax);
-  double w = a - i;
-  if (i == imax) {
-   --i;
-   in = (std::abs(w) < 1.e-12);
-   w = 1.0;
-  }
-  if (i == -1) {
-   i = 0;
-   in = (std::abs(1 - w) < 1.e-12);
-   w = 1.0;
-  }
-  return std::make_tuple(in, i, w);
-  // return std::make_tuple(in, (in ? i : 0),w);
- }
 }
 }
 

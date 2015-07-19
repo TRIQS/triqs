@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../tools.hpp"
+#include "../impl/tools.hpp"
 #include <map>
 #include <boost/serialization/map.hpp>
 namespace triqs {

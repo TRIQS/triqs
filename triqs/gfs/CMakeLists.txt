@@ -1,2 +1,3 @@
-add_subdirectory(local)
+add_subdirectory(functions)
+add_subdirectory(transform)
 

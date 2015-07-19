@@ -1,6 +1,5 @@
-#include <Python.h>
+#include <triqs/gfs.hpp>
 #include <iostream>
-#include <triqs/gfs/local/tail.hpp>
 int main() {
  int N1 = 1, N2 = 1;
  triqs::gfs::tail t(N1, N2);

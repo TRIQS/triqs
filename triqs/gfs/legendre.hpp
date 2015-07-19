@@ -18,11 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LEGENDRE_TIME_H
-#define TRIQS_GF_LEGENDRE_TIME_H
-#include "./tools.hpp"
+#pragma once
 #include "./gf.hpp"
-#include "./local/tail.hpp"
 #include "./domains/legendre.hpp"
 #include "./meshes/discrete.hpp"
 
@@ -52,8 +49,8 @@ namespace gfs {
    template <typename G> evaluator(G *) {};
    static constexpr int arity = 1;
    // ERROR : give a double and interpolate
-   template <typename G> arrays::matrix_view<double> operator()(G const* g, long n) const {
-    return g->data()(n, arrays::range(), arrays::range());
+   template <typename G> arrays::matrix_view<double> operator()(G const& g, long n) const {
+    return g.data()(n, arrays::range(), arrays::range());
    }
   };
 
@@ -65,5 +62,4 @@ namespace gfs {
  } // gfs_implementation
 }
 }
-#endif
 

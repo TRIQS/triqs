@@ -20,8 +20,10 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays.hpp>
-#include <triqs/arrays/algorithms.hpp>
-#include <triqs/gfs/tools.hpp>
+//#include <triqs/arrays/algorithms.hpp>
+#include <triqs/gfs/impl/tools.hpp>
+
+// TO BE SEPARATED
 #include <triqs/mpi/boost.hpp>
 #include <boost/serialization/complex.hpp>
 

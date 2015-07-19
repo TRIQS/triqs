@@ -57,6 +57,7 @@ namespace gfs {
 
   using index_t = utility::mini_vector<long, 3>;
   using linear_index_t = long;
+  using default_interpol_policy = interpol_t::None;
 
   size_t size() const { return _size; }
 
@@ -93,13 +94,36 @@ namespace gfs {
   bool operator==(gf_mesh const& M) const { return ((dims == M.dims)); }
   bool operator!=(gf_mesh const &M) const { return !(operator==(M)); }
 
-  /// ----------- End mesh concept  ----------------------
-
   /// Reduce point modulo to the lattice.
+  // WHY NOT INLINE ??? SLOW !!
   inline mesh_point_t modulo_reduce(index_t const& r) const;
 
  // mesh_point_t const & modulo_reduce(mesh_point_t const& r) const { return r;}
 
+  // -------------- Evaluation of a function on the grid --------------------------
+
+  /// Reduce index modulo to the lattice.
+  index_t index_modulo(index_t const& r) const {
+   return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)};
+  }
+  
+  using interpol_data_t = index_t;
+ 
+  interpol_data_t get_interpolation_data(default_interpol_policy, index_t const &x) const {
+   return index_modulo(x);
+  }
+
+  template<typename F>
+  auto evaluate(default_interpol_policy, F const & f, index_t const &x) const 
+#ifdef TRIQS_CPP11 
+->std14::decay_t<decltype(f[0])> 
+#endif
+  {
+   auto id = get_interpolation_data(default_interpol_policy{}, x);
+   return f[id];
+  }
+
+  // -------------- HDF5  --------------------------
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const& m) {
    h5::group gr = fg.create_group(subgroup_name);

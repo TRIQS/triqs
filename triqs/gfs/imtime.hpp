@@ -19,13 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./tools.hpp"
 #include "./gf.hpp"
-#include "./local/tail.hpp"
-#include "./local/no_tail.hpp"
-#include "./domains/matsubara.hpp"
 #include "./meshes/matsubara_time.hpp"
-#include "./evaluators.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -59,40 +54,6 @@ namespace gfs {
     int n = std::floor(x / g->mesh().delta());
     return n;
    }
-  };
-
-  /// ---------------------------  evaluator ---------------------------------
-
-  // this one is specific because of the beta-antiperiodicity for fermions
-  template <> struct evaluator_of_clef_expression<imtime> {
-   template <typename Expr, int N> auto operator()(Expr const &expr, clef::placeholder<N>, gf_mesh<imtime> const &m, double tau) 
-#ifdef TRIQS_CPP11
--> decltype(1.0 * clef::eval(expr, clef::placeholder<N>() = no_cast(m[1l])) + 1.0 * clef::eval(expr, clef::placeholder<N>() = no_cast(m[0l])))
-#endif
-   {
-    double beta = m.domain().beta;
-    int p = std::floor(tau / beta);
-    tau -= p * beta;
-    double w, w1, w2;
-    bool in;
-    long n;
-    std::tie(in, n, w) = windowing(m, tau);
-    if (!in) TRIQS_RUNTIME_ERROR << " Evaluation out of bounds";
-    if ((m.domain().statistic == Fermion) && (p % 2 != 0)) {
-     w2 = -w;
-     w1 = w - 1;
-    } else {
-     w2 = w;
-     w1 = 1 - w;
-    }
-    return std::move(w1) * clef::eval(expr, clef::placeholder<N>() = no_cast(m[n])) +
-           std::move(w2) * clef::eval(expr, clef::placeholder<N>() = no_cast(m[n + 1]));
-   }
-  };
-
-  // now evaluator
-  template <typename Singularity, typename Target> struct evaluator<imtime, Target, Singularity> : evaluator_one_var<imtime> {
-   template <typename G> evaluator(G *) {};
   };
 
  } // gfs_implementation.

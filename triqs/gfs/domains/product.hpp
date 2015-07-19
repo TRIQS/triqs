@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../tools.hpp"
+#include "../impl/tools.hpp"
 namespace triqs {
 namespace gfs {
 

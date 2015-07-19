@@ -21,6 +21,7 @@
 #pragma once
 #include <triqs/arrays/vector.hpp>
 #include <triqs/gfs/gf.hpp>
+#include <triqs/gfs/singularity/no_tail.hpp>
 
 namespace triqs { namespace gfs {
 

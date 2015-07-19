@@ -19,12 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./tools.hpp"
 #include "./gf.hpp"
-#include "./local/tail.hpp"
-#include "./local/no_tail.hpp"
 #include "./meshes/matsubara_freq.hpp"
-#include "./evaluators.hpp"
 namespace triqs {
 namespace gfs {
 
@@ -39,199 +35,58 @@ namespace gfs {
  namespace gfs_implementation {
 
   /// ---------------------------  hdf5 ---------------------------------
-  
+ 
   template <typename S> struct h5_name<imfreq, matrix_valued, S> {
    static std::string invoke() { return "ImFreq"; }
   };
 
-  /// ---------------------------  data access  ---------------------------------
-
-  template <> struct data_proxy<imfreq, matrix_valued> : data_proxy_array<std::complex<double>, 3> {};
-  template <> struct data_proxy<imfreq, scalar_valued> : data_proxy_array<std::complex<double>, 1> {};
-
   /// ---------------------------  evaluator ---------------------------------
 
-#ifndef TRIQS_CPP11
-  // simple evaluation : take the point on the grid...
-  template <> struct evaluator_of_clef_expression<imfreq> {
-   private : 
-    long __as_long(long p) { return p; }
-    long __as_long(matsubara_freq const &p) { return p.n; }
+  template <typename Target, typename Sing> struct evaluator<imfreq, Target, Sing> {
 
-   public:
-   //template <typename Arg> bool is_in_mesh(gf_mesh<imfreq> const &m, Arg const &p) {
-   // long n = __as_long(p);
-   // return ((n >= m.first_index()) && (n < m.size() + m.first_index()));
-   // }
-
-  template <typename Expr, int N, typename Arg>
-   auto operator()(Expr const &expr, clef::placeholder<N>, gf_mesh<imfreq> const &m, Arg const &p) {
-    long n = __as_long(p);
-    return clef::eval(expr, clef::placeholder<N>() = no_cast(m[n]));
-   }
-  };
-#endif
-
-  // ------------- evaluator  -------------------
-  // handle the case where the matsu. freq is out of grid...
-
-  struct _eval_imfreq_base_impl {
    static constexpr int arity = 1;
-   template <typename G> int sh(G const * g) const { return (g->mesh().domain().statistic == Fermion ? 1 : 0);}
+   template <typename G> evaluator(G *) {};
+
+   // technical details...
+   using r_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix<dcomplex>>;
+   using rv_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix_view<dcomplex>>;
+
+   template <typename S> auto _evaluate_sing(matrix_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f));
+   template <typename S> auto _evaluate_sing(scalar_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f)(0, 0));
+   rv_t _evaluate_sing(Target, nothing, matsubara_freq const &f) const {
+    TRIQS_RUNTIME_ERROR << "Evaluation out of mesh";
+    return r_t{};
+   }
+
+   // evaluator
+   template <typename G> rv_t operator()(G const &g, matsubara_freq const &f) const {
+    if (g.mesh().positive_only()) { // only positive Matsubara frequencies
+     if ((f.n >= 0) && (f.n < g.mesh().size())) return g[f.n];
+     int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
+     if ((f.n < 0) && ((-f.n - sh) < g.mesh().size())) return r_t{conj(g[-f.n - sh])};
+    } else {
+     if ((f.n >= g.mesh().first_index()) && (f.n < g.mesh().size() + g.mesh().first_index())) return g[f.n];
+    }
+    return _evaluate_sing(Target{}, g.singularity(), f);
+   }
 
    // int -> replace by matsubara_freq
    template <typename G>
-   AUTO_DECL operator()(G const *g, int n) const
-       RETURN((*g)(matsubara_freq(n, g->mesh().domain().beta, g->mesh().domain().statistic)));
+   AUTO_DECL operator()(G const &g, int n) const
+       RETURN(g(matsubara_freq(n, g.mesh().domain().beta, g.mesh().domain().statistic)));
 
-   template <typename G>
-   auto operator()(G const *g, __no_cast<typename gf_mesh<imfreq>::mesh_point_t> const &p) const RETURN((*g)[p.value]);
-
-   template <typename G> typename G::singularity_t operator()(G const *g, tail_view t) const {
-    return compose(g->singularity(),t);
-    //return g->singularity();
-   }
-  };
-  // --- various 4 specializations
-
-  // scalar_valued, tail
-  template <> struct evaluator<imfreq, scalar_valued, tail> : _eval_imfreq_base_impl {
- 
-   template <typename G> evaluator(G *) {};
-   using _eval_imfreq_base_impl::operator();
-
-   template <typename G> std::complex<double> operator()(G const *g, matsubara_freq const &f) const {
-    if (g->mesh().positive_only()) { // only positive Matsubara frequencies
-     if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
-     if ((f.n < 0) && ((-f.n - this->sh(g)) < g->mesh().size())) return conj((*g)[-f.n - this->sh(g)]);
-    } else {
-     if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size() + g->mesh().first_index())) return (*g)[f.n];
-    }
-    return evaluate(g->singularity(),f)(0, 0);
-   }
-  };
-
-  // scalar_valued, no tail
-  template <> struct evaluator<imfreq, scalar_valued, nothing> : _eval_imfreq_base_impl {
-
-   template <typename G> evaluator(G *) {};
-   using _eval_imfreq_base_impl::operator();
-
-   template <typename G> std::complex<double> operator()(G const *g, matsubara_freq const &f) const {
-    if (g->mesh().positive_only()) { // only positive Matsubara frequencies
-     if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n];
-     if ((f.n < 0) && ((-f.n - this->sh(g)) < g->mesh().size())) return conj((*g)[-f.n - this->sh(g)]);
-    } else {
-     if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size() + g->mesh().first_index())) return (*g)[f.n];
-    }
-    TRIQS_RUNTIME_ERROR<< "evaluation out of mesh";
-    return 0;
-   }
-  };
-
-  // matrix_valued, tail
-  template <> struct evaluator<imfreq, matrix_valued, tail> : _eval_imfreq_base_impl {
-
-   template <typename G> evaluator(G *) {};
-   using _eval_imfreq_base_impl::operator();
-
-   template <typename G> arrays::matrix_const_view<std::complex<double>> operator()(G const *g, matsubara_freq const &f) const {
-    if (g->mesh().positive_only()) { // only positive Matsubara frequencies
-     if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
-     if ((f.n < 0) && ((-f.n - this->sh(g)) < g->mesh().size()))
-      return arrays::matrix<std::complex<double>>{conj((*g)[-f.n - this->sh(g)]())};
-    } else {
-     if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size() + g->mesh().first_index())) return (*g)[f.n];
-    }
-    return evaluate(g->singularity(), f);
-   }
-  };
-
-  // matrix_valued, no tail
-  template <> struct evaluator<imfreq, matrix_valued, nothing> : _eval_imfreq_base_impl {
-
-   template <typename G> evaluator(G *) {};
-   using _eval_imfreq_base_impl::operator();
-
-   template <typename G> arrays::matrix_const_view<std::complex<double>> operator()(G const *g, matsubara_freq const &f) const {
-    if (g->mesh().positive_only()) { // only positive Matsubara frequencies
-     if ((f.n >= 0) && (f.n < g->mesh().size())) return (*g)[f.n]();
-     if ((f.n < 0) && ((-f.n - this->sh(g)) < g->mesh().size()))
-      return arrays::matrix<std::complex<double>>{conj((*g)[-f.n - this->sh(g)]())};
-    } else {
-     if ((f.n >= g->mesh().first_index()) && (f.n < g->mesh().size() + g->mesh().first_index())) return (*g)[f.n];
-    }
-    TRIQS_RUNTIME_ERROR<< "evaluation out of mesh";
-    auto r = arrays::matrix<std::complex<double>>{get_target_shape(*g)};
-    r() = 0;
-    return r;
+   // Evaluate on the tail : compose the tails
+   template <typename G> typename G::singularity_t operator()(G const &g, tail_view t) const {
+    return compose(g.singularity(), t);
    }
   };
 
  } // gfs_implementation
 
-
  // Specialization of the conjugate for imaginary Green's functions
  template <typename Singularity, typename Evaluator>
  gf<imfreq, matrix_valued, Singularity, Evaluator> conj(gf_view<imfreq, matrix_valued, Singularity, Evaluator> g) {
   return {g.mesh(), conj(g.data()), conj(g.singularity(), true), g.symmetry(), g.indices(), g.name};
- }
-
- // FOR LEGACY PYTHON CODE ONLY
- // THIS MUST be kept for python operations 
- // specific operations (for legacy python code).
- // +=, -= with a matrix
- inline void operator+=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-  for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) += m;
-  g.singularity()(0) += m;
- }
-
- inline void operator-=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-  for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) -= m;
-  g.singularity()(0) -= m;
- }
-
- inline void operator+=(gf_view<imfreq> g, std::complex<double> a) {
-  operator+=(g, arrays::make_unit_matrix(get_target_shape(g)[0], a));
- }
- inline void operator-=(gf_view<imfreq> g, std::complex<double> a) {
-  operator-=(g, arrays::make_unit_matrix(get_target_shape(g)[0], a));
- }
-
-
- inline gf<imfreq> operator+(gf<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-  g() += m;
-  return g;
- }
-
- inline gf<imfreq> operator+(gf<imfreq> g, std::complex<double> const &m) {
-  g() += m; // () is critical of infinite loop -> segfault
-  return g;
- }
-
- inline gf<imfreq> operator+(std::complex<double> const &m, gf<imfreq> g) { return g + m; }
- inline gf<imfreq> operator+(arrays::matrix<std::complex<double>> const &m, gf<imfreq> g) { return g + m; }
-
- inline gf<imfreq> operator-(gf<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-  g() -= m;
-  return g;
- }
-
- inline gf<imfreq> operator-(gf<imfreq> g, std::complex<double> const &m) {
-  g() -= m;
-  return g;
- }
-
- inline gf<imfreq> operator-(std::complex<double> const &m, gf<imfreq> g) { 
-  g *= -1;
-  g+=m;
-  return g;
-  }
-
- inline gf<imfreq> operator-(arrays::matrix<std::complex<double>> const &m, gf<imfreq> g) { 
-  g *= -1;
-  g+=m;
-  return g;
  }
 
 }

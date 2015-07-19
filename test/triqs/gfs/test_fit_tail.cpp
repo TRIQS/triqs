@@ -1,7 +1,6 @@
-#//define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-
+#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/gfs.hpp>
-#include <triqs/gfs/local/fit_tail.hpp>
+#include <triqs/gfs/singularity/fit_tail.hpp>
 
 using triqs::arrays::make_shape;
 using namespace triqs::gfs;

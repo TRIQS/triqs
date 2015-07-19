@@ -30,9 +30,17 @@ namespace gfs {
   using domain_t = Domain;
   using index_t = long;
   using linear_index_t = long;
+  using default_interpol_policy = interpol_t::None;
+
+  // -------------------- Constructors -------------------
 
   discrete_mesh(domain_t dom) : _dom(std::move(dom)) {}
   discrete_mesh() = default;
+
+  bool operator==(discrete_mesh const &M) const { return (_dom == M._dom); }
+  bool operator!=(discrete_mesh const &M) const { return !(operator==(M)); }
+
+  // -------------------- Accessors (from concept) -------------------
 
   domain_t const &domain() const { return _dom; }
   size_t size() const { return _dom.size(); }
@@ -46,9 +54,7 @@ namespace gfs {
   long index_to_point(index_t ind) const { return ind; }
   long index_to_linear(index_t ind) const { return ind; }
 
-  /// Is the point in the mesh ?
-  bool is_within_boundary(index_t const &p) const { return ((p >= 0) && (p < size())); }
-  //bool is_within_boundary(index_t const &p) const { return ((p >= first_index_window()) && (p <= last_index_window())); }
+  // -------------------- mesh_point -------------------
 
   /// The wrapper for the mesh point
   class mesh_point_t : tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point_t, long> {
@@ -78,9 +84,22 @@ namespace gfs {
   const_iterator cbegin() const { return const_iterator(this); }
   const_iterator cend() const { return const_iterator(this, true); }
 
-  /// Mesh comparison
-  bool operator==(discrete_mesh const &M) const { return (_dom == M._dom); }
-  bool operator!=(discrete_mesh const &M) const { return !(operator==(M)); }
+  // -------------- Evaluation of a function on the grid --------------------------
+
+  /// Is the point in the mesh ?
+  bool is_within_boundary(index_t const &p) const { return ((p >= 0) && (p < size())); }
+  //bool is_within_boundary(index_t const &p) const { return ((p >= first_index_window()) && (p <= last_index_window())); }
+
+  long get_interpolation_data(interpol_t::None, long n) const { return n;}
+ 
+#ifndef TRIQS_CPP11 
+  template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const { return f[n]; }
+#else
+  template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const RETURN(f[n]);
+#endif
+  // -------------------- MPI -------------------
+  
+  // -------------------- HDF5 -------------------
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, discrete_mesh const &m) {
@@ -96,14 +115,18 @@ namespace gfs {
    m = discrete_mesh(std::move(dom));
   }
 
-  //  BOOST Serialization
+  // -------------------- boost serialization -------------------
+
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    ar &TRIQS_MAKE_NVP("domain", _dom);
   }
 
+  // -------------------- print  -------------------
+
   friend std::ostream &operator<<(std::ostream &sout, discrete_mesh const &m) { return sout << "Discrete Mesh"; }
 
+  // ------------------------------------------------
   private:
   domain_t _dom;
  };

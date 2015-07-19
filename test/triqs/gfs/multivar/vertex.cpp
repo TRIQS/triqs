@@ -1,7 +1,5 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-
 #include <triqs/gfs.hpp> 
-#include <triqs/gfs/local/fourier_real.hpp> 
 
 using namespace triqs::gfs;
 using  triqs::clef::placeholder;

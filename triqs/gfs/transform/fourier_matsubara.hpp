@@ -19,8 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-
-#include "fourier_base.hpp"
+#include "./fourier_base.hpp"
 #include <triqs/gfs/imfreq.hpp>
 #include <triqs/gfs/imtime.hpp>
 

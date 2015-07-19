@@ -1,6 +1,5 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/gfs.hpp>
-#include <triqs/gfs/local/fourier_lattice.hpp>
 
 namespace h5 = triqs::h5;
 using namespace triqs;
@@ -24,7 +23,7 @@ struct my_evaluator {
 
  // all evaluation are rewritten with in terms of the default evaluator.
  template <typename G, typename Nu, typename Nup, typename Om>
- auto operator()(G const *g, Nu const &nu, Nup const &nup, Om const &omega) const {
+ auto operator()(G const &g, Nu const &nu, Nup const &nup, Om const &omega) const {
   if (omega < 0)
    return conj(gv(-nu, -nup, -omega));
   else

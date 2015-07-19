@@ -1,7 +1,5 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-
 #include <triqs/gfs.hpp> 
-#include <triqs/gfs/local/fourier_real.hpp> 
 
 namespace tql= triqs::clef;
 using namespace triqs::gfs;
