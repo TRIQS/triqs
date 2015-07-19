@@ -22,6 +22,5 @@
 #include <triqs/operators/many_body_operator.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
-#include <boost/serialization/variant.hpp>
 
 

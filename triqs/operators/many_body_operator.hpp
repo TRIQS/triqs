@@ -20,14 +20,13 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/dressed_iterator.hpp>
+#include <triqs/utility/variant_int_string.hpp>
 
 #include <ostream>
 #include <cmath>
-#include <boost/variant.hpp>
 #include <boost/operators.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
-#include <boost/serialization/variant.hpp>
 #include <triqs/utility/draft/numeric_ops.hpp>
 
 namespace triqs {
@@ -48,7 +47,7 @@ namespace utility {
 
   public:
   /// The indices of the C, C^+ operators are a vector of int/string
-  using indices_t = std::vector<boost::variant<int, std::string>>;
+  using indices_t = std::vector<variant_int_string>;
 
   private:
   // The canonical operator: a dagger and some indices

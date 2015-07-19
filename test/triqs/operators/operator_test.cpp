@@ -31,6 +31,7 @@ using namespace triqs::utility;
 
 int main(int argc, char **argv)
 {
+ try {
     // Operators without indices
     auto op_with_no_indices = c() + c_dag() - n();
     std::cout << "op_with_no_indices = " << op_with_no_indices << std::endl;
@@ -101,4 +102,8 @@ int main(int argc, char **argv)
     std::cout  << "X = "<< X<<std::endl; 
     std::cout  << "dagger(X) = "<< dagger(X)<<std::endl; 
     return 0;
+ }
+ catch(std::exception const & e) {
+  std::cout << e.what() << std::endl;
+ }
 }
