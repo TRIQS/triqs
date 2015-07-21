@@ -71,28 +71,29 @@ namespace py_tools {
 
  // --- range
 
+ // range can not be directly converted from slice (slice is more complex)
  // convert from python slice and int (interpreted are slice(i,i+1,1))
+ triqs::arrays::range range_from_slice(PyObject *ob, long len) {
+  if (PyInt_Check(ob)) {
+   long i = PyInt_AsLong(ob);
+   if ((i < -len) || (i >= len)) TRIQS_RUNTIME_ERROR << "Integer index out of range : expected [0," << len << "], got " << i;
+   if (i < 0) i += len;
+   // std::cerr  << " range int "<< i << std::endl;
+   return {i, i + 1, 1};
+  }
+  Py_ssize_t start, stop, step, slicelength;
+  if (!PySlice_Check(ob) || (PySlice_GetIndicesEx((PySliceObject *)ob, len, &start, &stop, &step, &slicelength) < 0))
+   TRIQS_RUNTIME_ERROR << "Can not converted the slice to C++";
+  // std::cerr  << "range ( "<< start << " "<< stop << " " << step<<std::endl;
+  return {start, stop, step};
+ }
+
  template <> struct py_converter<triqs::arrays::range> {
   static PyObject *c2py(triqs::arrays::range const &r) {
    return PySlice_New(convert_to_python(r.first()), convert_to_python(r.last()), convert_to_python(r.step()));
   }
-  static triqs::arrays::range py2c(PyObject *ob) {
-   if (PyInt_Check(ob)) {
-    int i = PyInt_AsLong(ob);
-    return {i, i + 1, 1};
-   }
-   int len = 4; // no clue what this len is ??
-   Py_ssize_t start, stop, step, slicelength;
-   if (PySlice_GetIndicesEx((PySliceObject *)ob, len, &start, &stop, &step, &slicelength) < 0) return {};
-   return {start, stop, step};
-  }
-  static bool is_convertible(PyObject *ob, bool raise_exception) {
-   if (PySlice_Check(ob) || PyInt_Check(ob)) return true;
-   if (raise_exception) {
-    PyErr_SetString(PyExc_TypeError, "Cannot convert to python slice");
-   }
-   return false;
-  }
+  static triqs::arrays::range py2c(PyObject *ob) = delete;
+  static bool is_convertible(PyObject *ob, bool raise_exception) = delete;
  };
 }
 }

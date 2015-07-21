@@ -109,7 +109,8 @@ module.add_function (name = "vector_x2", signature = "std::vector<int>(std::vect
 
 module.add_function (name = "make_matrix", signature = "matrix_view<double>(int size)", doc = "DOC ....")
 
-module.add_function (name = "iter_on_range", signature = "void (range r)" , doc = "DOC ....")
+# not possible to convert slice to range as easily..
+#module.add_function (name = "iter_on_range", signature = "void (range r)" , doc = "DOC ....")
 
 module.add_function (name = "make_fnt_ii", signature = {'c_name': 'make_fnt_ii', 'rtype': "std::function<int(int,int)>", 'args': []}, doc = "....")
 module.add_function (name = "make_fnt_iid", signature = {'c_name': 'make_fnt_iid', 'rtype': "std::function<int(int,int,double)>", 'args': []}, doc = "....")

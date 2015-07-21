@@ -275,12 +275,20 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
                  doc = "Call operator")
 
     # []
-    g.add_getitem(signature = "gf_view<%s>(range r1, range r2)"%c_tag,
-                  calling_pattern= "auto result = slice_target(self_c,r1,r2)",
-                  doc = "Returns a sliced view of the Green function")
-
-    g.add_getitem(signature = "gf_view<%s>(std::string i1, std::string i2)"%c_tag,
-                  calling_pattern= "auto result = slice_target(self_c,self_c.indices().convert_index(i1,0),self_c.indices().convert_index(i2,1))",
+    # r1, r2 can be a string, an int or slice :
+    # a string :
+    # an int or a slice : we ask Python to interpret the slice into a
+    # range (range_from_slice) , but we need to have the length of the target of the gf to do that.
+    g.add_getitem(signature = "gf_view<%s>(PyObject * r1, PyObject * r2)"%c_tag,
+                  calling_pattern= """
+                   auto sh = get_target_shape(self_c);
+                   auto f = [&sh, &self_c](PyObject * r, int u) {
+                       if (convertible_from_python<std::string>(r, false))
+                         return self_c.indices().convert_index(convert_from_python<std::string>(r),u);
+                       return range_from_slice(r,sh[u]);
+                       };
+                   auto result = slice_target(self_c,f(r1,0),f(r2,1));
+                   """,
                   doc = "Returns a sliced view of the Green function")
 
     g.add_setitem(signature = "void(PyObject* r1, PyObject* r2, PyObject* val)",
