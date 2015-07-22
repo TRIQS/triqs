@@ -54,7 +54,7 @@ namespace gfs {
   return {std::move(g2.mesh()), std::move(g2.data()), std::move(t), g2.symmetry()};
  }
 
- template <typename Variable, typename Target, typename S, typename Evaluator, bool V, bool C>
+ template <typename Variable, typename Target, typename Evaluator, bool V, bool C>
  gf_view<Variable, Target, tail, Evaluator, C> make_gf_view_from_g_and_tail(gf_impl<Variable, Target, no_tail, Evaluator, V, C> const &g,
                                                                  tail_view t) {
   details::_equal_or_throw(t.shape(), get_target_shape(g));
