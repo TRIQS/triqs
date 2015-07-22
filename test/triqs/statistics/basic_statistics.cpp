@@ -1,7 +1,5 @@
 #include <triqs/statistics.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
+#include <random>
 
 using namespace triqs::statistics; using namespace boost;
 ///construct correlated series a of expectation value 10 and compute average/error bar
@@ -9,11 +7,12 @@ int main(){
  int corr_length = 400;//correlation length
  std::vector<double> a(4000000);
 
- variate_generator<mt19937,normal_distribution<>> generator(mt19937(100405), normal_distribution<>());
+ std::mt19937 gen(100405);
+ std::normal_distribution<double> generator;
 
- a[0] = generator();
+ a[0] = generator(gen);
  double f = exp(-1. / corr_length);
- for (int i = 1; i < a.size(); i++) a[i] = f * a[i-1] + sqrt(1 - f * f) * generator();
+ for (int i = 1; i < a.size(); i++) a[i] = f * a[i-1] + sqrt(1 - f * f) * generator(gen);
 
  for(auto & x : a) x+=10;
 

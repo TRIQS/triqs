@@ -20,7 +20,7 @@ void test_0(){
 }
 
 void test_1(int argc, char ** argv){
- int N=100000, L=100;
+ int N=300000, L=100;
  if(argc==3){
   N = atoi(argv[1]); //size
   L = atoi(argv[2]); //autocorrelation time
@@ -45,7 +45,7 @@ void test_1(int argc, char ** argv){
 }
 
 void test_2(int argc, char ** argv){
- int N=100000, L=40;
+ int N=300000, L=40;
  if(argc==3){
   N = atoi(argv[1]); //size
   L = atoi(argv[2]); //autocorrelation time
