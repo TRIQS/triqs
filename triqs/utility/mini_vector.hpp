@@ -224,6 +224,7 @@ namespace triqs { namespace utility {
    public:
    mini_vector(){} 
    mini_vector(no_init_tag){} 
+   template<typename U> mini_vector(mini_vector<U,0>){}
 
    T & operator[](size_t i) { return _data[i];}
    const T & operator[](size_t i) const { return _data[i];}
