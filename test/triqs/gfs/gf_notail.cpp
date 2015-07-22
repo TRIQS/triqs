@@ -34,6 +34,11 @@ int main() {
   // rebuilding a new gf...
   auto g3 = make_gf_from_g_and_tail(vw, gw.singularity());
   // need to test all this....
+
+  //test make_gw_view_from_g_and_tail
+  auto g4 = gf<imfreq, matrix_valued, no_tail>{{beta, Fermion, 100},{1,1}};
+  tail t(1,1);
+  auto gwt = make_gf_view_from_g_and_tail(g4,t);
  
   //test antiperiodicity
   auto Gt = gf<imtime, scalar_valued, no_tail>{ { beta, Fermion, 10000 }, {  } };
