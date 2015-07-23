@@ -332,8 +332,8 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
     g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type)) 
 
     g.add_method(name = "from_L_G_R",
-                 calling_pattern = "self_c = L_G_R(l,g(),r)",
-                 signature = "void(matrix<%s> l,gf<%s> g,matrix<%s> r)"%(data_type,c_tag,data_type),
+                 calling_pattern = "set_from_L_G_R(self_c,l,g(),r)",
+                 signature = "void(matrix_view<%s> l,gf<%s> g,matrix_view<%s> r)"%(data_type,c_tag,data_type),
                  doc = "self << l * g * r")
 
     g.add_method(name = "zero",

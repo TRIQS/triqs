@@ -797,15 +797,6 @@ namespace gfs {
   }
  }
 
- template <typename A3, typename T> typename A3::regular_type _gf_data_mul_LR(matrix<T> const &l, A3 &a, matrix<T> const &r) {
-  auto res = typename A3::regular_type(first_dim(a), first_dim(l), second_dim(r));
-  for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-   auto _ = arrays::range{};
-   res(i, _, _) = l * make_matrix_view(a(i, _, _)) * r;
-  }
-  return res;
- }
-
  template <typename Variable, typename Singularity, typename Evaluator, typename T>
  gf<Variable, matrix_valued, Singularity, Evaluator> operator*(gf<Variable, matrix_valued, Singularity, Evaluator> g, matrix<T> r) {
   _gf_data_mul_R(g.data(), r);
@@ -820,12 +811,21 @@ namespace gfs {
   return g;
  }
 
- template <typename Variable, typename Singularity, typename Evaluator, typename T>
- gf<Variable, matrix_valued, Singularity, Evaluator> L_G_R(matrix<T> l, gf_view<Variable, matrix_valued, Singularity, Evaluator> g, matrix<T> r) {
-  auto res = gf<Variable, matrix_valued, Singularity, Evaluator>{g.mesh(), {int(first_dim(l)), int(second_dim(r))}};
-  res.data() = _gf_data_mul_LR(l, g.data(), r);
-  res.singularity() = l * g.singularity() * r;
-  return res;
+template <typename A, typename B, typename T> void set_from_gf_data_mul_LR(A & a, matrix_view<T> l, B const &b, matrix_view <T> r) {
+  auto tmp = matrix<T> (second_dim(b), second_dim(r));
+  auto _ = arrays::range{};
+  for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
+   auto rhs_v = make_matrix_view(b(i, _, _));
+   auto lhs_v = make_matrix_view(a(i, _, _));
+   arrays::blas::gemm(1,rhs_v,r,0,tmp);
+   arrays::blas::gemm(1,l,tmp,0,lhs_v);
+  }
+ }
+
+template <typename G1, typename G2, typename T>
+ void set_from_L_G_R(G1 & g1, matrix_view<T> l, G2 const & g2, matrix_view<T> r) {
+  set_from_gf_data_mul_LR(g1.data(), l, g2.data(), r);
+  g1.singularity() = l * g2.singularity() * r;
  }
 
  namespace gfs_implementation { // implement some default traits
