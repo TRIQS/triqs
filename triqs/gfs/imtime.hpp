@@ -33,38 +33,31 @@ namespace gfs {
   using type = tail;
  };
 
- namespace gfs_implementation {
+ template <typename Singularity> struct gf_h5_name<imtime, matrix_valued, Singularity> {
+  static std::string invoke() { return "ImTime"; }
+ };
 
-  // h5 name
-  template <typename Singularity> struct h5_name<imtime, matrix_valued, Singularity> {
-   static std::string invoke() { return "ImTime"; }
-  };
+ /// ---------------------------  data access  ---------------------------------
 
-  /// ---------------------------  data access  ---------------------------------
+ template <> struct gf_data_proxy<imtime, matrix_valued> : data_proxy_array<double, 3> {};
+ template <> struct gf_data_proxy<imtime, scalar_valued> : data_proxy_array<double, 1> {};
 
-  template <> struct data_proxy<imtime, matrix_valued> : data_proxy_array<double, 3> {};
-  template <> struct data_proxy<imtime, scalar_valued> : data_proxy_array<double, 1> {};
+ /// ---------------------------  closest mesh point on the grid ---------------------------------
 
-  /// ---------------------------  closest mesh point on the grid ---------------------------------
-
-  template <typename Singularity, typename Target> struct get_closest_point<imtime, Target, Singularity, void> {
-   // index_t is int
-   template <typename G, typename T> static int invoke(G const *g, closest_pt_wrap<T> const &p) {
-    double x = double(p.value) + 0.5 * g->mesh().delta();
-    int n = std::floor(x / g->mesh().delta());
-    return n;
-   }
-  };
-
- } // gfs_implementation.
-
+ template <typename Singularity, typename Target> struct gf_closest_point<imtime, Target, Singularity, void> {
+  // index_t is int
+  template <typename G, typename T> static int invoke(G const *g, closest_pt_wrap<T> const &p) {
+   double x = double(p.value) + 0.5 * g->mesh().delta();
+   int n = std::floor(x / g->mesh().delta());
+   return n;
+  }
+ };
 
  // Specialization of the conjugate for imaginary Green's functions
  template <typename Singularity, typename Evaluator>
  gf<imtime, matrix_valued, Singularity, Evaluator> conj(gf_view<imtime, matrix_valued, Singularity, Evaluator> g) {
   return {g.mesh(), conj(g.data()), conj(g.singularity(), true), g.symmetry(), g.indices(), g.name};
  }
-
 }
 }
 

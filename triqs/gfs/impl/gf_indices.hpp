@@ -24,15 +24,15 @@
 namespace triqs {
 namespace gfs {
 
- struct gf_indices {
+ struct gf_indices_one {
 
-  gf_indices() = default;
+  gf_indices_one() = default;
 
-  gf_indices(int L) {
+  gf_indices_one(int L) {
    for (int i = 0; i < L; ++i) ind.push_back(std::to_string(i));
   }
 
-  gf_indices(std::vector<std::string> _ind) : ind(std::move(_ind)) {}
+  gf_indices_one(std::vector<std::string> _ind) : ind(std::move(_ind)) {}
 
   int size() const { return ind.size(); }
 
@@ -43,7 +43,7 @@ namespace gfs {
    TRIQS_RUNTIME_ERROR << "Cannot find this string index for the Green's function";
   }
 
-  // the iterator on gf_indices just gives the vector of strings
+  // the iterator on gf_indices_one just gives the vector of strings
   std::vector<std::string>::const_iterator begin() { return ind.begin(); }
   std::vector<std::string>::const_iterator end() { return ind.end(); }
   std::vector<std::string>::const_iterator cbegin() { return ind.cbegin(); }
@@ -60,18 +60,18 @@ namespace gfs {
  // A simple indice struct
  struct gf_indices_pair {
 
-  std::vector<gf_indices> ind_pair;
+  std::vector<gf_indices_one> ind_pair;
 
   gf_indices_pair() : ind_pair(2) {}
 
-  gf_indices_pair(gf_indices r, gf_indices l) : ind_pair({r, l}) {}
+  gf_indices_pair(gf_indices_one r, gf_indices_one l) : ind_pair({r, l}) {}
 
-  gf_indices_pair(gf_indices r) : ind_pair({r, r}) {}
+  gf_indices_pair(gf_indices_one r) : ind_pair({r, r}) {}
 
   gf_indices_pair(std::vector<std::vector<std::string>> _ind) : ind_pair({_ind[0], _ind[1]}) {}
 
   // from a shape
-  gf_indices_pair(arrays::mini_vector<int, 2> const &shape) : ind_pair({gf_indices(shape[0]), gf_indices(shape[1])}) {}
+  gf_indices_pair(arrays::mini_vector<int, 2> const &shape) : ind_pair({gf_indices_one(shape[0]), gf_indices_one(shape[1])}) {}
 
   // from a size
   gf_indices_pair(int L) : gf_indices_pair(arrays::mini_vector<int, 2>{L, L}) {}
@@ -85,7 +85,7 @@ namespace gfs {
   arrays::range convert_index(std::string const &s, int i) const { return ind_pair[i].convert_index(s); }
 
   // access to one of the index list
-  gf_indices operator[](int i) const { return ind_pair[i]; }
+  gf_indices_one operator[](int i) const { return ind_pair[i]; }
 
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_indices_pair const &g) {
    if (g.is_empty()) return;

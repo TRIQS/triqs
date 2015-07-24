@@ -28,21 +28,20 @@ namespace triqs { namespace gfs {
   return {std::move(m), l, nothing(), nothing(), {}};
  }
 
- // simplify the code below ... 
+ // simplify the code below ...
  template <typename... Ms> struct cartesian_product<std::tuple<Ms...>> : cartesian_product<Ms...> {};
 
- namespace gfs_implementation { 
-  
-  /// ---------------------------  data access  ---------------------------------
+ /// ---------------------------  data access  ---------------------------------
 
-  template <typename F, typename M> struct data_proxy<M, lambda_valued<F>> : data_proxy_lambda<F, false> {};
-  template <typename F, typename... Ms>
-  struct data_proxy<cartesian_product<Ms...>, lambda_valued<F>> : data_proxy_lambda<F, true> {};
+ template <typename F, typename M> struct gf_data_proxy<M, lambda_valued<F>> : data_proxy_lambda<F, false> {};
+ template <typename F, typename... Ms>
+ struct gf_data_proxy<cartesian_product<Ms...>, lambda_valued<F>> : data_proxy_lambda<F, true> {};
 
-  /// ---------------------------  Factories ---------------------------------
+ /// ---------------------------  Factories ---------------------------------
 
-  template<typename F, typename ... Ms>
-   struct data_factory<cartesian_product<Ms...>, lambda_valued<F>, nothing> {};
+ template <typename F, typename... Ms> struct gf_data_factory<cartesian_product<Ms...>, lambda_valued<F>, nothing> {};
+
+ namespace curry_impl {
 
   /// ---------------------------  partial_eval ---------------------------------
   // partial_eval<0> (g, 1) returns :  x -> g(1,x)
@@ -55,22 +54,22 @@ namespace triqs { namespace gfs {
   template<typename ... Ms> using cart_prod = typename cart_prod_impl<Ms...>::type;
 
   // The implementation (can be overloaded for some types), so put in a struct to have partial specialization
-  template <typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsConst> struct partial_eval_impl;
+  template <typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsConst> struct partial_eval_impl;
 
   // The user function when the indices is already a linear index.
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool C, typename T>
-  auto partial_eval_linear_index(gf_view<Variable, Target, Singularity, Evaluator, C> g, T const& x) {
-   return partial_eval_impl<Variable, Target, Singularity, Evaluator, C>::template invoke<pos...>(g(), x);
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, bool C, typename T>
+  auto partial_eval_linear_index(gf_view<Mesh, Target, Singularity, Evaluator, C> g, T const& x) {
+   return partial_eval_impl<Mesh, Target, Singularity, Evaluator, C>::template invoke<pos...>(g(), x);
   }
 
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, typename T>
-  auto partial_eval_linear_index(gf<Variable, Target, Singularity, Evaluator>& g, T const& x) {
-   return partial_eval_impl<Variable, Target, Singularity, Evaluator, false>::template invoke<pos...>(g(), x);
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, typename T>
+  auto partial_eval_linear_index(gf<Mesh, Target, Singularity, Evaluator>& g, T const& x) {
+   return partial_eval_impl<Mesh, Target, Singularity, Evaluator, false>::template invoke<pos...>(g(), x);
   }
 
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, typename T>
-  auto partial_eval_linear_index(gf<Variable, Target, Singularity, Evaluator> const& g, T const& x) {
-   return partial_eval_impl<Variable, Target, Singularity, Evaluator, true>::template invoke<pos...>(g(), x);
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, typename T>
+  auto partial_eval_linear_index(gf<Mesh, Target, Singularity, Evaluator> const& g, T const& x) {
+   return partial_eval_impl<Mesh, Target, Singularity, Evaluator, true>::template invoke<pos...>(g(), x);
   }
 
   /// ------------------------------------------------------------
@@ -107,20 +106,20 @@ namespace triqs { namespace gfs {
   };
 
   // The user function
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
-  auto curry(gf_impl<Variable, Target, Singularity, Evaluator, IsView, IsConst> const &g) {
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
+  auto curry(gf_impl<Mesh, Target, Singularity, Evaluator, IsView, IsConst> const &g) {
    return curry_impl<pos...>(g());
   }
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator, bool IsConst>
-  auto curry(gf_view<Variable, Target, Singularity, Evaluator, IsConst> g) {
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsConst>
+  auto curry(gf_view<Mesh, Target, Singularity, Evaluator, IsConst> g) {
    return curry_impl<pos...>(g());
   }
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator>
-  auto curry(gf<Variable, Target, Singularity, Evaluator>& g) {
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator>
+  auto curry(gf<Mesh, Target, Singularity, Evaluator>& g) {
    return curry_impl<pos...>(g());
   }
-  template <int... pos, typename Variable, typename Target, typename Singularity, typename Evaluator>
-  auto curry(gf<Variable, Target, Singularity, Evaluator> const& g) {
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator>
+  auto curry(gf<Mesh, Target, Singularity, Evaluator> const& g) {
    return curry_impl<pos...>(g());
   }
 
@@ -150,10 +149,10 @@ namespace triqs { namespace gfs {
    }
   };
 
- } // gf_implementation
- using gfs_implementation::partial_eval;
- using gfs_implementation::partial_eval_linear_index;
- using gfs_implementation::curry;
+ } // curry_impl
+ using curry_impl::partial_eval;
+ using curry_impl::partial_eval_linear_index;
+ using curry_impl::curry;
 }}
 
 

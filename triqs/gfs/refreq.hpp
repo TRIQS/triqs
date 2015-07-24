@@ -29,7 +29,7 @@ namespace gfs {
 
  template <> struct gf_mesh<refreq> : segment_mesh {
   template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
-  //using segment_mesh::segment_mesh;
+  // using segment_mesh::segment_mesh;
  };
 
  // singularity
@@ -40,13 +40,9 @@ namespace gfs {
   using type = tail;
  };
 
- namespace gfs_implementation {
-
-  // h5 name
-  template <typename Singularity> struct h5_name<refreq, matrix_valued, Singularity> {
-   static std::string invoke() { return "ReFreq"; }
-  };
- }
+ template <typename Singularity> struct gf_h5_name<refreq, matrix_valued, Singularity> {
+  static std::string invoke() { return "ReFreq"; }
+ };
 }
 }
 

@@ -40,13 +40,8 @@ namespace gfs {
   using type = tail;
  };
 
- namespace gfs_implementation {
-
-  // h5 name
-  template <typename Singularity> struct h5_name<retime, matrix_valued, Singularity> {
-   static std::string invoke() { return "ReTime"; }
-  };
-
- } // gfs_implementation
+ template <typename Singularity> struct gf_h5_name<retime, matrix_valued, Singularity> {
+  static std::string invoke() { return "ReTime"; }
+ };
 }
 }

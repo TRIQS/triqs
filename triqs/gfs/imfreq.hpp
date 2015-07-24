@@ -32,57 +32,50 @@ namespace gfs {
   using type = tail;
  };
 
- namespace gfs_implementation {
+ /// ---------------------------  hdf5 ---------------------------------
 
-  /// ---------------------------  hdf5 ---------------------------------
- 
-  template <typename S> struct h5_name<imfreq, matrix_valued, S> {
-   static std::string invoke() { return "ImFreq"; }
-  };
+ template <typename S> struct gf_h5_name<imfreq, matrix_valued, S> {
+  static std::string invoke() { return "ImFreq"; }
+ };
 
-  /// ---------------------------  evaluator ---------------------------------
+ /// ---------------------------  gf_evaluator ---------------------------------
 
-  template <typename Target, typename Sing> struct evaluator<imfreq, Target, Sing> {
+ template <typename Target, typename Sing> struct gf_evaluator<imfreq, Target, Sing> {
 
-   static constexpr int arity = 1;
-   template <typename G> evaluator(G *) {};
+  static constexpr int arity = 1;
+  template <typename G> gf_evaluator(G *) {};
 
-   // technical details...
-   using r_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix<dcomplex>>;
-   using rv_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix_view<dcomplex>>;
+  // technical details...
+  using r_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix<dcomplex>>;
+  using rv_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix_view<dcomplex>>;
 
-   template <typename S> auto _evaluate_sing(matrix_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f));
-   template <typename S>
-   auto _evaluate_sing(scalar_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f)(0, 0));
-   rv_t _evaluate_sing(Target, nothing, matsubara_freq const &f) const {
-    TRIQS_RUNTIME_ERROR << "Evaluation out of mesh";
-    return r_t{};
+  template <typename S> auto _evaluate_sing(matrix_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f));
+  template <typename S>
+  auto _evaluate_sing(scalar_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f)(0, 0));
+  rv_t _evaluate_sing(Target, nothing, matsubara_freq const &f) const {
+   TRIQS_RUNTIME_ERROR << "Evaluation out of mesh";
+   return r_t{};
+  }
+
+  // gf_evaluator
+  template <typename G> rv_t operator()(G const &g, matsubara_freq const &f) const {
+   if (g.mesh().is_within_boundary(f.n)) return g[f.n];
+   if (g.mesh().positive_only()) { 
+    int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
+    if (g.mesh().is_within_boundary(-f.n - sh)) return r_t{conj(g[-f.n - sh])};
    }
+   return _evaluate_sing(Target{}, g.singularity(), f);
+  }
 
-   // evaluator
-   template <typename G> rv_t operator()(G const &g, matsubara_freq const &f) const {
-    if (g.mesh().is_within_boundary(f.n)) return g[f.n];
-    if (g.mesh().positive_only()) { // only positive Matsubara frequencies
-     // if ((f.n >= 0) && (f.n < g.mesh().size())) return g[f.n];
-     int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
-     if (g.mesh().is_within_boundary(-f.n - sh)) return r_t{conj(g[-f.n - sh])};
-     // if ((f.n < 0) && ((-f.n - sh) < g.mesh().size())) return r_t{conj(g[-f.n - sh])};
-    }
-    return _evaluate_sing(Target{}, g.singularity(), f);
-   }
+  // int -> replace by matsubara_freq
+  template <typename G>
+  AUTO_DECL operator()(G const &g, int n) const RETURN(g(matsubara_freq(n, g.mesh().domain().beta, g.mesh().domain().statistic)));
 
-   // int -> replace by matsubara_freq
-   template <typename G>
-   AUTO_DECL operator()(G const &g, int n) const
-       RETURN(g(matsubara_freq(n, g.mesh().domain().beta, g.mesh().domain().statistic)));
-
-   // Evaluate on the tail : compose the tails
-   template <typename G> typename G::singularity_t operator()(G const &g, tail_view t) const {
-    return compose(g.singularity(), t);
-   }
-  };
-
- } // gfs_implementation
+  // Evaluate on the tail : compose the tails
+  template <typename G> typename G::singularity_t operator()(G const &g, tail_view t) const {
+   return compose(g.singularity(), t);
+  }
+ };
 
  // Specialization of the conjugate for imaginary Green's functions
  template <typename Singularity, typename Evaluator>

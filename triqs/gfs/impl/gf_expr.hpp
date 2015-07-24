@@ -156,12 +156,12 @@ namespace triqs { namespace gfs {
 // we implement them trivially.
 
 #define DEFINE_OPERATOR(OP1, OP2)                                                                                                \
- template <typename Variable, typename Target, typename Evaluator, typename T>                                                   \
- void operator OP1(gf_view<Variable, Target, Evaluator> g, T const &x) {                                                         \
+ template <typename Mesh, typename Target, typename Evaluator, typename T>                                                   \
+ void operator OP1(gf_view<Mesh, Target, Evaluator> g, T const &x) {                                                         \
   g = g OP2 x;                                                                                                                   \
  }                                                                                                                               \
- template <typename Variable, typename Target, typename Evaluator, typename T>                                                   \
- void operator OP1(gf<Variable, Target, Evaluator> &g, T const &x) {                                                             \
+ template <typename Mesh, typename Target, typename Evaluator, typename T>                                                   \
+ void operator OP1(gf<Mesh, Target, Evaluator> &g, T const &x) {                                                             \
   g = g OP2 x;                                                                                                                   \
  }
 

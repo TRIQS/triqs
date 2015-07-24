@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2012-2015 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -36,49 +36,45 @@ namespace gfs {
   gf_mesh(std::initializer_list<std::string> const &s) : B(s) {}
  };
 
- namespace gfs_implementation {
+ /// ---------------------------  hdf5 ---------------------------------
 
-  /// ---------------------------  hdf5 ---------------------------------
+ template <typename Target> struct gf_h5_name<block_index, Target, nothing> {
+  static std::string invoke() { return "BlockGf"; }
+ };
 
-  template <typename Target> struct h5_name<block_index, Target, nothing> {
-   static std::string invoke() { return "BlockGf"; }
-  };
+ template <typename Target> struct gf_h5_rw<block_index, Target, nothing, void> {
 
-  template <typename Target> struct h5_rw<block_index, Target, nothing, void> {
+  static void write(h5::group gr, gf_const_view<block_index, Target> g) {
+   for (size_t i = 0; i < g.mesh().size(); ++i) h5_write(gr, g.mesh().domain().names()[i], g._data[i]);
+   h5_write(gr, "block_names", g.mesh().domain().names());
+  }
 
-   static void write(h5::group gr, gf_const_view<block_index, Target> g) {
-    for (size_t i = 0; i < g.mesh().size(); ++i) h5_write(gr, g.mesh().domain().names()[i], g._data[i]);
-    h5_write(gr, "block_names", g.mesh().domain().names());
-   }
+  template <bool IsView> static void read(h5::group gr, gf_impl<block_index, Target, nothing, void, IsView, false> &g) {
+   auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
+   g._mesh = gf_mesh<block_index>(block_names);
+   // auto check_names = gr.get_all_subgroup_names();
+   // sort both and check ?
+   g._data.resize(g._mesh.size());
+   for (size_t i = 0; i < g.mesh().size(); ++i) h5_read(gr, g.mesh().domain().names()[i], g._data[i]);
+  }
+ };
 
-   template <bool IsView> static void read(h5::group gr, gf_impl<block_index, Target, nothing, void, IsView, false> &g) {
-    auto block_names = h5::h5_read<std::vector<std::string>>  (gr, "block_names");
-    g._mesh = gf_mesh<block_index>(block_names);
-    //auto check_names = gr.get_all_subgroup_names();
-    // sort both and check ?
-    g._data.resize(g._mesh.size());
-    for (size_t i = 0; i < g.mesh().size(); ++i) h5_read(gr, g.mesh().domain().names()[i], g._data[i]);
-   }
-  };
+ /// ---------------------------  data access  ---------------------------------
 
-  /// ---------------------------  data access  ---------------------------------
+ template <typename Target>
+ struct gf_data_proxy<block_index, Target, void> : data_proxy_vector<typename regular_type_if_exists_else_type<Target>::type> {};
 
-  template <typename Target>
-  struct data_proxy<block_index, Target, void> : data_proxy_vector<typename regular_type_if_exists_else_type<Target>::type> {};
+ // -------------------------------   Factories  --------------------------------------------------
 
-  // -------------------------------   Factories  --------------------------------------------------
+ template <typename Target> struct gf_data_factory<block_index, Target, nothing> {
+  using mesh_t = gf_mesh<block_index>;
+  using gf_t = gf<block_index, Target>;
+  using gf_view_t = gf_view<block_index, Target>;
+  using aux_t = nothing;
+  struct target_shape_t {};
 
-  template <typename Target> struct data_factory<block_index, Target, nothing> {
-   using mesh_t = gf_mesh<block_index>;
-   using gf_t = gf<block_index, Target>;
-   using gf_view_t = gf_view<block_index, Target>;
-   using aux_t = nothing;
-   struct target_shape_t {};
-
-   static typename gf_t::data_t make(mesh_t const &m, target_shape_t, aux_t) { return std::vector<Target>(m.size()); }
-  };
-
- } // gfs_implementation
+  static typename gf_t::data_t make(mesh_t const &m, target_shape_t, aux_t) { return std::vector<Target>(m.size()); }
+ };
 
  // -------------------------------  aliases  --------------------------------------------------
 
@@ -100,16 +96,6 @@ namespace gfs {
   int s = V.size(); // DO NOT use V.size in next statement, the V is moved and the order of arg. evaluation is undefined.
   return {{s}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
-
- /*
- // from a vector of gf : generalized to have a different type of gf in the vector (e.g. views...)
- template <typename Variable, typename Target, typename Singularity, typename Evaluator, typename GF2>
- block_gf<Variable, Target, Singularity, Evaluator> make_block_gf(std::vector<GF2> const &V) {
-  auto V2 = std::vector<gf<Variable, Target, Singularity, Evaluator>>{};
-  for (auto const &g : V) V2.push_back(g);
-  return {{int(V.size())}, std::move(V2), nothing{}, nothing{}, nothing{}};
- }
-*/
 
  // from a init list of GF with the correct type
  template <typename... A> block_gf<A...> make_block_gf(std::initializer_list<gf<A...>> const &V) {
@@ -164,24 +150,24 @@ namespace gfs {
  // ------------------------------- Extend reinterpret_scalar_valued_gf_as_matrix_valued for block gf   ------
 
  // TODO simplify ?
- template <typename Variable, typename Singularity, typename Evaluator, bool IsConst>
- gf_view<block_index, gf<Variable, matrix_valued, Singularity, void>, nothing, void, IsConst>
+ template <typename Mesh, typename Singularity, typename Evaluator, bool IsConst>
+ gf_view<block_index, gf<Mesh, matrix_valued, Singularity, void>, nothing, void, IsConst>
  reinterpret_scalar_valued_gf_as_matrix_valued(
-     gf_view<block_index, gf<Variable, scalar_valued, Singularity, Evaluator>, nothing, void, IsConst> bg) {
-  std::vector<gf_view<Variable, matrix_valued, Singularity, void>> V;
+     gf_view<block_index, gf<Mesh, scalar_valued, Singularity, Evaluator>, nothing, void, IsConst> bg) {
+  std::vector<gf_view<Mesh, matrix_valued, Singularity, void>> V;
   for (auto &g : bg) V.push_back(reinterpret_scalar_valued_gf_as_matrix_valued(g));
   return make_block_gf_view_from_vector(std::move(V));
  }
 
- template <typename Variable, typename Singularity, typename Evaluator>
- block_gf_const_view<Variable, matrix_valued, Singularity, void>
- reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Variable, scalar_valued, Singularity, Evaluator> const &bg) {
+ template <typename Mesh, typename Singularity, typename Evaluator>
+ block_gf_const_view<Mesh, matrix_valued, Singularity, void>
+ reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Mesh, scalar_valued, Singularity, Evaluator> const &bg) {
   return reinterpret_scalar_valued_gf_as_matrix_valued(bg());
  }
 
- template <typename Variable, typename Singularity, typename Evaluator>
- block_gf_view<Variable, matrix_valued, Singularity, void>
- reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Variable, scalar_valued, Singularity, Evaluator> &bg) {
+ template <typename Mesh, typename Singularity, typename Evaluator>
+ block_gf_view<Mesh, matrix_valued, Singularity, void>
+ reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<Mesh, scalar_valued, Singularity, Evaluator> &bg) {
   return reinterpret_scalar_valued_gf_as_matrix_valued(bg());
  }
 

@@ -35,31 +35,27 @@ namespace gfs {
   gf_mesh(double beta, statistic_enum S, size_t n_leg) : B(typename B::domain_t(beta, S, n_leg)) {}
  };
 
- namespace gfs_implementation {
 
-  // h5 name
-  template <> struct h5_name<legendre, matrix_valued, nothing> {
-   static std::string invoke() { return "Legendre"; }
-  };
+ template <> struct gf_h5_name<legendre, matrix_valued, nothing> {
+  static std::string invoke() { return "Legendre"; }
+ };
 
-  /// ---------------------------  evaluator ---------------------------------
+ /// ---------------------------  gf_evaluator ---------------------------------
 
-  // Not finished, not tested
-  template <> struct evaluator<legendre, matrix_valued, nothing> {
-   template <typename G> evaluator(G *) {};
-   static constexpr int arity = 1;
-   // ERROR : give a double and interpolate
-   template <typename G> arrays::matrix_view<double> operator()(G const& g, long n) const {
-    return g.data()(n, arrays::range(), arrays::range());
-   }
-  };
+ // Not finished, not tested
+ template <> struct gf_evaluator<legendre, matrix_valued, nothing> {
+  template <typename G> gf_evaluator(G*) {};
+  static constexpr int arity = 1;
+  // ERROR : give a double and interpolate
+  template <typename G> arrays::matrix_view<double> operator()(G const& g, long n) const {
+   return g.data()(n, arrays::range(), arrays::range());
+  }
+ };
 
-  /// ---------------------------  data access  ---------------------------------
+ /// ---------------------------  data access  ---------------------------------
 
-  template <> struct data_proxy<legendre, matrix_valued> : data_proxy_array<double, 3> {};
-  template <> struct data_proxy<legendre, scalar_valued> : data_proxy_array<double, 1> {};
-
- } // gfs_implementation
+ template <> struct gf_data_proxy<legendre, matrix_valued> : data_proxy_array<double, 3> {};
+ template <> struct gf_data_proxy<legendre, scalar_valued> : data_proxy_array<double, 1> {};
 }
 }
 

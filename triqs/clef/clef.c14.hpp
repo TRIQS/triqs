@@ -463,6 +463,8 @@ namespace triqs { namespace clef {
   typename _result_of::make_expr_call<Obj,Args...>::type 
   make_expr_call(Obj&& obj, Args &&... args) { return {tags::function(),std::forward<Obj>(obj), std::forward<Args>(args)...};}
 
+ template< typename Obj, typename... Args> using make_expr_call_t = typename _result_of::make_expr_call<Obj,Args...>::type;
+
  /* --------------------------------------------------------------------------------------------------
   * Create a [] call (subscript) node of an object
   * The object can be kept as a : a ref, a copy, a view
@@ -475,6 +477,8 @@ namespace triqs { namespace clef {
  template< typename Obj, typename Arg>
   typename _result_of::make_expr_subscript<Obj,Arg>::type 
   make_expr_subscript(Obj&& obj, Arg && arg) { return {tags::subscript(),std::forward<Obj>(obj), std::forward<Arg>(arg)};}
+
+ template< typename Obj, typename... Args> using make_expr_subscript_t = typename _result_of::make_expr_subscript<Obj,Args...>::type;
 
  /* --------------------------------------------------------------------------------------------------
   *  function class : stores any expression polymorphically

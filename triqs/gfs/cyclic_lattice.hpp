@@ -26,13 +26,9 @@
 namespace triqs {
 namespace gfs {
 
- namespace gfs_implementation {
-
-  template <typename Singularity> struct h5_name<cyclic_lattice, matrix_valued, Singularity> {
-   static std::string invoke() { return "R"; }
-  };
-
- }
+ template <typename Singularity> struct gf_h5_name<cyclic_lattice, matrix_valued, Singularity> {
+  static std::string invoke() { return "R"; }
+ };
 }
 }
 

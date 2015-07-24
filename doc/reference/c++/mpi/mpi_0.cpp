@@ -11,19 +11,17 @@ int main(int argc, char *argv[]) {
  mpi::communicator world;
 
  int a = 5;
- broadcast(a);
- reduce_in_place(a);
+ mpi_broadcast(a);
+ a = mpi_reduce(a);
 
  array<int, 2> A(2,10); A()=1;
 
  std::cout<<A<<std::endl;
 
- scatter(A);
+ mpi_scatter(A);
  A += world.rank();
- gather(A);
+ mpi_gather(A);
 
  std::cout<<A<<std::endl;
-
- return 0;
 }
 
