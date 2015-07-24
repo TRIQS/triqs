@@ -41,7 +41,7 @@ namespace utility {
    static_assert(std::is_constructible<T, U>::value, "Cannot make std::vector<T> from std::vector<U>");
    R r;
    r.reserve(v.size());
-   for (auto& x : v) r.push_back(std::move(x));
+   for (auto& x : v) r.push_back(T(std::move(x)));
    return r;
   }
 

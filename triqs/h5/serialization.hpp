@@ -28,6 +28,8 @@
 namespace triqs {
 namespace h5 {
 
+#if H5_VERSION_GE(1, 8, 9)
+ 
  template <typename T> std::string serialize(T const &x) {
 
   proplist fapl = H5Pcreate(H5P_FILE_ACCESS);
@@ -79,6 +81,8 @@ namespace h5 {
   return res;
  }
 }
+
+#endif
 
 #undef CHECK_OR_THROW
 }

@@ -63,8 +63,10 @@ template<typename X, typename Y>
 
 // Arrays are close 
 template<typename X, typename Y>
-::testing::AssertionResult array_are_close(X const &x, Y const &y) {
+::testing::AssertionResult array_are_close(X const &x1, Y const &y1) {
  double precision = 1.e-10;
+ triqs::arrays::array<typename X::value_type, X::rank> x = x1; 
+ triqs::arrays::array<typename X::value_type, X::rank> y = y1; 
  if (x.domain() != y.domain()) 
  return ::testing::AssertionFailure() << "Comparing two arrays of different size "
           << "\n X = "<<  x << "\n Y = "<< y;
@@ -76,5 +78,38 @@ template<typename X, typename Y>
 }
 
 #define EXPECT_CLOSE_ARRAY(X, Y) EXPECT_TRUE(array_are_close(X,Y))
-#define EXPECT_ARRAY_NEAR(X, Y) EXPECT_TRUE(array_are_close(X,Y))
+#define EXPECT_ARRAY_NEAR(X, ...) EXPECT_TRUE(array_are_close(X,__VA_ARGS__))
+
+
+// ------------------  HDF5 --------------------
+//
+// We serialize to H5, deserialize, compare
+
+template <typename T> T rw_h5(T const &x, std::string filename = "ess") {
+
+ namespace h5 = triqs::h5;
+ T y; // must be default constructible
+
+ {
+  h5::file file(filename + ".h5", H5F_ACC_TRUNC);
+  h5_write(file, "x", x);
+ }
+
+ {
+  h5::file file(filename + ".h5", H5F_ACC_RDONLY);
+  h5_read(file, "x", y);
+ }
+
+#if H5_VERSION_GE(1, 8, 9)
+
+ auto s = triqs::h5::serialize(x);
+ T x2 = triqs::h5::deserialize<T>(s);
+ auto s2 = triqs::h5::serialize(x);
+
+ EXPECT_EQ(s, s2) << "Test h5 save, load, save, compare has failed !";
+
+#endif
+
+ return y;
+}
 

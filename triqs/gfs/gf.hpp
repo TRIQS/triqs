@@ -23,6 +23,7 @@
 #include <triqs/utility/factory.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/c14.hpp>
+#include <triqs/utility/macros.hpp>
 #include <triqs/arrays/h5.hpp>
 #include "./impl/gf_indices.hpp"
 #include "./impl/tools.hpp"
@@ -113,11 +114,30 @@ namespace gfs {
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
 
  // Is G a gf, gf_view, gf_const_view
- template<typename G> struct is_gf_or_view : std::false_type{};
+/* template<typename G> struct is_gf_or_view : std::false_type{};
  template <typename M, typename T, typename S, typename E> struct is_gf_or_view<gf<M, T, S, E>> : std::true_type {};
  template <typename M, typename T, typename S, typename E, bool C>
  struct is_gf_or_view<gf_view<M, T, S, E, C>> : std::true_type {};
+*/
 
+ // Is G a gf, gf_view, gf_const_view
+ // is_gf_or_view<G> is true iif G is a gf or a view
+ // is_gf_or_view<G,M0> is true iif  G is a gf or a view and its mesh is M0
+ template <typename G, typename M0 = void> struct is_gf_or_view : std::false_type {};
+
+ template <typename M, typename T, typename S, typename E> struct is_gf_or_view<gf<M, T, S, E>, void> : std::true_type {};
+ template <typename M, typename T, typename S, typename E> struct is_gf_or_view<gf<M, T, S, E>, M> : std::true_type {};
+ 
+ template <typename M, typename T, typename S, typename E, bool C>
+ struct is_gf_or_view<gf_view<M, T, S, E, C>, void> : std::true_type {};
+
+ template <typename M, typename T, typename S, typename E, bool C>
+ struct is_gf_or_view<gf_view<M, T, S, E, C>, M> : std::true_type {};
+
+ template <typename G, typename M> struct is_gf_or_view<G&,M> : is_gf_or_view<G,M>{};
+ template <typename G, typename M> struct is_gf_or_view<G const &,M> : is_gf_or_view<G,M>{};
+ template <typename G, typename M> struct is_gf_or_view<G &&,M> : is_gf_or_view<G,M>{};
+ 
  /*----------------------------------------------------------
   *  Evaluator
   *--------------------------------------------------------*/   

@@ -12,6 +12,8 @@ void print(gf<imtime> const & gt){
 
 int main() {
 
+ static_assert(is_block_gf_or_view<block_gf<imfreq>>::value, "oops");
+
  double beta = 1;
 
  auto gt1 =  gf<imtime> {{beta, Fermion, 9}, {1,1}};

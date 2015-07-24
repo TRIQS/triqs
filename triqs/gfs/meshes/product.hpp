@@ -79,7 +79,7 @@ namespace gfs {
   gf_mesh(gf_mesh const &) = default;
 
   /// Mesh comparison
-  bool operator==(gf_mesh const &m) { return m_tuple == m.m_tuple; }
+  bool operator==(gf_mesh const &m) const { return m_tuple == m.m_tuple; }
   bool operator!=(gf_mesh const &m) const { return !(operator==(m)); }
 
   // -------------------- Accessors (from concept) -------------------
