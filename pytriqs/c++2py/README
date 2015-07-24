@@ -12,7 +12,7 @@
 
 * wrap_generator.py
 
- The script that "render" the template to produce the xxx_wrap.cpp file.
+ The script that "renders" the template to produce the xxx_wrap.cpp file.
 
 * mako templates : 
 

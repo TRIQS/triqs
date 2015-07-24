@@ -34,7 +34,7 @@ class cfunction :
              is_method = False,  is_static = False, release_GIL_and_enable_signal = False, c_name = None, doc = '') :
       """
         - signature :
-             signature of the function, with types, parameter names and defaut value
+             signature of the function, with types, parameter names and default value
              rtype( arg1 name1, arg2 name2 = default2, ....)
              it can be :
                 - a string :
@@ -505,7 +505,7 @@ class class_ :
         """
         Add the __call__ operator.
 
-        It just call add_method, for the operator(), with name = "__call__"
+        It just calls add_method, for the operator(), with name = "__call__"
 
         Cf add_method documentation.
         """

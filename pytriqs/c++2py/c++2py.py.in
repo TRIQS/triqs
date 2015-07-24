@@ -101,6 +101,8 @@ if __name__ == '__main__' :
     
     # all classes used as parameters needs to be converted from / to Python
     classes_of_parameters = [m.parameter_arg for m in sum((c.methods for c in classes),[]) if m.parameter_arg != None]
+    classes_of_parameters_from_constr = [m.parameter_arg for m in sum((c.constructors for c in classes),[]) if m.parameter_arg != None]
+    classes_of_parameters.extend(classes_of_parameters_from_constr)
     classes_of_parameters = dict(((c.name,c) for c in classes_of_parameters)).values() # make unique
     if classes_of_parameters : 
         print "Generating the converters for parameters classes : " + ', '.join([c.name for c in classes_of_parameters])
