@@ -20,7 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/first_include.hpp>
-#include <triqs/utility/std_vector_expr_template.hpp>
 #include <triqs/utility/factory.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/c14.hpp>

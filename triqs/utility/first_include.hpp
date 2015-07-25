@@ -18,8 +18,17 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
-#define TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
+#pragma once
+
+#if defined __GNUC__  ||  defined  __clang__
+#define restrict __restrict__
+#endif
+
+#if defined __GNUC__  && ! defined  __clang__
+#define GCC_VERSION (__GNUC__ * 10000 \
+                               + __GNUC_MINOR__ * 100 \
+                               + __GNUC_PATCHLEVEL__)
+#endif
 
 // clang but not libc++
 //#if defined(__clang__) and !defined(_LIBCPP_VERSION) and (__clang_major__ <= 3) and (__clang_minor__ <= 5)  and (__clang_patchlevel__ < 2) 
@@ -60,6 +69,6 @@ typedef long double max_align_t;
 // boost serialization declaration...
 namespace boost { namespace serialization { class access; }} //forward
 #define TRIQS_MAKE_NVP(NAME,X) X
-//#define TRIQS_MAKE_NVP(NAME,X) boost::serialization::make_nvp(NAME,X)
 
-#endif
+// missing complex * int and in * complex
+#include <triqs/utility/complex_ops.hpp>

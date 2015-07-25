@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_UTILITY_CONCEPT_TOOLS_H
-#define TRIQS_UTILITY_CONCEPT_TOOLS_H
+#pragma once
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/seq/for_each_i.hpp>
 
@@ -50,7 +49,4 @@
 #define TRIQS_ASSERT_MODEL_CONCEPT(MyBeautifulConcept,T)
 #endif
 
-namespace triqs { namespace utility { 
-}}
-#endif
 

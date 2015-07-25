@@ -22,7 +22,6 @@
 #define TRIQS_CLEF_CORE_H
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/macros.hpp>
-#include <triqs/utility/compiler_details.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/c14.hpp>
 #include <tuple>

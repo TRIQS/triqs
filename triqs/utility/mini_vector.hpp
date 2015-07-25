@@ -18,18 +18,14 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_MINI_VECTOR_H 
-#define TRIQS_ARRAYS_MINI_VECTOR_H 
+#pragma once
 #include "./first_include.hpp"
-#include <iostream>
 #include "./macros.hpp"
 #include "./c14.hpp"
-#include "./compiler_details.hpp"
 #include "./exceptions.hpp"
 #include <boost/serialization/utility.hpp>
-#include <boost/preprocessor/repetition/repeat.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
 #include <vector>
+#include <iostream>
 
 #define TRIQS_MINI_VECTOR_NRANK_MAX 10
 
@@ -296,5 +292,4 @@ template<typename T, int R> struct tuple_size<triqs::utility::mini_vector<T, R>>
 
 }
 
-#endif
 

@@ -27,7 +27,6 @@
 #include <utility>
 
 // Workaround for GCC bug 41933
-#include <triqs/utility/compiler_details.hpp>
 #if defined GCC_VERSION && GCC_VERSION < 40900
 #define GCC_BUG_41933_WORKAROUND
 #endif
