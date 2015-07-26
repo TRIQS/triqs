@@ -1,24 +1,16 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include <triqs/gfs.hpp>
-
-namespace h5 = triqs::h5;
-using namespace triqs;
-using namespace triqs::gfs;
-using namespace triqs::arrays;
+#include "../common.hpp"
 using namespace triqs::lattice;
-
-#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl << std::endl;
 
 // In this test, we define a new evaluator for a multivar gf
 // to implement the symmetry g(nu, nup, -omega) = conj(g(-nu,-nup,omega))
 // The principle is simple : just write an evaluator with a view of the gf with the default evaluator.
-// TODO : test more...
 
 struct my_evaluator {
  static constexpr int arity = 3;
 
  // keep a view of the gf with the default evaluator
  gf_const_view<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued, nothing> gv;
+
  template <typename G> my_evaluator(G *g) : gv(*g) {}
 
  // all evaluation are rewritten with in terms of the default evaluator.
@@ -34,31 +26,32 @@ struct my_evaluator {
 using gf3_s = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued, nothing>;
 using gf3_s_modif = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued, nothing, my_evaluator>;
 
-int main() {
- try {
-  int nw = 5;
-  double beta = 10;
-  clef::placeholder<0> k_;
-  clef::placeholder<1> q_;
-  clef::placeholder<2> r_;
-  clef::placeholder<3> iw_;
-  clef::placeholder<4> inu_;
-  clef::placeholder<5> inup_;
+TEST(Gf, EvaluatorWithSymmetry) {
+ int nw = 5;
+ double beta = 10;
+ clef::placeholder<0> k_;
+ clef::placeholder<1> q_;
+ clef::placeholder<2> r_;
+ clef::placeholder<3> iw_;
+ clef::placeholder<4> inu_;
+ clef::placeholder<5> inup_;
 
-  // This would throw
-  //auto g = gf3_s{{{beta, Fermion, 2*nw, false}, {beta, Fermion, 2*nw, false}, {beta, Boson, nw}}};
-  auto g = gf3_s_modif{{{beta, Fermion, 2*nw, false}, {beta, Fermion, 2*nw, false}, {beta, Boson, nw}}};
- 
-  g(inu_,inup_, iw_) << inu_ + 10*inup_ + 100*iw_;
-  auto nu = matsubara_freq{2, beta, Fermion};
-  auto nup = matsubara_freq{2, beta, Fermion};
-  auto omega = matsubara_freq{3, beta, Boson};
+ // This would throw
+ auto g_classic = gf3_s{{{beta, Fermion, 2 * nw, false}, {beta, Fermion, 2 * nw, false}, {beta, Boson, nw}}};
 
-  TEST(g(nu,nup,omega));
-  TEST(g(-nu,-nup,omega));
-  TEST(g(nu,nup,-omega));
+ auto g = gf3_s_modif{{{beta, Fermion, 2 * nw, false}, {beta, Fermion, 2 * nw, false}, {beta, Boson, nw}}};
 
- }
- TRIQS_CATCH_AND_ABORT;
+ g(inu_, inup_, iw_) << inu_ + 10 * inup_ + 100 * iw_;
+
+ auto nu = matsubara_freq{2, beta, Fermion};
+ auto nup = matsubara_freq{2, beta, Fermion};
+ auto omega = matsubara_freq{3, beta, Boson};
+
+ EXPECT_CLOSE(g(nu, nup, omega), nu + 10 * nup + 100 * omega);
+ EXPECT_CLOSE(g(-nu, -nup, omega), - nu - 10 * nup + 100 * omega);
+ EXPECT_CLOSE(g(nu, nup, -omega), nu + 10 * nup - 100 * omega);
+
+ EXPECT_THROW(g_classic(nu, nup, -omega), std::exception);
 }
+MAKE_MAIN;
 

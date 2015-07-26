@@ -1,9 +1,4 @@
 #include "./common.hpp"
-#include <triqs/gfs.hpp>
-
-namespace h5 = triqs::h5;
-using namespace triqs::gfs;
-using namespace triqs::arrays;
 
 TEST(Gf, ArrayOf) { 
 

@@ -1,6 +1,4 @@
 #include "./common.hpp"
-using namespace triqs::gfs;
-using namespace triqs;
 
 TEST(Gf, Block) { 
   

@@ -1,8 +1,28 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include "../test_tools.hpp"
 #include <triqs/gfs.hpp>
+#include <triqs/gfs/functions/functions.hpp> 
+
+using namespace triqs::gfs;
+using namespace triqs;
+using namespace triqs::arrays;
+using namespace triqs::lattice;
 
 // 
+::testing::AssertionResult tail_are_close(tail const &x, tail const &y) {
+ if (x.order_min() != y.order_min())
+  return ::testing::AssertionFailure() << "Tail do not have the same omin"
+                                       << "\n X = " << x << "\n Y = " << y;
+
+ EXPECT_ARRAY_NEAR(x.data(), y.data()) << "Gf are not equal : data differ";
+
+ return ::testing::AssertionSuccess();
+}
+
+::testing::AssertionResult tail_are_close(nothing const &x, nothing const &y) {
+ return ::testing::AssertionSuccess();
+}
+
 template<typename X, typename Y>
 ::testing::AssertionResult gf_are_close(X const &x, Y const &y) {
  double precision = 1.e-10;
@@ -11,6 +31,9 @@ template<typename X, typename Y>
           << "\n X = "<<  x << "\n Y = "<< y;
 
  EXPECT_ARRAY_NEAR(x.data(), y.data()) << "Gf are not equal : data differ";
+
+ return tail_are_close(x.singularity(), y.singularity());
+
  return ::testing::AssertionSuccess();
 }
 

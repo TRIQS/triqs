@@ -1,11 +1,5 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include "test_tools.hpp"
-#include <triqs/gfs.hpp>
-
-namespace h5 = triqs::h5;
-using namespace triqs::gfs;
+#include "../common.hpp"
 using namespace triqs::clef;
-using namespace triqs::arrays;
 using namespace triqs::lattice;
 
 TEST(Gf, Bubble) { 
@@ -40,7 +34,6 @@ TEST(Gf, Bubble) {
 
   chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_ + iw_, -r_);
 
-
   curry<0,1>(chi0q_from_r)(inu_, iw_) << fourier(on_mesh(curry<0,1>(chi0r))(inu_, iw_));
   //curry<0,1>(chi0q_from_r)(inu_, iw_) << fourier(curry<0,1>(chi0r)(inu_, iw_));
 
@@ -63,9 +56,8 @@ TEST(Gf, Bubble) {
   EXPECT_CLOSE_ARRAY(ggq_from_r.data() , ggq.data()); //<<"fourier pb";
 
   // hdf5
-  h5::file file("chi0q.h5", H5F_ACC_TRUNC);
-  h5_write(file, "chi0q", chi0q);
-  h5_write(file, "chi0q_from_r", chi0q_from_r);
+  rw_h5(chi0q);
+  rw_h5(chi0r);
 }
 MAKE_MAIN;
 

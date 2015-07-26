@@ -1,8 +1,0 @@
-(G.mesh().positive_only()) ---> 0
-
-(G_pos_only.mesh().positive_only()) ---> 1
-
-(n) ---> 0.908877
-
-(n_pos_only) ---> 0.908877
-

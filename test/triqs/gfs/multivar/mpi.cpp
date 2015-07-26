@@ -1,63 +1,35 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include <triqs/gfs.hpp>
-#include <fstream>
-
-namespace h5 = triqs::h5;
-using namespace triqs;
-using namespace triqs::gfs;
-using namespace triqs::arrays;
-using namespace triqs::lattice;
-
-#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl << std::endl;
+#include "../common.hpp"
 
 using gf3_s = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued>;
 
-int main(int argc, char* argv[]) {
+TEST(Gfs, MPI_multivar) {
 
- mpi::environment env(argc, argv);
  mpi::communicator world;
 
- std::ofstream out("node" + std::to_string(world.rank()));
+ int nw = 2, nbw = 10;
+ double beta = 10;
+ clef::placeholder<0> k_;
+ clef::placeholder<1> q_;
+ clef::placeholder<2> r_;
+ clef::placeholder<3> iw_;
+ clef::placeholder<4> inu_;
+ clef::placeholder<5> inup_;
 
- try {
-  int nw = 2, nbw = 10;
-  double beta = 10;
-  clef::placeholder<0> k_;
-  clef::placeholder<1> q_;
-  clef::placeholder<2> r_;
-  clef::placeholder<3> iw_;
-  clef::placeholder<4> inu_;
-  clef::placeholder<5> inup_;
+ auto g = gf3_s{{{beta, Boson, nbw}, {beta, Fermion, nw}, {beta, Fermion, nw}}};
+ g(iw_, inu_, inup_) << inu_ + 10 * inup_ + 100 * iw_;
+ 
+ auto g2 = g;
+ g2 = mpi_reduce(g, world);
+ if (world.rank() == 0) EXPECT_ARRAY_NEAR(g2.data(), g.data() * world.size());
 
-  auto g = gf3_s{{{beta, Boson, nbw}, {beta, Fermion, nw}, {beta, Fermion, nw}}};
-  auto g2 = g;
+ gf3_s g3 = mpi_all_reduce(g, world);
+ EXPECT_ARRAY_NEAR(g3.data(), g.data() * world.size());
 
-  g(iw_, inu_, inup_) << inu_ + 10 * inup_ + 100 * iw_;
+ gf3_s g4 = mpi_scatter(g);
+ g2(iw_, inu_, inup_) << g2(iw_, inu_, inup_) * (1 + world.rank());
+ g4 = mpi_gather(g2);
+ // Test the result ?
 
-  {
-   out << "reduction " << std::endl;
-   g2 = mpi_reduce(g, world);
-   out << g2.data() << std::endl;
-  }
-
-  {
-   out << "all reduction " << std::endl;
-   g2 = mpi_all_reduce(g, world);
-   out << g2.data() << std::endl;
-  }
-
- {
-   out << "scatter-gather test with =" << std::endl;
-   auto g2b = g;
-
-   g2 = mpi_scatter(g);
-   g2(iw_, inu_, inup_) << g2(iw_, inu_, inup_) * (1 + world.rank());
-   g2b = mpi_gather(g2);
-
-   for (int i = 0; i < nw; ++i)
-    for (int j = 0; j < nw; ++j) out << g2b.data()(range(), i, j) << std::endl;
-  }
- }
- TRIQS_CATCH_AND_ABORT;
 }
+MAKE_MAIN;
 
