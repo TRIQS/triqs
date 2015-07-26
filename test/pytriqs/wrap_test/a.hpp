@@ -4,6 +4,7 @@
 #include <ostream>
 #include <triqs/arrays.hpp>
 //#include <triqs/h5.hpp>
+#include <triqs/utility/variant.hpp>
 #include <triqs/utility/signal_handler.hpp>
 namespace triqs { namespace py_tools { 
  class reductor;
@@ -210,6 +211,19 @@ inline std::tuple<int,double> tuple_to_tuple_2(std::tuple<int,double> const& t) 
 
 inline std::tuple<int,double,std::string> tuple_to_tuple_3(std::tuple<int,double,std::string> const& t) {
  return std::make_tuple(2*std::get<0>(t),1/std::get<1>(t),"*" + std::get<2>(t) + "*");
+}
+
+struct test_variant_visitor {
+ int operator()(int i) { return 3*i; }
+ int operator()(std::string const& s) { return s.size(); }
+ int operator()(std::pair<std::string,double> const& p) { return int(p.second); }
+};
+
+inline triqs::utility::variant<int,std::string,std::pair<std::string,double>>
+variant_to_variant(triqs::utility::variant<int,std::string,std::pair<std::string,double>> const& v) {
+ triqs::utility::variant<int,std::string,std::pair<std::string,double>> res(
+  apply_visitor(test_variant_visitor(), v));
+ return res;
 }
 
 inline std::function<int(int,int)>  make_fnt_ii() {

@@ -1,74 +1,66 @@
 #pragma once
 #include "../wrapper_tools.hpp"
-#include <boost/variant.hpp>
+#include <triqs/utility/variant.hpp>
 
 
 namespace triqs {
 namespace py_tools {
 
-// variant visitor: converts variant type to PyObject
-struct index_visitor: public boost::static_visitor<PyObject *> {
-  template<typename T>
-  PyObject * operator()(T i) { return py_converter<T>::c2py(i); }
-};
-
-// boost::variant<Types...> converter
-template<typename... Types> struct py_converter<boost::variant<Types...>> {
-
- using variant_t = boost::variant<Types...>;
- using types_t = typename variant_t::types;
- using begin_t = typename boost::mpl::begin<types_t>::type;
- using end_t = typename boost::mpl::end<types_t>::type;
+// triqs::utility::variant<Types...> converter
+template<typename... Types>
+struct py_converter<triqs::utility::variant<Types...>> {
 
 private:
 
-// Implementation details
-template<typename Iter, typename IterEnd> struct is_convertible_impl {
- static bool apply(PyObject *ob, bool raise_exception) {
-  return py_converter<typename boost::mpl::deref<Iter>::type>::is_convertible(ob, raise_exception) ||
-         is_convertible_impl<typename boost::mpl::next<Iter>::type,IterEnd>::apply(ob, raise_exception);
- }
-};
+  using variant_t = triqs::utility::variant<Types...>;
+  template<int N> using types_t = typename variant_t::template bounded_type<N>;
+  constexpr static int n_types = variant_t::n_bounded_types;
 
-template<typename Iter> struct is_convertible_impl<Iter,Iter> {
- static bool apply(PyObject *ob, bool raise_exception) { return false; }
-};
+  // c2py_visitor
+  struct c2py_visitor {
+    template<typename T> PyObject * operator()(T x) { return py_converter<T>::c2py(x); }
+  };
 
-template<typename Iter, typename IterEnd> struct py2c_impl {
- static variant_t apply(PyObject *ob) {
-  if(py_converter<typename boost::mpl::deref<Iter>::type>::is_convertible(ob, false))
-   return py_converter<typename boost::mpl::deref<Iter>::type>::py2c(ob);
-  else
-   return py2c_impl<typename boost::mpl::next<Iter>::type,IterEnd>::apply(ob);
- }
-};
+  // is_convertible_impl
+  template<int N> static std14::enable_if_t<(N<n_types),bool>
+  is_convertible_impl(PyObject *ob) {
+    return py_converter<types_t<N>>::is_convertible(ob,false) ||
+           is_convertible_impl<N+1>(ob);
+  }
+  template<int N> static std14::enable_if_t<N==n_types,bool>
+  is_convertible_impl(PyObject *ob) { return false; }
 
-template<typename Iter> struct py2c_impl<Iter,Iter> {
- static variant_t apply(PyObject *ob) {
-  TRIQS_RUNTIME_ERROR << "Internal error: py2c called for a Python object incompatible with boost::variant";
- }
-};
+  // py2c_impl
+  template<int N> static std14::enable_if_t<(N<n_types),variant_t>
+  py2c_impl(PyObject *ob) {
+    if(py_converter<types_t<N>>::is_convertible(ob,false))
+      return py_converter<types_t<N>>::py2c(ob);
+    else
+      return py2c_impl<N+1>(ob);
+  }
+  template<int N> static std14::enable_if_t<N==n_types,variant_t>
+  py2c_impl(PyObject *ob) {
+    TRIQS_RUNTIME_ERROR <<
+    "Internal error: py2c called for a Python object incompatible with triqs::utility::variant";
+  }
 
 public:
 
- static PyObject *c2py(variant_t index) {
-  index_visitor iv;
-  return boost::apply_visitor(iv, index);
- }
-
- static bool is_convertible(PyObject *ob, bool raise_exception) {
-  if (is_convertible_impl<begin_t,end_t>::apply(ob, false)) return true;
-  if (raise_exception) {
-    PyErr_SetString(PyExc_TypeError, "Cannot convert to variant");
+  static PyObject* c2py(variant_t const& v) {
+    return apply_visitor(c2py_visitor(), v);
   }
-  return false;
- }
 
- static variant_t py2c(PyObject *ob) {
-  return py2c_impl<begin_t,end_t>::apply(ob);
- }
+  static bool is_convertible(PyObject *ob, bool raise_exception) {
+    if (is_convertible_impl<0>(ob)) return true;
+    if (raise_exception) {
+      PyErr_SetString(PyExc_TypeError, "Cannot convert to triqs::utility::variant");
+    }
+    return false;
+  }
 
+  static variant_t py2c(PyObject *ob) {
+    return py2c_impl<0>(ob);
+  }
 };
 
 }}
-

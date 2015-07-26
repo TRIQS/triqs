@@ -28,7 +28,7 @@
         'std::function' : 'function',
         'std::pair' : 'pair',
         'std::tuple' : 'tuple',
-        'boost::variant' : 'variant'
+        'triqs::utility::variant' : 'variant'
         }
 
     used_module_list, converters_list = [], set()

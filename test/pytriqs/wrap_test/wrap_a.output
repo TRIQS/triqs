@@ -24,6 +24,9 @@ set([1, 3, 4])
 (18,)
 (18, 0.4)
 (18, 0.4, '*hi*')
+27
+6
+7
  rereading from hdf5   I am an A with x= 6.9
 'cmy_module\n__reduce_reconstructor__Ac\np0\n(I1\nF3.0\ntp1\nRp2\n.'
  I am an A with x= 3

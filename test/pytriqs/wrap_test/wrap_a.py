@@ -42,6 +42,10 @@ print tuple_to_tuple_1((9,))
 print tuple_to_tuple_2((9,2.5))
 print tuple_to_tuple_3((9,2.5,'hi'))
 
+print variant_to_variant(9)
+print variant_to_variant("qwerty")
+print variant_to_variant(("name",7.65))
+
 from pytriqs.archive import *
 import pytriqs.archive.hdf_archive_schemes
 
