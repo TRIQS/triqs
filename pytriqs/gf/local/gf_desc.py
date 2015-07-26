@@ -331,9 +331,15 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
     g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag)) 
     g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type)) 
 
+#  do we really want to have the view case separately ? the matrix can not be so big.
+#    g.add_method(name = "from_L_G_R",
+#                 calling_pattern = "set_from_L_G_R(self_c,l,g(),r)",
+#                 signature = "void(matrix_view<%s> l,gf<%s> g,matrix_view<%s> r)"%(data_type,c_tag,data_type),
+#                 doc = "self << l * g * r")
+
     g.add_method(name = "from_L_G_R",
                  calling_pattern = "set_from_L_G_R(self_c,l,g(),r)",
-                 signature = "void(matrix_view<%s> l,gf<%s> g,matrix_view<%s> r)"%(data_type,c_tag,data_type),
+                 signature = "void(matrix<%s> l,gf<%s> g,matrix<%s> r)"%(data_type,c_tag,data_type),
                  doc = "self << l * g * r")
 
     g.add_method(name = "zero",

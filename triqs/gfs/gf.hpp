@@ -811,8 +811,8 @@ namespace gfs {
   return g;
  }
 
-template <typename A, typename B, typename T> void set_from_gf_data_mul_LR(A & a, matrix_view<T> l, B const &b, matrix_view <T> r) {
-  auto tmp = matrix<T> (second_dim(b), second_dim(r));
+template <typename A, typename B, typename M> void set_from_gf_data_mul_LR(A & a, M const & l, B const &b, M const & r) {
+  auto tmp = matrix<typename M::value_type> (second_dim(b), second_dim(r));
   auto _ = arrays::range{};
   for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
    auto rhs_v = make_matrix_view(b(i, _, _));
@@ -822,8 +822,8 @@ template <typename A, typename B, typename T> void set_from_gf_data_mul_LR(A & a
   }
  }
 
-template <typename G1, typename G2, typename T>
- void set_from_L_G_R(G1 & g1, matrix_view<T> l, G2 const & g2, matrix_view<T> r) {
+template <typename G1, typename G2, typename M>
+ void set_from_L_G_R(G1 & g1, M const & l, G2 const & g2, M const & r) {
   set_from_gf_data_mul_LR(g1.data(), l, g2.data(), r);
   g1.singularity() = l * g2.singularity() * r;
  }
