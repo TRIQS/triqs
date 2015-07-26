@@ -1,3 +1,23 @@
+New in version 1.4
+==================
+
+Installation
+------------
+
+* boost mpi is no longer detected by triqs. 
+  You can either add 2 lines to
+  detect it in CMake, or port your apps to triqs::mpi.
+  To port an apps using mpi :
+ 
+  * detect boost mpi lib, and link to it, using e.g. in CMakeLists :
+
+    find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi serialization system)
+    link_libraries(${Boost_LIBRARIES})
+
+  * include "boost/mpi.hpp" if needed.
+
+
+
 New in version 1.3
 ==================
 
