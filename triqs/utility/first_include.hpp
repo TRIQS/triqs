@@ -51,8 +51,10 @@ typedef long double max_align_t;
 // Only on clang, other compilers : not needed, 
 #if defined(__clang__)
 #define TRIQS_WRAP_ARG_AS_DICT  __attribute__((annotate("use_parameter_class")))
+#define TRIQS_WRAP_IGNORE  __attribute__((annotate("ignore_in_python")))
 #else
-#define TRIQS_WRAP_ARG_AS_DICT  
+#define TRIQS_WRAP_ARG_AS_DICT
+#define TRIQS_WRAP_IGNORE
 #endif
 
 // boost serialization declaration...

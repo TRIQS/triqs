@@ -436,7 +436,8 @@ class class_ :
         """
         f = cfunction(signature, calling_pattern = calling_pattern, is_constructor = True, is_method = True,  doc = doc)
         all_args = ",".join([ ('*' if t in module_._wrapped_types else '') + n  for t,n,d in f.args])
-        f._calling_pattern = ''
+        all_args = all_args if f._dict_call is None else "convert_from_python<%s>(keywds)"%f._dict_call # call with the keywds argument
+        f._calling_pattern = '' if f._dict_call is None else "if (!convertible_from_python<%s>(keywds,true)) goto error_return;\n"%f._dict_call
         if calling_pattern is not None :
           f._calling_pattern, all_args = calling_pattern + ';\n', "std::move(result)"
         if self.c_type_is_view and build_from_regular_type_if_view :
@@ -780,6 +781,11 @@ class module_ :
             l += [(m,c.py_type, c.c_type) for m in c.methods.values() if m.do_implement]
             if c.constructor :
                 l.append( (c.constructor,c.py_type, c.c_type))
+        # Check before generation
+        for f, name, x in l:
+            n_dict_call = sum( 1 if overload._dict_call else 0 for overload in f.overloads)
+            assert n_dict_call <= 1, "At most one possible overload with ** call"
+            assert n_dict_call ==0  or len(f.overloads) == 1, "The function %s.%s has a ** call and overloads, which is meaningless !"%(name,f.py_name)
         return l
 
     def _prepare_for_generation(self) :

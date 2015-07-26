@@ -160,7 +160,9 @@ template <> struct py_converter<long> {
 };
 
 template <> struct py_converter<int> : py_converter<long> {};
-template <> struct py_converter<size_t> : py_converter<long> {};
+template <> struct py_converter<unsigned int> : py_converter<long> {};
+template <> struct py_converter<unsigned long> : py_converter<long> {};
+template <> struct py_converter<unsigned long long> : py_converter<long> {};
 
 // --- double
 

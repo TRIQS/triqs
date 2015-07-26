@@ -119,7 +119,7 @@ using namespace ${ns};
 %endif
 """)
 ##
-%for c in classes :
+%for c in [c for c in classes if not 'ignore_in_python' in c.annotations]:
 <%
   def doc_format(member_list) : 
    h= ['Parameter Name', 'Type', 'Default', 'Documentation']
@@ -154,13 +154,13 @@ c.add_member(c_name = "${m.name}",
 
 %endfor
 ##
-%for m in [m for m in c.constructors if not m.is_template]:
+%for m in [m for m in c.constructors if not m.is_template and not 'ignore_in_python' in m.annotations]:
 c.add_constructor("""${make_signature(m)}""", 
-                  doc = """${m.doc} """)
+                  doc = """${m.doc if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
 
 %endfor
 ##
-%for m in c.methods:
+%for m in [m for m in c.methods if not 'ignore_in_python' in m.annotations]:
 c.add_method("""${make_signature(m)}""", 
              %if m.is_static :
              is_static = True,
