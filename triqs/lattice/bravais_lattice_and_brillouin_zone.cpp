@@ -83,7 +83,8 @@ namespace lattice {
  /// Write into HDF5
  void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const& bl) {
   h5::group gr = fg.create_group(subgroup_name);
-  h5_write(gr, "units", bl.units_); // NOT COMPLETE
+  auto _ = range(0, bl.dim());
+  h5_write(gr, "units", bl.units_(_,_));
  }
 
  /// Read from HDF5
