@@ -22,6 +22,7 @@
 #define TRIQS_ARRAYS_NUMPY_EXTRACTOR_H
 
 #include "../storages/shared_block.hpp"
+#include "triqs/utility/macros.hpp"
 #include "triqs/utility/exceptions.hpp"
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "numpy/arrayobject.h"
@@ -36,8 +37,14 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
  }
 
  template <class T> struct numpy_to_C_type;
-#define CONVERT(C,P) template <> struct numpy_to_C_type<C> { enum {arraytype = P}; }
- CONVERT(bool, NPY_BOOL);
+#define CONVERT(C, P)                                                                                                            \
+ template <> struct numpy_to_C_type<C> {                                                                                         \
+  enum {                                                                                                                         \
+   arraytype = P                                                                                                                 \
+  };                                                                                                                             \
+  static const char* name() { return AS_STRING(C); }                                                                              \
+ }
+  CONVERT(bool, NPY_BOOL);
  CONVERT(char, NPY_CHAR);
  CONVERT(signed char, NPY_BYTE);
  CONVERT(unsigned char, NPY_UBYTE);
@@ -60,15 +67,16 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
  struct copy_exception : public triqs::runtime_error {};
 
  // return a NEW (owned) reference
- PyObject * numpy_extractor_impl ( PyObject * X, bool allow_copy, std::string type_name, 
-   int elementsType, int rank, size_t * lengths, std::ptrdiff_t * strides, size_t size_of_ValueType);
- 
+ PyObject* numpy_extractor_impl(PyObject* X, bool allow_copy, std::string type_name, int elementsType, int rank, size_t* lengths,
+                                std::ptrdiff_t* strides, size_t size_of_ValueType);
+
  // a little template class
  template<typename IndexMapType, typename ValueType > struct numpy_extractor {
 
   numpy_extractor (PyObject * X, bool allow_copy) {
-   numpy_obj = numpy_extractor_impl (X, allow_copy, typeid(ValueType).name(), numpy_to_C_type<typename boost::remove_const<ValueType>::type>::arraytype, IndexMapType::rank,
-     &lengths[0], &strides[0],sizeof(ValueType));
+   using numpy_t = numpy_to_C_type<std14::remove_const_t<ValueType>>;
+   numpy_obj = numpy_extractor_impl(X, allow_copy, numpy_t::name(), numpy_t::arraytype, IndexMapType::rank, &lengths[0],
+                                    &strides[0], sizeof(ValueType));
   }
 
   ~numpy_extractor(){ Py_DECREF(numpy_obj);}

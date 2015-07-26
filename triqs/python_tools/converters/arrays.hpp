@@ -43,9 +43,10 @@ namespace py_tools {
     py2c(ob);
     return true;
    }
-   catch (...) {
+   catch (std::exception const &e) {
     if (raise_exception) {
-     PyErr_SetString(PyExc_TypeError, "Cannot convert to array/matrix/vector");
+     auto mess = std::string("Cannot convert to array/matrix/vector : the error was : \n") + e.what();
+     PyErr_SetString(PyExc_TypeError, mess.c_str());
     }
     return false;
    }

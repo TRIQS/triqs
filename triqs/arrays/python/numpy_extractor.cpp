@@ -21,25 +21,36 @@
 #include "../impl/common.hpp"
 #include "../impl/traits.hpp"
 #include "../../utility/mini_vector.hpp"
+#include "../../utility/typeid_name.hpp"
+#include "../../python_tools/pyref.hpp"
 #include "./numpy_extractor.hpp"
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 
+
 namespace triqs { namespace arrays { namespace numpy_interface  {
 
-  PyObject *numpy_extractor_impl(PyObject *X, bool enforce_copy, std::string type_name, int elementsType, int rank,
-                                 size_t *lengths, std::ptrdiff_t *strides, size_t size_of_ValueType) {
+  PyObject *numpy_extractor_impl(PyObject *X, bool enforce_copy, std::string type_name, 
+                                 int elementsType, int rank, size_t *lengths, std::ptrdiff_t *strides, size_t size_of_ValueType) {
 
   PyObject * numpy_obj;
 
   if (X==NULL) TRIQS_RUNTIME_ERROR<<"numpy interface : the python object is NULL !";
   if (_import_array()!=0) TRIQS_RUNTIME_ERROR <<"Internal Error in importing numpy";
 
-  static const char * error_msg = "   A deep copy of the object would be necessary while views are supposed to guarantee to present a *view* of the python data.\n";
+  static const char * error_msg = "   Error from the Python to C++ converter of array/matrix/vector.\n   I am asked to take a *view* of Python numpy array.\n   However, it is impossible (a deep copy would be necessary) for the following reason : \n";
 
   if (!enforce_copy) {
    if (!PyArray_Check(X)) throw copy_exception () << error_msg<<"   Indeed the object was not even an array !\n";
-   if ( elementsType != PyArray_TYPE((PyArrayObject*)X))
-    throw copy_exception () << error_msg<<"   The deep copy is caused by a type mismatch of the elements. Expected "<< type_name<< " and found XXX \n";
+   if (elementsType != PyArray_TYPE((PyArrayObject *)X)) {
+    py_tools::pyref p = PyObject_GetAttrString(X, "dtype");
+    std::string actual_type = "";
+    if (p) {
+     py_tools::pyref q = PyObject_GetAttrString(p, "name");
+     if (q && PyString_Check(q)) actual_type = PyString_AsString(q);
+    }
+    throw copy_exception() << error_msg << "   Type mismatch of the elements.\n   The expected type by C+ is "
+                           << utility::demangle(type_name) << " while I receive an array of type " << actual_type << "\n";
+   }
    PyArrayObject *arr = (PyArrayObject *)X;
 #ifdef TRIQS_NUMPY_VERSION_LT_17
    if ( arr->nd != rank) throw copy_exception () << error_msg<<"   Rank mismatch . numpy array is of rank "<< arr->nd << "while you ask for rank "<< rank<<". \n";
