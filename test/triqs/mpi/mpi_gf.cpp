@@ -55,6 +55,13 @@ TEST(Gfs, MPI) {
   EXPECT_ARRAY_NEAR(g2.singularity().data(), world.size() * g1.singularity().data());
  }
 
+ { // all reduction of gf_view
+  gf<imfreq> g2 = g1;
+  g2() = mpi_all_reduce(g1(), world);
+  EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
+  EXPECT_ARRAY_NEAR(g2.singularity().data(), world.size() * g1.singularity().data());
+ }
+
  auto d = make_clone(g1.data());
  for (int u = 0; u < world.size(); ++u) {
   auto se = mpi::slice_range(0, Nfreq - 1, world.size(), u);

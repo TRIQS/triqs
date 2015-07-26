@@ -99,7 +99,8 @@ namespace arrays {
 
   template <typename LHS, typename Tag, typename A> struct is_special<LHS, mpi_lazy_array<Tag, A>> : std::true_type {};
 
-  // assignment delegation
+  // ----------------------- Reduce ------------------------------------
+
   template <typename LHS, typename A> struct impl<LHS, mpi_lazy_array<mpi::tag::reduce, A>, 'E', void> {
 
    using laz_t = mpi_lazy_array<mpi::tag::reduce, A>;
@@ -109,41 +110,44 @@ namespace arrays {
 
    void invoke() {
 
+    if (!has_contiguous_data(lhs)) TRIQS_RUNTIME_ERROR << "mpi reduction of array into a non contiguous view";
+
     auto rhs_n_elem = laz.ref.domain().number_of_elements();
-    void *lhs_p = lhs.data_start();
-    void *rhs_p = (void *)laz.ref.data_start();
     auto c = laz.c;
     auto root = laz.root;
     auto D = mpi::mpi_datatype<typename A::value_type>();
 
-    bool in_place = (lhs_p == rhs_p); // to be refined. Overlapping condition
+    bool in_place = (lhs.data_start() == laz.ref.data_start());
+
     // some checks.
     if (in_place) {
      if (rhs_n_elem != lhs.domain().number_of_elements())
       TRIQS_RUNTIME_ERROR << "mpi reduce of array : same pointer to data start, but differnet number of elements !";
     } else { // check no overlap
+     if ((c.rank() == root) || laz.all) resize_or_check_if_view(lhs, laz.domain().lengths());
      if (std::abs(lhs.data_start() - laz.ref.data_start()) < rhs_n_elem)
       TRIQS_RUNTIME_ERROR << "mpi reduce of array : overlapping arrays !";
     }
 
+    void *lhs_p = lhs.data_start();
+    void *rhs_p = (void *)laz.ref.data_start();
+
     if (!laz.all) {
      if (in_place)
       MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : rhs_p), rhs_p, rhs_n_elem, D, MPI_SUM, root, c.get());
-     else {
-      if (c.rank() == root) lhs.resize(laz.domain());
+     else
       MPI_Reduce(rhs_p, lhs_p, rhs_n_elem, D, MPI_SUM, root, c.get());
-     }
-    } else { // all reduce
+    } else {
      if (in_place)
       MPI_Allreduce(MPI_IN_PLACE, rhs_p, rhs_n_elem, D, MPI_SUM, c.get());
-     else {
-      lhs.resize(laz.domain());
+     else
       MPI_Allreduce(rhs_p, lhs_p, rhs_n_elem, D, MPI_SUM, c.get());
-     }
     }
    }
-};
-   // assignment delegation
+  };
+
+  // ----------------------- Scatter ------------------------------------
+
   template <typename LHS, typename A> struct impl<LHS, mpi_lazy_array<mpi::tag::scatter, A>, 'E', void> {
 
    using laz_t = mpi_lazy_array<mpi::tag::scatter, A>;
@@ -154,7 +158,10 @@ namespace arrays {
 
    void invoke() {
 
-    lhs.resize(laz.domain());
+    if (!has_contiguous_data(lhs)) TRIQS_RUNTIME_ERROR << "mpi scatter of array into a non contiguous view";
+
+    resize_or_check_if_view(lhs, laz.domain().lengths());
+
     auto c = laz.c;
     auto slow_size = first_dim(laz.ref);
     auto slow_stride = laz.ref.indexmap().strides()[0];
@@ -168,13 +175,14 @@ namespace arrays {
      displs[r + 1] = sendcounts[r] + displs[r];
     }
 
-    MPI_Scatterv((void *)laz.ref.data_start(), &sendcounts[0], &displs[0], D, (void *)lhs.data_start(), recvcount, D,
-                 laz.root, c.get());
+    MPI_Scatterv((void *)laz.ref.data_start(), &sendcounts[0], &displs[0], D, (void *)lhs.data_start(), recvcount, D, laz.root,
+                 c.get());
    }
-};
+  };
 
+  // ----------------------- Gather ------------------------------------
    // assignment delegation
- template <typename LHS, typename A> struct impl<LHS, mpi_lazy_array<mpi::tag::gather, A>, 'E', void> {
+  template <typename LHS, typename A> struct impl<LHS, mpi_lazy_array<mpi::tag::gather, A>, 'E', void> {
 
    using laz_t = mpi_lazy_array<mpi::tag::gather, A>;
    LHS &lhs;
@@ -182,17 +190,21 @@ namespace arrays {
 
    impl(LHS &lhs_, laz_t laz_) : lhs(lhs_), laz(laz_) {}
 
-   void invoke() { 
+   void invoke() {
+
+    if (!has_contiguous_data(lhs)) TRIQS_RUNTIME_ERROR << "mpi gather of array into a non contiguous view";
+
     auto c = laz.c;
     auto recvcounts = std::vector<int>(c.size());
     auto displs = std::vector<int>(c.size() + 1, 0);
     int sendcount = laz.ref.domain().number_of_elements();
-    void *lhs_p = lhs.data_start();
-    const void *rhs_p = laz.ref.data_start();
     auto D = mpi::mpi_datatype<typename A::value_type>();
 
-    auto d= laz.domain();
-    if (laz.all || (laz.c.rank() == laz.root)) lhs.resize(d);
+    auto d = laz.domain();
+    if (laz.all || (laz.c.rank() == laz.root)) resize_or_check_if_view(lhs, d.lengths());
+
+    void *lhs_p = lhs.data_start();
+    const void *rhs_p = laz.ref.data_start();
 
     auto mpi_ty = mpi::mpi_datatype<int>();
     if (!laz.all)
@@ -207,7 +219,6 @@ namespace arrays {
     else
      MPI_Allgatherv((void *)rhs_p, sendcount, D, lhs_p, &recvcounts[0], &displs[0], D, c.get());
    }
-
   };
  }
 } //namespace arrays

@@ -542,14 +542,16 @@ namespace gfs {
    return {a, c, root, true};
   }
   //---- reduce ----
-  void operator=(mpi::lazy<mpi::tag::reduce, gf_impl> l) {
-   _mesh = l.rhs._mesh;
+  template <typename E, bool V, bool C>
+  void operator=(mpi::lazy<mpi::tag::reduce, gf_impl<Mesh, Target, Singularity, E, V, C>> l) {
+   _mesh = l.rhs.mesh();
    _data = mpi_reduce(l.rhs.data(), l.c, l.root, l.all);
    _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all);
   }
 
   //---- scatter ----
-  void operator=(mpi::lazy<mpi::tag::scatter, gf_impl> l) {
+  template <typename E, bool V, bool C>
+  void operator=(mpi::lazy<mpi::tag::scatter, gf_impl<Mesh, Target, Singularity, E, V, C>> l) {
    _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
    _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
    if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
@@ -557,7 +559,8 @@ namespace gfs {
   }
 
   //---- gather ----
-  void operator=(mpi::lazy<mpi::tag::gather, gf_impl> l) {
+  template <typename E, bool V, bool C>
+  void operator=(mpi::lazy<mpi::tag::gather, gf_impl<Mesh, Target, Singularity, E, V, C>> l) {
    _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
    _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
    if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
@@ -630,8 +633,9 @@ namespace gfs {
  
   /// Construct from the mpi lazy class of the implementation class, cf mpi section of gf_impl
   // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
-  // Evaluator ?? 
-  template <typename Tag> gf(mpi::lazy<Tag, B> x) : gf() { B::operator=(x); }
+  template <typename Tag, typename E, bool V, bool C> gf(mpi::lazy<Tag, gf_impl<Mesh, Target, Singularity, E, V, C>> x) : gf() {
+   B::operator=(x);
+  }
 
   /// ---------------  swap --------------------
   
@@ -659,8 +663,12 @@ namespace gfs {
    // indices and name are not affected by it ???
    return *this;
   }
-  
-  template<typename Tag> gf & operator=(mpi::lazy<Tag,B> l) { B::operator =(l); return *this;}
+
+  template <typename Tag, typename E, bool V, bool C>
+  gf &operator=(mpi::lazy<Tag, gf_impl<Mesh, Target, Singularity, E, V, C>> l) {
+   B::operator=(l);
+   return *this;
+  }
  };
 
  /*------------------------------------------------------------------------------------------------------
