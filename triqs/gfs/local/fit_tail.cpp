@@ -86,7 +86,7 @@ namespace triqs { namespace gfs {
     }
    }
   }
-  res.mask()()=n_moments;
+  res.mask()()=n_min+n_moments;
   return res; // return tail
  }
 
