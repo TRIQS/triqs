@@ -752,7 +752,11 @@ static PyObject * ${c.py_type}__get_prop_${p.name} (PyObject *self, void *closur
   %else:
     auto & self_c = convert_from_python<${c.c_type}>(self);
     ${p.getter._get_calling_pattern()}; // defines result, which cannot be void (property would return None ??)
-    return convert_to_python(result);
+    %if p.getter.rtype != "void" :
+       return convert_to_python(std::move(result));
+    %else:
+       Py_RETURN_NONE;
+    %endif
   %endif
 }
 
