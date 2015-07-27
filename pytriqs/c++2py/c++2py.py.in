@@ -78,7 +78,7 @@ if __name__ == '__main__' :
             m_by_names =dict( (m.name,m) for m in cls.methods)
             # Find all the couples get_X, set_X
             for m in cls.methods : 
-                if  m.is_template or m.name.startswith('operator') or m.name in ['begin','end'] : # or m.rtype.name=="void" : 
+                if  m.is_template or m.name.startswith('operator') or m.name in ['begin','end'] or "ignore_in_python" in m.annotations: # or m.rtype.name=="void" :  
                     exclude.append(m)
                 elif len(m.params) == 0 and not m.is_static : # it is a property 
                     X = m.name[4:] if m.name.startswith('get_') else m.name # remove the get_ if present
