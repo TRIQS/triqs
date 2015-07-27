@@ -91,7 +91,7 @@ def dyson(**kwargs):
 
 # Fit tails for Sigma_iw and G_iw.
 # Either give window to fix in terms of matsubara frequencies index (fit_min_n/fit_max_n) or value (fit_min_w/fit_max_w).
-def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min_w=None,fit_max_w=None,fit_n_moments=None,fit_known_moments=None):
+def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min_w=None,fit_max_w=None,fit_max_moment=None,fit_known_moments=None):
     """
     Fit the tails of Sigma_iw and optionally G_iw.
 
@@ -112,9 +112,9 @@ def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min
                 Matsubara frequency from which tail fitting should start.
     fit_max_w : float, optional
                 Matsubara frequency at which tail fitting should end.
-    fit_n_moments : int, optional
-                    Number of moments to fit in the tail of Sigma_iw.
-    fit_known_moments : dict{str:TailGf object}, optional, default = {block_name: TailGf(dim1, dim2, n_moments, order_min)}
+    fit_max_moment : int, optional
+                     Highest moment to fit in the tail of Sigma_iw.
+    fit_known_moments : dict{str:TailGf object}, optional, default = {block_name: TailGf(dim1, dim2, max_moment=0, order_min=0)}
                         Known moments of Sigma_iw, given as a TailGf object.
 
     Returns
@@ -127,15 +127,15 @@ def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min
 
     # Define default tail quantities
     if fit_known_moments is None:
-        fit_known_moments = {name:TailGf(sig.N1,sig.N2,0,0) for name, sig in Sigma_iw} # TailGf(dim1, dim2, n_moments, order_min)
+        fit_known_moments = {name:TailGf(sig.N1,sig.N2,0,0) for name, sig in Sigma_iw}
     if fit_min_w is not None: fit_min_n = int(0.5*(fit_min_w*Sigma_iw.mesh.beta/np.pi - 1.0))
     if fit_max_w is not None: fit_max_n = int(0.5*(fit_max_w*Sigma_iw.mesh.beta/np.pi - 1.0))
     if fit_min_n is None: fit_min_n = int(0.8*len(Sigma_iw.mesh))
     if fit_max_n is None: fit_max_n = int(len(Sigma_iw.mesh))
-    if fit_n_moments is None: fit_n_moments = 3
+    if fit_max_moment is None: fit_max_moment = 3
 
     # Now fit the tails of Sigma_iw and G_iw
-    for name, sig in Sigma_iw: sig.fit_tail(fit_known_moments[name], fit_n_moments, fit_min_n, fit_max_n)
+    for name, sig in Sigma_iw: sig.fit_tail(fit_known_moments[name], fit_max_moment, fit_min_n, fit_max_n)
     if (G_iw is not None) and (G0_iw is not None):
         for name, g in G_iw: g.tail = inverse( inverse(G0_iw[name].tail) - Sigma_iw[name].tail )
 

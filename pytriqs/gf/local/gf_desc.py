@@ -388,8 +388,8 @@ g.add_method(name = "set_from_legendre",
              doc = """Fills self with the legendre transform of gl""")
 
 g.add_method(name = "fit_tail",
-             signature = "void(tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = true)",
-             calling_pattern = "fit_tail(self_c, *known_moments, n_moments, n_min, n_max, replace_by_fit)",
+             signature = "void(tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true)",
+             calling_pattern = "fit_tail(self_c, *known_moments, max_moment, n_min, n_max, replace_by_fit)",
              doc = """Set the tail by fitting""")
  
 # Pure python methods

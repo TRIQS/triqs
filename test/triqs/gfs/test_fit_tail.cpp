@@ -36,11 +36,11 @@ void test_0(){
 
  size_t wn_min=50; //frequency to start the fit
  size_t wn_max=90; //final fitting frequency (included)
- int n_moments=3;  //number of moments in the final tail (including known ones)
+ int max_moment=3;  //number of moments in the final tail (including known ones)
 
  //restore tail
- fit_tail(gw, known_moments, n_moments, wn_min, wn_max);
- fit_tail(gw_s, known_moments, n_moments, wn_min, wn_max);
+ fit_tail(gw, known_moments, max_moment, wn_min, wn_max);
+ fit_tail(gw_s, known_moments, max_moment, wn_min, wn_max);
 
  TEST(gw.singularity());
  TEST(gw_s.singularity());
@@ -60,7 +60,7 @@ void test_0(){
  order_min=1; //means that the first moment in the final tail will be the first moment
  known_moments = tail(make_shape(1,1), size, order_min); //length is 0, first moment to fit is order_min
  known_moments(1)=1.;//set the first moment
- fit_tail(gw, known_moments, n_moments, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
+ fit_tail(gw, known_moments, max_moment, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
 
  TEST(gw.singularity());
 /*
@@ -85,13 +85,13 @@ void test_1(){
 
  size_t wn_min=50; //frequency to start the fit
  size_t wn_max=90; //final fitting frequency (included)
- int n_moments=4;  //number of moments in the final tail (including known ones)
+ int max_moment=4;  //number of moments in the final tail (including known ones)
  int  size=1; //means that we know one moment
  int order_min=1; //means that the first moment in the final tail will be the first moment
  auto known_moments = tail(make_shape(1,1), size, order_min); //length is 0, first moment to fit is order_min
  known_moments(1)=1.;//set the first moment
- fit_tail(gw, known_moments, n_moments, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
- fit_tail(gw_b, known_moments, n_moments, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
+ fit_tail(gw, known_moments, max_moment, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
+ fit_tail(gw_b, known_moments, max_moment, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
  TEST(gw.singularity());
  TEST(gw_b.singularity());
 }
@@ -107,12 +107,12 @@ void test_2(){
 
  size_t wn_min=50; //frequency to start the fit
  size_t wn_max=90; //final fitting frequency (included)
- int n_moments=4;  //number of moments in the final tail (including known ones)
+ int max_moment=4;  //number of moments in the final tail (including known ones)
  int  size=1; //means that we know one moment
  int order_min=1; //means that the first moment in the final tail will be the first moment
  auto known_moments = tail(make_shape(1,1), size, order_min); //length is 0, first moment to fit is order_min
  known_moments(1)=1.;//set the first moment
- fit_tail(gw, known_moments, n_moments, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
+ fit_tail(gw, known_moments, max_moment, wn_min, wn_max, true);//true replace the gf data in the fitting range by the tail values
  TEST(gw.singularity());
 }
 

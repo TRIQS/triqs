@@ -39,18 +39,18 @@ namespace triqs { namespace gfs {
  // input:
  // the input gf<imfreq> Green's function: gf
  // the known moments in the form of a tail(_view): known_moments
- // the TOTAL number of desired moments (including the known ones): n_moments
+ // the highest fitted moment and the highest moment in the tail after the fit: max_moment
  // the index of the first and last frequency to fit (the last one is included): n_min, n_max
 
  // output: returns the tail obtained by fitting
 
- tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int n_moments, int n_min, int n_max) ;
+ tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max) ;
 
- void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int n_moments, int n_min, int n_max,
+ void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int n_min, int n_max,
    bool replace_by_fit = false) ;
 
- void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, int n_min,
+ void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int max_moment, int n_min,
    int n_max, bool replace_by_fit = false) ;
 
- void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit = false) ;
+ void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = false) ;
 }} // namespace

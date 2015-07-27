@@ -10,9 +10,9 @@ API
 
 The tail of a given ``gf<imfreq>/gf<block_index, gf<imfreq>> gw`` can be fitted using the two following functions:
 
- ``void fit_tail(gf<imfreq> &gf, tail_view known_moments, int n_moments, size_t n_min, size_t n_max, bool replace_by_fit = false);``
+ ``void fit_tail(gf<imfreq> &gf, tail_view known_moments, int max_moment, size_t n_min, size_t n_max, bool replace_by_fit = false);``
 
- ``void fit_tail(gf<block_index, gf<imfreq>> &block_gf, tail_view known_moments, int n_moments, size_t n_min,  size_t n_max, bool replace_by_fit = false);``
+ ``void fit_tail(gf<block_index, gf<imfreq>> &block_gf, tail_view known_moments, int max_moment, size_t n_min,  size_t n_max, bool replace_by_fit = false);``
 
 
 where
@@ -24,7 +24,7 @@ where
 +------------+----------------+----------------------------------------------------------------------+---------+
 | tail_view  | known_moments  | known part of the tail                                               | no      |
 +------------+----------------+----------------------------------------------------------------------+---------+
-| int        | n_moments      | number of moments in the final tail (including known ones)           | no      |
+| int        | max_moment     | highest moment in the final tail                                     | no      |
 +------------+----------------+----------------------------------------------------------------------+---------+
 | size_t     | n_min          | Matsubara index on mesh to start the fit                             | no      |
 +------------+----------------+----------------------------------------------------------------------+---------+

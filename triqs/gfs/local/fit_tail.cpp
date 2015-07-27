@@ -3,7 +3,7 @@
 #include "./fit_tail.hpp"
 namespace triqs { namespace gfs {  
 
- tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int n_moments, int n_min, int n_max) {
+ tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max) {
 
   // precondition : check that n_max is not too large
   n_max = std::min(n_max, int(gf.mesh().size()-1));
@@ -15,11 +15,11 @@ namespace triqs { namespace gfs {
   // if known_moments.size()==0, the lowest order to be obtained from the fit is determined by order_min in known_moments
   // if known_moments.size()==0, the lowest order is the one following order_max in known_moments
 
-  int n_unknown_moments = n_moments - known_moments.size();
+  int n_unknown_moments = (max_moment-known_moments.order_min()+1) - known_moments.size();
   if (n_unknown_moments < 1) return known_moments;
 
   // get the number of even unknown moments: it is n_unknown_moments/2+1 if the first
-  // moment is even and n_moments is odd; n_unknown_moments/2 otherwise
+  // moment is even and max_moment is odd; n_unknown_moments/2 otherwise
   int omin = known_moments.size() == 0 ? known_moments.order_min() : known_moments.order_max() + 1; // smallest unknown moment
   int omin_even = omin % 2 == 0 ? omin : omin + 1;
   int omin_odd = omin % 2 != 0 ? omin : omin + 1;
@@ -86,14 +86,14 @@ namespace triqs { namespace gfs {
     }
    }
   }
-  res.mask()()=n_min+n_moments-1;
+  res.mask()()=max_moment;
   return res; // return tail
  }
 
- void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int n_moments, int n_min, int n_max,
+ void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int n_min, int n_max,
    bool replace_by_fit ) {
   if (get_target_shape(gf) != known_moments.shape()) TRIQS_RUNTIME_ERROR << "shape of tail does not match shape of gf";
-  gf.singularity() = fit_tail_impl(gf, known_moments, n_moments, n_min, n_max);
+  gf.singularity() = fit_tail_impl(gf, known_moments, max_moment, n_min, n_max);
   if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
    int i = 0;
    for (auto iw : gf.mesh()) { // (arrays::range(n_min,n_max+1)) {
@@ -103,15 +103,15 @@ namespace triqs { namespace gfs {
    }
   }
 
-  void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int n_moments, int n_min,
+  void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int max_moment, int n_min,
     int n_max, bool replace_by_fit ) {
-   // for(auto &gf : block_gf) fit_tail(gf, known_moments, n_moments, n_min, n_max, replace_by_fit);
+   // for(auto &gf : block_gf) fit_tail(gf, known_moments, max_moment, n_min, n_max, replace_by_fit);
    for (int i = 0; i < block_gf.mesh().size(); i++)
-    fit_tail(block_gf[i], known_moments, n_moments, n_min, n_max, replace_by_fit);
+    fit_tail(block_gf[i], known_moments, max_moment, n_min, n_max, replace_by_fit);
   }
 
-  void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int n_moments, int n_min, int n_max, bool replace_by_fit ) {
-   fit_tail(reinterpret_scalar_valued_gf_as_matrix_valued(gf), known_moments, n_moments, n_min, n_max, replace_by_fit );
+  void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit ) {
+   fit_tail(reinterpret_scalar_valued_gf_as_matrix_valued(gf), known_moments, max_moment, n_min, n_max, replace_by_fit );
   }
 
  }} // namespace

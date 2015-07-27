@@ -105,8 +105,8 @@ coefficients :math:`(\mathbf{a}_{-1})_{00} = 0`\ ,
     fixed_coeff[-1] = array([[0.]])
     fixed_coeff[0] = array([[0.]])
     fixed_coeff[1] = array([[1.]])
-    fit_n_moments = 4
+    fit_max_moment = 4
     fit_start = 10
     fit_stop = 20
-    g.fit_tail(fixed_coeff, fit_n_moments, fit_start, fit_stop)
+    g.fit_tail(fixed_coeff, fit_max_moment, fit_start, fit_stop)
     print "g.tail = ", g.tail
