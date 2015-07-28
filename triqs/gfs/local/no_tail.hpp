@@ -58,7 +58,7 @@ namespace gfs {
  gf_view<Variable, Target, tail, Evaluator, C> make_gf_view_from_g_and_tail(gf_impl<Variable, Target, no_tail, Evaluator, V, C> const &g,
                                                                  tail_view t) {
   details::_equal_or_throw(t.shape(), get_target_shape(g));
-  return {g.mesh(), g.data(), t, g.symmetry()};
+  return {g.mesh(), g.data(), t, g.symmetry(), g.indices(), g.name};
  }
 }
 }

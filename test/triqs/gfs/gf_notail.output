@@ -1,3 +1,7 @@
+(g4.indices().is_empty()) ---> 0
+
+(gwt.indices().is_empty()) ---> 0
+
 (Gt(0.01)) ---> 0.99005
 
 (Gt(.5)) ---> 0.606531

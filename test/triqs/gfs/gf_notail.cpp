@@ -39,6 +39,8 @@ int main() {
   auto g4 = gf<imfreq, matrix_valued, no_tail>{{beta, Fermion, 100},{1,1}};
   tail t2(1,1);
   auto gwt = make_gf_view_from_g_and_tail(g4,t2);
+  TEST(g4.indices().is_empty()) ;
+  TEST(gwt.indices().is_empty()) ;
  
   //test antiperiodicity
   auto Gt = gf<imtime, scalar_valued, no_tail>{ { beta, Fermion, 10000 }, {  } };
