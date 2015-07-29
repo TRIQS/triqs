@@ -62,6 +62,7 @@ namespace gfs {
    index_t _index;
    public:
    mesh_point_t() = default;
+   mesh_point_t(mesh_point_t const&) = default;
    mesh_point_t(discrete_mesh const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
    mesh_point_t(discrete_mesh const &mesh) : mesh_point_t(mesh, 0){}
    void advance() { ++_index; }

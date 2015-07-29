@@ -90,8 +90,8 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
   pyref x = borrowed(ob);
   pyref names = x.attr("_BlockGf__indices");
   pyref gfs = x.attr("_BlockGf__GFlist");
-  return make_block_gf_view_from_vector(convert_from_python<std::vector<std::string>>(names),
-                                        convert_from_python<std::vector<gf_view_type>>(gfs));
+  return make_block_gf_view(convert_from_python<std::vector<std::string>>(names),
+                            convert_from_python<std::vector<gf_view_type>>(gfs));
  }
 };
 

@@ -113,6 +113,8 @@ namespace triqs { namespace gfs {
   //template<typename X> view_proxy & operator = (X && x) { V::operator=( std::forward<X>(x) ); return *this;} 
  };
 
+ //-----------------------
+ 
  template <typename T> struct data_proxy_vector {
   using Tv = typename T::view_type;
   using Tcv = typename T::const_view_type;
@@ -125,8 +127,37 @@ namespace triqs { namespace gfs {
   /// The data access
   template <typename S> AUTO_DECL operator()(S& data, size_t i) const  RETURN(data[i]);
 
-  template<typename S, typename RHS> static void assign_to_scalar   (S & data, RHS && rhs) {for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
+  template <typename S, typename RHS> static void assign_to_scalar(S& data, RHS&& rhs) {
+   for (auto& x : data) x = rhs;
+  }
+
   template <typename ST, typename RHS> static void rebind(ST& data, RHS&& rhs) { data.clear(); for (auto & x : rhs.data()) data.push_back(x);}
+
+ };
+
+ //--------------------------
+
+ template <typename T> struct data_proxy_vector2 {
+  using Tv = typename T::view_type;
+  using Tcv = typename T::const_view_type;
+
+  /// The storage
+  using storage_t = std::vector<std::vector<T>>;
+  using storage_view_t = std::vector<std::vector<view_proxy<Tv>>>;
+  using storage_const_view_t = std::vector<std::vector<view_proxy<Tcv>>>;
+
+  /// The data access
+  template <typename S>
+  AUTO_DECL operator()(S& data, std::tuple<long, long> const& i) const RETURN(data[std::get<0>(i)][std::get<1>(i)]);
+
+  template <typename S, typename RHS> static void assign_to_scalar(S& data, RHS&& rhs) {
+   for (auto& x : data)
+    for (auto& y : x) y = rhs;
+  }
+
+  template <typename ST, typename RHS>
+  static void rebind(ST& data, RHS&& rhs) = delete; // useful only for python interface, not here
+                                                    // but easy to write if needed at some point.
  };
 
  //---------------------------- lambda ----------------------------------

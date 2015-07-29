@@ -26,6 +26,9 @@ TEST(Gf, VertexScalar) {
 
  vertex[{0, 0, 0}] = 10;
 
+ //vertex(0,0,0) = 20;
+ //EXPECT_CLOSE(vertex(0,0,0), 20);
+
  EXPECT_CLOSE((vertex[{1, 6, 3}]),
               (M_PI * (2 * 1 + 1) / 10.0 + 2.3 * M_PI * (2 * 6 + 1) / 10.0 + 3.1 * M_PI * (2 * 3 + 1) / 10.0) * 1_j);
 
@@ -34,7 +37,7 @@ TEST(Gf, VertexScalar) {
 
  EXPECT_CLOSE(vertex(0, 0, 0), 20);
 
- rw_h5(vertex, "vertexS.h5", "v");
+ rw_h5(vertex, "vertexS", "v");
 }
 
 // -----------------------------------------------------
@@ -52,7 +55,7 @@ TEST(Gf, VertexTensor) {
  vertex[{0, 0, 0}](0, 0, 0) = 10;
  EXPECT_CLOSE((vertex[{0, 0, 0}](0, 0, 0)), 10);
 
- rw_h5(vertex, "vertexT.h5", "v");
+ rw_h5(vertex, "vertexT", "v");
 }
 MAKE_MAIN;
 

@@ -89,7 +89,7 @@ namespace gfs {
   static constexpr int arity = sizeof...(Ms); // METTRE ARITY DANS LA MESH !
   template <typename G> gf_evaluator(G *) {};
 
-  template <typename G, typename... Args> auto operator()(G const &g, Args &&... args) const {
+  template <typename G, typename... Args> const auto operator()(G const &g, Args &&... args) const {
    static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
    if (g.mesh().is_within_boundary(args...))
     return make_const_view(g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, std::forward<Args>(args)...));

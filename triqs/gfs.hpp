@@ -23,7 +23,6 @@
 
 #define TRIQS_GF_INCLUDED
 
-#include <triqs/gfs/block.hpp>
 #include <triqs/gfs/imtime.hpp>
 #include <triqs/gfs/imfreq.hpp>
 #include <triqs/gfs/retime.hpp>
@@ -38,6 +37,11 @@
 #include <triqs/gfs/curry.hpp>
 #include <triqs/gfs/singularity/m_tail.hpp>
 #endif
+
+#include <triqs/gfs/block.hpp>
+#include <triqs/gfs/block2.hpp>
+#include <triqs/gfs/impl/map.hpp>
+#include <triqs/gfs/impl/block_gf_iterator.hpp>
 
 #include <triqs/gfs/transform/fourier_matsubara.hpp>
 #include <triqs/gfs/transform/fourier_real.hpp>

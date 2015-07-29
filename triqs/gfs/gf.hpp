@@ -578,14 +578,14 @@ namespace gfs {
   using data_factory = gf_data_factory<Mesh, Target, Singularity>;
   using singularity_factory = gf_singularity_factory<Mesh, Target, Singularity>;
   using target_shape_t = typename data_factory::target_shape_t;
+  using aux_t = typename data_factory::aux_t;
+  
+  public:
   using typename B::mesh_t;
   using typename B::data_t;
   using typename B::singularity_t;
   using typename B::indices_t;
   using typename B::symmetry_t;
-  using aux_t = typename data_factory::aux_t;
-
-  public:
  
   /// ---------------  Constructors --------------------
   
@@ -678,14 +678,14 @@ namespace gfs {
  template <typename Mesh, typename Target, typename Singularity, typename Evaluator>
  class gf_view<Mesh, Target, Singularity, Evaluator, true> : public gf_impl<Mesh, Target, Singularity, Evaluator, true, true> {
   using B = gf_impl<Mesh, Target, Singularity, Evaluator, true, true>;
+
+  public:
   using typename B::mesh_t;
   using typename B::data_t;
   using typename B::singularity_t;
   using typename B::indices_t;
   using typename B::symmetry_t;
   using typename B::evaluator_t;
-
-  public:
 
   /// ---------------  Constructors --------------------
 
@@ -739,14 +739,14 @@ namespace gfs {
  class gf_view<Mesh, Target, Singularity, Evaluator, false> : public gf_impl<Mesh, Target, Singularity, Evaluator, true,
                                                                                  false> {
   using B = gf_impl<Mesh, Target, Singularity, Evaluator, true, false>;
+
+  public:
   using typename B::mesh_t;
   using typename B::data_t;
   using typename B::singularity_t;
   using typename B::indices_t;
   using typename B::symmetry_t;
   using typename B::evaluator_t;
-
-  public:
  
   /// ---------------  Constructors --------------------
 

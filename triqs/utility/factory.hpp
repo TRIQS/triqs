@@ -38,26 +38,23 @@ namespace utility {
   static R invoke(R& x) { return R(x); }
 
   template <typename U> static R invoke(std::vector<U>&& v) {
-   static_assert(std::is_constructible<T, U>::value, "Cannot make std::vector<T> from std::vector<U>");
    R r;
    r.reserve(v.size());
-   for (auto& x : v) r.push_back(T(std::move(x)));
+   for (auto& x : v) r.push_back(factories<T>::invoke(std::move(x)));
    return r;
   }
 
   template <typename U> static R invoke(std::vector<U>& v) {
-   static_assert(std::is_constructible<T, U>::value, "Cannot make std::vector<T> from std::vector<U>");
    R r;
    r.reserve(v.size());
-   for (auto& x : v) r.push_back(T(x));
+   for (auto& x : v) r.push_back(factories<T>::invoke(x));
    return r;
   }
 
   template <typename U> static R invoke(std::vector<U> const& v) {
-   static_assert(std::is_constructible<T, U>::value, "Cannot make std::vector<T> from std::vector<U>");
    R r;
    r.reserve(v.size());
-   for (auto& x : v) r.push_back(T(x));
+   for (auto& x : v) r.push_back(factories<T>::invoke(x));
    return r;
   }
  };

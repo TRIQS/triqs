@@ -27,6 +27,7 @@ namespace triqs {
 namespace gfs {
 
  struct block_index {};
+ using block_index2 = cartesian_product<block_index, block_index>;
 
  template <> struct gf_mesh<block_index> : discrete_mesh<discrete_domain> {
   using B = discrete_mesh<discrete_domain>;
@@ -46,7 +47,17 @@ namespace gfs {
  /// ---------------------------  trait to identify BlockGf ---------------------------------
 
  // Is G a block_gf, block_gf_view, block_gf_const_view
- template <typename G> using is_block_gf_or_view = is_gf_or_view<G, block_index>;
+ // is_block_gf_or_view<G> is true iif G is a block_gf or block2_gf
+ // is_block_gf_or_view<G,1> is true iff G is a block_gf
+ // is_block_gf_or_view<G,2> is true iff G is a block2_gf
+ //
+ template <typename G, int n = 0> struct is_block_gf_or_view;
+
+ template <typename G> struct is_block_gf_or_view<G, 1> : is_gf_or_view<G, block_index>{};
+ template <typename G> struct is_block_gf_or_view<G, 2> : is_gf_or_view<G, block_index2>{};
+ template <typename G>
+ struct is_block_gf_or_view<G, 0> : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value ||
+                                                                     is_block_gf_or_view<G, 2>::value> {};
 
  /// ---------------------------  hdf5 ---------------------------------
 
@@ -120,6 +131,13 @@ namespace gfs {
   return {{block_names}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
+ // from mesh, vector<gf>
+ template <typename... A> block_gf<A...> make_block_gf(gf_mesh<block_index> m, std::vector<gf<A...>> V) {
+  if (m.size() != V.size())
+   TRIQS_RUNTIME_ERROR << "size mismatch between the mesh and the data vector !";
+  return {std::move(m), std::move(V), nothing{}, nothing{}, nothing{}};
+ }
+
  // from vector<string>, vector<gf>
  template <typename... A> block_gf<A...> make_block_gf(std::vector<std::string> const & block_names, std::vector<gf<A...>> V) {
   if (block_names.size() != V.size())
@@ -137,170 +155,60 @@ namespace gfs {
  // -------------------------------   Free Factories for view type  --------------------------------------------------
 
  template <typename G0, typename... G>
- gf_view<block_index, typename std14::decay_t<G0>::view_type> make_block_gf_view(G0 &&g0, G &&... g) {
+ gf_view<block_index, typename std14::decay_t<G0>::regular_type> make_block_gf_view(G0 &&g0, G &&... g) {
   auto V = std::vector<typename std14::decay_t<G0>::view_type>{std::forward<G0>(g0), std::forward<G>(g)...};
   return {{int(V.size())}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
- template <typename GF> gf_view<block_index, typename GF::regular_type> make_block_gf_view_from_vector(std::vector<GF> V) {
+ template <typename GF> gf_view<block_index, typename GF::regular_type> make_block_gf_view(std::vector<GF> V) {
   int s = V.size();
   return {{s}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
+ // from mesh and data vector
  template <typename GF>
- gf_view<block_index, typename GF::regular_type> make_block_gf_view_from_vector(std::vector<std::string> block_names,
+ gf_view<block_index, typename GF::regular_type> make_block_gf_view(gf_mesh<block_index> m, std::vector<GF> V) {
+  return {std::move(m), std::move(V), nothing{}, nothing{}, nothing{}};
+ }
+ 
+ // from block_names and data vector
+ template <typename GF>
+ gf_view<block_index, typename GF::regular_type> make_block_gf_view(std::vector<std::string> block_names,
                                                                                 std::vector<GF> V) {
   return {{std::move(block_names)}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
+ // -------------------------------   Free Factories for view type  --------------------------------------------------
+
  template <typename GF>
- gf_const_view<block_index, typename GF::regular_type> make_block_gf_const_view_from_vector(std::vector<GF> V) {
+ gf_const_view<block_index, typename GF::regular_type> make_block_gf_const_view(std::vector<GF> V) {
   int s = V.size();
   return {{s}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
+ // from mesh and data vector
  template <typename GF>
- gf_const_view<block_index, typename GF::regular_type> make_block_gf_const_view_from_vector(std::vector<std::string> block_names,
+ gf_const_view<block_index, typename GF::regular_type> make_block_gf_const_view(std::vector<std::string> block_names,
                                                                                             std::vector<GF> V) {
   return {{std::move(block_names)}, std::move(V), nothing{}, nothing{}, nothing{}};
+ }
+
+ // from block_names and data vector
+ template <typename GF>
+ gf_const_view<block_index, typename GF::regular_type> make_block_gf_const_view(gf_mesh<block_index> m, std::vector<GF> V) {
+  return {std::move(m), std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // -------------------------------   Free functions   --------------------------------------------------
 
  /// The number of blocks
- template <typename G> TYPE_ENABLE_IF(int, is_block_gf_or_view<G>) n_blocks(G const &g) { return g.mesh().size(); }
+ template <typename G> TYPE_ENABLE_IF(int, is_block_gf_or_view<G,1>) n_blocks(G const &g) { return g.mesh().size(); }
 
  /// The vector of names of the blocks
- template <typename G> TYPE_ENABLE_IF(std::vector<std::string> const &, is_block_gf_or_view<G>) get_block_names(G const &g) {
+ template <typename G> TYPE_ENABLE_IF(std::vector<std::string> const &, is_block_gf_or_view<G,1>) get_block_names(G const &g) {
   return g.mesh().domain().names();
  }
 
- // -------------------------------   Map --------------------------------------------------
- // map takes a function f, a block_gf or its view g
- // then it computes f(g[i]) for all i
- // If the result of f is :
- //  * a gf             : then map returns a block_gf
- //  * a gf_view        : then map returns a block_gf_view
- //  * a gf_const_view  : then map returns a block_gf_const_view
- //  * otherwise        : then map returns a std::vector<>
- namespace impl {
-
-  template <typename F, typename T> std::vector<std14::result_of_t<F(T)>> _map(F &&f, std::vector<T> const &V) {
-   std::vector<std14::result_of_t<F(T)>> res;
-   res.reserve(V.size());
-   for (auto &x : V) res.emplace_back(f(x));
-   return res;
-  }
-
-  // implementation is dispatched according to R
-  template <typename F, typename G, typename R = std14::decay_t<std14::result_of_t<F(typename std14::decay_t<G>::target_t)>>>
-  struct map;
-
-  // general case
-  template <typename F, typename G, typename R> struct map {
-   static auto invoke(F &&f, G &&g) RETURN(_map(std::forward<F>(f), std::forward<G>(g).data()));
-  };
-
-  // now , when R is a gf, gf_view, a gf_const_view
-  template <typename F, typename G, typename... T> struct map<F, G, gf<T...>> {
-   static auto invoke(F &&f, G &&g)
-       RETURN(make_block_gf(get_block_names(g), _map(std::forward<F>(f), std::forward<G>(g).data())));
-  };
-
-  template <typename F, typename G, typename M, typename T, typename S, typename E> struct map<F, G, gf_view<M, T, S, E>> {
-   static auto invoke(F &&f, G &&g)
-       RETURN(make_block_gf_view_from_vector(get_block_names(g), _map(std::forward<F>(f), std::forward<G>(g).data())));
-  };
-
-  template <typename F, typename G, typename M, typename T, typename S, typename E> struct map<F, G, gf_const_view<M, T, S, E>> {
-   static auto invoke(F &&f, G &&g)
-       RETURN(make_block_gf_const_view_from_vector(get_block_names(g), _map(std::forward<F>(f), std::forward<G>(g).data())));
-  };
- }
-
-#ifndef TRIQS_CPP11
- template <typename F, typename G> auto map_block_gf(F &&f, G &&g) {
-  static_assert(is_block_gf_or_view<G>::value, "map_block_gf requires a block gf");
-  return impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g));
- }
-#else
- template <typename F, typename G>
- auto map_block_gf(F &&f, G &&g) RETURN(impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g)));
-#endif
-
- // the map function itself...
- template <typename F, typename G>
- auto map(F &&f, G &&g)
-     -> std14::enable_if_t<is_block_gf_or_view<G>::value,
-                           decltype(impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g)))> {
-  return impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g));
- }
-
-// -------------------------------   some functions mapped ... --------------------------------------------------
-
-// A macro to automatically map a function to the block gf
-#define TRIQS_PROMOTE_AS_BLOCK_GF_FUNCTION(f)                                                                                    \
- namespace impl {                                                                                                                \
-  struct _mapped_##f {                                                                                                           \
-   template <typename T> auto operator()(T &&x)RETURN(f(std::forward<T>(x)));                                                    \
-  };                                                                                                                             \
- }                                                                                                                               \
- template <typename G> auto f(gf<block_index, G> &g) RETURN(map_block_gf(impl::_mapped_##f{}, g));                               \
- template <typename G> auto f(gf_view<block_index, G> g) RETURN(map_block_gf(impl::_mapped_##f{}, g));                           \
- template <typename G> auto f(gf<block_index, G> const &g) RETURN(map_block_gf(impl::_mapped_##f{}, g));                         \
- template <typename G> auto f(gf_const_view<block_index, G> g) RETURN(map_block_gf(impl::_mapped_##f{}, g));
-
- TRIQS_PROMOTE_AS_BLOCK_GF_FUNCTION(reinterpret_scalar_valued_gf_as_matrix_valued);
- TRIQS_PROMOTE_AS_BLOCK_GF_FUNCTION(inverse);
-
- // -------------------------------   an iterator over the blocks --------------------------------------------------
-
- template <typename G>
- class block_gf_iterator : std::iterator<std::forward_iterator_tag, std14::remove_reference_t<decltype(std::declval<G>()[0])>> {
-  G *bgf = NULL;
-  long n = 0;
-
-  public:
-  block_gf_iterator() = default;
-  block_gf_iterator(G &bgf, bool at_end = false) : bgf(&bgf), n(at_end ? bgf.mesh().size() : 0) {}
-
-  using value_type = std14::remove_reference_t<decltype(std::declval<G>()[0])>;
-
-  value_type &operator*() { return (*bgf)[n]; }
-  value_type &operator->() { return (*bgf)[n]; }
-
-  block_gf_iterator &operator++() {
-   ++n;
-   return *this;
-  }
-
-  block_gf_iterator operator++(int) {
-   auto it = *this;
-   ++n;
-   return it;
-  }
-
-  bool operator==(block_gf_iterator const &other) const { return ((bgf == other.bgf) && (n == other.n)); }
-  bool operator!=(block_gf_iterator const &other) const { return (!operator==(other)); }
- };
-
- //------------
-
- template <typename G> std14::enable_if_t<is_block_gf_or_view<G>::value, block_gf_iterator<G>> begin(G &bgf) {
-  return {bgf, false};
- }
-
- template <typename G> std14::enable_if_t<is_block_gf_or_view<G>::value, block_gf_iterator<G const>> cbegin(G const &bgf) {
-  return {bgf, false};
- }
-
- template <typename G> std14::enable_if_t<is_block_gf_or_view<G>::value, block_gf_iterator<G>> end(G &bgf) {
-  return {bgf, true};
- }
-
- template <typename G> std14::enable_if_t<is_block_gf_or_view<G>::value, block_gf_iterator<G const>> cend(G const &bgf) {
-  return {bgf, true};
- }
 }
 }
 
