@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./communicator.hpp"
+#include <triqs/utility/is_complex.hpp>
 
 namespace triqs {
 namespace mpi {
