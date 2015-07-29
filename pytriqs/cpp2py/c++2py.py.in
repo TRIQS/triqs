@@ -107,13 +107,13 @@ if __name__ == '__main__' :
     if classes_of_parameters : 
         print "Generating the converters for parameters classes : " + ', '.join([c.name for c in classes_of_parameters])
         # Generate the converter code for all the classes.
-        tpl = Template(filename=triqs_install_location + '/share/triqs/c++2py/mako/converters.hxx')
+        tpl = Template(filename=triqs_install_location + '/share/triqs/cpp2py/mako/converters.hxx')
         rendered = tpl.render(classes = classes_of_parameters, args = args, shell_command= shell_command )
         with open("converters.hxx", "w") as f:
             f.write(clean_end_white_char(rendered))
 
         # Generate the rst file of the doc
-        tpl = Template(filename=triqs_install_location + '/share/triqs/c++2py/mako/parameters.rst')
+        tpl = Template(filename=triqs_install_location + '/share/triqs/cpp2py/mako/parameters.rst')
         rendered = tpl.render(classes = classes_of_parameters, args = args, shell_command= shell_command )
         with open("parameters.rst", "w") as f:
             f.write(clean_end_white_char(rendered))
@@ -122,7 +122,7 @@ if __name__ == '__main__' :
 
     # Making the desc file
     if not args.only_converters:
-        tpl = Template(filename=triqs_install_location + '/share/triqs/c++2py/mako/xxx_desc.py')
+        tpl = Template(filename=triqs_install_location + '/share/triqs/cpp2py/mako/xxx_desc.py')
         rendered = tpl.render(classes = classes, functions = functions, modulename=modulename,  moduledoc=args.moduledoc, args = args,
                      shell_command= shell_command, classes_of_parameters = classes_of_parameters  )
 

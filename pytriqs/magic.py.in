@@ -19,7 +19,7 @@ __version__ = '0.1.0'
 triqs_path = "@CMAKE_INSTALL_PREFIX@"
 cxx_compiler = "@CMAKE_CXX_COMPILER@"
 converter_include_path = triqs_path + "/include/pytriqs/converters/"
-generator_path = triqs_path + "/share/triqs/c++2py"
+generator_path = triqs_path + "/share/triqs/cpp2py"
 
 cmakelist = """
 list(APPEND CMAKE_MODULE_PATH %s/share/triqs/cmake)
