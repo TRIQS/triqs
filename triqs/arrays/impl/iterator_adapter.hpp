@@ -19,11 +19,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#ifndef TRIQS_ARRAYS_ARRAY_ITERATOR_H
-#define TRIQS_ARRAYS_ARRAY_ITERATOR_H
-#include "./make_const.hpp"
-#include <boost/iterator/iterator_facade.hpp>
+#pragma once
+#include <iterator>
 
 namespace triqs { namespace arrays { 
  /** 
@@ -35,35 +32,44 @@ namespace triqs { namespace arrays {
   *    - StorageType : the storage.
   */
 
- template <bool Const, typename IndexMapIterator, typename StorageType > 
-  class iterator_adapter : 
-   public boost::iterator_facade< 
-   iterator_adapter<Const,IndexMapIterator,StorageType>,
-   typename details::make_const_type<Const,typename StorageType::value_type>::type,
-   boost::forward_traversal_tag > 
- {
+ template <bool Const, typename IndexMapIterator, typename StorageType>
+ class iterator_adapter
+     : public std::iterator<std::forward_iterator_tag, std14::conditional_t<Const, const typename StorageType::value_type,
+                                                                            typename StorageType::value_type>> {
+
+  StorageType storage_;
+  IndexMapIterator it;
+
   public:
-   typedef typename details::make_const_type<Const,typename StorageType::value_type>::type value_type;
-   typedef IndexMapIterator indexmap_iterator_type;
+  using value_type = std14::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>;
+  using indexmap_iterator_type = IndexMapIterator;
 
-   iterator_adapter(): storage_(), it() {}
-   iterator_adapter(const typename IndexMapIterator::indexmap_type & Ind, const StorageType & ST, bool atEnd=false): 
-    	storage_(ST), it(Ind,atEnd) {} 
+  iterator_adapter() = default;
+  iterator_adapter(iterator_adapter const &) = default;
+  iterator_adapter(const typename IndexMapIterator::indexmap_type &Ind, const StorageType &ST, bool atEnd = false)
+     : storage_(ST), it(Ind, atEnd) {}
 
-   operator bool() const { return bool(it);}
+  value_type &operator*() { return storage_[*it]; }
+  value_type &operator->() { return storage_[*it]; }
 
-   typename IndexMapIterator::indexmap_type::domain_type::index_value_type const & indices() const {return it.indices();} 
-   IndexMapIterator const & indexmap_iterator() const { return it;}
+  iterator_adapter &operator++() {
+   ++it;
+   return *this;
+  }
 
-  private:
-   friend class boost::iterator_core_access;
-   void increment() { ++it; }
-   value_type & dereference() const { return storage_[*it];}
-   bool equal(iterator_adapter const & other) const { return (other.it == it);}
+  iterator_adapter operator++(int) {
+   auto c = *this;
+   ++it;
+   return c;
+  }
 
-   StorageType storage_;
-   IndexMapIterator it;   
+  bool operator==(iterator_adapter const &other) const { return (other.it == it); }
+  bool operator!=(iterator_adapter const &other) const { return (!operator==(other)); }
+  
+  // not in forward iterator concept
+  operator bool() const { return bool(it); }
+
+  AUTO_DECL indices() const RETURN(it.indices());
+  IndexMapIterator const &indexmap_iterator() const { return it; }
  };
-
 }}//namespace triqs::arrays
-#endif
