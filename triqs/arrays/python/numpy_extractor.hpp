@@ -37,6 +37,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
  }
 
  template <class T> struct numpy_to_C_type;
+ template <class T> struct numpy_to_C_type<T const> : numpy_to_C_type<T> {};
 #define CONVERT(C, P)                                                                                                            \
  template <> struct numpy_to_C_type<C> {                                                                                         \
   enum {                                                                                                                         \

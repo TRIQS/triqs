@@ -22,12 +22,9 @@
 #define TRIQS_ARRAYS_IMPL_TRAITS_H
 #include <triqs/utility/concept_tools.hpp>
 #include <triqs/utility/traits.hpp>
-#include <boost/mpl/and.hpp>
-#include <boost/mpl/not.hpp>
 
 namespace triqs {
 namespace arrays {
- namespace mpl = boost::mpl;
 
  // The ImmutableCuboidArray concept
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableCuboidArray);

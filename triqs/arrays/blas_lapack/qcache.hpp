@@ -18,8 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_QCACHE_H
-#define TRIQS_ARRAYS_QCACHE_H
+#pragma once
 #include "../matrix.hpp"
 #include "../vector.hpp"
 #include <memory>
@@ -38,8 +37,8 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   */
  template<typename A, typename Enable=void> class const_qcache;
 
- template <class T> struct guarantee_no_copy : boost::mpl::or_< is_amv_value_class<T>, is_vector_view<T> > {};
- template <class T> struct may_need_copy : boost::mpl::or_< is_matrix_view<T> > {};
+ template <class T> struct guarantee_no_copy : _or< is_amv_value_class<T>, is_vector_view<T> > {};
+ template <class T> struct may_need_copy : _or< is_matrix_view<T> > {};
 
  // For any data structure for which we can guarantee no copy is need to go to blas/lapack : this is just a ref
  template<typename A> class const_qcache< A, ENABLE_IF(guarantee_no_copy<A>) > { 
@@ -47,29 +46,29 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   public:
   const_qcache(A const & x_):x(x_){}
   const_qcache(const_qcache const &) = delete;
-  typedef A const & exposed_type; 
+  using exposed_type = A const &;
   exposed_type operator()() const {return x;}
  };
 
  // For any expression with matrix concept : we need to copy it into a matrix before using blas/lapack
- template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableMatrix<A>, mpl::not_<is_matrix_or_view<A> > >) > {
-  typedef matrix<typename A::value_type> X;
+ template<typename A> class const_qcache< A, ENABLE_IFC(ImmutableMatrix<A>::value && (!is_matrix_or_view<A>::value)) > {
+  using X=matrix<typename A::value_type> ;
   X x;
   public:
   const_qcache(A const & x_):x(x_){}
   const_qcache(const_qcache const &) = delete;
-  typedef X const & exposed_type; 
+  using exposed_type = X const &;
   exposed_type operator()() const {return x;}
  };
 
  // For any expression with vector concept : we need to copy it into a matrix before using blas/lapack
- template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableVector<A>, mpl::not_<is_vector_or_view<A> > >) > {
-  typedef vector<typename A::value_type> X;
+ template<typename A> class const_qcache< A, ENABLE_IFC(ImmutableVector<A>::value && (!is_vector_or_view<A>::value)) > {
+  using X=vector<typename A::value_type> ;
   X x;
   public:
   const_qcache(A const & x_):x(x_){}
   const_qcache(const_qcache const &) = delete;
-  typedef X const & exposed_type; 
+  using exposed_type = X const &;
   exposed_type operator()() const {return x;}
  };
 
@@ -113,7 +112,7 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   public :
   explicit const_qcache(A const & x): need_copy (blas_lapack_tools::copy_is_needed (x)), keeper(x) {}
   const_qcache(const_qcache const &) = delete;
-  typedef const A exposed_type; 
+  using exposed_type = const A;
   exposed_type operator()() const { return view();}
  };
 
@@ -135,20 +134,19 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   public:
   reflexive_qcache(A & x_):x(x_){}
   reflexive_qcache(reflexive_qcache const &) = delete;
-  typedef A & exposed_type; 
+  using exposed_type = A &;
   exposed_type operator()() const {return x;}
  };
 
  template<typename A> class reflexive_qcache <A, ENABLE_IF(may_need_copy<A>)> : const_qcache<A> {
-  typedef const_qcache<A> B;
+  using B=const_qcache<A> ;
   public :
   explicit reflexive_qcache(A const & x) : B(x) {} 
   reflexive_qcache(reflexive_qcache const &) = delete;
   ~reflexive_qcache() { this->back_update();}
-  typedef A exposed_type; 
+  using exposed_type = A;
   exposed_type operator()() { return B::view(); } 
  };
 
 }}}//namespace triqs::arrays::blas_lapack
-#endif
 

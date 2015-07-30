@@ -34,7 +34,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    //_import_array();
    typedef typename ArrayViewType::value_type value_type;
    static const int rank = ArrayViewType::rank;
-   const int elementsType (numpy_to_C_type<typename boost::remove_const<value_type>::type>::arraytype);
+   const int elementsType (numpy_to_C_type<value_type>::arraytype);
    npy_intp dims[rank],  strides[rank];
    for(size_t i =0; i<rank; ++i) { dims[i] = A.indexmap().lengths()[i]; strides[i] = A.indexmap().strides()[i]*sizeof(value_type); }
    const value_type * data = A.data_start();
