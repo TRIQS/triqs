@@ -277,7 +277,7 @@ GET_FILENAME_COMPONENT(TRIQS_HDF5_COMMAND_PATH ${TRIQS_HDF5_DIFF_EXECUTABLE} PAT
 
 # Get hdf5 version and add a definition HDF5_LT_189 if version < 1.8.9
 execute_process(COMMAND ${HDF5_DIFF_EXECUTABLE} --version OUTPUT_VARIABLE diff_output)
-string(REGEX MATCHALL "[0-9].[0-9].[0-9]" HDF5_VERSION "${diff_output}")
+string(REGEX MATCHALL "[0-9]+.[0-9]+.[0-9]+" HDF5_VERSION "${diff_output}")
 message(STATUS "hdf5 version: ${HDF5_VERSION}")
 
 # #################################
