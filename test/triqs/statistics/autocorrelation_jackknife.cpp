@@ -67,8 +67,8 @@ TEST(Statistics, Autocorrelation1) {
  EXPECT_CLOSE(autocorrelation_time_from_binning(A), 92.781874985705826);
 #else
  EXPECT_EQ(autocorrelation_time(A), 89);
- EXPECT_CLOSE(autocorrelation_time_from_binning(A, intrinsic_variance), 80.2806);
- EXPECT_CLOSE(autocorrelation_time_from_binning(A), 95.7671);
+ EXPECT_CLOSE(autocorrelation_time_from_binning(A, intrinsic_variance), 80.280569756204429);
+ EXPECT_CLOSE(autocorrelation_time_from_binning(A), 95.267077422645201);
 #endif
 }
 
@@ -90,7 +90,7 @@ TEST(Statistics, Autocorrelation2) {
  EXPECT_CLOSE(autocorrelation_time(V * V), 45);
 #else
  EXPECT_EQ(autocorrelation_time(V), 40);
- EXPECT_CLOSE(autocorrelation_time_from_binning(V), 38.0031);
+ EXPECT_CLOSE(autocorrelation_time_from_binning(V), 37.50308656560204 );
  EXPECT_CLOSE(autocorrelation_time(V * V), 37);
 #endif
 }
