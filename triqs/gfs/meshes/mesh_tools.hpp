@@ -43,7 +43,12 @@ namespace gfs {
     mesh_pt_generator( MeshType const * m, bool atEnd = false): mesh(m), u(atEnd ? m->size(): 0), pt(*m) {}
     void increment() { ++u; pt.advance(); }
     bool at_end() const { return (u>=mesh->size());}
-    typename MeshType::domain_t::point_t to_point() const { return pt;}    
+    typename MeshType::domain_t::point_t to_point() const { return pt;}
+    mesh_pt_generator& operator+=(int n) {
+     for (int i = 0; i < n; ++i) increment();
+     return *this;
+    }
+    friend mesh_pt_generator operator+(mesh_pt_generator lhs, int n) { return lhs += n; }
    };
 
 }}
