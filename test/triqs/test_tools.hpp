@@ -25,8 +25,11 @@
 #include <triqs/mpi/base.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/h5.hpp>
-#include <triqs/h5/serialization.hpp>
 #include <triqs/utility/typeid_name.hpp>
+
+#if H5_VERSION_GE(1, 8, 9)
+#include <triqs/h5/serialization.hpp>
+#endif
 
 // print a vector ?
 //template <typename T> 
