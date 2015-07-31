@@ -20,14 +20,14 @@
  ******************************************************************************/
 #include "../test_tools.hpp"
 #include <triqs/arrays.hpp>
-#include <triqs/h5/serialization.hpp>
 using namespace triqs::arrays;
-using triqs::h5::serialize;
-using triqs::h5::deserialize;
-
 #if not H5_VERSION_GE(1, 8, 9)
 int main() {}
 #else
+
+#include <triqs/h5/serialization.hpp>
+using triqs::h5::serialize;
+using triqs::h5::deserialize;
 
 TEST(H5Serialize, All) {
 
