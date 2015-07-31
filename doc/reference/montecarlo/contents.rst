@@ -17,3 +17,5 @@ the implementation details of your specific algorithm.
    reference
    random
    ising
+   mc_tools/mc_generic
+    

@@ -1,0 +1,182 @@
+#!@PYTHON_INTERPRETER@
+
+from clang_parser import parse
+import sys, os, re
+from mako.template import Template
+from collections import OrderedDict
+
+# the instruction that created this file
+shell_command = ' '.join( [ sys.argv[0].rsplit('/')[-1]] + [x if ' ' not in x else '"%s"'%x for x in sys.argv[1:]])
+
+#
+print "Welcome to the C++ doc generator, based on libclang !"
+
+# --- Parsing the arguments of the script and options
+import argparse
+
+parser = argparse.ArgumentParser(description="""
+Generate the rst doc file from C++ header code
+""")
+
+parser.add_argument('filename', help = "Name of the file")
+parser.add_argument('--outputname', '-o',  help="Name of the xxx_desc.py file [default is same as the filename]", default = '')
+parser.add_argument('--libclang_location', help='Location of the libclang', default = '@TRIQS_LIBCLANG_LOCATION@')
+parser.add_argument('--compiler_options', nargs ='*', help='Options to pass to clang')
+parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
+
+args = parser.parse_args()
+args.includes = (args.includes or []) +  '@TRIQS_INCLUDE_ALL@'.split(';')
+
+triqs_install_location = '@CMAKE_INSTALL_PREFIX@'
+args.includes.insert(0, triqs_install_location + '/include')
+
+#------------
+
+output_name = args.outputname or os.path.split(args.filename)[1].split('.',1)[0]
+
+def clean_end_white_char(s):
+    """ remove the space at the end of the lines (for clean git diff...)"""
+    reg = re.compile(r"[ \t\r\f\v]+$",re.MULTILINE)
+    return re.sub(reg,'',s.strip())
+
+doc = """
+Meaning of the @option in the doc : 
+
+ * @param   X   Documentation of parameter X for a function
+ * @return      Doc of the return of a function 
+ * @tparam  T   Documentation of a template parameter of a function or a class   
+ 
+ * @synopsis  An explicit synopsis for the automatically generated one, for a function.
+ * @value     Overrules the type of a using/typedef.
+ * @include   For a class, a function, the top level file to include [default : the definition file]
+
+ * @manual_methods  Comma separated list of methods which are referenced in the table, 
+                    but the page of doc is not generated. It will be written manually.
+ * @manual_friends  Comma separated list of non member functions which are referenced in the table, 
+                    but the page of doc is not generated. It will be written manually.
+"""
+
+def grab_from_doc (doc, var1, var2) : 
+    """ Extract all the @xxx from the doc"""
+    d = {}
+    for v1 in var1 :
+        m = re.search("@%s (.*)"%v1, doc)
+        d[v1] = m.group(1) if m else None 
+    for v2 in var2 : 
+        d[v2] =  dict( (m[0],m[1]) for m in re.findall("@%s (\w*) (.*)"%v2, doc))
+    for x in var1 + var2:
+      doc = re.sub(r"\n\s*(@%s .*)"%x,'',doc)
+    for m in re.findall("(@.*)", doc):
+        print "Ignoring " + m
+    return d,doc
+
+def process_doc_function(f) : 
+    """Process the doc of the function f"""
+    f.brief_doc = f.doc.split('\n',1)[0]
+    f.doc_elements, f.processed_doc = grab_from_doc(f.doc, ['include', 'return', 'synopsis'],['param', 'tparam'])
+    
+def process_doc_class(c) : 
+    """Process the doc of the class c"""
+    c.brief_doc = c.doc.split('\n',1)[0]
+    c.doc_elements, c.processed_doc = grab_from_doc(c.doc, ['include', 'manual_methods', 'manual_friends'],['tparam'])
+
+def regroup_func_by_names(constructors, *f_list_list) : 
+    """ Given a list of function, regroup them by names"""
+    d = OrderedDict()
+    if constructors : d['constructor'] = constructors
+    for f_list in f_list_list:
+        for f in f_list :
+            if f.doc : d.setdefault(f.name,[]).append(f)
+    return d
+
+def render(template, output_name, **d):
+    rendered = template.render(**d)
+    if '/' in output_name : 
+        print "Skipping ", output_name
+        return
+    with open("{output_name}.rst".format(output_name=output_name), "w") as f:
+        f.write(clean_end_white_char(rendered))
+
+def mkchdir(*subdirs) : 
+    for d in subdirs : 
+        try : 
+            os.mkdir(d)
+        except OSError : 
+            pass
+        os.chdir(d)
+
+if __name__ == '__main__' : 
+
+    compiler_options = args.compiler_options or [] 
+
+    if "@USE_CPP14@" == "ON":
+        compiler_options.append("-std=c++1y")
+    else:
+        compiler_options.append("-DTRIQS_CPP11")
+
+    compiler_options += ['-I%s'%x for x in args.includes]
+    add_opts = '@TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS@'.strip()
+    if add_opts:
+        compiler_options += add_opts.split()
+
+    functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, 
+               where_is_libclang = args.libclang_location, 
+               analyze_filter = lambda c, ns : c.raw_comment and "triqs" in ns)
+    #return namespaces and namespaces[0] in [ 'triqs', 'TEST'] and 
+    #c.spelling in ["array"] or c.location.file.name == sys.argv[1]
+    #return "triqs" in namespaces or c.location.file.name == sys.argv[1]
+
+    print "Generating the documentation ..."
+
+    # Making the rst files
+    tpl_class = Template(filename=triqs_install_location + '/share/triqs/cpp2py/mako/xxx_doc_class.rst')
+    tpl_fun = Template(filename=triqs_install_location + '/share/triqs/cpp2py/mako/xxx_doc_function.rst')
+    for c in classes :
+        if not c.doc : continue
+
+        print " ... class " + "::".join(c.ns + [c.name])
+
+        # process the doc of the class
+        process_doc_class(c)
+
+        # all methods
+        c.all_m = regroup_func_by_names(c.constructors, c.methods, *[p.methods for p in c.public_base])
+        
+        # all non member functions
+        c.all_friend_functions = regroup_func_by_names(None, c.friend_functions)
+
+        # process the doc
+        for f_list in c.all_m.values() + c.all_friend_functions.values() : 
+            for f in f_list : 
+                process_doc_function(f)
+
+        #
+        cur_dir = os.getcwd()
+        mkchdir(*c.ns)
+
+        # the file for the class
+        render(tpl_class, c.name, c = c, class_list = classes, shell_command= shell_command) 
+        
+        mkchdir(c.name)
+        # a file for each method
+        for m_name, m_overloads in c.all_m.items():
+            print " ...... method ", m_name
+            render(tpl_fun, m_name, c = c, f_name = m_name, f_overloads = m_overloads, 
+                  class_list = classes, shell_command= shell_command) 
+        
+        for m_name, m_overloads in c.all_friend_functions.items():
+            print " ...... non member function", m_name
+            render(tpl_fun, m_name, c = c, f_name = m_name, f_overloads = m_overloads, 
+                  class_list = classes, shell_command= shell_command) 
+        os.chdir(cur_dir)
+
+    for f in functions :
+        print " ... function " + f.name
+        cur_dir = os.getcwd()
+        mkchdir(*f.ns)
+        
+        # RENDER 
+        os.chdir(cur_dir)
+ 
+    print "... done"
+     

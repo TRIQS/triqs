@@ -68,6 +68,12 @@ The Measure concept
                                                                                 the calculation (compute average, error). 
   ==========================================================================  ============================================================
 
+New doc
+*********************
+
+The doc is :ref:`here <mc_generic>`.
+
+
 Doxygen documentation
 *********************
 

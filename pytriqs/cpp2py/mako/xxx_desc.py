@@ -73,7 +73,7 @@
         return tname
 
     def make_signature(m) :
-        assert not m.template_list, "template functions can not be wrapped to Python"
+        assert not m.tparams, "template functions can not be wrapped to Python"
         s = "({args})"
         if not m.is_constructor :
           s = cls(m.rtype) + " {name} " + s

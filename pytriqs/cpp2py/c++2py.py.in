@@ -1,6 +1,6 @@
 #!@PYTHON_INTERPRETER@
 
-from clang_parser import parse, decay
+from clang_parser import parse
 import sys, os, re
 from mako.template import Template
 
@@ -52,6 +52,11 @@ def clean_end_white_char(s):
     reg = re.compile(r"[ \t\r\f\v]+$",re.MULTILINE)
     return re.sub(reg,'',s.strip())
 
+def decay(s) :
+    for tok in ['const', '&&', '&'] :
+        s = re.sub(tok,'',s)
+    return s.strip()
+
 if __name__ == '__main__' : 
 
     compiler_options = args.compiler_options or [] 
@@ -66,7 +71,9 @@ if __name__ == '__main__' :
     if add_opts:
         compiler_options += add_opts.split()
 
-    functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, where_is_libclang = args.libclang_location)
+    functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, 
+               where_is_libclang = args.libclang_location, 
+               analyze_filter = lambda c,ns : c.location.file.name == sys.argv[1] )
   
     print "Parsing C++ code. Generating the wrapper and converters ..."
 

@@ -9,9 +9,11 @@ import itertools
 from mako.template import Template
 import textwrap
 
+from clang.cindex import CursorKind
+
 def get_annotations(node):
     return [c.displayname for c in node.get_children()
-            if c.kind == clang.cindex.CursorKind.ANNOTATE_ATTR]
+            if c.kind == CursorKind.ANNOTATE_ATTR]
 
 def process_doc (doc) :
     if not doc : return ""
@@ -19,11 +21,6 @@ def process_doc (doc) :
     return doc.strip()
 
 file_locations = set(())
-
-def decay(s) :
-    for tok in ['const', '&&', '&'] :
-        s = re.sub(tok,'',s)
-    return s.strip()
 
 class member_(object):
     def __init__(self, cursor,ns=()):
@@ -42,7 +39,7 @@ class member_(object):
         if '=' in tokens:
             self.initializer = ''.join(tokens[tokens.index('=') + 1:tokens.index(';')])
 
-    def namespace(self) : 
+    def namespace(self) :
         return "::".join(self.ns)
 
 class type_(object):
@@ -50,13 +47,28 @@ class type_(object):
         self.name, self.canonical_name = cursor.spelling, cursor.get_canonical().spelling
 
     def __repr__(self) :
-        return "type : %s"%(self.name)
+        return self.name
+        #return "type : %s %s\n"%(self.name, self.canonical_name)
+
+class type2_(type_):
+    def __init__(self, name):
+        self.name, self.canonical_name = name, name
+
+class type_alias_(object):
+    def __init__(self, cursor):
+        self.doc = process_doc(cursor.raw_comment)
+        self.name = cursor.spelling
+        self.value = list(cursor.get_tokens())[3].spelling
+
+    def __repr__(self) :
+        return "using %s = %s"%(self.name,self.value)
         #return "type : %s %s\n"%(self.name, self.canonical_name)
 
 class Function(object):
-    def __init__(self, cursor, is_constructor = False, ns=() ): #, template_list  =()):
+    def __init__(self, cursor, is_constructor = False, ns=(), parent_class = None):
         loc = cursor.location.file.name
         if loc : file_locations.add(loc)
+        self.file_location = loc
         self.doc = process_doc(cursor.raw_comment)
         self.brief_doc = self.doc.split('\n')[0].strip() # improve ...
         self.ns = ns
@@ -64,98 +76,229 @@ class Function(object):
         self.annotations = get_annotations(cursor)
         self.access = cursor.access_specifier
         self.params = [] # a list of tuple (type, name, default_value or None).
-        self.template_list = []  #template_list
+        self.tparams = []  #template_list
         self.is_constructor = is_constructor
         self.is_static = cursor.is_static_method()
         self.parameter_arg = None # If exists, it is the parameter class
+
+        tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
+        #print tokens 
+
+        # detect from the tokens if a constructor is explicit
+        self.is_explicit =  'explicit' in tokens
+     
+        def rindex(l, x) : 
+            """Get the right index of x in the list l"""
+            return len(l) - l[::-1].index(x) -1
+
+        # detect from the tokens the trailing const, const &, &, &&, etc ...
+        # it is just after a ) if it exists (a type can not end with a ) )
+        def get_qualif(syn):
+            for pat in ["const &*","&+", "noexcept"] : 
+                m = re.search(r"\) (%s)"%pat, syn)
+                if m: return m.group(1).strip()
+        self.const = get_qualif(' '.join(tokens)) or ''
+
+        if parent_class and parent_class.name == self.name.split('<')[0] :
+            self.is_constructor = True
+
+        if self.is_constructor : self.name = parent_class.name
+
         for c in cursor.get_children():
-            if c.kind == clang.cindex.CursorKind.TEMPLATE_TYPE_PARAMETER : 
-                 self.template_list.append(c.spelling)
-            elif (c.kind == clang.cindex.CursorKind.PARM_DECL) :
+            if c.kind == CursorKind.TEMPLATE_TYPE_PARAMETER :
+                tokens = [t.spelling if t else '' for t in c.get_tokens()]
+                d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
+                self.tparams.append(("typename", c.spelling, d))
+
+            elif c.kind == CursorKind.TEMPLATE_NON_TYPE_PARAMETER:
+                self.tparams.append((list(c.get_tokens())[0].spelling, c.spelling))
+
+            elif (c.kind == CursorKind.PARM_DECL) :
                 default_value = None
                 for ch in c.get_children() :
                     # TODO : string literal do not work.. needs to use location ? useful ?
-                    if ch.kind in [clang.cindex.CursorKind.INTEGER_LITERAL, clang.cindex.CursorKind.FLOATING_LITERAL, 
-                                   clang.cindex.CursorKind.CHARACTER_LITERAL, clang.cindex.CursorKind.STRING_LITERAL, 
-                                   clang.cindex.CursorKind.UNARY_OPERATOR, clang.cindex.CursorKind.UNEXPOSED_EXPR, 
-                                   clang.cindex.CursorKind.CXX_BOOL_LITERAL_EXPR ] :
+                    if ch.kind in [CursorKind.INTEGER_LITERAL, CursorKind.FLOATING_LITERAL,
+                                   CursorKind.CHARACTER_LITERAL, CursorKind.STRING_LITERAL,
+                                   CursorKind.UNARY_OPERATOR, CursorKind.UNEXPOSED_EXPR,
+                                   CursorKind.CXX_BOOL_LITERAL_EXPR ] :
                         #print [x.spelling for x in ch.get_tokens()]
-                        #default_value =  ch.get_tokens().next().spelling 
+                        #default_value =  ch.get_tokens().next().spelling
                         default_value =  ''.join([x.spelling for x in ch.get_tokens()][:-1])
                 t = type_(c.type)
 
                 # We look if this argument is a parameter class...
-                if 'use_parameter_class' in self.annotations : 
+                if 'use_parameter_class' in self.annotations :
                     tt = c.type.get_declaration()  # guess it is not a ref
                     if not tt.location.file : tt = c.type.get_pointee().get_declaration() # it is a T &
                     #if tt.raw_comment and 'triqs:is_parameter' in tt.raw_comment:
                     self.parameter_arg = Class(tt, ns)
 
                 self.params.append ( (t, c.spelling, default_value ))
-              #else : 
+              #else :
             #    print " node in fun ", c.kind
         if self.parameter_arg : assert len(self.params) == 1, "When using a parameter class, it must have exactly one argument"
         self.rtype = type_(cursor.result_type) if not is_constructor else None
+        #print self.rtype, parent_class.name if parent_class else ''
+        #if parent_class and self.rtype and self.rtype.name.replace('&','').replace('const','') == parent_class.name :
+        #    self.rtype = self.rtype.split('<')[0]
 
-    def namespace(self) : 
+    def namespace(self) :
         return "::".join(self.ns)
 
-    def signature_cpp(self) :
-        s = "{name} ({args})" if not self.is_constructor else "{rtype} {name} ({args})"
-        s = s.format(args = ', '.join( ["%s %s"%(t.name,n) + "="%d if d else "" for t,n,d in self.params]), **self.__dict__) 
-        if self.template_list : 
-            s = "template<" + ', '.join(['typename ' + x for x in self.template_list]) + ">  " + s
+    def signature_cpp2(self) :
+        s = "{name} ({args})" if self.is_constructor else "{rtype} {name} ({args})"
+        s = s.format(args = ', '.join( ["%s %s"%(t.name,n) + ("=%s"%d if d else "") for t,n,d in self.params]), **self.__dict__)
+        if self.tparams :
+            s = "template<" + ', '.join(['typename ' + x for x in self.tparams]) + ">  " + s
         if self.is_static : s = "static " + s
         return s.strip()
 
     @property
-    def is_template(self) : return len(self.template_list)>0
+    def is_template(self) : return len(self.tparams)>0
 
     def __str__(self) :
-        return "%s\n%s\n"%(self.signature_cpp(),self.doc)
+        return "%s\n%s\n"%(self.signature_cpp2(),self.doc)
 
-class Class(object):
-    def __init__(self, cursor,ns):
+
+class FriendFunction(Function):
+    """WORKAROUND for defect of libclang, which does not contain the friend node"""
+    def __init__(self, cursor,  ns=(), parent_class = None):
         loc = cursor.location.file.name
         if loc : file_locations.add(loc)
+        self.file_location = loc
         self.doc = process_doc(cursor.raw_comment)
         self.brief_doc = self.doc.split('\n')[0].strip() # improve ...
         self.ns = ns
+        self.const = ''
+        self.name = cursor.spelling
+        self.annotations = get_annotations(cursor)
+        self.access = cursor.access_specifier
+        self.params = [] # a list of tuple (type, name, default_value or None).
+        self.tparams = []  #template_list
+        self.is_constructor = False
+        self.is_static = False
+        self.parameter_arg = None 
+
+        tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
+        #print tokens
+        open_par, close_par = tokens.index('('),tokens.index(')')
+        l = tokens[1:open_par]
+        self.rtype = type2_(' '.join(l[:-1]))
+        self.name = l[-1]
+        args_list = tokens[open_par+1:close_par]
+        # separate the arguments
+        def f(tmp) : 
+            if '=' in tmp : 
+               ty, var, defaut = tmp[:-3], tmp[-3], tmp[-1]
+            else:
+               ty, var, defaut = tmp[:-1], tmp[-1], None
+            self.params.append((type2_(''.join([(' ' if x in ['const','&'] else '') + x for x in ty])),var,defaut))
+
+        tmp = []
+        for x in args_list : 
+            if x == ',' and tmp.count('<') == tmp.count('>'):
+                f(tmp)              
+                tmp = []
+            else : 
+                tmp.append(x)
+        f(tmp)
+
+class Class(object):
+    def __init__(self, cursor,ns):
+        print "analysing ", cursor.spelling
+        loc = cursor.location.file.name
+        if loc : file_locations.add(loc)
+        self.file_location = loc
+        self.doc = process_doc(cursor.raw_comment)
+        self.brief_doc = self.doc.split('\n')[0].strip() # improve ...
+        self.ns = ns
+        self.tparams = []
+        self.public_base = []
         self.name = cursor.spelling
         self.functions = []
         self.constructors = []
         self.methods = []
+        self.friend_functions = []
         self.members = []
-        self.proplist = []
+        #self.proplist = []
+        self.type_alias = []
         self.annotations = get_annotations(cursor)
         self.file = cursor.location.file.name
 
-        # MISSING : constructors template not recognized 
+        tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
+
+        #If the class is a (full) specialization
+        if cursor.kind in [CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL] and tokens[:3] ==['template', '<', '>']:
+            t = tokens[6:]
+            t = t[0:t.index('>')]
+            self.name = self.name + '<' + ','.join(t) + '>'
+
         for c in cursor.get_children():
             # Only public nodes
             if c.access_specifier != clang.cindex.AccessSpecifier.PUBLIC : continue
+            
+            if (c.kind == CursorKind.CXX_BASE_SPECIFIER):
+               tokens = [t.spelling if t else '' for t in c.get_tokens()]
+               tt = c.type.get_declaration()  # guess it is not a ref
+               if not tt.location.file : tt = c.type.get_pointee().get_declaration() # it is a T &
+               self.public_base.append( Class(tt, ns))
 
-            if (c.kind == clang.cindex.CursorKind.FIELD_DECL):
+            elif (c.kind == CursorKind.FIELD_DECL):
                 m = member_(c)
                 self.members.append(m)
 
-            elif (c.kind == clang.cindex.CursorKind.CXX_METHOD):
-                f = Function(c)
+            elif (c.kind == CursorKind.CXX_METHOD):
+                f = Function(c, parent_class = self)
                 self.methods.append(f)
 
-            elif (c.kind == clang.cindex.CursorKind.CONSTRUCTOR):
-                f = Function(c, is_constructor = True)
+            elif (c.kind == CursorKind.CONSTRUCTOR):
+                f = Function(c, is_constructor = True, parent_class  = self)
                 self.constructors.append(f)
 
-            elif (c.kind == clang.cindex.CursorKind.FUNCTION_DECL):
+            elif (c.kind == CursorKind.FUNCTION_DECL):
                 f = Function(c)
                 self.functions.append(f)
-            
-            elif (c.kind == clang.cindex.CursorKind.FUNCTION_TEMPLATE):
-                f = Function(c)
-                self.methods.append(f)
 
-    def namespace(self) : 
+            elif (c.kind == CursorKind.FUNCTION_TEMPLATE):
+                f = Function(c, parent_class = self)
+                if f.is_constructor :
+                    self.constructors.append(f)
+                else :
+                    self.methods.append(f)
+
+            elif c.kind == CursorKind.TYPE_ALIAS_DECL:
+                self.type_alias.append(type_alias_(c))
+                # do not capture properly the rhs, but is it useful ?
+                #print [(x.spelling, x.kind) for x in c.get_children()]
+                #print [t.spelling if t else '' for t in c.get_tokens()]
+                #print type_alias_(c)
+
+            #elif c.kind == CursorKind.TYPEDEF_DECL:
+            #    print [x.spelling for x in c.get_children()]
+            #    self.type_alias.append(type_alias_(c))
+
+            elif c.kind == CursorKind.TEMPLATE_TYPE_PARAMETER:
+                tokens = [t.spelling if t else '' for t in c.get_tokens()]
+                d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
+                self.tparams.append(("typename", c.spelling, d))
+            
+            elif c.kind == CursorKind.TEMPLATE_NON_TYPE_PARAMETER:
+                tokens = [t.spelling if t else '' for t in c.get_tokens()]
+                d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
+                self.tparams.append((tokens[0], c.spelling, d))
+
+            elif c.kind == CursorKind.UNEXPOSED_DECL:
+                tokens =  [t.spelling if t else '' for t in c.get_tokens()]
+                if tokens[0] == "friend" and tokens[1] not in ['struct', 'class'] :
+                    self.friend_functions.append(FriendFunction(c, parent_class = self))
+            
+            elif c.kind == CursorKind.CXX_ACCESS_SPEC_DECL:
+                pass
+            
+            else :
+                print "unknown in class ", c.spelling, repr(c.kind)
+
+    def namespace(self) :
         return "::".join(self.ns)
 
     def canonical_name(self) : return self.namespace() + '::' + self.name
@@ -164,33 +307,36 @@ class Class(object):
         s,s2 = "class {name}:\n  {doc}\n\n".format(**self.__dict__),[]
         for m in self.members :
             s2 += ["%s %s"%(m.ctype,m.name)]
-        for m in self.methods : 
+        for m in self.methods :
            s2 += str(m).split('\n')
-        for m in self.functions : 
+        for m in self.functions :
            s2 += ("friend " + str(m)).split('\n')
         s2 = '\n'.join( [ "   " + l.strip() + '\n' for l in s2 if l.strip()])
         return s + s2
 
-    def __repr__(self) : 
+    def __repr__(self) :
         return "Class %s"%self.name
 
-def build_functions_and_classes(cursor, namespaces=[]):
+def build_functions_and_classes(cursor, analyze_filter, namespaces=[]):
     classes,functions = [],[]
     for c in cursor.get_children():
-        if (c.kind == clang.cindex.CursorKind.FUNCTION_DECL
-            and c.location.file.name == sys.argv[1]):
+        if (c.kind == CursorKind.FUNCTION_DECL and analyze_filter(c, namespaces)):
             functions.append( Function(c,is_constructor = False, ns =namespaces))
-        elif (c.kind in [clang.cindex.CursorKind.CLASS_DECL, clang.cindex.CursorKind.STRUCT_DECL]
-            and c.location.file.name == sys.argv[1]):
+        elif (c.kind in [CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL,
+              CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION,
+              CursorKind.CLASS_TEMPLATE] and analyze_filter(c, namespaces)):
             classes.append( Class(c,namespaces))
-        elif c.kind == clang.cindex.CursorKind.NAMESPACE:
-            child_fnt, child_classes = build_functions_and_classes(c, namespaces +[c.spelling])
+        elif c.kind == CursorKind.NAMESPACE:
+            child_fnt, child_classes = build_functions_and_classes(c, analyze_filter, namespaces +[c.spelling])
             functions.extend(child_fnt)
             classes.extend(child_classes)
+        else:
+            pass
+            #print "unknown", c.kind, c.spelling
 
     return functions,classes
 
-def parse(filename, debug, compiler_options, where_is_libclang): 
+def parse(filename, debug, compiler_options, where_is_libclang, analyze_filter):
 
   compiler_options =  [ '-std=c++11', '-stdlib=libc++'] + compiler_options
 
@@ -200,33 +346,33 @@ def parse(filename, debug, compiler_options, where_is_libclang):
   #print filename, ['-x', 'c++'] + compiler_options
   translation_unit = index.parse(filename, ['-x', 'c++'] + compiler_options)
   print "... done. \nExtracting ..."
- 
+
   # If clang encounters errors, we report and stop
   errors = [d for d in translation_unit.diagnostics if d.severity >= 3]
-  if errors : 
+  if errors :
       s =  "Clang reports the following errors in parsing\n"
       for err in errors :
         loc = err.location
         s += '\n'.join(["file %s line %s col %s"%(loc.file, loc.line, loc.column), err.spelling])
-      raise RuntimeError, s + "\n... Your code must compile before making the wrapper !" 
+      raise RuntimeError, s + "\n... Your code must compile before making the wrapper !"
 
   # Analyze the AST to extract classes and functions
-  functions, classes = build_functions_and_classes(translation_unit.cursor)
+  functions, classes = build_functions_and_classes(translation_unit.cursor, analyze_filter)
   print "... done"
 
   global file_locations
-  #if len(file_locations) != 1 : 
+  #if len(file_locations) != 1 :
   #    print file_locations
   #    raise RuntimeError, "Multiple file location not implemented"
   file_locations = list(file_locations)
 
-  if debug : 
+  if debug :
       print "functions"
-      for f in functions : 
+      for f in functions :
           print f
-      
+
       print "classes"
-      for c in classes : 
+      for c in classes :
           print c
 
   return functions, classes
