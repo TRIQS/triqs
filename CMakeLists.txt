@@ -410,13 +410,8 @@ list (REMOVE_DUPLICATES TRIQS_INCLUDE_ALL)
 #---------------------------------------------------------------------
 MESSAGE(STATUS "-------- LibClang detection -------------")
 
-if( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-set(TRIQS_LIBCLANG_LOCATION "/usr/lib/libclang.dylib" CACHE STRING "Location of the libclang library")
-set(TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS "" CACHE STRING "Additional flags to be passed to libclang when parsing with clang")
-else()
 # Try to set TRIQS_LIBCLANG_LOCATION and TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS automatically
 find_package(LibClang)
-endif()
 MESSAGE(STATUS "LibClang location: ${TRIQS_LIBCLANG_LOCATION}")
 MESSAGE(STATUS "LibClang additional flags: ${TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS}")
 set(TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS "${TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS}" CACHE STRING "Additional flags to be passed to libclang when parsing with clang")
