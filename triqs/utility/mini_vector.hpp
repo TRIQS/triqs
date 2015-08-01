@@ -288,7 +288,7 @@ namespace std { // overload std::get to work with it
 
 template <int i, typename T, int R> AUTO_DECL get(triqs::utility::mini_vector<T, R> &v) RETURN(v[i]);
 template <int i, typename T, int R> AUTO_DECL get(triqs::utility::mini_vector<T, R> const &v) RETURN(v[i]);
-template<typename T, int R> struct tuple_size<triqs::utility::mini_vector<T, R>>: std::integral_constant<size_t,R>{};
+template<typename T, int R> class tuple_size<triqs::utility::mini_vector<T, R>>: public std::integral_constant<size_t,R>{};
 
 }
 

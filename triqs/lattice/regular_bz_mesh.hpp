@@ -159,10 +159,11 @@ namespace gfs {
  //                     The mesh point
  // ---------------------------------------------------------------------------
  template <>
- class mesh_point<gf_mesh<brillouin_zone>> : public utility::index3_generator,
+ struct mesh_point<gf_mesh<brillouin_zone>> : public utility::index3_generator,
                                              public utility::arithmetic_ops_by_cast<
                                                  mesh_point<gf_mesh<brillouin_zone>>,
                                                  typename gf_mesh<brillouin_zone>::domain_pt_t> {
+  private:
   using mesh_t = gf_mesh<brillouin_zone>;
   using index_t = mesh_t::index_t;
   using linear_index_t = mesh_t::linear_index_t;

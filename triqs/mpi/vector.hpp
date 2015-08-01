@@ -58,7 +58,6 @@ namespace mpi {
  }
 
  template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, std::false_type) {
-  int s = a.size();
   for (auto &x : a) mpi_reduce_in_place(a, c, root, all);
  }
 

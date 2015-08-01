@@ -47,7 +47,7 @@ template <typename StateType, typename OperatorType> class space_partition {
      std::map<std::pair<index_t,index_t>, typename state_t::value_type>;
 
  space_partition(state_t const& st, operator_t const& H, bool store_matrix_elements = true)
-    : subspaces(st.size()), tmp_state(make_zero_state(st)) {
+    : tmp_state(make_zero_state(st)), subspaces(st.size()){
   auto size = tmp_state.size();
 
   // Iteration over all initial basis states

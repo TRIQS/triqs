@@ -25,7 +25,7 @@ using namespace triqs::lattice;
 
 template<typename X, typename Y>
 ::testing::AssertionResult gf_are_close(X const &x, Y const &y) {
- double precision = 1.e-10;
+ //double precision = 1.e-10;
  if (x.mesh() != y.mesh()) 
   return ::testing::AssertionFailure() << "Comparing two arrays of different size "
           << "\n X = "<<  x << "\n Y = "<< y;
@@ -42,7 +42,7 @@ template<typename X, typename Y>
 // 
 template<typename X, typename Y>
 ::testing::AssertionResult block_gf_are_close(X const &x, Y const &y) {
- double precision = 1.e-10;
+ //double precision = 1.e-10;
 
  EXPECT_EQ( n_blocks(x), n_blocks(y)) << "Number of block differ between two block_gf";
 

@@ -154,9 +154,10 @@ namespace gfs {
  //                     The mesh point
  // ---------------------------------------------------------------------------
  template <>
- class mesh_point<gf_mesh<cyclic_lattice>> : public utility::index3_generator,
-                                             public utility::arithmetic_ops_by_cast<mesh_point<gf_mesh<cyclic_lattice>>,
-                                                                                    typename gf_mesh<cyclic_lattice>::point_t> {
+ struct mesh_point<gf_mesh<cyclic_lattice>> : public utility::index3_generator,
+                                              public utility::arithmetic_ops_by_cast<mesh_point<gf_mesh<cyclic_lattice>>,
+                                                                                     typename gf_mesh<cyclic_lattice>::point_t> {
+  private:
   using mesh_t = gf_mesh<cyclic_lattice>;
   mesh_t const* m = nullptr;
 
