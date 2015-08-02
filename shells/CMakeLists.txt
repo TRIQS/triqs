@@ -1,30 +1,32 @@
-
 MESSAGE( STATUS "Preparing the various scripts ")
 # a simple script to set the python path and have the same effect as the statically compiled code.
 option(TRIQS_ADD_PYPATHS_TO_SHELLS "Add the correct python paths to shell (ON except for packaging)" ON)
 mark_as_advanced( TRIQS_ADD_PYPATHS_TO_SHELLS)
 if (TRIQS_ADD_PYPATHS_TO_SHELLS)
- configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/pytriqs_shell.bash.in ${CMAKE_CURRENT_BINARY_DIR}/pytriqs)
- if (TRIQS_IPYTHON_DETECTED)
-  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/ipytriqs_shell.bash.in ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs)
-  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/ipytriqs_shell.notebook.bash.in ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs_notebook)
- endif (TRIQS_IPYTHON_DETECTED)
+ set(EXPORT_PYTHONPATH "export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST_ROOT}:\$PYTHONPATH")
 else (TRIQS_ADD_PYPATHS_TO_SHELLS)
- configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/pytriqs_shell.nopypath.bash.in ${CMAKE_CURRENT_BINARY_DIR}/pytriqs)
- if (TRIQS_IPYTHON_DETECTED)
-  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/ipytriqs_shell.nopypath.bash.in ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs)
-  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/ipytriqs_shell.notebook.nopypath.bash.in ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs_notebook)
- endif (TRIQS_IPYTHON_DETECTED)
+ set(EXPORT_PYTHONPATH "")
 endif (TRIQS_ADD_PYPATHS_TO_SHELLS)
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/pytriqs_for_test_shell.bash.in ${CMAKE_BINARY_DIR}/build_pytriqs)
-execute_process( COMMAND chmod u+x  ${CMAKE_BINARY_DIR}/build_pytriqs )
+# pytriqs shell
+configure_file(pytriqs.bash.in pytriqs)
+execute_process(COMMAND chmod u+x ${CMAKE_CURRENT_BINARY_DIR}/pytriqs)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pytriqs DESTINATION bin
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pytriqs DESTINATION bin  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
+# ipytriqs and ipytriqs_notebook shells
+if (TRIQS_IPYTHON_DETECTED)
+  configure_file(ipytriqs.bash.in ipytriqs)
+  configure_file(ipytriqs_notebook.bash.in ipytriqs_notebook)
 
- if (TRIQS_IPYTHON_DETECTED) 
+  execute_process(COMMAND chmod u+x ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs)
+  execute_process(COMMAND chmod u+x ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs_notebook)
+
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs_notebook DESTINATION bin  
- PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
- endif (TRIQS_IPYTHON_DETECTED) 
+          PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+endif (TRIQS_IPYTHON_DETECTED)
 
-
+# Bash shell for tests
+set(EXPORT_PYTHONPATH "export PYTHONPATH=${CMAKE_BINARY_DIR}:\$PYTHONPATH")
+configure_file(pytriqs.bash.in ${CMAKE_BINARY_DIR}/build_pytriqs)
+execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/build_pytriqs)
