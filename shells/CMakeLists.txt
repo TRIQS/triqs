@@ -10,7 +10,6 @@ endif (TRIQS_ADD_PYPATHS_TO_SHELLS)
 
 # pytriqs shell
 configure_file(pytriqs.bash.in pytriqs)
-execute_process(COMMAND chmod u+x ${CMAKE_CURRENT_BINARY_DIR}/pytriqs)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pytriqs DESTINATION bin
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
@@ -18,9 +17,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pytriqs DESTINATION bin
 if (TRIQS_IPYTHON_DETECTED)
   configure_file(ipytriqs.bash.in ipytriqs)
   configure_file(ipytriqs_notebook.bash.in ipytriqs_notebook)
-
-  execute_process(COMMAND chmod u+x ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs)
-  execute_process(COMMAND chmod u+x ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs_notebook)
 
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs ${CMAKE_CURRENT_BINARY_DIR}/ipytriqs_notebook DESTINATION bin  
           PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
