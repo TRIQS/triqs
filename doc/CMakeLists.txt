@@ -18,8 +18,9 @@ else (Sphinx_Math_Generator_MathJax)
  message(STATUS "Not using MathJax")
 endif (Sphinx_Math_Generator_MathJax)
 
-# the local extensions....
-file(COPY ../foreignlibs/breathe ../foreignlibs/doxylink ../foreignlibs/mpl ../foreignlibs/autorun ../foreignlibs/triqs_example DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# the local Sphinx extensions ...
+file(COPY sphinxext DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+install(DIRECTORY sphinxext DESTINATION "share/triqs")
 
 #EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs.so ${CMAKE_CURRENT_BINARY_DIR}")
 
