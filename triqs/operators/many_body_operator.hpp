@@ -19,8 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/dressed_iterator.hpp>
-#include <triqs/utility/variant_int_string.hpp>
+#include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
 #include <ostream>
 #include <cmath>
@@ -28,6 +27,8 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
 #include <triqs/utility/draft/numeric_ops.hpp>
+#include <triqs/h5.hpp>
+
 
 namespace triqs {
 namespace utility {
@@ -84,6 +85,14 @@ namespace utility {
 
   monomials_map_t monomials;
 
+  friend void h5_write(h5::group g, std::string const& name, many_body_operator const& op);
+  friend void h5_write(h5::group g, std::string const& name, many_body_operator<double> const& op,
+                       hilbert_space::fundamental_operator_set const& fops);
+
+  friend void h5_read(h5::group g, std::string const& name, many_body_operator& op);
+  friend void h5_read(h5::group g, std::string const& name, many_body_operator<double>& op,
+                      hilbert_space::fundamental_operator_set& fops);
+
   public:
   many_body_operator() = default;
   many_body_operator(many_body_operator const&) = default;
@@ -97,6 +106,15 @@ namespace utility {
   template <typename S> many_body_operator& operator=(many_body_operator<S> const& x) {
    monomials.clear();
    for (auto const& y : x.monomials) monomials.insert({y.first, y.second});
+  }
+
+  /// Make a minimal fundamental_operator_set with all the canonical operators of this
+  hilbert_space::fundamental_operator_set make_fundamental_operator_set() const {
+   hilbert_space::fundamental_operator_set fops;
+   for (auto const& m : monomials)        // for all monomials of the operator
+    for (auto const& c_cdag_op : m.first) // loop over the C C^+ operators of the monomial
+     fops.insert_from_indices_t(c_cdag_op.indices);
+   return fops;
   }
 
   // factory for c, cdag

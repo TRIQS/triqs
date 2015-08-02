@@ -28,6 +28,7 @@
 
 
 using namespace triqs::utility;
+using namespace triqs;
 
 int main(int argc, char **argv)
 {
@@ -101,6 +102,19 @@ int main(int argc, char **argv)
     auto X = c_dag(1) * c_dag(2) * c(3) * c(4);
     std::cout  << "X = "<< X<<std::endl; 
     std::cout  << "dagger(X) = "<< dagger(X)<<std::endl; 
+
+
+    auto op1 = 2* c_dag(1) * c_dag(2) * c(3) * c(4)  + 3.4 * c_dag(0,"a") *  c(0,"a");
+
+    auto f = h5::file("ess.h5", 'w');
+    h5_write(f, "OP", op1);
+
+    auto op2 = h5::h5_read<many_body_operator<double>>(f, "OP");
+
+    std::cerr << op1 << std::endl;
+    std::cerr << op2 << std::endl;
+
+    std::cerr << (op1 - op2).is_zero() << std::endl;
     return 0;
  }
  catch(std::exception const & e) {

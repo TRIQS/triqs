@@ -153,5 +153,10 @@ namespace utility {
 
  inline bool operator!=(variant_int_string const &x, variant_int_string const &y) { return !(operator==(x, y)); }
  inline bool operator>(variant_int_string const &x, variant_int_string const &y) { return !(operator<(x, y)); }
+ inline std::string to_string(variant_int_string const &x) {
+  std::stringstream fs;
+  fs << x;
+  return fs.str();
+ }
 }
 }

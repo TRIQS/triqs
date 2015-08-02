@@ -38,6 +38,12 @@ namespace triqs {
   void h5_write (group f, std::string const & name, std::vector<std::string> const & V);
   void h5_read (group f, std::string const & name, std::vector<std::string> & V);
 
+  void h5_write_attribute (hid_t ob, std::string const & name, std::vector<std::vector<std::string>> const & V);
+  void h5_read_attribute (hid_t ob, std::string const & name, std::vector<std::vector<std::string>> & V);
+
+  //void h5_write_attribute (hid_t ob, std::string const & name, std::vector<std::string> const & V);
+  //void h5_read_attribute (hid_t ob, std::string const & name, std::vector<std::string> & V);
+
   void h5_write (group f, std::string const & name, std::vector<int> const & V);
   void h5_write (group f, std::string const & name, std::vector<double> const & V);
   void h5_write (group f, std::string const & name, std::vector<std::complex<double>> const & V);
