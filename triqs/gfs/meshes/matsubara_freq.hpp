@@ -88,6 +88,9 @@ namespace gfs {
   /// Flatten the index in the positive linear index for memory storage (almost trivial here).
   long index_to_linear(index_t ind) const { return ind - first_index_window(); }
 
+  /// Reverse of index_to_linear
+  index_t linear_to_index(long lind) const { return lind + first_index_window(); }
+
   // -------------------- Accessors (other) -------------------
 
   /// first Matsubara index
