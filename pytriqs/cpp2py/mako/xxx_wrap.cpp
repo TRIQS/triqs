@@ -129,6 +129,10 @@ static PyObject * ${c.py_type}_${op_name} (PyObject *v);
 %endif
 %endfor
 
+//--------------------- Comparison  -----------------------------
+
+static PyObject* ${c.py_type}_richcompare (PyObject *a, PyObject *b, int op);
+
 // ----------------------------
 // stop class : ${c.py_type}
 // ----------------------------
@@ -361,7 +365,7 @@ static PyTypeObject ${c.py_type}Type = {
     "${c.doc}",                /* tp_doc */
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
+    ${c.py_type + "_richcompare"},  /* tp_richcompare */
     0,		               /* tp_weaklistoffset */
     ${c.py_type+"___iter__" if c.iterator else 0},		               /* tp_iter */
     0,		               /* tp_iternext */
@@ -885,6 +889,71 @@ static PyObject* ${c.py_type}___str__ (PyObject *self) {
 }
 
 %endif
+
+//--------------------- comparisons  -----------------------------
+
+static PyObject* ${c.py_type}_richcompare (PyObject *a, PyObject *b, int op) {
+
+%if c.comparisons:
+ auto & _a  = convert_from_python<${c.c_type}>(a);
+ auto & _b  = convert_from_python<${c.c_type}>(b);
+%endif
+ 
+ switch(op) {
+
+  case Py_EQ:
+%if "==" in c.comparisons:
+   return convert_to_python(_a ==_b);
+%else:
+   PyErr_SetString(PyExc_TypeError, "Comparison operator == not implemented for type ${c.py_type}");
+   return NULL;
+%endif
+
+  case Py_NE:
+%if "!=" in c.comparisons:
+   return convert_to_python(_a != _b);
+%else:
+   PyErr_SetString(PyExc_TypeError, "Comparison operator != not implemented for type ${c.py_type}");
+   return NULL;
+%endif
+
+  case Py_LT:
+%if "<" in c.comparisons:
+   return convert_to_python(_a < _b);
+%else:
+   PyErr_SetString(PyExc_TypeError, "Comparison operator < not implemented for type ${c.py_type}");
+   return NULL;
+%endif
+
+  case Py_GT:
+%if ">" in c.comparisons:
+   return convert_to_python(_a > _b);
+%else:
+   PyErr_SetString(PyExc_TypeError, "Comparison operator > not implemented for type ${c.py_type}");
+   return NULL;
+%endif
+
+  case Py_LE:
+%if "<=" in c.comparisons:
+   return convert_to_python(_a <= _b);
+%else:
+   PyErr_SetString(PyExc_TypeError, "Comparison operator <= not implemented for type ${c.py_type}");
+   return NULL;
+%endif
+
+  case Py_GE:
+%if ">=" in c.comparisons:
+   return convert_to_python(_a >= _b);
+%else:
+   PyErr_SetString(PyExc_TypeError, "Comparison operator >= not implemented for type ${c.py_type}");
+   return NULL;
+%endif
+
+  default:
+    break;
+ } 
+ return NULL;
+}
 
 //--------------------- hdf5 : write part -----------------------------
 %if not c.hdf5 :

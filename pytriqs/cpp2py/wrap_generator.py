@@ -269,7 +269,7 @@ class class_ :
        Representation of a wrapped type
     """
     hidden_python_function = {} # global dict of the python function to add to the module, hidden for the user, for precompute and so on
-    def __init__(self, py_type, c_type, c_type_absolute = None, hdf5 = False, arithmetic = None, serializable = None, is_printable = False, doc = '' ) :
+    def __init__(self, py_type, c_type, c_type_absolute = None, hdf5 = False, arithmetic = None, serializable = None, is_printable = False, doc = '', comparisons ='') :
       """
         - py_type : Name given in Python
         - c_type : C++ type to be wrapped.
@@ -304,6 +304,7 @@ class class_ :
                 On modern hdf5 (>1.8.9) it uses hdf5 to make the string, on older version it will use boost serialization
                 (which generates a very heavy code, sometimes can x2 the code size of the wrapper, just for this function !).
         - is_printable = If true, generate the str, repr from the C++ << stream operator
+        - comparisons = a chain with all operators separated by space, e.g. "== != < >"
         - doc : the doc string.
       """
       self.c_type = c_type
@@ -319,6 +320,7 @@ class class_ :
       assert serializable in [None, "via_string", "tuple"]
       self.serializable = serializable
       self.is_printable = is_printable
+      self.comparisons = comparisons
       self.iterator = None
       self.doc = doc
       self.methods = {} #  a dict : string -> pyfunction for each method name

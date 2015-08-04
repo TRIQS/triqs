@@ -113,6 +113,7 @@ def make_mesh( py_type, c_tag, is_im=False) :
             c_type_absolute = "triqs::gfs::gf_mesh<triqs::gfs::%s>"%c_tag,
             serializable= "tuple",
             is_printable= True,
+            comparisons = "== !="
            )
 
     if is_im :
@@ -210,6 +211,7 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
             #serializable= "boost",
             serializable= "tuple",
             is_printable= True,
+            #comparisons = "==",
             hdf5 = True,
             arithmetic = ("algebra",data_type, "with_inplace_operators")
             )
