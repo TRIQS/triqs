@@ -96,11 +96,18 @@ namespace gfs {
  tail_view tail_omega(tail::shape_type const &sh, int size_, int order_min) { return tail_omega(sh[0], sh[1], size_, order_min); }
  tail_view tail_omega(tail_view t) { return tail_omega(t.shape(), t.size(), t.order_min()); }
 
- // Ops
+ ///conjugate of the tail
+ /**
+   * \tilde(a)_n = coeff of order n in conj(tail) = (-)^n * conj(a_n)
+   */
  tail conj(tail_const_view const &t) {
-  return {conj(t.data()), t.mask(), t.order_min()};
+  auto tdata = tail::data_type(t.data());
+  for(int j=0;j<t.data().shape()[0];j++)
+   tdata(j,ellipsis()) = (((j-t.order_min())%2==0)?1:-1)*conj(tdata(j,ellipsis()));
+  return {tdata, t.mask(), t.order_min()};
  }
 
+ ///transpose
  tail transpose(tail_const_view const &t) {
   return {transposed_view(t.data(), 0, 2, 1), transposed_view(t.mask(), 1, 0), t.order_min()};
  }
