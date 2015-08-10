@@ -77,6 +77,12 @@ endif (NOT TEST_PYTHON_INCLUDE)
 mark_as_advanced(TEST_PYTHON_INCLUDE)
 
 #
+# HDF5 version used by h5py
+#
+EXEC_PYTHON_SCRIPT ("import h5py;print h5py.version.hdf5_version" PYTHON_H5PY_HDF5VERSION)
+MESSAGE(STATUS "PYTHON_H5PY_HDF5VERSION = ${PYTHON_H5PY_HDF5VERSION}" )
+
+#
 # include files for numpy
 #
 EXEC_PYTHON_SCRIPT ("import numpy;print numpy.get_include()" PYTHON_NUMPY_INCLUDE_DIR)

@@ -279,6 +279,9 @@ GET_FILENAME_COMPONENT(TRIQS_HDF5_COMMAND_PATH ${TRIQS_HDF5_DIFF_EXECUTABLE} PAT
 execute_process(COMMAND ${HDF5_DIFF_EXECUTABLE} --version OUTPUT_VARIABLE diff_output)
 string(REGEX MATCHALL "[0-9]+.[0-9]+.[0-9]+" HDF5_VERSION "${diff_output}")
 message(STATUS "hdf5 version: ${HDF5_VERSION}")
+if (NOT "${PYTHON_H5PY_HDF5VERSION}" STREQUAL "${HDF5_VERSION}")
+ message(FATAL_ERROR "The HDF5 version of the h5py (${PYTHON_H5PY_HDF5VERSION}) is different from the hdf5 library found for C++ (${HDF5_VERSION}). You MUST have the same version.")
+endif()
 
 # #################################
 # Other libs
