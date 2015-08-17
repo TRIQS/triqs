@@ -79,6 +79,9 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
     _MaxLengthKey = 500
 
     def __init__(self, parent, subpath) :
+        # We want to hold a reference to the parent group, if we are not at the root
+        # This will prevent a premature destruction of the root HDFArchive object
+        if not self is parent: self.parent = parent
         self.options = parent.options
         HDFArchiveGroupBasicLayer.__init__(self, parent, subpath)
         self.options = parent.options

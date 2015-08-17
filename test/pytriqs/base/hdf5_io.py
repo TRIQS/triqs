@@ -26,24 +26,29 @@ from numpy import *
 
 d = {'a' : 1.0, 'b' : [1,2,3]}
 
-h = HDFArchive('hdf5_io.output.h5','w', init = d.items())
+with HDFArchive('hdf5_io.output.h5','w', init = d.items()) as h:
+    h['c'] = 100
+    h['d'] = array([[1,2,3],[4,5,6]])
+    h['e'] = (1,2,3)
+    h['f'] = { 'a':10, 'b': 20}
+    h.create_group('g')
+    g = h['g']
+    g['a'] = 98
+    g['b'] = (1,2,3)
+    g['c'] = 200
 
-h['c'] = 100
-h['d'] = array([[1,2,3],[4,5,6]])
-h['e'] = (1,2,3)
-h['f'] = { 'a':10, 'b': 20}
-h.create_group('g')
-g = h['g']
-g['a'] = 98
-g['b'] = (1,2,3)
-g['c'] = 200
+h2 = HDFArchive('hdf5_io.output.h5','r')
+dd = h2['f']
+gg = h2['g']
+del h2, gg
 
-del h
+h3 = HDFArchive('hdf5_io.output.h5','a')
+dd = h3['f']
+dd['c'] = 18
+h3['f'] = dd
+gg = h3['g']
+gg['d'] = 700
+del h3, gg
 
-h = HDFArchive('hdf5_io.output.h5')
-
-dd = h['f']
-dd['a'] = 25
-h['f'] = dd
-
-del h
+gg = HDFArchive('hdf5_io.output.h5','a')['g']
+gg['x'] = 1.5
