@@ -1,15 +1,21 @@
 BasedOnStyle: LLVM
 
 AccessModifierOffset: 0
+#AlignConsecutiveAssignments: true
 AlignEscapedNewlinesLeft: false
+AlignOperands: true
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
+#AlwaysBreakAfterDefinitionReturnType
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: false
-BinPackParameters: true 
+BinPackArguments: true
+BinPackParameters: true
 BreakBeforeBinaryOperators: false
 BreakBeforeBraces: Attach
 BreakConstructorInitializersBeforeComma: true
@@ -26,8 +32,10 @@ Language: Cpp
 MaxEmptyLinesToKeep: 3
 NamespaceIndentation : Inner
 PointerBindsToType: true
+#PointerAlignment: Left
 SpaceAfterControlStatementKeyword: true
 SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false
 SpacesInParentheses: false
 #SpacesInAngles:false
