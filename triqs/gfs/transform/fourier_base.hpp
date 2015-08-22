@@ -20,8 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays/vector.hpp>
-#include <triqs/gfs/gf.hpp>
-#include <triqs/gfs/singularity/no_tail.hpp>
+#include "../gf_classes.hpp"
 
 namespace triqs { namespace gfs {
 
@@ -53,8 +52,14 @@ namespace triqs { namespace gfs {
    }
  }
 
+ // second part of the implementation
  template <typename X, typename Y, typename T, typename S>
  void triqs_gf_view_assign_delegation(gf_view<X, T, S> g, gf_keeper<tags::fourier, Y, T, S> const &L) {
+  _fourier_impl(g, L.g);
+  }
+
+ template <typename X, typename G, typename T, typename S>
+ void triqs_gf_view_assign_delegation(gf_view<X, T, S> g, tagged_cview<tags::fourier, G> const &L) {
   _fourier_impl(g, L.g);
   }
 }}

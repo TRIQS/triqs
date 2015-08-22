@@ -19,17 +19,20 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../gf.hpp"
 #include "./tail.hpp"
+#include "./nothing.hpp"
 
 namespace triqs {
 namespace gfs {
 
- // struct no_tail {};
  using no_tail = nothing;
 
- template <typename M, typename T, typename S, typename E, bool V, bool C>
- gf_view<M, T, no_tail, E, C> make_gf_view_without_tail(gf_impl<M, T, S, E, V, C> const &g) {
+ /**
+  * TBR
+  */
+ template <typename G>
+  // requires(is_gf_or_view<G>)
+ gf_view<typename G::variable_t, typename G::target_t, no_tail> make_gf_view_without_tail(G const &g) {
   return {g.mesh(), g.data(), {}, g.symmetry(), g.indices(), g.name};
  }
 
@@ -46,15 +49,21 @@ namespace gfs {
   }
  }
 
- template <typename M, typename T, typename S, typename E, bool V, bool C>
- gf_view<M, T> make_gf_from_g_and_tail(gf_impl<M, T, S, E, V, C> const &g, tail t) {
+ /**
+  * TBR
+  */
+ template <typename G>
+ gf_view<typename G::variable_t, typename G::target_t> make_gf_from_g_and_tail(G const &g, tail t) {
   details::_equal_or_throw(t.shape(), get_target_shape(g));
-  auto g2 = gf<M, T, no_tail>{g}; // copy the function without tail
+  auto g2 = gf<typename G::variable_t, typename G::target_t, no_tail>{g}; // copy the function without tail
   return {std::move(g2.mesh()), std::move(g2.data()), std::move(t), g2.symmetry()};
  }
 
- template <typename M, typename T, typename E, bool V, bool C>
- gf_view<M, T, tail, E, C> make_gf_view_from_g_and_tail(gf_impl<M, T, no_tail, E, V, C> const &g, tail_view t) {
+ /**
+  * TBR
+  */
+ template <typename G>
+ gf_view<typename G::variable_t, typename G::target_t, tail> make_gf_view_from_g_and_tail(G const &g, tail_view t) {
   details::_equal_or_throw(t.shape(), get_target_shape(g));
   return {g.mesh(), g.data(), t, g.symmetry(), g.indices(), g.name};
  }

@@ -106,10 +106,10 @@ namespace triqs { namespace gfs {
   };
 
   // The user function
-  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
-  auto curry(gf_impl<Mesh, Target, Singularity, Evaluator, IsView, IsConst> const &g) {
-   return curry_impl<pos...>(g());
-  }
+  //template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
+  //auto curry(gf_impl<Mesh, Target, Singularity, Evaluator, IsView, IsConst> const &g) {
+  // return curry_impl<pos...>(g());
+  //}
   template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsConst>
   auto curry(gf_view<Mesh, Target, Singularity, Evaluator, IsConst> g) {
    return curry_impl<pos...>(g());

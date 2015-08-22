@@ -20,9 +20,9 @@
  ******************************************************************************/
 #pragma once
 
-#include "../gf.hpp"
-#include "../imtime.hpp"
+#include "../gf_classes.hpp"
 #include "../imfreq.hpp"
+#include "../imtime.hpp"
 #include "../legendre.hpp"
 
 namespace triqs { 

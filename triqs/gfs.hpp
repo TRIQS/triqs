@@ -23,6 +23,8 @@
 
 #define TRIQS_GF_INCLUDED
 
+#include "./gfs/gf_classes.hpp"
+
 #include <triqs/gfs/imtime.hpp>
 #include <triqs/gfs/imfreq.hpp>
 #include <triqs/gfs/retime.hpp>

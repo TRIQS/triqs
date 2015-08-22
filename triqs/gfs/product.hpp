@@ -27,9 +27,17 @@ namespace triqs {
 namespace gfs {
 
  // special case : we need to pop for all the variables
- template <typename... Ms, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
- auto get_target_shape(gf_impl<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsView, IsConst> const &g) {
+ template <typename... Ms, typename T, typename S, typename E>
+ auto get_target_shape(gf_const_view<cartesian_product<Ms...>, T, S, E> const &g) {
   return g.data().shape().template front_mpop<sizeof...(Ms)>();
+ }
+ template <typename... Ms, typename T, typename S, typename E>
+ auto get_target_shape(gf_view<cartesian_product<Ms...>, T, S, E> const &g) {
+  return get_target_shape(g());
+ }
+ template <typename... Ms, typename T, typename S, typename E>
+ auto get_target_shape(gf<cartesian_product<Ms...>, T, S, E> const &g) {
+  return get_target_shape(g());
  }
 
  // The default singularity, for each Mesh.

@@ -60,8 +60,4 @@ namespace triqs { namespace gfs {
 
  }
 
- //gf_keeper<tags::pade,imfreq> lazy_pade(gf_view<imfreq> const & gw) {return gw;}
-
- //void triqs_gf_view_assign_delegation(gf_view<refreq> &gr, gf_keeper<tags::pade,imfreq> const & L) { pade(gr, L.g); }
-
 }}

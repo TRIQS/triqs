@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2015 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -20,54 +20,76 @@
  ******************************************************************************/
 #pragma once
 #include "./fourier_base.hpp"
-#include <triqs/gfs/imfreq.hpp>
-#include <triqs/gfs/imtime.hpp>
+#include "../imfreq.hpp"
+#include "../imtime.hpp"
 
 namespace triqs {
 namespace gfs {
 
- // only a few functions allowed:
- 
- template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf_keeper<tags::fourier, imtime, Target, Singularity> fourier(gf_impl<imtime, Target, Singularity, Evaluator, V, C> const& g) {
-  return {g};
- }
- template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf_keeper<tags::fourier, imfreq, Target, Singularity> inverse_fourier(gf_impl<imfreq, Target, Singularity, Evaluator, V, C> const& g) {
+ /**
+  * TBR
+  */
+ template <typename G> std14::enable_if_t<is_gf_or_view<G, imtime>::value, tagged_cview<tags::fourier, G>> fourier(G const& g) {
   return {g};
  }
 
- /// 
+ /**
+  * TBR
+  */ 
+ template <typename G> std14::enable_if_t<is_gf_or_view<G, imfreq>::value, tagged_cview<tags::fourier, G>> inverse_fourier(G const& g) {
+  return {g};
+ }
+
  void _fourier_impl(gf_view<imfreq, scalar_valued, tail> gw, gf_const_view<imtime, scalar_valued, tail> gt);
  void _fourier_impl(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt);
  void _fourier_impl(gf_view<imtime, scalar_valued, tail> gt, gf_const_view<imfreq, scalar_valued, tail> gw);
 
- /// A few helper functions
- template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf<imfreq, Target, Singularity, Evaluator> make_gf_from_fourier(gf_impl<imtime, Target, Singularity, Evaluator, V, C> const& gt, int n_iw) {
+ /**
+  *
+  */
+ template <typename Target, typename Singularity, typename Evaluator>
+ gf<imfreq, Target, Singularity> make_gf_from_fourier(gf_const_view<imtime, Target, Singularity, Evaluator> const& gt,
+                                                      int n_iw = -1) {
+  if (n_iw == -1) n_iw = (gt.mesh().size() - 1) / 2;
   auto m = gf_mesh<imfreq>{gt.mesh().domain(), n_iw};
-  auto gw = gf<imfreq, Target, Singularity, Evaluator>{m, get_target_shape(gt)};
+  auto gw = gf<imfreq, Target, Singularity>{m, get_target_shape(gt)};
   gw() = fourier(gt);
   return gw;
  }
 
- template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf<imfreq, Target, Singularity, Evaluator> make_gf_from_fourier(gf_impl<imtime, Target, Singularity, Evaluator, V, C> const& gt) {
-  return make_gf_from_fourier(gt, (gt.mesh().size() - 1) / 2);
+ template <typename T, typename S, typename E>
+ gf<imfreq, T, S> make_gf_from_fourier(gf_view<imtime, T, S, E> const& gt, int n_iw = -1) {
+  return make_gf_from_fourier(gt(), n_iw);
  }
 
- template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf<imtime, Target, Singularity, Evaluator> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Singularity, Evaluator, V, C> const& gw, int n_tau) {
+ template <typename T, typename S, typename E>
+ gf<imfreq, T, S> make_gf_from_fourier(gf<imtime, T, S, E> const& gt, int n_iw = -1) {
+  return make_gf_from_fourier(gt(), n_iw);
+ }
+
+ /**
+  *
+  */
+ template <typename Target, typename Singularity, typename Evaluator>
+ gf<imtime, Target, Singularity> make_gf_from_inverse_fourier(gf_const_view<imfreq, Target, Singularity, Evaluator> const& gw,
+                                                              int n_tau = -1) {
+  if (n_tau == -1) n_tau = 2 * gw.mesh().size() + 1;
   auto m = gf_mesh<imtime>{gw.mesh().domain(), n_tau};
   auto gt = gf<imtime, Target, Singularity, Evaluator>{m, get_target_shape(gw)};
   gt() = inverse_fourier(gw);
   return gt;
  }
 
- template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf<imtime, Target, Singularity, Evaluator> make_gf_from_inverse_fourier(gf_impl<imfreq, Target, Singularity, Evaluator, V, C> const& gw) {
-  return make_gf_from_inverse_fourier(gw, 2 * gw.mesh().size() + 1);
+ template <typename T, typename S, typename E>
+ gf<imtime, T, S> make_gf_from_inverse_fourier(gf_view<imfreq, T, S, E> const& gw, int n_tau = -1) {
+  return make_gf_from_inverse_fourier(gw(), n_tau);
  }
+
+ template <typename T, typename S, typename E>
+ gf<imtime, T, S> make_gf_from_inverse_fourier(gf<imfreq, T, S, E> const& gw, int n_tau = -1) {
+  return make_gf_from_inverse_fourier(gw(), n_tau);
+ }
+
 }
 
 namespace clef {

@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2012-2015 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,16 +18,13 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_PADE_H
-#define TRIQS_GF_LOCAL_PADE_H
+#pragma once
 
-#include "../gf_classes.hpp"
-#include "../imfreq.hpp"
-#include "../refreq.hpp"
+#include "./impl/defs.hpp"
+#include "./gf.hpp"
+#include "./impl/misc.hpp"
+#include "./impl/gf_expr.hpp"
+#include "./impl/functions.hpp"
 
-namespace triqs { namespace gfs {
+#include "./singularity/no_tail.hpp"
 
-  void pade (gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_points, double freq_offset);
-
-}}
-#endif

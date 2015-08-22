@@ -24,8 +24,8 @@
 namespace triqs {
 namespace gfs {
 
- template <typename Var, typename RHS, bool IsView>
- void assign_singularity_from_function(gf_impl<Var, tail, nothing, void, IsView, false> &s, RHS const &rhs) {
+ template <typename Var, typename RHS>
+ void assign_singularity_from_function(gf_view<Var, tail, nothing> s, RHS const &rhs) {
   auto t = tail_omega(s.get_from_linear_index(0));
   // a bit faster to first replace (some part of expression are precomputed).
   clef::placeholder<5> x_;
@@ -37,6 +37,11 @@ namespace gfs {
   // for (auto & x : s.mesh()) s[x] = rhs(x, t);
  }
 
+  template <typename Var, typename RHS>
+ void assign_singularity_from_function(gf<Var, tail, nothing> &s, RHS const &rhs) {
+  assign_singularity_from_function(s(),rhs);
+ }
+ 
  /// ---------------------------  User alias  ---------------------------------
 
  template <typename M> using m_tail = gf<M, tail>;
@@ -71,7 +76,7 @@ namespace gfs {
    h5_write(gr, "data", g._data.data);
   }
 
-  template <bool IsView> static void read(h5::group gr, gf_impl<Mesh, tail, nothing, void, IsView, false> &g) {
+  template <typename G> static void read(h5::group gr, G &g) {
    h5_read(gr, "omin", g._data.omin);
    h5_read(gr, "mask", g._data.mask);
    h5_read(gr, "data", g._data.data);

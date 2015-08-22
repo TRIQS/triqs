@@ -20,20 +20,23 @@
  ******************************************************************************/
 #pragma once
 #include "fourier_base.hpp"
-#include <triqs/gfs/bz.hpp> 
-#include <triqs/gfs/cyclic_lattice.hpp>
+#include "../bz.hpp" 
+#include "../cyclic_lattice.hpp"
 
 namespace triqs {
 namespace gfs {
 
- template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf_keeper<tags::fourier, cyclic_lattice, Target, Singularity>
- fourier(gf_impl<cyclic_lattice, Target, Singularity, Evaluator, V, C> const& g) {
+ /**
+  * TBR
+  */
+ template <typename G> std14::enable_if_t<is_gf_or_view<G, cyclic_lattice>::value, tagged_cview<tags::fourier, G>> fourier(G const& g) {
   return {g};
  }
- 
- template <typename Target, typename Singularity, typename Evaluator, bool V, bool C>
- gf_keeper<tags::fourier, brillouin_zone, Target, Singularity> inverse_fourier(gf_impl<brillouin_zone, Target, Singularity, Evaluator, V, C> const& g) {
+
+ /**
+  * TBR
+  */ 
+ template <typename G> std14::enable_if_t<is_gf_or_view<G, brillouin_zone>::value, tagged_cview<tags::fourier, G>> inverse_fourier(G const& g) {
   return {g};
  }
 

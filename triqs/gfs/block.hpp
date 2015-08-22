@@ -72,7 +72,7 @@ namespace gfs {
    h5_write(gr, "block_names", g.mesh().domain().names());
   }
 
-  template <bool IsView> static void read(h5::group gr, gf_impl<block_index, Target, nothing, void, IsView, false> &g) {
+  template <typename G> static void read(h5::group gr, G &g) {
    auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
    g._mesh = gf_mesh<block_index>(block_names);
    // auto check_names = gr.get_all_subgroup_names();
