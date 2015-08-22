@@ -23,6 +23,7 @@
 #include <utility>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/matrix_tensor_proxy.hpp>
+#include <triqs/utility/view_tools.hpp>
 
 //#define TRIQS_GF_DATA_PROXIES_WITH_SIMPLE_VIEWS
 
@@ -103,6 +104,7 @@ namespace triqs { namespace gfs {
  //---------------------------- vector ----------------------------------
 
  template<typename V> struct view_proxy : public V { 
+  using regular_type = triqs::Regular<V>;
   view_proxy() : V(typename V::regular_type()) {}
   view_proxy(V const &v) : V(v){};
   view_proxy(view_proxy const & p) : V(p) {};

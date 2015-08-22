@@ -21,7 +21,9 @@
 #pragma once
 
 #include "./impl/defs.hpp"
-#include "./gf.hpp"
+#include "./impl/gf.hpp"
+#include "./impl/gf_view.hpp"
+#include "./impl/gf_const_view.hpp"
 #include "./impl/misc.hpp"
 #include "./impl/gf_expr.hpp"
 #include "./impl/functions.hpp"

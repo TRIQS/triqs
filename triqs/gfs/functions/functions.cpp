@@ -60,11 +60,11 @@ namespace triqs { namespace gfs {
  //-------------------------------------------------------
  // For Imaginary Matsubara Frequency functions
  // ------------------------------------------------------
- arrays::matrix<double> density( gf_view<imfreq> const & G) { 
+ arrays::matrix<double> density(gf_const_view<imfreq> G) { 
   dcomplex I(0,1);
   auto sh = G.data().shape().front_pop();
   auto Beta = G.domain().beta;
-  tail_view t = G.singularity();
+  tail_const_view t = G.singularity();
   if (!t.is_decreasing_at_infinity())  TRIQS_RUNTIME_ERROR<<" density computation : Green Function is not as 1/omega or less !!!";
   const size_t N1=sh[0], N2 = sh[1];
   arrays::array<dcomplex,2> dens_part(sh), dens_tail(sh), dens(sh);
@@ -99,11 +99,11 @@ namespace triqs { namespace gfs {
   return res;
  }
 
-  double density(gf_view<imfreq, scalar_valued> const & g){
+  double density(gf_const_view<imfreq, scalar_valued> g){
     return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0,0);
   }
  
- arrays::matrix<double> density( gf_view<legendre> const & gl) { 
+ arrays::matrix<double> density(gf_const_view<legendre> gl) { 
 
    auto sh = gl.data().shape().front_pop();
    arrays::matrix<double> res(sh);

@@ -362,7 +362,7 @@ namespace triqs { namespace clef {
   *  --------------------------------------------------------------------------------------------------- */
 
  // by default it is deleted = not implemented : every class has to define it...
- template<typename T, typename F> void triqs_clef_auto_assign (T,F) = delete;
+ //template<typename T, typename F> void triqs_clef_auto_assign (T,F) = delete;
 
  // remove the ref_wrapper, terminal ...
  template <typename T, typename F> void triqs_clef_auto_assign(std::reference_wrapper<T> R, F&& f) {

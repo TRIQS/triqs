@@ -53,6 +53,7 @@ namespace gfs {
  template <typename... Ms> struct gf_mesh<cartesian_product<Ms...>> : tag::composite {
   using domain_t = domain_product<typename gf_mesh<Ms>::domain_t...>;
   using m_tuple_t = std::tuple<gf_mesh<Ms>...>;
+  using ms_tuple_t = std::tuple<Ms...>;
   using m_pt_tuple_t = std::tuple<typename gf_mesh<Ms>::mesh_point_t...>;
   using domain_pt_t = typename domain_t::point_t;
   using linear_index_t = std::tuple<typename gf_mesh<Ms>::linear_index_t...>;

@@ -5,7 +5,7 @@ using namespace triqs;
 block_gf_view<imfreq> make_bgf(double a) {
 
  double beta = 1;
- auto G1 = gf<imfreq>({beta, Fermion}, {2, 2});
+ auto G1 = gf<imfreq>{{beta, Fermion}, {2, 2}};
 
  auto B1 = make_block_gf<imfreq>(3, G1);
 
@@ -29,7 +29,7 @@ void pass_bgf(block_gf_view<imfreq> g) {
 
 gf_view<imfreq,scalar_valued> make_sgf(double a) {
  double beta = 1;
- auto G1 = gf<imfreq, scalar_valued>({beta, Fermion});
+ auto G1 = gf<imfreq, scalar_valued>{{beta, Fermion}};
 {
   h5::file file("ess_test_g3a.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", G1);

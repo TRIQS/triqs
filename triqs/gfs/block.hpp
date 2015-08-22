@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./gf.hpp"
+#include "./gf_classes.hpp"
 #include "./meshes/discrete.hpp"
 #include <iterator>
 
@@ -27,7 +27,6 @@ namespace triqs {
 namespace gfs {
 
  struct block_index {};
- using block_index2 = cartesian_product<block_index, block_index>;
 
  template <> struct gf_mesh<block_index> : discrete_mesh<discrete_domain> {
   using B = discrete_mesh<discrete_domain>;
@@ -54,11 +53,14 @@ namespace gfs {
  template <typename G, int n = 0> struct is_block_gf_or_view;
 
  template <typename G> struct is_block_gf_or_view<G, 1> : is_gf_or_view<G, block_index>{};
- template <typename G> struct is_block_gf_or_view<G, 2> : is_gf_or_view<G, block_index2>{};
+#ifndef TRIQS_CPP11
  template <typename G>
  struct is_block_gf_or_view<G, 0> : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value ||
                                                                      is_block_gf_or_view<G, 2>::value> {};
-
+#else
+ template <typename G>
+ struct is_block_gf_or_view<G, 0> : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value> {};
+#endif
  /// ---------------------------  hdf5 ---------------------------------
 
  template <typename Target> struct gf_h5_name<block_index, Target, nothing> {

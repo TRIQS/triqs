@@ -73,12 +73,12 @@ namespace gfs {
        RETURN(make_block_gf(g.mesh(), _map(std::forward<F>(f), std::forward<G>(g).data())));
   };
 
-  template <typename F, typename G, typename M, typename T, typename S, typename E> struct map<F, G, gf_view<M, T, S, E>> {
+  template <typename F, typename G, typename... T> struct map<F, G, gf_view<T...>> {
    static auto invoke(F &&f, G &&g)
        RETURN(make_block_gf_view(g.mesh(), _map(std::forward<F>(f), std::forward<G>(g).data())));
   };
 
-  template <typename F, typename G, typename M, typename T, typename S, typename E> struct map<F, G, gf_const_view<M, T, S, E>> {
+  template <typename F, typename G, typename... T> struct map<F, G, gf_const_view<T...>> {
    static auto invoke(F &&f, G &&g)
        RETURN(make_block_gf_const_view(g.mesh(), _map(std::forward<F>(f), std::forward<G>(g).data())));
   };
@@ -91,7 +91,7 @@ namespace gfs {
  }
 #else
  template <typename F, typename G>
- auto map_block_gf(F &&f, G &&g) RETURN(impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g)));
+ auto map_block_gf(F &&f, G &&g) RETURN((impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g))));
 #endif
 
  // the map function itself...

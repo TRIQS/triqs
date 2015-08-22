@@ -22,8 +22,8 @@
 #include <triqs/utility/index_generator.hpp>
 #include <triqs/h5/vector.hpp>
 #include "./brillouin_zone.hpp"
-#include "../gfs/gf.hpp"
-#include "../gfs/meshes/mesh_tools.hpp"
+#include "../gfs.hpp"
+//#include "../gfs/meshes/mesh_tools.hpp"
 
 namespace triqs {
 namespace gfs {

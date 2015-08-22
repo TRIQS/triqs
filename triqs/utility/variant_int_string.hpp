@@ -141,6 +141,7 @@ namespace utility {
 
   friend std::ostream & operator << (std::ostream & out, variant_int_string const &x) {
    apply_visitor(print_visitor{out},x);
+   return out;
   }
 #else
   friend std::ostream & operator << (std::ostream & out, variant_int_string const &x) {

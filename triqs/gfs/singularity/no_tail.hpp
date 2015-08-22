@@ -30,10 +30,32 @@ namespace gfs {
  /**
   * TBR
   */
- template <typename G>
-  // requires(is_gf_or_view<G>)
- gf_view<typename G::variable_t, typename G::target_t, no_tail> make_gf_view_without_tail(G const &g) {
+ template <typename M, typename T, typename S, typename E>
+ gf_view<M, T, no_tail> make_gf_view_without_tail(gf_view<M, T, S, E> g) {
   return {g.mesh(), g.data(), {}, g.symmetry(), g.indices(), g.name};
+ }
+
+ /**
+  * TBR
+  */
+ template <typename M, typename T, typename S, typename E>
+ gf_const_view<M, T, no_tail> make_gf_view_without_tail(gf_const_view<M, T, S, E> g) {
+  return {g.mesh(), g.data(), {}, g.symmetry(), g.indices(), g.name};
+ }
+
+ /**
+  * TBR
+  */
+ template <typename M, typename T, typename S, typename E> gf_view<M, T, no_tail> make_gf_view_without_tail(gf<M, T, S, E> &g) {
+  return make_gf_view_without_tail(g());
+ }
+
+ /**
+  * TBR
+  */
+ template <typename M, typename T, typename S, typename E>
+ gf_const_view<M, T, no_tail> make_gf_view_without_tail(gf<M, T, S, E> const &g) {
+  return make_gf_view_without_tail(g());
  }
 
  namespace details { // dispatch the test for scalar_valued and matrix_valued

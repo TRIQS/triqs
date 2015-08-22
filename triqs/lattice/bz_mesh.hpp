@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./brillouin_zone.hpp"
-#include "../gfs/gf.hpp"
+#include "../gfs.hpp"
 #include "../gfs/meshes/mesh_tools.hpp"
 
 namespace triqs {

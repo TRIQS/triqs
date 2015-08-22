@@ -38,10 +38,10 @@ namespace triqs {
   // For Imaginary Matsubara Frequency functions
   // ------------------------------------------------------
 
-  arrays::matrix<double> density(gf_view<imfreq> const & g);
-  double density(gf_view<imfreq, scalar_valued> const & g);
+  arrays::matrix<double> density(gf_const_view<imfreq>  g);
+  double density(gf_const_view<imfreq, scalar_valued>  g);
 
-  arrays::matrix<double> density(gf_view<legendre> const & g);
+  arrays::matrix<double> density(gf_const_view<legendre>  g);
 
   //-------------------------------------------------------
   // For Legendre functions

@@ -23,51 +23,64 @@ namespace triqs {
 namespace gfs {
 
  /*------------------------------------------------------------------------------------------------------
-  *                      Slicing the matrix valued into a matrix
-  *-----------------------------------------------------------------------------------------------------*/
+ *                      Slicing the matrix valued into a matrix
+ *-----------------------------------------------------------------------------------------------------*/
 
- template <typename M, typename Target, typename S, typename E, bool IsConst, typename... Args>
- gf_view<M, matrix_valued, S, E, IsConst> slice_target(gf_view<M, Target, S, E, IsConst> g, Args &&... args) {
-  static_assert(std::is_same<Target, matrix_valued>::value, "slice_target only for matrix_valued GF's");
-  using arrays::range;
-  return {g.mesh(),                                                   g.data()(range(), std::forward<Args>(args)...),
+ template <typename M, typename S, typename E, typename... Args>
+ gf_view<M, matrix_valued, S, E> slice_target(gf_view<M, matrix_valued, S, E> g, Args &&... args) {
+  return {g.mesh(), g.data()(arrays::range(), std::forward<Args>(args)...),
           slice_target(g.singularity(), std::forward<Args>(args)...), g.symmetry(),
-          slice(g.indices(), std::forward<Args>(args)...),            g.name};
+          slice(g.indices(), std::forward<Args>(args)...), g.name};
  }
 
- template <typename M, typename Target, typename S, typename E, typename... Args>
- gf_view<M, matrix_valued, S, E> slice_target(gf<M, Target, S, E> &g, Args &&... args) {
+ template <typename M, typename S, typename E, typename... Args>
+ gf_const_view<M, matrix_valued, S, E> slice_target(gf_const_view<M, matrix_valued, S, E> g, Args &&... args) {
+  return {g.mesh(), g.data()(arrays::range(), std::forward<Args>(args)...),
+          slice_target(g.singularity(), std::forward<Args>(args)...), g.symmetry(),
+          slice(g.indices(), std::forward<Args>(args)...), g.name};
+ }
+
+ template <typename M, typename S, typename E, typename... Args>
+ gf_view<M, matrix_valued, S, E> slice_target(gf<M, matrix_valued, S, E> &g, Args &&... args) {
   return slice_target(g(), std::forward<Args>(args)...);
  }
 
- template <typename M, typename Target, typename S, typename E, typename... Args>
- gf_const_view<M, matrix_valued, S, E> slice_target(gf<M, Target, S, E> const &g, Args &&... args) {
+ template <typename M, typename S, typename E, typename... Args>
+ gf_const_view<M, matrix_valued, S, E> slice_target(gf<M, matrix_valued, S, E> const &g, Args &&... args) {
   return slice_target(g(), std::forward<Args>(args)...);
  }
 
  /*------------------------------------------------------------------------------------------------------
-  *                      Slicing the matrix valued into a scalar 
+  *                      Slicing the matrix valued into a scalar
   *-----------------------------------------------------------------------------------------------------*/
 
- template <typename M, typename Target, typename S, typename E, bool IsConst, typename... Args>
- gf_view<M, scalar_valued, S, void, IsConst> slice_target_to_scalar(gf_view<M, Target, S, E, IsConst> g, Args &&... args) {
-  static_assert(std::is_same<Target, matrix_valued>::value, "slice_target only for matrix_valued GF's");
-  using arrays::range;
+ template <typename M, typename S, typename E, typename... Args>
+ gf_view<M, scalar_valued, S> slice_target_to_scalar(gf_view<M, matrix_valued, S, E> g, Args &&... args) {
   return {g.mesh(),
-          g.data()(range(), std::forward<Args>(args)...),
+          g.data()(arrays::range(), std::forward<Args>(args)...),
           slice_target(g.singularity(), range(args, args + 1)...),
           g.symmetry(),
           {},
           g.name};
  }
 
- template <typename M, typename Target, typename S, typename E, typename... Args>
- gf_view<M, scalar_valued, S, void> slice_target_to_scalar(gf<M, Target, S, E> &g, Args &&... args) {
+ template <typename M, typename S, typename E, typename... Args>
+ gf_const_view<M, scalar_valued, S> slice_target_to_scalar(gf_const_view<M, matrix_valued, S, E> g, Args &&... args) {
+  return {g.mesh(),
+          g.data()(arrays::range(), std::forward<Args>(args)...),
+          slice_target(g.singularity(), range(args, args + 1)...),
+          g.symmetry(),
+          {},
+          g.name};
+ }
+
+ template <typename M, typename S, typename E, typename... Args>
+ gf_view<M, scalar_valued, S> slice_target_to_scalar(gf<M, matrix_valued, S, E> &g, Args &&... args) {
   return slice_target_to_scalar(g(), std::forward<Args>(args)...);
  }
 
- template <typename M, typename Target, typename S, typename E, typename... Args>
- gf_const_view<M, scalar_valued, S, void> slice_target_to_scalar(gf<M, Target, S, E> const &g, Args &&... args) {
+ template <typename M, typename S, typename E, typename... Args>
+ gf_const_view<M, scalar_valued, S> slice_target_to_scalar(gf<M, matrix_valued, S, E> const &g, Args &&... args) {
   return slice_target_to_scalar(g(), std::forward<Args>(args)...);
  }
 
@@ -76,11 +89,10 @@ namespace gfs {
   *                      A scalar valued gf can be viewed as a 1x1 matrix
   *-----------------------------------------------------------------------------------------------------*/
 
- template <typename M, typename S, typename E, bool C>
- gf_view<M, matrix_valued, S, void, C>
- reinterpret_scalar_valued_gf_as_matrix_valued(gf_view<M, scalar_valued, S, E, C> g) {
-  using a_t = typename gf_view<M, matrix_valued, S, void, C>::data_view_t;
-  auto & imap = g.data().indexmap();
+ template <typename M, typename S, typename E>
+ gf_view<M, matrix_valued, S> reinterpret_scalar_valued_gf_as_matrix_valued(gf_view<M, scalar_valued, S, E> g) {
+  using a_t = typename gf_view<M, matrix_valued, S>::data_view_t;
+  auto &imap = g.data().indexmap();
   typename a_t::indexmap_type index_map(join(imap.lengths(), make_shape(1, 1)), join(imap.strides(), make_shape(1, 1)),
                                         imap.start_shift());
   auto a = a_t{index_map, g.data().storage()};
@@ -88,14 +100,22 @@ namespace gfs {
  }
 
  template <typename M, typename S, typename E>
- gf_view<M, matrix_valued, S, void>
- reinterpret_scalar_valued_gf_as_matrix_valued(gf<M, scalar_valued, S, E> &g) {
+ gf_const_view<M, matrix_valued, S> reinterpret_scalar_valued_gf_as_matrix_valued(gf_const_view<M, scalar_valued, S, E> g) {
+  using a_t = typename gf_view<M, matrix_valued, S>::data_view_t;
+  auto &imap = g.data().indexmap();
+  typename a_t::indexmap_type index_map(join(imap.lengths(), make_shape(1, 1)), join(imap.strides(), make_shape(1, 1)),
+                                        imap.start_shift());
+  auto a = a_t{index_map, g.data().storage()};
+  return {g.mesh(), a, g.singularity(), g.symmetry(), {}, g.name};
+ }
+
+ template <typename M, typename S, typename E>
+ gf_view<M, matrix_valued, S> reinterpret_scalar_valued_gf_as_matrix_valued(gf<M, scalar_valued, S, E> &g) {
   return reinterpret_scalar_valued_gf_as_matrix_valued(g());
  }
 
  template <typename M, typename S, typename E>
- gf_const_view<M, matrix_valued, S, void>
- reinterpret_scalar_valued_gf_as_matrix_valued(gf<M, scalar_valued, S, E> const &g) {
+ gf_const_view<M, matrix_valued, S> reinterpret_scalar_valued_gf_as_matrix_valued(gf<M, scalar_valued, S, E> const &g) {
   return reinterpret_scalar_valued_gf_as_matrix_valued(g());
  }
 
@@ -123,7 +143,11 @@ namespace gfs {
   return res;
  }
 
- template <typename M, typename S, typename E, bool B> gf<M, matrix_valued, S, E> inverse(gf_view<M, matrix_valued, S, E, B> g) {
+ template <typename M, typename S, typename E> gf<M, matrix_valued, S, E> inverse(gf_view<M, matrix_valued, S, E> g) {
+  return inverse(gf<M, matrix_valued, S, E>(g));
+ }
+
+ template <typename M, typename S, typename E> gf<M, matrix_valued, S, E> inverse(gf_const_view<M, matrix_valued, S, E> g) {
   return inverse(gf<M, matrix_valued, S, E>(g));
  }
 

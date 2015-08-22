@@ -41,7 +41,9 @@
 #endif
 
 #include <triqs/gfs/block.hpp>
+#ifndef TRIQS_C11
 #include <triqs/gfs/block2.hpp>
+#endif
 #include <triqs/gfs/impl/map.hpp>
 #include <triqs/gfs/impl/block_gf_iterator.hpp>
 

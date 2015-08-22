@@ -63,7 +63,8 @@ namespace mpi {
 
  // ---------------- reduce   ---------------------
 
- template <typename T> std::vector<T> mpi_reduce(std::vector<T> const &a, communicator c={}, int root=0, bool all=false) {
+ template <typename T>
+ std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false) {
   return mpi_reduce(a, c, root, all, is_basic<T>{});
  }
 
@@ -76,9 +77,10 @@ namespace mpi {
   return b;
  }
 
- template <typename T> std::vector<T> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, std::false_type) {
+ template <typename T>
+ std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, std::false_type) {
   int s = a.size();
-  std::vector<T> lhs;
+  std::vector<Regular<T>> lhs;
   lhs.reserve(s);
   for (auto i = 0; i < s; ++i) lhs.push_back(mpi_reduce(a[i], c, root, all));
   return lhs;

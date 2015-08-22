@@ -71,7 +71,8 @@ TEST(Gf, Block) {
 
   // test reinterpretation
   // compile only, add more test here
-  auto gs1 = gf<imfreq, scalar_valued>({beta, Fermion});
+  auto gs1 = gf<imfreq, scalar_valued>{{beta, Fermion}};
+  //auto gs1 = gf<imfreq, scalar_valued>({beta, Fermion});
   auto bgs = make_block_gf<imfreq>(3, gs1);
   auto bg = reinterpret_scalar_valued_gf_as_matrix_valued(bgs);
 

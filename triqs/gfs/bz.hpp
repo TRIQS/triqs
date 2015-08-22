@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./gf.hpp"
+#include "./gf_classes.hpp"
 #include "./domains/R.hpp"
 #include "../lattice/regular_bz_mesh.hpp"
 

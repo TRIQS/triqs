@@ -54,22 +54,27 @@ namespace triqs { namespace gfs {
   template<typename ... Ms> using cart_prod = typename cart_prod_impl<Ms...>::type;
 
   // The implementation (can be overloaded for some types), so put in a struct to have partial specialization
-  template <typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsConst> struct partial_eval_impl;
+  template <typename Mesh, typename Target, typename Singularity, typename Evaluator> struct partial_eval_impl;
 
   // The user function when the indices is already a linear index.
-  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, bool C, typename T>
-  auto partial_eval_linear_index(gf_view<Mesh, Target, Singularity, Evaluator, C> g, T const& x) {
-   return partial_eval_impl<Mesh, Target, Singularity, Evaluator, C>::template invoke<pos...>(g(), x);
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, typename T>
+  auto partial_eval_linear_index(gf_view<Mesh, Target, Singularity, Evaluator> g, T const& x) {
+   return partial_eval_impl<Mesh, Target, Singularity, Evaluator>::template invoke<pos...>(g(), x);
+  }
+
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, typename T>
+  auto partial_eval_linear_index(gf_const_view<Mesh, Target, Singularity, Evaluator> g, T const& x) {
+   return partial_eval_impl<Mesh, Target, Singularity, Evaluator>::template invoke<pos...>(g(), x);
   }
 
   template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, typename T>
   auto partial_eval_linear_index(gf<Mesh, Target, Singularity, Evaluator>& g, T const& x) {
-   return partial_eval_impl<Mesh, Target, Singularity, Evaluator, false>::template invoke<pos...>(g(), x);
+   return partial_eval_impl<Mesh, Target, Singularity, Evaluator>::template invoke<pos...>(g(), x);
   }
 
   template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, typename T>
   auto partial_eval_linear_index(gf<Mesh, Target, Singularity, Evaluator> const& g, T const& x) {
-   return partial_eval_impl<Mesh, Target, Singularity, Evaluator, true>::template invoke<pos...>(g(), x);
+   return partial_eval_impl<Mesh, Target, Singularity, Evaluator>::template invoke<pos...>(g(), x);
   }
 
   /// ------------------------------------------------------------
@@ -95,23 +100,23 @@ namespace triqs { namespace gfs {
   // curry<1>(g) returns : y-> x,z... -> g(x,y,z...)
 
   // The implementation (can be overloaded for some types)
-  template <int... pos, typename Target, typename Singularity, typename Evaluator, bool IsConst, typename... Ms>
-  auto curry_impl(gf_view<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsConst> g) {
+  template <int... pos, typename G>
+  auto curry_impl(G g) { // impl function : G is always a view, see call below
    // pick up the meshed corresponding to the curryed variables
    auto meshes_tuple = triqs::tuple::filter<pos...>(g.mesh().components());
-   using var_t = cart_prod<triqs::tuple::filter_t<std::tuple<Ms...>, pos...>>;
+   using var_t = cart_prod<triqs::tuple::filter_t<typename G::mesh_t::ms_tuple_t, pos...>>;
    auto m = triqs::tuple::apply_construct<gf_mesh<var_t>>(meshes_tuple);
    auto l = [g](auto&&... x) { return partial_eval_linear_index<pos...>(g, std::make_tuple(x...)); };
    return make_gf_view_lambda_valued<var_t>(m, l);
   };
 
   // The user function
-  //template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst>
-  //auto curry(gf_impl<Mesh, Target, Singularity, Evaluator, IsView, IsConst> const &g) {
-  // return curry_impl<pos...>(g());
-  //}
-  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsConst>
-  auto curry(gf_view<Mesh, Target, Singularity, Evaluator, IsConst> g) {
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator>
+  auto curry(gf_view<Mesh, Target, Singularity, Evaluator> g) {
+   return curry_impl<pos...>(g());
+  }
+  template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator>
+  auto curry(gf_const_view<Mesh, Target, Singularity, Evaluator> g) {
    return curry_impl<pos...>(g());
   }
   template <int... pos, typename Mesh, typename Target, typename Singularity, typename Evaluator>
@@ -126,11 +131,12 @@ namespace triqs { namespace gfs {
   //---------------------------------------------
 
   // A generic impl. for cartesian product
-  template <typename Target, typename Singularity, typename Evaluator, bool IsConst, typename... Ms>
-  struct partial_eval_impl<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsConst> {
+  template <typename Target, typename Singularity, typename Evaluator, typename... Ms>
+  struct partial_eval_impl<cartesian_product<Ms...>, Target, Singularity, Evaluator> {
 
-   template <int... pos, typename XTuple>
-   static auto invoke(gf_view<cartesian_product<Ms...>, Target, Singularity, Evaluator, IsConst> g, XTuple const& x_tuple) {
+   template <int... pos, typename G, typename XTuple>
+   static auto invoke(G && g, XTuple const& x_tuple) { 
+    // is a gf_view or gf_const_view of <cartesian_product<Ms...>, Target, Singularity, Evaluator> 
     using var_t = cart_prod<triqs::tuple::filter_out_t<std::tuple<Ms...>, pos...>>;
     // meshes of the returned gf_view : just drop the mesh of the evaluated variables
     auto meshes_tuple_partial = triqs::tuple::filter_out<pos...>(g.mesh().components());
@@ -144,7 +150,7 @@ namespace triqs { namespace gfs {
     auto singv = partial_eval_linear_index<pos...>(g.singularity(), x_tuple);
     using r_sing_t = typename decltype(singv)::regular_type;
     // finally, we build the view on this data.
-    using r_t = gf_view<var_t, Target, r_sing_t, void, IsConst>;
+    using r_t = std14::conditional_t<G::is_const,gf_const_view<var_t, Target, r_sing_t>,gf_view<var_t, Target, r_sing_t>>;
     return r_t{m, arr2, singv, {}, {}};
    }
   };

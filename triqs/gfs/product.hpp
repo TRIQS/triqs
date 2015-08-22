@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./gf.hpp"
+#include "./gf_classes.hpp"
 #include "./meshes/product.hpp"
 #include "./singularity/tail_zero.hpp"
 

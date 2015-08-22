@@ -453,11 +453,9 @@ namespace triqs { namespace clef {
    triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
   }
 
- template<typename F, typename RHS, typename... T> 
-  void operator<<(expr<tags::subscript, F, T...> && ex, RHS && rhs) = delete;
-
- template<typename F, typename RHS, typename... T> 
-  void operator<<(expr<tags::subscript, F, T...> const & ex, RHS && rhs) = delete;
+ template <typename F, typename RHS, typename... T> void operator<<(expr<tags::subscript, F, T...>&& ex, RHS&& rhs) = delete;
+ template <typename F, typename RHS, typename... T> void operator<<(expr<tags::subscript, F, T...>& ex, RHS&& rhs) = delete;
+ template <typename F, typename RHS, typename... T> void operator<<(expr<tags::subscript, F, T...> const& ex, RHS&& rhs) = delete;
 
  /* --------------------------------------------------------------------------------------------------
   * Create a terminal node of an object. the from clone version force copying the object  

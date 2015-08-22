@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../gf.hpp"
+#include "../gf_classes.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -160,18 +160,17 @@ namespace gfs {
 
  namespace curry_impl {
 
-  template <typename Mesh, bool IsConst> struct partial_eval_impl<Mesh, tail, nothing, void, IsConst> {
+  template <typename Mesh> struct partial_eval_impl<Mesh, tail, nothing, void> {
 
-   using gv_t = gf_view<Mesh, tail, nothing, void, IsConst>;
-   template <int... pos, typename T> static auto invoke(gv_t g, T const &x_tuple) {
+   template <int... pos, typename G, typename T> static auto invoke(G && g, T const &x_tuple) {
     return invoke_impl(g, std14::index_sequence<pos...>(), x_tuple);
    }
 
-   template <typename T> static auto invoke_impl(gv_t g, std14::index_sequence<0>, T const &x_tuple) {
+   template <typename G,typename T> static auto invoke_impl(G & g, std14::index_sequence<0>, T const &x_tuple) {
     return g.get_from_linear_index(std::get<0>(x_tuple));
    }
 
-   template <typename T> static nothing invoke_impl(gv_t g, std14::index_sequence<1>, T) { return nothing(); }
+   template <typename G,typename T> static nothing invoke_impl(G & g, std14::index_sequence<1>, T) { return nothing(); }
   };
  }
 }

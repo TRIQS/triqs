@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./gf.hpp"
+#include "./gf_classes.hpp"
 #include "./meshes/segment.hpp"
 
 namespace triqs {

@@ -38,6 +38,7 @@ namespace triqs {
 namespace gfs {
  using utility::factory;
  using arrays::make_shape;
+ using arrays::range;
  using arrays::array;
  using arrays::array_view;
  using arrays::matrix;
@@ -88,16 +89,13 @@ namespace gfs {
 
  // The view type
  template <typename Mesh, typename Target = gf_default_target_t<Mesh>,
-           typename Singularity = gf_default_singularity_t<Mesh, Target>, typename Evaluator = void, bool IsConst = false>
+           typename Singularity = gf_default_singularity_t<Mesh, Target>, typename Evaluator = void>
  class gf_view;
 
  // The const view type
  template <typename Mesh, typename Target = gf_default_target_t<Mesh>,
            typename Singularity = gf_default_singularity_t<Mesh, Target>, typename Evaluator = void>
- using gf_const_view = gf_view<Mesh, Target, Singularity, Evaluator, true>;
-
- // the implementation class : forward
- template <typename Mesh, typename Target, typename Singularity, typename Evaluator, bool IsView, bool IsConst> class gf_impl;
+ class gf_const_view;
 
  /*----------------------------------------------------------
   *   Useful metafunctions, traits
@@ -121,11 +119,17 @@ namespace gfs {
  template <typename M, typename T, typename S, typename E> struct is_gf_or_view<gf<M, T, S, E>, void> : std::true_type {};
  template <typename M, typename T, typename S, typename E> struct is_gf_or_view<gf<M, T, S, E>, M> : std::true_type {};
  
- template <typename M, typename T, typename S, typename E, bool C>
- struct is_gf_or_view<gf_view<M, T, S, E, C>, void> : std::true_type {};
+ template <typename M, typename T, typename S, typename E>
+ struct is_gf_or_view<gf_view<M, T, S, E>, void> : std::true_type {};
 
- template <typename M, typename T, typename S, typename E, bool C>
- struct is_gf_or_view<gf_view<M, T, S, E, C>, M> : std::true_type {};
+ template <typename M, typename T, typename S, typename E>
+ struct is_gf_or_view<gf_view<M, T, S, E>, M> : std::true_type {};
+
+ template <typename M, typename T, typename S, typename E>
+ struct is_gf_or_view<gf_const_view<M, T, S, E>, void> : std::true_type {};
+
+ template <typename M, typename T, typename S, typename E>
+ struct is_gf_or_view<gf_const_view<M, T, S, E>, M> : std::true_type {};
 
  template <typename G, typename M> struct is_gf_or_view<G&,M> : is_gf_or_view<G,M>{};
  template <typename G, typename M> struct is_gf_or_view<G const &,M> : is_gf_or_view<G,M>{};
@@ -210,14 +214,42 @@ namespace gfs {
   *  Get shape of the data or of the target
   *--------------------------------------------------------*/   
 
- template <typename M, typename T, typename S, typename E, bool IsView, bool IsConst>
- auto get_gf_data_shape(gf_impl<M,T,S,E, IsView, IsConst> const &g) RETURN(get_shape(g.data()));
+ template <typename M, typename T, typename S, typename E>
+ auto get_gf_data_shape(gf<M,T,S,E> const &g) RETURN(get_shape(g.data()));
+ 
+ template <typename M, typename T, typename S, typename E>
+ auto get_gf_data_shape(gf_view<M,T,S,E> const &g) RETURN(get_shape(g.data()));
+ 
+ template <typename M, typename T, typename S, typename E>
+ auto get_gf_data_shape(gf_const_view<M,T,S,E> const &g) RETURN(get_shape(g.data()));
 
- template <typename M, typename T, typename S, typename E, bool IsView, bool IsConst>
- auto get_target_shape(gf_impl<M,T,S,E, IsView, IsConst> const &g)
+ template <typename M, typename T, typename S, typename E>
+ auto get_target_shape(gf<M,T,S,E> const &g)
+     DECL_AND_RETURN(g.data().shape().front_pop());
+
+ template <typename M, typename T, typename S, typename E>
+ auto get_target_shape(gf_view<M,T,S,E> const &g)
+     DECL_AND_RETURN(g.data().shape().front_pop());
+
+ template <typename M, typename T, typename S, typename E>
+ auto get_target_shape(gf_const_view<M,T,S,E> const &g)
      DECL_AND_RETURN(g.data().shape().front_pop());
 
  // overload get_shape for a vector to simplify code below in gf block case.
  template <typename T> long get_shape(std::vector<T> const &x) { return x.size(); }
+
+
+ /*------------------------------------------------------------------------------------------------------
+  *                                  For mpi lazy
+  *-----------------------------------------------------------------------------------------------------*/
+
+ // A small lazy tagged class
+ template <typename Tag, typename T> struct mpi_lazy {
+  T rhs;
+  mpi::communicator c;
+  int root;
+  bool all;
+ };
+
 }
 }

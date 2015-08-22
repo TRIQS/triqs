@@ -19,12 +19,15 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./gf.hpp"
+#include "./gf_classes.hpp"
 #include "./meshes/discrete.hpp"
 #include <iterator>
 
 namespace triqs {
 namespace gfs {
+
+ using block_index2 = cartesian_product<block_index, block_index>;
+ template <typename G> struct is_block_gf_or_view<G, 2> : is_gf_or_view<G, block_index2>{};
 
  // -------------------------------  aliases  --------------------------------------------------
 

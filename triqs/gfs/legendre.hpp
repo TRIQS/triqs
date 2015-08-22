@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./gf.hpp"
+#include "./gf_classes.hpp"
 #include "./domains/legendre.hpp"
 #include "./meshes/discrete.hpp"
 

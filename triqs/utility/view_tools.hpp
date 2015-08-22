@@ -29,7 +29,12 @@ namespace triqs {
  struct has_view<
      T, decltype(nop(std::declval<typename T::view_type>(), std::declval<typename T::regular_type>()))> : std::true_type {};
 
- template<typename T, bool HasView = has_view<T>::value> struct regular_type_if_exists_else_type;
+
+ template<typename T, typename Enable=void> struct has_regular : std::false_type {};
+ template <typename T> struct has_regular<T, decltype(nop(std::declval<typename T::regular_type>()))> : std::true_type {};
+
+ // DEPRECATED
+ template<typename T, bool HasRegular = has_regular<T>::value> struct regular_type_if_exists_else_type;
  template<typename T> struct regular_type_if_exists_else_type<T,false> {using type=T;};
  template<typename T> struct regular_type_if_exists_else_type<T,true > {using type=typename T::regular_type;};
 
@@ -41,8 +46,11 @@ namespace triqs {
  template<typename T> struct const_view_type_if_exists_else_type<T,false> {using type=T;};
  template<typename T> struct const_view_type_if_exists_else_type<T,true>  {using type=const typename T::const_view_type;};
 
-  /// Transform to the regular type
- template <typename A> typename regular_type_if_exists_else_type<A>::type make_regular(A const &x) { return x; }
+ // CURRENT
+ template<typename A> using Regular = typename regular_type_if_exists_else_type<A>::type;
+
+ /// Transform to the regular type
+ template <typename A> Regular<A> make_regular(A &&x) { return std::forward<A>(x); }
 
 }//namespace triqs
 
