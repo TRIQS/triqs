@@ -22,7 +22,7 @@
 #define TRIQS_UTILITY_COUNT_OCCUR_H
 namespace triqs { 
 
- /// count_type_occurrence<T, Args...>::value is the number of Args deriving or equal to T
+ // count_type_occurrence<T, Args...>::value is the number of Args deriving or equal to T
  
  template<typename T, typename ... A > struct count_type_occurrence;
 

@@ -150,16 +150,16 @@ namespace triqs { namespace clef {
  template<typename U> U  _cl(U && x) { return std::forward<U>(x);}
  template<typename U> decltype(auto) _cl(std::reference_wrapper<U> x)  { return x.get();}
 
- /// Terminal 
+ // Terminal 
  template<> struct operation<tags::terminal> { template<typename L> L operator()(L&& l) const { return std::forward<L>(l);} };
 
- /// Function call 
+ // Function call 
  template<> struct operation<tags::function> {
   template <typename F, typename... Args>
   decltype(auto) operator()(F&& f, Args&&... args) const  { return _cl(std::forward<F>(f))(_cl(std::forward<Args>(args))...);}
  };
 
- /// [ ] Call
+ // [ ] Call
  template<> struct operation<tags::subscript> {
   template <typename F, typename Args>
   decltype(auto) operator()(F&& f, Args&& args) const  { return _cl(std::forward<F>(f))[_cl(std::forward<Args>(args))];}
@@ -211,7 +211,7 @@ namespace triqs { namespace clef {
  TRIQS_CLEF_OPERATION(loginot,     !);
 #undef TRIQS_CLEF_OPERATION
 
- /// the only ternary node :  expression if
+ // the only ternary node :  expression if
  template<> struct operation<tags::if_else> { 
   // A and B MUST be the same 
   template<typename C, typename A, typename B> A operator()(C const & c, A const & a, B const & b) const {return _cl(c) ? _cl(a): _cl(b);}

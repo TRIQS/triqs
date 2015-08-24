@@ -24,9 +24,26 @@
 #include <tuple>
 #include <type_traits>
 
-namespace triqs { namespace utility { 
+namespace triqs { namespace utility {
 
- /**
+ namespace details {
+
+  template <typename Fun> struct function_arg_ret_type1;
+
+  template <typename ClassType, typename ReturnType, typename... Args>
+  struct function_arg_ret_type1<ReturnType (ClassType::*)(Args...) const> {
+   static constexpr int arity = sizeof...(Args);
+   using result_type = ReturnType;
+   template <size_t i> struct arg : std::tuple_element<i, std::tuple<Args...>> {};
+   template <size_t i> struct decay_arg : std::tuple_element<i, std::tuple<typename std::decay<Args>::type...>> {};
+  };
+
+  template <typename ClassType, typename ReturnType, typename... Args>
+  struct function_arg_ret_type1<ReturnType (ClassType::*)(Args...)>
+      : function_arg_ret_type1<ReturnType (ClassType::*)(Args...) const> {};
+ }
+
+ /*
   * Detect argument and return type of a callable object, 
   * as long as its operator () is not overloaded
   *
@@ -50,18 +67,7 @@ namespace triqs { namespace utility {
   *    decay_arg<1> = double
   */ 
  template <typename Fun>
-  struct function_arg_ret_type : public function_arg_ret_type<decltype(&Fun::operator())> {};
+  struct function_arg_ret_type : public details::function_arg_ret_type1<decltype(&Fun::operator())> {};
 
- template <typename ClassType, typename ReturnType, typename... Args>
-  struct function_arg_ret_type<ReturnType(ClassType::*)(Args...) const> {
-   static constexpr int arity = sizeof...(Args);
-   typedef ReturnType result_type;
-   template <size_t i> struct arg : std::tuple_element<i, std::tuple<Args...>>{};
-   template <size_t i> struct decay_arg : std::tuple_element<i, std::tuple<typename std::decay<Args>::type...>>{};
-  };
-
- template <typename ClassType, typename ReturnType, typename... Args>
-  struct function_arg_ret_type<ReturnType(ClassType::*)(Args...)> : function_arg_ret_type<ReturnType(ClassType::*)(Args...) const>{};
-
-}}
+ }}
 #endif

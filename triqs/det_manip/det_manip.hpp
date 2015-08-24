@@ -39,27 +39,27 @@ namespace triqs { namespace det_manip {
  /**
   * \brief Standard matrix/det manipulations used in several QMC.
   */
- template<typename FunctionType>
-  class det_manip {
-   private:
-    typedef utility::function_arg_ret_type<FunctionType> f_tr;
-    static_assert(f_tr::arity == 2, "det_manip : the function must take two arguments !");
-    // Do we REALLY need this ?
-    static_assert(std::is_same< typename f_tr::template decay_arg<0>::type, typename f_tr::template decay_arg<1>::type>::value,
-      "det_manip : the two arguments must of the function must have the same type");
-   public:
+ template <typename FunctionType> class det_manip {
+  private:
+  using f_tr = utility::function_arg_ret_type<FunctionType>;
+  static_assert(f_tr::arity == 2, "det_manip : the function must take two arguments !");
+  // Do we REALLY need this ?
+  static_assert(std::is_same<typename f_tr::template decay_arg<0>::type, typename f_tr::template decay_arg<1>::type>::value,
+                "det_manip : the two arguments must of the function must have the same type");
 
-    typedef typename f_tr::template decay_arg<0>::type xy_type;
-    typedef typename f_tr::result_type                 value_type;
-    static_assert( std::is_floating_point<value_type>::value || triqs::is_complex<value_type>::value, "det_manip : the function must return a floating number or a complex number");
+  public:
+  using xy_type = typename f_tr::template decay_arg<0>::type;
+  using value_type = typename f_tr::result_type;
+  static_assert(std::is_floating_point<value_type>::value || triqs::is_complex<value_type>::value,
+                "det_manip : the function must return a floating number or a complex number");
 
-    typedef arrays::vector<value_type>                 vector_type;
-    typedef arrays::matrix<value_type>                 matrix_type;
-    typedef arrays::matrix_view<value_type>            matrix_view_type;
+  using vector_type = arrays::vector<value_type>;
+  using matrix_type = arrays::matrix<value_type>;
+  using matrix_view_type = arrays::matrix_view<value_type>;
 
-   protected: // the data
-    typedef std::ptrdiff_t int_type;
-    typedef arrays::range range;
+  protected: // the data
+  using int_type = std::ptrdiff_t;
+  using range = arrays::range;
 
     FunctionType f;
 

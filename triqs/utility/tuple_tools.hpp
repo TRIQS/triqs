@@ -70,7 +70,7 @@ namespace std {
 namespace triqs { namespace tuple {
 
  /*
- /// Repeat an element
+ // Repeat an element
  template<typename T, int R> struct make_tuple_repeat_impl;
 
  template <typename T> struct make_tuple_repeat_impl<T, 1> {
@@ -90,15 +90,15 @@ namespace triqs { namespace tuple {
  template <int R, typename T> auto make_tuple_repeat(T &&x) { return make_tuple_repeat_impl<T, R>::invoke(std::forward<T>(x)); }
 */
 
- /// _get_seq<T>() : from a tuple T, return the index sequence of the tuple length
+ // _get_seq<T>() : from a tuple T, return the index sequence of the tuple length
  template <typename T> std14::make_index_sequence<std::tuple_size<std14::decay_t<T>>::value> _get_seq() {
   return {};
  }
 
- /// _get_seq_len<T> : constexpr : return the length of the tuple
+ // _get_seq_len<T> : constexpr : return the length of the tuple
  template <typename Tu> constexpr int _get_seq_len() { return std::tuple_size<std14::decay_t<Tu>>::value; }
 
- /// basic tools
+ // basic tools
  template <int N> struct _int {};
  template <int... Is> struct all_indices : _int<Is>... {};
 
@@ -113,10 +113,10 @@ namespace triqs { namespace tuple {
   using type = std14::index_sequence<Is...>;
  };
 
- /// An index sequence of elements of [0,N-1] which are NOT Is
+ // An index sequence of elements of [0,N-1] which are NOT Is
  template <int N, int... Is> using complement_sequence = typename complement_sequence_impl<N, all_indices<Is...>>::type;
 
-  /**
+  /*
   * apply(f, t)
   * f : a callable object
   * t a tuple
@@ -130,7 +130,7 @@ namespace triqs { namespace tuple {
  template <typename F, typename T>
  AUTO_DECL apply(F &&f, T &&t) RETURN(apply_impl(std::forward<F>(f), std::forward<T>(t), _get_seq<T>()));
 
- /**
+ /*
   * apply_construct<C>(t)
   * C : a class
   * t a tuple
@@ -142,7 +142,7 @@ namespace triqs { namespace tuple {
  template <typename C, typename T>
  AUTO_DECL apply_construct(T &&t) RETURN(apply_construct_impl<C>(std::forward<T>(t), _get_seq<T>()));
 
- /**
+ /*
   * apply_construct_parenthesis<C>(t)
   * C : a class
   * t a tuple
@@ -154,7 +154,7 @@ namespace triqs { namespace tuple {
  template <typename C, typename T>
  AUTO_DECL apply_construct_parenthesis(T &&t) RETURN(apply_construct_parenthesis_impl<C>(std::forward<T>(t), _get_seq<T>()));
 
- /**
+ /*
   * called_on_tuple(f)
   * f : a callable object
   * Wrapping a function to make it callable from a tuple
@@ -186,7 +186,7 @@ namespace triqs { namespace tuple {
   _for_each_apply_impl(f, std::forward<T>(t)...);
  }
 
- /**
+ /*
   * for_each(t, f)
   * t: a tuple
   * f: a callable object
@@ -214,7 +214,7 @@ namespace triqs { namespace tuple {
   _for_each_enum_impl(f, std::forward<T>(t), _get_seq<T>());
  }
 
- /**
+ /*
   * for_each_zip(f, t1,t2)
   * f : a callable object
   * t1,t2 : two tuples
@@ -229,7 +229,7 @@ namespace triqs { namespace tuple {
   _for_each_zip_impl(_get_seq<T0>(), std::forward<F>(f), std::forward<T0>(t0), std::forward<T1>(t1));
  }
 
- /**
+ /*
   * for_each_zip(f, t1,t2,t3)
   * f : a callable object
   * t1,t2,t3 : three tuples
@@ -244,7 +244,7 @@ namespace triqs { namespace tuple {
   _for_each_zip_impl(_get_seq<T0>(), std::forward<F>(f), std::forward<T0>(t0), std::forward<T1>(t1), std::forward<T2>(t2));
  }
 
- /**
+ /*
   * map(f, t)
   * f : a callable object
   * t tuple
@@ -257,7 +257,7 @@ namespace triqs { namespace tuple {
  template <typename T, typename F>
  AUTO_DECL map(F &&f, T &&t) RETURN(_map_impl(std::forward<F>(f), std::forward<T>(t), _get_seq<T>()));
 
- /**
+ /*
   * map_on_zip(f, t1, t2)
   * f : a callable object
   * t1, t2 two tuples of the same size
@@ -275,7 +275,7 @@ namespace triqs { namespace tuple {
  auto map_on_zip_v2(F &&f, T0 &&t0, T1 &&t1)
      RETURN(map(called_on_tuple(f), zip(t0,t1)));
 
- /**
+ /*
   * map_on_zip(f,t0,t1,t2)
   * f : a callable object
   * t0, t1, t2 two tuples of the same size
@@ -293,7 +293,7 @@ namespace triqs { namespace tuple {
 }}
 #else
 
-/**
+/*
  * fold(f, t1, r_init)
  * f : a callable object : f(x,r) -> r'
  * t a tuple
@@ -309,7 +309,7 @@ namespace triqs { namespace tuple {
   return fold_impl(_int<_get_seq_len<T>() - 1>(), std::forward<F>(f), std::forward<T>(t), std::forward<R>(r));
  }
 
- /**
+ /*
   * fold(f, r_init, t1, t2)
   * f : a callable object
   * t1, t2 two tuples of the same size
@@ -332,7 +332,7 @@ namespace triqs { namespace tuple {
                    std::forward<R>(r));
  }
 
- /**
+ /*
   * replace<int ... I>(t,r)
   *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are replaced by r
   */
@@ -346,7 +346,7 @@ namespace triqs { namespace tuple {
  template <int... I, typename Tu, typename R>
  auto replace(Tu &&tu, R &&r) RETURN(_replace_impl(tu, r, all_indices<I...>(), _get_seq<Tu>()));
 
- /**
+ /*
   * filter<int ... I>(t) :
   *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are kept.
   */
@@ -360,7 +360,7 @@ namespace triqs { namespace tuple {
   return filter_t<Tu, I...>(std::get<I>(std::forward<Tu>(tu))...);
  }
 
- /**
+ /*
   * filter_out<int ... I>(t) :
   *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are dropped.
   */
@@ -369,7 +369,7 @@ namespace triqs { namespace tuple {
 
  template <typename Tu, int... I> using filter_out_t = std14::decay_t<decltype(filter_out<I...>(std::declval<Tu>()))>;
 
- /**
+ /*
   * t : a tuple
   * x : anything
   * push_back (t,x) -> returns new tuple with x append at the end
@@ -377,7 +377,7 @@ namespace triqs { namespace tuple {
  template <typename T, typename X>
  auto push_back(T &&t, X &&x) RETURN(std::tuple_cat(std::forward<T>(t), std::make_tuple(std::forward<X>(x))));
 
- /**
+ /*
   * t : a tuple
   * x : anything
   * push_front (t,x) -> returns new tuple with x append at the first position
@@ -385,8 +385,8 @@ namespace triqs { namespace tuple {
  template <typename T, typename X>
  auto push_front(T &&t, X &&x) RETURN(std::tuple_cat(std::make_tuple(std::forward<X>(x)), std::forward<T>(t)));
 
- /// To be rewritten ....
- /**
+ // To be rewritten ....
+ /*
   * inverse_filter<int L, int ... I>(t,x)
   *  Given a tuple t, and integers, returns the tuple R of size L such that filter<I...>(R) == t
   *  and the missing position are filled with object x.
@@ -422,7 +422,7 @@ namespace triqs { namespace tuple {
  template<int L, int ...I, typename Tu, typename X>
   auto inverse_filter(Tu const & tu, X const &x) DECL_AND_RETURN ( typename inverse_filter_r_type<Tu, X, L,  I...>::type ()(tu, std::make_tuple(),x));
 
- /**
+ /*
   * inverse_filter_out<int ... I>(t,x)
   *  Given a tuple t, and integers, returns the tuple R such that filter_out<I...>(R) == t
   *  and the missing position are filled with object x.
