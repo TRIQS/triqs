@@ -1,14 +1,16 @@
 
+* clang_parser.py 
+
+ A little interface to libclang. 
+ Its job is to parse the C++ code into a pythonic description 
+ (classes, functions, etc...) which is then reused by the two tools.
+
+/cpp2py/
 
 * c++2py.py.in 
 
  The script that analyse the C++ code with libclang, and produces the xxx_desc.py file. 
  Configured by cmake, to put proper path to libclang, the options, etc...
-
-* clang_parser.py 
-
- A little interface to libclang. Its job is to parse the C++ code into a pythonic description 
- (classes, functions, etc...).
 
 * wrap_generator.py
 
@@ -21,4 +23,6 @@
   * xxx_desc.py  : the desc file automatically produced from clang analysis of the C++ code.
   * xxx_wrap.cpp : the template for the c++ wrapping code.
 
+/cpp2doc/
 
+...

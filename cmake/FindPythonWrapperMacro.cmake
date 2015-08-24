@@ -18,10 +18,10 @@ macro (triqs_python_extension ModuleName)
  # Adjust pythonpath so that pytriqs is visible and the wrap_generator too...
  # pytriqs needed since we import modules with pure python method to extract the doc..
  add_custom_command(OUTPUT ${wrap_name} ${converter_name} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py
-  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/pytriqs/cpp2py:${CMAKE_BINARY_DIR}/ ${PYTHON_INTERPRETER} ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py
-   ${CMAKE_SOURCE_DIR}/pytriqs/cpp2py/mako/xxx_wrap.cpp
+  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}/tools/cpp2py:${CMAKE_BINARY_DIR}/ ${PYTHON_INTERPRETER} ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py
+   ${CMAKE_SOURCE_DIR}/tools/cpp2py/mako/xxx_wrap.cpp
    ${wrap_name}
-   ${CMAKE_SOURCE_DIR}/pytriqs/cpp2py/mako/py_converter.hpp
+   ${CMAKE_SOURCE_DIR}/tools/cpp2py/mako/py_converter.hpp
    ${converter_name} 
    ${CMAKE_BINARY_DIR}/include/pytriqs/converters/
    )

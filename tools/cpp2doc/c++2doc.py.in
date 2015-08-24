@@ -129,8 +129,8 @@ if __name__ == '__main__' :
     print "Generating the documentation ..."
 
     # Making the rst files
-    tpl_class = Template(filename=triqs_install_location + '/share/triqs/cpp2py/mako/xxx_doc_class.rst')
-    tpl_fun = Template(filename=triqs_install_location + '/share/triqs/cpp2py/mako/xxx_doc_function.rst')
+    tpl_class = Template(filename=triqs_install_location + '/share/triqs/cpp2doc/mako/xxx_doc_class.rst')
+    tpl_fun = Template(filename=triqs_install_location + '/share/triqs/cpp2doc/mako/xxx_doc_function.rst')
     for c in classes :
         if not c.doc : continue
 
