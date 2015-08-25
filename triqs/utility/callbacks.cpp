@@ -27,11 +27,10 @@ namespace utility {
 
  std::function<bool()> clock_callback(int time_in_seconds) {
   signal_handler::start();
-  if (time_in_seconds <= 0)
-   return []() { return (triqs::signal_handler::received()); };
+  if (time_in_seconds <= 0) return []() { return false; };
 
   auto end_time = std::chrono::system_clock::now() + std::chrono::seconds(time_in_seconds);
-  return [end_time]() { return (triqs::signal_handler::received()) || (std::chrono::system_clock::now() > end_time); };
+  return [end_time]() { return (std::chrono::system_clock::now() > end_time); };
  }
 }
 }

@@ -58,7 +58,7 @@ namespace signal_handler {
  }
 
  bool received(bool pop_) {
-  if (!initialized) start();
+  //if (!initialized) start();
   bool r = signals_list.size() != 0;
   if (r && pop_) pop();
   return r;

@@ -23,6 +23,7 @@
 #include <math.h>
 #include <triqs/utility/timer.hpp>
 #include <triqs/utility/report_stream.hpp>
+#include <triqs/utility/signal_handler.hpp>
 #include "./mc_measure_aux_set.hpp"
 #include "./mc_measure_set.hpp"
 #include "./mc_move_set.hpp"
@@ -99,17 +100,30 @@ namespace triqs { namespace mc_tools {
     bool thermalized() const { return (NC>= NWarmIterations);}
     bool converged() const { return false;}
 
-    /// Start the Monte Carlo
-    bool start(MCSignType sign_init, std::function<bool ()> const & stop_callback) {
-     assert(stop_callback);
+    /**
+     * Start the Monte Carlo
+     *
+     * @param sign_init The initial value of the sign (usually 1)
+     * @param stop_callback A function () -> bool that is called after each cycle
+     *                      to determine if the computation should continue.
+     *                      Typically the time limit
+     * @return 0 if the computation has run until the end.
+     *         1 if it has been stopped by stop_callback
+     *         2 if it has been  topped by receiving a signal
+     */
+    int start(MCSignType sign_init, std::function<bool ()> stop_callback) {
      Timer.start();
+     triqs::signal_handler::start();
      sign = sign_init; done_percent = 0; nmeasures = 0;
      sum_sign = 0;
      bool stop_it=false, finished = false;
      uint64_t NCycles_tot = NCycles+ NWarmIterations;
      report << std::endl << std::flush;
      for (NC = 0; !stop_it; ++NC) {
-      for (uint64_t k=1; (k<=Length_MC_Cycle); k++) { MCStepType::do_it(AllMoves,RandomGenerator,sign); }
+      for (uint64_t k=1; (k<=Length_MC_Cycle); k++) {
+       if (triqs::signal_handler::received()) goto _final;
+       MCStepType::do_it(AllMoves, RandomGenerator, sign);
+      }
       if (after_cycle_duty) {after_cycle_duty();}
       if (thermalized()) {
        nmeasures++;
@@ -118,15 +132,19 @@ namespace triqs { namespace mc_tools {
        AllMeasures.accumulate(sign);
       }
       // recompute fraction done
+     _final:
       uint64_t dp = uint64_t(floor( ( NC*100.0) / (NCycles_tot-1)));
       if (dp>done_percent)  { done_percent=dp; report << done_percent; report<<"%; "; report <<std::flush; }
       finished = ( (NC >= NCycles_tot -1) || converged () );
-      stop_it = (stop_callback() || finished);
+      stop_it = (stop_callback() || triqs::signal_handler::received() || finished);
      }
-     report << std::endl << std::endl << std::flush;
+     int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
      Timer.stop();
-     return finished;
-
+     if (status == 1) report << "mc_generic stops because of stop_callback";
+     if (status == 2) report << "mc_generic stops because of a signal";
+     report << std::endl << std::endl << std::flush;
+     triqs::signal_handler::stop();
+     return status;
     }
 
     /// Reduce the results of the measures, and reports some statistics
