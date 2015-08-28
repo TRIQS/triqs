@@ -775,6 +775,7 @@ namespace gfs {
  }
 
  //  ---- conjugate : always a new function -> changelog
+ //  Note that this calls the default conjugate for the singularity: needs to be specialized for imaginary gfs
 
  template <typename Variable, typename Singularity, typename Evaluator>
  gf<Variable, matrix_valued, Singularity, Evaluator> conj(gf_view<Variable, matrix_valued, Singularity, Evaluator> g) {

@@ -100,10 +100,10 @@ namespace gfs {
  /**
    * \tilde(a)_n = coeff of order n in conj(tail) = (-)^n * conj(a_n)
    */
- tail conj(tail_const_view const &t) {
+ tail conj(tail_const_view const &t, bool imaginary) {
   auto tdata = tail::data_type(t.data());
   for(int j=0;j<t.data().shape()[0];j++)
-   tdata(j,ellipsis()) = (((j-t.order_min())%2==0)?1:-1)*conj(tdata(j,ellipsis()));
+   tdata(j,ellipsis()) = (((j-t.order_min())%2==1 && imaginary)?-1:1)*conj(tdata(j,ellipsis()));
   return {tdata, t.mask(), t.order_min()};
  }
 

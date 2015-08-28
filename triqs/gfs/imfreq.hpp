@@ -170,6 +170,13 @@ namespace gfs {
 
  } // gfs_implementation
 
+
+ // Specialization of the conjugate for imaginary Green's functions
+ template <typename Singularity, typename Evaluator>
+ gf<imfreq, matrix_valued, Singularity, Evaluator> conj(gf_view<imfreq, matrix_valued, Singularity, Evaluator> g) {
+  return {g.mesh(), conj(g.data()), conj(g.singularity(), true), g.symmetry(), g.indices(), g.name};
+ }
+
  // FOR LEGACY PYTHON CODE ONLY
  // THIS MUST be kept for python operations 
  // specific operations (for legacy python code).
@@ -226,7 +233,6 @@ namespace gfs {
   g+=m;
   return g;
  }
-
 
 }
 }
