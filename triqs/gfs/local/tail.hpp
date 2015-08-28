@@ -233,7 +233,7 @@ namespace gfs {
    if (RVC == Regular) {
     omin = rhs.order_min();
    } else {
-    if ((_data.shape()[1] != rhs.data().shape()[1]) || (_data.shape()[2] != rhs.data().shape()[2]) || (omin != rhs.order_min()))
+   if ((_data.shape() != rhs.data().shape()) || (omin != rhs.order_min()) || (size() != rhs.size()))
      TRIQS_RUNTIME_ERROR << "tails are incompatible";
    }
    _mask = rhs.mask();
@@ -271,7 +271,7 @@ namespace gfs {
 
  // ----  Ops  -------------
 
- tail conj(tail_const_view const &t);
+ tail conj(tail_const_view const &t, bool imaginary = false);
  tail transpose(tail_const_view const &t);
 
  /// Slice in orbital space
