@@ -32,12 +32,11 @@ Hubbard I solver
 ----------------
 .. warning::
 
-   FIXME
-   MERGE THIS INTO DFTTOOLS
+   DOC IS BEING WRITTEN!
 
 
 This solver gives the Hubbard I solution of a quantum impurity problem,
 i.e. it solves the atomic limit. This simple approximation allows for 
 very quick answers even for large multiband systems.
 
-*Homepage:* `<http://ipht.cea.fr/triqs/1.2/applications/hubbardI/>`_
+*Homepage:* `<http://ipht.cea.fr/triqs/1.1/applications/hubbardI/>`_
