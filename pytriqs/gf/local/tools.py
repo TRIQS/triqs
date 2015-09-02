@@ -24,6 +24,7 @@ from block_gf import BlockGf
 from gf import GfImFreq, TailGf
 from descriptor_base import A_Omega_Plus_B
 import numpy as np
+from itertools import product
 
 def inverse(x):
     """
@@ -140,3 +141,63 @@ def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min
         for name, g in G_iw: g.tail = inverse( inverse(G0_iw[name].tail) - Sigma_iw[name].tail )
 
     return Sigma_iw, G_iw
+
+
+def read_gf_from_txt(block_txtfiles, block_name):
+    """
+    Read a GfReFreq from text files with the format (w, Re(G), Im(G)) for a single block.
+    
+    Notes
+    -----
+    A BlockGf must be constructed from multiple GfReFreq objects if desired.
+    The mesh must be the same for all files read in.
+    Non-uniform meshes are not supported.
+
+    Parameters
+    ----------
+    block_txtfiles: Rank 2 square np.array(str) or list[list[str]]
+        The text files containing the GF data that need to read for the block.
+        e.g. [['up_eg1.dat']] for a one-dimensional block and
+             [['up_eg1_1.dat','up_eg2_1.dat'],
+              ['up_eg1_2.dat','up_eg2_2.dat']] for a 2x2 block.
+    block_name: str
+        Name of the block.
+
+    Returns
+    -------
+    g: GfReFreq
+        The real frequency Green's function read in.
+    """
+    if type(g) != GfReFreq:
+        raise ValueError, 'read_gf_from_txt: Only GfReFreq quantities are supported.'
+    block_txtfiles = np.array(block_txtfiles) # Must be an array to use certain functions
+    N1,N2 = block_txtfiles.shape
+    mesh = np.genfromtxt(block_txtfiles[0,0],usecols=[0]) # Mesh needs to be the same for all blocks
+    g = GfReFreq(indices = range(N1), window = (np.min(mesh),np.max(mesh)), n_points = len(mesh), name = block_name)
+    for i,j in product(range(N1),range(N2)):
+        data = np.genfromtxt(block_txtfiles[i,j],usecols=[1,2])
+        g.data[:,i,j] = data[:,0]+1j*data[:,1]
+    return g
+
+
+def write_gf_to_txt(g):
+    """
+    Write a GfReFreq or GfImFreq to in the format (w/iw, Re(G), Im(G)) for a single block.
+    
+    Parameters
+    ----------
+    g: GfReFreq or GfImFreq
+        The real/imaginary frequency Green's function to be written out.
+    """
+    if type(g) == GfReFreq:
+        mesh = np.array(list(g.mesh)).real.reshape(-1,1)
+    elif type(g) == GfImFreq:
+        mesh = np.array(list(g.mesh)).imag.reshape(-1,1)
+    else:
+        raise ValueError, 'write_gf_to_txt: Only GfReFreq and GfImFreq quantities are supported.'
+    for i,j in product(range(g.N1),range(g.N2)):
+        txtfile = '%s_%s_%s.dat'%(g.name,i,j)
+        redata = g.data[:,i,i].real.reshape((g.data.shape[0],-1))
+        imdata = g.data[:,i,i].imag.reshape((g.data.shape[0],-1))
+        mesh_and_data = np.hstack((mesh,redata,imdata))
+        np.savetxt(txtfile,mesh_and_data)
