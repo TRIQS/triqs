@@ -52,3 +52,6 @@ del h3, gg
 
 gg = HDFArchive('hdf5_io.output.h5','a')['g']
 gg['x'] = 1.5
+
+with HDFArchive('hdf5_io.output.h5','a')['g'] as g:
+    g['y'] = 'zzz'

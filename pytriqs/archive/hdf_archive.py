@@ -305,6 +305,9 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
                   elif r == () : del d[k]
         visit_tree('/',self['/'])
 
+    # These two methods are necessary for "with"
+    def __enter__(self): return self
+    def __exit__(self, type, value, traceback): pass
 
 # -------------------------------------------
 #
