@@ -19,7 +19,7 @@ Some advanced parts of the library (multivariable Green functions) require some 
 A recent compiler is therefore mandatory.
 
 * Standard compliant C++ compilers (supported).
-  
+
   * in C++14 mode (recommended):
 
      * :ref:`clang 3.4<install_clang>` and higher (in particular the default clang on OS X >= 10.8).
@@ -28,11 +28,11 @@ A recent compiler is therefore mandatory.
   * in C++11 mode only:
 
      * g++ 4.8.2 and higher (there seems to be a bug in 4.8.1).
-  
-     * The intel icc 15.0 is close to be C++11 compliant, but presents currently too many bugs to be supported 
-       at present. It compiles 99% of TRIQS, but we do not have the resources to write and 
+
+     * The intel icc 15.0 is close to be C++11 compliant, but presents currently too many bugs to be supported
+       at present. It compiles 99% of TRIQS, but we do not have the resources to write and
        maintains all necessary workarounds.
-       The intel icl on OS X (with the clang front end) seems to be working.  
+       The intel icl on OS X (with the clang front end) seems to be working.
 
 * C++98 compilers do not work and will *not* be supported.
 
@@ -78,4 +78,4 @@ Libraries
 +------------------------+----------+------------------------------------------------------------------------+
 
 (1)  Since standard linux distributions (and macports on OS X) now provides openmpi, even on laptops, we avoid the unnecessary complication of maintaining a non-parallel version of TRIQS
- 
+

@@ -12,16 +12,16 @@ Disclaimer
 
 Here we provide the installation instructions in order to use TRIQS on OS X.
 
-While the installation of TRIQS itself is as straightforward as on Linux systems, 
-the installation of the standard scientific libraries used by TRIQS 
-(mpi, hdf5, boost, fftw, ipython, ....) is not as simple as in e.g. Debian/Ubuntu, 
+While the installation of TRIQS itself is as straightforward as on Linux systems,
+the installation of the standard scientific libraries used by TRIQS
+(mpi, hdf5, boost, fftw, ipython, ....) is not as simple as in e.g. Debian/Ubuntu,
 where they are packaged with the distribution itself (i.e. "part of the system").
 
 This general problem of scientific computing on OS X is clearly illustrated by the
 large number of third-party attempts to provide "easy" installation of scientific libraries,
 such as brew, macports, fink, or the Enthought Python distribution.
 
-In our experience, none of these solutions is perfect, nor complete or stable: they are still 
+In our experience, none of these solutions is perfect, nor complete or stable: they are still
 very far from the quality and stability of a Linux distribution like Debian/Ubuntu.
 It *almost* works, but at the end, there are some issues, sometimes severe, in the way
 scientific librairies are installed.
@@ -47,8 +47,8 @@ modifications) for earlier versions of OS X.
    install the clang command line tools. After this is done, proceed to step 3.
 
 3. Install several packages which are needed: ::
-        
-     brew tap homebrew/science  
+
+     brew tap homebrew/science
      brew install cmake
      brew install --with-mpi --with-python --without-single boost
      brew install hdf5 
@@ -59,7 +59,7 @@ modifications) for earlier versions of OS X.
      brew install python
 
 5. Install the required python packages: ::
-    
+
     pip install numpy
     pip install h5py
     pip install scipy
@@ -71,8 +71,8 @@ modifications) for earlier versions of OS X.
     pip install ipython
     pip install mako
 
-6. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax: :: 
-  
+6. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax: ::
+
      brew install doxygen
      pip install sphinx
      pip install sphinxcontrib-doxylink
@@ -104,8 +104,8 @@ Possible issues
 
   In this case, make sure to add the following lines to your ``.bash_profile``: ::
 
-    export lc_all=en_us.utf-8 
-    export lang=en_us.utf-8 
+    export lc_all=en_us.utf-8
+    export lang=en_us.utf-8
 
 
 

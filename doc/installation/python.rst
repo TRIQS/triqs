@@ -6,8 +6,8 @@ Python and the scientific python tools
 On some machines, not all the necessary scientific python tools are present
 (e.g. old distribution, computing centers, etc.), or perhaps just not in the right versions.
 
-There is a way to efficiently solve this issue without recompiling your own python, and 
-all the libs, which is painful, and specifically **avoiding any upgrade on your system** (which 
+There is a way to efficiently solve this issue without recompiling your own python, and
+all the libs, which is painful, and specifically **avoiding any upgrade on your system** (which
 is crucial on e.g. cluster machines).
 
 .. _virtualenv:
@@ -27,22 +27,22 @@ or python, and install and upgrade some packages for you, without touching the s
 
 .. note:: This works as long as the other dependencies of the packages on e.g. C++ libraries are satisfied.
 
-Usage 
+Usage
 ^^^^^
 
 * First install virtualenv, or ask your system manager to do so.
   On Ubuntu, run::
 
     sudo apt-get install python-virtualenv
- 
+
 * To create a new python in your home, do e.g.::
 
     virtualenv ~/.my_python --system-site-packages
- 
+
   This create in ~/.my_python a clone of the python of the system, with its packages.
 
   You can then use it with::
-   
+
     ~/.my_python/bin/python
 
 * To make this your default python, just add in your ~/.bash_aliases (or ~/.bashrc)::
@@ -51,10 +51,10 @@ Usage
 
   Then, after relaunching your terminal::
 
-    which python 
-  
+    which python
+
   should return::
-    
+
     /home/ME/.my_python/bin/python
 
 * You can install any python package for this local python installation easily. For example, by running::

@@ -7,7 +7,7 @@
 Installing required libraries on Ubuntu 14.04LTS
 ===================================================
 
-TRIQS has been installed and tested on Ubuntu 14.04. Earlier versions are not supported. 
+TRIQS has been installed and tested on Ubuntu 14.04. Earlier versions are not supported.
 
 Install the following packages which are necessary to build TRIQS and use it::
 
@@ -17,7 +17,7 @@ Install the following packages which are necessary to build TRIQS and use it::
        python-virtualenv python-matplotlib doxygen python-tornado python-zmq python-mpi4py python-mako \
 
 
-* If you wish to *simply* upgrade the ipython notebook to the latest version, 
+* If you wish to *simply* upgrade the ipython notebook to the latest version,
   use :ref:`virtualenv <virtualenv>`.
 
 
@@ -28,7 +28,7 @@ The default compiler on  Ubuntu 14.04LTS is gcc 4.8.1, which compiles TRIQS prop
 
 This is sufficient for most users.
 
-Developers however should rather use a C++14 compiler since : 
+Developers however should rather use a C++14 compiler since :
 
 * it leads to better error messages in many cases in C++ (due to the triqs/clef library to be precise).
 
@@ -37,14 +37,14 @@ Developers however should rather use a C++14 compiler since :
 There are two options:
 
 * Install clang 3.5, as packaged in Ubuntu.
- 
+
 * Upgrade the gcc to 4.9.2 in Ubuntu 14.04, which can be easily done with the commands::
 
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
     sudo apt-get update
     sudo apt-get upgrade
     sudo apt-get install g++-4.9
-    
+
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
 

@@ -7,8 +7,8 @@
 Installation 
 ============
 
-TRIQS and its applications are provided *à la carte*: 
-after you have installed the TRIQS library, you will be able to easily install 
+TRIQS and its applications are provided *à la carte*:
+after you have installed the TRIQS library, you will be able to easily install
 various TRIQS-based applications: impurity solvers, realistic DMFT tools, ...
 
 This page describes the installation of the TRIQS library itself. The
@@ -26,7 +26,7 @@ install these necessary libraries on two standard systems:
 
 .. toctree::
    :maxdepth: 1
-     
+
    installation/ubuntu
    installation/osx_install
 
@@ -35,17 +35,17 @@ install these necessary libraries on two standard systems:
 Installation steps
 ------------------
 
-#. Download the sources of TRIQS from github into a ``src`` directory::
+#. Download the sources of TRIQS from github into a ``triqs.src`` directory::
 
-     $ git clone https://github.com/TRIQS/triqs.git src
+     $ git clone https://github.com/TRIQS/triqs.git triqs.src
 
-#. Create an empty ``build`` directory where you will compile the code::
+#. Create an empty ``triqs.build`` directory where you will compile the code::
 
-     $ mkdir build && cd build
+     $ mkdir triqs.build && cd triqs.build
 
 #. In the build directory call ``cmake`` specifying where the TRIQS library should be installed::
 
-     $ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../src
+     $ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../triqs.src
 
    If you omit ``CMAKE_INSTALL_PREFIX``, the default
    ``path_to_install_directory`` is the subdirectory *INSTALL_DIR* in your build
@@ -59,7 +59,7 @@ Installation steps
      $ make install
 
    .. note:: 
-       
+
       On multicore machine, the make option -jN (where N is the number of cores)
       greatly speeds up the compilation, e.g. make -j8 on an 8 core machine.
 
@@ -79,7 +79,7 @@ Further reading
 ------------------
 .. toctree::
    :maxdepth: 1
-   
+
    installation/install_options
    installation/python
    installation/clang
