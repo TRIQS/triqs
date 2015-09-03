@@ -5,9 +5,13 @@ import numpy as np
 
 # The interaction matrix in desired basis
 # U^{spherical}_{m1 m2 m3 m4} = \sum_{k=0}^{2l} F_k angular_matrix_element(l, k, m1, m2, m3, m4)
+# H = \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
 def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical', T=None):
     r"""
     Calculate the full four-index U matrix being given either radial_integrals or U_int and J_hund.
+    The convetion for the U matrix is that used to construct the Hamiltonians, namely:
+
+    .. math:: H = \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
 
     Parameters
     ----------
