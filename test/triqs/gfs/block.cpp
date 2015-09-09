@@ -13,11 +13,16 @@ int main() {
 
   // construct some block functions
   auto B0 = block_gf<imfreq>(3);
+  std::vector<std::string> v = {"a","b","c"};
+  auto B01 = block_gf<imfreq>(v);
+  auto B00 = block_gf<imfreq>({"a","b","c"});
 
   auto B1 = make_block_gf<imfreq>(3, G1);
   auto B2 = make_block_gf<imfreq>({G1, G1, G1});
   auto B3 = make_block_gf<imfreq>({"a", "b", "c"}, {G1, G1, G1});
   auto B4 = block_gf<imfreq>(1);
+
+  //TEST(B3["a"]); //does not compile
 
   // test hdf5
   {

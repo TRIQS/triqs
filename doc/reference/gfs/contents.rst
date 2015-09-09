@@ -8,7 +8,7 @@ Green's functions
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    basic_notions/contents
    py/contents

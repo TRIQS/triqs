@@ -34,6 +34,7 @@ namespace gfs {
   gf_mesh() = default;
   gf_mesh(int s) : B(s) {}
   gf_mesh(discrete_domain const &d) : B(d) {}
+  gf_mesh(std::vector<std::string> const &s) : B(s) {}
   gf_mesh(std::initializer_list<std::string> const &s) : B(s) {}
  };
 
@@ -117,15 +118,20 @@ namespace gfs {
   return {{int(V.size())}, V, nothing{}, nothing{}, nothing{}};
  }
 
+ // from vector<string>
+ //template <typename... A> block_gf<A...> make_block_gf(std::vector<std::string> const & block_names) {
+ // return {{block_names}, std::vector<gf<A...>>(block_names.size()), nothing{}, nothing{}, nothing{}};
+ //}
+
  // from vector<string> and a gf to be copied
- template <typename... A> block_gf<A...> make_block_gf(std::vector<std::string> block_names, gf<A...> const &g) {
+ template <typename... A> block_gf<A...> make_block_gf(std::vector<std::string> const & block_names, gf<A...> const &g) {
   auto V = std::vector<gf<A...>>{};
   for (int i = 0; i < block_names.size(); ++i) V.push_back(g);
   return {{block_names}, std::move(V), nothing{}, nothing{}, nothing{}};
  }
 
  // from vector<string>, vector<gf>
- template <typename... A> block_gf<A...> make_block_gf(std::vector<std::string> block_names, std::vector<gf<A...>> V) {
+ template <typename... A> block_gf<A...> make_block_gf(std::vector<std::string> const & block_names, std::vector<gf<A...>> V) {
   if (block_names.size() != V.size())
    TRIQS_RUNTIME_ERROR << "make_block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
   return {{block_names}, std::move(V), nothing{}, nothing{}, nothing{}};
