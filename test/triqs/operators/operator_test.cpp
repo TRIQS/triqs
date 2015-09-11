@@ -20,6 +20,7 @@
  ******************************************************************************/
 #include <triqs/utility/first_include.hpp>
 #include <triqs/operators/many_body_operator.hpp>
+#include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <iostream>
 #include <vector>
 #include <boost/archive/text_oarchive.hpp>
@@ -29,6 +30,7 @@
 
 using namespace triqs::utility;
 using namespace triqs;
+using namespace triqs::hilbert_space;
 
 int main(int argc, char **argv)
 {
@@ -115,6 +117,22 @@ int main(int argc, char **argv)
     std::cerr << op2 << std::endl;
 
     std::cerr << (op1 - op2).is_zero() << std::endl;
+
+
+    // write operator op1 with imposed fundamental operator set
+    fundamental_operator_set fs;
+    fs.insert(6);
+    for(int i=1; i<5; i++) fs.insert(i);
+    fs.insert(0,"a");
+    fs.insert(1,"a");
+    h5_write(f, "OP_fs", op1, fs);
+
+    // read both operator and fundamental operator set
+    fundamental_operator_set fs2;
+    many_body_operator<double> op3;
+    h5_read(f, "OP_fs", op3, fs2);
+    std::cerr << (op1 - op3).is_zero() << std::endl;
+
     return 0;
  }
  catch(std::exception const & e) {
