@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./fundamental_operator_set.hpp"
+#include "../operators/many_body_operator.hpp"
 #include "./hilbert_space.hpp"
 
 #include <vector>
