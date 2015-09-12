@@ -160,11 +160,16 @@ namespace gfs {
  }
 
  /*------------------------------------------------------------------------------------------------------
-  *                      Conjugate 
+  *                      Conjugate
   *-----------------------------------------------------------------------------------------------------*/
 
- template <typename M, typename S, typename E> gf<M, matrix_valued, S, E> conj(gf_view<M, matrix_valued, S, E> g) {
-  return {g.mesh(), conj(g.data()), conj(g.singularity()), g.symmetry(), g.indices(), g.name};
+ struct imfreq; // forward
+ struct imtime; // forward
+
+ template <typename G> std14::enable_if_t<is_gf_or_view<G>::value, typename G::regular_type> conj(G const &g) {
+  using M = typename G::variable_t;
+  bool is_matsubara = std::is_same<M, imfreq>::value || std::is_same<M, imtime>::value;
+  return {g.mesh(), conj(g.data()), conj(g.singularity(), is_matsubara), g.symmetry(), g.indices(), g.name};
  }
 
  /*------------------------------------------------------------------------------------------------------

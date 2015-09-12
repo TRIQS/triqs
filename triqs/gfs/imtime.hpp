@@ -53,11 +53,6 @@ namespace gfs {
   }
  };
 
- // Specialization of the conjugate for imaginary Green's functions
- template <typename Singularity, typename Evaluator>
- gf<imtime, matrix_valued, Singularity, Evaluator> conj(gf_view<imtime, matrix_valued, Singularity, Evaluator> g) {
-  return {g.mesh(), conj(g.data()), conj(g.singularity(), true), g.symmetry(), g.indices(), g.name};
- }
 }
 }
 
