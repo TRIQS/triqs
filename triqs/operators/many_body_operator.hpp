@@ -27,86 +27,124 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
 #include <triqs/utility/draft/numeric_ops.hpp>
+#include <triqs/utility/real_or_complex.hpp>
 #include <triqs/h5.hpp>
 
-
 namespace triqs {
-namespace utility {
+namespace operators {
 
+ using utility::variant_int_string;
+ using utility::real_or_complex;
+
+ /// The generic class
+ template <typename scalar_t> class many_body_operator_generic;
+
+ /// The indices of the C, C^+ operators are a vector of int/string
+ using indices_t = std::vector<variant_int_string>;
+
+ /// The user class
+ using many_body_operator = many_body_operator_generic<real_or_complex>;
+ inline std::string get_triqs_hdf5_data_scheme(many_body_operator const&) { return "Operator"; }
+
+ //-----------------------------------------------------------------------------------------
+
+ /// The canonical operator: a dagger and some indices
+ struct canonical_ops_t {
+  bool dagger;
+  indices_t indices;
+  // Order: dagger < non dagger, and then indices
+  // Example: c+_1 < c+_2 < c+_3 < c_3 < c_2 < c_1
+  friend bool operator<(canonical_ops_t const& a, canonical_ops_t const& b) {
+   if (a.dagger != b.dagger) return (a.dagger > b.dagger);
+   if (a.dagger) // a.indices < b.indices
+    return std::lexicographical_compare(a.indices.begin(), a.indices.end(), b.indices.begin(), b.indices.end());
+   else // b.indices < a.indices
+    return std::lexicographical_compare(b.indices.begin(), b.indices.end(), a.indices.begin(), a.indices.end());
+  }
+  friend bool operator>(canonical_ops_t const& a, canonical_ops_t const& b) { return b < a; }
+  friend bool operator==(canonical_ops_t const& a, canonical_ops_t const& b) {
+   return (a.dagger == b.dagger && a.indices.size() == b.indices.size() &&
+           std::equal(a.indices.begin(), a.indices.end(), b.indices.begin()));
+  }
+
+  template <class Archive> void serialize(Archive& ar, const unsigned int version) { ar& dagger& indices; }
+ };
+
+ std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
+  if (op.dagger) os << "^+";
+  os << "(";
+  int u = 0;
+  for (auto const& i : op.indices) {
+   if (u++) os << ",";
+   os << i;
+  }
+  return os << ")";
+ }
+
+ //-----------------------------------------------------------------------------------------
+ // Monomial: an ordered set of creation/annihilation operators and comparison
+ using monomial_t = std::vector<canonical_ops_t>;
+
+ bool operator<(monomial_t const& m1, monomial_t const& m2) {
+  return m1.size() != m2.size() ? m1.size() < m2.size()
+                                : std::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end());
+ }
+
+ std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
+  for (auto const& c : m) { os << "C" << c; }
+  return os;
+ }
+
+ //-----------------------------------------------------------------------------------------
  /**
-  * many_body_operator is a general operator in second quantification
+  * many_body_operator_generic is a general operator in second quantification
   */
  template <typename scalar_t>
- class many_body_operator :
+ class many_body_operator_generic :
      // implements vector space over scalar_t operators
-     boost::additive<many_body_operator<scalar_t>>,
-     boost::multipliable<many_body_operator<scalar_t>>,
-     boost::additive<many_body_operator<scalar_t>, scalar_t>,   // op+a a+op op-a
-     //boost::subtractable2_left<many_body_operator<scalar_t>, scalar_t>, // a-op
-     boost::multipliable<many_body_operator<scalar_t>, scalar_t>, // op*a a*op op/a
-     boost::dividable<many_body_operator<scalar_t>, scalar_t> {
-
-  public:
-  using indices_t = hilbert_space::fundamental_operator_set::indices_t;
-
-  // The canonical operator: a dagger and some indices
-  struct canonical_ops_t {
-   bool dagger;
-   indices_t indices;
-   // Order: dagger < non dagger, and then indices
-   // Example: c+_1 < c+_2 < c+_3 < c_3 < c_2 < c_1
-   friend bool operator<(canonical_ops_t const& a, canonical_ops_t const& b) {
-    if (a.dagger != b.dagger) return (a.dagger > b.dagger);
-    if (a.dagger) // a.indices < b.indices
-     return std::lexicographical_compare(a.indices.begin(), a.indices.end(), b.indices.begin(), b.indices.end());
-    else // b.indices < a.indices
-     return std::lexicographical_compare(b.indices.begin(), b.indices.end(), a.indices.begin(), a.indices.end());
-   }
-   friend bool operator>(canonical_ops_t const& a, canonical_ops_t const& b) { return b < a; }
-   friend bool operator==(canonical_ops_t const& a, canonical_ops_t const& b) {
-    return (a.dagger == b.dagger && a.indices.size() == b.indices.size() &&
-            std::equal(a.indices.begin(), a.indices.end(), b.indices.begin()));
-   }
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) { ar& dagger& indices; }
-  };
-
-  // Monomial: an ordered set of creation/annihilation operators and comparison
-  using monomial_t = std::vector<canonical_ops_t>;
-
-  private:
-  friend bool operator<(monomial_t const& m1, monomial_t const& m2) {
-   return m1.size() != m2.size() ? m1.size() < m2.size()
-                                 : std::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end());
-  }
+     boost::additive<many_body_operator_generic<scalar_t>>,
+     boost::multipliable<many_body_operator_generic<scalar_t>>,
+     boost::additive<many_body_operator_generic<scalar_t>, scalar_t>, // op+a a+op op-a
+     // boost::subtractable2_left<many_body_operator_generic<scalar_t>, scalar_t>, // a-op
+     boost::multipliable<many_body_operator_generic<scalar_t>, scalar_t>, // op*a a*op op/a
+     boost::dividable<many_body_operator_generic<scalar_t>, scalar_t> {
 
   // Map of all monomials with coefficients
   using monomials_map_t = std::map<monomial_t, scalar_t>;
 
   monomials_map_t monomials;
 
-  friend std::string get_triqs_hdf5_data_scheme(many_body_operator const&) { return "Operator"; }
-  friend void h5_write(h5::group g, std::string const& name, many_body_operator<double> const& op);
-  friend void h5_write(h5::group g, std::string const& name, many_body_operator<double> const& op,
+  friend void h5_write(h5::group g, std::string const& name, many_body_operator_generic const& op);
+  friend void h5_write(h5::group g, std::string const& name, many_body_operator_generic const& op,
                        hilbert_space::fundamental_operator_set const& fops);
 
-  friend void h5_read(h5::group g, std::string const& name, many_body_operator<double>& op);
-  friend void h5_read(h5::group g, std::string const& name, many_body_operator<double>& op,
+  friend void h5_read(h5::group g, std::string const& name, many_body_operator_generic& op);
+  friend void h5_read(h5::group g, std::string const& name, many_body_operator_generic& op,
                       hilbert_space::fundamental_operator_set& fops);
 
   public:
-  many_body_operator() = default;
-  many_body_operator(many_body_operator const&) = default;
-  many_body_operator(many_body_operator&&) = default;
-  many_body_operator& operator=(many_body_operator const&) = default;
-  many_body_operator& operator=(many_body_operator&&) = default;
+  many_body_operator_generic() = default;
+  many_body_operator_generic(many_body_operator_generic const&) = default;
+  many_body_operator_generic(many_body_operator_generic&&) = default;
+  many_body_operator_generic& operator=(many_body_operator_generic const&) = default;
+  many_body_operator_generic& operator=(many_body_operator_generic&&) = default;
 
-  template <typename S> many_body_operator(many_body_operator<S> const& x) { *this = x; }
-  explicit many_body_operator(scalar_t const& x) { monomials.insert({{},x}); }
-
-  template <typename S> many_body_operator& operator=(many_body_operator<S> const& x) {
-   monomials.clear();
-   for (auto const& y : x.monomials) monomials.insert({y.first, y.second});
+  template <typename S> many_body_operator_generic(many_body_operator_generic<S> const& x) {
+   static_assert(std::is_constructible<scalar_t, S>::value, "Construction is impossible");
+   *this = x;
   }
+
+  explicit many_body_operator_generic(scalar_t const& x) { monomials.insert({{}, x}); }
+
+  template <typename S> many_body_operator_generic& operator=(many_body_operator_generic<S> const& x) {
+   static_assert(std::is_constructible<scalar_t, S>::value, "Assignment is impossible");
+   monomials.clear();
+   for (auto const& y : x.get_monomials()) monomials.insert(std::make_pair(monomial_t{y.first}, scalar_t(y.second)));
+   return *this;
+  }
+
+  // internal, for previous operator =
+  monomials_map_t const & get_monomials() const { return monomials;}
 
   /// Make a minimal fundamental_operator_set with all the canonical operators of this
   hilbert_space::fundamental_operator_set make_fundamental_operator_set() const {
@@ -118,8 +156,8 @@ namespace utility {
   }
 
   // factory for c, cdag
-  static many_body_operator make_canonical(bool is_dag, indices_t indices) {
-   many_body_operator res;
+  static many_body_operator_generic make_canonical(bool is_dag, indices_t indices) {
+   many_body_operator_generic res;
    auto m = monomial_t{canonical_ops_t{is_dag, indices}};
    res.monomials.insert({m, scalar_t(1.0)});
    return res;
@@ -151,13 +189,13 @@ namespace utility {
   bool is_zero() const { return monomials.empty(); }
 
   // Algebraic operations involving scalar_t constants
-  many_body_operator operator-() const {
+  many_body_operator_generic operator-() const {
    auto res = *this;
    for (auto& m : res.monomials) m.second = -m.second;
    return res;
   }
 
-  many_body_operator& operator+=(scalar_t alpha) {
+  many_body_operator_generic& operator+=(scalar_t alpha) {
    bool is_new_monomial;
    typename monomials_map_t::iterator it;
    std::tie(it, is_new_monomial) = monomials.insert(std::make_pair(monomial_t(0), alpha));
@@ -168,13 +206,14 @@ namespace utility {
    return *this;
   }
 
-  many_body_operator& operator-=(scalar_t alpha) { return operator+=(-alpha); }
+  many_body_operator_generic& operator-=(scalar_t alpha) { return operator+=(-alpha); }
 
-  friend many_body_operator operator-(scalar_t alpha, many_body_operator const& op) { return -op + alpha; }
-  //friend many_body_operator operator/ (many_body_operator const & op, scalar_t alpha) { return op/alpha; }
+  friend many_body_operator_generic operator-(scalar_t alpha, many_body_operator_generic const& op) { return -op + alpha; }
+  //friend many_body_operator_generic operator/ (many_body_operator_generic const & op, scalar_t alpha) { return op/alpha; }
 
-  many_body_operator& operator*=(scalar_t alpha) {
-   if (triqs::utility::is_zero(alpha)) {
+  many_body_operator_generic& operator*=(scalar_t alpha) {
+   using triqs::utility::is_zero;
+   if (is_zero(alpha)) {
     monomials.clear();
    } else {
     for (auto& m : monomials) m.second *= alpha;
@@ -182,10 +221,10 @@ namespace utility {
    return *this;
   }
 
-  many_body_operator& operator/=(scalar_t alpha) { return operator*=(1.0/alpha); }
+  many_body_operator_generic& operator/=(scalar_t alpha) { return operator*=(1.0/alpha); }
 
   // Algebraic operations
-  many_body_operator& operator+=(many_body_operator const& op) {
+  many_body_operator_generic& operator+=(many_body_operator_generic const& op) {
    bool is_new_monomial;
    typename monomials_map_t::iterator it;
    for (auto const& m : op.monomials) {
@@ -198,7 +237,7 @@ namespace utility {
    return *this;
   }
 
-  many_body_operator& operator-=(many_body_operator const& op) {
+  many_body_operator_generic& operator-=(many_body_operator_generic const& op) {
    bool is_new_monomial;
    typename monomials_map_t::iterator it;
    for (auto const& m : op.monomials) {
@@ -211,7 +250,7 @@ namespace utility {
    return *this;
   }
 
-  many_body_operator& operator*=(many_body_operator const& op) {
+  many_body_operator_generic& operator*=(many_body_operator_generic const& op) {
    monomials_map_t tmp_map; // product will be stored here
    for (auto const& m : monomials)
     for (auto const& op_m : op.monomials) {
@@ -244,9 +283,9 @@ namespace utility {
 
   public:
   // dagger
-  friend many_body_operator dagger(many_body_operator const& op) {
-   many_body_operator res;
-   for (auto const& x : op) res.monomials.insert({_dagger(x.monomial), triqs::utility::_conj(x.coef)});
+  friend many_body_operator_generic dagger(many_body_operator_generic const& op) {
+   many_body_operator_generic res;
+   for (auto const& x : op) res.monomials.insert({_dagger(x.monomial), conj(x.coef)});
    return res;
   }
 
@@ -301,23 +340,12 @@ namespace utility {
 
   // Erase a monomial with a close-to-zero coefficient.
   static void erase_zero_monomial(monomials_map_t& m, typename monomials_map_t::iterator& it) {
-   if (triqs::utility::is_zero(it->second)) m.erase(it);
+   using triqs::utility::is_zero;
+   if (is_zero(it->second)) m.erase(it);
   }
 
-  friend std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
-   if (op.dagger) os << "^+";
-   return os << "(" << op.indices << ")";
-  }
-
-  friend std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
-   for (auto const& c : m) {
-    os << "C" << c;
-   }
-   return os;
-  }
-
-  // Print many_body_operator itself
-  friend std::ostream& operator<<(std::ostream& os, many_body_operator const& op) {
+  // Print many_body_operator_generic itself
+  friend std::ostream& operator<<(std::ostream& os, many_body_operator_generic const& op) {
    if (op.monomials.size() != 0) {
     bool print_plus = false;
     for (auto const& m : op.monomials) {
@@ -332,21 +360,20 @@ namespace utility {
   }
  };
 
-
  // ---- factories --------------
 
  // Free functions to make creation/annihilation operators
- template <typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> c(IndexTypes... indices) {
-  return many_body_operator<scalar_t>::make_canonical(false, typename many_body_operator<scalar_t>::indices_t{indices...});
-  // need to put many_body_operator<double>::indices_t because {} constructor is explicit !?
+ template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> c(IndexTypes... indices) {
+  return many_body_operator_generic<scalar_t>::make_canonical(false, indices_t{indices...});
+  // need to put many_body_operator_generic<double>::indices_t because {} constructor is explicit !?
  }
 
- template <typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> c_dag(IndexTypes... indices) {
-  return many_body_operator<scalar_t>::make_canonical(true, typename many_body_operator<scalar_t>::indices_t{indices...});
+ template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> c_dag(IndexTypes... indices) {
+  return many_body_operator_generic<scalar_t>::make_canonical(true, indices_t{indices...});
  }
 
- template <typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> n(IndexTypes... indices) {
-  return c_dag<scalar_t>(indices...) * c<scalar_t>(indices...);
- }
+ template <typename scalar_t = real_or_complex, typename... IndexTypes> many_body_operator_generic<scalar_t> n(IndexTypes... indices) {
+   return c_dag<scalar_t>(indices...) * c<scalar_t>(indices...);
+  }
 }
 }

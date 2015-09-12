@@ -13,10 +13,10 @@
 #include <triqs/hilbert_space/state.hpp>
 
 using namespace triqs::hilbert_space;
-using triqs::utility::many_body_operator;
-using triqs::utility::c;
-using triqs::utility::c_dag;
-using triqs::utility::n;
+using triqs::operators::many_body_operator;
+using triqs::operators::c;
+using triqs::operators::c_dag;
+using triqs::operators::n;
 
 int main() {
 
@@ -35,7 +35,7 @@ int main() {
  }
 
  // Hamiltonian
- many_body_operator<double> H;
+ many_body_operator H;
  for (int o = 0; o < 3; ++o) {
   H += -mu * (n("up", o) + n("dn", o));
  }

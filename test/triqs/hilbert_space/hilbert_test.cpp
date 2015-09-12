@@ -1,7 +1,6 @@
 #include <triqs/utility/first_include.hpp>
-#include <triqs/hilbert_space/fundamental_operator_set.hpp>
-#include <triqs/hilbert_space/hilbert_space.hpp>
 #include <triqs/operators/many_body_operator.hpp>
+#include <triqs/hilbert_space/hilbert_space.hpp>
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include <triqs/hilbert_space/state.hpp>
 #include <iostream>
@@ -74,8 +73,8 @@ int main() {
 
   std::cout << std::endl << "Part V: the declarative operator" << std::endl << std::endl;
 
-  using triqs::utility::c;
-  using triqs::utility::c_dag;
+  using triqs::operators::c;
+  using triqs::operators::c_dag;
 
   auto H = 3 * c_dag("up",1) * c("up",1) + 2 * c_dag("up",2) * c("up",2) + c("up",1) * c("up",2);
   std::cout << "H = " << H << std::endl;
@@ -151,7 +150,7 @@ int main() {
   hilbert_space HS(FOPS);
   std::cerr  << " HS dimension "<< HS.size() << std::endl;
 
-  triqs::utility::many_body_operator<double> quartic_op;
+  triqs::operators::many_body_operator quartic_op;
   quartic_op = -1.0*c_dag("up",0)*c_dag("down",1)*c("up",1)*c("down",0);
 
   state<hilbert_space,double, false> st1(HS);

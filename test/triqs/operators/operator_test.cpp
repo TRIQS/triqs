@@ -27,8 +27,7 @@
 //#include <boost/archive/text_iarchive.hpp>
 #include <sstream>
 
-
-using namespace triqs::utility;
+using namespace triqs::operators;
 using namespace triqs;
 using namespace triqs::hilbert_space;
 
@@ -45,12 +44,12 @@ int main(int argc, char **argv)
     std::cout << "op_with_many_indices = " << op_with_many_indices << std::endl;
 
     // Constant operator
-    many_body_operator<double> const_op(3.14);
+    many_body_operator const_op(3.14);
     std::cout << "const_op = " << const_op << std::endl;
 
     // Commutation relations
-    std::vector<many_body_operator<double> > C = {c(1), c(2), c(3)};
-    std::vector<many_body_operator<double> > Cd = {c_dag(1), c_dag(2), c_dag(3)};
+    std::vector<many_body_operator > C = {c(1), c(2), c(3)};
+    std::vector<many_body_operator > Cd = {c_dag(1), c_dag(2), c_dag(3)};
 
     std::cout << std::endl << "Anticommutators:" << std::endl;
     for(auto const& cdi : Cd)
@@ -96,7 +95,7 @@ int main(int argc, char **argv)
     oa & N3;
 
     boost::archive::text_iarchive ia(ss);
-    many_body_operator<double> new_N3;
+    many_body_operator new_N3;
     ia & new_N3;
     
     std::cout << "New N^3 = " << new_N3 << std::endl; 
@@ -111,7 +110,7 @@ int main(int argc, char **argv)
     auto f = h5::file("ess.h5", 'w');
     h5_write(f, "OP", op1);
 
-    auto op2 = h5::h5_read<many_body_operator<double>>(f, "OP");
+    auto op2 = h5::h5_read<many_body_operator>(f, "OP");
 
     std::cerr << op1 << std::endl;
     std::cerr << op2 << std::endl;
@@ -129,7 +128,7 @@ int main(int argc, char **argv)
 
     // read both operator and fundamental operator set
     fundamental_operator_set fs2;
-    many_body_operator<double> op3;
+    many_body_operator op3;
     h5_read(f, "OP_fs", op3, fs2);
     std::cerr << (op1 - op3).is_zero() << std::endl;
 

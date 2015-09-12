@@ -1,7 +1,7 @@
 #include <triqs/utility/first_include.hpp>
 #include <triqs/operators/util/extractors.hpp>
 
-using namespace triqs::utility;
+using namespace triqs::operators;
 using namespace triqs::operators::util;
 
 int main(){

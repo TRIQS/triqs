@@ -29,10 +29,8 @@ namespace triqs {
 namespace operators {
 namespace util {
 
-template<typename scalar_t> using op_t = utility::many_body_operator<scalar_t>;
-template<typename scalar_t> using U_dict2_t = std::map<std::tuple<typename op_t<scalar_t>::indices_t,
-                                                                  typename op_t<scalar_t>::indices_t>,
-                                                       scalar_t>;
+template<typename scalar_t> using op_t = operators::many_body_operator_generic<scalar_t>;
+template <typename scalar_t> using U_dict2_t = std::map<std::tuple<indices_t, indices_t>, scalar_t>;
 
 using gf_struct_t = std::map<std::string, hilbert_space::fundamental_operator_set::indices_t> ;
 

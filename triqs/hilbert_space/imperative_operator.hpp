@@ -80,7 +80,7 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
  imperative_operator() {}
 
  // constructor from a many_body_operator, a fundamental_operator_set and a map (UseMap = true)
- imperative_operator(triqs::utility::many_body_operator<scalar_t> const &op, fundamental_operator_set const &fops,
+ imperative_operator(triqs::operators::many_body_operator_generic<scalar_t> const &op, fundamental_operator_set const &fops,
                      hilbert_map_t hmap = hilbert_map_t(), std::vector<sub_hilbert_space> const *sub_spaces_set = nullptr) {
 
   sub_spaces = sub_spaces_set;
@@ -108,7 +108,7 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
     return mask;
    };
    uint64_t d_count_mask = compute_count_mask(ndag), dag_count_mask = compute_count_mask(dag);
-   all_terms.push_back(one_term_t{term.coef, d_mask, dag_mask, d_count_mask, dag_count_mask});
+   all_terms.push_back(one_term_t{scalar_t(term.coef), d_mask, dag_mask, d_count_mask, dag_count_mask});
   }
  }
 

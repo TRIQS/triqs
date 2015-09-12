@@ -23,7 +23,7 @@
 #include <triqs/h5/base.hpp>
 
 namespace triqs {
-namespace utility {
+namespace operators {
 
  using namespace triqs::h5;
  using hilbert_space::fundamental_operator_set;
@@ -37,14 +37,17 @@ namespace utility {
   // the complicated indices of the C, C^ will be transformed into an int
   // via a fundamental_operator_set
   struct h5_monomial {
-   double scalar;
+   bool is_real;
+   double re, im;
    long op_indices[MAX_MONOMIAL_SIZE];
   };
 
   // create the h5 type corresponding to h5_monomial
   h5_object h5_monomial_dtype() {
    h5_object mono_id = H5Tcreate(H5T_COMPOUND, sizeof(h5_monomial));
-   H5Tinsert(mono_id, "scalar", HOFFSET(h5_monomial, scalar), H5T_NATIVE_DOUBLE);
+   H5Tinsert(mono_id, "is_real", HOFFSET(h5_monomial, is_real), H5T_NATIVE_INT);
+   H5Tinsert(mono_id, "re", HOFFSET(h5_monomial, re), H5T_NATIVE_DOUBLE);
+   H5Tinsert(mono_id, "im", HOFFSET(h5_monomial, im), H5T_NATIVE_DOUBLE);
    hsize_t array_dim[] = {MAX_MONOMIAL_SIZE};
    h5_object array_tid = H5Tarray_create(H5T_NATIVE_LONG, 1, array_dim);
    H5Tinsert(mono_id, "op_indices", HOFFSET(h5_monomial, op_indices), array_tid);
@@ -54,13 +57,13 @@ namespace utility {
 
  // ---------------------------  WRITE -----------------------------------------
 
- void h5_write(h5::group g, std::string const &name, many_body_operator<double> const &op) {
+ void h5_write(h5::group g, std::string const &name, many_body_operator const &op) {
   h5_write(g, name, op, op.make_fundamental_operator_set());
  }
 
  // ---------------
 
- void h5_write(h5::group g, std::string const &name, many_body_operator<double> const &op, fundamental_operator_set const &fops) {
+ void h5_write(h5::group g, std::string const &name, many_body_operator const &op, fundamental_operator_set const &fops) {
 
   // first prepare the data
   // datavec stores all monomials.
@@ -73,7 +76,7 @@ namespace utility {
    if (m.first.size() > MAX_MONOMIAL_SIZE)
     TRIQS_RUNTIME_ERROR << " h5 writing many_body_operator : unexpected monomial with more than " << MAX_MONOMIAL_SIZE
                         << "operators !";
-   h5_monomial y = {m.second, {0, 0, 0, 0}}; // we want to transform it to an h5_monomial
+   h5_monomial y = {m.second.is_real(), real(m.second), imag(m.second), {0, 0, 0, 0}}; // we want to transform it to an h5_monomial
    int i = 0;
    for (auto const &c_cdag_op : m.first) {       // loop over the C C^+ operators of the monomial
     long c_number = fops[c_cdag_op.indices] + 1; // the number of the C C^+ op. 0 means "no operators" here, so we shift by 1
@@ -107,14 +110,14 @@ namespace utility {
 
  // ---------------------------  READ -----------------------------------------
 
- void h5_read(h5::group g, std::string const &name, many_body_operator<double> &op) {
+ void h5_read(h5::group g, std::string const &name, many_body_operator &op) {
   fundamental_operator_set fops;
   h5_read(g, name, op, fops);
  }
 
  //-----
 
- void h5_read(h5::group g, std::string const &name, many_body_operator<double> &op, fundamental_operator_set &fops) {
+ void h5_read(h5::group g, std::string const &name, many_body_operator &op, fundamental_operator_set &fops) {
 
   // --- Read the datavec
 
@@ -148,12 +151,13 @@ namespace utility {
   auto r_fops = fops.reverse_map(); // a map int -> indices inverting fops[int] -> indices
 
   for (auto const &mon : datavec) {
-   many_body_operator<double>::monomial_t monomial;         // vector of canonical_ops_t
+   monomial_t monomial;         // vector of canonical_ops_t
    for (int i : mon.op_indices) {                           // loop over the index of the C, C^ ops of the monomial
     if (i == 0) break;                                      // means we have reach the end of the C,  C^+ list
     monomial.push_back({(i > 0), r_fops[std::abs(i) - 1]}); // add one C, C^+ op to the monomial
    }
-   op.monomials.insert({monomial, mon.scalar}); // add the monomial to the operator
+   real_or_complex s = (mon.is_real ? real_or_complex(mon.re) : real_or_complex(std::complex<double>(mon.re,mon.im)));
+   op.monomials.insert({monomial, s}); // add the monomial to the operator
   }
  }
 }
