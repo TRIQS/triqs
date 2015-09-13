@@ -53,12 +53,13 @@ std14::enable_if_t<triqs::is_complex<T>::value,bool> is_zero(T const& x) {
 // Complex conjugate
 //
 template<typename T> // Integral types
-std14::enable_if_t<std::is_integral<T>::value,T> _conj(T const& x) { return x; }
+std14::enable_if_t<std::is_integral<T>::value,T> conj(T const& x) { return x; }
 
 template<typename T> // Floating-point types
-std14::enable_if_t<std::is_floating_point<T>::value,T> _conj(T const& x) { return x; }
+std14::enable_if_t<std::is_floating_point<T>::value,T> conj(T const& x) { return x; }
 
 template<typename T> // std::complex
-std14::enable_if_t<triqs::is_complex<T>::value,T> _conj(T const& x) { return std::conj(x); }
+std14::enable_if_t<triqs::is_complex<T>::value,T> conj(T const& x) { return std::conj(x); }
+
 
 }}

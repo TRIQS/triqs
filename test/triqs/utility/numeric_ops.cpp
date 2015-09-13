@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/utility/draft/numeric_ops.hpp>
+#include <triqs/utility/numeric_ops.hpp>
 #include <complex>
 #include <iostream>
 
@@ -34,9 +34,9 @@ int main() {
     std::cout << "is_zero(i) = " << is_zero(i) << std::endl;
     std::cout << "is_zero(i_ref) = " << is_zero(i_ref) << std::endl;
     std::cout << "is_zero(i_cref) = " << is_zero(i_cref) << std::endl;
-    std::cout << "_conj(i) = " << _conj(i) << std::endl;
-    std::cout << "_conj(i_ref) = " << _conj(i_ref) << std::endl;
-    std::cout << "_conj(i_cref) = " << _conj(i_cref) << std::endl;
+    std::cout << "conj(i) = " << conj(i) << std::endl;
+    std::cout << "conj(i_ref) = " << conj(i_ref) << std::endl;
+    std::cout << "conj(i_cref) = " << conj(i_cref) << std::endl;
 
     double d = 0;
     double & d_ref = d;
@@ -46,9 +46,9 @@ int main() {
     std::cout << "is_zero(d) = " << is_zero(d) << std::endl;
     std::cout << "is_zero(d_ref) = " << is_zero(d_ref) << std::endl;
     std::cout << "is_zero(d_cref) = " << is_zero(d_cref) << std::endl;
-    std::cout << "_conj(d) = " << _conj(d) << std::endl;
-    std::cout << "_conj(d_ref) = " << _conj(d_ref) << std::endl;
-    std::cout << "_conj(d_cref) = " << _conj(d_cref) << std::endl;
+    std::cout << "conj(d) = " << conj(d) << std::endl;
+    std::cout << "conj(d_ref) = " << conj(d_ref) << std::endl;
+    std::cout << "conj(d_cref) = " << conj(d_cref) << std::endl;
 
     std::complex<double> c(1,1);
     std::complex<double> & c_ref = c;
@@ -58,9 +58,9 @@ int main() {
     std::cout << "is_zero(c) = " << is_zero(c) << std::endl;
     std::cout << "is_zero(c_ref) = " << is_zero(c_ref) << std::endl;
     std::cout << "is_zero(c_cref) = " << is_zero(c_cref) << std::endl;
-    std::cout << "_conj(c) = " << _conj(c) << std::endl;
-    std::cout << "_conj(c_ref) = " << _conj(c_ref) << std::endl;
-    std::cout << "_conj(c_cref) = " << _conj(c_cref) << std::endl;
+    std::cout << "conj(c) = " << conj(c) << std::endl;
+    std::cout << "conj(c_ref) = " << conj(c_ref) << std::endl;
+    std::cout << "conj(c_cref) = " << conj(c_cref) << std::endl;
 
     return 0;
 }

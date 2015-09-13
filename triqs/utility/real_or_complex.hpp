@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/exceptions.hpp>
-#include <triqs/utility/draft/numeric_ops.hpp>
+#include <triqs/utility/numeric_ops.hpp>
 #include <complex>
 
 namespace triqs {

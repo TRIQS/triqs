@@ -26,7 +26,7 @@
 #include <cmath>
 #include <boost/operators.hpp>
 #include "hilbert_space.hpp"
-#include <triqs/utility/draft/numeric_ops.hpp>
+#include <triqs/utility/numeric_ops.hpp>
 
 namespace triqs {
 namespace hilbert_space {
@@ -102,7 +102,8 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  friend value_type dot_product(state const& s1, state const& s2) {
   value_type res = 0.0;
   for (auto const& a : s1.ampli) {
-   if (s2.ampli.count(a.first) == 1) res += triqs::utility::_conj(a.second) * s2.ampli.at(a.first);
+   using triqs::utility::conj;
+   if (s2.ampli.count(a.first) == 1) res += conj(a.second) * s2.ampli.at(a.first);
   }
   return res;
  }
@@ -125,7 +126,8 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
  void prune() {
   for(auto it=ampli.begin(); it!=ampli.end();)
   {
-   if (triqs::utility::is_zero(it->second))
+   using triqs::utility::is_zero;
+   if (is_zero(it->second))
     it = ampli.erase(it);
    else
     ++it;
@@ -212,7 +214,8 @@ std::ostream& operator<<(std::ostream& os, state<HilbertSpace, ScalarType, Based
 
  using value_type = typename state<HilbertSpace, ScalarType, BasedOnMap>::value_type;
  foreach(s, [&os,hs,&something_written](int i, value_type ampl){
-  if (!triqs::utility::is_zero(ampl)){
+  using triqs::utility::is_zero;
+  if (!is_zero(ampl)){
    os << " +(" << ampl << ")" << "|" << hs.get_fock_state(i) << ">";
    something_written = true;
   }

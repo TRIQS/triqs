@@ -26,7 +26,7 @@
 #include <boost/operators.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
-#include <triqs/utility/draft/numeric_ops.hpp>
+#include <triqs/utility/numeric_ops.hpp>
 #include <triqs/utility/real_or_complex.hpp>
 #include <triqs/h5.hpp>
 
@@ -287,6 +287,7 @@ namespace operators {
   // dagger
   friend many_body_operator_generic dagger(many_body_operator_generic const& op) {
    many_body_operator_generic res;
+   using triqs::utility::conj;
    for (auto const& x : op) res.monomials.insert({_dagger(x.monomial), conj(x.coef)});
    return res;
   }

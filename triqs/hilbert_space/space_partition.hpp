@@ -24,7 +24,7 @@
 #include <set>
 #include <map>
 #include <utility>
-#include <triqs/utility/draft/numeric_ops.hpp>
+#include <triqs/utility/numeric_ops.hpp>
 #include <boost/pending/disjoint_sets.hpp>
 
 namespace triqs {
@@ -57,7 +57,8 @@ template <typename StateType, typename OperatorType> class space_partition {
 
    // Iterate over non-zero final amplitudes
    foreach(final_state, [&](index_t f, amplitude_t amplitude) {
-    if (triqs::utility::is_zero(amplitude)) return;
+    using triqs::utility::is_zero;
+    if (is_zero(amplitude)) return;
     auto i_subspace = subspaces.find_set(i);
     auto f_subspace = subspaces.find_set(f);
     if (i_subspace != f_subspace) subspaces.link(i_subspace, f_subspace);
@@ -90,7 +91,8 @@ template <typename StateType, typename OperatorType> class space_partition {
     state_t final_state = op(tmp_state);
     // Iterate over non-zero final amplitudes
     foreach(final_state, [&](index_t f, amplitude_t amplitude) {
-     if (triqs::utility::is_zero(amplitude)) return;
+     using triqs::utility::is_zero;
+     if (is_zero(amplitude)) return;
      auto f_subspace = subspaces.find_set(f);
      conn.insert({i_subspace,f_subspace});
      if (store_matrix_elements) elem[{i, f}] = amplitude;
@@ -171,7 +173,8 @@ template <typename StateType, typename OperatorType> class space_partition {
 
    // Iterate over non-zero final amplitudes
    foreach(final_state, [&](index_t f, amplitude_t amplitude) {
-    if (triqs::utility::is_zero(amplitude)) return;
+    using triqs::utility::is_zero;
+    if (is_zero(amplitude)) return;
     auto f_subspace = subspaces.find_set(f);
     if((!diagonal_only) || i_subspace==f_subspace)
       mapping.insert(std::make_pair(representative_to_index[i_subspace],
