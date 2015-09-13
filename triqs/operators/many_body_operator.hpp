@@ -37,7 +37,7 @@ namespace operators {
  using utility::real_or_complex;
 
  /// The generic class
- template <typename scalar_t> class many_body_operator_generic;
+ template <typename ScalarType> class many_body_operator_generic;
 
  /// The indices of the C, C^+ operators are a vector of int/string
  using indices_t = std::vector<variant_int_string>;
@@ -99,18 +99,18 @@ namespace operators {
  /**
   * many_body_operator_generic is a general operator in second quantification
   */
- template <typename scalar_t>
+ template <typename ScalarType>
  class many_body_operator_generic :
-     // implements vector space over scalar_t operators
-     boost::additive<many_body_operator_generic<scalar_t>>,
-     boost::multipliable<many_body_operator_generic<scalar_t>>,
-     boost::additive<many_body_operator_generic<scalar_t>, scalar_t>, // op+a a+op op-a
-     // boost::subtractable2_left<many_body_operator_generic<scalar_t>, scalar_t>, // a-op
-     boost::multipliable<many_body_operator_generic<scalar_t>, scalar_t>, // op*a a*op op/a
-     boost::dividable<many_body_operator_generic<scalar_t>, scalar_t> {
+     // implements vector space over ScalarType operators
+     boost::additive<many_body_operator_generic<ScalarType>>,
+     boost::multipliable<many_body_operator_generic<ScalarType>>,
+     boost::additive<many_body_operator_generic<ScalarType>, ScalarType>, // op+a a+op op-a
+     // boost::subtractable2_left<many_body_operator_generic<ScalarType>, ScalarType>, // a-op
+     boost::multipliable<many_body_operator_generic<ScalarType>, ScalarType>, // op*a a*op op/a
+     boost::dividable<many_body_operator_generic<ScalarType>, ScalarType> {
 
   // Map of all monomials with coefficients
-  using monomials_map_t = std::map<monomial_t, scalar_t>;
+  using monomials_map_t = std::map<monomial_t, ScalarType>;
 
   monomials_map_t monomials;
 
@@ -123,6 +123,8 @@ namespace operators {
                       hilbert_space::fundamental_operator_set& fops);
 
   public:
+  using scalar_t = ScalarType;
+
   many_body_operator_generic() = default;
   many_body_operator_generic(many_body_operator_generic const&) = default;
   many_body_operator_generic(many_body_operator_generic&&) = default;
