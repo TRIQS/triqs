@@ -289,6 +289,11 @@ namespace triqs { namespace arrays {
      template <typename Fnt> friend void triqs_clef_auto_assign(indexmap_storage_pair &x, Fnt f) {
       foreach(x, _worker<Fnt>{x, f});
      }
+     // for views only !
+     template <typename Fnt> friend void triqs_clef_auto_assign(indexmap_storage_pair &&x, Fnt f) {
+      static_assert(IsView, "Internal errro");
+      foreach(x, _worker<Fnt>{x, f});
+     }
      // template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
 
     // ------------------------------- Iterators --------------------------------------------
