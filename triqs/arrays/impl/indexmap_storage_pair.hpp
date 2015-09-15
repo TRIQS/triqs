@@ -51,6 +51,23 @@ namespace triqs { namespace arrays {
 
  template <class V, int R, typename TraversalOrder, class ViewTag, bool Borrowed, bool IsConst> struct ISPViewType;
 
+ // Auxiliary class for the auto_assign of indexmap_storage_pair, proxies.
+ // When implementing triqs_clef_auto_assign (A, f), if the result of f is itself a
+ // clef expression, we call again triqs_clef_auto_assign.
+ // This allows chain calls, cf clef adapter/vector
+ // This class is moved out of indexmap_storage_pair to be reused for proxy.
+ template <typename ArrayType, typename Function> struct array_auto_assign_worker {
+  ArrayType &A;
+  Function const &f;
+  template <typename T, typename RHS> void assign(T &x, RHS &&rhs) { x = std::forward<RHS>(rhs); }
+  template <typename Expr, int... Is, typename T> void assign(T &x, clef::make_fun_impl<Expr, Is...> &&rhs) {
+   triqs_clef_auto_assign(x, std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
+  }
+  template <typename... Args> void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
+ };
+
+ //---------------
+
  template <typename IndexMapType, typename StorageType, typename TraversalOrder, bool IsConst, bool IsView, typename ViewTag>
  class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_CONCEPT_TAG_NAME(MutableCuboidArray) {
 
@@ -274,25 +291,13 @@ namespace triqs { namespace arrays {
 
      // ------------------------------- clef auto assign --------------------------------------------
 
-     // For simple cases, it is assign_foreach. But when f(args...) is a function from a clef expression
-     // we make a chain call like cf clef vector adapter
-     template <typename Function> struct _worker {
-      indexmap_storage_pair &A;
-      Function const &f;
-      template <typename T, typename RHS> void assign(T &x, RHS &&rhs) { x = std::forward<RHS>(rhs); }
-      template <typename Expr, int... Is, typename T> void assign(T &x, clef::make_fun_impl<Expr, Is...> &&rhs) {
-       triqs_clef_auto_assign(x, std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
-      }
-      template <typename... Args> void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
-     };
-
-     template <typename Fnt> friend void triqs_clef_auto_assign(indexmap_storage_pair &x, Fnt f) {
-      foreach(x, _worker<Fnt>{x, f});
+    template <typename Fnt> friend void triqs_clef_auto_assign(indexmap_storage_pair &x, Fnt f) {
+      foreach (x, array_auto_assign_worker<indexmap_storage_pair, Fnt>{x, f});
      }
      // for views only !
      template <typename Fnt> friend void triqs_clef_auto_assign(indexmap_storage_pair &&x, Fnt f) {
       static_assert(IsView, "Internal errro");
-      foreach(x, _worker<Fnt>{x, f});
+      foreach (x, array_auto_assign_worker<indexmap_storage_pair, Fnt>{x, f});
      }
      // template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
 

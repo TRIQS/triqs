@@ -39,6 +39,7 @@ namespace arrays {
 
   typedef typename std::remove_reference<A>::type A_t;
   static constexpr bool is_const = true;
+  static constexpr int rank = A_t::rank;
   
   A a;
   long n;
@@ -94,6 +95,7 @@ namespace arrays {
 
   typedef typename std::remove_reference<A>::type A_t;
   static constexpr bool is_const = false;
+  static constexpr int rank = A_t::rank;
 
   A a;
   long n;
@@ -139,7 +141,10 @@ namespace arrays {
    return out << view_type{x};
   }
 
-  template <typename F> friend void triqs_clef_auto_assign(matrix_tensor_proxy x, F &&f) { foreach(x(), std::forward<F>(f)); }
+  // auto_assign like the main classes
+  template <typename F> friend void triqs_clef_auto_assign(matrix_tensor_proxy x, F &&f) {
+   foreach (x, array_auto_assign_worker<matrix_tensor_proxy, F>{x, f});
+  }
  };
 
  template <typename A, bool IsMatrix>
