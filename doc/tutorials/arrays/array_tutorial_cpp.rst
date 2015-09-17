@@ -46,3 +46,4 @@ Map and fold
 -------------
 .. triqs_example:: ./array_tutorial_7.cpp
 The full reference of the array library can be found :doc:`here <../reference/arrays/contents>`.
+

@@ -17,34 +17,42 @@ Creation of an empty det_manip class
 -------------------------------------
 
 .. triqs_example:: ./det_manip_tutorial_0.cpp
+
 Creation of a non empty det_manip class
 ----------------------------------------
 
 .. triqs_example:: ./det_manip_tutorial_1.cpp
+
 Get information about a det_manip class
 -----------------------------------------
 
 .. triqs_example:: ./det_manip_tutorial_2.cpp
+
 Add a line and a column
 -------------------------
 
 .. triqs_example:: ./det_manip_tutorial_3.cpp
+
 Remove a line and a column
 ---------------------------
 
 .. triqs_example:: ./det_manip_tutorial_4.cpp
+
 Add two lines and two columns
 ------------------------------
 
 .. triqs_example:: ./det_manip_tutorial_5.cpp
+
 Remove two lines and two columns
 --------------------------------
 
 .. triqs_example:: ./det_manip_tutorial_6.cpp
+
 Remove/add the one/two last lines and columns
 ---------------------------------------------
 
 .. triqs_example:: ./det_manip_tutorial_7.cpp
+
 Replace one line and column
 ---------------------------------------------
 

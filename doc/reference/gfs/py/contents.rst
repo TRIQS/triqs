@@ -3,7 +3,7 @@
 
 .. module:: pytriqs.gf.local
 
-.. _green:
+.. _green_py:
 
 
 Python documentation
