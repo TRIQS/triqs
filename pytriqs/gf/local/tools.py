@@ -21,7 +21,7 @@
 
 import lazy_expressions, descriptors
 from block_gf import BlockGf
-from gf import GfImFreq, TailGf
+from gf import GfImFreq, GfReFreq, TailGf
 from descriptor_base import A_Omega_Plus_B
 import numpy as np
 from itertools import product
@@ -168,15 +168,13 @@ def read_gf_from_txt(block_txtfiles, block_name):
     g: GfReFreq
         The real frequency Green's function read in.
     """
-    if type(g) != GfReFreq:
-        raise ValueError, 'read_gf_from_txt: Only GfReFreq quantities are supported.'
     block_txtfiles = np.array(block_txtfiles) # Must be an array to use certain functions
     N1,N2 = block_txtfiles.shape
     mesh = np.genfromtxt(block_txtfiles[0,0],usecols=[0]) # Mesh needs to be the same for all blocks
-    g = GfReFreq(indices = range(N1), window = (np.min(mesh),np.max(mesh)), n_points = len(mesh), name = block_name)
+    g = GfReFreq(indices=range(N1),window=(np.min(mesh),np.max(mesh)),n_points=len(mesh),name=block_name)
     for i,j in product(range(N1),range(N2)):
         data = np.genfromtxt(block_txtfiles[i,j],usecols=[1,2])
-        g.data[:,i,j] = data[:,0]+1j*data[:,1]
+        g.data[:,i,j] = data[:,0] + 1j*data[:,1]
     return g
 
 
