@@ -185,19 +185,26 @@ We know the inverse of the old matrix :math:`A` (of the same size as :math:`A'`)
 
 Using the following variables:
 
-.. math:: M = IF-GH, \qquad \xi=ID-CMB, 
+.. math:: h = HB, \qquad g=CG, 
 
-We have
+.. math:: C'=CF, \qquad B'=FB, 
+
+.. math:: f=C'B-D=CB'-D, \qquad \xi=gh-If, 
+
+.. math:: G'=\xi^{-1}(hG-IB'), \qquad H'=\xi^{-1}(gH-IC'),
+
+.. math:: F' = F-G'C'+\xi^{-1}(fG-gB')H
+             = F-B'H'+\xi^{-1}G(fH-hC')
+
+We get
 
 .. math:: (A')^{-1}=
           \begin{pmatrix}
-            F+\xi^{-1}(MBCF+(CFB-FBC-D)GH) & -MB\xi^{-1}\\
-            -CM\xi^{-1} & I\xi^{-1}
+            F' & G'\\
+            H' & \xi^{-1}I
           \end{pmatrix}
 
-.. math:: \frac{{\rm Det}A'}{{\rm Det}A}={\rm Det}\xi
+.. math:: \frac{{\rm Det}A'}{{\rm Det}A}=\xi
 
 Note that this formulas remain valid if :math:`A_0` is not inversible. 
-
-
 
