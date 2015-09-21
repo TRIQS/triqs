@@ -24,7 +24,23 @@ The matrix of the cofactors is defined as:
              \vdots    &       & \vdots      & \vdots     &       & \vdots    \\
              a_{n,1}   & \dots & a_{n,j-1}   & a_{n,j+1}  & \dots & a_{n,n}   \end{pmatrix}.
 
+
+
+The Sherman-Morrison formula
+=============================
     
+:math:`A` is an inversible :math:`n\times n` matrix.  and :math:`u`, :math:`v` are :math:`n` vectors. 
+Suppose furthermore that :math:`1+v^t A^{-1} u != 0`.
+Then the Sherman-Morrison formula states that
+
+.. math:: (A + u v^t)^{-1} = A^{-1} - \frac{ A^{-1} u v^t A^{-1} }{ 1 + v^t A^{-1} u}
+
+Similar formula for the determinant:
+
+.. math:: {\rm Det}(A + u v^t) = Det(A)(1 + v^t A^{-1} u).
+
+
+
 Addition of a line and a column, or more
 =========================================
 
@@ -54,6 +70,7 @@ and the previous formula with the cofactors, we get the determinant and the inve
 For the addition of two or more lines and columns, the formulas remain the same, but :math:`B`, :math:`C`, :math:`D`, :math:`\xi`, :math:`B'` and :math:`C'` are now matrices of different sizes. 
 
 
+
 Removal of a line and a column, or more
 ========================================
 
@@ -80,10 +97,77 @@ we get the determinant and the inverse of the new matrix :math:`A'` as:
 For the removal of two or more lines and columns, the formulas remain the same, but :math:`F`, :math:`G`, :math:`H`, and :math:`I` are now matrices of different sizes. 
 
 
-Exchange of a line and a column
-================================
+
+Change of a column
+===================
+
+:math:`A'` is the new matrix of size :math:`n\times n` where the last column has been changed:
  
-:math:`A'` is the new matrix where the last line and column has been changed:
+Writing:
+
+.. math:: A'=
+          \begin{pmatrix} 
+            A_0 & B+\Delta B 
+          \end{pmatrix}.
+
+We know the inverse of the old matrix :math:`A` (of the same size as :math:`A'`): 
+
+.. math:: A^{-1}=
+          \begin{pmatrix}
+            F\\
+            G
+          \end{pmatrix}
+
+Using the following variables:
+
+.. math:: M = A^{-1}\Delta B, 
+
+We have
+
+.. math:: (A')^{-1} = A^{-1} - \frac{ M G }{ 1 + M_n }
+
+.. math:: \frac{{\rm Det}A'}{{\rm Det}A}= 1 + M_n
+
+To ameliorate the precision of the algorithm, the last line of :math:`A^{-1}` should only be divided by :math:`1 + M_n` and not updated by the general formula. 
+
+
+Change of a line
+===================
+
+It is a straightformward adaptation of the previous section:
+ 
+Writing:
+
+.. math:: A'=
+          \begin{pmatrix} 
+            A_0 \\ C+\Delta C 
+          \end{pmatrix}.
+
+We know the inverse of the old matrix :math:`A` (of the same size as :math:`A'`): 
+
+.. math:: A^{-1}=
+          \begin{pmatrix}
+            F & G
+          \end{pmatrix}
+
+Using the following variables:
+
+.. math:: M =\Delta C A^{-1}, 
+
+We have
+
+.. math:: (A')^{-1} = A^{-1} - \frac{ G M }{ 1 + M_n }
+
+.. math:: \frac{{\rm Det}A'}{{\rm Det}A}= 1 + M_n
+
+To ameliorate the precision of the algorithm, the last column of :math:`A^{-1}` should only be divided by :math:`1 + M_n` and not updated by the general formula. 
+
+
+
+Change of a line and a column
+===============================
+ 
+:math:`A'` is the new matrix of size :math:`n\times n` where the last line and column has been changed:
  
 Writing:
 
@@ -91,7 +175,7 @@ Writing:
           A_0 & B \\ 
           C & D \end{pmatrix}.
 
-We know the inverse of the old matrix :math:`A` (of the same size as :math:`A'`: 
+We know the inverse of the old matrix :math:`A` (of the same size as :math:`A'`): 
 
 .. math:: (A)^{-1}=
           \begin{pmatrix}
