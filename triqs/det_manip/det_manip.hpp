@@ -257,7 +257,8 @@ namespace triqs { namespace det_manip {
     value_type determinant() const {return sign*det;}
 
     /** Returns M^{-1}(i,j) */
-    value_type inverse_matrix(size_t i,size_t j) const {return mat_inv(col_num[i],row_num[j]);} // warning : need to invert the 2 permutations.
+    // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
+    value_type inverse_matrix(size_t i,size_t j) const { return mat_inv(col_num[i],row_num[j]);}
 
     /// Returns the inverse matrix. Warning : this is slow, since it create a new copy, and reorder the lines/cols
     matrix_view_type inverse_matrix() const {
@@ -413,9 +414,9 @@ namespace triqs { namespace det_manip {
      * Double Insert operation at colum j0,j1 and row i0,i1.
      *
      * The operation consists in adding :
-     *    * a column  f(x_i,    y_{j0})
-     *    * and a row f(x_{i0}, x_j)
-     * The new colum/row will be at col j0, row i0.
+     *    * two columns  f(x_i,    y_{j0}), f(x_i,    y_{j1})
+     *    * and two rows f(x_{i0}, x_j),    f(x_{i1}, x_j)
+     * The new colums/rows will be at col j0, j1, row i0, i1.
      *
      * 0 <= i0,i1,j0,j1 <= N+1, where N is the current size of the matrix.
      * Returns the ratio of det Minv_new / det Minv.
@@ -683,7 +684,12 @@ namespace triqs { namespace det_manip {
       if (row_num[k]==N)     row_num[k]=i_real_min;
      }
 
-     for (int u=0; u<2; ++u) { row_num.pop_back(); col_num.pop_back(); x_values.pop_back(); y_values.pop_back(); }
+     for (int u=0; u<2; ++u) { 
+       row_num.pop_back(); 
+       col_num.pop_back(); 
+       x_values.pop_back(); 
+       y_values.pop_back(); 
+     }
     }
     //------------------------------------------------------------------------------------------
    public:
@@ -696,7 +702,8 @@ namespace triqs { namespace det_manip {
      */
     value_type try_change_col(size_t j, xy_type const & y) {
      TRIQS_ASSERT(j<N); TRIQS_ASSERT(j>=0);
-     w1.j=j;last_try = 3;
+     w1.j=j;
+     last_try = 3;
      w1.jreal = col_num[j];
      w1.y = y;
 
@@ -710,7 +717,7 @@ namespace triqs { namespace det_manip {
      w1.ksi = (1+w1.MB(w1.jreal));
      newdet = det*w1.ksi;
      newsign = sign;
-     return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
+     return (newdet/det); // newsign/sign is unity
     }
     //------------------------------------------------------------------------------------------
    private:
@@ -722,7 +729,7 @@ namespace triqs { namespace det_manip {
      // using Shermann Morrison formula.
      // implemented in 2 times : first Bn=0 so that Mnj is not modified ! and then change Mnj
      // Cf notes : simply multiply by -w1.ksi
-     w1.ksi = - 1/(1+ w1.MB(w1.jreal));
+     w1.ksi = - 1/w1.ksi;
      w1.MB(w1.jreal) = 0;
      //mat_inv(R,R) += w1.ksi * w1.MB(R) * mat_inv(w1.jreal,R)); // OPTIMIZE BELOW
      blas::ger(w1.ksi,w1.MB(R), mat_inv(w1.jreal,R), mat_inv(R,R));
@@ -740,7 +747,8 @@ namespace triqs { namespace det_manip {
      */
     value_type try_change_row(size_t i, xy_type const & x) {
      TRIQS_ASSERT(i<N); TRIQS_ASSERT(i>=0);
-     w1.i=i;last_try = 4;
+     w1.i=i;
+     last_try = 4;
      w1.ireal = row_num[i];
      w1.x = x;
 
@@ -754,7 +762,7 @@ namespace triqs { namespace det_manip {
      w1.ksi = (1+w1.MC(w1.ireal));
      newdet = det*w1.ksi;
      newsign = sign;
-     return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
+     return (newdet/det); // newsign/sign is unity
     }
     //------------------------------------------------------------------------------------------
    private:
@@ -765,7 +773,7 @@ namespace triqs { namespace det_manip {
      // modifying M : M ij += w1.ksi Min Cj
      // using Shermann Morrison formula.
      // impl. Cf case 3
-     w1.ksi = - 1/(1+ w1.MC(w1.ireal));
+     w1.ksi = - 1/w1.ksi;
      w1.MC(w1.ireal) = 0;
      //mat_inv(R,R) += w1.ksi * mat_inv(R,w1.ireal) * w1.MC(R);
      blas::ger(w1.ksi,mat_inv(R,w1.ireal),w1.MC(R),  mat_inv(R,R));
@@ -882,7 +890,6 @@ namespace triqs { namespace det_manip {
 
     /// Insert_at_end (try_insert + complete)
     value_type insert_at_end(xy_type const& x, xy_type const& y) {
-     auto N = size();
      return insert(N, N, x, y);
     }
 
@@ -896,7 +903,6 @@ namespace triqs { namespace det_manip {
 
     /// Insert2_at_end (try_insert2 + complete)
     value_type insert2_at_end(xy_type const& x0, xy_type const& x1, xy_type const& y0, xy_type const& y1) {
-     auto N = size();
      return insert2(N, N+1, N, N+1, x0, x1, y0, y1);
     }
 
@@ -909,7 +915,6 @@ namespace triqs { namespace det_manip {
 
     /// Remove_at_end (try_remove + complete)
     value_type remove_at_end() {
-     auto N = size();
      return remove(N-1, N-1);
     }
 
@@ -922,7 +927,6 @@ namespace triqs { namespace det_manip {
     
     /// Remove2_at_end (try_remove2 + complete)
     value_type remove2_at_end() {
-     auto N = size();
      return remove2(N-1, N-2, N-1, N-2);
     }
     
@@ -939,11 +943,88 @@ namespace triqs { namespace det_manip {
      complete_operation();
      return r;
     }
-
-    /// Change one line and one col
-    void change_one_line_and_one_col( size_t i, size_t j, xy_type const& x, xy_type const& y) {
-     change_col(j,y);
-     change_row(i,x);
+    
+    /// Change one row and one col
+    // other way of doing change_one_line_and_one_col. 
+    // Should be faster. 
+    void change_one_row_and_one_col( size_t i, size_t j, xy_type const& x, xy_type const& y) {
+      TRIQS_ASSERT(j<N); TRIQS_ASSERT(j>=0);
+      TRIQS_ASSERT(i<N); TRIQS_ASSERT(i>=0);
+      
+      //we treat the case N=1 separately
+      if(N==1){
+        x_values[0] = x;
+        y_values[0] = y;
+        regenerate();
+      }
+      
+      //N>1
+      w1.i = i;
+      w1.j = j;
+      w1.x = x;
+      w1.y = y;
+      w1.ireal = row_num[i];
+      w1.jreal = col_num[j];
+      // swap the rows w1.ireal and N, w1.jreal and N in inv_mat
+      {
+        range R(0,N);
+        if (w1.jreal !=N-1){
+          arrays::deep_swap( mat_inv(w1.jreal,R), mat_inv(N-1,R));
+          y_values[w1.jreal] = y_values[N-1];
+        }
+        y_values[N-1] = y;
+        if (w1.ireal !=N-1){
+          arrays::deep_swap (mat_inv(R,w1.ireal),  mat_inv(R,N-1));
+          x_values[w1.ireal] = x_values[N-1];
+        }
+        x_values[N-1] = x;
+      }
+      for (size_t k=0; k<N; k++){
+        if (col_num[k]==N-1) col_num[k]=w1.jreal;
+        if (row_num[k]==N-1) row_num[k]=w1.ireal;
+      }
+      row_num[i] = N-1;
+      col_num[j] = N-1;
+      if ((w1.ireal + w1.jreal)%2==1){
+        det *= -1;
+        sign *= -1;
+      }
+      
+      // Compute the new row and col
+      for (size_t k = 0; k < N-1; k++){
+        w1.B(k) = f(x_values[k] , w1.y);
+        w1.C(k) = f(w1.x , y_values[k]);
+      }
+      w1.ksi = f(x, y);
+      
+      // B' and C'
+      range R(0,N-1);
+      //w1.MC(R) = w1.C(R) * mat_inv(R,R);// OPTIMIZE BELOW
+      blas::gemv(1.0, mat_inv(R,R).transpose(), w1.C(R), 0.0, w1.MC(R));
+      //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
+      blas::gemv(1.0, mat_inv(R,R), w1.B(R), 0.0, w1.MB(R));
+      
+      // some scalar values, new det.
+      auto h = arrays::dot( mat_inv(N-1,R), w1.B(R) );
+      auto g = arrays::dot( w1.C(R), mat_inv(R,N-1) );
+      auto f = arrays::dot( w1.MC(R), w1.B(R)) - w1.ksi;
+      w1.ksi = g * h - mat_inv(N-1,N-1) * f;
+      det *= w1.ksi;
+      w1.ksi= 1./w1.ksi;
+      
+      //new B and C
+      w1.B(R) =  (w1.ksi*mat_inv(N-1,N-1))*w1.MB(R) - ( w1.ksi*h) * mat_inv(R,N-1); //(IB'-hG)/ksi
+      w1.C(R) = -(w1.ksi*g)               *w1.MB(R) + ( w1.ksi*f) * mat_inv(R,N-1); //(fG -gB')/ksi
+      
+      // we update mat_inv
+      mat_inv(N-1,N-1) *= w1.ksi;
+      // mat_inv(R,R) +=  w1.ksi * w1.B(R) * w1.MC(R)
+      //                - w1.ksi * w1.C(R) * mat_inv(N-1,R);// OPTIMIZE BELOW ?
+      // can still be optimised ??
+      blas::ger( 1, w1.B(R), w1.MC(R),       mat_inv(R,R) );
+      blas::ger(1, w1.C(R), mat_inv(N-1,R), mat_inv(R,R) );
+      mat_inv(R,N-1) = (w1.ksi*h)*mat_inv(R,N-1) - mat_inv(N-1,N-1)*w1.MB(R); //G'=ksi^-1*(hG-IB')
+      mat_inv(N-1,R) = (w1.ksi*g)*mat_inv(N-1,R) - mat_inv(N-1,N-1)*w1.MC(R); //H'=ksi^-1*(gH-IC')
     }
 
     ///
