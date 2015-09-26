@@ -22,16 +22,19 @@ Simple operations
 HDF5 Archiving
 -------------------
 Archiving an array into an HDF5 file is easy:
+
 .. triqs_example:: ./array_tutorial_2.cpp
 
 Views: ranges and slices
 -------------------------
 One can easily take a slice of an array to view and modify only part of the underlying data.
+
 .. triqs_example:: ./array_tutorial_3.cpp
 
 Matrices and vectors
 -------------------------
 Arrays must be distinguished from vectors and matrices, which have an algebra of their own.
+
 .. triqs_example:: ./array_tutorial_4.cpp
 
 Defining through a lazy expression
@@ -45,5 +48,5 @@ Linear algebra
 Map and fold
 -------------
 .. triqs_example:: ./array_tutorial_7.cpp
-The full reference of the array library can be found :doc:`here <../reference/arrays/contents>`.
+The full reference of the array library can be found :doc:`here <../../reference/arrays/contents>`.
 

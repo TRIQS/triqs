@@ -7,7 +7,7 @@ Tutorial on determinants for Continuous-Time Monte-Carlo in C++
    :maxdepth: 1
 
 TRIQS comes with a class called det_manip to easily perform operations on a special type of matrices
-(see :doc:`here <../reference/determinant_manipulation/contents>`).
+(see :doc:`here <../../reference/determinant_manipulation/contents>`).
 This library, among others, allows to easily add or remove lines or columns to the matrix, to calculate the determinant and the inverse.
 Here are a couple of simple examples showing the basic use of this class.
 
