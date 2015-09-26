@@ -193,8 +193,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         elif '__reduce_to_dict__' in dir(val) : # Is it a HDF_compliant object
             self.create_group(key) # create a new group
             d = val.__reduce_to_dict__() if '__reduce_to_dict__' in dir(val) else dict( [(x,getattr(val,x)) for x in val.__HDF_reduction__])
-            if type(d) != type({}) : raise ValueError, " __reduce_to_dict__ method does not return a dict. See the doc !"
-            if (d=={}) : raise ValueError, "__reduce_to_dict__ returns an empty dict"
+            if not isinstance(d,dict) : raise ValueError, " __reduce_to_dict__ method does not return a dict. See the doc !"
             SUB = HDFArchiveGroup(self,key)
             for n,v in d.items() : SUB[n] = v
             write_attributes(SUB)
