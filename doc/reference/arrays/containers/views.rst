@@ -128,7 +128,7 @@ Member functions
 
    view_constructors
    view_assign
-   comp_ops
+   compound_ops
    call 
    rebind
    STL 

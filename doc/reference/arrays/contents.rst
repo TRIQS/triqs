@@ -1,5 +1,5 @@
 Multidimensional arrays
-*******************************************
+************************
 .. warning::
 
    This library is of stable quality, except when otherwise stated(for some recent features).
@@ -34,4 +34,4 @@ Multidimensional arrays
    multithreading
    FAQ
    implementation_notes/contents
-   ./../../../tutorials/c++/array_tutorial
+   ./../../tutorials/arrays/array_tutorial

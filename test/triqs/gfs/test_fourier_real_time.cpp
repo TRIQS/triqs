@@ -19,9 +19,7 @@ double theta(double x){
 int main() {
  
   double precision=10e-10;
-  h5::file file("fourier_real_time.h5",H5F_ACC_TRUNC);
-
-  std::complex<double> I(0,1);  
+  h5::file file("fourier_real_time.h5",H5F_ACC_TRUNC); 
   
   //Test on the tail: GF in frequency that is a lorentzian, with its singularity, TF and TF^-1. 
   
@@ -55,14 +53,12 @@ int main() {
   
   
   //Test on the tail: GF in time that is a decreasing exponential 
-  
   double tmax=10.;
   int Nt=501;
   
   auto Gt2 = gf<retime> {{-tmax, tmax, Nt}, {1,1}};
   a = 2*acos(-1.) / ( Gt2.mesh().delta() *sqrt( Gt2.mesh().size() ) );
-  for(auto const & t:Gt2.mesh()) Gt2[t] = 0.5 *I * ( lorentzian_inverse(-t,a)*theta(-t)-lorentzian_inverse(t,a)*theta(t) );
-  //for(auto const & t:Gt2.mesh()) Gt2[t] = 0.5_j * ( lorentzian_inverse(-t,a)*theta(-t)-lorentzian_inverse(t,a)*theta(t) );
+  for(auto const & t:Gt2.mesh()) Gt2[t] = 0.5_j * ( lorentzian_inverse(-t,a)*theta(-t)-lorentzian_inverse(t,a)*theta(t) );
   Gt2.singularity()(1)=triqs::arrays::matrix<double>{{1.0}};
   h5_write(file,"Gt2",Gt2);
   
@@ -70,8 +66,7 @@ int main() {
   h5_write(file,"Gw2",Gw2);
   
   for(auto const & w:Gw2.mesh()){
-    Gw2[w]-= 0.5/(w+a*I)+0.5/(w-a*I);
-    //Gw2[w]-= 0.5/(w+a*1_j)+0.5/(w-a*1_j);
+    Gw2[w]-= 0.5/(w+a*1_j)+0.5/(w-a*1_j);
     if ( std::abs(Gw2[w](0,0)) > precision) TRIQS_RUNTIME_ERROR<<" fourier_real_time error : w="<<w<<" ,G2="<<std::abs(Gw2[w](0,0))<<"\n";
   }
   h5_write(file,"Gw2b",Gw2);
@@ -83,8 +78,7 @@ int main() {
   tmax=4*acos(-1.);
   
   auto Gt3 = gf<retime> {{-tmax, tmax, Nt}, {1,1}};
-  for(auto const & t:Gt3.mesh()) Gt3[t] = 1.0 * std::cos(10*t) + 0.25*std::sin(4*t) + 0.5 * I*std::sin(8*t+0.3*acos(-1.)) ;
-  //for(auto const & t:Gt3.mesh()) Gt3[t] = 1.0 * std::cos(10*t) + 0.25*std::sin(4*t) + 0.5_j*std::sin(8*t+0.3*acos(-1.)) ;
+  for(auto const & t:Gt3.mesh()) Gt3[t] = 1.0 * std::cos(10*t) + 0.25*std::sin(4*t) + 0.5_j*std::sin(8*t+0.3*acos(-1.)) ;
   h5_write(file,"Gt3",Gt3);
   
   auto Gw3 = make_gf_from_fourier(Gt3);

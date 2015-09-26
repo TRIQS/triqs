@@ -8,9 +8,9 @@ Synopsis
 
 **Synopsis** :: 
 
- auto fourier (gf<imfreq,Target,Opt>            const &)
- auto fourier (gf_view<imfreq,Target,Opt>       const &)
- auto fourier (gf_const_view<imfreq,Target,Opt> const &)
+ auto fourier (gf<imtime,Target,Opt>            const &)
+ auto fourier (gf_view<imtime,Target,Opt>       const &)
+ auto fourier (gf_const_view<imtime,Target,Opt> const &)
 
  auto inverse_fourier (gf<imfreq,Target,Opt>            const &)
  auto inverse_fourier (gf_view<imfreq,Target,Opt>       const &)
