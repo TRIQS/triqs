@@ -24,6 +24,7 @@
 #include "impl/indexmap_storage_pair.hpp"
 #include "impl/assignment.hpp"
 #include "vector.hpp"
+#include "array.hpp"
 namespace triqs {
 namespace arrays {
 
@@ -34,6 +35,7 @@ namespace arrays {
 //
 #define _IMPL_MATRIX_COMMON                                                                                                      \
  bool is_square() const { return this->shape()[0] == this->shape()[1]; }                                                         \
+ array_view<ValueType,2> as_array_view() { return *this; }                                                                         \
                                                                                                                                  \
  view_type transpose() const {                                                                                                   \
   typename indexmap_type::lengths_type l;                                                                                        \
