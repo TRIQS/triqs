@@ -76,7 +76,7 @@ class hilbert_space {
 class sub_hilbert_space {
 
  public:
- sub_hilbert_space(int index) : index(index) {}
+ sub_hilbert_space(int index = -1) : index(index) {}
 
  // add a fock state to the hilbert space basis
  void add_fock_state(fock_state_t f) {

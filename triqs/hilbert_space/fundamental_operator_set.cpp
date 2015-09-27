@@ -82,7 +82,7 @@ namespace hilbert_space {
 
  void h5_read_attribute(hid_t id, std::string const& name, fundamental_operator_set& f) {
   std::vector<std::vector<std::string>> fops1;
-  h5::h5_read_attribute(id, "fundamental_operator_set", fops1);
+  h5::h5_read_attribute(id, name, fops1);
   f = fundamental_operator_set(fops1);
  }
 }

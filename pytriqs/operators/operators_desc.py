@@ -6,6 +6,7 @@ module.add_include("<triqs/operators/many_body_operator.hpp>")
 module.add_include("<triqs/python_tools/converters/pair.hpp>")
 module.add_include("<triqs/python_tools/converters/vector.hpp>")
 module.add_include("<triqs/python_tools/converters/variant_int_string.hpp>")
+module.add_include("<triqs/python_tools/converters/h5.hpp>")
 module.add_using("namespace triqs::utility")
 
 
@@ -15,6 +16,7 @@ op = class_(
         c_type = "many_body_operator<double>",
         c_type_absolute = "triqs::utility::many_body_operator<double>",
         is_printable= True,
+        hdf5 = True,
         arithmetic = ("algebra","with_unit","with_unary_minus","double")
         )
 

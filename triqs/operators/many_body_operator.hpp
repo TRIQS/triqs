@@ -50,7 +50,6 @@ namespace utility {
   /// The indices of the C, C^+ operators are a vector of int/string
   using indices_t = std::vector<variant_int_string>;
 
-  private:
   // The canonical operator: a dagger and some indices
   struct canonical_ops_t {
    bool dagger;
@@ -75,6 +74,7 @@ namespace utility {
   // Monomial: an ordered set of creation/annihilation operators and comparison
   using monomial_t = std::vector<canonical_ops_t>;
 
+  private:
   friend bool operator<(monomial_t const& m1, monomial_t const& m2) {
    return m1.size() != m2.size() ? m1.size() < m2.size()
                                  : std::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end());
@@ -85,6 +85,7 @@ namespace utility {
 
   monomials_map_t monomials;
 
+  friend std::string get_triqs_hdf5_data_scheme(many_body_operator const&) { return "Operator"; }
   friend void h5_write(h5::group g, std::string const& name, many_body_operator<double> const& op);
   friend void h5_write(h5::group g, std::string const& name, many_body_operator<double> const& op,
                        hilbert_space::fundamental_operator_set const& fops);
