@@ -39,10 +39,10 @@ class PythonListWrap:
     def __init__(self,ob) :
         self.ob = ob
     def __reduce_to_dict__(self) : 
-        return dict( [ (_my_str(n),v) for (n,v) in  enumerate (self.ob)])
+        return dict( [ (str(n),v) for (n,v) in  enumerate (self.ob)])
     @classmethod
     def __factory_from_dict__(cls, name, D) :
-        return [x for (n,x) in sorted(D.items())]
+        return [x for (n,x) in sorted([(int(n), x) for n,x in D.items()])]
 
 class PythonTupleWrap:
     def __init__(self,ob) :
@@ -188,8 +188,9 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         if '__write_hdf5__' in dir(val) : # simplest protocol
             val.__write_hdf5__(self._group,key)
             self.cached_keys.append(key) # I need to do this here
-            SUB = HDFArchiveGroup(self,key)
-            write_attributes(SUB)
+            # Should be done in the __write_hdf5__ function
+            #SUB = HDFArchiveGroup(self,key)
+            #write_attributes(SUB)
         elif '__reduce_to_dict__' in dir(val) : # Is it a HDF_compliant object
             self.create_group(key) # create a new group
             d = val.__reduce_to_dict__() if '__reduce_to_dict__' in dir(val) else dict( [(x,getattr(val,x)) for x in val.__HDF_reduction__])
@@ -232,41 +233,42 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         if key not in self :
             key = self._key_cipher(key)
             if key not in self  : raise KeyError, "Key %s does not exist."%key
- 
+
         if self.is_group(key) :
             SUB = HDFArchiveGroup(self,key) # View of the subgroup
-            if not reconstruct_python_object : return SUB
-            try :
-                hdf_data_scheme = SUB.read_attr("TRIQS_HDF5_data_scheme") 
-            except:
-                return SUB
-            if hdf_data_scheme :  
-              try :
-                  sch = hdf_scheme_access(hdf_data_scheme)
-              except :
-                  print "Warning : The TRIQS_HDF5_data_scheme %s is not recognized. Returning as a group. Hint : did you forgot to import this python class ?"%hdf_data_scheme
-                  return SUB
-              r_class_name  = sch.classname
-              r_module_name = sch.modulename
-              r_readfun = sch.read_fun
-            if not (r_class_name and r_module_name) : return SUB
-            try :
-                exec("from %s import %s as r_class" %(r_module_name,r_class_name)) in globals(), locals()
-            except KeyError :
-                raise RuntimeError, "I cannot find the class %s to reconstruct the object !"%r_class_name
-            if r_readfun :
-                res = r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
-            elif "__factory_from_dict__" in dir(r_class) :
-                f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
-                values = dict( (self._key_decipher(str(K)),f(K)) for K in SUB )  # str transforms unicode string to regular python string
-                res = r_class.__factory_from_dict__(key,values)
-            else :
-                raise ValueError, "Impossible to reread the class %s for group %s and key %s"%(r_class_name,self, key)
-            return res
+            bare_return = lambda: SUB
         elif self.is_data(key) :
-            return self._read(key)
+            bare_return = lambda: self._read(key)
         else :
             raise KeyError, "Key %s is of unknown type !!"%Key 
+
+        if not reconstruct_python_object : return bare_return()
+        # try to find the scheme
+        try :
+           hdf_data_scheme = self._group[key].attrs["TRIQS_HDF5_data_scheme"]
+        except:
+            return bare_return()
+        try :
+            sch = hdf_scheme_access(hdf_data_scheme)
+        except :
+            print "Warning : The TRIQS_HDF5_data_scheme %s is not recognized. Returning as a group. Hint : did you forgot to import this python class ?"%hdf_data_scheme
+            return bare_return()
+        r_class_name  = sch.classname
+        r_module_name = sch.modulename
+        r_readfun = sch.read_fun
+        if not (r_class_name and r_module_name) : return bare_return()
+        try :
+            exec("from %s import %s as r_class" %(r_module_name,r_class_name)) in globals(), locals()
+        except KeyError :
+            raise RuntimeError, "I cannot find the class %s to reconstruct the object !"%r_class_name
+        if r_readfun :
+            return r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
+        if "__factory_from_dict__" in dir(r_class):
+            assert self.is_group(key), "__factory_from_dict__ requires a subgroup"
+            f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
+            values = dict( (self._key_decipher(str(K)),f(K)) for K in SUB )  # str transforms unicode string to regular python string
+            return r_class.__factory_from_dict__(key,values)
+        raise ValueError, "Impossible to reread the class %s for group %s and key %s"%(r_class_name,self, key)
 
     #---------------------------------------------------------------------------
     def __str__(self) :

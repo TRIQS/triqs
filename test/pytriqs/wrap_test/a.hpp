@@ -110,14 +110,14 @@ struct A {
     return u + i;
   }
 
-  friend void h5_write(int gr, A const &a) {
-    std::cout << " mimic h5 writing" << std::endl;
-  }
+  ///
+  friend std::string get_triqs_hdf5_data_scheme(A const&) { return "Ac"; }
 
   /// Write into HDF5
   friend void h5_write(triqs::h5::group fg, std::string subgroup_name, A const &a) {
    auto gr = fg.create_group(subgroup_name);
-   h5_write(gr,"x",a.x);
+   gr.write_triqs_hdf5_data_scheme(a);
+   h5_write(gr, "x", a.x);
   }
 
   /// Read from HDF5

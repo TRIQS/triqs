@@ -53,6 +53,9 @@ namespace h5 {
   /// Cf previous constructor
   file(std::string const &name, unsigned flags) : file(name.c_str(), flags) {}
 
+  ///
+  file(std::string const &name, char flags) : file(name.c_str(), flags) {}
+
   /// Internal : from an hdf5 id.
   file (hid_t id);
   file(h5_object obj);

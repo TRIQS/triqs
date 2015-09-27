@@ -24,14 +24,18 @@
 #include <vector>
 #include <complex>
 
-namespace triqs {
-
- inline std::string get_triqs_hdf5_data_scheme(std::vector<std::string> const & ) { return "vector<string>";}
+namespace std { // to be found by ADL
 
  template <typename T> std::string get_triqs_hdf5_data_scheme(std::vector<T> const&) {
   using triqs::get_triqs_hdf5_data_scheme; // for the basic types, not found by ADL
   return "std::vector<" + get_triqs_hdf5_data_scheme(T()) + ">";
  }
+
+}
+
+namespace triqs {
+
+ inline std::string get_triqs_hdf5_data_scheme(std::vector<std::string> const & ) { return "vector<string>";}
 
  namespace h5 {
 
@@ -47,11 +51,34 @@ namespace triqs {
   void h5_write (group f, std::string const & name, std::vector<int> const & V);
   void h5_write (group f, std::string const & name, std::vector<double> const & V);
   void h5_write (group f, std::string const & name, std::vector<std::complex<double>> const & V);
+  void h5_write(group f, std::string const& name, std::vector<unsigned long long> const& V);
 
   void h5_read (group f, std::string const & name, std::vector<int>  & V);
   void h5_read (group f, std::string const & name, std::vector<double>  & V);
   void h5_read (group f, std::string const & name, std::vector<std::complex<double>> & V);
+  void h5_read(group f, std::string const& name, std::vector<unsigned long long>& V);
 
+  // vector of non basic types
+
+ /**
+   * Vector of T as a subgroup with numbers
+   */
+ template <typename T> void h5_write(h5::group gr, std::string name, std::vector<T> const& v) {
+  auto gr2 = gr.create_group(name);
+  gr2.write_triqs_hdf5_data_scheme(v);
+  for (int i = 0; i < v.size(); ++i) h5_write(gr2, std::to_string(i), v[i]);
+ }
+
+ /**
+   * Vector of T
+   */
+ template <typename T> void h5_read(h5::group gr, std::string name, std::vector<T>& v) {
+  auto gr2 = gr.open_group(name);
+  v.resize(gr2.get_all_dataset_names().size() + gr2.get_all_subgroup_names().size());
+  for (int i = 0; i < v.size(); ++i) {
+   h5_read(gr2, std::to_string(i), v[i]);
+  }
+ }
  }
 }
 

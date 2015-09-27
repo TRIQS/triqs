@@ -1,5 +1,6 @@
 #pragma once
 #include "../wrapper_tools.hpp"
+#include "./function.hpp"
 #include <triqs/h5.hpp>
 
 namespace triqs { namespace py_tools {

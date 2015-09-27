@@ -28,6 +28,7 @@ namespace triqs { namespace h5 {
  void h5_write(group g, std::string const &name, int const &x);
  void h5_write(group g, std::string const &name, long const &x);
  void h5_write(group g, std::string const &name, long long const &x);
+ void h5_write(group g, std::string const &name, unsigned long long const &x);
  void h5_write(group g, std::string const &name, size_t const &x);
  void h5_write(group g, std::string const &name, bool const &x);
  void h5_write(group g, std::string const &name, char const &x);
@@ -37,6 +38,7 @@ namespace triqs { namespace h5 {
  void h5_read(group g, std::string const &name, int &x);
  void h5_read(group g, std::string const &name, long &x);
  void h5_read(group g, std::string const &name, long long &x);
+ void h5_read(group g, std::string const &name, unsigned long long &x);
  void h5_read(group g, std::string const &name, size_t &x);
  void h5_read(group g, std::string const &name, bool &x);
  void h5_read(group g, std::string const &name, char &x);
