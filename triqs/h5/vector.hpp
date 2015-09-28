@@ -51,12 +51,12 @@ namespace triqs {
   void h5_write (group f, std::string const & name, std::vector<int> const & V);
   void h5_write (group f, std::string const & name, std::vector<double> const & V);
   void h5_write (group f, std::string const & name, std::vector<std::complex<double>> const & V);
-  void h5_write(group f, std::string const& name, std::vector<unsigned long long> const& V);
+  void h5_write (group f, std::string const& name, std::vector<unsigned long long> const& V);
 
   void h5_read (group f, std::string const & name, std::vector<int>  & V);
   void h5_read (group f, std::string const & name, std::vector<double>  & V);
   void h5_read (group f, std::string const & name, std::vector<std::complex<double>> & V);
-  void h5_read(group f, std::string const& name, std::vector<unsigned long long>& V);
+  void h5_read (group f, std::string const& name, std::vector<unsigned long long>& V);
 
   // vector of non basic types
 

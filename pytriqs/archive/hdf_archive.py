@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-import sys,numpy,string
+import sys,numpy
 from hdf_archive_basic_layer_h5py import HDFArchiveGroupBasicLayer
 
 from pytriqs.archive.hdf_archive_schemes import hdf_scheme_access, register_class
@@ -30,37 +30,32 @@ from pytriqs.archive.hdf_archive_schemes import hdf_scheme_access, register_clas
 #  Various wrappers for basic python types.
 #
 # --------------------------------------------
-def _my_str(ll, digs = 10) :
-    ns = str(ll)
-    for ii in xrange(digs-len(ns)): ns = '0'+ns
-    return ns
-
 class PythonListWrap:
     def __init__(self,ob) :
         self.ob = ob
-    def __reduce_to_dict__(self) : 
-        return dict( [ (str(n),v) for (n,v) in  enumerate (self.ob)])
+    def __reduce_to_dict__(self) :
+        return {str(n):v for n,v in enumerate(self.ob)}
     @classmethod
     def __factory_from_dict__(cls, name, D) :
-        return [x for (n,x) in sorted([(int(n), x) for n,x in D.items()])]
+        return [x for n,x in sorted([(int(n), x) for n,x in D.items()])]
 
 class PythonTupleWrap:
     def __init__(self,ob) :
         self.ob = ob
     def __reduce_to_dict__(self) :
-        return dict( [ (_my_str(n),v) for (n,v) in  enumerate (self.ob)])
+        return {str(n):v for n,v in enumerate(self.ob)}
     @classmethod
     def __factory_from_dict__(cls, name, D) :
-        return tuple([x for (n,x) in sorted(D.items())])
+        return tuple(x for n,x in sorted([(int(n), x) for n,x in D.items()]))
 
 class PythonDictWrap:
     def __init__(self,ob) :
         self.ob = ob
     def __reduce_to_dict__(self) :
-        return dict( [ (str(n),v) for (n,v) in self.ob.items()])
+        return {str(n):v for n,v in self.ob.items()}
     @classmethod
     def __factory_from_dict__(cls, name, D) :
-        return dict([(n,x) for (n,x) in D.items()])
+        return {n:x for n,x in D.items()}
 
 register_class (PythonListWrap)
 register_class (PythonTupleWrap)
@@ -68,14 +63,14 @@ register_class (PythonDictWrap)
 
 # -------------------------------------------
 #
-#  A view of a subgroup of the archive 
+#  A view of a subgroup of the archive
 #
 # --------------------------------------------
 
 class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
     """
     """
-    _wrappedType = { type([]) : PythonListWrap, type(()) : PythonTupleWrap, type({}) : PythonDictWrap}
+    _wrappedType = {list : PythonListWrap, tuple : PythonTupleWrap, dict : PythonDictWrap}
     _MaxLengthKey = 500
 
     def __init__(self, parent, subpath) :
@@ -88,13 +83,13 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         self.key_as_string_only = self.options['key_as_string_only']
         self._reconstruct_python_objects = self.options['reconstruct_python_object']
         self.is_top_level = False
- 
+
     #-------------------------------------------------------------------------
     def _key_cipher(self,key) :
         if key in self.ignored_keys :
             raise KeyError, "key %s is reserved"%key
         if self.key_as_string_only : # for bacward compatibility
-            if type(key) not in [ type('') , type(u'a')] :
+            if type(key) not in (str,unicode):
                 raise KeyError, "Key must be string only !"
             return key
         r = repr(key)
@@ -102,10 +97,9 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             raise KeyError, "The Key is too large !"
         # check that the key is ok (it can be reconstructed)
         try :
-            ok = eval(r) == key
+            if eval(r) != key: raise KeyError
         except :
-            ok =False
-        if not ok :  raise KeyError, "The Key *%s*cannot be serialized properly by repr !"%key
+            raise KeyError, "The Key *%s*cannot be serialized properly by repr !"%key
         return r
 
     #-------------------------------------------------------------------------
@@ -122,7 +116,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         """
         Generator returning the values in the group
         """
-        def res() : 
+        def res() :
             for name in self.keys() :
                 yield self[name]
         return res()
@@ -178,27 +172,27 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
              sch = hdf_scheme_access(ds)
            except :
              err = """
-               You are trying to store an object of type "%s", with the TRIQS_HDF5_data_scheme "%s". 
+               You are trying to store an object of type "%s", with the TRIQS_HDF5_data_scheme "%s".
                But that data_scheme is not registered, so you will not be able to reread the class.
                Didn't you forget to register your class in pytriqs.archive.hdf_archive_schemes?
                """ %(val.__class__.__name__,ds)
              raise IOError,err
            g.write_attr("TRIQS_HDF5_data_scheme", ds)
 
-        if '__write_hdf5__' in dir(val) : # simplest protocol
+        if hasattr(val,'__write_hdf5__') : # simplest protocol
             val.__write_hdf5__(self._group,key)
             self.cached_keys.append(key) # I need to do this here
             # Should be done in the __write_hdf5__ function
             #SUB = HDFArchiveGroup(self,key)
             #write_attributes(SUB)
-        elif '__reduce_to_dict__' in dir(val) : # Is it a HDF_compliant object
+        elif hasattr(val,'__reduce_to_dict__') : # Is it a HDF_compliant object
             self.create_group(key) # create a new group
-            d = val.__reduce_to_dict__() if '__reduce_to_dict__' in dir(val) else dict( [(x,getattr(val,x)) for x in val.__HDF_reduction__])
+            d = val.__reduce_to_dict__()
             if not isinstance(d,dict) : raise ValueError, " __reduce_to_dict__ method does not return a dict. See the doc !"
             SUB = HDFArchiveGroup(self,key)
             for n,v in d.items() : SUB[n] = v
             write_attributes(SUB)
-        elif type(val)== numpy.ndarray : # it is a numpy
+        elif isinstance(val,numpy.ndarray) : # it is a numpy
             try :
                self._write_array( key, numpy.array(val,copy=1,order='C') )
             except RuntimeError:
@@ -240,7 +234,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         elif self.is_data(key) :
             bare_return = lambda: self._read(key)
         else :
-            raise KeyError, "Key %s is of unknown type !!"%Key 
+            raise KeyError, "Key %s is of unknown type !!"%Key
 
         if not reconstruct_python_object : return bare_return()
         # try to find the scheme
@@ -263,10 +257,10 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             raise RuntimeError, "I cannot find the class %s to reconstruct the object !"%r_class_name
         if r_readfun :
             return r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
-        if "__factory_from_dict__" in dir(r_class):
+        if hasattr(r_class,"__factory_from_dict__"):
             assert self.is_group(key), "__factory_from_dict__ requires a subgroup"
             f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
-            values = dict( (self._key_decipher(str(K)),f(K)) for K in SUB )  # str transforms unicode string to regular python string
+            values = {self._key_decipher(str(K)):f(K) for K in SUB }  # str transforms unicode string to regular python string
             return r_class.__factory_from_dict__(key,values)
         raise ValueError, "Impossible to reread the class %s for group %s and key %s"%(r_class_name,self, key)
 
@@ -276,21 +270,21 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             if self.is_group(name) :
                 return "%s : subgroup"%name
             elif self.is_data(name) : # can be an array of a number
-                return "%s : data "%(name)
+                return "%s : data "%name
             else :
-                raise ValueError, "oopps %s"%(name)
+                raise ValueError, "oopps %s"%name
 
         s= "HDFArchive%s with the following content:\n"%(" (partial view)" if self.is_top_level else '')
-        s+=string.join([ '  '+ pr(n) for n in self.keys() ], '\n')
+        s+='\n'.join([ '  '+ pr(n) for n in self.keys() ])
         return s
 
     #-------------------------------------------------------------------------
     def __repr__(self) :
         return self.__str__()
 
-    #------------------------------------------------------------------------- 
+    #-------------------------------------------------------------------------
     def apply_on_leaves (self,f) :
-        """ 
+        """
            For each named leaf (name,value) of the tree, it calls f(name,value)
            f should return :
             - `None`                    : no action is taken
@@ -300,9 +294,9 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         def visit_tree(n,d):
           for k in d:# Loop over the subgroups in d
               if d.is_group(k) : visit_tree(k,d[k])
-              else : 
+              else :
                   r = f(k,d[k])
-                  if r != None : d[k] = r
+                  if not r is None : d[k] = r
                   elif r == () : del d[k]
         visit_tree('/',self['/'])
 
@@ -312,7 +306,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
 
 # -------------------------------------------
 #
-#  The main class 
+#  The main class
 #
 # --------------------------------------------
 
@@ -345,7 +339,7 @@ class HDFArchive(HDFArchiveGroup):
            LocalFileName : string
              the name of the file or of the local downloaded copy
            url_name : string
-             the name of the Url 
+             the name of the Url
 
            Examples
            --------
@@ -370,7 +364,7 @@ class HDFArchive(HDFArchiveGroup):
         """
         import os,os.path
         assert open_flag in ['r','w','a'], "Invalid mode"
-        assert type(url_name)==type(''), "url_name must be a string"
+        assert isinstance(url_name,str), "url_name must be a string"
 
         # If it is an url , retrieve if and check mode is read only
         import urllib
@@ -408,8 +402,8 @@ class HDFArchive(HDFArchiveGroup):
 
 class HDFArchiveInert:
     """
-    A fake class for the node in MPI. It does nothing, but 
-    permits to write simply : 
+    A fake class for the node in MPI. It does nothing, but
+    permits to write simply :
        a= mpi.bcast(H['a']) # run on all nodes
     -[] : __getitem__ returns self so that H['a']['b'] is ok...
     - setitem : does nothing.
