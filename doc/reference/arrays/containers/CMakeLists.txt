@@ -1,3 +1,3 @@
-all_tests()
+all_examples()
 
 

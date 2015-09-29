@@ -41,15 +41,12 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 link_libraries( ${link_libs} triqs)
 
-find_package(TestCSimple)
-macro(all_tests )
+macro(all_examples)
 FILE(GLOB ExampleList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 FOREACH(example ${ExampleList}) 
   STRING(REPLACE ".cpp" "" example_short ${example})
-  add_executable( doc_${example_short}  ${CMAKE_CURRENT_SOURCE_DIR}/${example})
+  add_executable(doc_${example_short} ${CMAKE_CURRENT_SOURCE_DIR}/${example})
   add_dependencies(docs_sphinx doc_${example_short}) ## so that all code examples are compiled before the doc
-  add_test_C_simple( doc_${example_short} )
-  #add_test ( ${example_short} ${example_short})
 ENDFOREACH()
 endmacro()
 
