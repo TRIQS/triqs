@@ -5,31 +5,31 @@ import numpy as np
 
 # The interaction matrix in desired basis
 # U^{spherical}_{m1 m2 m3 m4} = \sum_{k=0}^{2l} F_k angular_matrix_element(l, k, m1, m2, m3, m4)
-# H = \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
+# H = \frac{1}{2} \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
 def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical', T=None):
     r"""
     Calculate the full four-index U matrix being given either radial_integrals or U_int and J_hund.
     The convetion for the U matrix is that used to construct the Hamiltonians, namely:
 
-    .. math:: H = \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
+    .. math:: H = \frac{1}{2} \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
 
     Parameters
     ----------
-    l : integer 
-        Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell). 
+    l : integer
+        Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell).
     radial_integrals : list, optional
                        Slater integrals [F0,F2,F4,..].
                        Must be provided if U_int and J_hund are not given.
-                       Preferentially used to compute the U_matrix if provided alongside U_int and J_hund. 
+                       Preferentially used to compute the U_matrix if provided alongside U_int and J_hund.
     U_int : scalar, optional
             Value of the screened Hubbard interaction.
-            Must be provided if radial_integrals are not given. 
+            Must be provided if radial_integrals are not given.
     J_hund : scalar, optional
              Value of the Hund's coupling.
-             Must be provided if radial_integrals are not given. 
+             Must be provided if radial_integrals are not given.
     basis : string, optional
             The basis in which the interaction matrix should be computed.
-            Takes the values 
+            Takes the values
 
             - 'spherical': spherical harmonics,
             - 'cubic': cubic harmonics,
@@ -38,12 +38,12 @@ def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical
     T : real/complex numpy array, optional
         Transformation matrix for basis change.
         Must be provided if basis='other'.
-    
+
     Returns
     -------
     U_matrix : float numpy array
                The four-index interaction matrix in the chosen basis.
-    
+
     """
 
     # Check all necessary information is present and consistent
@@ -85,14 +85,14 @@ def reduce_4index_to_2index(U_4index):
     ----------
     U_4index : float numpy array
                The four-index interaction matrix.
-    
+
     Returns
     -------
     U : float numpy array
         The two-index interaction matrix for parallel spins.
     Uprime : float numpy array
              The two-index interaction matrix for anti-parallel spins.
-    
+
     """
 
     size = len(U_4index) # 2l+1
@@ -106,6 +106,92 @@ def reduce_4index_to_2index(U_4index):
 
     return U, Uprime
 
+# Extract full 4-index U matrix from an interaction Hamiltonian.
+def extract_U_4index(H,ignore_irrelevant=False):
+    r"""
+    Reconstruct the full four-index U matrix from an interaction Hamiltonian H.
+
+    Parameters
+    ----------
+    H : Operator
+        The interaction Hamiltonian.
+    ignore_irrelevant : bool
+        If True, ignore all irrelevant terms in H.
+        Otherwise raise an exception when such terms are met.
+
+    Returns
+    -------
+    U_matrix : float numpy array
+               The four-index interaction matrix.
+    ind_to_linear : dict
+               Mapping from the operator indices to the linear index of U_matrix.
+    """
+    U_dict = {}
+    all_indices = set()
+    for indices, coeff in H:
+        try:
+            (dagi,i),(dagj,j),(dagl,l),(dagk,k) = indices
+            if (dagi,dagj,dagl,dagk) != (True,True,False,False): raise ValueError
+        except ValueError:
+            if ignore_irrelevant: continue
+            else: raise RuntimeError("H must contain only C^+(i) C^+(j) C(l) C(k) terms.")
+
+        i,j,k,l = map(tuple,(i,j,k,l))
+        for ind in (i,j,k,l): all_indices.add(ind)
+        U_dict[(i,j,k,l)] = U_dict[(j,i,l,k)] = 0.5*coeff
+        U_dict[(i,j,l,k)] = U_dict[(j,i,k,l)] = -0.5*coeff
+
+    ind_to_linear = {ind:n for n,ind in enumerate(all_indices)}
+    s = len(ind_to_linear)
+    U_matrix = np.zeros((s,s,s,s),dtype=float)
+    for indices, coeff in U_dict.items():
+        U_matrix[tuple(ind_to_linear[ind] for ind in indices)] = coeff
+
+    return U_matrix, ind_to_linear
+
+# Extract 2-index U matrix from a density-density interaction Hamiltonian.
+def extract_U_2index(H,ignore_irrelevant=False):
+    r"""
+    Reconstruct the reduced two-index U matrix from an interaction Hamiltonian H.
+
+    Parameters
+    ----------
+    H : Operator
+        The interaction Hamiltonian.
+    ignore_irrelevant : bool
+        If True, ignore all irrelevant terms in H.
+        Otherwise raise an exception when such terms are met.
+
+    Returns
+    -------
+    U_matrix : float numpy array
+               The two-index interaction matrix.
+    ind_to_linear : dict
+               Mapping from the operator indices to the linear index of U_matrix.
+    """
+    U_dict = {}
+    all_indices = set()
+    for indices, coeff in H:
+        try:
+            (dagi,i),(dagj,j),(dagl,l),(dagk,k) = indices
+            if (dagi,dagj,dagl,dagk) != (True,True,False,False): raise ValueError
+            if i != k or j != l: raise ValueError
+        except ValueError:
+            if ignore_irrelevant: continue
+            else: raise RuntimeError("H must contain only C^+(i) C^+(j) C(j) C(i) terms.")
+
+        i,j = tuple(i), tuple(j)
+        all_indices.add(i); all_indices.add(j)
+        U_dict[(i,j)] = U_dict[(j,i)] = coeff
+
+    ind_to_linear = {ind:n for n,ind in enumerate(all_indices)}
+    s = len(ind_to_linear)
+    U_matrix = np.zeros((s,s),dtype=float)
+    for indices, coeff in U_dict.items():
+        U_matrix[tuple(ind_to_linear[ind] for ind in indices)] = coeff
+
+    return U_matrix, ind_to_linear
+
 # Construct the 2-index matrices for the density-density form
 def U_matrix_kanamori(n_orb, U_int, J_hund):
     r"""
@@ -113,20 +199,20 @@ def U_matrix_kanamori(n_orb, U_int, J_hund):
 
     Parameters
     ----------
-    n_orb : integer 
+    n_orb : integer
             Number of orbitals in basis.
     U_int : scalar
             Value of the screened Hubbard interaction.
     J_hund : scalar
              Value of the Hund's coupling.
-    
+
     Returns
     -------
     U : float numpy array
         The two-index interaction matrix for parallel spins.
     Uprime : float numpy array
              The two-index interaction matrix for anti-parallel spins.
-    
+
     """
 
     U  = np.zeros((n_orb,n_orb),dtype=float)      # matrix for same spin
@@ -149,22 +235,22 @@ def t2g_submatrix(U, convention=''):
 
     Parameters
     ----------
-    U : float numpy array 
+    U : float numpy array
         Two- or four-index interaction matrix.
     convention : string, optional
                  The basis convention.
                  Takes the values
- 
+
                  - '': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
                  - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz").
-    
+
     Returns
     -------
     U_t2g : float numpy array
             The t2g component of the interaction matrix.
-    
+
     """
-    if convention == 'wien2k': 
+    if convention == 'wien2k':
         return subarray(U, len(U.shape)*[(2,3,4)])
     else:
         return subarray(U, len(U.shape)*[(0,1,3)])
@@ -175,23 +261,23 @@ def eg_submatrix(U, convention=''):
 
     Parameters
     ----------
-    U : float numpy array 
+    U : float numpy array
         Two- or four-index interaction matrix.
     convention : string, optional
                  The basis convention.
                  Takes the values
- 
+
                  - '': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
                  - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz").
-   
- 
+
+
     Returns
     -------
     U_eg : float numpy array
            The eg component of the interaction matrix.
-    
+
     """
-    if convention == 'wien2k': 
+    if convention == 'wien2k':
         return subarray(U, len(U.shape)*[(0,1)])
     else:
         return subarray(U, len(U.shape)*[(2,4)])
@@ -208,12 +294,12 @@ def transform_U_matrix(U_matrix, T):
     T : real/complex numpy array, optional
         Transformation matrix for basis change.
         Must be provided if basis='other'.
-    
+
     Returns
     -------
     U_matrix : float numpy array
                The four-index interaction matrix in the new basis.
-    
+
     """
     return np.einsum("ij,kl,jlmo,mn,op",np.conj(T),np.conj(T),U_matrix,np.transpose(T),np.transpose(T))
 
@@ -225,24 +311,24 @@ def spherical_to_cubic(l, convention=''):
 
     Parameters
     ----------
-    l : integer 
-        Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell). 
+    l : integer
+        Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell).
     convention : string, optional
                  The basis convention.
-                 Takes the values 
+                 Takes the values
 
                  - '': basis ordered as ("xy","yz","z^2","xz","x^2-y^2"),
                  - 'wien2k': basis ordered as ("z^2","x^2-y^2","xy","yz","xz").
-    
+
     Returns
     -------
     T : real/complex numpy array
         Transformation matrix for basis change.
-    
+
     """
     size = 2*l+1
     T = np.zeros((size,size),dtype=complex)
-    if convention == 'wien2k' and l != 2: 
+    if convention == 'wien2k' and l != 2:
         raise ValueError("spherical_to_cubic: wien2k convention implemented only for l=2")
     if l == 0:
         cubic_names = ("s")
@@ -286,15 +372,15 @@ def cubic_names(l):
 
     Parameters
     ----------
-    l : integer or string 
+    l : integer or string
         Angular momentum of shell being treated.
         Also takes 't2g' and 'eg' as arguments.
-    
+
     Returns
     -------
     cubic_names : tuple of strings
                   Names of the orbitals.
-    
+
     """
     if l == 0 or l == 's':
         return ("s")
@@ -317,13 +403,13 @@ def U_J_to_radial_integrals(l, U_int, J_hund):
 
     Parameters
     ----------
-    l : integer 
-        Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell). 
+    l : integer
+        Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell).
     U_int : scalar
             Value of the screened Hubbard interaction.
     J_hund : scalar
              Value of the Hund's coupling.
-    
+
     Returns
     -------
     radial_integrals : list
@@ -352,11 +438,11 @@ def radial_integrals_to_U_J(l, F):
 
     Parameters
     ----------
-    l : integer 
-        Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell). 
+    l : integer
+        Angular momentum of shell being treated (l=2 for d shell, l=3 for f shell).
     F : list
         Slater integrals [F0,F2,F4,..].
-    
+
     Returns
     -------
     U_int : scalar
@@ -383,12 +469,12 @@ def angular_matrix_element(l, k, m1, m2, m3, m4):
     Calculate the angular matrix element
 
     .. math::
-       (2l+1)^2 
+       (2l+1)^2
        \begin{pmatrix}
             l & k & l \\
             0 & 0 & 0
        \end{pmatrix}^2
-       \sum_{q=-k}^k (-1)^{m_1+m_2+q} 
+       \sum_{q=-k}^k (-1)^{m_1+m_2+q}
        \begin{pmatrix}
             l & k & l \\
          -m_1 & q & m_3
@@ -400,17 +486,17 @@ def angular_matrix_element(l, k, m1, m2, m3, m4):
 
     Parameters
     ----------
-    l : integer 
-    k : integer 
-    m1 : integer 
-    m2 : integer 
-    m3 : integer 
-    m4 : integer 
-    
+    l : integer
+    k : integer
+    m1 : integer
+    m2 : integer
+    m3 : integer
+    m4 : integer
+
     Returns
     -------
     ang_mat_ele : scalar
-                  Angular matrix element. 
+                  Angular matrix element.
 
     """
     ang_mat_ele = 0
@@ -439,7 +525,7 @@ def three_j_symbol(jm1, jm2, jm3):
           (j_2 m_2)
     jm3 : tuple of integers
           (j_3 m_3)
-    
+
     Returns
     -------
     three_j_sym : scalar
@@ -493,7 +579,7 @@ def clebsch_gordan(jm1, jm2, jm3):
           (j_2 m_2)
     jm3 : tuple of integers
           (j_3 m_3)
-    
+
     Returns
     -------
     cgcoeff : scalar
@@ -510,7 +596,7 @@ def clebsch_gordan(jm1, jm2, jm3):
 #  columns 0,1,2 and 3 for 3rd dim.
 def subarray(a,idxlist,n=None) :
     r"""
-    Extract a subarray from a matrix-like object. 
+    Extract a subarray from a matrix-like object.
 
     Parameters
     ----------
@@ -520,7 +606,7 @@ def subarray(a,idxlist,n=None) :
 
     Returns
     -------
-    subarray : matrix or array 
+    subarray : matrix or array
 
     Examples
     --------

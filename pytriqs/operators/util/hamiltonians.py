@@ -1,3 +1,4 @@
+import operator
 from pytriqs.operators import *
 from op_struct import *
 from itertools import product
@@ -8,13 +9,13 @@ def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
     r"""
     Create a Slater Hamiltonian using fully rotationally-invariant 4-index interactions:
 
-    .. math:: H = \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
+    .. math:: H = \frac{1}{2} \sum_{ijkl,\sigma \sigma'} U_{ijkl} a_{i \sigma}^\dagger a_{j \sigma'}^\dagger a_{l \sigma'} a_{k \sigma}.
 
     Parameters
     ----------
     spin_names : list of strings
                  Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int       
+    orb_names : list of strings or int
                 Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
     U_matrix : 4D matrix or array
                The fully rotationally-invariant 4-index interaction :math:`U_{ijkl}`.
@@ -22,8 +23,8 @@ def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
                otherwise by ('spin_orbital',0).
-    map_operator_structure : dict 
-                             Mapping of names of GF blocks names from one convention to another, 
+    map_operator_structure : dict
+                             Mapping of names of GF blocks names from one convention to another,
                              e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
                              If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
     H_dump : string
@@ -74,7 +75,7 @@ def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
     ----------
     spin_names : list of strings
                  Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int       
+    orb_names : list of strings or int
                 Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
     U : 2D matrix or array
         :math:`U_{ij}^{\sigma \sigma} (same spins)`
@@ -86,8 +87,8 @@ def h_int_kanamori(spin_names,orb_names,U,Uprime,J_hund,off_diag=None,map_operat
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
                otherwise by ('spin_orbital',0).
-    map_operator_structure : dict 
-                             Mapping of names of GF blocks names from one convention to another, 
+    map_operator_structure : dict
+                             Mapping of names of GF blocks names from one convention to another,
                              e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
                              If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
     H_dump : string
@@ -172,7 +173,7 @@ def h_int_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
     ----------
     spin_names : list of strings
                  Names of the spins, e.g. ['up','down'].
-    orb_names : list of strings or int       
+    orb_names : list of strings or int
                 Names of the orbitals, e.g. [0,1,2] or ['t2g','eg'].
     U : 2D matrix or array
         :math:`U_{ij}^{\sigma \sigma} (same spins)`
@@ -182,8 +183,8 @@ def h_int_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
                otherwise by ('spin_orbital',0).
-    map_operator_structure : dict 
-                             Mapping of names of GF blocks names from one convention to another, 
+    map_operator_structure : dict
+                             Mapping of names of GF blocks names from one convention to another,
                              e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
                              If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
     H_dump : string
@@ -220,3 +221,31 @@ def h_int_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
                 H_dump_file.write(str(U_val) + '\n')
 
     return H
+
+def extract_n_part(H):
+    r"""
+    Extract the density part from an operator H.
+
+    The density part is a sum of all those monomials of H that are
+    products of occupation number operators :math:`n_1 n_2 n_3 \ldots`.
+
+    Parameters
+    ----------
+    H : Operator
+        The operator from which the density part is extracted.
+
+    Returns
+    -------
+    n_part : Operator
+             The density part of H.
+    """
+    n_part = Operator()
+    for indices, coeff in H:
+        c_ind, c_dag_ind = set(), set()
+        for dag, ind in indices:
+            (c_dag_ind if dag else c_ind).add(tuple(ind))
+        if c_ind == c_dag_ind: # This monomial is of n-type
+            n_part += coeff * reduce(operator.mul,
+                              map(lambda (dag,ind): c_dag(*ind) if dag else c(*ind),indices),
+                              Operator(1))
+    return n_part
