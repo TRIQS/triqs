@@ -81,5 +81,6 @@ Example
    binning
    jackknife
    autocorrelation_time   
+   autocorrelation_function
    green_function
    ising2d

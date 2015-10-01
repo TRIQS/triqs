@@ -1,5 +1,5 @@
-Autocorrelation time
-=====================
+Autocorrelation time 
+=======================
 
 The autocorrelation time of a series of samples can be approximated, in the large :math:`N` limit, by :
 

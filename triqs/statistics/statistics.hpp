@@ -323,21 +323,11 @@ namespace statistics {
  template <typename TimeSeries> typename TimeSeries::value_type empirical_variance(TimeSeries const& t) {
   auto si = t.size();
   if (si == 0) return typename TimeSeries::value_type{};
-  auto avg = t[0];
-  //decltype(avg) sum = t[0] * t[0]; // also valid if t[0] is an array e.g., i.e. no trivial contructor...
-  for (int i = 1; i < si; ++i) {
-   //sum += t[i] * t[i];
-   avg += t[i];
-  }
-  avg /= t.size();
-  //sum /= t.size();
+
+  auto avg = empirical_average(t);
   decltype(avg) sum2 = (t[0]-avg) * (t[0]-avg) ; // also valid if t[0] is an array e.g., i.e. no trivial contructor...
-  for (int i = 1; i < si; ++i) {
-   sum2 += (t[i]-avg) * (t[i]-avg);
-  }
-  sum2 /= t.size();
-  //return sum - avg * avg;
-  return sum2;
+  for (int i = 1; i < si; ++i)  sum2 += (t[i]-avg) * (t[i]-avg);
+  return sum2/t.size();
  }
 
 
@@ -391,20 +381,19 @@ namespace statistics {
  template <typename TimeSeries>
  class normalized_autocorrelation : public ts_observer<normalized_autocorrelation<TimeSeries>, TimeSeries> {
   using B = ts_observer<normalized_autocorrelation<TimeSeries>, TimeSeries>;
-  typename B::value_type var, avg2;
+  typename B::value_type var, avg;
 
   public:
   template <typename TS> normalized_autocorrelation(TS&& t_) : B(std::forward<TS>(t_)) {
    var = empirical_variance(this->ts);
-   auto avg = empirical_average(this->ts);
-   avg2 = avg * avg;
+   avg = empirical_average(this->ts);
   }
 
   typename B::value_type operator[](int k) const {
    const int N = this->size();
    auto r = typename B::value_type{0 * this->ts[0]};
-   for (int i = 0; i < N - k; i++) r += this->ts[i + k] * this->ts[i];
-   r = (r / (N - k) - avg2) / var;
+   for (int i = 0; i < N - k; i++) r += (this->ts[i + k]-avg) * (this->ts[i]-avg);
+   r = (r / (N - k)) / var;
    return r;
   }
  };
