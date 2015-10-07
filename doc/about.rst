@@ -21,19 +21,19 @@ TRIQS is published under the `GNU General Public License, version 3
 
 Note that it *implies* that applications using TRIQS must also be GPL.
 
-..
-  Quotation
-  =========
 
-  TRIQS is a part of our scientific work and we would appreciate if
-  projects using it will include a citation to the following paper.  In
-  order to help you, we provide a BibTeX entry.
+Quotation
+=========
 
-  .. [#triqs] `AUTHORS, JOURNAL, YEAR <http://link>`_ (:download:`bibtex file <triqs.bib>`)
+TRIQS is a part of our scientific work and we would appreciate if
+projects using it will include a citation to the following paper. In
+order to help you, we provide a BibTeX entry.
 
-  If you find TRIQS useful, giving proper reference and citation is indeed a
-  simple way to help convincing funding sources that such projects are useful for
-  our community and should be supported.
+.. [#triqs] `O. Parcollet, M. Ferrero, T. Ayral, H. Hafermann, I. Krivenko, L. Messio, and P. Seth, Comp. Phys. Comm. 196, 398-415 (2015) <http://dx.doi.org/10.1016/j.cpc.2015.04.023>`_ (:download:`bibtex file <triqs.bib>`)
+
+If you find TRIQS useful, giving proper reference and citation is indeed a
+simple way to help convincing funding sources that such projects are useful for
+our community and should be supported.
 
 Disclaimer
 ==========
