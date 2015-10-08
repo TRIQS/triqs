@@ -35,16 +35,18 @@
 namespace triqs { 
 
  class exception : public std::exception {
-  std::string acc, _trace;
+  std::stringstream acc;
+  std::string _trace;
   mutable std::string _what;
   public:
   exception() throw() :std::exception() { _trace = utility::stack_trace();}
+  exception(exception const& e) throw() : acc(e.acc.str()), _trace(e._trace), _what(e._what) {}
   virtual ~exception() throw() {}
-  template<typename T> exception & operator  <<( T const & x) { std::stringstream f; f<<acc<<x; acc = f.str(); return *this;}
+  template<typename T> exception & operator  <<( T const & x) { acc << x; return *this;}
   exception & operator  <<( const char * mess ) { (*this) << std::string(mess); return *this;}// to limit code size
   virtual const char* what() const throw() {
    std::stringstream out;
-   out << acc << "\n Error occurred on node ";
+   out << acc.str() << "\n Error occurred on node ";
    if (mpi::is_initialized()) out << mpi::communicator().rank() << "\n";
 #ifdef TRIQS_EXCEPTION_SHOW_CPP_TRACE
    out << " C++ trace is : " << trace() << "\n";
