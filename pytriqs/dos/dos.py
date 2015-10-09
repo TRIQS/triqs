@@ -84,6 +84,9 @@ name : string
         DOS object :
         """%self.__dict__ 
 
+    def copy(self):
+        return DOS(self.eps,self.rho,self.name)
+
     def _plot_(self, Options) : 
         return  [ {'type' : "XY", 'label' : self.name, 'xlabel' :r'$\epsilon$', 'ylabel' : r'%s$(\epsilon)$'%self.name, 'xdata' : self.eps,'ydata' : self.rho } ]
 
