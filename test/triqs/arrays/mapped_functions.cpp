@@ -55,6 +55,9 @@ template<typename T> void test( T val=1 ) {
  // does not compile, since exp is only element wise at the moment
  // to do : implement it for matrix...
  //TEST(make_matrix(exp( matrix<double>{{ 1,2}, {3,4}} )));
+
+ //array<double,3> a(2,2,2);
+ //auto b = real(a);
 }
 
 int main(int argc, char **argv) {
