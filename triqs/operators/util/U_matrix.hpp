@@ -4,7 +4,7 @@
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/arrays.hpp>
 
-namespace triqs { namespace operators {
+namespace triqs { namespace operators { namespace util {
 using namespace triqs::utility;
 using namespace triqs;
 using namespace triqs::hilbert_space;
@@ -19,7 +19,7 @@ using triqs::arrays::matrix;
   * throw exception if non-density-density terms
   * otherwise return std::map<std::pair<op::indices_t,op::indices_t>, double>
   */
-U_dict_t U_dict_from_H(Op const & h);
+U_dict_t U_dict2_from_H(Op const & h, bool ignore_irrelevant=false);
 matrix<double> U_matrix_from_U_dict(U_dict_t const & U_dict, gf_struct_t const & gf_struct);
 
-}}
+}}}

@@ -1,7 +1,7 @@
-#include "./U_matrix_from_H.hpp"
+#include "./U_matrix.hpp"
 
-namespace triqs { namespace operators {
-U_dict_t U_dict_from_H(Op const & h){
+namespace triqs { namespace operators { namespace util {
+U_dict_t U_dict2_from_H(Op const & h, bool ignore_irrelevant){
 
  auto U_dict = U_dict_t{};
 
@@ -17,7 +17,7 @@ U_dict_t U_dict_from_H(Op const & h){
 
   if(monomial.size()==4){
    if(!(monomial[0].dagger && monomial[1].dagger && !monomial[2].dagger && !monomial[3].dagger) || (monomial[0].indices != monomial[3].indices ) ||  (monomial[1].indices != monomial[2].indices )){
-    TRIQS_RUNTIME_ERROR << "monomial is not of the form c_dag(i) c_dag(j) c(j) c(i)";
+    if (!ignore_irrelevant) TRIQS_RUNTIME_ERROR << "monomial is not of the form c_dag(i) c_dag(j) c(j) c(i)";
    }
    else{//everything ok
     U_dict.insert({{monomial[0].indices, monomial[1].indices},coef});
@@ -25,7 +25,7 @@ U_dict_t U_dict_from_H(Op const & h){
    }
   }
   else{
-   TRIQS_RUNTIME_ERROR << "monomial must have 4 operators";
+   if (!ignore_irrelevant) TRIQS_RUNTIME_ERROR << "monomial must have 4 operators";
   }
  }//h
 
@@ -53,4 +53,4 @@ matrix<double> U_matrix_from_U_dict(U_dict_t const & U_dict, gf_struct_t const &
  return U_matrix;
 }
 
-}}
+}}}
