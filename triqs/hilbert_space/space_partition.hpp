@@ -116,10 +116,9 @@ template <typename StateType, typename OperatorType> class space_partition {
    // - Removes all visited connections from Cd_connections/C_connections.
    // - Merges lower_subspace with all subspaces generated from lower_subspace by application of (C C^+)^(2*n).
    // - Merges upper_subspace with all subspaces generated from upper_subspace by application of (C^+ C)^(2*n).
-   std::function<void(index_t,index_t,bool)> zigzag_traversal =
+   std::function<void(index_t,bool)> zigzag_traversal =
     [this,lower_subspace,upper_subspace,&Cd_connections,&C_connections,&zigzag_traversal]
     (index_t i_subspace,        // find all connections starting from i_subspace
-     index_t prev_i_subspace,   // this was 'i_subspace' of the parent zigzag_traversal call
      bool upwards               // if true, C^+ connection, otherwise C connection
     ){
     std::multimap<index_t,index_t>::iterator it;
@@ -128,20 +127,17 @@ template <typename StateType, typename OperatorType> class space_partition {
 
      auto f_subspace = it->second;
      (upwards ? Cd_connections : C_connections).erase(it);
-     // Have we returned to the same subspace in two successive calls to zigzag_traversal?
-     // If so, stop traversing this branch.
-     if(f_subspace == prev_i_subspace) continue;
 
      if(upwards) subspaces.link(f_subspace, upper_subspace);
      else        subspaces.link(f_subspace, lower_subspace);
 
      // Recursively apply to all found f_subspace's with a 'flipped' direction
-     zigzag_traversal(f_subspace,i_subspace,!upwards);
+     zigzag_traversal(f_subspace,!upwards);
     }
    };
 
    // Apply to all C^+ connections starting from lower_subspace
-   zigzag_traversal(lower_subspace,lower_subspace,true);
+   zigzag_traversal(lower_subspace,true);
   }
 
   _update_index();
