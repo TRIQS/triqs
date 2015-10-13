@@ -73,6 +73,9 @@ class fundamental_operator_set {
  // return the number of operators
  int size() const { return map_index_n.size(); }
 
+ // Is an operator with indices t in this set?
+ bool has_indices(indices_t const& t) const { return map_index_n.count(t) == 1; }
+
  // flatten (a,alpha) --> n
  int operator[](indices_t const& t) const {
   try {
