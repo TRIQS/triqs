@@ -19,7 +19,9 @@ using triqs::arrays::matrix;
   * throw exception if non-density-density terms
   * otherwise return std::map<std::pair<op::indices_t,op::indices_t>, double>
   */
-U_dict_t U_dict2_from_H(Op const & h, bool ignore_irrelevant=false);
-matrix<double> U_matrix_from_U_dict(U_dict_t const & U_dict, gf_struct_t const & gf_struct);
+U_dict_t extract_U_dict2(Op const & h, bool ignore_irrelevant=false);
+
+///converts dictionary of interactions to matrix, given the structure of the gf
+matrix<double> dict_to_matrix(U_dict_t const & U_dict, gf_struct_t const & gf_struct);
 
 }}}
