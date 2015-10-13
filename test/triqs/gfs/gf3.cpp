@@ -27,6 +27,35 @@ int main() {
  
  G = -G3;
 
+
+  //auto g4 = gf<imfreq, tensor_valued<3>>{};
+  //auto g4 = gf<imfreq, tensor_valued<3>>{{beta,Fermion},{3,3,3}};
+
+  auto G3_view = gf_view<imfreq>(G3);
+  //TEST(G3_view[0].shape());
+  //TEST(G3_view.data().shape());
+ 
+ array<gf<imfreq>,2> A(2,2);
+ array<gf<imfreq>,1> B(2);
+ triqs::clef::placeholder<1> i_;
+ triqs::clef::placeholder<2> j_;
+ A(i_,j_) << gf<imfreq>{{1.0,Fermion},{1,1}};
+ A(i_,j_)(om_) << 1/(om_-3);
+
+ B(i_) << sum(A(i_,j_), j_=range(0,2));
+
+ block_gf<imfreq> G2(2);
+ //B(i_) << G2(i_);
+ B(i_) << G2[i_];
+
+  //auto g=gf<imfreq, matrix_valued>{{1.0,Fermion},{1,1}};
+  auto g=gf<imfreq, matrix_valued, no_tail>{{1.0,Fermion},{1,1}};
+  g(om_)(i_,j_) << 0.0;
+  auto g2 = gf<cartesian_product<imfreq,imfreq>, matrix_valued>{{{1.0,Fermion},{1.0,Fermion}},{1,1}};
+  triqs::clef::placeholder<3> nu_;
+  //g2(om_,nu_)(i_,j_) << 0.0;
+  //g2(om_,nu_) << 0.0;
+
  }
  TRIQS_CATCH_AND_ABORT;
 
