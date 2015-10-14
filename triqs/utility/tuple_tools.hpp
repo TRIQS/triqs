@@ -69,8 +69,7 @@ namespace std {
 
 namespace triqs { namespace tuple {
 
- /*
- // Repeat an element
+ /// Repeat an element
  template<typename T, int R> struct make_tuple_repeat_impl;
 
  template <typename T> struct make_tuple_repeat_impl<T, 1> {
@@ -88,7 +87,6 @@ namespace triqs { namespace tuple {
  };
 
  template <int R, typename T> auto make_tuple_repeat(T &&x) { return make_tuple_repeat_impl<T, R>::invoke(std::forward<T>(x)); }
-*/
 
  // _get_seq<T>() : from a tuple T, return the index sequence of the tuple length
  template <typename T> std14::make_index_sequence<std::tuple_size<std14::decay_t<T>>::value> _get_seq() {
