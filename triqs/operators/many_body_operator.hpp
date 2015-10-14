@@ -47,8 +47,7 @@ namespace utility {
      boost::dividable<many_body_operator<scalar_t>, scalar_t> {
 
   public:
-  /// The indices of the C, C^+ operators are a vector of int/string
-  using indices_t = std::vector<variant_int_string>;
+  using indices_t = hilbert_space::fundamental_operator_set::indices_t;
 
   // The canonical operator: a dagger and some indices
   struct canonical_ops_t {
@@ -307,13 +306,7 @@ namespace utility {
 
   friend std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
    if (op.dagger) os << "^+";
-   os << "(";
-   int u = 0;
-   for (auto const& i : op.indices) {
-    if (u++) os << ",";
-    os << i;
-   }
-   return os << ")";
+   return os << "(" << op.indices << ")";
   }
 
   friend std::ostream& operator<<(std::ostream& os, monomial_t const& m) {

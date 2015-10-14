@@ -27,6 +27,14 @@
 #include <set>
 #include <map>
 
+namespace std {
+inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::variant_int_string> const& fs) {
+ int u = 0;
+ for(auto const& i : fs) { if (u++) os << ","; os << i; }
+ return os;
+}
+}
+
 namespace triqs {
 namespace hilbert_space {
 
@@ -34,6 +42,7 @@ namespace hilbert_space {
 // It guarantees that the order in the list is the same as given by < operator on the indice tuple of the canonical operators.
 class fundamental_operator_set {
  public:
+ /// The indices of the C, C^+ operators are a vector of int/string
  using indices_t = std::vector<utility::variant_int_string>;
 
  private:
@@ -81,12 +90,7 @@ class fundamental_operator_set {
   try {
    return map_index_n.at(t);
   } catch(std::out_of_range &) {
-   std::stringstream msg;
-   msg << "Operator with indices (";
-   int u = 0;
-   for(auto const& i : t) { if (u++) msg << ","; msg << i; }
-   msg << ") does not belong to this fundamental set!";
-   TRIQS_RUNTIME_ERROR << msg.str();
+   TRIQS_RUNTIME_ERROR << "Operator with indices (" << t << ") does not belong to this fundamental set!";
   }
  }
 
@@ -116,4 +120,3 @@ class fundamental_operator_set {
 
 };
 }}
-

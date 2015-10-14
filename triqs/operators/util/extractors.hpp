@@ -81,8 +81,8 @@ triqs::arrays::array<scalar_t,2> dict_to_matrix(U_dict2_t<scalar_t> const& U_dic
   auto const& indices1 = std::get<0>(kv.first);
   auto const& indices2 = std::get<1>(kv.first);
 
-  if (!fs.has_indices(indices1)) TRIQS_RUNTIME_ERROR << "key [" << indices1[0] << "," << indices1[1] << "] of U_dict not in gf_struct";
-  if (!fs.has_indices(indices2)) TRIQS_RUNTIME_ERROR << "key [" << indices2[0] << "," << indices2[1] << "] of U_dict not in gf_struct";
+  if (!fs.has_indices(indices1)) TRIQS_RUNTIME_ERROR << "key [" << indices1 << "] of U_dict not in gf_struct";
+  if (!fs.has_indices(indices2)) TRIQS_RUNTIME_ERROR << "key [" << indices2 << "] of U_dict not in gf_struct";
   U_matrix(fs[indices1],fs[indices2]) = kv.second;
  }
  return U_matrix;
