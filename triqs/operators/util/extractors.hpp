@@ -30,6 +30,9 @@ namespace operators {
 namespace util {
 
 template<typename scalar_t> using op_t = utility::many_body_operator<scalar_t>;
+template<typename scalar_t> using h_dict_t = std::map<std::tuple<typename op_t<scalar_t>::indices_t,
+                                                                 typename op_t<scalar_t>::indices_t>,
+                                                      scalar_t>;
 template<typename scalar_t> using U_dict2_t = std::map<std::tuple<typename op_t<scalar_t>::indices_t,
                                                                   typename op_t<scalar_t>::indices_t>,
                                                        scalar_t>;
@@ -42,6 +45,36 @@ template<typename scalar_t> using U_dict4_t = std::map<std::tuple<typename op_t<
 template<typename DictType> using matrix_t = triqs::arrays::array<typename DictType::mapped_type,
                                                                   std::tuple_size<typename DictType::key_type>::value>;
 using gf_struct_t = std::map<std::string, hilbert_space::fundamental_operator_set::indices_t>;
+
+/// Return dictionary of quadractic term coefficients starting from a Hamiltonian
+/**
+  * throw exception if non-quadratic terms are met
+  * otherwise return std::map<std::tuple<op::indices_t,op::indices_t>, scalar_t>
+  */
+template<typename scalar_t>
+h_dict_t<scalar_t> extract_h_dict(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
+
+ auto h_dict = h_dict_t<scalar_t>{};
+
+ for(auto const & term : h){
+  auto const& coef = term.coef;
+  auto const& m = term.monomial;
+
+  if(m.size()==2){
+   if( !(m[0].dagger && !m[1].dagger)){
+    if (!ignore_irrelevant) TRIQS_RUNTIME_ERROR << "extract_h_dict: monomial is not of the form C^+(i) C(j)";
+   }
+   else{//everything ok
+    h_dict.insert({std::make_tuple(m[0].indices, m[1].indices),coef});
+   }
+  }
+  else{
+   if (!ignore_irrelevant) TRIQS_RUNTIME_ERROR << "extract_h_dict: monomial must have 2 operators";
+  }
+ }
+
+ return h_dict;
+}
 
 /// Return dictionary of density-density interactions starting from a Hamiltonian
 /**
@@ -123,14 +156,13 @@ matrix_t<DictType> dict_to_matrix(DictType const& dict,
  auto mat = apply_construct_parenthesis<matrix_t<DictType>>(make_tuple_repeat<rank>(fs.size()));
  mat() = scalar_t{};
 
- auto check_indices = [&fs](indices_t const& indices) {
+ auto indices_to_linear = [&fs](indices_t const& indices) {
   if (!fs.has_indices(indices))
    TRIQS_RUNTIME_ERROR << "dict_to_matrix: key [" << indices << "] of dict not in fundamental_operator_set/gf_struct";
+  return fs[indices];
  };
- auto indices_to_linear = [&fs](indices_t const& indices) { return fs[indices]; };
 
  for(auto const& kv : dict){
-  for_each(kv.first,check_indices);
   apply(mat,map(indices_to_linear,kv.first)) = kv.second;
  }
 

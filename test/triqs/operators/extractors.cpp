@@ -12,7 +12,7 @@ int main(){
   auto U_matrix = dict_to_matrix(U_dict, gf_struct);
  }
  catch(triqs::exception const & e) {
-  std::cout << "Error: " << e.what();
+  std::cout << "Error: " << e.what() << std::endl;
  }
 
  auto H2 = 0.1* n("up",0)*n("down",0);
@@ -29,8 +29,11 @@ int main(){
   auto U_dict3 = extract_U_dict2(H3);
  }
  catch(triqs::exception const & e) {
-  std::cout << "Error: " << e.what();
+  std::cout << "Error: " << e.what() << std::endl;
  }
+
+ auto h_dict = extract_h_dict(-0.5*(n("up",0) + n("down",0)));
+ std::cout << dict_to_matrix(h_dict, gf_struct) << std::endl;
 
  return 0;
 }
