@@ -69,26 +69,7 @@ namespace std {
 
 namespace triqs { namespace tuple {
 
- /// Repeat an element
- template<typename T, int R> struct make_tuple_repeat_impl;
-
- template <typename T> struct make_tuple_repeat_impl<T, 1> {
-  static std::tuple<T> invoke(T &&x) { return std::make_tuple(x); }
- };
- template <typename T> struct make_tuple_repeat_impl<T, 2> {
-  static std::tuple<T, T> invoke(T &&x) { return std::make_tuple(x, x); }
- };
- template <typename T> struct make_tuple_repeat_impl<T, 3> {
-  static std::tuple<T, T, T> invoke(T &&x) { return std::make_tuple(x, x, x); }
- };
-
- template <typename T> struct make_tuple_repeat_impl<T, 4> {
-  static std::tuple<T, T, T, T> invoke(T &&x) { return std::make_tuple(x, x, x, x); }
- };
-
- template <int R, typename T> auto make_tuple_repeat(T &&x) { return make_tuple_repeat_impl<T, R>::invoke(std::forward<T>(x)); }
-
- // _get_seq<T>() : from a tuple T, return the index sequence of the tuple length
+ /// _get_seq<T>() : from a tuple T, return the index sequence of the tuple length
  template <typename T> std14::make_index_sequence<std::tuple_size<std14::decay_t<T>>::value> _get_seq() {
   return {};
  }
@@ -114,7 +95,20 @@ namespace triqs { namespace tuple {
  // An index sequence of elements of [0,N-1] which are NOT Is
  template <int N, int... Is> using complement_sequence = typename complement_sequence_impl<N, all_indices<Is...>>::type;
 
-  /*
+  /**
+  * make_tuple_repeat<N>(x)
+  * N : a non-negative integer
+  * x : an object
+  * Returns : a tuple with N elements, each equal x
+  */
+ template <typename T, std::size_t... Is>
+ AUTO_DECL make_tuple_repeat_impl(T &&x, std14::index_sequence<Is...>) RETURN(std::make_tuple(((void)Is,x)...));
+
+ template <int N, typename T>
+ AUTO_DECL make_tuple_repeat(T &&x)
+ RETURN(make_tuple_repeat_impl(std::forward<T>(x), std14::make_index_sequence<N>()));
+
+  /**
   * apply(f, t)
   * f : a callable object
   * t a tuple
@@ -199,8 +193,8 @@ namespace triqs { namespace tuple {
  /* for_each_enumerate(t, f)
   * t: a tuple
   * f: a callable object
-  * calls f on all tuple elements: 
-  *  Python equivalent : 
+  * calls f on all tuple elements:
+  *  Python equivalent :
   *    for n,x in enumrate(t): f(n,x)
   */
  template <typename F, typename T, size_t... Is> void _for_each_enum_impl(F &&f, T &&t, std14::index_sequence<Is...>) {
@@ -268,7 +262,7 @@ namespace triqs { namespace tuple {
  template <typename T0, typename T1, typename F>
  auto map_on_zip(F &&f, T0 &&t0, T1 &&t1)
      RETURN(_map_impl(std::forward<F>(f), std::forward<T0>(t0), std::forward<T1>(t1), _get_seq<T0>()));
- 
+
  template <typename T0, typename T1, typename F>
  auto map_on_zip_v2(F &&f, T0 &&t0, T1 &&t1)
      RETURN(map(called_on_tuple(f), zip(t0,t1)));
