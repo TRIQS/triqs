@@ -99,7 +99,54 @@ TEST(Extractors, extract_U_dict2) {
  EXPECT_THROW(dict_to_matrix(extract_U_dict2(wrong_index),gf_struct),triqs::exception);
 }
 
-//TEST(Extractors, ExtractH4) {
-//}
+TEST(Extractors, extract_U_dict4) {
+ auto h_int = U1*n("up",1)*n("dn",1) +
+              U2*n("up",2)*n("dn",2) +
+              U3*n("up",3)*n("dn",3);
+ auto N1 = n("up",1)+n("dn",1);
+ auto N2 = n("up",2)+n("dn",2);
+ auto N3 = n("up",3)+n("dn",3);
+ h_int += V12*N1*N2 + V23*N2*N3 + V31*N1*N3;
+
+ array<double,2> U_matrix2_ref
+  {{.0,   V12,  V31,  U1,   V12,  V31},
+   {V12,  .0,   V23,  V12,  U2,   V23},
+   {V31,  V23,  .0,   V31,  V23,  U3 },
+   {U1,   V12,  V31,  .0,   V12,  V31},
+   {V12,  U2,   V23,  V12,  .0,   V23},
+   {V31,  V23,  U3,   V31,  V23,  .0 }};
+
+ U_dict4_t<double> U_dict4_ref;
+ array<double,4> U_matrix4_ref(6,6,6,6);
+ U_matrix4_ref() = 0;
+ for(int i=0; i<6; ++i)
+  for(int j=0; j<6; ++j){
+   auto val = U_matrix2_ref(i,j);
+   if(val!=.0) {
+    U_dict4_ref[std::make_tuple(ind[i],ind[j],ind[i],ind[j])] = 0.5*val;
+    U_dict4_ref[std::make_tuple(ind[j],ind[i],ind[j],ind[i])] = 0.5*val;
+    U_dict4_ref[std::make_tuple(ind[i],ind[j],ind[j],ind[i])] = -0.5*val;
+    U_dict4_ref[std::make_tuple(ind[j],ind[i],ind[i],ind[j])] = -0.5*val;
+
+    U_matrix4_ref(i,j,i,j) = U_matrix4_ref(j,i,j,i) = 0.5*val;
+    U_matrix4_ref(i,j,j,i) = U_matrix4_ref(j,i,i,j) = -0.5*val;
+   }
+  }
+
+ auto U_dict4 = extract_U_dict4(h_int);
+ EXPECT_EQ(U_dict4_ref,U_dict4);
+ EXPECT_CLOSE_ARRAY(U_matrix4_ref,dict_to_matrix(U_dict4,gf_struct));
+
+ auto quadratic = n("up",1) + n("dn",1);
+ EXPECT_THROW(extract_U_dict4(quadratic),triqs::exception);
+ EXPECT_NO_THROW(extract_U_dict4(quadratic,true));
+
+ auto non_conserving = c_dag("up",1)*c_dag("dn",1)*c_dag("up",3)*c("dn",2);
+ EXPECT_THROW(extract_U_dict4(non_conserving),triqs::exception);
+ EXPECT_NO_THROW(extract_U_dict4(non_conserving,true));
+
+ auto wrong_index = n("up",4)*n("dn",2);
+ EXPECT_THROW(dict_to_matrix(extract_U_dict4(wrong_index),gf_struct),triqs::exception);
+}
 
 MAKE_MAIN;
