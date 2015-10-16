@@ -102,11 +102,11 @@ namespace triqs { namespace tuple {
   * Returns : a tuple with N elements, each equal x
   */
  template <typename T, std::size_t... Is>
- AUTO_DECL make_tuple_repeat_impl(T &&x, std14::index_sequence<Is...>) RETURN(std::make_tuple(((void)Is,x)...));
+ auto make_tuple_repeat_impl(T const& x, std14::index_sequence<Is...>) RETURN(std::make_tuple(((void)Is,x)...));
 
  template <int N, typename T>
- AUTO_DECL make_tuple_repeat(T &&x)
- RETURN(make_tuple_repeat_impl(std::forward<T>(x), std14::make_index_sequence<N>()));
+ auto make_tuple_repeat(T const& x)
+ RETURN(make_tuple_repeat_impl(x, std14::make_index_sequence<N>()));
 
   /**
   * apply(f, t)
