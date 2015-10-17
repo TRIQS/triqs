@@ -38,6 +38,6 @@ N^3:
 N = 1*C^+(0,dn)C(0,dn) + 1*C^+(0,up)C(0,up)
 N^3 = 1*C^+(0,dn)C(0,dn) + 1*C^+(0,up)C(0,up) + 6*C^+(0,dn)C^+(0,up)C(0,up)C(0,dn)
 Monomials of N^3:
-[[True, [0, 'dn']], [False, [0, 'dn']]] 1.0
-[[True, [0, 'up']], [False, [0, 'up']]] 1.0
-[[True, [0, 'dn']], [True, [0, 'up']], [False, [0, 'up']], [False, [0, 'dn']]] 6.0
+[(True, [0, 'dn']), (False, [0, 'dn'])] 1.0
+[(True, [0, 'up']), (False, [0, 'up'])] 1.0
+[(True, [0, 'dn']), (True, [0, 'up']), (False, [0, 'up']), (False, [0, 'dn'])] 6.0

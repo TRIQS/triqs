@@ -1,6 +1,7 @@
 #pragma once
 #include "../wrapper_tools.hpp"
 #include <tuple>
+#include <triqs/utility/c14.hpp>
 
 namespace triqs {
 namespace py_tools {
@@ -11,13 +12,10 @@ namespace py_tools {
   using tuple_t = std::tuple<Types...>;
 
   // c2py implementation
-  template<int N, typename T, typename... Tail> static void c2py_impl(PyObject *list, tuple_t const& t, bool& ok) {
-   pyref e = py_converter<T>::c2py(std::get<N>(t));
-   int res = PyList_Append(list,e);
-   ok = (res != -1);
-   if(ok) c2py_impl<N+1,Tail...>(list,t,ok);
+  template<std::size_t... Is> static PyObject *c2py_impl(tuple_t const& t, std14::index_sequence<Is...>) {
+   return PyTuple_Pack(sizeof...(Types),
+          (PyObject *)pyref(py_converter<Types>::c2py(std::get<Is>(t)))...);
   }
-  template<int> static void c2py_impl(PyObject *list, tuple_t const& t, bool& ok) {}
 
   // is_convertible implementation
   template<int N, typename T, typename... Tail> static bool is_convertible_impl(PyObject *seq, bool raise_exception) {
@@ -35,14 +33,7 @@ namespace py_tools {
 
  public:
   static PyObject *c2py(tuple_t const &t) {
-   PyObject *list = PyList_New(0);
-   bool ok = true;
-   c2py_impl<0,Types...>(list,t,ok);
-   if(!ok) {
-     Py_DECREF(list);
-     return NULL;
-   }
-   return list;
+   return c2py_impl(t,std14::make_index_sequence<sizeof...(Types)>());
   }
 
   static bool is_convertible(PyObject *ob, bool raise_exception) {
