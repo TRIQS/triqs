@@ -173,7 +173,7 @@ class cfunction :
       return ''.join(l1 + l2)
 
     def _generate_doc(self) :
-        doc = "\n".join([ "   " + x.strip() for x in self.doc.split('\n')])
+        doc = "\n".join([ "   " + x.rstrip() for x in self.doc.split('\n')])
         doc = doc.replace('"',"'") # the " are replaced by \"r. 
         #doc = doc.replace('"',r'\"') # the " are replaced by \"r. Does not work, makes \\"
         if self._dict_call is not None : return doc
