@@ -36,7 +36,7 @@ TEST(Extractors, extract_h_dict) {
    {.0,   .0,   .0,   t12,  eps2, t23 },
    {.0,   .0,   .0,   t31,  t23,  eps3}};
 
- h_dict_t<double> h_dict_ref;
+ dict2_t<double> h_dict_ref;
  for(int i=0; i<6; ++i)
   for(int j=0; j<6; ++j){
    auto val = h_matrix_ref(i,j);
@@ -76,7 +76,7 @@ TEST(Extractors, extract_U_dict2) {
    {V12,  U2,   V23,  V12,  .0,   V23},
    {V31,  V23,  U3,   V31,  V23,  .0 }};
 
- U_dict2_t<double> U_dict2_ref;
+ dict2_t<double> U_dict2_ref;
  for(int i=0; i<6; ++i)
   for(int j=0; j<6; ++j){
    auto val = U_matrix2_ref(i,j);
@@ -116,7 +116,7 @@ TEST(Extractors, extract_U_dict4) {
    {V12,  U2,   V23,  V12,  .0,   V23},
    {V31,  V23,  U3,   V31,  V23,  .0 }};
 
- U_dict4_t<double> U_dict4_ref;
+ dict4_t<double> U_dict4_ref;
  array<double,4> U_matrix4_ref(6,6,6,6);
  U_matrix4_ref() = 0;
  for(int i=0; i<6; ++i)

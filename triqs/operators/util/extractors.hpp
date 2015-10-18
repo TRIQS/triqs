@@ -30,16 +30,13 @@ namespace operators {
 namespace util {
 
 template<typename scalar_t> using op_t = utility::many_body_operator<scalar_t>;
-template<typename scalar_t> using h_dict_t = std::map<std::tuple<typename op_t<scalar_t>::indices_t,
-                                                                 typename op_t<scalar_t>::indices_t>,
-                                                      scalar_t>;
-template<typename scalar_t> using U_dict2_t = std::map<std::tuple<typename op_t<scalar_t>::indices_t,
-                                                                  typename op_t<scalar_t>::indices_t>,
+template<typename scalar_t> using dict2_t = std::map<std::tuple<typename op_t<scalar_t>::indices_t,
+                                                                typename op_t<scalar_t>::indices_t>,
                                                        scalar_t>;
-template<typename scalar_t> using U_dict4_t = std::map<std::tuple<typename op_t<scalar_t>::indices_t,
-                                                                  typename op_t<scalar_t>::indices_t,
-                                                                  typename op_t<scalar_t>::indices_t,
-                                                                  typename op_t<scalar_t>::indices_t>,
+template<typename scalar_t> using dict4_t = std::map<std::tuple<typename op_t<scalar_t>::indices_t,
+                                                                typename op_t<scalar_t>::indices_t,
+                                                                typename op_t<scalar_t>::indices_t,
+                                                                typename op_t<scalar_t>::indices_t>,
                                                        scalar_t>;
 
 template<typename DictType> using matrix_t = triqs::arrays::array<typename DictType::mapped_type,
@@ -52,9 +49,9 @@ using gf_struct_t = std::map<std::string, hilbert_space::fundamental_operator_se
   * otherwise return std::map<std::tuple<op::indices_t,op::indices_t>, scalar_t>
   */
 template<typename scalar_t>
-h_dict_t<scalar_t> extract_h_dict(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
+dict2_t<scalar_t> extract_h_dict(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
 
- auto h_dict = h_dict_t<scalar_t>{};
+ auto h_dict = dict2_t<scalar_t>{};
 
  for(auto const & term : h){
   auto const& coef = term.coef;
@@ -82,9 +79,9 @@ h_dict_t<scalar_t> extract_h_dict(op_t<scalar_t> const & h, bool ignore_irreleva
   * otherwise return std::map<std::tuple<op::indices_t,op::indices_t>, scalar_t>
   */
 template<typename scalar_t>
-U_dict2_t<scalar_t> extract_U_dict2(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
+dict2_t<scalar_t> extract_U_dict2(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
 
- auto U_dict = U_dict2_t<scalar_t>{};
+ auto U_dict = dict2_t<scalar_t>{};
 
  for(auto const & term : h){
   auto const& coef = term.coef;
@@ -115,9 +112,9 @@ U_dict2_t<scalar_t> extract_U_dict2(op_t<scalar_t> const & h, bool ignore_irrele
   * otherwise return std::map<std::tuple<op::indices_t,op::indices_t,op::indices_t,op::indices_t>, scalar_t>
   */
 template<typename scalar_t>
-U_dict4_t<scalar_t> extract_U_dict4(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
+dict4_t<scalar_t> extract_U_dict4(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
 
- auto U_dict = U_dict4_t<scalar_t>{};
+ auto U_dict = dict4_t<scalar_t>{};
 
  for(auto const & term : h){
   scalar_t const& coef = term.coef;
