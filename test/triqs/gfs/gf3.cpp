@@ -27,6 +27,7 @@ int main() {
  
  G = -G3;
 
+#ifndef TRIQS_CPP11
 
   //auto g4 = gf<imfreq, tensor_valued<3>>{};
   //auto g4 = gf<imfreq, tensor_valued<3>>{{beta,Fermion},{3,3,3}};
@@ -55,6 +56,8 @@ int main() {
   triqs::clef::placeholder<3> nu_;
   //g2(om_,nu_)(i_,j_) << 0.0;
   //g2(om_,nu_) << 0.0;
+
+#endif
 
  }
  TRIQS_CATCH_AND_ABORT;
