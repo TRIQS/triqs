@@ -13,32 +13,17 @@ module.add_using("namespace triqs::utility")
 module.add_using("namespace triqs::operators::util")
 
 module.add_preamble("""
-// Convert std::vector of length 2 to a tuple
-struct vector2_to_tuple {
- template<typename T> std::tuple<T,T> operator()(std::vector<T> const& v) {
-  return std::make_tuple(v[0],v[1]);
- }
-};
-
-// This function takes dict2_t or dict4_t object and
-// translates operator indices using vector2_to_tuple().
-// It is necessary because Python lists are not welcome inside keys of a dictionary.
-template<typename... Indices>
-std::map<std::tuple<std::tuple<typename Indices::value_type,typename Indices::value_type>...>,double>
-operator_indices_to_tuple(std::map<std::tuple<Indices...>,double> const& dict){
-
- std::map<std::tuple<std::tuple<typename Indices::value_type,
-                                typename Indices::value_type>...>,double> res;
- for(auto const& kv : dict) {
-  using triqs::tuple::map;
-  res[map(vector2_to_tuple(),kv.first)] = kv.second;
- }
- return res;
-}
+using indices_v_t = typename op_t<double>::indices_t;
+using indices_t_t = std::tuple<typename indices_v_t::value_type,typename indices_v_t::value_type>;
+auto v2t = [](indices_v_t const& v) { return std::make_tuple(v[0],v[1]); };
+using triqs::tuple::map;
 """)
 
 module.add_function("dict2_t<double> extract_h_dict(many_body_operator<double> H, bool ignore_irrelevant = false)",
-                    calling_pattern = "auto result = operator_indices_to_tuple(extract_h_dict(*H,ignore_irrelevant))",
+                    calling_pattern = """
+                    std::map<std::tuple<indices_t_t,indices_t_t>,double> result;
+                    for(auto const& kv : extract_h_dict(*H,ignore_irrelevant)) result[map(v2t,kv.first)] = kv.second;
+                    """,
                     doc = r"""
     Extract coefficients of the quadratic part :math:`\sum_{ij}h_{ij} c^\dagger_i c_j` from a Hamiltonian H as a 2-index dictionary.
 
@@ -58,7 +43,10 @@ module.add_function("dict2_t<double> extract_h_dict(many_body_operator<double> H
 """)
 
 module.add_function("dict2_t<double> extract_U_dict2(many_body_operator<double> H, bool ignore_irrelevant = false)",
-                    calling_pattern = "auto result = operator_indices_to_tuple(extract_U_dict2(*H,ignore_irrelevant))",
+                    calling_pattern = """
+                    std::map<std::tuple<indices_t_t,indices_t_t>,double> result;
+                    for(auto const& kv : extract_U_dict2(*H,ignore_irrelevant)) result[map(v2t,kv.first)] = kv.second;
+                    """,
                     doc = r"""
     Extract U-matrix of the density-density interaction part :math:`\frac{1}{2}\sum_{ij} U_{ij} n_i n_j`
     from a Hamiltonian H as a 2-index dictionary.
@@ -79,7 +67,10 @@ module.add_function("dict2_t<double> extract_U_dict2(many_body_operator<double> 
 """)
 
 module.add_function("dict4_t<double> extract_U_dict4(many_body_operator<double> H, bool ignore_irrelevant = false)",
-                    calling_pattern = "auto result = operator_indices_to_tuple(extract_U_dict4(*H,ignore_irrelevant))",
+                    calling_pattern = """
+                    std::map<std::tuple<indices_t_t,indices_t_t,indices_t_t,indices_t_t>,double> result;
+                    for(auto const& kv : extract_U_dict4(*H,ignore_irrelevant)) result[map(v2t,kv.first)] = kv.second;
+                    """,
                     doc = r"""
     Extract U-matrix of the interaction part :math:`\frac{1}{2}\sum_{ijkl} U_{ijkl} c^\dagger_i c^\dagger_j c_l c_k`
     from a Hamiltonian H as a 4-index dictionary.

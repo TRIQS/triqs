@@ -9,5 +9,6 @@ SET(PYTHON_SOURCES
 )
 
 triqs_python_extension(extractors extractors)
+add_dependencies(python_wrap_extractors python_wrap_operators)
 
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators/util)
