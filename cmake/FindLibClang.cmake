@@ -26,6 +26,7 @@ SET(TRIAL_LIBRARY_PATHS
  /usr/lib/llvm-3.5/lib
  /usr/lib/llvm-3.4/lib
  /usr/lib64/llvm
+ /usr/local/install/clang-3.4/lib
 )
 if (NOT TRIQS_LIBCLANG_LOCATION)
 FIND_LIBRARY(TRIQS_LIBCLANG_LOCATION NAMES libclang.so PATHS ${TRIAL_LIBRARY_PATHS} DOC "Location of the libclang library")
