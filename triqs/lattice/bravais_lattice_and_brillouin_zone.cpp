@@ -69,6 +69,12 @@ namespace lattice {
     units_(2, _) = uy / delta;
     break;
    case 3:
+    using std::abs;
+    ux = units_(0, _);
+    uy = units_(1, _);
+    uz = units_(2, _);
+    delta = dot(cross_product(ux,uy),uz);
+    if(abs(delta) < almost_zero) TRIQS_RUNTIME_ERROR << "Bravais Lattice : 2 of the 3 vectors of unit are not independent : " << units__; 
     break;
   }
  }
