@@ -12,8 +12,13 @@ Green functions
 ---------------
 
 * New Python method `DOS.copy()`.
-* **[TODO]: something about new functions in pytriqs/gf/local/tools.py**
-* **[TODO]: Any new features in the C++ part?**
+* New convenience functions in module `pytriqs.gf.local.tools`,
+
+  * `inverse()`: compute the inverse of a Green's function;
+  * `delta()`: compute Delta_iw from G0_iw;
+  * `dyson()`: solve Dyson's equation for given two of G0_iw, G_iw and Sigma_iw to yield the third;
+  * `tail_fit()`: fit the tails of Sigma_iw and optionally G_iw;
+  * `read_gf_from_txt()`/`write_gf_to_txt()`: read/write a GfReFreq from/to text files.
 
 Many-body operators
 -------------------
@@ -25,7 +30,6 @@ Many-body operators
   * `U_matrix` (moved from dft_tools): construction of interaction matrices;
   * `observables`: operators of commonly used observables (S_z, S^2, L_z, L^2, L*S and so on);
   * `op_struct`: auxiliary functions to work with spin and orbital indices.
-* New C++ header `triqs/operators/util/extractors.hpp` and a corresponding Python module `pytriqs.operators.util.extractors`. Functions to extract coefficients from many-body operators.
 
 Monte-Carlo tools
 -----------------
@@ -56,11 +60,6 @@ c++2py
 * Converters for `unsigned int`, `unsigned long` and `unsigned long long`.
 * Converter for `std::tuple` (from any Python sequence/to `tuple()`).
 * `std::pair` is now converted to `tuple()`.
-
-Utilities
----------
-
-* **[Mention this at all?]** New header `triqs/utility/variant_int_string.hpp`, a simple variant class holding either `int` or `std::string` (with Python converter).
 
 Tests
 -----
