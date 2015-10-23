@@ -25,7 +25,7 @@
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <complex>
 
-#define TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY (cos)(sin)(tan)(cosh)(sinh)(tanh)(acos)(asin)(atan)(exp)(log)(sqrt)(abs)(floor)(pow)
+#define TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY (cos)(sin)(tan)(cosh)(sinh)(tanh)(acos)(asin)(atan)(exp)(log)(sqrt)(abs)(floor)(pow)(conj)
 
 namespace triqs { namespace clef { 
 

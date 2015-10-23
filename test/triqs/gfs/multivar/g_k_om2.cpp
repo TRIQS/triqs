@@ -20,7 +20,6 @@ auto  sum_gf(Function const &f, Mesh const &m) ->decltype(make_matrix(0*f(*(m.be
 namespace triqs {
  namespace clef {
   TRIQS_CLEF_MAKE_FNT_LAZY(sum_gf);
-  TRIQS_CLEF_MAKE_FNT_LAZY(conj);
  }
 }
 
