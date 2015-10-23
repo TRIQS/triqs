@@ -69,7 +69,6 @@ namespace lattice {
     units_(2, _) = uy / delta;
     break;
    case 3:
-    TRIQS_RUNTIME_ERROR << " 3d bravais lattice not implemented";
     break;
   }
  }
