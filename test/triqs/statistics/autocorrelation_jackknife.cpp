@@ -87,7 +87,7 @@ TEST(Statistics, Autocorrelation2) {
 #if BOOST_VERSION > 105500
  EXPECT_EQ(autocorrelation_time(V), 47);
  EXPECT_CLOSE(autocorrelation_time_from_binning(V), 38.56211345863931);
- EXPECT_CLOSE(autocorrelation_time(V * V), 45);
+ EXPECT_CLOSE(autocorrelation_time(V * V), 44);
 #else
  EXPECT_EQ(autocorrelation_time(V), 40);
  EXPECT_CLOSE(autocorrelation_time_from_binning(V), 37.50308656560204 );
