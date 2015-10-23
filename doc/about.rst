@@ -8,10 +8,22 @@ The TRIQS library has been developed and is currently maintained by:
 
 It is supported by ERC under Grant Number 278472.
 
-We acknowledge contributions from an increasing number of colleagues:
+Other developers include:
 
-  A. Antipov, T. Ayral, H. Hafermann, I. Krivenko, L. Messio.
+ T. Ayral, H. Hafermann, I. Krivenko, L. Messio, P. Seth.
 
+Citation
+=========
+
+TRIQS is a part of our scientific work and we kindly request that
+projects using it include a citation to the following paper. In
+order to help you, we provide a BibTeX entry.
+
+.. [#triqs] `O. Parcollet, M. Ferrero, T. Ayral, H. Hafermann, I. Krivenko, L. Messio, and P. Seth, Comp. Phys. Comm. 196, 398-415 (2015) <http://dx.doi.org/10.1016/j.cpc.2015.04.023>`_ (:download:`bibtex file <triqs.bib>`)
+
+If you find TRIQS useful, giving proper reference and citation is indeed a
+simple way to help convincing funding sources that such projects are useful for
+our community and should be supported.
 
 License
 =======
@@ -21,19 +33,6 @@ TRIQS is published under the `GNU General Public License, version 3
 
 Note that it *implies* that applications using TRIQS must also be GPL.
 
-
-Quotation
-=========
-
-TRIQS is a part of our scientific work and we would appreciate if
-projects using it will include a citation to the following paper. In
-order to help you, we provide a BibTeX entry.
-
-.. [#triqs] `O. Parcollet, M. Ferrero, T. Ayral, H. Hafermann, I. Krivenko, L. Messio, and P. Seth, Comp. Phys. Comm. 196, 398-415 (2015) <http://dx.doi.org/10.1016/j.cpc.2015.04.023>`_ (:download:`bibtex file <triqs.bib>`)
-
-If you find TRIQS useful, giving proper reference and citation is indeed a
-simple way to help convincing funding sources that such projects are useful for
-our community and should be supported.
 
 Disclaimer
 ==========
