@@ -3,12 +3,13 @@ enable_testing()
 
 option (TESTS_C_WITH_VALGRIND "Run all the tests also through valgrind" OFF)
 
-# Compile gtest lib and add include to its header. 
+# Compile gtest lib and add include to its header.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(gtest gtest/gtest-all)
 link_libraries (gtest)
 install(TARGETS gtest DESTINATION lib)
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/gtest/gtest.h" DESTINATION "include/gtest")
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/test_tools.hpp" DESTINATION "include")
 
 #
 macro(all_tests)
