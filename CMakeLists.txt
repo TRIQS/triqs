@@ -20,8 +20,7 @@
 ###################################################################################
 
 #version number of the library
-set (TRIQS_VERSION "1.2")
-set (TRIQS_RELEASE "1.2.0")
+set (TRIQS_VERSION "1.3")
 
 # Path for local cmake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
