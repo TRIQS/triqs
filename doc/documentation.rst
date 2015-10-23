@@ -6,7 +6,9 @@ Documentation
 A quick tour in python
 ----------------------
 
-A little tour of some aspects of TRIQS and its applications, at the Python level. 
+A little tour of some aspects of TRIQS and its applications, at the Python
+level.  We recommend that you download the ipython notebooks available in the
+`tutorials repository on GitHub <https://github.com/TRIQS/tutorials>`_.
 
 .. toctree::
    :maxdepth: 1
