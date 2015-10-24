@@ -7,10 +7,10 @@
 Welcome
 =======
 
-.. sidebar:: TRIQS 1.3
+.. sidebar:: TRIQS 1.4-dev
 
-   This is the homepage of the TRIQS release 1.3. 
-   For the changes in 1.3, Cf :ref:`changelog page <changelog>`
+   This is the homepage of the TRIQS release 1.4 (in development). 
+   For the changes in 1.4, Cf :ref:`changelog page <changelog>`
 
 
 TRIQS (**T**\oolbox for **R**\esearch on **I**\nteracting **Q**\uantum **S**\ystems)
