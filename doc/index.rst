@@ -7,13 +7,11 @@
 Welcome
 =======
 
-.. sidebar:: TRIQS 1.2
+.. sidebar:: TRIQS 1.3
 
-   This is the homepage of the new TRIQS 1.2. Many things
-   have changed and been improved since the versions 0.x.
-   The format of the archives and names of some python classes
-   have changed too. So go look at our :ref:`changelog page <changelog>`
-   to find out how to upgrade to 1.2.
+   This is the homepage of the TRIQS release 1.3. 
+   For the changes in 1.3, Cf :ref:`changelog page <changelog>`
+
 
 TRIQS (**T**\oolbox for **R**\esearch on **I**\nteracting **Q**\uantum **S**\ystems)
 is a scientific project providing a set of C++ and Python libraries to develop new tools

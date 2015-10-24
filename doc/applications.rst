@@ -16,7 +16,7 @@ calculation. It allows you to turn band-structure calculations obtained from
 the Wien2k package to inputs to full-fledged LDA+DMFT calculations in a few
 lines!
 
-*Homepage:* `<http://ipht.cea.fr/triqs/1.2/applications/dft_tools/>`_
+*Homepage:* `<http://ipht.cea.fr/triqs/1.3/applications/dft_tools/>`_
 
 Hybridization-expansion solver
 ------------------------------
@@ -26,7 +26,7 @@ of a quantum impurity embedded in a conduction bath. It is based on a quantum
 Monte Carlo algorithm that stochastically samples the diagrams of a
 hybridization expansion of the partition function.
 
-*Homepage:* `<http://ipht.cea.fr/triqs/1.2/applications/cthyb/>`_
+*Homepage:* `<http://ipht.cea.fr/triqs/1.3/applications/cthyb/>`_
 
 Hubbard I solver
 ----------------

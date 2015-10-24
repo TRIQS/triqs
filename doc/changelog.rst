@@ -6,6 +6,13 @@ Changelog
 
 This document describes the main changes in TRIQS.
 
+version >= 1.3
+------------
+
+The `ChangeLog file <https://github.com/TRIQS/triqs/blob/778ba8590153db10950a531a73e6b6b42e78bb19/ChangeLog.md>`_ 
+is now kept in the source directory.
+
+
 version 1.2.0
 -------------
 
