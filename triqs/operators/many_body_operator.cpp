@@ -31,6 +31,31 @@ namespace operators {
 // maximum order of the monomial (here quartic operators)
 #define MAX_MONOMIAL_SIZE 4
 
+ std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
+  if (op.dagger) os << "^+";
+  os << "(";
+  int u = 0;
+  for (auto const& i : op.indices) {
+   if (u++) os << ",";
+   os << i;
+  }
+  return os << ")";
+ }
+
+ bool operator<(monomial_t const& m1, monomial_t const& m2) {
+  return m1.size() != m2.size() ? m1.size() < m2.size()
+                                : std::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end());
+ }
+
+ std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
+  for (auto const& c : m) { os << "C" << c; }
+  return os;
+ }
+
+
+ /// ----- h5 support
+
+
  namespace {
 
   // the type of the monomial to be stored in the h5 file

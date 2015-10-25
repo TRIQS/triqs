@@ -16,7 +16,13 @@ Installation
 
   * include "boost/mpi.hpp" if needed.
 
+Many-body operators
+-------------------
 
+* They are now polymorphic, they can handle complex and real case.
+  many_body_operator is not a template any more.
+  many_body_operator_generic<ScalarType> is the general case.
+* The are in triqs::operators namespace (moved from utility).
 
 New in version 1.3
 ==================

@@ -70,30 +70,14 @@ namespace operators {
   template <class Archive> void serialize(Archive& ar, const unsigned int version) { ar& dagger& indices; }
  };
 
- std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
-  if (op.dagger) os << "^+";
-  os << "(";
-  int u = 0;
-  for (auto const& i : op.indices) {
-   if (u++) os << ",";
-   os << i;
-  }
-  return os << ")";
- }
-
- //-----------------------------------------------------------------------------------------
+ std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op);
+ 
+//-----------------------------------------------------------------------------------------
  // Monomial: an ordered set of creation/annihilation operators and comparison
  using monomial_t = std::vector<canonical_ops_t>;
 
- bool operator<(monomial_t const& m1, monomial_t const& m2) {
-  return m1.size() != m2.size() ? m1.size() < m2.size()
-                                : std::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end());
- }
-
- std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
-  for (auto const& c : m) { os << "C" << c; }
-  return os;
- }
+ bool operator<(monomial_t const& m1, monomial_t const& m2);
+ std::ostream& operator<<(std::ostream& os, monomial_t const& m);
 
  //-----------------------------------------------------------------------------------------
  /**

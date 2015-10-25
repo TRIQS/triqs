@@ -12,12 +12,12 @@
    # compute used_module_list
     recognized_namespace_for_using = {
         'triqs::gfs::' : 'gf',
-        'triqs::utility::many_body_operator' : 'operators',
+        'triqs::operators::many_body_operator' : 'operators',
         }
 
     using_needed_for_modules = {
         'gf' : 'namespace triqs::gfs',
-        'operators' : 'triqs::utility::many_body_operator',
+        'operators' : 'triqs::operators::many_body_operator',
         }
 
     converters_to_include = { 

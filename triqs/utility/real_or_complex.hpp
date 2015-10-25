@@ -72,9 +72,9 @@ namespace utility {
   }
 
 #define MAKE_OP(OP)\
-  real_or_complex& operator OP (double y) { _x OP y; return *this; } \
-  real_or_complex& operator OP (std::complex<double> const &y) { _x OP y; _is_real = false; return *this; }\
-  real_or_complex& operator OP (real_or_complex const & y) { _x OP y._x; _is_real &= y._is_real; return *this; }
+  inline real_or_complex& operator OP (double y) { _x OP y; return *this; } \
+  inline real_or_complex& operator OP (std::complex<double> const &y) { _x OP y; _is_real = false; return *this; }\
+  inline real_or_complex& operator OP (real_or_complex const & y) { _x OP y._x; _is_real &= y._is_real; return *this; }
 
   MAKE_OP(+=); MAKE_OP(-=); MAKE_OP(*=); MAKE_OP(/=);
 #undef MAKE_OP
@@ -82,11 +82,11 @@ namespace utility {
  };
   
 #define MAKE_OP(OP, OPC)\
- real_or_complex operator OP (real_or_complex a, real_or_complex const& b) { a OPC b; return a; }\
- real_or_complex operator OP (real_or_complex a, std::complex<double> const& b) { a OPC b; return a; }\
- real_or_complex operator OP (real_or_complex a, double b) { a OPC b; return a; }\
- real_or_complex operator OP (std::complex<double> const& a, real_or_complex b) { return a OP std::complex<double>(b); }\
- real_or_complex operator OP (double a, real_or_complex b) { if (b.is_real())  return a OP double(b); else return a OP std::complex<double>(b); }
+ inline real_or_complex operator OP (real_or_complex a, real_or_complex const& b) { a OPC b; return a; }\
+ inline real_or_complex operator OP (real_or_complex a, std::complex<double> const& b) { a OPC b; return a; }\
+ inline real_or_complex operator OP (real_or_complex a, double b) { a OPC b; return a; }\
+ inline real_or_complex operator OP (std::complex<double> const& a, real_or_complex b) { return a OP std::complex<double>(b); }\
+ inline real_or_complex operator OP (double a, real_or_complex b) { if (b.is_real())  return a OP double(b); else return a OP std::complex<double>(b); }
 
  MAKE_OP(+, +=); MAKE_OP(-, -=); MAKE_OP(*, *=); MAKE_OP(/, /=);
 #undef MAKE_OP
