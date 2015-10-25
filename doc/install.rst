@@ -26,10 +26,14 @@ However, we also understand that some users may not wish to constantly update
 their codes, and are happy to use an older but perhaps more stable version. 
 
 To this end, we propose two options to the user:
-1) You follow the latest master commits for all applications, and be certain to
+
+#. You follow the latest master commits for all applications, and be certain to
 have all the bug fixes and latest functionality, while perhaps having to change
-some API occasionally, or
-2) You use a version tag, e.g. version 1.2, for all applications, and have a
+some API occasionally. Note that we use Continous Integration (jenkins) to ensure 
+that the master always compiles and passes all tests, both
+for the library and for several public (and private) applications.
+
+#. You use a version tag, e.g. version 1.3, for all applications, and have a
 stable version of the code, while not having the latest bug fixes and
 functionality.
 

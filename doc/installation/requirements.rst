@@ -14,30 +14,39 @@ libraries and tools used by TRIQS are described below.
 C++ compilers
 -------------
 
-TRIQS is written in C++, i.e. in the **C++11** standard as defined by the ISO standardization committee.
-Some advanced parts of the library (multivariable Green functions) require some features of the most recent **C++14** standard.
+TRIQS is written in C++, i.e. in the **C++** standard as defined by the ISO standardization committee, 
+i.e. currently C++14.
 A recent compiler is therefore mandatory.
 
-* Standard compliant C++ compilers (supported).
+* Standard compliant C++ compilers (C++14).
 
-  * in C++14 mode (recommended):
+  * g++ 4.9.1 and higher.
+  
+  * :ref:`clang 3.4<install_clang>` and higher (in particular the default clang on OS X >= 10.8).
+    The recommandation is to use the latest version of clang available.
 
-     * :ref:`clang 3.4<install_clang>` and higher (in particular the default clang on OS X >= 10.8).
-     * g++ 4.9.1 and higher.
+  * Intel icc 16.0 seems to be fine too (it implements C++14).
+    The intel icl on OS X (with the clang front end) seems to be working as well.
+    In both cases, tests are still needed with these compilers, since none of the developers
+    use them on a routine basis. 
 
-  * in C++11 mode only:
+* In C++11 backward compatibility mode only:
+  This mode is **deprecated**.
+  
+  It is sufficient for a basic usage of the library, but 
+  it excludes several of its new features.
+  
+  C++11 mode **will be removed** in future releases in 2016, in order
+  to simplify the codes and their maintenance.
 
-     * g++ 4.8.2 and higher (there seems to be a bug in 4.8.1).
+  So if you using C++11, you are invited to upgrade your compiler.
 
-     * The intel icc 15.0 is close to be C++11 compliant, but presents currently too many bugs to be supported
-       at present. It compiles 99% of TRIQS, but we do not have the resources to write and
-       maintains all necessary workarounds.
-       The intel icl on OS X (with the clang front end) seems to be working.
+  * g++ 4.8.2 and higher (there seems to be a bug in 4.8.1).
 
-* C++98 compilers do not work and will *not* be supported.
+* C++98 compilers are obsolete and will *never* be supported.
 
   * g++ before 4.8.1
-  * Intel icc 13.0 and below
+  * Intel icc 15.0 and below
 
 
 Libraries
