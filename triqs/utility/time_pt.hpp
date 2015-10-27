@@ -129,6 +129,7 @@ namespace triqs { namespace utility {
   time_pt get_upper_pt() const { return time_pt(time_pt::Nmax, beta, true); }
   time_pt get_lower_pt() const { return time_pt(0, beta, true); }
   time_pt get_epsilon() const { return time_pt(1, beta, true); }
+  time_pt make_time_pt(double x) const { return time_pt(x ,beta);}
  };
 }}
 
