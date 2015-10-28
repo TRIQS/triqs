@@ -44,6 +44,8 @@ namespace operators {
 
  /// The user class
  using many_body_operator = many_body_operator_generic<real_or_complex>;
+ using many_body_operator_real = many_body_operator_generic<double>;
+ using many_body_operator_complex = many_body_operator_generic<std::complex<double>>;
  inline std::string get_triqs_hdf5_data_scheme(many_body_operator const&) { return "Operator"; }
 
  //-----------------------------------------------------------------------------------------
