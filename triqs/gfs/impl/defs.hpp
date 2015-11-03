@@ -191,6 +191,7 @@ namespace gfs {
  template <typename Mesh, typename Target, typename Enable = void> struct gf_data_proxy;
 
  template <typename M> struct gf_data_proxy<M, matrix_valued> : data_proxy_array<dcomplex, 3> {};
+ template <typename M, int R> struct gf_data_proxy<M, tensor_valued<R>> : data_proxy_array<dcomplex, 1+R> {};
  template <typename M> struct gf_data_proxy<M, scalar_valued> : data_proxy_array<dcomplex, 1> {};
 
  /*----------------------------------------------------------
