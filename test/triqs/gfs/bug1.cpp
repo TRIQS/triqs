@@ -22,5 +22,10 @@ TEST(Gf, SimpleAssign) {
 
  EXPECT_ARRAY_NEAR(g.data(), g2.data());
  EXPECT_ARRAY_NEAR(g.data(), g3.data() / 2);
+
+auto g4 = gf<imfreq, tensor_valued<3>>{};
+auto g5 = gf<imfreq, tensor_valued<3>>{{10,Fermion},{3,3,3}};
+
+rw_h5(g5);
 }
 MAKE_MAIN;

@@ -36,6 +36,8 @@ namespace gfs {
  template <typename Singularity> struct gf_h5_name<imtime, matrix_valued, Singularity> {
   static std::string invoke() { return "ImTime"; }
  };
+ template <typename S, int R>
+ struct gf_h5_name<imtime, tensor_valued<R>, S> : gf_h5_name<imtime, matrix_valued, S> {};
 
  /// ---------------------------  data access  ---------------------------------
 

@@ -37,6 +37,8 @@ namespace gfs {
  template <typename S> struct gf_h5_name<imfreq, matrix_valued, S> {
   static std::string invoke() { return "ImFreq"; }
  };
+ template <typename S, int R>
+ struct gf_h5_name<imfreq, tensor_valued<R>, S> : gf_h5_name<imfreq, matrix_valued, S> {};
 
  /// ---------------------------  gf_evaluator ---------------------------------
 
