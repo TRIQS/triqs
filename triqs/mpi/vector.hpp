@@ -39,7 +39,8 @@ namespace mpi {
  }
 
  template <typename T> void mpi_broadcast(std::vector<T> &v, communicator c, int root, std::false_type) {
-  size_t s = mpi_broadcast(v.size());
+  size_t s = v.size();
+  mpi_broadcast(s, c, root);
   if (c.rank() != root) v.resize(s);
   for (auto &x : v) mpi_broadcast(x, c, root);
  }
