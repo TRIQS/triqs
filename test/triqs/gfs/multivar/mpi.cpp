@@ -22,6 +22,9 @@ TEST(Gfs, MPI_multivar) {
  g2 = mpi_reduce(g, world);
  if (world.rank() == 0) EXPECT_ARRAY_NEAR(g2.data(), g.data() * world.size());
 
+ mpi_broadcast(g2, world);
+ if (world.rank() == 1) EXPECT_ARRAY_NEAR(g2.data(), g.data()* world.size());
+
  gf3_s g3 = mpi_all_reduce(g, world);
  EXPECT_ARRAY_NEAR(g3.data(), g.data() * world.size());
 
@@ -30,6 +33,13 @@ TEST(Gfs, MPI_multivar) {
  g4 = mpi_gather(g2);
  // Test the result ?
 
+
+ auto G = make_block_gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued>({g});
+ auto g0 = gf<imfreq, scalar_valued>{{beta, Boson, nbw}};
+ auto G2 = make_block_gf<imfreq, scalar_valued>({g0});
+
+ mpi_broadcast(G, world);
+ mpi_broadcast(G2, world);
 }
 MAKE_MAIN;
 
