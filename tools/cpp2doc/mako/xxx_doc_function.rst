@@ -2,6 +2,7 @@
  import cpp2doc_tools as tools
  tools.class_list = class_list
  f = f_overloads[0]
+ incl = f_overloads[0].doc_elements['include']
 %>
 ..
    Generated automatically using the command :
@@ -9,7 +10,14 @@
 
 .. highlight:: c
 
+%if c is not None :
 .. _${c.name}_${f_name}:
+%endif
+%if incl and c is None:
+.. code-block:: c
+
+    #include <${incl}>
+%endif
 
 ${f_name}
 ${'=' * (len(f_name)+2)}

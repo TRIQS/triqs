@@ -9,7 +9,7 @@ from collections import OrderedDict
 shell_command = ' '.join( [ sys.argv[0].rsplit('/')[-1]] + [x if ' ' not in x else '"%s"'%x for x in sys.argv[1:]])
 
 #
-print "Welcome to the C++ doc generator, based on libclang !"
+print "Welcome to the C++ doc generator, based on libclang!"
 
 # --- Parsing the arguments of the script and options
 import argparse
@@ -38,9 +38,15 @@ def clean_end_white_char(s):
     """ remove the space at the end of the lines (for clean git diff...)"""
     reg = re.compile(r"[ \t\r\f\v]+$",re.MULTILINE)
     return re.sub(reg,'',s.strip())
+def replace_latex(s):
+    """replace $XXX$  by :math:`XXX`"""
+    text=re.sub('\$\$([ A-Za-z0-9{}\(\[\],\)=./\/+-_]+)\$\$', r'\n\n.. math::\n\t\t\1\n\n', s)
+    text=re.sub('\$([ A-Za-z0-9{}\[\],\(\)=./\/+-_]+)\$', r':math:`\1`', text)
+    return text
+
 
 doc = """
-Meaning of the @option in the doc : 
+Meaning of the @option in the doc: 
 
  * @param   X   Documentation of parameter X for a function
  * @return      Doc of the return of a function 
@@ -48,7 +54,7 @@ Meaning of the @option in the doc :
  
  * @synopsis  An explicit synopsis for the automatically generated one, for a function.
  * @value     Overrules the type of a using/typedef.
- * @include   For a class, a function, the top level file to include [default : the definition file]
+ * @include   For a class, a function, the top level file to include [default: the definition file]
 
  * @manual_methods  Comma separated list of methods which are referenced in the table, 
                     but the page of doc is not generated. It will be written manually.
@@ -56,13 +62,13 @@ Meaning of the @option in the doc :
                     but the page of doc is not generated. It will be written manually.
 """
 
-def grab_from_doc (doc, var1, var2) : 
+def grab_from_doc (doc, var1, var2): 
     """ Extract all the @xxx from the doc"""
     d = {}
-    for v1 in var1 :
+    for v1 in var1:
         m = re.search("@%s (.*)"%v1, doc)
         d[v1] = m.group(1) if m else None 
-    for v2 in var2 : 
+    for v2 in var2: 
         d[v2] =  dict( (m[0],m[1]) for m in re.findall("@%s (\w*) (.*)"%v2, doc))
     for x in var1 + var2:
       doc = re.sub(r"\n\s*(@%s .*)"%x,'',doc)
@@ -70,42 +76,42 @@ def grab_from_doc (doc, var1, var2) :
         print "Ignoring " + m
     return d,doc
 
-def process_doc_function(f) : 
+def process_doc_function(f): 
     """Process the doc of the function f"""
     f.brief_doc = f.doc.split('\n',1)[0]
     f.doc_elements, f.processed_doc = grab_from_doc(f.doc, ['include', 'return', 'synopsis'],['param', 'tparam'])
     
-def process_doc_class(c) : 
+def process_doc_class(c): 
     """Process the doc of the class c"""
     c.brief_doc = c.doc.split('\n',1)[0]
     c.doc_elements, c.processed_doc = grab_from_doc(c.doc, ['include', 'manual_methods', 'manual_friends'],['tparam'])
 
-def regroup_func_by_names(constructors, *f_list_list) : 
-    """ Given a list of function, regroup them by names"""
+def regroup_func_by_names(constructors, *f_list_list): 
+    """ Given a list of functions, regroup them by names"""
     d = OrderedDict()
-    if constructors : d['constructor'] = constructors
+    if constructors: d['constructor'] = constructors
     for f_list in f_list_list:
-        for f in f_list :
-            if f.doc : d.setdefault(f.name,[]).append(f)
+        for f in f_list:
+            if f.doc: d.setdefault(f.name,[]).append(f)
     return d
 
 def render(template, output_name, **d):
     rendered = template.render(**d)
-    if '/' in output_name : 
+    if '/' in output_name: 
         print "Skipping ", output_name
         return
     with open("{output_name}.rst".format(output_name=output_name), "w") as f:
-        f.write(clean_end_white_char(rendered))
+        f.write(replace_latex(clean_end_white_char(rendered)))
 
-def mkchdir(*subdirs) : 
-    for d in subdirs : 
-        try : 
+def mkchdir(*subdirs): 
+    for d in subdirs: 
+        try: 
             os.mkdir(d)
-        except OSError : 
+        except OSError: 
             pass
         os.chdir(d)
 
-if __name__ == '__main__' : 
+if __name__ == '__main__': 
 
     compiler_options = args.compiler_options or [] 
 
@@ -121,7 +127,7 @@ if __name__ == '__main__' :
 
     functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, 
                where_is_libclang = args.libclang_location, 
-               analyze_filter = lambda c, ns : c.raw_comment and "triqs" in ns)
+               analyze_filter = lambda c, ns: c.raw_comment and "triqs" in ns)
     #return namespaces and namespaces[0] in [ 'triqs', 'TEST'] and 
     #c.spelling in ["array"] or c.location.file.name == sys.argv[1]
     #return "triqs" in namespaces or c.location.file.name == sys.argv[1]
@@ -131,8 +137,8 @@ if __name__ == '__main__' :
     # Making the rst files
     tpl_class = Template(filename=triqs_install_location + '/share/triqs/cpp2doc/mako/xxx_doc_class.rst')
     tpl_fun = Template(filename=triqs_install_location + '/share/triqs/cpp2doc/mako/xxx_doc_function.rst')
-    for c in classes :
-        if not c.doc : continue
+    for c in classes:
+        if not c.doc: continue
 
         print " ... class " + "::".join(c.ns + [c.name])
 
@@ -146,8 +152,8 @@ if __name__ == '__main__' :
         c.all_friend_functions = regroup_func_by_names(None, c.friend_functions)
 
         # process the doc
-        for f_list in c.all_m.values() + c.all_friend_functions.values() : 
-            for f in f_list : 
+        for f_list in c.all_m.values() + c.all_friend_functions.values(): 
+            for f in f_list: 
                 process_doc_function(f)
 
         #
@@ -170,12 +176,20 @@ if __name__ == '__main__' :
                   class_list = classes, shell_command= shell_command) 
         os.chdir(cur_dir)
 
-    for f in functions :
-        print " ... function " + f.name
+    all_functions = regroup_func_by_names(None, [f for f in functions])
+
+    for l in all_functions.values(): 
+     for f1 in l:
+      process_doc_function(f1)
+
+    for f_name, f_overloads in all_functions.items():
+        print " ... function " + f_name
         cur_dir = os.getcwd()
-        mkchdir(*f.ns)
-        
+        mkchdir(*f_overloads[0].ns)
+       
         # RENDER 
+        render(tpl_fun, f_name, c = None, f_name = f_name, f_overloads = f_overloads, 
+                  class_list = classes, shell_command= shell_command) 
         os.chdir(cur_dir)
  
     print "... done"

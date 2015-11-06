@@ -15,7 +15,7 @@
 %if incl:
 .. code-block:: c
 
-    #include<${incl}>
+    #include <${incl}>
 %endif
 
 ${c.name}
