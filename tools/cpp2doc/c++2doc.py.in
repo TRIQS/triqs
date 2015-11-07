@@ -2,6 +2,7 @@
 
 from clang_parser import parse
 import sys, os, re
+from numpy import all
 from mako.template import Template
 from collections import OrderedDict
 
@@ -23,6 +24,7 @@ parser.add_argument('--outputname', '-o',  help="Name of the xxx_desc.py file [d
 parser.add_argument('--libclang_location', help='Location of the libclang', default = '@TRIQS_LIBCLANG_LOCATION@')
 parser.add_argument('--compiler_options', nargs ='*', help='Options to pass to clang')
 parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
+parser.add_argument('--namespace', '-N', action='append',  help='namespaces to document', default= ['triqs']) #specify which namespaces to document, e.g. -N triqs -N applications
 
 args = parser.parse_args()
 args.includes = (args.includes or []) +  '@TRIQS_INCLUDE_ALL@'.split(';')
@@ -54,6 +56,8 @@ Meaning of the @option in the doc:
  
  * @synopsis  An explicit synopsis for the automatically generated one, for a function.
  * @value     Overrules the type of a using/typedef.
+ * @warning     Warning
+ * @note        Note
  * @include   For a class, a function, the top level file to include [default: the definition file]
 
  * @manual_methods  Comma separated list of methods which are referenced in the table, 
@@ -79,12 +83,12 @@ def grab_from_doc (doc, var1, var2):
 def process_doc_function(f): 
     """Process the doc of the function f"""
     f.brief_doc = f.doc.split('\n',1)[0]
-    f.doc_elements, f.processed_doc = grab_from_doc(f.doc, ['include', 'return', 'synopsis'],['param', 'tparam'])
+    f.doc_elements, f.processed_doc = grab_from_doc(f.doc, ['include', 'return', 'synopsis', 'warning', 'note'],['param', 'tparam'])
     
 def process_doc_class(c): 
     """Process the doc of the class c"""
     c.brief_doc = c.doc.split('\n',1)[0]
-    c.doc_elements, c.processed_doc = grab_from_doc(c.doc, ['include', 'manual_methods', 'manual_friends'],['tparam'])
+    c.doc_elements, c.processed_doc = grab_from_doc(c.doc, ['include', 'manual_methods', 'manual_friends','warning', 'note'],['tparam'])
 
 def regroup_func_by_names(constructors, *f_list_list): 
     """ Given a list of functions, regroup them by names"""
@@ -127,7 +131,7 @@ if __name__ == '__main__':
 
     functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, 
                where_is_libclang = args.libclang_location, 
-               analyze_filter = lambda c, ns: c.raw_comment and "triqs" in ns)
+               analyze_filter = lambda c, ns: c.raw_comment and all([x in ns for x in args.namespace]))
     #return namespaces and namespaces[0] in [ 'triqs', 'TEST'] and 
     #c.spelling in ["array"] or c.location.file.name == sys.argv[1]
     #return "triqs" in namespaces or c.location.file.name == sys.argv[1]
@@ -186,7 +190,7 @@ if __name__ == '__main__':
         print " ... function " + f_name
         cur_dir = os.getcwd()
         mkchdir(*f_overloads[0].ns)
-       
+        print "loc : ", f_overloads[0].file_location
         # RENDER 
         render(tpl_fun, f_name, c = None, f_name = f_name, f_overloads = f_overloads, 
                   class_list = classes, shell_command= shell_command) 

@@ -57,6 +57,7 @@ autoclass_content = "both"
 
 #pngmath_dvipng_args = ['-gamma 1.2', '-D 150', '-bg Transparent']
 mathjax_path = "@MATHJAX_PATH@/MathJax.js?config=default"
+print "Mathjax: ",mathjax_path
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['@TRIQS_SOURCE_DIR@/doc/_templates']
