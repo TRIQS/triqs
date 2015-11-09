@@ -207,7 +207,6 @@ namespace gfs {
 
  template <typename Mesh, typename Target, typename Singularity> struct gf_h5_name;
  template <typename Mesh, typename Target, typename Singularity, typename Evaluator> struct gf_h5_rw;
- template <typename Mesh, typename Target, typename Singularity, typename Evaluator> struct gf_h5_before_write;
  template <typename Mesh, typename Target, typename Singularity, typename Evaluator> struct gf_h5_after_read;
 
  /*----------------------------------------------------------

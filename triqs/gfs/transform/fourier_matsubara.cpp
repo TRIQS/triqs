@@ -115,10 +115,10 @@ namespace gfs {
    // If the discontinuity is perfectly correct, this term is 0.
    // We manually remove half of the first time point contribution and add half
    // of the last time point contribution. This is necessary to make sure that no symmetry is lost
-   dcomplex corr = -0.5 * fact * (gt[0] + d + (is_fermion ? 1 : -1) * gt[L]);
-   for (auto const& w : gw.mesh()) gw[w] = g_out((w.index() + L) % L) + corr + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
+   //dcomplex corr = -0.5 * fact * (gt[0] + d + (is_fermion ? 1 : -1) * gt[L]);
+   //for (auto const& w : gw.mesh()) gw[w] = g_out((w.index() + L) % L) + corr + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
    
-   //for (auto const& w : gw.mesh()) gw[w] = g_out((w.index() + L) % L) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
+   for (auto const& w : gw.mesh()) gw[w] = g_out((w.index() + L) % L) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
   }
 
   public:

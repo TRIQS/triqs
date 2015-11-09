@@ -44,7 +44,7 @@ G << iOmega_n + 2.0
 for ii, g in G : 
     N = g.data.shape[0]
     for n in range(N/2) : 
-        assert_array_close_to_scalar( g.data[n+N/2],  matsu(n) + 2.0)
+        assert_array_equal_to_scalar( g.data[n+N/2],  matsu(n) + 2.0)
 
     assert_array_close_to_scalar(g.tail[-1],1)
     assert_array_close_to_scalar(g.tail[0],2)
@@ -97,7 +97,7 @@ res = np.array([[[ 0.99901401-0.03138495j, -0.49950701+0.01569248j,
         [ 0.48796007-0.07664859j,  0.00000000+0.j        ,
           0.48796007-0.07664859j]]])
 shift = ga2.data.shape[0]/2
-assert_arrays_are_close(ga2.data[shift:shift+3], res) 
+assert_array_equal(ga2.data[shift:shift+3], res) 
 
 # conjugate:
 Gc = G.conjugate()
@@ -111,7 +111,7 @@ res = np.array([[[ 0.49950701+0.01569248j,  0.00000000-0.j        ],
        [[ 0.48796007+0.07664859j,  0.00000000-0.j        ],
         [-0.00000000-0.j        ,  0.48796007+0.07664859j]]])
 shift = Gc['a'].data.shape[0]/2
-assert_arrays_are_close(Gc['a'].data[shift:shift+3], res) 
+assert_array_equal(Gc['a'].data[shift:shift+3], res) 
 
 # to be continued
 # tranpose

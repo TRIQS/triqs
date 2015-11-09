@@ -188,37 +188,12 @@ namespace gfs {
   }
  };
 
- // Some work that may be necessary before writing (some compression, see imfreq)
- // Default : do nothing
- template <typename M, typename T, typename S, typename E> struct gf_h5_before_write {
-  template <typename G> static G const &invoke(h5::group gr, G const &g) { return g; }
- };
-
  // Some work that may be necessary after the read (for backward compatibility e.g.)
  // Default : do nothing
- template <typename M, typename T, typename S, typename E> struct gf_h5_after_read {
+ template <typename Mesh, typename Target, typename Singularity, typename Evaluator> struct gf_h5_after_read {
   template <typename G> static void invoke(h5::group gr, G&g) {}
  };
-
- /// ---------------------------  real for gf ---------------------------------
-
- /// is_gf_real(g, tolerance). Returns true iif the function g is real up to tolerance
- template <typename G> bool is_gf_real(G const &g, double tolerance = 1.e-13) {
-  return max_element(abs(imag(g.data()))) <= tolerance;
- }
-
- /// Takes the real part of g without check, and returns a new gf with a real target
- template <typename M, typename T, typename S, typename E> gf<M, real_target_t<T>, S> real(gf_const_view<M, T, S, E> g) {
-  return {g.mesh(), real(g.data()), g.singularity(), g.symmetry(), {}, {}}; // no indices for real_valued, internal C++ use only
- }
- template <typename M, typename T, typename S, typename E> gf<M, real_target_t<T>, S> real(gf_view<M, T, S, E> g) {
-  return {g.mesh(), real(g.data()), g.singularity(), g.symmetry(), {}, {}};
- }
- template <typename M, typename T, typename S, typename E> gf<M, real_target_t<T>, S> real(gf<M, T, S, E> const &g) {
-  return {g.mesh(), real(g.data()), g.singularity(), g.symmetry(), {}, {}};
- }
-
-}// triqs::gfs
+}
 }
 
 /*------------------------------------------------------------------------------------------------------

@@ -43,10 +43,21 @@ namespace gfs {
  template <typename Singularity> struct gf_h5_name<imtime, matrix_valued, Singularity> {
   static std::string invoke() { return "ImTime"; }
  };
- template <typename S, int R> struct gf_h5_name<imtime, tensor_valued<R>, S> : gf_h5_name<imtime, matrix_valued, S> {};
+ template <typename S, int R>
+ struct gf_h5_name<imtime, tensor_valued<R>, S> : gf_h5_name<imtime, matrix_valued, S> {};
 
- // If the data is real, write a real array, otherwise a complex array
- template <typename T, typename S, typename E> struct gf_h5_write_data<imtime, T, S, E> : gf_h5_write_data_real_or_complex_runtime{};
+
+ /// ---------------------------  A few specific functions ---------------------------------
+
+ /// Takes a complex G(tau) function and return a real G(tau) if imaginary part is small enough
+ /// and throws an exception otherwise.
+ /// Valid for any Gf in fact ...
+ template <typename G>
+ typename G::regular_type real_or_throw(G const &g, double tolerance = 1.e-13,
+                                        const char *message = "real_or_throw : the imaginary part of G(tau) is not zero") {
+  if (max_element(abs(imag(g.data()))) > tolerance) TRIQS_RUNTIME_ERROR << message;
+  return {g.mesh(), real(g.data()), g.singularity(), g.symmetry(), g.indices(), g.name};
+ }
 
  /// ---------------------------  closest mesh point on the grid ---------------------------------
 

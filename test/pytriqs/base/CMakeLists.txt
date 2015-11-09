@@ -1,6 +1,8 @@
-# Copy h5 files to binary dir
-FILE(GLOB all_h5_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h5)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${all_h5_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# A sample test with text output
+add_triqs_test_txt(test_example)
+add_triqs_test_txt(operator_python_test)
+add_triqs_test(gf_fourier)
+add_triqs_test_txt(gf_slicing)
 
 # Test the test!
 add_python_test(test_example)
@@ -27,10 +29,10 @@ add_python_test(pade)
 add_python_test(gf_inplace_112)
 
 # Bug fix #134
-add_python_test(gf_transpose)
+add_triqs_test(gf_transpose)
 
 # Add evaluator for g
-add_python_test(gf_eval)
+add_triqs_test(gf_eval)
 
 # U_matrix
 add_python_test(U_mat)
