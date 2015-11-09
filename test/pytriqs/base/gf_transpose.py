@@ -3,7 +3,7 @@ from pytriqs.gf.local import *
 g = GfImFreq(indicesR = range(5), indicesL = range(3), beta = 40, n_points = 1000)
 gt = g.transpose()
 
-print "Old data shape = ", g.data.shape
-print "Old tail shape = ", g.tail.data.shape
-print "New data shape = ", gt.data.shape
-print "New tail shape = ", gt.tail.data.shape
+assert g.data.shape == (2000, 3, 5)
+assert g.tail.data.shape == (10, 3, 5)
+assert gt.data.shape == (2000, 5, 3)
+assert gt.tail.data.shape == (10, 5, 3)

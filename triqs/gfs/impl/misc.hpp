@@ -142,22 +142,38 @@ namespace gfs {
   *-----------------------------------------------------------------------------------------------------*/
 
  // scalar function : just add a _s
- template <typename Mesh, typename Singularity> struct gf_h5_name<Mesh, scalar_valued, Singularity> {
-  static std::string invoke() { return gf_h5_name<Mesh, matrix_valued, Singularity>::invoke() + "_s"; }
+ template <typename M, typename S> struct gf_h5_name<M, scalar_valued, S> {
+  static std::string invoke() { return gf_h5_name<M, matrix_valued, S>::invoke() + "_s"; }
+ };
+
+ // Some transformation of the data may be needed before writing
+ template <typename M, typename T, typename S, typename E> struct gf_h5_write_data {
+  template <typename G> static void invoke(h5::group gr, G const &g) { h5_write(gr, "data", g.data()); }
+ };
+
+ // A special case used for imtime and legendre.
+ // If the data is real, write a real array, otherwise a complex array
+ struct gf_h5_write_data_real_or_complex_runtime {
+  template <typename G> static void invoke(h5::group gr, G const &g) {
+   if (!is_gf_real(g))
+    h5_write(gr, "data", g.data());
+   else
+    h5_write(gr, "data", array<double, 3>(real(g.data())));
+  }
  };
 
  // the h5 write and read of gf members, so that we can specialize it e.g. for block gf
- template <typename Mesh, typename Target, typename Singularity, typename Evaluator> struct gf_h5_rw {
+ template <typename M, typename T, typename S, typename E> struct gf_h5_rw {
 
-  static void write(h5::group gr, gf_const_view<Mesh, Target, Singularity, Evaluator> g) {
-   h5_write(gr, "data", g._data);
+  static void write(h5::group gr, gf_const_view<M, T, S, E> g) {
+   gf_h5_write_data<M, T, S, E>::invoke(gr, g); // h5_write(gr, "data", g._data);
    h5_write(gr, "singularity", g._singularity);
    h5_write(gr, "mesh", g._mesh);
    h5_write(gr, "symmetry", g._symmetry);
    h5_write(gr, "indices", g._indices);
   }
 
-  template <typename G> static void read(h5::group gr, G&g) {
+  template <typename G> static void read(h5::group gr, G &g) {
    h5_read(gr, "data", g._data);
    h5_read(gr, "singularity", g._singularity);
    h5_read(gr, "mesh", g._mesh);
@@ -165,7 +181,38 @@ namespace gfs {
    h5_read(gr, "indices", g._indices);
   }
  };
-}
+
+ // Some work that may be necessary before writing (some compression, see imfreq)
+ // Default : do nothing
+ template <typename M, typename T, typename S, typename E> struct gf_h5_before_write {
+  template <typename G> static G const &invoke(h5::group gr, G const &g) { return g; }
+ };
+
+ // Some work that may be necessary after the read (for backward compatibility e.g.)
+ // Default : do nothing
+ template <typename M, typename T, typename S, typename E> struct gf_h5_after_read {
+  template <typename G> static void invoke(h5::group gr, G&g) {}
+ };
+
+ /// ---------------------------  real for gf ---------------------------------
+
+ /// is_gf_real(g, tolerance). Returns true iif the function g is real up to tolerance
+ template <typename G> bool is_gf_real(G const &g, double tolerance = 1.e-13) {
+  return max_element(abs(imag(g.data()))) <= tolerance;
+ }
+
+ /// Takes the real part of g without check, and returns a new gf with a real target
+ template <typename M, typename T, typename S, typename E> gf<M, real_target_t<T>, S> real(gf_const_view<M, T, S, E> g) {
+  return {g.mesh(), real(g.data()), g.singularity(), g.symmetry(), {}, {}}; // no indices for real_valued, internal C++ use only
+ }
+ template <typename M, typename T, typename S, typename E> gf<M, real_target_t<T>, S> real(gf_view<M, T, S, E> g) {
+  return {g.mesh(), real(g.data()), g.singularity(), g.symmetry(), {}, {}};
+ }
+ template <typename M, typename T, typename S, typename E> gf<M, real_target_t<T>, S> real(gf<M, T, S, E> const &g) {
+  return {g.mesh(), real(g.data()), g.singularity(), g.symmetry(), {}, {}};
+ }
+
+}// triqs::gfs
 }
 
 /*------------------------------------------------------------------------------------------------------

@@ -49,6 +49,9 @@ namespace triqs { namespace arrays {
    return fold ([](T const & a, T const & b) { return std::min(a,b);} )  (a, get_first_element(a)); 
   }
 
+  inline double max_element(double x) { return x; }
+  inline std::complex<double> max_element(std::complex<double> x) { return x; }
+
  template <class A>
   typename A::value_type sum(A const & a) { return fold ( std::plus<typename A::value_type>())  (a); }
 

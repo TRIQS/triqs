@@ -24,9 +24,6 @@
 namespace triqs {
 namespace gfs {
 
- template <typename GfElementType> GfElementType convert_green(dcomplex const& x) { return x; }
- template <> double convert_green<double>(dcomplex const& x) { return real(x); }
-
  //--------------------------------------------------------------------------------------
 
  struct impl_worker {
@@ -65,12 +62,15 @@ namespace gfs {
    dcomplex a1, a2, a3;
    double beta = gt.mesh().domain().beta;
    auto L = gt.mesh().size() - 1;
-   if (L < 2*gw.mesh().size()) TRIQS_RUNTIME_ERROR << "The time mesh mush be at least twice as long as the freq mesh";
+   long Nw = gw.mesh().size();
+   if (L < Nw)
+    TRIQS_RUNTIME_ERROR << "The time mesh mush be at least as long as the freq mesh :\n gt.mesh().size() =  " << gt.mesh().size()
+                        << " gw.mesh().size()" << gw.mesh().size();
    double fact = beta / L;
-   dcomplex iomega = dcomplex(0.0, 1.0) * std::acos(-1) / beta;
-   g_in.resize(L);
-   g_out.resize(gw.mesh().size());
-   if (gw.domain().statistic == Fermion) {
+   dcomplex iomega = M_PI * 1_j / beta;
+   bool is_fermion = (gw.domain().statistic == Fermion);
+
+   if (is_fermion) {
     b1 = 0;
     b2 = 1;
     b3 = -1;
@@ -85,65 +85,64 @@ namespace gfs {
     a2 = B - (d + A) / 2;
     a3 = d / 6 + A / 2 + B / 3;
    }
-   if (gw.domain().statistic == Fermion) {
-    for (auto& t : gt.mesh())
-     if(t.index() < L) {
+
+   //debug: check it is useless ...
+   //a1=0; a2=0;a3=0;
+
+   g_in.resize(L + 1);
+   g_out.resize(L);
+   g_in() = 0;
+ 
+   if (is_fermion) {
+    for (auto const & t : gt.mesh())
        g_in[t.index()] = fact * exp(iomega * t) *
                          (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
-     }
    } else {
-    for (auto& t : gt.mesh())
-     if(t.index() < L) {
+    for (auto const & t : gt.mesh())
        g_in[t.index()] = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
-     }
    }
-   details::fourier_base(g_in, g_out, L, true);
+   g_in[L] = 0;
 
+   auto g_in_fft = reinterpret_cast<fftw_complex*>(g_in.data_start());
+   auto g_out_fft = reinterpret_cast<fftw_complex*>(g_out.data_start());
+ 
+   auto p = fftw_plan_dft_1d(L, g_in_fft, g_out_fft, FFTW_BACKWARD, FFTW_ESTIMATE); // in our convention backward is direct
+   fftw_execute(p); 
+   fftw_destroy_plan(p); 
+
+   //details::fourier_base(g_in, g_out, L, true);
+
+   // I do not see the use of this term
+   // If the discontinuity is perfectly correct, this term is 0.
    // We manually remove half of the first time point contribution and add half
-   // of the last time point contribution. This is necessary to make sure that
-   // no symmetry is lost
-   if (gw.domain().statistic == Fermion) {
-     for (auto& w : gw.mesh()) {
-       g_out(w.index()) -= 0.5*fact*(   gt[0] - (oneFermion(a1, b1, 0, beta) + oneFermion(a2, b2, 0, beta) + oneFermion(a3, b3, 0, beta))
-                                      + gt[L] - (oneFermion(a1, b1, beta, beta) + oneFermion(a2, b2, beta, beta) + oneFermion(a3, b3, beta, beta)) );
-     }
-   } else {
-     for (auto& w : gw.mesh()) {
-       g_out(w.index()) += 0.5*fact*(   gt[L] - (oneBoson(a1, b1, beta, beta) + oneBoson(a2, b2, beta, beta) + oneBoson(a3, b3, beta, beta))
-                                      - gt[0] + (oneBoson(a1, b1, 0, beta) + oneBoson(a2, b2, 0, beta) + oneBoson(a3, b3, 0, beta)) );
-     }
-   }
-
-   for (auto& w : gw.mesh()) {
-    gw[w] = g_out(w.index()) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
-   }
-
-
-
+   // of the last time point contribution. This is necessary to make sure that no symmetry is lost
+   dcomplex corr = -0.5 * fact * (gt[0] + d + (is_fermion ? 1 : -1) * gt[L]);
+   for (auto const& w : gw.mesh()) gw[w] = g_out((w.index() + L) % L) + corr + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
+   
+   //for (auto const& w : gw.mesh()) gw[w] = g_out((w.index() + L) % L) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
   }
 
   public:
   //-------------------------------------
 
   void inverse(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw) {
-   static bool Green_Function_Are_Complex_in_time = false;
-   // If the Green function are NOT complex, then one use the symmetry property
-   // fold the sum and get a factor 2
+   if (gw.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
    auto ta = gw.singularity();
    // TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
    dcomplex d = ta(1)(0, 0), A = ta.get_or_zero(2)(0, 0), B = ta.get_or_zero(3)(0, 0);
    double b1, b2, b3;
    dcomplex a1, a2, a3;
-
    double beta = gw.domain().beta;
-   size_t L = gt.mesh().size() - 1;
-   if (L < 2*gw.mesh().size()) TRIQS_RUNTIME_ERROR << "The time mesh mush be at least twice as long as the freq mesh";
-   dcomplex iomega = dcomplex(0.0, 1.0) * std::acos(-1) / beta;
-   double fact = (Green_Function_Are_Complex_in_time ? 1 : 2) / beta;
-   g_in.resize(gw.mesh().size());
-   g_out.resize(L);
-
-   if (gw.domain().statistic == Fermion) {
+   long L = gt.mesh().size() - 1;
+   long Nw = gw.mesh().size();
+   if (L < Nw)
+    TRIQS_RUNTIME_ERROR << "The time mesh mush be at least as long as the freq mesh :\n gt.mesh().size() =  " << gt.mesh().size()
+                        << " gw.mesh().size()" << gw.mesh().size();
+   dcomplex iomega = M_PI* 1_j / beta;
+   double fact = 1.0 / beta;
+   bool is_fermion = (gw.domain().statistic == Fermion);
+ 
+   if (is_fermion) {
     b1 = 0;
     b2 = 1;
     b3 = -1;
@@ -158,35 +157,31 @@ namespace gfs {
     a2 = B - (d + A) / 2;
     a3 = d / 6 + A / 2 + B / 3;
    }
+
+   g_in.resize(L); // L>= Nw, we will fill the middle array with 0
+   g_out.resize(L + 1);
+
    g_in() = 0;
-   for (auto& w : gw.mesh()) {
-    g_in[w.index()] = fact * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
-   }
-   // for bosons GF(w=0) is divided by 2 to avoid counting it twice
-   if (gw.domain().statistic == Boson && !Green_Function_Are_Complex_in_time) g_in(0) *= 0.5;
+   for (auto const& w : gw.mesh()) g_in[(w.index() + L) % L] = fact * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
 
-   details::fourier_base(g_in, g_out, L, false);
+   auto g_in_fft = reinterpret_cast<fftw_complex*>(g_in.data_start());
+   auto g_out_fft = reinterpret_cast<fftw_complex*>(g_out.data_start());
+ 
+   auto p = fftw_plan_dft_1d(L, g_in_fft, g_out_fft, FFTW_FORWARD, FFTW_ESTIMATE); // in our convention backward is inverse FFT
+   fftw_execute(p); 
+   fftw_destroy_plan(p); 
 
-   // CORRECT FOR COMPLEX G(tau) !!!
-   typedef double gt_result_type;
-   // typedef typename gf<imtime>::mesh_type::gf_result_type gt_result_type;
-   if (gw.domain().statistic == Fermion) {
-    for (auto& t : gt.mesh()) {
-     if (t.index() < L) {
-       gt[t] =
-         convert_green<gt_result_type>(g_out(t.index()) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) +
-                                       oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta));
-     }
+   if (is_fermion) {
+    for (auto const & t : gt.mesh()) {
+      gt[t] = g_out(t.index()) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) +
+              oneFermion(a3, b3, t, beta);
     }
    } else {
-    for (auto& t : gt.mesh())
-     if (t.index() < L) {
-       gt[t] = convert_green<gt_result_type>(g_out(t.index()) + oneBoson(a1, b1, t, beta) +
-                                           oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta));
-     }
+    for (auto const & t : gt.mesh())
+      gt[t] = g_out(t.index()) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
    }
-   double pm = (gw.domain().statistic == Fermion ? -1.0 : 1.0);
-   gt.on_mesh(L) = pm * (gt.on_mesh(0) + convert_green<gt_result_type>(ta(1)(0, 0)));
+   double pm = (is_fermion ? -1 : 1);
+   gt.on_mesh(L) = pm * (gt.on_mesh(0) + ta(1)(0, 0));
    // set tail
    gt.singularity() = gw.singularity();
   }

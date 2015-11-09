@@ -35,6 +35,7 @@ namespace gfs {
 
   using variable_t = Mesh;
   using target_t = Target;
+  using singularity_def_t = Singularity;
 
   using mesh_t = gf_mesh<Mesh>;
   using domain_t = typename mesh_t::domain_t;
@@ -326,14 +327,15 @@ namespace gfs {
   friend struct gf_h5_rw<Mesh, Target, Singularity, Evaluator>;
 
   /// Write into HDF5
-  friend void h5_write(h5::group fg, std::string subgroup_name, gf_view const &g) {
+  friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_view const &g) {
    auto gr = fg.create_group(subgroup_name);
    gr.write_triqs_hdf5_data_scheme(g);
-   gf_h5_rw<Mesh, Target, Singularity, Evaluator>::write(gr, g);
+   gf_h5_rw<Mesh, Target, Singularity, Evaluator>::write(gr,
+                                                         gf_h5_before_write<Mesh, Target, Singularity, Evaluator>::invoke(gr, g));
   }
 
   /// Read from HDF5
-  friend void h5_read(h5::group fg, std::string subgroup_name, gf_view &g) {
+  friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_view &g) {
    auto gr = fg.open_group(subgroup_name);
    // Check the attribute or throw
    auto tag_file = gr.read_triqs_hdf5_data_scheme();
@@ -342,6 +344,7 @@ namespace gfs {
     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                         << " while I expected " << tag_expected;
    gf_h5_rw<Mesh, Target, Singularity, Evaluator>::read(gr, g);
+   gf_h5_after_read<Mesh, Target, Singularity, Evaluator>::invoke(gr, g);
   }
 
   //-----------------------------  BOOST Serialization -----------------------------

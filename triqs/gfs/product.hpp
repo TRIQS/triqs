@@ -70,10 +70,6 @@ namespace gfs {
  struct gf_data_proxy<cartesian_product<Ms...>, tensor_valued<R>> : data_proxy_array_multivar<std::complex<double>,
                                                                                               R + sizeof...(Ms)> {};
 
- // special case ? Or make a specific container....
- template <typename M0>
- struct gf_data_proxy<cartesian_product<M0, imtime>, matrix_valued> : data_proxy_array_multivar_matrix_valued<double, 2 + 2> {};
-
  /// ---------------------------  hdf5 ---------------------------------
 
  // h5 name : name1_x_name2_.....

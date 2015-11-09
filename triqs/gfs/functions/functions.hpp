@@ -25,39 +25,38 @@
 #include "../imtime.hpp"
 #include "../legendre.hpp"
 
-namespace triqs { 
- namespace gfs { 
+namespace triqs {
+namespace gfs {
 
-  //-------------------------------------------------------
-  // For Imaginary Time functions
-  // ------------------------------------------------------
+ //-------------------------------------------------------
+ // For Imaginary Time functions
+ // ------------------------------------------------------
 
-  gf<imtime> rebinning_tau(gf_const_view<imtime> const & g, int new_n_tau);
+ gf<imtime> rebinning_tau(gf_const_view<imtime> const& g, int new_n_tau);
 
-  //-------------------------------------------------------
-  // For Imaginary Matsubara Frequency functions
-  // ------------------------------------------------------
+ //-------------------------------------------------------
+ // For Imaginary Matsubara Frequency functions
+ // ------------------------------------------------------
 
-  arrays::matrix<double> density(gf_const_view<imfreq>  g);
-  double density(gf_const_view<imfreq, scalar_valued>  g);
+ arrays::matrix<dcomplex> density(gf_const_view<imfreq> g);
+ dcomplex density(gf_const_view<imfreq, scalar_valued> g);
 
-  arrays::matrix<double> density(gf_const_view<legendre>  g);
+ arrays::matrix<dcomplex> density(gf_const_view<legendre> g);
 
-  //-------------------------------------------------------
-  // For Legendre functions
-  // ------------------------------------------------------
+ //-------------------------------------------------------
+ // For Legendre functions
+ // ------------------------------------------------------
 
-  tail_view get_tail(gf_const_view<legendre> gl, int size, int omin);
+ tail_view get_tail(gf_const_view<legendre> gl, int size, int omin);
 
-  void enforce_discontinuity(gf_view<legendre> & gl, triqs::arrays::array_view<double,2> disc);
+ void enforce_discontinuity(gf_view<legendre>& gl, triqs::arrays::array_view<double, 2> disc);
 
-  // For anything that has the ImmutableGfMatsubaraFreq concept, create such a function and compute
-  // Here I choose to create G and call the function to avoid creating one code for each expression...
-  //template<typename GfType>
-   //TYPE_ENABLE_IF (arrays::matrix<double>, ImmutableGfMatsubaraFreq<GfType>) 
-   //density( GfType const & G) { return density( gf_view<imfreq>(G));} 
-
- }
+ // For anything that has the ImmutableGfMatsubaraFreq concept, create such a function and compute
+ // Here I choose to create G and call the function to avoid creating one code for each expression...
+ // template<typename GfType>
+ // TYPE_ENABLE_IF (arrays::matrix<double>, ImmutableGfMatsubaraFreq<GfType>)
+ // density( GfType const & G) { return density( gf_view<imfreq>(G));}
+}
 
  namespace clef {
   TRIQS_CLEF_MAKE_FNT_LAZY (density);

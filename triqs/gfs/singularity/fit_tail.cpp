@@ -3,7 +3,9 @@
 #include "./fit_tail.hpp"
 namespace triqs { namespace gfs {  
 
- tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max) {
+ tail fit_tail_impl(gf_view<imfreq> gf1, const tail_view known_moments, int max_moment, int n_min, int n_max) {
+
+  gf_const_view<imfreq> gf = positive_freq_view(gf1);
 
   // precondition : check that n_max is not too large
   n_max = std::min(n_max, int(gf.mesh().size()-1));
@@ -28,6 +30,7 @@ namespace triqs { namespace gfs {
   int size_odd = n_unknown_moments - size_even;
 
   int size1 = n_max - n_min + 1;
+  if (size1 < 0) TRIQS_RUNTIME_ERROR << "n_max - n_min + 1 <0";
   // size2 is the number of moments
 
   arrays::matrix<double> A(size1, std::max(size_even, size_odd), FORTRAN_LAYOUT);
@@ -90,14 +93,15 @@ namespace triqs { namespace gfs {
   return res; // return tail
  }
 
- void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int n_min, int n_max,
-   bool replace_by_fit ) {
+ void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit) {
   if (get_target_shape(gf) != known_moments.shape()) TRIQS_RUNTIME_ERROR << "shape of tail does not match shape of gf";
   gf.singularity() = fit_tail_impl(gf, known_moments, max_moment, n_min, n_max);
   if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
    int i = 0;
+   long L = (gf.mesh().size() + 1) / 2;
    for (auto iw : gf.mesh()) { // (arrays::range(n_min,n_max+1)) {
-    if (i >= n_min) gf[iw] = evaluate(gf.singularity(),iw);
+    if (std::abs(i - L) >= n_min) gf[iw] = evaluate(gf.singularity(), iw);
+    //if (i >= n_min) gf[iw] = evaluate(gf.singularity(),iw);
     i++;
    }
    }

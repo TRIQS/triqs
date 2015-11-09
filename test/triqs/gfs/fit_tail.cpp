@@ -1,8 +1,5 @@
 #include "./common.hpp"
 #include <triqs/gfs/singularity/fit_tail.hpp>
-
-#define PRINT(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl << std::endl;
-
 using triqs::arrays::make_shape;
 
 TEST(Gf, FitTail1) {
@@ -60,7 +57,7 @@ TEST(Gf, FitTail2) {
  int N = 100;
 
  auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
- auto gw_b = gf<imfreq>{{beta, Boson, N}, {1, 1}};
+ auto gw_b = gf<imfreq>{{beta, Boson, N-1}, {1, 1}};
  gw(iom_) << 1 / (iom_ - 1);
  gw_b(iom_) << 1 / (iom_ - 1);
 
@@ -88,7 +85,7 @@ TEST(Gf, FitTail3) {
  double beta = 10;
  int N = 200;
 
- auto gw = gf<imfreq>{{beta, Fermion, N, false}, {1, 1}};
+ auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
  gw(iom_) << 1 / (iom_ - 1);
 
  int wn_min = 50; // frequency to start the fit

@@ -32,17 +32,21 @@ namespace gfs {
  template <> struct gf_default_singularity<imtime, scalar_valued> {
   using type = tail;
  };
+ template <> struct gf_default_singularity<imtime, matrix_real_valued> {
+  using type = tail;
+ };
+ template <> struct gf_default_singularity<imtime, scalar_real_valued> {
+  using type = tail;
+ };
 
+ /// ---------------------------  HDF5 ---------------------------------
  template <typename Singularity> struct gf_h5_name<imtime, matrix_valued, Singularity> {
   static std::string invoke() { return "ImTime"; }
  };
- template <typename S, int R>
- struct gf_h5_name<imtime, tensor_valued<R>, S> : gf_h5_name<imtime, matrix_valued, S> {};
+ template <typename S, int R> struct gf_h5_name<imtime, tensor_valued<R>, S> : gf_h5_name<imtime, matrix_valued, S> {};
 
- /// ---------------------------  data access  ---------------------------------
-
- template <> struct gf_data_proxy<imtime, matrix_valued> : data_proxy_array<double, 3> {};
- template <> struct gf_data_proxy<imtime, scalar_valued> : data_proxy_array<double, 1> {};
+ // If the data is real, write a real array, otherwise a complex array
+ template <typename T, typename S, typename E> struct gf_h5_write_data<imtime, T, S, E> : gf_h5_write_data_real_or_complex_runtime{};
 
  /// ---------------------------  closest mesh point on the grid ---------------------------------
 

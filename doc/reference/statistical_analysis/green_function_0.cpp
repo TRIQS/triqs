@@ -22,7 +22,7 @@ int main() {
     g[t] += RND(0.1)-0.05;//adding uniform noise of 0.05
 
  //put the generated Green's functions into a vector of observables
- std::vector<observable<double>> gt_as_observable(n_tau);
+ std::vector<observable<dcomplex>> gt_as_observable(n_tau);
  int i_tau = 0;
  for(auto & o : gt_as_observable){
   for(int i=0;i<n_measures;i++)

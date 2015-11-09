@@ -131,8 +131,8 @@ def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min
         fit_known_moments = {name:TailGf(sig.N1,sig.N2,0,0) for name, sig in Sigma_iw}
     if fit_min_w is not None: fit_min_n = int(0.5*(fit_min_w*Sigma_iw.mesh.beta/np.pi - 1.0))
     if fit_max_w is not None: fit_max_n = int(0.5*(fit_max_w*Sigma_iw.mesh.beta/np.pi - 1.0))
-    if fit_min_n is None: fit_min_n = int(0.8*len(Sigma_iw.mesh))
-    if fit_max_n is None: fit_max_n = int(len(Sigma_iw.mesh))
+    if fit_min_n is None: fit_min_n = int(0.8*len(Sigma_iw.mesh)/2)
+    if fit_max_n is None: fit_max_n = int(len(Sigma_iw.mesh)/2)
     if fit_max_moment is None: fit_max_moment = 3
 
     # Now fit the tails of Sigma_iw and G_iw

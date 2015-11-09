@@ -39,23 +39,21 @@ namespace gfs {
  template <> struct gf_h5_name<legendre, matrix_valued, nothing> {
   static std::string invoke() { return "Legendre"; }
  };
-
+ 
+ // If the data is real, write a real array, otherwise a complex array
+ template <typename T, typename S, typename E> struct gf_h5_write_data<legendre, T, S, E> : gf_h5_write_data_real_or_complex_runtime{};
+ 
  /// ---------------------------  gf_evaluator ---------------------------------
 
  // Not finished, not tested
  template <> struct gf_evaluator<legendre, matrix_valued, nothing> {
   template <typename G> gf_evaluator(G*) {};
   static constexpr int arity = 1;
-  // ERROR : give a double and interpolate
-  template <typename G> arrays::matrix_view<double> operator()(G const& g, long n) const {
+  template <typename G> arrays::matrix_view<dcomplex> operator()(G const& g, long n) const {
    return g.data()(n, arrays::range(), arrays::range());
   }
  };
 
- /// ---------------------------  data access  ---------------------------------
-
- template <> struct gf_data_proxy<legendre, matrix_valued> : data_proxy_array<double, 3> {};
- template <> struct gf_data_proxy<legendre, scalar_valued> : data_proxy_array<double, 1> {};
 }
 }
 

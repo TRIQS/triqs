@@ -380,6 +380,11 @@ class BlockGf(object):
        self.__check_attr("conjugate")
        return self.__class__( name_block_generator = [ (n, g.conjugate()) for n,g in self], make_copies=False)
 
+#     def make_real_in_tau(self):
+#       """  """
+#       self.__check_attr("make_real_in_tau")
+#       return self.__class__( name_block_generator = [ (n, g.make_real_in_tau()) for n,g in self], make_copies=False)
+
 #---------------------------------------------------------
 
 from pytriqs.archive.hdf_archive_schemes import register_class

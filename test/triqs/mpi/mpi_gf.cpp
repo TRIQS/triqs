@@ -64,7 +64,7 @@ TEST(Gfs, MPI) {
 
  auto d = make_clone(g1.data());
  for (int u = 0; u < world.size(); ++u) {
-  auto se = mpi::slice_range(0, Nfreq - 1, world.size(), u);
+  auto se = mpi::slice_range(0, 2*Nfreq - 1, world.size(), u);
   d(range(se.first, se.second + 1), 0, 0) *= (1 + u);
  }
 
@@ -90,8 +90,8 @@ TEST(Gfs, MPI) {
   g2(w_) << g2(w_) * (1 + world.rank());
 
   g1 = mpi_all_gather(g2);
-  EXPECT_EQ(g1.mesh().first_index_window(), 0);
-  EXPECT_EQ(g1.mesh().last_index_window(), 7);
+  EXPECT_EQ(g1.mesh().first_index_window(), -Nfreq);
+  EXPECT_EQ(g1.mesh().last_index_window(), Nfreq -1);
   EXPECT_ARRAY_NEAR(d, g1.data());
  }
 

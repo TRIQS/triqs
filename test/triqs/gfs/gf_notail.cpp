@@ -46,10 +46,10 @@ TEST(Gf, NoTail) {
  Gt(tau_) << exp(-tau_);
 
  double pre = 1.e-5;
- EXPECT_NEAR(Gt(0.01), 0.99005, pre);
- EXPECT_NEAR(Gt(.5), 0.606531, pre);
- EXPECT_NEAR(Gt(.9), 0.40657, pre);
- EXPECT_NEAR(Gt(-.1), -0.40657, pre); // should be equal to line above
+ EXPECT_NEAR_COMPLEX(Gt(0.01), 0.99005, pre);
+ EXPECT_NEAR_COMPLEX(Gt(.5), 0.606531, pre);
+ EXPECT_NEAR_COMPLEX(Gt(.9), 0.40657, pre);
+ EXPECT_NEAR_COMPLEX(Gt(-.1), -0.40657, pre); // should be equal to line above
 
  // fourier
  gw_n(tau_) << 1 / (tau_ - 1.);

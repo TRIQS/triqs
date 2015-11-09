@@ -49,6 +49,17 @@ using triqs::clef::placeholder;
   return RUN_ALL_TESTS();\
 }
 
+// Complex are close
+template<typename X, typename Y>
+::testing::AssertionResult complex_are_close(X const &x, Y const &y,double precision = 1.e-10) {
+ if (std::abs(x - y) < precision )
+  return ::testing::AssertionSuccess();
+ else
+  return ::testing::AssertionFailure() << "abs(x-y) = " << abs(x - y) << "\n X = "<<  x << "\n Y = "<< y;
+}
+
+#define EXPECT_NEAR_COMPLEX(X, ...) EXPECT_TRUE(complex_are_close(X,__VA_ARGS__))
+
 // Arrays are equal 
 template<typename X, typename Y>
 ::testing::AssertionResult array_are_equal(X const &x, Y const &y) {

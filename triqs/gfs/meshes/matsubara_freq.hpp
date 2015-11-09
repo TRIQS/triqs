@@ -27,6 +27,8 @@ namespace gfs {
 
  struct imfreq {};
 
+ enum class matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
+
  template <> struct mesh_point<gf_mesh<imfreq>>; //forward
 
  // ---------------------------------------------------------------------------
@@ -43,26 +45,29 @@ namespace gfs {
 
   // -------------------- Constructors -------------------
 
-  gf_mesh(domain_t dom, long n_pts = 1025, bool positive_only = true)
-     : _dom(std::move(dom)), _n_pts(n_pts), _positive_only(positive_only) {
-   if (_positive_only) {
+  // n_pts : TO DOCUMENT !
+  gf_mesh(domain_t dom, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt) {
+   if (opt == matsubara_mesh_opt::positive_frequencies_only) {
     _first_index = 0;
     _last_index = n_pts - 1; 
    } else {
-    _last_index = (_n_pts - (_dom.statistic == Boson ? 1 : 2)) / 2;
-    _first_index = -(_last_index + (_dom.statistic == Fermion));
+    bool is_fermion = (_dom.statistic == Fermion);
+    n_pts = 2 * n_pts + (is_fermion ? 0 : 1);
+    _last_index = (n_pts - (is_fermion ? 2 : 1)) / 2;
+    _first_index = -(_last_index + (is_fermion ? 1 : 0));
    }
    _first_index_window = _first_index;
    _last_index_window = _last_index;
   }
 
-  gf_mesh() : gf_mesh(domain_t(), 0, true){}
+  gf_mesh() : gf_mesh(domain_t(), 0){}
 
-  gf_mesh(double beta, statistic_enum S, int n_pts = 1025, bool positive_only = true)
-     : gf_mesh({beta, S}, n_pts, positive_only) {}
+  gf_mesh(double beta, statistic_enum S, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : gf_mesh({beta, S}, n_pts, opt) {}
 
   bool operator==(gf_mesh const &M) const {
-   return (std::tie(_dom, _n_pts, _positive_only) == std::tie(M._dom, M._n_pts, M._positive_only));
+   return (std::tie(_dom, _n_pts, _opt) == std::tie(M._dom, M._n_pts, M._opt));
   }
   bool operator!=(gf_mesh const &M) const { return !(operator==(M)); }
 
@@ -105,8 +110,12 @@ namespace gfs {
   /// last Matsubara index of the window 
   int last_index_window() const { return _last_index_window;}
 
- /// Is the mesh only for positive omega_n (G(tau) real))
-  bool positive_only() const { return _positive_only;}
+  /// Is the mesh only for positive omega_n (G(tau) real))
+  bool positive_only() const { return _opt == matsubara_mesh_opt::positive_frequencies_only;}
+
+  // -------------------- Get the grid for positive freq only -------------------
+
+  gf_mesh get_positive_freq() const { return {domain(), _n_pts, matsubara_mesh_opt::positive_frequencies_only}; }
 
   // -------------------- mesh_point -------------------
 
@@ -143,27 +152,29 @@ namespace gfs {
   // -------------------- MPI -------------------
 
   /// Scatter a mesh over the communicator c
-  //In practice, the same mesh, with a different window.
-  //the window can only be set by these 2 operations
-  friend gf_mesh mpi_scatter(gf_mesh m, mpi::communicator c, int root) {
-   auto m2 = gf_mesh{m.domain(), m.size(), m.positive_only()};
+  // In practice, the same mesh, with a different window.
+  // the window can only be set by these 2 operations
+  friend gf_mesh mpi_scatter(gf_mesh const &m, mpi::communicator c, int root) {
+   auto m2 = gf_mesh{m.domain(), m.size()/2,
+                     (m.positive_only() ? matsubara_mesh_opt::positive_frequencies_only : matsubara_mesh_opt::all_frequencies)};
    std::tie(m2._first_index_window, m2._last_index_window) = mpi::slice_range(m2._first_index, m2._last_index, c.size(), c.rank());
    return m2;
   }
 
   /// Opposite of scatter
-  friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
-   return gf_mesh{m.domain(), m.full_size(), m.positive_only()};
+  friend gf_mesh mpi_gather(gf_mesh const &m, mpi::communicator c, int root) {
+   return gf_mesh{m.domain(), m.full_size()/2,
+                  (m.positive_only() ? matsubara_mesh_opt::positive_frequencies_only : matsubara_mesh_opt::all_frequencies)};
   }
 
   // -------------------- HDF5 -------------------
- 
+
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const &m) {
    h5::group gr = fg.create_group(subgroup_name);
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "size", long(m.size()));
-   h5_write(gr, "positive_freq_only", (m._positive_only?1:0));
+   h5_write(gr, "positive_freq_only", (m.positive_only() ? 1 : 0));
   }
 
   /// Read from HDF5
@@ -171,29 +182,31 @@ namespace gfs {
    h5::group gr = fg.open_group(subgroup_name);
    typename gf_mesh::domain_t dom;
    long L;
-   int s = 1;
    h5_read(gr, "domain", dom);
    h5_read(gr, "size", L);
-   // backward compatibility : older file do not have this flags, default is true. 
-   if (gr.has_key("positive_freq_only")) h5_read(gr, "positive_freq_only", s);
-   if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", s);
-   m = gf_mesh{std::move(dom), L, (s==1)};
+   int pos_freq = 0;
+   if (gr.has_key("positive_freq_only")) h5_read(gr, "positive_freq_only", pos_freq);
+   if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", pos_freq); // backward compatibility only
+   int n_pts = (pos_freq ? L : L / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
+   auto opt = (pos_freq == 1 ? matsubara_mesh_opt::positive_frequencies_only : matsubara_mesh_opt::all_frequencies);
+   m = gf_mesh{std::move(dom), n_pts, opt};
   }
 
   // -------------------- boost serialization -------------------
 
+  // not implemented: the _opt need to be serialized.
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    ar &TRIQS_MAKE_NVP("beta", _dom.beta);
    ar &TRIQS_MAKE_NVP("statistic", _dom.statistic);
-   ar &TRIQS_MAKE_NVP("size", _n_pts);
-   ar &TRIQS_MAKE_NVP("kind", _positive_only);
+   ar &TRIQS_MAKE_NVP("n_pts", _n_pts);
+   //ar &TRIQS_MAKE_NVP("kind", _opt);
    ar &TRIQS_MAKE_NVP("_first_index", _first_index);
    ar &TRIQS_MAKE_NVP("_last_index", _last_index);
    ar &TRIQS_MAKE_NVP("_first_index_window", _first_index_window);
    ar &TRIQS_MAKE_NVP("_last_index_window", _last_index_window);
   }
-
+  
   // -------------------- print  -------------------
   
   friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
@@ -204,7 +217,7 @@ namespace gfs {
   private:
   domain_t _dom;
   int _n_pts;
-  bool _positive_only;
+  matsubara_mesh_opt _opt;
   long _first_index, _last_index, _first_index_window, _last_index_window;
  };
 

@@ -12,8 +12,7 @@ def init( mesh=None, shape=None, name='g', **kwargs):
         beta = float(kwargs.pop('beta'))
         n_points = kwargs.pop('n_points',1025)
         stat = kwargs.pop('statistic','Fermion')
-        positive_only = kwargs.pop('positive_only',True)
-        mesh = MeshImFreq(beta,stat,n_points, positive_only)
+        mesh = MeshImFreq(beta,stat,n_points)
     
     indices_pack = get_indices_in_dict(kwargs)
     if not shape: 

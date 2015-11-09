@@ -38,13 +38,23 @@ namespace triqs {
  template<typename T> struct regular_type_if_exists_else_type<T,false> {using type=T;};
  template<typename T> struct regular_type_if_exists_else_type<T,true > {using type=typename T::regular_type;};
 
+ /// view_type_t<T> it T::view_type if T not const, T::const_view_type otherwise
+ // decays the &, &&
+ template <typename T> struct view_type_impl { using type = typename T::view_type; };
+ template <typename T> struct view_type_impl<T &> : view_type_impl<T> {};
+ template <typename T> struct view_type_impl<T &&> : view_type_impl<T> {};
+ template <typename T> struct view_type_impl<T const> { using type = typename T::const_view_type; };
+ template <typename T> using view_type_t = typename view_type_impl<T>::type;
+ template <typename T> using const_view_type_t = typename view_type_t<T>::const_view_type;
+
  template<typename T, bool HasView = has_view<T>::value> struct view_type_if_exists_else_type;
  template<typename T> struct view_type_if_exists_else_type<T,false> {using type=T;};
  template<typename T> struct view_type_if_exists_else_type<T,true > {using type=typename T::view_type;};
+ template<typename T> struct view_type_if_exists_else_type<T const,true > {using type=typename T::const_view_type;};
 
  template<typename T, bool HasView = has_view<T>::value> struct const_view_type_if_exists_else_type;
  template<typename T> struct const_view_type_if_exists_else_type<T,false> {using type=T;};
- template<typename T> struct const_view_type_if_exists_else_type<T,true>  {using type=const typename T::const_view_type;};
+ template<typename T> struct const_view_type_if_exists_else_type<T,true>  {using type=typename T::const_view_type;};
 
  // CURRENT
  template<typename A> using Regular = typename regular_type_if_exists_else_type<A>::type;

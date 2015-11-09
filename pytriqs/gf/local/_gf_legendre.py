@@ -35,4 +35,4 @@ def plot(self, opt_dict):
          *:param x_window: (xmin,xmax) or None [default]
          *:param name: a string [default = '']. If not '', it remplaces the name of the function just for this plot.
     """
-    return _gf_plot.plot_base( self, opt_dict,  r'$l_n$', lambda name : r'%s$(l_n)$'%name, False, list(self.mesh) )
+    return _gf_plot.plot_base( self, opt_dict,  r'$l_n$', lambda name : r'%s$(l_n)$'%name, True, list(self.mesh) )

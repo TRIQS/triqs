@@ -1,7 +1,7 @@
 # A sample test with text output
 add_triqs_test_txt(test_example)
 add_triqs_test_txt(operator_python_test)
-add_triqs_test_txt(gf_fourier)
+add_triqs_test(gf_fourier)
 add_triqs_test_txt(gf_slicing)
 
 # A sample test with hdf5 output
@@ -24,10 +24,10 @@ add_triqs_test_hdf(pade " -d 1.e-6")
 add_triqs_test_txt(gf_inplace_112)
 
 # Bug fix #134
-add_triqs_test_txt(gf_transpose)
+add_triqs_test(gf_transpose)
 
 # Add evaluator for g
-add_triqs_test_txt(gf_eval)
+add_triqs_test(gf_eval)
 
 # U_matrix:
 add_triqs_test_hdf(U_mat " -d 1.e-6" )

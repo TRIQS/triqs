@@ -28,18 +28,50 @@
 
 namespace triqs {
 namespace gfs {
+ 
+ using dcomplex = std::complex<double>;
 
  namespace tag {
   struct composite {};
   struct mesh_point {};
  }
 
- struct scalar_valued { static constexpr int dim =0;};
- struct matrix_valued { static constexpr int dim =2;};
- template <int R> struct tensor_valued {  
-  static constexpr int dim = R; static_assert(R > 0, "tensor_valued only for rank >0"); 
+ struct scalar_valued {
+  static constexpr int dim = 0;
+  using value_type = dcomplex;
+ };
+ struct matrix_valued {
+  static constexpr int dim = 2;
+  using value_type = arrays::matrix<dcomplex>;
+ };
+ template <int R> struct tensor_valued {
+  static_assert(R > 0, "tensor_valued only for rank >0");
+  static constexpr int dim = R;
+  using value_type = arrays::array<dcomplex, R>;
  };
 
+ struct scalar_real_valued {
+  static constexpr int dim = 0;
+  using value_type = double;
+ };
+ struct matrix_real_valued {
+  static constexpr int dim = 2;
+  using value_type = arrays::matrix<double>;
+ };
+ template <int R> struct tensor_real_valued {
+  static constexpr int dim = R;
+  static_assert(R > 0, "tensor_valued only for rank >0");
+  using value_type = arrays::array<double, R>;
+ };
+
+ template<typename F> struct lambda_valued {};
+ 
+ template<typename T> struct _real_target_t_impl;
+ template<> struct _real_target_t_impl<scalar_valued> { using type = scalar_real_valued;};
+ template<> struct _real_target_t_impl<matrix_valued> { using type = matrix_real_valued;};
+ template<int R> struct _real_target_t_impl<tensor_valued<R>> { using type = tensor_real_valued<R>;};
+ template<typename T> using real_target_t = typename _real_target_t_impl<T>::type;
+ 
  //------------------------------------------------------
 
  using dcomplex = std::complex<double>;

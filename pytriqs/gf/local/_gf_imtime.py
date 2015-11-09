@@ -37,6 +37,6 @@ def plot(self, opt_dict):
          *:param x_window: (xmin,xmax) or None [default]
          *:param name: a string [default = '']. If not '', it remplaces the name of the function just for this plot.
     """
-    has_complex_value = False
-    return _gf_plot.plot_base( self, opt_dict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name, has_complex_value ,  list(self.mesh) )
+    return _gf_plot.plot_base( self, opt_dict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name, True ,  list(self.mesh) )
+
 

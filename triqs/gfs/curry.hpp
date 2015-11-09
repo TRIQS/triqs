@@ -22,8 +22,6 @@
 #include "./product.hpp"
 namespace triqs { namespace gfs { 
 
- template<typename F> struct lambda_valued {};
-
  template <typename Var, typename M, typename L> gf_view<Var, lambda_valued<L>> make_gf_view_lambda_valued(M m, L l) {
   return {std::move(m), l, nothing(), nothing(), {}};
  }

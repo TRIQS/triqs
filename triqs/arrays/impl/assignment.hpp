@@ -75,6 +75,8 @@ namespace triqs { namespace arrays {
   /// RHS is special type that defines its own specialization of assign
   template<class RHS,class LHS> struct is_special : std::false_type {};
 
+#define TRIQS_REJECT_UNASSIGNABLE\
+  static_assert(std::is_assignable<typename LHS::value_type, typename RHS::value_type>::value, "Assignment impossible for the type of RHS into the type of LHS");
 #define TRIQS_REJECT_ASSIGN_TO_CONST \
   static_assert( (!std::is_const<typename LHS::value_type>::value ), "Assignment : The value type of the LHS is const and cannot be assigned to !");
 #define TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR\
@@ -86,7 +88,8 @@ namespace triqs { namespace arrays {
    struct impl<LHS,RHS, OP, ENABLE_IF(is_isp< RHS,LHS>) > {
     TRIQS_REJECT_ASSIGN_TO_CONST;
     TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR;
-
+    //TRIQS_REJECT_UNASSIGNABLE;
+    
     typedef typename LHS::value_type value_type;
     typedef typename LHS::indexmap_type indexmap_type;
     LHS & lhs; const RHS & rhs; 

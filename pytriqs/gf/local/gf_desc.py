@@ -136,7 +136,7 @@ def make_mesh( py_type, c_tag, is_im=False) :
 ########################
 
 m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq", is_im = True)
-m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025, bool positive_only=true)")
+m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
 
 module.add_class(m)
 
@@ -200,9 +200,9 @@ module.add_class(m)
 ##   Gf Generic : common to all 5 one variable gf
 ########################
 
-def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = True) :
+def make_gf( py_type, c_tag, is_im = False, has_tail = True) :
 
-    data_type = "std::complex<double>" if is_complex_data else "double"
+    data_type = "std::complex<double>" 
 
     g = class_(
             py_type = py_type,
@@ -369,6 +369,11 @@ def make_gf( py_type, c_tag, is_complex_data = True, is_im = False, has_tail = T
 
 g = make_gf(py_type = "GfImFreq", c_tag = "imfreq", is_im = True)
 
+g.add_method(name = "make_real_in_tau",
+             calling_pattern = "auto result = make_real_in_tau(self_c)",
+             signature = "gf_view<imfreq>()",
+             doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
+
 g.add_method(name = "density",
              calling_pattern = "auto result = density(self_c)",
              signature = "matrix_view<double>()",
@@ -421,7 +426,7 @@ module.add_class(g)
 ##   GfImTime
 ########################
 
-g = make_gf(py_type = "GfImTime", c_tag = "imtime", is_complex_data = False, is_im = True)
+g = make_gf(py_type = "GfImTime", c_tag = "imtime", is_im = True)
 
 g.add_method(name = "set_from_inverse_fourier",
              signature = "void(gf_view<imfreq> gw)",
@@ -434,7 +439,7 @@ g.add_method(name = "set_from_legendre",
              doc = """Fills self with the legendre transform of gl""")
  
 # add the call operator using the interpolation
-g.add_call(signature = "matrix<double>(double tau)", doc = "G(tau) using interpolation")
+g.add_call(signature = "matrix<dcomplex>(double tau)", doc = "G(tau) using interpolation")
 
 module.add_class(g)
 
@@ -456,7 +461,7 @@ dom = class_( py_type = "GfLegendreDomain",
 dom.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 module.add_class(dom)
 
-g = make_gf(py_type = "GfLegendre", c_tag = "legendre", is_im = True, is_complex_data = False, has_tail =False)
+g = make_gf(py_type = "GfLegendre", c_tag = "legendre", is_im = True, has_tail =False)
 
 g.add_method(name = "density",
              calling_pattern = "auto result = density(self_c)",

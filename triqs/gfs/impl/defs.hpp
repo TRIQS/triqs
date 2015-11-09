@@ -190,9 +190,14 @@ namespace gfs {
  // dim 1 (scalar gf) and vector (e.g. block gf, ...)
  template <typename Mesh, typename Target, typename Enable = void> struct gf_data_proxy;
 
+ template <typename M> struct gf_data_proxy<M, scalar_valued> : data_proxy_array<dcomplex, 1> {};
  template <typename M> struct gf_data_proxy<M, matrix_valued> : data_proxy_array<dcomplex, 3> {};
  template <typename M, int R> struct gf_data_proxy<M, tensor_valued<R>> : data_proxy_array<dcomplex, 1+R> {};
- template <typename M> struct gf_data_proxy<M, scalar_valued> : data_proxy_array<dcomplex, 1> {};
+
+ // should only be used exceptionnal, for real g(tau) e.g. 
+ template <typename M> struct gf_data_proxy<M, scalar_real_valued> : data_proxy_array<double, 1> {};
+ template <typename M> struct gf_data_proxy<M, matrix_real_valued> : data_proxy_array<double, 3> {};
+ template <typename M, int R> struct gf_data_proxy<M, tensor_real_valued<R>> : data_proxy_array<double, 1+R> {};
 
  /*----------------------------------------------------------
   *  HDF5
@@ -202,6 +207,8 @@ namespace gfs {
 
  template <typename Mesh, typename Target, typename Singularity> struct gf_h5_name;
  template <typename Mesh, typename Target, typename Singularity, typename Evaluator> struct gf_h5_rw;
+ template <typename Mesh, typename Target, typename Singularity, typename Evaluator> struct gf_h5_before_write;
+ template <typename Mesh, typename Target, typename Singularity, typename Evaluator> struct gf_h5_after_read;
 
  /*----------------------------------------------------------
   *  Factories for data and singularity

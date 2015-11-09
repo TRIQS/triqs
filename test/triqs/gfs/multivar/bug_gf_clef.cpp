@@ -21,7 +21,7 @@ TEST(Gf, AutoAssignMatrixGf2) {
     for (int nu = 0; nu < 10; ++nu) {
      auto xom = ((2 * om + 1) * M_PI * 1_j / beta);
      auto xnu = ((2 * nu + 1) * M_PI * 1_j / beta);
-     EXPECT_CLOSE(g2.data()(om, nu, i, j), i + j + 2 * xom - 0.3 * xnu);
+     EXPECT_CLOSE(g2.data()(10+om, 10 +nu, i, j), i + j + 2 * xom - 0.3 * xnu);
     }
 }
 

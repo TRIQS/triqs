@@ -47,12 +47,11 @@ namespace gfs {
  /**
   *
   */
- template <typename Target, typename Singularity, typename Evaluator>
- gf<imfreq, Target, Singularity> make_gf_from_fourier(gf_const_view<imtime, Target, Singularity, Evaluator> const& gt,
-                                                      int n_iw = -1) {
+ template <typename T, typename S, typename E>
+ gf<imfreq, T, S> make_gf_from_fourier(gf_const_view<imtime, T, S, E> const& gt, int n_iw = -1) {
   if (n_iw == -1) n_iw = (gt.mesh().size() - 1) / 2;
   auto m = gf_mesh<imfreq>{gt.mesh().domain(), n_iw};
-  auto gw = gf<imfreq, Target, Singularity>{m, get_target_shape(gt)};
+  auto gw = gf<imfreq, T, S>{m, get_target_shape(gt)};
   gw() = fourier(gt);
   return gw;
  }
@@ -70,12 +69,11 @@ namespace gfs {
  /**
   *
   */
- template <typename Target, typename Singularity, typename Evaluator>
- gf<imtime, Target, Singularity> make_gf_from_inverse_fourier(gf_const_view<imfreq, Target, Singularity, Evaluator> const& gw,
-                                                              int n_tau = -1) {
-  if (n_tau == -1) n_tau = 2 * gw.mesh().size() + 1;
+ template <typename T, typename S, typename E>
+ gf<imtime, T, S> make_gf_from_inverse_fourier(gf_const_view<imfreq, T, S, E> const& gw, int n_tau = -1) {
+  if (n_tau == -1) n_tau = gw.mesh().size() + 1;
   auto m = gf_mesh<imtime>{gw.mesh().domain(), n_tau};
-  auto gt = gf<imtime, Target, Singularity, Evaluator>{m, get_target_shape(gw)};
+  auto gt = gf<imtime, T, S, E>{m, get_target_shape(gw)};
   gt() = inverse_fourier(gw);
   return gt;
  }

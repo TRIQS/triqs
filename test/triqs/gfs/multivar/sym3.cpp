@@ -37,9 +37,9 @@ TEST(Gf, EvaluatorWithSymmetry) {
  clef::placeholder<5> inup_;
 
  // This would throw
- auto g_classic = gf3_s{{{beta, Fermion, 2 * nw, false}, {beta, Fermion, 2 * nw, false}, {beta, Boson, nw}}};
+ auto g_classic = gf3_s{{{beta, Fermion, 2 * nw}, {beta, Fermion, 2 * nw}, {beta, Boson, nw, matsubara_mesh_opt::positive_frequencies_only}}};
 
- auto g = gf3_s_modif{{{beta, Fermion, 2 * nw, false}, {beta, Fermion, 2 * nw, false}, {beta, Boson, nw}}};
+ auto g = gf3_s_modif{{{beta, Fermion, 2 * nw}, {beta, Fermion, 2 * nw}, {beta, Boson, nw, matsubara_mesh_opt::positive_frequencies_only}}};
 
  g(inu_, inup_, iw_) << inu_ + 10 * inup_ + 100 * iw_;
 
