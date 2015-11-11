@@ -237,6 +237,10 @@ namespace gfs {
   gf_const_view(mesh_t const &m, D const &dat, singularity_t const &t, symmetry_t const &s, indices_t const &ind, std::string name = "")
      : gf_const_view(impl_tag{}, m, factory<data_t>(dat), t, s, ind, name) {}
 
+  /// ---------------  swap --------------------
+
+  friend void swap(gf_const_view &a, gf_const_view &b) noexcept { a.swap_impl(b); }
+
   /// ---------------  Rebind --------------------
   /// Rebind the view to view X
   template <typename Ev2> void rebind(gf_const_view<Mesh, Target, Singularity, Ev2> const &X) noexcept {
