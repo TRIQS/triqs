@@ -23,29 +23,14 @@
 using namespace triqs::arrays;
 namespace h5 = triqs::h5;
 
-/*template<typename T>
-class H5Test : ::testing::test { 
- public : 
-  T value;
-};
-
-
-TYPED_TEST_P(H5Test, RW) {
-   TypeParam n = 0;
- Construction pb...
-}
-*/
-
-
-
 TEST(Array, H5) {
 
  array<long, 2> A(2, 3), B, Af(FORTRAN_LAYOUT), Bf(FORTRAN_LAYOUT);
  array<double, 2> D(2, 3), D2;
- array<std::complex<double>, 1> C(5), C2;
- std::complex<double> z(1, 2);
+ array<dcomplex, 1> C(5), C2;
+ dcomplex z(1, 2);
 
- for (int i = 0; i < 5; ++i) C(i) = std::complex<double>(i, i);
+ for (int i = 0; i < 5; ++i) C(i) = dcomplex(i, i);
 
  for (int i = 0; i < 2; ++i)
   for (int j = 0; j < 3; ++j) {
@@ -70,7 +55,7 @@ TEST(Array, H5) {
   double x = 2.3;
   h5_write(top, "x", x);
 
-  // std::complex<double> xx(2, 3);
+  // dcomplex xx(2, 3);
   // h5_write(top, "xx", xx);
 
   h5_write(top, "s", std::string("a nice chain"));
@@ -112,6 +97,38 @@ TEST(Array, H5) {
   EXPECT_EQ(s2, "a nice chain");
  }
 }
+
+// -----------------------------------------------------
+// Testing the loading of array of double into complex
+// -----------------------------------------------------
+
+TEST(Array, H5RealIntoComplex) {
+
+ array<double, 2> D(2, 3);
+ array<dcomplex, 2> C(2,3);
+
+ for (int i = 0; i < 2; ++i)
+  for (int j = 0; j < 3; ++j) {
+   D(i, j) = 10 * i + j;
+  }
+
+ // WRITE the file
+ {
+  h5::file file("ess_real_complex.h5", H5F_ACC_TRUNC);
+  h5::group top(file);
+  h5_write(top, "D", D);
+ }
+
+ // READ the file
+ {
+  C() = 89 + 9_j; // put garbage in it
+  h5::file file("ess_real_complex.h5", 'r');
+  h5::group top(file);
+  h5_read(top, "D", C);
+  EXPECT_CLOSE_ARRAY(C, D);
+ }
+}
+
 
 MAKE_MAIN;
 

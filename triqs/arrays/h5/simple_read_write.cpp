@@ -37,6 +37,12 @@ namespace arrays {
    return h5::dataspace_from_LS(info.R, is_complex, L, L, S);
   }
 
+  // return true if the dataset in the file is tagged as complex
+  bool is_dataset_complex(h5::group g, std::string const& name) {
+   h5::dataset ds = g.open_dataset(name);
+   return H5LTfind_attribute(ds, "__complex__"); // the array in file is complex
+  }
+
   /// --------------------------- WRITE ---------------------------------------------
 
   template <typename T> void write_array_impl(h5::group g, std::string const& name, const T* start, array_stride_info info) {

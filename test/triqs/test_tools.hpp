@@ -32,6 +32,8 @@
 #include <triqs/h5/serialization.hpp>
 #endif
 
+using dcomplex = std::complex<double>;
+
 // print a vector ?
 //template <typename T> 
 //std::ostream & operator << (std::ostream & out, std::vector<T> const & v) { 

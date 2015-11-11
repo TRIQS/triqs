@@ -72,15 +72,29 @@ namespace arrays {
 
   std::vector<size_t> get_array_lengths(int R, h5::group g, std::string const& name, bool is_complex);
   template <typename T> void read_array_impl(h5::group g, std::string const& name, T* start, array_stride_info info);
+  template <typename A> void read_array1(h5::group g, std::string const& name, A& a, bool C_reorder);
+
+  bool is_dataset_complex(h5::group g, std::string const& name);
 
   template <typename A> void read_array(h5::group g, std::string const& name, A&& a, bool C_reorder = true) {
+   read_array1(g, name, a, C_reorder);
+  }
+
+  template <typename A> void read_array1(h5::group g, std::string const& name, A& a, bool C_reorder) {
+   constexpr bool is_complex = triqs::is_complex<typename A::value_type>::value;
+
+   if (is_complex && !is_dataset_complex(g,name)) { // if not complex in file, we load in real and assign
+     array<double, A::rank> tmp;
+     read_array(g, name, tmp);
+     a = tmp;
+     return;
+   }
+
    // mini_vector... : useless on 4.9 and clang, there seems to be a bug (??) on 4.8.
-   resize_or_check(a, mini_vector<size_t, std::c14::decay_t<A>::rank> (get_array_lengths(a.rank, g, name, triqs::is_complex<typename std::c14::decay_t<A>::value_type>::value)));
+   resize_or_check(a, mini_vector<size_t, A::rank>(get_array_lengths(a.rank, g, name, is_complex)));
    if (C_reorder) {
-    {
      auto b = make_cache(a);
      read_array_impl(g, name, b.view().data_start(), array_stride_info{b.view()});
-    }
    } else
     read_array_impl(g, name, a.data_start(), array_stride_info{a});
   }
