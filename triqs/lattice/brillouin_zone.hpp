@@ -31,7 +31,7 @@ namespace lattice {
 
   brillouin_zone() { // default construction, 3d cubic lattice
    K_reciprocal = arrays::make_unit_matrix<double>(3);
-   K_reciprocal_inv() = K_reciprocal;
+   K_reciprocal_inv = K_reciprocal;
   }
 
   /// Construct from a bravais_lattice

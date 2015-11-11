@@ -49,7 +49,7 @@ namespace gfs {
 
   // technical details...
   using r_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix<dcomplex>>;
-  using rv_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix_view<dcomplex>>;
+  using rv_t = std14::conditional_t<std::is_same<Target, scalar_valued>::value, dcomplex, matrix_const_view<dcomplex>>;
 
   template <typename S> auto _evaluate_sing(matrix_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f));
   template <typename S>

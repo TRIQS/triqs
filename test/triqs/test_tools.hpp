@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #define TRIQS_EXCEPTION_SHOW_CPP_TRACE
+#define TRIQS_ARRAYS_DEBUG
 #include <iostream>
 #include <sstream>
 #include "gtest/gtest.h"

@@ -1,4 +1,3 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include "../test_tools.hpp"
 #include <triqs/gfs.hpp>
 #include <triqs/gfs/functions/functions.hpp> 
