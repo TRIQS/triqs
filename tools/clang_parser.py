@@ -320,8 +320,8 @@ class Class(object):
 def build_functions_and_classes(cursor, analyze_filter, namespaces=[]):
     classes,functions = [],[]
     for c in cursor.get_children():
-        if (c.kind == CursorKind.FUNCTION_DECL and analyze_filter(c, namespaces)):
-            functions.append( Function(c,is_constructor = False, ns =namespaces))
+        if (c.kind in [CursorKind.FUNCTION_DECL, CursorKind.FUNCTION_TEMPLATE] and analyze_filter(c, namespaces)):
+          functions.append( Function(c,is_constructor = False, ns =namespaces))
         elif (c.kind in [CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL,
               CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION,
               CursorKind.CLASS_TEMPLATE] and analyze_filter(c, namespaces)):

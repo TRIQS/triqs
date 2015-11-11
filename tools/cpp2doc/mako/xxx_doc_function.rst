@@ -37,12 +37,56 @@ ${tools.make_synopsis_list(f_overloads)}
 ${f_overloads[0].processed_doc}
 %endif
 
+%if sum([len(m.doc_elements['tparam']) for n,m in enumerate(f_overloads)]) > 0 :
+
+Template parameters
+-------------
+
+%if len(f_overloads) >1 :
+%for n,m in enumerate(f_overloads) :
+
+ (${n+1}) 
+
+% if len(m.doc_elements['tparam'])>1:
+% for p,doc in m.doc_elements['tparam'].items():
+
+   * **${p}**: ${doc}
+%endfor
+% elif len(m.doc_elements['tparam'])==1:
+% for p,doc in m.doc_elements['tparam'].items():
+   **${p}**: ${doc}
+%endfor
+%else :
+   not documented
+%endif
+
+%endfor
+%else:
+%for p,doc in f.doc_elements['tparam'].items():
+* **${p}**: ${doc}
+%endfor
+%endif
+%endif
 Parameters
 -------------
 
+%if len(f_overloads) >1 :
+%for n,m in enumerate(f_overloads) :
+
+ (${n+1}) 
+
+% for p,doc in m.doc_elements['param'].items():
+
+   * **${p}**: ${doc}
+
+
+%endfor
+%endfor
+%else:
 %for p,doc in f.doc_elements['param'].items():
 * **${p}**: ${doc}
 %endfor
+%endif
 
 Return value
 --------------

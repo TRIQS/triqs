@@ -179,7 +179,6 @@ if __name__ == '__main__':
             render(tpl_fun, m_name, c = c, f_name = m_name, f_overloads = m_overloads, 
                   class_list = classes, shell_command= shell_command) 
         os.chdir(cur_dir)
-
     all_functions = regroup_func_by_names(None, [f for f in functions])
 
     for l in all_functions.values(): 
@@ -190,10 +189,9 @@ if __name__ == '__main__':
         print " ... function " + f_name
         cur_dir = os.getcwd()
         mkchdir(*f_overloads[0].ns)
-        print "loc : ", f_overloads[0].file_location
+        print " ..... located: ", f_overloads[0].file_location
         # RENDER 
-        render(tpl_fun, f_name, c = None, f_name = f_name, f_overloads = f_overloads, 
-                  class_list = classes, shell_command= shell_command) 
+        render(tpl_fun, f_name, c = None, f_name = f_name, f_overloads = f_overloads, class_list = classes, shell_command= shell_command) 
         os.chdir(cur_dir)
  
     print "... done"
