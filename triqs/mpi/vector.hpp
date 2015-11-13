@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./base.hpp"
+#include "../utility/view_tools.hpp"
 #include <vector>
 
 namespace triqs {
@@ -72,9 +73,9 @@ namespace mpi {
  template <typename T> std::vector<T> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, std::true_type) {
   std::vector<T> b(a.size());
   if (!all)
-   MPI_Reduce(a.data(), b.data(), a.size(), mpi_datatype<T>(), MPI_SUM, root, c.get());
+   MPI_Reduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), MPI_SUM, root, c.get());
   else
-   MPI_Allreduce(a.data(), b.data(), a.size(), mpi_datatype<T>(), MPI_SUM, root, c.get());
+   MPI_Allreduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), MPI_SUM, c.get());
   return b;
  }
 
