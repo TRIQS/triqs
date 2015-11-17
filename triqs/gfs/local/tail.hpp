@@ -115,7 +115,13 @@ namespace gfs {
 
   // operator = for views
   void operator=(tail_const_view const &rhs); // implemented later
-    
+
+  void swap_impl(tail_impl &b) noexcept {
+   std::swap(omin, b.omin);
+   swap(_mask, b._mask);
+   swap(_data, b._data);
+  }
+
   public:
 
   mv_type operator()(int n) {
@@ -183,6 +189,7 @@ namespace gfs {
   tail_const_view(tail_impl<View> const &t) : B(t) {}
   tail_const_view(tail_impl<Regular> const &t) : B(t) {}
 
+  friend void swap(tail_const_view & a, tail_const_view & b) noexcept { a.swap_impl(b);}
   void rebind(tail_const_view const &X);
  };
 
@@ -198,6 +205,7 @@ namespace gfs {
   tail_view(tail_impl<Regular> const &t) : B(t) {}
   tail_view(tail_impl<View> const &t) : B(t) {}
 
+  friend void swap(tail_view & a, tail_view & b) noexcept { a.swap_impl(b);}
   void rebind(tail_view const &X);
 
   tail_view &operator=(tail_view const &x) { return B::operator=(tail_const_view(x)), *this; }
@@ -223,6 +231,8 @@ namespace gfs {
   tail(tail_view const &g) : B(g) {}
   tail(tail_const_view const &g) : B(g) {}
   tail(tail &&) = default;
+
+  friend void swap(tail & a, tail & b) noexcept { a.swap_impl(b);}
 
   tail &operator=(tail const &x) { return B::operator=(tail_const_view(x)), *this; }
   template <rvc_enum RVC> tail &operator=(tail_impl<RVC> const &x) { return B::operator=(tail_const_view(x)), *this; }
