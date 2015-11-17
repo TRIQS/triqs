@@ -39,6 +39,13 @@ Template parameters
 %endfor
 %endif
 
+%if len(c.members) > 0:
+Public members
+-----------------
+
+${make_table(['Member','Type','Comment'], [(t.name,t.ctype, t.doc) for t in c.members])}
+%endif
+
 %if len(c.type_alias) > 0:
 Member types
 -----------------

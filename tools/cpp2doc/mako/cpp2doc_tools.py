@@ -18,7 +18,7 @@ def process_rtype(t) :
 
 def make_synopsis_template_decl(tparams) : 
     if not tparams: return ''
-    targs = ', '.join("%s %s"%(ty,n) + (" = %s"%d if d else '') for (ty,n,d) in tparams)
+    targs = ', '.join("%s %s"%(pp[0],pp[1]) + (" = %s"%pp[2] if (len(pp)==3 and pp[2]) else '') for pp in tparams)
     return "template<%s>"%targs
 
 def make_synopsis(m, decal):
@@ -55,10 +55,10 @@ def make_table(head_list, list_of_list):
     lcols = [len(x) for x in head_list]
     for li in list_of_list : # compute the max length of the columns
         lcols = [ max(len(x), y) for x,y in zip(li, lcols)]
-    form =  '|' + " | ".join("{:<%s}"%x for x in lcols).strip() + '|'
+    form =  '| ' + " | ".join("{:<%s}"%x for x in lcols).strip() + ' |'
     header= form.format(*head_list)
     w = len(header)
-    sep = '+' + '+'.join((x+1) *'-' for x in lcols) + '+'
+    sep = '+' + '+'.join((x+2) *'-' for x in lcols) + '+'
     sep1 = sep.replace('-','=')
     r = [sep, header, sep1]
     for li in list_of_list: r += [form.format(*li), sep] 
