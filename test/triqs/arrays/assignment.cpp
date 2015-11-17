@@ -18,58 +18,39 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <iostream>
+#include "start.hpp"
 
-using namespace triqs::arrays;
+TEST(Array, AssignFortranOrder) {
 
-int main(int argc, char **argv) {
- 
- 
+ static_assert(is_scalar_for<int, matrix<std::complex<double>>>::type::value == 1, "oops");
 
- array<long,2> A (2,3);
- //array<long,2> Af (2,3, "F" );
- array<long,2> Af (2,3, FORTRAN_LAYOUT );
- //array<long,2> Af (2,3, memory_layout<2>('F'));
+ array<long, 2> Af(2, 3, FORTRAN_LAYOUT);
 
- std::cout <<"Filling Af...."<<std::endl;
+ for (int i = 0; i < 2; ++i)
+  for (int j = 0; j < 3; ++j) Af(i, j) = 10 * i + j;
 
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-   Af(i,j) = 10*i+ j;
-
- // assign 
+ // assign
+ array<long, 2> A;
  A = Af;
- std::cout <<"A= Af --- > A =  "<<A<<std::endl;
 
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-   std::cout<<" i,j = "<<i<<"    "<<j<<" A="<< A(i,j)<< " should be "<< 10*i+ j<<std::endl;
+ for (int i = 0; i < 2; ++i)
+  for (int j = 0; j < 3; ++j) EXPECT_EQ(A(i, j), 10 * i + j);
 
- std::cout<<" copy construction B(A)"<<std::endl;
- array<long,2> B(Af);
+ // copy construction B(A)
+ array<long, 2> B(Af);
 
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-   std::cout<<"B "<<B(i,j)<<std::endl;
+ for (int i = 0; i < 2; ++i)
+  for (int j = 0; j < 3; ++j) EXPECT_EQ(B(i, j), 10 * i + j);
 
- std::cout<<"  B2 = A"<<std::endl;
- array<long,2> B2;
+ // assign C -> C
+ array<long, 2> B2;
  B2 = A;
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-   std::cout<<"B2 "<<B2(i,j)<<std::endl;
+ for (int i = 0; i < 2; ++i)
+  for (int j = 0; j < 3; ++j) EXPECT_EQ(B2(i, j), 10 * i + j);
 
- array<double,2> F = A;
- std::cout<<"  F = A"<<F<<std::endl;
-
- matrix<std::complex<double> > M1(2,2), M2(2,2);
- M1() = 0;
- A()=0;
- std::cerr<< " is scalar "<< is_scalar_for< int, matrix<std::complex<double> > >::type::value<< std::endl; 
-
- return 0;
+ // double
+ array<double, 2> F = A;
+ for (int i = 0; i < 2; ++i)
+  for (int j = 0; j < 3; ++j) EXPECT_EQ(F(i, j), 10 * i + j);
 }
-
+MAKE_MAIN;

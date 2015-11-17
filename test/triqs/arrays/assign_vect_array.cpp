@@ -19,24 +19,20 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "start.hpp"
 
-#include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/vector.hpp>
-#include <iostream>
+TEST(Array, AssignVectorArray) {
 
-using namespace triqs::arrays;
+ vector<double> V;
+ array<double, 1> Va(5);
+ for (int i = 0; i < 5; ++i) Va(i) = i + 2;
 
-int main(int argc, char **argv) {
+ V = Va / 2.0;
+ EXPECT_ARRAY_NEAR(V, array<double, 1>{1.0, 1.5, 2.0, 2.5, 3.0});
+ EXPECT_ARRAY_NEAR(Va, array<double, 1>{2, 3, 4, 5, 6});
 
- 
-
- triqs::arrays::vector<double> V; array<double,1> Va(5);
- for (int i =0; i<5; ++i) Va(i) = i+2;
- V = Va/2.0;
- std::cout<<" V = VA/2 : "<< V<< Va<<std::endl;
  V = Va;
- std::cout<<" V = VA : "<< V<< Va<<std::endl;
- return 0;
+ EXPECT_ARRAY_NEAR(V, array<double, 1>{2, 3, 4, 5, 6});
+ EXPECT_ARRAY_NEAR(Va, array<double, 1>{2, 3, 4, 5, 6});
 }
-
+MAKE_MAIN;

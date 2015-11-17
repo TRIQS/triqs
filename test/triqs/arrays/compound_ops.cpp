@@ -18,46 +18,26 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <iostream>
+#include "start.hpp"
 
-using namespace triqs::arrays;
+placeholder<0> i_;
+placeholder<1> j_;
 
-int main(int argc, char **argv) {
- 
- 
+TEST(Array, compound_ops) {
 
- array<long,2> A (2,3);
- array<long,2> Af (2,3,FORTRAN_LAYOUT);
-
- std::cout <<"Filling Af...."<<std::endl;
-
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-   Af(i,j) = 10*i+ j;
-
- // assign 
+ array<long, 2> A(2, 3), Af(2, 3, FORTRAN_LAYOUT);
+ Af(i_, j_) << 10 * i_ + j_;
  A = Af;
- std::cout <<"A= Af --- > A =  "<<A<<std::endl;
 
- A *=2.0;
-
- std::cout<<" 2* A= "<<A<<std::endl;
+ A *= 2.0;
+ EXPECT_ARRAY_NEAR(A, array<long, 2>{{0, 2, 4}, {20, 22, 24}});
 
  Af /= 2.0;
+ EXPECT_ARRAY_NEAR(Af, array<long, 2>{{0, 0, 1}, {5, 5, 6}});
 
- std::cout<<"  Af/2 =  "<<Af<<std::endl;
-
- // should this really compile ??
- long i=5; i/=2.0; std::cout <<i<<std::endl;
- 
- array<double,2> B (A);
-
- B /=4;
- 
- std::cout<<"  B= A/4 =  "<<B<<std::endl;
-
- return 0;
+ array<double, 2> B(A);
+ B /= 4;
+ EXPECT_ARRAY_NEAR(B, array<double, 2>{{0.0, 0.5, 1.0}, {5.0, 5.5, 6.0}});
 }
+MAKE_MAIN;
 

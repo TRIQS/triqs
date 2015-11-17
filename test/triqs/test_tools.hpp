@@ -33,6 +33,7 @@
 #endif
 
 using dcomplex = std::complex<double>;
+using triqs::clef::placeholder;
 
 // print a vector ?
 //template <typename T> 

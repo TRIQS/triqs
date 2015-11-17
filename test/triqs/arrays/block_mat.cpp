@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2015 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,31 +19,15 @@
  *
  ******************************************************************************/
 #include "start.hpp"
-TEST(Array, CrossConstruct1) {
- vector<int> Vi(3);
- Vi() = 3;
- vector<double> Vd(Vi);
- EXPECT_ARRAY_NEAR(Vd, Vi);
+
+TEST(BlockMatrixH5, S1) {
+
+ array<matrix<double>,1> V{matrix<double>{{1, 2}, {3, 4}}, matrix<double>{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}}};
+ 
+ auto W = rw_h5(V, "block_mat");
+ 
+ EXPECT_EQ(first_dim(V),first_dim(W));
+ for (int i = 0; i < first_dim(V); ++i) EXPECT_CLOSE_ARRAY(V(i), W(i));
 }
 
-// ------------------
-TEST(Array, CrossConstruct2) {
-
- array<long, 2> A(2, 3);
-
- for (int i = 0; i < 2; ++i)
-  for (int j = 0; j < 3; ++j) A(i, j) = 10 * i + j;
-
- std::vector<array<long, 2>> V(3, A);
-
- std::vector<array_view<long, 2>> W;
- for (auto& x : V) W.push_back(x);
-
- std::vector<array_view<long, 2>> W2(W);
-
- for (int i = 1; i < 3; ++i) V[i] *= i;
-
- for (int i = 1; i < 3; ++i) EXPECT_ARRAY_NEAR(W2[i], i * A);
-}
-MAKE_MAIN
-
+MAKE_MAIN;

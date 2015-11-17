@@ -18,15 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "test_tools.hpp"
-#include <triqs/arrays.hpp>
-using namespace triqs::arrays;
-using namespace triqs::utility;
-
+#include "start.hpp"
 #include <type_traits>
 static_assert(!std::is_pod<triqs::arrays::array<long, 2>>::value, "POD pb");
 
-TEST(Array, Resize) {
+TEST(Array, Create) {
 
  array<long, 2> A;
  A.resize(make_shape(3, 3));

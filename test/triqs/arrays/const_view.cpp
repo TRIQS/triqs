@@ -18,30 +18,17 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <iostream>
-
-using namespace triqs::arrays;
-
-
-template <typename U, typename To, bool B> void f(array_view<U, 2, To, B, true> const &a) {
- std::cout << a << std::endl;
-}
+#include "start.hpp"
 
 void f2(array_const_view<long, 2> const &a) { std::cout << a << std::endl; }
 
-int main(int argc, char **argv) {
+TEST(Array, compound_ops) {
 
- {
-  array<long, 2> A(2, 3);
-  A() = 3;
-  f2(A());
+ array<long, 2> A(2, 3);
+ A() = 98;
+ f2(A());
 
-
-  array_const_view<long,2> Vc = A();
-  //array_view<long,2> V = Vc;
- }
+ array_const_view<long, 2> Vc = A();
 
 //#define SHOULD_NOT_COMPILE
 #ifdef SHOULD_NOT_COMPILE
@@ -51,9 +38,8 @@ int main(int argc, char **argv) {
   // None of this should compile
   A(0) = 2;
   A()(0) = 2;
-  A(range(0,2))(0) = 10;
+  A(range(0, 2))(0) = 10;
  }
 #endif
- return 0;
 }
-
+MAKE_MAIN

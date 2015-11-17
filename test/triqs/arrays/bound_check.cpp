@@ -18,12 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include "test_tools.hpp"
-#include <triqs/arrays.hpp>
-using namespace triqs::arrays;
-namespace h5 = triqs::h5;
-
+#include "start.hpp"
 TEST(Array, BoundCheck) {
 
  array<long, 2> A(2, 3);

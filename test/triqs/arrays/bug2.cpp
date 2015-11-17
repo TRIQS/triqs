@@ -1,29 +1,21 @@
-#include <triqs/arrays.hpp>
+#include "start.hpp"
+TEST(Array, Bug2) {
 
-using namespace triqs::arrays;
+ array<double, 3> A(10, 2, 2);
+ A() = 0;
 
-int main() {
+ A(4, range(), range()) = 1;
+ A(5, range(), range()) = 2;
 
-  array<double,3> A(10,2,2); A() = 0;
+ matrix_view<double> M1 = A(4, range(), range());
+ matrix_view<double> M2 = A(5, range(), range());
 
-  A(4,range(),range()) = 1;
-  A(5,range(),range()) = 2;
+ EXPECT_ARRAY_NEAR(M1, matrix<double>{{1, 1}, {1, 1}});
+ EXPECT_ARRAY_NEAR(M2, matrix<double>{{2, 2}, {2, 2}});
 
-  matrix_view<double> M1 = A(4,range(),range());
-  matrix_view<double> M2 = A(5,range(),range());
+ M1 = M2;
 
-  std::cout << M1 << std::endl;
-  std::cout << M2 << std::endl;
-  
-  std::cout << M1.data_start() << std::endl;
-  std::cout << M2.data_start() << std::endl;
-
-
-  M1 = M2;
-  //M1 = M1*M2;
-
-  std::cout << M1 << std::endl;
-  std::cout << M2 << std::endl;
+ EXPECT_ARRAY_NEAR(M1, matrix<double>{{2, 2}, {2, 2}});
+ EXPECT_ARRAY_NEAR(M2, matrix<double>{{2, 2}, {2, 2}});
 }
-
-
+MAKE_MAIN;

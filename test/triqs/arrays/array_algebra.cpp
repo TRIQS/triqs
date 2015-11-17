@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2011-2015 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,37 +18,39 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "start.hpp"
 
-#include "./common.hpp"
-#include <triqs/arrays/array.hpp>
-#include <iostream>
-#include <type_traits>
+TEST(Array, Algebra) {
 
-using namespace triqs::arrays;
+ array<int, 1> A(3), B(3), C;
+ array<double, 1> D;
+ B() = 2;
+ A() = 3;
 
-int main() { 
+ C = A + B;
+ EXPECT_ARRAY_NEAR(C, array<int, 1>{5, 5, 5});
 
- array<int, 1> A(3), B(3),C; 
- array<double,1> D;
+ C = A * B;
+ EXPECT_ARRAY_NEAR(C, array<int, 1>{6, 6, 6});
 
- B() = 2; A() = 3;
- 
+ C = 2 * B;
+ EXPECT_ARRAY_NEAR(C, array<int, 1>{4, 4, 4});
 
- C = A+B; std::cout  << A + B<< " = "<< C << std::endl; 
- C = A*B; std::cout  << A * B<< " = "<< C << std::endl; 
- C = 2*B; std::cout  << 2 * B<< " = "<< C << std::endl; 
- C = B*2; std::cout  << 2 * B<< " = "<< C << std::endl; 
- D = 2.3*B; std::cout  << 2.3 * B<< " = "<< D << std::endl; 
- D = A + B/1.2; std::cout  << A +  B/1.2<< " = "<< D << std::endl; 
+ C = 2 * B;
+ EXPECT_ARRAY_NEAR(C, array<int, 1>{4, 4, 4});
 
+ D = 2.3 * B;
+ EXPECT_ARRAY_NEAR(D, array<double, 1>{4.6, 4.6, 4.6});
 
- auto x  = A + B + 2*A;
- std::cerr << x << std::endl;
+ D = A + B / 1.2;
+ EXPECT_ARRAY_NEAR(D, array<double, 1>{4.66666666666667, 4.66666666666667, 4.66666666666667});
 
-  C =  A+2*A+3*A - 2*A+A -A+A+A*3+A+A+A+A+A+A+A+A+A+A+A+A+A; 
- std::cout  << C << std::endl ; 
- array<double,2> D2 (2,2);
-// auto y = A+D/2 + (D2 + 2*D2);// should not and does not compile
+ auto x = A + B + 2 * A;
+ std::stringstream fs;
+ fs << x;
+ EXPECT_EQ(fs.str(), "(([3,3,3] + [2,2,2]) + (2 * [3,3,3]))");
+
+ C = A + 2 * A + 3 * A - 2 * A + A - A + A + A * 3 + A + A + A + A + A + A + A + A + A + A + A + A + A;
+ EXPECT_ARRAY_NEAR(C, array<int, 1>{63, 63, 63});
 }
-
-
+MAKE_MAIN;

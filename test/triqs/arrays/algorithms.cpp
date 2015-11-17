@@ -18,9 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "test_tools.hpp"
-#include <triqs/arrays.hpp>
-using namespace triqs::arrays;
+#include "start.hpp"
 
 TEST(Array, AlgoStd) {
 

@@ -18,78 +18,125 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./common.hpp"
-
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/vector.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
+#include "start.hpp"
 
 #include <triqs/arrays/blas_lapack/gemm.hpp>
 #include <triqs/arrays/blas_lapack/gemv.hpp>
 #include <triqs/arrays/blas_lapack/ger.hpp>
 #include <triqs/arrays/blas_lapack/axpy.hpp>
 
-#include <iostream>
-using namespace triqs::arrays;
+TEST(Array, Blas1) {
 
-int main(int argc, char **argv) {
+ placeholder<0> i_;
+ placeholder<1> j_;
 
- 
- 
- 	typedef std::complex<double> T;
- triqs::arrays::vector<T>  V(5),V2(5);
+ vector<dcomplex> V(5), V2(5);
+ V[i_] << i_;
+ V2() = -1;
 
- for (int i =0; i<5; ++i) {V(i) = i; V2(i) = -1;}
+ auto Vc = V;
+ blas::axpy(2.0, V, V2);
 
- std::cout<<"V = "<<V<<std::endl;
- std::cout<<"V2 = "<<V2<<std::endl;
-
- std::cout <<"starting blas test"<<std::endl;
-
- blas::axpy(2.0,V,V2);
-
- std::cout<<"V = "<<V<<std::endl;
- std::cout<<"V2 = "<<V2<<std::endl;
-
- triqs::arrays::vector <double> V3(2);
- for (int i =0; i<2; ++i) {V3(i) = i+1;}
- 
-
-  triqs::arrays::matrix<double> M1(2,2,FORTRAN_LAYOUT), M2(2,2,FORTRAN_LAYOUT), M3(2,2,FORTRAN_LAYOUT);
- for (int i =0; i<2; ++i)
-  for (int j=0; j<2; ++j)
-  { M1(i,j) = i+j; M2(i,j) = 1; M3(i,j)=0;}
-
- // try to multiply
- blas::gemm(1.0,M1, M2, 1.0, M3);
- std::cout<<"M1 = "<<M1<<std::endl;
- std::cout<<"M2 = "<<M2<<std::endl;
- std::cout<<"M3 = "<<M3<<std::endl;
- 
- triqs::arrays::matrix<double> Mc1(2,2), Mc2(2,2), Mc3(2,2);
- for (int i =0; i<2; ++i)
-  for (int j=0; j<2; ++j)
-  { Mc1(i,j) = i+j; Mc2(i,j) = 1; Mc3(i,j)=0;}
-
- // try to multiply
- blas::gemm(1.0,Mc1, Mc2, 1.0, Mc3);
- std::cout<<"Mc1 = "<<Mc1<<std::endl;
- std::cout<<"Mc2 = "<<Mc2<<std::endl;
- std::cout<<"Mc3 = "<<Mc3<<std::endl;
-
- std::cout<<"V3 = "<<V3<<std::endl;
- blas::ger(1.0,V3,V3,M2);
- std::cout<<"M2 = "<<M2<<std::endl;
-
- // try to invert
- triqs::arrays::vector <int> ipiv(2);
- lapack::getrf(M1, ipiv);
- lapack::getri(M1, ipiv);
- std::cout<<"inv M1 = "<<M1<<std::endl;
-
-
+ EXPECT_ARRAY_NEAR(V, Vc); // no change
+ EXPECT_ARRAY_NEAR(V2, array<dcomplex, 1>{-1, 1, 3, 5, 7});
 }
 
+//----------------------------
 
+TEST(Array, Blas3R) {
+
+ placeholder<0> i_;
+ placeholder<1> j_;
+ matrix<double> M1(2, 2), M2(2, 2), M3(2, 2);
+
+ M1(i_, j_) << i_ + j_;
+ M2().as_array_view() = 1;
+ M3() = 0;
+
+ blas::gemm(1.0, M1, M2, 1.0, M3);
+
+ EXPECT_ARRAY_NEAR(M1, matrix<double>{{0, 1}, {1, 2}});
+ EXPECT_ARRAY_NEAR(M2, matrix<double>{{1, 1}, {1, 1}});
+ EXPECT_ARRAY_NEAR(M3, matrix<double>{{1, 1}, {3, 3}});
+}
+
+//----------------------------
+TEST(Array, Blas3R_f) {
+
+ placeholder<0> i_;
+ placeholder<1> j_;
+ matrix<double> M1(2, 2, FORTRAN_LAYOUT), M2(2, 2, FORTRAN_LAYOUT), M3(2, 2, FORTRAN_LAYOUT);
+
+ M1(i_, j_) << i_ + j_;
+ M2().as_array_view() = 1;
+ M3() = 0;
+
+ blas::gemm(1.0, M1, M2, 1.0, M3);
+
+ EXPECT_ARRAY_NEAR(M1, matrix<double>{{0, 1}, {1, 2}});
+ EXPECT_ARRAY_NEAR(M2, matrix<double>{{1, 1}, {1, 1}});
+ EXPECT_ARRAY_NEAR(M3, matrix<double>{{1, 1}, {3, 3}});
+}
+
+//----------------------------
+TEST(Array, Blas3C) {
+
+ placeholder<0> i_;
+ placeholder<1> j_;
+ matrix<double> M1(2, 2), M2(2, 2), M3(2, 2);
+
+ M1(i_, j_) << i_ + j_;
+ M2().as_array_view() = 1;
+ M3() = 0;
+
+ blas::gemm(1.0, M1, M2, 1.0, M3);
+
+ EXPECT_ARRAY_NEAR(M1, matrix<double>{{0, 1}, {1, 2}});
+ EXPECT_ARRAY_NEAR(M2, matrix<double>{{1, 1}, {1, 1}});
+ EXPECT_ARRAY_NEAR(M3, matrix<double>{{1, 1}, {3, 3}});
+}
+
+//----------------------------
+TEST(Array, Blas3Cf) {
+ placeholder<0> i_;
+ placeholder<1> j_;
+ matrix<dcomplex> M1(2, 2, FORTRAN_LAYOUT), M2(2, 2, FORTRAN_LAYOUT), M3(2, 2, FORTRAN_LAYOUT);
+
+ M1(i_, j_) << i_ + j_;
+ M2().as_array_view() = 1;
+ M3() = 0;
+
+ blas::gemm(1.0, M1, M2, 1.0, M3);
+
+ EXPECT_ARRAY_NEAR(M1, matrix<double>{{0, 1}, {1, 2}});
+ EXPECT_ARRAY_NEAR(M2, matrix<double>{{1, 1}, {1, 1}});
+ EXPECT_ARRAY_NEAR(M3, matrix<double>{{1, 1}, {3, 3}});
+}
+
+//----------------------------
+TEST(Array, Blas2) {
+ placeholder<0> i_;
+ matrix<double> M(2, 2, FORTRAN_LAYOUT);
+ M() = 0;
+ vector<double> V(2);
+ V[i_] << i_ + 1;
+
+ blas::ger(1.0, V, V, M);
+ EXPECT_ARRAY_NEAR(M, matrix<double>{{1, 2}, {2, 4}});
+}
+
+//----------------------------
+
+TEST(Array, Blas3InvMat) {
+ placeholder<0> i_;
+ placeholder<1> j_;
+
+ matrix<double> M(2, 2);
+ M(i_, j_) << i_ + j_;
+ vector<int> ipiv(2);
+ lapack::getrf(M, ipiv);
+ lapack::getri(M, ipiv);
+ EXPECT_ARRAY_NEAR(M, matrix<double>{{-2, 1}, {1, 0}});
+}
+MAKE_MAIN;
 

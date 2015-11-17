@@ -1,36 +1,48 @@
-#include "./common.hpp"
+#include "start.hpp"
 
-using namespace triqs::arrays;
-using namespace triqs::clef;
+placeholder<0> i_;
+placeholder<1> j_;
+placeholder<2> k_;
+placeholder<3> l_;
 
-template <typename... T> void test(T... x) {
-  placeholder<0> i_;
-  placeholder<1> j_;
-  placeholder<2> k_;
-  placeholder<3> l_;
- array<int, 4> a(1, 2, 3, 4, make_memory_layout(x...));
+TEST(Array, c_ordered_transposed_view1) {
+
+ array<int, 4> a(1, 2, 3, 4, make_memory_layout(0, 1, 2, 3));
  a(i_, j_, k_, l_) << i_ + 10 * j_ + 100 * k_ + 1000 * l_;
- TEST_ERR(a);
 
  auto v = c_ordered_transposed_view(a());
 
- TEST(a.shape());
- TEST(a.indexmap().get_memory_layout());
- TEST(v.shape());
- TEST(v.indexmap().get_memory_layout());
- std::cerr << "----------------" << std::endl;
+ EXPECT_EQ(a.shape(), (mini_vector<size_t, 4>{1, 2, 3, 4}));
+ EXPECT_EQ(v.shape(), (mini_vector<size_t, 4>{1, 2, 3, 4}));
+ EXPECT_EQ(a.indexmap().get_memory_layout(), (memory_layout<4>{0, 1, 2, 3}));
+ EXPECT_EQ(v.indexmap().get_memory_layout(), (memory_layout<4>{0, 1, 2, 3}));
 }
 
-int main() {
+TEST(Array, c_ordered_transposed_view2) {
 
- try {
+ array<int, 4> a(1, 2, 3, 4, make_memory_layout(1, 0, 2, 3));
+ a(i_, j_, k_, l_) << i_ + 10 * j_ + 100 * k_ + 1000 * l_;
 
- test(0, 1, 2, 3);
- test(1, 0, 2, 3);
- test(2, 0, 3, 1);
- }
- catch (std::exception const& e) {
-  std::cerr << e.what() << std::endl;
- }
+ auto v = c_ordered_transposed_view(a());
+
+ EXPECT_EQ(a.shape(), (mini_vector<size_t, 4>{1, 2, 3, 4}));
+ EXPECT_EQ(v.shape(), (mini_vector<size_t, 4>{2, 1, 3, 4}));
+ EXPECT_EQ(a.indexmap().get_memory_layout(), (memory_layout<4>{1, 0, 2, 3}));
+ EXPECT_EQ(v.indexmap().get_memory_layout(), (memory_layout<4>{0, 1, 2, 3}));
 }
+
+TEST(Array, c_ordered_transposed_view3) {
+
+ array<int, 4> a(1, 2, 3, 4, make_memory_layout(2, 0, 3, 1));
+ a(i_, j_, k_, l_) << i_ + 10 * j_ + 100 * k_ + 1000 * l_;
+
+ auto v = c_ordered_transposed_view(a());
+
+ EXPECT_EQ(a.shape(), (mini_vector<size_t, 4>{1, 2, 3, 4}));
+ EXPECT_EQ(v.shape(), (mini_vector<size_t, 4>{3, 1, 4, 2}));
+ EXPECT_EQ(a.indexmap().get_memory_layout(), (memory_layout<4>{2, 0, 3, 1}));
+ EXPECT_EQ(v.indexmap().get_memory_layout(), (memory_layout<4>{0, 1, 2, 3}));
+}
+
+MAKE_MAIN;
 

@@ -18,39 +18,24 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./common.hpp"
-#include <iostream>
-
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/vector.hpp>
-#include <triqs/arrays/matrix.hpp>
+#include "start.hpp"
 #include <triqs/arrays/blas_lapack/dot.hpp>
-#include <triqs/arrays/asserts.hpp>
 
-using namespace triqs::arrays;
+TEST(Array, Dot) {
+ vector<double> a(2), aa(2), c(2);
+ a() = 2.0;
+ c() = 1;
+ vector<int> b(2);
+ b() = 3;
+ aa = 2 * a;
 
-template<typename Vd, typename Vi> 
-void test() {
- Vd a(2),aa(2),c(2) ;a()=2.0; c() = 1;
- Vi b(2);b()=3;
- std::cerr << blas::dot<false>(a,b) << std::endl;
-
- aa = 2*a;
-
- assert_close( dot(a,b), 12);
- assert_close( dot(aa,a), 16);
- assert_close( dot(aa,b), 24);
- assert_close( dot(aa-a,b), 12);
-
- std::cerr  << dot(aa,a) << std::endl ;
- std::cerr  << dot(aa,b) << std::endl ;
- std::cerr  << dot(aa-a, b) << std::endl;
- std::cerr<< "---------------------"<<std::endl;
+ EXPECT_DOUBLE_EQ(dot(a, b), 12);
+ EXPECT_DOUBLE_EQ(dot(aa, a), 16);
+ EXPECT_DOUBLE_EQ(dot(aa, b), 24);
+ EXPECT_DOUBLE_EQ(dot(aa - a, b), 12);
 }
 
-int main(int argc, char **argv) {
-
- test<vector<double> , vector<int> >();
+TEST(Array, Dot2) {
 
  /// Added by I. Krivenko, #122
  /// test the complex version, specially with the zdotu workaround on Os X.
@@ -58,18 +43,9 @@ int main(int argc, char **argv) {
  v(0) = 0;
  v(1) = {0, 1};
 
- std::cerr << v << std::endl;
- std::cerr << blas::dot<false>(v, v) << std::endl;
- std::cerr << blas::dot<true>(v, v) << std::endl;
- assert_close( dot(v,v), -1);
- assert_close( dotc(v,v), 1);
-
- // does not work for array just because of .size() vs .shape(0)...
- //test<array<double,1> , array<int,1> >();
- //test<array<double,1> , vector<int> >();
- //test<vector<double> , array<int,1>  >();
-
+ EXPECT_NEAR_COMPLEX(blas::dot<false>(v, v), -1);
+ EXPECT_NEAR_COMPLEX(blas::dot<true>(v, v), 1);
+ EXPECT_NEAR_COMPLEX(dot(v, v), -1);
+ EXPECT_NEAR_COMPLEX(dotc(v, v), 1);
 }
-
-
-
+MAKE_MAIN
