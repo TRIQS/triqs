@@ -40,9 +40,10 @@ def clean_end_white_char(s):
     """ remove the space at the end of the lines (for clean git diff...)"""
     reg = re.compile(r"[ \t\r\f\v]+$",re.MULTILINE)
     return re.sub(reg,'',s.strip())
+
 def replace_latex(s):
     """replace $XXX$  by :math:`XXX`"""
-    text=re.sub('\$\$([ A-Za-z0-9{}\(\[\],\)=./\/+-_]+)\$\$', r'\n\n.. math::\n\t\t\1\n\n', s)
+    text=re.sub('\$\$([ A-Za-z0-9{}\(\[\],\)=./\/+-_]+)\$\$', r'\n\n.. math::\n\t\t\1\n\n..\n', s)
     text=re.sub('\$([ A-Za-z0-9{}\[\],\(\)=./\/+-_]+)\$', r':math:`\1`', text)
     return text
 
@@ -83,12 +84,12 @@ def grab_from_doc (doc, var1, var2):
 def process_doc_function(f): 
     """Process the doc of the function f"""
     f.brief_doc = f.doc.split('\n',1)[0]
-    f.doc_elements, f.processed_doc = grab_from_doc(f.doc, ['include', 'return', 'synopsis', 'warning', 'note'],['param', 'tparam'])
+    f.doc_elements, f.processed_doc = grab_from_doc(replace_latex(f.doc), ['include', 'return', 'synopsis', 'warning', 'note'],['param', 'tparam'])
     
 def process_doc_class(c): 
     """Process the doc of the class c"""
     c.brief_doc = c.doc.split('\n',1)[0]
-    c.doc_elements, c.processed_doc = grab_from_doc(c.doc, ['include', 'manual_methods', 'manual_friends','warning', 'note'],['tparam'])
+    c.doc_elements, c.processed_doc = grab_from_doc(replace_latex(c.doc), ['include', 'manual_methods', 'manual_friends','warning', 'note'],['tparam'])
 
 def regroup_func_by_names(constructors, *f_list_list): 
     """ Given a list of functions, regroup them by names"""
@@ -105,7 +106,7 @@ def render(template, output_name, **d):
         print "Skipping ", output_name
         return
     with open("{output_name}.rst".format(output_name=output_name), "w") as f:
-        f.write(replace_latex(clean_end_white_char(rendered)))
+        f.write((clean_end_white_char(rendered)))
 
 def mkchdir(*subdirs): 
     for d in subdirs: 
