@@ -51,6 +51,8 @@ namespace arrays {
   typedef typename indexmap_type::domain_type domain_type;
   typedef typename std::conditional<IsMatrix, matrix_const_view<value_type>,
                                     array_const_view<value_type, domain_type::rank>>::type view_type;
+  typedef typename std::conditional<IsMatrix, matrix_const_view<value_type>,
+                                    array_const_view<value_type, domain_type::rank>>::type const_view_type;
 
   template <typename AA> const_matrix_tensor_proxy(AA &&a_, long n_) : a(std::forward<AA>(a_)), n(n_) {}
 
