@@ -32,7 +32,7 @@ ${c.processed_doc}
 %if len(c.doc_elements['tparam']) > 0 :
 
 Template parameters
--------------
+----------------------
 
 %for p,doc in c.doc_elements['tparam'].items():
    * **${p}**: ${doc}

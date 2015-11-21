@@ -42,9 +42,15 @@ def clean_end_white_char(s):
     return re.sub(reg,'',s.strip())
 
 def replace_latex(s):
-    """replace $XXX$  by :math:`XXX`"""
+    """replace 
+       $XXX$  by :math:`XXX`
+       $$XXX$$  by \n\n.. math:\n\t\tXXX\n\n..\n
+       [[XXX]]  by :ref:`XXX`
+     
+     """
     text=re.sub('\$\$([ A-Za-z0-9{}\(\[\],\)=./\/+-_]+)\$\$', r'\n\n.. math::\n\t\t\1\n\n..\n', s)
     text=re.sub('\$([ A-Za-z0-9{}\[\],\(\)=./\/+-_]+)\$', r':math:`\1`', text)
+    text=re.sub('\[\[([ A-Za-z0-9{}\(,\)=./\/+-_]+)\]\]', r':ref:`\1`', text)
     return text
 
 
@@ -74,7 +80,7 @@ def grab_from_doc (doc, var1, var2):
         m = re.search("@%s (.*)"%v1, doc)
         d[v1] = m.group(1) if m else None 
     for v2 in var2: 
-        d[v2] =  dict( (m[0],m[1]) for m in re.findall("@%s (\w*) (.*)"%v2, doc))
+        d[v2] =  OrderedDict( (m[0],m[1]) for m in re.findall("@%s (\w*) (.*)"%v2, doc))
     for x in var1 + var2:
       doc = re.sub(r"\n\s*(@%s .*)"%x,'',doc)
     for m in re.findall("(@.*)", doc):

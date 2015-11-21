@@ -11,13 +11,16 @@
 
 .. highlight:: c
 
-%if c is not None :
-.. _${c.name}_${f_name}:
-%endif
 %if c is None:
 .. code-block:: c
 
     #include <${f_overloads[0].file_location}>
+%endif
+
+%if c is not None :
+.. _${c.name}_${f_name}:
+%else:
+.. _${f_name}:
 %endif
 
 ${f_name}
@@ -40,7 +43,7 @@ ${f_overloads[0].processed_doc}
 %if sum([len(m.doc_elements['tparam']) for n,m in enumerate(f_overloads)]) > 0 :
 
 Template parameters
--------------
+-----------------------
 
 %if len(f_overloads) >1 :
 %for n,m in enumerate(f_overloads) :

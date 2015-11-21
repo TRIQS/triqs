@@ -21,6 +21,16 @@ def make_synopsis_template_decl(tparams) :
     targs = ', '.join("%s %s"%(pp[0],pp[1]) + (" = %s"%pp[2] if (len(pp)==3 and pp[2]) else '') for pp in tparams)
     return "template<%s>"%targs
 
+def add_linebreaks(s, num_char=80):
+    """ add linebreaks every num_char characters in string s (if possible i.e if whitespace)"""
+    char_count=0
+    final_s=''
+    for w in s.split(' '):
+     char_count += len(w)
+     if char_count < num_char: final_s += w+' '
+     else: final_s += '\n   '+w+' '; char_count=len(w)
+    return final_s
+
 def make_synopsis(m, decal):
     #assert not m.tparams, "template functions "
     syn = m.doc_elements['synopsis']
@@ -32,7 +42,9 @@ def make_synopsis(m, decal):
     args = ', '.join( ["%s %s"%(process_param_type(t),n) + (" = %s"%d if d else "") for t,n,d in m.params])
     s = s.format(args = args, name = m.name.strip(), const = m.const)
     r = [x.strip() for x in s.split('\n')]
-    return [x for x in r if x]
+    L= [x for x in r if x]
+    L_lb = [add_linebreaks(x) for x in L]
+    return L_lb
 
 def make_synopsis_list(m_list):
     if not m_list: return ''
