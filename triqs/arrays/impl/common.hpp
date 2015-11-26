@@ -22,7 +22,6 @@
 #define TRIQS_ARRAYS_IMPL_COMMON_H
 #include <triqs/utility/first_include.hpp>
 #include <triqs/clef.hpp>
-//#define TRIQS_ARRAYS_ALREADY_INCLUDED
 
 /// Maximum dimension of the arrays
 #define ARRAY_NRANK_MAX 10
@@ -33,7 +32,7 @@
 #include <sstream>
 #include <type_traits>
 
-template<char C> using char_ = std::integral_constant<char,C>;
+template <char C> using char_ = std::integral_constant<char, C>;
 
 #include <triqs/utility/is_complex.hpp>
 #include <triqs/utility/macros.hpp>
@@ -43,18 +42,8 @@ template<char C> using char_ = std::integral_constant<char,C>;
 
 namespace boost { namespace serialization { class access;}}
 
-#define TRIQS_ARRAYS_THROW(s) { TRIQS_RUNTIME_ERROR<<s; } 
-#define TRIQS_ARRAYS_CHECK_OR_THROW(Cond,Mess) {if (!(Cond)) {TRIQS_ARRAYS_THROW(Mess);}}
-
 #ifdef TRIQS_ARRAYS_DEBUG
-#define TRIQS_ARRAYS_DEBUG_CHECK(Cond,Error) TRIQS_ARRAYS_CHECK_OR_THROW(Cond,Error) 
-
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#define TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
-#define TRIQS_ARRAYS_CHECK_WEAK_REFS
-
-#else 
-#define TRIQS_ARRAYS_DEBUG_CHECK(Cond,Error) 
 #endif
 
 namespace triqs { 

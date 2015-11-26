@@ -90,14 +90,8 @@ namespace triqs { namespace arrays {
     // ------------------------------- constructors --------------------------------------------
 
     indexmap_storage_pair() {}
-   
-    indexmap_storage_pair(indexmap_type IM, storage_type ST) : indexmap_(std::move(IM)), storage_(std::move(ST)) {
-#ifdef TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT_deactivated
-     if (ST.size() != IM.domain().number_of_elements())
-      TRIQS_RUNTIME_ERROR<<"index_storage_pair construction : storage and indices are not compatible " <<
-      "Storage size"<< ST.size() <<" != "<< IM.domain().number_of_elements();
-#endif
-     }
+
+    indexmap_storage_pair(indexmap_type IM, storage_type ST) : indexmap_(std::move(IM)), storage_(std::move(ST)) {}
 
      /// The storage is allocated from the size of IM.
      indexmap_storage_pair(const indexmap_type &IM) : indexmap_(IM), storage_() {
@@ -207,7 +201,7 @@ namespace triqs { namespace arrays {
      operator()(Args const & ... args) && {
       // add here a security check in case it is a view, unique. For a regular type, move the result... 
 #ifdef TRIQS_ARRAYS_DEBUG
-      if (storage_.is_unique()) TRIQS_RUNTIME_ERROR <<"triqs::array. Attempting to call an rvalue unique view ...";
+      if (!storage_type::is_weak && storage_.is_unique()) TRIQS_RUNTIME_ERROR <<"triqs::array. Attempting to call an rvalue unique view ...";
 #endif
       return storage_[indexmap_(args...)]; 
      }

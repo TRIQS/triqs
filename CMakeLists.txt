@@ -88,7 +88,8 @@ endif()
 # Turn the memory check
 option(CHECK_MEMORY "Turn on memory check" OFF)
 if (CHECK_MEMORY)
- set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} " -DTRIQS_ARRAYS_DEBUG_COUNT_MEMORY")
+  # These options must be activated for the lib AND any code using it or they will give false positive
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} " -DTRIQS_ARRAYS_DEBUG_COUNT_MEMORY -DTRIQS_ARRAYS_CHECK_WEAK_REFS")
 endif()
 
 # Include TRIQS cmake macros
