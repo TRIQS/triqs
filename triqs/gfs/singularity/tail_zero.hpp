@@ -31,7 +31,7 @@ namespace gfs {
  
   tail_zero() = default;
   tail_zero(tail_zero const &) = default;
-  template <typename S> tail_zero(S const & s) { _init(s,zero);}
+  template <typename S> explicit tail_zero(S const & s) { _init(s,zero);}
 
   void rebind(tail_zero) {}
   template <typename RHS> void operator=(RHS &&) {}
