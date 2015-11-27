@@ -137,6 +137,10 @@ namespace gfs {
   /// Is the mesh only for positive omega_n (G(tau) real))
   bool positive_only() const { return _opt == matsubara_mesh_opt::positive_frequencies_only;}
 
+  // -------------------- Get the grid for positive freq only -------------------
+
+  gf_mesh get_positive_freq() const { return {domain(), _n_pts, matsubara_mesh_opt::positive_frequencies_only}; }
+
   // -------------------- mesh_point -------------------
 
   /// Type of the mesh point
