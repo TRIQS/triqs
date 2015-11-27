@@ -52,11 +52,18 @@ namespace gfs {
  /// Takes a complex G(tau) function and return a real G(tau) if imaginary part is small enough
  /// and throws an exception otherwise.
  /// Valid for any Gf in fact ...
- template <typename G>
- typename G::regular_type real_or_throw(G const &g, double tolerance = 1.e-13,
-                                        const char *message = "real_or_throw : the imaginary part of G(tau) is not zero") {
+
+ template <typename M, typename S, typename E>
+ gf<M, matrix_real_valued, S, E> real_or_throw_impl(gf_const_view<M, matrix_valued, S, E> g, double tolerance,
+                                                    const char *message) {
   if (max_element(abs(imag(g.data()))) > tolerance) TRIQS_RUNTIME_ERROR << message;
-  return {g.mesh(), real(g.data()), g.singularity(), g.symmetry(), g.indices(), g.name};
+  return {g.mesh(), real(g.data()), g.singularity(), g.symmetry(), {}, {}};
+ }
+
+ template <typename G>
+ auto real_or_throw(G const &g, double tolerance = 1.e-13,
+                    const char *message = "real_or_throw : the imaginary part of G(tau) is not zero") {
+  return real_or_throw_impl(make_const_view(g), tolerance, message);
  }
 
  /// ---------------------------  closest mesh point on the grid ---------------------------------
@@ -67,6 +74,25 @@ namespace gfs {
    double x = double(p.value) + 0.5 * g->mesh().delta();
    int n = std::floor(x / g->mesh().delta());
    return n;
+  }
+ };
+
+  template <typename T, typename S, typename E> struct gf_h5_rw<imtime, T, S, E> {
+
+  static void write(h5::group gr, gf_const_view<imtime, Target, Singularity, Evaluator> g) {
+   h5_write(gr, "data", real(g._data));
+   h5_write(gr, "singularity", g._singularity);
+   h5_write(gr, "mesh", g._mesh);
+   h5_write(gr, "symmetry", g._symmetry);
+   h5_write(gr, "indices", g._indices);
+  }
+
+  template <typename G> static void read(h5::group gr, G&g) {
+   h5_read(gr, "data", g._data);
+   h5_read(gr, "singularity", g._singularity);
+   h5_read(gr, "mesh", g._mesh);
+   h5_read(gr, "symmetry", g._symmetry);
+   h5_read(gr, "indices", g._indices);
   }
  };
 

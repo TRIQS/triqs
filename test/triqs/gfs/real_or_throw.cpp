@@ -10,7 +10,8 @@ TEST(Gf, Base) {
 
  Gt(t_) << 8 * t_;
  auto gtr = real_or_throw(Gt);
- EXPECT_CLOSE_ARRAY(gtr.data(), Gt.data());
+ array<double,3> D = real(Gt.data());
+ EXPECT_CLOSE_ARRAY(D, gtr.data());
 
  Gt(t_) << 8_j * t_;
  EXPECT_THROW(real_or_throw(Gt), std::exception);
