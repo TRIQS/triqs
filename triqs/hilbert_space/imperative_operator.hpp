@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <utility>
+#include <algorithm>
 
 // Workaround for GCC bug 41933
 #if defined GCC_VERSION && GCC_VERSION < 40900
