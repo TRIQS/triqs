@@ -24,7 +24,7 @@
 namespace triqs {
 namespace hilbert_space {
 
- using utility::variant;
+ using utility::variant_int_string;
 
  namespace { // auxiliary functions
 
@@ -35,7 +35,7 @@ namespace hilbert_space {
   };
 
   // decode the string
-  variant<int,std::string> string_to_variant(std::string const& s) {
+  variant_int_string string_to_variant(std::string const& s) {
    switch (s[0]) {
     case 'i':
      return std::stoi(s.c_str() + 1); // the variant is an int. Skip the first char and recover the int

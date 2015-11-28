@@ -31,7 +31,6 @@
 namespace triqs {
 namespace operators {
 
- using utility::variant;
  using utility::real_or_complex;
 
  /// The generic class
