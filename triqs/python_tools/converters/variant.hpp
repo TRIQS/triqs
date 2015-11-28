@@ -2,11 +2,11 @@
 #include "../wrapper_tools.hpp"
 #include <triqs/utility/variant.hpp>
 
-
 namespace triqs {
 namespace py_tools {
 
 // triqs::utility::variant<Types...> converter
+// converts in the first possible type
 template<typename... Types>
 struct py_converter<triqs::utility::variant<Types...>> {
 
@@ -18,7 +18,7 @@ private:
 
   // c2py_visitor
   struct c2py_visitor {
-    template<typename T> PyObject * operator()(T x) { return py_converter<T>::c2py(x); }
+    template<typename T> PyObject * operator()(T const &x) { return py_converter<T>::c2py(x); }
   };
 
   // is_convertible_impl

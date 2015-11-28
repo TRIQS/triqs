@@ -57,7 +57,7 @@ template<typename Archive, typename... Types>
 void load(Archive & ar, triqs::utility::variant<Types...> & v, const unsigned int version) {
   int new_type_id; ar >> new_type_id;
   if(v.type_id != new_type_id) {
-    (v.*triqs::utility::variant<Types...>::destroy_dt[v.type_id])();
+    v.destroy();
     v.type_id = new_type_id;
     apply_visitor(variant_serialize_loader<Archive>(ar,true),v);
   } else

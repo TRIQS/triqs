@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2015 by I. Krivenko
+ * Copyright (C) 2015 by I. Krivenko and O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,270 +19,253 @@
  *
  ******************************************************************************/
 #pragma once
+#include <triqs/utility/exceptions.hpp>
+#include <triqs/utility/c14.hpp>
 #include <utility>
 #include <type_traits>
 #include <tuple>
 #include <array>
 #include <ostream>
-
-#include <triqs/utility/exceptions.hpp>
-#include <triqs/utility/c14.hpp>
+#include <algorithm>
 
 // Forward-declarations for Boost.Serialization
 // They are neccessary along with ugly friend declarations in class variant,
 // if we want to keep the serialization code in a separate file
-namespace triqs { namespace utility {
-template <typename... Types> class variant;
-}}
+namespace triqs {
+namespace utility {
+ template <typename... Types> class variant;
+}
+}
 
-namespace boost { namespace serialization {
-template <typename Archive, typename... Types> void save(Archive &, triqs::utility::variant<Types...> const&, const unsigned int);
-template <typename Archive, typename... Types> void load(Archive &, triqs::utility::variant<Types...> &, const unsigned int);
-}}
+namespace boost {
+namespace serialization {
+ template <typename Archive, typename... Types> void save(Archive&, triqs::utility::variant<Types...> const&, const unsigned int);
+ template <typename Archive, typename... Types> void load(Archive&, triqs::utility::variant<Types...>&, const unsigned int);
+}
+}
 
 namespace triqs {
 namespace utility {
 
-// Too bad, std::aligned_union is a part of C++11, but it is supported only by g++ 5.1
-// This implementation has to be a bit messy, if we want to support g++ 4.8 (cf gcc bug 56859)
-template <typename... Types>
-struct aligned_union {
+ template <typename... Types> class variant {
 
-  // Find a type of the maximum size
-  template<typename T0, typename... Tail>
-  struct max_size_t {
-    using type = std14::conditional_t<(sizeof(T0)>sizeof(typename max_size_t<Tail...>::type)),
-                                      T0,
-                                      typename max_size_t<Tail...>::type>;
-  };
-  template<typename T0> struct max_size_t<T0> { using type = T0; };
-
-  // Find a type of the maximum alignment value
-  template<typename T0, typename... Tail>
-  struct max_alignment_t {
-    using type = std14::conditional_t<(alignof(T0)>alignof(typename max_alignment_t<Tail...>::type)),
-                                      T0,
-                                      typename max_alignment_t<Tail...>::type>;
-  };
-  template<typename T0> struct max_alignment_t<T0> { using type = T0; };
-
-  struct type {
-    alignas(typename max_alignment_t<Types...>::type) char _[sizeof(typename max_size_t<Types...>::type)];
-  };
-};
-
-template<typename... Types>
-class variant {
-
-public:
-
+  public:
+  constexpr static int n_bounded_types = sizeof...(Types);
   using bounded_types = std::tuple<Types...>;
-  constexpr static std::size_t n_bounded_types = sizeof...(Types);
-  template<std::size_t N> using bounded_type = std14::tuple_element_t<N,bounded_types>;
+  template <int N> using bounded_type = std14::tuple_element_t<N, bounded_types>;
 
-private:
-
-  static_assert(n_bounded_types > 0,"triqs::utility::variant: list of bounded types must not be empty");
+  private:
+  static_assert(n_bounded_types > 0, "triqs::utility::variant: list of bounded types must not be empty");
   static_assert(std::is_default_constructible<bounded_type<0>>::value,
                 "triqs::utility::variant: the first bounded type must be DefaultConstructible");
-  typename aligned_union<Types...>::type data; // Storage
-  std::size_t type_id; // Type ID of the stored value
+#if GCC_VERSION > 50200
+  std::aligned_union_t<0, Types...> data; // Storage. We do not require a min len (0).
+  // data can store any of the Types, but it is not initialized. Will be used with "placement new".
+#else
+  // WORKAROUND FOR OLD VERSION OF GCC which do not have aligned_union
+  struct aligned_union {
+   template <typename T0, typename... Tail> struct max_size_t {
+    using type =
+        std14::conditional_t<(sizeof(T0) > sizeof(typename max_size_t<Tail...>::type)), T0, typename max_size_t<Tail...>::type>;
+   };
+   template <typename T0> struct max_size_t<T0> { using type = T0; };
+
+   // Find a type of the maximum alignment value
+   template <typename T0, typename... Tail> struct max_alignment_t {
+    using type = std14::conditional_t<(alignof(T0) > alignof(typename max_alignment_t<Tail...>::type)), T0,
+                                      typename max_alignment_t<Tail...>::type>;
+   };
+   template <typename T0> struct max_alignment_t<T0> { using type = T0; };
+
+   struct type {
+    alignas(typename max_alignment_t<Types...>::type) char _[sizeof(typename max_size_t<Types...>::type)];
+   };
+  };
+  typename aligned_union::type data;
+#endif
+  int type_id; // Type ID of the stored value
 
   // Support for Boost.Serialization
-  template<typename Archive, typename... Types_>
-  friend void boost::serialization::save(Archive & ar, variant<Types_...> const& v, const unsigned int version);
-  template<typename Archive, typename... Types_>
-  friend void boost::serialization::load(Archive & ar, variant<Types_...> & v, const unsigned int version);
+  template <typename Archive, typename... Types_>
+  friend void boost::serialization::save(Archive& ar, variant<Types_...> const& v, const unsigned int version);
+  template <typename Archive, typename... Types_>
+  friend void boost::serialization::load(Archive& ar, variant<Types_...>& v, const unsigned int version);
 
-  // Auxiliary metafunctions-predicates
-  template<typename T> struct equal {
-    template<typename U> struct apply : std::is_same<T,U> {};
+  // Auxiliary metafunctions-predicates, i.e. currying metafunction T -> U -> XX<T,U>
+  template <typename T> struct equal {
+   template <typename U> struct apply : std::is_same<T, U> {};
   };
-  template<typename T> struct convertible_from {
-    template<typename U> struct apply : std::is_convertible<T,U> {};
-  };
-
-  template<typename Predicate, typename T0, typename... Tail> struct find_first_type_impl {
-    using type = std14::conditional_t<Predicate::template apply<T0>::value,
-                                      T0,
-                                      typename find_first_type_impl<Predicate,Tail...>::type>;
-    constexpr static std::size_t id = Predicate::template apply<T0>::value ?
-                                 n_bounded_types - sizeof...(Tail) - 1 :
-                                 find_first_type_impl<Predicate,Tail...>::id;
-  };
-  template<typename Predicate, typename T0> struct find_first_type_impl<Predicate,T0> {
-    using type = std14::conditional_t<Predicate::template apply<T0>::value,T0,void>;
-    constexpr static std::size_t id = Predicate::template apply<T0>::value ? n_bounded_types - 1 : -1;
+  template <typename T> struct convertible_from {
+   template <typename U> struct apply : std::is_convertible<T, U> {};
   };
 
-  // Find the first bounded type T, for which Predicate::apply<T>::value is true
-  template<typename Predicate> struct find_first_type : find_first_type_impl<Predicate,Types...> {};
+#if GCC_VERSION > 50200
+  // Find the id of the first type T for which Predicate::apply<T>::value is true, -1 if not found
+  template <typename Predicate> struct find_first_id {
+   template <size_t... Is> static constexpr int invoke(std14::index_sequence<Is...>) {
+    return std::min({(Predicate::template apply<bounded_type<Is>>::value ? int(Is) : n_bounded_types)...});
+   }
+   static constexpr int id1 = invoke(std14::make_index_sequence<n_bounded_types>{});
+   static constexpr int id = (id1 == n_bounded_types ? -1 : id1);
+  };
+#else
+  template <typename Predicate, typename T0, typename... Tail> struct find_first_type_impl {
+   constexpr static std::size_t id =
+       Predicate::template apply<T0>::value ? n_bounded_types - sizeof...(Tail)-1 : find_first_type_impl<Predicate, Tail...>::id;
+  };
+  template <typename Predicate, typename T0> struct find_first_type_impl<Predicate, T0> {
+   constexpr static std::size_t id = Predicate::template apply<T0>::value ? n_bounded_types - 1 : -1;
+  };
+  template <typename Predicate> struct find_first_id : find_first_type_impl<Predicate, Types...> {};
+#endif
+
+  // table of pointer to various variant methods ... see below.
+  using table_e_t = std::array<void (variant::*)(), n_bounded_types>;
+  using table_cr_t = std::array<void (variant::*)(variant<Types...> const&), n_bounded_types>;
+  using table_rr_t = std::array<void (variant::*)(variant<Types...>&&), n_bounded_types>;
 
   // Implementation: destructor
-  template<typename T> void destroy() {
-    if(!std::is_trivially_destructible<T>::value)
-      reinterpret_cast<T*>(&data)->~T();
+  template <typename T> void destroy_impl() {
+   if (!std::is_trivially_destructible<T>::value) reinterpret_cast<T*>(&data)->~T();
+  }
+
+  void destroy() {
+   constexpr static table_e_t table = {&variant::destroy_impl<Types>...};
+   (this->*table[type_id])();
   }
 
   // Implementation: copy-constructor
-  template<typename T> void copy(variant const& other) {
-    ::new(&data) T(*reinterpret_cast<T const*>(&other.data));
+  template <typename T> void copy_from_impl(variant const& other) { ::new (&data) T(*reinterpret_cast<T const*>(&other.data)); }
+
+  void copy_from(variant const& other) {
+   type_id = other.type_id;
+   constexpr static table_cr_t table = {&variant::copy_from_impl<Types>...};
+   (this->*table[type_id])(other);
   }
 
   // Implementation: move-constructor
-  template<typename T> void move(variant && other) {
-    ::new(&data) T(std::move(*reinterpret_cast<T*>(&other.data)));
+  template <typename T> void move_impl(variant&& other) { ::new (&data) T(std::move(*reinterpret_cast<T*>(&other.data))); }
+
+  void move_from(variant&& other) {
+   type_id = other.type_id;
+   constexpr static table_rr_t table = {&variant::move_impl<Types>...};
+   (this->*table[type_id])(std::move(other));
   }
 
   // Implementation: assignment
-  template<typename T> void assign(variant const& other) {
-    *reinterpret_cast<T*>(&data) = *reinterpret_cast<T const*>(&other.data);
+  template <typename T> void assign_impl(variant const& other) {
+   *reinterpret_cast<T*>(&data) = *reinterpret_cast<T const*>(&other.data);
   }
 
-  // Implementation: equality comparison
-  struct equal_visitor {
-    variant const& other;
-    equal_visitor(variant const& other) : other(other) {}
-    template<typename T> bool operator()(T const& x){
-      return x == *reinterpret_cast<T const*>(&other.data);
-    }
-  };
+  void assign_from(variant const& other) {
+   constexpr static table_cr_t table = {&variant::assign_impl<Types>...};
+   (this->*table[type_id])(other);
+  }
 
-  // Implementation: less-than comparison
-  struct less_visitor {
-    variant const& other;
-    less_visitor(variant const& other) : other(other) {}
-    template<typename T> bool operator()(T const& x){
-      return x < *reinterpret_cast<T const*>(&other.data);
-    }
-  };
+  // Implementation: move assignment
+  template <typename T> void assign_move_impl(variant&& other) {
+   *reinterpret_cast<T*>(&data) = std::move(*reinterpret_cast<T const*>(&other.data));
+  }
 
-  // Implementation: stream insertion
-  struct print_visitor {
-    std::ostream & os;
-    print_visitor(std::ostream & os) : os(os) {}
-    template<typename T> void operator()(T const& x){ os << x; }
-  };
+  void assign_move_from(variant&& other) {
+   constexpr static table_rr_t table = {&variant::assign_move_impl<Types>...};
+   (this->*table[type_id])(std::move(other));
+  }
 
   // Implementation: visitation
-  template<typename T, typename F>
-  std14::result_of_t<F(T&)> apply(F f) {
-    return f(*reinterpret_cast<T*>(&data));
-  }
-  template<typename T, typename F>
-  std14::result_of_t<F(T)> apply(F f) const { // const version
-    return f(*reinterpret_cast<T const*>(&data));
+  template <typename T, typename F> std14::result_of_t<F(T&)> apply(F f) { return f(*reinterpret_cast<T*>(&data)); }
+  template <typename T, typename F> std14::result_of_t<F(T const&)> apply_c(F f) const {
+   return f(*reinterpret_cast<T const*>(&data));
   }
 
-  // Declare dispatch tables
-#define DECLARE_DT(NAME,RTYPE,ARGS) \
-  constexpr static std::array<RTYPE(variant::*)ARGS,n_bounded_types> \
-  NAME##_dt = {&variant::NAME<Types>...};
-  DECLARE_DT(destroy,      void,())
-  DECLARE_DT(copy,         void,(variant<Types...> const&))
-  DECLARE_DT(move,         void,(variant<Types...> &&))
-  DECLARE_DT(assign,       void,(variant<Types...> const&))
-#undef DECLARE_DT
-
-public:
-
-#warning I'd like to delete the default constructor; this would require a change to c++2py
-  // Default constructor
-  variant() : type_id(0) {
-    ::new(&data) bounded_type<0>();
+  public:
+  template <typename T, int id = find_first_id<convertible_from<T>>::id, typename = std14::enable_if_t<id != -1>>
+  variant(T const& v)
+     : type_id(id) {
+   ::new (&data) bounded_type<id>(v);
   }
 
-  // Constructor
-  template<typename T, typename MatchingType = find_first_type<convertible_from<T>>,
-           typename = std14::enable_if_t<MatchingType::id != -1>>
-  variant(T v) : type_id(MatchingType::id) {
-    ::new(&data) typename MatchingType::type(v);
-  }
-
-  // Copy-constructor
-  variant(variant const& other) : type_id(other.type_id) {
-    (this->*copy_dt[type_id])(other);
-  }
-
-  // Move-constructor
-  variant(variant && other) : type_id(other.type_id) {
-    (this->*move_dt[type_id])(std::move(other));
-  }
-
-  // Destructor
-  ~variant() { (this->*destroy_dt[type_id])(); }
+  variant() : type_id(0) { ::new (&data) bounded_type<0>(); }
+  variant(variant const& other) { copy_from(other); }
+  variant(variant&& other) { move_from(std::move(other)); }
+  ~variant() { destroy(); }
 
   // Assignment
-  variant & operator=(variant const& other) {
-    if(type_id == other.type_id) {
-      (this->*assign_dt[type_id])(other);
-    } else {
-      (this->*destroy_dt[type_id])();
-      type_id = other.type_id;
-      (this->*copy_dt[type_id])(other);
-    }
-    return *this;
+  variant& operator=(variant&& other) {
+   if (type_id == other.type_id)
+    assign_move_from(std::move(other));
+   else {
+    destroy();
+    move_from(std::move(other));
+   }
+   return *this;
   }
 
-  // Casts
-  template<typename T,
-           typename MatchingType = find_first_type<equal<std14::remove_const_t<std14::remove_reference_t<T>>>>,
-           typename = std14::enable_if_t<MatchingType::id != -1>>
+  variant& operator=(variant const& other) {
+   if (type_id == other.type_id)
+    assign_from(other);
+   else {
+    destroy();
+    copy_from(other);
+   }
+   return *this;
+  }
+
+  // Casts. Only into one of the Types, and with runtime check that the variant really contains a type T.
+  template <typename T, int id = find_first_id<equal<std14::decay_t<T>>>::id, typename = std14::enable_if_t<id != -1>>
   operator T() {
-    static const std::size_t cast_type_id = MatchingType::id;
-    if(type_id != cast_type_id)
-      TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot cast stored value, type mismatch (" 
-                          << type_id << " vs " << cast_type_id << ")";
-    return *reinterpret_cast<T*>(&data);
+   if (type_id != id)
+    TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot cast stored value, type mismatch (" << type_id << " vs " << id << ")";
+   return *reinterpret_cast<T*>(&data);
   }
 
-  // Visitation
-  // Return type of f(v) must be the same for any stored type,
-  // that is why we can use the first type.
-  template <typename F, typename RType = std14::result_of_t<F(bounded_type<0>&)>>
-  friend RType apply_visitor(F &&f, variant & v) {
-    constexpr static std::array<RType(variant::*)(F),n_bounded_types> apply_dt = {&variant::apply<Types,F>...};
-    return (v.*apply_dt[v.type_id])(std::forward<F>(f));
+// Visitation
+// Return type of f(v) must be the same for any stored type, so we can use the first type.
+#if GCC_VERSION > 50200
+  template <typename F> friend auto apply_visitor(F&& f, variant& v) {
+   using RType = std14::result_of_t<F(bounded_type<0>&)>;
+   constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
+   return (v.*table[v.type_id])(std::forward<F>(f));
   }
-  template <typename F, typename RType = std14::result_of_t<F(bounded_type<0>)>>
-  friend RType apply_visitor(F &&f, variant const& v) { // const version
-    constexpr static std::array<RType(variant::*)(F) const,n_bounded_types> apply_dt = {&variant::apply<Types,F>...};
-    return (v.*apply_dt[v.type_id])(std::forward<F>(f));
+
+  template <typename F> friend auto apply_visitor(F&& f, variant const& v) {
+   using RType = std14::result_of_t<F(bounded_type<0> const&)>;
+   constexpr static std::array<RType (variant::*)(F) const, n_bounded_types> table = {&variant::apply_c<Types, F>...};
+   return (v.*table[v.type_id])(std::forward<F>(f));
   }
+#else
+  // A bug in gcc 4.9 forbids to use the friend auto which is clearer than this
+  template <typename F, typename RType = std14::result_of_t<F(bounded_type<0>&)>> friend RType apply_visitor(F&& f, variant& v) {
+   constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
+   return (v.*table[v.type_id])(std::forward<F>(f));
+  }
+
+  template <typename F, typename RType = std14::result_of_t<F(bounded_type<0> const&)>>
+  friend RType apply_visitor(F&& f, variant const& v) { // const version
+   constexpr static std::array<RType (variant::*)(F) const, n_bounded_types> table = {&variant::apply_c<Types, F>...};
+   return (v.*table[v.type_id])(std::forward<F>(f));
+  };
+#endif
 
   // Comparisons
   bool operator==(variant const& other) const {
-    if(type_id != other.type_id)
-      TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored values of different types";
-    return apply_visitor(equal_visitor(other),*this);
+   if (type_id != other.type_id)
+    TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored values of different types";
+   return apply_visitor([&other](auto const& x) { return x == *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
   }
   bool operator!=(variant const& other) const { return !(operator==(other)); }
 
   bool operator<(variant const& other) const {
-    if(type_id != other.type_id)
-      TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored values of different types";
-    return apply_visitor(less_visitor(other),*this);
+   if (type_id != other.type_id)
+    TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored values of different types";
+   return apply_visitor([&other](auto const& x) { return x < *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
   }
 
   // Stream insertion
-  friend std::ostream & operator<<(std::ostream & os, variant const &v) {
-    apply_visitor(print_visitor(os),v);
-    return os;
+  friend std::ostream& operator<<(std::ostream& os, variant const& v) {
+   apply_visitor([&os](auto const& x) { os << x; }, v);
+   return os;
   }
-
-};
-
-// Define dispatch tables
-#define DEFINE_DT(NAME,RTYPE,ARGS) \
-template<typename... Types> \
-constexpr std::array<RTYPE(variant<Types...>::*)ARGS,variant<Types...>::n_bounded_types> \
-variant<Types...>::NAME##_dt;
-
-DEFINE_DT(destroy,      void,())
-DEFINE_DT(copy,         void,(variant<Types...> const&))
-DEFINE_DT(move,         void,(variant<Types...> &&))
-DEFINE_DT(assign,       void,(variant<Types...> const&))
-#undef DEFINE_DT
-
+ };
 }
 }
