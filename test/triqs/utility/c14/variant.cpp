@@ -184,4 +184,29 @@ TEST(Variant,Casts) {
   EXPECT_THROW(ms = v_int,triqs::exception);
 }
 
+TEST(Variant,Comparisons) {
+ using variant_int_string = triqs::utility::variant<int,std::string>;
+
+ auto i1 = variant_int_string(3);
+ auto i2 = variant_int_string(5);
+
+ EXPECT_TRUE(i1 < i2);
+ EXPECT_FALSE(i1 > i2);
+ EXPECT_FALSE(i1 == i2);
+ EXPECT_TRUE(i1 != i2);
+
+ auto s1 = variant_int_string("ab");
+ auto s2 = variant_int_string("bc");
+
+ EXPECT_TRUE(s1 < s2);
+ EXPECT_FALSE(s1 > s2);
+ EXPECT_FALSE(s1 == s2);
+ EXPECT_TRUE(s1 != s2);
+
+ EXPECT_THROW((void)(i1 < s1), triqs::runtime_error);
+ EXPECT_THROW((void)(i1 > s1), triqs::runtime_error);
+ EXPECT_THROW((void)(i1 == s1), triqs::runtime_error);
+ EXPECT_THROW((void)(i1 != s1), triqs::runtime_error);
+}
+
 MAKE_MAIN;

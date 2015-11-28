@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/variant_int_string.hpp>
+#include <triqs/utility/variant.hpp>
 #include <triqs/utility/dressed_iterator.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/h5/base_public.hpp>
@@ -28,7 +28,7 @@
 #include <map>
 
 namespace std {
-inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::variant_int_string> const& fs) {
+inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::variant<int,std::string>> const& fs) {
  int u = 0;
  for(auto const& i : fs) { if (u++) os << ","; os << i; }
  return os;
@@ -43,7 +43,7 @@ namespace hilbert_space {
 class fundamental_operator_set {
  public:
  /// The indices of the C, C^+ operators are a vector of int/string
- using indices_t = std::vector<utility::variant_int_string>;
+ using indices_t = std::vector<utility::variant<int,std::string>>;
 
  private:
  using map_t = std::map<indices_t, int>; // the table index <-> n

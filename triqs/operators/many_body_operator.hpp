@@ -31,14 +31,14 @@
 namespace triqs {
 namespace operators {
 
- using utility::variant_int_string;
+ using utility::variant;
  using utility::real_or_complex;
 
  /// The generic class
  template <typename ScalarType> class many_body_operator_generic;
 
  /// The indices of the C, C^+ operators are a vector of int/string
- using indices_t = std::vector<variant_int_string>;
+ using indices_t = hilbert_space::fundamental_operator_set::indices_t;
 
  /// The user class
  using many_body_operator = many_body_operator_generic<real_or_complex>;
