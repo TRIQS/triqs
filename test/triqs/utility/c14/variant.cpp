@@ -99,6 +99,7 @@ struct test_visitor {
 
 TEST(Variant,Basic) {
   {
+  my_variant v;
   my_variant v_int(2);
   my_variant v_string("text");
   my_variant v_my_struct1(my_struct{"g",9});

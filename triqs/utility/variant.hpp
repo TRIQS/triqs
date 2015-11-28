@@ -50,15 +50,13 @@ namespace utility {
  template <typename... Types> class variant {
 
   public:
-  constexpr static int n_bounded_types = sizeof...(Types);
+  constexpr static std::size_t n_bounded_types = sizeof...(Types);
   using bounded_types = std::tuple<Types...>;
-  template <int N> using bounded_type = std14::tuple_element_t<N, bounded_types>;
+  template <std::size_t N> using bounded_type = std14::tuple_element_t<N, bounded_types>;
 
   private:
   static_assert(n_bounded_types > 0, "triqs::utility::variant: list of bounded types must not be empty");
-  static_assert(std::is_default_constructible<bounded_type<0>>::value,
-                "triqs::utility::variant: the first bounded type must be DefaultConstructible");
-#if GCC_VERSION > 50200
+#if GCC_VERSION > 50100
   std::aligned_union_t<0, Types...> data; // Storage. We do not require a min len (0).
   // data can store any of the Types, but it is not initialized. Will be used with "placement new".
 #else
@@ -83,7 +81,7 @@ namespace utility {
   };
   typename aligned_union::type data;
 #endif
-  int type_id; // Type ID of the stored value
+  std::size_t type_id; // Type ID of the stored value
 
   // Support for Boost.Serialization
   template <typename Archive, typename... Types_>
@@ -100,23 +98,22 @@ namespace utility {
   };
 
 #if GCC_VERSION > 50200
-  // Find the id of the first type T for which Predicate::apply<T>::value is true, -1 if not found
+  // Find the id of the first type T for which Predicate::apply<T>::value is true, n_bounded_types if not found
   template <typename Predicate> struct find_first_id {
-   template <size_t... Is> static constexpr int invoke(std14::index_sequence<Is...>) {
-    return std::min({(Predicate::template apply<bounded_type<Is>>::value ? int(Is) : n_bounded_types)...});
+   template <std::size_t... Is> static constexpr std::size_t invoke(std14::index_sequence<Is...>) {
+    return std::min({(Predicate::template apply<bounded_type<Is>>::value ? std::size_t(Is) : n_bounded_types)...});
    }
-   static constexpr int id1 = invoke(std14::make_index_sequence<n_bounded_types>{});
-   static constexpr int id = (id1 == n_bounded_types ? -1 : id1);
+   static constexpr std::size_t id = invoke(std14::make_index_sequence<n_bounded_types>{});
   };
 #else
-  template <typename Predicate, typename T0, typename... Tail> struct find_first_type_impl {
+  template <typename Predicate, typename T0, typename... Tail> struct find_first_id_impl {
    constexpr static std::size_t id =
-       Predicate::template apply<T0>::value ? n_bounded_types - sizeof...(Tail)-1 : find_first_type_impl<Predicate, Tail...>::id;
+    Predicate::template apply<T0>::value ? n_bounded_types - sizeof...(Tail)-1 : find_first_id_impl<Predicate, Tail...>::id;
   };
-  template <typename Predicate, typename T0> struct find_first_type_impl<Predicate, T0> {
-   constexpr static std::size_t id = Predicate::template apply<T0>::value ? n_bounded_types - 1 : -1;
+  template <typename Predicate, typename T0> struct find_first_id_impl<Predicate, T0> {
+   constexpr static std::size_t id = Predicate::template apply<T0>::value ? n_bounded_types - 1 : n_bounded_types;
   };
-  template <typename Predicate> struct find_first_id : find_first_type_impl<Predicate, Types...> {};
+  template <typename Predicate> struct find_first_id : find_first_id_impl<Predicate, Types...> {};
 #endif
 
   // table of pointer to various variant methods ... see below.
@@ -135,7 +132,9 @@ namespace utility {
   }
 
   // Implementation: copy-constructor
-  template <typename T> void copy_from_impl(variant const& other) { ::new (&data) T(*reinterpret_cast<T const*>(&other.data)); }
+  template <typename T> void copy_from_impl(variant const& other) {
+   ::new (&data) T(*reinterpret_cast<T const*>(&other.data));
+  }
 
   void copy_from(variant const& other) {
    type_id = other.type_id;
@@ -144,7 +143,9 @@ namespace utility {
   }
 
   // Implementation: move-constructor
-  template <typename T> void move_impl(variant&& other) { ::new (&data) T(std::move(*reinterpret_cast<T*>(&other.data))); }
+  template <typename T> void move_impl(variant&& other) {
+   ::new (&data) T(std::move(*reinterpret_cast<T*>(&other.data)));
+  }
 
   void move_from(variant&& other) {
    type_id = other.type_id;
@@ -164,7 +165,7 @@ namespace utility {
 
   // Implementation: move assignment
   template <typename T> void assign_move_impl(variant&& other) {
-   *reinterpret_cast<T*>(&data) = std::move(*reinterpret_cast<T const*>(&other.data));
+   *reinterpret_cast<T*>(&data) = std::move(*reinterpret_cast<T*>(&other.data));
   }
 
   void assign_move_from(variant&& other) {
@@ -173,19 +174,24 @@ namespace utility {
   }
 
   // Implementation: visitation
-  template <typename T, typename F> std14::result_of_t<F(T&)> apply(F f) { return f(*reinterpret_cast<T*>(&data)); }
+  template <typename T, typename F> std14::result_of_t<F(T&)> apply(F f) {
+   return f(*reinterpret_cast<T*>(&data));
+  }
   template <typename T, typename F> std14::result_of_t<F(T const&)> apply_c(F f) const {
    return f(*reinterpret_cast<T const*>(&data));
   }
 
   public:
-  template <typename T, int id = find_first_id<convertible_from<T>>::id, typename = std14::enable_if_t<id != -1>>
-  variant(T const& v)
-     : type_id(id) {
+
+  template<typename = std14::enable_if_t<std::is_default_constructible<bounded_type<0>>::value>>
+  variant() : type_id(0) { ::new (&data) bounded_type<0>(); }
+
+  template <typename T, std::size_t id = find_first_id<convertible_from<T>>::id,
+                        typename = std14::enable_if_t<id != n_bounded_types>>
+  variant(T const& v) : type_id(id) {
    ::new (&data) bounded_type<id>(v);
   }
 
-  variant() : type_id(0) { ::new (&data) bounded_type<0>(); }
   variant(variant const& other) { copy_from(other); }
   variant(variant&& other) { move_from(std::move(other)); }
   ~variant() { destroy(); }
@@ -212,7 +218,8 @@ namespace utility {
   }
 
   // Casts. Only into one of the Types, and with runtime check that the variant really contains a type T.
-  template <typename T, int id = find_first_id<equal<std14::decay_t<T>>>::id, typename = std14::enable_if_t<id != -1>>
+  template <typename T, std::size_t id = find_first_id<equal<std14::decay_t<T>>>::id,
+                        typename = std14::enable_if_t<id != n_bounded_types>>
   operator T() {
    if (type_id != id)
     TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot cast stored value, type mismatch (" << type_id << " vs " << id << ")";
@@ -234,7 +241,7 @@ namespace utility {
    return (v.*table[v.type_id])(std::forward<F>(f));
   }
 #else
-  // A bug in gcc 4.9 forbids to use the friend auto which is clearer than this
+  // A bug in gcc 4.9 (59766) forbids to use the friend auto which is clearer than this
   template <typename F, typename RType = std14::result_of_t<F(bounded_type<0>&)>> friend RType apply_visitor(F&& f, variant& v) {
    constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
    return (v.*table[v.type_id])(std::forward<F>(f));
@@ -259,6 +266,11 @@ namespace utility {
    if (type_id != other.type_id)
     TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored values of different types";
    return apply_visitor([&other](auto const& x) { return x < *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
+  }
+  bool operator>(variant const& other) const {
+   if (type_id != other.type_id)
+    TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored values of different types";
+   return apply_visitor([&other](auto const& x) { return x > *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
   }
 
   // Stream insertion
