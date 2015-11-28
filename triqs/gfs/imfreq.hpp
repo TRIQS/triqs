@@ -37,7 +37,7 @@ namespace gfs {
 
  // This function takes a g(i omega_n) on half mesh (positive omega_n) and returns a gf on the whole mesh
  // using G(-i omega_n) = G(i omega_n)^* for real G(tau) functions.
- template <typename T, typename S, typename E> gf<imfreq, T, S, E> gf_imfreq_real_to_complex(gf_const_view<imfreq, T, S, E> g) {
+ template <typename T, typename S, typename E> gf<imfreq, T, S, E> make_gf_from_real_gf(gf_const_view<imfreq, T, S, E> g) {
   if (!g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "gf imfreq is not for omega_n >0, real_to_complex does not apply";
   auto const &dat = g.data();
   auto sh = dat.shape();
@@ -105,10 +105,10 @@ namespace gfs {
  template <typename S, int R>
  struct gf_h5_name<imfreq, tensor_valued<R>, S> : gf_h5_name<imfreq, matrix_valued, S> {};
 
- template <typename T, typename S, typename E> struct gf_h5_after_read<imfreq,T,S,E> {
-  template <typename G> static void invoke(h5::group gr, G&g) {
-   std::cout  << "g.mesh().positive_only()"<<g.mesh().positive_only()<<std::endl;
-   if (g.mesh().positive_only()) g = gf_imfreq_real_to_complex(gf_const_view<imfreq, T, S, E>{g});
+ // After reading from h5, is the function is for freq >0, unfold it to the full mesh
+ template <typename T, typename S, typename E> struct gf_h5_after_read<imfreq, T, S, E> {
+  template <typename G> static void invoke(h5::group gr, G &g) {
+   if (g.mesh().positive_only()) g = make_gf_from_real_gf(make_const_view(g));
   }
  };
 

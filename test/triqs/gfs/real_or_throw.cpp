@@ -9,11 +9,12 @@ TEST(Gf, Base) {
  auto Gt = gf<imtime>{{beta, Fermion, 100}, {2, 2}};
 
  Gt(t_) << 8 * t_;
- auto gtr = real_or_throw(Gt);
+ auto gtr = real(Gt);
  array<double,3> D = real(Gt.data());
  EXPECT_CLOSE_ARRAY(D, gtr.data());
+ EXPECT_TRUE(is_gf_real(Gt));
 
  Gt(t_) << 8_j * t_;
- EXPECT_THROW(real_or_throw(Gt), std::exception);
+ EXPECT_FALSE(is_gf_real(Gt));
 }
 MAKE_MAIN;

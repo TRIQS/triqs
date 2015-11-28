@@ -98,9 +98,10 @@ namespace triqs { namespace gfs {
   gf.singularity() = fit_tail_impl(gf, known_moments, max_moment, n_min, n_max);
   if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
    int i = 0;
-   long L = gf.mesh().size()/2;
-   for (auto iw : gf.mesh()) {
-    if ((i >= L+n_min) || (i <= gf.mesh().size()-L-n_min-1)) gf[iw] = evaluate(gf.singularity(), iw);
+   long L = (gf.mesh().size() + 1) / 2;
+   for (auto iw : gf.mesh()) { // (arrays::range(n_min,n_max+1)) {
+    if (std::abs(i - L) >= n_min) gf[iw] = evaluate(gf.singularity(), iw);
+    //if (i >= n_min) gf[iw] = evaluate(gf.singularity(),iw);
     i++;
    }
    }

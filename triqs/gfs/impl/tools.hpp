@@ -64,12 +64,8 @@ namespace gfs {
   using value_type = arrays::array<double, R>;
  };
 
- struct scalar_real_valued { static constexpr int dim =0;};
- struct matrix_real_valued { static constexpr int dim =2;};
- template <int R> struct tensor_real_valued {  
-  static constexpr int dim = R; static_assert(R > 0, "tensor_valued only for rank >0"); 
- };
-
+ template<typename F> struct lambda_valued {};
+ 
  template<typename T> struct _real_target_t_impl;
  template<> struct _real_target_t_impl<scalar_valued> { using type = scalar_real_valued;};
  template<> struct _real_target_t_impl<matrix_valued> { using type = matrix_real_valued;};
