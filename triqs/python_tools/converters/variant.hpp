@@ -1,4 +1,5 @@
 #pragma once
+#include <tuple>
 #include "../wrapper_tools.hpp"
 #include <triqs/utility/variant.hpp>
 
@@ -13,8 +14,8 @@ struct py_converter<triqs::utility::variant<Types...>> {
 private:
 
   using variant_t = triqs::utility::variant<Types...>;
-  template<int N> using types_t = typename variant_t::template bounded_type<N>;
-  constexpr static int n_types = variant_t::n_bounded_types;
+  template<int N> using types_t = std14::tuple_element_t<N,std::tuple<Types...>>;
+  constexpr static int n_types = sizeof...(Types);
 
   // c2py_visitor
   struct c2py_visitor {
