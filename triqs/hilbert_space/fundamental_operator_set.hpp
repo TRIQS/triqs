@@ -44,6 +44,7 @@ class fundamental_operator_set {
  public:
  /// The indices of the C, C^+ operators are a vector of int/string
  using indices_t = std::vector<utility::variant_int_string>;
+ using reduction_t = std::vector<indices_t>;
 
  private:
  using map_t = std::map<indices_t, int>; // the table index <-> n
@@ -65,6 +66,14 @@ class fundamental_operator_set {
  template <typename IndexType> fundamental_operator_set(std::set<IndexType> const& s) {
   for (auto const& i : s) insert(i);
  }
+
+ /// Construct on a vector<indices_t>
+ explicit fundamental_operator_set(reduction_t const& indices_list) {
+  for (auto const& i : indices_list) insert_from_indices_t(i);
+ }
+
+ /// reduce to a vector<indices_t>
+ explicit operator reduction_t() const { return reverse_map(); }
 
  // Insert an operator with indices_t (internal for many_body_operator)
  void insert_from_indices_t(indices_t const& ind) {
