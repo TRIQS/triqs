@@ -10,6 +10,10 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/redirect.py
 )
 
+# Build C extension module
+triqs_python_extension(comparison_tests)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
+
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/utility)
 
 
