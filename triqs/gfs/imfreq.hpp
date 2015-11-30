@@ -74,6 +74,7 @@ namespace gfs {
  /// Make a const view of the positive frequency part of the function
  template <typename G> view_type_t<G> positive_freq_view(G &&g) {
   static_assert(std::is_same<typename std14::decay_t<G>::variable_t, imfreq>::value, "positive_freq_view only makes senses for imfreq gf");
+  if (g.mesh().positive_only()) return g;
   long L = g.mesh().size();
   long L1 = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
   return {
