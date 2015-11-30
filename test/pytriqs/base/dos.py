@@ -21,6 +21,7 @@
 ################################################################################
 
 from pytriqs.lattice.tight_binding import *
+from pytriqs.utility.comparison_tests import *
 
 # Define the Bravais Lattice : a square lattice in 2d
 BL = BravaisLattice(units = [(1,0,0) , (0,1,0) ])
@@ -46,6 +47,6 @@ TB = TightBinding(BL, hop)
 d = dos(TB, n_kpts= 500, n_eps = 101, name = 'dos')[0]
 
 from pytriqs.archive import HDFArchive
-R = HDFArchive('dos.output.h5','w')
-R['SquareLatt'] = d
-
+R = HDFArchive('dos.output.h5','r')
+assert_arrays_are_close(R['SquareLatt'].eps, d.eps)
+assert_arrays_are_close(R['SquareLatt'].rho, d.rho)

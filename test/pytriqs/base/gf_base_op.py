@@ -20,6 +20,7 @@
 ################################################################################
 from pytriqs.archive import *
 from pytriqs.gf.local import *
+from pytriqs.utility.comparison_tests import *
 import numpy as np, copy
 from math import pi
 
@@ -32,22 +33,6 @@ def matsu(n) :
 def max_abs(a) : 
     return np.amax(np.abs(a)) 
 
-def assert_array_equal(a, b) : 
-    assert max_abs(a - b) < precision , "oops"
-
-def assert_array_equal_to_scalar(a, x) : 
-    assert_array_equal(a, np.identity(a.shape[0])*(x))
-
-def assert_gf_equal(g1,g2) : 
-   assert type (g1) == type(g2), "internal error : comparing 2 different types"
-   if type(g1) == BlockGf : 
-       assert (list(g1.indices) == list(g2.indices)), "indices mismatch"
-       for n in g1.indices :
-           assert_gf_equal(g1[n], g2[n])
-   else :
-      assert_array_equal(g1.data, g2.data)
-      assert_array_equal(g1.tail.data, g2.tail.data)
-
 # --- start test
 
 ga = GfImFreq(indices = [1,2], beta = beta, n_points = 100, name = "a1Block")
@@ -59,10 +44,10 @@ G << iOmega_n + 2.0
 for ii, g in G : 
     N = g.data.shape[0]
     for n in range(N/2) : 
-        assert_array_equal_to_scalar( g.data[n+N/2],  matsu(n) + 2.0)
+        assert_array_close_to_scalar( g.data[n+N/2],  matsu(n) + 2.0)
 
-    assert_array_equal_to_scalar(g.tail[-1],1)
-    assert_array_equal_to_scalar(g.tail[0],2)
+    assert_array_close_to_scalar(g.tail[-1],1)
+    assert_array_close_to_scalar(g.tail[0],2)
     assert max_abs(g.tail.data[2:]) < precision, "oops"
 
 # inverse:
@@ -86,7 +71,7 @@ res = np.array([[[  3.14815470e-04,   0.00000000e+00],
        [[  7.46732524e-05,   0.00000000e+00],
         [  0.00000000e+00,   7.46732524e-05]]])
 
-assert_array_equal(gt['a'].data[:3], res) 
+assert_arrays_are_close(gt['a'].data[:3], res) 
 
 # Matrix operations:
 ga2 = GfImFreq(indices = [1,2,3], beta = beta, n_points = 100, name = "a1Block")
@@ -112,7 +97,7 @@ res = np.array([[[ 0.99901401-0.03138495j, -0.49950701+0.01569248j,
         [ 0.48796007-0.07664859j,  0.00000000+0.j        ,
           0.48796007-0.07664859j]]])
 shift = ga2.data.shape[0]/2
-assert_array_equal(ga2.data[shift:shift+3], res) 
+assert_arrays_are_close(ga2.data[shift:shift+3], res) 
 
 # conjugate:
 Gc = G.conjugate()
@@ -126,7 +111,7 @@ res = np.array([[[ 0.49950701+0.01569248j,  0.00000000-0.j        ],
        [[ 0.48796007+0.07664859j,  0.00000000-0.j        ],
         [-0.00000000-0.j        ,  0.48796007+0.07664859j]]])
 shift = Gc['a'].data.shape[0]/2
-assert_array_equal(Gc['a'].data[shift:shift+3], res) 
+assert_arrays_are_close(Gc['a'].data[shift:shift+3], res) 
 
 # to be continued
 # tranpose
@@ -141,7 +126,7 @@ import pickle
 def check_pickle(g): 
   s = pickle.dumps(g)
   g2 = pickle.loads(s)
-  assert_gf_equal(g,g2)
+  assert_block_gfs_are_close(g,g2)
 
 check_pickle(G)
 check_pickle(gt)

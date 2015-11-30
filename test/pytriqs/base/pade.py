@@ -25,6 +25,7 @@ from math import pi
 from cmath import sqrt, log
 from pytriqs.gf.local import GfImFreq, GfReFreq
 from pytriqs.gf.local.descriptors import Function
+from pytriqs.utility.comparison_tests import *
 
 beta = 100  # Inverse temperature
 L = 10      # Number of Matsubara frequencies used in the Pade approximation
@@ -55,5 +56,5 @@ g_pade = GfReFreq(indices = [0], window = (-5.995, 5.995), n_points = 1200, name
 g_pade.set_from_pade(gm, n_points = L, freq_offset = eta)
 
 from pytriqs.archive import HDFArchive
-R = HDFArchive('pade.output.h5','w')
-R['g_pade'] = g_pade
+R = HDFArchive('pade.output.h5','r')
+assert_gfs_are_close(g_pade, R['g_pade'])
