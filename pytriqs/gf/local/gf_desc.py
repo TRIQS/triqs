@@ -376,11 +376,6 @@ g.add_method(name = "make_real_in_tau",
              signature = "gf_view<imfreq>()",
              doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
 
-g.add_method(name = "positive_freq_view",
-             calling_pattern = "auto result = positive_freq_view(self_c)",
-             signature = "gf_view<imfreq>()",
-             doc = "A view on the 1/2 Green function, with only the positive frequencies")
-
 g.add_method(name = "density",
              calling_pattern = "auto result = density(self_c)",
              signature = "matrix_view<double>()",

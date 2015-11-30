@@ -105,6 +105,14 @@ namespace gfs {
  template <typename S, int R>
  struct gf_h5_name<imfreq, tensor_valued<R>, S> : gf_h5_name<imfreq, matrix_valued, S> {};
 
+ // Before writing to h5, check if I can save the positive freq only
+ template <typename T, typename S, typename E> struct gf_h5_before_write<imfreq, T, S, E> {
+  template <typename G> static gf_const_view<imfreq, T, S, E> invoke(h5::group gr, G const &g) {
+   if (is_gf_real_in_tau(g, 1.e-13)) return positive_freq_view(g);
+   return g;
+  }
+ };
+
  // After reading from h5, is the function is for freq >0, unfold it to the full mesh
  template <typename T, typename S, typename E> struct gf_h5_after_read<imfreq, T, S, E> {
   template <typename G> static void invoke(h5::group gr, G &g) {

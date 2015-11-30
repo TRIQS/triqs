@@ -188,6 +188,12 @@ namespace gfs {
   }
  };
 
+ // Some work that may be necessary before writing (some compression, see imfreq)
+ // Default : do nothing
+ template <typename M, typename T, typename S, typename E> struct gf_h5_before_write {
+  template <typename G> static G const &invoke(h5::group gr, G const &g) { return g; }
+ };
+
  // Some work that may be necessary after the read (for backward compatibility e.g.)
  // Default : do nothing
  template <typename M, typename T, typename S, typename E> struct gf_h5_after_read {
