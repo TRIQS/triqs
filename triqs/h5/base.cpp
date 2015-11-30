@@ -54,7 +54,7 @@ namespace h5 {
 
  /****************** Write string attribute *********************************************/
 
- void write_string_attribute(hid_t id, std::string name, std::string value) {
+ void h5_write_attribute(hid_t id, std::string const & name, std::string const & value) {
 
   datatype strdatatype = H5Tcopy(H5T_C_S1);
   auto status = H5Tset_size(strdatatype, value.size() + 1);
@@ -74,10 +74,11 @@ namespace h5 {
  /****************** Read string attribute *********************************************/
 
  /// Return the attribute name of obj, and "" if the attribute does not exist.
- std::string read_string_attribute(hid_t id, std::string name) {
+ void h5_read_attribute(hid_t id, std::string const &name, std::string & s) {
+  s = "";
 
   // if the attribute is not present, return 0
-  if (H5LTfind_attribute(id, name.c_str()) == 0) return ""; // not present
+  if (H5LTfind_attribute(id, name.c_str()) == 0) return; // not present
 
   attribute attr = H5Aopen(id, name.c_str(), H5P_DEFAULT);
   if (!attr.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot open the attribute " << name;
@@ -93,9 +94,7 @@ namespace h5 {
   auto err = H5Aread(attr, strdatatype, (void *)(&buf[0]));
   if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot read the attribute " << name;
 
-  std::string ret = "";
-  ret.append(&(buf.front()));
-  return ret;
+  s.append(&(buf.front()));
  }
 }
 }

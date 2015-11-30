@@ -42,6 +42,21 @@ namespace h5 {
 
   //-------------------------------------------------------------
 
+  // attribute
+  template <typename S> void h5_write_attribute_mpl(hid_t id, std::string const &name, S a) {
+
+   if (H5LTfind_attribute(id, name.c_str()) != 0)  TRIQS_RUNTIME_ERROR << "The attribute "<<name << " is already present. Can not overwrite"; // not present
+   dataspace space = H5Screate(H5S_SCALAR);
+
+   attribute attr = H5Acreate2(id, name.c_str(), data_type_file<S>(), space, H5P_DEFAULT, H5P_DEFAULT);
+   if (!attr.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot create the attribute " << name;
+
+   auto status = H5Awrite(attr, data_type_memory<S>(), (void *)(&a));
+   if (status < 0) TRIQS_RUNTIME_ERROR << "Cannot write the attribute " << name;
+  }
+
+  //-------------------------------------------------------------
+
   template <typename S> void h5_read_impl(group g, std::string const &name, S &A) {
 
    dataset ds = g.open_dataset(name);
@@ -56,7 +71,27 @@ namespace h5 {
    herr_t err = H5Dread(ds, data_type_memory<S>(), H5S_ALL, H5S_ALL, H5P_DEFAULT, (void *)(&A));
    if (err < 0) TRIQS_RUNTIME_ERROR << "Error reading the scalar dataset " << name << " in the group" << g.name();
   }
+
+  //-------------------------------------------------------------
+
+  template <typename S> void h5_read_attribute_mpl(hid_t id, std::string const &name, S &a) {
+
+   attribute attr = H5Aopen(id, name.c_str(), H5P_DEFAULT);
+   if (!attr.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot open the attribute " << name;
+
+   dataspace space = H5Aget_space(attr);
+   int rank = H5Sget_simple_extent_ndims(space);
+   if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a scalar attribute and got rank !=0";
+
+   auto eq = H5Tequal(H5Aget_type(attr), data_type_memory<S>());
+   if (eq < 0) TRIQS_RUNTIME_ERROR << "Type comparison failure in reading attribute";
+   if (eq == 0) TRIQS_RUNTIME_ERROR << "Type mismatch in reading attribute";
+
+   auto err = H5Aread(attr, data_type_memory<S>(), (void *)(&a));
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot read the attribute " << name;
+  }
  }
+
 
 // template <> void h5_write_impl(group g, std::string const &key, std::complex<double> a);
 // template <> void h5_read_impl(group g, std::string const &key, std::complex<double> &a);
@@ -79,7 +114,19 @@ namespace h5 {
  void h5_read(group g, std::string const &name, char &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, bool &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, double &x) { h5_read_impl(g, name, x); }
-// void h5_read(group g, std::string const &name, std::complex<double> &x) { h5_read_impl(g, name, x); }
+ // void h5_read(group g, std::string const &name, std::complex<double> &x) { h5_read_impl(g, name, x); }
+
+ void h5_write_attribute(hid_t id, std::string const &name, int const &x) { h5_write_attribute_mpl(id, name, x); }
+ void h5_write_attribute(hid_t id, std::string const &name, long const &x) { h5_write_attribute_mpl(id, name, x); }
+ void h5_write_attribute(hid_t id, std::string const &name, long long const &x) { h5_write_attribute_mpl(id, name, x); }
+ void h5_write_attribute(hid_t id, std::string const &name, unsigned long long const &x) { h5_write_attribute_mpl(id, name, x); }
+ void h5_write_attribute(hid_t id, std::string const &name, double const &x) { h5_write_attribute_mpl(id, name, x); }
+
+ void h5_read_attribute(hid_t id, std::string const &name, int &x) { h5_read_attribute_mpl(id, name, x); }
+ void h5_read_attribute(hid_t id, std::string const &name, long &x) { h5_read_attribute_mpl(id, name, x); }
+ void h5_read_attribute(hid_t id, std::string const &name, long long &x) { h5_read_attribute_mpl(id, name, x); }
+ void h5_read_attribute(hid_t id, std::string const &name, unsigned long long &x) { h5_read_attribute_mpl(id, name, x); }
+ void h5_read_attribute(hid_t id, std::string const &name, double &x) { h5_read_attribute_mpl(id, name, x); }
 }
 }
 

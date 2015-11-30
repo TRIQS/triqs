@@ -47,6 +47,14 @@ namespace h5 {
   h5_read(gr, name, x);
   return x;
  }
+
+ /// Returns the attribute name of obj, and "" if the attribute does not exist.
+ template <typename T> T h5_read_attribute(hid_t id, std::string const& name) {
+  using triqs::h5::h5_read_attribute;
+  T x;
+  h5_read_attribute(id, name, x);
+  return x;
+ }
 }
 }
 

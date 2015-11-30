@@ -51,6 +51,11 @@ TEST(Array, H5) {
   h5_write(top, "S", "");
   h5_write(top,"A_slice",A(range(),range(1,3)));
 
+  // add some attribute to A
+  auto id = top.open_dataset("A");
+  h5_write_attribute(id, "AttrOfA1", 12);
+  h5_write_attribute(id, "AttrOfA2", 8.9);
+
   // scalar
   double x = 2.3;
   h5_write(top, "x", x);
@@ -74,6 +79,13 @@ TEST(Array, H5) {
 
   h5_read(top, "A", B);
   EXPECT_EQ_ARRAY(A, B);
+
+  // read the attributes of A
+  auto id = top.open_dataset("A");
+  int att1 = h5::h5_read_attribute<int>(id, "AttrOfA1");
+  double att2 = h5::h5_read_attribute<double>(id, "AttrOfA2");
+  EXPECT_EQ(att1, 12);
+  EXPECT_EQ(att2, 8.9);
 
   h5_read(top, "Af", Bf);
   EXPECT_EQ_ARRAY(Af, Bf);

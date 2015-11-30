@@ -46,6 +46,19 @@ namespace triqs { namespace h5 {
  //void h5_read(group g, std::string const &name, std::complex<double> &x);
 
  // the implementation complex number is missing ...
+
+ // attribute
+ void h5_write_attribute(hid_t id, std::string const &name, int const &x);
+ void h5_write_attribute(hid_t id, std::string const &name, long const &x);
+ void h5_write_attribute(hid_t id, std::string const &name, long long const &x);
+ void h5_write_attribute(hid_t id, std::string const &name, unsigned long long const &x);
+ void h5_write_attribute(hid_t id, std::string const &name, double const &x);
+
+ void h5_read_attribute(hid_t id, std::string const &name, int &x);
+ void h5_read_attribute(hid_t id, std::string const &name, long &x);
+ void h5_read_attribute(hid_t id, std::string const &name, long long &x);
+ void h5_read_attribute(hid_t id, std::string const &name, unsigned long long &x);
+ void h5_read_attribute(hid_t id, std::string const &name, double &x);
 }
 }
 

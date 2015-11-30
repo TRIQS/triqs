@@ -126,10 +126,15 @@ namespace h5 {
  /****************** Read/Write string attribute *********************************************/
 
  /// Write an attribute named name, of type string, of value value to the object id
- void write_string_attribute(hid_t id, std::string name, std::string value);
+ void h5_write_attribute(hid_t id, std::string const& name, std::string const& value);
+
+ inline void h5_write_attribute(hid_t id, std::string const& name, const char* value) {
+  h5_write_attribute(id,name, std::string{value});
+ }
 
  /// Returns the attribute name of obj, and "" if the attribute does not exist.
- std::string read_string_attribute(hid_t id, std::string name);
+ void h5_read_attribute(hid_t id, std::string const& name, std::string&);
+
 }
 }
 

@@ -219,7 +219,7 @@ namespace h5 {
    if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the vector<....> " << name << " in the group" << g.name();
 
    // if complex, to be python compatible, we add the __complex__ attribute
-   if (triqs::is_complex<T>::value) h5::write_string_attribute(ds, "__complex__", "1");
+   if (triqs::is_complex<T>::value) h5_write_attribute(ds, "__complex__", "1");
   }
 
   //------------------------------------

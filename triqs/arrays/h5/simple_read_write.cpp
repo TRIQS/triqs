@@ -55,7 +55,7 @@ namespace arrays {
    if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the scalar dataset " << name << " in the group" << g.name();
 
    // if complex, to be python compatible, we add the __complex__ attribute
-   if (is_complex) h5::write_string_attribute(ds, "__complex__", "1");
+   if (is_complex) h5_write_attribute(ds, "__complex__", "1");
   }
 
   template void write_array_impl<int>(h5::group g, std::string const& name, const int* start, array_stride_info info);

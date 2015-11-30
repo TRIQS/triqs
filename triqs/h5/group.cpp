@@ -16,9 +16,13 @@ namespace h5 {
 
  group::group(hid_t id_) : group(h5_object(id_)){}
 
- void group::_write_triqs_hdf5_data_scheme(const char *a) { h5::write_string_attribute(id, "TRIQS_HDF5_data_scheme", a); }
+ void group::_write_triqs_hdf5_data_scheme(const char *a) { h5_write_attribute(id, "TRIQS_HDF5_data_scheme", a); }
 
- std::string group::read_triqs_hdf5_data_scheme() const { return read_string_attribute(id, "TRIQS_HDF5_data_scheme"); }
+ std::string group::read_triqs_hdf5_data_scheme() const {
+  std::string s;
+  h5_read_attribute(id, "TRIQS_HDF5_data_scheme", s);
+  return s;
+ }
 
  std::string group::name() const {
   char _n[1];

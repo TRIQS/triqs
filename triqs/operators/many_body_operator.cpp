@@ -129,7 +129,7 @@ namespace operators {
 
   // Store fundamental_operator_set as an attribute of the dataset
   h5_write_attribute(dataset, "fundamental_operator_set", fops);
-  h5::write_string_attribute(dataset, "TRIQS_HDF5_data_scheme", get_triqs_hdf5_data_scheme(op));
+  h5::h5_write_attribute(dataset, "TRIQS_HDF5_data_scheme", get_triqs_hdf5_data_scheme(op));
 
  }
 
