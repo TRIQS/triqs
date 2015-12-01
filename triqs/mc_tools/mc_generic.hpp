@@ -193,6 +193,13 @@ namespace triqs { namespace mc_tools {
      h5_read(gr,"sum_sign", mc.sum_sign);
     }
 
+   // do not use direcly, use the free function it is simpler to call...
+   template<typename MeasureType> MeasureType       & get_measure(std::string const & name)       { return AllMeasures.template get_measure<MeasureType> (name);}
+   template<typename MeasureType> MeasureType const & get_measure(std::string const & name) const { return AllMeasures.template get_measure<MeasureType> (name);}
+
+   template<typename MoveType> MoveType       & get_move (std::string const & name)       { return AllMoves.template get_move<MoveType> (name); }
+   template<typename MoveType> MoveType const & get_move (std::string const & name) const { return AllMoves.template get_move<MoveType> (name); }
+
    private:
     random_generator RandomGenerator;
     move_set<MCSignType> AllMoves;
@@ -208,6 +215,19 @@ namespace triqs { namespace mc_tools {
     MCSignType sign, sign_av;
     uint64_t NC,done_percent;// NC = number of the cycle
   };
+
+ /// Retrieve a Measure given name and type. NB : the type is checked at runtime
+ template<typename M,typename T1, typename T2> M       & get_measure(mc_generic<T1,T2> & s, std::string const & name)       { return s.template get_measure<M> (name); }
+ template<typename M,typename T1, typename T2> M const & get_measure(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_measure<M> (name); }
+ 
+ /// Retrieve a Measure given name and type. NB : the type is checked at runtime
+ template<typename M,typename T1, typename T2> M       * get_measure_aux(mc_generic<T1,T2> & s, std::string const & name)       { return s.template get_measure_aux<M> (name); }
+ template<typename M,typename T1, typename T2> M const * get_measure_aux(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_measure_aux<M> (name); }
+
+/// Retrieve a Move given name and type. NB : the type is checked at runtime
+ template<typename M,typename T1, typename T2> M & get_move(mc_generic<T1,T2> & s, std::string const & name)             { return s.template get_move<M> (name); }
+ template<typename M,typename T1, typename T2> M const & get_move(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_move<M> (name); }
+
 
 }}// end namespace
 

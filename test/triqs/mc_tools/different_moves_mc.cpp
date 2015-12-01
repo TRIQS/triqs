@@ -25,12 +25,15 @@ struct configuration {
 //------------------------------------------------------------
 struct move_left {
   configuration *config;
-  double proba;
+  double proba = -9;
   triqs::mc_tools::random_generator &RND;
   move_left(configuration &config_, double pl, double pr, triqs::mc_tools::random_generator &RND_):config(&config_), proba(pr/pl), RND(RND_){} //constructor
   double attempt() {return proba; }
   double accept()  {config->x += -1; return 1; }
   void reject()    {}
+  move_left( move_left const &x): config(x.config), proba(x.proba), RND(x.RND) { std::cout << "copy move_left"<<std::endl;}
+  move_left( move_left &&x) = default; //: config(x.config), proba(x.proba), RND(x.RND) { std::cout << "copy move_left"<<std::endl;}
+  ~move_left() { std::cout << "desctution move_left"<<std::endl;}
 };
 struct move_right {
   configuration *config;
@@ -110,6 +113,10 @@ int main(int argc, char* argv[]) {
   // Run and collect results
   IntMC.start(1.0, triqs::utility::clock_callback(600));
   IntMC.collect_results(world);
+
+  using triqs::mc_tools::get_move;
+  auto const & ml = get_move<move_left>(IntMC, "left move");
+  std::cout << ml.proba << "  "<< pr/pl << std::endl;
 
   return 0;
 

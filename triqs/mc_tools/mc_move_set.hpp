@@ -60,7 +60,7 @@ namespace triqs { namespace mc_tools {
      impl_= std::shared_ptr<MoveType> (p);
      hash_ = typeid(MoveType).hash_code();
      type_name_ =  typeid(MoveType).name();
-     clone_   = [p](){return MoveType(*p);};
+     clone_   = [p](){return move{true, MoveType(*p)};};
      attempt_ = [p](){return p->attempt();};
      accept_  = [p](){return p->accept();};
      reject_  = [p](){p->reject();};
@@ -74,19 +74,20 @@ namespace triqs { namespace mc_tools {
    public :
 
    template<typename MoveType>
-    move (MoveType && p ) {
+    move (bool, MoveType && p ) {
      static_assert( is_move_constructible<MoveType>::value, "This move is not MoveConstructible");
      static_assert( has_attempt<MCSignType,MoveType>::value, "This move has no attempt method (or is has an incorrect signature) !");
      static_assert( has_accept<MCSignType,MoveType>::value, "This move has no accept method (or is has an incorrect signature) !");
      static_assert( has_reject<MoveType>::value, "This move has no reject method (or is has an incorrect signature) !");
-     construct_delegation( new typename std::remove_reference<MoveType>::type(std::forward<MoveType>(p)));
+     construct_delegation( new std14::decay_t<MoveType>(std::forward<MoveType>(p)));
     }
 
    // Close to value semantics. Everyone at the end call move = ...
    // no default constructor.
    move(move const &rhs) {*this = rhs;}
-   move(move &rhs) {*this = rhs;} // to avoid clash with tempalte construction  !
-   move(move && rhs) { *this = std::move(rhs);}
+   //move(move const &rhs)  = delete; 
+   move(move && rhs) = default; // MUST BE noexcept// { *this = std::move(rhs);}
+   //move & operator = (move const & rhs) = delete;
    move & operator = (move const & rhs) { *this = rhs.clone_(); return *this;}
    move & operator = (move && rhs) = default;
 
@@ -153,7 +154,7 @@ namespace triqs { namespace mc_tools {
     */
    template <typename MoveType>
     void add (MoveType && M, std::string name, double proposition_probability) {
-     move_vec.emplace_back(std::forward<MoveType>(M));
+     move_vec.emplace_back(true, std::forward<MoveType>(M));
      assert(proposition_probability >=0);
      Proba_Moves.push_back(proposition_probability);
      names_.push_back(name);
