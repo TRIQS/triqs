@@ -83,7 +83,11 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
    if (!raise_exception) PyErr_Clear();
   }
   if ((i == 0) && (raise_exception)) PyErr_SetString(PyExc_TypeError, "The object is not a BlockGf");
-  return i;
+
+  pyref x = borrowed(ob);
+  pyref gfs = x.attr("_BlockGf__GFlist");
+  return (i && py_converter<std::vector<gf_view_type>>::is_convertible(gfs, raise_exception));
+
  }
 
  static c_type py2c(PyObject *ob) {

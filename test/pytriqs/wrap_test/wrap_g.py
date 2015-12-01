@@ -1,4 +1,4 @@
-from pytriqs.wrap_test.test_g import *
+from test_g import *
 
 B = make_bgf(2.0)
 pass_bgf(B+B)

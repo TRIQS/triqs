@@ -1,3 +1,6 @@
+from my_module import *
 import my_moduleB as B
-B.print_a2(2)
+
+a = Ac()
+B.print_a2(a)
 
