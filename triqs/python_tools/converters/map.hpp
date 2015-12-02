@@ -9,6 +9,8 @@ template <typename K, typename V> struct py_converter<std::map<K,V>> {
   PyObject *d = PyDict_New();
   for (auto &x : m) {
    pyref k = py_converter<K>::c2py(x.first);
+   // if the K is a list, we transform into a tuple
+   if (PyList_Check(k)) k = PyList_AsTuple(k);
    pyref v = py_converter<V>::c2py(x.second);
    if (PyDict_SetItem(d, k, v) == -1) {
     Py_DECREF(d);
