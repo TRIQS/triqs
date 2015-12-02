@@ -45,6 +45,7 @@ namespace py_tools {
   }
   pyref &operator=(pyref const &) = delete;
   pyref &operator=(pyref &&p) {
+   Py_XDECREF(ob);
    ob = p.ob;
    p.ob = NULL;
    return *this;
