@@ -63,12 +63,13 @@ namespace arrays {
    public:
    const_iterator(range const* r, bool atEnd) {
     last = r->last();
+    step = r->step();
     pos = (atEnd ? last : r->first());
    }
    private:
-   std::ptrdiff_t last, pos;
+   std::ptrdiff_t last, pos, step;
    friend class boost::iterator_core_access;
-   void increment() { ++pos; }
+   void increment() { pos+= step; }
    bool equal(const_iterator const& other) const { return (other.pos == pos); }
    std::ptrdiff_t dereference() const { return pos; }
   };
