@@ -39,10 +39,20 @@ namespace triqs { namespace arrays { namespace blas {
   * Blas1 : scal 
   */
  template< typename VT> 
-  typename std::enable_if< is_blas_lapack_type<typename VT::value_type>::value && have_same_value_type< VT>::value >::type 
-  scal (typename VT::value_type const & alpha, VT & X) { 
-   static_assert( is_amv_value_or_view_class<VT>::value, "blas1 bindings only take vector and vector_view");
+  std14::enable_if_t< is_blas_lapack_type<typename VT::value_type>::value && have_same_value_type< VT>::value >
+  scal (typename VT::value_type const & alpha, VT & X) {
+  static_assert(is_amv_value_or_view_class<VT>::value, "blas1 bindings only take vector and vector_view");
    f77::scal(X.size(), alpha, X.data_start(), X.stride());
+  }
+
+ /**
+  * Non blas equivalent
+  */
+ template< typename VT> 
+  std14::enable_if_t< !(is_blas_lapack_type<typename VT::value_type>::value && have_same_value_type< VT>::value) >
+  scal (typename VT::value_type const & alpha, VT & X) {
+  static_assert(is_amv_value_or_view_class<VT>::value, "blas1 bindings only take vector and vector_view");
+   for (size_t i = 0; i < X.size(); ++i) X(i) = X(i) * alpha;
   }
 
 }}}// namespace

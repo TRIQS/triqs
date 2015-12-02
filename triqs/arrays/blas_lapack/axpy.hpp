@@ -44,7 +44,7 @@ namespace triqs { namespace arrays { namespace blas {
   * Blas 1: copy
   */
  template< typename VTX, typename VTY> 
-  typename std::enable_if< is_blas_lapack_type<typename VTX::value_type>::value && have_same_value_type< VTX, VTY>::value >::type 
+  std14::enable_if_t< is_blas_lapack_type<typename VTX::value_type>::value && have_same_value_type< VTX, VTY>::value >
   axpy (typename VTX::value_type const & alpha ,VTX const & X, VTY & Y) {
    static_assert( is_amv_value_or_view_class<VTX>::value, "blas1 bindings only take vector and vector_view");
    static_assert( is_amv_value_or_view_class<VTY>::value, "blas1 bindings only take vector and vector_view");
@@ -54,6 +54,14 @@ namespace triqs { namespace arrays { namespace blas {
    f77::axpy(X.size(), alpha, X.data_start(), X.stride(), Y.data_start(), Y.stride());
   }
 
+  /**
+  * Non blas equivalent
+  */
+ template< typename VTX, typename VTY> 
+  std14::enable_if_t< !(is_blas_lapack_type<typename VTX::value_type>::value && have_same_value_type< VTX, VTY>::value) >
+  axpy (typename VTX::value_type const & alpha ,VTX const & X, VTY & Y) {
+  for (size_t i = 0; i < X.size(); ++i) Y(i) = Y(i) + alpha * X(i);
+ }
 }}}// namespace
 
 #endif
