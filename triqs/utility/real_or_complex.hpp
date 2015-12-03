@@ -32,7 +32,7 @@ namespace utility {
   * 
   */
  class real_or_complex { 
-  
+
   bool _is_real = true;
   std::complex<double> _x;
 
@@ -42,9 +42,9 @@ namespace utility {
   real_or_complex(std::complex<double> x) : _x(std::move(x)), _is_real(false) {}
 
   bool is_real() const { return _is_real; }
-  
+
   explicit operator std::complex<double>() const { return _x; }
-  
+
   explicit operator double() const { 
    if (!_is_real) TRIQS_RUNTIME_ERROR << "Logic error : the number is not real, it is complex";
    return real(_x);
@@ -71,6 +71,9 @@ namespace utility {
    return out;
   }
 
+  bool operator==(real_or_complex const& x) const { return abs(_x - x._x) == 0; }
+  bool operator!=(real_or_complex const& x) const { return !operator==(x); }
+
 #define MAKE_OP(OP)\
   inline real_or_complex& operator OP (double y) { _x OP y; return *this; } \
   inline real_or_complex& operator OP (std::complex<double> const &y) { _x OP y; _is_real = false; return *this; }\
@@ -80,7 +83,7 @@ namespace utility {
 #undef MAKE_OP
 
  };
-  
+
 #define MAKE_OP(OP, OPC)\
  inline real_or_complex operator OP (real_or_complex a, real_or_complex const& b) { a OPC b; return a; }\
  inline real_or_complex operator OP (real_or_complex a, std::complex<double> const& b) { a OPC b; return a; }\
