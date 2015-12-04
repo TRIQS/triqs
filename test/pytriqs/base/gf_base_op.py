@@ -119,6 +119,11 @@ assert_arrays_are_close(Gc['a'].data[shift:shift+3], res)
 with HDFArchive('gf_base_op_test.h5','w') as h : 
    h['g'] = G
    h['gt'] = gt
+
+# Check reading out of archive
+with HDFArchive('gf_base_op_test.h5','r') as h : 
+   assert_block_gfs_are_close(h['g'], G)
+   assert_block_gfs_are_close(h['gt'], gt)
  
 # Pickle (also use in mpi, etc...)
 import pickle

@@ -1,11 +1,10 @@
+SET(PythonBuildExecutable ${CMAKE_BINARY_DIR}/build_pytriqs)
 
-# runs python_with_DMFT script > output 
-# and compares output with script.output
-# Example: 
-#   triqs_add_triqs_test_script(ExampleTest)
-#   where ExampleTest.py is the script and ExampleTest.output is the expected output
-#
-macro(triqs_add_test_C_simple testname ) 
+# runs a c++ test
+# if there is a .output file a comparison test is done
+# Example: add_cpp_test(my_code)
+#   where my_code is the cpp executable my_code.output is the expected output
+macro(triqs_add_cpp_test testname)
  enable_testing()
 
  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
@@ -18,89 +17,46 @@ macro(triqs_add_test_C_simple testname )
    -Dcmd=${CMAKE_CURRENT_BINARY_DIR}/${testname}${ARGN}
    -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output
    -P @CMAKE_INSTALL_PREFIX@/share/triqs/cmake/run_test.cmake
-   )
+  )
 
  else (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
-  add_test(${testname}${ARGN} ${testname}${ARGN} )
+
+  add_test(${testname}${ARGN} ${testname}${ARGN})
+
  endif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
 
-endmacro(triqs_add_test_C_simple)
-
-
-macro(triqs_add_test_C_hdf testname h5diff_options)
- set(h5diff_objects ${ARGN}) # grab additionnal arguments !
- enable_testing()
- add_test(${testname}
-   ${CMAKE_COMMAND}
-   -Dname=${testname}${ARGN}
-   -Dcmd=${CMAKE_CURRENT_BINARY_DIR}/${testname}${ARGN}
-   -DoutputName=${testname}.output.h5
-   -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output.h5
-   -DH5_DIFF_EXECUTABLE=${TRIQS_HDF5_DIFF_EXECUTABLE}
-   -DH5_DIFF_OPTIONS=${h5diff_options}
-   -DH5_DIFF_OBJECTS=${h5diff_objects}
-   -P @CMAKE_INSTALL_PREFIX@/share/triqs/cmake/run_test.cmake
-   )
-endmacro(triqs_add_test_C_hdf)
-
-SET(ExecutableNameForTest ${CMAKE_BINARY_DIR}/build_pytriqs)
+endmacro(triqs_add_cpp_test)
  
-# runs pytriqs script > output 
-# and compares output with script.output
-# Example: 
-#   triqs_add_triqs_test_script(ExampleTest)
-#   where ExampleTest.py is the script and ExampleTest.output is the expected output
-#
-macro(triqs_add_test_txt testname ) 
+# runs a python test
+# if there is a .output file a comparison test is done
+# Example: add_python_test(my_script)
+#   where my_script.py is the script and my_script.output is the expected output
+macro(triqs_add_python_test testname)
  enable_testing()
- add_test(${testname}
-  ${CMAKE_COMMAND}
-  -Dname=${testname}
-  -Dcmd=${ExecutableNameForTest}
-  -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
-  -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output
-  -P @CMAKE_INSTALL_PREFIX@/share/triqs/cmake/run_test.cmake
+
+ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
+
+  file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+  add_test(${testname}
+   ${CMAKE_COMMAND}
+   -Dname=${testname}
+   -Dcmd=${PythonBuildExecutable}
+   -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
+   -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output
+   -P @CMAKE_INSTALL_PREFIX@/share/triqs/cmake/run_test.cmake
   )
-endmacro(triqs_add_test_txt)
 
-# - runs python_with_DMFT script 
-# - compares the file named testname_output.h5 
-#   with the file testname.output.h5 of the source directory
-# The comparison with made with h5diff_options 
-# all remainings arguments are the objects to which to restrict the comparison (default = no restriction)
-# Example : 
-#   triqs_add_triqs_test_hdf(ExampleTestH5 "-r" )
-#   where ExampleTestH5.py produces to be compared with ExampleTestH5_output.h5 with option "-r" and for all objects
-#
-macro(triqs_add_test_hdf testname h5diff_options)
- set(h5diff_objects ${ARGN}) # grab additionnal arguments !
- enable_testing()
- add_test(${testname}
-  ${CMAKE_COMMAND}
-  -Dname=${testname}
-  -Dcmd=${ExecutableNameForTest}
-  -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
-  -DoutputName=${testname}.output.h5
-  -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output.h5
-  -DH5_DIFF_EXECUTABLE=${TRIQS_HDF5_DIFF_EXECUTABLE} 
-  -DH5_DIFF_OPTIONS=${h5diff_options} 
-  -DH5_DIFF_OBJECTS=${h5diff_objects} 
-  -P @CMAKE_INSTALL_PREFIX@/share/triqs/cmake/run_test.cmake
+ else (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
+
+  add_test(${testname}
+   ${CMAKE_COMMAND}
+   -Dname=${testname}
+   -Dcmd=${PythonBuildExecutable}
+   -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
+   -P @CMAKE_INSTALL_PREFIX@/share/triqs/cmake/run_test.cmake
   )
-endmacro(triqs_add_test_hdf)
 
-# add all the test
-macro(triqs_add_all_C_tests_in_current_directory)
- FILE(GLOB TestList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
- FOREACH( TestName1  ${TestList} )
-  STRING(REPLACE ".cpp" "" TestName ${TestName1})
-  add_executable( ${TestName}  ${CMAKE_CURRENT_SOURCE_DIR}/${TestName}.cpp )
-  triqs_set_rpath_for_target(${TestName})
-  triqs_add_test_C_simple( ${TestName}    )
-  if (TESTS_C_WITH_VALGRIND)
-   add_test ( ${TestName}_valgrind valgrind --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/${TestName})
-  endif()
- ENDFOREACH( TestName1  ${TestList} )
-endmacro()
+ endif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
 
-
+endmacro(triqs_add_python_test)

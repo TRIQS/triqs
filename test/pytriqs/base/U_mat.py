@@ -21,16 +21,15 @@
 
 from pytriqs.archive import *
 from pytriqs.operators.util import *
+from pytriqs.utility.comparison_tests import *
 import numpy
 
 U_sph = U_matrix(l=2, U_int=2.0, J_hund=0.5)
 U_cubic = transform_U_matrix(U_sph,spherical_to_cubic(l=2))
 U,Up = reduce_4index_to_2index(U_cubic)
 
-ar = HDFArchive('U_mat.output.h5')
-ar['Ufull_sph'] = U_sph
-ar['Ufull_cubic'] = U_cubic
-ar['U'] = U
-ar['Up'] = Up
-
-del ar
+with HDFArchive('U_mat.ref.h5', 'r') as ar:
+   assert_arrays_are_close(ar['Ufull_sph'], U_sph)
+   assert_arrays_are_close(ar['Ufull_cubic'], U_cubic)
+   assert_arrays_are_close(ar['U'], U)
+   assert_arrays_are_close(ar['Up'], Up)

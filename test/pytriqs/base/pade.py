@@ -56,5 +56,5 @@ g_pade = GfReFreq(indices = [0], window = (-5.995, 5.995), n_points = 1200, name
 g_pade.set_from_pade(gm, n_points = L, freq_offset = eta)
 
 from pytriqs.archive import HDFArchive
-R = HDFArchive('pade.output.h5','r')
+R = HDFArchive('pade.ref.h5','r')
 assert_gfs_are_close(g_pade, R['g_pade'])

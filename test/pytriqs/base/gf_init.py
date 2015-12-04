@@ -24,7 +24,7 @@ from pytriqs.utility.comparison_tests import *
 import numpy
 
 
-h=HDFArchive('gf_init.output.h5','r')
+h=HDFArchive('gf_init.ref.h5','r')
 
 g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 100, name = "egBlock")
 g['eg1','eg1'] << SemiCircular(half_bandwidth = 1)

@@ -11,7 +11,7 @@ SET(PYTHON_SOURCES
 )
 
 # Build C extension module
-triqs_python_extension(comparison_tests)
+triqs_python_extension(comparison_tests utility)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/utility)

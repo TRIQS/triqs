@@ -15,8 +15,8 @@ template<typename X, typename Y>
  try {
   assert_gfs_are_close(x,y);
   return ::testing::AssertionSuccess();
- } catch (const char* msg) {
-  return ::testing::AssertionFailure() << msg;
+ } catch (triqs::exception msg) {
+  return ::testing::AssertionFailure() << msg.what();
  }
 
 }
@@ -30,8 +30,8 @@ template<typename X, typename Y>
  try {
   assert_block_gfs_are_close(x,y);
   return ::testing::AssertionSuccess();
- } catch (const char* msg) {
-  return ::testing::AssertionFailure() << msg;
+ } catch (triqs::exception msg) {
+  return ::testing::AssertionFailure() << msg.what();
  }
 
 }

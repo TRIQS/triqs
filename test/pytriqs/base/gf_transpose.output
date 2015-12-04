@@ -1,4 +1,0 @@
-Old data shape =  (1000, 3, 5)
-Old tail shape =  (10, 3, 5)
-New data shape =  (1000, 5, 3)
-New tail shape =  (10, 5, 3)

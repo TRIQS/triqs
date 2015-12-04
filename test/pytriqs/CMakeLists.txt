@@ -1,5 +1,5 @@
 enable_testing()
-find_package(TestScriptHdf)
+find_package(Test)
 
 # Create a temporary copy of the python modules so that we can run before installation with the test
 FILE(GLOB_RECURSE all_py_files RELATIVE ${CMAKE_SOURCE_DIR}/test/pytriqs *.py )

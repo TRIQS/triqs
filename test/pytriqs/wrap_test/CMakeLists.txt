@@ -10,8 +10,8 @@ add_dependencies(python_wrap_my_moduleB python_wrap_my_module)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 # A sample test with text output
-add_triqs_test_txt(wrap_a)
-add_triqs_test_txt(wrap_B)
-add_triqs_test(wrap_g)
-add_triqs_test(blockgf)
+add_python_test(wrap_a)
+add_python_test(wrap_B)
+add_python_test(wrap_g)
+add_python_test(blockgf)
 

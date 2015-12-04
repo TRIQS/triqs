@@ -22,11 +22,11 @@
 
 from pytriqs.archive import *
 from numpy import *
-
+from pytriqs.utility.comparison_tests import *
 
 d = {'a' : 1.0, 'b' : [1,2,3]}
 
-with HDFArchive('hdf5_io.output.h5','w', init = d.items()) as h:
+with HDFArchive('hdf5_io.out.h5','w', init = d.items()) as h:
     h['c'] = 100
     h['d'] = array([[1,2,3],[4,5,6]])
     h['e'] = (1,2,3)
@@ -37,12 +37,12 @@ with HDFArchive('hdf5_io.output.h5','w', init = d.items()) as h:
     g['b'] = (1,2,3)
     g['c'] = 200
 
-h2 = HDFArchive('hdf5_io.output.h5','r')
+h2 = HDFArchive('hdf5_io.out.h5','r')
 dd = h2['f']
 gg = h2['g']
 del h2, gg
 
-h3 = HDFArchive('hdf5_io.output.h5','a')
+h3 = HDFArchive('hdf5_io.out.h5','a')
 dd = h3['f']
 dd['c'] = 18
 h3['f'] = dd
@@ -50,8 +50,23 @@ gg = h3['g']
 gg['d'] = 700
 del h3, gg
 
-gg = HDFArchive('hdf5_io.output.h5','a')['g']
+gg = HDFArchive('hdf5_io.out.h5','a')['g']
 gg['x'] = 1.5
 
-with HDFArchive('hdf5_io.output.h5','a')['g'] as g:
+with HDFArchive('hdf5_io.out.h5','a')['g'] as g:
     g['y'] = 'zzz'
+
+# Final check
+A = HDFArchive('hdf5_io.out.h5','r')
+assert A['a'] == 1.0
+assert A['b'] == [1,2,3]
+assert A['c'] == 100
+assert_arrays_are_close(A['d'], array([[1, 2, 3], [4, 5, 6]]))
+assert A['e'] == (1,2,3)
+assert A['f'] == {'a': 10, 'c': 18, 'b': 20}
+assert A['g']['a'] == 98
+assert A['g']['b'] == (1, 2, 3)
+assert A['g']['c'] == 200
+assert A['g']['d'] == 700
+assert A['g']['x'] == 1.5
+assert A['g']['y'] == 'zzz'
