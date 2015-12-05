@@ -28,6 +28,7 @@ namespace arrays {
  // The lazy ref made by scatter and co. 
  // Differs from the generic one in that it can make a domain of the (target) array
  template <typename Tag, typename A> struct mpi_lazy_array {
+  using value_type = typename A::value_type; // needed to construct array from this object (to pass requires on convertibility of types)
   A const &ref;
   mpi::communicator c;
   int root;

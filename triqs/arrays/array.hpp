@@ -164,7 +164,9 @@ namespace triqs { namespace arrays {
      *  - a expression : e.g. array<int> A = B+ 2*C;
      */
     template <typename T>
-    array(const T& X, TYPE_ENABLE_IF(memory_layout<Rank>, ImmutableCuboidArray<T>) ml = memory_layout<Rank>{})
+    array(const T& X,
+          std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value,
+                             memory_layout<Rank>> ml = memory_layout<Rank>{})
        : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
      triqs_arrays_assign_delegation(*this, X);
     }

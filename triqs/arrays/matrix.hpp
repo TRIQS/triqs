@@ -158,7 +158,9 @@ namespace arrays {
 
   /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be :
   template <typename T>
-  matrix(const T& X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableCuboidArray<T>) ml = memory_layout<2>{})
+  matrix(const T& X,
+         std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value,
+                            memory_layout<2>> ml = memory_layout<2> {})
      : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
    triqs_arrays_assign_delegation(*this, X);
   }

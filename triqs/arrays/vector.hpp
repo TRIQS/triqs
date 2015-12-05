@@ -152,8 +152,9 @@ namespace arrays {
    * matrix
    */
   template <typename T>
-  // vector(const T & X, std14::enable_if_t< ImmutableCuboidArray<T> ::value> *dummy =0):
-  vector(const T& X, TYPE_ENABLE_IF(memory_layout<1>, ImmutableCuboidArray<T>) ml = memory_layout<1>{})
+  vector(const T& X,
+         std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value,
+                            memory_layout<1>> ml = memory_layout<1> {})
      : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
    triqs_arrays_assign_delegation(*this, X);
   }
