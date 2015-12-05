@@ -33,4 +33,4 @@ __all__ = ['h_int_slater','h_int_kanamori','h_int_density','diagonal_part',
            'reduce_4index_to_2index', 'spherical_to_cubic', 't2g_submatrix',
            'three_j_symbol', 'transform_U_matrix',
            'N_op', 'S_op', 'S2_op', 'L_op', 'L2_op', 'LS_op',
-           'extract_h_dict','extract_U_dict2','extract_U_dict4','dict_to_matrix']
+           'extract_h_dict','extract_U_dict2','extract_U_dict4']
