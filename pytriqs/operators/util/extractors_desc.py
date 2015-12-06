@@ -12,6 +12,7 @@ module.add_include("<triqs/python_tools/converters/variant.hpp>")
 module.add_include("<triqs/python_tools/converters/arrays.hpp>")
 module.add_using("namespace triqs::operators")
 module.add_using("namespace triqs::operators::util")
+module.add_using("namespace triqs::hilbert_space")
 
 module.add_preamble("""
 using indices_t_t = std::tuple<triqs::utility::variant_int_string,
@@ -91,28 +92,28 @@ module.add_function("dict4_t<real_or_complex> extract_U_dict4(many_body_operator
 
 """)
 
-#dict_to_matrix_docstring = r"""
-#Convert a 2/4-index dictionary to a 2/4-dimensional NumPy array given the structure of the Green's function.
-#The elements missing from the dictionary are assumed to be zero.
+dict_to_matrix_docstring = r"""
+Convert a 2/4-index dictionary to a 2/4-dimensional NumPy array given the structure of the Green's function.
+The elements missing from the dictionary are assumed to be zero.
 
-#Parameters
-#----------
-#d : dict
-    #The 2/4-index dictionary.
-#gf_struct : dict
-    #The structure of the Green's function, {block_index \: [inner indices]}.
+Parameters
+----------
+d : dict
+    The 2/4-index dictionary.
+gf_struct : dict
+    The structure of the Green's function, {block_index \: [inner indices]}.
 
-#Returns
-#-------
-#arr : array
-    #The resulting NumPy array.
+Returns
+-------
+arr : array
+    The resulting NumPy array.
 
-#"""
+"""
 
-#module.add_function("real_or_complex_array<2> dict_to_matrix(dict2_t<real_or_complex> d, gf_struct_t gf_struct)",
-                    #doc = dict_to_matrix_docstring)
-#module.add_function("real_or_complex_array<4> dict_to_matrix(dict4_t<real_or_complex> d, gf_struct_t gf_struct)",
-                    #doc = dict_to_matrix_docstring)
+module.add_function("real_or_complex_array<2> dict_to_variant_matrix(dict2_t<real_or_complex> d, gf_struct_t gf_struct)",
+                    name = "dict_to_matrix", doc = dict_to_matrix_docstring)
+module.add_function("real_or_complex_array<4> dict_to_variant_matrix(dict4_t<real_or_complex> d, gf_struct_t gf_struct)",
+                    name = "dict_to_matrix", doc = dict_to_matrix_docstring)
 
 module.generate_code()
 

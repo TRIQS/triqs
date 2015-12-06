@@ -8,13 +8,16 @@
 using namespace triqs::operators;
 using namespace triqs::operators::util;
 using namespace triqs::arrays;
+using namespace triqs::hilbert_space;
+
+using dcomplex = std::complex<double>;
 
 double U1 = 2.0, U2 = 2.2, U3 = 2.4;
 double eps1 = 1.0, eps2 = 1.1, eps3 = 1.2;
 double t12 = 0.4, t23 = 0.5, t31 = 0.6;
 double V12 = 1.8, V23 = 1.7, V31 = 1.6;
 
-//auto gf_struct = gf_struct_t({{"up", {1,2,3}}, {"dn", {1,2,3}}});
+auto gf_struct = gf_struct_t({{"up", {1,2,3}}, {"dn", {1,2,3}}});
 std::vector<indices_t> ind = {{"dn",1},{"dn",2},{"dn",3},{"up",1},{"up",2},{"up",3}};
 
 // Test extract_h_dict
@@ -44,7 +47,10 @@ TEST(Extractors, extract_h_dict) {
 
  auto h_dict = extract_h_dict(h0);
  EXPECT_EQ(h_dict_ref,h_dict);
- //EXPECT_CLOSE_ARRAY(h_matrix_ref,(array<double,2>)(dict_to_matrix(h_dict,gf_struct)));
+ EXPECT_CLOSE_ARRAY(h_matrix_ref,                   dict_to_matrix(h_dict,gf_struct));
+ EXPECT_CLOSE_ARRAY(h_matrix_ref,                   dict_to_matrix<double>(h_dict,gf_struct));
+ EXPECT_CLOSE_ARRAY((array<dcomplex,2>)h_matrix_ref,dict_to_matrix<dcomplex>(h_dict,gf_struct));
+ EXPECT_CLOSE_ARRAY(h_matrix_ref,                   (array<double,2>)dict_to_variant_matrix(h_dict,gf_struct));
 
  auto nn = n("up",1)*n("dn",1);
  EXPECT_THROW(extract_h_dict(nn),triqs::exception);
@@ -54,8 +60,8 @@ TEST(Extractors, extract_h_dict) {
  EXPECT_THROW(extract_h_dict(cc),triqs::exception);
  EXPECT_NO_THROW(extract_h_dict(cc,true));
 
- //auto wrong_index = n("up",1) + n("dn",5);
- //EXPECT_THROW(dict_to_matrix(extract_h_dict(wrong_index),gf_struct),triqs::exception);
+ auto wrong_index = n("up",1) + n("dn",5);
+ EXPECT_THROW(dict_to_matrix(extract_h_dict(wrong_index),gf_struct),triqs::exception);
 }
 
 TEST(Extractors, extract_U_dict2) {
@@ -84,7 +90,10 @@ TEST(Extractors, extract_U_dict2) {
 
  auto U_dict2 = extract_U_dict2(h_int);
  EXPECT_EQ(U_dict2_ref,U_dict2);
- //EXPECT_CLOSE_ARRAY(U_matrix2_ref,dict_to_matrix(U_dict2,gf_struct));
+ EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   dict_to_matrix(U_dict2,gf_struct));
+ EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   dict_to_matrix<double>(U_dict2,gf_struct));
+ EXPECT_CLOSE_ARRAY((array<dcomplex,2>)U_matrix2_ref,dict_to_matrix<dcomplex>(U_dict2,gf_struct));
+ EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   (array<double,2>)dict_to_variant_matrix(U_dict2,gf_struct));
 
  auto quadratic = n("up",1) + n("dn",1);
  EXPECT_THROW(extract_U_dict2(quadratic),triqs::exception);
@@ -94,8 +103,8 @@ TEST(Extractors, extract_U_dict2) {
  EXPECT_THROW(extract_U_dict2(non_nn),triqs::exception);
  EXPECT_NO_THROW(extract_U_dict2(non_nn,true));
 
- //auto wrong_index = n("up",4)*n("dn",2);
- //EXPECT_THROW(dict_to_matrix(extract_U_dict2(wrong_index),gf_struct),triqs::exception);
+ auto wrong_index = n("up",4)*n("dn",2);
+ EXPECT_THROW(dict_to_matrix(extract_U_dict2(wrong_index),gf_struct),triqs::exception);
 }
 
 TEST(Extractors, extract_U_dict4) {
@@ -134,7 +143,10 @@ TEST(Extractors, extract_U_dict4) {
 
  auto U_dict4 = extract_U_dict4(h_int);
  EXPECT_EQ(U_dict4_ref,U_dict4);
- //EXPECT_CLOSE_ARRAY(U_matrix4_ref,dict_to_matrix(U_dict4,gf_struct));
+ EXPECT_CLOSE_ARRAY(U_matrix4_ref,                   dict_to_matrix(U_dict4,gf_struct));
+ EXPECT_CLOSE_ARRAY(U_matrix4_ref,                   dict_to_matrix<double>(U_dict4,gf_struct));
+ EXPECT_CLOSE_ARRAY((array<dcomplex,4>)U_matrix4_ref,dict_to_matrix<dcomplex>(U_dict4,gf_struct));
+ EXPECT_CLOSE_ARRAY(U_matrix4_ref,                   (array<double,4>)dict_to_variant_matrix(U_dict4,gf_struct));
 
  auto quadratic = n("up",1) + n("dn",1);
  EXPECT_THROW(extract_U_dict4(quadratic),triqs::exception);
@@ -144,8 +156,8 @@ TEST(Extractors, extract_U_dict4) {
  EXPECT_THROW(extract_U_dict4(non_conserving),triqs::exception);
  EXPECT_NO_THROW(extract_U_dict4(non_conserving,true));
 
- //auto wrong_index = n("up",4)*n("dn",2);
- //EXPECT_THROW(dict_to_matrix(extract_U_dict4(wrong_index),gf_struct),triqs::exception);
+ auto wrong_index = n("up",4)*n("dn",2);
+ EXPECT_THROW(dict_to_matrix(extract_U_dict4(wrong_index),gf_struct),triqs::exception);
 }
 
 MAKE_MAIN;

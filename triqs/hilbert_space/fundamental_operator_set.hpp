@@ -38,6 +38,9 @@ inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::
 namespace triqs {
 namespace hilbert_space {
 
+/// Structure of the Green's function
+using gf_struct_t = std::map<std::string,std::vector<utility::variant_int_string>>;
+
 // This class contains an ordered list the **indices** of the canonical operators used to build the Fock state.
 // It guarantees that the order in the list is the same as given by < operator on the indice tuple of the canonical operators.
 class fundamental_operator_set {
@@ -70,6 +73,13 @@ class fundamental_operator_set {
  /// Construct on a vector<indices_t>
  explicit fundamental_operator_set(reduction_t const& indices_list) {
   for (auto const& i : indices_list) insert_from_indices_t(i);
+ }
+
+ /// Construct fundamental_operator_set on a GF structure
+ fundamental_operator_set (gf_struct_t const& gf_struct) {
+  for(auto const& block : gf_struct)
+   for(auto const& inner : block.second)
+    insert(block.first, inner);
  }
 
  /// reduce to a vector<indices_t>

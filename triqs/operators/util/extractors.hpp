@@ -21,6 +21,7 @@
 #pragma once
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/tuple_tools.hpp>
+#include <triqs/utility/variant.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/arrays.hpp>
@@ -30,14 +31,18 @@ namespace operators {
 namespace util {
 
 using triqs::arrays::array;
+using triqs::utility::variant;
 
-using indices_t = hilbert_space::fundamental_operator_set::indices_t;
+using indices_t =  hilbert_space::fundamental_operator_set::indices_t;
+
 template<typename scalar_t> using op_t = operators::many_body_operator_generic<scalar_t>;
 
 template<typename T>
 using dict2_t = std::map<std::tuple<indices_t,indices_t>,T>;
 template<typename T>
 using dict4_t = std::map<std::tuple<indices_t,indices_t,indices_t,indices_t>,T>;
+
+template<int N> using real_or_complex_array = variant<array<double,N>,array<std::complex<double>,N>>;
 
 /// Return dictionary of quadractic term coefficients starting from a Hamiltonian
 ///
@@ -129,27 +134,17 @@ dict4_t<scalar_t> extract_U_dict4(op_t<scalar_t> const & h, bool ignore_irreleva
  return U_dict;
 }
 
-/*
-template<int N> using real_or_complex_array = variant<array<double,N>,array<std::complex<double>,N>>;
-
-/// Return type of dict_to_matrix()
-template<typename DictType,
-         typename T = typename DictType::mapped_type,
-         int rank = std::tuple_size<typename DictType::key_type>::value>
-using dict_to_matrix_t = std14::conditional_t<
- std::is_same<T,real_or_complex>::value, // Are we storing real_or_complex in the dictionary?
- real_or_complex_array<rank>,            // If yes, return variant real array/complex array.
- array<T,rank>                           // Otherwise return array of the stored type
->;
-
-/// Converts dictionary of coefficients to matrix, given a fundamental operator set
-template<typename DictType, typename scalar_t = typename DictType::mapped_type>
-std14::enable_if_t<!std::is_same<scalar_t,real_or_complex>::value,dict_to_matrix_t<DictType>>
+/// Convert dictionary of coefficients to matrix, given a fundamental operator set
+///
+/// ValueType: value type of the resulting array
+/// dict: dictionary to convert
+/// fs: fundamental operator set used for conversion
+template<typename ValueType = double, typename DictType>
+array<ValueType, std::tuple_size<typename DictType::key_type>::value>
 dict_to_matrix(DictType const& dict, hilbert_space::fundamental_operator_set const& fs){
 
  using namespace triqs::tuple;
- using key_t = typename DictType::key_type;
- using indices_t = typename std::tuple_element<0,key_t>::type;
+ using matrix_t = array<ValueType, std::tuple_size<typename DictType::key_type>::value>;
 
  auto indices_to_linear = [&fs](indices_t const& indices) {
   if (!fs.has_indices(indices))
@@ -157,68 +152,31 @@ dict_to_matrix(DictType const& dict, hilbert_space::fundamental_operator_set con
   return fs[indices];
  };
 
- auto dims = make_tuple_repeat<std::tuple_size<key_t>::value>(fs.size());
- auto mat = apply_construct_parenthesis<dict_to_matrix_t<DictType>>(dims);
- mat() = scalar_t{};
+ auto dims = make_tuple_repeat<std::tuple_size<typename DictType::key_type>::value>(fs.size());
+ auto mat = apply_construct_parenthesis<matrix_t>(dims);
+ mat() = ValueType{};
 
- for(auto const& kv : dict) apply(mat,map(indices_to_linear,kv.first)) = kv.second;
+ for(auto const& kv : dict) apply(mat,map(indices_to_linear,kv.first)) = ValueType(kv.second);
 
  return mat;
 }
 
-// Specialization for scalar_t = real_or_complex
+///////////////////////////////////////////////////
+// Functions for scalar_t = real_or_complex only //
+///////////////////////////////////////////////////
+
+/// Convert dictionary of real_or_complex coefficients to variant of real/complex matrix, given a fundamental operator set
+///
+/// dict: dictionary to convert
+/// fs: fundamental operator set used for conversion
 template<typename DictType>
-std14::enable_if_t<std::is_same<typename DictType::mapped_type,real_or_complex>::value,dict_to_matrix_t<DictType>>
-dict_to_matrix(DictType const& dict, hilbert_space::fundamental_operator_set const& fs){
+real_or_complex_array<std::tuple_size<typename DictType::key_type>::value>
+dict_to_variant_matrix(DictType const& dict, hilbert_space::fundamental_operator_set const& fs){
 
- using namespace triqs::tuple;
- using key_t = typename DictType::key_type;
- using indices_t = typename std::tuple_element<0,key_t>::type;
- constexpr int rank = std::tuple_size<key_t>::value;
-
- auto indices_to_linear = [&fs](indices_t const& indices) {
-  if (!fs.has_indices(indices))
-   TRIQS_RUNTIME_ERROR << "dict_to_matrix: key [" << indices << "] of dict not in fundamental_operator_set/gf_struct";
-  return fs[indices];
- };
-
- bool is_real = true;
  for(auto const& kv : dict) {
-  if(!kv.second.is_real()) { is_real = false; break; }
+  if(!kv.second.is_real()) return dict_to_matrix<std::complex<double>>(dict,fs);
  }
-
- auto dims = make_tuple_repeat<rank>(fs.size());
- using dcomplex = std::complex<double>;
- using real_array_t = array<double,rank>;
- using complex_array_t = array<dcomplex,rank>;
-
- if(is_real) {
-  dict_to_matrix_t<DictType> mat(apply_construct_parenthesis<real_array_t>(dims));
-  auto & mat_as_real = (real_array_t&)mat;
-  mat_as_real() = double{};
-  for(auto const& kv : dict) apply(mat_as_real,map(indices_to_linear,kv.first)) = double(kv.second);
-  return mat;
- } else {
-  dict_to_matrix_t<DictType> mat(apply_construct_parenthesis<complex_array_t>(dims));
-  auto & mat_as_complex = (complex_array_t&)mat;
-  mat_as_complex() = dcomplex{};
-  for(auto const& kv : dict) apply(mat_as_complex,map(indices_to_linear,kv.first)) = dcomplex(kv.second);
-  return mat;
- }
+ return dict_to_matrix<double>(dict,fs);
 }
-
-using gf_struct_t = std::map<std::string,indices_t>;
-
-/// Converts dictionary of coefficients to matrix, given the structure of the gf
-template<typename DictType>
-dict_to_matrix_t<DictType> dict_to_matrix(DictType const& dict, gf_struct_t const& gf_struct){
- hilbert_space::fundamental_operator_set fs;
- for(auto const& block : gf_struct){
-  for(auto const& inner : block.second){
-   fs.insert(block.first, inner);
-  }
- }
- return dict_to_matrix(dict,fs);
-}*/
 
 }}}
