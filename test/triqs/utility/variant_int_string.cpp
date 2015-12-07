@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include <triqs/utility/variant_int_string.hpp>
-#include "../test_tools.hpp"
+#include <triqs/test_tools/arrays.hpp>
 
 using triqs::utility::variant_int_string;
 

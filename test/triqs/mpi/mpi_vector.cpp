@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include "./test_tools.hpp"
+#include <triqs/test_tools/arrays.hpp>
 #include <triqs/mpi/vector.hpp>
 #include <triqs/arrays.hpp>
 #include <iostream>

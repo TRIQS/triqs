@@ -1,4 +1,4 @@
-#include "./common.hpp"
+#include <triqs/test_tools/gfs.hpp>
 #include <triqs/gfs.hpp>
 #include <triqs/gfs/functions/functions.hpp>
 using namespace triqs::gfs;

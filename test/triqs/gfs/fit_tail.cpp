@@ -1,4 +1,4 @@
-#include "./common.hpp"
+#include <triqs/test_tools/gfs.hpp>
 #include <triqs/gfs/singularity/fit_tail.hpp>
 using triqs::arrays::make_shape;
 

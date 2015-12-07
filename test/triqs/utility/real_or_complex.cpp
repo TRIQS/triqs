@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include <triqs/utility/real_or_complex.hpp>
-#include "../test_tools.hpp"
+#include <triqs/test_tools/arrays.hpp>
 
 using triqs::utility::real_or_complex;
 

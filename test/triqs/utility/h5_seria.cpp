@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "../test_tools.hpp"
+#include <triqs/test_tools/arrays.hpp>
 #include <triqs/arrays.hpp>
 #if not H5_VERSION_GE(1, 8, 9)
 int main() {}

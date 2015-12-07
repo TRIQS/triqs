@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include <triqs/utility/buffered_function.hpp>
-#include "../test_tools.hpp"
+#include <triqs/test_tools/arrays.hpp>
 
 TEST(BufferedFunction, All) {
 

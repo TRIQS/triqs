@@ -31,14 +31,13 @@ install(TARGETS triqs DESTINATION lib)
 configure_file(version.hpp.in version.hpp @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.hpp" DESTINATION "include/triqs/")
 
-# all .hpp files...
-FILE(GLOB_RECURSE ALLHEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.hpp)
+# all .hpp and .h files...
+FILE(GLOB_RECURSE ALLHEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.hpp *.h)
 
 # Install headers in good include dir
 FOREACH(HEADER ${ALLHEADERS})
  get_filename_component(P ${HEADER} PATH)
  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${HEADER}" DESTINATION "include/triqs/${P}")
- #MESSAGE(STATUS "I will install ${HEADER} of ${P}")
 ENDFOREACH(HEADER ${ALLHEADERS})
 
 

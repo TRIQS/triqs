@@ -1,4 +1,4 @@
-#include "../test_tools.hpp"
+#include <triqs/test_tools/arrays.hpp>
 #include <triqs/statistics.hpp>
 #include <boost/version.hpp>
 #include <boost/random/variate_generator.hpp>

@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "test_tools.hpp"
+#include <triqs/test_tools/arrays.hpp>
 #include <random>
 #include <vector>
 #include <triqs/mc_tools/MersenneRNG.hpp>

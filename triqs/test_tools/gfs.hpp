@@ -1,4 +1,4 @@
-#include "../test_tools.hpp"
+#include "arrays.hpp"
 #include <triqs/gfs.hpp>
 #include <triqs/gfs/functions/gf_tests.hpp>
 #include <triqs/gfs/functions/functions.hpp> 

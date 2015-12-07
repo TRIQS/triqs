@@ -1,4 +1,4 @@
-#include "../common.hpp"
+#include <triqs/test_tools/gfs.hpp>
 
 using gf3_s = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued>;
 

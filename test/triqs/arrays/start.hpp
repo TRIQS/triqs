@@ -1,4 +1,4 @@
-#include "../test_tools.hpp"
+#include <triqs/test_tools/arrays.hpp>
 #include <triqs/arrays.hpp>
 using namespace triqs::arrays;
  

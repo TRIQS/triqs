@@ -22,7 +22,7 @@
 #define TRIQS_ARRAYS_DEBUG
 #include <iostream>
 #include <sstream>
-#include "gtest/gtest.h"
+#include "gtest.h"
 #include <triqs/mpi/base.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/h5.hpp>
