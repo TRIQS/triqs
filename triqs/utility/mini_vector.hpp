@@ -137,8 +137,8 @@ namespace triqs { namespace utility {
    mini_vector(mini_vector && x){ *this = std::move(x); }
    
    template<typename T2> mini_vector(const mini_vector<T2,Rank> & x){ *this = x; }
-
-   mini_vector(const std::vector<T> & v){ 
+   template<typename T2>
+   mini_vector(const std::vector<T2> & v){ 
     if (v.size()!=Rank)
      TRIQS_RUNTIME_ERROR<< "mini_vector construction : vector size incorrect  : expected "<<Rank<<" got : "<< v.size();
     for (int i=0;i<Rank; ++i)  _data[i] = v[i];
