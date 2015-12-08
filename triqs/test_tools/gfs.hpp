@@ -10,7 +10,7 @@ using namespace triqs::lattice;
 
 // 
 template<typename X, typename Y>
-::testing::AssertionResult test_gfs_are_close(X const &x, Y const &y, double precision = 1.e-10) {
+::testing::AssertionResult test_gfs_are_close(X const &x, Y const &y, double precision = 1.e-6) {
 
  try {
   assert_gfs_are_close(x,y, precision);
@@ -25,7 +25,7 @@ template<typename X, typename Y>
 
 // 
 template<typename X, typename Y>
-::testing::AssertionResult test_block_gfs_are_close(X const &x, Y const &y, double precision = 1.e-10) {
+::testing::AssertionResult test_block_gfs_are_close(X const &x, Y const &y, double precision = 1.e-6) {
 
  try {
   assert_block_gfs_are_close(x,y, precision);
