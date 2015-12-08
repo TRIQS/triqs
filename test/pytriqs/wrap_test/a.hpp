@@ -222,7 +222,7 @@ struct test_variant_visitor {
 inline triqs::utility::variant<int,std::string,std::pair<std::string,double>>
 variant_to_variant(triqs::utility::variant<int,std::string,std::pair<std::string,double>> const& v) {
  triqs::utility::variant<int,std::string,std::pair<std::string,double>> res(
-  apply_visitor(test_variant_visitor(), v));
+  visit(test_variant_visitor(), v));
  return res;
 }
 

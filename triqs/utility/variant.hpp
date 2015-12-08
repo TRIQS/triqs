@@ -225,17 +225,20 @@ namespace utility {
    return *reinterpret_cast<T *>(&data);
   }
 
+  // Access current type id
+  std::size_t index() const noexcept { return type_id; }
+
 // Visitation
 // Return type of f(v) must be the same for any stored type, so we can use the
 // first type.
 #if GCC_VERSION > 50200
-  template <typename F> friend auto apply_visitor(F &&f, variant &v) {
+  template <typename F> friend auto visit(F &&f, variant &v) {
    using RType = std14::result_of_t<F(bounded_type<0> &)>;
    constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
    return (v.*table[v.type_id])(std::forward<F>(f));
   }
 
-  template <typename F> friend auto apply_visitor(F &&f, variant const &v) {
+  template <typename F> friend auto visit(F &&f, variant const &v) {
    using RType = std14::result_of_t<F(bounded_type<0> const &)>;
    constexpr static std::array<RType (variant::*)(F) const, n_bounded_types> table = {&variant::apply_c<Types, F>...};
    return (v.*table[v.type_id])(std::forward<F>(f));
@@ -243,13 +246,13 @@ namespace utility {
 #else
   // A bug in gcc 4.9 (59766) forbids to use the friend auto which is clearer
   // than this
-  template <typename F, typename RType = std14::result_of_t<F(bounded_type<0> &)>> friend RType apply_visitor(F &&f, variant &v) {
+  template <typename F, typename RType = std14::result_of_t<F(bounded_type<0> &)>> friend RType visit(F &&f, variant &v) {
    constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
    return (v.*table[v.type_id])(std::forward<F>(f));
   }
 
   template <typename F, typename RType = std14::result_of_t<F(bounded_type<0> const &)>>
-  friend RType apply_visitor(F &&f, variant const &v) { // const version
+  friend RType visit(F &&f, variant const &v) { // const version
    constexpr static std::array<RType (variant::*)(F) const, n_bounded_types> table = {&variant::apply_c<Types, F>...};
    return (v.*table[v.type_id])(std::forward<F>(f));
   };
@@ -260,7 +263,7 @@ namespace utility {
    if (type_id != other.type_id)
     TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored "
                            "values of different types";
-   return apply_visitor([&other](auto const &x) { return x == *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
+   return visit([&other](auto const &x) { return x == *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
   }
   bool operator!=(variant const &other) const { return !(operator==(other)); }
 
@@ -268,18 +271,18 @@ namespace utility {
    if (type_id != other.type_id)
     TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored "
                            "values of different types";
-   return apply_visitor([&other](auto const &x) { return x < *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
+   return visit([&other](auto const &x) { return x < *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
   }
   bool operator>(variant const &other) const {
    if (type_id != other.type_id)
     TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored "
                            "values of different types";
-   return apply_visitor([&other](auto const &x) { return x > *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
+   return visit([&other](auto const &x) { return x > *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
   }
 
   // Stream insertion
   friend std::ostream &operator<<(std::ostream &os, variant const &v) {
-   apply_visitor([&os](auto const &x) { os << x; }, v);
+   visit([&os](auto const &x) { os << x; }, v);
    return os;
   }
  };

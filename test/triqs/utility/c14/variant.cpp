@@ -133,11 +133,11 @@ TEST(Variant,Basic) {
   EXPECT_EQ(ss.str(),"2:text:text:{g => 9}:{x => 2}:");
 
   std::stringstream ss2;
-  apply_visitor(test_visitor(ss2), v_int);
-  apply_visitor(test_visitor(ss2), v_string);
-  apply_visitor(test_visitor(ss2), v_my_struct1);
-  apply_visitor(test_visitor(ss2), v_my_struct2);
-  apply_visitor(test_visitor(ss2), v_my_struct3);
+  visit(test_visitor(ss2), v_int);
+  visit(test_visitor(ss2), v_string);
+  visit(test_visitor(ss2), v_my_struct1);
+  visit(test_visitor(ss2), v_my_struct2);
+  visit(test_visitor(ss2), v_my_struct3);
   EXPECT_EQ(ss2.str(),"int 2:string 'text':string 'text':my_struct {g => 9}:my_struct {x => 2}:");
   }
   EXPECT_MY_STRUCT_MESSAGE("my_struct[4]: destructor");

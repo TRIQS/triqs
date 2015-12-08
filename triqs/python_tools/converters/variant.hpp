@@ -48,7 +48,7 @@ private:
 public:
 
   static PyObject* c2py(variant_t const& v) {
-    return apply_visitor(c2py_visitor(), v);
+    return visit(c2py_visitor(), v);
   }
 
   static bool is_convertible(PyObject *ob, bool raise_exception) {

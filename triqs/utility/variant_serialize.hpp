@@ -50,7 +50,7 @@ inline void serialize(Archive & ar, triqs::utility::variant<Types...> & v, const
 template<typename Archive, typename... Types>
 void save(Archive & ar, triqs::utility::variant<Types...> const& v, const unsigned int version) {
   ar << v.type_id;
-  apply_visitor(variant_serialize_saver<Archive>(ar),v);
+  visit(variant_serialize_saver<Archive>(ar),v);
 }
 
 template<typename Archive, typename... Types>
@@ -59,9 +59,9 @@ void load(Archive & ar, triqs::utility::variant<Types...> & v, const unsigned in
   if(v.type_id != new_type_id) {
     v.destroy();
     v.type_id = new_type_id;
-    apply_visitor(variant_serialize_loader<Archive>(ar,true),v);
+    visit(variant_serialize_loader<Archive>(ar,true),v);
   } else
-    apply_visitor(variant_serialize_loader<Archive>(ar,false),v);
+    visit(variant_serialize_loader<Archive>(ar,false),v);
 }
 
 } // namespace serialization
