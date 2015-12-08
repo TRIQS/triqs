@@ -25,22 +25,22 @@ namespace triqs {
 namespace gfs {
 
  // check tails are close (min/max orders and data)
- void assert_tails_are_close(tail const &x, tail const &y, double precision = 1.e-10) {
+ void assert_tails_are_close(tail const &x, tail const &y, double precision) {
 
   if (x.order_min() != y.order_min()) TRIQS_RUNTIME_ERROR << "Tails do not have the same order_min";
   if (x.order_max() != y.order_max()) TRIQS_RUNTIME_ERROR << "Tails do not have the same order_max";
   if (max_element(abs(x.data() - y.data())) > precision) TRIQS_RUNTIME_ERROR << "Tails have different data";
 
  }
- void assert_tails_are_close(nothing const &x, nothing const &y, double precision = 1.e-10) {}
+ void assert_tails_are_close(nothing const &x, nothing const &y, double precision) {}
 
  // check gfs are close
  template<typename X, typename Y>
- void assert_gfs_are_close(X const &x, Y const &y, double precision = 1.e-10) {
+ void assert_gfs_are_close(X const &x, Y const &y, double precision) {
 
   // meshes must be identical and data close
   if (x.mesh() != y.mesh()) TRIQS_RUNTIME_ERROR << "GFs have different meshes";
-  if (max_element(abs(x.data() - y.data())) > precision) TRIQS_RUNTIME_ERROR << "Gfs have different data";
+  if (max_element(abs(x.data() - y.data())) > precision) TRIQS_RUNTIME_ERROR << "Gfs have different data. max(abs(x-y)) = " << max_element(abs(x.data() - y.data())) ;
 
   // tails must be close
   assert_tails_are_close(x.singularity(), y.singularity(), precision);
@@ -49,7 +49,7 @@ namespace gfs {
 
  // check block gfs are close
  template<typename X, typename Y>
- void assert_block_gfs_are_close(X const &x, Y const &y, double precision = 1.e-10) {
+ void assert_block_gfs_are_close(X const &x, Y const &y, double precision) {
 
   if (n_blocks(x) != n_blocks(y)) TRIQS_RUNTIME_ERROR << "Block GFs have different number of blocks";
   for (int u = 0; u < n_blocks(x); ++u) assert_gfs_are_close(x[u], y[u], precision);
