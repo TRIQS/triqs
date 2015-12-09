@@ -76,9 +76,6 @@ def S_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
         The component of the spin vector operator.
 
     """
-    # FIXME
-    assert component != 'y', "We cannot construct operators with complex coefficients at the moment. Sorry for that!"
-
     mkind  = get_mkind(off_diag,map_operator_structure)
     pm = pauli_matrix[component]
 
@@ -165,9 +162,6 @@ def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
         The component of the orbital momentum vector operator.
 
     """
-    # FIXME
-    assert component != 'y', "We cannot construct operators with complex coefficients at the moment. Sorry for that!"
-
     l = (len(orb_names)-1)/2.0
     L_melem_dict = {'z' : lambda m,mp: m if np.isclose(m,mp) else 0,
                     '+' : lambda m,mp: np.sqrt(l*(l+1)-mp*(mp+1)) if np.isclose(m,mp+1) else 0,
