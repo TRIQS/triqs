@@ -56,7 +56,6 @@ def S_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
     ----------
     component : string
                 Component to be created, one of 'x', 'y', 'z', '+', or '-'.
-                *Warning*: y-component is not supported at the moment!
     spin_names : list of strings
                  Names of the spins, e.g. ['up','down'].
     orb_names : list of strings or int
@@ -131,7 +130,6 @@ def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
     ----------
     component : string
                 Component to be created, one of 'x', 'y', 'z', '+', or '-'.
-                *Warning*: y-component is not supported at the moment!
     spin_names : list of strings
                  Names of the spins, e.g. ['up','down'].
     orb_names : list of strings or int
