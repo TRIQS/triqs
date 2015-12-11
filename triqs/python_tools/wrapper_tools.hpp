@@ -23,11 +23,11 @@ inline char *get_current_time() { // helper function to print the time in the CA
  PyErr_SetString(PyExc_KeyboardInterrupt, e.what());\
  return RET; }\
  catch(triqs::exception const & e) {\
- auto err = std::string("Error occurred at ") + get_current_time() + "\nError " + MESS + "\nC++ error was : \n"  + e.what();\
+ auto err = std::string(".. Error occurred at ") + get_current_time() + "\n.. Error " + MESS + "\n.. C++ error was : \n"  + e.what();\
  PyErr_SetString(PyExc_RuntimeError, err.c_str());\
  return RET; }\
  catch(std::exception const & e) {\
- auto err = std::string("Error occurred at ") + get_current_time() + "\nError " + MESS + "\nC++ error was : \n"  + e.what();\
+ auto err = std::string(".. Error occurred at ") + get_current_time() + "\n.. Error " + MESS + "\n.. C++ error was : \n"  + e.what();\
  PyErr_SetString(PyExc_RuntimeError, err.c_str());\
  return RET; }\
  catch(...) { PyErr_SetString(PyExc_RuntimeError,"Unknown error " MESS ); return RET; }\

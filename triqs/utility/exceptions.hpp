@@ -27,7 +27,7 @@
 #include <string>
 #include <sstream>
 
-#define TRIQS_ERROR(CLASS,NAME) throw CLASS()<<" Triqs "<<NAME<<" at "<<__FILE__<< " : "<<__LINE__<<"\n\n"
+#define TRIQS_ERROR(CLASS,NAME) throw CLASS()<<".. Triqs "<<NAME<<" at "<<__FILE__<< " : "<<__LINE__<<"\n\n"
 #define TRIQS_RUNTIME_ERROR TRIQS_ERROR(triqs::runtime_error,"runtime error")
 #define TRIQS_KEYBOARD_INTERRUPT TRIQS_ERROR(triqs::keyboard_interrupt,"Ctrl-C")
 #define TRIQS_ASSERT(X) if (!(X)) TRIQS_RUNTIME_ERROR << BOOST_PP_STRINGIZE(X)
@@ -46,10 +46,10 @@ namespace triqs {
   exception & operator  <<( const char * mess ) { (*this) << std::string(mess); return *this;}// to limit code size
   virtual const char* what() const throw() {
    std::stringstream out;
-   out << acc.str() << "\n Error occurred on node ";
+   out << acc.str() << "\n.. Error occurred on node ";
    if (mpi::is_initialized()) out << mpi::communicator().rank() << "\n";
 #ifdef TRIQS_EXCEPTION_SHOW_CPP_TRACE
-   out << " C++ trace is : " << trace() << "\n";
+   out << ".. C++ trace is : " << trace() << "\n";
 #endif
    _what = out.str();
    return _what.c_str();

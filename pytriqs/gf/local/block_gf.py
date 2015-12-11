@@ -89,7 +89,7 @@ class BlockGf(object):
         # Add the name to the G
         self.note = ''
         if self._rename_gf:
-            for i,g in self: g.name = "%s_%s"%(self.name,i) if self.name else '%s'%(i,)
+            for i,g in self: g.name = "%s_%s"%(str(self.name),i) if self.name else '%s'%(i,)
         del self._rename_gf
 
     #------------ copy and construction -----------------------------------------------

@@ -620,9 +620,9 @@ template<typename T>
         goto post_treatment; // eject, computation is done
       }
       %if not py_meth.is_constructor:
-      CATCH_AND_RETURN("calling C++ overload \n ${overload._get_c_signature()} \nin implementation of ${'method' if py_meth.is_method else 'function'} ${module_or_class_name}.${py_meth.py_name}", NULL);
+      CATCH_AND_RETURN(".. calling C++ overload \n.. ${overload._get_c_signature()} \n.. in implementation of ${'method' if py_meth.is_method else 'function'} ${module_or_class_name}.${py_meth.py_name}", NULL);
       %else:
-      CATCH_AND_RETURN ("in calling C++ overload of constructor :\n${overload._get_c_signature()}",-1);
+      CATCH_AND_RETURN (".. in calling C++ overload of constructor :\n.. ${overload._get_c_signature()}",-1);
       %endif
      }
   %if has_overloads :
