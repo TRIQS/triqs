@@ -27,7 +27,13 @@ template<> struct py_converter<${c.c_type_absolute}> {
   static void ** init() {
    PyObject * mod =  PyImport_ImportModule("${module.full_name}");
    if (mod ==NULL) return NULL;
-   void ** table = (void **)PyCapsule_Import("${module.full_name}._exported_wrapper_convert_fnt", 0);
+   pyref capsule =  PyObject_GetAttrString(mod,  "_exported_wrapper_convert_fnt");
+   if (capsule.is_null()) {
+     PyErr_SetString(PyExc_RuntimeError, "TRIQS: can not find _exported_wrapper_convert_fnt in the module ${module.full_name}");
+     return NULL;
+   }
+   void ** table = (void**) PyCapsule_GetPointer(capsule, "${module.full_name}._exported_wrapper_convert_fnt");
+   //void ** table = (void **)PyCapsule_Import("${module.full_name}._exported_wrapper_convert_fnt", 0);
    return table;
  }
  
