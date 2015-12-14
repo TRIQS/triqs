@@ -1,12 +1,11 @@
 #include "./fourier_two_variables.hpp"
 
 namespace triqs { namespace gfs {
-
- gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>> fourier(gf_const_view<cartesian_product<imtime, imtime>, tensor_valued<3>> g2t,  int n_w_1,  int n_w_2){
+ gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>> fourier(gf_const_view<cartesian_product<imtime, imtime>, tensor_valued<3>> g2t,  int n_w_1,  int n_w_2, bool positive_matsub_only_1, bool positive_matsub_only_2){
 
   double beta =  std::get<0>(g2t.mesh().components()).domain().beta;
-  auto imfreq_mesh_1 = gf_mesh<imfreq>{beta, std::get<0>(g2t.mesh().components()).domain().statistic, n_w_1};
-  auto imfreq_mesh_2 = gf_mesh<imfreq>{beta, std::get<1>(g2t.mesh().components()).domain().statistic, n_w_2};
+  auto imfreq_mesh_1 = gf_mesh<imfreq>{beta, std::get<0>(g2t.mesh().components()).domain().statistic, n_w_1, positive_matsub_only_1? matsubara_mesh_opt::positive_frequencies_only : matsubara_mesh_opt::all_frequencies};
+  auto imfreq_mesh_2 = gf_mesh<imfreq>{beta, std::get<1>(g2t.mesh().components()).domain().statistic, n_w_2, positive_matsub_only_2? matsubara_mesh_opt::positive_frequencies_only : matsubara_mesh_opt::all_frequencies};
 
   gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>> g2w({imfreq_mesh_1, imfreq_mesh_2}, get_target_shape(g2t));
   gf<cartesian_product<imfreq, imtime>, tensor_valued<3>> gwt({imfreq_mesh_1, std::get<1>(g2t.mesh().components())}, get_target_shape(g2t));
