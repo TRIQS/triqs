@@ -125,12 +125,23 @@ namespace arrays {
   /**
    * Simple diagonalization call, return all eigenelements.
    * Handles both real and complex case.
-   * @param M : the matrix or view. MUST be contiguous. It is modified by the call.
-   *            If you wish not to modify it, call eigenelements(make_clone(A))
+   * @param M : the matrix or view.
    */
-  template <typename M>
-  std::pair<array<double, 1>, matrix<typename std14::remove_reference_t<M>::value_type>> eigenelements(M &&m) {
-   return eigenelements_worker<typename std14::remove_reference_t<M>::value_type>().eigenelements(m);
+  template <typename M> std::pair<array<double, 1>, matrix<typename M::value_type>> eigenelements(M const &m) {
+   auto m2 = make_clone(m);
+   return eigenelements_worker<typename M::value_type>().eigenelements(m2);
+  }
+
+  //--------------------------------
+
+  /**
+   * Simple diagonalization call, return all eigenelements.
+   * Handles both real and complex case.
+   * Works in place, i.e. changes the matrix
+   * @param M : the matrix or view.
+   */
+  template <typename M> std::pair<array<double, 1>, matrix<typename M::value_type>> eigenelements_in_place(M *m) {
+   return eigenelements_worker<typename M::value_type>().eigenelements(*m);
   }
 
   //--------------------------------
@@ -139,12 +150,21 @@ namespace arrays {
    * Simple diagonalization call, returning only the eigenvalues.
    * Handles both real and complex case.
    * @param M : the matrix VIEW : it MUST be contiguous
-   * @param take_copy : makes a copy of the matrix before calling lapack, so that the original is preserved.
-   *   if false : no copy is made and the content of the matrix M is destroyed.
-   *   if true : a copy is made, M is preserved, but of course it is slower...
    */
-  template <typename M> array<double, 1> eigenvalues(M &&m) {
-   return eigenelements_worker<typename std14::remove_reference_t<M>::value_type>().eigenvalues(m);
+  template <typename M> array<double, 1> eigenvalues(M const &m) {
+   auto m2 = make_clone(m);
+   return eigenelements_worker<typename M::value_type>().eigenvalues(m2);
+  }
+
+  //--------------------------------
+
+  /**
+   * Simple diagonalization call, returning only the eigenvalues.
+   * Handles both real and complex case.
+   * @param M : the matrix VIEW : it MUST be contiguous
+   */
+  template <typename M> array<double, 1> eigenvalues_in_place(M *m) {
+   return eigenelements_worker<typename M::value_type>().eigenvalues(*m);
   }
  }
 }
