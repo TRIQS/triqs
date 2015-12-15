@@ -1,4 +1,3 @@
-from scipy.optimize import leastsq
 from _imp_tools import get_indices_in_dict
 import _gf_plot 
 import numpy
@@ -61,6 +60,7 @@ def fit_tail_depr(self, fixed_coef, order_max, fit_start, fit_stop, replace_tail
      and the new moments are included in the Green's function
    """
 
+   from scipy.optimize import leastsq
    # Turn known_coefs into a numpy array if ever it is not already the case
    known_coef = fixed_coef
 
