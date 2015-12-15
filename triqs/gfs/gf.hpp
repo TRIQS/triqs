@@ -581,8 +581,6 @@ namespace gfs {
    this->name = X.name;
   }
 
-  friend void swap(gf_view &a, gf_view &b) noexcept { a.swap_impl(b); }
-
   void rebind(gf_view<Variable, Target, Singularity, Evaluator, false> const &X) noexcept {
    rebind(gf_view{X});
   }
