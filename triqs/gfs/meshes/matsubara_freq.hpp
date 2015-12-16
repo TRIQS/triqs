@@ -53,7 +53,7 @@ namespace gfs {
     _last_index = n_pts - 1; 
    } else {
     bool is_fermion = (_dom.statistic == Fermion);
-    n_pts = 2 * n_pts + (is_fermion ? 0 : 1);
+    n_pts = 2 * n_pts - (is_fermion ? 0 : 1);
     _last_index = (n_pts - (is_fermion ? 2 : 1)) / 2;
     _first_index = -(_last_index + (is_fermion ? 1 : 0));
    }
