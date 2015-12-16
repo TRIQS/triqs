@@ -45,7 +45,7 @@ namespace triqs { namespace gfs {
   struct combine_mesh {
    template <typename L, typename R> auto operator()(L &&l, R &&r) const -> decltype(std::forward<L>(l).mesh()) {
     if (!(l.mesh() == r.mesh()))
-     TRIQS_RUNTIME_ERROR << "Mesh mismatch : in Green Function Expression " << l.mesh() << " vs" << r.mesh();
+     TRIQS_RUNTIME_ERROR << "Mesh mismatch: in Green Function Expression" << l.mesh() << " vs " << r.mesh();
     return std::forward<L>(l).mesh();
    }
    template <typename S, typename R>

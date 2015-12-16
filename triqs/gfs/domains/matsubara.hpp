@@ -109,6 +109,9 @@ namespace gfs {
    ar &TRIQS_MAKE_NVP("beta", beta);
    ar &TRIQS_MAKE_NVP("statistic", statistic);
   }
+  friend std::ostream &operator<<(std::ostream &sout, matsubara_domain const &d) {
+   return sout << "Matsubara domain with beta = " << d.beta << ", statistic = " << d.statistic ;
+  }
  };
 
  using matsubara_freq_domain = matsubara_domain<true>;
