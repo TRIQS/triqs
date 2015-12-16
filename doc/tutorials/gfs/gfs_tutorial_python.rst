@@ -1,6 +1,6 @@
 .. index:: Green's functions
 
-Tutorial on Green's functions in python
+Green's functions
 ========================================
 
 

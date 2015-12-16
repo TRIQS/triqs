@@ -1,4 +1,4 @@
-Tutorial on Green's functions
+Green's functions
 ==============================
 
 .. toctree::

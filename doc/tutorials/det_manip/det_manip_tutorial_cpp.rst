@@ -1,4 +1,4 @@
-Tutorial on determinants for Continuous-Time Monte-Carlo in C++
+Determinants for Continuous-Time Monte-Carlo
 ================================================================
 
 .. highlight:: c

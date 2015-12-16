@@ -1,4 +1,4 @@
-Tutorial on multidimensional arrays in C++
+Multidimensional arrays
 ============================================
 
 .. highlight:: c

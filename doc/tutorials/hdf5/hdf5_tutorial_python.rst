@@ -1,7 +1,7 @@
 
 .. _hdf5_tutorial:
 
-Tutorial on HDF5 archives in python
+HDF5 archives
 ####################################
 
 Let us consider a few examples, with increasing difficulty.

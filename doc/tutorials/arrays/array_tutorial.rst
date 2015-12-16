@@ -1,4 +1,4 @@
-Tutorial on arrays
+Arrays
 ====================
 
 .. toctree::

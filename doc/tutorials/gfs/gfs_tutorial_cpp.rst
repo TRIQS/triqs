@@ -1,4 +1,4 @@
-Tutorial on Green's functions in C++
+Green's functions
 =====================================
 
 .. highlight:: c
