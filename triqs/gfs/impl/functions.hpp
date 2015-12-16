@@ -23,30 +23,30 @@ namespace triqs {
 namespace gfs {
 
  /*------------------------------------------------------------------------------------------------------
- *                      Slicing the matrix valued into a matrix
+ *                      Slicing the matrix_valued/matrix_real_valued into a matrix
  *-----------------------------------------------------------------------------------------------------*/
 
- template <typename M, typename S, typename E, typename... Args>
- gf_view<M, matrix_valued, S, E> slice_target(gf_view<M, matrix_valued, S, E> g, Args &&... args) {
+ template <typename M, typename T, typename S, typename E, typename... Args>
+ gf_view<M, T, S, E> slice_target(gf_view<M, T, S, E> g, Args &&... args) {
   return {g.mesh(), g.data()(arrays::range(), std::forward<Args>(args)...),
           slice_target(g.singularity(), std::forward<Args>(args)...), g.symmetry(),
           slice(g.indices(), std::forward<Args>(args)...), g.name};
  }
 
- template <typename M, typename S, typename E, typename... Args>
- gf_const_view<M, matrix_valued, S, E> slice_target(gf_const_view<M, matrix_valued, S, E> g, Args &&... args) {
+ template <typename M, typename T, typename S, typename E, typename... Args>
+ gf_const_view<M, T, S, E> slice_target(gf_const_view<M, T, S, E> g, Args &&... args) {
   return {g.mesh(), g.data()(arrays::range(), std::forward<Args>(args)...),
           slice_target(g.singularity(), std::forward<Args>(args)...), g.symmetry(),
           slice(g.indices(), std::forward<Args>(args)...), g.name};
  }
 
- template <typename M, typename S, typename E, typename... Args>
- gf_view<M, matrix_valued, S, E> slice_target(gf<M, matrix_valued, S, E> &g, Args &&... args) {
+ template <typename M, typename T, typename S, typename E, typename... Args>
+ gf_view<M, T, S, E> slice_target(gf<M, T, S, E> &g, Args &&... args) {
   return slice_target(g(), std::forward<Args>(args)...);
  }
 
- template <typename M, typename S, typename E, typename... Args>
- gf_const_view<M, matrix_valued, S, E> slice_target(gf<M, matrix_valued, S, E> const &g, Args &&... args) {
+ template <typename M, typename T, typename S, typename E, typename... Args>
+ gf_const_view<M, T, S, E> slice_target(gf<M, T, S, E> const &g, Args &&... args) {
   return slice_target(g(), std::forward<Args>(args)...);
  }
 
