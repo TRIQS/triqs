@@ -1,4 +1,4 @@
-#include "test_tools.hpp"
+#include <triqs/test_tools/arrays.hpp>
 
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <vector>
