@@ -81,7 +81,7 @@ def dyson(**kwargs):
     if not (len(kwargs)==2 and set(kwargs.keys())<set(['G0_iw','G_iw', 'Sigma_iw'])):
         raise ValueError, 'dyson: Two (and only two) of G0_iw, G_iw and Sigma_iw must be provided to determine the third.'
     if 'G0_iw' not in kwargs:
-        G0_iw = inverse(kwargs['Sigma_iw'] - inverse(kwargs['G_iw']))
+        G0_iw = inverse(kwargs['Sigma_iw'] + inverse(kwargs['G_iw']))
         return G0_iw
     elif 'G_iw' not in kwargs:
         G_iw = inverse(inverse(kwargs['G0_iw']) - kwargs['Sigma_iw'])
