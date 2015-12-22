@@ -73,7 +73,7 @@
         return tname
 
     def make_signature(m) :
-        assert not m.tparams, "template functions can not be wrapped to Python"
+        assert not m.tparams, "template functions can not be wrapped to Python (%s)"%m.name
         s = "({args})"
         if not m.is_constructor :
           s = cls(m.rtype) + " {name} " + s
@@ -183,7 +183,7 @@ module.add_class(c)
 
 %endfor
 ##
-%for f in functions :  
+%for f in [f for f in functions if not 'ignore_in_python' in f.annotations]:  
 module.add_function ("${make_signature(f)}", doc = "${f.doc}")
 
 %endfor

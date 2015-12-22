@@ -105,6 +105,14 @@ if __name__ == '__main__' :
                     print "Property : ", m.name, set_m.name if set_m else ''
                     exclude.append(m)
             cls.methods = [m for m in cls.methods if m not in exclude]
+
+    #filter out functions with some conditions        
+    exclude=[]
+    for f in functions:
+      if  f.is_template or f.name.startswith('operator') or f.name in ['begin','end'] or "ignore_in_python" in f.annotations:
+         exclude.append(f)
+    functions=[f for f in functions if f not in exclude]
+      
     
     # all classes used as parameters needs to be converted from / to Python
     classes_of_parameters = [m.parameter_arg for m in sum((c.methods for c in classes),[]) if m.parameter_arg != None]

@@ -15,6 +15,9 @@
 #include "${file}"
 %endif
 %endfor
+%for ns in module.using :
+using ${ns};
+%endfor
 
 #include <triqs/python_tools/wrapper_tools.hpp>
 
