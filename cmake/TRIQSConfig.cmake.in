@@ -100,8 +100,8 @@ macro (triqs_python_extension ModuleName)
 
  # Adjust pythonpath so that pytriqs is visible and the wrap_generator too...
  # pytriqs needed since we import modules with pure python method to extract the doc..
- add_custom_command(OUTPUT ${wrap_name} ${converter_name} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py
-  COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py ${CMAKE_CURRENT_BINARY_DIR} && 
+ add_custom_command(OUTPUT ${ModuleName}_desc.py ${wrap_name} ${converter_name} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py ${CMAKE_CURRENT_BINARY_DIR} &&
           PYTHONPATH=@CMAKE_INSTALL_PREFIX@/share/triqs/cpp2py:${CMAKE_BINARY_DIR}/:$ENV{PYTHONPATH} ${TRIQS_PYTHON_INTERPRETER} ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py
    @CMAKE_INSTALL_PREFIX@/share/triqs/cpp2py/mako/xxx_wrap.cpp
    ${wrap_name}
@@ -113,8 +113,8 @@ macro (triqs_python_extension ModuleName)
    )
 
 
- add_custom_target(python_wrap_${ModuleName} ALL DEPENDS ${wrap_name} ${converter_name})
- add_dependencies(python_wrap_${ModuleName} py_copy ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_desc.py )
+ add_custom_target(python_wrap_${ModuleName} ALL DEPENDS ${ModuleName}_desc.py ${wrap_name} ${converter_name})
+ add_dependencies(python_wrap_${ModuleName} py_copy)
 
  add_library(${ModuleName} MODULE ${wrap_name})
  set_target_properties(${ModuleName} PROPERTIES PREFIX "") #eliminate the lib in front of the module name
