@@ -35,8 +35,6 @@ namespace triqs { namespace mc_tools {
 
    std::shared_ptr<void> impl_;
    std::function<move()> clone_;
-   size_t hash_;
-   std::string type_name_;
 
    std::function<MCSignType()> attempt_, accept_;
    std::function<void()> reject_;
@@ -57,8 +55,6 @@ namespace triqs { namespace mc_tools {
     using m_t = std14::decay_t<MoveType>;
     m_t *p = new m_t(std::forward<MoveType>(m));
     impl_ = std::shared_ptr<MoveType>(p);
-    hash_ = typeid(MoveType).hash_code();
-    type_name_ = typeid(MoveType).name();
     clone_ = [p]() { return move{true, MoveType(*p)}; };
     attempt_ = [p]() { return p->attempt(); };
     accept_ = [p]() { return p->accept(); };
@@ -86,7 +82,6 @@ namespace triqs { namespace mc_tools {
    double acceptance_rate() const { return acceptance_rate_;}
    uint64_t n_proposed_config () const { return NProposed;}
    uint64_t n_accepted_config () const { return Naccepted;}
-   //bool is_move_set() const { return is_move_set_;}
 
    void collect_statistics(mpi::communicator const & c) {
     uint64_t nacc_tot = mpi::reduce(Naccepted, c);
@@ -96,18 +91,6 @@ namespace triqs { namespace mc_tools {
    }
 
    move_set<MCSignType> *as_move_set() const { return is_move_set_ ? static_cast<move_set<MCSignType> *>(impl_.get()) : nullptr; }
-
-   // true iif the stored object has type MoveType Cf hash_code doc.
-   template<typename MoveType> bool has_type() const { return (typeid(MoveType).hash_code() == hash_); };
-
-   template<typename MoveType> void check_type() const {
-    if (!(has_type<MoveType>()))
-     TRIQS_RUNTIME_ERROR << "Trying to retrieve a move of type "<< typeid(MoveType).name() << " from a move of type "<< type_name_;
-   };
-
-   // retrieve an object of the correct type
-   template<typename MoveType> MoveType       & get()       { check_type<MoveType>(); return *(static_cast<MoveType *>(impl_.get())); }
-   template<typename MoveType> MoveType const & get() const { check_type<MoveType>(); return *(static_cast<MoveType const *>(impl_.get())); }
 
    // redirect the h5 call to the object lambda, if it not empty (i.e. if the underlying object can be called with h5_read/write
    friend void h5_write (h5::group g, std::string const & name, move const & m){ if (m.h5_w) m.h5_w(g,name);};
@@ -130,14 +113,11 @@ namespace triqs { namespace mc_tools {
    public:
 
    ///
-   move_set(random_generator & R): RNG(&R) { Proba_Moves.push_back(0); debug_counter=0;}
+   move_set(random_generator &R) : RNG(&R) {
+    Proba_Moves.push_back(0);
+    debug_counter = 0;
+   }
 
-   ///
-   move_set(move_set const &) = default;
-   move_set(move_set &&) = default;
-   move_set& operator = (move_set const &) = default;
-   move_set& operator = (move_set &&) = default;
-   
    /**
     * Add move M with its probability of being proposed.
     * NB : the proposition_probability needs to be >0 but does not need to be
@@ -239,7 +219,7 @@ namespace triqs { namespace mc_tools {
    std::map<std::string, double> get_acceptance_rates() const {
     std::map<std::string, double> r;
     for (unsigned int u = 0; u < move_vec.size(); ++u) {
-     r.insert(names_[u], move_vec[u].acceptance_rate());
+     r.insert({names_[u], move_vec[u].acceptance_rate()});
      auto ms = move_vec[u].as_move_set();
      if (ms) { // if it is a move set, flatten the result
       auto ar = ms->get_acceptance_rates();
@@ -289,21 +269,6 @@ namespace triqs { namespace mc_tools {
     auto gr = g.open_group(name);
     for (size_t u=0; u<ms.move_vec.size(); ++u) h5_read(gr,ms.names_[u],ms.move_vec[u]);
    }
-
-   // access to the move, given its type, with dynamical type check
-   template<typename MoveType>
-    MoveType & get_move(std::string const & name) {
-     int u=0; for (;u<names_.size();++u) { if (names_[u] == name) break;}
-     if (u == names_.size()) TRIQS_RUNTIME_ERROR << " Move " << name << " unknown";
-     return move_vec[u].template get<MoveType>();
-    }
-
-   template<typename MoveType>
-    MoveType const & get_move(std::string const & name) const {
-     int u=0; for (;u<names_.size();++u) { if (names_[u] == name) break;}
-     if (u == names_.size()) TRIQS_RUNTIME_ERROR << " Move " << name << " unknown";
-     return move_vec[u].template get<MoveType>();
-    }
 
   };// class move_set
 

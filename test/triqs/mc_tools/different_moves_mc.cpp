@@ -114,10 +114,5 @@ int main(int argc, char* argv[]) {
   IntMC.start(1.0, triqs::utility::clock_callback(600));
   IntMC.collect_results(world);
 
-  using triqs::mc_tools::get_move;
-  auto const & ml = get_move<move_left>(IntMC, "left move");
-  std::cout << ml.proba << "  "<< pr/pl << std::endl;
-
-  return 0;
-
+  h5_write(file, "Stats", IntMC.get_acceptance_rates());
 }

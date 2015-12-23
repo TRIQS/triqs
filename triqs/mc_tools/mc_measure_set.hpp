@@ -32,8 +32,6 @@ namespace triqs { namespace mc_tools {
 
    std::shared_ptr<void> impl_;
    std::function<measure()> clone_;
-   size_t hash_;
-   std::string type_name_;
 
    std::function<void (MCSignType const & ) > accumulate_;
    std::function<void (mpi::communicator const & )> collect_results_;
@@ -50,8 +48,6 @@ namespace triqs { namespace mc_tools {
     m_t *p = new m_t(std::forward<MeasureType>(m));
     impl_ = std::shared_ptr<MeasureType>(p);
     clone_ = [p]() { return measure{true, MeasureType(*p)}; };
-    hash_ = typeid(MeasureType).hash_code();
-    type_name_ = typeid(MeasureType).name();
     accumulate_ = [p](MCSignType const &x) { p->accumulate(x); };
     count_ = 0;
     collect_results_ = [p](mpi::communicator const &c) { p->collect_results(c); };
@@ -70,35 +66,20 @@ namespace triqs { namespace mc_tools {
 
    uint64_t count() const { return count_;}
 
-   template<typename MeasureType> bool has_type() const { return (typeid(MeasureType).hash_code() == hash_); };
-   template<typename MeasureType> void check_type() const {
-    if (!(has_type<MeasureType>()))
-     TRIQS_RUNTIME_ERROR << "Trying to retrieve a measure of type "<< typeid(MeasureType).name() << " from a measure of type "<< type_name_;
-   };
-
-   template<typename MeasureType> MeasureType       & get()       { check_type<MeasureType>(); return *(static_cast<MeasureType *>(impl_.get())); }
-   template<typename MeasureType> MeasureType const & get() const { check_type<MeasureType>(); return *(static_cast<MeasureType const *>(impl_.get())); }
-
    friend void h5_write (h5::group g, std::string const & name, measure const & m){ if (m.h5_w) m.h5_w(g,name);};
    friend void h5_read  (h5::group g, std::string const & name, measure & m)      { if (m.h5_r) m.h5_r(g,name);};
   };
 
  //--------------------------------------------------------------------
 
- template<typename MCSignType>
-  class measure_set  {
+  template <typename MCSignType> class measure_set {
 
-   typedef measure<MCSignType> measure_type;
+   using measure_type = measure<MCSignType>;
    std::map<std::string, measure<MCSignType>> m_map;
+
    public :
 
    measure_set(){}
-
-   measure_set(measure_set const &) = default;
-   measure_set(measure_set &&) = default;
-
-   measure_set& operator = (measure_set const &) = default;
-   measure_set& operator = (measure_set &&) = default;
 
    /**
     * Register the Measure M with a name
@@ -135,20 +116,6 @@ namespace triqs { namespace mc_tools {
     for (auto & p : ms.m_map) h5_read(gr,p.first, p.second);
    }
 
-   // access to the measure, given its type, with dynamical type check
-   template<typename MeasureType>
-    MeasureType & get_measure(std::string const & name) {
-     auto it = m_map.find (name);
-     if (it == m_map.end()) TRIQS_RUNTIME_ERROR << " Measure " << name << " unknown";
-     return it->template get<MeasureType>();
-    }
-
-   template<typename MeasureType>
-    MeasureType const & get_measure(std::string const & name) const {
-     auto it = m_map.find (name);
-     if (it == m_map.end()) TRIQS_RUNTIME_ERROR << " Measure " << name << " unknown";
-     return it->template get<MeasureType>();
-    }
   };
 
 }}// end namespace
