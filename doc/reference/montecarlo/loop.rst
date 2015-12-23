@@ -1,10 +1,10 @@
 .. _montecarloloop:
 
-The Monte Carlo loop
---------------------
-
 Introduction
-************
+-------------
+
+The Monte Carlo loop
+*********************
 
 The ``mc_generic`` class is an implementation of the Monte Carlo loop.  Its
 goal is to propose and then accept or reject changes to a configuration

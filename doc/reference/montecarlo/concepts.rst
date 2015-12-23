@@ -1,7 +1,7 @@
 .. _montecarloref:
 
 
-Full reference
+Concepts
 --------------
 
 Introduction & Motivations
@@ -68,21 +68,6 @@ The Measure concept
                                                                                 the calculation (compute average, error). 
   ==========================================================================  ============================================================
 
-New doc
-*********************
-
-The doc is :ref:`here <mc_generic>`.
 
 
-Doxygen documentation
-*********************
-
-The :doxy:`full C++ documentation<triqs::mc_tools::mc_generic>` is available here.
-
-
-Breathe Documentation 
-*********************
-.. doxygenclass:: triqs::mc_tools::mc_generic
-   :project: mc_tools
-   :members:
 

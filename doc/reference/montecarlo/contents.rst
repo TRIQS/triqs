@@ -13,9 +13,9 @@ the implementation details of your specific algorithm.
    :maxdepth: 2
 
    loop
-   overview
-   reference
+   tutorial
+   concepts
+   automatic/mc_generic
    random
    ising
-   mc_tools/mc_generic
     

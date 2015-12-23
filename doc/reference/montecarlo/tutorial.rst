@@ -1,7 +1,7 @@
 .. highlight:: c
 
-An overview of the Monte Carlo class
-------------------------------------
+Tutorial
+---------
 
 In order to have a first overview of the main features of the ``mc_generic``
 class, let's start with a concrete Monte Carlo code. We will consider maybe the
@@ -25,97 +25,9 @@ The C++ code for this problem
 
 Let's see how we can get this result from a Monte Carlo simulation. Here is
 a code that would do the job. Note that we put everything in one file here,
-but obviously you would usually want to cut this into pieces for clarity::
+but obviously you would usually want to cut this into pieces for clarity:
 
-  #include <iostream>
-  #include <triqs/utility/callbacks.hpp>
-  #include <triqs/mc_tools/mc_generic.hpp>
-
-  // the configuration: a spin, the inverse temperature, the external field
-  struct configuration {
-
-    int spin; double beta, h;
-    configuration(double beta_, double h_): spin(-1), beta(beta_), h(h_) {}
-
-  };
-
-
-  // a move: flip the spin
-  struct flip {
-
-    configuration & config;
-
-    flip(configuration & config_): config(config_) {}
-
-    double attempt() { return std::exp(-2*config.spin*config.h*config.beta); }
-    double accept() { config.spin *= -1; return 1.0; }
-    void reject() {}
-
-  };
-
-  // a measurement: the magnetization
-  struct compute_m {
-
-    configuration & config;
-    double Z, M;
-
-    compute_m(configuration & config_): config(config_), Z(0), M(0) {}
-
-    void accumulate(double sign) { Z += sign; M += sign * config.spin; }
-
-    void collect_results(boost::mpi::communicator const &c) {
-
-      double sum_Z, sum_M;
-      boost::mpi::reduce(c, Z, sum_Z, std::plus<double>(), 0);
-      boost::mpi::reduce(c, M, sum_M, std::plus<double>(), 0);
-
-      if (c.rank() == 0) {
-        std::cout << "Magnetization: " << sum_M / sum_Z << std::endl << std::endl;
-      }
-
-    }
-
-  };
-
-  int main(int argc, char* argv[]) {
-
-    // initialize mpi
-    boost::mpi::environment env(argc, argv);
-    boost::mpi::communicator world;
-
-    // greeting
-    if (world.rank() == 0) std::cout << "Isolated spin" << std::endl;
-
-    // prepare the MC parameters
-    int n_cycles = 5000000;
-    int length_cycle = 10;
-    int n_warmup_cycles = 10000;
-    std::string random_name = "";
-    int random_seed = 374982 + world.rank() * 273894;
-    int verbosity = (world.rank() == 0 ? 2: 0);
-
-    // construct a Monte Carlo loop
-    triqs::mc_tools::mc_generic<double> SpinMC(n_cycles, length_cycle, n_warmup_cycles,
-                                               random_name, random_seed, verbosity);
-
-    // parameters of the model
-    double beta = 0.3;
-    double field = 0.5;
-
-    // construct configuration
-    configuration config(beta, field);
-
-    // add moves and measures
-    SpinMC.add_move(flip(config), "flip move");
-    SpinMC.add_measure(compute_m(config), "magnetization measure");
-
-    // Run and collect results
-    SpinMC.start(1.0, triqs::utility::clock_callback(600));
-    SpinMC.collect_results(world);
-
-    return 0;
-
-  }
+.. triqs_example:: ./overview_ex.cpp
 
 Let's go through the different parts of this code. First we look
 at ``main()``.
@@ -129,8 +41,8 @@ lines of the ``main()`` just initialize the MPI environment and declare a
 communicator. The default communicator is ``WORLD`` which means that all the
 nodes will be involved in the calculation::
 
-    boost::mpi::environment env(argc, argv);
-    boost::mpi::communicator world;
+    triqs::mpi::environment env(argc, argv);
+    triqs::mpi::communicator world;
 
 
 Constructing the Monte Carlo simulation
@@ -176,10 +88,10 @@ Moves and measures
 
 At this stage the basic structure of the Monte Carlo is in ``SpinMC``. But we
 now need to tell it what moves must be tried and what measures must be made.
-This is done with::
+This is done with:
 
-    SpinMC.add_move(flip(config), "flip move");
-    SpinMC.add_measure(compute_m(config), "magnetization measure");
+.. literalinclude:: overview_ex.cpp
+   :lines: 76-77
 
 The method ``add_move`` expects a move and a name, while
 ``add_measure`` expects a measure and a name. The name can be
@@ -191,26 +103,17 @@ they don't have inheritance links with ``mc_generic``).  Actually you are
 almost completely free to design these classes as you want, **as long as they
 satisfy the correct concept**.
 
-The move concept
-****************
+The move 
+**********
 
 Let's go back to the beginning of the code and have a look at the ``flip``
 class which proposed a flip of the spin. The class is very short.  It has a
 constructor which might define some class variables. But more importantly, it
 has three member functions that any move **must** have: ``attempt``, ``accept`` and
-``reject``::
+``reject``:
 
-  struct flip {
-
-    configuration & config;
-
-    flip(configuration & config_): config(config_) {}
-
-    double attempt() { return std::exp(-2*config.spin*config.h*config.beta); }
-    double accept() { config.spin *= -1; return 1.0; }
-    void reject() {}
-
-  };
+.. literalinclude:: overview_ex.cpp
+   :lines: 14-25
 
 The ``attempt`` method is called by the Monte Carlo loop in order to try a new
 move. The Monte Carlo class doesn't care about what this trial is. All that
@@ -238,35 +141,14 @@ return type of ``attempt`` and ``accept`` has to be the same as the template of 
 Monte Carlo class.  In our example, nothing has to be done if the move is
 rejected. If it is accepted, the spin should be flipped.
 
-The measure concept
-*******************
+The measure 
+************
 
 Just in the same way, the measures are expected to satisfy a concept.
-Let's look at ``compute_m``::
+Let's look at ``compute_m``.
 
-  struct compute_m {
-
-    configuration & config;
-    double Z, M;
-
-    compute_m(configuration & config_): config(config_), Z(0), M(0) {}
-
-    void accumulate(double sign) { Z += sign; M += sign * config.spin; }
-
-    void collect_results(boost::mpi::communicator const &c) {
-
-      double sum_Z, sum_M;
-      boost::mpi::reduce(c, Z, sum_Z, std::plus<double>(), 0);
-      boost::mpi::reduce(c, M, sum_M, std::plus<double>(), 0);
-
-      if (c.rank() == 0) {
-        std::cout << "Magnetization: " << sum_M / sum_Z << std::endl << std::endl;
-      }
-
-    }
-
-  };
-
+.. literalinclude:: overview_ex.cpp
+   :lines: 28-45
 
 Here only two methods are expected, ``accumulate`` and ``collect_results``.
 The method ``accumulate`` is called every ``length_cycle`` Monte Carlo loops.
@@ -303,7 +185,7 @@ example, you might be running your code on a cluster that only allows for 1
 hour simulations. In that case, you would want your simulation to stop, say
 after 55 minutes, even if it didn't manage to do the ``n_cycles`` cycles.
 
-In practice, the second argument is a ``boost::function<bool ()>`` which is
+In practice, the second argument is a ``std::function<bool ()>`` which is
 called at the end of every cycle. If it returns 0 the simulation goes on, if it
 returns 1 the simulation stops. In this example, we used a function
 ``clock_callback(600)`` which starts returning 1 after 600 seconds.  It is
@@ -340,7 +222,7 @@ is how to generate random numbers. Actually, as soon as you have generated an
 instance of a ``mc_generic`` class, like ``SpinMC`` above, you automatically
 have an acces to a random number generator with::
 
-  triqs::mc_tools::random_generator RNG = SpinMC.rng();
+  triqs::mc_tools::random_generator RNG = SpinMC.get_rng();
 
 ``RNG`` is an instance of a ``random_generator``. If you want to
 generate a ``double`` number on the interval :math:`[0,1[`, you just have to
@@ -349,7 +231,7 @@ and real numbers on different intervals. This is described in detail in the
 section :ref:`Random number generator <random>`.
 
 That's it! Why don't you try to write your own Monte Carlo describing an
-:ref:`Ising chain in a field <isingex>`! You will find the solution
+:ref:`Ising chain in a field <isingex>`? You will find the solution
 in :ref:`this section <ising_solution>`.
 
 

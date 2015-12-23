@@ -77,12 +77,12 @@ def grab_from_doc (doc, var1, var2):
     """ Extract all the @xxx from the doc"""
     d = {}
     for v1 in var1:
-        m = re.search("@%s (.*)"%v1, doc)
+        m = re.search(re.compile("@%s ([^@]*)"%v1,re.DOTALL), doc)
         d[v1] = m.group(1) if m else None 
     for v2 in var2: 
-        d[v2] =  OrderedDict( (m[0],m[1]) for m in re.findall("@%s (\w*) (.*)"%v2, doc))
+        d[v2] =  OrderedDict( (m[0],m[1]) for m in re.findall(re.compile("@%s (\w*) ([^@]*)"%v2,re.DOTALL), doc))
     for x in var1 + var2:
-      doc = re.sub(r"\n\s*(@%s .*)"%x,'',doc)
+      doc = re.sub(re.compile(r"\n\s*(@%s .*)"%x,re.DOTALL),'',doc)
     for m in re.findall("(@.*)", doc):
         print "Ignoring " + m
     return d,doc

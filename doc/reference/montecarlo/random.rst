@@ -21,19 +21,16 @@ use of the generator::
     triqs::mc_tools::random_generator RNG("mt19937", 23432);
 
     // Generate double numbers in [0,1[
-    for (size_t i = 0; i < 100; i++) std::cout << RNG() << " ";
+    for (int i = 0; i < 100; i++) std::cout << RNG() << " ";
     std::cout << std::endl << std::endl;
 
     // Generate double numbers in [0,5[
-    for (size_t i = 0; i < 100; i++) std::cout << RNG(5.0) << " ";
+    for (int i = 0; i < 100; i++) std::cout << RNG(5.0) << " ";
     std::cout << std::endl << std::endl;
 
     // Generate int numbers in [0,5[
-    for (size_t i = 0; i < 100; i++) std::cout << RNG(5) << " ";
+    for (int i = 0; i < 100; i++) std::cout << RNG(5) << " ";
     std::cout << std::endl << std::endl;
-
-    return 0;
-
   }
 
 After having included the header
@@ -65,12 +62,8 @@ example::
   #include <triqs/mc_tools/random_generator.hpp>
 
   int main() {
-
     std::cout << "A list of all random generators" << std::endl << std::endl;
     std::cout << triqs::mc_tools::random_generator::random_generator_names() << std::endl;
-
-    return 0;
-
   }
 
 
@@ -86,11 +79,10 @@ Imagine you constructed an instance::
 
 Now, you can use ``SpinMC`` to have a random number generator::
 
-  triqs::mc_tools::random_generator RNG = SpinMC.rng();
+  triqs::mc_tools::random_generator RNG = SpinMC.get_rng();
 
 Typically, this generator will be passed as a argument to your
 implementation of a move::
 
   SpinMC.add_move(mymove(config, SpinMC.rng(), ...), "my move")
-
 
