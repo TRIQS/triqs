@@ -153,16 +153,17 @@ namespace triqs { namespace mc_tools {
 
     /// Reduce the results of the measures, and reports some statistics
     void collect_results(mpi::communicator const & c) {
+     AllMeasures.collect_results(c);
+     AllMoves.collect_statistics(c);
 
      uint64_t nmeasures_tot = mpi::reduce(nmeasures,c);
 
-     report(3) << "[Node "<<c.rank()<<"] Acceptance rate for all moves:\n" << AllMoves.get_statistics(c);
+     report(3) << "[Node "<<c.rank()<<"] Acceptance rate for all moves:\n" << AllMoves.get_statistics();
      report(3) << "[Node "<<c.rank()<<"] Simulation lasted: " << double(Timer) << " seconds" << std::endl;
      report(3) << "[Node "<<c.rank()<<"] Number of measures: " << nmeasures  << std::endl;
 
      if (c.rank() == 0) report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
      mpi::broadcast(sign_av, c);
-     AllMeasures.collect_results(c);
     }
 
     /// HDF5 interface

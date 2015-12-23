@@ -28,17 +28,7 @@
 
 namespace triqs { namespace mc_tools {
 
- // mini concept checking
- template<typename MCSignType, typename T, typename Enable=MCSignType> struct has_attempt : std::false_type {};
- template<typename MCSignType, typename T> struct has_attempt <MCSignType, T, decltype(MCSignType(std::declval<T>().attempt()))> : std::true_type {};
-
- template<typename MCSignType, typename T, typename Enable=MCSignType> struct has_accept : std::false_type {};
- template<typename MCSignType, typename T> struct has_accept <MCSignType,T, decltype(std::declval<T>().accept())> : std::true_type {};
-
- template<typename T, typename Enable=void> struct has_reject : std::false_type {};
- template<typename T> struct has_reject<T, decltype(std::declval<T>().reject())> : std::true_type {};
-
- //----------------------------------
+ template <typename MCSignType> class move_set;
 
  template<typename MCSignType>
   class move {
@@ -50,44 +40,42 @@ namespace triqs { namespace mc_tools {
 
    std::function<MCSignType()> attempt_, accept_;
    std::function<void()> reject_;
+   std::function<void(mpi::communicator const &)> collect_statistics_;
    std::function<void(h5::group, std::string const &)> h5_r, h5_w;
 
    uint64_t NProposed, Naccepted;
    double acceptance_rate_;
-
-   template<typename MoveType>
-    void construct_delegation (MoveType * p) {
-     impl_= std::shared_ptr<MoveType> (p);
-     hash_ = typeid(MoveType).hash_code();
-     type_name_ =  typeid(MoveType).name();
-     clone_   = [p](){return move{true, MoveType(*p)};};
-     attempt_ = [p](){return p->attempt();};
-     accept_  = [p](){return p->accept();};
-     reject_  = [p](){p->reject();};
-     h5_r = make_h5_read(p); // make_h5_read in impl_tools
-     h5_w = make_h5_write(p);
-     NProposed=0;
-     Naccepted=0;
-     acceptance_rate_ =-1;
-    }
+   bool is_move_set_;
 
    public :
-
-   template<typename MoveType>
-    move (bool, MoveType && p ) {
-     static_assert( is_move_constructible<MoveType>::value, "This move is not MoveConstructible");
-     static_assert( has_attempt<MCSignType,MoveType>::value, "This move has no attempt method (or is has an incorrect signature) !");
-     static_assert( has_accept<MCSignType,MoveType>::value, "This move has no accept method (or is has an incorrect signature) !");
-     static_assert( has_reject<MoveType>::value, "This move has no reject method (or is has an incorrect signature) !");
-     construct_delegation( new std14::decay_t<MoveType>(std::forward<MoveType>(p)));
-    }
+   template <typename MoveType> move(bool, MoveType &&m) {
+    static_assert(std::is_move_constructible<MoveType>::value, "This move is not MoveConstructible");
+    static_assert(has_attempt<MCSignType, MoveType>::value,
+                  "This move has no attempt method (or is has an incorrect signature) !");
+    static_assert(has_accept<MCSignType, MoveType>::value, "This move has no accept method (or is has an incorrect signature) !");
+    static_assert(has_reject<MoveType>::value, "This move has no reject method (or is has an incorrect signature) !");
+    using m_t = std14::decay_t<MoveType>;
+    m_t *p = new m_t(std::forward<MoveType>(m));
+    impl_ = std::shared_ptr<MoveType>(p);
+    hash_ = typeid(MoveType).hash_code();
+    type_name_ = typeid(MoveType).name();
+    clone_ = [p]() { return move{true, MoveType(*p)}; };
+    attempt_ = [p]() { return p->attempt(); };
+    accept_ = [p]() { return p->accept(); };
+    reject_ = [p]() { p->reject(); };
+    collect_statistics_ = make_collect_statistics(p);
+    h5_r = make_h5_read(*p);
+    h5_w = make_h5_write(*p);
+    NProposed = 0;
+    Naccepted = 0;
+    acceptance_rate_ = -1;
+    is_move_set_ = std::is_same<MoveType, move_set<MCSignType>>::value;
+   }
 
    // Close to value semantics. Everyone at the end call move = ...
    // no default constructor.
    move(move const &rhs) {*this = rhs;}
-   //move(move const &rhs)  = delete; 
-   move(move && rhs) = default; // MUST BE noexcept// { *this = std::move(rhs);}
-   //move & operator = (move const & rhs) = delete;
+   move(move && rhs) = default; 
    move & operator = (move const & rhs) { *this = rhs.clone_(); return *this;}
    move & operator = (move && rhs) = default;
 
@@ -98,12 +86,16 @@ namespace triqs { namespace mc_tools {
    double acceptance_rate() const { return acceptance_rate_;}
    uint64_t n_proposed_config () const { return NProposed;}
    uint64_t n_accepted_config () const { return Naccepted;}
+   //bool is_move_set() const { return is_move_set_;}
 
    void collect_statistics(mpi::communicator const & c) {
     uint64_t nacc_tot = mpi::reduce(Naccepted, c);
     uint64_t nprop_tot = mpi::reduce(NProposed, c);
     acceptance_rate_ = nacc_tot/static_cast<double>(nprop_tot);
+    if (collect_statistics_) collect_statistics_(c);
    }
+
+   move_set<MCSignType> *as_move_set() const { return is_move_set_ ? static_cast<move_set<MCSignType> *>(impl_.get()) : nullptr; }
 
    // true iif the stored object has type MoveType Cf hash_code doc.
    template<typename MoveType> bool has_type() const { return (typeid(MoveType).hash_code() == hash_); };
@@ -238,19 +230,32 @@ namespace triqs { namespace mc_tools {
     current->reject();
    }
 
-   /// Pretty printing of the acceptance probability of the moves.
-   std::string get_statistics(mpi::communicator const & c, int shift = 0) {
-    std::ostringstream s;
-    for (unsigned int u =0; u< move_vec.size(); ++u) {
-     move_vec[u].collect_statistics(c);
-     for(int i=0; i<shift; i++) s << " ";
-     if (move_vec[u].template has_type<move_set>()) {
-      auto & ms = move_vec[u].template get<move_set>();
-      s << "Move set " << names_[u] << ": " << move_vec[u].acceptance_rate() << "\n";
-      s << ms.get_statistics(c,shift+2);
-     } else {
-      s << "Move " << names_[u] << ": " << move_vec[u].acceptance_rate() << "\n";
+   /// 
+   void collect_statistics(mpi::communicator c) {
+    for (auto &m : move_vec) m.collect_statistics(c);
+   }
+
+   /// Acceptance rate of all moves as a map name:string -> acceptance_rate:double
+   std::map<std::string, double> get_acceptance_rates() const {
+    std::map<std::string, double> r;
+    for (unsigned int u = 0; u < move_vec.size(); ++u) {
+     r.insert(names_[u], move_vec[u].acceptance_rate());
+     auto ms = move_vec[u].as_move_set();
+     if (ms) { // if it is a move set, flatten the result
+      auto ar = ms->get_acceptance_rates();
+      r.insert(ar.begin(), ar.end());
      }
+    }
+    return r;
+   }
+
+   /// Pretty printing of the acceptance probability of the moves.
+   std::string get_statistics(std::string decal = "") const {
+    std::ostringstream s;
+    for (unsigned int u = 0; u < move_vec.size(); ++u) {
+     auto ms = move_vec[u].as_move_set();
+     s << decal << "Move " << (ms ? "set " : " ") << names_[u] << ": " << move_vec[u].acceptance_rate() << "\n";
+     if (ms) s << ms->get_statistics(decal + "  ");
     }
     return s.str();
    }

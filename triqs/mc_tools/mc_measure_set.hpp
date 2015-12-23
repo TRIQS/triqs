@@ -27,15 +27,6 @@
 
 namespace triqs { namespace mc_tools {
 
- // mini concept checking
- template<typename MCSignType, typename T, typename Enable=void> struct has_accumulate : std::false_type {};
- template<typename MCSignType, typename T> struct has_accumulate <MCSignType, T, decltype(std::declval<T>().accumulate(MCSignType()))> : std::true_type {};
-
- template<typename T, typename Enable=void> struct has_collect_result : std::false_type {};
- template<typename T> struct has_collect_result < T, decltype(std::declval<T>().collect_results(std::declval<triqs::mpi::communicator>()))> : std::true_type {};
-
- //--------------------------------------------------------------------
-
  template<typename MCSignType>
   class measure {
 
@@ -50,32 +41,26 @@ namespace triqs { namespace mc_tools {
 
    uint64_t count_;
 
-   template<typename MeasureType>
-    void construct_delegation (MeasureType * p) {
-     impl_= std::shared_ptr<MeasureType> (p);
-     clone_ =  [p]() { return MeasureType(*p);} ;
-     hash_ = typeid(MeasureType).hash_code();
-     type_name_ =  typeid(MeasureType).name();
-     accumulate_ = [p](MCSignType const & x) { p->accumulate(x);};
-     count_ = 0;
-     collect_results_ = [p] (mpi::communicator const & c) { p->collect_results(c);};
-     h5_r = make_h5_read(p);
-     h5_w = make_h5_write(p);
-    }
-
-   public :
-
-   template<typename MeasureType>
-    measure (MeasureType && p) {
-     static_assert( is_move_constructible<MeasureType>::value, "This measure is not MoveConstructible");
-     static_assert( has_accumulate<MCSignType,MeasureType>::value, " This measure has no accumulate method !");
-     static_assert( has_collect_result<MeasureType>::value, " This measure has no collect_results method !");
-     construct_delegation( new typename std::remove_reference<MeasureType>::type(std::forward<MeasureType>(p)));
-    }
+   public:
+   template <typename MeasureType> measure(bool, MeasureType &&m) {
+    static_assert(std::is_move_constructible<MeasureType>::value, "This measure is not MoveConstructible");
+    static_assert(has_accumulate<MCSignType, MeasureType>::value, " This measure has no accumulate method !");
+    static_assert(has_collect_result<MeasureType>::value, " This measure has no collect_results method !");
+    using m_t = std14::decay_t<MeasureType>;
+    m_t *p = new m_t(std::forward<MeasureType>(m));
+    impl_ = std::shared_ptr<MeasureType>(p);
+    clone_ = [p]() { return measure{true, MeasureType(*p)}; };
+    hash_ = typeid(MeasureType).hash_code();
+    type_name_ = typeid(MeasureType).name();
+    accumulate_ = [p](MCSignType const &x) { p->accumulate(x); };
+    count_ = 0;
+    collect_results_ = [p](mpi::communicator const &c) { p->collect_results(c); };
+    h5_r = make_h5_read(p);
+    h5_w = make_h5_write(p);
+   }
 
    // Value semantics. Everyone at the end call move = ...
    measure(measure const &rhs) {*this = rhs;}
-   measure(measure &rhs) {*this = rhs;} // or it will use the template  = bug
    measure(measure && rhs) { *this = std::move(rhs);}
    measure & operator = (measure const & rhs) { *this = rhs.clone_(); return *this;}
    measure & operator = (measure && rhs) =default;
@@ -121,7 +106,7 @@ namespace triqs { namespace mc_tools {
    template<typename MeasureType>
     void insert (MeasureType && M, std::string const & name) {
      if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
-     m_map.insert(std::make_pair(name, measure_type (std::forward<MeasureType>(M))));
+     m_map.insert(std::make_pair(name, measure_type(true, std::forward<MeasureType>(M))));
      // not implemented on gcc 4.6's stdlibc++ ?
      // m_map.emplace(name, measure_type (std::forward<MeasureType>(M)));
     }
