@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2013 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2016 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -66,21 +66,21 @@ namespace triqs { namespace mc_tools {
 
  // Workaround lack of concepts implementation
  template <typename T, typename = void> struct make_h5_impl {
-  static h5_rw_lambda_t read(T &p) { return {}; }
-  static h5_rw_lambda_t write(T const &p) { return {}; }
+  static h5_rw_lambda_t read(T *p) { return {}; }
+  static h5_rw_lambda_t write(T const *p) { return {}; }
  };
 
  template <typename T>
  struct make_h5_impl<T, decltype(h5_read(std::declval<h5::group>(), std::string(), std::declval<T &>()))> {
-  static h5_rw_lambda_t read(T &p) {
-   return [p](h5::group F, std::string const &Name) { h5_read(F, Name, p); };
+  static h5_rw_lambda_t read(T *p) {
+   return [p](h5::group F, std::string const &Name) { h5_read(F, Name, *p); };
   }
-  static h5_rw_lambda_t write(T const &p) {
-   return [p](h5::group F, std::string const &Name) { h5_write(F, Name, p); };
+  static h5_rw_lambda_t write(T const *p) {
+   return [p](h5::group F, std::string const &Name) { h5_write(F, Name, *p); };
   }
  };
- template <typename T> h5_rw_lambda_t make_h5_read(T &p) { return make_h5_impl<T>::read(p); }
- template <typename T> h5_rw_lambda_t make_h5_write(T const &p) { return make_h5_impl<T>::write(p); }
+ template <typename T> h5_rw_lambda_t make_h5_read(T *p) { return make_h5_impl<T>::read(p); }
+ template <typename T> h5_rw_lambda_t make_h5_write(T const *p) { return make_h5_impl<T>::write(p); }
 
 #endif 
 

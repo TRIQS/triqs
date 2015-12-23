@@ -106,8 +106,8 @@ int main(int argc, char* argv[]) {
   H()=0;
 
   // add moves and measures
-  IntMC.add_move(move_left (config, pl, pr, IntMC.rng()  ), "left move",  pl);
-  IntMC.add_move(move_right(config, pl, pr, IntMC.rng()  ), "right move", pr);
+  IntMC.add_move(move_left (config, pl, pr, IntMC.get_rng()  ), "left move",  pl);
+  IntMC.add_move(move_right(config, pl, pr, IntMC.get_rng()  ), "right move", pr);
   IntMC.add_measure(compute_histo(config, H, xmax), "histogramn measure");
 
   // Run and collect results
@@ -115,4 +115,5 @@ int main(int argc, char* argv[]) {
   IntMC.collect_results(world);
 
   h5_write(file, "Stats", IntMC.get_acceptance_rates());
+  //std::cout  << IntMC.average_sign() << std::endl;
 }

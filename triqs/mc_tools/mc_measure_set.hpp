@@ -27,12 +27,12 @@
 
 namespace triqs { namespace mc_tools {
 
- template<typename MCSignType>
-  class measure {
+ // similar technique as move, cf move_set.
+ template <typename MCSignType> class measure {
 
    std::shared_ptr<void> impl_;
    std::function<measure()> clone_;
-
+   
    std::function<void (MCSignType const & ) > accumulate_;
    std::function<void (mpi::communicator const & )> collect_results_;
    std::function<void(h5::group, std::string const &)> h5_r, h5_w;
@@ -46,8 +46,8 @@ namespace triqs { namespace mc_tools {
     static_assert(has_collect_result<MeasureType>::value, " This measure has no collect_results method !");
     using m_t = std14::decay_t<MeasureType>;
     m_t *p = new m_t(std::forward<MeasureType>(m));
-    impl_ = std::shared_ptr<MeasureType>(p);
-    clone_ = [p]() { return measure{true, MeasureType(*p)}; };
+    impl_ = std::shared_ptr<m_t>(p);
+    clone_ = [p]() { return measure{true, m_t(*p)}; };
     accumulate_ = [p](MCSignType const &x) { p->accumulate(x); };
     count_ = 0;
     collect_results_ = [p](mpi::communicator const &c) { p->collect_results(c); };
@@ -79,7 +79,7 @@ namespace triqs { namespace mc_tools {
 
    public :
 
-   measure_set(){}
+   measure_set() = default;
 
    /**
     * Register the Measure M with a name
@@ -87,9 +87,9 @@ namespace triqs { namespace mc_tools {
    template<typename MeasureType>
     void insert (MeasureType && M, std::string const & name) {
      if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
-     m_map.insert(std::make_pair(name, measure_type(true, std::forward<MeasureType>(M))));
-     // not implemented on gcc 4.6's stdlibc++ ?
-     // m_map.emplace(name, measure_type (std::forward<MeasureType>(M)));
+     // workaround for all gcc
+     // m_map.insert(std::make_pair(name, measure_type(true, std::forward<MeasureType>(M))));
+     m_map.emplace(name, measure_type(true, std::forward<MeasureType>(M)));
     }
 
    bool has(std::string const & name) const { return m_map.find(name) != m_map.end(); }

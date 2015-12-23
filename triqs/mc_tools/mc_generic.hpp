@@ -28,10 +28,12 @@
 #include "./mc_measure_aux_set.hpp"
 #include "./mc_measure_set.hpp"
 #include "./mc_move_set.hpp"
-#include "./mc_basic_step.hpp"
 #include "./random_generator.hpp"
 
 namespace triqs { namespace mc_tools {
+
+ /// mc_type
+ enum class mc_type {Metropolis}; // HeatBath, ...
 
  /**
   * \brief Generic Monte Carlo class.
@@ -39,81 +41,100 @@ namespace triqs { namespace mc_tools {
   * TBR
   * @include triqs/mc_tools.hpp
   */
- template<typename MCSignType, typename MCStepType = Step::Metropolis<MCSignType> >
-  class mc_generic {
+ template <typename MCSignType> class mc_generic {
 
    public:
 
     /**
-     * Constructor from a set of parameters
+     * Constructor 
+     *
+     * @param n_cycles        Number of QMC cycles (measures are done after each cycle).
+     * @param length_cycle    Number of QMC move attempts in one cycle
+     * @param n_warmup_cycles Number of cycles to warm up, before measuring.
+     * @param random_name     Name of the random generator (cf doc).
+     * @param random_seed     Seed for the random generator
+     * @param verbosity       Verbosity level. 0 : None, ... TBA
+     * @param debug           Debug mode 
+     * @param mode            mc_type: At present only mc_type::Metropolis   
      */
    mc_generic(uint64_t n_cycles, uint64_t length_cycle, uint64_t n_warmup_cycles, std::string random_name, int random_seed,
-              int verbosity, std::function<void()> AfterCycleDuty = std::function<void()>())
+              int verbosity, bool debug = false, mc_type mode = mc_type::Metropolis)
       : RandomGenerator(random_name, random_seed)
-      , AllMoves(RandomGenerator)
+      , AllMoves(RandomGenerator, debug)
       , AllMeasures()
       , AllMeasuresAux()
       , report(&std::cout, verbosity)
       , Length_MC_Cycle(length_cycle)
       , NWarmIterations(n_warmup_cycles)
       , NCycles(n_cycles)
-      , after_cycle_duty(AfterCycleDuty)
-      , sign_av(0) {}
-
-    /// Set function after_cycle_duty
-    void set_after_cycle_duty(std::function<void()> AfterCycleDuty){ after_cycle_duty = AfterCycleDuty; }
+      , sign_av(0)
+      , debug(debug)
+      , mode(mode) {}
 
     /**
-     * Register move M with its probability of being proposed.
-     * NB : the proposition_probability needs to be >0 but does not need to be
-     * normalized. Normalization is automatically done with all the added moves
-     * before starting the run
+     * Register a move 
+     *
+     * If the move m is an rvalue, it is moved into the mc_generic, otherwise is copied into it.
+     *
+     * @tparam MoveType                Type of the move. Must model Move concept
+     * @param m                        The move. Must model Move concept.
+     * @param name                     Name of the move
+     * @param proposition_probability  Probability that the move will be proposed. Precondition : >0 
+     *                                 NB it but does not need to be normalized. 
+     *                                 Normalization is automatically done with all the added moves before starting the run.
      */
     template <typename MoveType>
-     void add_move (MoveType && M, std::string name, double proposition_probability = 1.0) {
+     void add_move (MoveType && m, std::string name, double proposition_probability = 1.0) {
       static_assert( !std::is_pointer<MoveType>::value, "add_move in mc_generic takes ONLY values !");
-      AllMoves.add(std::forward<MoveType>(M), name, proposition_probability);
-     }
-
-    /**
-     * Register the Measure M
-     */
-    template<typename MeasureType>
-     void add_measure (MeasureType && M, std::string name) {
-      static_assert( !std::is_pointer<MeasureType>::value, "add_measure in mc_generic takes ONLY values !");
-      AllMeasures.insert(std::forward<MeasureType>(M), name);
+      AllMoves.add(std::forward<MoveType>(m), name, proposition_probability);
      }
 
      /**
-     * Register the precomputation 
-     */
-     template <typename MeasureAuxType> void add_measure_aux(std::shared_ptr<MeasureAuxType> p) { AllMeasuresAux.emplace_back(p); }
+      * Register a measure
+      *
+      * If the measure m is an rvalue, it is moved into the mc_generic, otherwise is copied into it.
+      *
+      * @param M                        The measure. Must model Measure concept
+      * @param name                     Name of the measure
+      *
+      */
+     template <typename MeasureType> void add_measure(MeasureType &&m, std::string name) {
+      static_assert(!std::is_pointer<MeasureType>::value, "add_measure in mc_generic takes ONLY values !");
+      AllMeasures.insert(std::forward<MeasureType>(m), name);
+     }
 
-     /// get the average sign (to be called after collect_results)
-    MCSignType average_sign() const { return sign_av; }
+     /**
+      * Register a common part for several measure [EXPERIMENTAL: API WILL CHANGE]
+      */
+     template <typename MeasureAuxType> void add_measure_aux(std::shared_ptr<MeasureAuxType> p) {
+      AllMeasuresAux.emplace_back(p);
+     }
 
-    /// get the current percents done
-    uint64_t percent() const { return done_percent; }
+     /** 
+      * Sets a function called after each cycle
+      *
+      * @param f The function be called.
+      */
+     void set_after_cycle_duty(std::function<void()> f) { after_cycle_duty =f; }
 
-    // An access to the random number generator
-    random_generator & rng(){ return RandomGenerator;}
-
-    // An access to the current cycle number 
-    int current_cycle_number() const { return NC; }
-
-    bool thermalized() const { return (NC>= NWarmIterations);}
-    bool converged() const { return false;}
-
+     // get the average sign (to be called after collect_results)
+     TRIQS_DEPRECATED("average_sign is very misleading. Remove it from your code") MCSignType average_sign() const {
+      return sign_av;
+     }
+  
     /**
-     * Start the Monte Carlo
+     * Starts the Monte Carlo
      *
      * @param sign_init The initial value of the sign (usually 1)
-     * @param stop_callback A function () -> bool that is called after each cycle
-     *                      to determine if the computation should continue.
-     *                      Typically the time limit
-     * @return 0 if the computation has run until the end.
-     *         1 if it has been stopped by stop_callback
-     *         2 if it has been  topped by receiving a signal
+     * @param stop_callback A callback function () -> bool. It is called after each cycle
+     *                      to and the computation stops when it returns true.
+     *                      Typically used to set up the time limit, cf doc.
+     * @return 
+     *    =  =============================================
+     *    0  if the computation has run until the end
+     *    1  if it has been stopped by stop_callback
+     *    2  if it has been  topped by receiving a signal
+     *    =  =============================================
      */
     int start(MCSignType sign_init, std::function<bool ()> stop_callback) {
      Timer.start();
@@ -124,12 +145,22 @@ namespace triqs { namespace mc_tools {
      uint64_t NCycles_tot = NCycles+ NWarmIterations;
      report << std::endl << std::flush;
      for (NC = 0; !stop_it; ++NC) {
-      for (uint64_t k=1; (k<=Length_MC_Cycle); k++) {
+      // Metropolis loop. Switch here for HeatBath, etc...
+      for (uint64_t k = 1; (k <= Length_MC_Cycle); k++) {
        if (triqs::signal_handler::received()) goto _final;
-       MCStepType::do_it(AllMoves, RandomGenerator, sign);
+       double r = AllMoves.attempt();
+       if (RandomGenerator() < std::min(1.0, r)) {
+        if (debug) std::cerr << " Move accepted " << std::endl;
+        sign *= AllMoves.accept();
+        if (debug) std::cerr << " New sign = " << sign << std::endl;
+       } else {
+        if (debug) std::cerr << " Move rejected " << std::endl;
+        AllMoves.reject();
+       }
+       ++config_id;
       }
       if (after_cycle_duty) {after_cycle_duty();}
-      if (thermalized()) {
+      if (is_thermalized()) {
        nmeasures++;
        sum_sign += sign;
        for (auto &x : AllMeasuresAux) x();
@@ -139,7 +170,7 @@ namespace triqs { namespace mc_tools {
      _final:
       uint64_t dp = uint64_t(floor( ( NC*100.0) / (NCycles_tot-1)));
       if (dp>done_percent)  { done_percent=dp; report << done_percent; report<<"%; "; report <<std::flush; }
-      finished = ( (NC >= NCycles_tot -1) || converged () );
+      finished = ( (NC >= NCycles_tot -1) || is_converged () );
       stop_it = (stop_callback() || triqs::signal_handler::received() || finished);
      }
      int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
@@ -155,18 +186,55 @@ namespace triqs { namespace mc_tools {
     void collect_results(mpi::communicator const & c) {
      AllMeasures.collect_results(c);
      AllMoves.collect_statistics(c);
-
      uint64_t nmeasures_tot = mpi::reduce(nmeasures,c);
-
+     
      report(3) << "[Node "<<c.rank()<<"] Acceptance rate for all moves:\n" << AllMoves.get_statistics();
      report(3) << "[Node "<<c.rank()<<"] Simulation lasted: " << double(Timer) << " seconds" << std::endl;
      report(3) << "[Node "<<c.rank()<<"] Number of measures: " << nmeasures  << std::endl;
-
      if (c.rank() == 0) report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
      mpi::broadcast(sign_av, c);
     }
 
+    /**
+     * The acceptance rates of all move
+     *
+     * @return map : name_of_the_move -> acceptance rate of this move
+     */
     std::map<std::string, double> get_acceptance_rates() const { return AllMoves.get_acceptance_rates(); }
+ 
+    /** 
+     *  The current percents done
+     */  
+    uint64_t get_percent() const { return done_percent; }
+
+    /** 
+     * An access to the random number generator
+     */
+    random_generator & get_rng(){ return RandomGenerator;}
+
+    // backward compatibility only
+    TRIQS_DEPRECATED("TRIQS API change: please use get_rng instead of rng. This function WILL be removed in future releases.")
+    random_generator &rng() { return RandomGenerator; }
+
+    /** 
+     * The current cycle number 
+     */
+    int get_current_cycle_number() const { return NC; }
+
+    /** 
+     * The current number of the visited configuration. Updated after each accept/reject.
+     */
+    int get_config_id () const { return config_id; }
+
+    /** 
+     * Is the qmc thermalized, i.e. has it run more than n_warmup_cycles given at construction
+     */
+    bool is_thermalized() const { return (NC >= NWarmIterations); }
+
+    private: // future use
+    bool is_converged() const { return false; }
+
+    public:
     
     /// HDF5 interface
     friend void h5_write (h5::group g, std::string const & name, mc_generic const & mc){
@@ -210,6 +278,9 @@ namespace triqs { namespace mc_tools {
     std::function<void()> after_cycle_duty;
     MCSignType sign, sign_av;
     uint64_t NC,done_percent;// NC = number of the cycle
+    bool debug;
+    mc_type mode;
+    uint64_t config_id = 0;
   };
 
 }}// end namespace

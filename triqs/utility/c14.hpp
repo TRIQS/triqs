@@ -56,6 +56,8 @@
 namespace std { 
  namespace c14 {
 
+#define TRIQS_DEPRECATED(Message) __attribute__((deprecated(AS_STRING(Message))))
+
   // helpers
   template <bool B, class T, class F> using conditional_t = typename conditional<B, T, F>::type;
   template <class T> using result_of_t = typename result_of<T>::type;
