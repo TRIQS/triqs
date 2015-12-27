@@ -27,7 +27,7 @@ The *Target* template parameter can take the following values:
 Domain & mesh
 ----------------
 
-The domain is :doxy:`matsubara_freq_domain<triqs::gfs::matsubara_domain>`.
+The domain is triqs::gfs::matsubara_domain.
 
 The Matsubara frequencies are :math:`\omega_n=\frac{(2n+1)\pi}{\beta}` for fermions and :math:`\omega_n=\frac{2n\pi}{\beta}` for bosons. 
 

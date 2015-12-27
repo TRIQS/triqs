@@ -29,12 +29,6 @@ The *Target* template parameter can take the following values:
 Domain & mesh
 ----------------
 
-CORRECT THIS !! PUT OUT THE C++ impl for doxy doc
-
-The domain is :doxy:`matsubara_freq_domain<triqs::gfs::matsubara_domain>`.
-
-The mesh is :doxy:`matsubara_freq_mesh<triqs::gfs::matsubara_freq_mesh>`.
-
 
 Singularity
 -------------

@@ -16,7 +16,6 @@ class Triqs < Formula
   depends_on 'gmp'
   depends_on 'gsl'
   #depends_on 'python'
-  #depends_on 'doxygen'
   #depends_on 'zmq'
   depends_on 'boost'
 

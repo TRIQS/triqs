@@ -15,7 +15,7 @@ the implementation details of your specific algorithm.
    loop
    tutorial
    concepts
-   automatic/mc_generic
+   full_ref
    random
    ising
     

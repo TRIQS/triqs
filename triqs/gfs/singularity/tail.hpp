@@ -343,17 +343,15 @@ namespace gfs {
  inline tail operator/(dcomplex a, tail_view r) { return a * inverse(r); }
 
 
-// inplace operators
-#define DEFINE_OPERATOR(OP1, OP2)                                                                                                \
- template <typename T> void operator OP1(tail_view g, T &&x) { g = g OP2 x; }                                                    \
- template <typename T> void operator OP1(tail &g, T &&x) { g = g OP2 x; }
-
- DEFINE_OPERATOR(+=, +);
- DEFINE_OPERATOR(-=, -);
- DEFINE_OPERATOR(*=, *);
- DEFINE_OPERATOR(/=, / );
-
-#undef DEFINE_OPERATOR
+ template <typename T> void operator+=(tail_view g, T &&x) { g = g + x; }
+ template <typename T> void operator-=(tail_view g, T &&x) { g = g - x; }
+ template <typename T> void operator*=(tail_view g, T &&x) { g = g * x; }
+ template <typename T> void operator/=(tail_view g, T &&x) { g = g / x; }
+ 
+ template <typename T> void operator+=(tail &g, T &&x) { g = g + x; }
+ template <typename T> void operator-=(tail &g, T &&x) { g = g - x; }
+ template <typename T> void operator*=(tail &g, T &&x) { g = g * x; }
+ template <typename T> void operator/=(tail &g, T &&x) { g = g / x; }
 }
 }
 

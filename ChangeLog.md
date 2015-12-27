@@ -2,6 +2,11 @@
 Version 1.4
 -----------
 
+Documentation
+~~~~~~~~~~~~~
+
+* Replace Doxygen by the local simpler tool c++2doc.
+
 Installation
 ~~~~~~~~~~~~
 

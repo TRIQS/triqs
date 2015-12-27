@@ -136,11 +136,6 @@ For convenience, we provide the header::
 which includes the headers for basic, vector, array and generic type support.
 
 
-Doxygen documentation
--------------------------
-
-The :doxy:`full C++ parameter documentation<triqs::utility::parameters>` and
-the :doxy:`parameter_defaults documentation<triqs::utility::parameter_defaults>` are available here.
 
 MPI example  
 -------------

@@ -74,9 +74,7 @@ modifications) for earlier versions of OS X.
 
 6. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax: ::
 
-     brew install doxygen
      pip install sphinx
-     pip install sphinxcontrib-doxylink
      pip install pyparsing
      git clone https://github.com/mathjax/MathJax.git MathJax
 

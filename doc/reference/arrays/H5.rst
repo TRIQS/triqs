@@ -20,14 +20,6 @@ Reference
    h5_stack
    h5_complex
 
-You can also get the :doxy:`full C++ documentation<triqs::h5::group>` for these classes and functions.
 
 
-.. :
- Breathe Documentation 
- *********************
- .. doxygenclass:: triqs::h5::group
-    :project: doxy
-    :members:
- 
 

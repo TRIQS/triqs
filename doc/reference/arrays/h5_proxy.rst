@@ -47,5 +47,3 @@ Tutorial
 Reference 
 ------------
 
-You can also get the :doxy:`full C++ documentation<triqs::arrays::h5::array_proxy>` for this class.
-

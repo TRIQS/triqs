@@ -219,6 +219,34 @@ endwhile()")
 
 endmacro(triqs_prepare_local_pytriqs)
 
+######################## triqs_add_cpp2doc_target ##################
+# Add a docs_cpp2doc target to docs_sphinx target.
+# Copies the doc in build and run cpp2doc from the doc_root.hpp document
+# Expects a doc_root.hpp in /doc to be parsed by the compiler. 
+macro(triqs_add_cpp2doc_target) 
+
+FILE(GLOB_RECURSE all_rst_files RELATIVE ${CMAKE_SOURCE_DIR}/doc *.rst _* *.py *.png *.cpp)
+SET(rst_copy_tar  ${CMAKE_CURRENT_BINARY_DIR}/rst_copy.tar)
+add_custom_command (OUTPUT ${rst_copy_tar} DEPENDS ${all_rst_files}
+ COMMAND cd ${CMAKE_SOURCE_DIR}/doc && tar cf ${rst_copy_tar} ${all_rst_files} && cd ${CMAKE_BINARY_DIR}/doc && tar xf ${rst_copy_tar} )
+add_custom_target(rst_copy DEPENDS ${rst_copy_tar})
+add_dependencies(docs_sphinx rst_copy) # we must first have copied the sources
+
+# use c++2doc to automatically build the documentation of C++  
+option(DocWithCpp2doc "Use c++2doc to generate C++ documentation of triqs classes and functions (requires libclang)" ON)
+if (DocWithCpp2doc)
+ FILE(GLOB_RECURSE all_header_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ../triqs/*.hpp)
+add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log DEPENDS ${all_header_files} 
+                    COMMAND export PYTHONPATH=\$PYTHONPATH:@CMAKE_INSTALL_PREFIX@/share/triqs/cpp2doc/mako && ${TRIQS_PYTHON_INTERPRETER} 
+		    @CMAKE_INSTALL_PREFIX@/bin/c++2doc.py ${CMAKE_CURRENT_SOURCE_DIR}/doc_root.hpp 
+		    --output_directory=${CMAKE_CURRENT_BINARY_DIR}/cpp2doc_generated
+		    --includes=${CMAKE_SOURCE_DIR}/ 2>1 > cpp2py.log) 
+add_custom_target(docs_cpp2doc DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log) 
+# add this to cmakelist
+# add_dependencies(docs_sphinx docs_cpp2doc) # we must have installed the sources before building
+endif()
+endmacro()
+
 ################### triqs_build_f2py_module  ###################
 #
 # This macro builds the f2py module

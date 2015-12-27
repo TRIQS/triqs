@@ -393,7 +393,6 @@ enable_testing()
 # Documentation
 ##------------------------
 option(Build_Documentation "Build the documentation ?" OFF)
-option(Build_PDF_Documentation "Build the pdf documentation ?" OFF)
 
 #------------------------------------------------------
 # link libs for shared libs or for pytriqs 

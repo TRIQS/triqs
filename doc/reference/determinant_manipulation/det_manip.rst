@@ -145,10 +145,18 @@ Under the hood ...
   so that this is transparent for the user.
 
 
-Doxygen documentation
+Full reference 
 -------------------------
 
-The :doxy:`full C++ documentation<triqs::det_manip::det_manip>` is available here.
+.. warning::
+    In construction 
+
+
+.. toctree::
+   :maxdepth: 2
+
+   /triqs/det_manip/det_manip
+
 
 Example  
 ---------

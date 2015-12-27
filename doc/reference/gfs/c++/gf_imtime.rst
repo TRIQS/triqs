@@ -33,7 +33,7 @@ since the function is periodic (resp. antiperiodic) for bosons (resp. fermions),
 * :math:`G(\tau+\beta)=-G(\tau)`  for fermions
 * :math:`G(\tau+\beta)=G(\tau)` for bosons.
 
-The domain is implemented in the class :doxy:`matsubara_time_domain<triqs::gfs::matsubara_domain>`.
+The domain is implemented in 
 
 The mesh is :ref:`gf_mesh_imtime`.
 

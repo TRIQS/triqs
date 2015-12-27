@@ -38,10 +38,3 @@ SET(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/contents.html)
 add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES} COMMAND ${SPHINXBUILD_EXECUTABLE} -c . -b html ${DOC_SOURCE} html)
 add_custom_target(docs_sphinx${DOC_EXT} ALL DEPENDS ${sphinx_top} ${DOC_SOURCE})
 
-if (Build_PDF_Documentation)
- SET(sphinx_top_pdf ${CMAKE_CURRENT_BINARY_DIR}/latex/TRIQS.pdf)
- add_custom_command(OUTPUT ${sphinx_top_pdf} DEPENDS ${SOURCES} COMMAND ${SPHINXBUILD_EXECUTABLE} -c . -b latex ${DOC_SOURCE} latex && cd latex
-  && pdflatex -interaction=nonstopmode TRIQS.tex && pdflatex -interaction=nonstopmode TRIQS.tex)
- add_custom_target(docs_sphinx_pdf${DOC_EXT} ALL DEPENDS ${sphinx_top_pdf} ${DOC_SOURCE})
-endif()
-

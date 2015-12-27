@@ -20,21 +20,20 @@ Generate the rst doc file from C++ header code
 """)
 
 parser.add_argument('filename', help = "Name of the file")
-parser.add_argument('--outputname', '-o',  help="Name of the xxx_desc.py file [default is same as the filename]", default = '')
+parser.add_argument('--output_directory', '-o',  help="Where to put the files [default './']", default = './')
 parser.add_argument('--libclang_location', help='Location of the libclang', default = '@TRIQS_LIBCLANG_LOCATION@')
 parser.add_argument('--compiler_options', nargs ='*', help='Options to pass to clang')
 parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
 parser.add_argument('--namespace', '-N', action='append',  help='namespaces to document', default= ['triqs']) #specify which namespaces to document, e.g. -N triqs -N applications
+parser.add_argument('--mako_location', help="Internal use: location of mako files", default = '')
 
 args = parser.parse_args()
 args.includes = (args.includes or []) +  '@TRIQS_INCLUDE_ALL@'.split(';')
 
 triqs_install_location = '@CMAKE_INSTALL_PREFIX@'
-args.includes.insert(0, triqs_install_location + '/include')
+if not args.mako_location: args.includes.insert(0, triqs_install_location + '/include')
 
 #------------
-
-output_name = args.outputname or os.path.split(args.filename)[1].split('.',1)[0]
 
 def clean_end_white_char(s):
     """ remove the space at the end of the lines (for clean git diff...)"""
@@ -100,7 +99,7 @@ def grab_from_doc (doc, var1, var2):
 
 def process_doc_function(f): 
     """Process the doc of the function f"""
-    f.brief_doc = f.doc.split('\n',1)[0]
+    f.brief_doc = replace_latex(f.doc.split('\n',1)[0])
     f.doc_elements, f.processed_doc = grab_from_doc(replace_latex(f.doc), ['include', 'return', 'synopsis', 'warning','figure', 'note'],['param', 'tparam'])
     
 def process_doc_class(c): 
@@ -112,9 +111,15 @@ def regroup_func_by_names(constructors, *f_list_list):
     """ Given a list of functions, regroup them by names"""
     d = OrderedDict()
     if constructors: d['constructor'] = constructors
+    def decay(name):
+        if 'operator' not in name : return name
+        a, ca, c, co = '+ - * /',  '+= -= *= /=',  "== !=",  r" comparison"
+        d = {'*=' : ca,'+=' : ca,'/=' : ca,'-=' : ca,'*' : a,'+' : a,'/' : a,'-' : a, '==': c, '!=' : c, '<': co, '>' : co, '<=' : co, '>=' : co}
+        n = name.replace('operator','').strip()
+        return 'operator' + d[n] if n in d else name 
     for f_list in f_list_list:
         for f in f_list:
-            if f.doc: d.setdefault(f.name,[]).append(f)
+            d.setdefault(decay(f.name),[]).append(f)
     return d
 
 def render(template, output_name, **d):
@@ -147,9 +152,10 @@ if __name__ == '__main__':
     if add_opts:
         compiler_options += add_opts.split()
 
-    functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, 
+    functions, classes = parse(args.filename, debug = True, compiler_options = compiler_options, 
                where_is_libclang = args.libclang_location, 
-               analyze_filter = lambda c, ns: c.raw_comment and all([x in ns for x in args.namespace]))
+               #analyze_filter = lambda c, ns: all([x in ns for x in args.namespace]))
+               analyze_filter = lambda c, ns: (c.raw_comment or 'operator' in c.spelling) and all([x in ns for x in args.namespace]))
     #return namespaces and namespaces[0] in [ 'triqs', 'TEST'] and 
     #c.spelling in ["array"] or c.location.file.name == sys.argv[1]
     #return "triqs" in namespaces or c.location.file.name == sys.argv[1]
@@ -157,8 +163,10 @@ if __name__ == '__main__':
     print "Generating the documentation ..."
 
     # Making the rst files
-    tpl_class = Template(filename=triqs_install_location + '/share/triqs/cpp2doc/mako/xxx_doc_class.rst')
-    tpl_fun = Template(filename=triqs_install_location + '/share/triqs/cpp2doc/mako/xxx_doc_function.rst')
+    mako_location =  args.mako_location or (triqs_install_location + '/share/triqs/')
+    tpl_class = Template(filename=mako_location + '/cpp2doc/mako/xxx_doc_class.rst')
+    tpl_fun = Template(filename=mako_location + '/cpp2doc/mako/xxx_doc_function.rst')
+    mkchdir(args.output_directory)
     for c in classes:
         if not c.doc: print "Skipping undocumented ",c.name;  continue
 

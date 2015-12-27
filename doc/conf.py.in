@@ -22,7 +22,7 @@ import sys, os
 # ---------------------
 
 # Local Sphinx extensions
-local_sphinxext = ("numpydoc","breathe","doxylink","autorun","triqs_example")
+local_sphinxext = ("numpydoc","autorun","triqs_example")
 
 # Append
 sys.path = map(lambda e: "@CMAKE_BINARY_DIR@/doc/sphinxext/" + e ,local_sphinxext) + sys.path
@@ -39,8 +39,6 @@ extensions = ['sphinx.ext.autodoc',
 
 extensions += [
         'autorun',
-        'breathe',
-        'doxylink',
         'plot_directive',
         'numpydoc',
         'ipython_console_highlighting',
@@ -98,7 +96,7 @@ release = '@TRIQS_RELEASE@'
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
-exclude_trees = ['build','html','sphinxext']
+exclude_trees = ['build','html','sphinxext'] #, 'triqs']
 exclude_patterns = ['sphinxext/*'] # For Sphinx 1.3 and later
 
 # The reST default role (used for this markup: `text`) to use for all documents.
@@ -117,22 +115,6 @@ exclude_patterns = ['sphinxext/*'] # For Sphinx 1.3 and later
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
-
-# Options for breathe extension
-# -----------------------------
-
-breathe_projects = {
-        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
-        "arrays":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
-        "doxy":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
-        }
-breathe_default_project = "mc_tools"
-
-# Options for doxylink extension
-# -----------------------------
-
-doxylink = { 'doxy': ('@CMAKE_CURRENT_BINARY_DIR@/doxy.tag', 'doxy_triqs') }
-
 
 # Options for HTML output
 # -----------------------

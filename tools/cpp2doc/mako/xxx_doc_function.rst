@@ -103,7 +103,9 @@ Parameters
 Return value
 --------------
 
+%if f.doc_elements['return']:
 ${f.doc_elements['return']}
+%endif
 
 <% 
   code,d1,d2, s,e = tools.prepare_example(f_name, 4)

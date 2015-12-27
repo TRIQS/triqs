@@ -82,7 +82,7 @@ class Function(object):
         self.parameter_arg = None # If exists, it is the parameter class
 
         tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
-        #print tokens 
+        #print "TOKENS ", tokens 
 
         # detect from the tokens if a constructor is explicit
         self.is_explicit =  'explicit' in tokens
@@ -149,7 +149,7 @@ class Function(object):
         s = "{name} ({args})" if self.is_constructor else "{rtype} {name} ({args})"
         s = s.format(args = ', '.join( ["%s %s"%(t.name,n) + ("=%s"%d if d else "") for t,n,d in self.params]), **self.__dict__)
         if self.tparams :
-            s = "template<" + ', '.join(['typename ' + x for x in self.tparams]) + ">  " + s
+            s = "template<" + ', '.join(['typename ' + str(x) for x in self.tparams]) + ">  " + s
         if self.is_static : s = "static " + s
         return s.strip()
 
@@ -354,7 +354,7 @@ def parse(filename, debug, compiler_options, where_is_libclang, analyze_filter):
       for err in errors :
         loc = err.location
         s += '\n'.join(["file %s line %s col %s"%(loc.file, loc.line, loc.column), err.spelling])
-      raise RuntimeError, s + "\n... Your code must compile before making the wrapper !"
+      raise RuntimeError, s + "\n... Your code must compile before using clang-parser !"
 
   # Analyze the AST to extract classes and functions
   functions, classes = build_functions_and_classes(translation_unit.cursor, analyze_filter)
@@ -368,8 +368,8 @@ def parse(filename, debug, compiler_options, where_is_libclang, analyze_filter):
 
   if debug :
       print "functions"
-      for f in functions :
-          print f
+      #for f in functions :
+      #    print f
 
       print "classes"
       for c in classes :

@@ -33,18 +33,21 @@ def add_linebreaks(s, num_char=80):
 
 def make_synopsis(m, decal):
     #assert not m.tparams, "template functions "
-    syn = m.doc_elements['synopsis']
-    if syn : return [syn]
-    s = " {name} ({args}) {const}; "
-    if not m.is_constructor :
-      s = process_rtype(m.rtype) + s
-    s = make_synopsis_template_decl(m.tparams) + "\n" + s
-    args = ', '.join( ["%s %s"%(process_param_type(t),n) + (" = %s"%d if d else "") for t,n,d in m.params])
-    s = s.format(args = args, name = m.name.strip(), const = m.const)
-    r = [x.strip() for x in s.split('\n')]
-    L= [x for x in r if x]
-    L_lb = [add_linebreaks(x) for x in L]
-    return L_lb
+    try : 
+        syn = m.doc_elements['synopsis']
+        if syn : return [syn]
+        s = " {name} ({args}) {const}; "
+        if not m.is_constructor :
+          s = process_rtype(m.rtype) + s
+        s = make_synopsis_template_decl(m.tparams) + "\n" + s
+        args = ', '.join( ["%s %s"%(process_param_type(t),n) + (" = %s"%d if d else "") for t,n,d in m.params])
+        s = s.format(args = args, name = m.name.strip(), const = m.const)
+        r = [x.strip() for x in s.split('\n')]
+        L= [x for x in r if x]
+        L_lb = [add_linebreaks(x) for x in L]
+        return L_lb
+    except: 
+        return ["Error in building synopsis"]
 
 def make_synopsis_list(m_list):
     if not m_list: return ''
