@@ -24,7 +24,9 @@
 #include "./py_stream.hpp"
 #include "../utility/exceptions.hpp"
 
+#ifndef __INTEL_COMPILER
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
+#endif
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 namespace triqs {

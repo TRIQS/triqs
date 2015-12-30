@@ -10,7 +10,7 @@ namespace py_tools {
 
 #ifndef TRIQS_CPP11
   static PyObject *c2py(utility::variant_int_string const &v) {
-   return apply_visitor([](auto const &x) { return convert_to_python(x); }, v);
+   return apply_visitor([](auto const &x) { return triqs::py_tools::convert_to_python(x); }, v);
   }
 #else
   struct visitor {

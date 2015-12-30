@@ -18,10 +18,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <iostream>
-#include <type_traits>
 #include <triqs/arrays.hpp>
 #include <triqs/utility/view_tools.hpp>
+#include <iostream>
+#include <type_traits>
 using namespace triqs;
 using namespace triqs::arrays;
 using namespace triqs::utility;

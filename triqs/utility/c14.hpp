@@ -19,9 +19,9 @@
  *
  ******************************************************************************/
 #pragma once
+#include "./macros.hpp"
 #include <memory>
 #include <functional>
-#include "./macros.hpp"
 
 // backward compat. C++11 compilers.
 // new stuff in 

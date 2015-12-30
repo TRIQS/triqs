@@ -104,7 +104,7 @@ namespace triqs { namespace gfs {
    auto meshes_tuple = triqs::tuple::filter<pos...>(g.mesh().components());
    using var_t = cart_prod<triqs::tuple::filter_t<typename G::mesh_t::ms_tuple_t, pos...>>;
    auto m = triqs::tuple::apply_construct<gf_mesh<var_t>>(meshes_tuple);
-   auto l = [g](auto&&... x) { return partial_eval_linear_index<pos...>(g, std::make_tuple(x...)); };
+   auto l = [g](auto&&... x) { using triqs::gfs::partial_eval_linear_index; return partial_eval_linear_index<pos...>(g, std::make_tuple(x...)); };
    return make_gf_view_lambda_valued<var_t>(m, l);
   };
 

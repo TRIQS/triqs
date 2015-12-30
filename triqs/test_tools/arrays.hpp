@@ -18,15 +18,16 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#pragma once
 #define TRIQS_EXCEPTION_SHOW_CPP_TRACE
 #define TRIQS_ARRAYS_DEBUG
-#include <iostream>
-#include <sstream>
-#include "gtest.h"
 #include <triqs/mpi/base.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/h5.hpp>
 #include <triqs/utility/typeid_name.hpp>
+#include <iostream>
+#include <sstream>
+#include "gtest.h"
 
 #if H5_VERSION_GE(1, 8, 9)
 #include <triqs/h5/serialization.hpp>

@@ -36,7 +36,8 @@ namespace clef {
  // requires(!triqs::clef::is_any_lazy<F, D>::value)
  auto sum_f_domain_impl(F const& f, D const& d)
      -> std::c14::enable_if_t<!triqs::clef::is_any_lazy<F, D>::value, std14::decay_t<decltype(make_regular(f(*(d.begin()))))>> {
-  auto it = d.begin(), ite = d.end();
+  auto it = d.begin(); 
+  auto ite = d.end();
   if (it == ite) TRIQS_RUNTIME_ERROR << "Sum over an empty domain";
   auto res = make_regular(f(*it));
   ++it;

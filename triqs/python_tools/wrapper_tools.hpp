@@ -8,7 +8,10 @@
 #include "./pyref.hpp"
 #include <time.h>
 
+// silence warning on intel
+#ifndef __INTEL_COMPILER
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
+#endif
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 inline char *get_current_time() { // helper function to print the time in the CATCH_AND_RETURN macro

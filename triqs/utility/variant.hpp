@@ -28,6 +28,12 @@
 #include <ostream>
 #include <algorithm>
 
+// a special workaround for gcc < 5.x !
+#if !defined __INTEL_COMPILER  && defined __GNUC__ && GCC_VERSION < 50100
+ #define WORKAROUND_GCC49
+ #warning "Compiling with workaround for gcc < 5.x"
+#endif
+
 // Forward-declarations for Boost.Serialization
 // They are neccessary along with ugly friend declarations in class variant,
 // if we want to keep the serialization code in a separate file
@@ -176,7 +182,7 @@ namespace utility {
   template <typename T, typename F> std14::result_of_t<F(T const &)> apply_c(F f) const {
    return f(*reinterpret_cast<T const *>(&data));
   }
-
+ 
   public:
   template <typename = std14::enable_if_t<std::is_default_constructible<bounded_type<0>>::value>> variant() : type_id(0) {
    ::new (&data) bounded_type<0>();
@@ -231,21 +237,10 @@ namespace utility {
 // Visitation
 // Return type of f(v) must be the same for any stored type, so we can use the
 // first type.
-#if GCC_VERSION > 50200
-  template <typename F> friend auto visit(F &&f, variant &v) {
-   using RType = std14::result_of_t<F(bounded_type<0> &)>;
-   constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
-   return (v.*table[v.type_id])(std::forward<F>(f));
-  }
-
-  template <typename F> friend auto visit(F &&f, variant const &v) {
-   using RType = std14::result_of_t<F(bounded_type<0> const &)>;
-   constexpr static std::array<RType (variant::*)(F) const, n_bounded_types> table = {&variant::apply_c<Types, F>...};
-   return (v.*table[v.type_id])(std::forward<F>(f));
-  }
-#else
+#ifdef WORKAROUND_GCC49
+  // Implementation for gcc 4.9 only.
   // A bug in gcc 4.9 (59766) forbids to use the friend auto which is clearer
-  // than this
+  // than this. For icc, I can not leave it here, need to put it outside the class, which is ok for gcc 5.x and clang !
   template <typename F, typename RType = std14::result_of_t<F(bounded_type<0> &)>> friend RType visit(F &&f, variant &v) {
    constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
    return (v.*table[v.type_id])(std::forward<F>(f));
@@ -257,6 +252,7 @@ namespace utility {
    return (v.*table[v.type_id])(std::forward<F>(f));
   };
 #endif
+
 
   // Comparisons
   bool operator==(variant const &other) const {
@@ -285,6 +281,31 @@ namespace utility {
    visit([&os](auto const &x) { os << x; }, v);
    return os;
   }
+#ifndef WORKAROUND_GCC49
+  template <typename F, typename ... T> friend auto visit(F &&f, variant<T...> &v);
+  template <typename F, typename ... T> friend auto visit(F &&f, variant<T...> const &v);
+#endif
  };
+
+#ifndef WORKAROUND_GCC49
+// Visitation
+// Return type of f(v) must be the same for any stored type, so we can use the
+// first type
+  template<typename T0, typename ...T> struct _first_type{ using type  = T0;};
+
+  template <typename F, typename ... T> auto visit(F &&f, variant<T...> &v) {
+   using RType = std14::result_of_t<F(typename _first_type<T...>::type &)>;
+   using v_t = variant<T...>; // workaround a bug in icc. Can not simply replace in next line !!
+   constexpr static std::array<RType (v_t::*)(F), sizeof...(T)> table = {&v_t::template apply<T, F>...};
+   return (v.*table[v.type_id])(std::forward<F>(f));
+  }
+
+  template <typename F, typename ... T> auto visit(F &&f, variant<T...> const &v) {
+   using RType = std14::result_of_t<F(typename _first_type<T...>::type const &)>;
+   using v_t = variant<T...>;
+   constexpr static std::array<RType (v_t::*)(F) const, sizeof...(T)> table = {&v_t::template apply_c<T, F>...};
+   return (v.*table[v.type_id])(std::forward<F>(f));
+  }
+#endif
 }
 }

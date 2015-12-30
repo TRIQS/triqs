@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
+#include "./first_include.hpp"
 #include <vector>
 #include <functional>
 

@@ -161,7 +161,7 @@ namespace h5 {
 
   dataspace d_space = H5Aget_space(attr);
 
-  mini_vector<hsize_t, 1> dims_out;
+  mini_vector<hsize_t, 2> dims_out;
   int ndims = H5Sget_simple_extent_dims(d_space, dims_out.ptr(), NULL);
   if (ndims != 2)
    TRIQS_RUNTIME_ERROR
