@@ -241,6 +241,10 @@ endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 # Lapack
 # #################################
 message( STATUS "-------- Lapack detection -------------")
+if (NOT MKLROOT) 
+  set(MKLROOT "$ENV{MKLROOT}")
+endif()
+if (NOT MKLROOT) 
 #option(LAPACK_64_BIT "Use 64-bit version of LAPACK" OFF)
 #set (BIND_FORTRAN_INTEGER_8 ${LAPACK_64_BIT})
 if (NOT LAPACK_FOUND)
@@ -257,6 +261,20 @@ set(TRIQS_LIBRARY_LAPACK ${LAPACK_LIBS})
 if(MAC_VECLIB)
  set(TRIQS_LIBRARY_LAPACK "-framework Accelerate ${TRIQS_LIBRARY_LAPACK}")
 endif(MAC_VECLIB) 
+
+else(NOT MKLROOT)
+ # MKL
+ # we use the LP64 mode, not IL64 mode which probably require porting the blas wrappers for MKL_INT and co
+ message (STATUS "Using MKL with root : ${MKLROOT}")
+ set(TRIQS_LIBRARY_LAPACK "-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm")
+if(CMAKE_COMPILER_IS_ICC)
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${MKLROOT}/include")
+else()
+ # must be GNU
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -I${MKLROOT}/include")
+endif()
+endif(NOT MKLROOT)
+
 message(STATUS "Lapack libraries : ${TRIQS_LIBRARY_LAPACK}")
 link_libraries(${TRIQS_LIBRARY_LAPACK})
 
