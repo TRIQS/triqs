@@ -546,7 +546,8 @@ namespace triqs { namespace det_manip {
      w1.ksi = mat_inv(w1.jreal,w1.ireal);
      newdet = det*w1.ksi;
      newsign = ((i + j)%2==0 ? sign : -sign);
-     return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
+     //return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
+     return (w1.ksi)*(newsign*sign); // sign is unity, hence 1/sign == sign
     }
     //------------------------------------------------------------------------------------------
    private:
