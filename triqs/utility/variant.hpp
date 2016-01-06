@@ -28,12 +28,6 @@
 #include <ostream>
 #include <algorithm>
 
-// a special workaround for gcc < 5.x !
-#if !defined __INTEL_COMPILER  && defined __GNUC__ && GCC_VERSION < 50100
- #define WORKAROUND_GCC49
- #warning "Compiling with workaround for gcc < 5.x"
-#endif
-
 // Forward-declarations for Boost.Serialization
 // They are neccessary along with ugly friend declarations in class variant,
 // if we want to keep the serialization code in a separate file
@@ -104,7 +98,7 @@ namespace utility {
    template <typename U> struct apply : std::is_convertible<T, U> {};
   };
 
-#if GCC_VERSION > 50200
+#if GCC_VERSION > 50100
   // Find the id of the first type T for which Predicate::apply<T>::value is
   // true, n_bounded_types if not found
   template <typename Predicate> struct find_first_id {
@@ -237,7 +231,20 @@ namespace utility {
 // Visitation
 // Return type of f(v) must be the same for any stored type, so we can use the
 // first type.
-#ifdef WORKAROUND_GCC49
+#if not defined(__INTEL_COMPILER) and GCC_VERSION >= 50100
+  template <typename F> friend auto visit(F &&f, variant &v) {
+   using RType = std14::result_of_t<F(bounded_type<0> &)>;
+   constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
+   return (v.*table[v.type_id])(std::forward<F>(f));
+  }
+
+  template <typename F> friend auto visit(F &&f, variant const &v) {
+   using RType = std14::result_of_t<F(bounded_type<0> const &)>;
+  constexpr static std::array<RType (variant::*)(F) const, n_bounded_types> table = {&variant::apply_c<Types, F>...};
+   return (v.*table[v.type_id])(std::forward<F>(f));
+  }
+#endif
+#if not defined(__INTEL_COMPILER) and GCC_VERSION < 50100
   // Implementation for gcc 4.9 only.
   // A bug in gcc 4.9 (59766) forbids to use the friend auto which is clearer
   // than this. For icc, I can not leave it here, need to put it outside the class, which is ok for gcc 5.x and clang !
@@ -281,13 +288,13 @@ namespace utility {
    visit([&os](auto const &x) { os << x; }, v);
    return os;
   }
-#ifndef WORKAROUND_GCC49
+#ifdef __INTEL_COMPILER
   template <typename F, typename ... T> friend auto visit(F &&f, variant<T...> &v);
   template <typename F, typename ... T> friend auto visit(F &&f, variant<T...> const &v);
 #endif
  };
 
-#ifndef WORKAROUND_GCC49
+#ifdef __INTEL_COMPILER
 // Visitation
 // Return type of f(v) must be the same for any stored type, so we can use the
 // first type
