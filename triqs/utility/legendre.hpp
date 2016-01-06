@@ -34,13 +34,15 @@ namespace utility {
  // This is T_{nl} following Eq.(E2) of our paper
  inline std::complex<double> legendre_T(int n, int l) {
 
-  // we assume n positive. if we need n negative we can fix this here
-  assert(n >= 0);
+  bool neg_n = n < 0;
+  n = std::abs(n);
 
   // note: cyl_bessel_j(l,x) give the Bessel functions of the first kind J_l (x)
   // one then gets the spherical Bessel with j_l (x) = \sqrt{\pi / (2x)} J_{l+0.5} (x)
-  return (sqrt(2 * l + 1) / sqrt(2 * n + 1)) * exp(i_c * (n + 0.5) * pi) * pow(i_c, l) *
+  std::complex<double> res = (sqrt(2 * l + 1) / sqrt(2 * n + 1)) * exp(i_c * (n + 0.5) * pi) * pow(i_c, l) *
          boost::math::cyl_bessel_j(l + 0.5, (n + 0.5) * pi);
+  // T_{-nl} = T_{nl}^*
+  return neg_n ? std::conj(res) : res;
  }
 
  // This is t_l^p following Eq.(E8) of our paper
