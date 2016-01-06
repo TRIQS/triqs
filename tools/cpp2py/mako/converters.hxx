@@ -37,13 +37,20 @@ template <> struct py_converter<${c.name}> {
    r = init_default;
  }
 
+ template <typename T> static void _get_optional(PyObject *dic, const char *name, T &r) {
+  if (PyDict_Contains(dic, pyref::string(name)))
+   r = convert_from_python<T>(PyDict_GetItemString(dic, name));
+  else
+   r = T{};
+ }
+
  static ${c.name} py2c(PyObject *dic) {
   ${c.name} res;
   %for m in c.members :
   %if m.initializer == None : 
   res.${m.name} = convert_from_python<${m.ctype}>(PyDict_GetItemString(dic, "${m.name}"));
   %else:
-  _get_optional(dic, ${name_format_q(m.name)}, res.${name_format(m.name)}, ${m.initializer});
+  _get_optional(dic, ${name_format_q(m.name)}, res.${name_format(m.name)} ${',' + m.initializer if m.initializer.strip() !="{}" else ''});
   %endif
   %endfor
   return res;
