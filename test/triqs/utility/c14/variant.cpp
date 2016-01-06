@@ -30,7 +30,10 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include <triqs/utility/variant.hpp>
+
+#ifdef TEST_SERIALIZE
 #include <triqs/utility/variant_serialize.hpp>
+#endif
 
 struct my_struct {
   std::string name;
@@ -144,6 +147,7 @@ TEST(Variant,Basic) {
   EXPECT_MY_STRUCT_MESSAGE("my_struct[2]: destructor");
 }
 
+#ifdef TEST_SERIALIZE
 TEST(Variant,Serialization) {
   std::array<my_variant,3> in {my_variant(7), my_variant("text_in"), my_struct("G",101)};
   std::array<my_variant,3> out {my_variant(8), my_variant("text_out"), my_struct("g",202)};
@@ -164,6 +168,7 @@ TEST(Variant,Serialization) {
   }
 
 }
+#endif
 
 TEST(Variant,Casts) {
   my_variant v_int(2);
