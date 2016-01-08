@@ -181,6 +181,7 @@ namespace gfs {
   // double operator()(int i) const { return (index()[i] + 0.5) * m->step[i]; }
   double operator[](int i) const { return operator()(i); }
   friend std::ostream& operator<<(std::ostream& out, mesh_point const& x) { return out << (domain_pt_t)x; }
+  mesh_t const & mesh() const { return *m;}
  };
 
  // for backward compat

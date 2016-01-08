@@ -152,7 +152,7 @@ namespace gfs {
    //mesh_point_t(typename Meshes::mesh_point_t const &...mp) : _c (mp...), _atend(false)
    m_pt_tuple_t const &components_tuple() const { return _c; }
    linear_index_t linear_index() const { return m->mp_to_linear(_c); }
-   const gf_mesh *mesh() const { return m; }
+   const gf_mesh &mesh() const { return *m; }
 
    using cast_t = domain_pt_t;
    operator cast_t() const { return m->index_to_point(index); }

@@ -72,6 +72,7 @@ namespace gfs {
    long index() const { return _index; }
    bool at_end() const { return (_index == m->size()); }
    void reset() { _index = 0; }
+   discrete_mesh const & mesh() const { return *m;}
   };
 
   /// Accessing a point of the mesh

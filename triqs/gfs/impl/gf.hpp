@@ -264,8 +264,19 @@ namespace gfs {
   cr_type operator[](mesh_index_t const &arg) const { return _data_proxy(_data, _mesh.index_to_linear(arg)); }
 
   /// pass a mesh_point of the mesh
-  r_type operator[](mesh_point_t const &x) { return _data_proxy(_data, x.linear_index()); }
-  cr_type operator[](mesh_point_t const &x) const { return _data_proxy(_data, x.linear_index()); }
+  r_type operator[](mesh_point_t const &x) {
+#ifdef TRIQS_DEBUG
+   if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+#endif
+   return _data_proxy(_data, x.linear_index());
+  }
+
+  cr_type operator[](mesh_point_t const &x) const {
+#ifdef TRIQS_DEBUG
+   if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+#endif
+   return _data_proxy(_data, x.linear_index());
+  }
 
   /// pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
   template <typename... U> r_type operator[](closest_pt_wrap<U...> const &p) {

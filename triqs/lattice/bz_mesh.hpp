@@ -79,6 +79,7 @@ namespace gfs {
    void reset() { _index = 0; }
    double operator()(int i) const { return m->index_to_point(_index)(i);}
    double operator[](int i) const { return m->index_to_point(_index)(i);}
+   bz_mesh const & mesh() const { return *m;}
   };
 
   /// Accessing a point of the mesh

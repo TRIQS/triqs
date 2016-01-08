@@ -19,8 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#define TRIQS_EXCEPTION_SHOW_CPP_TRACE
-#define TRIQS_ARRAYS_DEBUG
+#define TRIQS_DEBUG
 #include <triqs/mpi/base.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/h5.hpp>

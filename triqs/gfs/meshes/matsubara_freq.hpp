@@ -229,19 +229,22 @@ namespace gfs {
  template <> struct mesh_point<gf_mesh<imfreq>> : matsubara_freq {
   using index_t = typename gf_mesh<imfreq>::index_t;
   mesh_point() = default;
-  mesh_point(gf_mesh<imfreq> const &mesh, index_t const &index_)
-     : matsubara_freq(index_, mesh.domain().beta, mesh.domain().statistic)
-     , first_index_window(mesh.first_index_window())
-     , last_index_window(mesh.last_index_window()) {}
-  mesh_point(gf_mesh<imfreq> const &mesh) : mesh_point(mesh, mesh.first_index_window()) {}
+  mesh_point(gf_mesh<imfreq> const &m, index_t const &index_)
+     : matsubara_freq(index_, m.domain().beta, m.domain().statistic)
+     , first_index_window(m.first_index_window())
+     , last_index_window(m.last_index_window())
+     , _mesh(&m) {}
+  mesh_point(gf_mesh<imfreq> const &m) : mesh_point(m, m.first_index_window()) {}
   void advance() { ++n; }
   long linear_index() const { return n - first_index_window; }
   long index() const { return n; }
   bool at_end() const { return (n == last_index_window + 1); } // at_end means " one after the last one", as in STL
   void reset() { n = first_index_window; }
+  gf_mesh<imfreq> const & mesh() const { return *_mesh;}
 
   private:
   index_t first_index_window, last_index_window;
+  gf_mesh<imfreq> const * _mesh;
  };
 
  // ------------------- implementations -----------------------------

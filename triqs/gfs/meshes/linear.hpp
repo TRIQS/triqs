@@ -237,6 +237,7 @@ namespace gfs {
   long index() const { return _index; }
   bool at_end() const { return (_index == m->size()); }
   void reset() { _index = 0; }
+  mesh_t const & mesh() const { return *m;}
  };
 
 }

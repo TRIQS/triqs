@@ -1,9 +1,4 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include <triqs/gfs.hpp> 
-using namespace triqs::gfs;
-using namespace triqs::arrays;
-namespace h5 = triqs::h5;
-#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
+#include <triqs/test_tools/gfs.hpp>
 
 double lorentzian(double w, double a){
   return 2*a / (w*w + a*a) ; 

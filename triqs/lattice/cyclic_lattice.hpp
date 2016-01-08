@@ -177,6 +177,7 @@ namespace gfs {
   mesh_point operator-() const {
    return mesh_point{*m, {m->_modulo(-index()[0], 0), m->_modulo(-index()[1], 1), m->_modulo(-index()[2], 2)}};
   }
+  mesh_t const& mesh() const { return *m; }
  };
 
  // impl
