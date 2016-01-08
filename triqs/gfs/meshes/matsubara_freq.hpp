@@ -187,7 +187,7 @@ namespace gfs {
    int pos_freq = 0;
    if (gr.has_key("positive_freq_only")) h5_read(gr, "positive_freq_only", pos_freq);
    if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", pos_freq); // backward compatibility only
-   int n_pts = (pos_freq ? L : L / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
+   int n_pts = (pos_freq ? L : (L+1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
    auto opt = (pos_freq == 1 ? matsubara_mesh_opt::positive_frequencies_only : matsubara_mesh_opt::all_frequencies);
    m = gf_mesh{std::move(dom), n_pts, opt};
   }
