@@ -77,8 +77,13 @@ namespace gfs {
   if (g.mesh().positive_only()) return g;
   long L = g.mesh().size();
   long L1 = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
-  return {
-      g.mesh().get_positive_freq(), g.data()(range(L1, L), arrays::ellipsis()), g.singularity(), g.symmetry(), g.indices(), {}};
+  int is_boson = (g.mesh().domain().statistic == Boson);
+  return {g.mesh().get_positive_freq(),
+          g.data()(range(L1 - is_boson, L), arrays::ellipsis()),
+          g.singularity(),
+          g.symmetry(),
+          g.indices(),
+          {}};
  }
 
  /// Make_real_in_tau symmetrize the function in freq, to ensure its FT is real.
