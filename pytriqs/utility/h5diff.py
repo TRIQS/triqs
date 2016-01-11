@@ -2,6 +2,7 @@ from pytriqs.archive import *
 from pytriqs.utility.comparison_tests import *
 from pytriqs.gf.local import GfImFreq, GfImTime, GfReFreq, GfReTime, GfLegendre, BlockGf
 from pytriqs.operators import *
+from pytriqs.arrays import BlockMatrix
 import sys
 import numpy
 
@@ -31,6 +32,9 @@ def compare(key, a, b, level, precision):
 
         elif t in [Operator]:
             assert (a-b).is_zero(), "Many body operators not equal"
+        elif t in [BlockMatrix]:
+            for i in range(len(a.matrix_vec)):
+             assert_arrays_are_close(a[i],b[i])
 
         # ... until here
         elif isinstance(a, numpy.ndarray):
