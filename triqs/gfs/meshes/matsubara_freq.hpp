@@ -42,15 +42,21 @@ namespace gfs {
  * The mesh can span either only positive frequencies or both positive and negative frequencies (which is necessary for complex functions $G(\tau)$).
 */
  template <> struct gf_mesh<imfreq> {
+  ///type of the domain: matsubara_domain<true>
   using domain_t = matsubara_domain<true>;
+  ///type of the Matsubara index $n$ (as in $i\omega_n$)
   using index_t = long;
+  ///type of the linear index
   using linear_index_t = long;
   using default_interpol_policy = interpol_t::None;
+  ///type of the domain point
   using domain_pt_t = typename domain_t::point_t;
 
   // -------------------- Constructors -------------------
 
+  ///constructor
   /**
+   * Full constructor
    * @param dom domain
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies 
@@ -72,7 +78,9 @@ namespace gfs {
   ///default constructor
   gf_mesh() : gf_mesh(domain_t(), 0){}
 
+  ///constructor
   /**
+   * Full constructor
    * @param beta inverse temperature
    * @param S statistic (Fermion or Boson)
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
@@ -138,6 +146,9 @@ namespace gfs {
   using mesh_point_t = mesh_point<gf_mesh>;
 
   /// Accessing a point of the mesh from its index
+  /**
+    * @param i Matsubara index 
+    */
   inline mesh_point_t operator[](index_t i) const; //impl below
 
   /// Iterating on all the points...
