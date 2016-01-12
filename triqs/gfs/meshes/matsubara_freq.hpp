@@ -29,13 +29,18 @@ namespace gfs {
 
  enum class matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
 
- template <> struct mesh_point<gf_mesh<imfreq>>; //forward
-
  // ---------------------------------------------------------------------------
  //                     The mesh point
  //  NB : the mesh point is also in this case a matsubara_freq.
  // ---------------------------------------------------------------------------
- 
+ template <> struct mesh_point<gf_mesh<imfreq>>; //forward
+
+ /// Matsubara frequency mesh 
+ /**
+ * The class `matsubara_freq_mesh` is the implementation of a mesh of fermionic ($\frac{(2n+1)\pi}{\beta}$) or bosonic ($\frac{2n\pi}{\beta}$) Matsubara frequencies.
+ *
+ * The mesh can span either only positive frequencies or both positive and negative frequencies (which is necessary for complex functions $G(\tau)$).
+*/
  template <> struct gf_mesh<imfreq> {
   using domain_t = matsubara_domain<true>;
   using index_t = long;
@@ -45,7 +50,11 @@ namespace gfs {
 
   // -------------------- Constructors -------------------
 
-  // n_pts : TO DOCUMENT !
+  /**
+   * @param dom domain
+   * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
+   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies 
+  */ 
   gf_mesh(domain_t dom, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
      : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt) {
    if (opt == matsubara_mesh_opt::positive_frequencies_only) {
@@ -53,16 +62,22 @@ namespace gfs {
     _last_index = n_pts - 1; 
    } else {
     bool is_fermion = (_dom.statistic == Fermion);
-    n_pts = 2 * n_pts - (is_fermion ? 0 : 1);
-    _last_index = (n_pts - (is_fermion ? 2 : 1)) / 2;
+    _last_index = n_pts - 1;
     _first_index = -(_last_index + (is_fermion ? 1 : 0));
    }
    _first_index_window = _first_index;
    _last_index_window = _last_index;
   }
 
+  ///default constructor
   gf_mesh() : gf_mesh(domain_t(), 0){}
 
+  /**
+   * @param beta inverse temperature
+   * @param S statistic (Fermion or Boson)
+   * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
+   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies 
+  */ 
   gf_mesh(double beta, statistic_enum S, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
      : gf_mesh({beta, S}, n_pts, opt) {}
 
