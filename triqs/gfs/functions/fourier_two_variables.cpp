@@ -15,14 +15,14 @@ namespace triqs { namespace gfs {
   array<tail,3> tail_3(get_target_shape(g2t));
   tail t(1,1);tail_3()=t;
   for(auto const & tau : g_t_tp.mesh()){
-   auto g_w_tp_tau = fourier(g_t_tp[tau], tail_3, n_w_1);
+   auto g_w_tp_tau = fourier(g_t_tp[tau], tail_3, n_w_1, positive_matsub_only_1);
    for(auto const & om: std::get<0>(gwt.mesh().components()))
     gwt[{om, tau}] = g_w_tp_tau[om];
   }
 
   auto g_w_tp = triqs::make_view(curry<0>(gwt));
   for(auto const & om : g_w_tp.mesh()){
-   auto g_w_wp_nu = fourier(g_w_tp[om], tail_3, n_w_2);
+   auto g_w_wp_nu = fourier(g_w_tp[om], tail_3, n_w_2, positive_matsub_only_2);
    for(auto const & nu: std::get<1>(g2w.mesh().components()))
     g2w[{om, nu}] = g_w_wp_nu[nu];
   }

@@ -22,7 +22,7 @@ namespace triqs { namespace gfs {
   * @return $g_{abc}(i\omega)$
   * @warning tail not used
   */
- gf<imfreq, tensor_valued<3>, nothing> fourier(gf_const_view<imtime, tensor_valued<3>, nothing> g_in, array_const_view<tail, 3> tail, int n_pts=1025);
+ gf<imfreq, tensor_valued<3>, nothing> fourier(gf_const_view<imtime, tensor_valued<3>, nothing> g_in, array_const_view<tail, 3> tail, int n_pts=1025, bool positive_frequencies_only=false);
 
  ///Inverse Fourier transform of tensor-valued functions
  /**
