@@ -62,8 +62,7 @@ namespace gfs {
    dcomplex a1, a2, a3;
    double beta = gt.mesh().domain().beta;
    auto L = gt.mesh().size() - 1;
-   long Nw = gw.mesh().size();
-   if (L < Nw)
+   if (L < 2*(gw.mesh().last_index()+1))
     TRIQS_RUNTIME_ERROR << "The time mesh mush be at least as long as the freq mesh :\n gt.mesh().size() =  " << gt.mesh().size()
                         << " gw.mesh().size()" << gw.mesh().size();
    double fact = beta / L;
@@ -134,8 +133,7 @@ namespace gfs {
    dcomplex a1, a2, a3;
    double beta = gw.domain().beta;
    long L = gt.mesh().size() - 1;
-   long Nw = gw.mesh().size();
-   if (L < Nw)
+   if (L < 2*(gw.mesh().last_index()+1))
     TRIQS_RUNTIME_ERROR << "The time mesh mush be at least as long as the freq mesh :\n gt.mesh().size() =  " << gt.mesh().size()
                         << " gw.mesh().size()" << gw.mesh().size();
    dcomplex iomega = M_PI* 1_j / beta;
@@ -158,7 +156,7 @@ namespace gfs {
     a3 = d / 6 + A / 2 + B / 3;
    }
 
-   g_in.resize(L); // L>= Nw, we will fill the middle array with 0
+   g_in.resize(L); // L>=2*(gw.mesh().last_index()+1) , we will fill the middle array with 0
    g_out.resize(L + 1);
 
    g_in() = 0;
