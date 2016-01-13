@@ -25,7 +25,7 @@ Matsubara frequency mesh
 .. figure:: matsubara_freq_mesh.png
    :alt: Definitions for the mesh
 
-   Pictorial representation of ``gf_mesh<imfreq>({beta, Fermion/Boson, 2, all_frequencies/positive_frequencies_only})``. See :ref:`constructor <gf_mesh<imfreq>_constructor>`  for more details.
+   Pictorial representation of ``gf_mesh<imfreq>({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See :ref:`constructor <gf_mesh<imfreq>_constructor>`  for more details.
 
 
 
