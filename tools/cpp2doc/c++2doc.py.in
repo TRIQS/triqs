@@ -48,8 +48,8 @@ def replace_latex(s):
        [[XXX]]  by :ref:`XXX`
      
      """
-    text=re.sub('\$\$([ A-Za-z0-9{}\(\[\],\)=./\/+-_]+)\$\$', r'\n\n.. math::\n\t\t\1\n\n..\n', s)
-    text=re.sub('\$([ A-Za-z0-9{}\[\],\(\)=./\/+-_]+)\$', r':math:`\1`', text)
+    text=re.sub('\$\$([A-Za-z0-9{}\(\[\],\)=./\/+-_\']+)\$\$', r'\n\n.. math::\n\t\t\1\n\n..\n', s)
+    text=re.sub('\$([A-Za-z0-9{}\[\],\(\)=./\/+-_\']+)\$', r':math:`\1`', text)
     text=re.sub('\[\[([ A-Za-z0-9{}\(,\)=./\/+-_]+)\]\]', r':ref:`\1`', text)
     return text
 
