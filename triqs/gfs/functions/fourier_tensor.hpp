@@ -16,10 +16,21 @@ namespace triqs { namespace gfs {
  using triqs::arrays::array_const_view;
  ///Fourier transform of tensor-valued functions
  /**
+  * @param g_in input Green's function $g_{abc}(\tau)$
+  * @param tail singularity of the input Gf.
+  * @param n_pts defined as n_pts = n_max +1 where n_max is the maximal matsubara index
+  * @return $g_{abc}(i\omega)$
   * @warning tail not used
   */
- gf<imfreq, tensor_valued<3>, nothing> fourier(gf_const_view<imtime, tensor_valued<3>, nothing> g_in, array_const_view<tail, 3> tail, int n_freq=1025);
+ gf<imfreq, tensor_valued<3>, nothing> fourier(gf_const_view<imtime, tensor_valued<3>, nothing> g_in, array_const_view<tail, 3> tail, int n_pts=1025);
 
  ///Inverse Fourier transform of tensor-valued functions
+ /**
+  * @param g_in input Green's function $g_{abc}(i\omega)$
+  * @param tail singularity of the input Gf.
+  * @param n_tau number of tau points
+  * @return $g_{abc}(i\tau)$
+  * @warning tail not used
+  */
  gf<imtime, tensor_valued<3>, nothing> inverse_fourier(gf_const_view<imfreq, tensor_valued<3>, nothing> g_in, array_const_view<tail, 3> tail, int n_tau=1025);
 }}

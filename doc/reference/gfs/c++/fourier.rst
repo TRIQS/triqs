@@ -3,10 +3,13 @@
 Fourier transforms
 ###################
 
-Synopsis 
-=========
+Matrix-valued
+==============
 
-**Synopsis** :: 
+Synopsis
+----------
+
+Here is a synopsis::
 
  auto fourier (gf<imtime,Target,Opt>            const &)
  auto fourier (gf_view<imtime,Target,Opt>       const &)
@@ -33,7 +36,8 @@ Synopsis
  gf<imtime, Target, Opt> make_gf_from_inverse_fourier(gf_const_view<imfreq, Target, Opt> const&, int n_tau);
 
 
-**fourier, inverse_fourier**
+fourier, inverse_fourier
+---------------------------
 
 The fourier/inverse_fourier functions do **not** perform the Fourier transformation, 
 but returns a small lazy object (basically saying "Fourier Transform of XXX"), 
@@ -65,7 +69,7 @@ In the case where we want to create a *new* container from the fourier transform
 we can use the function make_gf_from_fourier.
 
 Example
-=========
+----------
 
 .. triqs_example:: ./fourier_0.cpp
 
@@ -74,3 +78,70 @@ Example
    :maxdepth: 1
 
    fourier_impl_notes
+
+
+Tensor-valued
+==================
+
+.. code-block:: c
+
+    #include <../../triqs/gfs/functions/fourier_tensor.hpp>
+
+fourier
+---------
+
+**Synopsis**:
+
+.. code-block:: c
+
+    gf<triqs::gfs::imfreq, tensor_valued<3>, triqs::gfs::nothing> _fourier
+   (gf_const_view<triqs::gfs::imtime, tensor_valued<3>, triqs::gfs::nothing> g_in = 3,
+   array_const_view<triqs::gfs::tail, 3> tail = 3, int n_pts = 1025) ;
+
+Fourier transform of tensor-valued functions
+
+Parameters
+-------------
+
+* **g_in**: input Green's function :math:`g_{abc}(\tau)`
+
+* **tail**: singularity of the input Gf.
+
+* **n_pts**: defined as n_pts = n_max +1 where n_max is the maximal matsubara index
+
+
+Return value
+--------------
+
+:math:`g_{abc}(i\omega)`
+
+
+
+.. warning::
+     tail not used
+
+.. code-block:: c
+
+    #include <../../triqs/gfs/functions/fourier_tensor.hpp>
+
+inverse_fourier
+------------------
+
+**Synopsis**:
+
+.. code-block:: c
+
+    gf<triqs::gfs::imtime, tensor_valued<3>, triqs::gfs::nothing> _inverse_fourier
+   (gf_const_view<triqs::gfs::imfreq, tensor_valued<3>, triqs::gfs::nothing> g_in = 3,
+   array_const_view<triqs::gfs::tail, 3> tail = 3, int n_tau = 1025) ;
+
+Inverse Fourier transform of tensor-valued functions
+
+Parameters
+-------------
+
+
+Return value
+--------------
+
+:math:`g_{abc}(\tau)`
