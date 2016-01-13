@@ -94,7 +94,7 @@ fourier
 
 .. code-block:: c
 
-    gf<triqs::gfs::imfreq, tensor_valued<3>, triqs::gfs::nothing> _fourier
+    gf<triqs::gfs::imfreq, tensor_valued<3>, triqs::gfs::nothing> fourier
    (gf_const_view<triqs::gfs::imtime, tensor_valued<3>, triqs::gfs::nothing> g_in = 3,
    array_const_view<triqs::gfs::tail, 3> tail = 3, int n_pts = 1025) ;
 
@@ -131,7 +131,7 @@ inverse_fourier
 
 .. code-block:: c
 
-    gf<triqs::gfs::imtime, tensor_valued<3>, triqs::gfs::nothing> _inverse_fourier
+    gf<triqs::gfs::imtime, tensor_valued<3>, triqs::gfs::nothing> inverse_fourier
    (gf_const_view<triqs::gfs::imfreq, tensor_valued<3>, triqs::gfs::nothing> g_in = 3,
    array_const_view<triqs::gfs::tail, 3> tail = 3, int n_tau = 1025) ;
 
@@ -145,3 +145,111 @@ Return value
 --------------
 
 :math:`g_{abc}(\tau)`
+
+
+Two-variable functions
+#########################
+
+.. code-block:: c
+
+    #include <../../triqs/gfs/functions/fourier_two_variables.hpp>
+
+.. __fourier:
+
+fourier
+==========
+
+**Synopsis**:
+
+.. code-block:: c
+
+    gf<cartesian_product<triqs::gfs::imfreq, triqs::gfs::imfreq>, tensor_valued<3> >
+   fourier (gf_const_view<cartesian_product<triqs::gfs::imtime,
+   triqs::gfs::imtime>, tensor_valued<3> > g2t = 3, int n_w_1, int n_w_2, bool
+   positive_matsub_only_1 = true, bool positive_matsub_only_2 = true) ;
+
+FT from  :math:`g_{uvw}(\tau,\tau')` to :math:`g_{uvw}(i\omega,i\Omega)`
+
+   Fourier transform from  :math:`g_{uvw}(\tau,\tau')` to :math:`g_{uvw}(i\omega,i\Omega)` :
+
+
+.. math::
+		g_{uvw}(i\omega,i\Omega)=\iint_{0}^{\beta}d{\tau}d\tau'e^{i\omega\tau+i\Omega\tau'}g_{uvw}(\tau,\tau')
+
+..
+
+   In two steps:
+#. Fourier transform from  :math:`g_{uvw}(\tau,\tau')` to  :math:`g_{uvw}(i\omega,\tau')`
+#. Fourier transform from  :math:`g_{uvw}(i\omega,\tau')` to  :math:`g_{uvw}(i\omega,i\Omega)`
+
+Parameters
+-------------
+
+* **g2t**: :math:`g_{uvw}(\tau,\tau')`
+
+* **n_w_1**: defined as n_w_1 = n_max + 1 (n_max: max Matsubara index)
+
+* **n_w_2**: defined as n_w_2 = n_max + 1 (n_max: max Matsubara index
+
+* **positive_matsub_only_1**: if true only positive fermionic Matsubara frequencies
+
+* **positive_matsub_only_2**: if true only positive bosonic Matsubara frequencies
+
+
+Return value
+--------------
+
+:math:`g_{uvw}(i\omega,i\Omega)`
+
+.. code-block:: c
+
+    #include <../../triqs/gfs/functions/fourier_two_variables.hpp>
+
+.. __inverse_fourier:
+
+inverse_fourier
+==================
+
+**Synopsis**:
+
+.. code-block:: c
+
+    gf<cartesian_product<triqs::gfs::imtime, triqs::gfs::imtime>, tensor_valued<3> >
+   inverse_fourier (gf_const_view<cartesian_product<triqs::gfs::imfreq,
+   triqs::gfs::imfreq>, tensor_valued<3> > g2w = 3, int n_t_1, int n_t_2, bool fit_tails =
+   false) ;
+
+FT from :math:`g_{uvw}(i\omega,i\Omega)` to :math:`g_{uvw}(\tau,\tau')`
+
+ Fourier Transform from :math:`g_{uvw}(i\omega,i\Omega)` to :math:`g_{uvw}(\tau,\tau')` :
+
+
+.. math::
+		g_{uvw}(\tau,\tau')=\frac{1}{\beta^2}\sum_{n=n_\mathrm{min}}^{n_\mathrm{n_max}}\sum_{m=n_\mathrm{min}}^{n_\mathrm{max}}e^{-i\omega_n\tau-i\Omega_m\tau'}g_{uvw}(i\omega_n,i\Omega_m)
+
+..
+
+   In two steps:
+#. Fourier transform from  :math:`g_{uvw}(i\omega,i\Omega)` to  :math:`g_{uvw}(\tau,i\Omega)`
+#. Fourier transform from :math:`g_{uvw}(\tau,i\Omega)` to  :math:`g_{uvw}(i\omega,i\Omega)`
+
+Parameters
+-------------
+
+* **g2w**: :math:`g_{uvw}(i\omega,i\Omega)`
+
+* **n_t_1**: number of imaginary time points
+
+* **n_t_2**: number of imaginary time points
+
+
+Return value
+--------------
+
+:math:`g_{uvw}(i\tau,i\tau')`
+
+
+
+
+.. warning::
+     fitting the tails!
