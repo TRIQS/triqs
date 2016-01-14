@@ -13,11 +13,13 @@
     recognized_namespace_for_using = {
         'triqs::gfs::' : 'gf',
         'triqs::operators::many_body_operator' : 'operators',
+        'triqs::lattice' : 'lattice_tools'
         }
 
     using_needed_for_modules = {
         'gf' : 'namespace triqs::gfs',
         'operators' : 'triqs::operators::many_body_operator',
+        'lattice_tools' : 'namespace triqs::lattice'
         }
 
     converters_to_include = {
