@@ -3,6 +3,7 @@
  tools.class_list = class_list
  f = f_overloads[0]
  incl = f_overloads[0].doc_elements['include'] 
+ if f.doc_elements['figure']:  fig=f.doc_elements['figure'].split(":")
 %>
 ..
    Generated automatically using the command :
@@ -38,6 +39,14 @@ ${tools.make_synopsis_list(f_overloads)}
 %endfor
 %else:
 ${f_overloads[0].processed_doc}
+%endif
+
+%if f.doc_elements['figure']:
+.. figure:: ${fig[0]}
+   :alt: ${fig[1]}
+   :align: center
+
+   ${fig[1].lstrip(' \t\n\r')}
 %endif
 
 %if sum([len(m.doc_elements['tparam']) for n,m in enumerate(f_overloads)]) > 0 :

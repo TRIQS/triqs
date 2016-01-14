@@ -3,9 +3,10 @@
  from cpp2doc_tools import make_table
  tools.class_list = class_list
  incl = c.doc_elements['include']
+ if c.doc_elements['figure']:  fig=c.doc_elements['figure'].split(":")
 %>
 ..
-   Generated automatically using the command :
+   Generated automatically using the command:
    ${shell_command}
 
 .. highlight:: c
@@ -28,6 +29,14 @@ ${'=' * (len(c.name)+2)}
      ${tools.make_synopsis_template_decl(c.tparams)} class ${c.name};
 
 ${c.processed_doc}
+
+%if c.doc_elements['figure']:
+.. figure:: ${fig[0]}
+   :alt: ${fig[1]}
+   :align: center
+
+   ${fig[1].lstrip(' \t\n\r')}
+%endif
 
 %if len(c.doc_elements['tparam']) > 0 :
 

@@ -64,6 +64,7 @@ Meaning of the @option in the doc:
  * @synopsis  An explicit synopsis for the automatically generated one, for a function.
  * @value     Overrules the type of a using/typedef.
  * @warning     Warning
+ * @figure     An illustration
  * @note        Note
  * @include   For a class, a function, the top level file to include [default: the definition file]
 
@@ -90,12 +91,12 @@ def grab_from_doc (doc, var1, var2):
 def process_doc_function(f): 
     """Process the doc of the function f"""
     f.brief_doc = f.doc.split('\n',1)[0]
-    f.doc_elements, f.processed_doc = grab_from_doc(replace_latex(f.doc), ['include', 'return', 'synopsis', 'warning', 'note'],['param', 'tparam'])
+    f.doc_elements, f.processed_doc = grab_from_doc(replace_latex(f.doc), ['include', 'return', 'synopsis', 'warning','figure', 'note'],['param', 'tparam'])
     
 def process_doc_class(c): 
     """Process the doc of the class c"""
     c.brief_doc = c.doc.split('\n',1)[0]
-    c.doc_elements, c.processed_doc = grab_from_doc(replace_latex(c.doc), ['include', 'manual_methods', 'manual_friends','warning', 'note'],['tparam'])
+    c.doc_elements, c.processed_doc = grab_from_doc(replace_latex(c.doc), ['include', 'manual_methods', 'manual_friends','warning','figure', 'note'],['tparam'])
 
 def regroup_func_by_names(constructors, *f_list_list): 
     """ Given a list of functions, regroup them by names"""
@@ -149,7 +150,7 @@ if __name__ == '__main__':
     tpl_class = Template(filename=triqs_install_location + '/share/triqs/cpp2doc/mako/xxx_doc_class.rst')
     tpl_fun = Template(filename=triqs_install_location + '/share/triqs/cpp2doc/mako/xxx_doc_function.rst')
     for c in classes:
-        if not c.doc: continue
+        if not c.doc: print "Skipping undocumented ",c.name;  continue
 
         print " ... class " + "::".join(c.ns + [c.name])
 
