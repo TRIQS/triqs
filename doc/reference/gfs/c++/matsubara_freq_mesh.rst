@@ -1,10 +1,10 @@
 ..
-   Generated automatically using the command :
+   Generated automatically using the command:
    c++2doc.py -N triqs all_triqs.hpp
 
 .. highlight:: c
 
-.. _gf_mesh<imfreq>:
+.. _gf_mesh_imfreq:
 
 
 gf_mesh<imfreq>
@@ -23,32 +23,33 @@ Matsubara frequency mesh
  The mesh can span either only positive frequencies or both positive and negative frequencies (which is necessary for complex functions :math:`G(\tau)`).
 
 .. figure:: matsubara_freq_mesh.png
-   :alt: Definitions for the mesh
+   :alt:  Pictorial representation of ``gf_mesh<imfreq>({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See
+   :align: center
 
-   Pictorial representation of ``gf_mesh<imfreq>({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See :ref:`constructor <gf_mesh<imfreq>_constructor>`  for more details.
+   Pictorial representation of ``gf_mesh<imfreq>({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See
 
 
 
 Member types
 -----------------
 
-+-------------------------+--------------------------------+
-| Member type             | Comment                        |
-+=========================+================================+
-| domain_t                |                                |
-+-------------------------+--------------------------------+
-| index_t                 |                                |
-+-------------------------+--------------------------------+
-| linear_index_t          |                                |
-+-------------------------+--------------------------------+
-| default_interpol_policy |                                |
-+-------------------------+--------------------------------+
-| domain_pt_t             |                                |
-+-------------------------+--------------------------------+
-| mesh_point_t            | Type of the mesh point         |
-+-------------------------+--------------------------------+
-| const_iterator          | Iterating on all the points... |
-+-------------------------+--------------------------------+
++-------------------------+-----------------------------------------------------+
+| Member type             | Comment                                             |
++=========================+=====================================================+
+| domain_t                | type of the domain: matsubara_domain<true>          |
++-------------------------+-----------------------------------------------------+
+| index_t                 | type of the Matsubara index $n$ (as in $i\omega_n$) |
++-------------------------+-----------------------------------------------------+
+| linear_index_t          | type of the linear index                            |
++-------------------------+-----------------------------------------------------+
+| default_interpol_policy |                                                     |
++-------------------------+-----------------------------------------------------+
+| domain_pt_t             | type of the domain point                            |
++-------------------------+-----------------------------------------------------+
+| mesh_point_t            | Type of the mesh point                              |
++-------------------------+-----------------------------------------------------+
+| const_iterator          | Iterating on all the points...                      |
++-------------------------+-----------------------------------------------------+
 
 Member functions
 -----------------
@@ -56,7 +57,7 @@ Member functions
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
 | Member function                                                | Comment                                                                                  |
 +================================================================+==========================================================================================+
-| :ref:`constructor <gf_mesh<imfreq>_constructor>`               | @param dom domain                                                                        |
+| :ref:`constructor <gf_mesh<imfreq>_constructor>`               | constructor                                                                              |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
 | :ref:`domain <gf_mesh<imfreq>_domain>`                         | The corresponding domain                                                                 |
 +----------------------------------------------------------------+------------------------------------------------------------------------------------------+
@@ -127,9 +128,3 @@ Non Member functions
    gf_mesh<imfreq>/mpi_gather
    gf_mesh<imfreq>/h5_write
    gf_mesh<imfreq>/h5_read
-
-Example
------------
-   
-.. triqs_example:: ./matsubara_freq_mesh_0.cpp
-

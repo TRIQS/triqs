@@ -35,7 +35,7 @@ since the function is periodic (resp. antiperiodic) for bosons (resp. fermions),
 
 The domain is implemented in the class :doxy:`matsubara_time_domain<triqs::gfs::matsubara_domain>`.
 
-The mesh is :doxy:`matsubara_time_mesh<triqs::gfs::matsubara_time_mesh>`.
+The mesh is :ref:`gf_mesh_imtime`.
 
 
 Singularity
