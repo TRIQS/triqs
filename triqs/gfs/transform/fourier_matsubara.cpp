@@ -63,8 +63,8 @@ namespace gfs {
    double beta = gt.mesh().domain().beta;
    auto L = gt.mesh().size() - 1;
    if (L < 2*(gw.mesh().last_index()+1))
-    TRIQS_RUNTIME_ERROR << "The time mesh mush be at least as long as the freq mesh :\n gt.mesh().size() =  " << gt.mesh().size()
-                        << " gw.mesh().size()" << gw.mesh().size();
+    TRIQS_RUNTIME_ERROR << "Fourier: The time mesh mush be at least twice as long as the number of positive frequencies :\n gt.mesh().size() =  " << gt.mesh().size()
+                        << " gw.mesh().last_index()" << gw.mesh().last_index();
    double fact = beta / L;
    dcomplex iomega = M_PI * 1_j / beta;
    bool is_fermion = (gw.domain().statistic == Fermion);
@@ -134,8 +134,8 @@ namespace gfs {
    double beta = gw.domain().beta;
    long L = gt.mesh().size() - 1;
    if (L < 2*(gw.mesh().last_index()+1))
-    TRIQS_RUNTIME_ERROR << "The time mesh mush be at least as long as the freq mesh :\n gt.mesh().size() =  " << gt.mesh().size()
-                        << " gw.mesh().size()" << gw.mesh().size();
+    TRIQS_RUNTIME_ERROR << "Inverse Fourier: The time mesh mush be at least twice as long as the freq mesh :\n gt.mesh().size() =  " << gt.mesh().size()
+                        << " gw.mesh().last_index()" << gw.mesh().last_index();
    dcomplex iomega = M_PI* 1_j / beta;
    double fact = 1.0 / beta;
    bool is_fermion = (gw.domain().statistic == Fermion);

@@ -71,7 +71,7 @@ namespace gfs {
   */
  template <typename T, typename S, typename E>
  gf<imtime, T, S> make_gf_from_inverse_fourier(gf_const_view<imfreq, T, S, E> const& gw, int n_tau = -1) {
-  if (n_tau == -1) n_tau = gw.mesh().size() + 1;
+  if (n_tau == -1) n_tau = 2*(gw.mesh().last_index() + 1) +1;
   auto m = gf_mesh<imtime>{gw.mesh().domain(), n_tau};
   auto gt = gf<imtime, T, S, E>{m, get_target_shape(gw)};
   gt() = inverse_fourier(gw);
