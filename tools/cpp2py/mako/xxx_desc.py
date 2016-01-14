@@ -6,7 +6,7 @@
     def decay(s) :
         for tok in ['const ', 'const&', '&&', '&'] :
             s = re.sub(tok,'',s)
-        s = s.replace('const_view', 'view') # DISCUSS THIS   
+        s = s.replace('const_view', 'view') # DISCUSS THIS
         return s.strip()
 
    # compute used_module_list
@@ -20,7 +20,7 @@
         'operators' : 'triqs::operators::many_body_operator',
         }
 
-    converters_to_include = { 
+    converters_to_include = {
         'std::map' : 'map',
         'std::set' : 'set',
         'std::vector' : 'vector',
@@ -54,7 +54,7 @@
             analyse(p.getter.rtype)
 
     for c in classes_of_parameters :
-        for m in c.members : 
+        for m in c.members :
             analyse(m.type)
 
     for f in functions :
@@ -77,11 +77,11 @@
         s = "({args})"
         if not m.is_constructor :
           s = cls(m.rtype) + " {name} " + s
-        args = ', '.join( ["%s %s"%(cls(t),n) + (" = %s"%d if d else "") for t,n,d in m.params]) if m.parameter_arg == None else '**%s'%cls(m.params[0][0])
+        args = ', '.join( ["%s %s"%(cls(t),n) + (" = %s"%d.replace('"','\\"') if d else "") for t,n,d in m.params]) if m.parameter_arg == None else '**%s'%cls(m.params[0][0])
         s = s.format(args = args, **m.__dict__)
         return s.strip()
 %>
-# Generated automatically using the command : 
+# Generated automatically using the command :
 # ${shell_command}
 from wrap_generator import *
 
@@ -93,7 +93,7 @@ module = module_(full_name = "${modulename}", doc = "${moduledoc}")
 module.use_module('${mod}')
 %endfor
 ##
-## All the using 
+## All the using
 ##%for ns in using_list :
 ##module.add_using('${ns}')
 ##%endfor
@@ -114,14 +114,14 @@ using ${ns};
 using namespace ${ns};
 %endfor
 %endfor
-%if classes_of_parameters : 
+%if classes_of_parameters :
 #include "./converters.hxx"
 %endif
 """)
 ##
 %for c in [c for c in classes if not 'ignore_in_python' in c.annotations]:
 <%
-  def doc_format(member_list) : 
+  def doc_format(member_list) :
    h= ['Parameter Name', 'Type', 'Default', 'Documentation']
    n_lmax = max(len(h[0]), max(len(m.name) for m in member_list))
    type_lmax = max(len(h[1]), max(len(m.ctype) for m in member_list))
@@ -136,32 +136,32 @@ using namespace ${ns};
 c = class_(
         py_type = "${deduce_normalized_python_class_name(c.name)}",  # name of the python class
         c_type = "${c.name}",   # name of the C++ class
-%if 0 : 
+%if 0 :
         #
         #Hereafter several options to be selected by hand. Cf doc
-        #has_iterator = True,   
+        #has_iterator = True,
         #boost_serializable= True,
         #is_printable= True,
         #arithmetic = ("algebra","double")
 %endif
 )
 
-%for m in c.members : 
-c.add_member(c_name = "${m.name}", 
-             c_type = "${m.ctype}", 
-             read_only= False, 
+%for m in c.members :
+c.add_member(c_name = "${m.name}",
+             c_type = "${m.ctype}",
+             read_only= False,
              doc = """${m.doc} """)
 
 %endfor
 ##
 %for m in [m for m in c.constructors if not m.is_template and not 'ignore_in_python' in m.annotations]:
-c.add_constructor("""${make_signature(m)}""", 
+c.add_constructor("""${make_signature(m)}""",
                   doc = """${m.doc if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
 
 %endfor
 ##
 %for m in [m for m in c.methods if not 'ignore_in_python' in m.annotations]:
-c.add_method("""${make_signature(m)}""", 
+c.add_method("""${make_signature(m)}""",
              %if m.is_static :
              is_static = True,
              %endif
@@ -169,10 +169,10 @@ c.add_method("""${make_signature(m)}""",
 
 %endfor
 ##
-%for p in [p for p in c.proplist]: 
-c.add_property(name = "${p.name}", 
+%for p in [p for p in c.proplist]:
+c.add_property(name = "${p.name}",
                getter = cfunction("${make_signature(p.getter)}"),
-               %if p.setter : 
+               %if p.setter :
                setter = cfunction("${make_signature(p.setter)}"),
                %endif
                doc = """${p.doc} """)
@@ -183,7 +183,7 @@ module.add_class(c)
 
 %endfor
 ##
-%for f in [f for f in functions if not 'ignore_in_python' in f.annotations]:  
+%for f in [f for f in functions if not 'ignore_in_python' in f.annotations]:
 module.add_function ("${make_signature(f)}", doc = "${f.doc}")
 
 %endfor

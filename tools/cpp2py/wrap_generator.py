@@ -107,11 +107,11 @@ class cfunction :
                 if acc.count('<') == acc.count('>') :
                     r, acc = acc,''
                     yield r
-        def g(a) : 
-            if '=' in a : 
+        def g(a) :
+            if '=' in a :
               l,r = a.split('=')
               return l.strip().rsplit(' ') + [r]
-            else : 
+            else :
               return a.rsplit(' ',1)
         #args = [ re.sub('=',' ',x).split() for x in f() if x] # list of (type, name, default) or (type, name)
         args = [ g(x) for x in f() if x] # list of (type, name, default) or (type, name)
@@ -150,7 +150,7 @@ class cfunction :
     def _get_signature (self):
         """Signature for the python doc"""
         rtype = translate_c_type_to_py_type(self.rtype) if self.rtype else ''
-        args_rep = ", ".join(["%s %s%s"%(translate_c_type_to_py_type(t),n,' = ' + str(d) if d else '') for t,n,d in self.args])
+        args_rep = ", ".join(["%s %s%s"%(translate_c_type_to_py_type(t),n,r' = ' + str(d).replace('"',"'") if d else '') for t,n,d in self.args])
         return "({args_rep}) -> {rtype}".format(**locals())
 
     def _get_c_signature (self):
@@ -174,7 +174,7 @@ class cfunction :
 
     def _generate_doc(self) :
         doc = "\n".join([ "   " + x.rstrip() for x in self.doc.split('\n')])
-        doc = doc.replace('"',"'") # the " are replaced by \"r. 
+        doc = doc.replace('"',"'") # the " are replaced by \"r.
         #doc = doc.replace('"',r'\"') # the " are replaced by \"r. Does not work, makes \\"
         if self._dict_call is not None : return doc
         return "Signature : %s\n%s"%( self._get_signature(),doc)
@@ -253,7 +253,7 @@ class pyfunction :
     def _generate_doc(self) :
         if len(self.overloads) == 1 : #only one overload
             s = "\n".join([f._generate_doc() for f in self.overloads])
-        else : 
+        else :
             s = "\n".join([self.doc, "\n"] + [f._generate_doc() for f in self.overloads])
         s=s.replace('@{','').replace('@}','')
         return repr(s)[1:-1] # remove the ' ' made by repr
@@ -576,7 +576,7 @@ class class_ :
     class _property :
         def __init__(self, name, getter, setter, doc) :
           self.name, self.getter, self.setter, self.doc = name, getter, setter, doc
- 
+
         def _generate_doc(self) :
           doc = "\n".join([ "   " + x.strip() for x in self.doc.split('\n')])
           doc = doc.replace('@{','').replace('@}','')
