@@ -137,6 +137,8 @@ def make_mesh( py_type, c_tag, is_im=False) :
 
 m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq", is_im = True)
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
+m.add_method("""int last_index()""")
+m.add_method("""int first_index()""")
 
 module.add_class(m)
 
