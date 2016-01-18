@@ -24,7 +24,14 @@
 namespace triqs {
 namespace gfs {
 
- // check tails are close (min/max orders and data)
+ /// check tails are close (does nothing)
+ /**
+   * @tparam TailType a tail type (incl. tail_zero and nothing)
+   */
+ template<typename TailType>
+ void assert_tails_are_close(TailType const &x, TailType const &y, double precision) {}
+
+ /// check tails are close (if TailType==tail, compare min/max orders and data)
  void assert_tails_are_close(tail const &x, tail const &y, double precision) {
 
   if (x.order_min() != y.order_min()) TRIQS_RUNTIME_ERROR << "Tails do not have the same order_min";
@@ -32,7 +39,6 @@ namespace gfs {
   if (max_element(abs(x.data() - y.data())) > precision) TRIQS_RUNTIME_ERROR << "Tails have different data";
 
  }
- void assert_tails_are_close(nothing const &x, nothing const &y, double precision) {}
 
  // check gfs are close
  template<typename X, typename Y>
