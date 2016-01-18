@@ -52,8 +52,9 @@
         for m in c.methods :
             for t,n,d in m.params : analyse(t)
             analyse(m.rtype)
-        for p in c.proplist :
-            analyse(p.getter.rtype)
+        if hasattr(c,'proplist'):
+            for p in c.proplist :
+                analyse(p.getter.rtype)
 
     for c in classes_of_parameters :
         for m in c.members :
@@ -171,7 +172,8 @@ c.add_method("""${make_signature(m)}""",
 
 %endfor
 ##
-%for p in [p for p in c.proplist]:
+%if hasattr(c,'proplist'):
+    %for p in [p for p in c.proplist]:
 c.add_property(name = "${p.name}",
                getter = cfunction("${make_signature(p.getter)}"),
                %if p.setter :
@@ -179,7 +181,8 @@ c.add_property(name = "${p.name}",
                %endif
                doc = """${p.doc} """)
 
-%endfor
+    %endfor
+%endif
 ##
 module.add_class(c)
 
