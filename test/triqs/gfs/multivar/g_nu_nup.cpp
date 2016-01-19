@@ -21,4 +21,68 @@ TEST(Gf, G_nu_nup) {
  EXPECT_CLOSE(res1, res);
  rw_h5(G, "ess_g_nu_nup.h5", "g");
 }
+
+TEST(GfCartesian, H5_RW_Evaluator){
+ double beta=1;
+ auto g = gf<cartesian_product<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}, {1,1}};
+ g()=2;
+ 
+ h5::file file("g_nu_nup.h5", H5F_ACC_TRUNC );
+ h5_write(file, "g", g);
+ gf<cartesian_product<imfreq, imfreq>, matrix_valued> g2{};
+ h5_read(file, "g", g2);
+
+ EXPECT_GF_NEAR(g,g2);
+
+ auto w0 = matsubara_freq(0, beta, Fermion);
+ auto W10 = matsubara_freq(10, beta, Boson);
+ auto W0 = matsubara_freq(0, beta, Boson);
+ EXPECT_ARRAY_NEAR(g(w0, W10),g2(w0, W10));
+ EXPECT_ARRAY_NEAR(g(w0, W0),g2(w0, W0));
+}
+
+TEST(BlockGfCartesian, H5_RW_Evaluator){
+ double beta=1;
+ auto g = gf<cartesian_product<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}, {1,1}};
+ g()=2;
+ auto G = make_block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>({"up"}, {g});
+ h5::file file("g_nu_nup.h5", H5F_ACC_TRUNC );
+ h5_write(file, "G", G);
+
+ block_gf<cartesian_product<imfreq, imfreq>, matrix_valued> G2{};
+ gf<cartesian_product<imfreq, imfreq>, matrix_valued> g2{};
+ h5_read(file, "G", G2);
+ EXPECT_GF_NEAR(G[0],G2[0]);
+
+ auto w0 = matsubara_freq(0, beta, Fermion);
+ auto W10 = matsubara_freq(10, beta, Boson);
+ EXPECT_ARRAY_NEAR(G[0](w0, W10),G2[0](w0, W10));
+}
+
+TEST(BlockGf, H5_RW_Evaluator){
+ double beta=1;
+
+ auto g = gf<imfreq, matrix_valued>{{beta, Boson, 5}, {1,1}};
+ g()=2;
+ auto G = make_block_gf<imfreq, matrix_valued>({"up"}, {g});
+
+ 
+ h5::file file("g_nu_nup.h5", H5F_ACC_TRUNC );
+ h5_write(file, "G", G);
+ h5_write(file, "g", g);
+
+ block_gf<imfreq, matrix_valued> G2{};
+ gf<imfreq, matrix_valued> g2{};
+ h5_read(file, "G", G2);
+ h5_read(file, "g", g2);
+
+ EXPECT_GF_NEAR(G[0],G2[0]);
+ EXPECT_GF_NEAR(g,g2);
+
+ auto w0 = matsubara_freq(0, beta, Fermion);
+ auto W0 = matsubara_freq(0, beta, Boson);
+ auto W10 = matsubara_freq(10, beta, Boson);
+ EXPECT_ARRAY_NEAR(G[0](W10),G2[0](W10));
+ EXPECT_ARRAY_NEAR(g(W10),g2(W10));
+}
 MAKE_MAIN;

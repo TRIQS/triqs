@@ -1,3 +1,4 @@
+from __future__ import print_function
 from pytriqs.archive import *
 from pytriqs.utility.comparison_tests import *
 from pytriqs.gf.local import GfImFreq, GfImTime, GfReFreq, GfReTime, GfLegendre, BlockGf
@@ -12,7 +13,7 @@ failures = []
 def compare(key, a, b, level, precision):
     """Compare two objects named key"""
 
-    if verbose and key : print level *'  ' + "Comparing %s ...."%key
+    if verbose and key : print(level *'  ' + "Comparing %s ...."%key)
 
     try :
         t = type(a)
@@ -60,17 +61,17 @@ def compare(key, a, b, level, precision):
     except (AssertionError, RuntimeError, ValueError) as e:
         #eliminate the lines starting with .., which are not the main error message
         mess = '\n'.join([l for l in e.message.split('\n') if l.strip() and not l.startswith('..')])
-        failures.append("Comparison of key '%s' has failed:\n """%key + mess)
+        failures.append("Comparison of key '%s'  has failed:\n """%key + mess)
 
 def h5diff(f1, f2, precision= 1.e-6):
     compare('', HDFArchive(f1,'r'), HDFArchive(f2,'r'), 0, precision)
     if failures :
-        print '-'*50
-        print '-'*20 + '  FAILED  ' +  '-'*20
-        print '-'*50
+        print ('-'*50, file=sys.stderr )
+        print ('-'*20 + '  FAILED  ' +  '-'*20, file=sys.stderr)
+        print ('-'*50, file=sys.stderr)
         for x in failures:
-            print x
-            print '-'*50
+            print (x, file=sys.stderr)
+            print ('-'*50, file=sys.stderr)
         raise RuntimeError, "FAILED"
 
 if __name__== "__main__":

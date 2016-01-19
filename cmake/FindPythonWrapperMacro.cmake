@@ -6,14 +6,14 @@ include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 # ModuleName = the python name of the module
 # ModuleDest = path in the pytriqs tree [ FOR INSTALLATION ONLY] IMPROVE MAKE THIS OPTIONAL (for test)
 
-EXECUTE_PROCESS(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/include/pytriqs/converters/)
+EXECUTE_PROCESS(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/include/triqs/py_converters/)
 include_directories( ${CMAKE_BINARY_DIR})
 
 macro (triqs_python_extension ModuleName)
  message(STATUS "Preparing extension module ${ModuleName}")
 
  SET(wrap_name  ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_wrap.cpp)
- SET(converter_name  ${CMAKE_BINARY_DIR}/include/pytriqs/converters/${ModuleName}.hpp)
+ SET(converter_name  ${CMAKE_BINARY_DIR}/include/triqs/py_converters/${ModuleName}.hpp)
 
  # Adjust pythonpath so that pytriqs is visible and the wrap_generator too...
  # pytriqs needed since we import modules with pure python method to extract the doc..
@@ -23,7 +23,8 @@ macro (triqs_python_extension ModuleName)
    ${wrap_name}
    ${CMAKE_SOURCE_DIR}/tools/cpp2py/mako/py_converter.hpp
    ${converter_name} 
-   ${CMAKE_BINARY_DIR}/include/pytriqs/converters/
+   ${CMAKE_INSTALL_PREFIX}
+   ${CMAKE_BINARY_DIR}/include/triqs/py_converters/
    )
 
  set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_TARGETS "python_wrap_${ModuleName}")
@@ -37,7 +38,7 @@ macro (triqs_python_extension ModuleName)
  target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
 
  if (${ARGN} MATCHES "")
-   install (FILES ${converter_name} DESTINATION "include/pytriqs/converters")
+   install (FILES ${converter_name} DESTINATION "include/triqs/py_converters")
    install (TARGETS ${ModuleName} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ARGN}  )
  endif (${ARGN} MATCHES "")
 

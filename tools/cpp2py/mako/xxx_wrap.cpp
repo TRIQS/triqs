@@ -23,6 +23,16 @@ using ${ns};
 #include <triqs/python_tools/converters/string.hpp>
 
 #include <triqs/utility/signal_handler.hpp>
+<% include_serialization=0 %>
+%for c in module.classes.values() :
+%if c.serializable == "via_string" :
+<% include_serialization=1 %>
+<% break %>
+%endif
+%endfor
+%if include_serialization==1 :
+#include <triqs/utility/serialization.hpp>
+%endif
 using namespace triqs::py_tools;
 
 ${module._preamble}

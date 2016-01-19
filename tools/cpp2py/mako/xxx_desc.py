@@ -139,6 +139,7 @@ using namespace ${ns};
 c = class_(
         py_type = "${deduce_normalized_python_class_name(c.name)}",  # name of the python class
         c_type = "${c.name}",   # name of the C++ class
+        doc = "${c.doc}",   # name of the C++ class
 %if 0 :
         #
         #Hereafter several options to be selected by hand. Cf doc

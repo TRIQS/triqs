@@ -12,7 +12,11 @@
 %if file.startswith('<'):
 #include ${file}
 %else:
+%if prepend_app_name:
+#include <${prepend_app_name}/${file}>
+%else:
 #include "${file}"
+%endif
 %endif
 %endfor
 

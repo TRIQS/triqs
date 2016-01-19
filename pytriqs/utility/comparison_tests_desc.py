@@ -2,7 +2,7 @@ from wrap_generator import *
 
 # The module
 module = module_(full_name = "comparison_tests", doc = "Short module with comparison tests")
-module.add_include("<pytriqs/converters/gf.hpp>")
+module.add_include("<triqs/py_converters/gf.hpp>")
 module.add_include("<triqs/gfs/functions/gf_tests.hpp>")
 module.add_using("namespace triqs::gfs")
 
