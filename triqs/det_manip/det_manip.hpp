@@ -72,8 +72,8 @@ namespace triqs { namespace det_manip {
   using xy_type = typename f_tr::template decay_arg<0>::type;
   using value_type = typename f_tr::result_type;
   //using det_type = std14::conditional_t<std::is_same<value_type,double>::value,float_as_logsign,complex_as_logphi >;
-  using det_type = complex_as_logphi;
-
+  //using det_type = complex_as_logphi;
+  using det_type = value_type;
   static_assert(std::is_floating_point<value_type>::value || triqs::is_complex<value_type>::value,
                 "det_manip : the function must return a floating number or a complex number");
 

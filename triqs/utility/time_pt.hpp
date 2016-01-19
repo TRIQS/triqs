@@ -39,7 +39,7 @@ namespace triqs { namespace utility {
 
   private : 
   // too dangerous because of rounding to be left public
-  time_pt(double v, double beta_) { beta = beta_; val = v; n = std::floor(Nmax*(v/beta));}
+  time_pt(double v, double beta_) { beta = beta_; val = v; if (v==beta) n = Nmax; else n = std::floor(Nmax*(v/beta));}
   time_pt(uint64_t n_, double beta_, bool) { beta = beta_; val = beta*(double(n_)/Nmax); n = n_;}
   
   public : 
