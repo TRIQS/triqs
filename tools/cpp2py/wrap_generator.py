@@ -649,7 +649,7 @@ class module_ :
         self.using =[]
         self.python_functions = {}
         self.hidden_python_functions = {}
-        self.module_path_list = []
+        self.module_path_list = module_path_list
         self._preamble = ''
 
     def add_class(self, cls):
@@ -739,7 +739,7 @@ class module_ :
            - read this file, extract the list of _wrapped_types, and add it to the wrapped_type list.
         """
         f = None
-        for path in module_path_list :
+        for path in self.module_path_list :
           hppfile = path + '/' +  modulename + '.hpp'
           if os.path.exists(hppfile) :
               f = open(hppfile ,'r')
