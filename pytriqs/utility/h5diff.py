@@ -43,6 +43,9 @@ def compare(key, a, b, level, precision):
         elif t in [int, float, complex]:
             assert abs(a-b) < 1.e-10, " a-b = %"%(a-b)
 
+        elif t in [bool, numpy.bool_]:
+           assert a==b
+
         elif t in [list, tuple]:
             assert len(a) == len(b), "List of different size"
             for x,y in zip(a,b):
@@ -54,7 +57,7 @@ def compare(key, a, b, level, precision):
         else:
             raise NotImplementedError, "The type %s for key '%s' is not comparable by h5diff"%(t, key)
 
-    except (AssertionError, RuntimeError) as e:
+    except (AssertionError, RuntimeError, ValueError) as e:
         #eliminate the lines starting with .., which are not the main error message
         mess = '\n'.join([l for l in e.message.split('\n') if l.strip() and not l.startswith('..')])
         failures.append("Comparison of key '%s' has failed:\n """%key + mess)
