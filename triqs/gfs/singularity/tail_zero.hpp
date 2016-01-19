@@ -35,10 +35,19 @@ namespace gfs {
 
   void rebind(tail_zero) {}
   template <typename RHS> void operator=(RHS &&) {}
-  
-  friend void h5_write(h5::group, std::string subgroup_name, tail_zero) {}
-  friend void h5_read(h5::group, std::string subgroup_name, tail_zero) {}
-  
+
+  template <typename S> void reset(S const &s) { _init(s, zero); }
+
+  /*friend void h5_write(h5::group fg, std::string const &subgroup_name, tail_zero const &t) {
+   auto gr = fg.create_group(subgroup_name);
+   h5_write(gr, "zero", t.zero);
+  }
+
+  friend void h5_read(h5::group fg, std::string const &subgroup_name, tail_zero &t) {
+   auto gr = fg.open_group(subgroup_name);
+   h5_read(gr, "zero", t.zero);
+  }
+  */
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {}
   
@@ -77,19 +86,11 @@ namespace gfs {
   TYPE_DISABLE_IF(tail_zero<T>, std::is_same<X, tail_zero<T>>) operator*(X const &, tail_zero<T>const & t) { return t;}
   template <typename T, typename X>
   TYPE_DISABLE_IF(tail_zero<T>, std::is_same<X, tail_zero<T>>) operator/(X const &, tail_zero<T>const & t) { return t;}
+
+  // the h5 write and read of singularities
+  template <typename S> struct gf_h5_rw_singularity<tail_zero<S>> {
+   template <typename G> static void write(h5::group gr, G const &g) {}
+   template <typename G> static void read(h5::group gr, G &g) { g.singularity().reset(get_target_shape(g)); }
+  };
 }
-
-/*namespace mpi {
-
- // ---------------------------------------------------------------------------------------
- //  Do nothing for tail_zero...
- // ---------------------------------------------------------------------------------------
- template <typename T> struct mpi_impl<gfs::tail_zero<T>> {
-  template <typename Tag> static void invoke2(gfs::tail_zero<T> &lhs, Tag, communicator c, gfs::tail_zero<T> const &a, int root) {}
-  template <typename Tag> static gfs::tail_zero<T> invoke(Tag, communicator c, gfs::tail_zero<T> const &a, int root) { return a; }
-  static void reduce_in_place(communicator c, gfs::tail_zero<T> &a, int root) {}
-  static void broadcast(communicator c, gfs::tail_zero<T> &a, int root) {}
- };
- }
-*/
 }

@@ -29,7 +29,7 @@
 #include "./tools.hpp"
 #include "../singularity/tail.hpp"
 #include "../singularity/nothing.hpp"
-#include "../singularity/tail_zero.hpp"
+//#include "../singularity/tail_zero.hpp"
 #include "./data_proxies.hpp"
 #include <triqs/mpi/vector.hpp>
 #include <vector>

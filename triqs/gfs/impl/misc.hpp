@@ -162,12 +162,18 @@ namespace gfs {
   }
  };
 
+ // the h5 write and read of singularities
+ template <typename S> struct gf_h5_rw_singularity {
+  template <typename G> static void write(h5::group gr, G const &g) { h5_write(gr, "singularity", g.singularity()); }
+  template <typename G> static void read(h5::group gr, G &g) { h5_read(gr, "singularity", g.singularity()); }
+ }; // will be specialized, e.g. tail_zero
+
  // the h5 write and read of gf members, so that we can specialize it e.g. for block gf
  template <typename M, typename T, typename S, typename E> struct gf_h5_rw {
 
   static void write(h5::group gr, gf_const_view<M, T, S, E> g) {
    gf_h5_write_data<M, T, S, E>::invoke(gr, g); // h5_write(gr, "data", g._data);
-   h5_write(gr, "singularity", g._singularity);
+   gf_h5_rw_singularity<S>::write(gr, g); //h5_write(gr, "singularity", g._singularity);
    h5_write(gr, "mesh", g._mesh);
    h5_write(gr, "symmetry", g._symmetry);
    h5_write(gr, "indices", g._indices);
@@ -175,7 +181,7 @@ namespace gfs {
 
   template <typename G> static void read(h5::group gr, G &g) {
    h5_read(gr, "data", g._data);
-   h5_read(gr, "singularity", g._singularity);
+   gf_h5_rw_singularity<S>::read(gr, g); // h5_read(gr, "singularity", g._singularity);
    h5_read(gr, "mesh", g._mesh);
    h5_read(gr, "symmetry", g._symmetry);
    h5_read(gr, "indices", g._indices);
