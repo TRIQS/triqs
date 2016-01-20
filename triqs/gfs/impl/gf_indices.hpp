@@ -39,7 +39,7 @@ namespace gfs {
   arrays::range convert_index(std::string const &s) const {
    auto b = ind.begin(), e = ind.end();
    auto it = std::find(b, e, s);
-   if (it != e) return it - b;
+   if (it != e) return arrays::range(it - b, it - b + 1);
    TRIQS_RUNTIME_ERROR << "Cannot find this string index for the Green's function";
   }
 
