@@ -176,7 +176,7 @@ namespace utility {
   template <typename T, typename F> std14::result_of_t<F(T const &)> apply_c(F f) const {
    return f(*reinterpret_cast<T const *>(&data));
   }
- 
+
   public:
   template <typename = std14::enable_if_t<std::is_default_constructible<bounded_type<0>>::value>> variant() : type_id(0) {
    ::new (&data) bounded_type<0>();
@@ -231,7 +231,7 @@ namespace utility {
 // Visitation
 // Return type of f(v) must be the same for any stored type, so we can use the
 // first type.
-#if not defined(__INTEL_COMPILER) and GCC_VERSION >= 50100
+#if not defined(__INTEL_COMPILER) and GCC_VERSION >= 50200
   template <typename F> friend auto visit(F &&f, variant &v) {
    using RType = std14::result_of_t<F(bounded_type<0> &)>;
    constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
@@ -244,7 +244,7 @@ namespace utility {
    return (v.*table[v.type_id])(std::forward<F>(f));
   }
 #endif
-#if not defined(__INTEL_COMPILER) and GCC_VERSION < 50100
+#if not defined(__INTEL_COMPILER) and GCC_VERSION < 50200
   // Implementation for gcc 4.9 only.
   // A bug in gcc 4.9 (59766) forbids to use the friend auto which is clearer
   // than this. For icc, I can not leave it here, need to put it outside the class, which is ok for gcc 5.x and clang !
