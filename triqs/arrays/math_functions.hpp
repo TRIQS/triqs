@@ -79,11 +79,13 @@ namespace triqs { namespace arrays {
 
  // --------------- Computation of the matrix norm ------------------------
 
- inline double frobenius_norm(matrix<double> const& a) {
-  return std::sqrt(fold([](double r, double x)->double {
+ template<typename T>
+ //require( is_real_or_complex<T>)
+  double frobenius_norm(matrix<T> const& a) {
+  return std::sqrt(fold([](double r, T const & x)->double {
    auto ab = std::abs(x);
    return r + ab * ab;
-  })(a));
+  })(a, double(0)));
  }
 
 }}//namespace triqs::arrays 
