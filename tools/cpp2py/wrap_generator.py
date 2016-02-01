@@ -836,6 +836,6 @@ class module_ :
         """
         self._generate_wrapper_code(mako_template = wrapper_mako, wrap_file = wrapper_target)
         self._generate_py_converter_header(mako_template = header_mako, wrap_file = header_target)
-        if self.app_name is not None: self._generate_py_converter_header(mako_template = header_mako, wrap_file = header_target+".to_be_installed")
+        self._generate_py_converter_header(mako_template = header_mako, wrap_file = header_target+".to_be_installed")
 
 

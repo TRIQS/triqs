@@ -19,7 +19,8 @@ Generate the C++/Python wrapper desc file from C++ header code
 
 parser.add_argument('filename', help = "Name of the file")
 parser.add_argument('--outputname', '-o',  help="Name of the xxx_desc.py file [default is same as the filename]", default = '')
-parser.add_argument('--modulename', '-m',  help="Name of the Python module [default ='', it will take the name of file", default = '')
+parser.add_argument('--modulename', '-m',  help="Name of the Python module [default ='', it will be modulename", default = '')
+parser.add_argument('--appname', '-a',  help="Name of the Python module [default ='', it will take the name of file", default = '')
 parser.add_argument('--moduledoc',  help="Documentation of the module", default = '')
 parser.add_argument('--properties', '-p',  action='store_true', 
         help="""Transforms i) every method with no arguments into read-only property
@@ -41,6 +42,7 @@ args.includes.insert(0, triqs_install_location + '/include')
 #------------
 
 modulename = args.modulename or os.path.split(args.filename)[1].split('.',1)[0]
+appname = args.appname or modulename
 output_name = args.outputname or os.path.split(args.filename)[1].split('.',1)[0]
 
 class property_ : 
@@ -138,7 +140,8 @@ if __name__ == '__main__' :
     # Making the desc file
     if not args.only_converters:
         tpl = Template(filename=triqs_install_location + '/share/triqs/cpp2py/mako/xxx_desc.py')
-        rendered = tpl.render(classes = classes, functions = functions, modulename=modulename,  moduledoc=args.moduledoc, args = args,
+        rendered = tpl.render(classes = classes, functions = functions, modulename=modulename,  appname = appname,
+                     moduledoc=args.moduledoc, args = args,
                      shell_command= shell_command, classes_of_parameters = classes_of_parameters  )
 
         with open("{output_name}_desc.py".format(output_name=output_name), "w") as f:

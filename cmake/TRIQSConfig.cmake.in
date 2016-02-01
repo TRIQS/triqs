@@ -120,7 +120,7 @@ macro (triqs_python_extension ModuleName)
  # pytriqs needed since we import modules with pure python method to extract the doc..
  add_custom_command(OUTPUT ${wrap_name} ${converter_name} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py
   COMMAND PYTHONPATH=@CMAKE_INSTALL_PREFIX@/share/triqs/cpp2py:${CMAKE_BINARY_DIR}/:$ENV{PYTHONPATH} 
-	  ${TRIQS_PYTHON_INTERPRETER} ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/${ModuleName}_desc.py
+  ${TRIQS_PYTHON_INTERPRETER} ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py
    @CMAKE_INSTALL_PREFIX@/share/triqs/cpp2py/mako/xxx_wrap.cpp
    ${wrap_name}
    @CMAKE_INSTALL_PREFIX@/share/triqs/cpp2py/mako/py_converter.hpp
@@ -189,6 +189,20 @@ macro (triqs_prepare_local_pytriqs python_destination)
   file(WRITE ${CMAKE_BINARY_DIR}/build_ipytriqs_notebook "@BUILD_IPYTRIQS_NOTEBOOK_SCRIPT@")
   execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_ipytriqs_notebook)
 
+  # Create sitecustomize.py file
+  # It will redirect import requests from pytriqs/${python_destination} to python dir
+  string(REPLACE "/" "." python_destination_with_dots ${python_destination})
+  file(WRITE ${CMAKE_BINARY_DIR}/python/sitecustomize.py
+   "package_name = 'pytriqs.${python_destination_with_dots}'.rsplit('.',1)[0]
+def application_pytriqs_import(name,*args,**kwargs):
+  if name.startswith(package_name):
+    name = name[len(package_name)+1:]
+  return builtin_import(name,*args,**kwargs)
+
+import __builtin__
+__builtin__.__import__, builtin_import = application_pytriqs_import, __builtin__.__import__"
+  )
+
   # Install the __init__.py files
   set(INIT_PY_INSTALLATION_SCRIPT
   "
@@ -212,7 +226,7 @@ endwhile()")
   set(py_copy_tar ${CMAKE_CURRENT_BINARY_DIR}/py_copy.tar)
   add_custom_command(OUTPUT ${py_copy_tar}
      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} tar cf ${py_copy_tar} ${python_sources}
-     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/${python_destination} tar xf ${py_copy_tar}
+     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar xf ${py_copy_tar}
      COMMAND ${CMAKE_COMMAND} -E remove ${py_copy_tar}
      DEPENDS ${python_sources})
   add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})

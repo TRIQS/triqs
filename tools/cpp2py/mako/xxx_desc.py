@@ -89,11 +89,11 @@
 from wrap_generator import *
 
 # The module
-module = module_(full_name = "${modulename}", doc = "${moduledoc}")
+module = module_(full_name = "${modulename}", doc = "${moduledoc}", app_name = "${appname}")
 
 # All the triqs C++/Python modules
 %for mod in used_module_list :
-module.use_module('${mod}')
+module.use_module('${mod}', 'triqs')
 %endfor
 ##
 ## All the using
@@ -102,7 +102,7 @@ module.use_module('${mod}')
 ##%endfor
 
 # Add here all includes beyond what is automatically included by the triqs modules
-module.add_include("${args.filename}")
+module.add_include("${args.filename.replace("../c++/",'')}")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
