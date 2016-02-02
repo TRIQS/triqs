@@ -140,7 +140,7 @@ using namespace ${ns};
 c = class_(
         py_type = "${deduce_normalized_python_class_name(c.name)}",  # name of the python class
         c_type = "${c.name}",   # name of the C++ class
-        doc = r"${replace_latex(c.doc)}",   # doc of the C++ class
+        doc = r"${replace_latex(c.doc, True)}",   # doc of the C++ class
 %if 0 :
         #
         #Hereafter several options to be selected by hand. Cf doc
@@ -155,13 +155,13 @@ c = class_(
 c.add_member(c_name = "${m.name}",
              c_type = "${m.ctype}",
              read_only= False,
-             doc = """${replace_latex(m.doc)} """)
+             doc = """${replace_latex(m.doc, True)} """)
 
 %endfor
 ##
 %for m in [m for m in c.constructors if not m.is_template and not 'ignore_in_python' in m.annotations]:
 c.add_constructor("""${make_signature(m)}""",
-                  doc = """${replace_latex(m.doc) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
+                  doc = """${replace_latex(m.doc, True) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
 
 %endfor
 ##
@@ -170,7 +170,7 @@ c.add_method("""${make_signature(m)}""",
              %if m.is_static :
              is_static = True,
              %endif
-             doc = """${replace_latex(m.doc) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
+             doc = """${replace_latex(m.doc,True) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
 
 %endfor
 ##
@@ -181,7 +181,7 @@ c.add_property(name = "${p.name}",
                %if p.setter :
                setter = cfunction("${make_signature(p.setter)}"),
                %endif
-               doc = """${replace_latex(p.doc)} """)
+               doc = """${replace_latex(p.doc, True)} """)
 
     %endfor
 %endif
@@ -191,7 +191,7 @@ module.add_class(c)
 %endfor
 ##
 %for f in [f for f in functions if not 'ignore_in_python' in f.annotations]:
-module.add_function ("${make_signature(f)}", doc = "${replace_latex(f.doc)}")
+module.add_function ("${make_signature(f)}", doc = "${replace_latex(f.doc, True)}")
 
 %endfor
 ##

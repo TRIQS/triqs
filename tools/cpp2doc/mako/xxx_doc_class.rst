@@ -1,6 +1,7 @@
 <%
  import cpp2doc_tools as tools
  from cpp2doc_tools import make_table
+ from cpp2py_and_cpp2doc_util import replace_latex
  tools.class_list = class_list
  incl = c.doc_elements['include']
  if c.doc_elements['figure']:  fig=c.doc_elements['figure'].split(":")
@@ -66,7 +67,7 @@ ${make_table(['Member type','Comment'], [(t.name, t.doc) for t in c.type_alias])
 Member functions
 -----------------
 
-${make_table(['Member function','Comment'], [(":ref:`%s <%s_%s>`"%(name,c.name, name), m[0].brief_doc) for name, m in c.all_m.items()])}
+${make_table(['Member function','Comment'], [(":ref:`%s <%s_%s>`"%(name,c.name, name), replace_latex(m[0].brief_doc)) for name, m in c.all_m.items()])}
 
 .. toctree::
 
