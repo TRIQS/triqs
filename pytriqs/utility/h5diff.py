@@ -20,8 +20,9 @@ def compare(key, a, b, level, precision):
         assert t == type(b), "%s have different types"%key
 
         if t == dict or isinstance(a, HDFArchiveGroup) :
-            assert list(a.keys()) == list(b.keys()), "Two archive groups '%s' with different keys \n %s \n vs\n %s"%(key,list(a.keys()), list(b.keys()))
-            for k in a.keys():
+            if list(a.keys()) != list(b.keys()):
+                failures.append("Two archive groups '%s' with different keys \n %s \n vs\n %s"%(key,list(a.keys()), list(b.keys())))
+            for k in set(a.keys()).intersection(b.keys()):
                 compare(key + '/'+ k, a[k], b[k], level + 1, precision)
 
         # The TRIQS object which are comparable starts here ....
@@ -33,6 +34,7 @@ def compare(key, a, b, level, precision):
 
         elif t in [Operator]:
             assert (a-b).is_zero(), "Many body operators not equal"
+
         elif t in [BlockMatrix]:
             for i in range(len(a.matrix_vec)):
              assert_arrays_are_close(a[i],b[i])
