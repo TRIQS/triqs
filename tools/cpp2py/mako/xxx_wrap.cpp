@@ -11,6 +11,7 @@
 %endfor
 
 #include<complex>
+#include<iostream> //for std::cout...
 using dcomplex = std::complex<double>;
 
 %for ns in module.using:
