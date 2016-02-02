@@ -1,5 +1,6 @@
 <%
     import re
+    from cpp2py_and_cpp2doc_util import replace_latex
     def deduce_normalized_python_class_name(s) :
         return ''.join([x.capitalize() for x in s.split('_')])
 
@@ -89,7 +90,7 @@
 from wrap_generator import *
 
 # The module
-module = module_(full_name = "${modulename}", doc = "${moduledoc}", app_name = "${appname}")
+module = module_(full_name = "${modulename}", doc = "${replace_latex(moduledoc)}", app_name = "${appname}")
 
 # All the triqs C++/Python modules
 %for mod in used_module_list :
@@ -129,17 +130,17 @@ using namespace ${ns};
    n_lmax = max(len(h[0]), max(len(m.name) for m in member_list))
    type_lmax = max(len(h[1]), max(len(m.ctype) for m in member_list))
    opt_lmax = max(len(h[2]), max(len(m.initializer) for m in member_list if m.initializer))
-   doc_lmax = max(len(h[3]), max(len(m.doc) for m in member_list))
+   doc_lmax = max(len(h[3]), max(len(replace_latex(m.doc)) for m in member_list))
    form =  "  {:<%s} {:<%s} {:<%s} {:<%s}"%(n_lmax, type_lmax, opt_lmax, doc_lmax)
    header = form.format(*h)
-   r = '\n'.join( form.format(m.name, m.ctype, m.initializer if m.initializer else '--', m.doc) for m in member_list)
+   r = '\n'.join( form.format(m.name, m.ctype, m.initializer if m.initializer else '--', replace_latex(m.doc)) for m in member_list)
    return header + '\n\n' + r
 %>
 # The class ${c.name}
 c = class_(
         py_type = "${deduce_normalized_python_class_name(c.name)}",  # name of the python class
         c_type = "${c.name}",   # name of the C++ class
-        doc = "${c.doc}",   # name of the C++ class
+        doc = r"${replace_latex(c.doc)}",   # doc of the C++ class
 %if 0 :
         #
         #Hereafter several options to be selected by hand. Cf doc
@@ -154,13 +155,13 @@ c = class_(
 c.add_member(c_name = "${m.name}",
              c_type = "${m.ctype}",
              read_only= False,
-             doc = """${m.doc} """)
+             doc = """${replace_latex(m.doc)} """)
 
 %endfor
 ##
 %for m in [m for m in c.constructors if not m.is_template and not 'ignore_in_python' in m.annotations]:
 c.add_constructor("""${make_signature(m)}""",
-                  doc = """${m.doc if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
+                  doc = """${replace_latex(m.doc) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
 
 %endfor
 ##
@@ -169,7 +170,7 @@ c.add_method("""${make_signature(m)}""",
              %if m.is_static :
              is_static = True,
              %endif
-             doc = """${m.doc if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
+             doc = """${replace_latex(m.doc) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
 
 %endfor
 ##
@@ -180,7 +181,7 @@ c.add_property(name = "${p.name}",
                %if p.setter :
                setter = cfunction("${make_signature(p.setter)}"),
                %endif
-               doc = """${p.doc} """)
+               doc = """${replace_latex(p.doc)} """)
 
     %endfor
 %endif
@@ -190,7 +191,7 @@ module.add_class(c)
 %endfor
 ##
 %for f in [f for f in functions if not 'ignore_in_python' in f.annotations]:
-module.add_function ("${make_signature(f)}", doc = "${f.doc}")
+module.add_function ("${make_signature(f)}", doc = "${replace_latex(f.doc)}")
 
 %endfor
 ##

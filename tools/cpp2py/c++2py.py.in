@@ -1,8 +1,11 @@
 #!@PYTHON_INTERPRETER@
 
 from clang_parser import parse
-import sys, os, re
+import os, re
 from mako.template import Template
+import sys
+sys.path.append('@CMAKE_INSTALL_PREFIX@/share/triqs')
+from cpp2py_and_cpp2doc_util import *
 
 # the instruction that created this file
 shell_command = ' '.join( [ sys.argv[0].rsplit('/')[-1]] + [x if ' ' not in x else '"%s"'%x for x in sys.argv[1:]])
@@ -54,6 +57,7 @@ def clean_end_white_char(s):
     reg = re.compile(r"[ \t\r\f\v]+$",re.MULTILINE)
     return re.sub(reg,'',s.strip())
 
+
 def decay(s) :
     for tok in ['const', '&&', '&'] :
         s = re.sub(tok,'',s)
@@ -103,7 +107,7 @@ if __name__ == '__main__' :
                             print "    Got ", decay(set_m.params[0][0].name)  
                             print "     I am not adding the setter to the property"
                             set_m = None
-                    cls.proplist.append(property_(name= X, doc = m.doc, getter = m, setter = set_m))
+                    cls.proplist.append(property_(name= X, doc = replace_latex(m.doc), getter = m, setter = set_m))
                     print "Property : ", m.name, set_m.name if set_m else ''
                     exclude.append(m)
             cls.methods = [m for m in cls.methods if m not in exclude]

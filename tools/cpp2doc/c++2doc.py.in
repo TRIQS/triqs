@@ -1,10 +1,13 @@
 #!@PYTHON_INTERPRETER@
 
 from clang_parser import parse
-import sys, os, re
+import os, re
 from numpy import all
 from mako.template import Template
 from collections import OrderedDict
+import sys
+sys.path.append('@CMAKE_INSTALL_PREFIX@/share/triqs')
+from cpp2py_and_cpp2doc_util import *
 
 # the instruction that created this file
 shell_command = ' '.join( [ sys.argv[0].rsplit('/')[-1]] + [x if ' ' not in x else '"%s"'%x for x in sys.argv[1:]])
@@ -39,28 +42,6 @@ def clean_end_white_char(s):
     """ remove the space at the end of the lines (for clean git diff...)"""
     reg = re.compile(r"[ \t\r\f\v]+$",re.MULTILINE)
     return re.sub(reg,'',s.strip())
-
-def replace_latex(s):
-    """replace 
-       $XX X$  by :math:`XX X`
-       $$X XX$$  by \n\n.. math:\n\t\tX XX\n\n..\n
-       [[ XXX]]  by :ref:` XXX`
-     
-     """
-    any_math_char = 'A-Za-z0-9{}\[\],\(\)=./\/+-_\'' #any math character
-    #matches all expressions starting and ending with any math char, with possibly whitespaces in between
-    pattern_1 = '\$(['+any_math_char+']['+any_math_char+' ]*['+any_math_char+']+)\$'
-    #matches any single math char
-    pattern_2 = '\$(['+any_math_char+'])\$'
-    #out of line formula
-    text=re.sub('\$'+pattern_1+'\$', r'\n\n.. math::\n\t\t\1\n\n..\n', s)
-    text=re.sub('\$'+pattern_2+'\$', r'\n\n.. math::\n\t\t\1\n\n..\n', text)
-    #inline formula
-    text=re.sub(pattern_1, r':math:`\1`', text)
-    text=re.sub(pattern_2, r':math:`\1`', text)
-    #to create a hyperlink
-    text=re.sub('\[\[([ A-Za-z0-9{}\(,\)=./\/+-_]+)\]\]', r':ref:`\1`', text)
-    return text
 
 
 doc = """
