@@ -177,6 +177,8 @@ endmacro (triqs_add_all_subdirectories_with_cmakelist)
 # Note: rm python destination and replace with CMAKE_PROJECT_NAME?
 macro (triqs_prepare_local_pytriqs python_destination)
 
+  get_filename_component(modulename ${python_destination} NAME)
+
   # Create the local build_pytriqs executable
   file(WRITE ${CMAKE_BINARY_DIR}/build_pytriqs "@BUILD_PYTRIQS_SCRIPT@")
   execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_pytriqs)
@@ -188,20 +190,6 @@ macro (triqs_prepare_local_pytriqs python_destination)
   # Create the local build_ipytriqs_notebook executable
   file(WRITE ${CMAKE_BINARY_DIR}/build_ipytriqs_notebook "@BUILD_IPYTRIQS_NOTEBOOK_SCRIPT@")
   execute_process(COMMAND chmod 755 ${CMAKE_BINARY_DIR}/build_ipytriqs_notebook)
-
-  # Create sitecustomize.py file
-  # It will redirect import requests from pytriqs/${python_destination} to python dir
-  string(REPLACE "/" "." python_destination_with_dots ${python_destination})
-  file(WRITE ${CMAKE_BINARY_DIR}/python/sitecustomize.py
-   "package_name = 'pytriqs.${python_destination_with_dots}'.rsplit('.',1)[0]
-def application_pytriqs_import(name,*args,**kwargs):
-  if name.startswith(package_name):
-    name = name[len(package_name)+1:]
-  return builtin_import(name,*args,**kwargs)
-
-import __builtin__
-__builtin__.__import__, builtin_import = application_pytriqs_import, __builtin__.__import__"
-  )
 
   # Install the __init__.py files
   set(INIT_PY_INSTALLATION_SCRIPT
@@ -222,11 +210,11 @@ endwhile()")
 
   # Set a rule to have original python files copied to their destination if modified
   file(GLOB_RECURSE python_sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
-  EXECUTE_PROCESS(COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/${python_destination})
+  EXECUTE_PROCESS(COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/${modulename})
   set(py_copy_tar ${CMAKE_CURRENT_BINARY_DIR}/py_copy.tar)
   add_custom_command(OUTPUT ${py_copy_tar}
      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} tar cf ${py_copy_tar} ${python_sources}
-     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR} tar xf ${py_copy_tar}
+     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/${modulename} tar xf ${py_copy_tar}
      COMMAND ${CMAKE_COMMAND} -E remove ${py_copy_tar}
      DEPENDS ${python_sources})
   add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
