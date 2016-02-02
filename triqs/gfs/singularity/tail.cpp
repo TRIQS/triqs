@@ -45,9 +45,9 @@ namespace gfs {
  }
 
  /// --- MPI
- tail mpi_reduce(tail_const_view t, mpi::communicator c, int root, bool all) { 
+ tail mpi_reduce(tail_const_view t, mpi::communicator c, int root, bool all, MPI_Op op) { 
   tail r{t};
-  r.data() = mpi_reduce(t.data(),c,root, all); 
+  r.data() = mpi_reduce(t.data(),c,root, all,op); 
   // SECURITY IS NEEDED HERE !! 
   // omin, mask are supposed to be the same ?
   return r;

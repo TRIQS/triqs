@@ -508,11 +508,13 @@ namespace gfs {
    mpi_broadcast(g.singularity(), c, root);
   }
 
-  friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(GF const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
-   return {a(), c, root, all};
+  friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(GF const &a, mpi::communicator c = {}, int root = 0,
+                                                                bool all = false, MPI_Op op = MPI_SUM) {
+   return {a(), c, root, all, op};
   }
-  friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(GF const &a, mpi::communicator c = {}, int root = 0) {
-   return {a(), c, root, true};
+  friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(GF const &a, mpi::communicator c = {}, int root = 0,
+                                                                    MPI_Op op = MPI_SUM) {
+   return {a(), c, root, true, op};
   }
   friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(GF const &a, mpi::communicator c = {}, int root = 0) {
    return {a(), c, root, true};
@@ -530,8 +532,8 @@ namespace gfs {
   template <typename E>
   void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Mesh, Target, Singularity, E>> l) {
    _mesh = l.rhs.mesh();
-   _data = mpi_reduce(l.rhs.data(), l.c, l.root, l.all);
-   _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all);
+   _data = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+   _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all, l.op);
   }
 
   //---- scatter ----

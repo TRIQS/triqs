@@ -173,8 +173,6 @@ namespace gfs {
   }
 
   // mpi operations
-  //friend void mpi_broadcast( tail_impl &t, mpi::communicator c = {}, int root=0) { mpi::mpi_broadcast(t._data);}
-  //friend tail mpi_reduce( tail_impl const &t, mpi::communicator c, int root, bool all);
   friend void mpi_broadcast(tail_impl & t, mpi::communicator c={}, int root=0) { 
     using mpi::mpi_broadcast;
     mpi_broadcast(t.omin);
@@ -273,7 +271,7 @@ namespace gfs {
  std::ostream &operator<<(std::ostream &out, tail_const_view);
 
  // ---- MPI  -------------
- tail mpi_reduce(tail_const_view t, mpi::communicator c={}, int root=0, bool all= false);
+ tail mpi_reduce(tail_const_view t, mpi::communicator c={}, int root=0, bool all= false, MPI_Op op = MPI_SUM);
   
  // ----  -------------
  //

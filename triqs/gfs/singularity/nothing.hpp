@@ -61,7 +61,7 @@ namespace gfs {
  template <typename T> TYPE_DISABLE_IF(nothing, std::is_same<T, nothing>) operator*(T const &, nothing) { return nothing(); }
  template <typename T> TYPE_DISABLE_IF(nothing, std::is_same<T, nothing>) operator/(T const &, nothing) { return nothing(); }
 
- inline nothing mpi_reduce(nothing, mpi::communicator c= {}, int root=0, bool all = false) { return {}; }
+ inline nothing mpi_reduce(nothing, mpi::communicator c= {}, int root=0, bool all = false, MPI_Op op = MPI_SUM) { return {}; }
  inline void mpi_broadcast(nothing, mpi::communicator c= {}, int root=0) {}
  
  }

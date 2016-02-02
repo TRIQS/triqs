@@ -259,5 +259,13 @@ namespace gfs {
   bool all;
  };
 
+ template <typename T> struct mpi_lazy<mpi::tag::reduce,T> {
+  T rhs;
+  mpi::communicator c;
+  int root;
+  bool all;
+  MPI_Op op;
+ };
+
 }
 }

@@ -61,7 +61,7 @@ namespace gfs {
 
   template<typename ... X> friend ReturnType evaluate(tail_zero const &t, X...) { return t.zero;} 
 
-  friend tail_zero mpi_reduce(tail_zero t, mpi::communicator c= {}, int root=0, bool all = false) { return t; }
+  friend tail_zero mpi_reduce(tail_zero t, mpi::communicator c= {}, int root=0, bool all = false, MPI_Op op = MPI_SUM) { return t; }
   friend void mpi_broadcast(tail_zero, mpi::communicator c= {}, int root=0) {}
  
   private: 

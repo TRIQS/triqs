@@ -33,6 +33,7 @@ namespace arrays {
   mpi::communicator c;
   int root;
   bool all;
+  MPI_Op op;
 
   using domain_type = typename A::domain_type;
 
@@ -73,19 +74,20 @@ namespace arrays {
    MPI_Bcast(a.data_start(), a.domain().number_of_elements(), mpi::mpi_datatype<typename A::value_type>(), root, c.get());
   }
 
-  template <typename A> REQUIRES_IS_ARRAY2(reduce) mpi_reduce (A &a, mpi::communicator c = {}, int root = 0, bool all = false) {
+  template <typename A>
+  REQUIRES_IS_ARRAY2(reduce) mpi_reduce(A &a, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
    if (!has_contiguous_data(a)) TRIQS_RUNTIME_ERROR << "Non contiguous view in mpi_reduce";
-   return {a, c, root, all};
+   return {a, c, root, all, op};
   }
 
-  template <typename A> REQUIRES_IS_ARRAY2(scatter) mpi_scatter (A &a, mpi::communicator c = {}, int root = 0, bool all = false) {
+  template <typename A> REQUIRES_IS_ARRAY2(scatter) mpi_scatter(A &a, mpi::communicator c = {}, int root = 0, bool all = false) {
    if (!has_contiguous_data(a)) TRIQS_RUNTIME_ERROR << "Non contiguous view in mpi_scatter";
-   return {a, c, root, all};
+   return {a, c, root, all, nullptr};
   }
 
-  template <typename A> REQUIRES_IS_ARRAY2(gather) mpi_gather (A &a, mpi::communicator c = {}, int root = 0, bool all = false) {
+  template <typename A> REQUIRES_IS_ARRAY2(gather) mpi_gather(A &a, mpi::communicator c = {}, int root = 0, bool all = false) {
    if (!has_contiguous_data(a)) TRIQS_RUNTIME_ERROR << "Non contiguous view in mpi_gather";
-   return {a, c, root, all};
+   return {a, c, root, all, nullptr};
   }
 
 #undef REQUIRES_IS_ARRAY  
@@ -135,14 +137,14 @@ namespace arrays {
 
     if (!laz.all) {
      if (in_place)
-      MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : rhs_p), rhs_p, rhs_n_elem, D, MPI_SUM, root, c.get());
+      MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : rhs_p), rhs_p, rhs_n_elem, D, laz.op, root, c.get());
      else
-      MPI_Reduce(rhs_p, lhs_p, rhs_n_elem, D, MPI_SUM, root, c.get());
+      MPI_Reduce(rhs_p, lhs_p, rhs_n_elem, D, laz.op, root, c.get());
     } else {
      if (in_place)
-      MPI_Allreduce(MPI_IN_PLACE, rhs_p, rhs_n_elem, D, MPI_SUM, c.get());
+      MPI_Allreduce(MPI_IN_PLACE, rhs_p, rhs_n_elem, D, laz.op, c.get());
      else
-      MPI_Allreduce(rhs_p, lhs_p, rhs_n_elem, D, MPI_SUM, c.get());
+      MPI_Allreduce(rhs_p, lhs_p, rhs_n_elem, D, laz.op, c.get());
     }
    }
   };

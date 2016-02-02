@@ -48,43 +48,47 @@ namespace mpi {
 
  // ---------------- reduce in place  ---------------------
 
- template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c={}, int root=0) {
-  mpi_reduce_in_place(a, c, root, is_basic<T>{});
+ template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
+  mpi_reduce_in_place(a, c, root, op, is_basic<T>{});
  }
 
- template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, std::true_type) {
+ template <typename T>
+ void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, MPI_Op op, std::true_type) {
   if (!all)
-   MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : a.data()), a.data(), a.size(), mpi_datatype<T>(), MPI_SUM, root, c.get());
+   MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : a.data()), a.data(), a.size(), mpi_datatype<T>(), op, root, c.get());
   else
-   MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), mpi_datatype<T>(), MPI_SUM, c.get());
+   MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), mpi_datatype<T>(), op, c.get());
  }
 
- template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, std::false_type) {
+ template <typename T>
+ void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, MPI_Op op, std::false_type) {
   for (auto &x : a) mpi_reduce_in_place(a, c, root, all);
  }
 
  // ---------------- reduce   ---------------------
 
  template <typename T>
- std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false) {
-  return mpi_reduce(a, c, root, all, is_basic<T>{});
+ std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false,
+                                    MPI_Op op = MPI_SUM) {
+  return mpi_reduce(a, c, root, all, op, is_basic<T>{});
  }
 
- template <typename T> std::vector<T> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, std::true_type) {
+ template <typename T>
+ std::vector<T> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, MPI_Op op, std::true_type) {
   std::vector<T> b(a.size());
   if (!all)
-   MPI_Reduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), MPI_SUM, root, c.get());
+   MPI_Reduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), op, root, c.get());
   else
-   MPI_Allreduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), MPI_SUM, c.get());
+   MPI_Allreduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), op, c.get());
   return b;
  }
 
  template <typename T>
- std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, std::false_type) {
+ std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, MPI_Op op, std::false_type) {
   int s = a.size();
   std::vector<Regular<T>> lhs;
   lhs.reserve(s);
-  for (auto i = 0; i < s; ++i) lhs.push_back(mpi_reduce(a[i], c, root, all));
+  for (auto i = 0; i < s; ++i) lhs.push_back(mpi_reduce(a[i], c, root, all, op));
   return lhs;
  }
 

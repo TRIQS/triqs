@@ -377,11 +377,13 @@ namespace gfs {
    mpi_broadcast(g.singularity(), c, root);
   }
 
-  friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
-   return {a(), c, root, all};
+  friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0,
+                                                                bool all = false, MPI_Op op = MPI_SUM) {
+   return {a(), c, root, all, op};
   }
-  friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0) {
-   return {a(), c, root, true};
+  friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0,
+                                                                    MPI_Op op = MPI_SUM) {
+   return {a(), c, root, true, op};
   }
   friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf_const_view const &a, mpi::communicator c = {}, int root = 0) {
    return {a(), c, root, true};

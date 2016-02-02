@@ -95,15 +95,23 @@ namespace mpi {
   bool all;
  };
 
+ template <typename T> struct lazy<tag::reduce, T> {
+  T const &rhs;
+  communicator c;
+  int root;
+  bool all;
+  MPI_Op op;
+ };
+
 // ----------------------------------------
 // ------- general functions -------
 // ----------------------------------------
 
 #ifndef TRIQS_CPP11
- template <typename T> auto mpi_all_reduce(T &x, communicator c = {}, int root = 0) { return mpi_reduce(x, c, root, true); }
+ template <typename T> auto mpi_all_reduce(T &x, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) { return mpi_reduce(x, c, root, true, op); }
  template <typename T> auto mpi_all_gather(T &x, communicator c = {}, int root = 0) { return mpi_gather(x, c, root, true); }
 #else
- template <typename T> auto mpi_all_reduce(T &x, communicator c = {}, int root = 0) RETURN(mpi_reduce(x, c, root, true));
+ template <typename T> auto mpi_all_reduce(T &x, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) RETURN(mpi_reduce(x, c, root, true, op));
  template <typename T> auto mpi_all_gather(T &x, communicator c = {}, int root = 0) RETURN(mpi_gather(x, c, root, true));
 #endif
 
@@ -167,13 +175,13 @@ namespace mpi {
 
  // Here send, recv
 
- template <typename T> REQUIRES_IS_BASIC(T, T) mpi_reduce(T a, communicator c = {}, int root = 0, bool all = false) {
+ template <typename T> REQUIRES_IS_BASIC(T, T) mpi_reduce(T a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
   T b;
   auto d = mpi_datatype<T>();
   if (!all)
-   MPI_Reduce(&a, &b, 1, d, MPI_SUM, root, c.get());
+   MPI_Reduce(&a, &b, 1, d, op, root, c.get());
   else
-   MPI_Allreduce(&a, &b, 1, d, MPI_SUM, c.get());
+   MPI_Allreduce(&a, &b, 1, d, op, c.get());
   return b;
  }
 
