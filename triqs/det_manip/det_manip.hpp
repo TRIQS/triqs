@@ -34,7 +34,7 @@
 
 namespace triqs { namespace det_manip {
 
- namespace blas = arrays::blas;
+ namespace blas = arrays::blas; 
 
  /**
   * \brief Standard matrix/det manipulations used in several QMC.
@@ -50,6 +50,9 @@ namespace triqs { namespace det_manip {
   public:
   using xy_type = typename f_tr::template decay_arg<0>::type;
   using value_type = typename f_tr::result_type;
+  // options the det could be kept in a long double to minimize overflow
+  //using det_type = std14::conditional_t<std::is_same<value_type, double>::value, long double, std::complex<long double>>;
+  using det_type = value_type;
   static_assert(std::is_floating_point<value_type>::value || triqs::is_complex<value_type>::value,
                 "det_manip : the function must return a floating number or a complex number");
 
@@ -64,11 +67,11 @@ namespace triqs { namespace det_manip {
     FunctionType f;
 
     // serialized data. There are all VALUES.
-    value_type det;
-    size_t Nmax,N;
+    det_type det;
+    size_t Nmax, N;
     size_t last_try; // keep in memory the last operation not completed
-    std::vector<size_t> row_num,col_num;
-    std::vector<xy_type> x_values,y_values;
+    std::vector<size_t> row_num, col_num;
+    std::vector<xy_type> x_values, y_values;
     int sign;
     matrix_type mat_inv;
     long long n_opts, n_opts_max_before_check;
@@ -144,7 +147,7 @@ namespace triqs { namespace det_manip {
 
     work_data_type1 w1;
     work_data_type2 w2;
-    value_type newdet;
+    det_type newdet;
     int newsign;
 
    private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
@@ -215,7 +218,7 @@ namespace triqs { namespace det_manip {
       if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR<< " X.size != Y.size";
       _construct_common();
       N =X.size();
-      if (N==0) { det = 1; reserve(30); return;}
+      if (N==0) { det = 1; reserve(30); return; }
       if (N>Nmax) reserve(2*N); // put some margin..
       std::copy(X.begin(),X.end(), std::back_inserter(x_values));
       std::copy(Y.begin(),Y.end(), std::back_inserter(y_values));
@@ -254,7 +257,7 @@ namespace triqs { namespace det_manip {
     xy_type const & get_y(size_t j) const { return y_values[col_num[j]];}
 
     /** det M of the current state of the matrix.  */
-    value_type determinant() const {return sign*det;}
+    det_type determinant() const { return sign * det; }
 
     /** Returns M^{-1}(i,j) */
     // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
@@ -320,8 +323,8 @@ namespace triqs { namespace det_manip {
      // treat empty matrix separately
      if (N==0) {
        newdet = f(x,y); 
-       newsign = 1; 
-       return newdet; 
+       newsign = 1;
+       return value_type(newdet);
     }
 
      // I add the row and col and the end. If the move is rejected,
@@ -376,7 +379,7 @@ namespace triqs { namespace det_manip {
      row_num.push_back(0); col_num.push_back(0);
 
      // special empty case again
-     if (N==0) { N=1; mat_inv(0,0) = 1/newdet; return; }
+     if (N==0) { N=1; mat_inv(0,0) = 1/value_type(newdet); return; }
 
      range R1(0,N);
      //w1.MC(R1) = mat_inv(R1,R1).transpose() * w1.C(R1); //OPTIMIZE BELOW
@@ -458,7 +461,7 @@ namespace triqs { namespace det_manip {
      if (N==0) {
       newdet = w2.det_ksi();
       newsign = 1;
-      return newdet;
+      return value_type(newdet);
      }
 
      // I add the rows and cols and the end. If the move is rejected,
@@ -474,9 +477,10 @@ namespace triqs { namespace det_manip {
      blas::gemm(1.0, mat_inv(R,R) , w2.B(R,R2),0.0,w2.MB(R,R2));
      //w2.ksi -= w2.C (R2, R) * w2.MB(R, R2); // OPTIMIZE BELOW
      blas::gemm(-1.0, w2.C(R2,R), w2.MB(R, R2),1.0,w2.ksi);
-     newdet = det * w2.det_ksi();
+     auto ksi = w2.det_ksi();
+     newdet = det * ksi;
      newsign = ((i0 + j0 + i1 + j1)%2==0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
-     return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
+     return ksi*(newsign*sign); // sign is unity, hence 1/sign == sign
     }
 
     //------------------------------------------------------------------------------------------
@@ -544,9 +548,10 @@ namespace triqs { namespace det_manip {
      // first we resolve the w1.ireal,w1.jreal, with the permutation of the Minv, then we pick up what
      // will become the 'corner' coefficient, if the move is accepted, after the exchange of row and col.
      w1.ksi = mat_inv(w1.jreal,w1.ireal);
-     newdet = det*w1.ksi;
+     auto ksi = w1.ksi;
+     newdet = det*ksi;
      newsign = ((i + j)%2==0 ? sign : -sign);
-     return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
+     return ksi*(newsign*sign); // sign is unity, hence 1/sign == sign
     }
     //------------------------------------------------------------------------------------------
    private:
@@ -625,11 +630,11 @@ namespace triqs { namespace det_manip {
      w2.ksi(1,0) = mat_inv(w2.jreal[1],w2.ireal[0]);
      w2.ksi(0,1) = mat_inv(w2.jreal[0],w2.ireal[1]);
      w2.ksi(1,1) = mat_inv(w2.jreal[1],w2.ireal[1]);
-
-     newdet = det * w2.det_ksi();
+     auto ksi = w2.det_ksi();
+     newdet = det * ksi;
      newsign = ((i0 + j0+ i1 + j1)%2==0 ? sign : -sign);
 
-     return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
+     return ksi*(newsign*sign); // sign is unity, hence 1/sign == sign
     }
     //------------------------------------------------------------------------------------------
    private:
@@ -715,9 +720,10 @@ namespace triqs { namespace det_manip {
 
      // compute the newdet
      w1.ksi = (1+w1.MB(w1.jreal));
-     newdet = det*w1.ksi;
+     auto ksi = w1.ksi;
+     newdet = det*ksi;
      newsign = sign;
-     return (newdet/det); // newsign/sign is unity
+     return ksi; // newsign/sign is unity
     }
     //------------------------------------------------------------------------------------------
    private:
@@ -760,9 +766,10 @@ namespace triqs { namespace det_manip {
 
      // compute the newdet
      w1.ksi = (1+w1.MC(w1.ireal));
-     newdet = det*w1.ksi;
+     auto ksi = w1.ksi;
+     newdet = det * ksi;
      newsign = sign;
-     return (newdet/det); // newsign/sign is unity
+     return ksi; // newsign/sign is unity
     }
     //------------------------------------------------------------------------------------------
    private:
