@@ -2,8 +2,6 @@
  import cpp2doc_tools as tools
  tools.class_list = class_list
  f = f_overloads[0]
- incl = f_overloads[0].doc_elements['include'] 
- if f.doc_elements['figure']:  fig=f.doc_elements['figure'].split(":")
 %>
 ..
    Generated automatically using the command :
@@ -12,11 +10,6 @@
 
 .. highlight:: c
 
-%if c is None:
-.. code-block:: c
-
-    #include <${f_overloads[0].file_location}>
-%endif
 
 %if c is not None :
 .. _${c.name}_${f_name}:
@@ -33,15 +26,35 @@ ${'=' * (len(f_name)+2)}
 
 ${tools.make_synopsis_list(f_overloads)}
 
-%if len(f_overloads) >1 :
 %for n,m in enumerate(f_overloads) :
-(${n+1})  ${m.processed_doc}
-%endfor
-%else:
-${f_overloads[0].processed_doc}
+
+--------------------------------------- 
+
+%if c is None :
+.. code-block:: c
+
+    #include <${m.file_location}>
+
+..
+
+%endif
+<%
+num = '(%s)'%(n+1) if len(f_overloads)>1 else ''
+%>
+${num} ${m.processed_doc}
+%if m.doc_elements['note']:
+.. note::
+     ${m.doc_elements['note']}
+%endif
+%if m.doc_elements['warning']:
+.. warning::
+     ${m.doc_elements['warning']}
 %endif
 
-%if f.doc_elements['figure']:
+%if m.doc_elements['figure']:
+<% 
+  fig=m.doc_elements['figure'].split(":")
+%>
 .. figure:: ${fig[0]}
    :alt: ${fig[1]}
    :align: center
@@ -49,43 +62,26 @@ ${f_overloads[0].processed_doc}
    ${fig[1].lstrip(' \t\n\r')}
 %endif
 
-%if sum([len(m.doc_elements['tparam']) for n,m in enumerate(f_overloads)]) > 0 :
+%if len(m.doc_elements['tparam'])  > 0 :
 
 Template parameters
 -----------------------
 
-%if len(f_overloads) >1 :
-%for n,m in enumerate(f_overloads) :
-
- (${n+1}) 
 
 % if len(m.doc_elements['tparam'])>1:
 % for p,doc in m.doc_elements['tparam'].items():
 
    * **${p}**: ${doc}
 %endfor
-% elif len(m.doc_elements['tparam'])==1:
-% for p,doc in m.doc_elements['tparam'].items():
-   **${p}**: ${doc}
-%endfor
 %else :
    not documented
 %endif
 
-%endfor
-%else:
-%for p,doc in f.doc_elements['tparam'].items():
-* **${p}**: ${doc}
-%endfor
 %endif
-%endif
+
+%if len(m.doc_elements['param'])  > 0 :
 Parameters
 -------------
-
-%if len(f_overloads) >1 :
-%for n,m in enumerate(f_overloads) :
-
- (${n+1}) 
 
 % for p,doc in m.doc_elements['param'].items():
 
@@ -93,32 +89,22 @@ Parameters
 
 
 %endfor
-%endfor
-%else:
-%for p,doc in f.doc_elements['param'].items():
-* **${p}**: ${doc}
-%endfor
+
 %endif
 
 Return value
 --------------
 
-%if f.doc_elements['return']:
-${f.doc_elements['return']}
+%if m.doc_elements['return']:
+${m.doc_elements['return']}
 %endif
+
+%endfor
 
 <% 
   code,d1,d2, s,e = tools.prepare_example(f_name, 4)
 %>
 
-%if f.doc_elements['note']:
-.. note::
-     ${f.doc_elements['note']}
-%endif
-%if f.doc_elements['warning']:
-.. warning::
-     ${f.doc_elements['warning']}
-%endif
 
 
 %if code is not None:

@@ -1,6 +1,6 @@
 <%
     import re
-    from cpp2py_and_cpp2doc_util import replace_latex
+    from cpp2py_and_cpp2doc_util import replace_latex, make_table, replace_cpp_keywords_by_py_keywords
     def deduce_normalized_python_class_name(s) :
         return ''.join([x.capitalize() for x in s.split('_')])
 
@@ -125,16 +125,10 @@ using namespace ${ns};
 ##
 %for c in [c for c in classes if not 'ignore_in_python' in c.annotations]:
 <%
-  def doc_format(member_list) :
-   h= ['Parameter Name', 'Type', 'Default', 'Documentation']
-   n_lmax = max(len(h[0]), max(len(m.name) for m in member_list))
-   type_lmax = max(len(h[1]), max(len(m.ctype) for m in member_list))
-   opt_lmax = max(len(h[2]), max(len(m.initializer) for m in member_list if m.initializer))
-   doc_lmax = max(len(h[3]), max(len(replace_latex(m.doc)) for m in member_list))
-   form =  "  {:<%s} {:<%s} {:<%s} {:<%s}"%(n_lmax, type_lmax, opt_lmax, doc_lmax)
-   header = form.format(*h)
-   r = '\n'.join( form.format(m.name, m.ctype, m.initializer if m.initializer else '--', replace_latex(m.doc)) for m in member_list)
-   return header + '\n\n' + r
+  def doc_format(member_list):
+   h = ['Parameter Name','Type','Default', 'Documentation']
+   l = [(m.name, m.ctype, m.initializer if m.initializer else '', replace_latex(m.doc)) for m in member_list]
+   return make_table(h, l)
 %>
 # The class ${c.name}
 c = class_(
@@ -155,13 +149,13 @@ c = class_(
 c.add_member(c_name = "${m.name}",
              c_type = "${m.ctype}",
              read_only= False,
-             doc = """${replace_latex(m.doc, True)} """)
+             doc = """${replace_cpp_keywords_by_py_keywords(replace_latex(m.doc, True))} """)
 
 %endfor
 ##
 %for m in [m for m in c.constructors if not m.is_template and not 'ignore_in_python' in m.annotations]:
 c.add_constructor("""${make_signature(m)}""",
-                  doc = """${replace_latex(m.doc, True) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
+                  doc = """${replace_cpp_keywords_by_py_keywords(replace_latex(m.doc, True)) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
 
 %endfor
 ##
@@ -170,7 +164,7 @@ c.add_method("""${make_signature(m)}""",
              %if m.is_static :
              is_static = True,
              %endif
-             doc = """${replace_latex(m.doc,True) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
+             doc = """${replace_cpp_keywords_by_py_keywords(replace_latex(m.doc,True)) if m.parameter_arg==None else doc_format(m.parameter_arg.members) } """)
 
 %endfor
 ##
@@ -191,7 +185,7 @@ module.add_class(c)
 %endfor
 ##
 %for f in [f for f in functions if not 'ignore_in_python' in f.annotations]:
-module.add_function ("${make_signature(f)}", doc = "${replace_latex(f.doc, True)}")
+module.add_function ("${make_signature(f)}", doc = """${replace_cpp_keywords_by_py_keywords(replace_latex(f.doc, True))}""")
 
 %endfor
 ##

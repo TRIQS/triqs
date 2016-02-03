@@ -1,4 +1,5 @@
 import re, os
+from cpp2py_and_cpp2doc_util import make_table
 
 def decay(s) :
     for tok in ['const ', 'const&', '&&', '&'] :
@@ -65,19 +66,6 @@ def make_synopsis_list(m_list):
             lines.append(form.format(l,''))
     return  decal*' ' + tab.join(lines[1:])
 
-def make_table(head_list, list_of_list):
-    l = len (head_list)
-    lcols = [len(x) for x in head_list]
-    for li in list_of_list : # compute the max length of the columns
-        lcols = [ max(len(x), y) for x,y in zip(li, lcols)]
-    form =  '| ' + " | ".join("{:<%s}"%x for x in lcols).strip() + ' |'
-    header= form.format(*head_list)
-    w = len(header)
-    sep = '+' + '+'.join((x+2) *'-' for x in lcols) + '+'
-    sep1 = sep.replace('-','=')
-    r = [sep, header, sep1]
-    for li in list_of_list: r += [form.format(*li), sep] 
-    return '\n'.join(r)
 
 def prepare_example(filename, decal):
     """From the filename, prepare the doc1, doc2, before and after the code

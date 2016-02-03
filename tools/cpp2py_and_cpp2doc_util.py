@@ -1,6 +1,16 @@
 #a few functions common to cpp2py and cpp2doc
 import re
 
+def replace_cpp_keywords_by_py_keywords(s):
+    """replace syntax 
+       @param XXX blabla 
+       by
+       :param XXX: blabla
+    """
+    s=re.sub('@param ([A-Za-z0-9_]*) ',r':param \1: ', s)
+    return s
+    
+
 def replace_latex(s, escape_slash=False):
     """replace 
        $XX X$  by :math:`XX X`
@@ -22,10 +32,24 @@ def replace_latex(s, escape_slash=False):
     #to create a hyperlink
     text=re.sub('\[\[([ A-Za-z0-9{}\(,\)=./\/+-_]+)\]\]', r':ref:`\1`', text)
 
-    if escape_slash: 
-      #text=re.sub('(/\[A-Za-z])', r'/\\\1', text)
-      #text='%r'%text
-      #text="  %r  "%text
-      text=text.encode('string_escape')
-      #text=text
+    if escape_slash: text=text.encode('string_escape')
     return text
+
+def make_table(head_list, list_of_list):
+    """
+    :param head_list: list of strings with table headers
+    :param list_of_list: list of list of strings
+    :returns: a valid rst table
+    """
+    l = len (head_list)
+    lcols = [len(x) for x in head_list]
+    for li in list_of_list : # compute the max length of the columns
+        lcols = [ max(len(x), y) for x,y in zip(li, lcols)]
+    form =  '| ' + " | ".join("{:<%s}"%x for x in lcols).strip() + ' |'
+    header= form.format(*head_list)
+    w = len(header)
+    sep = '+' + '+'.join((x+2) *'-' for x in lcols) + '+'
+    sep1 = sep.replace('-','=')
+    r = [sep, header, sep1]
+    for li in list_of_list: r += [form.format(*li), sep] 
+    return '\n'.join(r)
