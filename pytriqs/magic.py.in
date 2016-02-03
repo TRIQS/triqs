@@ -28,6 +28,7 @@ project(triqs_magic CXX)
 set(CMAKE_BUILD_TYPE Release)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 find_package(TRIQS REQUIRED)
+add_definitions(${TRIQS_CXX_DEFINITIONS})
 include_directories(${CMAKE_SOURCE_DIR} ${TRIQS_INCLUDE_ALL})
 add_library(ext MODULE ext_wrap.cpp)
 #add_library(ext MODULE ext.cpp ext_wrap.cpp)
@@ -41,11 +42,17 @@ mod_dict = {
 """
 module.add_include("<triqs/python_tools/converters/pair.hpp>")
 module.add_include("<triqs/python_tools/converters/vector.hpp>")
+module.add_include("<triqs/python_tools/converters/tuple.hpp>")
+module.add_include("<triqs/python_tools/converters/string.hpp>")
 """,
  'gf' :
 """
-module.use_module('gf')
+module.use_module('gf', 'triqs')
 module.add_using('namespace triqs::gfs')
+""",
+'array' :
+"""
+module.add_include("<triqs/python_tools/converters/arrays.hpp>")
 """,
 }
 
@@ -182,7 +189,7 @@ class TriqsMagics(Magics):
 
             # Call the wrapper generator
             command_generator = """
-            PYTHONPATH={generator_path} python ext_desc.py {generator_path}/mako/xxx_wrap.cpp ext_wrap.cpp {generator_path}/mako/py_converter.hpp conv.hpp {converter_include_path}
+            PYTHONPATH={generator_path} python ext_desc.py {generator_path}/mako/xxx_wrap.cpp ext_wrap.cpp {generator_path}/mako/py_converter.hpp conv.hpp {triqs_path}
             """.format(**globals())
 
             try :
