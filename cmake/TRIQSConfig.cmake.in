@@ -67,9 +67,6 @@ endmacro(triqs_get_git_hash)
 # Python specific stuff
 set (TRIQS_PYTHON_INTERPRETER @PYTHON_INTERPRETER@)
  
-message(STATUS "TRIQS : Adding compilation flags detected by the library (C++11/14, libc++, etc...) ")
-add_definitions(${TRIQS_CXX_DEFINITIONS})
-
 # Check compiler
 if (NOT CMAKE_CXX_COMPILER STREQUAL "@CMAKE_CXX_COMPILER@" )
  message(FATAL_ERROR "For your own safety, you should use the same compiler as the one used to compile TRIQS !")
