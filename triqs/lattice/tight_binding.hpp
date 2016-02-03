@@ -61,7 +61,10 @@ namespace lattice {
     return {tb.lattice()};
    }
 
-   template <typename K> matrix<dcomplex> operator()(K const& k) {
+   TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
+
+   template <typename K>
+   std14::enable_if_t<!clef::is_clef_expression<K>::value,matrix<dcomplex>> operator()(K const& k) const {
     matrix<dcomplex> res(nb, nb);
     res() = 0;
     foreach(tb, [&](std::vector<long> const& displ, matrix<dcomplex> const& m) {
