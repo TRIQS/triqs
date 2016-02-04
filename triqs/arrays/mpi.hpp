@@ -33,7 +33,8 @@ namespace arrays {
   mpi::communicator c;
   int root;
   bool all;
-  MPI_Op op;
+  std14::conditional_t<std::is_same<Tag, mpi::tag::reduce>::value, MPI_Op, void *> op; // some version of mpi do not use pointer.
+  // take void* to avoid specializing in the reduce case.
 
   using domain_type = typename A::domain_type;
 
