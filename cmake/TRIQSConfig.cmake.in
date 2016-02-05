@@ -149,12 +149,13 @@ macro (triqs_python_extension ModuleName)
  set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_TARGETS "python_wrap_${ModuleName}")
 
  install (FILES ${converter_name}.to_be_installed DESTINATION @CMAKE_INSTALL_PREFIX@/include/${CMAKE_PROJECT_NAME}/py_converters RENAME ${ModuleName}.hpp)
- install (TARGETS ${ModuleName} DESTINATION @TRIQS_PYTHON_LIB_DEST_ROOT@/${CMAKE_PROJECT_NAME}  )
-
- # Should we put it by default ?
- #triqs_set_rpath_for_target(${ModuleName})
-
 endmacro (triqs_python_extension)
+
+macro (triqs_python_extension_and_install ModuleName)
+ triqs_python_extension(${ModuleName})
+ install(TARGETS ${ModuleName} DESTINATION lib/python2.7/site-packages/${CMAKE_PROJECT_NAME} )
+endmacro()
+
 
 ################### triqs_add_all_subdirectories_with_cmakelist  ###################
 
