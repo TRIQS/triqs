@@ -83,7 +83,7 @@ This generates:
     #include <test.hpp>
 
 add
-=====
+*****
 
 **Synopsis**:
 

@@ -2,7 +2,7 @@
 .. _hdf5_base:
 .. module:: pytriqs.archive
 
-The HDF5 format
+**[triqs/h5]** The HDF5 format
 ###################################
 
 

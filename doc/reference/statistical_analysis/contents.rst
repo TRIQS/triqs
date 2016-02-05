@@ -1,5 +1,5 @@
-Tools for statistical analysis: binning, jackknife and autocorrelation time
-=============================================================================
+**[triqs/statistics]** Tools for statistical analysis: binning, jackknife and autocorrelation time
+====================================================================================================
 
 Introduction
 -------------

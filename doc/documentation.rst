@@ -59,15 +59,15 @@ Code reference
 
    reference/gfs/contents
    reference/lattice_tools/contents
-   reference/plotting_protocols/contents
    reference/montecarlo/contents
    reference/operators/contents
-   reference/random_generator/contents
    reference/arrays/contents
    reference/clef/contents
    reference/hdf5/contents
    reference/determinant_manipulation/contents
    reference/statistical_analysis/contents
+   reference/plotting_protocols/contents
+   reference/random_generator/contents
 
 
 Developer tools

@@ -1,5 +1,5 @@
-Clef: Compile-time lazy expressions and functions
-***************************************************
+**[triqs/clef]** Clef: Compile-time lazy expressions and functions
+************************************************************************
 
 .. highlight:: c
 

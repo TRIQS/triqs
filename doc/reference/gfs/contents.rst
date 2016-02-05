@@ -1,5 +1,5 @@
-Green's functions
-===================
+**[triqs/gfs]** Green's functions
+===================================
 
 
 .. warning::

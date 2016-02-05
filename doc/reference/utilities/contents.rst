@@ -1,5 +1,5 @@
-Utilities: exceptions, tuple-tools, etc.
-*******************************************
+**[triqs/utility]** Utilities: exceptions, tuple-tools, etc.
+*************************************************************
 
 .. highlight:: c
 

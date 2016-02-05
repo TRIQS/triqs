@@ -1,5 +1,5 @@
-Multidimensional arrays
-************************
+**[triqs/arrays]** Multidimensional arrays
+********************************************
 .. warning::
 
    This library is of stable quality, except when otherwise stated(for some recent features).

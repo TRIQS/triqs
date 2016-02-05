@@ -1,7 +1,7 @@
 .. _det_manip:
 
-Manipulations of determinants
-=============================
+**[triqs/det_manip]** Manipulations of determinants
+=====================================================
  
 .. warning::
 
