@@ -36,6 +36,45 @@ namespace triqs { namespace arrays {
   matrix_const_view <T> operator[](int i) const {
    return matrix_vec[i];
   }
+  block_matrix & operator += (block_matrix const & b){
+   assert(b.block_names==this->block_names);
+   for(int i=0;i<this->size();i++) (*this)[i] += b[i];
+   return *this; 
+  }
+  block_matrix & operator -= (block_matrix const & b){
+   assert(b.block_names==this->block_names);
+   for(int i=0;i<this->size();i++) (*this)[i] -= b[i];
+   return *this; 
+  }
+  template<typename Scalar>
+  block_matrix & operator *= (Scalar const & s){
+   for(int i=0;i<this->size();i++) (*this)[i] *= s;
+   return *this; 
+  }
+  template<typename Scalar>
+  block_matrix & operator /= (Scalar const & s){
+   for(int i=0;i<this->size();i++) (*this)[i] /= s;
+   return *this; 
+  }
+  block_matrix operator - (block_matrix const & b){
+   auto res=*this;  res-=b;  return res;
+  }
+  block_matrix operator + (block_matrix const & b){
+   auto res=*this;  res+=b;  return res;
+  }
+  template<typename Scalar>
+  block_matrix operator * (Scalar const & s){
+   auto res=*this; res*= s; return res;
+  }
+  template<typename Scalar>
+  block_matrix operator / (Scalar const & s){
+   auto res=*this; res/= s; return res;
+  }
+  template<typename Scalar>
+  friend block_matrix operator * ( Scalar const & s, block_matrix const & b){
+   auto res=b; res*= s; return res;
+  }
+
   friend std::string get_triqs_hdf5_data_scheme(block_matrix const &g) {
    return "BlockMatrix";
   }

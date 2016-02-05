@@ -20,6 +20,7 @@ c = class_(
         c_type = "block_matrix<double>",   # name of the C++ class
         c_type_absolute = "triqs::arrays::block_matrix<double>",
         hdf5 = True,
+        arithmetic=("vector_space", "double"),
         serializable = "tuple",
         is_printable = True
 )
