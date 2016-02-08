@@ -153,7 +153,7 @@ endmacro (triqs_python_extension)
 
 macro (triqs_python_extension_and_install ModuleName)
  triqs_python_extension(${ModuleName})
- install(TARGETS ${ModuleName} DESTINATION lib/python2.7/site-packages/${CMAKE_PROJECT_NAME} )
+ install(TARGETS ${ModuleName} DESTINATION @TRIQS_PYTHON_LIB_DEST_ROOT@/${CMAKE_PROJECT_NAME} )
 endmacro()
 
 
