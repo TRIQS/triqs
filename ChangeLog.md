@@ -25,6 +25,32 @@ Installation
 * The library is installed in C++14 mode by default. Put the flag ``USE_CPP14`` to false
   to get to C+11 backward compatibility mode.
 
+* New install/build conventions for apps.
+  Here are the changes to be made:
+
+  * in _desc.py
+  1) m = module(full_name = 'module_name', app_name='application_a')
+      (instead of full_name="pytriqs.applications.application_a.module_name")
+  2) m.use_module("gf", "triqs")
+      (instead of m.use_module("gf"))
+  3) m.add_include(... with path relative to c++ dir (not
+  relative to current dir))
+     (e.g. add_include(solver_core.hpp) instead of add_include("../c++/solver_core.hpp")
+
+  * in CMakeLists.txt
+  4) add line include_directories(c++)
+
+  * in python/CMakeLists.txt
+  5) change python_destination: remove pytriqs.applications...
+  6) change triqs_python_extension: change to triqs_python_extension_and_install, and remove second argument
+  7) change install DESTINATION : replace variable TRIQS_PYTHON_LIB_DEST with PYTHON_LIB_DEST_ROOT
+
+  * in your python scripts:
+  8) replace everywhere pytriqs.applications.*** with ***
+
+  A more detailed documentation can be found here: https://triqs.ipht.cnrs.fr/1.x/reference/using_the_lib/application_structure.html
+
+
 Many-body operators
 ~~~~~~~~~~~~~~~~~~~
 
@@ -90,6 +116,8 @@ Tests
   compare arrays and green's functions in a python script.
 
 * The module ``pytriqs.utility.h5diff`` allows to compare two archives.
+
+
 
 
 Version 1.3

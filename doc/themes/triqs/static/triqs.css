@@ -29,6 +29,13 @@ body {
     max-width: 1080px;
 }
 
+.red{
+ color: red
+}
+.blue{
+ color: blue
+}
+
 a.triqs {
   color: #073958;
   text-decoration: none;

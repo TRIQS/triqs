@@ -17,3 +17,4 @@ We will expose successively various cases:
    :maxdepth: 2
 
    triqs_library
+   application_structure
