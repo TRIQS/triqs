@@ -23,6 +23,6 @@ r"""
 DOC
 
 """
-from block_matrix import BlockMatrix
+from block_matrix import BlockMatrix, BlockMatrixComplex
 
-__all__ = ['BlockMatrix']
+__all__ = ['BlockMatrix', 'BlockMatrixComplex']

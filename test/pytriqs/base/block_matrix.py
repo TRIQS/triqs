@@ -23,3 +23,7 @@ A2=R2["A"]
 del R2
 
 assert A2.matrix_vec==A.matrix_vec, "not ok" 
+
+
+
+A3=BlockMatrixComplex(['up','down'],[matrix([[0]]), matrix([[1.0*1j]])])
