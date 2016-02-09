@@ -256,6 +256,9 @@ namespace triqs { namespace det_manip {
     /// Returns the j-th values of y
     xy_type const & get_y(size_t j) const { return y_values[col_num[j]];}
 
+    /// Returns the function f
+    FunctionType const & get_function() const { return f;}
+
     /** det M of the current state of the matrix.  */
     det_type determinant() const { return sign * det; }
 
