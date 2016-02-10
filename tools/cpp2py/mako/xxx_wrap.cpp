@@ -580,7 +580,7 @@ template<typename T>
      // define the variable to be filled by the parsing method
      // wrapped types are converted to a pointer, other converted types to a value or a view
      %for t,n,d in overload.args :
-       %if t in module._wrapped_types :
+       %if is_a_wrapped_type(t):
        ${t}* ${n} = NULL; // ${t} is a wrapped type
        %elif is_type_a_view(t):
        ${t} ${n}  = typename ${t}::regular_type{}; // ${t} is a view, but not wrapped

@@ -2,7 +2,7 @@
 // DO NOT EDIT. Generated automatically by wrap_generator
 // We store here the list of the C++ converted types for use in another module
 // WrappedTypeList
-// ${list(set(module._wrapped_types))}
+// ${list(set(wrapped_types_list))}
 //
 #pragma once
 // in case it is included in the module ${module.full_name}.so, we do not want this specialization

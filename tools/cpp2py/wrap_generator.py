@@ -26,6 +26,26 @@ def translate_c_type_to_py_type(t) :
     # numpy, etc...
     return t
 
+# List of all wrapped types. A priori it should be in module_, but
+# we will have at most one module per file, so I make a global variable
+# otherwise one has to add a "parent" to class_, cfunction, ... to access this
+# list from the parent module
+# We store the name of the type eliminating the whitespaces in them
+_wrapped_types_list = []
+def _add_wrapped_type(t): _wrapped_types_list.append(t.replace(' ',''))
+def _is_a_wrapped_type(t): return t.replace(' ','') in _wrapped_types_list
+
+def _is_type_a_view(c_type):
+    """Is c_type a view type ? The criterion is a bit basic ..."""
+    return c_type.split('<', 1)[0].endswith("_view") or c_type.endswith("::view_type")
+
+def _regular_type_if_view_else_type(c_type):
+    """Return the regular type if c_type is a view, or c_type otherwise"""
+    return "typename %s::regular_type"%c_type if _is_type_a_view(c_type) else c_type
+
+def is_non_wrappable_type(c_type):
+    return False
+
 class cfunction :
     """
        Representation of one overload of a C++ function or method.
@@ -129,6 +149,11 @@ class cfunction :
         else : raise RuntimeError, "Syntax error in overload: args = %s"%args
         self.args.append([t.strip(),n.strip(),d])
       # end analyze signature
+      # check that no type is forbidden
+      for a in args:
+          if is_non_wrappable_type(a[0]): raise ValueError, "The type %s can not be wrapped"%a[0]
+
+      #
       assert self.c_name or self._calling_pattern or self.is_constructor, "You must specify a calling_pattern or the signature must contain the name of the function"
       if self.is_constructor :
         assert self.rtype == None,  "Constructor must not have a return type"
@@ -143,7 +168,7 @@ class cfunction :
         if self.is_method:
             self_c = "self_c." if not self.is_static else "self_class::"
         # the wrapped types are called by pointer
-        args = ",".join([ ('*' if t in module_._wrapped_types else '') + n for t,n,d in self.args])
+        args = ",".join([ ('*' if _is_a_wrapped_type(t) else '') + n for t,n,d in self.args])
         args = args if self._dict_call is None else "convert_from_python<%s>(keywds)"%self._dict_call # call with the keywds argument
         return "%s %s %s%s(%s)"%(s1, s,self_c, self.c_name , args)
 
@@ -257,12 +282,6 @@ class pyfunction :
             s = "\n".join([self.doc, "\n"] + [f._generate_doc() for f in self.overloads])
         s=s.replace('@{','').replace('@}','')
         return repr(s)[1:-1] # remove the ' ' made by repr
-
-def _is_type_a_view(c_type) :
-    return c_type.split('<', 1)[0].endswith("_view") # A bit basic ?
-
-def _regular_type_if_view_else_type(c_type) :
-    return "typename %s::regular_type"%c_type if _is_type_a_view(c_type) else c_type
 
 class class_ :
     """
@@ -437,7 +456,7 @@ class class_ :
         - doc : the doc string.
         """
         f = cfunction(signature, calling_pattern = calling_pattern, is_constructor = True, is_method = True,  doc = doc)
-        all_args = ",".join([ ('*' if t in module_._wrapped_types else '') + n  for t,n,d in f.args])
+        all_args = ",".join([ ('*' if _is_a_wrapped_type(t) else '') + n  for t,n,d in f.args])
         all_args = all_args if f._dict_call is None else "convert_from_python<%s>(keywds)"%f._dict_call # call with the keywds argument
         f._calling_pattern = '' if f._dict_call is None else "if (!convertible_from_python<%s>(keywds,true)) goto error_return;\n"%f._dict_call
         if calling_pattern is not None :
@@ -632,8 +651,6 @@ class module_ :
     """
        Representation of a module
     """
-    _wrapped_types = []
-
     def __init__(self, full_name,  doc = '', app_name = None) :
         """
         - full_name = complete name of the module (after install, e.g.  pytriqs.gf.local.gf
@@ -661,7 +678,8 @@ class module_ :
         """
         if cls.py_type in self.classes : raise IndexError, "The class %s already exists"%cls.py_type
         self.classes[cls.py_type] = cls
-        self._wrapped_types += [cls.c_type, cls.c_type_absolute]  # we can call is by its name or its absolute name
+        _add_wrapped_type(cls.c_type)
+        _add_wrapped_type(cls.c_type_absolute)  # we can call is by its name or its absolute name
 
     def add_function(self, signature, name =None, calling_pattern = None, python_precall = None, python_postcall = None, doc = '', release_GIL_and_enable_signal = False):
         """
@@ -739,7 +757,7 @@ class module_ :
          @param app_name (optional) name of the application where the module is defined
          From the name of the module :
            - add the header file generated for this module to the C++ include list
-           - read this file, extract the list of _wrapped_types, and add it to the wrapped_type list.
+           - read this file, update the list of _wrapped_types_list, and add it to the wrapped_type list.
         """
         f = None
         if app_name is not None: self.module_path_list.append(install_dir+"/include/"+app_name+"/py_converters/")
@@ -753,7 +771,8 @@ class module_ :
         while f.readline().strip() != "// WrappedTypeList" :
             pass
         l = f.readline()[3:] # // strip "// "
-        self._wrapped_types += eval(l)
+        global _wrapped_types_list
+        _wrapped_types_list += eval(l)
         if app_name is None:
          self.add_include(hppfile)
         else:
@@ -780,7 +799,7 @@ class module_ :
 
     def _get_proper_converter(self, t) :
         if t in basic_types_formatting : return ''
-        if t in self._wrapped_types : return ',converter_for_parser_wrapped_type<'+t+'>'
+        if _is_a_wrapped_type(t) : return ',converter_for_parser_wrapped_type<'+t+'>'
         if t.split('<',1)[0].endswith("_view") : return ',converter_for_parser_view_type<'+t+'>'
         return ',converter_for_parser_non_wrapped_type<'+t+'>'
 
@@ -805,7 +824,8 @@ class module_ :
     def _generate_wrapper_code(self, mako_template, wrap_file) :
         self._prepare_for_generation()
         tpl = Template(filename=mako_template)
-        rendered = tpl.render(module=self, regular_type_if_view_else_type= _regular_type_if_view_else_type, is_type_a_view = _is_type_a_view, python_function = python_function)
+        rendered = tpl.render(module=self, regular_type_if_view_else_type= _regular_type_if_view_else_type, is_type_a_view = _is_type_a_view,
+                   is_a_wrapped_type = _is_a_wrapped_type, python_function = python_function)
         with open(wrap_file,'w') as f:
            f.write(rendered)
 
@@ -821,7 +841,7 @@ class module_ :
         prepend_app_name=None
         if wrap_file.endswith(".to_be_installed"):
           prepend_app_name=self.app_name
-        rendered = tpl.render(module=self, prepend_app_name=prepend_app_name)
+        rendered = tpl.render(module=self, prepend_app_name=prepend_app_name, wrapped_types_list = _wrapped_types_list)
         with open(wrap_file,'w') as f:
            f.write(rendered)
 
