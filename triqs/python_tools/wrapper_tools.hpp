@@ -5,6 +5,7 @@
 #include <complex>
 #include <vector>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/utility/c17.hpp>
 #include "./pyref.hpp"
 #include <time.h>
 
@@ -41,6 +42,7 @@ namespace triqs { namespace py_tools {
 
 // default version for a wrapped type. To be specialized later.
 // py2c behaviour is undefined is is_convertible return false
+// c2py should return NULL on failure
 template<typename T> struct py_converter;
  //{
  //  static PyObject * c2py(T const & x);
@@ -48,12 +50,19 @@ template<typename T> struct py_converter;
  //  static bool is_convertible(PyObject * ob, bool raise_exception);
  //}
 
+// helper for better error message
+template <class, class = std17::void_t<>> struct does_have_a_converter : std::false_type {};
+template <class T> struct does_have_a_converter<T, std17::void_t<decltype(py_converter<std14::decay_t<T>>::py2c(nullptr))>> : std::true_type {};
+
 // We only use these functions in the code, not converter
-// TODO : Does c2py return NULL in failure ? Or is it undefined...
 template <typename T> static PyObject *convert_to_python(T &&x) {
- return py_converter<typename std::decay<T>::type>::c2py(std::forward<T>(x));
+ static_assert(does_have_a_converter<T>::value, "The type does not have a Python converter");
+ return py_converter<std14::decay_t<T>>::c2py(std::forward<T>(x));
 }
-template<typename T> static auto convert_from_python(PyObject * ob) -> decltype(py_converter<T>::py2c(ob)) { return py_converter<T>::py2c(ob);}
+template <typename T> static auto convert_from_python(PyObject *ob) -> decltype(py_converter<T>::py2c(ob)) {
+ static_assert(does_have_a_converter<T>::value, "The type does not have a Python converter");
+ return py_converter<T>::py2c(ob);
+}
 template <typename T> static bool convertible_from_python(PyObject *ob, bool raise_exception) {
  return py_converter<T>::is_convertible(ob, raise_exception);
 }
