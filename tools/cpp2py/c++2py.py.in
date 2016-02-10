@@ -35,6 +35,7 @@ parser.add_argument('--compiler_options', nargs ='*', help='Options to pass to c
 parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
 parser.add_argument('--only_converters',  action='store_true',
         help="[Experts only] Do not generate the desc file, just the converters if there are")
+parser.add_argument('--namespace', '-N', action='append',  help="Specify the namespace to explore for classes and function to wrap", default= [])
 
 args = parser.parse_args()
 args.includes = (args.includes or []) +  '@TRIQS_INCLUDE_ALL@'.split(';')
@@ -77,9 +78,16 @@ if __name__ == '__main__' :
     if add_opts:
         compiler_options += add_opts.split()
 
+    # possible filters
+    ns_filt = lambda c, ns: all([x in ns for x in args.namespace])
+    cur_file_filt = lambda c,ns : c.location.file.name in sys.argv[1:]
+
+    # if we have passed at least one namespace, use this filter.
+    analyze_filter = ns_filt if args.namespace else cur_file_filt
+
     functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, 
                where_is_libclang = args.libclang_location, 
-               analyze_filter = lambda c,ns : c.location.file.name in sys.argv[1:] )
+               analyze_filter = analyze_filter)
   
     print "Parsing C++ code. Generating the wrapper and converters ..."
 
