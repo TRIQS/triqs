@@ -33,7 +33,7 @@ from tools import *
 
 __all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
            'lazy_expressions','TailGf',
-           'GfImFreq', 'MeshImFreq',
+           'GfImFreq', 'MeshImFreq', 'GfImFreqTv3',
            'GfImTime', 'MeshImTime',
            'GfReFreq', 'MeshReFreq',
            'GfReTime', 'MeshReTime',

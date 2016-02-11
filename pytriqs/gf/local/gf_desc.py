@@ -1,4 +1,5 @@
 from wrap_generator import *
+import re
 
 module = module_(full_name = "pytriqs.gf.local.gf", doc = "Local Green functions ...")
 module.add_include("<triqs/gfs.hpp>")
@@ -202,23 +203,34 @@ module.add_class(m)
 ##   Gf Generic : common to all 5 one variable gf
 ########################
 
-def make_gf( py_type, c_tag, is_im = False, has_tail = True) :
+def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matrix_valued", serializable=True) :
+    """
+    :param py_type: python type name
+    :param c_tag: descriptor name (in c++) (e.g. imfreq)
+    :param is_im: True if imaginary-time/imaginary frequency/Legendre
+    :param has_tail: True if has a tail
+    :param target_type: matrix_valued/tensor_valued<N>
+    :param serializable: bool
+    """
+
+    rank = 2 if target_type == "matrix_valued" else int(re.compile("tensor_valued<(.*)>").match(target_type).groups()[0])
 
     data_type = "std::complex<double>" 
+    return_type = "matrix<dcomplex>" if target_type=="matrix_valued" else "array<dcomplex,%s>"%(rank)
 
     g = class_(
             py_type = py_type,
-            c_type = "gf_view<%s>"%c_tag,
-            c_type_absolute = "triqs::gfs::gf_view<triqs::gfs::%s>"%c_tag,
+            c_type = "gf_view<%s, %s>"%(c_tag, target_type),
+            c_type_absolute = "triqs::gfs::gf_view<triqs::gfs::%s, triqs::gfs::%s>"%(c_tag, target_type),
             #serializable= "boost",
-            serializable= "tuple",
+            serializable= "tuple" if serializable else None,
             is_printable= True,
             #comparisons = "==",
             hdf5 = True,
             arithmetic = ("algebra",data_type, "with_inplace_operators")
             )
 
-    g.add_constructor(signature = "(gf_mesh<%s> mesh, mini_vector<size_t,2> shape, std::vector<std::vector<std::string>> indices = std::vector<std::vector<std::string>>{}, std::string name = "")"%c_tag, python_precall = "pytriqs.gf.local._gf_%s.init"%c_tag)
+    g.add_constructor(signature = "(gf_mesh<%s> mesh, mini_vector<size_t,%s> shape, std::vector<std::vector<std::string>> indices = std::vector<std::vector<std::string>>{}, std::string name = "")"%(c_tag, rank), python_precall = "pytriqs.gf.local._gf_%s.init%s"%(c_tag, "" if rank==2 else "_tv"))
 
     g.add_method_copy()
     g.add_method_copy_from()
@@ -239,7 +251,7 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True) :
                    doc ="The mesh")
 
     g.add_property(name = "data",
-                   getter = cfunction(calling_pattern="auto result = self_c.data()", signature = "array_view<%s,3>()"%data_type),
+                   getter = cfunction(calling_pattern="auto result = self_c.data()", signature = "array_view<%s,%s>()"%(data_type,rank+1)),
                    doc ="The data ")
 
     g.add_property(name = "target_shape",
@@ -274,8 +286,8 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True) :
 
     # ()
     g.add_method(name = "__call__",
-                 calling_pattern = "matrix<dcomplex> result = self_c(n)",
-                 signature = "matrix<dcomplex>(double n)",
+                 calling_pattern = "%s result = self_c(n)"%(return_type),
+                 signature = "%s(double n)"%return_type,
                  doc = "Call operator")
 
     # []
@@ -283,7 +295,7 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True) :
     # a string :
     # an int or a slice : we ask Python to interpret the slice into a
     # range (range_from_slice) , but we need to have the length of the target of the gf to do that.
-    g.add_getitem(signature = "gf_view<%s>(PyObject * r1, PyObject * r2)"%c_tag,
+    g.add_getitem(signature = "gf_view<%s>("%c_tag+", ".join(["PyObject * r%s"%i for i in range(1,rank+1)])+")",
                   calling_pattern= """
                    auto sh = get_target_shape(self_c);
                    auto f = [&sh, &self_c](PyObject * r, int u) {
@@ -291,14 +303,14 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True) :
                          return self_c.indices().convert_index(convert_from_python<std::string>(r),u);
                        return range_from_slice(r,sh[u]);
                        };
-                   auto result = slice_target(self_c,f(r1,0),f(r2,1));
+                   auto result = slice_target(self_c,"""+""", """.join(["""f(r%s,%s)"""%(i,i-1) for i in range(1,rank+1)])+""");
                    """,
                   doc = "Returns a sliced view of the Green function")
 
-    g.add_setitem(signature = "void(PyObject* r1, PyObject* r2, PyObject* val)",
+    g.add_setitem(signature = "void("+", ".join(["PyObject* r%s"%i for i in range(1,rank+1)])+", PyObject* val)",
                   calling_pattern=
                   """
-                   pyref __arg = Py_BuildValue("(OO)", r1,r2);
+                   pyref __arg = Py_BuildValue("(OO)", """+""", """.join(["""r%s"""%i for i in range(1,rank+1)])+""");
                    pyref gs_py = PyObject_GetItem(self, __arg);  // gs = self[r1,r2]
                    pyref res = PyNumber_Lshift(gs_py, val);      // gs << val
                   """,
@@ -325,23 +337,24 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True) :
     g.number_protocol['multiply'].python_precall = "pytriqs.gf.local._gf_common.mul_precall"
     g.number_protocol['divide'].python_precall   = "pytriqs.gf.local._gf_common.div_precall"
 
-    g.number_protocol['lshift'] = pyfunction(name ="__lshift__", python_precall = "pytriqs.gf.local._gf_common._lshift_", arity = 2)
+    if target_type=="matrix_valued":
+      g.number_protocol['lshift'] = pyfunction(name ="__lshift__", python_precall = "pytriqs.gf.local._gf_common._lshift_", arity = 2)
 
-    # For backward compatibility
-    g.number_protocol['inplace_lshift'] = pyfunction(name ="__inplace_lshift__", python_precall = "pytriqs.gf.local._gf_common._ilshift_", arity = 2)
+      # For backward compatibility
+      g.number_protocol['inplace_lshift'] = pyfunction(name ="__inplace_lshift__", python_precall = "pytriqs.gf.local._gf_common._ilshift_", arity = 2)
 
-    g.add_method(name = "invert", calling_pattern = "invert_in_place(self_c)" , signature = "void()", doc = "Invert (in place)")
+      g.add_method(name = "invert", calling_pattern = "invert_in_place(self_c)" , signature = "void()", doc = "Invert (in place)")
 
-    g.add_method(name = "transpose",
-                 calling_pattern = "auto result = transpose(self_c)",
-                 signature = "gf<%s>()"%c_tag,
-                 doc = "Returns a NEW gf, with transposed data, i.e. it is NOT a transposed view.")
+      g.add_method(name = "transpose",
+                   calling_pattern = "auto result = transpose(self_c)",
+                   signature = "gf<%s>()"%c_tag,
+                   doc = "Returns a NEW gf, with transposed data, i.e. it is NOT a transposed view.")
 
-    if c_tag not in [ "imtime", "legendre"] :
-        g.add_method(name = "conjugate", calling_pattern = "auto result = conj(self_c)" , signature = "gf<%s>()"%c_tag, doc = "Return a new function, conjugate of self.")
+      if c_tag not in [ "imtime", "legendre"] :
+          g.add_method(name = "conjugate", calling_pattern = "auto result = conj(self_c)" , signature = "gf<%s>()"%c_tag, doc = "Return a new function, conjugate of self.")
 
-    g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag)) 
-    g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type)) 
+      g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag)) 
+      g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type)) 
 
 #  do we really want to have the view case separately ? the matrix can not be so big.
 #    g.add_method(name = "from_L_G_R",
@@ -349,15 +362,15 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True) :
 #                 signature = "void(matrix_view<%s> l,gf<%s> g,matrix_view<%s> r)"%(data_type,c_tag,data_type),
 #                 doc = "self << l * g * r")
 
-    g.add_method(name = "from_L_G_R",
-                 calling_pattern = "set_from_L_G_R(self_c,l,g(),r)",
-                 signature = "void(matrix<%s> l,gf<%s> g,matrix<%s> r)"%(data_type,c_tag,data_type),
-                 doc = "self << l * g * r")
+      g.add_method(name = "from_L_G_R",
+                   calling_pattern = "set_from_L_G_R(self_c,l,g(),r)",
+                   signature = "void(matrix<%s> l,gf<%s> g,matrix<%s> r)"%(data_type,c_tag,data_type),
+                   doc = "self << l * g * r")
 
-    g.add_method(name = "zero",
-                 calling_pattern = "self_c = 0",
-                 signature = "void()",
-                 doc = "Put the Green function to 0")
+      g.add_method(name = "zero",
+                   calling_pattern = "self_c = 0",
+                   signature = "void()",
+                   doc = "Put the Green function to 0")
 
     # Pure python methods
     g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%c_tag, rename = "_plot_")
@@ -373,7 +386,7 @@ g = make_gf(py_type = "GfImFreq", c_tag = "imfreq", is_im = True)
 
 g.add_method(name = "make_real_in_tau",
              calling_pattern = "auto result = make_real_in_tau(self_c)",
-             signature = "gf_view<imfreq>()",
+             signature = "gf_view<imfreq, matrix_valued>()",
              doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
 
 g.add_method(name = "density",
@@ -387,12 +400,12 @@ g.add_method(name = "total_density",
              doc = "Trace of density")
 
 g.add_method(name = "set_from_fourier",
-             signature = "void(gf_view<imtime> gt)",
+             signature = "void(gf_view<imtime, matrix_valued> gt)",
              calling_pattern = "self_c = fourier(*gt)",
              doc = """Fills self with the Fourier transform of gt""")
 
 g.add_method(name = "set_from_legendre",
-             signature = "void(gf_view<legendre> gl)",
+             signature = "void(gf_view<legendre, matrix_valued> gl)",
              calling_pattern = "self_c = legendre_to_imfreq(*gl)",
              doc = """Fills self with the legendre transform of gl""")
 
@@ -424,6 +437,22 @@ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "g
 
 module.add_class(g)
 
+#############################
+##   Tensor-valued Gfs [ImFreq, ImTime, ReFreq]
+##############################
+for c_tag, py_tag in [("imfreq","ImFreq"), ("imtime","ImTime"), ("refreq", "ReFreq")]:
+
+ g = make_gf(
+       py_type = "Gf%sTv3"%py_tag,
+       c_tag = c_tag,
+       is_im = True if c_tag=="imfreq" or c_tag=="imtime" else False,
+       target_type = "tensor_valued<3>",
+       has_tail=False,
+       serializable=False,  #careful not serializable!!
+       )
+
+ module.add_class(g)
+
 ########################
 ##   GfImTime
 ########################
@@ -431,12 +460,12 @@ module.add_class(g)
 g = make_gf(py_type = "GfImTime", c_tag = "imtime", is_im = True)
 
 g.add_method(name = "set_from_inverse_fourier",
-             signature = "void(gf_view<imfreq> gw)",
+             signature = "void(gf_view<imfreq, matrix_valued> gw)",
              calling_pattern = "self_c = inverse_fourier(*gw)",
              doc = """Fills self with the Inverse Fourier transform of gw""")
 
 g.add_method(name = "set_from_legendre",
-             signature = "void(gf_view<legendre> gl)",
+             signature = "void(gf_view<legendre, matrix_valued> gl)",
              calling_pattern = "self_c = legendre_to_imtime(*gl)",
              doc = """Fills self with the legendre transform of gl""")
  
@@ -446,7 +475,7 @@ g.add_call(signature = "matrix<dcomplex>(double tau)", doc = "G(tau) using inter
 module.add_class(g)
 
 module.add_function(name = "rebinning_tau",
-                    signature = "gf<imtime>(gf_view<imtime> g, int new_n_tau)",
+                    signature = "gf<imtime, matrix_valued>(gf_view<imtime,matrix_valued,tail> g, int new_n_tau)",
                     doc = "Rebins the data of a GfImTime on a sparser mesh")
 
 ########################
@@ -476,12 +505,12 @@ g.add_method(name = "total_density",
              doc = "Trace of density")
 
 g.add_method(name = "set_from_imtime",
-             signature = "void(gf_view<imtime> gt)",
+             signature = "void(gf_view<imtime, matrix_valued> gt)",
              calling_pattern = "self_c = imtime_to_legendre(*gt)",
              doc = """Fills self with the legendre transform of gt""")
 
 g.add_method(name = "set_from_imfreq",
-             signature = "void(gf_view<imfreq> gw)",
+             signature = "void(gf_view<imfreq, matrix_valued> gw)",
              calling_pattern = "self_c = imfreq_to_legendre(*gw)",
              doc = """Fills self with the legendre transform of gw""")
 
@@ -499,12 +528,12 @@ module.add_class(g)
 g = make_gf(py_type = "GfReFreq", c_tag = "refreq")
 
 g.add_method(name = "set_from_fourier",
-             signature = "void(gf_view<retime> gt)",
+             signature = "void(gf_view<retime, matrix_valued> gt)",
              calling_pattern = "self_c = fourier(*gt)",
              doc = """Fills self with the Fourier transform of gt""")
 
 g.add_method(name = "set_from_pade",
-             signature = "void(gf_view<imfreq> gw, int n_points = 100, double freq_offset = 0.0)",
+             signature = "void(gf_view<imfreq, matrix_valued> gw, int n_points = 100, double freq_offset = 0.0)",
              calling_pattern = "pade(self_c,*gw,n_points, freq_offset)",
              doc = """TO BE WRITTEN""")
 
@@ -535,7 +564,7 @@ module.add_class(g)
 g = make_gf(py_type = "GfReTime", c_tag = "retime")
 
 g.add_method(name = "set_from_inverse_fourier",
-             signature = "void(gf_view<refreq> gw)",
+             signature = "void(gf_view<refreq, matrix_valued> gw)",
              calling_pattern = "self_c = inverse_fourier(*gw)",
              doc = """Fills self with the Inverse Fourier transform of gw""")
 
@@ -544,7 +573,7 @@ module.add_class(g)
 # EXPERIMENTAL : global fourier functions....
 # To be replaced by make_gf(fourier...)).
 
-module.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<retime>(gf_view<refreq> gw)", doc ="")
+module.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<retime, matrix_valued>(gf_view<refreq, matrix_valued> gw)", doc ="")
 
 ########################
 ##   Code generation

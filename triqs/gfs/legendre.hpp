@@ -39,6 +39,9 @@ namespace gfs {
  template <> struct gf_h5_name<legendre, matrix_valued, nothing> {
   static std::string invoke() { return "Legendre"; }
  };
+ template <int R> struct gf_h5_name<legendre, tensor_valued<R>, nothing> {
+  static std::string invoke() { return "LegendreTv"+std::to_string(R); }
+ };
  
  // If the data is real, write a real array, otherwise a complex array
  template <typename T, typename S, typename E> struct gf_h5_write_data<legendre, T, S, E> : gf_h5_write_data_real_or_complex_runtime{};

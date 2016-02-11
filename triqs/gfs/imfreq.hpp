@@ -110,7 +110,9 @@ namespace gfs {
   static std::string invoke() { return "ImFreq"; }
  };
  template <typename S, int R>
- struct gf_h5_name<imfreq, tensor_valued<R>, S> : gf_h5_name<imfreq, matrix_valued, S> {};
+ struct gf_h5_name<imfreq, tensor_valued<R>, S> : gf_h5_name<imfreq, matrix_valued, S> {
+  static std::string invoke() { return "ImFreqTv"+std::to_string(R); }
+ };
 
  // Before writing to h5, check if I can save the positive freq only
  template <typename T, typename S, typename E> struct gf_h5_before_write<imfreq, T, S, E> {

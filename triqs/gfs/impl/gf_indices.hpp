@@ -23,7 +23,7 @@
 
 namespace triqs {
 namespace gfs {
-
+ /// one index
  struct gf_indices_one {
 
   gf_indices_one() = default;
@@ -57,7 +57,7 @@ namespace gfs {
  };
 
 
- // A simple indice struct
+ // A simple indice struct (two indices)
  struct gf_indices_pair {
 
   std::vector<gf_indices_one> ind_pair;
@@ -125,6 +125,74 @@ namespace gfs {
 
  inline gf_indices_pair transpose(gf_indices_pair const &x) {
   return {x.ind_pair[1], x.ind_pair[0]};
+ }
+
+ /// A simple indice struct (triplet)
+ struct gf_indices_triplet {
+
+  std::vector<gf_indices_one> ind_triplet;
+
+  gf_indices_triplet() : ind_triplet(3) {}
+
+  gf_indices_triplet(gf_indices_one r1, gf_indices_one r2, gf_indices_one r3) : ind_triplet({r1, r2, r3}) {}
+
+  gf_indices_triplet(gf_indices_one r) : ind_triplet({r, r, r}) {}
+
+  gf_indices_triplet(std::vector<std::vector<std::string>> _ind) : ind_triplet({_ind[0], _ind[1], _ind[2]}) {}
+
+  /// from a shape
+  gf_indices_triplet(arrays::mini_vector<int, 3> const &shape) : ind_triplet({gf_indices_one(shape[0]), gf_indices_one(shape[1]), gf_indices_one(shape[2])}) {}
+
+  /// from a size
+  gf_indices_triplet(int L) : gf_indices_triplet(arrays::mini_vector<int, 3>{L, L, L}) {}
+
+  bool is_empty() const { return (ind_triplet[0].size() == 0) && (ind_triplet[1].size() == 0) && (ind_triplet[2].size() == 0); }
+
+  template <typename G> bool check_size(G *g) const {
+   return (is_empty() || ((ind_triplet[0].size() == get_target_shape(*g)[0]) && (ind_triplet[1].size() == get_target_shape(*g)[1]) && (ind_triplet[2].size() == get_target_shape(*g)[2])));
+  }
+
+  arrays::range convert_index(std::string const &s, int i) const { return ind_triplet[i].convert_index(s); }
+
+  // access to one of the index list
+  gf_indices_one operator[](int i) const { return ind_triplet[i]; }
+
+  friend void h5_write(h5::group fg, std::string subgroup_name, gf_indices_triplet const &g) {
+   if (g.is_empty()) return;
+   auto gr = fg.create_group(subgroup_name);
+   h5_write(gr, "r1", g.ind_triplet[0].ind);
+   h5_write(gr, "r2", g.ind_triplet[1].ind);
+   h5_write(gr, "r3", g.ind_triplet[2].ind);
+  }
+
+  friend void h5_read(h5::group fg, std::string subgroup_name, gf_indices_triplet &g) {
+   h5::group gr = fg; // no default construction
+   try {
+    gr = fg.open_group(subgroup_name);
+   }
+   catch (...) {
+    g = gf_indices_triplet{}; // empty, no file
+    return;
+   }
+   h5_read(gr, "r1", g.ind_triplet[0].ind);
+   h5_read(gr, "r2", g.ind_triplet[1].ind);
+   h5_read(gr, "r3", g.ind_triplet[2].ind);
+  }
+
+  friend class boost::serialization::access;
+  template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("ind_triplet", ind_triplet); }
+ };
+
+ inline gf_indices_triplet slice(gf_indices_triplet const &ind_triplet, arrays::range rr1, arrays::range rr2, arrays::range rr3) {
+  if (ind_triplet.is_empty()) return {};
+  std::vector<std::string> vr1, vr2, vr3;
+  for (auto i : rr1) 
+   vr1.push_back(ind_triplet[0].ind[i]);
+  for (auto i : rr2) 
+   vr2.push_back(ind_triplet[1].ind[i]);
+  for (auto i : rr3) 
+   vr3.push_back(ind_triplet[2].ind[i]);
+  return {vr1, vr2, vr3};
  }
 }
 }

@@ -43,6 +43,9 @@ namespace gfs {
  template <typename Singularity> struct gf_h5_name<refreq, matrix_valued, Singularity> {
   static std::string invoke() { return "ReFreq"; }
  };
+ template <typename Singularity, int R> struct gf_h5_name<refreq, tensor_valued<R>, Singularity> {
+  static std::string invoke() { return "ReFreqTv"+std::to_string(R); }
+ };
 }
 }
 

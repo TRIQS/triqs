@@ -16,8 +16,12 @@ class LazyCTX:
         return tmp
 
 def get_indices_in_dict(d): 
+    """
+    :param d: dictionary with at least keys 'indices' or ('indicesL' and 'indicesR')
+    works for indices of matrix_valued and tensor_valued<3> functions
+    """
     if not ( ('indicesL' in d and 'indicesR' in d) or 'indices' in d): return ()
-
+    
     indicesL = list ( d.pop('indicesL',()) or d.pop('indices',()) )
     indicesR = list ( d.pop('indicesR',()) or indicesL  )
 
@@ -32,5 +36,26 @@ def get_indices_in_dict(d):
 
     return indicesL, indicesR
 
+def get_indices_in_dict_tv(d): 
+    """
+    :param d: dictionary with at least keys 'indices'
+    works for indices of tensor_valued<3> functions
+    """
+    if not ( 'indices' in d): return ()
+    
+    indicesR1 = list ( d['indices'][0])
+    indicesR2 = list ( d['indices'][1])
+    indicesR3 = list ( d['indices'][2])
+    d.pop('indices') #pop key from dict 
 
+    # Now check the indices
+    ty = set([type(x) for x in indicesR1]+[type(x) for x in indicesR2]+ [type(x) for x in indicesR3])
+    assert len(ty) !=0, "No indices found !"
+    assert len(ty)==1, " All indices must have the same type %s"%ty
 
+    # If the indices are not string, make them string anyway
+    indicesR1 = [ str(x) for x in indicesR1 ]     
+    indicesR2 = [ str(x) for x in indicesR2 ]     
+    indicesR3 = [ str(x) for x in indicesR3 ]     
+
+    return indicesR1, indicesR2, indicesR3

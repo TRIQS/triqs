@@ -1,9 +1,11 @@
-from _imp_tools import get_indices_in_dict
+from _imp_tools import get_indices_in_dict, get_indices_in_dict_tv
 import _gf_plot 
 import numpy
 
 def init( mesh=None, shape=None, name='g', **kwargs):
     """
+    python adaptor for the construction of a gf<imfreq>
+    args: {mesh, indices} or {beta,[n_points], [statistic], indices} 
     """
     if mesh is None:
         from gf import MeshImFreq
@@ -16,8 +18,8 @@ def init( mesh=None, shape=None, name='g', **kwargs):
     indices_pack = get_indices_in_dict(kwargs)
     if not shape: 
       assert indices_pack, "No shape, no indices !"
-      indicesL, indicesR = indices_pack
-      shape = len(indicesL),len(indicesR)
+      indices = indices_pack
+      shape = [len(x) for x in indices]
     if kwargs: raise ValueError, "GfImFreq: Unused parameters %s were passed."%kwargs.keys()
 
 
@@ -26,6 +28,28 @@ def init( mesh=None, shape=None, name='g', **kwargs):
     #tail = kwargs.pop('tail') if 'tail' in kwargs else TailGf(shape = (N1,N2))
     #symmetry = kwargs.pop('symmetry', Nothing())
     #return mesh, data, tail, symmetry, indices_pack, name
+
+    return (mesh, shape, indices_pack, name), {}
+
+def init_tv( mesh=None, shape=None, name='g', **kwargs):
+    """
+    python adaptor for the construction of a gf<imfreq, tensor_valued>
+    args: {mesh, indices} or {beta,[n_points], [statistic], indices} 
+    """
+    if mesh is None:
+        from gf import MeshImFreq
+        if 'beta' not in kwargs: raise ValueError, "beta not provided"
+        beta = float(kwargs.pop('beta'))
+        n_points = kwargs.pop('n_points',1025)
+        stat = kwargs.pop('statistic','Fermion')
+        mesh = MeshImFreq(beta,stat,n_points)
+    
+    indices_pack = get_indices_in_dict_tv(kwargs)
+    if not shape: 
+      assert indices_pack, "No shape, no indices !"
+      indices = indices_pack
+      shape = [len(x) for x in indices]
+    if kwargs: raise ValueError, "GfImFreq: Unused parameters %s were passed."%kwargs.keys()
 
     return (mesh, shape, indices_pack, name), {}
 

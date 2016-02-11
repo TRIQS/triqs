@@ -154,11 +154,19 @@ namespace gfs {
  // A special case used for imtime and legendre.
  // If the data is real, write a real array, otherwise a complex array
  struct gf_h5_write_data_real_or_complex_runtime {
-  template <typename G> static void invoke(h5::group gr, G const &g) {
+  //template <typename G> static void invoke(h5::group gr, G const &g) {
+  template <typename D, typename T, typename S> static void invoke(h5::group gr, gf_const_view<D,T,S> const &g) {
    if (!is_gf_real(g))
     h5_write(gr, "data", g.data());
    else
     h5_write(gr, "data", array<double, G::data_t::rank>(real(g.data())));
+    //h5_write(gr, "data", array<double,3>(real(g.data())));
+  }
+  template <typename D, typename S> static void invoke(h5::group gr, gf_const_view<D,tensor_valued<3>,S> const &g) {
+   if (!is_gf_real(g))
+    h5_write(gr, "data", g.data());
+   else
+    h5_write(gr, "data", array<double,4>(real(g.data())));
   }
  };
 

@@ -37,3 +37,5 @@ add_python_test(U_mat)
 
 #block matrix
 add_python_test(block_matrix)
+
+add_python_test(gf_tensor_valued)

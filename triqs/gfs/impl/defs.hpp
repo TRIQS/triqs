@@ -180,6 +180,9 @@ namespace gfs {
  template <> struct gf_indices<matrix_valued> {
   using type = gf_indices_pair;
  };
+ template <> struct gf_indices<tensor_valued<3>> {
+  using type = gf_indices_triplet;
+ };
 
  /*----------------------------------------------------------
   *  data proxy

@@ -43,7 +43,9 @@ namespace gfs {
  template <typename Singularity> struct gf_h5_name<imtime, matrix_valued, Singularity> {
   static std::string invoke() { return "ImTime"; }
  };
- template <typename S, int R> struct gf_h5_name<imtime, tensor_valued<R>, S> : gf_h5_name<imtime, matrix_valued, S> {};
+ template <typename S, int R> struct gf_h5_name<imtime, tensor_valued<R>, S> : gf_h5_name<imtime, matrix_valued, S> {
+  static std::string invoke() { return "ImTimeTv"+std::to_string(R); }
+ };
 
  // If the data is real, write a real array, otherwise a complex array
  template <typename T, typename S, typename E> struct gf_h5_write_data<imtime, T, S, E> : gf_h5_write_data_real_or_complex_runtime{};
