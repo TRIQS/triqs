@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2013 by O. Parcollet
+ * Copyright (C) 2011-2016 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -77,8 +77,16 @@ namespace triqs { namespace arrays {
 
    template<typename LL, typename RR> matrix_expr(LL && l_, RR && r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
 
-   domain_type domain() const  { return combine_domain()(l,r); } 
-   template<typename ... Args> value_type operator()(Args && ... args) const { return utility::operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...));}
+   domain_type domain() const { return combine_domain()(l, r); }
+
+   template <typename... Args>
+   // require(!clef::is_any_lazy<Args...>)
+   std14::enable_if_t<!clef::is_any_lazy<Args...>::value, value_type> operator()(Args &&... args) const {
+    return utility::operation<Tag>()(l(std::forward<Args>(args)...), r(std::forward<Args>(args)...));
+   }
+
+   TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
+
    friend std::ostream &operator <<(std::ostream &sout, matrix_expr const &expr){return sout << "("<<expr.l << " "<<utility::operation<Tag>::name << " "<<expr.r<<")" ; }
 
    friend matrix<value_type> make_regular(matrix_expr const &x) { return make_matrix(x); }

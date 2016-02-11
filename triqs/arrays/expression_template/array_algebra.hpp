@@ -50,10 +50,23 @@ namespace triqs { namespace arrays {
 
    domain_type domain() const  { return combine_domain()(l,r); } 
    //template<typename ... Args> auto operator()(Args && ... args) const DECL_AND_RETURN( utility::operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...)));
-   template<typename ... Args> value_type operator()(Args && ... args) const { return utility::operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...));}
 
-   friend std::ostream &operator <<(std::ostream &sout, array_expr const &expr){return sout << "("<<expr.l << " "<<utility::operation<Tag>::name << " "<<expr.r<<")" ; }
-   friend array<value_type, domain_type::rank> make_array(array_expr const & e) { return e;}
+ template <typename... Args>
+   //require(!clef::is_any_lazy<Args...>)
+   std14::enable_if_t<!clef::is_any_lazy<Args...>::value, value_type> operator()(Args &&... args) const {
+    return utility::operation<Tag>()(l(std::forward<Args>(args)...), r(std::forward<Args>(args)...));
+   }
+
+   TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
+
+   friend std::ostream &operator<<(std::ostream &sout, array_expr const &expr) {
+    return sout << "(" << expr.l << " " << utility::operation<Tag>::name << " " << expr.r << ")";
+   }
+
+   friend array<value_type, domain_type::rank> make_array(array_expr const &e) { return e; }
+   friend array<value_type, domain_type::rank> make_regular(array_expr const &x) { return make_array(x); }
+   friend array_const_view<value_type, domain_type::rank> make_const_view(array_expr const &x) { return make_array(x); }
+
    // just for better error messages
    template <typename T> void operator=(T &&x) = delete; // can not assign to an expression template !
    template <typename T> void operator+=(T &&x) = delete;// can not += into an expression template !
