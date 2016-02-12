@@ -42,7 +42,7 @@ def determine_bounds(F, x_0, dx, maxiter):
     b = x
     return a, b
     
-def bisect(f, x_0, y=0.0, dx=1.0, xtol=1e-3, x_name='x', y_name='y', maxiter=1000, verbosity=1):
+def bound_and_bisect(f, x_0, y=0.0, dx=1.0, xtol=1e-3, x_name='x', y_name='y', maxiter=1000, verbosity=1):
     """
     Solve F(x) = y where F is a monotonic function.
     
