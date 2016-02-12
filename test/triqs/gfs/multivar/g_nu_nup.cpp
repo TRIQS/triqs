@@ -57,6 +57,31 @@ TEST(BlockGfCartesian, H5_RW_Evaluator){
  auto w0 = matsubara_freq(0, beta, Fermion);
  auto W10 = matsubara_freq(10, beta, Boson);
  EXPECT_ARRAY_NEAR(G[0](w0, W10),G2[0](w0, W10));
+
+}
+
+TEST(BlockGfCartesian, OutOfBounds){
+ double beta=1;
+ triqs::clef::placeholder<0> om_;
+ triqs::clef::placeholder<1> nu_;
+ auto g_2w = gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>>{{{beta, Fermion, 5}, {beta, Boson, 5, matsubara_mesh_opt::positive_frequencies_only}}, {2,2,2}};
+ g_2w(om_,nu_) << 1/(om_+nu_)*1/om_;
+ auto g_w = gf<imfreq, matrix_valued>{{beta, Fermion, 10}, {1,1}}; //longer than g
+ auto W0 = matsubara_freq(0, beta, Boson);
+ for(auto const & om : g_w.mesh()){
+  auto x = g_2w(om, W0)(0,0,0) ;
+ }
+}
+TEST(BlockGfCartesian, VectorConstruction){
+ double beta=1;
+ auto g_2w = gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>>{{{beta, Fermion, 5}, {beta, Boson, 5, matsubara_mesh_opt::positive_frequencies_only}}, {2,2,2}};
+ block_gf<cartesian_product<imfreq,imfreq>, tensor_valued<3>> L(2);
+ for(int i=0;i<2;i++) L[i] = g_2w;
+
+ auto w0 = matsubara_freq(1000, beta, Fermion);
+ auto W0 = matsubara_freq(1000, beta, Boson);
+ auto x = L[0](w0, W0);
+ x(0,0,0); //crashes if no proper equal op in tail_zero
 }
 
 TEST(BlockGf, H5_RW_Evaluator){
@@ -66,7 +91,7 @@ TEST(BlockGf, H5_RW_Evaluator){
  g()=2;
  auto G = make_block_gf<imfreq, matrix_valued>({"up"}, {g});
 
- 
+
  h5::file file("g_nu_nup.h5", H5F_ACC_TRUNC );
  h5_write(file, "G", G);
  h5_write(file, "g", g);
@@ -85,4 +110,8 @@ TEST(BlockGf, H5_RW_Evaluator){
  EXPECT_ARRAY_NEAR(G[0](W10),G2[0](W10));
  EXPECT_ARRAY_NEAR(g(W10),g2(W10));
 }
+
+
+
+
 MAKE_MAIN;

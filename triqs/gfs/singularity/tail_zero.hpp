@@ -23,7 +23,10 @@
 
 namespace triqs {
 namespace gfs {
-
+ ///tail zero
+ /**
+   * Empty tail (used for multi-variable gfs)
+   */
  template <typename ReturnType> struct tail_zero {
   using const_view_type = tail_zero;
   using view_type = tail_zero;
@@ -31,11 +34,26 @@ namespace gfs {
  
   tail_zero() = default;
   tail_zero(tail_zero const &) = default;
+  ///constructor
+  /**
+   * @tparam S shape type
+   */
   template <typename S> explicit tail_zero(S const & s) { _init(s,zero);}
 
   void rebind(tail_zero) {}
-  template <typename RHS> void operator=(RHS &&) {}
-
+  template <typename RHS> void  operator=(RHS &&) {  }
+  ///copy assignment
+  /**
+   * use move =
+   */
+  tail_zero &operator=(tail_zero const &rhs) { return *this = tail_zero(rhs); }
+  ///move assignment operator
+  tail_zero & operator=(tail_zero && t) = default;
+  
+  ///reset function
+  /**
+   * @tparam S shape type
+   */
   template <typename S> void reset(S const &s) { _init(s, zero); }
 
   /*friend void h5_write(h5::group fg, std::string const &subgroup_name, tail_zero const &t) {
