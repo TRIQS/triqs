@@ -1,7 +1,7 @@
 <%
  import cpp2doc_tools as tools
  from cpp2doc_tools import make_table
- from cpp2py_and_cpp2doc_util import replace_latex
+ from util import replace_latex
  tools.class_list = class_list
  incl = c.doc_elements['include']
  if c.doc_elements['figure']:  fig=c.doc_elements['figure'].split(":")

@@ -1,5 +1,5 @@
 import re, os
-from cpp2py_and_cpp2doc_util import make_table
+from util import make_table
 
 def decay(s) :
     for tok in ['const ', 'const&', '&&', '&'] :
