@@ -39,6 +39,16 @@ ${c.processed_doc}
    ${fig[1].lstrip(' \t\n\r')}
 %endif
 
+%if c.doc_elements['note']:
+.. note::
+     ${c.doc_elements['note']}
+%endif
+
+%if c.doc_elements['warning']:
+.. note::
+     ${c.doc_elements['warning']}
+%endif
+
 %if len(c.doc_elements['tparam']) > 0 :
 
 Template parameters

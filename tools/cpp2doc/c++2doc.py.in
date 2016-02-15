@@ -27,7 +27,7 @@ parser.add_argument('--output_directory', '-o',  help="Where to put the files [d
 parser.add_argument('--libclang_location', help='Location of the libclang', default = '@TRIQS_LIBCLANG_LOCATION@')
 parser.add_argument('--compiler_options', nargs ='*', help='Options to pass to clang')
 parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
-parser.add_argument('--namespace', '-N', action='append',  help='namespaces to document', default= ['triqs']) #specify which namespaces to document, e.g. -N triqs -N applications
+parser.add_argument('--namespace', '-N', action='append',  help='namespaces to document') #specify which namespaces to document, e.g. -N triqs -N applications
 parser.add_argument('--mako_location', help="Internal use: location of mako files", default = '')
 
 args = parser.parse_args()

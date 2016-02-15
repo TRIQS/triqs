@@ -73,7 +73,7 @@ if (DocWithCpp2doc)
  FILE(GLOB_RECURSE all_header_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ../triqs/*.hpp)
 add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log DEPENDS ${all_header_files} 
                     COMMAND export PYTHONPATH=\$PYTHONPATH:${CMAKE_BINARY_DIR}/tools/cpp2doc/mako && ${PYTHON_INTERPRETER} 
-		    ${CMAKE_BINARY_DIR}/tools/c++2doc.py ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp 
+		    ${CMAKE_BINARY_DIR}/tools/c++2doc.py -N triqs ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp 
 		    --output_directory=${CMAKE_CURRENT_BINARY_DIR}/cpp2doc_generated
 		    --includes=${CMAKE_SOURCE_DIR}/ --includes=${CMAKE_BINARY_DIR}/Config --compiler_options="-DTRIQS_BUILDING_LIBRARY" 
 		    --mako_location=${CMAKE_SOURCE_DIR}/tools/ 2>1 > cpp2py.log) 
