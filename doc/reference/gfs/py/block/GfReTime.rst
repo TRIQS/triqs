@@ -4,8 +4,8 @@
 
 .. _GfReTime:
 
-Retarded Green's function in real time (GfReTime)
-=================================================
+**[GfReTime]** Retarded Green's function in real time
+=======================================================
 
 Reference
 ---------------

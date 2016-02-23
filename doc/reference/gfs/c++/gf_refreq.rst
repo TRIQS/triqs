@@ -2,7 +2,7 @@
 
 .. _gf_refreq: 
 
-Real frequencies
+**[gf<refreq>]** Real frequencies
 ==========================================================
 
 This is a specialisation of :ref:`gf<gf_and_view>` for real frequencies.

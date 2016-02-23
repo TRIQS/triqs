@@ -2,7 +2,7 @@
 
 .. _gf_legendre: 
 
-Legendre representation
+**[gf<legendre>]** Legendre representation
 ==========================================================
 
 This is a specialisation of :ref:`gf<gf_and_view>` for Legendre polynomial expansion.

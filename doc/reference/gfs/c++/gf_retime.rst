@@ -2,7 +2,7 @@
 
 .. _gf_retime: 
 
-Real time
+**[gf<retime>]** Real time
 ===================================================
 
 This is a specialisation of :ref:`gf_and_view` for imaginary Matsubara frequencies.

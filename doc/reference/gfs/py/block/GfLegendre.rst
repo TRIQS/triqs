@@ -4,8 +4,8 @@
 
 .. _GfLegendre:
 
-Matsubara Green's function with Legendre polynomials (GfLegendre)
-===================================================================
+**[GfLegendre]** Matsubara Green's function with Legendre polynomials 
+=======================================================================
 
 Reference
 ---------------

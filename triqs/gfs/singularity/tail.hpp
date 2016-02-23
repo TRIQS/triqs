@@ -60,7 +60,24 @@ namespace gfs {
   using type = typename T::const_view_type;
  };
 
- /// A common implementation class.
+ /// A common implementation class for tails.
+ /**
+  * The high-frequency behavior (or **tail**) of a Green's function is of paramount importance in the context of Fourier transformations: since fermionic Green's functions are slowly decaying functions of frequency, special care has to be taken when Fourier-transforming them to time.
+  * 
+  * The "tail" of a Green's function encodes the behavior of the Green's function $G$ at large Matsubara frequencies, namely
+  * 
+  * $$\mathbf{G}(i\omega_n) \stackrel {=}{\infty} \mathbf{a}_{-1}\cdot i\omega_n + \mathbf{a}_{0} +\mathbf{a}_{1}\cdot \frac{1}{ i\omega_n} +\mathbf{a}_{2}\cdot \frac{1}{ (i\omega_n)^2} +\dots$$
+  * 
+  * 
+  * Generically, the tail is parametrized by matrix-valued coefficients
+  * $\mathbf{a}_{i}$ (of size $N_1 \times N_2$)
+  * 
+  * $t = \sum_{i=o_{min}}^{o_{max}} \mathbf{a}_i (i\omega_n)^{-i}$
+
+  @note three classes derive from this implementation class: [[tail]], [[tail_view]] and [[tail_const_view]]
+  @tparam RVC regular/view/const_view
+  */
+
  template <rvc_enum RVC> class tail_impl {
   public:
   using view_type = tail_view;
@@ -73,14 +90,23 @@ namespace gfs {
   using mv_type = matrix_view<dcomplex>;
   using const_mv_type = matrix_view<dcomplex>;
 
+  ///data
+  /**
+    3-dim array of the coefficients: data(i,n,m) stands for $(\mathbf{a}_{i+o_\mathrm{min}})_{nm}$
+   */
   data_type & data() { return _data; }
   data_type const & data() const { return _data; }
+  ///array of the maximum zero indices
   mask_type & mask() { return _mask; }
   mask_type const & mask() const { return _mask; }
 
+  ///minimum order
   int order_min() const { return omin; }
+  ///maximum order
   int order_max() const { return min_element(_mask); }
+  ///number of coefficients (first dim of data)
   size_t size() const { return _data.shape()[0]; }
+  ///smallest nonzero term
   int smallest_nonzero() const {
    int om = omin;
    while ((om < order_max()) && (max_element(abs(_data(om - omin, ellipsis()))) < 1.e-10)) om++;
@@ -88,7 +114,9 @@ namespace gfs {
   }
 
   using shape_type = mini_vector<size_t, 2>;
+  ///shape
   shape_type shape() const { return shape_type(_data.shape()[1], _data.shape()[2]); }
+  ///true if decreasing at infinity
   bool is_decreasing_at_infinity() const { return (smallest_nonzero() >= 1); }
 
   protected:
@@ -120,13 +148,22 @@ namespace gfs {
   }
 
   public:
-
+  ///call operator
+  /**
+    * @param n order
+    * @return $a_n$ as in $a_n/(i\omega)^n$
+    */
   mv_type operator()(int n) {
    if (n > order_max()) TRIQS_RUNTIME_ERROR << " n > Max Order. n= " << n << ", Max Order = " << order_max();
    if (n < order_min()) TRIQS_RUNTIME_ERROR << " n < Min Order. n= " << n << ", Min Order = " << order_min();
    return _data(n - omin, ellipsis());
   }
 
+  ///call operator
+  /**
+    * @param n order
+    * @return $a_n$ as in $a_n/(i\omega)^n$
+    */
   const_mv_type operator()(int n) const {
    if (n > order_max()) TRIQS_RUNTIME_ERROR << " n > Max Order. n= " << n << ", Max Order = " << order_max();
    if (n < order_min()) {
@@ -149,7 +186,7 @@ namespace gfs {
 
   friend std::string get_triqs_hdf5_data_scheme(tail_impl const &g) { return "TailGf"; }
 
-  ///
+  ///write to h5
   friend void h5_write(h5::group fg, std::string subgroup_name, tail_impl const &t) {
    auto gr = fg.create_group(subgroup_name);
    h5_write(gr, "omin", t.omin);
@@ -157,6 +194,7 @@ namespace gfs {
    h5_write(gr, "data", t._data);
   }
 
+  ///read from h5
   friend void h5_read(h5::group fg, std::string subgroup_name, tail_impl &t) {
    auto gr = fg.open_group(subgroup_name);
    h5_read(gr, "omin", t.omin);
@@ -164,7 +202,7 @@ namespace gfs {
    h5_read(gr, "data", t._data);
   }
 
-  //  BOOST Serialization
+  ///BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
    ar &TRIQS_MAKE_NVP("omin", omin);
@@ -172,7 +210,7 @@ namespace gfs {
    ar &TRIQS_MAKE_NVP("data", _data);
   }
 
-  // mpi operations
+  ///mpi broadcast
   friend void mpi_broadcast(tail_impl & t, mpi::communicator c={}, int root=0) { 
     using mpi::mpi_broadcast;
     mpi_broadcast(t.omin);
@@ -182,7 +220,7 @@ namespace gfs {
 
  };
 
- // -----------------------------
+ ///Tail (const view)
  class tail_const_view : public tail_impl<ConstView> {
   using B = tail_impl<ConstView>;
   // friend class tail;
@@ -199,7 +237,7 @@ namespace gfs {
   void rebind(tail_const_view const &X);
  };
 
- // -----------------------------
+ ///Tail (view)
  class tail_view : public tail_impl<View> {
   using B = tail_impl<View>;
   // friend class tail;
@@ -220,7 +258,10 @@ namespace gfs {
  };
 
  // -----------------------------
- // the regular class
+ ///Green's function tail
+ /** This is the regular class, deriving from [[tail_impl]]
+   *
+   */
  class tail : public tail_impl<Regular> {
   using B = tail_impl<Regular>;
   // friend class tail_view;
@@ -229,7 +270,20 @@ namespace gfs {
   using shape_type = mini_vector<int, 2>;
   
   tail() = default;
+  ///constructor
+  /**
+    * @param N1 first dimension
+    * @param N2 second dimension
+    * @param size_ number of moments in the tail
+    * @param order_min order of the first moment
+    */
   tail(int N1, int N2, int size_ = 10, int order_min = -1) : B(N1, N2, size_, order_min) {}
+  ///constructor
+  /**
+    * @param sh shape of the tail
+    * @param size_ number of moments in the tail
+    * @param order_min order of the first moment
+    */
   tail(shape_type const &sh, int size_ = 10, int order_min = -1) : B(sh[0], sh[1], size_, order_min) {}
   tail(mini_vector<int, 0>) : tail(1, 1) {}
   tail(B::data_type const &d, B::mask_type const &m, int order_min) : B(d, m, order_min) {}
@@ -266,11 +320,10 @@ namespace gfs {
  /// The simplest tail corresponding to omega, built from the shape, size, ordermin of t
  tail_view tail_omega(tail_view t);
 
- // ---- IO -------------
-
+ /// i/o
  std::ostream &operator<<(std::ostream &out, tail_const_view);
 
- // ---- MPI  -------------
+ /// mpi reduce
  tail mpi_reduce(tail_const_view t, mpi::communicator c={}, int root=0, bool all= false, MPI_Op op = MPI_SUM);
   
  // ----  -------------
@@ -279,16 +332,17 @@ namespace gfs {
   t = rhs(tail_omega(t.shape(), t.size(), t.order_min()));
  }
 
- // ---- Evaluate and compose  -------------
-
- /// Evaluate the tail to  sum_{n=order_min}^ordermax M_n/omega^n
+ /// Evaluate the tail to  $\sum_{n={ordermin}}^{ordermax} M_n/{\omega}^n$
  matrix<dcomplex> evaluate(tail_const_view t, dcomplex const &omega);
 
+ ///Composition
  tail compose(tail_const_view x, tail_const_view t);
 
  // ----  Ops  -------------
 
+ ///conjugation
  tail conj(tail_const_view const &t, bool imaginary = false);
+ ///transpose
  tail transpose(tail_const_view const &t);
 
  /// Slice in orbital space
@@ -301,7 +355,9 @@ namespace gfs {
 
  /// ------------------- Arithmetic operations ------------------------------
 
+ ///operator +
  tail operator+(tail_const_view const &l, tail_const_view const &r);
+ ///operator -
  tail operator-(tail_const_view const &l, tail_const_view const &r);
 
  // +/- with scalar or matrix. 
@@ -326,14 +382,21 @@ namespace gfs {
   return (-a) + t;
  }
 
+ ///operator *
  tail operator*(tail_const_view const &l, tail_const_view const &r);
 
+ ///left multiplication with a matrix
  tail operator*(matrix<dcomplex> const &a, tail_const_view const &b);
+ ///right multiplication with a matrix
  tail operator*(tail_const_view const &a, matrix<dcomplex> const &b);
+ ///left multiplication with a matrix
  template <typename T> tail operator*(matrix_view<T> const &a, tail_const_view const &b) { return matrix<dcomplex>(a) * b; }
+ ///right multiplication with a matrix
  template <typename T> tail operator*(tail_const_view const &a, matrix_view<T> const &b) { return a * matrix<dcomplex>(b); }
 
+ ///left multiplication with a scalar
  tail operator*(dcomplex a, tail_const_view const &r);
+ ///right multiplication with a scalar
  inline tail operator*(tail_const_view const &r, dcomplex a) { return a * r; }
 
  inline tail operator/(tail_const_view const &a, tail_const_view const &b) { return a * inverse(b); }

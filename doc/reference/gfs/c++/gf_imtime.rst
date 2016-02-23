@@ -2,7 +2,7 @@
 
 .. _gf_imtime: 
 
-Matsubara imaginary time
+**[gf<imtime>]** Matsubara imaginary time
 ==========================================================
 
 This is a specialisation of :ref:`gf<gf_and_view>` for imaginary Matsubara time.

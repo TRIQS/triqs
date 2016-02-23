@@ -4,7 +4,7 @@
 
 .. _GfImFreq:
 
-Matsubara Green's function in imaginary frequencies (GfImFreq)
+**[GfImFreq]** Matsubara Green's function in imaginary frequencies
 =====================================================================================
 
 Reference

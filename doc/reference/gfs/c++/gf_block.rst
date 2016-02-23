@@ -2,8 +2,8 @@
 
 .. _gf_block: 
 
-Block Green functions
-=======================
+**[block_gf<T>]** Block Green functions
+========================================
 
 This is a specialisation of :ref:`gf_and_view` for block functions.
 

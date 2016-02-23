@@ -4,8 +4,8 @@
 
 .. _GfReFreq:
 
-Retarded Green's function in real frequencies (GfReFreq)
-==========================================================
+**[GfReFreq]** Retarded Green's function in real frequencies
+=============================================================
 
 Reference
 ---------------

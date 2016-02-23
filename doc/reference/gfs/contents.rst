@@ -13,4 +13,8 @@
    basic_notions/contents
    py/contents
    c++/contents
+
+Tutorials:
+
+.. toctree::
    ./../../tutorials/gfs/gfs_tutorial

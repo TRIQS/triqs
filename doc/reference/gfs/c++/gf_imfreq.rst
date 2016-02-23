@@ -2,7 +2,7 @@
 
 .. _gf_imfreq: 
 
-Green function on Matsubara frequencies
+**[gf<imfreq>]** Green function on Matsubara frequencies
 ==========================================================
 
 This is a specialisation of :ref:`gf<gf_and_view>` for imaginary Matsubara frequencies.

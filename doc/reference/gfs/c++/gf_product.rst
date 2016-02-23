@@ -2,8 +2,8 @@
 
 .. _gf_product: 
 
-Multiple variables 
-===================
+**[gf<cartesian_product<X,Y,...>>]** Multiple variables 
+========================================================
 
 .. warning::
 

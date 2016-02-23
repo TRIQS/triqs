@@ -4,7 +4,7 @@
 
 .. _GfImTime:
 
-Matsubara Green's function in imaginary time (GfImTime)
+**[GfImTime]** Matsubara Green's function in imaginary time
 ==============================================================================
 
 Reference
