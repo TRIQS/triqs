@@ -18,7 +18,6 @@ def replace_latex(s, escape_slash=False):
        [[ XXX]]  by :ref:` XXX`
      
      """
-    print "stuck in latex replace, %s"%s
     any_math_char = 'A-Za-z0-9{}\[\],\(\)=./\/+-_^\'' #any math character
     #matches all expressions starting and ending with any math char, with possibly whitespaces in between
     pattern_1 = '\$(['+any_math_char+']['+any_math_char+' ]*['+any_math_char+']+)\$'
