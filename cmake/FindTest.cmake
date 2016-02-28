@@ -7,23 +7,38 @@ SET(PythonBuildExecutable ${CMAKE_BINARY_DIR}/build_pytriqs)
 macro(add_cpp_test testname)
  enable_testing()
 
- if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
+ set(testcmd ${CMAKE_CURRENT_BINARY_DIR}/${testname}${ARGN})
+ set(testref ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
 
-  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+ # run this test via mpirun if TEST_MPI_NUMPROC is set
+ if(TEST_MPI_NUMPROC)
+  set(testname_ ${testname}_np${TEST_MPI_NUMPROC})
+  set(testcmd ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${TEST_MPI_NUMPROC} ${testcmd})
+ else(TEST_MPI_NUMPROC)
+  set(testname_ ${testname})
+ endif(TEST_MPI_NUMPROC)
 
-  add_test(${testname}
+ if (EXISTS ${testref})
+
+  file(COPY ${testref} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+  add_test(${testname_}
    ${CMAKE_COMMAND}
-   -Dname=${testname}${ARGN}
-   -Dcmd=${CMAKE_CURRENT_BINARY_DIR}/${testname}${ARGN}
-   -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref
+   -Dname=${testname_}${ARGN}
+   -Dcmd=${testcmd}
+   -Dreference=${testref}
    -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
   )
 
- else (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
+ else (EXISTS ${testref})
 
-  add_test(${testname}${ARGN} ${testname}${ARGN})
+  add_test(${testname_}${ARGN} ${testcmd})
 
- endif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
+ endif (EXISTS ${testref})
+
+ if(TEST_MPI_NUMPROC)
+  set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
+ endif(TEST_MPI_NUMPROC)
 
 endmacro(add_cpp_test)
  
@@ -34,29 +49,44 @@ endmacro(add_cpp_test)
 macro(add_python_test testname)
  enable_testing()
 
- if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
+ set(testcmd ${PythonBuildExecutable})
+ set(testref ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
 
-  file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+ # run this test via mpirun if TEST_MPI_NUMPROC is set
+ if(TEST_MPI_NUMPROC)
+  set(testname_ ${testname}_np${TEST_MPI_NUMPROC})
+  set(testcmd ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${TEST_MPI_NUMPROC} ${testcmd})
+ else(TEST_MPI_NUMPROC)
+  set(testname_ ${testname})
+ endif(TEST_MPI_NUMPROC)
 
-  add_test(${testname}
+ if (EXISTS ${testref})
+
+  file(COPY ${testref} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+  add_test(${testname_}
    ${CMAKE_COMMAND}
-   -Dname=${testname}
-   -Dcmd=${PythonBuildExecutable}
+   -Dname=${testname_}
+   -Dcmd=${testcmd}
    -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
-   -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref
+   -Dreference=${testref}
    -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
   )
 
- else (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
+ else (EXISTS ${testref})
 
-  add_test(${testname}
+  add_test(${testname_}
    ${CMAKE_COMMAND}
-   -Dname=${testname}
-   -Dcmd=${PythonBuildExecutable}
+   -Dname=${testname_}
+   -Dcmd=${testcmd}
    -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
    -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
   )
 
- endif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
+ endif (EXISTS ${testref})
+
+ if(TEST_MPI_NUMPROC)
+  set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
+ endif(TEST_MPI_NUMPROC)
 
 endmacro(add_python_test)
