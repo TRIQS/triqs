@@ -174,8 +174,10 @@ namespace statistics {
 
   public:
   observable() { _series.reserve(1000); }
-
+  observable(std::vector<T>&& v) : _series(std::move(v)) {}
   observable(binned_series<T> && s):_series(std::move(s).data()){}
+
+  std::vector<T> const& get_series() const { return _series; }
 
   observable& operator<<(T x) { // copy and move : check speed ... or overload const &, &&
    _series.push_back(std::move(x));
