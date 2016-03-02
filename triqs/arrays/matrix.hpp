@@ -247,12 +247,6 @@ namespace arrays {
   return r;
  }
 
- template <typename V> matrix<V> make_unit_matrix(int dim,V const &v) {
-  matrix<V> r(dim, dim);
-  r() = v;
-  return r;
- }
-
  template <typename ArrayType>
  matrix_view<typename ArrayType::value_type, typename ArrayType::traversal_order_t, true> make_matrix_view(ArrayType const& a) {
   static_assert(ArrayType::rank == 2, "make_matrix_view only works for array of rank 2");
