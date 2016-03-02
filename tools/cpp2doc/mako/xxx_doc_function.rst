@@ -43,10 +43,12 @@ num = '(%s)'%(n+1) if len(f_overloads)>1 else ''
 %>
 ${num} ${m.processed_doc}
 %if m.doc_elements['note']:
+
 .. note::
      ${m.doc_elements['note']}
 %endif
 %if m.doc_elements['warning']:
+
 .. warning::
      ${m.doc_elements['warning']}
 %endif

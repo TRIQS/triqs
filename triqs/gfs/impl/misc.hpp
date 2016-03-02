@@ -202,7 +202,13 @@ namespace gfs {
 
  /// ---------------------------  real for gf ---------------------------------
 
- /// is_gf_real(g, tolerance). Returns true iif the function g is real up to tolerance
+ /// is_gf_real(g, tolerance). 
+ /** 
+   @tparam G any Gf type
+   @param g a gf
+   @param tolerance tolerance threshold
+   @return true iif the function g is real up to tolerance
+   */
  template <typename G> bool is_gf_real(G const &g, double tolerance = 1.e-13) {
   return max_element(abs(imag(g.data()))) <= tolerance;
  }

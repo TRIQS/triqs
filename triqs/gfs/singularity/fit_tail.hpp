@@ -24,27 +24,57 @@
 
 namespace triqs { namespace gfs { 
 
- // routine for fitting the tail (singularity) of a Matsubara Green's function
- // this is a *linear* least squares problem (with non-linear basis functions)
- // which is solved by singular value decomposition of the design matrix
- // the routine fits the real part (even moments) and the imaginary part
- //(odd moments) separately, since this is more stable
+ /// routine for fitting the tail (singularity) of a Matsubara Green's function
+ /**
+  This is a *linear* least squares problem (with non-linear basis functions)
+  which is solved by singular value decomposition of the design matrix
+  @note the routine fits the real part (even moments) and the imaginary part (odd moments) separately for stability reasons
 
- // input:
- // the input gf<imfreq> Green's function: gf
- // the known moments in the form of a tail(_view): known_moments
- // the highest fitted moment and the highest moment in the tail after the fit: max_moment
- // the index of the first and last frequency to fit (the last one is included): n_min, n_max
+  @param gf the input gf<imfreq> Green's function
+  @param known_moments the known moments in the form of a tail(_view)
+  @param max_moment the highest fitted moment and the highest moment in the tail after the fit: max_moment
+  @param n_min the index of the first frequency to fit
+  @param n_max the index of the last frequency to fit (included)
 
- // output: returns the tail obtained by fitting
-
+  @return the tail obtained by fitting
+ */
  tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max) ;
 
+ ///Fit the tail of a gf
+ /**
+  @param gf the input gf<imfreq> Green's function
+  @param known_moments the known moments in the form of a tail(_view)
+  @param max_moment the highest fitted moment and the highest moment in the tail after the fit: max_moment
+  @param n_min the Matsubara index of the first frequency to fit
+  @param n_max the Matsubara index of the last frequency to fit (included)
+  @param replace_by_fit if true, replace the gf data from n_min to the last index of the mesh by the asymptotic behavior obtained by fitting the tails
+  @note Based on [[fit_tail_impl]]
+ */
  void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int n_min, int n_max,
    bool replace_by_fit = false) ;
 
+ ///Fit the tail of a block_gf
+ /**
+  @param gf the input Green's function
+  @param known_moments the known moments in the form of a tail(_view)
+  @param max_moment the highest fitted moment and the highest moment in the tail after the fit: max_moment
+  @param n_min the Matsubara index of the first frequency to fit
+  @param n_max the Matsubara index of the last frequency to fit (included)
+  @param replace_by_fit if true, replace the gf data from n_min to the last index of the mesh by the asymptotic behavior obtained by fitting the tails
+  @note Based on [[fit_tail_impl]]
+ */
  void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int max_moment, int n_min,
    int n_max, bool replace_by_fit = false) ;
 
+ ///Fit the tail of a gf (scalar-valued)
+ /**
+  @param gf the input gf<imfreq> Green's function
+  @param known_moments the known moments in the form of a tail(_view)
+  @param max_moment the highest fitted moment and the highest moment in the tail after the fit: max_moment
+  @param n_min the Matsubara index of the first frequency to fit
+  @param n_max the Matsubara index of the last frequency to fit (included)
+  @param replace_by_fit if true, replace the gf data from n_min to the last index of the mesh by the asymptotic behavior obtained by fitting the tails
+  @note Based on [[fit_tail_impl]]
+ */
  void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = false) ;
 }} // namespace

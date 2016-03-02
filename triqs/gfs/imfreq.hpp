@@ -35,8 +35,10 @@ namespace gfs {
 
  /// ---------------------------  A few specific functions ---------------------------------
 
- // This function takes a g(i omega_n) on half mesh (positive omega_n) and returns a gf on the whole mesh
- // using G(-i omega_n) = G(i omega_n)^* for real G(tau) functions.
+ /// This function takes a g(i omega_n) on half mesh (positive omega_n) and returns a gf on the whole mesh
+ /**
+   using G(-i omega_n) = G(i omega_n)^* for real G(tau) functions.
+ */
  template <typename T, typename S, typename E> gf<imfreq, T, S, E> make_gf_from_real_gf(gf_const_view<imfreq, T, S, E> g) {
   if (!g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "gf imfreq is not for omega_n >0, real_to_complex does not apply";
   auto const &dat = g.data();
@@ -55,7 +57,12 @@ namespace gfs {
   return {gf_mesh<imfreq>{g.mesh().domain(), L}, std::move(new_data), g.singularity(), g.symmetry(), g.indices(), g.name};
  }
 
- /// is_real_in_tau(g, tolerance). Returns true iif the FOURIER transform g(tau) is real up to tolerance
+ /// Test if gf is real in tau
+ /**
+   @param g the gf
+   @param tolerance tolerance threshold $\epsilon$
+   @return true iif $$\forall n,\; \max_{ab}|g^*_{ab}(-i\omega_n)-g_{ab}(i\omega_n)|<\epsilon$$
+  */
  template <typename T, typename S, typename E>
  bool is_gf_real_in_tau(gf_const_view<imfreq, T, S, E> g, double tolerance = 1.e-13) {
   if (g.mesh().positive_only()) return true;

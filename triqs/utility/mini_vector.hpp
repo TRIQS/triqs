@@ -32,7 +32,13 @@
 namespace triqs { namespace utility { 
 
  struct no_init_tag{};
- 
+
+ ///Mini vector class
+ /**
+  @tparam T element type
+  @tparam Rank size of the vector
+
+  */ 
  template <typename T, int Rank> 
   class mini_vector { 
    T _data[(Rank!=0 ? Rank : 1)];
@@ -46,22 +52,25 @@ namespace triqs { namespace utility {
    mini_vector(){init();} 
    
    mini_vector(no_init_tag){}
-
+   ///constructor for mini_vector of size 1
    mini_vector(T x_0) {
     static_assert(Rank == 1, "mini_vector : incorrect number of variables in constructor");
     _data[0] = x_0;
    }
+   ///constructor for mini_vector of size 2
    mini_vector(T x_0, T x_1) {
     static_assert(Rank == 2, "mini_vector : incorrect number of variables in constructor");
     _data[0] = x_0;
     _data[1] = x_1;
    }
+   ///constructor for mini_vector of size 3
    mini_vector(T x_0, T x_1, T x_2) {
     static_assert(Rank == 3, "mini_vector : incorrect number of variables in constructor");
     _data[0] = x_0;
     _data[1] = x_1;
     _data[2] = x_2;
    }
+   ///constructor for mini_vector of size 4
    mini_vector(T x_0, T x_1, T x_2, T x_3) {
     static_assert(Rank == 4, "mini_vector : incorrect number of variables in constructor");
     _data[0] = x_0;
@@ -69,6 +78,7 @@ namespace triqs { namespace utility {
     _data[2] = x_2;
     _data[3] = x_3;
    }
+   ///constructor for mini_vector of size 5
    mini_vector(T x_0, T x_1, T x_2, T x_3, T x_4) {
     static_assert(Rank == 5, "mini_vector : incorrect number of variables in constructor");
     _data[0] = x_0;
@@ -77,6 +87,7 @@ namespace triqs { namespace utility {
     _data[3] = x_3;
     _data[4] = x_4;
    }
+   ///constructor for mini_vector of size 6
    mini_vector(T x_0, T x_1, T x_2, T x_3, T x_4, T x_5) {
     static_assert(Rank == 6, "mini_vector : incorrect number of variables in constructor");
     _data[0] = x_0;
@@ -132,23 +143,27 @@ namespace triqs { namespace utility {
     _data[8] = x_8;
     _data[9] = x_9;
    };
-
+   ///copy constructor
    mini_vector(const mini_vector & x){ *this = x; }
+   ///move constructor
    mini_vector(mini_vector && x){ *this = std::move(x); }
    
+   ///construct on another mini_vector with different element type
    template<typename T2> mini_vector(const mini_vector<T2,Rank> & x){ *this = x; }
+   ///construct on a std::vector
    template<typename T2>
    mini_vector(const std::vector<T2> & v){ 
     if (v.size()!=Rank)
      TRIQS_RUNTIME_ERROR<< "mini_vector construction : vector size incorrect  : expected "<<Rank<<" got : "<< v.size();
     for (int i=0;i<Rank; ++i)  _data[i] = v[i];
    }
-
+   ///copy assignment operator
    mini_vector & operator=(const mini_vector & x){ for (int i=0;i<Rank; ++i) _data[i] = x._data[i]; return *this;}
+   ///move assignement operator
    mini_vector & operator=(mini_vector && x) = default; 
 
    friend void swap(mini_vector & a, mini_vector & b) { std::swap(a._data, b._data);}
-
+   ///size of the mini_vector
    int size() const { return Rank;}
 
    template<typename T2>
@@ -161,7 +176,7 @@ namespace triqs { namespace utility {
 
    T & operator[](size_t i) { return _data[i];}
    const T & operator[](size_t i) const { return _data[i];}
-   
+   ///conversion to std::vector   
    std::vector<T> to_vector () const { std::vector<T> V(Rank); for (int i=0;i<Rank; ++i)  V[i] = _data[i]; return V; }
 
    T product_of_elements () const { T res=1; for (int i=0;i<Rank; ++i)  res *= _data[i]; return res; }
@@ -176,7 +191,7 @@ namespace triqs { namespace utility {
     fs<<")";
     return fs.str();
    }
-
+   ///append element to mini_vector (increases rank by 1)
    mini_vector<T, Rank+1> append (T const & x) const { 
     mini_vector<T, Rank+1> res;
     for (int i=0;i<Rank; ++i)  res[i]=_data[i];
@@ -184,6 +199,7 @@ namespace triqs { namespace utility {
     return res;
    }
 
+   ///prepend element to mini_vector (increases rank by 1)
    mini_vector<T, Rank+1> front_append (T const & x) const { 
     mini_vector<T, Rank+1> res;
     for (int i=0;i<Rank; ++i)  res[i+1]=_data[i];
