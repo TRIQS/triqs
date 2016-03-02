@@ -12,7 +12,8 @@ The tail of a given ``gf<imfreq>/gf<block_index, gf<imfreq>> gw`` can be fitted 
 
 .. toctree::
    :maxdepth: 1
-  /cpp2doc_generated/triqs/gfs/singularity/fit_tail
+   
+   /cpp2doc_generated/triqs/gfs/fit_tail
 
 
 
