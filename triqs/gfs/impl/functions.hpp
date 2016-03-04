@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
+#include "../product.hpp"
 namespace triqs {
 namespace gfs {
 
@@ -29,6 +30,13 @@ namespace gfs {
  template <typename M, typename T, typename S, typename E, typename... Args>
  gf_view<M, T, S, E> slice_target(gf_view<M, T, S, E> g, Args &&... args) {
   return {g.mesh(), g.data()(arrays::range(), std::forward<Args>(args)...),
+          slice_target(g.singularity(), std::forward<Args>(args)...), g.symmetry(),
+          slice(g.indices(), std::forward<Args>(args)...), g.name};
+ }
+
+ template <typename D1, typename D2, typename T, typename S, typename E, typename... Args>
+ gf_view<cartesian_product<D1, D2>, T, S, E> slice_target(gf_view<cartesian_product<D1, D2>, T, S, E> g, Args &&... args) {
+  return {g.mesh(), g.data()(arrays::range(), arrays::range(), std::forward<Args>(args)...),
           slice_target(g.singularity(), std::forward<Args>(args)...), g.symmetry(),
           slice(g.indices(), std::forward<Args>(args)...), g.name};
  }
