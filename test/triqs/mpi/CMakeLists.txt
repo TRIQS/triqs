@@ -1,5 +1,5 @@
 
- FILE(GLOB TestList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+ FILE(GLOB TestList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} mpi_*.cpp)
  FOREACH( TestName1  ${TestList} )
   STRING(REPLACE ".cpp" "" TestName ${TestName1})
   add_executable( ${TestName}  ${CMAKE_CURRENT_SOURCE_DIR}/${TestName}.cpp )
@@ -17,4 +17,7 @@
 
  ENDFOREACH( TestName1  ${TestList} )
 
-
+ # Communicator split test
+ add_executable(comm_split comm_split.cpp)
+ set(TEST_MPI_NUMPROC 4)
+ add_cpp_test(comm_split)

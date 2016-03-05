@@ -76,6 +76,12 @@ namespace mpi {
    return num;
   }
 
+  communicator split(int color, int key = 0) const {
+   communicator c;
+   MPI_Comm_split(_com, color, key, &c._com);
+   return c;
+  }
+
   void barrier() const { MPI_Barrier(_com); }
  };
 
