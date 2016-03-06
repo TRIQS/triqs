@@ -47,6 +47,7 @@ template<> struct py_converter<triqs::gfs::gf_indices_one> {
 };
 template<> struct py_converter<triqs::gfs::gf_indices_pair> : py_converter_from_reductor<triqs::gfs::gf_indices_pair>{};
 
+template<> struct py_converter<triqs::gfs::gf_indices_triplet> : py_converter_from_reductor<triqs::gfs::gf_indices_triplet>{};
 // domains
 template<bool B> struct py_converter<triqs::gfs::matsubara_domain<B>> : py_converter_from_reductor<triqs::gfs::matsubara_domain<B>>{};
 template<> struct py_converter<triqs::gfs::R_domain> : py_converter_from_reductor<triqs::gfs::R_domain>{};

@@ -448,7 +448,7 @@ for c_tag, py_tag in [("imfreq","ImFreq"), ("imtime","ImTime"), ("refreq", "ReFr
        is_im = True if c_tag=="imfreq" or c_tag=="imtime" else False,
        target_type = "tensor_valued<3>",
        has_tail=False,
-       serializable=False,  #careful not serializable!!
+       serializable=True,
        )
 
  module.add_class(g)
