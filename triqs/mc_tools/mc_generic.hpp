@@ -160,6 +160,7 @@ namespace triqs { namespace mc_tools {
        ++config_id;
       }
       if (after_cycle_duty) {after_cycle_duty();}
+      //if (NC == NWarmIterations) warm_clock_time = double(Timer);
       if (is_thermalized()) {
        nmeasures++;
        sum_sign += sign;
@@ -201,8 +202,13 @@ namespace triqs { namespace mc_tools {
      * @return map : name_of_the_move -> acceptance rate of this move
      */
     std::map<std::string, double> get_acceptance_rates() const { return AllMoves.get_acceptance_rates(); }
- 
+
     /** 
+     * The duration of the last run
+     */
+    double get_duration() const { return double(Timer); }
+
+    /**
      *  The current percents done
      */  
     uint64_t get_percent() const { return done_percent; }
