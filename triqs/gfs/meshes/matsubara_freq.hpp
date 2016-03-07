@@ -27,7 +27,7 @@ namespace gfs {
 
  struct imfreq {};
 
- enum class matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
+ enum  matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
 
  // ---------------------------------------------------------------------------
  //                     The mesh point
@@ -227,7 +227,7 @@ namespace gfs {
    ar &TRIQS_MAKE_NVP("beta", _dom.beta);
    ar &TRIQS_MAKE_NVP("statistic", _dom.statistic);
    ar &TRIQS_MAKE_NVP("n_pts", _n_pts);
-   //ar &TRIQS_MAKE_NVP("kind", _opt);
+   ar &TRIQS_MAKE_NVP("kind", _opt);
    ar &TRIQS_MAKE_NVP("_first_index", _first_index);
    ar &TRIQS_MAKE_NVP("_last_index", _last_index);
    ar &TRIQS_MAKE_NVP("_first_index_window", _first_index_window);

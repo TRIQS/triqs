@@ -103,6 +103,9 @@ module.add_class(t)
 module.add_enum(c_name = "statistic_enum",
                 c_namespace = "triqs::gfs",
                 values = ["Fermion","Boson"])
+module.add_enum(c_name = "matsubara_mesh_opt",
+                c_namespace = "triqs::gfs",
+                values = ["all_frequencies","positive_frequencies_only"])
 
 ########################
 ##   Mesh generic

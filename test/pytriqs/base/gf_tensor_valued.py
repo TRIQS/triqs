@@ -21,3 +21,15 @@ A2=HDFArchive("Tv3.h5",'r')
 G3=A2["G"]
 del A2
 assert G3.data.shape==G.data.shape,"not ok:%s vs %s"%(G3.data.shape, G.data.shape)
+
+#mpi bcast
+import pytriqs.utility.mpi as mpi
+G4=GfImFreqTv3(beta=1.,statistic="Fermion",n_points=100, indices=[['a'],['b1','b2'],['c1', 'c2']])
+if mpi.is_master_node():
+   G4.data[:,:,:,:] = 5
+   assert G4.data[0,0,0,0]==5, "not ok :%s"%(G4.data[0,0,0,0])
+if not mpi.is_master_node():
+   assert G4.data[0,0,0,0]==0, "not ok"
+G4 = mpi.bcast(G4)
+if not mpi.is_master_node():
+   assert G4.data[0,0,0,0]==5, "not ok :%s"%(G4.data[0,0,0,0])
