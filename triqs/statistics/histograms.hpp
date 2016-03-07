@@ -43,8 +43,8 @@ namespace statistics {
    _step = (n_bins - 1) / (b - a);
   }
 
-  friend histogram pdf(histogram const& h); // probability distribution function = normalised histogram
-  friend histogram cdf(histogram const& h); // cumulative distribution function = normalised histogram integrated
+  inline friend histogram pdf(histogram const& h); // probability distribution function = normalised histogram
+  inline friend histogram cdf(histogram const& h); // cumulative distribution function = normalised histogram integrated
 
   public:
   /// Constructor with mesh of integer values
