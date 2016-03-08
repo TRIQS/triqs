@@ -181,7 +181,10 @@ namespace gfs {
   using type = gf_indices_pair;
  };
  template <> struct gf_indices<tensor_valued<3>> {
-  using type = gf_indices_triplet;
+  using type = gf_indices_tuple<3>;
+ };
+ template <> struct gf_indices<tensor_valued<4>> {
+  using type = gf_indices_tuple<4>;
  };
 
  /*----------------------------------------------------------

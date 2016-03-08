@@ -42,20 +42,20 @@ def get_indices_in_dict_tv(d):
     works for indices of tensor_valued<3> functions
     """
     if not ( 'indices' in d): return ()
-    
-    indicesR1 = list ( d['indices'][0])
-    indicesR2 = list ( d['indices'][1])
-    indicesR3 = list ( d['indices'][2])
+    indices_list=[list ( d['indices'][i]) for i in range(len(d['indices']))]
     d.pop('indices') #pop key from dict 
 
     # Now check the indices
-    ty = set([type(x) for x in indicesR1]+[type(x) for x in indicesR2]+ [type(x) for x in indicesR3])
+    ty = set()
+    for indices in indices_list:
+     for x in indices:
+      ty.add(type(x))
     assert len(ty) !=0, "No indices found !"
     assert len(ty)==1, " All indices must have the same type %s"%ty
 
     # If the indices are not string, make them string anyway
-    indicesR1 = [ str(x) for x in indicesR1 ]     
-    indicesR2 = [ str(x) for x in indicesR2 ]     
-    indicesR3 = [ str(x) for x in indicesR3 ]     
+    indices_list = [[ str(x) for x in indices ] for indices in indices_list]
 
-    return indicesR1, indicesR2, indicesR3
+    print indices_list
+
+    return indices_list

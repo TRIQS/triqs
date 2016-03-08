@@ -444,17 +444,18 @@ module.add_class(g)
 ##   Tensor-valued Gfs [ImFreq, ImTime, ReFreq]
 ##############################
 for c_tag, py_tag in [("imfreq","ImFreq"), ("imtime","ImTime"), ("refreq", "ReFreq")]:
+ for rank in [3, 4]:
 
- g = make_gf(
-       py_type = "Gf%sTv3"%py_tag,
+  g = make_gf(
+       py_type = "Gf%sTv%s"%(py_tag, rank),
        c_tag = c_tag,
        is_im = True if c_tag=="imfreq" or c_tag=="imtime" else False,
-       target_type = "tensor_valued<3>",
+       target_type = "tensor_valued<%s>"%rank,
        has_tail=False,
        serializable=True,
        )
 
- module.add_class(g)
+  module.add_class(g)
 
 ########################
 ##   GfImTime

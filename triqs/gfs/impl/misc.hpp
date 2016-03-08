@@ -159,14 +159,14 @@ namespace gfs {
    if (!is_gf_real(g))
     h5_write(gr, "data", g.data());
    else
-    h5_write(gr, "data", array<double, G::data_t::rank>(real(g.data())));
-    //h5_write(gr, "data", array<double,3>(real(g.data())));
+    //h5_write(gr, "data", array<double, G::data_t::rank>(real(g.data())));
+    h5_write(gr, "data", array<double,3>(real(g.data())));
   }
-  template <typename D, typename S> static void invoke(h5::group gr, gf_const_view<D,tensor_valued<3>,S> const &g) {
+  template <typename D, typename S, int Rank> static void invoke(h5::group gr, gf_const_view<D,tensor_valued<Rank>,S> const &g) {
    if (!is_gf_real(g))
     h5_write(gr, "data", g.data());
    else
-    h5_write(gr, "data", array<double,4>(real(g.data())));
+    h5_write(gr, "data", array<double,Rank+1>(real(g.data())));
   }
  };
 

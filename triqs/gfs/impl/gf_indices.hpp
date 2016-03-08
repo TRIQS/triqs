@@ -194,6 +194,100 @@ namespace gfs {
    vr3.push_back(ind_triplet[2].ind[i]);
   return {vr1, vr2, vr3};
  }
+
+ /// A simple indice struct (tuple)
+ template<int Rank>
+ struct gf_indices_tuple {
+
+  std::vector<gf_indices_one> ind_tuple;
+
+  gf_indices_tuple() : ind_tuple(Rank) {}
+  template <class T>
+  gf_indices_tuple(T n) { ind_tuple.push_back(n); }
+  template <class T, class... T2>
+  gf_indices_tuple(T n, T2... rest): gf_indices_tuple(rest...) {
+      ind_tuple.insert(ind_tuple.begin(), n);
+  }
+
+  gf_indices_tuple(gf_indices_one r) : ind_tuple(Rank, r) { }
+
+  gf_indices_tuple(std::vector<std::vector<std::string>> const & _ind) : ind_tuple(Rank){
+   for(int i=0;i<ind_tuple.size();i++) ind_tuple[i] = _ind[i];
+  }
+
+  /// from a shape
+  gf_indices_tuple(arrays::mini_vector<int, Rank> const &shape) : ind_tuple(Rank){
+   for(int i=0;i<ind_tuple.size();i++) ind_tuple[i] = gf_indices_one(shape[i]);
+  }
+
+  /// from a size
+  gf_indices_tuple(int L) : gf_indices_tuple(arrays::mini_vector<int, Rank>{std::vector<int>{Rank, L}}) {}
+
+  bool is_empty() const { 
+   for(int i=0; i<ind_tuple.size();i++)
+    if (ind_tuple[i].size() !=0) return false;
+   return true;
+  }
+
+  template <typename G> bool check_size(G *g) const {
+    for(int i=0; i<ind_tuple.size();i++)
+     if (!(is_empty() || ((ind_tuple[i].size() == get_target_shape(*g)[i])))) return false;
+    return true;
+    }
+
+  arrays::range convert_index(std::string const &s, int i) const { return ind_tuple[i].convert_index(s); }
+
+  // access to one of the index list
+  gf_indices_one operator[](int i) const { return ind_tuple[i]; }
+
+  friend void h5_write(h5::group fg, std::string subgroup_name, gf_indices_tuple const &g) {
+   if (g.is_empty()) return;
+   auto gr = fg.create_group(subgroup_name);
+   for(int i=0;i<g.ind_tuple.size(); i++)
+    h5_write(gr, "r"+std::to_string(i), g.ind_tuple[i].ind);
+  }
+
+  friend void h5_read(h5::group fg, std::string subgroup_name, gf_indices_tuple &g) {
+   h5::group gr = fg; // no default construction
+   try {
+    gr = fg.open_group(subgroup_name);
+   }
+   catch (...) {
+    g = gf_indices_tuple{}; // empty, no file
+    return;
+   }
+   for(int i=0;i<g.ind_tuple.size(); i++)
+    h5_read(gr, "r"+std::to_string(i), g.ind_tuple[i].ind);
+  }
+
+  friend class boost::serialization::access;
+  template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &TRIQS_MAKE_NVP("ind_tuple", ind_tuple); }
+ };
+ inline gf_indices_tuple<3> slice(gf_indices_tuple<3> const &ind_tuple, arrays::range rr1, arrays::range rr2, arrays::range rr3) {
+  if (ind_tuple.is_empty()) return {};
+  std::vector<std::string> vr1, vr2, vr3;
+  for (auto i : rr1) 
+   vr1.push_back(ind_tuple[0].ind[i]);
+  for (auto i : rr2) 
+   vr2.push_back(ind_tuple[1].ind[i]);
+  for (auto i : rr3) 
+   vr3.push_back(ind_tuple[2].ind[i]);
+  return {vr1, vr2, vr3};
+ }
+ inline gf_indices_tuple<4> slice(gf_indices_tuple<4> const &ind_tuple, arrays::range rr1, arrays::range rr2, arrays::range rr3, arrays::range rr4) {
+  if (ind_tuple.is_empty()) return {};
+  std::vector<std::string> vr1, vr2, vr3, vr4;
+  for (auto i : rr1) 
+   vr1.push_back(ind_tuple[0].ind[i]);
+  for (auto i : rr2) 
+   vr2.push_back(ind_tuple[1].ind[i]);
+  for (auto i : rr3) 
+   vr3.push_back(ind_tuple[2].ind[i]);
+  for (auto i : rr4) 
+   vr4.push_back(ind_tuple[3].ind[i]);
+  return {vr1, vr2, vr3, vr4};
+ }
+
 }
 }
 
