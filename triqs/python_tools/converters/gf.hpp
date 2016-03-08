@@ -45,10 +45,9 @@ template<> struct py_converter<triqs::gfs::gf_indices_one> {
   return {};
  }
 };
-template<> struct py_converter<triqs::gfs::gf_indices_pair> : py_converter_from_reductor<triqs::gfs::gf_indices_pair>{};
 
-template<> struct py_converter<triqs::gfs::gf_indices_tuple<3>> : py_converter_from_reductor<triqs::gfs::gf_indices_tuple<3>>{};
-template<> struct py_converter<triqs::gfs::gf_indices_tuple<4>> : py_converter_from_reductor<triqs::gfs::gf_indices_tuple<4>>{};
+template<int N> struct py_converter<triqs::gfs::gf_indices_tuple<N>> : py_converter_from_reductor<triqs::gfs::gf_indices_tuple<N>>{};
+
 // domains
 template<bool B> struct py_converter<triqs::gfs::matsubara_domain<B>> : py_converter_from_reductor<triqs::gfs::matsubara_domain<B>>{};
 template<> struct py_converter<triqs::gfs::R_domain> : py_converter_from_reductor<triqs::gfs::R_domain>{};

@@ -164,7 +164,7 @@ namespace gfs {
   *-----------------------------------------------------------------------------------------------------*/
 
  template <typename M, typename S, typename E> gf<M, matrix_valued, S, E> transpose(gf_view<M, matrix_valued, S, E> g) {
-  return {g.mesh(), transposed_view(g.data(), 0, 2, 1), transpose(g.singularity()), g.symmetry(), transpose(g.indices()), g.name};
+  return {g.mesh(), transposed_view(g.data(), 0, 2, 1), transpose(g.singularity()), g.symmetry(), transpose_indices(g.indices()), g.name};
  }
 
  /*------------------------------------------------------------------------------------------------------

@@ -178,7 +178,7 @@ namespace gfs {
  };
 
  template <> struct gf_indices<matrix_valued> {
-  using type = gf_indices_pair;
+  using type = gf_indices_tuple<2>;
  };
  template <> struct gf_indices<tensor_valued<3>> {
   using type = gf_indices_tuple<3>;
