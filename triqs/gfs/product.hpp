@@ -80,11 +80,9 @@ namespace gfs {
   }
  };
  template <typename S, int R, typename... Ms>
- struct gf_h5_name<cartesian_product<Ms...>, tensor_valued<R>, S> {
+ struct gf_h5_name<cartesian_product<Ms...>, tensor_valued<R>, S> : gf_h5_name<cartesian_product<Ms...>, matrix_valued, S> {
   static std::string invoke() {
-   std::string name = triqs::tuple::fold([](std::string a, std::string b) { return a + std::string(b.empty() ? "" : "_x_") + b; }, reverse(std::make_tuple(gf_h5_name<Ms, matrix_valued, nothing>::invoke()...)), std::string());
-   name += "Tv"+std::to_string(R); 
-   return name;
+   return gf_h5_name<cartesian_product<Ms...>, matrix_valued, S>::invoke()+"Tv"+std::to_string(R);
   }
  
  };
