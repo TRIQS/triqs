@@ -56,6 +56,10 @@ TEST(hilbert_space, hilbert_space) {
  hilbert_space hs2;
  hs2 = hs1;
  EXPECT_EQ(256, hs2.size());
+
+ // HDF5
+ auto hs_h5 = rw_h5(hs1, "hilbert_space");
+ EXPECT_EQ(hs1, hs_h5);
 }
 
 TEST(hilbert_space, fock_state) {
@@ -152,6 +156,10 @@ TEST(hilbert_space, sub_hilbert_space) {
 
  EXPECT_EQ(" +(1)|0> +(2)|1> +(3)|2> +(4)|3>", as_string(start));
  EXPECT_EQ(" +(1)|4> +(-2)|5> +(-3)|6> +(4)|7>", as_string(opCdag(start)));
+
+ // HDF5
+ auto hs_h5 = rw_h5(phs1, "sub_hilbert_space");
+ EXPECT_EQ(phs1, hs_h5);
 }
 
 TEST(hilbert_space, QuarticOperators) {

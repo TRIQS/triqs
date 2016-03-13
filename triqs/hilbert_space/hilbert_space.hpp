@@ -22,6 +22,7 @@
 
 #include <set>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/h5/vector.hpp>
 #include "fundamental_operator_set.hpp"
 #include <boost/container/flat_map.hpp>
 
@@ -45,6 +46,10 @@ class hilbert_space {
  // size of the hilbert space
  int size() const { return dim; }
 
+ // compare two hilbert spaces
+ bool operator==(hilbert_space const& hs) const { return dim == hs.dim; }
+ bool operator!=(hilbert_space const& hs) const { return !operator==(hs); }
+
  // Check if a given fock state belong to this space
  bool has_state(fock_state_t f) const { return f < dim; }
 
@@ -66,6 +71,20 @@ class hilbert_space {
   for(auto const& index : indices) f += 1 << fops[index];
   return f;
  }
+
+ // HDF5
+ friend std::string get_triqs_hdf5_data_scheme(hilbert_space const&) { return "hilbert_space"; }
+
+ friend void h5_write(h5::group fg, std::string const& name, hilbert_space const& hs) {
+  auto gr = fg.create_group(name);
+  h5_write(gr, "dim", hs.dim);
+ }
+
+ friend void h5_read(h5::group fg, std::string const& name, hilbert_space & hs) {
+  auto gr = fg.open_group(name);
+  h5_read(gr, "dim", hs.dim);
+ }
+
 };
 
 
@@ -87,6 +106,12 @@ class sub_hilbert_space {
 
  // dimension
  int size() const { return fock_states.size(); }
+
+ // compare two hilbert spaces
+ bool operator==(sub_hilbert_space const& hs) const {
+  return index == hs.index && fock_states == hs.fock_states;
+ }
+ bool operator!=(sub_hilbert_space const& hs) const { return !operator==(hs); }
 
  // find the index of a given state
  int get_state_index(fock_state_t f) const { return fock_to_index.find(f)->second; }
@@ -118,5 +143,25 @@ class sub_hilbert_space {
  // hence is it slow to insert (we don't care) but fast to look up (we do it a lot)
  // std::map<fock_state_t, int> fock_to_index;
  boost::container::flat_map<fock_state_t, int> fock_to_index;
+
+ // HDF5
+ friend std::string get_triqs_hdf5_data_scheme(sub_hilbert_space const&) { return "sub_hilbert_space"; }
+
+ friend void h5_write(h5::group fg, std::string const& name, sub_hilbert_space const& hs) {
+  auto gr = fg.create_group(name);
+  h5_write(gr, "index", hs.index);
+  h5_write(gr, "fock_states", hs.fock_states);
+ }
+
+ friend void h5_read(h5::group fg, std::string const& name, sub_hilbert_space & hs) {
+  using h5::h5_read;
+  auto gr = fg.open_group(name);
+  h5_read(gr, "index", hs.index);
+  h5_read(gr, "fock_states", hs.fock_states);
+  hs.fock_to_index.clear();
+  for(auto f : hs.fock_states)
+   hs.fock_to_index.insert(std::make_pair(f, static_cast<int>(hs.fock_to_index.size())));
+ }
+
 };
 }}
