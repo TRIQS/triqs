@@ -1,27 +1,5 @@
 .. highlight:: c
 
-.. _arr_range:
-
-range
-=========
-
-  `range` mimics the Python `range`. Arguments of the constructor can be: 
-  
-  * no argument: it then takes the whole set of indices in the dimension (like `:` in python) ::    
-    
-     A(range(), 0) // take the first column of A
-
-  * two arguments to specify a range ::
-
-     A(range (0,3), 0)  // means  A(0,0), A(1,0), A(2,0)
-
-    .. warning::
-       the second element is excluded: range(0,3) is 0,1,2, like in Python.
-
-  * three arguments : a range with a step ::
-
-      A(range(0,4,2), 0) // means A(0,0), A(2,0)  
-   
 
 .. _arr_ellipsis:
 

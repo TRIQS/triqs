@@ -49,7 +49,7 @@ Another ::
 ---------------------------------
 
   
-When the arguments contains at least one :ref:`range<arr_range>` or one :ref:`ellipsis<arr_ellipsis>`, and no placeholder (see 3)),
+When the arguments contains at least one :ref:`range` or one :ref:`ellipsis<arr_ellipsis>`, and no placeholder (see 3)),
 the return type is a (partial) view of the container.
 
 The special case (2a) (no argument) returns a complete view of the object
@@ -70,7 +70,8 @@ Example
 .. toctree::
    :hidden:
 
-   range_ell
+   /cpp2doc_generated/triqs/arrays/range
+   ellipsis
 
 .. highlight:: c
 

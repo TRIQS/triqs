@@ -27,7 +27,9 @@
 namespace triqs {
 namespace arrays {
 
+ ///A range of indices
  /**
+  `range` mimics the Python `range`.
   */
  class range {
   std::ptrdiff_t first_ = 0, last_ = -1, step_ = 1;
@@ -35,17 +37,46 @@ namespace arrays {
   public:
   using index_type = std::ptrdiff_t;
 
+  ///default constructor
+  /**
+  * range() stands for the whole set of indices in the dimension (like `:` in python) ::    
+    
+     A(range(), 0) // take the first column of A
+  */
   range() = default;
 
+  ///constructor
+  /**
+
+   - two arguments to specify a range ::
+
+     A(range (0,3), 0)  // means  A(0,0), A(1,0), A(2,0)
+
+   -  three arguments : a range with a step ::
+
+      A(range(0,4,2), 0) // means A(0,0), A(2,0)  
+
+    @warning the second element is excluded: range(0,3) is 0,1,2, like in Python.
+  */
   range(std::ptrdiff_t first__, std::ptrdiff_t last__, std::ptrdiff_t step__ = 1)
      : first_(first__), last_(last__), step_(step__) {}
 
+  ///constructor
+  /**
+
+   - one argument to specify a range ::
+
+     range (3) // is equivalent to range(0,3,1) 
+  */
   range(std::ptrdiff_t i) : range(0, i, 1) {}
 
+  ///first index of the range
   std::ptrdiff_t first() const { return first_; }
+  ///last index of the range (is excluded from the list of indices)
   std::ptrdiff_t last() const { return last_; }
+  ///step between two indices
   std::ptrdiff_t step() const { return step_; }
-  
+  ///number of indices in the range
   size_t size() const {
    std::ptrdiff_t r = (last_ - first_) / step_;
    if (r < 0) TRIQS_RUNTIME_ERROR << " range with negative size";
@@ -86,7 +117,10 @@ namespace arrays {
    for (; i < last; i += step) f(i);
   }
 
+  ///Ellipsis
  /**
+   Ellipsis can be provided in place of [[range]], as in python. The type `ellipsis` is similar to [[range]]
+  except that it is implicitly repeated to as much as necessary.
   */
  class ellipsis : public range {
   public:
