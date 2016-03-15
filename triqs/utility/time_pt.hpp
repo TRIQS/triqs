@@ -80,13 +80,13 @@ namespace triqs { namespace utility {
 
   /// unary -
   friend time_pt operator-(time_pt const & a) { return time_pt(Nmax-a.n, a.beta,true); }
-  
+
   /// division by integer
   friend time_pt div_by_int(time_pt const & a, size_t b) { return time_pt(a.n/b, a.beta, true); }
-  
+
   /// Multiplication by int
   friend time_pt mult_by_int(time_pt const & a, size_t b) { return time_pt(a.n*b, a.beta, true); }
-  
+
   /// floor_div(x,y) = floor (x/y), but computed on the grid.
   friend size_t floor_div(time_pt const & a, time_pt const & b) { return a.n/b.n; }
 
@@ -95,7 +95,7 @@ namespace triqs { namespace utility {
 
   /// Stream insertion
   friend std::ostream & operator<< (std::ostream & out, time_pt const & p) { return out << p.val << " [time_pt : beta = "<< p.beta<< " n = "<< p.n<<"]" ; }
- 
+
   /// Nmax
   static constexpr uint64_t Nmax = std::numeric_limits<uint64_t>::max();
 
@@ -137,9 +137,14 @@ namespace triqs { namespace utility {
 
   /// Get a random point in $[0, tp[$
   template <typename RNG> time_pt get_random_pt(RNG &rng, time_pt tp) const { return time_pt(rng(tp.n), beta, true); }
-  
+
   /// Get a random point in $[0,\beta[$
   template <typename RNG> time_pt get_random_pt(RNG &rng) const { return time_pt(rng(time_pt::Nmax), beta, true); }
+
+  // Get a random point in $[tp1, tp2[$
+  template <typename RNG> time_pt get_random_pt(RNG &rng, time_pt tp1, time_pt tp2) const {
+   return time_pt(rng(tp2.n - tp1.n) + tp1.n, beta, true);
+  }
 
   /// Get maximum point (i.e. $\tau =\beta$)
   time_pt get_upper_pt() const { return time_pt(time_pt::Nmax, beta, true); }
