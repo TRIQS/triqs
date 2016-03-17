@@ -119,7 +119,7 @@ using namespace ${ns};
 %endfor
 %endfor
 %if classes_of_parameters :
-#include "./converters.hxx"
+#include "./${modulename}_converters.hxx"
 %endif
 """)
 ##
