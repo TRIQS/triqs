@@ -67,7 +67,7 @@ template<typename X, typename Y>
  return ::testing::AssertionFailure() << "Comparing two arrays of different size "
           << "\n X = "<<  x << "\n Y = "<< y;
 
- if (max_element(abs(x - y)) ==0)
+ if (x.domain().number_of_elements() == 0 || max_element(abs(x - y)) ==0)
   return ::testing::AssertionSuccess();
  else
   return ::testing::AssertionFailure() << "max_element(abs(x-y)) = " << max_element(abs(x - y)) << "\n X = "<<  x << "\n Y = "<< y;
@@ -85,7 +85,7 @@ template<typename X, typename Y>
  return ::testing::AssertionFailure() << "Comparing two arrays of different size "
           << "\n X = "<<  x << "\n Y = "<< y;
 
- if (max_element(abs(x - y)) < precision)
+ if (x.domain().number_of_elements() == 0 || max_element(abs(x - y)) < precision)
   return ::testing::AssertionSuccess();
  else
   return ::testing::AssertionFailure() << "max_element(abs(x-y)) = " << max_element(abs(x - y)) << "\n X = "<<  x << "\n Y = "<< y;
@@ -100,7 +100,7 @@ template<typename X>
  double precision = 1.e-10;
  triqs::arrays::array<typename X::value_type, X::rank> x = x1; 
 
- if (max_element(abs(x)) < precision)
+ if (x.domain().number_of_elements() == 0 || max_element(abs(x)) < precision)
   return ::testing::AssertionSuccess();
  else
   return ::testing::AssertionFailure() << "max_element(abs(x-y)) = " << max_element(abs(x)) << "\n X = "<<  x;
