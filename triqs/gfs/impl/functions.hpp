@@ -68,8 +68,8 @@ namespace gfs {
   *                      Slicing the matrix valued into a scalar
   *-----------------------------------------------------------------------------------------------------*/
 
- template <typename M, typename S, typename E, typename... Args>
- gf_view<M, scalar_valued, S> slice_target_to_scalar(gf_view<M, matrix_valued, S, E> g, Args &&... args) {
+ template <typename M, typename D, typename S, typename E, typename... Args>
+ gf_view<M, scalar_valued, S> slice_target_to_scalar(gf_view<M, D, S, E> g, Args &&... args) {
   return {g.mesh(),
           g.data()(arrays::range(), std::forward<Args>(args)...),
           slice_target(g.singularity(), range(args, args + 1)...),
@@ -78,8 +78,8 @@ namespace gfs {
           g.name};
  }
 
- template <typename M, typename S, typename E, typename... Args>
- gf_const_view<M, scalar_valued, S> slice_target_to_scalar(gf_const_view<M, matrix_valued, S, E> g, Args &&... args) {
+ template <typename M, typename D, typename S, typename E, typename... Args>
+ gf_const_view<M, scalar_valued, S> slice_target_to_scalar(gf_const_view<M, D, S, E> g, Args &&... args) {
   return {g.mesh(),
           g.data()(arrays::range(), std::forward<Args>(args)...),
           slice_target(g.singularity(), range(args, args + 1)...),
@@ -88,13 +88,13 @@ namespace gfs {
           g.name};
  }
 
- template <typename M, typename S, typename E, typename... Args>
- gf_view<M, scalar_valued, S> slice_target_to_scalar(gf<M, matrix_valued, S, E> &g, Args &&... args) {
+ template <typename M, typename D, typename S, typename E, typename... Args>
+ gf_view<M, scalar_valued, S> slice_target_to_scalar(gf<M, D, S, E> &g, Args &&... args) {
   return slice_target_to_scalar(g(), std::forward<Args>(args)...);
  }
 
- template <typename M, typename S, typename E, typename... Args>
- gf_const_view<M, scalar_valued, S> slice_target_to_scalar(gf<M, matrix_valued, S, E> const &g, Args &&... args) {
+ template <typename M, typename D, typename S, typename E, typename... Args>
+ gf_const_view<M, scalar_valued, S> slice_target_to_scalar(gf<M, D, S, E> const &g, Args &&... args) {
   return slice_target_to_scalar(g(), std::forward<Args>(args)...);
  }
 
