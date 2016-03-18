@@ -91,7 +91,7 @@ Note that:
      double a = 3;
      auto e = a + 2* x_ ;  // a is stored by reference (double &), but 2 is stored by value
 
-   The rational is as follows: 
+   The rationale is as follows: 
 
    * rvalue must be moved, otherwise we would keep (dangling) reference to temporaries.
    * for lvalue, keeping a reference is quicker. Of course, in the previous example, 

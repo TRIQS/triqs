@@ -34,7 +34,7 @@ namespace triqs { namespace utility {
   *
   * * Regular type.
   *
-  * * **Rational**: the position in the segment is given by an uint64_t, 
+  * * **Rationale**: the position in the segment is given by an uint64_t, 
   *   i.e. a very long integer.
   *   This allows exact comparisons, which notoriously dangerous on floating point number.
   *

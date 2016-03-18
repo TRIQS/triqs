@@ -26,7 +26,7 @@ namespace h5 {
 
  /**
   *  \brief A local derivative of Group.
-  *  Rational : use ADL for h5_read/h5_write, catch and rethrow exception, add some policy for opening/creating
+  *  Rationale : use ADL for h5_read/h5_write, catch and rethrow exception, add some policy for opening/creating
   */
  class group : public h5_object {
   void _write_triqs_hdf5_data_scheme(const char *a); // impl.

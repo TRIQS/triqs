@@ -1,4 +1,4 @@
-Rational
+Rationale
 ===========================
 
 .. highlight:: c

@@ -32,7 +32,7 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   *    temporary regrouped value class.
   *
   *  const_qcache is NOT copyable. It should be used in local use only.
-  *  [Rational : in simple case, like A =matrix, it allows to keep only a const &, which is quicker
+  *  [Rationale : in simple case, like A =matrix, it allows to keep only a const &, which is quicker
   *
   */
  template<typename A, typename Enable=void> class const_qcache;
@@ -124,7 +124,7 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   *    temporary regrouped value class. In that case, the data are back copied to the original at construction.
   *
   *  reflexive_qcache is NOT copyable. It should be used in local use only.
-  *  [Rational : in simple case, like A =matrix, it allows to keep only a &, which is quicker
+  *  [Rationale : in simple case, like A =matrix, it allows to keep only a &, which is quicker
   *
   */
  template<typename A, typename Enable=void> class reflexive_qcache;
