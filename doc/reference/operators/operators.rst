@@ -4,55 +4,79 @@ Second-quantization operators
 
 .. highlight:: c
 
-``many_body_operator`` is a template class, which implements the algebra of fermionic operators.
+``many_body_operator_generic`` is a templated class, which implements the algebra of fermionic operators.
 An object of this class represents a general fermionic operator and supports all standard algebraic operations (sums, products, multiplication by a scalar).
 It allows to write readable and clean C++ code involving various operators, such as Hamiltonians and observables of many-body systems.
 
 .. note::
 
-    The internal storage of a ``many_body_operator`` object is not based on a matrix representation.
-    Instead of that the object stores a list of normally-ordered monomials in basis elements
+    The internal storage of the ``many_body_operator_generic`` object is not based on a matrix representation.
+    Instead of that, the object stores a list of normally-ordered monomials in basis elements
     (creation and annihilation operators), accompanied by scalar coefficients. This approach allows
     to minimize the required storage space.
 
-``many_body_operator`` is declared as ::
+``many_body_operator_generic`` is declared as ::
 
-    template<typename scalar_t> class many_body_operator;
+    namespace triqs {
+    namespace operators {
+        template<typename ScalarType> class many_body_operator_generic;
+    }}
 
 Template parameters
 -------------------
 
-    * **scalar_t** determines the type of a scalar to construct the algebra.
+    * **ScalarType** determines the scalar type to construct the algebra.
 
-``scalar_t`` will be ``double`` or ``std::complex<double>`` most of the time. One may, however, use
-an arbitrary user-defined type, as long as it meets two conditions:
+``ScalarType`` will be ``double``, ``std::complex<double>``, or ``triqs::utility::real_or_complex`` most of the time.
+``triqs::utility::real_or_complex`` is a variant numeric type that can carry either a real or a complex value.
+Type of the result of an arithmetic expression involving ``real_or_complex`` objects is dynamically deduced at runtime.
 
-* Objects of the type form a field, i.e. they support operations ``+``,``-``,``*``,``=``
-  and their assignment versions ``+=``, ``-=``, ``*=``, ``/=``.
-* There is a free function ``bool is_zero(scalar_t [const&] x)``, declared in namespace ``triqs::utility``,
-  which detects an object of the type ``scalar_t`` being zero.
+One may, however, use an arbitrary user-defined type, as long as it meets two conditions:
 
-One more requirement must be met to make free function ``dagger()`` available:
+* Objects of the type form a field, i.e. they support operations ``+``, ``-``, ``*``, ``=``
+  and compound assignments ``+=``, ``-=``, ``*=``, ``/=``.
+* There is a free function ``bool is_zero(ScalarType [const&] x)``, declared in namespace ``triqs::utility``,
+  which detects if an object of the type ``ScalarType`` is zero.
 
-* There is a free function ``scalar_t _conj(scalar_t [const&] x)``, declared in namespace ``triqs::utility``,
+One more requirement must be met to make free function ``dagger()``
+(Hermitian conjugate) available:
+
+* There is a free function ``ScalarType conj(ScalarType [const&] x)``, declared in namespace ``triqs::utility``,
   which returns a complex conjugate of ``x``.
+
+For the sake of convenience, three type aliases are declared: ::
+
+    // Operator with real matrix elements
+    using many_body_operator_real = many_body_operator_generic<double>;
+    // Operator with complex matrix elements
+    using many_body_operator_complex = many_body_operator_generic<std::complex<double>>;
+    // Operator with polymorphic matrix elements
+    using many_body_operator = many_body_operator_generic<real_or_complex>;
 
 Construction/factories
 ----------------------
 
-``many_body_operator`` provides a minimal set of constructors: default, copy and move constructor. The default constructor
-creates a zero operator.
+``many_body_operator_generic`` provides a minimal set of constructors: ::
+
+    // Default constructor; constructs a zero operator
+    many_body_operator_generic();
+    // Construct a constant operator
+    many_body_operator_generic(ScalarType const& x);
+    // Copy-constructor
+    many_body_operator_generic(many_body_operator_generic const&);
+    // Move-constructor
+    many_body_operator_generic(many_body_operator_generic&&) = default;
 
 Three factory functions can be used to construct nontrivial operators: ::
 
     // Annihilation
-    template<typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> c(IndexTypes... ind);
+    template<typename ScalarType = real_or_complex, typename... IndexTypes> many_body_operator_generic<ScalarType> c(IndexTypes... ind);
     // Creation
-    template<typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> c_dag(IndexTypes... ind);
+    template<typename ScalarType = real_or_complex, typename... IndexTypes> many_body_operator_generic<ScalarType> c_dag(IndexTypes... ind);
     // Number of particles
-    template<typename scalar_t = double, typename... IndexTypes> many_body_operator<scalar_t> n(IndexTypes... ind);
+    template<typename ScalarType = real_or_complex, typename... IndexTypes> many_body_operator_generic<ScalarType> n(IndexTypes... ind);
 
-``IndexTypes`` is a sequence of index types with any number of elements, each being ``int`` or ``std::string``.
+``IndexTypes`` is an arbitrarily long sequence of index types, each being ``int`` or ``std::string``.
 
 Creation and annihilation operators obey the canonical anticommutation relation 
 
@@ -71,9 +95,9 @@ This means, that an algebra can be extended with new basis elements on-the-fly, 
 Overloaded operations
 ---------------------
 
-``many_body_operator`` class defines a number of arithmetic operations with objects of the class and constants of type ``scalar_t``.
-If ``A`` and ``B`` are objects of class ``many_body_operator`` (instantiated with *the same scalar and index types*) and ``x`` is an
-instance of ``scalar_t``, then the following expressions are valid: ::
+``many_body_operator_generic`` class defines a number of arithmetic operations with objects of the class and constants of type ``ScalarType``.
+If ``A`` and ``B`` are objects of class ``many_body_operator_generic`` (instantiated with *the same scalar and index types*) and ``x`` is an
+instance of ``ScalarType``, then the following expressions are valid: ::
 
     // Addition
     A + B; A + x; x + A;
@@ -93,40 +117,58 @@ instance of ``scalar_t``, then the following expressions are valid: ::
 
 The result of any of the defined operations is guaranteed to preserve its normally ordered form.
 
-Within the current implementation, ``many_body_operator`` provides no type conversions between objects with
-different scalar types or index types.
-For example, one cannot mix operators with ``scalar_t = double`` and ``scalar_t = std::complex<double>`` in a single expression.
-Nevertheless, one operator can be assigned from another if their scalar types are compatible.
+``many_body_operator_generic`` can be copy-constructed and assigned from another ``many_body_operator_generic`` instantiation 
+with a compatible scalar type. For example, it is possible to copy-construct ``many_body_operator_complex`` from
+``many_body_operator_real``, but not vice versa.
 
-An instance of ``many_body_operator`` can be inserted into an output stream, provided ``scalar_t`` supports insertion into the stream. ::
+An instance of ``many_body_operator_generic`` can be inserted into an output stream, provided ``ScalarType`` supports insertion into the stream. ::
 
-    many_body_operator<double> x = c(0);
-    many_body_operator<double> y = c_dag(1);
+    many_body_operator_generic<double> x = c(0);
+    many_body_operator_generic<double> y = c_dag(1);
 
     std::cout << (x + y)*(x - y) << std::endl; // prints "2*C^+(1)C(0)"
+
+Member types
+------------
+::
+
+    using scalar_t = ScalarType;
+Accessor to the ``ScalarType``.
 
 Methods
 -------
 ::
 
-    bool is_zero() const
-Returns ``true`` if the object is a precise zero.
+    bool is_zero() const;
+Returns ``true`` if this operator is a precise zero.
+
+::
+
+    triqs::hilbert_space::fundamental_operator_set make_fundamental_operator_set() const;
+Returns :ref:`fundamental_operator_set` containing all indices met within this operator.
+
+::
+
+    static many_body_operator_generic make_canonical(bool is_dag, indices_t indices);
+Returns a canonical operator (creation, if ``is_dag = true``, annihilation otherwise) with given ``indices``.
+
 
 Free functions
 --------------
 ::
 
-    many_body_operator<scalar_t> dagger(many_body_operator<scalar_t> const& op)
+    many_body_operator<ScalarType> dagger(many_body_operator_generic<ScalarType> const& op);
 Returns the Hermitian conjugate of ``op``.
 
 Iteration over monomials
 ------------------------
 
-The aim of ``many_body_operator`` is to have a class allowing to encode different operator expressions in C++ in the form closest to the mathematical notation.
-At the same time, one would like to explicitly extract the structure of a defined operator (to calculate its matrix elements, for instance).
-For this purpose ``many_body_operator`` exposes the following part of its interface:
+The aim of ``many_body_operator_generic`` is to have a class allowing to encode different operator expressions in C++
+in the form closest to the mathematical notation. At the same time, one would like to explicitly extract the structure
+of a given operator (to calculate its matrix elements, for instance).
+For this purpose ``many_body_operator_generic`` exposes the following part of its interface:
 
-- ``using indices_t = std::vector<boost::variant<int, std::string>>;``
+- ``using indices_t = std::vector<triqs::utility::variant_int_string>;``
     A vector of indices. Each index is a variant type with two options: ``int`` or ``std::string``.
 
 - ``struct canonical_ops_t``
@@ -144,7 +186,7 @@ For this purpose ``many_body_operator`` exposes the following part of its interf
 
 - ``using const_iterator = ...;``
     A bidirectional constant iterator to the list of monomials.
-    It can be dereferenced into a special proxy object, which carries two data members: ``scalar_t coef`` and ``monomial_t const& monomial``.
+    It can be dereferenced into a special proxy object, which contains two data members: ``scalar_t coef`` and ``monomial_t const& monomial``.
 
 - ``begin()``/``cbegin()``
     Returns ``const_iterator`` pointing at the first monomial.
@@ -154,7 +196,7 @@ For this purpose ``many_body_operator`` exposes the following part of its interf
 
 Here is an example of use: ::
 
-    using Op = many_body_operator<double>;
+    using Op = many_body_operator;
     Op H = -0.5*(n(0) + n(1)) + n(0)*n(1);
 
     for(Op::const_iterator it = H.begin(); it != H.end(); ++it){
@@ -185,12 +227,11 @@ The output should be ::
 Serialization & HDF5
 --------------------
 
-Objects of ``many_body_operator`` are ready to be serialized/deserialized with Boost.Serialization.
-It also allows to transparently send/receive them through Boost.MPI calls.
+Objects of ``many_body_operator_generic`` are ready to be serialized/deserialized with Boost.Serialization.
+This also allows to transparently send/receive them through Boost.MPI calls.
 
-.. warning::
-
-    Storing ``many_body_operator`` in HDF5 is not yet implemented.
+Writing to/reading from HDF5 is supported for the polymorphic version of the operators (``many_body_operator``)
+provided they contain no terms beyond quartic.
 
 Python
 ------
@@ -201,7 +242,7 @@ Python wrapper for ``many_body_operator`` class is called ``Operator``. It is fo
 
     from pytriqs.operators.operators import Operator, c, c_dag, n
 
-It corresponds to a specialized version of ``many_body_operator``: ``double`` as the scalar type and two indices.
+It corresponds to a specialized version of ``many_body_operator_generic``: ``real_or_complex`` as the scalar type and two indices.
 All arithmetic operations implemented in C++ are also available in Python as well as special methods ``__repr__()`` and ``__str__()``.
 
 .. runblock:: python

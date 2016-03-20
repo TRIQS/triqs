@@ -5,7 +5,7 @@
 .. _operators:
 
 **[triqs/operators]** Second-quantization operators and many-body Hamiltonians
-==========================================================================================
+==============================================================================
 
 The TRIQS-based solvers need to know several operators in order to solve the impurity
 problem. For example, they must know what the local Hamiltonian is, and optionally its
