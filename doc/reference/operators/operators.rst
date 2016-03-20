@@ -1,4 +1,6 @@
 
+.. _many_body_operator:
+
 Second-quantization operators
 =============================
 

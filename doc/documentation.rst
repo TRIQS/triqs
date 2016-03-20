@@ -61,6 +61,7 @@ Code reference
    reference/lattice_tools/contents
    reference/montecarlo/contents
    reference/operators/contents
+   reference/hilbert_space/contents
    reference/arrays/contents
    reference/clef/contents
    reference/hdf5/contents
