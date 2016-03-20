@@ -357,9 +357,9 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
     g.number_protocol['multiply'].python_precall = "pytriqs.gf.local._gf_common.mul_precall"
     g.number_protocol['divide'].python_precall   = "pytriqs.gf.local._gf_common.div_precall"
 
-    if target_type=="matrix_valued":
-      g.number_protocol['lshift'] = pyfunction(name ="__lshift__", python_precall = "pytriqs.gf.local._gf_common._lshift_", arity = 2)
+    g.number_protocol['lshift'] = pyfunction(name ="__lshift__", python_precall = "pytriqs.gf.local._gf_common._lshift_", arity = 2)
 
+    if target_type=="matrix_valued":
       # For backward compatibility
       g.number_protocol['inplace_lshift'] = pyfunction(name ="__inplace_lshift__", python_precall = "pytriqs.gf.local._gf_common._ilshift_", arity = 2)
 
@@ -456,6 +456,8 @@ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "g
 g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(std::complex<double> y, gf<imfreq> x)")
 
 module.add_class(g)
+
+module.add_function("bool is_gf_real_in_tau(gf_view<imfreq, matrix_valued> g, double tolerance = 1.e-13)")
 
 #############################
 ##   Tensor-valued Gfs [ImFreq, ImTime, ReFreq]

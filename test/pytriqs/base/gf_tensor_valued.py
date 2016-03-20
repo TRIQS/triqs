@@ -42,3 +42,6 @@ print G5.data.shape
 
 assert G5.data.shape==(20,1,2,2,1),"not ok"
 assert G5['a','b1','c2', 'c'].data.shape==(20,1,1,1, 1), "not ok"
+
+#ImTime, Tv3
+G6=GfImTimeTv3(beta=1.,statistic="Fermion",n_points=100, indices=[['a'],['b1','b2'],['c1', 'c2']])

@@ -56,6 +56,4 @@ def get_indices_in_dict_tv(d):
     # If the indices are not string, make them string anyway
     indices_list = [[ str(x) for x in indices ] for indices in indices_list]
 
-    print indices_list
-
     return indices_list

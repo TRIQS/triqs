@@ -43,12 +43,12 @@ def init_tv( mesh = None, shape = None, name = 'g', **kwargs):
     indices_pack = get_indices_in_dict_tv(kwargs)
     if not shape: 
       assert indices_pack, "No shape, no indices !"
-      indicesL, indicesR = indices_pack
-      shape = len(indicesL),len(indicesR)
+      indices = indices_pack
+      shape = [len(x) for x in indices]
     if kwargs: raise ValueError, "GfImTime: Unused parameters %s were passed."%kwargs.keys()
 
     return (mesh, shape, indices_pack, name), {}
-    
+
 #--------------   PLOT   ---------------------------------------
 
 def plot(self, opt_dict):
