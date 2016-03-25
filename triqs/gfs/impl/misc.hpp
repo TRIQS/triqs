@@ -158,7 +158,7 @@ namespace gfs {
    if (!is_gf_real(g))
     h5_write(gr, "data", g.data());
    else
-    h5_write(gr, "data", array<double, 3>(real(g.data())));
+    h5_write(gr, "data", array<double, G::data_t::rank>(real(g.data())));
   }
  };
 
