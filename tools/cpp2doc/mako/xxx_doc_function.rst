@@ -28,7 +28,7 @@ ${tools.make_synopsis_list(f_overloads)}
 
 %for n,m in enumerate(f_overloads) :
 
---------------------------------------- 
+---------------------------------------
 
 %if c is None :
 .. code-block:: c
@@ -54,7 +54,7 @@ ${num} ${m.processed_doc}
 %endif
 
 %if m.doc_elements['figure']:
-<% 
+<%
   fig=m.doc_elements['figure'].split(":")
 %>
 .. figure:: ${fig[0]}
@@ -94,16 +94,16 @@ Parameters
 
 %endif
 
+%if m.doc_elements['return']:
 Return value
 --------------
 
-%if m.doc_elements['return']:
 ${m.doc_elements['return']}
 %endif
 
 %endfor
 
-<% 
+<%
   code,d1,d2, s,e = tools.prepare_example(f_name, 4)
 %>
 
@@ -122,7 +122,7 @@ ${d1}
 
 ${code}
 
-${d2}    
+${d2}
 
 %endif
 
