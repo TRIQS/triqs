@@ -64,6 +64,14 @@ class type_alias_(object):
         return "using %s = %s"%(self.name,self.value)
         #return "type : %s %s\n"%(self.name, self.canonical_name)
 
+def extract_bracketed(tokens):
+    def p(t):
+     if t == '<': p.bracket_count += 1
+     elif t == '>': p.bracket_count -= 1
+     return p.bracket_count > 0
+    p.bracket_count = 0
+    return list(itertools.takewhile(p, tokens)) + ['>']
+
 class Function(object):
     def __init__(self, cursor, is_constructor = False, ns=(), parent_class = None):
         loc = cursor.location.file.name
@@ -82,19 +90,19 @@ class Function(object):
         self.parameter_arg = None # If exists, it is the parameter class
 
         tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
-        #print "TOKENS ", tokens 
+        #print "TOKENS ", tokens
 
         # detect from the tokens if a constructor is explicit
         self.is_explicit =  'explicit' in tokens
-     
-        def rindex(l, x) : 
+
+        def rindex(l, x) :
             """Get the right index of x in the list l"""
             return len(l) - l[::-1].index(x) -1
 
         # detect from the tokens the trailing const, const &, &, &&, etc ...
         # it is just after a ) if it exists (a type can not end with a ) )
         def get_qualif(syn):
-            for pat in ["const &*","&+", "noexcept"] : 
+            for pat in ["const &*","&+", "noexcept"] :
                 m = re.search(r"\) (%s)"%pat, syn)
                 if m: return m.group(1).strip()
         self.const = get_qualif(' '.join(tokens)) or ''
@@ -177,7 +185,7 @@ class FriendFunction(Function):
         self.tparams = []  #template_list
         self.is_constructor = False
         self.is_static = False
-        self.parameter_arg = None 
+        self.parameter_arg = None
 
         tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
         #print tokens
@@ -187,25 +195,24 @@ class FriendFunction(Function):
         self.name = l[-1]
         args_list = tokens[open_par+1:close_par]
         # separate the arguments
-        def f(tmp) : 
-            if '=' in tmp : 
+        def f(tmp) :
+            if '=' in tmp :
                ty, var, defaut = tmp[:-3], tmp[-3], tmp[-1]
             else:
                ty, var, defaut = tmp[:-1], tmp[-1], None
             self.params.append((type2_(''.join([(' ' if x in ['const','&'] else '') + x for x in ty])),var,defaut))
 
         tmp = []
-        for x in args_list : 
+        for x in args_list :
             if x == ',' and tmp.count('<') == tmp.count('>'):
-                f(tmp)              
+                f(tmp)
                 tmp = []
-            else : 
+            else :
                 tmp.append(x)
         f(tmp)
 
 class Class(object):
     def __init__(self, cursor,ns):
-        print "analysing ", cursor.spelling
         loc = cursor.location.file.name
         if loc : file_locations.add(loc)
         self.file_location = loc
@@ -227,16 +234,18 @@ class Class(object):
 
         tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
 
-        #If the class is a (full) specialization
-        if cursor.kind in [CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL] and tokens[:3] ==['template', '<', '>']:
-            t = tokens[6:]
-            t = t[0:t.index('>')]
-            self.name = self.name + '<' + ','.join(t) + '>'
+        # If the class is a specialization
+        if cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL, CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION):
+            if tokens and tokens[0] == 'template':
+               t = tokens[len(extract_bracketed(tokens[1:]))+3:]
+               self.name = self.name + ''.join(extract_bracketed(t))
+
+        print "Analysing", self.name
 
         for c in cursor.get_children():
             # Only public nodes
             if c.access_specifier != clang.cindex.AccessSpecifier.PUBLIC : continue
-            
+
             if (c.kind == CursorKind.CXX_BASE_SPECIFIER):
                tokens = [t.spelling if t else '' for t in c.get_tokens()]
                tt = c.type.get_declaration()  # guess it is not a ref
@@ -281,7 +290,7 @@ class Class(object):
                 tokens = [t.spelling if t else '' for t in c.get_tokens()]
                 d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
                 self.tparams.append(("typename", c.spelling, d))
-            
+
             elif c.kind == CursorKind.TEMPLATE_NON_TYPE_PARAMETER:
                 tokens = [t.spelling if t else '' for t in c.get_tokens()]
                 d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
@@ -291,10 +300,10 @@ class Class(object):
                 tokens =  [t.spelling if t else '' for t in c.get_tokens()]
                 if tokens[0] == "friend" and tokens[1] not in ['struct', 'class'] :
                     self.friend_functions.append(FriendFunction(c, parent_class = self))
-            
+
             elif c.kind == CursorKind.CXX_ACCESS_SPEC_DECL:
                 pass
-            
+
             else :
                 print "unknown in class ", c.spelling, repr(c.kind)
 
