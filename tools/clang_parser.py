@@ -65,11 +65,12 @@ class type_alias_(object):
         #return "type : %s %s\n"%(self.name, self.canonical_name)
 
 def extract_bracketed(tokens):
-    def p(t):
-     p.bracket_count += {'<' : 1, '>' : -1, '<<' : 2, '>>' : -2}.get(t, 0)
-     return p.bracket_count > 0
-    p.bracket_count = 0
-    return list(itertools.takewhile(p, tokens)) + ['>']
+    r = []
+    bracket_count = 0
+    for t in tokens:
+        bracket_count += {'<' : 1, '>' : -1, '<<' : 2, '>>' : -2}.get(t, 0)
+        r.append(t)
+        if bracket_count == 0: return r
 
 class Function(object):
     def __init__(self, cursor, is_constructor = False, ns=(), parent_class = None):

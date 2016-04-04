@@ -80,7 +80,6 @@ Member functions
 ${make_table(['Member function','Comment'], [(":ref:`%s <%s_%s>`"%(name,c.name, name), replace_latex(m[0].brief_doc)) for name, m in c.all_m.items()])}
 
 .. toctree::
-
   :hidden:
 
 %for m_name in c.all_m:
@@ -96,15 +95,14 @@ ${make_table(['Non member function','Comment'],
            [(":ref:`%s <%s_%s>`"%(name,c.name, name), m[0].brief_doc) for name, m in c.all_friend_functions.items()]) }
 
 .. toctree::
-
   :hidden:
-  
+
 %for m_name in c.all_friend_functions:
    ${c.name}/${m_name}
 %endfor
 %endif
 
-<% 
+<%
   code,d1,d2, s,e = tools.prepare_example(c.name, 4)
 %>
 %if code is not None:
@@ -120,7 +118,7 @@ ${d1}
 
 ${code}
 
-${d2}    
+${d2}
 
 %endif
 
