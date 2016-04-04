@@ -66,8 +66,7 @@ class type_alias_(object):
 
 def extract_bracketed(tokens):
     def p(t):
-     if t == '<': p.bracket_count += 1
-     elif t == '>': p.bracket_count -= 1
+     p.bracket_count += {'<' : 1, '>' : -1, '<<' : 2, '>>' : -2}.get(t, 0)
      return p.bracket_count > 0
     p.bracket_count = 0
     return list(itertools.takewhile(p, tokens)) + ['>']
@@ -238,7 +237,7 @@ class Class(object):
         if cursor.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL, CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION):
             if tokens and tokens[0] == 'template':
                t = tokens[len(extract_bracketed(tokens[1:]))+3:]
-               self.name = self.name + ''.join(extract_bracketed(t))
+               if t and t[0] == '<': self.name = self.name + ''.join(extract_bracketed(t))
 
         print "Analysing", self.name
 
