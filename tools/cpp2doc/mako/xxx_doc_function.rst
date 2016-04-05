@@ -31,13 +31,19 @@ ${tools.make_synopsis_list(f_overloads)}
 ---------------------------------------
 
 %if c is None :
+
 .. code-block:: c
 
+%if 'include' in m.doc_elements:
+    #include <${m.doc_elements['include'] | trim}>
+
+%else:
     #include <${m.file_location}>
 
-..
-
 %endif
+..
+%endif
+
 <%
 num = '(%s)'%(n+1) if len(f_overloads)>1 else ''
 %>

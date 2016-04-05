@@ -68,7 +68,8 @@ def extract_bracketed(tokens):
     r = []
     bracket_count = 0
     for t in tokens:
-        bracket_count += {'<' : 1, '>' : -1, '<<' : 2, '>>' : -2}.get(t, 0)
+        if t == '<': bracket_count += 1
+        else: bracket_count -= len(t) - len(t.lstrip('>'))
         r.append(t)
         if bracket_count == 0: return r
 
@@ -188,7 +189,11 @@ class FriendFunction(Function):
         self.parameter_arg = None
 
         tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
-        #print tokens
+        if tokens[0] == "template":
+            template_part = extract_bracketed(tokens[1:])
+            # Parse template params?
+            tokens = tokens[len(template_part)+1:]
+
         open_par, close_par = tokens.index('('),tokens.index(')')
         l = tokens[1:open_par]
         self.rtype = type2_(' '.join(l[:-1]))
@@ -298,6 +303,7 @@ class Class(object):
 
             elif c.kind == CursorKind.UNEXPOSED_DECL:
                 tokens =  [t.spelling if t else '' for t in c.get_tokens()]
+                if tokens[0] == "template": tokens = tokens[len(extract_bracketed(tokens[1:]))+1:]
                 if tokens[0] == "friend" and tokens[1] not in ['struct', 'class'] :
                     self.friend_functions.append(FriendFunction(c, parent_class = self))
 

@@ -12,13 +12,13 @@
 
 .. highlight:: c
 
-.. _${c.name}:
-
 %if incl:
 .. code-block:: c
 
-    #include <${incl}>
+    #include <${incl | trim}>
 %endif
+
+.. _${c.name}:
 
 ${c.name}
 ${'=' * (len(c.name)+2)}
@@ -77,7 +77,7 @@ ${make_table(['Member type','Comment'], [(t.name, t.doc) for t in c.type_alias])
 Member functions
 -----------------
 
-${make_table(['Member function','Comment'], [(":ref:`%s <%s_%s>`"%(name,c.name, name), replace_latex(m[0].brief_doc)) for name, m in c.all_m.items()])}
+${make_table(['Member function','Comment'], [(":ref:`%s <%s_%s>`"%(name,tools.escape_lg(c.name), tools.escape_lg(name)), replace_latex(m[0].brief_doc)) for name, m in c.all_m.items()])}
 
 .. toctree::
   :hidden:
@@ -92,7 +92,7 @@ Non Member functions
 -----------------------
 
 ${make_table(['Non member function','Comment'],
-           [(":ref:`%s <%s_%s>`"%(name,c.name, name), m[0].brief_doc) for name, m in c.all_friend_functions.items()]) }
+           [(":ref:`%s <%s_%s>`"%(name,tools.escape_lg(c.name), tools.escape_lg(name)), m[0].brief_doc) for name, m in c.all_friend_functions.items()]) }
 
 .. toctree::
   :hidden:

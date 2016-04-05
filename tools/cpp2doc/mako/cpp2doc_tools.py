@@ -32,6 +32,9 @@ def add_linebreaks(s, num_char=80):
      else: final_s += '\n   '+w+' '; char_count=len(w)
     return final_s
 
+def escape_lg(s):
+    return s.replace('>','\>').replace('<','\<')
+
 def make_synopsis(m, decal):
     #assert not m.tparams, "template functions "
     try :
