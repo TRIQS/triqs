@@ -29,7 +29,7 @@ namespace boost { namespace mpi { class communicator; }}
 namespace triqs {
 namespace mpi {
 
- inline bool is_initialized() noexcept { 
+ inline bool is_initialized() noexcept {
   int flag;
   MPI_Initialized(&flag);
   return flag;
@@ -55,6 +55,8 @@ namespace mpi {
 
   public:
   communicator() = default;
+
+  communicator(MPI_Comm c) : _com(c) {}
 
   MPI_Comm get() const { return _com; }
 
@@ -136,11 +138,11 @@ namespace mpi {
  template <class T> inline MPI_Datatype mpi_datatype();
 #define D(T, MPI_TY)                                                                                                             \
  template <> inline MPI_Datatype mpi_datatype<T>() { return MPI_TY; }
- D(int, MPI_INT) 
+ D(int, MPI_INT)
  D(long, MPI_LONG)
  D(long long, MPI_LONG_LONG)
- D(double, MPI_DOUBLE) 
- D(float, MPI_FLOAT) 
+ D(double, MPI_DOUBLE)
+ D(float, MPI_FLOAT)
  D(std::complex<double>, MPI_DOUBLE_COMPLEX);
  D(unsigned long, MPI_UNSIGNED_LONG);
  D(unsigned int, MPI_UNSIGNED);
