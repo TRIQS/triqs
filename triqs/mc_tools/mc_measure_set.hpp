@@ -75,25 +75,35 @@ namespace triqs { namespace mc_tools {
   template <typename MCSignType> class measure_set {
 
    using measure_type = measure<MCSignType>;
-   std::map<std::string, measure<MCSignType>> m_map;
+   using m_map_t = std::map<std::string, measure<MCSignType>>;
+   m_map_t m_map;
 
    public :
+   
+   using measure_ptr_t = typename m_map_t::const_iterator;
 
    measure_set() = default;
 
    /**
     * Register the Measure M with a name
     */
-   template<typename MeasureType>
-    void insert (MeasureType && M, std::string const & name) {
-     if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
-     // workaround for all gcc
-     // m_map.insert(std::make_pair(name, measure_type(true, std::forward<MeasureType>(M))));
-     m_map.emplace(name, measure_type(true, std::forward<MeasureType>(M)));
-    }
+   template <typename MeasureType> measure_ptr_t insert(MeasureType &&M, std::string const &name) {
+    if (has(name)) TRIQS_RUNTIME_ERROR << "measure_set : insert : measure '" << name << "' already inserted";
+    // workaround for all gcc
+    // m_map.insert(std::make_pair(name, measure_type(true, std::forward<MeasureType>(M))));
+    auto iter_b = m_map.emplace(name, measure_type(true, std::forward<MeasureType>(M)));
+    return iter_b.first;
+   }
 
-   bool has(std::string const & name) const { return m_map.find(name) != m_map.end(); }
+   /**
+    * Remove the measure m.
+    */
+   void remove(measure_ptr_t const &m) { m_map.erase(m); }
 
+   /// Does qmc have a measure named name
+   bool has(std::string const &name) const { return m_map.find(name) != m_map.end(); }
+
+   ///
    void accumulate(MCSignType const & signe) { for (auto & nmp : m_map) nmp.second.accumulate(signe); }
 
    std::vector<std::string> names() const {
