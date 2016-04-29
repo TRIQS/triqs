@@ -252,8 +252,10 @@ def t2g_submatrix(U, convention=''):
     """
     if convention == 'wien2k':
         return subarray(U, len(U.shape)*[(2,3,4)])
-    else:
+    elif convention== '':
         return subarray(U, len(U.shape)*[(0,1,3)])
+    else:
+        raise ValueError("Unknown convention: "+str(convention))
 
 def eg_submatrix(U, convention=''):
     r"""
@@ -279,8 +281,11 @@ def eg_submatrix(U, convention=''):
     """
     if convention == 'wien2k':
         return subarray(U, len(U.shape)*[(0,1)])
-    else:
+    elif convention == '':
         return subarray(U, len(U.shape)*[(2,4)])
+    else:
+        raise ValueError("Unknown convention: "+str(convention))
+
 
 # Transform the interaction matrix into another basis
 def transform_U_matrix(U_matrix, T):
@@ -326,6 +331,10 @@ def spherical_to_cubic(l, convention=''):
         Transformation matrix for basis change.
 
     """
+    
+    if not convention in ('wien2k',''):
+        raise ValueError("Unknown convention: "+str(convention))
+
     size = 2*l+1
     T = np.zeros((size,size),dtype=complex)
     if convention == 'wien2k' and l != 2:
@@ -342,8 +351,8 @@ def spherical_to_cubic(l, convention=''):
             cubic_names = ("z^2","x^2-y^2","xy","yz","xz")
             T[0,2] = 1.0
             T[1,0] = 1.0/sqrt(2);   T[1,4] = 1.0/sqrt(2)
-            T[2,0] = -1j/sqrt(2);   T[2,4] = 1j/sqrt(2)
-            T[3,1] = 1j/sqrt(2);    T[3,3] = -1j/sqrt(2)
+            T[2,0] =-1.0/sqrt(2);   T[2,4] = 1.0/sqrt(2)
+            T[3,1] = 1.0/sqrt(2);   T[3,3] =-1.0/sqrt(2)
             T[4,1] = 1.0/sqrt(2);   T[4,3] = 1.0/sqrt(2)
         else:
             cubic_names = ("xy","yz","z^2","xz","x^2-y^2")
