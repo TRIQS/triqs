@@ -59,8 +59,8 @@ namespace gfs {
   using linear_index_t = std::tuple<typename gf_mesh<Ms>::linear_index_t...>;
   using default_interpol_policy = interpol_t::Product;
   static constexpr int dim = sizeof...(Ms);
- 
-  /// The index 
+
+  /// The index
   struct index_t {
    std::tuple<typename gf_mesh<Ms>::index_t...> _i;
    // construct with at least 2 arguments
@@ -119,7 +119,7 @@ namespace gfs {
   m_tuple_t const &components() const { return m_tuple; }
   m_tuple_t &components() { return m_tuple; }
 
-  /// 
+  ///
   linear_index_t mp_to_linear(m_pt_tuple_t const &mp) const {
    auto l = [](auto const &p) { return p.linear_index(); };
    return triqs::tuple::map(l, mp);
@@ -155,7 +155,7 @@ namespace gfs {
    const gf_mesh &mesh() const { return *m; }
 
    using cast_t = domain_pt_t;
-   operator cast_t() const { return m->index_to_point(index); }
+   operator cast_t() const { return _c; }
 
    // index[0] +=1; if index[0]==m.component[0].size() { index[0]=0; index[1] +=1; if  ....}  and so on until dim
    void advance() {
@@ -189,7 +189,7 @@ namespace gfs {
   const_iterator cend() const { return const_iterator(this, true); }
 
   // -------------- Evaluation of a function on the grid --------------------------
-  
+
   /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
   template <typename... Args> bool is_within_boundary(Args const &... args) const {
    return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple,
@@ -202,20 +202,20 @@ namespace gfs {
   template <typename F, typename... Args> auto evaluate(interpol_t::Product, F const &f, Args &&... args) const {
    multivar_eval<typename gf_mesh<Ms>::default_interpol_policy...> ev;
    return ev(f, std::forward<Args>(args)...);
-  } 
+  }
 
   // -------------------- MPI -------------------
- 
+
   /// Scatter the first mesh over the communicator c
   friend gf_mesh mpi_scatter(gf_mesh const &m, mpi::communicator c, int root) {
-   auto r = m; // same domain, but mesh with a window. 
+   auto r = m; // same domain, but mesh with a window.
    std::get<0>(r.m_tuple) = mpi_scatter(std::get<0>(r.m_tuple), c, root);
    return r;
   }
 
   /// Opposite of scatter : rebuild the original mesh, without a window
   friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
-   auto r = m; // same domain, but mesh with a window. 
+   auto r = m; // same domain, but mesh with a window.
    std::get<0>(r.m_tuple) = mpi_gather(std::get<0>(r.m_tuple), c, root);
    return r;
   }
