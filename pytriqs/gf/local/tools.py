@@ -195,7 +195,7 @@ def write_gf_to_txt(g):
         raise ValueError, 'write_gf_to_txt: Only GfReFreq and GfImFreq quantities are supported.'
     for i,j in product(range(g.N1),range(g.N2)):
         txtfile = '%s_%s_%s.dat'%(g.name,i,j)
-        redata = g.data[:,i,i].real.reshape((g.data.shape[0],-1))
-        imdata = g.data[:,i,i].imag.reshape((g.data.shape[0],-1))
+        redata = g.data[:,i,j].real.reshape((g.data.shape[0],-1))
+        imdata = g.data[:,i,j].imag.reshape((g.data.shape[0],-1))
         mesh_and_data = np.hstack((mesh,redata,imdata))
         np.savetxt(txtfile,mesh_and_data)
