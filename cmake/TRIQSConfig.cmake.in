@@ -146,6 +146,7 @@ macro (triqs_python_extension ModuleName)
  get_property(all_py_converters_targets GLOBAL PROPERTY TRIQS_PY_CONVERTERS_TARGETS)
  foreach(T ${all_py_converters_targets})
   add_dependencies(${ModuleName} ${T})
+  add_dependencies(python_wrap_${ModuleName} ${T})
  endforeach()
  set_property (GLOBAL APPEND PROPERTY TRIQS_PY_CONVERTERS_TARGETS "python_wrap_${ModuleName}")
 
