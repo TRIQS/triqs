@@ -15,15 +15,15 @@ namespace utility {
 
  template <bool TX> using bool_ = std::integral_constant<bool, TX>;
 
- template <bool TX> constexpr bool_<TX> bool_v{};
+// template <bool TX> constexpr bool_<TX> bool_v{};
 
  template <int TX> using int_ = std::integral_constant<int, TX>;
 
- template <int TX> constexpr int_<TX> int_v{};
+ //template <int TX> constexpr int_<TX> int_v{};
 
  template <std::size_t TX> using sz_ = std::integral_constant<int, TX>;
 
- template <std::size_t TX> constexpr sz_<TX> sz_v{};
+ //template <std::size_t TX> constexpr sz_<TX> sz_v{};
 
  template <typename TPredicate> auto static_if(TPredicate) noexcept;
 

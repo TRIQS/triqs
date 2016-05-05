@@ -19,9 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../impl/tools.hpp"
-#include <triqs/utility/arithmetic_ops_by_cast.hpp>
-#include <triqs/utility/kronecker.hpp>
+#include "../../utility/arithmetic_ops_by_cast.hpp"
+#include "../../utility/kronecker.hpp"
 
 namespace triqs {
 namespace gfs {

@@ -12,7 +12,7 @@ double theta(double x){
 
 int main() {
  
-  double precision=10e-10;
+  double precision=2e-9;
   h5::file file("fourier_real_time.h5",H5F_ACC_TRUNC); 
   
   //Test on the tail: GF in frequency that is a lorentzian, with its singularity, TF and TF^-1. 

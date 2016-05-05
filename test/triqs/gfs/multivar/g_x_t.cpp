@@ -15,9 +15,9 @@ TEST(Gf, x_t) {
 
  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
  
- auto gkt = gf<cartesian_product<brillouin_zone, retime>, matrix_valued, no_tail>{{{bz, n_bz}, {t_min, t_max, n_times}}, {1, 1}};
+ auto gkt = gf<cartesian_product<brillouin_zone, retime>, matrix_valued>{{{bz, n_bz}, {t_min, t_max, n_times}}, {1, 1}};
 
- auto gxt = gf<cartesian_product<cyclic_lattice, retime>, matrix_valued, no_tail>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
+ auto gxt = gf<cartesian_product<cyclic_lattice, retime>, matrix_valued>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
 
  placeholder<0> k_;
  placeholder<1> t_;

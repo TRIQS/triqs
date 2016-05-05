@@ -54,7 +54,7 @@ TEST(Gf, BubbleScalar) {
 
  // simplified, without frequency dependence
  auto gk = gf<brillouin_zone, scalar_valued>{{bz, N}};
- auto gr = gf<cyclic_lattice, scalar_valued>{{N, N}};
+ auto gr = gf<cyclic_lattice, scalar_valued>{{N, N},{}};
  auto ggr = gr;
  auto ggq = gk;
  auto ggq_from_r = gk;

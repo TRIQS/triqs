@@ -19,6 +19,42 @@ template<> struct py_converter<triqs::gfs::nothing> {
 };
 
 // indices
+template<> struct py_converter<triqs::gfs::gf_indices> {
+ using v_t = std::vector<std::string>;
+ using vv_t = std::vector<v_t>;
+ using vvi_t = std::vector<std::vector<int>>;
+
+ static PyObject *c2py(triqs::gfs::gf_indices const & ind) {
+  return py_converter<vv_t>::c2py(ind.data());
+ }
+ static bool is_convertible(PyObject *ob, bool raise_exception) {
+  if (py_converter<vv_t>::is_convertible(ob, false) ||
+      py_converter<vvi_t>::is_convertible(ob, false)) return true;
+  if (raise_exception) {
+    PyErr_SetString(PyExc_TypeError, "Cannot convert to triqs::gfs::gf_indices_one");
+  }
+  return false;
+ }
+ static triqs::gfs::gf_indices py2c(PyObject *ob) {
+  if (py_converter<vv_t>::is_convertible(ob, false)) {
+   return py_converter<vv_t>::py2c(ob);
+  }
+  if (py_converter<vvi_t>::is_convertible(ob, false)) {
+   auto vec_vec_int = py_converter<vvi_t>::py2c(ob);
+   vv_t res;
+   for (auto const & x: vec_vec_int) {
+     v_t vs;
+     for (int i: x) vs.push_back(std::to_string(i));
+     res.push_back(vs);
+   }
+   return {res};
+  }
+  TRIQS_RUNTIME_ERROR << "Internal error: py2c called for a Python object incompatible with gf_indices";
+  return {};
+ }
+};
+
+/*// indices
 template<> struct py_converter<triqs::gfs::gf_indices_one> {
  static PyObject *c2py(triqs::gfs::gf_indices_one indices) {
   return py_converter<std::vector<std::string>>::c2py(indices.ind);
@@ -47,17 +83,18 @@ template<> struct py_converter<triqs::gfs::gf_indices_one> {
 };
 
 template<int N> struct py_converter<triqs::gfs::gf_indices_tuple<N>> : py_converter_from_reductor<triqs::gfs::gf_indices_tuple<N>>{};
+*/
 
 // domains
 template<bool B> struct py_converter<triqs::gfs::matsubara_domain<B>> : py_converter_from_reductor<triqs::gfs::matsubara_domain<B>>{};
 template<> struct py_converter<triqs::gfs::R_domain> : py_converter_from_reductor<triqs::gfs::R_domain>{};
 
 // Converter for Block gf
-template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::block_index, triqs::gfs::gf<T...>>> {
+template <typename... T> struct py_converter<triqs::gfs::block_gf_view<T...>> {
 
  using gf_type = triqs::gfs::gf<T...>;
  using gf_view_type = triqs::gfs::gf_view<T...>;
- using c_type = triqs::gfs::gf_view<triqs::gfs::block_index, gf_type>;
+ using c_type = triqs::gfs::block_gf_view<T...>;
 
  static PyObject *c2py(c_type g) {
   // rm the view_proxy
@@ -65,7 +102,7 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
   vg.reserve(g.data().size());
   for (auto const & x : g.data()) vg.push_back(x);
   pyref v_gf = convert_to_python(vg);
-  pyref v_names = convert_to_python(g.mesh().domain().names());
+  pyref v_names = convert_to_python(g.block_names());
   pyref cls = pyref::module("pytriqs.gf.local").attr("BlockGf");
   if (cls.is_null()) TRIQS_RUNTIME_ERROR <<"Cannot find the pytriqs.gf.local.BlockGf";
   pyref kw = PyDict_New();
@@ -101,8 +138,8 @@ template <typename... T> struct py_converter<triqs::gfs::gf_view<triqs::gfs::blo
 };
 
 // Treat the block_gf as view
-template <typename... T> struct py_converter<triqs::gfs::gf<triqs::gfs::block_index, triqs::gfs::gf<T...>>> :
-py_converter<triqs::gfs::gf_view<triqs::gfs::block_index, triqs::gfs::gf<T...>>> {};
+template <typename... T> struct py_converter<triqs::gfs::block_gf<T...>> :
+py_converter<triqs::gfs::block_gf_view<T...>> {};
 
 // Converter for Block gf
 template <typename... T> struct py_converter<triqs::gfs::block2_gf_view<T...>> {
@@ -161,10 +198,10 @@ template <typename... T> struct py_converter<triqs::gfs::block2_gf_view<T...>> {
 template <typename... T> struct py_converter<triqs::gfs::block2_gf<T...>> : py_converter<triqs::gfs::block2_gf_view<T...>> {};
 
 // Converter for scalar_valued gf : reinterpreted as 1x1 matrix
-template <typename Variable, typename Opt> struct py_converter<triqs::gfs::gf_view<Variable, triqs::gfs::scalar_valued, Opt>>{
+template <typename Variable> struct py_converter<triqs::gfs::gf_view<Variable, triqs::gfs::scalar_valued>>{
 
- using conv = py_converter<triqs::gfs::gf_view<Variable, triqs::gfs::matrix_valued, Opt>>;
- using c_t = triqs::gfs::gf_view<Variable, triqs::gfs::scalar_valued, Opt>;
+ using conv = py_converter<triqs::gfs::gf_view<Variable, triqs::gfs::matrix_valued>>;
+ using c_t = triqs::gfs::gf_view<Variable, triqs::gfs::scalar_valued>;
 
  static PyObject *c2py(c_t g) {
   return conv::c2py(reinterpret_scalar_valued_gf_as_matrix_valued(g));
@@ -173,13 +210,13 @@ template <typename Variable, typename Opt> struct py_converter<triqs::gfs::gf_vi
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (!conv::is_convertible(ob,raise_exception)) return false;
   auto g = conv::py2c(ob); // matrix view
-  if (get_target_shape(g) == triqs::arrays::make_shape(1,1)) return true;
+  if (g.target_shape() == triqs::arrays::make_shape(1,1)) return true;
   if (raise_exception) PyErr_SetString(PyExc_RuntimeError,"The green function is not of dimension 1x1 : cannot be reinterpreted as a scalar_valued Green function");
   return false;
  }
 
  static c_t py2c(PyObject *ob) {
-  return slice_target_to_scalar(conv::py2c(ob),0,0);
+  return gfs::slice_target_to_scalar(conv::py2c(ob),0,0); // qualif gfs:: necessary for gcc 5
  }
 };
 

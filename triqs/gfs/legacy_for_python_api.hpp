@@ -37,10 +37,10 @@ namespace gfs {
  }
 
  inline void operator+=(gf_view<imfreq> g, std::complex<double> a) {
-  operator+=(g, make_matrix(a*arrays::make_unit_matrix<double>(get_target_shape(g)[0])));
+  operator+=(g, make_matrix(a*arrays::make_unit_matrix<double>(g.target_shape()[0])));
  }
  inline void operator-=(gf_view<imfreq> g, std::complex<double> a) {
-  operator-=(g, make_matrix(a*arrays::make_unit_matrix<double>(get_target_shape(g)[0])));
+  operator-=(g, make_matrix(a*arrays::make_unit_matrix<double>(g.target_shape()[0])));
  }
 
 
@@ -95,10 +95,10 @@ namespace gfs {
  }
 
  inline void operator+=(gf_view<refreq> g, std::complex<double> a) {
-  operator+=(g, make_matrix(a*arrays::make_unit_matrix<double>(get_target_shape(g)[0])));
+  operator+=(g, make_matrix(a*arrays::make_unit_matrix<double>(g.target_shape()[0])));
  }
  inline void operator-=(gf_view<refreq> g, std::complex<double> a) {
-  operator-=(g, make_matrix(a*arrays::make_unit_matrix<double>(get_target_shape(g)[0])));
+  operator-=(g, make_matrix(a*arrays::make_unit_matrix<double>(g.target_shape()[0])));
  }
 
 

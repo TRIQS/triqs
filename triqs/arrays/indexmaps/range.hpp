@@ -68,7 +68,7 @@ namespace arrays {
 
      range (3) // is equivalent to range(0,3,1) 
   */
-  range(std::ptrdiff_t i) : range(0, i, 1) {}
+  explicit range(std::ptrdiff_t i) : range(0, i, 1) {}
 
   ///first index of the range
   std::ptrdiff_t first() const { return first_; }

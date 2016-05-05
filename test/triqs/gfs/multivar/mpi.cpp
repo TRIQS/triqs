@@ -33,10 +33,9 @@ TEST(Gfs, MPI_multivar) {
  g4 = mpi_gather(g2);
  // Test the result ?
 
-
- auto G = make_block_gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued>({g});
+ auto G = make_block_gf({g});
  auto g0 = gf<imfreq, scalar_valued>{{beta, Boson, nbw}};
- auto G2 = make_block_gf<imfreq, scalar_valued>({g0});
+ auto G2 = make_block_gf({g0});
 
  mpi_broadcast(G, world);
  mpi_broadcast(G2, world);

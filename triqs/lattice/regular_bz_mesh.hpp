@@ -19,10 +19,10 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/index_generator.hpp>
-#include <triqs/h5/vector.hpp>
+#include "../utility/index_generator.hpp"
+#include "../h5/vector.hpp"
 #include "./brillouin_zone.hpp"
-#include "../gfs.hpp"
+//#include "../gfs/gf_classes.hpp"
 //#include "../gfs/meshes/mesh_tools.hpp"
 
 namespace triqs {

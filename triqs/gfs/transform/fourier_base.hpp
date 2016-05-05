@@ -20,7 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays/vector.hpp>
-#include "../gf_classes.hpp"
 
 namespace triqs { namespace gfs {
 
@@ -35,13 +34,24 @@ namespace triqs { namespace gfs {
 
  namespace tags { struct fourier{}; }
 
+ /*------------------------------------------------------------------------------------------------------
+  *                                  For lazy transformation
+  *-----------------------------------------------------------------------------------------------------*/
+
+ template <typename Tag, typename G> struct tagged_cview { typename G::const_view_type g; };
+
+ /// FIXME : remove this 
+ template <typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper { gf_const_view<D, Target> g; };
+
+
+
  // -------------------------------------------------------------------
 
  // TO BE REPLACED BY A DIRECT CALL to many_fft in fftw, like for lattice case.
  // The implementation of the Fourier transformation
  // Reduce Matrix case to the scalar case.
- template <typename X, typename Y, typename S>
- void _fourier_impl(gf_view<X, matrix_valued, S> gw, gf_const_view<Y, matrix_valued, S> gt) {
+ template <typename X, typename Y>
+ void _fourier_impl(gf_view<X, matrix_valued> gw, gf_const_view<Y, matrix_valued> gt) {
   if (gt.data().shape().front_pop() != gw.data().shape().front_pop())
    TRIQS_RUNTIME_ERROR << "Fourier : matrix size of target mismatch";
   for (size_t n1 = 0; n1 < gt.data().shape()[1]; n1++)
@@ -53,13 +63,13 @@ namespace triqs { namespace gfs {
  }
 
  // second part of the implementation
- template <typename X, typename Y, typename T, typename S>
- void triqs_gf_view_assign_delegation(gf_view<X, T, S> g, gf_keeper<tags::fourier, Y, T, S> const &L) {
+ template <typename X, typename Y, typename T>
+ void triqs_gf_view_assign_delegation(gf_view<X, T> g, gf_keeper<tags::fourier, Y, T> const &L) {
   _fourier_impl(g, L.g);
   }
 
- template <typename X, typename G, typename T, typename S>
- void triqs_gf_view_assign_delegation(gf_view<X, T, S> g, tagged_cview<tags::fourier, G> const &L) {
+ template <typename X, typename G, typename T>
+ void triqs_gf_view_assign_delegation(gf_view<X, T> g, tagged_cview<tags::fourier, G> const &L) {
   _fourier_impl(g, L.g);
   }
 }}

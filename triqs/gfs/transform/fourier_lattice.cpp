@@ -18,7 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./fourier_lattice.hpp"
+#include "../../gfs.hpp"
+//#include "./fourier_lattice.hpp"
 #include <fftw3.h>
 
 #define ASSERT_EQUAL(X,Y,MESS) if (X!=Y) TRIQS_RUNTIME_ERROR << MESS;

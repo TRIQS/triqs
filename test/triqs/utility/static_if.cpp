@@ -26,7 +26,7 @@ using namespace triqs::utility;
 
 template<typename T> auto f(T const &y) {
 
- auto r = static_if(bool_v<std::is_integral<T>::value>)
+ auto r = static_if(bool_<std::is_integral<T>::value>{})
               .then([](auto &&x) { return std::make_pair(x, x); })
               .else_([](auto &&x) { return x.zozo(); })(y);
  return r;

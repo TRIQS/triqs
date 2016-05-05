@@ -36,11 +36,11 @@ class OneFermionInTime(Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         Id = numpy.identity(G.N1)
-        G.tail.zero()
+        G.tail.reset(3)
         G.tail[1][:,:] = 1*Id
         G.tail[2][:,:] = L*Id
         G.tail[3][:,:] = L*L*Id
-        G.tail.mask.fill(3)
+        #G.tail.mask.fill(3)
         
         fact = -1/(1+exp(-L*G.beta))
         Function(lambda t: fact* exp(-L*t) *Id, None)(G)
@@ -100,11 +100,11 @@ semicircular density of states"""
 
         # Let's create a new tail
         Id = numpy.identity(G.N1)
-        G.tail.zero()
+        G.tail.reset(5)
         G.tail[1][:,:] = 1.0*Id
         G.tail[3][:,:] = D**2/4.0*Id
         G.tail[5][:,:] = D**4/8.0*Id
-        G.tail.mask.fill(6)
+        #G.tail.mask.fill(6)
  
         Function(f,None)(G)
         return G
@@ -145,11 +145,11 @@ class Flat (Base):
 
         # Let's create a new tail
         Id = numpy.identity(G.N1)
-        G.tail.zero()
+        G.tail.reset(5)
         G.tail[1][:,:] = 1.0*Id
         G.tail[3][:,:] = D**2/3.0*Id
         G.tail[5][:,:] = D**4/5.0*Id
-        G.tail.mask.fill(6)
+        #G.tail.mask.fill(6)
 
         # Silence "RuntimeWarning: divide by zero encountered in divide"
         old_err = numpy.seterr(divide='ignore')

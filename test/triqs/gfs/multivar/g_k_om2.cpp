@@ -19,7 +19,7 @@ namespace triqs {
 TEST(Gf, Experimental1) {
  double beta = 1;
 
- using gf_bz_imfreq_mat_tail = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued, m_tail<brillouin_zone>>;
+ using gf_bz_imfreq_mat_tail = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued>;
  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
  auto g_eps = gf<brillouin_zone>{{bz, 20}, {1, 1}};
@@ -33,14 +33,16 @@ TEST(Gf, Experimental1) {
  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
  G_k_iom(k_, w_) << 1 / (w_ - eps_k);
 
- auto G_loc = gf<imfreq, matrix_valued, no_tail>{{beta, Fermion, 100}, {1, 1}};
+ auto G_loc = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {1, 1}};
 
  auto r = G_k_iom(k_t{0, 0, 0}, matsubara_freq{0, beta, Fermion});
 
  auto r5 = sum_gf(k_ >> G_k_iom(k_, 0), g_eps.mesh());
- G_loc(w_) << sum_gf(k_ >> G_k_iom(k_, w_), g_eps.mesh());
 
- auto G_k_tau = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued, m_tail<brillouin_zone>>{
+ placeholder_prime<0> wp_;
+ G_loc(wp_) << sum_gf(k_ >> G_k_iom(k_, wp_), g_eps.mesh());
+
+ auto G_k_tau = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>{
      {{bz, 20}, {beta, Fermion, 201}}, {1, 1}};
 
  // auto r3 = partial_eval<0>(G_k_iom,0);

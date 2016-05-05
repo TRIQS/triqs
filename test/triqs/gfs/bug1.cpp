@@ -4,7 +4,7 @@ using namespace triqs::gfs;
 
 TEST(Gf, SimpleAssign) {
 
- using A = triqs::arrays::matrix_tensor_proxy<triqs::arrays::array<std::complex<double>, 3, void> &, true>;
+ using A = triqs::arrays::array_proxy<triqs::arrays::array<std::complex<double>, 3, void> &, long>;
  
  static_assert(std::is_constructible<std::complex<double>, matsubara_freq>::value, "oops");
  static_assert(triqs::arrays::is_scalar_or_convertible<matsubara_freq>::value, "oops2");

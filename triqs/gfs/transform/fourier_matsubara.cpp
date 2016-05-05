@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "fourier_matsubara.hpp"
+#include "../../gfs.hpp"
 #include <fftw3.h>
 
 namespace triqs {
@@ -42,22 +42,17 @@ namespace gfs {
 
   void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt) {
    auto ta = gt.singularity();
-   direct_impl(make_gf_view_without_tail(gw), make_gf_view_without_tail(gt), ta);
+   direct_impl(gw, gt, ta);
    gw.singularity() = gt.singularity(); // set tail
   }
 
-  void direct(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt) {
-   auto ta = tail{1,1};
-   direct_impl(gw, gt, ta);
-  }
-  
   //-------------------------------------
 
   private:
-  void direct_impl(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt,
-                   tail const& ta) {
+  void direct_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, __tail<scalar_valued> const& ta) {
    // TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
-   dcomplex d = ta(1)(0, 0), A = ta.get_or_zero(2)(0, 0), B = ta.get_or_zero(3)(0, 0);
+   dcomplex d = ta(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
+   if (arrays::isnan(d)) TRIQS_RUNTIME_ERROR << " inverse fourier : 1/omega order undefined in tail";
    double b1 = 0, b2 = 0, b3 = 0;
    dcomplex a1, a2, a3;
    double beta = gt.mesh().domain().beta;
@@ -126,9 +121,11 @@ namespace gfs {
 
   void inverse(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw) {
    if (gw.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
+  
    auto ta = gw.singularity();
    // TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
-   dcomplex d = ta(1)(0, 0), A = ta.get_or_zero(2)(0, 0), B = ta.get_or_zero(3)(0, 0);
+   dcomplex d = ta(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
+   if (arrays::isnan(d)) TRIQS_RUNTIME_ERROR << " inverse fourier : 1/omega order undefined in tail";
    double b1, b2, b3;
    dcomplex a1, a2, a3;
    double beta = gw.domain().beta;
@@ -139,7 +136,7 @@ namespace gfs {
    dcomplex iomega = M_PI* 1_j / beta;
    double fact = 1.0 / beta;
    bool is_fermion = (gw.domain().statistic == Fermion);
- 
+
    if (is_fermion) {
     b1 = 0;
     b2 = 1;
@@ -179,7 +176,7 @@ namespace gfs {
       gt[t] = g_out(t.index()) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
    }
    double pm = (is_fermion ? -1 : 1);
-   gt.on_mesh(L) = pm * (gt.on_mesh(0) + ta(1)(0, 0));
+   gt.on_mesh(L) = pm * (gt.on_mesh(0) + ta(1));
    // set tail
    gt.singularity() = gw.singularity();
   }
@@ -189,18 +186,14 @@ namespace gfs {
  //--------------------------------------------
 
  // Direct transformation imtime -> imfreq, with a tail
- void _fourier_impl(gf_view<imfreq, scalar_valued, tail> gw, gf_const_view<imtime, scalar_valued, tail> gt) {
+ void _fourier_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt) {
   impl_worker w;
   w.direct(gw, gt);
  }
 
- void _fourier_impl(gf_view<imfreq, scalar_valued, no_tail> gw, gf_const_view<imtime, scalar_valued, no_tail> gt) {
-  impl_worker w;
-  w.direct(gw, gt);
- }
 
  // Inverse transformation imfreq -> imtime: tail is mandatory
- void _fourier_impl(gf_view<imtime, scalar_valued, tail> gt, gf_const_view<imfreq, scalar_valued, tail> gw) {
+ void _fourier_impl(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw) {
   impl_worker w;
   w.inverse(gt, gw);
  }

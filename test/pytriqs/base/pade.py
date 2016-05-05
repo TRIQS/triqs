@@ -48,7 +48,7 @@ def G(z):
 # Matsubara GF
 gm = GfImFreq(indices = [0], beta = beta, name = "gm")
 gm << Function(G)
-gm.tail.zero()
+gm.tail.reset(1)
 gm.tail[1] = array([[1.0]])
 
 # Analytic continuation of gm

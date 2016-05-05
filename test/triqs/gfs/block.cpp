@@ -32,7 +32,7 @@ TEST(Gf, Block) {
   // B3["a"][0] = 98;
 
   auto View = make_block_gf_view(G1, G2, G3);
-  EXPECT_EQ(View.mesh().size(), 3);
+  EXPECT_EQ(View.size(), 3);
   
   auto g0 = View[0];
   auto g0v = View[0]();
@@ -71,7 +71,7 @@ TEST(Gf, Block) {
 
   // test reinterpretation
   // compile only, add more test here
-  auto gs1 = gf<imfreq, scalar_valued>{{beta, Fermion}};
+  auto gs1 = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
   //auto gs1 = gf<imfreq, scalar_valued>({beta, Fermion});
   auto bgs = make_block_gf(3, gs1);
   auto bg = reinterpret_scalar_valued_gf_as_matrix_valued(bgs);
@@ -79,7 +79,7 @@ TEST(Gf, Block) {
   // inversion
   {
    auto inv_G1 = inverse(G1);
-   auto B = make_block_gf<imfreq>(3, G1);
+   auto B = make_block_gf(3, G1);
    auto inv_B1 = inverse(B);
    for (auto & g : inv_B1) EXPECT_GF_NEAR(g,inv_G1);
   }
@@ -98,7 +98,7 @@ TEST(Gf, Block) {
   auto B_ba = make_block_gf<imfreq>({"b", "a"}, {G2, G1});
   
   auto B_res = B_ab;
-  for(auto const & ind : B_res.mesh()){
+  for(auto const & ind : range(B_res.size())){
       //B_res[ind] = B_ba[ind];
       B_res[ind] = B_ba(ind);
   }

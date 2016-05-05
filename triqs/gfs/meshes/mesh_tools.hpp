@@ -19,12 +19,41 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../impl/tools.hpp"
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 
 namespace triqs {
 namespace gfs {
 
+ using dcomplex = std::complex<double>;
+
+ namespace tag {
+  struct composite {};
+  struct mesh_point {};
+ }
+
+ /** The statistics : Boson or Fermion
+  */
+ enum statistic_enum {
+  Boson,
+  Fermion
+ };
+
+ // Interpolation policies
+ namespace interpol_t {
+  struct None {};
+  struct Product {};
+  struct Linear1d {};
+  struct Linear2d {};
+ }
+
+ // The mesh for each Var
+ template <typename Var> struct gf_mesh;
+
+ // The mesh point for each mesh
+ template <typename MeshType> struct mesh_point;
+
+
+ // FIXME : remove boost !
  template<typename MeshType>
   class mesh_pt_generator : 
    public boost::iterator_facade< mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t , boost::forward_traversal_tag, 

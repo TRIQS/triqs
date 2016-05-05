@@ -1,5 +1,4 @@
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/gfs/functions/functions.hpp>
 
 TEST(Gf, Base) {
 
@@ -41,8 +40,8 @@ TEST(Gf, Base) {
 
  auto t1 = G.singularity();
 
- Gv(om_) << 1 / (om_ + 2.3);
- 
+ Gv(om_) << 1/ (om_ + 2.3);
+
  dcomplex z = 1/( M_PI* 1_j + 2.3);
  EXPECT_ARRAY_NEAR(G(0), matrix<dcomplex>{{z, 0_j}, {0_j, z}});
  EXPECT_ARRAY_ZERO(G.singularity()(-1));
@@ -55,7 +54,6 @@ TEST(Gf, Base) {
  // tail
  auto t = G.singularity();
  EXPECT_ARRAY_NEAR(t1.data(), inverse(G.singularity()).data());
- EXPECT_EQ(t.order_min(), -1);
  EXPECT_ARRAY_NEAR(Gv2.singularity()(2), matrix<double>{{-2.3}});
 
  // copy
@@ -91,5 +89,51 @@ TEST(Gf, Base) {
 
   for (auto const& nu : D0w.mesh()) Sigma_w(om_) << 2 * G0w(om_ - nu);
  }
+}
+
+// Test the technique to avoid the infinity
+TEST(Gf, PhNoInfinity) { 
+
+ double beta = 1;
+ auto g = gf<imfreq, matrix_valued>{{beta, Fermion}, {2, 2}};
+
+ triqs::clef::placeholder_prime<0> om_;
+ g(om_) << 1/ (om_ + 2.3);
+
+ EXPECT_TRUE(g.singularity().is_unset());
+}
+
+// Test the technique to avoid the infinity
+TEST(Gf, PhNoInfinity_tau) { 
+
+ double beta = 1, a = 1;
+ auto g = gf<imtime, matrix_valued>{{beta, Fermion, 10000}, {2, 2}};
+
+ //triqs::clef::placeholder<0> tau_; // would not compile
+ triqs::clef::placeholder_prime <0> tau_;
+ g(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
+
+ EXPECT_TRUE(g.singularity().is_unset());
+}
+
+TEST(Gf, ZeroM) {
+
+ double beta = 1;
+ auto g = gf<imfreq>{{beta, Fermion}, {2, 2}};
+ EXPECT_ARRAY_NEAR(g.get_zero(), matrix<double>{{0, 0}, {0, 0}});
+}
+TEST(Gf, ZeroS) {
+
+ double beta = 1;
+ auto g = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
+ EXPECT_NEAR_COMPLEX(g.get_zero(), 0);
+}
+
+TEST (Gf, SliceTargetScalar) { 
+ double beta = 1;
+ auto g = gf<imfreq>{{beta, Fermion}, {2, 2}};
+
+ auto gs = slice_target_to_scalar(g, 0,0);
+
 }
 MAKE_MAIN;

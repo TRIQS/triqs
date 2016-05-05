@@ -14,8 +14,40 @@ module.add_using("namespace triqs::gfs")
 module.add_preamble("""
 #include <triqs/python_tools/converters/vector.hpp>
 #include <triqs/python_tools/converters/tuple.hpp>
-#include <triqs/gfs/singularity/tail_zero.hpp>
 """)
+
+########################
+##   m_tail
+########################
+
+t = class_( py_type = "MeshBz",
+        c_type = "gf_mesh<brillouin_zone>",
+        c_type_absolute = "triqs::gfs::gf_mesh<brillouin_zone>",
+        serializable= "tuple",
+       )
+#module.add_class(t)
+
+t = class_( py_type = "MeshCyclic",
+        c_type = "gf_mesh<cyclic_lattice>",
+        c_type_absolute = "triqs::gfs::gf_mesh<cyclic_lattice>",
+        serializable= "tuple",
+       )
+module.add_class(t)
+
+t = class_( py_type = "MTailBz",
+        c_type = "gf_view<brillouin_zone, tail_valued<matrix_valued>>",
+        c_type_absolute = "triqs::gfs::gf_view<brillouin_zone, tail_valued<matrix_valued>>",
+        serializable= "tuple",
+       )
+module.add_class(t)
+
+t = class_( py_type = "MTailCyclic",
+        c_type = "gf_view<cyclic_lattice, tail_valued<matrix_valued>>",
+        c_type_absolute = "triqs::gfs::gf_view<cyclic_lattice, tail_valued<matrix_valued>>",
+        serializable= "tuple",
+       )
+module.add_class(t)
+
 
 for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime"), ("ImTime","imtime")], [("ReFreq", "refreq"), ("ReFreq", "refreq")],
                  [("ImFreq","imfreq"), ("ImFreq","imfreq"), ("ImFreq","imfreq")],  [("ImTime","imtime"), ("ImTime","imtime"), ("ImTime","imtime")],
@@ -34,7 +66,7 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
           serializable = "tuple",
           doc = "Cartesian product of meshes " + ",".join([x for x,y in TimeMesh])
   )
-  c.add_constructor("""("""+""",""".join(["""gf_mesh<%s> m%s"""%(TimeMesh[i][1],i) for i in range(mesh_rank)])+""")""",
+  c.add_constructor("("+",".join(["""gf_mesh<%s> m%s"""%(TimeMesh[i][1],i) for i in range(len(TimeMesh))])+""")""",
                     doc = """ """)
 
   c.add_property(name = "size",
@@ -74,7 +106,8 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
             doc = "GF on a product of meshes " + ",".join([x for x,y in TimeMesh]),
             arithmetic = ("algebra", "std::complex<double>")
     )
-    shape_or_not = "" if target_type=="scalar_valued" else """, mini_vector<size_t, %s> shape"""%(rank)
+    #shape_or_not= """""" if target_type=="scalar_valued" else """, mini_vector<size_t, %s> shape"""%(rank)
+    shape_or_not= r", mini_vector<int, %s> shape"%(rank)
 
     c.add_constructor("""(gf_mesh<cartesian_product<%s>> mesh"""%(",".join([y for x,y in TimeMesh]))+shape_or_not+""")""",
                       doc = """ """)
@@ -84,15 +117,6 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
     c.add_property(name = "mesh",
                    getter = cfunction("gf_mesh<cartesian_product<%s>> mesh ()"%(",".join([y for x,y in TimeMesh]))),
                    doc = """mesh """)
-    if target_type=="scalar_valued":
-     tail_data_t = "std::complex<double>"
-    elif target_type=="matrix_valued":
-     tail_data_t = "triqs::arrays::matrix<std::complex<double>>"
-    else:
-     tail_data_t = "triqs::arrays::array<std::complex<double>,%s>"%rank
-    c.add_property(name = "tail",
-      getter = cfunction("tail_zero<%s> singularity ()"%(tail_data_t)),
-                   doc = """singularity """)
 
     c.add_property(name = "data",
                    getter = cfunction("array_view<std::complex<double>, %s> data ()"%(rank+mesh_rank)),
@@ -100,23 +124,36 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
     for i in range(mesh_rank):
      return_descriptor = ",".join([TimeMesh[j][1] for j in range(mesh_rank) if not j==i])
      ind_type = "int" if not TimeMesh[i][0]=="BrillouinZone" else "triqs::utility::mini_vector<long, 3>"
-     if target_type == "scalar_valued":
-      if "Legendre" in [TimeMesh[j][0] for j in range(mesh_rank) if not j==i]:
-       calling_pattern = "auto result = make_gf_view_without_tail(reinterpret_scalar_valued_gf_as_matrix_valued(partial_eval<%s>(self_c, n)))"%i
-      else:
-       calling_pattern = "auto result = make_gf_from_g_and_tail(reinterpret_scalar_valued_gf_as_matrix_valued(partial_eval<%s>(self_c, n)), tail(1,1))"%i
-      signature = "gf_view<%s, matrix_valued> (%s n)"%(return_descriptor, ind_type)
-     else:
-      calling_pattern = "auto result =  partial_eval<%s>(self_c, n)"%i
-      signature = "gf_view<%s, %s> (%s n)"%(return_descriptor, target_type, ind_type)
-     c.add_method(name = "slice_at_const_w%s" % (i+1),
-                  calling_pattern = calling_pattern, signature = signature,
-                  doc = """Slice at const %sth argument""" % (i+1))
 
-    if rank>0 :
+### from rebase code
+#     if target_type == "scalar_valued":
+#      if "Legendre" in [TimeMesh[j][0] for j in range(mesh_rank) if not j==i]:
+#       calling_pattern = "auto result = make_gf_view_without_tail(reinterpret_scalar_valued_gf_as_matrix_valued(partial_eval<%s>(self_c, n)))"%i
+#      else:
+#       calling_pattern = "auto result = make_gf_from_g_and_tail(reinterpret_scalar_valued_gf_as_matrix_valued(partial_eval<%s>(self_c, n)), tail(1,1))"%i
+#      signature = "gf_view<%s, matrix_valued> (%s n)"%(return_descriptor, ind_type)
+#     else:
+#      calling_pattern = "auto result =  partial_eval<%s>(self_c, n)"%i
+#      signature = "gf_view<%s, %s> (%s n)"%(return_descriptor, target_type, ind_type)
+#     c.add_method(name = "slice_at_const_w%s" % (i+1),
+#                  calling_pattern = calling_pattern, signature = signature,
+#                  doc = """Slice at const %sth argument""" % (i+1))
+#
+#    if rank>0 :
+#     c.add_getitem(signature = "gf_view<cartesian_product<%s>>("%(",".join([y for x,y in TimeMesh]))+", ".join(["PyObject * r%s"%i for i in range(1,rank+1)])+")",
+#                  calling_pattern= """
+#                   auto sh = get_target_shape(self_c);
+     
+     c.add_method(
+       name = "slice_at_const_w%s"%(i+1),
+       calling_pattern = "auto result = reinterpret_scalar_valued_gf_as_matrix_valued(partial_eval<%s>(self_c, n))"%i if target_type=="scalar_valued" else  "auto result =  partial_eval<%s>(self_c, n)"%i,
+       signature = "gf_view<%s, matrix_valued> (%s n)"%(return_descriptor, ind_type) if target_type=="scalar_valued" else "gf_view<%s, %s> (%s n)"%(return_descriptor, target_type, ind_type),
+                 doc="""slice at const %sth argument"""%(i+1))
+
+    if rank>0 : 
      c.add_getitem(signature = "gf_view<cartesian_product<%s>>("%(",".join([y for x,y in TimeMesh]))+", ".join(["PyObject * r%s"%i for i in range(1,rank+1)])+")",
-                  calling_pattern= """
-                   auto sh = get_target_shape(self_c);
+                  calling_pattern= """ 
+                   auto sh = self_c.target_shape();
                    auto f = [&sh, &self_c](PyObject * r, int u) {
                        if (convertible_from_python<std::string>(r, false))
                          return self_c.indices().convert_index(convert_from_python<std::string>(r),u);

@@ -20,7 +20,6 @@
  ******************************************************************************/
 
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/gfs/block.hpp>
 
 using namespace triqs::clef;
 using namespace triqs::lattice;
@@ -29,8 +28,6 @@ using triqs::clef::placeholder;
 // scalar valued gf_vertex
 using gf_vertex_t = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued>;
 using gf_vertex_tensor_t = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<3>>;
-
-using bgf_t = gf <cartesian_product<block_index,block_index>, gf_vertex_t>;
 
 #define ITERATE_I1I2I3 \
 for(int i1 = 0; i1 < n_im_freq; ++i1) \
@@ -63,14 +60,15 @@ TEST(Gf, BlockOfVertexScalar) {
 
   // The total number of blocks
   // TODO: these lines should compile and run
-  //EXPECT_EQ(size1(B), indices1.size());
-  //EXPECT_EQ(size2(B), indices2.size());
-  EXPECT_EQ(n_blocks(B), indices1.size() * indices2.size());
+  EXPECT_EQ(B.size1(), indices1.size());
+  EXPECT_EQ(B.size2(), indices2.size());
+  //EXPECT_EQ(B.size(), indices1.size() * indices2.size());
 
   // Assign a function
   for(int u : indices1)
     for(int v : indices2)
-      B[{u,v}] = vertex;
+      //B[{u,v}] = vertex;
+      B(u,v) = vertex;
 
   // Assign expression
   B(s1_,s2_)(w0_, w1_, w2_) << w0_ +  (s1_-1)*(s2_-1)/(w1_ - 0.5) + (s1_-s2_)/(w2_ + 0.5);
@@ -98,8 +96,6 @@ TEST(Gf, BlockOfVertexScalar) {
   ITERATE_I1I2I3 {
     for(auto & x : B)  {
      x [{i1,i2,i3}] = 1.0/((iw_n(i1) - 3.0)*iw_n(i2)*(iw_n(i3) + 3.0));
-     //x.on_mesh(i1,i2,i3) = 1.0/((iw_n(i1) - 3.0)*iw_n(i2)*(iw_n(i3) + 3.0));
-     //DOES NOT COMPILE
      //x(i1,i2,i3) = 1.0/((iw_n(i1) - 3.0)*iw_n(i2)*(iw_n(i3) + 3.0));
     }
   }

@@ -141,8 +141,7 @@ namespace gfs {
    return {1- w, w, i, i + 1};
   }
 
-  template<typename F>
-  auto evaluate(interpol_t::Linear1d, F const & f, double x) const {
+  template <typename F> auto evaluate(interpol_t::Linear1d, F const &f, double x) const {
    auto id = get_interpolation_data(default_interpol_policy{}, x);
    return id.w0 * f[id.i0] + id.w1 * f[id.i1];
   }
@@ -150,7 +149,8 @@ namespace gfs {
   // -------------------- MPI -------------------
 
   /*
-   RETURNS gf_mesh ? or linear_mesh ?
+   * FIX DOC
+   return  gf_mesh ? or linear_mesh ?
   /// Scatter a mesh over the communicator c
   //In practice, the same mesh, with a different window.
   //the window can only be set by these 2 operations

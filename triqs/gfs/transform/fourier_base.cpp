@@ -18,7 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "fourier_base.hpp"
+#include "../../gfs.hpp"
+//#include "./fourier_base.hpp"
 #include <fftw3.h>
 #include <algorithm>
 
