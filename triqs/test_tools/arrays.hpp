@@ -52,7 +52,8 @@ using triqs::clef::placeholder;
 // Complex are close
 template<typename X, typename Y>
 ::testing::AssertionResult complex_are_close(X const &x, Y const &y,double precision = 1.e-10) {
- if (std::abs(x - y) < precision )
+ using std::abs;
+ if (abs(x - y) < precision )
   return ::testing::AssertionSuccess();
  else
   return ::testing::AssertionFailure() << "abs(x-y) = " << abs(x - y) << "\n X = "<<  x << "\n Y = "<< y;

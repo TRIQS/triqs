@@ -265,6 +265,12 @@ namespace arrays {
   for (int i = 0; i < d; ++i) r += m(i, i);
   return r;
  }
+
+ template <typename M> TYPE_ENABLE_IF(matrix<typename M::value_type>, ImmutableMatrix<M>) dagger(M const& m) {
+  return conj(m.transpose());
+ }
+
+ template <typename M> TYPE_ENABLE_IF(typename M::view_type, ImmutableMatrix<M>) transpose(M const& m) { return m.transpose(); }
 }
 } // namespace triqs::arrays
 

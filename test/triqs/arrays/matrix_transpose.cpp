@@ -18,36 +18,35 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./common.hpp"
-#include <triqs/arrays.hpp>
-#include <iostream>
-
-using std::cout; using std::endl;
-using namespace triqs::arrays;
-
-int main(int argc, char **argv) {
-
+#include "start.hpp"
+TEST(Matrix, TransposeDagger) {
  
+ const int N = 5;
 
- // testing gemv
- triqs::arrays::matrix<double> A(5,5,FORTRAN_LAYOUT);
+ triqs::arrays::matrix<double> A(N, N, FORTRAN_LAYOUT);
+ triqs::arrays::matrix<std::complex<double>> B(N, N);
 
- for (int i =0; i<5; ++i)
-  for (int j=0; j<5; ++j)
-   A(i,j) = i+2*j+1; 
+ // A *=A;; should be rejected by compiler
 
- //A *=A;; should be rejected by compiler
+ for (int i = 0; i < N; ++i)
+  for (int j = 0; j < N; ++j) {
+   A(i, j) = i + 2 * j + 1;
+   B(i, j) = i + 2.5 * j + (i - 0.8 * j) * 1_j;
+  }
 
- range R(1,3); 
+ auto at = A.transpose();
+ auto ad = dagger(A);
+ static_assert(std::is_same<decltype(A)::value_type, decltype(ad)::value_type>::value, "oops");
+ auto bt = B.transpose();
+ auto bd = dagger(B);
 
- std::cout<< "A = "<< A<< std::endl;
- std::cout<<A.transpose() << std::endl;
- std::cout<<A(R,R) << std::endl;
- std::cout<<A(R,R).transpose() << std::endl;
-
- triqs::arrays::matrix_view<double > Acw =  A.transpose();
-  
+ for (int i = 0; i < N; ++i)
+  for (int j = 0; j < N; ++j) {
+   EXPECT_NEAR_COMPLEX(at(i, j), A(j, i));
+   EXPECT_NEAR_COMPLEX(ad(i, j), A(j, i));
+   EXPECT_NEAR_COMPLEX(bd(i, j), std::conj(B(j, i)));
+   EXPECT_NEAR_COMPLEX(bt(i, j), B(j, i));
+  }
 }
-
-
+MAKE_MAIN;
 
