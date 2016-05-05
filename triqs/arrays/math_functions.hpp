@@ -26,10 +26,10 @@ namespace triqs { namespace arrays {
  // not for libc++ (already defined)
 #if !defined(_LIBCPP_VERSION)
  // complex conjugation for integers
- inline double conj(int x) { return x; }
- inline double conj(long x) { return x; }
- inline double conj(long long x) { return x; }
- inline double conj(double x) { return x; }
+ inline std::complex<double> conj(int x) { return x; }
+ inline std::complex<double> conj(long x) { return x; }
+ inline std::complex<double> conj(long long x) { return x; }
+ inline std::complex<double> conj(double x) { return x; }
 #endif
 
  //C++14 will simply be ... 

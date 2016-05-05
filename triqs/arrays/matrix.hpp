@@ -266,8 +266,18 @@ namespace arrays {
   return r;
  }
 
- template <typename M> TYPE_ENABLE_IF(matrix<typename M::value_type>, ImmutableMatrix<M>) dagger(M const& m) {
+ template <typename M>
+ std14::enable_if_t<ImmutableMatrix<M>::value and triqs::is_complex<typename M::value_type>::value,
+                    matrix<typename M::value_type>>
+ dagger(M const& m) {
   return conj(m.transpose());
+ }
+
+ template <typename M>
+ std14::enable_if_t<ImmutableMatrix<M>::value and !triqs::is_complex<typename M::value_type>::value,
+                    matrix<typename M::value_type>>
+ dagger(M const& m) {
+  return m.transpose();
  }
 
  template <typename M> TYPE_ENABLE_IF(typename M::view_type, ImmutableMatrix<M>) transpose(M const& m) { return m.transpose(); }

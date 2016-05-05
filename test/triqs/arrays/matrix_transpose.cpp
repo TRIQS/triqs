@@ -36,7 +36,6 @@ TEST(Matrix, TransposeDagger) {
 
  auto at = A.transpose();
  auto ad = dagger(A);
- static_assert(std::is_same<decltype(A)::value_type, decltype(ad)::value_type>::value, "oops");
  auto bt = B.transpose();
  auto bd = dagger(B);
 

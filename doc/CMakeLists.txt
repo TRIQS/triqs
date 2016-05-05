@@ -78,7 +78,7 @@ add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log DEPENDS ${all_
 		    --includes=${CMAKE_SOURCE_DIR}/ --includes=${CMAKE_BINARY_DIR}/Config --compiler_options="-DTRIQS_BUILDING_LIBRARY" 
 		    --mako_location=${CMAKE_SOURCE_DIR}/tools/ 2>1 > cpp2py.log) 
 add_custom_target(docs_cpp2doc DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log) 
-add_dependencies(docs_sphinx docs_cpp2doc) # we must have installed the sources before building
+add_dependencies(docs_sphinx docs_cpp2doc triqs) # we must have installed the sources before building
 endif()
 
 # Install
