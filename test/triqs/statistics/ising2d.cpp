@@ -157,8 +157,7 @@ int main(int argc, char* argv[]) {
  int verbosity = (world.rank() == 0 ? 2 : 0);
 
  // Construct a Monte Carlo loop
- triqs::mc_tools::mc_generic<double> IsingMC(n_cycles, length_cycle, n_warmup_cycles,
-   random_name, random_seed, verbosity);
+ triqs::mc_tools::mc_generic<double> IsingMC(random_name, random_seed, 1.0, verbosity);
 
  // parameters of the model
  int length = N;
@@ -174,7 +173,8 @@ int main(int argc, char* argv[]) {
  IsingMC.add_measure(compute_m(config), "measure magnetization");
 
  // Run and collect results
- IsingMC.start(1.0, triqs::utility::clock_callback(-1));
+
+ IsingMC.warmup_and_accumulate(n_warmup_cycles, n_cycles, length_cycle, triqs::utility::clock_callback(-1));
  IsingMC.collect_results(world);
 
  return 0;
