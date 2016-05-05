@@ -14,9 +14,9 @@ TEST(GfM, CurryFourier) {
  int n_freq = 100;
  int n_times = n_freq * 2 + 1;
  int n_bz = 10;
- auto gkw = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued, m_tail<brillouin_zone>>{
+ auto gkw = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued>{
      {{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
- auto gkt = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued, m_tail<brillouin_zone>>{
+ auto gkt = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>{
      {{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
  rw_h5(gkw,"ess_g_k_om.h5","g");
@@ -41,7 +41,7 @@ TEST(GfM, CurryFourier) {
  /// Testing the result
  auto gk_w_test = gf<imfreq>{{beta, Fermion, n_freq}, {1, 1}};
  auto gk_t_test = gf<imtime>{{beta, Fermion, n_times}, {1, 1}};
- EXPECT_ARRAY_NEAR(gkt.singularity().data().data, gkw.singularity().data().data);
+ EXPECT_ARRAY_NEAR(gkt.singularity().data(), gkw.singularity().data());
  for (auto& k : std::get<0>(gkw.mesh().components())) {
   gk_w_test(w_) << 1 / (w_ - eval(eps_k, k_ = k) - 1 / (w_ + 2));
   gk_t_test() = inverse_fourier(gk_w_test);

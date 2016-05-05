@@ -5,7 +5,7 @@ using namespace triqs::lattice;
 TEST(Gf, AutoAssignMatrixGf2) {
 
  double beta = 2.3;
- auto g2 = gf<cartesian_product<imfreq, imfreq>, matrix_valued, no_tail>{{{beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2}};
+ auto g2 = gf<cartesian_product<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 10}, {beta, Fermion, 10}}, {2, 2}};
 
  placeholder<0> i_;
  placeholder<1> j_;

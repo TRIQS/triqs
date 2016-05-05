@@ -1,8 +1,7 @@
 #pragma once
 #include "./arrays.hpp"
 #include <triqs/gfs.hpp>
-#include <triqs/gfs/functions/gf_tests.hpp>
-#include <triqs/gfs/functions/functions.hpp> 
+#include <triqs/gfs/gf_tests.hpp>
 
 using namespace triqs::gfs;
 using namespace triqs;

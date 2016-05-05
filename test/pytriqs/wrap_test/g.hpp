@@ -29,7 +29,7 @@ void pass_bgf(block_gf_view<imfreq> g) {
 
 gf_view<imfreq,scalar_valued> make_sgf(double a) {
  double beta = 1;
- auto G1 = gf<imfreq, scalar_valued>{{beta, Fermion}};
+ auto G1 = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
 {
   h5::file file("ess_test_g3a.h5", H5F_ACC_TRUNC);
   h5_write(file, "g", G1);

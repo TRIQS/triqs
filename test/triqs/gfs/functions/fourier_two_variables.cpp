@@ -1,5 +1,5 @@
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/gfs/functions/fourier_two_variables.hpp>
+#include <triqs/gfs/transform/fourier_two_variables.hpp>
 using namespace triqs::gfs;
 
 TEST(Fourier, TwoVariables){

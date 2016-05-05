@@ -233,16 +233,33 @@ namespace triqs { namespace utility {
  // ------------ specialization for size 0 ------------- 
   template <typename T> class mini_vector<T, 0> {
    T _data[1];
+   static constexpr int Rank =0;
    public:
    mini_vector(){} 
    mini_vector(no_init_tag){} 
    template<typename U> mini_vector(mini_vector<U,0>){}
-
+   template <typename T2> mini_vector(const std::vector<T2> &v) {
+    if (v.size()!=0)
+     TRIQS_RUNTIME_ERROR<< "mini_vector construction : vector size incorrect  : expected "<<0<<" got : "<< v.size();
+   }
+  
    T & operator[](size_t i) { return _data[i];}
    const T & operator[](size_t i) const { return _data[i];}
    T * restrict ptr() { return _data;}
    const T * restrict ptr() const { return _data;}
    friend std::ostream & operator << ( std::ostream & out, mini_vector const & v ) {return out<<"[]";}
+
+   ///prepend element to mini_vector (increases rank by 1)
+   mini_vector<T, Rank+1> front_append (T const & x) const { 
+    mini_vector<T, Rank+1> res;
+    for (int i=0;i<Rank; ++i)  res[i+1]=_data[i];
+    res[0] = x;
+    return res;
+   }
+ 
+ /// FIXME : temporary to make compile 
+   T product_of_elements () const { T res=1; for (int i=0;i<Rank; ++i)  res *= _data[i]; return res; }
+ 
   };
 
   // ------------- + ou - --------------------------------------

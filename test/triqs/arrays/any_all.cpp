@@ -41,4 +41,24 @@ TEST(Array, any_all) {
  EXPECT_TRUE(any(isnan(A)));
 
 }
+
+TEST(Array, any_all_c) {
+
+ auto nan = std::numeric_limits<double>::quiet_NaN();
+
+ array<std::complex<double>, 2> A(2, 3);
+ A() = 98;
+
+ EXPECT_FALSE(any(isnan(A)));
+
+ A() = nan;
+ EXPECT_TRUE(all(isnan(A)));
+
+ A() = 0;
+ A(0,0) = nan;
+
+ EXPECT_FALSE(all(isnan(A)));
+ EXPECT_TRUE(any(isnan(A)));
+
+}
 MAKE_MAIN

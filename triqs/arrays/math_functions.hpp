@@ -32,6 +32,9 @@ namespace triqs { namespace arrays {
  inline std::complex<double> conj(double x) { return x; }
 #endif
 
+ inline bool isnan( std::complex<double> const & z) { return std::isnan(z.real()) or std::isnan(z.imag());}
+ inline bool any(bool x) { return x;} // for generic codes
+
  //C++14 will simply be ... 
  //template <typename A> decltype(auto) abs(A && a) { return map( [](auto const &x) { using std::abs; return abs(a);}, std::forward<A>(a));}
 
@@ -53,7 +56,7 @@ namespace triqs { namespace arrays {
  typename boost::lazy_enable_if_c<ImmutableCuboidArray<A>::value,std::result_of<map_impl<__triqs_##FNT##_wrap,1>(A)>>::type\
  FNT(A && a) { return map(__triqs_##FNT##_wrap{})(std::forward<A>(a)); }
  
-#define TRIQS_ARRAYS_MATH_FNT (abs)(real)(imag)(floor)(conj)
+#define TRIQS_ARRAYS_MATH_FNT (abs)(real)(imag)(floor)(conj)(isnan)
 
 #define AUX(r, data, elem) MAP_IT(elem)
  BOOST_PP_SEQ_FOR_EACH(AUX , nil , TRIQS_ARRAYS_MATH_FNT);
@@ -69,7 +72,7 @@ namespace triqs { namespace arrays {
  typename boost::lazy_enable_if_c<ImmutableArray<A>::value||ImmutableVector<A>::value,std::result_of<map_impl<__triqs_##FNT##_wrap,1>(A)>>::type\
  FNT(A && a) { return map(__triqs_##FNT##_wrap{})(std::forward<A>(a)); }
  
-#define TRIQS_ARRAYS_MATH_FNT (exp)(cos)(sin)(tan)(cosh)(sinh)(tanh)(acos)(asin)(atan)(log)(sqrt)(isnan)
+#define TRIQS_ARRAYS_MATH_FNT (exp)(cos)(sin)(tan)(cosh)(sinh)(tanh)(acos)(asin)(atan)(log)(sqrt)
 
 #define AUX(r, data, elem) MAP_IT(elem)
  BOOST_PP_SEQ_FOR_EACH(AUX , nil , TRIQS_ARRAYS_MATH_FNT);

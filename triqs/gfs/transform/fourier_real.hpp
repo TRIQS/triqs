@@ -20,22 +20,22 @@
  ******************************************************************************/
 #pragma once
 #include "fourier_base.hpp"
-#include <triqs/gfs/refreq.hpp> 
-#include <triqs/gfs/retime.hpp> 
 
-namespace triqs { namespace gfs {
+namespace triqs {
+namespace gfs {
 
  /**
   * TBR
   */
- template <typename G> std14::enable_if_t<is_gf_or_view<G, retime>::value, tagged_cview<tags::fourier, G>> fourier(G const& g) {
+ template <typename G> std14::enable_if_t<is_gf<G, retime>::value, tagged_cview<tags::fourier, G>> fourier(G const& g) {
   return {g};
  }
 
  /**
   * TBR
-  */ 
- template <typename G> std14::enable_if_t<is_gf_or_view<G, refreq>::value, tagged_cview<tags::fourier, G>> inverse_fourier(G const& g) {
+  */
+ template <typename G>
+ std14::enable_if_t<is_gf<G, refreq>::value, tagged_cview<tags::fourier, G>> inverse_fourier(G const& g) {
   return {g};
  }
 
@@ -49,41 +49,31 @@ namespace triqs { namespace gfs {
  /**
   * TBR
   */
- template <typename Target, typename Singularity, typename Evaluator>
- gf<refreq, Target, Singularity> make_gf_from_fourier(gf_const_view<retime, Target, Singularity, Evaluator> const& gt) {
-  auto gw = gf<refreq, Target>{make_mesh_fourier_compatible(gt.mesh()), get_target_shape(gt)};
+ template <typename Target> gf<refreq, Target> make_gf_from_fourier(gf_const_view<retime, Target> const& gt) {
+  auto gw = gf<refreq, Target>{make_mesh_fourier_compatible(gt.mesh()), gt.target_shape()};
   gw() = fourier(gt);
   return gw;
  }
 
- template <typename T, typename S, typename E>
- gf<refreq, T, S> make_gf_from_fourier(gf_view<retime, T, S, E> const& gt) {
-  return make_gf_from_fourier(gt());
- }
-
- template <typename T, typename S, typename E>
- gf<refreq, T, S> make_gf_from_fourier(gf<retime, T, S, E> const& gt) {
-  return make_gf_from_fourier(gt());
- }
+ template <typename T> gf<refreq, T> make_gf_from_fourier(gf_view<retime, T> const& gt) { return make_gf_from_fourier(gt()); }
+ template <typename T> gf<refreq, T> make_gf_from_fourier(gf<retime, T> const& gt) { return make_gf_from_fourier(gt()); }
 
  /**
   * TBR
   */
- template <typename Target, typename Singularity, typename Evaluator>
- gf<retime, Target, Singularity> make_gf_from_inverse_fourier(gf_const_view<refreq, Target, Singularity, Evaluator> const& gw) {
-  auto gt = gf<retime, Target>{make_mesh_fourier_compatible(gw.mesh()), get_target_shape(gw)};
+ template <typename Target> gf<retime, Target> make_gf_from_inverse_fourier(gf_const_view<refreq, Target> const& gw) {
+  auto gt = gf<retime, Target>{make_mesh_fourier_compatible(gw.mesh()), gw.target_shape()};
   gt() = inverse_fourier(gw);
   return gt;
  }
 
- template <typename T, typename S, typename E>
- gf<retime, T, S> make_gf_from_inverse_fourier(gf_view<refreq, T, S, E> const& gw) {
+ template <typename T> gf<retime, T> make_gf_from_inverse_fourier(gf_view<refreq, T> const& gw) {
   return make_gf_from_inverse_fourier(gw());
  }
 
- template <typename T, typename S, typename E>
- gf<retime, T, S> make_gf_from_inverse_fourier(gf<refreq, T, S, E> const& gw) {
+ template <typename T> gf<retime, T> make_gf_from_inverse_fourier(gf<refreq, T> const& gw) {
   return make_gf_from_inverse_fourier(gw());
  }
-}}
+}
+}
 

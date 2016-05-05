@@ -1,6 +1,6 @@
 #include <triqs/test_tools/gfs.hpp>
 using namespace triqs::lattice;
-
+/*
 // In this test, we define a new evaluator for a multivar gf
 // to implement the symmetry g(nu, nup, -omega) = conj(g(-nu,-nup,omega))
 // The principle is simple : just write an evaluator with a view of the gf with the default evaluator.
@@ -53,5 +53,6 @@ TEST(Gf, EvaluatorWithSymmetry) {
 
  EXPECT_THROW(g_classic(nu, nup, -omega), std::exception);
 }
+*/
 MAKE_MAIN;
 

@@ -29,7 +29,7 @@ IndentCaseLabels: true
 #IndentFunctionDeclarationAfterType:true
 IndentWidth: 1
 Language: Cpp
-MaxEmptyLinesToKeep: 3
+MaxEmptyLinesToKeep: 2
 NamespaceIndentation : Inner
 PointerBindsToType: true
 #PointerAlignment: Left

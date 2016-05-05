@@ -1,13 +1,14 @@
 #include <triqs/test_tools/gfs.hpp>
 using triqs::clef::placeholder;
+using triqs::clef::placeholder_prime;
 
 TEST(Gf, AutoAssignMatrixGf1) {
 
  double beta = 2.3;
- auto g = gf<imfreq, matrix_valued, no_tail>({beta, Fermion, 10}, {2, 2});
+ auto g = gf<imfreq, matrix_valued>({beta, Fermion, 10}, {2, 2});
  auto sig = matrix<double>{{1, -1}, {-1, 1}};
  
- placeholder<0> om_;
+ placeholder_prime<0> om_;
  placeholder<1> u_;
  placeholder<2> v_;
 
@@ -22,14 +23,14 @@ TEST(Gf, AutoAssignMatrixGf1) {
 TEST(Gf, AutoAssignMatrixGf2) {
 
  double beta = 2.3;
- auto a = array<gf<imfreq, scalar_valued, no_tail>, 2>(2, 2);
+ auto a = array<gf<imfreq, scalar_valued>, 2>(2, 2);
  auto sig = matrix<double>{{1, -1}, {-1, 1}};
  
- placeholder<0> om_;
+ placeholder_prime<0> om_;
  placeholder<1> u_;
  placeholder<2> v_;
 
- auto g0 = gf<imfreq, scalar_valued, no_tail>({beta, Fermion, 10});
+ auto g0 = gf<imfreq, scalar_valued>({beta, Fermion, 10}, {});
  a(u_, v_) << g0;
  a(u_, v_)[om_] << 1 / (om_ - 3) * sig(u_, v_);
 

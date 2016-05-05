@@ -26,4 +26,6 @@ namespace std17 {
 
  template <typename... Ts> struct _make_void { typedef void type; };
  template <typename... Ts> using void_t = typename _make_void<Ts...>::type;
+
+ template <bool B> using bool_constant = std::integral_constant<bool, B>;
 }

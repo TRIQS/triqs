@@ -18,10 +18,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#include "legendre_matsubara.hpp"
-#include "fourier_matsubara.hpp"
-#include "../functions/functions.hpp"
+#include "../../gfs.hpp"
+//#include "legendre_matsubara.hpp"
+//#include "fourier_matsubara.hpp"
+//#include "../functions/functions.hpp"
 #include <triqs/utility/legendre.hpp>
 
 using namespace triqs::utility;
@@ -43,7 +43,7 @@ namespace gfs {
    }
   }
 
-  gw.singularity() = get_tail(gl, gw.singularity().size(), gw.singularity().order_min());
+  gw.singularity() = get_tail(gl, gw.singularity().n_valid_orders(), gw.singularity().order_min());
  }
 
  // ----------------------------
@@ -60,7 +60,7 @@ namespace gfs {
    }
   }
 
-  gt.singularity() = get_tail(gl, gt.singularity().size(), gt.singularity().order_min());
+  gt.singularity() = get_tail(gl, gt.singularity().n_valid_orders(), gt.singularity().order_min());
  }
 
  // ----------------------------

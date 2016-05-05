@@ -39,7 +39,7 @@ namespace triqs { namespace gfs {
 
   @return the tail obtained by fitting
  */
- tail fit_real_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max) ;
+ __tail<matrix_valued> fit_real_tail_impl(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min, int n_max) ;
 
  /// routine for fitting the tail (singularity) of a complex Matsubara Green's function
  /**
@@ -55,7 +55,7 @@ namespace triqs { namespace gfs {
 
   @return the tail obtained by fitting
  */
- tail fit_complex_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max) ;
+ __tail<matrix_valued> fit_complex_tail_impl(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min, int n_max) ;
 
  ///Fit the tail of a real (in tau) gf
  /**
@@ -67,7 +67,7 @@ namespace triqs { namespace gfs {
   @param replace_by_fit if true, replace the gf data with the asymptotic behavior obtained by fitting the tails.
   @note Based on [[fit_tail_impl]]. Works for functions with positive only or all Matsubara frequencies.
  */
- void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int n_min, int n_max,
+ void fit_tail(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min, int n_max,
    bool replace_by_fit = false) ;
 
  ///Fit the tail of a complex (in tau) gf
@@ -82,7 +82,7 @@ namespace triqs { namespace gfs {
   @param replace_by_fit if true, replace the gf data with the asymptotic behavior obtained by fitting the tails.
   @note Based on [[fit_tail_impl]]. Works for functions with positive only or all Matsubara frequencies.
  */
- void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max,
+ void fit_tail(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int neg_n_min, int neg_n_max,
    int pos_n_min, int pos_n_max, bool replace_by_fit = false);
 
  ///Fit the tail of a block_gf
@@ -104,7 +104,7 @@ namespace triqs { namespace gfs {
         -if n_min<0 (and n_max<0), replace all frequencies w_n <= w_n{n_max}
   @note Based on [[fit_tail_impl]]
  */
- void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int max_moment, int n_min,
+ void fit_tail(block_gf_view<imfreq> block_gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min,
    int n_max, bool replace_by_fit = false) ;
 
  ///Fit the tail of a gf (scalar-valued)
@@ -126,22 +126,10 @@ namespace triqs { namespace gfs {
         -if n_min<0 (and n_max<0), replace all frequencies w_n <= w_n{n_max}
   @note Based on [[fit_tail_impl]]
  */
- void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = false) ;
- void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max,int pos_n_min, int pos_n_max, bool replace_by_fit = false) ;
+ void fit_tail(gf_view<imfreq, scalar_valued> gf, __tail_const_view<scalar_valued> known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = false) ;
+ void fit_tail(gf_view<imfreq, scalar_valued> gf, __tail_const_view<scalar_valued> known_moments, int max_moment, int neg_n_min, int neg_n_max,int pos_n_min, int pos_n_max, bool replace_by_fit = false) ;
 
  ///fit tail of tensor_valued Gf, rank 3
- template<typename S>
- array<triqs::gfs::tail, 3> fit_tail(gf_const_view<imfreq, tensor_valued<3>,S> g, array_const_view<triqs::gfs::tail,3> known_moments, int max_moment, int n_min, int n_max){
+ array<__tail<scalar_valued>, 3> fit_tail(gf_const_view<imfreq, tensor_valued<3>> g, array_const_view<__tail<scalar_valued>,3> known_moments, int max_moment, int n_min, int n_max);
 
-  gf<imfreq, scalar_valued> g_scal(g.mesh());
-  array<triqs::gfs::tail, 3> tail(known_moments.shape());
-  for(int u=0;u<known_moments.shape()[0];u++) 
-   for(int v=0;v<known_moments.shape()[1];v++) 
-    for(int w=0;w<known_moments.shape()[2];w++) {
-     for(auto const & om : g_scal.mesh()) g_scal[om] = g[om](u,v,w);
-     fit_tail(g_scal,known_moments(u,v,w), max_moment, n_min, n_max);
-     tail(u,v,w) = g_scal.singularity();
-    }
-  return tail;
- }
 }} // namespace

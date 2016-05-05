@@ -27,48 +27,105 @@
 namespace triqs {
 namespace arrays {
 
- template <class T> struct _rm_rvalue_impl { using type = T; };
- template <class T> struct _rm_rvalue_impl<T &&> { using type = T; };
- template <class T> using _rm_rvalue = typename _rm_rvalue_impl<T>::type;
+ namespace details_proxy {
+
+  // a trait to remove the &&
+  template <class T> struct _rm_rvalue_impl { using type = T; };
+  template <class T> struct _rm_rvalue_impl<T &&> { using type = T; };
+  template <class T> using _rm_rvalue = typename _rm_rvalue_impl<T>::type;
+
+  template <size_t I> using _long = long;
+  template <typename IM, typename T> struct _sli;
+  template <typename IM, size_t... Is> struct _sli<IM, std14::index_sequence<Is...>> {
+   using type = indexmaps::slicer<IM, _long<Is>..., ellipsis>;
+  };
+
+  // implementation class
+  template <typename A, typename FrozenArgs, bool IsConst> struct _proxy_impl {
+
+   using A_t = std14::decay_t<A>;
+   using value_type = typename A_t::value_type;
+   A a;
+   FrozenArgs frozen_args;
+   static constexpr size_t n_args = std::tuple_size<FrozenArgs>::value;
+   using _seq = std14::make_index_sequence<n_args>;
+
+   using call_rt = std14::conditional_t<IsConst, value_type const &, value_type &>;
+   static constexpr bool is_const = IsConst;
+
+   using slicer_t = typename _sli<typename A_t::indexmap_type, _seq>::type;
+   using indexmap_type = typename slicer_t::r_type;
+
+   private:
+   template <size_t... Is> auto _indexmap_impl(std14::index_sequence<Is...>) const {
+    return slicer_t::invoke(a.indexmap(), std::get<Is>(frozen_args)..., ellipsis());
+   }
+
+   public:
+   auto indexmap() const { return _indexmap_impl(_seq{}); }
+
+   private: // FIXME use if constexpr
+   template <size_t... Is, typename... Args> FORCEINLINE call_rt _call(std14::index_sequence<Is...>, Args &&... args) const {
+    return a(std::get<Is>(frozen_args)..., std::forward<Args>(args)...);
+   }
+
+   public:
+   template <typename... Args>
+   std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
+    return _call(std14::make_index_sequence<n_args>(), std::forward<Args>(args)...);
+   }
+  };
+
+  // specialize for simple case
+  template <typename A, bool IsConst> struct _proxy_impl<A, long, IsConst> {
+
+   using A_t = std14::decay_t<A>;
+   using value_type = typename A_t::value_type;
+   A a;
+   long frozen_args;
+   static constexpr size_t n_args = 1;
+
+   using call_rt = std14::conditional_t<IsConst, value_type const &, value_type &>;
+   static constexpr bool is_const = IsConst;
+
+   using slicer_t = indexmaps::slicer<typename A_t::indexmap_type, long, ellipsis>;
+   using indexmap_type = typename slicer_t::r_type;
+   indexmap_type indexmap() const { return slicer_t::invoke(a.indexmap(), frozen_args, ellipsis()); }
+
+   template <typename... Args>
+   std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
+    return a(frozen_args, std::forward<Args>(args)...);
+   }
+  };
+ } // details_proxy
 
 
- template <typename A> struct array_const_proxy : TRIQS_CONCEPT_TAG_NAME(ImmutableArray) {
+ template <typename A, typename Tuple>
+ struct array_const_proxy : public details_proxy::_proxy_impl<A, Tuple, true>, TRIQS_CONCEPT_TAG_NAME(ImmutableArray) {
 
-  using A_t = std14::remove_reference_t<A>;
+  using B = details_proxy::_proxy_impl<A, Tuple, true>;
+  using value_type = typename B::value_type;
+  using indexmap_type = typename B::indexmap_type;
+  using A_t = std14::decay_t<A>;
   static constexpr int rank = A_t::rank;
 
-  A a;
-  long n;
-
-  using value_type = typename A_t::value_type;
   using traversal_order_t = typename A_t::traversal_order_t;
-  using slicer_t = indexmaps::slicer<typename A_t::indexmap_type, long, ellipsis>;
-  using indexmap_type = typename slicer_t::r_type;
   using domain_type = typename indexmap_type::domain_type;
 
   using view_type = array_const_view<value_type, domain_type::rank>;
   using const_view_type = array_const_view<value_type, domain_type::rank>;
 
-  using call_rt = value_type const &;
-  static constexpr bool is_const = true;
+  template <typename AA> array_const_proxy(AA &&a_, Tuple const &t) : B{std::forward<AA>(a_), t} {}
 
-  template <typename AA> array_const_proxy(AA &&a_, long n_) : a(std::forward<AA>(a_)), n(n_) {}
+  domain_type domain() const { return this->indexmap().domain(); }
 
-  indexmap_type indexmap() const { return slicer_t::invoke(a.indexmap(), n, ellipsis()); }
-  domain_type domain() const { return indexmap().domain(); }
-
-  auto storage() const { return a.storage(); }
-  value_type const *restrict data_start() const { return &storage()[indexmap().start_shift()]; }
-  value_type *restrict data_start() { return &storage()[indexmap().start_shift()]; }
+  auto storage() const { return this->a.storage(); }
+  value_type const *restrict data_start() const { return &storage()[this->indexmap().start_shift()]; }
+  value_type *restrict data_start() { return &storage()[this->indexmap().start_shift()]; }
 
   view_type operator()() const { return *this; }
 
-  friend auto get_shape(array_const_proxy const &x) { return get_shape(x.a).front_pop(); } // FIXME  nvar
-
-  template <typename... Args>
-  std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
-   return a(n, std::forward<Args>(args)...);
-  }
+  using B::operator();
   TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
 
 
@@ -79,44 +136,37 @@ namespace arrays {
   friend std::ostream &operator<<(std::ostream &out, array_const_proxy const &x) { return out << view_type(x); }
  };
 
+ template <typename A, typename T> auto get_shape(array_const_proxy<A, T> const &x) {
+  return get_shape(x.a).template front_mpop<array_const_proxy<A, T>::n_args>();
+ }
 
- template <typename A> struct array_proxy : TRIQS_CONCEPT_TAG_NAME(MutableArray) {
 
-  using A_t = std14::remove_reference_t<A>;
+ template <typename A, typename Tuple>
+ struct array_proxy : public details_proxy::_proxy_impl<A, Tuple, false>, TRIQS_CONCEPT_TAG_NAME(MutableArray) {
+
+  using B = details_proxy::_proxy_impl<A, Tuple, false>;
+  using value_type = typename B::value_type;
+  using indexmap_type = typename B::indexmap_type;
+  using A_t = std14::decay_t<A>;
   static constexpr int rank = A_t::rank;
 
-  A a;
-  long n;
-
-  using value_type = typename A_t::value_type;
   using traversal_order_t = typename A_t::traversal_order_t;
-  using slicer_t = indexmaps::slicer<typename A_t::indexmap_type, long, ellipsis>;
-  using indexmap_type = typename slicer_t::r_type;
   using domain_type = typename indexmap_type::domain_type;
 
   using view_type = array_view<value_type, domain_type::rank>;
   using const_view_type = array_const_view<value_type, domain_type::rank>;
 
-  using call_rt = value_type &;
-  static constexpr bool is_const = false;
+  template <typename AA> array_proxy(AA &&a_, Tuple const &t) : B{std::forward<AA>(a_), t} {}
 
-  template <typename AA> array_proxy(AA &&a_, long n_) : a(std::forward<AA>(a_)), n(n_) {}
+  domain_type domain() const { return this->indexmap().domain(); }
 
-  indexmap_type indexmap() const { return slicer_t::invoke(a.indexmap(), n, ellipsis()); }
-  domain_type domain() const { return indexmap().domain(); }
-
-  auto storage() const { return a.storage(); }
-  value_type const *restrict data_start() const { return &storage()[indexmap().start_shift()]; }
-  value_type *restrict data_start() { return &storage()[indexmap().start_shift()]; }
+  auto storage() const { return this->a.storage(); }
+  value_type const *restrict data_start() const { return &storage()[this->indexmap().start_shift()]; }
+  value_type *restrict data_start() { return &storage()[this->indexmap().start_shift()]; }
 
   view_type operator()() const { return *this; }
 
-  friend auto get_shape(array_proxy const &x) { return get_shape(x.a).front_pop(); } // FIXME  nvar
-
-  template <typename... Args>
-  std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
-   return a(n, std::forward<Args>(args)...);
-  }
+  using B::operator();
   TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
 
 
@@ -142,70 +192,55 @@ namespace arrays {
   friend std::ostream &operator<<(std::ostream &out, array_proxy const &x) { return out << view_type(x); }
  };
 
+ template <typename A, typename T> auto get_shape(array_proxy<A, T> const &x) {
+  return get_shape(x.a).template front_mpop<array_proxy<A, T>::n_args>();
+ }
+
+
+ // if A is a const_view or A is passed by const &, then the proxy is const, otherwise it is not.
+ template <typename A, typename... T>
+ std14::conditional_t<std14::decay_t<A>::is_const || std::is_const<std14::remove_reference_t<A>>::value,
+                      array_const_proxy<details_proxy::_rm_rvalue<A>, std::tuple<T...>>,
+                      array_proxy<details_proxy::_rm_rvalue<A>, std::tuple<T...>>>
+ make_array_proxy(A &&a, std::tuple<T...> const &n) {
+  return {std::forward<A>(a), n};
+ }
 
  // if A is a const_view or A is passed by const &, then the proxy is const, otherwise it is not.
  template <typename A>
  std14::conditional_t<std14::decay_t<A>::is_const || std::is_const<std14::remove_reference_t<A>>::value,
-                      array_const_proxy<_rm_rvalue<A>>, array_proxy<_rm_rvalue<A>>>
+                      array_const_proxy<details_proxy::_rm_rvalue<A>, long>, array_proxy<details_proxy::_rm_rvalue<A>, long>>
  make_array_proxy(A &&a, long n) {
   return {std::forward<A>(a), n};
  }
- /*
-
-  // factory
-  template <typename A> array_const_proxy<_rm_rvalue<A>> make_const_tensor_proxy(A &&a, long n) {
-   return {std::forward<A>(a), n};
-  }
-  template <typename A> array_proxy<_rm_rvalue<A>> make_tensor_proxy(A &&a, long n) { return {std::forward<A>(a), n}; }
 
 
-  template <typename A> const_matrix_tensor_proxy<_rm_rvalue<A>> make_const_matrix_proxy(A &&a, long n) {
-   return {std::forward<A>(a), n};
-  }
+ template <typename A, typename Tuple>
+ struct matrix_const_proxy : public details_proxy::_proxy_impl<A, Tuple, true>, TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) {
 
-
-  // factory
-  template <typename A> matrix_tensor_proxy<_rm_rvalue<A>> make_matrix_proxy(A &&a, long n) { return {std::forward<A>(a), n}; }
- */
-
-
- template <typename A> struct matrix_const_proxy : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) {
-
-  using A_t = std14::remove_reference_t<A>;
+  using B = details_proxy::_proxy_impl<A, Tuple, true>;
+  using value_type = typename B::value_type;
+  using indexmap_type = typename B::indexmap_type;
+  using A_t = std14::decay_t<A>;
   static constexpr int rank = A_t::rank;
 
-  A a;
-  long n;
-
-  using value_type = typename A_t::value_type;
   using traversal_order_t = typename A_t::traversal_order_t;
-  using slicer_t = indexmaps::slicer<typename A_t::indexmap_type, long, ellipsis>;
-  using indexmap_type = typename slicer_t::r_type;
   using domain_type = typename indexmap_type::domain_type;
 
   using view_type = matrix_const_view<value_type>;
   using const_view_type = matrix_const_view<value_type>;
 
-  using call_rt = value_type const &;
-  static constexpr bool is_const = true;
+  template <typename AA> matrix_const_proxy(AA &&a_, Tuple const &t) : B{std::forward<AA>(a_), t} {}
 
-  template <typename AA> matrix_const_proxy(AA &&a_, long n_) : a(std::forward<AA>(a_)), n(n_) {}
+  domain_type domain() const { return this->indexmap().domain(); }
 
-  indexmap_type indexmap() const { return slicer_t::invoke(a.indexmap(), n, ellipsis()); }
-  domain_type domain() const { return indexmap().domain(); }
-
-  auto storage() const { return a.storage(); }
-  value_type const *restrict data_start() const { return &storage()[indexmap().start_shift()]; }
-  value_type *restrict data_start() { return &storage()[indexmap().start_shift()]; }
+  auto storage() const { return this->a.storage(); }
+  value_type const *restrict data_start() const { return &storage()[this->indexmap().start_shift()]; }
+  value_type *restrict data_start() { return &storage()[this->indexmap().start_shift()]; }
 
   view_type operator()() const { return *this; }
 
-  friend auto get_shape(matrix_const_proxy const &x) { return get_shape(x.a).front_pop(); } // FIXME  nvar
-
-  template <typename... Args>
-  std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
-   return a(n, std::forward<Args>(args)...);
-  }
+  using B::operator();
   TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
 
 
@@ -216,44 +251,37 @@ namespace arrays {
   friend std::ostream &operator<<(std::ostream &out, matrix_const_proxy const &x) { return out << view_type(x); }
  };
 
+ template <typename A, typename T> auto get_shape(matrix_const_proxy<A, T> const &x) {
+  return get_shape(x.a).template front_mpop<matrix_const_proxy<A, T>::n_args>();
+ }
 
- template <typename A> struct matrix_proxy : TRIQS_CONCEPT_TAG_NAME(MutableMatrix) {
 
-  using A_t = std14::remove_reference_t<A>;
+ template <typename A, typename Tuple>
+ struct matrix_proxy : public details_proxy::_proxy_impl<A, Tuple, false>, TRIQS_CONCEPT_TAG_NAME(MutableMatrix) {
+
+  using B = details_proxy::_proxy_impl<A, Tuple, false>;
+  using value_type = typename B::value_type;
+  using indexmap_type = typename B::indexmap_type;
+  using A_t = std14::decay_t<A>;
   static constexpr int rank = A_t::rank;
 
-  A a;
-  long n;
-
-  using value_type = typename A_t::value_type;
   using traversal_order_t = typename A_t::traversal_order_t;
-  using slicer_t = indexmaps::slicer<typename A_t::indexmap_type, long, ellipsis>;
-  using indexmap_type = typename slicer_t::r_type;
   using domain_type = typename indexmap_type::domain_type;
 
   using view_type = matrix_view<value_type>;
   using const_view_type = matrix_const_view<value_type>;
 
-  using call_rt = value_type &;
-  static constexpr bool is_const = false;
+  template <typename AA> matrix_proxy(AA &&a_, Tuple const &t) : B{std::forward<AA>(a_), t} {}
 
-  template <typename AA> matrix_proxy(AA &&a_, long n_) : a(std::forward<AA>(a_)), n(n_) {}
+  domain_type domain() const { return this->indexmap().domain(); }
 
-  indexmap_type indexmap() const { return slicer_t::invoke(a.indexmap(), n, ellipsis()); }
-  domain_type domain() const { return indexmap().domain(); }
-
-  auto storage() const { return a.storage(); }
-  value_type const *restrict data_start() const { return &storage()[indexmap().start_shift()]; }
-  value_type *restrict data_start() { return &storage()[indexmap().start_shift()]; }
+  auto storage() const { return this->a.storage(); }
+  value_type const *restrict data_start() const { return &storage()[this->indexmap().start_shift()]; }
+  value_type *restrict data_start() { return &storage()[this->indexmap().start_shift()]; }
 
   view_type operator()() const { return *this; }
 
-  friend auto get_shape(matrix_proxy const &x) { return get_shape(x.a).front_pop(); } // FIXME  nvar
-
-  template <typename... Args>
-  std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
-   return a(n, std::forward<Args>(args)...);
-  }
+  using B::operator();
   TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
 
 
@@ -279,30 +307,26 @@ namespace arrays {
   friend std::ostream &operator<<(std::ostream &out, matrix_proxy const &x) { return out << view_type(x); }
  };
 
+ template <typename A, typename T> auto get_shape(matrix_proxy<A, T> const &x) {
+  return get_shape(x.a).template front_mpop<matrix_proxy<A, T>::n_args>();
+ }
+
+
+ // if A is a const_view or A is passed by const &, then the proxy is const, otherwise it is not.
+ template <typename A, typename... T>
+ std14::conditional_t<std14::decay_t<A>::is_const || std::is_const<std14::remove_reference_t<A>>::value,
+                      matrix_const_proxy<details_proxy::_rm_rvalue<A>, std::tuple<T...>>,
+                      matrix_proxy<details_proxy::_rm_rvalue<A>, std::tuple<T...>>>
+ make_matrix_proxy(A &&a, std::tuple<T...> const &n) {
+  return {std::forward<A>(a), n};
+ }
 
  // if A is a const_view or A is passed by const &, then the proxy is const, otherwise it is not.
  template <typename A>
  std14::conditional_t<std14::decay_t<A>::is_const || std::is_const<std14::remove_reference_t<A>>::value,
-                      matrix_const_proxy<_rm_rvalue<A>>, matrix_proxy<_rm_rvalue<A>>>
+                      matrix_const_proxy<details_proxy::_rm_rvalue<A>, long>, matrix_proxy<details_proxy::_rm_rvalue<A>, long>>
  make_matrix_proxy(A &&a, long n) {
   return {std::forward<A>(a), n};
  }
- /*
-
-  // factory
-  template <typename A> matrix_const_proxy<_rm_rvalue<A>> make_const_tensor_proxy(A &&a, long n) {
-   return {std::forward<A>(a), n};
-  }
-  template <typename A> matrix_proxy<_rm_rvalue<A>> make_tensor_proxy(A &&a, long n) { return {std::forward<A>(a), n}; }
-
-
-  template <typename A> const_matrix_tensor_proxy<_rm_rvalue<A>> make_const_matrix_proxy(A &&a, long n) {
-   return {std::forward<A>(a), n};
-  }
-
-
-  // factory
-  template <typename A> matrix_tensor_proxy<_rm_rvalue<A>> make_matrix_proxy(A &&a, long n) { return {std::forward<A>(a), n}; }
- */
 }
 }

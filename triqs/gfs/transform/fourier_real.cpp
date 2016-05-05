@@ -18,8 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#include "fourier_real.hpp"
+#include "../../gfs.hpp"
+//#include "fourier_real.hpp"
 #include <fftw3.h>
 
 namespace triqs { namespace gfs { 
@@ -70,7 +70,7 @@ namespace triqs { namespace gfs {
    g_in() = 0;
    g_out.resize(L);
    
-   dcomplex t1 = ta(1)(0,0), t2= ta.get_or_zero(2)(0,0);
+   dcomplex t1 = ta(1), t2= ta.get_or_zero(2);
    dcomplex a1 = (t1 + I * t2/a )/2., a2 = (t1 - I * t2/a )/2.;
    
    for (auto const & t : gt.mesh())
@@ -101,7 +101,7 @@ namespace triqs { namespace gfs {
    auto ta = gw.singularity();
    arrays::vector<dcomplex> g_in(L), g_out(L);
    
-   dcomplex t1 = ta(1)(0,0), t2 = ta.get_or_zero(2)(0,0);
+   dcomplex t1 = ta(1), t2 = ta.get_or_zero(2);
    dcomplex a1 = (t1 + I * t2/a )/2., a2 = (t1 - I * t2/a )/2.;
    g_in() = 0;
    

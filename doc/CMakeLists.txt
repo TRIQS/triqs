@@ -91,7 +91,8 @@ add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log DEPENDS ${all_
 		    #2>1 > cpp2py.log
 		    ) 
 add_custom_target(docs_cpp2doc DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log) 
-add_dependencies(docs_sphinx docs_cpp2doc triqs) # we must have installed the sources before building
+add_dependencies(docs_cpp2doc triqs) #
+add_dependencies(docs_sphinx docs_cpp2doc) # we must have installed the sources before building
 endif()
 
 # Install

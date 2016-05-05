@@ -94,7 +94,7 @@ class Const(Base):
             C = C*numpy.identity(G.N1) 
         if C.shape != (G.N1,G.N2): raise RuntimeError, "Size of constant incorrect"
 
-        G.tail.zero()
+        G.tail.reset(12)
         G.tail[0][:,:] = C
         
         Function(lambda om: C, None)(G)
@@ -110,9 +110,9 @@ class Omega_(Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         Id = numpy.identity(G.N1)
-        G.tail.zero()
+        G.tail.reset(10)
         G.tail[-1][:,:] = Id
-
+        
         for n,om in enumerate(G.mesh): G.data[n,:,:] = om*Id
         return G
 

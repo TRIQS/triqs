@@ -20,8 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include "fourier_base.hpp"
-#include "../bz.hpp" 
-#include "../cyclic_lattice.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -29,14 +27,14 @@ namespace gfs {
  /**
   * TBR
   */
- template <typename G> std14::enable_if_t<is_gf_or_view<G, cyclic_lattice>::value, tagged_cview<tags::fourier, G>> fourier(G const& g) {
+ template <typename G> std14::enable_if_t<is_gf<G, cyclic_lattice>::value, tagged_cview<tags::fourier, G>> fourier(G const& g) {
   return {g};
  }
 
  /**
   * TBR
   */ 
- template <typename G> std14::enable_if_t<is_gf_or_view<G, brillouin_zone>::value, tagged_cview<tags::fourier, G>> inverse_fourier(G const& g) {
+ template <typename G> std14::enable_if_t<is_gf<G, brillouin_zone>::value, tagged_cview<tags::fourier, G>> inverse_fourier(G const& g) {
   return {g};
  }
 

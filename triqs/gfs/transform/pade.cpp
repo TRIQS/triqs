@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,8 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#include "pade.hpp"
+#include "../../gfs.hpp"
+//#include "pade.hpp"
 #include <triqs/arrays.hpp>
 #include <triqs/utility/pade_approximants.hpp>
 

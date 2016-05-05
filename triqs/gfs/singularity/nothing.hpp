@@ -41,6 +41,7 @@ namespace gfs {
   template <typename RHS> friend void assign_singularity_from_function(nothing &, RHS) {}
   template<typename A> bool check_size(A) {return true;}
   bool is_empty() const { return false;}
+  nothing operator()() const { return {};}
  };
 
  // Check if T is nothing
@@ -51,7 +52,11 @@ namespace gfs {
  inline nothing inverse(nothing) { return {};}
  inline nothing conj(nothing) { return {};}
  template <typename T> nothing compose(nothing,T&) { return {};}
- template <typename... T> nothing slice_target(nothing, T...) { return nothing(); }
+ template <typename... T> nothing slice_target_sing(nothing, T...) { return {}; }
+ template <typename... T> nothing slice_target_to_scalar_sing(nothing, T...) { return {}; }
+
+ inline nothing reinterpret_as_matrix_valued_sing(nothing) { return {}; }
+
  template <typename T> nothing operator+(nothing, T const &) { return nothing(); }
  template <typename T> nothing operator-(nothing, T const &) { return nothing(); }
  template <typename T> nothing operator*(nothing, T const &) { return nothing(); }
