@@ -3,12 +3,11 @@
 #include "./fit_tail.hpp"
 namespace triqs { namespace gfs {  
 
- tail fit_tail_impl(gf_view<imfreq> gf1, const tail_view known_moments, int max_moment, int n_min, int n_max) {
-
-  gf_const_view<imfreq> gf = positive_freq_view(gf1);
+ tail fit_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max) {
 
   // precondition : check that n_max is not too large
-  n_max = std::min(n_max, int(gf.mesh().size()-1));
+  n_max = std::min(n_max, int(gf.mesh().last_index()));
+  n_min = std::max(n_min, int(gf.mesh().first_index()));
 
   tail res(get_target_shape(gf));
   if (known_moments.size())
@@ -97,11 +96,9 @@ namespace triqs { namespace gfs {
   if (get_target_shape(gf) != known_moments.shape()) TRIQS_RUNTIME_ERROR << "shape of tail does not match shape of gf";
   gf.singularity() = fit_tail_impl(gf, known_moments, max_moment, n_min, n_max);
   if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
-   int i = 0;
-   long L = gf.mesh().size()/2;
+   bool is_real = is_gf_real_in_tau(gf);
    for (auto iw : gf.mesh()) {
-    if ((i >= L+n_min) || (i <= gf.mesh().size()-L-n_min-1)) gf[iw] = evaluate(gf.singularity(), iw);
-    i++;
+    if ((iw.n >= n_min and iw.n>0 and n_min>0) or (!is_real and iw.n <= n_max and iw.n<0 and n_min<0) or (is_real and iw.n<=-n_min-(gf.mesh().domain().statistic==Fermion? 1 : 0) and iw.n<0)) gf[iw] = evaluate(gf.singularity(), iw);
    }
    }
   }
@@ -116,5 +113,6 @@ namespace triqs { namespace gfs {
   void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit ) {
    fit_tail(reinterpret_scalar_valued_gf_as_matrix_valued(gf), known_moments, max_moment, n_min, n_max, replace_by_fit );
   }
+
 
  }} // namespace

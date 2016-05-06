@@ -84,7 +84,7 @@ namespace triqs { namespace gfs {
 
   for(auto const & tau : g_t_wp.mesh()){
    int n_max = g_t_wp[tau].mesh().size();
-   auto tail_3 = fit_tails ? fit_tail(g_t_wp[tau], known_moments, 3, int(0.75*n_max), n_max) : tail_zero;
+   auto tail_3 = fit_tails ? fit_tail(make_const_view(g_t_wp[tau]), known_moments, 3, int(0.75*n_max), n_max) : tail_zero;
    auto g_t_tp_tau = inverse_fourier(g_t_wp[tau], tail_3, imtime_mesh_2.size());
    for(auto const & tp: std::get<1>(g2t.mesh().components()))
     g2t[{tau, tp}] = g_t_tp_tau[tp];
