@@ -105,6 +105,11 @@ namespace h5 {
  void h5_write(group g, std::string const &name, bool const &x) { h5_write_impl(g, name, x); }
  void h5_write(group g, std::string const &name, double const &x) { h5_write_impl(g, name, x); }
  //void h5_write(group g, std::string const &name, std::complex<double> const &x) { h5_write_impl(g, name, x); }
+ void h5_write(group g, std::string const &name, std::complex<double> const &x) {
+  triqs::h5::group gr =  g.create_group(name);
+  h5_write(gr,"r", x.real());
+  h5_write(gr,"i", x.imag());
+ }
 
  void h5_read(group g, std::string const &name, int &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, long &x) { h5_read_impl(g, name, x); }
@@ -114,7 +119,14 @@ namespace h5 {
  void h5_read(group g, std::string const &name, char &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, bool &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, double &x) { h5_read_impl(g, name, x); }
- // void h5_read(group g, std::string const &name, std::complex<double> &x) { h5_read_impl(g, name, x); }
+ //void h5_read(group g, std::string const &name, std::complex<double> &x) { h5_read_impl(g, name, x); }
+ void h5_read(group g, std::string const &name, std::complex<double> &x) { 
+  triqs::h5::group gr = g.open_group(name);
+  double r,i;
+  h5_read(gr,"r",r);
+  h5_read(gr,"i",i);
+  x = std::complex<double>{r,i};
+ }
 
  void h5_write_attribute(hid_t id, std::string const &name, int x) { h5_write_attribute_mpl(id, name, x); }
  void h5_write_attribute(hid_t id, std::string const &name, long x) { h5_write_attribute_mpl(id, name, x); }

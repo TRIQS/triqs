@@ -95,6 +95,23 @@ module.add_class(t)
 #          return "%s"%numpy.zeros(self.shape)
 #        else:
 #          return string.join([ "%s"%self[r]+ (" /" if r>0 else "") + " Om^%s"%(abs(r)) for r in range(omin, self.order_max+1) ] , " + ")
+########################
+##   TailZero
+########################
+for c_type, suffix in [("std::complex<double>","_s"),("triqs::arrays::array<std::complex<double>,3>", "_3"), ("triqs::arrays::array<std::complex<double>,4>", "_4")]:
+  c = class_( py_type = "TailZero%s"%suffix,
+        c_type = "tail_zero<%s>"%c_type,
+        c_type_absolute = "triqs::gfs::tail_zero<%s>"%c_type,
+        serializable= "tuple",
+        is_printable= False,
+        hdf5 = True,
+        arithmetic = ("algebra","double")
+       )
+  c.add_method_copy()
+  c.add_method_copy_from()
+  module.add_class(c)
+
+  module.add_function ("%s evaluate (tail_zero<%s> t, int i)"%(c_type, c_type), doc = """""")
 
 ########################
 ##   enums

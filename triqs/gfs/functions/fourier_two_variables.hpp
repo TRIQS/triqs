@@ -6,6 +6,7 @@ using triqs::gfs::curry;
 namespace triqs { namespace gfs {
  using triqs::arrays::array;
  using triqs::arrays::array_const_view;
+
  ///FT from  $g_{uvw}(\tau,\tau')$ to $g_{uvw}(i\omega,i\Omega)$
  /**
    Fourier transform from  $g_{uvw}(\tau,\tau')$ to $g_{uvw}(i\omega,i\Omega)$ :
@@ -22,8 +23,6 @@ namespace triqs { namespace gfs {
   */
  gf<cartesian_product<imfreq,imfreq>, tensor_valued<3>> fourier(gf_const_view<cartesian_product<imtime, imtime>, tensor_valued<3>> g2t,  int n_w_1,  int n_w_2, bool positive_matsub_only_1=true, bool positive_matsub_only_2=true);
 
-
- array<triqs::gfs::tail, 3> fit_tail(gf_const_view<imfreq, tensor_valued<3>> g, array_const_view<triqs::gfs::tail,3> known_moments, int max_moment, int n_min, int n_max);
 
  ///FT from $g_{uvw}(i\omega,i\Omega)$ to $g_{uvw}(\tau,\tau')$
  /**

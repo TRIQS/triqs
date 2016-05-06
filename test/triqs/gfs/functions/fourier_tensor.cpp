@@ -11,7 +11,7 @@ TEST(Fourier, Tensor_valued){
  tail_3() = tail(1,1);
  tail_3() = t;
 
- gf<imfreq, tensor_valued<3>, nothing> gw({1, Fermion, 300},{1,1,1});
+ gf<imfreq, tensor_valued<3>> gw({1, Fermion, 300},{1,1,1});
  placeholder<0> om_;
  gw(om_)<<1/(om_-1);
  auto gt = inverse_fourier(gw, tail_3, 1000);

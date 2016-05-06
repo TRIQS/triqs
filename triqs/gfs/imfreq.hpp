@@ -32,6 +32,9 @@ namespace gfs {
  template <> struct gf_default_singularity<imfreq, scalar_valued> {
   using type = tail;
  };
+ template <typename M, int R> struct gf_default_singularity<M, tensor_valued<R>> {
+  using type = tail_zero<array<dcomplex, R>>;
+ };
 
  /// ---------------------------  A few specific functions ---------------------------------
 
@@ -145,6 +148,10 @@ namespace gfs {
   auto _evaluate_sing(scalar_valued, S const &s, matsubara_freq const &f) const RETURN(evaluate(s, f)(0, 0));
   rv_t _evaluate_sing(Target, nothing, matsubara_freq const &f) const {
    TRIQS_RUNTIME_ERROR << "Evaluation out of mesh";
+   return r_t{};
+  }
+  template<typename T>
+  rv_t _evaluate_sing(Target, tail_zero<T>, matsubara_freq const &f) const {
    return r_t{};
   }
 
