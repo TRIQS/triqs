@@ -4,7 +4,7 @@ from wrap_generator import *
 module = module_(full_name = "pytriqs.gf.local.multivar", doc = "Local multivariable Green functions ...")
 
 # All the triqs C++/Python modules
-module.use_module('gf', 'triqs')
+module.use_module('gf')
 
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_using("namespace triqs::gfs")
