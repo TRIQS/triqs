@@ -25,3 +25,10 @@ triqs_python_extension(gf gf/local)
 
 install (FILES ${CMAKE_SOURCE_DIR}/pytriqs/__init__.py.template DESTINATION "include/pytriqs/gf/local" RENAME __init__.py)
 
+# 
+triqs_python_extension(multivar gf/local)
+#triqs_python_extension_and_install(multivar)
+#target_link_libraries(multivar ${TRIQS_LIBRARY_ALL})
+#include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_CURRENT_SOURCE_DIR})
+#triqs_set_rpath_for_target(multivar)
+

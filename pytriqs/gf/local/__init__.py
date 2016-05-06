@@ -31,6 +31,10 @@ from block_gf import BlockGf
 from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 from tools import *
 
+# import all ?
+#from multivar import *
+import multivar
+
 __all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
            'lazy_expressions','TailGf',
            'GfImFreq', 'MeshImFreq', 'GfImFreqTv3','GfImFreqTv4',
@@ -41,4 +45,5 @@ __all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier'
            'make_gf_from_inverse_fourier',
            'BlockGf','inverse','is_gf_real_in_tau',
            'delta','dyson','tail_fit',
-           'rebinning_tau']
+           'rebinning_tau', 
+           'multivar']
