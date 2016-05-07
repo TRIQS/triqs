@@ -57,12 +57,12 @@ def init_tv( mesh=None, shape=None, name='g', **kwargs):
 
 def plot(self, opt_dict):
     """ Plot protocol. opt_dict can contain:
-         *:param RIS: 'R', 'I', 'S', 'RI' [ default]
+         *:param RI: 'R', 'I', 'RI' [default]
          *:param x_window: (xmin,xmax) or None [default]
          *:param name: a string [default = '']. If not '', it remplaces the name of the function just for this plot.
     """
     return _gf_plot.plot_base( self, opt_dict,  r'$\omega_n$',
-            lambda name : r'%s$(i\omega_n)$'%name, True, [x.imag for x in self.mesh] )
+            lambda name : r'%s$(i\omega_n)$'%name, [x.imag for x in self.mesh] )
 
 #--------------   OTHER OPERATIONS -----------------------------------------------------
 

@@ -326,27 +326,19 @@ class BlockGf(object):
         c = self.copy()
         c /= y
         return c
-
-
   
+    def __neg__(self):
+        c = self.copy()
+        c *= -1
+        return c
    #-----------------------------plot protocol -----------------------------------
 
-    @property
-    def real(self): 
-        """Use self.real in a plot to plot only the real part"""
-        return PlotWrapperPartialReduce(self, RI='R')
-
-    @property
-    def imag(self):
-        """Use self.imag in a plot to plot only the imag part"""
-        return PlotWrapperPartialReduce(self, RI='I')
-
-    def _plot_(self, *l, **kw): 
+    def _plot_(self, kw):
         """ Implement the plot protocol"""
-        # NB: it is important to make a copy of the dictionnary, since the
-        # options are consumed by the _plot_ method
-        # however, a shallow copy should be enough here, no need for a deep copy
-        return sum([ g._plot_(*l, ** dict (** kw)) for sig,g in self],[])
+        r = sum([ g._plot_(dict(**kw)) for sig,g in self],[])
+        for opt in ['x_window', 'RI']:
+            kw.pop(opt,'') # consumes
+        return r
 
    #--------------------------------------------------------------------------
 

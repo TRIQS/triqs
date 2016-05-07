@@ -19,7 +19,7 @@
 #
 ################################################################################
 
-__all__ = ['plt','oplot','subplots','figsize_default','use_amsmath']
+__all__ = ['plt','oplot', 'oploti', 'oplotr', 'subplots','figsize_default','use_amsmath']
 
 import numpy, matplotlib as mpl, matplotlib.pylab as plt
 from protocol import plot_protocol_apply
@@ -46,6 +46,22 @@ def oplot (*ob_list, **opt_dict) :
     __oplot_impl(plt.plot, plt.xlabel,plt.ylabel,plt.legend, *ob_list,**opt_dict)
     # remove this in the notebook...
     #if hasattr(plt.figure(1), "show") : plt.figure(1).show()
+
+def oplotr (*ob_list, **opt_dict) :
+    """
+    Same as oplot, but enforce option RI='R'
+    """
+    opt_dict['RI'] = 'R'
+    oplot(*ob_list, **opt_dict)
+
+
+def oploti (*ob_list, **opt_dict) :
+    """
+    Same as oplot, but enforce option RI='I'
+    """
+    opt_dict['RI'] = 'I'
+    oplot(*ob_list, **opt_dict)
+
 
 mpl.axes.Axes.oplot = lambda self, *ob_list, **opt_dict : __oplot_impl(self.plot,self.set_xlabel, self.set_ylabel, self.legend, *ob_list,**opt_dict)
 

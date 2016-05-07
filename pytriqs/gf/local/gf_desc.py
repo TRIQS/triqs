@@ -244,10 +244,10 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
             c_type_absolute = "triqs::gfs::gf_view<triqs::gfs::%s, triqs::gfs::%s>"%(c_tag, target_type),
             #serializable= "boost",
             serializable= "tuple" if serializable else None,
-            is_printable= True,
+            #is_printable= True,
             #comparisons = "==",
             hdf5 = True,
-            arithmetic = ("algebra",data_type, "with_inplace_operators")
+            arithmetic = ("algebra",data_type, "with_inplace_operators", "with_unary_minus")
             )
 
     g.add_constructor(signature = "(gf_mesh<%s> mesh, mini_vector<size_t,%s> shape, std::vector<std::vector<std::string>> indices = std::vector<std::vector<std::string>>{}, std::string name = "")"%(c_tag, rank), python_precall = "pytriqs.gf.local._gf_%s.init%s"%(c_tag, "" if rank==2 else "_tv"))

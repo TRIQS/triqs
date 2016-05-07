@@ -11,9 +11,9 @@ class PlotWrapperPartialReduce:
 
 #----------------
 
-def plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
+def plot_base (self, opt_dict, xlabel, ylabel, X):
     """ Plot protocol. opt_dict can contain:
-         *:param RIS: 'R', 'I', 'S', 'RI' [ default]
+         *:param RI: 'R', 'I', 'RI' [ default]
          *:param x_window: (xmin,xmax) or None [default]
          *:param Name: a string [default = '']. If not '', it remplaces the name of the function just for this plot.
     """
@@ -34,23 +34,17 @@ def plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
                 'label': Name if Name else prefix + "%s_%s"%(i,j), 
                 'ydata': f( self.data[sl,i,j] ) } for i in range(self.target_shape[0]) for j in range(self.target_shape[1])]
 
-    if use_ris:
-        ris = opt_dict.pop('RI','RI')
-        if   ris == "R":
-            res = mdic( 'Re ', lambda x : x.real)
-        elif ris == "I":
-            res = mdic( 'Im ', lambda x : x.imag)
-        elif ris == "S":
-            res = mdic( '', lambda x : -1/numpy.pi *x.imag)
-        elif ris == 'RI':
-             res = mdic( 'Re ', lambda x : x.real) + mdic( 'Im ', lambda x : x.imag)
-        else:
-             raise ValueError, "RIS flags meaningless %s"%ris
+    ri = opt_dict.pop('RI','RI')
+    if  ri == 'R':
+        res = mdic( 'Re ', lambda x : x.real)
+    elif ri == 'I':
+        res = mdic( 'Im ', lambda x : x.imag)
+    elif ri == 'RI':
+         res = mdic( 'Re ', lambda x : x.real) + mdic( 'Im ', lambda x : x.imag)
     else:
-        res = mdic( '', lambda x : x)
+         raise ValueError, "RI flags meaningless %s"%ri
 
     if NamePrefix: self.name = name_save
-
     return res
 
 #------------------
