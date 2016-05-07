@@ -78,7 +78,7 @@ def _ilshift_(self, A):
     import warnings
     warnings.warn("The operator <<= is deprecated : update your code to use << instead", UserWarning, stacklevel=2)
     return _lshift_(self, A)
- 
+
 def _lshift_(self, A):
     """ A can be two things:
       * G << any_init will init the GFBloc with the initializer
@@ -100,5 +100,5 @@ def _lshift_(self, A):
     elif descriptors.is_scalar(A): #in the case it is a scalar ....
         self << lazy_expressions.LazyExpr(A)
     else:
-        raise RuntimeError, " << operator: RHS  not understood"
+        return NotImplemented
     return self
