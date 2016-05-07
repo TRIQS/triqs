@@ -633,9 +633,14 @@ class class_ :
         """
         self.add_method(name = "__setitem__impl", calling_pattern = calling_pattern or "self_c[i] = v", doc = doc, signature = signature, **d)
 
-    def add_method_copy(self) :
-        """Add a method copy, that make a **deep** copy, using triqs::make_clone"""
-        self.add_method(name = "copy", calling_pattern = self.c_type + " result = triqs::make_clone(self_c)", signature = self.c_type +"()", doc = "Make a copy (clone) of self")
+    def add_method_copy(self, clone_function = "triqs::make_clone") :
+        """Add a method copy, that make a **deep** copy, using the clone function"""
+        self.add_method(name = "copy", calling_pattern = self.c_type + " result = %s(self_c)"%clone_function, 
+                        signature = self.c_type +"()", doc = "Make a copy (clone) of self")
+
+    def add_method_cpp_copy(self) :
+        """Add a method sh_copy, that make an ordinary copy in C++"""
+        self.add_method(name = "sh_copy", calling_pattern = self.c_type + " result = self_c", signature = self.c_type +"()", doc = "Make a copy of self")
 
     def add_method_copy_from(self) :
         """Add a copy_from, using C++ assignment"""
