@@ -5,7 +5,7 @@ from itertools import product
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 
-def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None):
+def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_structure=None,H_dump=None,complex=False):
     r"""
     Create a Slater Hamiltonian using fully rotationally-invariant 4-index interactions:
 
@@ -29,6 +29,9 @@ def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
                              If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
     H_dump : string
              Name of the file to which the Hamiltonian should be written.
+    complex : bool
+             Whether there are complex values in the interaction. If False, passing a complex U will
+             cause an error.
 
     Returns
     -------
@@ -46,10 +49,10 @@ def h_int_slater(spin_names,orb_names,U_matrix,off_diag=None,map_operator_struct
     for s1, s2 in product(spin_names,spin_names):
         for a1, a2, a3, a4 in product(orb_names,orb_names,orb_names,orb_names):
             U_val = U_matrix[orb_names.index(a1),orb_names.index(a2),orb_names.index(a3),orb_names.index(a4)]
-            if abs(U_val.imag) > 1e-10:
+            if abs(U_val.imag) > 1e-10 and not complex:
                 raise RuntimeError("Matrix elements of U are not real. Are you using a cubic basis?")
 
-            H_term = 0.5 * U_val.real * c_dag(*mkind(s1,a1)) * c_dag(*mkind(s2,a2)) * c(*mkind(s2,a4)) * c(*mkind(s1,a3))
+            H_term = 0.5 * (U_val if complex else U_val.real) * c_dag(*mkind(s1,a1)) * c_dag(*mkind(s2,a2)) * c(*mkind(s2,a4)) * c(*mkind(s1,a3))
             H += H_term
 
             # Dump terms of H
