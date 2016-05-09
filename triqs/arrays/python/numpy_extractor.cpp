@@ -18,13 +18,13 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../impl/common.hpp"
 #include "../impl/traits.hpp"
 #include "../../utility/mini_vector.hpp"
 #include "../../utility/typeid_name.hpp"
 #include "../../python_tools/pyref.hpp"
 #include "./numpy_extractor.hpp"
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
 
 
 namespace triqs { namespace arrays { namespace numpy_interface  {
