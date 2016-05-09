@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
   h5_write(file,"Length_Cycle",Length_Cycle);
   
   // construct a Monte Carlo loop
-  triqs::mc_tools::mc_generic<double> IntMC(N_Cycles, Length_Cycle, N_Warmup_Cycles, Random_Name, Random_Seed, Verbosity);
+  triqs::mc_tools::mc_generic<double> IntMC(Random_Name, Random_Seed, 1.0, Verbosity);
 
   // construct configuration
   configuration config;
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
   IntMC.add_measure(compute_histo(config, H, xmax), "histogramn measure");
 
   // Run and collect results
-  IntMC.start(1.0, triqs::utility::clock_callback(600));
+  IntMC.warmup_and_accumulate(N_Warmup_Cycles, N_Cycles, Length_Cycle, triqs::utility::clock_callback(600));
   IntMC.collect_results(world);
 
   h5_write(file, "Stats", IntMC.get_acceptance_rates());
