@@ -103,7 +103,7 @@ namespace gfs {
 
   gf_indices_tuple(gf_indices_one r) : ind_vec(Rank, r) { }
 
-  gf_indices_tuple(std::vector<std::vector<std::string>> const & _ind) : ind_vec(Rank){
+  gf_indices_tuple(std::vector<std::vector<std::string>> const & _ind) : ind_vec(_ind.size()){
    for(int i=0;i<ind_vec.size();i++) ind_vec[i] = _ind[i];
   }
 
