@@ -21,12 +21,12 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf/local)
 
 # Build C extension module 
 triqs_python_extension(gf gf/local)
-# ?? was not needed ? triqs_set_rpath_for_target(my_module)
 
 install (FILES ${CMAKE_SOURCE_DIR}/pytriqs/__init__.py.template DESTINATION "include/pytriqs/gf/local" RENAME __init__.py)
 
 # 
 triqs_python_extension(multivar gf/local)
+add_dependencies(python_wrap_multivar python_wrap_gf)
 #triqs_python_extension_and_install(multivar)
 #target_link_libraries(multivar ${TRIQS_LIBRARY_ALL})
 #include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_CURRENT_SOURCE_DIR})
