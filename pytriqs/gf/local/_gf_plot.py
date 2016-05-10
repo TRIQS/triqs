@@ -29,7 +29,7 @@ def plot_base (self, opt_dict, xlabel, ylabel, X, allow_spectral_mode = False):
     def mdic( prefix, f):
        return [{'type': "XY",
                 'xlabel': xlabel,
-                'ylabel': ylabel (self.name),
+                'ylabel': ylabel (self.name or Name),
                 'xdata': X[sl],
                 'label': prefix + "%s %s_%s"%(Name,i,j) , 
                 'ydata': f( self.data[sl,i,j] ) } for i in range(self.target_shape[0]) for j in range(self.target_shape[1])]
