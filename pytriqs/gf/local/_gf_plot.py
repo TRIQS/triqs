@@ -31,7 +31,7 @@ def plot_base (self, opt_dict, xlabel, ylabel, X, allow_spectral_mode = False):
                 'xlabel': xlabel,
                 'ylabel': ylabel (self.name),
                 'xdata': X[sl],
-                'label': prefix + (Name if Name else "%s_%s"%(i,j)) , 
+                'label': prefix + "%s %s_%s"%(Name,i,j) , 
                 'ydata': f( self.data[sl,i,j] ) } for i in range(self.target_shape[0]) for j in range(self.target_shape[1])]
 
     # backward compat.
