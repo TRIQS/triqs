@@ -21,11 +21,10 @@
 
 import numpy
 import lazy_expressions, descriptor_base
-#from gf import MeshImFreq
 from types import IntType, SliceType, StringType
 from _imp_tools import LazyCTX #, IndicesConverter, get_indices_in_dict, py_deserialize
 from _gf_plot import PlotWrapperPartialReduce
-#from gf import TailGf
+import warnings
 
 #---------------------   [  ] operator        ------------------------------------------
 
@@ -54,10 +53,12 @@ def __setitem__(self, key, val):
 
 def _real_plot(self):
     """Use self.real in a plot to plot only the real part"""
+    warnings.warn("g.real is deprecated. Use rather oplot(g, ...., mode = 'R') or oplotr(g, ...)")
     return PlotWrapperPartialReduce(self, RI='R')
 
 def _imag_plot(self):
     """Use self.imag in a plot to plot only the imag part"""
+    warnings.warn("g.imag is deprecated. Use rather oplot(g, ...., mode = 'I') or oploti(g, ...)")
     return PlotWrapperPartialReduce(self, RI='I')
 
 #--------  LAZY expression system -----------------------------------------

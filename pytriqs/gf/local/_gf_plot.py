@@ -11,13 +11,13 @@ class PlotWrapperPartialReduce:
 
 #----------------
 
-def plot_base (self, opt_dict, xlabel, ylabel, X):
+def plot_base (self, opt_dict, xlabel, ylabel, X, allow_spectral_mode = False):
     """ Plot protocol. opt_dict can contain:
-         *:param RI: 'R', 'I', 'RI' [ default]
+         *:param mode : 'R', 'I', 'S'
          *:param x_window: (xmin,xmax) or None [default]
          *:param Name: a string [default = '']. If not '', it remplaces the name of the function just for this plot.
     """
-    Name = opt_dict.pop('name', '' )  # consume it
+    Name = opt_dict.pop('name', self.name)  # consume it
     NamePrefix = opt_dict.pop('NamePrefix', '' )  # consume it
     if Name and NamePrefix: raise ValueError, 'Name and NamePrefix cannot be used at the same time'
     if NamePrefix: name_save, self.name = self.name, Name or NamePrefix
@@ -31,18 +31,27 @@ def plot_base (self, opt_dict, xlabel, ylabel, X):
                 'xlabel': xlabel,
                 'ylabel': ylabel (self.name),
                 'xdata': X[sl],
-                'label': Name if Name else prefix + "%s_%s"%(i,j), 
+                'label': prefix + (Name if Name else "%s_%s"%(i,j)) , 
                 'ydata': f( self.data[sl,i,j] ) } for i in range(self.target_shape[0]) for j in range(self.target_shape[1])]
 
-    ri = opt_dict.pop('RI','RI')
-    if  ri == 'R':
-        res = mdic( 'Re ', lambda x : x.real)
+    # backward compat.
+    if 'RI' in opt_dict:
+	assert 'mode' not in opt_dict, "Can not have both flags RI and mode"
+	import warnings
+	warnings.warn("oplot: 'RI' flag is deprecated, use 'mode' instead")
+	opt_dict['mode'] = opt_dict.pop('RI','')
+
+    ri = opt_dict.pop('mode','')
+    if ri == 'R':
+       res = mdic( 'Re ', lambda x : x.real)
     elif ri == 'I':
-        res = mdic( 'Im ', lambda x : x.imag)
-    elif ri == 'RI':
-         res = mdic( 'Re ', lambda x : x.real) + mdic( 'Im ', lambda x : x.imag)
+       res = mdic( 'Im ', lambda x : x.imag)
+    elif ri == '':
+       res = mdic( 'Re ', lambda x : x.real) + mdic( 'Im ', lambda x : x.imag)
+    elif ri == "S":
+       res = mdic( '', lambda x : -1/numpy.pi *x.imag)
     else:
-         raise ValueError, "RI flags meaningless %s"%ri
+       raise ValueError, "mode flag is meaningless. I expect 'R', 'I', or 'S' and I got %s"%ri
 
     if NamePrefix: self.name = name_save
     return res

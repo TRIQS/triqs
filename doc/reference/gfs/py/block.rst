@@ -114,7 +114,7 @@ can be evaluated, can compute the high-frequency expansion, and so on. For examp
 
  * `Omega`: is the function :math:`f(\omega) = \omega`. 
  * `SemiCircular(D)`: is a Green's function corresponding to free fermions with a semicircular density of states of half-bandwith `D`.
- * `Wilson`: is a Green's function corresponding to fermions with a flat density of states of half-bandwidth `D`.
+ * `Flat`: is a Green's function corresponding to fermions with a flat density of states of half-bandwidth `D`.
 
 .. toctree::
   :maxdepth: 1

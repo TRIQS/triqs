@@ -90,7 +90,7 @@ computed. This is done with the ``window`` and ``n_points`` options.
 
 These lines initialize specific entries of the block Green's function. Note how the elements are
 accessed with ``[index1,index2]``. These lines also show how to initialize a Green's function
-to a constant or to the inverse of a Wilson bath (constant spectral function on an interval :math:`[-D,D]`, with
+to a constant or to the inverse of a Flat bath (constant spectral function on an interval :math:`[-D,D]`, with
 :math:`D=1.0` in our example).
 
 .. literalinclude:: impinbath.py

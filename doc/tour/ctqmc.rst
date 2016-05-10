@@ -54,7 +54,7 @@ function as well as the average impurity occupancy is stored in the
    
    # Initialize the non-interacting Green's function S.G0_iw
    for spin, g0 in S.G0_iw:
-       g0 << inverse( iOmega_n - e_f - t**2 * Wilson(D) ) 
+       g0 << inverse( iOmega_n - e_f - t**2 * Flat(D) ) 
    
    # Set the solver parameters.
    params = {}

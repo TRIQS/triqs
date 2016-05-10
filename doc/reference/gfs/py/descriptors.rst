@@ -26,6 +26,6 @@ Reference
     class member is called `iOmega_n`.
 
 .. automodule::  pytriqs.gf.local.descriptors
-   :members: Function,SemiCircular, Wilson 
+   :members: Function,SemiCircular, Flat 
 
    

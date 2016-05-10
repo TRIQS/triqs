@@ -28,14 +28,14 @@ It is imported with the command::
 
 from gf import *
 from block_gf import BlockGf
-from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
+from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Flat, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 from tools import *
 
 # import all ?
 #from multivar import *
 import multivar
 
-__all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
+__all__ = ['Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
            'lazy_expressions','TailGf',
            'GfImFreq', 'MeshImFreq', 'GfImFreqTv3','GfImFreqTv4',
            'GfImTime', 'MeshImTime', 'GfImTimeTv3', 'GfImTimeTv4',

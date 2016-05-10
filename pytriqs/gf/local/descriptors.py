@@ -111,7 +111,7 @@ semicircular density of states"""
 
 ##################################################
 
-class Wilson (Base):
+class Flat (Base):
     r"""The Hilbert transform of a flat density of states, with cut-off
 
     .. math::
@@ -125,7 +125,7 @@ class Wilson (Base):
         """:param half_bandwidth: :math:`D`, the half bandwidth """
         Base.__init__(self, half_bandwidth=half_bandwidth)
 
-    def __str__(self): return "Wilson(%s)"%half_bandwidth 
+    def __str__(self): return "Flat(%s)"%half_bandwidth 
 
     def __call__(self,G):
 
@@ -158,6 +158,8 @@ class Wilson (Base):
         numpy.seterr(**old_err)
         return G
 
+#backward compatibility
+Wilson = Flat
 
 ##################################################
 

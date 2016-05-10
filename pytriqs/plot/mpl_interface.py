@@ -41,8 +41,9 @@ def oplot (*ob_list, **opt_dict) :
     plot protocol as well as arrays.
     Options are the same as for the pyplot.plot function.
     """
-    plt.figure(num=opt_dict.pop('num', 1),
-               figsize=opt_dict.pop('figsize', figsize_default))
+    plt.figure(num=opt_dict.pop('num', plt.gcf().number))
+    # opt_dict.pop('num', 1),
+    #           figsize=opt_dict.pop('figsize', figsize_default))
     __oplot_impl(plt.plot, plt.xlabel,plt.ylabel,plt.legend, *ob_list,**opt_dict)
     # remove this in the notebook...
     #if hasattr(plt.figure(1), "show") : plt.figure(1).show()
@@ -99,8 +100,8 @@ def __oplot_impl (plot_fct, xlabel_fct, ylabel_fct, legend_fct, *ob_list, **opt_
                    raise RuntimeError, "Option %s is not understood in plot function : it is not an option of the object to be plotted, nor a matplotlib option"%m.group(0)
                 else :
                    raise
-            if 'xlabel' in curvedata : xlabel_fct(curvedata['xlabel'], fontsize=20)
-            if 'ylabel' in curvedata : ylabel_fct(curvedata['ylabel'], fontsize=20)
+            if 'xlabel' in curvedata : xlabel_fct(curvedata['xlabel']) #, fontsize=20)
+            if 'ylabel' in curvedata : ylabel_fct(curvedata['ylabel']) #, fontsize=20)
 
     legend_fct(loc = 1) #legend is built from the label
 
