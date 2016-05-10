@@ -7,7 +7,8 @@ Table of contents
 
    index
    install
-   documentation
+   reference
+   tutorials
    applications
    issues
    changelog
