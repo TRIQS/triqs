@@ -142,6 +142,7 @@ class cfunction :
       for a in args: # put back the default if there is none
         # treat the case when the type is const T *, or T* (e.g. const char *).
         # Need to regroup the first pieces.
+        assert len(a)>1, 'Incorrect signature %s: did you forget the name of the parameter ?'%a
         if a[0] == 'const' : a = [' '.join(a[:2])] + list(a[2:])
         if a[1] == '*' : a = [' '.join(a[:2])] + list(a[2:])
         if len(a) == 2 : (t,n),d = a,None
@@ -274,6 +275,7 @@ class pyfunction :
 
     def add_overload(self, **kw) :
         self.overloads.append(cfunction(**kw))
+        return self
 
     def _generate_doc(self) :
         if len(self.overloads) == 1 : #only one overload

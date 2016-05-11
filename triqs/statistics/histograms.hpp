@@ -57,10 +57,10 @@ namespace statistics {
   histogram() = default;
 
   // Copy, move constructors & assignment
-  histogram(histogram const&) = default;
-  histogram(histogram&&) = default;
-  histogram& operator=(histogram&&) = default;
-  histogram& operator=(histogram const&) = default;
+//  histogram(histogram const& h) = default;
+//  histogram(histogram&& h) = default;
+//  histogram& operator=(histogram&&) = default;
+//  histogram& operator=(histogram const&) = default;
 
   /// Bins a double into the histogram
   histogram& operator<<(double x) {

@@ -1037,7 +1037,7 @@ static PyObject * ${c.py_type}_${op_name} (PyObject* v, PyObject *w){
   %for overload in op.overloads :
   if (convertible_from_python<${overload.args[0][0]}>(v,false) && convertible_from_python<${overload.args[1][0]}>(w,false)) {
    try {
-    %if not op_name.startswith("inplace") :
+    %if not op_name.startswith("inplace") and not getattr(op, 'treat_as_inplace', False) :
      ${regular_type_if_view_else_type(overload.rtype)} r = convert_from_python<${overload.args[0][0]}>(v) ${overload._get_calling_pattern()} convert_from_python<${overload.args[1][0]}>(w);
      return convert_to_python(std::move(r)); // in two steps to force type for expression templates in C++
     %else:
