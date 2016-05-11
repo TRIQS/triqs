@@ -10,6 +10,7 @@
 // H = -J \sum_<ij> s_i s_j - h \sum_i s_i 
 // theoretical T_c = 2/log(1+sqrt(2)) for J = 1.0
 using namespace triqs::statistics;
+namespace mpi = triqs::mpi;
 /**************
  * config 
  **************/
@@ -56,7 +57,7 @@ struct flip {
   for(int i=-1;i<=1;i++){
    for(int j=-1;j<=1;j++){
     if ((i==0) != (j==0)) //xor
-     nns[counter++] = site{(s.i+i)%N, (s.j+j)%N};
+     nns[counter++] = site{(s.i+i+N)%N, (s.j+j+N)%N};
    }
   }
   return nns;
@@ -111,10 +112,10 @@ struct compute_m {
  }
 
  // get final answer M / (Z*N)
- void collect_results(triqs::mpi::communicator const &c) {
+ void collect_results(mpi::communicator const &c) {
 
-  double  sum_Z = mpi_reduce(Z, c);
-  double sum_M = mpi_reduce(M, c);
+  double sum_Z = mpi_reduce(Z,c);
+  double sum_M = mpi_reduce(M,c);
 
   if (c.rank() == 0) {
    std::cout << "@Beta:\t"<<config->beta<<"\tMagnetization:\t" << sum_M / (sum_Z*(config->N*config->N)) << std::endl ;
@@ -132,8 +133,8 @@ struct compute_m {
 int main(int argc, char* argv[]) {
 
  // initialize mpi
- triqs::mpi::environment env(argc, argv);
- triqs::mpi::communicator world;
+ mpi::environment env(argc, argv);
+ mpi::communicator world;
 
  double H=0.0,B=0.5;
  int N=20;
@@ -156,8 +157,7 @@ int main(int argc, char* argv[]) {
  int verbosity = (world.rank() == 0 ? 2 : 0);
 
  // Construct a Monte Carlo loop
- triqs::mc_tools::mc_generic<double> IsingMC(n_cycles, length_cycle, n_warmup_cycles,
-   random_name, random_seed, verbosity);
+ triqs::mc_tools::mc_generic<double> IsingMC(random_name, random_seed, 1.0, verbosity);
 
  // parameters of the model
  int length = N;
@@ -169,11 +169,12 @@ int main(int argc, char* argv[]) {
  configuration config(length, beta, J, field);
 
  // add moves and measures
- IsingMC.add_move(flip(config, IsingMC.rng()), "spin flip");
+ IsingMC.add_move(flip(config, IsingMC.get_rng()), "spin flip");
  IsingMC.add_measure(compute_m(config), "measure magnetization");
 
  // Run and collect results
- IsingMC.start(1.0, triqs::utility::clock_callback(-1));
+
+ IsingMC.warmup_and_accumulate(n_warmup_cycles, n_cycles, length_cycle, triqs::utility::clock_callback(-1));
  IsingMC.collect_results(world);
 
  return 0;

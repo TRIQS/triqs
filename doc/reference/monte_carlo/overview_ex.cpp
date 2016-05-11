@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
  int verbosity = (world.rank() == 0 ? 2 : 0);
 
  // construct a Monte Carlo loop
- triqs::mc_tools::mc_generic<double> SpinMC(n_cycles, length_cycle, n_warmup_cycles, random_name, random_seed, verbosity);
+ triqs::mc_tools::mc_generic<double> SpinMC(random_name, random_seed, 1.0, verbosity);
 
  // parameters of the model
  double beta = 0.3;
@@ -77,6 +77,7 @@ int main(int argc, char* argv[]) {
  SpinMC.add_measure(compute_m(&config), "magnetization measure");
 
  // Run and collect results
- SpinMC.start(1.0, triqs::utility::clock_callback(600));
+ SpinMC.warmup_and_accumulate(n_warmup_cycles, n_cycles, length_cycle, triqs::utility::clock_callback(600));
+
  SpinMC.collect_results(world);
 }

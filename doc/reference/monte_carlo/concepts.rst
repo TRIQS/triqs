@@ -25,7 +25,7 @@ Introduction & Motivations
     - writes move classes, modelling the Move concept.
     - writes measure classes, modelling the Measure concepts.
     - register them in a mc_generic object MC
-    - call `MC.start(...)`  ... and that is (almost) it  !
+    - call `MC.warmup_and_accumulate(...)`  ... and that is (almost) it  !
 
 
 

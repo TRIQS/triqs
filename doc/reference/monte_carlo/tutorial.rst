@@ -59,8 +59,7 @@ called ``SpinMC``::
     int random_seed = 374982 + world.rank() * 273894;
     int verbosity = (world.rank() == 0 ? 2: 0);
 
-    triqs::mc_tools::mc_generic<double> SpinMC(n_cycles, length_cycle, n_warmup_cycles,
-                                               random_name, random_seed, verbosity);
+    triqs::mc_tools::mc_generic<double> SpinMC(random_name, random_seed, initial_sign, verbosity);
 
 The ``SpinMC`` is an instance of the ``mc_generic`` class. First of all, note
 that you need to include the header ``<triqs/mc_tools/mc_generic.hpp>`` in
@@ -68,14 +67,14 @@ order to access the ``mc_generic`` class. The ``mc_generic`` class is a
 template on the type of the Monte Carlo sign. Usually this will be either a
 ``double`` or a ``complex<double>``.
 
-The first three parameters determine the length of the Monte Carlo cycles, the
-number of measurements and the warmup length. The definition of these variables
-has been detailed earlier in :ref:`montecarloloop`.
-
-The next two define the random number generator by giving its name in
+The first two arguments define the random number generator by giving its name in
 ``random_name`` (an empty string means the default generator, i.e. the Mersenne
 Twister) and the random seed in ``random_seed``. As you see the seed is
 different for all node with the use of ``world.rank()``.
+
+The third argument is the sign of the very first *configuration* of the
+simulation. Because the ``accept`` method only returns a ratio, this initial
+sign is used to determine the sign of all generated configurations.
 
 Finally, the last parameter sets the verbosity level. 0 means no output, 1 will
 output the progress level for the current node and 2 additionally shows some
@@ -172,18 +171,19 @@ Well, at this stage we're ready to launch our simulation. The moves
 and measures have been specified, so all you need to do now is start
 the simulation with::
 
-    SpinMC.start(1.0, triqs::utility::clock_callback(600));
+    SpinMC.warmup_and_accumulate(n_warmup_cycles, n_cycles, length_cycle, triqs::utility::clock_callback(600));
 
-The ``start`` method takes two arguments. The first is the sign
-of the very first *configuration* of the simulation. Because the
-``accept`` method only returns a ratio, this initial sign is used
-to determine the sign of all generated configurations.
+The ``warmup`` method takes several arguments. 
 
-The second argument is used to decide if the simulation must be stopped for
-some reason before it reaches the full number of cycles ``n_cycles``. For
-example, you might be running your code on a cluster that only allows for 1
-hour simulations. In that case, you would want your simulation to stop, say
-after 55 minutes, even if it didn't manage to do the ``n_cycles`` cycles.
+The first three parameters determine the warmup length, number of measurements
+and the length of the Monte Carlo cycles.  The definition of these variables
+has been detailed earlier in :ref:`montecarloloop`.
+
+The last argument is used to decide if the simulation must be stopped for some
+reason before it reaches the full number of cycles ``n_cycles``. For example,
+you might be running your code on a cluster that only allows for 1 hour
+simulations. In that case, you would want your simulation to stop, say after 55
+minutes, even if it didn't manage to do the ``n_cycles`` cycles.
 
 In practice, the second argument is a ``std::function<bool ()>`` which is
 called at the end of every cycle. If it returns 0 the simulation goes on, if it
@@ -192,9 +192,9 @@ returns 1 the simulation stops. In this example, we used a function
 defined in the header :file:`<triqs/utility/callbacks.hpp>`.  This way the
 simulation will last at most 10 minutes.
 
-Note that the simulation would end cleanly. The rest of the code can
-safely gather results from the statistics that has been accumulated, even
-if there have been less than ``n_cycles`` cycles.
+Note that the simulation would end cleanly. The rest of the code can safely
+gather results from the statistics that has been accumulated, even if there
+have been less than ``n_cycles`` cycles.
 
 
 End of the simulation - gathering results
