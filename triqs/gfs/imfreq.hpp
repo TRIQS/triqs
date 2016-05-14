@@ -101,10 +101,10 @@ namespace gfs {
   return make_gf_from_real_gf(positive_freq_view(g));
  }
  template <typename T, typename S, typename E> gf<imfreq, T, S> make_real_in_tau(gf_view<imfreq, T, S, E> g) {
-  return make_real_in_tau(g);
+  return make_real_in_tau(make_const_view(g));
  }
  template <typename T, typename S, typename E> gf<imfreq, T, S> make_real_in_tau(gf<imfreq, T, S, E> const &g) {
-  return make_real_in_tau(g);
+  return make_real_in_tau(make_const_view(g));
  }
 
  /// ---------------------------  hdf5 ---------------------------------
