@@ -259,7 +259,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             return r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
         if hasattr(r_class,"__factory_from_dict__"):
             assert self.is_group(key), "__factory_from_dict__ requires a subgroup"
-            f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
+            f = lambda K : SUB.__getitem1__(K,reconstruct_python_object)
             values = {self._key_decipher(str(K)):f(K) for K in SUB }  # str transforms unicode string to regular python string
             return r_class.__factory_from_dict__(key,values)
         raise ValueError, "Impossible to reread the class %s for group %s and key %s"%(r_class_name,self, key)

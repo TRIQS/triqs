@@ -7,6 +7,7 @@ add_python_test(test_example)
 
 # Many-body operators
 add_python_test(operator_python_test)
+add_python_test(operator_python2)
 
 # Some basic HDF IO stuff
 add_python_test(hdf5_io)
