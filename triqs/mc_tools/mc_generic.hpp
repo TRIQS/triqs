@@ -196,6 +196,7 @@ namespace mc_tools {
    *    =  =============================================
    */
   int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure = true) {
+   if (n_cycles==0) return 0;
    Timer.start();
    triqs::signal_handler::start();
    done_percent = 0;
