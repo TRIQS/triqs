@@ -3,7 +3,7 @@
 from wrap_generator import *
 
 # The module
-module = module_(full_name = "histograms", doc = "", app_name = "histograms")
+module = module_(full_name = "pytriqs.statistics.histograms", doc = "")
 
 # All the triqs C++/Python modules
 
@@ -15,6 +15,7 @@ module.add_include("<triqs/statistics/histograms.hpp>")
 module.add_preamble("""
 #include <triqs/python_tools/converters/pair.hpp>
 #include <triqs/python_tools/converters/arrays.hpp>
+#include <triqs/python_tools/converters/h5.hpp>
 using namespace triqs;
 using namespace statistics;
 """)
@@ -23,7 +24,11 @@ using namespace statistics;
 c = class_(
         py_type = "Histogram",  # name of the python class
         c_type = "histogram",   # name of the C++ class
+        c_type_absolute = "triqs::statistics::histogram",
         doc = r"Histogram",   # doc of the C++ class
+        is_printable = True,
+        hdf5 = True,
+        arithmetic = "add_only"
 )
 
 c.add_constructor("""(int a, int b)""",
@@ -38,9 +43,7 @@ c.add_constructor("""()""",
 c.add_method("""double mesh_point (int n)""",
              doc = """Point on the mesh """)
 
-c.add_property(name = "size",
-               getter = cfunction("size_t size ()"),
-               doc = """Number of bins """)
+c.add_len(doc = """Number of bins """)
 
 c.add_property(name = "limits",
                getter = cfunction("std::pair<double,double> limits ()"),
