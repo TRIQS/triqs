@@ -3,54 +3,33 @@
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
-#
-#
-# Compilers are sorted by group of interoperability
-# group 1 : fully compliant C++11 compiler
-#           gcc 4.8.1 and higher, clang >= 3.3
-# group 1 : older gcc, ok with workaround
-# group 2 : Intel 14.0 : almost C++11, but with Intel workaround
-# group 3 : Intel 13.0 : messy compiler...
-# group 0 : other
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  
- EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} --version  
-  OUTPUT_VARIABLE _compiler_output RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
+ # a little code to print the gcc version. More reliable than the --version output ...
+ try_run(run_result_var compile_result_var ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/test_gcc.cpp
+         RUN_OUTPUT_VARIABLE compiler_version)
  set(compiler_version_min "4.8.1")
  set(compiler_name "gcc")
+ if(compiler_version VERSION_LESS "4.8.1")
+   set(line_of_star "\n************************** FATAL ERROR ************************************\n")
+   MESSAGE( FATAL_ERROR "${line_of_star}You are using the ${compiler_name} compiler but your compiler is too old :\n TRIQS requires version >= ${compiler_version_min} while you have ${compiler_version}\n  ${line_of_star}")
+ endif()
  set(CMAKE_COMPILER_IS_GCC TRUE )
  set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -Wno-literal-suffix ")
- string(REGEX REPLACE ".*([2-5]\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
-
- #if(NOT compiler_version VERSION_LESS "4.9.0")
- # set (compiler_is_c14 ON)
- #endif()
-
+ 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+ 
+ try_run(run_result_var compile_result_var ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/test_clang.cpp
+         COMPILE_DEFINITIONS -std=c++14 RUN_OUTPUT_VARIABLE compiler_version)
+ if (NOT compile_result_var) 
+  MESSAGE (FATAL_ERROR "Clang compiler does not compile simple tests. Error was ${COMPILE_OUTPUT_VARIABLE}")
+ endif()
 
- EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} --version
-  OUTPUT_VARIABLE _compiler_output RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
+ MESSAGE(STATUS "Using clang version ${compiler_version}")
+
  set(CMAKE_COMPILER_IS_CLANG TRUE )
  set(compiler_name "clang")
- IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  # Apple which does not has the official clang version number ... 
-  string(REGEX REPLACE ".*LLVM ([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
-  # but this does not work if clang is not from Apple (compiled manually on the mac)
-  if (NOT ${compiler_version})
-  string(REGEX REPLACE ".* version ([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
-  endif()
- else()
-  string(REGEX REPLACE ".* version ([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
- endif()
- #message(STATUS "Compiler --version output = ${_compiler_output}")
- message(STATUS "Compiler version = ${compiler_version}")
- set( compiler_version_min "3.2")
-
- # does not always work ... To be fixed when clang 3.4 officially released and on OS X.
- #if(NOT compiler_version VERSION_LESS "3.4")
- # set (compiler_is_c14 ON)
- #endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  
@@ -69,18 +48,7 @@ else ()
  #message(FATAL_ERROR "Your C++ compiler does not support C++11.")
 endif ()
 
-
 MESSAGE( STATUS "Compiler is ${compiler_name} with version ${compiler_version}")
-
-# Check version. Does not work on OS X ... 
-IF(NOT ${CMAKE_SYSTEM_NAME}  MATCHES "Darwin")
-if(compiler_version VERSION_LESS ${compiler_version_min} )
- set(line_of_star "\n************************** FATAL ERROR ************************************\n")
- MESSAGE( FATAL_ERROR "${line_of_star}You are using the ${compiler_name} compiler but your compiler is too old :\n TRIQS requires version >= ${compiler_version_min} while you have ${compiler_version}\n  ${line_of_star}")
-endif(compiler_version VERSION_LESS ${compiler_version_min} )
-ENDIF()
-
-# Now add some definitions ...
 
 # on OS X : for clang, add the infamous -stdlib=libc++
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
