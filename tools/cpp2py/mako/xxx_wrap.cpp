@@ -5,8 +5,12 @@
 %for file in module.include_list :
 %if file.startswith('<'):
 #include ${file}
+%elif not file.startswith('_'):
+%if file.startswith('~'):
+#include "${file[1:]}"
 %else:
 #include "${file}"
+%endif
 %endif
 %endfor
 

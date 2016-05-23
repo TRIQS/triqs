@@ -1,7 +1,7 @@
 from wrap_generator import *
 
 # The module
-module = module_(full_name = "pytriqs.gf.local.multivar", doc = "Local multivariable Green functions ...")
+module = module_(full_name = "pytriqs.gf.local.multivar", doc = "Local multivariable Green functions ...", app_name="triqs")
 
 # All the triqs C++/Python modules
 module.use_module('gf')

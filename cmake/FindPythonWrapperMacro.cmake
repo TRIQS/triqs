@@ -38,7 +38,7 @@ macro (triqs_python_extension ModuleName)
  target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
 
  if (${ARGN} MATCHES "")
-   install (FILES ${converter_name} DESTINATION "include/triqs/py_converters")
+  install (FILES ${converter_name}.to_be_installed DESTINATION "include/triqs/py_converters" RENAME ${ModuleName}.hpp)
    install (TARGETS ${ModuleName} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ARGN}  )
  endif (${ARGN} MATCHES "")
 

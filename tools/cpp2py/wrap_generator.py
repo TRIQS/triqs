@@ -664,7 +664,7 @@ class module_ :
         - doc : doc string
 
         """
-        self.full_name = full_name if app_name is None else app_name+"."+full_name
+        self.full_name = full_name if app_name is None or app_name=="triqs" else app_name+"."+full_name
         self.name = full_name.rsplit('.',1)[-1]
         self.doc = doc
         self.app_name = app_name
@@ -781,7 +781,8 @@ class module_ :
         global _wrapped_types_list
         _wrapped_types_list += eval(l)
         if app_name is None:
-         self.add_include(hppfile)
+         self.add_include("~"+hppfile)
+         self.add_include('_<'+self.app_name+ '/py_converters/' +  modulename + '.hpp>')
         else:
          self.add_include('<'+app_name+ '/py_converters/' +  modulename + '.hpp>')
         #print "Loading triqs wrapped module %s"%modulename
