@@ -2,6 +2,7 @@ from __future__ import print_function
 from pytriqs.archive import *
 from pytriqs.utility.comparison_tests import *
 from pytriqs.gf.local import GfImFreq, GfImTime, GfReFreq, GfReTime, GfLegendre, BlockGf
+from pytriqs.gf.local.multivar import *
 from pytriqs.operators import *
 from pytriqs.arrays import BlockMatrix
 import sys
@@ -26,7 +27,7 @@ def compare(key, a, b, level, precision):
                 compare(key + '/'+ k, a[k], b[k], level + 1, precision)
 
         # The TRIQS object which are comparable starts here ....
-        elif t in [GfImFreq, GfImTime, GfReFreq, GfReTime, GfLegendre] :
+        elif t in [GfImFreq, GfImTime, GfReFreq, GfReTime, GfLegendre, GfImFreq_x_ImFreqTv3] :
             assert_gfs_are_close(a,b,precision)
 
         elif t in [BlockGf]:
