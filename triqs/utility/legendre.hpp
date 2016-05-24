@@ -34,8 +34,11 @@ namespace utility {
  // This is T_{nl} following Eq.(E2) of our paper
  inline std::complex<double> legendre_T(int n, int l) {
 
-  bool neg_n = n < 0;
-  n = std::abs(n);
+  bool neg_n = false;
+  if(n < 0) {
+   neg_n = true;
+   n = std::abs(n+1);
+  }
 
   // note: cyl_bessel_j(l,x) give the Bessel functions of the first kind J_l (x)
   // one then gets the spherical Bessel with j_l (x) = \sqrt{\pi / (2x)} J_{l+0.5} (x)
