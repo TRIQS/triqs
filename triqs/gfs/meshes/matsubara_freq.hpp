@@ -224,14 +224,13 @@ namespace gfs {
   // not implemented: the _opt need to be serialized.
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   ar &TRIQS_MAKE_NVP("beta", _dom.beta);
-   ar &TRIQS_MAKE_NVP("statistic", _dom.statistic);
-   ar &TRIQS_MAKE_NVP("n_pts", _n_pts);
-   ar &TRIQS_MAKE_NVP("kind", _opt);
-   ar &TRIQS_MAKE_NVP("_first_index", _first_index);
-   ar &TRIQS_MAKE_NVP("_last_index", _last_index);
-   ar &TRIQS_MAKE_NVP("_first_index_window", _first_index_window);
-   ar &TRIQS_MAKE_NVP("_last_index_window", _last_index_window);
+   ar & _dom;
+   ar & _n_pts;
+   ar & _opt;
+   ar & _first_index;
+   ar & _last_index;
+   ar & _first_index_window;
+   ar & _last_index_window;
   }
   
   // -------------------- print  -------------------
