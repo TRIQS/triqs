@@ -113,7 +113,8 @@ namespace statistics {
   }
 
   /// Reduce the histogram from all nodes
-  friend histogram mpi_reduce(histogram const& h, mpi::communicator c = {}, int root = 0, bool all = false) {
+  friend histogram mpi_reduce(histogram const& h, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+   assert(op == MPI_SUM);
    auto h2 = h;
    h2._data = mpi_reduce(h._data, c, root, all);
    h2._n_data_pts = mpi_reduce(h._n_data_pts, c, root, all);
