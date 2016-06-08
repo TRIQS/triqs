@@ -336,12 +336,14 @@ class BlockGf(object):
     def _plot_(self, kw):
         """ Implement the plot protocol"""
         r = sum([ g._plot_(dict(**kw)) for sig,g in self],[])
+        self.name, name_kept = self.name, kw.pop('name', self.name)
         for opt in ['x_window', 'RI', 'mode']:
             kw.pop(opt,'') # consumes
 	first_g_name = self.__GFlist[0].name
   	ylabel = r[0]['ylabel'].replace(first_g_name, self.name) if first_g_name else self.name
 	for D in r:
            D['ylabel'] = ylabel# remove the ylabel of the elements
+        self.name = name_kept
         return r
 
    #--------------------------------------------------------------------------
