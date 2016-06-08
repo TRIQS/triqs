@@ -49,10 +49,22 @@ def init_tv( mesh = None, shape = None, name = 'g', **kwargs):
 #--------------   PLOT   ---------------------------------------
 
 def plot(self, opt_dict):
-    """ Plot protocol. opt_dict can contain:
-         *:param RI: 'R', 'I', 'RI' [ default]
-         *:param x_window: (xmin,xmax) or None [default]
-         *:param name: a string [default = '']. If not '', it remplaces the name of the function just for this plot.
+    r"""
+    Plot protocol for GfReFreq objects.
+
+    Parameters
+    ----------
+    opt_dict: dictionary
+              Can contain:
+              - mode: string, default None
+                      Mode to plot the Green's function in:
+                      -- 'R': real part only
+                      -- 'I': imaginary part only
+                      -- 'S': spectral function
+              - x_window: tuple, default None 
+                          (xmin,xmax)
+              - name: string, default = ''
+                      If not '', it remplaces the name of the function just for this plot.
     """
     return _gf_plot.plot_base(self, opt_dict,  r'$\omega$', lambda name : r'%s$(\omega)$'%name, list(self.mesh), allow_spectral_mode = True)
 

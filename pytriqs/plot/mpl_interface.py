@@ -1,4 +1,4 @@
-################################################################################
+##########################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
@@ -17,95 +17,89 @@
 # You should have received a copy of the GNU General Public License along with
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
-################################################################################
+##########################################################################
 
-__all__ = ['plt','oplot', 'oploti', 'oplotr', 'subplots','figsize_default','use_amsmath']
+__all__ = ['plt', 'oplot', 'oploti', 'oplotr', 'subplots']
 
-import numpy, matplotlib as mpl, matplotlib.pylab as plt
+import numpy
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 from protocol import plot_protocol_apply
 from matplotlib import rc
 
 try:
-  subplots = mpl.pyplot.subplots
+    subplots = mpl.pyplot.subplots
 except:
-  def subplots(nrows=1, ncols=1, sharex=False, sharey=False, squeeze=True, subplot_kw=None, **fig_kw):
-    print "subplots not supported"
-    return plt.figure(1), [plt.subplot(nrows,ncols,x+1) for x in range(nrows*ncols)]
+    def subplots(nrows=1, ncols=1, sharex=False, sharey=False, squeeze=True, subplot_kw=None, **fig_kw):
+        print "subplots not supported"
+        return plt.figure(1), [plt.subplot(nrows, ncols, x + 1) for x in range(nrows * ncols)]
 
-figsize_default = (12,8)
-
-
-def oplot (*ob_list, **opt_dict) :
+def oplot(obj, *opt_list, **opt_dict):
     """
     A thin layer above pyplot.plot function that allows plotting objects with
     plot protocol as well as arrays.
     Options are the same as for the pyplot.plot function.
     """
     plt.figure(num=opt_dict.pop('num', plt.gcf().number))
-    # opt_dict.pop('num', 1),
-    #           figsize=opt_dict.pop('figsize', figsize_default))
-    __oplot_impl(plt.plot, plt.xlabel,plt.ylabel,plt.legend, *ob_list,**opt_dict)
-    # remove this in the notebook...
-    #if hasattr(plt.figure(1), "show") : plt.figure(1).show()
+    __oplot_impl(plt, plt.xlabel, plt.ylabel, plt.legend, obj, *opt_list, **opt_dict)
 
-def oplotr (*ob_list, **opt_dict) :
+
+def oplotr(obj, *opt_list, **opt_dict):
     """
-    Same as oplot, but enforce option RI='R'
+    Same as oplot, but enforce option mode='R'
     """
-    opt_dict['RI'] = 'R'
-    oplot(*ob_list, **opt_dict)
+    opt_dict['mode'] = 'R'
+    oplot(obj, *opt_list, **opt_dict)
 
 
-def oploti (*ob_list, **opt_dict) :
+def oploti(obj, *opt_list, **opt_dict):
     """
-    Same as oplot, but enforce option RI='I'
+    Same as oplot, but enforce option mode='I'
     """
-    opt_dict['RI'] = 'I'
-    oplot(*ob_list, **opt_dict)
+    opt_dict['mode'] = 'I'
+    oplot(obj, *opt_list, **opt_dict)
 
 
-mpl.axes.Axes.oplot = lambda self, *ob_list, **opt_dict : __oplot_impl(self.plot,self.set_xlabel, self.set_ylabel, self.legend, *ob_list,**opt_dict)
+mpl.axes.Axes.oplot = lambda self, obj, *opt_list, **opt_dict: __oplot_impl(self, self.set_xlabel, self.set_ylabel, self.legend, obj, *opt_list, **opt_dict)
 
-def __oplot_impl (plot_fct, xlabel_fct, ylabel_fct, legend_fct, *ob_list, **opt_dict) :
+
+def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, *opt_list, **opt_dict):
     """
     A thin layer above pyplot.plot function that allows plotting objects with
     plot protocol as well as arrays.
     Options are the same as for the pyplot.plot function.
     """
 
-    def objs() : # filter the arguments for the format strings ...
-        i, l = 0, []
-        while i< len (ob_list) :
-            if i < len(ob_list) - 1 and type(ob_list[i+1]) == type("") :
-                res = ob_list[i], [ ob_list[i+1] ]
-                i+=2
-            else :
-                res =  ob_list[i], [ ]
-                i+=1
-            yield res
+    for curve_dict in plot_protocol_apply(obj, opt_dict, plt.xlim):
 
-    for ob, OptionsList in objs() :
-        opt = opt_dict.copy() # the plot protocol will consume the dict....
-        #ob2 = eval_expr_or_pass (ob) # if it is a lazy_expr, it is time to evaluate it !
-        for curvedata in plot_protocol_apply(ob, opt, plt.xlim ) :
-            X,Y = curvedata['xdata'],curvedata['ydata']
-            d = { 'label' :  curvedata['label'] }
-            d.update(opt)
-            try :
-                plot_fct(X,Y,*OptionsList,**d)
-            except TypeError, e:
-                import re
-                m = re.search('(?<=There is no line property )"(.*)"', str(e) )
-                if m :
-                   raise RuntimeError, "Option %s is not understood in plot function : it is not an option of the object to be plotted, nor a matplotlib option"%m.group(0)
-                else :
-                   raise
-            if 'xlabel' in curvedata : xlabel_fct(curvedata['xlabel']) #, fontsize=20)
-            if 'ylabel' in curvedata : ylabel_fct(curvedata['ylabel']) #, fontsize=20)
+        import warnings
+        if type in curve_dict:
+            warnings.warn("The keyword 'type' is deprecated. Remove it.")
+            curve_dict.pop('type',None)
 
-    legend_fct(loc = 1) #legend is built from the label
+        plt_fct = getattr(top, curve_dict.pop('plot_function', 'plot'))
+        X = curve_dict.pop('xdata')
+        Y = curve_dict.pop('ydata')
+
+        # Sort out axis labels and legend
+        xlabel = curve_dict.pop('xlabel',None)
+        ylabel = curve_dict.pop('ylabel',None)
+        if xlabel: xlabel_fct(xlabel)
+        if ylabel: ylabel_fct(ylabel)
+        is_legend = curve_dict.pop('legend',True)
+
+        try:
+            plt_fct(X, Y, *opt_list, **curve_dict)
+        except TypeError, e:
+            import re
+            m = re.search('(?<=There is no line property )"(.*)"', str(e))
+            if m:
+                raise RuntimeError, "Plot option %s not understood: it is neither an option of the object to be plotted, nor a matplotlib option." % m.group(0)
+            else:
+                raise
+
+        if is_legend: legend_fct(loc=1)  # legend is built from the label
 
 def use_amsmath():
-  rc('text', usetex=True)
-  rc('text.latex', preamble="\usepackage{amsmath}")
-
+    rc('text', usetex=True)
+    rc('text.latex', preamble="\usepackage{amsmath}")
