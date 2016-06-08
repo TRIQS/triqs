@@ -33,7 +33,7 @@ Other
    :maxdepth: 1
 
    reference/conventions
-   reference/wrap_generator/contents
+   reference/cpp2py/contents
    reference/provenance/contents
    versions
    faqs

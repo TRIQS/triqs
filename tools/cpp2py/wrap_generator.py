@@ -58,7 +58,10 @@ class cfunction :
     def __init__(self, signature, calling_pattern = None, no_self_c = False, is_constructor = False,
              is_method = False,  is_static = False, release_GIL_and_enable_signal = False, c_name = None, doc = '') :
       """
-        - signature :
+        Parameters
+        ----------
+
+        signature : string
              signature of the function, with types, parameter names and default value
              rtype( arg1 name1, arg2 name2 = default2, ....)
              it can be :
@@ -69,7 +72,7 @@ class cfunction :
                 - a dict [expert only] : rtype -> string , args -> list of tuples [ (c_type, variable_name, default_value)]
                            where rtype is the C++ type returned by the function.
 
-        - calling_pattern :
+        calling_pattern : string
               A string containing a piece of C++ code to call the C++ function.
               This code can use :
                 - self_c  : a reference to the C++ object (except for constructor, and static method).
@@ -82,22 +85,26 @@ class cfunction :
               assuming the C++ function has exactly the signature given by the signature parameter of this function
               including the c_name in it (which is then mandatory).
 
-        - no_self_c : boolean. do not generate self_c reference in C++ code, in some rare calling_pattern. Avoid a compiler warning.
-        - is_constructor : boolean
-        - is_method : boolean
-        - is_static : boolean. If True, it is a static method
-        - release_GIL_and_enable_signal [expert only] :
-           - For long functions in pure C++.
-           - If True, the GIL is released in the call of the C++ function and restored after the call.
-           - It also saves the signal handler of python and restores it after the call,
-             and enables the C++ triqs signal_handler.
-           - This allows e.g. to intercept Ctrl-C during the long C++ function.
-           - **Requirement** :
-              The function wrapped must be pure C++, i.e.  no call whatsoever to the python C API, directly or indirectly.
-              otherwise the behaviour is undefined.
-        - doc : the doc string.
-        - c_name : Internal use only.
+        no_self_c : boolean. 
+                    Do not generate self_c reference in C++ code, in some rare calling_pattern. Avoid a compiler warning.
+        is_constructor : boolean
+        is_method : boolean
+        is_static : boolean. 
+                    If True, it is a static method
+        release_GIL_and_enable_signal : boolean, expert only
+          - For long functions in pure C++.
+          - If True, the GIL is released in the call of the C++ function and restored after the call.
+          - It also saves the signal handler of python and restores it after the call,
+            and enables the C++ triqs signal_handler.
+          - This allows e.g. to intercept Ctrl-C during the long C++ function.
+          - **Requirement** :
+             The function wrapped must be pure C++, i.e.  no call whatsoever to the python C API, directly or indirectly.
+             otherwise the behaviour is undefined.
+        doc : string
+            the doc string.
+        
       """
+      #c_name : internal use only
       self._calling_pattern = calling_pattern
       self.is_constructor = is_constructor
       self.no_self_c = no_self_c
@@ -301,41 +308,54 @@ class class_ :
     hidden_python_function = {} # global dict of the python function to add to the module, hidden for the user, for precompute and so on
     def __init__(self, py_type, c_type, c_type_absolute = None, hdf5 = False, arithmetic = None, serializable = None, is_printable = False, doc = '', comparisons ='') :
       """
-        - py_type : Name given in Python
-        - c_type : C++ type to be wrapped.
-        - c_type_absolute : full path of c_type, no using, no alias (need for the py_converter hpp file)
-        - hdf5 : generate the hdf5 write/read function from C++ triqs hdf5 protocol and register them in the hdf_archive
-        - arithmetic : determines the operations to be implemented.
-            - The idea is to give an abstract description of the mathematical structure to be implemented :
-              an algebra, a group, a vector space, and so on.
-              The generator will then implement all necessary functions, by calling their C++ counterparts.
-            - Possible values :
-                 - ("abelian_group") : implements + and -
-                 - ("vector_space", Scalar) : implements a vector_space, with scalar Scalar
-                 - ("algebra", Scalar) : implements an algebra, with scalar Scalar
-                 - ("algebra_with_unit", with_options..., Scalars...) :
-                    implements an algebra, with:
-                      - scalars Scalar... : the scalars
-                      - with_options is (possibly empty) list of options :
-                          - with_unit :  +/- of an element with a scalar (injection of the scalar with the unit)
-                          - with_unary_minus  : implement unary minus
-                 - "add_only" : implements only +
-                 - with_inplace_operators  : option to deduce the +=, -=, ...
-                   operators from +,-, .. It deduces the possibles terms to put at the rhs, looking at the
-                   case of the +,- operators where the lhs is of the type of self.
-                   NB : The operator is mapped to the corresponding C++ operators (for some objects, this may be faster)
-                   so it has to be defined in C++ as well....
-                 - .... more to be defined.
-        - serializable : Whether and how the object is to be serialized.  Possible values are :
-             - "tuple" : reduce it to a tuple of smaller objects, using the
-                boost serialization compatible template in C++, and the converters of the smaller objects.
-             - "via_string" : serialize via a string, made by
-                triqs::serialize/triqs::deserialize
-                On modern hdf5 (>1.8.9) it uses hdf5 to make the string, on older version it will use boost serialization
-                (which generates a very heavy code, sometimes can x2 the code size of the wrapper, just for this function !).
-        - is_printable = If true, generate the str, repr from the C++ << stream operator
-        - comparisons = a chain with all operators separated by space, e.g. "== != < >"
-        - doc : the doc string.
+        Parameters
+        ----------
+
+        py_type : string
+                Name given in Python
+        c_type : string
+                C++ type to be wrapped.
+        c_type_absolute : string
+                full path of c_type, no using, no alias (need for the py_converter hpp file)
+        hdf5 : boolean
+                generate the hdf5 write/read function from C++ triqs hdf5 protocol and register them in the hdf_archive
+        arithmetic : tuple of strings
+
+          Determines the operations to be implemented.
+          - The idea is to give an abstract description of the mathematical structure to be implemented :
+            an algebra, a group, a vector space, and so on.
+            The generator will then implement all necessary functions, by calling their C++ counterparts.
+          - Possible values :
+               - ("abelian_group") : implements + and -
+               - ("vector_space", Scalar) : implements a vector_space, with scalar Scalar
+               - ("algebra", Scalar) : implements an algebra, with scalar Scalar
+               - ("algebra_with_unit", with_options..., Scalars...) :
+                  implements an algebra, with:
+                    - scalars Scalar... : the scalars
+                    - with_options is (possibly empty) list of options :
+                        - with_unit :  +/- of an element with a scalar (injection of the scalar with the unit)
+                        - with_unary_minus  : implement unary minus
+               - "add_only" : implements only +
+               - with_inplace_operators  : option to deduce the +=, -=, ...
+                 operators from +,-, .. It deduces the possibles terms to put at the rhs, looking at the
+                 case of the +,- operators where the lhs is of the type of self.
+                 NB : The operator is mapped to the corresponding C++ operators (for some objects, this may be faster)
+                 so it has to be defined in C++ as well....
+               - .... more to be defined.
+        serializable : boolean
+           Whether and how the object is to be serialized.  Possible values are :
+           - "tuple" : reduce it to a tuple of smaller objects, using the
+              boost serialization compatible template in C++, and the converters of the smaller objects.
+           - "via_string" : serialize via a string, made by
+              triqs::serialize/triqs::deserialize
+              On modern hdf5 (>1.8.9) it uses hdf5 to make the string, on older version it will use boost serialization
+              (which generates a very heavy code, sometimes can x2 the code size of the wrapper, just for this function !).
+        is_printable : boolean
+             If true, generate the str, repr from the C++ << stream operator
+        comparisons : boolean 
+             a chain with all operators separated by space, e.g. "== != < >"
+        doc : string
+             the doc string.
       """
       self.c_type = c_type
       self.c_type_absolute = c_type_absolute or c_type
@@ -437,34 +457,44 @@ class class_ :
 
     def add_constructor(self, signature, calling_pattern = None, python_precall = None, python_postcall = None, build_from_regular_type_if_view = True, doc = ''):
         """
-        - signature : signature of the function, with types, parameter names and defaut value
-             rtype( arg1 name1, arg2 name2 = default2, ....)
-             signature can be :
-                - a string of 2 possible forms (i.e. c_name can be omitted) :
-                     - rtype (arg1 name1, arg2 name2 = default2, ....)
-                     - rtype c_name ( arg1 name1, arg2 name2 = default2, ....)
-                - a dict : rtype -> string , args -> list of tuples [ (c_type, variable_name, default_value)]
-                - rtype : the C++ type returned by the function. None for constructor
-             default_value is None when there is no default.
-        - calling_pattern [expert only]:
-              - Pattern to rewrite the call of the c++ constructor.
-              - It is a string, argument name and defining a result of the c_type
-                e.g., the default pattern is ::
-                auto result = c_type (a,b,c)
-        - build_from_regular_type_if_view : boolean.
-              - If True, and the type is a view, the wrapper calls the C++ constructor *of the corresponding regular type*.
-              - If False, it simply calls the constructor the C++ type.
-              - This allows to construct object which are wrapped by view (like gf e.g.), by calling the
-                constructor of the regular type, much simpler, than the view.
-        - python_precall :
-            - A string of the type "module.function_name"
-              where function_name is a python function to be called before the call of the C++ function.
-            - It must take  F(*args, **kw) and return (args, kw)
-        - python_postcall :
-            - A string of the type "module.function_name"
-              where function_name is a python function to be called after the call of the C++ function.
-            - The function must take a python object, and return one...
-        - doc : the doc string.
+        Parameters
+        ----------
+
+        signature : string
+            signature of the function, with types, parameter names and defaut value
+            rtype( arg1 name1, arg2 name2 = default2, ....)
+            signature can be :
+               - a string of 2 possible forms (i.e. c_name can be omitted) :
+                    - rtype (arg1 name1, arg2 name2 = default2, ....)
+                    - rtype c_name ( arg1 name1, arg2 name2 = default2, ....)
+               - a dict : rtype -> string , args -> list of tuples [ (c_type, variable_name, default_value)]
+               - rtype : the C++ type returned by the function. None for constructor
+            default_value is None when there is no default.
+        
+        calling_pattern : string, expert only
+            - Pattern to rewrite the call of the c++ constructor.
+            - It is a string, argument name and defining a result of the c_type
+              e.g., the default pattern is ::
+              auto result = c_type (a,b,c)
+        
+        build_from_regular_type_if_view : boolean.
+            - If True, and the type is a view, the wrapper calls the C++ constructor *of the corresponding regular type*.
+            - If False, it simply calls the constructor the C++ type.
+            - This allows to construct object which are wrapped by view (like gf e.g.), by calling the
+              constructor of the regular type, much simpler, than the view.
+        
+        python_precall : string
+          - A string of the type "module.function_name"
+            where function_name is a python function to be called before the call of the C++ function.
+          - It must take  F(*args, **kw) and return (args, kw)
+        
+        python_postcall : string
+          - A string of the type "module.function_name"
+            where function_name is a python function to be called after the call of the C++ function.
+          - The function must take a python object, and return one...
+        
+        doc : string
+            the doc string.
         """
         f = cfunction(signature, calling_pattern = calling_pattern, is_constructor = True, is_method = True,  doc = doc)
         all_args = ",".join([ ('*' if _is_a_wrapped_type(t) else '') + n  for t,n,d in f.args])
@@ -487,45 +517,58 @@ class class_ :
         """
         Add a C++ overload to a method of name name.
 
-        - signature : signature of the function, with types, parameter names and defaut value
-             rtype( arg1 name1, arg2 name2 = default2, ....)
-             signature can be :
-                - a string of 2 possible forms (i.e. c_name can be omitted) :
-                    - rtype (arg1 name1, arg2 name2 = default2, ....)
-                    - rtype c_name ( arg1 name1, arg2 name2 = default2, ....)
-                - a dict : rtype -> string , args -> list of tuples [ (c_type, variable_name, default_value)]
-                - rtype : the C++ type returned by the function. None for constructor
-             default_value is None when there is no default.
-        - name : name given in Python
-                 If None, the C++ name extracted from the signature is used.
-        - calling_pattern :
-            - Pattern to rewrite the call of the c++ function,
-            - It is a string, using self_c, argument name and defining result at the end if rtype != void
-              e.g., the default pattern is :
-              auto result = self_c.method_name(a,b,c).
-            - If None, the signature must contain c_name
-        - no_self_c : boolean. do not generate self_c reference in C++ code, in
-                      some rare calling_pattern. Avoid a compiler warning.
-        - is_method : boolean
-        - is_static : boolean. Is is a static method
-        - python_precall :
-            - A string of the type "module.function_name"
-              where function_name is a python function to be called before the call of the C++ function.
-            - It must take  F(*args, **kw) and return (args, kw)
-        - python_postcall :
-            - A string of the type "module.function_name"
-              where function_name is a python function to be called after the call of the C++ function.
-            - The function must take a python object, and return one...
-        - doc : the doc string.
-        - release_GIL_and_enable_signal [expert only] :
-           - For long functions in pure C++.
-           - If True, the GIL is released in the call of the C++ function and restored after the call.
-           - It also saves the signal handler of python and restores it after the call,
-             and enables the C++ triqs signal_handler.
-           - This allows e.g. to intercept Ctrl-C during the long C++ function.
-           - **Requirement** :
-              The function wrapped must be pure C++, i.e.  no call whatsoever to the python C API, directly or indirectly.
-              otherwise the behaviour is undefined.
+        Parameters
+        ----------
+
+        signature : string
+            signature of the function, with types, parameter names and defaut value
+            rtype( arg1 name1, arg2 name2 = default2, ....)
+            signature can be :
+              - a string of 2 possible forms (i.e. c_name can be omitted) :
+                  - rtype (arg1 name1, arg2 name2 = default2, ....)
+                  - rtype c_name ( arg1 name1, arg2 name2 = default2, ....)
+              - a dict : rtype -> string , args -> list of tuples [ (c_type, variable_name, default_value)]
+              - rtype : the C++ type returned by the function. None for constructor
+            default_value is None when there is no default.
+        
+        name : string
+               name given in Python
+               If None, the C++ name extracted from the signature is used.
+        
+        calling_pattern : string
+          - Pattern to rewrite the call of the c++ function,
+          - It is a string, using self_c, argument name and defining result at the end if rtype != void
+            e.g., the default pattern is :
+            auto result = self_c.method_name(a,b,c).
+          - If None, the signature must contain c_name
+        no_self_c : boolean. 
+                    do not generate self_c reference in C++ code, in
+                    some rare calling_pattern. Avoid a compiler warning.
+        is_method : boolean
+        is_static : boolean
+                    Is is a static method
+        python_precall : string
+          - A string of the type "module.function_name"
+            where function_name is a python function to be called before the call of the C++ function.
+          - It must take  F(*args, **kw) and return (args, kw)
+        
+        python_postcall : string
+          - A string of the type "module.function_name"
+            where function_name is a python function to be called after the call of the C++ function.
+          - The function must take a python object, and return one...
+        
+        doc : string
+              the doc string.
+        
+        release_GIL_and_enable_signal : boolean, expert only
+         - For long functions in pure C++.
+         - If True, the GIL is released in the call of the C++ function and restored after the call.
+         - It also saves the signal handler of python and restores it after the call,
+           and enables the C++ triqs signal_handler.
+         - This allows e.g. to intercept Ctrl-C during the long C++ function.
+         - **Requirement** :
+            The function wrapped must be pure C++, i.e.  no call whatsoever to the python C API, directly or indirectly.
+            otherwise the behaviour is undefined.
        """
         f = cfunction(signature, calling_pattern = calling_pattern, no_self_c = no_self_c, is_constructor = False,
              is_method = True,  is_static = is_static, release_GIL_and_enable_signal = release_GIL_and_enable_signal, doc = doc, c_name = c_name or name)
@@ -551,18 +594,28 @@ class class_ :
 
     def add_iterator(self, c_type = "const_iterator", c_cast_type = None, begin = "std::begin", end = "std::end") :
         """
-          Add an iterator, wrapping a C++ iterator.
-          Parameters :
-           - c_type : type of the C++ variable
-           - c_cast_type : If not None, the result of the C++ iterator dereference if converted to the cast_type.
-           - begin, end :
+        Add an iterator, wrapping a C++ iterator.
+        
+        Parameters
+        ----------
+
+        c_type : string
+                 type of the C++ variable
+        c_cast_type : string
+                 If not None, the result of the C++ iterator dereference if converted to the cast_type.
+        begin, end : string
+                 Functions to find begin and end.
         """
         self.iterator = self._iterator(c_type, c_cast_type, begin, end)
 
     def add_pure_python_method(self, f, rename = None):
         """
         Add a method name (or an overload of method name).
-        f can be :
+
+        Parameters
+        ----------
+        
+        f : string or function
            - a string module1.module2.fnt_name
            - a function in python
         """
@@ -583,8 +636,20 @@ class class_ :
         else : raise ValueError, "argument f must be callable or a string"
 
     class _member :
-        def __init__(self, c_name, c_type, py_name, read_only, doc) :
-          self.c_name, self.c_type, self.py_name, self.doc, self.read_only = c_name, c_type, py_name or c_name, doc, read_only
+        def __init__(self, c_name, c_type, py_name, read_only, doc):
+            """
+            Parameters
+            ----------
+
+            c_name : string
+                     name in C
+            c_type : string
+                     type in C
+            py_name : string
+                     name in Python
+
+            """
+            self.c_name, self.c_type, self.py_name, self.doc, self.read_only = c_name, c_type, py_name or c_name, doc, read_only
 
         def _generate_doc(self) :
           doc = "\n".join([ "   " + x.strip() for x in self.doc.split('\n')])
@@ -594,12 +659,20 @@ class class_ :
     def add_member(self, c_name, c_type, py_name = None, read_only = False, doc = ''):
         """
         Add a class member
-        Parameters :
-           - c_name : name of the variable in C++
-           - c_type : type of the C++ variable
-           - py_name : name of the variable in python. If None, use c_name.
-           - read_only : bool
-           - doc : the doc string.
+        
+        Parameters
+        ----------
+        c_name : string
+                 name of the variable in C++
+        c_type : string
+                 type of the C++ variable
+        py_name : string
+                  name of the variable in python. If None, use c_name.
+        read_only : boolean
+                    is a read only parameter
+
+        doc : string
+              the doc string.
         """
         self.members.append( self._member(c_name, c_type, py_name, read_only, doc))
 
@@ -615,7 +688,9 @@ class class_ :
     def add_property(self,  getter, setter = None, name = None, doc = ''):
         """
         Add a property
-        Parameters :
+        
+        Parameters
+        ----------
          - getter : the cfunction representing the get part
          - setter : the cfunction representing the set part or None if the property if read only
          - name : name in python. If None, try to use the C++ name of the getter.
@@ -669,8 +744,14 @@ class module_ :
     """
     def __init__(self, full_name,  doc = '', app_name = None) :
         """
-        - full_name = complete name of the module (after install, e.g.  pytriqs.gf.local.gf
-        - doc : doc string
+        Parameters
+        ----------
+
+        full_name : string
+                    complete name of the module (after install, e.g.  pytriqs.gf.local.gf)
+
+        doc : string 
+              doc string
 
         """
         self.full_name = full_name if app_name is None or app_name=="triqs" else app_name+"."+full_name
@@ -701,41 +782,53 @@ class module_ :
         """
         Add a C++ overload to function of the module
 
-        - signature : signature of the function, with types, parameter names and defaut value
-             rtype( arg1 name1, arg2 name2 = default2, ....)
-             signature can be :
-                - a string of 2 possible forms (i.e. c_name can be omitted) :
-                    - rtype (arg1 name1, arg2 name2 = default2, ....)
-                    - rtype c_name ( arg1 name1, arg2 name2 = default2, ....)
-                - a dict : rtype -> string , args -> list of tuples [ (c_type, variable_name, default_value)]
-                - rtype : the C++ type returned by the function. None for constructor
-             default_value is None when there is no default.
-        - name : name given in Python
-                 If None, the C++ name extracted from the signature is used.
-        - calling_pattern :
-            - Pattern to rewrite the call of the c++ function,
-            - It is a string, using self_c, argument name and defining result at the end if rtype != void
-              e.g., the default pattern is :
-              auto result = self_c.method_name(a,b,c).
-            - If None, the signature must contain c_name
-        - python_precall :
-            - A string of the type "module.function_name"
-              where function_name is a python function to be called before the call of the C++ function.
-            - It must take  F(*args, **kw) and return (args, kw)
-        - python_postcall :
-            - A string of the type "module.function_name"
-              where function_name is a python function to be called after the call of the C++ function.
-            - The function must take a python object, and return one...
-        - doc : the doc string.
-        - release_GIL_and_enable_signal [expert only] :
-           - For long functions in pure C++.
-           - If True, the GIL is released in the call of the C++ function and restored after the call.
-           - It also saves the signal handler of python and restores it after the call,
-             and enables the C++ triqs signal_handler.
-           - This allows e.g. to intercept Ctrl-C during the long C++ function.
-           - **Requirement** :
-              The function wrapped must be pure C++, i.e.  no call whatsoever to the python C API, directly or indirectly.
-              otherwise the behaviour is undefined.
+        Parameters
+        ----------
+
+        signature : string
+           signature of the function, with types, parameter names and defaut value
+           rtype( arg1 name1, arg2 name2 = default2, ....)
+           signature can be :
+              - a string of 2 possible forms (i.e. c_name can be omitted) :
+                  - rtype (arg1 name1, arg2 name2 = default2, ....)
+                  - rtype c_name ( arg1 name1, arg2 name2 = default2, ....)
+              - a dict : rtype -> string , args -> list of tuples [ (c_type, variable_name, default_value)]
+              - rtype : the C++ type returned by the function. None for constructor
+           default_value is None when there is no default.
+        
+        name : string 
+               name given in Python
+               If None, the C++ name extracted from the signature is used.
+
+        calling_pattern : string
+          - Pattern to rewrite the call of the c++ function,
+          - It is a string, using self_c, argument name and defining result at the end if rtype != void
+            e.g., the default pattern is :
+            auto result = self_c.method_name(a,b,c).
+          - If None, the signature must contain c_name
+        
+        python_precall : string
+          - A string of the type "module.function_name"
+            where function_name is a python function to be called before the call of the C++ function.
+          - It must take  F(*args, **kw) and return (args, kw)
+
+        python_postcall : string
+          - A string of the type "module.function_name"
+            where function_name is a python function to be called after the call of the C++ function.
+          - The function must take a python object, and return one...
+
+        doc : string
+              the doc string.
+        
+        release_GIL_and_enable_signal : boolean, expert only
+         - For long functions in pure C++.
+         - If True, the GIL is released in the call of the C++ function and restored after the call.
+         - It also saves the signal handler of python and restores it after the call,
+           and enables the C++ triqs signal_handler.
+         - This allows e.g. to intercept Ctrl-C during the long C++ function.
+         - **Requirement** :
+            The function wrapped MUST be pure C++, i.e.  no call whatsoever to the python C API, directly or indirectly.
+            otherwise the behaviour is undefined.
        """
         f = cfunction(signature, calling_pattern = calling_pattern, release_GIL_and_enable_signal = release_GIL_and_enable_signal, doc = doc,c_name = name)
         name = name or f.c_name
@@ -770,8 +863,12 @@ class module_ :
 
     def use_module(self, modulename, app_name=None) :
         """
-         @param app_name (optional) name of the application where the module is defined
-         From the name of the module :
+        Parameters
+        ----------
+ 
+        app_name : string, optional
+          Name of the application where the module is defined
+          From the name of the module :
            - add the header file generated for this module to the C++ include list
            - read this file, update the list of _wrapped_types_list, and add it to the wrapped_type list.
         """
@@ -806,11 +903,18 @@ class module_ :
     def add_enum(self, c_name, values, c_namespace ="", doc = '') :
         """
           Add an enum into the module.
-          Parameters :
-            - c_name : name in C++
-            - c_namespace: namespace of the enum
-            - values : list of string representing the C++ enum values
-            - doc : the doc string.
+    
+          Parameters
+          ----------
+
+          c_name : string
+                  name in C++
+          c_namespace: string
+                     namespace of the enum
+          values : list of string 
+                  represents the C++ enum values
+          doc : string
+                the doc string.
         """
         self.enums.append( self._enum(c_name, values, c_namespace, doc))
 
