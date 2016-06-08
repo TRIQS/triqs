@@ -1,6 +1,6 @@
 .. index:: wrapper
 
-.. module:: pytriqs.wrap_generator.wrap_generator
+.. module:: cpp2py.wrap_generator
 
 .. _wrapper:
 

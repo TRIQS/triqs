@@ -26,7 +26,13 @@ FILE(GLOB_RECURSE SOURCES *.rst)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
 EXECUTE_PROCESS(COMMAND sh -c "mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/html")
 set(DOC_SOURCE ${CMAKE_CURRENT_BINARY_DIR})
-include(${TRIQS_SOURCE_DIR}/cmake/BuildSphinx.cmake)
+
+# Get sphinx
+find_package(Sphinx)
+SET(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/contents.html)
+add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES} 
+                   COMMAND  export PYTHONPATH=\$PYTHONPATH:${CMAKE_BINARY_DIR}/tools && ${SPHINXBUILD_EXECUTABLE} -c . -b html ${DOC_SOURCE} html)
+add_custom_target(docs_sphinx${DOC_EXT} ALL DEPENDS ${sphinx_top} ${DOC_SOURCE})
 
 # for the C++ compilation of tests
 include_directories( ${CMAKE_SOURCE_DIR} )

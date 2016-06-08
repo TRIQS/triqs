@@ -13,6 +13,7 @@ add_custom_target(tools_copy ALL DEPENDS ${tools_copy_tar})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/clang_parser.py            DESTINATION  bin)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/util.py    DESTINATION  share/triqs)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cpp2py/__init__.py                DESTINATION  share/triqs/cpp2py)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cpp2py/wrap_generator.py          DESTINATION  share/triqs/cpp2py)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cpp2py/mako/py_converter.hpp      DESTINATION  share/triqs/cpp2py/mako)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cpp2py/mako/xxx_wrap.cpp          DESTINATION  share/triqs/cpp2py/mako)

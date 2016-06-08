@@ -1,7 +1,7 @@
 The cfunction class
 -----------------------
 
-.. autoclass:: pytriqs.cpp2py.wrap_generator.cfunction
+.. autoclass:: cpp2py.wrap_generator.cfunction
    :members:
    :undoc-members:
 
