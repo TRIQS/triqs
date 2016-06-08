@@ -18,6 +18,8 @@
 %>
 
 // --- C++ Python converter for ${c.name}
+#include <triqs/python_tools/converters/vector.hpp>
+#include <triqs/python_tools/converters/string.hpp>
 
 namespace triqs { namespace py_tools {
 
@@ -76,8 +78,8 @@ template <> struct py_converter<${c.name}> {
  }
 
  static bool is_convertible(PyObject *dic, bool raise_exception) {
-  if (!PyDict_Check(dic)) { 
-   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Not a python dict");}
+  if (dic == nullptr or !PyDict_Check(dic)) {
+   if (raise_exception) { PyErr_SetString(PyExc_TypeError, "The function must be called with named arguments");}
    return false;
   }  
   std::stringstream fs, fs2; int err=0;

@@ -313,6 +313,9 @@ class Class(object):
             else :
                 print "unknown in class ", c.spelling, repr(c.kind)
 
+    @property
+    def is_template(self) : return len(self.tparams)>0
+
     def namespace(self) :
         return "::".join(self.ns)
 

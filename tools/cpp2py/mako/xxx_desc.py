@@ -31,13 +31,15 @@
         'std::function' : 'function',
         'std::pair' : 'pair',
         'std::tuple' : 'tuple',
-        'triqs::utility::variant' : 'variant'
+        'triqs::utility::variant' : 'variant',
+        'triqs::arrays::array' : 'arrays',
+        'triqs::arrays::matrix' : 'arrays',
+        'triqs::arrays::vector' : 'arrays',
         }
 
     used_module_list, converters_list = [], set()
     def analyse(t) :
         if t is None :return
-        #global used_module_list
         for ns, mod in recognized_namespace_for_using.items() :
           if decay(t.canonical_name).startswith(ns) :
             used_module_list.append(mod)

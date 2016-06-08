@@ -62,6 +62,14 @@ typedef long double max_align_t;
 #include "Python.h"
 #endif
 
+// boost serialization declaration...
+namespace boost { namespace serialization { class access; }} //forward
+#define TRIQS_MAKE_NVP(NAME,X) X
+
+// missing complex * int and in * complex
+#include <triqs/utility/complex_ops.hpp>
+
+
 // MACRO USED only in automatic Python wrapper generator desc.
 // Only on clang, other compilers : not needed, 
 #if defined(__clang__)
@@ -74,9 +82,5 @@ typedef long double max_align_t;
 #define TRIQS_CPP2PY_IGNORE
 #endif
 
-// boost serialization declaration...
-namespace boost { namespace serialization { class access; }} //forward
-#define TRIQS_MAKE_NVP(NAME,X) X
-
-// missing complex * int and in * complex
-#include <triqs/utility/complex_ops.hpp>
+#define CPP2PY_ARG_AS_DICT TRIQS_WRAP_ARG_AS_DICT
+#define CPP2PY_IGNORE      TRIQS_CPP2PY_IGNORE

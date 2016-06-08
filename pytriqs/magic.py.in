@@ -14,12 +14,13 @@ from IPython.utils import py3compat
 from IPython.utils.io import capture_output
 from IPython.utils.path import get_ipython_cache_dir
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 triqs_path = "@CMAKE_INSTALL_PREFIX@"
 cxx_compiler = "@CMAKE_CXX_COMPILER@"
 converter_include_path = triqs_path + "/include/triqs/py_converters/"
 generator_path = triqs_path + "/share/triqs/cpp2py"
+cpp2py_bin = triqs_path + "/bin/c++2py.py"
 
 cmakelist = """
 list(APPEND CMAKE_MODULE_PATH %s/share/triqs/cmake)
@@ -37,45 +38,6 @@ target_link_libraries(ext ${TRIQS_LIBRARY_ALL})
 triqs_set_rpath_for_target(ext)
 """%triqs_path
 
-mod_dict = {
- 'stl' :
-"""
-module.add_include("<triqs/python_tools/converters/pair.hpp>")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
-module.add_include("<triqs/python_tools/converters/tuple.hpp>")
-module.add_include("<triqs/python_tools/converters/string.hpp>")
-""",
- 'gf' :
-"""
-module.use_module('gf', 'triqs')
-module.add_using('namespace triqs::gfs')
-""",
-'array' :
-"""
-module.add_include("<triqs/python_tools/converters/arrays.hpp>")
-""",
-}
-
-def desc_file(c_decl, use) :
-   s = """
-from wrap_generator import *
-module = module_(full_name = "ext", doc = "")
-module.add_include("<triqs/arrays.hpp>")
-module.add_include("<triqs/python_tools/py_stream.hpp>")
-module.add_include("<triqs/python_tools/converters/arrays.hpp>")
-module.add_using("namespace triqs::arrays")
-module.add_preamble('#include "./ext.cpp"')
-"""
-
-   mod_list = sum((x.split(',') for x in use), [])
-   for m in mod_list :
-       s+= mod_dict[m]
-
-   for f in c_decl :
-       s+= 'module.add_function("%s")\n'%f
-
-   return s + "module.generate_code()\n"
-
 @magics_class
 class TriqsMagics(Magics):
 
@@ -87,44 +49,23 @@ class TriqsMagics(Magics):
         if not os.path.exists(self._lib_dir):
             os.makedirs(self._lib_dir)
 
-    def _import_all(self, module, verbosity=0):
-        imported = []
-        for k, v in module.__dict__.items():
-            if not k.startswith('__'):
-                self.shell.push({k: v})
-                imported.append(k)
-        if verbosity > 0 and imported:
-            print("\nOk. The following objects are ready to use: %s" % ", ".join(imported))
-
-    def extract_signature(self,code):
-        acc = []
-        for l in code.splitlines() :
-            ll = l.strip()
-            if ll.startswith("#") or ll.startswith("using") : continue
-            acc.append(l)
-            if l.count('{') : break
-        s = ''.join(acc).split('{',1)[0] # everything before {
-        #print "signature", s
-        return [s]
-
     @magic_arguments.magic_arguments()
     @magic_arguments.argument(
             "-v", "--verbosity", action="count", default=0,
             help="increase output verbosity"
         )
     @magic_arguments.argument(
-            '-u', "--use", action='append', default=[],
-            help="""Modules used"""
+            '-o', "--only", action='append', default=[],
+            help="""Which object to wrap"""
         )
+
     @cell_magic
     def triqs(self, line, cell=None):
         """Compile and import everything from a Triqs code cell.
 
-        The content of the cell is written to a `.cpp` file in the
-        directory `IPYTHONDIR/triqs` using a filename with the hash of the
-        code. A python wrapper is then generated from the function signature.
-        Those files are then compiled.
-        The resulting module is imported and all of its symbols are injected into the user's namespace.
+        Takes the c++ code, call c++2py on it and compile the whole thing
+        into a module which is then loaded and 
+        all of its symbols are injected into the user's namespace.
 
         Usage
         =====
@@ -159,76 +100,74 @@ class TriqsMagics(Magics):
 
         key = code, line, sys.version_info, sys.executable
 
-        c_decl = self.extract_signature(code)
-        if args.verbosity>1 :
-          print "Found function of signature"
-          for f in c_decl :
-              print f
-
         module_name = "ext"
         module_dirname = os.path.join(self._lib_dir, "_triqs_magic_" + hashlib.md5(str(key).encode('utf-8')).hexdigest())
+
+        if args.verbosity > 0:
+            print "Workdir = ", module_dirname
+
         module_path = os.path.join(module_dirname, 'ext.so')
         try :
             os.mkdir(module_dirname)
         except :
             pass
-        #print "dir", module_dirname
+
+        def print_out (m, out) : 
+           l = (70 - len(m))/2
+           print l*'-' + m + l*'-' + '\n' + out 
 
         old_cwd = os.getcwd()
         try:
             os.chdir(module_dirname)
 
-            with open('ext_desc.py', 'w') as f:
-                f.write(desc_file(c_decl, args.use))
-
             with open('CMakeLists.txt', 'w') as f:
                 f.write(cmakelist)
 
             with open('ext.cpp', 'w') as f:
+                f.write("""
+#include <triqs/utility/cpp2py_macros.hpp>
+#include <triqs/python_tools/py_stream.hpp>
+                """)
                 f.write(code)
 
+            def execute(command, message):
+                try:
+                   out = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+                except subprocess.CalledProcessError as E :
+                   print_out ( message + " error ", E.output)
+                   raise RuntimeError, "Error"
+                if args.verbosity>0: 
+                   print_out(message, out)
+
+            # Call cpp2py
+            only_list = ','.join(args.only)
+            only_list = (" --only " + only_list) if only_list else '' 
+            execute(cpp2py_bin + " ./ext.cpp -p -m ext -o ext" + only_list, "c++2py")
+
             # Call the wrapper generator
-            command_generator = """
+            execute ("""
             PYTHONPATH={generator_path} python ext_desc.py {generator_path}/mako/xxx_wrap.cpp ext_wrap.cpp {generator_path}/mako/py_converter.hpp conv.hpp {triqs_path}
-            """.format(**globals())
-
-            try :
-              out_generator = subprocess.check_output(command_generator, stderr=subprocess.STDOUT, shell=True)
-            except subprocess.CalledProcessError as E :
-               print '---------- Wrapper generator error -------\n' + E.output
-               return
-
-            if args.verbosity>0 : print "---------- Wrapper generator ------", out_generator
+            """.format(**globals()), "Wrapper generator")
 
             # Call cmake
-            #command_cmake = "CXX =" + cxx_compiler+ "  cmake . -DTRIQS_PATH=" + triqs_path
-            command_cmake = "cmake .  -DCMAKE_CXX_COMPILER="+ cxx_compiler+ " -DTRIQS_PATH=" + triqs_path
-
-            try :
-              out_cmake = subprocess.check_output(command_cmake, stderr=subprocess.STDOUT, shell=True)
-            except subprocess.CalledProcessError as E :
-               print '----------  Cmake error -------\n' + E.output
-               return
-
-            if args.verbosity>0 : print "---------- Cmake ------", out_cmake
+            execute("cmake . -Wno-dev  -DCMAKE_CXX_COMPILER="+ cxx_compiler+ " -DTRIQS_PATH=" + triqs_path, "cmake")
 
             # Call make
-            command_make = "make -j2"
-
-            try :
-              out_make = subprocess.check_output(command_make, stderr=subprocess.STDOUT, shell=True)
-            except subprocess.CalledProcessError as E :
-               print '----------  Make error -------\n' + E.output
-               return
-
-            if args.verbosity>0 : print "---------- Make ------", out_make
+            execute ("make -j2", "make")
 
         finally:
             os.chdir(old_cwd)
 
         self._code_cache[key] = module_path
         module = imp.load_dynamic(module_name, module_path)
-        self._import_all(module, verbosity=args.verbosity)
+        # import all object and function in the main namespace
+        imported = []
+        for k, v in module.__dict__.items():
+            if not k.startswith('_'):
+                self.shell.push({k: v})
+                imported.append(k)
+        if args.verbosity > 0 and imported:
+            print_out("Success", "The following objects are ready to use: %s" % ", ".join(imported))
 
 __doc__ = __doc__.format(TRIQS_DOC=' ' * 8 + TriqsMagics.triqs.__doc__)
 

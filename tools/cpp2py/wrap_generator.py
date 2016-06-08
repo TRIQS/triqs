@@ -168,7 +168,11 @@ class cfunction :
     def _get_calling_pattern(self) :
         """Generation only: gets the calling_pattern or synthesize the default"""
         if self._calling_pattern : return self._calling_pattern
-        s1 = '' if self._dict_call is None else "if (!convertible_from_python<%s>(keywds,true)) goto error_return;\n"%self._dict_call
+        s1 = ''
+        if self._dict_call: # overrule
+          s1 = """if (PySequence_Size(args)>0) {PyErr_SetString(PyExc_TypeError, "The function must be called only with named arguments"); goto error_return;}
+             if (!convertible_from_python<%s>(keywds,true)) goto error_return;
+          """%self._dict_call
         s = "%s result = "%self.rtype if self.rtype != "void" else ""
         self_c = ""
         if self.is_method:
