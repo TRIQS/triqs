@@ -21,6 +21,7 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf/local)
 
 # Build C extension module 
 triqs_python_extension(gf gf/local)
+add_dependencies(python_wrap_gf python_wrap_lattice_tools)
 
 install (FILES ${CMAKE_SOURCE_DIR}/pytriqs/__init__.py.template DESTINATION "include/pytriqs/gf/local" RENAME __init__.py)
 
