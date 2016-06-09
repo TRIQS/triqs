@@ -1,7 +1,8 @@
 from wrap_generator import *
 import re
 
-module = module_(full_name = "pytriqs.gf.local.gf", doc = "Local Green functions ...")
+module = module_(full_name = "pytriqs.gf.local.gf", doc = "Local Green functions ...", app_name="triqs")
+module.use_module('lattice_tools')
 module.add_include("<triqs/gfs.hpp>")
 module.add_include("<triqs/gfs/functions/functions.hpp>")
 module.add_include("<triqs/gfs/singularity/fit_tail.hpp>")
@@ -16,6 +17,7 @@ module.add_include("<triqs/python_tools/converters/gf.hpp>")
 module.add_using("namespace triqs::arrays")
 module.add_using("namespace triqs::gfs")
 module.add_using("triqs::utility::mini_vector")
+
 
 ########################
 ##   TailGf
@@ -98,7 +100,7 @@ module.add_class(t)
 ########################
 ##   TailZero
 ########################
-for c_type, suffix in [("std::complex<double>","_s"),("triqs::arrays::array<std::complex<double>,3>", "_3"), ("triqs::arrays::array<std::complex<double>,4>", "_4")]:
+for c_type, suffix in [("std::complex<double>","_s"),("triqs::arrays::matrix<std::complex<double>>",""),("triqs::arrays::array<std::complex<double>,3>", "_3"), ("triqs::arrays::array<std::complex<double>,4>", "_4")]:
   c = class_( py_type = "TailZero%s"%suffix,
         c_type = "tail_zero<%s>"%c_type,
         c_type_absolute = "triqs::gfs::tail_zero<%s>"%c_type,
@@ -137,7 +139,7 @@ def make_mesh( py_type, c_tag, is_im=False) :
             comparisons = "== !="
            )
 
-    if is_im :
+    if is_im and not c_tag=="brillouin_zone":
         m.add_property(name = "beta",
                        getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                        signature = "double()",
@@ -148,7 +150,8 @@ def make_mesh( py_type, c_tag, is_im=False) :
                        doc = "Statistic")
 
     m.add_len(calling_pattern = "int result = self_c.size()", doc = "Size of the mesh")
-    m.add_iterator(c_cast_type = "dcomplex")
+    c_cast_type = "dcomplex" if not c_tag == "brillouin_zone" else "triqs::arrays::vector<double>"
+    m.add_iterator(c_cast_type = c_cast_type)
 
     return m
 
@@ -220,6 +223,14 @@ m.add_property(name = "t_max",
 module.add_class(m)
 
 ########################
+##   MeshBrillouinZone
+########################
+
+m = make_mesh( py_type = "MeshBrillouinZone", c_tag = "brillouin_zone", is_im = True)
+m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, int n_k)")
+module.add_class(m)
+
+########################
 ##   Gf Generic : common to all 5 one variable gf
 ########################
 
@@ -237,11 +248,16 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
 
     data_type = "std::complex<double>" 
     return_type = "matrix<dcomplex>" if target_type=="matrix_valued" else "array<dcomplex,%s>"%(rank)
-
+    if has_tail :
+     tail_type = "tail" 
+    elif rank<3:
+     tail_type = "no_tail"
+    else:
+     tail_type = "tail_zero<triqs::arrays::array<std::complex<double>,%s>>"%rank
     g = class_(
             py_type = py_type,
-            c_type = "gf_view<%s, %s>"%(c_tag, target_type),
-            c_type_absolute = "triqs::gfs::gf_view<triqs::gfs::%s, triqs::gfs::%s>"%(c_tag, target_type),
+            c_type = "gf_view<%s, %s, %s>"%(c_tag, target_type, tail_type),
+            c_type_absolute = "triqs::gfs::gf_view<triqs::gfs::%s, triqs::gfs::%s, triqs::gfs::%s>"%(c_tag, target_type, tail_type),
             #serializable= "boost",
             serializable= "tuple" if serializable else None,
             #is_printable= True,
@@ -258,7 +274,7 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
     # properties
     g.add_member(c_name = "name", c_type  ="std::string",  doc = "Name of the Green function (used for plotting only)")
 
-    if is_im :
+    if is_im and not c_tag=="brillouin_zone":
         g.add_property(name = "beta",
                        getter = cfunction(calling_pattern="double result = self_c.domain().beta", signature = "double()"),
                        doc = "Inverse temperature")
@@ -370,7 +386,7 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
                    signature = "gf<%s>()"%c_tag,
                    doc = "Returns a NEW gf, with transposed data, i.e. it is NOT a transposed view.")
 
-      if c_tag not in [ "imtime", "legendre"] :
+      if c_tag not in [ "imtime", "legendre", "brillouin_zone"] and has_tail:
           g.add_method(name = "conjugate", calling_pattern = "auto result = conj(self_c)" , signature = "gf<%s>()"%c_tag, doc = "Return a new function, conjugate of self.")
 
       g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag)) 
@@ -393,71 +409,74 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
                    doc = "Put the Green function to 0")
 
     # Pure python methods
-    g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%c_tag, rename = "_plot_")
-    g.add_pure_python_method("pytriqs.gf.local._gf_plot.x_data_view", rename = "x_data_view")
+    if c_tag != "brillouin_zone":
+     g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%c_tag, rename = "_plot_")
+     g.add_pure_python_method("pytriqs.gf.local._gf_plot.x_data_view", rename = "x_data_view")
 
     return g
 
 ########################
 ##   GfImFreq
 ########################
+for py_type, has_tail in [("GfImFreq", True) ,("GfImFreqNoTail",False)]:
+ g = make_gf(py_type = py_type, c_tag = "imfreq", is_im = True, has_tail = has_tail)
+ tail_type = "tail" if has_tail else "no_tail"
 
-g = make_gf(py_type = "GfImFreq", c_tag = "imfreq", is_im = True)
+ if has_tail :
+  g.add_method(name = "make_real_in_tau",
+              calling_pattern = "auto result = make_real_in_tau(self_c)",
+              signature = "gf_view<imfreq, matrix_valued, tail>()",
+              doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
 
-g.add_method(name = "make_real_in_tau",
-             calling_pattern = "auto result = make_real_in_tau(self_c)",
-             signature = "gf_view<imfreq, matrix_valued>()",
-             doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
+  g.add_method(name = "density",
+              calling_pattern = "auto result = density(self_c)",
+              signature = "matrix_view<double>()",
+              doc = "Density, as a matrix, computed from a Matsubara sum")
 
-g.add_method(name = "density",
-             calling_pattern = "auto result = density(self_c)",
-             signature = "matrix_view<double>()",
-             doc = "Density, as a matrix, computed from a Matsubara sum")
+  g.add_method(name = "total_density",
+              calling_pattern = "auto result = trace(density(self_c))",
+              signature = "double()",
+              doc = "Trace of density")
 
-g.add_method(name = "total_density",
-             calling_pattern = "auto result = trace(density(self_c))",
-             signature = "double()",
-             doc = "Trace of density")
+  g.add_method(name = "set_from_fourier",
+              signature = "void(gf_view<imtime, matrix_valued, tail> gt)",
+              calling_pattern = "self_c = fourier(*gt)",
+              doc = """Fills self with the Fourier transform of gt""")
 
-g.add_method(name = "set_from_fourier",
-             signature = "void(gf_view<imtime, matrix_valued> gt)",
-             calling_pattern = "self_c = fourier(*gt)",
-             doc = """Fills self with the Fourier transform of gt""")
+  g.add_method(name = "set_from_legendre",
+              signature = "void(gf_view<legendre, matrix_valued, no_tail> gl)",
+              calling_pattern = "self_c = legendre_to_imfreq(*gl)",
+              doc = """Fills self with the legendre transform of gl""")
 
-g.add_method(name = "set_from_legendre",
-             signature = "void(gf_view<legendre, matrix_valued> gl)",
-             calling_pattern = "self_c = legendre_to_imfreq(*gl)",
-             doc = """Fills self with the legendre transform of gl""")
-
-g.add_method(name = "fit_tail",
-             signature = "void(tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true)",
-             calling_pattern = "fit_tail(self_c, *known_moments, max_moment, n_min, n_max, replace_by_fit)",
-             doc = """Set the tail by fitting""")
- 
+  g.add_method(name = "fit_tail",
+              signature = "void(tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true)",
+              calling_pattern = "fit_tail(self_c, *known_moments, max_moment, n_min, n_max, replace_by_fit)",
+              doc = """Set the tail by fitting""")
+  
 # Pure python methods
-g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail_depr")
-g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.fit_tail_depr")
+ g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail_depr")
+ g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.fit_tail_depr")
 
 # For legacy Python code : authorize g + Matrix
-g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<imfreq> x,matrix<std::complex<double>> y)")
-g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<imfreq> x,matrix<std::complex<double>> y)")
+ g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<imfreq> x,matrix<std::complex<double>> y)")
+ g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<imfreq> x,matrix<std::complex<double>> y)")
 
-g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<imfreq> x,std::complex<double> y)")
-g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<imfreq> x,std::complex<double> y)")
+ g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<imfreq> x,std::complex<double> y)")
+ g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<imfreq> x,std::complex<double> y)")
 
-g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(gf<imfreq> x,matrix<std::complex<double>> y)")
-g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(matrix<std::complex<double>> y,gf<imfreq> x)")
-g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(gf<imfreq> x,std::complex<double> y)")
-g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(std::complex<double> y, gf<imfreq> x)")
+ g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(gf<imfreq> x,matrix<std::complex<double>> y)")
+ g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(matrix<std::complex<double>> y,gf<imfreq> x)")
+ g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(gf<imfreq> x,std::complex<double> y)")
+ g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<imfreq>(std::complex<double> y, gf<imfreq> x)")
 
-g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(gf<imfreq> x,matrix<std::complex<double>> y)")
-g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(matrix<std::complex<double>> y,gf<imfreq> x)")
-g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(gf<imfreq> x,std::complex<double> y)")
-g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(std::complex<double> y, gf<imfreq> x)")
+ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(gf<imfreq> x,matrix<std::complex<double>> y)")
+ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(matrix<std::complex<double>> y,gf<imfreq> x)")
+ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(gf<imfreq> x,std::complex<double> y)")
+ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<imfreq>(std::complex<double> y, gf<imfreq> x)")
 
-module.add_class(g)
+ module.add_class(g)
 
-module.add_function("bool is_gf_real_in_tau(gf_view<imfreq, matrix_valued> g, double tolerance = 1.e-13)")
+module.add_function("bool is_gf_real_in_tau(gf_view<imfreq, matrix_valued, tail> g, double tolerance = 1.e-13)")
 
 #############################
 ##   Tensor-valued Gfs [ImFreq, ImTime, ReFreq]
@@ -473,8 +492,21 @@ for c_tag, py_tag in [("imfreq","ImFreq"), ("imtime","ImTime"), ("refreq", "ReFr
        has_tail=False,
        serializable=True,
        )
-
   module.add_class(g)
+
+#############################
+##    Gfs [BrillouinZone]
+##############################
+
+g = make_gf(
+       py_type = "GfBrillouinZone",
+       c_tag = "brillouin_zone",
+       is_im = True,
+       target_type = "matrix_valued",
+       has_tail=False,
+       serializable=True,
+       )
+module.add_class(g)
 
 ########################
 ##   GfImTime
@@ -483,12 +515,12 @@ for c_tag, py_tag in [("imfreq","ImFreq"), ("imtime","ImTime"), ("refreq", "ReFr
 g = make_gf(py_type = "GfImTime", c_tag = "imtime", is_im = True)
 
 g.add_method(name = "set_from_inverse_fourier",
-             signature = "void(gf_view<imfreq, matrix_valued> gw)",
+             signature = "void(gf_view<imfreq, matrix_valued, tail> gw)",
              calling_pattern = "self_c = inverse_fourier(*gw)",
              doc = """Fills self with the Inverse Fourier transform of gw""")
 
 g.add_method(name = "set_from_legendre",
-             signature = "void(gf_view<legendre, matrix_valued> gl)",
+             signature = "void(gf_view<legendre, matrix_valued, no_tail> gl)",
              calling_pattern = "self_c = legendre_to_imtime(*gl)",
              doc = """Fills self with the legendre transform of gl""")
  
@@ -528,12 +560,12 @@ g.add_method(name = "total_density",
              doc = "Trace of density")
 
 g.add_method(name = "set_from_imtime",
-             signature = "void(gf_view<imtime, matrix_valued> gt)",
+             signature = "void(gf_view<imtime, matrix_valued, tail> gt)",
              calling_pattern = "self_c = imtime_to_legendre(*gt)",
              doc = """Fills self with the legendre transform of gt""")
 
 g.add_method(name = "set_from_imfreq",
-             signature = "void(gf_view<imfreq, matrix_valued> gw)",
+             signature = "void(gf_view<imfreq, matrix_valued, tail> gw)",
              calling_pattern = "self_c = imfreq_to_legendre(*gw)",
              doc = """Fills self with the legendre transform of gw""")
 
@@ -548,37 +580,38 @@ module.add_class(g)
 ##   GfReFreq
 ########################
 
-g = make_gf(py_type = "GfReFreq", c_tag = "refreq")
+for py_type, has_tail in [("GfReFreq", True) ,("GfReFreqNoTail",False)]:
+ g = make_gf(py_type = py_type, c_tag = "refreq", has_tail=has_tail)
+ if has_tail:
+  g.add_method(name = "set_from_fourier",
+              signature = "void(gf_view<retime, matrix_valued, tail> gt)",
+              calling_pattern = "self_c = fourier(*gt)",
+              doc = """Fills self with the Fourier transform of gt""")
 
-g.add_method(name = "set_from_fourier",
-             signature = "void(gf_view<retime, matrix_valued> gt)",
-             calling_pattern = "self_c = fourier(*gt)",
-             doc = """Fills self with the Fourier transform of gt""")
-
-g.add_method(name = "set_from_pade",
-             signature = "void(gf_view<imfreq, matrix_valued> gw, int n_points = 100, double freq_offset = 0.0)",
-             calling_pattern = "pade(self_c,*gw,n_points, freq_offset)",
-             doc = """TO BE WRITTEN""")
+  g.add_method(name = "set_from_pade",
+              signature = "void(gf_view<imfreq, matrix_valued, tail> gw, int n_points = 100, double freq_offset = 0.0)",
+              calling_pattern = "pade(self_c,*gw,n_points, freq_offset)",
+              doc = """TO BE WRITTEN""")
 
 # For legacy Python code : authorize g + Matrix
-g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<refreq> x,matrix<std::complex<double>> y)")
-g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<refreq> x,matrix<std::complex<double>> y)")
+ g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<refreq> x,matrix<std::complex<double>> y)")
+ g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<refreq> x,matrix<std::complex<double>> y)")
 
-g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<refreq> x,std::complex<double> y)")
-g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<refreq> x,std::complex<double> y)")
+ g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<refreq> x,std::complex<double> y)")
+ g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<refreq> x,std::complex<double> y)")
 
-g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(gf<refreq> x,matrix<std::complex<double>> y)")
-g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(matrix<std::complex<double>> y,gf<refreq> x)")
-g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(gf<refreq> x,std::complex<double> y)")
-g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(std::complex<double> y, gf<refreq> x)")
+ g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(gf<refreq> x,matrix<std::complex<double>> y)")
+ g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(matrix<std::complex<double>> y,gf<refreq> x)")
+ g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(gf<refreq> x,std::complex<double> y)")
+ g.number_protocol['add'].add_overload(calling_pattern = "+", signature = "gf<refreq>(std::complex<double> y, gf<refreq> x)")
 
-g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(gf<refreq> x,matrix<std::complex<double>> y)")
-g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(matrix<std::complex<double>> y,gf<refreq> x)")
-g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(gf<refreq> x,std::complex<double> y)")
-g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(std::complex<double> y, gf<refreq> x)")
+ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(gf<refreq> x,matrix<std::complex<double>> y)")
+ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(matrix<std::complex<double>> y,gf<refreq> x)")
+ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(gf<refreq> x,std::complex<double> y)")
+ g.number_protocol['subtract'].add_overload(calling_pattern = "-", signature = "gf<refreq>(std::complex<double> y, gf<refreq> x)")
 
 
-module.add_class(g)
+ module.add_class(g)
 
 ########################
 ##   GfReTime
@@ -587,7 +620,7 @@ module.add_class(g)
 g = make_gf(py_type = "GfReTime", c_tag = "retime")
 
 g.add_method(name = "set_from_inverse_fourier",
-             signature = "void(gf_view<refreq, matrix_valued> gw)",
+             signature = "void(gf_view<refreq, matrix_valued, tail> gw)",
              calling_pattern = "self_c = inverse_fourier(*gw)",
              doc = """Fills self with the Inverse Fourier transform of gw""")
 
@@ -596,7 +629,7 @@ module.add_class(g)
 # EXPERIMENTAL : global fourier functions....
 # To be replaced by make_gf(fourier...)).
 
-module.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<retime, matrix_valued>(gf_view<refreq, matrix_valued> gw)", doc ="")
+module.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<retime, matrix_valued, tail>(gf_view<refreq, matrix_valued, tail> gw)", doc ="")
 
 ########################
 ##   Code generation

@@ -5,6 +5,7 @@ module = module_(full_name = "pytriqs.gf.local.multivar", doc = "Local multivari
 
 # All the triqs C++/Python modules
 module.use_module('gf')
+module.use_module('lattice_tools')
 
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_using("namespace triqs::gfs")
@@ -16,7 +17,7 @@ module.add_preamble("""
 #include <triqs/gfs/singularity/tail_zero.hpp>
 """)
 
-for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime"), ("ImTime","imtime")], [("ReFreq", "refreq"), ("ReFreq", "refreq")], [("ImFreq","imfreq"), ("ImFreq","imfreq"), ("ImFreq","imfreq")],  [("ImTime","imtime"), ("ImTime","imtime"), ("ImTime","imtime")] ]:
+for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime"), ("ImTime","imtime")], [("ReFreq", "refreq"), ("ReFreq", "refreq")], [("ImFreq","imfreq"), ("ImFreq","imfreq"), ("ImFreq","imfreq")],  [("ImTime","imtime"), ("ImTime","imtime"), ("ImTime","imtime")], [("BrillouinZone","brillouin_zone"),("ImFreq","imfreq")], [("BrillouinZone","brillouin_zone"),("ReFreq","refreq")] ]:
 
   # The class gf_mesh<cartesian_product<imfreq, imfreq>>
   c = class_(
@@ -44,10 +45,17 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
 
 
   ###################
-  Target_List = [('scalar_valued', '_s'),('tensor_valued<3>', 'Tv3'), ('tensor_valued<4>', 'Tv4')] if len(TimeMesh)<3 else [('tensor_valued<3>', 'Tv3'), ('tensor_valued<4>', 'Tv4') ]
+  if TimeMesh[0][0]=="BrillouinZone":
+   Target_List = [('matrix_valued', '')]
+  else:
+   Target_List = [('scalar_valued', '_s'),('tensor_valued<3>', 'Tv3'), ('tensor_valued<4>', 'Tv4')] if len(TimeMesh)<3 else [('tensor_valued<3>', 'Tv3'), ('tensor_valued<4>', 'Tv4') ]
   for target_type, target_string in Target_List:
-
-    rank = 0 if target_type == "scalar_valued" else int(re.compile("tensor_valued<(.*)>").match(target_type).groups()[0])
+    if target_type == "scalar_valued":
+     rank = 0 
+    elif target_type == "matrix_valued":
+     rank = 2  
+    else:
+     rank = int(re.compile("tensor_valued<(.*)>").match(target_type).groups()[0])
     c = class_(
             py_type = "Gf%s%s"%("_x_".join([x for x,y in TimeMesh]), target_string), 
             c_type = "gf_view<cartesian_product<%s>, %s>"%(",".join([y for x,y in TimeMesh]), target_type),
@@ -67,9 +75,14 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
     c.add_property(name = "mesh",
                    getter = cfunction("gf_mesh<cartesian_product<%s>> mesh ()"%(",".join([y for x,y in TimeMesh]))),
                    doc = """mesh """)
-
+    if target_type=="scalar_valued":
+     tail_data_t = "std::complex<double>"
+    elif target_type=="matrix_valued":
+     tail_data_t = "triqs::arrays::matrix<std::complex<double>>"
+    else:
+     tail_data_t = "triqs::arrays::array<std::complex<double>,%s>"%rank
     c.add_property(name = "tail",
-      getter = cfunction("tail_zero<%s> singularity ()"%("std::complex<double>" if target_type=="scalar_valued" else "triqs::arrays::array<std::complex<double>,%s>"%rank)),
+      getter = cfunction("tail_zero<%s> singularity ()"%(tail_data_t)),
                    doc = """singularity """)
 
     c.add_property(name = "data",
@@ -77,9 +90,11 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
                    doc = """data """)
     for i in range(len(TimeMesh)):
      return_descriptor = ",".join([TimeMesh[j][1] for j in range(i) if not j==i])
-     c.add_method(name = "slice_at_const_w%s"%(i+1),
-      calling_pattern = "auto result = make_gf_from_g_and_tail(reinterpret_scalar_valued_gf_as_matrix_valued(partial_eval<%s>(self_c, n)), tail(1,1))"%i if target_type=="scalar_valued" else  "auto result =  partial_eval<%s>(self_c, n)"%i,
-                 signature = "gf_view<%s, matrix_valued> (int n)"%return_descriptor if target_type=="scalar_valued" else "gf_view<%s, %s> (int n)"%(return_descriptor, target_type),
+     ind_type = "int" if not TimeMesh[i][0]=="BrillouinZone" else "triqs::utility::mini_vector<long, 3>"
+     c.add_method(
+       name = "slice_at_const_w%s"%(i+1),
+       calling_pattern = "auto result = make_gf_from_g_and_tail(reinterpret_scalar_valued_gf_as_matrix_valued(partial_eval<%s>(self_c, n)), tail(1,1))"%i if target_type=="scalar_valued" else  "auto result =  partial_eval<%s>(self_c, n)"%i,
+       signature = "gf_view<%s, matrix_valued> (%s n)"%(return_descriptor, ind_type) if target_type=="scalar_valued" else "gf_view<%s, %s> (%s n)"%(return_descriptor, target_type, ind_type),
                  doc="""slice at const %sth argument"""%(i+1))
 
     if rank>0 : 

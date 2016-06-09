@@ -19,5 +19,5 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-
-__all__ = ['tight_binding','bz_patch','super_lattice']
+from lattice_tools import *
+__all__ = ['tight_binding','bz_patch','super_lattice', "BrillouinZone"]

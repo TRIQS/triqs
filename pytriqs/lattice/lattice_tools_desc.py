@@ -42,6 +42,23 @@ bl.add_method(name = "lattice_to_real_coordinates",
 
 module.add_class(bl)
 
+# ------  brillouin_zone ----------------------
+c = class_(
+        py_type = "BrillouinZone",  # name of the python class
+        c_type = "brillouin_zone",   # name of the C++ class
+        c_type_absolute = "triqs::lattice::brillouin_zone",
+        doc = r"",   # doc of the C++ class
+        serializable= "tuple",
+)
+
+c.add_constructor("""(triqs::lattice::bravais_lattice bl_)""",
+                  doc = """Construct from a bravais_lattice """)
+
+c.add_property(name = "lattice",
+               getter = cfunction("triqs::lattice::bravais_lattice lattice ()"),
+               doc = """Access to the underlying bravais lattice """)
+module.add_class(c)
+
 # ---------   TightBinding ----------------------------------
 tb = class_(py_type = "TightBinding",
         c_type = "tight_binding",
