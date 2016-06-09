@@ -43,11 +43,16 @@ c.add_constructor("""()""",
 c.add_method("""int size ()""",
              doc = """ """)
 c.add_method(name="__call__",
-             calling_pattern = "matrix<double> result = self_c(s)",
-             signature="matrix<double>(std::string s)",
+             calling_pattern = "matrix<double> result = self_c[n]",
+             signature="matrix<double>(int n)",
              doc = """ """)
 c.add_getitem(
-             signature="matrix<double>(int n)",
+             signature="matrix<double>(std::string s)",
+             calling_pattern = "matrix<double> result = self_c(s)",
+             doc = """ """)
+c.add_setitem(
+             calling_pattern = "self_c(s) = m",
+             signature = "void(std::string s, matrix<double> m)", 
              doc = """ """)
 
 module.add_class(c)
@@ -81,11 +86,16 @@ c.add_constructor("""()""",
 c.add_method("""int size ()""",
              doc = """ """)
 c.add_method(name="__call__",
-             calling_pattern = "matrix<std::complex<double>> result = self_c(s)",
-             signature="matrix<std::complex<double>>(std::string s)",
+             calling_pattern = "matrix<std::complex<double>> result = self_c[n]",
+             signature="matrix<std::complex<double>>(int n)",
              doc = """ """)
 c.add_getitem(
-             signature="matrix<std::complex<double>>(int n)",
+             signature="matrix<std::complex<double>>(std::string s)",
+             calling_pattern = "matrix<std::complex<double>> result = self_c(s)",
+             doc = """ """)
+c.add_setitem(
+             calling_pattern = "self_c(s) = m",
+             signature = "void(std::string s, matrix<std::complex<double>> m)", 
              doc = """ """)
 
 module.add_class(c)

@@ -38,7 +38,7 @@ def compare(key, a, b, level, precision):
 
         elif t in [BlockMatrix]:
             for i in range(len(a.matrix_vec)):
-             assert_arrays_are_close(a[i],b[i])
+             assert_arrays_are_close(a(i),b(i))
 
         # ... until here
         elif isinstance(a, numpy.ndarray):

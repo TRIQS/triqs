@@ -6,12 +6,12 @@ from numpy import matrix
 A=BlockMatrix(['up','down'],[matrix([[0]]), matrix([[1.0]])])
 A0=mpi.bcast(A)
 
-assert A("up")==matrix([[0.0]]), "not ok"
-assert A[0]==matrix([[0.0]]), "not ok"
+assert A["up"]==matrix([[0.0]]), "not ok"
+assert A(0)==matrix([[0.0]]), "not ok"
 assert A.size() ==2, "not ok"
 
 B=A+0.5*A+A*0.5
-assert B[1]==matrix([[2.0]]), "not ok"
+assert B(1)==matrix([[2.0]]), "not ok"
 
 #HDF5
 R=HDFArchive("block_matrix.output.h5",'w')
