@@ -20,6 +20,7 @@
 // --- C++ Python converter for ${c.name}
 #include <triqs/python_tools/converters/vector.hpp>
 #include <triqs/python_tools/converters/string.hpp>
+#include <algorithm>
 
 namespace triqs { namespace py_tools {
 
