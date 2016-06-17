@@ -1,6 +1,6 @@
 .. index:: Green's functions
 
-Green's functions
+Local Green's functions
 ========================================
 
 
