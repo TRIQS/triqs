@@ -23,14 +23,16 @@ class Triqs < Formula
   depends_on 'fftw'
   depends_on 'gmp'
   #depends_on 'gsl'
-  depends_on 'python'
+  #depends_on 'python'
 
+  depends_on :python => 'mako'
   depends_on :python => 'numpy'
   depends_on :python => 'scipy'
   depends_on :python => 'h5py'
   depends_on :python => 'matplotlib'
   depends_on :python => 'ipython'
   depends_on :python => 'jupyter'
+  depends_on :python => 'mpi4py'
 
   def install
     ENV.cxx11 
@@ -39,13 +41,15 @@ class Triqs < Formula
     args << "-DCMAKE_BUILD_TYPE=Release"
 
     #args << ("-DDocumentation=" + ((build.with? "doc") ? "ON" : "OFF"))
-    #args << ("-DTesting=" + ((build.with? "test") ? "ON" : "OFF"))
+    args << ("-DBuild_Tests=" + ((build.with? "test") ? "ON" : "OFF"))
 
     args << ["-DPYTHON_INTERPRETER=/usr/local/bin/python", "-DALLOW_COMPILATION_IN_SOURCES=ON" , "-DCMAKE_INSTALL_PREFIX=/usr/local"]
     
     mkdir "tmp" do
       args << ".."
       system "pip install --upgrade h5py"
+      system "pip install --upgrade mako"
+      system "pip install --upgrade mpi4py"
       system "cmake", *args
       system "make -j8"
       system "make", "test" if build.with? "test"
