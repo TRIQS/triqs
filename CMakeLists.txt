@@ -142,7 +142,7 @@ endif()
 
  include_directories(SYSTEM ${TRIQS_INCLUDE_PYTHON} )
  #include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
- link_libraries( ${TRIQS_LIBRARY_PYTHON})
+ #link_libraries( ${TRIQS_LIBRARY_PYTHON})
 
  message (STATUS "Numpy include in ${PYTHON_NUMPY_INCLUDE_DIR}")
 
@@ -173,7 +173,7 @@ endif()
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  ${MPI_CXX_COMPILE_FLAGS}  ${MPI_C_COMPILE_FLAGS})
 #add_definitions( ${MPI_CXX_COMPILE_FLAGS}  ${MPI_C_COMPILE_FLAGS})
 include_directories(SYSTEM ${MPI_CXX_INCLUDE_PATH})
-link_libraries( ${MPI_CXX_LIBRARIES})
+#link_libraries( ${MPI_CXX_LIBRARIES})
 set(TRIQS_LIBRARY_MPI ${MPI_CXX_LIBRARIES})
 set(TRIQS_INCLUDE_MPI ${MPI_CXX_INCLUDE_PATH})
 set(TRIQS_COMPILE_FLAGS_MPI ${MPI_CXX_COMPILE_FLAGS}  ${MPI_C_COMPILE_FLAGS}) 
@@ -273,7 +273,7 @@ endif()
 endif(NOT MKLROOT)
 
 message(STATUS "Lapack libraries : ${TRIQS_LIBRARY_LAPACK}")
-link_libraries(${TRIQS_LIBRARY_LAPACK})
+#link_libraries(${TRIQS_LIBRARY_LAPACK})
 
 # #################################
 # HDF5
@@ -295,7 +295,7 @@ message( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES} ")
 mark_as_advanced(HDF5_DIR) # defined somewhere else ? what is it ?
 
 include_directories (SYSTEM ${HDF5_INCLUDE_DIR})
-link_libraries (${HDF5_LIBRARIES}) 
+#link_libraries (${HDF5_LIBRARIES}) 
 set(TRIQS_LIBRARY_HDF5  ${HDF5_LIBRARIES})
 set(TRIQS_INCLUDE_HDF5 ${HDF5_INCLUDE_DIR})
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} ${HDF5_DEFINITIONS})
@@ -319,7 +319,7 @@ endif()
 message( STATUS "-------- GMP detection -------------")
 find_package(GMP)
 include_directories(SYSTEM ${GMP_INCLUDE_DIR})
-link_libraries(${GMP_LIBRARIES})
+#link_libraries(${GMP_LIBRARIES})
 set(TRIQS_LIBRARY_GMP ${GMP_LIBRARIES} ${GMPXX_LIBRARIES}) 
 set(TRIQS_INCLUDE_GMP ${GMP_INCLUDE_DIR})
 
@@ -327,7 +327,7 @@ set(TRIQS_INCLUDE_GMP ${GMP_INCLUDE_DIR})
 message( STATUS "-------- FFTW detection -------------")
 find_package(FFTW)
 include_directories(SYSTEM ${FFTW_INCLUDE_DIR})
-link_libraries( ${FFTW_LIBRARIES})
+#link_libraries( ${FFTW_LIBRARIES})
 set(TRIQS_LIBRARY_FFTW ${FFTW_LIBRARIES})
 set(TRIQS_INCLUDE_FFTW ${FFTW_INCLUDE_DIR})
 
@@ -336,7 +336,7 @@ message( STATUS "-------- NFFT detection (optional) -------------")
 find_package(NFFT)
 IF(NFFT_FOUND)
 include_directories(SYSTEM ${NFFT_INCLUDE_DIR})
-link_libraries( ${NFFT_LIBRARIES})
+#link_libraries( ${NFFT_LIBRARIES})
 set(TRIQS_LIBRARY_FFTW ${TRIQS_LIBRARY_FFTW} ${NFFT_LIBRARIES})
 set(TRIQS_INCLUDE_FFTW ${TRIQS_INCLUDE_FFTW} ${NFFT_INCLUDE_DIR})
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -DHAVE_NFFT )
@@ -348,13 +348,6 @@ ENDIF(NFFT_FOUND)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -pthread )
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
-#
-
-# 64 bits machine ?
-#if(CMAKE_SIZEOF_VOID_P EQUAL 8 OR CMAKE_GENERATOR MATCHES Win64)
-#  set (TRIQS_64BIT ON)
-#endif(CMAKE_SIZEOF_VOID_P EQUAL 8 OR CMAKE_GENERATOR MATCHES Win64)
 
 # is it useful ?
 if(NOT CMAKE_BUILD_TYPE)
@@ -399,14 +392,22 @@ option(Build_Documentation "Build the documentation ?" OFF)
 #------------------------------------------------------
 # link libs for shared libs or for pytriqs 
 #------------------------------------------------------
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ set(TRIQS_LINK_LIBS_PYTHON "-undefined dynamic_lookup")
+else()
+ set(TRIQS_LINK_LIBS_PYTHON ${TRIQS_LIBRARY_PYTHON})
+endif()
 
 set(TRIQS_LINK_LIBS 
- ${TRIQS_LIBRARY_PYTHON}
- ${FFTW_LIBRARIES}
- ${BOOST_LIBRARY} 
- ${LAPACK_LIBS}
- ${GMP_LIBRARIES} ${GMPXX_LIBRARIES}
- )
+${TRIQS_LIBRARY_BOOST} 
+${TRIQS_LINK_LIBS_PYTHON}
+${TRIQS_LIBRARY_MPI} 
+${TRIQS_LIBRARY_HDF5} 
+${TRIQS_LIBRARY_LAPACK} 
+${TRIQS_LIBRARY_FFTW} 
+${TRIQS_LIBRARY_GMP} 
+${TRIQS_LIBRARY_GSL} 
+)
 
 # General include header
 # remove this dep to C++

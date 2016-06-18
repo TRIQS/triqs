@@ -35,8 +35,13 @@ macro (triqs_python_extension ModuleName)
 
  add_library(${ModuleName} MODULE ${wrap_name})
  set_target_properties(${ModuleName} PROPERTIES PREFIX "") #eliminate the lib in front of the module name
- target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
-
+ 
+ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  target_link_libraries(${ModuleName} triqs "-undefined dynamic_lookup")
+ else()
+  target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
+ endif()
+ 
  if (${ARGN} MATCHES "")
   install (FILES ${converter_name}.to_be_installed DESTINATION "include/triqs/py_converters" RENAME ${ModuleName}.hpp)
    install (TARGETS ${ModuleName} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ARGN}  )
