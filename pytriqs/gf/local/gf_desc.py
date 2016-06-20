@@ -452,6 +452,11 @@ for py_type, has_tail in [("GfImFreq", True) ,("GfImFreqNoTail",False)]:
               signature = "void(tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true)",
               calling_pattern = "fit_tail(self_c, *known_moments, max_moment, n_min, n_max, replace_by_fit)",
               doc = """Set the tail by fitting""")
+
+  g.add_method(name = "fit_tail",
+              signature = "void(tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit = true)",
+              calling_pattern = "fit_tail(self_c, *known_moments, max_moment, neg_n_min, neg_n_max, pos_n_min, pos_n_max, replace_by_fit)",
+              doc = """Set the tail by fitting""")
   
 # Pure python methods
  g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail_depr")
