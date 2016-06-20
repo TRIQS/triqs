@@ -58,11 +58,31 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     sl = clip_array(X, *rx) if rx else slice(len(X)) # the slice due to clip option x_window
 
     def mdic(prefix, f):
+       rank = len(self.target_shape)
+       if rank==2:
         return [{'xlabel': xlabel,
                  'ylabel': ylabel(self.name or name),
                  'xdata': X[sl],
                  'label': prefix + "%s %s_%s" % (name, i, j),
                  'ydata': f(self.data[sl, i, j])} for i in range(self.target_shape[0]) for j in range(self.target_shape[1])]
+       elif rank==3:
+        return [{'xlabel': xlabel,
+                 'ylabel': ylabel (self.name or name),
+                 'xdata': X[sl],
+                 'label': prefix + "%s %s_%s"%(name,i,j) , 
+                 'ydata': f( self.data[sl,i,j, k] ) } for i in range(self.target_shape[0]) \
+                                                     for j in range(self.target_shape[1]) \
+                                                     for k in range(self.target_shape[2])]
+       elif rank==4:
+        return [{'xlabel': xlabel,
+                 'ylabel': ylabel (self.name or name),
+                 'xdata': X[sl],
+                 'label': prefix + "%s %s_%s"%(name,i,j) , 
+                 'ydata': f( self.data[sl,i,j, k, l] ) } for i in range(self.target_shape[0]) \
+                                                     for j in range(self.target_shape[1]) \
+                                                     for k in range(self.target_shape[2]) \
+                                                     for l in range(self.target_shape[3])]
+       else: raise Exception("Rank %s not implemented in plot"%rank)
 
     # backward compat.
     if 'RI' in opt_dict:
