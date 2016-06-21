@@ -224,5 +224,9 @@ namespace triqs { namespace gfs {
    fit_tail(reinterpret_scalar_valued_gf_as_matrix_valued(gf), known_moments, max_moment, n_min, n_max, replace_by_fit );
  }
 
+ void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max,int pos_n_min, int pos_n_max, bool replace_by_fit ){
+   fit_tail(reinterpret_scalar_valued_gf_as_matrix_valued(gf), known_moments, max_moment, neg_n_min, neg_n_max, pos_n_min, pos_n_max, replace_by_fit );
+ }
+
 
  }} // namespace

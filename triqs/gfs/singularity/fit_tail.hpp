@@ -127,6 +127,7 @@ namespace triqs { namespace gfs {
   @note Based on [[fit_tail_impl]]
  */
  void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = false) ;
+ void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max,int pos_n_min, int pos_n_max, bool replace_by_fit = false) ;
 
  ///fit tail of tensor_valued Gf, rank 3
  template<typename S>
