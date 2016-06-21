@@ -198,10 +198,10 @@ namespace triqs { namespace gfs {
  void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit) {
 
   if (get_target_shape(gf) != known_moments.shape()) TRIQS_RUNTIME_ERROR << "shape of tail does not match shape of gf";
-  if (pos_n_min <= 0) TRIQS_RUNTIME_ERROR << "pos_n_min must be larger than 0";
-  if (pos_n_max <= pos_n_min) TRIQS_RUNTIME_ERROR << "pos_n_max must be larger than pos_n_min";
-  if (neg_n_max <= 0) TRIQS_RUNTIME_ERROR << "neg_n_max must be smaller than 0";
-  if (neg_n_min <= neg_n_max) TRIQS_RUNTIME_ERROR << "neg_n_min must be smaller than neg_n_max";
+  if (pos_n_min <= 0) TRIQS_RUNTIME_ERROR << "pos_n_min ("<<pos_n_min<<") must be larger than 0";
+  if (pos_n_max <= pos_n_min) TRIQS_RUNTIME_ERROR << "pos_n_max ("<<pos_n_max<<") must be larger than pos_n_min ("<<pos_n_min<<")";
+  if (neg_n_max >= 0) TRIQS_RUNTIME_ERROR << "neg_n_max ("<< neg_n_max <<") must be smaller than 0";
+  if (neg_n_min >= neg_n_max) TRIQS_RUNTIME_ERROR << "neg_n_min ("<<neg_n_min <<") must be smaller than neg_n_max ("<<neg_n_max<<")";
 
   gf.singularity()  = fit_complex_tail_impl(gf, known_moments, max_moment, neg_n_min, neg_n_max);
   gf.singularity() += fit_complex_tail_impl(gf, known_moments, max_moment, pos_n_min, pos_n_max);
