@@ -4,6 +4,6 @@
 #error "Clang is too old. C++14 support is not present"
 #endif
 
-int main() { 
- std::cout << __GNUC__ <<"."<<__GNUC_MINOR__ <<"."<<__GNUC_PATCHLEVEL__;
+int main() {
+ std::cout << __clang_major__ <<"."<< __clang_minor__ <<"."<< __clang_patchlevel__;
 }
