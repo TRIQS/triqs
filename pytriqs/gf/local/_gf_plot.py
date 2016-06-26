@@ -28,7 +28,7 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
                       -- 'R': real part only
                       -- 'I': imaginary part only
                       -- 'S': spectral function
-              - x_window: tuple, default None 
+              - x_window: tuple, default None
                           (xmin,xmax)
               - name: string, default = ''
                       If not '', it remplaces the name of the function just for this plot.
@@ -37,7 +37,7 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     ylabel: string
             Label to apply to the y axis.
     X: list
-       The x values the object can take, i.e. the mesh. 
+       The x values the object can take, i.e. the mesh.
     allow_spectral_mode: boolean, default False
                          Can the spectral function be measured for this type of Green's function?
 
@@ -58,31 +58,15 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     sl = clip_array(X, *rx) if rx else slice(len(X)) # the slice due to clip option x_window
 
     def mdic(prefix, f):
-       rank = len(self.target_shape)
-       if rank==2:
+        from itertools import product
+        ind_range = product(*map(range,reversed(self.target_shape)))
+        make_label = lambda ind: "%s%s %s" % (prefix,name,"_".join(map(str, reversed(ind))))
+        make_data_sl = lambda ind: (sl,) + tuple(reversed(ind))
         return [{'xlabel': xlabel,
                  'ylabel': ylabel(self.name or name),
                  'xdata': X[sl],
-                 'label': prefix + "%s %s_%s" % (name, i, j),
-                 'ydata': f(self.data[sl, i, j])} for i in range(self.target_shape[0]) for j in range(self.target_shape[1])]
-       elif rank==3:
-        return [{'xlabel': xlabel,
-                 'ylabel': ylabel (self.name or name),
-                 'xdata': X[sl],
-                 'label': prefix + "%s %s_%s"%(name,i,j) , 
-                 'ydata': f( self.data[sl,i,j, k] ) } for i in range(self.target_shape[0]) \
-                                                     for j in range(self.target_shape[1]) \
-                                                     for k in range(self.target_shape[2])]
-       elif rank==4:
-        return [{'xlabel': xlabel,
-                 'ylabel': ylabel (self.name or name),
-                 'xdata': X[sl],
-                 'label': prefix + "%s %s_%s"%(name,i,j) , 
-                 'ydata': f( self.data[sl,i,j, k, l] ) } for i in range(self.target_shape[0]) \
-                                                     for j in range(self.target_shape[1]) \
-                                                     for k in range(self.target_shape[2]) \
-                                                     for l in range(self.target_shape[3])]
-       else: raise Exception("Rank %s not implemented in plot"%rank)
+                 'label': make_label(ind),
+                 'ydata': f(self.data[make_data_sl(ind)])} for ind in ind_range]
 
     # backward compat.
     if 'RI' in opt_dict:
