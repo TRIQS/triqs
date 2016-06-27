@@ -29,6 +29,7 @@ Tutorials in python
 
    tutorials/gfs/gfs_tutorial_python
    tutorials/gfs/lattice_gfs_tutorial_python
+   tutorials/gfs/multivar_gfs_tutorial_python
    tutorials/hdf5/hdf5_tutorial_python
 
 
