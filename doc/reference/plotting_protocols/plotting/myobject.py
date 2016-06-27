@@ -7,8 +7,8 @@ class myObject(object):
     ydata1 = numpy.cos(xdata)
     ydata2 = numpy.sin(xdata)
     return( [
-              {'type': "XY", 'xdata': xdata, 'ydata': ydata1, 'label': 'Cos'},
-              {'type': "XY", 'xdata': xdata, 'ydata': ydata2, 'label': 'Sin'}
+              {'xdata': xdata, 'ydata': ydata1, 'label': 'Cos'},
+              {'xdata': xdata, 'ydata': ydata2, 'label': 'Sin'}
             ] )
 
 X = myObject()

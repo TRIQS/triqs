@@ -75,7 +75,7 @@ See example below.
     * *xdata*: A 1-dimensional numpy array describing the x-axis points
     * *ydata*: A 1-dimensional numpy array describing the y-axis points
     * *label*: Label of the curve for the legend of the graph
-    * *type*: a string: currently "XY" [ optional] 
+    * *type*: a string: currently "XY" [DEPRECATED] 
 
    and optionally: 
     
