@@ -7,10 +7,11 @@ class myObject(object):
     phi = options.pop('phi',0)      # Crucial : removes the entry from the dict
     ydata1 = numpy.cos(xdata + phi)
     ydata2 = numpy.sin(xdata + phi)
-    return( [
-              {'xdata': xdata, 'ydata': ydata1, 'label': r'$x \rightarrow \cos (x + \phi), \quad \phi = %s$'%phi},
-              {'xdata': xdata, 'ydata': ydata2, 'label': r'$x \rightarrow \sin (x + \phi), \quad \phi = %s$'%phi}
-            ] )
+    dict1 = {'xdata': xdata, 'ydata': ydata1, 'label': r'$x \rightarrow \cos (x + \phi), \quad \phi = %s$'%phi}
+    dict2 = {'xdata': xdata, 'ydata': ydata2, 'label': r'$x \rightarrow \sin (x + \phi), \quad \phi = %s$'%phi}
+    dict1.update(options)
+    dict2.update(options)
+    return [dict1, dict2]
 
 X = myObject()
 
