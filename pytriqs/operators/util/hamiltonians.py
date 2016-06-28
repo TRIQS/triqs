@@ -225,7 +225,7 @@ def h_int_density(spin_names,orb_names,U,Uprime,off_diag=None,map_operator_struc
 
     return H
 
-def extract_n_part(H):
+def diagonal_part(H):
     r"""
     Extract the density part from an operator H.
 

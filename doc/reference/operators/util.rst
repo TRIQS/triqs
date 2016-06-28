@@ -26,6 +26,13 @@ Observables
 .. automodule:: pytriqs.operators.util.observables
    :members:
 
+Coefficient extraction
+======================
+
+.. automodule:: pytriqs.operators.util.extractors
+   :members:
+
+
 Helper functions
 ================
 
