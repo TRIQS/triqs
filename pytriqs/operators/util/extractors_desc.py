@@ -1,10 +1,12 @@
 from wrap_generator import *
 
-# The many_body_operators module
+# pytriqs.operators.util.extractors module
 module = module_(full_name = "pytriqs.operators.util.extractors",
-                 doc = "Functions to extract coefficients from many-body operators")
+                 doc = "Functions to extract coefficients from many-body operators",
+                 app_name = "triqs")
 
-module.use_module("operators")
+module.use_module('operators')
+
 module.add_include("<triqs/operators/util/extractors.hpp>")
 module.add_include("<triqs/python_tools/converters/map.hpp>")
 module.add_include("<triqs/python_tools/converters/tuple.hpp>")
