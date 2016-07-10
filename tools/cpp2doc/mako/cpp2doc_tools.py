@@ -40,12 +40,16 @@ def make_synopsis(m, decal):
     try :
         syn = m.doc_elements['synopsis']
         if syn : return [syn]
-        s = " {name} ({args}) {const}; "
+        s = " {name} ({args}) {const}"
         if not m.is_constructor :
           s = process_rtype(m.rtype) + s
         s = make_synopsis_template_decl(m.tparams) + "\n" + s
-        args = ', '.join( ["%s %s"%(process_param_type(t),n) + (" = %s"%d if d else "") for t,n,d in m.params])
+        # filter to remove enable_if dummies from the API
+        def no_dummy (t,n) : 
+            return not ( 'enable_if' in t.name and 'dummy' in n)
+        args = ', '.join( ["%s %s"%(process_param_type(t),n) + (" = %s"%d if d else "") for t,n,d in m.params if no_dummy(t,n)])
         s = s.format(args = args, name = m.name.strip(), const = m.const)
+        if getattr(m,'noexcept',False): s += ' noexcept' 
         r = [x.strip() for x in s.split('\n')]
         L= [x for x in r if x]
         L_lb = [add_linebreaks(x) for x in L]
@@ -74,6 +78,7 @@ def prepare_example(filename, decal):
     """From the filename, prepare the doc1, doc2, before and after the code
        and compute the lineno of the code for inclusion"""
     filename += ".cpp"
+    #if not os.path.exists(filename) : filename = '/
     if not os.path.exists(filename) :
         #print "example file %s (in %s) does not exist"%(filename,os.getcwd())
         return None, None, None, 0, 0

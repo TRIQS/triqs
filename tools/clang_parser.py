@@ -73,6 +73,9 @@ def extract_bracketed(tokens):
         r.append(t)
         if bracket_count == 0: return r
 
+def make_signature_template_params(tparams):
+    return "template<" + ', '.join(["%s %s = %s"%x if x[2] else "%s %s"%x[:2] for x in tparams]) + ">  " if tparams else ''
+
 class Function(object):
     def __init__(self, cursor, is_constructor = False, ns=(), parent_class = None):
         loc = cursor.location.file.name
@@ -91,10 +94,12 @@ class Function(object):
         self.parameter_arg = None # If exists, it is the parameter class
 
         tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
-        #print "TOKENS ", tokens
 
         # detect from the tokens if a constructor is explicit
         self.is_explicit =  'explicit' in tokens
+
+        # detects no except
+        self.is_noexcept = 'noexcept' in tokens[-2:]
 
         def rindex(l, x) :
             """Get the right index of x in the list l"""
@@ -114,6 +119,7 @@ class Function(object):
         if self.is_constructor : self.name = parent_class.name
 
         for c in cursor.get_children():
+
             if c.kind == CursorKind.TEMPLATE_TYPE_PARAMETER :
                 tokens = [t.spelling if t else '' for t in c.get_tokens()]
                 d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
@@ -129,10 +135,12 @@ class Function(object):
                     if ch.kind in [CursorKind.INTEGER_LITERAL, CursorKind.FLOATING_LITERAL,
                                    CursorKind.CHARACTER_LITERAL, CursorKind.STRING_LITERAL,
                                    CursorKind.UNARY_OPERATOR, CursorKind.UNEXPOSED_EXPR,
-                                   CursorKind.CXX_BOOL_LITERAL_EXPR ] :
-                        #print [x.spelling for x in ch.get_tokens()]
+                                   CursorKind.CXX_BOOL_LITERAL_EXPR, CursorKind.CALL_EXPR ] :
                         #default_value =  ch.get_tokens().next().spelling
                         default_value =  ''.join([x.spelling for x in ch.get_tokens()][:-1])
+                        # if the default value is a = A{} or = {}, need to clean
+                        # the = in front of it (why ??).
+                        default_value = default_value.strip(' =')
                 t = type_(c.type)
 
                 # We look if this argument is a parameter class...
@@ -143,8 +151,9 @@ class Function(object):
                     self.parameter_arg = Class(tt, ns)
 
                 self.params.append ( (t, c.spelling, default_value ))
-              #else :
-            #    print " node in fun ", c.kind
+            #else:
+            #    print "unknown kind ", c.kind, c.kind.is_attribute(), dir(c.kind)
+ 
         if self.parameter_arg : assert len(self.params) == 1, "When using a parameter class, it must have exactly one argument"
         self.rtype = type_(cursor.result_type) if not is_constructor else None
         #print self.rtype, parent_class.name if parent_class else ''
@@ -157,8 +166,7 @@ class Function(object):
     def signature_cpp2(self) :
         s = "{name} ({args})" if self.is_constructor else "{rtype} {name} ({args})"
         s = s.format(args = ', '.join( ["%s %s"%(t.name,n) + ("=%s"%d if d else "") for t,n,d in self.params]), **self.__dict__)
-        if self.tparams :
-            s = "template<" + ', '.join(['typename ' + str(x) for x in self.tparams]) + ">  " + s
+        s= make_signature_template_params(self.tparams) + s
         if self.is_static : s = "static " + s
         return s.strip()
 
@@ -189,10 +197,12 @@ class FriendFunction(Function):
         self.parameter_arg = None
 
         tokens = [t.spelling if t else '' for t in cursor.get_tokens()]
+        # If the friend function is a template, must analyse the template part
         if tokens[0] == "template":
             template_part = extract_bracketed(tokens[1:])
-            # Parse template params?
             tokens = tokens[len(template_part)+1:]
+            # Parse template params
+            self.tparams = [ (x.strip().split(' ') + [None]) for x in " ".join(template_part[1:-1]).split(',')]
 
         open_par, close_par = tokens.index('('),tokens.index(')')
         l = tokens[1:open_par]
@@ -215,6 +225,11 @@ class FriendFunction(Function):
             else :
                 tmp.append(x)
         f(tmp)
+
+def is_deprecated(c):
+    """Check if the node is deprecated"""
+    tokens = [t.spelling if t else '' for t in c.get_tokens()]
+    return len(tokens)>3 and tokens[0] =='__attribute__' and tokens[3] =='deprecated'
 
 class Class(object):
     def __init__(self, cursor,ns):
@@ -248,8 +263,23 @@ class Class(object):
         print "Analysing", self.name
 
         for c in cursor.get_children():
-            # Only public nodes
+
+            # Need to analyse this FIRST, their access is not public strangely
+            # so they do not pass the next tests.
+            if c.kind == CursorKind.TEMPLATE_TYPE_PARAMETER:
+                tokens = [t.spelling if t else '' for t in c.get_tokens()]
+                d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
+                self.tparams.append(("typename", c.spelling, d))
+
+            if c.kind == CursorKind.TEMPLATE_NON_TYPE_PARAMETER:
+                tokens = [t.spelling if t else '' for t in c.get_tokens()]
+                d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
+                self.tparams.append((tokens[0], c.spelling, d))
+
+            # Skip private, undocumented or deprecated nodes
             if c.access_specifier != clang.cindex.AccessSpecifier.PUBLIC : continue
+            if not c.raw_comment : continue
+            if is_deprecated(c) : continue
 
             if (c.kind == CursorKind.CXX_BASE_SPECIFIER):
                tokens = [t.spelling if t else '' for t in c.get_tokens()]
@@ -291,16 +321,6 @@ class Class(object):
             #    print [x.spelling for x in c.get_children()]
             #    self.type_alias.append(type_alias_(c))
 
-            elif c.kind == CursorKind.TEMPLATE_TYPE_PARAMETER:
-                tokens = [t.spelling if t else '' for t in c.get_tokens()]
-                d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
-                self.tparams.append(("typename", c.spelling, d))
-
-            elif c.kind == CursorKind.TEMPLATE_NON_TYPE_PARAMETER:
-                tokens = [t.spelling if t else '' for t in c.get_tokens()]
-                d = ''.join(tokens[tokens.index('=') + 1:-1]) if '=' in tokens else None
-                self.tparams.append((tokens[0], c.spelling, d))
-
             elif c.kind == CursorKind.UNEXPOSED_DECL:
                 tokens =  [t.spelling if t else '' for t in c.get_tokens()]
                 if tokens[0] == "template": tokens = tokens[len(extract_bracketed(tokens[1:]))+1:]
@@ -330,6 +350,7 @@ class Class(object):
         for m in self.functions :
            s2 += ("friend " + str(m)).split('\n')
         s2 = '\n'.join( [ "   " + l.strip() + '\n' for l in s2 if l.strip()])
+        s= make_signature_template_params(self.tparams) + s
         return s + s2
 
     def __repr__(self) :

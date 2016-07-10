@@ -56,12 +56,15 @@ Meaning of the @option in the doc:
  * @warning     Warning
  * @figure     An illustration
  * @note        Note
- * @include   For a class, a function, the top level file to include [default: the definition file]
+ * @include     For a class, a function, the top level file to include [default: the definition file]
+ * @example filename  File name of the example. Path should start from doc/reference/c++
 
  * @manual_methods  Comma separated list of methods which are referenced in the table,
                     but the page of doc is not generated. It will be written manually.
  * @manual_friends  Comma separated list of non member functions which are referenced in the table,
                     but the page of doc is not generated. It will be written manually.
+
+The @ MUST BE THE LAST FIELDS
 """
 
 def grab_from_doc (doc, var1, var2):
@@ -80,13 +83,19 @@ def grab_from_doc (doc, var1, var2):
 
 def process_doc_function(f):
     """Process the doc of the function f"""
-    f.brief_doc = replace_latex(f.doc.split('\n',1)[0])
-    f.doc_elements, f.processed_doc = grab_from_doc(replace_latex(f.doc), ['include', 'return', 'synopsis', 'warning','figure', 'note'],['param', 'tparam'])
+    spl = f.doc.split('\n',1)
+    f.brief_doc = replace_latex(spl[0])
+    f.doc_elements, f.processed_doc = grab_from_doc('\n'.join(spl[1:]), 
+            ['include', 'return', 'synopsis', 'warning','figure', 'note', 'example'],['param', 'tparam'])
+    f.processed_doc = replace_latex(f.processed_doc)
 
 def process_doc_class(c):
     """Process the doc of the class c"""
-    c.brief_doc = c.doc.split('\n',1)[0]
-    c.doc_elements, c.processed_doc = grab_from_doc(replace_latex(c.doc), ['include', 'manual_methods', 'manual_friends','warning','figure', 'note'],['tparam'])
+    spl = c.doc.split('\n',1)
+    c.brief_doc = spl[0]
+    c.doc_elements, c.processed_doc = grab_from_doc('\n'.join(spl[1:]), 
+            ['include', 'manual_methods', 'manual_friends','warning','figure', 'note', 'example'],['tparam'])
+    c.processed_doc = replace_latex(c.processed_doc)
 
 def regroup_func_by_names(constructors, *f_list_list):
     """ Given a list of functions, regroup them by names"""
@@ -122,8 +131,7 @@ def mkchdir(*subdirs):
 if __name__ == '__main__':
 
     compiler_options = args.compiler_options or []
-    compiler_options.append("-std=c++1y")
-
+    compiler_options.append("-std=c++14")
     compiler_options += ['-I%s'%x for x in args.includes]
     add_opts = '@TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS@'.strip()
     if add_opts:
