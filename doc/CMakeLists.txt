@@ -76,14 +76,21 @@ add_dependencies(docs_sphinx rst_copy) # we must first have copied the sources
 # use c++2doc to automatically build the documentation of C++
 option(DocWithCpp2doc "Use c++2doc to generate C++ documentation of triqs classes and functions (requires libclang)" ON)
 if (DocWithCpp2doc)
- FILE(GLOB_RECURSE all_header_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ../triqs/*.hpp)
-add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log DEPENDS ${all_header_files}
-                    COMMAND export PYTHONPATH=$$PYTHONPATH:${CMAKE_BINARY_DIR}/tools/cpp2doc/mako && ${PYTHON_INTERPRETER}
-		    ${CMAKE_BINARY_DIR}/tools/c++2doc.py -N triqs ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp
+ FILE(GLOB_RECURSE all_header_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ../triqs/*.hpp ../triqs/*.mhpp)
+add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log DEPENDS ${all_header_files} 
+                    COMMAND export PYTHONPATH=\$PYTHONPATH:${CMAKE_BINARY_DIR}/tools/cpp2doc/mako && ${PYTHON_INTERPRETER} 
+		    ${CMAKE_BINARY_DIR}/tools/c++2doc.py 
+		    -N triqs 
+		    ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp 
 		    --output_directory=${CMAKE_CURRENT_BINARY_DIR}/cpp2doc_generated
-		    --includes=${CMAKE_SOURCE_DIR}/ --includes=${CMAKE_BINARY_DIR}/Config --compiler_options="-DTRIQS_BUILDING_LIBRARY"
-		    --mako_location=${CMAKE_SOURCE_DIR}/tools/ 2>1 > cpp2py.log)
-add_custom_target(docs_cpp2doc DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log)
+		    --includes=${CMAKE_SOURCE_DIR}/ 
+		    --includes=${CMAKE_BINARY_DIR}/Config 
+		    --includes=${CMAKE_BINARY_DIR}/include
+		    --compiler_options="-DTRIQS_BUILDING_LIBRARY" 
+		    --mako_location=${CMAKE_SOURCE_DIR}/tools/ 
+		    #2>1 > cpp2py.log
+		    ) 
+add_custom_target(docs_cpp2doc DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log) 
 add_dependencies(docs_sphinx docs_cpp2doc triqs) # we must have installed the sources before building
 endif()
 

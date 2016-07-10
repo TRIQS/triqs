@@ -28,7 +28,7 @@ ${tools.make_synopsis_list(f_overloads)}
 
 %for n,m in enumerate(f_overloads) :
 
----------------------------------------
+..  ---------------------------------------
 
 %if c is None :
 
@@ -47,7 +47,7 @@ ${tools.make_synopsis_list(f_overloads)}
 <%
 num = '(%s)'%(n+1) if len(f_overloads)>1 else ''
 %>
-${num} ${m.processed_doc}
+${num} ${m.brief_doc}
 %if m.doc_elements['note']:
 
 .. note::
@@ -107,10 +107,18 @@ Return value
 ${m.doc_elements['return']}
 %endif
 
+%if m.processed_doc: 
+Documentation
+--------------
+${m.processed_doc}
+%endif
+
 %endfor
 
 <%
-  code,d1,d2, s,e = tools.prepare_example(f_name, 4)
+  # any example from the overloads
+  example_file_name = reduce(lambda x,y : x or y, [ m.doc_elements['example'] for m in f_overloads] + [f_name], '')  
+  code,d1,d2, s,e = tools.prepare_example(example_file_name, 4)
 %>
 
 
