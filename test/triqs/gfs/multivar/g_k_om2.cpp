@@ -40,14 +40,15 @@ TEST(Gf, Experimental1) {
  auto r5 = sum_gf(k_ >> G_k_iom(k_, 0), g_eps.mesh());
  G_loc(w_) << sum_gf(k_ >> G_k_iom(k_, w_), g_eps.mesh());
 
- auto G_k_tau = gf<cartesian_product<brillouin_zone, imtime>>{{{bz, 20}, {beta, Fermion, 100}}, {1, 1}};
+ auto G_k_tau = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued, m_tail<brillouin_zone>>{
+     {{bz, 20}, {beta, Fermion, 201}}, {1, 1}};
 
  // auto r3 = partial_eval<0>(G_k_iom,0);
  // auto r4 = partial_eval<0>(G_k_tau,0);
  // auto gt = curry<0>(G_k_tau) [0];
  // auto  gw = curry<0>(G_k_iom)[0];
 
- // curry<0>(G_k_tau) [k_] << inverse_fourier(curry<0>(G_k_iom)[k_]);
+  curry<0>(G_k_tau) [k_] << inverse_fourier(curry<0>(G_k_iom)[k_]);
 
  // TEST(G_k_tau[{0,0}]);
 
