@@ -85,4 +85,30 @@ TEST(Gf, Block) {
   }
 
  }
+
+ TEST(Block, Order){
+  double beta = 1;
+  auto G1 = gf<imfreq>({beta, Fermion}, {1, 1});
+  auto G2 = gf<imfreq>({beta, Fermion}, {1, 1});
+  triqs::clef::placeholder<0> w_;
+  G1(w_) << 1 / (w_ + 2);
+  G2(w_) << 1 / (w_ - 2);
+
+  auto B_ab = make_block_gf<imfreq>({"a", "b"}, {G1, G2});
+  auto B_ba = make_block_gf<imfreq>({"b", "a"}, {G2, G1});
+  
+  auto B_res = B_ab;
+  for(auto const & ind : B_res.mesh()){
+      //B_res[ind] = B_ba[ind];
+      B_res[ind] = B_ba(ind);
+  }
+  std::cout << B_ab[0](0) << std::endl;
+  std::cout << B_ba[1](0) << std::endl;
+  std::cout << B_res[0](0) << std::endl;
+
+
+    
+ }
+
+
 MAKE_MAIN;

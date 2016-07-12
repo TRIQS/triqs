@@ -41,7 +41,7 @@ def oplot(obj, *opt_list, **opt_dict):
     Options are the same as for the pyplot.plot function.
     """
     plt.figure(num=opt_dict.pop('num', plt.gcf().number))
-    __oplot_impl(plt, plt.xlabel, plt.ylabel, plt.legend, obj, *opt_list, **opt_dict)
+    __oplot_impl(plt, plt.xlabel, plt.ylabel, plt.legend, obj, plt.xticks, *opt_list, **opt_dict)
 
 
 def oplotr(obj, *opt_list, **opt_dict):
@@ -63,7 +63,7 @@ def oploti(obj, *opt_list, **opt_dict):
 mpl.axes.Axes.oplot = lambda self, obj, *opt_list, **opt_dict: __oplot_impl(self, self.set_xlabel, self.set_ylabel, self.legend, obj, *opt_list, **opt_dict)
 
 
-def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, *opt_list, **opt_dict):
+def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, xticks_fct, *opt_list, **opt_dict):
     """
     A thin layer above pyplot.plot function that allows plotting objects with
     plot protocol as well as arrays.
@@ -84,11 +84,17 @@ def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, *opt_list, **opt_
         # Sort out axis labels and legend
         xlabel = curve_dict.pop('xlabel',None)
         ylabel = curve_dict.pop('ylabel',None)
+        xticks = curve_dict.pop('xticks',None)
         if xlabel: xlabel_fct(xlabel)
         if ylabel: ylabel_fct(ylabel)
+        if xticks: xticks_fct(*xticks, rotation=30)
         is_legend = curve_dict.pop('legend',True)
 
         try:
+         if "zdata" in curve_dict.keys():
+            Z = curve_dict.pop('zdata')
+            plt_fct(X, Y, Z, *opt_list, **curve_dict)
+         else:
             plt_fct(X, Y, *opt_list, **curve_dict)
         except TypeError, e:
             import re

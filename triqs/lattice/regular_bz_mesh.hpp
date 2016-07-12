@@ -66,7 +66,7 @@ namespace gfs {
   }
 
   k_t index_to_point(index_t const& i) const {
-   return {i[0] * step[0], i[1] * step[1], i[2] * step[2]};
+   return bz.lattice().units() * arrays::vector<double>({i[0] * step[0], i[1] * step[1], i[2] * step[2]});
    //return {(i[0] + 0.5) * step[0], (i[1] + 0.5) * step[1], (i[2] + 0.5) * step[2]};
   }
 

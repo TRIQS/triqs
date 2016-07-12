@@ -12,7 +12,7 @@ This notebook shows a basic example of manipulation of
     from pytriqs.lattice import *
     from pytriqs.lattice.tight_binding import *
     from pytriqs.plot.mpl_interface import *
-
+    %pylab inline
 
 
 Defining the meshes
@@ -30,30 +30,8 @@ zone and a mesh defined on it.
     miw=MeshImFreq(beta=1., S="Fermion", n_max=100) #not used  (just demo)
     mprod_iw = MeshBrillouinZoneImFreq(mk, miw) # not used (just demo)
     
-    mw=MeshReFreq(-5,5, 100)
+    mw=MeshReFreq(-5,5, 201)
     mprod = MeshBrillouinZoneReFreq(mk, mw)
-    
-    #define and draw path in BZ
-    figure(figsize=(3,3))
-    gs=GridSpec(1,1)
-    subplot(gs[0],aspect="equal")
-    title("Brillouin zone discretization")
-    for m in mk:   plot(m[0],m[1],'+k')
-        
-    nkmid=nk/2
-    path=[]
-    for i in range(0,nkmid):    path.append((i,i))
-    for i in range(0,nkmid):    path.append((nkmid-i,nkmid))
-    for i in range(0,nkmid):    path.append((0,nkmid-i))
-        
-    for i,j in path:    plot(i*2*pi/nk,j*2*pi/nk,'or')
-    xlabel(r"$k_x$");
-    ylabel(r"$k_y$");
-
-
-
-.. image:: output_3_0.png
-
 
 Definition of the Green's function
 ----------------------------------
@@ -85,28 +63,63 @@ and :math:`\Sigma(\omega)` is the atomic-limit self-energy:
      G_k_w_Mott.data[ik,:,0,0]=G_w.data[:,0,0]
      ik+=1
     
-    #trick for the plot
-    offset = GfBrillouinZone_x_ReFreq(mprod, [1,1])
-    offset.data[:,:,0,0]=-0.2*1j
 
-Photoemission spectrum
-----------------------
+Various plots
+-------------
 
-We plot the ARPES spectrum corresponding to :math:`U=0` (black) and
-:math:`U=4` (red).
+We plot various slices of :math:`G(\mathbf{k},\omega)` corresponding to
+:math:`U=0` and :math:`U=4`.
 
 .. code:: python
 
-    title("ARPES spectrum along $(0,0)-(\pi,\pi)-(0,\pi)-(0,0)$")
-    ind=0
-    for i,j in path:
-     oplot(((-1./pi)*(G_k_w+ind*offset).slice_at_const_w1([i,j,0])).imag, '-k', label=None)
-     oplot(((-1./pi)*(G_k_w_Mott+ind*offset).slice_at_const_w1([i,j,0])).imag, '-r', label=None)
-     ind+=1
-    ylabel(r"$A(\mathbf{k},\omega)=-\frac{1}{\pi}\mathrm{Im}G(\mathbf{k},\omega)$");
+    gs=GridSpec(2,2)
+    
+    subplot(gs[0])
+    title(r"$\mathrm{Im}G(\mathbf{k},\omega)$")
+    oplot(G_k_w, path=[(0,0),(pi,pi),(pi,0),(0,0)], method="cubic", component="I", cmap=cm.terrain)
+    colorbar()
+    
+    #color plot of slice at constant omega in the Brillouin zone
+    #slice_at_const_w2 takes the linear frequency index as input  
+    #method can be "nearest","linear", "cubic"
+    #component can be "I" (imaginary) or "R" (real)
+    subplot(gs[1],aspect="equal")
+    title(r"$\mathrm{Im}G(\mathbf{k},\omega=0)$")
+    oplot(G_k_w.slice_at_const_w2(len(G_k_w.mesh.components[1])/2), mode="contourf", component="I", method="cubic", cmap=cm.terrain)
+    colorbar()
+    
+    #plot of slice at constant omega on a high-symmetry path
+    subplot(gs[2])
+    oplot(G_k_w.slice_at_const_w2(len(G_k_w.mesh.components[1])/2), path=[(0,0),(pi,pi),(pi,0),(0,0)], method="cubic",\
+          component="I", label=r"$\mathrm{Im}G(\mathbf{k},\omega=0)$")
+    
+    #plot of slice at constant k
+    #slice_at_const_w1 takes the integer coordinates of the k point
+    subplot(gs[3])
+    oplot(G_k_w.slice_at_const_w1([0,0,0]), label=r"$\mathrm{Im}G(\mathbf{k}=(0,0), \omega)$", mode="I")
+    oplot(G_k_w.slice_at_const_w1([nk/2,nk/2,0]), label=r"$\mathrm{Im}G(\mathbf{k}=(\pi,\pi), \omega)$", mode="I")
+    tight_layout()
 
 
 
-.. image:: output_7_0.png
+.. image:: output_7_1.png
+
+
+.. code:: python
+
+    
+    gs=GridSpec(1,2)
+    subplot(gs[0])
+    title(r"$\mathrm{Im}G(\mathbf{k},\omega)$")
+    oplot(G_k_w_Mott, path=[(0,0),(pi,pi),(pi,0),(0,0)], method="cubic", component="I", cmap=cm.terrain)
+    colorbar()
+    subplot(gs[1])
+    oplot(G_k_w_Mott.slice_at_const_w1([0,0,0]), label=r"$\mathrm{Im}G(\mathbf{k}=(0,0), \omega)$", mode="I")
+    oplot(G_k_w_Mott.slice_at_const_w1([nk/2,nk/2,0]), label=r"$\mathrm{Im}G(\mathbf{k}=(\pi,\pi), \omega)$", mode="I")
+    tight_layout()
+
+
+
+.. image:: output_8_0.png
 
 

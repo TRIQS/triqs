@@ -409,8 +409,8 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
                    doc = "Put the Green function to 0")
 
     # Pure python methods
+    g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%c_tag, rename = "_plot_")
     if c_tag != "brillouin_zone":
-     g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%c_tag, rename = "_plot_")
      g.add_pure_python_method("pytriqs.gf.local._gf_plot.x_data_view", rename = "x_data_view")
 
     return g
