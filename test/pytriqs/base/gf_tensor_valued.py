@@ -1,6 +1,5 @@
 from pytriqs.gf.local import *
 from pytriqs.archive import *
-from pytriqs.plot.mpl_interface import *
 
 #one constructor
 m=MeshImFreq(beta=1, S='Fermion', n_max=10)
