@@ -1,4 +1,5 @@
 from select_indices import *
+from pytriqs.gf.local.multivar import *
 from scipy.interpolate import griddata
 import numpy as np
 
@@ -38,7 +39,16 @@ def plot(self, opt_dict):
     method = opt_dict.pop('method', 'nearest')
     comp = opt_dict.pop('mode', 'R')
     component=  lambda x : x.real if comp=="R" else x.imag
-
+    if type(self)==GfBrillouinZone_x_ImFreq:
+     Y_label=r"i\omega"
+    elif type(self)==GfBrillouinZone_x_ReFreq:
+     Y_label=r"\omega"
+    elif type(self)==GfBrillouinZone_x_ReTime:
+     Y_label="t"
+    elif type(self)==GfBrillouinZone_x_ImTime:
+     Y_label=r"\tau"
+    else:
+     Y_label="X"
     if plot_type=="contourf":
      path=opt_dict.pop("path")
      x,y,z,zmin, zmax, high_sym = plottable_slice_along_path(self,path=path, method=method)
@@ -48,11 +58,12 @@ def plot(self, opt_dict):
                      'ydata': y, 
                      'label': r'$G_\mathbf{k}$', 
                      'xlabel': r'$\mathbf{k}$',
+                     'ylabel': r'$%s$'%Y_label,
                      'zdata' : component(z),
                      'levels':np.linspace(component(zmin),component(zmax),50), 
                      'plot_function': 'contourf',
                      'xticks' : xticks_args,
-                     'title': r'$\mathrm{%s}G(\mathbf{k},\omega)$'%('Re' if comp=='R' else 'Im'), 
+                     'title': r'$\mathrm{%s}G(\mathbf{k},%s)$'%('Re' if comp=='R' else 'Im', Y_label), 
                     }
     else: raise Exception("Unknown plot type %s. Can only be 'contourf' (default)."%plot_type)
 

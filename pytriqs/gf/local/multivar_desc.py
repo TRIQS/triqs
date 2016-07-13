@@ -125,6 +125,8 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
     c.add_method_copy_from()
     if TimeMesh[0][0] =="BrillouinZone":
      c.add_pure_python_method("pytriqs.gf.local._gf_%s_x_X.plot"%(TimeMesh[0][1]), rename = "_plot_")
+    elif len(TimeMesh)==2:
+     c.add_pure_python_method("pytriqs.gf.local._gf_X_x_X.plot", rename = "_plot_")
 
     module.add_class(c)
 
