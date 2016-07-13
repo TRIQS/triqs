@@ -1,5 +1,5 @@
 import numpy as np
-from pytriqs.gf.local.multivar import *
+#from gf import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime
 
 def plot(self, opt_dict):
     r"""
@@ -10,18 +10,39 @@ def plot(self, opt_dict):
     method = opt_dict.pop('method', 'nearest')
     comp = opt_dict.pop('mode', 'R')
     component=  lambda x : x.real if comp=="R" else x.imag
-    if type(self)==GfImFreq_x_ImFreqTv3:
-     X_label = r"i\omega"
-     Y_label = r"i\Omega"
-     mp_comp = lambda x : x.imag
-    elif type(self)==GfImTime_x_ImTimeTv3:
-     X_label = r"\omega"
-     Y_label = r"\Omega"
-     mp_comp = lambda x : x.real
-    else:
-     X_label = "X"
-     Y_label = "Y"
-     mp_comp = lambda x : x.real
+#    if type(self.mesh.components[0])==MeshImFreq:
+#     X_label = r"i\omega"
+#     mp_comp = lambda x : x.imag
+#    elif type(self.mesh.components[0])==MeshReFreq:
+#     X_label = r"\omega"
+#     mp_comp = lambda x : x.real
+#    elif type(self.mesh.components[0])==MeshReTime:
+#     X_label = "t"
+#     mp_comp = lambda x : x.real
+#    elif type(self.mesh.components[0])==MeshImTime:
+#     X_label = r"\tau"
+#     mp_comp = lambda x : x.real
+#    else:
+#     X_label = "X"
+#     mp_comp = lambda x : x.real
+#    if type(self.mesh.components[1])==MeshImFreq:
+#     Y_label = r"i\omega"
+#     mp_comp = lambda x : x.imag
+#    elif type(self.mesh.components[1])==MeshReFreq:
+#     Y_label = r"\omega"
+#     mp_comp = lambda x : x.real
+#    elif type(self.mesh.components[1])==MeshReTime:
+#     Y_label = "t"
+#     mp_comp = lambda x : x.real
+#    elif type(self.mesh.components[1])==MeshImTime:
+#     Y_label = r"\tau"
+#     mp_comp = lambda x : x.real
+#    else:
+#     Y_label = "X"
+#     mp_comp = lambda x : x.real
+    X_label="i\omega"
+    Y_label="i\Omega"
+    mp_comp = lambda x : x.imag
 
     if plot_type=="contourf":
      x = np.array([mp_comp(m) for m in self.mesh.components[0]])

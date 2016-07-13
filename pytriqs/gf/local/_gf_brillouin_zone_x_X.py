@@ -1,5 +1,5 @@
 from select_indices import *
-from pytriqs.gf.local.multivar import *
+#from gf import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime
 from scipy.interpolate import griddata
 import numpy as np
 
@@ -39,16 +39,18 @@ def plot(self, opt_dict):
     method = opt_dict.pop('method', 'nearest')
     comp = opt_dict.pop('mode', 'R')
     component=  lambda x : x.real if comp=="R" else x.imag
-    if type(self)==GfBrillouinZone_x_ImFreq:
-     Y_label=r"i\omega"
-    elif type(self)==GfBrillouinZone_x_ReFreq:
-     Y_label=r"\omega"
-    elif type(self)==GfBrillouinZone_x_ReTime:
-     Y_label="t"
-    elif type(self)==GfBrillouinZone_x_ImTime:
-     Y_label=r"\tau"
-    else:
-     Y_label="X"
+#    if type(self.mesh.components[1])==MeshImFreq:
+#     Y_label = r"i\omega"
+#    elif type(self.mesh.components[1])==MeshReFreq:
+#     Y_label = r"\omega"
+#    elif type(self.mesh.components[1])==MeshReTime:
+#     Y_label = "t"
+#    elif type(self.mesh.components[1])==MeshImTime:
+#     Y_label = r"\tau"
+#    else:
+#     Y_label = "X"
+    Y_label = "\omega"
+
     if plot_type=="contourf":
      path=opt_dict.pop("path")
      x,y,z,zmin, zmax, high_sym = plottable_slice_along_path(self,path=path, method=method)

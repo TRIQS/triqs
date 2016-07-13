@@ -32,8 +32,4 @@ install (FILES ${CMAKE_SOURCE_DIR}/pytriqs/__init__.py.template DESTINATION "inc
 # 
 triqs_python_extension(multivar gf/local)
 add_dependencies(python_wrap_multivar python_wrap_gf)
-#triqs_python_extension_and_install(multivar)
-#target_link_libraries(multivar ${TRIQS_LIBRARY_ALL})
-#include_directories(${TRIQS_INCLUDE_ALL} ${CMAKE_CURRENT_SOURCE_DIR})
-#triqs_set_rpath_for_target(multivar)
-
+#add_dependencies(python_wrap_multivar python_wrap_gf gf)
