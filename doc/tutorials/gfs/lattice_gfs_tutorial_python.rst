@@ -1,5 +1,5 @@
 
-Green's functions defined on a lattice
+Lattice Green's functions
 ======================================
 
 This notebook shows a basic example of manipulation of
@@ -13,6 +13,7 @@ This notebook shows a basic example of manipulation of
     from pytriqs.lattice.tight_binding import *
     from pytriqs.plot.mpl_interface import *
     %pylab inline
+
 
 
 Defining the meshes
@@ -64,6 +65,7 @@ and :math:`\Sigma(\omega)` is the atomic-limit self-energy:
      ik+=1
     
 
+
 Various plots
 -------------
 
@@ -75,23 +77,21 @@ We plot various slices of :math:`G(\mathbf{k},\omega)` corresponding to
     gs=GridSpec(2,2)
     
     subplot(gs[0])
-    title(r"$\mathrm{Im}G(\mathbf{k},\omega)$")
-    oplot(G_k_w, path=[(0,0),(pi,pi),(pi,0),(0,0)], method="cubic", component="I", cmap=cm.terrain)
+    oplot(G_k_w[0,0], path=[(0,0),(pi,pi),(pi,0),(0,0)], method="cubic", mode="I", cmap=cm.terrain)
     colorbar()
     
     #color plot of slice at constant omega in the Brillouin zone
     #slice_at_const_w2 takes the linear frequency index as input  
     #method can be "nearest","linear", "cubic"
-    #component can be "I" (imaginary) or "R" (real)
+    #mode can be "I" (imaginary) or "R" (real)
     subplot(gs[1],aspect="equal")
-    title(r"$\mathrm{Im}G(\mathbf{k},\omega=0)$")
-    oplot(G_k_w.slice_at_const_w2(len(G_k_w.mesh.components[1])/2), mode="contourf", component="I", method="cubic", cmap=cm.terrain)
+    oplot(G_k_w.slice_at_const_w2(len(G_k_w.mesh.components[1])/2), type="contourf", mode="I", method="cubic", cmap=cm.terrain)
     colorbar()
     
     #plot of slice at constant omega on a high-symmetry path
     subplot(gs[2])
     oplot(G_k_w.slice_at_const_w2(len(G_k_w.mesh.components[1])/2), path=[(0,0),(pi,pi),(pi,0),(0,0)], method="cubic",\
-          component="I", label=r"$\mathrm{Im}G(\mathbf{k},\omega=0)$")
+          mode="I", label=r"$\mathrm{Im}G(\mathbf{k},\omega=0)$")
     
     #plot of slice at constant k
     #slice_at_const_w1 takes the integer coordinates of the k point
@@ -102,16 +102,14 @@ We plot various slices of :math:`G(\mathbf{k},\omega)` corresponding to
 
 
 
-.. image:: output_7_1.png
+.. image:: output_7_0.png
 
 
 .. code:: python
 
-    
     gs=GridSpec(1,2)
     subplot(gs[0])
-    title(r"$\mathrm{Im}G(\mathbf{k},\omega)$")
-    oplot(G_k_w_Mott, path=[(0,0),(pi,pi),(pi,0),(0,0)], method="cubic", component="I", cmap=cm.terrain)
+    oplot(G_k_w_Mott, path=[(0,0),(pi,pi),(pi,0),(0,0)], method="cubic", mode="I", cmap=cm.terrain)
     colorbar()
     subplot(gs[1])
     oplot(G_k_w_Mott.slice_at_const_w1([0,0,0]), label=r"$\mathrm{Im}G(\mathbf{k}=(0,0), \omega)$", mode="I")

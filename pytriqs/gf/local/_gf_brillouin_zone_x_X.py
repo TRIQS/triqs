@@ -34,28 +34,27 @@ def plot(self, opt_dict):
     Plot protocol for GfBrillouinZone objects.
     """
 
-    mode = opt_dict.pop('mode','plot')
+    plot_type = opt_dict.pop('type','contourf')
     method = opt_dict.pop('method', 'nearest')
-    comp = opt_dict.pop('component', 'R')
-    if comp =="R" :
-      component=  lambda x : x.real 
-    else:  
-      component= lambda x : x.imag
-    if mode=="plot":
+    comp = opt_dict.pop('mode', 'R')
+    component=  lambda x : x.real if comp=="R" else x.imag
+
+    if plot_type=="contourf":
      path=opt_dict.pop("path")
      x,y,z,zmin, zmax, high_sym = plottable_slice_along_path(self,path=path, method=method)
 
      xticks_args=([i for i,j in high_sym], ["%1.3f,%1.3f"%(i,j) for i,j in path],)
      default_dict = {'xdata': x, 
                      'ydata': y, 
-                     'label': 'G_k', 
+                     'label': r'$G_\mathbf{k}$', 
                      'xlabel': r'$\mathbf{k}$',
                      'zdata' : component(z),
                      'levels':np.linspace(component(zmin),component(zmax),50), 
                      'plot_function': 'contourf',
                      'xticks' : xticks_args,
+                     'title': r'$\mathrm{%s}G(\mathbf{k},\omega)$'%('Re' if comp=='R' else 'Im'), 
                     }
-    else: raise Exception("Unknown mode %s"%mode)
+    else: raise Exception("Unknown plot type %s. Can only be 'contourf' (default)."%plot_type)
 
     default_dict.update(opt_dict)
 

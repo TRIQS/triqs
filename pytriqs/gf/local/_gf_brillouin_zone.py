@@ -86,14 +86,11 @@ def plot(self, opt_dict):
     Plot protocol for GfBrillouinZone objects.
     """
 
-    mode = opt_dict.pop('mode','plot')
+    plot_type = opt_dict.pop('type','XY')
     method = opt_dict.pop('method', 'nearest')
-    comp = opt_dict.pop('component', 'R')
-    if comp =="R" :
-      component=  lambda x : x.real 
-    else:  
-      component= lambda x : x.imag
-    if mode=="contourf":
+    comp = opt_dict.pop('mode', 'R')
+    component=  lambda x : x.real if comp=="R" else x.imag
+    if plot_type=="contourf":
      x,y,z,zmin, zmax = make_plottable(self, method=method)
 
      default_dict = {'xdata': x, 
@@ -103,9 +100,10 @@ def plot(self, opt_dict):
                      'ylabel': r'$k_y$', 
                      'zdata' : component(z[0,0, :, :]),
                      'levels':np.linspace(component(zmin[0,0]),component(zmax[0,0]),50), 
-                     'plot_function': mode
+                     'plot_function': plot_type,
+                     'title': r'$\mathrm{%s}G(\mathbf{k})$'%('Re' if comp=='R' else 'Im'), 
                     }
-    elif mode=="plot":
+    elif plot_type=="XY":
      path=opt_dict.pop("path")
      L,Lpt, high_sym = slice_on_path(self, path=path, method=method)
      xticks_args=(high_sym, ["%1.3f,%1.3f"%(x,y) for x,y in path],)
@@ -114,10 +112,10 @@ def plot(self, opt_dict):
                      'ydata': component(Lpt), 
                      'label': r'$G_\mathbf{k}$', 
                      'xlabel': r'$\mathbf{k}$', 
-                     'plot_function': mode,
+                     'plot_function': 'plot',
                      'xticks' : xticks_args,
                      }
-    else: raise Exception("Unknown mode %s"%mode)
+    else: raise Exception("Unknown plot type %s. Should be 'XY' (default) or 'contourf'"%mode)
 
     default_dict.update(opt_dict)
 
