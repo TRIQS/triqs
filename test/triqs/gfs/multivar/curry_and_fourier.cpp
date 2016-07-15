@@ -36,7 +36,7 @@ TEST(GfM, CurryFourier) {
  // works also, but uses the evaluator which return to the same point
  // gk_t(k_) << inverse_fourier(gk_w(k_));
  // check last assertion
- for (auto k : gk_t.mesh()) EXPECT_EQ(k.linear_index(), gk_t.mesh().index_to_linear(gk_t.mesh().locate_neighbours(k)));
+ for (auto k : gk_t.mesh()) EXPECT_EQ(k.linear_index(), gk_t.mesh().index_to_linear(gk_t.mesh().locate_neighbours(arrays::vector<double>(lattice_point(k)))));
 
  /// Testing the result
  auto gk_w_test = gf<imfreq>{{beta, Fermion, n_freq}, {1, 1}};

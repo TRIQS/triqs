@@ -8,7 +8,16 @@ TEST(Gf, Issue253) {
  int nw=50;
  int nk=4;
  double beta=1.0;
+ auto bl = bravais_lattice{{{1,0},{0,1}}};
  auto bz = brillouin_zone{bravais_lattice{{{1,0},{0,1}}}};
+ 
+ auto k_mesh = gf_mesh<brillouin_zone>(bz, make_unit_matrix<int>(3));
+ std::cout << "size= "<< k_mesh.size() << std::endl;
+
+
+ auto G_k_tau = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>{{ {bz, nk},{beta, Fermion, 2*nw+1}},{1,1}};
+
+ auto r_mesh = gf_mesh<cyclic_lattice>(bl, make_unit_matrix<int>(3));
 
  auto G_r_tau = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{ {nk, nk},{beta, Fermion, 2*nw+1}},{1,1}};
  auto expr_1 = curry<0>(G_r_tau);

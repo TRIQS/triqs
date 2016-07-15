@@ -64,7 +64,7 @@ namespace triqs { namespace gfs {
 
      for (int l = 0; l < size_odd; l++) {
       int order = omin_odd + 2 * l;
-      A(k, l) = imag(pow(iw, -1.0 * order)); // set design matrix for odd moments
+      A(k, l) = imag(std::pow(iw, -1.0 * order)); // set design matrix for odd moments
      }
     }
 
@@ -87,7 +87,7 @@ namespace triqs { namespace gfs {
 
      for (int l = 0; l < size_even; l++) {
       int order = omin_even + 2 * l;
-      A(k, l) = real(pow(iw, -1.0 * order)); // set design matrix for odd moments
+      A(k, l) = real(std::pow(iw, -1.0 * order)); // set design matrix for odd moments
      }
     }
 
@@ -149,7 +149,7 @@ namespace triqs { namespace gfs {
      // if the order is even the fit yields the imaginary coefficient of the moment
      for (int l = 0; l < n_unknown_moments; l++) {
       int order = omin + l;
-      A(k, l) = imag( (order%2==1 ? 1.0 : dcomplex{0,1})*pow(iw, -1.0 * order) );
+      A(k, l) = imag( (order%2==1 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
      }
     }
 
@@ -174,7 +174,7 @@ namespace triqs { namespace gfs {
      // if the order is odd the fit yields the imaginary coefficient of the moment
      for (int l = 0; l < n_unknown_moments; l++) {
       int order = omin + l;
-      A(k, l) = real( (order%2==0 ? 1.0 : dcomplex{0,1})*pow(iw, -1.0 * order) );
+      A(k, l) = real( (order%2==0 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
      }
     }
 
