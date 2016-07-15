@@ -43,6 +43,6 @@
 #include "./meshes/refreq.hpp"
 #include "./meshes/legendre.hpp"
 #include "./domains/R.hpp"
-#include "../lattice/regular_bz_mesh.hpp"
-#include "../lattice/cyclic_lattice.hpp"
+#include "../lattice/gf_mesh_brillouin_zone.hpp"
+#include "../lattice/gf_mesh_cyclic_lattice.hpp"
 

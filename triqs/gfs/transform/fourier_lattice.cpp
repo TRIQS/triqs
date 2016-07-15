@@ -50,6 +50,11 @@ namespace gfs {
   ASSERT_EQUAL(g_in.data().indexmap().strides()[1], g_in.data().shape()[1], "Unexpected strides in fourier implementation");
   ASSERT_EQUAL(g_in.data().indexmap().strides()[2], 1, "Unexpected strides in fourier implementation");
 
+  //check periodization_matrix is diagonal
+  for(int i=0;i<g_in.mesh().periodization_matrix.shape()[0];i++)
+   for(int j=0;j<g_in.mesh().periodization_matrix.shape()[1];j++)
+    if(i!=j and g_in.mesh().periodization_matrix(i,j)!=0) TRIQS_RUNTIME_ERROR << "Periodization matrix must be diagonal for FFTW to work";
+
   auto L = g_in.mesh().get_dimensions();
   auto rank = g_in.mesh().rank();
   auto in_FFT = reinterpret_cast<fftw_complex*>(g_in.data().data_start());

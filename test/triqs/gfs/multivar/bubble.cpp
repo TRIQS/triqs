@@ -1,9 +1,11 @@
+//#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/gfs.hpp>
+
 using namespace triqs::clef;
 using namespace triqs::lattice;
 
 TEST(Gf, Bubble) { 
-  int N = 4; // 16; // too long, 30 s
+  int n_k = 4; // 16; // too long, 30 s
   int nw =3;
 
   placeholder<0> k_;
@@ -16,23 +18,27 @@ TEST(Gf, Bubble) {
 
   auto bz = brillouin_zone{bravais_lattice{{ {1, 0}, {0, 1} }}};
 
-  auto chi0q = gf<cartesian_product<imfreq, imfreq, brillouin_zone>>{{{beta, Fermion, nw}, {beta, Boson, nw}, {bz, N}}, {1, 1}};
-  auto chi0r = gf<cartesian_product<imfreq, imfreq, cyclic_lattice>>{{{beta, Fermion, nw}, {beta, Boson, nw}, {N,  N}}, {1, 1}};
+  auto chi0q = gf<cartesian_product<imfreq, imfreq, brillouin_zone>>{{{beta, Fermion, nw}, {beta, Boson, nw}, {bz, n_k}}, {1, 1}};
+  auto chi0r = gf<cartesian_product<imfreq, imfreq, cyclic_lattice>>{{{beta, Fermion, nw}, {beta, Boson, nw}, {n_k,  n_k}}, {1, 1}};
 
   auto chi0q_from_r = chi0q;
 
-  auto Gk = gf<cartesian_product<imfreq, brillouin_zone>,matrix_valued>{{{beta, Fermion, nw}, {bz, N}}, {1, 1}};
-  auto Gr = gf<cartesian_product<imfreq, cyclic_lattice>,matrix_valued>{{{beta, Fermion, nw}, {N,  N}}, {1, 1}};
+  auto Gk = gf<cartesian_product<imfreq, brillouin_zone>,matrix_valued>{{{beta, Fermion, nw}, {bz, n_k}}, {1, 1}};
+  auto Gr = gf<cartesian_product<imfreq, cyclic_lattice>,matrix_valued>{{{beta, Fermion, nw}, {n_k,  n_k}}, {1, 1}};
 
   auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
   Gk(inu_, k_) << 1 / (inu_ + mu - eps_k_);
 
-  auto Gmesh = std::get<1>(Gk.mesh());
-  chi0q(inu_, iw_, q_) << sum(Gk(inu_, k_) * Gk(inu_ + iw_, k_ + q_), k_ = Gmesh) / Gmesh.size();
-
+  auto k_mesh = std::get<1>(Gk.mesh());
+  //auto r_mesh = std::get<1>(Gr.mesh());
+  //for(auto const & R : r_mesh) 
+  // std::cout << R <<"\t" << R.linear_index() << "\t" << R.index()<< std::endl;
+  chi0q(inu_, iw_, q_) << sum(Gk(inu_, k_) * Gk(inu_ + iw_, k_ + q_), k_ = k_mesh) / k_mesh.size();
   curry<0>(Gr)[inu_] << inverse_fourier(curry<0>(Gk)[inu_]);
 
+
   chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_ + iw_, -r_);
+
 
   curry<0,1>(chi0q_from_r)(inu_, iw_) << fourier(on_mesh(curry<0,1>(chi0r))(inu_, iw_));
   //curry<0,1>(chi0q_from_r)(inu_, iw_) << fourier(curry<0,1>(chi0r)(inu_, iw_));
@@ -40,8 +46,8 @@ TEST(Gf, Bubble) {
   EXPECT_CLOSE_ARRAY(chi0q_from_r.data(),chi0q.data());
 
   //simplified, without frequency dependence
-  auto gk = gf<brillouin_zone>{{bz, N} , {1,1}};
-  auto gr = gf<cyclic_lattice>{{N,  N} , {1,1}};
+  auto gk = gf<brillouin_zone>{{bz, n_k} , {1,1}};
+  auto gr = gf<cyclic_lattice>{{n_k,  n_k} , {1,1}};
   auto ggr = gr;
   auto ggq = gk;
   auto ggq_from_r = gk;

@@ -20,6 +20,9 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
+// FIXME : REMOVE THIS
+#include <boost/iterator/iterator_facade.hpp>
+
 
 namespace triqs {
 namespace gfs {

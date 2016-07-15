@@ -39,7 +39,7 @@ namespace triqs { namespace gfs {
 
    for (int p=1; p<=t.order_max(); p++)
      for (auto l : gl.mesh())
-       t(p) += (triqs::utility::legendre_t(l.index(),p)/pow(gl.domain().beta,p)) * gl[l];
+       t(p) += (triqs::utility::legendre_t(l.index(),p)/std::pow(gl.domain().beta,p)) * gl[l];
 
    return t;
 
