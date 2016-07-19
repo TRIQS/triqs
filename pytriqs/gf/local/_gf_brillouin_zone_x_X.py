@@ -39,17 +39,16 @@ def plot(self, opt_dict):
     method = opt_dict.pop('method', 'nearest')
     comp = opt_dict.pop('mode', 'R')
     component=  lambda x : x.real if comp=="R" else x.imag
-#    if type(self.mesh.components[1])==MeshImFreq:
-#     Y_label = r"i\omega"
-#    elif type(self.mesh.components[1])==MeshReFreq:
-#     Y_label = r"\omega"
-#    elif type(self.mesh.components[1])==MeshReTime:
-#     Y_label = "t"
-#    elif type(self.mesh.components[1])==MeshImTime:
-#     Y_label = r"\tau"
-#    else:
-#     Y_label = "X"
-    Y_label = "\omega"
+    if 'MeshImFreq' in str(type(self.mesh.components[1])):
+     Y_label = r"i\omega"
+    elif 'MeshReFreq' in str(type(self.mesh.components[1])):
+     Y_label = r"\omega"
+    elif 'MeshReTime' in str(type(self.mesh.components[1])):
+     Y_label = "t"
+    elif 'MeshImTime' in str(type(self.mesh.components[1])):
+     Y_label = r"\tau"
+    else:
+     Y_label = "X"
 
     if plot_type=="contourf":
      path=opt_dict.pop("path")
