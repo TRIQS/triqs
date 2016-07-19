@@ -69,7 +69,7 @@ namespace triqs { namespace arrays {
  typename boost::lazy_enable_if_c<ImmutableArray<A>::value||ImmutableVector<A>::value,std::result_of<map_impl<__triqs_##FNT##_wrap,1>(A)>>::type\
  FNT(A && a) { return map(__triqs_##FNT##_wrap{})(std::forward<A>(a)); }
  
-#define TRIQS_ARRAYS_MATH_FNT (exp)(cos)(sin)(tan)(cosh)(sinh)(tanh)(acos)(asin)(atan)(log)(sqrt)
+#define TRIQS_ARRAYS_MATH_FNT (exp)(cos)(sin)(tan)(cosh)(sinh)(tanh)(acos)(asin)(atan)(log)(sqrt)(isnan)
 
 #define AUX(r, data, elem) MAP_IT(elem)
  BOOST_PP_SEQ_FOR_EACH(AUX , nil , TRIQS_ARRAYS_MATH_FNT);
@@ -88,5 +88,16 @@ namespace triqs { namespace arrays {
   })(a, double(0)));
  }
 
+ // --------------- Check if is finite ------------------------
+
+ /// Returns true iif at least one element of the array is true
+ template <typename A> std14::enable_if_t<ImmutableCuboidArray<A>::value, bool> any(A const& a) {
+  return fold([](bool r, auto const& x) -> bool { return r or bool(x); })(a, false);
+ }
+
+ /// Returns true iif all elements of the array are true
+ template <typename A> std14::enable_if_t<ImmutableCuboidArray<A>::value, bool> all(A const& a) {
+  return fold([](bool r, auto const& x) -> bool { return r and bool(x); })(a, true);
+ }
 }}//namespace triqs::arrays 
 
