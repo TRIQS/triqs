@@ -60,7 +60,7 @@ def oploti(obj, *opt_list, **opt_dict):
     oplot(obj, *opt_list, **opt_dict)
 
 
-mpl.axes.Axes.oplot = lambda self, obj, *opt_list, **opt_dict: __oplot_impl(self, self.set_xlabel, self.set_ylabel, self.legend, obj, *opt_list, **opt_dict)
+mpl.axes.Axes.oplot = lambda self, obj, *opt_list, **opt_dict: __oplot_impl(self, self.set_xlabel, self.set_ylabel, self.legend, obj, self.set_xticks, self.set_title, *opt_list, **opt_dict)
 
 
 def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, xticks_fct,  title_fct, *opt_list, **opt_dict):
