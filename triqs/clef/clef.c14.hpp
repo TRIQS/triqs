@@ -58,39 +58,51 @@ namespace triqs { namespace clef {
  template<typename Tag, typename... T> struct expr; //forward
 
  // a placeholder is an empty struct, labelled by an int.
- template<int N> struct placeholder {
-  static_assert( (N>=0) && (N<64) , "Placeholder number limited to [0,63]");
+ template<int N> struct _ph {
+  //static_assert( (N>=0) && (N<64) , "Placeholder number limited to [0,63]");
+  static_assert( (N>=0) , "Invalid placeholder range. Placeholder parameters is to [0,15] for each type of placeholder.");
   static constexpr int index = N;
   template <typename RHS> pair<N,RHS> operator = (RHS && rhs) const { return {std::forward<RHS>(rhs)};}
-  template <typename... T> expr<tags::function, placeholder, expr_storage_t<T>...> operator()(T&&... x) const {
+  template <typename... T> expr<tags::function, _ph, expr_storage_t<T>...> operator()(T&&... x) const {
    return {tags::function{}, *this, std::forward<T>(x)...};
   }
-  template <typename T> expr<tags::subscript, placeholder, expr_storage_t<T>> operator[](T&& x) const {
+  template <typename T> expr<tags::subscript, _ph, expr_storage_t<T>> operator[](T&& x) const {
    return {tags::subscript{}, *this, std::forward<T>(x)};
   }
  };
 
- // placeholder will always be copied (they are empty anyway).
- template <int N> struct force_copy_in_expr<placeholder<N>> : std::true_type {};
+ //
+ constexpr int _ph_flatten_indices(int i, int p) { return (i <= 15 ? p * 16 + i : -1); }
 
- // represent a couple (placeholder, value).
+ // user class
+ template <int I> using placeholder = _ph<_ph_flatten_indices(I, 0)>;       // the ordinary placeholder (rank 0) with index [0,15]
+ template <int I> using placeholder_prime = _ph<_ph_flatten_indices(I, 1)>; // the of placeholder rank 1 with index [0,15]
+
+ // Given a placeholder, gets the index and rank
+ template <int I> constexpr int get_placeholder_index(_ph<I>) { return I % 16; }
+ template <int I> constexpr int get_placeholder_rank(_ph<I>) { return I / 16; }
+
+ // _ph will always be copied (they are empty anyway).
+ template <int N> struct force_copy_in_expr<_ph<N>> : std::true_type {};
+
+ // represent a couple (_ph, value).
  template <int N, typename U> struct pair {
   U rhs;
   static constexpr int p = N;
   using value_type = std14::decay_t<U>;
  };
 
- // ph_set is a trait that given a pack of type, returns the set of placeholders they contain
- // it returns a int in binary coding : bit N in the int is 1 iif at least one T is lazy and contains placeholder<N>
+ // ph_set is a trait that given a pack of type, returns the set of _phs they contain
+ // it returns a int in binary coding : bit N in the int is 1 iif at least one T is lazy and contains _ph<N>
  template<typename... T> struct ph_set;
  template<typename T0, typename... T> struct ph_set<T0,T...>{static constexpr ull_t value= ph_set<T0>::value| ph_set<T...>::value;};
  template<typename T> struct ph_set<T>                      {static constexpr ull_t value= 0;};
- template<int N>      struct ph_set<placeholder<N>>         {static constexpr ull_t value= 1ull<<N;};
- template<int i, typename T> struct ph_set<pair<i,T> > : ph_set<placeholder<i>>{};
+ template<int N>      struct ph_set<_ph<N>>         {static constexpr ull_t value= 1ull<<N;};
+ template<int i, typename T> struct ph_set<pair<i,T> > : ph_set<_ph<i>>{};
 
  // in_any_lazy : trait to detect if any of Args is a lazy expression
  template<typename... Args>             struct is_any_lazy                     :  std::false_type {};
- template<int N>                        struct is_any_lazy <placeholder <N> >  :  std::true_type  {};
+ template<int N>                        struct is_any_lazy <_ph <N> >  :  std::true_type  {};
  template <typename T>                  struct is_any_lazy< T >                :  std::false_type {};
  template <typename T>                  struct is_any_lazy< T&& >              :  is_any_lazy<T> {};
  template <typename T>                  struct is_any_lazy< T& >               :  is_any_lazy<T> {};
@@ -229,7 +241,7 @@ namespace triqs { namespace clef {
  constexpr bool __or() { return false;}
  template <typename... B> constexpr bool __or(bool b, B... bs) { return b || __or(bs...); }
 
- // Generic case : do nothing (for the leaf of the tree including placeholder)
+ // Generic case : do nothing (for the leaf of the tree including _ph)
  template <typename T, typename... Pairs> struct evaluator {
   static constexpr bool is_lazy = is_any_lazy<T>::value;
   T const & operator()(T const& k, Pairs const&... pairs) const { return k; }
@@ -238,16 +250,16 @@ namespace triqs { namespace clef {
  // The general eval function for expressions : declaration only
  template <typename T, typename... Pairs> decltype(auto) eval(T const& ex, Pairs const&... pairs);
 
- // placeholder
- template <int N, int i, typename T, typename... Pairs> struct evaluator<placeholder<N>, pair<i, T>, Pairs...> {
-  using eval_t = evaluator<placeholder<N>, Pairs...>;
+ // _ph
+ template <int N, int i, typename T, typename... Pairs> struct evaluator<_ph<N>, pair<i, T>, Pairs...> {
+  using eval_t = evaluator<_ph<N>, Pairs...>;
   static constexpr bool is_lazy = eval_t::is_lazy;
-  decltype(auto) operator()(placeholder<N>, pair<i, T> const&, Pairs const&... pairs) const { return eval_t()(placeholder<N>(), pairs...);}
+  decltype(auto) operator()(_ph<N>, pair<i, T> const&, Pairs const&... pairs) const { return eval_t()(_ph<N>(), pairs...);}
  };
 
- template <int N, typename T, typename... Pairs> struct evaluator<placeholder<N>, pair<N, T>, Pairs...> {
+ template <int N, typename T, typename... Pairs> struct evaluator<_ph<N>, pair<N, T>, Pairs...> {
   static constexpr bool is_lazy = false;
-  T operator()(placeholder<N>, pair<N, T> const& p, Pairs const&...) const { return p.rhs; }
+  T operator()(_ph<N>, pair<N, T> const& p, Pairs const&...) const { return p.rhs; }
  };
 
  // any object hold by reference wrapper is redirected to the evaluator of the object
@@ -339,14 +351,14 @@ namespace triqs { namespace clef {
  template< typename Expr, int... Is,typename... Pairs> struct evaluator<make_fun_impl<Expr,Is...>, Pairs...> {
   using e_t = evaluator<Expr, Pairs...>;
   static constexpr bool is_lazy = (ph_set<make_fun_impl<Expr, Is...>>::value != ph_set<Pairs...>::value);
-  decltype(auto) operator()(make_fun_impl<Expr,Is...> const & f, Pairs const & ... pairs) const  { return  make_function( e_t()(f.ex, pairs...),placeholder<Is>()...);}
+  decltype(auto) operator()(make_fun_impl<Expr,Is...> const & f, Pairs const & ... pairs) const  { return  make_function( e_t()(f.ex, pairs...),_ph<Is>()...);}
  };
 
  template<int ... N> struct ph_list {};
- template<int ... N> ph_list<N...> var( placeholder<N> ...) { return {};}
+ template<int ... N> ph_list<N...> var( _ph<N> ...) { return {};}
 
  template<typename Expr, int ... N> 
-  auto operator >> (ph_list<N...> &&, Expr const & ex) ->decltype(make_function(ex, placeholder<N>()...)) { return  make_function(ex, placeholder<N>()...);}
+  auto operator >> (ph_list<N...> &&, Expr const & ex) ->decltype(make_function(ex, _ph<N>()...)) { return  make_function(ex, _ph<N>()...);}
   // add trailing as a workaround around a clang bug here on xcode 5.1.1 (?)
 
  /* --------------------------------------------------------------------------------------------------
@@ -355,7 +367,7 @@ namespace triqs { namespace clef {
   * --------------------------------------------------------------------------------------------------- */
 
  template <int N, typename Expr>
-  make_fun_impl<Expr,N > operator >> (placeholder<N> p, Expr&& ex) { return {ex}; } 
+  make_fun_impl<Expr,N > operator >> (_ph<N> p, Expr&& ex) { return {ex}; } 
 
  /* ---------------------------------------------------------------------------------------------------
   * Auto assign for ()
@@ -384,15 +396,15 @@ namespace triqs { namespace clef {
  }
 
  // The case A(x_,y_) = RHS : we form the function (make_function) and call auto_assign (by ADL)
- template <typename F, typename RHS, int... Is> void operator<<(expr<tags::function, F, placeholder<Is>...>&& ex, RHS&& rhs) {
-  triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
+ template <typename F, typename RHS, int... Is> void operator<<(expr<tags::function, F, _ph<Is>...>&& ex, RHS&& rhs) {
+  triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
  }
  template <typename F, typename RHS, int... Is>
- void operator<<(expr<tags::function, F, placeholder<Is>...> const& ex, RHS&& rhs) {
-  triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
+ void operator<<(expr<tags::function, F, _ph<Is>...> const& ex, RHS&& rhs) {
+  triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
  }
- template <typename F, typename RHS, int... Is> void operator<<(expr<tags::function, F, placeholder<Is>...>& ex, RHS&& rhs) {
-  triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
+ template <typename F, typename RHS, int... Is> void operator<<(expr<tags::function, F, _ph<Is>...>& ex, RHS&& rhs) {
+  triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
  }
 
  // any other case e.g. f(x_+y_) = RHS etc .... which makes no sense : compiler will stop
@@ -422,12 +434,12 @@ namespace triqs { namespace clef {
 
  // Same thing for the  [ ]
  template<typename F, typename RHS, int... Is> 
-  void operator<<(expr<tags::subscript, F, placeholder<Is>...> const & ex, RHS && rhs) { 
-   triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
+  void operator<<(expr<tags::subscript, F, _ph<Is>...> const & ex, RHS && rhs) { 
+   triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
   }
  template<typename F, typename RHS, int... Is> 
-  void operator<<(expr<tags::subscript, F, placeholder<Is>...> && ex, RHS && rhs) { 
-   triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
+  void operator<<(expr<tags::subscript, F, _ph<Is>...> && ex, RHS && rhs) { 
+   triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
   }
 
  template <typename F, typename RHS, typename... T> void operator<<(expr<tags::subscript, F, T...>&& ex, RHS&& rhs) = delete;

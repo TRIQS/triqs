@@ -49,12 +49,12 @@ namespace clef {
 
  // sum( expression, i = domain)
  template <typename Expr, int N, typename D> decltype(auto) sum(Expr const& f, clef::pair<N, D> const& d) {
-  return sum_f_domain_impl(make_function(f, clef::placeholder<N>()), d.rhs);
+  return sum_f_domain_impl(make_function(f, clef::_ph<N>()), d.rhs);
  }
  // warning : danger here : if the d is a temporary, the domain MUST be moved in case the Expr
  // is still lazy after eval, or we will obtain a dangling reference.
  template <typename Expr, int N, typename D> decltype(auto) sum(Expr const& f, clef::pair<N, D>&& d) {
-  return sum_f_domain_impl(make_function(f, clef::placeholder<N>()), std::move(d.rhs));
+  return sum_f_domain_impl(make_function(f, clef::_ph<N>()), std::move(d.rhs));
  }
 
  // two or more indices : sum recursively
