@@ -29,7 +29,7 @@ namespace triqs { namespace clef {
   * Printing of the expressions
   *  --------------------------------------------------------------------------------------------------- */
 
- template<int N>       std::ostream &operator <<(std::ostream &sout, placeholder<N> ){return sout << "_"<<N ; }
+ template<int N>       std::ostream &operator <<(std::ostream &sout, _ph<N> ){return sout << "_"<<N ; }
  template<typename T> std::ostream & operator<<(std::ostream & out, std::reference_wrapper<T> const & x) { return out<< x.get(); }
  //template<typename T> std::ostream & operator<<(std::ostream & out, std::reference_wrapper<T> const & x) { return out<< "["<<x.get()<<"]"; }
 
@@ -77,7 +77,7 @@ namespace triqs { namespace clef {
 
  template< typename Expr, int... Is> 
   std::ostream &operator <<(std::ostream &sout, make_fun_impl<Expr,Is...> const & x) { 
-   sout << "lazy function : ("; variadic_print(sout, placeholder<Is>()...); return sout<< ") --> "<<  x.ex ; 
+   sout << "lazy function : ("; variadic_print(sout, _ph<Is>()...); return sout<< ") --> "<<  x.ex ; 
   }
 
  template<typename F>  std::ostream & operator<<(std::ostream & out, function<F> const & x) { return out<<"function ";}
