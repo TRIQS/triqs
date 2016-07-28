@@ -363,7 +363,7 @@ namespace gfs {
 
   friend std::string get_triqs_hdf5_data_scheme(gf const &g) {
    auto s = gf_h5_name<Mesh, Target, Singularity>::invoke();
-   return (s == "BlockGf" ? s : "Gf" + s);
+   return (s == "BlockGf" || s == "Block2Gf" ? s : "Gf" + s);
   }
 
   friend struct gf_h5_rw<Mesh, Target, Singularity, Evaluator>;

@@ -103,7 +103,7 @@ namespace triqs { namespace gfs {
 
  //---------------------------- vector ----------------------------------
 
- template<typename V> struct view_proxy : public V { 
+ template<typename V> struct view_proxy : public V {
   using regular_type = triqs::Regular<V>;
   view_proxy() : V(typename V::regular_type()) {}
   view_proxy(V const &v) : V(v){};
@@ -112,11 +112,11 @@ namespace triqs { namespace gfs {
   view_proxy & operator = ( view_proxy const & cp ) { this->rebind(cp); return *this;}
   view_proxy & operator = ( V          const & v  ) { this->rebind(v);  return *this;}
   using V::operator=;
-  //template<typename X> view_proxy & operator = (X && x) { V::operator=( std::forward<X>(x) ); return *this;} 
+  //template<typename X> view_proxy & operator = (X && x) { V::operator=( std::forward<X>(x) ); return *this;}
  };
 
  //-----------------------
- 
+
  template <typename T> struct data_proxy_vector {
   using Tv = typename T::view_type;
   using Tcv = typename T::const_view_type;
@@ -157,9 +157,10 @@ namespace triqs { namespace gfs {
     for (auto& y : x) y = rhs;
   }
 
-  template <typename ST, typename RHS>
-  static void rebind(ST& data, RHS&& rhs) = delete; // useful only for python interface, not here
-                                                    // but easy to write if needed at some point.
+  template <typename ST, typename RHS> static void rebind(ST& data, RHS&& rhs) {
+   data.clear();
+   for(auto & v : rhs.data()) data.emplace_back(std::move(v));
+  }
  };
 
  //---------------------------- lambda ----------------------------------

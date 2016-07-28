@@ -28,6 +28,7 @@ It is imported with the command::
 
 from gf import *
 from block_gf import BlockGf
+from block2_gf import Block2Gf
 from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Flat, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 from tools import *
 
@@ -44,7 +45,7 @@ __all__ = ['Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Inverse
            'GfBrillouinZone', 'MeshBrillouinZone',
            'GfLegendre', 'GfLegendreTv3', 'GfLegendreTv4', 'MeshLegendre',
            'make_gf_from_inverse_fourier',
-           'BlockGf','inverse','is_gf_real_in_tau',
+           'BlockGf','Block2Gf','inverse','is_gf_real_in_tau',
            'delta','dyson','tail_fit',
            'rebinning_tau',
            'multivar']
