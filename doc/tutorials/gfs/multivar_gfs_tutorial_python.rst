@@ -2,6 +2,9 @@
 Multivariable Green's functions
 -------------------------------
 
+.. warning::
+   This part of the library is largely experimental and subject to API breaks
+
 TRIQS comes with multivariable Green's functions such as
 :math:`G_{\sigma,\sigma',I}(i\omega,i\Omega)` or
 :math:`\gamma(i\omega,i\omega',i\Omega)`.
@@ -41,6 +44,4 @@ blocks are encoded by objects of the type **``GfImFreq_x_ImFreqTv3``**.
 .. plot:: tutorials/gfs/multivar.py
    :include-source:
    :scale: 70
-
-.. image:: multivar.png
 
