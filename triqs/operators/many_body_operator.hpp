@@ -70,7 +70,7 @@ namespace operators {
  };
 
  std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op);
- 
+
 //-----------------------------------------------------------------------------------------
  // Monomial: an ordered set of creation/annihilation operators and comparison
  using monomial_t = std::vector<canonical_ops_t>;
@@ -119,7 +119,10 @@ namespace operators {
    *this = x;
   }
 
-  explicit many_body_operator_generic(scalar_t const& x) { monomials.insert({{}, x}); }
+  explicit many_body_operator_generic(scalar_t const& x) {
+   using triqs::utility::is_zero;
+   if (!is_zero(x)) monomials.insert({{}, x});
+  }
 
   template <typename S> many_body_operator_generic& operator=(many_body_operator_generic<S> const& x) {
    static_assert(std::is_constructible<scalar_t, S>::value, "Assignment is impossible");
@@ -181,6 +184,8 @@ namespace operators {
   }
 
   many_body_operator_generic& operator+=(scalar_t alpha) {
+   using triqs::utility::is_zero;
+   if (is_zero(alpha)) return *this;
    bool is_new_monomial;
    typename monomials_map_t::iterator it;
    std::tie(it, is_new_monomial) = monomials.insert(std::make_pair(monomial_t(0), alpha));
