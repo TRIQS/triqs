@@ -38,6 +38,9 @@
 #include <triqs/arrays/h5/simple_read_write.hpp>
 #include <triqs/arrays/h5/array_of_non_basic.hpp>
 
+// proxy
+#include <triqs/arrays/proxy.hpp>
+
 // Regrouping indices
 #include <triqs/arrays/group_indices.hpp>
 
