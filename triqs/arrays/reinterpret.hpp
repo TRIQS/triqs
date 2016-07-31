@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2016 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,36 +19,22 @@
  *
  ******************************************************************************/
 #pragma once
-
-// for python code generator, we need to know what to include...
-#define TRIQS_ARRAYS_INCLUDED
-
-// The basic classes
 #include <triqs/arrays/array.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/vector.hpp>
+#include <algorithm>
 
-//
-#include <triqs/arrays/functional/map.hpp>
-#include <triqs/arrays/functional/fold.hpp>
-#include <triqs/arrays/math_functions.hpp>
-#include <triqs/arrays/algorithms.hpp>
+namespace triqs {
+namespace arrays {
 
-// HDF5 interface
-#include <triqs/arrays/h5/simple_read_write.hpp>
-#include <triqs/arrays/h5/array_of_non_basic.hpp>
 
-// proxy
-#include <triqs/arrays/proxy.hpp>
-
-// Regrouping indices
-#include <triqs/arrays/group_indices.hpp>
-
-// Reinterpretation of nx1x1 array and co
-#include <triqs/arrays/reinterpret.hpp>
-
-// Linear algebra ?? Keep here ?
-#include <triqs/arrays/linalg/det_and_inverse.hpp>
-
-#include <triqs/arrays/mpi.hpp>
-
+ // FIXME  generalize
+ template <typename A>
+ std14::conditional_t<A::is_const, array_const_view<typename A::value_type, A::rank + 2>,
+                      array_view<typename A::value_type, A::rank + 2>>
+ reinterpret_array_add_1x1(A const &d) {
+  auto &imap = d.indexmap();
+  typename array_view<typename A::value_type, A::rank + 2>::indexmap_type index_map(
+      join(imap.lengths(), make_shape(1, 1)), join(imap.strides(), make_shape(1, 1)), imap.start_shift());
+  return {index_map, d.storage()};
+ };
+}
+}
