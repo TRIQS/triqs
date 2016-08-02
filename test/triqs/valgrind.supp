@@ -1,0 +1,17 @@
+{
+   openmpi
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   fun:mca_oob_tcp_msg_send_handler
+   fun:mca_oob_tcp_peer_send
+   fun:mca_oob_tcp_send_nb
+   fun:orte_rml_oob_send
+   fun:orte_rml_oob_send_buffer
+   obj:/usr/lib/openmpi/lib/openmpi/mca_grpcomm_bad.so
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:environment
+   fun:main
+}
+
