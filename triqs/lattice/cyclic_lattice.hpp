@@ -21,8 +21,6 @@
 #pragma once
 #include <triqs/arrays.hpp>
 #include <triqs/utility/index_generator.hpp>
-//#include <string>
-//#include <vector>
 
 namespace triqs {
 namespace gfs {
@@ -113,8 +111,7 @@ namespace gfs {
    return index_modulo(x);
   }
 
-  template<typename F>
-  auto evaluate(default_interpol_policy, F const & f, index_t const &x) const {
+  template <typename F> auto evaluate(default_interpol_policy, F const& f, index_t const& x) const {
    auto id = get_interpolation_data(default_interpol_policy{}, x);
    return f[id];
   }

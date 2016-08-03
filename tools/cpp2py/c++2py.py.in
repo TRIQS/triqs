@@ -68,8 +68,7 @@ def decay(s) :
 if __name__ == '__main__' :
 
     compiler_options = args.compiler_options or []
-    compiler_options.append("-std=c++1y")
-
+    compiler_options.append("-std=c++14")
     compiler_options += ['-I%s'%x for x in args.includes]
     add_opts = '@TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS@'.strip()
     if add_opts:
