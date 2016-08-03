@@ -5,7 +5,7 @@
 
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
- set(gnu_compiler_version_min "4.8.1")
+ set(gnu_compiler_version_min "5.1.0")
  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS gnu_compiler_version_min)
    set(line_of_star "\n************************** FATAL ERROR ************************************\n")
    MESSAGE( FATAL_ERROR "${line_of_star}You are using the ${CMAKE_CXX_COMPILER_ID} compiler but your compiler is too old :\n TRIQS requires version >= ${gnu_compiler_version_min} while you have ${CMAKE_CXX_COMPILER_VERSION}\n  ${line_of_star}")

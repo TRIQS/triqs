@@ -61,10 +61,11 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # First check the C++ compiler
 find_package(CompilerCheck)
 
+# Reuse later for C17 switch
 # Add C11 or C14 flag depending on compiler detection
-#option(USE_CPP14 "Use C++14 mode (Put OFF to compile in C+11 backward compatibility mode) " ON)
-#mark_as_advanced(USE_CPP14)
-#if (NOT USE_CPP14)
+#option(USE_CPP17 "Use C++17 mode (Put OFF to compile in C+14 backward compatibility mode) " ON)
+#mark_as_advanced(USE_CPP17)
+#if (NOT USE_CPP17)
 # MESSAGE(STATUS "*********************************************************************************")
 # MESSAGE(STATUS "**                                                                             **")
 # MESSAGE(STATUS "**                          Compiling in C++11 mode                            **")
@@ -78,9 +79,7 @@ find_package(CompilerCheck)
 # MESSAGE(STATUS "**               UPGRADE YOUR COMPILER,  Cf documentation/install              **")
 # MESSAGE(STATUS "*********************************************************************************")
 # set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -std=c++11 -DTRIQS_CPP11")
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 #else()
-MESSAGE(STATUS "Compiling in C++14 mode")
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -std=c++1y ")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 #endif()
@@ -490,6 +489,10 @@ add_subdirectory(tools)
 #------------------------
 
 if (Build_Documentation)
+<<<<<<< d9855afaea4e7581620796bed06067ac25b4b10c
+=======
+
+>>>>>>> [c++14] Rm C++11 support.
  message( STATUS "-------- Prepare documentation -------------")
  add_subdirectory (${TRIQS_SOURCE_DIR}/doc )
  #add_dependencies(docs_sphinx py_sources)
