@@ -144,12 +144,11 @@ py_converter<triqs::gfs::block_gf_view<T...>> {};
 // Converter for Block gf
 template <typename... T> struct py_converter<triqs::gfs::block2_gf_view<T...>> {
 
- using gf_type = triqs::gfs::gf<T...>;
+ //using gf_type = triqs::gfs::gf<T...>;
  using gf_view_type = triqs::gfs::gf_view<T...>;
- using c_type = triqs::gfs::gf_view<triqs::gfs::block_index2, gf_type>;
+ using c_type = triqs::gfs::block2_gf_view<T...>;
 
  static PyObject *c2py(c_type g) {
-  // rm the view_proxy
   std::vector<std::vector<gf_view_type>> vvg;
   vvg.reserve(g.data().size());
   for (auto const & x : g.data()) {
@@ -159,8 +158,8 @@ template <typename... T> struct py_converter<triqs::gfs::block2_gf_view<T...>> {
    vvg.push_back(vg);
   }
   pyref v_gf = convert_to_python(vvg);
-  pyref v_names1 = convert_to_python(std::get<0>(g.mesh()).domain().names());
-  pyref v_names2 = convert_to_python(std::get<1>(g.mesh()).domain().names());
+  pyref v_names1 = convert_to_python(g.block_names()[0]);
+  pyref v_names2 = convert_to_python(g.block_names()[1]);
   pyref cls = pyref::module("pytriqs.gf.local").attr("Block2Gf");
   if (cls.is_null()) TRIQS_RUNTIME_ERROR << "Cannot find the pytriqs.gf.local.Block2Gf";
   pyref args = PyTuple_Pack(3, (PyObject *)v_names1, (PyObject *)v_names2, (PyObject *)v_gf);

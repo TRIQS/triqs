@@ -30,6 +30,9 @@ g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 100, name = "egBlock
 g['eg1','eg1'] << SemiCircular(half_bandwidth = 1)
 g['eg2','eg2'] << SemiCircular(half_bandwidth = 2)
 
+print g.tail.data[:,0,0]
+print h['g1'].tail.data[:,0,0]
+
 assert_gfs_are_close(g, h['g1'])
 
 g << numpy.array([[1,2],[2,3]])

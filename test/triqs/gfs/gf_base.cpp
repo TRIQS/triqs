@@ -100,7 +100,7 @@ TEST(Gf, PhNoInfinity) {
  triqs::clef::placeholder_prime<0> om_;
  g(om_) << 1/ (om_ + 2.3);
 
- EXPECT_TRUE(g.singularity().is_unset());
+ EXPECT_TRUE(g.singularity().empty());
 }
 
 // Test the technique to avoid the infinity
@@ -113,7 +113,7 @@ TEST(Gf, PhNoInfinity_tau) {
  triqs::clef::placeholder_prime <0> tau_;
  g(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 
- EXPECT_TRUE(g.singularity().is_unset());
+ EXPECT_TRUE(g.singularity().empty());
 }
 
 TEST(Gf, ZeroM) {

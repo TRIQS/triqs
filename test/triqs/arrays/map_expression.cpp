@@ -49,9 +49,10 @@ int main(int argc, char **argv) {
  std::cout<< " A " << A<<std::endl<<std::endl;
  std::cout<< " B " << B<<std::endl<<std::endl;
  std::cerr<< " Sqr(A) " << make_matrix(sqr(A))<<std::endl<<std::endl;
- std::cout<<" abs(B+B) = "<<make_matrix(Abs(B+B)) <<std::endl<<std::endl;
+ std::cout<<" abs(B+B) = "<<(Abs(B+B)) <<std::endl<<std::endl;
  std::cout<<" A+10*B = "<<make_matrix(A+10*B) <<std::endl<<std::endl;
  std::cout<<" Abs(A+10*B) = "<<make_matrix(Abs(A+10*B)) <<std::endl<<std::endl;
  std::cout<<" Max(A,10*B)"<< make_matrix(Max(A,10*B))<<std::endl<<std::endl;
+
  return 0;
 }

@@ -13,9 +13,6 @@ namespace triqs { namespace gfs {
   const int known_moments_omax = known_moments.largest_non_nan() - 0;
   const int known_moments_size = known_moments_omax - known_moments_omin + 0;
 
-  //tail res(gf.target_shape());
-  //if (known_moments_size)
-  // for (int i = known_moments_omin; i <= known_moments_omax; i++) res(i) = known_moments(i);
   __tail<matrix_valued> res = known_moments;
 
   // if known_moments_size==0, the lowest order to be obtained from the fit is determined by order_min in known_moments
@@ -69,6 +66,7 @@ namespace triqs { namespace gfs {
     }
 
     arrays::lapack::gelss(A, B, S, rcond, rank);
+
     for (int m = 0; m < size_odd; m++) {
      res(omin_odd + 2 * m)(i, j) = B(m, 0);
     }
@@ -110,9 +108,7 @@ namespace triqs { namespace gfs {
   const int known_moments_omax = known_moments.largest_non_nan() -0;
   const int known_moments_size = known_moments_omax - known_moments_omin + 0;
 
-  __tail<matrix_valued> res(gf.target_shape());
-  if (known_moments_size)
-   for (int i = known_moments_omin; i <= known_moments_omax; i++) res(i) = known_moments(i);
+  __tail<matrix_valued> res = known_moments;
 
   int n_unknown_moments = (max_moment-known_moments_omin+1) - known_moments_size;
   if (n_unknown_moments < 1) return known_moments;

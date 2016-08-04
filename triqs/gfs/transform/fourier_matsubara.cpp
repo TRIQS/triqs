@@ -51,8 +51,9 @@ namespace gfs {
   private:
   void direct_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, __tail<scalar_valued> const& ta) {
    // TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
-   dcomplex d = ta(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
-   if (arrays::isnan(d)) TRIQS_RUNTIME_ERROR << " inverse fourier : 1/omega order undefined in tail";
+   //dcomplex d = ta(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
+   dcomplex d = ta.get_or_zero(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
+   //if (arrays::isnan(d)) TRIQS_RUNTIME_ERROR << " direct fourier : 1/omega order undefined in tail";
    double b1 = 0, b2 = 0, b3 = 0;
    dcomplex a1, a2, a3;
    double beta = gt.mesh().domain().beta;
@@ -122,9 +123,8 @@ namespace gfs {
   void inverse(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw) {
    if (gw.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
   
-   auto ta = gw.singularity();
-   // TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
-   dcomplex d = ta(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
+   auto const ta = gw.singularity();
+   const dcomplex d = ta.get_or_zero(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
    if (arrays::isnan(d)) TRIQS_RUNTIME_ERROR << " inverse fourier : 1/omega order undefined in tail";
    double b1, b2, b3;
    dcomplex a1, a2, a3;
@@ -176,7 +176,7 @@ namespace gfs {
       gt[t] = g_out(t.index()) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
    }
    double pm = (is_fermion ? -1 : 1);
-   gt.on_mesh(L) = pm * (gt.on_mesh(0) + ta(1));
+   gt.on_mesh(L) = pm * (gt.on_mesh(0) + d); 
    // set tail
    gt.singularity() = gw.singularity();
   }

@@ -67,6 +67,8 @@ namespace gfs {
   template <typename LL, typename RR> bgf_expr(LL &&l_, RR &&r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
 
   auto size() const { return std::max(l.size(), r.size()); }
+  
+  auto block_names() const { return l.block_names(); }
 
   template <typename K> decltype(auto) operator[](K &&key) const {
    return utility::operation<Tag>()(l[std::forward<K>(key)], r[std::forward<K>(key)]);
@@ -90,6 +92,7 @@ namespace gfs {
   template <typename LL> bgf_unary_m_expr(LL &&l_) : l(std::forward<LL>(l_)) {}
 
   auto size() const { return l.size(); }
+  auto block_names() const { return l.block_names(); }
 
   template <typename KeyType> auto operator[](KeyType &&key) const { return -l[key]; }
   template <typename... Args> auto operator()(Args &&... args) const { return -l(std::forward<Args>(args)...); }

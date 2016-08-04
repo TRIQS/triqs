@@ -17,10 +17,6 @@ module.add_using("namespace triqs::arrays")
 module.add_using("namespace triqs::gfs")
 module.add_using("triqs::utility::mini_vector")
 module.add_preamble("""
-namespace triqs { namespace gfs {
-template <int R> struct gf_h5_name<legendre, tensor_valued<R>, tail_zero<typename tensor_valued<R>::value_type>> :
-gf_h5_name<legendre, tensor_valued<R>, nothing> {};
-}}
 """)
 
 ########################
@@ -144,7 +140,7 @@ def make_mesh( py_type, c_tag, is_im=False) :
             comparisons = "== !="
            )
 
-    if is_im and not c_tag=="brillouin_zone":
+    if is_im and not (c_tag=="brillouin_zone" or c_tag=="cyclic_lattice"):
         m.add_property(name = "beta",
                        getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                        signature = "double()",
@@ -155,7 +151,7 @@ def make_mesh( py_type, c_tag, is_im=False) :
                        doc = "Statistic")
 
     m.add_len(calling_pattern = "int result = self_c.size()", doc = "Size of the mesh")
-    c_cast_type = "dcomplex" if not c_tag == "brillouin_zone" else "triqs::arrays::vector<double>"
+    c_cast_type = "dcomplex" if not (c_tag == "brillouin_zone" or c_tag=="cyclic_lattice") else "triqs::arrays::vector<double>"
     m.add_iterator(c_cast_type = c_cast_type)
 
     return m
@@ -239,6 +235,17 @@ m.add_method(name="index_to_linear", signature="long index_to_linear(triqs::util
 module.add_class(m)
 
 ########################
+##   MeshCyclicLattice
+########################
+
+m = make_mesh( py_type = "MeshCyclicLattice", c_tag = "cyclic_lattice", is_im = True)
+#m.add_constructor(signature = "(triqs::gfs::cyclic_lattice b, int n_Rx, int n_Ry, int n_Rz)")
+m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<int> periodization_matrix)")
+#m.add_method(name="locate_neighbours", signature="triqs::utility::mini_vector<int,3> locate_neighbours(triqs::arrays::vector<double> x)")
+#m.add_method(name="index_to_linear", signature="long index_to_linear(triqs::utility::mini_vector<int,3> x)")
+module.add_class(m)
+
+########################
 ##   Gf Generic : common to all 5 one variable gf
 ########################
 
@@ -269,7 +276,7 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
             arithmetic = ("algebra",data_type, "with_inplace_operators", "with_unary_minus")
             )
 
-    g.add_constructor(signature = """(gf_mesh<%s> mesh, mini_vector<size_t,%s> shape, std::vector<std::vector<std::string>> indices = std::vector<std::vector<std::string>>{}, std::string name = "")"""%(c_tag, rank), python_precall = "pytriqs.gf.local._gf_%s.init%s"%(c_tag, "" if rank==2 else "_tv"))
+    g.add_constructor(signature = """(gf_mesh<%s> mesh, mini_vector<size_t,%s> shape, std::vector<std::vector<std::string>> indices = std::vector<std::vector<std::string>>{}, std::string name = "")"""%(c_tag, rank), python_precall = "pytriqs.gf.local._gf_%s.init%s"%((c_tag if not (c_tag=="brillouin_zone" or c_tag=="cyclic_lattice") else "space"), "" if rank==2 else "_tv"))
 
     g.add_method_copy()
     g.add_method_copy_from()
@@ -277,7 +284,7 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
     # properties
     g.add_member(c_name = "name", c_type  ="std::string",  doc = "Name of the Green function (used for plotting only)")
 
-    if is_im and not c_tag=="brillouin_zone":
+    if is_im and not (c_tag=="brillouin_zone" or c_tag=="cyclic_lattice"):
         g.add_property(name = "beta",
                        getter = cfunction(calling_pattern="double result = self_c.domain().beta", signature = "double()"),
                        doc = "Inverse temperature")
@@ -389,7 +396,7 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
                    signature = "gf<%s>()"%c_tag,
                    doc = "Returns a NEW gf, with transposed data, i.e. it is NOT a transposed view.")
 
-      if c_tag not in [ "imtime", "legendre", "brillouin_zone"] and has_tail:
+      if c_tag not in [ "imtime", "legendre", "brillouin_zone", "cyclic_lattice"] and has_tail:
           g.add_method(name = "conjugate", calling_pattern = "auto result = conj(self_c)" , signature = "gf<%s>()"%c_tag, doc = "Return a new function, conjugate of self.")
 
       g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag))
@@ -412,8 +419,8 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
                    doc = "Put the Green function to 0")
 
     # Pure python methods
-    g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%c_tag, rename = "_plot_")
-    if c_tag != "brillouin_zone":
+    g.add_pure_python_method("pytriqs.gf.local._gf_%s.plot"%(c_tag if not (c_tag=="brillouin_zone" or c_tag=="cyclic_lattice") else "space"), rename = "_plot_")
+    if not (c_tag == "brillouin_zone" or c_tag=="cyclic_lattice"):
      g.add_pure_python_method("pytriqs.gf.local._gf_plot.x_data_view", rename = "x_data_view")
 
     return g
@@ -506,6 +513,21 @@ for c_tag, py_tag in [("imfreq","ImFreq"), ("imtime","ImTime"), ("refreq", "ReFr
 g = make_gf(
        py_type = "GfBrillouinZone",
        c_tag = "brillouin_zone",
+       is_im = True,
+       target_type = "matrix_valued",
+       has_tail=False,
+       serializable=True,
+       point_type = "triqs::utility::mini_vector<int, 3>",
+       )
+module.add_class(g)
+
+#############################
+##    Gfs [CyclicLattice]
+##############################
+
+g = make_gf(
+       py_type = "GfCyclicLattice",
+       c_tag = "cyclic_lattice",
        is_im = True,
        target_type = "matrix_valued",
        has_tail=False,

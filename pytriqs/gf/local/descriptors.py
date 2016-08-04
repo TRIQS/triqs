@@ -36,7 +36,7 @@ class OneFermionInTime(Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         Id = numpy.identity(G.N1)
-        G.tail.reset(3)
+        G.tail.reset(4)
         G.tail[1][:,:] = 1*Id
         G.tail[2][:,:] = L*Id
         G.tail[3][:,:] = L*L*Id
@@ -100,7 +100,7 @@ semicircular density of states"""
 
         # Let's create a new tail
         Id = numpy.identity(G.N1)
-        G.tail.reset(5)
+        G.tail.reset(7)
         G.tail[1][:,:] = 1.0*Id
         G.tail[3][:,:] = D**2/4.0*Id
         G.tail[5][:,:] = D**4/8.0*Id
@@ -145,7 +145,7 @@ class Flat (Base):
 
         # Let's create a new tail
         Id = numpy.identity(G.N1)
-        G.tail.reset(5)
+        G.tail.reset(7)
         G.tail[1][:,:] = 1.0*Id
         G.tail[3][:,:] = D**2/3.0*Id
         G.tail[5][:,:] = D**4/5.0*Id

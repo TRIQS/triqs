@@ -36,9 +36,11 @@ namespace gfs {
 
   auto t = g.singularity();
   if (!t.is_decreasing_at_infinity())
-   TRIQS_RUNTIME_ERROR << " density computation : green Function is not as 1/omega or less !!!\n" << t;
+   TRIQS_RUNTIME_ERROR << "density computation: Green function is not as 1/omega or less !!!\n" << t;
+  if (t.largest_non_nan()<3)
+   TRIQS_RUNTIME_ERROR << "density computation: Need at least tail moments until n=3 (included" ;
 
-  if (g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << " imfreq gF : full mesh required in density computation";
+  if (g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << " imfreq gf: full mesh required in density computation";
   auto sh = g.target_shape();
   int N1 = sh[0], N2 = sh[1];
   arrays::matrix<dcomplex> res(sh);

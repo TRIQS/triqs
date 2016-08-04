@@ -90,18 +90,26 @@ def plot(self, opt_dict):
     method = opt_dict.pop('method', 'nearest')
     comp = opt_dict.pop('mode', 'R')
     component=  lambda x : x.real if comp=="R" else x.imag
+
+    if 'BrillouinZone' in str(type(self.mesh)):
+     X_label = r"k"
+    elif 'CyclicLattice' in str(type(self.mesh)):
+     X_label = r"R"
+    else:
+     X_label = "X"
+
     if plot_type=="contourf":
      x,y,z,zmin, zmax = make_plottable(self, method=method)
 
      default_dict = {'xdata': x, 
                      'ydata': y, 
-                     'label': r'$G_\mathbf{k}$', 
-                     'xlabel': r'$k_x$', 
-                     'ylabel': r'$k_y$', 
+                     'label': r'$G_\mathbf{%s}$'%X_label, 
+                     'xlabel': r'$%s_x$'%X_label, 
+                     'ylabel': r'$%s_y$'%X_label, 
                      'zdata' : component(z[0,0, :, :]),
                      'levels':np.linspace(component(zmin[0,0]),component(zmax[0,0]),50), 
                      'plot_function': plot_type,
-                     'title': r'$\mathrm{%s}G(\mathbf{k})$'%('Re' if comp=='R' else 'Im'), 
+                     'title': r'$\mathrm{%s}G(\mathbf{%s})$'%('Re' if comp=='R' else 'Im', X_label), 
                     }
     elif plot_type=="XY":
      path=opt_dict.pop("path")
@@ -110,8 +118,8 @@ def plot(self, opt_dict):
 
      default_dict = {'xdata': range(0,len(L)), 
                      'ydata': component(Lpt), 
-                     'label': r'$G_\mathbf{k}$', 
-                     'xlabel': r'$\mathbf{k}$', 
+                     'label': r'$G_\mathbf{%s}$'%X_label, 
+                     'xlabel': r'$\mathbf{%s}$'%X_label, 
                      'plot_function': 'plot',
                      'xticks' : xticks_args,
                      }

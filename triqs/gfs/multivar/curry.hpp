@@ -136,7 +136,7 @@ namespace gfs {
    }
 
    template <typename Rt, typename M, typename A, typename S> static Rt invoke_helper(M const& m, A&& a, S&& s, std::false_type) {
-    return Rt{m, a};
+    return Rt{impl_tag3{}, m, a};
    }
 
    template <int... pos, typename G, typename XTuple> static auto invoke(G&& g, XTuple const& x_tuple) {

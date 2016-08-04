@@ -86,6 +86,15 @@ TEST(Gf, Block) {
 
  }
 
+ TEST(Block, AssignmentOperator){
+    auto g = gf<imfreq, scalar_valued>{{1, Fermion}};
+    auto G = make_block_gf({"up","down"},{g,g});
+    block_gf<imfreq, scalar_valued> G2;
+    G2 = G;
+    ASSERT_EQ(G2.data().size(), G.data().size());
+    ASSERT_EQ(G2.block_names().size(), G.block_names().size());
+ }
+
  TEST(Block, Order){
   double beta = 1;
   auto G1 = gf<imfreq>({beta, Fermion}, {1, 1});
@@ -109,6 +118,7 @@ TEST(Gf, Block) {
 
     
  }
+
 
 
 MAKE_MAIN;

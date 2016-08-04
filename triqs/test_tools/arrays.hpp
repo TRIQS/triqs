@@ -28,6 +28,8 @@
 #include <sstream>
 #include "gtest.h"
 
+using namespace triqs::arrays;
+
 #if H5_VERSION_GE(1, 8, 9)
 #include <triqs/h5/serialization.hpp>
 #endif

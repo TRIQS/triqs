@@ -43,10 +43,10 @@ namespace gfs {
   static std::string invoke() { return "ReFreq"; }
  };
  template <> struct gf_h5_name<brillouin_zone, matrix_valued> {
-  static std::string invoke() { return "BZ"; }
+  static std::string invoke() { return "BrillouinZone"; }
  };
  template <> struct gf_h5_name<cyclic_lattice, matrix_valued> {
-  static std::string invoke() { return "R"; }
+  static std::string invoke() { return "CyclicLattice"; }
  };
 
  // h5 name : name1_x_name2_.....
@@ -137,13 +137,19 @@ namespace gfs {
   }
  };
 
- /// ---------------------------  
+ /// ---------------------------
 
+ // FIXME The mesh info is duplicated with the function it reads ... Need to pass a ref to the parent function ?
  template <typename Var> struct gf_h5_rw<Var, tail_valued<matrix_valued>> {
-  template <typename G> static void write(h5::group gr, G const &g) { h5_write(gr, "data", g._data); }
-  template <typename G> static void read(h5::group gr, G &g) { h5_read(gr, "data", g._data); }
+  template <typename G> static void write(h5::group gr, G const &g) {
+   h5_write(gr, "data", g._data);
+   h5_write(gr, "mesh", g._mesh);
+  }
+  template <typename G> static void read(h5::group gr, G &g) {
+   h5_read(gr, "data", g._data);
+   h5_read(gr, "mesh", g._mesh);
+  }
  };
-
 
 } // triqs::gfs
 }

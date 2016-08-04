@@ -53,6 +53,9 @@ namespace gfs {
     */
   gf_mesh(double beta, statistic_enum S, int n_time_slices) : gf_mesh({beta, S}, n_time_slices) {}
 
+  /// For imtime the point is always in the mesh, since we use anti-periodicity or periodicity. Needed for cartesian product.
+  bool is_within_boundary(double x) const { return true;}
+ 
   /// redefine the interpolation to handle the anti-periodicity of fermions.
   /** It also reduces tau to [0,beta]
   * because the get_interpolation_data is not virtual, to preserve inlining

@@ -4,8 +4,8 @@
 #include <triqs/arrays.hpp>
 #include <triqs/det_manip/det_manip.hpp>
 namespace arrays = triqs::arrays;
-using vector = arrays::vector<double>;
-using matrix = arrays::matrix<double>;
+using _vector = triqs::arrays::vector<double>;
+using _matrix = triqs::arrays::matrix<double>;
 using triqs::det_manip::det_manip;
 
 struct func {
@@ -32,39 +32,39 @@ TEST(det_manip, det_manip_refill_0) {
  auto dm = init_dm(3);
  EXPECT_CLOSE(1.0/5400, dm.determinant());
 
- EXPECT_NEAR(5400, dm.try_refill(vector{}, vector{}), 1e-9);
+ EXPECT_NEAR(5400, dm.try_refill(_vector{}, _vector{}), 1e-9);
  dm.complete_operation();
 
- EXPECT_ARRAY_NEAR(matrix{}, dm.matrix());
+ EXPECT_ARRAY_NEAR(_matrix{}, dm.matrix());
  EXPECT_CLOSE(1, dm.determinant());
- EXPECT_ARRAY_NEAR(matrix{}, dm.inverse_matrix());
+ EXPECT_ARRAY_NEAR(_matrix{}, dm.inverse_matrix());
 }
 
 TEST(det_manip, det_manip_refill_2) {
  auto dm = init_dm(3);
  EXPECT_CLOSE(1.0/5400, dm.determinant());
 
- EXPECT_NEAR(300.0, dm.try_refill(vector{1,2}, vector{1,2}), 1e-10);
+ EXPECT_NEAR(300.0, dm.try_refill(_vector{1,2}, _vector{1,2}), 1e-10);
  dm.complete_operation();
 
- EXPECT_ARRAY_NEAR(matrix{{1.0, 2.0/3},{2.0/3, 0.5}}, dm.matrix());
+ EXPECT_ARRAY_NEAR(_matrix{{1.0, 2.0/3},{2.0/3, 0.5}}, dm.matrix());
  EXPECT_CLOSE(1.0/18, dm.determinant());
- EXPECT_ARRAY_NEAR(matrix{{9, -12},{-12, 18}}, dm.inverse_matrix());
+ EXPECT_ARRAY_NEAR(_matrix{{9, -12},{-12, 18}}, dm.inverse_matrix());
 }
 
 TEST(det_manip, det_manip_refill_4) {
  auto dm = init_dm(3);
  EXPECT_CLOSE(1.0/5400, dm.determinant());
 
- EXPECT_NEAR(1.0/4900, dm.try_refill(vector{1,2,3,4}, vector{1,2,3,4}), 1e-10);
+ EXPECT_NEAR(1.0/4900, dm.try_refill(_vector{1,2,3,4}, _vector{1,2,3,4}), 1e-10);
  dm.complete_operation();
 
- EXPECT_ARRAY_NEAR(matrix{{1.0,   2.0/3, 1.0/2, 2.0/5},
+ EXPECT_ARRAY_NEAR(_matrix{{1.0,   2.0/3, 1.0/2, 2.0/5},
                           {2.0/3, 1.0/2, 2.0/5, 1.0/3},
                           {1.0/2, 2.0/5, 1.0/3, 2.0/7},
                           {2.0/5, 1.0/3, 2.0/7, 1.0/4}}, dm.matrix());
  EXPECT_CLOSE(1.0/26460000, dm.determinant());
- EXPECT_ARRAY_NEAR(matrix{{100, -600, 1050, -560},
+ EXPECT_ARRAY_NEAR(_matrix{{100, -600, 1050, -560},
                           {-600, 4050, -7560, 4200},
                           {1050, -7560, 14700, -8400},
                           {-560, 4200, -8400, 4900}}, dm.inverse_matrix(), 1e-8);
@@ -74,12 +74,12 @@ TEST(det_manip, det_manip_refill_empty) {
  auto dm = init_dm(0);
  EXPECT_CLOSE(1.0, dm.determinant());
 
- EXPECT_NEAR(1.0/18, dm.try_refill(vector{1,2}, vector{1,2}), 1e-10);
+ EXPECT_NEAR(1.0/18, dm.try_refill(_vector{1,2}, _vector{1,2}), 1e-10);
  dm.complete_operation();
 
- EXPECT_ARRAY_NEAR(matrix{{1.0, 2.0/3},{2.0/3, 0.5}}, dm.matrix());
+ EXPECT_ARRAY_NEAR(_matrix{{1.0, 2.0/3},{2.0/3, 0.5}}, dm.matrix());
  EXPECT_CLOSE(1.0/18, dm.determinant());
- EXPECT_ARRAY_NEAR(matrix{{9, -12},{-12, 18}}, dm.inverse_matrix());
+ EXPECT_ARRAY_NEAR(_matrix{{9, -12},{-12, 18}}, dm.inverse_matrix());
 }
 
 // ------------------------

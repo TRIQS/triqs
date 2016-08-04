@@ -29,16 +29,25 @@ namespace gfs {
    */
  template<typename T1, typename T2>
  void assert_tails_are_close(T1 const &x, T2 const &y, double precision) {
-  static_assert(std::is_same<typename T1::const_view_type, typename T2::const_view_type>::value, "Tails are of different types !");
-  if (max_element(abs(x.data() - y.data())) > precision) TRIQS_RUNTIME_ERROR << "Tails have different data";
+  static_assert(std::is_same<typename T1::const_view_type, typename T2::const_view_type>::value, "Tails are of different types");
+  if (x.n_valid_orders() != y.n_valid_orders())
+   TRIQS_RUNTIME_ERROR << "Tails have different n_valid_orders: "<<x.n_valid_orders() << " and " << y.n_valid_orders() ;
+  auto n = x.n_valid_orders();
+  if (n <= 0) return;
+  auto _ = range(0, n);
+  if (max_element(abs(x.data()(_,ellipsis()) - y.data()(_,ellipsis()))) > precision) TRIQS_RUNTIME_ERROR << "Tails have different data"<< x.data() << y.data();
  }
 
  inline void assert_tails_are_close(nothing, nothing, double) {}
 
-// /// check tails are close (if TailType==tail, compare min/max orders and data)
-// void assert_tails_are_close(tail const &x, tail const &y, double precision) {
-//  if (max_element(abs(x.data() - y.data())) > precision) TRIQS_RUNTIME_ERROR << "Tails have different data";
- //}
+ // for m_tail which are a tail for g(k,om) and also a g(k) -> tail_valued.
+ template <typename M, typename Ta>
+ void assert_tails_are_close(gf_const_view<M, Ta> const &x, gf_const_view<M, Ta> const &y, double precision) {
+  assert_gfs_are_close(x, y, precision);
+ }
+ template <typename M, typename Ta> void assert_tails_are_close(gf<M, Ta> const &x, gf<M, Ta> const &y, double precision) {
+  assert_gfs_are_close(x, y, precision);
+ }
 
  // check gfs are close
  template<typename X, typename Y>

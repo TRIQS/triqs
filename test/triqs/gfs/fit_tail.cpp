@@ -2,7 +2,7 @@
 #include <triqs/gfs/singularity/fit_tail.hpp>
 using triqs::arrays::make_shape;
 
-TEST(Gf, FitTail1) {
+TEST(Gf, FitTailBasic) {
 
  triqs::clef::placeholder<0> iom_;
  double beta = 10;
@@ -50,9 +50,9 @@ TEST(Gf, FitTail1) {
 
 // ------------------------------------------------------------------------------
 
-TEST(Gf, FitTail2) {
-
+TEST(Gf, FitTailReal_F_and_B) {
  // real life test: find tails of 1/(iom -1)
+
  triqs::clef::placeholder<0> iom_;
  double beta = 10;
  int N = 100;
@@ -62,24 +62,26 @@ TEST(Gf, FitTail2) {
  gw(iom_) << 1 / (iom_ - 1);
  gw_b(iom_) << 1 / (iom_ - 1);
 
- int wn_min = 50; // frequency to start the fit
- int wn_max = 90; // final fitting frequency (included)
- int n_moments = 4; // number of moments in the final tail (including known ones)
- int size = 1; // means that we know one moment
- int order_min = 1; // means that the first moment in the final tail will be the first moment
- auto known_moments = __tail<matrix_valued>(1, 1, size, order_min); // length is 0, first moment to fit is order_min
- known_moments(1) = 1.; // set the first moment
- fit_tail(gw, known_moments, n_moments, wn_min, wn_max, true); // true replace the gf data in the fitting range by the tail values
- fit_tail(gw_b, known_moments, n_moments, wn_min, wn_max,
-          true); // true replace the gf data in the fitting range by the tail values
+ int wn_min = 50; 
+ int wn_max = 90; 
+ int n_moments = 4; 
+ int size = 1; 
+ int order_min = 1;
+ auto known_moments = __tail<matrix_valued>(1, 1, size, order_min);
+ known_moments(1) = 1.; 
+ fit_tail(gw, known_moments, n_moments, wn_min, wn_max, true); 
+ fit_tail(gw_b, known_moments, n_moments, wn_min, wn_max, true); 
 
- triqs::arrays::array<dcomplex, 1> c{0.0, 0.0, 1.0, 1.0, 0.999251, 0.998655};
- EXPECT_ARRAY_NEAR(c, gw.singularity().data()(range(1, 7), 0, 0), 1.e-6);
+ tail t(make_shape(1,1),4,-1);
+ t.data()(range(1,7),0,0) =triqs::arrays::array<dcomplex, 1> {0.0, 0.0, 1.0, 1.0, 0.999251, 0.998655};
+
+ EXPECT_TAIL_NEAR(t, gw.singularity());
+ t.data()(range(1,7),0,0) =triqs::arrays::array<dcomplex, 1> {0.0, 0.0, 1.0, 1.0, 0.999236, 0.998631};
+ EXPECT_TAIL_NEAR(t, gw_b.singularity());
 }
 
-// ------------------------------------------------------------------------------
 
-TEST(Gf, FitTail3) {
+TEST(Gf, FitTailComplex) {
 
  // real life test: find tails of 1/(iom -1) -- with positive and negative matsubara
  triqs::clef::placeholder<0> iom_;
@@ -87,18 +89,20 @@ TEST(Gf, FitTail3) {
  int N = 200;
 
  auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
- gw(iom_) << 1 / (iom_ - 1);
+ auto a = dcomplex(1.0,0.4);
+ gw(iom_) << 1 / (iom_ - a);
 
- int wn_min = 50; // frequency to start the fit
- int wn_max = 90; // final fitting frequency (included)
- int n_moments = 4; // number of moments in the final tail (including known ones)
- int size = 1; // means that we know one moment
- int order_min = 1; // means that the first moment in the final tail will be the first moment
- auto known_moments = __tail<matrix_valued>(1, 1, size, order_min); // length is 0, first moment to fit is order_min
- known_moments(1) = 1.; // set the first moment
- fit_tail(gw, known_moments, n_moments, wn_min, wn_max, true); // true replace the gf data in the fitting range by the tail values
- triqs::arrays::array<dcomplex, 1> c{0.0, 0.0, 1.0, 1.0, 0.999251, 0.998655};
- EXPECT_ARRAY_NEAR(c, gw.singularity().data()(range(1, 7), 0, 0), 1.e-6);
+ int wn_min = 50; 
+ int wn_max = 90;
+ int n_moments = 4; 
+ auto known_moments = __tail<matrix_valued>(1, 1, 1, 1);
+ known_moments(1) = 1.; 
+ fit_tail(gw, known_moments, n_moments, -wn_max, -wn_min, wn_min, wn_max,  true); 
+
+ tail t(make_shape(1,1),-2,4);
+ t.data()(range(0,7),0,0) = triqs::arrays::array<dcomplex, 1> {dcomplex(0.0,0.0),dcomplex(0.0,0.0), dcomplex(0.0,0.0), dcomplex(1.0,0.0), a, std::pow(a,2), std::pow(a,3)};
+
+ EXPECT_TAIL_NEAR(t, gw.singularity(), 8e-3); 
 }
 MAKE_MAIN;
 
