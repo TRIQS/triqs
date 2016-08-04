@@ -62,6 +62,21 @@ namespace triqs { namespace gfs {
    }
  }
 
+ // tensor_valued.
+ template <typename X, typename Y> void _fourier_impl(gf_view<X, tensor_valued<3>> gw, gf_const_view<Y, tensor_valued<3>> gt) {
+  if (gt.data().shape().front_pop() != gw.data().shape().front_pop())
+   TRIQS_RUNTIME_ERROR << "Fourier : tensor size of target mismatch";
+  for (size_t n1 = 0; n1 < gt.data().shape()[1]; n1++)
+   for (size_t n2 = 0; n2 < gt.data().shape()[2]; n2++) {
+    for (size_t n3 = 0; n3 < gt.data().shape()[3]; n3++) {
+     auto gw_sl = slice_target_to_scalar(gw, n1, n2, n3);
+     auto gt_sl = slice_target_to_scalar(gt, n1, n2, n3);
+     _fourier_impl(gw_sl, gt_sl);
+    }
+   }
+ }
+
+
  // second part of the implementation
  template <typename X, typename Y, typename T>
  void triqs_gf_view_assign_delegation(gf_view<X, T> g, gf_keeper<tags::fourier, Y, T> const &L) {

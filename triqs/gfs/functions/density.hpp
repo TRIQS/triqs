@@ -23,10 +23,11 @@
 namespace triqs {
 namespace gfs {
 
- //-------------------------------------------------------
- // Density
- // ------------------------------------------------------
-
+ /// Density
+ /**
+   Computes the density of the Gf g, i.e $g(\tau=0^-)$
+   Uses tail moments n=1, 2, and 3
+   */
  arrays::matrix<dcomplex> density(gf_const_view<imfreq> g);
  dcomplex density(gf_const_view<imfreq, scalar_valued> g);
 

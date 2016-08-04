@@ -489,10 +489,6 @@ add_subdirectory(tools)
 #------------------------
 
 if (Build_Documentation)
-<<<<<<< d9855afaea4e7581620796bed06067ac25b4b10c
-=======
-
->>>>>>> [c++14] Rm C++11 support.
  message( STATUS "-------- Prepare documentation -------------")
  add_subdirectory (${TRIQS_SOURCE_DIR}/doc )
  #add_dependencies(docs_sphinx py_sources)

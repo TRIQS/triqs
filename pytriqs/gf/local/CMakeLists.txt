@@ -9,8 +9,8 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_imfreq.py
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_imtime.py
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_legendre.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/_gf_brillouin_zone.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/_gf_brillouin_zone_x_X.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/_gf_space.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/_gf_space_x_X.py
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_X_x_X.py
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_refreq.py
   ${CMAKE_CURRENT_SOURCE_DIR}/_gf_retime.py

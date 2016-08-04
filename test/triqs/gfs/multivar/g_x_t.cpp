@@ -36,4 +36,45 @@ TEST(Gf, x_t) {
  EXPECT_ARRAY_NEAR( matrix<dcomplex>{gxt(index_t{2, 0, 0}, 0.0)} , gxt(index_t{1, 0, 0} + index_t{1, 0, 0}, 0.0));
  EXPECT_ARRAY_NEAR( matrix<dcomplex>{gxt(index_t{0, 0, 0}, 0.0)} , gxt(index_t{1, 0, 0} - index_t{1, 0, 0}, 0.0));
 }
+
+// ------------------------------------------------------------------------------------------------------
+
+TEST(Gf, x_tau) {
+
+ double beta = 1;
+ int n_freq = 100;
+ double t_min = -10, t_max = 10;
+ int n_times = n_freq * 2 + 1;
+ int L = 16;
+ int n_bz = L;
+
+ auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+
+ auto gkt = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
+
+ placeholder<0> k_;
+ placeholder_prime<1> tau_;
+
+ auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
+ gkt(k_, tau_) << exp(-eps_k * tau_);
+
+ auto gxt = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{{L, L}, {beta, Fermion, n_times}}, {1, 1}};
+ auto gx_t = curry<1>(gxt);
+ auto gk_t = curry<1>(gkt);
+
+ gx_t[tau_] << inverse_fourier(gk_t[tau_]);
+
+ auto gg = rw_h5(gxt, "ess_g_x_tau.h5", "g");
+
+ EXPECT_EQ(gxt.mesh(), gg.mesh());
+ EXPECT_EQ(gxt.singularity().mesh(), std::get<0>(gxt.mesh()));
+ EXPECT_EQ(gg.singularity().mesh(), std::get<0>(gg.mesh()));
+ EXPECT_GF_NEAR(gxt, gg);
+
+ using index_t = utility::mini_vector<int,3>;
+
+ // evaluation with tau < 0 with anti-periodicity
+ EXPECT_ARRAY_NEAR(gxt(index_t{0, 0, 0}, -0.2), -gxt(index_t{0, 0, 0}, beta - 0.2));
+}
 MAKE_MAIN;
+

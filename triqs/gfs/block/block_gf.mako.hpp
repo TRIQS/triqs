@@ -263,10 +263,15 @@ namespace gfs {
   template <typename RHS> void _assign_impl(RHS &&rhs) {
 
    // mako %if ARITY == 1 :
-   for (int w = 0; w < size(); ++w) _glist[w] = rhs[w];
+   for (int w = 0; w < size(); ++w) {
+    _glist[w] = rhs[w];
+    _block_names[w] = rhs.block_names()[w];
+   }
    // mako %else:
-   for (int w = 0; w < size1(); ++w)
+   for (int w = 0; w < size1(); ++w){
     for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs[w][v];
+    _block_names[w] = rhs.block_names()[w];
+   }
    // mako %endif
   }
 
@@ -293,6 +298,7 @@ namespace gfs {
    */
   template <typename RHS> MAKO_GF &operator=(RHS &&rhs) {
    _glist.resize(rhs.size());
+   _block_names.resize(rhs.size());
    _assign_impl(rhs);
    return *this;
   }
@@ -315,7 +321,7 @@ namespace gfs {
    return *this;
   }
 
-  template <typename M, typename T, typename RHS>
+  template <typename RHS>
   std14::enable_if_t<arrays::is_scalar<RHS>::value, MAKO_GF &> operator=(RHS &&rhs) {
    // mako %if ARITY == 1 :
    for (auto &y : _glist) y = rhs;
@@ -337,12 +343,11 @@ namespace gfs {
   // mako %endif
 
   // ---------------  Rebind --------------------
-  // mako %if ISVIEW and ARITY ==1 :
+  // mako %if ISVIEW :
   /// Rebind
   void rebind(MAKO_GF x) noexcept {
    _block_names = x._block_names;
-   _glist.clear();
-   for (auto &y : x._glist) _glist.push_back(y);
+   _glist = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
    name = x.name;
   }
   // mako %endif
@@ -406,21 +411,24 @@ namespace gfs {
   //----------------------------- HDF5 -----------------------------
 
   /// HDF5 name
+  // mako %if ARITY == 1 :
   friend std::string get_triqs_hdf5_data_scheme(MAKO_GF const &g) { return "BlockGf"; }
-
+  // mako %else:
+  friend std::string get_triqs_hdf5_data_scheme(MAKO_GF const &g) { return "Block2Gf"; }
+  // mako %endif
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string const &subgroup_name, MAKO_GF const &g) {
    auto gr = fg.create_group(subgroup_name);
    gr.write_triqs_hdf5_data_scheme(g);
 
+   h5_write(gr, "block_names1",  g.block_names()[0]);
+   h5_write(gr, "block_names2",  g.block_names()[1]);
    // mako %if ARITY == 1 :
    for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
-   h5_write(gr, "block_names", g.block_names());
    // mako %else:
    for (int i = 0; i < g.size1(); ++i)
     for (int j = 0; j < g.size2(); ++j) h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
-   h5_write(gr, "block_names", g.block_names()[0]);
    // mako %endif
   }
 
@@ -433,19 +441,27 @@ namespace gfs {
    if (tag_file != tag_expected)
     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                         << " while I expected " << tag_expected;
+   // mako %if ARITY == 1 :
    auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
    int s = block_names.size();
-   // auto check_names = gr.get_all_subgroup_names();
-   // sort both and check ?
    g._glist.resize(s);
-   for (int i = 0; i < s; ++i) {
-    // mako %if ARITY == 1 :
+   g._block_names = block_names ;
+   for (int i = 0; i < s; ++i) 
     h5_read(gr, block_names[i], g._glist[i]);
-    // mako %else:
-    g._glist[i].resize(s);
-    for (int j = 0; j < s; ++j) h5_read(gr, block_names[i] + "_" + block_names[j], g._glist[i][j]);
-    // mako %endif
+   // mako %else:
+   auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
+   auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
+   auto block_names = std::vector<std::vector<std::string>>{block_names1, block_names2};
+   int s0 = block_names[0].size();
+   int s1 = block_names[1].size();
+   g._glist.resize(s0);
+   g._block_names = block_names ;
+   for (int i = 0; i < s0; ++i) {
+    g._glist[i].resize(s1);
+    for (int j = 0; j < s1; ++j) 
+     h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
    }
+   // mako %endif
   }
 
   //-----------------------------  BOOST Serialization -----------------------------
@@ -617,6 +633,28 @@ namespace gfs {
  /// From the size n x p and the g from a number and a gf to be copied
  template <typename V, typename T> block2_gf<V, T> make_block2_gf(int n, int p, gf<V, T> const &g) { return {n, p, g}; }
 
+  // from vector<tuple<string,string>>, vector<gf>
+ template <typename V, typename T> block2_gf<V, T> make_block2_gf(std::vector<std::string> const& block_names1,
+                                                         std::vector<std::string> const& block_names2,
+                                                         std::vector<std::vector<gf<V, T>>> vv) {
+  if (block_names1.size()  != vv.size())
+   TRIQS_RUNTIME_ERROR << "make_block2_gf(vector<string>, vector<string>>, vector<vector<gf>>): incompatible outer vector size!";
+  for(auto const& v : vv) {
+   if (block_names2.size()  != v.size())
+    TRIQS_RUNTIME_ERROR << "make_block2_gf(vector<string>, vector<string>>, vector<vector<gf>>): incompatible inner vector size!";
+  }
+  return {{block_names1, block_names2}, std::move(vv)};
+ }
+
+ // -------------------------------   Free Factories for view type  --------------------------------------------------
+
+ // from block_names and data vector
+ template <typename GF>
+ block2_gf_view<typename GF::variable_t, typename GF::target_t> make_block2_gf_view(std::vector<std::string> block_names1,
+                                                                                    std::vector<std::string> block_names2,
+                                                                                    std::vector<std::vector<GF>> v) {
+  return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
+ }
 }
 }
 
@@ -633,4 +671,3 @@ void swap(triqs::gfs::block_gf_const_view<Var, Target> &a, triqs::gfs::block_gf_
 template <typename Var, typename Target>
 void swap(triqs::gfs::block2_gf_const_view<Var, Target> &a, triqs::gfs::block2_gf_const_view<Var, Target> &b) = delete;
 }
-

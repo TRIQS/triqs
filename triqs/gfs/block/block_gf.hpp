@@ -148,8 +148,7 @@ namespace gfs {
 
   struct impl_tag {};
   template <typename G>
-  block_gf(impl_tag, G &&x)
-     : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+  block_gf(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
   public:
   /// Copy constructor
@@ -206,7 +205,10 @@ namespace gfs {
   private:
   template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-   for (int w = 0; w < size(); ++w) _glist[w] = rhs[w];
+   for (int w = 0; w < size(); ++w) {
+    _glist[w] = rhs[w];
+    _block_names[w] = rhs.block_names()[w];
+   }
   }
 
   public:
@@ -231,6 +233,7 @@ namespace gfs {
   */
   template <typename RHS> block_gf &operator=(RHS &&rhs) {
    _glist.resize(rhs.size());
+   _block_names.resize(rhs.size());
    _assign_impl(rhs);
    return *this;
   }
@@ -240,8 +243,7 @@ namespace gfs {
   /// Rebind
   void rebind(block_gf x) noexcept {
    _block_names = x._block_names;
-   _glist.clear();
-   for (auto &y : x._glist) _glist.push_back(y);
+   _glist = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
    name = x.name;
   }
 
@@ -294,14 +296,14 @@ namespace gfs {
   /// HDF5 name
   friend std::string get_triqs_hdf5_data_scheme(block_gf const &g) { return "BlockGf"; }
 
-
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf const &g) {
    auto gr = fg.create_group(subgroup_name);
    gr.write_triqs_hdf5_data_scheme(g);
 
+   h5_write(gr, "block_names1", g.block_names()[0]);
+   h5_write(gr, "block_names2", g.block_names()[1]);
    for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
-   h5_write(gr, "block_names", g.block_names());
   }
 
   /// Read from HDF5
@@ -315,10 +317,9 @@ namespace gfs {
                         << " while I expected " << tag_expected;
    auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
    int s = block_names.size();
-   // auto check_names = gr.get_all_subgroup_names();
-   // sort both and check ?
    g._glist.resize(s);
-   for (int i = 0; i < s; ++i) { h5_read(gr, block_names[i], g._glist[i]); }
+   g._block_names = block_names;
+   for (int i = 0; i < s; ++i) h5_read(gr, block_names[i], g._glist[i]);
   }
 
   //-----------------------------  BOOST Serialization -----------------------------
@@ -516,8 +517,7 @@ namespace gfs {
 
   struct impl_tag {};
   template <typename G>
-  block_gf_view(impl_tag, G &&x)
-     : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+  block_gf_view(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
   public:
   /// Copy constructor
@@ -549,7 +549,10 @@ namespace gfs {
   private:
   template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-   for (int w = 0; w < size(); ++w) _glist[w] = rhs[w];
+   for (int w = 0; w < size(); ++w) {
+    _glist[w] = rhs[w];
+    _block_names[w] = rhs.block_names()[w];
+   }
   }
 
   public:
@@ -570,8 +573,7 @@ namespace gfs {
    return *this;
   }
 
-  template <typename M, typename T, typename RHS>
-  std14::enable_if_t<arrays::is_scalar<RHS>::value, block_gf_view &> operator=(RHS &&rhs) {
+  template <typename RHS> std14::enable_if_t<arrays::is_scalar<RHS>::value, block_gf_view &> operator=(RHS &&rhs) {
    for (auto &y : _glist) y = rhs;
    return *this;
   }
@@ -587,8 +589,7 @@ namespace gfs {
   /// Rebind
   void rebind(block_gf_view x) noexcept {
    _block_names = x._block_names;
-   _glist.clear();
-   for (auto &y : x._glist) _glist.push_back(y);
+   _glist = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
    name = x.name;
   }
 
@@ -641,14 +642,14 @@ namespace gfs {
   /// HDF5 name
   friend std::string get_triqs_hdf5_data_scheme(block_gf_view const &g) { return "BlockGf"; }
 
-
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf_view const &g) {
    auto gr = fg.create_group(subgroup_name);
    gr.write_triqs_hdf5_data_scheme(g);
 
+   h5_write(gr, "block_names1", g.block_names()[0]);
+   h5_write(gr, "block_names2", g.block_names()[1]);
    for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
-   h5_write(gr, "block_names", g.block_names());
   }
 
   /// Read from HDF5
@@ -662,10 +663,9 @@ namespace gfs {
                         << " while I expected " << tag_expected;
    auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
    int s = block_names.size();
-   // auto check_names = gr.get_all_subgroup_names();
-   // sort both and check ?
    g._glist.resize(s);
-   for (int i = 0; i < s; ++i) { h5_read(gr, block_names[i], g._glist[i]); }
+   g._block_names = block_names;
+   for (int i = 0; i < s; ++i) h5_read(gr, block_names[i], g._glist[i]);
   }
 
   //-----------------------------  BOOST Serialization -----------------------------
@@ -863,8 +863,7 @@ namespace gfs {
 
   struct impl_tag {};
   template <typename G>
-  block_gf_const_view(impl_tag, G &&x)
-     : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+  block_gf_const_view(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
   public:
   /// Copy constructor
@@ -894,7 +893,10 @@ namespace gfs {
   private:
   template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-   for (int w = 0; w < size(); ++w) _glist[w] = rhs[w];
+   for (int w = 0; w < size(); ++w) {
+    _glist[w] = rhs[w];
+    _block_names[w] = rhs.block_names()[w];
+   }
   }
 
   public:
@@ -904,8 +906,7 @@ namespace gfs {
   /// Rebind
   void rebind(block_gf_const_view x) noexcept {
    _block_names = x._block_names;
-   _glist.clear();
-   for (auto &y : x._glist) _glist.push_back(y);
+   _glist = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
    name = x.name;
   }
   /// Rebind on a non const view
@@ -960,14 +961,14 @@ namespace gfs {
   /// HDF5 name
   friend std::string get_triqs_hdf5_data_scheme(block_gf_const_view const &g) { return "BlockGf"; }
 
-
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf_const_view const &g) {
    auto gr = fg.create_group(subgroup_name);
    gr.write_triqs_hdf5_data_scheme(g);
 
+   h5_write(gr, "block_names1", g.block_names()[0]);
+   h5_write(gr, "block_names2", g.block_names()[1]);
    for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
-   h5_write(gr, "block_names", g.block_names());
   }
 
   /// Read from HDF5
@@ -981,10 +982,9 @@ namespace gfs {
                         << " while I expected " << tag_expected;
    auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
    int s = block_names.size();
-   // auto check_names = gr.get_all_subgroup_names();
-   // sort both and check ?
    g._glist.resize(s);
-   for (int i = 0; i < s; ++i) { h5_read(gr, block_names[i], g._glist[i]); }
+   g._block_names = block_names;
+   for (int i = 0; i < s; ++i) h5_read(gr, block_names[i], g._glist[i]);
   }
 
   //-----------------------------  BOOST Serialization -----------------------------
@@ -1158,8 +1158,7 @@ namespace gfs {
 
   struct impl_tag {};
   template <typename G>
-  block2_gf(impl_tag, G &&x)
-     : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+  block2_gf(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
   public:
   /// Copy constructor
@@ -1201,8 +1200,10 @@ namespace gfs {
   private:
   template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-   for (int w = 0; w < size1(); ++w)
+   for (int w = 0; w < size1(); ++w) {
     for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs[w][v];
+    _block_names[w] = rhs.block_names()[w];
+   }
   }
 
   public:
@@ -1227,12 +1228,19 @@ namespace gfs {
   */
   template <typename RHS> block2_gf &operator=(RHS &&rhs) {
    _glist.resize(rhs.size());
+   _block_names.resize(rhs.size());
    _assign_impl(rhs);
    return *this;
   }
 
 
   // ---------------  Rebind --------------------
+  /// Rebind
+  void rebind(block2_gf x) noexcept {
+   _block_names = x._block_names;
+   _glist = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
+   name = x.name;
+  }
 
   public:
   // ------------- All the call operators without lazy arguments -----------------------------
@@ -1280,17 +1288,17 @@ namespace gfs {
   //----------------------------- HDF5 -----------------------------
 
   /// HDF5 name
-  friend std::string get_triqs_hdf5_data_scheme(block2_gf const &g) { return "BlockGf"; }
-
+  friend std::string get_triqs_hdf5_data_scheme(block2_gf const &g) { return "Block2Gf"; }
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf const &g) {
    auto gr = fg.create_group(subgroup_name);
    gr.write_triqs_hdf5_data_scheme(g);
 
+   h5_write(gr, "block_names1", g.block_names()[0]);
+   h5_write(gr, "block_names2", g.block_names()[1]);
    for (int i = 0; i < g.size1(); ++i)
     for (int j = 0; j < g.size2(); ++j) h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
-   h5_write(gr, "block_names", g.block_names()[0]);
   }
 
   /// Read from HDF5
@@ -1302,14 +1310,16 @@ namespace gfs {
    if (tag_file != tag_expected)
     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                         << " while I expected " << tag_expected;
-   auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
-   int s = block_names.size();
-   // auto check_names = gr.get_all_subgroup_names();
-   // sort both and check ?
-   g._glist.resize(s);
-   for (int i = 0; i < s; ++i) {
-    g._glist[i].resize(s);
-    for (int j = 0; j < s; ++j) h5_read(gr, block_names[i] + "_" + block_names[j], g._glist[i][j]);
+   auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
+   auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
+   auto block_names = std::vector<std::vector<std::string>>{block_names1, block_names2};
+   int s0 = block_names[0].size();
+   int s1 = block_names[1].size();
+   g._glist.resize(s0);
+   g._block_names = block_names;
+   for (int i = 0; i < s0; ++i) {
+    g._glist[i].resize(s1);
+    for (int j = 0; j < s1; ++j) h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
    }
   }
 
@@ -1496,8 +1506,7 @@ namespace gfs {
 
   struct impl_tag {};
   template <typename G>
-  block2_gf_view(impl_tag, G &&x)
-     : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+  block2_gf_view(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
   public:
   /// Copy constructor
@@ -1526,8 +1535,10 @@ namespace gfs {
   private:
   template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-   for (int w = 0; w < size1(); ++w)
+   for (int w = 0; w < size1(); ++w) {
     for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs[w][v];
+    _block_names[w] = rhs.block_names()[w];
+   }
   }
 
   public:
@@ -1548,8 +1559,7 @@ namespace gfs {
    return *this;
   }
 
-  template <typename M, typename T, typename RHS>
-  std14::enable_if_t<arrays::is_scalar<RHS>::value, block2_gf_view &> operator=(RHS &&rhs) {
+  template <typename RHS> std14::enable_if_t<arrays::is_scalar<RHS>::value, block2_gf_view &> operator=(RHS &&rhs) {
    for (auto &x : _glist)
     for (auto &y : x) y = rhs;
    return *this;
@@ -1563,6 +1573,12 @@ namespace gfs {
 
 
   // ---------------  Rebind --------------------
+  /// Rebind
+  void rebind(block2_gf_view x) noexcept {
+   _block_names = x._block_names;
+   _glist = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
+   name = x.name;
+  }
 
   public:
   // ------------- All the call operators without lazy arguments -----------------------------
@@ -1610,17 +1626,17 @@ namespace gfs {
   //----------------------------- HDF5 -----------------------------
 
   /// HDF5 name
-  friend std::string get_triqs_hdf5_data_scheme(block2_gf_view const &g) { return "BlockGf"; }
-
+  friend std::string get_triqs_hdf5_data_scheme(block2_gf_view const &g) { return "Block2Gf"; }
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf_view const &g) {
    auto gr = fg.create_group(subgroup_name);
    gr.write_triqs_hdf5_data_scheme(g);
 
+   h5_write(gr, "block_names1", g.block_names()[0]);
+   h5_write(gr, "block_names2", g.block_names()[1]);
    for (int i = 0; i < g.size1(); ++i)
     for (int j = 0; j < g.size2(); ++j) h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
-   h5_write(gr, "block_names", g.block_names()[0]);
   }
 
   /// Read from HDF5
@@ -1632,14 +1648,16 @@ namespace gfs {
    if (tag_file != tag_expected)
     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                         << " while I expected " << tag_expected;
-   auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
-   int s = block_names.size();
-   // auto check_names = gr.get_all_subgroup_names();
-   // sort both and check ?
-   g._glist.resize(s);
-   for (int i = 0; i < s; ++i) {
-    g._glist[i].resize(s);
-    for (int j = 0; j < s; ++j) h5_read(gr, block_names[i] + "_" + block_names[j], g._glist[i][j]);
+   auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
+   auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
+   auto block_names = std::vector<std::vector<std::string>>{block_names1, block_names2};
+   int s0 = block_names[0].size();
+   int s1 = block_names[1].size();
+   g._glist.resize(s0);
+   g._block_names = block_names;
+   for (int i = 0; i < s0; ++i) {
+    g._glist[i].resize(s1);
+    for (int j = 0; j < s1; ++j) h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
    }
   }
 
@@ -1826,8 +1844,7 @@ namespace gfs {
 
   struct impl_tag {};
   template <typename G>
-  block2_gf_const_view(impl_tag, G &&x)
-     : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+  block2_gf_const_view(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
   public:
   /// Copy constructor
@@ -1854,14 +1871,22 @@ namespace gfs {
   private:
   template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-   for (int w = 0; w < size1(); ++w)
+   for (int w = 0; w < size1(); ++w) {
     for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs[w][v];
+    _block_names[w] = rhs.block_names()[w];
+   }
   }
 
   public:
   block2_gf_const_view &operator=(block2_gf_const_view const &) = delete; // a const view can not be assigned to
 
   // ---------------  Rebind --------------------
+  /// Rebind
+  void rebind(block2_gf_const_view x) noexcept {
+   _block_names = x._block_names;
+   _glist = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
+   name = x.name;
+  }
   /// Rebind on a non const view
   void rebind(mutable_view_type const &X) noexcept { rebind(const_view_type{X}); }
 
@@ -1911,17 +1936,17 @@ namespace gfs {
   //----------------------------- HDF5 -----------------------------
 
   /// HDF5 name
-  friend std::string get_triqs_hdf5_data_scheme(block2_gf_const_view const &g) { return "BlockGf"; }
-
+  friend std::string get_triqs_hdf5_data_scheme(block2_gf_const_view const &g) { return "Block2Gf"; }
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf_const_view const &g) {
    auto gr = fg.create_group(subgroup_name);
    gr.write_triqs_hdf5_data_scheme(g);
 
+   h5_write(gr, "block_names1", g.block_names()[0]);
+   h5_write(gr, "block_names2", g.block_names()[1]);
    for (int i = 0; i < g.size1(); ++i)
     for (int j = 0; j < g.size2(); ++j) h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
-   h5_write(gr, "block_names", g.block_names()[0]);
   }
 
   /// Read from HDF5
@@ -1933,14 +1958,16 @@ namespace gfs {
    if (tag_file != tag_expected)
     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                         << " while I expected " << tag_expected;
-   auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
-   int s = block_names.size();
-   // auto check_names = gr.get_all_subgroup_names();
-   // sort both and check ?
-   g._glist.resize(s);
-   for (int i = 0; i < s; ++i) {
-    g._glist[i].resize(s);
-    for (int j = 0; j < s; ++j) h5_read(gr, block_names[i] + "_" + block_names[j], g._glist[i][j]);
+   auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
+   auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
+   auto block_names = std::vector<std::vector<std::string>>{block_names1, block_names2};
+   int s0 = block_names[0].size();
+   int s1 = block_names[1].size();
+   g._glist.resize(s0);
+   g._block_names = block_names;
+   for (int i = 0; i < s0; ++i) {
+    g._glist[i].resize(s1);
+    for (int j = 0; j < s1; ++j) h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
    }
   }
 
@@ -2128,6 +2155,29 @@ namespace gfs {
 
  /// From the size n x p and the g from a number and a gf to be copied
  template <typename V, typename T> block2_gf<V, T> make_block2_gf(int n, int p, gf<V, T> const &g) { return {n, p, g}; }
+
+ // from vector<tuple<string,string>>, vector<gf>
+ template <typename V, typename T>
+ block2_gf<V, T> make_block2_gf(std::vector<std::string> const &block_names1, std::vector<std::string> const &block_names2,
+                                std::vector<std::vector<gf<V, T>>> vv) {
+  if (block_names1.size() != vv.size())
+   TRIQS_RUNTIME_ERROR << "make_block2_gf(vector<string>, vector<string>>, vector<vector<gf>>): incompatible outer vector size!";
+  for (auto const &v : vv) {
+   if (block_names2.size() != v.size())
+    TRIQS_RUNTIME_ERROR << "make_block2_gf(vector<string>, vector<string>>, vector<vector<gf>>): incompatible inner vector size!";
+  }
+  return {{block_names1, block_names2}, std::move(vv)};
+ }
+
+ // -------------------------------   Free Factories for view type  --------------------------------------------------
+
+ // from block_names and data vector
+ template <typename GF>
+ block2_gf_view<typename GF::variable_t, typename GF::target_t> make_block2_gf_view(std::vector<std::string> block_names1,
+                                                                                    std::vector<std::string> block_names2,
+                                                                                    std::vector<std::vector<GF>> v) {
+  return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
+ }
 }
 }
 

@@ -55,9 +55,13 @@ namespace triqs {
  template<typename T, bool HasView = has_view<T>::value> struct const_view_type_if_exists_else_type;
  template<typename T> struct const_view_type_if_exists_else_type<T,false> {using type=T;};
  template<typename T> struct const_view_type_if_exists_else_type<T,true>  {using type=typename T::const_view_type;};
+ 
+ template<typename T> using view_or_type_t = typename view_type_if_exists_else_type<T>::type;
+ template<typename T> using const_view_or_type_t = typename const_view_type_if_exists_else_type<T>::type;
 
  // CURRENT
  template<typename A> using Regular = typename regular_type_if_exists_else_type<A>::type;
+ template<typename A> using get_regular_t = typename A::regular_type;
 
  /// Transform to the regular type
  template <typename A> Regular<A> make_regular(A &&x) { return std::forward<A>(x); }

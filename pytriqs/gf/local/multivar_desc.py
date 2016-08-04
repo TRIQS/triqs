@@ -22,38 +22,44 @@ module.add_preamble("""
 
 t = class_( py_type = "MeshBz",
         c_type = "gf_mesh<brillouin_zone>",
-        c_type_absolute = "triqs::gfs::gf_mesh<brillouin_zone>",
+        c_type_absolute = "triqs::gfs::gf_mesh<triqs::lattice::brillouin_zone>",
         serializable= "tuple",
        )
-#module.add_class(t)
+#module.add_class(t) #duplicate of wrapped type in gf_desc!
 
 t = class_( py_type = "MeshCyclic",
         c_type = "gf_mesh<cyclic_lattice>",
-        c_type_absolute = "triqs::gfs::gf_mesh<cyclic_lattice>",
+        c_type_absolute = "triqs::gfs::gf_mesh<triqs::gfs::cyclic_lattice>",
         serializable= "tuple",
        )
-module.add_class(t)
+#module.add_class(t) #duplicate of wrapped type in gf_desc!
 
 t = class_( py_type = "MTailBz",
         c_type = "gf_view<brillouin_zone, tail_valued<matrix_valued>>",
-        c_type_absolute = "triqs::gfs::gf_view<brillouin_zone, tail_valued<matrix_valued>>",
+        c_type_absolute = "triqs::gfs::gf_view<triqs::lattice::brillouin_zone, triqs::gfs::tail_valued<triqs::gfs::matrix_valued>>",
         serializable= "tuple",
        )
 module.add_class(t)
 
 t = class_( py_type = "MTailCyclic",
         c_type = "gf_view<cyclic_lattice, tail_valued<matrix_valued>>",
-        c_type_absolute = "triqs::gfs::gf_view<cyclic_lattice, tail_valued<matrix_valued>>",
+        c_type_absolute = "triqs::gfs::gf_view<triqs::gfs::cyclic_lattice, triqs::gfs::tail_valued<triqs::gfs::matrix_valued>>",
         serializable= "tuple",
        )
 module.add_class(t)
 
 
-for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime"), ("ImTime","imtime")], [("ReFreq", "refreq"), ("ReFreq", "refreq")],
-                 [("ImFreq","imfreq"), ("ImFreq","imfreq"), ("ImFreq","imfreq")],  [("ImTime","imtime"), ("ImTime","imtime"), ("ImTime","imtime")],
-                 [("Legendre","legendre"), ("Legendre","legendre")], [("ImFreq","imfreq"), ("Legendre","legendre")],
+for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],
+                 [("ImTime","imtime"), ("ImTime","imtime")], 
+                 [("ReFreq", "refreq"), ("ReFreq", "refreq")],
+                 [("ImFreq","imfreq"), ("ImFreq","imfreq"), ("ImFreq","imfreq")],  
+                 [("ImTime","imtime"), ("ImTime","imtime"), ("ImTime","imtime")],
+                 [("Legendre","legendre"), ("Legendre","legendre")], 
+                 [("ImFreq","imfreq"), ("Legendre","legendre")],
                  [("ImFreq","imfreq"), ("Legendre","legendre"), ("Legendre","legendre")],
-                 [("BrillouinZone","brillouin_zone"),("ImFreq","imfreq")], [("BrillouinZone","brillouin_zone"),("ReFreq","refreq")] ]:
+                 [("BrillouinZone","brillouin_zone"),("ImFreq","imfreq")], 
+                 [("BrillouinZone","brillouin_zone"),("ReFreq","refreq")],
+                 [("CyclicLattice","cyclic_lattice"),("ImTime","imtime")]   ]:
 
   mesh_rank = len(TimeMesh)
 
@@ -85,7 +91,7 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
 
 
   ###################
-  if TimeMesh[0][0]=="BrillouinZone":
+  if TimeMesh[0][0]=="BrillouinZone" or TimeMesh[0][0]=="CyclicLattice":
    Target_List = [('matrix_valued', '')]
   else:
    Target_List = [('tensor_valued<3>', 'Tv3'),('tensor_valued<4>', 'Tv4')]
@@ -121,9 +127,6 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
     c.add_property(name = "data",
                    getter = cfunction("array_view<std::complex<double>, %s> data ()"%(rank+mesh_rank)),
                    doc = """data """)
-    for i in range(mesh_rank):
-     return_descriptor = ",".join([TimeMesh[j][1] for j in range(mesh_rank) if not j==i])
-     ind_type = "int" if not TimeMesh[i][0]=="BrillouinZone" else "triqs::utility::mini_vector<long, 3>"
 
 ### from rebase code
 #     if target_type == "scalar_valued":
@@ -144,7 +147,11 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
 #                  calling_pattern= """
 #                   auto sh = get_target_shape(self_c);
      
-     c.add_method(
+    for i in range(len(TimeMesh)):
+     return_descriptor = ",".join([TimeMesh[j][1] for j in range(i) if not j==i])
+     ind_type = "int" if not (TimeMesh[i][0]=="BrillouinZone" or TimeMesh[i][0]=="CyclicLattice") else "triqs::utility::mini_vector<long, 3>"
+
+    c.add_method(
        name = "slice_at_const_w%s"%(i+1),
        calling_pattern = "auto result = reinterpret_scalar_valued_gf_as_matrix_valued(partial_eval<%s>(self_c, n))"%i if target_type=="scalar_valued" else  "auto result =  partial_eval<%s>(self_c, n)"%i,
        signature = "gf_view<%s, matrix_valued> (%s n)"%(return_descriptor, ind_type) if target_type=="scalar_valued" else "gf_view<%s, %s> (%s n)"%(return_descriptor, target_type, ind_type),
@@ -176,8 +183,9 @@ for TimeMesh in [[("ImFreq","imfreq"), ("ImFreq","imfreq")],[("ImTime","imtime")
     c.number_protocol['lshift'] = pyfunction(name ="__lshift__", python_precall = "pytriqs.gf.local._gf_common._lshift_", arity = 2)
     c.add_method_copy()
     c.add_method_copy_from()
-    if TimeMesh[0][0] =="BrillouinZone":
-     c.add_pure_python_method("pytriqs.gf.local._gf_%s_x_X.plot"%(TimeMesh[0][1]), rename = "_plot_")
+    if TimeMesh[0][0] =="BrillouinZone" or TimeMesh[0][0] =="CyclicLattice":
+     c.add_pure_python_method("pytriqs.gf.local._gf_space_x_X.plot", rename = "_plot_")
+     #c.add_pure_python_method("pytriqs.gf.local._gf_%s_x_X.plot"%(TimeMesh[0][1]), rename = "_plot_")
     elif mesh_rank==2:
      c.add_pure_python_method("pytriqs.gf.local._gf_X_x_X.plot", rename = "_plot_")
 

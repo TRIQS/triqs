@@ -50,6 +50,13 @@ def plot(self, opt_dict):
     else:
      Y_label = "X"
 
+    if 'BrillouinZone' in str(type(self.mesh.components[0])):
+     X_label = r"\mathbf{k}"
+    if 'CyclicLattice' in str(type(self.mesh.components[0])):
+     X_label = r"\mathbf{R}"
+    else:
+     X_label = "X"
+
     if plot_type=="contourf":
      path=opt_dict.pop("path")
      x,y,z,zmin, zmax, high_sym = plottable_slice_along_path(self,path=path, method=method)
@@ -57,14 +64,14 @@ def plot(self, opt_dict):
      xticks_args=([i for i,j in high_sym], ["%1.3f,%1.3f"%(i,j) for i,j in path],)
      default_dict = {'xdata': x, 
                      'ydata': y, 
-                     'label': r'$G_\mathbf{k}$', 
-                     'xlabel': r'$\mathbf{k}$',
+                     'label': r'$G_%s$'%X_label, 
+                     'xlabel': r'$%s$'%X_label,
                      'ylabel': r'$%s$'%Y_label,
                      'zdata' : component(z),
                      'levels':np.linspace(component(zmin),component(zmax),50), 
                      'plot_function': 'contourf',
                      'xticks' : xticks_args,
-                     'title': r'$\mathrm{%s}G(\mathbf{k},%s)$'%('Re' if comp=='R' else 'Im', Y_label), 
+                     'title': r'$\mathrm{%s}G(%s,%s)$'%('Re' if comp=='R' else 'Im', X_label, Y_label), 
                     }
     else: raise Exception("Unknown plot type %s. Can only be 'contourf' (default)."%plot_type)
 

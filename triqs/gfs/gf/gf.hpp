@@ -22,11 +22,11 @@
  *
  ******************************************************************************/
 #pragma once
+#include "../singularity/nothing.hpp"
+#include "../singularity/tail.hpp"
+#include "./data_proxy.hpp"
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
-#include "../singularity/tail.hpp"
-#include "../singularity/nothing.hpp"
-#include "./data_proxy.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -72,6 +72,9 @@ namespace gfs {
   inline void _rebind_helper(dcomplex &x, dcomplex const &y) { x = y; }
   inline void _rebind_helper(double &x, double const &y) { x = y; }
  }
+ struct impl_tag {};
+ struct impl_tag2 {};
+ struct impl_tag3 {};
 
 
  // ----------------------  gf -----------------------------------------
@@ -172,9 +175,6 @@ namespace gfs {
 
   // for delegation only
   private:
-  struct impl_tag {};
-  struct impl_tag2 {};
-
   // build a zero from a slice of data
   // MUST be static since it is used in constructors... (otherwise bug in clang)
   template <typename T> static zero_t __make_zero(T, data_t const &d) {
@@ -765,18 +765,15 @@ namespace gfs {
 
   // for delegation only
   private:
-  struct impl_tag {};
-  struct impl_tag2 {};
-
   // build a zero from a slice of data
   // MUST be static since it is used in constructors... (otherwise bug in clang)
-  static zero_t __make_zero(std::false_type, data_t const &d) {
+  template <typename T> static zero_t __make_zero(T, data_t const &d) {
    auto r = zero_regular_t{d.shape().template front_mpop<arity>()};
    r() = 0;
    return r;
   }
-  static zero_regular_t __make_zero(std::true_type, data_t const &d) { return 0; } // special case
-  static zero_t _make_zero(data_t const &d) { return __make_zero(std::is_same<zero_regular_t, scalar_t>{}, d); }
+  static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; } // special case
+  static zero_t _make_zero(data_t const &d) { return __make_zero(Target{}, d); }
   zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 
   template <typename G>
@@ -839,15 +836,14 @@ namespace gfs {
   /// Makes a view
   gf_view(gf<Var, Target> &&g) noexcept : gf_view(impl_tag2{}, std::move(g)) {} // from a gf &&
 
-  // Construct from mesh, data, ....
+  /// Construct from mesh, data, ....
   template <typename D>
   gf_view(mesh_t const &m, D &&dat, singularity_t const &t, indices_t const &ind = indices_t{})
      : gf_view(impl_tag{}, m, std::forward<D>(dat), t, ind) {}
 
-  // Construct from mesh, data, ....
-  // Hum... *this is not constructed
+  // Construct from mesh, data. Only for curry.
   template <typename D>
-  gf_view(mesh_t const &m, D const &dat)
+  gf_view(impl_tag3, mesh_t const &m, D const &dat)
      : gf_view(impl_tag{}, m, dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
 
   // ---------------  swap --------------------
@@ -1330,9 +1326,6 @@ namespace gfs {
 
   // for delegation only
   private:
-  struct impl_tag {};
-  struct impl_tag2 {};
-
   // build a zero from a slice of data
   // MUST be static since it is used in constructors... (otherwise bug in clang)
   template <typename T> static zero_t __make_zero(T, data_t const &d) {
@@ -1407,10 +1400,9 @@ namespace gfs {
   gf_const_view(mesh_t const &m, D const &dat, singularity_t const &t, indices_t const &ind)
      : gf_const_view(impl_tag{}, m, dat, t, ind) {}
 
-  // Construct from mesh, data, ....
-  // Hum... *this is not constructed
+  // Construct from mesh, data. Only for curry.
   template <typename D>
-  gf_const_view(mesh_t const &m, D const &dat)
+  gf_const_view(impl_tag3, mesh_t const &m, D const &dat)
      : gf_const_view(impl_tag{}, m, dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
 
   // ---------------  swap --------------------
