@@ -48,8 +48,8 @@ namespace arrays {
   return {std::forward<A>(a)};
  }
 
- template <class A>
- std14::enable_if_t<ImmutableArray<std14::remove_reference_t<A>>::value> inverse(A &&a) = delete; // arrays can not be inverted.
+ //template <class A>
+ //std14::enable_if_t<ImmutableArray<std14::remove_reference_t<A>>::value> inverse(A &&a) = delete; // arrays can not be inverted.
 
  // ----------------- implementation -----------------------------------------
 

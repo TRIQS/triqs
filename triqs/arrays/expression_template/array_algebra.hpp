@@ -109,6 +109,14 @@ namespace triqs { namespace arrays {
  DEFINE_OPERATOR(divides,    /, ImmutableArray,ImmutableArray);
  DEFINE_OPERATOR(divides,    /, is_in_ZRC,ImmutableArray);
  DEFINE_OPERATOR(divides,    /, ImmutableArray,is_in_ZRC);
+
+ // with scalar
+ DEFINE_OPERATOR(plus,       +, ImmutableArray,is_in_ZRC);
+ DEFINE_OPERATOR(plus,       +, is_in_ZRC,ImmutableArray);
+ DEFINE_OPERATOR(minus,      -, ImmutableArray,is_in_ZRC);
+ DEFINE_OPERATOR(minus,      -, is_in_ZRC,ImmutableArray);
+
+
 #undef DEFINE_OPERATOR
 
  // the unary is special
@@ -117,7 +125,15 @@ namespace triqs { namespace arrays {
   ImmutableArray<A1>::value, 
   array_unary_m_expr<typename node_t<A1,false>::type >
    >::type
-   operator - (A1 && a1) { return {std::forward<A1>(a1)};} 
+   operator - (A1 && a1) { return {std::forward<A1>(a1)};}
 
+
+ // inverse of an array
+ template <class A> struct __inv_array_rtype { using type = decltype(1 / std::declval<A>()); };
+
+ template <class A>
+ std14::enable_if_t<ImmutableArray<std14::decay_t<A>>::value, typename __inv_array_rtype<A &&>::type> inverse(A &&a) {
+  return 1 / std::forward<A>(a);
+ }
 }}//namespace triqs::arrays
 #endif
