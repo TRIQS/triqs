@@ -178,14 +178,14 @@ namespace triqs { namespace arrays {
 
     // build from a init_list
     template<typename T, int R=Rank>
-     array(std::initializer_list<T> const & l, typename std::enable_if<R==1>::type * dummy =0):
+     array(std::initializer_list<T> const & l, std14::enable_if_t<(R==1) && std::is_constructible<value_type, T>::value> * dummy =0):
       IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(l.size()),memory_layout<Rank>())) {
        size_t i=0;
        for (auto const & x : l) (*this)(i++) = x;
       }
 
     template<typename T, int R=Rank>
-     array (std::initializer_list<std::initializer_list<T>> const & l, typename std::enable_if<R==2>::type * dummy =0):
+     array (std::initializer_list<std::initializer_list<T>> const & l, std14::enable_if_t<(R==2) && std::is_constructible<value_type, T>::value > * dummy =0):
       IMPL_TYPE(memory_layout<Rank>()) {
        size_t i=0,j=0; int s=-1;
        for (auto const & l1 : l) { if (s==-1) s= l1.size(); else if (s != l1.size()) TRIQS_RUNTIME_ERROR << "initializer list not rectangular !";}
