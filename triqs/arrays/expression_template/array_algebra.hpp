@@ -129,11 +129,13 @@ namespace triqs { namespace arrays {
 
 
  // inverse of an array
- template <class A> struct __inv_array_rtype { using type = decltype(1 / std::declval<A>()); };
+ //template <class A> struct __inv_array_rtype { using type = decltype(1 / std::declval<A>()); };
+ //template <class A> struct __inv_array_rtype { using type = array_expr<utility::tags::divides, typename node_t<int, false>::type, typename node_t<A, false>::type>;};
 
  template <class A>
- std14::enable_if_t<ImmutableArray<std14::decay_t<A>>::value, typename __inv_array_rtype<A &&>::type> inverse(A &&a) {
-  return 1 / std::forward<A>(a);
+     std14::enable_if_t < ImmutableArray<std14::decay_t<A>>::value,
+     array_expr<utility::tags::divides, _scalar_wrap<int, false>, utility::remove_rvalue_ref_t<A>>> inverse(A &&a) {
+  return {1 , std::forward<A>(a)};
  }
 }}//namespace triqs::arrays
 #endif
