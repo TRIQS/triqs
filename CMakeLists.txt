@@ -25,10 +25,10 @@ set (TRIQS_VERSION "1.4")
 # Path for local cmake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-# Where is triqs source 
+# Where is triqs source
 set(TRIQS_SOURCE_DIR "${CMAKE_SOURCE_DIR}")
 
-# a default version : by default installation in the build dir : 
+# a default version : by default installation in the build dir :
 # useful for developer : everything is at the same place, easy to clean.
 # pass -DCMAKE_INSTALL_PREFIX to overrule
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/INSTALL_DIR" CACHE PATH "TRIQS install prefix" )
@@ -46,7 +46,7 @@ endif()
 # nasty policy for escaping in string....
 cmake_policy(SET CMP0011 OLD)
 cmake_policy(SET CMP0005 NEW)
-cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003 
+cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003
 
 cmake_minimum_required(VERSION 2.8.7 FATAL_ERROR)
 project (AllPrograms C CXX)
@@ -100,9 +100,9 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 string(COMPARE EQUAL ${BUILD_SHARED_LIBS}  "OFF" TRIQS_BUILD_STATIC)
 if (TRIQS_BUILD_STATIC)
  message(STATUS "STATIC Built  ")
-else (TRIQS_BUILD_STATIC) 
+else (TRIQS_BUILD_STATIC)
  message(STATUS "DYNAMIC Built ")
-endif (TRIQS_BUILD_STATIC) 
+endif (TRIQS_BUILD_STATIC)
 
 # RPATH setting
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -111,12 +111,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 else()
  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
  set(CMAKE_SKIP_BUILD_RPATH FALSE)
- set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
 # #################################
-# Python support 
+# Python support
 # #################################
 # TEST AND DEBUG THE OFF OPTION
 # option is set first time, once for all. No change.
@@ -152,8 +152,8 @@ endif()
  endif()
 
  # Installation : Final destination of the python modules
- string(REGEX REPLACE ".*/lib" "lib" TRIQS_PYTHON_LIB_DEST_ROOT ${PYTHON_SITE_PKG} ) 
- set( TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/pytriqs ) 
+ string(REGEX REPLACE ".*/lib" "lib" TRIQS_PYTHON_LIB_DEST_ROOT ${PYTHON_SITE_PKG} )
+ set( TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/pytriqs )
  message(STATUS "Python modules will be installed in ${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST}")
 
  # build pytriqs scripts
@@ -176,7 +176,7 @@ include_directories(SYSTEM ${MPI_CXX_INCLUDE_PATH})
 #link_libraries( ${MPI_CXX_LIBRARIES})
 set(TRIQS_LIBRARY_MPI ${MPI_CXX_LIBRARIES})
 set(TRIQS_INCLUDE_MPI ${MPI_CXX_INCLUDE_PATH})
-set(TRIQS_COMPILE_FLAGS_MPI ${MPI_CXX_COMPILE_FLAGS}  ${MPI_C_COMPILE_FLAGS}) 
+set(TRIQS_COMPILE_FLAGS_MPI ${MPI_CXX_COMPILE_FLAGS}  ${MPI_C_COMPILE_FLAGS})
 message(STATUS "MPI CXX compiler : ${MPI_CXX_COMPILER}")
 message(STATUS "MPI_COMPILE_FLAGS : ${TRIQS_COMPILE_FLAGS_MPI} ")
 message(STATUS "MPI_CXX_INCLUDE_PATH : ${MPI_CXX_INCLUDE_PATH}")
@@ -218,7 +218,7 @@ message(STATUS  "Boost include dir: ${BOOST_INCLUDE_DIR}")
 message(STATUS  "Boost libraries: ${BOOST_LIBRARY}")
 
 # #################################
-# max_align_t bug detection 
+# max_align_t bug detection
 # #################################
 try_compile(_max_align_t_is_correct ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/max_align_t_test.cpp COMPILE_DEFINITIONS  -std=c++11 )
 if (NOT _max_align_t_is_correct)
@@ -241,7 +241,7 @@ endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 # Lapack
 # #################################
 message( STATUS "-------- Lapack detection -------------")
-if (NOT MKLROOT) 
+if (NOT MKLROOT)
 #option(LAPACK_64_BIT "Use 64-bit version of LAPACK" OFF)
 #set (BIND_FORTRAN_INTEGER_8 ${LAPACK_64_BIT})
 if (NOT LAPACK_FOUND)
@@ -257,7 +257,7 @@ set(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE S
 set(TRIQS_LIBRARY_LAPACK ${LAPACK_LIBS})
 if(MAC_VECLIB)
  set(TRIQS_LIBRARY_LAPACK "-framework Accelerate ${TRIQS_LIBRARY_LAPACK}")
-endif(MAC_VECLIB) 
+endif(MAC_VECLIB)
 
 else(NOT MKLROOT)
  # MKL
@@ -291,12 +291,16 @@ endif()
 if(HDF5_IS_PARALLEL)
  message(FATAL_ERROR "parallel(MPI) hdf5 is detected. The standard version is preferred.")
 endif(HDF5_IS_PARALLEL)
-message( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES} ")
+if(HDF5_HL_LIBRARIES)    # CMake 3.6.0 and later puts libhdf5_hl into a separate variable
+ list(APPEND HDF5_LIBRARIES ${HDF5_HL_LIBRARIES})
+ list(REMOVE_DUPLICATES HDF5_LIBRARIES)
+endif(HDF5_HL_LIBRARIES)
+message( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES}")
 mark_as_advanced(HDF5_DIR) # defined somewhere else ? what is it ?
 
 include_directories (SYSTEM ${HDF5_INCLUDE_DIR})
-#link_libraries (${HDF5_LIBRARIES}) 
-set(TRIQS_LIBRARY_HDF5  ${HDF5_LIBRARIES})
+#link_libraries (${HDF5_LIBRARIES})
+set(TRIQS_LIBRARY_HDF5 ${HDF5_LIBRARIES})
 set(TRIQS_INCLUDE_HDF5 ${HDF5_INCLUDE_DIR})
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} ${HDF5_DEFINITIONS})
 set(TRIQS_HDF5_DIFF_EXECUTABLE ${HDF5_DIFF_EXECUTABLE})
@@ -320,7 +324,7 @@ message( STATUS "-------- GMP detection -------------")
 find_package(GMP)
 include_directories(SYSTEM ${GMP_INCLUDE_DIR})
 #link_libraries(${GMP_LIBRARIES})
-set(TRIQS_LIBRARY_GMP ${GMP_LIBRARIES} ${GMPXX_LIBRARIES}) 
+set(TRIQS_LIBRARY_GMP ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
 set(TRIQS_INCLUDE_GMP ${GMP_INCLUDE_DIR})
 
 # FFTW
@@ -343,7 +347,7 @@ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -DHAVE_NFFT )
 ENDIF(NFFT_FOUND)
 
 # remove the possible horrible pthread bug on os X !!( on gcc, old, before clang... is it really needed now ???)
-# check for clang compiler ?? on gcc, os X snow leopard, it MUST be set 
+# check for clang compiler ?? on gcc, os X snow leopard, it MUST be set
 # since _REENTRANT is mysteriously set and this leads to random stalling of the code....
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -pthread )
@@ -375,7 +379,7 @@ endif (GIT_FOUND)
 
 # Compute WhoAmI and hostname
 # Change this : make a version module
-EXECUTE_PROCESS(COMMAND hostname OUTPUT_VARIABLE myHostName RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE) 
+EXECUTE_PROCESS(COMMAND hostname OUTPUT_VARIABLE myHostName RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
 EXECUTE_PROCESS(COMMAND id -un OUTPUT_VARIABLE WhoAmI RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(TRIQS_HOSTNAME ${myHostName})
 set(TRIQS_COMPILEDBY ${WhoAmI})
@@ -390,7 +394,7 @@ enable_testing()
 option(Build_Documentation "Build the documentation ?" OFF)
 
 #------------------------------------------------------
-# link libs for shared libs or for pytriqs 
+# link libs for shared libs or for pytriqs
 #------------------------------------------------------
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  set(TRIQS_LINK_LIBS_PYTHON "-undefined dynamic_lookup")
@@ -398,15 +402,15 @@ else()
  set(TRIQS_LINK_LIBS_PYTHON ${TRIQS_LIBRARY_PYTHON})
 endif()
 
-set(TRIQS_LINK_LIBS 
-${TRIQS_LIBRARY_BOOST} 
+set(TRIQS_LINK_LIBS
+${TRIQS_LIBRARY_BOOST}
 ${TRIQS_LINK_LIBS_PYTHON}
-${TRIQS_LIBRARY_MPI} 
-${TRIQS_LIBRARY_HDF5} 
-${TRIQS_LIBRARY_LAPACK} 
-${TRIQS_LIBRARY_FFTW} 
-${TRIQS_LIBRARY_GMP} 
-${TRIQS_LIBRARY_GSL} 
+${TRIQS_LIBRARY_MPI}
+${TRIQS_LIBRARY_HDF5}
+${TRIQS_LIBRARY_LAPACK}
+${TRIQS_LIBRARY_FFTW}
+${TRIQS_LIBRARY_GMP}
+${TRIQS_LIBRARY_GSL}
 )
 
 # General include header
@@ -451,14 +455,14 @@ set(TRIQS_LIBCLANG_LOCATION "${TRIQS_LIBCLANG_LOCATION}" CACHE STRING "Location 
 
 if (PythonSupport)
  message( STATUS "-------- Preparing python extension modules  -------------")
- add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
+ add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs )
 endif (PythonSupport)
 
 #------------------------
 # General triqs libraries
 #------------------------
 
-add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
+add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES TRIQS_LINK_LIBS)
@@ -471,7 +475,7 @@ endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 option(Build_Tests "Build the tests of the library " ON)
 if (Build_Tests)
  message( STATUS "-------- Preparing tests  -------------")
- add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
+ add_subdirectory(${TRIQS_SOURCE_DIR}/test )
 endif()
 
 ##------------------------
@@ -484,7 +488,7 @@ add_subdirectory(tools)
 #------------------------
 
 if (Build_Documentation)
- if (NOT USE_CPP14) 
+ if (NOT USE_CPP14)
   message(FATAL_ERROR " The documentation can only be compiled in C++14 mode")
  endif()
 
@@ -495,7 +499,7 @@ if (Build_Documentation)
 endif (Build_Documentation)
 
 #------------------------
-# FindTRIQS needs to be configured and installed 
+# FindTRIQS needs to be configured and installed
 #------------------------
 
 install (FILES ${CMAKE_SOURCE_DIR}/cmake/FindTRIQS.cmake DESTINATION share/triqs/cmake)
@@ -525,7 +529,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake @ONLY)
 else()
  configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig1.cmake @ONLY)
- find_package(Python) # even in the case we use no python, cf issue #40 
+ find_package(Python) # even in the case we use no python, cf issue #40
  EXEC_PYTHON_SCRIPT( "import re;open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))" , ConfigFile)
 endif()
 
