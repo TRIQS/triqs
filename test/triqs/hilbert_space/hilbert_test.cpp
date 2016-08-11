@@ -1,5 +1,6 @@
 #include <triqs/test_tools/gfs.hpp>
 #include <sstream>
+#include <map>
 
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/hilbert_space.hpp>
@@ -11,6 +12,15 @@ using namespace triqs::hilbert_space;
 template<typename T> std::string as_string(T x) {
  std::stringstream ss; ss << x;
  return ss.str();
+}
+
+template<typename StateType>
+void check_state(StateType const& st, std::map<int,double> const& ref) {
+ foreach(st, [&st,&ref](int i, double a){
+  auto it = ref.find(st.get_hilbert().get_fock_state(i));
+  if(it != ref.end()) EXPECT_EQ(it->second, a);
+  else                EXPECT_EQ(0, a);
+ });
 }
 
 TEST(hilbert_space, fundamental_operator_set) {
@@ -85,7 +95,8 @@ TEST(hilbert_space, state) {
  state<hilbert_space,double, true> st(h_full);
  st(0) = 3.0;
  st(3) = 5.0;
- EXPECT_EQ(" +(5)|3> +(3)|0>", as_string(st));
+
+ check_state(st, {{3,5.0},{0,3.0}});
 }
 
 TEST(hilbert_space, imperative_operator) {
@@ -105,10 +116,10 @@ TEST(hilbert_space, imperative_operator) {
 
  state<hilbert_space, double, true> old_state(h_full);
  old_state(7) = 1.0;
- EXPECT_EQ(" +(1)|7>", as_string(old_state));
+ check_state(old_state, {{7,1.0}});
 
  auto new_state = opH(old_state);
- EXPECT_EQ(" +(-1)|1> +(5)|7>", as_string(new_state));
+ check_state(new_state, {{1,-1.0},{7,5.0}});
 }
 
 TEST(hilbert_space, sub_hilbert_space) {
@@ -154,8 +165,8 @@ TEST(hilbert_space, sub_hilbert_space) {
  start(2) = 3.0;
  start(3) = 4.0;
 
- EXPECT_EQ(" +(1)|0> +(2)|1> +(3)|2> +(4)|3>", as_string(start));
- EXPECT_EQ(" +(1)|4> +(-2)|5> +(-3)|6> +(4)|7>", as_string(opCdag(start)));
+ check_state(start, {{0,1.0},{1,2.0},{2,3.0},{3,4.0}});
+ check_state(opCdag(start), {{4,1.0},{5,-2.0},{6,-3.0},{7,4.0}});
 
  // HDF5
  auto hs_h5 = rw_h5(phs1, "sub_hilbert_space");
@@ -179,9 +190,9 @@ TEST(hilbert_space, QuarticOperators) {
 
  state<hilbert_space,double, false> st1(hs);
  st1(9) = 1.0; // 0110
- EXPECT_EQ(" +(1)|9>", as_string(st1)); // old state
+ check_state(st1, {{9,1.0}}); // old state
  EXPECT_EQ("1*C^+(down,1)C^+(up,0)C(up,1)C(down,0)", as_string(quartic_op)); // quartic operator
- EXPECT_EQ(" +(1)|6>", as_string(imperative_operator<hilbert_space>(quartic_op,fops)(st1))); // new state
+ check_state(imperative_operator<hilbert_space>(quartic_op,fops)(st1), {{6,1.0}}); // new state
 }
 
 TEST(hilbert_space, StateProjection) {
@@ -196,7 +207,7 @@ TEST(hilbert_space, StateProjection) {
  st(2) = 0.2;
  st(4) = 0.3;
  st(6) = 0.4;
- EXPECT_EQ(" +(0.4)|6> +(0.3)|4> +(0.2)|2> +(0.1)|0>", as_string(st)); // original state
+ check_state(st, {{6,0.4},{4,0.3},{2,0.2},{0,0.1}}); // original state
 
  sub_hilbert_space hs(0);
  hs.add_fock_state(hs_full.get_fock_state(4));
@@ -205,7 +216,7 @@ TEST(hilbert_space, StateProjection) {
  hs.add_fock_state(hs_full.get_fock_state(7));
 
  auto proj_st = project<state<sub_hilbert_space,double,false>>(st,hs);
- EXPECT_EQ(" +(0.3)|4> +(0.4)|6>", as_string(proj_st)); // projected state
+ check_state(proj_st, {{4,0.3},{6,0.4}}); // projected state
 }
 
 MAKE_MAIN;
