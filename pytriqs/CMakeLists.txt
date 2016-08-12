@@ -1,5 +1,4 @@
-option(Python_use_mpi4py "Use mpi4py (if OFF, use boost.mpi)" ON)
-if (Python_use_mpi4py) 
+if (Python_use_mpi4py)
  SET (TRIQS_PYTHON_MPI_USE_MPI4PY 1)
 else()
  SET(TRIQS_PYTHON_MPI_USE_MPI4PY 0)
@@ -14,7 +13,7 @@ add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
 
 find_package(PythonWrapperMacro)
 
-SET(PYTHON_SOURCES 
+SET(PYTHON_SOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
  ${CMAKE_CURRENT_BINARY_DIR}/version.py
  ${CMAKE_CURRENT_BINARY_DIR}/cmake_info.py
@@ -32,6 +31,6 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
 # All subdirs
 add_all_subdirectories_with_cmakelist()
 
-# 
+#
 add_custom_target(wrap_clean COMMAND find ${CMAKE_BINARY_DIR} -name \"*.cpp\" |xargs rm)
 

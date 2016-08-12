@@ -125,6 +125,8 @@ if (PythonSupport)
 
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
 
+ option(Python_use_mpi4py "Use mpi4py (if OFF, use boost.mpi)" ON)
+
  find_package(Python REQUIRED)
  if (NOT PYTHONLIBS_FOUND)
   message (FATAL_ERROR "Cannot find python. You can use -DWithoutPython to build a pure C++ version.")
