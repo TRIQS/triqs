@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 @EXPORT_PYTHONPATH@
 
 @PYTHON_INTERPRETER@ -c "
 import sys
 sys.argv.insert(1, 'notebook')
 import IPython
-assert IPython.__version__ >= '2' , 'ipython version too low: need 2.x or higher for the notebook' 
+assert IPython.__version__ >= '2' , 'ipython version too low: need 2.x or higher for the notebook'
 # pylab=inline is REMOVED in 3.x version of IPython.
 if IPython.__version__ < '3.0.0':
   sys.argv.insert(2, '--pylab=inline')

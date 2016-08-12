@@ -512,9 +512,9 @@ message( STATUS "-------- Making TRIQSConfig.cmake -------------")
 get_property(ALL_DEFS GLOBAL PROPERTY TRIQS_COMPIL_DEFINITIONS)
 configure_file(./cmake/triqs_config.h.in Config/triqs_config.h @ONLY)
 
-file(READ ${CMAKE_SOURCE_DIR}/shells/pytriqs.bash.in BUILD_PYTRIQS_SCRIPT)
-file(READ ${CMAKE_SOURCE_DIR}/shells/ipytriqs.bash.in BUILD_IPYTRIQS_SCRIPT)
-file(READ ${CMAKE_SOURCE_DIR}/shells/ipytriqs_notebook.bash.in BUILD_IPYTRIQS_NOTEBOOK_SCRIPT)
+file(READ ${CMAKE_SOURCE_DIR}/shells/pytriqs.sh.in BUILD_PYTRIQS_SCRIPT)
+file(READ ${CMAKE_SOURCE_DIR}/shells/ipytriqs.sh.in BUILD_IPYTRIQS_SCRIPT)
+file(READ ${CMAKE_SOURCE_DIR}/shells/ipytriqs_notebook.sh.in BUILD_IPYTRIQS_NOTEBOOK_SCRIPT)
 
 set(EXPORT_PYTHONPATH "export PYTHONPATH=\${CMAKE_CURRENT_BINARY_DIR}:\${TRIQS_PATH}/\${TRIQS_PYTHON_LIB_DEST_ROOT}:\$PYTHONPATH")
 string(CONFIGURE "${BUILD_PYTRIQS_SCRIPT}" BUILD_PYTRIQS_SCRIPT @ONLY)

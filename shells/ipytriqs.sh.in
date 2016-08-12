@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 @EXPORT_PYTHONPATH@
 
 @PYTHON_INTERPRETER@ -c "
 import sys
 import IPython
-assert IPython.__version__ >= '2' , 'ipython version too low: need 2.x or higher for the notebook' 
+assert IPython.__version__ >= '2' , 'ipython version too low: need 2.x or higher for the notebook'
 from IPython.frontend.terminal.ipapp import launch_new_instance
 sys.exit(launch_new_instance())
 " $@
