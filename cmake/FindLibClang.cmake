@@ -22,6 +22,7 @@ else()
 SET(TRIAL_LIBRARY_PATHS
  /usr/lib 
  /usr/lib/x86_64-linux-gnu
+ /usr/lib/llvm-3.8/lib
  /usr/lib/llvm-3.6/lib
  /usr/lib/llvm-3.5/lib
  /usr/lib/llvm-3.4/lib
@@ -48,7 +49,7 @@ else()
  SET(TRIAL_CLANG_PATHS
  /usr/bin 
  )
-FIND_PROGRAM(CLANG_COMPILER names clang++ clang++-3.7 clang++-3.6 clang++-3.5 PATHS ${TRIAL_CLANG_PATHS} DOC "Clang compiler (for libclang option)")
+FIND_PROGRAM(CLANG_COMPILER names clang++ clang++-3.8 clang++-3.7 clang++-3.6 clang++-3.5 PATHS ${TRIAL_CLANG_PATHS} DOC "Clang compiler (for libclang option)")
 endif(${CMAKE_COMPILER_IS_CLANG})
 endif()
 
