@@ -790,7 +790,21 @@ namespace triqs { namespace det_manip {
      mat_inv(R,w1.ireal) *= -w1.ksi;
     }
     //------------------------------------------------------------------------------------------
-   private:
+    private:
+    int _recompute_sign() {
+     if (N == 0) return 1;
+     range R(0, N);
+     // find the sign (there must be a better way...)
+     double s = 1.0;
+     arrays::matrix<double> m(N, N);
+     m() = 0.0;
+     for (int i = 0; i < N; i++) m(i, row_num[i]) = 1;
+     s *= arrays::determinant(m);
+     m() = 0.0;
+     for (int i = 0; i < N; i++) m(i, col_num[i]) = 1;
+     s *= arrays::determinant(m);
+     return (s > 0 ? 1 : -1);
+    }
 
     void check_mat_inv (double precision_warning=1.e-8, double precision_error=1.e-5) {
      if (N==0) return;
@@ -823,17 +837,9 @@ namespace triqs { namespace det_manip {
 
      // since we have the proper inverse, replace the matrix and the det
      mat_inv(R,R) = res;
-
-     // find the sign (there must be a better way...)
-     double s = 1.0;
-     arrays::matrix<double> m(N,N);
-     m() = 0.0; for (int i=0; i<N; i++) m(i,row_num[i]) = 1;
-     s *= arrays::determinant(m);
-     m() = 0.0; for (int i=0; i<N; i++) m(i,col_num[i]) = 1;
-     s *= arrays::determinant(m);
-
      det = 1/arrays::determinant(mat_inv(R,R)); // the det is the det of the matrix, hence inverse of mat_inv
-     sign = (s > 0 ? 1 : -1);
+     sign = _recompute_sign();
+     n_opts = 0;
     }
 
   //------------------------------------------------------------------------------------------
@@ -841,123 +847,115 @@ namespace triqs { namespace det_manip {
 
     void regenerate () {
      if (N==0) return;
+     range R(0,N);
      matrix_type res(N,N);
      for (size_t i=0; i<N;i++)
       for (size_t j=0; j<N;j++)
        res(i,j) = f(x_values[i], y_values[j]);
      det = arrays::determinant(res);
      res = inverse(res);
-     mat_inv(range(0,N),range(0,N)) = res;
+     mat_inv(R,R) = res;
+     sign = _recompute_sign();
+     n_opts = 0;
     }
 
     //------------------------------------------------------------------------------------------
-   public:
+    private:
+    bool is_singular() const { return std::abs(det) < 1.e-15; }
+
+    public:
     /**
      *  Finish the move of the last try_xxx called.
      *  Throws if no try_xxx has been done or if the last operation was complete_operation.
      */
     void complete_operation() {
-     switch(last_try){
-      case(1):
-       complete_insert();
-       break;
-      case(2):
-       complete_remove();
-       break;
-      case(3):
-       complete_change_col();
-       break;
-      case(4):
-       complete_change_row();
-       break;
-      case(10):
-       complete_insert2();
-       break;
-      case(11):
-       complete_remove2();
-       break;
-      case(0):
-       last_try=0; return;
+     bool is_sing = is_singular();
+     switch (last_try) {
+      case (1): complete_insert(); break;
+      case (2): complete_remove(); break;
+      case (3): complete_change_col(); break;
+      case (4): complete_change_row(); break;
+      case (10): complete_insert2(); break;
+      case (11): complete_remove2(); break;
+      case (0):
+       last_try = 0;
+       return;
        break; // double call of complete_operation...
-      default:
-       TRIQS_RUNTIME_ERROR<< "Misuing det_manip";
+      default: TRIQS_RUNTIME_ERROR << "Misuing det_manip";
      }
-     det = newdet;
-     sign = newsign;
-     last_try =0;
-     ++n_opts;
-     if (n_opts > n_opts_max_before_check) { check_mat_inv(); n_opts=0;}
+     if (is_sing) { regenerate(); } else {
+      det = newdet;
+      sign = newsign;
+      ++n_opts;
+      if (n_opts > n_opts_max_before_check) check_mat_inv();
+     }
+     last_try = 0;
     }
 
     // ----------------- A few short cuts   -----------------
 
+    public:
     /// Insert (try_insert + complete)
-    value_type insert(size_t i, size_t j, xy_type const& x, xy_type const& y) {
-     auto r = try_insert(i, j, x, y);
+    void insert(size_t i, size_t j, xy_type const& x, xy_type const& y) {
+     try_insert(i, j, x, y);
      complete_operation();
-     return r;
     }
 
     /// Insert_at_end (try_insert + complete)
-    value_type insert_at_end(xy_type const& x, xy_type const& y) {
-     return insert(N, N, x, y);
+    void insert_at_end(xy_type const& x, xy_type const& y) {
+     insert(N, N, x, y);
     }
 
     /// Insert2 (try_insert2 + complete)
-    value_type insert2(size_t i0, size_t i1, size_t j0, size_t j1,
+    void insert2(size_t i0, size_t i1, size_t j0, size_t j1,
                        xy_type const& x0, xy_type const& x1, xy_type const& y0, xy_type const& y1) {
-     auto r = try_insert2(i0, i1, j0, j1, x0, x1, y0, y1);
+     try_insert2(i0, i1, j0, j1, x0, x1, y0, y1);
      complete_operation();
-     return r;
     }
 
     /// Insert2_at_end (try_insert2 + complete)
-    value_type insert2_at_end(xy_type const& x0, xy_type const& x1, xy_type const& y0, xy_type const& y1) {
-     return insert2(N, N+1, N, N+1, x0, x1, y0, y1);
+    void insert2_at_end(xy_type const& x0, xy_type const& x1, xy_type const& y0, xy_type const& y1) {
+     insert2(N, N+1, N, N+1, x0, x1, y0, y1);
     }
 
     /// Remove (try_remove + complete)
-    value_type remove(size_t i, size_t j) {
-     auto r = try_remove(i, j);
+    void remove(size_t i, size_t j) {
+     try_remove(i, j);
      complete_operation();
-     return r;
     }
 
     /// Remove_at_end (try_remove + complete)
-    value_type remove_at_end() {
-     return remove(N-1, N-1);
+    void remove_at_end() {
+     remove(N-1, N-1);
     }
 
     /// Remove2 (try_remove2 + complete)
-    value_type remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
-      auto r = try_remove2(i0, i1, j0, j1);
+    void remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
+     try_remove2(i0, i1, j0, j1);
       complete_operation();
-      return r;
     }
     
     /// Remove2_at_end (try_remove2 + complete)
-    value_type remove2_at_end() {
-     return remove2(N-1, N-2, N-1, N-2);
+    void remove2_at_end() {
+     remove2(N-1, N-2, N-1, N-2);
     }
     
     /// change_col (try_change_col + complete)
-    value_type change_col(size_t j, xy_type const& y) {
-     auto r = try_change_col(j, y);
+    void change_col(size_t j, xy_type const& y) {
+     try_change_col(j, y);
      complete_operation();
-     return r;
     }
     
     /// change_row (try_change_row + complete)
-    value_type change_row(size_t i, xy_type const& x) {
-     auto r = try_change_row(i, x);
+    void change_row(size_t i, xy_type const& x) {
+     try_change_row(i, x);
      complete_operation();
-     return r;
     }
     
     /// Change one row and one col
     // other way of doing change_one_line_and_one_col. 
-    // Should be faster. 
-    void change_one_row_and_one_col( size_t i, size_t j, xy_type const& x, xy_type const& y) {
+    // Should be faster.
+    void change_one_row_and_one_col(size_t i, size_t j, xy_type const& x, xy_type const& y) {
       TRIQS_ASSERT(j<N); TRIQS_ASSERT(j>=0);
       TRIQS_ASSERT(i<N); TRIQS_ASSERT(i>=0);
       
