@@ -895,61 +895,68 @@ namespace triqs { namespace det_manip {
     // ----------------- A few short cuts   -----------------
 
     public:
+
     /// Insert (try_insert + complete)
-    void insert(size_t i, size_t j, xy_type const& x, xy_type const& y) {
-     try_insert(i, j, x, y);
+    value_type insert(size_t i, size_t j, xy_type const& x, xy_type const& y) {
+     auto r = try_insert(i, j, x, y);
      complete_operation();
+     return r;
     }
 
     /// Insert_at_end (try_insert + complete)
-    void insert_at_end(xy_type const& x, xy_type const& y) {
-     insert(N, N, x, y);
+    value_type insert_at_end(xy_type const& x, xy_type const& y) {
+     return insert(N, N, x, y);
     }
 
     /// Insert2 (try_insert2 + complete)
-    void insert2(size_t i0, size_t i1, size_t j0, size_t j1,
+    value_type insert2(size_t i0, size_t i1, size_t j0, size_t j1,
                        xy_type const& x0, xy_type const& x1, xy_type const& y0, xy_type const& y1) {
-     try_insert2(i0, i1, j0, j1, x0, x1, y0, y1);
+     auto r = try_insert2(i0, i1, j0, j1, x0, x1, y0, y1);
      complete_operation();
+     return r;
     }
 
     /// Insert2_at_end (try_insert2 + complete)
-    void insert2_at_end(xy_type const& x0, xy_type const& x1, xy_type const& y0, xy_type const& y1) {
-     insert2(N, N+1, N, N+1, x0, x1, y0, y1);
+    value_type insert2_at_end(xy_type const& x0, xy_type const& x1, xy_type const& y0, xy_type const& y1) {
+     return insert2(N, N+1, N, N+1, x0, x1, y0, y1);
     }
 
     /// Remove (try_remove + complete)
-    void remove(size_t i, size_t j) {
-     try_remove(i, j);
+    value_type remove(size_t i, size_t j) {
+     auto r = try_remove(i, j);
      complete_operation();
+     return r;
     }
 
     /// Remove_at_end (try_remove + complete)
-    void remove_at_end() {
-     remove(N-1, N-1);
+    value_type remove_at_end() {
+     return remove(N-1, N-1);
     }
 
     /// Remove2 (try_remove2 + complete)
-    void remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
-     try_remove2(i0, i1, j0, j1);
+    value_type remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
+      auto r = try_remove2(i0, i1, j0, j1);
       complete_operation();
+      return r;
     }
     
     /// Remove2_at_end (try_remove2 + complete)
-    void remove2_at_end() {
-     remove2(N-1, N-2, N-1, N-2);
+    value_type remove2_at_end() {
+     return remove2(N-1, N-2, N-1, N-2);
     }
     
     /// change_col (try_change_col + complete)
-    void change_col(size_t j, xy_type const& y) {
-     try_change_col(j, y);
+    value_type change_col(size_t j, xy_type const& y) {
+     auto r = try_change_col(j, y);
      complete_operation();
+     return r;
     }
     
     /// change_row (try_change_row + complete)
-    void change_row(size_t i, xy_type const& x) {
-     try_change_row(i, x);
+    value_type change_row(size_t i, xy_type const& x) {
+     auto r = try_change_row(i, x);
      complete_operation();
+     return r;
     }
     
     /// Change one row and one col
