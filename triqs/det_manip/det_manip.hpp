@@ -871,9 +871,49 @@ namespace triqs { namespace det_manip {
 
     //------------------------------------------------------------------------------------------
     private:
-    int _recompute_sign() {
-     if (N == 0) return 1;
+    void _regenerate_with_check(bool do_check, double precision_warning, double precision_error) {
+     if (N == 0) {
+      det = 1;
+      sign = 1;
+      return;
+     }
+
      range R(0, N);
+     matrix_type res(N, N);
+     for (int i = 0; i < N; i++)
+      for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
+     det = arrays::determinant(res);
+     if (is_singular()) {
+      res() = std::numeric_limits<double>::quiet_NaN();
+      do_check = false;
+     }
+     else
+      res = inverse(res);
+
+     if (do_check) { // check that mat_inv is close to res
+      const bool relative = true;
+      double r = max_element(abs(res - mat_inv(R, R)));
+      double r2 = max_element(abs(res + mat_inv(R, R)));
+      bool err = !(r < (relative ? precision_error * r2 : precision_error));
+      bool war = !(r < (relative ? precision_warning * r2 : precision_warning));
+      if (err || war) {
+       std::cerr << "matrix  = " << matrix() << std::endl;
+       std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
+      }
+      if (war)
+       std::cerr << "Warning : det_manip deviation above warning threshold "
+                 << "check "
+                 << "N = " << N << "  "
+                 << "\n   max(abs(M^-1 - M^-1_true)) = " << r
+                 << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? precision_warning * r2 : precision_warning)
+                 << " " << std::endl;
+      if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
+     }
+
+     // since we have the proper inverse, replace the matrix and the det
+     mat_inv(R, R) = res;
+     n_opts = 0;
+
      // find the sign (there must be a better way...)
      double s = 1.0;
      arrays::matrix<double> m(N, N);
@@ -883,65 +923,19 @@ namespace triqs { namespace det_manip {
      m() = 0.0;
      for (int i = 0; i < N; i++) m(i, col_num[i]) = 1;
      s *= arrays::determinant(m);
-     return (s > 0 ? 1 : -1);
+     sign = (s > 0 ? 1 : -1);
     }
 
-    void check_mat_inv (double precision_warning=1.e-8, double precision_error=1.e-5) {
-     if (N==0) return;
-     const bool relative = true;
-     matrix_type res(N,N);
-     for (size_t i=0; i<N;i++)
-      for (size_t j=0; j<N;j++)
-       res(i,j) = f(x_values[i], y_values[j]);
-     res = inverse(res);
-     range R(0,N);
-     double r = max_element (abs(res - mat_inv(R,R)));
-     double r2= max_element (abs(res + mat_inv(R,R)));
-     //value_type r = max_element (abs(res - mat_inv(range(0,N),range(0,N))));
-     //value_type r2= max_element (abs(res + mat_inv(range(0,N),range(0,N))));
-     //#define TRIQS_DET_MANIP_VERBOSE_CHECK
-#ifdef TRIQS_DET_MANIP_VERBOSE_CHECK
-     std::cout  << "----------------"<<std::endl
-      << "check " << "N = "<< N <<"  " <<"r,r2 =   "<< r << "  "<< r2 << " "<< std::endl;
-#endif
-     bool err =  !( r <  (relative ? precision_error * r2 : precision_error));
-     bool war =  !( r <  (relative ? precision_warning * r2 : precision_warning));
-     if (err || war) {
-       std::cerr << "matrix  = " <<matrix() <<std::endl;
-       std::cerr << "inverse_matrix = "<< inverse_matrix()<< std::endl;
-     }
-     if (war) std::cerr << "Warning : det_manip deviation above warning threshold "
-      << "check " << "N = "<< N <<"  " <<"\n   max(abs(M^-1 - M^-1_true)) = "<< r
-      << "\n   precision*max(abs(M^-1 + M^-1_true)) = "<< (relative ? precision_warning * r2 : precision_warning)<< " "<< std::endl;
-     if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! " ;
-
-     // since we have the proper inverse, replace the matrix and the det
-     mat_inv(R,R) = res;
-     det = 1/arrays::determinant(mat_inv(R,R)); // the det is the det of the matrix, hence inverse of mat_inv
-     sign = _recompute_sign();
-     n_opts = 0;
+    void check_mat_inv(double precision_warning = 1.e-8, double precision_error = 1.e-5) {
+     _regenerate_with_check(true, precision_warning, precision_error);
     }
 
-  //------------------------------------------------------------------------------------------
-   public:
-
-    void regenerate () {
-     if (N==0) return;
-     range R(0,N);
-     matrix_type res(N,N);
-     for (size_t i=0; i<N;i++)
-      for (size_t j=0; j<N;j++)
-       res(i,j) = f(x_values[i], y_values[j]);
-     det = arrays::determinant(res);
-     res = inverse(res);
-     mat_inv(R,R) = res;
-     sign = _recompute_sign();
-     n_opts = 0;
-    }
+    // it the det 0 ? I.e. is the det normal (not inf, Nan, or subnormal). 
+    bool is_singular() const { return not std::isnormal(std::abs(det)); }
 
     //------------------------------------------------------------------------------------------
-    private:
-    bool is_singular() const { return std::abs(det) < 1.e-15; }
+    public:
+    void regenerate() { _regenerate_with_check(false, 0, 0); }
 
     public:
     /**
