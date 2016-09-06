@@ -26,14 +26,7 @@
 #include <ostream>
 #include <sstream>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
 #include <triqs/utility/variant.hpp>
-
-#ifdef TEST_SERIALIZE
-#include <triqs/utility/variant_serialize.hpp>
-#endif
 
 struct my_struct {
   std::string name;
@@ -71,12 +64,6 @@ struct my_struct {
 
   friend std::ostream & operator<<(std::ostream & os, my_struct const& ms) {
     return os << "{" << ms.name << " => " << ms.value << "}";
-  }
-
-  // Boost.Serialization
-  template<class Archive>
-  void serialize(Archive & ar, const unsigned int version) {
-    ar & name & value;
   }
 
   static int next_id;
@@ -146,29 +133,6 @@ TEST(Variant,Basic) {
   EXPECT_MY_STRUCT_MESSAGE("my_struct[4]: destructor");
   EXPECT_MY_STRUCT_MESSAGE("my_struct[2]: destructor");
 }
-
-#ifdef TEST_SERIALIZE
-TEST(Variant,Serialization) {
-  std::array<my_variant,3> in {my_variant(7), my_variant("text_in"), my_struct("G",101)};
-  std::array<my_variant,3> out {my_variant(8), my_variant("text_out"), my_struct("g",202)};
-
-  std::array<std::array<int,3>,6> permutations {{{0,1,2},{0,2,1},{1,0,2},{1,2,0},{2,0,1},{2,1,0}}};
-
-  for(auto p : permutations){
-    std::stringstream ss;
-    boost::archive::text_oarchive oa(ss);
-    oa << in[0] << in[1] << in[2];
-
-    boost::archive::text_iarchive ia(ss);
-    ia >> out[p[0]] >> out[p[1]] >> out[p[2]];
-
-    EXPECT_EQ(out[p[0]],7);
-    EXPECT_EQ(out[p[1]],"text_in");
-    EXPECT_EQ(out[p[2]],my_struct("G",101));
-  }
-
-}
-#endif
 
 TEST(Variant,Casts) {
   my_variant v_int(2);
