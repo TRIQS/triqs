@@ -18,11 +18,12 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_DETMANIP_H
-#define TRIQS_DETMANIP_H
+#pragma once
+
 #include <triqs/utility/first_include.hpp>
 #include <vector>
 #include <iterator>
+#include <numeric>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/algorithms.hpp>
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
@@ -69,7 +70,7 @@ namespace triqs { namespace det_manip {
     // serialized data. There are all VALUES.
     det_type det;
     size_t Nmax, N;
-    enum {NoTry, Insert, Remove, ChangeCol, ChangeRow, Insert2 = 10, Remove2 = 11}
+    enum {NoTry, Insert, Remove, ChangeCol, ChangeRow, Insert2 = 10, Remove2 = 11, Refill = 20}
      last_try; // keep in memory the last operation not completed
     std::vector<size_t> row_num, col_num;
     std::vector<xy_type> x_values, y_values;
@@ -146,8 +147,19 @@ namespace triqs { namespace det_manip {
      value_type det_ksi() const { return ksi(0,0) * ksi(1,1) - ksi(1,0)* ksi(0,1);}
     };
 
+    struct work_data_type_refill {
+     std::vector<xy_type> x_values, y_values;
+     matrix_type M;
+     void reserve(size_t s) {
+      x_values.reserve(s);
+      y_values.reserve(s);
+      if(s > first_dim(M)) M.resize(s,s);
+     }
+    };
+
     work_data_type1 w1;
     work_data_type2 w2;
+    work_data_type_refill w_refill;
     det_type newdet;
     int newsign;
 
@@ -299,14 +311,14 @@ namespace triqs { namespace det_manip {
     // ------------------------- OPERATIONS -----------------------------------------------
 
     /**
-     * Insert operation at colum j0 and row i0.
+     * Insert operation at column j0 and row i0.
      *
      * The operation consists in adding :
      *
      *    * a column  f(x_i,    y_{j0})
      *    * and a row f(x_{i0}, x_j)
      *
-     * The new colum/row will be at col j0, row i0.
+     * The new column/row will be at col j0, row i0.
      *
      * 0 <= i0,j0 <= N, where N is the current size of the matrix.
      * The current column j0 (resp. row i0) will become column j0+1 (resp. row i0+1).
@@ -790,6 +802,73 @@ namespace triqs { namespace det_manip {
      blas::ger(w1.ksi,mat_inv(R,w1.ireal),w1.MC(R),  mat_inv(R,R));
      mat_inv(R,w1.ireal) *= -w1.ksi;
     }
+
+    //------------------------------------------------------------------------------------------
+   public:
+    /**
+     * Refill determinant with new values
+     *
+     * New values are calculated as f(x_i, y_i)
+     *
+     * Returns the ratio of det Minv_new / det Minv.
+     *
+     * This routine does NOT make any modification. It has to be completed with complete_operation().
+     */
+    template<typename ArgumentContainer1, typename ArgumentContainer2>
+    value_type try_refill(ArgumentContainer1 const& X, ArgumentContainer2 const& Y) {
+     TRIQS_ASSERT(X.size() == Y.size());
+
+     last_try = Refill;
+
+     size_t s = X.size();
+     // treat empty matrix separately
+     if (s==0) {
+      w_refill.x_values.clear();
+      w_refill.y_values.clear();
+      return 1 / (sign * det);
+     }
+
+     w_refill.reserve(s);
+     w_refill.x_values.clear(); w_refill.y_values.clear();
+     std::copy(X.begin(),X.end(), std::back_inserter(w_refill.x_values));
+     std::copy(Y.begin(),Y.end(), std::back_inserter(w_refill.y_values));
+
+     for (size_t i=0; i<s; ++i)
+      for (size_t j=0; j<s; ++j)
+       w_refill.M(i,j) = f(w_refill.x_values[i],w_refill.y_values[j]);
+     range R(0,s);
+     newdet = arrays::determinant(w_refill.M(R,R));
+     newsign = 1;
+
+     return newdet / (sign * det);
+    }
+
+    //------------------------------------------------------------------------------------------
+   private :
+
+    void complete_refill () {
+     N = w_refill.x_values.size();
+
+     // special empty case again
+     if (N==0) {
+      clear();
+      newdet = 1;
+      newsign = 1;
+      return;
+     }
+
+     if (N>Nmax) reserve(2*N);
+     std::swap(x_values, w_refill.x_values);
+     std::swap(y_values, w_refill.y_values);
+
+     row_num.resize(N); col_num.resize(N);
+     std::iota(row_num.begin(), row_num.end(), 0);
+     std::iota(col_num.begin(), col_num.end(), 0);
+
+     range R(0,N);
+     mat_inv(R,R) = inverse(w_refill.M(R,R));
+    }
+
     //------------------------------------------------------------------------------------------
     private:
     int _recompute_sign() {
@@ -878,6 +957,7 @@ namespace triqs { namespace det_manip {
       case (ChangeRow): complete_change_row(); break;
       case (Insert2): complete_insert2(); break;
       case (Remove2): complete_remove2(); break;
+      case (Refill): complete_refill(); break;
       case (NoTry):
        last_try = NoTry;
        return;
@@ -1093,4 +1173,3 @@ namespace triqs { namespace det_manip {
     }
   };
 }}
-#endif
