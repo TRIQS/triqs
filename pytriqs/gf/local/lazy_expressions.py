@@ -22,7 +22,7 @@
 
 __all__ = ['LazyExpr', 'LazyExprTerminal', 'eval_expr_with_context', 'lazy', 'lazy_function', 'transform', 'eval_expr']
 
-class __aux(object): 
+class __aux(object):
 
     def __add__(self, y): return LazyExpr("+", LazyExpr(self), LazyExpr(y))
     def __sub__(self, y): return LazyExpr("-", LazyExpr(self), LazyExpr(y))
@@ -42,64 +42,64 @@ class __aux(object):
     def __call__(self, *args): return LazyExpr("F", make_lazy(self), *map(make_lazy, args))
 
 class LazyExprTerminal (__aux):
-    pass 
+    pass
 
-class LazyExpr (__aux): 
+class LazyExpr (__aux):
     """
     """
 
-    def __init__ (self, *args): 
-        if len(args) == 1: 
+    def __init__ (self, *args):
+        if len(args) == 1:
             a0 = args[0]
             self.tag, self.childs = (a0.tag, a0.childs) if isinstance(a0, self.__class__) else ("T", [a0])
-        elif len(args) >1: 
+        elif len(args) >1:
             self.tag, self.childs = args[0], args[1:]
         else: raise ValueError, "too few arguments"
-    
-    def copy(self): 
+
+    def copy(self):
         """ Deep copy"""
         return LazyExpr(self.tag, self.childs)
 
     def set_from(self, y):
         """ self:= y """
-        self.tag, self.childs = tmp.tag, tmp.childs
+        self.tag, self.childs = y.tag, y.childs
         return self
 
-    def is_terminal(self): 
+    def is_terminal(self):
         """Returns true iif the expression is a terminal  """
         return self.tag == "T"
- 
-    def get_terminal(self): 
+
+    def get_terminal(self):
         """Returns the terminal if the expression is a terminal else None """
         return self.childs[0] if self.tag == "T" else None
- 
-    def __aux_print(self, F): 
+
+    def __aux_print(self, F):
         op_priority = {'T': 100, "+": 1 , '-': 1, '*': 2, '/': 2}
         if self.tag == "T":  return F(self.childs[0])
-        if self.tag == "F":  
+        if self.tag == "F":
             return reduce (lambda s, e: s+ F(e), self.childs[1:], self.childs[0].get_terminal()[0] + "(" ) + ')'
         par = lambda op, e: "%s"%e if op_priority[e.tag] >= op_priority[op] else "(%s)"%e
         return "%s %s %s "%(par(self.tag , self.childs[0]), self.tag , par(self.tag , self.childs[1]))
 
     def __str__(self): return self.__aux_print(str)
     def __repr__(self): return self.__aux_print(repr)
-   
-    #def __call__ (self, *args, **kwargs): 
+
+    #def __call__ (self, *args, **kwargs):
 
 
 #-----------------------------------------------------
- 
-def eval_expr_with_context(eval_term, expr ): 
+
+def eval_expr_with_context(eval_term, expr ):
 
     if expr.tag == "T": return eval_term(expr.childs[0]) #eval the terminals
 
     if expr.tag == "F":
         f = expr.childs[0].get_terminal()[1]
-        return f (*map(lambda e:eval_expr_with_context(eval_term, e) , expr.childs[1:]) ) 
-      
-    # Binary operations: 
+        return f (*map(lambda e:eval_expr_with_context(eval_term, e) , expr.childs[1:]) )
+
+    # Binary operations:
     ops = { "+": lambda x, y: x + y, "-": lambda x, y: x - y, "*": lambda x, y: x * y, "/": lambda x, y: x / y }
-    return ops[expr.tag] (*map(lambda e:eval_expr_with_context(eval_term, e) , expr.childs) ) 
+    return ops[expr.tag] (*map(lambda e:eval_expr_with_context(eval_term, e) , expr.childs) )
 
 #-----------------------------------------------------
 
@@ -107,13 +107,13 @@ def make_lazy(x): return LazyExpr(x)
 
 #-----------------------------------------------------
 
-def lazy_function(name, F): 
-    return LazyExpr("T", (name, F))  
- 
+def lazy_function(name, F):
+    return LazyExpr("T", (name, F))
+
 #-----------------------------------------------------
 
-def transform (expr, Fnode, Fterm = lambda x: x ): 
-    """Given two functions   
+def transform (expr, Fnode, Fterm = lambda x: x ):
+    """Given two functions
            Fnode(tag, childs) -> (tag, childs)
            Fterm(x) -> x'
            it transforms the expression recursively
@@ -125,35 +125,35 @@ def transform (expr, Fnode, Fterm = lambda x: x ):
 
 #-----------------------------------------------------
 
-def all_terminals (expr): 
+def all_terminals (expr):
     """Generate all terminals of an expression"""
-    if expr.tag == "T": 
+    if expr.tag == "T":
         yield expr.childs[0]
-    else: 
-        for ch in expr.childs: 
-            for t in all_terminals(ch): 
+    else:
+        for ch in expr.childs:
+            for t in all_terminals(ch):
                 yield t
 
 def eval_expr (expr):
 #def eval_expr_or_pass (expr):
-    """ 
+    """
     If expr is not a LazyExpr: returns expr unchanged.
     Otherwise, tries to eval it by looking for some element in the tree that can create the evaluation context and is not purely abstract
     """
-    if not isinstance (expr, LazyExpr): return expr # do nothing 
+    if not isinstance (expr, LazyExpr): return expr # do nothing
     # first take all terminals
     C = [ t.__lazy_expr_eval_context__() for t in all_terminals(expr) if hasattr(t, "__lazy_expr_eval_context__") ]
     if C == []: raise ValueError, "Evaluation impossible: expression is purely abstract"
     all_equal = reduce (lambda x, y: x and y , [ C[0] == x for x in C ])
     if not all_equal: raise ValueError, "Evaluation impossible: various terminals lead to incompatible evaluation contexts: their type are not compatible for binary ops"
     C = C[0]
-    return eval_expr_with_context(C, expr) 
+    return eval_expr_with_context(C, expr)
 
 #--------------- TEST --------------------------------------
 
 if __name__ == "__main__":
 
-    class T (LazyExprTerminal): 
+    class T (LazyExprTerminal):
         def __init__(self, n): self.name = n
         def __repr__(self): return self.name
 
@@ -161,27 +161,27 @@ if __name__ == "__main__":
     a = 2 * g1 + g2/3 + 5
     print a
 
-    def e_t(x): 
+    def e_t(x):
         d =  { "g1": 10, "g2": 100}
         return d[x.name] if isinstance(x, T) else x
 
     assert eval_expr_with_context(e_t, a) == 58
 
-    def find_sca(tag, childs): 
+    def find_sca(tag, childs):
         if tag == "+":
             t = childs[1].get_terminal()
             if t: childs[1] =  T("$$" + str(childs[1]))
         return (tag, childs)
 
-    b = transform(a, find_sca) 
+    b = transform(a, find_sca)
     print b
 
-    # a lazy function: 
+    # a lazy function:
     def f (x): return -x
 
     fa = lazy_function("f", f) (a)
-    print fa, eval_expr_with_context(e_t, fa) 
-   
+    print fa, eval_expr_with_context(e_t, fa)
+
     assert eval_expr_with_context(e_t, fa) == f(eval_expr_with_context(e_t, a) )
-    
+
 
