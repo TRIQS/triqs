@@ -26,6 +26,9 @@ endforeach()
 
 # Install library
 install(TARGETS triqs DESTINATION lib)
+set(TRIQS_LIB_LOCATION
+    ${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}triqs${CMAKE_SHARED_LIBRARY_SUFFIX}
+    PARENT_SCOPE)
 
 # Version file
 configure_file(version.hpp.in version.hpp @ONLY)

@@ -1,8 +1,8 @@
-set (COMPARE ${CMAKE_COMMAND} -E compare_files ${name}.out ${reference})  
+set (COMPARE ${CMAKE_COMMAND} -E compare_files ${name}.out ${reference})
 
 message("Command for the test: ${cmd} ${input}")
 
-if(input) 
+if(input)
  execute_process(
   COMMAND ${cmd}
    RESULT_VARIABLE not_successful
@@ -28,7 +28,7 @@ if(not_successful)
 endif(not_successful)
 
 # if no reference file, stop here
-if (reference) 
+if (reference)
 
  string (REPLACE ";" " " COM_STR "${COMPARE}")
  message( "About to compare using: ${COM_STR}")

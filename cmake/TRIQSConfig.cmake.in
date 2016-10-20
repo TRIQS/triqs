@@ -3,7 +3,7 @@ set(TRIQS_VERSION @TRIQS_VERSION@)
 set(TRIQS_GIT_HASH @TRIQS_GIT_HASH@)
 set(TRIQS_USE_CPP14 @USE_CPP14@)
 
-# definitions 
+# definitions
 set(TRIQS_CXX_DEFINITIONS @TRIQS_CXX_DEFINITIONS@)
 
 # Includes
@@ -17,8 +17,12 @@ set(TRIQS_INCLUDE_FFTW    @TRIQS_INCLUDE_FFTW@)
 set(TRIQS_INCLUDE_GMP     @TRIQS_INCLUDE_GMP@)
 set(TRIQS_INCLUDE_GSL     @GSL_INCLUDE_DIR@)
 
+# TRIQS library as an imported target
+add_library(triqs SHARED IMPORTED GLOBAL)
+set_property(TARGET triqs PROPERTY IMPORTED_LOCATION @TRIQS_LIB_LOCATION@)
+
 # Libraries
-set(TRIQS_LIBRARY -L@CMAKE_INSTALL_PREFIX@/lib -ltriqs)  
+set(TRIQS_LIBRARY triqs)
 
 set(TRIQS_LIBRARY_BOOST   @TRIQS_LIBRARY_BOOST@)
 set(TRIQS_LIBRARY_GTEST   -L@CMAKE_INSTALL_PREFIX@/lib -lgtest)
@@ -67,7 +71,7 @@ endmacro(triqs_get_git_hash)
 
 # Python specific stuff
 set (TRIQS_PYTHON_INTERPRETER @PYTHON_INTERPRETER@)
- 
+
 # Check compiler
 if (NOT CMAKE_CXX_COMPILER STREQUAL "@CMAKE_CXX_COMPILER@" )
  message(FATAL_ERROR "For your own safety, you should use the same compiler as the one used to compile TRIQS !")
@@ -78,14 +82,13 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ ")
   message(STATUS "TRIQS : Adding C++11/14 compilation flags for Os X:  -stdlib=libc++ ")
  else ()
-  message( WARNING "${line_of_star}You are on Os X but your are not using clang. This is NOT recommended...${line_of_star}") 
+  message( WARNING "${line_of_star}You are on Os X but your are not using clang. This is NOT recommended...${line_of_star}")
  endif ()
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 ################### triqs_set_rpath_for_target  ###################
 
 macro (triqs_set_rpath_for_target Target)
- set_target_properties(${Target} PROPERTIES LINK_FLAGS -Wl,-rpath,${TRIQS_PATH}/lib)
  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  set_target_properties(${Target} PROPERTIES INSTALL_NAME_DIR ${TRIQS_PATH}/lib)
  set_target_properties(${Target} PROPERTIES INSTALL_RPATH ${TRIQS_PATH}/lib)
@@ -98,8 +101,8 @@ endmacro()
 
 ######################## triqs_python_extension ##################
 # ModuleName : name of the module to build
-# 
-# This macro adds a target to build the module 
+#
+# This macro adds a target to build the module
 # It expects ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py as input
 # Action : create two targets
 #  python_wrap_${ModuleName} : generate the wrapper and the converter by calling the wrap generator
@@ -117,7 +120,7 @@ macro (triqs_python_extension ModuleName)
  # Adjust pythonpath so that pytriqs is visible and the wrap_generator too...
  # pytriqs needed since we import modules with pure python method to extract the doc..
  add_custom_command(OUTPUT ${wrap_name} ${converter_name} DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py
-  COMMAND PYTHONPATH=@CMAKE_INSTALL_PREFIX@/share/triqs/cpp2py:${CMAKE_BINARY_DIR}/:$ENV{PYTHONPATH} 
+  COMMAND PYTHONPATH=@CMAKE_INSTALL_PREFIX@/share/triqs/cpp2py:${CMAKE_BINARY_DIR}/:$ENV{PYTHONPATH}
   ${TRIQS_PYTHON_INTERPRETER} ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py
    @CMAKE_INSTALL_PREFIX@/share/triqs/cpp2py/mako/xxx_wrap.cpp
    ${wrap_name}
@@ -134,8 +137,8 @@ macro (triqs_python_extension ModuleName)
  # add_dependencies(python_wrap_${ModuleName} py_copy)
 
  add_library(${ModuleName} MODULE ${wrap_name})
- set_target_properties(${ModuleName} 
-   PROPERTIES 
+ set_target_properties(${ModuleName}
+   PROPERTIES
    PREFIX ""  #eliminate the lib in front of the module name
    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}
    )
@@ -168,7 +171,7 @@ macro (triqs_add_all_subdirectories_with_cmakelist)
  foreach ( f ${ALLSUBS})
   get_filename_component(d ${f} PATH)
   add_subdirectory(${d})
- endforeach ( f ${ALLSUBS}) 
+ endforeach ( f ${ALLSUBS})
 endmacro (triqs_add_all_subdirectories_with_cmakelist)
 
 ################### triqs_prepare_local_pytriqs  ###################
@@ -204,7 +207,7 @@ while(partial_dir MATCHES \"/\")
   endif()
 endwhile()")
   install(CODE ${INIT_PY_INSTALLATION_SCRIPT})
- 
+
   # Install all other files
   install(DIRECTORY ${CMAKE_SOURCE_DIR}/python/ DESTINATION ${TRIQS_PYTHON_LIB_DEST_ROOT}/${python_destination} FILES_MATCHING PATTERN *.py)
 
@@ -224,8 +227,8 @@ endmacro(triqs_prepare_local_pytriqs)
 ######################## triqs_add_cpp2doc_target ##################
 # Add a docs_cpp2doc target to docs_sphinx target.
 # Copies the doc in build and run cpp2doc from the doc_root.hpp document
-# Expects a doc_root.hpp in /doc to be parsed by the compiler. 
-macro(triqs_add_cpp2doc_target) 
+# Expects a doc_root.hpp in /doc to be parsed by the compiler.
+macro(triqs_add_cpp2doc_target)
 
 FILE(GLOB_RECURSE all_rst_files RELATIVE ${CMAKE_SOURCE_DIR}/doc *.rst _* *.py *.png *.cpp)
 SET(rst_copy_tar  ${CMAKE_CURRENT_BINARY_DIR}/rst_copy.tar)
@@ -234,16 +237,16 @@ add_custom_command (OUTPUT ${rst_copy_tar} DEPENDS ${all_rst_files}
 add_custom_target(rst_copy DEPENDS ${rst_copy_tar})
 add_dependencies(docs_sphinx rst_copy) # we must first have copied the sources
 
-# use c++2doc to automatically build the documentation of C++  
+# use c++2doc to automatically build the documentation of C++
 option(DocWithCpp2doc "Use c++2doc to generate C++ documentation of triqs classes and functions (requires libclang)" ON)
 if (DocWithCpp2doc)
  FILE(GLOB_RECURSE all_header_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ../triqs/*.hpp)
-add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log DEPENDS ${all_header_files} 
-                    COMMAND export PYTHONPATH=\$PYTHONPATH:@CMAKE_INSTALL_PREFIX@/share/triqs/cpp2doc/mako && ${TRIQS_PYTHON_INTERPRETER} 
-		    @CMAKE_INSTALL_PREFIX@/bin/c++2doc.py ${CMAKE_CURRENT_SOURCE_DIR}/doc_root.hpp 
+add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log DEPENDS ${all_header_files}
+                    COMMAND export PYTHONPATH=\$PYTHONPATH:@CMAKE_INSTALL_PREFIX@/share/triqs/cpp2doc/mako && ${TRIQS_PYTHON_INTERPRETER}
+		    @CMAKE_INSTALL_PREFIX@/bin/c++2doc.py ${CMAKE_CURRENT_SOURCE_DIR}/doc_root.hpp
 		    --output_directory=${CMAKE_CURRENT_BINARY_DIR}/cpp2doc_generated
-		    --includes=${CMAKE_SOURCE_DIR}/ 2>1 > cpp2py.log) 
-add_custom_target(docs_cpp2doc DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log) 
+		    --includes=${CMAKE_SOURCE_DIR}/ 2>1 > cpp2py.log)
+add_custom_target(docs_cpp2doc DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log)
 # add this to cmakelist
 # add_dependencies(docs_sphinx docs_cpp2doc) # we must have installed the sources before building
 endif()
@@ -253,7 +256,7 @@ endmacro()
 #
 # This macro builds the f2py module
 #   - target_name
-#   - 
+#   -
 #
 macro (triqs_build_f2py_module target_name modulename module_pyf_name filelist1)
 
@@ -272,14 +275,14 @@ macro (triqs_build_f2py_module target_name modulename module_pyf_name filelist1)
  FILE(APPEND ${filename} "main()\n")
 
  # We had the normal target of the module
- add_custom_target(${target_name} ALL DEPENDS ${modulename}.so) 
+ add_custom_target(${target_name} ALL DEPENDS ${modulename}.so)
 
  # TODO : to be corrected with the filelist is more than one file.
  # ... and a special target to build vertex.so, that depends on the sources files
- add_custom_command(OUTPUT  ${modulename}.so 
+ add_custom_command(OUTPUT  ${modulename}.so
   COMMAND echo See `pwd`/f2pyBuild.log for logs
   COMMAND ${TRIQS_PYTHON_INTERPRETER} temp_script.py > f2pyBuild.log 2>&1
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${filelist} ${CMAKE_CURRENT_SOURCE_DIR}/${module_pyf_name} 
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${filelist} ${CMAKE_CURRENT_SOURCE_DIR}/${module_pyf_name}
   )
 
 endmacro (triqs_build_f2py_module)
