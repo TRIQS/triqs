@@ -40,9 +40,6 @@ macro(triqs_add_cpp_test testname)
   set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
  endif(TEST_MPI_NUMPROC)
 
- # Ignore externally set LD_LIBRARY_PATH & DYLD_LIBRARY_PATH
- set_tests_properties(${testname_} PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=;DYLD_LIBRARY_PATH=")
-
 endmacro(triqs_add_cpp_test)
 
 # runs a python test
@@ -91,9 +88,6 @@ macro(triqs_add_python_test testname)
  if(TEST_MPI_NUMPROC)
   set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
  endif(TEST_MPI_NUMPROC)
-
- # Ignore externally set LD_LIBRARY_PATH & DYLD_LIBRARY_PATH
- set_tests_properties(${testname_} PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=;DYLD_LIBRARY_PATH=")
 
 endmacro(triqs_add_python_test)
 

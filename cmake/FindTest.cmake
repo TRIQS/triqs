@@ -27,7 +27,7 @@ macro(add_cpp_test testname)
    -Dname=${testname_}${ARGN}
    -Dcmd=${testcmd}
    -Dreference=${testref}
-   -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
+   -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
   )
 
  else (EXISTS ${testref})
@@ -41,7 +41,7 @@ macro(add_cpp_test testname)
  endif(TEST_MPI_NUMPROC)
 
 endmacro(add_cpp_test)
- 
+
 # runs a python test
 # if there is a .ref file a comparison test is done
 # Example: add_python_test(my_script)
@@ -70,7 +70,7 @@ macro(add_python_test testname)
    -Dcmd=${testcmd}
    -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
    -Dreference=${testref}
-   -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
+   -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
   )
 
  else (EXISTS ${testref})
@@ -80,7 +80,7 @@ macro(add_python_test testname)
    -Dname=${testname_}
    -Dcmd=${testcmd}
    -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
-   -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
+   -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
   )
 
  endif (EXISTS ${testref})

@@ -541,7 +541,8 @@ install(FILES ${CMAKE_SOURCE_DIR}/cmake/FindTRIQS.cmake DESTINATION share/triqs/
 
 configure_file(./cmake/FindTriqsTest.cmake.in Config//FindTriqsTest.cmake @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/FindTriqsTest.cmake DESTINATION share/triqs/cmake)
-install(FILES ${CMAKE_SOURCE_DIR}/cmake/run_test.cmake DESTINATION share/triqs/cmake)
+configure_file(./cmake/run_test.cmake.in Config/run_test.cmake @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/run_test.cmake DESTINATION share/triqs/cmake)
 
 #------------------------
 # Packaging
