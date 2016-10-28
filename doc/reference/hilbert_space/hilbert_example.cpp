@@ -55,8 +55,8 @@ int main() {
  for(int n = 0; n < partition.n_subspaces(); ++n) inv_subspaces.emplace_back(n);
 
  // Fill the subspaces with Fock spaces
- foreach(partition, [&](fock_state_t s, int spn) {
-  inv_subspaces[spn].add_fock_state(s);
+ foreach(partition, [&](int s, int spn) {
+  inv_subspaces[spn].add_fock_state(hs.get_fock_state(s));
  });
 
  // Observables: N_up and N_dn
