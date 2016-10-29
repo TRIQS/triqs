@@ -15,7 +15,7 @@ template <> struct py_converter<triqs::h5::group> {
  //-------
 
  static triqs::h5::group py2c (PyObject * ob) {
-  int id = PyInt_AsLong(borrowed(ob).attr("id").attr("id"));
+  hid_t id = PyInt_AsLong(borrowed(ob).attr("id").attr("id"));
   // id can be a file or a group. If it is a file, we open its root group '/'
   if (H5Iget_type(id) == H5I_FILE) {
    id = H5Gopen2(id, "/", H5P_DEFAULT);
@@ -44,7 +44,7 @@ template <> struct py_converter<triqs::h5::group> {
   if (cmp < 0) RAISE("hd5 : internal : comparison to group type has failed !!");
   pyref id_py = borrowed(ob).attr("id").attr("id");
   if ((!id_py) || (!PyInt_Check((PyObject *)id_py))) RAISE("hd5 : INTERNAL : group id.id is not an int !!");
-  int id = PyInt_AsLong(borrowed(ob).attr("id").attr("id"));
+  hid_t id = PyInt_AsLong(borrowed(ob).attr("id").attr("id"));
   if (!H5Iis_valid(id)) RAISE("Internal error : invalid id from h5py !");
   if (!((H5Iget_type(id) == H5I_FILE) || (H5Iget_type(id) == H5I_GROUP)))
    RAISE("h5py object is neither an hdf5 group or an hdf5 file");
