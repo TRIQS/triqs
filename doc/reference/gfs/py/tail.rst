@@ -1,7 +1,7 @@
 High-Frequency Tail (``TailGf``)
 =========================================
 
-.. _gf_tail:
+.. _tailgf:
 
 The tail is implemented as a Python object ``TailGf`` with the following constructor:
 
