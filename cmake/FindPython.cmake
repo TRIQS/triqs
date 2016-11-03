@@ -1,20 +1,20 @@
-#  Copyright Olivier Parcollet 2012 
+#  Copyright Olivier Parcollet 2012
 #  Distributed under the Boost Software License, Version 1.0.
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
 #
-#  Python settings : 
+#  Python settings :
 #
-#  This module checks that : 
+#  This module checks that :
 #  - the python interpreter is working and version >= 2.6.5
 #  - it has modules : distutils, numpy
-# 
+#
 #  This module defines the variables
 #  - PYTHON_INTERPRETER : name of the python interpreter
 #  - PYTHON_INCLUDE_DIRS : include for compilation
 #  - PYTHON_NUMPY_INCLUDE_DIR : include for compilation with numpy
-#  - PYTHON_LIBRARY : link flags 
+#  - PYTHON_LIBRARY : link flags
 #  - PYTHON_SITE_PKG : path to the standard packages of the python interpreter
 #  - PYTHON_EXTRA_LIBS :  libraries which must be linked in when embedding
 #  - PYTHON_LINK_FOR_SHARED :  linking flags needed when building a shared lib for external modules
@@ -37,10 +37,10 @@ MESSAGE (STATUS "Python interpreter ${PYTHON_INTERPRETER}")
 # and set the variable of output_var_name in the calling scope
 #
 FUNCTION ( EXEC_PYTHON_SCRIPT the_script output_var_name)
- EXECUTE_PROCESS(COMMAND ${PYTHON_INTERPRETER} -c "${the_script}" 
+ EXECUTE_PROCESS(COMMAND ${PYTHON_INTERPRETER} -c "${the_script}"
   OUTPUT_VARIABLE res RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
  IF (NOT returncode EQUAL 0)
-  MESSAGE(FATAL_ERROR "The script : ${the_script} \n did not run properly in the Python interpreter. Check your python installation.") 
+  MESSAGE(FATAL_ERROR "The script : ${the_script} \n did not run properly in the Python interpreter. Check your python installation.")
  ENDIF (NOT returncode EQUAL 0)
  SET( ${output_var_name} ${res} PARENT_SCOPE)
 ENDFUNCTION (EXEC_PYTHON_SCRIPT)
@@ -61,7 +61,10 @@ EXEC_PYTHON_SCRIPT ("import h5py" nulle) # check that h5py is there...
 EXEC_PYTHON_SCRIPT ("import scipy" nulle) # check that scipy is there...
 if (Python_use_mpi4py)
 EXEC_PYTHON_SCRIPT ("import mpi4py" nulle) # check that mpi4py is there...
-endif()
+endif(Python_use_mpi4py)
+if(Build_Documentation)
+EXEC_PYTHON_SCRIPT ("import clang.cindex" nulle) # check that libclang is there...
+endif(Build_Documentation)
 MESSAGE(STATUS "Python interpreter and modules are ok : version ${PYTHON_VERSION}" )
 
 #
@@ -107,7 +110,7 @@ mark_as_advanced(PYTHON_SITE_PKG)
 #
 # Check for Python library path
  #
- #EXEC_PYTHON_SCRIPT ("import string; from distutils.sysconfig import * ;print string.join(get_config_vars('VERSION'))"  PYTHON_VERSION_MAJOR_MINOR)         
+ #EXEC_PYTHON_SCRIPT ("import string; from distutils.sysconfig import * ;print string.join(get_config_vars('VERSION'))"  PYTHON_VERSION_MAJOR_MINOR)
  EXEC_PYTHON_SCRIPT ("import string; from distutils.sysconfig import *; print '%s/config' % get_python_lib(0,1)" PYTHON_LIBRARY_BASE_PATH)
  EXEC_PYTHON_SCRIPT ("import string; from distutils.sysconfig import *; print 'libpython%s' % string.join(get_config_vars('VERSION'))" PYTHON_LIBRARY_BASE_FILE)
  set( PYTHON_LIBRARY_SEARCH_PATH ${PYTHON_LIBRARY_BASE_PATH} /usr/lib/python2.7/config-x86_64-linux-gnu/ /usr/lib/i386-linux-gnu/)
@@ -134,7 +137,7 @@ mark_as_advanced(PYTHON_SITE_PKG)
  # Looking for ipython ... (optional)
  # not very useful... in static case, we should not allow ipython anyway I guess...
  EXECUTE_PROCESS(COMMAND ${PYTHON_INTERPRETER} -c "try :\n import IPython\n print 1\nexcept:\n print 0" OUTPUT_VARIABLE TRIQS_IPYTHON_DETECTED RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
- if (TRIQS_IPYTHON_DETECTED) 
+ if (TRIQS_IPYTHON_DETECTED)
   MESSAGE(STATUS "IPython found")
  else (TRIQS_IPYTHON_DETECTED)
   MESSAGE(STATUS "IPython NOT FOUND ")

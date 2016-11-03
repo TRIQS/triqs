@@ -51,7 +51,7 @@ modifications) for earlier versions of OS X.
      brew tap homebrew/science
      brew install cmake
      brew install --with-mpi --with-python --without-single boost
-     brew install hdf5 
+     brew install hdf5
      brew install gsl
      brew install gmp
      brew install fftw
@@ -72,10 +72,11 @@ modifications) for earlier versions of OS X.
     pip install ipython
     pip install mako
 
-6. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax: ::
+6. If you wish to compile the documentation locally, install sphinx, its dependencies, libclang Python bindings, and MathJax: ::
 
      pip install sphinx
      pip install pyparsing
+     pip install clang
      git clone https://github.com/mathjax/MathJax.git MathJax
 
 Possible issues
