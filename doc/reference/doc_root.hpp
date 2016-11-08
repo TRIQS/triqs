@@ -8,4 +8,7 @@
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include <triqs/hilbert_space/space_partition.hpp>
 
+#include <triqs/atom_diag/atom_diag.hpp>
+#include <triqs/atom_diag/atom_diag_functions.hpp>
+
 #include <triqs/gfs/singularity/fit_tail.hpp>

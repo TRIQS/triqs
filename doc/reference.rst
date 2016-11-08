@@ -16,6 +16,7 @@ Code reference
    reference/monte_carlo/contents
    reference/operators/contents
    reference/hilbert_space/contents
+   reference/atom_diag/contents
    reference/arrays/contents
    reference/clef/contents
    reference/determinant_manipulation/contents
