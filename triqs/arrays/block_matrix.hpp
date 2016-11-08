@@ -1,8 +1,10 @@
 #pragma once
+
+#include <triqs/utility/is_complex.hpp>
 #include <triqs/arrays.hpp>
 #include <boost/serialization/access.hpp>
 namespace triqs { namespace arrays {
- 
+
  ///implementation of a matrix by blocks
  /** implementation of a matrix by blocks **with named blocks**
    @tparam T scalar type (double/dcomplex)
@@ -39,22 +41,22 @@ namespace triqs { namespace arrays {
   block_matrix & operator += (block_matrix const & b){
    assert(b.block_names==this->block_names);
    for(int i=0;i<this->size();i++) (*this)[i] += b[i];
-   return *this; 
+   return *this;
   }
   block_matrix & operator -= (block_matrix const & b){
    assert(b.block_names==this->block_names);
    for(int i=0;i<this->size();i++) (*this)[i] -= b[i];
-   return *this; 
+   return *this;
   }
   template<typename Scalar>
   block_matrix & operator *= (Scalar const & s){
    for(int i=0;i<this->size();i++) (*this)[i] *= s;
-   return *this; 
+   return *this;
   }
   template<typename Scalar>
   block_matrix & operator /= (Scalar const & s){
    for(int i=0;i<this->size();i++) (*this)[i] /= s;
-   return *this; 
+   return *this;
   }
   block_matrix operator - (block_matrix const & b){
    auto res=*this;  res-=b;  return res;
@@ -76,9 +78,9 @@ namespace triqs { namespace arrays {
   }
 
   friend std::string get_triqs_hdf5_data_scheme(block_matrix const &g) {
-   return "BlockMatrix";
+    return triqs::is_complex<T>::value ? "BlockMatrixComplex" : "BlockMatrix";
   }
-  friend std::ostream & operator<< (std::ostream & out, block_matrix const & c) { 
+  friend std::ostream & operator<< (std::ostream & out, block_matrix const & c) {
    for(int i=0;i<c.block_names.size();i++)
     out <<c.block_names[i] << ": "<<c.matrix_vec[i] << std::endl;
    return out;
