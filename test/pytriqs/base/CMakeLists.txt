@@ -41,5 +41,6 @@ add_python_test(block_matrix)
 
 add_python_test(gf_tensor_valued)
 
+# Histograms
 add_python_test(histograms)
 add_python_test(brillouin_zone)
