@@ -46,9 +46,7 @@ TEST(Array, Algebra) {
  EXPECT_ARRAY_NEAR(D, array<double, 1>{4.66666666666667, 4.66666666666667, 4.66666666666667});
 
  auto x = A + B + 2 * A;
- std::stringstream fs;
- fs << x;
- EXPECT_EQ(fs.str(), "(([3,3,3] + [2,2,2]) + (2 * [3,3,3]))");
+ EXPECT_PRINT("(([3,3,3] + [2,2,2]) + (2 * [3,3,3]))", x);
 
  C = A + 2 * A + 3 * A - 2 * A + A - A + A + A * 3 + A + A + A + A + A + A + A + A + A + A + A + A + A;
  EXPECT_ARRAY_NEAR(C, array<int, 1>{63, 63, 63});

@@ -32,8 +32,6 @@ TEST(Array, Print) {
  for (int i = 0; i < 2; ++i)
   for (int j = 0; j < 3; ++j) A(i, j) = 10 * i + j;
 
- std::stringstream fs;
- fs << A;
- EXPECT_EQ(fs.str(), "\n[[0,1,2]\n [10,11,12]]");
+ EXPECT_PRINT("\n[[0,1,2]\n [10,11,12]]", A);
 }
 MAKE_MAIN;

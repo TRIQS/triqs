@@ -36,11 +36,15 @@ using dcomplex = std::complex<double>;
 using triqs::clef::placeholder;
 
 // print a vector ?
-//template <typename T> 
-//std::ostream & operator << (std::ostream & out, std::vector<T> const & v) { 
+//template <typename T>
+//std::ostream & operator << (std::ostream & out, std::vector<T> const & v) {
 //for (size_t i =0; i<v.size(); ++i) out<< v[i];
 //return out;
 //}
+
+// Check that 'cout << Y' prints X
+#define EXPECT_PRINT(X, Y) {std::stringstream ss; ss << Y; EXPECT_EQ(X,ss.str()); }
+#define ASSERT_PRINT(X, Y) {std::stringstream ss; ss << Y; ASSERT_EQ(X,ss.str()); }
 
 #define MAKE_MAIN \
  int main(int argc, char **argv) {\
@@ -61,10 +65,10 @@ template<typename X, typename Y>
 
 #define EXPECT_NEAR_COMPLEX(X, ...) EXPECT_TRUE(complex_are_close(X,__VA_ARGS__))
 
-// Arrays are equal 
+// Arrays are equal
 template<typename X, typename Y>
 ::testing::AssertionResult array_are_equal(X const &x, Y const &y) {
- if (x.domain() != y.domain()) 
+ if (x.domain() != y.domain())
  return ::testing::AssertionFailure() << "Comparing two arrays of different size "
           << "\n X = "<<  x << "\n Y = "<< y;
 
@@ -77,12 +81,12 @@ template<typename X, typename Y>
 #define EXPECT_EQ_ARRAY(X, Y) EXPECT_TRUE(array_are_equal(X,Y));
 #define EXPECT_ARRAY_EQ(X, Y) EXPECT_TRUE(array_are_equal(X,Y));
 
-// Arrays are close 
+// Arrays are close
 template<typename X, typename Y>
 ::testing::AssertionResult array_are_close(X const &x1, Y const &y1,double precision = 1.e-10) {
- triqs::arrays::array<typename X::value_type, X::rank> x = x1; 
- triqs::arrays::array<typename X::value_type, X::rank> y = y1; 
- if (x.domain() != y.domain()) 
+ triqs::arrays::array<typename X::value_type, X::rank> x = x1;
+ triqs::arrays::array<typename X::value_type, X::rank> y = y1;
+ if (x.domain() != y.domain())
  return ::testing::AssertionFailure() << "Comparing two arrays of different size "
           << "\n X = "<<  x << "\n Y = "<< y;
 
@@ -99,7 +103,7 @@ template<typename X, typename Y>
 template<typename X>
 ::testing::AssertionResult array_almost_zero(X const &x1) {
  double precision = 1.e-10;
- triqs::arrays::array<typename X::value_type, X::rank> x = x1; 
+ triqs::arrays::array<typename X::value_type, X::rank> x = x1;
 
  if (x.domain().number_of_elements() == 0 || max_element(abs(x)) < precision)
   return ::testing::AssertionSuccess();
@@ -108,7 +112,7 @@ template<typename X>
 }
 
 #define EXPECT_ARRAY_ZERO(X) EXPECT_TRUE(array_almost_zero(X))
-// 
+//
 template<typename X, typename Y>
 ::testing::AssertionResult  generic_are_near(X const &x, Y const &y) {
  double precision = 1.e-12;
