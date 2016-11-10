@@ -61,5 +61,28 @@ std14::enable_if_t<std::is_floating_point<T>::value,T> conj(T const& x) { return
 template<typename T> // std::complex
 std14::enable_if_t<triqs::is_complex<T>::value,T> conj(T const& x) { return std::conj(x); }
 
+//
+// Real part
+//
+template<typename T> // Integral types
+std14::enable_if_t<std::is_integral<T>::value,T> real(T const& x) { return x; }
+
+template<typename T> // Floating-point types
+std14::enable_if_t<std::is_floating_point<T>::value,T> real(T const& x) { return x; }
+
+template<typename T> // std::complex
+std14::enable_if_t<triqs::is_complex<T>::value,T> real(T const& x) { return std::real(x); }
+
+//
+// Imaginary part
+//
+template<typename T> // Integral types
+std14::enable_if_t<std::is_integral<T>::value,T> imag(T const& x) { return T{}; }
+
+template<typename T> // Floating-point types
+std14::enable_if_t<std::is_floating_point<T>::value,T> imag(T const& x) { return T{}; }
+
+template<typename T> // std::complex
+std14::enable_if_t<triqs::is_complex<T>::value,T> imag(T const& x) { return std::imag(x); }
 
 }}

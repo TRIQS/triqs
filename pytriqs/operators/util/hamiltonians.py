@@ -252,3 +252,25 @@ def diagonal_part(H):
                               map(lambda (dag,ind): c_dag(*ind) if dag else c(*ind),indices),
                               Operator(1))
     return n_part
+
+def make_operator_real(H, tol = 0):
+    r"""
+    Return the real part of a given operator H checking that its
+    imaginary part is below tolerance.
+
+    Parameters
+    ----------
+    H : Operator
+        The operator to be converted.
+
+    tol : float
+          Tolerance threshold for the imaginary part of the operator's coefficients.
+
+    Returns
+    -------
+    H_real : Operator
+             The real part of H.
+    """
+    if any(abs(term[-1].imag) > tol for term in H):
+        raise RuntimeError("A coefficient of the operator has an imaginary part above tolerance")
+    return H.real

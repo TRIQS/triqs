@@ -280,6 +280,30 @@ namespace operators {
    return res;
   }
 
+  // real
+  friend many_body_operator_generic real(many_body_operator_generic const& op) {
+   many_body_operator_generic res;
+   using triqs::utility::real;
+   using triqs::utility::is_zero;
+   for (auto const& x : op) {
+    auto c = real(x.coef);
+    if(!is_zero(c)) res.monomials.insert({x.monomial, c});
+   }
+   return res;
+  }
+
+  // imag
+  friend many_body_operator_generic imag(many_body_operator_generic const& op) {
+   many_body_operator_generic res;
+   using triqs::utility::imag;
+   using triqs::utility::is_zero;
+   for (auto const& x : op) {
+    auto c = imag(x.coef);
+    if(!is_zero(c)) res.monomials.insert({x.monomial, c});
+   }
+   return res;
+  }
+
   // Boost.Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive& ar, const unsigned int version) { ar& monomials; }

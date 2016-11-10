@@ -25,6 +25,13 @@ op.add_constructor(signature="(double x)", doc="create a constant operator")
 op.add_method("bool is_zero()", doc = "Boolean : is the operator null ?")
 op.add_iterator(c_cast_type="std::pair<std::vector<std::pair<bool,triqs::operators::indices_t>>, real_or_complex>")
 
+op.add_property(name = "real",
+                getter = cfunction("many_body_operator(many_body_operator op)", calling_pattern = "auto result = real(self_c)"),
+                doc = "Return the operator with the imaginary part of coefficients set to zero")
+op.add_property(name = "imag",
+                getter = cfunction("many_body_operator(many_body_operator op)", calling_pattern = "auto result = imag(self_c)"),
+                doc = "Return the operator with the real part of coefficients set to zero")
+
 module.add_class(op)
 
 # Add various overload of c, c_dag to the module Annihilation & Creation operators

@@ -9,7 +9,7 @@ for Cd,C in itertools.product(Cd_list,C_list):
 	print "{", Cd, ",", C, "} =", Cd*C + C*Cd
 
 print "Commutators:"
-for Cd,C in itertools.product(Cd_list,C_list): 
+for Cd,C in itertools.product(Cd_list,C_list):
 	print "[", Cd, ",", C, "] =", Cd*C - C*Cd
 
 
@@ -18,7 +18,7 @@ x = c(0,0)
 y = c_dag(1,0)
 
 print
-print "Algebra:"  
+print "Algebra:"
 print "x =", x
 print "y =", y
 
@@ -44,3 +44,12 @@ print "N^3 =", N3
 
 print "Monomials of N^3:"
 for monomial, coef in N3: print monomial, coef
+
+# Dagger, real & imag
+X = (1+2j)*c_dag('a',1)*c_dag('a',2)*c('a',3)*c('a',4);
+
+print
+print "X =", X
+print "dagger(X) =", dagger(X)
+print "X.real =", X.real
+print "X.imag =", X.imag
