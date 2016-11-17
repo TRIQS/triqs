@@ -41,7 +41,7 @@
     def analyse(t) :
         if t is None :return
         for ns, mod in recognized_namespace_for_using.items() :
-          if decay(t.canonical_name).startswith(ns) :
+          if ns in decay(t.canonical_name):
             used_module_list.append(mod)
 
         for ns, mod in converters_to_include.items() :
