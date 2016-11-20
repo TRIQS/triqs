@@ -148,6 +148,9 @@ class fundamental_operator_set {
   }
  }
 
+ /// Comparison with another fundamental operator set
+ bool operator==(fundamental_operator_set const& fops) const { return map_index_n == fops.map_index_n; }
+
  /// Build and return the reverse map: `int` -> `indices_t`
  /**
    @return The reverse map
