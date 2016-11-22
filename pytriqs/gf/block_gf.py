@@ -53,12 +53,12 @@ class BlockGf(object):
         self._rename_gf = kwargs.pop('rename_gf',True)
 
         if 'make_copies' not in kwargs: kwargs['make_copies'] = False
- 
+
         if set(kwargs.keys()) == set(['name_list','block_list','make_copies']):
             BlockNameList, GFlist = kwargs['name_list'],kwargs['block_list']
-        elif set(kwargs.keys()) == set(['name_block_generator','make_copies']): 
+        elif set(kwargs.keys()) == set(['name_block_generator','make_copies']):
             BlockNameList,GFlist = zip(* kwargs['name_block_generator'])
-        else: 
+        else:
             raise RuntimeError, "BlockGf construction: error in parameters, see the documentation"
         if kwargs['make_copies']: GFlist = [g.copy() for g in GFlist]
 
@@ -78,12 +78,12 @@ class BlockGf(object):
 
         # init
         self.__indices,self.__GFlist = BlockNameList,GFlist
-        try: 
+        try:
             self.__me_as_dict = dict(self)
-        except TypeError: 
+        except TypeError:
             raise TypeError, "indices are not of the correct type"
         self.__BlockIndexNumberTable = dict( (i,n) for n,i in enumerate(self.__indices) ) # a dict: index -> number of its order
-        
+
         # Add the name to the G
         self.note = ''
         if self._rename_gf:
@@ -116,73 +116,73 @@ class BlockGf(object):
 
      #--------------  Iterators -------------------------
 
-    def __iter__(self): 
+    def __iter__(self):
         return izip(self.__indices,self.__GFlist)
 
     #---------------------------------------------------------------------------------
 
     def _first(self):
         return self.__GFlist[0]
-        
-    def __len__(self): 
+
+    def __len__(self):
         return len(self.__GFlist)
 
     #---------------- Properties -------------------------------------------
 
-    # Deprecated. Left for backward compatibility ?? but  
-    # it would not work for Legendre 
+    # Deprecated. Left for backward compatibility ?? but
+    # it would not work for Legendre
     @property
-    def mesh(self): 
+    def mesh(self):
         """Deprecated: backward compatibility only"""
         return  self._first().mesh
 
     @property
-    def beta(self): 
+    def beta(self):
         """ Inverse Temperature"""
         return  self._first().beta
-    
+
     @property
-    def indices(self): 
+    def indices(self):
         """A generator of the block indices"""
-        for ind in self.__indices: 
+        for ind in self.__indices:
             yield ind
-    
-    @property 
+
+    @property
     def all_indices(self):
        """  An Iterator on BlockGf indices and indices of the blocs of the form: block_index,n1,n2, where n1,n2 are indices of the block"""
-       for sig,g in self: 
+       for sig,g in self:
           val = g.indices
           for x in val:
-              for y in val: 
+              for y in val:
                   yield  (sig,x,y)
 
-    @property 
+    @property
     def n_blocks(self):
         """ Number of blocks"""
         return len(self.__GFlist)
 
     #----------------------   IO    -------------------------------------
-    
+
     def __mymakestring(self,x):
         return str(x).replace(' ','').replace('(','').replace(')','').replace("'",'').replace(',','-')
-    
-    def save(self, filename, accumulate=False): 
+
+    def save(self, filename, accumulate=False):
         """ Save the Green function in i omega_n (as 2 columns).
-           - accumulate: 
+           - accumulate:
         """
-        for i,g in self: 
+        for i,g in self:
             g.save( "%s_%s"%(filename, self.__mymakestring(i)), accumulate)
- 
+
     def load(self, filename, no_exception = False):
-        """ 
-        adjust_temperature: if true, 
         """
-        for i,g in self: 
-            try: 
+        adjust_temperature: if true,
+        """
+        for i,g in self:
+            try:
                 g.load( "%s_%s"%(filename,self.__mymakestring(i)))
-            except: 
-                if not(no_exception): raise  
-    
+            except:
+                if not(no_exception): raise
+
     def __reduce__(self):
         return call_factory_from_dict, (self.__class__,self.name, self.__reduce_to_dict__())
 
@@ -194,7 +194,7 @@ class BlockGf(object):
     @classmethod
     def __factory_from_dict__(cls, name, d):
         # indices : for backward compatibility. indices is str repr of the
-        # indices list and we need to  drop name and note ... 
+        # indices list and we need to  drop name and note ...
         # block_names in str-mapped just to make sure that the key are python str (they could be numpy.string_, see __reduce_to_dict__)
         keys = map(str,d.pop('block_names')) if 'block_names' in d else eval(d.pop('indices'))
         assert (sorted(keys) == sorted(d.keys())) or (sorted(keys + ['note',
@@ -212,15 +212,15 @@ class BlockGf(object):
         if self.note: s += "NB: %s\n"%self.note
         return s
 
-    def __str__ (self): 
+    def __str__ (self):
            return self.name if self.name else repr(self)
- 
+
     #--------------  Bracket operator []  -------------------------
-    
+
     def __getitem__(self,key):
         try:
             g = self.__me_as_dict[key]
-        except KeyError: 
+        except KeyError:
             raise IndexError, "bloc index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(self.__indices)
         return g
 
@@ -230,43 +230,47 @@ class BlockGf(object):
             return
         try:
             g = self.__me_as_dict[key]
-        except KeyError: 
+        except KeyError:
             raise IndexError, "bloc index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(self.__indices)
         g << val
-       
+
     # -------------- Various operations -------------------------------------
 
-    def __le__(self, other): 
+    def __le__(self, other):
         raise RuntimeError, " Operator <= not defined "
 
-    def __lshift__(self, A): 
+    def __lshift__(self, A):
         """ A can be 2 things:
           * G << any_init will init all the BlockGf with the initializer
           * G << g2 where g2 is a BlockGf will copy g2 into self
           """
         if isinstance(A, self.__class__):
-           for (i,g) in self: g.copy_from(A[i])
-        else: 
-           for i,g in self:  g << A
+            for (i,g) in self: g.copy_from(A[i])
+        else:
+            try:
+                for i,g in self: g << A
+            except: return NotImplemented
         return self
 
-    def __ilshift__(self, A): 
+    def __ilshift__(self, A):
         """ A can be 2 things:
           * G << any_init will init all the BlockGf with the initializer
           * G << g2 where g2 is a BlockGf will copy g2 into self
           """
         if isinstance(A, self.__class__):
-           for (i,g) in self: g.copy_from(A[i])
-        else: 
-           for i,g in self:  g << A
+            for (i,g) in self: g.copy_from(A[i])
+        else:
+            try:
+                for i,g in self: g << A
+            except: return NotImplemented
         return self
-   
+
     def __iadd__(self,arg):
         if isinstance(arg, self.__class__):
             for (n,g) in self: self[n] += arg[n]
         elif operator.isSequenceType(arg):
             assert len(arg) == len(self.__GFlist), "list of incorrect length"
-            for l,g in izip(arg,self.__GFlist): g +=l 
+            for l,g in izip(arg,self.__GFlist): g +=l
         else:
             for i,g in self: g += arg
         return self
@@ -283,7 +287,7 @@ class BlockGf(object):
            for (n,g) in self: self[n] -= arg[n]
         elif operator.isSequenceType(arg):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
-            for l,g in izip(arg,self.__GFlist): g -=l 
+            for l,g in izip(arg,self.__GFlist): g -=l
         else:
             for i,g in self: g -= arg
         return self
@@ -299,12 +303,12 @@ class BlockGf(object):
         return c
 
     def __imul__(self,arg):
-        if isinstance(arg, BlockGf): 
+        if isinstance(arg, BlockGf):
             for (n,g) in self: self[n] *= arg[n]
         elif operator.isSequenceType(arg):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
-            for l,g in izip(arg,self.__GFlist): g*=l 
-        else: 
+            for l,g in izip(arg,self.__GFlist): g*=l
+        else:
             for i,g in self: g *= arg
         return self
 
@@ -318,8 +322,8 @@ class BlockGf(object):
     def __idiv__(self,arg):
         if operator.isSequenceType(arg):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
-            for l,g in izip(arg,self.__GFlist): g /=l 
-        else: 
+            for l,g in izip(arg,self.__GFlist): g /=l
+        else:
             for i,g in self: self[i] /= arg
         return self
 
@@ -327,7 +331,7 @@ class BlockGf(object):
         c = self.copy()
         c /= y
         return c
-  
+
     def __neg__(self):
         c = self.copy()
         c *= -1
@@ -350,14 +354,14 @@ class BlockGf(object):
 
    #--------------------------------------------------------------------------
 
-    def zero(self): 
+    def zero(self):
         for i,g in self: g.zero()
-  
-    def density(self): 
+
+    def density(self):
         """Returns the density as a dict of density of the blocks"""
         return dict( (s,g.density()) for s,g in self )
 
-    def total_density(self): 
+    def total_density(self):
         """ Total density of G  """
         return sum([ g.total_density()  for i,g in self ]).real
 
