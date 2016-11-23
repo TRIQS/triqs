@@ -31,12 +31,12 @@ namespace atom_diag {
 // Division of Hilbert Space into Hilbert subspaces, using either autopartitioning or quantum numbers.
 template<bool Complex> struct atom_diag_worker {
 
- using atom_diag = atom_diag<Complex>;
- using scalar_t = typename atom_diag::scalar_t;
- using matrix_t = typename atom_diag::matrix_t;
- using many_body_op_t = typename atom_diag::many_body_op_t;
+ //using atom_diag = atom_diag<Complex>;
+ using scalar_t = typename atom_diag<Complex>::scalar_t;
+ using matrix_t = typename atom_diag<Complex>::matrix_t;
+ using many_body_op_t = typename atom_diag<Complex>::many_body_op_t;
 
- atom_diag_worker(atom_diag * hdiag, int n_min = 0, int n_max = INT_MAX) :
+ atom_diag_worker(atom_diag<Complex> * hdiag, int n_min = 0, int n_max = INT_MAX) :
   hdiag(hdiag), n_min(n_min), n_max(n_max) {}
 
  void autopartition();
@@ -44,7 +44,7 @@ template<bool Complex> struct atom_diag_worker {
 
  private:
 
- atom_diag * hdiag;
+ atom_diag<Complex> * hdiag;
  int n_min, n_max;
 
  // Create matrix of an operator acting from one subspace to another

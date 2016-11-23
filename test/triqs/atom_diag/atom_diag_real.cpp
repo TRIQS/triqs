@@ -8,7 +8,7 @@
 #include "./hamiltonian.hpp"
 
 using namespace triqs::arrays;
-using namespace triqs::atom_diag;
+using namespace triqs::hilbert_space;
 
 triqs::h5::file ref_file("atom_diag_real.ref.h5", H5F_ACC_RDONLY);
 
@@ -21,7 +21,7 @@ TEST(atom_diag_real, QuantumNumbers) {
  auto N = N_up + N_dn;
 
  // Partition with total number of particles
- auto ad1 = atom_diag<false>(h, fops, {N});
+ auto ad1 = triqs::atom_diag::atom_diag<false>(h, fops, {N});
 
  vector<int> sp_dim_ref;
  vector<double> qn1_ref;
@@ -38,7 +38,7 @@ TEST(atom_diag_real, QuantumNumbers) {
  }
 
  // Partition with N_up and N_dn
- auto ad2 = atom_diag<false>(h, fops, {N_up, N_dn});
+ auto ad2 = triqs::atom_diag::atom_diag<false>(h, fops, {N_up, N_dn});
 
  h5_read(ref_file, "/QuantumNumbers/N_up_N_dn/sp_dims", sp_dim_ref);
  array<double,2> qn2_ref;
@@ -63,7 +63,7 @@ TEST(atom_diag_real, Vacuum) {
  fundamental_operator_set fops;
  fops.insert("up");
  fops.insert("dn");
- auto ad = atom_diag<false>(h, fops);
+ auto ad = triqs::atom_diag::atom_diag<false>(h, fops);
 
  EXPECT_EQ(1,ad.get_vacuum_subspace_index());
  auto vac = ad.get_vacuum_state();
@@ -82,7 +82,7 @@ TEST(atom_diag_real, Autopartition) {
  double t = 0.2;
  auto h = make_hamiltonian<many_body_operator_real>(mu, U, J, b, t);
 
- auto ad = atom_diag<false>(h, fops);
+ auto ad = triqs::atom_diag::atom_diag<false>(h, fops);
 
  using triqs::hilbert_space::hilbert_space;
  EXPECT_EQ(fops, ad.get_fops());
@@ -168,7 +168,7 @@ TEST(atom_diag_real, Functions) {
 
  auto h = make_hamiltonian<many_body_operator_real>(mu, U, J, b, t);
 
- auto ad = atom_diag<false>(h, fops);
+ auto ad = triqs::atom_diag::atom_diag<false>(h, fops);
 
  // Partition function
  double z_ref;
