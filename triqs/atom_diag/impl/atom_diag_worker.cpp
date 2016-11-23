@@ -270,11 +270,11 @@ ATOM_DIAG_WORKER_METHOD(void,complete()) {
  hdiag->gs_energy = std::numeric_limits<double>::infinity();
 
  // Prepare the eigensystem in a temporary map to sort them by energy !
- std::map<std::pair<double, int>, typename atom_diag::eigensystem_t> eign_map;
+ std::map<std::pair<double, int>, typename atom_diag<Complex>::eigensystem_t> eign_map;
  double energy_split = 1.e-10; // to split the eigenvalues, which are numerically very close
  for(int spn = 0; spn < n_subspaces; ++spn) {
   auto const& sp = hdiag->sub_hilbert_spaces[spn];
-  typename atom_diag::eigensystem_t eigensystem;
+  typename atom_diag<Complex>::eigensystem_t eigensystem;
 
   state<sub_hilbert_space, scalar_t, false> i_state(sp);
   matrix_t h_matrix(sp.size(), sp.size());
