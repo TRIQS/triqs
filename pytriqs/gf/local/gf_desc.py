@@ -17,7 +17,12 @@ module.add_include("<triqs/python_tools/converters/gf.hpp>")
 module.add_using("namespace triqs::arrays")
 module.add_using("namespace triqs::gfs")
 module.add_using("triqs::utility::mini_vector")
-
+module.add_preamble("""
+namespace triqs { namespace gfs {
+template <int R> struct gf_h5_name<legendre, tensor_valued<R>, tail_zero<typename tensor_valued<R>::value_type>> :
+gf_h5_name<legendre, tensor_valued<R>, nothing> {};
+}}
+""")
 
 ########################
 ##   TailGf
@@ -75,8 +80,8 @@ t.add_call(calling_pattern = "auto result = evaluate(self_c,u)",
            signature = "dcomplex(dcomplex u)",
            doc = "")
 
-t.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "tail(matrix<dcomplex> x,tail_view y)") 
-t.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "tail(tail_view x,matrix<dcomplex> y)") 
+t.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "tail(matrix<dcomplex> x,tail_view y)")
+t.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "tail(tail_view x,matrix<dcomplex> y)")
 
 # ok, but MISSING CHECK SIZE
 t.add_getitem(signature = "matrix_view<dcomplex> operator()(int i)",
@@ -88,7 +93,7 @@ t.add_setitem(calling_pattern = "self_c(i) = m",
 
 module.add_class(t)
 
-# Change C++ to make the same 
+# Change C++ to make the same
 #   def __repr__ (self) :
 #        omin = self.order_min
 #        while ((omin <= self.order_max) and (numpy.max(numpy.abs(self.data[omin-self.order_min,:,:])) < 1e-8)):
@@ -246,10 +251,10 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
 
     rank = 2 if target_type == "matrix_valued" else int(re.compile("tensor_valued<(.*)>").match(target_type).groups()[0])
 
-    data_type = "std::complex<double>" 
+    data_type = "std::complex<double>"
     return_type = "matrix<dcomplex>" if target_type=="matrix_valued" else "array<dcomplex,%s>"%(rank)
     if has_tail :
-     tail_type = "tail" 
+     tail_type = "tail"
     elif rank<3:
      tail_type = "no_tail"
     else:
@@ -389,8 +394,8 @@ def make_gf( py_type, c_tag, is_im = False, has_tail = True, target_type = "matr
       if c_tag not in [ "imtime", "legendre", "brillouin_zone"] and has_tail:
           g.add_method(name = "conjugate", calling_pattern = "auto result = conj(self_c)" , signature = "gf<%s>()"%c_tag, doc = "Return a new function, conjugate of self.")
 
-      g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag)) 
-      g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type)) 
+      g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(matrix<%s> x,gf<%s> y)"%(c_tag,data_type,c_tag))
+      g.number_protocol['multiply'].add_overload(calling_pattern = "*", signature = "gf<%s>(gf<%s> x,matrix<%s> y)"%(c_tag,c_tag,data_type))
 
 #  do we really want to have the view case separately ? the matrix can not be so big.
 #    g.add_method(name = "from_L_G_R",
@@ -457,7 +462,7 @@ for py_type, has_tail in [("GfImFreq", True) ,("GfImFreqNoTail",False)]:
               signature = "void(tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit = true)",
               calling_pattern = "fit_tail(self_c, *known_moments, max_moment, neg_n_min, neg_n_max, pos_n_min, pos_n_max, replace_by_fit)",
               doc = """Set the tail by fitting""")
-  
+
 # Pure python methods
  g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.replace_by_tail_depr")
  g.add_pure_python_method("pytriqs.gf.local._gf_imfreq.fit_tail_depr")
@@ -484,15 +489,15 @@ for py_type, has_tail in [("GfImFreq", True) ,("GfImFreqNoTail",False)]:
 module.add_function("bool is_gf_real_in_tau(gf_view<imfreq, matrix_valued, tail> g, double tolerance = 1.e-13)")
 
 #############################
-##   Tensor-valued Gfs [ImFreq, ImTime, ReFreq]
+##   Tensor-valued Gfs [ImFreq, ImTime, ReFreq, Legendre]
 ##############################
-for c_tag, py_tag in [("imfreq","ImFreq"), ("imtime","ImTime"), ("refreq", "ReFreq")]:
+for c_tag, py_tag in [("imfreq","ImFreq"), ("imtime","ImTime"), ("refreq", "ReFreq"), ("legendre","Legendre")]:
  for rank in [3, 4]:
 
   g = make_gf(
        py_type = "Gf%sTv%s"%(py_tag, rank),
        c_tag = c_tag,
-       is_im = True if c_tag=="imfreq" or c_tag=="imtime" else False,
+       is_im = (c_tag in ("imfreq","imtime","legendre")),
        target_type = "tensor_valued<%s>"%rank,
        has_tail=False,
        serializable=True,
@@ -528,7 +533,7 @@ g.add_method(name = "set_from_legendre",
              signature = "void(gf_view<legendre, matrix_valued, no_tail> gl)",
              calling_pattern = "self_c = legendre_to_imtime(*gl)",
              doc = """Fills self with the legendre transform of gl""")
- 
+
 # add the call operator using the interpolation
 g.add_call(signature = "matrix<dcomplex>(double tau)", doc = "G(tau) using interpolation")
 
