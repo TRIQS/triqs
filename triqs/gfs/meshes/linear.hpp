@@ -57,7 +57,7 @@ namespace gfs {
 
   /// Size (linear) of the mesh of the window
   long size() const { return L; }
-  
+
   utility::mini_vector<size_t, 1> size_of_components() const {
    return {size_t(size())};
   }
@@ -72,13 +72,13 @@ namespace gfs {
 
   /// Step of the mesh
   double delta() const { return del; }
-  
+
   /// Min of the mesh
   double x_min() const { return xmin; }
 
   /// Max of the mesh
   double x_max() const { return xmax; }
-  
+
   /// Min of the window of the mesh
   //double x_min_window() const { return xmin + _first_index_window *del; }
 
@@ -142,11 +142,7 @@ namespace gfs {
   }
 
   template<typename F>
-  auto evaluate(interpol_t::Linear1d, F const & f, double x) const 
-#ifdef TRIQS_CPP11 
-  ->decltype(0.0*f[0] + 1.0*f[0]) 
-#endif
-  {
+  auto evaluate(interpol_t::Linear1d, F const & f, double x) const {
    auto id = get_interpolation_data(default_interpol_policy{}, x);
    return id.w0 * f[id.i0] + id.w1 * f[id.i1];
   }

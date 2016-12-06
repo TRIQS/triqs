@@ -115,21 +115,12 @@ namespace mpi {
 // ------- general functions -------
 // ----------------------------------------
 
-#ifndef TRIQS_CPP11
  template <typename T> auto mpi_all_reduce(T &x, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) { return mpi_reduce(x, c, root, true, op); }
  template <typename T> auto mpi_all_gather(T &x, communicator c = {}, int root = 0) { return mpi_gather(x, c, root, true); }
-#else
- template <typename T> auto mpi_all_reduce(T &x, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) RETURN(mpi_reduce(x, c, root, true, op));
- template <typename T> auto mpi_all_gather(T &x, communicator c = {}, int root = 0) RETURN(mpi_gather(x, c, root, true));
-#endif
 
  // backward compatibility. Do not document.
  template <typename... T> void broadcast(T &&... x) { mpi_broadcast(std::forward<T>(x)...); }
-#ifndef TRIQS_CPP11
  template <typename... T> auto reduce(T &&... x) { return mpi_reduce(std::forward<T>(x)...); }
-#else
- template <typename... T> auto reduce(T &&... x) RETURN(mpi_reduce(std::forward<T>(x)...));
-#endif
 
  /* -----------------------------------------------------------
   *   transformation type -> mpi types

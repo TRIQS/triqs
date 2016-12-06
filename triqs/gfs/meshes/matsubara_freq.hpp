@@ -35,7 +35,7 @@ namespace gfs {
  // ---------------------------------------------------------------------------
  template <> struct mesh_point<gf_mesh<imfreq>>; //forward
 
- /// Matsubara frequency mesh 
+ /// Matsubara frequency mesh
  /**
  * The class `matsubara_freq_mesh` is the implementation of a mesh of fermionic ($\frac{(2n+1)\pi}{\beta}$) or bosonic ($\frac{2n\pi}{\beta}$) Matsubara frequencies.
  *
@@ -60,13 +60,13 @@ namespace gfs {
    * Full constructor
    * @param dom domain
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies 
-  */ 
+   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+  */
   gf_mesh(domain_t dom, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
      : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt) {
    if (opt == matsubara_mesh_opt::positive_frequencies_only) {
     _first_index = 0;
-    _last_index = n_pts - 1; 
+    _last_index = n_pts - 1;
    } else {
     bool is_fermion = (_dom.statistic == Fermion);
     _last_index = n_pts - 1;
@@ -85,8 +85,8 @@ namespace gfs {
    * @param beta inverse temperature
    * @param S statistic (Fermion or Boson)
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies 
-  */ 
+   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+  */
   gf_mesh(double beta, statistic_enum S, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
      : gf_mesh({beta, S}, n_pts, opt) {}
 
@@ -102,11 +102,11 @@ namespace gfs {
 
   /// Size (linear) of the mesh of the window
   long size() const { return _last_index_window - _first_index_window + 1; }
-  
+
   /// Size (linear) of the mesh of the window
   long full_size() const { return _last_index - _first_index + 1; }
 
-  /// 
+  ///
   utility::mini_vector<size_t, 1> size_of_components() const {
    return {size_t(size())};
   }
@@ -124,14 +124,14 @@ namespace gfs {
 
   /// first Matsubara index
   int first_index() const { return _first_index;}
-  
-  /// last Matsubara index 
+
+  /// last Matsubara index
   int last_index() const { return _last_index;}
 
   /// first Matsubara index of the window
   int first_index_window() const { return _first_index_window;}
-  
-  /// last Matsubara index of the window 
+
+  /// last Matsubara index of the window
   int last_index_window() const { return _last_index_window;}
 
   /// Is the mesh only for positive omega_n (G(tau) real))
@@ -148,16 +148,16 @@ namespace gfs {
 
   /// Accessing a point of the mesh from its index
   /**
-    * @param i Matsubara index 
+    * @param i Matsubara index
     */
   inline mesh_point_t operator[](index_t i) const; //impl below
 
   /// Iterating on all the points...
   using const_iterator = mesh_pt_generator<gf_mesh>;
   inline const_iterator begin() const;  // impl below
-  inline const_iterator end() const;    
-  inline const_iterator cbegin() const; 
-  inline const_iterator cend() const;   
+  inline const_iterator end() const;
+  inline const_iterator cbegin() const;
+  inline const_iterator cend() const;
 
  // -------------- Evaluation of a function on the grid --------------------------
 
@@ -167,14 +167,9 @@ namespace gfs {
 
   long get_interpolation_data(interpol_t::None, long n) const { return n;}
   long get_interpolation_data(interpol_t::None, matsubara_freq n) const { return n.n;}
- 
-#ifndef TRIQS_CPP11 
+
   template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const { return f[n]; }
   template <typename F> auto evaluate(interpol_t::None, F const &f, matsubara_freq n) const { return f[n.n]; }
-#else
-  template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const RETURN(f[n]);
-  template <typename F> auto evaluate(interpol_t::None, F const &f, matsubara_freq n) const RETURN(f[n.n]);
-#endif
 
   // -------------------- MPI -------------------
 
@@ -232,9 +227,9 @@ namespace gfs {
    ar & _first_index_window;
    ar & _last_index_window;
   }
-  
+
   // -------------------- print  -------------------
-  
+
   friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
    return sout << "Matsubara Freq Mesh of size " << m.size() <<", domain " << m.domain() <<", positive_only : " << m.positive_only();
   }
@@ -251,7 +246,7 @@ namespace gfs {
  //                     The mesh point
  //  NB : the mesh point is also in this case a matsubara_freq.
  // ---------------------------------------------------------------------------
- 
+
  template <> struct mesh_point<gf_mesh<imfreq>> : matsubara_freq {
   using index_t = typename gf_mesh<imfreq>::index_t;
   mesh_point() = default;

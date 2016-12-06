@@ -24,18 +24,9 @@ Install the following packages which are necessary to build TRIQS and use it::
 C++ compiler [developers only]
 ---------------------------------
 
-The default compiler on  Ubuntu 14.04LTS is gcc 4.8.1, which compiles TRIQS in C++11 mode only.
-
-This is sufficient for a basic usage of the library.
-
-More advanced users, in particular developers, however should rather use a C++14 compiler since:
-
-* it leads to better error messages in many cases in C++ (due to the triqs/clef library to be precise).
-
-* a few new parts of the library (in alpha stage) are C++14 only.
+The default compiler on  Ubuntu 14.04LTS is gcc 4.8.1, which cannot compile TRIQS.
 
 There are two options:
-
 
 * Upgrade the gcc to 4.9.2 in Ubuntu 14.04, using the official package, which can be easily done with the commands::
 
@@ -47,11 +38,11 @@ There are two options:
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
 
-  This procedure installs gcc 4.9, and (in the last lines) sets up the default compiler (g++, gcc) to point 
+  This procedure installs gcc 4.9, and (in the last lines) sets up the default compiler (g++, gcc) to point
   to the 4.9 version. The TRIQS developers uses this routinely on several machines, it does not affect the rest of the distribution.
 
 * Install clang 3.6, as packaged in Ubuntu.
-  
+
 
 Building the documentation
 -------------------------------

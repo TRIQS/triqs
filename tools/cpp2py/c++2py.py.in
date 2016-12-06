@@ -25,7 +25,7 @@ parser.add_argument('--outputname', '-o',  help="Name of the xxx_desc.py file [d
 parser.add_argument('--modulename', '-m',  help="Name of the Python module [default ='', it will be modulename", default = '')
 parser.add_argument('--appname', '-a',  help="Name of the Python module [default ='', it will take the name of file", default = '')
 parser.add_argument('--moduledoc',  help="Documentation of the module", default = '')
-parser.add_argument('--properties', '-p',  action='store_true', 
+parser.add_argument('--properties', '-p',  action='store_true',
         help="""Transforms i) every method with no arguments into read-only property
                 ii) every method get_X into read-only property
                 iii) every couple of methods get_X, set_X into rw property
@@ -50,8 +50,8 @@ modulename = args.modulename or os.path.split(args.filename)[1].split('.',1)[0]
 appname = args.appname or modulename
 output_name = args.outputname or os.path.split(args.filename)[1].split('.',1)[0]
 
-class property_ : 
-    def __init__ (self, **kw) : 
+class property_ :
+    def __init__ (self, **kw) :
         self.__dict__.update(kw)
 
 def clean_end_white_char(s):
@@ -65,14 +65,10 @@ def decay(s) :
         s = re.sub(tok,'',s)
     return s.strip()
 
-if __name__ == '__main__' : 
+if __name__ == '__main__' :
 
-    compiler_options = args.compiler_options or [] 
-
-    if "@USE_CPP14@" == "ON":
-        compiler_options.append("-std=c++1y")
-    else:
-        compiler_options.append("-DTRIQS_CPP11")
+    compiler_options = args.compiler_options or []
+    compiler_options.append("-std=c++1y")
 
     compiler_options += ['-I%s'%x for x in args.includes]
     add_opts = '@TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS@'.strip()
@@ -80,7 +76,7 @@ if __name__ == '__main__' :
         compiler_options += add_opts.split()
 
     # possible filters
-    def ns_has_ignore(ns) : 
+    def ns_has_ignore(ns) :
         return all(['cpp2py_ignore' not in n for n in ns])
 
     ns_filt = lambda c, ns: ns_has_ignore(ns) and all([x in ns for x in args.namespace])
@@ -90,44 +86,44 @@ if __name__ == '__main__' :
     # if we have passed at least one namespace, use this filter.
     analyze_filter = ns_filt if args.namespace else (only_filt if args.only else cur_file_filt)
 
-    functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options, 
-               where_is_libclang = args.libclang_location, 
+    functions, classes = parse(args.filename, debug = False, compiler_options = compiler_options,
+               where_is_libclang = args.libclang_location,
                analyze_filter = analyze_filter)
-  
+
     print "Parsing C++ code. Generating the wrapper and converters ..."
- 
-    #filter out classes with some conditions        
+
+    #filter out classes with some conditions
     exclude=[]
     for c in classes :
       if c.is_template or "ignore_in_python" in c.annotations:
          exclude.append(c)
-      #if not c.constructors: # if no constructor, assume the default one 
+      #if not c.constructors: # if no constructor, assume the default one
       #       c.add_constructor("""()""", doc = """ """)
-          
+
     classes=[c for c in classes if c not in exclude]
- 
-    if args.properties :    
+
+    if args.properties :
         print "Transforming no argument accessors into Python properties"
 
-        for cls in classes : 
+        for cls in classes :
             cls.proplist, exclude =[], []
             m_by_names =dict( (m.name,m) for m in cls.methods)
             # Find all the couples get_X, set_X
-            for m in cls.methods : 
-                if  m.is_template or m.name.startswith('operator') or m.name in ['begin','end'] or "ignore_in_python" in m.annotations: # or m.rtype.name=="void" :  
+            for m in cls.methods :
+                if  m.is_template or m.name.startswith('operator') or m.name in ['begin','end'] or "ignore_in_python" in m.annotations: # or m.rtype.name=="void" :
                     exclude.append(m)
-                elif len(m.params) == 0 and not m.is_static : # it is a property 
+                elif len(m.params) == 0 and not m.is_static : # it is a property
                     X = m.name[4:] if m.name.startswith('get_') else m.name # remove the get_ if present
                     set_m = m_by_names.get('set_' + X, None)
                     if set_m and set_m.rtype.name == "void" and len(set_m.params) ==1 :
-                        if decay(set_m.params[0][0].name) == m.rtype.name : 
+                        if decay(set_m.params[0][0].name) == m.rtype.name :
                           exclude.append(set_m)
-                        else : 
+                        else :
                             print "Warning :"
                             print "   in get_%s/set_%s" %(X,X)
                             print "     The type taken from set_%s is not the return type of get_%s"%(X,X)
-                            print "    Expected ",m.rtype.name  
-                            print "    Got ", decay(set_m.params[0][0].name)  
+                            print "    Expected ",m.rtype.name
+                            print "    Got ", decay(set_m.params[0][0].name)
                             print "     I am not adding the setter to the property"
                             set_m = None
                     cls.proplist.append(property_(name= X, doc = replace_latex(m.doc), getter = m, setter = set_m))
@@ -135,20 +131,20 @@ if __name__ == '__main__' :
                     exclude.append(m)
             cls.methods = [m for m in cls.methods if m not in exclude]
 
-    #filter out functions with some conditions        
+    #filter out functions with some conditions
     exclude=[]
     for f in functions:
       if  f.is_template or f.name.startswith('operator') or f.name in ['begin','end'] or "ignore_in_python" in f.annotations:
          exclude.append(f)
     functions=[f for f in functions if f not in exclude]
-      
-    
+
+
     # all classes used as parameters needs to be converted from / to Python
     classes_of_parameters = [f.parameter_arg for f in functions + sum((c.methods for c in classes),[]) if f.parameter_arg != None]
     classes_of_parameters_from_constr = [m.parameter_arg for m in sum((c.constructors for c in classes),[]) if m.parameter_arg != None]
     classes_of_parameters.extend(classes_of_parameters_from_constr)
     classes_of_parameters = dict(((c.name,c) for c in classes_of_parameters)).values() # make unique
-    if classes_of_parameters : 
+    if classes_of_parameters :
         print "Generating the converters for parameters classes : " + ', '.join([c.name for c in classes_of_parameters])
         # Generate the converter code for all the classes.
         tpl = Template(filename=triqs_install_location + '/share/triqs/cpp2py/mako/converters.hxx')
@@ -177,5 +173,5 @@ if __name__ == '__main__' :
         print "Do not generate the wrapper, only the converters.hxx file"
 
     print "... done"
-     
+
 

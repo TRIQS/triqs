@@ -57,12 +57,12 @@ namespace gfs {
    for (auto const &k : m.k_pt_stack) f(k);
   }
 
-  // locate the closest point : VERY PRIMITIVE : TO BE IMPROVED (kd-tree ?) 
+  // locate the closest point : VERY PRIMITIVE : TO BE IMPROVED (kd-tree ?)
   index_t locate_neighbours(k_t k) const;
 
   /// The wrapper for the mesh point
   class mesh_point_t : gfs::tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point_t, domain_pt_t> {
-   public : 
+   public :
    bz_mesh const *m;
    index_t _index;
 
@@ -99,17 +99,13 @@ namespace gfs {
 
   // -------------- Evaluation of a function on the grid --------------------------
   using interpol_data_t = index_t;
- 
+
   interpol_data_t get_interpolation_data(default_interpol_policy, k_t const &k) const {
    return locate_neighbours(k);
   }
 
   template<typename F>
-  auto evaluate(default_interpol_policy, F const & f, lattice::k_t const &k) const 
-#ifdef TRIQS_CPP11 
-->std14::decay_t<decltype(f[0])> 
-#endif
-  {
+  auto evaluate(default_interpol_policy, F const & f, lattice::k_t const &k) const {
    auto id = get_interpolation_data(default_interpol_policy{}, k);
    return f[id];
   }

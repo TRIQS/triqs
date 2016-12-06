@@ -19,11 +19,4 @@
  *
  ******************************************************************************/
 #pragma once
-#ifndef TRIQS_CPP11
-// simplest code, in c++14
 #include "./clef.c14.hpp"
-#else
-// workaround for C++11
-#include "./clef.c11.hpp"
-#endif
-

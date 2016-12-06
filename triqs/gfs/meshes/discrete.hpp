@@ -44,7 +44,7 @@ namespace gfs {
 
   domain_t const &domain() const { return _dom; }
   size_t size() const { return _dom.size(); }
- 
+
   ///
   utility::mini_vector<size_t, 1> size_of_components() const {
    return {size()};
@@ -93,14 +93,10 @@ namespace gfs {
   //bool is_within_boundary(index_t const &p) const { return ((p >= first_index_window()) && (p <= last_index_window())); }
 
   long get_interpolation_data(interpol_t::None, long n) const { return n;}
- 
-#ifndef TRIQS_CPP11 
+
   template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const { return f[n]; }
-#else
-  template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const RETURN(f[n]);
-#endif
   // -------------------- MPI -------------------
-  
+
   // -------------------- HDF5 -------------------
 
   /// Write into HDF5

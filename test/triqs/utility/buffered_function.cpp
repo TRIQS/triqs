@@ -23,13 +23,7 @@
 
 TEST(BufferedFunction, All) {
 
-#ifdef TRIQS_CPP11
- // a function that generates all the square ....
- int x = 0;
- auto f = [x]() mutable { auto res=x*x; x++; return res; };
-#else
-  auto f = [x=0]() mutable { auto res = x*x; x++; return res;};
-#endif
+ auto f = [x=0]() mutable { auto res = x*x; x++; return res;};
 
  auto gen = triqs::utility::buffered_function<double>(f, 5);
  for (int u = 0; u < 22; ++u) EXPECT_EQ(gen(), u * u);

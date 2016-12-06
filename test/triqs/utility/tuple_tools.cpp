@@ -25,7 +25,7 @@
 #include <string>
 #include <triqs/utility/mini_vector.hpp>
 
-struct fun { 
+struct fun {
  double operator()(int i, double x, double y, int k) {  return 6*k + i - 1.3*x + 2*y;}
 };
 
@@ -36,13 +36,13 @@ struct print_t {
 };
 
 struct A {
-template<typename T1, typename T2>  
+template<typename T1, typename T2>
   std::string str(T1 const & x, T2 const &y) const { std::stringstream fs; fs << "A : the string is "<< x<<" " << y; return fs.str();}
 };
 
 std::string my_print_str(int x, int y) { std::stringstream fs; fs << "the string is "<< x<< " " << y; return fs.str();}
 
-namespace triqs { namespace tuple { 
+namespace triqs { namespace tuple {
 
 }}
 
@@ -68,14 +68,13 @@ int main(int argc, char **argv) {
   if ( std::abs((res -  fun()(1,2.3,4.3,8))) > 1.e-13) throw std::runtime_error(" ");
  }
 
-#ifndef TRIQS_C11
  {
   auto r = triqs::tuple::map_on_zip_v2([](double x, double y) { return x + y; }, t1, t2);
-  std::cerr  << " [f(a,b) for (a,b) in zip(t1,t2)] =" << r << std::endl; 
+  std::cerr  << " [f(a,b) for (a,b) in zip(t1,t2)] =" << r << std::endl;
  }
 
   std::cerr  << "  ----- fold ----"<< std::endl ;
- 
+
  {
   auto res = triqs::tuple::fold([](double x,double r) { return x+r;}, t, 0);
   std::cerr  << " " << res << std::endl ;
@@ -145,14 +144,14 @@ int main(int argc, char **argv) {
  { // filter
   std::cout  << "  ----- filter ----"<< std::endl ;
   auto t= std::make_tuple(0,1,2,3,4,"=5");
-  std::cout << "filter "<< t << triqs::tuple::filter<0,2,3>(t)<< std::endl; 
-  std::cout << "filter "<< t << triqs::tuple::filter<1,3,5>(t)<< std::endl; 
+  std::cout << "filter "<< t << triqs::tuple::filter<0,2,3>(t)<< std::endl;
+  std::cout << "filter "<< t << triqs::tuple::filter<1,3,5>(t)<< std::endl;
 
-  std::cout << "filter out "<< t << triqs::tuple::filter_out<0,2,3>(t)<< std::endl; 
-  std::cout << "filter out "<< t << triqs::tuple::filter_out<1,3,5>(t)<< std::endl; 
+  std::cout << "filter out "<< t << triqs::tuple::filter_out<0,2,3>(t)<< std::endl;
+  std::cout << "filter out "<< t << triqs::tuple::filter_out<1,3,5>(t)<< std::endl;
 
   auto t2= std::make_tuple(0,1);
-  std::cout << "filter out "<< t2 << triqs::tuple::filter_out<0>(t2)<< std::endl; 
+  std::cout << "filter out "<< t2 << triqs::tuple::filter_out<0>(t2)<< std::endl;
  }
 
  { // filter
@@ -161,23 +160,23 @@ int main(int argc, char **argv) {
   auto s = std::string{"--"};
   {
    auto r = triqs::tuple::inverse_filter<6,0,2,3>(t, s);
-   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,3>(r)<<std::endl; 
+   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,3>(r)<<std::endl;
   }
   { auto r = triqs::tuple::inverse_filter<6,0,2,5>(t, s);
-   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,5>(r)<<std::endl; 
+   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,5>(r)<<std::endl;
   }
   { auto r = triqs::tuple::inverse_filter<8,0,2,5>(t, s);
-   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,5>(r)<<std::endl; 
+   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,5>(r)<<std::endl;
   }
   {
    auto r = triqs::tuple::inverse_filter_out<0,2,3>(t, s);
-   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3>(r)<<std::endl; 
+   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3>(r)<<std::endl;
   }
   { auto r = triqs::tuple::inverse_filter_out<0,2,3,5>(t, s);
-   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3,5>(r)<<std::endl; 
+   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3,5>(r)<<std::endl;
   }
   { auto r = triqs::tuple::inverse_filter_out<0,2,3,6>(t, s);
-   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3,6>(r)<<std::endl; 
+   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3,6>(r)<<std::endl;
   }
  }
 
@@ -186,11 +185,9 @@ int main(int argc, char **argv) {
   std::cout  << "  ----- filter ----"<< std::endl ;
   auto t= std::make_tuple(0,1,2,3,4,"=5");
   auto s = std::string{"--"};
-  std::cout << "replace 0,2,3"<< t << triqs::tuple::replace<0,2,3>(t,s)<< std::endl; 
-  std::cout << "replace 1,3,5"<< t << triqs::tuple::replace<1,3,5>(t,s)<< std::endl; 
+  std::cout << "replace 0,2,3"<< t << triqs::tuple::replace<0,2,3>(t,s)<< std::endl;
+  std::cout << "replace 1,3,5"<< t << triqs::tuple::replace<1,3,5>(t,s)<< std::endl;
  }
-
-#endif
 
 
 }

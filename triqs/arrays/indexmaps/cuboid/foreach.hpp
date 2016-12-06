@@ -115,28 +115,11 @@ namespace arrays {
  }
 
 /// --------------- ASSIGN FOREACH ------------------------
-#ifndef TRIQS_C11
  template <typename T, typename Function>
  std14::enable_if_t<MutableCuboidArray<T>::value> assign_foreach(T& x, Function const& f) {
   using S = _get_traversal_order<T>;
   indexmaps::cuboid::foreach_impl(typename S::traversal_order_t{}, x.domain(), S::invoke(x),
                                   [&x, &f](auto const&... args) { x(args...) = f(args...); });
  }
-
-#else
- template <typename T, typename Function> struct assign_foreach_adapter {
-  T& x;
-  Function const& f;
-  assign_foreach_adapter(T& x_, Function const& ff) : x(x_), f(ff) {}
-  template <typename... Args> void operator()(Args const&... args) const { x(args...) = f(args...); }
- };
-
- template <typename T, typename Function>
- std14::enable_if_t<MutableCuboidArray<T>::value> assign_foreach(T& x, Function const& F) {
-  using S = _get_traversal_order<T>;
-  indexmaps::cuboid::foreach_impl(typename S::traversal_order_t{}, x.domain(), S::invoke(x),
-                                  assign_foreach_adapter<T, Function>(x, F));
- }
-#endif
 }
 } // namespace

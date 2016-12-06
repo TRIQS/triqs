@@ -53,14 +53,9 @@ namespace gfs {
  template <typename G, int n = 0> struct is_block_gf_or_view;
 
  template <typename G> struct is_block_gf_or_view<G, 1> : is_gf_or_view<G, block_index>{};
-#ifndef TRIQS_CPP11
  template <typename G>
  struct is_block_gf_or_view<G, 0> : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value ||
                                                                      is_block_gf_or_view<G, 2>::value> {};
-#else
- template <typename G>
- struct is_block_gf_or_view<G, 0> : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value> {};
-#endif
  /// ---------------------------  hdf5 ---------------------------------
 
  template <typename Target> struct gf_h5_name<block_index, Target, nothing> {

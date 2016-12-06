@@ -33,7 +33,6 @@ namespace gfs {
  //  * otherwise        : then map returns a std::vector<>
  namespace impl {
 
-#ifndef TRIQS_CPP11
   template <typename F, typename T> auto _map(F &&f, std::vector<T> const &V) {
    std::vector<std14::result_of_t<F(T)>> res;
    res.reserve(V.size());
@@ -48,15 +47,6 @@ namespace gfs {
    for (auto &x : V) res.push_back(_map(f,x));
    return res;
   }
-#else
-  // C++11 can not use auto, and vec vec is not useful (block2 is C++14 only).
-  template <typename F, typename T> std::vector<std14::result_of_t<F(T)>> _map(F &&f, std::vector<T> const &V) {
-   std::vector<std14::result_of_t<F(T)>> res;
-   res.reserve(V.size());
-   for (auto &x : V) res.emplace_back(f(x));
-   return res;
-  }
-#endif
 
   // implementation is dispatched according to R
   template <typename F, typename G, typename R = std14::decay_t<std14::result_of_t<F(typename std14::decay_t<G>::target_t)>>>
@@ -84,15 +74,10 @@ namespace gfs {
   };
  }
 
-#ifndef TRIQS_CPP11
  template <typename F, typename G> auto map_block_gf(F &&f, G &&g) {
   static_assert(is_block_gf_or_view<G>::value, "map_block_gf requires a block gf");
   return impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g));
  }
-#else
- template <typename F, typename G>
- auto map_block_gf(F &&f, G &&g) RETURN((impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g))));
-#endif
 
  // the map function itself...
  template <typename F, typename G>

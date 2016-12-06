@@ -101,13 +101,8 @@ namespace arrays {
   TRIQS_DEFINE_COMPOUND_OPERATORS(vector_view);
 
   // to make interface similar to std::vector : forward [] to ()
-#ifdef TRIQS_CPP11
-  template <typename Arg> auto operator[](Arg&& arg) const DECL_AND_RETURN(IMPL_TYPE::operator()(std::forward<Arg>(arg)));
-  template <typename Arg> auto operator[](Arg&& arg)DECL_AND_RETURN(IMPL_TYPE::operator()(std::forward<Arg>(arg)));
-#else
   template <typename Arg> decltype(auto) operator[](Arg&& arg) const { return IMPL_TYPE::operator()(std::forward<Arg>(arg));}
   template <typename Arg> decltype(auto) operator[](Arg&& arg) { return IMPL_TYPE::operator()(std::forward<Arg>(arg));}
-#endif
  };
 #undef IMPL_TYPE
 
@@ -226,13 +221,8 @@ namespace arrays {
   TRIQS_DEFINE_COMPOUND_OPERATORS(vector);
 
   // to make interface similar to std::vector : forward [] to ()
-#ifdef TRIQS_CPP11
-  template <typename Arg> auto operator[](Arg&& arg) const DECL_AND_RETURN(IMPL_TYPE::operator()(std::forward<Arg>(arg)));
-  template <typename Arg> auto operator[](Arg&& arg)DECL_AND_RETURN(IMPL_TYPE::operator()(std::forward<Arg>(arg)));
-#else  
   template <typename Arg> decltype(auto) operator[](Arg&& arg) const { return IMPL_TYPE::operator()(std::forward<Arg>(arg));}
   template <typename Arg> decltype(auto) operator[](Arg&& arg) { return IMPL_TYPE::operator()(std::forward<Arg>(arg));}
-#endif  
 
  }; // vector class
 }

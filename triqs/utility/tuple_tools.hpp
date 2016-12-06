@@ -281,10 +281,6 @@ namespace triqs { namespace tuple {
  auto map_on_zip(F &&f, T0 &&t0, T1 &&t1, T2 &&t2)
      RETURN(_map_impl(std::forward<F>(f), std::forward<T0>(t0), std::forward<T1>(t1), std::forward<T2>(t2), _get_seq<T0>()));
 
-#ifdef TRIQS_C11
-}}
-#else
-
 /*
  * fold(f, t1, r_init)
  * f : a callable object : f(x,r) -> r'
@@ -486,4 +482,3 @@ auto get(c14::tuple<Args...> const &t) DECL_AND_RETURN(std::get<i>(static_cast<s
 
 template <typename... Args> class tuple_size<c14::tuple<Args...>> : public tuple_size<std::tuple<Args...>> {};
 }
-#endif

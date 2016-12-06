@@ -10,11 +10,11 @@ Documentation
 Installation
 ~~~~~~~~~~~~
 
-* boost mpi is no longer detected by triqs. 
+* boost mpi is no longer detected by triqs.
   You can either add 2 lines to
   detect it in CMake, or port your apps to triqs::mpi.
   To port an apps using mpi :
- 
+
   * detect boost mpi lib, and link to it, using e.g. in CMakeLists :
 
     find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi serialization system)
@@ -22,8 +22,7 @@ Installation
 
   * include "boost/mpi.hpp" if needed.
 
-* The library is installed in C++14 mode by default. Put the flag ``USE_CPP14`` to false
-  to get to C+11 backward compatibility mode.
+* The library is installed in C++14 mode.
 
 * New install/build conventions for apps.
   Here are the changes to be made:

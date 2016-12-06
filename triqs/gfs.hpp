@@ -32,18 +32,13 @@
 #include <triqs/gfs/legendre.hpp>
 #include <triqs/gfs/bz.hpp>
 #include <triqs/gfs/cyclic_lattice.hpp>
-
-// multivariable gf in C++14 only
-#ifndef TRIQS_C11
 #include <triqs/gfs/product.hpp>
 #include <triqs/gfs/curry.hpp>
 #include <triqs/gfs/singularity/m_tail.hpp>
-#endif
 
 #include <triqs/gfs/block.hpp>
-#ifndef TRIQS_C11
 #include <triqs/gfs/block2.hpp>
-#endif
+
 #include <triqs/gfs/impl/map.hpp>
 #include <triqs/gfs/impl/block_gf_iterator.hpp>
 

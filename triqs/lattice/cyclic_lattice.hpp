@@ -29,7 +29,7 @@ namespace gfs {
 
  struct cyclic_lattice {};
 
- template <> struct gf_mesh<cyclic_lattice> { 
+ template <> struct gf_mesh<cyclic_lattice> {
 
   utility::mini_vector<int, 3> dims;          // the size in each dimension
   size_t _size = dims[0] * dims[1] * dims[2]; // total size
@@ -86,9 +86,9 @@ namespace gfs {
   /// Iterating on all the points...
   using const_iterator = mesh_pt_generator<gf_mesh>;
   inline const_iterator begin() const;  // impl below
-  inline const_iterator end() const;    
-  inline const_iterator cbegin() const; 
-  inline const_iterator cend() const;   
+  inline const_iterator end() const;
+  inline const_iterator cbegin() const;
+  inline const_iterator cend() const;
 
    /// Mesh comparison
   bool operator==(gf_mesh const& M) const { return ((dims == M.dims)); }
@@ -106,19 +106,15 @@ namespace gfs {
   index_t index_modulo(index_t const& r) const {
    return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)};
   }
-  
+
   using interpol_data_t = index_t;
- 
+
   interpol_data_t get_interpolation_data(default_interpol_policy, index_t const &x) const {
    return index_modulo(x);
   }
 
   template<typename F>
-  auto evaluate(default_interpol_policy, F const & f, index_t const &x) const 
-#ifdef TRIQS_CPP11 
-->std14::decay_t<decltype(f[0])> 
-#endif
-  {
+  auto evaluate(default_interpol_policy, F const & f, index_t const &x) const {
    auto id = get_interpolation_data(default_interpol_policy{}, x);
    return f[id];
   }
@@ -147,7 +143,7 @@ namespace gfs {
   }
 
   friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) { return sout << "cyclic_lattice of size " << m.dims; }
-  
+
  };
 
  // ---------------------------------------------------------------------------

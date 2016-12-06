@@ -29,8 +29,8 @@ namespace triqs {
 namespace gfs {
 
  using lattice::brillouin_zone;
- 
- template <> struct gf_mesh<brillouin_zone>  { 
+
+ template <> struct gf_mesh<brillouin_zone>  {
 
   brillouin_zone bz;                             //
   utility::mini_vector<int, 3> dims = {1, 1, 1}; // the size in each dimension
@@ -83,7 +83,7 @@ namespace gfs {
 
   /// Is the point in the mesh ? Always true
   bool is_within_boundary(domain_pt_t const &) const { return true;}
- 
+
   using mesh_point_t = mesh_point<gf_mesh>;
 
   /// Accessing a point of the mesh from its index
@@ -92,9 +92,9 @@ namespace gfs {
   /// Iterating on all the points...
   using const_iterator = mesh_pt_generator<gf_mesh>;
   inline const_iterator begin() const;  // impl below
-  inline const_iterator end() const;    
-  inline const_iterator cbegin() const; 
-  inline const_iterator cend() const;   
+  inline const_iterator end() const;
+  inline const_iterator cbegin() const;
+  inline const_iterator cend() const;
 
   /// Mesh comparison
   //bool operator==(gf_mesh const& M) const { return ((bz == M.bz) && (dims == M.dims)); }
@@ -103,22 +103,18 @@ namespace gfs {
 
   /// ----------- End mesh concept  ----------------------
 
-  /// locate the closest point 
+  /// locate the closest point
   inline index_t locate_neighbours(k_t const& k) const;
 
   // -------------- Evaluation of a function on the grid --------------------------
   using interpol_data_t = index_t;
- 
+
   interpol_data_t get_interpolation_data(default_interpol_policy, k_t const &k) const {
    return locate_neighbours(k);
   }
 
   template<typename F>
-  auto evaluate(default_interpol_policy, F const & f, lattice::k_t const &k) const 
-#ifdef TRIQS_CPP11 
-->std14::decay_t<decltype(f[0])> 
-#endif
-  {
+  auto evaluate(default_interpol_policy, F const & f, lattice::k_t const &k) const {
    auto id = get_interpolation_data(default_interpol_policy{}, k);
    return f[id];
   }
@@ -151,7 +147,7 @@ namespace gfs {
    ar& TRIQS_MAKE_NVP("s1", s1);
    ar& TRIQS_MAKE_NVP("step", step);
   }
-  
+
   friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) { return sout << "gf_mesh "; }
  };
 
@@ -185,7 +181,7 @@ namespace gfs {
  };
 
  // for backward compat
- // SHOULD REMOVE THIS 
+ // SHOULD REMOVE THIS
  using regular_bz_mesh = gf_mesh<brillouin_zone>;
 
  /// impl...

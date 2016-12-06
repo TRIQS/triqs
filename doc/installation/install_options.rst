@@ -22,8 +22,6 @@ cmake options
 +===============================================+================================================+
 | Specify the installation directory            | -DCMAKE_INSTALL_PREFIX=install_path            |
 +-----------------------------------------------+------------------------------------------------+
-| Use the C++14 standard (gcc >= 4.9.1 needed)  | -USE_CPP14=ON                                  |
-+-----------------------------------------------+------------------------------------------------+
 | Special python interpreter                    | -DPYTHON_INTERPRETER=path/python               |
 +-----------------------------------------------+------------------------------------------------+
 | Build the documentation locally               | -DBuild_Documentation=ON                       |

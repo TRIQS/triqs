@@ -30,22 +30,9 @@ A recent compiler is therefore mandatory.
     In both cases, tests are still needed with these compilers, since none of the developers
     use them on a routine basis.
 
-* In C++11 backward compatibility mode only:
-  This mode is **deprecated**.
+* C++98 and C++11 compilers are obsolete and will *never* be supported.
 
-  It is sufficient for a basic usage of the library, but
-  it excludes several of its new features.
-
-  C++11 mode **will be removed** in future releases in 2016, in order
-  to simplify the codes and their maintenance.
-
-  So if you using C++11, you are invited to upgrade your compiler.
-
-  * g++ 4.8.2 and higher (there seems to be a bug in 4.8.1).
-
-* C++98 compilers are obsolete and will *never* be supported.
-
-  * g++ before 4.8.1
+  * g++ before 4.9.1
   * Intel icc 15.0 and below
 
 
