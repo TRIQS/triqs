@@ -42,7 +42,7 @@ args = parser.parse_args()
 args.includes = (args.includes or []) +  '@TRIQS_INCLUDE_ALL@'.split(';')
 
 triqs_install_location = '@CMAKE_INSTALL_PREFIX@'
-args.includes.insert(0, triqs_install_location + '/include')
+args.includes.append(triqs_install_location + '/include')
 
 #------------
 
