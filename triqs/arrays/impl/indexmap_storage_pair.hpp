@@ -66,6 +66,10 @@ namespace triqs { namespace arrays {
   template <typename... Args> void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
  };
 
+ namespace tags { 
+ struct _with_lambda_init {};
+ }
+
  //---------------
 
  template <typename IndexMapType, typename StorageType, typename TraversalOrder, bool IsConst, bool IsView, typename ViewTag>
@@ -73,7 +77,7 @@ namespace triqs { namespace arrays {
 
    public :
     using value_type=typename StorageType::value_type ;
-    static_assert(std::is_constructible<value_type>::value, "array/array_view and const operate only on values");
+    //static_assert(std::is_constructible<value_type>::value, "array/array_view and const operate only on values");
     static_assert(!std::is_const<value_type>::value,         "no const type");
     using storage_type=StorageType ;
     using indexmap_type=IndexMapType ;
@@ -97,6 +101,13 @@ namespace triqs { namespace arrays {
      indexmap_storage_pair(const indexmap_type &IM) : indexmap_(IM), storage_() {
       storage_ = StorageType(indexmap_.domain().number_of_elements());
      }
+
+  
+   template<typename InitLambda>
+    explicit indexmap_storage_pair(tags::_with_lambda_init, indexmap_type IM, InitLambda && lambda): indexmap_(std::move(IM)), storage_() {
+      storage_ = StorageType(indexmap_.domain().number_of_elements(), storages::tags::_allocate_only{}); // DO NOT construct the element of the array
+       _foreach_on_indexmap (indexmap_, [&](auto const & ...x) { storage_._init_raw(indexmap_(x...), lambda(x...));});
+      }
 
      public:
     // Shallow copy

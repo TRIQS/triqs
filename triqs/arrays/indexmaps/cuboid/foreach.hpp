@@ -99,6 +99,13 @@ namespace arrays {
   static memory_layout<A::domain_type::rank> invoke(A const& a) { return a.indexmap().get_memory_layout(); }
  };
 
+ /// --------------- FOREACH on the domain------------------------
+ //// Internal : only in non default constructible init of array
+ template <typename T, typename Function>
+ FORCEINLINE void _foreach_on_indexmap(T const& x, Function const& F) {
+  indexmaps::cuboid::foreach_impl(_traversal_c{}, x.domain(), x.get_memory_layout(), F);
+ }
+
  /// --------------- FOREACH ------------------------
  template <typename T, typename Function>
  FORCEINLINE std14::enable_if_t<ImmutableCuboidArray<T>::value> foreach(T const& x, Function const& F) {

@@ -31,6 +31,9 @@ namespace triqs { namespace arrays { namespace Tag {struct indexmap{}; }}}
 namespace triqs { namespace arrays { 
  using utility::mini_vector;
 
+ template <int Rank> using shape_t = mini_vector<long,Rank>;
+ //template <typename ... Args> shape_t<sizeof...(Args)> make_shape(Args&&... args) { return {args...};}
+
  // make_shape
  template<typename... T> 
   mini_vector<size_t, sizeof...(T)+1> make_shape(size_t x0, T... args) { return  mini_vector<size_t, sizeof...(T)+1> (x0,args...);}

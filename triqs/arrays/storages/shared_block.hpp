@@ -51,6 +51,14 @@ namespace triqs { namespace arrays { namespace storages {
    ///  Construct a new block of memory of given size
    explicit shared_block(size_t size) { construct_delegate(size); }
 
+   explicit shared_block(size_t size, tags::_allocate_only) { 
+    s = size;
+    if (size ==0) { sptr = nullptr; data_=nullptr; }
+    else { sptr = new mem_block<ValueType>(size, tags::_allocate_only{}); data_ = sptr->p;}
+   }
+
+   void _init_raw (size_t i, ValueType && x) {  assert(sptr); sptr->_init_raw(i,std::move(x));}
+
    //explicit shared_block(size_t size, Tag::default_init) {// C++11  : delegate to previous constructor when gcc 4.6 support is out. 
    // construct_delegate(size); 
    // const auto s = this->size(); for (size_t u=0; u<s; ++u) data_[u] = ValueType(); 
@@ -85,6 +93,7 @@ namespace triqs { namespace arrays { namespace storages {
 
    /// True copy of the data
    shared_block clone() const { 
+    //static_assert(std::is_copy_constructible<ValueType>::value, "Can not clone an array if its value_type is not copy constructible");
     shared_block res; 
     if (!empty()) { res.sptr = new mem_block<ValueType> (*sptr); res.data_ = res.sptr->p; res.s = s;}
     return res;
