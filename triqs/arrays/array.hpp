@@ -136,6 +136,11 @@ namespace triqs { namespace arrays {
   explicit array(typename indexmap_type::domain_type const& dom, memory_layout<Rank> ml = memory_layout<Rank>{})
      : IMPL_TYPE(indexmap_type(dom, ml)) {}
 
+ /// From shape
+  template<typename InitLambda>
+   explicit array(typename indexmap_type::domain_type const& dom, InitLambda && lambda)
+     : IMPL_TYPE(tags::_with_lambda_init{}, indexmap_type(dom), std::forward<InitLambda>(lambda)) {}
+
 #ifdef TRIQS_DOXYGEN
     /// Construction from the dimensions. NB : the number of parameters must be exactly rank (checked at compile time). 
     array (size_t I_1, .... , size_t I_rank);
@@ -199,8 +204,13 @@ namespace triqs { namespace arrays {
     /** 
      * Resizes the array. NB : all references to the storage is invalidated.
      * Does not initialize the array by default: to resize and init, do resize(IND).init()
+     *
      */
-    array & resize (const indexmaps::cuboid::domain_t<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
+    template<typename ... Args>
+    array & resize (Args && ... args) { 
+     static_assert(std::is_copy_constructible<ValueType>::value, "Can not resize an array if its value_type is not copy constructible");
+     IMPL_TYPE::resize(indexmaps::cuboid::domain_t<IMPL_TYPE::rank>(args...)); return *this; 
+    }
 
     /// Assignement resizes the array.  All references to the storage are therefore invalidated.
     array & operator=(const array & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }

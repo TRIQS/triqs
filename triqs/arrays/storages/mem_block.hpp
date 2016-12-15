@@ -46,6 +46,10 @@ typedef void PyObject;
 
 namespace triqs { namespace arrays { namespace storages { //namespace details {
 
+ namespace tags { 
+  struct _allocate_only{};
+ }
+
  template<typename ValueType> struct mem_block; // forward
 
 // debug only, to check also weak refs. This will slow down a bit critical loops..
@@ -141,6 +145,7 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
  template<typename ValueType> struct mem_block {
 
   size_t size_;                  // size of the block
+  char * raw_ptr = nullptr;
   ValueType * restrict p;        // the memory block. Owned by this, except when py_numpy is not null
   size_t ref_count;              // number of refs. :  >=1
   size_t weak_ref_count;              // number of refs. :  >=1
@@ -164,6 +169,22 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
    ref_count=1;
    weak_ref_count =0;
   }
+ 
+  // construct to state 1 with a given size. Just allocating, no
+  mem_block (size_t s, tags::_allocate_only):size_(s),py_numpy(nullptr), py_guard(nullptr){
+   try { 
+    raw_ptr = new char[s*sizeof(ValueType)]; // new guarantees alignment for any scalar type
+    p = (ValueType*) raw_ptr;
+   }
+   catch (std::bad_alloc& ba) { TRIQS_RUNTIME_ERROR<< "Memory allocation error in memblock construction. Size :"<<s << "  bad_alloc error : "<< ba.what();}
+   TRACE_MEM_DEBUG("Allocating from C++ a block of size "<< s << " at address " <<p);
+   TRIQS_MEMORY_USED_INC(s);
+   ref_count=1;
+   weak_ref_count =0;
+  }
+
+  // emplace the object at position i. Used in init of non default constructible types
+  void _init_raw (size_t i, ValueType && x) {  new(&p[i]) ValueType { std::move(x)}; }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
   // construct to state 2. python_object_is_borrowed : whether the python ref is borrowed
@@ -192,7 +213,8 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
     if (p) { // state 2 or state 0
      TRACE_MEM_DEBUG("Desallocating from C++ a block of size " << this->size_ << " at address " << p);
      TRIQS_MEMORY_USED_INC(-size_);
-     delete[] p;
+     if (raw_ptr) delete[] raw_ptr;
+     else delete[] p;
     }
    }
   }
