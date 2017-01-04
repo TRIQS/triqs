@@ -65,7 +65,7 @@ namespace arrays {
   vector_view() = delete;
 
   // Move
-  vector_view(vector_view&& X) { this->swap_me(X); }
+  vector_view(vector_view&& X) noexcept { this->swap_me(X); }
 
   /// Swap
   friend void swap(vector_view& A, vector_view& B) { A.swap_me(B); }
@@ -131,7 +131,7 @@ namespace arrays {
   vector() {}
 
   // Move
-  explicit vector(vector&& X) { this->swap_me(X); }
+  explicit vector(vector&& X) noexcept { this->swap_me(X); }
 
   ///
   vector(size_t dim) : IMPL_TYPE(indexmap_type(mini_vector<size_t, 1>(dim))) {}
@@ -208,7 +208,7 @@ namespace arrays {
   }
 
   /// Move assignment
-  vector& operator=(vector&& X) {
+  vector& operator=(vector&& X) noexcept{
    this->swap_me(X);
    return *this;
   }

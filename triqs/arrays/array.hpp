@@ -67,7 +67,7 @@ namespace triqs { namespace arrays {
    array_view () = delete;
 
    // Move
-   array_view(array_view && X) { this->swap_me(X); }
+   array_view(array_view && X) noexcept { this->swap_me(X); }
 
    /// Swap
    friend void swap( array_view & A, array_view & B) { A.swap_me(B);}
@@ -157,7 +157,7 @@ namespace triqs { namespace arrays {
     array(const array & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
     // Move
-    explicit array(array && X) { this->swap_me(X); } 
+    explicit array(array && X) noexcept{ this->swap_me(X); } 
 
     // from a temporary storage and an indexmap. Used for reshaping a temporary array
     explicit array(typename indexmap_type::domain_type const& dom, storage_type&& sto, memory_layout<Rank> ml = memory_layout<Rank>{})
@@ -216,7 +216,7 @@ namespace triqs { namespace arrays {
     array & operator=(const array & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
 
     /// Move assignment
-    array & operator=(array && X) { this->swap_me(X); return *this;}
+    array & operator=(array && X) noexcept{ this->swap_me(X); return *this;}
 
     /// Swap
     friend void swap( array & A, array & B) { A.swap_me(B);}
