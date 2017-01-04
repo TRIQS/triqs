@@ -31,8 +31,6 @@ namespace triqs { namespace mc_tools {
  template <typename MCSignType> class measure {
 
    std::shared_ptr<void> impl_;
-   std::function<measure()> clone_;
-   
    std::function<void (MCSignType const & ) > accumulate_;
    std::function<void (mpi::communicator const & )> collect_results_;
    std::function<void(h5::group, std::string const &)> h5_r, h5_w;
@@ -47,7 +45,6 @@ namespace triqs { namespace mc_tools {
     using m_t = std14::decay_t<MeasureType>;
     m_t *p = new m_t(std::forward<MeasureType>(m));
     impl_ = std::shared_ptr<m_t>(p);
-    clone_ = [p]() { return measure{true, m_t(*p)}; };
     accumulate_ = [p](MCSignType const &x) { p->accumulate(x); };
     count_ = 0;
     collect_results_ = [p](mpi::communicator const &c) { p->collect_results(c); };
@@ -55,10 +52,10 @@ namespace triqs { namespace mc_tools {
     h5_w = make_h5_write(p);
    }
 
-   // Value semantics. Everyone at the end call move = ...
-   measure(measure const &rhs) {*this = rhs;}
-   measure(measure && rhs) { *this = std::move(rhs);}
-   measure & operator = (measure const & rhs) { *this = rhs.clone_(); return *this;}
+   // 
+   measure(measure const &rhs) = delete;
+   measure(measure && rhs) = default;
+   measure & operator = (measure const & rhs) = delete;
    measure & operator = (measure && rhs) =default;
 
    void accumulate(MCSignType signe){ assert(impl_); count_++; accumulate_(signe); }
@@ -83,6 +80,10 @@ namespace triqs { namespace mc_tools {
    using measure_ptr_t = typename m_map_t::const_iterator;
 
    measure_set() = default;
+   measure_set(measure_set const &rhs) = delete;
+   measure_set(measure_set && rhs) = default;
+   measure_set & operator = (measure_set const & rhs) = delete;
+   measure_set & operator = (measure_set && rhs) =default;
 
    /**
     * Register the Measure M with a name
