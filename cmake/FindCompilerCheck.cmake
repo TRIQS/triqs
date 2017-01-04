@@ -11,7 +11,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
    MESSAGE( FATAL_ERROR "${line_of_star}You are using the ${CMAKE_CXX_COMPILER_ID} compiler but your compiler is too old :\n TRIQS requires version >= ${gnu_compiler_version_min} while you have ${CMAKE_CXX_COMPILER_VERSION}\n  ${line_of_star}")
  endif()
  set(CMAKE_COMPILER_IS_GCC TRUE )
- set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -Wno-literal-suffix ")
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -Wno-literal-suffix -fdiagnostics-color ")
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
@@ -25,6 +25,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
  set(CMAKE_COMPILER_IS_CLANG TRUE )
  set(compiler_name "clang")
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -fcolor-diagnostics ")
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
 
