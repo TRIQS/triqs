@@ -80,7 +80,7 @@ namespace arrays {
   matrix_view() = delete;
 
   // Move
-  matrix_view(matrix_view&& X) { this->swap_me(X); }
+  matrix_view(matrix_view&& X) noexcept { this->swap_me(X); }
 
   /// Swap
   friend void swap(matrix_view& A, matrix_view& B) { A.swap_me(B); }
@@ -144,7 +144,7 @@ namespace arrays {
   matrix(memory_layout<2> ml = memory_layout<2>{}) : IMPL_TYPE(indexmap_type(ml)) {}
 
   /// Move
-  explicit matrix(matrix&& X) { this->swap_me(X); }
+  explicit matrix(matrix&& X) noexcept { this->swap_me(X); }
 
   ///
   matrix(size_t dim1, size_t dim2, memory_layout<2> ml = memory_layout<2>{})
@@ -215,7 +215,7 @@ namespace arrays {
   }
 
   /// Move assignment
-  matrix& operator=(matrix&& X) {
+  matrix& operator=(matrix&& X) noexcept {
    this->swap_me(X);
    return *this;
   }

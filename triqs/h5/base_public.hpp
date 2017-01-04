@@ -78,11 +78,11 @@ namespace h5 {
 
   h5_object(h5_object const& x) : id(x.id) { xincref(id); } // a new copy, a new ref.
 
-  h5_object(h5_object&& x) : id(x.id) { x.id = 0; } // steal the ref.
+  h5_object(h5_object&& x) noexcept : id(x.id) { x.id = 0; } // steal the ref.
 
   h5_object& operator=(h5_object const& x) { return operator=(h5_object(x)); } //rewriting with the next overload
 
-  h5_object& operator=(h5_object&& x) { //steals the ref, after properly decref its own.
+  h5_object& operator=(h5_object&& x) noexcept { //steals the ref, after properly decref its own.
    xdecref(id);
    id = x.id;
    x.id = 0;

@@ -146,7 +146,7 @@ namespace triqs { namespace utility {
    ///copy constructor
    mini_vector(const mini_vector & x){ *this = x; }
    ///move constructor
-   mini_vector(mini_vector && x){ *this = std::move(x); }
+   mini_vector(mini_vector && x) noexcept { *this = std::move(x); }
    
    ///construct on another mini_vector with different element type
    template<typename T2> mini_vector(const mini_vector<T2,Rank> & x){ *this = x; }
