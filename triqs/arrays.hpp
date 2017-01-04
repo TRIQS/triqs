@@ -39,7 +39,7 @@
 #include <triqs/arrays/h5/array_of_non_basic.hpp>
 
 // proxy
-#include <triqs/arrays/proxy.hpp>
+#include <triqs/arrays/proxy.hxx>
 
 // Regrouping indices
 #include <triqs/arrays/group_indices.hpp>

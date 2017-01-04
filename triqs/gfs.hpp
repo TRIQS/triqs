@@ -29,7 +29,7 @@
 #include "./gfs/gf/targets.hpp"
 
 // gf class and its mechanisms
-#include "./gfs/gf/gf.hpp"
+#include "./gfs/gf/gf.hxx"
 #include "./gfs/gf/auto_assign.hpp"
 #include "./gfs/gf/gf_expr.hpp"
 
@@ -45,11 +45,11 @@
 #include "./gfs/singularity/m_tail.hpp"
 
 // block gf
-#include "./gfs/block/block_gf.hpp"
+#include "./gfs/block/block_gf.hxx"
 #include "./gfs/block/expr.hpp"
 #include "./gfs/block/auto_assign.hpp"
 #include "./gfs/block/map.hpp"
-#include "./gfs/block/mapped_functions.hpp"
+#include "./gfs/block/mapped_functions.hxx"
 
 // hdf5 
 #include "./gfs/h5.hpp"

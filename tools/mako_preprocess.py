@@ -60,7 +60,7 @@ def process_one_file(fi):
     code = code2 if code2 else code
 
     # output file : same name, without mako
-    fo = fi.replace(".mako",'')
+    fo = fi.replace(".mako",'').replace('.hpp','.hxx').replace('.cpp','.cxx')
 
     # if not check mode, write the file, otherwise just compare
     if args.check : 

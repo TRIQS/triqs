@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./product.hpp"
-#include "./gf_curried_view.hpp"
+#include "./gf_curried_view.hxx"
 
 namespace triqs {
 namespace gfs {
