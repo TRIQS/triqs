@@ -164,7 +164,8 @@ namespace gfs {
     *
     * Tail is initialized to 0 for n <= o_min + n_orders and NaN afterwards.
     */
-  template <typename... Args> TRIQS_DEPRECATED("Deprecated constructor") explicit __tail(int n0, Args const &... args) {
+  template <typename... Args> // TRIQS_DEPRECATED("Deprecated constructor")
+  explicit __tail(int n0, Args const &... args) {
    constexpr int n_args = sizeof...(Args) + 1;
    static_assert((n_args - T::rank == 2) or ((n_args - T::rank == 0)), "Too many arguments in tail construction");
    mini_vector<int, T::rank> shape;

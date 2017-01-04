@@ -422,11 +422,12 @@ namespace gfs {
    auto gr = fg.create_group(subgroup_name);
    gr.write_triqs_hdf5_data_scheme(g);
 
-   h5_write(gr, "block_names1",  g.block_names()[0]);
-   h5_write(gr, "block_names2",  g.block_names()[1]);
    // mako %if ARITY == 1 :
+   h5_write(gr, "block_names",  g.block_names());
    for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
    // mako %else:
+   h5_write(gr, "block_names1",  g.block_names()[0]);
+   h5_write(gr, "block_names2",  g.block_names()[1]);
    for (int i = 0; i < g.size1(); ++i)
     for (int j = 0; j < g.size2(); ++j) h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
    // mako %endif
