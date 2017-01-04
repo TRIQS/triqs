@@ -41,8 +41,6 @@ namespace mc_tools {
   //      in particular copy DOES copy ...
 
   std::shared_ptr<void> impl_;
-  std::function<move()> clone_;
-
   std::function<MCSignType()> attempt_, accept_;
   std::function<void()> reject_;
   std::function<void(mpi::communicator const &)> collect_statistics_;
@@ -63,7 +61,6 @@ namespace mc_tools {
    using m_t = std14::decay_t<MoveType>;
    m_t *p = new m_t(std::forward<MoveType>(m)); // moving or copying
    impl_ = std::shared_ptr<m_t>(p);
-   clone_ = [p]() { return move{true, m_t(*p)}; };
    attempt_ = [p]() { return p->attempt(); };
    accept_ = [p]() { return p->accept(); };
    reject_ = [p]() { p->reject(); };
@@ -76,14 +73,10 @@ namespace mc_tools {
    is_move_set_ = std::is_same<MoveType, move_set<MCSignType>>::value;
   }
 
-  // Close to value semantics. Everyone at the end call move = ...
   // no default constructor.
-  move(move const &rhs) { *this = rhs; }
+  move(move const &rhs) = delete;
   move(move &&rhs) = default;
-  move &operator=(move const &rhs) {
-   *this = rhs.clone_();
-   return *this;
-  }
+  move &operator=(move const &rhs) = delete;
   move &operator=(move &&rhs) = default;
 
   MCSignType attempt() {
@@ -138,6 +131,11 @@ namespace mc_tools {
    Proba_Moves.push_back(0);
    debug_counter = 0;
   }
+
+  move_set(move_set const &rhs) = delete;
+  move_set(move_set &&rhs) = default;
+  move_set &operator=(move_set const &rhs) = delete;
+  move_set &operator=(move_set &&rhs) = default;
 
   /**
    * Add move M with its probability of being proposed.
