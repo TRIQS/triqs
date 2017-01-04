@@ -21,7 +21,7 @@
 #pragma once
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
-#include "../singularity/tail.hpp"
+#include "../singularity/tail.hxx"
 #include "../singularity/nothing.hpp"
 #include "./data_proxy.hpp"
 

@@ -24,7 +24,7 @@
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/mini_vector.hpp>
 #include <triqs/utility/c14.hpp>
-#include "./multivar_eval.hpp"
+#include "./multivar_eval.hxx"
 
 namespace triqs {
 namespace gfs {

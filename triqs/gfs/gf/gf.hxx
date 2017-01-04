@@ -23,7 +23,7 @@
  ******************************************************************************/
 #pragma once
 #include "../singularity/nothing.hpp"
-#include "../singularity/tail.hpp"
+#include "../singularity/tail.hxx"
 #include "./data_proxy.hpp"
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
