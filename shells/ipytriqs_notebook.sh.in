@@ -14,4 +14,4 @@ else:
   sys.argv.insert(2, '--MappingKernelManager.time_to_dead=3600')
 from IPython.frontend.terminal.ipapp import launch_new_instance
 sys.exit(launch_new_instance())
-" $@
+" "$@"
