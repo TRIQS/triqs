@@ -163,6 +163,9 @@ namespace triqs { namespace utility {
    mini_vector & operator=(mini_vector && x) = default; 
 
    friend void swap(mini_vector & a, mini_vector & b) { std::swap(a._data, b._data);}
+
+   friend T sum (mini_vector const & a ) { T res=0; for( int i=0;i<Rank; ++i ) res += a._data[i]; return res; }
+
    ///size of the mini_vector
    int size() const { return Rank;}
 

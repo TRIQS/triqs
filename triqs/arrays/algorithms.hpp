@@ -54,10 +54,12 @@ namespace triqs { namespace arrays {
 
 
  template <class A>
-  typename A::value_type sum(A const & a) { return fold ( std::plus<typename A::value_type>())  (a); }
+  std::c14::enable_if_t<is_amv_value_or_view_class<A>::value, typename A::value_type>
+   sum(A const & a) { return fold ( std::plus<typename A::value_type>())  (a); }
 
  template <class A>
-  typename A::value_type prod(A const & a) { return fold ( std::multiplies<typename A::value_type>())  (a,1); }
+  std::c14::enable_if_t<is_amv_value_or_view_class<A>::value, typename A::value_type> 
+   prod(A const & a) { return fold ( std::multiplies<typename A::value_type>())  (a,1); }
 
 }}//namespace triqs::arrays 
 #endif
