@@ -180,7 +180,9 @@ namespace triqs { namespace utility {
    std::vector<T> to_vector () const { std::vector<T> V(Rank); for (int i=0;i<Rank; ++i)  V[i] = _data[i]; return V; }
 
    T product_of_elements () const { T res=1; for (int i=0;i<Rank; ++i)  res *= _data[i]; return res; }
- 
+
+  friend T sum (mini_vector const & a ) { T res=0; for( int i=0;i<Rank; ++i ) res += a._data[i]; return res; }
+   
    T * restrict ptr() { return _data;}
    const T * restrict ptr() const { return _data;}
 
