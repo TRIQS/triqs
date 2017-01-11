@@ -180,7 +180,7 @@ namespace triqs { namespace utility {
    ///conversion to std::vector   
    std::vector<T> to_vector () const { std::vector<T> V(Rank); for (int i=0;i<Rank; ++i)  V[i] = _data[i]; return V; }
 
-   T sum_of_elements() const  { T=0 res; for( int i=0;i<Rank; ++i ) res += _data[i]; return res; }
+   T sum_of_elements() const  { T res=0; for( int i=0;i<Rank; ++i ) res += _data[i]; return res; }
 
    T product_of_elements () const { T res=1; for (int i=0;i<Rank; ++i)  res *= _data[i]; return res; }
  
