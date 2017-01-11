@@ -40,6 +40,12 @@ namespace triqs { namespace utility {
 
   */ 
  template <typename T, int Rank> 
+  class mini_vector; 
+  
+ template <typename T, int Rank>
+  T sum(mini_vector<T, Rank> const & a ) { T res=0; for( int i=0;i<Rank; ++i ) res += a._data[i]; return res; }; 
+
+ template <typename T, int Rank> 
   class mini_vector { 
    T _data[(Rank!=0 ? Rank : 1)];
    friend class boost::serialization::access;
@@ -164,6 +170,8 @@ namespace triqs { namespace utility {
 
    friend void swap(mini_vector & a, mini_vector & b) { std::swap(a._data, b._data);}
 
+   friend T sum<T,Rank>(mini_vector const & a );
+
    ///size of the mini_vector
    int size() const { return Rank;}
 
@@ -179,8 +187,6 @@ namespace triqs { namespace utility {
    const T & operator[](size_t i) const { return _data[i];}
    ///conversion to std::vector   
    std::vector<T> to_vector () const { std::vector<T> V(Rank); for (int i=0;i<Rank; ++i)  V[i] = _data[i]; return V; }
-
-   T sum_of_elements() const  { T res=0; for( int i=0;i<Rank; ++i ) res += _data[i]; return res; }
 
    T product_of_elements () const { T res=1; for (int i=0;i<Rank; ++i)  res *= _data[i]; return res; }
  
