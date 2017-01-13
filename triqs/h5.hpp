@@ -27,6 +27,7 @@
 #include "./h5/string.hpp"
 #include "./h5/vector.hpp"
 #include "./h5/map.hpp"
+#include "./h5/optional.hpp"
 
 // traits to detect h5_read/h5_write is overloaded. Unused currently. Kept since
 // it can useful and is it not so simple to do...
