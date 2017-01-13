@@ -71,12 +71,14 @@ namespace triqs { namespace det_manip {
     det_type det;
     size_t Nmax, N;
     enum {NoTry, Insert, Remove, ChangeCol, ChangeRow, Insert2 = 10, Remove2 = 11, Refill = 20}
-     last_try; // keep in memory the last operation not completed
+    last_try = NoTry; // keep in memory the last operation not completed
     std::vector<size_t> row_num, col_num;
     std::vector<xy_type> x_values, y_values;
-    int sign;
+    int sign = 1;
     matrix_type mat_inv;
-    long long n_opts, n_opts_max_before_check;
+    uint64_t n_opts =0; // count the number of operation
+    uint64_t n_opts_max_before_check = 100; // max number of ops before the test of deviation of the det, M^-1 is performed.
+    double singular_threshold = -1; // the test to see if the matrix is singular is abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
 
    private:
     //  ------------     BOOST Serialization ------------
@@ -84,12 +86,18 @@ namespace triqs { namespace det_manip {
     friend class boost::serialization::access;
     template<class Archive>
      void serialize(Archive & ar, const unsigned int version) {
-      ar & TRIQS_MAKE_NVP("Nmax",Nmax) & TRIQS_MAKE_NVP("N",N)
-       & TRIQS_MAKE_NVP("n_opts",n_opts) & TRIQS_MAKE_NVP("n_opts_max_before_check",n_opts_max_before_check)
-       & TRIQS_MAKE_NVP("det",det) & TRIQS_MAKE_NVP("sign",sign)
+      ar & TRIQS_MAKE_NVP("Nmax",Nmax) 
+       & TRIQS_MAKE_NVP("N",N)
+       & TRIQS_MAKE_NVP("n_opts",n_opts) 
+       & TRIQS_MAKE_NVP("n_opts_max_before_check",n_opts_max_before_check)
+       & TRIQS_MAKE_NVP("singular_threshold",singular_threshold) 
+       & TRIQS_MAKE_NVP("det",det) 
+       & TRIQS_MAKE_NVP("sign",sign)
        & TRIQS_MAKE_NVP("Minv",mat_inv)
-       & TRIQS_MAKE_NVP("row_num",row_num) & TRIQS_MAKE_NVP("col_num",col_num)
-       & TRIQS_MAKE_NVP("x_values",x_values) & TRIQS_MAKE_NVP("y_values",y_values);
+       & TRIQS_MAKE_NVP("row_num",row_num) 
+       & TRIQS_MAKE_NVP("col_num",col_num)
+       & TRIQS_MAKE_NVP("x_values",x_values) 
+       & TRIQS_MAKE_NVP("y_values",y_values);
      }
 
     /// Write into HDF5
@@ -105,6 +113,7 @@ namespace triqs { namespace det_manip {
      h5_write(gr,"y_values",g.y_values);
      h5_write(gr,"n_opts",g.n_opts);
      h5_write(gr,"n_opts_max_before_check",g.n_opts_max_before_check);
+     h5_write(gr,"singular_threshold",g.singular_threshold);
     }
 
     /// Read from HDF5
@@ -122,6 +131,7 @@ namespace triqs { namespace det_manip {
      h5_read(gr,"y_values",g.y_values);
      h5_read(gr,"n_opts",g.n_opts);
      h5_read(gr,"n_opts_max_before_check",g.n_opts_max_before_check);
+     h5_read(gr,"singular_threshold",g.singular_threshold);
     }
 
    private:
@@ -197,13 +207,18 @@ namespace triqs { namespace det_manip {
      w1.reserve(Nmax); w2.reserve(Nmax);
     }
 
-   private:
-    void _construct_common() {
-     last_try=NoTry; sign =1;
-     n_opts=0; n_opts_max_before_check = 100;
-    }
+    /// Get the number below which abs(det) is considered 0. If <0, the test will be isnormal(abs(det))
+    double get_singular_threshold() const { return singular_threshold;}
 
-   public:
+    /// Sets the number below which abs(det) is considered 0. Cf get_is_singular_threshold
+    void set_singular_threshold(double threshold) { singular_threshold = threshold;}
+
+    /// Gets the number of operations done before a check in the dets.
+    double get_n_operations_before_check() const { return n_opts_max_before_check;}
+
+    /// Sets the number of operations done before a check in the dets.
+    void set_n_operations_before_check(uint64_t n)  { n_opts_max_before_check = n;}
+
     /**
      * \brief Constructor.
      *
@@ -217,7 +232,6 @@ namespace triqs { namespace det_manip {
       reserve(init_size);
       mat_inv()=0;
       det = 1;
-      _construct_common();
      }
 
     /** \brief Constructor.
@@ -229,7 +243,6 @@ namespace triqs { namespace det_manip {
     template<typename ArgumentContainer1, typename ArgumentContainer2>
     det_manip(FunctionType F, ArgumentContainer1 const & X, ArgumentContainer2 const & Y) : f(std::move(F)), Nmax(0) {
       if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR<< " X.size != Y.size";
-      _construct_common();
       N =X.size();
       if (N==0) { det = 1; reserve(30); return; }
       if (N>Nmax) reserve(2*N); // put some margin..
@@ -930,8 +943,8 @@ namespace triqs { namespace det_manip {
      _regenerate_with_check(true, precision_warning, precision_error);
     }
 
-    // it the det 0 ? I.e. is the det normal (not inf, Nan, or subnormal). 
-    bool is_singular() const { return not std::isnormal(std::abs(det)); }
+    /// it the det 0 ? I.e. (singular_threshold <0 ? not std::isnormal(std::abs(det)) : (std::abs(det)<singular_threshold))
+    bool is_singular() const { return (singular_threshold <0 ? not std::isnormal(std::abs(det)) : (std::abs(det)<singular_threshold)) ; }
 
     //------------------------------------------------------------------------------------------
     public:
