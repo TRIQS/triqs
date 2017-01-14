@@ -52,6 +52,7 @@ namespace gfs {
   using default_interpol_policy = interpol_t::None;
   ///type of the domain point
   using domain_pt_t = typename domain_t::point_t;
+  using var_t = imfreq;
 
   // -------------------- Constructors -------------------
 

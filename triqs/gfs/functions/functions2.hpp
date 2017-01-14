@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../multivar/product.hpp"
+#include "../gf/product.hpp"
 namespace triqs {
 namespace gfs {
 

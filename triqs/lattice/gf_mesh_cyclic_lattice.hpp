@@ -33,6 +33,7 @@ namespace gfs {
   bravais_lattice bl;
 
   public:
+  using var_t = cyclic_lattice;
 
   ///full constructor
   /**

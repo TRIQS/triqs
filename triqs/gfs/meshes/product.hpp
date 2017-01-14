@@ -58,6 +58,7 @@ namespace gfs {
   using domain_pt_t = typename domain_t::point_t;
   using linear_index_t = std::tuple<typename gf_mesh<Ms>::linear_index_t...>;
   using default_interpol_policy = interpol_t::Product;
+  using var_t = cartesian_product<Ms...>;
   static constexpr int dim = sizeof...(Ms);
 
   /// The index

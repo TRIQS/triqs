@@ -469,6 +469,28 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES TRIQS_LINK_LIBS)
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
+#---------------------------------------------------------------------
+# Clang-tidy
+#---------------------------------------------------------------------
+
+find_program(CLANG_TIDY "clang-tidy" PATHS $ENV{PATH})
+if(CLANG_TIDY)
+ MESSAGE(STATUS "-------- clang-tidy detected. Making target -------------")
+ string(REGEX REPLACE "([^;]+)" "-I/\\1" ALL_INCLUDES "${TRIQS_INCLUDE_ALL}")
+ set(tmp ${TRIQS_CXX_DEFINITIONS}) # SHOULD WE separate_arguments always ?
+ separate_arguments(tmp)
+ add_custom_target(
+    clang-tidy
+    COMMAND ${CLANG_TIDY}
+    ${CMAKE_SOURCE_DIR}/test/triqs/arrays/algorithms.cpp
+    -checks=*
+    -header-filter='.*hpp'
+    --
+    ${tmp}
+    ${ALL_INCLUDES} -I ${CMAKE_SOURCE_DIR}
+    )
+endif()
+
 #------------------------
 # tests
 #------------------------

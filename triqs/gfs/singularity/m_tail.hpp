@@ -117,21 +117,21 @@ namespace gfs {
  };
 
  // -------------------------------   partial_eval  --------------------------------------------------
+ 
+ template <typename M, typename Ta, typename A> auto partial_eval_singularity (m_tail<M,Ta> &t, A && a,var_t) { 
+  return t[a];
+ }
+ 
+ template <typename M, typename Ta, typename A> auto partial_eval_singularity (m_tail<M,Ta> const &t, A && a,var_t) { 
+  return t[a];
+ }
 
- namespace curry_impl {
+ template <typename M, typename Ta, typename A> auto partial_eval_singularity (m_tail<M,Ta> const &t, var_t, A && a) { 
+  return nothing();
+ }
 
-  template <typename Var> struct partial_eval_impl<Var, tail_valued<matrix_valued>> {
-
-   template <int... pos, typename G, typename T> static auto invoke(G && g, T const &x_tuple) {
-    return invoke_impl(g, std14::index_sequence<pos...>(), x_tuple);
-   }
-
-   template <typename G,typename T> static auto invoke_impl(G & g, std14::index_sequence<0>, T const &x_tuple) {
-    return g.get_from_linear_index(std::get<0>(x_tuple));
-   }
-
-   template <typename G,typename T> static nothing invoke_impl(G & g, std14::index_sequence<1>, T) { return nothing(); }
-  };
+ template <typename M, typename Ta, typename A> auto partial_eval_singularity (m_tail<M,Ta> &t, var_t, A && a) { 
+  return nothing();
  }
 }
 }

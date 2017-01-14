@@ -27,6 +27,7 @@ namespace gfs {
  struct refreq {};
 
  template <> struct gf_mesh<refreq> : segment_mesh {
+  using var_t = refreq;
   template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
   // using segment_mesh::segment_mesh;
  };

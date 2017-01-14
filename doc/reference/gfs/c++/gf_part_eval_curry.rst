@@ -2,14 +2,12 @@
 
 .. _gf_eval_curry: 
 
-Partial evaluation and Currying 
-================================
+Partial evaluation 
+===================
 
 .. warning::
 
-   This part of the library is still in alpha, in development.
- 
-Multivariable Green function are be both partially evalued, and "curried".
+Multivariable Green functions can be both partially evalued.
 
 Partial evaluation 
 --------------------------
@@ -20,26 +18,26 @@ Partial evaluation
 
 **Synopsis** ::
 
-  template<int ... pos, typename Opt, typename Target, bool B, bool IsConst, typename IT, typename ... Ms>
-  gf_view< sliced_domain_t<cartesian_product<Ms...>>  ,Target, Opt, IsConst>
-   partial_eval(gf_impl< cartesian_product<Ms...>, Target,Opt,B,IsConst> const & g, IT index) { 
- 
-Probably an example would help here ... :
+  If g is a multivar function, and 
+     auto _ = var_t{};
 
-.. triqs_example:: ./gf_part_eval_curry_0.cpp
-Currying
--------------
+     g[w][_] // is the gf partially evaluated for the first mesh.
 
-**Purpose** :
+When a Green function is evaluated with [][], and there is at least once var_t as an argument, 
+the result is a view of the partially evaluated gf with : 
 
-  Having a function (x,y) -> f(x,y), rewrite it as x-> y-> f(x,y)
+* a mesh corresponding of the mesh components of the _ variables.
 
-**Synopsis** ::
+* the tag type is computed accordingly
 
-  template <int... pos, typename Target, typename Opt, bool IsConst, typename... Ms>
-  gf_view<cart_prod<triqs::tuple::filter_t<std::tuple<Ms...>, pos...>>,
-                lambda_valued<curry_polymorphic_lambda<gf_view<cartesian_product<Ms...>, Target, Opt,IsConst>, pos...>>, Opt, IsConst>
-  curry(gf_view<cartesian_product<Ms...>, Target, Opt, IsConst> g);
- 
- 
-.. triqs_example:: ./gf_part_eval_curry_1.cpp
+* the target is unchanged.
+
+* the data is a sliced view of the original function
+
+* singularity : in the case where the singularity is non trivial, is it also partially evaluated
+  (in practice, G(k,omega). EXPLAIN).
+
+
+Example : 
+
+.. triqs_example:: ./gf_part_eval_0.cpp

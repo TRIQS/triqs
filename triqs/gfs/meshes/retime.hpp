@@ -27,6 +27,7 @@ namespace gfs {
  struct retime {};
 
  template <> struct gf_mesh<retime> : segment_mesh {
+  using var_t = retime;
   using segment_mesh::segment_mesh;
   // template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
  };

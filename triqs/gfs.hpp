@@ -34,8 +34,8 @@
 #include "./gfs/gf/gf_expr.hpp"
 
 // multivar 
-#include "./gfs/multivar/product.hpp"
-#include "./gfs/multivar/curry.hpp"
+#include "./gfs/gf/product.hpp"
+#include "./gfs/gf/partial_eval.hpp"
 
 // evaluator
 #include "./gfs/evaluator.hpp"

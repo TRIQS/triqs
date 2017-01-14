@@ -33,6 +33,8 @@ namespace gfs {
   brillouin_zone bz;  
 
   public:
+  using var_t = brillouin_zone;
+
   gf_mesh() = default;
 
   ///full constructor

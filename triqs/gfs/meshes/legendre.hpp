@@ -29,10 +29,11 @@ namespace gfs {
 
  // mesh type and its factories
  template <> struct gf_mesh<legendre> : discrete_mesh<legendre_domain> {
-  typedef discrete_mesh<legendre_domain> B;
+  using B = discrete_mesh<legendre_domain>;
+  using var_t = legendre;
+
   gf_mesh() = default;
   gf_mesh(double beta, statistic_enum S, size_t n_leg) : B(typename B::domain_t(beta, S, n_leg)) {}
  };
 }
 }
-

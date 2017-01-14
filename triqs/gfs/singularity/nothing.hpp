@@ -42,12 +42,14 @@ namespace gfs {
   template<typename A> bool check_size(A) {return true;}
   bool is_empty() const { return false;}
   nothing operator()() const { return {};}
+  template <typename A>  nothing operator[](A&&) const { return {};}
  };
 
  // Check if T is nothing
  template <typename T> constexpr bool is_nothing() { return std::is_same<nothing, T>::value; }
 
  template<int ... pos, typename ...T> nothing partial_eval_linear_index(nothing, T&&...) { return {};}
+ template< typename ...T> nothing partial_eval_singularity(nothing, T&&...) { return {};}
  inline nothing transpose(nothing) { return {};}
  inline nothing inverse(nothing) { return {};}
  inline nothing conj(nothing) { return {};}

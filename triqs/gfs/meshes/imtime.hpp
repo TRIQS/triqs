@@ -36,6 +36,7 @@ namespace gfs {
   */
  template <> struct gf_mesh<imtime> : linear_mesh<matsubara_time_domain> {
   using B = linear_mesh<matsubara_time_domain>;
+  using var_t= imtime;
 
   gf_mesh() = default;
   gf_mesh(gf_mesh const &x) = default;
