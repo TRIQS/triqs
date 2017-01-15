@@ -80,7 +80,7 @@ namespace triqs {
   }
   struct impl_tag {};
   struct impl_tag2 {};
-  struct impl_tag3 {};
+  // struct impl_tag3 {};
 
   // ----------------------  gf -----------------------------------------
   /**
@@ -851,13 +851,13 @@ namespace triqs {
 
    /// Construct from mesh, data, ....
    template <typename D>
-   gf_view(mesh_t const& m, D&& dat, singularity_t const& t, indices_t const& ind = indices_t{})
-      : gf_view(impl_tag{}, m, std::forward<D>(dat), t, ind) {}
+   gf_view(mesh_t m, D&& dat, singularity_t const& t, indices_t const& ind = indices_t{})
+      : gf_view(impl_tag{}, std::move(m), std::forward<D>(dat), t, ind) {}
 
-   // Construct from mesh, data. Only for curry.
+   // Construct from mesh, data. Only for partial_eval
    template <typename D>
-   gf_view(impl_tag3, mesh_t const& m, D const& dat)
-      : gf_view(impl_tag{}, m, dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+   gf_view(mesh_t m, D const& dat)
+      : gf_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
 
    // ---------------  swap --------------------
    /// Swap
@@ -1419,13 +1419,14 @@ namespace triqs {
 
    // Construct from mesh, data, ....
    template <typename D>
-   gf_const_view(mesh_t const& m, D const& dat, singularity_t const& t, indices_t const& ind)
-      : gf_const_view(impl_tag{}, m, dat, t, ind) {}
+   gf_const_view(mesh_t m, D const& dat, singularity_t const& t, indices_t const& ind)
+      : gf_const_view(impl_tag{}, std::move(m), dat, t, ind) {}
 
    // Construct from mesh, data.
    template <typename D>
-   gf_const_view(impl_tag3, mesh_t const& m, D const& dat)
-      : gf_const_view(impl_tag{}, m, dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+   gf_const_view(mesh_t m, D const& dat)
+      : gf_const_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {
+   }
 
    // ---------------  swap --------------------
 

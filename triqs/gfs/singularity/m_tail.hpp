@@ -116,22 +116,5 @@ namespace gfs {
   }
  };
 
- // -------------------------------   partial_eval  --------------------------------------------------
- 
- template <typename M, typename Ta, typename A> auto partial_eval_singularity (m_tail<M,Ta> &t, A && a,var_t) { 
-  return t[a];
- }
- 
- template <typename M, typename Ta, typename A> auto partial_eval_singularity (m_tail<M,Ta> const &t, A && a,var_t) { 
-  return t[a];
- }
-
- template <typename M, typename Ta, typename A> auto partial_eval_singularity (m_tail<M,Ta> const &t, var_t, A && a) { 
-  return nothing();
- }
-
- template <typename M, typename Ta, typename A> auto partial_eval_singularity (m_tail<M,Ta> &t, var_t, A && a) { 
-  return nothing();
- }
 }
 }

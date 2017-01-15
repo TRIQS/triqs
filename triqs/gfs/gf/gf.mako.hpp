@@ -77,7 +77,6 @@ namespace triqs {
   }
   struct impl_tag {};
   struct impl_tag2 {};
-  struct impl_tag3 {};
 
   /*mako
   %for ROOT in ['gf'] :
@@ -358,13 +357,13 @@ namespace triqs {
 
    // Construct from mesh, data, ....
    template <typename D>
-   gf_const_view(mesh_t const &m, D const &dat, singularity_t const &t, indices_t const &ind)
-      : gf_const_view(impl_tag{}, m, dat, t, ind) {}
+   gf_const_view(mesh_t m, D const &dat, singularity_t const &t, indices_t const &ind)
+      : gf_const_view(impl_tag{}, std::move(m), dat, t, ind) {}
 
    // Construct from mesh, data. 
    template <typename D>
-   gf_const_view(impl_tag3, mesh_t const &m, D const &dat)
-      : gf_const_view(impl_tag{}, m, dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+   gf_const_view(mesh_t m, D const &dat)
+      : gf_const_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
 
    // ---------------  swap --------------------
 
@@ -412,13 +411,13 @@ namespace triqs {
 
    /// Construct from mesh, data, ....
    template <typename D>
-   gf_view(mesh_t const &m, D &&dat, singularity_t const &t, indices_t const &ind = indices_t{})
-      : gf_view(impl_tag{}, m, std::forward<D>(dat), t, ind) {}
+   gf_view(mesh_t m, D &&dat, singularity_t const &t, indices_t const &ind = indices_t{})
+      : gf_view(impl_tag{}, std::move(m), std::forward<D>(dat), t, ind) {}
 
    // Construct from mesh, data. Only for partial_eval 
    template <typename D>
-   gf_view(impl_tag3, mesh_t const &m, D const &dat)
-      : gf_view(impl_tag{}, m, dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+   gf_view(mesh_t m, D const &dat)
+      : gf_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
 
    // ---------------  swap --------------------
    /// Swap
@@ -576,7 +575,7 @@ namespace triqs {
 
    // --------------------- on mesh (g) : the call before [] -------------------------
    // This is a workaround the the lack of multi argument [] in C++
-
+/*
    // mesh points should be treated slighly differently : take their index....
    template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
    template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
@@ -597,7 +596,7 @@ namespace triqs {
    // TRIQS_DEPRECATED("Use [][][] instead")
    _on_mesh_wrapper<MAKO_GF const> friend on_mesh(MAKO_GF const &f) { return {f}; }
    _on_mesh_wrapper<MAKO_GF> friend on_mesh(MAKO_GF &f) { return {f}; }
-
+*/
    public:
    // --------------------- [][][][] ------------------------
    // This is a workaround the the lack of multi argument [] in C++

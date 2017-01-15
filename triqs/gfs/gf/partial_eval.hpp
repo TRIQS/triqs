@@ -46,7 +46,7 @@ namespace triqs {
      return std::forward<Tu>(tu);
     }
     template <typename M, typename Tu> auto operator()(var_t, M const& m, Tu&& tu) const {
-     return std::tuple_cat(std::forward<Tu>(tu), std::make_tuple(m));
+     return std::tuple_cat(std::forward<Tu>(tu), std::tie(m));
     }
    };
 
@@ -57,13 +57,15 @@ namespace triqs {
    // - else cartesian_product<M::var_t ...>
    // with a filter function to be apply on the tuple mesh
    template <typename... M> struct mesh_to_var;
-   template <typename M> struct mesh_to_var<std::tuple<M>> {
+   // the & ensures that it is called with & hence no copy of mesh is done before here
+   // copy of the mesh is done now
+   template <typename M> struct mesh_to_var<std::tuple<M&>> {
     using type = typename M::var_t;
-    static M const& filter(std::tuple<M> const& t) { return std::get<0>(t); }
+    static M filter(std::tuple<M> const& t) { return std::get<0>(t); }
    };
-   template <typename M1, typename M2, typename... M> struct mesh_to_var<std::tuple<M1, M2, M...>> {
+   template <typename M1, typename M2, typename... M> struct mesh_to_var<std::tuple<M1&, M2&, M&...>> {
     using type = cartesian_product<typename M1::var_t, typename M2::var_t, typename M::var_t...>;
-    static std::tuple<M1, M2, M...> const& filter(std::tuple<M1, M2, M...> const& t) { return t; }
+    static gf_mesh<type> filter(std::tuple<M1, M2, M...> const& t) { return triqs::tuple::apply_construct<gf_mesh<type>>(t); }
    };
 
    // "Lambda" : X = argument, M = mesh, Tu = tuple of results
@@ -83,13 +85,19 @@ namespace triqs {
 
 #ifndef __cpp_if_constexpr
    // Two helper function for a compile time decision. Workaround
-   template <typename Rt, typename M, typename A, typename S> Rt make_r_t(M const& m, A&& a, S&& s, std::true_type) {
-    return Rt{m, a, s, {}};
+   template <typename Rt, typename M, typename A, typename S> Rt make_r_t(M&& m, A&& a, S&& s, std::true_type) {
+    return Rt{std::forward<M>(m), a, s, {}}; // a is view, copy is fine
    }
-   template <typename Rt, typename M, typename A, typename S> Rt make_r_t(M const& m, A&& a, S&& s, std::false_type) {
-    return Rt{impl_tag3{}, m, a};
+   template <typename Rt, typename M, typename A, typename S> Rt make_r_t(M&& m, A&& a, S&& s, std::false_type) {
+    return Rt{std::forward<M>(m), a};
    }
 #endif
+
+   // FIXME : C++17 replace this dispatch
+   template <typename S, typename A, typename B> auto partial_eval_singularity(std::true_type, S&& s, A const& a, B const&) {
+    return s[a];
+   }
+   template <typename S, typename... A> auto partial_eval_singularity(std::false_type, S&& s, A const&...) { return nothing{}; }
 
    // FIXME : C++17 replace dispatch by constexpr
    ///
@@ -102,8 +110,8 @@ namespace triqs {
     auto m_tuple = triqs::tuple::fold(details::fw_mesh{}, std::make_tuple(args...), g->mesh().components(), std::make_tuple());
 
     // if m_tuple is of size 1, remove the tuple.
-    using mtv     = details::mesh_to_var<decltype(m_tuple)>;
-    auto const& m = mtv::filter(m_tuple);
+    using mtv = details::mesh_to_var<decltype(m_tuple)>;
+    auto m    = mtv::filter(m_tuple); // copy of the meshes is done here, m_tuple was only
 
     // computing the template parameters of the returned gf, i.e. r_t
     using var_t    = typename mtv::type;   // deduced from the tuple of mesh.
@@ -114,25 +122,30 @@ namespace triqs {
     // compute the sliced view of the data array
     // xs : filter the arguments which are not var_t and compute their linear_index with the corresponding mesh
     // then in arr2, we unfold the xs tuple into the slice of the data
-    auto xs = triqs::tuple::fold(details::fw_mesh_x{}, g->mesh().components(), std::make_tuple(args...), std::make_tuple());
-    // std::cout << "XXX " << xs << std::endl;
+    auto xs   = triqs::tuple::fold(details::fw_mesh_x{}, g->mesh().components(), std::make_tuple(args...), std::make_tuple());
     auto arr2 = triqs::tuple::apply([&g](auto const&... args) { return g->data()(args..., arrays::ellipsis()); }, xs);
 
     // We now also partial_eval the singularity
-    // It can be a m_tail or nothing.
-    auto singv     = partial_eval_singularity(g->singularity(), args...);
-    using r_sing_t = typename decltype(singv)::regular_type;
+    // The rule is :
+    // If we have 2 variables AND the var_t is the second arguments, then call singularity[first_argument]
+    // This covers the m_tail, used for g(k,omega), g(x,t), ....
+    // In all others cases, return nothing
+    using TArgs = std::tuple<Args...>;
+    // for some mysterious reason, I need to quality var_t on clang or it does not work ... Collision ?
+    constexpr bool B = (sizeof...(Args) == 2) and std::is_same<std::tuple_element_t<1, TArgs>, triqs::gfs::var_t>::value and
+        not std::is_same<std::tuple_element_t<0, TArgs>, triqs::gfs::var_t>::value;
 
-// finally, we build the view on this data.
-// two cases : if type(singv) == type (r_t.singularity) or not. If not, we rebuild a default singularity (impl_tag3, cf gf).
-#ifndef __cpp_if_constexpr
-    return details::make_r_t<r_t>(m, arr2, singv, std::is_same<r_sing_t, typename r_t::_singularity_regular_t>{});
-#else
-    if constexpr (std::is_same<r_sing_t, typename r_t::_singularity_regular_t>::value)
-     return r_t{m, arr2, singv, {}};
-    else
-     return r_t{impl_tag3{}, m, arr2};
-#endif
+    auto singv = partial_eval_singularity(std::integral_constant<bool, B>{}, g->singularity(), args...);
+    using r_sing_t = typename decltype(singv)::regular_type;
+    // finally, we build the view on this data.
+    // two cases : if type(singv) == type (r_t.singularity) or not. If not, we rebuild a default singularity
+
+    return details::make_r_t<r_t>(std::move(m), arr2, singv, std::is_same<r_sing_t, typename r_t::_singularity_regular_t>{});
+
+    // FIXME C++17 : remove the dispatch and
+    // if constexpr (std::is_same<r_sing_t, typename r_t::_singularity_regular_t>::value)
+    // return r_t{m, arr2, singv, {}};
+    // else
    }
 
    ///
