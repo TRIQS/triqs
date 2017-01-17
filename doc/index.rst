@@ -7,9 +7,9 @@
 Welcome
 =======
 
-.. sidebar:: TRIQS 1.4-dev
+.. sidebar:: TRIQS 1.4
 
-   This is the homepage of the TRIQS release 1.4 (in development). 
+   This is the homepage of the TRIQS release 1.4. 
    For the changes in 1.4, Cf :ref:`changelog page <changelog>`
 
 
