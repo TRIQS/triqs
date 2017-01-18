@@ -61,11 +61,11 @@ namespace triqs {
    // copy of the mesh is done now
    template <typename M> struct mesh_to_var<std::tuple<M&>> {
     using type = typename M::var_t;
-    static M filter(std::tuple<M> const& t) { return std::get<0>(t); }
+    static M& filter(std::tuple<M&> const& t) { return std::get<0>(t); }
    };
    template <typename M1, typename M2, typename... M> struct mesh_to_var<std::tuple<M1&, M2&, M&...>> {
     using type = cartesian_product<typename M1::var_t, typename M2::var_t, typename M::var_t...>;
-    static gf_mesh<type> filter(std::tuple<M1, M2, M...> const& t) { return triqs::tuple::apply_construct<gf_mesh<type>>(t); }
+    static gf_mesh<type> filter(std::tuple<M1&, M2&, M&...> const& t) { return triqs::tuple::apply_construct<gf_mesh<type>>(t); }
    };
 
    // "Lambda" : X = argument, M = mesh, Tu = tuple of results

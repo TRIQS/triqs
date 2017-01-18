@@ -106,10 +106,12 @@ namespace triqs {
    using view_type         = block_gf_view<Var, Target>;
    using const_view_type   = block_gf_const_view<Var, Target>;
 
+   private:
    using g_t           = gf<Var, Target>;
    using data_t        = std::vector<g_t>;
    using block_names_t = std::vector<std::string>;
 
+   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -384,6 +386,7 @@ namespace triqs {
    void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
     _block_names = l.rhs.block_names();
     _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    // mpi_reduce of vector produces a new vector of gf, so it is fine here
    }
   };
 
@@ -467,10 +470,12 @@ namespace triqs {
    using view_type         = block_gf_view<Var, Target>;
    using const_view_type   = block_gf_const_view<Var, Target>;
 
+   private:
    using g_t           = gf_view<Var, Target>;
    using data_t        = std::vector<g_t>;
    using block_names_t = std::vector<std::string>;
 
+   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -526,7 +531,7 @@ namespace triqs {
 
    // ---------------  Constructors --------------------
 
-   block_gf_view()                         = delete; // views can not be default constructed
+   block_gf_view()                         = default;
    block_gf_view(const_view_type const& g) = delete; // No view from a const g
    block_gf_view(regular_type const& g)    = delete; // no view from a const_view
 
@@ -722,8 +727,13 @@ namespace triqs {
     * @param l The lazy object returned by mpi_reduce
     */
    void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
+    if (l.rhs.size() != this->size())
+     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
     _block_names = l.rhs.block_names();
-    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    for (int i = 0; i < size(); ++i)
+     _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
+    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
+    // we can not overload the = of vector for better API.
    }
   };
 
@@ -807,10 +817,12 @@ namespace triqs {
    using view_type         = block_gf_const_view<Var, Target>;
    using const_view_type   = block_gf_const_view<Var, Target>;
 
+   private:
    using g_t           = gf_const_view<Var, Target>;
    using data_t        = std::vector<g_t>;
    using block_names_t = std::vector<std::string>;
 
+   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -866,7 +878,7 @@ namespace triqs {
 
    // ---------------  Constructors --------------------
 
-   block_gf_const_view() = delete; // views can not be default constructed
+   block_gf_const_view() = default; // views can not be default constructed
 
    /// Makes a const view
    block_gf_const_view(mutable_view_type const& g) : block_gf_const_view(impl_tag{}, g) {}
@@ -1109,10 +1121,12 @@ namespace triqs {
    using view_type         = block2_gf_view<Var, Target>;
    using const_view_type   = block2_gf_const_view<Var, Target>;
 
+   private:
    using g_t           = gf<Var, Target>;
    using data_t        = std::vector<std::vector<g_t>>;
    using block_names_t = std::vector<std::vector<std::string>>;
 
+   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -1366,6 +1380,7 @@ namespace triqs {
    void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
     _block_names = l.rhs.block_names();
     _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    // mpi_reduce of vector produces a new vector of gf, so it is fine here
    }
   };
 
@@ -1449,10 +1464,12 @@ namespace triqs {
    using view_type         = block2_gf_view<Var, Target>;
    using const_view_type   = block2_gf_const_view<Var, Target>;
 
+   private:
    using g_t           = gf_view<Var, Target>;
    using data_t        = std::vector<std::vector<g_t>>;
    using block_names_t = std::vector<std::vector<std::string>>;
 
+   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -1492,7 +1509,7 @@ namespace triqs {
 
    // ---------------  Constructors --------------------
 
-   block2_gf_view()                         = delete; // views can not be default constructed
+   block2_gf_view()                         = default;
    block2_gf_view(const_view_type const& g) = delete; // No view from a const g
    block2_gf_view(regular_type const& g)    = delete; // no view from a const_view
 
@@ -1696,8 +1713,13 @@ namespace triqs {
     * @param l The lazy object returned by mpi_reduce
     */
    void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
+    if (l.rhs.size() != this->size())
+     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
     _block_names = l.rhs.block_names();
-    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    for (int i = 0; i < size(); ++i)
+     _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
+    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
+    // we can not overload the = of vector for better API.
    }
   };
 
@@ -1781,10 +1803,12 @@ namespace triqs {
    using view_type         = block2_gf_const_view<Var, Target>;
    using const_view_type   = block2_gf_const_view<Var, Target>;
 
+   private:
    using g_t           = gf_const_view<Var, Target>;
    using data_t        = std::vector<std::vector<g_t>>;
    using block_names_t = std::vector<std::vector<std::string>>;
 
+   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -1824,7 +1848,7 @@ namespace triqs {
 
    // ---------------  Constructors --------------------
 
-   block2_gf_const_view() = delete; // views can not be default constructed
+   block2_gf_const_view() = default; // views can not be default constructed
 
    /// Makes a const view
    block2_gf_const_view(mutable_view_type const& g) : block2_gf_const_view(impl_tag{}, g) {}
