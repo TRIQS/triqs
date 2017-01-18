@@ -44,6 +44,7 @@ namespace h5 {
  }
 
  group group::open_group(std::string const &key) const {
+  if (key.empty()) return group{h5_object::from_borrowed(id)}; 
   if (!has_key(key)) TRIQS_RUNTIME_ERROR << "no subgroup " << key << " in the group";
   hid_t sg = H5Gopen2(id, key.c_str(), H5P_DEFAULT);
   if (sg < 0) TRIQS_RUNTIME_ERROR << "Error in opening the subgroup " << key;
@@ -58,12 +59,9 @@ namespace h5 {
   return ds;
  }
 
- /**
-  * \brief Create a subgroup.
-  * \param key  The name of the subgroup
-  * \param delete_if_exists  Unlink the group if it exists
-  */
+ 
  group group::create_group(std::string const &key, bool delete_if_exists) const {
+  if (key.empty()) return group{h5_object::from_borrowed(id)}; 
   unlink_key_if_exists(key);
   hid_t id_g = H5Gcreate2(id, key.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
   if (id_g < 0) TRIQS_RUNTIME_ERROR << "Cannot create the subgroup " << key << " of the group" << name();
