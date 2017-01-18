@@ -62,7 +62,7 @@ namespace arrays {
   /// Copy construction
   vector_view(vector_view const& X) : IMPL_TYPE(X.indexmap(), X.storage()) {}
 
-  vector_view() = delete;
+  vector_view() = default;
 
   // Move
   vector_view(vector_view&& X) noexcept { this->swap_me(X); }

@@ -64,7 +64,7 @@ namespace triqs { namespace arrays {
    explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){}
 #endif
 
-   array_view () = delete;
+   array_view () = default;
 
    // Move
    array_view(array_view && X) noexcept { this->swap_me(X); }

@@ -340,8 +340,8 @@ namespace triqs {
 
    // ---------------  Constructors --------------------
 
-   // views can not be default constructed
-   gf_const_view() = delete;
+   // 
+   gf_const_view() = default;
 
    /// Makes a const view
    gf_const_view(gf_view<Var, Target> const &g) : gf_const_view(impl_tag2{}, g) {}
@@ -393,8 +393,8 @@ namespace triqs {
    public:
    // ---------------  Constructors --------------------
 
-   // views can not be default constructed
-   gf_view() = delete;
+   // 
+   gf_view() = default;
 
    // Allow to construct a view from a gf with a different evaluator, except const_views ...
    /// Makes a view

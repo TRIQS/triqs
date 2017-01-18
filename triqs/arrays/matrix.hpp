@@ -77,7 +77,7 @@ namespace arrays {
   /// Copy construction
   matrix_view(matrix_view const& X) : IMPL_TYPE(X.indexmap(), X.storage()) {}
 
-  matrix_view() = delete;
+  matrix_view() = default;
 
   // Move
   matrix_view(matrix_view&& X) noexcept { this->swap_me(X); }

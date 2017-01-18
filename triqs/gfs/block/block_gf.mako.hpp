@@ -236,7 +236,7 @@ namespace gfs {
 
   // mako %elif RVC == 'view' :
 
-  MAKO_GF() = delete;                         // views can not be default constructed
+  MAKO_GF() = default;     
   MAKO_GF(const_view_type const &g) = delete; // No view from a const g
   MAKO_GF(regular_type const &g) = delete;    // no view from a const_view
 
@@ -248,7 +248,7 @@ namespace gfs {
 
   // mako %elif RVC == 'const_view' :
 
-  MAKO_GF() = delete; // views can not be default constructed
+  MAKO_GF() = default; // views can not be default constructed
 
   /// Makes a const view
   MAKO_GF(mutable_view_type const &g) : MAKO_GF(impl_tag{}, g) {}
