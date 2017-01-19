@@ -30,6 +30,9 @@ parser.add_argument('--properties', '-p',  action='store_true',
                 ii) every method get_X into read-only property
                 iii) every couple of methods get_X, set_X into rw property
               """)
+parser.add_argument('--members_read_only',  action='store_true',
+        help="""Makes members read only (only the getter, not the setter) """)
+
 parser.add_argument('--libclang_location', help='Location of the libclang', default = '@TRIQS_LIBCLANG_LOCATION@')
 parser.add_argument('--compiler_options', nargs ='*', help='Options to pass to clang')
 parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')

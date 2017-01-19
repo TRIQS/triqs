@@ -153,7 +153,7 @@ c = class_(
 %for m in c.get_members() :
 c.add_member(c_name = "${m.name}",
              c_type = "${m.ctype}",
-             read_only= False,
+             read_only= ${args.members_read_only},
              doc = """${replace_cpp_keywords_by_py_keywords(replace_latex(m.doc, True))} """)
 
 %endfor
