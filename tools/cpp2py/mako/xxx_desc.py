@@ -46,7 +46,7 @@
             used_module_list.append(mod)
 
         for ns, mod in converters_to_include.items() :
-            tname = t.canonical_name.replace('std::__1::','std::').replace('experimental::','') # on OS X, strange __1 name ?
+          tname = t.canonical_name.replace('std::__1::','std::').replace('experimental::','') # on OS X, strange __1 name ?
           if ns in decay(tname):
             converters_list.add(mod)
 
