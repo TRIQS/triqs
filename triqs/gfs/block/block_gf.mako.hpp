@@ -116,7 +116,6 @@ namespace triqs {
    using view_type         = MAKO_GV<Var, Target>;
    using const_view_type   = MAKO_ROOT_const_view<Var, Target>;
 
-   private:
    using g_t = gfMAKO_EXT<Var, Target>;
    // mako %if ARITY == 1 :
    using data_t        = std::vector<g_t>;
@@ -126,7 +125,6 @@ namespace triqs {
    using block_names_t = std::vector<std::vector<std::string>>;
    // mako %endif
 
-   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array

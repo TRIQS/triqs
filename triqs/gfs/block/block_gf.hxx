@@ -106,12 +106,10 @@ namespace triqs {
    using view_type         = block_gf_view<Var, Target>;
    using const_view_type   = block_gf_const_view<Var, Target>;
 
-   private:
    using g_t           = gf<Var, Target>;
    using data_t        = std::vector<g_t>;
    using block_names_t = std::vector<std::string>;
 
-   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -470,12 +468,10 @@ namespace triqs {
    using view_type         = block_gf_view<Var, Target>;
    using const_view_type   = block_gf_const_view<Var, Target>;
 
-   private:
    using g_t           = gf_view<Var, Target>;
    using data_t        = std::vector<g_t>;
    using block_names_t = std::vector<std::string>;
 
-   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -817,12 +813,10 @@ namespace triqs {
    using view_type         = block_gf_const_view<Var, Target>;
    using const_view_type   = block_gf_const_view<Var, Target>;
 
-   private:
    using g_t           = gf_const_view<Var, Target>;
    using data_t        = std::vector<g_t>;
    using block_names_t = std::vector<std::string>;
 
-   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -1121,12 +1115,10 @@ namespace triqs {
    using view_type         = block2_gf_view<Var, Target>;
    using const_view_type   = block2_gf_const_view<Var, Target>;
 
-   private:
    using g_t           = gf<Var, Target>;
    using data_t        = std::vector<std::vector<g_t>>;
    using block_names_t = std::vector<std::vector<std::string>>;
 
-   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -1464,12 +1456,10 @@ namespace triqs {
    using view_type         = block2_gf_view<Var, Target>;
    using const_view_type   = block2_gf_const_view<Var, Target>;
 
-   private:
    using g_t           = gf_view<Var, Target>;
    using data_t        = std::vector<std::vector<g_t>>;
    using block_names_t = std::vector<std::vector<std::string>>;
 
-   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
@@ -1803,12 +1793,10 @@ namespace triqs {
    using view_type         = block2_gf_const_view<Var, Target>;
    using const_view_type   = block2_gf_const_view<Var, Target>;
 
-   private:
    using g_t           = gf_const_view<Var, Target>;
    using data_t        = std::vector<std::vector<g_t>>;
    using block_names_t = std::vector<std::vector<std::string>>;
 
-   public:
    // ------------- Accessors -----------------------------
 
    /// Direct access to the data array
