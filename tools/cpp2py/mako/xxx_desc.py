@@ -31,7 +31,8 @@
         'std::function' : 'function',
         'std::pair' : 'pair',
         'std::tuple' : 'tuple',
-        'std::optional' : 'optional',
+         #'std::optional' : 'optional',
+        'optional' : 'optional',
         'triqs::utility::variant' : 'variant',
         'triqs::arrays::array' : 'arrays',
         'triqs::arrays::matrix' : 'arrays',
@@ -56,6 +57,8 @@
         for m in c.methods :
             for t,n,d in m.params : analyse(t)
             analyse(m.rtype)
+        for m in c.members :
+            analyse(m.type)
         if hasattr(c,'proplist'):
             for p in c.proplist :
                 analyse(p.getter.rtype)

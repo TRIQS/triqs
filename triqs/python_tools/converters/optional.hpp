@@ -9,7 +9,7 @@ namespace py_tools {
 
   using conv = py_converter<T>;
 
-  static PyObject *c2py(std::optional<T> const &op) {
+  static PyObject *c2py(std::optional<T> &op) {
    if (!bool(op)) Py_RETURN_NONE;
    return conv::c2py(*op);
   }
