@@ -7,7 +7,7 @@ import sys,re,os
 import clang.cindex
 import itertools
 from mako.template import Template
-import textwrap
+#import textwrap
 
 from clang.cindex import CursorKind
 
@@ -278,13 +278,14 @@ class Class(object):
 
             # Skip private, undocumented or deprecated nodes
             if c.access_specifier != clang.cindex.AccessSpecifier.PUBLIC : continue
-            if not c.raw_comment : continue
+            if not (c.raw_comment or (c.kind == CursorKind.CXX_BASE_SPECIFIER))  : continue # autorise the parent to be non documented
             if is_deprecated(c) : continue
 
             if (c.kind == CursorKind.CXX_BASE_SPECIFIER):
                tokens = [t.spelling if t else '' for t in c.get_tokens()]
                tt = c.type.get_declaration()  # guess it is not a ref
                if not tt.location.file : tt = c.type.get_pointee().get_declaration() # it is a T &
+               print "Analysing public base of %s : %s"%(cursor.spelling, c.spelling)
                self.public_base.append( Class(tt, ns))
 
             elif (c.kind == CursorKind.FIELD_DECL):
@@ -332,6 +333,24 @@ class Class(object):
 
             else :
                 print "unknown in class ", c.spelling, repr(c.kind)
+
+    def get_members(self, with_base_classes = True) : 
+        """Generate all members AND the members of the public base classes"""
+        if with_base_classes : 
+            for b in self.public_base : 
+                for m in b.members : 
+                    yield m
+        for m in self.members : 
+                yield m
+
+    def get_methods(self, with_base_classes = True) : 
+        """Generate all methods AND the methods of the public base classes"""
+        if with_base_classes : 
+            for b in self.public_base : 
+                for m in b.methods : 
+                    yield m
+        for m in self.methods : 
+                yield m
 
     @property
     def is_template(self) : return len(self.tparams)>0

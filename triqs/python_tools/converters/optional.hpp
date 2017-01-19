@@ -20,7 +20,7 @@ namespace py_tools {
 
   static std::optional<T> py2c(PyObject *ob) {
    if (ob == Py_None) return {};
-   return conv::py2c(ob);
+   return std::optional<T>{conv::py2c(ob)};
   }
  };
 }

@@ -31,8 +31,7 @@
         'std::function' : 'function',
         'std::pair' : 'pair',
         'std::tuple' : 'tuple',
-         #'std::optional' : 'optional',
-        'optional' : 'optional',
+        'std::.*optional' : 'optional',
         'triqs::utility::variant' : 'variant',
         'triqs::arrays::array' : 'arrays',
         'triqs::arrays::matrix' : 'arrays',
@@ -47,8 +46,8 @@
             used_module_list.append(mod)
 
         for ns, mod in converters_to_include.items() :
-          tname = t.canonical_name.replace('std::__1::','std::').replace('experimental::','') # on OS X, strange __1 name ?
-          if ns in decay(tname):
+          tname = t.canonical_name.replace('std::__1::','std::') # on OS X, strange __1 name ?
+          if re.compile(ns).search(decay(tname)): # or ns in decay(tname) :
             converters_list.add(mod)
 
     for c in classes :
@@ -151,7 +150,7 @@ c = class_(
 %endif
 )
 
-%for m in c.members :
+%for m in c.get_members() :
 c.add_member(c_name = "${m.name}",
              c_type = "${m.ctype}",
              read_only= False,
@@ -165,7 +164,7 @@ c.add_constructor("""${make_signature(m)}""",
 
 %endfor
 ##
-%for m in [m for m in c.methods if not 'ignore_in_python' in m.annotations]:
+%for m in [m for m in c.get_methods() if not 'ignore_in_python' in m.annotations]:
 c.add_method("""${make_signature(m)}""",
              %if m.is_static :
              is_static = True,
