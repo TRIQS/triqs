@@ -36,7 +36,7 @@ FIND_LIBRARY(NFFT_LIBRARIES nfft3 ${TRIAL_LIBRARY_PATHS} DOC "NFFT library")
 mark_as_advanced(NFFT_INCLUDE_DIR)
 mark_as_advanced(NFFT_LIBRARIES)
 
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/nfft_api_test.cpp "#include \"nfft3.h\"\nint main(){ nfft_plan p; return p.nfft_plan; }")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/nfft_api_test.cpp "#include \"nfft3.h\"\nint main(){ nfft_plan p; return p.nfft_flags; }")
 try_compile(NFFT_OLD_API ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/nfft_api_test.cpp COMPILE_DEFINITIONS -I${NFFT_INCLUDE_DIR} )
 file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/a.out ${CMAKE_CURRENT_BINARY_DIR}/nfft_api_test.cpp)
 
