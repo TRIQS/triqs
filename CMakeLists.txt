@@ -336,17 +336,6 @@ include_directories(SYSTEM ${FFTW_INCLUDE_DIR})
 set(TRIQS_LIBRARY_FFTW ${FFTW_LIBRARIES})
 set(TRIQS_INCLUDE_FFTW ${FFTW_INCLUDE_DIR})
 
-# NFFT
-message( STATUS "-------- NFFT detection (optional) -------------")
-find_package(NFFT)
-IF(NFFT_FOUND)
-include_directories(SYSTEM ${NFFT_INCLUDE_DIR})
-#link_libraries( ${NFFT_LIBRARIES})
-set(TRIQS_LIBRARY_FFTW ${TRIQS_LIBRARY_FFTW} ${NFFT_LIBRARIES})
-set(TRIQS_INCLUDE_FFTW ${TRIQS_INCLUDE_FFTW} ${NFFT_INCLUDE_DIR})
-set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -DHAVE_NFFT )
-ENDIF(NFFT_FOUND)
-
 # remove the possible horrible pthread bug on os X !!( on gcc, old, before clang... is it really needed now ???)
 # check for clang compiler ?? on gcc, os X snow leopard, it MUST be set
 # since _REENTRANT is mysteriously set and this leads to random stalling of the code....
@@ -518,10 +507,10 @@ if (Build_Documentation)
 endif (Build_Documentation)
 
 #------------------------
-# FindTRIQS needs to be configured and installed
+# FindTRIQS and FindNFFT need to be installed
 #------------------------
 
-install (FILES ${CMAKE_SOURCE_DIR}/cmake/FindTRIQS.cmake DESTINATION share/triqs/cmake)
+install (FILES ${CMAKE_SOURCE_DIR}/cmake/FindTRIQS.cmake ${CMAKE_SOURCE_DIR}/cmake/FindNFFT.cmake DESTINATION share/triqs/cmake)
 
 #------------------------
 # TRIQS cmake file and config.h
