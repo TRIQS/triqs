@@ -1,20 +1,26 @@
-from types import SliceType
-import descriptor_base
+from pytriqs.gf.singularities import TailGf
+from pytriqs.gf.gf import Gf
 
-class LazyCTX:
-    def __init__ (self, G): 
-        self.G = G
-    def _is_compatible_for_ops(self, g): 
-        m1,m2  = self.G.mesh, g.mesh
-        return m1 is m2 or m1 == m2
-    def __eq__ (self, y):
-        return isinstance(y, self.__class__) and self._is_compatible_for_ops(y.G)
-    def __call__ (self, x): 
-        if not isinstance(x, descriptor_base.Base): return x
-        tmp = self.G.copy()
-        x(tmp)
-        return tmp
+def make_gf(clsname, mesh, target_shape, name, n_order_tail, indices = None, **kwargs):
+    """
+    """
+    indices_pack = get_indices_in_dict(kwargs)
+    if target_shape is None: 
+      assert indices_pack, "No shape, no indices !"
+      indices = indices_pack
+      target_shape = [len(x) for x in indices]
 
+    data = kwargs.pop('data', None) 
+    tail = kwargs.pop('tail', None)
+    if not tail : tail = kwargs.pop('singularity', None)
+    if not tail : tail = TailGf(target_shape = target_shape, n_order=n_order_tail, order_min = -2)
+
+    if kwargs: raise ValueError, clsname + ": Unused parameters %s were passed."%kwargs.keys()
+
+    return Gf(mesh = mesh, data = data, target_shape = None if data is not None else target_shape,
+              singularity = tail, indices = indices_pack, name = name) 
+
+    
 def get_indices_in_dict(d): 
     """
     :param d: dictionary with at least keys 'indices' or ('indicesL' and 'indicesR')

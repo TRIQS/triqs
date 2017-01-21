@@ -51,23 +51,3 @@ def init_tv( mesh = None, shape = None, name = 'g', **kwargs):
 
 #--------------   PLOT   ---------------------------------------
 
-def plot(self, opt_dict):
-    r"""
-    Plot protocol for GfImTime objects.
-
-    Parameters
-    ----------
-    opt_dict: dictionary
-              Can contain:
-              - mode: string, default None
-                      Mode to plot the Green's function in:
-                      -- 'R': real part only
-                      -- 'I': imaginary part only
-              - x_window: tuple, default None 
-                          (xmin,xmax)
-              - name: string, default = ''
-                      If not '', it remplaces the name of the function just for this plot.
-    """
-    return _gf_plot.plot_base( self, opt_dict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name,  list(self.mesh) )
-
-

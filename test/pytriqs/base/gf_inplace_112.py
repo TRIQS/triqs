@@ -1,7 +1,7 @@
 # Test from I. Krivenko.
 from __future__ import print_function
-from pytriqs.gf.local import *
-from pytriqs.gf.local.descriptors import *
+from pytriqs.gf import *
+from pytriqs.gf.descriptors import *
 import sys
 def print_err(*x) : print (*x, file= sys.stderr)
 

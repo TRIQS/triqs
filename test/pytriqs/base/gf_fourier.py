@@ -1,4 +1,4 @@
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 
 gt = GfImTime(beta=20.0, indices=[0])
 gw = GfImFreq(beta=20.0, indices=[0])

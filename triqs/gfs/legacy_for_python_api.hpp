@@ -44,46 +44,33 @@ namespace gfs {
  }
 
 
- inline gf<imfreq> operator+(gf<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-  g() += m;
-  return g;
+ inline gf<imfreq> operator+(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
+  gf_view<imfreq> r = g;
+  r += m;
+  return r;
  }
 
- inline gf<imfreq> operator+(gf<imfreq> g, std::complex<double> const &m) {
-  g() += m; // () is critical of infinite loop -> segfault
-  return g;
+ inline gf<imfreq> operator+(gf_view<imfreq> g, std::complex<double> const &m) {
+  gf_view<imfreq> r = g;
+  r += m; 
+  return r;
  }
 
- inline gf<imfreq> operator+(std::complex<double> const &m, gf<imfreq> g) { return g + m; }
- inline gf<imfreq> operator+(arrays::matrix<std::complex<double>> const &m, gf<imfreq> g) { return g + m; }
-
- inline gf<imfreq> operator-(gf<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-  g() -= m;
-  return g;
+ inline gf<imfreq> operator-(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
+  gf_view<imfreq> r = g;
+  r -= m;
+  return r;
  }
 
- inline gf<imfreq> operator-(gf<imfreq> g, std::complex<double> const &m) {
-  g() -= m;
-  return g;
- }
-
- inline gf<imfreq> operator-(std::complex<double> const &m, gf<imfreq> g) {
-  g *= -1;
-  g += m;
-  return g;
- }
-
- inline gf<imfreq> operator-(arrays::matrix<std::complex<double>> const &m, gf<imfreq> g) {
-  g *= -1;
-  g += m;
-  return g;
+ inline gf<imfreq> operator-(gf_view<imfreq> g, std::complex<double> const &m) {
+  gf_view<imfreq> r = g;
+  r -= m;
+  return r;
  }
 
 
- // FOR LEGACY PYTHON CODE ONLY
- // THIS MUST be kept for python operations
- // specific operations (for legacy python code).
- // +=, -= with a matrix
+
+ // - same with refreq
  inline void operator+=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
   for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, arrays::ellipsis()) += m;
   g.singularity()(0) += m;
@@ -102,40 +89,49 @@ namespace gfs {
  }
 
 
- inline gf<refreq> operator+(gf<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-  g() += m;
-  return g;
+ inline gf<refreq> operator+(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
+  gf_view<refreq> r = g;
+  r += m;
+  return r;
  }
 
- inline gf<refreq> operator+(gf<refreq> g, std::complex<double> const &m) {
-  g() += m; // () is critical of infinite loop -> segfault
-  return g;
+ inline gf<refreq> operator+(gf_view<refreq> g, std::complex<double> const &m) {
+  gf_view<refreq> r = g;
+  r += m; 
+  return r;
  }
 
- inline gf<refreq> operator+(std::complex<double> const &m, gf<refreq> g) { return g + m; }
- inline gf<refreq> operator+(arrays::matrix<std::complex<double>> const &m, gf<refreq> g) { return g + m; }
-
- inline gf<refreq> operator-(gf<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-  g() -= m;
-  return g;
+ inline gf<refreq> operator-(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
+  gf_view<refreq> r = g;
+  r -= m;
+  return r;
  }
 
- inline gf<refreq> operator-(gf<refreq> g, std::complex<double> const &m) {
-  g() -= m;
-  return g;
+ inline gf<refreq> operator-(gf_view<refreq> g, std::complex<double> const &m) {
+  gf_view<refreq> r = g;
+  r -= m;
+  return r;
  }
 
- inline gf<refreq> operator-(std::complex<double> const &m, gf<refreq> g) { 
-  g *= -1;
-  g+=m;
-  return g;
-  }
 
- inline gf<refreq> operator-(arrays::matrix<std::complex<double>> const &m, gf<refreq> g) { 
-  g *= -1;
-  g+=m;
-  return g;
- }
+
+ //inline gf<imfreq> operator+(std::complex<double> const &m, gf_view<imfreq> g) { return g + m; }
+ //inline gf<imfreq> operator+(arrays::matrix<std::complex<double>> const &m, gf_view<imfreq> g) { return g + m; }
+
+// inline gf<imfreq> operator-(std::complex<double> const &m, gf_view<imfreq> g) {
+//  gf_view<imfreq> r = g;
+//  r *= -1;
+//  r += m;
+//  return r;
+// }
+
+ //inline gf<imfreq> operator-(arrays::matrix<std::complex<double>> const &m, gf_view<imfreq> g) {
+  //gf_view<imfreq> r = g;
+  //r *= -1;
+  //r += m;
+  //return r;
+ //}
+
 
 }
 }

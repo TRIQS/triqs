@@ -22,7 +22,7 @@
 r""" """
 
 from descriptor_base import *
-from gf import MeshImFreq, MeshReFreq
+from mesh import MeshImFreq, MeshReFreq
                 
 #######################################
 
@@ -35,12 +35,12 @@ class OneFermionInTime(Base):
         if G.mesh.TypeGF not in [GF_Type.Imaginary_Time]: 
             raise TypeError, "This initializer is only correct in frequency"
 
-        Id = numpy.identity(G.N1)
-        G.tail.reset(4)
-        G.tail[1][:,:] = 1*Id
-        G.tail[2][:,:] = L*Id
-        G.tail[3][:,:] = L*L*Id
-        #G.tail.mask.fill(3)
+        Id = numpy.identity(G.target_shape[0])
+        G.singularity.reset(4)
+        G.singularity[1][:,:] = 1*Id
+        G.singularity[2][:,:] = L*Id
+        G.singularity[3][:,:] = L*L*Id
+        #G.singularity.mask.fill(3)
         
         fact = -1/(1+exp(-L*G.beta))
         Function(lambda t: fact* exp(-L*t) *Id, None)(G)
@@ -85,7 +85,7 @@ semicircular density of states"""
 
     def __call__(self,G):
         D = self.half_bandwidth
-        Id = numpy.identity(G.N1,numpy.complex_)
+        Id = numpy.identity(G.target_shape[0],numpy.complex_)
         if type(G.mesh) == MeshImFreq:
             f = lambda om: (om  - 1j*copysign(1,om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
         elif type(G.mesh) == MeshReFreq:
@@ -99,12 +99,12 @@ semicircular density of states"""
             raise TypeError, "This initializer is only correct in frequency"
 
         # Let's create a new tail
-        Id = numpy.identity(G.N1)
-        G.tail.reset(7)
-        G.tail[1][:,:] = 1.0*Id
-        G.tail[3][:,:] = D**2/4.0*Id
-        G.tail[5][:,:] = D**4/8.0*Id
-        #G.tail.mask.fill(6)
+        Id = numpy.identity(G.target_shape[0])
+        G.singularity.reset(7)
+        G.singularity[1][:,:] = 1.0*Id
+        G.singularity[3][:,:] = D**2/4.0*Id
+        G.singularity[5][:,:] = D**4/8.0*Id
+        #G.singularity.mask.fill(6)
  
         Function(f,None)(G)
         return G
@@ -130,7 +130,7 @@ class Flat (Base):
     def __call__(self,G):
 
         D = self.half_bandwidth
-        Id = numpy.identity(G.N1,numpy.complex_)
+        Id = numpy.identity(G.target_shape[0],numpy.complex_)
 
         if type(G.mesh) == MeshImFreq:
             f = lambda om: (-1/(2.0*D)) * numpy.log(numpy.divide(om-D,om+D)) * Id
@@ -144,12 +144,12 @@ class Flat (Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         # Let's create a new tail
-        Id = numpy.identity(G.N1)
-        G.tail.reset(7)
-        G.tail[1][:,:] = 1.0*Id
-        G.tail[3][:,:] = D**2/3.0*Id
-        G.tail[5][:,:] = D**4/5.0*Id
-        #G.tail.mask.fill(6)
+        Id = numpy.identity(G.target_shape[0])
+        G.singularity.reset(7)
+        G.singularity[1][:,:] = 1.0*Id
+        G.singularity[3][:,:] = D**2/3.0*Id
+        G.singularity[5][:,:] = D**4/5.0*Id
+        #G.singularity.mask.fill(6)
 
         # Silence "RuntimeWarning: divide by zero encountered in divide"
         old_err = numpy.seterr(divide='ignore')

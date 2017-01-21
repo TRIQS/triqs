@@ -18,7 +18,6 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-
 from itertools import izip
 import operator
 import numpy as np

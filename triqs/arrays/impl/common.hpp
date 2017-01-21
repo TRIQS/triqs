@@ -23,6 +23,8 @@
 #include <triqs/utility/first_include.hpp>
 #include <triqs/clef.hpp>
 
+#include <triqs/utility/c17.hpp>
+
 /// Maximum dimension of the arrays
 #define ARRAY_NRANK_MAX 10
 
@@ -54,8 +56,26 @@ namespace triqs {
  template<typename A> typename A::view_type make_view(A const & x) { return typename A::view_type(x);}
  template<typename A> typename A::const_view_type make_const_view(A const & x) { return typename A::const_view_type(x);}
 
+ //  
+ //template<class, class = std17::void_t<>> struct has_regular_type: std::false_type {};
+ //template<class T> struct has_regular_type<T, std17::void_t<typename T::regular_type>> : std::true_type {};
+
  /// Makes a clone
- template<typename A> typename A::regular_type make_clone(A const & x) { return typename A::regular_type(x);}
+ //template<typename A> auto make_clone(A const & x) { 
+ //if  constexpr (has_regular_type<A>::value) {
+ //  return typename A::regular_type(x);}
+ // else {
+ //  return A{x};
+ //  }
+ //}
+ 
+ /// Makes a clone
+ template<typename T, typename = std17::void_t<>> struct _make_clone { static T invoke(T const &x) { return T{x};} };
+ template<typename T> struct _make_clone<T, std17::void_t<typename T::regular_type>> {
+   static auto invoke(T const &x) { return typename T::regular_type{x};}
+ };
+ template<typename T> auto make_clone(T const & x) { return _make_clone<T>::invoke(x);}
+
 
  namespace arrays {
   using triqs::make_clone;

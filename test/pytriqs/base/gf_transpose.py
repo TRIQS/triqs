@@ -1,6 +1,6 @@
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 
-g = GfImFreq(indicesR = range(5), indicesL = range(3), beta = 40, n_points = 1000)
+g = GfImFreq(indices = [range(3), range(5)], beta = 40, n_points = 1000)
 gt = g.transpose()
 
 assert g.data.shape == (2000, 3, 5)

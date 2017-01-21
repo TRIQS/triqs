@@ -1,4 +1,4 @@
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 
 g = GfImFreq(beta=10, indices=[0,1,2])
 print g.indices
