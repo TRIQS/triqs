@@ -65,6 +65,7 @@ namespace std {
    return {std::forward<T>(x)...};
   }
 
+
 }
 
 namespace triqs { namespace tuple {
@@ -154,7 +155,7 @@ namespace triqs { namespace tuple {
   */
  template <typename F> struct _called_on_tuple {
   F _f;
-  template <typename Tu> AUTO_DECL operator()(Tu &&tu) RETURN(apply(_f, std::forward<Tu>(tu)));
+  template <typename Tu> AUTO_DECL operator()(Tu &&tu) RETURN(triqs::tuple::apply(_f, std::forward<Tu>(tu)));
  };
 
  template <typename F> _called_on_tuple<F> called_on_tuple(F &&f) {
@@ -266,6 +267,7 @@ namespace triqs { namespace tuple {
  template <typename T0, typename T1, typename F>
  auto map_on_zip_v2(F &&f, T0 &&t0, T1 &&t1)
      RETURN(map(called_on_tuple(f), zip(t0,t1)));
+
 
  /*
   * map_on_zip(f,t0,t1,t2)

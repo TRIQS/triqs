@@ -1,5 +1,5 @@
 import numpy as np
-from pytriqs.gf.local import GfReFreq, SemiCircular
+from pytriqs.gf import GfReFreq, SemiCircular
 
 g = GfReFreq(indices = ['eg1', 'eg2'], window = (-5, 5), n_points = 1000, name = "egBlock")
 

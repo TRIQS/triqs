@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 import types, string, inspect, itertools
 from operator import isSequenceType
 from pytriqs.dos import DOS, DOSFromFunction

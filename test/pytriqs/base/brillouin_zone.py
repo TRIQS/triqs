@@ -1,7 +1,7 @@
 from numpy import *
 from numpy.linalg import *
 #from matplotlib.pyplot import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.lattice import *
 units =[
         matrix([[1.,0.,0.],[0.,1.,0.],[0.,0.,1.]], float), #square lattice

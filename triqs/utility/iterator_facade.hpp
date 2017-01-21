@@ -37,7 +37,7 @@ namespace triqs {
 
    public:
    using value_type        = Value; // decltype(*(std::declval<Iterator_facade>()));
-   using Iterator_category = std::forward_iterator_tag;
+   using iterator_category = std::forward_iterator_tag;
    using pointer           = value_type*;
    using difference_type   = Difference;
    using reference         = Reference;
@@ -50,7 +50,7 @@ namespace triqs {
    Iter operator++(int) {
     Iter c = *this;
     self().increment();
-    return self();
+    return c;
    }
 
    bool operator==(Iter const& other) const { return self().equal(other); }

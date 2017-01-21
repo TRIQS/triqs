@@ -351,13 +351,12 @@ namespace gfs {
    return _data(n - order_min(), ellipsis());
   }
 
-#ifdef __cpp_if_constexpr
+/*#ifdef __cpp_if_constexpr
 
   /// same as (), but if n in an undefined order (i.e. NaN) it returns 0.
   crv_t get_or_zero(int n) const {
    auto r = operator()(n);
-   if
-    constexpr(!is_scalar_target) {
+   if constexpr(!is_scalar_target) {
      if (!any(_isnan(r))) return r;
      auto r2 = make_clone(r);
      r2() = 0;
@@ -369,7 +368,7 @@ namespace gfs {
   }
 
 #else
-
+*/
   private:
   template <typename U> crv_t __get_or_zero(U, int n) const {
    auto r = _data(n - order_min(), ellipsis());
@@ -386,13 +385,19 @@ namespace gfs {
   public:
   /// same as (), but if n in an undefined order (i.e. NaN) it returns 0.
   crv_t get_or_zero(int n) const { return __get_or_zero(T{}, n); }
-#endif
+//#endif
 
-  friend std::string get_triqs_hdf5_data_scheme(MAKO_TAIL const &g) { return "TailGf"; }
+  friend std::string get_triqs_hdf5_data_scheme(MAKO_TAIL const &g) { 
+   if (T::rank==0) return "TailGf_s"; 
+   if (T::rank==2) return "TailGf";
+   if (T::rank==3) return "TailGfTv3";
+   if (T::rank==4) return "TailGfTv4"; 
+  }
 
   /// write to h5
   friend void h5_write(h5::group fg, std::string subgroup_name, MAKO_TAIL const &t) {
    auto gr = fg.create_group(subgroup_name);
+   gr.write_triqs_hdf5_data_scheme(t);
    h5_write(gr, "data", t._data);
    h5_write(gr, "omin", t.order_min());
   }
@@ -400,6 +405,7 @@ namespace gfs {
   /// read from h5
   friend void h5_read(h5::group fg, std::string subgroup_name, MAKO_TAIL &t) {
    auto gr = fg.open_group(subgroup_name);
+   gr.assert_triqs_hdf5_data_scheme(t, true);
    if (!gr.has_key("mask")) {     // if no mask, we have the latest version of the tail
     h5_read(gr, "data", t._data); // Add here backward compat code IF order_min/max where to change
    } else {

@@ -1,5 +1,5 @@
 from pytriqs.plot.mpl_interface import oplot
-from pytriqs.gf.local import GfImFreq, Omega, inverse
+from pytriqs.gf import GfImFreq, Omega, inverse
 
 g = GfImFreq(indices = [0], beta = 300, n_points = 1000, name = "g")
 g << inverse( Omega + 0.5 )

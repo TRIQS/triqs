@@ -87,7 +87,6 @@ namespace gfs {
   *  Can be specialized for some case (Cf block). Defined below
   *--------------------------------------------------------*/
 
- template <typename Var, typename Target> struct gf_h5_name;
  template <typename Var, typename Target> struct gf_h5_rw;
 
  /*----------------------------------------------------------
@@ -105,8 +104,6 @@ namespace gfs {
  /*------------------------------------------------------------------------------------------------------
  *                                  For mpi lazy
  *-----------------------------------------------------------------------------------------------------*/
-
- // FIXME
 
  // A small lazy tagged class
  template <typename Tag, typename T> struct mpi_lazy {

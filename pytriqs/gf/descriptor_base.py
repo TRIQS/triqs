@@ -25,8 +25,22 @@ import numpy
 from math import *
 from lazy_expressions import LazyExprTerminal, LazyExpr, transform
 
+class LazyCTX:
+    def __init__ (self, G): 
+        self.G = G
+    def _is_compatible_for_ops(self, g): 
+        m1,m2  = self.G.mesh, g.mesh
+        return m1 is m2 or m1 == m2
+    def __eq__ (self, y):
+        return isinstance(y, self.__class__) and self._is_compatible_for_ops(y.G)
+    def __call__ (self, x): 
+        if not isinstance(x, descriptor_base.Base): return x
+        tmp = self.G.copy()
+        x(tmp)
+        return tmp
+
+
 def is_lazy(y):
-    #return type(y) in [ Omega_, LazyExpr]
     return  isinstance(y,(Omega_, LazyExpr, LazyExprTerminal))
 
 def is_scalar(x): 
@@ -90,9 +104,9 @@ class Const(Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         if not isinstance(C,numpy.ndarray): 
-            assert G.N1==G.N2, "Const only applies to square G"
-            C = C*numpy.identity(G.N1) 
-        if C.shape != (G.N1,G.N2): raise RuntimeError, "Size of constant incorrect"
+            assert G.target_shape[0]==G.target_shape[1], "Const only applies to square G"
+            C = C*numpy.identity(G.target_shape[0]) 
+        if C.shape != (G.target_shape[0],G.target_shape[1]): raise RuntimeError, "Size of constant incorrect"
 
         G.tail.reset(12)
         G.tail[0][:,:] = C
@@ -109,7 +123,7 @@ class Omega_(Base):
         if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
             raise TypeError, "This initializer is only correct in frequency"
 
-        Id = numpy.identity(G.N1)
+        Id = numpy.identity(G.target_shape[0])
         G.tail.reset(10)
         G.tail[-1][:,:] = Id
         
@@ -133,10 +147,10 @@ class A_Omega_Plus_B(Base):
         if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
             raise TypeError, "This initializer is only correct in frequency"
 
-        if not isinstance(A,numpy.ndarray): A = A*numpy.identity(G.N1) 
-        if not isinstance(B,numpy.ndarray): B = B*numpy.identity(G.N1) 
-        if A.shape != (G.N1,G.N2): raise RuntimeError, "Size of A incorrect"
-        if B.shape != (G.N1,G.N2): raise RuntimeError, "Size of B incorrect"
+        if not isinstance(A,numpy.ndarray): A = A*numpy.identity(G.target_shape[0]) 
+        if not isinstance(B,numpy.ndarray): B = B*numpy.identity(G.target_shape[0]) 
+        if A.shape != (G.target_shape[0],G.target_shape[1]): raise RuntimeError, "Size of A incorrect"
+        if B.shape != (G.target_shape[0],G.target_shape[1]): raise RuntimeError, "Size of B incorrect"
 
         G.tail.zero()
         G.tail[-1][:,:] = A

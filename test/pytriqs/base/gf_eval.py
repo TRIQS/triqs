@@ -1,4 +1,4 @@
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from numpy import *
 
 def are_close(a,b):
@@ -9,6 +9,7 @@ n = 2
 
 g_iw = GfImFreq(beta=beta, indices=[0])
 g_iw << iOmega_n
+
 
 assert are_close(1j*(2*n+1)*pi/beta, g_iw(n)[0,0])
 

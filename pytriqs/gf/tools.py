@@ -18,13 +18,13 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-
 import lazy_expressions, descriptors
 from block_gf import BlockGf
-from gf import GfImFreq, GfReFreq, TailGf
+from singularities import TailGf
 from descriptor_base import A_Omega_Plus_B
 import numpy as np
 from itertools import product
+from backwd_compat.gf_refreq import GfReFreq 
 
 def inverse(x):
     """
@@ -52,9 +52,9 @@ def delta(g):
     delta_iw : BlockGf (of GfImFreq) or GfImFreq
                Hybridization function.
     """
-    if type(g) == BlockGf:
+    if isinstance(g, BlockGf):
     	return BlockGf(name_block_generator = [ (n, delta(g0)) for n,g0 in g], make_copies=False)
-    elif type(g) == GfImFreq:
+    elif isinstance(g.mesh, MeshImFreq):
     	g0_iw_inv = inverse(g)
     	delta_iw = g0_iw_inv.copy()
     	delta_iw << A_Omega_Plus_B(g0_iw_inv.tail[-1], g0_iw_inv.tail[0])
@@ -187,9 +187,9 @@ def write_gf_to_txt(g):
     g: GfReFreq or GfImFreq
         The real/imaginary frequency Green's function to be written out.
     """
-    if type(g) == GfReFreq:
+    if isinstance(g.mesh, MeshReFreq):
         mesh = np.array(list(g.mesh)).real.reshape(-1,1)
-    elif type(g) == GfImFreq:
+    elif isinstance(g.mesh, MeshImFreq):
         mesh = np.array(list(g.mesh)).imag.reshape(-1,1)
     else:
         raise ValueError, 'write_gf_to_txt: Only GfReFreq and GfImFreq quantities are supported.'

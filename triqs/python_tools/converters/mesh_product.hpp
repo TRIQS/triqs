@@ -18,9 +18,17 @@ namespace triqs {
     return PyObject_Call(cls, m_tuple, NULL);
    }
 
-   static bool is_convertible(PyObject* ob, bool raise_exception) { return mtuple_conv::is_convertible(ob, raise_exception); }
+   static bool is_convertible(PyObject* ob, bool raise_exception) {
+    pyref x  = borrowed(ob);
+    pyref ml = x.attr("_mlist");
+    return mtuple_conv::is_convertible(ml, raise_exception);
+   }
 
-   static c_type py2c(PyObject* ob) { return triqs::tuple::apply_construct<c_type>(mtuple_conv::py2c(ob)); }
+   static c_type py2c(PyObject* ob) {
+    pyref x  = borrowed(ob);
+    pyref ml = x.attr("_mlist");
+    return triqs::tuple::apply_construct<c_type>(mtuple_conv::py2c(ml));
+   }
   };
  }
 }

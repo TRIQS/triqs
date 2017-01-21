@@ -19,7 +19,7 @@
 #
 ################################################################################
 from pytriqs.archive import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 import numpy
 
@@ -29,9 +29,6 @@ h=HDFArchive('gf_init.ref.h5','r')
 g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 100, name = "egBlock")
 g['eg1','eg1'] << SemiCircular(half_bandwidth = 1)
 g['eg2','eg2'] << SemiCircular(half_bandwidth = 2)
-
-print g.tail.data[:,0,0]
-print h['g1'].tail.data[:,0,0]
 
 assert_gfs_are_close(g, h['g1'])
 
@@ -47,4 +44,6 @@ g['eg2','eg2'] << iOmega_n + 1.0
 
 assert_gfs_are_close(g, h['g3'])
 
-del h
+print h['g1'], type(h['g1'])
+print g, type(g)
+

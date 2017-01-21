@@ -29,7 +29,6 @@ namespace h5 {
   *  Rationale : use ADL for h5_read/h5_write, catch and rethrow exception, add some policy for opening/creating
   */
  class group : public h5_object {
-  void _write_triqs_hdf5_data_scheme(const char *a); // impl.
 
   public:
   group() = default; // for python converter only
@@ -54,13 +53,24 @@ namespace h5 {
   /// Name of the group
   std::string name() const;
 
-  ///  Write the triqs tag of the group if it is an object.
+  /// Write the triqs tag
+  void write_triqs_hdf5_data_scheme_as_string(const char *a); 
+  	
+  /// Write the triqs tag of the group if it is an object.
   template <typename T> void write_triqs_hdf5_data_scheme(T const &obj) {
-   _write_triqs_hdf5_data_scheme(get_triqs_hdf5_data_scheme(obj).c_str());
+   write_triqs_hdf5_data_scheme_as_string(get_triqs_hdf5_data_scheme(obj).c_str());
   }
 
-  /// Read the triqs tag of the group if it is an object. Returns"" if attribute is not present
+  /// Read the triqs tag of the group if it is an object. Returns the empty string "" if attribute is not present
   std::string read_triqs_hdf5_data_scheme() const;
+  
+  /// Asserts that the tag of the group is the same as for T. Throws TRIQS_RUNTIME_ERROR if
+  void assert_triqs_hdf5_data_scheme_as_string(const char * tag_expected, bool ignore_if_absent= false) const;
+
+  /// Asserts that the tag of the group is the same as for T. Throws TRIQS_RUNTIME_ERROR if
+  template<typename T> void assert_triqs_hdf5_data_scheme(T const &x, bool ignore_if_absent= false) const {
+   assert_triqs_hdf5_data_scheme_as_string(get_triqs_hdf5_data_scheme(x).c_str(), ignore_if_absent);
+  }
 
   ///
   bool has_key(std::string const &key) const;

@@ -19,7 +19,7 @@
 #
 ################################################################################
 from pytriqs.archive import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 import numpy as np, copy
 from math import pi

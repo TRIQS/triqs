@@ -50,17 +50,22 @@ template<typename T> struct py_converter;
  //  static bool is_convertible(PyObject * ob, bool raise_exception);
  //}
 
-// helper for better error message
-template <class, class = std17::void_t<>> struct does_have_a_converter : std::false_type {};
-template <class T> struct does_have_a_converter<T, std17::void_t<decltype(py_converter<std14::decay_t<T>>::py2c(nullptr))>> : std::true_type {};
+// helpers for better error message
+// some class (e.g. range !) only have ONE conversion, i.e. C -> Py, but not both 
+// we need to distinguish
+template <class, class = std17::void_t<>> struct does_have_a_converterPy2C : std::false_type {};
+template <class T> struct does_have_a_converterPy2C<T, std17::void_t<decltype(py_converter<std14::decay_t<T>>::py2c(nullptr))>> : std::true_type {};
 
-// We only use these functions in the code, not converter
+template <class, class = std17::void_t<>> struct does_have_a_converterC2Py : std::false_type {};
+template <class T> struct does_have_a_converterC2Py<T, std17::void_t<decltype(py_converter<std14::decay_t<T>>::c2py(std::declval<T>()))>> : std::true_type {};
+
+// We only use these functions in the code, not directly the converter
 template <typename T> static PyObject *convert_to_python(T &&x) {
- static_assert(does_have_a_converter<T>::value, "The type does not have a Python converter");
+ static_assert(does_have_a_converterC2Py<T>::value, "The type does not have a converter from C++ to Python");
  return py_converter<std14::decay_t<T>>::c2py(std::forward<T>(x));
 }
 template <typename T> static auto convert_from_python(PyObject *ob) -> decltype(py_converter<T>::py2c(ob)) {
- static_assert(does_have_a_converter<T>::value, "The type does not have a Python converter");
+ static_assert(does_have_a_converterPy2C<T>::value, "The type does not have a converter from Python to C++");
  return py_converter<T>::py2c(ob);
 }
 template <typename T> static bool convertible_from_python(PyObject *ob, bool raise_exception) {

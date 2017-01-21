@@ -1,20 +1,6 @@
 from pytriqs.plot.protocol import clip_array
 import numpy
 
-
-class PlotWrapperPartialReduce:
-    """ Internal Use"""
-
-    def __init__(self, obj,  **opt):
-        self.obj, self.opt = obj, opt
-
-    def _plot_(self, Options):
-        Options.update(self.opt)
-        return self.obj._plot_(Options)
-
-#----------------
-
-
 def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     r"""
     Plot protocol for Green's function objects.
@@ -75,8 +61,11 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
         warnings.warn("oplot: 'RI' flag is deprecated, use 'mode' instead")
         opt_dict['mode'] = opt_dict.pop('RI', '')
 
+    # if data is real, overrule
     mode = opt_dict.pop('mode', '')
-    if mode == '':
+    if self.data.dtype == numpy.float64 : 
+        res = mdic('', lambda x: x)    
+    elif mode == '':
         res = mdic('Re ', lambda x: x.real) + mdic('Im ', lambda x: x.imag)
     elif mode == 'R':
         res = mdic('Re ', lambda x: x.real)
@@ -96,26 +85,3 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     return res
 
 #------------------
-
-
-def x_data_view(self, x_window=None, flatten_y=False):
-    """
-    :param x_window: the window of x variable (omega/omega_n/t/tau) for which data is requested
-                      if None, take the full window
-    :param flatten_y: If the Green function is of size (1, 1) flatten the array as a 1d array
-    :rtype: a tuple (X, data) where
-             * X is a 1d numpy of the x variable inside the window requested
-             * data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data
-               If flatten_y is True and dim is (1, 1, *), returns a 1d numpy
-    """
-    from pytriqs.gf.local.gf import MeshImFreq
-    X = [x.imag for x in self.mesh] if type(self.mesh) == MeshImFreq else [
-        x for x in self.mesh]
-    X, data = numpy.array(X), self.data
-    if x_window:
-        # the slice due to clip option x_window
-        sl = clip_array(X, *x_window) if x_window else slice(len(X))
-        X, data = X[sl],  data[sl, :, :]
-    if flatten_y and data.shape[1:3] == (1, 1):
-        data = data[:, 0, 0]
-    return X, data

@@ -1,3 +1,24 @@
+Version 1.5
+-----------
+
+* New Python interface for Gf.
+
+EXPLAIN
+
+API changes
+~~~~~~~~~~~~
+
+* Remove the gf.local module, simply use gf
+
+   from pytriqs.gf.local import ... --> from pytriqs.gf import ...
+
+* g.indices -> g.indices[0]
+
+
+Deprecation
+
+
+
 
 Version 1.4
 -----------

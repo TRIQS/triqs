@@ -1,5 +1,5 @@
-from pytriqs.gf.local.multivar import *
-from pytriqs.gf.local import *
+from pytriqs.gf.multivar import *
+from pytriqs.gf import *
 from pytriqs.lattice import *
 from pytriqs.lattice.tight_binding import *
 from pytriqs.plot.mpl_interface import *

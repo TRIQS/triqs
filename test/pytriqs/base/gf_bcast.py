@@ -1,5 +1,5 @@
 # Import the Green's functions
-from pytriqs.gf.local import GfImFreq, iOmega_n, inverse
+from pytriqs.gf import GfImFreq, iOmega_n, inverse
 
 # Create the Matsubara-frequency Green's function and initialize it
 g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
@@ -13,7 +13,7 @@ mpi.bcast(g)
 
 #Block
 
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 g1 = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
 g2 = GfImFreq(indices = ['t2g1','t2g2','t2g3'], beta = 50, n_points = 1000, name = "t2gBlock")
 G = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
@@ -23,7 +23,7 @@ mpi.bcast(G)
 
 
 #imtime 
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 
 # A Green's function on the Matsubara axis set to a semicircular
 gw = GfImFreq(indices = [1], beta = 50)

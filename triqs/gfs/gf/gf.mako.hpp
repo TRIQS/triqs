@@ -618,7 +618,7 @@ namespace triqs {
    //----------------------------- HDF5 -----------------------------
 
    /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(MAKO_GF const &g) { return "Gf" + gf_h5_name<Var, Target>::invoke(); }
+   friend std::string get_triqs_hdf5_data_scheme(MAKO_GF const &g) { return "Gf"; } 
 
    friend struct gf_h5_rw<Var, Target>;
 
@@ -632,12 +632,10 @@ namespace triqs {
    /// Read from HDF5
    friend void h5_read(h5::group fg, std::string const &subgroup_name, MAKO_GF &g) {
     auto gr = fg.open_group(subgroup_name);
-    // Check the attribute or throw
     auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected = get_triqs_hdf5_data_scheme(g);
-    if (tag_file != tag_expected)
-     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
-                         << " while I expected " << tag_expected;
+    if (! ( tag_file[0] =='G' and tag_file[1] =='f' ))
+     TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) " 
+                         << " while I found " << tag_file;
     gf_h5_rw<Var, Target>::read(gr, g);
     g._remake_zero();
    }

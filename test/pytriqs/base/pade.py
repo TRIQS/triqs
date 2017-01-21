@@ -23,8 +23,8 @@
 from numpy import array, arange
 from math import pi
 from cmath import sqrt, log
-from pytriqs.gf.local import GfImFreq, GfReFreq
-from pytriqs.gf.local.descriptors import Function
+from pytriqs.gf import *
+from pytriqs.gf.descriptors import Function
 from pytriqs.utility.comparison_tests import *
 
 beta = 100  # Inverse temperature
