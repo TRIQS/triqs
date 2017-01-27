@@ -387,6 +387,7 @@ namespace triqs {
    // mako %if RVC == 'const_view' :
    /// Rebind on a non const view
    void rebind(mutable_view_type const& X) noexcept { rebind(const_view_type{X}); }
+   void rebind(regular_type const& X) noexcept { rebind(const_view_type{X}); }
    // mako %endif
 
    public:
