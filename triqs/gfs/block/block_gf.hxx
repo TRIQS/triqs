@@ -902,6 +902,7 @@ namespace triqs {
    }
    /// Rebind on a non const view
    void rebind(mutable_view_type const& X) noexcept { rebind(const_view_type{X}); }
+   void rebind(regular_type const& X) noexcept { rebind(const_view_type{X}); }
 
    public:
    // ------------- All the call operators without lazy arguments -----------------------------
@@ -1867,6 +1868,7 @@ namespace triqs {
    }
    /// Rebind on a non const view
    void rebind(mutable_view_type const& X) noexcept { rebind(const_view_type{X}); }
+   void rebind(regular_type const& X) noexcept { rebind(const_view_type{X}); }
 
    public:
    // ------------- All the call operators without lazy arguments -----------------------------
