@@ -42,7 +42,7 @@ def _is_a_wrapped_type(t): return t.replace(' ','') in _wrapped_types_list
 
 def _is_type_a_view(c_type):
     """Is c_type a view type ? The criterion is a bit basic ..."""
-    return c_type.split('<', 1)[0].endswith("_view") or c_type.endswith("::view_type")
+    return c_type.split('<', 1)[0].strip().endswith("_view") or c_type.endswith("::view_type")
 
 def _regular_type_if_view_else_type(c_type):
     """Return the regular type if c_type is a view, or c_type otherwise"""
@@ -921,7 +921,7 @@ class module_ :
     def _get_proper_converter(self, t) :
         if t in basic_types_formatting : return ''
         if _is_a_wrapped_type(t) : return ',converter_for_parser_wrapped_type<'+t+'>'
-        if t.split('<',1)[0].endswith("_view") : return ',converter_for_parser_view_type<'+t+'>'
+        if t.split('<',1)[0].strip().endswith("_view") : return ',converter_for_parser_view_type<'+t+'>'
         return ',converter_for_parser_non_wrapped_type<'+t+'>'
 
     def _all_args_kw_functions(self) :
