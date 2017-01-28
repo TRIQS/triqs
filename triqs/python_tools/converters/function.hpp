@@ -21,8 +21,6 @@ template <> struct _make_index_seq<3> { using type = index_seq<0, 1, 2>; };
 template <> struct _make_index_seq<4> { using type = index_seq<0, 1, 2, 3>; };
 template <> struct _make_index_seq<5> { using type = index_seq<0, 1, 2, 3, 4>; };
 
-template <int N> struct make_format { static const char * value;};
-
 template <typename R, typename... T> struct py_converter<std::function<R(T...)>> {
 
  static_assert(sizeof...(T) < 5, "More than 5 variables not implemented");
@@ -63,7 +61,9 @@ template <typename R, typename... T> struct py_converter<std::function<R(T...)>>
  using _int_max = _int<sizeof...(T) - 1>;
 
  template <typename... U> static int _parse(_int<-1>, PyObject *args, arg_tuple_t &tu, U... u) {
-  return PyArg_ParseTuple(args, make_format<sizeof...(T)>::value, u...);
+  const char * format= "O&O&O&O&O&"; // change 5 for more arguments. 
+  static_assert( sizeof...(T) <=5, "More than 5 not implement. Easy to do ...");
+  return PyArg_ParseTuple(args, format + 2*(5 - sizeof...(T)), u...);
  }
  template <int N, typename... U> static int _parse(_int<N>, PyObject *args, arg_tuple_t &tu, U... u) {
   return _parse(_int<N - 1>(), args, tu,
