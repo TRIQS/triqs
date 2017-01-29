@@ -24,7 +24,6 @@
 
 #include <vector>
 #include <utility>
-#include <boost/iterator/iterator_facade.hpp>
 
 #include "../utility/factory.hpp"
 #include "../utility/tuple_tools.hpp"

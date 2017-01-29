@@ -22,7 +22,7 @@
 #define TRIQS_ARRAYS_RANGE_H
 #include <triqs/utility/first_include.hpp>
 #include <ostream>
-#include <boost/iterator/iterator_facade.hpp>
+#include <triqs/utility/iterator_facade.hpp>
 
 namespace triqs {
 namespace arrays {
@@ -90,7 +90,7 @@ namespace arrays {
    return os;
   }
 
-  class const_iterator : public boost::iterator_facade<const_iterator, const std::ptrdiff_t, boost::forward_traversal_tag, const std::ptrdiff_t> {
+  class const_iterator : public triqs::utility::iterator_facade<const_iterator, const std::ptrdiff_t, std::forward_iterator_tag, const std::ptrdiff_t> {
    public:
    const_iterator(range const* r, bool atEnd) {
     last = r->last();
@@ -99,7 +99,7 @@ namespace arrays {
    }
    private:
    std::ptrdiff_t last, pos, step;
-   friend class boost::iterator_core_access;
+   friend class triqs::utility::iterator_facade<const_iterator, const std::ptrdiff_t, std::forward_iterator_tag, const std::ptrdiff_t>;
    void increment() { pos+= step; }
    bool equal(const_iterator const& other) const { return (other.pos == pos); }
    std::ptrdiff_t dereference() const { return pos; }

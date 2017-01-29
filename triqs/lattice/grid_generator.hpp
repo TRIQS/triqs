@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./brillouin_zone.hpp"
+#include <triqs/utility/iterator_facade.hpp>
 
 namespace triqs {
 namespace lattice {
@@ -27,8 +28,8 @@ namespace lattice {
  /**
   * Generate the point in a cuboid as an array<double,1> const &
   */
- class grid_generator : public boost::iterator_facade<grid_generator, k_t const &, boost::forward_traversal_tag, k_t const &> {
-  friend class boost::iterator_core_access;
+ class grid_generator : public triqs::utility::iterator_facade<grid_generator, k_t const, std::forward_iterator_tag> {
+  friend class triqs::utility::iterator_facade<grid_generator, k_t const, std::forward_iterator_tag>;
   int dim, nkpts, nx, ny, nz, N_X, N_Y, N_Z, index_;
   double step_x, step_y, step_z;
   bool at_end;

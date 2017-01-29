@@ -22,7 +22,7 @@
 #include "./domain.hpp"
 #include "./mem_layout.hpp"
 #include <vector>
-#include <boost/iterator/iterator_facade.hpp>
+#include <triqs/utility/iterator_facade.hpp>
 
 namespace triqs { namespace arrays {
 
@@ -187,7 +187,7 @@ namespace triqs { namespace arrays {
     * Iteration order is the order in which to iterate on the indices.
     * It is given by a permutation, with the same convention as IndexOrder.
     */
-   class iterator : public boost::iterator_facade< iterator, const std::ptrdiff_t, boost::forward_traversal_tag > {
+   class iterator : public triqs::utility::iterator_facade< iterator, const std::ptrdiff_t, std::forward_iterator_tag > {
     public:
      using indexmap_type=map ;
      using indices_type=typename domain_type::index_value_type ;
@@ -198,7 +198,7 @@ namespace triqs { namespace arrays {
      indices_type const & indices() const { return indices_tuple; }
      operator bool() const { return !atend;}
     private:
-     friend class boost::iterator_core_access;
+     friend class triqs::utility::iterator_facade< iterator, const std::ptrdiff_t, std::forward_iterator_tag >;
      void increment(){ inc_ind_impl (std::integral_constant<int,Rank>()); }
      template<int v> inline void inc_ind_impl(std::integral_constant<int,v>) {
       int p = __iter_get_p(v - 1, im, typename _get_traversal_order_t<TraversalOrder>::type{});

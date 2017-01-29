@@ -20,9 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
-// FIXME : REMOVE THIS
-#include <boost/iterator/iterator_facade.hpp>
-
+#include <triqs/utility/iterator_facade.hpp>
 
 namespace triqs {
 namespace gfs {
@@ -59,9 +57,9 @@ namespace gfs {
  // FIXME : remove boost !
  template<typename MeshType>
   class mesh_pt_generator : 
-   public boost::iterator_facade< mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t , boost::forward_traversal_tag, 
+   public triqs::utility::iterator_facade< mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t , std::forward_iterator_tag,
    typename MeshType::mesh_point_t const & > {
-    friend class boost::iterator_core_access;
+    friend class triqs::utility::iterator_facade< mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t , std::forward_iterator_tag, typename MeshType::mesh_point_t const & >;
     MeshType const * mesh;
     size_t u;
     typename MeshType::mesh_point_t pt;
