@@ -116,7 +116,10 @@ struct test {
      D.complete_operation();
      if (D.size() >0) check();
     }
-    else { std::cerr  << " reject  since new det is = " << std::abs(detratio*det_old)<<std::endl;}
+    else { 
+     std::cerr  << " reject  since new det is = " << std::abs(detratio*det_old)<<std::endl;
+     D.reject_last_try(); 
+    }
    }
   }
  }
