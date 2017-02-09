@@ -21,26 +21,22 @@
 #pragma once
 
 namespace triqs {
-namespace gfs {
+ namespace gfs {
 
- //-------------------------------------------------------
- // rebinning
- // ------------------------------------------------------
+  //-------------------------------------------------------
+  // closest mesh point on the grid
+  // ------------------------------------------------------
 
- gf<imtime> rebinning_tau(gf_const_view<imtime> const &g, int new_n_tau);
+  template <typename... Ms, typename Target> struct gf_closest_point<cartesian_product<Ms...>, Target> {
+   using index_t = typename gf_mesh<cartesian_product<Ms...>>::index_t;
 
- //-------------------------------------------------------
- // closest mesh point on the grid
- // ------------------------------------------------------
+   template <typename M, typename... T, size_t... Is> static index_t _impl(M const& m, closest_pt_wrap<T...> const& p, std14::index_sequence<Is...>) {
+    return index_t(gf_closest_point<Ms, Target>::invoke(std::get<Is>(m), closest_pt_wrap<T>{std::get<Is>(p.value_tuple)})...);
+   }
 
- template <typename Target> struct gf_closest_point<imtime, Target> {
-  // index_t is int
-  template <typename M, typename T> static int invoke(M const &mesh, closest_pt_wrap<T> const &p) {
-   double x = double(p.value) + 0.5 * mesh.delta();
-   int n = std::floor(x / mesh.delta());
-   return n;
-  }
- };
+   template <typename M, typename... T> static index_t invoke(M const& m, closest_pt_wrap<T...> const& p) {
+    return _impl(m, p, std14::index_sequence_for<T...>{});
+   }
+  };
+ }
 }
-}
-
