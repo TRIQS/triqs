@@ -269,8 +269,7 @@ namespace triqs {
     }
     // mako %else:
     for (int w = 0; w < size1(); ++w) {
-     for (int v      = 0; v < size2(); ++v)
-      _glist[w][v]   = rhs[w][v];
+     for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs[w][v];
      _block_names[w] = rhs.block_names()[w];
     }
     // mako %endif
@@ -283,6 +282,17 @@ namespace triqs {
 
    /// Move assignment
    MAKO_GF& operator=(MAKO_GF&& rhs) = default;
+
+   /**
+    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+    *
+    * @param l The lazy object returned by mpi_reduce
+    */
+   void operator=(mpi_lazy<mpi::tag::reduce, MAKO_GF::const_view_type> l) {
+    _block_names = l.rhs.block_names();
+    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    // mpi_reduce of vector produces a new vector of gf, so it is fine here
+   }
 
    /**
    * Assignment operator
@@ -305,6 +315,27 @@ namespace triqs {
    }
 
    // mako %elif RVC == 'view' :
+   /**
+    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+    *
+    * @param l The lazy object returned by mpi_reduce
+    */
+   void operator=(mpi_lazy<mpi::tag::reduce, MAKO_GF::const_view_type> l) {
+    if (l.rhs.size() != this->size())
+     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
+    _block_names = l.rhs.block_names();
+    // mako %if ARITY == 1 :
+    for (int i = 0; i< size(); ++i)
+     _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
+    // mako %else:
+    for (int i = 0; i< size1(); ++i)
+     for (int j = 0; j< size2(); ++j)
+      _glist[i][j] = mpi_reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
+    // mako %endif
+    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view, 
+    // we can not overload the = of vector for better API.
+   }
+
    /**
    * Assignment operator
    *
@@ -528,39 +559,6 @@ namespace triqs {
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
 
-   // mako %if RVC == "regular":
-
-   //-------------  corresponding operator = overload
-
-   /**
-    * Performs MPI reduce
-    * @param l The lazy object returned by mpi_reduce
-    */
-   void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
-    _block_names = l.rhs.block_names();
-    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
-    // mpi_reduce of vector produces a new vector of gf, so it is fine here
-   }
-
-   // mako %elif RVC == "view":
-
-   //-------------  corresponding operator = overload
-
-   /**
-    * Performs MPI reduce
-    * @param l The lazy object returned by mpi_reduce
-    */
-   void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
-    if (l.rhs.size() != this->size())
-     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
-    _block_names = l.rhs.block_names();
-    for (int i = 0; i< size(); ++i)
-     _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
-    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view, 
-    // we can not overload the = of vector for better API.
-   }
-
-   // mako %endif
   };
 
   //----------------------------- MPI  -----------------------------

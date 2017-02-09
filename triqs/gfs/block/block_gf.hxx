@@ -217,6 +217,17 @@ namespace triqs {
    block_gf& operator=(block_gf&& rhs) = default;
 
    /**
+    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+    *
+    * @param l The lazy object returned by mpi_reduce
+    */
+   void operator=(mpi_lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
+    _block_names = l.rhs.block_names();
+    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    // mpi_reduce of vector produces a new vector of gf, so it is fine here
+   }
+
+   /**
    * Assignment operator
    *
    * @tparam RHS Type of the right hand side rhs
@@ -374,18 +385,6 @@ namespace triqs {
    iterator end() { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
-
-   //-------------  corresponding operator = overload
-
-   /**
-    * Performs MPI reduce
-    * @param l The lazy object returned by mpi_reduce
-    */
-   void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
-    _block_names = l.rhs.block_names();
-    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
-    // mpi_reduce of vector produces a new vector of gf, so it is fine here
-   }
   };
 
   //----------------------------- MPI  -----------------------------
@@ -548,6 +547,21 @@ namespace triqs {
    }
 
    public:
+   /**
+    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+    *
+    * @param l The lazy object returned by mpi_reduce
+    */
+   void operator=(mpi_lazy<mpi::tag::reduce, block_gf_view::const_view_type> l) {
+    if (l.rhs.size() != this->size())
+     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
+    _block_names = l.rhs.block_names();
+    for (int i = 0; i < size(); ++i)
+     _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
+    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
+    // we can not overload the = of vector for better API.
+   }
+
    /**
    * Assignment operator
    *
@@ -715,22 +729,6 @@ namespace triqs {
    iterator end() { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
-
-   //-------------  corresponding operator = overload
-
-   /**
-    * Performs MPI reduce
-    * @param l The lazy object returned by mpi_reduce
-    */
-   void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
-    if (l.rhs.size() != this->size())
-     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
-    _block_names = l.rhs.block_names();
-    for (int i = 0; i < size(); ++i)
-     _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
-    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
-    // we can not overload the = of vector for better API.
-   }
   };
 
   //----------------------------- MPI  -----------------------------
@@ -1199,6 +1197,17 @@ namespace triqs {
    block2_gf& operator=(block2_gf&& rhs) = default;
 
    /**
+    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+    *
+    * @param l The lazy object returned by mpi_reduce
+    */
+   void operator=(mpi_lazy<mpi::tag::reduce, block2_gf::const_view_type> l) {
+    _block_names = l.rhs.block_names();
+    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    // mpi_reduce of vector produces a new vector of gf, so it is fine here
+   }
+
+   /**
    * Assignment operator
    *
    * @tparam RHS Type of the right hand side rhs
@@ -1362,18 +1371,6 @@ namespace triqs {
    iterator end() { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
-
-   //-------------  corresponding operator = overload
-
-   /**
-    * Performs MPI reduce
-    * @param l The lazy object returned by mpi_reduce
-    */
-   void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
-    _block_names = l.rhs.block_names();
-    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
-    // mpi_reduce of vector produces a new vector of gf, so it is fine here
-   }
   };
 
   //----------------------------- MPI  -----------------------------
@@ -1521,6 +1518,22 @@ namespace triqs {
    }
 
    public:
+   /**
+    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+    *
+    * @param l The lazy object returned by mpi_reduce
+    */
+   void operator=(mpi_lazy<mpi::tag::reduce, block2_gf_view::const_view_type> l) {
+    if (l.rhs.size() != this->size())
+     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
+    _block_names = l.rhs.block_names();
+    for (int i = 0; i < size1(); ++i)
+     for (int j    = 0; j < size2(); ++j)
+      _glist[i][j] = mpi_reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
+    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
+    // we can not overload the = of vector for better API.
+   }
+
    /**
    * Assignment operator
    *
@@ -1695,22 +1708,6 @@ namespace triqs {
    iterator end() { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
-
-   //-------------  corresponding operator = overload
-
-   /**
-    * Performs MPI reduce
-    * @param l The lazy object returned by mpi_reduce
-    */
-   void operator=(mpi_lazy<mpi::tag::reduce, block_gf_const_view<Var, Target>> l) {
-    if (l.rhs.size() != this->size())
-     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
-    _block_names = l.rhs.block_names();
-    for (int i = 0; i < size(); ++i)
-     _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
-    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
-    // we can not overload the = of vector for better API.
-   }
   };
 
   //----------------------------- MPI  -----------------------------
