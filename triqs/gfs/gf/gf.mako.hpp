@@ -535,10 +535,10 @@ namespace triqs {
 
    // pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
    template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this, p)));
+    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
    }
    template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) const {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this, p)));
+    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
    }
 
    // ------------- [] with lazy arguments -----------------------------
