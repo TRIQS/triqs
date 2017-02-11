@@ -16,6 +16,11 @@ get_filename_component(TRIQS_PATH ${TRIQS_PATH} ABSOLUTE)
 SET(TRIAL_PATHS
  $ENV{TRIQS_PATH}/include/triqs
  ${TRIQS_PATH}/include/triqs
+ ENV CPATH
+ ENV C_INCLUDE_PATH
+ ENV CPLUS_INCLUDE_PATH
+ ENV OBJC_INCLUDE_PATH
+ ENV OBJCPLUS_INCLUDE_PATH
  /usr/include/triqs
  /usr/local/include/triqs
  /opt/local/include/triqs
@@ -24,12 +29,15 @@ SET(TRIAL_PATHS
 FIND_PATH(TRIQS_INCLUDE_DIR triqs_config.h ${TRIAL_PATHS} DOC "Include triqs")
 
 SET(TRIAL_LIBRARY_PATHS
+ $ENV{TRIQS_PATH}/lib
+ ${TRIQS_PATH}/lib
+ ${TRIQS_INCLUDE_DIR}/../lib
+ ENV LIBRARY_PATH
+ ENV LD_LIBRARY_PATH
  /usr/lib 
  /usr/local/lib
  /opt/local/lib
  /sw/lib
- $ENV{TRIQS_PATH}/lib
- ${TRIQS_PATH}/lib
  )
 
 SET(TRIQS_LIBRARIES "TRIQS_LIBRARIES-NOTFOUND" CACHE STRING "TRIQS library")
@@ -39,6 +47,8 @@ FIND_LIBRARY(TRIQS_LIBRARIES triqs ${TRIAL_LIBRARY_PATHS} DOC "TRIQS library")
 SET(TRIAL_PATHS
  $ENV{TRIQS_PATH}/share/triqs/cmake
  ${TRIQS_PATH}/share/triqs/cmake
+ ${TRIQS_INCLUDE_DIR}/../share/triqs/cmake
+ ${TRIQS_LIBRARIES}/../share/triqs/cmake
  /usr/share/triqs/cmake
  /usr/local/share/triqs/cmake
  /opt/local/share/triqs/cmake
