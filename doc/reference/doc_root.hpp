@@ -8,4 +8,6 @@
 #include <triqs/hilbert_space/imperative_operator.hpp>
 #include <triqs/hilbert_space/space_partition.hpp>
 
+#include <triqs/operators/util/extractors.hpp>
+
 #include <triqs/gfs/singularity/fit_tail.hpp>

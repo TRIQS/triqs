@@ -35,18 +35,32 @@ using triqs::utility::variant;
 
 using indices_t =  hilbert_space::fundamental_operator_set::indices_t;
 
+// Shorthand for many_body_operator_generic
 template<typename scalar_t> using op_t = operators::many_body_operator_generic<scalar_t>;
 
+// Mapping index pair -> coefficient of T
 template<typename T>
 using dict2_t = std::map<std::tuple<indices_t,indices_t>,T>;
+// Mapping quadruple -> coefficient of T
 template<typename T>
 using dict4_t = std::map<std::tuple<indices_t,indices_t,indices_t,indices_t>,T>;
 
 template<int N> using real_or_complex_array = variant<array<double,N>,array<std::complex<double>,N>>;
 
-/// Return dictionary of quadractic term coefficients starting from a Hamiltonian
-///
-/// ignore_irrelevant: do not throw exception if a non-quadratic term is met
+/// Extract coefficients from an operator assuming it is a normal quadratic form of canonical operators
+/**
+ * The normal quadratic form of canonical operators is defined as
+ *
+ * .. math:: \sum_{ij} h_{ij} c_i^\dagger c_j.
+ *
+ * An exception will be thrown if a term of a different form is met,
+ * unless `ignore_irrelevant` argument is set to `true`.
+ *
+ * @param h subject operator for coefficient extraction.
+ * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
+ * @return All non-vanishing coefficients :math:`h_{ij}` as dictionary object.
+ * @include triqs/operators/util/extractors.hpp
+ */
 template<typename scalar_t>
 dict2_t<scalar_t> extract_h_dict(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
 
@@ -72,9 +86,20 @@ dict2_t<scalar_t> extract_h_dict(op_t<scalar_t> const & h, bool ignore_irrelevan
  return h_dict;
 }
 
-/// Return dictionary of density-density interactions starting from a Hamiltonian
-///
-/// ignore_irrelevant: do not throw exception if a non-density-density term is met
+/// Extract coefficients from a density-density interaction operator
+/**
+ * The density-density interaction operator is defined as
+ *
+ * .. math:: \frac{1}{2} \sum_{ij} U_{ij} n_i n_j.
+ *
+ * An exception will be thrown if a term of a different form is met,
+ * unless `ignore_irrelevant` argument is set to `true`.
+ *
+ * @param h subject operator for coefficient extraction.
+ * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
+ * @return All non-vanishing coefficients :math:`U_{ij}` as dictionary object.
+ * @include triqs/operators/util/extractors.hpp
+ */
 template<typename scalar_t>
 dict2_t<scalar_t> extract_U_dict2(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
 
@@ -103,9 +128,20 @@ dict2_t<scalar_t> extract_U_dict2(op_t<scalar_t> const & h, bool ignore_irreleva
  return U_dict;
 }
 
-/// Return dictionary of quartic interactions starting from a Hamiltonian
-///
-/// ignore_irrelevant: do not throw exception if a non-quartic term is met
+/// Extract coefficients from a two-particle interaction operator
+/**
+ * The two-particle interaction operator is defined as
+ *
+ * .. math:: \frac{1}{2} \sum_{ijkl} U_{ijkl} c_i^\dagger c_j^\dagger c_l c_k
+ *
+ * An exception will be thrown if a term of a different form is met,
+ * unless `ignore_irrelevant` argument is set to `true`.
+ *
+ * @param h subject operator for coefficient extraction.
+ * @param ignore_irrelevant do not throw exception if an irrelevant term is met in `h`.
+ * @return All non-vanishing coefficients :math:`U_{ijkl}` as dictionary object.
+ * @include triqs/operators/util/extractors.hpp
+ */
 template<typename scalar_t>
 dict4_t<scalar_t> extract_U_dict4(op_t<scalar_t> const & h, bool ignore_irrelevant = false){
 
@@ -134,11 +170,24 @@ dict4_t<scalar_t> extract_U_dict4(op_t<scalar_t> const & h, bool ignore_irreleva
  return U_dict;
 }
 
-/// Convert dictionary of coefficients to matrix, given a fundamental operator set
-///
-/// ValueType: value type of the resulting array
-/// dict: dictionary to convert
-/// fs: fundamental operator set used for conversion
+/// Convert dictionary of coefficients to matrix/tensor, given a fundamental operator set
+/**
+ * For a given dictionary `dict: (ind_1,ind_2,...,ind_N) -> x` returns an array of rank `N`
+ * with elements of type `ValueType`. Each key `(ind_1,ind_2,...,ind_N)` is mapped to a
+ * tuple of integers `(i_1,i_2,...,i_N)` using a given fundamental operator set `fs`.
+ * The element of the resulting array addressed by `(i_1,i_2,...,i_N)` is then set to `x`.
+ * The rest of elements, which have no corresponding keys in `dict`, are value-initialized
+ * (set to `ValueType{}`).
+ *
+ * An exception is thrown if some index `ind_n` is missing from `fs`.
+ *
+ * @tparam ValueType element type of the resulting matrix/tensor
+ * @tparam DictType type of the dictionary to convert
+ * @param dict dictionary to convert
+ * @param fs fundamental operator set used for conversion
+ * @return Matrix/tensor, result of conversion
+ * @include triqs/operators/util/extractors.hpp
+ */
 template<typename ValueType = double, typename DictType>
 array<ValueType, std::tuple_size<typename DictType::key_type>::value>
 dict_to_matrix(DictType const& dict, hilbert_space::fundamental_operator_set const& fs){

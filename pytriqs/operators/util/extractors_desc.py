@@ -29,7 +29,7 @@ module.add_function("dict2_t<real_or_complex> extract_h_dict(many_body_operator 
                     for(auto const& kv : extract_h_dict(*H,ignore_irrelevant)) result[map(v2t,kv.first)] = kv.second;
                     """,
                     doc = r"""
-    Extract coefficients of the quadratic part :math:`\sum_{ij}h_{ij} c^\dagger_i c_j` from a Hamiltonian H as a 2-index dictionary.
+    Extract coefficients of the normal quadratic part :math:`\sum_{ij}h_{ij} c^\dagger_i c_j` from a Hamiltonian H as a 2-index dictionary.
 
     Parameters
     ----------

@@ -18,4 +18,8 @@ A class with commonly-used quantities such as Hamiltonians is also provided.
    :maxdepth: 2
 
    operators
-   util
+   util/hamiltonians
+   util/U_matrix
+   util/observables
+   util/op_struct
+   util/extractors
