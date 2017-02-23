@@ -49,7 +49,8 @@ TEST(Array, H5) {
   h5_write(top, "C", C);
   h5_write(top, "D", D);
   h5_write(top, "S", "");
-  h5_write(top,"A_slice",A(range(),range(1,3)));
+  h5_write(top, "A_slice",A(range(),range(1,3)));
+  h5_write(top, "empty", array<double, 2>(0, 10));
 
   // add some attribute to A
   auto id = top.open_dataset("A");
@@ -107,6 +108,10 @@ TEST(Array, H5) {
   std::string s2("----------------------------------");
   h5_read(top, "s", s2);
   EXPECT_EQ(s2, "a nice chain");
+
+  array<double, 2> empty(5, 5);
+  h5_read(top, "empty", empty);
+  EXPECT_EQ_ARRAY(empty, (array<double, 2>(0, 10)));
  }
 }
 

@@ -146,7 +146,6 @@ namespace arrays {
  template <typename ArrayType>
  ENABLE_IFC(is_amv_value_or_view_class<ArrayType>::value&& has_scalar_or_string_value_type<ArrayType>::value)
      h5_write(h5::group g, std::string const& name, ArrayType const& A) {
-  if (A.is_empty()) TRIQS_RUNTIME_ERROR << " Cannot save an empty array into hdf5";
   h5_impl::write_array(g, name, array_const_view<typename ArrayType::value_type, ArrayType::rank>(A));
  }
 
