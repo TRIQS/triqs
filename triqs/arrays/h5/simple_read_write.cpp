@@ -30,7 +30,7 @@ namespace arrays {
   h5::dataspace data_space_impl(array_stride_info info, bool is_complex) {
    hsize_t L[info.R], S[info.R];
    for (int u = 0; u < info.R; ++u) {
-    if (info.strides[u] <= 0) TRIQS_RUNTIME_ERROR << " negative strides not permitted in h5";
+    if (info.strides[u] < 0) TRIQS_RUNTIME_ERROR << " negative strides not permitted in h5";
     S[u] = 1;
     L[u] = info.lengths[u];
    }
