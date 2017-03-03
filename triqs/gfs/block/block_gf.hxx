@@ -71,6 +71,17 @@ namespace triqs {
   // The trait that "marks" the Green function
   TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(BlockGreenFunction);
 
+  // ------------- Helper Types -----------------------------
+
+  template <typename Lambda, typename T> struct lazy_transform_t {
+   Lambda lambda;
+   T value;
+  };
+
+  template <typename Lambda, typename T> lazy_transform_t<Lambda, T> make_lazy_transform(Lambda&& l, T&& x) {
+   return {std::forward<Lambda>(l), std::forward<T>(x)};
+  }
+
   /// ---------------------------  details  ---------------------------------
 
   namespace details {
@@ -221,9 +232,10 @@ namespace triqs {
     *
     * @param l The lazy object returned by mpi_reduce
     */
-   void operator=(mpi_lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
+   block_gf& operator=(mpi_lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
     _block_names = l.rhs.block_names();
     _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    return *this;
     // mpi_reduce of vector produces a new vector of gf, so it is fine here
    }
 
@@ -347,42 +359,51 @@ namespace triqs {
 
    // -------------------------------  iterator  --------------------------------------------------
 
-   class iterator {
-    block_gf* bgf = NULL;
+   template <bool is_const> class iterator_impl {
+    std::conditional_t<is_const, const block_gf*, block_gf*> bgf = NULL;
     int n;
 
     public:
     using iterator_category = std::forward_iterator_tag;
     using value_type        = g_t;
     using difference_type   = std::ptrdiff_t;
-    using reference         = g_t&;
-    using pointer           = g_t*;
+    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
+    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
+    using block_gf_ref      = std::conditional_t<is_const, block_gf const&, block_gf&>;
 
-    iterator() = default;
-    iterator(block_gf& _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl() = default;
+    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
 
-    value_type& operator*() { return (*bgf)[n]; }
-    value_type& operator->() { return operator*(); }
+    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
-    iterator& operator++() {
+    reference operator*() { return (*bgf)[n]; }
+    reference operator->() { return operator*(); }
+
+    iterator_impl& operator++() {
      ++n;
      return *this;
     }
 
-    iterator operator++(int) {
+    iterator_impl operator++(int) {
      auto it = *this;
      ++n;
      return it;
     }
 
-    bool operator==(iterator const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator const& other) const { return (!operator==(other)); }
+    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
+    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
    };
+
+   using iterator       = iterator_impl<false>;
+   using const_iterator = iterator_impl<true>;
 
    //------------
 
    iterator begin() { return {*this, false}; }
+   const_iterator begin() const { return {*this, false}; }
    iterator end() { return {*this, true}; }
+   const_iterator end() const { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
   };
@@ -527,8 +548,8 @@ namespace triqs {
    // ---------------  Constructors --------------------
 
    block_gf_view()                         = default;
-   block_gf_view(const_view_type const& g) = delete; // No view from a const g
-   block_gf_view(regular_type const& g)    = delete; // no view from a const_view
+   block_gf_view(const_view_type const& g) = delete; // No view from a const_view
+   block_gf_view(regular_type const& g)    = delete; // No view from a const g
 
    /// Makes a view
    block_gf_view(regular_type& g) : block_gf_view(impl_tag{}, g) {}
@@ -547,6 +568,19 @@ namespace triqs {
    }
 
    public:
+   /**
+    * Assignment operator overload specific for lazy_transform objects
+    *
+    * @param rhs The lazy object returned e.g. by fourier(my_block_gf)
+    */
+   template <typename L, typename G> block_gf_view& operator=(lazy_transform_t<L, G> const& rhs) {
+    // for (auto & [ l, r ] : zip(*this, rhs.value)) FIXME C++17
+    //  l = rhs.lambda(r);
+    for (int i  = 0; i < rhs.value.size(); ++i)
+     (*this)[i] = rhs.lambda(rhs.value[i]);
+    return *this;
+   }
+
    /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
@@ -691,42 +725,51 @@ namespace triqs {
 
    // -------------------------------  iterator  --------------------------------------------------
 
-   class iterator {
-    block_gf_view* bgf = NULL;
+   template <bool is_const> class iterator_impl {
+    std::conditional_t<is_const, const block_gf_view*, block_gf_view*> bgf = NULL;
     int n;
 
     public:
     using iterator_category = std::forward_iterator_tag;
     using value_type        = g_t;
     using difference_type   = std::ptrdiff_t;
-    using reference         = g_t&;
-    using pointer           = g_t*;
+    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
+    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
+    using block_gf_ref      = std::conditional_t<is_const, block_gf_view const&, block_gf_view&>;
 
-    iterator() = default;
-    iterator(block_gf_view& _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl() = default;
+    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
 
-    value_type& operator*() { return (*bgf)[n]; }
-    value_type& operator->() { return operator*(); }
+    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
-    iterator& operator++() {
+    reference operator*() { return (*bgf)[n]; }
+    reference operator->() { return operator*(); }
+
+    iterator_impl& operator++() {
      ++n;
      return *this;
     }
 
-    iterator operator++(int) {
+    iterator_impl operator++(int) {
      auto it = *this;
      ++n;
      return it;
     }
 
-    bool operator==(iterator const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator const& other) const { return (!operator==(other)); }
+    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
+    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
    };
+
+   using iterator       = iterator_impl<false>;
+   using const_iterator = iterator_impl<true>;
 
    //------------
 
    iterator begin() { return {*this, false}; }
+   const_iterator begin() const { return {*this, false}; }
    iterator end() { return {*this, true}; }
+   const_iterator end() const { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
   };
@@ -994,42 +1037,51 @@ namespace triqs {
 
    // -------------------------------  iterator  --------------------------------------------------
 
-   class iterator {
-    block_gf_const_view* bgf = NULL;
+   template <bool is_const> class iterator_impl {
+    std::conditional_t<is_const, const block_gf_const_view*, block_gf_const_view*> bgf = NULL;
     int n;
 
     public:
     using iterator_category = std::forward_iterator_tag;
     using value_type        = g_t;
     using difference_type   = std::ptrdiff_t;
-    using reference         = g_t&;
-    using pointer           = g_t*;
+    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
+    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
+    using block_gf_ref      = std::conditional_t<is_const, block_gf_const_view const&, block_gf_const_view&>;
 
-    iterator() = default;
-    iterator(block_gf_const_view& _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl() = default;
+    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
 
-    value_type& operator*() { return (*bgf)[n]; }
-    value_type& operator->() { return operator*(); }
+    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
-    iterator& operator++() {
+    reference operator*() { return (*bgf)[n]; }
+    reference operator->() { return operator*(); }
+
+    iterator_impl& operator++() {
      ++n;
      return *this;
     }
 
-    iterator operator++(int) {
+    iterator_impl operator++(int) {
      auto it = *this;
      ++n;
      return it;
     }
 
-    bool operator==(iterator const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator const& other) const { return (!operator==(other)); }
+    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
+    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
    };
+
+   using iterator       = iterator_impl<false>;
+   using const_iterator = iterator_impl<true>;
 
    //------------
 
    iterator begin() { return {*this, false}; }
+   const_iterator begin() const { return {*this, false}; }
    iterator end() { return {*this, true}; }
+   const_iterator end() const { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
   };
@@ -1185,7 +1237,7 @@ namespace triqs {
 
     for (int w = 0; w < size1(); ++w) {
      for (int v      = 0; v < size2(); ++v)
-      _glist[w][v]   = rhs[w][v];
+      _glist[w][v]   = rhs(w, v);
      _block_names[w] = rhs.block_names()[w];
     }
    }
@@ -1202,9 +1254,10 @@ namespace triqs {
     *
     * @param l The lazy object returned by mpi_reduce
     */
-   void operator=(mpi_lazy<mpi::tag::reduce, block2_gf::const_view_type> l) {
+   block2_gf& operator=(mpi_lazy<mpi::tag::reduce, block2_gf::const_view_type> l) {
     _block_names = l.rhs.block_names();
     _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    return *this;
     // mpi_reduce of vector produces a new vector of gf, so it is fine here
    }
 
@@ -1334,42 +1387,51 @@ namespace triqs {
 
    // -------------------------------  iterator  --------------------------------------------------
 
-   class iterator {
-    block2_gf* bgf = NULL;
+   template <bool is_const> class iterator_impl {
+    std::conditional_t<is_const, const block2_gf*, block2_gf*> bgf = NULL;
     int n;
 
     public:
     using iterator_category = std::forward_iterator_tag;
     using value_type        = g_t;
     using difference_type   = std::ptrdiff_t;
-    using reference         = g_t&;
-    using pointer           = g_t*;
+    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
+    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
+    using block_gf_ref      = std::conditional_t<is_const, block2_gf const&, block2_gf&>;
 
-    iterator() = default;
-    iterator(block2_gf& _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl() = default;
+    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
 
-    value_type& operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
-    value_type& operator->() { return operator*(); }
+    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
-    iterator& operator++() {
+    reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+    reference operator->() { return operator*(); }
+
+    iterator_impl& operator++() {
      ++n;
      return *this;
     }
 
-    iterator operator++(int) {
+    iterator_impl operator++(int) {
      auto it = *this;
      ++n;
      return it;
     }
 
-    bool operator==(iterator const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator const& other) const { return (!operator==(other)); }
+    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
+    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
    };
+
+   using iterator       = iterator_impl<false>;
+   using const_iterator = iterator_impl<true>;
 
    //------------
 
    iterator begin() { return {*this, false}; }
+   const_iterator begin() const { return {*this, false}; }
    iterator end() { return {*this, true}; }
+   const_iterator end() const { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
   };
@@ -1498,8 +1560,8 @@ namespace triqs {
    // ---------------  Constructors --------------------
 
    block2_gf_view()                         = default;
-   block2_gf_view(const_view_type const& g) = delete; // No view from a const g
-   block2_gf_view(regular_type const& g)    = delete; // no view from a const_view
+   block2_gf_view(const_view_type const& g) = delete; // No view from a const_view
+   block2_gf_view(regular_type const& g)    = delete; // No view from a const g
 
    /// Makes a view
    block2_gf_view(regular_type& g) : block2_gf_view(impl_tag{}, g) {}
@@ -1513,12 +1575,26 @@ namespace triqs {
 
     for (int w = 0; w < size1(); ++w) {
      for (int v      = 0; v < size2(); ++v)
-      _glist[w][v]   = rhs[w][v];
+      _glist[w][v]   = rhs(w, v);
      _block_names[w] = rhs.block_names()[w];
     }
    }
 
    public:
+   /**
+    * Assignment operator overload specific for lazy_transform objects
+    *
+    * @param rhs The lazy object returned e.g. by fourier(my_block_gf)
+    */
+   template <typename L, typename G> block2_gf_view& operator=(lazy_transform_t<L, G> const& rhs) {
+    // for (auto & [ l, r ] : zip(*this, rhs.value)) FIXME C++17
+    //  l = rhs.lambda(r);
+    for (int i = 0; i < rhs.value.size1(); ++i)
+     for (int j = 0; j < rhs.value.size2(); ++j)
+      (*this)(i, j) = rhs.lambda(rhs.value(i, j));
+    return *this;
+   }
+
    /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
@@ -1671,42 +1747,51 @@ namespace triqs {
 
    // -------------------------------  iterator  --------------------------------------------------
 
-   class iterator {
-    block2_gf_view* bgf = NULL;
+   template <bool is_const> class iterator_impl {
+    std::conditional_t<is_const, const block2_gf_view*, block2_gf_view*> bgf = NULL;
     int n;
 
     public:
     using iterator_category = std::forward_iterator_tag;
     using value_type        = g_t;
     using difference_type   = std::ptrdiff_t;
-    using reference         = g_t&;
-    using pointer           = g_t*;
+    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
+    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
+    using block_gf_ref      = std::conditional_t<is_const, block2_gf_view const&, block2_gf_view&>;
 
-    iterator() = default;
-    iterator(block2_gf_view& _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl() = default;
+    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
 
-    value_type& operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
-    value_type& operator->() { return operator*(); }
+    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
-    iterator& operator++() {
+    reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+    reference operator->() { return operator*(); }
+
+    iterator_impl& operator++() {
      ++n;
      return *this;
     }
 
-    iterator operator++(int) {
+    iterator_impl operator++(int) {
      auto it = *this;
      ++n;
      return it;
     }
 
-    bool operator==(iterator const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator const& other) const { return (!operator==(other)); }
+    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
+    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
    };
+
+   using iterator       = iterator_impl<false>;
+   using const_iterator = iterator_impl<true>;
 
    //------------
 
    iterator begin() { return {*this, false}; }
+   const_iterator begin() const { return {*this, false}; }
    iterator end() { return {*this, true}; }
+   const_iterator end() const { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
   };
@@ -1848,7 +1933,7 @@ namespace triqs {
 
     for (int w = 0; w < size1(); ++w) {
      for (int v      = 0; v < size2(); ++v)
-      _glist[w][v]   = rhs[w][v];
+      _glist[w][v]   = rhs(w, v);
      _block_names[w] = rhs.block_names()[w];
     }
    }
@@ -1965,42 +2050,51 @@ namespace triqs {
 
    // -------------------------------  iterator  --------------------------------------------------
 
-   class iterator {
-    block2_gf_const_view* bgf = NULL;
+   template <bool is_const> class iterator_impl {
+    std::conditional_t<is_const, const block2_gf_const_view*, block2_gf_const_view*> bgf = NULL;
     int n;
 
     public:
     using iterator_category = std::forward_iterator_tag;
     using value_type        = g_t;
     using difference_type   = std::ptrdiff_t;
-    using reference         = g_t&;
-    using pointer           = g_t*;
+    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
+    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
+    using block_gf_ref      = std::conditional_t<is_const, block2_gf_const_view const&, block2_gf_const_view&>;
 
-    iterator() = default;
-    iterator(block2_gf_const_view& _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl() = default;
+    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
 
-    value_type& operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
-    value_type& operator->() { return operator*(); }
+    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
-    iterator& operator++() {
+    reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+    reference operator->() { return operator*(); }
+
+    iterator_impl& operator++() {
      ++n;
      return *this;
     }
 
-    iterator operator++(int) {
+    iterator_impl operator++(int) {
      auto it = *this;
      ++n;
      return it;
     }
 
-    bool operator==(iterator const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator const& other) const { return (!operator==(other)); }
+    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
+    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
    };
+
+   using iterator       = iterator_impl<false>;
+   using const_iterator = iterator_impl<true>;
 
    //------------
 
    iterator begin() { return {*this, false}; }
+   const_iterator begin() const { return {*this, false}; }
    iterator end() { return {*this, true}; }
+   const_iterator end() const { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
   };
