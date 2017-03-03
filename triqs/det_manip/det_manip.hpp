@@ -346,7 +346,7 @@ namespace triqs { namespace det_manip {
     value_type try_insert(size_t i, size_t j, x_type const & x, y_type const & y) {
 
      // check input and store it for complete_operation
-     TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
      if (N==Nmax) reserve(2*Nmax);
      last_try = Insert;
      w1.i=i; w1.j=j; w1.x=x; w1.y = y;
@@ -378,7 +378,7 @@ namespace triqs { namespace det_manip {
     value_type try_insert_from_function(size_t i, size_t j, Fx fx, Fy fy, value_type const ksi) {
 
      // check input and store it for complete_operation
-     TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
      if (N==Nmax) reserve(2*Nmax);
      last_try = Insert;
      w1.i=i; w1.j=j;
@@ -468,7 +468,7 @@ namespace triqs { namespace det_manip {
      if (j0 > j1) std::swap(j0, j1);
 
      // check input and store it for complete_operation
-     TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);TRIQS_ASSERT(i0<=N);  TRIQS_ASSERT(j0<=N); TRIQS_ASSERT(i0>=0); TRIQS_ASSERT(j0>=0);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);TRIQS_ASSERT(i0<=N);  TRIQS_ASSERT(j0<=N); TRIQS_ASSERT(i0>=0); TRIQS_ASSERT(j0>=0);
      TRIQS_ASSERT(i1<=N+1);  TRIQS_ASSERT(j1<=N+1); TRIQS_ASSERT(i1>=0); TRIQS_ASSERT(j1>=0);
 
      if (N >= Nmax-1) reserve(2*Nmax);
@@ -571,7 +571,7 @@ namespace triqs { namespace det_manip {
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
     value_type try_remove(size_t i, size_t j){
-     TRIQS_ASSERT(i<N);  TRIQS_ASSERT(j<N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(i<N);  TRIQS_ASSERT(j<N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
      w1.i = i; w1.j = j; last_try = Remove;
      w1.jreal = col_num[w1.j];
      w1.ireal = row_num[w1.i];
@@ -641,7 +641,7 @@ namespace triqs { namespace det_manip {
      if (i0 > i1) std::swap(i0, i1);
      if (j0 > j1) std::swap(j0, j1);
 
-     TRIQS_ASSERT(N>=2); TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(N>=2); TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);
      TRIQS_ASSERT(i0<N);  TRIQS_ASSERT(j0<N); TRIQS_ASSERT(i0>=0); TRIQS_ASSERT(j0>=0);
      TRIQS_ASSERT(i1<N+1);  TRIQS_ASSERT(j1<N+1);TRIQS_ASSERT(i1>=0); TRIQS_ASSERT(j1>=0);
 
@@ -831,7 +831,7 @@ namespace triqs { namespace det_manip {
      */
     template<typename ArgumentContainer1, typename ArgumentContainer2>
     value_type try_refill(ArgumentContainer1 const& X, ArgumentContainer2 const& Y) {
-     TRIQS_ASSERT(X.size() == Y.size());
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(X.size() == Y.size());
 
      last_try = Refill;
 
@@ -967,11 +967,8 @@ namespace triqs { namespace det_manip {
       case (Insert2): complete_insert2(); break;
       case (Remove2): complete_remove2(); break;
       case (Refill): complete_refill(); break;
-      case (NoTry):
-       last_try = NoTry;
-       return;
-       break; // double call of complete_operation...
-      default: TRIQS_RUNTIME_ERROR << "Misuing det_manip";
+      case (NoTry): return; break; 
+      default: TRIQS_RUNTIME_ERROR << "Misuing det_manip"; // Never used?
      }
      if (is_sing) { regenerate(); } else {
       det = newdet;
@@ -981,6 +978,12 @@ namespace triqs { namespace det_manip {
      }
      last_try = NoTry;
     }
+
+    /**
+     *  Reject the previous try_xxx called.
+     *  All try_xxx have to be either accepted (complete_operation) or rejected.
+     */
+    void reject_last_try() { last_try = NoTry; }
 
     // ----------------- A few short cuts   -----------------
 
