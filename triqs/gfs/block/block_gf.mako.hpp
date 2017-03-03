@@ -68,6 +68,17 @@ namespace triqs {
   // The trait that "marks" the Green function
   TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(BlockGreenFunction);
 
+  // ------------- Helper Types -----------------------------
+
+  template <typename Lambda, typename T> struct lazy_transform_t {
+   Lambda lambda;
+   T value;
+  };
+
+  template <typename Lambda, typename T> lazy_transform_t<Lambda, T> make_lazy_transform(Lambda&& l, T&& x) {
+   return {std::forward<Lambda>(l), std::forward<T>(x)};
+  }
+
   /// ---------------------------  details  ---------------------------------
 
   namespace details {
@@ -237,8 +248,8 @@ namespace triqs {
    // mako %elif RVC == 'view' :
 
    MAKO_GF()                         = default;
-   MAKO_GF(const_view_type const& g) = delete; // No view from a const g
-   MAKO_GF(regular_type const& g)    = delete; // no view from a const_view
+   MAKO_GF(const_view_type const& g) = delete; // No view from a const_view
+   MAKO_GF(regular_type const& g)    = delete; // No view from a const g
 
    /// Makes a view
    MAKO_GF(regular_type& g) : MAKO_GF(impl_tag{}, g) {}
@@ -269,7 +280,7 @@ namespace triqs {
     }
     // mako %else:
     for (int w = 0; w < size1(); ++w) {
-     for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs[w][v];
+     for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs(w,v);
      _block_names[w] = rhs.block_names()[w];
     }
     // mako %endif
@@ -288,9 +299,10 @@ namespace triqs {
     *
     * @param l The lazy object returned by mpi_reduce
     */
-   void operator=(mpi_lazy<mpi::tag::reduce, MAKO_GF::const_view_type> l) {
+   MAKO_GF& operator=(mpi_lazy<mpi::tag::reduce, MAKO_GF::const_view_type> l) {
     _block_names = l.rhs.block_names();
     _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+    return *this; 
     // mpi_reduce of vector produces a new vector of gf, so it is fine here
    }
 
@@ -315,6 +327,25 @@ namespace triqs {
    }
 
    // mako %elif RVC == 'view' :
+   /**
+    * Assignment operator overload specific for lazy_transform objects
+    *
+    * @param rhs The lazy object returned e.g. by fourier(my_block_gf)
+    */
+   template <typename L, typename G> MAKO_GF& operator=(lazy_transform_t<L, G> const& rhs) {
+    // for (auto & [ l, r ] : zip(*this, rhs.value)) FIXME C++17
+    //  l = rhs.lambda(r);
+    // mako %if ARITY == 1 :
+    for (int i  = 0; i < rhs.value.size(); ++i)
+     (*this)[i] = rhs.lambda(rhs.value[i]);
+    // mako %else:
+    for (int i  = 0; i < rhs.value.size1(); ++i)
+     for (int j  = 0; j < rhs.value.size2(); ++j)
+      (*this)(i,j) = rhs.lambda(rhs.value(i,j));
+    // mako %endif
+    return *this; 
+   }
+
    /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
@@ -517,46 +548,56 @@ namespace triqs {
 
    // -------------------------------  iterator  --------------------------------------------------
 
-   class iterator {
-    MAKO_GF* bgf = NULL;
+   template<bool is_const>
+   class iterator_impl {
+    std::conditional_t<is_const, const MAKO_GF*, MAKO_GF*> bgf = NULL;
     int n;
 
     public:
     using iterator_category = std::forward_iterator_tag;
     using value_type        = g_t;
     using difference_type   = std::ptrdiff_t;
-    using reference         = g_t&;
-    using pointer           = g_t*;
+    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
+    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
+    using block_gf_ref      = std::conditional_t<is_const, MAKO_GF const&, MAKO_GF&>; 
 
-    iterator() = default;
-    iterator(MAKO_GF& _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl() = default;
+    iterator_impl( block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+    iterator_impl( block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
+
+    operator iterator_impl<true>() const{ return iterator_impl<true>(*bgf, n); } 
 
     // mako %if ARITY == 1 :
-    value_type& operator*() { return (*bgf)[n]; }
+    reference operator*() { return (*bgf)[n]; }
     // mako %else :
-    value_type& operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+    reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
     // mako %endif
-    value_type& operator->() { return operator*(); }
+    reference operator->() { return operator*(); }
 
-    iterator& operator++() {
+    iterator_impl& operator++() {
      ++n;
      return *this;
     }
 
-    iterator operator++(int) {
+    iterator_impl operator++(int) {
      auto it = *this;
      ++n;
      return it;
     }
 
-    bool operator==(iterator const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator const& other) const { return (!operator==(other)); }
+    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
+    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
    };
+
+   using iterator = iterator_impl<false>; 
+   using const_iterator = iterator_impl<true>; 
 
    //------------
 
    iterator begin() { return {*this, false}; }
+   const_iterator begin() const { return {*this, false}; }
    iterator end() { return {*this, true}; }
+   const_iterator end() const { return {*this, true}; }
    auto cbegin() { return const_view_type(*this).begin(); }
    auto cend() { return const_view_type(*this).end(); }
 

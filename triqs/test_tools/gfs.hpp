@@ -51,3 +51,16 @@ template<typename X, typename Y>
 
 #define EXPECT_BLOCK_GF_NEAR(X, ...) EXPECT_TRUE(test_block_gfs_are_close(X,__VA_ARGS__))
 
+template<typename X, typename Y>
+::testing::AssertionResult test_block2_gfs_are_close(X const &x, Y const &y, double precision = 1.e-6) {
+
+ try {
+  assert_block2_gfs_are_close(x,y, precision);
+  return ::testing::AssertionSuccess();
+ } catch (triqs::exception const & msg) {
+  return ::testing::AssertionFailure() << msg.what();
+ }
+
+}
+
+#define EXPECT_BLOCK2_GF_NEAR(X, ...) EXPECT_TRUE(test_block2_gfs_are_close(X,__VA_ARGS__))

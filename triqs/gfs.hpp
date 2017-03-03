@@ -46,6 +46,7 @@
 
 // block gf
 #include "./gfs/block/block_gf.hxx"
+#include "./gfs/block/functions.hxx"
 #include "./gfs/block/expr.hpp"
 #include "./gfs/block/auto_assign.hpp"
 #include "./gfs/block/map.hpp"
