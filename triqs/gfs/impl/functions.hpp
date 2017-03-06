@@ -71,7 +71,7 @@ namespace gfs {
  template <typename M, typename D, typename S, typename E, typename... Args>
  gf_view<M, scalar_valued, S> slice_target_to_scalar(gf_view<M, D, S, E> g, Args &&... args) {
   return {g.mesh(),
-          g.data()(arrays::range(), std::forward<Args>(args)...),
+          g.data()(arrays::ellipsis(), std::forward<Args>(args)...),
           slice_target(g.singularity(), range(args, args + 1)...),
           g.symmetry(),
           {},
@@ -81,7 +81,7 @@ namespace gfs {
  template <typename M, typename D, typename S, typename E, typename... Args>
  gf_const_view<M, scalar_valued, S> slice_target_to_scalar(gf_const_view<M, D, S, E> g, Args &&... args) {
   return {g.mesh(),
-          g.data()(arrays::range(), std::forward<Args>(args)...),
+          g.data()(arrays::ellipsis(), std::forward<Args>(args)...),
           slice_target(g.singularity(), range(args, args + 1)...),
           g.symmetry(),
           {},
