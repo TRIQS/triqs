@@ -24,6 +24,7 @@
 #define TRIQS_UTILITY_PADE_APPROXIMANTS_H
 
 #include "pade_approximants.hpp"
+#include <triqs/utility/exceptions.hpp>
 #include <triqs/arrays.hpp>
 #include <gmpxx.h>
 
@@ -40,7 +41,11 @@ typedef std::complex<double> dcomplex;
 struct gmp_complex {
   mpf_class re, im;
   gmp_complex operator* (const gmp_complex &rhs){ return { rhs.re*re-rhs.im*im, rhs.re*im+rhs.im*re }; }
-  friend gmp_complex inverse (const gmp_complex &rhs){ mpf_class d=rhs.re*rhs.re + rhs.im*rhs.im; return { rhs.re/d, -rhs.im/d}; }
+  friend gmp_complex inverse (const gmp_complex &rhs){
+   mpf_class d=rhs.re*rhs.re + rhs.im*rhs.im;
+   if(d == 0) TRIQS_RUNTIME_ERROR << "pade_approximant: GMP division by zero";
+   return { rhs.re/d, -rhs.im/d};
+  }
   gmp_complex operator/ (const gmp_complex &rhs){ return (*this)*inverse(rhs); }
   gmp_complex operator+ (const gmp_complex &rhs){ return { rhs.re + re, rhs.im + im }; }
   gmp_complex operator- (const gmp_complex &rhs){ return { re - rhs.re, im - rhs.im }; }
