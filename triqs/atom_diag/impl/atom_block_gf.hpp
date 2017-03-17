@@ -26,7 +26,7 @@
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/utility/legendre.hpp>
 #include <triqs/gfs.hpp>
-
+/*
 namespace triqs {
 namespace atom_diag {
 
@@ -122,4 +122,4 @@ public:
  friend void triqs_gf_view_assign_delegation(block_gf_view<Tag> g, atom_block_gf const& agf) { agf(g); }
 };
 
-}}
+}}*/

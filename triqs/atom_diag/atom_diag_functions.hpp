@@ -114,11 +114,11 @@ std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues_checked(AT
  * @return Atomic Green's function represented as a sum of single excitation terms.
  * @include triqs/atom_diag/atom_diag_functions.hpp
  */
-template<bool Complex>
-atom_block_gf atomic_gf(ATOM_DIAG const& atom,
-                        double beta,
-                        gf_struct_t const& gf_struct,
-                        std::vector<std::pair<int, int>> excluded_states = {});
+//template<bool Complex>
+//atom_block_gf atomic_gf(ATOM_DIAG const& atom,
+//                        double beta,
+//                        gf_struct_t const& gf_struct,
+//                        std::vector<std::pair<int, int>> excluded_states = {});
 
 #undef ATOM_DIAG
 #undef ATOM_DIAG_T

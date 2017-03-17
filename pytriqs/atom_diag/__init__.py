@@ -21,10 +21,10 @@
 
 from pytriqs.operators import Operator
 from atom_diag import AtomDiagReal, AtomDiagComplex
-from atom_diag import AtomBlockGf
+#from atom_diag import AtomBlockGf
 from atom_diag import partition_function, atomic_density_matrix, trace_rho_op, act
 from atom_diag import quantum_number_eigenvalues, quantum_number_eigenvalues_checked
-from atom_diag import atomic_gf
+#from atom_diag import atomic_gf
 
 # Construct real/complex AtomDiag
 def AtomDiag(*args, **kwargs):
@@ -42,7 +42,8 @@ def AtomDiag(*args, **kwargs):
     else:
         return AtomDiagReal(*args, **kwargs)
 
-__all__ = ['AtomDiag','AtomDiagReal','AtomDiagComplex','AtomBlockGf',
+__all__ = ['AtomDiag','AtomDiagReal','AtomDiagComplex',#'AtomBlockGf',
            'partition_function','atomic_density_matrix','trace_rho_op','act',
            'quantum_number_eigenvalues','quantum_number_eigenvalues_checked',
-           'atomic_gf']
+           ]
+#           'atomic_gf']
