@@ -19,7 +19,7 @@ int main(int argc, const char* argv[]) {
 
  // Diagonalize the problem ('false' = no complex-valued matrix elements in h)
  auto ad = triqs::atom_diag::atom_diag<false>(h, fops);
-
+/*
  // Create atomic_block_gf object for \beta = 10
  double beta = 10;
  gf_struct_t gf_struct = {{"dn",{0}},{"up",{0}}};
@@ -38,6 +38,6 @@ int main(int argc, const char* argv[]) {
  G_tau() = agf;
  G_iw() = agf;
  G_l() = agf;
-
+*/
  return 0;
 }

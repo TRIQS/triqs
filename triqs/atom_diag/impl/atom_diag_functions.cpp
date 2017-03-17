@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include "../atom_diag_functions.hpp"
-#include "./atom_block_gf.hpp"
+//#include "./atom_block_gf.hpp"
 #include <algorithm>
 #include <limits>
 #include <triqs/arrays.hpp>
@@ -204,7 +204,7 @@ template std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues_c
                                                                                        atom_diag<true> const&);
 
 // -----------------------------------------------------------------
-template<bool Complex>
+/*template<bool Complex>
 atom_block_gf atomic_gf(ATOM_DIAG const& atom, double beta, gf_struct_t const& gf_struct,
               std::vector<std::pair<int, int>> excluded_states) {
 
@@ -269,9 +269,9 @@ atom_block_gf atomic_gf(ATOM_DIAG const& atom, double beta, gf_struct_t const& g
  }
 
  return g;
-}
+}*/
 
-template atom_block_gf atomic_gf(atom_diag<false> const&, double, gf_struct_t const&, std::vector<std::pair<int, int>>);
-template atom_block_gf atomic_gf(atom_diag<true> const&, double, gf_struct_t const&, std::vector<std::pair<int, int>>);
+//template atom_block_gf atomic_gf(atom_diag<false> const&, double, gf_struct_t const&, std::vector<std::pair<int, int>>);
+//template atom_block_gf atomic_gf(atom_diag<true> const&, double, gf_struct_t const&, std::vector<std::pair<int, int>>);
 
 }}

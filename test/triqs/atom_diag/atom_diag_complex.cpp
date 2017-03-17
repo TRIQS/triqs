@@ -149,7 +149,7 @@ TEST(atom_diag_complex, Autopartition) {
   }
  }
 }
-
+/*
 TEST(atom_diag_complex, Functions) {
  auto fops = make_fops();
 
@@ -243,6 +243,6 @@ TEST(atom_diag_complex, Functions) {
  h5_read(ref_file, "/Functions/G_l", G_l_ref);
  G_l() = agf;
  EXPECT_BLOCK_GF_NEAR(G_l_ref,G_l);
-}
+}*/
 
 MAKE_MAIN;

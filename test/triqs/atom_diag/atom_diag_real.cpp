@@ -151,7 +151,7 @@ TEST(atom_diag_real, Autopartition) {
   }
  }
 }
-
+/*
 TEST(atom_diag_real, Functions) {
  auto fops = make_fops();
 
@@ -245,6 +245,6 @@ TEST(atom_diag_real, Functions) {
  h5_read(ref_file, "/Functions/G_l", G_l_ref);
  G_l() = agf;
  EXPECT_BLOCK_GF_NEAR(G_l_ref,G_l);
-}
+}*/
 
 MAKE_MAIN;
