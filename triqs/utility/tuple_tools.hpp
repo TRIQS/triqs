@@ -47,7 +47,7 @@ namespace std {
 
   template <typename TU> class tuple_size<_triqs_reversed_tuple<TU>> : public tuple_size<std14::decay_t<TU>> {};
 
- /* // Zipped tuple:
+  // Zipped tuple:
   template <typename... T> struct _triqs_zipped_tuple {
    std::tuple<T...> _tu;
    template <typename... U> _triqs_zipped_tuple(U &&... u) : _tu(std::forward<U>(u)...) {}
@@ -64,7 +64,7 @@ namespace std {
   template <typename... T> _triqs_zipped_tuple<T...> zip(T &&... x) {
    return {std::forward<T>(x)...};
   }
-*/
+
 
 }
 
@@ -267,6 +267,7 @@ namespace triqs { namespace tuple {
  template <typename T0, typename T1, typename F>
  auto map_on_zip_v2(F &&f, T0 &&t0, T1 &&t1)
      RETURN(map(called_on_tuple(f), zip(t0,t1)));
+
 
  /*
   * map_on_zip(f,t0,t1,t2)
