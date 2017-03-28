@@ -351,13 +351,12 @@ namespace gfs {
    return _data(n - order_min(), ellipsis());
   }
 
-#ifdef __cpp_if_constexpr
+/*#ifdef __cpp_if_constexpr
 
   /// same as (), but if n in an undefined order (i.e. NaN) it returns 0.
   crv_t get_or_zero(int n) const {
    auto r = operator()(n);
-   if
-    constexpr(!is_scalar_target) {
+   if constexpr(!is_scalar_target) {
      if (!any(_isnan(r))) return r;
      auto r2 = make_clone(r);
      r2() = 0;
@@ -369,7 +368,7 @@ namespace gfs {
   }
 
 #else
-
+*/
   private:
   template <typename U> crv_t __get_or_zero(U, int n) const {
    auto r = _data(n - order_min(), ellipsis());
@@ -386,7 +385,7 @@ namespace gfs {
   public:
   /// same as (), but if n in an undefined order (i.e. NaN) it returns 0.
   crv_t get_or_zero(int n) const { return __get_or_zero(T{}, n); }
-#endif
+//#endif
 
   friend std::string get_triqs_hdf5_data_scheme(MAKO_TAIL const &g) { return "TailGf"; }
 

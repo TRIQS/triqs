@@ -40,8 +40,8 @@ namespace triqs {
     Lambda f;
     Tu tu;
     template <typename U> decltype(auto) operator[](U const& u) { return make_bra<r - 1>(f, std::tuple_cat(tu, std::tie(u))); }
-    template<typename T> void operator=(T&&) = delete; // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
-    _bra & operator=(_bra const &) = delete;
+    template <typename T> void operator=(T&&) = delete; // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
+    _bra& operator=(_bra const&) = delete;
    };
 
    // r=1 is special
@@ -51,8 +51,8 @@ namespace triqs {
     template <typename U> decltype(auto) operator[](U const& u) {
      return triqs::tuple::apply(f, std::tuple_cat(tu, std::tie(u)));
     }
-    template<typename T> void operator=(T&&) = delete;  // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
-    _bra & operator=(_bra const &) = delete;
+    template <typename T> void operator=(T&&) = delete; // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
+    _bra& operator=(_bra const&) = delete;
    };
 
    // dispatch the constexpr
@@ -74,5 +74,5 @@ namespace triqs {
   template <int NArgs, typename Lambda, typename T> decltype(auto) make_lazy_bracket(Lambda&& f, T const& x) {
    return details::_make_lazy_bracket<NArgs>(std::forward<Lambda>(f), x, std::integral_constant<bool, (NArgs == 1)>{});
   }
-  } // namespace utility
- }  // namespace triqs
+ } // namespace utility
+} // namespace triqs
