@@ -1,5 +1,6 @@
 #include <triqs/atom_diag/atom_diag.hpp>
-#include <triqs/atom_diag/atom_diag_functions.hpp>
+#include <triqs/atom_diag/functions.hpp>
+#include <triqs/atom_diag/gf.hpp>
 
 using namespace triqs::gfs;
 using namespace triqs::operators;
@@ -19,25 +20,20 @@ int main(int argc, const char* argv[]) {
 
  // Diagonalize the problem ('false' = no complex-valued matrix elements in h)
  auto ad = triqs::atom_diag::atom_diag<false>(h, fops);
-/*
- // Create atomic_block_gf object for \beta = 10
+
+ // Inverse temperature \beta = 10 and structure of Green's functions
  double beta = 10;
- gf_struct_t gf_struct = {{"dn",{0}},{"up",{0}}};
- auto agf = atomic_gf(ad, beta, gf_struct);
+ gf_struct_t gf_struct = {{"dn", {0}}, {"up", {0}}};
 
- // Construct block_gf<imtime>, block_gf<imfreq> and block_gf<legendre> objects
- auto g_tau = gf<imtime>({beta, Fermion, 400}, {1, 1});
- auto g_iw = gf<imfreq>({beta, Fermion, 100}, {1, 1});
- auto g_l = gf<legendre>({beta, Fermion, 20}, {1, 1});
+ // Make block_gf<imtime>, block_gf<imfreq>, block_gf<legendre>
+ // and block_gf<refreq> objects
+ auto G_tau = atomic_g_tau(ad, beta, gf_struct, 200 /* n_tau */);
+ auto G_iw  = atomic_g_iw(ad, beta, gf_struct, 100 /* n_iw */);
+ auto G_l   = atomic_g_l(ad, beta, gf_struct, 20 /* n_l */);
+ auto G_w   = atomic_g_w(ad, beta, gf_struct,
+                         {-2.0, 2.0} /* energy window */,
+                         200 /* n_w */,
+                         0.01 /* broadening */);
 
- auto G_tau = make_block_gf<imtime>({"dn","up"},g_tau);
- auto G_iw = make_block_gf<imfreq>({"dn","up"},g_iw);
- auto G_l = make_block_gf<legendre>({"dn","up"},g_l);
-
- // Fill the block GFs with data
- G_tau() = agf;
- G_iw() = agf;
- G_l() = agf;
-*/
  return 0;
 }

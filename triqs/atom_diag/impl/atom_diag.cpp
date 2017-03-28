@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include "../atom_diag.hpp"
-#include "./atom_diag_worker.hpp"
+#include "./worker.hpp"
 
 #include <triqs/arrays.hpp>
 

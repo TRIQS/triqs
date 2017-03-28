@@ -6,6 +6,8 @@ from pytriqs.utility.comparison_tests import *
 import numpy as np
 from itertools import product
 
+save_h5 = False
+
 fops = [(s,o) for s,o in product(('up','dn'),range(3))]
 
 def make_hamiltonian(mu, U, J, b, t):
@@ -40,43 +42,45 @@ ad_c = AtomDiag(make_hamiltonian(0.4, 1.0, 0.3, 0.03, 0.2j), fops)
 gf_struct = {'dn':[0,1,2],'up':[0,1,2]}
 beta = 10
 
-#G_tau_gen = lambda bn: (bn,GfImTime(beta=beta,indices=gf_struct[bn],n_points=400))
-#G_iw_gen = lambda bn: (bn,GfImFreq(beta=beta,indices=gf_struct[bn],n_points=100))
-#G_l_gen = lambda bn: (bn,GfLegendre(beta=beta,indices=gf_struct[bn],n_points=20))
+# GF (real)
+G_tau = atomic_g_tau(ad_r, beta, gf_struct, 400)
+G_iw = atomic_g_iw(ad_r, beta, gf_struct, 100)
+G_l = atomic_g_l(ad_r, beta, gf_struct, 20)
+G_w = atomic_g_w(ad_r, beta, gf_struct, (-2, 2), 400, 0.01)
 
-#G_tau = BlockGf(name_block_generator = map(G_tau_gen, gf_struct))
-#G_iw = BlockGf(name_block_generator = map(G_iw_gen, gf_struct))
-#G_l = BlockGf(name_block_generator = map(G_l_gen, gf_struct))
+if save_h5:
+    with HDFArchive('atom_diag_python.h5','w') as ar:
+        ar["real"] = {'G_tau':G_tau, 'G_iw':G_iw, 'G_l':G_l, 'G_w':G_w}
+else:
+    with HDFArchive('atom_diag_python.ref.h5','r') as ref_ar:
+        assert_block_gfs_are_close(ref_ar["real"]["G_tau"], G_tau)
+        assert_block_gfs_are_close(ref_ar["real"]["G_iw"], G_iw)
+        assert_block_gfs_are_close(ref_ar["real"]["G_l"], G_l)
+        assert_block_gfs_are_close(ref_ar["real"]["G_w"], G_w)
 
-## GF (real)
-#agf = atomic_gf(ad_r, beta, gf_struct)
-#G_tau << agf
-#G_iw << agf
-#G_l << agf
-#with HDFArchive('atom_diag_python.ref.h5','r') as ar:
-    ##ar["real"] = {'G_tau':G_tau,'G_iw':G_iw,'G_l':G_l}
-    #assert_block_gfs_are_close(ar["real"]["G_tau"],G_tau)
-    #assert_block_gfs_are_close(ar["real"]["G_iw"],G_iw)
-    #assert_block_gfs_are_close(ar["real"]["G_l"],G_l)
-
-## GF (complex)
-#agf = atomic_gf(ad_c, beta, gf_struct)
-#G_tau << agf
-#G_iw << agf
-#G_l << agf
-#with HDFArchive('atom_diag_python.ref.h5','r') as ar:
-    ##ar["complex"] = {'G_tau':G_tau,'G_iw':G_iw,'G_l':G_l}
-    #assert_block_gfs_are_close(ar["complex"]["G_tau"],G_tau)
-    #assert_block_gfs_are_close(ar["complex"]["G_iw"],G_iw)
-    #assert_block_gfs_are_close(ar["complex"]["G_l"],G_l)
+# GF (complex)
+G_tau = atomic_g_tau(ad_c, beta, gf_struct, 400)
+G_iw = atomic_g_iw(ad_c, beta, gf_struct, 100)
+G_l = atomic_g_l(ad_c, beta, gf_struct, 20)
+G_w = atomic_g_w(ad_c, beta, gf_struct, (-2, 2), 400, 0.01)
+if save_h5:
+    with HDFArchive('atom_diag_python.h5','a') as ar:
+        ar["complex"] = {'G_tau':G_tau, 'G_iw':G_iw, 'G_l':G_l, 'G_w':G_w}
+else:
+    with HDFArchive('atom_diag_python.ref.h5','r') as ref_ar:
+        assert_block_gfs_are_close(ref_ar["complex"]["G_tau"], G_tau)
+        assert_block_gfs_are_close(ref_ar["complex"]["G_iw"], G_iw)
+        assert_block_gfs_are_close(ref_ar["complex"]["G_l"], G_l)
+        assert_block_gfs_are_close(ref_ar["complex"]["G_w"], G_w)
 
 # HDF5
-with HDFArchive('atom_diag.h5','w') as ar:
+with HDFArchive('atom_diag.h5', 'w') as ar:
     ar['ad_r'] = ad_r
     ar['ad_c'] = ad_c
 
-with HDFArchive('atom_diag.h5','r') as ar:
+with HDFArchive('atom_diag.h5', 'r') as ar:
     ad_1 = ar['ad_r']
     ad_2 = ar['ad_c']
 
-assert isinstance(ad_1,AtomDiagReal) and isinstance(ad_2,AtomDiagComplex)
+assert isinstance(ad_1, AtomDiagReal)
+assert isinstance(ad_2, AtomDiagComplex)

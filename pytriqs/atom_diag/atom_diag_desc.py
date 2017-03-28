@@ -28,7 +28,8 @@ module.use_module('operators', 'triqs')
 module.use_module('gf', 'triqs')
 
 module.add_include("<triqs/atom_diag/atom_diag.hpp>")
-module.add_include("<triqs/atom_diag/atom_diag_functions.hpp>")
+module.add_include("<triqs/atom_diag/functions.hpp>")
+module.add_include("<triqs/atom_diag/gf.hpp>")
 
 module.add_include("<triqs/python_tools/converters/pair.hpp>")
 module.add_include("<triqs/python_tools/converters/vector.hpp>")
@@ -129,24 +130,6 @@ for c_py, c_cpp, in (('Real','false'),('Complex','true')):
 
     module.add_class(c)
 
-# Wrap atom_block_gf
-#c = class_(
-    #py_type = "AtomBlockGf",
-    #c_type = "atom_block_gf",
-    #doc = "Green's function of a finite fermionic system"
-#)
-
-#c.add_constructor("(double beta, gf_struct_t gf_struct)")
-
-#lshift = pyfunction(name = '__lshift__', arity = 2)
-#lshift.add_overload(calling_pattern = '() =', signature = '(block_gf_view<imtime> g_tau, atom_block_gf agf)')
-#lshift.add_overload(calling_pattern = '() =', signature = '(block_gf_view<imfreq> g_iw, atom_block_gf agf)')
-#lshift.add_overload(calling_pattern = '() =', signature = '(block_gf_view<legendre> g_l, atom_block_gf agf)')
-#lshift.treat_as_inplace = True
-#c.number_protocol['lshift'] = lshift
-
-#module.add_class(c)
-
 # Wrap free functions
 for c_py, c_cpp, in (('Real','false'),('Complex','true')):
     c_type = "triqs::atom_diag::atom_diag<%s>" % c_cpp
@@ -174,8 +157,21 @@ for c_py, c_cpp, in (('Real','false'),('Complex','true')):
                          doc = "Compute values of a given quantum number for all eigenstates, "
                                "checking that `op` is a quantum number indeed.")
 
-#    module.add_function ("atom_block_gf atomic_gf(%s atom, double beta, gf_struct_t gf_struct, "
-#                         "std::vector<std::pair<int, int>> excluded_states = {})" % c_type,
-#                         doc = "The atomic Green's function, possibly with excluded states (none by default)")
+    module.add_function ("block_gf<imtime> atomic_g_tau(%s atom, double beta, gf_struct_t gf_struct, int n_tau, "
+                         "std::vector<std::pair<int, int>> excluded_states = {})" % c_type,
+                         doc = "The atomic imaginary time Green's function, possibly with excluded states (none by default)")
+
+    module.add_function ("block_gf<imfreq> atomic_g_iw(%s atom, double beta, gf_struct_t gf_struct, int n_iw, "
+                         "std::vector<std::pair<int, int>> excluded_states = {})" % c_type,
+                         doc = "The atomic Matsubara Green's function, possibly with excluded states (none by default)")
+
+    module.add_function ("block_gf<legendre> atomic_g_l(%s atom, double beta, gf_struct_t gf_struct, int n_l, "
+                         "std::vector<std::pair<int, int>> excluded_states = {})" % c_type,
+                         doc = "The atomic Green's function in Legendre representation, possibly with excluded states (none by default)")
+
+    module.add_function ("block_gf<refreq> atomic_g_w(%s atom, double beta, gf_struct_t gf_struct, "
+                         "std::pair<double, double> energy_window, int n_w, double broadening = 0, "
+                         "std::vector<std::pair<int, int>> excluded_states = {})" % c_type,
+                         doc = "The atomic real frequency Green's function, possibly with excluded states (none by default)")
 
 module.generate_code()

@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./atom_diag_worker.hpp"
+#include "./worker.hpp"
 
 #include <vector>
 #include <bitset>
