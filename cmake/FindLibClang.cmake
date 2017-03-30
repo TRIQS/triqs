@@ -58,8 +58,6 @@ if (NOT CLANG_COMPILER)
  MESSAGE(STATUS "Can not find the Clang compiler, hence can not find the option for libclang")
 endif()
 
- set(CLANG_OPT -std=c++1y )
-
 endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 if (CLANG_COMPILER)

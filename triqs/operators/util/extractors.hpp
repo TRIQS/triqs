@@ -156,7 +156,7 @@ dict_to_matrix(DictType const& dict, hilbert_space::fundamental_operator_set con
  auto mat = apply_construct_parenthesis<matrix_t>(dims);
  mat() = ValueType{};
 
- for(auto const& kv : dict) apply(mat,map(indices_to_linear,kv.first)) = ValueType(kv.second);
+ for(auto const& kv : dict) triqs::tuple::apply(mat,map(indices_to_linear,kv.first)) = ValueType(kv.second);
 
  return mat;
 }
