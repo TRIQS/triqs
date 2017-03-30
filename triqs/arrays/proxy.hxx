@@ -97,7 +97,7 @@ namespace triqs {
      return a(frozen_args, std::forward<Args>(args)...);
     }
    };
-  } // details_proxy
+  } // namespace details_proxy
 
   template <typename A, typename Tuple>
   struct array_const_proxy : public details_proxy::_proxy_impl<A, Tuple, true>, TRIQS_CONCEPT_TAG_NAME(ImmutableArray) {
@@ -314,5 +314,6 @@ namespace triqs {
   make_matrix_proxy(A&& a, long n) {
    return {std::forward<A>(a), n};
   }
- }
-}
+
+ } // namespace arrays
+} // namespace triqs

@@ -235,7 +235,7 @@ namespace triqs {
    /// Construct from the vector of names and one gf to be copied
    block_gf(block_names_t b, g_t const& g) : _block_names(std::move(b)), _glist(_block_names.size(), g) {}
 
-   /// Construct from the vector of names and one gf to be copied
+   /// Construct from the vector of names 
    block_gf(block_names_t b) : _block_names(std::move(b)), _glist(_block_names.size()) {}
 
    // mako %else:

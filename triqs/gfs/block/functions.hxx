@@ -76,5 +76,6 @@ namespace triqs {
   ////lazy_transform_t{[](auto&& x) { return FUNC(x); }, g}; //}
   // MAP_BGF(fourier);
   // MAP_BGF(inverse_fourier);
- }
-}
+
+ } // namespace gfs
+} // namespace triqs

@@ -80,5 +80,6 @@ namespace triqs {
         id0.w1 * id1.w1 * g[{id0.i1, id1.i1}];
    }
   };
- }
-}
+
+ } // namespace gfs
+} // namespace triqs
