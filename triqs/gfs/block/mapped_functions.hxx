@@ -66,5 +66,6 @@ namespace triqs {
    auto l = [](auto&& x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
    return map_block_gf(l, g);
   }
- }
-}
+
+ } // namespace gfs
+} // namespace triqs

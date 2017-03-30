@@ -21,7 +21,6 @@
 #pragma once
 #include "./group.hpp"
 #include "./string.hpp"
-#include <triqs/utility/optional_compat.hpp>
 
 namespace std { // to be found by ADL
 
@@ -45,7 +44,7 @@ namespace h5 {
    * Read optional from the h5
    */
  template <typename T> void h5_read(h5::group gr, std::string name, std::optional<T>& v) {
-  reset(v);
+  v.reset();
   // v.reset();
   if (gr.has_key(name)) v.emplace(h5_read<T>(gr, name));
  }
