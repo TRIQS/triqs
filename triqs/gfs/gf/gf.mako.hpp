@@ -765,7 +765,7 @@ namespace triqs {
 
 #ifdef __cpp_if_constexpr
   template <typename M, typename T, typename RHS> void triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
-   if constexpr (arrays::is_scalar_v<RHS>) {
+   if constexpr (arrays::is_scalar<RHS>::value) {
     for (auto const &w : g.mesh()) g[w] = rhs;
     g.singularity()                     = rhs;
    } else {

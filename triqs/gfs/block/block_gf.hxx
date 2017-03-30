@@ -52,7 +52,7 @@ namespace triqs {
 
   template <typename G>
   struct _is_block_gf_or_view<G, 0>
-      : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value || is_block_gf_or_view<G, 2>::value> {};
+     : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value || is_block_gf_or_view<G, 2>::value> {};
 
   template <typename V, typename T> struct _is_block_gf_or_view<block_gf<V, T>, 1> : std::true_type {};
   template <typename V, typename T> struct _is_block_gf_or_view<block_gf_view<V, T>, 1> : std::true_type {};
@@ -88,13 +88,13 @@ namespace triqs {
    inline auto _make_block_names1(int n) {
     std::vector<std::string> r(n);
     for (int i = 0; i < n; ++i)
-     r[i]      = std::to_string(i);
+     r[i] = std::to_string(i);
     return r;
    }
    inline std::vector<std::vector<std::string>> _make_block_names2(int n, int p) {
     return {_make_block_names1(n), _make_block_names1(p)};
    }
-  }
+  } // namespace details
 
   /// ---------------------------  implementation  ---------------------------------
 
@@ -207,7 +207,7 @@ namespace triqs {
    /// Construct from the vector of names and one gf to be copied
    block_gf(block_names_t b, g_t const& g) : _block_names(std::move(b)), _glist(_block_names.size(), g) {}
 
-   /// Construct from the vector of names and one gf to be copied
+   /// Construct from the vector of names
    block_gf(block_names_t b) : _block_names(std::move(b)), _glist(_block_names.size()) {}
 
    /// ---------------  Operator = --------------------
@@ -240,18 +240,18 @@ namespace triqs {
    }
 
    /**
-   * Assignment operator
-   *
-   * @tparam RHS Type of the right hand side rhs
-   *
-   *             RHS can be anything modeling the gf concept TBW
-   *             In particular lazy expression with Green functions
-   * @param rhs
-   * @example
-   *
-   * The assignment resizes the mesh and the data, invalidating all pointers on them.
-   *
-   */
+    * Assignment operator
+    *
+    * @tparam RHS Type of the right hand side rhs
+    *
+    *             RHS can be anything modeling the gf concept TBW
+    *             In particular lazy expression with Green functions
+    * @param rhs
+    * @example
+    *
+    * The assignment resizes the mesh and the data, invalidating all pointers on them.
+    *
+    */
    template <typename RHS> block_gf& operator=(RHS&& rhs) {
     _glist.resize(rhs.size());
     _block_names.resize(rhs.size());
@@ -411,18 +411,18 @@ namespace triqs {
   //----------------------------- MPI  -----------------------------
 
   /**
-    * Initiate (lazy) MPI Bcast
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Bcast operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Bcast
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Bcast operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T> void mpi_broadcast(block_gf<V, T>& g, mpi::communicator c = {}, int root = 0) {
    // Shall we bcast mesh ?
@@ -430,18 +430,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI Reduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Reduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Reduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Reduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf<V, T> const& a, mpi::communicator c = {},
@@ -450,18 +450,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI AllReduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI AllReduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf<V, T> const& a, mpi::communicator c = {},
@@ -576,7 +576,7 @@ namespace triqs {
    template <typename L, typename G> block_gf_view& operator=(lazy_transform_t<L, G> const& rhs) {
     // for (auto & [ l, r ] : zip(*this, rhs.value)) FIXME C++17
     //  l = rhs.lambda(r);
-    for (int i  = 0; i < rhs.value.size(); ++i)
+    for (int i = 0; i < rhs.value.size(); ++i)
      (*this)[i] = rhs.lambda(rhs.value[i]);
     return *this;
    }
@@ -597,15 +597,15 @@ namespace triqs {
    }
 
    /**
-   * Assignment operator
-   *
-   * @tparam RHS Type of the right hand side rhs
-   *
-   * 		 RHS can be anything with .block_names() and [n] -> gf
-   * @param rhs
-   * @example
-   *
-   */
+    * Assignment operator
+    *
+    * @tparam RHS Type of the right hand side rhs
+    *
+    * 		 RHS can be anything with .block_names() and [n] -> gf
+    * @param rhs
+    * @example
+    *
+    */
    template <typename RHS> std14::enable_if_t<!arrays::is_scalar<RHS>::value, block_gf_view&> operator=(RHS const& rhs) {
     if (!(size() == rhs.size()))
      TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible size" << size() << " vs " << rhs.size();
@@ -777,18 +777,18 @@ namespace triqs {
   //----------------------------- MPI  -----------------------------
 
   /**
-    * Initiate (lazy) MPI Bcast
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Bcast operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Bcast
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Bcast operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T> void mpi_broadcast(block_gf_view<V, T>& g, mpi::communicator c = {}, int root = 0) {
    // Shall we bcast mesh ?
@@ -796,18 +796,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI Reduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Reduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Reduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Reduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_view<V, T> const& a, mpi::communicator c = {},
@@ -816,18 +816,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI AllReduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI AllReduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf_view<V, T> const& a, mpi::communicator c = {},
@@ -1089,18 +1089,18 @@ namespace triqs {
   //----------------------------- MPI  -----------------------------
 
   /**
-    * Initiate (lazy) MPI Bcast
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Bcast operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Bcast
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Bcast operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T> void mpi_broadcast(block_gf_const_view<V, T>& g, mpi::communicator c = {}, int root = 0) {
    // Shall we bcast mesh ?
@@ -1108,18 +1108,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI Reduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Reduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Reduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Reduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_const_view<V, T> const& a, mpi::communicator c = {},
@@ -1128,18 +1128,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI AllReduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI AllReduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>>
@@ -1236,8 +1236,8 @@ namespace triqs {
    template <typename RHS> void _assign_impl(RHS&& rhs) {
 
     for (int w = 0; w < size1(); ++w) {
-     for (int v      = 0; v < size2(); ++v)
-      _glist[w][v]   = rhs(w, v);
+     for (int v = 0; v < size2(); ++v)
+      _glist[w][v] = rhs(w, v);
      _block_names[w] = rhs.block_names()[w];
     }
    }
@@ -1262,18 +1262,18 @@ namespace triqs {
    }
 
    /**
-   * Assignment operator
-   *
-   * @tparam RHS Type of the right hand side rhs
-   *
-   *             RHS can be anything modeling the gf concept TBW
-   *             In particular lazy expression with Green functions
-   * @param rhs
-   * @example
-   *
-   * The assignment resizes the mesh and the data, invalidating all pointers on them.
-   *
-   */
+    * Assignment operator
+    *
+    * @tparam RHS Type of the right hand side rhs
+    *
+    *             RHS can be anything modeling the gf concept TBW
+    *             In particular lazy expression with Green functions
+    * @param rhs
+    * @example
+    *
+    * The assignment resizes the mesh and the data, invalidating all pointers on them.
+    *
+    */
    template <typename RHS> block2_gf& operator=(RHS&& rhs) {
     _glist.resize(rhs.size());
     _block_names.resize(rhs.size());
@@ -1439,18 +1439,18 @@ namespace triqs {
   //----------------------------- MPI  -----------------------------
 
   /**
-    * Initiate (lazy) MPI Bcast
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Bcast operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Bcast
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Bcast operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T> void mpi_broadcast(block2_gf<V, T>& g, mpi::communicator c = {}, int root = 0) {
    // Shall we bcast mesh ?
@@ -1458,18 +1458,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI Reduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Reduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Reduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Reduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf<V, T> const& a, mpi::communicator c = {},
@@ -1478,18 +1478,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI AllReduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI AllReduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf<V, T> const& a, mpi::communicator c = {},
@@ -1574,8 +1574,8 @@ namespace triqs {
    template <typename RHS> void _assign_impl(RHS&& rhs) {
 
     for (int w = 0; w < size1(); ++w) {
-     for (int v      = 0; v < size2(); ++v)
-      _glist[w][v]   = rhs(w, v);
+     for (int v = 0; v < size2(); ++v)
+      _glist[w][v] = rhs(w, v);
      _block_names[w] = rhs.block_names()[w];
     }
    }
@@ -1605,22 +1605,22 @@ namespace triqs {
      TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
     _block_names = l.rhs.block_names();
     for (int i = 0; i < size1(); ++i)
-     for (int j    = 0; j < size2(); ++j)
+     for (int j = 0; j < size2(); ++j)
       _glist[i][j] = mpi_reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
     // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
     // we can not overload the = of vector for better API.
    }
 
    /**
-   * Assignment operator
-   *
-   * @tparam RHS Type of the right hand side rhs
-   *
-   * 		 RHS can be anything with .block_names() and [n] -> gf
-   * @param rhs
-   * @example
-   *
-   */
+    * Assignment operator
+    *
+    * @tparam RHS Type of the right hand side rhs
+    *
+    * 		 RHS can be anything with .block_names() and [n] -> gf
+    * @param rhs
+    * @example
+    *
+    */
    template <typename RHS> std14::enable_if_t<!arrays::is_scalar<RHS>::value, block2_gf_view&> operator=(RHS const& rhs) {
     if (!(size() == rhs.size()))
      TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible size" << size() << " vs " << rhs.size();
@@ -1799,18 +1799,18 @@ namespace triqs {
   //----------------------------- MPI  -----------------------------
 
   /**
-    * Initiate (lazy) MPI Bcast
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Bcast operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Bcast
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Bcast operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T> void mpi_broadcast(block2_gf_view<V, T>& g, mpi::communicator c = {}, int root = 0) {
    // Shall we bcast mesh ?
@@ -1818,18 +1818,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI Reduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Reduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Reduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Reduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_view<V, T> const& a, mpi::communicator c = {},
@@ -1838,18 +1838,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI AllReduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI AllReduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf_view<V, T> const& a, mpi::communicator c = {},
@@ -1932,8 +1932,8 @@ namespace triqs {
    template <typename RHS> void _assign_impl(RHS&& rhs) {
 
     for (int w = 0; w < size1(); ++w) {
-     for (int v      = 0; v < size2(); ++v)
-      _glist[w][v]   = rhs(w, v);
+     for (int v = 0; v < size2(); ++v)
+      _glist[w][v] = rhs(w, v);
      _block_names[w] = rhs.block_names()[w];
     }
    }
@@ -2102,18 +2102,18 @@ namespace triqs {
   //----------------------------- MPI  -----------------------------
 
   /**
-    * Initiate (lazy) MPI Bcast
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Bcast operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Bcast
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Bcast operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T> void mpi_broadcast(block2_gf_const_view<V, T>& g, mpi::communicator c = {}, int root = 0) {
    // Shall we bcast mesh ?
@@ -2121,18 +2121,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI Reduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI Reduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI Reduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI Reduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_const_view<V, T> const& a, mpi::communicator c = {},
@@ -2141,18 +2141,18 @@ namespace triqs {
   }
 
   /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
+   * Initiate (lazy) MPI AllReduce
+   *
+   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+   * the MPI AllReduce operation is performed.
+   *
+   * @group MPI
+   * @param g The Green function
+   * @param c The MPI communicator (default is world)
+   * @param root The root of the broadcast communication in the MPI sense.
+   * @return Returns a lazy object describing the object and the MPI operation to be performed.
+   *
+   */
 
   template <typename V, typename T>
   mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>>
@@ -2245,8 +2245,8 @@ namespace triqs {
                                                                                      std::vector<std::vector<GF>> v) {
    return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
   }
- }
-}
+ } // namespace gfs
+} // namespace triqs
 
 /*------------------------------------------------------------------------------------------------------
  *             Delete std::swap for views
@@ -2260,4 +2260,4 @@ namespace std {
  void swap(triqs::gfs::block_gf_const_view<Var, Target>& a, triqs::gfs::block_gf_const_view<Var, Target>& b) = delete;
  template <typename Var, typename Target>
  void swap(triqs::gfs::block2_gf_const_view<Var, Target>& a, triqs::gfs::block2_gf_const_view<Var, Target>& b) = delete;
-}
+} // namespace std
