@@ -40,25 +40,29 @@ namespace triqs {
    template <int r, typename Lambda, typename Tu> struct _bra {
     Lambda f;
     Tu tu;
+    _bra& operator=(_bra const&)       = delete;
+    template <typename T> void operator=(T&&) = delete; // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
     template <typename U> decltype(auto) operator[](U const& u) {
      if constexpr (r == 1)
-      return std::apply(f, std::tuple_cat(tu, std::tie(u)));
+      return triqs::tuple::apply(f, std::tuple_cat(tu, std::tie(u)));
      else
-      return make_bra<r - 1>{f, std::tuple_cat(tu, std::tie(u))};
+      return make_bra<r - 1>(f, std::tuple_cat(tu, std::tie(u)));
     }
    };
 
-   /**
-      * @tparam r The total number of [][] expected
-      * @param f The lambda to be called with the accumulated arguments
-      *
-      */
-   template <int NArgs, typename Lambda, typename T> decltype(auto) make_lazy_bracket(Lambda&& f, T const& x) {
-    if constexpr (NArgs == 1)
-     return f(x);
-    else
-     return details::make_bra<NArgs - 1>(std::forward<Lambda>(f), std::tie(x));
-   }
+  } // namespace details
+
+  /**
+     * @tparam r The total number of [][] expected
+     * @param f The lambda to be called with the accumulated arguments
+     *
+     */
+  template <int NArgs, typename Lambda, typename T> decltype(auto) make_lazy_bracket(Lambda&& f, T const& x) {
+   if constexpr (NArgs == 1)
+    return f(x);
+   else
+    return details::make_bra<NArgs - 1>(std::forward<Lambda>(f), std::tie(x));
+  }
 #else
   namespace details {
 
@@ -74,8 +78,8 @@ namespace triqs {
     Lambda f;
     Tu tu;
     template <typename U> decltype(auto) operator[](U const& u) { return make_bra<r - 1>(f, std::tuple_cat(tu, std::tie(u))); }
-    template<typename T> void operator=(T&&) = delete; // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
-    _bra & operator=(_bra const &) = delete;
+    template <typename T> void operator=(T&&) = delete; // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
+    _bra& operator=(_bra const&) = delete;
    };
 
    // r=1 is special
@@ -85,8 +89,8 @@ namespace triqs {
     template <typename U> decltype(auto) operator[](U const& u) {
      return triqs::tuple::apply(f, std::tuple_cat(tu, std::tie(u)));
     }
-    template<typename T> void operator=(T&&) = delete;  // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
-    _bra & operator=(_bra const &) = delete;
+    template <typename T> void operator=(T&&) = delete; // IF YOU SEE THIS, YOU PROBABLY FORGOT A []
+    _bra& operator=(_bra const&) = delete;
    };
 
    // dispatch the constexpr
@@ -109,5 +113,5 @@ namespace triqs {
    return details::_make_lazy_bracket<NArgs>(std::forward<Lambda>(f), x, std::integral_constant<bool, (NArgs == 1)>{});
   }
 #endif
-  } // namespace utility
- }  // namespace triqs
+ } // namespace utility
+} // namespace triqs

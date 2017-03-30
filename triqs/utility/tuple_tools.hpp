@@ -61,7 +61,7 @@ namespace std {
 
   template <typename T0, typename... T> class tuple_size<_triqs_zipped_tuple<T0, T...>> : public std::tuple_size<std14::decay_t<T0>> {};
 
-  template <typename... T> _triqs_zipped_tuple<T...> zip(T &&... x) {
+  template <typename... T> _triqs_zipped_tuple<T...> zip_tuple(T &&... x) {
    return {std::forward<T>(x)...};
   }
 
@@ -154,7 +154,7 @@ namespace triqs { namespace tuple {
   */
  template <typename F> struct _called_on_tuple {
   F _f;
-  template <typename Tu> AUTO_DECL operator()(Tu &&tu) RETURN(apply(_f, std::forward<Tu>(tu)));
+  template <typename Tu> AUTO_DECL operator()(Tu &&tu) RETURN(triqs::tuple::apply(_f, std::forward<Tu>(tu)));
  };
 
  template <typename F> _called_on_tuple<F> called_on_tuple(F &&f) {
@@ -174,7 +174,7 @@ namespace triqs { namespace tuple {
  template <typename F> void _for_each_apply_impl(F &&f) {}
 
  template <typename F, typename T0, typename... T> void _for_each_apply_impl(F &&f, T0 &&t0, T &&... t) {
-  apply(f, std::forward<T0>(t0));
+  triqs::tuple::apply(f, std::forward<T0>(t0));
   _for_each_apply_impl(f, std::forward<T>(t)...);
  }
 
@@ -265,7 +265,7 @@ namespace triqs { namespace tuple {
 
  template <typename T0, typename T1, typename F>
  auto map_on_zip_v2(F &&f, T0 &&t0, T1 &&t1)
-     RETURN(map(called_on_tuple(f), zip(t0,t1)));
+     RETURN(map(called_on_tuple(f), zip_tuple(t0,t1)));
 
  /*
   * map_on_zip(f,t0,t1,t2)
