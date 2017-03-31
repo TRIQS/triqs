@@ -10,6 +10,7 @@
 
 using namespace triqs::arrays;
 using namespace triqs::hilbert_space;
+using namespace triqs::atom_diag;
 
 //#define GENERATE_REF_H5
 #ifdef GENERATE_REF_H5
@@ -321,15 +322,17 @@ TEST(atom_diag_real, Functions) {
 
  int n_tau = 1000;
  int n_iw = 400;
- int n_l = 25;
+ unsigned int n_l = 25;
  int n_w = 1000;
 
  triqs::atom_diag::excluded_states_t excluded_states =
   {{1,0},{1,1},{3,0},{3,1},{3,2},{3,3}};
  auto G_tau = atomic_g_tau(ad, beta, gf_struct, n_tau, excluded_states);
  auto G_iw = atomic_g_iw(ad, beta, gf_struct, n_iw, excluded_states);
- auto G_l = atomic_g_l(ad, beta, gf_struct, n_l,excluded_states);
+ auto G_l = atomic_g_l(ad, beta, gf_struct, n_l, excluded_states);
  auto G_w = atomic_g_w(ad, beta, gf_struct, {-2.0, 2.0}, n_w, 0.01, excluded_states);
+
+ auto lehmann = atomic_g_lehmann(ad, beta, gf_struct, excluded_states);
 
 #ifndef GENERATE_REF_H5
  auto G_tau_ref = G_tau;
@@ -344,6 +347,16 @@ TEST(atom_diag_real, Functions) {
  auto G_w_ref = G_w;
  h5_read(ref_file, "/Functions/G_w", G_w_ref);
  EXPECT_BLOCK_GF_NEAR(G_w_ref, G_w);
+
+ // Check indirect GF calculation via Lehmann representation
+ auto G_tau_ind = atomic_g_tau<false>(lehmann, gf_struct, {beta, Fermion, n_tau});
+ EXPECT_BLOCK_GF_NEAR(G_tau_ref, G_tau_ind);
+ auto G_iw_ind = atomic_g_iw<false>(lehmann, gf_struct, {beta, Fermion, n_iw});
+ EXPECT_BLOCK_GF_NEAR(G_iw_ref, G_iw_ind);
+ auto G_l_ind = atomic_g_l<false>(lehmann, gf_struct, {beta, Fermion, n_l});
+ EXPECT_BLOCK_GF_NEAR(G_l_ref, G_l_ind);
+ auto G_w_ind = atomic_g_w<false>(lehmann, gf_struct, {-2.0, 2.0, n_w}, 0.01);
+ EXPECT_BLOCK_GF_NEAR(G_w_ref, G_w_ind);
 #endif
 
 #ifdef GENERATE_REF_H5

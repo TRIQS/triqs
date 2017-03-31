@@ -39,9 +39,17 @@ using namespace triqs::arrays;
 #define ATOM_DIAG_C atom_diag<true>
 #define ATOM_DIAG_T typename atom_diag<Complex>
 
-template<bool Complex>
-gf_lehmann_t<Complex> atomic_g_lehmann(ATOM_DIAG const& atom, double beta, gf_struct_t const& gf_struct,
-                                       excluded_states_t excluded_states) {
+// -----------------------------------------------------------------
+
+//////////////////////////////
+/// Lehmann representation ///
+//////////////////////////////
+
+// Generate Lehmann representation of GF defined by gf_struct
+// passing every term to proc(int bl, int n1, int n2, double pole, scalar_t residue)
+template<bool Complex, typename ProcessTerm>
+inline void atomic_g_lehmann_impl(ATOM_DIAG const& atom, double beta, gf_struct_t const& gf_struct,
+                                  excluded_states_t excluded_states, ProcessTerm proc) {
  // Sort excluded states to speed up lookups
  std::sort(excluded_states.begin(), excluded_states.end());
  auto is_excluded = [&excluded_states](int A, int ia) {
@@ -65,15 +73,9 @@ gf_lehmann_t<Complex> atomic_g_lehmann(ATOM_DIAG const& atom, double beta, gf_st
 
  for (auto & w : weights) w /= z;
 
- // Prepare Lehmann GF container
- gf_lehmann_t<Complex> g;
- g.reserve(gf_struct.size());
- for(auto const& block : gf_struct)
-  g.emplace_back(block.second.size(), block.second.size());
-
  auto const & fops = atom.get_fops();
 
- // Fill gf_lehmann_t with terms
+ // Generate all terms in Lehmann representation
  int bl = 0;
  for (auto const& block : gf_struct) {
   int bl_size = block.second.size();
@@ -82,8 +84,6 @@ gf_lehmann_t<Complex> atomic_g_lehmann(ATOM_DIAG const& atom, double beta, gf_st
   for (int inner_index2 : range(bl_size)) {
     int n1 = fops[{block.first, block.second[inner_index1]}]; // linear_index of c
     int n2 = fops[{block.first, block.second[inner_index2]}]; // linear_index of c_dag
-
-    auto & terms = g[bl](inner_index1, inner_index2);
 
     for (int A = 0; A < n_sp; ++A) {                         // index of the A block. sum over all
      int B = atom.cdag_connection(n2, A);                    // index of the block connected to A by operator c_n
@@ -98,15 +98,35 @@ gf_lehmann_t<Complex> atomic_g_lehmann(ATOM_DIAG const& atom, double beta, gf_st
        auto Eb = atom.get_eigenvalue(B, ib);
 
        if(std::abs(residue) < std::numeric_limits<double>::epsilon()) continue;
-       terms.emplace_back(Eb - Ea, residue);
+       proc(bl, inner_index1, inner_index2, Eb - Ea, residue);
       }
      }
     }
    }
   ++bl;
  }
+}
 
- return g;
+// -----------------------------------------------------------------
+
+// Construct and return Lehmann representation
+template<bool Complex>
+gf_lehmann_t<Complex> atomic_g_lehmann(ATOM_DIAG const& atom, double beta, gf_struct_t const& gf_struct,
+                                       excluded_states_t excluded_states) {
+ // Prepare Lehmann GF container
+ gf_lehmann_t<Complex> lehmann;
+ lehmann.reserve(gf_struct.size());
+ for(auto const& block : gf_struct) {
+  lehmann.emplace_back(block.second.size(), block.second.size());
+ }
+
+ // Fill container
+ auto fill = [&lehmann](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) {
+  lehmann[bl](n1, n2).emplace_back(pole, residue);
+ };
+ atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states, fill);
+
+ return lehmann;
 }
 template gf_lehmann_t<false> atomic_g_lehmann(ATOM_DIAG_R const&, double, gf_struct_t const&,
                                               excluded_states_t);
@@ -114,78 +134,115 @@ template gf_lehmann_t<true> atomic_g_lehmann(ATOM_DIAG_C const&, double, gf_stru
                                              excluded_states_t);
 
 // -----------------------------------------------------------------
-template<typename M, typename Fill>
-inline block_gf<M> make_and_fill_block_gf(gf_struct_t const& gf_struct, gf_mesh<M> const& mesh, Fill fill) {
+
+/// Create block_gf<T> object
+template<typename M>
+inline block_gf<M> make_block_gf(gf_struct_t const& gf_struct, gf_mesh<M> const& mesh) {
  std::vector<std::string> block_names;
  std::vector<gf<M>> g_blocks;
 
- int bl = 0;
  for (auto const& block : gf_struct) {
   block_names.push_back(block.first);
   int bl_size = block.second.size();
   g_blocks.push_back(gf<M>{mesh, {bl_size, bl_size}});
-  for(int n1 : range(bl_size))
-  for(int n2 : range(bl_size)) {
-   fill(bl, n1, n2, slice_target_to_scalar(g_blocks.back(), n1, n2));
-  }
-  ++bl;
  }
 
  return make_block_gf(block_names, g_blocks);
 }
 
 // -----------------------------------------------------------------
-template<bool Complex>
-inline void check_lehmann_struct(gf_lehmann_t<Complex> const& lehmann, gf_struct_t const& gf_struct) {
+
+/// In debug mode, check that Lehmann representation object is compatible with gf_struct
+template<bool Complex, typename T>
+inline void check_lehmann_struct(gf_lehmann_t<Complex> const& lehmann, block_gf_view<T> g) {
 #ifndef NDEBUG
- assert(lehmann.size() == gf_struct.size());
+ assert(lehmann.size() == g.size());
  int bl = 0;
- for(auto const& b : gf_struct) {
-  auto s = lehmann[bl].shape();
-  assert(s[0] == b.second.size() && s[1] == b.second.size());
+ for(auto const& block : g) {
+  assert(block.target_shape() == lehmann[bl].shape());
   ++bl;
  }
 #endif
 }
 
 // -----------------------------------------------------------------
+
+/// Fill block_gf<T> object using precomputed Lehmann representation
+template<bool Complex, typename T, typename ProcessTerm>
+inline void fill_block_gf_from_lehmann(block_gf_view<T> g,
+                                       gf_lehmann_t<Complex> const& lehmann,
+                                       ProcessTerm proc) {
+ check_lehmann_struct<Complex>(lehmann, g);
+
+ int bl = 0;
+ for(auto & block : g) {
+  auto shape = block.target_shape();
+  for(int n1 : range(shape[0]))
+  for(int n2 : range(shape[1])) {
+   for(auto const& term : lehmann[bl](n1, n2))
+    proc(bl, n1, n2, term.first, term.second);
+  }
+  ++bl;
+ }
+}
+
+// -----------------------------------------------------------------
+
+//////////////////////////
+/// GF: Imaginary time ///
+//////////////////////////
+
+// Returns lambda-function compatible with atomic_g_lehmann_impl
+// The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
+template<bool Complex> auto make_term_proc(double beta, block_gf_view<imtime> gf) {
+ return [&gf, beta](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) {
+  gf_view<imtime, scalar_valued> g = slice_target_to_scalar(gf[bl], n1, n2);
+
+  auto w = -residue / (pole > 0 ? (1 + std::exp(-beta*pole)) : (std::exp(beta*pole) + 1));
+
+  // Set data points
+  for(auto tau : g.mesh())
+   g[tau] += w * (pole > 0 ? std::exp(-double(tau)*pole) : std::exp((beta-double(tau))*pole));
+
+  // Set tail
+  auto & tail = g.singularity();
+  auto tail_coeff = residue;
+  int omax = tail.order_max();
+  for(int o = 1; o <= omax; ++o) {
+   tail(o) += tail_coeff;
+   tail_coeff *= pole;
+  }
+ };
+}
+
+// -----------------------------------------------------------------
+
+/// G(\tau) from Lehmann representation
 template<bool Complex>
 block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const& lehmann,
                               gf_struct_t const& gf_struct,
                               gf_mesh<imtime> const& mesh) {
- check_lehmann_struct<Complex>(lehmann, gf_struct);
-
  double beta = mesh.domain().beta;
- auto fill = [&lehmann, beta](int bl, int n1, int n2, gf_view<imtime, scalar_valued> g) {
-  // Iterate over all terms in Lehmann representation
-  for(auto term : lehmann[bl](n1, n2)) {
-   auto pole = term.first;
-   auto residue = term.second;
-   auto w = -residue / (pole > 0 ? (1 + std::exp(-beta*pole)) : (std::exp(beta*pole) + 1));
-
-   // Set data points
-   for(auto tau : g.mesh())
-    g[tau] += w * (pole > 0 ? std::exp(-double(tau)*pole) : std::exp((beta-double(tau))*pole));
-
-   // Set tail
-   auto & tail = g.singularity();
-   auto tail_coeff = residue;
-   int omax = tail.order_max();
-   for(int o = 1; o <= omax; ++o) {
-    tail(o) += tail_coeff;
-    tail_coeff *= pole;
-   }
-  }
- };
- return make_and_fill_block_gf<imtime>(gf_struct, mesh, fill);
+ auto g = make_block_gf(gf_struct, mesh);
+ fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(beta, g()));
+ return g;
 }
+template block_gf<imtime> atomic_g_tau<false>(gf_lehmann_t<false> const&, gf_struct_t const&,
+                                              gf_mesh<imtime> const&);
+template block_gf<imtime> atomic_g_tau<true>(gf_lehmann_t<true> const&, gf_struct_t const&,
+                                             gf_mesh<imtime> const&);
 
+// -----------------------------------------------------------------
+
+/// G(\tau) from atom_diag
 template<bool Complex>
 block_gf<imtime> atomic_g_tau(ATOM_DIAG const& atom,
                               double beta, gf_struct_t const& gf_struct, int n_tau,
                               excluded_states_t const& excluded_states) {
- return atomic_g_tau<Complex>(atomic_g_lehmann(atom, beta, gf_struct, excluded_states),
-                              gf_struct, {beta, Fermion, n_tau});
+ auto g = make_block_gf<imtime>(gf_struct, {beta, Fermion, n_tau});
+ atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states,
+                       make_term_proc<Complex>(beta, g()));
+ return g;
 }
 template block_gf<imtime> atomic_g_tau(ATOM_DIAG_R const&, double, gf_struct_t const&, int,
                                        excluded_states_t const&);
@@ -193,38 +250,58 @@ template block_gf<imtime> atomic_g_tau(ATOM_DIAG_C const&, double, gf_struct_t c
                                        excluded_states_t const&);
 
 // -----------------------------------------------------------------
+
+/////////////////////////////////
+/// GF: Matsubara frequencies ///
+/////////////////////////////////
+
+// Returns lambda-function compatible with atomic_g_lehmann_impl
+// The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
+template<bool Complex> auto make_term_proc(block_gf_view<imfreq> gf) {
+ return [&gf](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) {
+  gf_view<imfreq, scalar_valued> g = slice_target_to_scalar(gf[bl], n1, n2);
+
+  // Set data points
+  for(auto iw : g.mesh()) g[iw] += residue / (iw - pole);
+
+  // Set tail
+  auto & tail = g.singularity();
+  auto tail_coeff = residue;
+  int omax = tail.order_max();
+  for(int o = 1; o <= omax; ++o) {
+   tail(o) += tail_coeff;
+   tail_coeff *= pole;
+  }
+ };
+}
+
+// -----------------------------------------------------------------
+
+/// G(i\omega) from Lehmann representation
 template<bool Complex>
 block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const& lehmann,
                              gf_struct_t const& gf_struct,
                              gf_mesh<imfreq> const& mesh) {
- auto fill = [&lehmann](int bl, int n1, int n2, gf_view<imfreq, scalar_valued> g) {
-  // Iterate over all terms in Lehmann representation
-  for(auto term : lehmann[bl](n1, n2)) {
-   auto pole = term.first;
-   auto residue = term.second;
-
-   // Set data points
-   for(auto iw : g.mesh()) g[iw] += residue / (iw - pole);
-
-   // Set tail
-   auto & tail = g.singularity();
-   auto tail_coeff = residue;
-   int omax = tail.order_max();
-   for(int o = 1; o <= omax; ++o) {
-    tail(o) += tail_coeff;
-    tail_coeff *= pole;
-   }
-  }
- };
- return make_and_fill_block_gf<imfreq>(gf_struct, mesh, fill);
+ auto g = make_block_gf(gf_struct, mesh);
+ fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(g()));
+ return g;
 }
+template block_gf<imfreq> atomic_g_iw<false>(gf_lehmann_t<false> const&, gf_struct_t const&,
+                                             gf_mesh<imfreq> const&);
+template block_gf<imfreq> atomic_g_iw<true>(gf_lehmann_t<true> const&, gf_struct_t const&,
+                                            gf_mesh<imfreq> const&);
 
+// -----------------------------------------------------------------
+
+/// G(i\omega) from atom_diag
 template<bool Complex>
 block_gf<imfreq> atomic_g_iw(ATOM_DIAG const& atom,
                              double beta, gf_struct_t const& gf_struct, int n_iw,
                              excluded_states_t const& excluded_states) {
- return atomic_g_iw<Complex>(atomic_g_lehmann(atom, beta, gf_struct, excluded_states),
-                             gf_struct, {beta, Fermion, n_iw});
+ auto g = make_block_gf<imfreq>(gf_struct, {beta, Fermion, n_iw});
+ atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states,
+                       make_term_proc<Complex>(g()));
+ return g;
 }
 template block_gf<imfreq> atomic_g_iw(ATOM_DIAG_R const&, double, gf_struct_t const&, int,
                                       excluded_states_t const&);
@@ -232,36 +309,56 @@ template block_gf<imfreq> atomic_g_iw(ATOM_DIAG_C const&, double, gf_struct_t co
                                       excluded_states_t const&);
 
 // -----------------------------------------------------------------
+
+/////////////////////////////////
+/// GF: Legendre coefficients ///
+/////////////////////////////////
+
+// Returns lambda-function compatible with atomic_g_lehmann_impl
+// The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
+template<bool Complex> auto make_term_proc(double beta, block_gf_view<legendre> gf) {
+ return [&gf, beta](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) {
+  gf_view<legendre, scalar_valued> g = slice_target_to_scalar(gf[bl], n1, n2);
+
+  // Set data points
+  double x = beta * pole / 2;
+  double w = -beta / (2 * std::cosh(x));
+  for(auto l : g.mesh()) {
+   auto ll = int(l);
+   g[l] += residue * w * std::sqrt(2*ll+1) * (ll%2==0 ? 1 : std::copysign(1,-x))
+                       * triqs::utility::mod_cyl_bessel_i(ll,std::abs(x));
+  }
+ };
+}
+
+// -----------------------------------------------------------------
+
+/// G_\ell from Lehmann representation
 template<bool Complex>
 block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const& lehmann,
                               gf_struct_t const& gf_struct,
                               gf_mesh<legendre> const& mesh) {
  double beta = mesh.domain().beta;
- auto fill = [&lehmann, beta](int bl, int n1, int n2, gf_view<legendre, scalar_valued> g) {
-  // Iterate over all terms in Lehmann representation
-  for(auto term : lehmann[bl](n1, n2)) {
-   auto pole = term.first;
-   auto residue = term.second;
-
-   // Set data points
-   double x = beta * pole / 2;
-   double w = -beta / (2 * std::cosh(x));
-   for(auto l : g.mesh()) {
-    auto ll = int(l);
-    g[l] += residue * w * std::sqrt(2*ll+1) * (ll%2==0 ? 1 : std::copysign(1,-x))
-                        * triqs::utility::mod_cyl_bessel_i(ll,std::abs(x));
-   }
-  }
- };
- return make_and_fill_block_gf<legendre>(gf_struct, mesh, fill);
+ auto g = make_block_gf(gf_struct, mesh);
+ fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(beta, g()));
+ return g;
 }
+template block_gf<legendre> atomic_g_l<false>(gf_lehmann_t<false> const&, gf_struct_t const&,
+                                              gf_mesh<legendre> const&);
+template block_gf<legendre> atomic_g_l<true>(gf_lehmann_t<true> const&, gf_struct_t const&,
+                                             gf_mesh<legendre> const&);
 
+// -----------------------------------------------------------------
+
+/// G_\ell from atom_diag
 template<bool Complex>
 block_gf<legendre> atomic_g_l(ATOM_DIAG const& atom,
                               double beta, gf_struct_t const& gf_struct, int n_l,
                               excluded_states_t const& excluded_states) {
- return atomic_g_l<Complex>(atomic_g_lehmann(atom, beta, gf_struct, excluded_states),
-                            gf_struct, {beta, Fermion, static_cast<size_t>(n_l)});
+ auto g = make_block_gf<legendre>(gf_struct, {beta, Fermion, static_cast<size_t>(n_l)});
+ atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states,
+                       make_term_proc<Complex>(beta, g()));
+ return g;
 }
 template block_gf<legendre> atomic_g_l(ATOM_DIAG_R const&, double, gf_struct_t const&, int,
                                        excluded_states_t const&);
@@ -269,41 +366,61 @@ template block_gf<legendre> atomic_g_l(ATOM_DIAG_C const&, double, gf_struct_t c
                                        excluded_states_t const&);
 
 // -----------------------------------------------------------------
+
+////////////////////////////
+/// GF: Real frequencies ///
+////////////////////////////
+
+// Returns lambda-function compatible with atomic_g_lehmann_impl
+// The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
+template<bool Complex> auto make_term_proc(block_gf_view<refreq> gf, double broadening) {
+ return [&gf, broadening](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) {
+  gf_view<refreq, scalar_valued> g = slice_target_to_scalar(gf[bl], n1, n2);
+
+  // Set data points
+  for(auto w : g.mesh()) g[w] += residue / (w + 1_j * broadening - pole);
+
+  // Set tail
+  auto & tail = g.singularity();
+  std::complex<double> tail_coeff = residue;
+  int omax = tail.order_max();
+  for(int o = 1; o <= omax; ++o) {
+   tail(o) += tail_coeff;
+   tail_coeff *= (pole - 1_j * broadening);
+  }
+ };
+}
+
+// -----------------------------------------------------------------
+
+/// G(\omega) from Lehmann representation
 template<bool Complex>
 block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const& lehmann,
                               gf_struct_t const& gf_struct,
                               gf_mesh<refreq> const& mesh,
                               double broadening) {
- auto fill = [&lehmann, broadening](int bl, int n1, int n2, gf_view<refreq, scalar_valued> g) {
-  // Iterate over all terms in Lehmann representation
-  for(auto term : lehmann[bl](n1, n2)) {
-   auto pole = term.first;
-   auto residue = term.second;
-
-   // Set data points
-   for(auto w : g.mesh()) g[w] += residue / (w + 1_j * broadening - pole);
-
-   // Set tail
-   auto & tail = g.singularity();
-   std::complex<double> tail_coeff = residue;
-   int omax = tail.order_max();
-   for(int o = 1; o <= omax; ++o) {
-    tail(o) += tail_coeff;
-    tail_coeff *= (pole - 1_j * broadening);
-   }
-  }
- };
- return make_and_fill_block_gf<refreq>(gf_struct, mesh, fill);
+ auto g = make_block_gf(gf_struct, mesh);
+ fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(g(), broadening));
+ return g;
 }
+template block_gf<refreq> atomic_g_w<false>(gf_lehmann_t<false> const&, gf_struct_t const&,
+                              gf_mesh<refreq> const&, double);
+template block_gf<refreq> atomic_g_w<true>(gf_lehmann_t<true> const&, gf_struct_t const&,
+                              gf_mesh<refreq> const&, double);
 
+// -----------------------------------------------------------------
+
+/// G(\omega) from atom_diag
 template<bool Complex>
 block_gf<refreq> atomic_g_w(ATOM_DIAG const& atom,
                             double beta, gf_struct_t const& gf_struct,
                             std::pair<double, double> const& energy_window, int n_w,
                             double broadening,
                             excluded_states_t const& excluded_states) {
- return atomic_g_w<Complex>(atomic_g_lehmann(atom, beta, gf_struct, excluded_states),
-                            gf_struct, {energy_window.first, energy_window.second, n_w}, broadening);
+ auto g = make_block_gf<refreq>(gf_struct, {energy_window.first, energy_window.second, n_w});
+ atomic_g_lehmann_impl(atom, beta, gf_struct, excluded_states,
+                       make_term_proc<Complex>(g(), broadening));
+ return g;
 }
 template block_gf<refreq> atomic_g_w(ATOM_DIAG_R const&, double, gf_struct_t const&,
                                      std::pair<double, double> const&, int, double,
