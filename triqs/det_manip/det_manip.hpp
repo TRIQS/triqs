@@ -58,6 +58,7 @@ namespace triqs { namespace det_manip {
   using vector_type = arrays::vector<value_type>;
   using matrix_type = arrays::matrix<value_type>;
   using matrix_view_type = arrays::matrix_view<value_type>;
+  using matrix_const_view_type = arrays::matrix_const_view<value_type>;
 
   protected: // the data
   using int_type = std::ptrdiff_t;
@@ -284,6 +285,12 @@ namespace triqs { namespace det_manip {
     /// Returns the j-th values of y
     y_type const & get_y(size_t j) const { return y_values[col_num[j]];}
 
+    /// Returns the vector of x_values using the internal storage order
+    std::vector<x_type> const & get_x_values() const { return x_values;}
+
+    /// Returns the vector of y_values using the internal storage order
+    std::vector<y_type> const & get_y_values() const { return y_values;}
+
     /// Returns the function f
     FunctionType const & get_function() const { return f;}
 
@@ -294,8 +301,11 @@ namespace triqs { namespace det_manip {
     // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
     value_type inverse_matrix(size_t i,size_t j) const { return mat_inv(col_num[i],row_num[j]);}
 
+    /** Returns M^{-1}(i,j) using the internal storage order */
+    value_type inverse_matrix_values(size_t i,size_t j) const { return mat_inv(i,j);}
+
     /// Returns the inverse matrix. Warning : this is slow, since it create a new copy, and reorder the lines/cols
-    matrix_view_type inverse_matrix() const {
+    matrix_type inverse_matrix() const {
      matrix_type res(N,N);
      for (size_t i=0; i<N;i++)
       for (size_t j=0; j<N;j++)
@@ -303,8 +313,13 @@ namespace triqs { namespace det_manip {
      return res;
     }
 
+    /// Returns the inverse matrix. Warning : this is slow, since it create a new copy, and reorder the lines/cols
+    matrix_const_view_type inverse_matrix_values() const {
+       return make_const_view(mat_inv); 
+    }
+
     /// Rebuild the matrix. Warning : this is slow, since it create a new matrix and re-evaluate the function.
-    matrix_view_type matrix() const {
+    matrix_type matrix() const {
      matrix_type res(N,N);
      for (size_t i=0; i<N;i++)
       for (size_t j=0; j<N;j++)
