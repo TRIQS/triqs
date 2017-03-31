@@ -22,6 +22,7 @@ else()
 SET(TRIAL_LIBRARY_PATHS
  /usr/lib 
  /usr/lib/x86_64-linux-gnu
+ /usr/lib/llvm-4.0/lib
  /usr/lib/llvm-3.9/lib
  /usr/lib/llvm-3.8/lib
  /usr/lib/llvm-3.6/lib
