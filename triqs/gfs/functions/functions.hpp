@@ -22,6 +22,7 @@
 
 #include "../gf_classes.hpp"
 #include "../imfreq.hpp"
+#include "../refreq.hpp"
 #include "../imtime.hpp"
 #include "../legendre.hpp"
 
@@ -42,6 +43,13 @@ namespace gfs {
  dcomplex density(gf_const_view<imfreq, scalar_valued> g);
 
  arrays::matrix<dcomplex> density(gf_const_view<legendre> g);
+
+ //-------------------------------------------------------
+ // For Real Frequency functions
+ // ------------------------------------------------------
+
+ arrays::matrix<dcomplex> density(gf_const_view<refreq> g);
+ dcomplex density(gf_const_view<refreq, scalar_valued> g);
 
  //-------------------------------------------------------
  // For Legendre functions

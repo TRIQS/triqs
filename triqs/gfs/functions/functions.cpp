@@ -98,6 +98,63 @@ namespace triqs { namespace gfs {
  }
 
  //-------------------------------------------------------
+ // For Real Frequency functions
+ // ------------------------------------------------------
+ arrays::matrix<dcomplex> density(gf_const_view<refreq> g) {
+   
+  double dw = g.mesh().delta(); // spacing (equidistant mesh!)
+  double a = -g.mesh().x_min() - floor(-g.mesh().x_min()/dw)*dw; // spacing between last negative meshpoint and 0
+  double fac = 0;
+  bool zero_in_mesh = false;
+  
+  auto sh = get_target_shape(g);
+  int N1 = sh[0], N2 = sh[1];
+  arrays::matrix<dcomplex> res(sh);
+  res() = 0;
+  
+  // check if 0 is a meshpoint
+  for (auto const &w : g.mesh()) {
+    if (w == 0) { zero_in_mesh = true;}
+  }
+  
+  for (int n1 = 0; n1 < N1; n1++)
+    for (int n2 = n1; n2 < N2; n2++) {
+        for (auto const &w : g.mesh()) {
+            fac = 0.0;
+            // all other points
+            if (w < 0) {
+                fac = 1.0;
+                // first negative point
+                if (w == g.mesh().x_min()) { fac = 0.5;}
+                // if zero is not in mesh treat last negative point
+                if (zero_in_mesh == false && w > -dw) {
+                    fac = 0.5;
+                    // missing area up to 0
+                    fac = fac - (a*(a/dw-2))/(dw*2.0);
+                }
+            }
+            // last point (if 0 is in mesh)
+            else if (w == 0) { fac = 0.5;}
+            // if zero is not in mesh treat first positive point
+            else if (zero_in_mesh == false && w < dw) {    
+                    fac = (a*(a/dw))/(dw*2.0);
+            }
+            res(n1,n2) -= fac*dw/(2.0*M_PI*1_j)*(g[w](n1,n2)-conj(g[w](n2,n1)));
+        }
+        if (n2 > n1) res(n2, n1) = conj(res(n1, n2));
+  }
+  
+  return res;
+ }
+
+ //-------------------------------------------------------
+ dcomplex density(gf_const_view<refreq, scalar_valued> g) {
+  return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0);
+ }
+
+
+
+ //-------------------------------------------------------
  // For Legendre functions
  // ------------------------------------------------------
 
