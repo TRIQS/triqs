@@ -248,7 +248,7 @@ namespace arrays {
  // norm2
  template <typename V> std14::enable_if_t<ImmutableVector<V>::value, typename V::value_type> norm2(V const& a) {
   using std::sqrt;
-  return sqrt(norm2(a));
+  return sqrt(norm2_sqr(a));
  }
 
  // lexicographical comparison operators
