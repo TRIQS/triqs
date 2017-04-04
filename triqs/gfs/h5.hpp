@@ -24,52 +24,6 @@ namespace triqs {
 namespace gfs {
 
  /*------------------------------------------------------------------------------------------------------
-  *                              gf_h5_name
-  *-----------------------------------------------------------------------------------------------------*/
-/*
- template <> struct gf_h5_name<imfreq, matrix_valued> {
-  static std::string invoke() { return "ImFreq"; }
- };
- template <> struct gf_h5_name<imtime, matrix_valued> {
-  static std::string invoke() { return "ImTime"; }
- };
- template <> struct gf_h5_name<retime, matrix_valued> {
-  static std::string invoke() { return "ReTime"; }
- };
- template <> struct gf_h5_name<legendre, matrix_valued> {
-  static std::string invoke() { return "Legendre"; }
- };
- template <> struct gf_h5_name<refreq, matrix_valued> {
-  static std::string invoke() { return "ReFreq"; }
- };
- template <> struct gf_h5_name<brillouin_zone, matrix_valued> {
-  static std::string invoke() { return "BrillouinZone"; }
- };
- template <> struct gf_h5_name<cyclic_lattice, matrix_valued> {
-  static std::string invoke() { return "CyclicLattice"; }
- };
-
- // h5 name : name1_x_name2_.....
- template <typename... Ms> struct gf_h5_name<cartesian_product<Ms...>, matrix_valued> {
-  static std::string invoke() {
-   return triqs::tuple::fold([](std::string a, std::string b) { return a + std::string(b.empty() ? "" : "_x_") + b; },
-                             reverse(std::make_tuple(gf_h5_name<Ms, matrix_valued>::invoke()...)), std::string());
-  }
- };
-
- template <typename Var> struct gf_h5_name<Var, tail_valued<matrix_valued>> {
-  static std::string invoke() { return "V_TailGf"; }
- };
-
- template <typename V, int R> struct gf_h5_name<V, tensor_valued<R>> {
-  static std::string invoke() { return gf_h5_name<V, matrix_valued>::invoke() + "Tv" + std::to_string(R); }
- };
-
- template <typename M> struct gf_h5_name<M, scalar_valued> {
-  static std::string invoke() { return gf_h5_name<M, matrix_valued>::invoke() + "_s"; }
- };
-*/
- /*------------------------------------------------------------------------------------------------------
   *                              HDF5
   *-----------------------------------------------------------------------------------------------------*/
 
