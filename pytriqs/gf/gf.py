@@ -114,6 +114,9 @@ class Gf(object):
 
     NB : One of target_shape, data and indices must be set, and the other must be None.
     """
+    
+    _hdf5_data_scheme_ = 'Gf'
+
     def __init__(self, **kw): # enforce keyword only policy 
          
         def delegate(self, mesh, data=None, target_shape=None, singularity = None, indices = None, name = '', is_real = False, _singularity_maker = None):
@@ -170,17 +173,11 @@ class Gf(object):
             self._singularity = singularity or (_singularity_maker(self) if _singularity_maker else None)
             self.name = name
 
-            # compute the hdf5 tag 
-            ## MUST correspond to C++. [4:] removes the 'Mesh'. Assumes that meshes are called
-            ## MeshXXX where XXX is the hdf5 name
-            ext = '' if self._target_rank == 2 else ('_s' if self._target_rank == 0 else 'Tv%s'%self._target_rank)
-            s = '_x_'.join( m.__class__.__name__[4:] for m in self.mesh._mlist) if isinstance(mesh, MeshProduct) else self._mesh.__class__.__name__[4:]
-            #self._hdf5_data_scheme_mesh_ =  s
-            self._hdf5_data_scheme_ = 'Gf' # + s + ext
-      
             # NB : at this stage, enough checks should have been made in Python in order for the C++ view 
             # to be constructed without any exceptions.
             # C proxy for call operator for speed ...
+            ext = '' if self._target_rank == 2 else ('_s' if self._target_rank == 0 else 'Tv%s'%self._target_rank)
+            s = '_x_'.join( m.__class__.__name__[4:] for m in self.mesh._mlist) if isinstance(mesh, MeshProduct) else self._mesh.__class__.__name__[4:]
             proxyname = 'CallProxy%s_%s%s'%(s, self.target_rank,'_R' if data.dtype == np.float64 else '')
             self.c_proxy = all_call_proxies.get(proxyname, CallProxyNone)(self)
             
@@ -483,20 +480,6 @@ class Gf(object):
         #print "FACTORY", d
         return cls(name = name, **d)
 
-    @classmethod
-    def __group_scheme_map__(cls, hdf_scheme):
-        # TODO: hdf_scheme needs to be boned
-        # we know scheme is of the form GfM1_x_M2_s/tv3
-        print "SCHEME", hdf_scheme
-        m, t= hdf_scheme[2:], '' # get rid of Gf
-        for suffix in ['_s', 'Tv3', 'Tv4'] : 
-            if m.endswith(suffix) :
-                m, t = m[:-len(suffix)], suffix
-                break
-        # HORRIBLE quick fix ... Simplify all the h5 write/read
-        suffix_convert = { '' : '', '_s' : '_s', 'Tv3': '_tv3' , 'Tv4' : '_tv4' }
-        print {'singularity': 'TailGf'+suffix_convert[t], 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
-        return {'singularity': 'TailGf'+suffix_convert[t], 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
     
     #-----------------------------plot protocol -----------------------------------
 
@@ -524,8 +507,46 @@ class Gf(object):
             data = data[:, 0, 0]
         return X, data
 
+    #-------------- Deprecated. NB works only in 1 var, matrix_valued anyway  ---------------------------
+
+    @property
+    def N1(self):
+        assert self.target_rank == 2, "N1 only makes sense for rank 2 targets"
+        warnings.warn("g.N1 is deprecated and not generic. Use g.target_shape[0] instead")
+        return self.target_shape[0]
+
+    @property
+    def N2(self):
+        assert self.target_rank == 2, "N2 only makes sense for rank 2 targets"
+        warnings.warn("g.N2 is deprecated and not generic. Use g.target_shape[1] instead")
+        return self.target_shape[1]
+
+    @property
+    def indicesL(self):
+        warnings.warn("g.indicesL is deprecated. Use g.indices[0] instead")
+        return self.indices.data[0]
+
+    @property
+    def indicesR(self):
+        warnings.warn("g.indicesR is deprecated. Use g.indices[1] instead")
+        return self.indices.data[1]
+
 #---------------------------------------------------------
 
-from pytriqs.archive.hdf_archive_schemes import register_class
+from pytriqs.archive.hdf_archive_schemes import register_class, register_backward_compatibility_method
 register_class (Gf)
+
+# A backward compatility function
+def bckwd(hdf_scheme):
+    # we know scheme is of the form GfM1_x_M2_s/tv3
+    m, t= hdf_scheme[2:], '' # get rid of Gf
+    for suffix in ['_s', 'Tv3', 'Tv4'] : 
+        if m.endswith(suffix) :
+            m, t = m[:-len(suffix)], suffix
+            break
+    # HORRIBLE quick fix ... Simplify all the h5 write/read
+    suffix_convert = { '' : '', '_s' : '_s', 'Tv3': '_tv3' , 'Tv4' : '_tv4' }
+    return {'singularity': 'TailGf'+suffix_convert[t], 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
+
+register_backward_compatibility_method("Gf", "Gf", bckwd)
 

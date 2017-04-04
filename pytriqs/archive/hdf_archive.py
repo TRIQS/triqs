@@ -23,7 +23,7 @@
 import sys,numpy
 from hdf_archive_basic_layer_h5py import HDFArchiveGroupBasicLayer
 
-from pytriqs.archive.hdf_archive_schemes import hdf_scheme_access, register_class
+from pytriqs.archive.hdf_archive_schemes import hdf_scheme_access_for_write, hdf_scheme_access_for_read, register_class
 
 # -------------------------------------------
 #
@@ -169,7 +169,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
            """Use the _hdf5_data_scheme_ if it exists otherwise the class name"""
            ds = val._hdf5_data_scheme_ if hasattr(val,"_hdf5_data_scheme_") else val.__class__.__name__
            try :
-             sch = hdf_scheme_access(ds)
+             sch = hdf_scheme_access_for_write(ds)
            except :
              err = """
                You are trying to store an object of type "%s", with the TRIQS_HDF5_data_scheme "%s".
@@ -244,7 +244,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         except:
             return bare_return()
         try :
-            sch = hdf_scheme_access(hdf_data_scheme)
+            sch, group_to_scheme = hdf_scheme_access_for_read(hdf_data_scheme)
         except KeyError:
             print "Warning : The TRIQS_HDF5_data_scheme %s is not recognized. Returning as a group. Hint : did you forgot to import this python class ?"%hdf_data_scheme
             return bare_return()
@@ -260,16 +260,8 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         if r_readfun :
             return r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
         if hasattr(r_class,"__factory_from_dict__"):
-
             assert self.is_group(key), "__factory_from_dict__ requires a subgroup"
-            if hasattr(r_class, "__group_scheme_map__") and sch.scheme_name != hdf_data_scheme :
-                group_to_scheme = r_class.__group_scheme_map__(hdf_data_scheme)
-                def f(K):
-                    sch = group_to_scheme[K] if group_to_scheme.has_key(K) else None
-                    return SUB.__getitem1__(K, reconstruct_python_object, sch)
-            else:
-                f = lambda K : SUB.__getitem1__(K, reconstruct_python_object)
-
+            f = lambda K : SUB.__getitem1__(K, reconstruct_python_object, group_to_scheme.get(K, None) if group_to_scheme else None)
             values = {self._key_decipher(str(K)): f(K) for K in SUB}  # str transforms unicode string to regular python string
             return r_class.__factory_from_dict__(key,values)
 

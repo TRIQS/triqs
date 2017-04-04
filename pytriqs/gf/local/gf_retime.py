@@ -78,26 +78,3 @@ class GfReTime(Gf) :
                       indices = indices, 
                       name = name) 
         delegate(self, **kw)
-
-    @property
-    def N1(self):
-        assert self.target_rank == 2, "N1 only makes sense for rank 2 targets"
-        warnings.warn("g.N1 is deprecated and not generic. Use g.target_shape[0] instead")
-        return self.target_shape[0]
-
-    @property
-    def N2(self):
-        assert self.target_rank == 2, "N2 only makes sense for rank 2 targets"
-        warnings.warn("g.N2 is deprecated and not generic. Use g.target_shape[1] instead")
-        return self.target_shape[1]
-
-    @property
-    def indicesL(self):
-        warnings.warn("g.indicesL is deprecated. Use g.indices[0] instead")
-        return self.indices.data[0]
-
-    @property
-    def indicesR(self):
-        warnings.warn("g.indicesR is deprecated. Use g.indices[1] instead")
-        return self.indices.data[1]
-
