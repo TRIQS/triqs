@@ -20,14 +20,14 @@
 ################################################################################
 import warnings, numpy as np
 from pytriqs.gf.gf import Gf
-from pytriqs.gf.mesh import MeshImTime
+from pytriqs.gf.mesh import MeshLegendre
 from tool_gfloc import *
 
-class GfImTime(Gf) : 
+class GfLegendre(Gf) : 
     """
     Parameters (KEYWORD argument ONLY)
     ----------
-    mesh: MeshImTime, optional
+    mesh: MeshLegendre, optional
           The mesh of the Green function
           If not present, it will be constructed from 
           the parameters beta, indices, [n_points], [statistic]
@@ -63,20 +63,21 @@ class GfImTime(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
-        def delegate(self, mesh=None, data = None, target_shape=None, singularity = None, tail = None, indices = None, name='g', n_points = 10000, beta = None, statistic = 'Fermion'):
+        def delegate(self, mesh=None, data = None, target_shape=None, singularity = None, tail = None, indices = None, name='g', n_points = 30, beta = None, statistic = 'Fermion'):
             if mesh is None:
                 assert isinstance(beta, (int, long, float)), "If the Mesh is not given, beta is mandatory and must be float"
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
-                mesh = MeshImTime(beta, statistic, n_points)
-           
-            super(GfImTime, self).__init__(
+                mesh = MeshLegendre(beta, statistic, n_points)
+        
+            super(GfLegendre, self).__init__(
                       mesh = mesh, 
                       data = data, 
                       target_shape = target_shape,
                       singularity = tail or singularity,
-                      _singularity_maker = make_singularity_maker(8, tail, singularity),
+                      _singularity_maker = make_singularity_maker(8,tail, singularity),
                       indices = indices, 
                       name = name) 
+
         delegate(self, **kw)
 
     @property

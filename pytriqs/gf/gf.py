@@ -32,7 +32,7 @@ import mesh as meshes
 import singularities
 import plot 
 
-all_meshes = tuple(c for c in meshes.__dict__.values() if isinstance(c, type) and c.__name__.startswith('Mesh'))
+all_meshes = (MeshProduct,) + tuple(c for c in meshes.__dict__.values() if isinstance(c, type) and c.__name__.startswith('Mesh'))
 all_call_proxies = dict( (c.__name__, c) for c in wrapped_aux.__dict__.values() if isinstance(c, type) and c.__name__.startswith('CallProxy'))
 
 class CallProxyNone :
@@ -65,11 +65,6 @@ class LazyCTX:
 def add_method_helper(a,cls): 
     def _(self, *args, **kw):
        return a(self, *args, **kw)
-#         try : 
-            # return a(*args, **kw)
-        # except TypeError:
-            # print "No dispatch available for %s(%s, ...)"%(a.__name__, cls.__name__)
-            # raise
     _.__doc__ = 50*'-' + '\n' + a.__doc__
     _.__name__ = a.__name__
     return _
@@ -79,13 +74,6 @@ class AddMethod(type):
         super(AddMethod, cls).__init__(name, bases, dct)
         for a in [f for f in gf_fnt.__dict__.values() if callable(f)]:
             setattr(cls, a.__name__, add_method_helper(a,cls)) 
-
-#Debug warning
-#import traceback
-#def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
-#    traceback.print_stack()
-#    print warnings.formatwarning(message, category, filename, lineno, line)
-#warnings.showwarning = warn_with_traceback
 
 class Gf(object):
     __metaclass__ = AddMethod
@@ -134,12 +122,14 @@ class Gf(object):
             """
             # input check
             assert (target_shape is None) or (data is None), "data and target_shape : one must be None"
-                
+            if target_shape : 
+                for i in target_shape : 
+                    assert i>0, "Target shape elements must be >0"
+
             # mesh
             assert isinstance(mesh, all_meshes), "Unknown mesh !"
             self._mesh = mesh
 
-            # FIXME ??
             # if indices is not a list of list, but a list, then the target_rank is assumed to be 2 !
             # backward compatibility only, it is not very logical (what about vector_valued gf ???)
             assert isinstance(indices, (type(None), list,  singularities.GfIndices)) 
@@ -155,14 +145,28 @@ class Gf(object):
                 if target_shape is None : 
                     assert indices, "Without data, target_shape, I need the indices to compute the shape !"
                     target_shape = [ len(x) for x in indices.data]
-                data = np.zeros([len(mesh)]  + list(target_shape), dtype = np.float64 if is_real else np.complex128)
+                l = mesh.size_of_components() if isinstance(mesh, MeshProduct) else [len(mesh)]
+                data = np.zeros(list(l) + list(target_shape), dtype = np.float64 if is_real else np.complex128)
             self._data = data
             self._target_rank = len(self._data.shape) - (self._mesh.rank if isinstance(mesh, MeshProduct) else 1) 
             self._rank = len(self._data.shape) - self._target_rank
             assert self._rank >= 0
-            
+
+            # target_shape
+            assert target_shape is None or tuple(target_shape) == self._data.shape[self._rank:] # Debug only
+            target_shape = self._data.shape[self._rank:]
+
+            # If no indices, build the default ones
+            if self._indices is None: 
+                self._indices = singularities.GfIndices([list(str(i) for i in range(n)) for n in target_shape])
+
+            # Check that indices  have the right size
+            if self._indices is not None: 
+                d,i =  self._data.shape[self._rank:], tuple(len(x) for x in self._indices.data)
+                assert (d == i), "Indices are of incorrect size. Data size is %s while indices size is %s"%(d,i)
+           
             #singularity
-            assert (singularity is None) ^ (_singularity_maker is None), "Internal error"
+            assert (singularity is None) or (_singularity_maker is None), "Internal error"
             self._singularity = singularity or (_singularity_maker(self) if _singularity_maker else None)
             self.name = name
 
@@ -171,9 +175,11 @@ class Gf(object):
             ## MeshXXX where XXX is the hdf5 name
             ext = '' if self._target_rank == 2 else ('_s' if self._target_rank == 0 else 'Tv%s'%self._target_rank)
             s = '_x_'.join( m.__class__.__name__[4:] for m in self.mesh._mlist) if isinstance(mesh, MeshProduct) else self._mesh.__class__.__name__[4:]
-            self._hdf5_data_scheme_mesh_ =  s
-            self._hdf5_data_scheme_ = 'Gf' + s + ext
-       
+            #self._hdf5_data_scheme_mesh_ =  s
+            self._hdf5_data_scheme_ = 'Gf' # + s + ext
+      
+            # NB : at this stage, enough checks should have been made in Python in order for the C++ view 
+            # to be constructed without any exceptions.
             # C proxy for call operator for speed ...
             proxyname = 'CallProxy%s_%s%s'%(s, self.target_rank,'_R' if data.dtype == np.float64 else '')
             self.c_proxy = all_call_proxies.get(proxyname, CallProxyNone)(self)
@@ -241,20 +247,26 @@ class Gf(object):
     #--------------  Bracket operator []  -------------------------
     
     def __getitem__(self, key):
-        if type(key) == list : # This is a slice !
-        
+        # First case : g[:] = RHS ... will be g << RHS
+        if key == slice(None, None, None) : return self
+
+        #print "get ", key
+        # Second, we get a list g[[a,b]] : we are slicing the mesh
+        if type(key) == list :
             assert self.rank > 1, "Slicing makes no sense for single variable gf"
             _ = slice(0, None) # all
             k = [m.index_to_linear(i) if type(i) != var_t else _ for i,m in itertools.izip(key, self._mesh._mlist)]
             k += self._target_rank * [_]
             dat = self._data[k]
+            # list of the remaining lists
             mlist = [m for i,m in itertools.ifilter(lambda i,m : type(i) == var_t, itertools.izip(key, self._mesh._mlist))]
             assert len(mlist) > 0, "Slice does not make sense if all variable are var_t"
             mesh = MeshProduct(*mlist) if len(mlist)>1 else mlist[0]
             sing = None # FIXME : slice the singularity, in one case
             return self.__class__(mesh = mesh, data = dat, singularity = sing)
 
-        else : # This is a target slice
+        # In all other cases, we are slicing the target space
+        else : 
             assert self.target_rank == len(key), "wrong number of arguments. Expected %s, got %s"%(self.target_rank, len(key))
             # transform the key in a list of slices
             if all(isinstance(x, str) for x in key):
@@ -267,7 +279,7 @@ class Gf(object):
                 key_s = map(lambda r: slice(r,r+1,1), key) # transform int into slice 
             # now the key is a list of slices
             dat = self._data[ self._rank * [slice(0,None)] + key_s ] 
-            ind = singularities.GfIndices([ [v[k]]  for k,v in zip(key, self._indices.data)])
+            ind = singularities.GfIndices([ v[k]  for k,v in zip(key_s, self._indices.data)])
             sing = singularities.slice_target_sing(self._singularity, *key) if self._singularity else None
             return self.__class__(mesh = self._mesh, data = dat, singularity = sing, indices = ind, name = "")
 
@@ -374,8 +386,9 @@ class Gf(object):
     # ---------- Multiplication
     def __imul__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) * arg
+        # Multiply by a GF !?
         self._data[:] *= arg
-        self._singularity *= arg
+        if self._singularity : self._singularity *= arg
         return self
 
     def __mul__(self,y):
@@ -425,7 +438,7 @@ class Gf(object):
         assert any( (isinstance(self.mesh, x) for x in [meshes.MeshImFreq, meshes.MeshReFreq])), "Method invalid for this Gf" 
         d = np.transpose(self.data.copy(), (0, 2, 1))
         t = self.singularity.transpose()
-        return self.__class__(mesh = self.mesh, data= d, singularity = t, indices = self.indices, name = self.name)
+        return self.__class__(mesh = self.mesh, data= d, singularity = t, indices = self.indices.transpose(), name = self.name)
 
     def conjugate(self):
         """Returns a new functions, with the conjugate.
@@ -467,18 +480,23 @@ class Gf(object):
 
     @classmethod
     def __factory_from_dict__(cls, name, d):
+        #print "FACTORY", d
         return cls(name = name, **d)
 
     @classmethod
     def __group_scheme_map__(cls, hdf_scheme):
         # TODO: hdf_scheme needs to be boned
         # we know scheme is of the form GfM1_x_M2_s/tv3
+        print "SCHEME", hdf_scheme
         m, t= hdf_scheme[2:], '' # get rid of Gf
-        for suffix in ['_s', '_tv3', '_tv4'] : 
+        for suffix in ['_s', 'Tv3', 'Tv4'] : 
             if m.endswith(suffix) :
-                m, t = s[:-len(suffix)], suffix
+                m, t = m[:-len(suffix)], suffix
                 break
-        return {'singularity': 'TailGf'+t, 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
+        # HORRIBLE quick fix ... Simplify all the h5 write/read
+        suffix_convert = { '' : '', '_s' : '_s', 'Tv3': '_tv3' , 'Tv4' : '_tv4' }
+        print {'singularity': 'TailGf'+suffix_convert[t], 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
+        return {'singularity': 'TailGf'+suffix_convert[t], 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
     
     #-----------------------------plot protocol -----------------------------------
 

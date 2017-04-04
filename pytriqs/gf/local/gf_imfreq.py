@@ -21,7 +21,7 @@
 import warnings, numpy as np
 from pytriqs.gf.gf import Gf
 from pytriqs.gf.mesh import MeshImFreq
-from pytriqs.gf.singularities import TailGf
+from tool_gfloc import *
 
 class GfImFreq(Gf) : 
     """
@@ -68,13 +68,13 @@ class GfImFreq(Gf) :
                 assert isinstance(beta, (int, long, float)), "If the Mesh is not given, beta is mandatory and must be float"
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
                 mesh = MeshImFreq(beta, statistic, n_points)
-         
+        
             super(GfImFreq, self).__init__(
                       mesh = mesh, 
                       data = data, 
                       target_shape = target_shape,
                       singularity = tail or singularity,
-                      _singularity_maker =(lambda se : TailGf(target_shape = se.target_shape, n_order=8, order_min = -2)) if not (tail or singularity) else None,
+                      _singularity_maker = make_singularity_maker(8,tail, singularity),
                       indices = indices, 
                       name = name) 
 
@@ -175,8 +175,4 @@ class GfImFreq(Gf) :
        # Replace then end of the Green's function by the tail
        if replace_tail: self.replace_by_tail_depr(ninit);
        
-#---------------------------------------------------------
-
-from pytriqs.archive.hdf_archive_schemes import register_class
-register_class (GfImFreq)
 

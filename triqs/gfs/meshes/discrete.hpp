@@ -97,16 +97,18 @@ namespace gfs {
   // -------------------- MPI -------------------
 
   // -------------------- HDF5 -------------------
-
+ 
   /// Write into HDF5
-  friend void h5_write(h5::group fg, std::string subgroup_name, discrete_mesh const &m) {
+  friend void h5_write_impl(h5::group fg, std::string subgroup_name, discrete_mesh const &m,  const char * _type) {
    h5::group gr = fg.create_group(subgroup_name);
+   gr.write_triqs_hdf5_data_scheme_as_string(_type);
    h5_write(gr, "domain", m.domain());
   }
 
   /// Read from HDF5
-  friend void h5_read(h5::group fg, std::string subgroup_name, discrete_mesh &m) {
+  friend void h5_read_impl(h5::group fg, std::string subgroup_name, discrete_mesh &m, const char * tag_expected) {
    h5::group gr = fg.open_group(subgroup_name);
+   gr.assert_triqs_hdf5_data_scheme_as_string(tag_expected, true);
    typename discrete_mesh::domain_t dom;
    h5_read(gr, "domain", dom);
    m = discrete_mesh(std::move(dom));

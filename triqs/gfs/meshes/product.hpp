@@ -222,10 +222,13 @@ namespace gfs {
   }
 
   // -------------------- HDF5 -------------------
+ 
+  friend std::string get_triqs_hdf5_data_scheme(gf_mesh const &) { return "MeshProduct";}
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const &m) {
    h5::group gr = fg.create_group(subgroup_name);
+   gr.write_triqs_hdf5_data_scheme(m);
    auto l = [gr](int N, auto const &m) { h5_write(gr, "MeshComponent" + std::to_string(N), m); };
    triqs::tuple::for_each_enumerate(m.components(), l);
   }
@@ -233,6 +236,7 @@ namespace gfs {
   /// Read from HDF5
   friend void h5_read(h5::group fg, std::string subgroup_name, gf_mesh &m) {
    h5::group gr = fg.open_group(subgroup_name);
+   gr.assert_triqs_hdf5_data_scheme(m, true);
    auto l = [gr](int N, auto &m) { h5_read(gr, "MeshComponent" + std::to_string(N), m); };
    triqs::tuple::for_each_enumerate(m.components(), l);
   }

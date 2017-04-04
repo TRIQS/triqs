@@ -22,6 +22,7 @@ import warnings, numpy as np
 from pytriqs.gf.gf import Gf
 from pytriqs.gf.mesh import MeshReTime
 from pytriqs.gf.singularities import TailGf
+from tool_gfloc import *
 
 class GfReTime(Gf) : 
     """
@@ -73,7 +74,7 @@ class GfReTime(Gf) :
                       data = data, 
                       target_shape = target_shape,
                       singularity = tail or singularity,
-                      _singularity_maker =(lambda se : TailGf(target_shape = se.target_shape, n_order=10, order_min = -2)) if not (tail or singularity) else None,
+                      _singularity_maker = make_singularity_maker(10, tail, singularity),
                       indices = indices, 
                       name = name) 
         delegate(self, **kw)

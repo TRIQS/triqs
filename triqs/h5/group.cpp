@@ -16,12 +16,20 @@ namespace h5 {
 
  group::group(hid_t id_) : group(h5_object(id_)){}
 
- void group::_write_triqs_hdf5_data_scheme(const char *a) { h5_write_attribute(id, "TRIQS_HDF5_data_scheme", a); }
+ void group::write_triqs_hdf5_data_scheme_as_string(const char *a) { h5_write_attribute(id, "TRIQS_HDF5_data_scheme", a); }
 
  std::string group::read_triqs_hdf5_data_scheme() const {
   std::string s;
   h5_read_attribute(id, "TRIQS_HDF5_data_scheme", s);
   return s;
+ }
+
+ void group::assert_triqs_hdf5_data_scheme_as_string(const char * tag_expected, bool ignore_if_absent) const {
+   auto tag_file     = read_triqs_hdf5_data_scheme();
+   if (ignore_if_absent and tag_file.empty()) return;
+   if (tag_file != tag_expected)
+    TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+                        << " while I expected " << tag_expected;
  }
 
  std::string group::name() const {

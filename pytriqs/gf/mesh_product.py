@@ -23,6 +23,9 @@ from functools import reduce # Valid in Python 2.6+, required in Python 3
 import operator
 import numpy as np
 
+def call_factory_from_dict(cl, name, l):
+    return cl.__factory_from_dict__(name, l)
+
 class MeshProduct(object):
     """
     The cartesian Mesh product
@@ -30,6 +33,7 @@ class MeshProduct(object):
 
     def __init__(self, *mlist):
         self._mlist = mlist
+        self._hdf5_data_scheme_ = 'MeshProduct' 
 
     @property
     def components(self):
@@ -42,14 +46,17 @@ class MeshProduct(object):
         """
         A tuple with the size of the compomements
         """
-        return (x.size() for x in self.components())
+        return (len(x) for x in self._mlist)
 
     @property
     def rank(self): 
         return len(self._mlist)
 
-    @property
-    def size(self) : 
+    # @property
+    # def size(self) : 
+        # return len(self)
+    
+    def __len__(self): 
         """
         Total number of points (product of size of components)
         """
@@ -61,18 +68,18 @@ class MeshProduct(object):
         """
         return itertools.product(*self._mlist)
 
-    def copy(self, another):
+    def copy(self):
         """
          Deep copy
         """
-        return self.__class__([x.copy() for x in self._mlist])
+        return self.__class__(*[x.copy() for x in self._mlist])
 
     def copy_from(self, another):
         """
          Deep copy
         """
-        assert self.size == another.size, "copy_from requires the same rank for meshes" 
-        return self.__class__([x.copy_from() for x in self._mlist])
+        assert self.rank == another.rank, "copy_from requires the same rank for meshes" 
+        return self.__class__(*[x.copy_from(y) for x,y in zip(self._mlist, another._mlist)])
 
     def index_to_linear(self, idx) : 
         """
@@ -90,13 +97,22 @@ class MeshProduct(object):
    #-----------------------------  IO  -----------------------------------
     
     def __reduce__(self):
-        return call_factory_from_dict, (self.__class__, self.__reduce_to_dict__())
+        return call_factory_from_dict, (self.__class__, "", self.__reduce_to_dict__())
 
     def __reduce_to_dict__(self):
         return dict (('MeshComponent%s'%i, m) for i,m in enumerate(self._mlist))
 
+    # @classmethod
+    # def __factory_from_dict__(cls, l):
+        # return cls(*l)
+   
     @classmethod
-    def __factory_from_dict__(cls, d):
-        return cls(**d)
-    
+    def __factory_from_dict__(cls, name, d):
+        return cls(*d.values())
+
+ 
+#---------------------------------------------------------
+
+from pytriqs.archive.hdf_archive_schemes import register_class
+register_class (MeshProduct)
  

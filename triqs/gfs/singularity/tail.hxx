@@ -333,11 +333,17 @@ namespace triqs {
    crv_t get_or_zero(int n) const { return __get_or_zero(T{}, n); }
    //#endif
 
-   friend std::string get_triqs_hdf5_data_scheme(__tail const& g) { return "TailGf"; }
+   friend std::string get_triqs_hdf5_data_scheme(__tail const& g) {
+    if (T::rank == 0) return "TailGf_s";
+    if (T::rank == 2) return "TailGf";
+    if (T::rank == 3) return "TailGf_tv3";
+    if (T::rank == 4) return "TailGf_tv4";
+   }
 
    /// write to h5
    friend void h5_write(h5::group fg, std::string subgroup_name, __tail const& t) {
     auto gr = fg.create_group(subgroup_name);
+    gr.write_triqs_hdf5_data_scheme(t);
     h5_write(gr, "data", t._data);
     h5_write(gr, "omin", t.order_min());
    }
@@ -345,6 +351,7 @@ namespace triqs {
    /// read from h5
    friend void h5_read(h5::group fg, std::string subgroup_name, __tail& t) {
     auto gr = fg.open_group(subgroup_name);
+    gr.assert_triqs_hdf5_data_scheme(t, true);
     if (!gr.has_key("mask")) {     // if no mask, we have the latest version of the tail
      h5_read(gr, "data", t._data); // Add here backward compat code IF order_min/max where to change
     } else {
@@ -606,11 +613,17 @@ namespace triqs {
    crv_t get_or_zero(int n) const { return __get_or_zero(T{}, n); }
    //#endif
 
-   friend std::string get_triqs_hdf5_data_scheme(__tail_view const& g) { return "TailGf"; }
+   friend std::string get_triqs_hdf5_data_scheme(__tail_view const& g) {
+    if (T::rank == 0) return "TailGf_s";
+    if (T::rank == 2) return "TailGf";
+    if (T::rank == 3) return "TailGf_tv3";
+    if (T::rank == 4) return "TailGf_tv4";
+   }
 
    /// write to h5
    friend void h5_write(h5::group fg, std::string subgroup_name, __tail_view const& t) {
     auto gr = fg.create_group(subgroup_name);
+    gr.write_triqs_hdf5_data_scheme(t);
     h5_write(gr, "data", t._data);
     h5_write(gr, "omin", t.order_min());
    }
@@ -618,6 +631,7 @@ namespace triqs {
    /// read from h5
    friend void h5_read(h5::group fg, std::string subgroup_name, __tail_view& t) {
     auto gr = fg.open_group(subgroup_name);
+    gr.assert_triqs_hdf5_data_scheme(t, true);
     if (!gr.has_key("mask")) {     // if no mask, we have the latest version of the tail
      h5_read(gr, "data", t._data); // Add here backward compat code IF order_min/max where to change
     } else {
@@ -859,11 +873,17 @@ namespace triqs {
    crv_t get_or_zero(int n) const { return __get_or_zero(T{}, n); }
    //#endif
 
-   friend std::string get_triqs_hdf5_data_scheme(__tail_const_view const& g) { return "TailGf"; }
+   friend std::string get_triqs_hdf5_data_scheme(__tail_const_view const& g) {
+    if (T::rank == 0) return "TailGf_s";
+    if (T::rank == 2) return "TailGf";
+    if (T::rank == 3) return "TailGf_tv3";
+    if (T::rank == 4) return "TailGf_tv4";
+   }
 
    /// write to h5
    friend void h5_write(h5::group fg, std::string subgroup_name, __tail_const_view const& t) {
     auto gr = fg.create_group(subgroup_name);
+    gr.write_triqs_hdf5_data_scheme(t);
     h5_write(gr, "data", t._data);
     h5_write(gr, "omin", t.order_min());
    }
@@ -871,6 +891,7 @@ namespace triqs {
    /// read from h5
    friend void h5_read(h5::group fg, std::string subgroup_name, __tail_const_view& t) {
     auto gr = fg.open_group(subgroup_name);
+    gr.assert_triqs_hdf5_data_scheme(t, true);
     if (!gr.has_key("mask")) {     // if no mask, we have the latest version of the tail
      h5_read(gr, "data", t._data); // Add here backward compat code IF order_min/max where to change
     } else {
@@ -950,11 +971,10 @@ namespace triqs {
    using rv_t = typename __tail_const_view<T>::rv_t;
    auto r     = typename T::slice_t{}; // is 0 if it is a double
 #ifdef __cpp_if_constexpr
-   if
-    constexpr(T::rank != 0) {
-     r.resize(t.target_shape());
-     r() = 0;
-    }
+   if constexpr (T::rank != 0) {
+    r.resize(t.target_shape());
+    r() = 0;
+   }
 #else
    static_if(bool_<T::rank != 0>{}) // if not a number, need to resize and put to 0
        .then([&](auto& rr) {
@@ -1047,9 +1067,9 @@ namespace triqs {
    // We assign iif the placeholder of the expression has rank 0
    constexpr bool ph_has_rank0 = clef::get_placeholder_rank(clef::_ph<Is...>()) == 0;
 #ifdef __cpp_if_constexpr
-   if
-    constexpr(ph_has_rank0) { t = rhs(__tail<T>::omega(t.data())); }
-   else {
+   if constexpr (ph_has_rank0) {
+    t = rhs(__tail<T>::omega(t.data()));
+   } else {
     t.reset();
    }
 #else

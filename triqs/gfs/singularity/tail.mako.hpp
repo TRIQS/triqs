@@ -387,11 +387,17 @@ namespace gfs {
   crv_t get_or_zero(int n) const { return __get_or_zero(T{}, n); }
 //#endif
 
-  friend std::string get_triqs_hdf5_data_scheme(MAKO_TAIL const &g) { return "TailGf"; }
+  friend std::string get_triqs_hdf5_data_scheme(MAKO_TAIL const &g) { 
+   if (T::rank==0) return "TailGf_s"; 
+   if (T::rank==2) return "TailGf";
+   if (T::rank==3) return "TailGf_tv3";
+   if (T::rank==4) return "TailGf_tv4"; 
+  }
 
   /// write to h5
   friend void h5_write(h5::group fg, std::string subgroup_name, MAKO_TAIL const &t) {
    auto gr = fg.create_group(subgroup_name);
+   gr.write_triqs_hdf5_data_scheme(t);
    h5_write(gr, "data", t._data);
    h5_write(gr, "omin", t.order_min());
   }
@@ -399,6 +405,7 @@ namespace gfs {
   /// read from h5
   friend void h5_read(h5::group fg, std::string subgroup_name, MAKO_TAIL &t) {
    auto gr = fg.open_group(subgroup_name);
+   gr.assert_triqs_hdf5_data_scheme(t, true);
    if (!gr.has_key("mask")) {     // if no mask, we have the latest version of the tail
     h5_read(gr, "data", t._data); // Add here backward compat code IF order_min/max where to change
    } else {

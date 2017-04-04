@@ -36,6 +36,7 @@ c.add_property(getter = cfunction("std::vector<std::vector<std::string>> data()"
 c.add_method("gf_indices transpose()", doc = "Transposing")
 c.add_method("triqs::arrays::range convert_index(std::string s, int i)", doc = "index -> position conversion")
 c.add_method_copy()
+c.add_getitem(signature = "std::vector<std::string> operator[](int d)", doc = "The list of indices for dimension d")
 
 module.add_class (c)
 
@@ -44,8 +45,9 @@ module.add_class (c)
 ########################
 
 # FIXME : Names are not regular
-for Target, Rvt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_valued<3>', 'tensor_valued<4>'],
+for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_valued<3>', 'tensor_valued<4>'],
                           ['dcomplex', 'matrix_view<dcomplex>', 'array_view<dcomplex,3>', 'array_view<dcomplex,4>'],
+                          ['dcomplex', 'matrix<dcomplex>', 'array<dcomplex,3>', 'array<dcomplex,4>'],
                           ['_s', '', '_tv3', '_tv4'],
                           [0,2,3,4]):
    
@@ -120,7 +122,7 @@ for Target, Rvt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_valued
                   doc = "Returns the i-th coefficient of the expansion, or order Om^i")
 
     t.add_setitem(calling_pattern = "self_c(i) = m",
-                  signature = "void(int i, %s m)"%Rvt, # I use matrix, not view. It makes a copy, but ensure I can pass double, int, and numpy will convert.
+                  signature = "void(int i, %s m)"%Rt, # I use matrix, not view. It makes a copy, but ensure I can pass double, int, and numpy will convert.
                   doc = "Sets the i-th coefficient of the expansion, or order Om^i")
 
     module.add_class(t)
@@ -128,7 +130,8 @@ for Target, Rvt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_valued
     # slice_target_sing for all cases
     int_int = ', '.join('int n%s'%i for i in range(n))
     range_range = ', '.join('range(n%s, n%s + 1)'%(i,i) for i in range(n))
-    if Target == "matrix_valued":
+    #if Target == "matrix_valued":
+    if n>0 : 
         #print "adding slice_target_sing", c_type, int_int, range_range
         module.add_function("%s slice_target_sing(%s t, %s)"%(c_type, c_type, int_int), 
             calling_pattern = "%s result = slice_target_sing(*t, %s)"%(c_type, range_range))

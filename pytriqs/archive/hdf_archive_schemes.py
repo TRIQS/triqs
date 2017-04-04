@@ -21,8 +21,9 @@
 import re
 
 class HDF5Scheme : 
-    def __init__(self, classname, modulename, doc, read_fun= None) : 
+    def __init__(self, classname, modulename, doc, SchemeName, read_fun) : 
         self.classname, self.modulename, self.doc, self.read_fun = classname, modulename,doc, read_fun
+        self.scheme_name = SchemeName
     def __str__(self) : 
         return """
         Name of the class : %s
@@ -42,7 +43,7 @@ def register_class (cls, doc = None, read_fun = None) :
     SchemeName = cls._hdf5_data_scheme_ if hasattr(cls,"_hdf5_data_scheme_") else cls.__name__ 
     assert SchemeName not in _hdf5_schemes_dict, "class %s is already registered"%SchemeName
     doc = doc if doc else (cls._hdf5_data_scheme_doc_ if hasattr(cls,"_hdf5_data_scheme_doc_") else {})
-    _hdf5_schemes_dict [SchemeName] = HDF5Scheme (cls.__name__, cls.__module__,doc, read_fun)
+    _hdf5_schemes_dict [SchemeName] = HDF5Scheme (cls.__name__, cls.__module__,doc, SchemeName, read_fun)
 
 def hdf_scheme_access (SchemeName): 
     # We need to find the key in _hdf5_schemes_dict which AS A REGEX will MATCH SchemeName
@@ -54,11 +55,5 @@ def hdf_scheme_access (SchemeName):
         if not all( l[i] in l[i+1] for i in range(len(l)-1)): # they are not ordered like Gf, GfImFreq, GfImFreq_x_ImFreq ...
             raise KeyError, "HDF5 Data Scheme %s is ambiguous. Possible schemes are %s"%(SchemeName,l)
     return _hdf5_schemes_dict[l[-1]] # Take the most refined
-
-#def classname (SchemeName) : 
-#   return access(SchemeName).classname 
-
-#def modulename (SchemeName) : 
-#   return access(SchemeName).modulename 
 
 

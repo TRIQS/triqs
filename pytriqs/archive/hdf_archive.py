@@ -262,8 +262,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         if hasattr(r_class,"__factory_from_dict__"):
 
             assert self.is_group(key), "__factory_from_dict__ requires a subgroup"
-
-            if hasattr(r_class, "__group_scheme_map__"):
+            if hasattr(r_class, "__group_scheme_map__") and sch.scheme_name != hdf_data_scheme :
                 group_to_scheme = r_class.__group_scheme_map__(hdf_data_scheme)
                 def f(K):
                     sch = group_to_scheme[K] if group_to_scheme.has_key(K) else None
