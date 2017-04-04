@@ -336,8 +336,8 @@ namespace triqs {
    friend std::string get_triqs_hdf5_data_scheme(__tail const& g) {
     if (T::rank == 0) return "TailGf_s";
     if (T::rank == 2) return "TailGf";
-    if (T::rank == 3) return "TailGf_tv3";
-    if (T::rank == 4) return "TailGf_tv4";
+    if (T::rank == 3) return "TailGfTv3";
+    if (T::rank == 4) return "TailGfTv4";
    }
 
    /// write to h5
@@ -616,8 +616,8 @@ namespace triqs {
    friend std::string get_triqs_hdf5_data_scheme(__tail_view const& g) {
     if (T::rank == 0) return "TailGf_s";
     if (T::rank == 2) return "TailGf";
-    if (T::rank == 3) return "TailGf_tv3";
-    if (T::rank == 4) return "TailGf_tv4";
+    if (T::rank == 3) return "TailGfTv3";
+    if (T::rank == 4) return "TailGfTv4";
    }
 
    /// write to h5
@@ -876,8 +876,8 @@ namespace triqs {
    friend std::string get_triqs_hdf5_data_scheme(__tail_const_view const& g) {
     if (T::rank == 0) return "TailGf_s";
     if (T::rank == 2) return "TailGf";
-    if (T::rank == 3) return "TailGf_tv3";
-    if (T::rank == 4) return "TailGf_tv4";
+    if (T::rank == 3) return "TailGfTv3";
+    if (T::rank == 4) return "TailGfTv4";
    }
 
    /// write to h5

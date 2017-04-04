@@ -48,7 +48,7 @@ module.add_class (c)
 for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_valued<3>', 'tensor_valued<4>'],
                           ['dcomplex', 'matrix_view<dcomplex>', 'array_view<dcomplex,3>', 'array_view<dcomplex,4>'],
                           ['dcomplex', 'matrix<dcomplex>', 'array<dcomplex,3>', 'array<dcomplex,4>'],
-                          ['_s', '', '_tv3', '_tv4'],
+                          ['_s', '', 'Tv3', 'Tv4'],
                           [0,2,3,4]):
    
     c_type = '__tail_view<triqs::gfs::%s>'%Target

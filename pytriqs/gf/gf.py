@@ -544,9 +544,7 @@ def bckwd(hdf_scheme):
         if m.endswith(suffix) :
             m, t = m[:-len(suffix)], suffix
             break
-    # HORRIBLE quick fix ... Simplify all the h5 write/read
-    suffix_convert = { '' : '', '_s' : '_s', 'Tv3': '_tv3' , 'Tv4' : '_tv4' }
-    return {'singularity': 'TailGf'+suffix_convert[t], 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
+    return {'singularity': 'TailGf'+t, 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
 
 register_backward_compatibility_method("Gf", "Gf", bckwd)
 
