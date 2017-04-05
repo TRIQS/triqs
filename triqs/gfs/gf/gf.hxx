@@ -1782,23 +1782,6 @@ namespace triqs {
  *                                     View  assignment
  *-----------------------------------------------------------------------------------------------------*/
 
-#ifdef __cpp_if_constexpr
-  template <typename M, typename T, typename RHS> void triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const& rhs) {
-   if
-    constexpr(arrays::is_scalar_v<RHS>) {
-     for (auto const& w : g.mesh())
-      g[w]           = rhs;
-     g.singularity() = rhs;
-    }
-   else {
-    if (!(g.mesh() == rhs.mesh()))
-     TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh" << g.mesh() << " vs " << rhs.mesh();
-    for (auto const& w : g.mesh())
-     g[w]           = rhs[w];
-    g.singularity() = rhs.singularity();
-   }
-  }
-#else
   // delegate = so that I can overload it for specific RHS...
   template <typename M, typename T, typename RHS>
   std14::enable_if_t<!arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const& rhs) {
@@ -1815,7 +1798,6 @@ namespace triqs {
     g[w]           = rhs;
    g.singularity() = rhs;
   }
-#endif
  }
 }
 /*------------------------------------------------------------------------------------------------------

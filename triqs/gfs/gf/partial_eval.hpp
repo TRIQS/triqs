@@ -83,7 +83,6 @@ namespace triqs {
     }
    };
 
-#ifndef __cpp_if_constexpr
    // Two helper function for a compile time decision. Workaround
    template <typename Rt, typename M, typename A, typename S> Rt make_r_t(M&& m, A&& a, S&& s, std::true_type) {
     return Rt{std::forward<M>(m), a, s, {}}; // a is view, copy is fine
@@ -91,7 +90,6 @@ namespace triqs {
    template <typename Rt, typename M, typename A, typename S> Rt make_r_t(M&& m, A&& a, S&& s, std::false_type) {
     return Rt{std::forward<M>(m), a};
    }
-#endif
 
    // FIXME : C++17 replace this dispatch
    template <typename S, typename A, typename B> auto partial_eval_singularity(std::true_type, S&& s, A const& a, B const&) {
