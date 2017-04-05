@@ -20,7 +20,7 @@
 ################################################################################
 import warnings, numpy as np
 from pytriqs.gf.gf import Gf
-from pytriqs.gf.mesh import MeshLegendre
+from pytriqs.gf.meshes import MeshLegendre
 from tool_gfloc import *
 
 class GfLegendre(Gf) : 

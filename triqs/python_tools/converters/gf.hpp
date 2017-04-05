@@ -5,7 +5,7 @@
 #include "./mesh_product.hpp"
 
 // IS IS Necessary ?
-#include <triqs/py_converters/mesh.hpp>
+#include <triqs/py_converters/meshes.hpp>
 #include <triqs/py_converters/singularities.hpp>
 
 /// Additional converters for gf
@@ -23,7 +23,7 @@ namespace triqs {
    using mesh_t = typename c_type::mesh_t;
    using data_t = typename c_type::data_t;
    using sing_t = typename c_type::singularity_t;
-   using ind_t  = typename c_type::indices_t;
+   using indices_t  = typename c_type::indices_t;
 
    static PyObject* c2py(c_type g) {
     pyref cls = pyref::get_class("pytriqs.gf", "Gf", true);
@@ -45,19 +45,24 @@ namespace triqs {
     // first check it is a Gf
     if (not pyref::check_is_instance(ob, "pytriqs.gf", "Gf", raise_exception)) return false;
     pyref x = borrowed(ob);
+    
     // check the mesh, data, sing
     pyref m = x.attr("_mesh");
+    if (!py_converter<mesh_t>::is_convertible(m, raise_exception)) return false;
+    
     pyref d = x.attr("_data");
+    if (!py_converter<data_t>::is_convertible(d, raise_exception)) return false;
+    
     pyref s = x.attr("_singularity");
+    if (!py_converter<sing_t>::is_convertible(s, raise_exception)) return false;
+    
     pyref i = x.attr("_indices");
+    if (!py_converter<indices_t>::is_convertible(i, raise_exception)) return false;
 
     /*  TRIQS_DEBUG(py_converter<mesh_t>::is_convertible(m, raise_exception) );*/
     // TRIQS_DEBUG(py_converter<data_t>::is_convertible(m, raise_exception) );
     // TRIQS_DEBUG(py_converter<sing_t>::is_convertible(m, raise_exception) );
 
-    if (!py_converter<mesh_t>::is_convertible(m, raise_exception)) return false;
-    if (!py_converter<data_t>::is_convertible(d, raise_exception)) return false;
-    if (!py_converter<sing_t>::is_convertible(s, raise_exception)) return false;
     return true;
    }
 
@@ -68,7 +73,7 @@ namespace triqs {
     pyref s = x.attr("_singularity");
     pyref i = x.attr("_indices");
     return c_type{convert_from_python<mesh_t>(m), convert_from_python<data_t>(d), convert_from_python<sing_t>(s),
-                  convert_from_python<ind_t>(i)};
+                  convert_from_python<indices_t>(i)};
    }
   };
  }

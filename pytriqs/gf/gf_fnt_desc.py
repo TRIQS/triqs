@@ -4,7 +4,7 @@ import re
 # This modules contains functions that may be called directly by users
 m = module_(full_name = "pytriqs.gf.gf_fnt", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
 m.use_module('lattice_tools')
-m.use_module('mesh')
+m.use_module('meshes')
 m.use_module('singularities')
 
 m.add_include("<triqs/gfs/transform/pade.hpp>")
@@ -78,7 +78,7 @@ m.add_function("gf_view<imfreq, matrix_valued> make_real_in_tau(gf_view<imfreq, 
                doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
 
 # fit_tail
-m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit)", 
+m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true)", 
                 doc = """Set the tail by fitting""")
 m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit = true)", 
                 doc = """Set the tail by fitting""")

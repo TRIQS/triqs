@@ -39,7 +39,7 @@ from local.gf_refreq import *
 from local.gf_retime import *
 from local.gf_legendre import *
 
-from mesh import MeshBrillouinZone
+from meshes import MeshBrillouinZone
 
 from gf_fnt import is_gf_real_in_tau
 

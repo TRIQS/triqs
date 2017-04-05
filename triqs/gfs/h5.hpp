@@ -49,6 +49,7 @@ namespace gfs {
 */
  /// ---------------------------  
 
+ // FIXME : C17 : REMOVE THIS dispatch with a constexpr if
  // Some work that may be necessary after the read (for backward compatibility e.g.)
  // Default : do nothing
  template <typename M, typename T> struct gf_h5_after_read {

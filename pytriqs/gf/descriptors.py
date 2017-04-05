@@ -22,7 +22,7 @@
 r""" """
 
 from descriptor_base import *
-from mesh import MeshImFreq, MeshReFreq
+from meshes import MeshImFreq, MeshReFreq
                 
 #######################################
 

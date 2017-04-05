@@ -20,7 +20,7 @@
 ################################################################################
 import warnings, numpy as np
 from pytriqs.gf.gf import Gf
-from pytriqs.gf.mesh import MeshReTime
+from pytriqs.gf.meshes import MeshReTime
 from pytriqs.gf.singularities import TailGf
 from tool_gfloc import *
 

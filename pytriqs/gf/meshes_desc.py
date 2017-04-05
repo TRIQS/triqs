@@ -1,12 +1,9 @@
 from wrap_generator import *
 import re
 
-module = module_(full_name = "pytriqs.gf.mesh", doc = "Wrapped ...", app_name="triqs")
+module = module_(full_name = "pytriqs.gf.meshes", doc = "All the meshes", app_name="triqs")
 module.use_module('lattice_tools')
 module.add_include("<triqs/gfs.hpp>")
-#module.add_include("<triqs/gfs/singularity/fit_tail.hpp>")
-#module.add_include("<triqs/gfs/transform/pade.hpp>")
-#module.add_include("<triqs/gfs/legacy_for_python_api.hpp>")
 module.add_include("<triqs/python_tools/converters/string.hpp>")
 module.add_include("<triqs/python_tools/converters/arrays.hpp>")
 module.add_include("<triqs/python_tools/converters/h5.hpp>")
@@ -69,6 +66,7 @@ m = make_mesh( py_type = "MeshImFreq", c_tag = "imfreq")
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
 m.add_method("""int last_index()""")
 m.add_method("""int first_index()""")
+m.add_method("""bool positive_only()""")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                signature = "double()",

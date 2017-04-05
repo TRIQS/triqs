@@ -20,7 +20,7 @@
 ################################################################################
 import warnings, numpy as np
 from pytriqs.gf.gf import Gf
-from pytriqs.gf.mesh import MeshImFreq
+from pytriqs.gf.meshes import MeshImFreq
 from tool_gfloc import *
 
 class GfImFreq(Gf) : 

@@ -20,7 +20,7 @@
 ################################################################################
 import warnings, numpy as np
 from pytriqs.gf.gf import Gf
-from pytriqs.gf.mesh import MeshImTime
+from pytriqs.gf.meshes import MeshImTime
 from tool_gfloc import *
 
 class GfImTime(Gf) : 

@@ -3,7 +3,7 @@ import re
 
 # This modules contains utilities that will only be called internally, not by users.
 m = module_(full_name = "pytriqs.gf.wrapped_aux", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
-m.use_module('mesh')
+m.use_module('meshes')
 m.use_module('singularities')
 
 #m.add_include("<triqs/gfs.hpp>")
@@ -117,8 +117,8 @@ for M in ['imfreq', 'refreq'] :
     #m.add_function("gf<imfreq> _imul_L_g_matrix (matrix<std::complex<double>> y, gf_view<{M}, matrix_valued> x)", calling_pattern = "x = y * x")
 
 # invert auxiliary tool
-m.add_function("gf<imfreq, matrix_valued> _gf_h5_after_read(gf_view<imfreq, matrix_valued> g)", doc = "Backward Compat. Internal")
-
+m.add_function("gf<imfreq, matrix_valued> _make_gf_from_real_gf(gf_view<imfreq, matrix_valued> g)",
+        calling_pattern = " auto result = make_gf_from_real_gf(make_const_view(g));", doc = "Backward Compat. Internal")
  
 ########################
 ##   Code generation

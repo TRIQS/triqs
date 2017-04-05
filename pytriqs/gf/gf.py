@@ -24,11 +24,11 @@ import operator
 import numpy as np
 import mesh_product
 import lazy_expressions
-from descriptor_base import *
+import descriptors, descriptor_base
 from types import IntType, SliceType, StringType
 import gf_fnt, wrapped_aux
 from mesh_product import MeshProduct
-import mesh as meshes
+import meshes
 import singularities
 import plot 
 
@@ -44,21 +44,6 @@ class CallProxyNone :
 def call_factory_from_dict(cl,name, dic):
     """Given a class cl and a dict dic, it calls cl.__factory_from_dict__(dic)"""
     return cl.__factory_from_dict__(name, dic)
-
-import descriptor_base
-class LazyCTX:
-    def __init__ (self, G): 
-        self.G = G
-    def _is_compatible_for_ops(self, g): 
-        m1,m2  = self.G.mesh, g.mesh
-        return m1 is m2 or m1 == m2
-    def __eq__ (self, y):
-        return isinstance(y, self.__class__) and self._is_compatible_for_ops(y.G)
-    def __call__ (self, x): 
-        if not isinstance(x, descriptor_base.Base): return x
-        tmp = self.G.copy()
-        x(tmp)
-        return tmp
 
 # a metaclass that adds all functions of gf_fnt as methods 
 # the C++ will take care of the dispatch
@@ -218,6 +203,10 @@ class Gf(object):
     @property
     def tail(self) : 
         return self._singularity
+   
+    @tail.setter
+    def tail(self, value):
+        self._singularity = value
 
     @property
     def indices(self):
@@ -293,6 +282,9 @@ class Gf(object):
     def imag(self) : 
         return self.__class__(mesh = self._mesh, data = self._data.imag, singularity = None, name = "Im " + self.name) # Singularity is None for G(tau) ?
 
+    def to_complex(self): 
+        return self.__class__(mesh = self._mesh, data = np.array(self._data, dtype = 'complex'), singularity = None,name = self.name) 
+
     # --------------  Lazy system -------------------------------------
 
     def __lazy_expr_eval_context__(self) : 
@@ -303,7 +295,6 @@ class Gf(object):
           * G << any_init will init the GFBloc with the initializer
           * G << g2 where g2 is a GFBloc will copy g2 into self
         """
-        import descriptors
         if isinstance(A, Gf):
             if self is not A: self.copy_from(A) # otherwise it is useless AND does not work !!
         elif isinstance(A, lazy_expressions.LazyExpr): # A is a lazy_expression made of GF, scalars, descriptors
@@ -478,8 +469,13 @@ class Gf(object):
     @classmethod
     def __factory_from_dict__(cls, name, d):
         #print "FACTORY", d
-        return cls(name = name, **d)
-
+        r = cls(name = name, **d)
+        # Backward compatibility layer
+        # In the case of an ImFreq function, old archives did store only the >0
+        # frequencies, we need to duplicate it for negative freq.
+        # Same code as in the C++ h5_read for gf.
+        need_unfold = isinstance(r.mesh, meshes.MeshImFreq) and r.mesh.positive_only() 
+        return r if not need_unfold else wrapped_aux._make_gf_from_real_gf(r)
     
     #-----------------------------plot protocol -----------------------------------
 
@@ -530,6 +526,10 @@ class Gf(object):
     def indicesR(self):
         warnings.warn("g.indicesR is deprecated. Use g.indices[1] instead")
         return self.indices.data[1]
+
+    def density2(self):
+        """ BLBAB LABLA """
+        return gf_fnt.density(self)
 
 #---------------------------------------------------------
 

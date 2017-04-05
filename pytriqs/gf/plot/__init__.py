@@ -1,5 +1,5 @@
 import one_var
-from pytriqs.gf.mesh import *
+from pytriqs.gf.meshes import *
 from pytriqs.gf.mesh_product import MeshProduct
 
 def dispatcher(g) :
