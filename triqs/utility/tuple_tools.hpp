@@ -174,7 +174,7 @@ namespace triqs { namespace tuple {
  template <typename F> void _for_each_apply_impl(F &&f) {}
 
  template <typename F, typename T0, typename... T> void _for_each_apply_impl(F &&f, T0 &&t0, T &&... t) {
-  apply(f, std::forward<T0>(t0));
+  triqs::tuple::apply(f, std::forward<T0>(t0));
   _for_each_apply_impl(f, std::forward<T>(t)...);
  }
 

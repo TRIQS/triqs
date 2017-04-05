@@ -45,7 +45,7 @@ namespace h5 {
    * Read optional from the h5
    */
  template <typename T> void h5_read(h5::group gr, std::string name, std::optional<T>& v) {
-  reset(v);
+  std::experimental::reset(v);
   // v.reset();
   if (gr.has_key(name)) v.emplace(h5_read<T>(gr, name));
  }

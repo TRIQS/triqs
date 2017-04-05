@@ -19,21 +19,24 @@
  *
  ******************************************************************************/
 #pragma once
-#include <experimental/optional>
 
+#if __cplusplus > 201402L 
+#include <optional>
+#else
+#include <experimental/optional>
 namespace std { // to be found by ADL
 
-using std::experimental::optional;
-using std::experimental::in_place;
+ using std::experimental::optional;
+ using std::experimental::in_place;
+}
+#endif
 
-namespace experimental {
- 
+namespace std::experimental{
+
  // workaround for compiler defect
- template <typename T> void reset(std::experimental::optional<T>& x) { x = std::experimental::optional<T>{}; }
+ template <typename T> void reset(std::optional<T>& x) { x = std::optional<T>{}; }
 
  // .value does not work on old OS X compilers ... WORKAROUND
- template <typename T> T& value_of(std::experimental::optional<T>& x) { *x;}
- template <typename T> T const & value_of(std::experimental::optional<T> const & x) { *x;}
+ template <typename T> T& value_of(std::optional<T>& x) { *x; }
+ template <typename T> T const& value_of(std::optional<T> const& x) { *x; }
 }
-}
-
