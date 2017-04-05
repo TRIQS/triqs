@@ -20,6 +20,7 @@ add_dependencies(python_wrap_meshes python_wrap_lattice_tools)
 
 # Build C extension module
 triqs_python_extension(singularities gf)
+add_dependencies(python_wrap_singularities python_wrap_lattice_tools)
 
 # Build C extension module
 triqs_python_extension(gf_fnt gf)
@@ -32,7 +33,6 @@ triqs_python_extension(wrapped_aux gf)
 add_dependencies(python_wrap_wrapped_aux python_wrap_meshes )
 add_dependencies(python_wrap_wrapped_aux python_wrap_singularities)
 
-
-add_subdirectory(local)
+add_subdirectory(backwd_compat)
 add_subdirectory(plot)
 

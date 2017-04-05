@@ -24,6 +24,7 @@ from singularities import TailGf
 from descriptor_base import A_Omega_Plus_B
 import numpy as np
 from itertools import product
+from backwd_compat.gf_refreq import GfReFreq 
 
 def inverse(x):
     """

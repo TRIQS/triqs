@@ -23,7 +23,7 @@ r"""
 This is the base module for all common operations with Green's functions.
 It is imported with the command::
 
-  >>> from pytriqs.gf.local import *
+  >>> from pytriqs.gf.backwd_compat import *
 """
 
 from gf import *
@@ -33,11 +33,11 @@ from block2_gf import Block2Gf
 from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Flat, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 from tools import *
 
-from local.gf_imfreq import *
-from local.gf_imtime import *
-from local.gf_refreq import *
-from local.gf_retime import *
-from local.gf_legendre import *
+from backwd_compat.gf_imfreq import *
+from backwd_compat.gf_imtime import *
+from backwd_compat.gf_refreq import *
+from backwd_compat.gf_retime import *
+from backwd_compat.gf_legendre import *
 
 from meshes import MeshBrillouinZone
 
