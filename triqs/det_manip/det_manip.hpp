@@ -285,11 +285,19 @@ namespace triqs { namespace det_manip {
     /// Returns the j-th values of y
     y_type const & get_y(size_t j) const { return y_values[col_num[j]];}
 
-    /// Returns the vector of x_values using the internal storage order
-    std::vector<x_type> const & get_x_values() const { return x_values;}
+    /**
+     * Advanced: Returns the vector of x_values using the INTERNAL STORAGE ORDER,
+     * which differs by some permutation from the one given by the user.
+     * Useful for some performance-critical loops. 
+     * To be used together with other *_internal_order functions. 
+     */ 
+    std::vector<x_type> const & get_x_internal_order() const { return x_values; }
 
-    /// Returns the vector of y_values using the internal storage order
-    std::vector<y_type> const & get_y_values() const { return y_values;}
+    /**
+     * Advanced: Returns the vector of y_values using the INTERNAL STORAGE ORDER. 
+     * See doc of get_x_internal_order. 
+     */ 
+    std::vector<y_type> const & get_y_internal_order() const { return y_values; }
 
     /// Returns the function f
     FunctionType const & get_function() const { return f;}
@@ -299,10 +307,7 @@ namespace triqs { namespace det_manip {
 
     /** Returns M^{-1}(i,j) */
     // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
-    value_type inverse_matrix(size_t i,size_t j) const { return mat_inv(col_num[i],row_num[j]);}
-
-    /** Returns M^{-1}(i,j) using the internal storage order */
-    value_type inverse_matrix_values(size_t i,size_t j) const { return mat_inv(i,j);}
+    value_type inverse_matrix(int i, int j) const { return mat_inv(col_num[i],row_num[j]);}
 
     /// Returns the inverse matrix. Warning : this is slow, since it create a new copy, and reorder the lines/cols
     matrix_type inverse_matrix() const {
@@ -313,9 +318,18 @@ namespace triqs { namespace det_manip {
      return res;
     }
 
-    /// Returns the inverse matrix. Warning : this is slow, since it create a new copy, and reorder the lines/cols
-    matrix_const_view_type inverse_matrix_values() const {
-       return make_const_view(mat_inv); 
+    /**
+     * Advanced: Returns the inverse matrix using the INTERNAL STORAGE ORDER. 
+     * See doc of get_x_internal_order. 
+     */ 
+    value_type inverse_matrix_internal_order(int i, int j) const { return mat_inv(i,j); }
+
+    /**
+     * Advanced: Returns the inverse matrix using the INTERNAL STORAGE ORDER. 
+     * See doc of get_x_internal_order.
+     */ 
+    matrix_const_view_type inverse_matrix_internal_order() const {
+       return mat_inv(range(N),range(N)); 
     }
 
     /// Rebuild the matrix. Warning : this is slow, since it create a new matrix and re-evaluate the function.
