@@ -116,7 +116,10 @@ for M in ['imfreq', 'refreq'] :
     #m.add_function("gf<imfreq> _imul_R_g_matrix (gf_view<{M}, matrix_valued> x, matrix<std::complex<double>> y)", calling_pattern = "x = x * y")
     #m.add_function("gf<imfreq> _imul_L_g_matrix (matrix<std::complex<double>> y, gf_view<{M}, matrix_valued> x)", calling_pattern = "x = y * x")
 
-   
+# invert auxiliary tool
+m.add_function("gf<imfreq, matrix_valued> _gf_h5_after_read(gf_view<imfreq, matrix_valued> g)", doc = "Backward Compat. Internal")
+
+ 
 ########################
 ##   Code generation
 ########################

@@ -30,7 +30,7 @@ namespace gfs {
  template <typename G, typename Target> constexpr bool gf_has_target() {
   return std::is_same<typename G::target_t, Target>::value;
  }
-
+/*
  /// ---------------------------  
 
  // Some work that may be necessary before writing (some compression, see imfreq)
@@ -46,7 +46,7 @@ namespace gfs {
    return g;
   }
  };
-
+*/
  /// ---------------------------  
 
  // Some work that may be necessary after the read (for backward compatibility e.g.)
@@ -61,22 +61,26 @@ namespace gfs {
    if (g.mesh().positive_only()) g = make_gf_from_real_gf(make_const_view(g));
   }
  };
+ // same, for python interface
+ template <typename T> gf<imfreq, T>  _gf_h5_after_read(gf_view<imfreq, T> g) { 
+   if (g.mesh().positive_only()) return make_gf_from_real_gf(make_const_view(g));
+   else return g;
+  }
 
  /// ---------------------------
 
  // the h5 write and read of gf members, so that we can specialize it e.g. for block gf
  template <typename V, typename T> struct gf_h5_rw {
 
-  template <typename G> static void write(h5::group gr, G const &g) { _write(gr, gf_h5_before_write<V, T>::invoke(gr, g)); }
+  //template <typename G> static void write(h5::group gr, G const &g) { _write(gr, gf_h5_before_write<V, T>::invoke(gr, g)); }
 
-  template <typename G> static void _write(h5::group gr, G const &g) {
+  template <typename G> static void write(h5::group gr, G const &g) {
    // write the data
-   constexpr bool _can_compress = (gf_has_target<G, imtime>() or gf_has_target<G, legendre>());
-   if (_can_compress and is_gf_real(g))
-    h5_write(gr, "data", array<double, G::data_t::rank>(real(g.data())));
-   else
-    h5_write(gr, "data", g.data());
-
+   //constexpr bool _can_compress = (gf_has_target<G, imtime>() or gf_has_target<G, legendre>());
+   //if (_can_compress and is_gf_real(g))
+   // h5_write(gr, "data", array<double, G::data_t::rank>(real(g.data())));
+   //else
+   h5_write(gr, "data", g.data());
    h5_write(gr, "singularity", g._singularity);
    h5_write(gr, "mesh", g._mesh);
    h5_write(gr, "indices", g._indices);
