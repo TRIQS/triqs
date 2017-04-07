@@ -550,7 +550,12 @@ namespace triqs { namespace det_manip {
       for (int_type i =N-2; i>=int_type(w2.j[k]); i--) col_num[i+1]= col_num[i];
       col_num[w2.j[k]] = N-1;
      }
+
+	 try {
      w2.ksi = inverse (w2.ksi);
+	 }
+	 catch (...) {}
+
      range R(0,N);
      mat_inv(R,range(N-2,N)) = 0;
      mat_inv(range(N-2,N),R) = 0;
@@ -700,7 +705,11 @@ namespace triqs { namespace det_manip {
      range Rn(0,N), Rl(N,N+2);
      //w2.ksi = mat_inv(Rl,Rl);
      //w2.ksi = inverse( w2.ksi);
-     w2.ksi =  inverse( mat_inv(Rl,Rl));
+
+	 try {
+      w2.ksi =  inverse( mat_inv(Rl,Rl));
+	 }
+	 catch (...) {}
 
      // write explicitely the second product on ksi for speed ?
      //mat_inv(Rn,Rn) -= mat_inv(Rn,Rl) * (w2.ksi * mat_inv(Rl,Rn)); // OPTIMIZE BELOW
