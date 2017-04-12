@@ -1,6 +1,6 @@
 <%
     import re
-    from util import replace_latex, make_table, replace_cpp_keywords_by_py_keywords
+    from cpp2py.util import replace_latex, make_table, replace_cpp_keywords_by_py_keywords
     def deduce_normalized_python_class_name(s) :
         return ''.join([x.capitalize() for x in s.split('_')])
 

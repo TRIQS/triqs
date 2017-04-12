@@ -37,7 +37,8 @@ class member_(object):
         tokens = [t.spelling for t in cursor.get_tokens()]
         self.initializer = None
         if '=' in tokens:
-            self.initializer = ''.join(tokens[tokens.index('=') + 1:tokens.index(';')])
+            end_idx = tokens.index(';') if ';' in tokens else len(tokens)
+            self.initializer = ''.join(tokens[tokens.index('=') + 1:end_idx])
 
     def namespace(self) :
         return "::".join(self.ns)

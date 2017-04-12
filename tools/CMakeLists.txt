@@ -10,7 +10,7 @@ add_custom_target(tools_copy ALL DEPENDS ${tools_copy_tar})
 
 # list all files to be installed...
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/util.py    DESTINATION  share/triqs)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cpp2py/util.py                    DESTINATION  share/triqs/cpp2py)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cpp2py/__init__.py                DESTINATION  share/triqs/cpp2py)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cpp2py/wrap_generator.py          DESTINATION  share/triqs/cpp2py)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cpp2py/mako/py_converter.hpp      DESTINATION  share/triqs/cpp2py/mako)

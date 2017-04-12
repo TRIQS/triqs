@@ -5,7 +5,7 @@ import os, re
 from mako.template import Template
 import sys
 sys.path.append('@CMAKE_INSTALL_PREFIX@/share/triqs')
-from util import *
+from cpp2py.util import replace_latex
 
 # the instruction that created this file
 shell_command = ' '.join( [ sys.argv[0].rsplit('/')[-1]] + [x if ' ' not in x else '"%s"'%x for x in sys.argv[1:]])
