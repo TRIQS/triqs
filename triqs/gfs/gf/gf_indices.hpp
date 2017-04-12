@@ -95,6 +95,11 @@ namespace triqs {
     TRIQS_RUNTIME_ERROR << "Cannot find this string index for the Green's function";
    }
 
+   // Need iterable for Python interface
+   using const_iterator = vv_t::const_iterator;
+   auto begin() const { return std::begin(_data);} 
+   auto end() const { return std::end(_data);} 
+
    friend std::string get_triqs_hdf5_data_scheme(gf_indices const &);
    friend void h5_write(h5::group fg, std::string subgroup_name, gf_indices const& g);
    friend void h5_read(h5::group fg, std::string subgroup_name, gf_indices& g);

@@ -38,6 +38,9 @@ c.add_method("triqs::arrays::range convert_index(std::string s, int i)", doc = "
 c.add_method_copy()
 c.add_getitem(signature = "std::vector<std::string> operator[](int d)", doc = "The list of indices for dimension d")
 
+c.add_len(calling_pattern = "int result = self_c.rank()", doc = "")
+c.add_iterator(c_cast_type = "std::vector<std::string>")
+
 module.add_class (c)
 
 ########################
@@ -64,6 +67,9 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
     
     t.add_constructor(signature = "(triqs::utility::mini_vector<int,%s> target_shape, int n_order=10, int order_min=-1)"%n,
                           doc = "Constructs a new tail, of matrix size N1xN2")
+ 
+    module.add_function("%s _make_tail_view_from_data(triqs::arrays::array_view<dcomplex, %s + 1> data)"%(c_type,n), 
+                        calling_pattern = "%s result {data}"%c_type, doc = "Makes a new tail from a view of the data")
 
     # backward compat
     if Target == "matrix_valued":
@@ -128,13 +134,13 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
     module.add_class(t)
 
     # slice_target_sing for all cases
-    int_int = ', '.join('int n%s'%i for i in range(n))
-    range_range = ', '.join('range(n%s, n%s + 1)'%(i,i) for i in range(n))
+    #int_int = ', '.join('int n%s'%i for i in range(n))
+    #range_range = ', '.join('range(n%s, n%s + 1)'%(i,i) for i in range(n))
     #if Target == "matrix_valued":
-    if n>0 : 
-        #print "adding slice_target_sing", c_type, int_int, range_range
-        module.add_function("%s slice_target_sing(%s t, %s)"%(c_type, c_type, int_int), 
-            calling_pattern = "%s result = slice_target_sing(*t, %s)"%(c_type, range_range))
+    #if n>0 : 
+    #    #print "adding slice_target_sing", c_type, int_int, range_range
+    #    module.add_function("%s slice_target_sing(%s t, %s)"%(c_type, c_type, int_int), 
+    #        calling_pattern = "%s result = slice_target_sing(*t, %s)"%(c_type, range_range))
 
 ##   Code generation
 module.generate_code()

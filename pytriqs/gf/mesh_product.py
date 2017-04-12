@@ -108,7 +108,7 @@ class MeshProduct(object):
    
     @classmethod
     def __factory_from_dict__(cls, name, d):
-        return cls(*d.values())
+        return cls(*(d['MeshComponent%s'%i] for i in range(len(d)))) #.values())
 
  
 #---------------------------------------------------------
