@@ -30,7 +30,7 @@ namespace arrays {
   h5::dataspace data_space_impl(array_stride_info info, bool is_complex) {
    hsize_t L[info.R], S[info.R];
    for (int u = 0; u < info.R; ++u) {
-    if (info.strides[u] <= 0) TRIQS_RUNTIME_ERROR << " negative strides not permitted in h5";
+    if (info.strides[u] < 0) TRIQS_RUNTIME_ERROR << " negative strides not permitted in h5";
     S[u] = 1;
     L[u] = info.lengths[u];
    }
@@ -48,11 +48,14 @@ namespace arrays {
   template <typename T> void write_array_impl(h5::group g, std::string const& name, const T* start, array_stride_info info) {
    static_assert(!std::is_base_of<std::string, T>::value, " Not implemented"); // 1d is below
    bool is_complex = triqs::is_complex<T>::value;
-   h5::dataset ds = g.create_dataset(name, h5::data_type_file<T>(), data_space_impl(info, is_complex));
+   h5::dataspace d_space = data_space_impl(info, is_complex);
+   h5::dataset ds = g.create_dataset(name, h5::data_type_file<T>(), d_space);
 
-   auto err =
-       H5Dwrite(ds, h5::data_type_memory<T>(), data_space_impl(info, is_complex), H5S_ALL, H5P_DEFAULT, h5::get_data_ptr(start));
-   if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the scalar dataset " << name << " in the group" << g.name();
+   if(H5Sget_simple_extent_npoints(d_space) > 0) {
+    auto err =
+        H5Dwrite(ds, h5::data_type_memory<T>(), data_space_impl(info, is_complex), H5S_ALL, H5P_DEFAULT, h5::get_data_ptr(start));
+    if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the scalar dataset " << name << " in the group" << g.name();
+   }
 
    // if complex, to be python compatible, we add the __complex__ attribute
    if (is_complex) h5_write_attribute(ds, "__complex__", "1");
@@ -99,9 +102,11 @@ namespace arrays {
    h5::dataset ds = g.open_dataset(name);
    h5::dataspace d_space = H5Dget_space(ds);
 
-   herr_t err =
-       H5Dread(ds, h5::data_type_memory<T>(), data_space_impl(info, is_complex), d_space, H5P_DEFAULT, h5::get_data_ptr(start));
-   if (err < 0) TRIQS_RUNTIME_ERROR << "Error reading the scalar dataset " << name << " in the group" << g.name();
+   if(H5Sget_simple_extent_npoints(d_space) > 0) {
+    herr_t err =
+        H5Dread(ds, h5::data_type_memory<T>(), data_space_impl(info, is_complex), d_space, H5P_DEFAULT, h5::get_data_ptr(start));
+    if (err < 0) TRIQS_RUNTIME_ERROR << "Error reading the scalar dataset " << name << " in the group" << g.name();
+   }
   }
 
   template void read_array_impl<int>(h5::group g, std::string const& name, int* start, array_stride_info info);
