@@ -78,7 +78,7 @@ option(DocWithCpp2doc "Use c++2doc to generate C++ documentation of triqs classe
 if (DocWithCpp2doc)
  FILE(GLOB_RECURSE all_header_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ../triqs/*.hpp ../triqs/*.mhpp)
 add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2py.log DEPENDS ${all_header_files} 
-                    COMMAND export PYTHONPATH=\$PYTHONPATH:${CMAKE_BINARY_DIR}/tools/cpp2doc/mako && ${PYTHON_INTERPRETER} 
+                    COMMAND export PYTHONPATH=$$PYTHONPATH:${CMAKE_BINARY_DIR}/tools/cpp2doc/mako && ${PYTHON_INTERPRETER} 
 		    ${CMAKE_BINARY_DIR}/tools/c++2doc.py 
 		    -N triqs 
 		    ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp 
