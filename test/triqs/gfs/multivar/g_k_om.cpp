@@ -57,6 +57,29 @@ TEST(Gf, GkOm) {
  rw_h5(G, "ess_g_k_om.h5", "g");
 }
 
+
+// ------------------------------------------------------------
+
+TEST(Gf, GkOmMeshPointTuple) {
+
+ double beta = 1;
+ int n_bz    = 20;
+
+ auto bz    = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
+ auto g_eps = gf<brillouin_zone>{{bz, n_bz}, {1, 1}};
+
+ auto G = gf_bz_imfreq_mat{{{bz, n_bz}, {beta, Fermion, 10}}, {1, 1}};
+
+ // FIXME C17
+/* for (auto [k,om] : G.mesh()) { */
+  //std::cout  << om << std::endl;
+ /*}*/
+
+ dcomplex om = 0;
+ for (auto w : G.mesh()) om += dcomplex(std::get<1>(w));
+ EXPECT_NEAR(std::abs(om), 0, 1.e-10);
+}
+
 // ------------------------------------------------------------
 
 TEST(Gf, GkOmSlice) {
