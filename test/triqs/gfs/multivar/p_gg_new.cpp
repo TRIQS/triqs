@@ -16,11 +16,12 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
  auto w_mesh = std::get<1>(G_k_w.mesh());
  auto k_mesh = std::get<0>(G_k_w.mesh());
  double beta = w_mesh.domain().beta;
- int nw      = w_mesh.last_index() + 1;
- int ntau    = nw * 4;
- int nk      = k_mesh.get_dimensions()[0];
+ int nw   = w_mesh.last_index() + 1; 
+ int nnu  = 2;
+ int ntau = nw * 4;
+ int nk   = k_mesh.get_dimensions()[0];
 
- auto chi0_q_w = gf_bz_imfreq_mat{{k_mesh, {beta, Boson, nw}}, {1, 1}};
+ auto chi0_q_nu = gf_bz_imfreq_mat{{k_mesh, {beta, Boson, nnu}}, {1, 1}};
 
  auto chi0_q_tau = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>{{k_mesh, {beta, Boson, ntau}}, {1, 1}};
  auto chi0_R_tau = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{{nk, nk}, {beta, Boson, ntau}}, {1, 1}};
@@ -33,10 +34,8 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
  for (auto const &tau : std::get<1>(G_R_tau.mesh()))
   G_R_tau[_][tau] = inverse_fourier(G_k_tau[_][tau]);
 
- // chi0_R_tau(r_, tau_) << G_R_tau(r_, tau_) * G_R_tau(-r_, -tau_); //-tau does not work: if tau>0, returns 0
- for (auto const &r : std::get<0>(G_R_tau.mesh()))
-  for (auto const &tau : std::get<1>(G_R_tau.mesh()))
-   chi0_R_tau[r][tau] = G_R_tau(r, tau) * G_R_tau(-r, -tau); //-tau does not work: if tau>0, returns 0
+ chi0_R_tau(r_, tau_) << G_R_tau(r_, tau_) * G_R_tau(-r_, -tau_);
+
  /*
  h5::file file("bubble.h5", H5F_ACC_TRUNC );
  h5_write(file, "G_R_tau", G_R_tau);
@@ -46,10 +45,10 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
  for (auto const &tau : std::get<1>(chi0_q_tau.mesh()))
   chi0_q_tau[_][tau] = fourier(chi0_R_tau[_][tau]);
 
- for (auto const &k : std::get<0>(chi0_q_w.mesh()))
-  chi0_q_w[k][_] = fourier(chi0_q_tau[k][_]);
+ for (auto const &k : std::get<0>(chi0_q_nu.mesh()))
+  chi0_q_nu[k][_] = fourier(chi0_q_tau[k][_]);
 
- return chi0_q_w;
+ return chi0_q_nu;
 }
 
 // --------------------------------------------------------------------------------
@@ -60,39 +59,41 @@ gf_bz_imfreq_mat compute_gg(gf_bz_imfreq_mat const &G_k_w) {
  placeholder_prime<1> q_;
  placeholder_prime<3> iw_;
  placeholder_prime<4> inu_;
- auto w_mesh = std::get<1>(G_k_w.mesh());
- auto k_mesh = std::get<0>(G_k_w.mesh());
+ auto const & w_mesh = std::get<1>(G_k_w.mesh());
+ auto const & k_mesh = std::get<0>(G_k_w.mesh());
  double beta = w_mesh.domain().beta;
- int nw      = w_mesh.last_index() + 1;
+ int nnu = 2;
 
- auto chi0_q_w = gf_bz_imfreq_mat{{k_mesh, {beta, Boson, nw}}, {1, 1}};
+ auto chi0_q_nu = gf_bz_imfreq_mat{{k_mesh, {beta, Boson, nnu}}, {1, 1}};
 
- chi0_q_w(q_, inu_) << sum(G_k_w(k_, inu_) * G_k_w(k_ + q_, inu_ + iw_), k_ = k_mesh, iw_ = w_mesh) / k_mesh.size() / beta;
+ chi0_q_nu(q_, inu_) << sum(G_k_w(k_, iw_) * G_k_w(k_ + q_, inu_ + iw_), k_ = k_mesh, iw_ = w_mesh) / k_mesh.size() / beta;
 
- return chi0_q_w;
+ return chi0_q_nu;
 }
 
 // --------------------------------------------------------------------------------
 
 TEST(Gf, Bubble) {
- int nw      = 10;
+ int nw      = 40;
  int nk      = 6;
  auto bz     = brillouin_zone{bravais_lattice{{{1., 0.}, {0.5, sqrt(3) / 2.}}}};
- double beta = 20, mu = 0.;
+ double beta = 5, mu = 0.5;
  placeholder<0> k_;
  placeholder<4> inu_;
  auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
  auto G_k_w  = gf_bz_imfreq_mat{{{bz, nk}, {beta, Fermion, nw}}, {1, 1}};
- G_k_w(k_, inu_) << 1 / (inu_ + mu - eps_k_);
+ G_k_w(k_, inu_) << 1.0 / (inu_ + mu - eps_k_);
 
- auto chi_q_w_fft = compute_gg_fft(G_k_w);
- auto chi_q_w     = compute_gg(G_k_w);
+ auto chi_q_nu_fft = compute_gg_fft(G_k_w);
+ auto chi_q_nu     = compute_gg(G_k_w);
 
  /*
   h5::file file("bubble.h5", H5F_ACC_RDWR );
-  h5_write(file, "chi_fft", chi_q_w_fft);
+  h5_write(file, "chi_fft", chi_q_nu_fft);
   h5_write(file, "chi", chi_q_w);
  */
- EXPECT_ARRAY_NEAR(chi_q_w_fft.data(), chi_q_w.data());
+
+ // Error due to finite summation range in compute_gg
+ EXPECT_ARRAY_NEAR(chi_q_nu_fft.data(), chi_q_nu.data(), 1e-2);
 }
 MAKE_MAIN;
