@@ -304,11 +304,11 @@ class Gf(object):
             mlist = self._mesh._mlist if self.rank > 1 else [self._mesh]
             # slice the data 
             _ = slice(0, None) # all
-            k = [m.index_to_linear(i) if i is all else _ for i,m in itertools.izip(key, mlist)] 
+            k = [m.index_to_linear(i) if i is not all else _ for i,m in itertools.izip(key, mlist)] 
             k += self._target_rank * [_]
             dat = self._data[k]
             # list of the remaining lists
-            mlist = [m for i,m in itertools.ifilter(lambda i,m : i is all, itertools.izip(key, mlist))]
+            mlist = [m for i,m in itertools.ifilter(lambda tup_im : tup_im[0] is all, itertools.izip(key, mlist))]
             # if no mlist, then we have a complete evaluation
             # assert len(mlist) > 0, "Oops"  # More conservative version
             if len(mlist) == 0 : return dat
