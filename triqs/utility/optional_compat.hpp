@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 
-#if __cplusplus > 201402L 
+#ifdef HAS_OPTIONAL_HEADER
 #include <optional>
 #else
 #include <experimental/optional>
