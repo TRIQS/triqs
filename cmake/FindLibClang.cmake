@@ -10,8 +10,15 @@
 # First find libclang if it is not provided
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+  SET(TRIAL_LIBRARY_PATHS
+   /usr/local/lib/
+   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/
+  )
+ #if (NOT TRIQS_LIBCLANG_LOCATION)
+   FIND_LIBRARY(TRIQS_LIBCLANG_LOCATION NAMES libclang.dylib PATHS ${TRIAL_LIBRARY_PATHS} DOC "Location of the libclang library")
+   #endif()
  
-  set(TRIQS_LIBCLANG_LOCATION "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib" CACHE STRING "Location of the libclang library")
   set(TRIQS_LIBCLANG_CXX_ADDITIONAL_FLAGS "" CACHE STRING "Additional flags to be passed to libclang when parsing with clang")
 
   set(CLANG_COMPILER "clang++")
