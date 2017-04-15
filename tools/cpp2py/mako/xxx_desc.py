@@ -12,13 +12,11 @@
 
    # compute used_module_list
     recognized_namespace_for_using = {
-        'triqs::gfs::' : 'gf',
         'triqs::operators::many_body_operator' : 'operators',
         'triqs::lattice' : 'lattice_tools'
         }
 
     using_needed_for_modules = {
-        'gf' : 'namespace triqs::gfs',
         'operators' : 'triqs::operators::many_body_operator',
         'lattice_tools' : 'namespace triqs::lattice'
         }
@@ -36,6 +34,7 @@
         'triqs::arrays::array' : 'arrays',
         'triqs::arrays::matrix' : 'arrays',
         'triqs::arrays::vector' : 'arrays',
+        'triqs::gfs' : 'gf',
         }
 
     used_module_list, converters_list = [], set()
