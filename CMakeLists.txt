@@ -230,6 +230,17 @@ else ()
 endif()
 
 # #################################
+# Check availability of <optional>
+# #################################
+try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS -std=c++1z )
+if (NOT has_optional_header)
+ message(STATUS "Using <experimental/optional> header instead of <optional>")
+else ()
+ message(STATUS "<optional> header is available. No workaround needed")
+ set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} -DHAS_OPTIONAL_HEADER)
+endif()
+
+# #################################
 # on 64 bit machines
 # #################################
 if (CMAKE_SIZEOF_VOID_P EQUAL 8) # for 64 bits machines
@@ -300,7 +311,7 @@ message( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES}")
 mark_as_advanced(HDF5_DIR) # defined somewhere else ? what is it ?
 
 include_directories (SYSTEM ${HDF5_INCLUDE_DIR})
-#link_libraries (${HDF5_LIBRARIES}) 
+#link_libraries (${HDF5_LIBRARIES})
 set(TRIQS_LIBRARY_HDF5  ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 set(TRIQS_INCLUDE_HDF5 ${HDF5_INCLUDE_DIR})
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} ${HDF5_DEFINITIONS})
