@@ -7,7 +7,7 @@ from mako.template import Template
 from collections import OrderedDict
 import sys
 sys.path.append('@CMAKE_INSTALL_PREFIX@/share/triqs')
-from util import *
+from cpp2py.util import replace_latex
 
 # the instruction that created this file
 shell_command = ' '.join( [ sys.argv[0].rsplit('/')[-1]] + [x if ' ' not in x else '"%s"'%x for x in sys.argv[1:]])
@@ -85,7 +85,7 @@ def process_doc_function(f):
     """Process the doc of the function f"""
     spl = f.doc.split('\n',1)
     f.brief_doc = replace_latex(spl[0])
-    f.doc_elements, f.processed_doc = grab_from_doc('\n'.join(spl[1:]), 
+    f.doc_elements, f.processed_doc = grab_from_doc('\n'.join(spl[1:]),
             ['include', 'return', 'synopsis', 'warning','figure', 'note', 'example'],['param', 'tparam'])
     f.processed_doc = replace_latex(f.processed_doc)
 
@@ -93,7 +93,7 @@ def process_doc_class(c):
     """Process the doc of the class c"""
     spl = c.doc.split('\n',1)
     c.brief_doc = spl[0]
-    c.doc_elements, c.processed_doc = grab_from_doc('\n'.join(spl[1:]), 
+    c.doc_elements, c.processed_doc = grab_from_doc('\n'.join(spl[1:]),
             ['include', 'manual_methods', 'manual_friends','warning','figure', 'note', 'example'],['tparam'])
     c.processed_doc = replace_latex(c.processed_doc)
 

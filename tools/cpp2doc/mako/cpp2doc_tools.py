@@ -1,5 +1,5 @@
 import re, os
-from util import make_table
+from cpp2py.util import make_table
 
 def decay(s) :
     for tok in ['const ', 'const&', '&&', '&'] :
@@ -45,11 +45,11 @@ def make_synopsis(m, decal):
           s = process_rtype(m.rtype) + s
         s = make_synopsis_template_decl(m.tparams) + "\n" + s
         # filter to remove enable_if dummies from the API
-        def no_dummy (t,n) : 
+        def no_dummy (t,n) :
             return not ( 'enable_if' in t.name and 'dummy' in n)
         args = ', '.join( ["%s %s"%(process_param_type(t),n) + (" = %s"%d if d else "") for t,n,d in m.params if no_dummy(t,n)])
         s = s.format(args = args, name = m.name.strip(), const = m.const)
-        if getattr(m,'noexcept',False): s += ' noexcept' 
+        if getattr(m,'noexcept',False): s += ' noexcept'
         r = [x.strip() for x in s.split('\n')]
         L= [x for x in r if x]
         L_lb = [add_linebreaks(x) for x in L]
