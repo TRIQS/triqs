@@ -32,6 +32,7 @@ SET(TRIAL_LIBRARY_PATHS
  ENV LIBRARY_PATH
  ENV LD_INCLUDE_PATH
  /usr/lib 
+ /usr/lib/x86_64-linux-gnu
  /usr/local/lib
  /opt/local/lib
  /sw/lib
