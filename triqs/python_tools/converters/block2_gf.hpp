@@ -26,8 +26,9 @@ namespace triqs {
     pyref v_gf     = convert_to_python(vvg);
     pyref v_names1 = convert_to_python(g.block_names()[0]);
     pyref v_names2 = convert_to_python(g.block_names()[1]);
+    if (v_gf.is_null() or v_names1.is_null() or v_names2.is_null()) return NULL;
     pyref cls      = pyref::module("pytriqs.gf").attr("Block2Gf");
-    if (cls.is_null()) TRIQS_RUNTIME_ERROR << "Cannot find the pytriqs.gf.Block2Gf";
+    if (cls.is_null()) return NULL;
     pyref args = PyTuple_Pack(3, (PyObject*)v_names1, (PyObject*)v_names2, (PyObject*)v_gf);
     return PyObject_Call(cls, args, NULL);
    }

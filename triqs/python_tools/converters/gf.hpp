@@ -27,10 +27,15 @@ namespace triqs {
 
    static PyObject* c2py(c_type g) {
     pyref cls = pyref::get_class("pytriqs.gf", "Gf", true);
+    if (cls.is_null()) return NULL;
     pyref m   = convert_to_python(g.mesh());
+    if (m.is_null()) return NULL;
     pyref d   = convert_to_python(g.data());
+    if (d.is_null()) return NULL;
     pyref s   = convert_to_python(g.singularity());
+    if (s.is_null()) return NULL;
     pyref i   = convert_to_python(g.indices());
+    if (i.is_null()) return NULL;
 
     pyref kw = PyDict_New();
     PyDict_SetItemString(kw, "mesh", m);

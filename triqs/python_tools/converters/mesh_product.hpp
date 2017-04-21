@@ -14,7 +14,9 @@ namespace triqs {
 
    static PyObject* c2py(c_type m) {
     pyref cls     = pyref::get_class("pytriqs.gf", "MeshProduct", true);
+    if (cls.is_null()) return NULL;
     pyref m_tuple = mtuple_conv::c2py(m.components()); // take the C++ tuple of meshes and make the corresponding Python tuple
+    if (m_tuple.is_null()) return NULL;
     return PyObject_Call(cls, m_tuple, NULL);
    }
 

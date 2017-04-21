@@ -9,6 +9,7 @@ namespace py_tools {
   static PyObject *c2py(std::pair<T1, T2> const &p) {
    pyref x1 = py_converter<T1>::c2py(std::get<0>(p));
    pyref x2 = py_converter<T2>::c2py(std::get<1>(p));
+   if (x1.is_null() or x2.is_null()) return NULL;
    return PyTuple_Pack(2,(PyObject *)x1,(PyObject *)x2);
   }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "../wrapper_tools.hpp"
+#include <array>
 #include <tuple>
 #include <triqs/utility/c14.hpp>
 
@@ -13,8 +14,10 @@ namespace py_tools {
 
   // c2py implementation
   template<std::size_t... Is> static PyObject *c2py_impl(tuple_t const& t, std14::index_sequence<Is...>) {
-   return PyTuple_Pack(sizeof...(Types),
-          (PyObject *)pyref(py_converter<Types>::c2py(std::get<Is>(t)))...);
+   auto objs = std::array<pyref, sizeof...(Is)>{pyref(py_converter<Types>::c2py(std::get<Is>(t)))...};
+   bool one_is_null = std::accumulate(std::begin(objs), std::end(objs), false, [](bool x, PyObject * a) { return x or (a==NULL);});
+   if (one_is_null) return NULL;
+   return PyTuple_Pack(sizeof...(Types), (PyObject *)(objs[Is])...);
   }
 
   // is_convertible implementation

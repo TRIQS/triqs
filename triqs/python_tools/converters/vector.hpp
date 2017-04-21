@@ -1,29 +1,22 @@
 #pragma once
 #include "../wrapper_tools.hpp"
 #include <vector>
+#include <numeric>
 
 namespace triqs { namespace py_tools {
 
 template <typename T> struct py_converter<std::vector<T>> {
  static PyObject *c2py(std::vector<T> const &v) {
   PyObject *list = PyList_New(0);
-  for (auto &x : v) {
+  for (auto const &x : v) {
    pyref y = py_converter<T>::c2py(x);
-   if (PyList_Append(list, y) == -1) {
+   if (y.is_null() or (PyList_Append(list, y) == -1)) {
     Py_DECREF(list);
     return NULL;
    } // error
   }
   return list;
  }
- /* static PyObject * c2py(std::vector<T> &v) {
-  PyObject * list = PyList_New(0);
-  for (auto & x : v) {
-   pyref y = py_converter<T>::c2py(x);
-   if (PyList_Append(list, y) == -1) { Py_DECREF(list); return NULL;} // error
-  }
-  return list;
- }*/
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (!PySequence_Check(ob)) goto _false;
   {

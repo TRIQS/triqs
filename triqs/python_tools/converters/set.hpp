@@ -9,21 +9,14 @@ template <typename K> struct py_converter<std::set<K>> {
   PyObject *set = PySet_New(NULL);
   for (auto &x : s) {
    pyref y = py_converter<K>::c2py(x);
-   if (PySet_Add(set, y) == -1) {
+   if (y.is_null() or (PySet_Add(set, y) == -1)) {
     Py_DECREF(set);
     return NULL;
    } // error
   }
   return set;
  }
- /*static PyObject * c2py(std::set<K> &s) {
-  PyObject * set = PySet_New(NULL);
-  for (auto & x : s) {
-   pyref y = py_converter<T>::c2py(x);
-   if (PySet_Add(set, y) == -1) { Py_DECREF(set); return NULL;} // error
-  }
-  return set;
- }*/
+ 
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (!PySet_Check(ob)) goto _false;
   {

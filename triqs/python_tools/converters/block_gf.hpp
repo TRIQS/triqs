@@ -23,8 +23,9 @@ namespace triqs {
      vg.push_back(x);
     pyref v_gf    = convert_to_python(vg);
     pyref v_names = convert_to_python(g.block_names());
+    if (v_gf.is_null() or v_names.is_null()) return NULL;
     pyref cls     = pyref::module("pytriqs.gf").attr("BlockGf");
-    if (cls.is_null()) TRIQS_RUNTIME_ERROR << "Cannot find the pytriqs.gf.BlockGf";
+    if (cls.is_null()) return NULL;
     pyref kw = PyDict_New();
     PyDict_SetItemString(kw, "name_list", v_names);
     PyDict_SetItemString(kw, "block_list", v_gf);
