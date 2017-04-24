@@ -123,7 +123,7 @@ class Gf(object):
                     assert i>0, "Target shape elements must be >0"
 
             # mesh
-            assert isinstance(mesh, all_meshes), "Mesh is unknown. Possible type of meshes are  %s"%''.join(all_meshes)
+            assert isinstance(mesh, all_meshes), "Mesh is unknown. Possible type of meshes are %s" % ', '.join(map(lambda m: m.__name__,all_meshes))
             self._mesh = mesh
 
             # indices
