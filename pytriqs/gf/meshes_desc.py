@@ -121,6 +121,26 @@ m.add_property(name = "statistic",
 module.add_class(m)
 
 ########################
+##   MeshDiscrete
+########################
+
+
+# the domain
+dom = class_( py_type = "GfDiscreteDomainSimple",
+        c_type = "discrete_domain_simple",
+        c_type_absolute = "triqs::gfs::discrete_domain_simple",
+        serializable= "tuple",
+       )
+dom.add_constructor(signature = "(int n_max)")
+module.add_class(dom)
+
+# the mesh
+m = make_mesh( py_type = "MeshDiscrete", c_tag = "discrete")
+m.add_constructor(signature = "(int n_max)")
+
+module.add_class(m)
+
+########################
 ##   MeshReFreq
 ########################
 
