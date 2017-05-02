@@ -97,7 +97,6 @@ module.add_class(m)
 ##   MeshLegendre
 ########################
 
-
 # the domain
 dom = class_( py_type = "GfLegendreDomain",
         c_type = "legendre_domain",
@@ -124,7 +123,6 @@ module.add_class(m)
 ##   MeshDiscrete
 ########################
 
-
 # the domain
 dom = class_( py_type = "GfDiscreteDomainSimple",
         c_type = "discrete_domain_simple",
@@ -137,6 +135,46 @@ module.add_class(dom)
 # the mesh
 m = make_mesh( py_type = "MeshDiscrete", c_tag = "discrete")
 m.add_constructor(signature = "(int n_max)")
+
+module.add_class(m)
+
+########################
+##   MeshPoly3
+########################
+
+# the mesh
+m = make_mesh( py_type = "MeshPolyOne", c_tag = "poly_one")
+m.add_constructor(signature = "(double beta, statistic_enum S, long n)")
+
+module.add_class(m)
+
+# -- by hand wrapping of poly3 since it is an underlying cartesian_product mesh
+
+def make_mesh_stripped(py_type, c_tag,
+              #index_type='long'
+              ) :
+    m = class_( py_type = py_type,
+            c_type = "gf_mesh<%s>"%c_tag,
+            c_type_absolute = "triqs::gfs::gf_mesh<triqs::gfs::%s>"%c_tag,
+            hdf5 = True,
+            serializable= "tuple",
+            is_printable= True,
+            comparisons = "== !="
+           )
+
+    #m.add_method("long index_to_linear(%s i)"%index_type, doc = "index -> linear index")
+    #m.add_len(calling_pattern = "int result = self_c.size()", doc = "Size of the mesh")
+    #c_cast_type = "dcomplex" if not (c_tag == "brillouin_zone" or c_tag=="cyclic_lattice") else "triqs::arrays::vector<double>"
+    #m.add_iterator(c_cast_type = c_cast_type)
+
+    m.add_method_copy()
+    m.add_method_copy_from()
+
+    return m
+
+# the mesh
+m = make_mesh_stripped( py_type = "MeshPoly3", c_tag = "poly3")
+m.add_constructor(signature = "(double beta, statistic_enum S, long order)")
 
 module.add_class(m)
 
