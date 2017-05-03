@@ -163,7 +163,7 @@ def make_mesh_stripped(py_type, c_tag,
            )
 
     #m.add_method("long index_to_linear(%s i)"%index_type, doc = "index -> linear index")
-    #m.add_len(calling_pattern = "int result = self_c.size()", doc = "Size of the mesh")
+    m.add_len(calling_pattern = "int result = self_c.size()", doc = "Size of the mesh")
     #c_cast_type = "dcomplex" if not (c_tag == "brillouin_zone" or c_tag=="cyclic_lattice") else "triqs::arrays::vector<double>"
     #m.add_iterator(c_cast_type = c_cast_type)
 

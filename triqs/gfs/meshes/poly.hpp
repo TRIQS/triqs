@@ -130,11 +130,35 @@ namespace triqs {
       using B = gf_mesh<cartesian_product<discrete, poly_one>>;
       
       gf_mesh() = default;
-      gf_mesh(double beta, statistic_enum S, long order) : order(order),
-        B{{6}, {beta, S, (order * (order * order + 3 * order + 2)) / 6}} {}
+      gf_mesh(double beta, statistic_enum S, long order) : order(order), B{{n_tetras}, {beta, S, n_coeff(order)}} {}
+
+      size_t size() const { return B::size(); }
+      
+      friend std::string get_triqs_hdf5_data_scheme(gf_mesh const &) { return "MeshPoly3";}
+
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
+	h5::group gr = fg.create_group(subgroup_name);
+	gr.write_triqs_hdf5_data_scheme(m);
+	h5_write(gr, "order", m.order);
+	auto l = [gr](int N, auto const &m) { h5_write(gr, "MeshComponent" + std::to_string(N), m); };
+	triqs::tuple::for_each_enumerate(m.components(), l);
+      }
+
+      friend void h5_read(h5::group fg, std::string const & subgroup_name, gf_mesh &m) {
+	h5::group gr = fg.open_group(subgroup_name);
+	gr.assert_triqs_hdf5_data_scheme(m, true);
+	int order;
+	h5_read(gr, "order", m.order);
+	auto l = [gr](int N, auto &m) { h5_read(gr, "MeshComponent" + std::to_string(N), m); };
+	triqs::tuple::for_each_enumerate(m.components(), l);	
+      }   
+      
+      int order = 1;
+      constexpr static int n_tetras = 6;
+      constexpr int n_coeff(int order) { return (order * (order * order + 3 * order + 2)) / 6; }
 
       public:
-      int order;
+      int get_order() { return order; }
     };
 
     // GET RID OF THIS TRAIT ?
