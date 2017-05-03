@@ -76,6 +76,8 @@ namespace triqs { namespace det_manip {
     std::vector<xy_type> x_values, y_values;
     int sign = 1;
     matrix_type mat_inv;
+    double cond_nb = 0; // log10 condition number estimate (for Frobenius norm) always >= 0
+    double sqr_norm = 0;
     uint64_t n_opts =0; // count the number of operation
     uint64_t n_opts_max_before_check = 100; // max number of ops before the test of deviation of the det, M^-1 is performed.
     double singular_threshold = -1; // the test to see if the matrix is singular is abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
@@ -86,17 +88,19 @@ namespace triqs { namespace det_manip {
     friend class boost::serialization::access;
     template<class Archive>
      void serialize(Archive & ar, const unsigned int version) {
-      ar & TRIQS_MAKE_NVP("Nmax",Nmax) 
+      ar & TRIQS_MAKE_NVP("Nmax",Nmax)
        & TRIQS_MAKE_NVP("N",N)
-       & TRIQS_MAKE_NVP("n_opts",n_opts) 
+       & TRIQS_MAKE_NVP("n_opts",n_opts)
        & TRIQS_MAKE_NVP("n_opts_max_before_check",n_opts_max_before_check)
-       & TRIQS_MAKE_NVP("singular_threshold",singular_threshold) 
-       & TRIQS_MAKE_NVP("det",det) 
+       & TRIQS_MAKE_NVP("singular_threshold",singular_threshold)
+       & TRIQS_MAKE_NVP("det",det)
        & TRIQS_MAKE_NVP("sign",sign)
        & TRIQS_MAKE_NVP("Minv",mat_inv)
-       & TRIQS_MAKE_NVP("row_num",row_num) 
+       & TRIQS_MAKE_NVP("cond_nb",cond_nb)
+       & TRIQS_MAKE_NVP("sqr_norm",sqr_norm)
+       & TRIQS_MAKE_NVP("row_num",row_num)
        & TRIQS_MAKE_NVP("col_num",col_num)
-       & TRIQS_MAKE_NVP("x_values",x_values) 
+       & TRIQS_MAKE_NVP("x_values",x_values)
        & TRIQS_MAKE_NVP("y_values",y_values);
      }
 
@@ -105,6 +109,8 @@ namespace triqs { namespace det_manip {
      auto gr =  fg.create_group(subgroup_name);
      h5_write(gr,"N",g.N);
      h5_write(gr,"mat_inv",g.mat_inv);
+     h5_write(gr,"cond_nb",g.cond_nb);
+     h5_write(gr,"sqr_norm",g.sqr_norm);
      h5_write(gr,"det",g.det);
      h5_write(gr,"sign",g.sign);
      h5_write(gr,"row_num",g.row_num);
@@ -123,6 +129,8 @@ namespace triqs { namespace det_manip {
      h5_read(gr,"mat_inv",g.mat_inv);
      g.Nmax = first_dim(g.mat_inv); // restore Nmax
      g.last_try = NoTry;
+     h5_read(gr,"cond_nb",g.cond_nb);
+     h5_read(gr,"sqr_norm",g.sqr_norm);
      h5_read(gr,"det",g.det);
      h5_read(gr,"sign",g.sign);
      h5_read(gr,"row_num",g.row_num);
@@ -172,6 +180,7 @@ namespace triqs { namespace det_manip {
     work_data_type_refill w_refill;
     det_type newdet;
     int newsign;
+    double new_sqr_norm;
 
    private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
     void swap_but_f (det_manip & rhs) noexcept {
@@ -182,6 +191,7 @@ namespace triqs { namespace det_manip {
      SW(x_values); SW(y_values);
      SW(sign); SW(mat_inv); SW(n_opts); SW(n_opts_max_before_check);
      SW(w1); SW(w2); SW(newdet); SW(newsign);
+     SW(cond_nb); SW(sqr_norm);
 #undef SW
     }
 
@@ -219,6 +229,9 @@ namespace triqs { namespace det_manip {
     /// Sets the number of operations done before a check in the dets.
     void set_n_operations_before_check(uint64_t n)  { n_opts_max_before_check = n;}
 
+    /// Give the conditioning number
+    double get_cond_nb() const { return cond_nb; }
+
     /**
      * \brief Constructor.
      *
@@ -252,8 +265,10 @@ namespace triqs { namespace det_manip {
       for (size_t i=0; i<N; ++i) {
        row_num.push_back(i);col_num.push_back(i);
        for (size_t j=0; j<N; ++j)
-	mat_inv(i,j) = f(x_values[i],y_values[j]);
+        mat_inv(i,j) = f(x_values[i],y_values[j]);
       }
+      sqr_norm = sqr_fro_norm_of_inv();
+      sqr_norm *= sqr_norm;
       range R(0,N);
       det = arrays::determinant(mat_inv(R,R));
       mat_inv(R,R) = inverse(mat_inv(R,R));
@@ -353,19 +368,25 @@ namespace triqs { namespace det_manip {
      if (N==0) {
        newdet = f(x,y);
        newsign = 1;
+       new_sqr_norm = abs(newdet * newdet);
        return value_type(newdet);
-    }
+     }
 
+     new_sqr_norm = sqr_norm;
      // I add the row and col and the end. If the move is rejected,
      // no effect since N will not be changed : Minv(i,j) for i,j>=N has no meaning.
      for (size_t k= 0; k< N; k++) {
       w1.B(k) = f(x_values[k],y);
       w1.C(k) = f(x, y_values[k]);
+      new_sqr_norm += abs(w1.B(k) * w1.B(k));
+      new_sqr_norm += abs(w1.C(k) * w1.C(k));
      }
      range R(0,N);
      //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
      blas::gemv(1.0, mat_inv(R,R), w1.B(R),0.0,w1.MB(R));
-     w1.ksi = f(x,y) - arrays::dot( w1.C(R) , w1.MB(R) );
+     w1.ksi = f(x,y);
+     new_sqr_norm += abs(w1.ksi * w1.ksi);
+     w1.ksi -= arrays::dot( w1.C(R) , w1.MB(R) );
      newdet = det*w1.ksi;
      newsign = ((i + j)%2==0 ? sign : -sign);   // since N-i0 + N-j0  = i0+j0 [2]
      return w1.ksi*(newsign*sign);              // sign is unity, hence 1/sign == sign
@@ -382,14 +403,18 @@ namespace triqs { namespace det_manip {
      w1.i=i; w1.j=j;
 
      // treat empty matrix separately
-     if (N==0) { newdet = ksi; newsign = 1; return newdet; }
+     if (N==0) { newdet = ksi; newsign = 1; new_sqr_norm = abs(newdet * newdet); return newdet; }
 
+     new_sqr_norm = sqr_norm;
      // I add the row and col and the end. If the move is rejected,
      // no effect since N will not be changed : Minv(i,j) for i,j>=N has no meaning.
      for (size_t k= 0; k< N; k++) {
       w1.B(k) = fx(x_values[k]);
       w1.C(k) = fy(y_values[k]);
+      new_sqr_norm += abs(w1.B(k) * w1.B(k));
+      new_sqr_norm += abs(w1.C(k) * w1.C(k));
      }
+     new_sqr_norm += abs(ksi * ksi);
      range R(0,N);
      //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
      blas::gemv(1.0, mat_inv(R,R), w1.B(R),0.0,w1.MB(R));
@@ -480,11 +505,17 @@ namespace triqs { namespace det_manip {
      w2.y[0] = y0;
      w2.y[1] = y1;
 
+     new_sqr_norm = sqr_norm;
+
      // w1.ksi = Delta(x_values,y_values) - Cw.MB using BLAS
      w2.ksi(0,0) = f(x0,y0);
      w2.ksi(0,1) = f(x0,y1);
      w2.ksi(1,0) = f(x1,y0);
      w2.ksi(1,1) = f(x1,y1);
+     new_sqr_norm += abs(w2.ksi(0, 0) * w2.ksi(0, 0));
+     new_sqr_norm += abs(w2.ksi(1, 0) * w2.ksi(1, 0));
+     new_sqr_norm += abs(w2.ksi(0, 1) * w2.ksi(0, 1));
+     new_sqr_norm += abs(w2.ksi(1, 1) * w2.ksi(1, 1));
 
      // treat empty matrix separately
      if (N==0) {
@@ -500,6 +531,10 @@ namespace triqs { namespace det_manip {
       w2.B(k,1) = f(x_values[k],y1);
       w2.C(0,k) = f(x0, y_values[k]);
       w2.C(1,k) = f(x1, y_values[k]);
+      new_sqr_norm += abs(w2.B(k, 0) * w2.B(k, 0));
+      new_sqr_norm += abs(w2.B(k, 1) * w2.B(k, 1));
+      new_sqr_norm += abs(w2.C(0, k) * w2.C(0, k));
+      new_sqr_norm += abs(w2.C(1, k) * w2.C(1, k));
      }
      range R(0,N), R2(0,2);
      //w2.MB(R,R2) = mat_inv(R,R) * w2.B(R,R2); // OPTIMIZE BELOW
@@ -578,6 +613,22 @@ namespace triqs { namespace det_manip {
      w1.i = i; w1.j = j; last_try = Remove;
      w1.jreal = col_num[w1.j];
      w1.ireal = row_num[w1.i];
+
+     // update norm
+     if (N == 1) new_sqr_norm = 0;
+     else {
+      new_sqr_norm = sqr_norm;
+      double elt;
+      for (size_t k=0; k<N; ++k) {
+       elt = abs(f(x_values[k], y_values[w1.jreal]));
+       new_sqr_norm -= elt * elt;
+       if (k != w1.jreal) {
+        elt = abs(f(x_values[w1.ireal], y_values[k]));
+        new_sqr_norm -= elt * elt;
+       }
+      }
+     }
+
      // compute the newdet
      // first we resolve the w1.ireal,w1.jreal, with the permutation of the Minv, then we pick up what
      // will become the 'corner' coefficient, if the move is accepted, after the exchange of row and col.
@@ -658,6 +709,23 @@ namespace triqs { namespace det_manip {
      w2.ireal[1] = row_num[w2.i[1]];
      w2.jreal[0] = col_num[w2.j[0]];
      w2.jreal[1] = col_num[w2.j[1]];
+
+     // update norm
+     if (N == 2) new_sqr_norm = 0;
+     else {
+      new_sqr_norm = sqr_norm;
+      double elt;
+      for (size_t k=0; k<N; ++k) {
+       for (size_t l=0; l<2; ++l) {
+        elt = abs(f(x_values[w2.ireal[l]], y_values[k]));
+        new_sqr_norm -= elt * elt;
+        if (k != w2.ireal[0] and k != w2.ireal[1]) {
+         elt = abs(f(x_values[k], y_values[w2.jreal[l]]));
+         new_sqr_norm -= elt * elt;
+        }
+       }
+      }
+     }
 
      // compute the newdet
      w2.ksi(0,0) = mat_inv(w2.jreal[0],w2.ireal[0]);
@@ -750,9 +818,19 @@ namespace triqs { namespace det_manip {
      w1.jreal = col_num[j];
      w1.y = y;
 
+     new_sqr_norm = sqr_norm;
+
+     vector_type old_col(N), new_col(N);
+     for (size_t i= 0; i<N;i++) {
+      old_col(i) = f(x_values[i], y_values[w1.jreal]);
+      new_col(i) = f(x_values[i] , w1.y);
+      new_sqr_norm -= abs(old_col(i) * old_col(i));
+      new_sqr_norm += abs(new_col(i) * new_col(i));
+     }
+
      // Compute the col B.
-     for (size_t i= 0; i<N;i++) w1.MC(i) = f(x_values[i] , w1.y) - f(x_values[i], y_values[w1.jreal]);
      range R(0,N);
+     w1.MC(R) = new_col - old_col;
      //w1.MB(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
      blas::gemv(1.0, mat_inv(R,R), w1.MC(R) ,0.0,  w1.MB(R) );
 
@@ -796,9 +874,19 @@ namespace triqs { namespace det_manip {
      w1.ireal = row_num[i];
      w1.x = x;
 
+     new_sqr_norm = sqr_norm;
+
+     vector_type old_row(N), new_row(N);
+     for (size_t j=0; j<N; j++) {
+      old_row(j) = f(x_values[w1.ireal], y_values[j]);
+      new_row(j) = f(w1.x, y_values[j]);
+      new_sqr_norm -= abs(old_row(j) * old_row(j));
+      new_sqr_norm += abs(new_row(j) * new_row(j));
+     }
+
      // Compute the col B.
-     for (size_t i= 0; i<N;i++) w1.MB(i) = f(w1.x, y_values[i] ) -  f(x_values[w1.ireal], y_values[i] );
      range R(0,N);
+     w1.MB(R) = new_row - old_row;
      //w1.MC(R) = mat_inv(R,R).transpose() * w1.MB(R); // OPTIMIZE BELOW
      blas::gemv(1.0, mat_inv(R,R).transpose(), w1.MB(R),0.0,  w1.MC(R));
 
@@ -847,6 +935,7 @@ namespace triqs { namespace det_manip {
      if (s==0) {
       w_refill.x_values.clear();
       w_refill.y_values.clear();
+      new_sqr_norm = 0;
       return 1 / (sign * det);
      }
 
@@ -861,6 +950,7 @@ namespace triqs { namespace det_manip {
      range R(0,s);
      newdet = arrays::determinant(w_refill.M(R,R));
      newsign = 1;
+     new_sqr_norm = frobenius_norm(make_matrix(w_refill.M(R,R)));
 
      return newdet / (sign * det);
     }
@@ -897,6 +987,7 @@ namespace triqs { namespace det_manip {
      if (N == 0) {
       det = 1;
       sign = 1;
+      sqr_norm = 0;
       return;
      }
 
@@ -952,12 +1043,24 @@ namespace triqs { namespace det_manip {
      _regenerate_with_check(true, precision_warning, precision_error);
     }
 
-    /// it the det 0 ? I.e. (singular_threshold <0 ? not std::isnormal(std::abs(det)) : (std::abs(det)<singular_threshold))
-    bool is_singular() const { return (singular_threshold <0 ? not std::isnormal(std::abs(det)) : (std::abs(det)<singular_threshold)) ; }
+    /// is the det 0 ?
+    bool is_singular() const { return not std::isnormal(std::abs(det)); }
 
     //------------------------------------------------------------------------------------------
     public:
     void regenerate() { _regenerate_with_check(false, 0, 0); }
+
+    private:
+    double sqr_fro_norm_of_inv() {
+     double res = 0;
+     for (size_t i=0; i<N; ++i) {
+      for (size_t j=0; j<N; ++j) {
+       value_type elt = mat_inv(i, j);
+       res += abs(elt * elt);
+      }
+     }
+     return res;
+    }
 
     public:
     /**
@@ -980,13 +1083,20 @@ namespace triqs { namespace det_manip {
        break; // double call of complete_operation...
       default: TRIQS_RUNTIME_ERROR << "Misuing det_manip";
      }
-     if (is_sing) { regenerate(); } else {
+     sqr_norm = new_sqr_norm;
+     range R(0, N);
+     if (N == 0) cond_nb = 0;
+     else cond_nb = 0.5 * std::log10(sqr_fro_norm_of_inv() * sqr_norm);
+
+     if (is_sing or (singular_threshold > 0 and cond_nb > singular_threshold)) { regenerate(); }
+     else {
       det = newdet;
       sign = newsign;
       ++n_opts;
       if (n_opts > n_opts_max_before_check) check_mat_inv();
      }
      last_try = NoTry;
+
     }
 
     // ----------------- A few short cuts   -----------------
