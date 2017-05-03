@@ -175,12 +175,20 @@ namespace triqs { namespace det_manip {
      }
     };
 
+    struct stats_type {
+     long nb_changes = 0;
+     long nb_regens = 0;
+     double error = 0;
+     double sqr_error = 0;
+    };
+
     work_data_type1 w1;
     work_data_type2 w2;
     work_data_type_refill w_refill;
     det_type newdet;
     int newsign;
     double new_sqr_norm;
+    stats_type stats;
 
    private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
     void swap_but_f (det_manip & rhs) noexcept {
@@ -231,6 +239,14 @@ namespace triqs { namespace det_manip {
 
     /// Give the conditioning number
     double get_cond_nb() const { return cond_nb; }
+
+    double get_regen_ratio() const { return (double)stats.nb_regens / (double)stats.nb_changes; }
+
+    std::pair<double, double> get_error_stats() const {
+     double avg = stats.error / (double)stats.nb_regens;
+     double var = stats.sqr_error / (double)stats.nb_regens - avg * avg;
+     return {avg, var};
+    }
 
     /**
      * \brief Constructor.
@@ -996,17 +1012,25 @@ namespace triqs { namespace det_manip {
      for (int i = 0; i < N; i++)
       for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
      det = arrays::determinant(res);
-     if (is_singular()) {
+     if (not std::isnormal(std::abs(det))) {
       res() = std::numeric_limits<double>::quiet_NaN();
       do_check = false;
      }
-     else
+     else {
       res = inverse(res);
+     }
+
+     double r = max_element(abs(res - mat_inv(R, R)));
+     double r2 = max_element(abs(res + mat_inv(R, R)));
+     double log_error = std::log10(r / (0.5 * r2));
+     if (std::isnormal(log_error)) {
+      stats.nb_regens ++;
+      stats.error += log_error;
+      stats.sqr_error += log_error * log_error;
+     }
 
      if (do_check) { // check that mat_inv is close to res
       const bool relative = true;
-      double r = max_element(abs(res - mat_inv(R, R)));
-      double r2 = max_element(abs(res + mat_inv(R, R)));
       bool err = !(r < (relative ? precision_error * r2 : precision_error));
       bool war = !(r < (relative ? precision_warning * r2 : precision_warning));
       if (err || war) {
@@ -1083,6 +1107,7 @@ namespace triqs { namespace det_manip {
        break; // double call of complete_operation...
       default: TRIQS_RUNTIME_ERROR << "Misuing det_manip";
      }
+     stats.nb_changes ++;
      sqr_norm = new_sqr_norm;
      range R(0, N);
      if (N == 0) cond_nb = 0;
