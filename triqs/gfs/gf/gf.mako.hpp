@@ -328,6 +328,9 @@ namespace triqs {
     _remake_zero();
     for (auto const &w : _mesh) (*this)[w] = rhs[w];
     _singularity                           = rhs.singularity();
+    _indices = rhs.indices();
+    if (_indices.empty()) _indices = indices_t(target_shape());
+    //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
     // to be implemented : there is none in the gf_expr in particular....
     // indices and name are not affected by it ???
     return *this;

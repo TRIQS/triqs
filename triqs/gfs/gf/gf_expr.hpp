@@ -42,7 +42,7 @@ namespace gfs {
 
   // Combine the two meshes of LHS and RHS : need to specialize where there is a scalar
   struct combine_mesh {
-   template <typename L, typename R> auto operator()(L &&l, R &&r) const -> decltype(std::forward<L>(l).mesh()) {
+   template <typename L, typename R> auto operator()(L &&l, R &&r) const {
     if (!(l.mesh() == r.mesh()))
      TRIQS_RUNTIME_ERROR << "Mesh mismatch: in Green Function Expression" << l.mesh() << " vs " << r.mesh();
     return std::forward<L>(l).mesh();
@@ -58,13 +58,28 @@ namespace gfs {
   // Same thing to get the data shape
   // NB : could be unified to one combine<F>, where F is a functor, but an easy usage requires polymorphic lambda ...
   struct combine_shape {
-   template <typename L, typename R> auto operator()(L &&l, R &&r) const -> decltype(l.data_shape()) {
+   template <typename L, typename R> auto operator()(L &&l, R &&r) const {
     if (!(l.data_shape() == r.data_shape()))
      TRIQS_RUNTIME_ERROR << "Shape mismatch in Green Function Expression: " << l.data_shape() << " vs " << r.data_shape();
     return l.data_shape();
    }
    template <typename S, typename R> decltype(auto) operator()(scalar_wrap<S> const &, R &&r) const { return r.data_shape(); }
    template <typename S, typename L> decltype(auto) operator()(L &&l, scalar_wrap<S> const &) const { return l.data_shape(); }
+  };
+
+  // Combine the two indices of LHS and RHS : need to specialize where there is a scalar
+  // FIXME C++17 : simplifyt with if constexpr
+  struct combine_indices {
+   template <typename L, typename R> auto operator()(L &&l, R &&r) const {
+    // make some check ?
+    return std::forward<L>(l).indices();
+   }
+   template <typename S, typename R> decltype(auto) operator()(scalar_wrap<S> const &, R &&r) const {
+    return std::forward<R>(r).indices();
+   }
+   template <typename S, typename L> decltype(auto) operator()(L &&l, scalar_wrap<S> const &) const {
+    return std::forward<L>(l).indices();
+   }
   };
 
   template <typename T>
@@ -93,6 +108,7 @@ namespace gfs {
   decltype(auto) mesh() const { return gfs_expr_tools::combine_mesh()(l, r); }
   decltype(auto) singularity() const { return utility::operation<Tag>()(l.singularity(), r.singularity()); }
   auto data_shape() const { return gfs_expr_tools::combine_shape()(l, r); }
+  decltype(auto) indices() const { return gfs_expr_tools::combine_indices()(l, r); }
 
   template <typename KeyType> decltype(auto) operator[](KeyType &&key) const {
    return utility::operation<Tag>()(l[std::forward<KeyType>(key)], r[std::forward<KeyType>(key)]);
@@ -119,6 +135,7 @@ namespace gfs {
   decltype(auto) mesh() const { return l.mesh(); }
   decltype(auto) singularity() const { return l.singularity(); }
   auto data_shape() const { return l.data_shape(); }
+  decltype(auto) indices() const { return l.indices(); }
 
   template <typename KeyType> auto operator[](KeyType &&key) const { return -l[key]; }
   template <typename... Args> auto operator()(Args &&... args) const { return -l(std::forward<Args>(args)...); }
