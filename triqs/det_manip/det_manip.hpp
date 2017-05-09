@@ -1023,7 +1023,7 @@ namespace triqs { namespace det_manip {
      double r = max_element(abs(res - mat_inv(R, R)));
      double r2 = max_element(abs(res + mat_inv(R, R)));
      double log_error = std::log10(r / (0.5 * r2));
-     if (std::isnormal(log_error)) {
+     if (std::isnormal(log_error) and not do_check) {
       stats.nb_regens ++;
       stats.error += log_error;
       stats.sqr_error += log_error * log_error;
@@ -1043,8 +1043,9 @@ namespace triqs { namespace det_manip {
                  << "N = " << N << "  "
                  << "\n   max(abs(M^-1 - M^-1_true)) = " << r
                  << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? precision_warning * r2 : precision_warning)
+                 << "\n   log10(error) = " << log_error << ", log10(cond) = " << cond_nb
                  << " " << std::endl;
-      if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
+      //if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
      }
 
      // since we have the proper inverse, replace the matrix and the det
