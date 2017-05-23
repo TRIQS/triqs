@@ -51,7 +51,7 @@ else()
  SET(TRIAL_CLANG_PATHS
  /usr/bin 
  )
-FIND_PROGRAM(CLANG_COMPILER names clang++ clang++-3.9 clang++-3.8 clang++-3.7 clang++-3.6 clang++-3.5 PATHS ${TRIAL_CLANG_PATHS} DOC "Clang compiler (for libclang option)")
+FIND_PROGRAM(CLANG_COMPILER names clang++ clang++-4.0 clang++-3.9 clang++-3.8 clang++-3.7 clang++-3.6 clang++-3.5 PATHS ${TRIAL_CLANG_PATHS} DOC "Clang compiler (for libclang option)")
 endif(${CMAKE_COMPILER_IS_CLANG})
 endif()
 
