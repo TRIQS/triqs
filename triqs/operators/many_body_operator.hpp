@@ -124,6 +124,11 @@ namespace operators {
    if (!is_zero(x)) monomials.insert({{}, x});
   }
 
+  struct _cdress; 
+  many_body_operator_generic(_cdress const& term) {
+     monomials.insert({term.monomial, term.coef}); 
+  }
+
   template <typename S> many_body_operator_generic& operator=(many_body_operator_generic<S> const& x) {
    static_assert(std::is_constructible<scalar_t, S>::value, "Assignment is impossible");
    monomials.clear();
