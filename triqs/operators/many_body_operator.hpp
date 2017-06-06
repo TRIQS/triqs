@@ -126,7 +126,7 @@ namespace operators {
 
   struct _cdress; 
   many_body_operator_generic(_cdress const& term) {
-     monomials.insert({term.monomial, term.coef}); 
+   normalize_and_insert(term.monomial, term.coef, monomials); 
   }
 
   template <typename S> many_body_operator_generic& operator=(many_body_operator_generic<S> const& x) {
