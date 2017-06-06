@@ -51,13 +51,15 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    }
 
 m.add_preamble("""
-namespace triqs::gfs {
-template<typename Gv>
-struct gf_proxy { 
- Gv gv;
- gf_proxy(Gv gv) : gv(gv){}
- template<typename U> auto call(U&& x) { return gv(std::forward<U>(x));}
-};
+namespace triqs {
+ namespace gfs {
+  template<typename Gv>
+  struct gf_proxy { 
+   Gv gv;
+   gf_proxy(Gv gv) : gv(gv){}
+   template<typename U> auto call(U&& x) { return gv(std::forward<U>(x));}
+  };
+ }
 }
 """)
 

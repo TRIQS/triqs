@@ -31,12 +31,14 @@ namespace std { // to be found by ADL
 }
 #endif
 
-namespace std::experimental{
+namespace std {
+ namespace experimental {
 
- // workaround for compiler defect
- template <typename T> void reset(std::optional<T>& x) { x = std::optional<T>{}; }
+  // workaround for compiler defect
+  template <typename T> void reset(std::optional<T>& x) { x = std::optional<T>{}; }
 
- // .value does not work on old OS X compilers ... WORKAROUND
- template <typename T> T& value_of(std::optional<T>& x) { *x; }
- template <typename T> T const& value_of(std::optional<T> const& x) { *x; }
+  // .value does not work on old OS X compilers ... WORKAROUND
+  template <typename T> T& value_of(std::optional<T>& x) { *x; }
+  template <typename T> T const& value_of(std::optional<T> const& x) { *x; }
+ }
 }
