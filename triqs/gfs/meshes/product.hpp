@@ -70,8 +70,15 @@ namespace gfs {
    index_t(Arg0 &&arg0, Arg1 &&arg1, Args &&... args)
       : _i(detail::get_index(std::forward<Arg0>(arg0)), detail::get_index(std::forward<Arg1>(arg1)),
            detail::get_index(std::forward<Args>(args))...) {}
+   // Construct the index_t from a tuple of indices
+   index_t(std::tuple<typename gf_mesh<Ms>::index_t...> const & i): _i(i){}
+   index_t(std::tuple<typename gf_mesh<Ms>::index_t...> && i): _i(i){}
+
    index_t(index_t const &) = default;
    index_t(index_t &&) = default;
+
+   index_t& operator=(index_t const& idx) = default; 
+   index_t& operator=(index_t && idx) = default; 
   };
 
   // -------------------- Constructors -------------------
@@ -238,11 +245,12 @@ namespace gfs {
    mesh_point() = default;
    mesh_point(mesh_t const &m_, index_t index_)
       : m(&m_)
-      , _c(triqs::tuple::map_on_zip([](auto const & m, auto const & i) { return m[i]; }, m_.m_tuple, index_._i))
+      , _c(triqs::tuple::map_on_zip([](auto const & m, auto const & i) { return m[i]; }, m_.components(), index_._i))
       , _atend(false) {}
    mesh_point(mesh_t const &m_) : m(&m_), _c(triqs::tuple::map(F1(), m_.components())), _atend(false) {}
    m_pt_tuple_t const &components_tuple() const { return _c; }
    linear_index_t linear_index() const { return m->mp_to_linear(_c); }
+   index_t index() const { return triqs::tuple::map([](auto const & mesh_pt){ return mesh_pt.index(); }, _c); }
    const mesh_t &mesh() const { return *m; }
 
    using cast_t = domain_pt_t;
