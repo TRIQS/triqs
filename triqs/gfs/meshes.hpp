@@ -41,6 +41,7 @@
 #include "./meshes/retime.hpp"
 #include "./meshes/refreq.hpp"
 #include "./meshes/legendre.hpp"
+#include "./meshes/poly.hpp"
 #include "./domains/R.hpp"
 #include "../lattice/gf_mesh_brillouin_zone.hpp"
 #include "../lattice/gf_mesh_cyclic_lattice.hpp"
