@@ -2,9 +2,9 @@ class Triqs < Formula
   desc "Applications and Libraries for Physics Simulations"
 
   homepage "http://triqs.ipht.cnrs.fr/"
-  url "https://github.com/TRIQS/triqs/archive/1.3.2.tar.gz"
+  url "https://github.com/TRIQS/triqs/archive/1.4.tar.gz"
 
-  sha256 "09e44d78849fef6d4a12b4bdf08bc038d3a41ba2b5b5d43d8855668ac66165ff"
+  sha256 "98378d5fb934c02f710d96eb5a3ffa28cbee20bab73b574487f5db18c5457cc4"
   head "https://github.com/TRIQS/triqs.git"
 
   option "with-test",   "Build and run shipped tests"
