@@ -62,9 +62,9 @@ modifications) for earlier versions of OS X.
 5. Install the required python packages: ::
 
     pip install numpy
-    pip install h5py
+    pip install --no-binary=h5py h5py
     pip install scipy
-    pip install mpi4py
+    pip install --no-binary=mpi4py mpi4py
     pip install matplotlib
     pip install tornado
     pip install pyzmq
