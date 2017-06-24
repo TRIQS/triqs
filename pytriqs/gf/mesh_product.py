@@ -62,6 +62,12 @@ class MeshProduct(object):
         """
         return reduce(operator.mul, self.size_of_components(), 1)
 
+    def __eq__(self, other):
+        """
+        Compare with another product mesh
+        """
+        return np.all(m1 == m2 for m1, m2 in zip(self._mlist, other._mlist))
+
     def __iter__(self): 
         """
         The composite mesh point
