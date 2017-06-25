@@ -12,45 +12,34 @@ AllowShortBlocksOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: true
-AllowShortLoopsOnASingleLine: false
+AllowShortLoopsOnASingleLine: true
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: false
-
 BinPackArguments: true
 BinPackParameters: true 
-BreakBeforeBinaryOperators: None
+BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Attach
 BreakBeforeTernaryOperators: false
-BreakConstructorInitializersBeforeComma: true
+BreakConstructorInitializersBeforeComma: false
 BreakStringLiterals: false
-
-ColumnLimit: 130
+ColumnLimit: 150
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 3
-#ContinuationIndentWidth: 3
+ContinuationIndentWidth: 3
 Cpp11BracedListStyle: true
-
 DerivePointerBinding : false
-
 IndentCaseLabels: true
-IndentWidth: 1
-
+IndentWidth: 2
 Language: Cpp
-
 MaxEmptyLinesToKeep: 1
-
-NamespaceIndentation :  All
-
-PointerAlignment: Left #Right
-#ReflowComments: true
-
+NamespaceIndentation : All
+PointerAlignment: Right
+ReflowComments: false
 SortIncludes: false
 SpaceAfterControlStatementKeyword: true
 SpaceBeforeAssignmentOperators: true
 SpaceInEmptyParentheses: false
 SpacesInParentheses: false
 Standard: Cpp11
-
-TabWidth: 1
-
+TabWidth: 2
 UseTab: Never
