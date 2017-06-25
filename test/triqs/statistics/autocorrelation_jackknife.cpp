@@ -61,7 +61,11 @@ TEST(Statistics, Autocorrelation1) {
 
  // normal distribution has changed in boost after 1.55, so results will be differents
 
-#if BOOST_VERSION > 105500
+#if BOOST_VERSION > 106300
+ EXPECT_EQ(autocorrelation_time(A), 121);
+ EXPECT_CLOSE(autocorrelation_time_from_binning(A, intrinsic_variance), 116.0001586780634);
+ EXPECT_CLOSE(autocorrelation_time_from_binning(A), 91.836181159626847);
+#elif BOOST_VERSION > 105500
  EXPECT_EQ(autocorrelation_time(A), 119);
  EXPECT_CLOSE(autocorrelation_time_from_binning(A, intrinsic_variance), 114.71362779226516);
  EXPECT_CLOSE(autocorrelation_time_from_binning(A), 92.781874985705826);
@@ -84,7 +88,11 @@ TEST(Statistics, Autocorrelation2) {
 
  observable<double> V;
  for (auto& x : A) V << x;
-#if BOOST_VERSION > 105500
+#if BOOST_VERSION > 106300
+ EXPECT_EQ(autocorrelation_time(V), 47);
+ EXPECT_CLOSE(autocorrelation_time_from_binning(V), 36.600655522946184);
+ EXPECT_CLOSE(autocorrelation_time(V * V), 44);
+#elif BOOST_VERSION > 105500
  EXPECT_EQ(autocorrelation_time(V), 47);
  EXPECT_CLOSE(autocorrelation_time_from_binning(V), 38.56211345863931);
  EXPECT_CLOSE(autocorrelation_time(V * V), 44);
