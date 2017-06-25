@@ -60,7 +60,7 @@ typedef long double max_align_t;
 // including python first remove some warning
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "Python.h"
-#elif 
+#else
 #include <assert.h>
 #endif
 
