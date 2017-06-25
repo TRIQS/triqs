@@ -128,7 +128,7 @@ if (PythonSupport)
 
  find_package(Python REQUIRED)
  if (NOT PYTHONLIBS_FOUND)
-  message (FATAL_ERROR "Cannot find python. You can use -DWithoutPython to build a pure C++ version.")
+  message (FATAL_ERROR "Cannot find python. You can use -DWithoutPython=OFF to build a pure C++ version.")
  endif()
 
  # added from issue 181. Does not work on Mac, because of -framework CoreFoundation.
