@@ -164,7 +164,7 @@ if (PythonSupport)
 
  set (PYTHONLIBS_FOUND TRUE) #${PYTHON_FOUND})
 
-if (PythonSupport)
+endif (PythonSupport)
 
 MESSAGE( STATUS "--------------------------------------------")
 
