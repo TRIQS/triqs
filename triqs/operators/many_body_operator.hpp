@@ -133,9 +133,9 @@ namespace operators {
    if (!is_zero(x)) monomials.insert({{}, x});
   }
 
-  struct _cdress; 
+  struct _cdress;
   many_body_operator_generic(_cdress const& term) {
-   normalize_and_insert(term.monomial, term.coef, monomials); 
+   normalize_and_insert(term.monomial, term.coef, monomials);
   }
 
   template <typename S> many_body_operator_generic& operator=(many_body_operator_generic<S> const& x) {
@@ -298,28 +298,32 @@ namespace operators {
    return res;
   }
 
-  // real
-  friend many_body_operator_generic real(many_body_operator_generic const& op) {
+  // Transform operator by applying a given function to each monomial
+  template <typename Lambda>
+  friend many_body_operator_generic foreach_monomial(many_body_operator_generic const& op, Lambda L) {
    many_body_operator_generic res;
-   using triqs::utility::real;
    using triqs::utility::is_zero;
    for (auto const& x : op) {
-    auto c = real(x.coef);
+    auto c = L(x.monomial, x.coef);
     if(!is_zero(c)) res.monomials.insert({x.monomial, c});
    }
    return res;
   }
 
+  // real
+  friend many_body_operator_generic real(many_body_operator_generic const& op) {
+   return foreach_monomial(op, [](monomial_t const&, scalar_t c) {
+    using triqs::utility::real;
+    return real(c);
+   });
+  }
+
   // imag
   friend many_body_operator_generic imag(many_body_operator_generic const& op) {
-   many_body_operator_generic res;
-   using triqs::utility::imag;
-   using triqs::utility::is_zero;
-   for (auto const& x : op) {
-    auto c = imag(x.coef);
-    if(!is_zero(c)) res.monomials.insert({x.monomial, c});
-   }
-   return res;
+   return foreach_monomial(op, [](monomial_t const&, scalar_t c) {
+    using triqs::utility::imag;
+    return imag(c);
+   });
   }
 
   // Boost.Serialization
