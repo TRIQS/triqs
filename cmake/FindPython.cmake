@@ -45,70 +45,72 @@ FUNCTION ( EXEC_PYTHON_SCRIPT the_script output_var_name)
  SET( ${output_var_name} ${res} PARENT_SCOPE)
 ENDFUNCTION (EXEC_PYTHON_SCRIPT)
 
-#
-# Check the interpreter and its version
-#
-EXEC_PYTHON_SCRIPT ("import sys, string; print sys.version.split()[0]" PYTHON_VERSION)
-STRING(COMPARE GREATER ${PYTHON_MINIMAL_VERSION} ${PYTHON_VERSION} PYTHON_VERSION_NOT_OK)
-IF (PYTHON_VERSION_NOT_OK)
- MESSAGE(FATAL_ERROR "Python intepreter version is ${PYTHON_VERSION} . It should be >= ${PYTHON_MINIMAL_VERSION}")
-ENDIF (PYTHON_VERSION_NOT_OK)
+if (PythonSupport)
 
-EXEC_PYTHON_SCRIPT ("import mako.template" nulle) # check that Mako is there...
-EXEC_PYTHON_SCRIPT ("import distutils " nulle) # check that distutils is there...
-EXEC_PYTHON_SCRIPT ("import numpy" nulle) # check that numpy is there...
-EXEC_PYTHON_SCRIPT ("import h5py" nulle) # check that h5py is there...
-EXEC_PYTHON_SCRIPT ("import scipy" nulle) # check that scipy is there...
-if (Python_use_mpi4py)
-EXEC_PYTHON_SCRIPT ("import mpi4py" nulle) # check that mpi4py is there...
-endif(Python_use_mpi4py)
-if(Build_Documentation)
-EXEC_PYTHON_SCRIPT ("import clang.cindex" nulle) # check that libclang is there...
-endif(Build_Documentation)
-MESSAGE(STATUS "Python interpreter and modules are ok : version ${PYTHON_VERSION}" )
-
-#
-# Check for Python include path
-#
-EXEC_PYTHON_SCRIPT ("import distutils ; from distutils.sysconfig import * ; print distutils.sysconfig.get_python_inc()"  PYTHON_INCLUDE_DIRS )
-message(STATUS "PYTHON_INCLUDE_DIRS =  ${PYTHON_INCLUDE_DIRS}" )
-mark_as_advanced(PYTHON_INCLUDE_DIRS)
-FIND_PATH(TEST_PYTHON_INCLUDE patchlevel.h PATHS ${PYTHON_INCLUDE_DIRS} NO_DEFAULT_PATH)
-if (NOT TEST_PYTHON_INCLUDE)
- message (ERROR "The Python herader files have not been found. Please check that you installed the Python headers and not only the interpreter.")
-endif (NOT TEST_PYTHON_INCLUDE)
-mark_as_advanced(TEST_PYTHON_INCLUDE)
-
-#
-# HDF5 version used by h5py
-#
-EXEC_PYTHON_SCRIPT ("import h5py;print h5py.version.hdf5_version" PYTHON_H5PY_HDF5VERSION)
-MESSAGE(STATUS "PYTHON_H5PY_HDF5VERSION = ${PYTHON_H5PY_HDF5VERSION}" )
-
-#
-# include files for numpy
-#
-EXEC_PYTHON_SCRIPT ("import numpy;print numpy.get_include()" PYTHON_NUMPY_INCLUDE_DIR)
-MESSAGE(STATUS "PYTHON_NUMPY_INCLUDE_DIR = ${PYTHON_NUMPY_INCLUDE_DIR}" )
-mark_as_advanced(PYTHON_NUMPY_INCLUDE_DIR)
-
-#
-# include files for numpy
-#
-EXEC_PYTHON_SCRIPT ("import numpy;print numpy.version.version" PYTHON_NUMPY_VERSION)
-MESSAGE(STATUS "PYTHON_NUMPY_VERSION = ${PYTHON_NUMPY_VERSION}" )
-mark_as_advanced(PYTHON_NUMPY_VERSION)
-
-#
-# Check for site packages
-#
-EXEC_PYTHON_SCRIPT ("from distutils.sysconfig import * ;print get_python_lib(0,0)"
- PYTHON_SITE_PKG)
-MESSAGE(STATUS "PYTHON_SITE_PKG = ${PYTHON_SITE_PKG}" )
-mark_as_advanced(PYTHON_SITE_PKG)
-
-#
-# Check for Python library path
+ #
+ # Check the interpreter and its version
+ #
+ EXEC_PYTHON_SCRIPT ("import sys, string; print sys.version.split()[0]" PYTHON_VERSION)
+ STRING(COMPARE GREATER ${PYTHON_MINIMAL_VERSION} ${PYTHON_VERSION} PYTHON_VERSION_NOT_OK)
+ IF (PYTHON_VERSION_NOT_OK)
+  MESSAGE(FATAL_ERROR "Python intepreter version is ${PYTHON_VERSION} . It should be >= ${PYTHON_MINIMAL_VERSION}")
+ ENDIF (PYTHON_VERSION_NOT_OK)
+ 
+ EXEC_PYTHON_SCRIPT ("import mako.template" nulle) # check that Mako is there...
+ EXEC_PYTHON_SCRIPT ("import distutils " nulle) # check that distutils is there...
+ EXEC_PYTHON_SCRIPT ("import numpy" nulle) # check that numpy is there...
+ EXEC_PYTHON_SCRIPT ("import h5py" nulle) # check that h5py is there...
+ EXEC_PYTHON_SCRIPT ("import scipy" nulle) # check that scipy is there...
+ if (Python_use_mpi4py)
+ EXEC_PYTHON_SCRIPT ("import mpi4py" nulle) # check that mpi4py is there...
+ endif(Python_use_mpi4py)
+ if(Build_Documentation)
+ EXEC_PYTHON_SCRIPT ("import clang.cindex" nulle) # check that libclang is there...
+ endif(Build_Documentation)
+ MESSAGE(STATUS "Python interpreter and modules are ok : version ${PYTHON_VERSION}" )
+ 
+ #
+ # Check for Python include path
+ #
+ EXEC_PYTHON_SCRIPT ("import distutils ; from distutils.sysconfig import * ; print distutils.sysconfig.get_python_inc()"  PYTHON_INCLUDE_DIRS )
+ message(STATUS "PYTHON_INCLUDE_DIRS =  ${PYTHON_INCLUDE_DIRS}" )
+ mark_as_advanced(PYTHON_INCLUDE_DIRS)
+ FIND_PATH(TEST_PYTHON_INCLUDE patchlevel.h PATHS ${PYTHON_INCLUDE_DIRS} NO_DEFAULT_PATH)
+ if (NOT TEST_PYTHON_INCLUDE)
+  message (ERROR "The Python herader files have not been found. Please check that you installed the Python headers and not only the interpreter.")
+ endif (NOT TEST_PYTHON_INCLUDE)
+ mark_as_advanced(TEST_PYTHON_INCLUDE)
+ 
+ #
+ # HDF5 version used by h5py
+ #
+ EXEC_PYTHON_SCRIPT ("import h5py;print h5py.version.hdf5_version" PYTHON_H5PY_HDF5VERSION)
+ MESSAGE(STATUS "PYTHON_H5PY_HDF5VERSION = ${PYTHON_H5PY_HDF5VERSION}" )
+ 
+ #
+ # include files for numpy
+ #
+ EXEC_PYTHON_SCRIPT ("import numpy;print numpy.get_include()" PYTHON_NUMPY_INCLUDE_DIR)
+ MESSAGE(STATUS "PYTHON_NUMPY_INCLUDE_DIR = ${PYTHON_NUMPY_INCLUDE_DIR}" )
+ mark_as_advanced(PYTHON_NUMPY_INCLUDE_DIR)
+ 
+ #
+ # include files for numpy
+ #
+ EXEC_PYTHON_SCRIPT ("import numpy;print numpy.version.version" PYTHON_NUMPY_VERSION)
+ MESSAGE(STATUS "PYTHON_NUMPY_VERSION = ${PYTHON_NUMPY_VERSION}" )
+ mark_as_advanced(PYTHON_NUMPY_VERSION)
+ 
+ #
+ # Check for site packages
+ #
+ EXEC_PYTHON_SCRIPT ("from distutils.sysconfig import * ;print get_python_lib(0,0)"
+  PYTHON_SITE_PKG)
+ MESSAGE(STATUS "PYTHON_SITE_PKG = ${PYTHON_SITE_PKG}" )
+ mark_as_advanced(PYTHON_SITE_PKG)
+ 
+ #
+ # Check for Python library path
  #
  #EXEC_PYTHON_SCRIPT ("import string; from distutils.sysconfig import * ;print string.join(get_config_vars('VERSION'))"  PYTHON_VERSION_MAJOR_MINOR)
  EXEC_PYTHON_SCRIPT ("import string; from distutils.sysconfig import *; print '%s/config' % get_python_lib(0,1)" PYTHON_LIBRARY_BASE_PATH)
@@ -161,6 +163,8 @@ mark_as_advanced(PYTHON_SITE_PKG)
  #ENDIF(APPLE)
 
  set (PYTHONLIBS_FOUND TRUE) #${PYTHON_FOUND})
+
+if (PythonSupport)
 
 MESSAGE( STATUS "--------------------------------------------")
 
