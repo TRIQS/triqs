@@ -300,7 +300,7 @@ namespace operators {
 
   // Transform operator by applying a given function to each monomial
   template <typename Lambda>
-  friend many_body_operator_generic foreach_monomial(many_body_operator_generic const& op, Lambda L) {
+  friend many_body_operator_generic foreach_monomial(many_body_operator_generic const& op, Lambda&& L) {
    many_body_operator_generic res;
    using triqs::utility::is_zero;
    for (auto const& x : op) {
