@@ -18,7 +18,7 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-import itertools 
+import itertools
 from functools import reduce # Valid in Python 2.6+, required in Python 3
 import operator
 import numpy as np
@@ -33,7 +33,7 @@ class MeshProduct(object):
 
     def __init__(self, *mlist):
         self._mlist = mlist
-        self._hdf5_data_scheme_ = 'MeshProduct' 
+        self._hdf5_data_scheme_ = 'MeshProduct'
 
     @property
     def components(self):
@@ -42,21 +42,21 @@ class MeshProduct(object):
         """
         return self._mlist
 
-    def size_of_components(self): 
+    def size_of_components(self):
         """
         A tuple with the size of the compomements
         """
         return (len(x) for x in self._mlist)
 
     @property
-    def rank(self): 
+    def rank(self):
         return len(self._mlist)
 
     # @property
-    # def size(self) : 
+    # def size(self) :
         # return len(self)
-    
-    def __len__(self): 
+
+    def __len__(self):
         """
         Total number of points (product of size of components)
         """
@@ -66,9 +66,9 @@ class MeshProduct(object):
         """
         Compare with another product mesh
         """
-        return all(m1 == m2 for m1, m2 in zip(self._mlist, other._mlist))
+        return self._mlist == other._mlist
 
-    def __iter__(self): 
+    def __iter__(self):
         """
         The composite mesh point
         """
@@ -84,10 +84,10 @@ class MeshProduct(object):
         """
          Deep copy
         """
-        assert self.rank == another.rank, "copy_from requires the same rank for meshes" 
+        assert self.rank == another.rank, "copy_from requires the same rank for meshes"
         return self.__class__(*[x.copy_from(y) for x,y in zip(self._mlist, another._mlist)])
 
-    def index_to_linear(self, idx) : 
+    def index_to_linear(self, idx) :
         """
         """
         return (x.index_to_linear(i) for x,i in itertools.izip(self._mlist, idx))
@@ -101,7 +101,7 @@ class MeshProduct(object):
         return ', '.join(str(x) for x in self._mlist)
 
    #-----------------------------  IO  -----------------------------------
-    
+
     def __reduce__(self):
         return call_factory_from_dict, (self.__class__, "", self.__reduce_to_dict__())
 
@@ -111,14 +111,14 @@ class MeshProduct(object):
     # @classmethod
     # def __factory_from_dict__(cls, l):
         # return cls(*l)
-   
+
     @classmethod
     def __factory_from_dict__(cls, name, d):
         return cls(*(d['MeshComponent%s'%i] for i in range(len(d)))) #.values())
 
- 
+
 #---------------------------------------------------------
 
 from pytriqs.archive.hdf_archive_schemes import register_class
 register_class (MeshProduct)
- 
+
