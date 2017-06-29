@@ -66,7 +66,7 @@ class MeshProduct(object):
         """
         Compare with another product mesh
         """
-        return np.all(m1 == m2 for m1, m2 in zip(self._mlist, other._mlist))
+        return all(m1 == m2 for m1, m2 in zip(self._mlist, other._mlist))
 
     def __iter__(self): 
         """
