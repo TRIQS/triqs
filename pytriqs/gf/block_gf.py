@@ -225,6 +225,9 @@ class BlockGf(object):
         return g
 
     def __setitem__(self,key,val):
+        if key == slice(None, None, None): # G[:] = XXX is the same as G << XXX
+            self << val
+            return
         try:
             g = self.__me_as_dict[key]
         except KeyError: 
