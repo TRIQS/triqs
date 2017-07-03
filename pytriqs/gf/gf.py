@@ -440,7 +440,7 @@ class Gf(object):
     def __imul__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) * arg
         # If arg is a Gf
-        if isinstance(self, Gf):
+        if isinstance(arg, Gf):
             assert type(self.mesh) == type(arg.mesh), "Can not multiply two Gf with meshes of different type"
             assert self.mesh == arg.mesh, "Can not multiply two Gf with different mesh"
             if self.target_rank == 2:
