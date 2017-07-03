@@ -439,9 +439,21 @@ class Gf(object):
     # ---------- Multiplication
     def __imul__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) * arg
-        # Multiply by a GF !?
-        self._data[:] *= arg
-        if self._singularity : self._singularity *= arg
+        # If arg is a Gf
+        if isinstance(self, Gf):
+            assert type(self.mesh) == type(arg.mesh), "Can not multiply two Gf with meshes of different type"
+            assert self.mesh == arg.mesh, "Can not multiply two Gf with different mesh"
+            if self.target_rank == 2:
+                for n in range (self.data.shape[0]):
+                   self.data[n] = np.dot(self.data[n], arg.data[n]) # put to C if too slow.
+            else:
+                for n in range (self.data.shape[0]):
+                   self.data[n] = self.data[n] * arg.data[n] # put to C if too slow.
+            self.tail.reset(-2) # Can not compute the tail, so it is undefined.
+        # arg is not a Gf
+        else:
+            self._data[:] *= arg
+            if self._singularity : self._singularity *= arg
         return self
 
     def __mul__(self,y):
