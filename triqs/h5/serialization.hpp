@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2017 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
