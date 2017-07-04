@@ -66,8 +66,11 @@ namespace utility {
   friend std::ostream& operator<<(std::ostream& out, real_or_complex const& x) {
    if (x._is_real)
     out << double(x);
-   else
-    out << x._x;
+   else { 
+    out << '(' << x._x.real();
+    if (x._x.imag()>0) out <<'+';
+    out << x._x.imag() <<"j)";
+   }
    return out;
   }
 

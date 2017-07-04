@@ -38,7 +38,7 @@ void test_comm_anticomm(std::vector<O> const& C, std::vector<O> const& Cd) {
  };
  auto ref_comm = [](int i, int j) {
   std::stringstream s;
-  if(i==j) s << -T(1) << " + "; s << T(2) << "*C^+(" << i << ")C(" << j << ")";
+  if(i==j) s << -T(1) << " + "; s << T(2) << "*c_dag(" << i << ")*c(" << j << ")";
   return s.str();
  };
  for(int i = 0; i < C.size(); ++i)
@@ -51,12 +51,12 @@ void test_comm_anticomm(std::vector<O> const& C, std::vector<O> const& Cd) {
 TEST(Operator, Real) {
  // Operators without indices
  auto op_with_no_indices = c<double>() + c_dag<double>() - n<double>();
- EXPECT_PRINT("1*C^+() + 1*C() + -1*C^+()C()", op_with_no_indices);
+ EXPECT_PRINT("1*c_dag() + 1*c() + -1*c_dag()*c()", op_with_no_indices);
 
  // Operators with many indices
  auto op_with_many_indices = c<double>(1,2,"a",true,-2) +
                          c_dag<double>(3,15,"b",false,-5);
- EXPECT_PRINT("1*C^+(3,15,b,0,-5) + 1*C(1,2,a,1,-2)", op_with_many_indices);
+ EXPECT_PRINT("1*c_dag(3,15,'b',0,-5) + 1*c(1,2,'a',1,-2)", op_with_many_indices);
 
  // Constant operator
  many_body_operator_real const_op(3.14);
@@ -69,44 +69,44 @@ TEST(Operator, Real) {
 
  // Algebra
  auto x = c<double>(0), y = c_dag<double>(1);
- EXPECT_PRINT("1*C(0)", x);
- EXPECT_PRINT("1*C^+(1)", y);
- EXPECT_PRINT("-1*C(0)", -x);
- EXPECT_PRINT("2 + 1*C(0)", x + 2.0);
- EXPECT_PRINT("2 + 1*C(0)", 2.0 + x);
- EXPECT_PRINT("-2 + 1*C(0)", x - 2.0);
- EXPECT_PRINT("2 + -1*C(0)", 2.0 - x);
- EXPECT_PRINT("3*C^+(1)", 3.0*y);
- EXPECT_PRINT("3*C^+(1)", y*3.0);
- EXPECT_PRINT("1*C^+(1) + 1*C(0)", x + y);
- EXPECT_PRINT("-1*C^+(1) + 1*C(0)", x - y);
- EXPECT_PRINT("2*C^+(1)C(0)", (x + y)*(x - y));
+ EXPECT_PRINT("1*c(0)", x);
+ EXPECT_PRINT("1*c_dag(1)", y);
+ EXPECT_PRINT("-1*c(0)", -x);
+ EXPECT_PRINT("2 + 1*c(0)", x + 2.0);
+ EXPECT_PRINT("2 + 1*c(0)", 2.0 + x);
+ EXPECT_PRINT("-2 + 1*c(0)", x - 2.0);
+ EXPECT_PRINT("2 + -1*c(0)", 2.0 - x);
+ EXPECT_PRINT("3*c_dag(1)", 3.0*y);
+ EXPECT_PRINT("3*c_dag(1)", y*3.0);
+ EXPECT_PRINT("1*c_dag(1) + 1*c(0)", x + y);
+ EXPECT_PRINT("-1*c_dag(1) + 1*c(0)", x - y);
+ EXPECT_PRINT("2*c_dag(1)*c(0)", (x + y)*(x - y));
 
  // N^3
  auto N = n<double>("up") + n<double>("dn");
  auto N3 = N*N*N;
- EXPECT_PRINT("1*C^+(dn)C(dn) + 1*C^+(up)C(up)",N);
- EXPECT_PRINT("1*C^+(dn)C(dn) + 1*C^+(up)C(up) + 6*C^+(dn)C^+(up)C(up)C(dn)",N3);
+ EXPECT_PRINT("1*c_dag('dn')*c('dn') + 1*c_dag('up')*c('up')",N);
+ EXPECT_PRINT("1*c_dag('dn')*c('dn') + 1*c_dag('up')*c('up') + 6*c_dag('dn')*c_dag('up')*c('up')*c('dn')",N3);
 
  // Dagger
  auto X = c_dag<double>(1) * c_dag<double>(2) * c<double>(3) * c<double>(4);
- EXPECT_PRINT("-1*C^+(1)C^+(2)C(4)C(3)",X);
- EXPECT_PRINT("-1*C^+(3)C^+(4)C(2)C(1)",dagger(X));
+ EXPECT_PRINT("-1*c_dag(1)*c_dag(2)*c(4)*c(3)",X);
+ EXPECT_PRINT("-1*c_dag(3)*c_dag(4)*c(2)*c(1)",dagger(X));
 
  // Real & Imaginary
- EXPECT_PRINT("-1*C^+(1)C^+(2)C(4)C(3)",real(X));
+ EXPECT_PRINT("-1*c_dag(1)*c_dag(2)*c(4)*c(3)",real(X));
  EXPECT_PRINT("0",imag(X));
 }
 
 TEST(Operator, Complex) {
  // Operators without indices
  auto op_with_no_indices = c<dcomplex>() + c_dag<dcomplex>() - n<dcomplex>();
- EXPECT_PRINT("(1,0)*C^+() + (1,0)*C() + (-1,-0)*C^+()C()", op_with_no_indices);
+ EXPECT_PRINT("(1,0)*c_dag() + (1,0)*c() + (-1,-0)*c_dag()*c()", op_with_no_indices);
 
  // Operators with many indices
  auto op_with_many_indices = c<dcomplex>(1,2,"a",true,-2) +
                          c_dag<dcomplex>(3,15,"b",false,-5);
- EXPECT_PRINT("(1,0)*C^+(3,15,b,0,-5) + (1,0)*C(1,2,a,1,-2)", op_with_many_indices);
+ EXPECT_PRINT("(1,0)*c_dag(3,15,'b',0,-5) + (1,0)*c(1,2,'a',1,-2)", op_with_many_indices);
 
  // Constant operator
  many_body_operator_complex const_op(3.14+2_j);
@@ -119,50 +119,50 @@ TEST(Operator, Complex) {
 
  // Algebra
  auto x = c<dcomplex>(0), y = c_dag<dcomplex>(1);
- EXPECT_PRINT("(1,0)*C(0)", x);
- EXPECT_PRINT("(1,0)*C^+(1)", y);
- EXPECT_PRINT("(-1,-0)*C(0)", -x);
- EXPECT_PRINT("(2,0) + (1,0)*C(0)", x + 2.0);
- EXPECT_PRINT("(2,0) + (1,0)*C(0)", 2.0 + x);
- EXPECT_PRINT("(0,2) + (1,0)*C(0)", x + 2.0_j);
- EXPECT_PRINT("(0,2) + (1,0)*C(0)", 2.0_j + x);
- EXPECT_PRINT("(-2,-0) + (1,0)*C(0)", x - 2.0);
- EXPECT_PRINT("(2,0) + (-1,-0)*C(0)", 2.0 - x);
- EXPECT_PRINT("(-0,-2) + (1,0)*C(0)", x - 2.0_j);
- EXPECT_PRINT("(0,2) + (-1,-0)*C(0)", 2.0_j - x);
- EXPECT_PRINT("(3,0)*C^+(1)", 3.0*y);
- EXPECT_PRINT("(3,0)*C^+(1)", y*3.0);
- EXPECT_PRINT("(0,3)*C^+(1)", 3.0_j*y);
- EXPECT_PRINT("(0,3)*C^+(1)", y*3.0_j);
- EXPECT_PRINT("(1,0)*C^+(1) + (1,0)*C(0)", x + y);
- EXPECT_PRINT("(-1,-0)*C^+(1) + (1,0)*C(0)", x - y);
- EXPECT_PRINT("(2,0)*C^+(1)C(0)", (x + y)*(x - y));
+ EXPECT_PRINT("(1,0)*c(0)", x);
+ EXPECT_PRINT("(1,0)*c_dag(1)", y);
+ EXPECT_PRINT("(-1,-0)*c(0)", -x);
+ EXPECT_PRINT("(2,0) + (1,0)*c(0)", x + 2.0);
+ EXPECT_PRINT("(2,0) + (1,0)*c(0)", 2.0 + x);
+ EXPECT_PRINT("(0,2) + (1,0)*c(0)", x + 2.0_j);
+ EXPECT_PRINT("(0,2) + (1,0)*c(0)", 2.0_j + x);
+ EXPECT_PRINT("(-2,-0) + (1,0)*c(0)", x - 2.0);
+ EXPECT_PRINT("(2,0) + (-1,-0)*c(0)", 2.0 - x);
+ EXPECT_PRINT("(-0,-2) + (1,0)*c(0)", x - 2.0_j);
+ EXPECT_PRINT("(0,2) + (-1,-0)*c(0)", 2.0_j - x);
+ EXPECT_PRINT("(3,0)*c_dag(1)", 3.0*y);
+ EXPECT_PRINT("(3,0)*c_dag(1)", y*3.0);
+ EXPECT_PRINT("(0,3)*c_dag(1)", 3.0_j*y);
+ EXPECT_PRINT("(0,3)*c_dag(1)", y*3.0_j);
+ EXPECT_PRINT("(1,0)*c_dag(1) + (1,0)*c(0)", x + y);
+ EXPECT_PRINT("(-1,-0)*c_dag(1) + (1,0)*c(0)", x - y);
+ EXPECT_PRINT("(2,0)*c_dag(1)*c(0)", (x + y)*(x - y));
 
  // N^3
  auto N = n<dcomplex>("up") + n<dcomplex>("dn");
  auto N3 = N*N*N;
- EXPECT_PRINT("(1,0)*C^+(dn)C(dn) + (1,0)*C^+(up)C(up)",N);
- EXPECT_PRINT("(1,0)*C^+(dn)C(dn) + (1,0)*C^+(up)C(up) + (6,0)*C^+(dn)C^+(up)C(up)C(dn)",N3);
+ EXPECT_PRINT("(1,0)*c_dag('dn')*c('dn') + (1,0)*c_dag('up')*c('up')",N);
+ EXPECT_PRINT("(1,0)*c_dag('dn')*c('dn') + (1,0)*c_dag('up')*c('up') + (6,0)*c_dag('dn')*c_dag('up')*c('up')*c('dn')",N3);
 
  // Dagger
  auto X = (1+2_j) *c_dag<dcomplex>(1) * c_dag<dcomplex>(2) * c<dcomplex>(3) * c<dcomplex>(4);
- EXPECT_PRINT("(-1,-2)*C^+(1)C^+(2)C(4)C(3)",X);
- EXPECT_PRINT("(-1,2)*C^+(3)C^+(4)C(2)C(1)",dagger(X));
+ EXPECT_PRINT("(-1,-2)*c_dag(1)*c_dag(2)*c(4)*c(3)",X);
+ EXPECT_PRINT("(-1,2)*c_dag(3)*c_dag(4)*c(2)*c(1)",dagger(X));
 
  // Real & Imaginary
- EXPECT_PRINT("(-1,0)*C^+(1)C^+(2)C(4)C(3)",real(X));
- EXPECT_PRINT("(-2,0)*C^+(1)C^+(2)C(4)C(3)",imag(X));
+ EXPECT_PRINT("(-1,0)*c_dag(1)*c_dag(2)*c(4)*c(3)",real(X));
+ EXPECT_PRINT("(-2,0)*c_dag(1)*c_dag(2)*c(4)*c(3)",imag(X));
 }
 
 TEST(Operator, RealOrComplex) {
  // Operators without indices
  auto op_with_no_indices = c() + 1_j*c_dag() - n();
- EXPECT_PRINT("(0,1)*C^+() + 1*C() + -1*C^+()C()", op_with_no_indices);
+ EXPECT_PRINT("(0+1j)*c_dag() + 1*c() + -1*c_dag()*c()", op_with_no_indices);
 
  // Operators with many indices
  auto op_with_many_indices =     c(1,2,"a",true,-2) +
                          1_j*c_dag(3,15,"b",false,-5);
- EXPECT_PRINT("(0,1)*C^+(3,15,b,0,-5) + 1*C(1,2,a,1,-2)", op_with_many_indices);
+ EXPECT_PRINT("(0+1j)*c_dag(3,15,'b',0,-5) + 1*c(1,2,'a',1,-2)", op_with_many_indices);
 
  // Constant operator
  many_body_operator_complex const_op(3.14+2_j);
@@ -175,39 +175,39 @@ TEST(Operator, RealOrComplex) {
 
  // Algebra
  auto x = c(0), y = c_dag(1);
- EXPECT_PRINT("1*C(0)", x);
- EXPECT_PRINT("1*C^+(1)", y);
- EXPECT_PRINT("-1*C(0)", -x);
- EXPECT_PRINT("2 + 1*C(0)", x + 2.0);
- EXPECT_PRINT("2 + 1*C(0)", 2.0 + x);
- EXPECT_PRINT("(0,2) + 1*C(0)", x + 2.0_j);
- EXPECT_PRINT("(0,2) + 1*C(0)", 2.0_j + x);
- EXPECT_PRINT("-2 + 1*C(0)", x - 2.0);
- EXPECT_PRINT("2 + -1*C(0)", 2.0 - x);
- EXPECT_PRINT("(-0,-2) + 1*C(0)", x - 2.0_j);
- EXPECT_PRINT("(0,2) + -1*C(0)", 2.0_j - x);
- EXPECT_PRINT("3*C^+(1)", 3.0*y);
- EXPECT_PRINT("3*C^+(1)", y*3.0);
- EXPECT_PRINT("(0,3)*C^+(1)", 3.0_j*y);
- EXPECT_PRINT("(0,3)*C^+(1)", y*3.0_j);
- EXPECT_PRINT("1*C^+(1) + 1*C(0)", x + y);
- EXPECT_PRINT("-1*C^+(1) + 1*C(0)", x - y);
- EXPECT_PRINT("2*C^+(1)C(0)", (x + y)*(x - y));
+ EXPECT_PRINT("1*c(0)", x);
+ EXPECT_PRINT("1*c_dag(1)", y);
+ EXPECT_PRINT("-1*c(0)", -x);
+ EXPECT_PRINT("2 + 1*c(0)", x + 2.0);
+ EXPECT_PRINT("2 + 1*c(0)", 2.0 + x);
+ EXPECT_PRINT("(0+2j) + 1*c(0)", x + 2.0_j);
+ EXPECT_PRINT("(0+2j) + 1*c(0)", 2.0_j + x);
+ EXPECT_PRINT("-2 + 1*c(0)", x - 2.0);
+ EXPECT_PRINT("2 + -1*c(0)", 2.0 - x);
+ EXPECT_PRINT("(-0-2j) + 1*c(0)", x - 2.0_j);
+ EXPECT_PRINT("(0+2j) + -1*c(0)", 2.0_j - x);
+ EXPECT_PRINT("3*c_dag(1)", 3.0*y);
+ EXPECT_PRINT("3*c_dag(1)", y*3.0);
+ EXPECT_PRINT("(0+3j)*c_dag(1)", 3.0_j*y);
+ EXPECT_PRINT("(0+3j)*c_dag(1)", y*3.0_j);
+ EXPECT_PRINT("1*c_dag(1) + 1*c(0)", x + y);
+ EXPECT_PRINT("-1*c_dag(1) + 1*c(0)", x - y);
+ EXPECT_PRINT("2*c_dag(1)*c(0)", (x + y)*(x - y));
 
  // N^3
  auto N = n("up") + n("dn");
  auto N3 = N*N*N;
- EXPECT_PRINT("1*C^+(dn)C(dn) + 1*C^+(up)C(up)",N);
- EXPECT_PRINT("1*C^+(dn)C(dn) + 1*C^+(up)C(up) + 6*C^+(dn)C^+(up)C(up)C(dn)",N3);
+ EXPECT_PRINT("1*c_dag('dn')*c('dn') + 1*c_dag('up')*c('up')",N);
+ EXPECT_PRINT("1*c_dag('dn')*c('dn') + 1*c_dag('up')*c('up') + 6*c_dag('dn')*c_dag('up')*c('up')*c('dn')",N3);
 
  // Dagger
  auto X = (1+2_j) *c_dag(1) * c_dag(2) * c(3) * c(4);
- EXPECT_PRINT("(-1,-2)*C^+(1)C^+(2)C(4)C(3)",X);
- EXPECT_PRINT("(-1,2)*C^+(3)C^+(4)C(2)C(1)",dagger(X));
+ EXPECT_PRINT("(-1-2j)*c_dag(1)*c_dag(2)*c(4)*c(3)",X);
+ EXPECT_PRINT("(-1+2j)*c_dag(3)*c_dag(4)*c(2)*c(1)",dagger(X));
 
  // Real & Imaginary
- EXPECT_PRINT("-1*C^+(1)C^+(2)C(4)C(3)",real(X));
- EXPECT_PRINT("-2*C^+(1)C^+(2)C(4)C(3)",imag(X));
+ EXPECT_PRINT("-1*c_dag(1)*c_dag(2)*c(4)*c(3)",real(X));
+ EXPECT_PRINT("-2*c_dag(1)*c_dag(2)*c(4)*c(3)",imag(X));
 
  // HDF5
  auto f = h5::file("ess.h5", 'w');

@@ -370,7 +370,6 @@ namespace operators {
     bool print_plus = false;
     for (auto const& m : op.monomials) {
      os << (print_plus ? " + " : "") << m.second;
-     if (m.first.size()) os << "*";
      os << m.first;
      print_plus = true;
     }

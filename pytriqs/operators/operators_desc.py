@@ -17,8 +17,9 @@ op = class_(
         c_type_absolute = "triqs::operators::many_body_operator",
         is_printable= True,
         hdf5 = True,
-        arithmetic = ("algebra","with_unit","with_unary_minus","real_or_complex")
-        )
+        arithmetic = ("algebra","with_unit","with_unary_minus","real_or_complex"),
+        serializable = "repr",
+       )
 
 op.add_constructor(signature="()", doc="create zero operator")
 op.add_constructor(signature="(double x)", doc="create a constant operator")
