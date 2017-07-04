@@ -172,22 +172,25 @@ class cfunction :
         assert self.rtype == None,  "Constructor must not have a return type"
         self.is_method = False
 
+    def _get_calling_pattern1(self) :
+        """Generation only: gets the calling_pattern or synthesize the default"""
+        if not self._dict_call: return ''
+        return """if (PySequence_Size(args)>0) {PyErr_SetString(PyExc_TypeError, "The function must be called only with named arguments"); goto error_return;}
+           if (!convertible_from_python<%s>(keywds,true)) goto error_return;
+           auto dict_transcript = convert_from_python<%s>(keywds);
+        """%(self._dict_call, self._dict_call)
+
     def _get_calling_pattern(self) :
         """Generation only: gets the calling_pattern or synthesize the default"""
         if self._calling_pattern : return self._calling_pattern
-        s1 = ''
-        if self._dict_call: # overrule
-          s1 = """if (PySequence_Size(args)>0) {PyErr_SetString(PyExc_TypeError, "The function must be called only with named arguments"); goto error_return;}
-             if (!convertible_from_python<%s>(keywds,true)) goto error_return;
-          """%self._dict_call
         s = "%s result = "%self.rtype if self.rtype != "void" else ""
         self_c = ""
         if self.is_method:
             self_c = "self_c." if not self.is_static else "self_class::"
         # the wrapped types are called by pointer
         args = ",".join([ ('*' if _is_a_wrapped_type(t) else '') + n for t,n,d in self.args])
-        args = args if self._dict_call is None else "convert_from_python<%s>(keywds)"%self._dict_call # call with the keywds argument
-        return "%s %s %s%s(%s)"%(s1, s,self_c, self.c_name , args)
+        args = args if self._dict_call is None else "dict_transcript" 
+        return "%s %s%s(%s)"%(s,self_c, self.c_name , args)
 
     def _get_signature (self):
         """Signature for the python doc"""

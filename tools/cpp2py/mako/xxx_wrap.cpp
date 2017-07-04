@@ -596,6 +596,7 @@ template<typename T>
        using self_class = ${self_c_type};
       %endif
       try {
+        ${overload._get_calling_pattern1()}
         %if overload.release_GIL_and_enable_signal :
          PyOS_sighandler_t sig = PyOS_getsig(SIGINT);
          triqs::signal_handler::start(); // start the C++ signal handler
