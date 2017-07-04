@@ -112,14 +112,8 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v);
 
 //--------------------- reduce  -----------------------------
 
-%if c.serializable == "via_string" :
- static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds);
-%endif
-
-//--------------------- reduce version 2 -----------------------------
-
-%if c.serializable == "tuple" :
- static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds);
+static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds);
+%if c.serializable :
  static PyObject* ${c.py_type}___reduce_reconstructor__ (PyObject *self, PyObject *args, PyObject *keywds);
 %endif
 
@@ -337,9 +331,7 @@ static PyMethodDef ${c.py_type}_methods[] = {
     {"${meth_name}", (PyCFunction)${c.py_type}_${meth_name}, METH_VARARGS| METH_KEYWORDS ${"|METH_STATIC" if meth.is_static else ""}, "${c.methods[meth_name]._generate_doc()}" },
     %endif
    %endfor
-%if c.serializable :
     {"__reduce__", (PyCFunction)${c.py_type}___reduce__, METH_VARARGS, "Internal  " },
-%endif
 ##%if c.serializable == "tuple" :
 ##    {"__reduce_reconstructor__", (PyCFunction)${c.py_type}___reduce_reconstructor__, METH_VARARGS|METH_STATIC, "Internal " },
 ##%endif
@@ -830,28 +822,45 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) 
 }
 %endif
 
+//--------------------- reduce : default case -----------------------------
+
+%if c.serializable is None:
+ static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds) {
+  PyErr_SetString(PyExc_NotImplementedError, "__reduce__ not implemented");
+  return NULL;
+}
+%endif
 //--------------------- reduce  -----------------------------
 
 %if c.serializable == "via_string" :
- // we make the unserialize function using the convertion of a C++ lambda !
  static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds) {
-  static PyObject* pyfoo = NULL; // never need to decref it, it is static
-  if (!pyfoo) {
-   auto lambda = [](std::string const &s) -> PyObject *{
+  auto & self_c = convert_from_python<${c.c_type}>(self);
+  pyref r = pyref::module("${module.full_name}").attr("__reduce_reconstructor__${c.py_type}");
+  if (r.is_null()) {
+   PyErr_SetString(PyExc_ImportError,
+                   "Cannot find the reconstruction function ${module.full_name}.__reduce_reconstructor__${c.py_type}");
+   return NULL;
+  }
+  return Py_BuildValue("(NN)", r.new_ref() , Py_BuildValue("(s)", triqs::serialize(self_c).c_str()));
+ }
+
+ //
+ static PyObject* ${c.py_type}___reduce_reconstructor__ (PyObject *self, PyObject *args, PyObject *keywds) {
+    PyObject* s = PyTuple_GetItem(args,0); // 
+    if (!PyString_Check(s)) {
+      PyErr_SetString(PyExc_RuntimeError, "Internal error");
+      return NULL;
+    }
+    const char * s2 = PyString_AsString (s);
     try {
      %if not c.c_type_is_view :
-      return convert_to_python( triqs::deserialize<${c.c_type}>(s));
+      return convert_to_python( triqs::deserialize<${c.c_type}>(s2));
      %else:
-      return convert_to_python( ${c.c_type} ( triqs::deserialize<typename ${c.c_type}::regular_type>(s)));
+      return convert_to_python( ${c.c_type} ( triqs::deserialize<typename ${c.c_type}::regular_type>(s2)));
      %endif
     }
-    CATCH_AND_RETURN("in boost unserialization of object ${c.py_type}",NULL);
-   };
-   pyfoo = convert_to_python(std::function<PyObject *(std::string)>{lambda}); // new ref
+    CATCH_AND_RETURN("in unserialization of object ${c.py_type}",NULL);
   }
-  auto & self_c = convert_from_python<${c.c_type}>(self);
-  return Py_BuildValue("(Os)",pyfoo, triqs::serialize(self_c).c_str()); // pyfoo ref ++ by Py_BuildValue
- }
 %endif
 
 //--------------------- reduce version 2 -----------------------------
@@ -868,7 +877,6 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) 
    return NULL;
   }
   return Py_BuildValue("(NN)", r.new_ref() , reductor{}.apply_to(self_c)); // pyfoo ref ++ by Py_BuildValue
-  //return Py_BuildValue("(NN)", borrowed(self).attr("__class__").attr("__module__").attr("__reduce_reconstructor__").new_ref(), reductor{}.apply_to(self_c)); // pyfoo ref ++ by Py_BuildValue
  }
 
 //
@@ -885,6 +893,38 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) 
    }
    CATCH_AND_RETURN("in boost unserialization of object ${c.py_type}",NULL);
  }
+%endif
+
+//--------------------- reduce version 3 -----------------------------
+
+%if c.serializable == "repr" :
+ static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds) {
+  pyref r = pyref::module("${module.full_name}").attr("__reduce_reconstructor__${c.py_type}");
+  if (r.is_null()) {
+   PyErr_SetString(PyExc_ImportError, "Cannot find the reconstruction function ${module.full_name}.__reduce_reconstructor__${c.py_type}");
+   return NULL;
+  }
+  return Py_BuildValue("(NN)", r.new_ref(), Py_BuildValue("(N)", PyObject_Repr(self))); // pyfoo ref ++ by Py_BuildValue, the second one is stolen
+ }
+
+ //
+ static PyObject* ${c.py_type}___reduce_reconstructor__ (PyObject *self, PyObject *args, PyObject *keywds) {
+    pyref this_module = PyImport_ImportModule("${module.full_name}");
+    if (this_module.is_null()) {
+      PyErr_SetString(PyExc_ImportError, "Cannot find the ${module.full_name}");
+      return NULL;
+    }
+    PyObject* global_dict = PyModule_GetDict(this_module); //borrowed
+    PyObject* s = PyTuple_GetItem(args,0); //borrowed 
+    if (!PyString_Check(s)) {
+      PyErr_SetString(PyExc_RuntimeError, "Internal error");
+      return NULL;
+    }
+    pyref code1 = Py_CompileString(PyString_AsString (s), "nofile", Py_eval_input);
+    PyCodeObject* code = (PyCodeObject*)((PyObject *)(code1));
+    pyref local_dict = PyDict_New();
+    return PyEval_EvalCode(code, global_dict, local_dict);
+  }
 %endif
 
 //--------------------- repr  -----------------------------
@@ -1129,7 +1169,7 @@ static PyMethodDef module_methods[] = {
 %endfor
 
 %for c in module.classes.values() :
-%if c.serializable == "tuple" :
+%if c.serializable:
     {"__reduce_reconstructor__${c.py_type}", (PyCFunction)${c.py_type}___reduce_reconstructor__, METH_VARARGS, "Internal " },
 %endif
 %endfor

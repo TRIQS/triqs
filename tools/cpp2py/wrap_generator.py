@@ -346,10 +346,12 @@ class class_ :
            Whether and how the object is to be serialized.  Possible values are :
            - "tuple" : reduce it to a tuple of smaller objects, using the
               boost serialization compatible template in C++, and the converters of the smaller objects.
-           - "via_string" : serialize via a string, made by
+           - "via_string" : [NOT OPERATIONAL] serialize via a string, made by
               triqs::serialize/triqs::deserialize
               On modern hdf5 (>1.8.9) it uses hdf5 to make the string, on older version it will use boost serialization
               (which generates a very heavy code, sometimes can x2 the code size of the wrapper, just for this function !).
+           - "repr" : serialize via a string produced by python repr, reconstructed by eval.
+
         is_printable : boolean
              If true, generate the str, repr from the C++ << stream operator
         comparisons : boolean 
@@ -367,7 +369,7 @@ class class_ :
       self.py_type = py_type
       c_to_py_type[self.c_type] = self.py_type # register the name translation for the doc generation
       self.hdf5 = hdf5
-      assert serializable in [None, "via_string", "tuple"]
+      assert serializable in [None, "via_string", "tuple", "repr"]
       self.serializable = serializable
       self.is_printable = is_printable
       self.comparisons = comparisons
