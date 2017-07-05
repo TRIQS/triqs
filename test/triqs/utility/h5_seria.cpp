@@ -39,7 +39,7 @@ TEST(H5Serialize, All) {
 
  auto s2 = serialize(array<double, 1>(10000));
  auto s3 = serialize(array<double, 1>(20000));
- EXPECT_TRUE(s3.size() < s2.size() * 2); // Test scaling in size with overhead
+ EXPECT_TRUE(first_dim(s3) < first_dim(s2) * 2); // Test scaling in size with overhead
 }
 MAKE_MAIN;
 

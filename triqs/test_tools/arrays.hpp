@@ -147,14 +147,13 @@ template <typename T> T rw_h5(T const &x, std::string filename = "ess", std::str
 
 //#define TRIQS_TEST_USE_H5_SERIA
 #ifdef TRIQS_TEST_USE_H5_SERIA
-// ok, but not stable. Sometimes, it does not work for long strings..
 
  std::cerr << "Checking H5 serialization/deserialization of \n " << triqs::utility::demangle(typeid(x).name()) << std::endl;
  auto s = triqs::h5::serialize(x);
  T x2 = triqs::h5::deserialize<T>(s);
  auto s2 = triqs::h5::serialize(x);
- std::cerr << "Length of serialization string "<< s.length()<<std::endl;
- EXPECT_EQ(s, s2) << "Test h5 save, load, save, compare has failed !";
+ std::cerr << "Length of serialization string "<< first_dim(s)<<std::endl;
+ EXPECT_EQ_ARRAY(s, s2);// << "Test h5 save, load, save, compare has failed !";
 #endif
 
 #endif
