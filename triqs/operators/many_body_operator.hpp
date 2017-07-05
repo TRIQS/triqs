@@ -298,9 +298,17 @@ namespace operators {
    return res;
   }
 
-  // Transform operator by applying a given function to each monomial
+  /// Transform operator by applying a given functor to each monomial
+  /**
+   * The functor must take two arguments convertible from monomial_t and scalar_t respectively,
+   * and return a value convertible to scalar_t -- new coefficient of the monomial.
+   *
+   @param op Operator to be transformed
+   @param L Functor to apply to each monomial
+   @return Transformed operator
+  */
   template <typename Lambda>
-  friend many_body_operator_generic foreach_monomial(many_body_operator_generic const& op, Lambda&& L) {
+  friend many_body_operator_generic transform(many_body_operator_generic const& op, Lambda&& L) {
    many_body_operator_generic res;
    using triqs::utility::is_zero;
    for (auto const& x : op) {
@@ -310,17 +318,25 @@ namespace operators {
    return res;
   }
 
-  // real
+  /// Given an operator, return its copy with the imaginary parts of all monomial coefficients set to zero
+  /**
+   @param op Operator to be transformed
+   @return Real part of the operator
+  */
   friend many_body_operator_generic real(many_body_operator_generic const& op) {
-   return foreach_monomial(op, [](monomial_t const&, scalar_t c) {
+   return transform(op, [](monomial_t const&, scalar_t c) {
     using triqs::utility::real;
     return real(c);
    });
   }
 
-  // imag
+  /// Given an operator, return its copy with the real parts of all monomial coefficients set to zero
+  /**
+   @param op Operator to be transformed
+   @return Imaginary part of the operator
+  */
   friend many_body_operator_generic imag(many_body_operator_generic const& op) {
-   return foreach_monomial(op, [](monomial_t const&, scalar_t c) {
+   return transform(op, [](monomial_t const&, scalar_t c) {
     using triqs::utility::imag;
     return imag(c);
    });
