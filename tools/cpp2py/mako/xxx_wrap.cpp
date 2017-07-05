@@ -30,7 +30,7 @@ using ${ns};
 #include <triqs/utility/signal_handler.hpp>
 <% include_serialization=0 %>
 %for c in module.classes.values() :
-%if c.serializable == "via_string" :
+%if c.serializable == "h5" :
 <% include_serialization=1 %>
 <% break %>
 %endif
@@ -833,7 +833,7 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) 
 %endif
 //--------------------- reduce  -----------------------------
 
-%if c.serializable == "via_string" :
+%if c.serializable == "h5" :
  static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds) {
   auto & self_c = convert_from_python<${c.c_type}>(self);
   pyref r = pyref::module("${module.full_name}").attr("__reduce_reconstructor__${c.py_type}");
@@ -842,26 +842,23 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) 
                    "Cannot find the reconstruction function ${module.full_name}.__reduce_reconstructor__${c.py_type}");
    return NULL;
   }
-  return Py_BuildValue("(NN)", r.new_ref() , Py_BuildValue("(s)", triqs::serialize(self_c).c_str()));
+  return Py_BuildValue("(NN)", r.new_ref() , Py_BuildValue("(N)", convert_to_python(triqs::serialize(self_c))));
  }
 
  //
  static PyObject* ${c.py_type}___reduce_reconstructor__ (PyObject *self, PyObject *args, PyObject *keywds) {
-    PyObject* s = PyTuple_GetItem(args,0); // 
-    if (!PyString_Check(s)) {
-      PyErr_SetString(PyExc_RuntimeError, "Internal error");
-      return NULL;
-    }
-    const char * s2 = PyString_AsString (s);
+    PyObject* a1 = PyTuple_GetItem(args,0); // 
+    auto a = convert_from_python<triqs::arrays::array_const_view<triqs::h5::h5_serialization_char_t,1>>(a1);
     try {
      %if not c.c_type_is_view :
-      return convert_to_python( triqs::deserialize<${c.c_type}>(s2));
+      return convert_to_python( triqs::deserialize<${c.c_type}>(a));
      %else:
-      return convert_to_python( ${c.c_type} ( triqs::deserialize<typename ${c.c_type}::regular_type>(s2)));
+      return convert_to_python( ${c.c_type} ( triqs::deserialize<typename ${c.c_type}::regular_type>(a)));
      %endif
     }
     CATCH_AND_RETURN("in unserialization of object ${c.py_type}",NULL);
   }
+
 %endif
 
 //--------------------- reduce version 2 -----------------------------
