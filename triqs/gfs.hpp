@@ -20,7 +20,8 @@
  ******************************************************************************/
 #pragma once
 
-#define TRIQS_GF_INCLUDED
+// for python code generator, we need to know what has to been included.
+#define TRIQS_INCLUDED_GF
 
 // the meshes 
 #include "./gfs/meshes.hpp"
@@ -69,4 +70,5 @@
 #include "./gfs/transform/fourier_real.hpp"
 #include "./gfs/transform/fourier_lattice.hpp"
 #include "./gfs/transform/legendre_matsubara.hpp"
+
 

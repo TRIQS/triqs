@@ -5,10 +5,10 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/tight_binding.py
 )
 
-install (FILES ${CMAKE_SOURCE_DIR}/pytriqs/__init__.py.template DESTINATION "include/pytriqs/gf/local" RENAME __init__.py)
+# 
+add_cpp2py_module(lattice_tools)
 
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/lattice)
+install(FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/lattice)
+install(TARGETS lattice_tools DESTINATION ${TRIQS_PYTHON_LIB_DEST}/lattice)
 
-# Build C extension module 
-triqs_python_extension(lattice_tools lattice)
 

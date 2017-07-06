@@ -1,6 +1,6 @@
 # Generated automatically using the command :
 # c++2py.py ../../triqs/statistics/histograms.hpp -p
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
 # The module
 module = module_(full_name = "pytriqs.statistics.histograms", doc = "")
@@ -10,12 +10,11 @@ module = module_(full_name = "pytriqs.statistics.histograms", doc = "")
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_include("<triqs/statistics/histograms.hpp>")
 
+module.add_include("<cpp2py/converters/pair.hpp>")
+module.add_include("<triqs/cpp2py_converters.hpp>")
 
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
-#include <triqs/python_tools/converters/pair.hpp>
-#include <triqs/python_tools/converters/arrays.hpp>
-#include <triqs/python_tools/converters/h5.hpp>
 using namespace triqs;
 using namespace statistics;
 """)

@@ -1,6 +1,6 @@
 # Generated automatically using the command :
 # c++2py.py ../c++/block_matrix.hpp -p -m pytriqs.arrays.block_matrix -o block_matrix
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
 # The module
 module = module_(full_name = "pytriqs.arrays.block_matrix", doc = "Block-diagonal matrix containers")
@@ -8,11 +8,12 @@ module = module_(full_name = "pytriqs.arrays.block_matrix", doc = "Block-diagona
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_include("<triqs/mpi/vector.hpp>")
 module.add_include("<triqs/arrays/block_matrix.hpp>")
-module.add_include("<triqs/python_tools/converters/h5.hpp>")
-module.add_include("<triqs/python_tools/converters/pair.hpp>")
-module.add_include("<triqs/python_tools/converters/arrays.hpp>")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
-module.add_include("<triqs/python_tools/converters/map.hpp>")
+
+module.add_include("<cpp2py/converters/pair.hpp>")
+module.add_include("<cpp2py/converters/vector.hpp>")
+module.add_include("<cpp2py/converters/map.hpp>")
+module.add_include("<triqs/cpp2py_converters.hpp>")
+
 module.add_using("namespace triqs::arrays")
 
 # The class block_matrix

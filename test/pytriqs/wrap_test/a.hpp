@@ -1,11 +1,12 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <set>
 #include <ostream>
 #include <triqs/arrays.hpp>
-//#include <triqs/h5.hpp>
 #include <triqs/utility/variant.hpp>
 #include <triqs/utility/signal_handler.hpp>
+
 namespace triqs { namespace py_tools { 
  class reductor;
  class reconstructor;

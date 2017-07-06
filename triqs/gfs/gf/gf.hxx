@@ -320,7 +320,7 @@ namespace triqs {
         for (auto const &w : _mesh) (*this)[w] = rhs[w];
         _singularity = rhs.singularity();
         _indices     = rhs.indices();
-        if (_indices.empty()) _indices= indices_t(target_shape());
+        if (_indices.empty()) _indices = indices_t(target_shape());
         //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
         // to be implemented : there is none in the gf_expr in particular....
         return *this;
@@ -666,7 +666,7 @@ namespace triqs {
       void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
         _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
         _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
-        if (l.c.rank() == l.root) _singularity= l.rhs.singularity();
+        if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
         mpi_broadcast(_singularity, l.c, l.root);
       }
 
@@ -677,7 +677,7 @@ namespace triqs {
       void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
         _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
         _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
-        if (l.all || (l.c.rank() == l.root)) _singularity= l.rhs.singularity();
+        if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
       }
     };
 
@@ -685,7 +685,7 @@ namespace triqs {
     /**
    * gf_view : the main class
    */
-    template <typename Var, typename Target> class gf_view : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+    template <typename Var, typename Target> class gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1238,7 +1238,7 @@ namespace triqs {
       void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
         _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
         _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
-        if (l.c.rank() == l.root) _singularity= l.rhs.singularity();
+        if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
         mpi_broadcast(_singularity, l.c, l.root);
       }
 
@@ -1249,7 +1249,7 @@ namespace triqs {
       void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
         _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
         _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
-        if (l.all || (l.c.rank() == l.root)) _singularity= l.rhs.singularity();
+        if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
       }
     };
 
@@ -1257,7 +1257,7 @@ namespace triqs {
     /**
    * gf_const_view : the main class
    */
-    template <typename Var, typename Target> class gf_const_view : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+    template <typename Var, typename Target> class gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;

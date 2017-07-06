@@ -5,37 +5,35 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/descriptor_base.py
   ${CMAKE_CURRENT_SOURCE_DIR}/descriptors.py
   ${CMAKE_CURRENT_SOURCE_DIR}/gf.py
-  #${CMAKE_CURRENT_SOURCE_DIR}/_imp_tools.py
   ${CMAKE_CURRENT_SOURCE_DIR}/lazy_expressions.py
   ${CMAKE_CURRENT_SOURCE_DIR}/mesh_product.py
   ${CMAKE_CURRENT_SOURCE_DIR}/tools.py
 )
 
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
-install (FILES ${CMAKE_SOURCE_DIR}/pytriqs/__init__.py.template DESTINATION "include/pytriqs/gf" RENAME __init__.py)
+# 
+add_cpp2py_module(meshes)
+add_dependencies(meshes lattice_tools)
 
-# Build C extension module
-triqs_python_extension(meshes gf)
-add_dependencies(python_wrap_meshes python_wrap_lattice_tools)
+# 
+add_cpp2py_module(singularities)
+add_dependencies(singularities lattice_tools)
 
-# Build C extension module
-triqs_python_extension(singularities gf)
-add_dependencies(python_wrap_singularities python_wrap_lattice_tools)
+# 
+add_cpp2py_module(gf_fnt)
+add_dependencies(gf_fnt meshes )
+add_dependencies(gf_fnt singularities)
 
-# Build C extension module
-triqs_python_extension(gf_fnt gf)
-add_dependencies(python_wrap_gf_fnt python_wrap_meshes )
-add_dependencies(python_wrap_gf_fnt python_wrap_singularities)
+# 
+add_cpp2py_module(wrapped_aux)
+add_dependencies(wrapped_aux meshes )
+add_dependencies(wrapped_aux singularities)
 
-# Build C extension module
-triqs_python_extension(wrapped_aux gf)
-
-add_dependencies(python_wrap_wrapped_aux python_wrap_meshes )
-add_dependencies(python_wrap_wrapped_aux python_wrap_singularities)
+# 
+install(FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
+install(TARGETS meshes singularities gf_fnt wrapped_aux DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
 
 add_subdirectory(backwd_compat)
 add_subdirectory(plot)
-
 # Backward compatibility only
 add_subdirectory(local)
 

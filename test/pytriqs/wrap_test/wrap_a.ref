@@ -1,10 +1,5 @@
  calling m1 1 2
 11.0
-calling ffg, with :
-(1, 2.0)
-{}
- calling m1 2 4
-[19.0]
 my a is 3
 [0, 1, 2] [0, 2, 4]
 [2, 4, 6, 8]

@@ -10,35 +10,26 @@
  * version.
  *
  * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * WARRANTY; without even the gfied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along with
- * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ * TRIQS. If not, see <http://www.gnu.org/licenses/".
  *
  ******************************************************************************/
 #pragma once
 
-#if defined(HAS_OPTIONAL_HEADER) and __cplusplus > 201402L
-#include <optional>
-#else
-#include <experimental/optional>
-namespace std { // to be found by ADL
-
- using std::experimental::optional;
- using std::experimental::in_place;
-}
+#ifdef TRIQS_INCLUDED_H5
+#include "./cpp2py_converters/h5.hpp"
 #endif
 
-namespace std {
- namespace experimental {
+#ifdef TRIQS_INCLUDED_ARRAYS
+#include "./cpp2py_converters/arrays.hpp"
+#endif
 
-  // workaround for compiler defect
-  template <typename T> void reset(std::optional<T>& x) { x = std::optional<T>{}; }
+#ifdef TRIQS_INCLUDED_GF
+#include "./cpp2py_converters/gf.hpp"
+#endif
 
-  // .value does not work on old OS X compilers ... WORKAROUND
-  template <typename T> T& value_of(std::optional<T>& x) { *x; }
-  template <typename T> T const& value_of(std::optional<T> const& x) { *x; }
- }
-}
+

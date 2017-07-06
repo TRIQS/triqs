@@ -42,6 +42,11 @@
 
 namespace triqs { 
  template<typename T> struct remove_cv_ref : std::remove_cv<typename std::remove_reference<T>::type> {};
+
+ /// Tag the views
+ struct is_view_tag {};
+ template<typename T> struct is_view : std::is_base_of<is_view_tag,T>{};
+
 };
 
 #define TRIQS_CATCH_AND_ABORT catch(std::exception const & e) { std::cout  << e.what()<< std::endl; return 1;}

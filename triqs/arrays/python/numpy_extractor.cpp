@@ -23,7 +23,6 @@
 #include "../../utility/mini_vector.hpp"
 #include "../../utility/typeid_name.hpp"
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-#include "../../python_tools/pyref.hpp"
 #include "./numpy_extractor.hpp"
 
 
@@ -42,17 +41,19 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
   if (!enforce_copy) {
    if (!PyArray_Check(X)) throw copy_exception () << error_msg<<"   Indeed the object was not even an array !\n";
    if (elementsType != PyArray_TYPE((PyArrayObject *)X)) {
-    py_tools::pyref p = PyObject_GetAttrString(X, "dtype");
+    PyObject* p = PyObject_GetAttrString(X, "dtype");
     std::string actual_type = "";
     if (p) {
-     py_tools::pyref q = PyObject_GetAttrString(p, "name");
+     PyObject* q = PyObject_GetAttrString(p, "name");
      if (q && PyString_Check(q)) actual_type = PyString_AsString(q);
+     Py_XDECREF(q);
     }
+    Py_XDECREF(p);
     throw copy_exception() << error_msg << "   Type mismatch of the elements.\n   The expected type by C+ is "
                            << utility::demangle(type_name) << " while I receive an array of type " << actual_type << "\n";
    }
    PyArrayObject *arr = (PyArrayObject *)X;
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+#ifdef PYTHON_NUMPY_VERSION_LT_17
    if ( arr->nd != rank) throw copy_exception () << error_msg<<"   Rank mismatch . numpy array is of rank "<< arr->nd << "while you ask for rank "<< rank<<". \n";
 #else
    if ( PyArray_NDIM(arr) != rank) throw copy_exception () << error_msg<<"   Rank mismatch . numpy array is of rank "<<  PyArray_NDIM(arr) << "while you ask for rank "<< rank<<". \n";
@@ -75,7 +76,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    int flags = 0; //(ForceCast ? NPY_FORCECAST : 0) ;// do NOT force a copy | (make_copy ?  NPY_ENSURECOPY : 0);
    //if (!(PyArray_Check(X) ))
     //flags |= ( IndexMapType::traversal_order == indexmaps::mem_layout::c_order(rank) ? NPY_C_CONTIGUOUS : NPY_F_CONTIGUOUS); //impose mem order
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+#ifdef PYTHON_NUMPY_VERSION_LT_17
    flags |= (NPY_C_CONTIGUOUS); //impose mem order
    flags |= (NPY_ENSURECOPY);
 #else
@@ -97,7 +98,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    PyArrayObject *arr_obj;
    arr_obj = (PyArrayObject *)numpy_obj;
    try {
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+#ifdef PYTHON_NUMPY_VERSION_LT_17
     if (arr_obj->nd!=rank)  TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : dimensions do not match";
     if (arr_obj->descr->type_num != elementsType)
      TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : incorrect type of element :" <<arr_obj->descr->type_num <<" vs "<<elementsType;
@@ -113,7 +114,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
   // extract strides and lengths
   PyArrayObject *arr_obj;
   arr_obj = (PyArrayObject *)numpy_obj;
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+#ifdef PYTHON_NUMPY_VERSION_LT_17
   const size_t dim =arr_obj->nd; // we know that dim == rank
   for (size_t i=0; i< dim ; ++i) {
    lengths[i] = size_t(arr_obj-> dimensions[i]);

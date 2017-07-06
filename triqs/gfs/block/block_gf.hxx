@@ -25,8 +25,8 @@
 namespace triqs {
   namespace gfs {
 
-    using triqs::utility::factory;
     using triqs::mpi::mpi_reduce;
+    using triqs::utility::factory;
 
     /*----------------------------------------------------------
    *   Declaration of main types : gf, gf_view, gf_const_view
@@ -465,7 +465,7 @@ namespace triqs {
     /**
    * block_gf_view
    */
-    template <typename Var, typename Target> class block_gf_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block_gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -580,7 +580,7 @@ namespace triqs {
         if (l.rhs.size() != this->size())
           TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
         _block_names = l.rhs.block_names();
-        for (int i = 0; i < size(); ++i) _glist[i]= mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
+        for (int i = 0; i < size(); ++i) _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
         // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
         // we can not overload the = of vector for better API.
       }
@@ -824,7 +824,7 @@ namespace triqs {
     /**
    * block_gf_const_view
    */
-    template <typename Var, typename Target> class block_gf_const_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block_gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1477,7 +1477,7 @@ namespace triqs {
     /**
    * block2_gf_view
    */
-    template <typename Var, typename Target> class block2_gf_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block2_gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1829,7 +1829,7 @@ namespace triqs {
     /**
    * block2_gf_const_view
    */
-    template <typename Var, typename Target> class block2_gf_const_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block2_gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;

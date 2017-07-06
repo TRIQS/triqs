@@ -39,7 +39,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    for(size_t i =0; i<rank; ++i) { dims[i] = A.indexmap().lengths()[i]; strides[i] = A.indexmap().strides()[i]*sizeof(value_type); }
    const value_type * data = A.data_start();
    //int flags = NPY_ARRAY_BEHAVED & ~NPY_ARRAY_OWNDATA;;// for numpy2
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+#ifdef PYTHON_NUMPY_VERSION_LT_17
    int flags = NPY_BEHAVED & ~NPY_OWNDATA;
 #else
    int flags = NPY_ARRAY_BEHAVED & ~NPY_ARRAY_OWNDATA;
@@ -53,7 +53,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    if (!PyArray_Check(res)) TRIQS_RUNTIME_ERROR<<" array_view_from_numpy : internal error : the python object is not a numpy";
    PyArrayObject * arr = (PyArrayObject *)(res);
    //PyArray_SetBaseObject(arr,  A.storage().new_python_ref());
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+#ifdef PYTHON_NUMPY_VERSION_LT_17
    arr->base =  A.storage().new_python_ref();
    assert( arr->flags == (arr->flags & ~NPY_OWNDATA));
 #else

@@ -88,7 +88,7 @@ Member functions
 
 .. toctree::
 
-  :hidden:
+   :hidden:
 
    gf_mesh<imfreq>/constructor
    gf_mesh<imfreq>/domain

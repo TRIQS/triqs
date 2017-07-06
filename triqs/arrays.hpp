@@ -21,7 +21,7 @@
 #pragma once
 
 // for python code generator, we need to know what to include...
-#define TRIQS_ARRAYS_INCLUDED
+#define TRIQS_INCLUDED_ARRAYS
 
 // The basic classes
 #include <triqs/arrays/array.hpp>
@@ -51,4 +51,5 @@
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 
 #include <triqs/arrays/mpi.hpp>
+
 

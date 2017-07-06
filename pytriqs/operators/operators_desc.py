@@ -1,14 +1,24 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
+
 
 # The many_body_operators module
 module = module_(full_name = "pytriqs.operators.operators", doc = "Doc to be written", app_name="triqs")
+
+module.add_include("<triqs/arrays.hpp>")
 module.add_include("<triqs/operators/many_body_operator.hpp>")
-module.add_include("<triqs/python_tools/converters/arrays.hpp>") # for h5 serialization.
-module.add_include("<triqs/python_tools/converters/pair.hpp>")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
-module.add_include("<triqs/python_tools/converters/variant_int_string.hpp>")
-module.add_include("<triqs/python_tools/converters/h5.hpp>")
-module.add_include("<triqs/python_tools/converters/real_or_complex.hpp>")
+
+module.add_include("<cpp2py/converters/pair.hpp>")
+module.add_include("<cpp2py/converters/vector.hpp>")
+module.add_include("<cpp2py/converters/map.hpp>")
+
+module.add_include("<triqs/cpp2py_converters.hpp>")
+module.add_include("<triqs/cpp2py_converters/variant_int_string.hpp>")
+module.add_include("<triqs/cpp2py_converters/real_or_complex.hpp>")
+
+#module.add_include("<triqs/python_tools/converters/arrays.hpp>") # for h5 serialization.
+#module.add_include("<triqs/python_tools/converters/variant_int_string.hpp>")
+#odule.add_include("<triqs/python_tools/converters/real_or_complex.hpp>")
+
 module.add_using("namespace triqs::operators")
  
 # The operator class

@@ -83,11 +83,13 @@ class TriqsExample(Directive):
         filename_clean = filename.rsplit('.',1)[0]
         if filename_clean.startswith('./') : filename_clean = filename_clean[2:]
         #print "Running the example ....",filename_clean
-        
+        #print "Root ?", env.doc2path(env.docname, base=None)
+
         import subprocess as S
         error = True
         try : 
             stdout =''
+            #resout = S.check_output("./example_bin/doc_%s"%(filename_clean) ,stderr=S.STDOUT,shell=True)
             resout = S.check_output("./%s/doc_%s"%(docdir,filename_clean) ,stderr=S.STDOUT,shell=True)
             if resout : 
                stdout = '---------- Result is -------\n' + resout.strip()

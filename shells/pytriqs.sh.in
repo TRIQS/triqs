@@ -1,4 +1,0 @@
-#!/bin/sh
-@EXPORT_PYTHONPATH@
-
-@PYTHON_INTERPRETER@ $@

@@ -1,15 +1,17 @@
 
 # Build C extension module
-triqs_python_extension(my_module)
-triqs_python_extension(my_moduleB)
-triqs_python_extension(test_g)
-triqs_python_extension(test_bl)
-triqs_python_extension(test_multivar)
+add_cpp2py_module(my_module)
+add_cpp2py_module(my_moduleB)
+add_cpp2py_module(test_g)
+add_cpp2py_module(test_bl)
+add_cpp2py_module(test_multivar)
 
-add_dependencies(python_wrap_test_multivar python_wrap_meshes)
+add_dependencies(test_multivar meshes singularities gf_fnt wrapped_aux)
+add_dependencies(test_g meshes singularities gf_fnt wrapped_aux)
+add_dependencies(test_bl meshes singularities gf_fnt wrapped_aux)
 
-# the module B must be generated AFTER my_module since it uses some wrapped types...
-add_dependencies(python_wrap_my_moduleB python_wrap_my_module)
+add_dependencies(my_moduleB my_module)
+
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 # A sample test with text output
@@ -19,4 +21,8 @@ add_python_test(wrap_g)
 add_python_test(wrap_multivar)
 add_python_test(blockgf)
 
+
+
+add_test(NAME mytest COMMAND  ${CMAKE_BINARY_DIR}/build_pytriqs  wrap_a.py) 
+#add_test(NAME mytest COMMAND "PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR} python wrap_a.py") 
 

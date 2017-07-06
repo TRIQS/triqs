@@ -7,7 +7,10 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/U_matrix.py
 )
 
-triqs_python_extension(extractors operators/util)
-add_dependencies(python_wrap_extractors python_wrap_operators)
+add_cpp2py_module(extractors)
+add_dependencies(extractors operators)
 
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators/util)
+install(FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators/util)
+install(TARGETS extractors DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators/util)
+
+

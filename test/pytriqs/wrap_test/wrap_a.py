@@ -2,7 +2,6 @@ from my_module import *
 
 a = Ac()
 print a.m1(1,2.0)
-print a.m1p(1,2.0)
 
 print_a (a)
 

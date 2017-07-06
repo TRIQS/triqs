@@ -64,7 +64,6 @@ namespace h5 {
  // -----------------------------
 
  template <typename T> T deserialize(arrays::array_const_view<h5_serialization_char_t, 1> buf) {
-  T res;
 
   proplist fapl = H5Pcreate(H5P_FILE_ACCESS);
   CHECK_OR_THROW((fapl >= 0), "creating fapl");
@@ -79,6 +78,7 @@ namespace h5 {
   CHECK_OR_THROW((f.is_valid()), "opened received file image file");
 
   auto gr = triqs::h5::group(f);
+  regular_type_if_view_else_type_t<T> res; 
   h5_read(gr, "object", res);
 
   return res;

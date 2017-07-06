@@ -19,5 +19,16 @@ before_install:
 install: true
 
 script:
-  - mkdir build && cd build && cmake .. -DCMAKE_CXX_COMPILER=/usr/bin/${CXX} -DPYTHON_INTERPRETER=/usr/bin/python && make && make test
-  # Failing with -DBuild_Documentation=ON -DTESTS_C_WITH_VALGRIND=ON
+  - git clone https://github.com/triqs/cpp2py
+  - cd cpp2py && mkdir build && cd build
+  - git checkout master
+  - cmake .. -DCMAKE_CXX_COMPILER=/usr/bin/${CXX} -DPYTHON_INTERPRETER=/usr/bin/python -DCMAKE_INSTALL_PREFIX=$PWD/../../root_install
+  #- make -j8 && make test && make install
+  - make -j8 install
+  - cd ../..
+  - source root_install/share/cpp2pyvars.sh
+  #- git checkout dev_externCpp2Py
+  - mkdir build && cd build
+  - cmake .. -DCMAKE_CXX_COMPILER=/usr/bin/${CXX} -DPYTHON_INTERPRETER=/usr/bin/python -DCMAKE_INSTALL_PREFIX=$PWD/../../root_install
+  - make -j8 && make test
+

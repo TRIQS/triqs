@@ -70,7 +70,7 @@ Example
 .. toctree::
    :hidden:
 
-   /cpp2doc_generated/triqs/arrays/range
+   /cpp2rst_generated/triqs/arrays/range
    ellipsis
 
 .. highlight:: c

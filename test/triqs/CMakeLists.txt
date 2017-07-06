@@ -1,12 +1,13 @@
 find_package(Test)
 enable_testing()
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- link_libraries( ${TRIQS_LIBRARY_PYTHON} )
-endif()
+#if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+# link_libraries( ${TRIQS_LIBRARY_PYTHON} )
+#endif()
 
 option(TESTS_C_WITH_VALGRIND "Run all the tests also through valgrind" OFF)
 link_libraries(gtest)
+include_directories(${CMAKE_SOURCE_DIR}/google_test)
 
 macro(all_tests)
 

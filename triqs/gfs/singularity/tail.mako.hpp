@@ -78,7 +78,11 @@ namespace gfs {
   *
   * $t = \sum_{i=o_{min}}^{o_{max}} \mathbf{a}_i (i\omega_n)^{-i}$
   */
- template <typename T> class MAKO_TAIL : tag_is_tail {
+ template <typename T> class MAKO_TAIL : 
+   // mako %if 'view' in RVC:
+   is_view_tag, 
+   // mako %endif
+   tag_is_tail {
   static constexpr bool is_scalar_target = (T::rank ==0);
 
   public:
@@ -208,6 +212,8 @@ namespace gfs {
   // mako ## ------------------------------------------------  const view class ---------------------------------
   // mako %elif RVC == 'const_view' :
 
+  __tail_const_view()= default;
+
   ///
   __tail_const_view(regular_type const &x) : _data(x.data()) {}
 
@@ -223,6 +229,8 @@ namespace gfs {
   // mako ## ------------------------------------------------  view class ---------------------------------
   // mako %elif RVC == 'view' :
 
+  __tail_view()= default;
+  
   /// View from a tail
   __tail_view(regular_type &x) : _data(x.data()) {}
 

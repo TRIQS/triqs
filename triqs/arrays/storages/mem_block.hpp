@@ -254,7 +254,7 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
     // else make a new copy of the numpy ...
     import_numpy_array();
     if (!is_scalar_or_pod<ValueType>::value) TRIQS_RUNTIME_ERROR << "Internal Error : memcpy on non-scalar";
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+#ifdef PYTHON_NUMPY_VERSION_LT_17
     PyObject * arr3 = X.py_numpy;
 #else
     // STRANGE : uncommenting this leads to a segfault on mac ???
@@ -269,7 +269,7 @@ namespace triqs { namespace arrays { namespace storages { //namespace details {
     else { // if the X.py_numpy is not contiguous, first let numpy copy it properly, then memcpy
      PyObject * na = PyObject_CallMethod(X.py_numpy,(char *)"copy",nullptr);
      assert(na);
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+#ifdef PYTHON_NUMPY_VERSION_LT_17
      PyObject * arr = na;
 #else
      if (!PyArray_Check(na)) TRIQS_RUNTIME_ERROR<<"Internal error : is not an array";

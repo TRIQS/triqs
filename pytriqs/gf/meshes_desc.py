@@ -1,15 +1,18 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 import re
 
+import pytriqs.lattice 
+
 module = module_(full_name = "pytriqs.gf.meshes", doc = "All the meshes", app_name="triqs")
-module.use_module('lattice_tools')
+
 module.add_include("<triqs/gfs.hpp>")
-module.add_include("<triqs/python_tools/converters/string.hpp>")
-module.add_include("<triqs/python_tools/converters/arrays.hpp>")
-module.add_include("<triqs/python_tools/converters/h5.hpp>")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
-module.add_include("<triqs/python_tools/converters/function.hpp>")
-module.add_include("<triqs/python_tools/converters/gf.hpp>")
+
+module.add_include("<cpp2py/converters/string.hpp>")
+module.add_include("<cpp2py/converters/vector.hpp>")
+module.add_include("<cpp2py/converters/function.hpp>")
+
+module.add_include("<triqs/cpp2py_converters.hpp>")
+
 module.add_using("namespace triqs::arrays")
 module.add_using("namespace triqs::gfs")
 module.add_using("triqs::utility::mini_vector")

@@ -1,13 +1,13 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 
 module = module_(full_name = "pytriqs.lattice.lattice_tools", doc = "Lattice tools (to be improved)")
 module.add_include("<triqs/lattice/brillouin_zone.hpp>")
 module.add_include("<triqs/lattice/tight_binding.hpp>")
-module.add_include("<triqs/python_tools/converters/pair.hpp>")
-module.add_include("<triqs/python_tools/converters/string.hpp>")
-module.add_include("<triqs/python_tools/converters/arrays.hpp>")
-#module.add_include("<triqs/python_tools/converters/h5.hpp>")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
+
+module.add_include("<cpp2py/converters/pair.hpp>")
+module.add_include("<cpp2py/converters/vector.hpp>")
+module.add_include("<cpp2py/converters/map.hpp>")
+module.add_include("<triqs/cpp2py_converters.hpp>")
 
 module.add_using("namespace triqs::lattice")
 module.add_using("namespace triqs::arrays")
@@ -89,7 +89,7 @@ tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hopping)",
                      displs.push_back(convert_from_python<std::vector<long>>(key));
                      mats.push_back(convert_from_python<matrix<dcomplex>>(value));
                     }
-                    auto result = tight_binding(*latt, displs, mats);
+                    auto result = tight_binding(latt, displs, mats);
                    """, 
                    doc = " ")
 

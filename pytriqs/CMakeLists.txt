@@ -1,8 +1,5 @@
-if (Python_use_mpi4py)
- SET (TRIQS_PYTHON_MPI_USE_MPI4PY 1)
-else()
- SET(TRIQS_PYTHON_MPI_USE_MPI4PY 0)
-endif()
+# 
+set(TRIQS_PYTHON_LIB_DEST ${CPP2PY_PYTHON_LIB_DEST_ROOT}/pytriqs)
 
 # Create a temporary copy of the python modules so that we can run before installation with the test
 FILE(GLOB_RECURSE all_py_files RELATIVE ${CMAKE_SOURCE_DIR}/pytriqs *.py )
@@ -10,8 +7,6 @@ SET(py_copy_tar  ${CMAKE_BINARY_DIR}/py_copy.tar)
 add_custom_command (OUTPUT ${py_copy_tar} DEPENDS ${all_py_files}
  COMMAND cd ${CMAKE_SOURCE_DIR}/pytriqs && tar cf ${py_copy_tar} ${all_py_files} && cd ${CMAKE_BINARY_DIR}/pytriqs && tar xf ${py_copy_tar} )
 add_custom_target(py_copy ALL DEPENDS ${py_copy_tar})
-
-find_package(PythonWrapperMacro)
 
 SET(PYTHON_SOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
@@ -28,9 +23,30 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/magic.py.in ${CMAKE_CURRENT_BINARY_DI
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
 
-# All subdirs
-add_all_subdirectories_with_cmakelist()
+# all targets below link to triqs
+link_libraries(triqs)
 
-#
-add_custom_target(wrap_clean COMMAND find ${CMAKE_BINARY_DIR} -name \"*.cpp\" |xargs rm)
+# Remove some warnings on clang and gcc for Python ?
+If("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+ add_compile_options(-Wno-deprecated-writable-strings)
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+ add_compile_options(-Wno-literal-suffix) 
+endif()
+
+# ---------------------------------------------
+
+add_subdirectory(archive)
+add_subdirectory(arrays)
+add_subdirectory(dos)
+add_subdirectory(fit)
+add_subdirectory(gf)
+add_subdirectory(lattice)
+add_subdirectory(operators)
+add_subdirectory(plot)
+add_subdirectory(random_generator)
+add_subdirectory(statistics)
+add_subdirectory(sumk)
+add_subdirectory(utility)
 

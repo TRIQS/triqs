@@ -1,18 +1,15 @@
-from wrap_generator import *
+from cpp2py.wrap_generator import *
 import re
 
+import pytriqs.lattice 
+ 
 module = module_(full_name = "pytriqs.gf.singularities", doc = "Wrapped ...", app_name="triqs")
-module.use_module('lattice_tools')
 module.add_include("<triqs/gfs.hpp>")
 module.add_include("<triqs/gfs/singularity/fit_tail.hpp>")
-#module.add_include("<triqs/gfs/transform/pade.hpp>")
-#module.add_include("<triqs/gfs/legacy_for_python_api.hpp>")
-module.add_include("<triqs/python_tools/converters/string.hpp>")
-module.add_include("<triqs/python_tools/converters/arrays.hpp>")
-module.add_include("<triqs/python_tools/converters/h5.hpp>")
-module.add_include("<triqs/python_tools/converters/vector.hpp>")
-module.add_include("<triqs/python_tools/converters/function.hpp>")
-module.add_include("<triqs/python_tools/converters/gf.hpp>")
+
+module.add_include("<cpp2py/converters/vector.hpp>")
+module.add_include("<triqs/cpp2py_converters.hpp>")
+
 module.add_using("namespace triqs::arrays")
 module.add_using("namespace triqs::gfs")
 module.add_using("triqs::utility::mini_vector")
@@ -55,6 +52,7 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
                           [0,2,3,4]):
    
     c_type = '__tail_view<triqs::gfs::%s>'%Target
+    c_type_reg = '__tail<triqs::gfs::%s>'%Target
 
     t = class_( py_type = "TailGf"+ext,
             c_type = c_type,
@@ -64,9 +62,10 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
             is_printable= True,
             arithmetic = ("algebra","dcomplex")
            )
-    
+
+    t.add_regular_type_converter()
     t.add_constructor(signature = "(triqs::utility::mini_vector<int,%s> target_shape, int n_order=10, int order_min=-1)"%n,
-                          doc = "Constructs a new tail, of matrix size N1xN2")
+                      intermediate_type = c_type_reg,   doc = "Constructs a new tail, of matrix size N1xN2")
  
     module.add_function("%s _make_tail_view_from_data(triqs::arrays::array_view<dcomplex, %s + 1> data)"%(c_type,n), 
                         calling_pattern = "%s result {data}"%c_type, doc = "Makes a new tail from a view of the data")
@@ -74,7 +73,7 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
     # backward compat
     if Target == "matrix_valued":
         t.add_constructor(signature = "(int N1, int N2, int n_order=10, int order_min=-1)",
-                          doc = "Constructs a new tail, of matrix size N1xN2")
+                          intermediate_type = c_type_reg, doc = "Constructs a new tail, of matrix size N1xN2")
 
     t.add_property(name = "data",
                    getter = cfunction("array_view<dcomplex,%s+1> data()"%n),
@@ -111,7 +110,7 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
         t.add_method("%s transpose()"%c_type, calling_pattern = "auto result = transpose(self_c)")
 
     if Target == "matrix_valued":
-        t.add_method(name = "from_L_G_R", calling_pattern = "self_c = l * (*t) * r",
+        t.add_method(name = "from_L_G_R", calling_pattern = "self_c = l * t * r",
                            signature = "void (matrix<dcomplex> l, %s t, matrix<dcomplex> r)"%c_type)
 
     t.add_method("void zero()", doc = "Sets the expansion to 0")

@@ -29,12 +29,12 @@
 namespace triqs {
   namespace gfs {
 
-    using utility::static_if;
+    using triqs::arrays::any;
+    using triqs::arrays::isnan;
+    using triqs::arrays::max_element;
     using utility::bool_;
     using utility::is_in_ZRC;
-    using triqs::arrays::isnan;
-    using triqs::arrays::any;
-    using triqs::arrays::max_element;
+    using utility::static_if;
 
     inline dcomplex inverse(dcomplex const &z) { return 1 / z; }
 
@@ -124,7 +124,7 @@ namespace triqs {
       __tail() {
         mini_vector<int, T::rank + 1> sh;
         sh[0] = _size();
-        for (int u = 0; u < T::rank; ++u) sh[u + 1]= 1;
+        for (int u = 0; u < T::rank; ++u) sh[u + 1] = 1;
         _data.resize(sh);
       }
 
@@ -404,7 +404,7 @@ namespace triqs {
   *
   * $t = \sum_{i=o_{min}}^{o_{max}} \mathbf{a}_i (i\omega_n)^{-i}$
   */
-    template <typename T> class __tail_view : tag_is_tail {
+    template <typename T> class __tail_view : is_view_tag, tag_is_tail {
       static constexpr bool is_scalar_target = (T::rank == 0);
 
       public:
@@ -455,6 +455,8 @@ namespace triqs {
       /// Construction from a data
       template <typename ArrayType, typename Enable = std14::enable_if_t<arrays::ImmutableCuboidArray<ArrayType>::value>>
       __tail_view(ArrayType const &x) : _data(x) {}
+
+      __tail_view() = default;
 
       /// View from a tail
       __tail_view(regular_type &x) : _data(x.data()) {}
@@ -682,7 +684,7 @@ namespace triqs {
   *
   * $t = \sum_{i=o_{min}}^{o_{max}} \mathbf{a}_i (i\omega_n)^{-i}$
   */
-    template <typename T> class __tail_const_view : tag_is_tail {
+    template <typename T> class __tail_const_view : is_view_tag, tag_is_tail {
       static constexpr bool is_scalar_target = (T::rank == 0);
 
       public:
@@ -733,6 +735,8 @@ namespace triqs {
       /// Construction from a data
       template <typename ArrayType, typename Enable = std14::enable_if_t<arrays::ImmutableCuboidArray<ArrayType>::value>>
       __tail_const_view(ArrayType const &x) : _data(x) {}
+
+      __tail_const_view() = default;
 
       ///
       __tail_const_view(regular_type const &x) : _data(x.data()) {}
@@ -1192,14 +1196,14 @@ namespace triqs {
     template <typename A, typename B>
     std14::enable_if_t<is_scalar_or_array_v<A> and is_tail_v<B>, typename B::regular_type> operator*(A const &a, B const &b) {
       typename B::regular_type res = b;
-      for (int n = b.order_min(); n <= b.order_max(); ++n) res(n)= a * b(n);
+      for (int n = b.order_min(); n <= b.order_max(); ++n) res(n) = a * b(n);
       return res;
     }
 
     template <typename A, typename B>
     std14::enable_if_t<is_tail_v<A> and is_scalar_or_array_v<B>, typename A::regular_type> operator*(A const &a, B const &b) {
       typename A::regular_type res = a;
-      for (int n = a.order_min(); n <= a.order_max(); ++n) res(n)= a(n) * b;
+      for (int n = a.order_min(); n <= a.order_max(); ++n) res(n) = a(n) * b;
       return res;
     }
 

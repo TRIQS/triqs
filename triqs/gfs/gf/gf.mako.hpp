@@ -94,7 +94,11 @@ namespace triqs {
   /**
    * MAKO_GF : the main class
    */
-  template <typename Var, typename Target> class MAKO_GF : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+  template <typename Var, typename Target> class MAKO_GF : 
+   // mako %if 'view' in RVC:
+   is_view_tag, 
+   // mako %endif
+   TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
 
    public:
    static constexpr bool is_view  = MAKO_ISVIEW;

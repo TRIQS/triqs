@@ -44,10 +44,10 @@ namespace arrays {
 
  namespace Tag {
   struct array {};
-  struct array_view {};
+  struct array_view : is_view_tag {};
   struct vector {};
-  struct vector_view {};
-  struct matrix_view {};
+  struct vector_view: is_view_tag {};
+  struct matrix_view: is_view_tag {};
   struct matrix {};
  }
  template <typename T> struct is_array : std::is_base_of<Tag::array, T> {};

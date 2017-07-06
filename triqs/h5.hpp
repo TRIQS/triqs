@@ -29,6 +29,9 @@
 #include "./h5/map.hpp"
 #include "./h5/optional.hpp"
 
+// for python code generator, we need to know what has to been included.
+#define TRIQS_INCLUDED_H5
+
 // traits to detect h5_read/h5_write is overloaded. Unused currently. Kept since
 // it can useful and is it not so simple to do...
 namespace triqs {

@@ -51,9 +51,9 @@ typedef long double max_align_t;
 
 // FOR DEBUG ONLY : detection of the version of numpy is automatic.
 // Uncomment to use the old API ANYWAY
-//#define TRIQS_NUMPY_VERSION_LT_17
+//#define PYTHON_NUMPY_VERSION_LT_17
 
-#ifndef TRIQS_NUMPY_VERSION_LT_17
+#ifndef PYTHON_NUMPY_VERSION_LT_17
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #endif
 

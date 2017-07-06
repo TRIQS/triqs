@@ -65,7 +65,7 @@ namespace lattice {
   //  BOOST Serialization
   friend class boost::serialization::access;
   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-   ar& lattice_;
+   ar& lattice_ & K_reciprocal & K_reciprocal_inv;
   }
 
   private:
