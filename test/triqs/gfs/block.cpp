@@ -17,9 +17,9 @@ TEST(Gf, Block) {
   auto B01 = block_gf<imfreq>(v);
   auto B00 = block_gf<imfreq>({"a","b","c"});
 
-  auto B1 = make_block_gf<imfreq>(3, G1);
-  auto B2 = make_block_gf<imfreq>({G1, G1, G1});
-  auto B3 = make_block_gf<imfreq>({"a", "b", "c"}, {G1, G1, G1});
+  auto B1 = make_block_gf(3, G1);
+  auto B2 = make_block_gf({G1, G1, G1});
+  auto B3 = make_block_gf({"a", "b", "c"}, {G1, G1, G1});
   auto B4 = block_gf<imfreq>(1);
   //TEST(B3["a"]); //does not compile
 
@@ -103,8 +103,8 @@ TEST(Gf, Block) {
   G1(w_) << 1 / (w_ + 2);
   G2(w_) << 1 / (w_ - 2);
 
-  auto B_ab = make_block_gf<imfreq>({"a", "b"}, {G1, G2});
-  auto B_ba = make_block_gf<imfreq>({"b", "a"}, {G2, G1});
+  auto B_ab = make_block_gf({"a", "b"}, {G1, G2});
+  auto B_ba = make_block_gf({"b", "a"}, {G2, G1});
   
   auto B_res = B_ab;
   for(auto const & ind : range(B_res.size())){
