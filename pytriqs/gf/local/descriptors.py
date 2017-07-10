@@ -125,7 +125,7 @@ class Flat (Base):
         """:param half_bandwidth: :math:`D`, the half bandwidth """
         Base.__init__(self, half_bandwidth=half_bandwidth)
 
-    def __str__(self): return "Flat(%s)"%half_bandwidth 
+    def __str__(self): return "Flat(%s)"%self.half_bandwidth 
 
     def __call__(self,G):
 
