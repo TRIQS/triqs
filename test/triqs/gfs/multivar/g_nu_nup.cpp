@@ -45,7 +45,7 @@ TEST(BlockGfCartesian, H5_RW_Evaluator){
  double beta=1;
  auto g = gf<cartesian_product<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}, {1,1}};
  g()=2;
- auto G = make_block_gf<cartesian_product<imfreq, imfreq>, matrix_valued>({"up"}, {g});
+ auto G = make_block_gf({"up"}, {g});
  //EXPECT_ARRAY_NEAR(get_target_shape(G[0]), mini_vector<size_t,2>{1,1});
  h5::file file("g_nu_nup.h5", H5F_ACC_TRUNC );
  h5_write(file, "G", G);
@@ -74,7 +74,7 @@ TEST(BlockGfCartesian, OutOfBounds){
  }
 
  //g_2w.singularity().toto(); //tail_zero
- auto G_2w = make_block_gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>>({"0"}, {g_2w});
+ auto G_2w = make_block_gf({"0"}, {g_2w});
  //G_2w[0].singularity().toto();//tail_zero
  //G_2w.singularity().toto();//nothing
  std::cout << evaluate(G_2w[0].singularity(), 5) << std::endl;
@@ -106,7 +106,7 @@ TEST(BlockGf, H5_RW_Evaluator){
 
  auto g = gf<imfreq, matrix_valued>{{beta, Boson, 5}, {1,1}};
  g()=2;
- auto G = make_block_gf<imfreq, matrix_valued>({"up"}, {g});
+ auto G = make_block_gf({"up"}, {g});
 
 
  h5::file file("g_nu_nup.h5", H5F_ACC_TRUNC );
