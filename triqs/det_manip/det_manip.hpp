@@ -578,7 +578,10 @@ namespace triqs { namespace det_manip {
      // treat empty matrix separately
      if (N==0) {
        N=2;
-       mat_inv(R2,R2)=inverse(w2.ksi);
+	   try {
+        mat_inv(R2,R2)=inverse(w2.ksi);
+       }
+	   catch (...) {}
        row_num[w2.i[1]]=1;
        col_num[w2.j[1]]=1;
        return;
