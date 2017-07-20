@@ -219,6 +219,7 @@ namespace triqs { namespace clef {
   template <typename L> decltype(auto) operator()(L&& l) const { return OP _cl(std::forward<L>(l)); }                            \
  };
 
+ TRIQS_CLEF_OPERATION(unaryplus,   +);
  TRIQS_CLEF_OPERATION(negate,      -);
  TRIQS_CLEF_OPERATION(loginot,     !);
 #undef TRIQS_CLEF_OPERATION
