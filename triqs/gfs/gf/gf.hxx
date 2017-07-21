@@ -30,270 +30,284 @@
 #include "./data_proxy.hpp"
 
 namespace triqs {
- namespace gfs {
+  namespace gfs {
 
-  // forward
-  namespace details {
-   template <typename G, typename... Args> decltype(auto) partial_eval(G* g, Args const&... args);
-  }
+    // forward
+    namespace details {
+      template <typename G, typename... Args> decltype(auto) partial_eval(G *g, Args const &... args);
+    }
 
-  /*----------------------------------------------------------
+    /*----------------------------------------------------------
    *   Declaration of main types : gf, gf_view, gf_const_view
    *--------------------------------------------------------*/
 
-  template <typename Var, typename Target = matrix_valued> class gf;
-  template <typename Var, typename Target = matrix_valued> class gf_view;
-  template <typename Var, typename Target = matrix_valued> class gf_const_view;
+    template <typename Var, typename Target = matrix_valued> class gf;
+    template <typename Var, typename Target = matrix_valued> class gf_view;
+    template <typename Var, typename Target = matrix_valued> class gf_const_view;
 
-  /*----------------------------------------------------------
+    /*----------------------------------------------------------
    *   Traits
    *--------------------------------------------------------*/
 
-  // The trait that "marks" the Green function
-  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
+    // The trait that "marks" the Green function
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
 
-  // Is G a gf, gf_view, gf_const_view
-  // is_gf<G> is true iif G is a gf or a view
-  // is_gf<G,M0> is true iif  G is a gf or a view and its mesh is M0
-  template <typename G, typename M0 = void> struct is_gf : std::false_type {};
+    // Is G a gf, gf_view, gf_const_view
+    // is_gf<G> is true iif G is a gf or a view
+    // is_gf<G,M0> is true iif  G is a gf or a view and its mesh is M0
+    template <typename G, typename M0 = void> struct is_gf : std::false_type {};
 
-  template <typename M, typename T> struct is_gf<gf<M, T>, void> : std::true_type {};
-  template <typename M, typename T> struct is_gf<gf<M, T>, M> : std::true_type {};
-  template <typename M, typename T> struct is_gf<gf_view<M, T>, void> : std::true_type {};
-  template <typename M, typename T> struct is_gf<gf_view<M, T>, M> : std::true_type {};
+    template <typename M, typename T> struct is_gf<gf<M, T>, void> : std::true_type {};
+    template <typename M, typename T> struct is_gf<gf<M, T>, M> : std::true_type {};
+    template <typename M, typename T> struct is_gf<gf_view<M, T>, void> : std::true_type {};
+    template <typename M, typename T> struct is_gf<gf_view<M, T>, M> : std::true_type {};
 
-  template <typename M, typename T> struct is_gf<gf_const_view<M, T>, void> : std::true_type {};
+    template <typename M, typename T> struct is_gf<gf_const_view<M, T>, void> : std::true_type {};
 
-  template <typename M, typename T> struct is_gf<gf_const_view<M, T>, M> : std::true_type {};
+    template <typename M, typename T> struct is_gf<gf_const_view<M, T>, M> : std::true_type {};
 
-  template <typename G, typename M> struct is_gf<G&, M> : is_gf<G, M> {};
-  template <typename G, typename M> struct is_gf<G const&, M> : is_gf<G, M> {};
-  template <typename G, typename M> struct is_gf<G&&, M> : is_gf<G, M> {};
+    template <typename G, typename M> struct is_gf<G &, M> : is_gf<G, M> {};
+    template <typename G, typename M> struct is_gf<G const &, M> : is_gf<G, M> {};
+    template <typename G, typename M> struct is_gf<G &&, M> : is_gf<G, M> {};
 
-  /// ---------------------------  implementation  ---------------------------------
+    /// ---------------------------  implementation  ---------------------------------
 
-  namespace details {
-   // FIXME : replace by if constexpr when possible
-   template <typename A> void _rebind_helper(A& x, A const& y) { x.rebind(y); }
-   inline void _rebind_helper(dcomplex& x, dcomplex const& y) { x = y; }
-   inline void _rebind_helper(double& x, double const& y) { x = y; }
-  }
-  struct impl_tag {};
-  struct impl_tag2 {};
+    namespace details {
+      // FIXME : replace by if constexpr when possible
+      template <typename A> void _rebind_helper(A &x, A const &y) { x.rebind(y); }
+      inline void _rebind_helper(dcomplex &x, dcomplex const &y) { x = y; }
+      inline void _rebind_helper(double &x, double const &y) { x = y; }
+    } // namespace details
+    struct impl_tag {};
+    struct impl_tag2 {};
 
-  // ----------------------  gf -----------------------------------------
-  /**
+    // ----------------------  gf -----------------------------------------
+    /**
    * gf : the main class
    */
-  template <typename Var, typename Target> class gf : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+    template <typename Var, typename Target> class gf : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
 
-   public:
-   static constexpr bool is_view  = false;
-   static constexpr bool is_const = false;
+      public:
+      static constexpr bool is_view  = false;
+      static constexpr bool is_const = false;
 
-   using mutable_view_type = gf_view<Var, Target>;
+      using mutable_view_type = gf_view<Var, Target>;
 
-   /// The associated const view type (gf_const_view <....>)
-   using const_view_type = gf_const_view<Var, Target>;
+      /// The associated const view type (gf_const_view <....>)
+      using const_view_type = gf_const_view<Var, Target>;
 
-   /// The associated view type (non const)
-   using view_type = gf_view<Var, Target>;
+      /// The associated view type (non const)
+      using view_type = gf_view<Var, Target>;
 
-   /// The associated regular type (gf<....>)
-   using regular_type = gf<Var, Target>;
+      /// The associated regular type (gf<....>)
+      using regular_type = gf<Var, Target>;
 
-   using variable_t = Var;
-   using target_t   = Target;
+      using variable_t = Var;
+      using target_t   = Target;
 
-   /// Type of the mesh
-   using mesh_t               = gf_mesh<Var>;
-   using domain_t             = typename mesh_t::domain_t;
-   static constexpr int arity = get_n_variables<Var>::value;
+      /// Type of the mesh
+      using mesh_t               = gf_mesh<Var>;
+      using domain_t             = typename mesh_t::domain_t;
+      static constexpr int arity = get_n_variables<Var>::value;
 
-   using mesh_point_t        = typename mesh_t::mesh_point_t;
-   using mesh_index_t        = typename mesh_t::index_t;
-   using linear_mesh_index_t = typename mesh_t::linear_index_t;
-   using indices_t           = gf_indices;
-   using evaluator_t         = gf_evaluator<Var, Target>;
+      using mesh_point_t        = typename mesh_t::mesh_point_t;
+      using mesh_index_t        = typename mesh_t::index_t;
+      using linear_mesh_index_t = typename mesh_t::linear_index_t;
+      using indices_t           = gf_indices;
+      using evaluator_t         = gf_evaluator<Var, Target>;
 
-   using scalar_t = typename Target::scalar_t;
+      using scalar_t = typename Target::scalar_t;
 
-   using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
-   using data_view_t       = typename data_regular_t::view_type;
-   using data_const_view_t = typename data_regular_t::const_view_type;
-   using data_t            = data_regular_t;
+      using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
+      using data_view_t       = typename data_regular_t::view_type;
+      using data_const_view_t = typename data_regular_t::const_view_type;
+      using data_t            = data_regular_t;
 
-   using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
-   using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
-   using zero_view_t       = zero_const_view_t;
-   using zero_t            = zero_regular_t;
+      using memory_layout_t = memory_layout<arity + Target::rank>;
 
-   using _singularity_regular_t    = gf_singularity_t<Var, Target>;
-   using _singularity_view_t       = typename _singularity_regular_t::view_type;
-   using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
-   using singularity_t             = _singularity_regular_t;
+      using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
+      using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
+      using zero_view_t       = zero_const_view_t;
+      using zero_t            = zero_regular_t;
 
-   // ------------- Accessors -----------------------------
+      using _singularity_regular_t    = gf_singularity_t<Var, Target>;
+      using _singularity_view_t       = typename _singularity_regular_t::view_type;
+      using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
+      using singularity_t             = _singularity_regular_t;
 
-   /// Access the  mesh
-   mesh_t const& mesh() const { return _mesh; }
-   domain_t const& domain() const { return _mesh.domain(); }
+      using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued(Target{})>;
 
-   /// Direct access to the data array
-   data_t& data() { return _data; }
+      struct target_and_shape_t {
+        target_shape_t _shape;
+        using target_t = Target;
+        target_shape_t const &shape() const { return _shape; }
+      };
 
-   /// Const version
-   data_t const& data() const { return _data; }
+      // ------------- Accessors -----------------------------
 
-   /// Shape of the target
-   auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
+      /// Access the  mesh
+      mesh_t const &mesh() const { return _mesh; }
+      domain_t const &domain() const { return _mesh.domain(); }
 
-   /// Shape of the data
-   auto data_shape() const { return _data.shape(); }
+      /// Direct access to the data array
+      data_t &data() & { return _data; }
 
-   ///
-   zero_t const& get_zero() const { return _zero; }
+      /// Const version
+      data_t const &data() const & { return _data; }
 
-   /// Access to the singularity
-   singularity_t& singularity() { return _singularity; }
+      /// Move data in case of rvalue gf
+      data_t data() && { return std::move(_data); }
 
-   /// Const version
-   singularity_t const& singularity() const { return _singularity; }
+      /// Shape of the target
+      //auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
+      target_and_shape_t target() const {
+        return target_and_shape_t{_data.shape().template front_mpop<arity + is_tail_valued(Target{})>()};
+      } // drop arity dims
 
-   indices_t const& indices() const { return _indices; }
+      auto target_shape() const { return target().shape(); } // drop arity dims
 
-   private:
-   mesh_t _mesh;
-   data_t _data;
-   zero_t _zero;
-   singularity_t _singularity;
-   indices_t _indices;
+      /// Shape of the data
+      auto const &data_shape() const { return _data.shape(); }
 
-   public:
-   std::string name;
+      /// Memorylayout of the data
+      auto const &get_memory_layout() const { return _data.indexmap().get_memory_layout(); }
 
-   private:
-   using dproxy_t = details::_data_proxy<Target>;
+      ///
+      zero_t const &get_zero() const { return _zero; }
 
-   // -------------------------------- impl. details common to all classes -----------------------------------------------
+      /// Access to the singularity
+      singularity_t &singularity() { return _singularity; }
 
-   // for delegation only
-   private:
-   // build a zero from a slice of data
-   // MUST be static since it is used in constructors... (otherwise bug in clang)
-   template <typename T> static zero_t __make_zero(T, data_t const& d) {
-    auto r = zero_regular_t{d.shape().template front_mpop<arity>()};
-    r()    = 0;
-    return r;
-   }
-   static zero_t __make_zero(scalar_valued, data_t const& d) { return 0; } // special case
-   static zero_t _make_zero(data_t const& d) { return __make_zero(Target{}, d); }
-   zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
+      /// Const version
+      singularity_t const &singularity() const { return _singularity; }
 
-   template <typename G>
-   gf(impl_tag2, G&& x)
-      : _mesh(x.mesh())
-      , _data(x.data())
-      , _zero(_make_zero(_data))
-      , _singularity(x.singularity())
-      , _indices(x.indices())
-      , name(x.name) {}
+      indices_t const &indices() const { return _indices; }
 
-   template <typename M, typename D, typename S>
-   gf(impl_tag, M&& m, D&& dat, S&& sing, indices_t ind)
-      : _mesh(std::forward<M>(m))
-      , _data(std::forward<D>(dat))
-      , _zero(_make_zero(_data))
-      , _singularity(std::forward<S>(sing))
-      , _indices(std::move(ind)) {
-    if (!(_indices.empty() or (is_tail_valued(Target())) or _indices.has_shape(target_shape())))
-     TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
-   }
+      private:
+      mesh_t _mesh;
+      data_t _data;
+      zero_t _zero;
+      singularity_t _singularity;
+      indices_t _indices;
 
-   public:
-   /// Construct an empty Green function (with empty array).
-   gf() {} // all arrays of zero size (empty)
+      public:
+      std::string name;
 
-   /// Copy constructor
-   gf(gf const& x)
-      : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
+      private:
+      using dproxy_t = details::_data_proxy<Target>;
 
-   /// Move constructor
-   gf(gf&&) = default;
+      // -------------------------------- impl. details common to all classes -----------------------------------------------
 
-   void swap_impl(gf& b) noexcept {
-    using std::swap;
-    swap(this->_mesh, b._mesh);
-    swap(this->_data, b._data);
-    swap(this->_zero, b._zero);
-    swap(this->_singularity, b._singularity);
-    swap(this->_indices, b._indices);
-    swap(this->name, b.name);
-   }
+      // for delegation only
+      private:
+      // build a zero from a slice of data
+      // MUST be static since it is used in constructors... (otherwise bug in clang)
+      template <typename T> static zero_t __make_zero(T, data_t const &d) {
+        auto r = zero_regular_t{d.shape().template front_mpop<arity>()};
+        r()    = 0;
+        return r;
+      }
+      static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; } // special case
+      static zero_t _make_zero(data_t const &d) { return __make_zero(Target{}, d); }
+      zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 
-   using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
+      template <typename G>
+      gf(impl_tag2, G &&x)
+         : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
 
-   private:
-   using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued(Target{})>;
+      template <typename M, typename D, typename S>
+      gf(impl_tag, M &&m, D &&dat, S &&sing, indices_t ind)
+         : _mesh(std::forward<M>(m)),
+           _data(std::forward<D>(dat)),
+           _zero(_make_zero(_data)),
+           _singularity(std::forward<S>(sing)),
+           _indices(std::move(ind)) {
+        if (!(_indices.empty() or (is_tail_valued(Target())) or _indices.has_shape(target_shape())))
+          TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
+      }
 
-   template <typename U> static auto make_data_shape(U, mesh_t const& m, target_shape_t const& shap) {
-    return join(m.size_of_components(), shap);
-   }
+      public:
+      /// Construct an empty Green function (with empty array).
+      gf() {} // all arrays of zero size (empty)
 
-   template <typename U> static auto make_data_shape(tail_valued<U>, mesh_t const& m, target_shape_t const& shap) {
-    return join(mini_vector<int, 2>{int(m.size()), __tail<matrix_valued>::_size()}, shap); // shap.front_append(m.size());
-   }
+      /// Copy constructor
+      gf(gf const &x) : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
 
-   public:
-   // Construct from the data. Using the "pass by value" pattern + move
-   gf(mesh_t m, data_t dat, singularity_t si, indices_t ind)
-      : gf(impl_tag{}, std::move(m), std::move(dat), std::move(si), std::move(ind)) {}
+      /// Move constructor
+      gf(gf &&) = default;
 
-   // Construct from mesh, target_shape, memory order
-   gf(mesh_t m, target_shape_t shape, arrays::memory_layout<arity + Target::rank> const& ml, indices_t const& ind = indices_t{})
-      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape), ml), singularity_factory::make(m, shape), ind) {
-    if (this->_indices.empty()) this->_indices = indices_t(shape);
-   }
+      void swap_impl(gf &b) noexcept {
+        using std::swap;
+        swap(this->_mesh, b._mesh);
+        swap(this->_data, b._data);
+        swap(this->_zero, b._zero);
+        swap(this->_singularity, b._singularity);
+        swap(this->_indices, b._indices);
+        swap(this->name, b.name);
+      }
 
-   // Construct from mesh, target_shape, memory order
-   gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const& ind = indices_t{}, std::string _name = {})
-      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), singularity_factory::make(m, shape), ind) {
-    if (this->_indices.empty()) this->_indices = indices_t(shape);
-    name                                       = std::move(_name);
-   }
+      using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
 
-   /// From a gf_view of the same kind
-   gf(gf_view<Var, Target> const& g) : gf(impl_tag2{}, g) {}
+      private:
+      template <typename U> static auto make_data_shape(U, mesh_t const &m, target_shape_t const &shap) { return join(m.size_of_components(), shap); }
 
-   /// From a const_gf_view of the same kind
-   gf(gf_const_view<Var, Target> const& g) : gf(impl_tag2{}, g) {}
+      template <typename U> static auto make_data_shape(tail_valued<U>, mesh_t const &m, target_shape_t const &shap) {
+        return join(mini_vector<int, 2>{int(m.size()), __tail<matrix_valued>::_size()}, shap); // shap.front_append(m.size());
+      }
 
-   /// Construct from anything which models ImmutableGreenFunction.
-   // TODO: We would like to refine this, G should have the same mesh, target, at least ...
-   template <typename G> gf(G const& x, std14::enable_if_t<ImmutableGreenFunction<G>::value>* dummy = 0) : gf() { *this = x; }
+      public:
+      // Construct from the data. Using the "pass by value" pattern + move
+      gf(mesh_t m, data_t dat, singularity_t si, indices_t ind) : gf(impl_tag{}, std::move(m), std::move(dat), std::move(si), std::move(ind)) {}
 
-   /// Construct from the mpi lazy class of the implementation class, cf mpi section
-   // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
-   template <typename Tag> gf(mpi_lazy<Tag, gf_const_view<Var, Target>> x) : gf() { operator=(x); }
+      // Construct from the data. Using the "pass by value" pattern + move
+      gf(mesh_t m, data_t dat, arrays::memory_layout<arity + Target::rank> const &ml, singularity_t si, indices_t ind)
+         : gf(impl_tag{}, std::move(m), data_t(dat, ml), std::move(si), std::move(ind)) {}
 
-   /// ---------------  swap --------------------
+      // Construct from mesh, target_shape, memory order
+      gf(mesh_t m, target_shape_t shape, arrays::memory_layout<arity + Target::rank> const &ml, indices_t const &ind = indices_t{})
+         : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape), ml), singularity_factory::make(m, shape), ind) {
+        if (this->_indices.empty()) this->_indices = indices_t(shape);
+      }
 
-   /// implement the swap
-   friend void swap(gf& a, gf& b) noexcept { a.swap_impl(b); }
+      // Construct from mesh, target_shape, memory order
+      gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const &ind = indices_t{}, std::string _name = {})
+         : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), singularity_factory::make(m, shape), ind) {
+        if (this->_indices.empty()) this->_indices = indices_t(shape);
+        name = std::move(_name);
+      }
 
-   /// ---------------  Operator = --------------------
+      /// From a gf_view of the same kind
+      gf(gf_view<Var, Target> const &g) : gf(impl_tag2{}, g) {}
 
-   /// Copy assignment
-   gf& operator=(gf const& rhs) { return *this = gf(rhs); } // use move =
-   //
-   gf& operator=(gf& rhs) { return *this = gf(rhs); } // use move =
-   /// Move assignment
-   gf& operator=(gf&& rhs) noexcept {
-    this->swap_impl(rhs);
-    return *this;
-   }
+      /// From a const_gf_view of the same kind
+      gf(gf_const_view<Var, Target> const &g) : gf(impl_tag2{}, g) {}
 
-   /**
+      /// Construct from anything which models ImmutableGreenFunction.
+      // TODO: We would like to refine this, G should have the same mesh, target, at least ...
+      template <typename G> gf(G const &x, std14::enable_if_t<ImmutableGreenFunction<G>::value> *dummy = 0) : gf() { *this = x; }
+
+      /// Construct from the mpi lazy class of the implementation class, cf mpi section
+      // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
+      template <typename Tag> gf(mpi_lazy<Tag, gf_const_view<Var, Target>> x) : gf() { operator=(x); }
+
+      /// ---------------  swap --------------------
+
+      /// implement the swap
+      friend void swap(gf &a, gf &b) noexcept { a.swap_impl(b); }
+
+      /// ---------------  Operator = --------------------
+
+      /// Copy assignment
+      gf &operator=(gf const &rhs) { return *this = gf(rhs); } // use move =
+      //
+      gf &operator=(gf &rhs) { return *this = gf(rhs); } // use move =
+      /// Move assignment
+      gf &operator=(gf &&rhs) noexcept {
+        this->swap_impl(rhs);
+        return *this;
+      }
+
+      /**
     * Assignment operator
     *
     * @tparam RHS Type of the right hand side rhs
@@ -306,235 +320,232 @@ namespace triqs {
     * The assignment resizes the mesh and the data, invalidating all pointers on them.
     *
     */
-   template <typename RHS> gf& operator=(RHS&& rhs) {
-    _mesh = rhs.mesh();
-    _data.resize(rhs.data_shape());
-    _remake_zero();
-    for (auto const& w : _mesh)
-     (*this)[w]                    = rhs[w];
-    _singularity                   = rhs.singularity();
-    _indices                       = rhs.indices();
-    if (_indices.empty()) _indices = indices_t(target_shape());
-    // if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
-    // to be implemented : there is none in the gf_expr in particular....
-    // indices and name are not affected by it ???
-    return *this;
-   }
+      template <typename RHS> gf &operator=(RHS &&rhs) {
+        _mesh = rhs.mesh();
+        _data.resize(rhs.data_shape());
+        _remake_zero();
+        for (auto const &w : _mesh) (*this)[w] = rhs[w];
+        _singularity = rhs.singularity();
+        _indices     = rhs.indices();
+        if (_indices.empty()) _indices= indices_t(target_shape());
+        //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
+        // to be implemented : there is none in the gf_expr in particular....
+        // indices and name are not affected by it ???
+        return *this;
+      }
 
-   // other = late, cf MPI
-
-   public:
-   // ------------- apply_on_data -----------------------------
-
-   template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata&& fd, Fsing&& fs, Find&& fi) {
-    auto d2  = fd(_data);
-    using t2 = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
-                                    target_from_array<decltype(d2), arity>>;
-    using gv_t = gf_view<Var, t2>;
-    return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
-   }
-
-   template <typename Fdata, typename Fsing> auto apply_on_data(Fdata&& fd, Fsing&& fs) {
-    return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto&) { return indices_t{}; });
-   }
-
-   template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata&& fd, Fsing&& fs, Find&& fi) const {
-    auto d2  = fd(_data);
-    using t2 = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
-                                    target_from_array<decltype(d2), arity>>;
-    using gv_t = gf_const_view<Var, t2>;
-    return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
-   }
-
-   template <typename Fdata, typename Fsing> auto apply_on_data(Fdata&& fd, Fsing&& fs) const {
-    return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto&) { return indices_t{}; });
-   }
-
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
-   // there is at least one lazy argument ...
-   template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
-   typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
-       (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value ||
-           ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
-       ,
-       std::result_of<evaluator_t(gf, Args...)> // what is the result type of call
-       >::type                                  // end of lazy_disable_if
-   operator()(Args&&... args) const {
-    return evaluator_t()(*this, std::forward<Args>(args)...);
-   }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<gf&, Args...> operator()(Args&&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<gf const&, Args...> operator()(Args&&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<gf, Args...> operator()(Args&&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-   }
-
-   // ------------- All the [] operators without lazy arguments -----------------------------
-
-   // pass a index_t of the mesh
-   decltype(auto) operator[](mesh_index_t const& arg) { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
-   decltype(auto) operator[](mesh_index_t const& arg) const { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
-
-   // pass a mesh_point of the mesh
-   decltype(auto) operator[](mesh_point_t const& x) {
-#ifdef TRIQS_DEBUG
-    if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
-#endif
-    return dproxy_t::invoke(_data, x.linear_index());
-   }
-
-   decltype(auto) operator[](mesh_point_t const& x) const {
-#ifdef TRIQS_DEBUG
-    if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
-#endif
-    return dproxy_t::invoke(_data, x.linear_index());
-   }
-
-   // pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
-   template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const& p) {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
-   }
-   template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const& p) const {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
-   }
-
-   // ------------- [] with lazy arguments -----------------------------
-
-   template <typename Arg> clef::make_expr_subscript_t<gf const&, Arg> operator[](Arg&& arg) const & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<gf&, Arg> operator[](Arg&& arg) & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<gf, Arg> operator[](Arg&& arg) && {
-    return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-   }
-
-   // --------------------- A direct access to the grid point --------------------------
-
-   template <typename... Args> decltype(auto) get_from_linear_index(Args&&... args) {
-    return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-   }
-
-   template <typename... Args> decltype(auto) get_from_linear_index(Args&&... args) const {
-    return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-   }
-
-   template <typename... Args> decltype(auto) on_mesh(Args&&... args) {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
-   }
-
-   template <typename... Args> decltype(auto) on_mesh(Args&&... args) const {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
-   }
-
-   // --------------------- on mesh (g) : the call before [] -------------------------
-   // This is a workaround the the lack of multi argument [] in C++
-   /*
-      // mesh points should be treated slighly differently : take their index....
-      template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
-      template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
-
-      // The on_mesh little adaptor ....
-      private:
-      template <typename G> struct _on_mesh_wrapper {
-       G &f;
-       template <typename... Args>
-       auto operator()(Args &&... args) const
-           -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
-        return f.on_mesh(std::forward<Args>(args)...);
-       }
-       TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
-      };
+      // other = late, cf MPI
 
       public:
-      // TRIQS_DEPRECATED("Use [][][] instead")
-      _on_mesh_wrapper<gf const> friend on_mesh(gf const &f) { return {f}; }
-      _on_mesh_wrapper<gf> friend on_mesh(gf &f) { return {f}; }
-   */
+      // ------------- apply_on_data -----------------------------
+
+      template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata &&fd, Fsing &&fs, Find &&fi) {
+        auto d2    = fd(_data);
+        using t2   = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
+                                        target_from_array<decltype(d2), arity>>;
+        using gv_t = gf_view<Var, t2>;
+        return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
+      }
+
+      template <typename Fdata, typename Fsing> auto apply_on_data(Fdata &&fd, Fsing &&fs) {
+        return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto &) { return indices_t{}; });
+      }
+
+      template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata &&fd, Fsing &&fs, Find &&fi) const {
+        auto d2    = fd(_data);
+        using t2   = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
+                                        target_from_array<decltype(d2), arity>>;
+        using gv_t = gf_const_view<Var, t2>;
+        return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
+      }
+
+      template <typename Fdata, typename Fsing> auto apply_on_data(Fdata &&fd, Fsing &&fs) const {
+        return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto &) { return indices_t{}; });
+      }
+
+      // ------------- All the call operators without lazy arguments -----------------------------
+
+      // First, a simple () returns a view, like for an array...
+      /// Makes a const view of *this
+      const_view_type operator()() const { return *this; }
+      /// Makes a view of *this if it is non const
+      view_type operator()() { return *this; }
+
+      // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
+      // there is at least one lazy argument ...
+      template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
+      typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
+         (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value
+            || ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
+         ,
+         std::result_of<evaluator_t(gf, Args...)> // what is the result type of call
+         >::type                                  // end of lazy_disable_if
+      operator()(Args &&... args) const {
+        return evaluator_t()(*this, std::forward<Args>(args)...);
+      }
+
+      // ------------- Call with lazy arguments -----------------------------
+
+      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
+      template <typename... Args> clef::make_expr_call_t<gf &, Args...> operator()(Args &&... args) & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<gf const &, Args...> operator()(Args &&... args) const & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<gf, Args...> operator()(Args &&... args) && {
+        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      }
+
+      // ------------- All the [] operators without lazy arguments -----------------------------
+
+      // pass a index_t of the mesh
+      decltype(auto) operator[](mesh_index_t const &arg) { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
+      decltype(auto) operator[](mesh_index_t const &arg) const { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
+
+      // pass a mesh_point of the mesh
+      decltype(auto) operator[](mesh_point_t const &x) {
+#ifdef TRIQS_DEBUG
+        if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+#endif
+        return dproxy_t::invoke(_data, x.linear_index());
+      }
+
+      decltype(auto) operator[](mesh_point_t const &x) const {
+#ifdef TRIQS_DEBUG
+        if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+#endif
+        return dproxy_t::invoke(_data, x.linear_index());
+      }
+
+      // pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
+      template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
+      }
+      template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) const {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
+      }
+
+      // ------------- [] with lazy arguments -----------------------------
+
+      template <typename Arg> clef::make_expr_subscript_t<gf const &, Arg> operator[](Arg &&arg) const & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<gf &, Arg> operator[](Arg &&arg) & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<gf, Arg> operator[](Arg &&arg) && {
+        return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
+      }
+
+      // --------------------- A direct access to the grid point --------------------------
+
+      template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) {
+        return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+      }
+
+      template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) const {
+        return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+      }
+
+      template <typename... Args> decltype(auto) on_mesh(Args &&... args) {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
+      }
+
+      template <typename... Args> decltype(auto) on_mesh(Args &&... args) const {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
+      }
+
+      // --------------------- on mesh (g) : the call before [] -------------------------
+      // This is a workaround the the lack of multi argument [] in C++
+      /*
+   // mesh points should be treated slighly differently : take their index....
+   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
+   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
+
+   // The on_mesh little adaptor ....
+   private:
+   template <typename G> struct _on_mesh_wrapper {
+    G &f;
+    template <typename... Args>
+    auto operator()(Args &&... args) const
+        -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
+     return f.on_mesh(std::forward<Args>(args)...);
+    }
+    TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
+   };
+
    public:
-   // --------------------- [][][][] ------------------------
-   // This is a workaround the the lack of multi argument [] in C++
+   // TRIQS_DEPRECATED("Use [][][] instead")
+   _on_mesh_wrapper<gf const> friend on_mesh(gf const &f) { return {f}; }
+   _on_mesh_wrapper<gf> friend on_mesh(gf &f) { return {f}; }
+*/
+      public:
+      // --------------------- [][][][] ------------------------
+      // This is a workaround the the lack of multi argument [] in C++
 
-   /**
+      /**
     *
     */
-   template <typename T> decltype(auto) operator[](T const& x) {
-    return triqs::utility::make_lazy_bracket<arity>(
-        [this](auto&&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
-   }
+      template <typename T> decltype(auto) operator[](T const &x) {
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+      }
 
-   /**
+      /**
     *
     */
-   template <typename T> decltype(auto) operator[](T const& x) const {
-    return triqs::utility::make_lazy_bracket<arity>(
-        [this](auto&&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
-   }
+      template <typename T> decltype(auto) operator[](T const &x) const {
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+      }
 
-   //----------------------------- HDF5 -----------------------------
+      //----------------------------- HDF5 -----------------------------
 
-   /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(gf const& g) { return "Gf"; }
+      /// HDF5 name
+      friend std::string get_triqs_hdf5_data_scheme(gf const &g) { return "Gf"; }
 
-   friend struct gf_h5_rw<Var, Target>;
+      friend struct gf_h5_rw<Var, Target>;
 
-   /// Write into HDF5
-   friend void h5_write(h5::group fg, std::string const& subgroup_name, gf const& g) {
-    auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
-    gf_h5_rw<Var, Target>::write(gr, g);
-   }
+      /// Write into HDF5
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf const &g) {
+        auto gr = fg.create_group(subgroup_name);
+        gr.write_triqs_hdf5_data_scheme(g);
+        gf_h5_rw<Var, Target>::write(gr, g);
+      }
 
-   /// Read from HDF5
-   friend void h5_read(h5::group fg, std::string const& subgroup_name, gf& g) {
-    auto gr       = fg.open_group(subgroup_name);
-    auto tag_file = gr.read_triqs_hdf5_data_scheme();
-    if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
-     TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
-                         << " while I found " << tag_file;
-    gf_h5_rw<Var, Target>::read(gr, g);
-    g._remake_zero();
-   }
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf &g) {
+        auto gr       = fg.open_group(subgroup_name);
+        auto tag_file = gr.read_triqs_hdf5_data_scheme();
+        if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
+          TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
+                              << " while I found " << tag_file;
+        gf_h5_rw<Var, Target>::read(gr, g);
+        g._remake_zero();
+      }
 
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   /// The serialization as required by Boost
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-    ar& _data;
-    ar& _singularity;
-    ar& _mesh;
-    ar& _indices;
-    ar& name;
-   }
+      //-----------------------------  BOOST Serialization -----------------------------
+      friend class boost::serialization::access;
+      /// The serialization as required by Boost
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &_data;
+        ar &_singularity;
+        ar &_mesh;
+        ar &_indices;
+        ar &name;
+      }
 
-   //----------------------------- print  -----------------------------
+      //----------------------------- print  -----------------------------
 
-   /// IO
-   friend std::ostream& operator<<(std::ostream& out, gf const& x) { return out << "gf"; }
+      /// IO
+      friend std::ostream &operator<<(std::ostream &out, gf const &x) { return out << "gf"; }
 
-   //----------------------------- MPI  -----------------------------
+      //----------------------------- MPI  -----------------------------
 
-   /**
+      /**
      * Initiate (lazy) MPI Bcast
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -548,13 +559,13 @@ namespace triqs {
      *
      */
 
-   friend void mpi_broadcast(gf& g, mpi::communicator c = {}, int root = 0) {
-    // Shall we bcast mesh ?
-    mpi_broadcast(g.data(), c, root);
-    mpi_broadcast(g.singularity(), c, root);
-   }
+      friend void mpi_broadcast(gf &g, mpi::communicator c = {}, int root = 0) {
+        // Shall we bcast mesh ?
+        mpi_broadcast(g.data(), c, root);
+        mpi_broadcast(g.singularity(), c, root);
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI Reduce
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -568,12 +579,12 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf const& a, mpi::communicator c = {}, int root = 0,
-                                                                 bool all = false, MPI_Op op = MPI_SUM) {
-    return {a(), c, root, all, op};
-   }
+      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf const &a, mpi::communicator c = {}, int root = 0, bool all = false,
+                                                                    MPI_Op op = MPI_SUM) {
+        return {a(), c, root, all, op};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI AllReduce
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -587,12 +598,11 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf const& a, mpi::communicator c = {}, int root = 0,
-                                                                     MPI_Op op = MPI_SUM) {
-    return {a(), c, root, true, op};
-   }
+      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf const &a, mpi::communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
+        return {a(), c, root, true, op};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI Scatter
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -606,11 +616,11 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf const& a, mpi::communicator c = {}, int root = 0) {
-    return {a(), c, root, true};
-   }
+      friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf const &a, mpi::communicator c = {}, int root = 0) {
+        return {a(), c, root, true};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI Gather
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -624,12 +634,11 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf const& a, mpi::communicator c = {}, int root = 0,
-                                                                 bool all = false) {
-    return {a(), c, root, all};
-   }
+      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
+        return {a(), c, root, all};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI AllGather
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -643,466 +652,480 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf const& a, mpi::communicator c = {}, int root = 0) {
-    return {a(), c, root, true};
-   }
+      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf const &a, mpi::communicator c = {}, int root = 0) {
+        return {a(), c, root, true};
+      }
 
-   //-------------  corresponding operator = overload
+      //-------------  corresponding operator = overload
 
-   /**
+      /**
     * Performs MPI reduce
     * @param l The lazy object returned by mpi_reduce
     */
-   void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
-    _mesh        = l.rhs.mesh();
-    _data        = arrays::mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
-    _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all, l.op);
-   }
+      void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
+        _mesh        = l.rhs.mesh();
+        _data        = arrays::mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
+        _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all, l.op);
+      }
 
-   /**
+      /**
      * Performs MPI scatter
      * @param l The lazy object returned by mpi_reduce
      */
-   void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
-    _mesh                                  = mpi_scatter(l.rhs.mesh(), l.c, l.root);
-    _data                                  = mpi_scatter(l.rhs.data(), l.c, l.root, true);
-    if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
-    mpi_broadcast(_singularity, l.c, l.root);
-   }
+      void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
+        _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
+        _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
+        if (l.c.rank() == l.root) _singularity= l.rhs.singularity();
+        mpi_broadcast(_singularity, l.c, l.root);
+      }
 
-   /**
+      /**
      * Performs MPI gather
      * @param l The lazy object returned by mpi_reduce
      */
-   void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
-    _mesh                                             = mpi_gather(l.rhs.mesh(), l.c, l.root);
-    _data                                             = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
-    if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
-   }
-  };
+      void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
+        _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
+        _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
+        if (l.all || (l.c.rank() == l.root)) _singularity= l.rhs.singularity();
+      }
+    };
 
-  // ----------------------  gf_view -----------------------------------------
-  /**
+    // ----------------------  gf_view -----------------------------------------
+    /**
    * gf_view : the main class
    */
-  template <typename Var, typename Target> class gf_view : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+    template <typename Var, typename Target> class gf_view : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
 
-   public:
-   static constexpr bool is_view  = true;
-   static constexpr bool is_const = false;
+      public:
+      static constexpr bool is_view  = true;
+      static constexpr bool is_const = false;
 
-   using mutable_view_type = gf_view<Var, Target>;
+      using mutable_view_type = gf_view<Var, Target>;
 
-   /// The associated const view type (gf_const_view <....>)
-   using const_view_type = gf_const_view<Var, Target>;
+      /// The associated const view type (gf_const_view <....>)
+      using const_view_type = gf_const_view<Var, Target>;
 
-   /// The associated view type (non const)
-   using view_type = gf_view<Var, Target>;
+      /// The associated view type (non const)
+      using view_type = gf_view<Var, Target>;
 
-   /// The associated regular type (gf<....>)
-   using regular_type = gf<Var, Target>;
+      /// The associated regular type (gf<....>)
+      using regular_type = gf<Var, Target>;
 
-   using variable_t = Var;
-   using target_t   = Target;
+      using variable_t = Var;
+      using target_t   = Target;
 
-   /// Type of the mesh
-   using mesh_t               = gf_mesh<Var>;
-   using domain_t             = typename mesh_t::domain_t;
-   static constexpr int arity = get_n_variables<Var>::value;
+      /// Type of the mesh
+      using mesh_t               = gf_mesh<Var>;
+      using domain_t             = typename mesh_t::domain_t;
+      static constexpr int arity = get_n_variables<Var>::value;
 
-   using mesh_point_t        = typename mesh_t::mesh_point_t;
-   using mesh_index_t        = typename mesh_t::index_t;
-   using linear_mesh_index_t = typename mesh_t::linear_index_t;
-   using indices_t           = gf_indices;
-   using evaluator_t         = gf_evaluator<Var, Target>;
+      using mesh_point_t        = typename mesh_t::mesh_point_t;
+      using mesh_index_t        = typename mesh_t::index_t;
+      using linear_mesh_index_t = typename mesh_t::linear_index_t;
+      using indices_t           = gf_indices;
+      using evaluator_t         = gf_evaluator<Var, Target>;
 
-   using scalar_t = typename Target::scalar_t;
+      using scalar_t = typename Target::scalar_t;
 
-   using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
-   using data_view_t       = typename data_regular_t::view_type;
-   using data_const_view_t = typename data_regular_t::const_view_type;
-   using data_t            = data_view_t;
+      using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
+      using data_view_t       = typename data_regular_t::view_type;
+      using data_const_view_t = typename data_regular_t::const_view_type;
+      using data_t            = data_view_t;
 
-   using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
-   using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
-   using zero_view_t       = zero_const_view_t;
-   using zero_t            = zero_view_t;
+      using memory_layout_t = memory_layout<arity + Target::rank>;
 
-   using _singularity_regular_t    = gf_singularity_t<Var, Target>;
-   using _singularity_view_t       = typename _singularity_regular_t::view_type;
-   using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
-   using singularity_t             = _singularity_view_t;
+      using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
+      using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
+      using zero_view_t       = zero_const_view_t;
+      using zero_t            = zero_view_t;
 
-   // ------------- Accessors -----------------------------
+      using _singularity_regular_t    = gf_singularity_t<Var, Target>;
+      using _singularity_view_t       = typename _singularity_regular_t::view_type;
+      using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
+      using singularity_t             = _singularity_view_t;
 
-   /// Access the  mesh
-   mesh_t const& mesh() const { return _mesh; }
-   domain_t const& domain() const { return _mesh.domain(); }
+      using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued(Target{})>;
 
-   /// Direct access to the data array
-   data_t& data() { return _data; }
+      struct target_and_shape_t {
+        target_shape_t _shape;
+        using target_t = Target;
+        target_shape_t const &shape() const { return _shape; }
+      };
 
-   /// Const version
-   data_t const& data() const { return _data; }
+      // ------------- Accessors -----------------------------
 
-   /// Shape of the target
-   auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
+      /// Access the  mesh
+      mesh_t const &mesh() const { return _mesh; }
+      domain_t const &domain() const { return _mesh.domain(); }
 
-   /// Shape of the data
-   auto data_shape() const { return _data.shape(); }
+      /// Direct access to the data array
+      data_t &data() & { return _data; }
 
-   ///
-   zero_t const& get_zero() const { return _zero; }
+      /// Const version
+      data_t const &data() const & { return _data; }
 
-   /// Access to the singularity
-   singularity_t& singularity() { return _singularity; }
+      /// Move data in case of rvalue gf
+      data_t data() && { return std::move(_data); }
 
-   /// Const version
-   singularity_t const& singularity() const { return _singularity; }
+      /// Shape of the target
+      //auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
+      target_and_shape_t target() const {
+        return target_and_shape_t{_data.shape().template front_mpop<arity + is_tail_valued(Target{})>()};
+      } // drop arity dims
 
-   indices_t const& indices() const { return _indices; }
+      auto target_shape() const { return target().shape(); } // drop arity dims
 
-   private:
-   mesh_t _mesh;
-   data_t _data;
-   zero_t _zero;
-   singularity_t _singularity;
-   indices_t _indices;
+      /// Shape of the data
+      auto const &data_shape() const { return _data.shape(); }
 
-   public:
-   std::string name;
+      /// Memorylayout of the data
+      auto const &get_memory_layout() const { return _data.indexmap().get_memory_layout(); }
 
-   private:
-   using dproxy_t = details::_data_proxy<Target>;
+      ///
+      zero_t const &get_zero() const { return _zero; }
 
-   // -------------------------------- impl. details common to all classes -----------------------------------------------
+      /// Access to the singularity
+      singularity_t &singularity() { return _singularity; }
 
-   // for delegation only
-   private:
-   // build a zero from a slice of data
-   // MUST be static since it is used in constructors... (otherwise bug in clang)
-   template <typename T> static zero_t __make_zero(T, data_t const& d) {
-    auto r = zero_regular_t{d.shape().template front_mpop<arity>()};
-    r()    = 0;
-    return r;
-   }
-   static zero_t __make_zero(scalar_valued, data_t const& d) { return 0; } // special case
-   static zero_t _make_zero(data_t const& d) { return __make_zero(Target{}, d); }
-   zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
+      /// Const version
+      singularity_t const &singularity() const { return _singularity; }
 
-   template <typename G>
-   gf_view(impl_tag2, G&& x)
-      : _mesh(x.mesh())
-      , _data(x.data())
-      , _zero(_make_zero(_data))
-      , _singularity(x.singularity())
-      , _indices(x.indices())
-      , name(x.name) {}
+      indices_t const &indices() const { return _indices; }
 
-   template <typename M, typename D, typename S>
-   gf_view(impl_tag, M&& m, D&& dat, S&& sing, indices_t ind)
-      : _mesh(std::forward<M>(m))
-      , _data(std::forward<D>(dat))
-      , _zero(_make_zero(_data))
-      , _singularity(std::forward<S>(sing))
-      , _indices(std::move(ind)) {
-    if (!(_indices.empty() or (is_tail_valued(Target())) or _indices.has_shape(target_shape())))
-     TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
-   }
+      private:
+      mesh_t _mesh;
+      data_t _data;
+      zero_t _zero;
+      singularity_t _singularity;
+      indices_t _indices;
 
-   public:
-   /// Copy constructor
-   gf_view(gf_view const& x)
-      : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
+      public:
+      std::string name;
 
-   /// Move constructor
-   gf_view(gf_view&&) = default;
+      private:
+      using dproxy_t = details::_data_proxy<Target>;
 
-   void swap_impl(gf_view& b) noexcept {
-    using std::swap;
-    swap(this->_mesh, b._mesh);
-    swap(this->_data, b._data);
-    swap(this->_zero, b._zero);
-    swap(this->_singularity, b._singularity);
-    swap(this->_indices, b._indices);
-    swap(this->name, b.name);
-   }
+      // -------------------------------- impl. details common to all classes -----------------------------------------------
 
-   using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
+      // for delegation only
+      private:
+      // build a zero from a slice of data
+      // MUST be static since it is used in constructors... (otherwise bug in clang)
+      template <typename T> static zero_t __make_zero(T, data_t const &d) {
+        auto r = zero_regular_t{d.shape().template front_mpop<arity>()};
+        r()    = 0;
+        return r;
+      }
+      static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; } // special case
+      static zero_t _make_zero(data_t const &d) { return __make_zero(Target{}, d); }
+      zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 
-   public:
-   // ---------------  Constructors --------------------
+      template <typename G>
+      gf_view(impl_tag2, G &&x)
+         : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
 
-   //
-   gf_view() = default;
+      template <typename M, typename D, typename S>
+      gf_view(impl_tag, M &&m, D &&dat, S &&sing, indices_t ind)
+         : _mesh(std::forward<M>(m)),
+           _data(std::forward<D>(dat)),
+           _zero(_make_zero(_data)),
+           _singularity(std::forward<S>(sing)),
+           _indices(std::move(ind)) {
+        if (!(_indices.empty() or (is_tail_valued(Target())) or _indices.has_shape(target_shape())))
+          TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
+      }
 
-   // Allow to construct a view from a gf with a different evaluator, except const_views ...
-   /// Makes a view
-   gf_view(gf_const_view<Var, Target> const& g) = delete;
+      public:
+      /// Copy constructor
+      gf_view(gf_view const &x)
+         : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
 
-   /// Makes a view
-   gf_view(gf<Var, Target> const& g) = delete;
+      /// Move constructor
+      gf_view(gf_view &&) = default;
 
-   /// Makes a view
-   gf_view(gf<Var, Target>& g) : gf_view(impl_tag2{}, g) {}
+      void swap_impl(gf_view &b) noexcept {
+        using std::swap;
+        swap(this->_mesh, b._mesh);
+        swap(this->_data, b._data);
+        swap(this->_zero, b._zero);
+        swap(this->_singularity, b._singularity);
+        swap(this->_indices, b._indices);
+        swap(this->name, b.name);
+      }
 
-   /// Makes a view
-   gf_view(gf<Var, Target>&& g) noexcept : gf_view(impl_tag2{}, std::move(g)) {} // from a gf &&
+      using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
 
-   /// Construct from mesh, data, ....
-   template <typename D>
-   gf_view(mesh_t m, D&& dat, singularity_t const& t, indices_t const& ind = indices_t{})
-      : gf_view(impl_tag{}, std::move(m), std::forward<D>(dat), t, ind) {}
+      public:
+      // ---------------  Constructors --------------------
 
-   // Construct from mesh, data. Only for partial_eval
-   template <typename D>
-   gf_view(mesh_t m, D const& dat)
-      : gf_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+      //
+      gf_view() = default;
 
-   // ---------------  swap --------------------
-   /// Swap
-   friend void swap(gf_view& a, gf_view& b) noexcept { a.swap_impl(b); }
+      // Allow to construct a view from a gf with a different evaluator, except const_views ...
+      /// Makes a view
+      gf_view(gf_const_view<Var, Target> const &g) = delete;
 
-   // ---------------  Rebind --------------------
-   /// Rebind
-   void rebind(gf_view<Var, Target> const& X) noexcept {
-    this->_mesh = X._mesh;
-    this->_data.rebind(X._data);
-    details::_rebind_helper(_zero, X._zero);
-    this->_singularity.rebind(X._singularity);
-    this->_indices = X._indices;
-    this->name     = X.name;
-   }
+      /// Makes a view
+      gf_view(gf<Var, Target> const &g) = delete;
 
-   // ---------------  operator =  --------------------
-   /// Copy the data, without resizing the view.
-   gf_view& operator=(gf_view const& rhs) {
-    triqs_gf_view_assign_delegation(*this, rhs);
-    return *this;
-   }
+      /// Makes a view
+      gf_view(gf<Var, Target> &g) : gf_view(impl_tag2{}, g) {}
 
-   /**
+      /// Makes a view
+      gf_view(gf<Var, Target> &&g) noexcept : gf_view(impl_tag2{}, std::move(g)) {} // from a gf &&
+
+      /// Construct from mesh, data, ....
+      template <typename D>
+      gf_view(mesh_t m, D &&dat, singularity_t const &t, indices_t const &ind = indices_t{})
+         : gf_view(impl_tag{}, std::move(m), std::forward<D>(dat), t, ind) {}
+
+      // Construct from mesh, data. Only for partial_eval
+      template <typename D>
+      gf_view(mesh_t m, D const &dat)
+         : gf_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+
+      // ---------------  swap --------------------
+      /// Swap
+      friend void swap(gf_view &a, gf_view &b) noexcept { a.swap_impl(b); }
+
+      // ---------------  Rebind --------------------
+      /// Rebind
+      void rebind(gf_view<Var, Target> const &X) noexcept {
+        this->_mesh = X._mesh;
+        this->_data.rebind(X._data);
+        details::_rebind_helper(_zero, X._zero);
+        this->_singularity.rebind(X._singularity);
+        this->_indices = X._indices;
+        this->name     = X.name;
+      }
+
+      // ---------------  operator =  --------------------
+      /// Copy the data, without resizing the view.
+      gf_view &operator=(gf_view const &rhs) {
+        triqs_gf_view_assign_delegation(*this, rhs);
+        return *this;
+      }
+
+      /**
     * Assignment
     *
     * @tparam RHS WRITE A LIST OF POSSIBLES ...
     */
-   template <typename RHS> gf_view& operator=(RHS const& rhs) {
-    triqs_gf_view_assign_delegation(*this, rhs);
-    return *this;
-   }
-
-   public:
-   // ------------- apply_on_data -----------------------------
-
-   template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata&& fd, Fsing&& fs, Find&& fi) {
-    auto d2  = fd(_data);
-    using t2 = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
-                                    target_from_array<decltype(d2), arity>>;
-    using gv_t = gf_view<Var, t2>;
-    return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
-   }
-
-   template <typename Fdata, typename Fsing> auto apply_on_data(Fdata&& fd, Fsing&& fs) {
-    return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto&) { return indices_t{}; });
-   }
-
-   template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata&& fd, Fsing&& fs, Find&& fi) const {
-    auto d2  = fd(_data);
-    using t2 = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
-                                    target_from_array<decltype(d2), arity>>;
-    using gv_t = gf_const_view<Var, t2>;
-    return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
-   }
-
-   template <typename Fdata, typename Fsing> auto apply_on_data(Fdata&& fd, Fsing&& fs) const {
-    return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto&) { return indices_t{}; });
-   }
-
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
-   // there is at least one lazy argument ...
-   template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
-   typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
-       (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value ||
-           ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
-       ,
-       std::result_of<evaluator_t(gf_view, Args...)> // what is the result type of call
-       >::type                                       // end of lazy_disable_if
-   operator()(Args&&... args) const {
-    return evaluator_t()(*this, std::forward<Args>(args)...);
-   }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<gf_view&, Args...> operator()(Args&&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<gf_view const&, Args...> operator()(Args&&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<gf_view, Args...> operator()(Args&&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-   }
-
-   // ------------- All the [] operators without lazy arguments -----------------------------
-
-   // pass a index_t of the mesh
-   decltype(auto) operator[](mesh_index_t const& arg) { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
-   decltype(auto) operator[](mesh_index_t const& arg) const { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
-
-   // pass a mesh_point of the mesh
-   decltype(auto) operator[](mesh_point_t const& x) {
-#ifdef TRIQS_DEBUG
-    if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
-#endif
-    return dproxy_t::invoke(_data, x.linear_index());
-   }
-
-   decltype(auto) operator[](mesh_point_t const& x) const {
-#ifdef TRIQS_DEBUG
-    if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
-#endif
-    return dproxy_t::invoke(_data, x.linear_index());
-   }
-
-   // pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
-   template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const& p) {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
-   }
-   template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const& p) const {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
-   }
-
-   // ------------- [] with lazy arguments -----------------------------
-
-   template <typename Arg> clef::make_expr_subscript_t<gf_view const&, Arg> operator[](Arg&& arg) const & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<gf_view&, Arg> operator[](Arg&& arg) & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<gf_view, Arg> operator[](Arg&& arg) && {
-    return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-   }
-
-   // --------------------- A direct access to the grid point --------------------------
-
-   template <typename... Args> decltype(auto) get_from_linear_index(Args&&... args) {
-    return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-   }
-
-   template <typename... Args> decltype(auto) get_from_linear_index(Args&&... args) const {
-    return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-   }
-
-   template <typename... Args> decltype(auto) on_mesh(Args&&... args) {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
-   }
-
-   template <typename... Args> decltype(auto) on_mesh(Args&&... args) const {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
-   }
-
-   // --------------------- on mesh (g) : the call before [] -------------------------
-   // This is a workaround the the lack of multi argument [] in C++
-   /*
-      // mesh points should be treated slighly differently : take their index....
-      template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
-      template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
-
-      // The on_mesh little adaptor ....
-      private:
-      template <typename G> struct _on_mesh_wrapper {
-       G &f;
-       template <typename... Args>
-       auto operator()(Args &&... args) const
-           -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
-        return f.on_mesh(std::forward<Args>(args)...);
-       }
-       TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
-      };
+      template <typename RHS> gf_view &operator=(RHS const &rhs) {
+        triqs_gf_view_assign_delegation(*this, rhs);
+        return *this;
+      }
 
       public:
-      // TRIQS_DEPRECATED("Use [][][] instead")
-      _on_mesh_wrapper<gf_view const> friend on_mesh(gf_view const &f) { return {f}; }
-      _on_mesh_wrapper<gf_view> friend on_mesh(gf_view &f) { return {f}; }
-   */
+      // ------------- apply_on_data -----------------------------
+
+      template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata &&fd, Fsing &&fs, Find &&fi) {
+        auto d2    = fd(_data);
+        using t2   = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
+                                        target_from_array<decltype(d2), arity>>;
+        using gv_t = gf_view<Var, t2>;
+        return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
+      }
+
+      template <typename Fdata, typename Fsing> auto apply_on_data(Fdata &&fd, Fsing &&fs) {
+        return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto &) { return indices_t{}; });
+      }
+
+      template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata &&fd, Fsing &&fs, Find &&fi) const {
+        auto d2    = fd(_data);
+        using t2   = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
+                                        target_from_array<decltype(d2), arity>>;
+        using gv_t = gf_const_view<Var, t2>;
+        return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
+      }
+
+      template <typename Fdata, typename Fsing> auto apply_on_data(Fdata &&fd, Fsing &&fs) const {
+        return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto &) { return indices_t{}; });
+      }
+
+      // ------------- All the call operators without lazy arguments -----------------------------
+
+      // First, a simple () returns a view, like for an array...
+      /// Makes a const view of *this
+      const_view_type operator()() const { return *this; }
+      /// Makes a view of *this if it is non const
+      view_type operator()() { return *this; }
+
+      // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
+      // there is at least one lazy argument ...
+      template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
+      typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
+         (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value
+            || ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
+         ,
+         std::result_of<evaluator_t(gf_view, Args...)> // what is the result type of call
+         >::type                                       // end of lazy_disable_if
+      operator()(Args &&... args) const {
+        return evaluator_t()(*this, std::forward<Args>(args)...);
+      }
+
+      // ------------- Call with lazy arguments -----------------------------
+
+      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
+      template <typename... Args> clef::make_expr_call_t<gf_view &, Args...> operator()(Args &&... args) & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<gf_view const &, Args...> operator()(Args &&... args) const & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<gf_view, Args...> operator()(Args &&... args) && {
+        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      }
+
+      // ------------- All the [] operators without lazy arguments -----------------------------
+
+      // pass a index_t of the mesh
+      decltype(auto) operator[](mesh_index_t const &arg) { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
+      decltype(auto) operator[](mesh_index_t const &arg) const { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
+
+      // pass a mesh_point of the mesh
+      decltype(auto) operator[](mesh_point_t const &x) {
+#ifdef TRIQS_DEBUG
+        if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+#endif
+        return dproxy_t::invoke(_data, x.linear_index());
+      }
+
+      decltype(auto) operator[](mesh_point_t const &x) const {
+#ifdef TRIQS_DEBUG
+        if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+#endif
+        return dproxy_t::invoke(_data, x.linear_index());
+      }
+
+      // pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
+      template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
+      }
+      template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) const {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
+      }
+
+      // ------------- [] with lazy arguments -----------------------------
+
+      template <typename Arg> clef::make_expr_subscript_t<gf_view const &, Arg> operator[](Arg &&arg) const & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<gf_view &, Arg> operator[](Arg &&arg) & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<gf_view, Arg> operator[](Arg &&arg) && {
+        return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
+      }
+
+      // --------------------- A direct access to the grid point --------------------------
+
+      template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) {
+        return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+      }
+
+      template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) const {
+        return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+      }
+
+      template <typename... Args> decltype(auto) on_mesh(Args &&... args) {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
+      }
+
+      template <typename... Args> decltype(auto) on_mesh(Args &&... args) const {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
+      }
+
+      // --------------------- on mesh (g) : the call before [] -------------------------
+      // This is a workaround the the lack of multi argument [] in C++
+      /*
+   // mesh points should be treated slighly differently : take their index....
+   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
+   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
+
+   // The on_mesh little adaptor ....
+   private:
+   template <typename G> struct _on_mesh_wrapper {
+    G &f;
+    template <typename... Args>
+    auto operator()(Args &&... args) const
+        -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
+     return f.on_mesh(std::forward<Args>(args)...);
+    }
+    TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
+   };
+
    public:
-   // --------------------- [][][][] ------------------------
-   // This is a workaround the the lack of multi argument [] in C++
+   // TRIQS_DEPRECATED("Use [][][] instead")
+   _on_mesh_wrapper<gf_view const> friend on_mesh(gf_view const &f) { return {f}; }
+   _on_mesh_wrapper<gf_view> friend on_mesh(gf_view &f) { return {f}; }
+*/
+      public:
+      // --------------------- [][][][] ------------------------
+      // This is a workaround the the lack of multi argument [] in C++
 
-   /**
+      /**
     *
     */
-   template <typename T> decltype(auto) operator[](T const& x) {
-    return triqs::utility::make_lazy_bracket<arity>(
-        [this](auto&&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
-   }
+      template <typename T> decltype(auto) operator[](T const &x) {
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+      }
 
-   /**
+      /**
     *
     */
-   template <typename T> decltype(auto) operator[](T const& x) const {
-    return triqs::utility::make_lazy_bracket<arity>(
-        [this](auto&&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
-   }
+      template <typename T> decltype(auto) operator[](T const &x) const {
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+      }
 
-   //----------------------------- HDF5 -----------------------------
+      //----------------------------- HDF5 -----------------------------
 
-   /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(gf_view const& g) { return "Gf"; }
+      /// HDF5 name
+      friend std::string get_triqs_hdf5_data_scheme(gf_view const &g) { return "Gf"; }
 
-   friend struct gf_h5_rw<Var, Target>;
+      friend struct gf_h5_rw<Var, Target>;
 
-   /// Write into HDF5
-   friend void h5_write(h5::group fg, std::string const& subgroup_name, gf_view const& g) {
-    auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
-    gf_h5_rw<Var, Target>::write(gr, g);
-   }
+      /// Write into HDF5
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_view const &g) {
+        auto gr = fg.create_group(subgroup_name);
+        gr.write_triqs_hdf5_data_scheme(g);
+        gf_h5_rw<Var, Target>::write(gr, g);
+      }
 
-   /// Read from HDF5
-   friend void h5_read(h5::group fg, std::string const& subgroup_name, gf_view& g) {
-    auto gr       = fg.open_group(subgroup_name);
-    auto tag_file = gr.read_triqs_hdf5_data_scheme();
-    if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
-     TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
-                         << " while I found " << tag_file;
-    gf_h5_rw<Var, Target>::read(gr, g);
-    g._remake_zero();
-   }
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_view &g) {
+        auto gr       = fg.open_group(subgroup_name);
+        auto tag_file = gr.read_triqs_hdf5_data_scheme();
+        if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
+          TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
+                              << " while I found " << tag_file;
+        gf_h5_rw<Var, Target>::read(gr, g);
+        g._remake_zero();
+      }
 
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   /// The serialization as required by Boost
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-    ar& _data;
-    ar& _singularity;
-    ar& _mesh;
-    ar& _indices;
-    ar& name;
-   }
+      //-----------------------------  BOOST Serialization -----------------------------
+      friend class boost::serialization::access;
+      /// The serialization as required by Boost
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &_data;
+        ar &_singularity;
+        ar &_mesh;
+        ar &_indices;
+        ar &name;
+      }
 
-   //----------------------------- print  -----------------------------
+      //----------------------------- print  -----------------------------
 
-   /// IO
-   friend std::ostream& operator<<(std::ostream& out, gf_view const& x) { return out << "gf_view"; }
+      /// IO
+      friend std::ostream &operator<<(std::ostream &out, gf_view const &x) { return out << "gf_view"; }
 
-   //----------------------------- MPI  -----------------------------
+      //----------------------------- MPI  -----------------------------
 
-   /**
+      /**
      * Initiate (lazy) MPI Bcast
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1116,13 +1139,13 @@ namespace triqs {
      *
      */
 
-   friend void mpi_broadcast(gf_view& g, mpi::communicator c = {}, int root = 0) {
-    // Shall we bcast mesh ?
-    mpi_broadcast(g.data(), c, root);
-    mpi_broadcast(g.singularity(), c, root);
-   }
+      friend void mpi_broadcast(gf_view &g, mpi::communicator c = {}, int root = 0) {
+        // Shall we bcast mesh ?
+        mpi_broadcast(g.data(), c, root);
+        mpi_broadcast(g.singularity(), c, root);
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI Reduce
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1136,12 +1159,12 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_view const& a, mpi::communicator c = {}, int root = 0,
-                                                                 bool all = false, MPI_Op op = MPI_SUM) {
-    return {a(), c, root, all, op};
-   }
+      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_view const &a, mpi::communicator c = {}, int root = 0, bool all = false,
+                                                                    MPI_Op op = MPI_SUM) {
+        return {a(), c, root, all, op};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI AllReduce
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1155,12 +1178,12 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_view const& a, mpi::communicator c = {}, int root = 0,
-                                                                     MPI_Op op = MPI_SUM) {
-    return {a(), c, root, true, op};
-   }
+      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_view const &a, mpi::communicator c = {}, int root = 0,
+                                                                        MPI_Op op = MPI_SUM) {
+        return {a(), c, root, true, op};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI Scatter
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1174,11 +1197,11 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf_view const& a, mpi::communicator c = {}, int root = 0) {
-    return {a(), c, root, true};
-   }
+      friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf_view const &a, mpi::communicator c = {}, int root = 0) {
+        return {a(), c, root, true};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI Gather
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1192,12 +1215,11 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf_view const& a, mpi::communicator c = {}, int root = 0,
-                                                                 bool all = false) {
-    return {a(), c, root, all};
-   }
+      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf_view const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
+        return {a(), c, root, all};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI AllGather
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1211,455 +1233,467 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf_view const& a, mpi::communicator c = {}, int root = 0) {
-    return {a(), c, root, true};
-   }
+      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf_view const &a, mpi::communicator c = {}, int root = 0) {
+        return {a(), c, root, true};
+      }
 
-   //-------------  corresponding operator = overload
+      //-------------  corresponding operator = overload
 
-   /**
+      /**
     * Performs MPI reduce
     * @param l The lazy object returned by mpi_reduce
     */
-   void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
-    _mesh        = l.rhs.mesh();
-    _data        = arrays::mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
-    _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all, l.op);
-   }
+      void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
+        _mesh        = l.rhs.mesh();
+        _data        = arrays::mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
+        _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all, l.op);
+      }
 
-   /**
+      /**
      * Performs MPI scatter
      * @param l The lazy object returned by mpi_reduce
      */
-   void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
-    _mesh                                  = mpi_scatter(l.rhs.mesh(), l.c, l.root);
-    _data                                  = mpi_scatter(l.rhs.data(), l.c, l.root, true);
-    if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
-    mpi_broadcast(_singularity, l.c, l.root);
-   }
+      void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
+        _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
+        _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
+        if (l.c.rank() == l.root) _singularity= l.rhs.singularity();
+        mpi_broadcast(_singularity, l.c, l.root);
+      }
 
-   /**
+      /**
      * Performs MPI gather
      * @param l The lazy object returned by mpi_reduce
      */
-   void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
-    _mesh                                             = mpi_gather(l.rhs.mesh(), l.c, l.root);
-    _data                                             = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
-    if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
-   }
-  };
+      void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
+        _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
+        _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
+        if (l.all || (l.c.rank() == l.root)) _singularity= l.rhs.singularity();
+      }
+    };
 
-  // ----------------------  gf_const_view -----------------------------------------
-  /**
+    // ----------------------  gf_const_view -----------------------------------------
+    /**
    * gf_const_view : the main class
    */
-  template <typename Var, typename Target> class gf_const_view : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
-
-   public:
-   static constexpr bool is_view  = true;
-   static constexpr bool is_const = true;
-
-   using mutable_view_type = gf_view<Var, Target>;
-
-   /// The associated const view type (gf_const_view <....>)
-   using const_view_type = gf_const_view<Var, Target>;
-
-   /// The associated view type (non const)
-   using view_type = gf_const_view<Var, Target>;
-
-   /// The associated regular type (gf<....>)
-   using regular_type = gf<Var, Target>;
-
-   using variable_t = Var;
-   using target_t   = Target;
-
-   /// Type of the mesh
-   using mesh_t               = gf_mesh<Var>;
-   using domain_t             = typename mesh_t::domain_t;
-   static constexpr int arity = get_n_variables<Var>::value;
-
-   using mesh_point_t        = typename mesh_t::mesh_point_t;
-   using mesh_index_t        = typename mesh_t::index_t;
-   using linear_mesh_index_t = typename mesh_t::linear_index_t;
-   using indices_t           = gf_indices;
-   using evaluator_t         = gf_evaluator<Var, Target>;
-
-   using scalar_t = typename Target::scalar_t;
-
-   using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
-   using data_view_t       = typename data_regular_t::view_type;
-   using data_const_view_t = typename data_regular_t::const_view_type;
-   using data_t            = data_const_view_t;
-
-   using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
-   using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
-   using zero_view_t       = zero_const_view_t;
-   using zero_t            = zero_const_view_t;
-
-   using _singularity_regular_t    = gf_singularity_t<Var, Target>;
-   using _singularity_view_t       = typename _singularity_regular_t::view_type;
-   using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
-   using singularity_t             = _singularity_const_view_t;
-
-   // ------------- Accessors -----------------------------
-
-   /// Access the  mesh
-   mesh_t const& mesh() const { return _mesh; }
-   domain_t const& domain() const { return _mesh.domain(); }
-
-   /// Direct access to the data array
-   data_t& data() { return _data; }
-
-   /// Const version
-   data_t const& data() const { return _data; }
-
-   /// Shape of the target
-   auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
-
-   /// Shape of the data
-   auto data_shape() const { return _data.shape(); }
-
-   ///
-   zero_t const& get_zero() const { return _zero; }
-
-   /// Access to the singularity
-   singularity_t& singularity() { return _singularity; }
-
-   /// Const version
-   singularity_t const& singularity() const { return _singularity; }
-
-   indices_t const& indices() const { return _indices; }
-
-   private:
-   mesh_t _mesh;
-   data_t _data;
-   zero_t _zero;
-   singularity_t _singularity;
-   indices_t _indices;
-
-   public:
-   std::string name;
-
-   private:
-   using dproxy_t = details::_data_proxy<Target>;
-
-   // -------------------------------- impl. details common to all classes -----------------------------------------------
-
-   // for delegation only
-   private:
-   // build a zero from a slice of data
-   // MUST be static since it is used in constructors... (otherwise bug in clang)
-   template <typename T> static zero_t __make_zero(T, data_t const& d) {
-    auto r = zero_regular_t{d.shape().template front_mpop<arity>()};
-    r()    = 0;
-    return r;
-   }
-   static zero_t __make_zero(scalar_valued, data_t const& d) { return 0; } // special case
-   static zero_t _make_zero(data_t const& d) { return __make_zero(Target{}, d); }
-   zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
-
-   template <typename G>
-   gf_const_view(impl_tag2, G&& x)
-      : _mesh(x.mesh())
-      , _data(x.data())
-      , _zero(_make_zero(_data))
-      , _singularity(x.singularity())
-      , _indices(x.indices())
-      , name(x.name) {}
-
-   template <typename M, typename D, typename S>
-   gf_const_view(impl_tag, M&& m, D&& dat, S&& sing, indices_t ind)
-      : _mesh(std::forward<M>(m))
-      , _data(std::forward<D>(dat))
-      , _zero(_make_zero(_data))
-      , _singularity(std::forward<S>(sing))
-      , _indices(std::move(ind)) {
-    if (!(_indices.empty() or (is_tail_valued(Target())) or _indices.has_shape(target_shape())))
-     TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
-   }
-
-   public:
-   /// Copy constructor
-   gf_const_view(gf_const_view const& x)
-      : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
-
-   /// Move constructor
-   gf_const_view(gf_const_view&&) = default;
-
-   void swap_impl(gf_const_view& b) noexcept {
-    using std::swap;
-    swap(this->_mesh, b._mesh);
-    swap(this->_data, b._data);
-    swap(this->_zero, b._zero);
-    swap(this->_singularity, b._singularity);
-    swap(this->_indices, b._indices);
-    swap(this->name, b.name);
-   }
-
-   using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
-
-   // ---------------  Constructors --------------------
-
-   //
-   gf_const_view() = default;
-
-   /// Makes a const view
-   gf_const_view(gf_view<Var, Target> const& g) : gf_const_view(impl_tag2{}, g) {}
-
-   /// Makes a const view
-   gf_const_view(gf<Var, Target> const& g) : gf_const_view(impl_tag2{}, g) {}
-
-   /// Makes a const view
-   gf_const_view(gf<Var, Target>& g) : gf_const_view(impl_tag2{}, g) {} // from a gf &
-
-   /// Makes a const view
-   gf_const_view(gf<Var, Target>&& g) noexcept : gf_const_view(impl_tag2{}, std::move(g)) {} // from a gf &&
-
-   // Construct from mesh, data, ....
-   template <typename D>
-   gf_const_view(mesh_t m, D const& dat, singularity_t const& t, indices_t const& ind)
-      : gf_const_view(impl_tag{}, std::move(m), dat, t, ind) {}
-
-   // Construct from mesh, data.
-   template <typename D>
-   gf_const_view(mesh_t m, D const& dat)
-      : gf_const_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {
-   }
-
-   // ---------------  swap --------------------
-
-   /// Swap
-   friend void swap(gf_const_view& a, gf_const_view& b) noexcept { a.swap_impl(b); }
-
-   // ---------------  Rebind --------------------
-   /// Rebind the view
-   void rebind(gf_const_view<Var, Target> const& X) noexcept {
-    this->_mesh = X._mesh;
-    this->_data.rebind(X._data);
-    details::_rebind_helper(_zero, X._zero);
-    this->_singularity.rebind(X._singularity);
-    this->_indices = X._indices;
-    this->name     = X.name;
-   }
-
-   /// Rebind on a non const view
-   void rebind(gf_view<Var, Target> const& X) noexcept { rebind(gf_const_view{X}); }
-
-   // ---------------  No = since it is const ... --------------------
-   gf_const_view& operator=(gf_const_view const&) = delete; // a const view can not be assigned to
-
-   public:
-   // ------------- apply_on_data -----------------------------
-
-   template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata&& fd, Fsing&& fs, Find&& fi) {
-    auto d2  = fd(_data);
-    using t2 = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
-                                    target_from_array<decltype(d2), arity>>;
-    using gv_t = gf_const_view<Var, t2>;
-    return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
-   }
-
-   template <typename Fdata, typename Fsing> auto apply_on_data(Fdata&& fd, Fsing&& fs) {
-    return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto&) { return indices_t{}; });
-   }
-
-   template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata&& fd, Fsing&& fs, Find&& fi) const {
-    auto d2  = fd(_data);
-    using t2 = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
-                                    target_from_array<decltype(d2), arity>>;
-    using gv_t = gf_const_view<Var, t2>;
-    return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
-   }
-
-   template <typename Fdata, typename Fsing> auto apply_on_data(Fdata&& fd, Fsing&& fs) const {
-    return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto&) { return indices_t{}; });
-   }
-
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
-   // there is at least one lazy argument ...
-   template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
-   typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
-       (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value ||
-           ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
-       ,
-       std::result_of<evaluator_t(gf_const_view, Args...)> // what is the result type of call
-       >::type                                             // end of lazy_disable_if
-   operator()(Args&&... args) const {
-    return evaluator_t()(*this, std::forward<Args>(args)...);
-   }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<gf_const_view&, Args...> operator()(Args&&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<gf_const_view const&, Args...> operator()(Args&&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<gf_const_view, Args...> operator()(Args&&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-   }
-
-   // ------------- All the [] operators without lazy arguments -----------------------------
-
-   // pass a index_t of the mesh
-   decltype(auto) operator[](mesh_index_t const& arg) { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
-   decltype(auto) operator[](mesh_index_t const& arg) const { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
-
-   // pass a mesh_point of the mesh
-   decltype(auto) operator[](mesh_point_t const& x) {
-#ifdef TRIQS_DEBUG
-    if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
-#endif
-    return dproxy_t::invoke(_data, x.linear_index());
-   }
-
-   decltype(auto) operator[](mesh_point_t const& x) const {
-#ifdef TRIQS_DEBUG
-    if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
-#endif
-    return dproxy_t::invoke(_data, x.linear_index());
-   }
-
-   // pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
-   template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const& p) {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
-   }
-   template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const& p) const {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
-   }
-
-   // ------------- [] with lazy arguments -----------------------------
-
-   template <typename Arg> clef::make_expr_subscript_t<gf_const_view const&, Arg> operator[](Arg&& arg) const & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<gf_const_view&, Arg> operator[](Arg&& arg) & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<gf_const_view, Arg> operator[](Arg&& arg) && {
-    return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-   }
-
-   // --------------------- A direct access to the grid point --------------------------
-
-   template <typename... Args> decltype(auto) get_from_linear_index(Args&&... args) {
-    return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-   }
-
-   template <typename... Args> decltype(auto) get_from_linear_index(Args&&... args) const {
-    return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-   }
-
-   template <typename... Args> decltype(auto) on_mesh(Args&&... args) {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
-   }
-
-   template <typename... Args> decltype(auto) on_mesh(Args&&... args) const {
-    return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
-   }
-
-   // --------------------- on mesh (g) : the call before [] -------------------------
-   // This is a workaround the the lack of multi argument [] in C++
-   /*
-      // mesh points should be treated slighly differently : take their index....
-      template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
-      template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
-
-      // The on_mesh little adaptor ....
-      private:
-      template <typename G> struct _on_mesh_wrapper {
-       G &f;
-       template <typename... Args>
-       auto operator()(Args &&... args) const
-           -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
-        return f.on_mesh(std::forward<Args>(args)...);
-       }
-       TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
-      };
+    template <typename Var, typename Target> class gf_const_view : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
 
       public:
-      // TRIQS_DEPRECATED("Use [][][] instead")
-      _on_mesh_wrapper<gf_const_view const> friend on_mesh(gf_const_view const &f) { return {f}; }
-      _on_mesh_wrapper<gf_const_view> friend on_mesh(gf_const_view &f) { return {f}; }
-   */
+      static constexpr bool is_view  = true;
+      static constexpr bool is_const = true;
+
+      using mutable_view_type = gf_view<Var, Target>;
+
+      /// The associated const view type (gf_const_view <....>)
+      using const_view_type = gf_const_view<Var, Target>;
+
+      /// The associated view type (non const)
+      using view_type = gf_const_view<Var, Target>;
+
+      /// The associated regular type (gf<....>)
+      using regular_type = gf<Var, Target>;
+
+      using variable_t = Var;
+      using target_t   = Target;
+
+      /// Type of the mesh
+      using mesh_t               = gf_mesh<Var>;
+      using domain_t             = typename mesh_t::domain_t;
+      static constexpr int arity = get_n_variables<Var>::value;
+
+      using mesh_point_t        = typename mesh_t::mesh_point_t;
+      using mesh_index_t        = typename mesh_t::index_t;
+      using linear_mesh_index_t = typename mesh_t::linear_index_t;
+      using indices_t           = gf_indices;
+      using evaluator_t         = gf_evaluator<Var, Target>;
+
+      using scalar_t = typename Target::scalar_t;
+
+      using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
+      using data_view_t       = typename data_regular_t::view_type;
+      using data_const_view_t = typename data_regular_t::const_view_type;
+      using data_t            = data_const_view_t;
+
+      using memory_layout_t = memory_layout<arity + Target::rank>;
+
+      using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
+      using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
+      using zero_view_t       = zero_const_view_t;
+      using zero_t            = zero_const_view_t;
+
+      using _singularity_regular_t    = gf_singularity_t<Var, Target>;
+      using _singularity_view_t       = typename _singularity_regular_t::view_type;
+      using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
+      using singularity_t             = _singularity_const_view_t;
+
+      using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued(Target{})>;
+
+      struct target_and_shape_t {
+        target_shape_t _shape;
+        using target_t = Target;
+        target_shape_t const &shape() const { return _shape; }
+      };
+
+      // ------------- Accessors -----------------------------
+
+      /// Access the  mesh
+      mesh_t const &mesh() const { return _mesh; }
+      domain_t const &domain() const { return _mesh.domain(); }
+
+      /// Direct access to the data array
+      data_t &data() & { return _data; }
+
+      /// Const version
+      data_t const &data() const & { return _data; }
+
+      /// Move data in case of rvalue gf
+      data_t data() && { return std::move(_data); }
+
+      /// Shape of the target
+      //auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
+      target_and_shape_t target() const {
+        return target_and_shape_t{_data.shape().template front_mpop<arity + is_tail_valued(Target{})>()};
+      } // drop arity dims
+
+      auto target_shape() const { return target().shape(); } // drop arity dims
+
+      /// Shape of the data
+      auto const &data_shape() const { return _data.shape(); }
+
+      /// Memorylayout of the data
+      auto const &get_memory_layout() const { return _data.indexmap().get_memory_layout(); }
+
+      ///
+      zero_t const &get_zero() const { return _zero; }
+
+      /// Access to the singularity
+      singularity_t &singularity() { return _singularity; }
+
+      /// Const version
+      singularity_t const &singularity() const { return _singularity; }
+
+      indices_t const &indices() const { return _indices; }
+
+      private:
+      mesh_t _mesh;
+      data_t _data;
+      zero_t _zero;
+      singularity_t _singularity;
+      indices_t _indices;
+
+      public:
+      std::string name;
+
+      private:
+      using dproxy_t = details::_data_proxy<Target>;
+
+      // -------------------------------- impl. details common to all classes -----------------------------------------------
+
+      // for delegation only
+      private:
+      // build a zero from a slice of data
+      // MUST be static since it is used in constructors... (otherwise bug in clang)
+      template <typename T> static zero_t __make_zero(T, data_t const &d) {
+        auto r = zero_regular_t{d.shape().template front_mpop<arity>()};
+        r()    = 0;
+        return r;
+      }
+      static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; } // special case
+      static zero_t _make_zero(data_t const &d) { return __make_zero(Target{}, d); }
+      zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
+
+      template <typename G>
+      gf_const_view(impl_tag2, G &&x)
+         : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
+
+      template <typename M, typename D, typename S>
+      gf_const_view(impl_tag, M &&m, D &&dat, S &&sing, indices_t ind)
+         : _mesh(std::forward<M>(m)),
+           _data(std::forward<D>(dat)),
+           _zero(_make_zero(_data)),
+           _singularity(std::forward<S>(sing)),
+           _indices(std::move(ind)) {
+        if (!(_indices.empty() or (is_tail_valued(Target())) or _indices.has_shape(target_shape())))
+          TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
+      }
+
+      public:
+      /// Copy constructor
+      gf_const_view(gf_const_view const &x)
+         : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
+
+      /// Move constructor
+      gf_const_view(gf_const_view &&) = default;
+
+      void swap_impl(gf_const_view &b) noexcept {
+        using std::swap;
+        swap(this->_mesh, b._mesh);
+        swap(this->_data, b._data);
+        swap(this->_zero, b._zero);
+        swap(this->_singularity, b._singularity);
+        swap(this->_indices, b._indices);
+        swap(this->name, b.name);
+      }
+
+      using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
+
+      // ---------------  Constructors --------------------
+
+      //
+      gf_const_view() = default;
+
+      /// Makes a const view
+      gf_const_view(gf_view<Var, Target> const &g) : gf_const_view(impl_tag2{}, g) {}
+
+      /// Makes a const view
+      gf_const_view(gf<Var, Target> const &g) : gf_const_view(impl_tag2{}, g) {}
+
+      /// Makes a const view
+      gf_const_view(gf<Var, Target> &g) : gf_const_view(impl_tag2{}, g) {} // from a gf &
+
+      /// Makes a const view
+      gf_const_view(gf<Var, Target> &&g) noexcept : gf_const_view(impl_tag2{}, std::move(g)) {} // from a gf &&
+
+      // Construct from mesh, data, ....
+      template <typename D>
+      gf_const_view(mesh_t m, D const &dat, singularity_t const &t, indices_t const &ind) : gf_const_view(impl_tag{}, std::move(m), dat, t, ind) {}
+
+      // Construct from mesh, data.
+      template <typename D>
+      gf_const_view(mesh_t m, D const &dat)
+         : gf_const_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+
+      // ---------------  swap --------------------
+
+      /// Swap
+      friend void swap(gf_const_view &a, gf_const_view &b) noexcept { a.swap_impl(b); }
+
+      // ---------------  Rebind --------------------
+      /// Rebind the view
+      void rebind(gf_const_view<Var, Target> const &X) noexcept {
+        this->_mesh = X._mesh;
+        this->_data.rebind(X._data);
+        details::_rebind_helper(_zero, X._zero);
+        this->_singularity.rebind(X._singularity);
+        this->_indices = X._indices;
+        this->name     = X.name;
+      }
+
+      /// Rebind on a non const view
+      void rebind(gf_view<Var, Target> const &X) noexcept { rebind(gf_const_view{X}); }
+
+      // ---------------  No = since it is const ... --------------------
+      gf_const_view &operator=(gf_const_view const &) = delete; // a const view can not be assigned to
+
+      public:
+      // ------------- apply_on_data -----------------------------
+
+      template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata &&fd, Fsing &&fs, Find &&fi) {
+        auto d2    = fd(_data);
+        using t2   = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
+                                        target_from_array<decltype(d2), arity>>;
+        using gv_t = gf_const_view<Var, t2>;
+        return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
+      }
+
+      template <typename Fdata, typename Fsing> auto apply_on_data(Fdata &&fd, Fsing &&fs) {
+        return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto &) { return indices_t{}; });
+      }
+
+      template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata &&fd, Fsing &&fs, Find &&fi) const {
+        auto d2    = fd(_data);
+        using t2   = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
+                                        target_from_array<decltype(d2), arity>>;
+        using gv_t = gf_const_view<Var, t2>;
+        return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
+      }
+
+      template <typename Fdata, typename Fsing> auto apply_on_data(Fdata &&fd, Fsing &&fs) const {
+        return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto &) { return indices_t{}; });
+      }
+
+      // ------------- All the call operators without lazy arguments -----------------------------
+
+      // First, a simple () returns a view, like for an array...
+      /// Makes a const view of *this
+      const_view_type operator()() const { return *this; }
+      /// Makes a view of *this if it is non const
+      view_type operator()() { return *this; }
+
+      // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
+      // there is at least one lazy argument ...
+      template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
+      typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
+         (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value
+            || ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
+         ,
+         std::result_of<evaluator_t(gf_const_view, Args...)> // what is the result type of call
+         >::type                                             // end of lazy_disable_if
+      operator()(Args &&... args) const {
+        return evaluator_t()(*this, std::forward<Args>(args)...);
+      }
+
+      // ------------- Call with lazy arguments -----------------------------
+
+      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
+      template <typename... Args> clef::make_expr_call_t<gf_const_view &, Args...> operator()(Args &&... args) & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<gf_const_view const &, Args...> operator()(Args &&... args) const & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<gf_const_view, Args...> operator()(Args &&... args) && {
+        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      }
+
+      // ------------- All the [] operators without lazy arguments -----------------------------
+
+      // pass a index_t of the mesh
+      decltype(auto) operator[](mesh_index_t const &arg) { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
+      decltype(auto) operator[](mesh_index_t const &arg) const { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
+
+      // pass a mesh_point of the mesh
+      decltype(auto) operator[](mesh_point_t const &x) {
+#ifdef TRIQS_DEBUG
+        if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+#endif
+        return dproxy_t::invoke(_data, x.linear_index());
+      }
+
+      decltype(auto) operator[](mesh_point_t const &x) const {
+#ifdef TRIQS_DEBUG
+        if (this->_mesh != x.mesh()) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+#endif
+        return dproxy_t::invoke(_data, x.linear_index());
+      }
+
+      // pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
+      template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
+      }
+      template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) const {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
+      }
+
+      // ------------- [] with lazy arguments -----------------------------
+
+      template <typename Arg> clef::make_expr_subscript_t<gf_const_view const &, Arg> operator[](Arg &&arg) const & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<gf_const_view &, Arg> operator[](Arg &&arg) & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<gf_const_view, Arg> operator[](Arg &&arg) && {
+        return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
+      }
+
+      // --------------------- A direct access to the grid point --------------------------
+
+      template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) {
+        return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+      }
+
+      template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) const {
+        return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+      }
+
+      template <typename... Args> decltype(auto) on_mesh(Args &&... args) {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
+      }
+
+      template <typename... Args> decltype(auto) on_mesh(Args &&... args) const {
+        return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
+      }
+
+      // --------------------- on mesh (g) : the call before [] -------------------------
+      // This is a workaround the the lack of multi argument [] in C++
+      /*
+   // mesh points should be treated slighly differently : take their index....
+   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
+   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
+
+   // The on_mesh little adaptor ....
+   private:
+   template <typename G> struct _on_mesh_wrapper {
+    G &f;
+    template <typename... Args>
+    auto operator()(Args &&... args) const
+        -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
+     return f.on_mesh(std::forward<Args>(args)...);
+    }
+    TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
+   };
+
    public:
-   // --------------------- [][][][] ------------------------
-   // This is a workaround the the lack of multi argument [] in C++
+   // TRIQS_DEPRECATED("Use [][][] instead")
+   _on_mesh_wrapper<gf_const_view const> friend on_mesh(gf_const_view const &f) { return {f}; }
+   _on_mesh_wrapper<gf_const_view> friend on_mesh(gf_const_view &f) { return {f}; }
+*/
+      public:
+      // --------------------- [][][][] ------------------------
+      // This is a workaround the the lack of multi argument [] in C++
 
-   /**
+      /**
     *
     */
-   template <typename T> decltype(auto) operator[](T const& x) {
-    return triqs::utility::make_lazy_bracket<arity>(
-        [this](auto&&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
-   }
+      template <typename T> decltype(auto) operator[](T const &x) {
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+      }
 
-   /**
+      /**
     *
     */
-   template <typename T> decltype(auto) operator[](T const& x) const {
-    return triqs::utility::make_lazy_bracket<arity>(
-        [this](auto&&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
-   }
+      template <typename T> decltype(auto) operator[](T const &x) const {
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+      }
 
-   //----------------------------- HDF5 -----------------------------
+      //----------------------------- HDF5 -----------------------------
 
-   /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(gf_const_view const& g) { return "Gf"; }
+      /// HDF5 name
+      friend std::string get_triqs_hdf5_data_scheme(gf_const_view const &g) { return "Gf"; }
 
-   friend struct gf_h5_rw<Var, Target>;
+      friend struct gf_h5_rw<Var, Target>;
 
-   /// Write into HDF5
-   friend void h5_write(h5::group fg, std::string const& subgroup_name, gf_const_view const& g) {
-    auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
-    gf_h5_rw<Var, Target>::write(gr, g);
-   }
+      /// Write into HDF5
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_const_view const &g) {
+        auto gr = fg.create_group(subgroup_name);
+        gr.write_triqs_hdf5_data_scheme(g);
+        gf_h5_rw<Var, Target>::write(gr, g);
+      }
 
-   /// Read from HDF5
-   friend void h5_read(h5::group fg, std::string const& subgroup_name, gf_const_view& g) {
-    auto gr       = fg.open_group(subgroup_name);
-    auto tag_file = gr.read_triqs_hdf5_data_scheme();
-    if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
-     TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
-                         << " while I found " << tag_file;
-    gf_h5_rw<Var, Target>::read(gr, g);
-    g._remake_zero();
-   }
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_const_view &g) {
+        auto gr       = fg.open_group(subgroup_name);
+        auto tag_file = gr.read_triqs_hdf5_data_scheme();
+        if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
+          TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
+                              << " while I found " << tag_file;
+        gf_h5_rw<Var, Target>::read(gr, g);
+        g._remake_zero();
+      }
 
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   /// The serialization as required by Boost
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-    ar& _data;
-    ar& _singularity;
-    ar& _mesh;
-    ar& _indices;
-    ar& name;
-   }
+      //-----------------------------  BOOST Serialization -----------------------------
+      friend class boost::serialization::access;
+      /// The serialization as required by Boost
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &_data;
+        ar &_singularity;
+        ar &_mesh;
+        ar &_indices;
+        ar &name;
+      }
 
-   //----------------------------- print  -----------------------------
+      //----------------------------- print  -----------------------------
 
-   /// IO
-   friend std::ostream& operator<<(std::ostream& out, gf_const_view const& x) { return out << "gf_const_view"; }
+      /// IO
+      friend std::ostream &operator<<(std::ostream &out, gf_const_view const &x) { return out << "gf_const_view"; }
 
-   //----------------------------- MPI  -----------------------------
+      //----------------------------- MPI  -----------------------------
 
-   /**
+      /**
      * Initiate (lazy) MPI Bcast
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1673,13 +1707,13 @@ namespace triqs {
      *
      */
 
-   friend void mpi_broadcast(gf_const_view& g, mpi::communicator c = {}, int root = 0) {
-    // Shall we bcast mesh ?
-    mpi_broadcast(g.data(), c, root);
-    mpi_broadcast(g.singularity(), c, root);
-   }
+      friend void mpi_broadcast(gf_const_view &g, mpi::communicator c = {}, int root = 0) {
+        // Shall we bcast mesh ?
+        mpi_broadcast(g.data(), c, root);
+        mpi_broadcast(g.singularity(), c, root);
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI Reduce
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1693,12 +1727,12 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_const_view const& a, mpi::communicator c = {}, int root = 0,
-                                                                 bool all = false, MPI_Op op = MPI_SUM) {
-    return {a(), c, root, all, op};
-   }
+      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0, bool all = false,
+                                                                    MPI_Op op = MPI_SUM) {
+        return {a(), c, root, all, op};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI AllReduce
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1712,12 +1746,12 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_const_view const& a, mpi::communicator c = {},
-                                                                     int root = 0, MPI_Op op = MPI_SUM) {
-    return {a(), c, root, true, op};
-   }
+      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0,
+                                                                        MPI_Op op = MPI_SUM) {
+        return {a(), c, root, true, op};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI Scatter
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1731,12 +1765,11 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf_const_view const& a, mpi::communicator c = {},
-                                                                   int root = 0) {
-    return {a(), c, root, true};
-   }
+      friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf_const_view const &a, mpi::communicator c = {}, int root = 0) {
+        return {a(), c, root, true};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI Gather
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1750,12 +1783,12 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf_const_view const& a, mpi::communicator c = {}, int root = 0,
-                                                                 bool all = false) {
-    return {a(), c, root, all};
-   }
+      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf_const_view const &a, mpi::communicator c = {}, int root = 0,
+                                                                    bool all = false) {
+        return {a(), c, root, all};
+      }
 
-   /**
+      /**
      * Initiate (lazy) MPI AllGather
      *
      * When the returned object is used at the RHS of operator = or in a constructor of a gf,
@@ -1769,38 +1802,46 @@ namespace triqs {
      *
      */
 
-   friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf_const_view const& a, mpi::communicator c = {},
-                                                                     int root = 0) {
-    return {a(), c, root, true};
-   }
-  };
+      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf_const_view const &a, mpi::communicator c = {}, int root = 0) {
+        return {a(), c, root, true};
+      }
+    };
 
 /*------------------------------------------------------------------------------------------------------
  *                                     View  assignment
  *-----------------------------------------------------------------------------------------------------*/
 
-  // delegate = so that I can overload it for specific RHS...
-  template <typename M, typename T, typename RHS>
-  std14::enable_if_t<!arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const& rhs) {
-   if (!(g.mesh() == rhs.mesh()))
-    TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh" << g.mesh() << " vs " << rhs.mesh();
-   for (auto const& w : g.mesh())
-    g[w]           = rhs[w];
-   g.singularity() = rhs.singularity();
-  }
+#ifdef __cpp_if_constexpr
+    template <typename M, typename T, typename RHS> void triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
+      if constexpr (arrays::is_scalar<RHS>::value) {
+        for (auto const &w : g.mesh()) g[w] = rhs;
+        g.singularity() = rhs;
+      } else {
+        if (!(g.mesh() == rhs.mesh())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh" << g.mesh() << " vs " << rhs.mesh();
+        for (auto const &w : g.mesh()) g[w] = rhs[w];
+        g.singularity() = rhs.singularity();
+      }
+    }
+#else
+    // delegate = so that I can overload it for specific RHS...
+    template <typename M, typename T, typename RHS>
+    std14::enable_if_t<!arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
+      if (!(g.mesh() == rhs.mesh())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh" << g.mesh() << " vs " << rhs.mesh();
+      for (auto const &w : g.mesh()) g[w] = rhs[w];
+      g.singularity() = rhs.singularity();
+    }
 
-  template <typename M, typename T, typename RHS>
-  std14::enable_if_t<arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const& rhs) {
-   for (auto const& w : g.mesh())
-    g[w]           = rhs;
-   g.singularity() = rhs;
-  }
- }
-}
+    template <typename M, typename T, typename RHS>
+    std14::enable_if_t<arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
+      for (auto const &w : g.mesh()) g[w] = rhs;
+      g.singularity() = rhs;
+    }
+#endif
+  } // namespace gfs
+} // namespace triqs
 /*------------------------------------------------------------------------------------------------------
  *             Delete std::swap for views, as for arrays
  *-----------------------------------------------------------------------------------------------------*/
 namespace std {
- template <typename Var, typename Target>
- void swap(triqs::gfs::gf_view<Var, Target>& a, triqs::gfs::gf_view<Var, Target>& b) = delete;
+  template <typename Var, typename Target> void swap(triqs::gfs::gf_view<Var, Target> &a, triqs::gfs::gf_view<Var, Target> &b) = delete;
 }

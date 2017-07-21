@@ -132,6 +132,8 @@ namespace triqs {
    using data_const_view_t = typename data_regular_t::const_view_type;
    using data_t            = data_MAKO_RVC_t;
 
+   using memory_layout_t   = memory_layout<arity + Target::rank>;
+
    using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
    using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
    using zero_view_t       = zero_const_view_t;
@@ -142,6 +144,14 @@ namespace triqs {
    using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
    using singularity_t             = _singularity_MAKO_RVC_t;
 
+   using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued(Target{})>;
+
+   struct target_and_shape_t{
+     target_shape_t _shape; 
+     using target_t = Target;
+     target_shape_t const & shape() const { return _shape; }
+   }; 
+
    // ------------- Accessors -----------------------------
 
    /// Access the  mesh
@@ -149,16 +159,26 @@ namespace triqs {
    domain_t const &domain() const { return _mesh.domain(); }
 
    /// Direct access to the data array
-   data_t &data() { return _data; }
+   data_t &data() & { return _data; }
 
    /// Const version
-   data_t const &data() const { return _data; }
+   data_t const &data() const & { return _data; }
+
+   /// Move data in case of rvalue gf
+   data_t data() && { return std::move(_data); }
 
    /// Shape of the target
-   auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
+   //auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
+   target_and_shape_t target() const { 
+     return target_and_shape_t{ _data.shape().template front_mpop<arity + is_tail_valued(Target{})>() }; } // drop arity dims
+
+   auto target_shape() const { return target().shape(); } // drop arity dims
 
    /// Shape of the data
-   auto data_shape() const { return _data.shape(); }
+   auto const & data_shape() const { return _data.shape(); }
+
+   /// Memorylayout of the data
+   auto const & get_memory_layout() const { return _data.indexmap().get_memory_layout(); }
 
    ///
    zero_t const &get_zero() const { return _zero; }
@@ -250,7 +270,6 @@ namespace triqs {
    // mako %if RVC == 'regular' :
 
    private:
-   using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued(Target{})>;
 
    template <typename U> static auto make_data_shape(U, mesh_t const &m, target_shape_t const &shap) {
     return join(m.size_of_components(), shap);
@@ -264,6 +283,10 @@ namespace triqs {
    // Construct from the data. Using the "pass by value" pattern + move
    gf(mesh_t m, data_t dat, singularity_t si, indices_t ind)
       : gf(impl_tag{}, std::move(m), std::move(dat), std::move(si), std::move(ind)) {}
+
+   // Construct from the data. Using the "pass by value" pattern + move
+   gf(mesh_t m, data_t dat, arrays::memory_layout<arity + Target::rank> const &ml, singularity_t si, indices_t ind)
+      : gf(impl_tag{}, std::move(m), data_t(dat, ml), std::move(si), std::move(ind)) {}
 
    // Construct from mesh, target_shape, memory order
    gf(mesh_t m, target_shape_t shape, arrays::memory_layout<arity + Target::rank> const &ml, indices_t const &ind = indices_t{})

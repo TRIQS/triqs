@@ -30,6 +30,7 @@
 
 // gf class and its mechanisms
 #include "./gfs/gf/gf.hxx"
+#include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
 #include "./gfs/gf/gf_expr.hpp"
 
