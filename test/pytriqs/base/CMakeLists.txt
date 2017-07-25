@@ -11,6 +11,7 @@ add_python_test(operator_python2)
 
 # Some basic HDF IO stuff
 add_python_test(hdf5_io)
+add_python_test(hdf5_io_types)
 
 # Greens functions
 add_python_test(gf_init)
