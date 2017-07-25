@@ -4,78 +4,76 @@
 #pragma once
 
 namespace triqs {
- namespace gfs {
+  namespace gfs {
 
-  template <typename V, typename T> auto fourier(block_gf<V, T> const& g) {
-   return make_lazy_transform([](auto&& x) { return fourier(x); }, g);
-  };
+    template <typename V, typename T> auto fourier(block_gf<V, T> const &g) {
+      return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto fourier(block_gf<V, T>& g) {
-   return make_lazy_transform([](auto&& x) { return fourier(x); }, g);
-  };
+    template <typename V, typename T> auto fourier(block_gf<V, T> &g) {
+      return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto fourier(block_gf_view<V, T> g) {
-   return make_lazy_transform([](auto&& x) { return fourier(x); }, g);
-  };
+    template <typename V, typename T> auto fourier(block_gf_view<V, T> g) {
+      return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto fourier(block_gf_const_view<V, T> g) {
-   return make_lazy_transform([](auto&& x) { return fourier(x); }, g);
-  };
+    template <typename V, typename T> auto fourier(block_gf_const_view<V, T> g) {
+      return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto fourier(block2_gf<V, T> const& g) {
-   return make_lazy_transform([](auto&& x) { return fourier(x); }, g);
-  };
+    template <typename V, typename T> auto fourier(block2_gf<V, T> const &g) {
+      return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto fourier(block2_gf<V, T>& g) {
-   return make_lazy_transform([](auto&& x) { return fourier(x); }, g);
-  };
+    template <typename V, typename T> auto fourier(block2_gf<V, T> &g) {
+      return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto fourier(block2_gf_view<V, T> g) {
-   return make_lazy_transform([](auto&& x) { return fourier(x); }, g);
-  };
+    template <typename V, typename T> auto fourier(block2_gf_view<V, T> g) {
+      return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto fourier(block2_gf_const_view<V, T> g) {
-   return make_lazy_transform([](auto&& x) { return fourier(x); }, g);
-  };
+    template <typename V, typename T> auto fourier(block2_gf_const_view<V, T> g) {
+      return make_lazy_transform([](auto &&x) { return fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto inverse_fourier(block_gf<V, T> const& g) {
-   return make_lazy_transform([](auto&& x) { return inverse_fourier(x); }, g);
-  };
+    template <typename V, typename T> auto inverse_fourier(block_gf<V, T> const &g) {
+      return make_lazy_transform([](auto &&x) { return inverse_fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto inverse_fourier(block_gf<V, T>& g) {
-   return make_lazy_transform([](auto&& x) { return inverse_fourier(x); }, g);
-  };
+    template <typename V, typename T> auto inverse_fourier(block_gf<V, T> &g) {
+      return make_lazy_transform([](auto &&x) { return inverse_fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto inverse_fourier(block_gf_view<V, T> g) {
-   return make_lazy_transform([](auto&& x) { return inverse_fourier(x); }, g);
-  };
+    template <typename V, typename T> auto inverse_fourier(block_gf_view<V, T> g) {
+      return make_lazy_transform([](auto &&x) { return inverse_fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto inverse_fourier(block_gf_const_view<V, T> g) {
-   return make_lazy_transform([](auto&& x) { return inverse_fourier(x); }, g);
-  };
+    template <typename V, typename T> auto inverse_fourier(block_gf_const_view<V, T> g) {
+      return make_lazy_transform([](auto &&x) { return inverse_fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto inverse_fourier(block2_gf<V, T> const& g) {
-   return make_lazy_transform([](auto&& x) { return inverse_fourier(x); }, g);
-  };
+    template <typename V, typename T> auto inverse_fourier(block2_gf<V, T> const &g) {
+      return make_lazy_transform([](auto &&x) { return inverse_fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto inverse_fourier(block2_gf<V, T>& g) {
-   return make_lazy_transform([](auto&& x) { return inverse_fourier(x); }, g);
-  };
+    template <typename V, typename T> auto inverse_fourier(block2_gf<V, T> &g) {
+      return make_lazy_transform([](auto &&x) { return inverse_fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto inverse_fourier(block2_gf_view<V, T> g) {
-   return make_lazy_transform([](auto&& x) { return inverse_fourier(x); }, g);
-  };
+    template <typename V, typename T> auto inverse_fourier(block2_gf_view<V, T> g) {
+      return make_lazy_transform([](auto &&x) { return inverse_fourier(x); }, g);
+    };
 
-  template <typename V, typename T> auto inverse_fourier(block2_gf_const_view<V, T> g) {
-   return make_lazy_transform([](auto&& x) { return inverse_fourier(x); }, g);
-  };
+    template <typename V, typename T> auto inverse_fourier(block2_gf_const_view<V, T> g) {
+      return make_lazy_transform([](auto &&x) { return inverse_fourier(x); }, g);
+    };
 
-  // FIXME c++17
-  //#define MAP_BGF_17(FUNC)
-  ////template <typename G> requires(is_block_gf_or_view<G>()) auto FUNC(G const& g) {
-  ////lazy_transform_t{[](auto&& x) { return FUNC(x); }, g}; //}
-  // MAP_BGF(fourier);
-  // MAP_BGF(inverse_fourier);
+    // FIXME c++17
+    //#define MAP_BGF_17(FUNC)                                                                                                          //template <typename G> requires(is_block_gf_or_view<G>()) auto FUNC(G const& g) {                                                  //lazy_transform_t{[](auto&& x) { return FUNC(x); }, g};                                                                          //}
+    // MAP_BGF(fourier);
+    // MAP_BGF(inverse_fourier);
 
- } // namespace gfs
+  } // namespace gfs
 } // namespace triqs

@@ -43,7 +43,7 @@ namespace arrays {
    TRIQS_RUNTIME_ERROR << "Return rank is " << Rf << " but " << indices_groups.size() << " indices are given";
   
   /// First check indices are contiguous in memory
-  auto mem_pos = a.indexmap().get_memory_layout().get_memory_positions();
+  auto mem_pos = a.indexmap().memory_layout().get_memory_positions();
   for (auto const& gr : indices_groups) {
    auto gr2 = std::vector<int>(gr.size());
    for (int i = 0; i < int(gr.size()); ++i) gr2[i] = mem_pos[gr[i]];

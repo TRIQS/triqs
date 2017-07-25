@@ -154,7 +154,7 @@ namespace arrays {
   template <typename T>
   vector(const T& X,
          std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value,
-                            memory_layout<1>> ml = memory_layout<1> {})
+                            memory_layout_t<1>> ml = memory_layout_t<1> {})
      : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
    triqs_arrays_assign_delegation(*this, X);
   }
@@ -167,7 +167,7 @@ namespace arrays {
   // build from a init_list
   template <typename T>
   vector(std::initializer_list<T> const& l)
-     : IMPL_TYPE(indexmap_type(mini_vector<size_t, 1>(l.size()), memory_layout<1>{})) {
+     : IMPL_TYPE(indexmap_type(mini_vector<size_t, 1>(l.size()), memory_layout_t<1>{})) {
    size_t i = 0;
    for (auto const& x : l) (*this)(i++) = x;
   }

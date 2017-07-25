@@ -23,2241 +23,2197 @@
  ******************************************************************************/
 #pragma once
 namespace triqs {
- namespace gfs {
+  namespace gfs {
 
-  using triqs::utility::factory;
-  using triqs::mpi::mpi_reduce;
+    using triqs::utility::factory;
+    using triqs::mpi::mpi_reduce;
 
-  /*----------------------------------------------------------
+    /*----------------------------------------------------------
    *   Declaration of main types : gf, gf_view, gf_const_view
    *--------------------------------------------------------*/
-  template <typename Var, typename Target = matrix_valued> class block_gf;
-  template <typename Var, typename Target = matrix_valued> class block_gf_view;
-  template <typename Var, typename Target = matrix_valued> class block_gf_const_view;
+    template <typename Var, typename Target = matrix_valued> class block_gf;
+    template <typename Var, typename Target = matrix_valued> class block_gf_view;
+    template <typename Var, typename Target = matrix_valued> class block_gf_const_view;
 
-  template <typename Var, typename Target = matrix_valued> class block2_gf;
-  template <typename Var, typename Target = matrix_valued> class block2_gf_view;
-  template <typename Var, typename Target = matrix_valued> class block2_gf_const_view;
+    template <typename Var, typename Target = matrix_valued> class block2_gf;
+    template <typename Var, typename Target = matrix_valued> class block2_gf_view;
+    template <typename Var, typename Target = matrix_valued> class block2_gf_const_view;
 
-  /// ---------------------------  traits ---------------------------------
+    /// ---------------------------  traits ---------------------------------
 
-  // Is G a block_gf, block_gf_view, block_gf_const_view
-  // is_block_gf_or_view<G> is true iif G is a block_gf or block2_gf
-  // is_block_gf_or_view<G,1> is true iff G is a block_gf
-  // is_block_gf_or_view<G,2> is true iff G is a block2_gf
-  //
-  template <typename G, int n> struct _is_block_gf_or_view : std::false_type {};
+    // Is G a block_gf, block_gf_view, block_gf_const_view
+    // is_block_gf_or_view<G> is true iif G is a block_gf or block2_gf
+    // is_block_gf_or_view<G,1> is true iff G is a block_gf
+    // is_block_gf_or_view<G,2> is true iff G is a block2_gf
+    //
+    template <typename G, int n> struct _is_block_gf_or_view : std::false_type {};
 
-  template <typename G, int n = 0> using is_block_gf_or_view = _is_block_gf_or_view<std14::decay_t<G>, n>;
+    template <typename G, int n = 0> using is_block_gf_or_view = _is_block_gf_or_view<std14::decay_t<G>, n>;
 
-  template <typename G>
-  struct _is_block_gf_or_view<G, 0>
-     : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value || is_block_gf_or_view<G, 2>::value> {};
+    template <typename G>
+    struct _is_block_gf_or_view<G, 0> : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value || is_block_gf_or_view<G, 2>::value> {};
 
-  template <typename V, typename T> struct _is_block_gf_or_view<block_gf<V, T>, 1> : std::true_type {};
-  template <typename V, typename T> struct _is_block_gf_or_view<block_gf_view<V, T>, 1> : std::true_type {};
-  template <typename V, typename T> struct _is_block_gf_or_view<block_gf_const_view<V, T>, 1> : std::true_type {};
-  template <typename V, typename T> struct _is_block_gf_or_view<block2_gf<V, T>, 2> : std::true_type {};
-  template <typename V, typename T> struct _is_block_gf_or_view<block2_gf_view<V, T>, 2> : std::true_type {};
-  template <typename V, typename T> struct _is_block_gf_or_view<block2_gf_const_view<V, T>, 2> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf_or_view<block_gf<V, T>, 1> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf_or_view<block_gf_view<V, T>, 1> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf_or_view<block_gf_const_view<V, T>, 1> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf_or_view<block2_gf<V, T>, 2> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf_or_view<block2_gf_view<V, T>, 2> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf_or_view<block2_gf_const_view<V, T>, 2> : std::true_type {};
 
-  // Given a gf G, the corresponding block
-  template <typename G> using get_variable_t         = typename std14::decay_t<G>::variable_t;
-  template <typename G> using get_target_t           = typename std14::decay_t<G>::target_t;
-  template <typename G> using block_gf_of            = block_gf<get_variable_t<G>, get_target_t<G>>;
-  template <typename G> using block_gf_view_of       = block_gf_view<get_variable_t<G>, get_target_t<G>>;
-  template <typename G> using block_gf_const_view_of = block_gf_const_view<get_variable_t<G>, get_target_t<G>>;
+    // Given a gf G, the corresponding block
+    template <typename G> using get_variable_t         = typename std14::decay_t<G>::variable_t;
+    template <typename G> using get_target_t           = typename std14::decay_t<G>::target_t;
+    template <typename G> using block_gf_of            = block_gf<get_variable_t<G>, get_target_t<G>>;
+    template <typename G> using block_gf_view_of       = block_gf_view<get_variable_t<G>, get_target_t<G>>;
+    template <typename G> using block_gf_const_view_of = block_gf_const_view<get_variable_t<G>, get_target_t<G>>;
 
-  // The trait that "marks" the Green function
-  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(BlockGreenFunction);
+    // The trait that "marks" the Green function
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(BlockGreenFunction);
 
-  // ------------- Helper Types -----------------------------
+    // ------------- Helper Types -----------------------------
 
-  template <typename Lambda, typename T> struct lazy_transform_t {
-   Lambda lambda;
-   T value;
-  };
+    template <typename Lambda, typename T> struct lazy_transform_t {
+      Lambda lambda;
+      T value;
+    };
 
-  template <typename Lambda, typename T> lazy_transform_t<Lambda, T> make_lazy_transform(Lambda&& l, T&& x) {
-   return {std::forward<Lambda>(l), std::forward<T>(x)};
-  }
+    template <typename Lambda, typename T> lazy_transform_t<Lambda, T> make_lazy_transform(Lambda &&l, T &&x) {
+      return {std::forward<Lambda>(l), std::forward<T>(x)};
+    }
 
-  /// ---------------------------  details  ---------------------------------
+    /// ---------------------------  details  ---------------------------------
 
-  namespace details {
-   inline auto _make_block_names1(int n) {
-    std::vector<std::string> r(n);
-    for (int i = 0; i < n; ++i)
-     r[i] = std::to_string(i);
-    return r;
-   }
-   inline std::vector<std::vector<std::string>> _make_block_names2(int n, int p) {
-    return {_make_block_names1(n), _make_block_names1(p)};
-   }
-  } // namespace details
+    namespace details {
+      inline auto _make_block_names1(int n) {
+        std::vector<std::string> r(n);
+        for (int i = 0; i < n; ++i) r[i] = std::to_string(i);
+        return r;
+      }
+      inline std::vector<std::vector<std::string>> _make_block_names2(int n, int p) { return {_make_block_names1(n), _make_block_names1(p)}; }
+    } // namespace details
 
-  /// ---------------------------  implementation  ---------------------------------
+    /// ---------------------------  implementation  ---------------------------------
 
-  // ----------------------  block_gf -----------------------------------------
-  /**
+    // ----------------------  block_gf -----------------------------------------
+    /**
    * block_gf
    */
-  template <typename Var, typename Target> class block_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
-   public:
-   static constexpr bool is_view  = false;
-   static constexpr bool is_const = false;
-   static constexpr int arity     = 1;
+      public:
+      static constexpr bool is_view  = false;
+      static constexpr bool is_const = false;
+      static constexpr int arity     = 1;
 
-   using variable_t = Var;
-   using target_t   = Target;
+      using variable_t = Var;
+      using target_t   = Target;
 
-   using regular_type      = block_gf<Var, Target>;
-   using mutable_view_type = block_gf_view<Var, Target>;
-   using view_type         = block_gf_view<Var, Target>;
-   using const_view_type   = block_gf_const_view<Var, Target>;
+      using regular_type      = block_gf<Var, Target>;
+      using mutable_view_type = block_gf_view<Var, Target>;
+      using view_type         = block_gf_view<Var, Target>;
+      using const_view_type   = block_gf_const_view<Var, Target>;
 
-   using g_t           = gf<Var, Target>;
-   using data_t        = std::vector<g_t>;
-   using block_names_t = std::vector<std::string>;
+      using g_t           = gf<Var, Target>;
+      using data_t        = std::vector<g_t>;
+      using block_names_t = std::vector<std::string>;
 
-   // ------------- Accessors -----------------------------
+      // ------------- Accessors -----------------------------
 
-   /// Direct access to the data array
-   data_t& data() { return _glist; }
+      /// Direct access to the data array
+      data_t &data() { return _glist; }
 
-   /// Const version
-   data_t const& data() const { return _glist; }
+      /// Const version
+      data_t const &data() const { return _glist; }
 
-   ///
-   block_names_t const& block_names() const { return _block_names; }
+      ///
+      block_names_t const &block_names() const { return _block_names; }
 
-   int size() const { return _glist.size(); }
+      int size() const { return _glist.size(); }
 
-   // backwd compat only
-   // TO BE REMOVED IN FUTURE RELEASE
-   //
-   struct __dom {
-    block_gf const* _g;
-    int size() const { return _g->size(); }
-    auto const& names() const { return _g->block_names(); }
-   };
-   TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
-   __dom domain() const { return {this}; }
-   TRIQS_DEPRECATED(
-       "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
-       "x<g.size(); ++x)")
-   arrays::range mesh() const { return arrays::range{0, size()}; }
+      // backwd compat only
+      // TO BE REMOVED IN FUTURE RELEASE
+      //
+      struct __dom {
+        block_gf const *_g;
+        int size() const { return _g->size(); }
+        auto const &names() const { return _g->block_names(); }
+      };
+      TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
+      __dom domain() const { return {this}; }
+      TRIQS_DEPRECATED(
+         "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
+         "x<g.size(); ++x)")
+      arrays::range mesh() const { return arrays::range{0, size()}; }
 
-   std::string name;
+      std::string name;
 
-   private:
-   block_names_t _block_names;
-   data_t _glist;
+      private:
+      block_names_t _block_names;
+      data_t _glist;
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   struct impl_tag {};
-   template <typename G>
-   block_gf(impl_tag, G&& x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+      struct impl_tag {};
+      template <typename G> block_gf(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
-   public:
-   /// Copy constructor
-   block_gf(block_gf const& x) = default;
+      public:
+      /// Copy constructor
+      block_gf(block_gf const &x) = default;
 
-   /// Move constructor
-   block_gf(block_gf&&) = default;
+      /// Move constructor
+      block_gf(block_gf &&) = default;
 
-   /// Construct from block_names and list of gf
-   block_gf(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {
-    if (_glist.size() != _block_names.size())
-     TRIQS_RUNTIME_ERROR << "block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
-   }
+      /// Construct from block_names and list of gf
+      block_gf(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {
+        if (_glist.size() != _block_names.size())
+          TRIQS_RUNTIME_ERROR << "block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
+      }
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   /// Construct an empty Green function (with empty array).
-   block_gf() = default;
+      /// Construct an empty Green function (with empty array).
+      block_gf() = default;
 
-   /// From a block_gf_view of the same kind
-   block_gf(view_type const& g) : block_gf(impl_tag{}, g) {}
+      /// From a block_gf_view of the same kind
+      block_gf(view_type const &g) : block_gf(impl_tag{}, g) {}
 
-   /// From a const_gf_view of the same kind
-   block_gf(const_view_type const& g) : block_gf(impl_tag{}, g) {}
+      /// From a const_gf_view of the same kind
+      block_gf(const_view_type const &g) : block_gf(impl_tag{}, g) {}
 
-   /// Construct from anything which models BlockGreenFunction.
-   // TODO: We would like to refine this, G should have the same mesh, target, at least ...
-   template <typename G> block_gf(G const& x, std14::enable_if_t<BlockGreenFunction<G>::value>* dummy = 0) : block_gf() {
-    *this = x;
-   }
+      /// Construct from anything which models BlockGreenFunction.
+      // TODO: We would like to refine this, G should have the same mesh, target, at least ...
+      template <typename G> block_gf(G const &x, std14::enable_if_t<BlockGreenFunction<G>::value> *dummy = 0) : block_gf() { *this = x; }
 
-   /// Construct from the mpi lazy class of the implementation class, cf mpi section
-   // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
-   template <typename Tag> block_gf(mpi_lazy<Tag, block_gf_const_view<Var, Target>> x) : block_gf() { operator=(x); }
+      /// Construct from the mpi lazy class of the implementation class, cf mpi section
+      // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
+      template <typename Tag> block_gf(mpi_lazy<Tag, block_gf_const_view<Var, Target>> x) : block_gf() { operator=(x); }
 
-   /// Construct from a vector of gf
-   block_gf(data_t V) : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
+      /// Construct from a vector of gf
+      block_gf(data_t V) : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
 
-   /// Constructs a n block
-   block_gf(int n) : block_gf(data_t(n)) {}
+      /// Constructs a n block
+      block_gf(int n) : block_gf(data_t(n)) {}
 
-   /// Constructs a n block with copies of g.
-   block_gf(int n, g_t const& g) : block_gf(data_t(n, g)) {}
+      /// Constructs a n block with copies of g.
+      block_gf(int n, g_t const &g) : block_gf(data_t(n, g)) {}
 
-   /// Construct from the vector of names and one gf to be copied
-   block_gf(block_names_t b, g_t const& g) : _block_names(std::move(b)), _glist(_block_names.size(), g) {}
+      /// Construct from the vector of names and one gf to be copied
+      block_gf(block_names_t b, g_t const &g) : _block_names(std::move(b)), _glist(_block_names.size(), g) {}
 
-   /// Construct from the vector of names
-   block_gf(block_names_t b) : _block_names(std::move(b)), _glist(_block_names.size()) {}
+      /// Construct from the vector of names
+      block_gf(block_names_t b) : _block_names(std::move(b)), _glist(_block_names.size()) {}
 
-   /// ---------------  Operator = --------------------
-   private:
-   template <typename RHS> void _assign_impl(RHS&& rhs) {
+      /// ---------------  Operator = --------------------
+      private:
+      template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-    for (int w = 0; w < size(); ++w) {
-     _glist[w]       = rhs[w];
-     _block_names[w] = rhs.block_names()[w];
-    }
-   }
+        for (int w = 0; w < size(); ++w) {
+          _glist[w]       = rhs[w];
+          _block_names[w] = rhs.block_names()[w];
+        }
+      }
 
-   public:
-   /// Copy assignment
-   block_gf& operator=(block_gf const& rhs) = default;
+      public:
+      /// Copy assignment
+      block_gf &operator=(block_gf const &rhs) = default;
 
-   /// Move assignment
-   block_gf& operator=(block_gf&& rhs) = default;
+      /// Move assignment
+      block_gf &operator=(block_gf &&rhs) = default;
 
-   /**
+      /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
     * @param l The lazy object returned by mpi_reduce
     */
-   block_gf& operator=(mpi_lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
-    _block_names = l.rhs.block_names();
-    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
-    return *this;
-    // mpi_reduce of vector produces a new vector of gf, so it is fine here
-   }
+      block_gf &operator=(mpi_lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
+        _block_names = l.rhs.block_names();
+        _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+        return *this;
+        // mpi_reduce of vector produces a new vector of gf, so it is fine here
+      }
 
-   /**
-    * Assignment operator
+      /**
+   * Assignment operator
+   *
+   * @tparam RHS Type of the right hand side rhs
+   *
+   *             RHS can be anything modeling the gf concept TBW
+   *             In particular lazy expression with Green functions
+   * @param rhs
+   * @example
+   *
+   * The assignment resizes the mesh and the data, invalidating all pointers on them.
+   *
+   */
+      template <typename RHS> block_gf &operator=(RHS &&rhs) {
+        _glist.resize(rhs.size());
+        _block_names.resize(rhs.size());
+        _assign_impl(rhs);
+        return *this;
+      }
+
+      // ---------------  Rebind --------------------
+      /// Rebind
+      void rebind(block_gf x) noexcept {
+        _block_names = x._block_names;
+        _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
+        name         = x.name;
+      }
+
+      public:
+      // ------------- All the call operators without lazy arguments -----------------------------
+
+      // First, a simple () returns a view, like for an array...
+      /// Makes a const view of *this
+      const_view_type operator()() const { return *this; }
+      /// Makes a view of *this if it is non const
+      view_type operator()() { return *this; }
+
+      decltype(auto) operator()(int n) const { return _glist[n]; }
+
+      // ------------- Call with lazy arguments -----------------------------
+
+      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
+      template <typename... Args> clef::make_expr_call_t<block_gf &, Args...> operator()(Args &&... args) & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block_gf const &, Args...> operator()(Args &&... args) const & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block_gf, Args...> operator()(Args &&... args) && {
+        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      }
+      // ------------- All the [] operators without lazy arguments -----------------------------
+
+      decltype(auto) operator[](int n) const { return _glist[n]; }
+      decltype(auto) operator[](int n) { return _glist[n]; }
+
+      // ------------- [] with lazy arguments -----------------------------
+
+      template <typename Arg> clef::make_expr_subscript_t<block_gf const &, Arg> operator[](Arg &&arg) const & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block_gf &, Arg> operator[](Arg &&arg) & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block_gf, Arg> operator[](Arg &&arg) && {
+        return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
+      }
+
+      //----------------------------- HDF5 -----------------------------
+
+      /// HDF5 name
+      friend std::string get_triqs_hdf5_data_scheme(block_gf const &g) { return "BlockGf"; }
+
+      /// Write into HDF5
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf const &g) {
+        auto gr = fg.create_group(subgroup_name);
+        gr.write_triqs_hdf5_data_scheme(g);
+
+        h5_write(gr, "block_names", g.block_names());
+        for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
+      }
+
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, block_gf &g) {
+        auto gr = fg.open_group(subgroup_name);
+        // Check the attribute or throw
+        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
+        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        if (tag_file != tag_expected)
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+                              << " while I expected " << tag_expected;
+        auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
+        int s            = block_names.size();
+        g._glist.resize(s);
+        g._block_names = block_names;
+        for (int i = 0; i < s; ++i) h5_read(gr, block_names[i], g._glist[i]);
+      }
+
+      //-----------------------------  BOOST Serialization -----------------------------
+      friend class boost::serialization::access;
+      /// The serialization as required by Boost
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &_glist;
+        ar &_block_names;
+        ar &name;
+      }
+
+      //----------------------------- print  -----------------------------
+
+      /// IO
+      friend std::ostream &operator<<(std::ostream &out, block_gf const &x) { return out << "block_gf"; }
+
+      // -------------------------------  iterator  --------------------------------------------------
+
+      template <bool is_const> class iterator_impl {
+        std::conditional_t<is_const, const block_gf *, block_gf *> bgf = NULL;
+        int n;
+
+        public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type        = g_t;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = std::conditional_t<is_const, const g_t *, g_t *>;
+        using reference         = std::conditional_t<is_const, g_t const &, g_t &>;
+        using block_gf_ref      = std::conditional_t<is_const, block_gf const &, block_gf &>;
+
+        iterator_impl() = default;
+        iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+        iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
+
+        operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
+
+        reference operator*() { return (*bgf)[n]; }
+        reference operator->() { return operator*(); }
+
+        iterator_impl &operator++() {
+          ++n;
+          return *this;
+        }
+
+        iterator_impl operator++(int) {
+          auto it = *this;
+          ++n;
+          return it;
+        }
+
+        bool operator==(iterator_impl const &other) const { return ((bgf == other.bgf) && (n == other.n)); }
+        bool operator!=(iterator_impl const &other) const { return (!operator==(other)); }
+      };
+
+      using iterator       = iterator_impl<false>;
+      using const_iterator = iterator_impl<true>;
+
+      //------------
+
+      iterator begin() { return {*this, false}; }
+      const_iterator begin() const { return {*this, false}; }
+      iterator end() { return {*this, true}; }
+      const_iterator end() const { return {*this, true}; }
+      auto cbegin() { return const_view_type(*this).begin(); }
+      auto cend() { return const_view_type(*this).end(); }
+    };
+
+    //----------------------------- MPI  -----------------------------
+
+    /**
+    * Initiate (lazy) MPI Bcast
     *
-    * @tparam RHS Type of the right hand side rhs
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Bcast operation is performed.
     *
-    *             RHS can be anything modeling the gf concept TBW
-    *             In particular lazy expression with Green functions
-    * @param rhs
-    * @example
-    *
-    * The assignment resizes the mesh and the data, invalidating all pointers on them.
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-   template <typename RHS> block_gf& operator=(RHS&& rhs) {
-    _glist.resize(rhs.size());
-    _block_names.resize(rhs.size());
-    _assign_impl(rhs);
-    return *this;
-   }
 
-   // ---------------  Rebind --------------------
-   /// Rebind
-   void rebind(block_gf x) noexcept {
-    _block_names = x._block_names;
-    _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
-    name         = x.name;
-   }
-
-   public:
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   decltype(auto) operator()(int n) const { return _glist[n]; }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<block_gf&, Args...> operator()(Args&&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block_gf const&, Args...> operator()(Args&&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block_gf, Args...> operator()(Args&&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-   }
-   // ------------- All the [] operators without lazy arguments -----------------------------
-
-   decltype(auto) operator[](int n) const { return _glist[n]; }
-   decltype(auto) operator[](int n) { return _glist[n]; }
-
-   // ------------- [] with lazy arguments -----------------------------
-
-   template <typename Arg> clef::make_expr_subscript_t<block_gf const&, Arg> operator[](Arg&& arg) const & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block_gf&, Arg> operator[](Arg&& arg) & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block_gf, Arg> operator[](Arg&& arg) && {
-    return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-   }
-
-   //----------------------------- HDF5 -----------------------------
-
-   /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(block_gf const& g) { return "BlockGf"; }
-
-   /// Write into HDF5
-   friend void h5_write(h5::group fg, std::string const& subgroup_name, block_gf const& g) {
-    auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
-
-    h5_write(gr, "block_names", g.block_names());
-    for (int i = 0; i < g.size(); ++i)
-     h5_write(gr, g.block_names()[i], g.data()[i]);
-   }
-
-   /// Read from HDF5
-   friend void h5_read(h5::group fg, std::string const& subgroup_name, block_gf& g) {
-    auto gr = fg.open_group(subgroup_name);
-    // Check the attribute or throw
-    auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected = get_triqs_hdf5_data_scheme(g);
-    if (tag_file != tag_expected)
-     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
-                         << " while I expected " << tag_expected;
-    auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
-    int s            = block_names.size();
-    g._glist.resize(s);
-    g._block_names = block_names;
-    for (int i = 0; i < s; ++i)
-     h5_read(gr, block_names[i], g._glist[i]);
-   }
-
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   /// The serialization as required by Boost
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-    ar& _glist;
-    ar& _block_names;
-    ar& name;
-   }
-
-   //----------------------------- print  -----------------------------
-
-   /// IO
-   friend std::ostream& operator<<(std::ostream& out, block_gf const& x) { return out << "block_gf"; }
-
-   // -------------------------------  iterator  --------------------------------------------------
-
-   template <bool is_const> class iterator_impl {
-    std::conditional_t<is_const, const block_gf*, block_gf*> bgf = NULL;
-    int n;
-
-    public:
-    using iterator_category = std::forward_iterator_tag;
-    using value_type        = g_t;
-    using difference_type   = std::ptrdiff_t;
-    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
-    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
-    using block_gf_ref      = std::conditional_t<is_const, block_gf const&, block_gf&>;
-
-    iterator_impl() = default;
-    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
-    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
-
-    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
-
-    reference operator*() { return (*bgf)[n]; }
-    reference operator->() { return operator*(); }
-
-    iterator_impl& operator++() {
-     ++n;
-     return *this;
+    template <typename V, typename T> void mpi_broadcast(block_gf<V, T> &g, mpi::communicator c = {}, int root = 0) {
+      // Shall we bcast mesh ?
+      mpi_broadcast(g.data(), c, root);
     }
 
-    iterator_impl operator++(int) {
-     auto it = *this;
-     ++n;
-     return it;
+    /**
+    * Initiate (lazy) MPI Reduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Reduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
+
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                     bool all = false, MPI_Op op = MPI_SUM) {
+      return {a(), c, root, all, op};
     }
 
-    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
-   };
+    /**
+    * Initiate (lazy) MPI AllReduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI AllReduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
 
-   using iterator       = iterator_impl<false>;
-   using const_iterator = iterator_impl<true>;
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                         MPI_Op op = MPI_SUM) {
+      return {a(), c, root, true, op};
+    }
 
-   //------------
-
-   iterator begin() { return {*this, false}; }
-   const_iterator begin() const { return {*this, false}; }
-   iterator end() { return {*this, true}; }
-   const_iterator end() const { return {*this, true}; }
-   auto cbegin() { return const_view_type(*this).begin(); }
-   auto cend() { return const_view_type(*this).end(); }
-  };
-
-  //----------------------------- MPI  -----------------------------
-
-  /**
-   * Initiate (lazy) MPI Bcast
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Bcast operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T> void mpi_broadcast(block_gf<V, T>& g, mpi::communicator c = {}, int root = 0) {
-   // Shall we bcast mesh ?
-   mpi_broadcast(g.data(), c, root);
-  }
-
-  /**
-   * Initiate (lazy) MPI Reduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Reduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf<V, T> const& a, mpi::communicator c = {},
-                                                                   int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, all, op};
-  }
-
-  /**
-   * Initiate (lazy) MPI AllReduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI AllReduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf<V, T> const& a, mpi::communicator c = {},
-                                                                       int root = 0, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, true, op};
-  }
-
-  // ----------------------  block_gf_view -----------------------------------------
-  /**
+    // ----------------------  block_gf_view -----------------------------------------
+    /**
    * block_gf_view
    */
-  template <typename Var, typename Target> class block_gf_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block_gf_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
-   public:
-   static constexpr bool is_view  = true;
-   static constexpr bool is_const = false;
-   static constexpr int arity     = 1;
+      public:
+      static constexpr bool is_view  = true;
+      static constexpr bool is_const = false;
+      static constexpr int arity     = 1;
 
-   using variable_t = Var;
-   using target_t   = Target;
+      using variable_t = Var;
+      using target_t   = Target;
 
-   using regular_type      = block_gf<Var, Target>;
-   using mutable_view_type = block_gf_view<Var, Target>;
-   using view_type         = block_gf_view<Var, Target>;
-   using const_view_type   = block_gf_const_view<Var, Target>;
+      using regular_type      = block_gf<Var, Target>;
+      using mutable_view_type = block_gf_view<Var, Target>;
+      using view_type         = block_gf_view<Var, Target>;
+      using const_view_type   = block_gf_const_view<Var, Target>;
 
-   using g_t           = gf_view<Var, Target>;
-   using data_t        = std::vector<g_t>;
-   using block_names_t = std::vector<std::string>;
+      using g_t           = gf_view<Var, Target>;
+      using data_t        = std::vector<g_t>;
+      using block_names_t = std::vector<std::string>;
 
-   // ------------- Accessors -----------------------------
+      // ------------- Accessors -----------------------------
 
-   /// Direct access to the data array
-   data_t& data() { return _glist; }
+      /// Direct access to the data array
+      data_t &data() { return _glist; }
 
-   /// Const version
-   data_t const& data() const { return _glist; }
+      /// Const version
+      data_t const &data() const { return _glist; }
 
-   ///
-   block_names_t const& block_names() const { return _block_names; }
+      ///
+      block_names_t const &block_names() const { return _block_names; }
 
-   int size() const { return _glist.size(); }
+      int size() const { return _glist.size(); }
 
-   // backwd compat only
-   // TO BE REMOVED IN FUTURE RELEASE
-   //
-   struct __dom {
-    block_gf_view const* _g;
-    int size() const { return _g->size(); }
-    auto const& names() const { return _g->block_names(); }
-   };
-   TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
-   __dom domain() const { return {this}; }
-   TRIQS_DEPRECATED(
-       "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
-       "x<g.size(); ++x)")
-   arrays::range mesh() const { return arrays::range{0, size()}; }
+      // backwd compat only
+      // TO BE REMOVED IN FUTURE RELEASE
+      //
+      struct __dom {
+        block_gf_view const *_g;
+        int size() const { return _g->size(); }
+        auto const &names() const { return _g->block_names(); }
+      };
+      TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
+      __dom domain() const { return {this}; }
+      TRIQS_DEPRECATED(
+         "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
+         "x<g.size(); ++x)")
+      arrays::range mesh() const { return arrays::range{0, size()}; }
 
-   std::string name;
+      std::string name;
 
-   private:
-   block_names_t _block_names;
-   data_t _glist;
+      private:
+      block_names_t _block_names;
+      data_t _glist;
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   struct impl_tag {};
-   template <typename G>
-   block_gf_view(impl_tag, G&& x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+      struct impl_tag {};
+      template <typename G> block_gf_view(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
-   public:
-   /// Copy constructor
-   block_gf_view(block_gf_view const& x) = default;
+      public:
+      /// Copy constructor
+      block_gf_view(block_gf_view const &x) = default;
 
-   /// Move constructor
-   block_gf_view(block_gf_view&&) = default;
+      /// Move constructor
+      block_gf_view(block_gf_view &&) = default;
 
-   /// Construct from block_names and list of gf
-   block_gf_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {
-    if (_glist.size() != _block_names.size())
-     TRIQS_RUNTIME_ERROR << "block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
-   }
+      /// Construct from block_names and list of gf
+      block_gf_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {
+        if (_glist.size() != _block_names.size())
+          TRIQS_RUNTIME_ERROR << "block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
+      }
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   block_gf_view()                         = default;
-   block_gf_view(const_view_type const& g) = delete; // No view from a const_view
-   block_gf_view(regular_type const& g)    = delete; // No view from a const g
+      block_gf_view()                         = default;
+      block_gf_view(const_view_type const &g) = delete; // No view from a const_view
+      block_gf_view(regular_type const &g)    = delete; // No view from a const g
 
-   /// Makes a view
-   block_gf_view(regular_type& g) : block_gf_view(impl_tag{}, g) {}
+      /// Makes a view
+      block_gf_view(regular_type &g) : block_gf_view(impl_tag{}, g) {}
 
-   /// Makes a view
-   block_gf_view(regular_type&& g) noexcept : block_gf_view(impl_tag{}, std::move(g)) {}
+      /// Makes a view
+      block_gf_view(regular_type &&g) noexcept : block_gf_view(impl_tag{}, std::move(g)) {}
 
-   /// ---------------  Operator = --------------------
-   private:
-   template <typename RHS> void _assign_impl(RHS&& rhs) {
+      /// ---------------  Operator = --------------------
+      private:
+      template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-    for (int w = 0; w < size(); ++w) {
-     _glist[w]       = rhs[w];
-     _block_names[w] = rhs.block_names()[w];
-    }
-   }
+        for (int w = 0; w < size(); ++w) {
+          _glist[w]       = rhs[w];
+          _block_names[w] = rhs.block_names()[w];
+        }
+      }
 
-   public:
-   /**
+      public:
+      /**
     * Assignment operator overload specific for lazy_transform objects
     *
     * @param rhs The lazy object returned e.g. by fourier(my_block_gf)
     */
-   template <typename L, typename G> block_gf_view& operator=(lazy_transform_t<L, G> const& rhs) {
-    // for (auto & [ l, r ] : zip(*this, rhs.value)) FIXME C++17
-    //  l = rhs.lambda(r);
-    for (int i = 0; i < rhs.value.size(); ++i)
-     (*this)[i] = rhs.lambda(rhs.value[i]);
-    return *this;
-   }
+      template <typename L, typename G> block_gf_view &operator=(lazy_transform_t<L, G> const &rhs) {
+        // for (auto & [ l, r ] : zip(*this, rhs.value)) FIXME C++17
+        //  l = rhs.lambda(r);
+        for (int i = 0; i < rhs.value.size(); ++i) (*this)[i] = rhs.lambda(rhs.value[i]);
+        return *this;
+      }
 
-   /**
+      /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
     * @param l The lazy object returned by mpi_reduce
     */
-   void operator=(mpi_lazy<mpi::tag::reduce, block_gf_view::const_view_type> l) {
-    if (l.rhs.size() != this->size())
-     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
-    _block_names = l.rhs.block_names();
-    for (int i = 0; i < size(); ++i)
-     _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
-    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
-    // we can not overload the = of vector for better API.
-   }
+      void operator=(mpi_lazy<mpi::tag::reduce, block_gf_view::const_view_type> l) {
+        if (l.rhs.size() != this->size())
+          TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
+        _block_names = l.rhs.block_names();
+        for (int i = 0; i < size(); ++i) _glist[i]= mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
+        // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
+        // we can not overload the = of vector for better API.
+      }
 
-   /**
-    * Assignment operator
+      /**
+   * Assignment operator
+   *
+   * @tparam RHS Type of the right hand side rhs
+   *
+   * 		 RHS can be anything with .block_names() and [n] -> gf
+   * @param rhs
+   * @example
+   *
+   */
+      template <typename RHS> std14::enable_if_t<!arrays::is_scalar<RHS>::value, block_gf_view &> operator=(RHS const &rhs) {
+        if (!(size() == rhs.size())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible size" << size() << " vs " << rhs.size();
+        _assign_impl(rhs);
+        return *this;
+      }
+
+      template <typename RHS> std14::enable_if_t<arrays::is_scalar<RHS>::value, block_gf_view &> operator=(RHS &&rhs) {
+        for (auto &y : _glist) y = rhs;
+        return *this;
+      }
+
+      /// Copy the data, without resizing the view.
+      block_gf_view &operator=(block_gf_view const &rhs) {
+        _assign_impl(rhs);
+        return *this;
+      }
+
+      // ---------------  Rebind --------------------
+      /// Rebind
+      void rebind(block_gf_view x) noexcept {
+        _block_names = x._block_names;
+        _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
+        name         = x.name;
+      }
+
+      public:
+      // ------------- All the call operators without lazy arguments -----------------------------
+
+      // First, a simple () returns a view, like for an array...
+      /// Makes a const view of *this
+      const_view_type operator()() const { return *this; }
+      /// Makes a view of *this if it is non const
+      view_type operator()() { return *this; }
+
+      decltype(auto) operator()(int n) const { return _glist[n]; }
+
+      // ------------- Call with lazy arguments -----------------------------
+
+      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
+      template <typename... Args> clef::make_expr_call_t<block_gf_view &, Args...> operator()(Args &&... args) & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block_gf_view const &, Args...> operator()(Args &&... args) const & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block_gf_view, Args...> operator()(Args &&... args) && {
+        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      }
+      // ------------- All the [] operators without lazy arguments -----------------------------
+
+      decltype(auto) operator[](int n) const { return _glist[n]; }
+      decltype(auto) operator[](int n) { return _glist[n]; }
+
+      // ------------- [] with lazy arguments -----------------------------
+
+      template <typename Arg> clef::make_expr_subscript_t<block_gf_view const &, Arg> operator[](Arg &&arg) const & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block_gf_view &, Arg> operator[](Arg &&arg) & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block_gf_view, Arg> operator[](Arg &&arg) && {
+        return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
+      }
+
+      //----------------------------- HDF5 -----------------------------
+
+      /// HDF5 name
+      friend std::string get_triqs_hdf5_data_scheme(block_gf_view const &g) { return "BlockGf"; }
+
+      /// Write into HDF5
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf_view const &g) {
+        auto gr = fg.create_group(subgroup_name);
+        gr.write_triqs_hdf5_data_scheme(g);
+
+        h5_write(gr, "block_names", g.block_names());
+        for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
+      }
+
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, block_gf_view &g) {
+        auto gr = fg.open_group(subgroup_name);
+        // Check the attribute or throw
+        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
+        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        if (tag_file != tag_expected)
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+                              << " while I expected " << tag_expected;
+        auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
+        int s            = block_names.size();
+        g._glist.resize(s);
+        g._block_names = block_names;
+        for (int i = 0; i < s; ++i) h5_read(gr, block_names[i], g._glist[i]);
+      }
+
+      //-----------------------------  BOOST Serialization -----------------------------
+      friend class boost::serialization::access;
+      /// The serialization as required by Boost
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &_glist;
+        ar &_block_names;
+        ar &name;
+      }
+
+      //----------------------------- print  -----------------------------
+
+      /// IO
+      friend std::ostream &operator<<(std::ostream &out, block_gf_view const &x) { return out << "block_gf_view"; }
+
+      // -------------------------------  iterator  --------------------------------------------------
+
+      template <bool is_const> class iterator_impl {
+        std::conditional_t<is_const, const block_gf_view *, block_gf_view *> bgf = NULL;
+        int n;
+
+        public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type        = g_t;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = std::conditional_t<is_const, const g_t *, g_t *>;
+        using reference         = std::conditional_t<is_const, g_t const &, g_t &>;
+        using block_gf_ref      = std::conditional_t<is_const, block_gf_view const &, block_gf_view &>;
+
+        iterator_impl() = default;
+        iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+        iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
+
+        operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
+
+        reference operator*() { return (*bgf)[n]; }
+        reference operator->() { return operator*(); }
+
+        iterator_impl &operator++() {
+          ++n;
+          return *this;
+        }
+
+        iterator_impl operator++(int) {
+          auto it = *this;
+          ++n;
+          return it;
+        }
+
+        bool operator==(iterator_impl const &other) const { return ((bgf == other.bgf) && (n == other.n)); }
+        bool operator!=(iterator_impl const &other) const { return (!operator==(other)); }
+      };
+
+      using iterator       = iterator_impl<false>;
+      using const_iterator = iterator_impl<true>;
+
+      //------------
+
+      iterator begin() { return {*this, false}; }
+      const_iterator begin() const { return {*this, false}; }
+      iterator end() { return {*this, true}; }
+      const_iterator end() const { return {*this, true}; }
+      auto cbegin() { return const_view_type(*this).begin(); }
+      auto cend() { return const_view_type(*this).end(); }
+    };
+
+    //----------------------------- MPI  -----------------------------
+
+    /**
+    * Initiate (lazy) MPI Bcast
     *
-    * @tparam RHS Type of the right hand side rhs
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Bcast operation is performed.
     *
-    * 		 RHS can be anything with .block_names() and [n] -> gf
-    * @param rhs
-    * @example
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-   template <typename RHS> std14::enable_if_t<!arrays::is_scalar<RHS>::value, block_gf_view&> operator=(RHS const& rhs) {
-    if (!(size() == rhs.size()))
-     TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible size" << size() << " vs " << rhs.size();
-    _assign_impl(rhs);
-    return *this;
-   }
 
-   template <typename RHS> std14::enable_if_t<arrays::is_scalar<RHS>::value, block_gf_view&> operator=(RHS&& rhs) {
-    for (auto& y : _glist)
-     y = rhs;
-    return *this;
-   }
-
-   /// Copy the data, without resizing the view.
-   block_gf_view& operator=(block_gf_view const& rhs) {
-    _assign_impl(rhs);
-    return *this;
-   }
-
-   // ---------------  Rebind --------------------
-   /// Rebind
-   void rebind(block_gf_view x) noexcept {
-    _block_names = x._block_names;
-    _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
-    name         = x.name;
-   }
-
-   public:
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   decltype(auto) operator()(int n) const { return _glist[n]; }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<block_gf_view&, Args...> operator()(Args&&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block_gf_view const&, Args...> operator()(Args&&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block_gf_view, Args...> operator()(Args&&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-   }
-   // ------------- All the [] operators without lazy arguments -----------------------------
-
-   decltype(auto) operator[](int n) const { return _glist[n]; }
-   decltype(auto) operator[](int n) { return _glist[n]; }
-
-   // ------------- [] with lazy arguments -----------------------------
-
-   template <typename Arg> clef::make_expr_subscript_t<block_gf_view const&, Arg> operator[](Arg&& arg) const & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block_gf_view&, Arg> operator[](Arg&& arg) & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block_gf_view, Arg> operator[](Arg&& arg) && {
-    return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-   }
-
-   //----------------------------- HDF5 -----------------------------
-
-   /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(block_gf_view const& g) { return "BlockGf"; }
-
-   /// Write into HDF5
-   friend void h5_write(h5::group fg, std::string const& subgroup_name, block_gf_view const& g) {
-    auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
-
-    h5_write(gr, "block_names", g.block_names());
-    for (int i = 0; i < g.size(); ++i)
-     h5_write(gr, g.block_names()[i], g.data()[i]);
-   }
-
-   /// Read from HDF5
-   friend void h5_read(h5::group fg, std::string const& subgroup_name, block_gf_view& g) {
-    auto gr = fg.open_group(subgroup_name);
-    // Check the attribute or throw
-    auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected = get_triqs_hdf5_data_scheme(g);
-    if (tag_file != tag_expected)
-     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
-                         << " while I expected " << tag_expected;
-    auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
-    int s            = block_names.size();
-    g._glist.resize(s);
-    g._block_names = block_names;
-    for (int i = 0; i < s; ++i)
-     h5_read(gr, block_names[i], g._glist[i]);
-   }
-
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   /// The serialization as required by Boost
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-    ar& _glist;
-    ar& _block_names;
-    ar& name;
-   }
-
-   //----------------------------- print  -----------------------------
-
-   /// IO
-   friend std::ostream& operator<<(std::ostream& out, block_gf_view const& x) { return out << "block_gf_view"; }
-
-   // -------------------------------  iterator  --------------------------------------------------
-
-   template <bool is_const> class iterator_impl {
-    std::conditional_t<is_const, const block_gf_view*, block_gf_view*> bgf = NULL;
-    int n;
-
-    public:
-    using iterator_category = std::forward_iterator_tag;
-    using value_type        = g_t;
-    using difference_type   = std::ptrdiff_t;
-    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
-    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
-    using block_gf_ref      = std::conditional_t<is_const, block_gf_view const&, block_gf_view&>;
-
-    iterator_impl() = default;
-    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
-    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
-
-    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
-
-    reference operator*() { return (*bgf)[n]; }
-    reference operator->() { return operator*(); }
-
-    iterator_impl& operator++() {
-     ++n;
-     return *this;
+    template <typename V, typename T> void mpi_broadcast(block_gf_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
+      // Shall we bcast mesh ?
+      mpi_broadcast(g.data(), c, root);
     }
 
-    iterator_impl operator++(int) {
-     auto it = *this;
-     ++n;
-     return it;
+    /**
+    * Initiate (lazy) MPI Reduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Reduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
+
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                     bool all = false, MPI_Op op = MPI_SUM) {
+      return {a(), c, root, all, op};
     }
 
-    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
-   };
+    /**
+    * Initiate (lazy) MPI AllReduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI AllReduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
 
-   using iterator       = iterator_impl<false>;
-   using const_iterator = iterator_impl<true>;
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                         MPI_Op op = MPI_SUM) {
+      return {a(), c, root, true, op};
+    }
 
-   //------------
-
-   iterator begin() { return {*this, false}; }
-   const_iterator begin() const { return {*this, false}; }
-   iterator end() { return {*this, true}; }
-   const_iterator end() const { return {*this, true}; }
-   auto cbegin() { return const_view_type(*this).begin(); }
-   auto cend() { return const_view_type(*this).end(); }
-  };
-
-  //----------------------------- MPI  -----------------------------
-
-  /**
-   * Initiate (lazy) MPI Bcast
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Bcast operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T> void mpi_broadcast(block_gf_view<V, T>& g, mpi::communicator c = {}, int root = 0) {
-   // Shall we bcast mesh ?
-   mpi_broadcast(g.data(), c, root);
-  }
-
-  /**
-   * Initiate (lazy) MPI Reduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Reduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_view<V, T> const& a, mpi::communicator c = {},
-                                                                   int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, all, op};
-  }
-
-  /**
-   * Initiate (lazy) MPI AllReduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI AllReduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf_view<V, T> const& a, mpi::communicator c = {},
-                                                                       int root = 0, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, true, op};
-  }
-
-  // ----------------------  block_gf_const_view -----------------------------------------
-  /**
+    // ----------------------  block_gf_const_view -----------------------------------------
+    /**
    * block_gf_const_view
    */
-  template <typename Var, typename Target> class block_gf_const_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block_gf_const_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
-   public:
-   static constexpr bool is_view  = true;
-   static constexpr bool is_const = true;
-   static constexpr int arity     = 1;
+      public:
+      static constexpr bool is_view  = true;
+      static constexpr bool is_const = true;
+      static constexpr int arity     = 1;
 
-   using variable_t = Var;
-   using target_t   = Target;
+      using variable_t = Var;
+      using target_t   = Target;
 
-   using regular_type      = block_gf<Var, Target>;
-   using mutable_view_type = block_gf_view<Var, Target>;
-   using view_type         = block_gf_const_view<Var, Target>;
-   using const_view_type   = block_gf_const_view<Var, Target>;
+      using regular_type      = block_gf<Var, Target>;
+      using mutable_view_type = block_gf_view<Var, Target>;
+      using view_type         = block_gf_const_view<Var, Target>;
+      using const_view_type   = block_gf_const_view<Var, Target>;
 
-   using g_t           = gf_const_view<Var, Target>;
-   using data_t        = std::vector<g_t>;
-   using block_names_t = std::vector<std::string>;
+      using g_t           = gf_const_view<Var, Target>;
+      using data_t        = std::vector<g_t>;
+      using block_names_t = std::vector<std::string>;
 
-   // ------------- Accessors -----------------------------
+      // ------------- Accessors -----------------------------
 
-   /// Direct access to the data array
-   data_t& data() { return _glist; }
+      /// Direct access to the data array
+      data_t &data() { return _glist; }
 
-   /// Const version
-   data_t const& data() const { return _glist; }
+      /// Const version
+      data_t const &data() const { return _glist; }
 
-   ///
-   block_names_t const& block_names() const { return _block_names; }
+      ///
+      block_names_t const &block_names() const { return _block_names; }
 
-   int size() const { return _glist.size(); }
+      int size() const { return _glist.size(); }
 
-   // backwd compat only
-   // TO BE REMOVED IN FUTURE RELEASE
-   //
-   struct __dom {
-    block_gf_const_view const* _g;
-    int size() const { return _g->size(); }
-    auto const& names() const { return _g->block_names(); }
-   };
-   TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
-   __dom domain() const { return {this}; }
-   TRIQS_DEPRECATED(
-       "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
-       "x<g.size(); ++x)")
-   arrays::range mesh() const { return arrays::range{0, size()}; }
+      // backwd compat only
+      // TO BE REMOVED IN FUTURE RELEASE
+      //
+      struct __dom {
+        block_gf_const_view const *_g;
+        int size() const { return _g->size(); }
+        auto const &names() const { return _g->block_names(); }
+      };
+      TRIQS_DEPRECATED("g.domain() is deprecated. Replace g.domain().size() by g.size(), and g.domain().names() by g.block_names()")
+      __dom domain() const { return {this}; }
+      TRIQS_DEPRECATED(
+         "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
+         "x<g.size(); ++x)")
+      arrays::range mesh() const { return arrays::range{0, size()}; }
 
-   std::string name;
+      std::string name;
 
-   private:
-   block_names_t _block_names;
-   data_t _glist;
+      private:
+      block_names_t _block_names;
+      data_t _glist;
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   struct impl_tag {};
-   template <typename G>
-   block_gf_const_view(impl_tag, G&& x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+      struct impl_tag {};
+      template <typename G> block_gf_const_view(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
-   public:
-   /// Copy constructor
-   block_gf_const_view(block_gf_const_view const& x) = default;
+      public:
+      /// Copy constructor
+      block_gf_const_view(block_gf_const_view const &x) = default;
 
-   /// Move constructor
-   block_gf_const_view(block_gf_const_view&&) = default;
+      /// Move constructor
+      block_gf_const_view(block_gf_const_view &&) = default;
 
-   /// Construct from block_names and list of gf
-   block_gf_const_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {
-    if (_glist.size() != _block_names.size())
-     TRIQS_RUNTIME_ERROR << "block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
-   }
+      /// Construct from block_names and list of gf
+      block_gf_const_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {
+        if (_glist.size() != _block_names.size())
+          TRIQS_RUNTIME_ERROR << "block_gf(vector<string>, vector<gf>) : the two vectors do not have the same size !";
+      }
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   block_gf_const_view() = default; // views can not be default constructed
+      block_gf_const_view() = default; // views can not be default constructed
 
-   /// Makes a const view
-   block_gf_const_view(mutable_view_type const& g) : block_gf_const_view(impl_tag{}, g) {}
+      /// Makes a const view
+      block_gf_const_view(mutable_view_type const &g) : block_gf_const_view(impl_tag{}, g) {}
 
-   /// Makes a const view
-   block_gf_const_view(regular_type const& g) : block_gf_const_view(impl_tag{}, g) {}
+      /// Makes a const view
+      block_gf_const_view(regular_type const &g) : block_gf_const_view(impl_tag{}, g) {}
 
-   /// ---------------  Operator = --------------------
-   private:
-   template <typename RHS> void _assign_impl(RHS&& rhs) {
+      /// ---------------  Operator = --------------------
+      private:
+      template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-    for (int w = 0; w < size(); ++w) {
-     _glist[w]       = rhs[w];
-     _block_names[w] = rhs.block_names()[w];
+        for (int w = 0; w < size(); ++w) {
+          _glist[w]       = rhs[w];
+          _block_names[w] = rhs.block_names()[w];
+        }
+      }
+
+      public:
+      block_gf_const_view &operator=(block_gf_const_view const &) = delete; // a const view can not be assigned to
+
+      // ---------------  Rebind --------------------
+      /// Rebind
+      void rebind(block_gf_const_view x) noexcept {
+        _block_names = x._block_names;
+        _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
+        name         = x.name;
+      }
+      /// Rebind on a non const view
+      void rebind(mutable_view_type const &X) noexcept { rebind(const_view_type{X}); }
+      void rebind(regular_type const &X) noexcept { rebind(const_view_type{X}); }
+
+      public:
+      // ------------- All the call operators without lazy arguments -----------------------------
+
+      // First, a simple () returns a view, like for an array...
+      /// Makes a const view of *this
+      const_view_type operator()() const { return *this; }
+      /// Makes a view of *this if it is non const
+      view_type operator()() { return *this; }
+
+      decltype(auto) operator()(int n) const { return _glist[n]; }
+
+      // ------------- Call with lazy arguments -----------------------------
+
+      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
+      template <typename... Args> clef::make_expr_call_t<block_gf_const_view &, Args...> operator()(Args &&... args) & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block_gf_const_view const &, Args...> operator()(Args &&... args) const & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block_gf_const_view, Args...> operator()(Args &&... args) && {
+        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      }
+      // ------------- All the [] operators without lazy arguments -----------------------------
+
+      decltype(auto) operator[](int n) const { return _glist[n]; }
+      decltype(auto) operator[](int n) { return _glist[n]; }
+
+      // ------------- [] with lazy arguments -----------------------------
+
+      template <typename Arg> clef::make_expr_subscript_t<block_gf_const_view const &, Arg> operator[](Arg &&arg) const & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block_gf_const_view &, Arg> operator[](Arg &&arg) & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block_gf_const_view, Arg> operator[](Arg &&arg) && {
+        return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
+      }
+
+      //----------------------------- HDF5 -----------------------------
+
+      /// HDF5 name
+      friend std::string get_triqs_hdf5_data_scheme(block_gf_const_view const &g) { return "BlockGf"; }
+
+      /// Write into HDF5
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf_const_view const &g) {
+        auto gr = fg.create_group(subgroup_name);
+        gr.write_triqs_hdf5_data_scheme(g);
+
+        h5_write(gr, "block_names", g.block_names());
+        for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
+      }
+
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, block_gf_const_view &g) {
+        auto gr = fg.open_group(subgroup_name);
+        // Check the attribute or throw
+        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
+        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        if (tag_file != tag_expected)
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+                              << " while I expected " << tag_expected;
+        auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
+        int s            = block_names.size();
+        g._glist.resize(s);
+        g._block_names = block_names;
+        for (int i = 0; i < s; ++i) h5_read(gr, block_names[i], g._glist[i]);
+      }
+
+      //-----------------------------  BOOST Serialization -----------------------------
+      friend class boost::serialization::access;
+      /// The serialization as required by Boost
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &_glist;
+        ar &_block_names;
+        ar &name;
+      }
+
+      //----------------------------- print  -----------------------------
+
+      /// IO
+      friend std::ostream &operator<<(std::ostream &out, block_gf_const_view const &x) { return out << "block_gf_const_view"; }
+
+      // -------------------------------  iterator  --------------------------------------------------
+
+      template <bool is_const> class iterator_impl {
+        std::conditional_t<is_const, const block_gf_const_view *, block_gf_const_view *> bgf = NULL;
+        int n;
+
+        public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type        = g_t;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = std::conditional_t<is_const, const g_t *, g_t *>;
+        using reference         = std::conditional_t<is_const, g_t const &, g_t &>;
+        using block_gf_ref      = std::conditional_t<is_const, block_gf_const_view const &, block_gf_const_view &>;
+
+        iterator_impl() = default;
+        iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+        iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
+
+        operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
+
+        reference operator*() { return (*bgf)[n]; }
+        reference operator->() { return operator*(); }
+
+        iterator_impl &operator++() {
+          ++n;
+          return *this;
+        }
+
+        iterator_impl operator++(int) {
+          auto it = *this;
+          ++n;
+          return it;
+        }
+
+        bool operator==(iterator_impl const &other) const { return ((bgf == other.bgf) && (n == other.n)); }
+        bool operator!=(iterator_impl const &other) const { return (!operator==(other)); }
+      };
+
+      using iterator       = iterator_impl<false>;
+      using const_iterator = iterator_impl<true>;
+
+      //------------
+
+      iterator begin() { return {*this, false}; }
+      const_iterator begin() const { return {*this, false}; }
+      iterator end() { return {*this, true}; }
+      const_iterator end() const { return {*this, true}; }
+      auto cbegin() { return const_view_type(*this).begin(); }
+      auto cend() { return const_view_type(*this).end(); }
+    };
+
+    //----------------------------- MPI  -----------------------------
+
+    /**
+    * Initiate (lazy) MPI Bcast
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Bcast operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
+
+    template <typename V, typename T> void mpi_broadcast(block_gf_const_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
+      // Shall we bcast mesh ?
+      mpi_broadcast(g.data(), c, root);
     }
-   }
 
-   public:
-   block_gf_const_view& operator=(block_gf_const_view const&) = delete; // a const view can not be assigned to
+    /**
+    * Initiate (lazy) MPI Reduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Reduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
 
-   // ---------------  Rebind --------------------
-   /// Rebind
-   void rebind(block_gf_const_view x) noexcept {
-    _block_names = x._block_names;
-    _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
-    name         = x.name;
-   }
-   /// Rebind on a non const view
-   void rebind(mutable_view_type const& X) noexcept { rebind(const_view_type{X}); }
-   void rebind(regular_type const& X) noexcept { rebind(const_view_type{X}); }
-
-   public:
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   decltype(auto) operator()(int n) const { return _glist[n]; }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<block_gf_const_view&, Args...> operator()(Args&&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block_gf_const_view const&, Args...> operator()(Args&&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block_gf_const_view, Args...> operator()(Args&&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-   }
-   // ------------- All the [] operators without lazy arguments -----------------------------
-
-   decltype(auto) operator[](int n) const { return _glist[n]; }
-   decltype(auto) operator[](int n) { return _glist[n]; }
-
-   // ------------- [] with lazy arguments -----------------------------
-
-   template <typename Arg> clef::make_expr_subscript_t<block_gf_const_view const&, Arg> operator[](Arg&& arg) const & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block_gf_const_view&, Arg> operator[](Arg&& arg) & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block_gf_const_view, Arg> operator[](Arg&& arg) && {
-    return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-   }
-
-   //----------------------------- HDF5 -----------------------------
-
-   /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(block_gf_const_view const& g) { return "BlockGf"; }
-
-   /// Write into HDF5
-   friend void h5_write(h5::group fg, std::string const& subgroup_name, block_gf_const_view const& g) {
-    auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
-
-    h5_write(gr, "block_names", g.block_names());
-    for (int i = 0; i < g.size(); ++i)
-     h5_write(gr, g.block_names()[i], g.data()[i]);
-   }
-
-   /// Read from HDF5
-   friend void h5_read(h5::group fg, std::string const& subgroup_name, block_gf_const_view& g) {
-    auto gr = fg.open_group(subgroup_name);
-    // Check the attribute or throw
-    auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected = get_triqs_hdf5_data_scheme(g);
-    if (tag_file != tag_expected)
-     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
-                         << " while I expected " << tag_expected;
-    auto block_names = h5::h5_read<std::vector<std::string>>(gr, "block_names");
-    int s            = block_names.size();
-    g._glist.resize(s);
-    g._block_names = block_names;
-    for (int i = 0; i < s; ++i)
-     h5_read(gr, block_names[i], g._glist[i]);
-   }
-
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   /// The serialization as required by Boost
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-    ar& _glist;
-    ar& _block_names;
-    ar& name;
-   }
-
-   //----------------------------- print  -----------------------------
-
-   /// IO
-   friend std::ostream& operator<<(std::ostream& out, block_gf_const_view const& x) { return out << "block_gf_const_view"; }
-
-   // -------------------------------  iterator  --------------------------------------------------
-
-   template <bool is_const> class iterator_impl {
-    std::conditional_t<is_const, const block_gf_const_view*, block_gf_const_view*> bgf = NULL;
-    int n;
-
-    public:
-    using iterator_category = std::forward_iterator_tag;
-    using value_type        = g_t;
-    using difference_type   = std::ptrdiff_t;
-    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
-    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
-    using block_gf_ref      = std::conditional_t<is_const, block_gf_const_view const&, block_gf_const_view&>;
-
-    iterator_impl() = default;
-    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
-    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
-
-    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
-
-    reference operator*() { return (*bgf)[n]; }
-    reference operator->() { return operator*(); }
-
-    iterator_impl& operator++() {
-     ++n;
-     return *this;
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                     bool all = false, MPI_Op op = MPI_SUM) {
+      return {a(), c, root, all, op};
     }
 
-    iterator_impl operator++(int) {
-     auto it = *this;
-     ++n;
-     return it;
+    /**
+    * Initiate (lazy) MPI AllReduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI AllReduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
+
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                         MPI_Op op = MPI_SUM) {
+      return {a(), c, root, true, op};
     }
 
-    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
-   };
-
-   using iterator       = iterator_impl<false>;
-   using const_iterator = iterator_impl<true>;
-
-   //------------
-
-   iterator begin() { return {*this, false}; }
-   const_iterator begin() const { return {*this, false}; }
-   iterator end() { return {*this, true}; }
-   const_iterator end() const { return {*this, true}; }
-   auto cbegin() { return const_view_type(*this).begin(); }
-   auto cend() { return const_view_type(*this).end(); }
-  };
-
-  //----------------------------- MPI  -----------------------------
-
-  /**
-   * Initiate (lazy) MPI Bcast
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Bcast operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T> void mpi_broadcast(block_gf_const_view<V, T>& g, mpi::communicator c = {}, int root = 0) {
-   // Shall we bcast mesh ?
-   mpi_broadcast(g.data(), c, root);
-  }
-
-  /**
-   * Initiate (lazy) MPI Reduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Reduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_const_view<V, T> const& a, mpi::communicator c = {},
-                                                                   int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, all, op};
-  }
-
-  /**
-   * Initiate (lazy) MPI AllReduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI AllReduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>>
-  mpi_all_reduce(block_gf_const_view<V, T> const& a, mpi::communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, true, op};
-  }
-
-  // ----------------------  block2_gf -----------------------------------------
-  /**
+    // ----------------------  block2_gf -----------------------------------------
+    /**
    * block2_gf
    */
-  template <typename Var, typename Target> class block2_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block2_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
-   public:
-   static constexpr bool is_view  = false;
-   static constexpr bool is_const = false;
-   static constexpr int arity     = 2;
+      public:
+      static constexpr bool is_view  = false;
+      static constexpr bool is_const = false;
+      static constexpr int arity     = 2;
 
-   using variable_t = Var;
-   using target_t   = Target;
+      using variable_t = Var;
+      using target_t   = Target;
 
-   using regular_type      = block2_gf<Var, Target>;
-   using mutable_view_type = block2_gf_view<Var, Target>;
-   using view_type         = block2_gf_view<Var, Target>;
-   using const_view_type   = block2_gf_const_view<Var, Target>;
+      using regular_type      = block2_gf<Var, Target>;
+      using mutable_view_type = block2_gf_view<Var, Target>;
+      using view_type         = block2_gf_view<Var, Target>;
+      using const_view_type   = block2_gf_const_view<Var, Target>;
 
-   using g_t           = gf<Var, Target>;
-   using data_t        = std::vector<std::vector<g_t>>;
-   using block_names_t = std::vector<std::vector<std::string>>;
+      using g_t           = gf<Var, Target>;
+      using data_t        = std::vector<std::vector<g_t>>;
+      using block_names_t = std::vector<std::vector<std::string>>;
 
-   // ------------- Accessors -----------------------------
+      // ------------- Accessors -----------------------------
 
-   /// Direct access to the data array
-   data_t& data() { return _glist; }
+      /// Direct access to the data array
+      data_t &data() { return _glist; }
 
-   /// Const version
-   data_t const& data() const { return _glist; }
+      /// Const version
+      data_t const &data() const { return _glist; }
 
-   ///
-   block_names_t const& block_names() const { return _block_names; }
+      ///
+      block_names_t const &block_names() const { return _block_names; }
 
-   int size1() const { return _glist.size(); }
-   int size2() const { return _glist[0].size(); } // FIXME PROTECT
-   int size() const { return size1() * size2(); }
+      int size1() const { return _glist.size(); }
+      int size2() const { return _glist[0].size(); } // FIXME PROTECT
+      int size() const { return size1() * size2(); }
 
-   std::string name;
+      std::string name;
 
-   private:
-   block_names_t _block_names;
-   data_t _glist;
+      private:
+      block_names_t _block_names;
+      data_t _glist;
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   struct impl_tag {};
-   template <typename G>
-   block2_gf(impl_tag, G&& x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+      struct impl_tag {};
+      template <typename G> block2_gf(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
-   public:
-   /// Copy constructor
-   block2_gf(block2_gf const& x) = default;
+      public:
+      /// Copy constructor
+      block2_gf(block2_gf const &x) = default;
 
-   /// Move constructor
-   block2_gf(block2_gf&&) = default;
+      /// Move constructor
+      block2_gf(block2_gf &&) = default;
 
-   /// Construct from block_names and list of gf
-   block2_gf(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {}
+      /// Construct from block_names and list of gf
+      block2_gf(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {}
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   /// Construct an empty Green function (with empty array).
-   block2_gf() = default;
+      /// Construct an empty Green function (with empty array).
+      block2_gf() = default;
 
-   /// From a block_gf_view of the same kind
-   block2_gf(view_type const& g) : block2_gf(impl_tag{}, g) {}
+      /// From a block_gf_view of the same kind
+      block2_gf(view_type const &g) : block2_gf(impl_tag{}, g) {}
 
-   /// From a const_gf_view of the same kind
-   block2_gf(const_view_type const& g) : block2_gf(impl_tag{}, g) {}
+      /// From a const_gf_view of the same kind
+      block2_gf(const_view_type const &g) : block2_gf(impl_tag{}, g) {}
 
-   /// Construct from anything which models BlockGreenFunction.
-   // TODO: We would like to refine this, G should have the same mesh, target, at least ...
-   template <typename G> block2_gf(G const& x, std14::enable_if_t<BlockGreenFunction<G>::value>* dummy = 0) : block2_gf() {
-    *this = x;
-   }
+      /// Construct from anything which models BlockGreenFunction.
+      // TODO: We would like to refine this, G should have the same mesh, target, at least ...
+      template <typename G> block2_gf(G const &x, std14::enable_if_t<BlockGreenFunction<G>::value> *dummy = 0) : block2_gf() { *this = x; }
 
-   /// Construct from the mpi lazy class of the implementation class, cf mpi section
-   // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
-   template <typename Tag> block2_gf(mpi_lazy<Tag, block2_gf_const_view<Var, Target>> x) : block2_gf() { operator=(x); }
+      /// Construct from the mpi lazy class of the implementation class, cf mpi section
+      // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
+      template <typename Tag> block2_gf(mpi_lazy<Tag, block2_gf_const_view<Var, Target>> x) : block2_gf() { operator=(x); }
 
-   /// Constructs a n blocks with copies of g.
-   block2_gf(int n, int p, g_t const& g) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
+      /// Constructs a n blocks with copies of g.
+      block2_gf(int n, int p, g_t const &g) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
 
-   /// ---------------  Operator = --------------------
-   private:
-   template <typename RHS> void _assign_impl(RHS&& rhs) {
+      /// ---------------  Operator = --------------------
+      private:
+      template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-    for (int w = 0; w < size1(); ++w) {
-     for (int v = 0; v < size2(); ++v)
-      _glist[w][v] = rhs(w, v);
-     _block_names[w] = rhs.block_names()[w];
-    }
-   }
+        for (int w = 0; w < size1(); ++w) {
+          for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs(w, v);
+          _block_names[w] = rhs.block_names()[w];
+        }
+      }
 
-   public:
-   /// Copy assignment
-   block2_gf& operator=(block2_gf const& rhs) = default;
+      public:
+      /// Copy assignment
+      block2_gf &operator=(block2_gf const &rhs) = default;
 
-   /// Move assignment
-   block2_gf& operator=(block2_gf&& rhs) = default;
+      /// Move assignment
+      block2_gf &operator=(block2_gf &&rhs) = default;
 
-   /**
+      /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
     * @param l The lazy object returned by mpi_reduce
     */
-   block2_gf& operator=(mpi_lazy<mpi::tag::reduce, block2_gf::const_view_type> l) {
-    _block_names = l.rhs.block_names();
-    _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
-    return *this;
-    // mpi_reduce of vector produces a new vector of gf, so it is fine here
-   }
+      block2_gf &operator=(mpi_lazy<mpi::tag::reduce, block2_gf::const_view_type> l) {
+        _block_names = l.rhs.block_names();
+        _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+        return *this;
+        // mpi_reduce of vector produces a new vector of gf, so it is fine here
+      }
 
-   /**
-    * Assignment operator
+      /**
+   * Assignment operator
+   *
+   * @tparam RHS Type of the right hand side rhs
+   *
+   *             RHS can be anything modeling the gf concept TBW
+   *             In particular lazy expression with Green functions
+   * @param rhs
+   * @example
+   *
+   * The assignment resizes the mesh and the data, invalidating all pointers on them.
+   *
+   */
+      template <typename RHS> block2_gf &operator=(RHS &&rhs) {
+        _glist.resize(rhs.size());
+        _block_names.resize(rhs.size());
+        _assign_impl(rhs);
+        return *this;
+      }
+
+      // ---------------  Rebind --------------------
+      /// Rebind
+      void rebind(block2_gf x) noexcept {
+        _block_names = x._block_names;
+        _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
+        name         = x.name;
+      }
+
+      public:
+      // ------------- All the call operators without lazy arguments -----------------------------
+
+      // First, a simple () returns a view, like for an array...
+      /// Makes a const view of *this
+      const_view_type operator()() const { return *this; }
+      /// Makes a view of *this if it is non const
+      view_type operator()() { return *this; }
+
+      decltype(auto) operator()(int n1, int n2) const { return _glist[n1][n2]; }
+      decltype(auto) operator()(int n1, int n2) { return _glist[n1][n2]; }
+
+      // ------------- Call with lazy arguments -----------------------------
+
+      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
+      template <typename... Args> clef::make_expr_call_t<block2_gf &, Args...> operator()(Args &&... args) & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block2_gf const &, Args...> operator()(Args &&... args) const & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block2_gf, Args...> operator()(Args &&... args) && {
+        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      }
+      // ------------- All the [] operators without lazy arguments -----------------------------
+
+      // ------------- [] with lazy arguments -----------------------------
+
+      template <typename Arg> clef::make_expr_subscript_t<block2_gf const &, Arg> operator[](Arg &&arg) const & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block2_gf &, Arg> operator[](Arg &&arg) & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block2_gf, Arg> operator[](Arg &&arg) && {
+        return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
+      }
+
+      //----------------------------- HDF5 -----------------------------
+
+      /// HDF5 name
+      friend std::string get_triqs_hdf5_data_scheme(block2_gf const &g) { return "Block2Gf"; }
+
+      /// Write into HDF5
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf const &g) {
+        auto gr = fg.create_group(subgroup_name);
+        gr.write_triqs_hdf5_data_scheme(g);
+
+        h5_write(gr, "block_names1", g.block_names()[0]);
+        h5_write(gr, "block_names2", g.block_names()[1]);
+        for (int i = 0; i < g.size1(); ++i)
+          for (int j = 0; j < g.size2(); ++j) h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
+      }
+
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, block2_gf &g) {
+        auto gr = fg.open_group(subgroup_name);
+        // Check the attribute or throw
+        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
+        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        if (tag_file != tag_expected)
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+                              << " while I expected " << tag_expected;
+        auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
+        auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
+        auto block_names  = std::vector<std::vector<std::string>>{block_names1, block_names2};
+        int s0            = block_names[0].size();
+        int s1            = block_names[1].size();
+        g._glist.resize(s0);
+        g._block_names = block_names;
+        for (int i = 0; i < s0; ++i) {
+          g._glist[i].resize(s1);
+          for (int j = 0; j < s1; ++j) h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
+        }
+      }
+
+      //-----------------------------  BOOST Serialization -----------------------------
+      friend class boost::serialization::access;
+      /// The serialization as required by Boost
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &_glist;
+        ar &_block_names;
+        ar &name;
+      }
+
+      //----------------------------- print  -----------------------------
+
+      /// IO
+      friend std::ostream &operator<<(std::ostream &out, block2_gf const &x) { return out << "block2_gf"; }
+
+      // -------------------------------  iterator  --------------------------------------------------
+
+      template <bool is_const> class iterator_impl {
+        std::conditional_t<is_const, const block2_gf *, block2_gf *> bgf = NULL;
+        int n;
+
+        public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type        = g_t;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = std::conditional_t<is_const, const g_t *, g_t *>;
+        using reference         = std::conditional_t<is_const, g_t const &, g_t &>;
+        using block_gf_ref      = std::conditional_t<is_const, block2_gf const &, block2_gf &>;
+
+        iterator_impl() = default;
+        iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+        iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
+
+        operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
+
+        reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+        reference operator->() { return operator*(); }
+
+        iterator_impl &operator++() {
+          ++n;
+          return *this;
+        }
+
+        iterator_impl operator++(int) {
+          auto it = *this;
+          ++n;
+          return it;
+        }
+
+        bool operator==(iterator_impl const &other) const { return ((bgf == other.bgf) && (n == other.n)); }
+        bool operator!=(iterator_impl const &other) const { return (!operator==(other)); }
+      };
+
+      using iterator       = iterator_impl<false>;
+      using const_iterator = iterator_impl<true>;
+
+      //------------
+
+      iterator begin() { return {*this, false}; }
+      const_iterator begin() const { return {*this, false}; }
+      iterator end() { return {*this, true}; }
+      const_iterator end() const { return {*this, true}; }
+      auto cbegin() { return const_view_type(*this).begin(); }
+      auto cend() { return const_view_type(*this).end(); }
+    };
+
+    //----------------------------- MPI  -----------------------------
+
+    /**
+    * Initiate (lazy) MPI Bcast
     *
-    * @tparam RHS Type of the right hand side rhs
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Bcast operation is performed.
     *
-    *             RHS can be anything modeling the gf concept TBW
-    *             In particular lazy expression with Green functions
-    * @param rhs
-    * @example
-    *
-    * The assignment resizes the mesh and the data, invalidating all pointers on them.
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-   template <typename RHS> block2_gf& operator=(RHS&& rhs) {
-    _glist.resize(rhs.size());
-    _block_names.resize(rhs.size());
-    _assign_impl(rhs);
-    return *this;
-   }
 
-   // ---------------  Rebind --------------------
-   /// Rebind
-   void rebind(block2_gf x) noexcept {
-    _block_names = x._block_names;
-    _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
-    name         = x.name;
-   }
-
-   public:
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   decltype(auto) operator()(int n1, int n2) const { return _glist[n1][n2]; }
-   decltype(auto) operator()(int n1, int n2) { return _glist[n1][n2]; }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<block2_gf&, Args...> operator()(Args&&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block2_gf const&, Args...> operator()(Args&&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block2_gf, Args...> operator()(Args&&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-   }
-   // ------------- All the [] operators without lazy arguments -----------------------------
-
-   // ------------- [] with lazy arguments -----------------------------
-
-   template <typename Arg> clef::make_expr_subscript_t<block2_gf const&, Arg> operator[](Arg&& arg) const & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block2_gf&, Arg> operator[](Arg&& arg) & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block2_gf, Arg> operator[](Arg&& arg) && {
-    return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-   }
-
-   //----------------------------- HDF5 -----------------------------
-
-   /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(block2_gf const& g) { return "Block2Gf"; }
-
-   /// Write into HDF5
-   friend void h5_write(h5::group fg, std::string const& subgroup_name, block2_gf const& g) {
-    auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
-
-    h5_write(gr, "block_names1", g.block_names()[0]);
-    h5_write(gr, "block_names2", g.block_names()[1]);
-    for (int i = 0; i < g.size1(); ++i)
-     for (int j = 0; j < g.size2(); ++j)
-      h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
-   }
-
-   /// Read from HDF5
-   friend void h5_read(h5::group fg, std::string const& subgroup_name, block2_gf& g) {
-    auto gr = fg.open_group(subgroup_name);
-    // Check the attribute or throw
-    auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected = get_triqs_hdf5_data_scheme(g);
-    if (tag_file != tag_expected)
-     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
-                         << " while I expected " << tag_expected;
-    auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
-    auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
-    auto block_names  = std::vector<std::vector<std::string>>{block_names1, block_names2};
-    int s0            = block_names[0].size();
-    int s1            = block_names[1].size();
-    g._glist.resize(s0);
-    g._block_names = block_names;
-    for (int i = 0; i < s0; ++i) {
-     g._glist[i].resize(s1);
-     for (int j = 0; j < s1; ++j)
-      h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
-    }
-   }
-
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   /// The serialization as required by Boost
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-    ar& _glist;
-    ar& _block_names;
-    ar& name;
-   }
-
-   //----------------------------- print  -----------------------------
-
-   /// IO
-   friend std::ostream& operator<<(std::ostream& out, block2_gf const& x) { return out << "block2_gf"; }
-
-   // -------------------------------  iterator  --------------------------------------------------
-
-   template <bool is_const> class iterator_impl {
-    std::conditional_t<is_const, const block2_gf*, block2_gf*> bgf = NULL;
-    int n;
-
-    public:
-    using iterator_category = std::forward_iterator_tag;
-    using value_type        = g_t;
-    using difference_type   = std::ptrdiff_t;
-    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
-    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
-    using block_gf_ref      = std::conditional_t<is_const, block2_gf const&, block2_gf&>;
-
-    iterator_impl() = default;
-    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
-    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
-
-    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
-
-    reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
-    reference operator->() { return operator*(); }
-
-    iterator_impl& operator++() {
-     ++n;
-     return *this;
+    template <typename V, typename T> void mpi_broadcast(block2_gf<V, T> &g, mpi::communicator c = {}, int root = 0) {
+      // Shall we bcast mesh ?
+      mpi_broadcast(g.data(), c, root);
     }
 
-    iterator_impl operator++(int) {
-     auto it = *this;
-     ++n;
-     return it;
+    /**
+    * Initiate (lazy) MPI Reduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Reduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
+
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                      bool all = false, MPI_Op op = MPI_SUM) {
+      return {a(), c, root, all, op};
     }
 
-    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
-   };
+    /**
+    * Initiate (lazy) MPI AllReduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI AllReduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
 
-   using iterator       = iterator_impl<false>;
-   using const_iterator = iterator_impl<true>;
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                          MPI_Op op = MPI_SUM) {
+      return {a(), c, root, true, op};
+    }
 
-   //------------
-
-   iterator begin() { return {*this, false}; }
-   const_iterator begin() const { return {*this, false}; }
-   iterator end() { return {*this, true}; }
-   const_iterator end() const { return {*this, true}; }
-   auto cbegin() { return const_view_type(*this).begin(); }
-   auto cend() { return const_view_type(*this).end(); }
-  };
-
-  //----------------------------- MPI  -----------------------------
-
-  /**
-   * Initiate (lazy) MPI Bcast
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Bcast operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T> void mpi_broadcast(block2_gf<V, T>& g, mpi::communicator c = {}, int root = 0) {
-   // Shall we bcast mesh ?
-   mpi_broadcast(g.data(), c, root);
-  }
-
-  /**
-   * Initiate (lazy) MPI Reduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Reduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf<V, T> const& a, mpi::communicator c = {},
-                                                                    int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, all, op};
-  }
-
-  /**
-   * Initiate (lazy) MPI AllReduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI AllReduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf<V, T> const& a, mpi::communicator c = {},
-                                                                        int root = 0, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, true, op};
-  }
-
-  // ----------------------  block2_gf_view -----------------------------------------
-  /**
+    // ----------------------  block2_gf_view -----------------------------------------
+    /**
    * block2_gf_view
    */
-  template <typename Var, typename Target> class block2_gf_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block2_gf_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
-   public:
-   static constexpr bool is_view  = true;
-   static constexpr bool is_const = false;
-   static constexpr int arity     = 2;
+      public:
+      static constexpr bool is_view  = true;
+      static constexpr bool is_const = false;
+      static constexpr int arity     = 2;
 
-   using variable_t = Var;
-   using target_t   = Target;
+      using variable_t = Var;
+      using target_t   = Target;
 
-   using regular_type      = block2_gf<Var, Target>;
-   using mutable_view_type = block2_gf_view<Var, Target>;
-   using view_type         = block2_gf_view<Var, Target>;
-   using const_view_type   = block2_gf_const_view<Var, Target>;
+      using regular_type      = block2_gf<Var, Target>;
+      using mutable_view_type = block2_gf_view<Var, Target>;
+      using view_type         = block2_gf_view<Var, Target>;
+      using const_view_type   = block2_gf_const_view<Var, Target>;
 
-   using g_t           = gf_view<Var, Target>;
-   using data_t        = std::vector<std::vector<g_t>>;
-   using block_names_t = std::vector<std::vector<std::string>>;
+      using g_t           = gf_view<Var, Target>;
+      using data_t        = std::vector<std::vector<g_t>>;
+      using block_names_t = std::vector<std::vector<std::string>>;
 
-   // ------------- Accessors -----------------------------
+      // ------------- Accessors -----------------------------
 
-   /// Direct access to the data array
-   data_t& data() { return _glist; }
+      /// Direct access to the data array
+      data_t &data() { return _glist; }
 
-   /// Const version
-   data_t const& data() const { return _glist; }
+      /// Const version
+      data_t const &data() const { return _glist; }
 
-   ///
-   block_names_t const& block_names() const { return _block_names; }
+      ///
+      block_names_t const &block_names() const { return _block_names; }
 
-   int size1() const { return _glist.size(); }
-   int size2() const { return _glist[0].size(); } // FIXME PROTECT
-   int size() const { return size1() * size2(); }
+      int size1() const { return _glist.size(); }
+      int size2() const { return _glist[0].size(); } // FIXME PROTECT
+      int size() const { return size1() * size2(); }
 
-   std::string name;
+      std::string name;
 
-   private:
-   block_names_t _block_names;
-   data_t _glist;
+      private:
+      block_names_t _block_names;
+      data_t _glist;
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   struct impl_tag {};
-   template <typename G>
-   block2_gf_view(impl_tag, G&& x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+      struct impl_tag {};
+      template <typename G> block2_gf_view(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
-   public:
-   /// Copy constructor
-   block2_gf_view(block2_gf_view const& x) = default;
+      public:
+      /// Copy constructor
+      block2_gf_view(block2_gf_view const &x) = default;
 
-   /// Move constructor
-   block2_gf_view(block2_gf_view&&) = default;
+      /// Move constructor
+      block2_gf_view(block2_gf_view &&) = default;
 
-   /// Construct from block_names and list of gf
-   block2_gf_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {}
+      /// Construct from block_names and list of gf
+      block2_gf_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {}
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   block2_gf_view()                         = default;
-   block2_gf_view(const_view_type const& g) = delete; // No view from a const_view
-   block2_gf_view(regular_type const& g)    = delete; // No view from a const g
+      block2_gf_view()                         = default;
+      block2_gf_view(const_view_type const &g) = delete; // No view from a const_view
+      block2_gf_view(regular_type const &g)    = delete; // No view from a const g
 
-   /// Makes a view
-   block2_gf_view(regular_type& g) : block2_gf_view(impl_tag{}, g) {}
+      /// Makes a view
+      block2_gf_view(regular_type &g) : block2_gf_view(impl_tag{}, g) {}
 
-   /// Makes a view
-   block2_gf_view(regular_type&& g) noexcept : block2_gf_view(impl_tag{}, std::move(g)) {}
+      /// Makes a view
+      block2_gf_view(regular_type &&g) noexcept : block2_gf_view(impl_tag{}, std::move(g)) {}
 
-   /// ---------------  Operator = --------------------
-   private:
-   template <typename RHS> void _assign_impl(RHS&& rhs) {
+      /// ---------------  Operator = --------------------
+      private:
+      template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-    for (int w = 0; w < size1(); ++w) {
-     for (int v = 0; v < size2(); ++v)
-      _glist[w][v] = rhs(w, v);
-     _block_names[w] = rhs.block_names()[w];
-    }
-   }
+        for (int w = 0; w < size1(); ++w) {
+          for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs(w, v);
+          _block_names[w] = rhs.block_names()[w];
+        }
+      }
 
-   public:
-   /**
+      public:
+      /**
     * Assignment operator overload specific for lazy_transform objects
     *
     * @param rhs The lazy object returned e.g. by fourier(my_block_gf)
     */
-   template <typename L, typename G> block2_gf_view& operator=(lazy_transform_t<L, G> const& rhs) {
-    // for (auto & [ l, r ] : zip(*this, rhs.value)) FIXME C++17
-    //  l = rhs.lambda(r);
-    for (int i = 0; i < rhs.value.size1(); ++i)
-     for (int j = 0; j < rhs.value.size2(); ++j)
-      (*this)(i, j) = rhs.lambda(rhs.value(i, j));
-    return *this;
-   }
+      template <typename L, typename G> block2_gf_view &operator=(lazy_transform_t<L, G> const &rhs) {
+        // for (auto & [ l, r ] : zip(*this, rhs.value)) FIXME C++17
+        //  l = rhs.lambda(r);
+        for (int i = 0; i < rhs.value.size1(); ++i)
+          for (int j = 0; j < rhs.value.size2(); ++j) (*this)(i, j) = rhs.lambda(rhs.value(i, j));
+        return *this;
+      }
 
-   /**
+      /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
     * @param l The lazy object returned by mpi_reduce
     */
-   void operator=(mpi_lazy<mpi::tag::reduce, block2_gf_view::const_view_type> l) {
-    if (l.rhs.size() != this->size())
-     TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
-    _block_names = l.rhs.block_names();
-    for (int i = 0; i < size1(); ++i)
-     for (int j = 0; j < size2(); ++j)
-      _glist[i][j] = mpi_reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
-    // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
-    // we can not overload the = of vector for better API.
-   }
+      void operator=(mpi_lazy<mpi::tag::reduce, block2_gf_view::const_view_type> l) {
+        if (l.rhs.size() != this->size())
+          TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
+        _block_names = l.rhs.block_names();
+        for (int i = 0; i < size1(); ++i)
+          for (int j = 0; j < size2(); ++j) _glist[i][j] = mpi_reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
+        // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
+        // we can not overload the = of vector for better API.
+      }
 
-   /**
-    * Assignment operator
+      /**
+   * Assignment operator
+   *
+   * @tparam RHS Type of the right hand side rhs
+   *
+   * 		 RHS can be anything with .block_names() and [n] -> gf
+   * @param rhs
+   * @example
+   *
+   */
+      template <typename RHS> std14::enable_if_t<!arrays::is_scalar<RHS>::value, block2_gf_view &> operator=(RHS const &rhs) {
+        if (!(size() == rhs.size())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible size" << size() << " vs " << rhs.size();
+        _assign_impl(rhs);
+        return *this;
+      }
+
+      template <typename RHS> std14::enable_if_t<arrays::is_scalar<RHS>::value, block2_gf_view &> operator=(RHS &&rhs) {
+        for (auto &x : _glist)
+          for (auto &y : x) y = rhs;
+        return *this;
+      }
+
+      /// Copy the data, without resizing the view.
+      block2_gf_view &operator=(block2_gf_view const &rhs) {
+        _assign_impl(rhs);
+        return *this;
+      }
+
+      // ---------------  Rebind --------------------
+      /// Rebind
+      void rebind(block2_gf_view x) noexcept {
+        _block_names = x._block_names;
+        _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
+        name         = x.name;
+      }
+
+      public:
+      // ------------- All the call operators without lazy arguments -----------------------------
+
+      // First, a simple () returns a view, like for an array...
+      /// Makes a const view of *this
+      const_view_type operator()() const { return *this; }
+      /// Makes a view of *this if it is non const
+      view_type operator()() { return *this; }
+
+      decltype(auto) operator()(int n1, int n2) const { return _glist[n1][n2]; }
+      decltype(auto) operator()(int n1, int n2) { return _glist[n1][n2]; }
+
+      // ------------- Call with lazy arguments -----------------------------
+
+      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
+      template <typename... Args> clef::make_expr_call_t<block2_gf_view &, Args...> operator()(Args &&... args) & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block2_gf_view const &, Args...> operator()(Args &&... args) const & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block2_gf_view, Args...> operator()(Args &&... args) && {
+        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      }
+      // ------------- All the [] operators without lazy arguments -----------------------------
+
+      // ------------- [] with lazy arguments -----------------------------
+
+      template <typename Arg> clef::make_expr_subscript_t<block2_gf_view const &, Arg> operator[](Arg &&arg) const & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block2_gf_view &, Arg> operator[](Arg &&arg) & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block2_gf_view, Arg> operator[](Arg &&arg) && {
+        return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
+      }
+
+      //----------------------------- HDF5 -----------------------------
+
+      /// HDF5 name
+      friend std::string get_triqs_hdf5_data_scheme(block2_gf_view const &g) { return "Block2Gf"; }
+
+      /// Write into HDF5
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf_view const &g) {
+        auto gr = fg.create_group(subgroup_name);
+        gr.write_triqs_hdf5_data_scheme(g);
+
+        h5_write(gr, "block_names1", g.block_names()[0]);
+        h5_write(gr, "block_names2", g.block_names()[1]);
+        for (int i = 0; i < g.size1(); ++i)
+          for (int j = 0; j < g.size2(); ++j) h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
+      }
+
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, block2_gf_view &g) {
+        auto gr = fg.open_group(subgroup_name);
+        // Check the attribute or throw
+        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
+        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        if (tag_file != tag_expected)
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+                              << " while I expected " << tag_expected;
+        auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
+        auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
+        auto block_names  = std::vector<std::vector<std::string>>{block_names1, block_names2};
+        int s0            = block_names[0].size();
+        int s1            = block_names[1].size();
+        g._glist.resize(s0);
+        g._block_names = block_names;
+        for (int i = 0; i < s0; ++i) {
+          g._glist[i].resize(s1);
+          for (int j = 0; j < s1; ++j) h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
+        }
+      }
+
+      //-----------------------------  BOOST Serialization -----------------------------
+      friend class boost::serialization::access;
+      /// The serialization as required by Boost
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &_glist;
+        ar &_block_names;
+        ar &name;
+      }
+
+      //----------------------------- print  -----------------------------
+
+      /// IO
+      friend std::ostream &operator<<(std::ostream &out, block2_gf_view const &x) { return out << "block2_gf_view"; }
+
+      // -------------------------------  iterator  --------------------------------------------------
+
+      template <bool is_const> class iterator_impl {
+        std::conditional_t<is_const, const block2_gf_view *, block2_gf_view *> bgf = NULL;
+        int n;
+
+        public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type        = g_t;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = std::conditional_t<is_const, const g_t *, g_t *>;
+        using reference         = std::conditional_t<is_const, g_t const &, g_t &>;
+        using block_gf_ref      = std::conditional_t<is_const, block2_gf_view const &, block2_gf_view &>;
+
+        iterator_impl() = default;
+        iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+        iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
+
+        operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
+
+        reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+        reference operator->() { return operator*(); }
+
+        iterator_impl &operator++() {
+          ++n;
+          return *this;
+        }
+
+        iterator_impl operator++(int) {
+          auto it = *this;
+          ++n;
+          return it;
+        }
+
+        bool operator==(iterator_impl const &other) const { return ((bgf == other.bgf) && (n == other.n)); }
+        bool operator!=(iterator_impl const &other) const { return (!operator==(other)); }
+      };
+
+      using iterator       = iterator_impl<false>;
+      using const_iterator = iterator_impl<true>;
+
+      //------------
+
+      iterator begin() { return {*this, false}; }
+      const_iterator begin() const { return {*this, false}; }
+      iterator end() { return {*this, true}; }
+      const_iterator end() const { return {*this, true}; }
+      auto cbegin() { return const_view_type(*this).begin(); }
+      auto cend() { return const_view_type(*this).end(); }
+    };
+
+    //----------------------------- MPI  -----------------------------
+
+    /**
+    * Initiate (lazy) MPI Bcast
     *
-    * @tparam RHS Type of the right hand side rhs
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Bcast operation is performed.
     *
-    * 		 RHS can be anything with .block_names() and [n] -> gf
-    * @param rhs
-    * @example
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-   template <typename RHS> std14::enable_if_t<!arrays::is_scalar<RHS>::value, block2_gf_view&> operator=(RHS const& rhs) {
-    if (!(size() == rhs.size()))
-     TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible size" << size() << " vs " << rhs.size();
-    _assign_impl(rhs);
-    return *this;
-   }
 
-   template <typename RHS> std14::enable_if_t<arrays::is_scalar<RHS>::value, block2_gf_view&> operator=(RHS&& rhs) {
-    for (auto& x : _glist)
-     for (auto& y : x)
-      y = rhs;
-    return *this;
-   }
-
-   /// Copy the data, without resizing the view.
-   block2_gf_view& operator=(block2_gf_view const& rhs) {
-    _assign_impl(rhs);
-    return *this;
-   }
-
-   // ---------------  Rebind --------------------
-   /// Rebind
-   void rebind(block2_gf_view x) noexcept {
-    _block_names = x._block_names;
-    _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
-    name         = x.name;
-   }
-
-   public:
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   decltype(auto) operator()(int n1, int n2) const { return _glist[n1][n2]; }
-   decltype(auto) operator()(int n1, int n2) { return _glist[n1][n2]; }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<block2_gf_view&, Args...> operator()(Args&&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block2_gf_view const&, Args...> operator()(Args&&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block2_gf_view, Args...> operator()(Args&&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-   }
-   // ------------- All the [] operators without lazy arguments -----------------------------
-
-   // ------------- [] with lazy arguments -----------------------------
-
-   template <typename Arg> clef::make_expr_subscript_t<block2_gf_view const&, Arg> operator[](Arg&& arg) const & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block2_gf_view&, Arg> operator[](Arg&& arg) & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block2_gf_view, Arg> operator[](Arg&& arg) && {
-    return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-   }
-
-   //----------------------------- HDF5 -----------------------------
-
-   /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(block2_gf_view const& g) { return "Block2Gf"; }
-
-   /// Write into HDF5
-   friend void h5_write(h5::group fg, std::string const& subgroup_name, block2_gf_view const& g) {
-    auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
-
-    h5_write(gr, "block_names1", g.block_names()[0]);
-    h5_write(gr, "block_names2", g.block_names()[1]);
-    for (int i = 0; i < g.size1(); ++i)
-     for (int j = 0; j < g.size2(); ++j)
-      h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
-   }
-
-   /// Read from HDF5
-   friend void h5_read(h5::group fg, std::string const& subgroup_name, block2_gf_view& g) {
-    auto gr = fg.open_group(subgroup_name);
-    // Check the attribute or throw
-    auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected = get_triqs_hdf5_data_scheme(g);
-    if (tag_file != tag_expected)
-     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
-                         << " while I expected " << tag_expected;
-    auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
-    auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
-    auto block_names  = std::vector<std::vector<std::string>>{block_names1, block_names2};
-    int s0            = block_names[0].size();
-    int s1            = block_names[1].size();
-    g._glist.resize(s0);
-    g._block_names = block_names;
-    for (int i = 0; i < s0; ++i) {
-     g._glist[i].resize(s1);
-     for (int j = 0; j < s1; ++j)
-      h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
-    }
-   }
-
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   /// The serialization as required by Boost
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-    ar& _glist;
-    ar& _block_names;
-    ar& name;
-   }
-
-   //----------------------------- print  -----------------------------
-
-   /// IO
-   friend std::ostream& operator<<(std::ostream& out, block2_gf_view const& x) { return out << "block2_gf_view"; }
-
-   // -------------------------------  iterator  --------------------------------------------------
-
-   template <bool is_const> class iterator_impl {
-    std::conditional_t<is_const, const block2_gf_view*, block2_gf_view*> bgf = NULL;
-    int n;
-
-    public:
-    using iterator_category = std::forward_iterator_tag;
-    using value_type        = g_t;
-    using difference_type   = std::ptrdiff_t;
-    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
-    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
-    using block_gf_ref      = std::conditional_t<is_const, block2_gf_view const&, block2_gf_view&>;
-
-    iterator_impl() = default;
-    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
-    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
-
-    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
-
-    reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
-    reference operator->() { return operator*(); }
-
-    iterator_impl& operator++() {
-     ++n;
-     return *this;
+    template <typename V, typename T> void mpi_broadcast(block2_gf_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
+      // Shall we bcast mesh ?
+      mpi_broadcast(g.data(), c, root);
     }
 
-    iterator_impl operator++(int) {
-     auto it = *this;
-     ++n;
-     return it;
+    /**
+    * Initiate (lazy) MPI Reduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Reduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
+
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                      bool all = false, MPI_Op op = MPI_SUM) {
+      return {a(), c, root, all, op};
     }
 
-    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
-   };
+    /**
+    * Initiate (lazy) MPI AllReduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI AllReduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
 
-   using iterator       = iterator_impl<false>;
-   using const_iterator = iterator_impl<true>;
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                          MPI_Op op = MPI_SUM) {
+      return {a(), c, root, true, op};
+    }
 
-   //------------
-
-   iterator begin() { return {*this, false}; }
-   const_iterator begin() const { return {*this, false}; }
-   iterator end() { return {*this, true}; }
-   const_iterator end() const { return {*this, true}; }
-   auto cbegin() { return const_view_type(*this).begin(); }
-   auto cend() { return const_view_type(*this).end(); }
-  };
-
-  //----------------------------- MPI  -----------------------------
-
-  /**
-   * Initiate (lazy) MPI Bcast
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Bcast operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T> void mpi_broadcast(block2_gf_view<V, T>& g, mpi::communicator c = {}, int root = 0) {
-   // Shall we bcast mesh ?
-   mpi_broadcast(g.data(), c, root);
-  }
-
-  /**
-   * Initiate (lazy) MPI Reduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Reduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_view<V, T> const& a, mpi::communicator c = {},
-                                                                    int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, all, op};
-  }
-
-  /**
-   * Initiate (lazy) MPI AllReduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI AllReduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
-
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf_view<V, T> const& a, mpi::communicator c = {},
-                                                                        int root = 0, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, true, op};
-  }
-
-  // ----------------------  block2_gf_const_view -----------------------------------------
-  /**
+    // ----------------------  block2_gf_const_view -----------------------------------------
+    /**
    * block2_gf_const_view
    */
-  template <typename Var, typename Target> class block2_gf_const_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block2_gf_const_view : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
-   public:
-   static constexpr bool is_view  = true;
-   static constexpr bool is_const = true;
-   static constexpr int arity     = 2;
+      public:
+      static constexpr bool is_view  = true;
+      static constexpr bool is_const = true;
+      static constexpr int arity     = 2;
 
-   using variable_t = Var;
-   using target_t   = Target;
+      using variable_t = Var;
+      using target_t   = Target;
 
-   using regular_type      = block2_gf<Var, Target>;
-   using mutable_view_type = block2_gf_view<Var, Target>;
-   using view_type         = block2_gf_const_view<Var, Target>;
-   using const_view_type   = block2_gf_const_view<Var, Target>;
+      using regular_type      = block2_gf<Var, Target>;
+      using mutable_view_type = block2_gf_view<Var, Target>;
+      using view_type         = block2_gf_const_view<Var, Target>;
+      using const_view_type   = block2_gf_const_view<Var, Target>;
 
-   using g_t           = gf_const_view<Var, Target>;
-   using data_t        = std::vector<std::vector<g_t>>;
-   using block_names_t = std::vector<std::vector<std::string>>;
+      using g_t           = gf_const_view<Var, Target>;
+      using data_t        = std::vector<std::vector<g_t>>;
+      using block_names_t = std::vector<std::vector<std::string>>;
 
-   // ------------- Accessors -----------------------------
+      // ------------- Accessors -----------------------------
 
-   /// Direct access to the data array
-   data_t& data() { return _glist; }
+      /// Direct access to the data array
+      data_t &data() { return _glist; }
 
-   /// Const version
-   data_t const& data() const { return _glist; }
+      /// Const version
+      data_t const &data() const { return _glist; }
 
-   ///
-   block_names_t const& block_names() const { return _block_names; }
+      ///
+      block_names_t const &block_names() const { return _block_names; }
 
-   int size1() const { return _glist.size(); }
-   int size2() const { return _glist[0].size(); } // FIXME PROTECT
-   int size() const { return size1() * size2(); }
+      int size1() const { return _glist.size(); }
+      int size2() const { return _glist[0].size(); } // FIXME PROTECT
+      int size() const { return size1() * size2(); }
 
-   std::string name;
+      std::string name;
 
-   private:
-   block_names_t _block_names;
-   data_t _glist;
+      private:
+      block_names_t _block_names;
+      data_t _glist;
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   struct impl_tag {};
-   template <typename G>
-   block2_gf_const_view(impl_tag, G&& x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
+      struct impl_tag {};
+      template <typename G> block2_gf_const_view(impl_tag, G &&x) : _block_names(x.block_names()), _glist(factory<data_t>(x.data())), name(x.name) {}
 
-   public:
-   /// Copy constructor
-   block2_gf_const_view(block2_gf_const_view const& x) = default;
+      public:
+      /// Copy constructor
+      block2_gf_const_view(block2_gf_const_view const &x) = default;
 
-   /// Move constructor
-   block2_gf_const_view(block2_gf_const_view&&) = default;
+      /// Move constructor
+      block2_gf_const_view(block2_gf_const_view &&) = default;
 
-   /// Construct from block_names and list of gf
-   block2_gf_const_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {}
+      /// Construct from block_names and list of gf
+      block2_gf_const_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {}
 
-   // ---------------  Constructors --------------------
+      // ---------------  Constructors --------------------
 
-   block2_gf_const_view() = default; // views can not be default constructed
+      block2_gf_const_view() = default; // views can not be default constructed
 
-   /// Makes a const view
-   block2_gf_const_view(mutable_view_type const& g) : block2_gf_const_view(impl_tag{}, g) {}
+      /// Makes a const view
+      block2_gf_const_view(mutable_view_type const &g) : block2_gf_const_view(impl_tag{}, g) {}
 
-   /// Makes a const view
-   block2_gf_const_view(regular_type const& g) : block2_gf_const_view(impl_tag{}, g) {}
+      /// Makes a const view
+      block2_gf_const_view(regular_type const &g) : block2_gf_const_view(impl_tag{}, g) {}
 
-   /// ---------------  Operator = --------------------
-   private:
-   template <typename RHS> void _assign_impl(RHS&& rhs) {
+      /// ---------------  Operator = --------------------
+      private:
+      template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-    for (int w = 0; w < size1(); ++w) {
-     for (int v = 0; v < size2(); ++v)
-      _glist[w][v] = rhs(w, v);
-     _block_names[w] = rhs.block_names()[w];
+        for (int w = 0; w < size1(); ++w) {
+          for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs(w, v);
+          _block_names[w] = rhs.block_names()[w];
+        }
+      }
+
+      public:
+      block2_gf_const_view &operator=(block2_gf_const_view const &) = delete; // a const view can not be assigned to
+
+      // ---------------  Rebind --------------------
+      /// Rebind
+      void rebind(block2_gf_const_view x) noexcept {
+        _block_names = x._block_names;
+        _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
+        name         = x.name;
+      }
+      /// Rebind on a non const view
+      void rebind(mutable_view_type const &X) noexcept { rebind(const_view_type{X}); }
+      void rebind(regular_type const &X) noexcept { rebind(const_view_type{X}); }
+
+      public:
+      // ------------- All the call operators without lazy arguments -----------------------------
+
+      // First, a simple () returns a view, like for an array...
+      /// Makes a const view of *this
+      const_view_type operator()() const { return *this; }
+      /// Makes a view of *this if it is non const
+      view_type operator()() { return *this; }
+
+      decltype(auto) operator()(int n1, int n2) const { return _glist[n1][n2]; }
+      decltype(auto) operator()(int n1, int n2) { return _glist[n1][n2]; }
+
+      // ------------- Call with lazy arguments -----------------------------
+
+      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
+      template <typename... Args> clef::make_expr_call_t<block2_gf_const_view &, Args...> operator()(Args &&... args) & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block2_gf_const_view const &, Args...> operator()(Args &&... args) const & {
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      }
+
+      template <typename... Args> clef::make_expr_call_t<block2_gf_const_view, Args...> operator()(Args &&... args) && {
+        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      }
+      // ------------- All the [] operators without lazy arguments -----------------------------
+
+      // ------------- [] with lazy arguments -----------------------------
+
+      template <typename Arg> clef::make_expr_subscript_t<block2_gf_const_view const &, Arg> operator[](Arg &&arg) const & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block2_gf_const_view &, Arg> operator[](Arg &&arg) & {
+        return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
+      }
+
+      template <typename Arg> clef::make_expr_subscript_t<block2_gf_const_view, Arg> operator[](Arg &&arg) && {
+        return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
+      }
+
+      //----------------------------- HDF5 -----------------------------
+
+      /// HDF5 name
+      friend std::string get_triqs_hdf5_data_scheme(block2_gf_const_view const &g) { return "Block2Gf"; }
+
+      /// Write into HDF5
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf_const_view const &g) {
+        auto gr = fg.create_group(subgroup_name);
+        gr.write_triqs_hdf5_data_scheme(g);
+
+        h5_write(gr, "block_names1", g.block_names()[0]);
+        h5_write(gr, "block_names2", g.block_names()[1]);
+        for (int i = 0; i < g.size1(); ++i)
+          for (int j = 0; j < g.size2(); ++j) h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
+      }
+
+      /// Read from HDF5
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, block2_gf_const_view &g) {
+        auto gr = fg.open_group(subgroup_name);
+        // Check the attribute or throw
+        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
+        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        if (tag_file != tag_expected)
+          TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+                              << " while I expected " << tag_expected;
+        auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
+        auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
+        auto block_names  = std::vector<std::vector<std::string>>{block_names1, block_names2};
+        int s0            = block_names[0].size();
+        int s1            = block_names[1].size();
+        g._glist.resize(s0);
+        g._block_names = block_names;
+        for (int i = 0; i < s0; ++i) {
+          g._glist[i].resize(s1);
+          for (int j = 0; j < s1; ++j) h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
+        }
+      }
+
+      //-----------------------------  BOOST Serialization -----------------------------
+      friend class boost::serialization::access;
+      /// The serialization as required by Boost
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &_glist;
+        ar &_block_names;
+        ar &name;
+      }
+
+      //----------------------------- print  -----------------------------
+
+      /// IO
+      friend std::ostream &operator<<(std::ostream &out, block2_gf_const_view const &x) { return out << "block2_gf_const_view"; }
+
+      // -------------------------------  iterator  --------------------------------------------------
+
+      template <bool is_const> class iterator_impl {
+        std::conditional_t<is_const, const block2_gf_const_view *, block2_gf_const_view *> bgf = NULL;
+        int n;
+
+        public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type        = g_t;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = std::conditional_t<is_const, const g_t *, g_t *>;
+        using reference         = std::conditional_t<is_const, g_t const &, g_t &>;
+        using block_gf_ref      = std::conditional_t<is_const, block2_gf_const_view const &, block2_gf_const_view &>;
+
+        iterator_impl() = default;
+        iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
+        iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
+
+        operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
+
+        reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+        reference operator->() { return operator*(); }
+
+        iterator_impl &operator++() {
+          ++n;
+          return *this;
+        }
+
+        iterator_impl operator++(int) {
+          auto it = *this;
+          ++n;
+          return it;
+        }
+
+        bool operator==(iterator_impl const &other) const { return ((bgf == other.bgf) && (n == other.n)); }
+        bool operator!=(iterator_impl const &other) const { return (!operator==(other)); }
+      };
+
+      using iterator       = iterator_impl<false>;
+      using const_iterator = iterator_impl<true>;
+
+      //------------
+
+      iterator begin() { return {*this, false}; }
+      const_iterator begin() const { return {*this, false}; }
+      iterator end() { return {*this, true}; }
+      const_iterator end() const { return {*this, true}; }
+      auto cbegin() { return const_view_type(*this).begin(); }
+      auto cend() { return const_view_type(*this).end(); }
+    };
+
+    //----------------------------- MPI  -----------------------------
+
+    /**
+    * Initiate (lazy) MPI Bcast
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Bcast operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
+
+    template <typename V, typename T> void mpi_broadcast(block2_gf_const_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
+      // Shall we bcast mesh ?
+      mpi_broadcast(g.data(), c, root);
     }
-   }
 
-   public:
-   block2_gf_const_view& operator=(block2_gf_const_view const&) = delete; // a const view can not be assigned to
+    /**
+    * Initiate (lazy) MPI Reduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI Reduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
 
-   // ---------------  Rebind --------------------
-   /// Rebind
-   void rebind(block2_gf_const_view x) noexcept {
-    _block_names = x._block_names;
-    _glist       = data_t{x._glist}; // copy of vector<vector<gf_view>>, makes new views on the gf of x
-    name         = x.name;
-   }
-   /// Rebind on a non const view
-   void rebind(mutable_view_type const& X) noexcept { rebind(const_view_type{X}); }
-   void rebind(regular_type const& X) noexcept { rebind(const_view_type{X}); }
-
-   public:
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   decltype(auto) operator()(int n1, int n2) const { return _glist[n1][n2]; }
-   decltype(auto) operator()(int n1, int n2) { return _glist[n1][n2]; }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<block2_gf_const_view&, Args...> operator()(Args&&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block2_gf_const_view const&, Args...> operator()(Args&&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<block2_gf_const_view, Args...> operator()(Args&&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
-   }
-   // ------------- All the [] operators without lazy arguments -----------------------------
-
-   // ------------- [] with lazy arguments -----------------------------
-
-   template <typename Arg> clef::make_expr_subscript_t<block2_gf_const_view const&, Arg> operator[](Arg&& arg) const & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block2_gf_const_view&, Arg> operator[](Arg&& arg) & {
-    return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
-   }
-
-   template <typename Arg> clef::make_expr_subscript_t<block2_gf_const_view, Arg> operator[](Arg&& arg) && {
-    return clef::make_expr_subscript(std::move(*this), std::forward<Arg>(arg));
-   }
-
-   //----------------------------- HDF5 -----------------------------
-
-   /// HDF5 name
-   friend std::string get_triqs_hdf5_data_scheme(block2_gf_const_view const& g) { return "Block2Gf"; }
-
-   /// Write into HDF5
-   friend void h5_write(h5::group fg, std::string const& subgroup_name, block2_gf_const_view const& g) {
-    auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
-
-    h5_write(gr, "block_names1", g.block_names()[0]);
-    h5_write(gr, "block_names2", g.block_names()[1]);
-    for (int i = 0; i < g.size1(); ++i)
-     for (int j = 0; j < g.size2(); ++j)
-      h5_write(gr, g.block_names()[0][i] + "_" + g.block_names()[1][j], g._glist[i][j]);
-   }
-
-   /// Read from HDF5
-   friend void h5_read(h5::group fg, std::string const& subgroup_name, block2_gf_const_view& g) {
-    auto gr = fg.open_group(subgroup_name);
-    // Check the attribute or throw
-    auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected = get_triqs_hdf5_data_scheme(g);
-    if (tag_file != tag_expected)
-     TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
-                         << " while I expected " << tag_expected;
-    auto block_names1 = h5::h5_read<std::vector<std::string>>(gr, "block_names1");
-    auto block_names2 = h5::h5_read<std::vector<std::string>>(gr, "block_names2");
-    auto block_names  = std::vector<std::vector<std::string>>{block_names1, block_names2};
-    int s0            = block_names[0].size();
-    int s1            = block_names[1].size();
-    g._glist.resize(s0);
-    g._block_names = block_names;
-    for (int i = 0; i < s0; ++i) {
-     g._glist[i].resize(s1);
-     for (int j = 0; j < s1; ++j)
-      h5_read(gr, block_names[0][i] + "_" + block_names[1][j], g._glist[i][j]);
-    }
-   }
-
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   /// The serialization as required by Boost
-   template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-    ar& _glist;
-    ar& _block_names;
-    ar& name;
-   }
-
-   //----------------------------- print  -----------------------------
-
-   /// IO
-   friend std::ostream& operator<<(std::ostream& out, block2_gf_const_view const& x) { return out << "block2_gf_const_view"; }
-
-   // -------------------------------  iterator  --------------------------------------------------
-
-   template <bool is_const> class iterator_impl {
-    std::conditional_t<is_const, const block2_gf_const_view*, block2_gf_const_view*> bgf = NULL;
-    int n;
-
-    public:
-    using iterator_category = std::forward_iterator_tag;
-    using value_type        = g_t;
-    using difference_type   = std::ptrdiff_t;
-    using pointer           = std::conditional_t<is_const, const g_t*, g_t*>;
-    using reference         = std::conditional_t<is_const, g_t const&, g_t&>;
-    using block_gf_ref      = std::conditional_t<is_const, block2_gf_const_view const&, block2_gf_const_view&>;
-
-    iterator_impl() = default;
-    iterator_impl(block_gf_ref _bgf, bool at_end = false) : bgf(&_bgf), n(at_end ? bgf->size() : 0) {}
-    iterator_impl(block_gf_ref _bgf, int _n) : bgf(&_bgf), n(_n) {}
-
-    operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
-
-    reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
-    reference operator->() { return operator*(); }
-
-    iterator_impl& operator++() {
-     ++n;
-     return *this;
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                      bool all = false, MPI_Op op = MPI_SUM) {
+      return {a(), c, root, all, op};
     }
 
-    iterator_impl operator++(int) {
-     auto it = *this;
-     ++n;
-     return it;
+    /**
+    * Initiate (lazy) MPI AllReduce
+    *
+    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
+    * the MPI AllReduce operation is performed.
+    *
+    * @group MPI
+    * @param g The Green function
+    * @param c The MPI communicator (default is world)
+    * @param root The root of the broadcast communication in the MPI sense.
+    * @return Returns a lazy object describing the object and the MPI operation to be performed.
+    *
+    */
+
+    template <typename V, typename T>
+    mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
+                                                                          MPI_Op op = MPI_SUM) {
+      return {a(), c, root, true, op};
     }
 
-    bool operator==(iterator_impl const& other) const { return ((bgf == other.bgf) && (n == other.n)); }
-    bool operator!=(iterator_impl const& other) const { return (!operator==(other)); }
-   };
+    // -------------------------------   Free Factories for regular type  --------------------------------------------------
 
-   using iterator       = iterator_impl<false>;
-   using const_iterator = iterator_impl<true>;
+    ///
+    template <typename V, typename T> block_gf<V, T> make_block_gf(int n, gf<V, T> const &g) { return {n, g}; }
 
-   //------------
+    ///
+    template <typename V, typename T> block_gf<V, T> make_block_gf(std::vector<gf<V, T>> v) { return {std::move(v)}; }
 
-   iterator begin() { return {*this, false}; }
-   const_iterator begin() const { return {*this, false}; }
-   iterator end() { return {*this, true}; }
-   const_iterator end() const { return {*this, true}; }
-   auto cbegin() { return const_view_type(*this).begin(); }
-   auto cend() { return const_view_type(*this).end(); }
-  };
+    ///
+    template <typename V, typename T> block_gf<V, T> make_block_gf(std::initializer_list<gf<V, T>> const &v) { return {v}; }
 
-  //----------------------------- MPI  -----------------------------
+    ///
+    template <typename V, typename T> block_gf<V, T> make_block_gf(std::vector<std::string> const &b, gf<V, T> const &g) { return {b, g}; }
 
-  /**
-   * Initiate (lazy) MPI Bcast
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Bcast operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
+    ///
+    template <typename V, typename T> block_gf<V, T> make_block_gf(std::vector<std::string> const &b, std::vector<gf<V, T>> v) {
+      return {b, std::move(v)};
+    }
 
-  template <typename V, typename T> void mpi_broadcast(block2_gf_const_view<V, T>& g, mpi::communicator c = {}, int root = 0) {
-   // Shall we bcast mesh ?
-   mpi_broadcast(g.data(), c, root);
-  }
+    ///
+    template <typename V, typename T> block_gf<V, T> make_block_gf(std::vector<std::string> b, std::initializer_list<gf<V, T>> const &v) {
+      return {b, v};
+    }
 
-  /**
-   * Initiate (lazy) MPI Reduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI Reduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
+    // -------------------------------   Free Factories for block_gf_view and block_gf_const_view
+    // --------------------------------------------------
 
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_const_view<V, T> const& a, mpi::communicator c = {},
-                                                                    int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, all, op};
-  }
+    /// Make a block view from the G. Indices are '1', '2', ....
+    template <typename G0, typename... G> block_gf_view_of<G0> make_block_gf_view(G0 &&g0, G &&... g) {
+      return {details::_make_block_names1(sizeof...(G) + 1), {std::forward<G0>(g0), std::forward<G>(g)...}};
+    }
 
-  /**
-   * Initiate (lazy) MPI AllReduce
-   *
-   * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-   * the MPI AllReduce operation is performed.
-   *
-   * @group MPI
-   * @param g The Green function
-   * @param c The MPI communicator (default is world)
-   * @param root The root of the broadcast communication in the MPI sense.
-   * @return Returns a lazy object describing the object and the MPI operation to be performed.
-   *
-   */
+    ///
+    template <typename G> block_gf_view_of<G> make_block_gf_view(std::vector<G> v) { return {std::move(v)}; }
 
-  template <typename V, typename T>
-  mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>>
-  mpi_all_reduce(block2_gf_const_view<V, T> const& a, mpi::communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
-   return {a(), c, root, true, op};
-  }
+    /// Make a block view from block_names and a vector of G
+    /// G can be a view, or the regular type
+    template <typename G> block_gf_view_of<G> make_block_gf_view(std::vector<std::string> b, std::vector<G> v) {
+      return {std::move(b), std::move(v)};
+    }
+    /// Make a block const_view from the G. Indices are '1', '2', ....
+    template <typename G0, typename... G> block_gf_const_view_of<G0> make_block_gf_const_view(G0 &&g0, G &&... g) {
+      return {details::_make_block_names1(sizeof...(G) + 1), {std::forward<G0>(g0), std::forward<G>(g)...}};
+    }
 
-  // -------------------------------   Free Factories for regular type  --------------------------------------------------
+    ///
+    template <typename G> block_gf_const_view_of<G> make_block_gf_const_view(std::vector<G> v) { return {std::move(v)}; }
 
-  ///
-  template <typename V, typename T> block_gf<V, T> make_block_gf(int n, gf<V, T> const& g) { return {n, g}; }
+    /// Make a block const_view from block_names and a vector of G
+    /// G can be a view, or the regular type
+    template <typename G> block_gf_const_view_of<G> make_block_gf_const_view(std::vector<std::string> b, std::vector<G> v) {
+      return {std::move(b), std::move(v)};
+    }
 
-  ///
-  template <typename V, typename T> block_gf<V, T> make_block_gf(std::vector<gf<V, T>> v) { return {std::move(v)}; }
+    // -------------------------------   Free Factories for block2_gf   --------------------------------------------------
 
-  ///
-  template <typename V, typename T> block_gf<V, T> make_block_gf(std::initializer_list<gf<V, T>> const& v) { return {v}; }
+    /// From the size n x p and the g from a number and a gf to be copied
+    template <typename V, typename T> block2_gf<V, T> make_block2_gf(int n, int p, gf<V, T> const &g) { return {n, p, g}; }
 
-  ///
-  template <typename V, typename T> block_gf<V, T> make_block_gf(std::vector<std::string> const& b, gf<V, T> const& g) {
-   return {b, g};
-  }
+    // from vector<tuple<string,string>>, vector<gf>
+    template <typename V, typename T>
+    block2_gf<V, T> make_block2_gf(std::vector<std::string> const &block_names1, std::vector<std::string> const &block_names2,
+                                   std::vector<std::vector<gf<V, T>>> vv) {
+      if (block_names1.size() != vv.size())
+        TRIQS_RUNTIME_ERROR << "make_block2_gf(vector<string>, vector<string>>, vector<vector<gf>>): incompatible outer vector size!";
+      for (auto const &v : vv) {
+        if (block_names2.size() != v.size())
+          TRIQS_RUNTIME_ERROR << "make_block2_gf(vector<string>, vector<string>>, vector<vector<gf>>): incompatible inner vector size!";
+      }
+      return {{block_names1, block_names2}, std::move(vv)};
+    }
 
-  ///
-  template <typename V, typename T> block_gf<V, T> make_block_gf(std::vector<std::string> const& b, std::vector<gf<V, T>> v) {
-   return {b, std::move(v)};
-  }
+    // -------------------------------   Free Factories for view type  --------------------------------------------------
 
-  ///
-  template <typename V, typename T>
-  block_gf<V, T> make_block_gf(std::vector<std::string> b, std::initializer_list<gf<V, T>> const& v) {
-   return {b, v};
-  }
-
-  // -------------------------------   Free Factories for block_gf_view and block_gf_const_view
-  // --------------------------------------------------
-
-  /// Make a block view from the G. Indices are '1', '2', ....
-  template <typename G0, typename... G> block_gf_view_of<G0> make_block_gf_view(G0&& g0, G&&... g) {
-   return {details::_make_block_names1(sizeof...(G) + 1), {std::forward<G0>(g0), std::forward<G>(g)...}};
-  }
-
-  ///
-  template <typename G> block_gf_view_of<G> make_block_gf_view(std::vector<G> v) { return {std::move(v)}; }
-
-  /// Make a block view from block_names and a vector of G
-  /// G can be a view, or the regular type
-  template <typename G> block_gf_view_of<G> make_block_gf_view(std::vector<std::string> b, std::vector<G> v) {
-   return {std::move(b), std::move(v)};
-  }
-  /// Make a block const_view from the G. Indices are '1', '2', ....
-  template <typename G0, typename... G> block_gf_const_view_of<G0> make_block_gf_const_view(G0&& g0, G&&... g) {
-   return {details::_make_block_names1(sizeof...(G) + 1), {std::forward<G0>(g0), std::forward<G>(g)...}};
-  }
-
-  ///
-  template <typename G> block_gf_const_view_of<G> make_block_gf_const_view(std::vector<G> v) { return {std::move(v)}; }
-
-  /// Make a block const_view from block_names and a vector of G
-  /// G can be a view, or the regular type
-  template <typename G> block_gf_const_view_of<G> make_block_gf_const_view(std::vector<std::string> b, std::vector<G> v) {
-   return {std::move(b), std::move(v)};
-  }
-
-  // -------------------------------   Free Factories for block2_gf   --------------------------------------------------
-
-  /// From the size n x p and the g from a number and a gf to be copied
-  template <typename V, typename T> block2_gf<V, T> make_block2_gf(int n, int p, gf<V, T> const& g) { return {n, p, g}; }
-
-  // from vector<tuple<string,string>>, vector<gf>
-  template <typename V, typename T>
-  block2_gf<V, T> make_block2_gf(std::vector<std::string> const& block_names1, std::vector<std::string> const& block_names2,
-                                 std::vector<std::vector<gf<V, T>>> vv) {
-   if (block_names1.size() != vv.size())
-    TRIQS_RUNTIME_ERROR << "make_block2_gf(vector<string>, vector<string>>, vector<vector<gf>>): incompatible outer vector size!";
-   for (auto const& v : vv) {
-    if (block_names2.size() != v.size())
-     TRIQS_RUNTIME_ERROR
-         << "make_block2_gf(vector<string>, vector<string>>, vector<vector<gf>>): incompatible inner vector size!";
-   }
-   return {{block_names1, block_names2}, std::move(vv)};
-  }
-
-  // -------------------------------   Free Factories for view type  --------------------------------------------------
-
-  // from block_names and data vector
-  template <typename GF>
-  block2_gf_view<typename GF::variable_t, typename GF::target_t> make_block2_gf_view(std::vector<std::string> block_names1,
-                                                                                     std::vector<std::string> block_names2,
-                                                                                     std::vector<std::vector<GF>> v) {
-   return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
-  }
- } // namespace gfs
+    // from block_names and data vector
+    template <typename GF>
+    block2_gf_view<typename GF::variable_t, typename GF::target_t>
+    make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2, std::vector<std::vector<GF>> v) {
+      return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
+    }
+  } // namespace gfs
 } // namespace triqs
 
 /*------------------------------------------------------------------------------------------------------
  *             Delete std::swap for views
  *-----------------------------------------------------------------------------------------------------*/
 namespace std {
- template <typename Var, typename Target>
- void swap(triqs::gfs::block_gf_view<Var, Target>& a, triqs::gfs::block_gf_view<Var, Target>& b) = delete;
- template <typename Var, typename Target>
- void swap(triqs::gfs::block2_gf_view<Var, Target>& a, triqs::gfs::block2_gf_view<Var, Target>& b) = delete;
- template <typename Var, typename Target>
- void swap(triqs::gfs::block_gf_const_view<Var, Target>& a, triqs::gfs::block_gf_const_view<Var, Target>& b) = delete;
- template <typename Var, typename Target>
- void swap(triqs::gfs::block2_gf_const_view<Var, Target>& a, triqs::gfs::block2_gf_const_view<Var, Target>& b) = delete;
+  template <typename Var, typename Target> void swap(triqs::gfs::block_gf_view<Var, Target> &a, triqs::gfs::block_gf_view<Var, Target> &b)   = delete;
+  template <typename Var, typename Target> void swap(triqs::gfs::block2_gf_view<Var, Target> &a, triqs::gfs::block2_gf_view<Var, Target> &b) = delete;
+  template <typename Var, typename Target>
+  void swap(triqs::gfs::block_gf_const_view<Var, Target> &a, triqs::gfs::block_gf_const_view<Var, Target> &b) = delete;
+  template <typename Var, typename Target>
+  void swap(triqs::gfs::block2_gf_const_view<Var, Target> &a, triqs::gfs::block2_gf_const_view<Var, Target> &b) = delete;
 } // namespace std
