@@ -105,7 +105,7 @@ namespace triqs { namespace arrays {
    }
 
    friend view_type c_ordered_transposed_view(array_view const& a) {
-    return transposed_view(a, a.indexmap().get_memory_layout().get_memory_positions());
+    return transposed_view(a, a.indexmap().memory_layout().get_memory_positions());
    }
  };
 #undef IMPL_TYPE
@@ -130,10 +130,10 @@ namespace triqs { namespace arrays {
   using weak_view_type = array_view<ValueType, Rank, TraversalOrder, true>;
 
   /// Empty array.
-  explicit array(memory_layout<Rank> ml = memory_layout<Rank>{}) : IMPL_TYPE(ml) {}
+  explicit array(memory_layout_t<Rank> ml = memory_layout_t<Rank>{}) : IMPL_TYPE(ml) {}
 
   /// From a domain
-  explicit array(typename indexmap_type::domain_type const& dom, memory_layout<Rank> ml = memory_layout<Rank>{})
+  explicit array(typename indexmap_type::domain_type const& dom, memory_layout_t<Rank> ml = memory_layout_t<Rank>{})
      : IMPL_TYPE(indexmap_type(dom, ml)) {}
 
  /// From shape
@@ -146,7 +146,7 @@ namespace triqs { namespace arrays {
     array (size_t I_1, .... , size_t I_rank);
 #else
 #define IMPL(z, NN, unused)                                \
-    explicit array (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), size_t I_),memory_layout<Rank> ml = memory_layout<Rank>{}): \
+    explicit array (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), size_t I_),memory_layout_t<Rank> ml = memory_layout_t<Rank>{}): \
     IMPL_TYPE(indexmap_type(mini_vector<size_t,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_)),ml)) {\
      static_assert(IMPL_TYPE::rank-1==NN,"array : incorrect number of variables in constructor");}
     BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
@@ -160,26 +160,41 @@ namespace triqs { namespace arrays {
     explicit array(array && X) noexcept{ this->swap_me(X); } 
 
     // Makes a true (deep) copy of the data. 
-    explicit array(const array & X, memory_layout<Rank> ml): array(X.indexmap().domain(), ml){
+    explicit array(const array & X, memory_layout_t<Rank> ml): array(X.indexmap().domain(), ml){
       triqs_arrays_assign_delegation(*this,X);
     }
 
     // from a temporary storage and an indexmap. Used for reshaping a temporary array
-    explicit array(typename indexmap_type::domain_type const& dom, storage_type&& sto, memory_layout<Rank> ml = memory_layout<Rank>{})
+    explicit array(typename indexmap_type::domain_type const& dom, storage_type&& sto, memory_layout_t<Rank> ml = memory_layout_t<Rank>{})
        : IMPL_TYPE(indexmap_type(dom, ml), std::move(sto)) {}
 
     /** 
      * Build a new array from X.domain() and fill it with by evaluating X. X can be : 
      *  - another type of array, array_view, matrix,.... (any <IndexMap, Storage> pair)
+     *  - the memory layout will be as given (ml)
      *  - a expression : e.g. array<int> A = B+ 2*C;
      */
     template <typename T>
     array(const T& X,
           std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value,
-                             memory_layout<Rank>> ml = memory_layout<Rank>{})
+                             memory_layout_t<Rank>> ml)
        : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
      triqs_arrays_assign_delegation(*this, X);
     }
+
+    /** 
+     * Build a new array from X.domain() and fill it with by evaluating X. X can be : 
+     *  - another type of array, array_view, matrix,.... (any <IndexMap, Storage> pair)
+     *  - the memory layout will be deduced from X if possible, or default constructed
+     *  - a expression : e.g. array<int> A = B+ 2*C;
+     */
+    template <typename T>
+    array(const T& X,
+          std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, void*> _unused = nullptr )
+       : IMPL_TYPE(indexmap_type(X.domain(), get_memory_layout<Rank, T>::invoke(X))) {
+     triqs_arrays_assign_delegation(*this, X);
+    }
+
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
@@ -189,14 +204,14 @@ namespace triqs { namespace arrays {
     // build from a init_list
     template<typename T, int R=Rank>
      array(std::initializer_list<T> const & l, std14::enable_if_t<(R==1) && std::is_constructible<value_type, T>::value> * dummy =0):
-      IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(l.size()),memory_layout<Rank>())) {
+      IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(l.size()),memory_layout_t<Rank>())) {
        size_t i=0;
        for (auto const & x : l) (*this)(i++) = x;
       }
 
     template<typename T, int R=Rank>
      array (std::initializer_list<std::initializer_list<T>> const & l, std14::enable_if_t<(R==2) && std::is_constructible<value_type, T>::value > * dummy =0):
-      IMPL_TYPE(memory_layout<Rank>()) {
+      IMPL_TYPE(memory_layout_t<Rank>()) {
        size_t i=0,j=0; int s=-1;
        for (auto const & l1 : l) { if (s==-1) s= l1.size(); else if (s != l1.size()) TRIQS_RUNTIME_ERROR << "initializer list not rectangular !";}
        IMPL_TYPE::resize(typename IMPL_TYPE::domain_type (mini_vector<size_t,2>(l.size(),s)));

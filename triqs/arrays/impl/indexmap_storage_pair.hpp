@@ -35,6 +35,14 @@
 
 namespace triqs { namespace arrays {
 
+ template<int Rank, class T, class = std17::void_t<>> struct get_memory_layout {
+   static auto invoke( T const & ){ return memory_layout_t<Rank>{}; }
+ };
+ 
+ template<int Rank, class T> struct get_memory_layout<Rank, T, std17::void_t<decltype(std::declval<T>().memory_layout())>> {
+   static auto invoke( T const & x ){ return x.memory_layout(); }
+ };
+
  template<typename A> AUTO_DECL get_shape  (A const & x) RETURN(x.domain().lengths());
 
  template<typename A> size_t first_dim   (A const & x) { return x.domain().lengths()[0];}
@@ -156,6 +164,7 @@ namespace triqs { namespace arrays {
    public:
     // ------------------------------- data access --------------------------------------------
 
+    auto const & memory_layout() const { return indexmap_.memory_layout(); }
     indexmap_type const & indexmap() const {return indexmap_;}
     storage_type const & storage() const {return storage_;}
     storage_type & storage() {return storage_;}
@@ -322,7 +331,7 @@ namespace triqs { namespace arrays {
     // ------------------------------- resize --------------------------------------------
     //
     void resize (domain_type const & d) {
-     indexmap_ = IndexMapType(d,indexmap_.get_memory_layout());
+     indexmap_ = IndexMapType(d,indexmap_.memory_layout());
      // build a new one with the lengths of IND BUT THE SAME layout !
      // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
      if (storage_.size() != indexmap_.domain().number_of_elements())

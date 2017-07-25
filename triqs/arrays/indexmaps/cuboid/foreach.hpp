@@ -50,24 +50,24 @@ namespace arrays {
 #define AUX3C(z, p, unused) BOOST_PP_COMMA_IF(p) i##p
 #define IMPL(z, RR, unused)                                                                                                      \
  template <typename FntType>                                                                                                     \
- FORCEINLINE void foreach_impl(_traversal_c, domain_t<RR> const& dom, memory_layout<RR> const& ml, FntType F) {                  \
+ FORCEINLINE void foreach_impl(_traversal_c, domain_t<RR> const& dom, memory_layout_t<RR> const& ml, FntType F) {                  \
   const mini_vector<foreach_int_type, RR> l(dom.lengths());                                                                      \
   BOOST_PP_REPEAT(RR, AUX_C, nil) { F(BOOST_PP_REPEAT(RR, AUX3C, nil)); }                                                        \
  }                                                                                                                               \
  template <typename FntType>                                                                                                     \
- FORCEINLINE void foreach_impl(_traversal_fortran, domain_t<RR> const& dom, memory_layout<RR> ml, FntType F) {                   \
+ FORCEINLINE void foreach_impl(_traversal_fortran, domain_t<RR> const& dom, memory_layout_t<RR> ml, FntType F) {                   \
   foreach_int_type ind[RR];                                                                                                      \
   const mini_vector<foreach_int_type, RR> l(dom.lengths());                                                                      \
   BOOST_PP_REPEAT(RR, AUX_F, BOOST_PP_DEC(RR)) { F(BOOST_PP_REPEAT(RR, AUX3, nil)); }                                            \
  }                                                                                                                               \
  template <typename FntType>                                                                                                     \
- FORCEINLINE void foreach_impl(_traversal_dynamical, domain_t<RR> const& dom, memory_layout<RR> ml, FntType F) {                 \
+ FORCEINLINE void foreach_impl(_traversal_dynamical, domain_t<RR> const& dom, memory_layout_t<RR> ml, FntType F) {                 \
   foreach_int_type ind[RR];                                                                                                      \
   const mini_vector<foreach_int_type, RR> l(dom.lengths());                                                                      \
   BOOST_PP_REPEAT(RR, AUX_Dynamical, nil) { F(BOOST_PP_REPEAT(RR, AUX3, nil)); }                                                 \
  }                                                                                                                               \
  template <typename FntType, int... Is>                                                                                          \
- FORCEINLINE void foreach_impl(_traversal_custom<Is...>, domain_t<RR> const& dom, memory_layout<RR> ml, FntType F) {             \
+ FORCEINLINE void foreach_impl(_traversal_custom<Is...>, domain_t<RR> const& dom, memory_layout_t<RR> ml, FntType F) {             \
   constexpr ull_t traversal_order_perm = permutations::permutation(Is...);                                                       \
   BOOST_PP_REPEAT(RR, AUX_Custom1, BOOST_PP_DEC(RR));                                                                            \
   foreach_int_type ind[RR];                                                                                                      \
@@ -90,20 +90,20 @@ namespace arrays {
  /// Get the traversal order
  template <typename A, typename Enable = void> struct _get_traversal_order {
   using traversal_order_t = _traversal_c;
-  static memory_layout<A::domain_type::rank> invoke(A const& a) {
-   return memory_layout<A::domain_type::rank>{};
+  static memory_layout_t<A::domain_type::rank> invoke(A const& a) {
+   return memory_layout_t<A::domain_type::rank>{};
   }
  };
  template <typename A> struct _get_traversal_order<A, typename A::indexmap_type::has_traversal_order_tag> {
   using traversal_order_t = typename A::traversal_order_t;
-  static memory_layout<A::domain_type::rank> invoke(A const& a) { return a.indexmap().get_memory_layout(); }
+  static memory_layout_t<A::domain_type::rank> invoke(A const& a) { return a.indexmap().memory_layout(); }
  };
 
  /// --------------- FOREACH on the domain------------------------
  //// Internal : only in non default constructible init of array
  template <typename T, typename Function>
  FORCEINLINE void _foreach_on_indexmap(T const& x, Function const& F) {
-  indexmaps::cuboid::foreach_impl(_traversal_c{}, x.domain(), x.get_memory_layout(), F);
+  indexmaps::cuboid::foreach_impl(_traversal_c{}, x.domain(), x.memory_layout(), F);
  }
 
  /// --------------- FOREACH ------------------------

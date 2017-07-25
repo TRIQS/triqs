@@ -34,8 +34,8 @@ TEST(make_gf, new_layout) {
     std::cerr << G1.data().data_start()[i] << " " << G2.data().data_start()[i] << "\n"; 
   }
 
-  EXPECT_EQ(G1.get_memory_layout(), make_memory_layout(0,1,2)); 
-  EXPECT_EQ(G2.get_memory_layout(), make_memory_layout(1,0,2)); 
+  EXPECT_EQ(G1.memory_layout(), make_memory_layout(0,1,2)); 
+  EXPECT_EQ(G2.memory_layout(), make_memory_layout(1,0,2)); 
   EXPECT_GF_NEAR(G1, G2);
 }
 
@@ -69,13 +69,13 @@ TEST(make_gf, from_mesh_target_and_layout) {
   G1[iw] << 1.0 / iw;
 
   // Create G2 with same mesh and target as G1
-  auto G2 = make_gf(G1.mesh(), G1.target(), G1.get_memory_layout());
+  auto G2 = make_gf(G1.mesh(), G1.target(), G1.memory_layout());
 
   // Fill G2 with same values as G1
   G2() = G1;
 
-  EXPECT_EQ(G1.get_memory_layout(), make_memory_layout(1,0,2)); 
-  EXPECT_EQ(G2.get_memory_layout(), make_memory_layout(1,0,2)); 
+  EXPECT_EQ(G1.memory_layout(), make_memory_layout(1,0,2)); 
+  EXPECT_EQ(G2.memory_layout(), make_memory_layout(1,0,2)); 
   EXPECT_GF_NEAR(G1, G2);
 }
 

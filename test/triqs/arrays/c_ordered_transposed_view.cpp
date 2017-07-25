@@ -14,8 +14,8 @@ TEST(Array, c_ordered_transposed_view1) {
 
  EXPECT_EQ(a.shape(), (mini_vector<size_t, 4>{1, 2, 3, 4}));
  EXPECT_EQ(v.shape(), (mini_vector<size_t, 4>{1, 2, 3, 4}));
- EXPECT_EQ(a.indexmap().get_memory_layout(), (memory_layout<4>{0, 1, 2, 3}));
- EXPECT_EQ(v.indexmap().get_memory_layout(), (memory_layout<4>{0, 1, 2, 3}));
+ EXPECT_EQ(a.indexmap().memory_layout(), (memory_layout_t<4>{0, 1, 2, 3}));
+ EXPECT_EQ(v.indexmap().memory_layout(), (memory_layout_t<4>{0, 1, 2, 3}));
 }
 
 TEST(Array, c_ordered_transposed_view2) {
@@ -27,8 +27,8 @@ TEST(Array, c_ordered_transposed_view2) {
 
  EXPECT_EQ(a.shape(), (mini_vector<size_t, 4>{1, 2, 3, 4}));
  EXPECT_EQ(v.shape(), (mini_vector<size_t, 4>{2, 1, 3, 4}));
- EXPECT_EQ(a.indexmap().get_memory_layout(), (memory_layout<4>{1, 0, 2, 3}));
- EXPECT_EQ(v.indexmap().get_memory_layout(), (memory_layout<4>{0, 1, 2, 3}));
+ EXPECT_EQ(a.indexmap().memory_layout(), (memory_layout_t<4>{1, 0, 2, 3}));
+ EXPECT_EQ(v.indexmap().memory_layout(), (memory_layout_t<4>{0, 1, 2, 3}));
 }
 
 TEST(Array, c_ordered_transposed_view3) {
@@ -40,8 +40,8 @@ TEST(Array, c_ordered_transposed_view3) {
 
  EXPECT_EQ(a.shape(), (mini_vector<size_t, 4>{1, 2, 3, 4}));
  EXPECT_EQ(v.shape(), (mini_vector<size_t, 4>{3, 1, 4, 2}));
- EXPECT_EQ(a.indexmap().get_memory_layout(), (memory_layout<4>{2, 0, 3, 1}));
- EXPECT_EQ(v.indexmap().get_memory_layout(), (memory_layout<4>{0, 1, 2, 3}));
+ EXPECT_EQ(a.indexmap().memory_layout(), (memory_layout_t<4>{2, 0, 3, 1}));
+ EXPECT_EQ(v.indexmap().memory_layout(), (memory_layout_t<4>{0, 1, 2, 3}));
 }
 
 MAKE_MAIN;

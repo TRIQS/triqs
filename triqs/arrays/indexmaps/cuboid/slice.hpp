@@ -117,17 +117,17 @@ namespace arrays {
     cuboid_details::slice_calc::invoke<0, 0, EllipsisLength>(&X.lengths()[0], &X.strides()[0], &newlengths[0], &newstrides[0],
                                                              imap.ptr(), newstart, args...);
 
-    if (X.get_memory_layout().is_c()) return r_type(std::move(newlengths), std::move(newstrides), newstart, memory_layout<Rf>{});
-    if (X.get_memory_layout().is_fortran()) return r_type(std::move(newlengths), std::move(newstrides), newstart, memory_layout<Rf>{FORTRAN_LAYOUT});
+    if (X.memory_layout().is_c()) return r_type(std::move(newlengths), std::move(newstrides), newstart, memory_layout_t<Rf>{});
+    if (X.memory_layout().is_fortran()) return r_type(std::move(newlengths), std::move(newstrides), newstart, memory_layout_t<Rf>{FORTRAN_LAYOUT});
 
     // Compute the new memory index order
     mini_vector<int, Rf> p(utility::no_init_tag{});
     for (int i = 0, j = 0; j < R; ++j) {
-     auto k = imap[X.get_memory_layout()[j]];
+     auto k = imap[X.memory_layout()[j]];
      if (k != -1) p[i++] = k;
     }
 
-    return r_type(std::move(newlengths), std::move(newstrides), newstart, memory_layout<Rf>{p, bool()});
+    return r_type(std::move(newlengths), std::move(newstrides), newstart, memory_layout_t<Rf>{p, bool()});
    };
   };
  }

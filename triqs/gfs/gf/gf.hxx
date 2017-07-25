@@ -123,7 +123,7 @@ namespace triqs {
       using data_const_view_t = typename data_regular_t::const_view_type;
       using data_t            = data_regular_t;
 
-      using memory_layout_t = memory_layout<arity + Target::rank>;
+      using data_memory_layout_t = memory_layout_t<arity + Target::rank>;
 
       using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
       using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
@@ -170,7 +170,7 @@ namespace triqs {
       auto const &data_shape() const { return _data.shape(); }
 
       /// Memorylayout of the data
-      auto const &get_memory_layout() const { return _data.indexmap().get_memory_layout(); }
+      auto const &memory_layout() const { return _data.indexmap().memory_layout(); }
 
       ///
       zero_t const &get_zero() const { return _zero; }
@@ -260,11 +260,11 @@ namespace triqs {
       gf(mesh_t m, data_t dat, singularity_t si, indices_t ind) : gf(impl_tag{}, std::move(m), std::move(dat), std::move(si), std::move(ind)) {}
 
       // Construct from the data. Using the "pass by value" pattern + move
-      gf(mesh_t m, data_t dat, arrays::memory_layout<arity + Target::rank> const &ml, singularity_t si, indices_t ind)
+      gf(mesh_t m, data_t dat, arrays::memory_layout_t<arity + Target::rank> const &ml, singularity_t si, indices_t ind)
          : gf(impl_tag{}, std::move(m), data_t(dat, ml), std::move(si), std::move(ind)) {}
 
       // Construct from mesh, target_shape, memory order
-      gf(mesh_t m, target_shape_t shape, arrays::memory_layout<arity + Target::rank> const &ml, indices_t const &ind = indices_t{})
+      gf(mesh_t m, target_shape_t shape, arrays::memory_layout_t<arity + Target::rank> const &ml, indices_t const &ind = indices_t{})
          : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape), ml), singularity_factory::make(m, shape), ind) {
         if (this->_indices.empty()) this->_indices = indices_t(shape);
       }
@@ -732,7 +732,7 @@ namespace triqs {
       using data_const_view_t = typename data_regular_t::const_view_type;
       using data_t            = data_view_t;
 
-      using memory_layout_t = memory_layout<arity + Target::rank>;
+      using data_memory_layout_t = memory_layout_t<arity + Target::rank>;
 
       using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
       using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
@@ -779,7 +779,7 @@ namespace triqs {
       auto const &data_shape() const { return _data.shape(); }
 
       /// Memorylayout of the data
-      auto const &get_memory_layout() const { return _data.indexmap().get_memory_layout(); }
+      auto const &memory_layout() const { return _data.indexmap().memory_layout(); }
 
       ///
       zero_t const &get_zero() const { return _zero; }
@@ -1313,7 +1313,7 @@ namespace triqs {
       using data_const_view_t = typename data_regular_t::const_view_type;
       using data_t            = data_const_view_t;
 
-      using memory_layout_t = memory_layout<arity + Target::rank>;
+      using data_memory_layout_t = memory_layout_t<arity + Target::rank>;
 
       using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
       using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
@@ -1360,7 +1360,7 @@ namespace triqs {
       auto const &data_shape() const { return _data.shape(); }
 
       /// Memorylayout of the data
-      auto const &get_memory_layout() const { return _data.indexmap().get_memory_layout(); }
+      auto const &memory_layout() const { return _data.indexmap().memory_layout(); }
 
       ///
       zero_t const &get_zero() const { return _zero; }
