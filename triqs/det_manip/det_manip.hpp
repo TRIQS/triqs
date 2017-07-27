@@ -37,6 +37,15 @@ namespace triqs { namespace det_manip {
 
  namespace blas = arrays::blas;
 
+ template <typename T>
+ double sqr_frob_norm(arrays::matrix<T> const& m, size_t n) {
+  auto R = arrays::range(0, n);
+  return arrays::fold([](double r, T const& x)->double {
+   auto ab = std::abs(x);
+   return r + ab * ab;
+  })(m(R, R), double(0));
+ };
+
  /**
   * \brief Standard matrix/det manipulations used in several QMC.
   */
@@ -283,8 +292,7 @@ namespace triqs { namespace det_manip {
        for (size_t j=0; j<N; ++j)
         mat_inv(i,j) = f(x_values[i],y_values[j]);
       }
-      sqr_norm = sqr_fro_norm_of_inv();
-      sqr_norm *= sqr_norm;
+      sqr_norm = sqr_frob_norm(mat_inv, N);
       range R(0,N);
       det = arrays::determinant(mat_inv(R,R));
       mat_inv(R,R) = inverse(mat_inv(R,R));
@@ -969,7 +977,7 @@ namespace triqs { namespace det_manip {
      range R(0,s);
      newdet = arrays::determinant(w_refill.M(R,R));
      newsign = 1;
-     new_sqr_norm = frobenius_norm(make_matrix(w_refill.M(R,R)));
+     new_sqr_norm = sqr_frob_norm(make_matrix(w_refill.M(R, R)), s);
 
      return newdet / (sign * det);
     }
@@ -1007,6 +1015,7 @@ namespace triqs { namespace det_manip {
       det = 1;
       sign = 1;
       sqr_norm = 0;
+      cond_nb = 0;
       return;
      }
 
@@ -1015,6 +1024,7 @@ namespace triqs { namespace det_manip {
      for (int i = 0; i < N; i++)
       for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
      det = arrays::determinant(res);
+     sqr_norm = sqr_frob_norm(res, N);
      if (not std::isnormal(std::abs(det))) {
       res() = std::numeric_limits<double>::quiet_NaN();
       do_check = false;
@@ -1022,6 +1032,7 @@ namespace triqs { namespace det_manip {
      else {
       res = inverse(res);
      }
+     cond_nb = 0.5 * std::log10(sqr_frob_norm(res, N) * sqr_norm);
 
      double r = max_element(abs(res - mat_inv(R, R)));
      double r2 = max_element(abs(res + mat_inv(R, R)));
@@ -1078,18 +1089,6 @@ namespace triqs { namespace det_manip {
     public:
     void regenerate() { _regenerate_with_check(false, 0, 0); }
 
-    private:
-    double sqr_fro_norm_of_inv() {
-     double res = 0;
-     for (size_t i=0; i<N; ++i) {
-      for (size_t j=0; j<N; ++j) {
-       value_type elt = mat_inv(i, j);
-       res += abs(elt * elt);
-      }
-     }
-     return res;
-    }
-
     public:
     /**
      *  Finish the move of the last try_xxx called.
@@ -1115,9 +1114,9 @@ namespace triqs { namespace det_manip {
      sqr_norm = new_sqr_norm;
      range R(0, N);
      if (N == 0) cond_nb = 0;
-     else cond_nb = 0.5 * std::log10(sqr_fro_norm_of_inv() * sqr_norm);
+     else cond_nb = 0.5 * std::log10(sqr_frob_norm(mat_inv, N) * sqr_norm);
 
-     if (is_sing or (singular_threshold > 0 and cond_nb > singular_threshold)) { regenerate(); }
+     if (is_sing or (singular_threshold >= 0 and cond_nb >= singular_threshold)) { regenerate(); }
      else {
       det = newdet;
       sign = newsign;
