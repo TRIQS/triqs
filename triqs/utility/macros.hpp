@@ -46,7 +46,7 @@ namespace triqs {
 
 #define TRIQS_CATCH_AND_ABORT catch(std::exception const & e) { std::cout  << e.what()<< std::endl; return 1;}
 
-#define TRIQS_DEBUG(X) std::cerr << AS_STRING(X) << " = " << X << "      at " << __FILE__ << ":" << __LINE__ << '\n'
+#define TRIQS_PRINT(X) std::cerr << AS_STRING(X) << " = " << X << "      at " << __FILE__ << ":" << __LINE__ << '\n'
 
 
 
