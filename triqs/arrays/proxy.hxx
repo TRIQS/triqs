@@ -176,7 +176,7 @@ namespace triqs {
       TRIQS_DEFINE_COMPOUND_OPERATORS(array_proxy);
 
       // auto_assign like the main classes
-      template <typename F> friend void triqs_clef_auto_assign(array_proxy x, F &&f) {
+      template <typename F> friend FORCEINLINE void triqs_clef_auto_assign(array_proxy x, F &&f) {
         foreach (x, array_auto_assign_worker<array_proxy, F>{x, f})
           ;
       }
@@ -284,7 +284,7 @@ namespace triqs {
       TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_proxy);
 
       // auto_assign like the main classes
-      template <typename F> friend void triqs_clef_auto_assign(matrix_proxy x, F &&f) {
+      template <typename F> friend FORCEINLINE void triqs_clef_auto_assign(matrix_proxy x, F &&f) {
         foreach (x, array_auto_assign_worker<matrix_proxy, F>{x, f})
           ;
       }

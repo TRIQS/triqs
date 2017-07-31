@@ -158,7 +158,7 @@ namespace arrays {
   TRIQS_DEFINE_COMPOUND_OPERATORS(MAKO_AMCV_proxy);
 
   // auto_assign like the main classes
-  template <typename F> friend void triqs_clef_auto_assign(MAKO_AMCV_proxy x, F &&f) {
+  template <typename F> friend FORCEINLINE void triqs_clef_auto_assign(MAKO_AMCV_proxy x, F &&f) {
    foreach (x, array_auto_assign_worker<MAKO_AMCV_proxy, F>{x, f})
     ;
   }

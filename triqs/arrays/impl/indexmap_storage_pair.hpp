@@ -67,11 +67,11 @@ namespace triqs { namespace arrays {
  template <typename ArrayType, typename Function> struct array_auto_assign_worker {
   ArrayType &A;
   Function const &f;
-  template <typename T, typename RHS> void assign(T &x, RHS &&rhs) { x = std::forward<RHS>(rhs); }
-  template <typename Expr, int... Is, typename T> void assign(T &x, clef::make_fun_impl<Expr, Is...> &&rhs) {
+  template <typename T, typename RHS> void FORCEINLINE assign(T &x, RHS &&rhs) { x = std::forward<RHS>(rhs); }
+  template <typename Expr, int... Is, typename T> FORCEINLINE void assign(T &x, clef::make_fun_impl<Expr, Is...> &&rhs) {
    triqs_clef_auto_assign(x, std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
   }
-  template <typename... Args> void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
+  template <typename... Args> FORCEINLINE void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
  };
 
  namespace tags { 
