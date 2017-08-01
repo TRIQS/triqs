@@ -492,14 +492,14 @@ namespace triqs {
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
       }
 
       /**
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) const {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
       }
 
       //----------------------------- HDF5 -----------------------------
@@ -1072,14 +1072,14 @@ namespace triqs {
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
       }
 
       /**
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) const {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
       }
 
       //----------------------------- HDF5 -----------------------------
@@ -1640,14 +1640,14 @@ namespace triqs {
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
       }
 
       /**
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) const {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
       }
 
       //----------------------------- HDF5 -----------------------------

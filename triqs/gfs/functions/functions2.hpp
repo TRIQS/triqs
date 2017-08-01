@@ -30,7 +30,7 @@ namespace gfs {
  *-----------------------------------------------------------------------------------------------------*/
 
  template <typename G, typename... Args> auto slice_target(G &&g, Args &&... args) {
-  return g.apply_on_data([&args...](auto &&d) { return d(arrays::ellipsis(), args...); },
+  return g.apply_on_data([&args...](auto &&d) { return d(triqs::arrays::ellipsis(), args...); },
                          [&args...](auto &&s) { return slice_target_sing(s(), args...); },
                          [&args...](auto &&i) { return slice(i, args...); });
  }
@@ -48,7 +48,7 @@ namespace gfs {
 
 
  template <typename G, typename... Args> auto slice_target_to_scalar(G &&g, Args &&... args) {
-  auto r = g.apply_on_data([&args...](auto &&d) { return d(arrays::ellipsis(), args...); },
+  auto r = g.apply_on_data([&args...](auto &&d) { return d(triqs::arrays::ellipsis(), args...); },
                            [&args...](auto &&s) { return slice_target_to_scalar_sing(s(), args...); },
                            [&args...](auto &&i) { return slice(i, args...); });
   // The target of the return is scalar_valued or tail_valued<scalar_valued>
