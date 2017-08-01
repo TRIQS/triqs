@@ -12,9 +12,6 @@ TEST(make_gf, from_view) {
   gf<imfreq> G1{{beta, Fermion, 5}, {2, 2}};
   G1[iw] << 1.0 / iw;
 
-  // Initialize G1
-  G1[iw] << 1.0 / iw;
-
   // Create G2 from view of G1
   auto G2 = make_gf(G1());
 
@@ -45,10 +42,6 @@ TEST(make_gf, from_mesh_and_target) {
   gf<imfreq> G1{{beta, Fermion, 5}, {2, 2}};
   G1[iw] << 1.0 / iw;
 
-  // Initialize G1
-  placeholder<0> iw;
-  G1[iw] << 1.0 / iw;
-
   // Create G2 with same mesh and target as G1
   auto G2 = make_gf(G1.mesh(), G1.target());
 
@@ -62,10 +55,6 @@ TEST(make_gf, from_mesh_target_and_layout) {
 
   // Create and intialize G1
   gf<imfreq> G1{{beta, Fermion, 5}, {2, 2}, make_memory_layout(1,0,2)};
-  G1[iw] << 1.0 / iw;
-
-  // Initialize G1
-  placeholder<0> iw;
   G1[iw] << 1.0 / iw;
 
   // Create G2 with same mesh and target as G1
