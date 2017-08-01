@@ -65,7 +65,7 @@ namespace triqs { namespace arrays {
 
    friend array<value_type, domain_type::rank> make_array(array_expr const &e) { return e; }
    friend array<value_type, domain_type::rank> make_regular(array_expr const &x) { return make_array(x); }
-   friend array_const_view<value_type, domain_type::rank> make_const_view(array_expr const &x) { return make_array(x); }
+   //friend inline array_const_view<value_type, domain_type::rank> make_const_view(array_expr const &x) { return make_array(x); } // Moved to end of file, ICC Compatibility
 
    // just for better error messages
    template <typename T> void operator=(T &&x) = delete; // can not assign to an expression template !
@@ -118,6 +118,10 @@ namespace triqs { namespace arrays {
   array_unary_m_expr<typename node_t<A1,false>::type >
    >::type
    operator - (A1 && a1) { return {std::forward<A1>(a1)};} 
+ 
+ // Fix for compatibility with Intel Compiler (17)
+ template<typename Tag, typename L, typename R> 
+ inline array_const_view<typename array_expr<Tag, L, R>::value_type, array_expr<Tag, L, R>::domain_type::rank> make_const_view(array_expr<Tag, L, R> const &x) { return make_array(x); }
 
 }}//namespace triqs::arrays
 #endif
