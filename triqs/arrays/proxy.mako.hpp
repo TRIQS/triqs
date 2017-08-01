@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#pragma
+#pragma once
 #include <triqs/arrays.hpp>
 
 namespace triqs {

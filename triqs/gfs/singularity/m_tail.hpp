@@ -82,12 +82,12 @@ namespace gfs {
  // FIXME
  template <typename M, typename Ta, typename... Args>
  auto slice_target_sing(gf_view<M, tail_valued<Ta>> g, Args const &... args) {
-  return g.apply_on_data([&args...](auto &&d) { return d(arrays::ellipsis(), args...); }, [](auto &&) { return nothing{}; });
+  return g.apply_on_data([&args...](auto &&d) { return d(triqs::arrays::ellipsis(), args...); }, [](auto &&) { return nothing{}; });
  }
 
  template <typename M, typename Ta, typename... Args>
  auto slice_target_to_scalar_sing(gf_view<M, tail_valued<Ta>> g, Args const &... args) {
-  return g.apply_on_data([&args...](auto &&d) { return d(arrays::ellipsis(), args...); }, [](auto &&) { return nothing{}; });
+  return g.apply_on_data([&args...](auto &&d) { return d(triqs::arrays::ellipsis(), args...); }, [](auto &&) { return nothing{}; });
  }
 
  

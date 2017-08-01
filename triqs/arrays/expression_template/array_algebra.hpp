@@ -65,7 +65,7 @@ namespace triqs { namespace arrays {
 
    friend array<value_type, domain_type::rank> make_array(array_expr const &e) { return e; }
    friend array<value_type, domain_type::rank> make_regular(array_expr const &x) { return make_array(x); }
-   friend array_const_view<value_type, domain_type::rank> make_const_view(array_expr const &x) { return make_array(x); }
+   //friend inline array_const_view<value_type, domain_type::rank> make_const_view(array_expr const &x) { return make_array(x); } // Moved to end of file, ICC Compatibility
 
    // just for better error messages
    template <typename T> void operator=(T &&x) = delete; // can not assign to an expression template !
@@ -127,15 +127,19 @@ namespace triqs { namespace arrays {
    >::type
    operator - (A1 && a1) { return {std::forward<A1>(a1)};}
 
-
  // inverse of an array
  //template <class A> struct __inv_array_rtype { using type = decltype(1 / std::declval<A>()); };
  //template <class A> struct __inv_array_rtype { using type = array_expr<utility::tags::divides, typename node_t<int, false>::type, typename node_t<A, false>::type>;};
-
+ 
  template <class A>
      std14::enable_if_t < ImmutableArray<std14::decay_t<A>>::value,
      array_expr<utility::tags::divides, _scalar_wrap<int, false>, utility::remove_rvalue_ref_t<A>>> inverse(A &&a) {
   return {1 , std::forward<A>(a)};
  }
+
+ // Fix for compatibility with Intel Compiler (17)
+ template<typename Tag, typename L, typename R> 
+ inline array_const_view<typename array_expr<Tag, L, R>::value_type, array_expr<Tag, L, R>::domain_type::rank> make_const_view(array_expr<Tag, L, R> const &x) { return make_array(x); }
+
 }}//namespace triqs::arrays
 #endif

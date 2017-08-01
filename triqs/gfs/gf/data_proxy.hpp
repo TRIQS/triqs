@@ -79,7 +79,7 @@ namespace gfs {
 
   // one var only here
   template <typename S> static auto invoke(S& data, long i) {
-   return make_tail_view_from_data(data(i, arrays::ellipsis()));
+   return make_tail_view_from_data(data(i, triqs::arrays::ellipsis()));
   }
  };
 

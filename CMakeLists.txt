@@ -80,8 +80,8 @@ find_package(CompilerCheck)
 # MESSAGE(STATUS "*********************************************************************************")
 # set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -std=c++11 -DTRIQS_CPP11")
 #else()
-set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -std=c++1z ")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
+set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS}  " -std=c++1y ")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 #endif()
 
 # Turn the memory check
@@ -232,7 +232,7 @@ endif()
 # #################################
 # Check availability of <optional>
 # #################################
-try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS -std=c++1z )
+try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS -std=c++1y )
 if (NOT has_optional_header)
  message(STATUS "Using <experimental/optional> header instead of <optional>")
 else ()

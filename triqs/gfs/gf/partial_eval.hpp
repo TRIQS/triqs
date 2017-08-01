@@ -121,7 +121,7 @@ namespace triqs {
     // xs : filter the arguments which are not var_t and compute their linear_index with the corresponding mesh
     // then in arr2, we unfold the xs tuple into the slice of the data
     auto xs   = triqs::tuple::fold(details::fw_mesh_x{}, g->mesh().components(), std::make_tuple(args...), std::make_tuple());
-    auto arr2 = triqs::tuple::apply([&g](auto const&... args) { return g->data()(args..., arrays::ellipsis()); }, xs);
+    auto arr2 = triqs::tuple::apply([&g](auto const&... args) { return g->data()(args..., triqs::arrays::ellipsis()); }, xs);
 
     // We now also partial_eval the singularity
     // The rule is :
