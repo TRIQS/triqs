@@ -159,6 +159,19 @@ class sub_hilbert_space {
  */
  sub_hilbert_space(int index = -1) : index(index) {}
 
+#ifdef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
+ // Workaround needed for icc, checked with 17.0.1 20161005)
+ sub_hilbert_space( sub_hilbert_space const & ) = default; 
+ sub_hilbert_space( sub_hilbert_space && ) = default; 
+ sub_hilbert_space & operator=( sub_hilbert_space const & x ){
+    index = x.index; 
+    fock_states = x.fock_states; 
+    fock_to_index = x.fock_to_index; 
+    return *this; 
+ } 
+ sub_hilbert_space & operator=( sub_hilbert_space && ) = default; 
+#endif
+
  /// Add a Fock state to the Hilbert space basis
  /**
    @param f Fock state to add

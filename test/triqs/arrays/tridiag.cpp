@@ -30,7 +30,7 @@ using dcomplex = std::complex<double>;
 template <typename T> void check_eig(matrix<T> M, matrix_view<T> vectors, vector_view<double, 1> values) {
  auto _ = range();
  for (auto i : range(0,first_dim(M))) {
-  EXPECT_ARRAY_NEAR(M * vectors(i, _), values(i) * vectors(i, _), 1.e-14);
+  EXPECT_ARRAY_NEAR(M * vectors(i, _), values(i) * vectors(i, _), 1.e-13);
  }
 }
 
