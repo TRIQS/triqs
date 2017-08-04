@@ -21,6 +21,7 @@
 #pragma once
 #include <triqs/mpi/base.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/utility/timer_chrono.hpp>
 #include <functional>
 #include <map>
 #include "./impl_tools.hpp"
@@ -36,6 +37,7 @@ namespace triqs { namespace mc_tools {
    std::function<void(h5::group, std::string const &)> h5_r, h5_w;
 
    uint64_t count_;
+   utility::timer Timer;
 
    public:
    template <typename MeasureType> measure(bool, MeasureType &&m) {
@@ -58,10 +60,11 @@ namespace triqs { namespace mc_tools {
    measure & operator = (measure const & rhs) = delete;
    measure & operator = (measure && rhs) =default;
 
-   void accumulate(MCSignType signe){ assert(impl_); count_++; accumulate_(signe); }
-   void collect_results (mpi::communicator const & c ) { collect_results_(c);}
+   void accumulate(MCSignType signe){ assert(impl_); count_++; Timer.start(); accumulate_(signe); Timer.stop(); }
+   void collect_results (mpi::communicator const & c ) { Timer.start(); collect_results_(c); Timer.stop(); }
 
    uint64_t count() const { return count_;}
+   double duration() const { return double(Timer); }
 
    friend void h5_write (h5::group g, std::string const & name, measure const & m){ if (m.h5_w) m.h5_w(g,name);};
    friend void h5_read  (h5::group g, std::string const & name, measure & m)      { if (m.h5_r) m.h5_r(g,name);};
@@ -113,6 +116,18 @@ namespace triqs { namespace mc_tools {
     return res;
    }
 
+   /// Pretty print the timings of all measures
+   std::string get_timings() const {
+     std::ostringstream s;
+     double total_time = 0;
+     for (auto & nmp : m_map) {
+       s << "Measure  " << nmp.first << " " << nmp.second.duration() << " seconds\n";
+       total_time += nmp.second.duration();
+     }
+     s << "Measures total time " << total_time << " seconds\n";
+     return s.str();
+   }
+    
    // gather result for all measure, on communicator c
    void collect_results (mpi::communicator const & c ) { for (auto & nmp : m_map) nmp.second.collect_results(c); }
 
