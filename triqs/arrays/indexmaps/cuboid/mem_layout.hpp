@@ -111,13 +111,16 @@ namespace arrays {
  /// Make a memory_layout_t from the strides
  template <int Rank> memory_layout_t<Rank> memory_layout_from_strides(mini_vector<std::ptrdiff_t, Rank> const &strides) {
   mini_vector<int, Rank> c; // rely on init to 0 by default of mini_vector
+  
   for (int i = 0; i < Rank; ++i)
    for (int j = i + 1; j < Rank; ++j)
-    if (strides[i] > strides[j])
+    if (strides[i] < strides[j])
      c[i]++;
     else
      c[j]++;
   // we computed the map : index -> memory_rank, which is the inverse map, cf mem_layout
+  
+  //std::cout << " memory_layout_from_strides\n"<< "    strides = "<< strides << "\n    memlayout"<< c <<std::endl;
   return memory_layout_t<Rank>{c};
  }
 
