@@ -21,7 +21,8 @@
 #pragma once
 #include <triqs/utility/first_include.hpp>
 #include <math.h>
-#include <triqs/utility/timer.hpp>
+#include <triqs/utility/timer_chrono.hpp>
+#include <triqs/utility/timestamp.hpp>
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/signal_handler.hpp>
 #include <triqs/mpi/base.hpp>
@@ -170,9 +171,14 @@ namespace mc_tools {
   int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle,
                             std::function<bool()> stop_callback) {
    report << "\nWarming up ..." << std::endl;
+   TimerWarmup.start();
    int status = run(n_warmup_cycles, length_cycle, stop_callback, false);
+   TimerWarmup.stop();
+
    report << "\nAccumulating ..." << std::endl;
+   Timer.start();
    if (status == 0) status = run(n_accumulation_cycles, length_cycle, stop_callback, true);
+   Timer.stop();
    // final reporting
    if (status == 1) report << "mc_generic stops because of stop_callback";
    if (status == 2) report << "mc_generic stops because of a signal";
@@ -197,7 +203,6 @@ namespace mc_tools {
    */
   int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure = true) {
    if (n_cycles==0) return 0;
-   Timer.start();
    triqs::signal_handler::start();
    done_percent = 0;
    nmeasures = 0;
@@ -229,13 +234,14 @@ namespace mc_tools {
     uint64_t dp = uint64_t(floor((NC * 100.0) / (n_cycles - 1)));
     if (dp > done_percent) {
      done_percent = dp;
-     report << done_percent << "%; " << std::flush;
+     report << utility::timestamp() << " "
+	    << std::setfill(' ') << std::setw(3) << done_percent << "%\n"
+	    << std::flush;
     }
     finished = ((NC + 1 >= n_cycles) || is_converged());
     stop_it = (stop_callback() || triqs::signal_handler::received() || finished);
    }
    int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
-   Timer.stop();
    triqs::signal_handler::stop();
    current_cycle_number += NC;
    return status;
@@ -247,9 +253,11 @@ namespace mc_tools {
    AllMoves.collect_statistics(c);
    uint64_t nmeasures_tot = mpi::reduce(nmeasures, c);
 
-   report(3) << "[Node " << c.rank() << "] Acceptance rate for all moves:\n" << AllMoves.get_statistics();
-   report(3) << "[Node " << c.rank() << "] Simulation lasted: " << double(Timer) << " seconds" << std::endl;
-   report(3) << "[Node " << c.rank() << "] Number of measures: " << nmeasures << std::endl;
+   report(3) << "[Rank " << c.rank() << "] Timings for all measures:\n" << AllMeasures.get_timings();
+   report(3) << "[Rank " << c.rank() << "] Acceptance rate for all moves:\n" << AllMoves.get_statistics();
+   report(3) << "[Rank " << c.rank() << "] Warmup lasted: " << double(TimerWarmup) << " seconds" << std::endl;
+   report(3) << "[Rank " << c.rank() << "] Simulation lasted: " << double(Timer) << " seconds" << std::endl;
+   report(3) << "[Rank " << c.rank() << "] Number of measures: " << nmeasures << std::endl;
    if (c.rank() == 0) report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
   }
 
@@ -263,7 +271,7 @@ namespace mc_tools {
   /**
    * The duration of the last run
    */
-  double get_duration() const { return double(Timer); }
+  double get_duration() const { return double(Timer) + double(TimerWarmup); }
 
   /**
    *  The current percents done
@@ -327,7 +335,7 @@ namespace mc_tools {
   utility::report_stream report;
   uint64_t length_cycle_bckwd = 0, n_warmup_cycles_bckwd = 0, ncycles_bckwd = 0; // backward compat only. Deprecated
   uint64_t nmeasures, current_cycle_number = 0;
-  utility::timer Timer;
+  utility::timer Timer, TimerWarmup;
   std::function<void()> after_cycle_duty;
   MCSignType sign;
   uint64_t done_percent = 0;
