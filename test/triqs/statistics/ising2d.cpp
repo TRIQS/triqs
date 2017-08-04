@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
  int n_warmup_cycles = 100000;
  std::string random_name = "";
  int random_seed = 374982 + world.rank() * 273894;
- int verbosity = (world.rank() == 0 ? 2 : 0);
+ int verbosity = 0;
 
  // Construct a Monte Carlo loop
  triqs::mc_tools::mc_generic<double> IsingMC(random_name, random_seed, 1.0, verbosity);
