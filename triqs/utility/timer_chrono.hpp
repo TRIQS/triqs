@@ -27,10 +27,12 @@ namespace triqs {
   namespace utility {
 
     class timer {
+      public:
       typedef std::chrono::high_resolution_clock clock_t;
       typedef clock_t::time_point time_point_t;
       typedef clock_t::duration duration_t;
 
+      private:
       time_point_t start_time;
       duration_t total_time;
       bool running;
@@ -46,9 +48,11 @@ namespace triqs {
         total_time += clock_t::now() - start_time;
         running = false;
       }
+      bool is_running() const { return running; }
       operator double() const {
-	std::chrono::duration<double> total_time_seconds(total_time);
-	return total_time_seconds.count(); }
+        std::chrono::duration<double> total_time_seconds(total_time);
+        return total_time_seconds.count();
+      }
     };
   }
 }

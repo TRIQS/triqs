@@ -235,8 +235,10 @@ namespace mc_tools {
     if (dp > done_percent) {
      done_percent = dp;
      report << utility::timestamp() << " "
-	    << std::setfill(' ') << std::setw(3) << done_percent << "%\n"
-	    << std::flush;
+	    << std::setfill(' ') << std::setw(3) << done_percent << "%";
+     if(Timer.is_running())
+       report << " ETA " << estimate_time_left(n_cycles, NC, Timer);
+     report << "\n" << std::flush;
     }
     finished = ((NC + 1 >= n_cycles) || is_converged());
     stop_it = (stop_callback() || triqs::signal_handler::received() || finished);
