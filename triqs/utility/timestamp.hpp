@@ -30,11 +30,26 @@ namespace triqs {
 
     std::string inline timestamp() {
       std::ostringstream s;
-      auto now = std::chrono::system_clock::now();
+      auto now          = std::chrono::system_clock::now();
       std::time_t now_c = std::chrono::system_clock::to_time_t(now);
       s << std::put_time(std::localtime(&now_c), "%H:%M:%S");
       return s.str();
     }
 
+    std::string inline estimate_time_left(int Ntot, int iter, timer & Timer) {
+      using namespace std::chrono;
+      std::ostringstream s;
+
+      Timer.stop();
+      double eta = (Ntot - 1 - iter) * double(Timer) / (iter + 1);
+      Timer.start();
+      time_point<system_clock> tp(milliseconds(long(eta * 1000)) - hours(1));
+
+      std::time_t tp_c = system_clock::to_time_t(tp);
+      s << std::put_time(std::localtime(&tp_c), "%H:%M:%S");
+
+      return s.str();
+    }
+    
   } // namespace utility
 } // namespace triqs
