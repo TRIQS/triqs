@@ -120,11 +120,19 @@ namespace triqs { namespace mc_tools {
    std::string get_timings() const {
      std::ostringstream s;
      double total_time = 0;
+     int wsec = 10;
+     size_t wlab = 18; // measure label width, find max length
+     for ( auto & nmp : m_map )
+       wlab = wlab > nmp.first.size() ? wlab : nmp.first.size();
+     s << std::left << std::setw(wlab) << "Measure" << " | "
+       << std::setw(wsec) << "seconds" << std::endl;;
      for (auto & nmp : m_map) {
-       s << "Measure  " << nmp.first << " " << nmp.second.duration() << " seconds\n";
+       s << std::left << std::setw(wlab) << nmp.first << " | "
+	 << std::setw(wsec) << nmp.second.duration() << "\n";
        total_time += nmp.second.duration();
      }
-     s << "Measures total time " << total_time << " seconds\n";
+     s << std::left << std::setw(wlab) << "Total measure time" << " | "
+       << std::setw(wsec) << total_time << "\n";
      return s.str();
    }
     
