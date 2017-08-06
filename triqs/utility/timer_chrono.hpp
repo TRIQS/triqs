@@ -51,6 +51,7 @@ namespace triqs {
       bool is_running() const { return running; }
       operator double() const {
         std::chrono::duration<double> total_time_seconds(total_time);
+	if(is_running()) total_time_seconds += clock_t::now() - start_time;
         return total_time_seconds.count();
       }
     };
