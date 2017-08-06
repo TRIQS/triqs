@@ -1,10 +1,10 @@
 2D Ising with field = 0, beta = 0.5, N = 20
 
 Warming up ...
-15:17:09  10% ETA 00:00:01 n_cycles, NC = 100000, 10537
+15:30:11  10% ETA 00:00:01 n_cycles, NC = 100000, 10088
 
 Accumulating ...
-15:17:10  11% ETA 00:00:01 n_cycles, NC = 100000, 11527
+15:30:12  11% ETA 00:00:01 n_cycles, NC = 100000, 11652
 
 
 @Beta:	0.5	Magnetization:	-0.909722
