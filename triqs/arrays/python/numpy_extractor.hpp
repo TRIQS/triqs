@@ -46,7 +46,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
   static const char* name() { return AS_STRING(C); }                                                                              \
  }
   CONVERT(bool, NPY_BOOL);
- CONVERT(char, NPY_CHAR);
+ CONVERT(char, NPY_STRING);
  CONVERT(signed char, NPY_BYTE);
  CONVERT(unsigned char, NPY_UBYTE);
  CONVERT(short, NPY_SHORT);
