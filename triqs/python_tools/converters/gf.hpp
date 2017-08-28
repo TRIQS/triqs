@@ -1,6 +1,7 @@
 #pragma once
 #include "../wrapper_tools.hpp"
 #include <triqs/gfs.hpp>
+#include <triqs/utility/typeid_name.hpp>
 #include "./gf_details.hpp"
 #include "./mesh_product.hpp"
 
@@ -10,7 +11,7 @@
 
 /// Additional converters for gf
 //
-namespace triqs {
+namespace triqs { 
  namespace py_tools {
 
   // Treat the gf as view
@@ -46,6 +47,14 @@ namespace triqs {
     return PyObject_Call(cls, empty_tuple, kw);
    }
 
+   static void _set_err(PyObject * p, const char * X, std::string const & C) { 
+     using namespace std::string_literals; 
+     std::string err= "Cpp2py converter: Python to C++ :\n"s + 
+                      "  ... Conversion of a gf from Python to C++ " + utility::typeid_name<triqs::gfs::gf_view<M, T>>() + 
+    		       "\n  ... Cannot convert the "s + X + " of gf from Python type :  " + p->ob_type->tp_name + " to the C++ type " + C;
+     PyErr_SetString(PyExc_TypeError, err.c_str() ); 
+   }
+
    static bool is_convertible(PyObject* ob, bool raise_exception) {
     // first check it is a Gf
     if (not pyref::check_is_instance(ob, "pytriqs.gf", "Gf", raise_exception)) return false;
@@ -53,16 +62,29 @@ namespace triqs {
     
     // check the mesh, data, sing
     pyref m = x.attr("_mesh");
-    if (!py_converter<mesh_t>::is_convertible(m, raise_exception)) return false;
-    
+   
+    if (!py_converter<mesh_t>::is_convertible(m, false)) {
+    	if (raise_exception) _set_err(m, "mesh", utility::typeid_name<mesh_t>()); 
+        return false;
+    }
+
     pyref d = x.attr("_data");
-    if (!py_converter<data_t>::is_convertible(d, raise_exception)) return false;
+    if (!py_converter<data_t>::is_convertible(d, raise_exception)) {
+    	if (raise_exception) _set_err(d, "data", utility::typeid_name<data_t>());
+        return false;
+    }
     
     pyref s = x.attr("_singularity");
-    if (!py_converter<sing_t>::is_convertible(s, raise_exception)) return false;
+    if (!py_converter<sing_t>::is_convertible(s, raise_exception)) {
+    	if (raise_exception) _set_err(s, "singularity", utility::typeid_name<sing_t>());
+        return false;
+    }
     
     pyref i = x.attr("_indices");
-    if (!py_converter<indices_t>::is_convertible(i, raise_exception)) return false;
+    if (!py_converter<indices_t>::is_convertible(i, raise_exception)) {
+    	if (raise_exception) _set_err(i, "indices", utility::typeid_name<indices_t>());
+        return false;
+    }
 
     /*  TRIQS_DEBUG(py_converter<mesh_t>::is_convertible(m, raise_exception) );*/
     // TRIQS_DEBUG(py_converter<data_t>::is_convertible(m, raise_exception) );
