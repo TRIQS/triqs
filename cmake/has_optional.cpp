@@ -1,2 +1,2 @@
 #include <optional>
-int main() { return 0; }
+int main() { std::optional<int> a; return 0; }
