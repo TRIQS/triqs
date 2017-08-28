@@ -99,7 +99,7 @@ class Gf(object):
              list of list of str: the list of indices for each dimension.
              list of str: all indices are assumed to be the same for all dimensions.
    
-    name: str
+    name: str 
           The name of the Green function. For plotting.
 
     NB : One of target_shape, data and indices must be set, and the other must be None.
@@ -115,6 +115,11 @@ class Gf(object):
             """
             target_shape and data  : must provide exactly one of them
             """
+            # FIXME ? name is deprecated
+            #if name: 
+            #    warnings.warn("constructor parameter 'name' is deprecated in gf constructor.\n It is only used in plots.\n Pass the name to the oplot function directly")
+            self.name = name
+
             # input check
             assert (target_shape is None) or (data is None), "data and target_shape : one must be None"
             assert (data is None) or (is_real is False), "is_real can not be True is data is not None"
@@ -170,9 +175,6 @@ class Gf(object):
             # singularity : given, or a maker is given (using the data, ...)
             assert (singularity is None) or (_singularity_maker is None), "Internal error"
             self.singularity = singularity or (_singularity_maker(self) if _singularity_maker else None)
-
-            # Misc.
-            self.name = name
 
             # NB : at this stage, enough checks should have been made in Python in order for the C++ view 
             # to be constructed without any INTERNAL exceptions.
@@ -282,12 +284,11 @@ class Gf(object):
         self._data[:] = another._data[:]
         if self._singularity : self._singularity.copy_from(another._singularity)
         self._indices = another._indices.copy()
-        self.name = another.name
         self.__check_invariants()
 
     def __repr__(self):
         return "Green Function %s with mesh %s and range %s: \n"%(self.name, self.mesh, self.rank)
-
+ 
     def __str__ (self): 
         return self.name if self.name else repr(self)
 
@@ -334,7 +335,7 @@ class Gf(object):
             dat = self._data[ self._rank * [slice(0,None)] + key_s ] 
             ind = GfIndices([ v[k]  for k,v in zip(key_s, self._indices.data)])
             sing = singularities._make_tail_view_from_data(self._singularity.data[[slice(0,None)] + key_s]) if self._singularity else None # Build a new view of the singularity
-            r = Gf(mesh = self._mesh, data = dat, singularity = sing, indices = ind, name = "")
+            r = Gf(mesh = self._mesh, data = dat, singularity = sing, indices = ind)
             r.__check_invariants()
             return r
 
@@ -345,12 +346,12 @@ class Gf(object):
     
     @property
     def real(self) : 
-        return Gf(mesh = self._mesh, data = self._data.real, singularity = None,name = "Re " + self.name) # Singularity is None for G(tau) ?
+        return Gf(mesh = self._mesh, data = self._data.real, singularity = None,name = ("Re " + self.name) if name else '') # Singularity is None for G(tau) ?
 
     @property
     def imag(self) : 
-        return Gf(mesh = self._mesh, data = self._data.imag, singularity = None, name = "Im " + self.name) # Singularity is None for G(tau) ?
-
+        return Gf(mesh = self._mesh, data = self._data.imag, singularity = None, name = ("Im " + self.name) if name else '') # Singularity is None for G(tau) ?
+ 
     # --------------  Lazy system -------------------------------------
 
     def __lazy_expr_eval_context__(self) : 
@@ -506,7 +507,7 @@ class Gf(object):
         #assert any( (isinstance(self.mesh, x) for x in [meshes.MeshImFreq, meshes.MeshReFreq])), "Method invalid for this Gf" 
         d = np.transpose(self.data.copy(), (0, 2, 1))
         t = self.singularity.transpose()
-        return Gf(mesh = self.mesh, data= d, singularity = t, indices = self.indices.transpose(), name = self.name)
+        return Gf(mesh = self.mesh, data= d, singularity = t, indices = self.indices.transpose())
 
     def conjugate(self):
         """
@@ -515,7 +516,7 @@ class Gf(object):
         #assert any( (isinstance(self.mesh, x) for x in [meshes.MeshImFreq, meshes.MeshReFreq])), "Method invalid for this Gf" 
         t = self.singularity.conjugate(isinstance(self.mesh,meshes.MeshImFreq)) if self.singularity else None
         d = np.conj(self.data)
-        return Gf(mesh = self.mesh, data= d, singularity = t, indices = self.indices, name = self.name)
+        return Gf(mesh = self.mesh, data= d, singularity = t, indices = self.indices)
 
     def zero(self):
         """Put self to 0"""
@@ -546,7 +547,6 @@ class Gf(object):
 
     @classmethod
     def __factory_from_dict__(cls, name, d):
-        #print "FACTORY", d
         r = cls(name = name, **d)
         # Backward compatibility layer
         # In the case of an ImFreq function, old archives did store only the >0

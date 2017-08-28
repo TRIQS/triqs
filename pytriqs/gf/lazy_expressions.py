@@ -136,7 +136,6 @@ def all_terminals (expr):
                 yield t
 
 def eval_expr (expr):
-#def eval_expr_or_pass (expr):
     """
     If expr is not a LazyExpr: returns expr unchanged.
     Otherwise, tries to eval it by looking for some element in the tree that can create the evaluation context and is not purely abstract
@@ -149,40 +148,4 @@ def eval_expr (expr):
     if not all_equal: raise ValueError, "Evaluation impossible: various terminals lead to incompatible evaluation contexts: their type are not compatible for binary ops"
     C = C[0]
     return eval_expr_with_context(C, expr)
-
-#--------------- TEST --------------------------------------
-
-if __name__ == "__main__":
-
-    class T (LazyExprTerminal):
-        def __init__(self, n): self.name = n
-        def __repr__(self): return self.name
-
-    g1, g2 = T("g1"), T("g2")
-    a = 2 * g1 + g2/3 + 5
-    print a
-
-    def e_t(x):
-        d =  { "g1": 10, "g2": 100}
-        return d[x.name] if isinstance(x, T) else x
-
-    assert eval_expr_with_context(e_t, a) == 58
-
-    def find_sca(tag, childs):
-        if tag == "+":
-            t = childs[1].get_terminal()
-            if t: childs[1] =  T("$$" + str(childs[1]))
-        return (tag, childs)
-
-    b = transform(a, find_sca)
-    print b
-
-    # a lazy function:
-    def f (x): return -x
-
-    fa = lazy_function("f", f) (a)
-    print fa, eval_expr_with_context(e_t, fa)
-
-    assert eval_expr_with_context(e_t, fa) == f(eval_expr_with_context(e_t, a) )
-
 

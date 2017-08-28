@@ -63,7 +63,7 @@ class GfImTime(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
-        def delegate(self, mesh=None, data = None, target_shape=None, singularity = None, tail = None, indices = None, name='g', n_points = 10000, beta = None, statistic = 'Fermion'):
+        def delegate(self, mesh=None, data = None, target_shape=None, singularity = None, tail = None, indices = None, name='', n_points = 10000, beta = None, statistic = 'Fermion'):
             if mesh is None:
                 assert isinstance(beta, (int, long, float)), "If the Mesh is not given, beta is mandatory and must be float"
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"

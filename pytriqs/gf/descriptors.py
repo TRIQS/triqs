@@ -171,7 +171,7 @@ class Fourier (Base):
         """:param G: :math:`G`, the function to be transformed. Must in the time domain"""
         Base.__init__(self, G = G)
 
-    def __str__(self): return "Fourier(%s)"%self.G.name
+    def __str__(self): return "Fourier of gf"
 
     def __call__(self,G2):
         G2.set_from_fourier(self.G)
@@ -185,7 +185,7 @@ class InverseFourier (Base):
         """:param G: :math:`G`, the function to be transformed. Must in the frequency domain"""
         Base.__init__(self, G = G)
 
-    def __str__(self): return "InverseFourier(%s)"%self.G.name
+    def __str__(self): return "InverseFourier of gf"
 
     def __call__(self,G2):
         G2.set_from_inverse_fourier(self.G)
@@ -199,7 +199,7 @@ class LegendreToMatsubara (Base):
         """:param G: :math:`G`, the function to be transformed. Must in the Legendre domain"""
         Base.__init__(self, G = G)
 
-    def __str__(self): return "LegendreToMatsubara(%s)"%self.G.name
+    def __str__(self): return "LegendreToMatsubara of gf"
 
     def __call__(self,G2):
         G2.set_from_legendre(self.G)
@@ -213,7 +213,7 @@ class MatsubaraToLegendre (Base):
         """:param G: :math:`G`, the function to be transformed. Must in the Matsubara domain"""
         Base.__init__(self, G = G)
 
-    def __str__(self): return "MatsubaraToLegendre(%s)"%self.G.name
+    def __str__(self): return "MatsubaraToLegendre of gf"
 
     def __call__(self,G2):
         G2.set_from_imfreq(self.G)

@@ -190,9 +190,6 @@ namespace triqs {
       singularity_t _singularity;
       indices_t _indices;
 
-      public:
-      std::string name;
-
       private:
       using dproxy_t = details::_data_proxy<Target>;
 
@@ -212,8 +209,7 @@ namespace triqs {
       zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 
       template <typename G>
-      gf(impl_tag2, G &&x)
-         : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
+      gf(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _singularity(x.singularity()), _indices(x.indices()) {}
 
       template <typename M, typename D, typename S>
       gf(impl_tag, M &&m, D &&dat, S &&sing, indices_t ind)
@@ -231,8 +227,7 @@ namespace triqs {
       gf() {} // all arrays of zero size (empty)
 
       /// Copy constructor
-      gf(gf const &x) : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
-
+      gf(gf const &x) : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {}
       /// Move constructor
       gf(gf &&) = default;
 
@@ -243,7 +238,6 @@ namespace triqs {
         swap(this->_zero, b._zero);
         swap(this->_singularity, b._singularity);
         swap(this->_indices, b._indices);
-        swap(this->name, b.name);
       }
 
       using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
@@ -270,10 +264,9 @@ namespace triqs {
       }
 
       // Construct from mesh, target_shape, memory order
-      gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const &ind = indices_t{}, std::string _name = {})
+      gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const &ind = indices_t{})
          : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), singularity_factory::make(m, shape), ind) {
         if (this->_indices.empty()) this->_indices = indices_t(shape);
-        name = std::move(_name);
       }
 
       /// From a gf_view of the same kind
@@ -330,7 +323,6 @@ namespace triqs {
         if (_indices.empty()) _indices= indices_t(target_shape());
         //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
         // to be implemented : there is none in the gf_expr in particular....
-        // indices and name are not affected by it ???
         return *this;
       }
 
@@ -492,14 +484,14 @@ namespace triqs {
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
       }
 
       /**
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) const {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
       }
 
       //----------------------------- HDF5 -----------------------------
@@ -535,7 +527,6 @@ namespace triqs {
         ar &_singularity;
         ar &_mesh;
         ar &_indices;
-        ar &name;
       }
 
       //----------------------------- print  -----------------------------
@@ -799,9 +790,6 @@ namespace triqs {
       singularity_t _singularity;
       indices_t _indices;
 
-      public:
-      std::string name;
-
       private:
       using dproxy_t = details::_data_proxy<Target>;
 
@@ -821,8 +809,7 @@ namespace triqs {
       zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 
       template <typename G>
-      gf_view(impl_tag2, G &&x)
-         : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
+      gf_view(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _singularity(x.singularity()), _indices(x.indices()) {}
 
       template <typename M, typename D, typename S>
       gf_view(impl_tag, M &&m, D &&dat, S &&sing, indices_t ind)
@@ -837,9 +824,7 @@ namespace triqs {
 
       public:
       /// Copy constructor
-      gf_view(gf_view const &x)
-         : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
-
+      gf_view(gf_view const &x) : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {}
       /// Move constructor
       gf_view(gf_view &&) = default;
 
@@ -850,7 +835,6 @@ namespace triqs {
         swap(this->_zero, b._zero);
         swap(this->_singularity, b._singularity);
         swap(this->_indices, b._indices);
-        swap(this->name, b.name);
       }
 
       using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
@@ -896,7 +880,6 @@ namespace triqs {
         details::_rebind_helper(_zero, X._zero);
         this->_singularity.rebind(X._singularity);
         this->_indices = X._indices;
-        this->name     = X.name;
       }
 
       // ---------------  operator =  --------------------
@@ -1072,14 +1055,14 @@ namespace triqs {
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
       }
 
       /**
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) const {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
       }
 
       //----------------------------- HDF5 -----------------------------
@@ -1115,7 +1098,6 @@ namespace triqs {
         ar &_singularity;
         ar &_mesh;
         ar &_indices;
-        ar &name;
       }
 
       //----------------------------- print  -----------------------------
@@ -1380,9 +1362,6 @@ namespace triqs {
       singularity_t _singularity;
       indices_t _indices;
 
-      public:
-      std::string name;
-
       private:
       using dproxy_t = details::_data_proxy<Target>;
 
@@ -1403,7 +1382,7 @@ namespace triqs {
 
       template <typename G>
       gf_const_view(impl_tag2, G &&x)
-         : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
+         : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _singularity(x.singularity()), _indices(x.indices()) {}
 
       template <typename M, typename D, typename S>
       gf_const_view(impl_tag, M &&m, D &&dat, S &&sing, indices_t ind)
@@ -1419,8 +1398,7 @@ namespace triqs {
       public:
       /// Copy constructor
       gf_const_view(gf_const_view const &x)
-         : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
-
+         : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {}
       /// Move constructor
       gf_const_view(gf_const_view &&) = default;
 
@@ -1431,7 +1409,6 @@ namespace triqs {
         swap(this->_zero, b._zero);
         swap(this->_singularity, b._singularity);
         swap(this->_indices, b._indices);
-        swap(this->name, b.name);
       }
 
       using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
@@ -1475,7 +1452,6 @@ namespace triqs {
         details::_rebind_helper(_zero, X._zero);
         this->_singularity.rebind(X._singularity);
         this->_indices = X._indices;
-        this->name     = X.name;
       }
 
       /// Rebind on a non const view
@@ -1640,14 +1616,14 @@ namespace triqs {
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
       }
 
       /**
     *
     */
       template <typename T> decltype(auto) operator[](T const &x) const {
-        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return triqs::gfs::details::partial_eval(this, y...); }, x);
+        return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); }, x);
       }
 
       //----------------------------- HDF5 -----------------------------
@@ -1683,7 +1659,6 @@ namespace triqs {
         ar &_singularity;
         ar &_mesh;
         ar &_indices;
-        ar &name;
       }
 
       //----------------------------- print  -----------------------------
@@ -1807,7 +1782,7 @@ namespace triqs {
       }
     };
 
-/*------------------------------------------------------------------------------------------------------
+    /*------------------------------------------------------------------------------------------------------
  *                                     View  assignment
  *-----------------------------------------------------------------------------------------------------*/
 

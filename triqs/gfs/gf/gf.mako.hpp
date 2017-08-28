@@ -198,9 +198,6 @@ namespace triqs {
    singularity_t _singularity;
    indices_t _indices;
 
-   public:
-   std::string name;
-
    private:
    using dproxy_t = details::_data_proxy<Target>;
 
@@ -225,8 +222,7 @@ namespace triqs {
       , _data(x.data())
       , _zero(_make_zero(_data))
       , _singularity(x.singularity())
-      , _indices(x.indices())
-      , name(x.name) {}
+      , _indices(x.indices()) {}
 
    template <typename M, typename D, typename S>
    MAKO_GF(impl_tag, M &&m, D &&dat, S &&sing, indices_t ind)
@@ -249,8 +245,7 @@ namespace triqs {
 
    /// Copy constructor
    MAKO_GF(MAKO_GF const &x)
-      : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()), name(x.name) {}
-
+      : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {} 
    /// Move constructor
    MAKO_GF(MAKO_GF &&) = default;
 
@@ -261,7 +256,6 @@ namespace triqs {
     swap(this->_zero, b._zero);
     swap(this->_singularity, b._singularity);
     swap(this->_indices, b._indices);
-    swap(this->name, b.name);
    }
 
    using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
@@ -295,10 +289,9 @@ namespace triqs {
    }
 
    // Construct from mesh, target_shape, memory order
-   gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const &ind = indices_t{}, std::string _name = {})
+   gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const &ind = indices_t{})
       : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), singularity_factory::make(m, shape), ind) {
     if (this->_indices.empty()) this->_indices = indices_t(shape);
-    name                                       = std::move(_name);
    }
 
    /// From a gf_view of the same kind
@@ -355,7 +348,6 @@ namespace triqs {
     if (_indices.empty()) _indices = indices_t(target_shape());
     //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
     // to be implemented : there is none in the gf_expr in particular....
-    // indices and name are not affected by it ???
     return *this;
    }
 
@@ -404,7 +396,6 @@ namespace triqs {
     details::_rebind_helper(_zero, X._zero);
     this->_singularity.rebind(X._singularity);
     this->_indices = X._indices;
-    this->name     = X.name;
    }
 
    /// Rebind on a non const view
@@ -457,7 +448,6 @@ namespace triqs {
     details::_rebind_helper(_zero, X._zero);
     this->_singularity.rebind(X._singularity);
     this->_indices = X._indices;
-    this->name     = X.name;
    }
 
    // ---------------  operator =  --------------------
@@ -674,7 +664,6 @@ namespace triqs {
     ar &_singularity;
     ar &_mesh;
     ar &_indices;
-    ar &name;
    }
 
    //----------------------------- print  -----------------------------

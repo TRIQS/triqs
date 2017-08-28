@@ -1,5 +1,6 @@
-from pytriqs.plot.protocol import clip_array
 import numpy
+from warnings import warn
+from pytriqs.plot.protocol import clip_array
 
 def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     r"""
@@ -8,6 +9,10 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     Parameters
     ----------
     opt_dict: dictionary
+              MUST contain:
+              - name: str
+                      Name for the plotting label
+              
               Can contain:
               - mode: string, default None
                       Mode to plot the Green's function in:
@@ -16,11 +21,9 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
                       -- 'S': spectral function
               - x_window: tuple, default None
                           (xmin,xmax)
-              - name: string, default = ''
-                      If not '', it remplaces the name of the function just for this plot.
-    xlabel: string
+    xlabel: str
             Label to apply to the x axis.
-    ylabel: string
+    ylabel: lambda : str -> str
             Label to apply to the y axis.
     X: list
        The x values the object can take, i.e. the mesh.
@@ -32,13 +35,13 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
     plot_data: list of dict
                Object passed to oplot to plot.
     """
-    name = opt_dict.pop('name', self.name)  # consume it
-    name_prefix = opt_dict.pop('name_prefix', '')  # consume it
-    if name and name_prefix:
-        raise ValueError, 'name and name_prefix cannot be used at the same time'
-    if name_prefix:
-        name_save, self.name = self.name, name or name_prefix
 
+    assert 'name_prefix' not in opt_dict, "name_prefix is deprecated"
+    #if 'name' not in opt_dict: 
+    #    warnings.warn("oplot REQUIRES a name = for making the legend and labels. Using self.name, but it is deprecated and WILL BE REMOVED")
+    name = opt_dict.pop('name', self.name)         # consume it
+    if not name:
+        warn("oplot of gf : no name provided !")
     rx = opt_dict.pop('x_window', None)  # consume it
     X = numpy.array(X).real
     sl = clip_array(X, *rx) if rx else slice(len(X)) # the slice due to clip option x_window
@@ -49,7 +52,7 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
         make_label = lambda ind: "%s%s %s" % (prefix,name,"_".join(map(str, reversed(ind))))
         make_data_sl = lambda ind: (sl,) + tuple(reversed(ind))
         return [{'xlabel': xlabel,
-                 'ylabel': ylabel(self.name or name),
+                 'ylabel': ylabel(name),
                  'xdata': X[sl],
                  'label': make_label(ind),
                  'ydata': f(self.data[make_data_sl(ind)])} for ind in ind_range]
@@ -80,8 +83,6 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
         raise ValueError, "The 'mode' flag is meaningless. Expected 'R', 'I', or 'S' and I got %s." % mode
 
     res[0].update(opt_dict) # Add all other unused parameters to the dict
-    if name_prefix:
-        self.name = name_save
     return res
 
 #------------------
