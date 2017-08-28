@@ -31,6 +31,7 @@ add_python_test(gf_inplace_112)
 add_python_test(gf_transpose)
 
 add_python_test(issue460)
+add_python_test(issue437)
 
 # Add evaluator for g
 add_python_test(gf_eval)

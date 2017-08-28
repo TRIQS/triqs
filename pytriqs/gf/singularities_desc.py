@@ -62,7 +62,7 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
             hdf5 = True,
             serializable= "tuple",
             is_printable= True,
-            arithmetic = ("algebra","double")
+            arithmetic = ("algebra","dcomplex")
            )
     
     t.add_constructor(signature = "(triqs::utility::mini_vector<int,%s> target_shape, int n_order=10, int order_min=-1)"%n,
