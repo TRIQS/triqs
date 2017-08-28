@@ -449,8 +449,13 @@ class Gf(object):
             else:
                 for n in range (self.data.shape[0]):
                    self.data[n] = self.data[n] * arg.data[n] # put to C if too slow.
-            self.tail.reset(-2) # Can not compute the tail, so it is undefined.
-        # arg is not a Gf
+            if isinstance(self.mesh, (meshes.MeshImFreq, meshes.MeshReFreq)):
+                if self._singularity and arg._singularity : self._singularity *= arg._singularity
+                if not self._singularity and arg._singularity : self._singularity = arg._singularity.copy()
+                if self._singularity and not arg._singularity : self._singularity = None
+            else:
+                self.tail.reset(-2) # Can not compute the tail, so it is undefined.
+         # arg is not a Gf
         else:
             self._data[:] *= arg
             if self._singularity : self._singularity *= arg

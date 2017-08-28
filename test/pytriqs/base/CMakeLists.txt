@@ -30,6 +30,8 @@ add_python_test(gf_inplace_112)
 # Bug fix #134
 add_python_test(gf_transpose)
 
+add_python_test(issue460)
+
 # Add evaluator for g
 add_python_test(gf_eval)
 
