@@ -73,8 +73,8 @@ class GfLegendre(Gf) :
                       mesh = mesh, 
                       data = data, 
                       target_shape = target_shape,
-                      singularity = tail or singularity,
-                      _singularity_maker = make_singularity_maker(8,tail, singularity),
+                      singularity = None, # no tail for a legendre
+                      _singularity_maker = None, 
                       indices = indices, 
                       name = name) 
 
