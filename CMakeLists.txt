@@ -232,7 +232,7 @@ endif()
 # #################################
 # Check availability of <optional>
 # #################################
-try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS -std=c++1y )
+try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} )
 if (NOT has_optional_header)
  message(STATUS "Using <experimental/optional> header instead of <optional>")
 else ()
