@@ -73,8 +73,10 @@ namespace gfs {
 
  // auxiliary function : invert the data : one function for all matrix valued gf (save code).
  template <typename A3> void _gf_invert_data_in_place(A3 &&a) {
-  for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-   auto v = make_matrix_view(a(i, arrays::range(), arrays::range()));
+  auto dom = a(ellipsis(), 0,0).indexmap().domain();
+  auto f = [&a, _ = arrays::range()](auto ... x) { return a(x..., _, _);};
+  for(auto ind : dom) {
+   auto v = make_matrix_view(triqs::tuple::apply(f, ind));
    v = triqs::arrays::inverse(v);
   }
  }
