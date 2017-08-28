@@ -948,6 +948,11 @@ static PyObject* ${c.py_type}___str__ (PyObject *self) {
 static PyObject* ${c.py_type}_richcompare (PyObject *a, PyObject *b, int op) {
 
 %if c.comparisons:
+ if (!convertible_from_python<${c.c_type}>(a, true)) return NULL;
+ if (!convertible_from_python<${c.c_type}>(b, false)) {
+   PyErr_SetString(PyExc_TypeError, "Comparison operator : the RHS must be a ${c.c_type}");
+   return NULL;
+ }
  auto & _a  = convert_from_python<${c.c_type}>(a);
  auto & _b  = convert_from_python<${c.c_type}>(b);
 %endif

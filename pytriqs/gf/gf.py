@@ -175,6 +175,10 @@ class Gf(object):
             # singularity : given, or a maker is given (using the data, ...)
             assert (singularity is None) or (_singularity_maker is None), "Internal error"
             self.singularity = singularity or (_singularity_maker(self) if _singularity_maker else None)
+            # Overrule in this case, add an empty tail
+            if self._singularity is None and isinstance(self._mesh, (meshes.MeshImFreq, meshes.MeshReFreq, meshes.MeshImTime, meshes.MeshReTime)):
+                self._singularity = singularities.TailGf(*self._target_shape)
+                self._singularity.reset(-2)
 
             # NB : at this stage, enough checks should have been made in Python in order for the C++ view 
             # to be constructed without any INTERNAL exceptions.
