@@ -144,7 +144,7 @@ namespace triqs {
    using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
    using singularity_t             = _singularity_MAKO_RVC_t;
 
-   using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued(Target{})>;
+   using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued<Target>::value>;
 
    struct target_and_shape_t{
      target_shape_t _shape; 
@@ -170,7 +170,7 @@ namespace triqs {
    /// Shape of the target
    //auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
    target_and_shape_t target() const { 
-     return target_and_shape_t{ _data.shape().template front_mpop<arity + is_tail_valued(Target{})>() }; } // drop arity dims
+     return target_and_shape_t{ _data.shape().template front_mpop<arity + is_tail_valued<Target>::value>() }; } // drop arity dims
 
    auto target_shape() const { return target().shape(); } // drop arity dims
 
@@ -231,7 +231,7 @@ namespace triqs {
       , _zero(_make_zero(_data))
       , _singularity(std::forward<S>(sing))
       , _indices(std::move(ind)) {
-    if (!(_indices.empty() or (is_tail_valued(Target())) or _indices.has_shape(target_shape())))
+    if (!(_indices.empty() or (is_tail_valued<Target>::value) or _indices.has_shape(target_shape())))
      TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
    }
 
@@ -477,7 +477,7 @@ namespace triqs {
    // mako <% GFVIEW = 'gf_const_view' if (C or RVC == 'const_view') else 'gf_view' %>
    template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata &&fd, Fsing &&fs, Find &&fi) MAKO_C {
     auto d2  = fd(_data);
-    using t2 = std14::conditional_t<is_tail_valued(Target()), tail_valued<target_from_array<decltype(d2), arity + 1>>,
+    using t2 = std14::conditional_t<is_tail_valued<Target>::value, tail_valued<target_from_array<decltype(d2), arity + 1>>,
                                     target_from_array<decltype(d2), arity>>;
     using gv_t = MAKO_GFVIEW<Var, t2>;
     return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};

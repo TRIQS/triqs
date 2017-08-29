@@ -111,7 +111,7 @@ class Gf(object):
         
         #print "Gf construct args", kw
 
-        def delegate(self, mesh, data=None, target_shape=None, singularity = None, indices = None, name = '', is_real = False, _singularity_maker = None):
+        def delegate(self, mesh, data=None, target_shape=None, singularity = None, indices = None, name = '', is_real = False, _singularity_maker = None, tail_valued = False):
             """
             target_shape and data  : must provide exactly one of them
             """
@@ -126,6 +126,12 @@ class Gf(object):
             if target_shape : 
                 for i in target_shape : 
                     assert i>0, "Target shape elements must be >0"
+     
+            # Is the gf tail_valued ?
+            self.tail_valued = tail_valued
+            tail_valued_shift = (1 if tail_valued else 0)
+            if tail_valued:
+                assert data is not None and singularity is None and _singularity_maker is None
 
             # mesh
             assert isinstance(mesh, all_meshes), "Mesh is unknown. Possible type of meshes are %s" % ', '.join(map(lambda m: m.__name__,all_meshes))
@@ -153,8 +159,9 @@ class Gf(object):
                 data = np.zeros(list(l) + list(target_shape), dtype = np.float64 if is_real else np.complex128)
             # Now we have the data at correct size. Set up a few short cuts
             self._data = data
-            self._target_rank = len(self._data.shape) - (self._mesh.rank if isinstance(mesh, MeshProduct) else 1) 
-            self._rank = len(self._data.shape) - self._target_rank
+            len_data_shape = len(self._data.shape) - tail_valued_shift
+            self._target_rank = len_data_shape - (self._mesh.rank if isinstance(mesh, MeshProduct) else 1)  
+            self._rank = len_data_shape - self._target_rank 
             assert self._rank >= 0
 
             # target_shape. Ensure it is correct in any case.
@@ -167,7 +174,7 @@ class Gf(object):
 
             # Check that indices  have the right size
             if self._indices is not None: 
-                d,i =  self._data.shape[self._rank:], tuple(len(x) for x in self._indices.data)
+                d,i =  self._data.shape[self._rank + tail_valued_shift:], tuple(len(x) for x in self._indices.data)
                 assert (d == i), "Indices are of incorrect size. Data size is %s while indices size is %s"%(d,i)
             # Now indices are set, and are always a GfIndices object, with the
             # correct size
@@ -185,7 +192,7 @@ class Gf(object):
             # Set up the C proxy for call operator for speed. The name has to
             # agree with the wrapped_aux module, it is of only internal use
             s = '_x_'.join( m.__class__.__name__[4:] for m in self.mesh._mlist) if isinstance(mesh, MeshProduct) else self._mesh.__class__.__name__[4:]
-            proxyname = 'CallProxy%s_%s%s'%(s, self.target_rank,'_R' if data.dtype == np.float64 else '')
+            proxyname = 'CallProxy%s_%s%s'%(s, self.target_rank,'_R' if data.dtype == np.float64 else '') if not tail_valued else None
             self._c_proxy = all_call_proxies.get(proxyname, CallProxyNone)(self)
             
             # check all invariants. Debug.
@@ -197,7 +204,9 @@ class Gf(object):
         """Check invariant for singularity. Mainly for debug"""
         if self._singularity: 
             # The target size
-            assert self._singularity.data.shape[1:] == self.data.shape[self._rank:], "Invariant broken for tail %s, %s"%(self._singularity.data.shape[1:], self.data.shape[self._rank:])
+            if self._target_rank >0 : 
+                assert self._singularity.data.shape[-self._target_rank:] == self.data.shape[-self._target_rank:],\
+                        "Invariant broken for tail %s, %s"%(self._singularity.data.shape[-self._target_rank:], self.data.shape[-self._target_rank:])
  
     def __check_invariants(self):
         """Check various invariant. Mainly for debug"""
@@ -291,7 +300,9 @@ class Gf(object):
         self.__check_invariants()
 
     def __repr__(self):
-        return "Green Function %s with mesh %s and range %s: \n"%(self.name, self.mesh, self.rank)
+        if self._tail_valued : 
+            return "Tail valued function with mesh %s and target_rank %s: \n"%(self.mesh, self.target_rank)
+        return "Green Function %s with mesh %s and target_rank %s: \n"%(self.name, self.mesh, self.target_rank)
  
     def __str__ (self): 
         return self.name if self.name else repr(self)
@@ -349,11 +360,13 @@ class Gf(object):
     # -------------- Various operations -------------------------------------
     
     @property
-    def real(self) : 
+    def real(self): 
+        """A Gf with only the real part of data. NB : it has no tail, since it does not make sense any more"""
         return Gf(mesh = self._mesh, data = self._data.real, singularity = None,name = ("Re " + self.name) if name else '') # Singularity is None for G(tau) ?
 
     @property
-    def imag(self) : 
+    def imag(self): 
+        """A Gf with only the imag part of data. NB : it has no tail, since it does not make sense any more"""
         return Gf(mesh = self._mesh, data = self._data.imag, singularity = None, name = ("Im " + self.name) if name else '') # Singularity is None for G(tau) ?
  
     # --------------  Lazy system -------------------------------------
@@ -496,7 +509,9 @@ class Gf(object):
     def invert(self):
         """Inverts this Gf in place, in a matrix sense"""
         assert self.target_rank==2, "Inversion only makes sense for matrix valued Gf"
-        wrapped_aux._gf_invert_data_in_place(self.data)   
+        d = self.data.view() # Cf https://docs.scipy.org/doc/numpy/reference/generated/numpy.reshape.html
+        d.shape = (np.prod(d.shape[:-2]),) + d.shape[-2:] # reshaped view, guarantee no copy
+        wrapped_aux._gf_invert_data_in_place(d)   
         if self._singularity : self._singularity.invert()
 
     def inverse(self): 

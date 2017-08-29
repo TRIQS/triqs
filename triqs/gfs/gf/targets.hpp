@@ -86,8 +86,9 @@ namespace gfs {
   // using value_type = typename T::value_type;
  };
 
- template <typename T> constexpr int is_tail_valued(T) { return 0; }
- template <typename T> constexpr int is_tail_valued(tail_valued<T>) { return 1; }
+ template<typename T> struct is_tail_valued: std::false_type{};
+ template<typename T> struct is_tail_valued<tail_valued<T>>: std::true_type{};
+ //template< class T > constexpr bool is_tail_valued_v = _is_tail_valued<T>::value;
 
  /// invert the relation:  type, rank -> target.
  template <typename T, int R> struct _target_from_type_rank;

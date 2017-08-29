@@ -27,6 +27,7 @@ namespace triqs {
    using indices_t  = typename c_type::indices_t;
 
    static PyObject* c2py(c_type g) {
+
     pyref cls = pyref::get_class("pytriqs.gf", "Gf", true);
     if (cls.is_null()) return NULL;
     pyref m   = convert_to_python(g.mesh());
@@ -43,6 +44,8 @@ namespace triqs {
     PyDict_SetItemString(kw, "data", d);
     PyDict_SetItemString(kw, "singularity", s);
     PyDict_SetItemString(kw, "indices", i);
+
+    PyDict_SetItemString(kw, "tail_valued", (triqs::gfs::is_tail_valued<T>::value ? Py_True: Py_False));
     pyref empty_tuple = PyTuple_New(0);
     return PyObject_Call(cls, empty_tuple, kw);
    }
@@ -85,10 +88,6 @@ namespace triqs {
     	if (raise_exception) _set_err(i, "indices", utility::typeid_name<indices_t>());
         return false;
     }
-
-    /*  TRIQS_DEBUG(py_converter<mesh_t>::is_convertible(m, raise_exception) );*/
-    // TRIQS_DEBUG(py_converter<data_t>::is_convertible(m, raise_exception) );
-    // TRIQS_DEBUG(py_converter<sing_t>::is_convertible(m, raise_exception) );
 
     return true;
    }
