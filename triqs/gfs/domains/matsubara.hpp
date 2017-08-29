@@ -62,6 +62,10 @@ namespace gfs {
   return {-(mp.n + (mp.statistic == Fermion ? 1 : 0)), mp.beta, mp.statistic};
  }
 
+ inline std::complex<double> operator*(matsubara_freq const &x, matsubara_freq const &y) {
+   return std::complex<double>{x} * std::complex<double>{y}; 
+ }
+
  template<typename T> bool operator<(matsubara_freq const &x, T const &y) { return (x.n <y);}
  template<typename T> bool operator<(T const &x, matsubara_freq const &y) { return (x <y.n);}
  inline bool operator<(matsubara_freq const &x, matsubara_freq const &y) { return (x.n<y.n);}
