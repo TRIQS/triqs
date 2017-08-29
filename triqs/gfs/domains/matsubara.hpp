@@ -25,6 +25,14 @@
 namespace triqs {
 namespace gfs {
 
+ // a long with no cast, no operation
+ struct _long { 
+  long value;
+  _long(int i):value{i}{}
+  _long(long i):value{i}{}
+ };
+
+
  /** 
   * A matsubara frequency, i.e. 
   *   * n : int, the index
@@ -37,15 +45,17 @@ namespace gfs {
   *   and work on the index
   **/
  struct matsubara_freq : public utility::arithmetic_ops_by_cast_disable_same_type<matsubara_freq, std::complex<double>> {
-  int n;
+  long n;
   double beta;
   statistic_enum statistic;
   matsubara_freq() : n(0), beta(1), statistic(Fermion) {}
-  matsubara_freq(int n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
+  matsubara_freq(long n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
+  matsubara_freq(_long n_, double beta_, statistic_enum stat_) : n(n_.value), beta(beta_), statistic(stat_) {}
   using cast_t = std::complex<double>;
   operator cast_t() const {
    return {0, M_PI * (2 * n + statistic) / beta};
   }
+  operator _long() const { return {n};}
  };
 
  inline std::ostream &operator<<(std::ostream &out, matsubara_freq const &y) { return out << std::complex<double>(y); }

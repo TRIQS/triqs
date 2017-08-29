@@ -46,7 +46,8 @@ namespace gfs {
   ///type of the domain: matsubara_domain<true>
   using domain_t = matsubara_domain<true>;
   ///type of the Matsubara index $n$ (as in $i\omega_n$)
-  using index_t = long;
+  //using index_t = long;
+  using index_t = _long;
   ///type of the linear index
   using linear_index_t = long;
   using default_interpol_policy = interpol_t::None;
@@ -113,13 +114,13 @@ namespace gfs {
   }
 
   /// From an index of a point in the mesh, returns the corresponding point in the domain
-  domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind + (_dom.statistic == Fermion)) / _dom.beta; }
+  domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind.value + (_dom.statistic == Fermion)) / _dom.beta; }
 
   /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-  long index_to_linear(index_t ind) const { return ind - first_index_window(); }
+  long index_to_linear(index_t ind) const { return ind.value - first_index_window(); }
 
   /// Reverse of index_to_linear
-  index_t linear_to_index(long lind) const { return lind + first_index_window(); }
+  index_t linear_to_index(long lind) const { return {lind + first_index_window()}; }
 
   // -------------------- Accessors (other) -------------------
 
@@ -268,7 +269,7 @@ namespace gfs {
   gf_mesh<imfreq> const & mesh() const { return *_mesh;}
 
   private:
-  index_t first_index_window, last_index_window;
+  long first_index_window, last_index_window;
   gf_mesh<imfreq> const * _mesh;
  };
 
