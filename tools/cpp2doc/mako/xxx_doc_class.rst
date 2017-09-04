@@ -23,6 +23,8 @@
 ${c.name}
 ${'=' * (len(c.name)+2)}
 
+${replace_latex(c.brief_doc)}
+
 **Synopsis**:
 
 .. code-block:: c
@@ -41,12 +43,12 @@ ${c.processed_doc}
 
 %if c.doc_elements['note']:
 .. note::
-     ${c.doc_elements['note']}
+     ${replace_latex(c.doc_elements['note'])}
 %endif
 
 %if c.doc_elements['warning']:
-.. note::
-     ${c.doc_elements['warning']}
+.. warning::
+     ${replace_latex(c.doc_elements['warning'])}
 %endif
 
 %if len(c.doc_elements['tparam']) > 0 :
