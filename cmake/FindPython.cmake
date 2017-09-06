@@ -12,6 +12,8 @@
 #
 #  This module defines the variables
 #  - PYTHON_INTERPRETER : name of the python interpreter
+#  - PYTHON_VERSION_MAJOR : Python major version found e.g. 2
+#  - PYTHON_VERSION_MINOR : Python version found e.g. 7
 #  - PYTHON_INCLUDE_DIRS : include for compilation
 #  - PYTHON_NUMPY_INCLUDE_DIR : include for compilation with numpy
 #  - PYTHON_LIBRARY : link flags
@@ -51,10 +53,11 @@ if (PythonSupport)
  # Check the interpreter and its version
  #
  EXEC_PYTHON_SCRIPT ("import sys, string; print sys.version.split()[0]" PYTHON_VERSION)
- STRING(COMPARE GREATER ${PYTHON_MINIMAL_VERSION} ${PYTHON_VERSION} PYTHON_VERSION_NOT_OK)
- IF (PYTHON_VERSION_NOT_OK)
+ IF (${PYTHON_VERSION} VERSION_LESS ${PYTHON_MINIMAL_VERSION})
   MESSAGE(FATAL_ERROR "Python intepreter version is ${PYTHON_VERSION} . It should be >= ${PYTHON_MINIMAL_VERSION}")
- ENDIF (PYTHON_VERSION_NOT_OK)
+ ENDIF ()
+ EXEC_PYTHON_SCRIPT ("import sys; print sys.version_info[0]" PYTHON_VERSION_MAJOR)
+ EXEC_PYTHON_SCRIPT ("import sys; print sys.version_info[1]" PYTHON_VERSION_MINOR)
  
  EXEC_PYTHON_SCRIPT ("import mako.template" nulle) # check that Mako is there...
  EXEC_PYTHON_SCRIPT ("import distutils " nulle) # check that distutils is there...
