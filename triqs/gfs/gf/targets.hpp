@@ -33,6 +33,7 @@ namespace gfs {
   using scalar_t = double;
   using slice_t = arrays::array<scalar_t, rank>;
   // using value_type = std14::conditional_t<(R!=0), arrays::array<dcomplex, R>, double > ;
+  using real_t = tensor_real_valued<R>;
  };
 
  template <int R> struct tensor_valued {
@@ -51,6 +52,7 @@ namespace gfs {
   using scalar_t = double;
   using slice_t = arrays::matrix<scalar_t>;
   // using value_type = arrays::<double>;
+  using real_t = matrix_real_valued;
  };
 
  struct matrix_valued {
@@ -67,6 +69,7 @@ namespace gfs {
   static constexpr bool is_matrix = false;
   using scalar_t = double;
   using slice_t = scalar_t;
+  using real_t = scalar_real_valued;
  };
 
  struct scalar_valued {
@@ -84,6 +87,7 @@ namespace gfs {
   using scalar_t = dcomplex;
   // using slice_t = scalar_t;
   // using value_type = typename T::value_type;
+  using real_t = tail_valued<typename T::real_t>; 
  };
 
  template<typename T> struct is_tail_valued: std::false_type{};
