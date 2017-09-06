@@ -102,6 +102,9 @@ namespace triqs {
       /// The associated regular type (gf<....>)
       using regular_type = gf<Var, Target>;
 
+      /// The associated real type
+      using real_t = gf<Var, typename Target::real_t>;
+
       using variable_t = Var;
       using target_t   = Target;
 
@@ -204,7 +207,8 @@ namespace triqs {
         r()    = 0;
         return r;
       }
-      static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; } // special case
+      static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; }      // special case
+      static zero_t __make_zero(scalar_real_valued, data_t const &d) { return 0; } // special case
       static zero_t _make_zero(data_t const &d) { return __make_zero(Target{}, d); }
       zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 
@@ -320,7 +324,7 @@ namespace triqs {
         for (auto const &w : _mesh) (*this)[w] = rhs[w];
         _singularity = rhs.singularity();
         _indices     = rhs.indices();
-        if (_indices.empty()) _indices= indices_t(target_shape());
+        if (_indices.empty()) _indices = indices_t(target_shape());
         //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
         // to be implemented : there is none in the gf_expr in particular....
         return *this;
@@ -666,7 +670,7 @@ namespace triqs {
       void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
         _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
         _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
-        if (l.c.rank() == l.root) _singularity= l.rhs.singularity();
+        if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
         mpi_broadcast(_singularity, l.c, l.root);
       }
 
@@ -677,7 +681,7 @@ namespace triqs {
       void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
         _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
         _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
-        if (l.all || (l.c.rank() == l.root)) _singularity= l.rhs.singularity();
+        if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
       }
     };
 
@@ -701,6 +705,9 @@ namespace triqs {
 
       /// The associated regular type (gf<....>)
       using regular_type = gf<Var, Target>;
+
+      /// The associated real type
+      using real_t = gf_view<Var, typename Target::real_t>;
 
       using variable_t = Var;
       using target_t   = Target;
@@ -804,7 +811,8 @@ namespace triqs {
         r()    = 0;
         return r;
       }
-      static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; } // special case
+      static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; }      // special case
+      static zero_t __make_zero(scalar_real_valued, data_t const &d) { return 0; } // special case
       static zero_t _make_zero(data_t const &d) { return __make_zero(Target{}, d); }
       zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 
@@ -1238,7 +1246,7 @@ namespace triqs {
       void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
         _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
         _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
-        if (l.c.rank() == l.root) _singularity= l.rhs.singularity();
+        if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
         mpi_broadcast(_singularity, l.c, l.root);
       }
 
@@ -1249,7 +1257,7 @@ namespace triqs {
       void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
         _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
         _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
-        if (l.all || (l.c.rank() == l.root)) _singularity= l.rhs.singularity();
+        if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
       }
     };
 
@@ -1273,6 +1281,9 @@ namespace triqs {
 
       /// The associated regular type (gf<....>)
       using regular_type = gf<Var, Target>;
+
+      /// The associated real type
+      using real_t = gf_const_view<Var, typename Target::real_t>;
 
       using variable_t = Var;
       using target_t   = Target;
@@ -1376,7 +1387,8 @@ namespace triqs {
         r()    = 0;
         return r;
       }
-      static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; } // special case
+      static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; }      // special case
+      static zero_t __make_zero(scalar_real_valued, data_t const &d) { return 0; } // special case
       static zero_t _make_zero(data_t const &d) { return __make_zero(Target{}, d); }
       zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 

@@ -25,8 +25,8 @@
 namespace triqs {
   namespace gfs {
 
-    using triqs::utility::factory;
     using triqs::mpi::mpi_reduce;
+    using triqs::utility::factory;
 
     /*----------------------------------------------------------
    *   Declaration of main types : gf, gf_view, gf_const_view
@@ -112,6 +112,9 @@ namespace triqs {
       using mutable_view_type = block_gf_view<Var, Target>;
       using view_type         = block_gf_view<Var, Target>;
       using const_view_type   = block_gf_const_view<Var, Target>;
+
+      /// The associated real type
+      using real_t = block_gf<Var, typename Target::real_t>;
 
       using g_t           = gf<Var, Target>;
       using data_t        = std::vector<g_t>;
@@ -479,6 +482,9 @@ namespace triqs {
       using view_type         = block_gf_view<Var, Target>;
       using const_view_type   = block_gf_const_view<Var, Target>;
 
+      /// The associated real type
+      using real_t = block_gf_view<Var, typename Target::real_t>;
+
       using g_t           = gf_view<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
@@ -579,7 +585,7 @@ namespace triqs {
         if (l.rhs.size() != this->size())
           TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
         _block_names = l.rhs.block_names();
-        for (int i = 0; i < size(); ++i) _glist[i]= mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
+        for (int i = 0; i < size(); ++i) _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
         // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
         // we can not overload the = of vector for better API.
       }
@@ -837,6 +843,9 @@ namespace triqs {
       using mutable_view_type = block_gf_view<Var, Target>;
       using view_type         = block_gf_const_view<Var, Target>;
       using const_view_type   = block_gf_const_view<Var, Target>;
+
+      /// The associated real type
+      using real_t = block_gf_const_view<Var, typename Target::real_t>;
 
       using g_t           = gf_const_view<Var, Target>;
       using data_t        = std::vector<g_t>;
@@ -1146,6 +1155,9 @@ namespace triqs {
       using mutable_view_type = block2_gf_view<Var, Target>;
       using view_type         = block2_gf_view<Var, Target>;
       using const_view_type   = block2_gf_const_view<Var, Target>;
+
+      /// The associated real type
+      using real_t = block2_gf<Var, typename Target::real_t>;
 
       using g_t           = gf<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
@@ -1490,6 +1502,9 @@ namespace triqs {
       using mutable_view_type = block2_gf_view<Var, Target>;
       using view_type         = block2_gf_view<Var, Target>;
       using const_view_type   = block2_gf_const_view<Var, Target>;
+
+      /// The associated real type
+      using real_t = block2_gf_view<Var, typename Target::real_t>;
 
       using g_t           = gf_view<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
@@ -1842,6 +1857,9 @@ namespace triqs {
       using mutable_view_type = block2_gf_view<Var, Target>;
       using view_type         = block2_gf_const_view<Var, Target>;
       using const_view_type   = block2_gf_const_view<Var, Target>;
+
+      /// The associated real type
+      using real_t = block2_gf_const_view<Var, typename Target::real_t>;
 
       using g_t           = gf_const_view<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;

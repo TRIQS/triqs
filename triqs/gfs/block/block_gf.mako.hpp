@@ -127,6 +127,9 @@ namespace triqs {
    using view_type         = MAKO_GV<Var, Target>;
    using const_view_type   = MAKO_ROOT_const_view<Var, Target>;
 
+   /// The associated real type
+   using real_t = MAKO_GF<Var, typename Target::real_t>;
+
    using g_t = gfMAKO_EXT<Var, Target>;
    // mako %if ARITY == 1 :
    using data_t        = std::vector<g_t>;

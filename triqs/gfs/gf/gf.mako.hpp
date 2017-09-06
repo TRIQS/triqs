@@ -111,6 +111,9 @@ namespace triqs {
    /// The associated regular type (gf<....>)
    using regular_type = gf<Var, Target>;
 
+   /// The associated real type
+   using real_t = MAKO_GF<Var, typename Target::real_t>;
+
    using variable_t = Var;
    using target_t   = Target;
 
