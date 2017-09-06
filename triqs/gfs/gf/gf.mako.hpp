@@ -219,6 +219,7 @@ namespace triqs {
     return r;
    }
    static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; } // special case
+   static zero_t __make_zero(scalar_real_valued, data_t const &d) { return 0; } // special case
    static zero_t _make_zero(data_t const &d) { return __make_zero(Target{}, d); }
    zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 
