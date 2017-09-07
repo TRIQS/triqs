@@ -362,12 +362,12 @@ class Gf(object):
     @property
     def real(self): 
         """A Gf with only the real part of data. NB : it has no tail, since it does not make sense any more"""
-        return Gf(mesh = self._mesh, data = self._data.real, singularity = None,name = ("Re " + self.name) if name else '') # Singularity is None for G(tau) ?
+        return Gf(mesh = self._mesh, data = self._data.real, singularity = None,name = ("Re " + self.name) if self.name else '') # Singularity is None for G(tau) ?
 
     @property
     def imag(self): 
         """A Gf with only the imag part of data. NB : it has no tail, since it does not make sense any more"""
-        return Gf(mesh = self._mesh, data = self._data.imag, singularity = None, name = ("Im " + self.name) if name else '') # Singularity is None for G(tau) ?
+        return Gf(mesh = self._mesh, data = self._data.imag, singularity = None, name = ("Im " + self.name) if self.name else '') # Singularity is None for G(tau) ?
  
     # --------------  Lazy system -------------------------------------
 
