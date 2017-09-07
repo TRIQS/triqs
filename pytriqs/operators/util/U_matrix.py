@@ -341,7 +341,10 @@ def U_J_to_radial_integrals(l, U_int, J_hund):
     """
 
     F = np.zeros((l+1),dtype=float)
-    if l == 2:
+    if l==1:
+        F[0] = U_int
+        F[1] = 5.0 * J_hund
+    elif l == 2:
         F[0] = U_int
         F[1] = J_hund * 14.0 / (1.0 + 0.63)
         F[2] = 0.630 * F[1]
@@ -350,7 +353,7 @@ def U_J_to_radial_integrals(l, U_int, J_hund):
         F[1] = 6435.0 * J_hund / (286.0 + 195.0 * 451.0 / 675.0 + 250.0 * 1001.0 / 2025.0)
         F[2] = 451.0 * F[1] / 675.0
         F[3] = 1001.0 * F[1] / 2025.0
-    else: raise ValueError("U_J_to_radial_integrals: implemented only for l=2,3")
+    else: raise ValueError("U_J_to_radial_integrals: implemented only for l=1,2,3")
 
     return F
 
@@ -374,14 +377,16 @@ def radial_integrals_to_U_J(l, F):
              Value of the Hund's coupling.
 
     """
-
-    if l == 2:
+    if l == 1:
+        U_int = F[0]
+        J_hund = F[1] / 5.0
+    elif l == 2:
         U_int = F[0]
         J_hund = F[1] * (1.0 + 0.63) / 14.0
     elif l == 3:
         U_int = F[0]
         J_hund = F[1] * (286.0 + 195.0 * 451.0 / 675.0 + 250.0 * 1001.0 / 2025.0) / 6435.0
-    else: raise ValueError("radial_integrals_to_U_J: implemented only for l=2,3")
+    else: raise ValueError("radial_integrals_to_U_J: implemented only for l=1,2,3")
 
     return U_int,J_hund
 
