@@ -300,7 +300,7 @@ class Gf(object):
         self.__check_invariants()
 
     def __repr__(self):
-        if self._tail_valued : 
+        if self.tail_valued :
             return "Tail valued function with mesh %s and target_rank %s: \n"%(self.mesh, self.target_rank)
         return "Green Function %s with mesh %s and target_rank %s: \n"%(self.name, self.mesh, self.target_rank)
  
