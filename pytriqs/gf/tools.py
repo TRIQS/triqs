@@ -28,14 +28,30 @@ from backwd_compat.gf_refreq import GfReFreq
 
 def inverse(x):
     """
-    Compute the inverse of a Green's function and return this.
+    Return the inverse of a Green's function
     """
     if descriptors.is_lazy(x):
         return lazy_expressions.lazy_function("inverse", inverse) (x)
-    assert hasattr(x,'invert') and hasattr(x,'copy')
-    cop = x.copy() 
-    cop.invert()
-    return cop
+    assert hasattr(x,'inverse')
+    return x.inverse()
+
+def conjugate(x):
+    """
+    Return the conjugate of a Green's function
+    """
+    if descriptors.is_lazy(x):
+        return lazy_expressions.lazy_function("conjugate", conjugate) (x)
+    assert hasattr(x,'conjugate')
+    return x.conjugate()
+
+def transpose(x):
+    """
+    Return the transpose of a Green's function
+    """
+    if descriptors.is_lazy(x):
+        return lazy_expressions.lazy_function("transpose", transpose) (x)
+    assert hasattr(x,'transpose')
+    return x.transpose()
 
 
 def delta(g):

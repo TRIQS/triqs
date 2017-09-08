@@ -54,7 +54,7 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Invers
             'MeshBrillouinZone',
             'BlockGf',
             'Block2Gf',
-            'inverse',
+            'inverse', 'conjugate', 'transpose',
             'is_gf_real_in_tau',
             'delta','dyson','tail_fit',
             # 'make_gf_from_inverse_fourier',

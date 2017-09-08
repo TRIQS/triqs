@@ -366,17 +366,22 @@ class BlockGf(object):
            raise RuntimeError, "The blocks of this Green Function do not possess the %s method"%ATTR
 
     def invert(self): 
-       """Inverse all the blocks"""
+       """Inverse all the blocks inplace"""
        self.__check_attr("invert")
        for i,g in self: g.invert()
 
+    def inverse(self):
+       """Return inverse of the BlockGf"""
+       self.__check_attr("inverse")
+       return self.__class__( name_block_generator = [ (n, g.inverse()) for n,g in self], make_copies=False)
+
     def transpose(self):
-       """Transpose of the BlockGf"""
+       """Return transpose of the BlockGf"""
        self.__check_attr("transpose")
        return self.__class__( name_block_generator = [ (n, g.transpose()) for n,g in self], make_copies=False)
 
     def conjugate(self):
-       """Conjugate of the BlockGf"""
+       """Return conjugate of the BlockGf"""
        self.__check_attr("conjugate")
        return self.__class__( name_block_generator = [ (n, g.conjugate()) for n,g in self], make_copies=False)
 
