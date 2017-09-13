@@ -4,10 +4,10 @@
 
 .. highlight:: bash
 
-Installing required libraries on Ubuntu 14.04LTS
+Installing required libraries on Ubuntu
 ===================================================
 
-TRIQS has been installed and tested on Ubuntu 14.04. Earlier versions are not supported.
+TRIQS has been installed and tested on Ubuntu 14.04 and later. Earlier versions are not supported.
 
 Install the following packages which are necessary to build TRIQS and use it::
 
@@ -17,32 +17,44 @@ Install the following packages which are necessary to build TRIQS and use it::
        python-virtualenv python-matplotlib python-tornado python-zmq python-mpi4py python-mako \
 
 
-* If you wish to *simply* upgrade the ipython notebook to the latest version,
-  use :ref:`virtualenv <virtualenv>`.
+If you wish to use the ipython/jupyter notebook with triqs, you need to install additional packages depending on your Ubuntu version.
+
+* For Ubuntu up to version 16.10 please install::
+
+    sudo apt-get install ipython ipython-notebook 
+
+* For Ubuntu 17.04 and later please install::
+
+    sudo apt-get install python-notebook 
 
 
-C++ compiler [developers only]
+C++ compiler
 ---------------------------------
 
-The default compiler on  Ubuntu 14.04LTS is gcc 4.8.1, which cannot compile TRIQS.
+The default compiler on  Ubuntu 14.04LTS is gcc 4.8.2, which cannot compile TRIQS.
 
 There are two options:
 
-* Upgrade the gcc to 4.9.2 in Ubuntu 14.04, using the official package, which can be easily done with the commands::
+* Upgrade the gcc to 7.2.0 in Ubuntu 14.04, using the official package, which can be easily done with the commands::
 
     sudo apt-get install software-properties-common
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
     sudo apt-get update
     sudo apt-get upgrade
-    sudo apt-get install g++-4.9
+    sudo apt-get install g++-7
 
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
 
-  This procedure installs gcc 4.9, and (in the last lines) sets up the default compiler (g++, gcc) to point
-  to the 4.9 version. The TRIQS developers uses this routinely on several machines, it does not affect the rest of the distribution.
+  This procedure installs gcc 7.2.0, and (in the last lines) sets up the default compiler (g++, gcc) to point
+  to the 7.2.0 version. The TRIQS developers uses this routinely on several machines, it does not affect the rest of the distribution.
 
-* Install clang 3.8, as packaged in Ubuntu.
+* Install clang 3.8, as packaged in Ubuntu. In order to use it for the TRIQS installation you should::
+    
+    export CC=clang-3.8
+    export CXX=clang++-3.8
+
+  before installing.
 
 
 Building the documentation
