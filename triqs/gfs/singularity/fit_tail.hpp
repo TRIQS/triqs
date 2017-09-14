@@ -55,7 +55,7 @@ namespace triqs { namespace gfs {
 
   @return the tail obtained by fitting
  */
- tail fit_complex_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max) ;
+ tail fit_complex_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min1, int n_max1,int n_min2, int n_max2) ;
 
  ///Fit the tail of a real (in tau) gf
  /**
