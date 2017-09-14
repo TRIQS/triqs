@@ -78,9 +78,9 @@ m.add_function("gf_view<imfreq, matrix_valued> make_real_in_tau(gf_view<imfreq, 
                doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
 
 # fit_tail
-m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true)", 
+m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true, double error_omega = 0.0)",
                 doc = """Set the tail by fitting""")
-m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit = true)", 
+m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit = true, double error_omega = 0.0)",
                 doc = """Set the tail by fitting""")
   
 # GfImTime specific functions

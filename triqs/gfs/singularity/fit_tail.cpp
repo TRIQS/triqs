@@ -3,7 +3,7 @@
 #include "./fit_tail.hpp"
 namespace triqs { namespace gfs {  
 
- __tail<matrix_valued> fit_real_tail_impl(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min, int n_max) {
+ __tail<matrix_valued> fit_real_tail_impl(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min, int n_max, double error_omega) {
 
   // precondition : check that n_max is not too large
   n_max = std::min(n_max, int(gf.mesh().last_index()));
@@ -63,6 +63,11 @@ namespace triqs { namespace gfs {
       int order = omin_odd + 2 * l;
       A(k, l) = imag(std::pow(iw, -1.0 * order)); // set design matrix for odd moments
      }
+     // use omega-dependent error
+     B(k, 0) /= std::pow(imag(iw),error_omega);
+     for (int l = 0; l < size_odd; l++) {
+      A(k, l) /= std::pow(imag(iw),error_omega);
+     }
     }
 
     arrays::lapack::gelss(A, B, S, rcond, rank);
@@ -87,6 +92,10 @@ namespace triqs { namespace gfs {
       int order = omin_even + 2 * l;
       A(k, l) = real(std::pow(iw, -1.0 * order)); // set design matrix for odd moments
      }
+     B(k, 0) /= std::pow(imag(iw),error_omega);
+     for (int l = 0; l < size_even; l++) {
+      A(k, l) /= std::pow(imag(iw),error_omega);
+     }
     }
 
     arrays::lapack::gelss(A, B, S, rcond, rank);
@@ -98,7 +107,7 @@ namespace triqs { namespace gfs {
   return res; // return tail
  }
 
- __tail<matrix_valued> fit_complex_tail_impl(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min1, int n_max1,int n_min2, int n_max2) {
+ __tail<matrix_valued> fit_complex_tail_impl(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min1, int n_max1,int n_min2, int n_max2, double error_omega) {
 
   // precondition : check that n_max is not too large
   n_max1 = std::min(n_max1, int(gf.mesh().last_index()));
@@ -151,6 +160,10 @@ namespace triqs { namespace gfs {
       int order = omin + l;
       A(k, l) = imag( (order%2==1 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
      }
+     B(k, 0) /= std::pow(imag(iw),error_omega);
+     for (int l = 0; l < n_unknown_moments; l++) {
+      A(k, l) /= std::pow(imag(iw),error_omega);
+     }
     }
     for (int k = n_freq1; k < n_freq1+n_freq2; k++) {
      auto n = n_min2 + k - n_freq1;
@@ -167,6 +180,10 @@ namespace triqs { namespace gfs {
      for (int l = 0; l < n_unknown_moments; l++) {
       int order = omin + l;
       A(k, l) = imag( (order%2==1 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
+     }
+     B(k, 0) /= std::pow(imag(iw),error_omega);
+     for (int l = 0; l < n_unknown_moments; l++) {
+      A(k, l) /= std::pow(imag(iw),error_omega);
      }
     }
 
@@ -193,6 +210,10 @@ namespace triqs { namespace gfs {
       int order = omin + l;
       A(k, l) = real( (order%2==0 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
      }
+     B(k, 0) /= std::pow(imag(iw),error_omega);
+     for (int l = 0; l < n_unknown_moments; l++) {
+      A(k, l) /= std::pow(imag(iw),error_omega);
+     }
     }
 
     for (int k = n_freq1; k < n_freq1+n_freq2; k++) {
@@ -211,6 +232,10 @@ namespace triqs { namespace gfs {
       int order = omin + l;
       A(k, l) = real( (order%2==0 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
      }
+     B(k, 0) /= pow(imag(iw),error_omega);
+     for (int l = 0; l < n_unknown_moments; l++) {
+      A(k, l) /= pow(imag(iw),error_omega);
+     }
     }
 
     arrays::lapack::gelss(A, B, S, rcond, rank);
@@ -225,7 +250,7 @@ namespace triqs { namespace gfs {
  }
 
 
- void fit_tail(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit) {
+ void fit_tail(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit, double error_omega) {
 
   // FIXME
   //if (gf.target_shape() != known_moments.shape()) TRIQS_RUNTIME_ERROR << "shape of tail does not match shape of gf";
@@ -233,7 +258,7 @@ namespace triqs { namespace gfs {
   if (n_max <= n_min) TRIQS_RUNTIME_ERROR << "n_max must be larger than n_min";
   if (!is_gf_real_in_tau(gf, 1e-8)) TRIQS_RUNTIME_ERROR << "more arguments are needed to fit a complex gf";
 
-  gf.singularity() = fit_real_tail_impl(gf, known_moments, max_moment, n_min, n_max);
+  gf.singularity() = fit_real_tail_impl(gf, known_moments, max_moment, n_min, n_max, error_omega);
   if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
    for (auto iw : gf.mesh()) {
     if ((iw.n >= n_min) or (iw.n <= -n_min-(gf.mesh().domain().statistic==Fermion? 1 : 0))) gf[iw] = evaluate(gf.singularity(), iw);
@@ -242,7 +267,7 @@ namespace triqs { namespace gfs {
 
  }
 
- void fit_tail(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit) {
+ void fit_tail(gf_view<imfreq> gf, __tail_const_view<matrix_valued> known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit, double error_omega) {
 
   //FIXME 
   //if (gf.target_shape() != known_moments.shape()) TRIQS_RUNTIME_ERROR << "shape of tail does not match shape of gf";
@@ -251,7 +276,7 @@ namespace triqs { namespace gfs {
   if (neg_n_max >= 0) TRIQS_RUNTIME_ERROR << "neg_n_max ("<< neg_n_max <<") must be smaller than 0";
   if (neg_n_min >= neg_n_max) TRIQS_RUNTIME_ERROR << "neg_n_min ("<<neg_n_min <<") must be smaller than neg_n_max ("<<neg_n_max<<")";
 
-  gf.singularity()  = fit_complex_tail_impl(gf, known_moments, max_moment, neg_n_min, neg_n_max,pos_n_min,pos_n_max);
+  gf.singularity()  = fit_complex_tail_impl(gf, known_moments, max_moment, neg_n_min, neg_n_max,pos_n_min,pos_n_max,error_omega);
 
   if (replace_by_fit) { // replace data in the fitting range by the values from the fitted tail
    for (auto iw : gf.mesh()) {
@@ -261,34 +286,34 @@ namespace triqs { namespace gfs {
  }
 
  void fit_tail(block_gf_view<imfreq> block_gf, __tail_view<matrix_valued> known_moments, int max_moment, int n_min,
-    int n_max, bool replace_by_fit ) {
+    int n_max, bool replace_by_fit, double error_omega ) {
    // for(auto &gf : block_gf) fit_tail(gf, known_moments, max_moment, n_min, n_max, replace_by_fit);
    for (int i = 0; i < block_gf.size(); i++)
-    fit_tail(block_gf[i], known_moments, max_moment, n_min, n_max, replace_by_fit);
+    fit_tail(block_gf[i], known_moments, max_moment, n_min, n_max, replace_by_fit, error_omega);
   }
 
  void fit_tail(block_gf_view<imfreq> block_gf, __tail_view<matrix_valued> known_moments, int max_moment, int neg_n_min,
-               int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit) {
+               int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit, double error_omega) {
    // for(auto &gf : block_gf) fit_tail(gf, known_moments, max_moment, n_min, n_max, replace_by_fit);
    for (int i = 0; i < block_gf.size(); i++)
-    fit_tail(block_gf[i], known_moments, max_moment, neg_n_min, neg_n_max, pos_n_min, pos_n_max, replace_by_fit);
+    fit_tail(block_gf[i], known_moments, max_moment, neg_n_min, neg_n_max, pos_n_min, pos_n_max, replace_by_fit, error_omega);
   }
 
   void fit_tail(gf_view<imfreq, scalar_valued> gf, __tail_const_view<scalar_valued> known_moments, int max_moment, int n_min,
-                int n_max, bool replace_by_fit) {
+                int n_max, bool replace_by_fit, double error_omega) {
    fit_tail(reinterpret_scalar_valued_gf_as_matrix_valued(gf), reinterpret_as_matrix_valued_sing(known_moments), max_moment, n_min,
-            n_max, replace_by_fit);
+            n_max, replace_by_fit, error_omega);
   }
 
   void fit_tail(gf_view<imfreq, scalar_valued> gf, __tail_const_view<scalar_valued> known_moments, int max_moment, int neg_n_min,
-                int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit) {
+                int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit, double error_omega) {
    fit_tail(reinterpret_scalar_valued_gf_as_matrix_valued(gf), reinterpret_as_matrix_valued_sing(known_moments), max_moment, neg_n_min,
-            neg_n_max, pos_n_min, pos_n_max, replace_by_fit);
+            neg_n_max, pos_n_min, pos_n_max, replace_by_fit, error_omega);
   }
 
 
  ///fit tail of tensor_valued Gf, rank 3
- array<__tail<scalar_valued>, 3> fit_tail(gf_const_view<imfreq, tensor_valued<3>> g, array_const_view<__tail<scalar_valued>,3> known_moments, int max_moment, int n_min, int n_max){
+ array<__tail<scalar_valued>, 3> fit_tail(gf_const_view<imfreq, tensor_valued<3>> g, array_const_view<__tail<scalar_valued>,3> known_moments, int max_moment, int n_min, int n_max, double error_omega){
 
   gf<imfreq, scalar_valued> g_scal(g.mesh(), {});
   array<__tail<scalar_valued>, 3> tail(known_moments.shape());
@@ -296,7 +321,7 @@ namespace triqs { namespace gfs {
    for(int v=0;v<known_moments.shape()[1];v++) 
     for(int w=0;w<known_moments.shape()[2];w++) {
      for(auto const & om : g_scal.mesh()) g_scal[om] = g[om](u,v,w);
-     fit_tail(g_scal,known_moments(u,v,w), max_moment, n_min, n_max);
+     fit_tail(g_scal,known_moments(u,v,w), max_moment, n_min, n_max, error_omega);
      tail(u,v,w) = g_scal.singularity();
     }
   return tail;
