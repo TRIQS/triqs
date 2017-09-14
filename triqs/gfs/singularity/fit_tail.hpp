@@ -39,7 +39,7 @@ namespace triqs { namespace gfs {
 
   @return the tail obtained by fitting
  */
- tail fit_real_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max) ;
+ tail fit_real_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min, int n_max, double error_omega = 0.0) ;
 
  /// routine for fitting the tail (singularity) of a complex Matsubara Green's function
  /**
@@ -55,7 +55,7 @@ namespace triqs { namespace gfs {
 
   @return the tail obtained by fitting
  */
- tail fit_complex_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min1, int n_max1,int n_min2, int n_max2) ;
+ tail fit_complex_tail_impl(gf_view<imfreq> gf, const tail_view known_moments, int max_moment, int n_min1, int n_max1,int n_min2, int n_max2, double error_omega = 0.0) ;
 
  ///Fit the tail of a real (in tau) gf
  /**
@@ -68,7 +68,7 @@ namespace triqs { namespace gfs {
   @note Based on [[fit_tail_impl]]. Works for functions with positive only or all Matsubara frequencies.
  */
  void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int n_min, int n_max,
-   bool replace_by_fit = false) ;
+   bool replace_by_fit = false, double error_omega = 0.0) ;
 
  ///Fit the tail of a complex (in tau) gf
  /**
@@ -83,7 +83,7 @@ namespace triqs { namespace gfs {
   @note Based on [[fit_tail_impl]]. Works for functions with positive only or all Matsubara frequencies.
  */
  void fit_tail(gf_view<imfreq> gf, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max,
-   int pos_n_min, int pos_n_max, bool replace_by_fit = false);
+   int pos_n_min, int pos_n_max, bool replace_by_fit = false, double error_omega = 0.0);
 
  ///Fit the tail of a block_gf
  /**
@@ -105,7 +105,7 @@ namespace triqs { namespace gfs {
   @note Based on [[fit_tail_impl]]
  */
  void fit_tail(gf_view<block_index, gf<imfreq>> block_gf, tail_view known_moments, int max_moment, int n_min,
-   int n_max, bool replace_by_fit = false) ;
+   int n_max, bool replace_by_fit = false, double error_omega = 0.0) ;
 
  ///Fit the tail of a gf (scalar-valued)
  /**
@@ -126,12 +126,12 @@ namespace triqs { namespace gfs {
         -if n_min<0 (and n_max<0), replace all frequencies w_n <= w_n{n_max}
   @note Based on [[fit_tail_impl]]
  */
- void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = false) ;
- void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max,int pos_n_min, int pos_n_max, bool replace_by_fit = false) ;
+ void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = false, double error_omega = 0.0) ;
+ void fit_tail(gf_view<imfreq, scalar_valued> gf, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max,int pos_n_min, int pos_n_max, bool replace_by_fit = false, double error_omega = 0.0) ;
 
  ///fit tail of tensor_valued Gf, rank 3
  template<typename S>
- array<triqs::gfs::tail, 3> fit_tail(gf_const_view<imfreq, tensor_valued<3>,S> g, array_const_view<triqs::gfs::tail,3> known_moments, int max_moment, int n_min, int n_max){
+ array<triqs::gfs::tail, 3> fit_tail(gf_const_view<imfreq, tensor_valued<3>,S> g, array_const_view<triqs::gfs::tail,3> known_moments, int max_moment, int n_min, int n_max, double error_omega = 0.0){
 
   gf<imfreq, scalar_valued> g_scal(g.mesh());
   array<triqs::gfs::tail, 3> tail(known_moments.shape());
@@ -139,7 +139,7 @@ namespace triqs { namespace gfs {
    for(int v=0;v<known_moments.shape()[1];v++) 
     for(int w=0;w<known_moments.shape()[2];w++) {
      for(auto const & om : g_scal.mesh()) g_scal[om] = g[om](u,v,w);
-     fit_tail(g_scal,known_moments(u,v,w), max_moment, n_min, n_max);
+     fit_tail(g_scal,known_moments(u,v,w), max_moment, n_min, n_max, error_omega);
      tail(u,v,w) = g_scal.singularity();
     }
   return tail;
