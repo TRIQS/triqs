@@ -181,6 +181,11 @@ namespace operators {
   // Is zero operator ?
   bool is_zero() const { return monomials.empty(); }
 
+  // Check if two many-body-operators are term-wise equal
+  friend bool operator==(many_body_operator_generic const & lhs, many_body_operator_generic const & rhs){ 
+   return lhs.get_monomials() == rhs.get_monomials(); 
+  }
+
   // Algebraic operations involving scalar_t constants
   many_body_operator_generic operator-() const {
    auto res = *this;
@@ -315,7 +320,7 @@ namespace operators {
 
   private:
   // Normalize a monomial and insert into a map
-  static void normalize_and_insert(monomial_t& m, scalar_t coeff, monomials_map_t& target) {
+  static void normalize_and_insert(monomial_t m, scalar_t coeff, monomials_map_t& target) {
    // The normalization is done by employing a simple bubble sort algorithms.
    // Apart from sorting elements this function keeps track of the sign and
    // recursively calls itself if a permutation of two operators produces a new
@@ -351,7 +356,7 @@ namespace operators {
    // Insert the result
    bool is_new_monomial;
    typename monomials_map_t::iterator it;
-   std::tie(it, is_new_monomial) = target.insert(std::make_pair(m, coeff));
+   std::tie(it, is_new_monomial) = target.insert(std::make_pair(std::move(m), coeff));
    if (!is_new_monomial) {
     it->second += coeff;
     erase_zero_monomial(target, it);
