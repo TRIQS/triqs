@@ -100,6 +100,11 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
                  signature = "void()",
                  doc = "Invert")
 
+    t.add_method(name = "inverse",
+                 calling_pattern = "auto result = inverse(self_c)",
+                 signature = "%s()"%c_type,
+                 doc = "Return inverse")
+
     t.add_method("%s conjugate(bool is_matsubara)"%c_type, calling_pattern = "auto result = conj(self_c, is_matsubara)")
     
     if Target == "matrix_valued":
