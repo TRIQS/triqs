@@ -171,10 +171,10 @@ namespace mc_tools {
   int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle,
                             std::function<bool()> stop_callback) {
    report << "\nWarming up ..." << std::endl;
-   int status = run(n_warmup_cycles, length_cycle, stop_callback, TimerWarmup, false);
+   int status = run(n_warmup_cycles, length_cycle, stop_callback, false);
 
    report << "\nAccumulating ..." << std::endl;
-   if (status == 0) status = run(n_accumulation_cycles, length_cycle, stop_callback, TimerAcc, true);
+   if (status == 0) status = run(n_accumulation_cycles, length_cycle, stop_callback, true);
    // final reporting
    if (status == 1) report << "mc_generic stops because of stop_callback";
    if (status == 2) report << "mc_generic stops because of a signal";
@@ -197,10 +197,11 @@ namespace mc_tools {
    *    2  if it has been stopped by receiving a signal
    *    =  =============================================
    */
-   int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, utility::timer & Timer, bool do_measure = true) {
+   int run(uint64_t n_cycles, uint64_t length_cycle, std::function<bool()> stop_callback, bool do_measure = true) {
+   utility::timer timer;
+   timer.start();
    if (n_cycles==0) return 0;
    triqs::signal_handler::start();
-   Timer.start();
    done_percent = 0;
    nmeasures = 0;
    bool stop_it = false, finished = false;
@@ -230,13 +231,13 @@ namespace mc_tools {
    // recompute fraction done
    _final:
     done_percent = uint64_t(floor((NC * 100.0) / (n_cycles - 1)));
-    if (Timer > next_info_time) {
+    if (timer > next_info_time) {
      report << utility::timestamp() << " "
 	    << std::setfill(' ') << std::setw(3) << done_percent << "%"
-            << " ETA " << estimate_time_left(n_cycles, NC, Timer)
+            << " ETA " << estimate_time_left(n_cycles, NC, timer)
             << " n_cycles, NC = " << n_cycles << ", " << NC 
             << "\n" << std::flush;
-     next_info_time = 1.25 * Timer + 2.0; // Increase time interval non-linearly
+     next_info_time = 1.25 * timer + 2.0; // Increase time interval non-linearly
     }
     finished = ((NC + 1 >= n_cycles) || is_converged());
     stop_it = (stop_callback() || triqs::signal_handler::received() || finished);
@@ -244,7 +245,12 @@ namespace mc_tools {
    int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
    triqs::signal_handler::stop();
    current_cycle_number += NC;
-   Timer.stop();
+   timer.stop();
+   if(do_measure) {
+     timer_accumulation = timer;
+   } else {
+     timer_warmup = timer;
+   }
    return status;
   }
 
@@ -256,8 +262,8 @@ namespace mc_tools {
 
    report(3) << "[Rank " << c.rank() << "] Timings for all measures:\n" << AllMeasures.get_timings();
    report(3) << "[Rank " << c.rank() << "] Acceptance rate for all moves:\n" << AllMoves.get_statistics();
-   report(3) << "[Rank " << c.rank() << "] Warmup lasted: " << double(TimerWarmup) << " seconds [" << hours_minutes_seconds_from_seconds(TimerWarmup) << "]\n";
-   report(3) << "[Rank " << c.rank() << "] Simulation lasted: " << double(TimerAcc) << " seconds [" << hours_minutes_seconds_from_seconds(TimerAcc) << "]\n";
+   report(3) << "[Rank " << c.rank() << "] Warmup lasted: " << get_warmup_time() << " seconds [" << get_warmup_time_HHMMSS() << "]\n";
+   report(3) << "[Rank " << c.rank() << "] Simulation lasted: " << get_accumulation_time() << " seconds [" << get_accumulation_time_HHMMSS() << "]\n";
    report(3) << "[Rank " << c.rank() << "] Number of measures: " << nmeasures << std::endl;
    if (c.rank() == 0) report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
   }
@@ -268,11 +274,6 @@ namespace mc_tools {
    * @return map : name_of_the_move -> acceptance rate of this move
    */
   std::map<std::string, double> get_acceptance_rates() const { return AllMoves.get_acceptance_rates(); }
-
-  /**
-   * The duration of the last run
-   */
-  double get_duration() const { return double(TimerAcc) + double(TimerWarmup); }
 
   /**
    *  The current percents done
@@ -298,6 +299,36 @@ namespace mc_tools {
    */
   int get_config_id() const { return config_id; }
 
+  /**
+   * The duration of the last run in seconds
+   */
+   double get_duration() const { return get_total_time(); }
+
+  /**
+   * The total time of the last run in seconds
+   */
+   double get_total_time() const { return get_warmup_time() + get_accumulation_time(); }
+   
+  /**
+   * The time spent on warmup in seconds
+   */
+  double get_warmup_time() const { return double(timer_warmup); }
+
+  /**
+   * The time spent on warmup in hours, minutes, and seconds
+   */
+  auto get_warmup_time_HHMMSS() const { return hours_minutes_seconds_from_seconds(timer_warmup); }
+   
+  /**
+   * The time spent on accumulation in seconds
+   */
+  double get_accumulation_time() const { return double(timer_accumulation); }
+
+  /**
+   * The time spent on warmup in hours, minutes, and seconds
+   */
+  auto get_accumulation_time_HHMMSS() const { return hours_minutes_seconds_from_seconds(timer_accumulation); }
+   
   private:
   /**
    * Is the qmc thermalized, i.e. has it run more than n_warmup_cycles given at construction
@@ -336,7 +367,7 @@ namespace mc_tools {
   utility::report_stream report;
   uint64_t length_cycle_bckwd = 0, n_warmup_cycles_bckwd = 0, ncycles_bckwd = 0; // backward compat only. Deprecated
   uint64_t nmeasures, current_cycle_number = 0;
-  utility::timer TimerAcc, TimerWarmup;
+  utility::timer timer_accumulation, timer_warmup;
   std::function<void()> after_cycle_duty;
   MCSignType sign;
   uint64_t done_percent = 0;
