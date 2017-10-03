@@ -23,6 +23,7 @@
 
 #include <ostream>
 #include <cmath>
+#include <algorithm>
 #include <boost/operators.hpp>
 #include <triqs/utility/real_or_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
@@ -180,11 +181,6 @@ namespace operators {
 
   // Is zero operator ?
   bool is_zero() const { return monomials.empty(); }
-
-  // Check if two many-body-operators are term-wise equal
-  friend bool operator==(many_body_operator_generic const & lhs, many_body_operator_generic const & rhs){ 
-   return lhs.get_monomials() == rhs.get_monomials(); 
-  }
 
   // Algebraic operations involving scalar_t constants
   many_body_operator_generic operator-() const {
@@ -383,6 +379,16 @@ namespace operators {
    return os;
   }
  };
+
+ // Assert that two many-body-operators are term-wise close
+ template<typename scalar1_t, typename scalar2_t>
+ void assert_operators_are_close(many_body_operator_generic<scalar1_t> const &op1, many_body_operator_generic<scalar2_t> const &op2, double precision){ 
+  auto terms_are_equal = [precision]( auto const &t1, auto const &t2 ){ using std::abs; return (t1.monomial == t2.monomial) && abs(t1.coef - t2.coef) < precision; }; 
+  if(op1.get_monomials().size() != op2.get_monomials().size())
+    TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different number of terms"; 
+  if(!std::equal(op1.begin(), op1.end(), op2.begin(), terms_are_equal))
+    TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different terms"; 
+ }
 
  // ---- factories --------------
 
