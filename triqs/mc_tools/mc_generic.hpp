@@ -235,7 +235,7 @@ namespace mc_tools {
      report << utility::timestamp() << " "
 	    << std::setfill(' ') << std::setw(3) << done_percent << "%"
             << " ETA " << estimate_time_left(n_cycles, NC, timer)
-            << " n_cycles, NC = " << n_cycles << ", " << NC 
+            << " cycle " << NC << " of " << n_cycles
             << "\n" << std::flush;
      next_info_time = 1.25 * timer + 2.0; // Increase time interval non-linearly
     }
