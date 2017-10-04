@@ -26,6 +26,7 @@ It is imported with the command::
   >>> from pytriqs.gf import *
 """
 
+from mesh_point import MeshPoint, MeshValueGenerator
 from gf import *
 from singularities import *
 from block_gf import BlockGf
@@ -45,6 +46,7 @@ from gf_fnt import is_gf_real_in_tau
 
 __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
             'lazy_expressions','TailGf',
+            'MeshPoint','MeshValueGenerator',
             'Gf', 'MeshProduct',
             'GfImFreq', 'MeshImFreq', 
             'GfImTime', 'MeshImTime',

@@ -55,7 +55,7 @@ namespace cpp2py {
     using mtuple_conv = py_converter<typename c_type::m_tuple_t>; // the tuple of meshes
 
     static PyObject *c2py(c_type m) {
-      pyref cls = pyref::get_class("pytriqs.gf", "MeshProduct", true);
+      static pyref cls = pyref::get_class("pytriqs.gf", "MeshProduct", true);
       if (cls.is_null()) return NULL;
       pyref m_tuple = mtuple_conv::c2py(m.components()); // take the C++ tuple of meshes and make the corresponding Python tuple
       if (m_tuple.is_null()) return NULL;
@@ -74,6 +74,32 @@ namespace cpp2py {
       return triqs::tuple::apply_construct<c_type>(mtuple_conv::py2c(ml));
     }
   };
+
+ 
+  // Converter of mesh_point
+  template <typename M> struct py_converter<triqs::gfs::mesh_point<M>> {
+
+   using c_type = triqs::gfs::mesh_point<M>;
+
+   static PyObject* c2py(c_type const & p) {
+
+    static pyref cls = pyref::get_class("pytriqs.gf", "MeshPoint", /* raise_exception */ true);
+    if (cls.is_null()) return NULL;
+
+    pyref val = convert_to_python(static_cast<typename c_type::cast_t>(p));
+    if (val.is_null()) return NULL;
+
+    //pyref idx   = convert_to_python(p.index());
+    //if (idx.is_null()) return NULL;
+
+    pyref lidx   = convert_to_python(p.linear_index());
+    if (lidx.is_null()) return NULL;
+
+    return PyObject_Call(cls, pyref::make_tuple(lidx, val), NULL);
+   }
+  };
+
+
 
   // -----------------------------------
   //    regular types
@@ -140,7 +166,7 @@ namespace cpp2py {
 
     static PyObject *c2py(c_type g) {
 
-      pyref cls = pyref::get_class("pytriqs.gf", "Gf", true);
+      static pyref cls = pyref::get_class("pytriqs.gf", "Gf", true);
       if (cls.is_null()) return NULL;
       pyref m = convert_to_python(g.mesh());
       if (m.is_null()) return NULL;

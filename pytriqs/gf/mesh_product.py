@@ -48,6 +48,9 @@ class MeshProduct(object):
         """
         return (len(x) for x in self._mlist)
 
+    def __getitem__(self, i):
+        return self._mlist[i]
+
     @property
     def rank(self):
         return len(self._mlist)

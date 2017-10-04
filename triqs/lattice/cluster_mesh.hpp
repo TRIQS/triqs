@@ -253,6 +253,9 @@ namespace gfs {
   explicit mesh_point(mesh_t const& mesh, mesh_t::index_t const& index)
      : index3_generator(mesh.get_dimensions(), index), m(&mesh) {}
   mesh_point(mesh_t const& mesh) : mesh_point(mesh, {0, 0, 0}) {}
+
+  using cast_t = point_t; // FIXME : decide what we want.
+
   operator mesh_t::point_t() const { return m->index_to_point(index()); }
   operator lattice_point() const { return lattice_point(index(), m->units); }
   operator mesh_t::index_t() const { return index(); }

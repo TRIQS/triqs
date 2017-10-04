@@ -85,7 +85,7 @@ class Function (Base):
         if not(callable(self.function)): raise RuntimeError, "GFInitializer.Function: f must be callable"
         res = G.data[:,:,:]
         try:
-            for n,om in enumerate(G.mesh): res[n,:,:] = self.function(om)
+            for n,om in enumerate(G.mesh): res[n,:,:] = self.function(om.value)
         except:
             print "The given function has a problem..."
             raise

@@ -32,6 +32,7 @@ import singularities
 import plot 
 import gf_fnt, wrapped_aux
 from singularities import GfIndices
+from mesh_point import MeshPoint
 
 # list of all the meshes
 all_meshes = (MeshProduct,) + tuple(c for c in meshes.__dict__.values() if isinstance(c, type) and c.__name__.startswith('Mesh'))
@@ -309,25 +310,37 @@ class Gf(object):
 
     #--------------  Bracket operator []  -------------------------
     
+    _full_slice = slice(None, None, None) 
+
     def __getitem__(self, key):
 
         # First case : g[:] = RHS ... will be g << RHS
-        if key == slice(None, None, None) : return self
+        if key == self._full_slice:
+            return self
 
-        # Second, we get a list g[[a,b]] : we are slicing the mesh
-        if isinstance(key, list):
+        # Only one argument. Must be a mesh point
+        if not isinstance(key, tuple):
+            assert isinstance(key, MeshPoint)
+            return self.data[key.linear_index]
+
+        # If all arguments are MeshPoint, we are slicing the mesh or evaluating
+        if all(isinstance(x, MeshPoint) for x in key):
+            assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
+            return self.data[tuple(x.linear_index for x in key)]
+
+        # If any argument is a MeshPoint, we are slicing the mesh or evaluating
+        elif any(isinstance(x, MeshPoint) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [[ ]]. Expected %s, got %s"%(self.rank, len(key))
-            mlist = self._mesh._mlist if self.rank > 1 else [self._mesh]
+            assert self.rank > 1, "Internal error : impossible case" # here all == any for one argument
+            mlist = self._mesh._mlist 
+            for x in key:
+                if isinstance(x, slice) and x != self._full_slice: raise NotImplementedError, "Partial slice of the mesh not implemented" 
             # slice the data 
-            _ = slice(0, None) # all
-            k = [m.index_to_linear(i) if i is not all else _ for i,m in itertools.izip(key, mlist)] 
-            k += self._target_rank * [_]
+            k = [x.linear_index if isinstance(x, MeshPoint) else x for x in key] + self._target_rank * [slice(0, None)]
             dat = self._data[k]
             # list of the remaining lists
-            mlist = [m for i,m in itertools.ifilter(lambda tup_im : tup_im[0] is all, itertools.izip(key, mlist))]
-            # if no mlist, then we have a complete evaluation
-            # assert len(mlist) > 0, "Oops"  # More conservative version
-            if len(mlist) == 0 : return dat
+            mlist = [m for i,m in itertools.ifilter(lambda tup_im : not isinstance(tup_im[0], MeshPoint), itertools.izip(key, mlist))]
+            assert len(mlist) > 0, "Internal error" 
             mesh = MeshProduct(*mlist) if len(mlist)>1 else mlist[0]
             sing = None # FIXME : slice the singularity, in one case
             r = Gf(mesh = mesh, data = dat, singularity = sing)
@@ -355,7 +368,19 @@ class Gf(object):
             return r
 
     def __setitem__(self, key, val):
-        self[key] << val
+
+        # Only one argument. Must be a mesh point
+        if not isinstance(key, tuple):
+            assert isinstance(key, MeshPoint)
+            self.data[key.linear_index] = val
+
+        # If all arguments are MeshPoint, we are slicing the mesh or evaluating
+        elif all(isinstance(x, MeshPoint) for x in key):
+            assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
+            self.data[tuple(x.linear_index for x in key)] = val
+
+        else:
+            self[key] << val
 
     # -------------- Various operations -------------------------------------
     
