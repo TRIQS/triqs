@@ -63,20 +63,13 @@ class MeshPoint :
     def __getitem__(self, *args):
         return self.value.__getitem__(*args)
 
-    #We should not use it, it is not in Python 3
-    #def __coerce__(self, other) :
-    #    return (self.value, other)
-
     def __float__(self):
-        #print "convert to float"
         return float(self.value)
 
     def __int__(self):
-        #print "convert to int"
         return int(self.value)
 
     def __complex__(self):
-        #print "convert to complex"
         return complex(self.value)
 
     def __str__(self):
