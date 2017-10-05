@@ -57,10 +57,10 @@ namespace utility {
   friend double abs(real_or_complex const& x) { return std::abs(x._x); }
   friend real_or_complex conj(real_or_complex x) { x._x = std::conj(x._x); return x; }
 
-  friend bool is_zero(real_or_complex const& x) {
-   using utility::is_zero;
-   if (x.is_real()) return is_zero(double(x));
-   return is_zero(x._x);
+  friend bool is_zero(real_or_complex const& x, double tolerance = 100*std::numeric_limits<double>::epsilon()) {
+   using triqs::utility::is_zero;
+   if (x.is_real()) return is_zero(double(x), tolerance);
+   return is_zero(x._x, tolerance);
   }
 
   friend std::ostream& operator<<(std::ostream& out, real_or_complex const& x) {
