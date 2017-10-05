@@ -35,7 +35,7 @@ namespace utility {
 // Zero value tests
 //
 template<typename T> // Integral types
-std14::enable_if_t<std::is_integral<T>::value,bool> is_zero(T const& x) {
+std14::enable_if_t<std::is_integral<T>::value,bool> is_zero(T const& x, T = 0) {
  return x==0;
 }
 
@@ -44,9 +44,9 @@ std14::enable_if_t<std::is_floating_point<T>::value,bool> is_zero(T const& x, T 
  return std::abs(x) < tolerance;
 }
 
-template<typename T> // std::complex
-std14::enable_if_t<triqs::is_complex<T>::value,bool> is_zero(T const& x) {
- return is_zero(std::real(x)) && is_zero(std::imag(x));
+template<typename value_t> // std::complex
+bool is_zero(std::complex<value_t> const& x, value_t tolerance = 100*std::numeric_limits<value_t>::epsilon()) {
+ return is_zero(std::real(x), tolerance) && is_zero(std::imag(x), tolerance);
 }
 
 //
