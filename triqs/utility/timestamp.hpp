@@ -36,19 +36,21 @@ namespace triqs {
       return s.str();
     }
 
-    std::string inline hours_minutes_seconds_from_seconds(double seconds) {
-      using namespace std::chrono;
-      time_point<system_clock> tp(milliseconds(long(seconds * 1000)) - hours(1));
-      std::ostringstream s;
-      std::time_t tp_c = system_clock::to_time_t(tp);
-      s << std::put_time(std::localtime(&tp_c), "%H:%M:%S");
-      return s.str();
+    std::string inline hours_minutes_seconds_from_seconds(double sec) {
+      auto s = std::chrono::seconds{int(sec)};
+      auto h = std::chrono::duration_cast<std::chrono::hours>(s);
+      auto m = std::chrono::duration_cast<std::chrono::minutes>(s -= h);
+      s -= m;
+      std::ostringstream os;
+      os << sec << " -- " << std::setfill('0') << std::setw(2) << h.count() << ":" << std::setfill('0') << std::setw(2) << m.count() << ":"
+         << std::setfill('0') << std::setw(2) << s.count();
+      return os.str();
     }
-    
-    std::string inline estimate_time_left(int Ntot, int iter, timer & Timer) {
+
+    std::string inline estimate_time_left(int Ntot, int iter, timer &Timer) {
       double eta = (Ntot - 1 - iter) * double(Timer) / (iter + 1);
       return hours_minutes_seconds_from_seconds(eta);
     }
-    
+
   } // namespace utility
 } // namespace triqs
