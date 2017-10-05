@@ -1,4 +1,5 @@
 #pragma once
+#include "./arrays.hpp"
 #include <triqs/operators/many_body_operator.hpp>
 
 // Test that two operators are term-wise equal up to a precision
