@@ -383,7 +383,7 @@ namespace operators {
  // Assert that two many-body-operators are term-wise close
  template<typename scalar1_t, typename scalar2_t>
  void assert_operators_are_close(many_body_operator_generic<scalar1_t> const &op1, many_body_operator_generic<scalar2_t> const &op2, double precision){ 
-  auto terms_are_equal = [precision]( auto const &t1, auto const &t2 ){ using std::abs; return (t1.monomial == t2.monomial) && abs(t1.coef - t2.coef) < precision; }; 
+  auto terms_are_equal = [precision]( auto const &t1, auto const &t2 ){ return (t1.monomial == t2.monomial) && triqs::utility::is_zero(t1.coef - t2.coef, precision); }; 
   if(op1.get_monomials().size() != op2.get_monomials().size())
     TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different number of terms"; 
   if(!std::equal(op1.begin(), op1.end(), op2.begin(), terms_are_equal))
