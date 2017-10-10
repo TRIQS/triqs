@@ -44,8 +44,10 @@ namespace gfs {
      : bl(bl_), cluster_mesh{bl_.units(), periodization_matrix_ } {}
 
   ///backward compatibility (also serves as default const.)
-  gf_mesh(int L1=1, int L2=1, int L3=1): bl(make_unit_matrix<double>(3)), cluster_mesh(make_unit_matrix<double>(3), matrix<int>({{L1, 0, 0},{0, L2, 0},{0, 0, L3}})){
-  }
+  gf_mesh(int L1=1, int L2=1, int L3=1): bl{make_unit_matrix<double>(3)}, cluster_mesh{make_unit_matrix<double>(3), matrix<int>({{L1, 0, 0},{0, L2, 0},{0, 0, L3}})}{}
+
+  ///Construct gf_mesh<cyclic_lattice> from domain (bravais_lattice) and int L (linear size of Cluster mesh)
+  gf_mesh(bravais_lattice const& bl_, int L): bl(bl_), cluster_mesh{make_unit_matrix<double>(3), L * make_unit_matrix<int>(3)} {}
 
   using domain_t = bravais_lattice;
   domain_t const& domain() const { return bl; }
