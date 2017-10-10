@@ -39,6 +39,9 @@ namespace lattice {
 
   /// Access to the underlying bravais lattice
   bravais_lattice lattice() const { return lattice_; }
+
+  /// Allow cast to bravais lattice
+  operator bravais_lattice() const { return lattice_; }
   
   ///return reciprocal matrix: lines are cartesian coordinates of each reciprocal unit vectors
   arrays::matrix_view<double> units() const { return K_reciprocal; }
