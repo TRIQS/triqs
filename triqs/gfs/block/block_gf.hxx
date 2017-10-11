@@ -369,6 +369,7 @@ namespace triqs {
         operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
         reference operator*() { return (*bgf)[n]; }
+        auto const & operator*() const { return (*bgf)[n]; }
         reference operator->() { return operator*(); }
 
         iterator_impl &operator++() {

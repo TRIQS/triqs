@@ -569,8 +569,10 @@ namespace triqs {
 
     // mako %if ARITY == 1 :
     reference operator*() { return (*bgf)[n]; }
+    reference operator*() const { return (*bgf)[n]; }
     // mako %else :
     reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+    reference operator*() const { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
     // mako %endif
     reference operator->() { return operator*(); }
 
