@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
  }
 
  {
-  auto r = triqs::tuple::map_on_zip_v2([](double x, double y) { return x + y; }, t1, t2);
+  auto r = triqs::tuple::map_on_zip([](double x, double y) { return x + y; }, t1, t2);
   std::cerr  << " [f(a,b) for (a,b) in zip(t1,t2)] =" << r << std::endl;
  }
 
@@ -153,33 +153,6 @@ int main(int argc, char **argv) {
   auto t2= std::make_tuple(0,1);
   std::cout << "filter out "<< t2 << triqs::tuple::filter_out<0>(t2)<< std::endl;
  }
-
- { // filter
-  std::cout  << "  ----- inverse filter ----"<< std::endl ;
-  auto t= std::make_tuple(1,4,5);
-  auto s = std::string{"--"};
-  {
-   auto r = triqs::tuple::inverse_filter<6,0,2,3>(t, s);
-   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,3>(r)<<std::endl;
-  }
-  { auto r = triqs::tuple::inverse_filter<6,0,2,5>(t, s);
-   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,5>(r)<<std::endl;
-  }
-  { auto r = triqs::tuple::inverse_filter<8,0,2,5>(t, s);
-   std::cout << "inverse filter "<< t << r<< triqs::tuple::filter<0,2,5>(r)<<std::endl;
-  }
-  {
-   auto r = triqs::tuple::inverse_filter_out<0,2,3>(t, s);
-   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3>(r)<<std::endl;
-  }
-  { auto r = triqs::tuple::inverse_filter_out<0,2,3,5>(t, s);
-   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3,5>(r)<<std::endl;
-  }
-  { auto r = triqs::tuple::inverse_filter_out<0,2,3,6>(t, s);
-   std::cout << "inverse filter out "<< t << r<< triqs::tuple::filter_out<0,2,3,6>(r)<<std::endl;
-  }
- }
-
 
  { // replace
   std::cout  << "  ----- filter ----"<< std::endl ;
