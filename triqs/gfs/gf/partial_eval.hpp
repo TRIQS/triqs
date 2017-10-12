@@ -19,12 +19,10 @@
  *
  ******************************************************************************/
 #pragma once
+#include "./comma.hpp"
 
 namespace triqs {
  namespace gfs {
-
-  /// The placeholder
-  struct var_t {};
 
   /// Short cuts. Experimental
   template <typename G> decltype(auto) first_mesh(G&& g) { return std::get<0>(std::forward<G>(g).mesh()); }
@@ -152,11 +150,51 @@ namespace triqs {
     return g->on_mesh(args...);
    }
 
-   ///
+   // a simple test for the argument of G[...] to have an early error and short error message.
+   template<typename Mesh, typename A> constexpr bool is_ok1() { 
+    return std::is_same<typename Mesh::mesh_point_t, A>::value || std::is_constructible<long,A>::value 
+          ||std::is_same<A, var_t>::value || std::is_base_of<infty, A>::value;
+   }
+   template<typename Mesh, typename ... A> struct is_ok { 
+     static constexpr bool value = is_ok1<Mesh,std::decay_t<A>...>();
+   };
+   template<typename ... T, typename ... A> struct is_ok<gf_mesh<cartesian_product<T...>>, A...>  { 
+     static constexpr bool value = clef::__and(is_ok1<gf_mesh<T>,std::decay_t<A>>()...);
+   };
+ 
+#ifdef __cpp_if_constexpr 
+     ///
    template <typename G, typename... Args> decltype(auto) partial_eval(G* g, Args const&... args) {
+    
+    if constexpr ((sizeof...(Args) == 2) and (std::is_base_of<infty, std::tuple_element_t<1, std::tuple<Args...>>>::value)) { 
+      return (*g).singularity()[std::get<0>(std::tie(args...))];
+    }
+    else { 
+     constexpr bool one_is_var = clef::__or(std::is_same<Args, var_t>::value...);
+     static_assert(is_ok<typename G::mesh_t, std::decay_t<Args>...>::value, "Argument type incorrect");
+     return partial_eval1(std::integral_constant<bool, one_is_var>{}, g, args...);
+    }
+   }
+#else
+
+   ///
+   template <typename G, typename... Args> decltype(auto) partial_eval0(std::false_type, G* g, Args const&... args) {
     constexpr bool one_is_var = clef::__or(std::is_same<Args, var_t>::value...);
+    static_assert(is_ok<typename G::mesh_t, std::decay_t<Args>...>::value, "Argument type incorrect");
     return partial_eval1(std::integral_constant<bool, one_is_var>{}, g, args...);
    }
+
+   ///
+   template <typename G, typename A> decltype(auto) partial_eval0(std::true_type, G* g, A const&a, infty const &) {
+    return (*g).singularity()[a];
+   }
+
+   template <typename G, typename... Args> decltype(auto) partial_eval(G* g, Args const&... args) {
+    constexpr bool C = ((sizeof...(Args) == 2) and (std::is_base_of<infty, std::tuple_element_t<1, std::tuple<Args...>>>::value));
+    return partial_eval0(std::integral_constant<bool, C>{}, g,args...);
+   }
+
+#endif
 
   } // namespace details
  }

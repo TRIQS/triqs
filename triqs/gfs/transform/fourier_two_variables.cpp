@@ -27,18 +27,18 @@ namespace triqs {
 
    for (auto const& tau : second_mesh(g2t)) {
    //for (auto const& tau : std::get<1>(g2t.mesh())) {
-    gwt[_][tau] = fourier(g2t[_][tau], tail_3, n_w_1, positive_matsub_only_1);
-    // auto g_w_tau = fourier(g2t[_][tau], tail_3, n_w_1, positive_matsub_only_1);
+    gwt[_, tau] = fourier(g2t[_, tau], tail_3, n_w_1, positive_matsub_only_1);
+    // auto g_w_tau = fourier(g2t[_, tau], tail_3, n_w_1, positive_matsub_only_1);
     // for (auto const& om : std::get<0>(gwt.mesh()))
-    // gwt[om][tau] = g_w_tau[om];
+    // gwt[om, tau] = g_w_tau[om];
    }
 
    for (auto const& om : first_mesh(gwt)) { 
    //for (auto const& om : std::get<0>(gwt.mesh())) {
-    g2w[om][_] = fourier(gwt[om][_], tail_3, n_w_2, positive_matsub_only_2);
-    // auto g_w_wp = fourier(gwt[om][_], tail_3, n_w_2, positive_matsub_only_2);
+    g2w[om, _] = fourier(gwt[om, _], tail_3, n_w_2, positive_matsub_only_2);
+    // auto g_w_wp = fourier(gwt[om, _], tail_3, n_w_2, positive_matsub_only_2);
     // for (auto const& nu : std::get<1>(g2w.mesh()))
-    // g2w[om][nu] = g_w_wp[nu];
+    // g2w[om, nu] = g_w_wp[nu];
    }
 
    return g2w;
@@ -70,23 +70,23 @@ namespace triqs {
    auto _ = var_t{};
 
    for (auto const& wp : std::get<1>(g2w.mesh())) {
-    auto g      = g2w[_][wp];
+    auto g      = g2w[_, wp];
     int n_max   = g.mesh().size();
     auto tail_3 = fit_tails ? fit_tail(g, known_moments, 3, int(0.75 * n_max), n_max) : tail_zero;
-    gtw[_][wp]  = inverse_fourier(g, tail_3, imtime_mesh_1.size());
+    gtw[_, wp]  = inverse_fourier(g, tail_3, imtime_mesh_1.size());
     // auto g_t_wp_nu = inverse_fourier(g, tail_3, imtime_mesh_1.size());
     // for (auto const& tau : std::get<0>(gtw.mesh()))
-    // gtw[tau][wp] = g_t_wp_nu[tau];
+    // gtw[tau, wp] = g_t_wp_nu[tau];
    }
 
    for (auto const& tau : std::get<0>(gtw.mesh())) {
-    auto g      = gtw[tau][_];
+    auto g      = gtw[tau, _];
     int n_max   = g.mesh().size();
     auto tail_3 = fit_tails ? fit_tail(make_const_view(g), known_moments, 3, int(0.75 * n_max), n_max) : tail_zero;
-    g2t[tau][_] = inverse_fourier(g, tail_3, imtime_mesh_2.size());
+    g2t[tau, _] = inverse_fourier(g, tail_3, imtime_mesh_2.size());
     // auto g_t_tp_tau = inverse_fourier(g, tail_3, imtime_mesh_2.size());
     // for (auto const& tp : std::get<1>(g2t.mesh()))
-    // g2t[tau][tp] = g_t_tp_tau[tp];
+    // g2t[tau, tp] = g_t_tp_tau[tp];
    }
 
    return g2t;

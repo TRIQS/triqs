@@ -1,0 +1,25 @@
+
+
+- Sigma[k][w] << Sigma[w]
+
+- zip : 
+
+  - ambiguity :
+      - zip for homogeneours container : zip
+      - zip for tuple like :  izip ? tuple_zip ?? 
+      - triqs:: not triqs::utility ]
+      - remove from std::
+
+  - what happen for different range length ?
+    - shortest ?   zip : check
+
+- make_regular patch  in Nils branch
+
+
+- PAPER list
+
+- G[w_, k_] 
+
+- clef :  
+  G[w_, k_] += expr
+  G[w_, k_] = expr  

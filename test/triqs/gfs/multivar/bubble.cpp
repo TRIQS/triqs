@@ -48,17 +48,17 @@ TEST(Gf, Bubble) {
  chi0q(inu_, iw_, q_) << sum(Gk(inu_, k_) * Gk(inu_ + iw_, k_ + q_), k_ = k_mesh) / k_mesh.size();
 
  for (auto const &inu : std::get<0>(Gr.mesh()))
-  Gr[inu][_] = inverse_fourier(Gk[inu][_]);
+  Gr[inu, _] = inverse_fourier(Gk[inu, _]);
 
  chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_ + iw_, -r_);
 
  for (auto const &inu : std::get<0>(chi0q_from_r.mesh())) {
   for (auto const &iw : std::get<1>(chi0q_from_r.mesh())) {
 
-   EXPECT_EQ(chi0q_from_r[inu][iw][_].mesh().size(), 16);
-   EXPECT_EQ(chi0r[inu][iw][_].mesh().size(), 16);
+   EXPECT_EQ((chi0q_from_r[inu, iw, _]).mesh().size(), 16);
+   EXPECT_EQ((chi0r[inu, iw, _]).mesh().size(), 16);
 
-   chi0q_from_r[inu][iw][_] = fourier(chi0r[inu][iw][_]);
+   chi0q_from_r[inu, iw, _] = fourier(chi0r[inu, iw, _]);
   }
  }
  EXPECT_CLOSE_ARRAY(chi0q_from_r.data(), chi0q.data());
@@ -88,13 +88,13 @@ TEST(Gf, BubbleScalar) {
  chi0q(inu_, iw_, q_) << sum(Gk(inu_, k_) * Gk(inu_ + iw_, k_ + q_), k_ = Gmesh) / Gmesh.size();
 
  for (auto const &inu : std::get<0>(Gr.mesh()))
-  Gr[inu][_] = inverse_fourier(Gk[inu][_]);
+  Gr[inu, _] = inverse_fourier(Gk[inu, _]);
 
  chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_ + iw_, -r_);
 
  for (auto const &inu : std::get<0>(chi0q_from_r.mesh())) {
   for (auto const &iw : std::get<1>(chi0q_from_r.mesh())) {
-   chi0q_from_r[inu][iw][_] = fourier(chi0r[inu][iw][_]);
+   chi0q_from_r[inu, iw, _] = fourier(chi0r[inu, iw, _]);
   }
  }
  EXPECT_CLOSE_ARRAY(chi0q_from_r.data(), chi0q.data());

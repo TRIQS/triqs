@@ -369,7 +369,7 @@ namespace triqs {
         operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
         reference operator*() { return (*bgf)[n]; }
-        auto const & operator*() const { return (*bgf)[n]; }
+        reference operator*() const { return (*bgf)[n]; }
         reference operator->() { return operator*(); }
 
         iterator_impl &operator++() {
@@ -729,6 +729,7 @@ namespace triqs {
         operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
         reference operator*() { return (*bgf)[n]; }
+        reference operator*() const { return (*bgf)[n]; }
         reference operator->() { return operator*(); }
 
         iterator_impl &operator++() {
@@ -1038,6 +1039,7 @@ namespace triqs {
         operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
         reference operator*() { return (*bgf)[n]; }
+        reference operator*() const { return (*bgf)[n]; }
         reference operator->() { return operator*(); }
 
         iterator_impl &operator++() {
@@ -1382,6 +1384,7 @@ namespace triqs {
         operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
         reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+        reference operator*() const { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
         reference operator->() { return operator*(); }
 
         iterator_impl &operator++() {
@@ -1734,6 +1737,7 @@ namespace triqs {
         operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
         reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+        reference operator*() const { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
         reference operator->() { return operator*(); }
 
         iterator_impl &operator++() {
@@ -2033,6 +2037,7 @@ namespace triqs {
         operator iterator_impl<true>() const { return iterator_impl<true>(*bgf, n); }
 
         reference operator*() { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
+        reference operator*() const { return (*bgf)(n / bgf->size2(), n % bgf->size2()); }
         reference operator->() { return operator*(); }
 
         iterator_impl &operator++() {

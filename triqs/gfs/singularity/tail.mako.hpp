@@ -35,6 +35,8 @@ namespace gfs {
 
  inline dcomplex inverse(dcomplex const &z) { return 1 / z; }
 
+ struct infty{};
+
  // FIXME replace to __tail_gf
  template <typename T> class __tail;
  template <typename T> class __tail_view;
@@ -79,6 +81,7 @@ namespace gfs {
   * $t = \sum_{i=o_{min}}^{o_{max}} \mathbf{a}_i (i\omega_n)^{-i}$
   */
  template <typename T> class MAKO_TAIL : 
+   public infty,
    // mako %if 'view' in RVC:
    is_view_tag, 
    // mako %endif

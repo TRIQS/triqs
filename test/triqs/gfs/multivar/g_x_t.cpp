@@ -27,7 +27,7 @@ TEST(Gf, x_t) {
  auto gxt = gf<cartesian_product<cyclic_lattice, retime>, matrix_valued>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
 
  for (auto const &t : std::get<1>(gxt.mesh()))
-  gxt[_][t] = inverse_fourier(gkt[_][t]);
+  gxt[_, t] = inverse_fourier(gkt[_, t]);
 
  EXPECT_GF_NEAR(gxt, rw_h5(gxt, "ess_g_x_t.h5", "g"));
 
@@ -51,7 +51,7 @@ TEST(Gf, x_tau) {
  auto gxt = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{{L, L}, {beta, Fermion, n_times}}, {1, 1}};
 
  for (auto const &t : std::get<1>(gxt.mesh()))
-  gxt[_][t] = inverse_fourier(gkt[_][t]);
+  gxt[_, t] = inverse_fourier(gkt[_, t]);
 
  auto gg = rw_h5(gxt, "ess_g_x_tau.h5", "g");
 

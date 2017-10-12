@@ -166,6 +166,7 @@ namespace gfs {
   long get_interpolation_data(interpol_t::None, long n) = delete;
 
   template <typename F, typename... Args> auto evaluate(interpol_t::Product, F const &f, Args &&... args) const {
+   static_assert (clef::__and (!std::is_base_of<infty, std::decay_t<Args>>::value...), "Tails are not authorized in g(...) for multivariables");
    multivar_eval<typename gf_mesh<Ms>::default_interpol_policy...> ev;
    return ev(f, std::forward<Args>(args)...);
   }

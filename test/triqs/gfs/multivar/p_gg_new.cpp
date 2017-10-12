@@ -29,10 +29,10 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
  auto G_R_tau    = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{{nk, nk}, {beta, Fermion, ntau}}, {1, 1}};
 
  for (auto const &k : std::get<0>(G_k_tau.mesh()))
-  G_k_tau[k][_] = inverse_fourier(G_k_w[k][_]);
+  G_k_tau[k, _] = inverse_fourier(G_k_w[k, _]);
 
  for (auto const &tau : std::get<1>(G_R_tau.mesh()))
-  G_R_tau[_][tau] = inverse_fourier(G_k_tau[_][tau]);
+  G_R_tau[_, tau] = inverse_fourier(G_k_tau[_, tau]);
 
  chi0_R_tau(r_, tau_) << G_R_tau(r_, tau_) * G_R_tau(-r_, -tau_);
 
@@ -43,10 +43,10 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
  */
 
  for (auto const &tau : std::get<1>(chi0_q_tau.mesh()))
-  chi0_q_tau[_][tau] = fourier(chi0_R_tau[_][tau]);
+  chi0_q_tau[_, tau] = fourier(chi0_R_tau[_, tau]);
 
  for (auto const &k : std::get<0>(chi0_q_nu.mesh()))
-  chi0_q_nu[k][_] = fourier(chi0_q_tau[k][_]);
+  chi0_q_nu[k, _] = fourier(chi0_q_tau[k, _]);
 
  return chi0_q_nu;
 }

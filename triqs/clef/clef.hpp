@@ -241,8 +241,12 @@ namespace triqs { namespace clef {
   * Evaluation of the expression tree.
   *  --------------------------------------------------------------------------------------------------- */
 
+ //FIXME C++17 : replace by fold
  constexpr bool __or() { return false;}
  template <typename... B> constexpr bool __or(bool b, B... bs) { return b || __or(bs...); }
+ 
+ constexpr bool __and() { return true;}
+ template <typename... B> constexpr bool __and(bool b, B... bs) { return b && __and(bs...); }
 
  // Generic case : do nothing (for the leaf of the tree including _ph)
  template <typename T, typename... Pairs> struct evaluator {
@@ -410,6 +414,18 @@ namespace triqs { namespace clef {
   triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
  }
 
+ // The case A[x_,y_] = RHS : we form the function (make_function) and call auto_assign (by ADL)
+// template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::subscript, F, _tuple<_ph<Is>...>>&& ex, RHS&& rhs) {
+//  triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
+// }
+ /*template <typename F, typename RHS, int... Is>
+ FORCEINLINE void operator<<(expr<tags::subscript, F, _ph<Is>...> const& ex, RHS&& rhs) {
+  triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
+ }
+ template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::subscript, F, _ph<Is>...>& ex, RHS&& rhs) {
+  triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
+ }
+*/
  // any other case e.g. f(x_+y_) = RHS etc .... which makes no sense : compiler will stop
  template <typename F, typename RHS, typename... T> void operator<<(expr<tags::function, F, T...>&& ex, RHS&& rhs) = delete;
  template <typename F, typename RHS, typename... T> void operator<<(expr<tags::function, F, T...>& ex, RHS&& rhs) = delete;

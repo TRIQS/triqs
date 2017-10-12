@@ -19,9 +19,10 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/lazy_bracket.hpp>
+//#include <triqs/utility/lazy_bracket.hpp>
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
+#include "./comma.hpp"
 #include "../singularity/tail.hxx"
 #include "../singularity/nothing.hpp"
 #include "./data_proxy.hpp"
@@ -31,6 +32,7 @@ namespace triqs {
 
   // forward
   namespace details { 
+   template<typename Mesh, typename ... A> struct is_ok;   
   template <typename G, typename... Args> decltype(auto) partial_eval(G *g, Args const &... args);
   }
 
@@ -561,7 +563,60 @@ namespace triqs {
     return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
    }
 
-   // ------------- [] with lazy arguments -----------------------------
+   // G[ tail] = G[infty] in evaluation ... 
+   singularity_t const & operator[](infty) const { return _singularity;}
+
+
+   // -------------- operator [] with _tuple. Distinguich the lazy and non lazy case
+   private:
+   // FIXME : if constexpr !!!
+   
+   template<typename ... U>
+   FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) {
+     auto l = [this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...);};
+     return triqs::tuple::apply(l, tu._t);
+   }
+   template<typename ... U>
+   FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) const {
+     auto l = [this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...);};
+     return triqs::tuple::apply(l, tu._t);
+   }
+
+   // ------------- 
+
+   template<typename ... U>
+   FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) const &{
+    return clef::make_expr_subscript(*this, tu);
+   }
+   template<typename ... U>
+   FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) &{
+    return clef::make_expr_subscript(*this, tu);
+   }
+   template<typename ... U>
+   FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) && {
+    return clef::make_expr_subscript(std::move(*this), tu);
+   }
+
+   public:
+   template<typename ... U>
+   decltype(auto) operator[](_tuple<U...> const &tu) &{ 
+    static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+    return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+   }
+   
+   template<typename ... U>
+   decltype(auto) operator[](_tuple<U...> const &tu) const & { 
+    static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+    return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+   }
+
+   template<typename ... U>
+   decltype(auto) operator[](_tuple<U...> const &tu) && { 
+    static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+    return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+   }
+
+     // ------------- [] with lazy arguments -----------------------------
 
    template <typename Arg> clef::make_expr_subscript_t<MAKO_GF const &, Arg> operator[](Arg &&arg) const & {
     return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
@@ -595,9 +650,8 @@ namespace triqs {
 
    // --------------------- on mesh (g) : the call before [] -------------------------
    // This is a workaround the the lack of multi argument [] in C++
-/*
    // mesh points should be treated slighly differently : take their index....
-   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
+ /*  template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
    template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
 
    // The on_mesh little adaptor ....
@@ -624,16 +678,32 @@ namespace triqs {
    /**
     *
     */
-   template <typename T> decltype(auto) operator[](T const &x) {
-    return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-   }
+   //template <typename T> decltype(auto) operator[](T const &x) {
+    //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
+   //}
 
    /**
     *
     */
-   template <typename T> decltype(auto) operator[](T const &x) const {
-    return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-   }
+   //template <typename T> decltype(auto) operator[](T const &x) const {
+    //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
+   //}
+
+   /**
+    *
+    */
+   //template <typename T> decltype(auto) operator[](T const &x) {
+    //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
+   //}
+
+   /**
+    *
+    */
+   //template <typename T> decltype(auto) operator[](T const &x) const {
+    //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
+   //}
+
+
 
    //----------------------------- HDF5 -----------------------------
 
