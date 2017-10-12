@@ -60,8 +60,8 @@ namespace triqs {
  template<typename T> using const_view_or_type_t = typename const_view_type_if_exists_else_type<T>::type;
 
  // CURRENT
- template<typename A> using Regular = typename regular_type_if_exists_else_type<A>::type;
- template<typename A> using regular_type_if_view_else_type_t = typename regular_type_if_exists_else_type<A>::type;
+ template<typename A> using Regular = typename regular_type_if_exists_else_type<std::decay_t<A>>::type;
+ template<typename A> using regular_type_if_view_else_type_t = Regular<A>; // backward
  template<typename A> using get_regular_t = typename A::regular_type;
 
  /// Transform to the regular type
