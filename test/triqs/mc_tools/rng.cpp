@@ -22,9 +22,11 @@
 #include <random>
 #include <vector>
 #include <triqs/mc_tools/MersenneRNG.hpp>
-#include <boost/random.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/mersenne_twister.hpp>
+#include <boost/random/lagged_fibonacci.hpp>
+#include <boost/random/ranlux.hpp>
+#include <boost/random/variate_generator.hpp>
 
 // This test that std::random and boost::random are the same for MT and uniform distribution
 // Conclusion : the std and boost generator give the same numbers.
