@@ -21,7 +21,7 @@
 #pragma once
 #include <triqs/utility/first_include.hpp>
 #include <math.h>
-#include <triqs/utility/timer_chrono.hpp>
+#include <triqs/utility/timer.hpp>
 #include <triqs/utility/timestamp.hpp>
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/signal_handler.hpp>

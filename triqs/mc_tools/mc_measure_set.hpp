@@ -21,7 +21,7 @@
 #pragma once
 #include <triqs/mpi/base.hpp>
 #include <triqs/utility/exceptions.hpp>
-#include <triqs/utility/timer_chrono.hpp>
+#include <triqs/utility/timer.hpp>
 #include <functional>
 #include <map>
 #include "./impl_tools.hpp"
