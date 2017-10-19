@@ -144,7 +144,7 @@ def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min
 
     # Define default tail quantities
     if fit_known_moments is None:
-        fit_known_moments = {name:TailGf(sig.N1,sig.N2,0,0) for name, sig in Sigma_iw}
+        fit_known_moments = {name:TailGf(sig.target_shape[0],sig.target_shape[1],0,0) for name, sig in Sigma_iw}
     if fit_min_w is not None: fit_min_n = int(0.5*(fit_min_w*Sigma_iw.mesh.beta/np.pi - 1.0))
     if fit_max_w is not None: fit_max_n = int(0.5*(fit_max_w*Sigma_iw.mesh.beta/np.pi - 1.0))
     if fit_min_n is None: fit_min_n = int(0.8*len(Sigma_iw.mesh)/2)
@@ -209,7 +209,7 @@ def write_gf_to_txt(g):
         mesh = np.array(list(g.mesh)).imag.reshape(-1,1)
     else:
         raise ValueError, 'write_gf_to_txt: Only GfReFreq and GfImFreq quantities are supported.'
-    for i,j in product(range(g.N1),range(g.N2)):
+    for i,j in product(range(g.target_shape[0]),range(g.target_shape[1])):
         txtfile = '%s_%s_%s.dat'%(g.name,i,j)
         redata = g.data[:,i,j].real.reshape((g.data.shape[0],-1))
         imdata = g.data[:,i,j].imag.reshape((g.data.shape[0],-1))
