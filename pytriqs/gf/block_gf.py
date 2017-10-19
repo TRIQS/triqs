@@ -110,7 +110,7 @@ class BlockGf(object):
         """Copy the Green's function from G2: G2 MUST have the same structure!"""
         assert isinstance(G2, BlockGf)
         for (i,g),(i2,g2) in itertools.izip(self,G2): 
-           if  (g.N1,g.N2) != (g2.N1,g2.N2): 
+           if  (g.target_shape[0],g.target_shape[1]) != (g2.target_shape[0],g2.target_shape[1]): 
                raise RuntimeError, "Blocks %s and %s of the Green Function do have the same dimension"%(i1,i2) 
         for (i,g),(i2,g2) in itertools.izip(self,G2): g.copy_from(g2)
 
