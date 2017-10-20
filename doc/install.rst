@@ -28,14 +28,14 @@ their codes, and are happy to use an older but perhaps more stable version.
 To this end, we propose two options to the user:
 
 #. You follow the latest master commits for all applications, and be certain to
-have all the bug fixes and latest functionality, while perhaps having to change
-some API occasionally. Note that we use Continous Integration (jenkins) to ensure 
-that the master always compiles and passes all tests, both
-for the library and for several public (and private) applications.
+   have all the bug fixes and latest functionality, while perhaps having to change
+   some API occasionally. Note that we use Continous Integration (jenkins) to ensure 
+   that the master always compiles and passes all tests, both
+   for the library and for several public (and private) applications.
 
 #. You use a version tag, e.g. version 1.3, for all applications, and have a
-stable version of the code, while not having the latest bug fixes and
-functionality.
+   stable version of the code, while not having the latest bug fixes and
+   functionality.
 
 Prerequisites
 -------------
@@ -57,48 +57,31 @@ install these necessary libraries on two standard systems:
 Installation steps
 ------------------
 
-#. Download the sources of TRIQS from github into a ``triqs.src`` directory::
+You need to install first Cpp2Py and then TRIQS.
 
-     $ git clone https://github.com/TRIQS/triqs.git triqs.src
+We provide hereafter the build instructions in the form of a little bash script.
+You can adapt INSTALL_PREFIX, NCORES for your local settings.
+Note that, contrary to previous versions of TRIQS,  
+the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake configuration.
 
-   If you wish to follow Option 2 as described under Philosophy, you should
-   instead download the latest tagged version from the `GitHub releases page 
-   <https://github.com/TRIQS/triqs/releases>`_.
 
-#. Create an empty ``triqs.build`` directory where you will compile the code::
+.. literalinclude:: install.sh
+   :language: bash
 
-     $ mkdir triqs.build && cd triqs.build
 
-#. In the build directory call ``cmake`` specifying where the TRIQS library should be installed::
+Environment setup
+^^^^^^^^^^^^^^^^^^^
 
-     $ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../triqs.src
+Cpp2Py and TRIQS both provide a little file `cpp2pyvars.sh` and `triqsvars.sh`
+to update your environment variables.  
 
-   If you omit ``CMAKE_INSTALL_PREFIX``, the default
-   ``path_to_install_directory`` is the subdirectory *INSTALL_DIR* in your build
-   directory. More configuration options are described in the
-   :ref:`cmake options <install_options>`.
+Please add to your .bash_profile (replace INSTALL_PREFIX with the correct path)::
 
-#. Compile the code, run the tests and install the library::
+        source INSTALL_PREFIX/share/cpp2pyvars.sh
+        source INSTALL_PREFIX/share/triqsvars.sh
 
-     $ make
-     $ make test
-     $ make install
-
-   .. note:: 
-
-      On multicore machine, the make option -jN (where N is the number of cores)
-      greatly speeds up the compilation, e.g. make -j8 on an 8 core machine.
-
-#. After the installation TRIQS has been installed using the standard UNIX
-   scheme:
-
-   * executables in ``path_to_install_directory/bin``.
-
-   * c++ and python libraries in ``path_to_install_directory/lib``.
-
-   * c++ headers in ``path_to_install_directory/include/triqs``.
- 
-   * shared items (e.g. the documentation) in ``path_to_install_directory/share/triqs``.
+This updates PATH and similar variables to that your unix shell find commands like c++2py, libraries and 
+cmake automatically finds Cpp2Py and TRIQS in applications.
 
 
 Further reading

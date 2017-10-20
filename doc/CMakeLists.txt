@@ -22,7 +22,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR
 # and filters the relevant extension
 # ------------------------------------------------------------------------------------------------
 
-set(EXT_FOR_DOC "rst png txt css_t conf css js gif jpg py html bib")
+set(EXT_FOR_DOC "rst png txt css_t conf css js gif jpg py html bib sh")
 execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${EXT_FOR_DOC})
 
 # ---------------------------------
@@ -37,7 +37,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs
 		   --output_directory=${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
 		   --includes=${CMAKE_SOURCE_DIR}/ 
 		   --includes=${CMAKE_BINARY_DIR}/Config 
-		   --compiler_options="-DTRIQS_BUILDING_LIBRARY" 
+		   --cxxflags="-std=c++14 -DTRIQS_BUILDING_LIBRARY" 
 		   2>1 > cpp2rst.log
 		   ) 
 add_custom_target(docs_cpp2rst DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log) 
