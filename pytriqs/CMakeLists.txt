@@ -15,12 +15,11 @@ SET(PYTHON_SOURCES
  ${CMAKE_CURRENT_BINARY_DIR}/magic.py
  )
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake_info.py.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_info.py)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in ${CMAKE_CURRENT_BINARY_DIR}/version.py)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utility/mpi.py.in ${CMAKE_CURRENT_BINARY_DIR}/utility/mpi.py)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/magic.py.in ${CMAKE_CURRENT_BINARY_DIR}/magic.py @ONLY)
+configure_file(cmake_info.py.in cmake_info.py)
+configure_file(version.py.in version.py)
+configure_file(utility/mpi.py.in utility/mpi.py)
+configure_file(magic.py.in magic.py @ONLY)
 
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST})
 
 # all targets below link to triqs
