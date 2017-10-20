@@ -35,7 +35,7 @@ namespace utility {
 // Zero value tests
 //
 template<typename T> // Integral types
-std14::enable_if_t<std::is_integral<T>::value,bool> is_zero(T const& x, T = 0) {
+std14::enable_if_t<std::is_integral<T>::value,bool> is_zero(T const& x) {
  return x==0;
 }
 
