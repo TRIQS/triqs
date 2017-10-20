@@ -31,6 +31,7 @@ namespace gfs {
   using index_t = long;
   using linear_index_t = long;
   using default_interpol_policy = interpol_t::None;
+  using mesh_point_t = mesh_point<discrete_mesh<Domain>>;
 
   // -------------------- Constructors -------------------
 
@@ -55,26 +56,7 @@ namespace gfs {
   long index_to_linear(index_t ind) const { return ind; }
 
   // -------------------- mesh_point -------------------
-
-  /// The wrapper for the mesh point
-  class mesh_point_t : tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point_t, long> {
-   discrete_mesh const *m;
-   index_t _index;
-   public:
-   mesh_point_t() = default;
-   mesh_point_t(mesh_point_t const&) = default;
-   mesh_point_t(discrete_mesh const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
-   mesh_point_t(discrete_mesh const &mesh) : mesh_point_t(mesh, 0){}
-   void advance() { ++_index; }
-   using cast_t = long;
-   operator cast_t() const { return m->index_to_point(_index); }
-   long linear_index() const { return _index; }
-   long index() const { return _index; }
-   bool at_end() const { return (_index == m->size()); }
-   void reset() { _index = 0; }
-   discrete_mesh const & mesh() const { return *m;}
-  };
-
+ 
   /// Accessing a point of the mesh
   mesh_point_t operator[](index_t i) const { return mesh_point_t(*this, i); }
   mesh_point_t operator[](std::string const &s) const { return mesh_point_t(*this, _dom.index_from_name(s)); }
@@ -129,6 +111,29 @@ namespace gfs {
   private:
   domain_t _dom;
  };
+
+
+ template <typename Domain> struct mesh_point<discrete_mesh<Domain>> : 
+          tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point<discrete_mesh<Domain>>, long> {
+   using discrete_mesh_t = discrete_mesh<Domain>;
+   using index_t = typename discrete_mesh_t::index_t;
+   discrete_mesh_t const *m;
+   index_t _index;
+   public:
+   mesh_point() = default;
+   mesh_point(mesh_point const&) = default;
+   mesh_point(discrete_mesh_t const &mesh, index_t const &index_) : m(&mesh), _index(index_) {}
+   mesh_point(discrete_mesh_t const &mesh) : mesh_point(mesh, 0){}
+   void advance() { ++_index; }
+   using cast_t = long;
+   operator cast_t() const { return m->index_to_point(_index); }
+   long linear_index() const { return _index; }
+   long index() const { return _index; }
+   bool at_end() const { return (_index == m->size()); }
+   void reset() { _index = 0; }
+   discrete_mesh_t const & mesh() const { return *m;}
+  };
+
 }
 }
 

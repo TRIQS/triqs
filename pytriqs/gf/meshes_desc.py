@@ -30,6 +30,7 @@ module.add_preamble("""
 module.add_enum(c_name = "statistic_enum",
                 c_namespace = "triqs::gfs",
                 values = ["Fermion","Boson"])
+
 module.add_enum(c_name = "matsubara_mesh_opt",
                 c_namespace = "triqs::gfs",
                 values = ["all_frequencies","positive_frequencies_only"])
@@ -38,7 +39,8 @@ module.add_enum(c_name = "matsubara_mesh_opt",
 ##   Mesh generic
 ########################
 
-def make_mesh(py_type, c_tag, index_type='long') :
+def make_mesh(py_type, c_tag, index_type='long'):
+
     m = class_( py_type = py_type,
             c_type = "gf_mesh<%s>"%c_tag,
             c_type_absolute = "triqs::gfs::gf_mesh<triqs::gfs::%s>"%c_tag,
@@ -50,9 +52,14 @@ def make_mesh(py_type, c_tag, index_type='long') :
 
     m.add_method("long index_to_linear(%s i)"%index_type, doc = "index -> linear index")
     m.add_len(calling_pattern = "int result = self_c.size()", doc = "Size of the mesh")
-    c_cast_type = "dcomplex" if not (c_tag == "brillouin_zone" or c_tag=="cyclic_lattice") else "triqs::arrays::vector<double>"
-    m.add_iterator(c_cast_type = c_cast_type)
-
+    m.add_iterator()
+    m.add_method("PyObject * values()",
+                 calling_pattern = """
+                    static auto cls = pyref::get_class("pytriqs.gf", "MeshValueGenerator", /* raise_exception */ true);
+                    pyref args = PyTuple_Pack(1, self);
+                    auto result = PyObject_CallObject(cls, args);
+                 """, doc = "A numpy array of all the values of the mesh points")
+    
     m.add_method_copy()
     m.add_method_copy_from()
 

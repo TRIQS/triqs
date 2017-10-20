@@ -53,6 +53,9 @@ namespace py_tools {
   static pyref module(std::string const &module_name) { return PyImport_ImportModule(module_name.c_str()); }
   static pyref string(std::string const &s) { return PyString_FromString(s.c_str()); }
 
+  template<typename ... T>
+  static pyref make_tuple(T const & ...x) { return PyTuple_Pack(sizeof...(T), static_cast<PyObject*>(x)...);}
+
   // gets a reference to the class cls_name in module_name
   static pyref get_class(const char * module_name, const char* cls_name, bool raise_exception) {
     pyref cls = pyref::module(module_name).attr(cls_name);

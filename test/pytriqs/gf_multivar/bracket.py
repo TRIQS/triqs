@@ -22,21 +22,19 @@ g4_tau(t1, t2, t3)
 
 import itertools
 import numpy as np
-
-from pytriqs.gf import Gf
-from pytriqs.gf import GfImTime
-from pytriqs.gf import MeshImTime, MeshProduct
+from pytriqs.gf import Gf, GfImTime, MeshImTime, MeshProduct
 
 ntau = 10
 beta = 1.2345
 
-g_tau = GfImTime(name='g_tau', beta=beta,
-                 statistic='Fermion', n_points=ntau,
-                 indices=[1])
+g_tau = GfImTime(name='g_tau', beta=beta, statistic='Fermion', n_points=ntau, indices=[1])
 
-tau = np.array([tau for tau in g_tau.mesh])
+tau = np.array([tau.value for tau in g_tau.mesh])
 g_ref = np.exp(-beta * tau)
 g_tau.data[:, 0, 0] = np.exp(-beta * tau)
+
+for tau in g_tau.mesh:
+    g_tau[tau] = np.exp(-beta * tau)
 
 for idx, tau in enumerate(g_tau.mesh):
 
@@ -46,7 +44,7 @@ for idx, tau in enumerate(g_tau.mesh):
     #diff_interp = g_tau(tau)[0,0] - g_ref[idx] # FIXME: tau is complex
     
     diff_interp = g_tau(tau.real)[0,0] - g_ref[idx]
-    diff_dbrack = g_tau[[idx]][0,0] - g_ref[idx]
+    diff_dbrack = g_tau[tau][0,0] - g_ref[idx]
 
     np.testing.assert_almost_equal(diff_interp, 0.0)
     np.testing.assert_almost_equal(diff_dbrack, 0.0)
@@ -54,24 +52,32 @@ for idx, tau in enumerate(g_tau.mesh):
 # -- three imaginary time gf
 
 imtime = MeshImTime(beta=beta, S='Fermion', n_max=ntau)
-prodmesh = MeshProduct(imtime, imtime, imtime)
-g4_tau = Gf(name='g4_tau', mesh=prodmesh, indices=[1])
+g4_tau = Gf(name='g4_tau', mesh= MeshProduct(imtime, imtime, imtime), indices=[1])
 
-for (i1, t1), (i2, t2), (i3, t3) in itertools.product(*[
-        enumerate(mesh) for mesh in g4_tau.mesh.components]):
+for t1, t2, t3 in g4_tau.mesh:
+    g4_tau[t1, t2, t3] = g_tau(t1-t2)*g_tau(t3) - g_tau(t1)*g_tau(t3-t2)
 
-    t1, t2, t3 = t1.real, t2.real, t3.real # Can we get rid of this?    
-    g4_tau[[i1, i2, i3]][:] = g_tau(t1-t2)*g_tau(t3) - g_tau(t1)*g_tau(t3-t2)
-
-    
-for (i1, t1), (i2, t2), (i3, t3) in itertools.product(*[
-        enumerate(mesh) for mesh in g4_tau.mesh.components]):
-
-    t1, t2, t3 = t1.real, t2.real, t3.real # Can we get rid of this?    
-
-    #val = g4_tau(t1, t2, t3) # Not implemented FIXME
-    val = g4_tau[[i1, i2, i3]]
+for t1, t2, t3 in g4_tau.mesh:
+    val = g4_tau[t1, t2, t3] 
     val_ref = g_tau(t1-t2)*g_tau(t3) - g_tau(t1)*g_tau(t3-t2)
-
     np.testing.assert_array_almost_equal(val, val_ref)
+
+
+# for (i1, t1), (i2, t2), (i3, t3) in itertools.product(*[
+        # enumerate(mesh) for mesh in g4_tau.mesh.components]):
+
+    # t1, t2, t3 = t1.real, t2.real, t3.real # Can we get rid of this?    
+    # g4_tau[[i1, i2, i3]][:] = g_tau(t1-t2)*g_tau(t3) - g_tau(t1)*g_tau(t3-t2)
+    
+# for (i1, t1), (i2, t2), (i3, t3) in itertools.product(*[
+        # enumerate(mesh) for mesh in g4_tau.mesh.components]):
+
+    # t1, t2, t3 = t1.real, t2.real, t3.real # Can we get rid of this?    
+
+    ## val = g4_tau(t1, t2, t3) # Not implemented FIXME
+    # val = g4_tau[[i1, i2, i3]]
+    # val_ref = g_tau(t1-t2)*g_tau(t3) - g_tau(t1)*g_tau(t3-t2)
+
+    # np.testing.assert_array_almost_equal(val, val_ref)
+    
     
