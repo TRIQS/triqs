@@ -127,6 +127,10 @@ namespace gfs {
   m_tuple_t const &components() const { return m_tuple; }
   m_tuple_t &components() { return m_tuple; }
 
+  // for structured binding
+  template <size_t pos> decltype(auto) get() { return std::get<pos>(m_tuple); }
+  template <size_t pos> decltype(auto) get() const { return std::get<pos>(m_tuple); }
+
   ///
   linear_index_t mp_to_linear(m_pt_tuple_t const &mp) const {
    auto l = [](auto const &p) { return p.linear_index(); };
@@ -276,7 +280,7 @@ namespace gfs {
     triqs::tuple::for_each(_c, [](auto &m) { m.reset(); });
    }
 
-  // std::get should work
+  // std::get should work FIXME ? redondant
   template <int N> decltype(auto) get() { return std::get<N>(_c); }
   template <int N> decltype(auto) get() const { return std::get<N>(_c); }
  
@@ -287,10 +291,21 @@ namespace gfs {
 /// std::get (mesh) return the component...
 namespace std {
 
- template <int pos, typename... M> decltype(auto) get(triqs::gfs::gf_mesh<M...> const &m) {
+ // mesh as tuple
+ // redondant with .get<pos>, but seems necessary.
+ template <size_t pos, typename... Ms> decltype(auto) get(triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>> const &m) {
   return std::get<pos>(m.components());
  }
 
+ template <typename... Ms> class tuple_size<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> {
+  public:
+  static const int value = sizeof...(Ms);
+ };
+
+ template <size_t N, typename... Ms> class tuple_element<N, triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> : 
+  public tuple_element<N, std::tuple<typename triqs::gfs::gf_mesh<Ms>...>> {};
+
+ // mesh_point as tuple
  template <int pos, typename... Ms> decltype(auto) get(triqs::gfs::mesh_point<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> const &m) {
   return std::get<pos>(m.components_tuple());
  }

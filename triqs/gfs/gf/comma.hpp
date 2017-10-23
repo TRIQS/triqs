@@ -78,7 +78,7 @@ namespace triqs {
       FORCEINLINE decltype(auto) operator()(gfs::_tuple<T...> const &tu, Contexts const &... contexts) const {
         auto l  = [&contexts...](auto &&y) -> decltype(auto) { return eval(y, contexts...); };
         auto _t = triqs::tuple::map(l, tu._t);
-        return _make_tuple(std::move(_t));
+        return triqs::gfs::_make_tuple(std::move(_t));
       }
     };
 
