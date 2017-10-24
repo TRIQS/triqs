@@ -50,6 +50,9 @@ namespace triqs {
     inline _tuple<long, var_t> operator,(long i, var_t p) { return {std::make_tuple(i, p)}; }
     template <typename M> _tuple<long, mesh_point<M>> operator,(long i, mesh_point<M> m) { return {std::make_tuple(i, std::move(m))}; }
 
+    template <typename T, int n, typename X> _tuple<mini_vector<T,n>, X> operator,(mini_vector<T,n> const & v, X const &x) { return {std::make_tuple(v,x)}; } 
+    template <typename X> _tuple<matsubara_freq, X> operator,(matsubara_freq const & m, X const &x) { return {std::make_tuple(m,x)}; } 
+
     // _tuple absorbs anything
     template <typename X, typename... T, size_t... Is>
     FORCEINLINE _tuple<T..., std::decay_t<X>> __comma_impl(_tuple<T...> &&tu, X &&x, std14::index_sequence<Is...>) {
