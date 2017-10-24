@@ -50,7 +50,7 @@ TEST(Itertools, Zip) {
   }
 
   // Change the values of the second vector to the first
-  for (auto[x, y] : zip(V1, std::ref(V2))) {
+  for (auto[x, y] : zip(V1, V2)) {
     y = x.i;
   }
   EXPECT_TRUE(std::equal(V2.begin(), V2.end(), V1.begin()));
@@ -68,7 +68,7 @@ TEST(Itertools, Enumerate) {
 
   // Enumerate and change values
   std::vector<int> V_compare{0, 1, 2, 3, 4, 5};
-  for (auto[j, x] : enumerate(std::ref(V))) {
+  for (auto[j, x] : enumerate(V)) {
     x = j;
   }
   EXPECT_TRUE(std::equal(V.begin(), V.end(), V_compare.begin()));

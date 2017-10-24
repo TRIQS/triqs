@@ -38,19 +38,13 @@ namespace triqs::utility {
 
     /********************* Some helpers  ********************/
 
-    // By default, get iterators to const
-    template <typename T> auto _begin(T& range) { return std::cbegin(range); }
-    template <typename T> auto _end(T& range) { return std::cend(range); }
-
-    // If std::ref is used for a range, return mutable iterator
-    template <typename T> auto _begin(std::reference_wrapper<T> ref_range) { return std::begin(ref_range.get()); }
-    template <typename T> auto _end(std::reference_wrapper<T> ref_range) { return std::end(ref_range.get()); }
+    // By default, get mutable iterators
+    template <typename T> auto _begin(T& range) { return std::begin(range); }
+    template <typename T> auto _end(T& range) { return std::end(range); }
 
     // Always return iterator to const for cbegin/cend
     template <typename T> auto _cbegin(T const& range) { return std::cbegin(range); }
     template <typename T> auto _cend(T const& range) { return std::cend(range); }
-    template <typename T> auto _cbegin(std::reference_wrapper<T> ref_range) { return std::cbegin(ref_range.get()); }
-    template <typename T> auto _cend(std::reference_wrapper<T> ref_range) { return std::cend(ref_range.get()); }
 
     // Sentinel_t, used to denote the end of a range for e.g. product
     template <typename It> struct sentinel_t { It it; };
