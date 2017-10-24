@@ -53,7 +53,6 @@ namespace gfs {
  // The mesh point for each mesh
  template <typename MeshType> struct mesh_point;
 
-
  // FIXME : remove boost !
  template<typename MeshType>
   class mesh_pt_generator : 
@@ -79,5 +78,20 @@ namespace gfs {
     }
     friend mesh_pt_generator operator+(mesh_pt_generator lhs, int n) { return lhs += n; }
    };
+ 
+ 
+ // A little vehicle for the ref of a mesh, when infty point should be ignored
+ template<typename MeshType> struct mesh_without_infty{
+  MeshType const & m;
+
+  using domain_t = typename MeshType::domain_t;
+  using mesh_point_t = mesh_point<mesh_without_infty>;
+  using const_iterator = mesh_pt_generator<mesh_without_infty>;
+  const_iterator begin() const { return const_iterator(this); }
+  const_iterator end() const { return const_iterator(this, true); }
+  const_iterator cbegin() const { return const_iterator(this); }
+  const_iterator cend() const { return const_iterator(this, true); }
+ };
+
 
 }}
