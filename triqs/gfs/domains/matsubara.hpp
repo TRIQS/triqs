@@ -110,7 +110,7 @@ namespace gfs {
   friend void h5_read(h5::group fg, std::string subgroup_name, matsubara_domain &d) {
    h5::group gr = fg.open_group(subgroup_name);
    double beta;
-   std::string statistic;
+   std::string statistic = " ";
    h5_read(gr, "beta", beta);
    h5_read(gr, "statistic", statistic);
    d = matsubara_domain(beta, (statistic == "F" ? Fermion : Boson));
