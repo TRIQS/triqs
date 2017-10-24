@@ -184,10 +184,11 @@ module.add_class(m)
 ########################
 
 m = make_mesh( py_type = "MeshCyclicLattice", c_tag = "cyclic_lattice", index_type = 'triqs::utility::mini_vector<int,3>' )
-#m.add_constructor(signature = "(triqs::gfs::cyclic_lattice b, int n_Rx, int n_Ry, int n_Rz)")
+m.add_constructor(signature = "(int L1, int L2, int L3)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<int> periodization_matrix)")
-#m.add_method(name="locate_neighbours", signature="triqs::utility::mini_vector<int,3> locate_neighbours(triqs::arrays::vector<double> x)")
-#m.add_method(name="index_to_linear", signature="long index_to_linear(triqs::utility::mini_vector<int,3> x)")
+m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")
+m.add_method(name="locate_neighbours", signature="triqs::utility::mini_vector<int,3> locate_neighbours(triqs::arrays::vector<double> x)")
+m.add_method(name="index_to_linear", signature="long index_to_linear(triqs::utility::mini_vector<int,3> x)")
 module.add_class(m)
 
 

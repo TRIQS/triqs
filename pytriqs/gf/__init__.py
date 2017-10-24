@@ -40,7 +40,7 @@ from backwd_compat.gf_refreq import *
 from backwd_compat.gf_retime import *
 from backwd_compat.gf_legendre import *
 
-from meshes import MeshBrillouinZone
+from meshes import MeshBrillouinZone, MeshCyclicLattice
 
 from gf_fnt import is_gf_real_in_tau
 
@@ -54,6 +54,7 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Invers
             'GfReTime', 'MeshReTime',
             'GfLegendre', 'MeshLegendre',
             'MeshBrillouinZone',
+            'MeshCyclicLattice',
             'BlockGf',
             'Block2Gf',
             'inverse', 'conjugate', 'transpose',
