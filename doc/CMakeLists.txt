@@ -34,12 +34,12 @@ set(NS -N triqs::det_manip -N triqs::mc_tools)
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs 
 		   COMMAND c++2rst ${NS} 
 		   ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp 
-		   --output_directory=${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
-		   --includes=${CMAKE_SOURCE_DIR}/ 
-		   --includes=${CMAKE_BINARY_DIR}/Config 
-		   --cxxflags="-std=c++14 -DTRIQS_BUILDING_LIBRARY" 
-		   2>1 > cpp2rst.log
-		   ) 
+		   --output_directory ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
+		   --includes ${CMAKE_SOURCE_DIR}/ 
+		   --includes ${CMAKE_BINARY_DIR}/Config 
+		   --cxxflags "-std=c++14 -DTRIQS_BUILDING_LIBRARY" 
+		   2>&1 > cpp2rst.log
+		   VERBATIM) 
 add_custom_target(docs_cpp2rst DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log) 
 add_dependencies(docs_cpp2rst triqs) 
 
