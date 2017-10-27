@@ -36,6 +36,10 @@ m.add_function("void set_from_fourier(gf_view<refreq, matrix_valued> gw, gf_view
              calling_pattern = "gw = fourier(gt)",
              doc = """Fills self with the Fourier transform of gt""")
 
+m.add_function("void set_from_fourier(gf_view<brillouin_zone, matrix_valued> gk, gf_view<cyclic_lattice, matrix_valued> gr)",
+               calling_pattern = "gk = fourier(gr)",
+               doc = """Fills self with the Fourier transform of gr""")
+
 # set_from_inverse_fourier
 m.add_function("void set_from_inverse_fourier(gf_view<imtime, matrix_valued> gt, gf_view<imfreq, matrix_valued> gw)",
                calling_pattern = "gt = inverse_fourier(gw)",
@@ -44,6 +48,10 @@ m.add_function("void set_from_inverse_fourier(gf_view<imtime, matrix_valued> gt,
 m.add_function("void set_from_inverse_fourier(gf_view<retime, matrix_valued> gt,  gf_view<refreq, matrix_valued> gw)",
              calling_pattern = "gt = inverse_fourier(gw)",
              doc = """Fills self with the Inverse Fourier transform of gw""")
+
+m.add_function("void set_from_inverse_fourier(gf_view<cyclic_lattice, matrix_valued> gr, gf_view<brillouin_zone, matrix_valued> gk)",
+               calling_pattern = "gr = inverse_fourier(gk)",
+               doc = """Fills self with the Fourier transform of gk""")
 
 # set_from_legendre
 m.add_function("void set_from_legendre(gf_view<imfreq, matrix_valued> gw, gf_view<legendre, matrix_valued> gl)",
