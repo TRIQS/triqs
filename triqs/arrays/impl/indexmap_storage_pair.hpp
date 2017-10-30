@@ -125,20 +125,18 @@ namespace triqs { namespace arrays {
     protected:
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     indexmap_storage_pair (PyObject * X, bool enforce_copy, const char * name ) {
-     try {
-      numpy_interface::numpy_extractor<indexmap_type,value_type> E(X, enforce_copy);
-      this->indexmap_ = E.indexmap(); this->storage_  = E.storage();
-     }
-     catch(numpy_interface::copy_exception s){// intercept only this one...
-      TRIQS_RUNTIME_ERROR<< " construction of a "<< name <<" from a numpy  "
+     numpy_interface::numpy_extractor<value_type, indexmap_type::rank> E;
+     bool ok = E.extract(X, enforce_copy);
+     if (!ok) TRIQS_RUNTIME_ERROR<< " construction of a "<< name <<" from a numpy  "
        <<"\n   T = "<< triqs::utility::typeid_name(value_type())
        // lead to a nasty link pb ???
        // linker search for IndexMapType::domain_type::rank in triqs.so
        // and cannot resolve it ???
        //<<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
        <<"\nfrom the python object \n"<< numpy_interface::object_to_string(X)
-       <<"\nThe error was :\n "<<s.what();
-     }
+       <<"\nThe error was :\n "<<E.error;
+     indexmap_ = indexmap_type {E.lengths,E.strides,0};
+     storage_ = storages::shared_block<value_type> (E.numpy_obj, true);
     }
 #endif
     // ------------------------------- swap --------------------------------------------

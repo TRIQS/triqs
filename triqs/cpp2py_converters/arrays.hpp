@@ -5,6 +5,15 @@
 
 namespace cpp2py {
 
+  // is_view
+  template <typename T, int R> struct is_view<triqs::arrays::array_view<T, R>> : std::true_type {};
+  template <typename T> struct is_view<triqs::arrays::matrix_view<T>> : std::true_type {};
+  template <typename T> struct is_view<triqs::arrays::vector_view<T>> : std::true_type {};
+
+  template <typename T, int R> struct is_view<triqs::arrays::array_const_view<T, R>> : std::true_type {};
+  template <typename T> struct is_view<triqs::arrays::matrix_const_view<T>> : std::true_type {};
+  template <typename T> struct is_view<triqs::arrays::vector_const_view<T>> : std::true_type {};
+
   // FIXME : std::array instead
   // --- mini_vector<T,N>---
   // via std::vector
@@ -28,27 +37,37 @@ namespace cpp2py {
     }
   }
 
-  template <typename ArrayType> struct py_converter_array {
-    static PyObject *c2py(ArrayType const &x) {
-      import_numpy();
-      return x.to_python();
-    }
+  template <typename ArrayType> struct py_converter_array_impl {
     static ArrayType py2c(PyObject *ob) {
       import_numpy();
       return ArrayType(ob);
     }
     static bool is_convertible(PyObject *ob, bool raise_exception) {
       import_numpy();
-      try {
-        py2c(ob);
-        return true;
-      } catch (std::exception const &e) {
-        if (raise_exception) {
-          auto mess = std::string("Cannot convert to array/matrix/vector : the error was : \n") + e.what();
+      triqs::arrays::numpy_interface::numpy_extractor<typename ArrayType::value_type, ArrayType::indexmap_type::rank> E;
+      // FIXME C++17 Add if constexpr
+      if (is_view<ArrayType>::value and not raise_exception) { // quick decision, no need to build all the error strings
+        return E.is_convertible_to_view(ob);
+      }
+      else { // is a regular type or we want the error message
+  	bool ok = E.extract(ob, !is_view<ArrayType>::value); // if not a view, enforce_copy
+	if (!ok and raise_exception) {
+	  std::string mess = "Cannot convert to array/matrix/vector : the error was : \n" + E.error;
           PyErr_SetString(PyExc_TypeError, mess.c_str());
         }
-        return false;
+      return ok;
       }
+    }
+  };
+
+  template <typename ArrayType> struct py_converter_array_cvt : py_converter_array_impl<ArrayType> {
+    static PyObject *c2py(ArrayType const &x) = delete; // Can not convert a C++ const_view into python, it violates const correctness
+  };
+
+  template <typename ArrayType> struct py_converter_array : py_converter_array_impl<ArrayType> {
+    static PyObject *c2py(ArrayType const &x) {
+      import_numpy();
+      return x.to_python();
     }
   };
 
@@ -61,18 +80,14 @@ namespace cpp2py {
   template <typename T> struct py_converter<triqs::arrays::matrix_const_view<T>> : py_converter_array<triqs::arrays::matrix_const_view<T>> {};
   template <typename T> struct py_converter<triqs::arrays::vector_const_view<T>> : py_converter_array<triqs::arrays::vector_const_view<T>> {};
 
+  // FIXME : better, but there is ONE error in lattice_tools !
+  //struct py_converter<triqs::arrays::array_const_view<T, R>> : py_converter_array_cvt<triqs::arrays::array_const_view<T, R>> {};
+  //template <typename T> struct py_converter<triqs::arrays::matrix_const_view<T>> : py_converter_array_cvt<triqs::arrays::matrix_const_view<T>> {};
+  //template <typename T> struct py_converter<triqs::arrays::vector_const_view<T>> : py_converter_array_cvt<triqs::arrays::vector_const_view<T>> {};
+
   template <typename T, int R> struct py_converter<triqs::arrays::array<T, R>> : py_converter_array<triqs::arrays::array<T, R>> {};
   template <typename T> struct py_converter<triqs::arrays::matrix<T>> : py_converter_array<triqs::arrays::matrix<T>> {};
   template <typename T> struct py_converter<triqs::arrays::vector<T>> : py_converter_array<triqs::arrays::vector<T>> {};
-
-  // is_view
-  template <typename T, int R> struct is_view<triqs::arrays::array_view<T, R>> : std::true_type {};
-  template <typename T> struct is_view<triqs::arrays::matrix_view<T>> : std::true_type {};
-  template <typename T> struct is_view<triqs::arrays::vector_view<T>> : std::true_type {};
-
-  template <typename T, int R> struct is_view<triqs::arrays::array_const_view<T, R>> : std::true_type {};
-  template <typename T> struct is_view<triqs::arrays::matrix_const_view<T>> : std::true_type {};
-  template <typename T> struct is_view<triqs::arrays::vector_const_view<T>> : std::true_type {};
 
   // -----------------------------------
   // range

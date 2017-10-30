@@ -26,14 +26,17 @@
 #include "triqs/utility/exceptions.hpp"
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "numpy/arrayobject.h"
+#include <cpp2py/pyref.hpp>
 
 namespace triqs { namespace arrays { namespace numpy_interface  {
 
  using utility::mini_vector;
 
  inline std::string object_to_string (PyObject * p) {
-  if (!PyString_Check(p)) TRIQS_RUNTIME_ERROR<<" Internal error, expected a python string .....";
-  return PyString_AsString(p);
+   return "";
+// FIXME 
+ // if (!PyString_Check(p)) TRIQS_RUNTIME_ERROR<<" Internal error, expected a python string .....";
+ // return PyString_AsString(p);
  }
 
  template <class T> struct numpy_to_C_type;
@@ -65,33 +68,39 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
  CONVERT(std::complex<long double>, NPY_CLONGDOUBLE);
 #undef CONVERT
 
- struct copy_exception : public triqs::runtime_error {};
+  // ----------------------   Impl. functions
 
- // return a NEW (owned) reference
- PyObject* numpy_extractor_impl(PyObject* X, bool allow_copy, std::string type_name, int elementsType, int rank, size_t* lengths,
+  // Return X is an array of given rank and elementtype
+  bool numpy_convertible_to_view_impl(PyObject *X, std::string const& type_name, int elementsType, int rank);
+
+   // Extracts
+  std::pair<cpp2py::pyref, std::string> numpy_extractor_impl(PyObject* X, bool enforce_copy, std::string const &type_name, int elementsType, int rank, size_t* lengths,
                                 std::ptrdiff_t* strides, size_t size_of_ValueType);
 
- // a little template class
- template<typename IndexMapType, typename ValueType > struct numpy_extractor {
+  // ---------------------  
 
-  numpy_extractor (PyObject * X, bool allow_copy) {
-   using numpy_t = numpy_to_C_type<std14::remove_const_t<ValueType>>;
-   numpy_obj = numpy_extractor_impl(X, allow_copy, numpy_t::name(), numpy_t::arraytype, IndexMapType::rank, &lengths[0],
-                                    &strides[0], sizeof(ValueType));
-  }
+ template<typename T, int Rank> struct numpy_extractor {
+   using numpy_t = numpy_to_C_type<T>;
 
-  ~numpy_extractor(){ Py_DECREF(numpy_obj);}
+   numpy_extractor() = default;
 
-  IndexMapType indexmap() const { return IndexMapType (lengths,strides,0); }
+   // is X convertible to array_view<T, Rank> ? 
+   bool is_convertible_to_view(PyObject* X) const { 
+     return numpy_convertible_to_view_impl(X, numpy_t::name(), numpy_t::arraytype, Rank);
+   } 
 
-  storages::shared_block<ValueType> storage() const { return storages::shared_block<ValueType> (numpy_obj,true); }
-  // true means borrowed : object is owned by this class, which will decref it in case of exception ...
+   // true if ok
+   bool extract(PyObject* X, bool enforce_copy) {  
+    std::tie(numpy_obj, error) = numpy_extractor_impl(X, enforce_copy, numpy_t::name(), numpy_t::arraytype, Rank, &lengths[0], &strides[0], sizeof(T));
+    return bool(numpy_obj);
+   } 
 
-  private:
-  PyObject * numpy_obj;
-  mini_vector<size_t,IndexMapType::rank> lengths;
-  mini_vector<std::ptrdiff_t,IndexMapType::rank> strides;
+  cpp2py::pyref numpy_obj;
+  std::string error = " ";
+  mini_vector<size_t, Rank> lengths;
+  mini_vector<std::ptrdiff_t, Rank> strides;
  };
+
 }}}
 #endif
 #endif
