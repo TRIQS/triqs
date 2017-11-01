@@ -49,3 +49,7 @@ add_subdirectory(statistics)
 add_subdirectory(sumk)
 add_subdirectory(utility)
 
+# backwd compatibility
+add_subdirectory(applications)
+
+
