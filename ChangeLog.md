@@ -1,6 +1,20 @@
 Version 1.5
 -----------
 
+* Changes in installation and cmake files
+...........................................
+
+- To port an application's cmakelists:
+
+ - The best is to look at a complete example, ctint tutorial or cthyb.
+ - Import TRIQS AND Cpp2Py which are 2 separate packages now. 
+ - We now use modern cmake techniques, i.e. imported targets
+ - Simply link your target to triqs (imported target). Remove TRIQS_CXX_DEFINITIONS TRIQS_INCLUDE_ALL and co.
+ - Obsolete : TRIQSTest are deprecated. Cf cthyb and ctint tutorial for examples.
+ - build_pytriqs is also removed. Cf test/python in cthyb to set up the environment variable properly
+
+
+
 * New Python interface for Gf.
 
 EXPLAIN
