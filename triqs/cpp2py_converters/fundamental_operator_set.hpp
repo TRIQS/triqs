@@ -1,5 +1,4 @@
 #pragma once
-#include "./generics.hpp"
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 
 namespace cpp2py {
