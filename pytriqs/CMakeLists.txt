@@ -49,7 +49,8 @@ add_subdirectory(statistics)
 add_subdirectory(sumk)
 add_subdirectory(utility)
 
+add_subdirectory(atom_diag)
+
 # backwd compatibility
 add_subdirectory(applications)
-
 
