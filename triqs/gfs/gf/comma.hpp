@@ -56,7 +56,7 @@ namespace triqs {
     // _tuple absorbs anything
     template <typename X, typename... T, size_t... Is>
     FORCEINLINE _tuple<T..., std::decay_t<X>> __comma_impl(_tuple<T...> &&tu, X &&x, std14::index_sequence<Is...>) {
-      return {{std::get<Is>(std::move(tu._t))..., std::forward<X>(x)}};
+      return {std::make_tuple(std::get<Is>(std::move(tu._t))..., std::forward<X>(x))};
     }
 
     template <typename X, typename... T> FORCEINLINE _tuple<T..., std::decay_t<X>> operator,(_tuple<T...> &&t, X &&x) {
