@@ -76,13 +76,13 @@ namespace gfs {
    return std::complex<double>{x} * std::complex<double>{y}; 
  }
 
- template<typename T> bool operator<(matsubara_freq const &x, T const &y) { return (x.n <y);}
- template<typename T> bool operator<(T const &x, matsubara_freq const &y) { return (x <y.n);}
- inline bool operator<(matsubara_freq const &x, matsubara_freq const &y) { return (x.n<y.n);}
+ //template<typename T> bool operator<(matsubara_freq const &x, T const &y) { return (x.n <y);}
+ //template<typename T> bool operator<(T const &x, matsubara_freq const &y) { return (x <y.n);}
+ //inline bool operator<(matsubara_freq const &x, matsubara_freq const &y) { return (x.n<y.n);}
  
- template<typename T> bool operator>(matsubara_freq const &x, T const &y) { return (x.n>y);}
- template<typename T> bool operator>(T const &x, matsubara_freq const &y) { return (x>y.n);}
- inline bool operator>(matsubara_freq const &x, matsubara_freq const &y) { return (x.n>y.n);}
+ //template<typename T> bool operator>(matsubara_freq const &x, T const &y) { return (x.n>y);}
+ //template<typename T> bool operator>(T const &x, matsubara_freq const &y) { return (x>y.n);}
+ //inline bool operator>(matsubara_freq const &x, matsubara_freq const &y) { return (x.n>y.n);}
 
  //---------------------------------------------------------------------------------------------------------
  /// The domain
