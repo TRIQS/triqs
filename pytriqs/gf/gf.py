@@ -68,6 +68,10 @@ class AddMethod(type):
         for a in [f for f in gf_fnt.__dict__.values() if callable(f)]:
             setattr(cls, a.__name__, add_method_helper(a,cls)) 
 
+class Idx:
+    def __init__(self, *x):
+        self.idx = x[0] if len(x)==1 else x
+
 class Gf(object):
     __metaclass__ = AddMethod
     """
@@ -186,7 +190,7 @@ class Gf(object):
             assert (singularity is None) or (_singularity_maker is None), "Internal error"
             self.singularity = singularity or (_singularity_maker(self) if _singularity_maker else None)
             # Overrule in this case, add an empty tail
-            if self._singularity is None and isinstance(self._mesh, (meshes.MeshImFreq, meshes.MeshReFreq, meshes.MeshImTime, meshes.MeshReTime)):
+            if self._singularity is None and self._target_rank ==2 and isinstance(self._mesh, (meshes.MeshImFreq, meshes.MeshReFreq, meshes.MeshImTime, meshes.MeshReTime)):
                 self._singularity = singularities.TailGf(*self._target_shape)
                 self._singularity.reset(-2)
 
@@ -196,8 +200,11 @@ class Gf(object):
             # agree with the wrapped_aux module, it is of only internal use
             s = '_x_'.join( m.__class__.__name__[4:] for m in self.mesh._mlist) if isinstance(mesh, MeshProduct) else self._mesh.__class__.__name__[4:]
             proxyname = 'CallProxy%s_%s%s'%(s, self.target_rank,'_R' if data.dtype == np.float64 else '') if not tail_valued else None
-            self._c_proxy = all_call_proxies.get(proxyname, CallProxyNone)(self)
-            
+            try:
+                self._c_proxy = all_call_proxies.get(proxyname, CallProxyNone)(self)
+            except:
+                self._c_proxy = None
+
             # check all invariants. Debug.
             self.__check_invariants()
 
@@ -322,26 +329,27 @@ class Gf(object):
 
         # Only one argument. Must be a mesh point
         if not isinstance(key, tuple):
-            assert isinstance(key, MeshPoint)
-            return self.data[key.linear_index]
+            assert isinstance(key, (MeshPoint, Idx))
+            return self.data[key.linear_index if isinstance(key, MeshPoint) else self._mesh.index_to_linear(key.idx)]
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
-        if all(isinstance(x, MeshPoint) for x in key):
+        if all(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
-            return self.data[tuple(x.linear_index for x in key)]
+            return self.data[tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) for x,m in itertools.izip(key,self._mesh._mlist))]
 
         # If any argument is a MeshPoint, we are slicing the mesh or evaluating
-        elif any(isinstance(x, MeshPoint) for x in key):
+        elif any(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [[ ]]. Expected %s, got %s"%(self.rank, len(key))
+            assert all(isinstance(x, (MeshPoint, Idx, slice)) for x in key), "Invalid accessor of Green function, please combine only MeshPoints, Idx and slice"
             assert self.rank > 1, "Internal error : impossible case" # here all == any for one argument
             mlist = self._mesh._mlist 
             for x in key:
                 if isinstance(x, slice) and x != self._full_slice: raise NotImplementedError, "Partial slice of the mesh not implemented" 
             # slice the data 
-            k = [x.linear_index if isinstance(x, MeshPoint) else x for x in key] + self._target_rank * [slice(0, None)]
+            k = [x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) if isinstance(x, Idx) else x for x,m in itertools.izip(key,mlist)] + self._target_rank * [slice(0, None)]
             dat = self._data[k]
             # list of the remaining lists
-            mlist = [m for i,m in itertools.ifilter(lambda tup_im : not isinstance(tup_im[0], MeshPoint), itertools.izip(key, mlist))]
+            mlist = [m for i,m in itertools.ifilter(lambda tup_im : not isinstance(tup_im[0], (MeshPoint, Idx)), itertools.izip(key, mlist))]
             assert len(mlist) > 0, "Internal error" 
             mesh = MeshProduct(*mlist) if len(mlist)>1 else mlist[0]
             sing = None # FIXME : slice the singularity, in one case
@@ -369,17 +377,22 @@ class Gf(object):
             r.__check_invariants()
             return r
 
+        # All other cases are an invalid combination
+        else:
+            raise RuntimeError, "Invalid accessor of Green function"
+
+
     def __setitem__(self, key, val):
 
         # Only one argument. Must be a mesh point
         if not isinstance(key, tuple):
-            assert isinstance(key, MeshPoint)
-            self.data[key.linear_index] = val
+            assert isinstance(key, (MeshPoint, Idx))
+            self.data[key.linear_index if isinstance(key, MeshPoint) else self._mesh.index_to_linear(key.idx)] = val
 
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
-        elif all(isinstance(x, MeshPoint) for x in key):
+        elif all(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
-            self.data[tuple(x.linear_index for x in key)] = val
+            self.data[tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) for x,m in itertools.izip(key,self._mesh._mlist))] = val
 
         else:
             self[key] << val
@@ -427,6 +440,7 @@ class Gf(object):
     # -------------- call -------------------------------------
     
     def __call__(self, args) : 
+        assert self._c_proxy, " no proxy"
         return self._c_proxy(args) 
 
     # -------------- Various operations -------------------------------------
