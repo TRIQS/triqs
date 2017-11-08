@@ -33,6 +33,9 @@ set(CPP_NAMESPACES -N triqs::det_manip -N triqs::mc_tools)
 
 # get include paths for the triqs target
 get_property(TRIQS_INCLUDE_DIRS TARGET triqs PROPERTY INCLUDE_DIRECTORIES)
+foreach(I ${TRIQS_INCLUDE_DIRS})
+ set (INC  ${INC} -I ${I})
+endforeach()
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs 
 		   COMMAND c++2rst ${CPP_NAMESPACES} 
@@ -40,7 +43,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs
 		   --output_directory ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
 		   --includes ${CMAKE_SOURCE_DIR}/ 
 		   --includes ${CMAKE_BINARY_DIR}/Config 
-		   --includes ${TRIQS_INCLUDE_DIRS}
+		   ${INC}
 		   --cxxflags "-std=c++14 -DTRIQS_BUILDING_LIBRARY" 
 		   2>&1 > cpp2rst.log
 		   VERBATIM)
