@@ -64,7 +64,7 @@ endif()
 
 option(CHECK_MEMORY "Turn on memory check" OFF)
 if (CHECK_MEMORY)
-target_compile_options(triqs PUBLIC  " -DTRIQS_ARRAYS_DEBUG_COUNT_MEMORY -DTRIQS_ARRAYS_CHECK_WEAK_REFS")
+target_compile_definitions(triqs PUBLIC TRIQS_ARRAYS_DEBUG_COUNT_MEMORY TRIQS_ARRAYS_CHECK_WEAK_REFS)
 endif()
 
 # ---------------------------------
@@ -126,10 +126,10 @@ target_include_directories(triqs SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 message( STATUS "-------- Misc -------------")
 
 # should be move to config.h ?
-try_compile(_max_align_t_is_correct ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/max_align_t_test.cpp COMPILE_DEFINITIONS  -std=c++11 )
+try_compile(_max_align_t_is_correct ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/max_align_t_test.cpp COMPILE_DEFINITIONS -std=c++11)
 if (NOT _max_align_t_is_correct)
  MESSAGE(STATUS "Adding workaround for max_align_t bug (in clang normally)")
- target_compile_options(triqs PUBLIC TRIQS_ADD_MAX_ALIGN_T_WORKAROUND)
+ target_compile_definitions(triqs PUBLIC TRIQS_ADD_MAX_ALIGN_T_WORKAROUND)
 else ()
   MESSAGE(STATUS "Checked max_align_t. No workaround needed")
 endif()
@@ -140,12 +140,12 @@ endif()
 
 # should be move to config.h ?
 
-try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS  -std=c++14 )
+try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS -std=c++17)
 if (NOT has_optional_header)
  message(STATUS "Using <experimental/optional> header instead of <optional>")
 else ()
  message(STATUS "<optional> header is available. No workaround needed")
- target_compile_options(triqs PUBLIC -DHAS_OPTIONAL_HEADER)
+ target_compile_definitions(triqs PUBLIC HAS_OPTIONAL_HEADER)
 endif()
 
 # ---------------------------------
