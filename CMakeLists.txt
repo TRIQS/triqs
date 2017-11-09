@@ -271,3 +271,9 @@ MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/triqsvars.sh          "
 MESSAGE(STATUS "*                                                              ") 
 MESSAGE(STATUS "*   to set up the environment variables                        ") 
 MESSAGE(STATUS "***************************************************************")
+
+#--------------------------------------------------------
+# Process and install modulefile
+#--------------------------------------------------------
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqs.modulefile.in ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile DESTINATION ${CMAKE_INSTALL_PREFIX}/share)
