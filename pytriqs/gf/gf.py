@@ -377,11 +377,6 @@ class Gf(object):
             r.__check_invariants()
             return r
 
-        # All other cases are an invalid combination
-        else:
-            raise RuntimeError, "Invalid accessor of Green function"
-
-
     def __setitem__(self, key, val):
 
         # Only one argument. Must be a mesh point
