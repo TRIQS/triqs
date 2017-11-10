@@ -1,4 +1,6 @@
 #%Module1.0
+#
+# To be installed as ${MODULEPATH}/triqs/@TRIQS_VERSION@
 
 set     name        triqs
 set     version     @TRIQS_VERSION@
@@ -17,6 +19,10 @@ proc ModulesHelp { } {
     puts stderr "Version:     $version"
     puts stderr "Git hash:    $git_hash"
 }
+
+# You may need to edit the next line if cpp2py module is installed
+# under a different name in your setup.
+prereq cpp2py/@CPP2PY_VERSION@
 
 # Only one version of triqs can be loaded at a time
 conflict $name
