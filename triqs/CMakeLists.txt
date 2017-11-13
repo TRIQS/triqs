@@ -46,6 +46,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  target_compile_definitions(triqs PUBLIC TRIQS_WORKAROUND_INTEL_COMPILER_BUGS BOOST_MATH_DISABLE_STD_FPCLASSIFY)
 endif() 
 
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+ target_compile_definitions(triqs PRIVATE TRIQS_DEBUG)
+endif()
+
 # enforce color diagnostics ?
 # gcc : -fdiagnostics-color
 # clang :  -fcolor-diagnostics 

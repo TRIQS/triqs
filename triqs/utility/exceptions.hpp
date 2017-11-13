@@ -26,6 +26,7 @@
 #include <exception>
 #include <string>
 #include <sstream>
+#include <stdlib.h>
 
 #define TRIQS_ERROR(CLASS,NAME) throw CLASS()<<".. Triqs "<<NAME<<" at "<<__FILE__<< " : "<<__LINE__<<"\n\n"
 #define TRIQS_RUNTIME_ERROR TRIQS_ERROR(triqs::runtime_error,"runtime error")
@@ -48,9 +49,7 @@ namespace triqs {
    std::stringstream out;
    out << acc.str() << "\n.. Error occurred on node ";
    if (mpi::is_initialized()) out << mpi::communicator().rank() << "\n";
-#ifdef TRIQS_EXCEPTION_SHOW_CPP_TRACE
-   out << ".. C++ trace is : " << trace() << "\n";
-#endif
+   if (getenv("TRIQS_SHOW_EXCEPTION_TRACE")) out << ".. C++ trace is : " << trace() << "\n";
    _what = out.str();
    return _what.c_str();
   }

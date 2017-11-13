@@ -20,12 +20,6 @@
  ******************************************************************************/
 #pragma once
 
-// general debug macro
-#ifdef TRIQS_DEBUG
-#define TRIQS_EXCEPTION_SHOW_CPP_TRACE
-#define TRIQS_ARRAYS_DEBUG
-#endif
-
 #if defined __GNUC__  ||  defined  __clang__
 #define restrict __restrict__
 #endif

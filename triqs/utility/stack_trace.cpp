@@ -26,8 +26,6 @@
 #define TRIQS_TRACE_MAX_FRAMES 50
 #endif
 
-#ifdef __GNUC__
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
@@ -70,14 +68,13 @@ namespace triqs { namespace utility {
 #else
  std::string stack_trace() {
   std::ostringstream buffer;
-
   void * stack[TRIQS_TRACE_MAX_FRAMES + 1];
   std::size_t depth = backtrace(stack, TRIQS_TRACE_MAX_FRAMES + 1);
   if (!depth)
    buffer << "  empty  " << std::endl;
   else {
    char * * symbols = backtrace_symbols(stack, depth);
-   for (std::size_t i = 1; i < depth; ++i) {
+   for (std::size_t i = 0; i < depth; ++i) {
     std::string symbol = symbols[i];
     std::istringstream iss(symbol);
     std::vector<std::string> strs{std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}}; 
@@ -94,14 +91,5 @@ namespace triqs { namespace utility {
 #endif
 
 }}
-#else
-
-namespace triqs { namespace utility {
-
- std::string stack_trace() { return std::string("stacktrace only available in gcc");}
-
-}}
-
-#endif
 
 

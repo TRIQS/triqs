@@ -1,5 +1,3 @@
-//#define TRIQS_EXCEPTION_SHOW_CPP_TRACE
-//#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include "./fit_tail.hpp"
 namespace triqs { namespace gfs {  
 

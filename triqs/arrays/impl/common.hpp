@@ -44,7 +44,8 @@ template <char C> using char_ = std::integral_constant<char, C>;
 
 namespace boost { namespace serialization { class access;}}
 
-#ifdef TRIQS_ARRAYS_DEBUG
+#ifdef TRIQS_DEBUG
+#define TRIQS_ARRAYS_DEBUG
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #endif
 
