@@ -84,6 +84,7 @@ m.add_property(name = "beta",
 m.add_property(name = "statistic",
                getter = cfunction(calling_pattern="statistic_enum result = self_c.domain().statistic", signature = "statistic_enum()"),
                doc = "Statistic")
+m.add_call(signature = "dcomplex (long n)", calling_pattern = " auto result = dcomplex{0, (2*n + self_c.domain().statistic)*M_PI/self_c.domain().beta}", doc = "")
 
 module.add_class(m)
 
