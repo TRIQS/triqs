@@ -29,17 +29,25 @@ execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY
 # Generate C++ doc with c++2rst
 # ---------------------------------
 # list of namespaces selected by c++2rst
-set(NS -N triqs::det_manip -N triqs::mc_tools)
+set(CPP_NAMESPACES -N triqs::det_manip -N triqs::mc_tools)
+
+# get include paths for the triqs target
+get_property(TRIQS_INCLUDE_DIRS TARGET triqs PROPERTY INCLUDE_DIRECTORIES)
+foreach(I ${TRIQS_INCLUDE_DIRS})
+ set (INC  ${INC} -I ${I})
+endforeach()
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs 
-		   COMMAND c++2rst ${NS} 
+		   COMMAND c++2rst ${CPP_NAMESPACES} 
 		   ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp 
 		   --output_directory ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
 		   --includes ${CMAKE_SOURCE_DIR}/ 
 		   --includes ${CMAKE_BINARY_DIR}/Config 
+		   ${INC}
 		   --cxxflags "-std=c++14 -DTRIQS_BUILDING_LIBRARY" 
 		   2>&1 > cpp2rst.log
-		   VERBATIM) 
+		   VERBATIM)
+
 add_custom_target(docs_cpp2rst DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log) 
 add_dependencies(docs_cpp2rst triqs) 
 
