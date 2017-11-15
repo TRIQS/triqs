@@ -28,8 +28,8 @@ namespace triqs::utility {
 
   std::string stack_trace() {
 
-    std::string cmd = "lldb --batch -k bt -p " + std::to_string(getpid()) + " 2>&1";
-    //std::string cmd = "lldb --batch -n -ex bt -p " + std::to_string(getpid()) + " 2>&1";
+    //std::string cmd = "lldb --batch -k bt -p " + std::to_string(getpid()) + " 2>&1";
+    std::string cmd = "gdb --batch -n -ex bt -p " + std::to_string(getpid()) + " 2>&1";
 
     const int max_buffer = 256;
     char buffer2[max_buffer];
