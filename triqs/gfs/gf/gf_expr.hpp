@@ -28,6 +28,8 @@ namespace gfs {
 
  namespace gfs_expr_tools {
 
+  using no_mesh_t = void *;
+
   // a wrapper for scalars
   template <typename S> struct scalar_wrap {
    using variable_t = void;
@@ -35,26 +37,51 @@ namespace gfs {
    S s;
    template <typename T> scalar_wrap(T &&x) : s(std::forward<T>(x)) {}
    S singularity() const { return s; }
+   no_mesh_t mesh() const { return {};} // Fake for combine_mesh
    template <typename KeyType> S operator[](KeyType &&key) const { return s; }
    template <typename... Args> inline S operator()(Args &&... args) const { return s; }
    friend std::ostream &operator<<(std::ostream &sout, scalar_wrap const &expr) { return sout << expr.s; }
   };
 
-  // Combine the two meshes of LHS and RHS : need to specialize where there is a scalar
-  struct combine_mesh {
-   template <typename L, typename R> auto operator()(L &&l, R &&r) const {
-    if (!(l.mesh() == r.mesh()))
-     TRIQS_RUNTIME_ERROR << "Mesh mismatch: in Green Function Expression" << l.mesh() << " vs " << r.mesh();
-    return std::forward<L>(l).mesh();
-   }
-   template <typename S, typename R> decltype(auto) operator()(scalar_wrap<S> const &, R &&r) const {
-    return std::forward<R>(r).mesh();
-   }
-   template <typename S, typename L> decltype(auto) operator()(L &&l, scalar_wrap<S> const &) const {
-    return std::forward<L>(l).mesh();
-   }
-  };
+  // a function that computes the mesh of  lhs X rhs, where X is +,-,*,/
+  template<typename Tag, typename M> M const & combine_mesh(M const & m, no_mesh_t) {return m;}
+  template<typename Tag, typename M> M const & combine_mesh(no_mesh_t, M const & m) {return m;}
+  template<typename Tag, typename T> gf_mesh<T> const & combine_mesh(gf_mesh<T>  const &l, gf_mesh<T> const & r) {
+     if (!(l == r)) 
+     TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the meshes of the 2 operands should be equal" << l << " vs " << r;
+     return l;
+  }
+  // special case for imtime
+   template<typename Tag> gf_mesh<imtime> combine_mesh(gf_mesh<imtime> const &l, gf_mesh<imtime> const & r) { 
+   
+   // FIXME C++17 constexpr   
+   if (std::is_same<Tag, utility::tags::multiplies>::value or std::is_same<Tag, utility::tags::divides>::value) { 
+    bool eq =  (std::abs(l.domain().beta - r.domain().beta) < 1.e-15) and (l.size() == r.size());
+    if (!eq) 
+     TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the meshes of the 2 operands should be equal" << l << " vs " << r;
 
+    // compute the stat of the product, divide.
+    int s = (int(l.domain().statistic) + int(r.domain().statistic))%2;
+    statistic_enum stat = (s ==0 ? Boson : Fermion);
+    return gf_mesh<imtime> {{l.domain().beta, stat}, l.size()};
+   }
+   else {
+     if (!(l == r)) 
+     TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the meshes of the 2 operands should be equal" << l << " vs " << r;
+     return l;
+   }
+  }
+
+  // special case of cartesian_product of meshes
+  namespace details { 
+   template<typename Tag, typename ... M, size_t ...Is> gf_mesh<cartesian_product<M...>> combine_mesh_impl_cp(std::index_sequence<Is...>, gf_mesh<cartesian_product<M...>> const &l, gf_mesh<cartesian_product<M...>> const & r) { 
+    return {combine_mesh<Tag>(std::get<Is>(l), std::get<Is>(r))...};
+   }
+  }
+  template<typename Tag, typename ... M> gf_mesh<cartesian_product<M...>> combine_mesh(gf_mesh<cartesian_product<M...>> const &l, gf_mesh<cartesian_product<M...>> const & r) { 
+     return details::combine_mesh_impl_cp<Tag>(std::index_sequence_for<M...>{}, l,r);
+  }
+   
   // Same thing to get the data shape
   // NB : could be unified to one combine<F>, where F is a functor, but an easy usage requires polymorphic lambda ...
   struct combine_shape {
@@ -105,7 +132,7 @@ namespace gfs {
   R r;
   template <typename LL, typename RR> gf_expr(LL &&l_, RR &&r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
 
-  decltype(auto) mesh() const { return gfs_expr_tools::combine_mesh()(l, r); }
+  decltype(auto) mesh() const { return gfs_expr_tools::combine_mesh<Tag>(l.mesh(), r.mesh()); }
   decltype(auto) singularity() const { return utility::operation<Tag>()(l.singularity(), r.singularity()); }
   auto data_shape() const { return gfs_expr_tools::combine_shape()(l, r); }
   decltype(auto) indices() const { return gfs_expr_tools::combine_indices()(l, r); }

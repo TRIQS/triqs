@@ -18,7 +18,7 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-import itertools, warnings
+import itertools, warnings, numbers
 from functools import reduce # Valid in Python 2.6+, required in Python 3
 import operator
 import numpy as np
@@ -33,6 +33,7 @@ import plot
 import gf_fnt, wrapped_aux
 from singularities import GfIndices
 from mesh_point import MeshPoint
+from operator import mul
 
 # list of all the meshes
 all_meshes = (MeshProduct,) + tuple(c for c in meshes.__dict__.values() if isinstance(c, type) and c.__name__.startswith('Mesh'))
@@ -441,6 +442,8 @@ class Gf(object):
     def __iadd__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) + arg
         if isinstance(arg, Gf):
+           assert type(self.mesh) == type(arg.mesh), "Can not add two Gf with meshes of different type"
+           assert self.mesh == arg.mesh, "Can not add two Gf with different mesh"
            self._data += arg._data 
            if self._singularity and arg._singularity : self._singularity += arg._singularity
            if not self._singularity and arg._singularity : self._singularity = arg._singularity.copy()
@@ -461,6 +464,8 @@ class Gf(object):
     def __isub__(self,arg):
        if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) - arg
        if isinstance(arg, Gf):
+           assert type(self.mesh) == type(arg.mesh), "Can not subtract two Gf with meshes of different type"
+           assert self.mesh == arg.mesh, "Can not subtract two Gf with different mesh"
            self._data -= arg._data 
            if self._singularity and arg._singularity : self._singularity -= arg._singularity
            if not self._singularity and arg._singularity : self._singularity = - arg._singularity.copy()
@@ -480,33 +485,70 @@ class Gf(object):
         return c
 
     # ---------- Multiplication
+    # Naive implementation of G1 *= G2 without checks
+    def __imul__impl(self,arg): # need to separate for the ImTime case
+
+        # reshaping the data. Smash the mesh indices into one
+        rh = lambda d : np.reshape(d, (reduce(mul, d.shape[:self.rank]),) + (d.shape[self.rank+1:]))
+        d_self =  rh(self.data)
+        d_args =  rh(arg.data)
+        if self.target_rank == 2:
+            for n in range (d_self.shape[0]):
+               d_self[n] = np.dot(d_self[n], d_args[n]) # put to C if too slow.
+        else:
+            for n in range (self.data.shape[0]):
+               d_self[n] = d_self[n] * d_args[n] # put to C if too slow.
+
+        if isinstance(self.mesh, (meshes.MeshImFreq, meshes.MeshReFreq)):
+            if self._singularity and arg._singularity : self._singularity *= arg._singularity
+            if not self._singularity and arg._singularity : self._singularity = arg._singularity.copy()
+            if self._singularity and not arg._singularity : self._singularity = None
+        else:
+            if self.tail : self.tail.reset(-2) # Can not compute the tail, so it is undefined.
+    
     def __imul__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) * arg
         # If arg is a Gf
         if isinstance(arg, Gf):
             assert type(self.mesh) == type(arg.mesh), "Can not multiply two Gf with meshes of different type"
-            assert self.mesh == arg.mesh, "Can not multiply two Gf with different mesh"
-            if self.target_rank == 2:
-                for n in range (self.data.shape[0]):
-                   self.data[n] = np.dot(self.data[n], arg.data[n]) # put to C if too slow.
-            else:
-                for n in range (self.data.shape[0]):
-                   self.data[n] = self.data[n] * arg.data[n] # put to C if too slow.
-            if isinstance(self.mesh, (meshes.MeshImFreq, meshes.MeshReFreq)):
-                if self._singularity and arg._singularity : self._singularity *= arg._singularity
-                if not self._singularity and arg._singularity : self._singularity = arg._singularity.copy()
-                if self._singularity and not arg._singularity : self._singularity = None
-            else:
-                self.tail.reset(-2) # Can not compute the tail, so it is undefined.
-         # arg is not a Gf
-        else:
+            assert self.mesh == arg.mesh, "Can not use in-place multiplication for two Gf with different mesh"
+            self.__imul__impl(arg)
+        elif isinstance(arg, numbers.Number):
             self._data[:] *= arg
             if self._singularity : self._singularity *= arg
+        else:
+            assert False, "Invalid operand type for Gf in-place multiplication"
         return self
+    
+    @staticmethod
+    def _combine_mesh_mul(l, r):
+        """ Apply the Fermion/Boson rules for ImTime mesh, and recursively for MeshProduct"""
+        assert type(l) == type(r), "Can not multiply two Gf with meshes of different type"
+        
+        if type(l) is MeshProduct:
+            return MeshProduct(*[Gf._combine_mesh_mul(l,r) for (l,r) in zip(l.components, r.components)])
+
+        if not type(l) is meshes.MeshImTime: #regular case
+            assert l==r, "Can not multiply two Gf with different mesh"
+            return l.copy()
+        else:
+            assert abs(l.beta-r.beta) < 1.e-15 and len(l)== len(r), "Can not multiply two Gf with different mesh"
+            return meshes.MeshImTime(l.beta, 'Boson' if l.statistic == r.statistic else 'Fermion', len(l)) 
 
     def __mul__(self,y):
-        c = self.copy()
-        c *= y
+        if isinstance(y, Gf):
+            # make a copy, but special treatment of the mesh in the Imtime case.
+            c = Gf(mesh = Gf._combine_mesh_mul(self._mesh, y.mesh),
+                   data = self._data.copy(), 
+                   singularity = self._singularity.copy() if self._singularity else None,
+                   indices = self._indices.copy(), 
+                   name = self.name)
+            c.__imul__impl(y)
+        elif isinstance(y, numbers.Number):
+            c = self.copy()
+            c*= y
+        else:
+            assert False, "Invalid operand type for Gf multiplication"
         return c
 
     def __rmul__(self,x): return self.__mul__(x)

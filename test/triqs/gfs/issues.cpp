@@ -64,6 +64,8 @@ TEST(Gf, Issue276) {
 
 // ----------------------------------------------------------
 
+// Shall we reimplement this or too strict ?
+/*
 TEST(Gf, Issue285) {
  triqs::clef::placeholder<0> om_;
  auto G  = gf<imfreq>{{1, Fermion, 3, matsubara_mesh_opt::positive_frequencies_only}, {1, 1}};
@@ -76,7 +78,7 @@ TEST(Gf, Issue285) {
   EXPECT_THROW(G[w](0, 0), triqs::runtime_error);
  }
 }
-
+*/
 // ----------------------------------------------------------
 
 TEST(Gf, Issue319) {

@@ -126,7 +126,7 @@ namespace triqs {
       __tail() {
         mini_vector<int, T::rank + 1> sh;
         sh[0] = _size();
-        for (int u = 0; u < T::rank; ++u) sh[u + 1]= 1;
+        for (int u = 0; u < T::rank; ++u) sh[u + 1] = 1;
         _data.resize(sh);
       }
 
@@ -1198,14 +1198,14 @@ namespace triqs {
     template <typename A, typename B>
     std14::enable_if_t<is_scalar_or_array_v<A> and is_tail_v<B>, typename B::regular_type> operator*(A const &a, B const &b) {
       typename B::regular_type res = b;
-      for (int n = b.order_min(); n <= b.order_max(); ++n) res(n)= a * b(n);
+      for (int n = b.order_min(); n <= b.order_max(); ++n) res(n) = a * b(n);
       return res;
     }
 
     template <typename A, typename B>
     std14::enable_if_t<is_tail_v<A> and is_scalar_or_array_v<B>, typename A::regular_type> operator*(A const &a, B const &b) {
       typename A::regular_type res = a;
-      for (int n = a.order_min(); n <= a.order_max(); ++n) res(n)= a(n) * b;
+      for (int n = a.order_min(); n <= a.order_max(); ++n) res(n) = a(n) * b;
       return res;
     }
 

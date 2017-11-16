@@ -45,14 +45,14 @@ namespace gfs {
     * @param d domain
     * @param n_time_slices number of time slices
     */
-  gf_mesh(matsubara_time_domain d, int n_time_slices) : B(d, 0, d.beta, n_time_slices) {}
+  gf_mesh(matsubara_time_domain d, long n_time_slices) : B(d, 0, d.beta, n_time_slices) {}
   ///constructor
   /**
     * @param beta inverse temperature
     * @param S statistic (Fermion/Boson)
     * @param n_time_slices number of time slices
     */
-  gf_mesh(double beta, statistic_enum S, int n_time_slices) : gf_mesh({beta, S}, n_time_slices) {}
+  gf_mesh(double beta, statistic_enum S, long n_time_slices) : gf_mesh({beta, S}, n_time_slices) {}
 
   /// For imtime the point is always in the mesh, since we use anti-periodicity or periodicity. Needed for cartesian product.
   bool is_within_boundary(double x) const { return true;}
@@ -98,6 +98,7 @@ namespace gfs {
    h5_read_impl(fg, subgroup_name, m, "MeshImTime");
   }   
  };
+
 
  //-------------------------------------------------------
 

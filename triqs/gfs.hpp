@@ -26,6 +26,9 @@
 // the meshes 
 #include "./gfs/meshes.hpp"
 
+// debug
+//#include "./gfs/debug.hpp"
+
 // the targets
 #include "./gfs/gf/targets.hpp"
 
@@ -33,11 +36,13 @@
 #include "./gfs/gf/gf.hxx"
 #include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
-#include "./gfs/gf/gf_expr.hpp"
 
 // multivar 
 #include "./gfs/gf/product.hpp"
 #include "./gfs/gf/partial_eval.hpp"
+
+// expression template
+#include "./gfs/gf/gf_expr.hpp"
 
 // evaluator
 #include "./gfs/evaluator.hpp"
