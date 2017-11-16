@@ -40,7 +40,7 @@ namespace triqs { namespace arrays {
  template<int Rank, class T, class = std17::void_t<>> struct get_memory_layout {
    static auto invoke( T const & ){ return memory_layout_t<Rank>{}; }
  };
- 
+
  template<int Rank, class T> struct get_memory_layout<Rank, T, std17::void_t<decltype(std::declval<T>().memory_layout())>> {
    static auto invoke( T const & x ){ return x.memory_layout(); }
  };
@@ -76,7 +76,7 @@ namespace triqs { namespace arrays {
   template <typename... Args> FORCEINLINE void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
  };
 
- namespace tags { 
+ namespace tags {
  struct _with_lambda_init {};
  }
 
@@ -116,7 +116,7 @@ namespace triqs { namespace arrays {
       storage_ = StorageType(indexmap_.domain().number_of_elements());
      }
 
-  
+
    template<typename InitLambda>
     explicit indexmap_storage_pair(tags::_with_lambda_init, indexmap_type IM, InitLambda && lambda): indexmap_(std::move(IM)), storage_() {
       storage_ = StorageType(indexmap_.domain().number_of_elements(), storages::tags::_allocate_only{}); // DO NOT construct the element of the array
@@ -170,6 +170,7 @@ namespace triqs { namespace arrays {
 
     auto const & memory_layout() const { return indexmap_.memory_layout(); }
     indexmap_type const & indexmap() const {return indexmap_;}
+    indexmap_type & indexmap() {return indexmap_;}
     storage_type const & storage() const {return storage_;}
     storage_type & storage() {return storage_;}
 
@@ -217,17 +218,17 @@ namespace triqs { namespace arrays {
      , value_type const &>
      operator()(Args const & ... args) const & { return storage_[indexmap_(args...)]; }
 
-    // && : return a & iif it is a non const view 
+    // && : return a & iif it is a non const view
     template<typename... Args>
      std14::enable_if_t<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && (!IsConst&&IsView)
      , value_type &>
      operator()(Args const & ... args) && {
-      // add here a security check in case it is a view, unique. For a regular type, move the result... 
+      // add here a security check in case it is a view, unique. For a regular type, move the result...
 #ifdef TRIQS_ARRAYS_DEBUG
       if (!storage_type::is_weak && storage_.is_unique()) TRIQS_RUNTIME_ERROR <<"triqs::array. Attempting to call an rvalue unique view ...";
 #endif
-      return storage_[indexmap_(args...)]; 
+      return storage_[indexmap_(args...)];
      }
 
     // && return a value if this is not a view (regular class) or it is a const_view
@@ -270,7 +271,7 @@ namespace triqs { namespace arrays {
      >::type // enable_if
      operator()(Args const & ... args) && {
       //std::cerr  << "slicing a temporary"<< this->storage().is_weak<< result_of_call_as_view<true,true,Args...>::type::storage_type::is_weak << std::endl;
-      return typename result_of_call_as_view<false,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), std::move(storage())); 
+      return typename result_of_call_as_view<false,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), std::move(storage()));
      }
 
     /// Equivalent to make_view
@@ -360,6 +361,20 @@ namespace triqs { namespace arrays {
      return out;
     }
   };// end class
+
+template< typename A>
+ENABLE_IF(is_amv_view_class<A>)
+set_mem_layout_or_check_if_view( A & a, memory_layout_t<A::domain_type::rank> const & memory_layout) {
+  if (a.memory_layout() != memory_layout)
+      TRIQS_RUNTIME_ERROR << "Memory layout mismatch : view class memory layout = " << a.memory_layout()
+                          << " expected " << memory_layout;
+}
+
+template< typename A>
+ENABLE_IF(is_amv_value_class<A>)
+set_mem_layout_or_check_if_view( A & a, memory_layout_t<A::domain_type::rank> const & memory_layout) {
+  if (a.memory_layout() != memory_layout) a.indexmap() = typename A::indexmap_type(a.domain(), memory_layout);
+}
 
 }}//namespace triqs::arrays
 
