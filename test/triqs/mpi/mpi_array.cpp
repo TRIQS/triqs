@@ -107,5 +107,23 @@ TEST(Arrays, MPIReduceMAX) {
  EXPECT_ARRAY_EQ(r1, b1);
  EXPECT_ARRAY_EQ(r2, b2);
 }
+
+// test reduce MAX, MIN
+TEST(Arrays, transpose_bcast) {
+
+ mpi::communicator world;
+
+ matrix<dcomplex> A = {{1, 2, 3},
+                       {4, 5, 6}};
+ matrix<dcomplex> At = A.transpose();
+
+ matrix<dcomplex> B;
+ if(world.rank() == 0) B = At;
+
+ mpi_broadcast(B, world, 0);
+
+ EXPECT_ARRAY_EQ(At, B);
+}
+
 MAKE_MAIN;
 
