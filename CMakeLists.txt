@@ -209,14 +209,6 @@ endif (Build_Documentation)
 install (FILES ${CMAKE_SOURCE_DIR}/cmake/FindNFFT.cmake DESTINATION share/cmake)
 
 #---------------------------------------
-# build_pytriqs : to run the tests
-# with the proper PYTHONPATH
-#---------------------------------------
-
-file (WRITE ${CMAKE_BINARY_DIR}/build_pytriqs  "#!/bin/sh\n export PYTHONPATH=${CMAKE_BINARY_DIR}:\$PYTHONPATH\n python $@")
-execute_process(COMMAND chmod u+x ${CMAKE_BINARY_DIR}/build_pytriqs)
-
-#---------------------------------------
 # triqs_config.h
 #---------------------------------------
 message( STATUS "-------- Making triqs_config.h  -------------")

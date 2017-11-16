@@ -20,9 +20,3 @@ add_python_test(wrap_B)
 add_python_test(wrap_g)
 add_python_test(wrap_multivar)
 add_python_test(blockgf)
-
-
-
-add_test(NAME mytest COMMAND  ${CMAKE_BINARY_DIR}/build_pytriqs  wrap_a.py) 
-#add_test(NAME mytest COMMAND "PYTHONPATH=$PYTHONPATH:${CMAKE_BINARY_DIR} python wrap_a.py") 
-

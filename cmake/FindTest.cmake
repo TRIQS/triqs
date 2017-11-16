@@ -1,4 +1,4 @@
-SET(PythonBuildExecutable ${CMAKE_BINARY_DIR}/build_pytriqs)
+SET(PythonBuildExecutable python)
 
 # runs a c++ test
 # if there is a .ref file a comparison test is done
@@ -84,6 +84,8 @@ macro(add_python_test testname)
   )
 
  endif (EXISTS ${testref})
+
+ set_property(TEST ${testname_} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:./:$ENV{PYTHONPATH} )
 
  if(TEST_MPI_NUMPROC)
   set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
