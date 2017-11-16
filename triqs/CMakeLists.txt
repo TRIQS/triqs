@@ -90,6 +90,14 @@ find_package(MPI)
 if (NOT MPI_C_FOUND)
  message(FATAL_ERROR "TRIQS requires MPI")
 endif()
+#set(MPI_C_COMPILE_FLAGS "-fexceptions  -fstack-protector-strong  -fPIC")
+
+# Quick hack: split a string by semicolons to convert MPI_C_COMPILE_FLAGS to a list
+if (NOT MPI_C_COMPILE_FLAGS STREQUAL "")
+    string(REPLACE " " ";" REPLACED_MPI_C_COMPILE_FLAGS ${MPI_C_COMPILE_FLAGS})
+    set(MPI_C_COMPILE_FLAGS ${REPLACED_MPI_C_COMPILE_FLAGS})
+endif()
+
 message(STATUS "MPI C compiler : ${MPI_C_COMPILER}")
 message(STATUS "MPI_COMPILE_FLAGS : ${MPI_C_COMPILE_FLAGS} ")
 message(STATUS "MPI_C_INCLUDE_PATH : ${MPI_C_INCLUDE_PATH}")
