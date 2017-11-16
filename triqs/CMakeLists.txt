@@ -98,7 +98,7 @@ message(STATUS "MPI_CXX_LIBRARIES : ${MPI_CXX_LIBRARIES}")
 
 # FIXME : we should not link to CXX lib, but openmpi uses them by default apparently on Linux
 
-separate_arguments(MPI_C_COMPILE_FLAGS UNIX_COMMAND ${MPI_C_COMPILE_FLAGS}) # Convert to list
+separate_arguments(MPI_C_COMPILE_FLAGS) # Convert to list
 target_compile_options(triqs PUBLIC ${MPI_C_COMPILE_FLAGS})
 target_include_directories(triqs SYSTEM PUBLIC ${MPI_C_INCLUDE_PATH})
 target_link_libraries(triqs ${MPI_C_LIBRARIES}  ${MPI_CXX_LIBRARIES})
