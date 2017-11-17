@@ -87,11 +87,11 @@ namespace triqs {
    }
 
    /// Convert index string s for indices number i into the integer index.
-   arrays::range convert_index(std::string const& s, int i) const {
+   int convert_index(std::string const& s, int i) const {
     auto const& v = _data[i];
     auto b = v.begin(), e = v.end();
     auto it = std::find(b, e, s);
-    if (it != e) return arrays::range(it - b, it - b + 1);
+    if (it != e) return it - b;
     TRIQS_RUNTIME_ERROR << "Cannot find this string index for the Green's function";
    }
 

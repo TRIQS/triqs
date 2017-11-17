@@ -32,6 +32,7 @@ namespace gfs {
  dcomplex density(gf_const_view<imfreq, scalar_valued> g);
 
  arrays::matrix<dcomplex> density(gf_const_view<legendre> g);
+ dcomplex density(gf_const_view<legendre, scalar_valued> g);
 }
 
 namespace clef {
