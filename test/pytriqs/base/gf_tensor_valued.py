@@ -9,7 +9,7 @@ G=GfImFreq(mesh=m, indices=[['a'],['b1','b2'],['c1', 'c2']])
 G2=GfImFreq(beta=1.,statistic="Fermion",n_points=100, indices=[['a'],['b1','b2'],['c1', 'c2']])
 
 assert G.data.shape==(20,1,2,2),"not ok"
-assert G['a','b1','c2'].data.shape==(20,1,1,1), "not ok"
+assert G['a','b1','c2'].data.shape==(20,), "not ok"
 
 #H5 r/w
 A=HDFArchive("Tv3.h5",'w')
@@ -40,7 +40,7 @@ G5=GfImFreq(mesh=m, indices=[['a'],['b1','b2'],['c1', 'c2'], ['c']])
 print G5.data.shape
 
 assert G5.data.shape==(20,1,2,2,1),"not ok"
-assert G5['a','b1','c2', 'c'].data.shape==(20,1,1,1, 1), "not ok"
+assert G5['a','b1','c2', 'c'].data.shape==(20,), "not ok"
 
 #ImTime, 
 print "#############################"

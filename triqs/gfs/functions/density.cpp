@@ -72,4 +72,10 @@ namespace triqs::gfs {
     res /= gl.domain().beta;
     return res;
   }
+
+  //-------------------------------------------------------
+  dcomplex density(gf_const_view<legendre, scalar_valued> g) {
+   return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0);
+  }
+
 } // namespace triqs::gfs

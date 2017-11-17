@@ -131,13 +131,11 @@ m.add_function("void _gf_invert_data_in_place(array_view <dcomplex, 3> a)", doc 
 for M in ['imfreq', 'refreq'] : 
     m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x += y")
     m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x += y")
+    #m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, scalar_valued> x, std::complex<double> y)"%M, calling_pattern = "x += y")
     
     m.add_function("void _isub_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x -= y")
     m.add_function("void _isub_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x -= y")
-
-    m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, scalar_valued> x, std::complex<double> y)"%M, calling_pattern = "x += y")
-    
-    m.add_function("void _isub_g_matrix_scalar (gf_view<%s, scalar_valued> x, std::complex<double> y)"%M, calling_pattern = "x -= y")
+    #m.add_function("void _isub_g_matrix_scalar (gf_view<%s, scalar_valued> x, std::complex<double> y)"%M, calling_pattern = "x -= y")
 
     # is it useful ?
     #m.add_function("gf<imfreq> _imul_R_g_matrix (gf_view<{M}, matrix_valued> x, matrix<std::complex<double>> y)", calling_pattern = "x = x * y")

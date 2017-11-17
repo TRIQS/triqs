@@ -34,7 +34,7 @@ c = class_( py_type = "GfIndices",
 c.add_constructor("(std::vector<std::vector<std::string>> indices)", doc = "Constructs indices, from a list(list(string)))")
 c.add_property(getter = cfunction("std::vector<std::vector<std::string>> data()"), doc = "Get a copy of the list of list of strings")
 c.add_method("gf_indices transpose()", doc = "Transposing")
-c.add_method("triqs::arrays::range convert_index(std::string s, int i)", doc = "index -> position conversion")
+c.add_method("int convert_index(std::string s, int i)", doc = "index -> position conversion")
 c.add_method_copy()
 c.add_getitem(signature = "std::vector<std::string> operator[](int d)", doc = "The list of indices for dimension d")
 
@@ -53,64 +53,72 @@ m.add_function("std::pair<array<dcomplex,3>, double> fit_tail(gf_view<imfreq, ma
 
 # density
 m.add_function("matrix<dcomplex> density(gf_view<imfreq, matrix_valued> g)",   doc = "Density, as a matrix, computed from a Matsubara sum")
-m.add_function("dcomplex density(gf_view<imfreq, scalar_valued> g)",   doc = "Density, as a matrix, computed from a Matsubara sum")
+m.add_function("dcomplex density(gf_view<imfreq, scalar_valued> g)",   doc = "Density, as a complex, computed from a Matsubara sum")
 
 m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from a Matsubara sum")
-#m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a matrix, computed from a Matsubara sum")
+m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a complex, computed from a Matsubara sum")
 
-# enforce_discontinuity
-m.add_function("void enforce_discontinuity(gf_view<legendre, matrix_valued> gl, matrix_view<double> disc)", doc = """Modify the coefficient to adjust discontinuity""")
-
-# set_from_fourier
+# set_from_fourier with known moments
 m.add_function("void set_from_fourier(gf_view<imfreq, matrix_valued> gw, gf_view<imtime, matrix_valued> gt, array_const_view<dcomplex, 3> moments = {})",
                calling_pattern = "gw = fourier(gt, moments)",
                doc = """Fills self with the Fourier transform of gt""")
 
-m.add_function("void set_from_fourier(gf_view<refreq, matrix_valued> gw, gf_view<retime, matrix_valued> gt)",
-             calling_pattern = "gw = fourier(gt)",
-             doc = """Fills self with the Fourier transform of gt""")
+for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
-m.add_function("void set_from_fourier(gf_view<brillouin_zone, matrix_valued> gk, gf_view<cyclic_lattice, matrix_valued> gr)",
-               calling_pattern = "gk = fourier(gr)",
-               doc = """Fills self with the Fourier transform of gr""")
+    for Meshes in [["imtime", "imfreq"], ["retime", "refreq"], ["cyclic_lattice", "brillouin_zone"]]:
+        # === Direct Fourier
 
-# set_from_inverse_fourier
-m.add_function("void set_from_inverse_fourier(gf_view<imtime, matrix_valued> gt, gf_view<imfreq, matrix_valued> gw)",
-               calling_pattern = "gt = fourier(gw)",
-               doc = """Fills self with the Inverse Fourier transform of gw""")
+        # Setter
+        m.add_function("void set_from_fourier(gf_view<%s, %s> g_out, gf_view<%s, %s> g_in)"%(Meshes[1], Target, Meshes[0], Target),
+                calling_pattern = "g_out = fourier(g_in)",
+                doc = """Fills self with the Fourier transform of g_in""")
+        # Factory function
+        m.add_function(name = "make_gf_from_fourier",
+                signature="gf_view<%s, %s> make_gf_from_fourier(gf_view<%s, %s> g_in)"%(Meshes[1], Target, Meshes[0], Target),
+                doc ="""Create Green function from the Fourier transform of g_in""")
 
-m.add_function("void set_from_inverse_fourier(gf_view<retime, matrix_valued> gt,  gf_view<refreq, matrix_valued> gw)",
-             calling_pattern = "gt = fourier(gw)",
-             doc = """Fills self with the Inverse Fourier transform of gw""")
+        # === Inverse Fourier
 
-m.add_function("void set_from_inverse_fourier(gf_view<cyclic_lattice, matrix_valued> gr, gf_view<brillouin_zone, matrix_valued> gk)",
-               calling_pattern = "gr = fourier(gk)",
-               doc = """Fills self with the Fourier transform of gk""")
+        # Setter
+        m.add_function("void set_from_inverse_fourier(gf_view<%s, %s> g_out, gf_view<%s, %s> g_in)"%(Meshes[0], Target, Meshes[1], Target),
+                calling_pattern = "g_out = fourier(g_in)",
+                doc = """Fills self with the inverse Fourier transform of g_in""")
+        # Factory function
+        m.add_function(name = "make_gf_from_inverse_fourier",
+                signature="gf_view<%s, %s> make_gf_from_fourier(gf_view<%s, %s> g_in)"%(Meshes[0], Target, Meshes[1], Target),
+                doc ="""Create Green function from the inverse Fourier transform of g_in""")
+
+    # make_real_in_tau
+    m.add_function("gf_view<imfreq, %s> make_real_in_tau(gf_view<imfreq, %s> g)"%(Target, Target),
+                doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
+
+    # is_gf_real_in_tau
+    m.add_function("bool is_gf_real_in_tau(gf_view<imfreq, %s> g, double tolerance = 1.e-13)"%Target)
+
 
 # set_from_legendre
 m.add_function("void set_from_legendre(gf_view<imfreq, matrix_valued> gw, gf_view<legendre, matrix_valued> gl)",
-               calling_pattern = "gw = legendre_to_imfreq(gl)",
-               doc = """Fills self with the legendre transform of gl""")
+            calling_pattern = "gw = legendre_to_imfreq(gl)",
+            doc = """Fills self with the legendre transform of gl""")
 
 m.add_function("void set_from_legendre(gf_view<imtime, matrix_valued> gt, gf_view<legendre, matrix_valued> gl)",
-               calling_pattern = "gt = legendre_to_imtime(gl)",
-               doc = """Fills self with the legendre transform of gl""")
-
-# replace imfreq_to_legendre !!
-# set_from_imfreq
-m.add_function("void set_from_imfreq(gf_view<legendre, matrix_valued> gl, gf_view<imfreq, matrix_valued> gw)", 
-               calling_pattern = "gl = imfreq_to_legendre(gw)",
-               doc = """Fills self with the legendre transform of gw""")
-
-# set_from_imtime 
-m.add_function("void set_from_imtime(gf_view<legendre, matrix_valued> gl, gf_view<imtime, matrix_valued> gt)",
-             calling_pattern = "gl = imtime_to_legendre(gt)",
-             doc = """Fills self with the legendre transform of gt""")
+            calling_pattern = "gt = legendre_to_imtime(gl)",
+            doc = """Fills self with the legendre transform of gl""")
 
 # set_from_imfreq
 m.add_function("void set_from_imfreq(gf_view<legendre, matrix_valued> gl, gf_view<imfreq, matrix_valued> gw)",
-             calling_pattern = "gl = imfreq_to_legendre(gw)",
-             doc = """Fills self with the legendre transform of gw""")
+            calling_pattern = "gl = imfreq_to_legendre(gw)",
+            doc = """Fills self with the legendre transform of gw""")
+
+# set_from_imtime
+m.add_function("void set_from_imtime(gf_view<legendre, matrix_valued> gl, gf_view<imtime, matrix_valued> gt)",
+            calling_pattern = "gl = imtime_to_legendre(gt)",
+            doc = """Fills self with the legendre transform of gt""")
+
+# set_from_imfreq
+m.add_function("void set_from_imfreq(gf_view<legendre, matrix_valued> gl, gf_view<imfreq, matrix_valued> gw)",
+            calling_pattern = "gl = imfreq_to_legendre(gw)",
+            doc = """Fills self with the legendre transform of gw""")
 
 # set_from_pade
 m.add_function("void set_from_pade (gf_view<refreq, matrix_valued> gw, gf_view<imfreq, matrix_valued> giw, int n_points = 100, double freq_offset = 0.0)",
@@ -138,10 +146,7 @@ m.add_function("void replace_by_tail_in_fit_window(gf_view<imfreq, matrix_valued
 # rebinning_tau
 m.add_function("gf<imtime, matrix_valued> rebinning_tau(gf_view<imtime,matrix_valued> g, int new_n_tau)", doc = "Rebins the data of a GfImTime on a sparser mesh")
 
-# is_gf_real_in_tau
-m.add_function("bool is_gf_real_in_tau(gf_view<imfreq, matrix_valued> g, double tolerance = 1.e-13)")
-
-# GfLegendre specific functions 
+# GfLegendre specific functions
 m.add_function("void enforce_discontinuity(gf_view<legendre, matrix_valued> gl, matrix_view<double> disc)", doc = """Modify the coefficient to adjust discontinuity""")
 
 ########################
