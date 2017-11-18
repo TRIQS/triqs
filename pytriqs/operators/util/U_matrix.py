@@ -38,6 +38,11 @@ def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical
     T : real/complex numpy array, optional
         Transformation matrix for basis change.
         Must be provided if basis='other'.
+        The transformation matrix is defined such that new creation operators :math:`b^\dagger` are related to
+        the old ones :math:`a^\dagger` as
+
+        .. math:: b_{i \sigma}^\dagger = \sum_j T_{ji} a^\dagger_{j \sigma}.
+
 
     Returns
     -------
@@ -205,6 +210,10 @@ def eg_submatrix(U, convention=''):
 def transform_U_matrix(U_matrix, T):
     r"""
     Transform a four-index interaction matrix into another basis.
+    The transformation matrix is defined such that new creation operators :math:`b^\dagger` are related to
+    the old ones :math:`a^\dagger` as
+
+    .. math:: b_{i \sigma}^\dagger = \sum_j T_{ji} a^\dagger_{j \sigma}.
 
     Parameters
     ----------
@@ -245,7 +254,7 @@ def spherical_to_cubic(l, convention=''):
         Transformation matrix for basis change.
 
     """
-    
+
     if not convention in ('wien2k',''):
         raise ValueError("Unknown convention: "+str(convention))
 
