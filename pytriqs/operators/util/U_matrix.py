@@ -41,7 +41,7 @@ def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical
         The transformation matrix is defined such that new creation operators :math:`b^\dagger` are related to
         the old ones :math:`a^\dagger` as
 
-        .. math:: b_{i \sigma}^\dagger = \sum_j T_{ji} a^\dagger_{j \sigma}.
+        .. math:: b_{i \sigma}^\dagger = \sum_j T_{ij} a^\dagger_{j \sigma}.
 
 
     Returns
@@ -213,7 +213,7 @@ def transform_U_matrix(U_matrix, T):
     The transformation matrix is defined such that new creation operators :math:`b^\dagger` are related to
     the old ones :math:`a^\dagger` as
 
-    .. math:: b_{i \sigma}^\dagger = \sum_j T_{ji} a^\dagger_{j \sigma}.
+    .. math:: b_{i \sigma}^\dagger = \sum_j T_{ij} a^\dagger_{j \sigma}.
 
     Parameters
     ----------
