@@ -27,9 +27,17 @@
 namespace triqs::utility {
 
   std::string stack_trace() {
-
-    //std::string cmd = "lldb --batch -k bt -p " + std::to_string(getpid()) + " 2>&1";
+  
+   // On Os X, we use lldb, on linux gdb to decipher the call stack for us
+   // We launch it with a pipe, and get back the output 
+#ifdef __APPLE__ 
+ 	
+    std::string cmd = "lldb -p " + std::to_string(getpid()) + " --batch -o \"bt\" 2>&1";
+    const char * PYTHON_SENTINEL = "Python";
+#else 
     std::string cmd = "gdb --batch -n -ex bt -p " + std::to_string(getpid()) + " 2>&1";
+    const char * PYTHON_SENTINEL = "libpython";
+#endif
 
     const int max_buffer = 256;
     char buffer2[max_buffer];
@@ -41,15 +49,13 @@ namespace triqs::utility {
       pclose(stream);
     }
 
-    std::cout  << pipe_output << std::endl;
-
     std::stringstream ss(pipe_output);
     std::string to, r = "\n";
 
     while (std::getline(ss, to, '\n') and (to.find("triqs::exception::exception") == std::string::npos)) {}
 
     while (std::getline(ss, to, '\n')) {
-      if (to.find("libpython") != std::string::npos) break;
+      if (to.find(PYTHON_SENTINEL) != std::string::npos) break;
       r += to + '\n';
     }
 
