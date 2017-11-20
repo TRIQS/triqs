@@ -27,7 +27,7 @@
 #include "./gfs/meshes.hpp"
 
 // debug
-//#include "./gfs/debug.hpp"
+#include "./gfs/debug.hpp"
 
 // the targets
 #include "./gfs/gf/targets.hpp"

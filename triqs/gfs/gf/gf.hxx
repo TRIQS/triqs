@@ -406,14 +406,14 @@ namespace triqs {
       // pass a mesh_point of the mesh
       decltype(auto) operator[](mesh_point_t const &x) {
 #ifdef TRIQS_DEBUG
-        //if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+        if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
 #endif
         return dproxy_t::invoke(_data, x.linear_index());
       }
 
       decltype(auto) operator[](mesh_point_t const &x) const {
 #ifdef TRIQS_DEBUG
-        //if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+        if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
 #endif
         return dproxy_t::invoke(_data, x.linear_index());
       }
@@ -1038,14 +1038,14 @@ namespace triqs {
       // pass a mesh_point of the mesh
       decltype(auto) operator[](mesh_point_t const &x) {
 #ifdef TRIQS_DEBUG
-        //if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+        if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
 #endif
         return dproxy_t::invoke(_data, x.linear_index());
       }
 
       decltype(auto) operator[](mesh_point_t const &x) const {
 #ifdef TRIQS_DEBUG
-        //if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+        if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
 #endif
         return dproxy_t::invoke(_data, x.linear_index());
       }
@@ -1660,14 +1660,14 @@ namespace triqs {
       // pass a mesh_point of the mesh
       decltype(auto) operator[](mesh_point_t const &x) {
 #ifdef TRIQS_DEBUG
-        //if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+        if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
 #endif
         return dproxy_t::invoke(_data, x.linear_index());
       }
 
       decltype(auto) operator[](mesh_point_t const &x) const {
 #ifdef TRIQS_DEBUG
-        //if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
+        if (!mesh_point_compatible_to_mesh(x, _mesh)) TRIQS_RUNTIME_ERROR << "gf[ ] : mesh point's mesh and gf's mesh mismatch";
 #endif
         return dproxy_t::invoke(_data, x.linear_index());
       }
