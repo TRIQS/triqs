@@ -1,9 +1,11 @@
+#ifndef __cpp_if_constexpr
+#error "C++17 support incomplete"
+#endif
 
-//#if not __has_feature(cxx_generic_lambdas)
-//#error "C++14 support is not present"
-//#endif
+#ifndef __cpp_structured_bindings
+#error "C++17 support incomplete"
+#endif
 
-//#include <cstddef>
 int main() { 
  int i=2;
  auto f = [j =i]( auto x) { return x+j;};
