@@ -37,7 +37,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs
 		   --output_directory ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
 		   --includes ${CMAKE_SOURCE_DIR}/ 
 		   --includes ${CMAKE_BINARY_DIR}/Config 
-		   --cxxflags "-std=c++14 -DTRIQS_BUILDING_LIBRARY" 
+		   --cxxflags "-std=c++17 -DTRIQS_BUILDING_LIBRARY" 
 		   2>&1 > cpp2rst.log
 		   VERBATIM) 
 add_custom_target(docs_cpp2rst DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log) 
