@@ -43,25 +43,8 @@ namespace statistics {
   inline friend histogram pdf(histogram const& h); // probability distribution function = normalised histogram
   inline friend histogram cdf(histogram const& h); // cumulative distribution function = normalised histogram integrated
 
-  /// BOOST Serialization
-  friend class boost::serialization::access;
-  template <class Archive>
-  void save(Archive & ar, const unsigned int version) const {
-    ar << TRIQS_MAKE_NVP("a", a);
-    ar << TRIQS_MAKE_NVP("b", b);
-    ar << TRIQS_MAKE_NVP("data", _data);
-    ar << TRIQS_MAKE_NVP("n_data_pts", _n_data_pts);
-    ar << TRIQS_MAKE_NVP("n_lost_pts", _n_lost_pts);
-  }
-  template <class Archive>
-  void load(Archive & ar, const unsigned int version) {
-    ar >> a >> b >> _data >> _n_data_pts >> _n_lost_pts;
-    n_bins = _data.size();
-    _init();
-  }
-  BOOST_SERIALIZATION_SPLIT_MEMBER();
-
   public:
+
   /// Constructor with mesh of integer values
   histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(n_bins, 0) { _init(); }
 
@@ -119,6 +102,19 @@ namespace statistics {
 
   /// Output stream insertion
   friend std::ostream& operator<<(std::ostream& os, histogram const& h);
+
+  /// BOOST Serialization
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive & ar, const unsigned int version) {
+    ar & TRIQS_MAKE_NVP("a", a);
+    ar & TRIQS_MAKE_NVP("b", b);
+    ar & TRIQS_MAKE_NVP("n_bins", n_bins);
+    ar & TRIQS_MAKE_NVP("data", _data);
+    ar & TRIQS_MAKE_NVP("n_data_pts", _n_data_pts);
+    ar & TRIQS_MAKE_NVP("n_lost_pts", _n_lost_pts);
+    ar & TRIQS_MAKE_NVP("step", _step);
+  }
 
  };
 

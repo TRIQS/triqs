@@ -27,7 +27,8 @@ c = class_(
         doc = r"Histogram",   # doc of the C++ class
         is_printable = True,
         hdf5 = True,
-        arithmetic = "add_only"
+        arithmetic = "add_only",
+        serializable = "tuple"
 )
 
 c.add_constructor("""(int a, int b)""",
