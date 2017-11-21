@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-15 by O. Parcollet, I. Krivenko
+ * Copyright (C) 2011-2017 by O. Parcollet, I. Krivenko
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -46,6 +46,24 @@ namespace statistics {
   inline friend histogram pdf(histogram const& h); // probability distribution function = normalised histogram
   inline friend histogram cdf(histogram const& h); // cumulative distribution function = normalised histogram integrated
 
+  /// BOOST Serialization
+  friend class boost::serialization::access;
+  template <class Archive>
+  void save(Archive & ar, const unsigned int version) const {
+    ar << TRIQS_MAKE_NVP("a", a);
+    ar << TRIQS_MAKE_NVP("b", b);
+    ar << TRIQS_MAKE_NVP("data", _data);
+    ar << TRIQS_MAKE_NVP("n_data_pts", _n_data_pts);
+    ar << TRIQS_MAKE_NVP("n_lost_pts", _n_lost_pts);
+  }
+  template <class Archive>
+  void load(Archive & ar, const unsigned int version) {
+    ar >> a >> b >> _data >> _n_data_pts >> _n_lost_pts;
+    n_bins = _data.size();
+    _init();
+  }
+  BOOST_SERIALIZATION_SPLIT_MEMBER();
+
   public:
   /// Constructor with mesh of integer values
   histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(n_bins, 0) { _init(); }
@@ -55,12 +73,6 @@ namespace statistics {
 
   /// Default constructor
   histogram() = default;
-
-  // Copy, move constructors & assignment
-//  histogram(histogram const& h) = default;
-//  histogram(histogram&& h) = default;
-//  histogram& operator=(histogram&&) = default;
-//  histogram& operator=(histogram const&) = default;
 
   /// Bins a double into the histogram
   histogram& operator<<(double x) {
@@ -164,7 +176,7 @@ namespace statistics {
   histogram pdf(histogram const& h) {
    auto pdf = h;
    pdf._data /= double(h.n_data_pts());
-   return pdf; 
+   return pdf;
   }
 
   /// Integrate and normalise histogram to get CDF
