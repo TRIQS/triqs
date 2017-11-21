@@ -38,10 +38,7 @@ namespace statistics {
   arrays::vector<double> _data;   // histogram data
   double _step;                   // number of bins per unit length
 
-  void _init() {
-   if (a >= b) TRIQS_RUNTIME_ERROR << "histogram construction: one must have a<b";
-   _step = (n_bins - 1) / (b - a);
-  }
+  void _init();                   // initialize _step
 
   inline friend histogram pdf(histogram const& h); // probability distribution function = normalised histogram
   inline friend histogram cdf(histogram const& h); // cumulative distribution function = normalised histogram integrated
@@ -75,16 +72,7 @@ namespace statistics {
   histogram() = default;
 
   /// Bins a double into the histogram
-  histogram& operator<<(double x) {
-   if ((x < a) || (x > b))
-    ++_n_lost_pts;
-   else {
-    auto n = int(std::floor(((x - a) * _step) + 0.5));
-    ++_data[n];
-    ++_n_data_pts;
-   }
-   return *this;
-  }
+  histogram& operator<<(double x);
 
   /// Point on the mesh
   double mesh_point(int n) const { return a + n / _step; }
@@ -105,17 +93,7 @@ namespace statistics {
   uint64_t n_lost_pts() const { return _n_lost_pts; }
 
   /// Addition of histograms
-  friend histogram operator+(histogram h1, histogram const& h2) {
-   auto l1 = h1.limits(), l2 = h2.limits();
-   if (l1 != l2 || h1.size() != h2.size()) {
-    TRIQS_RUNTIME_ERROR << "Histograms with different limits in addition: [" << l1.first << ";" << l1.second << "] vs ["
-                        << l2.first << ";" << l2.second << "]";
-   }
-   h1._data += h2._data;
-   h1._n_data_pts += h2._n_data_pts;
-   h1._n_lost_pts += h2._n_lost_pts;
-   return h1;
-  }
+  friend histogram operator+(histogram h1, histogram const& h2);
 
   /// Reset all values to 0
   void clear() {
@@ -126,7 +104,7 @@ namespace statistics {
 
   /// Reduce the histogram from all nodes
   friend histogram mpi_reduce(histogram const& h, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-   assert(op == MPI_SUM);
+   TRIQS_ASSERT(op == MPI_SUM);
    auto h2 = h;
    h2._data = mpi_reduce(h._data, c, root, all);
    h2._n_data_pts = mpi_reduce(h._n_data_pts, c, root, all);
@@ -135,39 +113,12 @@ namespace statistics {
   }
 
   /// HDF5 interface
-
-  friend std::string get_triqs_hdf5_data_scheme(histogram const&) { return "Histogram"; }
-
-  friend void h5_write(h5::group g, std::string const& name, histogram const& h) {
-   h5_write(g, name, h._data);
-   auto ds = g.open_dataset(name);
-   h5_write_attribute(ds, "TRIQS_HDF5_data_scheme", get_triqs_hdf5_data_scheme(h));
-   h5_write_attribute(ds, "a", h.a);
-   h5_write_attribute(ds, "b", h.b);
-   h5_write_attribute(ds, "n_bins", h.n_bins);
-   h5_write_attribute(ds, "n_data_pts", h._n_data_pts);
-   h5_write_attribute(ds, "n_lost_pts", h._n_lost_pts);
-  }
-
-  friend void h5_read(h5::group g, std::string const& name, histogram& h) {
-   h5_read(g, name, h._data);
-   auto ds = g.open_dataset(name);
-   h5_read_attribute(ds, "a", h.a);
-   h5_read_attribute(ds, "b", h.b);
-   h5_read_attribute(ds, "n_bins", h.n_bins);
-   h5_read_attribute(ds, "n_data_pts", h._n_data_pts);
-   h5_read_attribute(ds, "n_lost_pts", h._n_lost_pts);
-   h._init();
-  }
+  friend std::string get_triqs_hdf5_data_scheme(histogram const&);
+  friend void h5_write(h5::group g, std::string const& name, histogram const& h);
+  friend void h5_read(h5::group g, std::string const& name, histogram& h);
 
   /// Output stream insertion
-  friend std::ostream& operator<<(std::ostream& os, histogram const& h) {
-   auto normed = pdf(h);
-   auto integrated = cdf(h);
-   for (int i = 0; i < h.size(); ++i)
-    os << h.mesh_point(i) << "  " << h.data()[i] << "  " << normed.data()[i] << "  " << integrated.data()[i] << std::endl;
-   return os;
-  }
+  friend std::ostream& operator<<(std::ostream& os, histogram const& h);
 
  };
 
