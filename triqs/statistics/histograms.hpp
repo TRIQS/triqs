@@ -85,6 +85,16 @@ namespace statistics {
    _data() = 0.0;
   }
 
+  /// Broadcast histogram
+  friend void mpi_broadcast(histogram & h, mpi::communicator c = {}, int root = 0) {
+   MPI_Bcast(&h.a, 1, MPI_DOUBLE, root, c.get());
+   MPI_Bcast(&h.b, 1, MPI_DOUBLE, root, c.get());
+   mpi_broadcast(h._data, c, root);
+   MPI_Bcast(&h._n_data_pts, 1, MPI_UINT64_T, root, c.get());
+   MPI_Bcast(&h._n_lost_pts, 1, MPI_UINT64_T, root, c.get());
+   if (c.rank() != root) { h.n_bins = h._data.size(); h._init(); }
+  }
+
   /// Reduce the histogram from all nodes
   friend histogram mpi_reduce(histogram const& h, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
    TRIQS_ASSERT(op == MPI_SUM);
