@@ -54,11 +54,11 @@ c.add_property(name = "data",
                doc = """Read-only access to the data storage """)
 
 c.add_property(name = "n_data_pts",
-               getter = cfunction("uint64_t n_data_pts ()"),
+               getter = cfunction("unsigned long long n_data_pts ()"),
                doc = """Norm of the stored data """)
 
 c.add_property(name = "n_lost_pts",
-               getter = cfunction("uint64_t n_lost_pts ()"),
+               getter = cfunction("unsigned long long n_lost_pts ()"),
                doc = """Number of discarded points """)
 
 c.add_method("""void clear ()""",

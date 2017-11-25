@@ -31,14 +31,14 @@ namespace statistics {
   */
  class histogram {
 
-  double a, b;                    // start and end of mesh
-  long n_bins;                    // number of points on the mesh (for double only)
-  uint64_t _n_data_pts = 0;       // number of data points
-  uint64_t _n_lost_pts = 0;       // number of discarded points
-  arrays::vector<double> _data;   // histogram data
-  double _step;                   // number of bins per unit length
+  double a, b;                          // start and end of mesh
+  long n_bins;                          // number of points on the mesh (for double only)
+  unsigned long long _n_data_pts = 0;   // number of data points
+  unsigned long long _n_lost_pts = 0;   // number of discarded points
+  arrays::vector<double> _data;         // histogram data
+  double _step;                         // number of bins per unit length
 
-  void _init();                   // initialize _step
+  void _init();                         // initialize _step
 
   inline friend histogram pdf(histogram const& h); // probability distribution function = normalised histogram
   inline friend histogram cdf(histogram const& h); // cumulative distribution function = normalised histogram integrated
@@ -70,10 +70,10 @@ namespace statistics {
   arrays::vector<double> const& data() const { return _data; }
 
   /// Norm of the stored data
-  uint64_t n_data_pts() const { return _n_data_pts; }
+  unsigned long long n_data_pts() const { return _n_data_pts; }
 
   /// Number of discarded points
-  uint64_t n_lost_pts() const { return _n_lost_pts; }
+  unsigned long long n_lost_pts() const { return _n_lost_pts; }
 
   /// Addition of histograms
   friend histogram operator+(histogram h1, histogram const& h2);
@@ -87,21 +87,21 @@ namespace statistics {
 
   /// Broadcast histogram
   friend void mpi_broadcast(histogram & h, mpi::communicator c = {}, int root = 0) {
-   MPI_Bcast(&h.a, 1, MPI_DOUBLE, root, c.get());
-   MPI_Bcast(&h.b, 1, MPI_DOUBLE, root, c.get());
+   mpi_broadcast(h.a, c, root);
+   mpi_broadcast(h.b, c, root);
    mpi_broadcast(h._data, c, root);
-   MPI_Bcast(&h._n_data_pts, 1, MPI_UINT64_T, root, c.get());
-   MPI_Bcast(&h._n_lost_pts, 1, MPI_UINT64_T, root, c.get());
+   mpi_broadcast(h._n_data_pts, c, root);
+   mpi_broadcast(h._n_lost_pts, c, root);
    if (c.rank() != root) { h.n_bins = h._data.size(); h._init(); }
   }
 
-  /// Reduce the histogram from all nodes
+  /// Reduce histogram
   friend histogram mpi_reduce(histogram const& h, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
    TRIQS_ASSERT(op == MPI_SUM);
-   auto h2 = h;
-   h2._data = mpi_reduce(h._data, c, root, all);
-   h2._n_data_pts = mpi_reduce(h._n_data_pts, c, root, all);
-   h2._n_lost_pts = mpi_reduce(h._n_lost_pts, c, root, all);
+   histogram h2(h.a, h.b, h.n_bins);
+   h2._data = mpi_reduce(h._data, c, root, all, MPI_SUM);
+   h2._n_data_pts = mpi_reduce(h._n_data_pts, c, root, all, MPI_SUM);
+   h2._n_lost_pts = mpi_reduce(h._n_lost_pts, c, root, all, MPI_SUM);
    return h2;
   }
 
