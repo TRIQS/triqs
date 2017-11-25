@@ -32,37 +32,34 @@ c = class_(
 )
 
 c.add_constructor("""(int a, int b)""",
-                  doc = """Constructor with mesh of integer values """)
+                  doc = """Constructor with mesh of integer values""")
 
 c.add_constructor("""(double a, double b, long n_bins)""",
-                  doc = """Constructor with mesh of double values """)
-
-c.add_constructor("""()""",
-                  doc = """Default constructor """)
+                  doc = """Constructor with mesh of floating point values""")
 
 c.add_method("""double mesh_point (int n)""",
-             doc = """Point on the mesh """)
+             doc = """Point on the mesh""")
 
-c.add_len(doc = """Number of bins """)
+c.add_len(doc = """Number of bins""")
 
 c.add_property(name = "limits",
                getter = cfunction("std::pair<double,double> limits ()"),
-               doc = """Returns boundaries of the histogram """)
+               doc = """Returns boundaries of the histogram""")
 
 c.add_property(name = "data",
                getter = cfunction("arrays::vector<double> data ()"),
-               doc = """Read-only access to the data storage """)
+               doc = """Read-only access to the data storage""")
 
 c.add_property(name = "n_data_pts",
                getter = cfunction("unsigned long long n_data_pts ()"),
-               doc = """Norm of the stored data """)
+               doc = """Norm of the stored data""")
 
 c.add_property(name = "n_lost_pts",
                getter = cfunction("unsigned long long n_lost_pts ()"),
-               doc = """Number of discarded points """)
+               doc = """Number of discarded points""")
 
 c.add_method("""void clear ()""",
-             doc = """Reset all values to 0 """)
+             doc = """Reset all values to 0""")
 
 f = pyfunction(name = '__lshift__', arity = 2)
 f.add_overload(calling_pattern = '<<', signature = 'self_t& (triqs::statistics::histogram h, double x)')
