@@ -102,7 +102,7 @@ TEST(histogram, hdf5) {
 
  auto hd1 = make_hd1();
 
- auto hd1_r = rw_h5(hd1, "ess_histograms2.h5", "hd1");
+ auto hd1_r = rw_h5(hd1, "ess_histograms2", "hd1");
  EXPECT_EQ(hd1.limits(), hd1_r.limits());
  EXPECT_EQ(hd1.n_data_pts(), hd1_r.n_data_pts());
  EXPECT_EQ(hd1.n_lost_pts(), hd1_r.n_lost_pts());

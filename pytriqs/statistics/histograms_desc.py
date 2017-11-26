@@ -24,11 +24,15 @@ c = class_(
         py_type = "Histogram",  # name of the python class
         c_type = "histogram",   # name of the C++ class
         c_type_absolute = "triqs::statistics::histogram",
-        doc = r"Histogram",   # doc of the C++ class
         is_printable = True,
         hdf5 = True,
         arithmetic = "add_only",
-        serializable = "tuple"
+        serializable = "tuple",
+        doc = "This class serves to sample a continuous random variable, and to 'bin' it. "
+              "It divides a given range of real values into a series of equal intervals, "
+              "and counts amounts of samples falling into each interval. "
+              "The histogram keeps track of the total number of the sampled values, as well "
+              "as of the lost samples that lie outside the chosen range."
 )
 
 c.add_constructor("""(int a, int b)""",
@@ -38,13 +42,13 @@ c.add_constructor("""(double a, double b, long n_bins)""",
                   doc = """Constructor with mesh of floating point values""")
 
 c.add_method("""double mesh_point (int n)""",
-             doc = """Point on the mesh""")
+             doc = """Get position of bin's center""")
 
 c.add_len(doc = """Number of bins""")
 
 c.add_property(name = "limits",
                getter = cfunction("std::pair<double,double> limits ()"),
-               doc = """Returns boundaries of the histogram""")
+               doc = """Return boundaries of the histogram""")
 
 c.add_property(name = "data",
                getter = cfunction("arrays::vector<double> data ()"),
@@ -52,14 +56,14 @@ c.add_property(name = "data",
 
 c.add_property(name = "n_data_pts",
                getter = cfunction("unsigned long long n_data_pts ()"),
-               doc = """Norm of the stored data""")
+               doc = """Number of accumulated data points""")
 
 c.add_property(name = "n_lost_pts",
                getter = cfunction("unsigned long long n_lost_pts ()"),
-               doc = """Number of discarded points""")
+               doc = """Number of discarded data points""")
 
 c.add_method("""void clear ()""",
-             doc = """Reset all values to 0""")
+             doc = """Reset all histogram values to 0""")
 
 f = pyfunction(name = '__lshift__', arity = 2)
 f.add_overload(calling_pattern = '<<', signature = 'self_t& (triqs::statistics::histogram h, double x)')
@@ -70,8 +74,10 @@ c.add_pure_python_method("pytriqs.statistics.histogram.plot", rename = "_plot_")
 
 module.add_class(c)
 
-module.add_function ("triqs::statistics::histogram pdf (triqs::statistics::histogram h)", doc = """Normalise histogram to get PDF""")
+module.add_function ("triqs::statistics::histogram pdf (triqs::statistics::histogram h)",
+                     doc = """Normalise histogram to get probability density function (PDF)""")
 
-module.add_function ("triqs::statistics::histogram cdf (triqs::statistics::histogram h)", doc = """Integrate and normalise histogram to get CDF""")
+module.add_function ("triqs::statistics::histogram cdf (triqs::statistics::histogram h)",
+                     doc = """Integrate and normalise histogram to get cumulative distribution function (CDF)""")
 
 module.generate_code()

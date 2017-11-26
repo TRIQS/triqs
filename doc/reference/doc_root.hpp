@@ -13,3 +13,5 @@
 #include <triqs/atom_diag/gf.hpp>
 
 #include <triqs/gfs/singularity/fit_tail.hpp>
+
+#include <triqs/statistics/histograms.hpp>
