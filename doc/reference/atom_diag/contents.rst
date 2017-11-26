@@ -26,7 +26,7 @@ since it can only treat problems of a moderate size.
 .. toctree::
    :maxdepth: 1
 
-    [atom_diag] Exact diagonalization of an atomic problem </cpp2doc_generated/triqs/atom_diag/atom_diag>
+    [atom_diag] Exact diagonalization of an atomic problem </cpp2rst_generated/triqs/atom_diag/atom_diag>
     [atom_diag_functions] Utility functions for atom_diag <functions>
 
 Example of use: Python
