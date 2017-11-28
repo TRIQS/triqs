@@ -47,7 +47,7 @@ from gf_fnt import is_gf_real_in_tau
 __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
             'lazy_expressions','TailGf',
             'MeshPoint','MeshValueGenerator',
-            'Gf', 'MeshProduct',
+            'Gf', 'MeshProduct', 'GfIndices',
             'GfImFreq', 'MeshImFreq', 
             'GfImTime', 'MeshImTime',
             'GfReFreq', 'MeshReFreq',
