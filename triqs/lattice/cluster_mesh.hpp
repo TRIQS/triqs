@@ -228,7 +228,7 @@ namespace gfs {
   }
 
   friend std::ostream& operator<<(std::ostream& sout, cluster_mesh const& m) {
-   return sout << "cyclic_lattice of size " << m.dims;
+   return sout << "cluster_mesh of size " << m.dims;
   }
  };
 
