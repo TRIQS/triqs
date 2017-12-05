@@ -19,19 +19,16 @@
  *
  ******************************************************************************/
 #pragma once
+#include <variant>
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/tuple_tools.hpp>
-#include <triqs/utility/variant.hpp>
 #include <triqs/operators/many_body_operator.hpp>
 #include <triqs/hilbert_space/fundamental_operator_set.hpp>
 #include <triqs/arrays.hpp>
 
-namespace triqs {
-namespace operators {
-namespace util {
+namespace triqs::operators::utils {
 
 using triqs::arrays::array;
-using triqs::utility::variant;
 
 using indices_t =  hilbert_space::fundamental_operator_set::indices_t;
 
@@ -42,7 +39,7 @@ using dict2_t = std::map<std::tuple<indices_t,indices_t>,T>;
 template<typename T>
 using dict4_t = std::map<std::tuple<indices_t,indices_t,indices_t,indices_t>,T>;
 
-template<int N> using real_or_complex_array = variant<array<double,N>,array<std::complex<double>,N>>;
+template<int N> using real_or_complex_array = std::variant<array<double,N>,array<std::complex<double>,N>>;
 
 /// Return dictionary of quadractic term coefficients starting from a Hamiltonian
 ///
@@ -179,4 +176,4 @@ dict_to_variant_matrix(DictType const& dict, hilbert_space::fundamental_operator
  return dict_to_matrix<double>(dict,fs);
 }
 
-}}}
+}

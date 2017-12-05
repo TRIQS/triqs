@@ -40,7 +40,6 @@ class Cpp2pyInfo(Cpp2pyInfoBase):
         'triqs::gfs::block_gf*' : 'gf',
         'triqs::gfs::block2_gf*' : 'gf',
         'triqs::operators::many_body_operator*' : 'operators_real_complex',
-        'triqs::utility::variant' : 'variant',
         }
 
     table_converters = dict ( (k, "triqs/cpp2py_converters/%s.hpp"%v) for (k,v) in _table_converters.items())
