@@ -43,7 +43,7 @@ namespace operators {
   int u = 0;
   for (auto const& i : op.indices) {
    if (u++) os << ",";
-   apply_visitor(pr, i);
+   visit(pr, i);
   }
   return os << ')';
  }

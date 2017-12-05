@@ -24,8 +24,6 @@
 namespace triqs {
 namespace hilbert_space {
 
- using utility::variant_int_string;
-
  namespace { // auxiliary functions
 
   // a little visitor for reduction to string
@@ -34,8 +32,9 @@ namespace hilbert_space {
    std::string operator()(std::string const& s) const { return "s" + s; }
   };
 
+  // FIXME : Simplify this ??
   // decode the string
-  variant_int_string string_to_variant(std::string const& s) {
+  std::variant<int, std::string> string_to_variant(std::string const& s) {
    switch (s[0]) {
     case 'i':
      return std::stoi(s.c_str() + 1); // the variant is an int. Skip the first char and recover the int
@@ -51,7 +50,7 @@ namespace hilbert_space {
    std::vector<std::vector<std::string>> v(f.size());
    for (auto const& p : f) { // loop over the couple (indices list, number)
     if (p.linear_index >= f.size()) TRIQS_RUNTIME_ERROR << " Internal error fundamental_operator_set to vec vec string";
-    for (auto& x : p.index) v[p.linear_index].push_back(apply_visitor(variant_visitor{}, x));
+    for (auto& x : p.index) v[p.linear_index].push_back(visit(variant_visitor{}, x));
     // variants x are transformed to a string, add 'i' or 's' in front of the string
    }
    return v;
