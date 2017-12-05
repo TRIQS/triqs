@@ -17,12 +17,12 @@ module.add_include("<triqs/cpp2py_converters.hpp>")
 module.add_include("<triqs/cpp2py_converters/variant.hpp>")
 
 module.add_using("namespace triqs::operators")
-module.add_using("namespace triqs::operators::util")
+module.add_using("namespace triqs::operators::utils")
 module.add_using("namespace triqs::hilbert_space")
 
 module.add_preamble("""
-using indices_t_t = std::tuple<triqs::utility::variant_int_string,
-                               triqs::utility::variant_int_string>;
+using variant_int_string = std::variant<int, std::string>;
+using indices_t_t = std::tuple<variant_int_string, variant_int_string>;
 auto v2t = [](indices_t const& v) { return std::make_tuple(v[0],v[1]); };
 using triqs::tuple::map;
 """)

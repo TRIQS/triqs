@@ -159,7 +159,7 @@ std::ostream& operator<<(std::ostream& os, atom_diag<Complex> const& ad) {
   os << "Subspace " << n_sp << ", ";
   os << "lowest energy level : " << ad.eigensystems[n_sp].eigenvalues[0] << std::endl;
   os << "Subspace dimension = " << ad.eigensystems[n_sp].eigenvalues.size() << std::endl;
-  os << "-------------------------" << std::endl;
+  //os << "-------------------------" << std::endl;
  }
  return os;
 }

@@ -19,7 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/variant_int_string.hpp>
+#include <variant>
+#include <string>
 #include <triqs/utility/dressed_iterator.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/h5/base_public.hpp>
@@ -28,7 +29,14 @@
 #include <map>
 
 namespace std {
-inline std::ostream & operator<<(std::ostream & os, std::vector<triqs::utility::variant_int_string> const& fs) {
+
+template<typename T1, typename ...T>
+std::ostream &operator<<(std::ostream &os, std::variant<T1, T...> const &v) {
+  visit([&os](auto const &x) { os << x; }, v);
+  return os;
+}
+
+inline std::ostream & operator<<(std::ostream & os, std::vector<std::variant<int, std::string>> const& fs) {
  int u = 0;
  for(auto const& i : fs) { if (u++) os << ","; os << i; }
  return os;
@@ -39,7 +47,7 @@ namespace triqs {
 namespace hilbert_space {
 
 /// Structure of the Green's function
-using gf_struct_t = std::map<std::string,std::vector<utility::variant_int_string>>;
+using gf_struct_t = std::map<std::string,std::vector<std::variant<int, std::string>>>;
 
 /// This class represents an ordered set of **indices** of the canonical operators (see [[many_body_operator]]) used to build the Fock states.
 /**
@@ -51,7 +59,7 @@ class fundamental_operator_set {
  public:
 
  /// Sequence of indices (`std::vector` of int/string variant objects)
- using indices_t = std::vector<utility::variant_int_string>;
+ using indices_t = std::vector<std::variant<int, std::string>>;
 
  /// The set represented as a plain `std::vector`
  using reduction_t = std::vector<indices_t>;
