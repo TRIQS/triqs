@@ -102,6 +102,15 @@ separate_arguments(MPI_C_COMPILE_FLAGS) # Convert to list
 target_compile_options(triqs PUBLIC ${MPI_C_COMPILE_FLAGS})
 target_include_directories(triqs SYSTEM PUBLIC ${MPI_C_INCLUDE_PATH})
 target_link_libraries(triqs ${MPI_C_LIBRARIES}  ${MPI_CXX_LIBRARIES})
+if(NOT MPIEXEC_EXECUTABLE) # Backward compatibility for older FindMPI.cmake
+  set(MPIEXEC_EXECUTABLE ${MPIEXEC} CACHE FILENAME "MPI Executable")
+endif()
+# Compatibility to Open-MPI 3.0.0: check whether MPI executable has option --oversubscribe and add it 
+execute_process(COMMAND ${MPIEXEC_EXECUTABLE} --oversubscribe ${MPIEXEC_NUMPROC_FLAG} 4 ${MPIEXEC_PREFLAGS} ls ${MPIEXEC_POSTFLAGS} RESULT_VARIABLE HAS_NO_OVERSUBSCRIBE OUTPUT_QUIET)
+if(NOT HAS_NO_OVERSUBSCRIBE)
+  list(APPEND MPIEXEC_PREFLAGS --oversubscribe)
+  set(MPIEXEC_PREFLAGS ${MPIEXEC_PREFLAGS} CACHE STRING "These flags will be directly before the executable that is being run by mpiexec." FORCE)
+endif()
 
 # ---------------------------------
 # Boost
