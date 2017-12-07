@@ -38,7 +38,7 @@ All Green's functions in the calculations have just one index because
 
 .. runblock:: python
 
-   from pytriqs.gf.local import *
+   from pytriqs.gf import *
 
    class IPTSolver:
 

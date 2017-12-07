@@ -21,14 +21,14 @@
 
 r"""
 Deprecated module
-from pytriqs.gf.local import XXX
+from pytriqs.gf import XXX
 """
 
 import warnings
 warnings.warn("""
 ***************************************************
 
-from pytriqs.gf.local import XXX  
+from pytriqs.gf import XXX  
 
 is deprecated. Replace it by 
       
