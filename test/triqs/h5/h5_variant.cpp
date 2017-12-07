@@ -17,14 +17,13 @@ TEST(H5, Variant) {
   }
 
   {
-    v_t v1, v2{std::string{}};
+    v_t v1, v2;
     h5::file file("variant.h5", 'r');
     h5_read(file, "v1", v1);
-
     h5_read(file, "v2", v2);
 
     EXPECT_EQ(std::get<int>(v1), 6);
-    //EXPECT_EQ(std::get<std::string>(v2), s);
+    EXPECT_EQ(std::get<std::string>(v2), s);
   }
 }
 MAKE_MAIN;
