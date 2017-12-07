@@ -29,38 +29,12 @@
 #include "./h5/map.hpp"
 #include "./h5/optional.hpp"
 
+// FIXME : Why all these include by default ?
+
+
+// FIXME : Still needed ?
 // for python code generator, we need to know what has to been included.
 #define TRIQS_INCLUDED_H5
-
-// traits to detect h5_read/h5_write is overloaded. Unused currently. Kept since
-// it can useful and is it not so simple to do...
-namespace triqs {
-namespace h5 {
- template <typename T, typename Enable = void> struct has_h5_read : std::false_type {};
- template <typename T>
- struct has_h5_read<T, decltype(h5_read(std::declval<h5::group>(), std::string(), *(std::declval<T*>())))> : std::true_type {};
-
- template <typename T, typename Enable = void> struct has_h5_write : std::false_type {};
- template <typename T>
- struct has_h5_write<T, decltype(h5_write(std::declval<h5::group>(), std::string(), std::declval<const T>()))> : std::true_type {
- };
-
-// A generic read
- template <typename T> T h5_read(group gr, std::string const& name) {
-  T x;
-  h5_read(gr, name, x);
-  return x;
- }
-
- /// Returns the attribute name of obj, and "" if the attribute does not exist.
- template <typename T> T h5_read_attribute(hid_t id, std::string const& name) {
-  using triqs::h5::h5_read_attribute;
-  T x;
-  h5_read_attribute(id, name, x);
-  return x;
- }
-}
-}
 
 // in some old version of hdf5 (Ubuntu 12.04 e.g.), the macro is not yet defined.
 #ifndef H5_VERSION_GE
