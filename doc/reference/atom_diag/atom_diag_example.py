@@ -1,4 +1,4 @@
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.operators import *
 from pytriqs.operators.util.hamiltonians import h_int_kanamori
 from pytriqs.archive import HDFArchive

@@ -4,25 +4,27 @@
 
 .. _install_options:
 
-Customizing your installation: cmake options
----------------------------------------------
+Customizing your installation
+-----------------------------
 
-Specifying the compiler or compile/link flags
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To specify the compiler with cmake one may use the CXX, CXXFLAGS variables, e.g.::
-
-   CXX=clang++ CXXFLAGS=XXXX cmake path_to_TRIQS_source_directory ...
+The installation of TRIQS can be customized using either :ref:`environment variables <environment_vars>` such
+as ``CXX`` or via a set of cmake options described below.
 
 cmake options
 ^^^^^^^^^^^^^^
 
-+-----------------------------------------------+------------------------------------------------+
-| Options                                       | Syntax                                         |
-+===============================================+================================================+
-| Specify the installation directory            | -DCMAKE_INSTALL_PREFIX=install_path            |
-+-----------------------------------------------+------------------------------------------------+
-| Special python interpreter                    | -DPYTHON_INTERPRETER=path/python               |
-+-----------------------------------------------+------------------------------------------------+
-| Build the documentation locally               | -DBuild_Documentation=ON                       |
-+-----------------------------------------------+------------------------------------------------+
++-----------------------------------------------+---------------------------------------------------------------+
+| Options                                       | Syntax                                                        |
++===============================================+===============================================================+
+| Specify the installation directory (required) | -DCMAKE_INSTALL_PREFIX=install_path                           |
++-----------------------------------------------+---------------------------------------------------------------+
+| Choose to build TRIQS in Debug mode           | -DCMAKE_BUILD_TYPE=Debug                                      |
++-----------------------------------------------+---------------------------------------------------------------+
+| Specify additional compiler flags             | -DCMAKE_CXX_FLAGS='...'                                       |
++-----------------------------------------------+---------------------------------------------------------------+
+| Specify additional linker flags               | -DCMAKE_EXE_LINKER_FLAGS='...'                                |
++-----------------------------------------------+---------------------------------------------------------------+
+| Turn of the compilation of tests              | -DBuild_Tests=OFF                                             |
++-----------------------------------------------+---------------------------------------------------------------+
+| Build the documentation locally               | -DBuild_Documentation=ON                                      |
++-----------------------------------------------+---------------------------------------------------------------+

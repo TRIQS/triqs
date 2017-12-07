@@ -43,7 +43,7 @@ The following code snippet illustrates how to instantiate a TailGf object.
 
 .. runblock:: python
 
-    from pytriqs.gf.local import *
+    from pytriqs.gf import *
 
     t = TailGf(N1=1, N2=1)
     print "t = ",t
@@ -62,7 +62,7 @@ The following code snippet show how to access the tail of a Green's function
 
 .. runblock:: python
 
-    from pytriqs.gf.local import *
+    from pytriqs.gf import *
     
     # Create the Matsubara-frequency Green's function and initialize it
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
@@ -95,7 +95,7 @@ coefficients :math:`(\mathbf{a}_{-1})_{00} = 0`\ ,
 
 .. runblock:: python
 
-    from pytriqs.gf.local import *
+    from pytriqs.gf import *
     from numpy import array
 
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")

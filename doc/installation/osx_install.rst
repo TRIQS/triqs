@@ -86,7 +86,7 @@ Possible issues
 
     /usr/local/bin
 
-  occurs before /usr/bin in your path. Otherwise you may be using the system's default version of Python.
+  occurs before /usr/bin in your :ref:`path <environment_vars>`_. Otherwise you may be using the system's default version of Python.
   As a result, some packages, although previously installed with ``pip install``, may not be found.
 
 * If you encounter the following error: ::
@@ -96,7 +96,7 @@ Possible issues
   in the installation of matplotlib, you need to pass the proper include path. Locate the freetype directory
   with the header file and pass the include path through ``CPPFLAGS``: ::
 
-    CPPFLAGS=-I/usr/X11/include/freetype2/ pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
+    CXXFLAGS=-I/usr/X11/include/freetype2/ pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
 
 * When building the doc, you may experience the following sphinx error: ::
 

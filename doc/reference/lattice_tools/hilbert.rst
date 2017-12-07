@@ -11,7 +11,7 @@ TRIQS comes with a Hilbert transform. Let us look at an example:
 
    from pytriqs.lattice.tight_binding import *
    from pytriqs.dos import HilbertTransform
-   from pytriqs.gf.local import GfImFreq
+   from pytriqs.gf import GfImFreq
 
    # Define a DOS (here on a square lattice)
    BL = BravaisLattice(units = [(1,0,0) , (0,1,0) ], orbital_positions= [(0,0,0)] ) 

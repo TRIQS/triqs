@@ -1,5 +1,5 @@
 from pytriqs.operators import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.archive import *
 from pytriqs.atom_diag import *
 from pytriqs.utility.comparison_tests import *
