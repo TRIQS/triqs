@@ -108,8 +108,8 @@ class pade_approximant {
    for(int i=0; i<=N-2; ++i){
      dcomplex Anew = A2 + (e - z_in(i))*a(i+1)*A1;
      dcomplex Bnew = B2 + (e - z_in(i))*a(i+1)*B1;
-     A1 = A2; A2 = Anew;
-     B1 = B2; B2 = Bnew;
+     A1 = A2/Bnew; A2 = Anew/Bnew;
+     B1 = B2/Bnew; B2 = 1.0;
    }
 
    return A2/B2;
