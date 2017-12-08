@@ -149,20 +149,6 @@ else ()
 endif()
 
 # ---------------------------------
-# Check availability of <optional>
-# ---------------------------------
-
-# should be move to config.h ?
-
-try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS -std=c++17)
-if (NOT has_optional_header)
- message(STATUS "Using <experimental/optional> header instead of <optional>")
-else ()
- message(STATUS "<optional> header is available. No workaround needed")
- target_compile_definitions(triqs PUBLIC HAS_OPTIONAL_HEADER)
-endif()
-
-# ---------------------------------
 # Lapack
 # ---------------------------------
 
