@@ -724,7 +724,11 @@ namespace gfs {
    // hence p <= min ( a.n_max, n-b.n_min ) and p >= max ( a.n_min, n- b.n_max)
    const int pmin = std::max(l.order_min(), n - r.order_max());
    const int pmax = std::min(l.order_max(), n - r.order_min());
-   for (int p = pmin; p <= pmax; ++p) { res(n) += l(p) * r(n - p); }
+   for (int p = pmin; p <= pmax; ++p) { 
+     // Propagate NAN only if other component is non-zero
+     if( max_element(abs(l(p))) < 1e-15 || max_element(abs(r(n-p))) < 1e-15 ) continue; 
+     res(n) += l(p) * r(n - p); 
+   }
   }
   return res;
  }
