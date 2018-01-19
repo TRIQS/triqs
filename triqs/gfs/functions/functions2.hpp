@@ -61,7 +61,7 @@ namespace gfs {
   *-----------------------------------------------------------------------------------------------------*/
 
  template <typename G, typename... Args> auto reinterpret_scalar_valued_gf_as_matrix_valued(G &&g) {
-  static_assert(std::is_same<typename std14::decay_t<G>::target_t, scalar_valued>::value,
+  static_assert(std::is_same<typename std::decay_t<G>::target_t, scalar_valued>::value,
                 "slice_target_to_scalar : the result is not a scalar valued function");
   return g.apply_on_data([](auto &&d) { return reinterpret_array_add_1x1(d); },
                          [](auto &&s) { return reinterpret_as_matrix_valued_sing(s()); });
@@ -115,16 +115,21 @@ namespace gfs {
  template <typename G> std::enable_if_t<is_gf<G>::value, bool> is_gf_real(G const &g, double tolerance = 1.e-13) {
   return max_element(abs(imag(g.data()))) <= tolerance;
  }
+ template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, bool> is_gf_real(G const &g, double tolerance = 1.e-13) {
+  return std::all_of(g.begin(), g.end(), [&](auto &g){ return is_gf_real(g, tolerance); });
+ }
 
  /// Takes the real part of g without check, and returns a new gf with a real target
- template <typename M, typename T> gf<M, typename T::real_t> real(gf_const_view<M, T> g) {
-  return {g.mesh(), real(g.data()), g.singularity(), {}}; // no indices for real_valued, internal C++ use only
+ /// real(g).
+ /**
+   @tparam G any Gf, BlockGf or Block2Gf type
+   @param g a gf
+   */
+ template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type::real_t> real(G const &g) {
+  return {g.mesh(), real(g.data()), {}, g.indices()};
  }
- template <typename M, typename T> gf<M, typename T::real_t> real(gf_view<M, T> g) {
-  return {g.mesh(), real(g.data()), g.singularity(), {}};
- }
- template <typename M, typename T> gf<M, typename T::real_t> real(gf<M, T> const &g) {
-  return {g.mesh(), real(g.data()), g.singularity(), {}};
+ template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, typename G::regular_type::real_t> real(G const &g) {
+  return map_block_gf(real<typename G::g_t>, g);
  }
 
  /*------------------------------------------------------------------------------------------------------
@@ -139,7 +144,7 @@ namespace gfs {
   *                      Conjugate
   *-----------------------------------------------------------------------------------------------------*/
 
- template <typename G> std14::enable_if_t<is_gf<G>::value, typename G::regular_type> conj(G const &g) {
+ template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type> conj(G const &g) {
   using M = typename G::variable_t;
   bool is_matsubara = std::is_same<M, imfreq>::value || std::is_same<M, imtime>::value;
   return {g.mesh(), conj(g.data()), conj(g.singularity(), is_matsubara), g.indices()};
