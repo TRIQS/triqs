@@ -36,7 +36,7 @@ namespace gfs {
   int is_boson = (g.mesh().domain().statistic == Boson);
   long L = sh[0];
   sh[0] = 2 * sh[0] - is_boson;
-  array<dcomplex, std14::decay_t<decltype(dat)>::rank> new_data(sh);
+  array<dcomplex, std::decay_t<decltype(dat)>::rank> new_data(sh);
   auto _ = arrays::ellipsis{};
   if (is_boson) new_data(L - 1, _) = dat(0, _);
   int L1 = (is_boson ? L - 1 : L);
@@ -53,23 +53,22 @@ namespace gfs {
    @param tolerance tolerance threshold $\epsilon$
    @return true iif $$\forall n,\; \max_{ab}|g^*_{ab}(-i\omega_n)-g_{ab}(i\omega_n)|<\epsilon$$
   */
- template <typename T> bool is_gf_real_in_tau(gf_const_view<imfreq, T> g, double tolerance = 1.e-13) {
+ template <typename G> std::enable_if_t<is_gf<G>::value, bool> is_gf_real_in_tau(G const& g, double tolerance = 1.e-13) {
+  static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value,
+                "is_gf_real_in_tau only makes senses for imfreq gf");
   if (g.mesh().positive_only()) return true;
   using triqs::arrays::max_element; // the case real, complex is not found by ADL
   for (auto const &w : g.mesh().get_positive_freq())
    if (max_element(abs(conj(g(-w)) - g(w))) > tolerance) return false;
   return true;
  }
- template <typename T> bool is_gf_real_in_tau(gf_view<imfreq, T> g, double tolerance = 1.e-13) {
-  return is_gf_real_in_tau(make_const_view(g), tolerance);
- }
- template <typename T> bool is_gf_real_in_tau(gf<imfreq, T> const &g, double tolerance = 1.e-13) {
-  return is_gf_real_in_tau(make_const_view(g), tolerance);
+ template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, bool> is_gf_real_in_tau(G const &g, double tolerance = 1.e-13) {
+  return std::all_of(g.begin(), g.end(), [&](auto &g_bl){ return is_gf_real_in_tau(g_bl, tolerance); });
  }
 
  /// Make a const view of the positive frequency part of the function
  template <typename G> view_type_t<G> positive_freq_view(G &&g) {
-  static_assert(std::is_same<typename std14::decay_t<G>::variable_t, imfreq>::value,
+  static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value,
                 "positive_freq_view only makes senses for imfreq gf");
   if (g.mesh().positive_only()) return g;
   long L = g.mesh().size();
@@ -79,10 +78,13 @@ namespace gfs {
  }
 
  /// Make_real_in_tau symmetrize the function in freq, to ensure its FT is real.
- template <typename T> gf<imfreq, T> make_real_in_tau(gf_const_view<imfreq, T> g) {
+ template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type> make_real_in_tau(G const &g) {
+  static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value,
+                "make_real_in_tau only makes senses for imfreq gf");
   return make_gf_from_real_gf(positive_freq_view(g));
  }
- template <typename T> gf<imfreq, T> make_real_in_tau(gf_view<imfreq, T> g) { return make_real_in_tau(make_const_view(g)); }
- template <typename T> gf<imfreq, T> make_real_in_tau(gf<imfreq, T> const &g) { return make_real_in_tau(make_const_view(g)); }
+ template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, typename G::regular_type> make_real_in_tau(G const &g) {
+  return map_block_gf(make_real_in_tau<typename G::g_t>, g);
+ }
 }
 }

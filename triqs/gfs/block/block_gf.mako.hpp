@@ -727,6 +727,14 @@ namespace triqs {
                                                                                      std::vector<std::vector<GF>> v) {
    return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
   }
+
+  // from block_names and data vector
+  template <typename GF>
+  block2_gf_const_view<typename GF::variable_t, typename GF::target_t> make_block2_gf_const_view(std::vector<std::string> block_names1,
+                                                                                     		 std::vector<std::string> block_names2,
+                                                                                     		 std::vector<std::vector<GF>> v) {
+   return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
+  }
  }
 }
 

@@ -74,18 +74,30 @@ namespace gfs {
 
   // now , when R is a gf, gf_view, a gf_const_view
   template <typename F, typename G, typename... T> struct map<F, G, gf<T...>> {
-   static auto invoke(F &&f, G &&g)
-       {return make_block_gf(g.block_names(), _map(std::forward<F>(f), std::forward<G>(g).data()));}
+   static auto invoke(F &&f, G &&g){
+    if constexpr (std::remove_reference_t<G>::arity == 1)
+     return make_block_gf(g.block_names(), _map(std::forward<F>(f), std::forward<G>(g).data()));
+    else
+     return make_block2_gf(g.block_names()[0], g.block_names()[1], _map(std::forward<F>(f), std::forward<G>(g).data()));
+   }
   };
 
   template <typename F, typename G, typename... T> struct map<F, G, gf_view<T...>> {
-   static auto invoke(F &&f, G &&g)
-       {return make_block_gf_view(g.block_names(), _map(std::forward<F>(f), std::forward<G>(g).data()));}
+   static auto invoke(F &&f, G &&g){
+    if constexpr (std::remove_reference_t<G>::arity == 1)
+     return make_block_gf_view(g.block_names(), _map(std::forward<F>(f), std::forward<G>(g).data()));
+    else
+     return make_block2_gf_view(g.block_names()[0], g.block_names()[1], _map(std::forward<F>(f), std::forward<G>(g).data()));
+   }
   };
 
   template <typename F, typename G, typename... T> struct map<F, G, gf_const_view<T...>> {
-   static auto invoke(F &&f, G &&g)
-       {return make_block_gf_const_view(g.block_names(), _map(std::forward<F>(f), std::forward<G>(g).data()));}
+   static auto invoke(F &&f, G &&g){ 
+    if constexpr (std::remove_reference_t<G>::arity == 1)
+     return make_block_gf_const_view(g.block_names(), _map(std::forward<F>(f), std::forward<G>(g).data()));
+    else
+     return make_block2_gf_const_view(g.block_names()[0], g.block_names()[1], _map(std::forward<F>(f), std::forward<G>(g).data()));
+   }
   };
  }
 
