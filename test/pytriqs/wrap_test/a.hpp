@@ -3,8 +3,8 @@
 #include <vector>
 #include <set>
 #include <ostream>
+#include <variant>
 #include <triqs/arrays.hpp>
-#include <triqs/utility/variant.hpp>
 #include <triqs/utility/signal_handler.hpp>
 
 namespace triqs { namespace py_tools { 
@@ -220,9 +220,9 @@ struct test_variant_visitor {
  int operator()(std::pair<std::string,double> const& p) { return int(p.second); }
 };
 
-inline triqs::utility::variant<int,std::string,std::pair<std::string,double>>
-variant_to_variant(triqs::utility::variant<int,std::string,std::pair<std::string,double>> const& v) {
- triqs::utility::variant<int,std::string,std::pair<std::string,double>> res(
+inline std::variant<int,std::string,std::pair<std::string,double>>
+variant_to_variant(std::variant<int,std::string,std::pair<std::string,double>> const& v) {
+  std::variant<int,std::string,std::pair<std::string,double>> res(
   visit(test_variant_visitor(), v));
  return res;
 }
