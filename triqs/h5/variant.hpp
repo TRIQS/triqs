@@ -20,9 +20,10 @@
  *
  ******************************************************************************/
 #pragma once
+#include "./base.hpp"
 #include "./group.hpp"
 #include "./string.hpp"
-#include "./base.hpp"
+#include "./generic.hpp"
 #include <variant>
 
 namespace std { // to be found by ADL

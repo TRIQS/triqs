@@ -28,6 +28,8 @@
 #include "./h5/vector.hpp"
 #include "./h5/map.hpp"
 #include "./h5/optional.hpp"
+#include "./h5/generic.hpp"
+#include "./h5/variant.hpp"
 
 // FIXME : Why all these include by default ?
 
