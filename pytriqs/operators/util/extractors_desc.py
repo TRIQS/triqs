@@ -9,12 +9,11 @@ module = module_(full_name = "pytriqs.operators.util.extractors",
 
 module.add_include("<triqs/operators/util/extractors.hpp>")
 
-#module.add_include("<cpp2py/converters/variant.hpp>")
+module.add_include("<cpp2py/converters/variant.hpp>")
 module.add_include("<cpp2py/converters/tuple.hpp>")
 module.add_include("<cpp2py/converters/map.hpp>")
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
-module.add_include("<triqs/cpp2py_converters/variant.hpp>")
 
 module.add_using("namespace triqs::operators")
 module.add_using("namespace triqs::operators::utils")
