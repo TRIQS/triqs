@@ -11,9 +11,9 @@ module.add_include("<cpp2py/converters/map.hpp>")
 module.add_include("<cpp2py/converters/pair.hpp>")
 module.add_include("<cpp2py/converters/set.hpp>")
 module.add_include("<cpp2py/converters/tuple.hpp>")
+module.add_include("<cpp2py/converters/variant.hpp>")
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
-module.add_include("<triqs/cpp2py_converters/variant.hpp>")
 
 
 
@@ -127,7 +127,7 @@ for i in range(0,4):
     signature = "std::tuple<%s>(std::tuple<%s> t)" % (tt,tt)
     module.add_function(name = name, signature = signature, doc = "DOC of tuple_to_tuple_%i"%i)
 
-my_variant = "triqs::utility::variant<int,std::string,std::pair<std::string,double>>"
+my_variant = "std::variant<int,std::string,std::pair<std::string,double>>"
 module.add_function (name = "variant_to_variant",
                      signature = "%s variant_to_variant(%s v)" % (my_variant,my_variant),
                      doc = "DOC of variant_to_variant")

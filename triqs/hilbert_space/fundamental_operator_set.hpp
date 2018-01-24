@@ -27,6 +27,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <variant>
 
 namespace std {
 
