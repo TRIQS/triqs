@@ -59,10 +59,11 @@ namespace triqs::h5 {
       return;
     }
     if constexpr (sizeof...(T) > 0) h5_read_variant_helper<VT, T...>(v, dt, gr, name);
+    else TRIQS_RUNTIME_ERROR << " Error in h5_read: std::variant<...> not compatible with TRIQS_HDF5_data_scheme \n";
   }
 
   /**
-   * Read optional from the h5
+   * Read vairant from the h5
    */
   template <typename... T> void h5_read(h5::group gr, std::string const &name, std::variant<T...> &v) {
     // name is a group --> triqs object
