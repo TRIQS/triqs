@@ -48,7 +48,6 @@ c = class_(
         c_type = "brillouin_zone",   # name of the C++ class
         c_type_absolute = "triqs::lattice::brillouin_zone",
         doc = r"",   # doc of the C++ class
-        hdf5 = True,
         serializable= "tuple",
 )
 

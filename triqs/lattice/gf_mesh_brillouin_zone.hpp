@@ -66,14 +66,14 @@ namespace gfs {
 
   // -------------- HDF5  --------------------------
 
-  friend std::string get_triqs_hdf5_data_scheme(gf_mesh const &) { return "BrillouinZone";}
+  friend std::string get_triqs_hdf5_data_scheme(gf_mesh const &) { return "MeshBrillouinZone";}
  
   friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
-   h5_write_impl(fg, subgroup_name, m, "BrillouinZone");
+   h5_write_impl(fg, subgroup_name, m, "MeshBrillouinZone");
   }
   
   friend void h5_read(h5::group fg, std::string const & subgroup_name, gf_mesh &m) {
-   h5_read_impl(fg, subgroup_name, m, "BrillouinZone");
+   h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
   }   
 
  };
