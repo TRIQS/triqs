@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-
 #include "group.hpp"
 #include "string.hpp"
 #include <map>
