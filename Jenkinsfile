@@ -25,6 +25,24 @@ pipeline {
             '''
           }
         }
+        stage('centos') {
+          agent {
+            dockerfile {
+              dir "packaging/centos"
+              args '-v /etc/passwd:/etc/passwd -v /etc/group:/etc/group'
+            }
+          }
+          steps {
+            sh '''#!/bin/bash -ex
+              source $INSTALL/share/cpp2pyvars.sh
+              mkdir -p build
+              cd build
+              cmake .. -DCMAKE_INSTALL_PREFIX=$INSTALL
+              make
+              make test
+            '''
+          }
+        }
       }
     }
   }
