@@ -28,7 +28,7 @@ RUN yum -y install \
       python-zmq \
       scipy
 
-ENV PATH=/opt/rh/devtoolset-7/root/usr/bin:${PATH}:/usr/lib64/openmpi/bin
+ENV PATH=/opt/rh/devtoolset-7/root/usr/bin:${PATH}:/usr/lib64/openmpi/bin PYTHONPATH=/usr/lib64/python2.7/site-packages/openmpi
 
 ENV SRC=/work/src BUILD=/work/build INSTALL=/work/install
 
