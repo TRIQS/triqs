@@ -11,6 +11,7 @@ pipeline {
           agent {
             dockerfile {
               dir "packaging/ubuntu"
+              args '-v /etc/passwd:/etc/passwd -v /etc/group:/etc/group'
             }
           }
           steps {
