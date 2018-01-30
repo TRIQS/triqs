@@ -74,7 +74,7 @@ class GfReTime(Gf) :
                       data = data, 
                       target_shape = target_shape,
                       singularity = tail or singularity,
-                      _singularity_maker = make_singularity_maker(10, tail, singularity),
+                      _singularity_maker = make_singularity_maker(tail, singularity),
                       indices = indices, 
                       name = name) 
         delegate(self, **kw)

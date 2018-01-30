@@ -4,7 +4,7 @@ using namespace triqs::clef;
 
 TEST(Gf, k) {
  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
- auto t = __tail<matrix_valued>{1, 1};
+ auto t = __tail<matrix_valued>(make_shape(1,1));
  auto G = m_tail<brillouin_zone, matrix_valued>{{bz, 100}, {1, 1}};
 
  placeholder<0> k_;

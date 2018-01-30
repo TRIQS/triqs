@@ -19,8 +19,7 @@ namespace triqs {
    gf<cartesian_product<imfreq, imtime>, tensor_valued<3>> gwt({imfreq_mesh_1, std::get<1>(g2t.mesh())}, g2t.target_shape());
 
    array<__tail<scalar_valued>, 3> tail_3(g2t.target_shape());
-   __tail<scalar_valued> t(1, 1);
-   t.data()() = 0;
+   __tail<scalar_valued> t(make_shape()); // moments are set to zero
    tail_3()   = t;
 
    auto _ = var_t{};
@@ -57,14 +56,12 @@ namespace triqs {
    gf<cartesian_product<imtime, imfreq>, tensor_valued<3>> gtw({imtime_mesh_1, std::get<1>(g2w.mesh())}, g2w.target_shape());
 
    array<__tail<scalar_valued>, 3> known_moments(g2w.target_shape());
-   __tail<scalar_valued> t(2, -1);
-   t(-1)           = 0.;
-   t(0)            = 0.;
+   __tail<scalar_valued> t(make_shape()); // moments are set to zero
+   t.reset(1);
    known_moments() = t;
 
    array<__tail<scalar_valued>, 3> tail_zero(g2w.target_shape());
-   __tail<scalar_valued> t0;
-   t0.data()() = 0;
+   __tail<scalar_valued> t0(make_shape()); // moments are set to zero
    tail_zero() = t0;
 
    auto _ = var_t{};

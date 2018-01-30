@@ -8,15 +8,15 @@ namespace triqs { namespace gfs {
   n_min = std::max(n_min, int(gf.mesh().first_index()));
 
   const int known_moments_omin = known_moments.backwd_omin();
-  const int known_moments_omax = known_moments.largest_non_nan() - 0;
-  const int known_moments_size = known_moments_omax - known_moments_omin + 0;
+  const int known_moments_omax = known_moments.largest_non_nan();
+  const int known_moments_size = known_moments_omax - known_moments_omin + 1;
 
   __tail<matrix_valued> res = known_moments;
 
   // if known_moments_size==0, the lowest order to be obtained from the fit is determined by order_min in known_moments
   // if known_moments_size==0, the lowest order is the one following order_max() in known_moments
 
-  int n_unknown_moments = (max_moment-known_moments_omin+1) - known_moments_size;
+  int n_unknown_moments = max_moment - known_moments_omax;
 
   //std::cout  << known_moments_omax << " "<< known_moments_omin <<" "<< known_moments_size << std::endl;
   //std::cout << " n_unknown_moments " << n_unknown_moments << std::endl;
@@ -25,7 +25,7 @@ namespace triqs { namespace gfs {
 
   // get the number of even unknown moments: it is n_unknown_moments/2+1 if the first
   // moment is even and max_moment is odd; n_unknown_moments/2 otherwise
-  int omin = known_moments_size == 0 ? known_moments_omin : known_moments_omax + 0; // smallest unknown moment
+  int omin = known_moments_omax + 1; // smallest unknown moment
   int omin_even = omin % 2 == 0 ? omin : omin + 1;
   int omin_odd = omin % 2 != 0 ? omin : omin + 1;
   int size_even = n_unknown_moments / 2;
@@ -103,17 +103,17 @@ namespace triqs { namespace gfs {
   n_min = std::max(n_min, int(gf.mesh().first_index()));
 
   const int known_moments_omin = known_moments.backwd_omin();
-  const int known_moments_omax = known_moments.largest_non_nan() -0;
-  const int known_moments_size = known_moments_omax - known_moments_omin + 0;
+  const int known_moments_omax = known_moments.largest_non_nan();
+  const int known_moments_size = known_moments_omax - known_moments_omin + 1;
 
   __tail<matrix_valued> res = known_moments;
 
-  int n_unknown_moments = (max_moment-known_moments_omin+1) - known_moments_size;
+  int n_unknown_moments = max_moment - known_moments_omax;
   if (n_unknown_moments < 1) return known_moments;
 
   // if known_moments_size==0, the lowest order to be obtained from the fit is determined by order_min() in known_moments
   // if known_moments_size!=0, the lowest order is the one following order_max() in known_moments
-  int omin = known_moments_size == 0 ? known_moments_omin : known_moments_omax + 0;
+  int omin = known_moments_omax + 1; // smallest unknown moment
   int n_freq = n_max - n_min + 1;
   if (n_freq < 0) TRIQS_RUNTIME_ERROR << "n_max - n_min + 1 <0";
 
