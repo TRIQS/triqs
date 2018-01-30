@@ -135,41 +135,39 @@ namespace triqs {
       template <typename Int> explicit __tail(mini_vector<Int, T::rank> sh) : _data(sh.front_append(_size())) { zero(); }
 
       /**
+    * DEPRECATED Constructor
+    *
     * @param sh target shape.
-    * @param n_orders number of moments in the tail ...
+    * @param n_moments number of moments greater than o_min
     * @param o_min ... starting at o_min.
     *
-    * Only n_orders + o_min matters. Kept this way for backward compatibility.
+    * Only n_moments + o_min matters. Kept this way for backward compatibility.
     * Precondition : o_min >= order_min()
     *
-    * Tail is initialized to 0 for n <= o_min + n_orders and NaN afterwards.
+    * Tail is initialized to 0 for n <= o_min + n_moments and NaN afterwards.
     */
-      template <typename Int> explicit __tail(mini_vector<Int, T::rank> sh, int n_orders, int o_min) : __tail{sh} {
-        if (o_min < order_min()) TRIQS_RUNTIME_ERROR << "Tail construction : o_min is < " << order_min();
-        reset(o_min + n_orders + 1);
+      template <typename Int>
+      TRIQS_DEPRECATED("__tail{shape, n_moments, omin} deprecated. Please use __tail{shape} instead followed by a reset")
+      explicit __tail(mini_vector<Int, T::rank> sh, int n_moments, int o_min) : __tail{sh} {
+        if (n_moments > _size()) TRIQS_RUNTIME_ERROR << " Tail construction is limited to a total number of " << _size() << " moments";
+        reset(o_min + n_moments);
       }
 
       /**
+    * DEPRECATED Constructor
     * Parameters are (for rank R)
     *
-    * (n0, ... n_{R-1}) : dimensions of the target shape
+    * (n0, ... n_{R-1}) : Invoke __tail{ make_make(n0, ... n_{R-1}) }
     * or
-    * (n0, ... n_{R-1}, n_orders, o_min)
-    *
-    * @param n_orders number of moments in the tail ...
-    * @param o_min ... starting at o_min.
-    *
-    * Only n_orders + o_min matters. Kept this way for backward compatibility.
-    * Precondition : o_min >= order_min()
-    *
-    * Tail is initialized to 0 for n <= o_min + n_orders and NaN afterwards.
+    * (n0, ... n_{R-1}, n_moments, o_min) : Invoke __tail{ make_shape(n0, ... n_{R-1}), n_moments, o_min }
     */
-      template <typename... Args> //TRIQS_DEPRECATED("Deprecated constructor")
-      explicit __tail(int n0, Args const &... args) {
-        constexpr int n_args = sizeof...(Args) + 1;
-        static_assert((n_args - T::rank == 2) or ((n_args - T::rank == 0)), "Too many arguments in tail construction");
+      template <typename... Args>
+      TRIQS_DEPRECATED("__tail{n0, n1, ... } deprecated. Please use __tail{shape, n_moments} instead")
+      explicit __tail(Args... ns) {
+        constexpr int n_args = sizeof...(Args);
+        static_assert((n_args == T::rank) or (n_args == 2 + T::rank), "Wrong number of arguments in tail construction");
         mini_vector<int, T::rank> shape;
-        mini_vector<int, n_args> _args{n0, int(args)...};
+        mini_vector<int, n_args> _args{int(ns)...};
         for (int i = 0; i < T::rank; ++i) shape[i] = _args[i];
         *this = (n_args == T::rank ? __tail{shape} : __tail{shape, _args[n_args - 2], _args[n_args - 1]});
       }
@@ -213,7 +211,7 @@ namespace triqs {
 
       /// Sets order < n to 0 and Nan from n to order_max
       void reset(int n = order_min()) {
-        n                                    = std::min(n, order_max() + 1) - order_min();
+        n                                    = std::min(n, order_max()) - order_min();
         _data(range(0, n), ellipsis())       = 0;
         _data(range(n, _size()), ellipsis()) = std::numeric_limits<double>::quiet_NaN();
       }
@@ -493,7 +491,7 @@ namespace triqs {
 
       /// Sets order < n to 0 and Nan from n to order_max
       void reset(int n = order_min()) {
-        n                                    = std::min(n, order_max() + 1) - order_min();
+        n                                    = std::min(n, order_max()) - order_min();
         _data(range(0, n), ellipsis())       = 0;
         _data(range(n, _size()), ellipsis()) = std::numeric_limits<double>::quiet_NaN();
       }

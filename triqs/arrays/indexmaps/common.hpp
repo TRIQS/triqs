@@ -36,7 +36,7 @@ namespace triqs { namespace arrays {
 
  // make_shape
  template<typename... T> 
-  mini_vector<size_t, sizeof...(T)+1> make_shape(size_t x0, T... args) { return  mini_vector<size_t, sizeof...(T)+1> (x0,args...);}
+  mini_vector<size_t, sizeof...(T)> make_shape(T... args) { return  mini_vector<size_t, sizeof...(T)> (args...);}
 
  namespace indexmaps { 
 
