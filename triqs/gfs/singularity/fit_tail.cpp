@@ -20,9 +20,6 @@ namespace triqs { namespace gfs {
 
   int n_unknown_moments = max_moment - known_moments_omax;
 
-  //std::cout  << known_moments_omax << " "<< known_moments_omin <<" "<< known_moments_size << std::endl;
-  //std::cout << " n_unknown_moments " << n_unknown_moments << std::endl;
-
   if (n_unknown_moments < 1) return known_moments;
 
   // get the number of even unknown moments: it is n_unknown_moments/2+1 if the first
@@ -36,7 +33,6 @@ namespace triqs { namespace gfs {
 
   int size1 = n_max - n_min + 1;
   if (size1 < 0) TRIQS_RUNTIME_ERROR << "n_max - n_min + 1 <0";
-  // size2 is the number of moments
 
   arrays::matrix<double> A(size1, std::max(size_even, size_odd), FORTRAN_LAYOUT);
   arrays::matrix<double> B(size1, 1, FORTRAN_LAYOUT);
@@ -129,44 +125,37 @@ namespace triqs { namespace gfs {
   const double rcond = 0.0;
   int rank;
 
+  auto ranges_n = std::vector{range(n_min1, n_max1 + 1), range(n_min2, n_max2 + 1)};
+
   // fit both real and imaginary parts at the same time
   for (int i = 0; i < gf.target_shape()[0]; i++) {
    for (int j = 0; j < gf.target_shape()[1]; j++) {
 
-    // IMAGINARY PART
-    // k is a label for the matsubara frequency
-    for (int k = 0; k < n_freq1; k++) {
-     auto n = n_min1 + k;
-     auto iw = std::complex<double>(gf.mesh().index_to_point(n));
+    // === IMAGINARY PART
 
-     // construct data to be fitted - subtract known tail if present
-     B(k, 0) = imag(gf.data()(gf.mesh().index_to_linear(n), i, j));
-     if (known_moments_size > 0)
-      B(k, 0) -= imag(evaluate(slice_target_sing(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)), iw)(0, 0));
+    // k is the position inside the Fitting Matrices
+    int k = 0;
 
-     // set design matrix
-     // if the order is odd the fit yields the real coefficient of the moment
-     // if the order is even the fit yields the imaginary coefficient of the moment
-     for (int l = 0; l < n_unknown_moments; l++) {
-      int order = omin + l;
-      A(k, l) = imag( (order%2==1 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
-     }
-    }
-    for (int k = n_freq1; k < n_freq1+n_freq2; k++) {
-     auto n = n_min2 + k - n_freq1;
-     auto iw = std::complex<double>(gf.mesh().index_to_point(n));
+    // TODO : for ( auto [k, n] : enumerate( append( range1, range2 ) ) )
+    // We have two ranges to consider
+    for ( auto const & range : ranges_n ){
+     for ( int n : range ){
+      auto iw = std::complex<double>(gf.mesh().index_to_point(n));
 
-     // construct data to be fitted - subtract known tail if present
-     B(k, 0) = imag(gf.data()(gf.mesh().index_to_linear(n), i, j));
-     if (known_moments_size > 0)
-      B(k, 0) -= imag(evaluate(slice_target_sing(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)), iw)(0, 0));
+      // construct data to be fitted - subtract known tail if present
+      B(k, 0) = imag(gf.data()(gf.mesh().index_to_linear(n), i, j));
+      if (known_moments_size > 0)
+       B(k, 0) -= imag(evaluate(slice_target_sing(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)), iw)(0, 0));
 
-     // set design matrix
-     // if the order is odd the fit yields the real coefficient of the moment
-     // if the order is even the fit yields the imaginary coefficient of the moment
-     for (int l = 0; l < n_unknown_moments; l++) {
-      int order = omin + l;
-      A(k, l) = imag( (order%2==1 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
+      // set design matrix
+      // if the order is odd the fit yields the real coefficient of the moment
+      // if the order is even the fit yields the imaginary coefficient of the moment
+      for (int l = 0; l < n_unknown_moments; l++) {
+       int order = omin + l;
+       A(k, l) = imag( (order%2==1 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
+      }
+
+      ++k;
      }
     }
 
@@ -175,41 +164,27 @@ namespace triqs { namespace gfs {
      res(omin+m)(i, j) = ((omin+m)%2==1 ? B(m,0) : dcomplex{0,1}*B(m, 0));
     }
 
-    // REAL PART
-    // k is a label for the matsubara frequency
-    for (int k = 0; k < n_freq1; k++) {
-     auto n = n_min1 + k;
-     auto iw = std::complex<double>(gf.mesh().index_to_point(n));
+    // === REAL PART
 
-     // construct data to be fitted - subtract known tail if present
-     B(k, 0) = real(gf.data()(gf.mesh().index_to_linear(n), i, j));
-     if (known_moments_size > 0)
-      B(k, 0) -= real(evaluate(slice_target_sing(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)), iw)(0, 0));
+    k = 0; 
+    for ( auto const & range : ranges_n ){
+     for ( int n : range ){
+      auto iw = std::complex<double>(gf.mesh().index_to_point(n));
 
-     // set design matrix
-     // if the order is even the fit yields the real coefficient of the moment
-     // if the order is odd the fit yields the imaginary coefficient of the moment
-     for (int l = 0; l < n_unknown_moments; l++) {
-      int order = omin + l;
-      A(k, l) = real( (order%2==0 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
-     }
-    }
+      // construct data to be fitted - subtract known tail if present
+      B(k, 0) = real(gf.data()(gf.mesh().index_to_linear(n), i, j));
+      if (known_moments_size > 0)
+       B(k, 0) -= real(evaluate(slice_target_sing(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)), iw)(0, 0));
 
-    for (int k = n_freq1; k < n_freq1+n_freq2; k++) {
-     auto n = n_min2 + k - n_freq1;
-     auto iw = std::complex<double>(gf.mesh().index_to_point(n));
+      // set design matrix
+      // if the order is even the fit yields the real coefficient of the moment
+      // if the order is odd the fit yields the imaginary coefficient of the moment
+      for (int l = 0; l < n_unknown_moments; l++) {
+       int order = omin + l;
+       A(k, l) = real( (order%2==0 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
+      }
 
-     // construct data to be fitted - subtract known tail if present
-     B(k, 0) = real(gf.data()(gf.mesh().index_to_linear(n), i, j));
-     if (known_moments_size > 0)
-      B(k, 0) -= real(evaluate(slice_target_sing(known_moments, arrays::range(i, i + 1), arrays::range(j, j + 1)), iw)(0, 0));
-
-     // set design matrix
-     // if the order is even the fit yields the real coefficient of the moment
-     // if the order is odd the fit yields the imaginary coefficient of the moment
-     for (int l = 0; l < n_unknown_moments; l++) {
-      int order = omin + l;
-      A(k, l) = real( (order%2==0 ? 1.0 : dcomplex{0,1})*std::pow(iw, -1.0 * order) );
+      ++k;
      }
     }
 
