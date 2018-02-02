@@ -169,7 +169,7 @@ namespace gfs {
     *
     * Tail is initialized to 0 for n <= o_min + n_moments and NaN afterwards.
     */
-  template <typename Int> TRIQS_DEPRECATED("__tail{shape, n_moments, omin} deprecated. Please use __tail{shape} instead followed by a reset") 
+  template <typename Int> TRIQS_DEPRECATED("__tail{shape, n_moments, omin} deprecated. Please use __tail{shape} instead followed by tail.reset(o_min + n_moments)") 
   explicit __tail(mini_vector<Int, T::rank> sh, int n_moments, int o_min) : __tail{sh} {
    if( n_moments > _size() ) TRIQS_RUNTIME_ERROR << " Tail construction is limited to a total number of " << _size() << " moments"; 
    reset(o_min + n_moments);
@@ -183,7 +183,7 @@ namespace gfs {
     * or
     * (n0, ... n_{R-1}, n_moments, o_min) : Invoke __tail{ make_shape(n0, ... n_{R-1}), n_moments, o_min }
     */
-  template <typename... Args> TRIQS_DEPRECATED("__tail{n0, n1, ... } deprecated. Please use __tail{shape, n_moments} instead") 
+  template <typename... Args> TRIQS_DEPRECATED("__tail{n0, n1, ... } deprecated. Please use __tail{shape} instead followed by tail.reset(n_moments + o_min)") 
   explicit __tail(Args... ns) {
    constexpr int n_args = sizeof...(Args); 
    static_assert((n_args == T::rank) or (n_args == 2 + T::rank), "Wrong number of arguments in tail construction");
