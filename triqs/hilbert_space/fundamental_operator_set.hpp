@@ -48,7 +48,7 @@ namespace triqs {
 namespace hilbert_space {
 
 /// Structure of the Green's function
-using gf_struct_t = std::map<std::string,std::vector<std::variant<int, std::string>>>;
+using gf_struct_t = std::vector<std::pair<std::string,std::vector<std::variant<int, std::string>>>>;
 
 /// This class represents an ordered set of **indices** of the canonical operators (see [[many_body_operator]]) used to build the Fock states.
 /**
