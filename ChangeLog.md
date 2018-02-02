@@ -28,6 +28,24 @@ API changes
 
 * g.indices -> g.indices[0]
 
+* Change gf_struct_t in fundamental_operator_set.hpp from
+	```
+	std::map<std::string,std::vector<std::variant<int, std::string>>>
+	```
+  to
+	```
+	std::vector<std::pair<std::string,std::vector<std::variant<int, std::string>>>>
+	```
+
+  to properly maintain the order of blocks.
+  In any Python script, replace e.g.
+	```
+	gf_struct = { "up" : [0, 1], "dn" : [0, 1] }
+	```
+  by
+	```
+	gf_struct = [ ["up", [0, 1]], ["dn" : [0, 1]] ]
+	```
 
 Deprecation
 
