@@ -8,7 +8,7 @@ def fermi(eps, beta):
 
 beta = 10.0
 
-g_iw = GfImFreq(beta=beta, indices=[0])
+g_iw = GfImFreq(beta=beta, indices=[0], n_points=1000)
 g_iw << inverse(iOmega_n)
 np.testing.assert_almost_equal(g_iw.density(), 0.5)
 
@@ -20,17 +20,25 @@ for eps in np.random.random(10):
 
 # -- Real frequency
      
-g_w = GfReFreq(indices=[0], window=[-2., 2.])
+D = 2.
+eps = 1e-9
 
-D, mu = 2., .5
-g_w << inverse(Omega - SemiCircular(D) + mu)
-g_iw << inverse(iOmega_n - SemiCircular(D) + mu)
+g_w_even = GfReFreq(indices=[0], window=[-2.+eps, 2.-eps], n_points=100000)
+g_w_odd = GfReFreq(indices=[0], window=[-2.+eps, 2.-eps], n_points=100001)
 
-np.testing.assert_almost_equal(g_iw.density(), g_w.density(beta=beta))
+g_iw << SemiCircular(D)
+g_w_even << SemiCircular(D)
+g_w_odd << SemiCircular(D)
 
-w = np.array([w.real for w in g_w.mesh])
-g = np.squeeze(g_w.data.imag)
-norm = -1./np.pi * np.trapz(g, x=w)
+n_iw = g_iw.density()
 
-np.testing.assert_almost_equal(norm, 1.)
+n_w_even = g_w_even.density(beta=beta)
+n_w0_even = g_w_even.density(beta=-1.)
+n_w_odd = g_w_odd.density(beta=beta)
+n_w0_odd = g_w_odd.density(beta=-1.)
+
+np.testing.assert_almost_equal(n_iw, n_w_even)
+np.testing.assert_almost_equal(n_iw, n_w_odd)
+np.testing.assert_almost_equal(n_iw, n_w0_even)
+np.testing.assert_almost_equal(n_iw, n_w0_odd)
 

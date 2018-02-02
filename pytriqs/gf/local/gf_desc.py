@@ -602,16 +602,27 @@ for py_type, has_tail in [("GfReFreq", True) ,("GfReFreqNoTail",False)]:
               signature = "void(gf_view<imfreq, matrix_valued, tail> gw, int n_points = 100, double freq_offset = 0.0)",
               calling_pattern = "pade(self_c,*gw,n_points, freq_offset)",
               doc = """TO BE WRITTEN""")
+
   g.add_method(name = "density",
-              signature = "matrix_view<double>()",
-              calling_pattern = "auto result = density(self_c)",
-              doc = "Density, as a matrix, computed from a Matsubara sum")
+              signature = "matrix_view<double>(double beta)",
+              calling_pattern = "auto result = density(self_c, beta)",
+              doc = "Density, as a matrix, computed from real frequency integration")
 
   g.add_method(name = "total_density",
-              signature = "double()",
-              calling_pattern = "auto result = trace(density(self_c))",
+              signature = "double(double beta)",
+              calling_pattern = "auto result = trace(density(self_c, beta))",
               doc = "Trace of density")
 
+  g.add_method(name = "density_zero_T",
+              signature = "matrix_view<double>()",
+              calling_pattern = "auto result = density_zero_T(self_c)",
+              doc = "Density, as a matrix, computed from real frequency integration")
+
+  g.add_method(name = "total_density_zero_T",
+              signature = "double()",
+              calling_pattern = "auto result = trace(density_zero_T(self_c))",
+              doc = "Trace of density")
+  
 # For legacy Python code : authorize g + Matrix
  g.number_protocol['inplace_add'].add_overload(calling_pattern = "+=", signature = "void(gf_view<refreq> x,matrix<std::complex<double>> y)")
  g.number_protocol['inplace_subtract'].add_overload(calling_pattern = "-=", signature = "void(gf_view<refreq> x,matrix<std::complex<double>> y)")

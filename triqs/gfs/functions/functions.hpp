@@ -48,8 +48,11 @@ namespace gfs {
  // For Real Frequency functions
  // ------------------------------------------------------
 
- arrays::matrix<dcomplex> density(gf_const_view<refreq> g);
- dcomplex density(gf_const_view<refreq, scalar_valued> g);
+ arrays::matrix<dcomplex> density(gf_const_view<refreq> g, double beta);
+ dcomplex density(gf_const_view<refreq, scalar_valued> g, double beta);
+
+ arrays::matrix<dcomplex> density_zero_T(gf_const_view<refreq> g);
+ dcomplex density_zero_T(gf_const_view<refreq, scalar_valued> g);
 
  //-------------------------------------------------------
  // For Legendre functions

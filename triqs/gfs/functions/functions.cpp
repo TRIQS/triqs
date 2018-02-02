@@ -19,7 +19,12 @@
  *
  ******************************************************************************/
 #include "functions.hpp"
+
 #include <triqs/utility/legendre.hpp>
+#include <triqs/arrays/algorithms.hpp>
+
+#include <triqs/clef.hpp>
+using namespace triqs::clef;
 
 namespace triqs { namespace gfs {
 
@@ -100,59 +105,69 @@ namespace triqs { namespace gfs {
  //-------------------------------------------------------
  // For Real Frequency functions
  // ------------------------------------------------------
- arrays::matrix<dcomplex> density(gf_const_view<refreq> g) {
+
+ /// Zero temperature density from integration on the real frequency axis
+ arrays::matrix<dcomplex> density_zero_T(gf_const_view<refreq> g) {
    
-  double dw = g.mesh().delta(); // spacing (equidistant mesh!)
-  double a = -g.mesh().x_min() - floor(-g.mesh().x_min()/dw)*dw; // spacing between last negative meshpoint and 0
-  double fac = 0;
-  bool zero_in_mesh = false;
+  int N = g.mesh().size(); // no mesh points
+  double wmin = g.mesh().x_min();
+  double dw = g.mesh().delta();
+
+  assert( wmin < 0. );
   
-  auto sh = get_target_shape(g);
-  int N1 = sh[0], N2 = sh[1];
-  arrays::matrix<dcomplex> res(sh);
-  res() = 0;
+  int N0 = floor(-wmin/dw) + 1; // frequency index at or above w=0
+  double dw0 = -wmin - (N0 - 1)*dw; // last interval width to w=0
   
-  // check if 0 is a meshpoint
-  for (auto const &w : g.mesh()) {
-    if (w == 0) { zero_in_mesh = true;}
-  }
+  arrays::matrix<dcomplex> res(get_target_shape(g));
+
+  // Trapetzoidal integration, with partial right interval
+  res = 0.5 * g[0];
+  for( int widx : range(1, N0) ) res += g[widx];
+  if( abs(dw0) > 1e-9 ) {
+    double a = dw0/dw;
+    res += 0.5 * ((a*a-1.)*g[N0-1] + a*(2.-a)*g[N0]);		 
+  } else
+    res -= 0.5 * g[N0-1];
+
+  // Filter out divergent real parts of g that are inf
+  // e.g. flat dos at dos edge (but keep complex matrix structure)
+  for( int idx : range(0, res.shape()[0]) )
+    res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
   
-  for (int n1 = 0; n1 < N1; n1++)
-    for (int n2 = n1; n2 < N2; n2++) {
-        for (auto const &w : g.mesh()) {
-            fac = 0.0;
-            // all other points
-            if (w < 0) {
-                fac = 1.0;
-                // first negative point
-                if (w == g.mesh().x_min()) { fac = 0.5;}
-                // if zero is not in mesh treat last negative point
-                if (zero_in_mesh == false && w > -dw) {
-                    fac = 0.5;
-                    // missing area up to 0
-                    fac = fac - (a*(a/dw-2))/(dw*2.0);
-                }
-            }
-            // last point (if 0 is in mesh)
-            else if (w == 0) { fac = 0.5;}
-            // if zero is not in mesh treat first positive point
-            else if (zero_in_mesh == false && w < dw) {    
-                    fac = (a*(a/dw))/(dw*2.0);
-            }
-            res(n1,n2) -= fac*dw/(2.0*M_PI*1_j)*(g[w](n1,n2)-conj(g[w](n2,n1)));
-        }
-        if (n2 > n1) res(n2, n1) = conj(res(n1, n2));
-  }
-  
+  res *= dcomplex(0., 1.) * dw / M_PI; // scale to density
+
   return res;
  }
 
+ /// Finite temperature density from integration on the real frequency axis
+arrays::matrix<dcomplex> density(gf_const_view<refreq> g, double beta) {
+
+  if( beta < 0. ) return density_zero_T(g);
+  
+  arrays::matrix<dcomplex> res(get_target_shape(g));
+  res() = 0;
+  
+  for (auto const &w : g.mesh())
+    res += g[w] / ( 1. + exp(-beta * w) );
+
+  // -- Required to filter out divergent real parts of g that are inf
+  // -- eg flat dos at dos edge
+  for( int idx : range(0, res.shape()[0]) )
+    res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
+
+  res *= dcomplex(0., 1.) * g.mesh().delta() / M_PI;
+  
+  return res;
+ }
+    
  //-------------------------------------------------------
- dcomplex density(gf_const_view<refreq, scalar_valued> g) {
-  return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0);
+ dcomplex density(gf_const_view<refreq, scalar_valued> g, double beta) {
+   return density(reinterpret_scalar_valued_gf_as_matrix_valued(g), beta)(0, 0);
  }
 
-
+ dcomplex density_zero_T(gf_const_view<refreq, scalar_valued> g) {
+   return density_zero_T(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0);
+ }
 
  //-------------------------------------------------------
  // For Legendre functions
