@@ -27,6 +27,7 @@ import lazy_expressions
 import descriptors, descriptor_base
 from types import IntType, SliceType, StringType
 from mesh_product import MeshProduct
+from pytriqs.plot.protocol import clip_array
 import meshes
 import singularities
 import plot 
@@ -658,7 +659,7 @@ class Gf(object):
                    If flatten_y is True and dim is (1, 1, *), returns a 1d numpy
         """
         X = [x.imag for x in self.mesh] if isinstance(self.mesh, meshes.MeshImFreq) else [x for x in self.mesh]
-        X, data = numpy.array(X), self.data
+        X, data = np.array(X), self.data
         if x_window:
             # the slice due to clip option x_window
             sl = clip_array(X, *x_window) if x_window else slice(len(X))

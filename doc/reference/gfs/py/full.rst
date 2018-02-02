@@ -1,6 +1,6 @@
 .. index::
   single: Green's functions; full Green's function
-  module: gf.local
+  module: gf
 
 .. _fullgreen:
 
@@ -55,7 +55,7 @@ These names will be used when we try to access a particular block, for example :
 Reference 
 ----------------
 
-.. autoclass:: pytriqs.gf.local.BlockGf
+.. autoclass:: pytriqs.gf.BlockGf
   :members: copy, copy_from
 
 

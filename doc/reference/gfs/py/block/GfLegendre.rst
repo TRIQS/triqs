@@ -10,7 +10,7 @@
 Reference
 ---------------
 
-.. autoclass:: pytriqs.gf.local.GfLegendre
+.. autoclass:: pytriqs.gf.GfLegendre
   :members: density, enforce_discontinuity
 
 .. warning::
