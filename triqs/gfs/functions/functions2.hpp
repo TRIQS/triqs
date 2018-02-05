@@ -126,7 +126,9 @@ namespace gfs {
    @param g a gf
    */
  template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type::real_t> real(G const &g) {
-  return {g.mesh(), real(g.data()), {}, g.indices()};
+  auto empty_tail = typename G::regular_type::real_t::singularity_t{g.target_shape()};
+  empty_tail.reset();
+  return {g.mesh(), real(g.data()), empty_tail, g.indices()};
  }
  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, typename G::regular_type::real_t> real(G const &g) {
   return map_block_gf(real<typename G::g_t>, g);
