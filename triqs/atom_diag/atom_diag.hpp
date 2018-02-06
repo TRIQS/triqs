@@ -84,7 +84,8 @@ template<bool Complex> class atom_diag {
   matrix_t unitary_matrix;
 
   // HDF5
-  friend std::string get_triqs_hdf5_data_scheme(eigensystem_t const&) { return "atom_diag::eigensystem_t"; }
+  static std::string hdf5_scheme() { return "atom_diag::eigensystem_t"; }
+  
   friend void h5_write(h5::group fg, std::string const& name, eigensystem_t const& es) {
    auto gr = fg.create_group(name);
    h5_write(gr, "eigenvalues", es.eigenvalues);
@@ -222,8 +223,7 @@ template<bool Complex> class atom_diag {
  long c_connection(int op_linear_index, int sp_index) const { return annihilation_connection(op_linear_index, sp_index); }
 
  /// Subspace-to-subspace connections for fundamental operator :math:`C^\dagger`
- /**
-  *
+ /** *
   * @param op_linear_index The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
   * @param sp_index The index of the initial subspace.
   * @return The index of the final subspace.
@@ -274,7 +274,9 @@ template<bool Complex> class atom_diag {
  friend std::ostream& operator<< <Complex>(std::ostream& os, atom_diag const& ss);
  friend void h5_write<Complex>(h5::group gr, std::string const& name, atom_diag const&);
  friend void h5_read<Complex>(h5::group gr, std::string const& name, atom_diag&);
- friend std::string get_triqs_hdf5_data_scheme(atom_diag const&) { return Complex ? "AtomDiagComplex" : "AtomDiagReal"; }
+ 
+ public:
+ static std::string hdf5_scheme() { return Complex ? "AtomDiagComplex" : "AtomDiagReal"; } 
 };
 
 }}

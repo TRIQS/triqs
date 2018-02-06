@@ -29,11 +29,11 @@ class HDF5Scheme :
         return """
         Name of the class : %s
         Name of the module : %s
-        Documentation : %s"""(self.classname,self.modulename,self.doc)
+        Documentation : %s"""%(self.classname,self.modulename,self.doc)
         
 _hdf5_schemes_dict= {}
 
-def register_class (cls, doc = None, read_fun = None):
+def register_class (cls, doc = None, read_fun = None, hdf5_data_scheme = None):
     """
      For each class, register it with::
 
@@ -41,7 +41,7 @@ def register_class (cls, doc = None, read_fun = None):
          register_class (GfImFreq, doc= doc_if_different_from cls._hdf5_data_scheme_doc_ )
 
     """
-    hdf_scheme = cls._hdf5_data_scheme_ if hasattr(cls,"_hdf5_data_scheme_") else cls.__name__ 
+    hdf_scheme = hdf5_data_scheme or (cls._hdf5_data_scheme_ if hasattr(cls,"_hdf5_data_scheme_") else cls.__name__) 
     assert hdf_scheme not in _hdf5_schemes_dict, "class %s is already registered"%hdf_scheme
     doc = doc if doc else (cls._hdf5_data_scheme_doc_ if hasattr(cls,"_hdf5_data_scheme_doc_") else {})
     _hdf5_schemes_dict [hdf_scheme] = HDF5Scheme (cls.__name__, cls.__module__,doc, hdf_scheme, read_fun)

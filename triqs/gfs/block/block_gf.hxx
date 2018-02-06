@@ -310,12 +310,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      friend std::string get_triqs_hdf5_data_scheme(block_gf const &g) { return "BlockGf"; }
+      static std::string hdf5_scheme() { return "BlockGf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(g);
+        gr.write_hdf5_scheme(g);
 
         h5_write(gr, "block_names", g.block_names());
         for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
@@ -325,8 +325,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block_gf &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        auto tag_file     = gr.read_hdf5_scheme();
+        auto tag_expected = block_gf::hdf5_scheme();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -673,12 +673,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      friend std::string get_triqs_hdf5_data_scheme(block_gf_view const &g) { return "BlockGf"; }
+      static std::string hdf5_scheme() { return "BlockGf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(g);
+        gr.write_hdf5_scheme(g);
 
         h5_write(gr, "block_names", g.block_names());
         for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
@@ -688,8 +688,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block_gf_view &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        auto tag_file     = gr.read_hdf5_scheme();
+        auto tag_expected = block_gf_view::hdf5_scheme();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -986,12 +986,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      friend std::string get_triqs_hdf5_data_scheme(block_gf_const_view const &g) { return "BlockGf"; }
+      static std::string hdf5_scheme() { return "BlockGf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf_const_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(g);
+        gr.write_hdf5_scheme(g);
 
         h5_write(gr, "block_names", g.block_names());
         for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
@@ -1001,8 +1001,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block_gf_const_view &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        auto tag_file     = gr.read_hdf5_scheme();
+        auto tag_expected = block_gf_const_view::hdf5_scheme();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -1326,12 +1326,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      friend std::string get_triqs_hdf5_data_scheme(block2_gf const &g) { return "Block2Gf"; }
+      static std::string hdf5_scheme() { return "Block2Gf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(g);
+        gr.write_hdf5_scheme(g);
 
         h5_write(gr, "block_names1", g.block_names()[0]);
         h5_write(gr, "block_names2", g.block_names()[1]);
@@ -1343,8 +1343,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block2_gf &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        auto tag_file     = gr.read_hdf5_scheme();
+        auto tag_expected = block2_gf::hdf5_scheme();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -1682,12 +1682,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      friend std::string get_triqs_hdf5_data_scheme(block2_gf_view const &g) { return "Block2Gf"; }
+      static std::string hdf5_scheme() { return "Block2Gf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(g);
+        gr.write_hdf5_scheme(g);
 
         h5_write(gr, "block_names1", g.block_names()[0]);
         h5_write(gr, "block_names2", g.block_names()[1]);
@@ -1699,8 +1699,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block2_gf_view &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        auto tag_file     = gr.read_hdf5_scheme();
+        auto tag_expected = block2_gf_view::hdf5_scheme();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -1985,12 +1985,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      friend std::string get_triqs_hdf5_data_scheme(block2_gf_const_view const &g) { return "Block2Gf"; }
+      static std::string hdf5_scheme() { return "Block2Gf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf_const_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(g);
+        gr.write_hdf5_scheme(g);
 
         h5_write(gr, "block_names1", g.block_names()[0]);
         h5_write(gr, "block_names2", g.block_names()[1]);
@@ -2002,8 +2002,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block2_gf_const_view &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-        auto tag_expected = get_triqs_hdf5_data_scheme(g);
+        auto tag_file     = gr.read_hdf5_scheme();
+        auto tag_expected = block2_gf_const_view::hdf5_scheme();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;

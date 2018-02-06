@@ -20,40 +20,43 @@
  *
  ******************************************************************************/
 #pragma once
+#include <type_traits>
+
 #include "./scalar.hpp"
 #include "./string.hpp"
 #include "./vector.hpp"
 #include "./map.hpp"
 #include "./optional.hpp"
 
-namespace triqs {
-namespace h5 {
- 
- // A generic read
- template <typename T> T h5_read(group gr, std::string const& name) {
-  T x;
-  h5_read(gr, name, x);
-  return x;
- }
+namespace triqs::h5 {
 
- /// Returns the attribute name of obj, and "" if the attribute does not exist.
- template <typename T> T h5_read_attribute(hid_t id, std::string const& name) {
-  using triqs::h5::h5_read_attribute;
-  T x;
-  h5_read_attribute(id, name, x);
-  return x;
- }
+  // A generic read
+  template <typename T> T h5_read(group gr, std::string const &name) {
+    if constexpr (std::is_default_constructible_v<T>) {
+      T x;
+      h5_read(gr, name, x);
+      return x;
+    } else {
+      return T::h5_read_construct(gr, name);
+    }
+  }
 
- // traits to detect h5_read/h5_write is overloaded. Unused currently. Kept since
- // it can useful and is it not so simple to do...
- template <typename T, typename Enable = void> struct has_h5_read : std::false_type {};
- template <typename T>
- struct has_h5_read<T, decltype(h5_read(std::declval<h5::group>(), std::string(), *(std::declval<T*>())))> : std::true_type {};
+  /// Returns the attribute name of obj, and "" if the attribute does not exist.
+  template <typename T> T h5_read_attribute(hid_t id, std::string const &name) {
+    using triqs::h5::h5_read_attribute;
+    T x;
+    h5_read_attribute(id, name, x);
+    return x;
+  }
 
- template <typename T, typename Enable = void> struct has_h5_write : std::false_type {};
- template <typename T>
- struct has_h5_write<T, decltype(h5_write(std::declval<h5::group>(), std::string(), std::declval<const T>()))> : std::true_type {
- };
+  // traits to detect h5_read/h5_write is overloaded. Unused currently. Kept since
+  // it can useful and is it not so simple to do...
+  template <typename T, typename Enable = void> struct has_h5_read : std::false_type {};
+  template <typename T>
+  struct has_h5_read<T, decltype(h5_read(std::declval<h5::group>(), std::string(), *(std::declval<T *>())))> : std::true_type {};
 
-}
-}
+  template <typename T, typename Enable = void> struct has_h5_write : std::false_type {};
+  template <typename T>
+  struct has_h5_write<T, decltype(h5_write(std::declval<h5::group>(), std::string(), std::declval<const T>()))> : std::true_type {};
+
+} // namespace triqs::h5

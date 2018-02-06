@@ -33,6 +33,8 @@
 #include "../python/array_view_to_python.hpp"
 #endif
 
+#include "triqs/h5/base_public.hpp"
+
 namespace triqs { namespace arrays {
 
  template<int Rank, class T, class = std17::void_t<>> struct get_memory_layout {
@@ -94,6 +96,10 @@ namespace triqs { namespace arrays {
     static constexpr int rank = IndexMapType::domain_type::rank;
     static constexpr bool is_const = IsConst;
 
+    static std::string hdf5_scheme() { 
+       return "array<" + triqs::h5::get_hdf5_scheme<value_type>() + "," + std::to_string(rank) + ">";
+    }
+    
    protected:
 
     indexmap_type indexmap_;

@@ -85,6 +85,7 @@ class HDFArchiveGroupBasicLayer :
             if type(v) in [n.uint8, n.uint16, n.uint32, n.uint64] : return int(v)
             if type(v) in [n.float,  n.float32, n.float64] : return float(v)
             if type(v) in [n.complex, n.complex64, n.complex128] : return complex(v)
+            if type(v) in [n.bool_] : return bool(v)
             if type(v) in [n.str_, n.string_] : return str(v)
             # converts the array of numpy string into a list of normal python strings
             if type(v) is n.ndarray and v.dtype.type is n.string_ : return map(str,v)

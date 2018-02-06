@@ -114,13 +114,7 @@ namespace arrays {
             typename A::value_type>()))> : std::integral_constant<bool, is_scalar<typename A::value_type>::value ||
                                                                             std::is_base_of<std::string,
                                                                                             typename A::value_type>::value> {};
- // get_triqs_hdf5_data_scheme
- template <typename ArrayType>
- TYPE_ENABLE_IFC(std::string, is_amv_value_or_view_class<ArrayType>::value) get_triqs_hdf5_data_scheme(ArrayType const&) {
-  using triqs::get_triqs_hdf5_data_scheme; // for the basic types, not found by ADL
-  return "array<" + get_triqs_hdf5_data_scheme(typename ArrayType::value_type()) + "," + std::to_string(ArrayType::rank) + ">";
- }
-
+ 
  /*
   * Read an array or a view from an hdf5 file
   * ArrayType The type of the array/matrix/vector, etc..
@@ -150,4 +144,5 @@ namespace arrays {
  }
 
 }}
+
 

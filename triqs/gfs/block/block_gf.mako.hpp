@@ -484,15 +484,15 @@ namespace triqs {
 
    /// HDF5 name
    // mako %if ARITY == 1 :
-   friend std::string get_triqs_hdf5_data_scheme(MAKO_GF const& g) { return "BlockGf"; }
+   static std::string hdf5_scheme() {return  "BlockGf";}
    // mako %else:
-   friend std::string get_triqs_hdf5_data_scheme(MAKO_GF const& g) { return "Block2Gf"; }
+   static std::string hdf5_scheme() {return  "Block2Gf";}
    // mako %endif
 
    /// Write into HDF5
    friend void h5_write(h5::group fg, std::string const& subgroup_name, MAKO_GF const& g) {
     auto gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g);
+    gr.write_hdf5_scheme(g);
 
     // mako %if ARITY == 1 :
     h5_write(gr, "block_names", g.block_names());
@@ -511,8 +511,8 @@ namespace triqs {
    friend void h5_read(h5::group fg, std::string const& subgroup_name, MAKO_GF& g) {
     auto gr = fg.open_group(subgroup_name);
     // Check the attribute or throw
-    auto tag_file     = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected = get_triqs_hdf5_data_scheme(g);
+    auto tag_file     = gr.read_hdf5_scheme();
+    auto tag_expected = MAKO_GF::hdf5_scheme(); 
     if (tag_file != tag_expected)
      TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                          << " while I expected " << tag_expected;

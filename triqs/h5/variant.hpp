@@ -26,18 +26,11 @@
 #include "./generic.hpp"
 #include <variant>
 
-namespace std { // to be found by ADL
-
-  template <typename... T> std::string get_triqs_hdf5_data_scheme(std::variant<T...> const &v) {
-    auto l = [](auto &&x) {
-      using triqs::get_triqs_hdf5_data_scheme; // for the basic types, not found by ADL
-      return get_triqs_hdf5_data_scheme(x);
-    };
-    return visit(l, v);
-  }
-} // namespace std
-
 namespace triqs::h5 {
+
+  template <typename... T> struct hdf5_scheme_impl<std::variant<T...>> {
+    static std::string invoke() = delete;
+  };
 
   /**
    */
@@ -46,11 +39,8 @@ namespace triqs::h5 {
   }
 
   template <typename T> bool h5_is(datatype dt) {
-    // special case for the string
-    if constexpr (std::is_same<T, std::string>::value) { return H5Tget_class(dt) == H5T_STRING; }
-    //if constexpr (std::is_integral<T>::value) { return H5Tget_class(dt) == H5T_INTEGER; }
-    //if constexpr (std::is_same<T, double>::value) { return H5Tget_class(dt) == H5T_FLOAT; }
-    return H5Tequal(dt, h5_type_from_C(T{}));
+    if constexpr (std::is_same<T, std::string>::value) { return H5Tget_class(dt) == H5T_STRING; } // H5T_INTEGER, H5T_FLOAT
+    else return H5Tequal(dt, h5_type_from_C(T{}));
   }
 
   template <typename VT, typename U, typename... T> void h5_read_variant_helper(VT &v, datatype dt, h5::group gr, std::string const &name) {

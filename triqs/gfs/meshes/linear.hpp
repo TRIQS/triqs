@@ -169,7 +169,7 @@ namespace gfs {
   /// Write into HDF5
   friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, linear_mesh const &m,  const char * _type) {
    h5::group gr = fg.create_group(subgroup_name);
-   gr.write_triqs_hdf5_data_scheme_as_string(_type);
+   gr.write_hdf5_scheme_as_string(_type);
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "min", m.xmin);
    h5_write(gr, "max", m.xmax);
@@ -179,7 +179,7 @@ namespace gfs {
   /// Read from HDF5
   friend void h5_read_impl(h5::group fg, std::string const & subgroup_name, linear_mesh &m, const char * tag_expected) {
    h5::group gr = fg.open_group(subgroup_name);
-   gr.assert_triqs_hdf5_data_scheme_as_string(tag_expected, true);
+   gr.assert_hdf5_scheme_as_string(tag_expected, true);
    typename linear_mesh::domain_t dom;
    double a, b;
    long L;

@@ -22,11 +22,9 @@
 #include "./group.hpp"
 #include <cstring>
 
-namespace triqs {
+namespace triqs::h5 {
 
- inline std::string get_triqs_hdf5_data_scheme(std::string const & ) { return "string";}
-
- namespace h5 {
+ TRIQS_SPECIALIZE_HDF5_SCHEME2(std::string, string);
 
  /**
   * \brief Write a string  into an hdf5 file
@@ -48,5 +46,5 @@ namespace triqs {
 
  inline void h5_read (group g, std::string const & name, char * s) = delete;
 
-}}
+}
 

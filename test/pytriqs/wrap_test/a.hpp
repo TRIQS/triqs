@@ -113,12 +113,12 @@ struct A {
   }
 
   ///
-  friend std::string get_triqs_hdf5_data_scheme(A const&) { return "Ac"; }
+  static std::string hdf5_scheme() { return "Ac"; }
 
   /// Write into HDF5
   friend void h5_write(triqs::h5::group fg, std::string subgroup_name, A const &a) {
    auto gr = fg.create_group(subgroup_name);
-   gr.write_triqs_hdf5_data_scheme(a);
+   gr.write_hdf5_scheme(a);
    h5_write(gr, "x", a.x);
   }
 

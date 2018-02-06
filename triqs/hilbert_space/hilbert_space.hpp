@@ -113,13 +113,11 @@ class hilbert_space {
   return f;
  }
 
- private:
-
- /// Return name of the HDF5 scheme
  /**
    @return Name of the scheme
  */
- friend std::string get_triqs_hdf5_data_scheme(hilbert_space const&) { return "hilbert_space"; }
+ static std::string hdf5_scheme() { return "hilbert_space"; }
+ private:
 
  /// Write a Hilbert space to an HDF5 group
  /**
@@ -264,11 +262,12 @@ class sub_hilbert_space {
  // hence it is slow to insert (we don't care) but fast to look up (we do it a lot)
  boost::container::flat_map<fock_state_t, int> fock_to_index;
 
+ public:
  /// Return name of the HDF5 scheme
  /**
    @return Name of the scheme
  */
- friend std::string get_triqs_hdf5_data_scheme(sub_hilbert_space const&) { return "sub_hilbert_space"; }
+ static std::string hdf5_scheme() { return "sub_hilbert_space"; }
 
  /// Write a Hilbert subspace to an HDF5 group
  /**

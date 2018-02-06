@@ -155,6 +155,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
 
     #-------------------------------------------------------------------------
     def __setitem__(self,key,val) :
+        assert '/' not in key, "/ can not be part of a key"
         key= self._key_cipher(key)# first look if key is a string or key
 
         if key in self.keys() :
@@ -219,6 +220,11 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
     def __getitem__(self,key) :
         """Return the object key, possibly reconstructed as a python object if
         it has been properly set up"""
+        # If the key contains /, grabs the subgroups
+        if '/' in key:
+            a,l =self, key.split('/')
+            for s in l[:-1]: a = a.get_raw(s)
+            return a[l[-1]]
         return self.__getitem1__(key,self._reconstruct_python_objects)
 
     #-------------------------------------------------------------------------

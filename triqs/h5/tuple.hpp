@@ -21,34 +21,36 @@
 #pragma once
 #include "group.hpp"
 #include "string.hpp"
-#include <map>
+#include <tuple>
 
 namespace triqs::h5 {
 
-  template <typename T> struct hdf5_scheme_impl<std::map<std::string, T>> {
-    static std::string invoke() { return "PythonDictWrap"; } //"std::map<string," + hdf5_scheme_impl<T>::invoke() + ">"; }
+  template <typename... T> struct hdf5_scheme_impl<std::tuple<T...>> {
+    static std::string invoke() { return "PythonTupleWrap"; }
   };
 
- /**
-   * Map of string and T as a subgroup with key_names
-   */
-  template <typename T> void h5_write(group f, std::string const &name, std::map<std::string, T> const &M) {
+  template <typename... T, std::size_t... Is> void h5_write_impl(group f, std::string const &name, std::tuple<T...> const &tpl, std::index_sequence<Is...>) {
     auto gr = f.create_group(name);
-    gr.write_hdf5_scheme(M);
-    for (auto &pvp : M) h5_write(gr, pvp.first, pvp.second);
+    gr.write_hdf5_scheme(tpl);
+    (h5_write(gr, std::to_string(Is), std::get<Is>(tpl)), ...);
   }
 
  /**
-   * Map of string and T
+   * Tuple of T... as a subgroup with numbers
    */
-  template <typename T> void h5_read(group f, std::string const &name, std::map<std::string, T> &M) {
-    auto gr = f.open_group(name);
-    M.clear();
-    for (auto const &x : gr.get_all_subgroup_dataset_names()) {
-      T value;
-      h5_read(gr, x, value);
-      M.emplace(x, std::move(value));
-    }
+  template <typename... T> void h5_write(group f, std::string const &name, std::tuple<T...> const &tpl) {
+    h5_write_impl(f, name, tpl, std::index_sequence_for<T...>{});
   }
 
+  template <typename... T, std::size_t... Is> void h5_read_impl(group f, std::string const &name, std::tuple<T...> &tpl, std::index_sequence<Is...>) {
+    auto gr = f.open_group(name);
+    (h5_read(gr, std::to_string(Is), std::get<Is>(tpl)), ...);
+  }
+
+ /**
+   * Tuple of T...
+   */
+  template <typename... T> void h5_read(group f, std::string const &name, std::tuple<T...> &tpl) {
+    h5_read_impl(f, name, tpl, std::index_sequence_for<T...>{});
+  }
 } // namespace triqs::h5

@@ -100,7 +100,8 @@ namespace triqs {
    auto begin() const { return std::begin(_data);} 
    auto end() const { return std::end(_data);} 
 
-   friend std::string get_triqs_hdf5_data_scheme(gf_indices const &);
+   static std::string hdf5_scheme() {return  "GfIndices";}
+   
    friend void h5_write(h5::group fg, std::string subgroup_name, gf_indices const& g);
    friend void h5_read(h5::group fg, std::string subgroup_name, gf_indices& g);
 

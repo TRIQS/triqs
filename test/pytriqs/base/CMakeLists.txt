@@ -9,7 +9,8 @@ add_python_test(test_example)
 add_python_test(operator_python_test)
 add_python_test(operator_python2)
 
-# Some basic HDF IO stuff
+# Some basic HDF5 Stuff
+add_python_test(hdf5_bool)
 add_python_test(hdf5_io)
 
 # Greens functions

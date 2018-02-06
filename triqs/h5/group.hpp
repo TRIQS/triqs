@@ -54,22 +54,22 @@ namespace h5 {
   std::string name() const;
 
   /// Write the triqs tag
-  void write_triqs_hdf5_data_scheme_as_string(const char *a); 
+  void write_hdf5_scheme_as_string(const char *a); 
   	
   /// Write the triqs tag of the group if it is an object.
-  template <typename T> void write_triqs_hdf5_data_scheme(T const &obj) {
-   write_triqs_hdf5_data_scheme_as_string(get_triqs_hdf5_data_scheme(obj).c_str());
+  template <typename T> void write_hdf5_scheme(T const &obj) {
+   write_hdf5_scheme_as_string(get_hdf5_scheme<T>().c_str());
   }
 
   /// Read the triqs tag of the group if it is an object. Returns the empty string "" if attribute is not present
-  std::string read_triqs_hdf5_data_scheme() const;
+  std::string read_hdf5_scheme() const;
   
   /// Asserts that the tag of the group is the same as for T. Throws TRIQS_RUNTIME_ERROR if
-  void assert_triqs_hdf5_data_scheme_as_string(const char * tag_expected, bool ignore_if_absent= false) const;
+  void assert_hdf5_scheme_as_string(const char * tag_expected, bool ignore_if_absent= false) const;
 
   /// Asserts that the tag of the group is the same as for T. Throws TRIQS_RUNTIME_ERROR if
-  template<typename T> void assert_triqs_hdf5_data_scheme(T const &x, bool ignore_if_absent= false) const {
-   assert_triqs_hdf5_data_scheme_as_string(get_triqs_hdf5_data_scheme(x).c_str(), ignore_if_absent);
+  template<typename T> void assert_hdf5_scheme(T const &x, bool ignore_if_absent= false) const {
+   assert_hdf5_scheme_as_string(get_hdf5_scheme<T>().c_str(), ignore_if_absent);
   }
 
   ///
@@ -109,6 +109,9 @@ namespace h5 {
 
   /// Returns all names of dataset of G
   std::vector<std::string> get_all_dataset_names() const;
+  
+  /// Returns all names of dataset of G
+  std::vector<std::string> get_all_subgroup_dataset_names() const;
  };
 
 }
