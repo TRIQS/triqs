@@ -49,11 +49,9 @@ namespace gfs {
   //-------------------------------------
 
   private:
-  void direct_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, __tail<scalar_valued> const& ta) {
-   // TO BE MODIFIED AFTER SCALAR IMPLEMENTATION TODO
-   //dcomplex d = ta(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
-   dcomplex d = ta.get_or_zero(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
-   //if (arrays::isnan(d)) TRIQS_RUNTIME_ERROR << " direct fourier : 1/omega order undefined in tail";
+  void direct_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, __tail<scalar_valued> const& ta) { 
+   if (ta.largest_non_nan() < 2) TRIQS_RUNTIME_ERROR << " direct fourier: G_iw needs at least a proper 2nd moment in tail \n";
+   dcomplex d = ta(1), A = ta(2), B = ta.get_or_zero(3);
    double b1 = 0, b2 = 0, b3 = 0;
    dcomplex a1, a2, a3;
    double beta = gt.mesh().domain().beta;
@@ -124,8 +122,8 @@ namespace gfs {
    if (gw.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
   
    auto const ta = gw.singularity();
-   const dcomplex d = ta.get_or_zero(1), A = ta.get_or_zero(2), B = ta.get_or_zero(3);
-   if (arrays::isnan(d)) TRIQS_RUNTIME_ERROR << " inverse fourier : 1/omega order undefined in tail";
+   if (ta.largest_non_nan() < 2) TRIQS_RUNTIME_ERROR << " inverse fourier: G_tau needs at least a proper 2nd moment in tail \n";
+   dcomplex d = ta(1), A = ta(2), B = ta.get_or_zero(3);
    double b1, b2, b3;
    dcomplex a1, a2, a3;
    double beta = gw.domain().beta;
