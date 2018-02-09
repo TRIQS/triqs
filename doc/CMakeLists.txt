@@ -31,10 +31,17 @@ execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY
 # list of namespaces selected by c++2rst
 set(NS -N triqs::det_manip -N triqs::mc_tools)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs 
+get_property(TRIQS_INCLUDE_DIRS TARGET triqs PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+
+foreach(I ${TRIQS_INCLUDE_DIRS})
+ set (CPP2RST_INCLUDE_DIRS  ${CPP2RST_INCLUDE_DIRS} --includes ${I})
+endforeach()
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs
 		   COMMAND c++2rst ${NS} 
 		   ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp 
 		   --output_directory ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
+		   ${CPP2RST_INCLUDE_DIRS}
 		   --includes ${CMAKE_SOURCE_DIR}/ 
 		   --includes ${CMAKE_BINARY_DIR}/Config 
 		   --cxxflags "-std=c++17 -DTRIQS_BUILDING_LIBRARY" 
