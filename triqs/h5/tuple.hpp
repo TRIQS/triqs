@@ -29,13 +29,14 @@ namespace triqs::h5 {
     static std::string invoke() { return "PythonTupleWrap"; }
   };
 
-  template <typename... T, std::size_t... Is> void h5_write_impl(group f, std::string const &name, std::tuple<T...> const &tpl, std::index_sequence<Is...>) {
+  template <typename... T, std::size_t... Is>
+  void h5_write_impl(group f, std::string const &name, std::tuple<T...> const &tpl, std::index_sequence<Is...>) {
     auto gr = f.create_group(name);
     gr.write_hdf5_scheme(tpl);
     (h5_write(gr, std::to_string(Is), std::get<Is>(tpl)), ...);
   }
 
- /**
+  /**
    * Tuple of T... as a subgroup with numbers
    */
   template <typename... T> void h5_write(group f, std::string const &name, std::tuple<T...> const &tpl) {
@@ -44,10 +45,12 @@ namespace triqs::h5 {
 
   template <typename... T, std::size_t... Is> void h5_read_impl(group f, std::string const &name, std::tuple<T...> &tpl, std::index_sequence<Is...>) {
     auto gr = f.open_group(name);
+    if (gr.get_all_subgroup_dataset_names().size() != sizeof...(Is))
+      TRIQS_RUNTIME_ERROR << "ERROR in std::tuple h5_read: Tuple size incompatible to number of group elements";
     (h5_read(gr, std::to_string(Is), std::get<Is>(tpl)), ...);
   }
 
- /**
+  /**
    * Tuple of T...
    */
   template <typename... T> void h5_read(group f, std::string const &name, std::tuple<T...> &tpl) {
