@@ -88,12 +88,6 @@ namespace operators {
 
  // ---------------------------  WRITE -----------------------------------------
 
- void h5_write(h5::group g, std::string const &name, many_body_operator const &op) {
-  h5_write(g, name, op, op.make_fundamental_operator_set());
- }
-
- // ---------------
-
  void h5_write(h5::group g, std::string const &name, many_body_operator const &op, fundamental_operator_set const &fops) {
 
   // first prepare the data
@@ -140,13 +134,6 @@ namespace operators {
  }
 
  // ---------------------------  READ -----------------------------------------
-
- void h5_read(h5::group g, std::string const &name, many_body_operator &op) {
-  fundamental_operator_set fops;
-  h5_read(g, name, op, fops);
- }
-
- //-----
 
  void h5_read(h5::group g, std::string const &name, many_body_operator &op, fundamental_operator_set &fops) {
 
