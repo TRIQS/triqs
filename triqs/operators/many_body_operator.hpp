@@ -271,6 +271,10 @@ namespace operators {
    return *this;
   }
 
+  bool operator==(many_body_operator_generic const& op) {
+    return (*this - op).is_zero();
+  }
+   
   // implementation details of dagger
   //
   private:

@@ -53,3 +53,7 @@ print "X =", X
 print "dagger(X) =", dagger(X)
 print "X.real =", X.real
 print "X.imag =", X.imag
+
+# Test Operator comparison
+anti_comm_ccdag = c(0,0) * c_dag(0,0) + c_dag(0,0) * c(0,0)
+assert( Operator(1.) == anti_comm_ccdag )

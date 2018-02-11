@@ -28,6 +28,7 @@ op = class_(
         is_printable= True,
         hdf5 = True,
         arithmetic = ("algebra","with_unit","with_unary_minus","real_or_complex"),
+        comparisons="==",
         serializable = "repr",
         #serializable = "h5",
        )
