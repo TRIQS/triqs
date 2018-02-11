@@ -19,6 +19,7 @@
 #
 ################################################################################
 import lazy_expressions, descriptors
+from meshes import MeshImFreq, MeshReFreq
 from block_gf import BlockGf
 from singularities import TailGf
 from descriptor_base import A_Omega_Plus_B
