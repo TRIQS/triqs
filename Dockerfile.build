@@ -19,6 +19,6 @@ COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
 RUN chown build .
 USER build
-RUN cmake ${SRC}/triqs -DCMAKE_INSTALL_PREFIX=${INSTALL} ${LLVM:+-DCMAKE_CXX_FLAGS="-stdlib=libc++ -DBOOST_NO_AUTO_PTR=1"} && make -j2 && make test
+RUN cmake ${SRC}/triqs -DCMAKE_INSTALL_PREFIX=${INSTALL} && make -j2 && make test
 USER root
 RUN make install

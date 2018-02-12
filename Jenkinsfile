@@ -28,7 +28,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
 
 def osxPlatforms = [
   ["gcc", ['CC=gcc-7', 'CXX=g++-7']],
-  ["clang", ['LLVM=/usr/local/opt/llvm', 'CC=/usr/local/opt/llvm/bin/clang', 'CXX=/usr/local/opt/llvm/bin/clang++']]
+  ["clang", ['CC=/usr/local/opt/llvm/bin/clang', 'CXX=/usr/local/opt/llvm/bin/clang++', 'CXXFLAGS=-I/usr/local/opt/llvm/include', 'LDFLAGS=-L/usr/local/opt/llvm/lib']]
 ]
 for (int i = 0; i < osxPlatforms.size(); i++) {
   def platformEnv = osxPlatforms[i]
@@ -57,7 +57,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 
 	      cd build
 	      # Is there a better way to force brew's clang to find its own libc++ library?
-	      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTALL ${LLVM:+-DCMAKE_CXX_FLAGS=-I$LLVM/include -DCMAKE_EXE_LINKER_FLAGS=-L$LLVM/lib -DCMAKE_SHARED_LINKER_FLAGS=-L$LLVM/lib}
+	      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTALL
 	      make -j2
 	      make test
 	      make install
