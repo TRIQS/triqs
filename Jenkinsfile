@@ -1,5 +1,6 @@
 properties([
-  disableConcurrentBuilds()
+  disableConcurrentBuilds(),
+  buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '30'))
 ])
 
 /* map of all builds to run, populated below */
@@ -37,32 +38,47 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
     stage("osx-$platform") {
       timeout(time: 1, unit: 'HOURS') {
 	node('osx && triqs') {
-	  withEnv(['PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin']+platformEnv[1]) {
-	    checkout scm
-	    /* should we make this a proper submodule? */
-	    sh '[[ -d cpp2py ]] || git clone https://github.com/TRIQS/cpp2py && git -C cpp2py pull && git -C cpp2py describe --always'
-	    sh 'mkdir -p cpp2py.build build install'
-	    sh 'virtualenv pyvenv'
-	    sh '''#!/bin/bash -ex
-	      INSTALL=$PWD/install
-	      source pyvenv/bin/activate
-	      pip install --no-binary=h5py,mpi4py -r packaging/requirements.txt
+	  def workDir = pwd()
+	  def tmpDir = pwd(tmp:true)
+	  def cpp2pyDir = "$tmpDir/cpp2py"
+	  def venvDir = "$tmpDir/venv"
+	  def buildDir = "$tmpDir/build"
+	  def installDir = "$tmpDir/install"
 
-	      cd cpp2py.build
-	      cmake ../cpp2py -DCMAKE_INSTALL_PREFIX=$INSTALL
+	  checkout scm
+	  dir(cpp2pyDir) {
+	    /* should we make this a proper submodule? */
+	    git(url: 'https://github.com/TRIQS/cpp2py')
+	    // sh '[[ -d cpp2py ]] || git clone y && git -C cpp2py pull && git -C cpp2py describe --always'
+	  }
+
+	  dir(buildDir) { withEnv(platformEnv[1]+[
+	      "PATH=$installDir/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin",
+	      "CPATH=$installDir/include",
+	      "LIBRARY_PATH=$installDir/lib",
+	      "PYTHONPATH=$installDir/lib/python2.7/site-packages",
+	      "CMAKE_PREFIX_PATH=$installDir/share/cmake"]) {
+	    deleteDir()
+	    dir(installDir) {
+	      deleteDir()
+	    }
+	    sh """#!/bin/bash -ex
+	      virtualenv $venvDir
+	      source $venvDir/bin/activate
+	      pip install --no-binary=h5py,mpi4py -r $workDir/packaging/requirements.txt
+
+	      cmake $cpp2pyDir -DCMAKE_INSTALL_PREFIX=$installDir
 	      make
 	      make install
-	      cd ..
-	      source $INSTALL/share/cpp2pyvars.sh
+	      rm -rf *
 
-	      cd build
-	      # Is there a better way to force brew's clang to find its own libc++ library?
-	      cmake .. -DCMAKE_INSTALL_PREFIX=$INSTALL
+	      cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir
 	      make -j2
 	      make test
 	      make install
-	    '''
-	  }
+	    """
+	  } }
+	  zip(zipFile: "osx-${platform}.zip", archive: true, dir: installDir)
 	}
       }
     }
