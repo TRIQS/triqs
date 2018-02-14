@@ -41,14 +41,17 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 	  def workDir = pwd()
 	  def tmpDir = pwd(tmp:true)
 	  def cpp2pyDir = "$tmpDir/cpp2py"
-	  def venvDir = "$tmpDir/venv"
 	  def buildDir = "$tmpDir/build"
 	  def installDir = "$tmpDir/install"
+
+	  dir(installDir) {
+	    deleteDir()
+	  }
 
 	  checkout scm
 	  dir(cpp2pyDir) {
 	    /* should we make this a proper submodule? */
-	    git(url: 'https://github.com/TRIQS/cpp2py')
+	    git(url: 'https://github.com/TRIQS/cpp2py', branch: 'master')
 	    // sh '[[ -d cpp2py ]] || git clone y && git -C cpp2py pull && git -C cpp2py describe --always'
 	  }
 
@@ -56,27 +59,28 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 	      "PATH=$installDir/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin",
 	      "CPATH=$installDir/include",
 	      "LIBRARY_PATH=$installDir/lib",
-	      "PYTHONPATH=$installDir/lib/python2.7/site-packages",
 	      "CMAKE_PREFIX_PATH=$installDir/share/cmake"]) {
 	    deleteDir()
-	    dir(installDir) {
-	      deleteDir()
-	    }
 	    sh """#!/bin/bash -ex
-	      virtualenv $venvDir
-	      source $venvDir/bin/activate
+	      virtualenv $installDir
+	      virtualenv --relocatable $installDir
 	      pip install --no-binary=h5py,mpi4py -r $workDir/packaging/requirements.txt
 
 	      cmake $cpp2pyDir -DCMAKE_INSTALL_PREFIX=$installDir
 	      make
 	      make install
 	      rm -rf *
-
-	      cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir
-	      make -j2
-	      make test
-	      make install
 	    """
+
+	    sh "cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir"
+	    sh "make -j2"
+	    try {
+	      sh "make test"
+	    } catch (exc) {
+	      archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
+	      throw exc
+	    }
+	    sh "make install"
 	  } }
 	  zip(zipFile: "osx-${platform}.zip", archive: true, dir: installDir)
 	}
