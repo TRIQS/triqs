@@ -254,8 +254,7 @@ namespace triqs {
    // mako %endif
 
    /// Copy constructor
-   MAKO_GF(MAKO_GF const &x)
-      : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {} 
+   MAKO_GF(MAKO_GF const &x) = default;
    /// Move constructor
    MAKO_GF(MAKO_GF &&) = default;
 
@@ -326,9 +325,9 @@ namespace triqs {
    /// ---------------  Operator = --------------------
 
    /// Copy assignment
-   gf &operator=(gf const &rhs) { return *this = gf(rhs); } // use move =
-   //
-   gf &operator=(gf &rhs) { return *this = gf(rhs); } // use move =
+   gf &operator=(gf &rhs) = default;
+   gf &operator=(gf const &rhs) = default;
+
    /// Move assignment
    gf &operator=(gf &&rhs) noexcept {
     this->swap_impl(rhs);

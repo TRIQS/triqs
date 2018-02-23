@@ -233,7 +233,7 @@ namespace triqs {
       gf() {} // all arrays of zero size (empty)
 
       /// Copy constructor
-      gf(gf const &x) : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {}
+      gf(gf const &x) = default;
       /// Move constructor
       gf(gf &&) = default;
 
@@ -297,9 +297,9 @@ namespace triqs {
       /// ---------------  Operator = --------------------
 
       /// Copy assignment
-      gf &operator=(gf const &rhs) { return *this = gf(rhs); } // use move =
-      //
-      gf &operator=(gf &rhs) { return *this = gf(rhs); } // use move =
+      gf &operator=(gf &rhs) = default;
+      gf &operator=(gf const &rhs) = default;
+
       /// Move assignment
       gf &operator=(gf &&rhs) noexcept {
         this->swap_impl(rhs);
@@ -891,7 +891,7 @@ namespace triqs {
 
       public:
       /// Copy constructor
-      gf_view(gf_view const &x) : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {}
+      gf_view(gf_view const &x) = default;
       /// Move constructor
       gf_view(gf_view &&) = default;
 
@@ -1525,8 +1525,7 @@ namespace triqs {
 
       public:
       /// Copy constructor
-      gf_const_view(gf_const_view const &x)
-         : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {}
+      gf_const_view(gf_const_view const &x) = default;
       /// Move constructor
       gf_const_view(gf_const_view &&) = default;
 
