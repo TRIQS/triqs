@@ -210,14 +210,13 @@ namespace triqs {
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-        for (int w = 0; w < size(); ++w) {
-          _glist[w]       = rhs[w];
-          _block_names[w] = rhs.block_names()[w];
-        }
+        for (int w = 0; w < size(); ++w) _glist[w] = rhs[w];
+        _block_names = rhs.block_names();
       }
 
       public:
       /// Copy assignment
+      block_gf &operator=(block_gf &rhs) = default;
       block_gf &operator=(block_gf const &rhs) = default;
 
       /// Move assignment
@@ -558,10 +557,8 @@ namespace triqs {
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-        for (int w = 0; w < size(); ++w) {
-          _glist[w]       = rhs[w];
-          _block_names[w] = rhs.block_names()[w];
-        }
+        for (int w = 0; w < size(); ++w) _glist[w] = rhs[w];
+        _block_names = rhs.block_names();
       }
 
       public:
@@ -919,10 +916,8 @@ namespace triqs {
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-        for (int w = 0; w < size(); ++w) {
-          _glist[w]       = rhs[w];
-          _block_names[w] = rhs.block_names()[w];
-        }
+        for (int w = 0; w < size(); ++w) _glist[w] = rhs[w];
+        _block_names = rhs.block_names();
       }
 
       public:
@@ -1228,14 +1223,14 @@ namespace triqs {
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-        for (int w = 0; w < size1(); ++w) {
+        for (int w = 0; w < size1(); ++w)
           for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs(w, v);
-          _block_names[w] = rhs.block_names()[w];
-        }
+        _block_names = rhs.block_names();
       }
 
       public:
       /// Copy assignment
+      block2_gf &operator=(block2_gf &rhs) = default;
       block2_gf &operator=(block2_gf const &rhs) = default;
 
       /// Move assignment
@@ -1267,8 +1262,10 @@ namespace triqs {
    *
    */
       template <typename RHS> block2_gf &operator=(RHS &&rhs) {
-        _glist.resize(rhs.size());
-        _block_names.resize(rhs.size());
+        _glist.resize(rhs.size1());
+        for (auto &g_bl : _glist) g_bl.resize(rhs.size2());
+        _block_names[0].resize(rhs.size1());
+        _block_names[1].resize(rhs.size2());
         _assign_impl(rhs);
         return *this;
       }
@@ -1566,10 +1563,9 @@ namespace triqs {
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-        for (int w = 0; w < size1(); ++w) {
+        for (int w = 0; w < size1(); ++w)
           for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs(w, v);
-          _block_names[w] = rhs.block_names()[w];
-        }
+        _block_names = rhs.block_names();
       }
 
       public:
@@ -1920,10 +1916,9 @@ namespace triqs {
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
 
-        for (int w = 0; w < size1(); ++w) {
+        for (int w = 0; w < size1(); ++w)
           for (int v = 0; v < size2(); ++v) _glist[w][v] = rhs(w, v);
-          _block_names[w] = rhs.block_names()[w];
-        }
+        _block_names = rhs.block_names();
       }
 
       public:
