@@ -46,6 +46,7 @@ struct gmp_complex {
   gmp_complex operator- (const gmp_complex &rhs){ return { re - rhs.re, im - rhs.im }; }
   friend mpf_class real(const gmp_complex &rhs) { return rhs.re; }
   friend mpf_class imag(const gmp_complex &rhs) { return rhs.im; }
+  mpf_class norm() const { return real(*this)*real(*this) + imag(*this)*imag(*this); }
   gmp_complex& operator= (const std::complex<double> &rhs) { re = real(rhs); im = imag(rhs); return *this; }
   friend std::ostream & operator << (std::ostream & out,gmp_complex const & r) { return out << " gmp_complex("<<r.re<<","<<r.im<<")"<<std::endl ;}
 };
@@ -75,12 +76,20 @@ class pade_approximant {
 
   gmp_complex MP_1 = {1.0, 0.0};
 
-  for(int p=1; p<N; ++p)
+  for(int p=1; p<N; ++p) {
+
+    // If |g| is very small, the continued fraction should be truncated.
+    if (g(p-1,p-1).norm() < 1.0e-20) {
+      for(int j=p; j<N; ++j) g(j,j) = 0.0;
+      break;
+    }
+
     for(int j=p; j<N; ++j) {
       gmp_complex x = g(p-1,p-1)/g(p-1,j) - MP_1;
       gmp_complex y; y = z_in(j)-z_in(p-1);
       g(p,j) = x/y;
     }
+  }
 
   for(int j=0; j<N; ++j) {
     gmp_complex gj = g(j,j);
