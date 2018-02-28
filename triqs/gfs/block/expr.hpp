@@ -34,6 +34,8 @@ namespace gfs {
    using target_t = void;
    S s;
    int size() const { return -1; }
+   int size1() const { return -1; }
+   int size2() const { return -1; }
    template <typename T> scalar_wrap(T &&x) : s(std::forward<T>(x)) {}
    template <typename KeyType> S operator[](KeyType &&key) const { return s; }
    template <typename... Args> inline S operator()(Args &&... args) const { return s; }
@@ -67,7 +69,9 @@ namespace gfs {
   template <typename LL, typename RR> bgf_expr(LL &&l_, RR &&r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
 
   auto size() const { return std::max(l.size(), r.size()); }
-  
+  auto size1() const { return std::max(l.size1(), r.size1()); }
+  auto size2() const { return std::max(l.size2(), r.size2()); }
+
   auto block_names() const { return l.block_names(); }
 
   template <typename K> decltype(auto) operator[](K &&key) const {

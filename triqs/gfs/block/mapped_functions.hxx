@@ -47,6 +47,26 @@ namespace triqs {
       return map_block_gf(l, g);
     }
 
+    template <typename M, typename T> auto inverse(block2_gf<M, T> &g) {
+      auto l = [](auto &&x) { return inverse(x); };
+      return map_block_gf(l, g);
+    }
+
+    template <typename M, typename T> auto inverse(block2_gf<M, T> const &g) {
+      auto l = [](auto &&x) { return inverse(x); };
+      return map_block_gf(l, g);
+    }
+
+    template <typename M, typename T> auto inverse(block2_gf_view<M, T> g) {
+      auto l = [](auto &&x) { return inverse(x); };
+      return map_block_gf(l, g);
+    }
+
+    template <typename M, typename T> auto inverse(block2_gf_const_view<M, T> g) {
+      auto l = [](auto &&x) { return inverse(x); };
+      return map_block_gf(l, g);
+    }
+
     template <typename M, typename T> auto reinterpret_scalar_valued_gf_as_matrix_valued(block_gf<M, T> &g) {
       auto l = [](auto &&x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
       return map_block_gf(l, g);
@@ -63,6 +83,26 @@ namespace triqs {
     }
 
     template <typename M, typename T> auto reinterpret_scalar_valued_gf_as_matrix_valued(block_gf_const_view<M, T> g) {
+      auto l = [](auto &&x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
+      return map_block_gf(l, g);
+    }
+
+    template <typename M, typename T> auto reinterpret_scalar_valued_gf_as_matrix_valued(block2_gf<M, T> &g) {
+      auto l = [](auto &&x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
+      return map_block_gf(l, g);
+    }
+
+    template <typename M, typename T> auto reinterpret_scalar_valued_gf_as_matrix_valued(block2_gf<M, T> const &g) {
+      auto l = [](auto &&x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
+      return map_block_gf(l, g);
+    }
+
+    template <typename M, typename T> auto reinterpret_scalar_valued_gf_as_matrix_valued(block2_gf_view<M, T> g) {
+      auto l = [](auto &&x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
+      return map_block_gf(l, g);
+    }
+
+    template <typename M, typename T> auto reinterpret_scalar_valued_gf_as_matrix_valued(block2_gf_const_view<M, T> g) {
       auto l = [](auto &&x) { return reinterpret_scalar_valued_gf_as_matrix_valued(x); };
       return map_block_gf(l, g);
     }
