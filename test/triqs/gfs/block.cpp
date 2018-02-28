@@ -2,94 +2,78 @@
 
 TEST(Gf, Block) {
 
-  double beta = 1;
+  double beta = 1.;
   auto G1     = gf<imfreq>({beta, Fermion}, {2, 2});
   auto G2     = G1;
+  auto G3     = G1;
 
   triqs::clef::placeholder<0> w_;
-  G1(w_) << 1 / (w_ + 2);
+  G1(w_) << 1. / (w_ + 2.);
+  G2(w_) << 2. / (w_ - 2.);
 
-  auto G3 = G2;
+  // Constructors
+  auto G_vec = std::vector{G1, G2, G3};
 
-  // construct some block functions
-  auto B0                    = block_gf<imfreq>(3);
-  std::vector<std::string> v = {"a", "b", "c"};
-  auto B01                   = block_gf<imfreq>(v);
-  auto B00                   = block_gf<imfreq>({"a", "b", "c"});
+  auto B1 = block_gf{G_vec};
+  auto B2 = block_gf{B1()};
+  auto B3 = block_gf<imfreq>({"0", "1", "2"}, G_vec);
+  auto B4 = make_block_gf({"0", "1", "2"}, G_vec);
+  auto B5 = make_block_gf(2, G1);
 
-  auto B1 = make_block_gf(3, G1);
-  auto B2 = make_block_gf({G1, G1, G1});
-  auto B3 = make_block_gf({"a", "b", "c"}, {G1, G1, G1});
-  auto B4 = block_gf<imfreq>(1);
-  //TEST(B3["a"]); //does not compile
+  auto V1       = make_block_gf_view(G1, G2, G3);
+  auto view_vec = std::vector<gf_view<imfreq>>{G1, G2, G3};
+  auto V2       = make_block_gf_view(view_vec);
 
+  EXPECT_BLOCK_GF_NEAR(B1, B2);
+  EXPECT_BLOCK_GF_NEAR(B1, B3);
+  EXPECT_BLOCK_GF_NEAR(B1, B4);
+  EXPECT_BLOCK_GF_NEAR(B1, V1);
+  EXPECT_BLOCK_GF_NEAR(B1, V2);
+
+  // H5 read write
   EXPECT_BLOCK_GF_NEAR(B1, rw_h5(B1, "block", "B1"));
 
-  B1[0][0] = 98;
-  EXPECT_CLOSE(B1[0][0](0, 0), 98);
-
-  // not implemented yet
-  // B3["a"][0] = 98;
-
-  auto View = make_block_gf_view(G1, G2, G3);
-  EXPECT_EQ(View.size(), 3);
-
-  auto g0  = View[0];
-  auto g0v = View[0]();
-
-  auto Gv = g0();
-
-  Gv[0] = 20;
-  EXPECT_ARRAY_NEAR(G1(0), matrix<double>{{20, 0}, {0, 20}});
-
-  Gv[0]  = 0;
-  g0v[0] = 3.2;
-  EXPECT_ARRAY_NEAR(G1(0), matrix<double>{{3.2, 0.0}, {0.0, 3.2}});
-
-  // Operation
-  g0[0] = 3.2;
-  EXPECT_ARRAY_NEAR(View[0](0), matrix<double>{{3.2, 0.0}, {0.0, 3.2}});
-  View = View / 2;
-  EXPECT_ARRAY_NEAR(View[0](0), matrix<double>{{1.6, 0.0}, {0.0, 1.6}});
-
-  // try the loop over the block.
-  for (auto &g : View) { g[0] = 20; }
-  for (auto &g : B1) { g[0] = 20; }
-
-  // check chaining of clef
-  clef::placeholder<0> b_;
-  clef::placeholder<1> om_;
-  B1[b_][om_] << b_ / (om_ + 2);
-
-  auto B11 = B1;
-
-  B1[b_](om_) << B11[b_](om_) * B1[b_](om_) * B11[b_](om_);
-
-  // test reinterpretation
-  // compile only, add more test here
-  auto gs1 = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
-  //auto gs1 = gf<imfreq, scalar_valued>({beta, Fermion});
-  auto bgs = make_block_gf(3, gs1);
-  auto bg  = reinterpret_scalar_valued_gf_as_matrix_valued(bgs);
-
-  // inversion
-  {
-    auto inv_G1 = inverse(G1);
-    auto B      = make_block_gf(3, G1);
-    auto inv_B1 = inverse(B);
-    for (auto &g : inv_B1) EXPECT_GF_NEAR(g, inv_G1);
-  }
+  // Data write/read access
+  B1[0][0] = 1.0;
+  EXPECT_ARRAY_NEAR(B1[0](0), matrix<double>{{1.0, 0.0}, {0.0, 1.0}});
 
   // Operations
-  {
-    auto A = make_block_gf({"up", "down"}, {gf<imfreq>{{beta, Fermion}, {1, 1}}, gf<imfreq>{{beta, Fermion}, {1, 1}}});
-    auto B = A;
-    auto C = A;
+  B1 = B1 / 2.0;
+  B1 = B1 * 4.0;
+  EXPECT_CLOSE(B1[0][0](0, 0), 2.0);
+  B1 = B1 + B1 * B1;
+  EXPECT_CLOSE(B1[0][0](0, 0), 6.0);
+  B1 = B1 + B1() * B1();
+  EXPECT_CLOSE(B1[0][0](0, 0), 42.0);
 
-    C   = A + A * B;
-    C() = A + A() * B();
-    // Test Nothing
-  }
+  // View Access
+  V1[0] = 20.;
+  EXPECT_ARRAY_NEAR(G1(0), matrix<double>{{20, 0}, {0, 20}});
+  EXPECT_ARRAY_NEAR(V2[0](0), matrix<double>{{20, 0}, {0, 20}});
+
+  // Loops
+  for (auto &g : B1) { g[0] = 20; }
+  EXPECT_CLOSE(B1[0][0](0, 0), 20);
+  for (auto &g : B1()) { g[0] = 40; }
+  EXPECT_CLOSE(B1[0][0](0, 0), 40);
+
+  // Clef expressions
+  clef::placeholder<0> b_;
+  clef::placeholder<1> iw_;
+  B1[b_][iw_] << b_ / (iw_ + 2);
+  auto B11 = B1;
+  B1[b_](iw_) << B11[b_](iw_) * B1[b_](iw_) * B11[b_](iw_);
+
+  // Reinterpretation (compile checks)
+  auto G1_scalar = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
+  auto B1_scalar = make_block_gf(3, G1_scalar);
+  auto B1_interp = reinterpret_scalar_valued_gf_as_matrix_valued(B1_scalar);
+
+  // inversion
+  auto inv_G1 = inverse(G1);
+  auto B      = make_block_gf(3, G1);
+  auto inv_B  = inverse(B);
+  for (auto &g : inv_B) EXPECT_GF_NEAR(g, inv_G1);
 }
 
 TEST(Block, AssignmentOperator) {

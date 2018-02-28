@@ -61,11 +61,14 @@ namespace triqs {
     template <typename V, typename T> struct _is_block_gf_or_view<block2_gf_const_view<V, T>, 2> : std::true_type {};
 
     // Given a gf G, the corresponding block
-    template <typename G> using get_variable_t         = typename std14::decay_t<G>::variable_t;
-    template <typename G> using get_target_t           = typename std14::decay_t<G>::target_t;
-    template <typename G> using block_gf_of            = block_gf<get_variable_t<G>, get_target_t<G>>;
-    template <typename G> using block_gf_view_of       = block_gf_view<get_variable_t<G>, get_target_t<G>>;
-    template <typename G> using block_gf_const_view_of = block_gf_const_view<get_variable_t<G>, get_target_t<G>>;
+    template <typename G> using get_variable_t          = typename std::decay_t<G>::variable_t;
+    template <typename G> using get_target_t            = typename std::decay_t<G>::target_t;
+    template <typename G> using block_gf_of             = block_gf<get_variable_t<G>, get_target_t<G>>;
+    template <typename G> using block_gf_view_of        = block_gf_view<get_variable_t<G>, get_target_t<G>>;
+    template <typename G> using block_gf_const_view_of  = block_gf_const_view<get_variable_t<G>, get_target_t<G>>;
+    template <typename G> using block2_gf_of            = block2_gf<get_variable_t<G>, get_target_t<G>>;
+    template <typename G> using block2_gf_view_of       = block2_gf_view<get_variable_t<G>, get_target_t<G>>;
+    template <typename G> using block2_gf_const_view_of = block2_gf_const_view<get_variable_t<G>, get_target_t<G>>;
 
     // The trait that "marks" the Green function
     TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(BlockGreenFunction);
@@ -1195,7 +1198,13 @@ namespace triqs {
       block2_gf(block2_gf &&) = default;
 
       /// Construct from block_names and list of gf
-      block2_gf(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {}
+      block2_gf(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {
+        if (_glist.size() != _block_names[0].size())
+          TRIQS_RUNTIME_ERROR << "block2_gf(vector<vector<string>>, vector<vector<gf>>) : Outer vectors have different sizes !";
+        if (_glist.size() != 0)
+          if (_glist[0].size() != _block_names[1].size())
+            TRIQS_RUNTIME_ERROR << "block2_gf(vector<vector<string>>, vector<vector<gf>>) : Inner vectors have different sizes !";
+      }
 
       // ---------------  Constructors --------------------
 
@@ -1218,6 +1227,9 @@ namespace triqs {
 
       /// Constructs a n blocks with copies of g.
       block2_gf(int n, int p, g_t const &g) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
+
+      /// Construct from a vector of gf
+      block2_gf(data_t V) : _block_names(details::_make_block_names2(V.size(), V[0].size())), _glist(std::move(V)) {}
 
       /// ---------------  Operator = --------------------
       private:
@@ -1545,7 +1557,13 @@ namespace triqs {
       block2_gf_view(block2_gf_view &&) = default;
 
       /// Construct from block_names and list of gf
-      block2_gf_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {}
+      block2_gf_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {
+        if (_glist.size() != _block_names[0].size())
+          TRIQS_RUNTIME_ERROR << "block2_gf(vector<vector<string>>, vector<vector<gf>>) : Outer vectors have different sizes !";
+        if (_glist.size() != 0)
+          if (_glist[0].size() != _block_names[1].size())
+            TRIQS_RUNTIME_ERROR << "block2_gf(vector<vector<string>>, vector<vector<gf>>) : Inner vectors have different sizes !";
+      }
 
       // ---------------  Constructors --------------------
 
@@ -1900,7 +1918,13 @@ namespace triqs {
       block2_gf_const_view(block2_gf_const_view &&) = default;
 
       /// Construct from block_names and list of gf
-      block2_gf_const_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {}
+      block2_gf_const_view(block_names_t b, data_t d) : _block_names(std::move(b)), _glist(std::move(d)) {
+        if (_glist.size() != _block_names[0].size())
+          TRIQS_RUNTIME_ERROR << "block2_gf(vector<vector<string>>, vector<vector<gf>>) : Outer vectors have different sizes !";
+        if (_glist.size() != 0)
+          if (_glist[0].size() != _block_names[1].size())
+            TRIQS_RUNTIME_ERROR << "block2_gf(vector<vector<string>>, vector<vector<gf>>) : Inner vectors have different sizes !";
+      }
 
       // ---------------  Constructors --------------------
 
@@ -2169,30 +2193,52 @@ namespace triqs {
     // -------------------------------   Free Factories for block_gf_view and block_gf_const_view
     // --------------------------------------------------
 
-    /// Make a block view from the G. Indices are '1', '2', ....
+    /// Make a block view from the G. Indices are '0', '1', '2', ....
     template <typename G0, typename... G> block_gf_view_of<G0> make_block_gf_view(G0 &&g0, G &&... g) {
       return {details::_make_block_names1(sizeof...(G) + 1), {std::forward<G0>(g0), std::forward<G>(g)...}};
     }
 
-    ///
-    template <typename G> block_gf_view_of<G> make_block_gf_view(std::vector<G> v) { return {std::move(v)}; }
+    // Create block_gf_view from vector of views
+    template <typename Gf> block_gf_view_of<Gf> make_block_gf_view(std::vector<Gf> &v) {
+      static_assert(Gf::is_view);
+      return {details::_make_block_names1(v.size()), v};
+    }
+    template <typename Gf> block_gf_view_of<Gf> make_block_gf_view(std::vector<Gf> &&v) {
+      static_assert(Gf::is_view);
+      return {details::_make_block_names1(v.size()), std::move(v)};
+    }
 
-    /// Make a block view from block_names and a vector of G
-    /// G can be a view, or the regular type
-    template <typename G> block_gf_view_of<G> make_block_gf_view(std::vector<std::string> b, std::vector<G> v) {
+    // Create block_gf_view from block_names and vector of views
+    template <typename Gf> block_gf_view_of<Gf> make_block_gf_view(std::vector<std::string> b, std::vector<Gf> &v) {
+      static_assert(Gf::is_view);
+      return {std::move(b), v};
+    }
+    template <typename Gf> block_gf_view_of<Gf> make_block_gf_view(std::vector<std::string> b, std::vector<Gf> &&v) {
+      static_assert(Gf::is_view);
       return {std::move(b), std::move(v)};
     }
-    /// Make a block const_view from the G. Indices are '1', '2', ....
+    /// Make a block const_view from the G. Indices are '0', '1', '2', ....
     template <typename G0, typename... G> block_gf_const_view_of<G0> make_block_gf_const_view(G0 &&g0, G &&... g) {
       return {details::_make_block_names1(sizeof...(G) + 1), {std::forward<G0>(g0), std::forward<G>(g)...}};
     }
 
-    ///
-    template <typename G> block_gf_const_view_of<G> make_block_gf_const_view(std::vector<G> v) { return {std::move(v)}; }
+    // Create block_gf_const_view from vector of views
+    template <typename Gf> block_gf_const_view_of<Gf> make_block_gf_const_view(std::vector<Gf> &v) {
+      static_assert(Gf::is_view);
+      return {details::_make_block_names1(v.size()), v};
+    }
+    template <typename Gf> block_gf_const_view_of<Gf> make_block_gf_const_view(std::vector<Gf> &&v) {
+      static_assert(Gf::is_view);
+      return {details::_make_block_names1(v.size()), std::move(v)};
+    }
 
-    /// Make a block const_view from block_names and a vector of G
-    /// G can be a view, or the regular type
-    template <typename G> block_gf_const_view_of<G> make_block_gf_const_view(std::vector<std::string> b, std::vector<G> v) {
+    // Create block_gf_const_view from block_names and vector of views
+    template <typename Gf> block_gf_const_view_of<Gf> make_block_gf_const_view(std::vector<std::string> b, std::vector<Gf> &v) {
+      static_assert(Gf::is_view);
+      return {std::move(b), v};
+    }
+    template <typename Gf> block_gf_const_view_of<Gf> make_block_gf_const_view(std::vector<std::string> b, std::vector<Gf> &&v) {
+      static_assert(Gf::is_view);
       return {std::move(b), std::move(v)};
     }
 
@@ -2214,19 +2260,57 @@ namespace triqs {
       return {{block_names1, block_names2}, std::move(vv)};
     }
 
-    // -------------------------------   Free Factories for view type  --------------------------------------------------
+    // -------------------------------   Free Factories for block2_gf_view and block2_gf_const_view  --------------------------------------------------
 
-    // from block_names and data vector
-    template <typename GF>
-    block2_gf_view<typename GF::variable_t, typename GF::target_t>
-    make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2, std::vector<std::vector<GF>> v) {
+    // Create block2_gf_view from vector of views
+    template <typename Gf> block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::vector<Gf>> &v) {
+      static_assert(Gf::is_view);
+      if (v.size() == 0) return {details::_make_block_names2(0, 0), v};
+      return {details::_make_block_names2(v.size(), v[0].size()), v};
+    }
+    template <typename Gf> block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::vector<Gf>> &&v) {
+      static_assert(Gf::is_view);
+      if (v.size() == 0) return {details::_make_block_names2(0, 0), v};
+      return {details::_make_block_names2(v.size(), v[0].size()), std::move(v)};
+    }
+
+    // Create block2_gf_view from block_names and vector of views
+    template <typename Gf>
+    block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
+                                              std::vector<std::vector<Gf>> &v) {
+      static_assert(Gf::is_view);
+      return {{std::move(block_names1), std::move(block_names2)}, v};
+    }
+    template <typename Gf>
+    block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
+                                              std::vector<std::vector<Gf>> &&v) {
+      static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
     }
 
-    // from block_names and data vector
-    template <typename GF>
-    block2_gf_const_view<typename GF::variable_t, typename GF::target_t>
-    make_block2_gf_const_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2, std::vector<std::vector<GF>> v) {
+    // Create block2_gf_const_view from vector of views
+    template <typename Gf> block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::vector<Gf>> &v) {
+      static_assert(Gf::is_view);
+      if (v.size() == 0) return {details::_make_block_names2(0, 0), v};
+      return {details::_make_block_names2(v.size(), v[0].size()), v};
+    }
+    template <typename Gf> block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::vector<Gf>> &&v) {
+      static_assert(Gf::is_view);
+      if (v.size() == 0) return {details::_make_block_names2(0, 0), v};
+      return {details::_make_block_names2(v.size(), v[0].size()), std::move(v)};
+    }
+
+    // Create block2_gf_const_view from block_names and vector of views
+    template <typename Gf>
+    block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
+                                                          std::vector<std::vector<Gf>> &v) {
+      static_assert(Gf::is_view);
+      return {{std::move(block_names1), std::move(block_names2)}, v};
+    }
+    template <typename Gf>
+    block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
+                                                          std::vector<std::vector<Gf>> &&v) {
+      static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
     }
   } // namespace gfs
