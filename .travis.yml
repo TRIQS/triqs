@@ -1,3 +1,6 @@
+branches:
+  except:
+    - jenkins
 
 language: cpp
 sudo: required
