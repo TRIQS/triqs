@@ -29,7 +29,9 @@ RUN apt-get update && apt-get install -y \
       python-tornado \
       python-virtualenv \
       python-zmq \
-      software-properties-common
+      software-properties-common \
+      python-sphinx \
+      libjs-mathjax
 
 ARG LLVM=5.0
 RUN add-apt-repository "deb http://apt.llvm.org/${RELEASE}/ llvm-toolchain-${RELEASE}-${LLVM} main" -y
