@@ -27,6 +27,7 @@ c = class_(
         doc = r"Histogram",   # doc of the C++ class
         is_printable = True,
         hdf5 = True,
+        serializable = "tuple",
         arithmetic = "add_only"
 )
 

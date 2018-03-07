@@ -157,7 +157,20 @@ namespace statistics {
    return os;
   }
 
- };
+  // -------------------- boost serialization -------------------
+
+  friend class boost::serialization::access;
+  template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+   ar & a;
+   ar & b;
+   ar & n_bins;
+   ar & _n_data_pts;
+   ar & _n_lost_pts;
+   ar & _data;
+   ar & _step;
+  }
+  
+};
 
  //-------------------------------------------------------------------------------
   /// Normalise histogram to get PDF
