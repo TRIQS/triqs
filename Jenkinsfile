@@ -48,7 +48,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
       checkout scm
       dir(cpp2pyDir) {
         /* should we make this a proper submodule? */
-        git(url: 'https://github.com/TRIQS/cpp2py', branch: '94974ca9f68d4492b79d407dee8a24dc1357c25e')
+        git(url: 'https://github.com/TRIQS/cpp2py', branch: 'master')
       }
 
       dir(buildDir) { withEnv(platformEnv[1]+[
