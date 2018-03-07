@@ -30,8 +30,7 @@ RUN apt-get update && apt-get install -y \
       python-virtualenv \
       python-zmq \
       software-properties-common \
-      python-sphinx \
-      libjs-mathjax
+      python-sphinx
 
 ARG LLVM=5.0
 RUN add-apt-repository "deb http://apt.llvm.org/${RELEASE}/ llvm-toolchain-${RELEASE}-${LLVM} main" -y

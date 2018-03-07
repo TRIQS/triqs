@@ -19,6 +19,7 @@ COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
 RUN chown build .
 USER build
-RUN cmake ${SRC}/triqs -DCMAKE_INSTALL_PREFIX=${INSTALL} && make -j2 && make test
+ARG BUILD_DOC=0
+RUN cmake ${SRC}/triqs -DCMAKE_INSTALL_PREFIX=${INSTALL} -DBuild_Documentation=${BUILD_DOC} -DCPP2RST_INCLUDE_DIRS=--includes=/usr/lib/llvm-${LLVM}/include/c++/v1 -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" && make -j2 && make test
 USER root
 RUN make install

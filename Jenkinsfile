@@ -1,3 +1,6 @@
+def projectName = "triqs"
+def documentationPlatform = "ubuntu-clang"
+
 properties([
   disableConcurrentBuilds(),
   buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '30'))
@@ -18,7 +21,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
         ( cat packaging/Dockerfile.${env.STAGE_NAME} ; sed '0,/^FROM /d' Dockerfile.build ) > Dockerfile
       """
       /* build and tag */
-      def img = docker.build("flatironinstitute/triqs:${env.BRANCH_NAME}-${env.STAGE_NAME}")
+      def img = docker.build("flatironinstitute/${projectName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg BUILD_DOC=${platform==documentationPlatform} .")
       if (env.BRANCH_NAME.startsWith("PR-")) {
         sh "docker rmi ${img.imageName()}"
       }
@@ -89,24 +92,19 @@ try {
     node("docker") {
       stage("documentation") { timeout(time: 1, unit: 'HOURS') {
         def workDir = pwd()
-        def tmpDir = pwd(tmp:true)
-        dir("$tmpDir/doc") {
-          docker.image("flatironinstitute/triqs:${env.BRANCH_NAME}-ubuntu-clang").inside('-v /etc/passwd:/etc/passwd -v /etc/group:/etc/group') {
-            sh 'cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Documentation=1 -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" -DCPP2RST_INCLUDE_DIRS="--includes=/usr/lib/llvm-5.0/include/c++/v1"'
-            sh 'make -C doc -j2'
+        dir("$workDir/gh-pages") {
+          def subdir = env.BRANCH_NAME
+          git(url: "ssh://git@github.com/TRIQS/${projectName}.git", branch: "gh-pages", credentialsId: "ssh", changelog: false)
+          sh "rm -rf ${subdir}"
+          docker.image("flatironinstitute/${projectName}:${env.BRANCH_NAME}-${documentationPlatform}").inside() {
+            sh "cp -rp \$INSTALL/share/doc/${projectName} ${subdir}"
           }
-          dir("gh-pages") {
-            def subdir = env.BRANCH_NAME
-            git(url: "ssh://git@github.com/TRIQS/triqs.git", branch: "gh-pages", credentialsId: "ssh", changelog: false)
-            sh "rm -rf ${subdir}"
-            sh "mv ../doc/html ${subdir}"
-            sh "git add ${subdir}"
-            sh """
-              git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Generated documentation for ${env.BRANCH_NAME}' -m "`git --git-dir ${workDir}/.git rev-parse HEAD`"
-            """
-            // note: credentials used above don't work (need JENKINS-28335)
-            sh "git push origin gh-pages"
-          }
+          sh "git add -A ${subdir}"
+          sh """
+            git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Generated documentation for ${env.BRANCH_NAME}' -m "`git --git-dir ${workDir}/.git rev-parse HEAD`"
+          """
+          // note: credentials used above don't work (need JENKINS-28335)
+          sh "git push origin gh-pages"
         }
       } }
     }
