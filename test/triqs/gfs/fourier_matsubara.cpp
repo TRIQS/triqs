@@ -107,5 +107,3 @@ TEST(Gfs, FourierMatsubaraAllFreq){
  ASSERT_THROW(Gt1() = inverse_fourier(Gw1), triqs::runtime_error);
 }
 MAKE_MAIN;
-
-
