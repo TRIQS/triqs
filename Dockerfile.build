@@ -9,8 +9,8 @@ ENV SRC=/src \
     PYTHONPATH=/usr/local/lib/python2.7/site-packages:${PYTHONPATH} \
     CMAKE_PREFIX_PATH=/usr/local/share/cmake:${CMAKE_PREFIX_PATH}
 
-# cpp2py: should either make this a submodule or hard-code a commit here
-RUN git clone https://github.com/TRIQS/cpp2py ${SRC}/cpp2py && cd ${SRC}/cpp2py && git describe --always
+# cpp2py: use a fixed revision to ensure we have the right one (alternatively could make this a submodule or upstream project)
+RUN git clone -b 94974ca9f68d4492b79d407dee8a24dc1357c25e https://github.com/TRIQS/cpp2py ${SRC}/cpp2py && cd ${SRC}/cpp2py && git describe --always
 WORKDIR ${BUILD}/cpp2py
 RUN cmake ${SRC}/cpp2py -DCMAKE_INSTALL_PREFIX=${INSTALL} && make
 RUN make install
