@@ -35,6 +35,7 @@ add_python_test(gf_transpose)
 
 add_python_test(issue460)
 add_python_test(issue437)
+add_python_test(bug_tight_binding)
 
 # Add evaluator for g
 add_python_test(gf_eval)
