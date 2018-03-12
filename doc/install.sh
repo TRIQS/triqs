@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Set this variable to your desired install directory
 INSTALL_PREFIX=$(pwd)/install
