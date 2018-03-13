@@ -9,7 +9,7 @@ import codecs
 from os import path
 from subprocess import Popen,PIPE
 from docutils import nodes
-from sphinx.util.compat import Directive
+from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
 from sphinx.errors import SphinxError
 
