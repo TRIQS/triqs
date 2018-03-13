@@ -63,6 +63,7 @@
 #include "./gfs/h5.hpp"
 
 // functions
+#include "./gfs/functions/closest_mesh_pt.hpp"
 #include "./gfs/functions/functions2.hpp"
 #include "./gfs/functions/imfreq.hpp"
 #include "./gfs/functions/imtime.hpp"
