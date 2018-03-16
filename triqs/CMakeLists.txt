@@ -7,23 +7,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.hpp" DESTINATION "include/tri
 # ---------------------------------
 
 # all .cpp files to get the dependencies
-FILE(GLOB_RECURSE ALLHEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.hpp *.h *.hxx)
 FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
-
-# remove the .mako.?pp from the build
-# they are not preprocessed by cmake
-foreach (TMP_PATH ${ALLHEADERS})
-    string (FIND ${TMP_PATH} ".mako." EXCLUDE_DIR_FOUND)
-    if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
-        list (REMOVE_ITEM ALLHEADERS ${TMP_PATH})
-    endif ()
-endforeach()
-foreach (TMP_PATH ${ALLSOURCES})
-    string (FIND ${TMP_PATH} ".mako." EXCLUDE_DIR_FOUND)
-    if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
-        list (REMOVE_ITEM ALLSOURCES ${TMP_PATH})
-    endif ()
-endforeach()
 
 # ---------------------------------
 #  Define triqs target 
@@ -275,8 +259,4 @@ install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
 install(EXPORT triqs-targets DESTINATION share/cmake)
 
 # Install headers 
-FOREACH(HEADER ${ALLHEADERS})
- get_filename_component(P ${HEADER} PATH)
- install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${HEADER}" DESTINATION "include/triqs/${P}")
-ENDFOREACH()
-
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h" PATTERN "*.hxx" PATTERN "*.mako.*" EXCLUDE)
