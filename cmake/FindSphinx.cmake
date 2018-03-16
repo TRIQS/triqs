@@ -39,4 +39,3 @@ mark_as_advanced( SPHINXBUILD_EXECUTABLE )
 # Imported target
 add_executable(sphinx IMPORTED)
 set_property(TARGET sphinx PROPERTY IMPORTED_LOCATION ${SPHINXBUILD_EXECUTABLE})
-
