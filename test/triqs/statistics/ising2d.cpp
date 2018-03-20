@@ -118,7 +118,7 @@ struct compute_m {
   double sum_M = mpi_reduce(M,c);
 
   if (c.rank() == 0) {
-   std::cout << "@Beta:\t"<<config->beta<<"\tMagnetization:\t" << sum_M / (sum_Z*(config->N*config->N)) << std::endl ;
+   std::cout << "#Beta:\t"<<config->beta<<"\tMagnetization:\t" << sum_M / (sum_Z*(config->N*config->N)) << std::endl ;
    std::cout << "average_and_error(M) = " << average_and_error(config->M_stack) << std::endl;
    std::cout << "#Beta:\t"<<config->beta<<"\tAutocorr_time:\t" << autocorrelation_time_from_binning(config->M_stack) << std::endl; 
    std::ofstream outfile("magnetization_series.dat");

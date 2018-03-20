@@ -35,7 +35,3 @@ include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(SPHINX DEFAULT_MSG SPHINXBUILD_EXECUTABLE)
 
 mark_as_advanced( SPHINXBUILD_EXECUTABLE )
-
-# Imported target
-add_executable(sphinx IMPORTED)
-set_property(TARGET sphinx PROPERTY IMPORTED_LOCATION ${SPHINXBUILD_EXECUTABLE})
