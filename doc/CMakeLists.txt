@@ -59,7 +59,7 @@ find_package(Sphinx)
 FILE(GLOB_RECURSE SOURCES *.rst)
 
 SET(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/contents.html)
-set_property(TARGET sphinx PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}/python:$ENV{PYTHONPATH})
+set_property(TARGET sphinx PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:$ENV{PYTHONPATH})
 add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES} docs_cpp2rst
 		  COMMAND sphinx -c . -j8 -b html ${CMAKE_CURRENT_BINARY_DIR} html)
 add_custom_target(docs_sphinx ALL DEPENDS ${sphinx_top} ${CMAKE_CURRENT_BINARY_DIR}) 
