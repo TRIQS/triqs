@@ -221,7 +221,11 @@ namespace gfs {
 
   // -------------------- print  -------------------
 
-  friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) { return sout << "Product Mesh"; }
+  friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &prod_mesh) {
+    sout << "Product Mesh";
+    triqs::tuple::for_each(prod_mesh.m_tuple, [&sout](auto & m) { sout << "\n  -- " << m; });
+    return sout;
+  }
 
   // ------------------------------------------------
   private:
