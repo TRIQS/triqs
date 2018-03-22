@@ -53,6 +53,9 @@ typedef long double max_align_t;
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #endif
 
+// disable std::auto_ptr (disabled in c++17) usage in boost
+#define BOOST_NO_AUTO_PTR
+
 // including python first remove some warning
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "Python.h"
