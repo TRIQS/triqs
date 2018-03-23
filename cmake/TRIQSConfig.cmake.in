@@ -2,12 +2,18 @@
 if (NOT TRIQS_FOUND) 
 set(TRIQS_FOUND True)
 
-# version
+# Version
 set(TRIQS_VERSION @TRIQS_VERSION@)
 set(TRIQS_GIT_HASH @TRIQS_GIT_HASH@)
 
-# Root of the installation 
+# The compiler used for triqs
+set(TRIQS_CXX_COMPILER @CMAKE_CXX_COMPILER@)
+
+# Root of the installation
 set(TRIQS_ROOT  @CMAKE_INSTALL_PREFIX@)
+
+# Make all cmake modules installed with TRIQS available
+list(APPEND CMAKE_MODULE_PATH ${TRIQS_ROOT}/share/cmake)
 
 # True iif triqs was compiled with Python support
 set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
@@ -18,7 +24,7 @@ include(@CMAKE_INSTALL_PREFIX@/share/cmake/triqs-targets.cmake)
 MESSAGE(STATUS "Found TRIQSConfig.cmake with version ${TRIQS_VERSION}, hash = ${TRIQS_GIT_HASH}")
 
 # Check compiler
-if (NOT CMAKE_CXX_COMPILER STREQUAL "@CMAKE_CXX_COMPILER@" )
+if (NOT CMAKE_CXX_COMPILER STREQUAL TRIQS_CXX_COMPILER)
  message(FATAL_ERROR "For your own safety, you should use the same compiler as the one used to compile TRIQS !")
 endif()
 
@@ -31,10 +37,6 @@ set(TRIQS_MATHJAX_PATH @MATHJAX_PATH@)
 
 set(TRIQS_SPHINXEXT_PATH         @CMAKE_INSTALL_PREFIX@/share/triqs/sphinxext)
 set(TRIQS_SPHINX_INVENTORY_DIR   @CMAKE_INSTALL_PREFIX@/share/doc/triqs)
-
-# Imported target for sphinx executabe
-add_executable(sphinx IMPORTED)
-set_property(TARGET sphinx PROPERTY IMPORTED_LOCATION @SPHINXBUILD_EXECUTABLE@)
 
 ##########################################################################
 #

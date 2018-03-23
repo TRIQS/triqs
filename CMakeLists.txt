@@ -205,13 +205,12 @@ endif (Build_Documentation)
 #-----------------------------------------------
 # Install the FindXXX that should be exported
 #-----------------------------------------------
-
-install (FILES ${CMAKE_SOURCE_DIR}/cmake/FindNFFT.cmake DESTINATION share/cmake)
+install (FILES cmake/FindNFFT.cmake DESTINATION share/cmake)
 
 #---------------------------------------
 # triqs_config.h
 #---------------------------------------
-message( STATUS "-------- Making triqs_config.h  -------------")
+message(STATUS "-------- Making triqs_config.h  -------------")
 
 # Prepare some variable
 SET(PYTHON_NUMPY_VERSION_LT_17 ${CPP2PY_PYTHON_NUMPY_VERSION_LT_17})
