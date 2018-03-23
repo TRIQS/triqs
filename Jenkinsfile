@@ -86,7 +86,8 @@ try {
   parallel platforms
   if (keepInstall) {
     node("docker") {
-      stage("documentation") { timeout(time: 1, unit: 'HOURS') {
+      stage("publish") { timeout(time: 1, unit: 'HOURS') {
+	def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
         def workDir = pwd()
         dir("$workDir/gh-pages") {
           def subdir = env.BRANCH_NAME
@@ -97,11 +98,22 @@ try {
           }
           sh "git add -A ${subdir}"
           sh """
-            git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Generated documentation for ${env.BRANCH_NAME}' -m "`git --git-dir ${workDir}/.git rev-parse HEAD`"
+            git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Generated documentation for ${env.BRANCH_NAME}' -m '${env.BUILD_TAG} ${commit}'
           """
           // note: credentials used above don't work (need JENKINS-28335)
           sh "git push origin gh-pages"
         }
+        dir("$workDir/docker") { try {
+	  git(url: "ssh://git@github.com/TRIQS/docker.git", branch: env.BRANCH_NAME, credentialsId: "ssh", changelog: false)
+	  sh "echo '160000 commit ${commit}\t${projectName}' | git update-index --index-info"
+	  sh """
+	    git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Autoupdate ${projectName}' -m '${env.BUILD_TAG}'
+	  """
+	  // note: credentials used above don't work (need JENKINS-28335)
+	  sh "git push origin ${env.BRANCH_NAME}"
+	} catch (err) {
+	  echo "Failed to update docker repo"
+	} }
       } }
     }
   }
