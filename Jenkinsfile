@@ -1,5 +1,6 @@
 def projectName = "triqs"
 def documentationPlatform = "ubuntu-clang"
+def keepInstall = !env.BRANCH_NAME.startsWith("PR-")
 
 properties([
   disableConcurrentBuilds(),
@@ -22,8 +23,8 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
       """
       /* build and tag */
       def img = docker.build("flatironinstitute/${projectName}:${env.BRANCH_NAME}-${env.STAGE_NAME}", "--build-arg BUILD_DOC=${platform==documentationPlatform} .")
-      if (env.BRANCH_NAME.startsWith("PR-")) {
-        sh "docker rmi ${img.imageName()}"
+      if (!keepInstall) {
+        sh "docker rmi --no-prune ${img.imageName()}"
       }
     } }
   } }
@@ -42,11 +43,8 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
       def tmpDir = pwd(tmp:true)
       def cpp2pyDir = "$tmpDir/cpp2py"
       def buildDir = "$tmpDir/build"
-      def installDir = "$tmpDir/install"
-
-      dir(installDir) {
-        deleteDir()
-      }
+      /* install real branches in a fixed predictable place so apps can find them */
+      def installDir = keepInstall ? "${env.HOME}/install/${projectName}/${env.BRANCH_NAME}/${platform}" : "$tmpDir/install"
 
       checkout scm
       dir(cpp2pyDir) {
@@ -62,17 +60,16 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         deleteDir()
         sh """#!/bin/bash -ex
           virtualenv $installDir
-          virtualenv --relocatable $installDir
           pip install --no-binary=h5py,mpi4py -r $workDir/packaging/requirements.txt
 
           cmake $cpp2pyDir -DCMAKE_INSTALL_PREFIX=$installDir
-          make
+          make -j3
           make install
           rm -rf *
         """
 
         sh "cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir"
-        sh "make -j2"
+        sh "make -j3"
         try {
           sh "make test"
         } catch (exc) {
@@ -81,14 +78,13 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         }
         sh "make install"
       } }
-      zip(zipFile: "osx-${platform}.zip", archive: true, dir: installDir)
     } }
   } }
 }
 
 try {
   parallel platforms
-  if (!env.BRANCH_NAME.startsWith("PR-")) {
+  if (keepInstall) {
     node("docker") {
       stage("documentation") { timeout(time: 1, unit: 'HOURS') {
         def workDir = pwd()
