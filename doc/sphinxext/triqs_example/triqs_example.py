@@ -74,8 +74,8 @@ class TriqsExample(Directive):
         config = TriqsExampleRun.config
 
         # Get configuration values for the language
-        input_encoding = 'ascii' #config.get(language+'_input_encoding','ascii')
-        output_encoding = 'ascii' #config.get(language+'_output_encoding','ascii')
+        input_encoding = 'utf8' #config.get(language+'_input_encoding','ascii')
+        output_encoding = 'utf8' #config.get(language+'_output_encoding','ascii')
         show_source = True 
 
         # Build the code text
