@@ -47,7 +47,7 @@ Block Green's functions support various simple operations.
    g2 = inverse(inverse(g) - sigma) # this is Dyson's equation
 
 Slicing
---------  
+-------
 
 Just like numpy arrays, the Green's function can be sliced, *when the indices are integers* (otherwise it is meaningless).
 The syntax is the regular python/numpy syntax, so a simple example will be enough here::
@@ -62,6 +62,33 @@ The syntax is the regular python/numpy syntax, so a simple example will be enoug
 
   >>> g[2:3,2:3]
   gf_view
+
+
+Bracket Accessor
+----------------
+
+The operator [] is further in charge of accessing the data of the Green function on the mesh.
+It allows to acquire both the values the Green function and alter them.
+
+To not collide with the slicing functionality described above, two wrapper classes Idx and Meshpoint are used.
+The former allows to access the Green function at a given :ref:`mesh index <gf_subscript_index>`
+
+.. code::
+
+        from pytriqs.gf import Idx
+        ...
+        g[Idx(0)] = 1.0
+
+
+Mesh points are acquired naturally when looping over the mesh of a Green function. For example, we can set
+the values of the Green function using
+
+.. code::
+
+        for iw in g_iw.mesh():
+            g[iw] = 1.0 / iw
+
+Note however that this will not set a proper singularity of the Green function.
 
 
 Assignment: << or = operator
