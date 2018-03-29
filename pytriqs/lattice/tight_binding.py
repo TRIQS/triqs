@@ -23,6 +23,7 @@
 __all__ = ['BravaisLattice', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
            'hopping_stack', 'TBLattice']
 
+from lattice_tools import BrillouinZone
 from lattice_tools import BravaisLattice as BravaisLattice
 from lattice_tools import TightBinding as TightBinding
 from lattice_tools import dos_patch as dos_patch_c
@@ -30,6 +31,7 @@ from lattice_tools import dos as dos_c
 from lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stack, energy_matrix_on_bz_path
 from pytriqs.dos import DOS
 import numpy
+import numpy as np
 
 # MOVE THIS BACK INTO CYTHON !!!!
 
@@ -82,4 +84,37 @@ class TBLattice:
 
     #def dos(self) : d = dos (TB, nkpts= 100, neps = 100, name = 'dos2')
 
+# ----------------------------------------------------------------------
+def energies_on_bz_paths(paths, tb_lattice, n_pts=50):
+
+    """ Given a list of k-point paths compute the eigen energies along
+    the paths using n_pts discrete points for each sub-path. """
+
+    # -- Get the reciprocal lattice vectors
+    bz = BrillouinZone(tb_lattice.bl)
+    k_mat = np.array(bz.units())
+
+    n_paths = len(paths)
+    n_orb = tb_lattice.dim
+
+    k = np.zeros(n_pts * n_paths)
+    E = np.zeros((n_orb, n_pts * n_paths))
+
+    k_length = 0. # accumulative k-path length
+
+    for pidx, (ki, kf) in enumerate(paths):
+
+        s, e = pidx * n_pts, (pidx+1) * n_pts
+        E[:, s:e] = energies_on_bz_path(tb_lattice.tb, ki, kf, n_pts)
+
+        dk = np.dot(k_mat.T, (ki - kf))
+        a = np.linspace(0., 1., num=n_pts, endpoint=False)
+        k_vec = a[:, None] * dk[None, :]
+
+        k[s:e] = np.linalg.norm(k_vec, axis=1) + k_length
+        k_length += np.linalg.norm(dk)
+
+    K = np.concatenate((k[::n_pts], [2 * k[-1] - k[-2]])) # add last point for K-grid
+
+    return k, K, E
 
