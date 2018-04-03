@@ -95,7 +95,7 @@ def energies_on_bz_paths(paths, tb_lattice, n_pts=50):
     k_mat = np.array(bz.units())
 
     n_paths = len(paths)
-    n_orb = tb_lattice.dim
+    n_orb = tb_lattice.NOrbitalsInUnitCell
 
     k = np.zeros(n_pts * n_paths)
     E = np.zeros((n_orb, n_pts * n_paths))
