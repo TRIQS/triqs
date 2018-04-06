@@ -27,6 +27,7 @@
 #include "./h5/string.hpp"
 #include "./h5/vector.hpp"
 #include "./h5/map.hpp"
+#include "./h5/pair.hpp"
 #include "./h5/tuple.hpp"
 #include "./h5/optional.hpp"
 #include "./h5/generic.hpp"
