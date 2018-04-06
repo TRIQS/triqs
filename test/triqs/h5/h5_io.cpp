@@ -25,6 +25,35 @@
 
 namespace h5 = triqs::h5;
 
+TEST(H5Io, Pair) {
+
+  // write
+  std::pair<std::string, int> m                  = {"a", 1};
+  std::pair<std::string, std::vector<double>> mv = {"a", {1.0, 2.0}};
+
+  {
+    h5::file file{"test_pair.h5", H5F_ACC_TRUNC};
+    h5::group grp{file};
+    h5_write(grp, "pair_int_str", m);
+    h5_write(grp, "pair_str_vec", mv);
+  }
+
+  // read
+  std::pair<std::string, int> mm;
+  std::pair<std::string, std::vector<double>> mmv;
+
+  {
+    h5::file file{"test_pair.h5", H5F_ACC_RDONLY};
+    h5::group grp{file};
+    h5_read(grp, "pair_int_str", mm);
+    h5_read(grp, "pair_str_vec", mmv);
+  }
+
+  // compare
+  EXPECT_EQ(m, mm);
+  EXPECT_EQ(mv, mmv);
+}
+
 TEST(H5Io, Tuple) {
 
   // write
