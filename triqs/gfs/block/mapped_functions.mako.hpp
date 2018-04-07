@@ -24,7 +24,7 @@
 namespace triqs {
 namespace gfs {
 
- //mako %for FntToMap in ['inverse', 'reinterpret_scalar_valued_gf_as_matrix_valued'] :
+ //mako %for FntToMap in ['inverse', 'reinterpret_scalar_valued_gf_as_matrix_valued', 'make_gf_from_fourier', 'make_gf_from_inverse_fourier'] :
 
  //mako %for BGF in ['block_gf<M,T> &' , 'block_gf<M,T> const &' , 'block_gf_view<M,T>', 'block_gf_const_view<M,T>', 'block2_gf<M,T> &' , 'block2_gf<M,T> const &' , 'block2_gf_view<M,T>', 'block2_gf_const_view<M,T>'] :
  template <typename M, typename T> auto MAKO_FntToMap(MAKO_BGF g) {
