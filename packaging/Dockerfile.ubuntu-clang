@@ -50,4 +50,4 @@ RUN mkdir /tmp/build && cd /tmp/build && \
       rm -rf * && \
       cmake /tmp/libcxx-5.0.1.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=/tmp/libcxxabi-5.0.1.src/include && make -j2 install && \
       rm -rf /tmp/libcxx* /tmp/build
-ENV CXXFLAGS="-stdlib=libc++ -DBOOST_NO_AUTO_PTR=1" LD_LIBRARY_PATH=/usr/lib/llvm-${LLVM}/lib
+ENV CXXFLAGS="-stdlib=libc++" LD_LIBRARY_PATH=/usr/lib/llvm-${LLVM}/lib
