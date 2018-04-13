@@ -39,5 +39,10 @@ class test_Gf_Block(unittest.TestCase):
         gf_struct = [ ['1', []], ['2',[]], ['3',[]] ]
         B4 = BlockGf(mesh=self.iw_mesh, gf_struct=gf_struct)
 
+        # Map_block functionality
+        B5 = map_block(lambda x: 2*x, B3)
+        assert_block_gfs_are_close(B5, 2*B3)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -139,6 +139,18 @@ class Block2Gf(object):
             yield ind
 
     @property
+    def indices1(self):
+        """A generator of the first block indices"""
+        for ind in self.__indices1:
+            yield ind
+
+    @property
+    def indices2(self):
+        """A generator of the second block indices"""
+        for ind in self.__indices2:
+            yield ind
+
+    @property
     def all_indices(self):
         """  An Iterator on Block2Gf indices and indices of the blocks of the form:
             block_index1,block_index2,n1,n2, where n1,n2 are indices of the block"""

@@ -2,6 +2,7 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
   ${CMAKE_CURRENT_SOURCE_DIR}/block2_gf.py
   ${CMAKE_CURRENT_SOURCE_DIR}/block_gf.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/map_block.py
   ${CMAKE_CURRENT_SOURCE_DIR}/descriptor_base.py
   ${CMAKE_CURRENT_SOURCE_DIR}/descriptors.py
   ${CMAKE_CURRENT_SOURCE_DIR}/gf.py
