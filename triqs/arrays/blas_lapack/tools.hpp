@@ -48,11 +48,11 @@ namespace triqs { namespace arrays {
    }
 
    // returns the # of rows of the matrix *seen* as fortran matrix
-   template <typename MatrixType> int get_n_rows (MatrixType const & A) { 
+   template <typename MatrixType> size_t get_n_rows (MatrixType const & A) {
     return (A.memory_layout_is_fortran() ? first_dim(A) : second_dim(A));
    }
    // returns the # of cols of the matrix *seen* as fortran matrix
-   template <typename MatrixType> int get_n_cols (MatrixType const & A) { 
+   template <typename MatrixType> size_t get_n_cols (MatrixType const & A) {
     return (A.memory_layout_is_fortran() ? second_dim(A) : first_dim(A));
    }
 
