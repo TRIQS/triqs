@@ -33,34 +33,6 @@ using namespace triqs::clef;
 
 using value_type = std::complex<double>;
 
-struct gelss_cache {
-
-  private:
-  size_t M, N;
-  matrix<value_type> V_x_InvS_x_UT;
-
-  public:
-  vector<double> S_vec;
-
-  gelss_cache(matrix_const_view<value_type> _A) : M{get_n_rows(_A)}, N{get_n_cols(_A)}, V_x_InvS_x_UT{N, M}, S_vec(std::min(M, N)) {
-
-    matrix<value_type> A{_A, FORTRAN_LAYOUT};
-    matrix<value_type> U{M, M, FORTRAN_LAYOUT};
-    matrix<value_type> VT{N, N, FORTRAN_LAYOUT};
-
-    lapack::gesvd(A, S_vec, U, VT);
-
-    matrix<double> S_inv{N, M, FORTRAN_LAYOUT};
-    S_inv() = 0.;
-    for (int i : range(std::min(M, N))) S_inv(i, i) = 1.0 / S_vec(i);
-    V_x_InvS_x_UT = VT.transpose() * S_inv * U.transpose();
-  }
-
-  matrix<value_type> operator()(matrix_const_view<value_type> B) const {
-    return V_x_InvS_x_UT * B;
-  }
-};
-
 TEST(blas_lapack, svd) {
 
   auto A = matrix<value_type>{{{1, 1, 1}, {2, 3, 4}, {3, 5, 2}, {4, 2, 5}, {5, 4, 3}}, FORTRAN_LAYOUT};
