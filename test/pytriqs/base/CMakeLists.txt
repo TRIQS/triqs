@@ -15,6 +15,7 @@ add_python_test(hdf5_io)
 
 # Greens functions
 add_python_test(gf_imfreq)
+add_python_test(gf_block)
 add_python_test(gf_init)
 add_python_test(gf_base_op)
 add_python_test(gf_fourier)

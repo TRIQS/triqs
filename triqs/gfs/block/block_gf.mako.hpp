@@ -19,6 +19,9 @@
  *
  ******************************************************************************/
 #pragma once
+
+#include "./../../hilbert_space/fundamental_operator_set.hpp"
+
 namespace triqs {
  namespace gfs {
 
@@ -253,6 +256,21 @@ namespace triqs {
 
    /// Construct from the vector of names 
    block_gf(block_names_t b) : _block_names(std::move(b)), _glist(_block_names.size()) {}
+
+   // Create Block Green function from Mesh and gf_struct
+   block_gf(gf_mesh<Var> const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) {
+
+     for (auto const & [ bname, idx_lst ] : gf_struct) {
+       auto bl_size = idx_lst.size();
+       _block_names.push_back(bname);
+       std::vector<std::string> idx_str_lst(bl_size);
+       std::transform(idx_lst.cbegin(), idx_lst.cend(), idx_str_lst.begin(), [](auto &arg){ return std::to_string(arg); });
+       if constexpr (Target::rank == 0)
+         _glist.emplace_back(m, make_shape(bl_size, bl_size));
+       else
+         _glist.emplace_back(m, make_shape(bl_size, bl_size), std::vector<std::vector<std::string>>{Target::rank, idx_str_lst});
+     }
+   }
 
    // mako %else:
 

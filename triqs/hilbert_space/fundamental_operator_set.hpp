@@ -31,18 +31,31 @@
 
 namespace std {
 
-template<typename T1, typename ...T>
-std::ostream &operator<<(std::ostream &os, std::variant<T1, T...> const &v) {
-  visit([&os](auto const &x) { os << x; }, v);
-  return os;
-}
+ // == ostream operator<< for variant and vector of variant
 
-inline std::ostream & operator<<(std::ostream & os, std::vector<std::variant<int, std::string>> const& fs) {
- int u = 0;
- for(auto const& i : fs) { if (u++) os << ","; os << i; }
- return os;
-}
-}
+ template<typename T1, typename ...T>
+ std::ostream &operator<<(std::ostream &os, std::variant<T1, T...> const &v) {
+   visit([&os](auto const &x) { os << x; }, v);
+   return os;
+ }
+
+ inline std::ostream & operator<<(std::ostream & os, std::vector<std::variant<int, std::string>> const& fs) {
+  int u = 0;
+  for(auto const& i : fs) { if (u++) os << ","; os << i; }
+  return os;
+ }
+
+ // == Make std::to_string available for both string and variant
+
+ inline string to_string(string const &str) { return str; }
+ template<typename T1, typename T2>
+ inline string to_string(variant<T1, T2> const &var) {
+   stringstream ss;
+   ss << var;
+   return ss.str();
+ }
+
+} // namespace std
 
 namespace triqs {
 namespace hilbert_space {
