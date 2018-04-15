@@ -23,6 +23,7 @@
 #include <complex>
 #include "./tools.hpp"
 #include "./qcache.hpp"
+#include "./gesvd.hpp"
 
 namespace triqs::arrays::lapack {
 
