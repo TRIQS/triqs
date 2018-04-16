@@ -18,6 +18,8 @@ TEST(Gfs, cyclic_lattice) {
   Gr(r_) << 1. + r_(0) + r_(1);
   EXPECT_COMPLEX_NEAR(Gr(index_t{0, 0, 0})(0, 0), 1);
   Gr(r_) << exp(-r_(0));
+
+  std::cout << Gr.mesh() << "\n";
 }
 
 // FIXME : Test matrix case with same code ?
@@ -102,5 +104,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
       double res = -2 * (cos(kx) + cos(ky));
       EXPECT_COMPLEX_NEAR(Gk(K_t{kx, ky, 0})(0,0), res, 0.01);
     }
+
+  std::cout << Gk.mesh() << "\n";
 }
 MAKE_MAIN;
