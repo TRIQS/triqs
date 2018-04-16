@@ -499,7 +499,7 @@ class Gf(object):
     def __imul__impl(self,arg): # need to separate for the ImTime case
 
         # reshaping the data. Smash the mesh indices into one
-        rh = lambda d : np.reshape(d, (reduce(mul, d.shape[:self.rank]),) + (d.shape[self.rank+1:]))
+        rh = lambda d : np.reshape(d, (reduce(mul, d.shape[:self.rank]),) + (d.shape[self.rank:]))
         d_self =  rh(self.data)
         d_args =  rh(arg.data)
         if self.target_rank == 2:
