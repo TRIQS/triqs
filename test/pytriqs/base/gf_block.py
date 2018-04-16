@@ -26,7 +26,7 @@ class test_Gf_Block(unittest.TestCase):
         B1 = BlockGf(name_list=['0', '1', '2'], block_list=G_vec)
         B2 = B1.copy()
         
-        gf_struct = [ ['1', [0, 1]], ['2',[0, 1]], ['3',[0, 1]] ]
+        gf_struct = [ ['1', ['0', '1']], ['2',['0', '1']], ['3',['0', '1']] ]
         B3 = BlockGf(mesh=self.iw_mesh, gf_struct=gf_struct)
 
         B3['1'] << inverse(iOmega_n + 2.)
@@ -34,6 +34,10 @@ class test_Gf_Block(unittest.TestCase):
 
         assert_block_gfs_are_close(B1, B2)
         assert_block_gfs_are_close(B1, B3)
+
+        # Scalar-valued blocks
+        gf_struct = [ ['1', []], ['2',[]], ['3',[]] ]
+        B4 = BlockGf(mesh=self.iw_mesh, gf_struct=gf_struct)
 
 if __name__ == '__main__':
     unittest.main()

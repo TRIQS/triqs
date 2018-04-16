@@ -223,7 +223,7 @@ namespace triqs {
           if constexpr (Target::rank == 0)
             _glist.emplace_back(m, make_shape(bl_size, bl_size));
           else
-            _glist.emplace_back(m, make_shape(bl_size, bl_size), std::vector<std::vector<std::string>>{Target::rank, idx_str_lst});
+            _glist.emplace_back(m, make_shape(bl_size, bl_size), std::vector<std::vector<std::string>>(Target::rank, idx_str_lst));
         }
       }
 

@@ -42,11 +42,11 @@ class BlockGf(object):
                    * ``block_list``: list of blocks of Green's functions.
                    * ``make_copies``: If True, it makes a copy of the blocks and build the Green's function from these copies.
 
-            * BlockGf(mesh = mesh, target_shape = shape of target space, gf_struct = block structure, name = '')
+            * BlockGf(mesh = mesh, gf_struct = block structure, target_rank = rank of target space, name = '')
 
                    * ``mesh``: The mesh used to construct each block
                    * ``target_rank``: The rank of the target space of each block (default: 2)
-                   * ``gf_struct``: List of pairs [ [str, [str,...]], ... ] providing the block name and indices, e.g. [ ['up', [0]], ['dn', [0]] ]
+                   * ``gf_struct``: List of pairs [ [str, [str,...]], ... ] providing the block name and indices, e.g. [ ['up', ['0']], ['dn', ['0']] ]
 
             * BlockGf(name_block_generator, make_copies = False, name = '')
 
@@ -72,13 +72,16 @@ class BlockGf(object):
             GFlist = []
             for bl, idx_lst in kwargs['gf_struct']:
                 BlockNameList.append(bl)
-                GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[len(idx_lst)]*kwargs['target_rank'], indices=[idx_lst]*kwargs['target_rank']))
+                if len(idx_lst) > 0 and kwargs['target_rank'] > 0:
+                    GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[len(idx_lst)]*kwargs['target_rank'], name='G_%s'%bl, indices=[idx_lst]*kwargs['target_rank']))
+                else:
+                    GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[], name='G_%s'%bl))
         elif set(kwargs.keys()) == set(['name_block_generator','make_copies']):
             BlockNameList,GFlist = zip(* kwargs['name_block_generator'])
         else:
             raise RuntimeError, "BlockGf construction: error in parameters, see the documentation"
 
-        if 'make_copies' in kwargs.keys() and kwargs['make_copies']: GFlist = [g.copy() for g in GFlist]
+        if kwargs.get('make_copies', False): GFlist = [g.copy() for g in GFlist]
 
         # First a few checks
         assert GFlist !=[], "Empty list of blocks !"
