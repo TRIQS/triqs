@@ -268,11 +268,29 @@ namespace triqs { namespace arrays {
 #undef IMPL_TYPE
 
   /// Make a array of zeros with the given dimensions.
+  /// FIXME : add variadic form
+  /// FIXME : add eyes 
   template<typename T, int R> array<T, R> zeros(mini_vector<long, R> const & len) { 
     array<T, R> r (typename array<T, R>::indexmap_type::domain_type{len});
     r() = 0;
     return r;
   }
+
+  // swap two indices i,j
+  template<typename A> 
+    std::enable_if_t<is_amv_value_or_view_class<std::decay_t<A>>::value, typename std::decay_t<A>::view_type>
+  swap_index_view(A && a, int i, int j) { 
+   auto imp = a.indexmap();
+   auto l= imp.lengths();
+   auto s = imp.strides();
+   std::swap(l[i], l[j]);
+   std::swap(s[i], s[j]);
+   using r_t = typename std::decay_t<A>::view_type;
+   // FIXME : long only
+   auto imp2 = typename r_t::indexmap_type { l, s, static_cast<ptrdiff_t>(imp.start_shift())};
+   return r_t{imp2, a.storage()};
+  }
+
 
  //----------------------------------------------------------------------------------
 
