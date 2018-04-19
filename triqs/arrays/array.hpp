@@ -304,6 +304,13 @@ namespace triqs { namespace arrays {
 
 #undef IMPL_TYPE
 
+  /// Make a array of zeros with the given dimensions.
+  template<typename T, int R> array<T, R> zeros(mini_vector<long, R> const & len) { 
+    array<T, R> r (typename array<T, R>::indexmap_type::domain_type{len});
+    r() = 0;
+    return r;
+  }
+
  //----------------------------------------------------------------------------------
 
  // how to build the view type ....

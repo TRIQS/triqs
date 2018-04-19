@@ -121,8 +121,14 @@ TEST(Itertools, Make_Product) {
 
   std::array<range, N> range_arr{range(1), range(2), range(3), range(4)};
 
+  array<int, 4> arr(1,2,3,4), arr_ref(1,2,3,4);
+  arr_ref() = 1;
+
+  arr() = 0; // Visit each element exactly once
   for (auto [i,j,k,l] : make_product(range_arr))
-    std::cerr << i << j << k << l << "\n";
+    ++arr(i,j,k,l);
+
+  EXPECT_EQ(arr, arr_ref);
 }
 
 TEST(Itertools, Multi) {
