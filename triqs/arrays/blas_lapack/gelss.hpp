@@ -112,6 +112,7 @@ namespace triqs::arrays::lapack {
 
     private:
     size_t M, N;
+
     // The matrix V * Diag(S_vec)^{-1} * UT for the least square procedure
     matrix<value_type> V_x_InvS_x_UT;
 
@@ -124,7 +125,7 @@ namespace triqs::arrays::lapack {
     public:
     vector<double> const &S_vec() const { return _S_vec; }
 
-    gelss_cache(matrix_const_view<value_type> _A) : M{first_dim(_A)}, N{second_dim(_A)}, V_x_InvS_x_UT{N, M}, _S_vec(std::min(M, N)) {
+    gelss_cache(matrix_const_view<value_type> _A) : M{first_dim(_A)}, N{second_dim(_A)}, V_x_InvS_x_UT{N, M}, UT_NULL{M-N, M}, _S_vec(std::min(M, N)) {
 
       if (N > M) TRIQS_RUNTIME_ERROR << "ERROR: Matrix A for linear least square procedure cannot have more columns than rows";
 
@@ -142,7 +143,7 @@ namespace triqs::arrays::lapack {
       V_x_InvS_x_UT = VT.transpose() * S_inv * U.transpose();
 
       // Read off U_Null for defining the error of the least square procedure
-      UT_NULL = U.transpose()(range(N, M), range());
+      UT_NULL = U.transpose()(range(N, M), range(M));
     }
 
     std::pair<matrix<value_type>, double> operator()(matrix_const_view<value_type> B) const {
