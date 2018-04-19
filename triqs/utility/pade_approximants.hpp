@@ -84,10 +84,7 @@ class pade_approximant {
   for(int p=1; p<N; ++p) {
 
     // If |g| is very small, the continued fraction should be truncated.
-    if (g(p-1,p-1).norm() < 1.0e-20) {
-      for(int j=p; j<N; ++j) g(j,j) = 0.0;
-      break;
-    }
+    if (g(p-1,p-1).norm() < 1.0e-20) break;
 
     for(int j=p; j<N; ++j) {
       gmp_complex x = g(p-1,p-1)/g(p-1,j) - MP_1;
@@ -111,17 +108,17 @@ class pade_approximant {
 
    dcomplex A1(0);
    dcomplex A2 = a(0);
-   dcomplex B1(1.0), B2(1.0);
+   dcomplex B1(1.0);
 
    int N = a.size();
    for(int i=0; i<=N-2; ++i){
      dcomplex Anew = A2 + (e - z_in(i))*a(i+1)*A1;
-     dcomplex Bnew = B2 + (e - z_in(i))*a(i+1)*B1;
+     dcomplex Bnew = 1.0 + (e - z_in(i))*a(i+1)*B1;
      A1 = A2/Bnew; A2 = Anew/Bnew;
-     B1 = B2/Bnew; B2 = 1.0;
+     B1 = 1.0/Bnew;
    }
 
-   return A2/B2;
+   return A2;
 
  }
 
