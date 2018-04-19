@@ -31,7 +31,7 @@ namespace gfs {
 
  struct imfreq {};
 
- enum  matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
+ enum class matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
 
  struct energy_t { 
    double value = 0;
@@ -78,8 +78,8 @@ namespace gfs {
    * @param tail_order : order of computation of the tail
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
   */
-  gf_mesh(domain_t dom, long n_pts = 1025, double tail_fraction = 0.2, int tail_order = 10, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-     : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt), _tail_fraction(tail_fraction), _tail_order(tail_order){
+  gf_mesh(domain_t dom, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt){
    _last_index = n_pts - 1; // total number of points
    if (opt == matsubara_mesh_opt::positive_frequencies_only) {
     _first_index = 0;
@@ -91,7 +91,6 @@ namespace gfs {
    }
    _first_index_window = _first_index;
    _last_index_window = _last_index;
-   // compute the _lss
   }
 
   /**
@@ -100,8 +99,8 @@ namespace gfs {
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
   */
-  gf_mesh(double beta, statistic_enum S, long n_pts = 1025, double tail_fraction = 0.2, int tail_order = 10, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-     : gf_mesh({beta, S}, n_pts, tail_fraction, tail_order, opt) {}
+  gf_mesh(double beta, statistic_enum S, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : gf_mesh({beta, S}, n_pts, opt) {}
 
   /**
    * constructor
@@ -110,8 +109,8 @@ namespace gfs {
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
   */
-  gf_mesh(domain_t dom, energy_t omega_max, double tail_fraction = 0.2, int tail_order = 10, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-     : gf_mesh(std::move(dom), ((omega_max.value*dom.beta/M_PI)-1)/2, tail_fraction, tail_order, opt) {}
+  gf_mesh(domain_t dom, energy_t omega_max, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : gf_mesh(std::move(dom), ((omega_max.value*dom.beta/M_PI)-1)/2, opt) {}
 
   /**
    * constructor
@@ -120,8 +119,8 @@ namespace gfs {
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
   */
-  gf_mesh(double beta, statistic_enum S, energy_t omega_max, double tail_fraction = 0.2, int tail_order = 10, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-     : gf_mesh({beta, S}, omega_max, tail_fraction, tail_order, opt) {}
+  gf_mesh(double beta, statistic_enum S, energy_t omega_max, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : gf_mesh({beta, S}, omega_max, opt) {}
 
   // -------------------- Comparisons -------------------
 
@@ -174,7 +173,7 @@ namespace gfs {
 
   // -------------------- Get the grid for positive freq only -------------------
 
-  gf_mesh get_positive_freq() const { return {domain(), _n_pts, _tail_fraction, _tail_order, matsubara_mesh_opt::positive_frequencies_only}; }
+  gf_mesh get_positive_freq() const { return {domain(), _n_pts, matsubara_mesh_opt::positive_frequencies_only}; }
 
   // -------------------- tail -------------------
 
@@ -195,6 +194,12 @@ namespace gfs {
 
   dcomplex idx_to_matsu_freq(int n) const { 
    return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta;
+  }
+
+  void set_tail_parameters(double tail_fraction, int tail_order = -1) { 
+   _tail_fraction = tail_fraction;
+   _tail_order = tail_order;
+   _lss.reset(); 	
   }
 
   // number of the points in the tail for positive omega.
@@ -250,12 +255,17 @@ namespace gfs {
 
    long i=0;
    for (auto const & ra : m.tail_fit_point_indices()){
-     for (auto p : ra)
-      for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
-	//FIXME : looks like a clang BUG ?
-	auto la = [i,jj = j,p](auto && ...x) { g_mat(i, jj) = g_data_swap_idx(p, x...);};
+     for (auto p : ra){
+      int count = 0;
+      //for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
+      for (auto const & tu : prod_ranges) {
+	// FIXME Use enumerate -> BUG
+	// FIXME : looks like a clang BUG ?
+	auto la = [&](auto && ...x) { g_mat(i, count) = g_data_swap_idx(p, x...);};
+	++count;
         std::apply(la, tu);
       }
+     }
      ++i;
     }
    
@@ -263,10 +273,12 @@ namespace gfs {
    auto [a_mat, epsilon] = (*m._lss)(g_mat); // coef + error
   
    // Reinterpret the result as an R dim array and return 
-   using r_t = arrays::array_const_view<dcomplex, R>; // return type
+   using r_t = arrays::array<dcomplex, R>; // return type
    lg[0] = m._tail_order; // change the length corresponding to omega, now it is the order index
-   //FIXME : Ugly 
-   return { r_t{ typename r_t::indexmap_type {typename r_t::indexmap_type::domain_type{lg}}, a_mat.storage()}, epsilon};
+   //FIXME : Ugly, Avoid copy, use std::move
+   //FIXME : Assert Memory layout C
+   auto arr = r_t{ typename r_t::indexmap_type::domain_type{lg}, std::move(a_mat).storage()};
+   return { std::move(arr), epsilon };
 
   }
  
@@ -396,9 +408,9 @@ namespace gfs {
   domain_t _dom;
   int _n_pts;
   matsubara_mesh_opt _opt;
-  double _tail_fraction;
-  int _tail_order;
   long _first_index, _last_index, _first_index_window, _last_index_window;
+  double _tail_fraction = 0.2;
+  int _tail_order = -1;
   mutable std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>> _lss;
  };
 

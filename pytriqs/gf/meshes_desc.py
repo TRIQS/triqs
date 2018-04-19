@@ -36,7 +36,7 @@ module.add_enum(c_name = "statistic_enum",
 
 module.add_enum(c_name = "matsubara_mesh_opt",
                 c_namespace = "triqs::gfs",
-                values = ["all_frequencies","positive_frequencies_only"])
+                values = ["matsubara_mesh_opt::all_frequencies","matsubara_mesh_opt::positive_frequencies_only"])
 
 ########################
 ##   Mesh generic

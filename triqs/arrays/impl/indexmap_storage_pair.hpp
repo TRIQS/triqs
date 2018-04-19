@@ -170,8 +170,9 @@ namespace triqs { namespace arrays {
 
     auto const & memory_layout() const { return indexmap_.memory_layout(); }
     indexmap_type const & indexmap() const {return indexmap_;}
-    storage_type const & storage() const {return storage_;}
-    storage_type & storage() {return storage_;}
+    storage_type storage() && {return std::move(storage_);}
+    storage_type const & storage() const &{return storage_;}
+    storage_type & storage() &{return storage_;}
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
   PyObject *to_python() const {

@@ -136,6 +136,7 @@ namespace triqs { namespace arrays {
    size_t start_shift() const { return start_shift_;}
    lengths_type const & lengths() const { return mydomain.lengths();}
    strides_type const & strides() const { return this->strides_;}
+   long size() const { return mydomain.number_of_elements(); }
 
    memory_layout_t<Rank> const & memory_layout() const { return memory_order_;}
    bool memory_layout_is_c() const { return memory_layout().is_c();}

@@ -106,45 +106,49 @@ namespace triqs::arrays::lapack {
     return info;
   }
 
-  template<typename value_type>
-  struct gelss_cache {
+  template <typename value_type> struct gelss_cache {
 
     // cf. Notation in https://math.stackexchange.com/questions/772039/how-does-the-svd-solve-the-least-squares-problem
 
     private:
     size_t M, N;
+
     // The matrix V * Diag(S_vec)^{-1} * UT for the least square procedure
     matrix<value_type> V_x_InvS_x_UT;
 
     // The part of UT fixing the error of the LLS
     matrix<value_type> UT_NULL;
 
-    public:
     // Vector containing the singular values
-    vector<double> S_vec;
+    vector<double> _S_vec;
 
-    gelss_cache(matrix_const_view<value_type> _A) : M{get_n_rows(_A)}, N{get_n_cols(_A)}, V_x_InvS_x_UT{N, M}, S_vec(std::min(M, N)) {
+    public:
+    vector<double> const &S_vec() const { return _S_vec; }
 
-      if( N > M ) TRIQS_RUNTIME_ERROR << "ERROR: Matrix A for linear least square procedure cannot have more columns than rows";
+    gelss_cache(matrix_const_view<value_type> _A) : M{first_dim(_A)}, N{second_dim(_A)}, V_x_InvS_x_UT{N, M}, UT_NULL{M-N, M}, _S_vec(std::min(M, N)) {
+
+      if (N > M) TRIQS_RUNTIME_ERROR << "ERROR: Matrix A for linear least square procedure cannot have more columns than rows";
 
       matrix<value_type> A{_A, FORTRAN_LAYOUT};
       matrix<value_type> U{M, M, FORTRAN_LAYOUT};
       matrix<value_type> VT{N, N, FORTRAN_LAYOUT};
 
       // Calculate the SVD A = U * Diag(S_vec) * VT
-      lapack::gesvd(A, S_vec, U, VT);
+      lapack::gesvd(A, _S_vec, U, VT);
 
       // Calculate the matrix V * Diag(S_vec)^{-1} * UT for the least square procedure
       matrix<double> S_inv{N, M, FORTRAN_LAYOUT};
       S_inv() = 0.;
-      for (int i : range(std::min(M, N))) S_inv(i, i) = 1.0 / S_vec(i);
+      for (int i : range(std::min(M, N))) S_inv(i, i) = 1.0 / _S_vec(i);
       V_x_InvS_x_UT = VT.transpose() * S_inv * U.transpose();
 
       // Read off U_Null for defining the error of the least square procedure
-      UT_NULL = U.transpose()(range(M-N, M), range());
+      UT_NULL = U.transpose()(range(N, M), range(M));
     }
 
-    auto operator()(matrix_const_view<value_type> B) const { return std::make_pair(V_x_InvS_x_UT * B, (M == N) ? value_type{0.0} : frobenius_norm(UT_NULL * B)); }
+    std::pair<matrix<value_type>, double> operator()(matrix_const_view<value_type> B) const {
+      return std::make_pair(V_x_InvS_x_UT * B, (M == N) ? 0.0 : frobenius_norm(UT_NULL * B));
+    }
   };
 
 } // namespace triqs::arrays::lapack
