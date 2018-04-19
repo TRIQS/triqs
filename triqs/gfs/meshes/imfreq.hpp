@@ -29,6 +29,11 @@ namespace gfs {
 
  enum  matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
 
+ struct energy_t { 
+   double value = 0;
+   explicit operator double() const { return value;}
+ };
+
  // ---------------------------------------------------------------------------
  //                     The mesh point
  //  NB : the mesh point is also in this case a matsubara_freq.
@@ -56,16 +61,22 @@ namespace gfs {
   using var_t = imfreq;
 
   // -------------------- Constructors -------------------
+  
+  ///default constructor
+  gf_mesh() : gf_mesh(domain_t{}, 0){}
 
   ///constructor
   /**
    * Full constructor
    * @param dom domain
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
+   * @param tail_fraction : percent of the function in the tail.
+   * @param tail_order : order of computation of the tail
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
   */
-  gf_mesh(domain_t dom, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-     : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt) {
+  gf_mesh(domain_t dom, long n_pts, double tail_fraction, int tail_order, matsubara_mesh_opt opt)
+     : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt), _tail_fraction(tail_fraction), _tail_order(tail_order){
+   _last_index = n_pts - 1; // total number of points
    if (opt == matsubara_mesh_opt::positive_frequencies_only) {
     _first_index = 0;
     _last_index = n_pts - 1;
@@ -76,10 +87,18 @@ namespace gfs {
    }
    _first_index_window = _first_index;
    _last_index_window = _last_index;
+   // compute the _lls
   }
 
-  ///default constructor
-  gf_mesh() : gf_mesh(domain_t(), 0){}
+  /**
+   * constructor
+   * @param dom domain
+   * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
+   * @param tail_fraction : percent of the function in the tail.
+   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+  */
+  gf_mesh(domain_t dom, long n_pts = 1025, double tail_fraction = 0.2, int tail_order = 10, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : gf_mesh(std::move(dom), n_pts, tail_fraction, tail_order, opt) {}
 
   ///constructor
   /**
@@ -89,8 +108,30 @@ namespace gfs {
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
   */
-  gf_mesh(double beta, statistic_enum S, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-     : gf_mesh({beta, S}, n_pts, opt) {}
+  gf_mesh(double beta, statistic_enum S, long n_pts = 1025, double tail_fraction = 0.2, int tail_order = 10, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : gf_mesh({beta, S}, n_pts, tail_fraction, tail_order, opt) {}
+
+  /**
+   * constructor
+   * @param beta inverse temperature
+   * @param S statistic (Fermion or Boson)
+   * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
+   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+  */
+  gf_mesh(domain_t dom, energy_t omega_max, double tail_fraction = 0.2, int tail_order = 10, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : gf_mesh(std::move(dom), n_pts, tail_fraction, tail_order, opt) {}
+
+  /**
+   * constructor
+   * @param beta inverse temperature
+   * @param S statistic (Fermion or Boson)
+   * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
+   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+  */
+  gf_mesh(double beta, statistic_enum S, energy_t omega_max, double tail_fraction = 0.2, int tail_order = 10, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : gf_mesh({beta, S}, n_pts, tail_fraction, tail_order, opt) {}
+
+  // -------------------- Comparisons -------------------
 
   bool operator==(gf_mesh const &M) const {
    return (std::tie(_dom, _n_pts, _opt) == std::tie(M._dom, M._n_pts, M._opt));
@@ -141,7 +182,120 @@ namespace gfs {
 
   // -------------------- Get the grid for positive freq only -------------------
 
-  gf_mesh get_positive_freq() const { return {domain(), _n_pts, matsubara_mesh_opt::positive_frequencies_only}; }
+  gf_mesh get_positive_freq() const { return {domain(), _n_pts, _tail_fraction, _tail_order, matsubara_mesh_opt::positive_frequencies_only}; }
+
+  // -------------------- tail -------------------
+
+  private:
+
+  // construct the Vandermonde matrix
+  void vander(std::vector<dcomplex> const & c, int order) const { 
+   matrix<dcomplex> V(c.size(), order);
+   for (auto const & pt : c) { 
+     dcomplex z=1;
+     for (int n =0; n < order; ++n) {
+	V(p,n) = z;
+	z *= pt;
+      }
+   }
+   return V;
+  }
+
+  dcomplex index_to_complex(int n) const { 
+   return 1_j * M_PI * (2 * (_first_index + p) + (_dom.statistic == Fermion)) / _dom.beta;
+  }
+
+  // number of the points in the tail for positive omega.
+  int n_pts_in_tail() const { return std::round(tail_fraction * _n_pts);}
+ 
+  // maximum freq of the mesh
+  double omega_max () const { return index_to_complex(_last_index);}
+
+  // returns the 2 ranges of indices of the points used for tail fitting 
+  std::array<range, 2> tail_fit_point_indices() const { 
+   int n_tail = n_pts_in_tail();
+   int n_step = 1; //FIXME : Cap the number of points in tail fitting.
+   // two ranges of size n_tail exactly, at the start and at the end of the mesh
+   auto R_p  = range{ _last_index - n_tail, _last_index, n_step);
+   auto R_m  = range{ _first_index, _first_index + n_tail, n_step);
+   return {R_m, R_p};
+  }
+
+  void setup_lls() const { 
+    auto N = n_pts_in_tail();
+    std::vector<dcomplex> C; 
+    C.reserve(2*N);
+    auto omega_max = omega_max();
+    for (auto const & r: m.tail_fit_point_indices())
+      for (auto x : r) C.push_back(index_to_complex(x)/omega_max);
+    _lls = std::make_shared<const gelss_cache<dcomplex>>(vander(C, tail_order));
+  }
+
+  /**
+   * @param m mesh
+   * @param data 
+   * @param n position of the omega in the data array
+   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+  */
+  template<int R>
+  friend std::pair<array<dcomplex, R>, double> get_tail(gf_mesh const & m, array_const_view<dcomplex,R> g_data, int n) const {
+   
+   if (m.opt == matsubara_mesh_opt::positive_frequencies_only) TRIQS_RUNTIME_ERROR << "Can not fit on an positive_only mesh";
+   
+   if (!bool(_lls)) m.setup_lls();
+
+   // The points of G
+   auto g_data_swap_idx = swap_index_view(g_data, 0, n); // put index n as the first index
+   auto imp = g_data_swap_idx.indexmap();
+   auto lg = imp.lengths(); // lengths of the data array of g
+
+   matrix<dcomplex> g_mat(2*m.n_pts_in_tail(), imp.size()/lg[0]);
+   
+   // 
+   std::array<range, R-1> rs{};
+   for (int i =1; i <R; ++i) rs[i-1] = range(0, lg[i]); 
+   auto prod_ranges = triqs::utility::make_product(rs)
+
+   long i=0;
+   for (auto const & ra : m.tail_fit_point_indices()){
+     for (auto p : ra)
+      for (auto [j, tu] : triqs::utility::enumerate(prod_ranges))
+        std::apply([i, p, j, &tu](auto && ...x) { g_mat(i, j) = g_data_swap_idx(p, x...);}, tu);
+     ++i;
+    }
+   }
+   
+   // Call SVD 
+   auto [a_mat, epsilon] = (*_lls)(g_mat); // coef + error
+  
+   // Reinterpret the result as an R dim array and return 
+   using r_t = array_const_view<dcomplex, R>; // return type
+   lg[0] = tail_order; // change the length corresponding to omega, now it is the order index
+   return { r_t{ r_t::indexmap_type {r_t::indexmap_type::domain_type{lg}}, a_mat.storage()}, epsilon};
+
+  }
+ 
+  // Computes sum A_n / om^n 
+  // Return array<dcomplex, R -1 > if R>1 else dcomplex
+  // FIXME : use dynamic R array when available.
+  // FIXME : array of dimension 0
+  auto tail_eval(array_const_view<dcomplex,R> A, dcomplex om) {
+    
+    auto compute = [&A](auto res) { // copy, in fact rvalue 
+       dcomplex z = 1;
+       long N = first_dim(A);       
+       for (int n=0; n<N; ++n, z /=om)
+	  res += A(n, ellipsis()) * z;
+       return std::move(res);
+    };
+
+    if constexpr(R>1) {
+      return compute(arrays::zeros(front_pop(A.indexmap().lengths())));
+    }
+    else {
+      return compute(dcomplex{0});
+    }
+  }
 
   // -------------------- mesh_point -------------------
 
@@ -244,7 +398,10 @@ namespace gfs {
   domain_t _dom;
   int _n_pts;
   matsubara_mesh_opt _opt;
+  double _tail_fraction;
+  int _tail_order;
   long _first_index, _last_index, _first_index_window, _last_index_window;
+  mutable std::shared_ptr<const gelss_cache<dcomplex>> _lls;
  };
 
  // ---------------------------------------------------------------------------
