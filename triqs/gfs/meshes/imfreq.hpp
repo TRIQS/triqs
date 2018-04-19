@@ -27,7 +27,7 @@ namespace gfs {
 
  struct imfreq {};
 
- enum class matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
+ enum  matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
 
  // ---------------------------------------------------------------------------
  //                     The mesh point
@@ -56,42 +56,34 @@ namespace gfs {
   using var_t = imfreq;
 
   // -------------------- Constructors -------------------
-  
-  ///default constructor
-  gf_mesh() : gf_mesh(domain_t(), 0){}
 
+  ///constructor
   /**
-   * Most general constructor
+   * Full constructor
    * @param dom domain
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
-   * @param R : Radius of the tail circle
-   * @param n_tail : Number of points on the tail circle, i.e. order of the tail expansion
   */
-  gf_mesh(domain_t dom, long n_pts, matsubara_mesh_opt opt, long n_tail, double R)
-     : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt), _ntail(n_tail), R(R) {
-   _last_index = n_pts - 1 + _ntail; // total number of points
+  gf_mesh(domain_t dom, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+     : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt) {
    if (opt == matsubara_mesh_opt::positive_frequencies_only) {
     _first_index = 0;
+    _last_index = n_pts - 1;
    } else {
     bool is_fermion = (_dom.statistic == Fermion);
+    _last_index = n_pts - 1;
     _first_index = -(_last_index + (is_fermion ? 1 : 0));
    }
    _first_index_window = _first_index;
    _last_index_window = _last_index;
   }
 
-  /**
-   * constructor
-   * @param dom domain
-   * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
-  */
-  gf_mesh(domain_t const & dom, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-     : gf_mesh(dom, n_pts, opt, 0, (2*n_pts + 1)*M_PI*dom.beta) {}
+  ///default constructor
+  gf_mesh() : gf_mesh(domain_t(), 0){}
 
+  ///constructor
   /**
-   * constructor
+   * Full constructor
    * @param beta inverse temperature
    * @param S statistic (Fermion or Boson)
    * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
@@ -100,19 +92,8 @@ namespace gfs {
   gf_mesh(double beta, statistic_enum S, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
      : gf_mesh({beta, S}, n_pts, opt) {}
 
-  /**
-   * constructor
-   * @param beta inverse temperature
-   * @param S statistic (Fermion or Boson)
-   * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-   * @param R : Radius of the tail circle
-   * @param n_tail : Number of points on the tail circle, i.e. order of the tail expansion
-  */
-  gf_mesh(double beta, statistic_enum S, long n_pts, long n_tail,double R )
-     : gf_mesh({beta, S}, n_pts, matsubara_mesh_opt::all_frequencies, n_tail, R) {}
-
   bool operator==(gf_mesh const &M) const {
-   return (std::tie(_dom, _n_pts, _ntail, _opt) == std::tie(M._dom, M._n_pts, _ntail, M._opt));
+   return (std::tie(_dom, _n_pts, _opt) == std::tie(M._dom, M._n_pts, M._opt));
   }
   bool operator!=(gf_mesh const &M) const { return !(operator==(M)); }
 
@@ -133,14 +114,13 @@ namespace gfs {
   }
 
   /// From an index of a point in the mesh, returns the corresponding point in the domain
-  domain_pt_t index_to_point(index_t idx) const { 
-    if (idx return 1_j * M_PI * (2 * ind.value + (_dom.statistic == Fermion)) / _dom.beta; }
+  domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind.value + (_dom.statistic == Fermion)) / _dom.beta; }
 
   /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-  long index_to_linear(index_t ind) const { return ind.value - _first_index_window; }
+  long index_to_linear(index_t ind) const { return ind.value - first_index_window(); }
 
   /// Reverse of index_to_linear
-  index_t linear_to_index(long lind) const { return {lind + _first_index_window}; }
+  index_t linear_to_index(long lind) const { return {lind + first_index_window()}; }
 
   // -------------------- Accessors (other) -------------------
 
@@ -158,12 +138,6 @@ namespace gfs {
 
   /// Is the mesh only for positive omega_n (G(tau) real))
   bool positive_only() const { return _opt == matsubara_mesh_opt::positive_frequencies_only;}
-
-  /// Order of the tail
-  int n_tail() const { return _ntail;}
-
-  /// Idx in the tail
-  bool in_tail(index_t idx) const { return (idx.value - _first_index_window) < _n_pts; }
 
   // -------------------- Get the grid for positive freq only -------------------
 
@@ -227,7 +201,6 @@ namespace gfs {
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "size", long(m.size()));
    h5_write(gr, "positive_freq_only", (m.positive_only() ? 1 : 0));
-   h5_write(gr, "n_tail", m._ntail);
   }
 
   /// Read from HDF5
@@ -258,7 +231,6 @@ namespace gfs {
    ar & _last_index;
    ar & _first_index_window;
    ar & _last_index_window;
-   ar & R & _ntail;
   }
 
   // -------------------- print  -------------------
@@ -270,11 +242,9 @@ namespace gfs {
   // ------------------------------------------------
   private:
   domain_t _dom;
-  int _n_pts =0;
+  int _n_pts;
   matsubara_mesh_opt _opt;
   long _first_index, _last_index, _first_index_window, _last_index_window;
-  double R;
-  long _ntail = 10;
  };
 
  // ---------------------------------------------------------------------------
@@ -282,23 +252,21 @@ namespace gfs {
  //  NB : the mesh point is also in this case a matsubara_freq.
  // ---------------------------------------------------------------------------
 
- // FIXME : Why does mesh_point need mesh here ?
-
  template <> struct mesh_point<gf_mesh<imfreq>> : matsubara_freq {
   using index_t = typename gf_mesh<imfreq>::index_t;
   mesh_point() = default;
   mesh_point(gf_mesh<imfreq> const &m, index_t const &index_)
-     : matsubara_freq(index_, m.m.domain().beta, m.m.domain().statistic)
-     , first_index_window(m.m.first_index_window())
-     , last_index_window(m.m.last_index_window())
-     , _mesh(&m.m) {}
+     : matsubara_freq(index_, m.domain().beta, m.domain().statistic)
+     , first_index_window(m.first_index_window())
+     , last_index_window(m.last_index_window())
+     , _mesh(&m) {}
   mesh_point(gf_mesh<imfreq> const &m) : mesh_point(m, m.first_index_window()) {}
   void advance() { ++n; }
   long linear_index() const { return n - first_index_window; }
   long index() const { return n; }
   bool at_end() const { return (n == last_index_window + 1); } // at_end means " one after the last one", as in STL
   void reset() { n = first_index_window; }
-  // gf_mesh<imfreq> const & mesh() const { return *_mesh;}
+  gf_mesh<imfreq> const & mesh() const { return *_mesh;}
 
   private:
   long first_index_window, last_index_window;
@@ -307,8 +275,7 @@ namespace gfs {
 
  // ------------------- implementations -----------------------------
  inline mesh_point<gf_mesh<imfreq>> gf_mesh<imfreq>::operator[](index_t i) const {
-  if (i<_ntail
-  //return {*this, i};
+  return {*this, i};
  }
 
  inline gf_mesh<imfreq>::const_iterator gf_mesh<imfreq>::begin() const { return const_iterator(this); }
