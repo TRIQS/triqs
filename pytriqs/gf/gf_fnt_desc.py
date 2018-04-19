@@ -21,7 +21,7 @@ m.add_preamble("""
 """)
 
 # New tail
-m.add_function("array<dcomplex,3> get_tail(gf_view<imfreq, matrix_valued> g)", doc = "tail")
+m.add_function("std::pair<array<dcomplex,3>, double> get_tail(gf_view<imfreq, matrix_valued> g)", doc = "tail")
 
 # density
 m.add_function("matrix<dcomplex> density(gf_view<imfreq, matrix_valued> g)",   doc = "Density, as a matrix, computed from a Matsubara sum")

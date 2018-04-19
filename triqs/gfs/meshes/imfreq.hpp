@@ -250,12 +250,17 @@ namespace gfs {
 
    long i=0;
    for (auto const & ra : m.tail_fit_point_indices()){
-     for (auto p : ra)
-      for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
-	//FIXME : looks like a clang BUG ?
-	auto la = [i,jj = j,p](auto && ...x) { g_mat(i, jj) = g_data_swap_idx(p, x...);};
+     for (auto p : ra){
+      int count = 0;
+      //for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
+      for (auto const & tu : prod_ranges) {
+	// FIXME Use enumerate -> BUG
+	// FIXME : looks like a clang BUG ?
+	auto la = [&](auto && ...x) { g_mat(i, count) = g_data_swap_idx(p, x...);};
+	++count;
         std::apply(la, tu);
       }
+     }
      ++i;
     }
    
@@ -263,10 +268,12 @@ namespace gfs {
    auto [a_mat, epsilon] = (*m._lss)(g_mat); // coef + error
   
    // Reinterpret the result as an R dim array and return 
-   using r_t = arrays::array_const_view<dcomplex, R>; // return type
+   using r_t = arrays::array<dcomplex, R>; // return type
    lg[0] = m._tail_order; // change the length corresponding to omega, now it is the order index
-   //FIXME : Ugly 
-   return { r_t{ typename r_t::indexmap_type {typename r_t::indexmap_type::domain_type{lg}}, a_mat.storage()}, epsilon};
+   //FIXME : Ugly, Avoid copy, use std::move
+   //FIXME : Assert Memory layout C
+   auto arr = r_t{ typename r_t::indexmap_type::domain_type{lg}, std::move(a_mat).storage()};
+   return { std::move(arr), epsilon };
 
   }
  

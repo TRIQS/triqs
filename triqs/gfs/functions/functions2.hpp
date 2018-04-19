@@ -33,7 +33,7 @@ namespace gfs {
  // FIXME : to be improved. Add checks
 
   template <typename G> auto get_tail(G const & g) { 
-     return get_tail(g.mesh(), g.data(), 0);
+     return get_tail(g.mesh(), make_const_view(g.data()), 0);
   } 
 
  /*------------------------------------------------------------------------------------------------------
