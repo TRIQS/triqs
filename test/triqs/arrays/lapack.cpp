@@ -28,7 +28,7 @@
 
 using namespace triqs::gfs;
 using namespace triqs::arrays;
-using namespace triqs::arrays::blas;
+using namespace triqs::arrays::lapack;
 using namespace triqs::clef;
 
 using value_type = std::complex<double>;
@@ -65,8 +65,9 @@ TEST(blas_lapack, gelss) {
 
   auto S = vector<double>(std::min(M, N));
 
-  auto gelss_new = gelss_cache{A};
-  auto x_1       = gelss_new(B);
+  auto gelss_new = gelss_cache<value_type>{A};
+  auto [x_1, eps_1] = gelss_new(B);
+  std::cout << eps_1 << "\n";
 
   int i;
   lapack::gelss(A, B, S, 1e-18, i);

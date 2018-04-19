@@ -110,9 +110,19 @@ TEST(Itertools, Product) {
   std::vector<int> V1{0, 1, 2, 3, 4};
   std::array<_int, 5> V2{0, 1, 2, 3, 4};
 
-  for (auto[x, y] : prod(V1, V2)) {
+  for (auto[x, y] : product(V1, V2)) {
     std::cout << "[" << x << "," << y << "]\n";
   }
+}
+
+TEST(Itertools, Make_Product) {
+
+  constexpr int N = 4;
+
+  std::array<range, N> range_arr{range(1), range(2), range(3), range(4)};
+
+  for (auto [i,j,k,l] : make_product(range_arr))
+    std::cerr << i << j << k << l << "\n";
 }
 
 TEST(Itertools, Multi) {
