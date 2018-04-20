@@ -85,7 +85,7 @@ namespace triqs::arrays::lapack {
 
     } else if constexpr (std::is_same<typename MTA::value_type, std::complex<double>>::value) {
 
-      auto rwork = array<double, 1>{std::min(first_dim(Ca()), second_dim(Ca())), FORTRAN_LAYOUT};
+      auto rwork = array<double, 1>(5*std::min(first_dim(Ca()), second_dim(Ca())));
 
       // first call to get the optimal lwork
       typename MTA::value_type work1[1];
