@@ -277,7 +277,10 @@ namespace gfs {
    lg[0] = m._tail_order; // change the length corresponding to omega, now it is the order index
    //FIXME : Ugly, Avoid copy, use std::move
    //FIXME : Assert Memory layout C
-   auto arr = r_t{ typename r_t::indexmap_type::domain_type{lg}, std::move(a_mat).storage()};
+   //auto arr = r_t{ typename r_t::indexmap_type::domain_type{lg}, std::move(a_mat).storage()};
+   // FIXME : debug only : make a copy
+   auto arr_v = typename r_t::view_type{ typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg}}, a_mat.storage()};
+   auto arr = r_t{ arr_v};
    return { std::move(arr), epsilon };
 
   }
@@ -410,7 +413,7 @@ namespace gfs {
   matsubara_mesh_opt _opt;
   long _first_index, _last_index, _first_index_window, _last_index_window;
   double _tail_fraction = 0.2;
-  int _tail_order = -1;
+  int _tail_order = 10;
   mutable std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>> _lss;
  };
 
