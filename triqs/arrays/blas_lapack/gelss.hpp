@@ -86,7 +86,7 @@ namespace triqs::arrays::lapack {
 
     } else if constexpr (std::is_same<typename MTA::value_type, std::complex<double>>::value) {
 
-      auto rwork = array<double, 1>{dm, FORTRAN_LAYOUT};
+      auto rwork = array<double, 1>(5*dm);
 
       // first call to get the optimal lwork
       typename MTA::value_type work1[1];
@@ -111,7 +111,8 @@ namespace triqs::arrays::lapack {
     // cf. Notation in https://math.stackexchange.com/questions/772039/how-does-the-svd-solve-the-least-squares-problem
 
     private:
-    size_t M, N;
+    // True if M == N
+    bool is_square;
 
     // The matrix V * Diag(S_vec)^{-1} * UT for the least square procedure
     matrix<value_type> V_x_InvS_x_UT;
@@ -125,11 +126,17 @@ namespace triqs::arrays::lapack {
     public:
     vector<double> const &S_vec() const { return _S_vec; }
 
-    gelss_cache(matrix_const_view<value_type> _A) : M{first_dim(_A)}, N{second_dim(_A)}, V_x_InvS_x_UT{N, M}, UT_NULL{M-N, M}, _S_vec(std::min(M, N)) {
+    gelss_cache(matrix_const_view<value_type> _A) : _S_vec(std::min(first_dim(_A), second_dim(_A))) {
 
-      if (N > M) TRIQS_RUNTIME_ERROR << "ERROR: Matrix A for linear least square procedure cannot have more columns than rows";
+      if (second_dim(_A) > first_dim(_A))
+        TRIQS_RUNTIME_ERROR << "ERROR: Matrix A for linear least square procedure cannot have more columns than rows";
 
-      matrix<value_type> A{_A, FORTRAN_LAYOUT};
+      matrix<value_type> A(_A, FORTRAN_LAYOUT);
+
+      size_t M = get_n_rows(A);
+      size_t N = get_n_cols(A);
+      is_square = (M == N);
+
       matrix<value_type> U{M, M, FORTRAN_LAYOUT};
       matrix<value_type> VT{N, N, FORTRAN_LAYOUT};
 
@@ -147,7 +154,7 @@ namespace triqs::arrays::lapack {
     }
 
     std::pair<matrix<value_type>, double> operator()(matrix_const_view<value_type> B) const {
-      return std::make_pair(V_x_InvS_x_UT * B, (M == N) ? 0.0 : frobenius_norm(UT_NULL * B));
+      return std::make_pair(V_x_InvS_x_UT * B, is_square ? 0.0 : frobenius_norm(UT_NULL * B));
     }
   };
 

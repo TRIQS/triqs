@@ -181,7 +181,7 @@ namespace gfs {
   
   // construct the Vandermonde matrix
   arrays::matrix<dcomplex> vander(std::vector<dcomplex> const & pts, int order) const { 
-    arrays::matrix<dcomplex> V(pts.size(), order);
+   arrays::matrix<dcomplex> V(pts.size(), order);
    for (auto [i,p] : triqs::utility::enumerate(pts)) { 
      dcomplex z=1;
      for (int n =0; n < order; ++n) {
@@ -213,8 +213,8 @@ namespace gfs {
    int n_tail = n_pts_in_tail();
    int n_step = 1; //FIXME : Cap the number of points in tail fitting.
    // two ranges of size n_tail exactly, at the start and at the end of the mesh
-   auto R_p  = range{ _last_index - n_tail, _last_index, n_step};
    auto R_m  = range{ _first_index, _first_index + n_tail, n_step};
+   auto R_p  = range{ _last_index - n_tail + 1, _last_index + 1, n_step};
    return {R_m, R_p};
   }
 
@@ -235,7 +235,7 @@ namespace gfs {
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
   */
   template<int R>
-  friend std::pair<arrays::array<dcomplex, R>, double> get_tail(gf_mesh const & m, arrays::array_const_view<dcomplex,R> g_data, int n) {
+  friend std::pair<arrays::array<dcomplex, R>, double> get_tail(gf_mesh const & m, arrays::array_const_view<dcomplex,R> g_data, int n, bool normalize = true) {
    
    if (m._opt == matsubara_mesh_opt::positive_frequencies_only) TRIQS_RUNTIME_ERROR << "Can not fit on an positive_only mesh";
    
@@ -261,23 +261,34 @@ namespace gfs {
       for (auto const & tu : prod_ranges) {
 	// FIXME Use enumerate -> BUG
 	// FIXME : looks like a clang BUG ?
-	auto la = [&](auto && ...x) { g_mat(i, count) = g_data_swap_idx(p, x...);};
+	auto la = [&](auto && ...x) { g_mat(i, count) = g_data_swap_idx(m.index_to_linear(p), x...);};
+       std::apply(la, tu); 
 	++count;
-        std::apply(la, tu);
       }
+      ++i;
      }
-     ++i;
     }
    
    // Call SVD 
    auto [a_mat, epsilon] = (*m._lss)(g_mat); // coef + error
+
+   if(normalize){
+    dcomplex Z = 1.0, om_max = m.omega_max();
+    for(int i : range(first_dim(a_mat))){
+     a_mat(i,range()) *= Z; 
+     Z *= om_max; 
+    }
+   }
   
    // Reinterpret the result as an R dim array and return 
    using r_t = arrays::array<dcomplex, R>; // return type
    lg[0] = m._tail_order; // change the length corresponding to omega, now it is the order index
    //FIXME : Ugly, Avoid copy, use std::move
    //FIXME : Assert Memory layout C
-   auto arr = r_t{ typename r_t::indexmap_type::domain_type{lg}, std::move(a_mat).storage()};
+   //auto arr = r_t{ typename r_t::indexmap_type::domain_type{lg}, std::move(a_mat).storage()};
+   // FIXME : debug only : make a copy
+   auto arr_v = typename r_t::view_type{ typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg}}, a_mat.storage()};
+   auto arr = r_t{ arr_v};
    return { std::move(arr), epsilon };
 
   }
@@ -410,7 +421,7 @@ namespace gfs {
   matsubara_mesh_opt _opt;
   long _first_index, _last_index, _first_index_window, _last_index_window;
   double _tail_fraction = 0.2;
-  int _tail_order = -1;
+  int _tail_order = 10;
   mutable std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>> _lss;
  };
 
