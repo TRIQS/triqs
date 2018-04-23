@@ -49,7 +49,16 @@ namespace arrays {
    static_assert(!std::is_base_of<std::string, T>::value, " Not implemented"); // 1d is below
    bool is_complex = triqs::is_complex<T>::value;
    h5::dataspace d_space = data_space_impl(info, is_complex);
-   h5::dataset ds = g.create_dataset(name, h5::data_type_file<T>(), d_space);
+
+   h5::proplist cparms = H5Pcreate(H5P_DATASET_CREATE);
+   int n_dims = info.R + (is_complex ? 1 : 0);
+   hsize_t chunk_dims[n_dims];
+   for(int i : range(info.R)) chunk_dims[i] = std::max(info.lengths[i], 1ul);
+   if(is_complex) chunk_dims[n_dims - 1] = 2;
+   H5Pset_chunk(cparms, n_dims, chunk_dims);
+   H5Pset_deflate(cparms, 8);
+
+   h5::dataset ds = g.create_dataset(name, h5::data_type_file<T>(), d_space, cparms);
 
    if(H5Sget_simple_extent_npoints(d_space) > 0) {
     auto err =
