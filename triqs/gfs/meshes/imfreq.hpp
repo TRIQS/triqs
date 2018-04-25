@@ -172,15 +172,21 @@ namespace triqs::gfs {
 
     // -------------------- tail -------------------
 
+    void set_tail_parameters(double tail_fraction) const {
+      _tail_fraction = tail_fraction;
+      for (auto &l : _lss) l.reset();
+    }
+
     private:
     // construct the Vandermonde matrix
-    arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int order, int order_min = 0) const {
-      arrays::matrix<dcomplex> V(pts.size(), order);
+    arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int max_order, int first_order = 0) const {
+      if (first_order > max_order) TRIQS_RUNTIME_ERROR << "Vandermonde matrix requires first_order <= max_order\n";
+      arrays::matrix<dcomplex> V(pts.size(), max_order - first_order + 1);
       for (auto [i, p] : triqs::utility::enumerate(pts)) {
         dcomplex z = 1;
-        for (int n = 0; n < order_min; ++n) z *= p;
-        for (int n = order_min; n < order; ++n) {
-          V(i, n) = z;
+        for (int n = 0; n < first_order; ++n) z *= p;
+        for (int n = first_order; n <= max_order; ++n) {
+          V(i, n - first_order) = z;
           z *= p;
         }
       }
@@ -188,12 +194,6 @@ namespace triqs::gfs {
     }
 
     dcomplex idx_to_matsu_freq(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
-
-    void set_tail_parameters(double tail_fraction, int tail_order = -1) {
-      _tail_fraction = tail_fraction;
-      _tail_order    = tail_order;
-      for (auto &l : _lss) l.reset();
-    }
 
     // number of the points in the tail for positive omega.
     int n_pts_in_tail() const { return std::round(_tail_fraction * _n_pts); }
@@ -211,14 +211,28 @@ namespace triqs::gfs {
       return {R_m, R_p};
     }
 
-    void setup_lss(int order_min = 0) const {
+    void setup_lss(int n_fixed_moments = 0) const {
       auto N = n_pts_in_tail();
       std::vector<dcomplex> C;
       C.reserve(2 * N);
       auto om_max = omega_max();
       for (auto const &r : tail_fit_point_indices())
-        for (auto x : r) C.push_back(1 / (idx_to_matsu_freq(x) / om_max));
-      _lss[order_min] = std::make_shared<const arrays::lapack::gelss_cache<dcomplex>>(vander(C, _tail_order, order_min));
+        for (auto x : r) C.push_back(1. / (idx_to_matsu_freq(x) / om_max));
+
+      _lss[n_fixed_moments].reset();
+      for (int n = n_fixed_moments + 2; n < 10; ++n) {
+        auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>(vander(C, n, n_fixed_moments));
+        TRIQS_PRINT(n);
+        TRIQS_PRINT(ptr->S_vec());
+
+        if (ptr->S_vec()[ptr->S_vec().size() - 1] > rcond)
+          _lss[n_fixed_moments] = std::move(ptr);
+        else {
+          std::cout << "declined \n";
+          break;
+        }
+      }
+      if (!_lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
     }
 
     /**
@@ -233,10 +247,10 @@ namespace triqs::gfs {
 
       if (m._opt == matsubara_mesh_opt::positive_frequencies_only) TRIQS_RUNTIME_ERROR << "Can not fit on an positive_only mesh";
 
-      int order_min = first_dim(known_moments);
-      if (order_min >= std::min(4, m._tail_order)) TRIQS_RUNTIME_ERROR << "known_moments shape incompatible with tail order";
+      int n_fixed_moments = first_dim(known_moments);
+      if (!bool(m._lss[n_fixed_moments])) m.setup_lss(n_fixed_moments);
 
-      if (!bool(m._lss[order_min])) m.setup_lss(order_min);
+      int n_moments = m._lss[n_fixed_moments]->n_var() + n_fixed_moments;
 
       using triqs::arrays::ellipsis;
 
@@ -269,30 +283,37 @@ namespace triqs::gfs {
         }
       }
 
-      if (!known_moments.is_empty()) {
+      if (n_fixed_moments > 0) {
         auto imp_km = known_moments(0, ellipsis()).indexmap();
 
         if (imp.lengths() != imp_km.lengths()) TRIQS_RUNTIME_ERROR << "known_moments shape incompatible with shape of data";
-        arrays::matrix<dcomplex> km_mat(order_min, imp_km.size());
+        arrays::matrix<dcomplex> km_mat(n_fixed_moments, imp_km.size());
 
-        //FIXME for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
-        int count = 0;
-        for (auto const &tu : prod_ranges) {
-          auto la = [&](auto &&... x) { km_mat(range(), count) = known_moments(range(), x...); };
-          std::apply(la, tu);
-          ++count;
+        // We have to scale the known_moments by 1/Omega_max^n
+        dcomplex z      = 1;
+        dcomplex om_max = m.omega_max();
+
+        for (int n : range(n_fixed_moments)) {
+          //FIXME for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
+          int count = 0;
+          for (auto const &tu : prod_ranges) {
+            auto la = [&](auto &&... x) { km_mat(n, count) = z * known_moments(n, x...); };
+            std::apply(la, tu);
+            ++count;
+          }
+          z /= om_max;
         }
 
         // Shift g_mat to account for known moment correction
-        g_mat -= m._lss[order_min]->A_mat()(range(), range(order_min)) * km_mat;
+        g_mat -= m._lss[n_fixed_moments]->A_mat()(range(), range(n_fixed_moments)) * km_mat;
       }
 
       // Call SVD
-      auto [a_mat, epsilon] = (*m._lss[order_min])(g_mat); // coef + error
+      auto [a_mat, epsilon] = (*m._lss[n_fixed_moments])(g_mat); // coef + error
 
       if (normalize) {
         dcomplex Z = 1.0, om_max = m.omega_max();
-        for (int i : range(order_min)) Z *= om_max;
+        for (int i : range(n_fixed_moments)) Z *= om_max;
         for (int i : range(first_dim(a_mat))) {
           a_mat(i, range()) *= Z;
           Z *= om_max;
@@ -304,15 +325,15 @@ namespace triqs::gfs {
       auto lg   = g_data.indexmap().lengths();
 
       // Index map for the view on the a_mat result
-      lg[0]     = m._tail_order - order_min;
+      lg[0]     = n_moments - n_fixed_moments;
       auto imp1 = typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg}};
 
       // Index map for the full result
-      lg[0]     = m._tail_order;
+      lg[0]    = n_moments;
       auto res = r_t(typename r_t::indexmap_type::domain_type{lg});
 
-      if (order_min) res(range(order_min), ellipsis()) = known_moments;
-      res(range(order_min, m._tail_order), ellipsis()) = typename r_t::view_type{imp1, a_mat.storage()};
+      if (n_fixed_moments) res(range(n_fixed_moments), ellipsis()) = known_moments;
+      res(range(n_fixed_moments, n_moments), ellipsis()) = typename r_t::view_type{imp1, a_mat.storage()};
 
       return {std::move(res), epsilon};
     }
@@ -445,8 +466,8 @@ namespace triqs::gfs {
     int _n_pts;
     matsubara_mesh_opt _opt;
     long _first_index, _last_index, _first_index_window, _last_index_window;
-    double _tail_fraction = 0.2;
-    int _tail_order       = 10;
+    mutable double _tail_fraction = 0.2;
+    double rcond                  = 1e-2;
     mutable std::array<std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
   };
 

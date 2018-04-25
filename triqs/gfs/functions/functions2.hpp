@@ -32,9 +32,13 @@ namespace gfs {
 
  // FIXME : to be improved. Add checks
 
-  template <typename G> auto get_tail(G const & g) { 
+  template <typename G> auto get_tail(G const & g) {
      return get_tail(g.mesh(), make_const_view(g.data()), 0);
-  } 
+  }
+
+  template <typename G, typename A> auto get_tail(G const & g, A const & known_moments) {
+     return get_tail(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
+  }
 
  /*------------------------------------------------------------------------------------------------------
  *                      Slicing the matrix_valued/matrix_real_valued into a matrix

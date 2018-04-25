@@ -138,6 +138,7 @@ namespace triqs::arrays::lapack {
     vector<double> _S_vec;
 
     public:
+    int n_var() const { return second_dim(A); }
     matrix<value_type> const &A_mat() const { return A; }
     vector<double> const &S_vec() const { return _S_vec; }
 
