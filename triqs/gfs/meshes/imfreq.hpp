@@ -192,7 +192,7 @@ namespace triqs::gfs {
     void set_tail_parameters(double tail_fraction, int tail_order = -1) {
       _tail_fraction = tail_fraction;
       _tail_order    = tail_order;
-      _lss.reset();
+      for (auto &l : _lss) l.reset();
     }
 
     // number of the points in the tail for positive omega.
@@ -238,6 +238,8 @@ namespace triqs::gfs {
 
       if (!bool(m._lss[order_min])) m.setup_lss(order_min);
 
+      using triqs::arrays::ellipsis;
+
       // The values of the Green function. Swap relevant mesh to front
       auto g_data_swap_idx = swap_index_view(g_data, 0, n);
       auto imp             = g_data_swap_idx(0, ellipsis()).indexmap();
@@ -276,13 +278,13 @@ namespace triqs::gfs {
         //FIXME for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
         int count = 0;
         for (auto const &tu : prod_ranges) {
-          auto la = [&](auto &&... x) { km_mat(range(), count) = (*known_moments)(range(), x...); };
+          auto la = [&](auto &&... x) { km_mat(range(), count) = known_moments(range(), x...); };
           std::apply(la, tu);
           ++count;
         }
 
         // Shift g_mat to account for known moment correction
-        g_mat -= m._lss[order_min]->A_mat()(range(), range(order_min)) * k_mat;
+        g_mat -= m._lss[order_min]->A_mat()(range(), range(order_min)) * km_mat;
       }
 
       // Call SVD
@@ -290,7 +292,7 @@ namespace triqs::gfs {
 
       if (normalize) {
         dcomplex Z = 1.0, om_max = m.omega_max();
-	for (int i : range(order_min)) Z *= om_max;
+        for (int i : range(order_min)) Z *= om_max;
         for (int i : range(first_dim(a_mat))) {
           a_mat(i, range()) *= Z;
           Z *= om_max;
@@ -299,19 +301,17 @@ namespace triqs::gfs {
 
       // Reinterpret the result as an R dim array and return
       using r_t = arrays::array<dcomplex, R>; // return type
-      auto lg = imp.lengths();
+      auto lg   = g_data.indexmap().lengths();
 
       // Index map for the view on the a_mat result
       lg[0]     = m._tail_order - order_min;
-      auto imp1 = typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg};
+      auto imp1 = typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg}};
 
       // Index map for the full result
       lg[0]     = m._tail_order;
-      auto imp2 = typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg};
+      auto res = r_t(typename r_t::indexmap_type::domain_type{lg});
 
-      auto res = r_t(imp2);
-
-      if(order_min) res(range(order_min), ellipsis()) = known_moments;
+      if (order_min) res(range(order_min), ellipsis()) = known_moments;
       res(range(order_min, m._tail_order), ellipsis()) = typename r_t::view_type{imp1, a_mat.storage()};
 
       return {std::move(res), epsilon};
