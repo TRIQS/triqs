@@ -59,16 +59,27 @@ namespace triqs::arrays::lapack {
   typename std::enable_if_t<is_blas_lapack_type<typename MTA::value_type>::value && is_blas_lapack_type<typename VCS::value_type>::value
                                && is_blas_lapack_type<typename MTU::value_type>::value && is_blas_lapack_type<typename MTVT::value_type>::value,
                             int>
-  gesvd(MTA A, VCS &S, MTU &U, MTVT &VT) {
-    if (A.memory_layout_is_c() || U.memory_layout_is_c() || VT.memory_layout_is_c())
-      TRIQS_RUNTIME_ERROR << "matrix passed to gesvd is not in Fortran order";
+  gesvd(MTA const &A, VCS &S, MTU &U, MTVT &VT) {
 
-    reflexive_qcache<MTA> Ca(A);
+    int info;
+
+    if (A.memory_layout_is_c() || U.memory_layout_is_c() || VT.memory_layout_is_c()) {
+      auto A_FL  = typename MTA::regular_type{A, FORTRAN_LAYOUT};
+      auto U_FL  = typename MTU::regular_type{U, FORTRAN_LAYOUT};
+      auto VT_FL = typename MTVT::regular_type{VT, FORTRAN_LAYOUT};
+      info       = gesvd(A_FL, S, U_FL, VT_FL);
+      U()        = U_FL();
+      VT()       = VT_FL();
+      return info;
+    }
+
+    // Copy A, since it is altered by gesvd
+    typename MTA::regular_type _A{A, FORTRAN_LAYOUT};
+
+    reflexive_qcache<MTA> Ca(_A);
     reflexive_qcache<VCS> Cs(S);
     reflexive_qcache<MTU> Cu(U);
     reflexive_qcache<MTVT> Cvt(VT);
-
-    int info;
 
     if constexpr (std::is_same<typename MTA::value_type, double>::value) {
 
@@ -85,7 +96,7 @@ namespace triqs::arrays::lapack {
 
     } else if constexpr (std::is_same<typename MTA::value_type, std::complex<double>>::value) {
 
-      auto rwork = array<double, 1>(5*std::min(first_dim(Ca()), second_dim(Ca())));
+      auto rwork = array<double, 1>(5 * std::min(first_dim(Ca()), second_dim(Ca())));
 
       // first call to get the optimal lwork
       typename MTA::value_type work1[1];
@@ -105,5 +116,4 @@ namespace triqs::arrays::lapack {
     if (info) TRIQS_RUNTIME_ERROR << "Error in gesvd : info = " << info;
     return info;
   }
-
 } // namespace triqs::arrays::lapack

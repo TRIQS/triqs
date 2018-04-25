@@ -14,11 +14,8 @@ TEST(Gf, Exceptions) {
  
 
   placeholder<0> w_;
-  g(w_) << 1/(w_ +1);
+  g(w_) << 1/(w_ - 1);
 
   std::cout << get_tail(g).first;
 }
 MAKE_MAIN;
-
-
-

@@ -57,18 +57,29 @@ namespace triqs::arrays::lapack {
   typename std::enable_if_t<is_blas_lapack_type<typename MTA::value_type>::value && is_blas_lapack_type<typename MTB::value_type>::value
                                && is_blas_lapack_type<typename VCS::value_type>::value,
                             int>
-  gelss(MTA A, MTB &B, VCS &S, double rcond, int &rank) {
-    if (A.memory_layout_is_c() || B.memory_layout_is_c()) TRIQS_RUNTIME_ERROR << "matrix passed to gelss is not in Fortran order";
+  gelss(MTA const &A, MTB &B, VCS &S, double rcond, int &rank) {
 
-    reflexive_qcache<MTA> Ca(A);
+    int info;
+
+    if (A.memory_layout_is_c() || B.memory_layout_is_c()) {
+      auto A_FL = typename MTA::regular_type{A, FORTRAN_LAYOUT};
+      auto B_FL = typename MTB::regular_type{B, FORTRAN_LAYOUT};
+      info      = gelss(A_FL, B_FL, S, rcond, rank);
+      B()       = B_FL();
+      return info;
+    }
+
+    // Copy A, since it is altered by gelss
+    typename MTA::regular_type _A{A, FORTRAN_LAYOUT};
+
+    reflexive_qcache<MTA> Ca(_A);
     reflexive_qcache<MTB> Cb(B);
 
-    auto dm = std::min(first_dim(Ca()), second_dim(Ca()));
+    auto dm = std::min(get_n_rows(Ca()), get_n_cols(Ca()));
     if (S.size() < dm) S.resize(dm);
 
     reflexive_qcache<VCS> Cs(S);
 
-    int info;
     int nrhs = get_n_cols(Cb());
 
     if constexpr (std::is_same<typename MTA::value_type, double>::value) {
@@ -86,7 +97,7 @@ namespace triqs::arrays::lapack {
 
     } else if constexpr (std::is_same<typename MTA::value_type, std::complex<double>>::value) {
 
-      auto rwork = array<double, 1>(5*dm);
+      auto rwork = array<double, 1>(5 * dm);
 
       // first call to get the optimal lwork
       typename MTA::value_type work1[1];
@@ -102,7 +113,7 @@ namespace triqs::arrays::lapack {
       TRIQS_RUNTIME_ERROR << "Error in gelss : only implemented for value_type double and std::complex<double>";
     }
 
-    if (info) TRIQS_RUNTIME_ERROR << "Error in gelss : info = " << info;
+    if (info) TRIQS_RUNTIME_ERROR << "Error in gesvd : info = " << info;
     return info;
   }
 
@@ -111,10 +122,13 @@ namespace triqs::arrays::lapack {
     // cf. Notation in https://math.stackexchange.com/questions/772039/how-does-the-svd-solve-the-least-squares-problem
 
     private:
-    // True if M == N
-    bool is_square;
+    // Number of rows (M) and columns (N) of the Matrix A
+    size_t M, N;
 
-    // The matrix V * Diag(S_vec)^{-1} * UT for the least square procedure
+    // The matrix to be decomposed by SVD
+    matrix<value_type> A;
+
+    // The (pseudo) inverse of A, i.e. V * Diag(S_vec)^{-1} * UT, for the least square procedure
     matrix<value_type> V_x_InvS_x_UT;
 
     // The part of UT fixing the error of the LLS
@@ -124,37 +138,33 @@ namespace triqs::arrays::lapack {
     vector<double> _S_vec;
 
     public:
+    matrix<value_type> const &A_mat() const { return A; }
     vector<double> const &S_vec() const { return _S_vec; }
 
-    gelss_cache(matrix_const_view<value_type> _A) : _S_vec(std::min(first_dim(_A), second_dim(_A))) {
+    gelss_cache(matrix_const_view<value_type> _A) : M(first_dim(_A)), N(second_dim(_A)), A(_A), _S_vec(std::min(M, N)) {
 
-      if (second_dim(_A) > first_dim(_A))
-        TRIQS_RUNTIME_ERROR << "ERROR: Matrix A for linear least square procedure cannot have more columns than rows";
+      if (N > M) TRIQS_RUNTIME_ERROR << "ERROR: Matrix A for linear least square procedure cannot have more columns than rows";
 
-      matrix<value_type> A(_A, FORTRAN_LAYOUT);
-
-      size_t M = get_n_rows(A);
-      size_t N = get_n_cols(A);
-      is_square = (M == N);
-
+      matrix<value_type> A_FL{_A, FORTRAN_LAYOUT};
       matrix<value_type> U{M, M, FORTRAN_LAYOUT};
       matrix<value_type> VT{N, N, FORTRAN_LAYOUT};
 
       // Calculate the SVD A = U * Diag(S_vec) * VT
-      lapack::gesvd(A, _S_vec, U, VT);
+      lapack::gesvd(A_FL, _S_vec, U, VT);
 
       // Calculate the matrix V * Diag(S_vec)^{-1} * UT for the least square procedure
       matrix<double> S_inv{N, M, FORTRAN_LAYOUT};
       S_inv() = 0.;
       for (int i : range(std::min(M, N))) S_inv(i, i) = 1.0 / _S_vec(i);
-      V_x_InvS_x_UT = VT.transpose() * S_inv * U.transpose();
+      V_x_InvS_x_UT = dagger(VT) * S_inv * dagger(U);
 
       // Read off U_Null for defining the error of the least square procedure
-      UT_NULL = U.transpose()(range(N, M), range(M));
+      UT_NULL = dagger(U)(range(N, M), range(M));
     }
 
+    // Solve the least-square problem that minimizes || A * x - B ||_2 given A and B
     std::pair<matrix<value_type>, double> operator()(matrix_const_view<value_type> B) const {
-      return std::make_pair(V_x_InvS_x_UT * B, is_square ? 0.0 : frobenius_norm(UT_NULL * B));
+      return std::make_pair(V_x_InvS_x_UT * B, (M == N) ? 0.0 : frobenius_norm(UT_NULL * B));
     }
   };
 

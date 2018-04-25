@@ -35,12 +35,12 @@ using value_type = std::complex<double>;
 
 TEST(blas_lapack, svd) {
 
-  auto A = matrix<value_type>{{{1, 1, 1}, {2, 3, 4}, {3, 5, 2}, {4, 2, 5}, {5, 4, 3}}, FORTRAN_LAYOUT};
-  int M = get_n_rows(A);
-  int N = get_n_cols(A);
+  auto A = matrix<value_type>{{{1, 1, 1}, {2, 3, 4}, {3, 5, 2}, {4, 2, 5}, {5, 4, 3}}};
+  int M = first_dim(A);
+  int N = second_dim(A);
 
-  auto U  = matrix<value_type>(M, M, FORTRAN_LAYOUT);
-  auto VT = matrix<value_type>(N, N, FORTRAN_LAYOUT);
+  auto U  = matrix<value_type>(M, M);
+  auto VT = matrix<value_type>(N, N);
 
   auto S  = vector<double>(std::min(M, N));
 
@@ -56,24 +56,23 @@ TEST(blas_lapack, svd) {
 TEST(blas_lapack, gelss) {
 
   // Cf. http://www.netlib.org/lapack/explore-html/d3/d77/example___d_g_e_l_s__colmajor_8c_source.html
-  auto A = matrix<value_type>{{{1, 1, 1}, {2, 3, 4}, {3, 5, 2}, {4, 2, 5}, {5, 4, 3}}, FORTRAN_LAYOUT};
-  auto B = matrix<value_type>{{{-10, -3}, {12, 14}, {14, 12}, {16, 16}, {18, 16}}, FORTRAN_LAYOUT};
+  auto A = matrix<value_type>{{{1, 1, 1}, {2, 3, 4}, {3, 5, 2}, {4, 2, 5}, {5, 4, 3}}};
+  auto B = matrix<value_type>{{{-10, -3}, {12, 14}, {14, 12}, {16, 16}, {18, 16}}};
   
-  int M    = get_n_rows(A);
-  int N    = get_n_cols(A);
-  int NRHS = get_n_cols(B);
+  int M    = first_dim(A);
+  int N    = second_dim(A);
+  int NRHS = second_dim(B);
 
   auto S = vector<double>(std::min(M, N));
 
   auto gelss_new = gelss_cache<value_type>{A};
   auto [x_1, eps_1] = gelss_new(B);
-  std::cout << eps_1 << "\n";
 
   int i;
   lapack::gelss(A, B, S, 1e-18, i);
   auto x_2 = B(range(N), range(NRHS));
 
-  auto x_exact = matrix<value_type>{{{2, 1}, {1, 1}, {1, 2}}, FORTRAN_LAYOUT};
+  auto x_exact = matrix<value_type>{{{2, 1}, {1, 1}, {1, 2}}};
 
   EXPECT_ARRAY_NEAR(x_exact, x_1, 1e-14);
   EXPECT_ARRAY_NEAR(x_exact, x_2, 1e-14);
