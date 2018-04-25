@@ -179,13 +179,14 @@ namespace triqs::gfs {
 
     private:
     // construct the Vandermonde matrix
-    arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int order, int n_fixed_moments = 0) const {
-      arrays::matrix<dcomplex> V(pts.size(), order);
+    arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int max_order, int first_order = 0) const {
+      if (first_order > max_order) TRIQS_RUNTIME_ERROR << "Vandermonde matrix requires first_order <= max_order\n";
+      arrays::matrix<dcomplex> V(pts.size(), max_order - first_order + 1);
       for (auto [i, p] : triqs::utility::enumerate(pts)) {
         dcomplex z = 1;
-        for (int n = 0; n < n_fixed_moments; ++n) z *= p;
-        for (int n = n_fixed_moments; n < order; ++n) {
-          V(i, n) = z;
+        for (int n = 0; n < first_order; ++n) z *= p;
+        for (int n = first_order; n <= max_order; ++n) {
+          V(i, n - first_order) = z;
           z *= p;
         }
       }
@@ -216,22 +217,20 @@ namespace triqs::gfs {
       C.reserve(2 * N);
       auto om_max = omega_max();
       for (auto const &r : tail_fit_point_indices())
-        for (auto x : r) C.push_back(1 / (idx_to_matsu_freq(x) / om_max));
+        for (auto x : r) C.push_back(1. / (idx_to_matsu_freq(x) / om_max));
 
       _lss[n_fixed_moments].reset();
       for (int n = n_fixed_moments + 2; n < 10; ++n) {
         auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>(vander(C, n, n_fixed_moments));
-
-        if (ptr->S_vec()[n] > rcond)
-          _lss[n_fixed_moments] = std::move(ptr);
-        else{
-          TRIQS_PRINT(n);
-          TRIQS_PRINT(ptr->S_vec());
-          break;
-	}
-
         TRIQS_PRINT(n);
-        TRIQS_PRINT(_lss[n_fixed_moments]->S_vec());
+        TRIQS_PRINT(ptr->S_vec());
+
+        if (ptr->S_vec()[ptr->S_vec().size() - 1] > rcond)
+          _lss[n_fixed_moments] = std::move(ptr);
+        else {
+          std::cout << "declined \n";
+          break;
+        }
       }
       if (!_lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
     }
@@ -284,18 +283,25 @@ namespace triqs::gfs {
         }
       }
 
-      if (!known_moments.is_empty()) {
+      if (n_fixed_moments > 0) {
         auto imp_km = known_moments(0, ellipsis()).indexmap();
 
         if (imp.lengths() != imp_km.lengths()) TRIQS_RUNTIME_ERROR << "known_moments shape incompatible with shape of data";
         arrays::matrix<dcomplex> km_mat(n_fixed_moments, imp_km.size());
 
-        //FIXME for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
-        int count = 0;
-        for (auto const &tu : prod_ranges) {
-          auto la = [&](auto &&... x) { km_mat(range(), count) = known_moments(range(), x...); };
-          std::apply(la, tu);
-          ++count;
+        // We have to scale the known_moments by 1/Omega_max^n
+        dcomplex z      = 1;
+        dcomplex om_max = m.omega_max();
+
+        for (int n : range(n_fixed_moments)) {
+          //FIXME for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
+          int count = 0;
+          for (auto const &tu : prod_ranges) {
+            auto la = [&](auto &&... x) { km_mat(n, count) = z * known_moments(n, x...); };
+            std::apply(la, tu);
+            ++count;
+          }
+          z /= om_max;
         }
 
         // Shift g_mat to account for known moment correction

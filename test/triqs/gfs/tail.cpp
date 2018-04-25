@@ -22,7 +22,7 @@ TEST(Gf, Exceptions) { // NOLINT
  
 
   placeholder<0> w_;
-  g(w_) << 1/(w_ - 1);
+  g(w_) << 1/(w_ + 1);
 
   std::cout << get_tail(g) << "\n\n";
   //g.mesh().set_tail_parameters(0.4);
@@ -30,11 +30,11 @@ TEST(Gf, Exceptions) { // NOLINT
   //g.mesh().set_tail_parameters(0.05);
   //std::cout << get_tail(g);
 
-  auto known_moments = array<dcomplex, 3>(2,1,1);
-  known_moments(0,0,0) = 0.0;
-  known_moments(1,0,0) = 1.0;
+  //auto known_moments = array<dcomplex, 3>(2,1,1);
+  //known_moments(0,0,0) = 0.0;
+  //known_moments(1,0,0) = 1.0;
 
-  std::cout << get_tail(g, known_moments);
+  //std::cout << get_tail(g, known_moments);
   
 }
 MAKE_MAIN;

@@ -320,10 +320,8 @@ namespace triqs::utility {
 
   template <typename T, size_t N, size_t... Is> auto _make_product_impl(std::array<T, N> & arr, std::index_sequence<Is...>) {
     static_assert(N == sizeof...(Is));
-    return details::multiplied{arr[Is]...};
+    return product(arr[Is]...);
   }
-  template <typename T, size_t N> auto make_product(std::array<T, N> & arr) {
-    return _make_product_impl(arr, std::make_index_sequence<N>{});
-  }
+  template <typename T, size_t N> auto make_product(std::array<T, N> &arr) { return _make_product_impl(arr, std::make_index_sequence<N>{}); }
 
 } // namespace triqs::utility
