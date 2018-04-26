@@ -175,18 +175,17 @@ namespace triqs::gfs {
     void set_tail_parameters(double tail_fraction) const {
       _tail_fraction = tail_fraction;
       for (auto &l : _lss) l.reset();
+      for (auto &v : _V_km) v.reset();
     }
 
     private:
     // construct the Vandermonde matrix
-    arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int max_order, int first_order = 0) const {
-      if (first_order > max_order) TRIQS_RUNTIME_ERROR << "Vandermonde matrix requires first_order <= max_order\n";
-      arrays::matrix<dcomplex> V(pts.size(), max_order - first_order + 1);
+    arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int max_order) const {
+      arrays::matrix<dcomplex> V(pts.size(), max_order + 1);
       for (auto [i, p] : triqs::utility::enumerate(pts)) {
         dcomplex z = 1;
-        for (int n = 0; n < first_order; ++n) z *= p;
-        for (int n = first_order; n <= max_order; ++n) {
-          V(i, n - first_order) = z;
+        for (int n = 0; n <= max_order; ++n) {
+          V(i, n) = z;
           z *= p;
         }
       }
@@ -221,16 +220,14 @@ namespace triqs::gfs {
 
       _lss[n_fixed_moments].reset();
       for (int n = n_fixed_moments + 2; n < 10; ++n) {
-        auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>(vander(C, n, n_fixed_moments));
-        TRIQS_PRINT(n);
-        TRIQS_PRINT(ptr->S_vec());
+        auto V   = vander(C, n);
+        auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>(V(range(), range(n_fixed_moments, n + 1)));
 
-        if (ptr->S_vec()[ptr->S_vec().size() - 1] > rcond)
-          _lss[n_fixed_moments] = std::move(ptr);
-        else {
-          std::cout << "declined \n";
+        if (ptr->S_vec()[ptr->S_vec().size() - 1] > rcond) {
+          _lss[n_fixed_moments]  = std::move(ptr);
+          _V_km[n_fixed_moments] = std::make_unique<arrays::matrix<dcomplex>>(V(range(), range(n_fixed_moments)));
+        } else
           break;
-        }
       }
       if (!_lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
     }
@@ -305,7 +302,7 @@ namespace triqs::gfs {
         }
 
         // Shift g_mat to account for known moment correction
-        g_mat -= m._lss[n_fixed_moments]->A_mat()(range(), range(n_fixed_moments)) * km_mat;
+        g_mat -= *m._V_km[n_fixed_moments] * km_mat;
       }
 
       // Call SVD
@@ -469,6 +466,7 @@ namespace triqs::gfs {
     mutable double _tail_fraction = 0.2;
     double rcond                  = 1e-2;
     mutable std::array<std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
+    mutable std::array<std::shared_ptr<arrays::matrix<dcomplex>>, 4> _V_km;
   };
 
   // ---------------------------------------------------------------------------
