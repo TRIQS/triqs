@@ -506,8 +506,7 @@ class Gf(object):
             for n in range (d_self.shape[0]):
                d_self[n] = np.dot(d_self[n], d_args[n]) # put to C if too slow.
         else:
-            for n in range (self.data.shape[0]):
-               d_self[n] = d_self[n] * d_args[n] # put to C if too slow.
+            d_self *= d_args # put to C if too slow.
 
         if isinstance(self.mesh, (meshes.MeshImFreq, meshes.MeshReFreq)):
             if self._singularity and arg._singularity : self._singularity *= arg._singularity
