@@ -56,6 +56,12 @@ namespace lattice {
   /// Transform from real to lattice coordinates
   template <typename K> k_t real_to_lattice_coordinates(K const& k) const { return _transfo_impl(k, K_reciprocal_inv); }
 
+  // -------------------- print -------------------
+
+  friend std::ostream &operator<<(std::ostream &sout, brillouin_zone const &bz) {
+   return sout << "Brillouin Zone with repiprocal matrix " << bz.reciprocal_matrix();
+  }
+
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, brillouin_zone const& bz);
 

@@ -58,6 +58,12 @@ namespace lattice {
    return res;
   }
 
+  // -------------------- print -------------------
+
+  friend std::ostream &operator<<(std::ostream &sout, bravais_lattice const &bl) {
+   return sout << "Bravais Lattice with unit vectors " << bl.units();
+  }
+
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, bravais_lattice const& bl);
 

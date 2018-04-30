@@ -53,6 +53,12 @@ namespace gfs {
   using domain_t = bravais_lattice;
   domain_t const& domain() const { return bl; }
 
+  // -------------------- print -------------------
+
+  friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
+   return sout << "Cyclic Lattice Mesh of size " << m.dims <<", Domain: " << m.domain();
+  }
+
   // -------------- HDF5  --------------------------
 
   static std::string hdf5_scheme() { return "MeshCyclicLattice";}

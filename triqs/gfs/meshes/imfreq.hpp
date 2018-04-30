@@ -236,7 +236,7 @@ namespace gfs {
   // -------------------- print  -------------------
 
   friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-   return sout << "Matsubara Freq Mesh of size " << m.size() <<", domain " << m.domain() <<", positive_only : " << m.positive_only();
+   return sout << "Matsubara Freq Mesh of size " << m.size() <<", Domain: " << m.domain() <<", positive_only : " << m.positive_only();
   }
 
   // ------------------------------------------------

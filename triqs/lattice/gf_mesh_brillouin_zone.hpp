@@ -64,6 +64,12 @@ namespace gfs {
 
   domain_t const& domain() const { return bz; }
 
+  // -------------------- print -------------------
+
+  friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
+   return sout << "Brillouin Zone Mesh of size " << m.dims <<", Domain: " << m.domain();
+  }
+
   // -------------- HDF5  --------------------------
 
   static std::string hdf5_scheme() { return "MeshBrillouinZone";}
