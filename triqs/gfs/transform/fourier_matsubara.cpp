@@ -41,19 +41,18 @@ namespace gfs {
   //-------------------------------------
 
   void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt) {
-   auto ta = gt.singularity();
-   direct_impl(gw, gt, ta);
-   gw.singularity() = gt.singularity(); // set tail
+   TRIQS_RUNTIME_ERROR << "DISABLED direct fourier, high frequency moments unknown\n";
+   auto tail = array<dcomplex, 1>{ 0.0, 0.0, 0.0, 0.0 };
+   direct(gw, gt, tail);
   }
 
   //-------------------------------------
 
   private:
-  void direct_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, __tail<scalar_valued> const& ta) { 
-   if (ta.largest_non_nan() < 2) TRIQS_RUNTIME_ERROR << " direct fourier: G_iw needs at least a proper 2nd moment in tail \n";
-   dcomplex d = ta(1), A = ta(2), B = ta.get_or_zero(3);
-   double b1 = 0, b2 = 0, b3 = 0;
-   dcomplex a1, a2, a3;
+  void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, array_const_view<dcomplex, 1> tail) {
+   if (std::abs(tail(0)) > 1e-15) TRIQS_RUNTIME_ERROR << "ERROR: Direct Fourier implementation requires vanishing 0th moment\n";
+   if (first_dim(tail) < 3) TRIQS_RUNTIME_ERROR << "ERROR: Direct Fourier implementation requires at least a proper 2nd high-frequency moment\n";
+
    double beta = gt.mesh().domain().beta;
    auto L = gt.mesh().size() - 1;
    if (L < 2*(gw.mesh().last_index()+1))
@@ -62,6 +61,10 @@ namespace gfs {
    double fact = beta / L;
    dcomplex iomega = M_PI * 1_j / beta;
    bool is_fermion = (gw.domain().statistic == Fermion);
+
+   double b1, b2, b3;
+   dcomplex a1, a2, a3;
+   dcomplex d = tail(1), A = tail(2), B = (first_dim(tail) == 3) ? 0 : tail(3);
 
    if (is_fermion) {
     b1 = 0;
@@ -121,11 +124,12 @@ namespace gfs {
   void inverse(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw) {
    if (gw.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
   
-   auto const ta = gw.singularity();
-   if (ta.largest_non_nan() < 2) TRIQS_RUNTIME_ERROR << " inverse fourier: G_tau needs at least a proper 2nd moment in tail \n";
-   dcomplex d = ta(1), A = ta(2), B = ta.get_or_zero(3);
-   double b1, b2, b3;
-   dcomplex a1, a2, a3;
+   auto [tail, error] = get_tail(gw);
+   if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n";
+   if (error > 1e-3) TRIQS_RUNTIME_ERROR << "ERROR: High frequency moments have an error greater than 1e-3.\n";
+   if (first_dim(tail) < 3) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires at least a proper 2nd high-frequency moment\n";
+   if (std::abs(tail(0)) > 1e-15) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n";
+
    double beta = gw.domain().beta;
    long L = gt.mesh().size() - 1;
    if (L < 2*(gw.mesh().last_index()+1))
@@ -134,6 +138,10 @@ namespace gfs {
    dcomplex iomega = M_PI* 1_j / beta;
    double fact = 1.0 / beta;
    bool is_fermion = (gw.domain().statistic == Fermion);
+
+   double b1, b2, b3;
+   dcomplex a1, a2, a3;
+   dcomplex d = tail(1), A = tail(2), B = (first_dim(tail) == 3) ? 0 : tail(3);
 
    if (is_fermion) {
     b1 = 0;

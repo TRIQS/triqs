@@ -13,7 +13,25 @@ namespace std {
   }
 } // namespace std
 
-TEST(Gf, Exceptions) { // NOLINT
+TEST(Gf, Fourier) { // NOLINT
+
+  double beta = 1;
+  int n_iw    = 20;
+
+  auto gw = gf<imfreq, scalar_valued>{{beta, Fermion, n_iw}};
+
+  placeholder<0> w_;
+  gw(w_) << 1. / (w_ - 1);
+
+  std::cout << get_tail(gw) << "\n";
+
+  auto gt  = make_gf_from_inverse_fourier(gw);
+  auto gw2 = make_gf_from_fourier(gt);
+
+  std::cout << get_tail(gw2) << "\n";
+}
+
+TEST(Gf, Tail) { // NOLINT
 
   double beta = 1;
 
@@ -27,7 +45,7 @@ TEST(Gf, Exceptions) { // NOLINT
   //g.mesh().set_tail_parameters(0.4);
   //std::cout << get_tail(g) << "\n\n";
 
-  auto known_moments     = array<dcomplex, 3>(2, 1, 1);
+  auto known_moments = array<dcomplex, 3>(2, 1, 1);
 
   known_moments(0, 0, 0) = 0.0;
   known_moments(1, 0, 0) = 1.0;

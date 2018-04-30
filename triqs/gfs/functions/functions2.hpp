@@ -33,11 +33,21 @@ namespace gfs {
  // FIXME : to be improved. Add checks
 
   template <typename G> auto get_tail(G const & g) {
-     return get_tail(g.mesh(), make_const_view(g.data()), 0);
+    if constexpr(G::target_t::rank == 0){
+      auto [tail, error] = get_tail(reinterpret_scalar_valued_gf_as_matrix_valued(g));
+      return std::make_pair(tail(range(), 0, 0), error);
+    }
+    else
+      return get_tail(g.mesh(), make_const_view(g.data()), 0);
   }
 
   template <typename G, typename A> auto get_tail(G const & g, A const & known_moments) {
-     return get_tail(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
+    if constexpr(G::target_t::rank == 0){
+      // FIXME lift rank of known_moments array
+      TRIQS_RUNTIME_ERROR << "NOT IMPLEMENTED";
+    }
+    else
+      return get_tail(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
   }
 
  /*------------------------------------------------------------------------------------------------------

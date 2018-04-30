@@ -226,9 +226,12 @@ namespace triqs::gfs {
         _vander = std::make_shared<arrays::matrix<dcomplex>>(vander(C, 9));
       }
 
+      if(n_fixed_moments + 1 > first_dim(*_vander) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
+
       // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
       _lss[n_fixed_moments].reset();
-      for (int n = n_fixed_moments + 2; n < 10; ++n) {
+      int n_max = std::min(size_t{9}, first_dim(*_vander) / 2);
+      for (int n = n_fixed_moments + 1; n <= n_max; ++n) {
         auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>((*_vander)(range(), range(n_fixed_moments, n + 1)));
         if (ptr->S_vec()[ptr->S_vec().size() - 1] > rcond)
           _lss[n_fixed_moments] = std::move(ptr);
