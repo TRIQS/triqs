@@ -160,7 +160,7 @@ namespace triqs::arrays::lapack {
       V_x_InvS_x_UT = dagger(VT) * S_inv * dagger(U);
 
       // Read off U_Null for defining the error of the least square procedure
-      UT_NULL = dagger(U)(range(N, M), range(M));
+      if (N < M) UT_NULL = dagger(U)(range(N, M), range(M));
     }
 
     // Solve the least-square problem that minimizes || A * x - B ||_2 given A and B

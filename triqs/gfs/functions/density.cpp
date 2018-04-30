@@ -34,11 +34,11 @@ namespace gfs {
   if (g.mesh().positive_only())
    TRIQS_RUNTIME_ERROR << "density is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
 
-  auto t = g.singularity();
-  if (!t.is_decreasing_at_infinity())
-   TRIQS_RUNTIME_ERROR << "density computation: Green function is not as 1/omega or less !!!\n" << t;
-  if (t.largest_non_nan()<3)
-   TRIQS_RUNTIME_ERROR << "density computation: Need at least tail moments until n=3 (included" ;
+  auto [tail, err] = get_tail(g);
+  if (err > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n";
+  if (err > 1e-3) TRIQS_RUNTIME_ERROR << "ERROR: High frequency moments have an error greater than 1e-3.\n";
+  if (first_dim(tail) < 4) TRIQS_RUNTIME_ERROR << "ERROR: Density implementation requires at least a proper 3rd high-frequency moment in tail\n";
+  if (max_element(abs(tail(0,ellipsis()))) > 1e-15) TRIQS_RUNTIME_ERROR << "ERROR: Density implementation requires vanishing 0th moment\n";
 
   if (g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << " imfreq gf: full mesh required in density computation";
   auto sh = g.target_shape();
@@ -50,7 +50,7 @@ namespace gfs {
 
   for (int n1 = 0; n1 < N1; n1++)
    for (int n2 = n1; n2 < N2; n2++) {
-    dcomplex d = t(1)(n1, n2), A = t(2)(n1, n2), B = t(3)(n1, n2);
+    dcomplex d = tail(1,n1, n2), A = tail(2,n1, n2), B = tail(3,n1, n2);
     dcomplex a1 = d - B, a2 = (A + B) / 2, a3 = (B - A) / 2;
     dcomplex r = 0;
     for (auto const& w : g.mesh()) r += g[w](n1, n2) - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3));
