@@ -195,7 +195,7 @@ namespace triqs::gfs {
     dcomplex idx_to_matsu_freq(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
 
     // number of the points in the tail for positive omega.
-    int n_pts_in_tail() const { return std::min(int(std::round(_tail_fraction * _n_pts)), 100); }
+    int n_pts_in_tail() const { return std::min(int(std::round(_tail_fraction * _n_pts)), 30); }
 
     // maximum freq of the mesh
     dcomplex omega_max() const { return idx_to_matsu_freq(_last_index); }
@@ -203,37 +203,41 @@ namespace triqs::gfs {
     // returns the 2 ranges of indices of the points used for tail fitting
     std::vector<long> get_tail_fit_indices() const {
 
-      //FIXME : Cap the number of points in tail fitting.
-      int n_fit_range = int(std::round(_tail_fraction * _n_pts));
+      // Total number of points in the fitting window
+      int n_pts_in_fit_range = int(std::round(_tail_fraction * _n_pts));
+
+      // Number of points used for the fit
       int n_tail      = n_pts_in_tail();
 
-      std::vector<long> res;
-      res.reserve(2 * n_tail);
+      std::vector<long> idx_vec;
+      idx_vec.reserve(2 * n_tail);
 
-      double step = double(n_fit_range) / n_tail;
+      double step = double(n_pts_in_fit_range) / n_tail;
 
       double idx1 = _first_index;
-      double idx2 = _last_index - n_fit_range;
+      double idx2 = _last_index - n_pts_in_fit_range;
 
       for (int n : range(n_tail)) {
-        res.push_back(long(idx1));
-        res.push_back(long(idx2));
+        idx_vec.push_back(long(idx1));
+        idx_vec.push_back(long(idx2));
         idx1 += step;
         idx2 += step;
       }
 
-      return res;
+      return idx_vec;
     }
 
     void setup_lss(int n_fixed_moments = 0) const {
 
+      // Calculate the indices to fit on
+      if (!_fit_idx_lst) _fit_idx_lst = std::make_shared<std::vector<long>>(get_tail_fit_indices());
+
       // Set Up full Vandermonde matrix up to order 9 if not set
       if (!_vander) {
-        auto idx_lst = get_tail_fit_indices();
         std::vector<dcomplex> C;
-        C.reserve(idx_lst.size());
+        C.reserve(_fit_idx_lst->size());
         auto om_max = omega_max();
-        for (long n : idx_lst) C.push_back(1. / (idx_to_matsu_freq(n) / om_max));
+        for (long n : *_fit_idx_lst) C.push_back(1. / (idx_to_matsu_freq(n) / om_max));
         _vander = std::make_shared<arrays::matrix<dcomplex>>(vander(C, 9));
       }
 
@@ -284,7 +288,7 @@ namespace triqs::gfs {
       arrays::matrix<dcomplex> g_mat(2 * m.n_pts_in_tail(), ncols);
 
       // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
-      for (auto [i, n] : enumerate(m.get_tail_fit_indices())) {
+      for (auto [i, n] : enumerate(*m._fit_idx_lst)) {
         if constexpr (R == 1)
           g_mat(i, 0) = g_data_swap_idx(m.index_to_linear(n));
         else
@@ -481,6 +485,7 @@ namespace triqs::gfs {
     double rcond                  = 1e-4;
     mutable std::array<std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
     mutable std::shared_ptr<arrays::matrix<dcomplex>> _vander;
+    mutable std::shared_ptr<std::vector<long>> _fit_idx_lst;
   };
 
   // ---------------------------------------------------------------------------
