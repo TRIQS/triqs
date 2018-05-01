@@ -182,7 +182,7 @@ namespace triqs::gfs {
     // construct the Vandermonde matrix
     arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int max_order) const {
       arrays::matrix<dcomplex> V(pts.size(), max_order + 1);
-      for (auto[i, p] : triqs::utility::enumerate(pts)) {
+      for (auto [i, p] : triqs::utility::enumerate(pts)) {
         dcomplex z = 1;
         for (int n = 0; n <= max_order; ++n) {
           V(i, n) = z;
@@ -265,33 +265,20 @@ namespace triqs::gfs {
 
       // The values of the Green function. Swap relevant mesh to front
       auto g_data_swap_idx = swap_index_view(g_data, 0, n);
-      auto imp             = g_data_swap_idx(0, ellipsis()).indexmap();
+      auto const &imp      = g_data_swap_idx.indexmap();
+      long ncols           = imp.size() / imp.lengths()[0];
 
       // We flatten the data in the target space and remaining meshes into the second dim
-      arrays::matrix<dcomplex> g_mat(2 * m.n_pts_in_tail(), imp.size());
-
-      // Make one range for all other dimensions
-      // FIXME We want for( auto const & idx_tpl : imp.indices() ), where idx_tpl is decomposable
-      //std::array<range, R - 1> rs{};
-      //for (int i = 0; i < R - 1; ++i) rs[i] = range(0, imp.lengths()[i]);
-      //auto prod_ranges = triqs::utility::make_product(rs);
+      arrays::matrix<dcomplex> g_mat(2 * m.n_pts_in_tail(), ncols);
 
       // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
       long i = 0;
       for (auto const &ra : m.tail_fit_point_indices()) {
         for (auto p : ra) {
-	  for (auto [n,x] : triqs::utility::enumerate(g_data_swap_idx(m.index_to_linear(p), ellipsis())))
-	    g_mat(i, n) = x;
-
-
-          //int count = 0;
-          //FIXME for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
-          //for (auto const &tu : prod_ranges) {
-          //  // FIXME : looks like a clang BUG ?
-          //  auto la = [&](auto &&... x) { g_mat(i, count) = g_data_swap_idx(m.index_to_linear(p), x...); };
-          //  std::apply(la, tu);
-          //  ++count;
-          //}
+          if constexpr (R == 1)
+            g_mat(i, 0) = g_data_swap_idx(m.index_to_linear(p));
+          else
+            for (auto [n, x] : triqs::utility::enumerate(g_data_swap_idx(m.index_to_linear(p), ellipsis()))) g_mat(i, n) = x;
           ++i;
         }
       }
@@ -299,26 +286,21 @@ namespace triqs::gfs {
       // If an array with known_moments was passed, flatten the array into a matrix
       // just like g_data. Then account for the proper shift in g_mat
       if (n_fixed_moments > 0) {
-        auto imp_km = known_moments(0, ellipsis()).indexmap();
+        auto imp_km   = known_moments.indexmap();
+        long ncols_km = imp_km.size() / imp_km.lengths()[0];
 
-        if (imp.lengths() != imp_km.lengths()) TRIQS_RUNTIME_ERROR << "known_moments shape incompatible with shape of data";
-        arrays::matrix<dcomplex> km_mat(n_fixed_moments, imp_km.size());
+        if (ncols != ncols_km) TRIQS_RUNTIME_ERROR << "known_moments shape incompatible with shape of data";
+        arrays::matrix<dcomplex> km_mat(n_fixed_moments, ncols);
 
         // We have to scale the known_moments by 1/Omega_max^n
         dcomplex z      = 1;
         dcomplex om_max = m.omega_max();
 
         for (int order : range(n_fixed_moments)) {
-         for (auto [n, x] : triqs::utility::enumerate(known_moments(order, ellipsis())))
-	    km_mat(order,n) = z* x;
-
-	  //FIXME for (auto [j, tu] : triqs::utility::enumerate(prod_ranges)) {
-          //int count = 0;
-          //for (auto const &tu : prod_ranges) {
-            //auto la = [&](auto &&... x) { km_mat(n, count) = z * known_moments(n, x...); };
-            //std::apply(la, tu);
-            //++count;
-          //}
+          if constexpr (R == 1)
+            km_mat(order, 0) = z * known_moments(order, ellipsis());
+          else
+            for (auto [n, x] : triqs::utility::enumerate(known_moments(order, ellipsis()))) km_mat(order, n) = z * x;
           z /= om_max;
         }
 
@@ -327,7 +309,7 @@ namespace triqs::gfs {
       }
 
       // Call least square solver
-      auto[a_mat, epsilon] = (*m._lss[n_fixed_moments])(g_mat); // coef + error
+      auto [a_mat, epsilon] = (*m._lss[n_fixed_moments])(g_mat); // coef + error
 
       // === The result a_mat contains the fitted moments divided by omega_max()^n
       // Here we extract the real moments
