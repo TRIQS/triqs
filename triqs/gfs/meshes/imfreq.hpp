@@ -201,28 +201,39 @@ namespace triqs::gfs {
     dcomplex omega_max() const { return idx_to_matsu_freq(_last_index); }
 
     // returns the 2 ranges of indices of the points used for tail fitting
-    std::array<range, 2> tail_fit_point_indices() const {
+    std::vector<long> get_tail_fit_indices() const {
 
       //FIXME : Cap the number of points in tail fitting.
-      int n_tail = n_pts_in_tail();
-      int n_step = std::round(_tail_fraction * _n_pts / n_tail);
+      int n_fit_range = int(std::round(_tail_fraction * _n_pts));
+      int n_tail      = n_pts_in_tail();
 
-      // two ranges of size n_tail exactly, at the start and at the end of the mesh
-      auto R_m = range{_first_index, _first_index + n_step * n_tail, n_step};
-      auto R_p = range{_last_index - n_step * n_tail + 1, _last_index + 1, n_step};
-      return {R_m, R_p};
+      std::vector<long> res;
+      res.reserve(2 * n_tail);
+
+      double step = double(n_fit_range) / n_tail;
+
+      double idx1 = _first_index;
+      double idx2 = _last_index - n_fit_range;
+
+      for (int n : range(n_tail)) {
+        res.push_back(long(idx1));
+        res.push_back(long(idx2));
+        idx1 += step;
+        idx2 += step;
+      }
+
+      return res;
     }
 
     void setup_lss(int n_fixed_moments = 0) const {
 
       // Set Up full Vandermonde matrix up to order 9 if not set
       if (!_vander) {
-        auto N = n_pts_in_tail();
+        auto idx_lst = get_tail_fit_indices();
         std::vector<dcomplex> C;
-        C.reserve(2 * N);
+        C.reserve(idx_lst.size());
         auto om_max = omega_max();
-        for (auto const &r : tail_fit_point_indices())
-          for (auto x : r) C.push_back(1. / (idx_to_matsu_freq(x) / om_max));
+        for (long n : idx_lst) C.push_back(1. / (idx_to_matsu_freq(n) / om_max));
         _vander = std::make_shared<arrays::matrix<dcomplex>>(vander(C, 9));
       }
 
@@ -262,6 +273,7 @@ namespace triqs::gfs {
       int n_moments = m._lss[n_fixed_moments]->n_var() + n_fixed_moments;
 
       using triqs::arrays::ellipsis;
+      using triqs::utility::enumerate;
 
       // The values of the Green function. Swap relevant mesh to front
       auto g_data_swap_idx = swap_index_view(g_data, 0, n);
@@ -272,15 +284,11 @@ namespace triqs::gfs {
       arrays::matrix<dcomplex> g_mat(2 * m.n_pts_in_tail(), ncols);
 
       // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
-      long i = 0;
-      for (auto const &ra : m.tail_fit_point_indices()) {
-        for (auto p : ra) {
-          if constexpr (R == 1)
-            g_mat(i, 0) = g_data_swap_idx(m.index_to_linear(p));
-          else
-            for (auto [n, x] : triqs::utility::enumerate(g_data_swap_idx(m.index_to_linear(p), ellipsis()))) g_mat(i, n) = x;
-          ++i;
-        }
+      for (auto [i, n] : enumerate(m.get_tail_fit_indices())) {
+        if constexpr (R == 1)
+          g_mat(i, 0) = g_data_swap_idx(m.index_to_linear(n));
+        else
+          for (auto [j, x] : enumerate(g_data_swap_idx(m.index_to_linear(n), ellipsis()))) g_mat(i, j) = x;
       }
 
       // If an array with known_moments was passed, flatten the array into a matrix
@@ -300,7 +308,7 @@ namespace triqs::gfs {
           if constexpr (R == 1)
             km_mat(order, 0) = z * known_moments(order, ellipsis());
           else
-            for (auto [n, x] : triqs::utility::enumerate(known_moments(order, ellipsis()))) km_mat(order, n) = z * x;
+            for (auto [n, x] : enumerate(known_moments(order, ellipsis()))) km_mat(order, n) = z * x;
           z /= om_max;
         }
 
@@ -470,7 +478,7 @@ namespace triqs::gfs {
     matsubara_mesh_opt _opt;
     long _first_index, _last_index, _first_index_window, _last_index_window;
     mutable double _tail_fraction = 0.2;
-    double rcond                  = 1e-2;
+    double rcond                  = 1e-4;
     mutable std::array<std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
     mutable std::shared_ptr<arrays::matrix<dcomplex>> _vander;
   };
