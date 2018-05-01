@@ -195,7 +195,7 @@ namespace triqs::gfs {
     dcomplex idx_to_matsu_freq(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
 
     // number of the points in the tail for positive omega.
-    int n_pts_in_tail() const { return std::round(_tail_fraction * _n_pts); }
+    int n_pts_in_tail() const { return std::min(int(std::round(_tail_fraction * _n_pts)), 100); }
 
     // maximum freq of the mesh
     dcomplex omega_max() const { return idx_to_matsu_freq(_last_index); }
@@ -205,11 +205,11 @@ namespace triqs::gfs {
 
       //FIXME : Cap the number of points in tail fitting.
       int n_tail = n_pts_in_tail();
-      int n_step = 1;
+      int n_step = std::round(_tail_fraction * _n_pts / n_tail);
 
       // two ranges of size n_tail exactly, at the start and at the end of the mesh
-      auto R_m = range{_first_index, _first_index + n_tail, n_step};
-      auto R_p = range{_last_index - n_tail + 1, _last_index + 1, n_step};
+      auto R_m = range{_first_index, _first_index + n_step * n_tail, n_step};
+      auto R_p = range{_last_index - n_step * n_tail + 1, _last_index + 1, n_step};
       return {R_m, R_p};
     }
 
