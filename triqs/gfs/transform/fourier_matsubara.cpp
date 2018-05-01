@@ -41,16 +41,15 @@ namespace gfs {
   //-------------------------------------
 
   void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt) {
-   TRIQS_RUNTIME_ERROR << "DISABLED direct fourier, high frequency moments unknown\n";
    auto tail = array<dcomplex, 1>{ 0.0, 0.0, 0.0, 0.0 };
-   direct(gw, gt, tail);
+   direct_impl(gw, gt, tail);
   }
 
   //-------------------------------------
 
   private:
-  void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, array_const_view<dcomplex, 1> tail) {
-   if (std::abs(tail(0)) > 1e-15) TRIQS_RUNTIME_ERROR << "ERROR: Direct Fourier implementation requires vanishing 0th moment\n";
+  void direct_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, array_const_view<dcomplex, 1> tail) {
+   if (std::abs(tail(0)) > 1e-12) TRIQS_RUNTIME_ERROR << "ERROR: Direct Fourier implementation requires vanishing 0th moment\n";
    if (first_dim(tail) < 3) TRIQS_RUNTIME_ERROR << "ERROR: Direct Fourier implementation requires at least a proper 2nd high-frequency moment\n";
 
    double beta = gt.mesh().domain().beta;
@@ -128,7 +127,7 @@ namespace gfs {
    if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n";
    if (error > 1e-3) TRIQS_RUNTIME_ERROR << "ERROR: High frequency moments have an error greater than 1e-3.\n";
    if (first_dim(tail) < 3) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires at least a proper 2nd high-frequency moment\n";
-   if (std::abs(tail(0)) > 1e-15) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n";
+   if (std::abs(tail(0)) > 1e-12) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n";
 
    double beta = gw.domain().beta;
    long L = gt.mesh().size() - 1;

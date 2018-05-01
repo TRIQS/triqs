@@ -172,10 +172,13 @@ namespace triqs::gfs {
 
     // -------------------- tail -------------------
 
-    void set_tail_parameters(double tail_fraction) const {
+    void set_tail_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-4) const {
+      _n_tail_max = n_tail_max;
       _tail_fraction = tail_fraction;
+      _rcond = rcond;
       for (auto &l : _lss) l.reset();
       _vander.reset();
+      _fit_idx_lst.reset();
     }
 
     private:
@@ -195,7 +198,7 @@ namespace triqs::gfs {
     dcomplex idx_to_matsu_freq(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
 
     // number of the points in the tail for positive omega.
-    int n_pts_in_tail() const { return std::min(int(std::round(_tail_fraction * _n_pts)), 30); }
+    int n_pts_in_tail() const { return std::min(int(std::round(_tail_fraction * _n_pts)), _n_tail_max); }
 
     // maximum freq of the mesh
     dcomplex omega_max() const { return idx_to_matsu_freq(_last_index); }
@@ -248,7 +251,7 @@ namespace triqs::gfs {
       int n_max = std::min(size_t{9}, first_dim(*_vander) / 2);
       for (int n = n_fixed_moments + 1; n <= n_max; ++n) {
         auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>((*_vander)(range(), range(n_fixed_moments, n + 1)));
-        if (ptr->S_vec()[ptr->S_vec().size() - 1] > rcond)
+        if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond)
           _lss[n_fixed_moments] = std::move(ptr);
         else
           break;
@@ -481,8 +484,9 @@ namespace triqs::gfs {
     int _n_pts;
     matsubara_mesh_opt _opt;
     long _first_index, _last_index, _first_index_window, _last_index_window;
+    mutable int _n_tail_max = 30;
     mutable double _tail_fraction = 0.2;
-    double rcond                  = 1e-4;
+    mutable double _rcond = 1e-4;
     mutable std::array<std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
     mutable std::shared_ptr<arrays::matrix<dcomplex>> _vander;
     mutable std::shared_ptr<std::vector<long>> _fit_idx_lst;

@@ -15,8 +15,8 @@ namespace std {
 
 TEST(Gf, Fourier) { // NOLINT
 
-  double beta = 1;
-  int n_iw    = 20;
+  double beta = 10;
+  int n_iw    = 100;
 
   auto gw = gf<imfreq, scalar_valued>{{beta, Fermion, n_iw}};
 
@@ -25,33 +25,27 @@ TEST(Gf, Fourier) { // NOLINT
 
   std::cout << get_tail(gw) << "\n";
 
-  auto gt  = make_gf_from_inverse_fourier(gw);
-  //auto gw2 = make_gf_from_fourier(gt);
+  auto gt  = make_gf_from_inverse_fourier(gw, 100 * n_iw);
+  auto gw2 = make_gf_from_fourier(gt);
 
-  //std::cout << get_tail(gw2) << "\n";
+  std::cout << get_tail(gw2) << "\n";
 }
 
 TEST(Gf, Tail) { // NOLINT
 
-  double beta = 1;
+  double beta = 500;
+  int n_iw = 3000;
 
-  auto g = gf<imfreq, scalar_valued>{{beta, Fermion, 20}};
+  auto g = gf<imfreq, scalar_valued>{{beta, Fermion, n_iw}};
 
   placeholder<0> w_;
-  g(w_) << 1. / (w_ - 1);
+  g(w_) << (1. / (w_ - 5) + 1. / (w_ + 10)) / 2.0;
 
   std::cout << get_tail(g) << "\n\n";
 
-  //g.mesh().set_tail_parameters(0.4);
-  //std::cout << get_tail(g) << "\n\n";
-
-  auto known_moments = array<dcomplex, 3>(2);
+  auto known_moments = array<dcomplex, 1>(2);
 
   known_moments(0) = 0.0;
-  known_moments(1) = 1.0;
-  std::cout << get_tail(g, known_moments) << "\n\n";
-
-  known_moments(0) = 1.0;
   known_moments(1) = 1.0;
   std::cout << get_tail(g, known_moments) << "\n\n";
 }
