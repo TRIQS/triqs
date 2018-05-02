@@ -8,9 +8,6 @@ using namespace triqs::utility;
 using namespace triqs::clef;
 
 namespace std {
-  template <typename T1, typename T2> std::ostream &operator<<(std::ostream &os, std::pair<T1, T2> const &x) {
-    return os << '(' << x.first << ", " << x.second << ')';
-  }
 } // namespace std
 
 TEST(Gf, Fourier) { // NOLINT

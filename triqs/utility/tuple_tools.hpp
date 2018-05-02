@@ -363,6 +363,10 @@ template <typename... T> std::ostream &operator<<(std::ostream &os, std::tuple<T
  return os << ")";
 }
 
+template <typename T1, typename T2> std::ostream &operator<<(std::ostream &os, std::pair<T1, T2> const &x) {
+  return os << '(' << x.first << ", " << x.second << ')';
+}
+
 // do not move this up....
 namespace c14 {
 
