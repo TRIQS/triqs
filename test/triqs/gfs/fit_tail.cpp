@@ -142,7 +142,7 @@ TEST(Gf, FitTailMultivar) { // NOLINT
     tail_exact(range(), k.linear_index()) = array<dcomplex, 1>{0.0, 1.0, eps_k, std::pow(eps_k, 2), std::pow(eps_k, 3)};
   }
 
-  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range(), 0, 0), 1e-8);
+  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range(), 0, 0), 1e-7);
 }
 
 MAKE_MAIN;
