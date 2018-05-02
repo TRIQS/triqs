@@ -30,14 +30,20 @@ namespace gfs {
  *                 Getting the tail
  *-----------------------------------------------------------------------------------------------------*/
 
- // FIXME : to be improved. Add checks
-
-  template <typename G> auto get_tail(G const & g) {
+  template <template<typename, typename> typename G, typename T> auto get_tail(G<imfreq, T> const & g) {
       return get_tail(g.mesh(), make_const_view(g.data()), 0);
   }
 
-  template <typename G, typename A> auto get_tail(G const & g, A const & known_moments) {
+  template <template<typename, typename> typename G, typename T, typename A> auto get_tail(G<imfreq, T> const & g, A const & known_moments) {
       return get_tail(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
+  }
+
+  template <int N, template<typename, typename> typename G, typename T, typename... M> auto get_tail(G<cartesian_product<M...>, T> const & g) {
+      return get_tail(std::get<N>(g.mesh()), make_const_view(g.data()), N);
+  }
+
+  template <int N, template<typename, typename> typename G, typename T, typename A, typename... M> auto get_tail(G<cartesian_product<M...>, T> const & g, A const & known_moments) {
+      return get_tail(std::get<N>(g.mesh()), make_const_view(g.data()), N, true, make_const_view(known_moments));
   }
 
  /*------------------------------------------------------------------------------------------------------
