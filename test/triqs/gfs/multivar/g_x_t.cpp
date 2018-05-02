@@ -56,8 +56,6 @@ TEST(Gf, x_tau) {
  auto gg = rw_h5(gxt, "ess_g_x_tau.h5", "g");
 
  EXPECT_EQ(gxt.mesh(), gg.mesh());
- EXPECT_EQ(gxt.singularity().mesh(), std::get<0>(gxt.mesh()));
- EXPECT_EQ(gg.singularity().mesh(), std::get<0>(gg.mesh()));
  EXPECT_GF_NEAR(gxt, gg);
 
 }

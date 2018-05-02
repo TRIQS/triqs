@@ -36,7 +36,7 @@ namespace triqs {
 
     // Create a Green function from another gf or view, changing the memory layout
     template <typename G> typename G::regular_type make_gf(G const &g, typename G::data_memory_layout_t const &ml) {
-      return {g.mesh(), g.data(), ml, g.singularity(), g.indices()};
+      return {g.mesh(), g.data(), ml, g.indices()};
     }
 
     // Create a Green function from another gf or view

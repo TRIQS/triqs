@@ -40,13 +40,10 @@ TEST(GfM, CurryFourier) {
  /// Testing the result
  auto gk_w_test = gf<imfreq>{{beta, Fermion, n_freq}, {1, 1}};
  auto gk_t_test = gf<imtime>{{beta, Fermion, n_times}, {1, 1}};
- EXPECT_ARRAY_NEAR(gkt.singularity().data(), gkw.singularity().data());
 
  for (auto const &k : std::get<0>(gkw.mesh())) {
   gk_w_test(w_) << 1 / (w_ - eval(eps_k, k_ = k) - 1 / (w_ + 2));
   gk_t_test() = inverse_fourier(gk_w_test);
-  EXPECT_ARRAY_NEAR(gk_w_test.singularity().data(), gkw[k, _].singularity().data());
-  EXPECT_ARRAY_NEAR(gk_t_test.singularity().data(), gkt[k, _].singularity().data());
   EXPECT_ARRAY_NEAR(gk_w_test.data(), gkw[k, _].data());
   EXPECT_ARRAY_NEAR(gk_t_test.data(), gkt[k, _].data());
  }

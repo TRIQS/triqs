@@ -56,9 +56,7 @@ TEST_F(MpiGf, Reduce) {
  // reduction
  gf<imfreq> g2 = mpi_reduce(g1, world);
  // out << g2.data()<<std::endl;
- // out << g2.singularity() << std::endl;
  if (world.rank() == 0) EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
- if (world.rank() == 0) EXPECT_ARRAY_NEAR(g2.singularity().data(), world.size() * g1.singularity().data());
 }
 
 //----------------------------------------------
@@ -67,7 +65,6 @@ TEST_F(MpiGf, AllReduce) {
  // all reduction
  gf<imfreq> g2 = mpi_all_reduce(g1, world);
  EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
- EXPECT_ARRAY_NEAR(g2.singularity().data(), world.size() * g1.singularity().data());
 }
 
 //----------------------------------------------
@@ -76,7 +73,6 @@ TEST_F(MpiGf, ReduceView) { // all reduction of gf_view
  gf<imfreq> g2 = g1;
  g2()          = mpi_all_reduce(g1(), world);
  EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
- EXPECT_ARRAY_NEAR(g2.singularity().data(), world.size() * g1.singularity().data());
 }
 
 //----------------------------------------------
@@ -99,9 +95,6 @@ TEST_F(MpiGf, ScatterGatherWithConstruction) {
 
  gf<imfreq> g2 = mpi_scatter(g1);
  g1.data()()   = 0;
- // std::cout << g2(g2.singularity()) *2 << std::endl;
- // Fix this issue...
- // g2.singularity() = g1.singularity();
  g2(w_) << g2(w_) * (1 + world.rank());
 
  g1 = mpi_all_gather(g2);

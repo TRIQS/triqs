@@ -13,6 +13,8 @@ TEST(Fourier, Tensor_valued){
  auto gw2 = gw;
  gw2() = fourier(gt);
 
+ //TRIQS_PRINT ( get_tail(gw));
+ //TRIQS_PRINT ( get_tail(gw2));
  EXPECT_CLOSE_ARRAY(gw.data(), gw2.data());
 }
 

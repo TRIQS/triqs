@@ -26,22 +26,19 @@ namespace triqs { namespace gfs {
  
  gf_mesh<refreq> make_mesh_fourier_compatible(gf_mesh<retime> const& m) {
   int L = m.size();
-  double pi = std::acos(-1);
-  double wmin = -pi * (L - 1) / (L * m.delta());
-  double wmax = pi * (L - 1) / (L * m.delta());
+  double wmin = -M_PI * (L - 1) / (L * m.delta());
+  double wmax = M_PI * (L - 1) / (L * m.delta());
   return {wmin, wmax, L};
  }
 
  gf_mesh<retime> make_mesh_fourier_compatible(gf_mesh<refreq> const& m) {
-  double pi = std::acos(-1);
   int L = m.size();
-  double tmin = -pi * (L-1) / (L*m.delta());
-  double tmax =  pi * (L-1) / (L*m.delta());
+  double tmin = -M_PI * (L-1) / (L*m.delta());
+  double tmax =  M_PI * (L-1) / (L*m.delta());
   return {tmin, tmax, L};
  }
 
  namespace {
-  double pi = std::acos(-1);
   dcomplex I(0,1);
   inline dcomplex th_expo(double t, double a )     { return (t > 0 ? -I * exp(-a*t) : ( t < 0 ? 0 : -0.5 * I * exp(-a*t) ) ) ; }
   inline dcomplex th_expo_neg(double t, double a ) { return (t < 0 ?  I * exp( a*t) : ( t > 0 ? 0 :  0.5 * I * exp( a*t) ) ) ; }
@@ -53,11 +50,11 @@ namespace triqs { namespace gfs {
   
   arrays::vector<dcomplex> g_in, g_out;
   
-  void direct (gf_view<refreq,scalar_valued> gw, gf_const_view<retime,scalar_valued> gt){
+  void direct (gf_view<refreq,scalar_valued> gw, gf_const_view<retime,scalar_valued> gt, dcomplex m1 =0, dcomplex m2 =0){
    
    size_t L = gt.mesh().size();
    if (gw.mesh().size() != L) TRIQS_RUNTIME_ERROR << "Meshes are different";
-   double test = std::abs(gt.mesh().delta() * gw.mesh().delta() * L / (2*pi) -1);
+   double test = std::abs(gt.mesh().delta() * gw.mesh().delta() * L / (2*M_PI) -1);
    if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
    
    const double tmin = gt.mesh().x_min();
@@ -65,13 +62,13 @@ namespace triqs { namespace gfs {
    //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
    const double a = gw.mesh().delta() * sqrt( double(L) );
    
-   auto ta = gt.singularity();
    g_in.resize(L);
    g_in() = 0;
    g_out.resize(L);
    
-   dcomplex t1 = ta(1), t2= ta.get_or_zero(2);
-   dcomplex a1 = (t1 + I * t2/a )/2., a2 = (t1 - I * t2/a )/2.;
+   //auto ta = gt.singularity();
+   //dcomplex m1 = ta(1), m2= ta.get_or_zero(2);
+   dcomplex a1 = (m1 + I * m2/a )/2., a2 = (m1 - I * m2/a )/2.;
    
    for (auto const & t : gt.mesh())
     g_in[t.index()] = (gt[t] - (a1*th_expo(t,a) + a2*th_expo_neg(t,a))) * std::exp(I*t*wmin);
@@ -82,15 +79,13 @@ namespace triqs { namespace gfs {
     gw[w] = gt.mesh().delta() * std::exp(I*(w-wmin)*tmin) * g_out(w.index())
     + a1*th_expo_inv(w,a) + a2*th_expo_neg_inv(w,a);
    
-   gw.singularity() = gt.singularity();// set tail
-   
   }
   
   void inverse(gf_view<retime,scalar_valued> gt, gf_const_view<refreq,scalar_valued> gw){
    
    size_t L = gw.mesh().size();
    if ( L != gt.mesh().size()) TRIQS_RUNTIME_ERROR << "Meshes are different";
-   double test = std::abs(gt.mesh().delta() * gw.mesh().delta() * L / (2*pi) -1);
+   double test = std::abs(gt.mesh().delta() * gw.mesh().delta() * L / (2*M_PI) -1);
    if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
    
    const double tmin = gt.mesh().x_min();
@@ -98,11 +93,14 @@ namespace triqs { namespace gfs {
    //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
    const double a = gw.mesh().delta() * sqrt( double(L) );
    
-   auto ta = gw.singularity();
    arrays::vector<dcomplex> g_in(L), g_out(L);
-   
-   dcomplex t1 = ta(1), t2 = ta.get_or_zero(2);
-   dcomplex a1 = (t1 + I * t2/a )/2., a2 = (t1 - I * t2/a )/2.;
+  
+  TRIQS_RUNTIME_ERROR << " Tail fit not IMPLEMENTED"; 
+   //auto ta = gw.fit_tail();
+   //dcomplex m1 = ta(1), m2 = ta(2);
+   dcomplex m1=0, m2 =0;
+
+   dcomplex a1 = (m1 + I * m2/a )/2., a2 = (m1 - I * m2/a )/2.;
    g_in() = 0;
    
    for (auto const & w: gw.mesh())
@@ -115,8 +113,6 @@ namespace triqs { namespace gfs {
     gt[t] = corr * std::exp(I*wmin*(tmin-t)) *
     g_out[ t.index() ] + a1 * th_expo(t,a) + a2 * th_expo_neg(t,a) ;
  
-   // set tail
-   gt.singularity() = gw.singularity();
   }
   
  };

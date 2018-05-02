@@ -30,7 +30,6 @@ namespace gfs {
 
  template <typename RHS, typename M, typename T> FORCEINLINE void triqs_clef_auto_assign(gf_view<M, T> g, RHS const &rhs) {
   triqs_clef_auto_assign_impl(g, rhs, typename std::is_base_of<tag::composite, gf_mesh<M>>::type());
-  assign_singularity_from_function(g.singularity(), rhs);
  }
 
  template <typename RHS, typename M, typename T> FORCEINLINE void triqs_clef_auto_assign(gf<M, T> &g, RHS const &rhs) {

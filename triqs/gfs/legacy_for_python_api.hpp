@@ -28,12 +28,10 @@ namespace gfs {
  // +=, -= with a matrix
  inline void operator+=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
   for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, triqs::arrays::ellipsis()) += m;
-  g.singularity()(0) += m;
  }
 
  inline void operator-=(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
   for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, triqs::arrays::ellipsis()) -= m;
-  g.singularity()(0) -= m;
  }
 
  inline void operator+=(gf_view<imfreq> g, std::complex<double> a) {
@@ -73,12 +71,10 @@ namespace gfs {
  // - same with refreq
  inline void operator+=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
   for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, triqs::arrays::ellipsis()) += m;
-  g.singularity()(0) += m;
  }
 
  inline void operator-=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
   for (int u = 0; u < int(first_dim(g.data())); ++u) g.data()(u, triqs::arrays::ellipsis()) -= m;
-  g.singularity()(0) -= m;
  }
 
  inline void operator+=(gf_view<refreq> g, std::complex<double> a) {

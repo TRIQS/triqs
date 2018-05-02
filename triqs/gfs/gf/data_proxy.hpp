@@ -74,15 +74,6 @@ namespace gfs {
   }
  };
 
- //---------------------------- tail valued ---------------------------------
- template <typename Target> struct _data_proxy<tail_valued<Target>> {
-
-  // one var only here
-  template <typename S> static auto invoke(S& data, long i) {
-   return make_tail_view_from_data(data(i, triqs::arrays::ellipsis()));
-  }
- };
-
  template <int R> struct _data_proxy<tensor_real_valued<R>> : _data_proxy<tensor_valued<R>> {};
  template <> struct _data_proxy<matrix_real_valued> : _data_proxy<matrix_valued> {};
  template <> struct _data_proxy<scalar_real_valued> : _data_proxy<scalar_valued> {};

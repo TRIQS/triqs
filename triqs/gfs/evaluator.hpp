@@ -35,20 +35,6 @@ namespace gfs {
   template <typename G, typename X> auto operator()(G const &g, X x) const {
    return (g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, x));
   }
-
-  // template <typename G, typename T> std14::enable_if_t<is_tail_v<T>, typename G::singularity_t> operator()(G const &g, T&& t)
-  // const {
-  // return compose(g.singularity(), t);
-  //}
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail_view<T> t) const {
-   return compose(g.singularity(), t);
-  }
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail_const_view<T> t) const {
-   return compose(g.singularity(), t);
-  }
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail<T> const &t) const {
-   return compose(g.singularity(), t);
-  }
  };
 
  /*----------------------------------------------------------
@@ -73,29 +59,13 @@ namespace gfs {
     int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
     if (g.mesh().is_within_boundary(-f.n - sh)) return r_t{conj(g[-f.n - sh])};
    }
-   // return _evaluate_sing(Target{}, g.singularity(), f);
-   return evaluate(g.singularity(), f);
+   TRIQS_RUNTIME_ERROR << " Evaluator not implemented";
+   //return ?
   }
 
   // int -> replace by matsubara_freq
   template <typename G> decltype(auto) operator()(G const &g, int n) const {
    return g(matsubara_freq(n, g.mesh().domain().beta, g.mesh().domain().statistic));
-  }
-
-  /*template <typename G, typename T> std14::enable_if_t<is_tail_v<T>, typename G::singularity_t> operator()(G const &g, T&& t)
-  const {
-   return compose(g.singularity(), t);
-  }
-  */
-  // Evaluate on the tail : compose the tails
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail_view<T> t) const {
-   return compose(g.singularity(), t);
-  }
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail_const_view<T> t) const {
-   return compose(g.singularity(), t);
-  }
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail<T> const &t) const {
-   return compose(g.singularity(), t);
   }
  };
 

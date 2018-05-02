@@ -44,7 +44,7 @@ namespace gfs {
    new_data(L1 + u, _) = dat(u, _);
    new_data(L - 1 - u, _) = conj(dat(u, _));
   }
-  return {gf_mesh<imfreq>{g.mesh().domain(), L}, std::move(new_data), g.singularity(), g.indices()};
+  return {gf_mesh<imfreq>{g.mesh().domain(), L}, std::move(new_data), g.indices()};
  }
 
  /// Test if gf is real in tau
@@ -74,7 +74,7 @@ namespace gfs {
   long L = g.mesh().size();
   long L1 = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
   int is_boson = (g.mesh().domain().statistic == Boson);
-  return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), triqs::arrays::ellipsis()), g.singularity(), g.indices()};
+  return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), triqs::arrays::ellipsis()), g.indices()};
  }
 
  /// Make_real_in_tau symmetrize the function in freq, to ensure its FT is real.

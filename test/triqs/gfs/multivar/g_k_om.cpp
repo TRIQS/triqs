@@ -12,10 +12,8 @@ template <typename Function, typename Mesh> auto sum_gf(Function const &f, Mesh 
  return res;
 }
 
-namespace triqs {
- namespace clef {
+namespace triqs::clef {
   TRIQS_CLEF_MAKE_FNT_LAZY(sum_gf);
- }
 }
 
 placeholder<0> k_;
@@ -28,6 +26,8 @@ auto _ = var_t{};
 
 // ------------------------------------------------------------
 
+
+// FIXME : Does not test much ...
 TEST(Gf, GkOm) {
 
  double beta = 1;
@@ -39,9 +39,6 @@ TEST(Gf, GkOm) {
  auto G = gf_bz_imfreq_mat{{{bz, n_bz}, {beta, Fermion, 100}}, {1, 1}};
  auto Sigma = gf<imfreq, matrix_valued>{ {beta, Fermion, 100}, {1,1}};
  Sigma() =0;
-
- static_assert(std::is_same<std14::decay_t<decltype(G.singularity())>, gf<brillouin_zone, tail_valued<matrix_valued>>>::value,
-               "!!");
 
  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
  
@@ -60,20 +57,6 @@ TEST(Gf, GkOm) {
  G[k_, w_] << 2*Sigma[w_];
 
  G[k_, w_] << 1 / (w_ - eps_k - 1 / (w_ + 2));
-
-
- for (auto k : std::get<0>(G.mesh())) {
- 
-  auto sli  = G[k, _];
-  static_assert(
-      std::is_same<std14::decay_t<decltype(G.singularity()[k])>, std14::decay_t<decltype(G[k, _].singularity())>>::value, "!!");
-
-  EXPECT_CLOSE(G.singularity()[k](1)(0, 0), 1);
-  EXPECT_CLOSE(G.singularity()[k](2)(0, 0), eval(eps_k, k_ = k));
-
-  EXPECT_CLOSE(sli.singularity()(1)(0, 0), 1);
-  EXPECT_CLOSE(sli.singularity()(2)(0, 0), eval(eps_k, k_ = k));
- }
 
  rw_h5(G, "ess_g_k_om.h5", "g");
 }

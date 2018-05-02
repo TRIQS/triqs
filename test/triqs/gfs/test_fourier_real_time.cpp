@@ -23,7 +23,9 @@ int main() {
   auto Gw1 = gf<refreq> {{-wmax, wmax, Nw}, {1,1}};
   double a = Gw1.mesh().delta() * sqrt( Gw1.mesh().size() );
   for(auto const & w:Gw1.mesh()) Gw1[w]=lorentzian(w,a);
-  Gw1.singularity()(2)=triqs::arrays::matrix<double>{{2.0*a}};
+  
+  //Gw1.singularity()(2)=triqs::arrays::matrix<double>{{2.0*a}};
+  
   h5_write(file,"Gw1",Gw1);   // the original lorentzian
   
   auto Gt1 = make_gf_from_inverse_fourier(Gw1);  
@@ -53,7 +55,9 @@ int main() {
   auto Gt2 = gf<retime> {{-tmax, tmax, Nt}, {1,1}};
   a = 2*acos(-1.) / ( Gt2.mesh().delta() *sqrt( Gt2.mesh().size() ) );
   for(auto const & t:Gt2.mesh()) Gt2[t] = 0.5_j * ( lorentzian_inverse(-t,a)*theta(-t)-lorentzian_inverse(t,a)*theta(t) );
-  Gt2.singularity()(1)=triqs::arrays::matrix<double>{{1.0}};
+  
+  //Gt2.singularity()(1)=triqs::arrays::matrix<double>{{1.0}};
+  
   h5_write(file,"Gt2",Gt2);
   
   auto Gw2 = make_gf_from_fourier(Gt2);
