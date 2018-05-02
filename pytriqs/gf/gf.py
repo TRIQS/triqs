@@ -32,7 +32,7 @@ import meshes
 import singularities
 import plot 
 import gf_fnt, wrapped_aux
-from singularities import GfIndices
+from wrapped_aux import GfIndices
 from mesh_point import MeshPoint
 from operator import mul
 

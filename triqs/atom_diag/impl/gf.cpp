@@ -186,15 +186,6 @@ template<bool Complex> auto make_term_proc(double beta, block_gf_view<imtime> gf
   // Set data points
   for(auto tau : g.mesh())
    g[tau] += w * (pole > 0 ? std::exp(-double(tau)*pole) : std::exp((beta-double(tau))*pole));
-
-  // Set tail
-  auto & tail = g.singularity();
-  auto tail_coeff = residue;
-  int omax = tail.order_max();
-  for(int o = 1; o <= omax; ++o) {
-   tail(o) += tail_coeff;
-   tail_coeff *= pole;
-  }
  };
 }
 
@@ -246,15 +237,6 @@ template<bool Complex> auto make_term_proc(block_gf_view<imfreq> gf) {
 
   // Set data points
   for(auto iw : g.mesh()) g[iw] += residue / (iw - pole);
-
-  // Set tail
-  auto & tail = g.singularity();
-  auto tail_coeff = residue;
-  int omax = tail.order_max();
-  for(int o = 1; o <= omax; ++o) {
-   tail(o) += tail_coeff;
-   tail_coeff *= pole;
-  }
  };
 }
 
@@ -363,14 +345,6 @@ template<bool Complex> auto make_term_proc(block_gf_view<refreq> gf, double broa
   // Set data points
   for(auto w : g.mesh()) g[w] += residue / (w + 1_j * broadening - pole);
 
-  // Set tail
-  auto & tail = g.singularity();
-  std::complex<double> tail_coeff = residue;
-  int omax = tail.order_max();
-  for(int o = 1; o <= omax; ++o) {
-   tail(o) += tail_coeff;
-   tail_coeff *= (pole - 1_j * broadening);
-  }
  };
 }
 

@@ -249,12 +249,12 @@ namespace triqs::gfs {
       // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
       _lss[n_fixed_moments].reset();
       int n_max = std::min(size_t{9}, first_dim(*_vander) / 2);
-      for (int n = n_fixed_moments + 1; n <= n_max; ++n) {
+      for (int n = n_max; n >= n_fixed_moments; --n) {
         auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>((*_vander)(range(), range(n_fixed_moments, n + 1)));
-        if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond)
+        if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond){
           _lss[n_fixed_moments] = std::move(ptr);
-        else
           break;
+	}
       }
       if (!_lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
     }

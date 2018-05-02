@@ -110,14 +110,17 @@ namespace gfs {
   //-------------------------------------
 
   // FIXME Generalize to matrix / tensor_valued gf
+  // FIXME : doc : we assume that the fuction is at least 1/omega
   void inverse(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw) {
    if (gw.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
   
-   auto [tail, error] = get_tail(gw);
-   if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n";
-   if (error > 1e-3) TRIQS_RUNTIME_ERROR << "ERROR: High frequency moments have an error greater than 1e-3.\n";
+   auto [tail, error] = get_tail(gw, array<dcomplex, 1> {0});
+   if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = "<<error;
+   if (error > 1e-3) TRIQS_RUNTIME_ERROR << "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = "<<error;
    if (first_dim(tail) < 3) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires at least a proper 2nd high-frequency moment\n";
-   if (std::abs(tail(0)) > 1e-12) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n";
+   
+   // FIXME
+   //if (std::abs(tail(0)) > 1e-10) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" << std::abs(tail(0));
 
    double beta = gw.domain().beta;
    long L = gt.mesh().size() - 1;

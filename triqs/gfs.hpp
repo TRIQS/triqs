@@ -38,7 +38,7 @@
 #include "./gfs/gf/auto_assign.hpp"
 
 // multivar 
-#include "./gfs/gf/product.hpp"
+#include "./gfs/meshes/product.hpp"
 #include "./gfs/gf/partial_eval.hpp"
 
 // expression template
@@ -46,10 +46,6 @@
 
 // evaluator
 #include "./gfs/evaluator.hpp"
-
-// singularity 
-#include "./gfs/singularity/gf_singularity.hpp"
-#include "./gfs/singularity/m_tail.hpp"
 
 // block gf
 #include "./gfs/block/block_gf.hxx"

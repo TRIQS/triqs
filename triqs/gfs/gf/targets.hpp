@@ -81,19 +81,6 @@ namespace gfs {
   using real_t = scalar_real_valued;
  };
 
- template <typename T> struct tail_valued {
-  static constexpr int rank = T::rank + 1;
-  static constexpr bool is_matrix = false;
-  using scalar_t = dcomplex;
-  // using slice_t = scalar_t;
-  // using value_type = typename T::value_type;
-  using real_t = tail_valued<typename T::real_t>; 
- };
-
- template<typename T> struct is_tail_valued: std::false_type{};
- template<typename T> struct is_tail_valued<tail_valued<T>>: std::true_type{};
- //template< class T > constexpr bool is_tail_valued_v = _is_tail_valued<T>::value;
-
  /// invert the relation:  type, rank -> target.
  template <typename T, int R> struct _target_from_type_rank;
  template <int R> struct _target_from_type_rank<dcomplex, R> { using type = tensor_valued<R>; };

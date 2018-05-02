@@ -5,7 +5,6 @@ import re
 m = module_(full_name = "pytriqs.gf.gf_fnt", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
 
 import meshes
-import singularities
 
 m.add_include("<triqs/gfs.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")
@@ -20,6 +19,34 @@ m.add_using("triqs::utility::mini_vector")
 m.add_preamble("""
 """)
 
+########################
+##   Indices
+########################
+
+# Wrapping indices
+c = class_( py_type = "GfIndices",
+        c_type = "gf_indices",
+        c_type_absolute = "triqs::gfs::gf_indices",
+        hdf5 = True,
+        serializable= "tuple",
+       )
+
+c.add_constructor("(std::vector<std::vector<std::string>> indices)", doc = "Constructs indices, from a list(list(string)))")
+c.add_property(getter = cfunction("std::vector<std::vector<std::string>> data()"), doc = "Get a copy of the list of list of strings")
+c.add_method("gf_indices transpose()", doc = "Transposing")
+c.add_method("triqs::arrays::range convert_index(std::string s, int i)", doc = "index -> position conversion")
+c.add_method_copy()
+c.add_getitem(signature = "std::vector<std::string> operator[](int d)", doc = "The list of indices for dimension d")
+
+c.add_len(calling_pattern = "int result = self_c.rank()", doc = "")
+c.add_iterator(c_cast_type = "std::vector<std::string>")
+
+m.add_class (c)
+
+
+########################
+
+# FIXME
 # New tail
 m.add_function("std::pair<array<dcomplex,3>, double> get_tail(gf_view<imfreq, matrix_valued> g)", doc = "tail")
 m.add_function("std::pair<array<dcomplex,3>, double> get_tail(gf_view<imfreq, matrix_valued> g, array_view<dcomplex,3> known_moments)", doc = "tail")
@@ -95,10 +122,10 @@ m.add_function("gf_view<imfreq, matrix_valued> make_real_in_tau(gf_view<imfreq, 
                doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
 
 # fit_tail
-m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true)", 
-                doc = """Set the tail by fitting""")
-m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit = true)", 
-                doc = """Set the tail by fitting""")
+#m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true)", 
+#                doc = """Set the tail by fitting""")
+#m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit = true)", 
+#                doc = """Set the tail by fitting""")
   
 # GfImTime specific functions
 

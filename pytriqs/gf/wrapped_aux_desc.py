@@ -5,21 +5,13 @@ import re
 m = module_(full_name = "pytriqs.gf.wrapped_aux", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
 
 import meshes
-import singularities
+import gf_fnt
 
 m.add_include("<triqs/gfs.hpp>")
-m.add_include("<triqs/gfs/singularity/fit_tail.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")
 
 m.add_include("<cpp2py/converters/vector.hpp>")
 m.add_include("<triqs/cpp2py_converters.hpp>")
-
-#m.add_include("<triqs/python_tools/converters/string.hpp>")
-#m.add_include("<triqs/python_tools/converters/arrays.hpp>")
-#m.add_include("<triqs/python_tools/converters/h5.hpp>")
-#m.add_include("<triqs/python_tools/converters/vector.hpp>")
-#m.add_include("<triqs/python_tools/converters/function.hpp>")
-#m.add_include("<triqs/python_tools/converters/gf.hpp>")
 
 m.add_include("<triqs/gfs/legacy_for_python_api.hpp>")
 m.add_using("namespace triqs::arrays")

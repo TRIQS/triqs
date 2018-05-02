@@ -47,7 +47,6 @@ namespace gfs {
    new_gf[index] += g[tau];
   }
   if (norm != 1) new_gf[new_m.size() - 1] /= norm;
-  new_gf.singularity() = g.singularity();
   return new_gf;
  }
 }

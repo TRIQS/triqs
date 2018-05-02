@@ -32,8 +32,6 @@ namespace triqs { namespace gfs {
   // make sure the GFs have the same structure
   //assert(gw.shape() == gr.shape());
 
-  // copy the tail. it doesn't need to conform to the pade approximant
-  gr.singularity() = gw.singularity();
   gr() = 0.0;
 
   auto sh = gw.data().shape().front_pop();

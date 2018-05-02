@@ -19,12 +19,11 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../gf/product.hpp"
+#include "../meshes/product.hpp"
 namespace triqs {
 namespace gfs {
 
  using triqs::arrays::array_const_view;
-
 
  /*------------------------------------------------------------------------------------------------------
  *                 Getting the tail
@@ -46,22 +45,15 @@ namespace gfs {
       return get_tail(std::get<N>(g.mesh()), make_const_view(g.data()), N, true, make_const_view(known_moments));
   }
 
+  // FIXME : merge the slice_target_to_scalar
  /*------------------------------------------------------------------------------------------------------
  *                      Slicing the matrix_valued/matrix_real_valued into a matrix
  *-----------------------------------------------------------------------------------------------------*/
 
  template <typename G, typename... Args> auto slice_target(G &&g, Args &&... args) {
   return g.apply_on_data([&args...](auto &&d) { return d(triqs::arrays::ellipsis(), args...); },
-                         [&args...](auto &&s) { return slice_target_sing(s(), args...); },
                          [&args...](auto &&i) { return slice(i, args...); });
  }
-
- // FIXME ADD apply_on _dato to TAIL !
- /*
- template <typename G, typename... Args> auto slice_target_sing(G &&g, Args &&... args) {
-  return g.apply_on_data([&args...](auto &&d) { return d(arrays::ellipsis(), args...); }, nothing{});
- }
-*/
 
  /*------------------------------------------------------------------------------------------------------
   *                      Slicing the matrix valued into a scalar
@@ -70,9 +62,7 @@ namespace gfs {
 
  template <typename G, typename... Args> auto slice_target_to_scalar(G &&g, Args &&... args) {
   auto r = g.apply_on_data([&args...](auto &&d) { return d(triqs::arrays::ellipsis(), args...); },
-                           [&args...](auto &&s) { return slice_target_to_scalar_sing(s(), args...); },
                            [&args...](auto &&i) { return slice(i, args...); });
-  // The target of the return is scalar_valued or tail_valued<scalar_valued>
   return r;
  }
 
@@ -84,8 +74,7 @@ namespace gfs {
  template <typename G, typename... Args> auto reinterpret_scalar_valued_gf_as_matrix_valued(G &&g) {
   static_assert(std::is_same<typename std::decay_t<G>::target_t, scalar_valued>::value,
                 "slice_target_to_scalar : the result is not a scalar valued function");
-  return g.apply_on_data([](auto &&d) { return reinterpret_array_add_1x1(d); },
-                         [](auto &&s) { return reinterpret_as_matrix_valued_sing(s()); });
+  return g.apply_on_data([](auto &&d) { return reinterpret_array_add_1x1(d); });
  }
 
  /*------------------------------------------------------------------------------------------------------
@@ -104,7 +93,6 @@ namespace gfs {
 
  template <typename M> void invert_in_place(gf_view<M, matrix_valued> g) {
   _gf_invert_data_in_place(g.data());
-  g.singularity() = inverse(g.singularity());
  }
 
  template <typename M> gf<M, matrix_valued> inverse(gf<M, matrix_valued> const &g) {
@@ -147,9 +135,7 @@ namespace gfs {
    @param g a gf
    */
  template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type::real_t> real(G const &g) {
-  auto empty_tail = typename G::regular_type::real_t::singularity_t{g.target_shape()};
-  empty_tail.reset();
-  return {g.mesh(), real(g.data()), empty_tail, g.indices()};
+  return {g.mesh(), real(g.data()), g.indices()};
  }
  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, typename G::regular_type::real_t> real(G const &g) {
   return map_block_gf(real<typename G::g_t>, g);
@@ -160,7 +146,7 @@ namespace gfs {
   *-----------------------------------------------------------------------------------------------------*/
 
  template <typename M> gf<M, matrix_valued> transpose(gf_view<M, matrix_valued> g) {
-  return {g.mesh(), transposed_view(g.data(), 0, 2, 1), transpose(g.singularity()), g.indices().transpose()};
+  return {g.mesh(), transposed_view(g.data(), 0, 2, 1), g.indices().transpose()};
  }
 
  /*------------------------------------------------------------------------------------------------------
@@ -169,8 +155,7 @@ namespace gfs {
 
  template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type> conj(G const &g) {
   using M = typename G::variable_t;
-  bool is_matsubara = std::is_same<M, imfreq>::value || std::is_same<M, imtime>::value;
-  return {g.mesh(), conj(g.data()), conj(g.singularity(), is_matsubara), g.indices()};
+  return {g.mesh(), conj(g.data()), g.indices()};
  }
 
  /*------------------------------------------------------------------------------------------------------
@@ -195,13 +180,11 @@ namespace gfs {
 
  template <typename M, typename T> gf<M, matrix_valued> operator*(gf<M, matrix_valued> g, matrix<T> r) {
   _gf_data_mul_R(g.data(), r);
-  g.singularity() = g.singularity() * r;
   return g;
  }
 
  template <typename M, typename T> gf<M, matrix_valued> operator*(matrix<T> l, gf<M, matrix_valued> g) {
   _gf_data_mul_L(l, g.data());
-  g.singularity() = l * g.singularity();
   return g;
  }
 
@@ -223,7 +206,6 @@ namespace gfs {
 
  template <typename G1, typename G2, typename M> void set_from_L_G_R(G1 &g1, M const &l, G2 const &g2, M const &r) {
   set_from_gf_data_mul_LR(g1.data(), l, g2.data(), r);
-  g1.singularity() = l * g2.singularity() * r;
  }
 }
 }

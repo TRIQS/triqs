@@ -42,8 +42,6 @@ namespace gfs {
     gw[om] += legendre_T(om.index(), l.index()) * gl[l];
    }
   }
-
-  gw.singularity() = get_tail(gl);
  }
 
  // ----------------------------
@@ -60,7 +58,6 @@ namespace gfs {
    }
   }
 
-  gt.singularity() = get_tail(gl);
  }
 
  // ----------------------------

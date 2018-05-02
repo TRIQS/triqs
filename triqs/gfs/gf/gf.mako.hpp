@@ -23,8 +23,6 @@
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
 #include "./comma.hpp"
-#include "../singularity/tail.hxx"
-#include "../singularity/nothing.hpp"
 #include "./data_proxy.hpp"
 
 namespace triqs {
@@ -148,12 +146,8 @@ namespace triqs {
    using zero_view_t       = zero_const_view_t;
    using zero_t            = zero_MAKO_RVC_t;
 
-   using _singularity_regular_t    = gf_singularity_t<Var, Target>;
-   using _singularity_view_t       = typename _singularity_regular_t::view_type;
-   using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
-   using singularity_t             = _singularity_MAKO_RVC_t;
-
-   using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued<Target>::value>;
+   // FIXME : std::array with NDA
+   using target_shape_t = arrays::mini_vector<int, Target::rank>;
 
    struct target_and_shape_t{
      target_shape_t _shape; 
@@ -179,7 +173,7 @@ namespace triqs {
    /// Shape of the target
    //auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
    target_and_shape_t target() const { 
-     return target_and_shape_t{ _data.shape().template front_mpop<arity + is_tail_valued<Target>::value>() }; } // drop arity dims
+     return target_and_shape_t{ _data.shape().template front_mpop<arity>() }; } // drop arity dims
 
    auto target_shape() const { return target().shape(); } // drop arity dims
 
@@ -192,19 +186,12 @@ namespace triqs {
    ///
    zero_t const &get_zero() const { return _zero; }
 
-   /// Access to the singularity
-   singularity_t &singularity() { return _singularity; }
-
-   /// Const version
-   singularity_t const &singularity() const { return _singularity; }
-
    indices_t const &indices() const { return _indices; }
 
    private:
    mesh_t _mesh;
    data_t _data;
    zero_t _zero;
-   singularity_t _singularity;
    indices_t _indices;
 
    private:
@@ -231,17 +218,15 @@ namespace triqs {
       : _mesh(x.mesh())
       , _data(x.data())
       , _zero(_make_zero(_data))
-      , _singularity(x.singularity())
       , _indices(x.indices()) {}
 
-   template <typename M, typename D, typename S>
-   MAKO_GF(impl_tag, M &&m, D &&dat, S &&sing, indices_t ind)
+   template <typename M, typename D>
+   MAKO_GF(impl_tag, M &&m, D &&dat, indices_t ind)
       : _mesh(std::forward<M>(m))
       , _data(std::forward<D>(dat))
       , _zero(_make_zero(_data))
-      , _singularity(std::forward<S>(sing))
       , _indices(std::move(ind)) {
-    if (!(_indices.empty() or (is_tail_valued<Target>::value) or _indices.has_shape(target_shape())))
+    if (!(_indices.empty() or _indices.has_shape(target_shape())))
      TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
    }
 
@@ -263,43 +248,37 @@ namespace triqs {
     swap(this->_mesh, b._mesh);
     swap(this->_data, b._data);
     swap(this->_zero, b._zero);
-    swap(this->_singularity, b._singularity);
     swap(this->_indices, b._indices);
    }
-
-   using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
 
    // mako ## ------------------------------------------------  regular class ---------------------------------
    // mako %if RVC == 'regular' :
 
    private:
 
+   // FIXME : simplify
    template <typename U> static auto make_data_shape(U, mesh_t const &m, target_shape_t const &shap) {
     return join(m.size_of_components(), shap);
    }
 
-   template <typename U> static auto make_data_shape(tail_valued<U>, mesh_t const &m, target_shape_t const &shap) {
-    return join(mini_vector<int, 2>{int(m.size()), __tail<matrix_valued>::_size()}, shap); // shap.front_append(m.size());
-   }
-
    public:
    // Construct from the data. Using the "pass by value" pattern + move
-   gf(mesh_t m, data_t dat, singularity_t si, indices_t ind)
-      : gf(impl_tag{}, std::move(m), std::move(dat), std::move(si), std::move(ind)) {}
+   gf(mesh_t m, data_t dat, indices_t ind)
+      : gf(impl_tag{}, std::move(m), std::move(dat), std::move(ind)) {}
 
    // Construct from the data. Using the "pass by value" pattern + move
-   gf(mesh_t m, data_t dat, arrays::memory_layout_t<arity + Target::rank> const &ml, singularity_t si, indices_t ind)
-      : gf(impl_tag{}, std::move(m), data_t(dat, ml), std::move(si), std::move(ind)) {}
+   gf(mesh_t m, data_t dat, arrays::memory_layout_t<arity + Target::rank> const &ml, indices_t ind)
+      : gf(impl_tag{}, std::move(m), data_t(dat, ml), std::move(ind)) {}
 
    // Construct from mesh, target_shape, memory order
    gf(mesh_t m, target_shape_t shape, arrays::memory_layout_t<arity + Target::rank> const &ml, indices_t const &ind = indices_t{})
-      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape), ml), singularity_factory::make(m, shape), ind) {
+      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape), ml), ind) {
     if (this->_indices.empty()) this->_indices = indices_t(shape);
    }
 
    // Construct from mesh, target_shape, memory order
    gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const &ind = indices_t{})
-      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), singularity_factory::make(m, shape), ind) {
+      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), ind) {
     if (this->_indices.empty()) this->_indices = indices_t(shape);
    }
 
@@ -352,7 +331,6 @@ namespace triqs {
     _data.resize(rhs.data_shape());
     _remake_zero();
     for (auto const &w : _mesh) (*this)[w] = rhs[w];
-    _singularity                           = rhs.singularity();
     _indices = rhs.indices();
     if (_indices.empty()) _indices = indices_t(target_shape());
     //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
@@ -384,13 +362,13 @@ namespace triqs {
 
    // Construct from mesh, data, ....
    template <typename D>
-   gf_const_view(mesh_t m, D const &dat, singularity_t const &t, indices_t const &ind)
-      : gf_const_view(impl_tag{}, std::move(m), dat, t, ind) {}
+   gf_const_view(mesh_t m, D const &dat, indices_t const &ind)
+      : gf_const_view(impl_tag{}, std::move(m), dat, ind) {}
 
    // Construct from mesh, data. 
    template <typename D>
    gf_const_view(mesh_t m, D const &dat)
-      : gf_const_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+      : gf_const_view(impl_tag{}, std::move(m), dat, {}) {}
 
    // ---------------  swap --------------------
 
@@ -403,7 +381,6 @@ namespace triqs {
     this->_mesh = X._mesh;
     this->_data.rebind(X._data);
     details::_rebind_helper(_zero, X._zero);
-    this->_singularity.rebind(X._singularity);
     this->_indices = X._indices;
    }
 
@@ -437,13 +414,13 @@ namespace triqs {
 
    /// Construct from mesh, data, ....
    template <typename D>
-   gf_view(mesh_t m, D &&dat, singularity_t const &t, indices_t const &ind = indices_t{})
-      : gf_view(impl_tag{}, std::move(m), std::forward<D>(dat), t, ind) {}
+   gf_view(mesh_t m, D &&dat, indices_t const &ind = indices_t{})
+      : gf_view(impl_tag{}, std::move(m), std::forward<D>(dat), ind) {}
 
    // Construct from mesh, data. Only for partial_eval 
    template <typename D>
    gf_view(mesh_t m, D const &dat)
-      : gf_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+      : gf_view(impl_tag{}, std::move(m), dat, {}) {}
 
    // ---------------  swap --------------------
    /// Swap
@@ -455,7 +432,6 @@ namespace triqs {
     this->_mesh = X._mesh;
     this->_data.rebind(X._data);
     details::_rebind_helper(_zero, X._zero);
-    this->_singularity.rebind(X._singularity);
     this->_indices = X._indices;
    }
 
@@ -484,16 +460,15 @@ namespace triqs {
 
    // mako %for C in ['', 'const'] :
    // mako <% GFVIEW = 'gf_const_view' if (C or RVC == 'const_view') else 'gf_view' %>
-   template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata &&fd, Fsing &&fs, Find &&fi) MAKO_C {
+   template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) MAKO_C {
     auto d2  = fd(_data);
-    using t2 = std14::conditional_t<is_tail_valued<Target>::value, tail_valued<target_from_array<decltype(d2), arity + 1>>,
-                                    target_from_array<decltype(d2), arity>>;
+    using t2 = target_from_array<decltype(d2), arity>;
     using gv_t = MAKO_GFVIEW<Var, t2>;
-    return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
+    return gv_t{_mesh, d2, fi(_indices)};
    }
 
-   template <typename Fdata, typename Fsing> auto apply_on_data(Fdata &&fd, Fsing &&fs) MAKO_C {
-    return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto &) { return indices_t{}; });
+   template <typename Fdata> auto apply_on_data(Fdata &&fd) MAKO_C {
+    return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
    }
    // mako %endfor
 
@@ -565,10 +540,6 @@ namespace triqs {
    template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) const {
     return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
    }
-
-   // G[ tail] = G[infty] in evaluation ... 
-   singularity_t const & operator[](infty) const { return _singularity;}
-
 
    // -------------- operator [] with _tuple. Distinguich the lazy and non lazy case
    private:
@@ -738,7 +709,6 @@ namespace triqs {
    /// The serialization as required by Boost
    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
     ar &_data;
-    ar &_singularity;
     ar &_mesh;
     ar &_indices;
    }
@@ -770,7 +740,6 @@ namespace triqs {
    friend void mpi_broadcast(MAKO_GF &g, mpi::communicator c = {}, int root = 0) {
     // Shall we bcast mesh ?
     mpi_broadcast(g.data(), c, root);
-    mpi_broadcast(g.singularity(), c, root);
    }
 
    // mako ${mpidoc("Reduce")}
@@ -815,7 +784,6 @@ namespace triqs {
     // mako %if GRV == "regular" :
     _remake_zero();
     // mako %endif
-    _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all, l.op);
    }
 
    /**
@@ -828,8 +796,6 @@ namespace triqs {
     // mako %if GRV == "regular" :
     _remake_zero();
     // mako %endif
-    if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
-    mpi_broadcast(_singularity, l.c, l.root);
    }
 
    /**
@@ -842,7 +808,6 @@ namespace triqs {
     // mako %if GRV == "regular" :
     _remake_zero();
     // mako %endif
-    if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
    }
    // mako %endif
   };
@@ -853,34 +818,15 @@ namespace triqs {
  *                                     View  assignment
  *-----------------------------------------------------------------------------------------------------*/
 
-#ifdef __cpp_if_constexpr
-  template <typename M, typename T, typename RHS> void triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
+ template <typename M, typename T, typename RHS> void triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
    if constexpr (arrays::is_scalar<RHS>::value) {
     for (auto const &w : g.mesh()) g[w] = rhs;
-    g.singularity()                     = rhs;
    } else {
     if (!(g.mesh() == rhs.mesh()))
      TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh \n" << g.mesh() << "\n vs \n" << rhs.mesh();
     for (auto const &w : g.mesh()) g[w] = rhs[w];
-    g.singularity()                     = rhs.singularity();
    }
   }
-#else
-  // delegate = so that I can overload it for specific RHS...
-  template <typename M, typename T, typename RHS>
-  std14::enable_if_t<!arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
-   if (!(g.mesh() == rhs.mesh()))
-    TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh \n" << g.mesh() << "\n vs \n" << rhs.mesh();
-   for (auto const &w : g.mesh()) g[w] = rhs[w];
-   g.singularity()                     = rhs.singularity();
-  }
-
-  template <typename M, typename T, typename RHS>
-  std14::enable_if_t<arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
-   for (auto const &w : g.mesh()) g[w] = rhs;
-   g.singularity()                     = rhs;
-  }
-#endif
  }
 }
 /*------------------------------------------------------------------------------------------------------

@@ -20,30 +20,12 @@ namespace cpp2py {
   template <typename... T> struct is_view<triqs::gfs::block_gf_const_view<T...>> : std::true_type {};
   template <typename... T> struct is_view<triqs::gfs::block2_gf_const_view<T...>> : std::true_type {};
 
-
-  template <typename T> struct is_view<triqs::gfs::__tail_view<T>> : std::true_type {};
-  template <typename T> struct is_view<triqs::gfs::__tail_const_view<T>> : std::true_type {};
-  
   // -----------------------------------
   // domains
   // -----------------------------------
 
   template <bool B> struct py_converter<triqs::gfs::matsubara_domain<B>> : py_converter_from_reductor<triqs::gfs::matsubara_domain<B>> {};
   template <> struct py_converter<triqs::gfs::R_domain> : py_converter_from_reductor<triqs::gfs::R_domain> {};
-
-  // -----------------------------------
-  // nothing
-  // -----------------------------------
-
-  template <> struct py_converter<triqs::gfs::nothing> {
-    static PyObject *c2py(triqs::gfs::nothing g) { Py_RETURN_NONE; }
-    static bool is_convertible(PyObject *ob, bool raise_exception) {
-      if (ob == Py_None) return true;
-      if (raise_exception) { PyErr_SetString(PyExc_TypeError, "Cannot convert to triqs::gfs::nothing : can only convert None"); }
-      return false;
-    }
-    static triqs::gfs::nothing py2c(PyObject *ob) { return {}; }
-  };
 
   // -----------------------------------
   //     Mesh Product
@@ -161,7 +143,6 @@ namespace cpp2py {
     using c_type    = triqs::gfs::gf_view<M, T>;
     using mesh_t    = typename c_type::mesh_t;
     using data_t    = typename c_type::data_t;
-    using sing_t    = typename c_type::singularity_t;
     using indices_t = typename c_type::indices_t;
 
     static PyObject *c2py(c_type g) {
@@ -172,18 +153,14 @@ namespace cpp2py {
       if (m.is_null()) return NULL;
       pyref d = convert_to_python(g.data());
       if (d.is_null()) return NULL;
-      pyref s = convert_to_python(g.singularity());
-      if (s.is_null()) return NULL;
       pyref i = convert_to_python(g.indices());
       if (i.is_null()) return NULL;
 
       pyref kw = PyDict_New();
       PyDict_SetItemString(kw, "mesh", m);
       PyDict_SetItemString(kw, "data", d);
-      PyDict_SetItemString(kw, "singularity", s);
       PyDict_SetItemString(kw, "indices", i);
 
-      PyDict_SetItemString(kw, "tail_valued", (triqs::gfs::is_tail_valued<T>::value ? Py_True : Py_False));
       pyref empty_tuple = PyTuple_New(0);
       return PyObject_Call(cls, empty_tuple, kw);
     }
@@ -219,12 +196,6 @@ namespace cpp2py {
         return false;
       }
 
-      pyref s = x.attr("_singularity");
-      if (!py_converter<sing_t>::is_convertible(s, raise_exception)) {
-        if (raise_exception) _set_err(s, "singularity", triqs::utility::typeid_name<sing_t>());
-        return false;
-      }
-
       pyref i = x.attr("_indices");
       if (!py_converter<indices_t>::is_convertible(i, raise_exception)) {
         if (raise_exception) _set_err(i, "indices", triqs::utility::typeid_name<indices_t>());
@@ -240,10 +211,8 @@ namespace cpp2py {
       pyref x = borrowed(ob);
       pyref m = x.attr("_mesh");
       pyref d = x.attr("_data");
-      pyref s = x.attr("_singularity");
       pyref i = x.attr("_indices");
-      return c_type{convert_from_python<mesh_t>(m), convert_from_python<data_t>(d), convert_from_python<sing_t>(s),
-                    convert_from_python<indices_t>(i)};
+      return c_type{convert_from_python<mesh_t>(m), convert_from_python<data_t>(d), convert_from_python<indices_t>(i)};
     }
   };
 

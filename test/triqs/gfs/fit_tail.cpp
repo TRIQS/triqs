@@ -1,5 +1,4 @@
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/gfs/singularity/fit_tail.hpp>
 
 using namespace triqs::arrays;
 
@@ -103,7 +102,7 @@ TEST(Gf, FitTailComplex) { // NOLINT
 
   auto tail_exact = array<dcomplex, 1>{dcomplex(0, 0), dcomplex(1,0), a, std::pow(a, 2), std::pow(a, 3)};
 
-  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), 0, 0), 1e-8);
+  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), 0, 0), 1e-7);
 }
 
 // ------------------------------------------------------------------------------
@@ -142,7 +141,7 @@ TEST(Gf, FitTailMultivar) { // NOLINT
     tail_exact(range(), k.linear_index()) = array<dcomplex, 1>{0.0, 1.0, eps_k, std::pow(eps_k, 2), std::pow(eps_k, 3)};
   }
 
-  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range(), 0, 0), 1e-8);
+  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range(), 0, 0), 1e-7);
 }
 
 MAKE_MAIN;
