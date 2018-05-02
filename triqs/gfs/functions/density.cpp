@@ -50,11 +50,11 @@ namespace gfs {
 
   for (int n1 = 0; n1 < N1; n1++)
    for (int n2 = n1; n2 < N2; n2++) {
-    dcomplex d = tail(1,n1, n2), A = tail(2,n1, n2), B = tail(3,n1, n2);
-    dcomplex a1 = d - B, a2 = (A + B) / 2, a3 = (B - A) / 2;
+    dcomplex m1 = tail(1,n1, n2), m2 = tail(2,n1, n2), m3 = tail(3,n1, n2);
+    dcomplex a1 = m1 - m3, a2 = (m2 + m3) / 2, a3 = (m3 - m2) / 2;
     dcomplex r = 0;
     for (auto const& w : g.mesh()) r += g[w](n1, n2) - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3));
-    res(n1, n2) = r / beta + d + F(a1, b1) + F(a2, b2) + F(a3, b3);
+    res(n1, n2) = r / beta + m1 + F(a1, b1) + F(a2, b2) + F(a3, b3);
     if (n2 > n1) res(n2, n1) = conj(res(n1, n2));
    }
 
