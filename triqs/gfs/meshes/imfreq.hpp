@@ -340,7 +340,7 @@ namespace triqs::gfs {
       // === Reinterpret the result as an R-dimensional array according to initial shape and return together with the error
 
       using r_t = arrays::array<dcomplex, R>; // return type
-      auto lg   = g_data.indexmap().lengths();
+      auto lg   = g_data_swap_idx.indexmap().lengths();
 
       // Index map for the view on the a_mat result
       lg[0]     = n_moments - n_fixed_moments;
