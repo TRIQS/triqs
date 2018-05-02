@@ -172,7 +172,7 @@ namespace triqs::gfs {
 
     // -------------------- tail -------------------
 
-    void set_tail_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-4) const {
+    void set_tail_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) const {
       _n_tail_max = n_tail_max;
       _tail_fraction = tail_fraction;
       _rcond = rcond;
