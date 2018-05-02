@@ -233,6 +233,10 @@ namespace gfs {
   domain_t _dom;
  }; //end of class
 
+ // Class template argument deduction rule
+ template <typename M1, typename M2, typename... Ms>
+ gf_mesh(M1, M2, Ms...)->gf_mesh<cartesian_product<typename M1::var_t, typename M2::var_t, typename Ms::var_t...>>;
+
   // ------------------------------------------------
   /// The wrapper for the mesh point
 
