@@ -6,7 +6,6 @@ m = module_(full_name = "pytriqs.gf.gf_fnt", doc = "C++ wrapping of functions on
 
 import meshes
 
-
 m.add_include("<triqs/gfs.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")
 m.add_include("<triqs/gfs/legacy_for_python_api.hpp>")

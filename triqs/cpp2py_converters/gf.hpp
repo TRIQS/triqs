@@ -161,7 +161,6 @@ namespace cpp2py {
       PyDict_SetItemString(kw, "data", d);
       PyDict_SetItemString(kw, "indices", i);
 
-      PyDict_SetItemString(kw, "tail_valued", (triqs::gfs::is_tail_valued<T>::value ? Py_True : Py_False));
       pyref empty_tuple = PyTuple_New(0);
       return PyObject_Call(cls, empty_tuple, kw);
     }
