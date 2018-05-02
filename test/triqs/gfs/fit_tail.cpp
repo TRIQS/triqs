@@ -1,107 +1,153 @@
 #include <triqs/test_tools/gfs.hpp>
 #include <triqs/gfs/singularity/fit_tail.hpp>
-using triqs::arrays::make_shape;
 
-TEST(Gf, FitTailBasic) {
+using namespace triqs::arrays;
 
- triqs::clef::placeholder<0> iom_;
- double beta = 10;
- int N = 100;
+TEST(Gf, FitTailBasic) { // NOLINT
 
- auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
- auto gw_s = gf<imfreq, scalar_valued>{{beta, Fermion, N}, {}};
+  triqs::clef::placeholder<0> iom_;
+  double beta = 10;
+  int N       = 100;
 
- triqs::arrays::array<dcomplex, 1> c{1, 3, 5, 7, 9};
+  auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, N};
 
- auto known_moments = __tail<matrix_valued>(make_shape(1,1)); // all moments are set to zero
- known_moments.reset(1); // first unkown moment is 1 (set moments >= 1 to NaN)
- auto known_moments_s = __tail<scalar_valued>(make_shape()); // all moments are set to zero
- known_moments_s.reset(1); // first unkown moment is 1 (set moments >= 1 to NaN)
+  // Set the fraction of mesh points to use for the tail fit
+  double tail_fraction = 0.3;
+  iw_mesh.set_tail_parameters(tail_fraction);
 
- gw(iom_) << c(0) / iom_ + c(1) / iom_ / iom_ + c(2) / iom_ / iom_ / iom_;
- gw_s(iom_) << c(0) / iom_ + c(1) / iom_ / iom_ + c(2) / iom_ / iom_ / iom_;
+  auto gw   = gf<imfreq>{iw_mesh, {1, 1}};
+  auto gw_s = gf<imfreq, scalar_valued>{iw_mesh, {}};
 
- gw.singularity().data()() = 0.0;
- gw_s.singularity().data()() = 0.0;
+  // Initialize the Green functions
+  array<dcomplex, 1> c{0, 1, 3, 5};
+  gw(iom_) << c(0) + c(1) / iom_ + c(2) / iom_ / iom_ + c(3) / iom_ / iom_ / iom_;
+  gw_s(iom_) << c(0) + c(1) / iom_ + c(2) / iom_ / iom_ + c(3) / iom_ / iom_ / iom_;
 
- int wn_min = 50; // frequency to start the fit
- int wn_max = 90; // final fitting frequency (included)
- int max_moment = 3; // number of moments in the final tail (including known ones)
+  // ==== Fix only the 0th moment to 0
+  {
+    auto known_moments   = array<dcomplex, 3>{{{0.0}}};
+    auto known_moments_s = array<dcomplex, 1>{0.0};
 
- // restore tail
- fit_tail(gw, known_moments, max_moment, wn_min, wn_max);
- fit_tail(gw_s, known_moments_s, max_moment, wn_min, wn_max);
+    // Get the tail using least square fitting
+    auto [tail, err]     = get_tail(gw, known_moments);
+    auto [tail_s, err_s] = get_tail(gw_s, known_moments_s);
 
- triqs::arrays::array<dcomplex, 1> res{0, 0, 1, 3, 5};
- EXPECT_ARRAY_NEAR(res, gw.singularity().data()(range(1, 6), 0, 0));
+    EXPECT_ARRAY_NEAR(c, tail(range(0, 4), 0, 0), 1e-9);
+    EXPECT_ARRAY_NEAR(c, tail_s(range(0, 4)), 1e-9);
+  }
 
- // erase tail
- gw.singularity().data()() = 0.0;
+  // ==== Now fix both the 0th and 1st moment
+  {
+    auto known_moments   = array<dcomplex, 3>{{{0.0}}, {{1.0}}};
+    auto known_moments_s = array<dcomplex, 1>{0.0, 1.0};
 
- // now with a known moment
- known_moments.reset(2); // first unknow moment is 2
- known_moments(1) = 1.; // set the first moment
- fit_tail(gw, known_moments, max_moment, wn_min, wn_max, true); // true replace the gf data in the fitting range by the tail values
+    // Get the tail using least square fitting
+    auto [tail, err]     = get_tail(gw, known_moments);
+    auto [tail_s, err_s] = get_tail(gw_s, known_moments_s);
 
- EXPECT_ARRAY_NEAR(res, gw.singularity().data()(range(1, 6), 0, 0));
+    EXPECT_ARRAY_NEAR(c, tail(range(4), 0, 0), 1e-9);
+    EXPECT_ARRAY_NEAR(c, tail_s(range(4)), 1e-9);
+  }
 }
 
 // ------------------------------------------------------------------------------
 
-TEST(Gf, FitTailReal_F_and_B) {
- // real life test: find tails of 1/(iom -1)
+TEST(Gf, FitTailReal_F_and_B) { // NOLINT
 
- triqs::clef::placeholder<0> iom_;
- double beta = 10;
- int N = 100;
+  triqs::clef::placeholder<0> iom_;
+  double beta = 10;
+  int N       = 100;
 
- auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
- auto gw_b = gf<imfreq>{{beta, Boson, N-1}, {1, 1}};
- gw(iom_) << 1 / (iom_ - 1);
- gw_b(iom_) << 1 / (iom_ - 1);
+  auto gw_f = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
+  auto gw_b = gf<imfreq>{{beta, Boson, N - 1}, {1, 1}};
 
- int wn_min = 50; 
- int wn_max = 90; 
- int max_moment = 4; 
- auto known_moments = __tail<matrix_valued>(make_shape(1, 1)); // all moments are set to zero
- known_moments.reset(2); // put NaN for moments >= 2
- known_moments(1) = 1.; // this one we know
- fit_tail(gw, known_moments, max_moment, wn_min, wn_max, true); 
- fit_tail(gw_b, known_moments, max_moment, wn_min, wn_max, true); 
+  // Set the fraction of mesh points to use for the tail fit
+  double tail_fraction = 0.3;
+  gw_f.mesh().set_tail_parameters(tail_fraction);
+  gw_b.mesh().set_tail_parameters(tail_fraction);
 
- auto t_exact = __tail<matrix_valued>(make_shape(1, 1)); // all moments are set to zero
- t_exact.reset(5);
- t_exact.data()(range(3,7),0,0) = triqs::arrays::array<dcomplex, 1> {1.0, 1.0, 1.0, 1.0};
+  // Initialize the Green functions
+  gw_f(iom_) << 1 / (iom_ - 1);
+  gw_b(iom_) << 1 / (iom_ - 1);
 
- EXPECT_TAIL_NEAR(t_exact, gw.singularity(), 2e-3);
- EXPECT_TAIL_NEAR(t_exact, gw_b.singularity(), 2e-3);
+  // Fix both the 0th and 1st moment
+  auto known_moments = array<dcomplex, 3>{{{0.0}}, {{1.0}}};
+
+  auto [tail_f, err_r] = get_tail(gw_f, known_moments);
+  auto [tail_b, err_b] = get_tail(gw_b, known_moments);
+
+  auto tail_exact = array<dcomplex, 1>{0.0, 1.0, 1.0, 1.0, 1.0};
+
+  EXPECT_ARRAY_NEAR(tail_exact, tail_f(range(5), 0, 0), 1e-9);
+  EXPECT_ARRAY_NEAR(tail_exact, tail_b(range(5), 0, 0), 1e-9);
 }
 
+// ------------------------------------------------------------------------------
 
-TEST(Gf, FitTailComplex) {
+TEST(Gf, FitTailComplex) { // NOLINT
 
- // real life test: find tails of 1/(iom -1) -- with positive and negative matsubara
- triqs::clef::placeholder<0> iom_;
- double beta = 10;
- int N = 200;
+  triqs::clef::placeholder<0> iom_;
+  double beta = 10;
+  int N       = 200;
 
- auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
- auto a = dcomplex(1.0,0.4);
- gw(iom_) << 1 / (iom_ - a);
+  auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
 
- int wn_min = 50; 
- int wn_max = 90;
- int max_moment = 4;
- auto known_moments = __tail<matrix_valued>(make_shape(1, 1));
- known_moments.reset(2);
- known_moments(1) = 1.;
- fit_tail(gw, known_moments, max_moment, -wn_max-1, -wn_min-1, wn_min, wn_max,  true); 
+  // Initialize the Green functions
+  auto a = dcomplex(1.0, 0.4);
+  gw(iom_) << 1 / (iom_ - a);
 
- auto t_exact = __tail<matrix_valued>(make_shape(1, 1));
- t_exact.reset(5);
- t_exact.data()(range(3,7),0,0) = triqs::arrays::array<dcomplex, 1> {dcomplex(1.0,0.0), a, std::pow(a,2), std::pow(a,3)};
+  // Fix both the 0th and 1st moment
+  auto known_moments = array<dcomplex, 3>{{{0.0}}, {{1.0}}};
 
- EXPECT_TAIL_NEAR(t_exact, gw.singularity(), 9e-3); 
+  auto [tail, err] = get_tail(gw, known_moments);
+
+  auto tail_exact = array<dcomplex, 1>{dcomplex(0, 0), dcomplex(1,0), a, std::pow(a, 2), std::pow(a, 3)};
+
+  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), 0, 0), 1e-8);
 }
+
+// ------------------------------------------------------------------------------
+
+namespace triqs::gfs {
+  template <typename M1, typename M2, typename... Ms>
+  gf_mesh(M1, M2, Ms...)->gf_mesh<cartesian_product<typename M1::var_t, typename M2::var_t, typename Ms::var_t...>>;
+}
+
+TEST(Gf, FitTailMultivar) { // NOLINT
+
+  triqs::clef::placeholder<0> iom_;
+  triqs::clef::placeholder<1> k_;
+
+  double beta = 10;
+  int N       = 100;
+  int N_k     = 4;
+
+  auto BL        = bravais_lattice(matrix<double>{{1, 0}, {0, 1}});
+  auto k_mesh    = gf_mesh<brillouin_zone>(BL, N_k);
+  auto iw_mesh   = gf_mesh<imfreq>{beta, Fermion, N};
+  auto prod_mesh = gf_mesh{k_mesh, iw_mesh};
+
+  auto gw = gf{prod_mesh, {1, 1}};
+
+  // Initialize the Multivariable Green functions
+  gw(k_, iom_) << 1 / (iom_ - cos(k_[0]) * cos(k_[1]));
+
+  // Fix both the 0th and 1st moment
+  auto known_moments = array<dcomplex, 4>(2, N_k * N_k, 1, 1);
+  known_moments(0, range(), 0, 0) = 0.0;
+  known_moments(1, range(), 0, 0) = 1.0;
+
+  // Fit for all k-points. Resulting shape is (N_orders, N_k * N_k, 1, 1)
+  auto [tail, err] = get_tail<1>(gw, known_moments);
+
+  // Calculate the exact tail
+  auto tail_exact = array<dcomplex, 2>(5, N_k * N_k);
+  for(auto & k : k_mesh){
+    double eps_k = cos(k[0]) * cos(k[1]);
+    tail_exact(range(), k.linear_index()) = array<dcomplex, 1>{0.0, 1.0, eps_k, std::pow(eps_k, 2), std::pow(eps_k, 3)};
+  }
+
+  EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range(), 0, 0), 1e-8);
+}
+
 MAKE_MAIN;
-
