@@ -96,9 +96,9 @@ TEST(atom_diag_complex, Vacuum) {
 
  EXPECT_EQ(1,ad.get_vacuum_subspace_index());
  auto vac = ad.get_vacuum_state();
- EXPECT_NEAR_COMPLEX(1, dotc(vac, vac), 1e-14);
+ EXPECT_COMPLEX_NEAR(1, dotc(vac, vac), 1e-14);
  for(auto s : {"up","dn"})
-  EXPECT_NEAR_COMPLEX(0, dotc(vac, act(n(s), vac, ad)), 1e-14);
+  EXPECT_COMPLEX_NEAR(0, dotc(vac, act(n(s), vac, ad)), 1e-14);
 }
 
 TEST(atom_diag_complex, Autopartition) {

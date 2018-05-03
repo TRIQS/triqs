@@ -27,7 +27,7 @@ TEST(BlockMatrixH5, S1) {
  auto W = rw_h5(V, "block_mat");
  
  EXPECT_EQ(first_dim(V),first_dim(W));
- for (int i = 0; i < first_dim(V); ++i) EXPECT_CLOSE_ARRAY(V(i), W(i));
+ for (int i = 0; i < first_dim(V); ++i) EXPECT_ARRAY_NEAR(V(i), W(i));
 }
 
 MAKE_MAIN;

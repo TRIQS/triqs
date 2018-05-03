@@ -61,7 +61,7 @@ TEST(Gf, Bubble) {
    chi0q_from_r[inu, iw, _] = fourier(chi0r[inu, iw, _]);
   }
  }
- EXPECT_CLOSE_ARRAY(chi0q_from_r.data(), chi0q.data());
+ EXPECT_ARRAY_NEAR(chi0q_from_r.data(), chi0q.data());
 
  // hdf5
  rw_h5(chi0q);
@@ -97,7 +97,7 @@ TEST(Gf, BubbleScalar) {
    chi0q_from_r[inu, iw, _] = fourier(chi0r[inu, iw, _]);
   }
  }
- EXPECT_CLOSE_ARRAY(chi0q_from_r.data(), chi0q.data());
+ EXPECT_ARRAY_NEAR(chi0q_from_r.data(), chi0q.data());
 
  rw_h5(chi0q);
  rw_h5(chi0r);
@@ -120,7 +120,7 @@ TEST(Gf, BubbleSimplif) {
  ggr(r_) << gr(r_) * gr(r_);
  ggq_from_r() = fourier(ggr);
 
- EXPECT_CLOSE_ARRAY(ggq_from_r.data(), ggq.data()); //<<"fourier pb";
+ EXPECT_ARRAY_NEAR(ggq_from_r.data(), ggq.data()); //<<"fourier pb";
 }
 
 
@@ -141,7 +141,7 @@ TEST(Gf, BubbleSimplifScalar) {
  ggr(r_) << gr(r_) * gr(r_);
  ggq_from_r() = fourier(ggr);
 
- EXPECT_CLOSE_ARRAY(ggq_from_r.data(), ggq.data()); //<<"fourier pb";
+ EXPECT_ARRAY_NEAR(ggq_from_r.data(), ggq.data()); //<<"fourier pb";
 }
 
 

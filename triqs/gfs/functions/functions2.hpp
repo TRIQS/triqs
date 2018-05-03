@@ -29,8 +29,8 @@ namespace gfs {
  *                 Getting the tail
  *-----------------------------------------------------------------------------------------------------*/
 
-  template <template<typename, typename> typename G, typename T> auto get_tail(G<imfreq, T> const & g) {
-      return get_tail(g.mesh(), make_const_view(g.data()), 0);
+  template <template<typename, typename> typename G, typename T> auto get_tail(G<imfreq, T> const & g, bool normalize = true) {
+      return get_tail(g.mesh(), make_const_view(g.data()), 0, normalize);
   }
 
   template <template<typename, typename> typename G, typename T, typename A> auto get_tail(G<imfreq, T> const & g, A const & known_moments) {

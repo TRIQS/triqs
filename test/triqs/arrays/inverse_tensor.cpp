@@ -10,7 +10,7 @@ TEST(Array, InverseTensor){
  array<dcomplex,3> r(2,2,2);
  r() = 0.5;
 
- EXPECT_CLOSE_ARRAY(r,a);
+ EXPECT_ARRAY_NEAR(r,a);
 }
 
 MAKE_MAIN;

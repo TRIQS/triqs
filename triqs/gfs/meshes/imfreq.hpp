@@ -172,6 +172,9 @@ namespace triqs::gfs {
 
     // -------------------- tail -------------------
 
+    // maximum freq of the mesh
+    dcomplex omega_max() const { return idx_to_matsu_freq(_last_index); }
+
     void set_tail_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) const {
       _n_tail_max    = n_tail_max;
       _tail_fraction = tail_fraction;
@@ -199,9 +202,6 @@ namespace triqs::gfs {
 
     // number of the points in the tail for positive omega.
     int n_pts_in_tail() const { return std::min(int(std::round(_tail_fraction * _n_pts)), _n_tail_max); }
-
-    // maximum freq of the mesh
-    dcomplex omega_max() const { return idx_to_matsu_freq(_last_index); }
 
     // returns the 2 ranges of indices of the points used for tail fitting
     std::vector<long> get_tail_fit_indices() const {

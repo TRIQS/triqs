@@ -65,7 +65,7 @@ template<typename X, typename Y>
   return ::testing::AssertionFailure() << "abs(x-y) = " << abs(x - y) << "\n X = "<<  x << "\n Y = "<< y;
 }
 
-#define EXPECT_NEAR_COMPLEX(X, ...) EXPECT_TRUE(complex_are_close(X,__VA_ARGS__))
+#define EXPECT_COMPLEX_NEAR(X, ...) EXPECT_TRUE(complex_are_close(X,__VA_ARGS__))
 
 // Arrays are equal
 template<typename X, typename Y>
@@ -98,7 +98,6 @@ template<typename X, typename Y>
   return ::testing::AssertionFailure() << "max_element(abs(x-y)) = " << max_element(abs(x - y)) << "\n X = "<<  x << "\n Y = "<< y;
 }
 
-#define EXPECT_CLOSE_ARRAY(X, Y) EXPECT_TRUE(array_are_close(X,Y))
 #define EXPECT_ARRAY_NEAR(X, ...) EXPECT_TRUE(array_are_close(X,__VA_ARGS__))
 
 // Arrays is almost 0
