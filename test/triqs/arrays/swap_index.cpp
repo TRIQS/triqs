@@ -37,7 +37,7 @@ TEST(Array, SwapIndex) {
  array<double, 4> B(3,2,1,4);
  B(k_,j_,i_,l_) << i_ + 10* j_ + 100* k_ + 1000*l_;
  
- EXPECT_EQ(S, (array_view<double, 4>{B}));
+ EXPECT_EQ(S, (array_const_view<double, 4>{B}));
 
  EXPECT_EQ(first_dim(A), third_dim(S));
  EXPECT_EQ(first_dim(S), third_dim(A));

@@ -36,14 +36,8 @@ class OneFermionInTime(Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         Id = numpy.identity(G.target_shape[0])
-        G.singularity.reset(4)
-        G.singularity[1][:,:] = 1*Id
-        G.singularity[2][:,:] = L*Id
-        G.singularity[3][:,:] = L*L*Id
-        #G.singularity.mask.fill(3)
-        
         fact = -1/(1+exp(-L*G.beta))
-        Function(lambda t: fact* exp(-L*t) *Id, None)(G)
+        Function(lambda t: fact* exp(-L*t) *Id)(G)
         return G
 
 ##################################################
@@ -98,15 +92,8 @@ semicircular density of states"""
         else:
             raise TypeError, "This initializer is only correct in frequency"
 
-        # Let's create a new tail
         Id = numpy.identity(G.target_shape[0])
-        G.singularity.reset(7)
-        G.singularity[1][:,:] = 1.0*Id
-        G.singularity[3][:,:] = D**2/4.0*Id
-        G.singularity[5][:,:] = D**4/8.0*Id
-        #G.singularity.mask.fill(6)
- 
-        Function(f,None)(G)
+        Function(f)(G)
         return G
 
 ##################################################
@@ -143,18 +130,11 @@ class Flat (Base):
         else:
             raise TypeError, "This initializer is only correct in frequency"
 
-        # Let's create a new tail
         Id = numpy.identity(G.target_shape[0])
-        G.singularity.reset(7)
-        G.singularity[1][:,:] = 1.0*Id
-        G.singularity[3][:,:] = D**2/3.0*Id
-        G.singularity[5][:,:] = D**4/5.0*Id
-        #G.singularity.mask.fill(6)
-
         # Silence "RuntimeWarning: divide by zero encountered in divide"
         old_err = numpy.seterr(divide='ignore')
 
-        Function(f,None)(G)
+        Function(f)(G)
         numpy.seterr(**old_err)
         return G
 

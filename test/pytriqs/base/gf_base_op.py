@@ -35,8 +35,8 @@ def max_abs(a) :
 
 # --- start test
 
-ga = GfImFreq(indices = [1,2], beta = beta, n_points = 100, name = "a1Block")
-gb = GfImFreq(indices = [1,2], beta = beta, n_points = 100, name = "b1Block")
+ga = GfImFreq(indices = [1,2], beta = beta, n_points = 1000, name = "a1Block")
+gb = GfImFreq(indices = [1,2], beta = beta, n_points = 1000, name = "b1Block")
 
 G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
 G << iOmega_n + 2.0
@@ -45,27 +45,21 @@ G << iOmega_n + 2.0
 G2 = G.copy()
 G2 << G * G + 1.5 * G
 
-#print G['a'].tail.data 
-
 for ii, g in G : 
     N = g.data.shape[0]
     for n in range(N/2) : 
         assert_array_close_to_scalar( g.data[n+N/2],  matsu(n) + 2.0)
-
-    assert_array_close_to_scalar(g.tail[-1],1)
-    assert_array_close_to_scalar(g.tail[0],2)
-    assert max_abs(g.tail.data[-g.tail.order_min + 1:]) < precision, "oops"
 
 # inverse:
 G << inverse(G)
 
 #  Density:
 dens = G.total_density()
-assert abs(dens - 4.00125926188) < precision, "oops"
+assert abs(dens - 4.000001283004012) < precision, "oops dens =  %s"%dens
 
 # FT:
 f = lambda g,L : GfImTime(indices = g.indices, beta = g.mesh.beta, n_points =L )
-gt = BlockGf(name_block_generator = [ (n,f(g,201) ) for n,g in G], make_copies=False, name='gt')
+gt = BlockGf(name_block_generator = [ (n,f(g,2001) ) for n,g in G], make_copies=False, name='gt')
 for (i,gtt) in gt : gtt.set_from_inverse_fourier(G[i])
 
 res = np.array([[[  3.14815470e-04,   0.00000000e+00],
@@ -77,10 +71,10 @@ res = np.array([[[  3.14815470e-04,   0.00000000e+00],
        [[  7.46732524e-05,   0.00000000e+00],
         [  0.00000000e+00,   7.46732524e-05]]])
 
-assert_arrays_are_close(gt['a'].data[:3], res) 
+assert_arrays_are_close(gt['a'].data[:3], res, 1.e-3) 
 
 # Matrix operations:
-ga2 = GfImFreq(indices = [1,2,3], beta = beta, n_points = 100, name = "a1Block")
+ga2 = GfImFreq(indices = [1,2,3], beta = beta, n_points = 1000, name = "a1Block")
 mat = np.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], np.complex)
 
 ga2.from_L_G_R(mat.transpose(),ga,mat)

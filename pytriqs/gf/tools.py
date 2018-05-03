@@ -21,7 +21,6 @@
 import lazy_expressions, descriptors
 from meshes import MeshImFreq, MeshReFreq
 from block_gf import BlockGf
-from singularities import TailGf
 from descriptor_base import A_Omega_Plus_B
 import numpy as np
 from itertools import product
@@ -69,6 +68,8 @@ def delta(g):
     delta_iw : BlockGf (of GfImFreq) or GfImFreq
                Hybridization function.
     """
+
+    raise RuntimeError, "OBSOLETE : TO BE REPLACED"
     if isinstance(g, BlockGf):
     	return BlockGf(name_block_generator = [ (n, delta(g0)) for n,g0 in g], make_copies=False)
     elif isinstance(g.mesh, MeshImFreq):
@@ -106,62 +107,6 @@ def dyson(**kwargs):
     elif 'Sigma_iw' not in kwargs:
         Sigma_iw = inverse(kwargs['G0_iw']) - inverse(kwargs['G_iw'])
         return Sigma_iw
-
-# Fit tails for Sigma_iw and G_iw.
-# Either give window to fix in terms of matsubara frequencies index (fit_min_n/fit_max_n) or value (fit_min_w/fit_max_w).
-def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min_w=None,fit_max_w=None,fit_max_moment=None,fit_known_moments=None):
-    """
-    Fit the tails of Sigma_iw and optionally G_iw.
-
-    Parameters
-    ----------
-    Sigma_iw : Gf
-               Self-energy.
-    G0_iw : Gf, optional
-            Non-interacting Green's function.
-    G_iw : Gf, optional
-           Interacting Green's function.
-           If G0_iw and G_iw are provided, the tails of G_iw will also be fitted.
-    fit_min_n : int, optional, default=int(0.8*len(Sigma_iw.mesh))
-                Matsubara frequency index from which tail fitting should start.
-    fit_max_n : int, optional, default=int(len(Sigma_iw.mesh))
-                Matsubara frequency index at which tail fitting should end.
-    fit_min_w : float, optional
-                Matsubara frequency from which tail fitting should start.
-    fit_max_w : float, optional
-                Matsubara frequency at which tail fitting should end.
-    fit_max_moment : int, optional
-                     Highest moment to fit in the tail of Sigma_iw.
-    fit_known_moments : dict{str:TailGf object}, optional, default = {block_name: TailGf(dim1, dim2, max_moment=0, order_min=0)}
-                        Known moments of Sigma_iw, given as a TailGf object.
-
-    Returns
-    -------
-    Sigma_iw : Gf
-               Self-energy.
-    G_iw : Gf, optional
-           Interacting Green's function.
-    """
-
-    # Define default tail quantities
-    if fit_known_moments is None:
-        fit_known_moments = {name:TailGf(sig.target_shape[0],sig.target_shape[1],0,0) for name, sig in Sigma_iw}
-    if fit_min_w is not None: fit_min_n = int(0.5*(fit_min_w*Sigma_iw.mesh.beta/np.pi - 1.0))
-    if fit_max_w is not None: fit_max_n = int(0.5*(fit_max_w*Sigma_iw.mesh.beta/np.pi - 1.0))
-    if fit_min_n is None: fit_min_n = int(0.8*len(Sigma_iw.mesh)/2)
-    if fit_max_n is None: fit_max_n = int(len(Sigma_iw.mesh)/2)
-    if fit_max_moment is None: fit_max_moment = 3
-
-    # Now fit the tails of Sigma_iw and G_iw
-    try:
-        for name, sig in Sigma_iw: sig.fit_tail(fit_known_moments[name], fit_max_moment, fit_min_n, fit_max_n)
-    except RuntimeError:
-        for name, sig in Sigma_iw: sig.fit_tail(fit_known_moments[name], fit_max_moment, -fit_max_n-1, -fit_min_n-1, fit_min_n, fit_max_n)
-    if (G_iw is not None) and (G0_iw is not None):
-        for name, g in G_iw: g.tail = inverse( inverse(G0_iw[name].tail) - Sigma_iw[name].tail )
-
-    return Sigma_iw, G_iw
-
 
 def read_gf_from_txt(block_txtfiles, block_name):
     """

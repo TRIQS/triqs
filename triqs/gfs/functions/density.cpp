@@ -21,58 +21,55 @@
 #include "../../gfs.hpp"
 #include <triqs/utility/legendre.hpp>
 
-namespace triqs {
-namespace gfs {
+namespace triqs::gfs {
 
- using arrays::array;
+  using arrays::array;
 
- //-------------------------------------------------------
- // For Imaginary Matsubara Frequency functions
- // ------------------------------------------------------
- arrays::matrix<dcomplex> density(gf_const_view<imfreq> g) {
+  //-------------------------------------------------------
+  // For Imaginary Matsubara Frequency functions
+  // ------------------------------------------------------
+  arrays::matrix<dcomplex> density(gf_const_view<imfreq> g) {
 
-  if (g.mesh().positive_only())
-   TRIQS_RUNTIME_ERROR << "density is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
+    if (g.mesh().positive_only())
+      TRIQS_RUNTIME_ERROR << "density is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
 
-  auto [tail, err] = get_tail(g);
-  if (err > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n";
-  if (err > 1e-3) TRIQS_RUNTIME_ERROR << "ERROR: High frequency moments have an error greater than 1e-3.\n";
-  if (first_dim(tail) < 4) TRIQS_RUNTIME_ERROR << "ERROR: Density implementation requires at least a proper 3rd high-frequency moment in tail\n";
-  if (max_element(abs(tail(0,ellipsis()))) > 1e-15) TRIQS_RUNTIME_ERROR << "ERROR: Density implementation requires vanishing 0th moment\n";
+    auto [tail, err] = get_tail(g);
+    if (err > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n";
+    if (err > 1e-3) TRIQS_RUNTIME_ERROR << "ERROR: High frequency moments have an error greater than 1e-3.\n";
+    if (first_dim(tail) < 4) TRIQS_RUNTIME_ERROR << "ERROR: Density implementation requires at least a proper 3rd high-frequency moment in tail\n";
+    auto mt = max_element(abs(tail(0, ellipsis())));
+    if (mt > 1e-12) TRIQS_RUNTIME_ERROR << "ERROR: Density implementation requires vanishing 0th moment\n" << mt;
 
-  if (g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << " imfreq gf: full mesh required in density computation";
-  auto sh = g.target_shape();
-  int N1 = sh[0], N2 = sh[1];
-  arrays::matrix<dcomplex> res(sh);
-  auto beta = g.domain().beta;
-  double b1 = 0, b2 = 1, b3 = -1;
-  auto F = [&beta](dcomplex a, double b) { return -a / (1 + exp(-beta * b)); };
+    if (g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << " imfreq gf: full mesh required in density computation";
+    auto sh = g.target_shape();
+    int N1 = sh[0], N2 = sh[1];
+    arrays::matrix<dcomplex> res(sh);
+    auto beta = g.domain().beta;
+    double b1 = 0, b2 = 1, b3 = -1;
+    auto F = [&beta](dcomplex a, double b) { return -a / (1 + exp(-beta * b)); };
 
-  for (int n1 = 0; n1 < N1; n1++)
-   for (int n2 = n1; n2 < N2; n2++) {
-    dcomplex m1 = tail(1,n1, n2), m2 = tail(2,n1, n2), m3 = tail(3,n1, n2);
-    dcomplex a1 = m1 - m3, a2 = (m2 + m3) / 2, a3 = (m3 - m2) / 2;
-    dcomplex r = 0;
-    for (auto const& w : g.mesh()) r += g[w](n1, n2) - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3));
-    res(n1, n2) = r / beta + m1 + F(a1, b1) + F(a2, b2) + F(a3, b3);
-    if (n2 > n1) res(n2, n1) = conj(res(n1, n2));
-   }
+    for (int n1 = 0; n1 < N1; n1++)
+      for (int n2 = n1; n2 < N2; n2++) {
+        dcomplex m1 = tail(1, n1, n2), m2 = tail(2, n1, n2), m3 = tail(3, n1, n2);
+        dcomplex a1 = m1 - m3, a2 = (m2 + m3) / 2, a3 = (m3 - m2) / 2;
+        dcomplex r = 0;
+        for (auto const &w : g.mesh()) r += g[w](n1, n2) - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3));
+        res(n1, n2) = r / beta + m1 + F(a1, b1) + F(a2, b2) + F(a3, b3);
+        if (n2 > n1) res(n2, n1) = conj(res(n1, n2));
+      }
 
-  return res;
- }
+    return res;
+  }
 
- //-------------------------------------------------------
- dcomplex density(gf_const_view<imfreq, scalar_valued> g) {
-  return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0);
- }
+  //-------------------------------------------------------
+  dcomplex density(gf_const_view<imfreq, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
 
- //-------------------------------------------------------
- arrays::matrix<dcomplex> density(gf_const_view<legendre> gl) {
-  arrays::matrix<dcomplex> res(gl.target_shape());
-  res() = 0.0;
-  for (auto const& l : gl.mesh()) res -= sqrt(2 * l.index() + 1) * gl[l];
-  res /= gl.domain().beta;
-  return res;
- }
-}
-}
+  //-------------------------------------------------------
+  arrays::matrix<dcomplex> density(gf_const_view<legendre> gl) {
+    arrays::matrix<dcomplex> res(gl.target_shape());
+    res() = 0.0;
+    for (auto const &l : gl.mesh()) res -= sqrt(2 * l.index() + 1) * gl[l];
+    res /= gl.domain().beta;
+    return res;
+  }
+} // namespace triqs::gfs
