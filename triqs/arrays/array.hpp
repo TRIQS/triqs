@@ -80,8 +80,8 @@ namespace triqs { namespace arrays {
 
    // rebind the other view, iif this is const, and the other is not.
    template <typename To, bool C = IsConst> ENABLE_IFC(C) rebind(array_view<ValueType, Rank, To, Borrowed, !IsConst> const& X) {
-    this->indexmap_ = X.indexmap_;
-    this->storage_ = X.storage_;
+    this->indexmap_ = X.indexmap();
+    this->storage_ = X.storage();
    }
 
    /// Assignment. The size of the array MUST match exactly, except in the empty case 
@@ -306,7 +306,7 @@ namespace triqs { namespace arrays {
 
   // swap two indices i,j
   template<typename A> 
-    std::enable_if_t<is_amv_value_or_view_class<std::decay_t<A>>::value, typename std::decay_t<A>::view_type>
+    std::enable_if_t<is_amv_value_or_view_class<std::decay_t<A>>::value, typename std::decay_t<A>::const_view_type>
   swap_index_view(A && a, int i, int j) { 
    auto imp = a.indexmap();
    auto l= imp.lengths();
