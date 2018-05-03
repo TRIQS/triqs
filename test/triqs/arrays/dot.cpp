@@ -43,9 +43,9 @@ TEST(Array, Dot2) {
  v(0) = 0;
  v(1) = {0, 1};
 
- EXPECT_NEAR_COMPLEX(blas::dot<false>(v, v), -1);
- EXPECT_NEAR_COMPLEX(blas::dot<true>(v, v), 1);
- EXPECT_NEAR_COMPLEX(dot(v, v), -1);
- EXPECT_NEAR_COMPLEX(dotc(v, v), 1);
+ EXPECT_COMPLEX_NEAR(blas::dot<false>(v, v), -1);
+ EXPECT_COMPLEX_NEAR(blas::dot<true>(v, v), 1);
+ EXPECT_COMPLEX_NEAR(dot(v, v), -1);
+ EXPECT_COMPLEX_NEAR(dotc(v, v), 1);
 }
 MAKE_MAIN

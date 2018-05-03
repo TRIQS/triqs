@@ -92,10 +92,10 @@ TEST(Array, H5) {
   EXPECT_EQ_ARRAY(Af, Bf);
 
   h5_read(top, "D", D2);
-  EXPECT_CLOSE_ARRAY(D, D2);
+  EXPECT_ARRAY_NEAR(D, D2);
 
   h5_read(top, "C", C2);
-  EXPECT_CLOSE_ARRAY(C, C2);
+  EXPECT_ARRAY_NEAR(C, C2);
 
   array<long,2> a_sli;
   h5_read(top, "A_slice", a_sli);
@@ -142,7 +142,7 @@ TEST(Array, H5RealIntoComplex) {
   h5::file file("ess_real_complex.h5", 'r');
   h5::group top(file);
   h5_read(top, "D", C);
-  EXPECT_CLOSE_ARRAY(C, D);
+  EXPECT_ARRAY_NEAR(C, D);
  }
 }
 

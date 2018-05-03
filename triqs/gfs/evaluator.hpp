@@ -58,9 +58,20 @@ namespace gfs {
    if (g.mesh().positive_only()) {
     int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
     if (g.mesh().is_within_boundary(-f.n - sh)) return r_t{conj(g[-f.n - sh])};
+    TRIQS_RUNTIME_ERROR << " ERROR: Cannot evaluate Green function with positive only mesh outside grid ";
    }
-   TRIQS_RUNTIME_ERROR << " Evaluator not implemented";
-   //return ?
+
+   auto [tail, err] = get_tail(g, false);
+
+   dcomplex x = g.mesh().omega_max() / f;
+   typename G::zero_regular_t res = g.get_zero();
+
+   dcomplex z = 1.0; 
+   for( int n : range(first_dim(tail))){
+     res += tail(n,ellipsis()) * z;
+     z = z * x;
+   }
+   return res; 
   }
 
   // int -> replace by matsubara_freq

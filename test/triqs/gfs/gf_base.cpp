@@ -71,6 +71,36 @@ TEST(Gf, Base) {
 }
 
 // Test the technique to avoid the infinity
+TEST(Gf, EvaluatorMatrix) { 
+
+ double beta = 1;
+ auto g = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {2, 2}};
+
+ triqs::clef::placeholder_prime<0> om_;
+ g(om_) << 1/ (om_ + 2.3);
+
+ auto f = matsubara_freq{120, beta, Fermion};
+ auto exact = matrix<dcomplex>{{1/(f+2.3), 0_j}, {0_j, 1/(f+2.3)}};
+
+ EXPECT_ARRAY_NEAR(g(f), exact, 1e-14); 
+}
+
+// Test the technique to avoid the infinity
+TEST(Gf, EvaluatorScalar) { 
+
+ double beta = 1;
+ auto g = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};
+
+ triqs::clef::placeholder_prime<0> om_;
+ g(om_) << 1/ (om_ + 2.3);
+
+ auto f = matsubara_freq{120, beta, Fermion};
+ auto exact = 1/(f+2.3);
+
+ EXPECT_COMPLEX_NEAR(g(f), exact, 1e-14); 
+}
+
+// Test the technique to avoid the infinity
 TEST(Gf, PhNoInfinity) { 
 
  double beta = 1;
@@ -103,7 +133,7 @@ TEST(Gf, ZeroS) {
 
  double beta = 1;
  auto g = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
- EXPECT_NEAR_COMPLEX(g.get_zero(), 0);
+ EXPECT_COMPLEX_NEAR(g.get_zero(), 0);
 }
 
 TEST (Gf, SliceTargetScalar) { 

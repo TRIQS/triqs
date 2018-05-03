@@ -35,7 +35,7 @@ TEST(H5Serialize, All) {
  auto a = array<double, 1>{1, 2, 3, 4, 5};
  auto s = serialize(a);
  auto b = deserialize<array<double, 1>>(s);
- EXPECT_CLOSE_ARRAY(a, b);
+ EXPECT_ARRAY_NEAR(a, b);
 
  auto s2 = serialize(array<double, 1>(10000));
  auto s3 = serialize(array<double, 1>(20000));

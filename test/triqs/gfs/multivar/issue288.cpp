@@ -17,8 +17,8 @@ TEST(GfCartesian, H5_RW_EvaluatorS) {
  auto W10 = matsubara_freq(10, beta, Boson);
  auto W0 = matsubara_freq(0, beta, Boson);
 
- EXPECT_NEAR_COMPLEX(g(w0, W0), g2(w0, W0), 1.e-13);
- EXPECT_NEAR_COMPLEX(g(w0, W10), g2(w0, W10), 1.e-13);
+ EXPECT_COMPLEX_NEAR(g(w0, W0), g2(w0, W0), 1.e-13);
+ EXPECT_COMPLEX_NEAR(g(w0, W10), g2(w0, W10), 1.e-13);
 }
 
 
