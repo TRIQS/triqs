@@ -21,7 +21,6 @@
 import warnings, numpy as np
 from pytriqs.gf.gf import Gf
 from pytriqs.gf.meshes import MeshImTime
-from tool_gfloc import *
 
 class GfImTime(Gf) : 
     """
@@ -46,10 +45,6 @@ class GfImTime(Gf) :
              If true, and target_shape is set, the data will be real.
              No effect with the parameter data.
 
-    singularity or tail : TailGfXXX, optional
-                 One of the singularity of the module 'singularities'
-                 If not present singularity is None.
-
     indices: GfIndices or list of str or list of list of str, Optional
              Optional string indices for the target space, to allow e.g g['eg', 'eg']
              list of list of str: the list of indices for each dimension.
@@ -63,7 +58,7 @@ class GfImTime(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
-        def delegate(self, mesh=None, data = None, target_shape=None, singularity = None, tail = None, indices = None, name='', n_points = 10000, beta = None, statistic = 'Fermion'):
+        def delegate(self, mesh=None, data = None, target_shape=None, indices = None, name='', n_points = 10000, beta = None, statistic = 'Fermion'):
             if mesh is None:
                 assert isinstance(beta, (int, long, float)), "If the Mesh is not given, beta is mandatory and must be float"
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
@@ -73,8 +68,6 @@ class GfImTime(Gf) :
                       mesh = mesh, 
                       data = data, 
                       target_shape = target_shape,
-                      singularity = tail or singularity,
-                      _singularity_maker = make_singularity_maker(tail, singularity),
                       indices = indices, 
                       name = name) 
         delegate(self, **kw)
