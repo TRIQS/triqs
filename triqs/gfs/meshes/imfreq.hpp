@@ -173,9 +173,9 @@ namespace triqs::gfs {
     // -------------------- tail -------------------
 
     void set_tail_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) const {
-      _n_tail_max = n_tail_max;
+      _n_tail_max    = n_tail_max;
       _tail_fraction = tail_fraction;
-      _rcond = rcond;
+      _rcond         = rcond;
       for (auto &l : _lss) l.reset();
       _vander.reset();
       _fit_idx_lst.reset();
@@ -210,7 +210,7 @@ namespace triqs::gfs {
       int n_pts_in_fit_range = int(std::round(_tail_fraction * _n_pts));
 
       // Number of points used for the fit
-      int n_tail      = n_pts_in_tail();
+      int n_tail = n_pts_in_tail();
 
       std::vector<long> idx_vec;
       idx_vec.reserve(2 * n_tail);
@@ -251,10 +251,10 @@ namespace triqs::gfs {
       int n_max = std::min(size_t{9}, first_dim(*_vander) / 2);
       for (int n = n_max; n >= n_fixed_moments; --n) {
         auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>((*_vander)(range(), range(n_fixed_moments, n + 1)));
-        if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond){
+        if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond) {
           _lss[n_fixed_moments] = std::move(ptr);
           break;
-	}
+        }
       }
       if (!_lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
     }
@@ -283,9 +283,10 @@ namespace triqs::gfs {
       using triqs::utility::enumerate;
 
       // The values of the Green function. Swap relevant mesh to front
-      auto g_data_swap_idx = swap_index_view(g_data, 0, n);
-      auto const &imp      = g_data_swap_idx.indexmap();
-      long ncols           = imp.size() / imp.lengths()[0];
+      auto g_data_swap_idx = g_data;
+      for (int i = n; i > 0; --i) g_data_swap_idx.rebind(swap_index_view(g_data_swap_idx, i - 1, i));
+      auto const &imp = g_data_swap_idx.indexmap();
+      long ncols      = imp.size() / imp.lengths()[0];
 
       // We flatten the data in the target space and remaining meshes into the second dim
       arrays::matrix<dcomplex> g_mat(2 * m.n_pts_in_tail(), ncols);
@@ -484,9 +485,9 @@ namespace triqs::gfs {
     int _n_pts;
     matsubara_mesh_opt _opt;
     long _first_index, _last_index, _first_index_window, _last_index_window;
-    mutable int _n_tail_max = 30;
+    mutable int _n_tail_max       = 30;
     mutable double _tail_fraction = 0.2;
-    mutable double _rcond = 1e-4;
+    mutable double _rcond         = 1e-4;
     mutable std::array<std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
     mutable std::shared_ptr<arrays::matrix<dcomplex>> _vander;
     mutable std::shared_ptr<std::vector<long>> _fit_idx_lst;
