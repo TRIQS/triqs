@@ -63,6 +63,8 @@ namespace gfs {
   // one var
   template <typename S> static decltype(auto) invoke(S& data, long i) { return data(i); }
 
+
+  // FIXME : WHY is this necessary in this case ? can we simplify ?
   // multi var
   // using the standard technique from tuple::apply with a sequence
   template <typename S, typename Tu, size_t... Is>

@@ -147,28 +147,29 @@ class Fourier (Base):
     r"""
     The Fourier transform as a lazy expression
     """
-    def __init__ (self, G):
+    def __init__ (self, G, *args, **kw):
         """:param G: :math:`G`, the function to be transformed. Must in the time domain"""
         Base.__init__(self, G = G)
-
+        self.args, self.kw = args, kw
     def __str__(self): return "Fourier of gf"
 
     def __call__(self,G2):
-        G2.set_from_fourier(self.G)
+        G2.set_from_fourier(self.G, *self.args, **self.kw)
         return G2
 
 class InverseFourier (Base):
     r"""
     The Inverse Fourier transform as a lazy expression
     """
-    def __init__ (self, G):
+    def __init__ (self, G, *args, **kw):
         """:param G: :math:`G`, the function to be transformed. Must in the frequency domain"""
         Base.__init__(self, G = G)
+        self.args, self.kw = args, kw
 
     def __str__(self): return "InverseFourier of gf"
 
     def __call__(self,G2):
-        G2.set_from_inverse_fourier(self.G)
+        G2.set_from_inverse_fourier(self.G, *self.args, **self.kw)
         return G2
 
 class LegendreToMatsubara (Base):
