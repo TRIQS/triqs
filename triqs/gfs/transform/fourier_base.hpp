@@ -50,20 +50,20 @@ namespace triqs { namespace gfs {
  // TO BE REPLACED BY A DIRECT CALL to many_fft in fftw, like for lattice case.
  // The implementation of the Fourier transformation
  // Reduce Matrix case to the scalar case.
- template <typename X, typename Y>
- void _fourier_impl(gf_view<X, matrix_valued> gw, gf_const_view<Y, matrix_valued> gt) {
+ template <typename X, typename Y, typename... A>
+ void _fourier_impl(gf_view<X, matrix_valued> gw, gf_const_view<Y, matrix_valued> gt, A... args) {
   if (gt.target_shape() != gw.target_shape())
    TRIQS_RUNTIME_ERROR << "Fourier : matrix size of target mismatch";
   for (size_t n1 = 0; n1 < gt.target_shape()[0]; n1++)
    for (size_t n2 = 0; n2 < gt.target_shape()[1]; n2++) {
     auto gw_sl = slice_target_to_scalar(gw, n1, n2);
     auto gt_sl = slice_target_to_scalar(gt, n1, n2);
-    _fourier_impl(gw_sl, gt_sl);
+    _fourier_impl(gw_sl, gt_sl, args...);
    }
  }
 
  // tensor_valued.
- template <typename X, typename Y> void _fourier_impl(gf_view<X, tensor_valued<3>> gw, gf_const_view<Y, tensor_valued<3>> gt) {
+ template <typename X, typename Y, typename... A> void _fourier_impl(gf_view<X, tensor_valued<3>> gw, gf_const_view<Y, tensor_valued<3>> gt, A... args) {
   if (gt.target_shape() != gw.target_shape())
    TRIQS_RUNTIME_ERROR << "Fourier : tensor size of target mismatch";
   for (size_t n1 = 0; n1 < gt.target_shape()[0]; n1++)
@@ -71,14 +71,14 @@ namespace triqs { namespace gfs {
     for (size_t n3 = 0; n3 < gt.target_shape()[2]; n3++) {
      auto gw_sl = slice_target_to_scalar(gw, n1, n2, n3);
      auto gt_sl = slice_target_to_scalar(gt, n1, n2, n3);
-     _fourier_impl(gw_sl, gt_sl);
+     _fourier_impl(gw_sl, gt_sl, args...);
     }
    }
  }
 
  // tensor_valued.
- template <typename X, typename Y>
- void _fourier_impl(gf_view<X, tensor_valued<4>> gw, gf_const_view<Y, tensor_valued<4>> gt) {
+ template <typename X, typename Y, typename... A>
+ void _fourier_impl(gf_view<X, tensor_valued<4>> gw, gf_const_view<Y, tensor_valued<4>> gt, A... args) {
   if (gt.target_shape() != gw.target_shape())
    TRIQS_RUNTIME_ERROR << "Fourier : tensor size of target mismatch";
   for (size_t n1 = 0; n1 < gt.target_shape()[0]; n1++)
@@ -87,7 +87,7 @@ namespace triqs { namespace gfs {
      for (size_t n4 = 0; n4 < gt.target_shape()[3]; n4++) {
       auto gw_sl = slice_target_to_scalar(gw, n1, n2, n3, n4);
       auto gt_sl = slice_target_to_scalar(gt, n1, n2, n3, n4);
-      _fourier_impl(gw_sl, gt_sl);
+      _fourier_impl(gw_sl, gt_sl, args...);
      }
     }
    }

@@ -40,15 +40,8 @@ namespace gfs {
 
   //-------------------------------------
 
-  void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt) {
-   direct_impl(gw, gt);
-  }
-
-  //-------------------------------------
-
-  private:
   // FIXME Generalize to matrix / tensor_valued gf
-  void direct_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, dcomplex m2 = 0.0, dcomplex m3 = 0.0) {
+  void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, dcomplex m2 = 0.0, dcomplex m3 = 0.0) {
 
    double beta = gt.mesh().domain().beta;
    auto L = gt.mesh().size() - 1;
@@ -106,7 +99,6 @@ namespace gfs {
    for (auto const& w : gw.mesh()) gw[w] = g_out((w.index() + L) % L) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
   }
 
-  public:
   //-------------------------------------
 
   // FIXME Generalize to matrix / tensor_valued gf
@@ -184,9 +176,9 @@ namespace gfs {
  //--------------------------------------------
 
  // Direct transformation imtime -> imfreq, with a tail
- void _fourier_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt) {
+ void _fourier_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, dcomplex m2, dcomplex m3) {
   impl_worker w;
-  w.direct(gw, gt);
+  w.direct(gw, gt, m2, m3);
  }
 
 
