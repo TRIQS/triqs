@@ -59,8 +59,8 @@ m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", d
 m.add_function("void enforce_discontinuity(gf_view<legendre, matrix_valued> gl, matrix_view<double> disc)", doc = """Modify the coefficient to adjust discontinuity""")
 
 # set_from_fourier
-m.add_function("void set_from_fourier(gf_view<imfreq, matrix_valued> gw, gf_view<imtime, matrix_valued> gt)",
-               calling_pattern = "gw = fourier(gt)",
+m.add_function("void set_from_fourier(gf_view<imfreq, matrix_valued> gw, gf_view<imtime, matrix_valued> gt, dcomplex m2 = 0, dcomplex m3 = 0)",
+               calling_pattern = "_fourier_impl(gw, make_const_view(gt), m2, m3)",
                doc = """Fills self with the Fourier transform of gt""")
 
 m.add_function("void set_from_fourier(gf_view<refreq, matrix_valued> gw, gf_view<retime, matrix_valued> gt)",

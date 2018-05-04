@@ -38,7 +38,7 @@ namespace gfs {
   return {g};
  }
 
- void _fourier_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt);
+ void _fourier_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, dcomplex m2 = 0, dcomplex m3 = 0);
  void _fourier_impl(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw);
 
  /**

@@ -40,21 +40,36 @@ namespace gfs {
 
   //-------------------------------------
 
-  void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt) {
-   direct_impl(gw, gt);
-  }
-
-  //-------------------------------------
-
-  private:
   // FIXME Generalize to matrix / tensor_valued gf
-  void direct_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, dcomplex m2 = 0.0, dcomplex m3 = 0.0) {
+  void direct(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, dcomplex m2 = 0.0, dcomplex m3 = 0.0) {
 
    double beta = gt.mesh().domain().beta;
    auto L = gt.mesh().size() - 1;
    if (L < 2*(gw.mesh().last_index()+1))
     TRIQS_RUNTIME_ERROR << "Fourier: The time mesh mush be at least twice as long as the number of positive frequencies :\n gt.mesh().size() =  " << gt.mesh().size()
                         << " gw.mesh().last_index()" << gw.mesh().last_index();
+
+   auto d_vec = vector<dcomplex>(7);
+   for (int m : range(1, 8)) d_vec[m - 1] = (gt[m] - gt[0]) / gt.mesh()[m];
+   
+   // Inverse of the Vandermonde matrix V_{m,j} = m^{j-1}
+   auto V_inv = matrix<dcomplex>{
+      {7.000000000000351, -21.00000000000213, 35.00000000000503, -35.00000000000608, 21.000000000003606, -7.000000000001135, 1.000000000000174},
+      {-11.150000000000887, 43.95000000000505, -79.08333333334492, 82.00000000001403, -50.25000000000872, 16.98333333333621, -2.450000000000441},
+      {7.088888888889711, -32.74166666667111, 64.83333333334329, -70.69444444445642, 44.666666666674445, -15.408333333336019, 2.255555555555966},
+      {-2.312500000000358, 11.833333333335242, -25.395833333337578, 29.333333333338373, -19.270833333336668, 6.83333333333452,
+       -1.0208333333335127},
+      {0.409722222222303, -2.25000000000043, 5.145833333334286, -6.277777777778903, 4.3125000000007505, -1.5833333333336026,
+       0.24305555555559613},
+      {-0.037500000000009116, 0.21666666666671525, -0.5208333333334408, 0.6666666666667935, -0.47916666666675145, 0.18333333333336377,
+       -0.029166666666671254},
+      {0.001388888888889295, -0.008333333333335498, 0.02083333333333812, -0.027777777777783428, 0.020833333333337107, -0.008333333333334688,
+       0.0013888888888890932}};
+   
+   // Calculate the 2nd
+   auto g_vec = V_inv * d_vec;
+   m2 = g_vec[0];
+   m3 = -g_vec[1] * 2 / gt.mesh().delta();
 
    g_in.resize(L + 1);
    g_out.resize(L);
@@ -106,7 +121,6 @@ namespace gfs {
    for (auto const& w : gw.mesh()) gw[w] = g_out((w.index() + L) % L) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
   }
 
-  public:
   //-------------------------------------
 
   // FIXME Generalize to matrix / tensor_valued gf
@@ -184,9 +198,9 @@ namespace gfs {
  //--------------------------------------------
 
  // Direct transformation imtime -> imfreq, with a tail
- void _fourier_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt) {
+ void _fourier_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, dcomplex m2, dcomplex m3) {
   impl_worker w;
-  w.direct(gw, gt);
+  w.direct(gw, gt, m2, m3);
  }
 
 
