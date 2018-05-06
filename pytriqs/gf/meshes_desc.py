@@ -1,8 +1,6 @@
 from cpp2py.wrap_generator import *
 import re
 
-import pytriqs.lattice 
-
 module = module_(full_name = "pytriqs.gf.meshes", doc = "All the meshes", app_name="triqs")
 
 module.add_include("<triqs/gfs.hpp>")

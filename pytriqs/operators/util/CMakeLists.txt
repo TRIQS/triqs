@@ -8,7 +8,6 @@ SET(PYTHON_SOURCES
 )
 
 add_cpp2py_module(extractors)
-add_dependencies(extractors operators)
 
 install(FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators/util)
 install(TARGETS extractors DESTINATION ${TRIQS_PYTHON_LIB_DEST}/operators/util)

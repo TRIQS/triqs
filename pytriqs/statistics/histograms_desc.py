@@ -70,7 +70,6 @@ f.add_overload(calling_pattern = '<<', signature = 'self_t& (triqs::statistics::
 f.treat_as_inplace = True
 c.number_protocol['lshift'] = f
 
-c.add_pure_python_method("pytriqs.statistics.histogram.plot", rename = "_plot_")
 
 module.add_class(c)
 

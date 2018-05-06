@@ -24,19 +24,19 @@ module = module_(full_name = "pytriqs.atom_diag.atom_diag",
                  doc = "Lightweight exact diagonalization solver",
                  app_name = "triqs")
 
-import pytriqs.gf
-import pytriqs.operators
-
 module.add_preamble("""
 #include <cpp2py/converters/pair.hpp>
 #include <cpp2py/converters/vector.hpp>
 #include <cpp2py/converters/map.hpp>
+#include <cpp2py/converters/variant.hpp>
 
 #include <triqs/atom_diag/atom_diag.hpp>
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
 
 #include <triqs/cpp2py_converters/arrays.hpp>
+#include <triqs/cpp2py_converters/gf.hpp>
+#include <triqs/cpp2py_converters/h5.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
 #include <triqs/cpp2py_converters/fundamental_operator_set.hpp>
 

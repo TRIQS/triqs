@@ -4,9 +4,6 @@ import re
 # This modules contains utilities that will only be called internally, not by users.
 m = module_(full_name = "pytriqs.gf.wrapped_aux", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
 
-import meshes
-import gf_fnt
-
 m.add_include("<triqs/gfs.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")
 

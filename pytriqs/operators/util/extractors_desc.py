@@ -1,7 +1,5 @@
 from cpp2py.wrap_generator import *
 
-import pytriqs.operators
-
 # pytriqs.operators.util.extractors module
 module = module_(full_name = "pytriqs.operators.util.extractors",
                  doc = "Functions to extract coefficients from many-body operators",

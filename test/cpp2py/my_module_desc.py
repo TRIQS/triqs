@@ -6,6 +6,7 @@ module = module_(full_name = "my_module", doc = " Doc of my_module ")
 module.add_include("<triqs/../test/cpp2py/a.hpp>")
 module.add_include("<triqs/arrays.hpp>")
 
+module.add_include("<triqs/cpp2py_converters.hpp>")
 module.add_include("<cpp2py/converters/vector.hpp>")
 module.add_include("<cpp2py/converters/map.hpp>")
 module.add_include("<cpp2py/converters/pair.hpp>")
@@ -13,7 +14,6 @@ module.add_include("<cpp2py/converters/set.hpp>")
 module.add_include("<cpp2py/converters/tuple.hpp>")
 module.add_include("<cpp2py/converters/variant.hpp>")
 
-module.add_include("<triqs/cpp2py_converters.hpp>")
 
 
 
@@ -69,20 +69,8 @@ g.add_call(signature = "int(int u)", doc = "call op")
 g.add_getitem(signature = "double(int i)", doc = " doc [] ")
 g.add_setitem(signature = "void(int i, double v)", doc = " doc [] set ")
 
-# We can also add the call to a pure python function !
-g.add_pure_python_method("cpp2py.aux.pure_py1")
 
-def ffg2(self, *args, **kw) : 
-    """ my doc of the function ffg2 """
-    print "calling ffg2 [inline], with :"
-    print args
-    print self.sm(3)
-    print kw
-    #return [2*x for x in args], kw
-    print dir()
-    return tuple(2*x for x in args), kw
 
-g.add_pure_python_method(ffg2)
 
 # public members -> as properties
 g.add_member(c_name = "x", c_type = "double", doc = "x field of A ....")
@@ -138,9 +126,6 @@ def f1(x,y):
     print tuple([x])
     assert x>0, "an horrible error"
 
-# The code of f1 will be copied verbatim in the module, and compiled at the
-# initialisation of the module
-module.add_python_function(f1)
 
 if __name__ == '__main__' : 
    module.generate_code()

@@ -1,6 +1,5 @@
 from cpp2py.wrap_generator import *
 
-
 # The many_body_operators module
 module = module_(full_name = "pytriqs.operators.operators", doc = "Doc to be written", app_name="triqs")
 
