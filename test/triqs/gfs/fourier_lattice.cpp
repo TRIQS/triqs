@@ -1,23 +1,35 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/gfs.hpp>
 
-TEST(Gfs, FourierLattice) {
+// Generic Fourier test function for different ranks
+template <int TARGET_RANK> void test_fourier() {
   double precision = 10e-9;
   triqs::clef::placeholder<0> r_;
   double beta = 1;
   int N       = 2;
 
+  mini_vector<size_t, TARGET_RANK> shape{};
+
+  if constexpr (TARGET_RANK == 2) // Matrix_valued
+    shape = make_shape(2, 2);
+  else if constexpr (TARGET_RANK == 3) // Tensor_valued<3>
+    shape = make_shape(2, 2, 2);
+  else if constexpr (TARGET_RANK == 4) // Tensor_valued<4>
+    shape = make_shape(2, 2, 2, 2);
+
+  using target_t = typename _target_from_type_rank<dcomplex, TARGET_RANK>::type;
+
   auto bl = bravais_lattice{make_unit_matrix<double>(2)};
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
-  auto Gr = gf<cyclic_lattice, matrix_valued>{{N, N}, {2, 2}};
+  auto Gr = gf<cyclic_lattice, target_t>{{N, N}, shape};
   Gr(r_) << exp(-r_(0));
 
-  auto Gk1 = gf<brillouin_zone, matrix_valued>{{bz, N}, {2, 2}};
+  auto Gk1 = gf<brillouin_zone, target_t>{{bz, N}, shape};
   Gk1()    = fourier(Gr);
 
   ///verification that TF(TF^-1)=Id
-  auto Grb = gf<cyclic_lattice, matrix_valued>{{N, N}, {2, 2}};
+  auto Grb = gf<cyclic_lattice, target_t>{{N, N}, shape};
   Grb()    = inverse_fourier(Gk1);
   EXPECT_GF_NEAR(Gr, Grb, precision);
 
@@ -29,9 +41,15 @@ TEST(Gfs, FourierLattice) {
 
   // Test EXCEPTION for non-diagonal periodization matrix
   auto per_mat = matrix<int>{{{2, 1, 0}, {-1, 2, 0}, {0, 0, 1}}};
-  Gr           = gf<cyclic_lattice, matrix_valued>{{bl, per_mat}, {2, 2}};
+  Gr           = gf<cyclic_lattice, target_t>{{bl, per_mat}, shape};
   Gr(r_) << exp(-r_(0));
-  Gk1 = gf<brillouin_zone, matrix_valued>{{bz, per_mat}, {2, 2}};
+  Gk1 = gf<brillouin_zone, target_t>{{bz, per_mat}, shape};
   EXPECT_THROW(Gk1() = fourier(Gr), triqs::runtime_error);
 }
+
+TEST(FourierLattice, Scalar) { test_fourier<0>(); }
+TEST(FourierLattice, Matrix) { test_fourier<2>(); }
+TEST(FourierLattice, Tensor3) { test_fourier<3>(); }
+TEST(FourierLattice, Tensor4) { test_fourier<4>(); }
+
 MAKE_MAIN;
