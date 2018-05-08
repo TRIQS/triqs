@@ -26,8 +26,6 @@ namespace h5 {
 
  namespace {
 
-  // TODO : Fix complex number ....
-
   // S must be scalar
   template <typename S> void h5_write_impl(group g, std::string const &key, S a) {
 
@@ -102,7 +100,7 @@ namespace h5 {
  void h5_write(group g, std::string const &name, unsigned long long const &x) { h5_write_impl(g, name, x); }
  void h5_write(group g, std::string const &name, size_t const &x) { h5_write_impl(g, name, x); }
  void h5_write(group g, std::string const &name, char const &x) { h5_write_impl(g, name, x); }
- void h5_write(group g, std::string const &name, bool const &x) { h5_write_impl(g, name, x); }
+ //void h5_write(group g, std::string const &name, bool const &x) { h5_write_impl(g, name, x); }
  void h5_write(group g, std::string const &name, double const &x) { h5_write_impl(g, name, x); }
  //void h5_write(group g, std::string const &name, std::complex<double> const &x) { h5_write_impl(g, name, x); }
  void h5_write(group g, std::string const &name, std::complex<double> const &x) {
@@ -117,9 +115,11 @@ namespace h5 {
  void h5_read(group g, std::string const &name, unsigned long long &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, size_t &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, char &x) { h5_read_impl(g, name, x); }
- void h5_read(group g, std::string const &name, bool &x) { h5_read_impl(g, name, x); }
+ //void h5_read(group g, std::string const &name, bool &x) { h5_read_impl(g, name, x); }
  void h5_read(group g, std::string const &name, double &x) { h5_read_impl(g, name, x); }
  //void h5_read(group g, std::string const &name, std::complex<double> &x) { h5_read_impl(g, name, x); }
+ 
+ // special case : complex
  void h5_read(group g, std::string const &name, std::complex<double> &x) { 
   triqs::h5::group gr = g.open_group(name);
   double r,i;
@@ -127,6 +127,39 @@ namespace h5 {
   h5_read(gr,"i",i);
   x = std::complex<double>{r,i};
  }
+ 
+ datatype bool_datatype() { 
+   datatype bool_enum_t = H5Tenum_create(H5T_NATIVE_CHAR);
+   char val;
+   H5Tenum_insert(bool_enum_t, "FALSE",   (val=0,&val));
+   H5Tenum_insert(bool_enum_t, "TRUE",    (val=1,&val));
+   return bool_enum_t; 
+ } 
+
+ // special case : bool. Same code as the general case
+ void h5_write(group g, std::string const &key, bool const &x) { 
+   g.unlink_key_if_exists(key);
+   datatype dt = bool_datatype();
+   dataspace space = H5Screate(H5S_SCALAR);
+   auto ds = g.create_dataset(key, dt, space);
+   auto err = H5Dwrite(ds, dt, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void *)(&x));
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the scalar dataset " << key << " in the group" << g.name();
+  }
+
+ // Seems to work with the default function (read as integer), but it is cleaner to implement a proper read function 
+ // with the enum.
+ void h5_read(group g, std::string const &name, bool &x) {
+   dataset ds = g.open_dataset(name);
+   dataspace d_space = H5Dget_space(ds);
+   // check that rank is 0, it is a scalar.
+   int rank = H5Sget_simple_extent_ndims(d_space);
+   if (rank != 0)
+    TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : expecting a scalar (rank =0)"
+                        << " while the array stored in the hdf5 file has rank = " << rank;
+   datatype dt = bool_datatype();
+   herr_t err = H5Dread(ds, dt, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void *)(&x));
+   if (err < 0) TRIQS_RUNTIME_ERROR << "Error reading the scalar dataset " << name << " in the group" << g.name();
+  }
 
  void h5_write_attribute(hid_t id, std::string const &name, int x) { h5_write_attribute_mpl(id, name, x); }
  void h5_write_attribute(hid_t id, std::string const &name, long x) { h5_write_attribute_mpl(id, name, x); }

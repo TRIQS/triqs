@@ -7,23 +7,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.hpp" DESTINATION "include/tri
 # ---------------------------------
 
 # all .cpp files to get the dependencies
-FILE(GLOB_RECURSE ALLHEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.hpp *.h *.hxx)
 FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
-
-# remove the .mako.?pp from the build
-# they are not preprocessed by cmake
-foreach (TMP_PATH ${ALLHEADERS})
-    string (FIND ${TMP_PATH} ".mako." EXCLUDE_DIR_FOUND)
-    if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
-        list (REMOVE_ITEM ALLHEADERS ${TMP_PATH})
-    endif ()
-endforeach()
-foreach (TMP_PATH ${ALLSOURCES})
-    string (FIND ${TMP_PATH} ".mako." EXCLUDE_DIR_FOUND)
-    if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
-        list (REMOVE_ITEM ALLSOURCES ${TMP_PATH})
-    endif ()
-endforeach()
 
 # ---------------------------------
 #  Define triqs target 
@@ -102,6 +86,15 @@ separate_arguments(MPI_C_COMPILE_FLAGS) # Convert to list
 target_compile_options(triqs PUBLIC ${MPI_C_COMPILE_FLAGS})
 target_include_directories(triqs SYSTEM PUBLIC ${MPI_C_INCLUDE_PATH})
 target_link_libraries(triqs ${MPI_C_LIBRARIES}  ${MPI_CXX_LIBRARIES})
+if(NOT MPIEXEC_EXECUTABLE) # Backward compatibility for older FindMPI.cmake
+  set(MPIEXEC_EXECUTABLE ${MPIEXEC} CACHE FILENAME "MPI Executable")
+endif()
+# Compatibility to Open-MPI 3.0.0: check whether MPI executable has option --oversubscribe and add it 
+execute_process(COMMAND ${MPIEXEC_EXECUTABLE} --oversubscribe ${MPIEXEC_NUMPROC_FLAG} 4 ${MPIEXEC_PREFLAGS} ls ${MPIEXEC_POSTFLAGS} RESULT_VARIABLE HAS_NO_OVERSUBSCRIBE OUTPUT_QUIET ERROR_QUIET)
+if(NOT HAS_NO_OVERSUBSCRIBE)
+  list(APPEND MPIEXEC_PREFLAGS --oversubscribe)
+  set(MPIEXEC_PREFLAGS ${MPIEXEC_PREFLAGS} CACHE STRING "These flags will be directly before the executable that is being run by mpiexec." FORCE)
+endif()
 
 # ---------------------------------
 # Boost
@@ -137,20 +130,6 @@ if (NOT _max_align_t_is_correct)
  target_compile_definitions(triqs PUBLIC TRIQS_ADD_MAX_ALIGN_T_WORKAROUND)
 else ()
   MESSAGE(STATUS "Checked max_align_t. No workaround needed")
-endif()
-
-# ---------------------------------
-# Check availability of <optional>
-# ---------------------------------
-
-# should be move to config.h ?
-
-try_compile(has_optional_header ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/has_optional.cpp COMPILE_DEFINITIONS -std=c++17)
-if (NOT has_optional_header)
- message(STATUS "Using <experimental/optional> header instead of <optional>")
-else ()
- message(STATUS "<optional> header is available. No workaround needed")
- target_compile_definitions(triqs PUBLIC HAS_OPTIONAL_HEADER)
 endif()
 
 # ---------------------------------
@@ -280,8 +259,4 @@ install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
 install(EXPORT triqs-targets DESTINATION share/cmake)
 
 # Install headers 
-FOREACH(HEADER ${ALLHEADERS})
- get_filename_component(P ${HEADER} PATH)
- install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${HEADER}" DESTINATION "include/triqs/${P}")
-ENDFOREACH()
-
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h" PATTERN "*.hxx" PATTERN "*.mako.*" EXCLUDE)

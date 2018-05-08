@@ -44,7 +44,6 @@ namespace operators {
  using many_body_operator = many_body_operator_generic<real_or_complex>;
  using many_body_operator_real = many_body_operator_generic<double>;
  using many_body_operator_complex = many_body_operator_generic<std::complex<double>>;
- inline std::string get_triqs_hdf5_data_scheme(many_body_operator const&) { return "Operator"; }
 
  //-----------------------------------------------------------------------------------------
 
@@ -98,17 +97,26 @@ namespace operators {
 
   monomials_map_t monomials;
 
-  friend void h5_write(h5::group g, std::string const& name, many_body_operator const& op);
   friend void h5_write(h5::group g, std::string const& name, many_body_operator const& op,
                        hilbert_space::fundamental_operator_set const& fops);
+  friend void h5_write(h5::group g, std::string const& name, many_body_operator_generic const& op){
+   h5_write(g, name, op, op.make_fundamental_operator_set());
+  }
 
-  friend void h5_read(h5::group g, std::string const& name, many_body_operator& op);
   friend void h5_read(h5::group g, std::string const& name, many_body_operator& op,
                       hilbert_space::fundamental_operator_set& fops);
+  friend void h5_read(h5::group g, std::string const& name, many_body_operator_generic& op){
+   hilbert_space::fundamental_operator_set fops;
+   many_body_operator op_real_cplx;
+   h5_read(g, name, op_real_cplx, fops);
+   op = std::move(op_real_cplx);
+  }
 
   public:
   using scalar_t = ScalarType;
 
+  static std::string hdf5_scheme() {return  "Operator";}
+  
   many_body_operator_generic() = default;
   many_body_operator_generic(many_body_operator_generic const&) = default;
   many_body_operator_generic(many_body_operator_generic&&) = default;
@@ -125,9 +133,9 @@ namespace operators {
    if (!is_zero(x)) monomials.insert({{}, x});
   }
 
-  struct _cdress; 
+  struct _cdress;
   many_body_operator_generic(_cdress const& term) {
-   normalize_and_insert(term.monomial, term.coef, monomials); 
+   normalize_and_insert(term.monomial, term.coef, monomials);
   }
 
   template <typename S> many_body_operator_generic& operator=(many_body_operator_generic<S> const& x) {
@@ -263,6 +271,10 @@ namespace operators {
    return *this;
   }
 
+  bool operator==(many_body_operator_generic const& op) {
+    return (*this - op).is_zero();
+  }
+   
   // implementation details of dagger
   //
   private:
@@ -286,28 +298,48 @@ namespace operators {
    return res;
   }
 
-  // real
-  friend many_body_operator_generic real(many_body_operator_generic const& op) {
+  /// Transform operator by applying a given functor to each monomial
+  /**
+   * The functor must take two arguments convertible from monomial_t and scalar_t respectively,
+   * and return a value convertible to scalar_t -- new coefficient of the monomial.
+   *
+   @param op Operator to be transformed
+   @param L Functor to apply to each monomial
+   @return Transformed operator
+  */
+  template <typename Lambda>
+  friend many_body_operator_generic transform(many_body_operator_generic const& op, Lambda&& L) {
    many_body_operator_generic res;
-   using triqs::utility::real;
    using triqs::utility::is_zero;
    for (auto const& x : op) {
-    auto c = real(x.coef);
+    auto c = L(x.monomial, x.coef);
     if(!is_zero(c)) res.monomials.insert({x.monomial, c});
    }
    return res;
   }
 
-  // imag
+  /// Given an operator, return its copy with the imaginary parts of all monomial coefficients set to zero
+  /**
+   @param op Operator to be transformed
+   @return Real part of the operator
+  */
+  friend many_body_operator_generic real(many_body_operator_generic const& op) {
+   return transform(op, [](monomial_t const&, scalar_t c) {
+    using triqs::utility::real;
+    return real(c);
+   });
+  }
+
+  /// Given an operator, return its copy with the real parts of all monomial coefficients set to zero
+  /**
+   @param op Operator to be transformed
+   @return Imaginary part of the operator
+  */
   friend many_body_operator_generic imag(many_body_operator_generic const& op) {
-   many_body_operator_generic res;
-   using triqs::utility::imag;
-   using triqs::utility::is_zero;
-   for (auto const& x : op) {
-    auto c = imag(x.coef);
-    if(!is_zero(c)) res.monomials.insert({x.monomial, c});
-   }
-   return res;
+   return transform(op, [](monomial_t const&, scalar_t c) {
+    using triqs::utility::imag;
+    return imag(c);
+   });
   }
 
   // Boost.Serialization

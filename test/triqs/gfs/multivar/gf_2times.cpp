@@ -14,6 +14,8 @@ TEST(Gf, TwoTimes) {
 
  auto G_w_wn2 = gf<cartesian_product<imfreq, imfreq>>(
      {gf_mesh<imfreq>(beta, Fermion, n_im_freq), gf_mesh<imfreq>(beta, Fermion, n_im_freq)}, {2, 2});
+
+ std::cout << G_w_wn2.mesh();
 }
 MAKE_MAIN;
 

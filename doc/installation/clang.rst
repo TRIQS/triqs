@@ -7,59 +7,46 @@
 Using the clang compiler
 ========================
 
-**clang/llvm** is one of the very best C++ compilers, with gcc. It is open
-source on linux and OS X (where it is now the standard compiler provided by
-Apple).
+**clang/llvm** alongside gcc is one of most modern C++ compilers. 
+It is open source with contributers such as Apple and Google, and is currently the default compiler on and Mac OS.
 
-The **clang** compiler is *highly recommended* for anyone developing in C++ since:
+We *highly recommend* the **clang** compiler for anyone developing C++ since:
 
-* It is standard compliant (C++11).
-* It has very nice and useful error messages, much nicer than intel or gcc (even thought gcc is catching up).
-  It really makes little sense to develop with e.g. gcc 4.6 today, especially with a library like TRIQS,
-  which uses a lot of metaprogramming.
+* It is compliant with the most recent C++ language standards.
+* It has expressive and clear error messages, superior to intel and gcc.
+* It is a developed as a drop-in replacement for the more wide-spread gcc (i.e. almost identical usage)
 
 Note, however, that for *production* compilations, gcc, especially recent versions, still produces in general
-a slighly more optimal code for TRIQS applications, even if the differences are small. In fact, a bug in the
-compiler was recently found and reported.
+a slighly more optimal code for TRIQS applications, even if the differences are small.
 
-It is highly recommended to use the latest stable version on Linux (3.4), and the default compiler on OS X (Mountain lion).
+It is highly recommended to use the latest stable version on Linux and the default compiler on Mac OS.
 
 Get and install clang on linux
 ------------------------------
 
 Precompiled versions are available at the `LLVM dowload page <http://llvm.org/releases/download.html>`_.
-Just untar them and add the directory in your path.
+We have provided :ref:`instructions <clang_ubuntu>` on how to install a recent clang on Ubuntu.
 
-It is also very easy to compile **clang** from source, just follow the
-`instructions <http://clang.llvm.org/get_started.html#build>`_.
+Alternatively, for the more experienced user, the most recent version of **clang** can be
+`compiled from source <http://clang.llvm.org/get_started.html#build>`_.
 
 Usage
 -----
 
-In order to use clang when building TRIQS::
+In order to use clang for building TRIQS and its applications, one should::
 
-   CXX=clang++ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../triqs.src + other options
+   export C=clang
+   export CXX=clang++
 
-.. note::
-
-   On OS X, the options -std=c++11 and -stdlib=libc++ are automatically added by the TRIQS
-   installation script.
+before the cmake configuration step in the install instructions.
 
 libclang
 ----------
 
-Some tools for developers (e.g. automatically C++/Python wrapper generation), use libclang
-(delivered with clang), and its python bindings (usually not given).
+Some tools for developers (such as the `Cpp2Py <http://github.com/triqs/cpp2py>`_ wrapping tool) make use of
+the libclang library (commonly installed with llvm/clang) and its Python bindings (usually not given).
 
-The latest version is necessary.
+The latter can be installed either via the package manager of your distribution
+or into a :ref:`Python virtual environment <python_virtualenv>` via::
 
-A pip package, updated to the latest version, is on github.
-Install it simply with ::
-
-  pip install -e git+https://github.com/parcollet/python-clang.git#egg=clang
-
-To uninstall it (or another version) ::
-
-  pip uninstall clang
-
-
+  pip install clang

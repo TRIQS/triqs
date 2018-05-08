@@ -20,5 +20,5 @@ The tail of a given ``gf<imfreq>/gf<block_index, gf<imfreq>> gw`` can be fitted 
 Example
 ~~~~~~~~
 
-.. triqs_example:: ./fit_tail_0.cpp
+.. triqs_example:: ./tail_1.cpp
 

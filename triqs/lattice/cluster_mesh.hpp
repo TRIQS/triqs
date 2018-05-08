@@ -202,7 +202,7 @@ namespace gfs {
   /// Write into HDF5
   friend void h5_write_impl(h5::group fg, std::string subgroup_name, cluster_mesh const& m, const char * _type) {
    h5::group gr = fg.create_group(subgroup_name);
-   gr.write_triqs_hdf5_data_scheme_as_string(_type);
+   gr.write_hdf5_scheme_as_string(_type);
    h5_write(gr, "units", m.units);
    h5_write(gr, "periodization_matrix", m.periodization_matrix);
   }
@@ -210,7 +210,7 @@ namespace gfs {
   /// Read from HDF5
   friend void h5_read_impl(h5::group fg, std::string subgroup_name, cluster_mesh& m, const char * _type) {
    h5::group gr = fg.open_group(subgroup_name);
-   gr.assert_triqs_hdf5_data_scheme_as_string(_type, true);
+   gr.assert_hdf5_scheme_as_string(_type, true);
    auto units = h5::h5_read<matrix<double>>(gr, "units");
    auto periodization_matrix = h5::h5_read<matrix<double>>(gr, "periodization_matrix");
    m = cluster_mesh(units, periodization_matrix);
@@ -228,7 +228,7 @@ namespace gfs {
   }
 
   friend std::ostream& operator<<(std::ostream& sout, cluster_mesh const& m) {
-   return sout << "cyclic_lattice of size " << m.dims;
+   return sout << "cluster_mesh of size " << m.dims;
   }
  };
 

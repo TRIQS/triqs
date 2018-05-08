@@ -3,8 +3,8 @@
 #include <vector>
 #include <set>
 #include <ostream>
-#include <triqs/arrays.hpp>
 #include <triqs/utility/variant.hpp>
+#include <triqs/arrays.hpp>
 #include <triqs/utility/signal_handler.hpp>
 
 namespace triqs { namespace py_tools { 
@@ -113,12 +113,12 @@ struct A {
   }
 
   ///
-  friend std::string get_triqs_hdf5_data_scheme(A const&) { return "Ac"; }
+  static std::string hdf5_scheme() { return "Ac"; }
 
   /// Write into HDF5
   friend void h5_write(triqs::h5::group fg, std::string subgroup_name, A const &a) {
    auto gr = fg.create_group(subgroup_name);
-   gr.write_triqs_hdf5_data_scheme(a);
+   gr.write_hdf5_scheme(a);
    h5_write(gr, "x", a.x);
   }
 
@@ -220,9 +220,9 @@ struct test_variant_visitor {
  int operator()(std::pair<std::string,double> const& p) { return int(p.second); }
 };
 
-inline triqs::utility::variant<int,std::string,std::pair<std::string,double>>
-variant_to_variant(triqs::utility::variant<int,std::string,std::pair<std::string,double>> const& v) {
- triqs::utility::variant<int,std::string,std::pair<std::string,double>> res(
+inline std::variant<int,std::string,std::pair<std::string,double>>
+variant_to_variant(std::variant<int,std::string,std::pair<std::string,double>> const& v) {
+  std::variant<int,std::string,std::pair<std::string,double>> res(
   visit(test_variant_visitor(), v));
  return res;
 }

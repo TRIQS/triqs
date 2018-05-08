@@ -43,7 +43,7 @@ namespace gfs {
    }
   }
 
-  gw.singularity() = get_tail(gl, gw.singularity().n_valid_orders(), gw.singularity().order_min());
+  gw.singularity() = get_tail(gl);
  }
 
  // ----------------------------
@@ -60,7 +60,7 @@ namespace gfs {
    }
   }
 
-  gt.singularity() = get_tail(gl, gt.singularity().n_valid_orders(), gt.singularity().order_min());
+  gt.singularity() = get_tail(gl);
  }
 
  // ----------------------------

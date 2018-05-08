@@ -56,9 +56,9 @@ include(CheckIncludeFileCXX)
 
 message( STATUS "-------- Checking compiler C++ status-------------")
 
-try_compile(_cxx_ok ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/cxx_check.cpp COMPILE_DEFINITIONS  -std=c++14)
+try_compile(_cxx_ok ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/cxx_check.cpp COMPILE_DEFINITIONS  -std=c++17)
 if (NOT _cxx_ok)
- MESSAGE(FATAL_ERROR "The compiler does not support C++14")
+ MESSAGE(FATAL_ERROR "The compiler does not support C++17")
 endif()
 
 #---------------------------------------------------------------------
@@ -90,7 +90,7 @@ option(PythonSupport "Build with Python support" ON)
 if (PythonSupport)
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
  message( STATUS "-------- Cpp2Py detection -------------")
- find_package(Cpp2Py REQUIRED)
+ find_package(Cpp2Py 1.5 EXACT REQUIRED)
 endif (PythonSupport)
  
 #---------------------------------------------------------------------
@@ -142,10 +142,10 @@ endif()
 # C++ standard
 # Common for all targets below (triqs lib, test, pytriqs, doc examples)
 # Here and not in triqs lib, since it is private.
-# It should not exported or an application could not e.g. upgrade to c++17
+# It should not be exported or an application could not e.g. use a different c++ standard
 # -----------------------------------------------------------------------------
 
-add_compile_options(-std=c++14) 
+add_compile_options(-std=c++17) 
 
 #------------------------
 # Build google test
@@ -205,13 +205,12 @@ endif (Build_Documentation)
 #-----------------------------------------------
 # Install the FindXXX that should be exported
 #-----------------------------------------------
-
-install (FILES ${CMAKE_SOURCE_DIR}/cmake/FindNFFT.cmake DESTINATION share/cmake)
+install (FILES cmake/FindNFFT.cmake DESTINATION share/cmake)
 
 #---------------------------------------
 # triqs_config.h
 #---------------------------------------
-message( STATUS "-------- Making triqs_config.h  -------------")
+message(STATUS "-------- Making triqs_config.h  -------------")
 
 # Prepare some variable
 SET(PYTHON_NUMPY_VERSION_LT_17 ${CPP2PY_PYTHON_NUMPY_VERSION_LT_17})
@@ -271,3 +270,9 @@ MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/triqsvars.sh          "
 MESSAGE(STATUS "*                                                              ") 
 MESSAGE(STATUS "*   to set up the environment variables                        ") 
 MESSAGE(STATUS "***************************************************************")
+
+#--------------------------------------------------------
+# Process and install modulefile
+#--------------------------------------------------------
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqs.modulefile.in ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile DESTINATION ${CMAKE_INSTALL_PREFIX}/share)

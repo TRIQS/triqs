@@ -1,0 +1,37 @@
+FROM ubuntu:xenial
+ARG RELEASE=xenial
+
+RUN apt-get update && apt-get install -y \
+      cmake \
+      g++ \
+      gfortran \
+      git \
+      hdf5-tools \
+      libblas-dev \
+      libboost-all-dev \
+      libfftw3-dev \
+      libgfortran3 \
+      libgmp-dev \
+      libhdf5-serial-dev \
+      liblapack-dev \
+      libopenmpi-dev \
+      openmpi-bin \
+      openmpi-common \
+      openmpi-doc \
+      python-dev \
+      python-h5py \
+      python-jinja2 \
+      python-mako \
+      python-matplotlib \
+      python-mpi4py \
+      python-numpy \
+      python-scipy \
+      python-tornado \
+      python-virtualenv \
+      python-zmq \
+      software-properties-common
+
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt-get update && apt-get install -y \
+  g++-7
+ENV CC=gcc-7 CXX=g++-7

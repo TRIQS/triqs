@@ -7,7 +7,7 @@ module = module_(full_name = "pytriqs.wrap_test.test_g", doc = " Doc of my_modul
 module.add_include("<triqs/../test/pytriqs/wrap_test/g.hpp>") 
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
-module.add_include("<triqs/cpp2py_converters/variant.hpp>")
+module.add_include("<cpp2py/converters/variant.hpp>")
 
 
 module.add_function (name = "make_bgf", signature = "block_gf_view<imfreq> (double a)", doc = "DOC of print_a")

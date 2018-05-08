@@ -41,14 +41,13 @@ namespace lattice {
   K_reciprocal_inv = inverse(K_reciprocal);
  }
 
- //------------------------------------------------------------------------------------
- /// Write into HDF5
+ // -------------- HDF5  --------------------------
+
  void h5_write(h5::group fg, std::string subgroup_name, brillouin_zone const& bz) {
   h5::group gr = fg.create_group(subgroup_name);
   h5_write(gr, "bravais_lattice", bz.lattice_);
  }
 
- /// Read from HDF5
  void h5_read(h5::group fg, std::string subgroup_name, brillouin_zone& bz) {
   h5::group gr = fg.open_group(subgroup_name);
   bravais_lattice bl;

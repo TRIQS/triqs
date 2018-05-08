@@ -41,6 +41,10 @@ gb = GfImFreq(indices = [1,2], beta = beta, n_points = 100, name = "b1Block")
 G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
 G << iOmega_n + 2.0
 
+# Arithmetic operations
+G2 = G.copy()
+G2 << G * G + 1.5 * G
+
 #print G['a'].tail.data 
 
 for ii, g in G : 
@@ -137,4 +141,3 @@ def check_pickle(g):
 
 check_pickle(G)
 check_pickle(gt)
-

@@ -64,7 +64,7 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
            )
 
     t.add_regular_type_converter()
-    t.add_constructor(signature = "(triqs::utility::mini_vector<int,%s> target_shape, int n_order=10, int order_min=-1)"%n,
+    t.add_constructor(signature = "(triqs::utility::mini_vector<int,%s> target_shape)"%n,
                       intermediate_type = c_type_reg,   doc = "Constructs a new tail, of matrix size N1xN2")
  
     module.add_function("%s _make_tail_view_from_data(triqs::arrays::array_view<dcomplex, %s + 1> data)"%(c_type,n), 
@@ -73,7 +73,8 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
     # backward compat
     if Target == "matrix_valued":
         t.add_constructor(signature = "(int N1, int N2, int n_order=10, int order_min=-1)",
-                          intermediate_type = c_type_reg, doc = "Constructs a new tail, of matrix size N1xN2")
+                          calling_pattern = "auto result = __tail<matrix_valued>(make_shape(N1,N2)); result.reset(order_min+n_order)",
+                          doc = "Constructs a new tail, of matrix size N1xN2")
 
     t.add_property(name = "data",
                    getter = cfunction("array_view<dcomplex,%s+1> data()"%n),
@@ -114,7 +115,7 @@ for Target, Rvt, Rt, ext, n in zip(['scalar_valued', 'matrix_valued', 'tensor_va
                            signature = "void (matrix<dcomplex> l, %s t, matrix<dcomplex> r)"%c_type)
 
     t.add_method("void zero()", doc = "Sets the expansion to 0")
-    t.add_method("void reset(int n)", doc = "Sets the expansion to 0 until order n, to NaN afterwards.")
+    t.add_method("void reset(int n)", doc = "Sets the expansion to 0 until order n-1, to NaN afterwards.")
 
     t.add_method_copy()
     t.add_method_copy_from()

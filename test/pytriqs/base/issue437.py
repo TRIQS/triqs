@@ -1,4 +1,4 @@
-from pytriqs.gf.local import *                                             
+from pytriqs.gf import *                                             
                                                                            
 G_iw = GfImFreq(beta=40,indices=[0,1])                                     
 G_w = GfReFreq(window=(-3,3),indices=[0,1])                                

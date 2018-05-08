@@ -21,33 +21,26 @@
 #pragma once
 #include "./group.hpp"
 #include "./string.hpp"
-#include <triqs/utility/optional_compat.hpp>
+#include <optional>
 
-namespace std { // to be found by ADL
+namespace triqs::h5 {
 
-template <typename T> std::string get_triqs_hdf5_data_scheme(std::optional<T> const&) {
- using triqs::get_triqs_hdf5_data_scheme; // for the basic types, not found by ADL
- return get_triqs_hdf5_data_scheme(T());
-}
-}
+  template <typename T> struct hdf5_scheme_impl<std::optional<T>> {
+    static std::string invoke() { return hdf5_scheme_impl<T>::invoke(); }
+  };
 
-namespace triqs {
-namespace h5 {
-
- /**
+  /**
    * Optional : write if the value is set.
    */
- template <typename T> void h5_write(h5::group gr, std::string const& name, std::optional<T> const& v) {
-  if (bool(v)) h5_write(gr, name, *v);
- }
+  template <typename T> void h5_write(h5::group gr, std::string const &name, std::optional<T> const &v) {
+    if (bool(v)) h5_write(gr, name, *v);
+  }
 
- /**
+  /**
    * Read optional from the h5
    */
- template <typename T> void h5_read(h5::group gr, std::string name, std::optional<T>& v) {
-  std::experimental::reset(v);
-  // v.reset();
-  if (gr.has_key(name)) v.emplace(h5_read<T>(gr, name));
- }
-}
-}
+  template <typename T> void h5_read(h5::group gr, std::string name, std::optional<T> &v) {
+    v.reset();
+    if (gr.has_key(name)) v.emplace(h5_read<T>(gr, name));
+  }
+} // namespace triqs::h5

@@ -29,7 +29,7 @@ class Cpp2pyInfo(Cpp2pyInfoBase):
         'triqs::operators::many_body_operator' : 'pytriqs.operators',
         'triqs::lattice' : 'pytriqs.lattice',
         'triqs::statistics::histogram' : 'pytriqs.statistics.histograms',
-        'triqs::atom_diag::' : 'pytriqs.atom_diag',
+        'triqs::atom_diag::' : 'pytriqs.atom_diag'
         }
 
     _table_converters = {
@@ -40,7 +40,9 @@ class Cpp2pyInfo(Cpp2pyInfoBase):
         'triqs::gfs::block_gf*' : 'gf',
         'triqs::gfs::block2_gf*' : 'gf',
         'triqs::operators::many_body_operator*' : 'operators_real_complex',
-        'triqs::utility::variant' : 'variant',
+        'triqs::hilbert_space::fundamental_operator_set' : 'fundamental_operator_set',
+        'triqs::utility::real_or_complex' : 'real_or_complex',
+        'triqs::h5::group' : 'h5'
         }
 
     table_converters = dict ( (k, "triqs/cpp2py_converters/%s.hpp"%v) for (k,v) in _table_converters.items())

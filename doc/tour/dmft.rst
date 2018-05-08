@@ -22,8 +22,8 @@ Here is a complete program doing this plain-vanilla DMFT on a half-filled one-ba
 
 .. runblock:: python
 
-   from pytriqs.gf.local import *
-   from pytriqs.gf.local import *
+   from pytriqs.gf import *
+   from pytriqs.gf import *
    from pytriqs.operators import *
    from pytriqs.archive import *
    import pytriqs.utility.mpi as mpi

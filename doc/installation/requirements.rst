@@ -5,74 +5,75 @@
 A complete list of requirements
 ===============================
 
-TRIQS is built upon several python and C++ libraries, which, if not present
-already in your system, can be freely downloaded and installed. All the
-libraries and tools used by TRIQS are described below.
+TRIQS is built upon several tools, C++ libraries and Python packages, which, 
+if not present already in your system, can be freely downloaded and installed. 
+All the dependencies of TRIQS are listed below with a brief description.
 
 .. _require_cxx_compilers:
 
 C++ compilers
 -------------
 
-TRIQS is written in C++, i.e. in the **C++** standard as defined by the ISO standardization committee,
-i.e. currently C++14.
+TRIQS is written in modern C++, i.e. using the latest **C++** standard as defined by the ISO standardization committee.
+In particular, the latest TRIQS version uses language features from the C++17 standard. 
 A recent compiler is therefore mandatory.
 
-* Standard compliant C++ compilers (C++14).
+* Standard compliant C++ compilers (C++17).
 
-  * g++ 4.9.1 and higher.
+  * g++ 7.0.0 and higher.
 
-  * :ref:`clang 3.4<install_clang>` and higher (in particular the default clang on OS X >= 10.8).
-    The recommandation is to use the latest version of clang available.
+  * :ref:`clang 5.0<install_clang>` and higher.
 
-  * Intel icc 16.0 seems to be fine too (it implements C++14).
-    The intel icl on OS X (with the clang front end) seems to be working as well.
-    In both cases, tests are still needed with these compilers, since none of the developers
-    use them on a routine basis.
+  .. note:: Intel's compiler icc has **not** yet fully implemented the C++17 standard.
+            It can therefore not be used to compile TRIQS.
 
-* C++98 and C++11 compilers are obsolete and will *never* be supported.
-
-  * g++ before 4.9.1
-  * Intel icc 15.0 and below
-
-
-Libraries
----------
+Tools and Libraries
+-------------------
 
 +------------------------+----------+-----------------------------------------------------------------------------+
-| Library/tool           | Version  | Comment                                                                     |
+| Tool/Library           | Version  | Comment                                                                     |
 +========================+==========+=============================================================================+
-| mpi                    | openmpi  | Parallelism (1).                                                            |
-+------------------------+----------+-----------------------------------------------------------------------------+
-| fftw                   | >= 3.2   | Fourier transforms                                                          |
-+------------------------+----------+-----------------------------------------------------------------------------+
-| boost                  | >= 1.49  | C++ librairies                                                              |
-+------------------------+----------+-----------------------------------------------------------------------------+
-| hdf5                   | >= 1.8.2 | File storage system. Important: the *serial* version must be installed      |
+| cmake                  | >= 2.8.7 | CMake is used to control the software compilation process                   |
 +------------------------+----------+-----------------------------------------------------------------------------+
 | python                 | >= 2.7   | The Python interpreter                                                      |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| scipy                  | >= ?     | Python mathematical library                                                 |
+| mpi                    | openmpi  | Parallelism (1).                                                            |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| numpy                  | >= ?     | Python scientific library                                                   |
+| hdf5                   | >= 1.8.2 | File storage system. Important: the *serial* version must be installed      |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| h5py                   | >= ?     | Python interface to hdf5 library                                            |
+| fftw                   | >= 3.2   | Fourier transforms                                                          |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| matplotlib             | >= 0.99  | Python 2D plotting library                                                  |
+| boost                  | >= 1.49  | C++ library collection                                                      |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| mpi4py                 | >= ?     | Python MPI                                                                  |
+| numpy                  | >= ?     | Python Package - Array library                                              |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| cmake                  | >= 2.8.7 | CMake is used to control the software compilation process                   |
+| scipy                  | >= ?     | Python Package - Scientific computing library                               |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| mako                   | >= 0.9.1 | mako templates are used to generate the C++/python wrapper                  |
+| h5py                   | >= ?     | Python Package - Interface to hdf5 library                                  |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| sphinx                 | >= 1.0.1 | Python documentation tools (to compile documentation)                       |
+| matplotlib             | >= 0.99  | Python Package - Plotting library                                           |
 +------------------------+----------+-----------------------------------------------------------------------------+
-| pyparsing              | >= ?     | Tool for sphinx (to compile documentation, for developers)                  |
+| mpi4py                 | >= ?     | Python Package - MPI bindings                                               | 
 +------------------------+----------+-----------------------------------------------------------------------------+
-| libclang               | 3.4      | python bindings of the clang lib (to compile documentation, for developers) |
+| mako                   | >= 0.9.1 | Python Package - Template library                                           |
 +------------------------+----------+-----------------------------------------------------------------------------+
 
 (1)  Since standard linux distributions (and macports on OS X) now provide openmpi, even on laptops, we avoid the
 unnecessary complication of maintaining a non-parallel version of TRIQS.
 
+Building the TRIQS documentation
+--------------------------------
+
+If you want to build the documentation of the TRIQS library locally on your machine, additional dependencies are required.
+
++------------------------+----------+-----------------------------------------------------------------------------+
+| Library/tool           | Version  | Comment                                                                     |
++========================+==========+=============================================================================+
+| libclang               | 5.0      | C interface to clang                                                        |
++------------------------+----------+-----------------------------------------------------------------------------+
+| MathJax                | >= ?     | Library for browser Latex rendering                                         |
++------------------------+----------+-----------------------------------------------------------------------------+
+| sphinx                 | >= 1.0.1 | Python Package - Documentation tools                                        |
++------------------------+----------+-----------------------------------------------------------------------------+
+| clang                  | 5.0      | Python Package - Libclang bindings                                          |
++------------------------+----------+-----------------------------------------------------------------------------+

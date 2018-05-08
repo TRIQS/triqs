@@ -91,7 +91,7 @@ template<bool Complex>
 void h5_write(triqs::h5::group fg, std::string const& name, atom_diag<Complex> const& ad) {
  using matrix_t = typename atom_diag<Complex>::matrix_t;
  auto gr = fg.create_group(name);
- gr.write_triqs_hdf5_data_scheme(ad);
+ gr.write_hdf5_scheme(ad);
  h5_write(gr, "creation_connection", ad.creation_connection);
  h5_write(gr, "annihilation_connection", ad.annihilation_connection);
 
@@ -159,7 +159,7 @@ std::ostream& operator<<(std::ostream& os, atom_diag<Complex> const& ad) {
   os << "Subspace " << n_sp << ", ";
   os << "lowest energy level : " << ad.eigensystems[n_sp].eigenvalues[0] << std::endl;
   os << "Subspace dimension = " << ad.eigensystems[n_sp].eigenvalues.size() << std::endl;
-  os << "-------------------------" << std::endl;
+  //os << "-------------------------" << std::endl;
  }
  return os;
 }

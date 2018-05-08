@@ -182,12 +182,12 @@ namespace statistics {
   }
 
   /// HDF5 interface
-
+   
   /// Get HDF5 scheme name
   /**
     @return HDF5 scheme name
    */
-  friend std::string get_triqs_hdf5_data_scheme(histogram const&);
+  static std::string hdf5_scheme() {return  "Histogram";}
   /// Write histogram to HDF5
   /**
     @param g Enclosing HDF5 group
@@ -230,7 +230,20 @@ namespace statistics {
     ar & TRIQS_MAKE_NVP("step", _step);
   }
 
- };
+  // -------------------- boost serialization -------------------
+
+  friend class boost::serialization::access;
+  template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+   ar & a;
+   ar & b;
+   ar & n_bins;
+   ar & _n_data_pts;
+   ar & _n_lost_pts;
+   ar & _data;
+   ar & _step;
+  }
+  
+};
 
  //-------------------------------------------------------------------------------
 

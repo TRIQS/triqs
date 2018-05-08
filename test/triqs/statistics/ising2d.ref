@@ -1,4 +1,4 @@
 2D Ising with field = 0, beta = 0.5, N = 20
-@Beta:	0.5	Magnetization:	-0.909722
+#Beta:	0.5	Magnetization:	-0.909722
 average_and_error(M) = -363.889 +/- 0.0553269
 #Beta:	0.5	Autocorr_time:	29.8271

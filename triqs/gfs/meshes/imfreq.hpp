@@ -192,12 +192,12 @@ namespace gfs {
 
   // -------------------- HDF5 -------------------
 
-  friend std::string get_triqs_hdf5_data_scheme(gf_mesh const &) { return "MeshImFreq";}
+  static std::string hdf5_scheme() {return  "MeshImFreq";}
 
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const &m) {
    h5::group gr = fg.create_group(subgroup_name);
-   gr.write_triqs_hdf5_data_scheme(m);
+   gr.write_hdf5_scheme(m);
    h5_write(gr, "domain", m.domain());
    h5_write(gr, "size", long(m.size()));
    h5_write(gr, "positive_freq_only", (m.positive_only() ? 1 : 0));
@@ -206,7 +206,7 @@ namespace gfs {
   /// Read from HDF5
   friend void h5_read(h5::group fg, std::string subgroup_name, gf_mesh &m) {
    h5::group gr = fg.open_group(subgroup_name);
-   gr.assert_triqs_hdf5_data_scheme(m, true);
+   gr.assert_hdf5_scheme(m, true);
    typename gf_mesh::domain_t dom;
    long L;
    h5_read(gr, "domain", dom);
@@ -236,7 +236,7 @@ namespace gfs {
   // -------------------- print  -------------------
 
   friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-   return sout << "Matsubara Freq Mesh of size " << m.size() <<", domain " << m.domain() <<", positive_only : " << m.positive_only();
+   return sout << "Matsubara Freq Mesh of size " << m.size() <<", Domain: " << m.domain() <<", positive_only : " << m.positive_only();
   }
 
   // ------------------------------------------------

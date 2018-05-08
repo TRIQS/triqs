@@ -6,7 +6,7 @@
 #include <triqs/operators/util/extractors.hpp>
 
 using namespace triqs::operators;
-using namespace triqs::operators::util;
+using namespace triqs::operators::utils;
 using namespace triqs::arrays;
 using namespace triqs::hilbert_space;
 
@@ -50,7 +50,7 @@ TEST(Extractors, extract_h_dict) {
  EXPECT_CLOSE_ARRAY(h_matrix_ref,                   dict_to_matrix(h_dict,gf_struct));
  EXPECT_CLOSE_ARRAY(h_matrix_ref,                   dict_to_matrix<double>(h_dict,gf_struct));
  EXPECT_CLOSE_ARRAY((array<dcomplex,2>)h_matrix_ref,dict_to_matrix<dcomplex>(h_dict,gf_struct));
- EXPECT_CLOSE_ARRAY(h_matrix_ref,                   (array<double,2>)dict_to_variant_matrix(h_dict,gf_struct));
+ EXPECT_CLOSE_ARRAY(h_matrix_ref,                   (std::get<array<double,2>>(dict_to_variant_matrix(h_dict,gf_struct))));
 
  auto nn = n("up",1)*n("dn",1);
  EXPECT_THROW(extract_h_dict(nn),triqs::exception);
@@ -93,7 +93,7 @@ TEST(Extractors, extract_U_dict2) {
  EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   dict_to_matrix(U_dict2,gf_struct));
  EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   dict_to_matrix<double>(U_dict2,gf_struct));
  EXPECT_CLOSE_ARRAY((array<dcomplex,2>)U_matrix2_ref,dict_to_matrix<dcomplex>(U_dict2,gf_struct));
- EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   (array<double,2>)dict_to_variant_matrix(U_dict2,gf_struct));
+ EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   (std::get<array<double,2>>(dict_to_variant_matrix(U_dict2,gf_struct))));
 
  auto quadratic = n("up",1) + n("dn",1);
  EXPECT_THROW(extract_U_dict2(quadratic),triqs::exception);
@@ -146,7 +146,7 @@ TEST(Extractors, extract_U_dict4) {
  EXPECT_CLOSE_ARRAY(U_matrix4_ref,                   dict_to_matrix(U_dict4,gf_struct));
  EXPECT_CLOSE_ARRAY(U_matrix4_ref,                   dict_to_matrix<double>(U_dict4,gf_struct));
  EXPECT_CLOSE_ARRAY((array<dcomplex,4>)U_matrix4_ref,dict_to_matrix<dcomplex>(U_dict4,gf_struct));
- EXPECT_CLOSE_ARRAY(U_matrix4_ref,                   (array<double,4>)dict_to_variant_matrix(U_dict4,gf_struct));
+ EXPECT_CLOSE_ARRAY(U_matrix4_ref,                  (std::get<array<double,4>>(dict_to_variant_matrix(U_dict4,gf_struct))));
 
  auto quadratic = n("up",1) + n("dn",1);
  EXPECT_THROW(extract_U_dict4(quadratic),triqs::exception);

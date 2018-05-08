@@ -4,5 +4,5 @@ Tools for GFs
 
 .. highlight:: python
 
-.. automodule:: pytriqs.gf.local.tools
+.. automodule:: pytriqs.gf.tools
    :members:

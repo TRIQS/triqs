@@ -10,7 +10,7 @@
 Reference
 ---------------
 
-.. autoclass:: pytriqs.gf.local.GfImFreq
+.. autoclass:: pytriqs.gf.GfImFreq
   :members: density, set_from_fourier, set_from_legendre
 
 .. warning::

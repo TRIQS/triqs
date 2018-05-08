@@ -27,3 +27,5 @@ def assert_block_gfs_are_close(a, b, precision = 1.e-6):
     for (nx,x),(ny,y) in zip(a,b):
       assert_gfs_are_close(x, y, precision)
 
+def assert_block2_gfs_are_close(a, b, precision = 1.e-6):
+    assert_block_gfs_are_close(a, b, precision)

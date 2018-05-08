@@ -31,7 +31,7 @@ namespace gfs {
   template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
   // using segment_mesh::segment_mesh;
   
-  friend std::string get_triqs_hdf5_data_scheme(gf_mesh const &) { return "MeshReFreq";}
+  static std::string hdf5_scheme() {return  "MeshReFreq";}
  
   friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
    h5_write_impl(fg, subgroup_name, m,"MeshReFreq");

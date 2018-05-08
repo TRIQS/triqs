@@ -28,19 +28,6 @@ namespace gfs {
  // ------------------------------------------------------
 
  gf<imtime> rebinning_tau(gf_const_view<imtime> const &g, int new_n_tau);
-
- //-------------------------------------------------------
- // closest mesh point on the grid
- // ------------------------------------------------------
-
- template <typename Target> struct gf_closest_point<imtime, Target> {
-  // index_t is int
-  template <typename M, typename T> static int invoke(M const &mesh, closest_pt_wrap<T> const &p) {
-   double x = double(p.value) + 0.5 * mesh.delta();
-   int n = std::floor(x / mesh.delta());
-   return n;
-  }
- };
 }
 }
 

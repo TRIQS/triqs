@@ -233,7 +233,7 @@ namespace triqs {
       gf() {} // all arrays of zero size (empty)
 
       /// Copy constructor
-      gf(gf const &x) : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {}
+      gf(gf const &x) = default;
       /// Move constructor
       gf(gf &&) = default;
 
@@ -297,9 +297,9 @@ namespace triqs {
       /// ---------------  Operator = --------------------
 
       /// Copy assignment
-      gf &operator=(gf const &rhs) { return *this = gf(rhs); } // use move =
-      //
-      gf &operator=(gf &rhs) { return *this = gf(rhs); } // use move =
+      gf &operator=(gf &rhs) = default;
+      gf &operator=(gf const &rhs) = default;
+
       /// Move assignment
       gf &operator=(gf &&rhs) noexcept {
         this->swap_impl(rhs);
@@ -560,21 +560,21 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      friend std::string get_triqs_hdf5_data_scheme(gf const &g) { return "Gf"; }
+      static std::string hdf5_scheme() { return "Gf"; }
 
       friend struct gf_h5_rw<Var, Target>;
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, gf const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(g);
+        gr.write_hdf5_scheme(g);
         gf_h5_rw<Var, Target>::write(gr, g);
       }
 
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf &g) {
         auto gr       = fg.open_group(subgroup_name);
-        auto tag_file = gr.read_triqs_hdf5_data_scheme();
+        auto tag_file = gr.read_hdf5_scheme();
         if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
           TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
                               << " while I found " << tag_file;
@@ -891,7 +891,7 @@ namespace triqs {
 
       public:
       /// Copy constructor
-      gf_view(gf_view const &x) : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {}
+      gf_view(gf_view const &x) = default;
       /// Move constructor
       gf_view(gf_view &&) = default;
 
@@ -1192,21 +1192,21 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      friend std::string get_triqs_hdf5_data_scheme(gf_view const &g) { return "Gf"; }
+      static std::string hdf5_scheme() { return "Gf"; }
 
       friend struct gf_h5_rw<Var, Target>;
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(g);
+        gr.write_hdf5_scheme(g);
         gf_h5_rw<Var, Target>::write(gr, g);
       }
 
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_view &g) {
         auto gr       = fg.open_group(subgroup_name);
-        auto tag_file = gr.read_triqs_hdf5_data_scheme();
+        auto tag_file = gr.read_hdf5_scheme();
         if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
           TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
                               << " while I found " << tag_file;
@@ -1525,8 +1525,7 @@ namespace triqs {
 
       public:
       /// Copy constructor
-      gf_const_view(gf_const_view const &x)
-         : _mesh(x.mesh()), _data(x.data()), _zero(x._zero), _singularity(x.singularity()), _indices(x.indices()) {}
+      gf_const_view(gf_const_view const &x) = default;
       /// Move constructor
       gf_const_view(gf_const_view &&) = default;
 
@@ -1814,21 +1813,21 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      friend std::string get_triqs_hdf5_data_scheme(gf_const_view const &g) { return "Gf"; }
+      static std::string hdf5_scheme() { return "Gf"; }
 
       friend struct gf_h5_rw<Var, Target>;
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_const_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(g);
+        gr.write_hdf5_scheme(g);
         gf_h5_rw<Var, Target>::write(gr, g);
       }
 
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_const_view &g) {
         auto gr       = fg.open_group(subgroup_name);
-        auto tag_file = gr.read_triqs_hdf5_data_scheme();
+        auto tag_file = gr.read_hdf5_scheme();
         if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
           TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
                               << " while I found " << tag_file;
@@ -1977,7 +1976,7 @@ namespace triqs {
         for (auto const &w : g.mesh()) g[w] = rhs;
         g.singularity() = rhs;
       } else {
-        if (!(g.mesh() == rhs.mesh())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh" << g.mesh() << " vs " << rhs.mesh();
+        if (!(g.mesh() == rhs.mesh())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh \n" << g.mesh() << "\n vs \n" << rhs.mesh();
         for (auto const &w : g.mesh()) g[w] = rhs[w];
         g.singularity() = rhs.singularity();
       }
@@ -1986,7 +1985,7 @@ namespace triqs {
     // delegate = so that I can overload it for specific RHS...
     template <typename M, typename T, typename RHS>
     std14::enable_if_t<!arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
-      if (!(g.mesh() == rhs.mesh())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh" << g.mesh() << " vs " << rhs.mesh();
+      if (!(g.mesh() == rhs.mesh())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh \n" << g.mesh() << "\n vs \n" << rhs.mesh();
       for (auto const &w : g.mesh()) g[w] = rhs[w];
       g.singularity() = rhs.singularity();
     }

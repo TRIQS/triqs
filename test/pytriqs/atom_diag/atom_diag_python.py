@@ -1,5 +1,5 @@
 from pytriqs.operators import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.archive import *
 from pytriqs.atom_diag import *
 from pytriqs.utility.comparison_tests import *
@@ -39,7 +39,7 @@ def make_hamiltonian(mu, U, J, b, t):
 ad_r = AtomDiag(make_hamiltonian(0.4, 1.0, 0.3, 0.03, 0.2), fops)
 ad_c = AtomDiag(make_hamiltonian(0.4, 1.0, 0.3, 0.03, 0.2j), fops)
 
-gf_struct = {'dn':[0,1,2],'up':[0,1,2]}
+gf_struct = [['dn',[0,1,2]],['up',[0,1,2]]]
 beta = 10
 
 # GF (real)

@@ -1,0 +1,1 @@
+../../../test/triqs/statistics/ising2d.cpp

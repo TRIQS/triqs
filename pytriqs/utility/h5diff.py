@@ -33,6 +33,9 @@ def compare(key, a, b, level, precision):
         elif t in [BlockGf]:
             assert_block_gfs_are_close(a,b,precision)
 
+        elif t in [Block2Gf]:
+            assert_block2_gfs_are_close(a,b,precision)
+
         elif t in [Operator]:
             assert (a-b).is_zero(), "Many body operators not equal"
 

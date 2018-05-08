@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2017 by O. Parcollet
+ * Copyright (C) 2018, N. Wentzell, I. Krivenko, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,27 +18,31 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#pragma once
-
-#if defined(HAS_OPTIONAL_HEADER) and __cplusplus > 201402L
-#include <optional>
-#else
-#include <experimental/optional>
-namespace std { // to be found by ADL
-
- using std::experimental::optional;
- using std::experimental::in_place;
-}
-#endif
 
 namespace std {
- namespace experimental {
 
-  // workaround for compiler defect
-  template <typename T> void reset(std::optional<T>& x) { x = std::optional<T>{}; }
+ // == ostream operator<< for variant and vector of variant
 
-  // .value does not work on old OS X compilers ... WORKAROUND
-  template <typename T> T& value_of(std::optional<T>& x) { *x; }
-  template <typename T> T const& value_of(std::optional<T> const& x) { *x; }
+ template<typename T1, typename ...T>
+ std::ostream &operator<<(std::ostream &os, std::variant<T1, T...> const &v) {
+   visit([&os](auto const &x) { os << x; }, v);
+   return os;
  }
-}
+
+ inline std::ostream & operator<<(std::ostream & os, std::vector<std::variant<int, std::string>> const& fs) {
+  int u = 0;
+  for(auto const& i : fs) { if (u++) os << ","; os << i; }
+  return os;
+ }
+
+ // == Make std::to_string available for both string and variant
+
+ inline string to_string(string const &str) { return str; }
+ template<typename T1, typename T2>
+ inline string to_string(variant<T1, T2> const &var) {
+   stringstream ss;
+   ss << var;
+   return ss.str();
+ }
+
+} // namespace std

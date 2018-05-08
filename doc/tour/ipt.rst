@@ -38,7 +38,7 @@ All Green's functions in the calculations have just one index because
 
 .. runblock:: python
 
-   from pytriqs.gf.local import *
+   from pytriqs.gf import *
 
    class IPTSolver:
 
@@ -79,7 +79,7 @@ values of :math:`U`.
 Alternatively, in this :download:`script <./ipt_dmft.py>`, at every iteration the resulting data is plotted
 and saved into PNG files using the :ref:`TRIQS matplotlib interface<plotting>`.
 Note that :math:`G(i\omega_n)` is analytically continued to the real axis using
-:ref:`Padé approximant<GfReFreq>`.
+:ref:`Pade approximant<GfReFreq>`.
 
 At the end of the script an external utility `convert` is invoked to join the
 DOS plots into a single animated GIF file which illustrates how a metallic

@@ -285,6 +285,22 @@ namespace triqs { namespace det_manip {
     /// Returns the j-th values of y
     y_type const & get_y(size_t j) const { return y_values[col_num[j]];}
 
+    /// Returns a vector with all x_values. Warning : this is slow, since it creates a new copy, and reorders the lines
+    std::vector<x_type> get_x() const {
+      std::vector<x_type> res;
+      res.reserve(N);
+      for(int i : range(N)) res.emplace_back(x_values[row_num[i]]);
+      return res;
+    }
+
+    /// Returns a vector with all y_values. Warning : this is slow, since it creates a new copy, and reorders the cols
+    std::vector<y_type> get_y() const {
+      std::vector<y_type> res;
+      res.reserve(N);
+      for(int i : range(N)) res.emplace_back(y_values[col_num[i]]);
+      return res;
+    }
+
     /**
      * Advanced: Returns the vector of x_values using the INTERNAL STORAGE ORDER,
      * which differs by some permutation from the one given by the user.

@@ -31,10 +31,10 @@ namespace triqs { namespace gfs {
 
  // compute a tail from the Legendre GF
  // this is Eq. 8 of our paper
- __tail_view<matrix_valued> get_tail(gf_const_view<legendre> gl, int size = 10, int omin = -1) {
+ __tail_view<matrix_valued> get_tail(gf_const_view<legendre> gl) {
 
    auto sh = gl.data().shape().front_pop();
-   __tail<matrix_valued> t(sh, size, omin);
+   __tail<matrix_valued> t(sh);
    t.data()() = 0.0;
 
    for (int p=1; p<=t.order_max(); p++)

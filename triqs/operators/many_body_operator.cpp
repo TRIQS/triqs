@@ -43,7 +43,7 @@ namespace operators {
   int u = 0;
   for (auto const& i : op.indices) {
    if (u++) os << ",";
-   apply_visitor(pr, i);
+   visit(pr, i);
   }
   return os << ')';
  }
@@ -88,12 +88,6 @@ namespace operators {
 
  // ---------------------------  WRITE -----------------------------------------
 
- void h5_write(h5::group g, std::string const &name, many_body_operator const &op) {
-  h5_write(g, name, op, op.make_fundamental_operator_set());
- }
-
- // ---------------
-
  void h5_write(h5::group g, std::string const &name, many_body_operator const &op, fundamental_operator_set const &fops) {
 
   // first prepare the data
@@ -135,18 +129,11 @@ namespace operators {
 
   // Store fundamental_operator_set as an attribute of the dataset
   h5_write_attribute(dataset, "fundamental_operator_set", fops);
-  h5::h5_write_attribute(dataset, "TRIQS_HDF5_data_scheme", get_triqs_hdf5_data_scheme(op));
+  h5::h5_write_attribute(dataset, "TRIQS_HDF5_data_scheme", get_hdf5_scheme<many_body_operator>());
 
  }
 
  // ---------------------------  READ -----------------------------------------
-
- void h5_read(h5::group g, std::string const &name, many_body_operator &op) {
-  fundamental_operator_set fops;
-  h5_read(g, name, op, fops);
- }
-
- //-----
 
  void h5_read(h5::group g, std::string const &name, many_body_operator &op, fundamental_operator_set &fops) {
 

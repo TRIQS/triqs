@@ -88,8 +88,16 @@ namespace gfs {
    return id.w0 * f[id.i0] + id.w1 * f[id.i1];
   }
 
-  friend std::string get_triqs_hdf5_data_scheme(gf_mesh const &) { return "MeshImTime";}
-  
+  // -------------------- print -------------------
+
+  friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
+   return sout << "Imaginary Time Mesh of size " << m.size() <<", Domain: " << m.domain();
+  }
+
+  // -------------------- hdf5 -------------------
+
+  static std::string hdf5_scheme(){ return  "MeshImTime";}
+
   friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
    h5_write_impl(fg, subgroup_name, m, "MeshImTime");
   }

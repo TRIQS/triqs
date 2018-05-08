@@ -27,7 +27,7 @@ namespace gfs {
  // For Legendre functions
  // ------------------------------------------------------
 
- __tail_view<matrix_valued> get_tail(gf_const_view<legendre> gl, int size, int omin);
+ __tail_view<matrix_valued> get_tail(gf_const_view<legendre> gl);
 
  void enforce_discontinuity(gf_view<legendre>& gl, triqs::arrays::array_view<double, 2> disc);
 }

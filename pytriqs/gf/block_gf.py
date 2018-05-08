@@ -19,6 +19,7 @@
 #
 ################################################################################
 from itertools import izip
+from gf import Gf
 import operator
 import numpy as np
 
@@ -41,6 +42,12 @@ class BlockGf(object):
                    * ``block_list``: list of blocks of Green's functions.
                    * ``make_copies``: If True, it makes a copy of the blocks and build the Green's function from these copies.
 
+            * BlockGf(mesh = mesh, gf_struct = block structure, target_rank = rank of target space, name = '')
+
+                   * ``mesh``: The mesh used to construct each block
+                   * ``target_rank``: The rank of the target space of each block (default: 2)
+                   * ``gf_struct``: List of pairs [ [str, [str,...]], ... ] providing the block name and indices, e.g. [ ['up', ['0']], ['dn', ['0']] ]
+
             * BlockGf(name_block_generator, make_copies = False, name = '')
 
                    * ``name_block_generator``: a generator of (name, block)
@@ -52,20 +59,34 @@ class BlockGf(object):
         self.note = kwargs.pop('note','')
         self._rename_gf = kwargs.pop('rename_gf',True)
 
-        if 'make_copies' not in kwargs: kwargs['make_copies'] = False
+        # Default arguments
+        if set(kwargs.keys()) == set(['name_list','block_list']):
+            kwargs['make_copies'] = False
+        if set(kwargs.keys()) == set(['mesh','gf_struct']):
+            kwargs['target_rank'] = 2
 
         if set(kwargs.keys()) == set(['name_list','block_list','make_copies']):
             BlockNameList, GFlist = kwargs['name_list'],kwargs['block_list']
+        elif set(kwargs.keys()) == set(['mesh','gf_struct','target_rank']):
+            BlockNameList = []
+            GFlist = []
+            for bl, idx_lst in kwargs['gf_struct']:
+                BlockNameList.append(bl)
+                if len(idx_lst) > 0 and kwargs['target_rank'] > 0:
+                    GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[len(idx_lst)]*kwargs['target_rank'], name='G_%s'%bl, indices=[idx_lst]*kwargs['target_rank']))
+                else:
+                    GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[], name='G_%s'%bl))
         elif set(kwargs.keys()) == set(['name_block_generator','make_copies']):
             BlockNameList,GFlist = zip(* kwargs['name_block_generator'])
         else:
             raise RuntimeError, "BlockGf construction: error in parameters, see the documentation"
-        if kwargs['make_copies']: GFlist = [g.copy() for g in GFlist]
+
+        if kwargs.get('make_copies', False): GFlist = [g.copy() for g in GFlist]
 
         # First a few checks
         assert GFlist !=[], "Empty list of blocks !"
         for ind in BlockNameList: assert str(ind)[0:2] !='__', "indices should not start with __"
-        assert len(set(BlockNameList)) == len(BlockNameList),"Bloc indices of the Green Function are not unique"
+        assert len(set(BlockNameList)) == len(BlockNameList),"Block indices of the Green Function are not unique"
         assert len(BlockNameList) == len(GFlist), "Number of indices and of Green Function Blocks differ"
         assert 'block_names' not in BlockNameList, "'block_names' is a reserved keyword. It is not authorized as a block name ! "
 
@@ -208,7 +229,7 @@ class BlockGf(object):
         s =  "Green Function %s composed of %d blocks: \n"%(self.name,self.n_blocks)
         #s =  "Green Function %s composed of %d blocks at inverse temperature beta = %s: \n"%(self.name,self.n_blocks,self.beta)
         for i,g in self:
-            s += " %s \n"%repr(g)  #"  Bloc %s: indices %s \n"%(i,self[i].indices)
+            s += " %s \n"%repr(g)  #"  Block %s: indices %s \n"%(i,self[i].indices)
         if self.note: s += "NB: %s\n"%self.note
         return s
 

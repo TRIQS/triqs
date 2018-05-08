@@ -135,41 +135,39 @@ namespace triqs {
       template <typename Int> explicit __tail(mini_vector<Int, T::rank> sh) : _data(sh.front_append(_size())) { zero(); }
 
       /**
+    * DEPRECATED Constructor
+    *
     * @param sh target shape.
-    * @param n_orders number of moments in the tail ...
+    * @param n_moments number of moments greater than o_min
     * @param o_min ... starting at o_min.
     *
-    * Only n_orders + o_min matters. Kept this way for backward compatibility.
+    * Only n_moments + o_min matters. Kept this way for backward compatibility.
     * Precondition : o_min >= order_min()
     *
-    * Tail is initialized to 0 for n <= o_min + n_orders and NaN afterwards.
+    * Tail is initialized to 0 for n <= o_min + n_moments and NaN afterwards.
     */
-      template <typename Int> explicit __tail(mini_vector<Int, T::rank> sh, int n_orders, int o_min) : __tail{sh} {
-        if (o_min < order_min()) TRIQS_RUNTIME_ERROR << "Tail construction : o_min is < " << order_min();
-        reset(o_min + n_orders + 1);
+      template <typename Int>
+      TRIQS_DEPRECATED("__tail{shape, n_moments, omin} deprecated. Please use __tail{shape} instead followed by tail.reset(o_min + n_moments)")
+      explicit __tail(mini_vector<Int, T::rank> sh, int n_moments, int o_min) : __tail{sh} {
+        if (n_moments > _size()) TRIQS_RUNTIME_ERROR << " Tail construction is limited to a total number of " << _size() << " moments";
+        reset(o_min + n_moments);
       }
 
       /**
+    * DEPRECATED Constructor
     * Parameters are (for rank R)
     *
-    * (n0, ... n_{R-1}) : dimensions of the target shape
+    * (n0, ... n_{R-1}) : Invoke __tail{ make_make(n0, ... n_{R-1}) }
     * or
-    * (n0, ... n_{R-1}, n_orders, o_min)
-    *
-    * @param n_orders number of moments in the tail ...
-    * @param o_min ... starting at o_min.
-    *
-    * Only n_orders + o_min matters. Kept this way for backward compatibility.
-    * Precondition : o_min >= order_min()
-    *
-    * Tail is initialized to 0 for n <= o_min + n_orders and NaN afterwards.
+    * (n0, ... n_{R-1}, n_moments, o_min) : Invoke __tail{ make_shape(n0, ... n_{R-1}), n_moments, o_min }
     */
-      template <typename... Args> //TRIQS_DEPRECATED("Deprecated constructor")
-      explicit __tail(int n0, Args const &... args) {
-        constexpr int n_args = sizeof...(Args) + 1;
-        static_assert((n_args - T::rank == 2) or ((n_args - T::rank == 0)), "Too many arguments in tail construction");
+      template <typename... Args>
+      TRIQS_DEPRECATED("__tail{n0, n1, ... } deprecated. Please use __tail{shape} instead followed by tail.reset(n_moments + o_min)")
+      explicit __tail(Args... ns) {
+        constexpr int n_args = sizeof...(Args);
+        static_assert((n_args == T::rank) or (n_args == 2 + T::rank), "Wrong number of arguments in tail construction");
         mini_vector<int, T::rank> shape;
-        mini_vector<int, n_args> _args{n0, int(args)...};
+        mini_vector<int, n_args> _args{int(ns)...};
         for (int i = 0; i < T::rank; ++i) shape[i] = _args[i];
         *this = (n_args == T::rank ? __tail{shape} : __tail{shape, _args[n_args - 2], _args[n_args - 1]});
       }
@@ -213,7 +211,7 @@ namespace triqs {
 
       /// Sets order < n to 0 and Nan from n to order_max
       void reset(int n = order_min()) {
-        n                                    = std::min(n, order_max() + 1) - order_min();
+        n                                    = std::min(n, order_max()) - order_min();
         _data(range(0, n), ellipsis())       = 0;
         _data(range(n, _size()), ellipsis()) = std::numeric_limits<double>::quiet_NaN();
       }
@@ -331,7 +329,7 @@ namespace triqs {
       crv_t get_or_zero(int n) const { return __get_or_zero(T{}, n); }
       //#endif
 
-      friend std::string get_triqs_hdf5_data_scheme(__tail const &g) {
+      static std::string hdf5_scheme() {
         if (T::rank == 0) return "TailGf_s";
         if (T::rank == 2) return "TailGf";
         if (T::rank == 3) return "TailGfTv3";
@@ -341,7 +339,7 @@ namespace triqs {
       /// write to h5
       friend void h5_write(h5::group fg, std::string subgroup_name, __tail const &t) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(t);
+        gr.write_hdf5_scheme(t);
         h5_write(gr, "data", t._data);
         h5_write(gr, "omin", t.order_min());
       }
@@ -349,7 +347,7 @@ namespace triqs {
       /// read from h5
       friend void h5_read(h5::group fg, std::string subgroup_name, __tail &t) {
         auto gr = fg.open_group(subgroup_name);
-        gr.assert_triqs_hdf5_data_scheme(t, true);
+        gr.assert_hdf5_scheme(t, true);
         if (!gr.has_key("mask")) {      // if no mask, we have the latest version of the tail
           h5_read(gr, "data", t._data); // Add here backward compat code IF order_min/max where to change
         } else {
@@ -493,7 +491,7 @@ namespace triqs {
 
       /// Sets order < n to 0 and Nan from n to order_max
       void reset(int n = order_min()) {
-        n                                    = std::min(n, order_max() + 1) - order_min();
+        n                                    = std::min(n, order_max()) - order_min();
         _data(range(0, n), ellipsis())       = 0;
         _data(range(n, _size()), ellipsis()) = std::numeric_limits<double>::quiet_NaN();
       }
@@ -611,7 +609,7 @@ namespace triqs {
       crv_t get_or_zero(int n) const { return __get_or_zero(T{}, n); }
       //#endif
 
-      friend std::string get_triqs_hdf5_data_scheme(__tail_view const &g) {
+      static std::string hdf5_scheme() {
         if (T::rank == 0) return "TailGf_s";
         if (T::rank == 2) return "TailGf";
         if (T::rank == 3) return "TailGfTv3";
@@ -621,7 +619,7 @@ namespace triqs {
       /// write to h5
       friend void h5_write(h5::group fg, std::string subgroup_name, __tail_view const &t) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(t);
+        gr.write_hdf5_scheme(t);
         h5_write(gr, "data", t._data);
         h5_write(gr, "omin", t.order_min());
       }
@@ -629,7 +627,7 @@ namespace triqs {
       /// read from h5
       friend void h5_read(h5::group fg, std::string subgroup_name, __tail_view &t) {
         auto gr = fg.open_group(subgroup_name);
-        gr.assert_triqs_hdf5_data_scheme(t, true);
+        gr.assert_hdf5_scheme(t, true);
         if (!gr.has_key("mask")) {      // if no mask, we have the latest version of the tail
           h5_read(gr, "data", t._data); // Add here backward compat code IF order_min/max where to change
         } else {
@@ -871,7 +869,7 @@ namespace triqs {
       crv_t get_or_zero(int n) const { return __get_or_zero(T{}, n); }
       //#endif
 
-      friend std::string get_triqs_hdf5_data_scheme(__tail_const_view const &g) {
+      static std::string hdf5_scheme() {
         if (T::rank == 0) return "TailGf_s";
         if (T::rank == 2) return "TailGf";
         if (T::rank == 3) return "TailGfTv3";
@@ -881,7 +879,7 @@ namespace triqs {
       /// write to h5
       friend void h5_write(h5::group fg, std::string subgroup_name, __tail_const_view const &t) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_triqs_hdf5_data_scheme(t);
+        gr.write_hdf5_scheme(t);
         h5_write(gr, "data", t._data);
         h5_write(gr, "omin", t.order_min());
       }
@@ -889,7 +887,7 @@ namespace triqs {
       /// read from h5
       friend void h5_read(h5::group fg, std::string subgroup_name, __tail_const_view &t) {
         auto gr = fg.open_group(subgroup_name);
-        gr.assert_triqs_hdf5_data_scheme(t, true);
+        gr.assert_hdf5_scheme(t, true);
         if (!gr.has_key("mask")) {      // if no mask, we have the latest version of the tail
           h5_read(gr, "data", t._data); // Add here backward compat code IF order_min/max where to change
         } else {
@@ -1170,7 +1168,11 @@ namespace triqs {
         // hence p <= min ( a.n_max, n-b.n_min ) and p >= max ( a.n_min, n- b.n_max)
         const int pmin = std::max(l.order_min(), n - r.order_max());
         const int pmax = std::min(l.order_max(), n - r.order_min());
-        for (int p = pmin; p <= pmax; ++p) { res(n) += l(p) * r(n - p); }
+        for (int p = pmin; p <= pmax; ++p) {
+          // Propagate NAN only if other component is non-zero
+          if (max_element(abs(l(p))) < 1e-15 || max_element(abs(r(n - p))) < 1e-15) continue;
+          res(n) += l(p) * r(n - p);
+        }
       }
       return res;
     }
