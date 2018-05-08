@@ -92,7 +92,7 @@ def dyson(**kwargs):
 
 # Fit tails for Sigma_iw and G_iw.
 # Either give window to fix in terms of matsubara frequencies index (fit_min_n/fit_max_n) or value (fit_min_w/fit_max_w).
-def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min_w=None,fit_max_w=None,fit_max_moment=None,fit_known_moments=None):
+def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min_w=None,fit_max_w=None,fit_max_moment=None,fit_known_moments=None,error_omega=0.0):
     """
     Fit the tails of Sigma_iw and optionally G_iw.
 
@@ -136,7 +136,10 @@ def tail_fit(Sigma_iw,G0_iw=None,G_iw=None,fit_min_n=None,fit_max_n=None,fit_min
     if fit_max_moment is None: fit_max_moment = 3
 
     # Now fit the tails of Sigma_iw and G_iw
-    for name, sig in Sigma_iw: sig.fit_tail(fit_known_moments[name], fit_max_moment, fit_min_n, fit_max_n)
+    try:
+        for name, sig in Sigma_iw: sig.fit_tail(fit_known_moments[name], fit_max_moment, fit_min_n, fit_max_n, error_omega=error_omega)
+    except RuntimeError:
+        for name, sig in Sigma_iw: sig.fit_tail(fit_known_moments[name], fit_max_moment, -fit_max_n-1, -fit_min_n-1, fit_min_n, fit_max_n, error_omega=error_omega)
     if (G_iw is not None) and (G0_iw is not None):
         for name, g in G_iw: g.tail = inverse( inverse(G0_iw[name].tail) - Sigma_iw[name].tail )
 
