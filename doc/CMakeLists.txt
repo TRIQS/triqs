@@ -29,7 +29,12 @@ execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY
 # Generate C++ doc with c++2rst
 # ---------------------------------
 # list of namespaces selected by c++2rst
-set(NS -N triqs::det_manip -N triqs::mc_tools)
+set(NS
+    -N triqs::det_manip
+    -N triqs::mc_tools
+    -N triqs::hilbert_space
+    -N triqs::atom_diag
+    -N triqs::statistics)
 
 get_property(TRIQS_INCLUDE_DIRS TARGET triqs PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 
@@ -38,17 +43,17 @@ foreach(I ${TRIQS_INCLUDE_DIRS})
 endforeach()
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs
-		   COMMAND c++2rst ${NS} 
-		   ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp 
+		   COMMAND c++2rst ${NS}
+		   ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp
 		   --output_directory ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
 		   ${CPP2RST_INCLUDE_DIRS}
-		   --includes ${CMAKE_SOURCE_DIR}/ 
-		   --includes ${CMAKE_BINARY_DIR}/Config 
+		   --includes ${CMAKE_SOURCE_DIR}/
+		   --includes ${CMAKE_BINARY_DIR}/Config
 		   --cxxflags "-std=c++17 -DTRIQS_BUILDING_LIBRARY" 
 		   2>&1 > cpp2rst.log
-		   VERBATIM) 
-add_custom_target(docs_cpp2rst DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log) 
-add_dependencies(docs_cpp2rst triqs) 
+		   VERBATIM)
+add_custom_target(docs_cpp2rst DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log)
+add_dependencies(docs_cpp2rst triqs)
 
 #---------------------------------
 # Top Sphinx target
@@ -61,10 +66,10 @@ FILE(GLOB_RECURSE SOURCES *.rst)
 SET(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/contents.html)
 add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES} docs_cpp2rst
   COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_BINARY_DIR} html)
-add_custom_target(docs_sphinx ALL DEPENDS ${sphinx_top} ${CMAKE_CURRENT_BINARY_DIR}) 
+add_custom_target(docs_sphinx ALL DEPENDS ${sphinx_top} ${CMAKE_CURRENT_BINARY_DIR})
 
 # depends on generated doc
-add_dependencies(docs_sphinx docs_cpp2rst) 
+add_dependencies(docs_sphinx docs_cpp2rst)
 
 # doc depends on all python modules (because they  may be loaded in examples).
 GET_PROPERTY(CPP2PY_MODULES_LIST GLOBAL PROPERTY CPP2PY_MODULES_LIST)

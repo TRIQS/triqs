@@ -2,7 +2,7 @@
 ====================================================================================================
 
 Introduction
--------------
+------------
 Given the statistical samples :math:`\lbrace x_i\rbrace _{i=0\dots N-1}` and   :math:`\lbrace y_i\rbrace _{i=0\dots N-1}` of  random variables :math:`X` and :math:`Y`, one often wants to compute the estimate of the following observables:
 
 :math:`\langle X \rangle`,  :math:`\langle X\rangle/\langle Y \rangle`, :math:`\langle X \rangle^2`, or in general  :math:`f(\langle X \rangle , \langle Y \rangle, \dots)`
@@ -22,8 +22,8 @@ If the samples are independent from each other and :math:`f` is a linear functio
 where :math:`\sigma^2({x})` is the empirical variance of the sample.
 
 
-In the general case, however, 
-   
+In the general case, however,
+
   - the samples are correlated (with a characteristic correlation time): one needs to :doc:`bin <binning>`  the series to obtain a reliable estimate of the error bar
   - :math:`f` is non-linear in its arguments: one needs to :doc:`jackknife <jackknife>` the series
 
@@ -40,7 +40,7 @@ Concepts
 ---------
 
 TimeSeries
-~~~~~~~~~~~
+~~~~~~~~~~
 An object has the concept of a TimeSeries if it has the following member functions:
 
 +-------------+-------------------+
@@ -60,7 +60,7 @@ and the following member type:
 +-------------+--------------------------------------------+
 
 Observable
-~~~~~~~~~~~
+~~~~~~~~~~
 
 An object has the concept of an observable if it is a TimeSeries and has, additionally, the following member function:
 
@@ -73,14 +73,24 @@ An object has the concept of an observable if it is a TimeSeries and has, additi
 where `T` belongs to an algebra.
 
 Example
---------
+-------
 
 .. triqs_example:: ./contents_0.cpp
 
 .. toctree::
    binning
    jackknife
-   autocorrelation_time   
+   autocorrelation_time
    autocorrelation_function
    green_function
    ising2d
+
+Histogram
+---------
+
+`histogram` is a lightweight object used to represent and to accumulate a histogram of a real random variable.
+
+.. triqs_example:: ./histogram_example.cpp
+
+.. toctree::
+   /cpp2rst_generated/triqs/statistics/histogram
