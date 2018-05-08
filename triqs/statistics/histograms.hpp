@@ -229,20 +229,6 @@ namespace statistics {
     ar & TRIQS_MAKE_NVP("n_lost_pts", _n_lost_pts);
     ar & TRIQS_MAKE_NVP("step", _step);
   }
-
-  // -------------------- boost serialization -------------------
-
-  friend class boost::serialization::access;
-  template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-   ar & a;
-   ar & b;
-   ar & n_bins;
-   ar & _n_data_pts;
-   ar & _n_lost_pts;
-   ar & _data;
-   ar & _step;
-  }
-  
 };
 
  //-------------------------------------------------------------------------------
