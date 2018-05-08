@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <variant>
+#include <triqs/utility/variant.hpp>
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/operators/many_body_operator.hpp>

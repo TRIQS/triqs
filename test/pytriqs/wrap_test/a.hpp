@@ -3,7 +3,7 @@
 #include <vector>
 #include <set>
 #include <ostream>
-#include <variant>
+#include <triqs/utility/variant.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/utility/signal_handler.hpp>
 

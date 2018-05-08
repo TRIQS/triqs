@@ -24,7 +24,7 @@
 #include "./group.hpp"
 #include "./string.hpp"
 #include "./generic.hpp"
-#include <variant>
+#include <triqs/utility/variant.hpp>
 
 namespace triqs::h5 {
 

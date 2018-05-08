@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <variant>
+#include <triqs/utility/variant.hpp>
 #include <string>
 #include <triqs/utility/dressed_iterator.hpp>
 #include <triqs/utility/exceptions.hpp>
@@ -28,7 +28,6 @@
 #include <vector>
 #include <set>
 #include <map>
-#include <variant>
 
 namespace triqs {
 namespace hilbert_space {
