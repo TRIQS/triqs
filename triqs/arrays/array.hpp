@@ -306,7 +306,7 @@ namespace triqs { namespace arrays {
 
   // swap two indices i,j
   template<typename A> 
-    std::enable_if_t<is_amv_value_or_view_class<std::decay_t<A>>::value, typename std::decay_t<A>::const_view_type>
+    std::enable_if_t<is_amv_value_or_view_class<std::decay_t<A>>::value, typename std::decay_t<A>::view_type>
   swap_index_view(A && a, int i, int j) { 
    auto imp = a.indexmap();
    auto l= imp.lengths();
@@ -317,6 +317,15 @@ namespace triqs { namespace arrays {
    // FIXME : long only
    auto imp2 = typename r_t::indexmap_type { l, s, static_cast<ptrdiff_t>(imp.start_shift())};
    return r_t{imp2, a.storage()};
+  }
+
+ // Rotate the index n to 0, preserving the relative order of the other indices
+  template<typename A> 
+    std::enable_if_t<is_amv_value_or_view_class<std::decay_t<A>>::value, typename std::decay_t<A>::view_type>
+  rotate_index_view(A && a, int n) { 
+    typename std::decay_t<A>::view_type r{a};
+    for (int i = n; i > 0; --i) r.rebind(swap_index_view(r, i - 1, i));
+   return r;
   }
 
 
