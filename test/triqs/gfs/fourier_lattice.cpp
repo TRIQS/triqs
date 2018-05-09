@@ -6,7 +6,7 @@ template <int TARGET_RANK> void test_fourier() {
   double precision = 10e-9;
   triqs::clef::placeholder<0> r_;
   double beta = 1;
-  int N       = 2;
+  int N_k     = 2;
 
   mini_vector<size_t, TARGET_RANK> shape{};
 
@@ -22,14 +22,14 @@ template <int TARGET_RANK> void test_fourier() {
   auto bl = bravais_lattice{make_unit_matrix<double>(2)};
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 
-  auto Gr = gf<cyclic_lattice, target_t>{{N, N}, shape};
+  auto Gr = gf<cyclic_lattice, target_t>{{N_k, N_k}, shape};
   Gr(r_) << exp(-r_(0));
 
-  auto Gk1 = gf<brillouin_zone, target_t>{{bz, N}, shape};
+  auto Gk1 = gf<brillouin_zone, target_t>{{bz, N_k}, shape};
   Gk1()    = fourier(Gr);
 
   ///verification that TF(TF^-1)=Id
-  auto Grb = gf<cyclic_lattice, target_t>{{N, N}, shape};
+  auto Grb = gf<cyclic_lattice, target_t>{{N_k, N_k}, shape};
   Grb()    = inverse_fourier(Gk1);
   EXPECT_GF_NEAR(Gr, Grb, precision);
 
