@@ -28,7 +28,7 @@ int main() {
   
   h5_write(file,"Gw1",Gw1);   // the original lorentzian
   
-  auto Gt1 = make_gf_from_inverse_fourier(Gw1);  
+  auto Gt1 = make_gf_from_fourier(Gw1);  
   h5_write(file,"Gt1",Gt1);   // the lorentzian TF : lorentzian_inverse
   
   // verification that TF(TF^-1)=Id

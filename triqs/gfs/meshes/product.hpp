@@ -38,32 +38,33 @@ namespace gfs {
   template <typename T> auto get_index(mesh_point<T> &x) { return x.index(); }
  }
 
- template <typename... Ms> struct cartesian_product {
-  using type = std::tuple<Ms...>;
-  static constexpr size_t size = sizeof...(Ms);
+ template <typename... Vs> struct cartesian_product {
+  using type = std::tuple<Vs...>;
+  static constexpr size_t size = sizeof...(Vs);
+  static_assert(size > 1, "Cartesian_product meshes require at least two components");
  };
 
- // template <typename... Ms>  constexpr int get_n_variables(cartesian_product<Ms...>) { return sizeof...(Ms);}
- template <typename... Ms> struct get_n_variables<cartesian_product<Ms...>> {
-  static const int value = sizeof...(Ms);
+ // template <typename... Vs>  constexpr int get_n_variables(cartesian_product<Vs...>) { return sizeof...(Vs);}
+ template <typename... Vs> struct get_n_variables<cartesian_product<Vs...>> {
+  static const int value = sizeof...(Vs);
  };
 
  /** Cartesian product of meshes */
  // the mesh is simply a cartesian product
- template <typename... Ms> struct gf_mesh<cartesian_product<Ms...>> : tag::composite {
-  using domain_t = domain_product<typename gf_mesh<Ms>::domain_t...>;
-  using m_tuple_t = std::tuple<gf_mesh<Ms>...>;
-  using ms_tuple_t = std::tuple<Ms...>;
-  using m_pt_tuple_t = std::tuple<typename gf_mesh<Ms>::mesh_point_t...>;
+ template <typename... Vs> struct gf_mesh<cartesian_product<Vs...>> : tag::composite {
+  using domain_t = domain_product<typename gf_mesh<Vs>::domain_t...>;
+  using m_tuple_t = std::tuple<gf_mesh<Vs>...>;
+  using ms_tuple_t = std::tuple<Vs...>;
+  using m_pt_tuple_t = std::tuple<typename gf_mesh<Vs>::mesh_point_t...>;
   using domain_pt_t = typename domain_t::point_t;
-  using linear_index_t = std::tuple<typename gf_mesh<Ms>::linear_index_t...>;
+  using linear_index_t = std::tuple<typename gf_mesh<Vs>::linear_index_t...>;
   using default_interpol_policy = interpol_t::Product;
-  using var_t = cartesian_product<Ms...>;
-  static constexpr int dim = sizeof...(Ms);
+  using var_t = cartesian_product<Vs...>;
+  static constexpr int dim = sizeof...(Vs);
 
   /// The index
   struct index_t {
-   std::tuple<typename gf_mesh<Ms>::index_t...> _i;
+   std::tuple<typename gf_mesh<Vs>::index_t...> _i;
    // construct with at least 2 arguments
    // The mesh point are replaced by their index.
    template <typename Arg0, typename Arg1, typename... Args>
@@ -71,8 +72,8 @@ namespace gfs {
       : _i(detail::get_index(std::forward<Arg0>(arg0)), detail::get_index(std::forward<Arg1>(arg1)),
            detail::get_index(std::forward<Args>(args))...) {}
    // Construct the index_t from a tuple of indices
-   index_t(std::tuple<typename gf_mesh<Ms>::index_t...> const & i): _i(i){}
-   index_t(std::tuple<typename gf_mesh<Ms>::index_t...> && i): _i(i){}
+   index_t(std::tuple<typename gf_mesh<Vs>::index_t...> const & i): _i(i){}
+   index_t(std::tuple<typename gf_mesh<Vs>::index_t...> && i): _i(i){}
 
    index_t(index_t const &) = default;
    index_t(index_t &&) = default;
@@ -84,7 +85,8 @@ namespace gfs {
   // -------------------- Constructors -------------------
 
   gf_mesh() = default;
-  gf_mesh(gf_mesh<Ms> const &... meshes) : m_tuple(meshes...), _dom(meshes.domain()...) {}
+  gf_mesh(gf_mesh<Vs> const &... meshes) : m_tuple(meshes...), _dom(meshes.domain()...) {}
+  gf_mesh(std::tuple<gf_mesh<Vs>...> const & mesh_tpl) : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto && m){ return m.domain(); }, mesh_tpl)) {}
   gf_mesh(gf_mesh const &) = default;
 
   /// Mesh comparison
@@ -149,7 +151,7 @@ namespace gfs {
 
   /// Accessing a point of the mesh
   mesh_point_t operator[](index_t const &i) const { return mesh_point_t(*this, i); }
-  mesh_point_t operator()(typename gf_mesh<Ms>::index_t... i) const { return (*this)[index_t{i...}]; }
+  mesh_point_t operator()(typename gf_mesh<Vs>::index_t... i) const { return (*this)[index_t{i...}]; }
 
   /// Iterating on all the points...
   using const_iterator = mesh_pt_generator<gf_mesh>;
@@ -170,7 +172,7 @@ namespace gfs {
   long get_interpolation_data(interpol_t::None, long n) = delete;
 
   template <typename F, typename... Args> auto evaluate(interpol_t::Product, F const &f, Args &&... args) const {
-   multivar_eval<typename gf_mesh<Ms>::default_interpol_policy...> ev;
+   multivar_eval<typename gf_mesh<Vs>::default_interpol_policy...> ev;
    return ev(f, std::forward<Args>(args)...);
   }
 
@@ -232,15 +234,18 @@ namespace gfs {
   domain_t _dom;
  }; //end of class
 
- // Class template argument deduction rule
+ // ---------- Class template argument deduction rules -------------
  template <typename M1, typename M2, typename... Ms>
  gf_mesh(M1, M2, Ms...)->gf_mesh<cartesian_product<typename M1::var_t, typename M2::var_t, typename Ms::var_t...>>;
+
+ template <typename M1, typename M2, typename... Ms>
+ gf_mesh(std::tuple<M1, M2, Ms...>)->gf_mesh<cartesian_product<typename M1::var_t, typename M2::var_t, typename Ms::var_t...>>;
 
   // ------------------------------------------------
   /// The wrapper for the mesh point
 
- template <typename... Ms> struct mesh_point<gf_mesh<cartesian_product<Ms...>>> : tag::mesh_point {
-   using mesh_t = gf_mesh<cartesian_product<Ms...>>;
+ template <typename... Vs> struct mesh_point<gf_mesh<cartesian_product<Vs...>>> : tag::mesh_point {
+   using mesh_t = gf_mesh<cartesian_product<Vs...>>;
    using index_t = typename mesh_t::index_t;
    using m_pt_tuple_t = typename mesh_t::m_pt_tuple_t;
    using linear_index_t = typename mesh_t::linear_index_t;
@@ -300,30 +305,44 @@ namespace std {
 
  // mesh as tuple
  // redondant with .get<pos>, but seems necessary.
- template <size_t pos, typename... Ms> decltype(auto) get(triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>> const &m) {
+ template <size_t pos, typename... Vs> decltype(auto) get(triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Vs...>> const &m) {
   return std::get<pos>(m.components());
  }
 
- template <typename... Ms> class tuple_size<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> {
+ template <typename... Vs> class tuple_size<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Vs...>>> {
   public:
-  static const int value = sizeof...(Ms);
+  static const int value = sizeof...(Vs);
  };
 
- template <size_t N, typename... Ms> class tuple_element<N, triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> : 
-  public tuple_element<N, std::tuple<typename triqs::gfs::gf_mesh<Ms>...>> {};
+ template <size_t N, typename... Vs> class tuple_element<N, triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Vs...>>> : 
+  public tuple_element<N, std::tuple<typename triqs::gfs::gf_mesh<Vs>...>> {};
+
+ // NON PRODUCT mesh, for generic code std::get<0> should work
+ // redondant with .get<pos>, but seems necessary.
+ template <size_t pos, typename M> auto const & get(triqs::gfs::gf_mesh<M> const &m) { 
+   static_assert(pos ==0, "std::get<N>() of a non cartesiant product mesh for N>0");
+   return m;
+ }
+
+ template <typename M> class tuple_size<triqs::gfs::gf_mesh<M>> {
+  public:
+  static const int value = 1;
+ };
+
+ template <size_t N, typename M> class tuple_element<N, triqs::gfs::gf_mesh<M>> { using type = triqs::gfs::gf_mesh<M>;};
 
  // mesh_point as tuple
- template <int pos, typename... Ms> decltype(auto) get(triqs::gfs::mesh_point<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> const &m) {
+ template <int pos, typename... Vs> decltype(auto) get(triqs::gfs::mesh_point<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Vs...>>> const &m) {
   return std::get<pos>(m.components_tuple());
  }
 
- template <typename... Ms> class tuple_size<triqs::gfs::mesh_point<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>>> {
+ template <typename... Vs> class tuple_size<triqs::gfs::mesh_point<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Vs...>>>> {
   public:
-  static const int value = sizeof...(Ms);
+  static const int value = sizeof...(Vs);
  };
 
- template <size_t N, typename... Ms> class tuple_element<N, triqs::gfs::mesh_point<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>>> : 
-  public tuple_element<N, std::tuple<typename triqs::gfs::gf_mesh<Ms>::mesh_point_t...>> {};
+ template <size_t N, typename... Vs> class tuple_element<N, triqs::gfs::mesh_point<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Vs...>>>> : 
+  public tuple_element<N, std::tuple<typename triqs::gfs::gf_mesh<Vs>::mesh_point_t...>> {};
 
 }
 

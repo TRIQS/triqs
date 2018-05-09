@@ -109,9 +109,10 @@ namespace triqs {
       using target_t   = Target;
 
       /// Type of the mesh
-      using mesh_t               = gf_mesh<Var>;
-      using domain_t             = typename mesh_t::domain_t;
-      static constexpr int arity = get_n_variables<Var>::value;
+      using mesh_t                   = gf_mesh<Var>;
+      using domain_t                 = typename mesh_t::domain_t;
+      static constexpr int arity     = get_n_variables<Var>::value;
+      static constexpr int data_rank = arity + Target::rank;
 
       using mesh_point_t        = typename mesh_t::mesh_point_t;
       using mesh_index_t        = typename mesh_t::index_t;
@@ -121,12 +122,12 @@ namespace triqs {
 
       using scalar_t = typename Target::scalar_t;
 
-      using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
+      using data_regular_t    = arrays::array<scalar_t, data_rank>;
       using data_view_t       = typename data_regular_t::view_type;
       using data_const_view_t = typename data_regular_t::const_view_type;
       using data_t            = data_regular_t;
 
-      using data_memory_layout_t = memory_layout_t<arity + Target::rank>;
+      using data_memory_layout_t = memory_layout_t<data_rank>;
 
       using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
       using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
@@ -134,7 +135,7 @@ namespace triqs {
       using zero_t            = zero_regular_t;
 
       // FIXME : std::array with NDA
-      using target_shape_t = arrays::mini_vector<int, Target::rank>;
+      using target_shape_t = arrays::mini_vector<long, Target::rank>;
 
       struct target_and_shape_t {
         target_shape_t _shape;
@@ -733,9 +734,10 @@ namespace triqs {
       using target_t   = Target;
 
       /// Type of the mesh
-      using mesh_t               = gf_mesh<Var>;
-      using domain_t             = typename mesh_t::domain_t;
-      static constexpr int arity = get_n_variables<Var>::value;
+      using mesh_t                   = gf_mesh<Var>;
+      using domain_t                 = typename mesh_t::domain_t;
+      static constexpr int arity     = get_n_variables<Var>::value;
+      static constexpr int data_rank = arity + Target::rank;
 
       using mesh_point_t        = typename mesh_t::mesh_point_t;
       using mesh_index_t        = typename mesh_t::index_t;
@@ -745,12 +747,12 @@ namespace triqs {
 
       using scalar_t = typename Target::scalar_t;
 
-      using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
+      using data_regular_t    = arrays::array<scalar_t, data_rank>;
       using data_view_t       = typename data_regular_t::view_type;
       using data_const_view_t = typename data_regular_t::const_view_type;
       using data_t            = data_view_t;
 
-      using data_memory_layout_t = memory_layout_t<arity + Target::rank>;
+      using data_memory_layout_t = memory_layout_t<data_rank>;
 
       using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
       using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
@@ -758,7 +760,7 @@ namespace triqs {
       using zero_t            = zero_view_t;
 
       // FIXME : std::array with NDA
-      using target_shape_t = arrays::mini_vector<int, Target::rank>;
+      using target_shape_t = arrays::mini_vector<long, Target::rank>;
 
       struct target_and_shape_t {
         target_shape_t _shape;
@@ -1329,9 +1331,10 @@ namespace triqs {
       using target_t   = Target;
 
       /// Type of the mesh
-      using mesh_t               = gf_mesh<Var>;
-      using domain_t             = typename mesh_t::domain_t;
-      static constexpr int arity = get_n_variables<Var>::value;
+      using mesh_t                   = gf_mesh<Var>;
+      using domain_t                 = typename mesh_t::domain_t;
+      static constexpr int arity     = get_n_variables<Var>::value;
+      static constexpr int data_rank = arity + Target::rank;
 
       using mesh_point_t        = typename mesh_t::mesh_point_t;
       using mesh_index_t        = typename mesh_t::index_t;
@@ -1341,12 +1344,12 @@ namespace triqs {
 
       using scalar_t = typename Target::scalar_t;
 
-      using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
+      using data_regular_t    = arrays::array<scalar_t, data_rank>;
       using data_view_t       = typename data_regular_t::view_type;
       using data_const_view_t = typename data_regular_t::const_view_type;
       using data_t            = data_const_view_t;
 
-      using data_memory_layout_t = memory_layout_t<arity + Target::rank>;
+      using data_memory_layout_t = memory_layout_t<data_rank>;
 
       using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
       using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
@@ -1354,7 +1357,7 @@ namespace triqs {
       using zero_t            = zero_const_view_t;
 
       // FIXME : std::array with NDA
-      using target_shape_t = arrays::mini_vector<int, Target::rank>;
+      using target_shape_t = arrays::mini_vector<long, Target::rank>;
 
       struct target_and_shape_t {
         target_shape_t _shape;

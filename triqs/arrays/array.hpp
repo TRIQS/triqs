@@ -330,6 +330,21 @@ namespace triqs { namespace arrays {
    return r_t{imp2, a.storage()};
   }
 
+ // Rotate the index n to 0, preserving the relative order of the other indices
+  template<typename T, int R>
+  array_const_view<T,R> rotate_index_view(array_const_view<T,R> a, int n) {
+    for (int i = n; i > 0; --i) a.rebind(swap_index_view(a, i - 1, i));
+   return a;
+  }
+
+ // FIXME : regroup
+  // Rotate the index n to 0, preserving the relative order of the other indices
+  template<typename T, int R>
+  array_view<T,R> rotate_index_view(array_view<T,R> a, int n) {
+    for (int i = n; i > 0; --i) a.rebind(swap_index_view(a, i - 1, i));
+   return a;
+  }
+
 
  //----------------------------------------------------------------------------------
 

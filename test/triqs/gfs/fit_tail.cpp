@@ -100,7 +100,7 @@ TEST(Gf, FitTailComplex) { // NOLINT
 
   auto [tail, err] = get_tail(gw, known_moments);
 
-  auto tail_exact = array<dcomplex, 1>{dcomplex(0, 0), dcomplex(1,0), a, std::pow(a, 2), std::pow(a, 3)};
+  auto tail_exact = array<dcomplex, 1>{dcomplex(0, 0), dcomplex(1, 0), a, std::pow(a, 2), std::pow(a, 3)};
 
   EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), 0, 0), 1e-7);
 }
@@ -118,7 +118,7 @@ TEST(Gf, FitTailMultivar) { // NOLINT
   int N_iW    = 4;
   int N_k     = 4;
 
-  auto BL        = bravais_lattice(matrix<double>{{1, 0}, {0, 1}});
+  auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
   auto k_mesh    = gf_mesh<brillouin_zone>(BL, N_k);
   auto iw_mesh   = gf_mesh<imfreq>{beta, Fermion, N_iw};
   auto iW_mesh   = gf_mesh<imfreq>{beta, Boson, N_iW};
@@ -130,7 +130,7 @@ TEST(Gf, FitTailMultivar) { // NOLINT
   g(k_, iOm_, iom_) << 1 / (iom_ + iOm_ - cos(k_[0]) * cos(k_[1]));
 
   // Fix both the 0th and 1st moment
-  auto known_moments = array<dcomplex, 5>(2, N_k * N_k, 2*N_iW - 1, 1, 1);
+  auto known_moments                       = array<dcomplex, 5>(2, N_k * N_k, 2 * N_iW - 1, 1, 1);
   known_moments(0, range(), range(), 0, 0) = 0.0;
   known_moments(1, range(), range(), 0, 0) = 1.0;
 
@@ -138,10 +138,11 @@ TEST(Gf, FitTailMultivar) { // NOLINT
   auto [tail, err] = get_tail<2>(g, known_moments);
 
   // Calculate the exact tail
-  auto tail_exact = array<dcomplex, 3>(5, N_k * N_k, 2*N_iW - 1);
-  for(auto [k, iW] : triqs::utility::product(k_mesh, iW_mesh)){
+  auto tail_exact = array<dcomplex, 3>(5, N_k * N_k, 2 * N_iW - 1);
+  for (auto [k, iW] : triqs::utility::product(k_mesh, iW_mesh)) {
     dcomplex pole = cos(k[0]) * cos(k[1]) - iW;
-    tail_exact(range(), k.linear_index(), iW.linear_index()) = array<dcomplex, 1>{dcomplex(0.0,0.0), dcomplex(1.0,0.0), pole, std::pow(pole, 2), std::pow(pole, 3)};
+    tail_exact(range(), k.linear_index(), iW.linear_index()) =
+       array<dcomplex, 1>{dcomplex(0.0, 0.0), dcomplex(1.0, 0.0), pole, std::pow(pole, 2), std::pow(pole, 3)};
   }
 
   EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range(), range(), 0, 0), 1e-6);

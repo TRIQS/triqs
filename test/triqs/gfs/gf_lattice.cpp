@@ -15,7 +15,7 @@ TEST(Gfs, cyclic_lattice) {
 
   // Clef Assignment
   Gr(r_) << 1. + r_(0) + r_(1);
-  EXPECT_NEAR_COMPLEX(Gr(index_t{0, 0, 0})(0, 0), 1);
+  EXPECT_COMPLEX_NEAR(Gr(index_t{0, 0, 0})(0, 0), 1);
   Gr(r_) << exp(-r_(0));
 }
 
@@ -33,6 +33,6 @@ TEST(Gfs, brillouin_zone) {
   Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   ASSERT_EQ(Gk.mesh().locate_neighbours(arrays::vector<double>{0, 0, 0}), (utility::mini_vector<long, 3>({0, 0, 0})));
   auto a = Gk(index_t{0, 0, 0});
-  EXPECT_NEAR_COMPLEX(a(0, 0), -4);
+  EXPECT_COMPLEX_NEAR(a(0, 0), -4);
 }
 MAKE_MAIN;

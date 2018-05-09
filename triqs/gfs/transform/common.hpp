@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2018- by Simons Foundation
+ *               authors : O. Parcollet, N. Wentzell 
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,18 +21,13 @@
  *
  ******************************************************************************/
 #pragma once
-namespace triqs {
-namespace gfs {
+#include <triqs/arrays/vector.hpp>
+#include "./../gf/flatten.hpp"
 
- template <typename... Domains> struct domain_product {
-  using point_t = std::tuple<typename Domains::point_t...>;
-  std::tuple<Domains...> domains;
-  domain_product() = default;
-  domain_product(std::tuple<Domains...> const & dom_tpl) : domains(dom_tpl) {}
-  domain_product(std::tuple<Domains...> && dom_tpl) : domains(std::move(dom_tpl)) {}
-  domain_product(Domains const&... doms) : domains(doms...) {}
-  friend bool operator==(domain_product const& D1, domain_product const& D2) { return D1.domains == D2.domains; }
-  // implement boost serializable, hdf5 if needed... (done at the mesh level).
- };
-}
+namespace triqs::gfs { 
+
+  using namespace triqs::arrays;
+  
+ void _fourier_base(array_const_view<dcomplex, 2> in, array_view<dcomplex, 2> out, int rank, int* dims, int fftw_count, fftw_direction_t d);
+
 }

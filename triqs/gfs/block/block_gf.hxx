@@ -215,7 +215,7 @@ namespace triqs {
       // Create Block Green function from Mesh and gf_struct
       block_gf(gf_mesh<Var> const &m, triqs::hilbert_space::gf_struct_t const &gf_struct) {
 
-        for (auto const &[bname, idx_lst] : gf_struct) {
+        for (auto const & [ bname, idx_lst ] : gf_struct) {
           auto bl_size = idx_lst.size();
           _block_names.push_back(bname);
           std::vector<std::string> idx_str_lst(bl_size);

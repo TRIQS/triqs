@@ -26,6 +26,7 @@ namespace gfs {
  namespace tags {
   struct legendre {};
  }
+ template <typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper { gf_const_view<D, Target> g; };
 
  inline gf_keeper<tags::legendre, legendre> legendre_to_imfreq(gf_const_view<legendre> gl) { return {gl}; }
  inline gf_keeper<tags::legendre, legendre> legendre_to_imtime(gf_const_view<legendre> gl) { return {gl}; }

@@ -8,7 +8,7 @@ TEST(Fourier, Tensor_valued){
 
  gw(om_) << 1 / (om_ - 1);
 
- auto gt = make_gf_from_inverse_fourier(gw, 10000);
+ auto gt = make_gf_from_fourier(gw, 10000);
 
  auto gw2 = gw;
  gw2() = fourier(gt);

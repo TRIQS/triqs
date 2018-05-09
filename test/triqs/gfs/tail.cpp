@@ -22,7 +22,7 @@ TEST(Gf, Fourier) { // NOLINT
 
   std::cout << get_tail(gw) << "\n";
 
-  auto gt  = make_gf_from_inverse_fourier(gw, 100 * n_iw);
+  auto gt  = make_gf_from_fourier(gw, 100 * n_iw);
   auto gw2 = make_gf_from_fourier(gt);
 
   std::cout << get_tail(gw2) << "\n";

@@ -18,78 +18,69 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2018- by Simons Foundation
+ *               authors : O. Parcollet, N. Wentzell 
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
 #include "../../gfs.hpp"
-//#include "./fourier_lattice.hpp"
-#include <fftw3.h>
+#include "./fourier_common.hpp"
 
-#define ASSERT_EQUAL(X,Y,MESS) if (X!=Y) TRIQS_RUNTIME_ERROR << MESS;
+#define ASSERT_EQUAL(X, Y, MESS)                                                                                                                     \
+  if (X != Y) TRIQS_RUNTIME_ERROR << MESS;
 
-namespace triqs {
-namespace gfs {
+namespace triqs::gfs {
 
- // We rewrite the scalar in term of the matrix 
- // We will change this for other FFT later when this FFT on lattice is checked.
- void _fourier_impl(gf_view<brillouin_zone, scalar_valued> gk, gf_const_view<cyclic_lattice, scalar_valued> gr) {
-  _fourier_impl(reinterpret_scalar_valued_gf_as_matrix_valued(gk), reinterpret_scalar_valued_gf_as_matrix_valued(gr));
- }
- //--------------------------------------------------------------------------------------
+  // The implementation is almost the same in both cases...
+  template <typename V1, typename V2> gf_vec_t<V1> __impl(int fftw_backward_forward, gf_mesh<V1> const &out_mesh, gf_vec_cvt<V2> g_in) {
 
- void _fourier_impl(gf_view<cyclic_lattice, scalar_valued> gr, gf_const_view<brillouin_zone, scalar_valued> gk) {
-  _fourier_impl(reinterpret_scalar_valued_gf_as_matrix_valued(gr), reinterpret_scalar_valued_gf_as_matrix_valued(gk));
- }
+    //ASSERT_EQUAL(g_out.data().shape(), g_in.data().shape(), "Meshes are different");
+    //ASSERT_EQUAL(g_out.data().indexmap().strides()[1], g_out.data().shape()[1], "Unexpected strides in fourier implementation");
+    //ASSERT_EQUAL(g_out.data().indexmap().strides()[2], 1, "Unexpected strides in fourier implementation");
+    //ASSERT_EQUAL(g_in.data().indexmap().strides()[1], g_in.data().shape()[1], "Unexpected strides in fourier implementation");
+    //ASSERT_EQUAL(g_in.data().indexmap().strides()[2], 1, "Unexpected strides in fourier implementation");
 
- //--------------------------------------------------------------------------------------
+    //check periodization_matrix is diagonal
+    for (int i = 0; i < g_in.mesh().periodization_matrix.shape()[0]; i++)
+      for (int j = 0; j < g_in.mesh().periodization_matrix.shape()[1]; j++)
+        if (i != j and g_in.mesh().periodization_matrix(i, j) != 0) TRIQS_RUNTIME_ERROR << "Periodization matrix must be diagonal for FFTW to work";
 
- // The implementation is almost the same in both cases...
- template <typename V1, typename V2>
- void __impl(int sign, gf_view<V1, matrix_valued> g_out, gf_const_view<V2, matrix_valued> g_in) {
+    auto g_out    = gf_vec_t<V1>{out_mesh, g_in.target_shape()[0]};
+    long n_others = second_dim(g_in.data());
 
-  ASSERT_EQUAL(g_out.data().shape(), g_in.data().shape(), "Meshes are different");
-  ASSERT_EQUAL(g_out.data().indexmap().strides()[1], g_out.data().shape()[1], "Unexpected strides in fourier implementation");
-  ASSERT_EQUAL(g_out.data().indexmap().strides()[2], 1, "Unexpected strides in fourier implementation");
-  ASSERT_EQUAL(g_in.data().indexmap().strides()[1], g_in.data().shape()[1], "Unexpected strides in fourier implementation");
-  ASSERT_EQUAL(g_in.data().indexmap().strides()[2], 1, "Unexpected strides in fourier implementation");
+    auto dims = g_in.mesh().get_dimensions();
+    _fourier_base(g_in.data(), g_out.data(), dims.size(), dims.ptr(), n_others,  fftw_backward_forward);
 
-  //check periodization_matrix is diagonal
-  for(int i=0;i<g_in.mesh().periodization_matrix.shape()[0];i++)
-   for(int j=0;j<g_in.mesh().periodization_matrix.shape()[1];j++)
-    if(i!=j and g_in.mesh().periodization_matrix(i,j)!=0) TRIQS_RUNTIME_ERROR << "Periodization matrix must be diagonal for FFTW to work";
+    return std::move(g_out);
+  }
 
-  auto L = g_in.mesh().get_dimensions();
-  auto rank = g_in.mesh().rank();
-  auto in_FFT = reinterpret_cast<fftw_complex*>(g_in.data().data_start());
-  auto outFFT = reinterpret_cast<fftw_complex*>(g_out.data().data_start());
-  // auto p = fftw_plan_dft(rank, L.ptr(), in_FFT, outFFT, FFTW_BACKWARD, FFTW_ESTIMATE);
+  // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  // use the general routine that can do all the matrices at once.
-  auto p = fftw_plan_many_dft(rank,                                            // rank
-                              L.ptr(),                                         // the dimension
-                              g_in.data().shape()[1] * g_in.data().shape()[2], // how many FFT : here 1
-                              in_FFT,                                          // in data
-                              NULL,                                            // embed : unused. Doc unclear ?
-                              g_in.data().indexmap().strides()[0],             // stride of the in data
-                              1,                                               // in : shift for multi fft.
-                              outFFT,                                          // out data
-                              NULL,                                            // embed : unused. Doc unclear ?
-                              g_out.data().indexmap().strides()[0],            // stride of the out data
-                              1,                                               // out : shift for multi fft.
-                              sign, FFTW_ESTIMATE);
+  gf_vec_t<cyclic_lattice> _fourier_impl(gf_mesh<cyclic_lattice> const &r_mesh, gf_vec_cvt<brillouin_zone> gk) {
+    auto gr = __impl(FFTW_FORWARD, r_mesh,  gk);
+    gr.data() /= gk.mesh().size();
+    return std::move(gr);
+  }
 
+  // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  fftw_execute(p);
-  fftw_destroy_plan(p);
- }
+  gf_vec_t<brillouin_zone> _fourier_impl(gf_mesh<brillouin_zone> const &k_mesh, gf_vec_cvt<cyclic_lattice> gr) { return __impl(FFTW_BACKWARD, k_mesh, gr); }
 
- //--------------------------------------------------------------------------------------
-
- void _fourier_impl(gf_view<brillouin_zone, matrix_valued> gk, gf_const_view<cyclic_lattice, matrix_valued> gr) {
-  __impl(FFTW_BACKWARD, gk, gr);
- }
-
- //--------------------------------------------------------------------------------------
- void _fourier_impl(gf_view<cyclic_lattice, matrix_valued> gr, gf_const_view<brillouin_zone, matrix_valued> gk) {
-  __impl(FFTW_FORWARD, gr, gk);
-  gr.data() /= gk.mesh().size();
- }
-}
-}
+} // namespace triqs::gfs

@@ -59,8 +59,8 @@ m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", d
 m.add_function("void enforce_discontinuity(gf_view<legendre, matrix_valued> gl, matrix_view<double> disc)", doc = """Modify the coefficient to adjust discontinuity""")
 
 # set_from_fourier
-m.add_function("void set_from_fourier(gf_view<imfreq, matrix_valued> gw, gf_view<imtime, matrix_valued> gt, dcomplex m2 = 0, dcomplex m3 = 0)",
-               calling_pattern = "_fourier_impl(gw, make_const_view(gt), m2, m3)",
+m.add_function("void set_from_fourier(gf_view<imfreq, matrix_valued> gw, gf_view<imtime, matrix_valued> gt, array_const_view<dcomplex, 3> moments = {})",
+               calling_pattern = "gw = fourier(gt, moments)",
                doc = """Fills self with the Fourier transform of gt""")
 
 m.add_function("void set_from_fourier(gf_view<refreq, matrix_valued> gw, gf_view<retime, matrix_valued> gt)",
@@ -73,15 +73,15 @@ m.add_function("void set_from_fourier(gf_view<brillouin_zone, matrix_valued> gk,
 
 # set_from_inverse_fourier
 m.add_function("void set_from_inverse_fourier(gf_view<imtime, matrix_valued> gt, gf_view<imfreq, matrix_valued> gw)",
-               calling_pattern = "gt = inverse_fourier(gw)",
+               calling_pattern = "gt = fourier(gw)",
                doc = """Fills self with the Inverse Fourier transform of gw""")
 
 m.add_function("void set_from_inverse_fourier(gf_view<retime, matrix_valued> gt,  gf_view<refreq, matrix_valued> gw)",
-             calling_pattern = "gt = inverse_fourier(gw)",
+             calling_pattern = "gt = fourier(gw)",
              doc = """Fills self with the Inverse Fourier transform of gw""")
 
 m.add_function("void set_from_inverse_fourier(gf_view<cyclic_lattice, matrix_valued> gr, gf_view<brillouin_zone, matrix_valued> gk)",
-               calling_pattern = "gr = inverse_fourier(gk)",
+               calling_pattern = "gr = fourier(gk)",
                doc = """Fills self with the Fourier transform of gk""")
 
 # set_from_legendre
@@ -115,7 +115,7 @@ m.add_function("void set_from_pade (gf_view<refreq, matrix_valued> gw, gf_view<i
              doc = """""")
 
 # make_gf_from_inverse_fourier
-m.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<retime, matrix_valued> make_gf_from_inverse_fourier(gf_view<refreq, matrix_valued> gw)", doc ="")
+m.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<retime, matrix_valued> make_gf_from_fourier(gf_view<refreq, matrix_valued> gw)", doc ="")
 
 # make_real_in_tau
 m.add_function("gf_view<imfreq, matrix_valued> make_real_in_tau(gf_view<imfreq, matrix_valued> g)",
