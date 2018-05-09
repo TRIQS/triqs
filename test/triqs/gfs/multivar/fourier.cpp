@@ -38,19 +38,20 @@ template <int TARGET_RANK> void test_fourier() {
   // Initialize the Multivariable Green functions
   g(k_, iOm_, iom_) << 1 / (iom_ + iOm_ - cos(k_[0]) * cos(k_[1]));
 
-  //// Fourier Transform 1st mesh and back
-  //auto g_r_iW_iw = make_gf_from_inverse_fourier<0>(g);
-  //auto gb = make_gf_from_fourier<0>(g);
-  //EXPECT_GF_NEAR(g, gb, precision);
+  // Fourier Transform 1st mesh and back
+  auto r_mesh = gf_mesh<cyclic_lattice>(BL, N_k);
+  auto g_r_iW_iw = make_gf_from_inverse_fourier<0>(g, r_mesh);
+  auto gb = make_gf_from_fourier<0>(g_r_iW_iw, k_mesh);
+  EXPECT_GF_NEAR(g, gb, precision);
 
   //// Fourier Transform 3rd mesh and back
   //auto g_k_iW_tau = make_gf_from_inverse_fourier<2>(g);
-  //gb = make_gf_from_fourier<2>(g);
+  //gb = make_gf_from_fourier<2>(g_k_iW_tau);
   //EXPECT_GF_NEAR(g, gb, precision);
 
   //// Fourier Transform 1st and 3rd mesh and back
   //auto g_r_iW_tau = make_gf_from_inverse_fourier<0,2>(g);
-  //auto gb = make_gf_from_fourier<0,2>(g);
+  //auto gb = make_gf_from_fourier<0,2>(g_r_iW_tau);
   //EXPECT_GF_NEAR(g, gb, precision);
 }
 

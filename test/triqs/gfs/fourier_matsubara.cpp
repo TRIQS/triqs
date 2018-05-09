@@ -48,7 +48,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   // === Test Green function with a self-energy ===
 
   auto Sigma = Gw1;
-  Sigma(iom_) << 1 / iom_;
+  Sigma(iom_) << 1 / (iom_ - 2) + 3 / (iom_ + 3);
   Gw1(iom_) << 1 / (iom_ - E - Sigma[iom_]);
 
   Gt1()  = inverse_fourier(Gw1);
