@@ -239,22 +239,19 @@ namespace std {
     // Comparisons
     bool operator==(variant const &other) const {
       if (type_id != other.type_id)
-        TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored "
-                               "values of different types";
+	return false;
       return visit([&other](auto const &x) { return x == *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
     }
     bool operator!=(variant const &other) const { return !(operator==(other)); }
 
     bool operator<(variant const &other) const {
       if (type_id != other.type_id)
-        TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored "
-                               "values of different types";
+	return type_id < other.type_id;
       return visit([&other](auto const &x) { return x < *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
     }
     bool operator>(variant const &other) const {
       if (type_id != other.type_id)
-        TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot compare stored "
-                               "values of different types";
+	return type_id > other.type_id;
       return visit([&other](auto const &x) { return x > *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
     }
 
