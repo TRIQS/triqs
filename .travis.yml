@@ -1,6 +1,7 @@
 branches:
   except:
     - jenkins
+    - new_tail
 
 language: cpp
 sudo: required
