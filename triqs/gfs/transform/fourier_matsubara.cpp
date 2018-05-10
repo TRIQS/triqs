@@ -19,8 +19,7 @@
  *
  ******************************************************************************/
 #include "../../gfs.hpp"
-#include "./array_aux.hpp"
-#include <fftw3.h>
+#include "./fourier_base.hpp"
 
 namespace triqs::gfs {
 
@@ -137,8 +136,8 @@ namespace triqs::gfs {
         _gin(t.index(), _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
     }
 
-    auto dims = triqs::utility::mini_vector{L};
-    details::fourier_base(_gin, _gout, dims, n_others, FFTW_BACKWARD);
+    int dims[] = {L};
+    _fourier_base(_gin, _gout, 1, dims, n_others, DIRECT);
 
     auto gw = gf<imfreq, tensor_valued<1>>{iw_mesh, {n_others}};
 
@@ -152,14 +151,14 @@ namespace triqs::gfs {
 
   gf<imtime, tensor_valued<1>> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf<imfreq, tensor_valued<1>> &&gw, arrays::array_const_view<dcomplex, 2> mom_123) {
 
-    TRIQS_ASSERT(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
+    TRIQS_ASSERT(!gw.mesh().positive_only() && "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
     if (mom_123.is_empty()){
       auto[tail, error] = get_tail(gw, array<dcomplex, 1>{0});
       if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
-      TRIQS_ASSERT(error < 1e-3, "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error)); 
-      TRIQS_ASSERT(first_dim(tail) > 4, "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
-      TRIQS_ASSERT((std::abs(tail(0)) < 1e-10), "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(std::abs(tail(0))));
+      TRIQS_ASSERT(error < 1e-3 && "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error)); 
+      TRIQS_ASSERT(first_dim(tail) > 4 && "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
+      TRIQS_ASSERT((std::abs(tail(0)) < 1e-10) && "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(std::abs(tail(0))));
       mom_123.rebind(tail(range(1,4), range()));
     }
 
@@ -203,8 +202,8 @@ namespace triqs::gfs {
 
     for (auto const &w : gw.mesh()) _gin((w.index() + L) % L, _) = fact * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
 
-    auto dims = triqs::utility::mini_vector{L};
-    details::fourier_base(_gin, _gout, dims, n_others, FFTW_FORWARD);
+    int dims[] = {L};
+    details::fourier_base(_gin, _gout, 1, dims, n_others, BACKWARD);
 
     auto gt = gf<imtime, tensor_valued<1>>{tau_mesh, {n_others}};
 

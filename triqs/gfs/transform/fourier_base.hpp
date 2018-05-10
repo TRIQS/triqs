@@ -24,15 +24,10 @@
 
 namespace triqs { namespace gfs {
 
- namespace details {
+ using namespace triqs::arrays;
 
-   using triqs::arrays::vector;
-   using triqs::arrays::matrix;
-   using dcomplex = std::complex<double>;
-
-   void fourier_base(const vector<dcomplex> &in, vector<dcomplex> &out, size_t L, bool direct);
-   void fourier_base(matrix_const_view<dcomplex> &in, matrix_view<dcomplex> &out, std::array<long, Rank> const & dims, int fftw_count, bool direct);
- }
+ enum class fftw_direction_t{ direct, inverse };
+ void _fourier_base(array_const_view<dcomplex, 2> in, array_view<dcomplex, 2> out, int rank, int* dims, int fftw_count, fftw_direction_t d);
 
  namespace tags { struct fourier{}; }
 
@@ -70,7 +65,7 @@ namespace triqs { namespace gfs {
       auto g_data_view = rotate_index_view(gout.data(), N);
       auto a_0         = g_data_view(0, ellipsis());
       for (auto const &mp : mesh)
-        foreach (a_0, [&g_data_view, &gout_flatten, c = long{0} ](auto &&... i) mutable { g_data_view(mp.linear_index(), i...) = gout_flatten.data()(mp.linear_index(), c++); })
+        foreach (a_0, [&g_data_view, &gout_flatten, &mp, c = long{0} ](auto &&... i) mutable { g_data_view(mp.linear_index(), i...) = gout_flatten.data()(mp.linear_index(), c++); })
           ;
     }
   }
@@ -81,22 +76,22 @@ namespace triqs { namespace gfs {
                                       array_const_view<dcomplex, R + 1> moment_two_three = {}) {
     static_assert(_fourier_category<Var>() == _fourier_category<Var2>(), "There is no Fourier transform between these two meshes");
     gf<Var2, Target> gout{mesh, gin.target_shape()};
-    _fourier(gw(), gin, moment_two_three);
+    _fourier(gout(), gin, moment_two_three);
     return gout;
   }
 
-  template <typename Var, typename T, typename... A>
-  gf<Var, T> make_gf_from_fourier(gf_view<Var, T> const& gin, A&&... args) {
+  template <typename Var, typename T, typename... Args>
+  gf<Var, T> make_gf_from_fourier(gf_view<Var, T> const& gin, Args&&... args) {
    return make_gf_from_fourier(gin(), std::forward<Args>(args)...);
   }
 
-  template <typename Var, typename T, typename... A>
-  gf<Var, T> make_gf_from_fourier(gf<Var, T> const& gin, A&&... args) {
+  template <typename Var, typename T, typename... Args>
+  gf<Var, T> make_gf_from_fourier(gf<Var, T> const& gin, Args&&... args) {
    return make_gf_from_fourier(gin(), std::forward<Args>(args)...);
   }
 
-  template <typename Var, typename T, typename... A>
-  gf<Var, T> make_gf_from_inverse_fourier(gf_view<Var, T> const& gin, A&&... args) {
+  template <typename Var, typename T, typename... Args>
+  gf<Var, T> make_gf_from_inverse_fourier(gf_view<Var, T> const& gin, Args&&... args) {
    return make_gf_from_inverse_fourier(gin(), std::forward<Args>(args)...);
   }
 

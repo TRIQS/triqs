@@ -21,7 +21,7 @@ namespace triqs::gfs {
       if constexpr (R == 1)
         mat(n, 0) = a(n);
       else
-        foreach (a_0, [&a, &mat, c = long{0}](auto &&... i) mutable { mat(n, c++) = a(n, i...); })
+        foreach (a_0, [&a, &mat, n, c = long{0}](auto &&... i) mutable { mat(n, c++) = a(n, i...); })
           ;
     }
     return std::move(mat);
