@@ -156,8 +156,8 @@ namespace arrays {
   /** Makes a true (deep) copy of the data. */
   matrix(const matrix& X) : IMPL_TYPE(X.indexmap(), X.storage().clone()) {}
 
-  /** 
-   * Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
+  /**
+   * Build a new matrix from X.domain() and fill it with by evaluating X. X can be :
    *  - another type of matrix, matrix_view, matrix,.... (any <IndexMap, Storage> pair)
    *  - the memory layout will be as given (ml)
    *  - a expression : e.g. matrix<int> A = B+ 2*C;
@@ -170,8 +170,8 @@ namespace arrays {
    triqs_arrays_assign_delegation(*this, X);
   }
 
-  /** 
-   * Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
+  /**
+   * Build a new matrix from X.domain() and fill it with by evaluating X. X can be :
    *  - another type of matrix, matrix_view, matrix,.... (any <IndexMap, Storage> pair)
    *  - the memory layout will be deduced from X if possible, or default constructed
    *  - a expression : e.g. matrix<int> A = B+ 2*C;
@@ -223,6 +223,15 @@ namespace arrays {
    */
   matrix& resize(const indexmaps::cuboid::domain_t<IMPL_TYPE::rank>& l) {
    IMPL_TYPE::resize(l);
+   return *this;
+  }
+
+  /**
+   * Resizes the matrix and changes its memory layout. NB : all references to the storage is invalidated.
+   * Does not initialize the matrix by default
+   */
+  matrix& resize(const indexmaps::cuboid::domain_t<IMPL_TYPE::rank>& l, const memory_layout_t<2>& ml) {
+   IMPL_TYPE::resize(l, ml);
    return *this;
   }
 

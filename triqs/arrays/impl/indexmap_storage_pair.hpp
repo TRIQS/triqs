@@ -96,10 +96,10 @@ namespace triqs { namespace arrays {
     static constexpr int rank = IndexMapType::domain_type::rank;
     static constexpr bool is_const = IsConst;
 
-    static std::string hdf5_scheme() { 
+    static std::string hdf5_scheme() {
        return "array<" + triqs::h5::get_hdf5_scheme<value_type>() + "," + std::to_string(rank) + ">";
     }
-    
+
    protected:
 
     indexmap_type indexmap_;
@@ -170,7 +170,6 @@ namespace triqs { namespace arrays {
 
     auto const & memory_layout() const { return indexmap_.memory_layout(); }
     indexmap_type const & indexmap() const {return indexmap_;}
-    indexmap_type & indexmap() {return indexmap_;}
     storage_type const & storage() const {return storage_;}
     storage_type & storage() {return storage_;}
 
@@ -343,6 +342,13 @@ namespace triqs { namespace arrays {
       storage_ = StorageType(indexmap_.domain().number_of_elements());
     }
 
+    void resize (domain_type const & d, memory_layout_t<rank> const & ml) {
+     indexmap_ = IndexMapType(d, ml);
+     // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
+     if (storage_.size() != indexmap_.domain().number_of_elements())
+      storage_ = StorageType(indexmap_.domain().number_of_elements());
+    }
+
     template<typename Xtype>
      void resize_and_clone_data( Xtype const & X) { indexmap_ = X.indexmap(); storage_ = X.storage().clone(); }
 
@@ -361,20 +367,6 @@ namespace triqs { namespace arrays {
      return out;
     }
   };// end class
-
-template< typename A>
-ENABLE_IF(is_amv_view_class<A>)
-set_mem_layout_or_check_if_view( A & a, memory_layout_t<A::domain_type::rank> const & memory_layout) {
-  if (a.memory_layout() != memory_layout)
-      TRIQS_RUNTIME_ERROR << "Memory layout mismatch : view class memory layout = " << a.memory_layout()
-                          << " expected " << memory_layout;
-}
-
-template< typename A>
-ENABLE_IF(is_amv_value_class<A>)
-set_mem_layout_or_check_if_view( A & a, memory_layout_t<A::domain_type::rank> const & memory_layout) {
-  if (a.memory_layout() != memory_layout) a.indexmap() = typename A::indexmap_type(a.domain(), memory_layout);
-}
 
 }}//namespace triqs::arrays
 
