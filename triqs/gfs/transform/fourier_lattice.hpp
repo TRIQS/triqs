@@ -21,8 +21,7 @@
 #pragma once
 #include "fourier_base.hpp"
 
-namespace triqs {
-namespace gfs {
+namespace triqs::gfs {
 
  /**
   * TBR
@@ -38,12 +37,8 @@ namespace gfs {
   return {g};
  }
 
- // implementation
- void _fourier_impl(gf_view<brillouin_zone, scalar_valued> gk, gf_const_view<cyclic_lattice, scalar_valued> gr);
- void _fourier_impl(gf_view<brillouin_zone, matrix_valued> gk, gf_const_view<cyclic_lattice, matrix_valued> gr);
-
- void _fourier_impl(gf_view<cyclic_lattice, scalar_valued> gr, gf_const_view<brillouin_zone, scalar_valued> gk);
- void _fourier_impl(gf_view<cyclic_lattice, matrix_valued> gr, gf_const_view<brillouin_zone, matrix_valued> gk);
+ gf<brillouin_zone, tensor_valued<1>> _fourier_impl(gf_mesh<cyclic_lattice> const & r_mesh, gf<brillouin_zone, tensor_valued<1>>&& gk);
+ gf<cyclic_lattice, tensor_valued<1>> _fourier_impl(gf_mesh<brillouin_zone> const & k_mesh, gf<cyclic_lattice, tensor_valued<1>>&& gr);
 
  /**
   *
@@ -51,19 +46,7 @@ namespace gfs {
  template <typename T>
  gf<brillouin_zone, T> make_gf_from_fourier(gf_const_view<cyclic_lattice, T> const& gr) {
   auto m = gf_mesh<brillouin_zone>{gr.mesh().domain(), gr.mesh().periodization_matrix};
-  auto gk = gf<brillouin_zone, T>{m, gr.target_shape()};
-  gk() = fourier(gr);
-  return gk;
- }
-
- template <typename T>
- gf<brillouin_zone, T> make_gf_from_fourier(gf_view<cyclic_lattice, T> const& gr) {
-  return make_gf_from_fourier(gr());
- }
-
- template <typename T>
- gf<brillouin_zone, T> make_gf_from_fourier(gf<cyclic_lattice, T> const& gr) {
-  return make_gf_from_fourier(gr());
+  return _make_fourier(gr, m);
  }
 
  /**
@@ -72,20 +55,7 @@ namespace gfs {
  template <typename T>
  gf<cyclic_lattice, T> make_gf_from_inverse_fourier(gf_const_view<brillouin_zone, T> const& gk) {
   auto m = gf_mesh<cyclic_lattice>{gk.mesh().domain(), gk.mesh().periodization_matrix};
-  auto gr = gf<cyclic_lattice, T>{m, gk.target_shape()};
-  gr() = inverse_fourier(gk);
-  return gr;
+  return _make_fourier(gk, m);
  }
 
- template <typename T>
- gf<cyclic_lattice, T> make_gf_from_inverse_fourier(gf_view<brillouin_zone, T> const& gk) {
-  return make_gf_from_inverse_fourier(gk());
- }
-
- template <typename T>
- gf<cyclic_lattice, T> make_gf_from_inverse_fourier(gf<brillouin_zone, T> const& gk) {
-  return make_gf_from_inverse_fourier(gk());
- }
-
-}}
-
+}

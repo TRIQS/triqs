@@ -19,17 +19,20 @@
  *
  ******************************************************************************/
 #include "../../gfs.hpp"
+#include "./array_aux.hpp"
 #include <fftw3.h>
 
 namespace triqs::gfs {
 
+  using matrix_t = arrays::matrix<dcomplex>;
+
   namespace {
 
-    dcomplex oneFermion(dcomplex a, double b, double tau, double beta) {
+    array<dcomplex, 1> oneFermion(array_const_view<dcomplex, 1> a, double b, double tau, double beta) {
       return -a * (b >= 0 ? exp(-b * tau) / (1 + exp(-beta * b)) : exp(b * (beta - tau)) / (1 + exp(beta * b)));
     }
 
-    dcomplex oneBoson(dcomplex a, double b, double tau, double beta) {
+    array<dcomplex, 1> oneBoson(array_const_view<dcomplex, 1> a, double b, double tau, double beta) {
       return a * (b >= 0 ? exp(-b * tau) / (exp(-beta * b) - 1) : exp(b * (beta - tau)) / (1 - exp(b * beta)));
     }
   } // namespace
@@ -82,115 +85,31 @@ namespace triqs::gfs {
     return m23;
   }
 
-  /**
-   * Makes a copy of the array in matrix, whose first dimension is the n-th dimension of a
-   * and the second dimension are the flattening of the other dimensions, in the original order
-   *
-   * @param a : array
-   * @param n : the dimension to preserve.
-   *
-   * @return : a matrix, copy of the data
-   * */
-  template <typename T, int R> matrix<T> flatten_2d(array_const_view<T, R> a, int n) {
-
-    a.rebind(rotate_index_view(a, n)); // Swap relevant dim to front. The view is passed by value, we modify it.
-    long nrows = first_dim(a);         // # rows of the result, i.e. n-th dim, which is now at 0.
-    long ncols = a.size() / nrows;     // # columns of the result. Everything but n-th dim.
-    matrix_t mat(first_dim(a), ncols); // result
-
-    auto a_0 = a(0, ellipsis()); // FIXME for_each should take only the lengths ...
-    for (long n : range(first_dim(a))) {
-      if constexpr (R == 1)
-        mat(n, 0) = a(n);
-      else
-        foreach (a_0, [&a, &mat, c = long{0} ](auto &&... i) mutable { mat(n, c++) = a(n, i...); })
-          ;
-    }
-    return std::move(mat);
-  }
-
-  //template <typename T, int R> matrix<T> flatten_2d(array<T, R> const &a, int n) { return flatten_2d(a(), n); }
-
-  //-------------------------------------
-
-  template <int N, typename... Ms, typename Target> auto flatten_2d(gf_const_view<cartesian_product<Ms...>, Target> g) {
-    return gf{std::get<N>(g.mesh()), flatten_2d(g.data(), N), {}};
-  }
-
-  template <int N, typename Var, typename Target> gf<Var, tensor_valued<1>> flatten_2d(gf_const_view<Var, Target> g) {
-    static_assert(N == 0, "Internal error");
-    return {g.mesh(), flatten_2d(g.data(), 0), {}};
-  }
-
-  //-------------------------------------
-
-  using matrix_t = arrays::matrix<dcomplex>;
-
-  // ----------------------------- General mechanism ------------------------------------------------------
-
-  // We need a mechanism to tell which meshes are related by Fourier op, e.g. imtime, imfreq...
-  // Or the error will happens as _fourier_impl is not implemented, which is not clear...
-  // A little constexpr will do the job
-  template <typename Var> constexpr int _fourier_category() {
-    if constexpr (std::is_same_v<Var, imtime>) return 0;
-    if constexpr (std::is_same_v<Var, imfreq>) return 0;
-    if constexpr (std::is_same_v<Var, retime>) return 1;
-    if constexpr (std::is_same_v<Var, refreq>) return 1;
-    // continue with cyclic///
-    return -1;
-  }
-
-  // this function just regroups the function, and calls the vector_valued gf core implementation
-  template <int N, typename Var, typename Var2, typename Target, int R = get_n_variables<Var>::value - 1 + Target::rank>
-  void _fourier_impl(gf_view<Var2, Target> gout, gf_const_view<Var, Target> gin, array_const_view<dcomplex, R + 1> moment_two_three = {}) {
-    static_assert(_fourier_category<Var>() == _fourier_category<Var2>(), "There is no Fourier transform between these two meshes");
-    auto const &mesh = std::get<N>(gout.mesh());
-    auto lambda_res  = _fourier_impl_impl(mesh, flatten_2d<N>(gin), flatten_2d<N>(moment_two_three));
-    if constexpr (R == 0)
-      for (auto const &mp : mesh) gout[mp] = lambda_res(mp, 0);
-    else {
-      // inverse operation as flatten_2d, exactly
-      auto g_data_view = rotate_index_view(gout.data(), N);
-      auto a_0         = g_data_view(0, ellipsis());
-      for (auto const &mp : mesh)
-        foreach (a_0, [&g_data_view, &lambda_res, c = long{0} ](auto &&... i) mutable { g_data_view(mp.index(), i...) = lambda_res(mp, c++); })
-          ;
-    }
-  }
-
-  // implements the maker of the fourier transform
-  template <int N, typename Var, typename Var2, typename Target, int R = get_n_variables<Var>::value - 1 + Target::rank>
-  gf<Var2, Target> _make_fourier_impl(gf_const_view<Var, Target> gin, gf_mesh<Var2> const &mesh,
-                                      array_const_view<dcomplex, R + 1> moment_two_three = {}) {
-    static_assert(_fourier_category<Var>() == _fourier_category<Var2>(), "There is no Fourier transform between these two meshes");
-    gf<Var2, Target> gout{mesh, gin.target_shape()};
-    _fourier_impl(gw(), gin, moment_two_three);
-    return gout;
-  }
-
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  auto _fourier_impl_impl(gf_mesh<imfreq> const &iw_mesh, gf<imtime, tensor_valued<1>> &&gt, arrays::array_const_view<dcomplex, 2> moment_two_three) {
-    if (moment_two_three.is_empty()) moment_two_three.rebind(fit_derivatives(gt));
+  gf<imfreq, tensor_valued<1>> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf<imtime, tensor_valued<1>> &&gt, arrays::array_const_view<dcomplex, 2> mom_23) {
+    if (mom_23.is_empty()) mom_23.rebind(fit_derivatives(gt));
 
     double beta = gt.mesh().domain().beta;
     auto L      = gt.mesh().size() - 1;
-    if (L < 2 * (gw.mesh().last_index() + 1))
+    if (L < 2 * (iw_mesh.last_index() + 1))
       TRIQS_RUNTIME_ERROR << "Fourier: The time mesh mush be at least twice as long as the number of positive frequencies :\n gt.mesh().size() =  "
-                          << gt.mesh().size() << " gw.mesh().last_index()" << gw.mesh().last_index();
+                          << gt.mesh().size() << " gw.mesh().last_index()" << iw_mesh.last_index();
 
     long n_others = second_dim(gt.data());
-    long nw       = gw.mesh().size();
+
     matrix_t _gout(L, n_others); // FIXME Why do we need this dimension to be one less than gt.mesh().size() ?
     matrix_t _gin(L + 1, n_others);
 
-    bool is_fermion = (gw.domain().statistic == Fermion);
+    bool is_fermion = (iw_mesh.domain().statistic == Fermion);
     double fact     = beta / L;
     dcomplex iomega = M_PI * 1_j / beta;
 
-    auto _ = range();
     double b1, b2, b3;
     array<dcomplex, 1> m1, a1, a2, a3;
+    auto _ = range();
+    auto m2 = mom_23(0, _);
+    auto m3 = mom_23(1, _);
 
     if (is_fermion) {
       m1 = -(gt[0] + gt[L]);
@@ -202,11 +121,8 @@ namespace triqs::gfs {
       a3 = (m3 - m2) / 2;
 
       for (auto const &t : gt.mesh())
-        for (long i = 0; i < n_others; ++i) {
-          _gin(t.index(), i) = fact * exp(iomega * t)
-             * (gt.data()(t.index(), i)
-                - (oneFermion(a1(i), b1(i), t, beta) + oneFermion(a2(i), b2(i), t, beta) + oneFermion(a3(i), b3(i), t, beta)));
-        }
+        _gin(t.index(), _) = fact * exp(iomega * t)
+           * (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
 
     } else {
       m1 = -(gt[0] - gt[L]);
@@ -218,74 +134,56 @@ namespace triqs::gfs {
       a3 = m1 / 6 + m2 / 2 + m3 / 3;
 
       for (auto const &t : gt.mesh())
-        for (long i = 0; i < n_others; ++i) {
-          _gin(t.index(), i) =
-             fact * (gt.data()(t.index(), i) - (oneBoson(a1(i), b1(i) t, beta) + oneBoson(a2(i), b2(i), t, beta) + oneBoson(a3(i), b3(i), t, beta)));
-        }
+        _gin(t.index(), _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
     }
 
-    //g_in[L] = 0;
+    auto dims = triqs::utility::mini_vector{L};
+    details::fourier_base(_gin, _gout, dims, n_others, FFTW_BACKWARD);
 
-    auto g_in_fft  = reinterpret_cast<fftw_complex *>(_gin.data_start());
-    auto g_out_fft = reinterpret_cast<fftw_complex *>(_gout.data_start());
+    auto gw = gf<imfreq, tensor_valued<1>>{iw_mesh, {n_others}};
 
-    int rank   = 1;
-    int dims[] = {L};
-    // use the general routine that can do all the matrices at once.
-    auto p = fftw_plan_many_dft(rank,                          // rank
-                                dims,                          // the dimension
-                                n_others,                      // how many FFT : here 1
-                                g_in_fft,                      // in data
-                                NULL,                          // embed : unused. Doc unclear ?
-                                _gin.indexmap().strides()[0],  // stride of the in data
-                                1,                             // in : shift for multi fft.
-                                g_out_fft,                     // out data
-                                NULL,                          // embed : unused. Doc unclear ?
-                                _gout.indexmap().strides()[0], // stride of the out data
-                                1,                             // out : shift for multi fft.
-                                FFTW_BACKWARD, FFTW_ESTIMATE);
+    // FIXME Avoid copy, by doing proper in-place operation
+    for( int w : iw_mesh) gw[w] = gout((w.index() + L) % L, _) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
 
-    fftw_execute(p);
-    fftw_destroy_plan(p);
-
-    return [ L, a1 = std::move(a1), a2 = std::move(a2), a3 = std::move(a3), b1, b2, b3, gout = std::move(gout) ](auto &&w, long i) {
-      return gout((w.index() + L) % L, i) + a1(i) / (w - b1) + a2(i) / (w - b2) + a3(i) / (w - b3);
-    };
+    return std::move(gw);
   }
 
-  //-------------------------------------
+  // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  // FIXME Generalize to matrix / tensor_valued gf
-  // FIXME : doc : we assume that the fuction is at least 1/omega
-  void inverse(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw) {
-    if (gw.mesh().positive_only())
-      TRIQS_RUNTIME_ERROR << "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
+  gf<imtime, tensor_valued<1>> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf<imfreq, tensor_valued<1>> &&gw, arrays::array_const_view<dcomplex, 2> mom_123) {
 
-    auto[tail, error] = get_tail(gw, array<dcomplex, 1>{0});
-    if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
-    if (error > 1e-3) TRIQS_RUNTIME_ERROR << "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " << error;
-    if (first_dim(tail) < 3) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires at least a proper 2nd high-frequency moment\n";
+    TRIQS_ASSERT(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
-    // FIXME
-    //if (std::abs(tail(0)) > 1e-10) TRIQS_RUNTIME_ERROR << "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" << std::abs(tail(0));
+    if (mom_123.is_empty()){
+      auto[tail, error] = get_tail(gw, array<dcomplex, 1>{0});
+      if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
+      TRIQS_ASSERT(error < 1e-3, "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error)); 
+      TRIQS_ASSERT(first_dim(tail) > 4, "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
+      TRIQS_ASSERT((std::abs(tail(0)) < 1e-10), "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(std::abs(tail(0))));
+      mom_123.rebind(tail(range(1,4), range()));
+    }
 
-    double beta = gw.domain().beta;
-    long L      = gt.mesh().size() - 1;
+    double beta = tau_mesh.domain().beta;
+    long L      = tau_mesh.size() - 1;
     if (L < 2 * (gw.mesh().last_index() + 1))
       TRIQS_RUNTIME_ERROR << "Inverse Fourier: The time mesh mush be at least twice as long as the freq mesh :\n gt.mesh().size() =  "
-                          << gt.mesh().size() << " gw.mesh().last_index()" << gw.mesh().last_index();
+                          << tau_mesh.size() << " gw.mesh().last_index()" << gw.mesh().last_index();
 
-    g_in.resize(L); // L>=2*(gw.mesh().last_index()+1) , we will fill the middle array with 0
-    g_out.resize(L + 1);
-    g_in() = 0;
+    long n_others = second_dim(gw.data());
+
+    matrix_t _gin(L, n_others); // FIXME Why do we need this dimension to be one less than gt.mesh().size() ?
+    matrix_t _gout(L + 1, n_others);
 
     bool is_fermion = (gw.domain().statistic == Fermion);
     double fact     = 1.0 / beta;
     dcomplex iomega = M_PI * 1_j / beta;
 
     double b1, b2, b3;
-    dcomplex a1, a2, a3;
-    dcomplex m1 = tail(1), m2 = tail(2), m3 = (first_dim(tail) == 3) ? 0 : tail(3);
+    array<dcomplex, 1> a1, a2, a3;
+    auto _ = range();
+    auto m1 = mom_123(0, _);
+    auto m2 = mom_123(1, _);
+    auto m3 = mom_123(2, _);
 
     if (is_fermion) {
       b1 = 0;
@@ -303,36 +201,24 @@ namespace triqs::gfs {
       a3 = m1 / 6 + m2 / 2 + m3 / 3;
     }
 
-    for (auto const &w : gw.mesh()) g_in[(w.index() + L) % L] = fact * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
+    for (auto const &w : gw.mesh()) _gin((w.index() + L) % L, _) = fact * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
 
-    auto g_in_fft  = reinterpret_cast<fftw_complex *>(g_in.data_start());
-    auto g_out_fft = reinterpret_cast<fftw_complex *>(g_out.data_start());
+    auto dims = triqs::utility::mini_vector{L};
+    details::fourier_base(_gin, _gout, dims, n_others, FFTW_FORWARD);
 
-    // FIXME Factorize plan into worker
-    auto p = fftw_plan_dft_1d(L, g_in_fft, g_out_fft, FFTW_FORWARD, FFTW_ESTIMATE); // in our convention backward is inverse FFT
-    fftw_execute(p);
-    fftw_destroy_plan(p);
+    auto gt = gf<imtime, tensor_valued<1>>{tau_mesh, {n_others}};
 
-    if (is_fermion) {
-      for (auto const &t : gt.mesh()) {
-        gt[t] = g_out(t.index()) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta);
-      }
-    } else {
-      for (auto const &t : gt.mesh()) gt[t] = g_out(t.index()) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
-    }
+    if (is_fermion)
+      for (auto const &t : tau_mesh)
+        gt[t] = _gout(t.index(), _) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta);
+    else
+      for (auto const &t : tau_mesh)
+	gt[t] = _gout(t.index(), _) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
+
     double pm = (is_fermion ? -1 : 1);
     gt[L]     = pm * (gt[0] + m1);
-  }
 
-  //template <typename Target, int R = Target::rank> void _fourier_impl(gf_view<imfreq, Target> gw, gf_const_view<imtime, Target> gt, arrays::array_const_view<dcomplex, R+1> moment_two_three = {}) {
-  //auto lambda_res = _fourier_impl_impl(gw.mesh(), flatten_2d(gt), flatten_2d(moment_two_three));
-  //if constexpr( R == 0 )
-  //for(auto const & iw : iw_mesh) gw[iw] = lambda_res(iw, 0);;
-  //else{
-  //auto a_0 = gw[0];
-  //for(auto const & iw : iw_mesh)
-  //foreach (a_0, [&gw, &lambda_res, c = long{0}](auto &&... i) mutable { gw.data()(iw.index(), i...) = lambda_res(iw, c++); });
-  //}
-  //}
+    return std::move(gt);
+  }
 
 } // namespace triqs::gfs

@@ -38,8 +38,8 @@ namespace gfs {
   return {g};
  }
 
- void _fourier_impl(gf_view<imfreq, scalar_valued> gw, gf_const_view<imtime, scalar_valued> gt, dcomplex m2 = 0, dcomplex m3 = 0);
- void _fourier_impl(gf_view<imtime, scalar_valued> gt, gf_const_view<imfreq, scalar_valued> gw);
+ gf<imfreq, tensor_valued<1>> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf<imtime, tensor_valued<1>> &&gt, arrays::array_const_view<dcomplex, 2> mom_23 = {});
+ gf<imtime, tensor_valued<1>> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf<imfreq, tensor_valued<1>> &&gw, arrays::array_const_view<dcomplex, 2> mom_123 = {});
 
  /**
   *
@@ -48,19 +48,7 @@ namespace gfs {
  gf<imfreq, T> make_gf_from_fourier(gf_const_view<imtime, T> const& gt, int n_iw = -1) {
   if (n_iw == -1) n_iw = (gt.mesh().size() - 1) / 2;
   auto m = gf_mesh<imfreq>{gt.mesh().domain(), n_iw};
-  auto gw = gf<imfreq, T>{m, gt.target_shape()};
-  gw() = fourier(gt);
-  return gw;
- }
-
- template <typename T>
- gf<imfreq, T> make_gf_from_fourier(gf_view<imtime, T> const& gt, int n_iw = -1) {
-  return make_gf_from_fourier(gt(), n_iw);
- }
-
- template <typename T>
- gf<imfreq, T> make_gf_from_fourier(gf<imtime, T> const& gt, int n_iw = -1) {
-  return make_gf_from_fourier(gt(), n_iw);
+  return _make_fourier(gt, m);
  }
 
  /**
@@ -70,19 +58,7 @@ namespace gfs {
  gf<imtime, T> make_gf_from_inverse_fourier(gf_const_view<imfreq, T> const& gw, int n_tau = -1) {
   if (n_tau == -1) n_tau = 2*(gw.mesh().last_index() + 1) +1;
   auto m = gf_mesh<imtime>{gw.mesh().domain(), n_tau};
-  auto gt = gf<imtime, T>{m, gw.target_shape()};
-  gt() = inverse_fourier(gw);
-  return gt;
- }
-
- template <typename T>
- gf<imtime, T> make_gf_from_inverse_fourier(gf_view<imfreq, T> const& gw, int n_tau = -1) {
-  return make_gf_from_inverse_fourier(gw(), n_tau);
- }
-
- template <typename T>
- gf<imtime, T> make_gf_from_inverse_fourier(gf<imfreq, T> const& gw, int n_tau = -1) {
-  return make_gf_from_inverse_fourier(gw(), n_tau);
+  return _make_fourier(gw, m);
  }
 
 }
@@ -92,4 +68,3 @@ namespace clef {
  TRIQS_CLEF_MAKE_FNT_LAZY(inverse_fourier);
 }
 }
-

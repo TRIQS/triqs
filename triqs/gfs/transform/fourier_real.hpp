@@ -21,8 +21,7 @@
 #pragma once
 #include "fourier_base.hpp"
 
-namespace triqs {
-namespace gfs {
+namespace triqs::gfs {
 
  /**
   * TBR
@@ -39,8 +38,8 @@ namespace gfs {
   return {g};
  }
 
- void _fourier_impl(gf_view<refreq, scalar_valued> gw, gf_const_view<retime, scalar_valued> gt);
- void _fourier_impl(gf_view<retime, scalar_valued> gt, gf_const_view<refreq, scalar_valued> gw);
+  gf<refreq, tensor_valued<1>> _fourier_impl(gf_mesh<refreq> const &w_mesh, gf<retime, tensor_valued<1>> &&gt, arrays::array_const_view<dcomplex, 2> mom_12 = {}); 
+  gf<retime, tensor_valued<1>> _fourier_impl(gf_mesh<retime> const & t_mesh, gf<refreq, tensor_valued<1>> &&gw, arrays::array_const_view<dcomplex, 2> mom_12 = {});
 
  // helper functions
  gf_mesh<refreq> make_mesh_fourier_compatible(gf_mesh<retime> const& m);
@@ -55,9 +54,6 @@ namespace gfs {
   return gw;
  }
 
- template <typename T> gf<refreq, T> make_gf_from_fourier(gf_view<retime, T> const& gt) { return make_gf_from_fourier(gt()); }
- template <typename T> gf<refreq, T> make_gf_from_fourier(gf<retime, T> const& gt) { return make_gf_from_fourier(gt()); }
-
  /**
   * TBR
   */
@@ -67,13 +63,4 @@ namespace gfs {
   return gt;
  }
 
- template <typename T> gf<retime, T> make_gf_from_inverse_fourier(gf_view<refreq, T> const& gw) {
-  return make_gf_from_inverse_fourier(gw());
- }
-
- template <typename T> gf<retime, T> make_gf_from_inverse_fourier(gf<refreq, T> const& gw) {
-  return make_gf_from_inverse_fourier(gw());
- }
 }
-}
-

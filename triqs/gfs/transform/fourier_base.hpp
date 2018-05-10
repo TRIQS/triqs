@@ -20,16 +20,18 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays/vector.hpp>
+#include "./../gf/flatten.hpp"
 
 namespace triqs { namespace gfs {
 
  namespace details {
 
-   namespace tqa = triqs::arrays;
+   using triqs::arrays::vector;
+   using triqs::arrays::matrix;
    using dcomplex = std::complex<double>;
 
-   void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L, bool direct);
-   void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L1, size_t L2, bool direct);
+   void fourier_base(const vector<dcomplex> &in, vector<dcomplex> &out, size_t L, bool direct);
+   void fourier_base(matrix_const_view<dcomplex> &in, matrix_view<dcomplex> &out, std::array<long, Rank> const & dims, int fftw_count, bool direct);
  }
 
  namespace tags { struct fourier{}; }
@@ -43,65 +45,76 @@ namespace triqs { namespace gfs {
  /// FIXME : remove this 
  template <typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper { gf_const_view<D, Target> g; };
 
+  // We need a mechanism to tell which meshes are related by Fourier op, e.g. imtime, imfreq...
+  // Or the error will happens as _fourier is not implemented, which is not clear...
+  // A little constexpr will do the job
+  template <typename Var> constexpr int _fourier_category() {
+    if constexpr (std::is_same_v<Var, imtime>) return 0;
+    if constexpr (std::is_same_v<Var, imfreq>) return 0;
+    if constexpr (std::is_same_v<Var, retime>) return 1;
+    if constexpr (std::is_same_v<Var, refreq>) return 1;
+    // continue with cyclic///
+    return -1;
+  }
 
+  // this function just regroups the function, and calls the vector_valued gf core implementation
+  template <int N, typename Var, typename Var2, typename Target, int R = get_n_variables<Var>::value - 1 + Target::rank>
+  void _fourier(gf_view<Var2, Target> gout, gf_const_view<Var, Target> gin, array_const_view<dcomplex, R + 1> moment_two_three = {}) {
+    static_assert(_fourier_category<Var>() == _fourier_category<Var2>(), "There is no Fourier transform between these two meshes");
+    auto const &mesh = std::get<N>(gout.mesh());
+    auto gout_flatten = _fourier_impl(mesh, flatten_2d<N>(gin), flatten_2d<N>(moment_two_three));
+    if constexpr (R == 0)
+      gout = gout_flatten;
+    else {
+      // inverse operation as flatten_2d, exactly
+      auto g_data_view = rotate_index_view(gout.data(), N);
+      auto a_0         = g_data_view(0, ellipsis());
+      for (auto const &mp : mesh)
+        foreach (a_0, [&g_data_view, &gout_flatten, c = long{0} ](auto &&... i) mutable { g_data_view(mp.linear_index(), i...) = gout_flatten.data()(mp.linear_index(), c++); })
+          ;
+    }
+  }
+
+  // implements the maker of the fourier transform
+  template <int N, typename Var, typename Var2, typename Target, int R = get_n_variables<Var>::value - 1 + Target::rank>
+  gf<Var2, Target> _make_fourier(gf_const_view<Var, Target> gin, gf_mesh<Var2> const &mesh,
+                                      array_const_view<dcomplex, R + 1> moment_two_three = {}) {
+    static_assert(_fourier_category<Var>() == _fourier_category<Var2>(), "There is no Fourier transform between these two meshes");
+    gf<Var2, Target> gout{mesh, gin.target_shape()};
+    _fourier(gw(), gin, moment_two_three);
+    return gout;
+  }
+
+  template <typename Var, typename T, typename... A>
+  gf<Var, T> make_gf_from_fourier(gf_view<Var, T> const& gin, A&&... args) {
+   return make_gf_from_fourier(gin(), std::forward<Args>(args)...);
+  }
+
+  template <typename Var, typename T, typename... A>
+  gf<Var, T> make_gf_from_fourier(gf<Var, T> const& gin, A&&... args) {
+   return make_gf_from_fourier(gin(), std::forward<Args>(args)...);
+  }
+
+  template <typename Var, typename T, typename... A>
+  gf<Var, T> make_gf_from_inverse_fourier(gf_view<Var, T> const& gin, A&&... args) {
+   return make_gf_from_inverse_fourier(gin(), std::forward<Args>(args)...);
+  }
+
+  template <typename Var, typename T, typename... Args>
+  gf<Var, T> make_gf_from_inverse_fourier(gf<Var, T> const& gin, Args&&... args) {
+   return make_gf_from_inverse_fourier(gin(), std::forward<Args>(args)...);
+  }
 
  // -------------------------------------------------------------------
-
- // TO BE REPLACED BY A DIRECT CALL to many_fft in fftw, like for lattice case.
- // The implementation of the Fourier transformation
- // Reduce Matrix case to the scalar case.
- template <typename X, typename Y, typename... A>
- void _fourier_impl(gf_view<X, matrix_valued> gw, gf_const_view<Y, matrix_valued> gt, A... args) {
-  if (gt.target_shape() != gw.target_shape())
-   TRIQS_RUNTIME_ERROR << "Fourier : matrix size of target mismatch";
-  for (size_t n1 = 0; n1 < gt.target_shape()[0]; n1++)
-   for (size_t n2 = 0; n2 < gt.target_shape()[1]; n2++) {
-    auto gw_sl = slice_target_to_scalar(gw, n1, n2);
-    auto gt_sl = slice_target_to_scalar(gt, n1, n2);
-    _fourier_impl(gw_sl, gt_sl, args...);
-   }
- }
-
- // tensor_valued.
- template <typename X, typename Y, typename... A> void _fourier_impl(gf_view<X, tensor_valued<3>> gw, gf_const_view<Y, tensor_valued<3>> gt, A... args) {
-  if (gt.target_shape() != gw.target_shape())
-   TRIQS_RUNTIME_ERROR << "Fourier : tensor size of target mismatch";
-  for (size_t n1 = 0; n1 < gt.target_shape()[0]; n1++)
-   for (size_t n2 = 0; n2 < gt.target_shape()[1]; n2++) {
-    for (size_t n3 = 0; n3 < gt.target_shape()[2]; n3++) {
-     auto gw_sl = slice_target_to_scalar(gw, n1, n2, n3);
-     auto gt_sl = slice_target_to_scalar(gt, n1, n2, n3);
-     _fourier_impl(gw_sl, gt_sl, args...);
-    }
-   }
- }
-
- // tensor_valued.
- template <typename X, typename Y, typename... A>
- void _fourier_impl(gf_view<X, tensor_valued<4>> gw, gf_const_view<Y, tensor_valued<4>> gt, A... args) {
-  if (gt.target_shape() != gw.target_shape())
-   TRIQS_RUNTIME_ERROR << "Fourier : tensor size of target mismatch";
-  for (size_t n1 = 0; n1 < gt.target_shape()[0]; n1++)
-   for (size_t n2 = 0; n2 < gt.target_shape()[1]; n2++) {
-    for (size_t n3 = 0; n3 < gt.target_shape()[2]; n3++) {
-     for (size_t n4 = 0; n4 < gt.target_shape()[3]; n4++) {
-      auto gw_sl = slice_target_to_scalar(gw, n1, n2, n3, n4);
-      auto gt_sl = slice_target_to_scalar(gt, n1, n2, n3, n4);
-      _fourier_impl(gw_sl, gt_sl, args...);
-     }
-    }
-   }
- }
-
 
  // second part of the implementation
  template <typename X, typename Y, typename T>
  void triqs_gf_view_assign_delegation(gf_view<X, T> g, gf_keeper<tags::fourier, Y, T> const &L) {
-  _fourier_impl(g, L.g);
+  _fourier(g, L.g);
   }
 
  template <typename X, typename G, typename T>
  void triqs_gf_view_assign_delegation(gf_view<X, T> g, tagged_cview<tags::fourier, G> const &L) {
-  _fourier_impl(g, L.g);
+  _fourier(g, L.g);
   }
 }}

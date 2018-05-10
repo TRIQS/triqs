@@ -23,10 +23,10 @@
 #include <fftw3.h>
 #include <algorithm>
 
-namespace triqs { namespace gfs { namespace details { 
- 
- void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L, bool direct) {
-  
+namespace triqs::gfs::details {
+
+ void fourier_base(const vector<dcomplex> &in, vector<dcomplex> &out, size_t L, bool direct) {
+
   // !!!! L must always be the number of time bins !!!!
   //const size_t L( (direct ? in.size() : out.size()) );
   //const int L(max(in.size(),out.size()));  <-- bug
@@ -49,5 +49,32 @@ namespace triqs { namespace gfs { namespace details {
   fftw_destroy_plan(p); 
   fftw_free(inFFT); fftw_free(outFFT);
  }
- 
-}}}
+
+ template<int Rank> // FIXME replace mini_vector by std::array
+ void fourier_base(array_const_view<dcomplex, 2> &in, array_view<dcomplex, 2> &out, triqs::utility::mini_vector<int, Rank> const & dims, int fftw_count, bool direct) {
+
+  // !!!! L must always be the number of time bins !!!!
+  //const size_t L( (direct ? in.size() : out.size()) );
+  //const int L(max(in.size(),out.size()));  <-- bug
+
+  auto in_fft = reinterpret_cast<fftw_complex*>(in.data().data_start());
+  auto out_fft = reinterpret_cast<fftw_complex*>(g_out.data().data_start());
+
+  auto p = fftw_plan_many_dft(rank,                                            // rank
+                              dims.ptr(),                                         // the dimension
+                              n_others, 				       // how many FFT : here 1
+                              g_in_FFT,                                        // in data
+                              NULL,                                            // embed : unused. Doc unclear ?
+                              in.indexmap().strides()[0],             	       // stride of the in data
+                              1,                                               // in : shift for multi fft.
+                              g_out_fft,                                       // out data
+                              NULL,                                            // embed : unused. Doc unclear ?
+                              out.indexmap().strides()[0],            	       // stride of the out data
+                              1,                                               // out : shift for multi fft.
+                              direct, FFTW_ESTIMATE);
+
+  fftw_execute(p);
+  fftw_destroy_plan(p);
+ }
+
+}
