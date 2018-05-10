@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2018- by Simons Foundation
+ *               authors : O. Parcollet, N. Wentzell 
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,7 +21,7 @@
  *
  ******************************************************************************/
 #include "../../gfs.hpp"
-#include "./fourier_base.hpp"
+#include "./fourier_common.hpp"
 
 namespace triqs::gfs {
 
@@ -27,11 +29,12 @@ namespace triqs::gfs {
 
   namespace {
 
-    array<dcomplex, 1> oneFermion(array_const_view<dcomplex, 1> a, double b, double tau, double beta) {
+    // NB : will return an expression template, but compute the number after a*
+    template <typename A> auto oneFermion(A &&a, double b, double tau, double beta) {
       return -a * (b >= 0 ? exp(-b * tau) / (1 + exp(-beta * b)) : exp(b * (beta - tau)) / (1 + exp(beta * b)));
     }
 
-    array<dcomplex, 1> oneBoson(array_const_view<dcomplex, 1> a, double b, double tau, double beta) {
+    template <typename A> auto oneBoson(A &&a, double b, double tau, double beta) {
       return a * (b >= 0 ? exp(-b * tau) / (exp(-beta * b) - 1) : exp(b * (beta - tau)) / (1 - exp(b * beta)));
     }
   } // namespace
@@ -40,7 +43,8 @@ namespace triqs::gfs {
 
   array<dcomplex, 2> fit_derivatives(gf_const_view<imtime, tensor_valued<1>> gt) {
     int fit_order = 8;
-    auto d_vec    = matrix_t(fit_order, n_others);
+    auto _        = range();
+    auto d_vec    = matrix_t(fit_order, gt.target_shape()[0]);
     for (int m : range(1, fit_order + 1)) d_vec(m - 1, _) = (gt[m] - gt[0]) / gt.mesh()[m];
 
     // Inverse of the Vandermonde matrix V_{m,j} = m^{j-1}
@@ -86,7 +90,7 @@ namespace triqs::gfs {
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  gf<imfreq, tensor_valued<1>> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf<imtime, tensor_valued<1>> &&gt, arrays::array_const_view<dcomplex, 2> mom_23) {
+  gf_vec_t<imfreq> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf_vec_t<imtime> &&gt, arrays::array_const_view<dcomplex, 2> mom_23) {
     if (mom_23.is_empty()) mom_23.rebind(fit_derivatives(gt));
 
     double beta = gt.mesh().domain().beta;
@@ -97,8 +101,8 @@ namespace triqs::gfs {
 
     long n_others = second_dim(gt.data());
 
-    matrix_t _gout(L, n_others); // FIXME Why do we need this dimension to be one less than gt.mesh().size() ?
-    matrix_t _gin(L + 1, n_others);
+    array<dcomplex, 2> _gout(L, n_others); // FIXME Why do we need this dimension to be one less than gt.mesh().size() ?
+    array<dcomplex, 2> _gin(L + 1, n_others);
 
     bool is_fermion = (iw_mesh.domain().statistic == Fermion);
     double fact     = beta / L;
@@ -106,7 +110,7 @@ namespace triqs::gfs {
 
     double b1, b2, b3;
     array<dcomplex, 1> m1, a1, a2, a3;
-    auto _ = range();
+    auto _  = range();
     auto m2 = mom_23(0, _);
     auto m3 = mom_23(1, _);
 
@@ -120,8 +124,8 @@ namespace triqs::gfs {
       a3 = (m3 - m2) / 2;
 
       for (auto const &t : gt.mesh())
-        _gin(t.index(), _) = fact * exp(iomega * t)
-           * (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
+        _gin(t.index(), _) =
+           fact * exp(iomega * t) * (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
 
     } else {
       m1 = -(gt[0] - gt[L]);
@@ -136,30 +140,31 @@ namespace triqs::gfs {
         _gin(t.index(), _) = fact * (gt[t] - (oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta)));
     }
 
-    int dims[] = {L};
-    _fourier_base(_gin, _gout, 1, dims, n_others, DIRECT);
+    int dims[] = {int(L)};
+    _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
 
-    auto gw = gf<imfreq, tensor_valued<1>>{iw_mesh, {n_others}};
+    auto gw = gf_vec_t<imfreq>{iw_mesh, {n_others}};
 
     // FIXME Avoid copy, by doing proper in-place operation
-    for( int w : iw_mesh) gw[w] = gout((w.index() + L) % L, _) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
+    for (auto const & w : iw_mesh) gw[w] = _gout((w.index() + L) % L, _) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
 
     return std::move(gw);
   }
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf<imtime, tensor_valued<1>> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf<imfreq, tensor_valued<1>> &&gw, arrays::array_const_view<dcomplex, 2> mom_123) {
+  gf_vec_t<imtime> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf_vec_t<imfreq> &&gw, arrays::array_const_view<dcomplex, 2> mom_123) {
 
-    TRIQS_ASSERT(!gw.mesh().positive_only() && "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
+    TRIQS_ASSERT(!gw.mesh().positive_only(),  "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
-    if (mom_123.is_empty()){
-      auto[tail, error] = get_tail(gw, array<dcomplex, 1>{0});
+    if (mom_123.is_empty()) {
+      auto [tail, error] = get_tail(gw); 
       if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
-      TRIQS_ASSERT(error < 1e-3 && "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error)); 
-      TRIQS_ASSERT(first_dim(tail) > 4 && "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
-      TRIQS_ASSERT((std::abs(tail(0)) < 1e-10) && "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(std::abs(tail(0))));
-      mom_123.rebind(tail(range(1,4), range()));
+     TRIQS_ASSERT((error < 1e-3),  "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error));
+      TRIQS_ASSERT((first_dim(tail) > 4),  "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
+      double _abs_tail0 = max_element(abs(tail(0, range())));
+      TRIQS_ASSERT((_abs_tail0 < 1e-10),  "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+      mom_123.rebind(tail(range(1, 4), range()));
     }
 
     double beta = tau_mesh.domain().beta;
@@ -170,8 +175,8 @@ namespace triqs::gfs {
 
     long n_others = second_dim(gw.data());
 
-    matrix_t _gin(L, n_others); // FIXME Why do we need this dimension to be one less than gt.mesh().size() ?
-    matrix_t _gout(L + 1, n_others);
+    array<dcomplex, 2> _gin(L, n_others); // FIXME Why do we need this dimension to be one less than gt.mesh().size() ?
+    array<dcomplex, 2> _gout(L + 1, n_others);
 
     bool is_fermion = (gw.domain().statistic == Fermion);
     double fact     = 1.0 / beta;
@@ -179,7 +184,7 @@ namespace triqs::gfs {
 
     double b1, b2, b3;
     array<dcomplex, 1> a1, a2, a3;
-    auto _ = range();
+    auto _  = range();
     auto m1 = mom_123(0, _);
     auto m2 = mom_123(1, _);
     auto m3 = mom_123(2, _);
@@ -202,17 +207,16 @@ namespace triqs::gfs {
 
     for (auto const &w : gw.mesh()) _gin((w.index() + L) % L, _) = fact * (gw[w] - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3)));
 
-    int dims[] = {L};
-    details::fourier_base(_gin, _gout, 1, dims, n_others, BACKWARD);
+    int dims[] = {int(L)};
+    _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
 
-    auto gt = gf<imtime, tensor_valued<1>>{tau_mesh, {n_others}};
+    auto gt = gf_vec_t<imtime>{tau_mesh, {n_others}};
 
     if (is_fermion)
       for (auto const &t : tau_mesh)
         gt[t] = _gout(t.index(), _) * exp(-iomega * t) + oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta);
     else
-      for (auto const &t : tau_mesh)
-	gt[t] = _gout(t.index(), _) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
+      for (auto const &t : tau_mesh) gt[t] = _gout(t.index(), _) + oneBoson(a1, b1, t, beta) + oneBoson(a2, b2, t, beta) + oneBoson(a3, b3, t, beta);
 
     double pm = (is_fermion ? -1 : 1);
     gt[L]     = pm * (gt[0] + m1);

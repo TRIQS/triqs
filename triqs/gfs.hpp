@@ -68,9 +68,7 @@
 #include "./gfs/functions/density.hpp"
 
 // fourier
-#include "./gfs/transform/fourier_matsubara.hpp"
-#include "./gfs/transform/fourier_real.hpp"
-#include "./gfs/transform/fourier_lattice.hpp"
+#include "./gfs/transform/fourier.hpp"
 #include "./gfs/transform/legendre_matsubara.hpp"
 
 

@@ -320,12 +320,18 @@ namespace triqs { namespace arrays {
   }
 
  // Rotate the index n to 0, preserving the relative order of the other indices
-  template<typename A> 
-    std::enable_if_t<is_amv_value_or_view_class<std::decay_t<A>>::value, typename std::decay_t<A>::view_type>
-  rotate_index_view(A && a, int n) { 
-    typename std::decay_t<A>::view_type r{a};
-    for (int i = n; i > 0; --i) r.rebind(swap_index_view(r, i - 1, i));
-   return r;
+  template<typename T, int R> 
+  array_const_view<T,R> rotate_index_view(array_const_view<T,R> a, int n) { 
+    for (int i = n; i > 0; --i) a.rebind(swap_index_view(a, i - 1, i));
+   return a;
+  }
+
+ // FIXME : regroup 
+  // Rotate the index n to 0, preserving the relative order of the other indices
+  template<typename T, int R> 
+  array_view<T,R> rotate_index_view(array_view<T,R> a, int n) { 
+    for (int i = n; i > 0; --i) a.rebind(swap_index_view(a, i - 1, i));
+   return a;
   }
 
 

@@ -312,6 +312,20 @@ namespace std {
  template <size_t N, typename... Ms> class tuple_element<N, triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> : 
   public tuple_element<N, std::tuple<typename triqs::gfs::gf_mesh<Ms>...>> {};
 
+ // NON PRODUCT mesh, for generic code std::get<0> should work
+ // redondant with .get<pos>, but seems necessary.
+ template <size_t pos, typename M> auto const & get(triqs::gfs::gf_mesh<M> const &m) { 
+   static_assert(pos ==0, "std::get<N>() of a non cartesiant product mesh for N>0");
+   return m;
+ }
+
+ template <typename M> class tuple_size<triqs::gfs::gf_mesh<M>> {
+  public:
+  static const int value = 1;
+ };
+
+ template <size_t N, typename M> class tuple_element<N, triqs::gfs::gf_mesh<M>> { using type = triqs::gfs::gf_mesh<M>;};
+
  // mesh_point as tuple
  template <int pos, typename... Ms> decltype(auto) get(triqs::gfs::mesh_point<triqs::gfs::gf_mesh<triqs::gfs::cartesian_product<Ms...>>> const &m) {
   return std::get<pos>(m.components_tuple());

@@ -11,7 +11,9 @@ namespace triqs::gfs {
    * */
   template <typename T, int R> matrix<T> flatten_2d(array_const_view<T, R> a, int n) {
 
-    a.rebind(rotate_index_view(a, n)); // Swap relevant dim to front. The view is passed by value, we modify it.
+    auto v = rotate_index_view(a, n);
+    a.rebind(v);
+    //a.rebind(rotate_index_view(a, n)); // Swap relevant dim to front. The view is passed by value, we modify it.
     long nrows = first_dim(a);         // # rows of the result, i.e. n-th dim, which is now at 0.
     long ncols = a.size() / nrows;     // # columns of the result. Everything but n-th dim.
     arrays::matrix<dcomplex> mat(first_dim(a), ncols); // result
@@ -31,11 +33,11 @@ namespace triqs::gfs {
 
   //-------------------------------------
 
-  template <int N, typename... Ms, typename Target> auto flatten_2d(gf_const_view<cartesian_product<Ms...>, Target> g) {
+  template <int N, typename... Ms, typename Target> auto flatten_gf_2d(gf_const_view<cartesian_product<Ms...>, Target> g) {
     return gf{std::get<N>(g.mesh()), flatten_2d(g.data(), N), {}};
   }
 
-  template <int N, typename Var, typename Target> gf<Var, tensor_valued<1>> flatten_2d(gf_const_view<Var, Target> g) {
+  template <int N, typename Var, typename Target> gf<Var, tensor_valued<1>> flatten_gf_2d(gf_const_view<Var, Target> g) {
     static_assert(N == 0, "Internal error");
     return {g.mesh(), flatten_2d(g.data(), 0), {}};
   }

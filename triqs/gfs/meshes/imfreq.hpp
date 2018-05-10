@@ -266,10 +266,11 @@ namespace triqs::gfs {
    * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
   */
     // FIXME : nda : use dynamic Rank here.
-    template <int R>
+    template <int R, int R2=R>
     friend std::pair<arrays::array<dcomplex, R>, double> get_tail(gf_mesh const &m, arrays::array_const_view<dcomplex, R> g_data, int n,
-                                                                  bool normalize = true, arrays::array_const_view<dcomplex, R> known_moments = {}) {
+                                                                  bool normalize = true, arrays::array_const_view<dcomplex, R2> known_moments = {}) {
 
+      static_assert((R==R2), "The rank of the moment array is not equal to the data to fit !!!");
       if (m._opt == matsubara_mesh_opt::positive_frequencies_only) TRIQS_RUNTIME_ERROR << "Can not fit on an positive_only mesh";
 
       // If not set, build least square solver for for given number of known moments

@@ -126,7 +126,7 @@ namespace arrays {
 
 /// --------------- ASSIGN FOREACH ------------------------
  template <typename T, typename Function>
- std14::enable_if_t<MutableCuboidArray<T>::value> assign_foreach(T& x, Function const& f) {
+ std14::enable_if_t<MutableCuboidArray<T>::value> assign_foreach(T& x, Function && f) {
   using S = _get_traversal_order<T>;
   indexmaps::cuboid::foreach_impl(typename S::traversal_order_t{}, x.domain(), S::invoke(x),
                                   [&x, &f](auto const&... args) { x(args...) = f(args...); });

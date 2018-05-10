@@ -31,7 +31,7 @@
 #define TRIQS_ERROR(CLASS,NAME) throw CLASS()<<".. Triqs "<<NAME<<" at "<<__FILE__<< " : "<<__LINE__<<"\n\n"
 #define TRIQS_RUNTIME_ERROR TRIQS_ERROR(triqs::runtime_error,"runtime error")
 #define TRIQS_KEYBOARD_INTERRUPT TRIQS_ERROR(triqs::keyboard_interrupt,"Ctrl-C")
-#define TRIQS_ASSERT(X) if (!(X)) TRIQS_RUNTIME_ERROR << BOOST_PP_STRINGIZE(X)
+#define TRIQS_ASSERT(X, ...) if (!(X)) TRIQS_RUNTIME_ERROR << BOOST_PP_STRINGIZE(X) << "\n "<< __VA_ARGS__;
 
 namespace triqs { 
 
