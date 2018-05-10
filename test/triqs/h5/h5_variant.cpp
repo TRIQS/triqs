@@ -22,9 +22,6 @@ TEST(H5, Variant) {
     h5_read(file, "v1", v1);
     h5_read(file, "v2", v2);
 
-    //EXPECT_EQ(int(v1), 6); // std library version
-    //EXPECT_EQ(std::string(v2), s);
-
     EXPECT_EQ(std::get<int>(v1), 6); // std library version
     EXPECT_EQ(std::get<std::string>(v2), s);
   }

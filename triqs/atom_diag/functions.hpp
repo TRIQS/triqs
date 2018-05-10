@@ -27,10 +27,7 @@
 namespace triqs {
 namespace atom_diag {
 
- using namespace triqs::gfs;
-
-#define ATOM_DIAG atom_diag<Complex>
-#define ATOM_DIAG_T typename atom_diag<Complex>
+using namespace triqs::gfs;
 
 /// The atomic partition function
 /**
@@ -41,7 +38,7 @@ namespace atom_diag {
  * @include triqs/atom_diag/functions.hpp
  */
 template<bool Complex>
-double partition_function(ATOM_DIAG const& atom, double beta);
+double partition_function(atom_diag<Complex> const& atom, double beta);
 
 /// The atomic density matrix
 /**
@@ -52,7 +49,7 @@ double partition_function(ATOM_DIAG const& atom, double beta);
  * @include triqs/atom_diag/functions.hpp
 */
 template<bool Complex>
-ATOM_DIAG_T::block_matrix_t atomic_density_matrix(ATOM_DIAG const& atom, double beta);
+typename atom_diag<Complex>::block_matrix_t atomic_density_matrix(atom_diag<Complex> const& atom, double beta);
 
 /// Compute Tr (op * density_matrix)
 /**
@@ -63,9 +60,9 @@ ATOM_DIAG_T::block_matrix_t atomic_density_matrix(ATOM_DIAG const& atom, double 
  * @include triqs/atom_diag/functions.hpp
  */
 template<bool Complex>
-ATOM_DIAG_T::scalar_t trace_rho_op(ATOM_DIAG_T::block_matrix_t const& density_matrix,
-                                   ATOM_DIAG_T::many_body_op_t const& op,
-                                   ATOM_DIAG const& atom);
+typename atom_diag<Complex>::scalar_t trace_rho_op(typename atom_diag<Complex>::block_matrix_t const& density_matrix,
+                                   typename atom_diag<Complex>::many_body_op_t const& op,
+                                   atom_diag<Complex> const& atom);
 
 /// Act with operator `op` on state `st`
 /**
@@ -76,9 +73,9 @@ ATOM_DIAG_T::scalar_t trace_rho_op(ATOM_DIAG_T::block_matrix_t const& density_ma
  * @include triqs/atom_diag/functions.hpp
  */
 template<bool Complex>
-ATOM_DIAG_T::full_hilbert_space_state_t act(ATOM_DIAG_T::many_body_op_t const& op,
-                                            ATOM_DIAG_T::full_hilbert_space_state_t const& st,
-                                            ATOM_DIAG const& atom);
+typename atom_diag<Complex>::full_hilbert_space_state_t act(typename atom_diag<Complex>::many_body_op_t const& op,
+                                            typename atom_diag<Complex>::full_hilbert_space_state_t const& st,
+                                            atom_diag<Complex> const& atom);
 
 /// Compute values of a given quantum number for all eigenstates
 /**
@@ -88,8 +85,8 @@ ATOM_DIAG_T::full_hilbert_space_state_t act(ATOM_DIAG_T::many_body_op_t const& o
  * @include triqs/atom_diag/functions.hpp
  */
 template<bool Complex>
-std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues(ATOM_DIAG_T::many_body_op_t const& op,
-                                                                      ATOM_DIAG const& atom);
+std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues(typename atom_diag<Complex>::many_body_op_t const& op,
+                                                                      atom_diag<Complex> const& atom);
 
 /// Compute values of a given quantum number for all eigenstates
 /**
@@ -102,6 +99,6 @@ std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues(ATOM_DIAG_
  * @include triqs/atom_diag/functions.hpp
  */
 template<bool Complex>
-std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues_checked(ATOM_DIAG_T::many_body_op_t const& op,
-                                                                              ATOM_DIAG const& atom);
+std::vector<std::vector<quantum_number_t>> quantum_number_eigenvalues_checked(typename atom_diag<Complex>::many_body_op_t const& op,
+                                                                              atom_diag<Complex> const& atom);
 }}

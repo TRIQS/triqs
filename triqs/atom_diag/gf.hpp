@@ -27,14 +27,11 @@
 namespace triqs {
 namespace atom_diag {
 
- using namespace triqs::gfs;
-
-#define ATOM_DIAG atom_diag<Complex>
-#define ATOM_DIAG_T typename atom_diag<Complex>
+using namespace triqs::gfs;
 
 /// Lehmann representation of one matrix element of a GF: list of (pole, residue) pairs
 template<bool Complex>
-using gf_scalar_lehmann_t = std::vector<std::pair<double, ATOM_DIAG_T::scalar_t>>;
+using gf_scalar_lehmann_t = std::vector<std::pair<double, typename atom_diag<Complex>::scalar_t>>;
 
 /// Lehmann representation of a matrix-valued GF
 template<bool Complex>
@@ -54,7 +51,7 @@ using excluded_states_t = std::vector<std::pair<int, int>>;
  * @include triqs/atom_diag/gf.hpp
  */
 template<bool Complex>
-gf_lehmann_t<Complex> atomic_g_lehmann(ATOM_DIAG const& atom,
+gf_lehmann_t<Complex> atomic_g_lehmann(atom_diag<Complex> const& atom,
                                        double beta,
                                        gf_struct_t const& gf_struct,
                                        excluded_states_t excluded_states = {});
@@ -85,7 +82,7 @@ block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const& lehmann,
  * @include triqs/atom_diag/gf.hpp
  */
 template<bool Complex>
-block_gf<imtime> atomic_g_tau(ATOM_DIAG const& atom,
+block_gf<imtime> atomic_g_tau(atom_diag<Complex> const& atom,
                               double beta,
                               gf_struct_t const& gf_struct,
                               int n_tau,
@@ -117,7 +114,7 @@ block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const& lehmann,
  * @include triqs/atom_diag/gf.hpp
  */
 template<bool Complex>
-block_gf<imfreq> atomic_g_iw(ATOM_DIAG const& atom,
+block_gf<imfreq> atomic_g_iw(atom_diag<Complex> const& atom,
                              double beta,
                              gf_struct_t const& gf_struct,
                              int n_iw,
@@ -149,7 +146,7 @@ block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const& lehmann,
  * @include triqs/atom_diag/gf.hpp
  */
 template<bool Complex>
-block_gf<legendre> atomic_g_l(ATOM_DIAG const& atom,
+block_gf<legendre> atomic_g_l(atom_diag<Complex> const& atom,
                               double beta,
                               gf_struct_t const& gf_struct,
                               int n_l,
@@ -185,14 +182,11 @@ block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const& lehmann,
  * @include triqs/atom_diag/gf.hpp
  */
 template<bool Complex>
-block_gf<refreq> atomic_g_w(ATOM_DIAG const& atom,
+block_gf<refreq> atomic_g_w(atom_diag<Complex> const& atom,
                             double beta, gf_struct_t const& gf_struct,
                             std::pair<double, double> const& energy_window,
                             int n_w,
                             double broadening = 0,
                             excluded_states_t const& excluded_states = {});
-
-#undef ATOM_DIAG
-#undef ATOM_DIAG_T
 
 }}
