@@ -34,9 +34,9 @@ namespace triqs::gfs {
     }
   } // namespace
 
-  //------------------------------------- 
+  //-------------------------------------
 
-  auto fit_derivatives(gf_const_view<imtime, tensor_valued<1>> gt){
+  array<dcomplex, 2> fit_derivatives(gf_const_view<imtime, tensor_valued<1>> gt) {
     int fit_order = 8;
     auto d_vec    = matrix_t(fit_order, n_others);
     for (int m : range(1, fit_order + 1)) d_vec(m - 1, _) = (gt[m] - gt[0]) / gt.mesh()[m];
@@ -76,75 +76,102 @@ namespace triqs::gfs {
 
     // Calculate the 2nd
     matrix_t g_vec = V_inv * d_vec;
-    array1c_t m2   = g_vec[0];
-    array1c_t m3   = -g_vec[1] * 2 / gt.mesh().delta();
-    return std::make_pair(m2, m3);
+    array<dcomplex, 2> m23(2, second_dim(g_vec));
+    m23(0, _) = g_vec(0, _);
+    m23(1, _) = -g_vec(1, _) * 2 / gt.mesh().delta();
+    return m23;
   }
 
-  // no : return a matrix_const_view, and detect if a copy is needed or not
-  // if data are contiguous in memory, no copy  !
-  // Regroups the other dimensions in one, make a copy
-  template <int R> matrix<dcomplex> flatten_2d(arrays::array_const_view<dcomplex, R> a, int n) {
+  /**
+   * Makes a copy of the array in matrix, whose first dimension is the n-th dimension of a
+   * and the second dimension are the flattening of the other dimensions, in the original order
+   *
+   * @param a : array
+   * @param n : the dimension to preserve.
+   *
+   * @return : a matrix, copy of the data
+   * */
+  template <typename T, int R> matrix<T> flatten_2d(array_const_view<T, R> a, int n) {
 
-    // use group_indices, in a special case...
+    a.rebind(rotate_index_view(a, n)); // Swap relevant dim to front. The view is passed by value, we modify it.
+    long nrows = first_dim(a);         // # rows of the result, i.e. n-th dim, which is now at 0.
+    long ncols = a.size() / nrows;     // # columns of the result. Everything but n-th dim.
+    matrix_t mat(first_dim(a), ncols); // result
 
-    // Swap relevant dim to front
-    a.rebind(rotate_index_view(a, n));
-    long ncols = a.size() / first_dim(a);
-
-    // We flatten the data in the target space and remaining meshes into the second dim
-    matrix_t mat(first_dim(a), ncols);
-
-    // Copy data into new matrix (necessary because data might have fancy strides/lengths)
-    auto a_0 = a(0, ellipsis());
+    auto a_0 = a(0, ellipsis()); // FIXME for_each should take only the lengths ...
     for (long n : range(first_dim(a))) {
       if constexpr (R == 1)
         mat(n, 0) = a(n);
       else
-        foreach (a_0, [&a, &mat, c = long{0} ](auto &&... i) mutable { mat(n, c++) = a(n, i...); });
+        foreach (a_0, [&a, &mat, c = long{0} ](auto &&... i) mutable { mat(n, c++) = a(n, i...); })
+          ;
     }
     return std::move(mat);
   }
+
+  //template <typename T, int R> matrix<T> flatten_2d(array<T, R> const &a, int n) { return flatten_2d(a(), n); }
+
+  //-------------------------------------
 
   template <int N, typename... Ms, typename Target> auto flatten_2d(gf_const_view<cartesian_product<Ms...>, Target> g) {
     return gf{std::get<N>(g.mesh()), flatten_2d(g.data(), N), {}};
   }
 
-  template <typename Var, typename Target> gf<Var, tensor_valued<1>> flatten_2d(gf_const_view<Var, Target> g) {
-    return { g.mesh(), flatten_2d(g.data(), 0), {} };
+  template <int N, typename Var, typename Target> gf<Var, tensor_valued<1>> flatten_2d(gf_const_view<Var, Target> g) {
+    static_assert(N == 0, "Internal error");
+    return {g.mesh(), flatten_2d(g.data(), 0), {}};
   }
 
   //-------------------------------------
 
-  using matrix_t     = arrays::matrix<dcomplex>;
-  using array1c_t    = arrays::array<dcomplex, 1>;
-  using array1c_cv_t = arrays::array_const_view<dcomplex, 1>;
+  using matrix_t = arrays::matrix<dcomplex>;
 
+  // ----------------------------- General mechanism ------------------------------------------------------
 
-  // ------------------------ DIRECT TRANSFORM --------------------------------------------
+  // We need a mechanism to tell which meshes are related by Fourier op, e.g. imtime, imfreq...
+  // Or the error will happens as _fourier_impl is not implemented, which is not clear...
+  // A little constexpr will do the job
+  template <typename Var> constexpr int _fourier_category() {
+    if constexpr (std::is_same_v<Var, imtime>) return 0;
+    if constexpr (std::is_same_v<Var, imfreq>) return 0;
+    if constexpr (std::is_same_v<Var, retime>) return 1;
+    if constexpr (std::is_same_v<Var, refreq>) return 1;
+    // continue with cyclic///
+    return -1;
+  }
 
-  template <int N, typename Var, typename Target, int R = get_n_variables<Var>::value + Target::rank> void _fourier_impl(gf_view<Var, Target> gout, gf_const_view<Var, Target> gin, arrays::array_const_view<dcomplex, R> moment_two_three = {}) {
-    auto const & mesh = std::get<N>(gout.mesh());
-    auto lambda_res = _fourier_impl_impl(mesh, flatten_2d<N>(gin), flatten_2d<N>(moment_two_three));
-    if constexpr( R == 0 )
-      for(auto const & mp : mesh) gout[mp] = lambda_res(mp, 0);
-    else{
+  // this function just regroups the function, and calls the vector_valued gf core implementation
+  template <int N, typename Var, typename Var2, typename Target, int R = get_n_variables<Var>::value - 1 + Target::rank>
+  void _fourier_impl(gf_view<Var2, Target> gout, gf_const_view<Var, Target> gin, array_const_view<dcomplex, R + 1> moment_two_three = {}) {
+    static_assert(_fourier_category<Var>() == _fourier_category<Var2>(), "There is no Fourier transform between these two meshes");
+    auto const &mesh = std::get<N>(gout.mesh());
+    auto lambda_res  = _fourier_impl_impl(mesh, flatten_2d<N>(gin), flatten_2d<N>(moment_two_three));
+    if constexpr (R == 0)
+      for (auto const &mp : mesh) gout[mp] = lambda_res(mp, 0);
+    else {
+      // inverse operation as flatten_2d, exactly
       auto g_data_view = rotate_index_view(gout.data(), N);
-      auto a_0 = g_data_view(0, ellipsis());
-      for(auto const & mp : mesh)
-        foreach (a_0, [&gout, &lambda_res, c = long{0}](auto &&... i) mutable { g_data_view(mp.index(), i...) = lambda_res(mp, c++); });
+      auto a_0         = g_data_view(0, ellipsis());
+      for (auto const &mp : mesh)
+        foreach (a_0, [&g_data_view, &lambda_res, c = long{0} ](auto &&... i) mutable { g_data_view(mp.index(), i...) = lambda_res(mp, c++); })
+          ;
     }
   }
 
-  template <int N, typename Var, typename Target, int R = get_n_variables<Var>::value + Target::rank>
-  gf<Var, Target> _make_fourier_impl(gf_const_view<Var, Target> gin, gf_mesh<Var> const & mesh, arrays::array_const_view<dcomplex, R+1> moment_two_three = {}) {
-    gf<Var, Target> gout{mesh, gin.target_shape()}; 
+  // implements the maker of the fourier transform
+  template <int N, typename Var, typename Var2, typename Target, int R = get_n_variables<Var>::value - 1 + Target::rank>
+  gf<Var2, Target> _make_fourier_impl(gf_const_view<Var, Target> gin, gf_mesh<Var2> const &mesh,
+                                      array_const_view<dcomplex, R + 1> moment_two_three = {}) {
+    static_assert(_fourier_category<Var>() == _fourier_category<Var2>(), "There is no Fourier transform between these two meshes");
+    gf<Var2, Target> gout{mesh, gin.target_shape()};
     _fourier_impl(gw(), gin, moment_two_three);
     return gout;
   }
 
-  auto _fourier_impl_impl(gf_mesh<imfreq> const & iw_mesh, gf<imtime, tensor_valued<1>> && gt, arrays::array_const_view<dcomplex, 2> moment_two_three) {
-    if( moment_two_three.is_empty() ) moment_two_three.rebind(fit_derivatives(gt));
+  // ------------------------ DIRECT TRANSFORM --------------------------------------------
+
+  auto _fourier_impl_impl(gf_mesh<imfreq> const &iw_mesh, gf<imtime, tensor_valued<1>> &&gt, arrays::array_const_view<dcomplex, 2> moment_two_three) {
+    if (moment_two_three.is_empty()) moment_two_three.rebind(fit_derivatives(gt));
 
     double beta = gt.mesh().domain().beta;
     auto L      = gt.mesh().size() - 1;
@@ -163,7 +190,7 @@ namespace triqs::gfs {
 
     auto _ = range();
     double b1, b2, b3;
-    array1c_t m1, a1, a2, a3;
+    array<dcomplex, 1> m1, a1, a2, a3;
 
     if (is_fermion) {
       m1 = -(gt[0] + gt[L]);
@@ -221,7 +248,9 @@ namespace triqs::gfs {
     fftw_execute(p);
     fftw_destroy_plan(p);
 
-    return [L, _a1 = a1(), _a2 = a2(), _a3 = a3(), b1, b2, b3, _gout = gout()](auto&& w, long i){ return _gout((w.index() + L) % L, i) + a1(i) / (w - b1) + a2(i) / (w - b2) + a3(i) / (w - b3); }; 
+    return [ L, a1 = std::move(a1), a2 = std::move(a2), a3 = std::move(a3), b1, b2, b3, gout = std::move(gout) ](auto &&w, long i) {
+      return gout((w.index() + L) % L, i) + a1(i) / (w - b1) + a2(i) / (w - b2) + a3(i) / (w - b3);
+    };
   }
 
   //-------------------------------------
@@ -296,14 +325,14 @@ namespace triqs::gfs {
   }
 
   //template <typename Target, int R = Target::rank> void _fourier_impl(gf_view<imfreq, Target> gw, gf_const_view<imtime, Target> gt, arrays::array_const_view<dcomplex, R+1> moment_two_three = {}) {
-    //auto lambda_res = _fourier_impl_impl(gw.mesh(), flatten_2d(gt), flatten_2d(moment_two_three));
-    //if constexpr( R == 0 )
-      //for(auto const & iw : iw_mesh) gw[iw] = lambda_res(iw, 0);;
-    //else{
-      //auto a_0 = gw[0];
-      //for(auto const & iw : iw_mesh)
-        //foreach (a_0, [&gw, &lambda_res, c = long{0}](auto &&... i) mutable { gw.data()(iw.index(), i...) = lambda_res(iw, c++); });
-    //}
+  //auto lambda_res = _fourier_impl_impl(gw.mesh(), flatten_2d(gt), flatten_2d(moment_two_three));
+  //if constexpr( R == 0 )
+  //for(auto const & iw : iw_mesh) gw[iw] = lambda_res(iw, 0);;
+  //else{
+  //auto a_0 = gw[0];
+  //for(auto const & iw : iw_mesh)
+  //foreach (a_0, [&gw, &lambda_res, c = long{0}](auto &&... i) mutable { gw.data()(iw.index(), i...) = lambda_res(iw, c++); });
+  //}
   //}
 
 } // namespace triqs::gfs

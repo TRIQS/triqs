@@ -106,6 +106,9 @@ namespace arrays {
   indexmaps::cuboid::foreach_impl(_traversal_c{}, x.domain(), x.memory_layout(), F);
  }
 
+ // FIXME : the for_each should take only a std::array<...> 
+ // it is a general algo, nothing to do with arrays 
+
  /// --------------- FOREACH ------------------------
  template <typename T, typename Function>
  FORCEINLINE std14::enable_if_t<ImmutableCuboidArray<T>::value> foreach(T const& x, Function const& F) {
