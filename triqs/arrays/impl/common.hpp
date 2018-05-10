@@ -28,7 +28,7 @@
 /// Maximum dimension of the arrays
 #define ARRAY_NRANK_MAX 10
 
-#include <exception> 
+#include <exception>
 #include <assert.h>
 #include <triqs/utility/exceptions.hpp>
 #include <sstream>
@@ -38,6 +38,7 @@ template <char C> using char_ = std::integral_constant<char, C>;
 
 #include <triqs/utility/is_complex.hpp>
 #include <triqs/utility/macros.hpp>
+#include <triqs/arrays/indexmaps/cuboid/mem_layout.hpp>
 // LEADS to an error on OS X???
 //#include <triqs/utility/c14.hpp>
 #include "./traits.hpp"
@@ -49,27 +50,27 @@ namespace boost { namespace serialization { class access;}}
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #endif
 
-namespace triqs { 
+namespace triqs {
 
  typedef unsigned long long ull_t;
- 
+
  /// Makes a view
  template<typename A> typename A::view_type make_view(A const & x) { return typename A::view_type(x);}
  template<typename A> typename A::const_view_type make_const_view(A const & x) { return typename A::const_view_type(x);}
 
- //  
+ //
  //template<class, class = std17::void_t<>> struct has_regular_type: std::false_type {};
  //template<class T> struct has_regular_type<T, std17::void_t<typename T::regular_type>> : std::true_type {};
 
  /// Makes a clone
- //template<typename A> auto make_clone(A const & x) { 
+ //template<typename A> auto make_clone(A const & x) {
  //if  constexpr (has_regular_type<A>::value) {
  //  return typename A::regular_type(x);}
  // else {
  //  return A{x};
  //  }
  //}
- 
+
  /// Makes a clone
  template<typename T, typename = std17::void_t<>> struct _make_clone { static T invoke(T const &x) { return T{x};} };
  template<typename T> struct _make_clone<T, std17::void_t<typename T::regular_type>> {
@@ -86,15 +87,33 @@ namespace triqs {
   template<typename A> TYPE_ENABLE_IFC(bool, is_amv_value_class<A>::value) has_contiguous_data(A const &) {return true;}
   template<typename A> TYPE_ENABLE_IFC(bool, is_amv_view_class<A>::value) has_contiguous_data(A const & v){return v.indexmap().is_contiguous();}
 
-  template< typename A> 
+  template<typename A>
    ENABLE_IF(is_amv_view_class<A>)
-   resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { 
+   resize_or_check_if_view ( A & a, typename A::shape_type const & sha) {
     if (a.shape()!=sha) TRIQS_RUNTIME_ERROR<< "Size mismatch : view class shape = "<<a.shape() << " expected "<<sha;
    }
 
-  template< typename A> 
+  template<typename A>
    ENABLE_IF(is_amv_value_class<A>)
    resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { if (a.shape()!=sha) a.resize(sha); }
+
+  /// Check shape and memory layout
+  template<typename A>
+   ENABLE_IF(is_amv_view_class<A>)
+   resize_or_check_if_view ( A & a, typename A::shape_type const & sha, memory_layout_t<A::domain_type::rank> const & memory_layout) {
+    resize_or_check_if_view(a, sha);
+    if (a.memory_layout() != memory_layout)
+      TRIQS_RUNTIME_ERROR << "Memory layout mismatch : view class memory layout = " << a.memory_layout()
+                          << ", expected " << memory_layout;
+   }
+
+  /// Resize and update memory layout
+  template<typename A>
+   ENABLE_IF(is_amv_value_class<A>)
+   resize_or_check_if_view ( A & a, typename A::shape_type const & sha, memory_layout_t<A::domain_type::rank> const & memory_layout) {
+     if (a.shape() != sha || a.memory_layout() != memory_layout) a.resize(sha, memory_layout);
+  }
+
  }}//namespace triqs::arrays
 #endif
 

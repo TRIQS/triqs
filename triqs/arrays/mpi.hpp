@@ -74,8 +74,7 @@ namespace arrays {
    MPI_Bcast(&sh[0], sh.size(), mpi::mpi_datatype<typename decltype(sh)::value_type>(), root, c.get());
    MPI_Bcast(&m_pos[0], m_pos.size(), mpi::mpi_datatype<typename decltype(m_pos)::value_type>(), root, c.get());
    if (c.rank() != root) {
-     resize_or_check_if_view(a, sh);
-     set_mem_layout_or_check_if_view(a, memory_layout_t<A::rank>(m_pos));
+     resize_or_check_if_view(a, sh, memory_layout_t<A::rank>(m_pos));
    }
    MPI_Bcast(a.data_start(), a.domain().number_of_elements(), mpi::mpi_datatype<typename A::value_type>(), root, c.get());
   }

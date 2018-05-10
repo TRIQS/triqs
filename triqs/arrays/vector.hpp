@@ -190,6 +190,15 @@ namespace arrays {
    return *this;
   }
 
+  /**
+   * Resizes the vector. Needed for generic code only. NB : all references to the storage is invalidated.
+   * Does not initialize the vector by default: to resize and init, do resize(IND).init()
+   */
+  vector& resize(const indexmaps::cuboid::domain_t<IMPL_TYPE::rank>& l, const memory_layout_t<1>&) {
+   this->resize(l);
+   return *this;
+  }
+
   /// Assignement resizes the vector.  All references to the storage are therefore invalidated.
   vector& operator=(const vector& X) {
    IMPL_TYPE::resize_and_clone_data(X);

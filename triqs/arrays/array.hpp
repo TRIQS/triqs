@@ -60,7 +60,7 @@ namespace triqs { namespace arrays {
    }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-   /// Build from a numpy.array (X is a borrowed reference) : throws if X is not a numpy.array 
+   /// Build from a numpy.array (X is a borrowed reference) : throws if X is not a numpy.array
    explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){}
 #endif
 
@@ -84,7 +84,7 @@ namespace triqs { namespace arrays {
     this->storage_ = X.storage_;
    }
 
-   /// Assignment. The size of the array MUST match exactly, except in the empty case 
+   /// Assignment. The size of the array MUST match exactly, except in the empty case
    template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
 
    ///
@@ -142,7 +142,7 @@ namespace triqs { namespace arrays {
      : IMPL_TYPE(tags::_with_lambda_init{}, indexmap_type(dom), std::forward<InitLambda>(lambda)) {}
 
 #ifdef TRIQS_DOXYGEN
-    /// Construction from the dimensions. NB : the number of parameters must be exactly rank (checked at compile time). 
+    /// Construction from the dimensions. NB : the number of parameters must be exactly rank (checked at compile time).
     array (size_t I_1, .... , size_t I_rank);
 #else
 #define IMPL(z, NN, unused)                                \
@@ -153,13 +153,13 @@ namespace triqs { namespace arrays {
 #undef IMPL
 #endif
 
-    // Makes a true (deep) copy of the data. 
+    // Makes a true (deep) copy of the data.
     array(const array & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
     // Move
-    explicit array(array && X) noexcept{ this->swap_me(X); } 
+    explicit array(array && X) noexcept{ this->swap_me(X); }
 
-    // Makes a true (deep) copy of the data. 
+    // Makes a true (deep) copy of the data.
     explicit array(const array & X, memory_layout_t<Rank> ml): array(X.indexmap().domain(), ml){
       triqs_arrays_assign_delegation(*this,X);
     }
@@ -168,8 +168,8 @@ namespace triqs { namespace arrays {
     explicit array(typename indexmap_type::domain_type const& dom, storage_type&& sto, memory_layout_t<Rank> ml = memory_layout_t<Rank>{})
        : IMPL_TYPE(indexmap_type(dom, ml), std::move(sto)) {}
 
-    /** 
-     * Build a new array from X.domain() and fill it with by evaluating X. X can be : 
+    /**
+     * Build a new array from X.domain() and fill it with by evaluating X. X can be :
      *  - another type of array, array_view, matrix,.... (any <IndexMap, Storage> pair)
      *  - the memory layout will be as given (ml)
      *  - a expression : e.g. array<int> A = B+ 2*C;
@@ -182,8 +182,8 @@ namespace triqs { namespace arrays {
      triqs_arrays_assign_delegation(*this, X);
     }
 
-    /** 
-     * Build a new array from X.domain() and fill it with by evaluating X. X can be : 
+    /**
+     * Build a new array from X.domain() and fill it with by evaluating X. X can be :
      *  - another type of array, array_view, matrix,.... (any <IndexMap, Storage> pair)
      *  - the memory layout will be deduced from X if possible, or default constructed
      *  - a expression : e.g. array<int> A = B+ 2*C;
@@ -221,15 +221,26 @@ namespace triqs { namespace arrays {
        }
       }
 
-    /** 
+    /**
      * Resizes the array. NB : all references to the storage is invalidated.
      * Does not initialize the array by default: to resize and init, do resize(IND).init()
      *
      */
-    template<typename ... Args>
-    array & resize (Args && ... args) { 
+    template<typename ... Args,
+             typename = std::enable_if_t<std::is_constructible<indexmaps::cuboid::domain_t<IMPL_TYPE::rank>, Args...>::value>>
+    array & resize (Args && ... args) {
      static_assert(std::is_copy_constructible<ValueType>::value, "Can not resize an array if its value_type is not copy constructible");
-     IMPL_TYPE::resize(indexmaps::cuboid::domain_t<IMPL_TYPE::rank>(args...)); return *this; 
+     IMPL_TYPE::resize(indexmaps::cuboid::domain_t<IMPL_TYPE::rank>(args...)); return *this;
+    }
+
+    /**
+     * Resizes the array and changes its memory layout. NB : all references to the storage is invalidated.
+     * Does not initialize the array by default: to resize and init, do resize(IND).init()
+     *
+     */
+    array & resize(typename indexmap_type::domain_type const& dom, const memory_layout_t<Rank>& ml) {
+     IMPL_TYPE::resize(dom, ml);
+     return *this;
     }
 
     /// Assignement resizes the array.  All references to the storage are therefore invalidated.
@@ -241,17 +252,17 @@ namespace triqs { namespace arrays {
     /// Swap
     friend void swap( array & A, array & B) { A.swap_me(B);}
 
-    /** 
+    /**
      * Assignement resizes the array (if necessary).
      * All references to the storage are therefore invalidated.
      * NB : to avoid that, do make_view(A) = X instead of A = X
      */
-    template<typename RHS> 
-     array & operator=(const RHS & X) { 
+    template<typename RHS>
+     array & operator=(const RHS & X) {
       static_assert(ImmutableCuboidArray<RHS>::value, "Assignment : RHS not supported");
       IMPL_TYPE::resize(X.domain());
       triqs_arrays_assign_delegation(*this,X);
-      return *this; 
+      return *this;
      }
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(array);
