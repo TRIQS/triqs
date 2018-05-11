@@ -116,7 +116,7 @@ namespace operators {
   using scalar_t = ScalarType;
 
   static std::string hdf5_scheme() {return  "Operator";}
-  
+
   many_body_operator_generic() = default;
   many_body_operator_generic(many_body_operator_generic const&) = default;
   many_body_operator_generic(many_body_operator_generic&&) = default;
@@ -161,7 +161,7 @@ namespace operators {
   static many_body_operator_generic make_canonical(bool is_dag, indices_t indices) {
    many_body_operator_generic res;
    auto m = monomial_t{canonical_ops_t{is_dag, indices}};
-   res.monomials.insert({m, scalar_t(1.0)});
+   res.monomials.insert({m, scalar_t(1)});
    return res;
   }
 
@@ -225,7 +225,7 @@ namespace operators {
    return *this;
   }
 
-  many_body_operator_generic& operator/=(scalar_t alpha) { return operator*=(1.0/alpha); }
+  many_body_operator_generic& operator/=(scalar_t alpha) { return operator*=(scalar_t(1)/alpha); }
 
   // Algebraic operations
   many_body_operator_generic& operator+=(many_body_operator_generic const& op) {
@@ -274,7 +274,7 @@ namespace operators {
   bool operator==(many_body_operator_generic const& op) {
     return (*this - op).is_zero();
   }
-   
+
   // implementation details of dagger
   //
   private:
@@ -414,12 +414,12 @@ namespace operators {
 
  // Assert that two many-body-operators are term-wise close
  template<typename scalar1_t, typename scalar2_t>
- void assert_operators_are_close(many_body_operator_generic<scalar1_t> const &op1, many_body_operator_generic<scalar2_t> const &op2, double precision){ 
-  auto terms_are_equal = [precision]( auto const &t1, auto const &t2 ){ using triqs::utility::is_zero; return (t1.monomial == t2.monomial) && is_zero(t1.coef - t2.coef, precision); }; 
+ void assert_operators_are_close(many_body_operator_generic<scalar1_t> const &op1, many_body_operator_generic<scalar2_t> const &op2, double precision){
+  auto terms_are_equal = [precision]( auto const &t1, auto const &t2 ){ using triqs::utility::is_zero; return (t1.monomial == t2.monomial) && is_zero(t1.coef - t2.coef, precision); };
   if(op1.get_monomials().size() != op2.get_monomials().size())
-    TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different number of terms"; 
+    TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different number of terms";
   if(!std::equal(op1.begin(), op1.end(), op2.begin(), terms_are_equal))
-    TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different terms"; 
+    TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different terms";
  }
 
  // ---- factories --------------
