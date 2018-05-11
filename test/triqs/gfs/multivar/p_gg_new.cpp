@@ -34,7 +34,7 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
  for (auto const &tau : std::get<1>(G_R_tau.mesh()))
   G_R_tau[_, tau] = inverse_fourier(G_k_tau[_, tau]);
 
- chi0_R_tau(r_, tau_) << G_R_tau(r_, tau_) * G_R_tau(-r_, -tau_);
+ chi0_R_tau(r_, tau_) << - G_R_tau(r_, tau_) * G_R_tau(-r_, beta -tau_);
 
  /*
  h5::file file("bubble.h5", H5F_ACC_TRUNC );

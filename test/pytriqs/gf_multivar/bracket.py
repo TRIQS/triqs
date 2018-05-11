@@ -55,29 +55,10 @@ imtime = MeshImTime(beta=beta, S='Fermion', n_max=ntau)
 g4_tau = Gf(name='g4_tau', mesh= MeshProduct(imtime, imtime, imtime), indices=[1])
 
 for t1, t2, t3 in g4_tau.mesh:
-    g4_tau[t1, t2, t3] = g_tau(t1-t2)*g_tau(t3) - g_tau(t1)*g_tau(t3-t2)
+    g4_tau[t1, t2, t3] = g_tau(t1)*g_tau(t3) - g_tau(t1)*g_tau(t3)
 
 for t1, t2, t3 in g4_tau.mesh:
     val = g4_tau[t1, t2, t3] 
-    val_ref = g_tau(t1-t2)*g_tau(t3) - g_tau(t1)*g_tau(t3-t2)
+    val_ref = g_tau(t1)*g_tau(t3) - g_tau(t1)*g_tau(t3)
     np.testing.assert_array_almost_equal(val, val_ref)
 
-
-# for (i1, t1), (i2, t2), (i3, t3) in itertools.product(*[
-        # enumerate(mesh) for mesh in g4_tau.mesh.components]):
-
-    # t1, t2, t3 = t1.real, t2.real, t3.real # Can we get rid of this?    
-    # g4_tau[[i1, i2, i3]][:] = g_tau(t1-t2)*g_tau(t3) - g_tau(t1)*g_tau(t3-t2)
-    
-# for (i1, t1), (i2, t2), (i3, t3) in itertools.product(*[
-        # enumerate(mesh) for mesh in g4_tau.mesh.components]):
-
-    # t1, t2, t3 = t1.real, t2.real, t3.real # Can we get rid of this?    
-
-    ## val = g4_tau(t1, t2, t3) # Not implemented FIXME
-    # val = g4_tau[[i1, i2, i3]]
-    # val_ref = g_tau(t1-t2)*g_tau(t3) - g_tau(t1)*g_tau(t3-t2)
-
-    # np.testing.assert_array_almost_equal(val, val_ref)
-    
-    

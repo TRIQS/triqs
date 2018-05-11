@@ -60,7 +60,5 @@ TEST(Gf, x_tau) {
  EXPECT_EQ(gg.singularity().mesh(), std::get<0>(gg.mesh()));
  EXPECT_GF_NEAR(gxt, gg);
 
- // evaluation with tau < 0 with anti-periodicity
- EXPECT_ARRAY_NEAR(gxt(index_t{0, 0, 0}, -0.2), -gxt(index_t{0, 0, 0}, beta - 0.2));
 }
 MAKE_MAIN;

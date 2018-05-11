@@ -57,31 +57,6 @@ namespace gfs {
   /// For imtime the point is always in the mesh, since we use anti-periodicity or periodicity. Needed for cartesian product.
   bool is_within_boundary(double x) const { return true;}
  
-  /// redefine the interpolation to handle the anti-periodicity of fermions.
-  /** It also reduces tau to [0,beta]
-  * because the get_interpolation_data is not virtual, to preserve inlining
-  * I simply rewrite evaluate again, it is short (same code as linear).
-  * it is necessary to do it as the level of the get_interpolation_data
-  * in order e.g. g(x,tau) to behave properly
-  */
-  B::interpol_data_t get_interpolation_data(interpol_t::Linear1d, double tau) const {
-
-   // reduce tau into the [0,beta] segment
-   double beta = this->domain().beta;
-   int p = std::floor(tau / beta);
-   tau -= p * beta;
-
-   // use regular interpolation of linear class.
-   auto id = B::get_interpolation_data(interpol_t::Linear1d{}, tau);
-
-   // if necessary, add the - sign
-   if ((this->domain().statistic == Fermion) && (p % 2 != 0)) {
-    id.w0 = -id.w0;
-    id.w1 = -id.w1;
-   }
-   return id;
-  }
-
   /// evaluation
   template <typename F> auto evaluate(interpol_t::Linear1d, F const &f, double x) const {
    auto id = this->get_interpolation_data(default_interpol_policy{}, x);

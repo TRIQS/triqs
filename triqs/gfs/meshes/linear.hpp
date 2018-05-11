@@ -137,7 +137,7 @@ namespace gfs {
    long i;
    bool in;
    std::tie(in, i, w) = windowing(x);
-   if (!in) TRIQS_RUNTIME_ERROR <<"out of window";
+   if (!in) TRIQS_RUNTIME_ERROR <<"out of window x= " << x << " xmin = "<< x_min() << " xmax = "<<x_max();
    return {1- w, w, i, i + 1};
   }
 
