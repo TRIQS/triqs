@@ -9,21 +9,19 @@ namespace triqs::gfs {
    *
    * @return : a matrix, copy of the data
    * */
-  template <typename T, int R> matrix<T> flatten_2d(array_const_view<T, R> a, int n) {
+  template <typename T, int R> array<T, 2> flatten_2d(array_const_view<T, R> a, int n) {
 
-    auto v = rotate_index_view(a, n);
-    a.rebind(v);
-    //a.rebind(rotate_index_view(a, n)); // Swap relevant dim to front. The view is passed by value, we modify it.
-    long nrows = first_dim(a);         // # rows of the result, i.e. n-th dim, which is now at 0.
-    long ncols = a.size() / nrows;     // # columns of the result. Everything but n-th dim.
-    arrays::matrix<dcomplex> mat(first_dim(a), ncols); // result
+    a.rebind(rotate_index_view(a, n));    // Swap relevant dim to front. The view is passed by value, we modify it.
+    long nrows = first_dim(a);            // # rows of the result, i.e. n-th dim, which is now at 0.
+    long ncols = a.size() / nrows;        // # columns of the result. Everything but n-th dim.
+    array<T, 2> mat(first_dim(a), ncols); // result
 
     auto a_0 = a(0, ellipsis()); // FIXME for_each should take only the lengths ...
     for (long n : range(first_dim(a))) {
       if constexpr (R == 1)
         mat(n, 0) = a(n);
       else
-        foreach (a_0, [&a, &mat, n, c = long{0}](auto &&... i) mutable { mat(n, c++) = a(n, i...); })
+        foreach (a_0, [&a, &mat, n, c = 0ll ](auto &&... i) mutable { mat(n, c++) = a(n, i...); })
           ;
     }
     return std::move(mat);

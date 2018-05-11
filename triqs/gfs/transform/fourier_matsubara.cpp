@@ -25,8 +25,6 @@
 
 namespace triqs::gfs {
 
-  using matrix_t = arrays::matrix<dcomplex>;
-
   namespace {
 
     // NB : will return an expression template, but compute the number after a*
@@ -42,9 +40,10 @@ namespace triqs::gfs {
   //-------------------------------------
 
   array<dcomplex, 2> fit_derivatives(gf_const_view<imtime, tensor_valued<1>> gt) {
-    int fit_order = 8;
-    auto _        = range();
-    auto d_vec    = matrix_t(fit_order, gt.target_shape()[0]);
+    using matrix_t = arrays::matrix<dcomplex>;
+    int fit_order  = 8;
+    auto _         = range();
+    auto d_vec     = matrix_t(fit_order, gt.target_shape()[0]);
     for (int m : range(1, fit_order + 1)) d_vec(m - 1, _) = (gt[m] - gt[0]) / gt.mesh()[m];
 
     // Inverse of the Vandermonde matrix V_{m,j} = m^{j-1}
@@ -146,7 +145,7 @@ namespace triqs::gfs {
     auto gw = gf_vec_t<imfreq>{iw_mesh, {n_others}};
 
     // FIXME Avoid copy, by doing proper in-place operation
-    for (auto const & w : iw_mesh) gw[w] = _gout((w.index() + L) % L, _) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
+    for (auto const &w : iw_mesh) gw[w] = _gout((w.index() + L) % L, _) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
 
     return std::move(gw);
   }
@@ -155,15 +154,16 @@ namespace triqs::gfs {
 
   gf_vec_t<imtime> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf_vec_t<imfreq> &&gw, arrays::array_const_view<dcomplex, 2> mom_123) {
 
-    TRIQS_ASSERT(!gw.mesh().positive_only(),  "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
+    TRIQS_ASSERT(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
     if (mom_123.is_empty()) {
-      auto [tail, error] = get_tail(gw); 
+      auto[tail, error] = get_tail(gw);
       if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
-     TRIQS_ASSERT((error < 1e-3),  "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error));
-      TRIQS_ASSERT((first_dim(tail) > 4),  "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
+      TRIQS_ASSERT((error < 1e-3), "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error));
+      TRIQS_ASSERT((first_dim(tail) > 4), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
       double _abs_tail0 = max_element(abs(tail(0, range())));
-      TRIQS_ASSERT((_abs_tail0 < 1e-10),  "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+      TRIQS_ASSERT((_abs_tail0 < 1e-10),
+                   "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
       mom_123.rebind(tail(range(1, 4), range()));
     }
 
