@@ -13,7 +13,7 @@ int main() {
  gw(w_) << 1/(w_-2.0);
  int n_tau = 41;
  auto gt = gf<imtime, scalar_valued>{{10, Fermion, n_tau}};
- gt() = inverse_fourier(gw);
+ gt() = fourier(gw);
 
  int n_measures = 20;
  std::vector<gf<imtime, scalar_valued>> G_measurements(n_measures, gt);

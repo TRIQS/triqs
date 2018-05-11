@@ -30,12 +30,12 @@ template <int TARGET_RANK> void test_fourier() {
 
   ///verification that TF(TF^-1)=Id
   auto Grb = gf<cyclic_lattice, target_t>{{N_k, N_k}, shape};
-  Grb()    = inverse_fourier(Gk1);
+  Grb()    = fourier(Gk1);
   EXPECT_GF_NEAR(Gr, Grb, precision);
 
   // Test the factory function
   auto Gk2  = make_gf_from_fourier(Gr);
-  auto Gr2b = make_gf_from_inverse_fourier(Gk2);
+  auto Gr2b = make_gf_from_fourier(Gk2);
   EXPECT_GF_NEAR(Gk1, Gk2, precision);
   EXPECT_GF_NEAR(Grb, Gr2b, precision);
 

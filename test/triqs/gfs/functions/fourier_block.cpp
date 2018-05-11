@@ -33,7 +33,7 @@ TEST(Fourier, Block) {
 
  // -- Perform transforms
 
- block_gtau()  = inverse_fourier(block_giw);
+ block_gtau()  = fourier(block_giw);
  block_giw_2() = fourier(block_gtau);
 
  EXPECT_BLOCK_GF_NEAR(block_giw, block_giw_2, 1e-5);
@@ -55,7 +55,7 @@ TEST(Fourier, Block) {
 
  // -- Perform transforms
 
- block2_gtau()  = inverse_fourier(block2_giw);
+ block2_gtau()  = fourier(block2_giw);
  block2_giw_2() = fourier(block2_gtau);
 
  EXPECT_BLOCK2_GF_NEAR(block2_giw, block2_giw_2, 1e-5);

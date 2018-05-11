@@ -10,7 +10,7 @@ int main() {
  gw(om_) << 1 / (om_ - a);
 
  // fills a full *view* of gt with the contents of the FFT
- gt() = inverse_fourier(gw);
+ gt() = fourier(gw);
 
  // make a new fresh gf from the FFT of gt with a mesh of size N/2
  auto gw2 = make_gf_from_fourier(gt, N/2);

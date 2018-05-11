@@ -2,7 +2,7 @@
 
 // Generic Fourier test function for different ranks
 template <int TARGET_RANK> void test_fourier() {
-  double precision = 1e-7;
+  double precision = 1e-4;
   triqs::clef::placeholder<0> k_;
   triqs::clef::placeholder<1> iOm_;
   triqs::clef::placeholder<2> iom_;
@@ -40,18 +40,25 @@ template <int TARGET_RANK> void test_fourier() {
 
   // Fourier Transform 1st mesh and back
   auto r_mesh = gf_mesh<cyclic_lattice>(BL, N_k);
-  auto g_r_iW_iw = make_gf_from_inverse_fourier<0>(g, r_mesh);
+  auto g_r_iW_iw = make_gf_from_fourier<0>(g, r_mesh);
   auto gb = make_gf_from_fourier<0>(g_r_iW_iw, k_mesh);
   EXPECT_GF_NEAR(g, gb, precision);
+  gb() = fourier<0>(g_r_iW_iw);
+  EXPECT_GF_NEAR(g, gb, precision);
 
-  //// Fourier Transform 3rd mesh and back
-  //auto g_k_iW_tau = make_gf_from_inverse_fourier<2>(g);
-  //gb = make_gf_from_fourier<2>(g_k_iW_tau);
-  //EXPECT_GF_NEAR(g, gb, precision);
+  // Fourier Transform 3rd mesh and back
+  auto tau_mesh = gf_mesh<imtime>{beta, Fermion, 2 * N_iw + 1};
+  auto g_k_iW_tau = make_gf_from_fourier<2>(g, tau_mesh);
+  gb = make_gf_from_fourier<2>(g_k_iW_tau, iw_mesh);
+  EXPECT_GF_NEAR(g, gb, precision);
+  gb() = fourier<2>(g_k_iW_tau);
+  EXPECT_GF_NEAR(g, gb, precision);
 
-  //// Fourier Transform 1st and 3rd mesh and back
-  //auto g_r_iW_tau = make_gf_from_inverse_fourier<0,2>(g);
-  //auto gb = make_gf_from_fourier<0,2>(g_r_iW_tau);
+  // Fourier Transform 1st and 3rd mesh and back
+  auto g_r_iW_tau = make_gf_from_fourier<0,2>(g);
+  gb = make_gf_from_fourier<0,2>(g_r_iW_tau);
+  EXPECT_GF_NEAR(g, gb, precision);
+  //gb = fourier<0,2>(g_r_iW_tau);
   //EXPECT_GF_NEAR(g, gb, precision);
 }
 

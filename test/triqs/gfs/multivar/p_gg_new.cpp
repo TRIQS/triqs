@@ -29,10 +29,10 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
  auto G_R_tau    = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{{nk, nk}, {beta, Fermion, ntau}}, {1, 1}};
 
  for (auto const &k : std::get<0>(G_k_tau.mesh()))
-  G_k_tau[k, _] = inverse_fourier(G_k_w[k, _]);
+  G_k_tau[k, _] = fourier(G_k_w[k, _]);
 
  for (auto const &tau : std::get<1>(G_R_tau.mesh()))
-  G_R_tau[_, tau] = inverse_fourier(G_k_tau[_, tau]);
+  G_R_tau[_, tau] = fourier(G_k_tau[_, tau]);
 
  chi0_R_tau(r_, tau_) << - G_R_tau(r_, tau_) * G_R_tau(-r_, beta -tau_);
 

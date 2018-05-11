@@ -25,7 +25,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   Gw1(iom_) << 1 / (iom_ - E);
 
   auto Gt1 = gf<imtime, target_t>{{beta, statistic, 2 * N_iw + 1}, shape};
-  Gt1()    = inverse_fourier(Gw1);
+  Gt1()    = fourier(Gw1);
 
   ///verification that TF(TF^-1)=Id
   auto Gw1b = gf<imfreq, target_t>{{beta, statistic, N_iw}, shape};
@@ -40,7 +40,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   EXPECT_GF_NEAR(Gt1, Gt1_exact, precision);
 
   // Test the factory function
-  auto Gt2  = make_gf_from_inverse_fourier(Gw1);
+  auto Gt2  = make_gf_from_fourier(Gw1);
   auto Gw2b = make_gf_from_fourier(Gt2);
   EXPECT_GF_NEAR(Gt2, Gt1, precision);
   EXPECT_GF_NEAR(Gw2b, Gw1, precision);
@@ -51,7 +51,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   Sigma(iom_) << 1 / (iom_ - 2) + 3 / (iom_ + 3);
   Gw1(iom_) << 1 / (iom_ - E - Sigma[iom_]);
 
-  Gt1()  = inverse_fourier(Gw1);
+  Gt1()  = fourier(Gw1);
   Gw1b() = fourier(Gt1);
   EXPECT_GF_NEAR(Gw1, Gw1b, precision);
 }
@@ -76,7 +76,7 @@ TEST(Gfs, FourierMatsubaraAllFreq) {
   auto Gw1    = gf<imfreq>{{beta, Fermion, N_iw, matsubara_mesh_opt::positive_frequencies_only}, {2, 2}};
   Gw1(iom_) << 1 / (iom_ - E);
   auto Gt1 = gf<imtime>{{beta, Fermion, 2 * N_iw + 1}, {2, 2}};
-  ASSERT_THROW(Gt1() = inverse_fourier(Gw1), triqs::runtime_error);
+  ASSERT_THROW(Gt1() = fourier(Gw1), triqs::runtime_error);
 }
 
 MAKE_MAIN;

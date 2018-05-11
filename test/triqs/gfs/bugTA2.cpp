@@ -8,6 +8,6 @@ TEST(Gf, NoTailWithTail) {
   G(om_) << 1/(om_ + 2.3);
 
  // FIXME : test the tail in scalar
-  auto Gt = make_gf_from_inverse_fourier(G);
+  auto Gt = make_gf_from_fourier(G);
 }
 MAKE_MAIN;
