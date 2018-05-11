@@ -71,7 +71,7 @@ template <typename StateType, typename OperatorType> class space_partition {
 
   // Iteration over all initial basis states
   for (index_t i = 0; i < size; ++i) {
-   tmp_state(i) = amplitude_t(1.0);
+   tmp_state(i) = amplitude_t(1);
    state_t final_state = H(tmp_state);
 
    // Iterate over non-zero final amplitudes
@@ -113,7 +113,7 @@ template <typename StateType, typename OperatorType> class space_partition {
 
   // Fill connection multimaps
   for (index_t i = 0; i < size; ++i) {
-   tmp_state(i) = amplitude_t(1.0);
+   tmp_state(i) = amplitude_t(1);
    auto i_subspace = subspaces.find_set(i);
 
    auto fill_conn = [this,i,i_subspace,store_matrix_elements]
@@ -222,7 +222,7 @@ template <typename StateType, typename OperatorType> class space_partition {
   // Iteration over all initial basis states
   for (index_t i = 0; i < tmp_state.size(); ++i) {
    state_t initial_state = tmp_state;
-   initial_state(i) = amplitude_t(1.0);
+   initial_state(i) = amplitude_t(1);
    auto i_subspace = subspaces.find_set(i);
 
    state_t final_state = op(initial_state);
