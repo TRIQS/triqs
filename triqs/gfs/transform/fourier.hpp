@@ -130,6 +130,7 @@ namespace triqs::gfs {
    * *-----------------------------------------------------------------------------------------------------*/
 
   // FIXME DOC
+  // split : No N for 1 mesh ...
   template <int N = 0, typename V1, typename V2, typename T, typename... OptArgs>
   auto make_gf_from_fourier(gf_const_view<V1, T> gin, gf_mesh<V2> const &mesh, OptArgs const&... opt_args) {
     static_assert(get_n_variables<V2>::value == 1, "Cannot fourier transform on cartesian product mesh");
@@ -159,20 +160,28 @@ namespace triqs::gfs {
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename T> auto make_gf_from_fourier(gf_const_view<brillouin_zone, T> gin) {
+  template <int N=0, typename T> auto make_gf_from_fourier(gf_const_view<brillouin_zone, T> gin) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 
-  template <typename T> auto make_gf_from_fourier(gf_const_view<cyclic_lattice, T> gin) {
+  template <int N=0,typename T> auto make_gf_from_fourier(gf_const_view<cyclic_lattice, T> gin) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 
-  template <typename T> gf<imtime, T> make_gf_from_fourier(gf_const_view<imfreq, T> gin, int n_iw = -1) {
+  template <int N=0,typename T> gf<imtime, T> make_gf_from_fourier(gf_const_view<imfreq, T> gin, int n_iw = -1) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), n_iw));
   }
 
-  template <typename T> gf<imfreq, T> make_gf_from_fourier(gf_const_view<imtime, T> gin, int n_tau = -1) {
+  template <int N=0,typename T> gf<imfreq, T> make_gf_from_fourier(gf_const_view<imtime, T> gin, int n_tau = -1) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), n_tau));
+  }
+
+ template <int N=0,typename T> gf<retime, T> make_gf_from_fourier(gf_const_view<refreq, T> gin) {
+    return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
+  }
+
+  template <int N=0,typename T> gf<refreq, T> make_gf_from_fourier(gf_const_view<retime, T> gin) {
+    return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 
   /* *-----------------------------------------------------------------------------------------------------
