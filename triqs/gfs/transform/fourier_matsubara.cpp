@@ -43,8 +43,13 @@ namespace triqs::gfs {
     using matrix_t = arrays::matrix<dcomplex>;
     int fit_order  = 8;
     auto _         = range();
-    auto d_vec     = matrix_t(fit_order, gt.target_shape()[0]);
-    for (int m : range(1, fit_order + 1)) d_vec(m - 1, _) = (gt[m] - gt[0]) / gt.mesh()[m];
+    auto d_vec_left = matrix_t(fit_order, gt.target_shape()[0]);
+    auto d_vec_right = d_vec_left;
+    int n_tau = gt.mesh().size();
+    for (int m : range(1, fit_order + 1)){
+      d_vec_left(m - 1, _) = (gt[m] - gt[0]) / gt.mesh()[m]; // Values around 0
+      d_vec_right(m - 1, _) = (gt[n_tau - 1] - gt[n_tau - 1 - m]) / gt.mesh()[n_tau - 1 - m]; // Values around beta
+    }
 
     // Inverse of the Vandermonde matrix V_{m,j} = m^{j-1}
     // FIXME : add here teh python code that generated it
@@ -80,10 +85,11 @@ namespace triqs::gfs {
    */
 
     // Calculate the 2nd
-    matrix_t g_vec = V_inv * d_vec;
-    array<dcomplex, 2> m23(2, second_dim(g_vec));
-    m23(0, _) = g_vec(0, _);
-    m23(1, _) = -g_vec(1, _) * 2 / gt.mesh().delta();
+    matrix_t g_vec_left = V_inv * d_vec_left;
+    matrix_t g_vec_right = V_inv * d_vec_right;
+    array<dcomplex, 2> m23(2, second_dim(g_vec_left));
+    m23(0, _) = g_vec_left(0, _) + g_vec_right(0, _);
+    m23(1, _) = - (g_vec_left(1, _) + g_vec_right(1, _)) * 2 / gt.mesh().delta();
     return m23;
   }
 
