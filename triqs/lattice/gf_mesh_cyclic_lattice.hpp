@@ -56,7 +56,7 @@ namespace gfs {
   // -------------------- print -------------------
 
   friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-   return sout << "Cyclic Lattice Mesh of size " << m.dims <<", Domain: " << m.domain();
+   return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims <<", Domain: " << m.domain();
   }
 
   // -------------- HDF5  --------------------------
