@@ -474,12 +474,6 @@ namespace triqs::gfs {
       ar &_last_index_window;
     }
 
-    // -------------------- print  -------------------
-
-    friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-      return sout << "Matsubara Freq Mesh of size " << m.size() << ", domain " << m.domain() << ", positive_only : " << m.positive_only();
-    }
-
     // ------------------------------------------------
     private:
     domain_t _dom;
