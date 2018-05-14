@@ -3,7 +3,7 @@
 // Generic Fourier test function for different ranks
 template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   double precision = 1e-7;
-  triqs::clef::placeholder<0> iom_;
+  triqs::clef::placeholder<0> iw_;
   double beta = 1;
   int N_iw    = 1000;
   double E    = 1;
@@ -22,7 +22,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   // === Test a Green function with a Single Pole ===
 
   auto Gw1 = gf<imfreq, target_t>{{beta, statistic, N_iw}, shape};
-  Gw1(iom_) << 1 / (iom_ - E);
+  Gw1(iw_) << 1 / (iw_ - E);
 
   auto Gt1 = gf<imtime, target_t>{{beta, statistic, 2 * N_iw + 1}, shape};
   Gt1()    = fourier(Gw1);
@@ -48,8 +48,8 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   // === Test Green function with a self-energy ===
 
   auto Sigma = Gw1;
-  Sigma(iom_) << 1 / (iom_ - 2) + 3 / (iom_ + 3);
-  Gw1(iom_) << 1 / (iom_ - E - Sigma[iom_]);
+  Sigma(iw_) << 1 / (iw_ - 2) + 3 / (iw_ + 3);
+  Gw1(iw_) << 1 / (iw_ - E - Sigma[iw_]);
 
   Gt1()  = fourier(Gw1);
   Gw1b() = fourier(Gt1);
@@ -69,12 +69,12 @@ TEST(FourierMatsubara, BosonTensor4) { test_fourier<4>(Boson); }
 ///check Fourier on positive-only freqs fails
 TEST(Gfs, FourierMatsubaraAllFreq) {
   double precision = 10e-9;
-  triqs::clef::placeholder<0> iom_;
+  triqs::clef::placeholder<0> iw_;
   double beta = 1;
   int N_iw    = 10000;
   double E    = 1;
   auto Gw1    = gf<imfreq>{{beta, Fermion, N_iw, matsubara_mesh_opt::positive_frequencies_only}, {2, 2}};
-  Gw1(iom_) << 1 / (iom_ - E);
+  Gw1(iw_) << 1 / (iw_ - E);
   auto Gt1 = gf<imtime>{{beta, Fermion, 2 * N_iw + 1}, {2, 2}};
   ASSERT_THROW(Gt1() = fourier(Gw1), triqs::runtime_error);
 }
