@@ -18,7 +18,6 @@ g_tau = GfImTime(beta=beta, indices=[0])
 g_tau << InverseFourier(g_iw)
 
 assert are_close(g_tau(1.)[0,0], -0.5)
-assert are_close(g_tau(11.)[0,0], 0.5)
 
 g_w = GfReFreq(indices=[0], window=[0.,1.], n_points = 1000)
 g_w << Omega+0.1
