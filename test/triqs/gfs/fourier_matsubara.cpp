@@ -2,11 +2,12 @@
 
 // Generic Fourier test function for different ranks
 template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
-  double precision = 1e-7;
+  double precision = 1e-8;
   triqs::clef::placeholder<0> iw_;
-  double beta = 1;
+  double beta = 10;
   int N_iw    = 1000;
-  double E    = 1;
+  int N_tau   = 10000;
+  double E    = -1;
 
   mini_vector<size_t, TARGET_RANK> shape{};
 
@@ -22,9 +23,9 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   // === Test a Green function with a Single Pole ===
 
   auto Gw1 = gf<imfreq, target_t>{{beta, statistic, N_iw}, shape};
-  Gw1(iw_) << 1 / (iw_ - E);
+  Gw1(iw_) << 1 / (iw_ - E) + 1 / (iw_ + 2 * E) - 4.5 / (iw_ - 1.25 * E);
 
-  auto Gt1 = gf<imtime, target_t>{{beta, statistic, 2 * N_iw + 1}, shape};
+  auto Gt1 = gf<imtime, target_t>{{beta, statistic, N_tau}, shape};
   Gt1()    = fourier(Gw1);
 
   ///verification that TF(TF^-1)=Id
@@ -35,13 +36,19 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   // Check against the exact result
   auto Gt1_exact = Gt1;
   Gt1_exact()    = 0.0;
-  double s       = (statistic == Fermion ? 1 : -1);
-  for (auto const &t : Gt1.mesh()) { Gt1_exact[t] = exp(-E * t) * ((t >= 0 ? -1 : 0) + 1 / (1 + s * exp(E * beta))); }
+  double s       = (statistic == Fermion ? -1 : 1);
+  auto one_pole  = [&](double E, auto &&t) { 
+    if(E>0)
+      return - exp(-E * t) / (1 - s * exp(-E * beta));
+    else
+      return s* exp(E * (beta - t)) / (1 - s * exp(E * beta)); 
+  };
+  for (auto const &t : Gt1.mesh()) { Gt1_exact[t] = one_pole(E, t) + one_pole(-2*E, t) - 4.5*one_pole(1.25*E,t); }
   EXPECT_GF_NEAR(Gt1, Gt1_exact, precision);
 
   // Test the factory function
-  auto Gt2  = make_gf_from_fourier(Gw1);
-  auto Gw2b = make_gf_from_fourier(Gt2);
+  auto Gt2  = make_gf_from_fourier(Gw1, N_tau);
+  auto Gw2b = make_gf_from_fourier(Gt2, N_iw);
   EXPECT_GF_NEAR(Gt2, Gt1, precision);
   EXPECT_GF_NEAR(Gw2b, Gw1, precision);
 
@@ -53,6 +60,13 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
 
   Gt1()  = fourier(Gw1);
   Gw1b() = fourier(Gt1);
+  EXPECT_GF_NEAR(Gw1, Gw1b, precision);
+
+  // Now lets do multiple fourier transforms
+  for(int i : range(10)){
+    Gt1()  = fourier(Gw1b);
+    Gw1b() = fourier(Gt1);
+  }
   EXPECT_GF_NEAR(Gw1, Gw1b, precision);
 }
 
