@@ -11,6 +11,7 @@ namespace triqs::gfs {
    * */
   template <typename T, int R> array<T, 2> flatten_2d(array_const_view<T, R> a, int n) {
 
+    if(a.is_empty()) return array<T, 2>{};
     a.rebind(rotate_index_view(a, n));    // Swap relevant dim to front. The view is passed by value, we modify it.
     long nrows = first_dim(a);            // # rows of the result, i.e. n-th dim, which is now at 0.
     long ncols = a.size() / nrows;        // # columns of the result. Everything but n-th dim.
