@@ -184,6 +184,10 @@ m.add_property(name = "linear_dims",
                getter = cfunction(calling_pattern="triqs::utility::mini_vector<int,3> result = self_c.get_dimensions()",
                signature = "triqs::utility::mini_vector<int,3>()",
                doc = "Linear dimensions"))
+m.add_property(name = "domain",
+               getter = cfunction(calling_pattern="brillouin_zone result = self_c.domain()",
+               signature = "brillouin_zone()",
+               doc = "Domain"))
 
 module.add_class(m)
 
@@ -202,6 +206,10 @@ m.add_property(name = "linear_dims",
                getter = cfunction(calling_pattern="triqs::utility::mini_vector<int,3> result = self_c.get_dimensions()",
                signature = "triqs::utility::mini_vector<int,3>()",
                doc = "Linear dimensions"))
+m.add_property(name = "domain",
+               getter = cfunction(calling_pattern="bravais_lattice result = self_c.domain()",
+               signature = "bravais_lattice()",
+               doc = "Domain"))
 
 module.add_class(m)
 
