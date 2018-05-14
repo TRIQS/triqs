@@ -48,7 +48,7 @@ namespace triqs::gfs {
     int n_tau = gt.mesh().size();
     for (int m : range(1, fit_order + 1)){
       d_vec_left(m - 1, _) = (gt[m] - gt[0]) / gt.mesh()[m]; // Values around 0
-      d_vec_right(m - 1, _) = (gt[n_tau - 1] - gt[n_tau - 1 - m]) / gt.mesh()[n_tau - 1 - m]; // Values around beta
+      d_vec_right(m - 1, _) = (gt[n_tau - 1] - gt[n_tau - 1 - m]) / gt.mesh()[m]; // Values around beta
     }
 
     // Inverse of the Vandermonde matrix V_{m,j} = m^{j-1}
@@ -87,9 +87,12 @@ namespace triqs::gfs {
     // Calculate the 2nd
     matrix_t g_vec_left = V_inv * d_vec_left;
     matrix_t g_vec_right = V_inv * d_vec_right;
+    double sign = (gt.mesh().domain().statistic == Fermion) ? -1 : 1;
     array<dcomplex, 2> m23(2, second_dim(g_vec_left));
-    m23(0, _) = g_vec_left(0, _) + g_vec_right(0, _);
-    m23(1, _) = - (g_vec_left(1, _) + g_vec_right(1, _)) * 2 / gt.mesh().delta();
+    m23(0, _) = g_vec_left(0, _) - sign * g_vec_right(0, _);
+    m23(1, _) = -(g_vec_left(1, _) + sign * g_vec_right(1, _)) * 2 / gt.mesh().delta();
+    //TRIQS_PRINT(m23(0,_));
+    //TRIQS_PRINT(m23(1,_));
     return m23;
   }
 
