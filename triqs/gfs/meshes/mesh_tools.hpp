@@ -32,13 +32,24 @@ namespace gfs {
   struct mesh_point {};
  }
 
- /** The statistics : Boson or Fermion
-  */
- enum statistic_enum {
-  Boson,
-  Fermion
- };
+ /** The statistics : Boson or Fermion */
+ enum statistic_enum {Boson=0, Fermion = 1};
 
+// 1 for Boson, -1 for Fermion 
+ inline int sign(statistic_enum s) { return (s==Boson ? 1 : -1);}
+
+ // Boson*Fermion -> Fermion, others -> Boson 
+ inline statistic_enum operator* (statistic_enum i, statistic_enum j) { return ( i==j ? Boson : Fermion); }
+
+ // pretty print 
+ inline std::ostream &operator<<(std::ostream &sout, statistic_enum x) { return sout << (x==Boson ? "Boson" : "Fermion"); }
+
+ //enum class statistic_enum {_Boson=0, _Fermion = 1};
+ //inline statistic_enum Fermion = statistic_enum::_Fermion;
+ //inline statistic_enum Boson = statistic_enum::_Boson;
+ //statistic_enum operator* (statistic_enum i, statistic_enum j) { return ( i==j ? statistic_enum::_Boson : statistic_enum::_Fermion); }
+ //std::ostream &operator<<(std::ostream &sout, statistic_enum x) { return sout << (x==statistic_enum::_Boson ? "Boson" : "Fermion"); }
+ 
  // Interpolation policies
  namespace interpol_t {
   struct None {};
