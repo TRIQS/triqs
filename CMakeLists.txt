@@ -44,7 +44,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #---------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 2.8.7 FATAL_ERROR)
-project (AllPrograms C CXX)
+project (triqs C CXX)
 
 ## C & C++ Headers
 include(CheckIncludeFile)
@@ -276,3 +276,19 @@ MESSAGE(STATUS "***************************************************************"
 #--------------------------------------------------------
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqs.modulefile.in ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile DESTINATION ${CMAKE_INSTALL_PREFIX}/share)
+
+#--------------------------------------------------------
+# Packaging
+#--------------------------------------------------------
+option(BUILD_DEBIAN_PACKAGE "Build a deb package" OFF)
+if(BUILD_DEBIAN_PACKAGE)
+  if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr")
+    message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /usr for packaging")
+  endif()
+  SET(CPACK_GENERATOR "DEB")
+  SET(CPACK_PACKAGE_VERSION ${TRIQS_VERSION})
+  SET(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/triqs")
+  EXECUTE_PROCESS(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
+  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.23), libgcc1 (>= 1:8), libstdc++6, python, libpython2.7, libopenmpi1.10, libhdf5-10, libgmp10, libfftw3-double3, libibverbs1, libgfortran3, zlib1g, libsz2, libhwloc5, libquadmath0, libaec0, libnuma1, libltdl7, libblas3, liblapack3, python-numpy, python-h5py, python-jinja2, python-mako, python-mpi4py, python-matplotlib, python-scipy, cpp2py (= ${TRIQS_VERSION})")
+  INCLUDE(CPack)
+endif()
