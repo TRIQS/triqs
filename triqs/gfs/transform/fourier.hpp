@@ -212,12 +212,49 @@ namespace triqs::gfs {
       return std::move(g2);
   }
 
-  // general rewrite for gf_view and gf
+  /* *-----------------------------------------------------------------------------------------------------
+   *
+   * make_gf_from_fourier : Block / Block2 Gf
+   *
+   * *-----------------------------------------------------------------------------------------------------*/
+
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(block_gf_const_view<V, T> gin, Args &&... args) {
+    auto l = [&](gf_const_view<V,T> g_bl){ return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), std::forward<Args>(args)...); };
+    return map_block_gf(l, gin);
+  }
+
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(block2_gf_const_view<V, T> gin, Args &&... args) {
+    auto l = [&](gf_const_view<V,T> g_bl){ return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), std::forward<Args>(args)...); };
+    return map_block_gf(l, gin);
+  }
+
+  /* *-----------------------------------------------------------------------------------------------------
+   *
+   * make_gf_from_fourier : Give proper overloads for gf and gf_view
+   *
+   * *-----------------------------------------------------------------------------------------------------*/
+
   template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(gf_view<V, T> gin, Args &&... args) {
     return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
   }
 
   template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(gf<V, T> const &gin, Args &&... args) {
+    return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
+  }
+
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(block_gf_view<V, T> gin, Args &&... args) {
+    return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
+  }
+
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(block_gf<V, T> const &gin, Args &&... args) {
+    return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
+  }
+
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(block2_gf_view<V, T> gin, Args &&... args) {
+    return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
+  }
+
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(block2_gf<V, T> const &gin, Args &&... args) {
     return make_gf_from_fourier<N, Ns...>(make_const_view(gin), std::forward<Args>(args)...);
   }
 
