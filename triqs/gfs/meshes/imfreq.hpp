@@ -185,7 +185,7 @@ namespace triqs::gfs {
     }
 
     private:
-    // construct the Vandermonde matrix
+    // construct the Vandermonde matrix // FIXME Elevate
     arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int max_order) const {
       arrays::matrix<dcomplex> V(pts.size(), max_order + 1);
       for (auto [i, p] : triqs::utility::enumerate(pts)) {
@@ -203,7 +203,7 @@ namespace triqs::gfs {
     // number of the points in the tail for positive omega.
     int n_pts_in_tail() const { return std::min(int(std::round(_tail_fraction * _n_pts)), _n_tail_max); }
 
-    // returns the 2 ranges of indices of the points used for tail fitting
+    // returns the 2 ranges of indices of the points used for tail fitting // FIXME Elevate
     std::vector<long> get_tail_fit_indices() const {
 
       // Total number of points in the fitting window
@@ -230,6 +230,7 @@ namespace triqs::gfs {
       return idx_vec;
     }
 
+    // FIXME Generalized
     void setup_lss(int n_fixed_moments = 0) const {
 
       // Calculate the indices to fit on
@@ -283,7 +284,7 @@ namespace triqs::gfs {
       using triqs::arrays::ellipsis;
       using triqs::utility::enumerate;
 
-      // The values of the Green function. Swap relevant mesh to front
+      // The values of the Green function. Swap relevant mesh to front // FIXME USE ROTATE INDEX VIEW
       auto g_data_swap_idx = g_data;
       for (int i = n; i > 0; --i) g_data_swap_idx.rebind(swap_index_view(g_data_swap_idx, i - 1, i));
       auto const &imp = g_data_swap_idx.indexmap();
