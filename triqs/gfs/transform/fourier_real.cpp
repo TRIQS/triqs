@@ -35,7 +35,7 @@ namespace triqs::gfs {
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  gf_vec_t<refreq> _fourier_impl(gf_mesh<refreq> const &w_mesh, gf_vec_t<retime> &&gt, arrays::array_const_view<dcomplex, 2> mom_12) {
+  gf_vec_t<refreq> _fourier_impl(gf_mesh<refreq> const &w_mesh, gf_vec_cvt<retime> gt, arrays::array_const_view<dcomplex, 2> mom_12) {
 
     if (mom_12.is_empty()) TRIQS_RUNTIME_ERROR << " Tail fit not IMPLEMENTED";
 
@@ -73,7 +73,7 @@ namespace triqs::gfs {
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<retime> _fourier_impl(gf_mesh<retime> const &t_mesh, gf_vec_t<refreq> &&gw, arrays::array_const_view<dcomplex, 2> mom_12) {
+  gf_vec_t<retime> _fourier_impl(gf_mesh<retime> const &t_mesh, gf_vec_cvt<refreq> gw, arrays::array_const_view<dcomplex, 2> mom_12) {
 
     if (mom_12.is_empty()) TRIQS_RUNTIME_ERROR << " Tail fit not IMPLEMENTED";
 

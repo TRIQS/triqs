@@ -89,7 +89,7 @@ namespace triqs::gfs {
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  gf_vec_t<imfreq> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf_vec_t<imtime> &&gt, arrays::array_const_view<dcomplex, 2> mom_23) {
+  gf_vec_t<imfreq> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf_vec_cvt<imtime> gt, arrays::array_const_view<dcomplex, 2> mom_23) {
     if (mom_23.is_empty()) mom_23.rebind(fit_derivatives(gt));
 
     double beta = gt.mesh().domain().beta;
@@ -152,7 +152,7 @@ namespace triqs::gfs {
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<imtime> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf_vec_t<imfreq> &&gw, arrays::array_const_view<dcomplex, 2> mom_123) {
+  gf_vec_t<imtime> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf_vec_cvt<imfreq> gw, arrays::array_const_view<dcomplex, 2> mom_123) {
 
     TRIQS_ASSERT2(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
