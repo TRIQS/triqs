@@ -21,10 +21,10 @@
 #pragma once
 #include "./mesh_tools.hpp"
 #include "../domains/matsubara.hpp"
-#include <triqs/arrays/blas_lapack/gelss.hpp>
-#include <triqs/utility/itertools.hpp>
+#include "./tail_fitter.hpp"
 
 namespace triqs::gfs {
+
   using arrays::range;
   using dcomplex = std::complex<double>;
 
@@ -62,6 +62,7 @@ namespace triqs::gfs {
     ///type of the domain point
     using domain_pt_t = typename domain_t::point_t;
     using var_t       = imfreq;
+    using tail_fitter_t = tail_fitter<gf_mesh>;
 
     // -------------------- Constructors -------------------
 
@@ -173,212 +174,17 @@ namespace triqs::gfs {
     // -------------------- tail -------------------
 
     // maximum freq of the mesh
-    dcomplex omega_max() const { return idx_to_matsu_freq(_last_index); }
+    dcomplex omega_max() const { return idx_to_freq(_last_index); }
 
     void set_tail_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) const {
-      _n_tail_max    = n_tail_max;
-      _tail_fraction = tail_fraction;
-      _rcond         = rcond;
-      for (auto &l : _lss) l.reset();
-      _vander.reset();
-      _fit_idx_lst.reset();
+      _tail_fitter = std::make_shared<tail_fitter_t>(tail_fitter_t{this, n_tail_max, tail_fraction, rcond});
     }
 
-    private:
-    // construct the Vandermonde matrix // FIXME Elevate
-    arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int max_order) const {
-      arrays::matrix<dcomplex> V(pts.size(), max_order + 1);
-      for (auto [i, p] : triqs::utility::enumerate(pts)) {
-        dcomplex z = 1;
-        for (int n = 0; n <= max_order; ++n) {
-          V(i, n) = z;
-          z *= p;
-        }
-      }
-      return V;
-    }
+    tail_fitter_t & get_tail_fitter() const { return *_tail_fitter; }
 
-    dcomplex idx_to_matsu_freq(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
+    bool fit_tail_possible() const { return _opt == matsubara_mesh_opt::positive_frequencies_only; }
 
-    // number of the points in the tail for positive omega.
-    int n_pts_in_tail() const { return std::min(int(std::round(_tail_fraction * _n_pts)), _n_tail_max); }
-
-    // returns the 2 ranges of indices of the points used for tail fitting // FIXME Elevate
-    std::vector<long> get_tail_fit_indices() const {
-
-      // Total number of points in the fitting window
-      int n_pts_in_fit_range = int(std::round(_tail_fraction * _n_pts));
-
-      // Number of points used for the fit
-      int n_tail = n_pts_in_tail();
-
-      std::vector<long> idx_vec;
-      idx_vec.reserve(2 * n_tail);
-
-      double step = double(n_pts_in_fit_range) / n_tail;
-
-      double idx1 = _first_index;
-      double idx2 = _last_index - n_pts_in_fit_range;
-
-      for (int n : range(n_tail)) {
-        idx_vec.push_back(long(idx1));
-        idx_vec.push_back(long(idx2));
-        idx1 += step;
-        idx2 += step;
-      }
-
-      return idx_vec;
-    }
-
-    // FIXME Generalized
-    void setup_lss(int n_fixed_moments = 0) const {
-
-      // Calculate the indices to fit on
-      if (!_fit_idx_lst) _fit_idx_lst = std::make_shared<std::vector<long>>(get_tail_fit_indices());
-
-      // Set Up full Vandermonde matrix up to order 9 if not set
-      if (!_vander) {
-        std::vector<dcomplex> C;
-        C.reserve(_fit_idx_lst->size());
-        auto om_max = omega_max();
-        for (long n : *_fit_idx_lst) C.push_back(1. / (idx_to_matsu_freq(n) / om_max));
-        _vander = std::make_shared<arrays::matrix<dcomplex>>(vander(C, 9));
-      }
-
-      if (n_fixed_moments + 1 > first_dim(*_vander) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
-
-      // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
-      _lss[n_fixed_moments].reset();
-      int n_max = std::min(size_t{9}, first_dim(*_vander) / 2);
-      for (int n = n_max; n >= n_fixed_moments; --n) {
-        auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>((*_vander)(range(), range(n_fixed_moments, n + 1)));
-        if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond) {
-          _lss[n_fixed_moments] = std::move(ptr);
-          break;
-        }
-      }
-      if (!_lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
-    }
-
-    /**
-     * @param m mesh
-   * @param data 
-   * @param n position of the omega in the data array
-   * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
-  */
-    // FIXME : nda : use dynamic Rank here.
-    template <int R, int R2=R>
-    friend std::pair<arrays::array<dcomplex, R>, double> get_tail(gf_mesh const &m, arrays::array_const_view<dcomplex, R> g_data, int n,
-                                                                  bool normalize = true, arrays::array_const_view<dcomplex, R2> known_moments = {}) {
-
-      static_assert((R==R2), "The rank of the moment array is not equal to the data to fit !!!");
-      if (m._opt == matsubara_mesh_opt::positive_frequencies_only) TRIQS_RUNTIME_ERROR << "Can not fit on an positive_only mesh";
-
-      // If not set, build least square solver for for given number of known moments
-      int n_fixed_moments = first_dim(known_moments);
-      if (!bool(m._lss[n_fixed_moments])) m.setup_lss(n_fixed_moments);
-
-      // Total number of moments
-      int n_moments = m._lss[n_fixed_moments]->n_var() + n_fixed_moments;
-
-      using triqs::arrays::ellipsis;
-      using triqs::utility::enumerate;
-
-      // The values of the Green function. Swap relevant mesh to front // FIXME USE ROTATE INDEX VIEW
-      auto g_data_swap_idx = g_data;
-      for (int i = n; i > 0; --i) g_data_swap_idx.rebind(swap_index_view(g_data_swap_idx, i - 1, i));
-      auto const &imp = g_data_swap_idx.indexmap();
-      long ncols      = imp.size() / imp.lengths()[0];
-
-      // We flatten the data in the target space and remaining meshes into the second dim
-      arrays::matrix<dcomplex> g_mat(2 * m.n_pts_in_tail(), ncols);
-
-      // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
-      for (auto [i, n] : enumerate(*m._fit_idx_lst)) {
-        if constexpr (R == 1)
-          g_mat(i, 0) = g_data_swap_idx(m.index_to_linear(n));
-        else
-          for (auto [j, x] : enumerate(g_data_swap_idx(m.index_to_linear(n), ellipsis()))) g_mat(i, j) = x;
-      }
-
-      // If an array with known_moments was passed, flatten the array into a matrix
-      // just like g_data. Then account for the proper shift in g_mat
-      if (n_fixed_moments > 0) {
-        auto imp_km   = known_moments.indexmap();
-        long ncols_km = imp_km.size() / imp_km.lengths()[0];
-
-        if (ncols != ncols_km) TRIQS_RUNTIME_ERROR << "known_moments shape incompatible with shape of data";
-        arrays::matrix<dcomplex> km_mat(n_fixed_moments, ncols);
-
-        // We have to scale the known_moments by 1/Omega_max^n
-        dcomplex z      = 1;
-        dcomplex om_max = m.omega_max();
-
-        for (int order : range(n_fixed_moments)) {
-          if constexpr (R == 1)
-            km_mat(order, 0) = z * known_moments(order, ellipsis());
-          else
-            for (auto [n, x] : enumerate(known_moments(order, ellipsis()))) km_mat(order, n) = z * x;
-          z /= om_max;
-        }
-
-        // Shift g_mat to account for known moment correction
-        g_mat -= (*m._vander)(range(), range(n_fixed_moments)) * km_mat;
-      }
-
-      // Call least square solver
-      auto [a_mat, epsilon] = (*m._lss[n_fixed_moments])(g_mat); // coef + error
-
-      // === The result a_mat contains the fitted moments divided by omega_max()^n
-      // Here we extract the real moments
-      if (normalize) {
-        dcomplex Z = 1.0, om_max = m.omega_max();
-        for (int i : range(n_fixed_moments)) Z *= om_max;
-        for (int i : range(first_dim(a_mat))) {
-          a_mat(i, range()) *= Z;
-          Z *= om_max;
-        }
-      }
-
-      // === Reinterpret the result as an R-dimensional array according to initial shape and return together with the error
-
-      using r_t = arrays::array<dcomplex, R>; // return type
-      auto lg   = g_data_swap_idx.indexmap().lengths();
-
-      // Index map for the view on the a_mat result
-      lg[0]     = n_moments - n_fixed_moments;
-      auto imp1 = typename r_t::indexmap_type{typename r_t::indexmap_type::domain_type{lg}};
-
-      // Index map for the full result
-      lg[0]    = n_moments;
-      auto res = r_t(typename r_t::indexmap_type::domain_type{lg});
-
-      if (n_fixed_moments) res(range(n_fixed_moments), ellipsis()) = known_moments;
-      res(range(n_fixed_moments, n_moments), ellipsis()) = typename r_t::view_type{imp1, a_mat.storage()};
-
-      return {std::move(res), epsilon};
-    }
-
-    // Computes sum A_n / om^n
-    // Return array<dcomplex, R -1 > if R>1 else dcomplex
-    // FIXME : use dynamic R array when available.
-    // FIXME : array of dimension 0
-    template <int R> auto tail_eval(arrays::array_const_view<dcomplex, R> A, dcomplex om) {
-
-      // same algo for both cases below
-      auto compute = [&A, om](auto res) { // copy, in fact rvalue
-        dcomplex z = 1;
-        long N     = first_dim(A);
-        for (int n = 0; n < N; ++n, z /= om) res += A(n, arrays::ellipsis()) * z;
-        return std::move(res);
-      };
-
-      if constexpr (R > 1) {
-        return compute(arrays::zeros(front_pop(A.indexmap().lengths())));
-      } else {
-        return compute(dcomplex{0});
-      }
-    }
+    dcomplex idx_to_freq(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
 
     public:
     // -------------------- mesh_point -------------------
@@ -481,12 +287,7 @@ namespace triqs::gfs {
     int _n_pts;
     matsubara_mesh_opt _opt;
     long _first_index, _last_index, _first_index_window, _last_index_window;
-    mutable int _n_tail_max       = 30;
-    mutable double _tail_fraction = 0.2;
-    mutable double _rcond         = 1e-4;
-    mutable std::array<std::shared_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
-    mutable std::shared_ptr<arrays::matrix<dcomplex>> _vander;
-    mutable std::shared_ptr<std::vector<long>> _fit_idx_lst;
+    mutable std::shared_ptr<tail_fitter_t> _tail_fitter = {};
   };
 
   // ---------------------------------------------------------------------------
@@ -535,4 +336,5 @@ namespace triqs::gfs {
   template <typename Lambda> void foreach (gf_mesh<imfreq> const &m, Lambda F) {
     for (auto const &w : m) F(w);
   }
+
 } // namespace triqs::gfs

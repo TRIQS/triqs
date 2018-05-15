@@ -141,6 +141,9 @@ namespace triqs::arrays::lapack {
     int n_var() const { return second_dim(A); }
     matrix<value_type> const &A_mat() const { return A; }
     vector<double> const &S_vec() const { return _S_vec; }
+    bool empty() const { return A.is_empty(); }
+
+    gelss_cache() = default;
 
     gelss_cache(matrix_const_view<value_type> _A) : M(first_dim(_A)), N(second_dim(_A)), A(_A), _S_vec(std::min(M, N)) {
 
@@ -165,6 +168,7 @@ namespace triqs::arrays::lapack {
 
     // Solve the least-square problem that minimizes || A * x - B ||_2 given A and B
     std::pair<matrix<value_type>, double> operator()(matrix_const_view<value_type> B) const {
+      TRIQS_ASSERT2(!empty(), "Internal Error!");
       return std::make_pair(V_x_InvS_x_UT * B, (M == N) ? 0.0 : frobenius_norm(UT_NULL * B));
     }
   };
