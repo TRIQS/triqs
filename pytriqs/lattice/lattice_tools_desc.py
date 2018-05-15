@@ -23,6 +23,8 @@ bl = class_( py_type = "BravaisLattice",
         serializable= "tuple",
        )
 
+bl.add_constructor(signature = "(triqs::lattice::brillouin_zone bz)",
+                   doc = "")
 bl.add_constructor(signature = "(matrix<double> units, std::vector<r_t> orbital_positions, std::vector<std::string> atom_orb_name)",
                    doc = "")
 bl.add_constructor(signature = "(matrix<double> units, std::vector<r_t> orbital_positions)",
