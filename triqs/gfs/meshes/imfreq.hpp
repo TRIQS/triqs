@@ -62,7 +62,7 @@ namespace triqs::gfs {
     ///type of the domain point
     using domain_pt_t = typename domain_t::point_t;
     using var_t       = imfreq;
-    using tail_fitter_t = tail_fitter<gf_mesh>;
+    using tail_fitter_t = tail_fitter;
 
     // -------------------- Constructors -------------------
 
@@ -91,6 +91,7 @@ namespace triqs::gfs {
       }
       _first_index_window = _first_index;
       _last_index_window  = _last_index;
+      _tail_fitter = std::make_shared<tail_fitter_t>();
     }
 
     /**
@@ -138,6 +139,9 @@ namespace triqs::gfs {
     /// Size (linear) of the mesh of the window
     long full_size() const { return _last_index - _first_index + 1; }
 
+    /// Number of points given at construction
+    long n_pts() const { return _n_pts;}
+
     ///
     utility::mini_vector<size_t, 1> size_of_components() const { return {size_t(size())}; }
 
@@ -176,11 +180,13 @@ namespace triqs::gfs {
     // maximum freq of the mesh
     dcomplex omega_max() const { return idx_to_freq(_last_index); }
 
-    void set_tail_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) const {
-      _tail_fitter = std::make_shared<tail_fitter_t>(tail_fitter_t{this, n_tail_max, tail_fraction, rcond});
-    }
+    // the tail fitter is mutable, even if the mesh is immutable to cache some data
+    tail_fitter_t & get_tail_fitter() const { if (!_tail_fitter) TRIQS_RUNTIME_ERROR << "Tail fit params not set up "; return *_tail_fitter; }
 
-    tail_fitter_t & get_tail_fitter() const { return *_tail_fitter; }
+    // FIXME : only for python wrap ... Ugly 
+    void set_tail_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-4) { 
+      get_tail_fitter().reset(tail_fraction, n_tail_max, rcond);
+    }
 
     bool fit_tail_possible() const { return _opt == matsubara_mesh_opt::positive_frequencies_only; }
 
@@ -287,7 +293,7 @@ namespace triqs::gfs {
     int _n_pts;
     matsubara_mesh_opt _opt;
     long _first_index, _last_index, _first_index_window, _last_index_window;
-    mutable std::shared_ptr<tail_fitter_t> _tail_fitter = {};
+    mutable std::shared_ptr<tail_fitter_t> _tail_fitter;
   };
 
   // ---------------------------------------------------------------------------
