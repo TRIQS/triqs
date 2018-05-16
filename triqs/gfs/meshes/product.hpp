@@ -176,22 +176,6 @@ namespace gfs {
    return ev(f, std::forward<Args>(args)...);
   }
 
-  // -------------------- MPI -------------------
-
-  /// Scatter the first mesh over the communicator c
-  friend gf_mesh mpi_scatter(gf_mesh const &m, mpi::communicator c, int root) {
-   auto r = m; // same domain, but mesh with a window.
-   std::get<0>(r.m_tuple) = mpi_scatter(std::get<0>(r.m_tuple), c, root);
-   return r;
-  }
-
-  /// Opposite of scatter : rebuild the original mesh, without a window
-  friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
-   auto r = m; // same domain, but mesh with a window.
-   std::get<0>(r.m_tuple) = mpi_gather(std::get<0>(r.m_tuple), c, root);
-   return r;
-  }
-
   // -------------------- HDF5 -------------------
  
   static std::string hdf5_scheme() {return  "MeshProduct";}
