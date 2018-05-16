@@ -298,7 +298,7 @@ namespace triqs { namespace arrays {
   /// Make a array of zeros with the given dimensions.
   /// FIXME : add variadic form
   /// FIXME : add eyes 
-  template<typename T, int R> array<T, R> zeros(mini_vector<long, R> const & len) { 
+  template<typename T, typename INT, int R> array<T, R> zeros(mini_vector<INT, R> const & len) { 
     array<T, R> r (typename array<T, R>::indexmap_type::domain_type{len});
     r() = 0;
     return r;

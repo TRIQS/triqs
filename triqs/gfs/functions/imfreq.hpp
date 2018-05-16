@@ -19,8 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-namespace triqs {
-namespace gfs {
+namespace triqs::gfs {
+
  using triqs::arrays::conj; // not found on gcc 5
 
  /// ---------------------------  A few specific functions ---------------------------------
@@ -86,5 +86,34 @@ namespace gfs {
  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, typename G::regular_type> make_real_in_tau(G const &g) {
   return map_block_gf(make_real_in_tau<typename G::g_t>, g);
  }
-}
+
+ // ------------------------------------------------------------------------------------------------------
+
+ template<template<typename, typename> typename G, typename T>
+ auto restricted_view(G<imfreq, T> const & g, int n_max){
+   auto iw_mesh = gf_mesh<imfreq>{g.mesh().domain().beta, Fermion, n_max};
+
+   auto const & old_mesh = g.mesh();
+   int idx_min = old_mesh.index_to_linear(iw_mesh.first_index()); 
+   int idx_max = old_mesh.index_to_linear(iw_mesh.last_index()); 
+   auto data_view = g.data()(range(idx_min, idx_max + 1), ellipsis()); 
+
+   return typename G<imfreq, T>::const_view_type{iw_mesh, data_view};
+ }
+
+ template<typename T>
+ void replace_by_tail(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min){
+   for( auto const & iw : g.mesh())
+     if(abs(iw.index()) > n_min) g[iw] = tail_eval(tail, iw);
+ }
+
+ // FIXME For backward compatibility only
+ template<template<typename, typename> typename G, typename T>
+ auto fit_tail(G<imfreq, T> const & g, int n_min, int n_max = -1, array_const_view<dcomplex, 1 + T::rank> known_moments = {}) {
+   if(n_max == -1) n_max = g.mesh().last_index();
+   auto g_rview = restricted_view(g, n_max);
+   double tail_fraction = double(n_max - n_min) / n_max;
+   g_rview.mesh().set_tail_fit_parameters(tail_fraction);
+   return fit_tail(g_rview, known_moments); 
+ }
 }

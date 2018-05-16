@@ -39,14 +39,13 @@ namespace gfs {
    return m.get_tail_fitter().fit_tail(m, make_const_view(g.data()), N, true, make_const_view(known_moments));
   }
 
-  template <template<typename, typename> typename G, typename V, typename T> auto fit_tail(G<V, T> const & g, bool normalize = true) {
-      return g.mesh().get_tail_fitter().fit_tail(g.mesh(), make_const_view(g.data()), 0, normalize);
+  template <template<typename, typename> typename G, typename V, typename T> auto fit_tail(G<V, T> const & g) {
+      return g.mesh().get_tail_fitter().fit_tail(g.mesh(), make_const_view(g.data()), 0, true);
   }
 
   template <template<typename, typename> typename G, typename V, typename T, typename A> auto fit_tail(G<V, T> const & g, A const & known_moments) {
       return g.mesh().get_tail_fitter().fit_tail(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
   }
-
 
   // FIXME : merge the slice_target_to_scalar
  /*------------------------------------------------------------------------------------------------------
