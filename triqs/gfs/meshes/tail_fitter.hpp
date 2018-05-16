@@ -24,6 +24,7 @@
 
 namespace triqs::gfs {
 
+  using arrays::array_const_view;
   using arrays::range;
 
   //----------------------------------------------------------------------------------------------
@@ -67,7 +68,10 @@ namespace triqs::gfs {
 
     const double _tail_fraction = 0.2;
     const int _n_tail_max       = 30;
+    const int _n_order          = 9;
+    const bool adjust_order     = true;
     const double _rcond         = 1e-8;
+
     std::array<std::unique_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
     arrays::matrix<dcomplex> _vander;
     std::vector<long> _fit_idx_lst;
@@ -92,7 +96,6 @@ namespace triqs::gfs {
       idx_vec.reserve(2 * n_tail);
 
       double step = double(n_pts_in_fit_range) / n_tail;
-
       double idx1 = m.first_index();
       double idx2 = m.last_index() - n_pts_in_fit_range;
 
@@ -109,32 +112,38 @@ namespace triqs::gfs {
     //----------------------------------------------------------------------------------------------
 
     // Set up the least-squares solver for a given number of known moments.
-    template <typename M> void setup_lss(M const &m, int n_fixed_moments = 0) {
+    template <typename M> void setup_lss(M const &m, int n_fixed_moments) {
 
       // Calculate the indices to fit on
       if (_fit_idx_lst.empty()) _fit_idx_lst = get_tail_fit_indices(m);
 
-      // Set Up full Vandermonde matrix up to order 9 if not set
+      // Set Up full Vandermonde matrix up to order n_order if not set
       if (_vander.is_empty()) {
         std::vector<dcomplex> C;
         C.reserve(_fit_idx_lst.size());
         auto om_max = m.omega_max();
         for (long n : _fit_idx_lst) C.push_back(om_max / m.index_to_point(n));
-        _vander = vander(C, 9);
+        _vander = vander(C, _n_order);
       }
 
       if (n_fixed_moments + 1 > first_dim(_vander) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
 
-      // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
-      _lss[n_fixed_moments].reset();
-      int n_max = std::min(size_t{9}, first_dim(_vander) / 2);
-      for (int n = n_max; n >= n_fixed_moments; --n) {
-        auto ptr = std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>(_vander(range(), range(n_fixed_moments, n + 1)));
-        if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond) {
-          _lss[n_fixed_moments] = std::move(ptr);
-          break;
+      auto l = [&](int n) { return std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>(_vander(range(), range(n_fixed_moments, n + 1))); };
+
+      if (!adjust_order)
+        _lss[n_fixed_moments] = l(_n_order);
+      else { // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
+        _lss[n_fixed_moments].reset();
+        int n_max = std::min(size_t{9}, first_dim(_vander) / 2);
+        for (int n = n_max; n >= n_fixed_moments; --n) {
+          auto ptr = l(n);
+          if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond) {
+            _lss[n_fixed_moments] = std::move(ptr);
+            break;
+          }
         }
       }
+
       if (!_lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
     }
 
@@ -144,12 +153,13 @@ namespace triqs::gfs {
      * @param m mesh
      * @param data 
      * @param n position of the omega in the data array
-     * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+     * @param normalize Finish the normalization of the tail coefficient (normally true)
+     * @param known_moments  Array of the known_moments
      * */
     // FIXME : nda : use dynamic Rank here.
     template <typename M, int R, int R2 = R>
-    std::pair<arrays::array<dcomplex, R>, double> fit_tail(M const &m, arrays::array_const_view<dcomplex, R> g_data, int n, bool normalize = true,
-                                                           arrays::array_const_view<dcomplex, R2> known_moments = {}) {
+    std::pair<arrays::array<dcomplex, R>, double> operator()(M const &m, array_const_view<dcomplex, R> g_data, int n, bool normalize,
+                                                             array_const_view<dcomplex, R2> known_moments) {
 
       static_assert((R == R2), "The rank of the moment array is not equal to the data to fit !!!");
       if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Can not fit on an positive_only mesh";
@@ -243,8 +253,9 @@ namespace triqs::gfs {
 
   struct tail_fitter_handle {
 
-    void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) const {
-      _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, rcond});
+    // FIXME : backward only ?
+    void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, int n_order = 9, bool adjust_order = true, double rcond = 1e-8) const {
+      _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, n_order, adjust_order, rcond});
     }
 
     // the tail fitter is mutable, even if the mesh is immutable to cache some data
@@ -253,13 +264,13 @@ namespace triqs::gfs {
       return *_tail_fitter;
     }
 
-    tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) const {
-      set_tail_fit_parameters(tail_fraction, n_tail_max, rcond);
+    tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = 30, int n_order = 9, bool adjust_order = true, double rcond = 1e-8) const {
+      set_tail_fit_parameters(tail_fraction, n_tail_max, n_order, adjust_order, rcond);
       return *_tail_fitter;
     }
 
     private:
     mutable std::shared_ptr<tail_fitter> _tail_fitter;
-  }; 
+  };
 
 } // namespace triqs::gfs
