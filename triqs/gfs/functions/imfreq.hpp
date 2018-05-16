@@ -108,8 +108,9 @@ namespace triqs::gfs {
  }
 
  // FIXME For backward compatibility only
+ // Fit_tail on a window
  template<template<typename, typename> typename G, typename T>
- auto fit_tail(G<imfreq, T> const & g, int n_min, int n_max = -1, array_const_view<dcomplex, 1 + T::rank> known_moments = {}) {
+ auto fit_tail(G<imfreq, T> const & g, int n_min, int n_max, array_const_view<dcomplex, 1 + T::rank> known_moments = {}) {
    if(n_max == -1) n_max = g.mesh().last_index();
    auto g_rview = restricted_view(g, n_max);
    double tail_fraction = double(n_max - n_min) / n_max;

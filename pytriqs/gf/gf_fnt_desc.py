@@ -122,10 +122,11 @@ m.add_function("gf_view<imfreq, matrix_valued> make_real_in_tau(gf_view<imfreq, 
                doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
 
 # fit_tail
-#m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int n_min, int n_max, bool replace_by_fit = true)", 
-#                doc = """Set the tail by fitting""")
-#m.add_function("void fit_tail(gf_view<imfreq, matrix_valued> g, tail_view known_moments, int max_moment, int neg_n_min, int neg_n_max, int pos_n_min, int pos_n_max, bool replace_by_fit = true)", 
-#                doc = """Set the tail by fitting""")
+m.add_function("std::pair<array<dcomplex,3>, double> fit_tail(gf_const_view<imfreq, matrix_valued> g,  int n_min, int n_max = -1, array_const_view<dcomplex, 3> known_moments={})", 
+                doc = """Fits the tail on the [n_min, n_max] window  + negative counter part""")
+
+m.add_function("void replace_by_tail(gf_view<imfreq, matrix_valued> g, array_const_view<dcomplex, 3> tail, int n_min)", 
+                doc = """Replace the function by the evaluation of the tail for |n| > n_min""")
   
 # GfImTime specific functions
 
