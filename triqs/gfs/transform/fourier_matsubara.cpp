@@ -166,7 +166,7 @@ namespace triqs::gfs {
     TRIQS_ASSERT2(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
     if (mom_123.is_empty()) {
-      auto[tail, error] = get_tail(gw);
+      auto[tail, error] = fit_tail(gw);
       if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
       TRIQS_ASSERT2((error < 1e-3), "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error));
       TRIQS_ASSERT2((first_dim(tail) > 4), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");

@@ -61,7 +61,7 @@ namespace gfs {
     TRIQS_RUNTIME_ERROR << " ERROR: Cannot evaluate Green function with positive only mesh outside grid ";
    }
 
-   auto [tail, err] = get_tail(g, false);
+   auto [tail, err] = fit_tail(g, false);
 
    dcomplex x = g.mesh().omega_max() / f;
    typename G::zero_regular_t res = g.get_zero();

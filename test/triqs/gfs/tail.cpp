@@ -20,12 +20,12 @@ TEST(Gf, Fourier) { // NOLINT
   placeholder<0> w_;
   gw(w_) << 1. / (w_ - 1);
 
-  std::cout << get_tail(gw) << "\n";
+  std::cout << fit_tail(gw) << "\n";
 
   auto gt  = make_gf_from_fourier(gw, 100 * n_iw);
   auto gw2 = make_gf_from_fourier(gt);
 
-  std::cout << get_tail(gw2) << "\n";
+  std::cout << fit_tail(gw2) << "\n";
 }
 
 TEST(Gf, Tail) { // NOLINT
@@ -38,12 +38,12 @@ TEST(Gf, Tail) { // NOLINT
   placeholder<0> w_;
   g(w_) << (1. / (w_ - 5) + 1. / (w_ + 10)) / 2.0;
 
-  std::cout << get_tail(g) << "\n\n";
+  std::cout << fit_tail(g) << "\n\n";
 
   auto known_moments = array<dcomplex, 1>(2);
 
   known_moments(0) = 0.0;
   known_moments(1) = 1.0;
-  std::cout << get_tail(g, known_moments) << "\n\n";
+  std::cout << fit_tail(g, known_moments) << "\n\n";
 }
 MAKE_MAIN;

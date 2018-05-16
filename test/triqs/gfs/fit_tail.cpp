@@ -28,8 +28,8 @@ TEST(Gf, FitTailBasic) { // NOLINT
     auto known_moments_s = array<dcomplex, 1>{0.0};
 
     // Get the tail using least square fitting
-    auto [tail, err]     = get_tail(gw, known_moments);
-    auto [tail_s, err_s] = get_tail(gw_s, known_moments_s);
+    auto [tail, err]     = fit_tail(gw, known_moments);
+    auto [tail_s, err_s] = fit_tail(gw_s, known_moments_s);
 
     EXPECT_ARRAY_NEAR(c, tail(range(0, 4), 0, 0), 1e-9);
     EXPECT_ARRAY_NEAR(c, tail_s(range(0, 4)), 1e-9);
@@ -41,8 +41,8 @@ TEST(Gf, FitTailBasic) { // NOLINT
     auto known_moments_s = array<dcomplex, 1>{0.0, 1.0};
 
     // Get the tail using least square fitting
-    auto [tail, err]     = get_tail(gw, known_moments);
-    auto [tail_s, err_s] = get_tail(gw_s, known_moments_s);
+    auto [tail, err]     = fit_tail(gw, known_moments);
+    auto [tail_s, err_s] = fit_tail(gw_s, known_moments_s);
 
     EXPECT_ARRAY_NEAR(c, tail(range(4), 0, 0), 1e-9);
     EXPECT_ARRAY_NEAR(c, tail_s(range(4)), 1e-9);
@@ -72,8 +72,8 @@ TEST(Gf, FitTailReal_F_and_B) { // NOLINT
   // Fix both the 0th and 1st moment
   auto known_moments = array<dcomplex, 3>{{{0.0}}, {{1.0}}};
 
-  auto [tail_f, err_r] = get_tail(gw_f, known_moments);
-  auto [tail_b, err_b] = get_tail(gw_b, known_moments);
+  auto [tail_f, err_r] = fit_tail(gw_f, known_moments);
+  auto [tail_b, err_b] = fit_tail(gw_b, known_moments);
 
   auto tail_exact = array<dcomplex, 1>{0.0, 1.0, 1.0, 1.0, 1.0};
 
@@ -98,7 +98,7 @@ TEST(Gf, FitTailComplex) { // NOLINT
   // Fix both the 0th and 1st moment
   auto known_moments = array<dcomplex, 3>{{{0.0}}, {{1.0}}};
 
-  auto [tail, err] = get_tail(gw, known_moments);
+  auto [tail, err] = fit_tail(gw, known_moments);
 
   auto tail_exact = array<dcomplex, 1>{dcomplex(0, 0), dcomplex(1, 0), a, std::pow(a, 2), std::pow(a, 3)};
 
@@ -135,7 +135,7 @@ TEST(Gf, FitTailMultivar) { // NOLINT
   known_moments(1, range(), range(), 0, 0) = 1.0;
 
   // Fit for all k-points. Resulting shape is (N_orders, N_k * N_k, 1, 1)
-  auto [tail, err] = get_tail<2>(g, known_moments);
+  auto [tail, err] = fit_tail<2>(g, known_moments);
 
   // Calculate the exact tail
   auto tail_exact = array<dcomplex, 3>(5, N_k * N_k, 2 * N_iW - 1);

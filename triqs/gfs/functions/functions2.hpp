@@ -26,23 +26,23 @@ namespace gfs {
  using triqs::arrays::array_const_view;
 
  /*------------------------------------------------------------------------------------------------------
- *                 Getting the tail
+ *                 Fitting the tail
  *-----------------------------------------------------------------------------------------------------*/
 
-  template <template<typename, typename> typename G, typename T> auto get_tail(G<imfreq, T> const & g, bool normalize = true) {
+  template <template<typename, typename> typename G, typename T> auto fit_tail(G<imfreq, T> const & g, bool normalize = true) {
       return g.mesh().get_tail_fitter().fit_tail(g.mesh(), make_const_view(g.data()), 0, normalize);
   }
 
-  template <template<typename, typename> typename G, typename T, typename A> auto get_tail(G<imfreq, T> const & g, A const & known_moments) {
+  template <template<typename, typename> typename G, typename T, typename A> auto fit_tail(G<imfreq, T> const & g, A const & known_moments) {
       return g.mesh().get_tail_fitter().fit_tail(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
   }
 
-  template <int N, template<typename, typename> typename G, typename T, typename... M> auto get_tail(G<cartesian_product<M...>, T> const & g) {
+  template <int N, template<typename, typename> typename G, typename T, typename... M> auto fit_tail(G<cartesian_product<M...>, T> const & g) {
     auto const & m = std::get<N>(g.mesh());
     return m.get_tail_fitter().fit_tail(m, make_const_view(g.data()), N);
   }
 
-  template <int N, template<typename, typename> typename G, typename T, typename A, typename... M> auto get_tail(G<cartesian_product<M...>, T> const & g, A const & known_moments) {
+  template <int N, template<typename, typename> typename G, typename T, typename A, typename... M> auto fit_tail(G<cartesian_product<M...>, T> const & g, A const & known_moments) {
     auto const & m = std::get<N>(g.mesh());
    return m.get_tail_fitter().fit_tail(m, make_const_view(g.data()), N, true, make_const_view(known_moments));
   }

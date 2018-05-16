@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./segment.hpp"
+#include "./tail_fitter.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -31,6 +32,8 @@ namespace gfs {
   template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
   // using segment_mesh::segment_mesh;
   
+  // -------------------- HDF5 -------------------
+
   static std::string hdf5_scheme() {return  "MeshReFreq";}
  
   friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
@@ -40,6 +43,10 @@ namespace gfs {
   friend void h5_read(h5::group fg, std::string const & subgroup_name, gf_mesh &m) {
    h5_read_impl(fg, subgroup_name, m,"MeshReFreq");
   }   
+
+  // ------------------------------------------------
+  private:
+  mutable std::shared_ptr<tail_fitter> _tail_fitter;
  };
 
 }

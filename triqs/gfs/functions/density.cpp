@@ -33,7 +33,7 @@ namespace triqs::gfs {
     if (g.mesh().positive_only())
       TRIQS_RUNTIME_ERROR << "density is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
 
-    auto [tail, err] = get_tail(g);
+    auto [tail, err] = fit_tail(g);
     if (err > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n";
     if (err > 1e-3) TRIQS_RUNTIME_ERROR << "ERROR: High frequency moments have an error greater than 1e-3.\n";
     if (first_dim(tail) < 4) TRIQS_RUNTIME_ERROR << "ERROR: Density implementation requires at least a proper 3rd high-frequency moment in tail\n";
