@@ -13,5 +13,5 @@ int main() {
   size_t n_min   = 50; // linear index on mesh to start the fit
   size_t n_max   = 90; // final linear index for fit (included)
 
-  std::cout << get_tail(gw) << std::endl;
+  std::cout << fit_tail(gw) << std::endl;
 }

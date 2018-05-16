@@ -1,3 +1,24 @@
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2012-2018 by N. Wentzell, O. Parcollet
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
+#pragma once
 #include <triqs/utility/itertools.hpp>
 #include <triqs/arrays/blas_lapack/gelss.hpp>
 
@@ -6,7 +27,7 @@ namespace triqs::gfs {
   using arrays::range;
 
   //----------------------------------------------------------------------------------------------
-  // construct the Vandermonde matrix // FIXME Elevate
+  // construct the Vandermonde matrix
   inline arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int max_order) {
     arrays::matrix<dcomplex> V(pts.size(), max_order + 1);
     for (auto [i, p] : triqs::utility::enumerate(pts)) {
@@ -44,15 +65,18 @@ namespace triqs::gfs {
 
   struct tail_fitter {
 
-    int _n_tail_max       = 30;
     double _tail_fraction = 0.2;
-    double _rcond         = 1e-4;
+    int _n_tail_max       = 30;
+    double _rcond         = 1e-8;
     std::array<std::unique_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
     arrays::matrix<dcomplex> _vander;
     std::vector<long> _fit_idx_lst;
 
     //----------------------------------------------------------------------------------------------
-    void reset(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) {
+    
+    // Reset tail_fitter parameters to given values or defaults.
+    // Reset all other members
+    void reset(double tail_fraction = 0.2, int n_tail_max = 30, double rcond = 1e-8) {
       _n_tail_max    = n_tail_max;
       _tail_fraction = tail_fraction;
       _rcond         = rcond;
@@ -64,15 +88,15 @@ namespace triqs::gfs {
     //----------------------------------------------------------------------------------------------
 
     // number of the points in the tail for positive omega.
-    template <typename M> int n_pts_in_tail(M const &m) const { return std::min(int(std::round(_tail_fraction * m.n_pts())), _n_tail_max); }
+    template <typename M> int n_pts_in_tail(M const &m) const { return std::min(int(std::round(_tail_fraction * m.size() / 2)), _n_tail_max); }
 
     //----------------------------------------------------------------------------------------------
 
-    // returns the 2 ranges of indices of the points used for tail fitting
+    // Return the vector of all indices that are used fit the fitting procedure
     template <typename M> std::vector<long> get_tail_fit_indices(M const &m) {
 
       // Total number of points in the fitting window
-      int n_pts_in_fit_range = int(std::round(_tail_fraction * m.n_pts()));
+      int n_pts_in_fit_range = int(std::round(_tail_fraction * m.size() / 2));
 
       // Number of points used for the fit
       int n_tail = n_pts_in_tail(m);
@@ -98,7 +122,6 @@ namespace triqs::gfs {
     //----------------------------------------------------------------------------------------------
 
     // Set up the least-squares solver for a given number of known moments.
-    // Requires a Lambda for the translation index -> x_value
     template <typename M> void setup_lss(M const &m, int n_fixed_moments = 0) {
 
       // Calculate the indices to fit on
@@ -109,7 +132,7 @@ namespace triqs::gfs {
         std::vector<dcomplex> C;
         C.reserve(_fit_idx_lst.size());
         auto om_max = m.omega_max();
-        for (long n : _fit_idx_lst) C.push_back(om_max / m.idx_to_freq(n));
+        for (long n : _fit_idx_lst) C.push_back(om_max / m.index_to_point(n));
         _vander = vander(C, 9);
       }
 
@@ -142,7 +165,7 @@ namespace triqs::gfs {
                                                            arrays::array_const_view<dcomplex, R2> known_moments = {}) {
 
       static_assert((R == R2), "The rank of the moment array is not equal to the data to fit !!!");
-      if (m.fit_tail_possible()) TRIQS_RUNTIME_ERROR << "Can not fit on an positive_only mesh";
+      if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Can not fit on an positive_only mesh";
 
       // If not set, build least square solver for for given number of known moments
       int n_fixed_moments = first_dim(known_moments);
