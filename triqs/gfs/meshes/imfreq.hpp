@@ -88,8 +88,6 @@ namespace triqs::gfs {
         _last_index     = n_pts - 1;
         _first_index    = -(_last_index + (is_fermion ? 1 : 0));
       }
-      _first_index_window = _first_index;
-      _last_index_window  = _last_index;
       _tail_fitter = std::make_shared<tail_fitter>();
     }
 
@@ -132,14 +130,8 @@ namespace triqs::gfs {
     /// The corresponding domain
     domain_t const &domain() const { return _dom; }
 
-    /// Size (linear) of the mesh of the window
-    long size() const { return _last_index_window - _first_index_window + 1; }
-
-    /// Size (linear) of the mesh of the window
-    long full_size() const { return _last_index - _first_index + 1; }
-
-    /// Number of points given at construction
-    long n_pts() const { return _n_pts;}
+    /// Size (linear) of the mesh
+    long size() const { return _last_index - _first_index + 1; }
 
     ///
     utility::mini_vector<size_t, 1> size_of_components() const { return {size_t(size())}; }
@@ -148,10 +140,10 @@ namespace triqs::gfs {
     domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind.value + (_dom.statistic == Fermion)) / _dom.beta; }
 
     /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-    long index_to_linear(index_t ind) const { return ind.value - first_index_window(); }
+    long index_to_linear(index_t ind) const { return ind.value - first_index(); }
 
     /// Reverse of index_to_linear
-    index_t linear_to_index(long lind) const { return {lind + first_index_window()}; }
+    index_t linear_to_index(long lind) const { return {lind + first_index()}; }
 
     // -------------------- Accessors (other) -------------------
 
@@ -160,12 +152,6 @@ namespace triqs::gfs {
 
     /// last Matsubara index
     int last_index() const { return _last_index; }
-
-    /// first Matsubara index of the window
-    int first_index_window() const { return _first_index_window; }
-
-    /// last Matsubara index of the window
-    int last_index_window() const { return _last_index_window; }
 
     /// Is the mesh only for positive omega_n (G(tau) real))
     bool positive_only() const { return _opt == matsubara_mesh_opt::positive_frequencies_only; }
@@ -177,7 +163,7 @@ namespace triqs::gfs {
     // -------------------- tail -------------------
 
     // maximum freq of the mesh
-    dcomplex omega_max() const { return idx_to_freq(_last_index); }
+    dcomplex omega_max() const { return index_to_point(_last_index); }
 
     // the tail fitter is mutable, even if the mesh is immutable to cache some data
     tail_fitter & get_tail_fitter() const { if (!_tail_fitter) TRIQS_RUNTIME_ERROR << "Tail fit params not set up "; return *_tail_fitter; }
@@ -187,7 +173,7 @@ namespace triqs::gfs {
       get_tail_fitter().reset(tail_fraction, n_tail_max, rcond);
     }
 
-    dcomplex idx_to_freq(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
+    dcomplex index_to_point(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
 
     // -------------------- mesh_point -------------------
 
@@ -210,35 +196,13 @@ namespace triqs::gfs {
     // -------------- Evaluation of a function on the grid --------------------------
 
     /// Is the point in mesh ?
-    bool is_within_boundary(long n) const { return ((n >= first_index_window()) && (n <= last_index_window())); }
+    bool is_within_boundary(long n) const { return ((n >= first_index()) && (n <= last_index())); }
     bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n); }
 
     long get_interpolation_data(interpol_t::None, long n) const { return n; }
     long get_interpolation_data(interpol_t::None, matsubara_freq n) const { return n.n; }
     template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const { return f[n]; }
     template <typename F> auto evaluate(interpol_t::None, F const &f, matsubara_freq n) const { return f[n.n]; }
-
-    // -------------------- MPI -------------------
-
-    /// Scatter a mesh over the communicator c
-    // In practice, the same mesh, with a different window.
-    // the window can only be set by these 2 operations
-    friend gf_mesh mpi_scatter(gf_mesh const &m, mpi::communicator c, int root) {
-      auto m2 =
-         gf_mesh{m.domain(), m.size() / 2, (m.positive_only() ? matsubara_mesh_opt::positive_frequencies_only : matsubara_mesh_opt::all_frequencies)};
-      std::tie(m2._first_index_window, m2._last_index_window) = mpi::slice_range(m2._first_index, m2._last_index, c.size(), c.rank());
-      return m2;
-    }
-
-    /// Opposite of scatter
-    friend gf_mesh mpi_gather(gf_mesh const &m, mpi::communicator c, int root) {
-      return gf_mesh{m.domain(), m.full_size() / 2,
-                     (m.positive_only() ? matsubara_mesh_opt::positive_frequencies_only : matsubara_mesh_opt::all_frequencies)};
-    }
-
-    friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-      return sout << "Matsubara Freq Mesh of size " << m.size() <<", Domain: " << m.domain() <<", positive_only : " << m.positive_only();
-    }
 
     // -------------------- HDF5 -------------------
 
@@ -279,8 +243,6 @@ namespace triqs::gfs {
       ar &_opt;
       ar &_first_index;
       ar &_last_index;
-      ar &_first_index_window;
-      ar &_last_index_window;
     }
 
     // ------------------------------------------------
@@ -288,7 +250,7 @@ namespace triqs::gfs {
     domain_t _dom;
     int _n_pts;
     matsubara_mesh_opt _opt;
-    long _first_index, _last_index, _first_index_window, _last_index_window;
+    long _first_index, _last_index;
     mutable std::shared_ptr<tail_fitter> _tail_fitter;
   };
 
@@ -302,19 +264,19 @@ namespace triqs::gfs {
     mesh_point()  = default;
     mesh_point(gf_mesh<imfreq> const &m, index_t const &index_)
        : matsubara_freq(index_, m.domain().beta, m.domain().statistic),
-         first_index_window(m.first_index_window()),
-         last_index_window(m.last_index_window()),
+         first_index(m.first_index()),
+         last_index(m.last_index()),
          _mesh(&m) {}
-    mesh_point(gf_mesh<imfreq> const &m) : mesh_point(m, m.first_index_window()) {}
+    mesh_point(gf_mesh<imfreq> const &m) : mesh_point(m, m.first_index()) {}
     void advance() { ++n; }
-    long linear_index() const { return n - first_index_window; }
+    long linear_index() const { return n - first_index; }
     long index() const { return n; }
-    bool at_end() const { return (n == last_index_window + 1); } // at_end means " one after the last one", as in STL
-    void reset() { n = first_index_window; }
+    bool at_end() const { return (n == last_index + 1); } // at_end means " one after the last one", as in STL
+    void reset() { n = first_index; }
     gf_mesh<imfreq> const &mesh() const { return *_mesh; }
 
     private:
-    long first_index_window, last_index_window;
+    long first_index, last_index;
     gf_mesh<imfreq> const *_mesh;
   };
 

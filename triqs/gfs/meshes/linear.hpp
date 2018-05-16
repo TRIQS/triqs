@@ -38,8 +38,6 @@ namespace gfs {
 
   explicit linear_mesh(domain_t dom, double a, double b, long n_pts)
      : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del((b - a) / (L - 1)) {
-   //_first_index_window = 0;
-   //_last_index_window = L - 1;
   }
 
   linear_mesh() : linear_mesh(domain_t{}, 0, 1, 2) {}
@@ -78,12 +76,6 @@ namespace gfs {
 
   /// Max of the mesh
   double x_max() const { return xmax; }
-
-  /// Min of the window of the mesh
-  //double x_min_window() const { return xmin + _first_index_window *del; }
-
-  /// Max of the window of the mesh
-  //double x_max_window() const { return xmin + _last_index_window * del; }
 
   // -------------------- mesh_point -------------------
 

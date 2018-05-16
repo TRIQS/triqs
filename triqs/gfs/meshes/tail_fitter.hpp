@@ -88,7 +88,7 @@ namespace triqs::gfs {
     //----------------------------------------------------------------------------------------------
 
     // number of the points in the tail for positive omega.
-    template <typename M> int n_pts_in_tail(M const &m) const { return std::min(int(std::round(_tail_fraction * m.n_pts())), _n_tail_max); }
+    template <typename M> int n_pts_in_tail(M const &m) const { return std::min(int(std::round(_tail_fraction * m.size() / 2)), _n_tail_max); }
 
     //----------------------------------------------------------------------------------------------
 
@@ -96,7 +96,7 @@ namespace triqs::gfs {
     template <typename M> std::vector<long> get_tail_fit_indices(M const &m) {
 
       // Total number of points in the fitting window
-      int n_pts_in_fit_range = int(std::round(_tail_fraction * m.n_pts()));
+      int n_pts_in_fit_range = int(std::round(_tail_fraction * m.size() / 2));
 
       // Number of points used for the fit
       int n_tail = n_pts_in_tail(m);
@@ -132,7 +132,7 @@ namespace triqs::gfs {
         std::vector<dcomplex> C;
         C.reserve(_fit_idx_lst.size());
         auto om_max = m.omega_max();
-        for (long n : _fit_idx_lst) C.push_back(om_max / m.idx_to_freq(n));
+        for (long n : _fit_idx_lst) C.push_back(om_max / m.index_to_point(n));
         _vander = vander(C, 9);
       }
 
