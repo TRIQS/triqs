@@ -56,7 +56,7 @@ namespace triqs::gfs {
     };
 
     if constexpr (R > 1) {
-      return compute(arrays::zeros(front_pop(A.indexmap().lengths())));
+      return compute(arrays::zeros<dcomplex>(A.indexmap().lengths().front_pop()));
     } else {
       return compute(dcomplex{0});
     }
