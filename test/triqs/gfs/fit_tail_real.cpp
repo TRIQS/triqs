@@ -12,7 +12,7 @@ TEST(FitTailReal, Basic) { // NOLINT
 
   // Set the fraction of mesh points to use for the tail fit
   double tail_fraction = 0.3;
-  w_mesh.get_tail_fitter().reset(tail_fraction);
+  w_mesh.get_tail_fitter(tail_fraction);
 
   auto gw   = gf<refreq>{w_mesh, {1, 1}};
   auto gw_s = gf<refreq, scalar_valued>{w_mesh, {}};

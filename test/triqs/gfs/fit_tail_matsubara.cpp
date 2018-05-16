@@ -12,7 +12,7 @@ TEST(FitTailMatsubara, Basic) { // NOLINT
 
   // Set the fraction of mesh points to use for the tail fit
   double tail_fraction = 0.3;
-  iw_mesh.get_tail_fitter().reset(tail_fraction);
+  iw_mesh.get_tail_fitter(tail_fraction);
 
   auto gw   = gf<imfreq>{iw_mesh, {1, 1}};
   auto gw_s = gf<imfreq, scalar_valued>{iw_mesh, {}};
@@ -63,8 +63,8 @@ TEST(FitTailMatsubara, Real_F_and_B) { // NOLINT
 
   // Set the fraction of mesh points to use for the tail fit
   double tail_fraction = 0.3;
-  gw_f.mesh().get_tail_fitter().reset(tail_fraction);
-  gw_b.mesh().get_tail_fitter().reset(tail_fraction);
+  gw_f.mesh().get_tail_fitter(tail_fraction);
+  gw_b.mesh().get_tail_fitter(tail_fraction);
 
   // Initialize the Green functions
   gw_f(iw_) << 1 / (iw_ - 1);

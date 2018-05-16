@@ -148,7 +148,7 @@ namespace triqs {
    using zero_t            = zero_MAKO_RVC_t;
 
    // FIXME : std::array with NDA
-   using target_shape_t = arrays::mini_vector<long, Target::rank>;
+   using target_shape_t = arrays::mini_vector<int, Target::rank>;
 
    struct target_and_shape_t{
      target_shape_t _shape; 

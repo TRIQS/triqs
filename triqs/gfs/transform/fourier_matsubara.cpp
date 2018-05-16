@@ -151,7 +151,7 @@ namespace triqs::gfs {
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
 
-    auto gw = gf_vec_t<imfreq>{iw_mesh, {n_others}};
+    auto gw = gf_vec_t<imfreq>{iw_mesh, {int(n_others)}};
 
     // FIXME Avoid copy, by doing proper in-place operation
     for (auto const &w : iw_mesh) gw[w] = _gout((w.index() + L) % L, _) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
@@ -219,7 +219,7 @@ namespace triqs::gfs {
     int dims[] = {int(L)};
     _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
 
-    auto gt = gf_vec_t<imtime>{tau_mesh, {n_others}};
+    auto gt = gf_vec_t<imtime>{tau_mesh, {int(n_others)}};
 
     if (is_fermion)
       for (auto const &t : tau_mesh)
