@@ -50,7 +50,7 @@ namespace triqs::gfs {
  * The mesh can span either only positive frequencies or both positive and negative frequencies (which is necessary for complex functions $G(\tau)$).
  * @figure matsubara_freq_mesh.png: Pictorial representation of ``gf_mesh<imfreq>({beta, Fermion/Boson, 3, all_frequencies/positive_frequencies_only})``. See :ref:`constructor <gf_mesh<imfreq>_constructor>` for more details.
 */
-  template <> struct gf_mesh<imfreq> {
+  template <> struct gf_mesh<imfreq> : tail_fitter_handle {
     ///type of the domain: matsubara_domain<true>
     using domain_t = matsubara_domain<true>;
     ///type of the Matsubara index $n$ (as in $i\omega_n$)
@@ -88,7 +88,6 @@ namespace triqs::gfs {
         _last_index     = n_pts - 1;
         _first_index    = -(_last_index + (is_fermion ? 1 : 0));
       }
-      _tail_fitter = std::make_shared<tail_fitter>();
     }
 
     /**
@@ -165,14 +164,6 @@ namespace triqs::gfs {
     // maximum freq of the mesh
     dcomplex omega_max() const { return index_to_point(_last_index); }
 
-    // the tail fitter is mutable, even if the mesh is immutable to cache some data
-    tail_fitter & get_tail_fitter() const { if (!_tail_fitter) TRIQS_RUNTIME_ERROR << "Tail fit params not set up "; return *_tail_fitter; }
-
-    // FIXME : only for python wrap ... Ugly 
-    void set_tail_parameters(double tail_fraction = 0.2, int n_tail_max = 30, double rcond = 1e-8) { 
-      get_tail_fitter().reset(tail_fraction, n_tail_max, rcond);
-    }
-
     dcomplex index_to_point(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
 
     // -------------------- mesh_point -------------------
@@ -204,6 +195,9 @@ namespace triqs::gfs {
     template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const { return f[n]; }
     template <typename F> auto evaluate(interpol_t::None, F const &f, matsubara_freq n) const { return f[n.n]; }
 
+    friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
+      return sout << "Matsubara Freq Mesh of size " << m.size() <<", Domain: " << m.domain() <<", positive_only : " << m.positive_only();
+    }
     // -------------------- HDF5 -------------------
 
     static std::string hdf5_scheme() { return "MeshImFreq"; }

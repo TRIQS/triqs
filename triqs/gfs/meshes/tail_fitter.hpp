@@ -65,25 +65,12 @@ namespace triqs::gfs {
 
   struct tail_fitter {
 
-    double _tail_fraction = 0.2;
-    int _n_tail_max       = 30;
-    double _rcond         = 1e-8;
+    const double _tail_fraction = 0.2;
+    const int _n_tail_max       = 30;
+    const double _rcond         = 1e-8;
     std::array<std::unique_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
     arrays::matrix<dcomplex> _vander;
     std::vector<long> _fit_idx_lst;
-
-    //----------------------------------------------------------------------------------------------
-    
-    // Reset tail_fitter parameters to given values or defaults.
-    // Reset all other members
-    void reset(double tail_fraction = 0.2, int n_tail_max = 30, double rcond = 1e-8) {
-      _n_tail_max    = n_tail_max;
-      _tail_fraction = tail_fraction;
-      _rcond         = rcond;
-      for (auto &l : _lss) l.reset();
-      _vander = arrays::matrix<dcomplex>{};
-      _fit_idx_lst.clear();
-    }
 
     //----------------------------------------------------------------------------------------------
 
@@ -179,8 +166,8 @@ namespace triqs::gfs {
 
       // The values of the Green function. Swap relevant mesh to front
       auto g_data_swap_idx = rotate_index_view(g_data, n);
-      auto const &imp = g_data_swap_idx.indexmap();
-      long ncols      = imp.size() / imp.lengths()[0];
+      auto const &imp      = g_data_swap_idx.indexmap();
+      long ncols           = imp.size() / imp.lengths()[0];
 
       // We flatten the data in the target space and remaining meshes into the second dim
       arrays::matrix<dcomplex> g_mat(2 * n_pts_in_tail(m), ncols);
@@ -251,5 +238,28 @@ namespace triqs::gfs {
       return {std::move(res), epsilon};
     }
   };
+
+  //----------------------------------------------------------------------------------------------
+
+  struct tail_fitter_handle {
+
+    void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) const {
+      _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, rcond});
+    }
+
+    // the tail fitter is mutable, even if the mesh is immutable to cache some data
+    tail_fitter &get_tail_fitter() const {
+      if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>();
+      return *_tail_fitter;
+    }
+
+    tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = 30, double rcond = 1e-8) const {
+      set_tail_fit_parameters(tail_fraction, n_tail_max, rcond);
+      return *_tail_fitter;
+    }
+
+    private:
+    mutable std::shared_ptr<tail_fitter> _tail_fitter;
+  }; 
 
 } // namespace triqs::gfs

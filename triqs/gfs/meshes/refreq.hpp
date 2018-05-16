@@ -22,34 +22,28 @@
 #include "./segment.hpp"
 #include "./tail_fitter.hpp"
 
-namespace triqs {
-namespace gfs {
+namespace triqs::gfs {
 
  struct refreq {};
 
- template <> struct gf_mesh<refreq> : segment_mesh {
+ template <> struct gf_mesh<refreq> : segment_mesh, tail_fitter_handle {
   using var_t = refreq;
-  template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {
-    _tail_fitter = std::make_shared<tail_fitter>();
-  }
+  template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
   // using segment_mesh::segment_mesh;
   
   /// Is the mesh only for positive omega
-  static bool positive_only() { return false; }
+  static constexpr bool positive_only() { return false; }
 
   // -------------------- tail -------------------
 
   // First index of the mesh
-  static long first_index() { return 0; }
+  static constexpr long first_index() { return 0; }
 
   // Last index of the mesh
   long last_index() const { return size() - 1; }
 
   // Largest frequency in the mesh
   dcomplex omega_max() const { return index_to_point(last_index()); }
-
-  // the tail fitter is mutable, even if the mesh is immutable to cache some data
-  tail_fitter & get_tail_fitter() const { if (!_tail_fitter) TRIQS_RUNTIME_ERROR << "Tail fit params not set up "; return *_tail_fitter; }
 
   // -------------------- HDF5 -------------------
 
@@ -63,11 +57,6 @@ namespace gfs {
    h5_read_impl(fg, subgroup_name, m,"MeshReFreq");
   }   
 
-  // ------------------------------------------------
-  private:
-  mutable std::shared_ptr<tail_fitter> _tail_fitter;
  };
 
 }
-}
-
