@@ -109,7 +109,7 @@ namespace triqs::gfs {
 
  template<typename T>
  void replace_by_tail(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail){
-   replace_by_tail(g, tail, int(std::round(tail_fitter::default_tail_fraction() * g.mesh().size()/2)) - 1);
+   replace_by_tail(g, tail, int(std::round((1- tail_fitter::default_tail_fraction()) * g.mesh().size()/2)) - 1);
  }
 
  // FIXME For backward compatibility only
