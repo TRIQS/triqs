@@ -67,7 +67,7 @@ TEST(Gf, FitAndReplace) {
   km(1, 0, 0) = 1;
   km(1, 1, 1) = 1;
 
-  auto [tail, err] = fit_tail_on_window(G_new_iw, n_min, n_max, km);
+  auto [tail, err] = fit_tail_on_window(G_new_iw, n_min, n_max, km, 30, 9);
   
   replace_by_tail(G_new_iw(), tail, n_max);
   EXPECT_GF_NEAR(G_iw, G_new_iw, 1e-9);
