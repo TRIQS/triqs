@@ -107,6 +107,11 @@ namespace triqs::gfs {
      if(abs(iw.index()) > n_min) g[iw] = tail_eval(tail, iw);
  }
 
+ template<typename T>
+ void replace_by_tail(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail){
+   replace_by_tail(g, tail, int(std::round(tail_fitter::default_tail_fraction() * g.mesh().size()/2)) - 1);
+ }
+
  // FIXME For backward compatibility only
  // Fit_tail on a window
  template<template<typename, typename> typename G, typename T>
