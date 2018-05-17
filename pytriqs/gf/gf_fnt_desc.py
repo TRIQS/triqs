@@ -127,7 +127,7 @@ m.add_function("std::pair<array<dcomplex,3>, double> fit_tail_on_window(gf_const
 
 m.add_function("void replace_by_tail(gf_view<imfreq, matrix_valued> g, array_const_view<dcomplex, 3> tail, int n_min)", 
                 doc = """Replace the function by the evaluation of the tail for |n| > n_min""")
-m.add_function("void replace_by_tail(gf_view<imfreq, matrix_valued> g, array_const_view<dcomplex, 3> tail)", 
+m.add_function("void replace_by_tail_in_fit_window(gf_view<imfreq, matrix_valued> g, array_const_view<dcomplex, 3> tail)", 
                 doc = """Replace the function by the evaluation of the tail for |n| > n_min""")
   
 # GfImTime specific functions

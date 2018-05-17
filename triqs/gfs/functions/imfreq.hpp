@@ -108,7 +108,7 @@ namespace triqs::gfs {
  }
 
  template<typename T>
- void replace_by_tail(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail){
+ void replace_by_tail_in_fit_window(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail){
    int n_pts_in_fit_range = int(std::round(tail_fitter::default_tail_fraction() * g.mesh().size() / 2));
    int n_min = g.mesh().last_index() - n_pts_in_fit_range;
    replace_by_tail(g, tail, n_min); 
