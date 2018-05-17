@@ -13,6 +13,8 @@ t_0 = 1/N \sum_k e_k
 Author: Hugo U.R. Strand 
 
 """
+import matplotlib.pyplot as plt
+##%matplotlib inline
 
 import numpy as np
 from pytriqs.gf import Gf, MeshImFreq, iOmega_n, inverse
@@ -21,20 +23,24 @@ def delta_inv(beta, nw, nk=100):
 
     mesh = MeshImFreq(beta, 'Fermion', n_max=nw)
 
-    Sigma = 1.337
+    Sigma0, Sigma1 = 1.337, 3.5235
     ek = 2.*np.random.random(nk) - 1.
 
     G = Gf(mesh=mesh, target_shape=[1, 1])
-    for e in ek: G << G + inverse(iOmega_n - e - Sigma)
+    Sig = G.copy()
+    for w in Sig.mesh:
+        Sig[w][:] = Sigma0 + Sigma1 /w
+ 
+    for e in ek: G << G + inverse(iOmega_n - e - Sig)
 
     G /= nk
 
     Delta = G.copy()
-    Delta << inverse(G) - iOmega_n + Sigma
+    Delta << inverse(G) - iOmega_n + Sig
 
     sum_ek = - np.sum(ek) / nk
 
-    Roo = np.abs(Sigma) + 1.
+    Roo = np.abs(Sigma0) + 1.
 
     w = [ w for w in mesh ]
     wmax = np.abs(w[-1].value)
@@ -66,17 +72,16 @@ beta = 500.0
 nw = 1000
 diff = delta_inv(beta, nw)
 
-assert( diff < 1e-6 )
+assert( diff < 2e-6 )
 
-if False:
+if True:
 
     beta_vec = np.array([1., 10., 100., 1000.])
     diff_vec = np.zeros_like(beta_vec)
 
     for idx, beta in enumerate(beta_vec):
         diff_vec[idx] = delta_inv(beta, nw)
-
-    import matplotlib.pyplot as plt
+        
     plt.plot(beta_vec, diff_vec, '-o')
     plt.semilogy([], [])
     plt.show()
