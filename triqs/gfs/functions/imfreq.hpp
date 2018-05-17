@@ -110,11 +110,11 @@ namespace triqs::gfs {
  // FIXME For backward compatibility only
  // Fit_tail on a window
  template<template<typename, typename> typename G, typename T>
- auto fit_tail_on_window(G<imfreq, T> const & g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_expansion_order = 9, int n_tail_max = 30){
+ auto fit_tail_on_window(G<imfreq, T> const & g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max, int expansion_order){
    if(n_max == -1) n_max = g.mesh().last_index();
    auto g_rview = restricted_view(g, n_max);
    double tail_fraction = double(n_max - n_min) / n_max;
-   g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, n_expansion_order, false);
+   g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
    return fit_tail(g_rview, known_moments); 
  }
 }
