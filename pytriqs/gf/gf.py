@@ -376,9 +376,9 @@ class Gf(object):
 
     # -------------- call -------------------------------------
     
-    def __call__(self, args) : 
+    def __call__(self, *args) : 
         assert self._c_proxy, " no proxy"
-        return self._c_proxy(args) 
+        return self._c_proxy(*args) 
 
     # -------------- Various operations -------------------------------------
  
