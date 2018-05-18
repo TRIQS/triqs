@@ -45,14 +45,16 @@ def all_calls():
     for M1, M2 in [('brillouin_zone', 'imfreq')]:
         yield 'cartesian_product<%s,%s>'%(M1,M2), "dcomplex", 0, 'scalar_valued', ('triqs::utility::mini_vector<int, 3>', 'double')
 
+# Fixme
 C_py_transcript = {'imfreq' : 'ImFreq', 
                    'refreq' : 'ReFreq', 
                    'imtime' : 'ImTime', 
                    'retime' : 'ReTime',
                    'brillouin_zone' : 'BrillouinZone',
-                   'cyclic_lattice' : 'CyclicLattice'
+                   'cyclic_lattice' : 'CyclicLattice', 
+                   'cartesian_product<brillouin_zone,imfreq>': 'BrillouinZone_x_ImFreq',
                    }
-
+ 
 m.add_preamble("""
 namespace triqs {
  namespace gfs {
@@ -68,7 +70,7 @@ namespace triqs {
 
 for var, return_t, R, target_t, point_t in all_calls():
     c_type = "gf_proxy<gf_view<%s,%s>>"%(var, target_t)
-    c_py_trans = C_py_transcript.get(var, 'MeshProduct')
+    c_py_trans = C_py_transcript[var]
     print " Proxy : ", c_type, " : Py : ", "CallProxy%s_%s"%(c_py_trans,R)
     c = class_( 
             py_type = "CallProxy%s_%s"%(c_py_trans,R),
