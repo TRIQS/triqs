@@ -25,20 +25,26 @@ m.add_preamble("""
 #------------------------------------------------------------
 def all_calls():
     for M in ['imfreq']:
+        yield M, "dcomplex", 0, 'scalar_valued', 'int' # R =2
         yield M, "matrix<dcomplex>", 2, 'matrix_valued', 'int' # R =2
         for R in [3,4]:
             yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'int'
     
     for M in ['imtime', 'refreq', 'retime']:
+        yield M, "dcomplex", 0, 'scalar_valued', 'double' # R =1
         yield M, "matrix<dcomplex>", 2, 'matrix_valued', 'double' # R =2
         for R in [3,4]:
             yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'double'
     
     for M in ['brillouin_zone', 'cyclic_lattice']:
+        yield M, "dcomplex", 0, 'scalar_valued', 'triqs::utility::mini_vector<int, 3>' # R =1
         yield M,"matrix<dcomplex>", 2, 'matrix_valued', 'triqs::utility::mini_vector<int, 3>' # R =2
         for R in [3,4]:
             yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'triqs::utility::mini_vector<int, 3>' 
- 
+
+    for M1, M2 in [('brillouin_zone', 'imfreq')]:
+        yield 'cartesian_product<%s,%s>'%(M1,M2), "dcomplex", 0, 'scalar_valued', ('triqs::utility::mini_vector<int, 3>', 'double')
+
 C_py_transcript = {'imfreq' : 'ImFreq', 
                    'refreq' : 'ReFreq', 
                    'imtime' : 'ImTime', 
@@ -54,7 +60,7 @@ namespace triqs {
   struct gf_proxy { 
    Gv gv;
    gf_proxy(Gv gv) : gv(gv){}
-   template<typename U> auto call(U&& x) { return gv(std::forward<U>(x));}
+   template<typename ... U> auto call(U&& ... x) { return gv(std::forward<U>(x)...);}
   };
  }
 }
@@ -62,14 +68,21 @@ namespace triqs {
 
 for var, return_t, R, target_t, point_t in all_calls():
     c_type = "gf_proxy<gf_view<%s,%s>>"%(var, target_t)
+    c_py_trans = C_py_transcript.get(var, 'MeshProduct')
+    print " Proxy : ", c_type, " : Py : ", "CallProxy%s_%s"%(c_py_trans,R)
     c = class_( 
-            py_type = "CallProxy%s_%s"%(C_py_transcript[var],R),
+            py_type = "CallProxy%s_%s"%(c_py_trans,R),
             c_type = c_type,
             c_type_absolute = "triqs::gfs::" + c_type,
             export = False
             )
     c.add_constructor("(gf_view<%s,%s> g)"%(var, target_t), doc = "")
-    c.add_call(signature = "%s call(%s x)"%(return_t, point_t), doc = "")
+    if not isinstance(point_t, tuple) : 
+      c.add_call(signature = "%s call(%s x)"%(return_t, point_t), doc = "")
+    else: 
+        xs = ['%s x_%s'%(t,n) for (n,t) in enumerate(point_t)]
+        sig =  "%s call(%s)"%(return_t, ','.join(xs))
+        c.add_call(signature =sig,  doc = "")
     m.add_class (c)
 
     # FIX FIRST THE call and wrap of real_valued
