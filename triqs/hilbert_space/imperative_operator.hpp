@@ -203,6 +203,8 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
   auto args_tuple = std::make_tuple(args...);
 #endif
 
+  using amplitude_t = typename StateType::value_type; 
+
   for (int i = 0; i < all_terms.size(); ++i) { // loop over monomials
    auto M = all_terms[i];
 #ifdef GCC_BUG_41933_WORKAROUND
@@ -219,9 +221,9 @@ template <typename HilbertType, typename ScalarType = double, bool UseMap = fals
     // update state vector in target Hilbert space
     auto ind = target_st.get_hilbert().get_state_index(f3);
 #ifdef GCC_BUG_41933_WORKAROUND
-    target_st(ind) += amplitude * apply_if_possible(M.coeff,args_tuple) * (sign_is_minus ? -1.0 : 1.0);
+    target_st(ind) += amplitude * apply_if_possible(M.coeff,args_tuple) * (sign_is_minus ? -amplitude_t(1) : amplitude_t(1));
 #else
-    target_st(ind) += amplitude * apply_if_possible(M.coeff,args...) * (sign_is_minus ? -1.0 : 1.0);
+    target_st(ind) += amplitude * apply_if_possible(M.coeff,args...) * (sign_is_minus ? -amplitude_t(1) : amplitude_t(1));
 #endif
    }); // foreach
   }

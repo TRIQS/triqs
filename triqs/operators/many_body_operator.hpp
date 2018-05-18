@@ -147,7 +147,7 @@ namespace operators {
   static many_body_operator_generic make_canonical(bool is_dag, indices_t indices) {
    many_body_operator_generic res;
    auto m = monomial_t{canonical_ops_t{is_dag, indices}};
-   res.monomials.insert({m, scalar_t(1.0)});
+   res.monomials.insert({m, scalar_t(1)});
    return res;
   }
 
@@ -211,7 +211,7 @@ namespace operators {
    return *this;
   }
 
-  many_body_operator_generic& operator/=(scalar_t alpha) { return operator*=(1.0/alpha); }
+  many_body_operator_generic& operator/=(scalar_t alpha) { return operator*=(scalar_t(1)/alpha); }
 
   // Algebraic operations
   many_body_operator_generic& operator+=(many_body_operator_generic const& op) {

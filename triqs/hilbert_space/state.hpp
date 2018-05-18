@@ -164,7 +164,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
    @param x Divisor
    @return Reference to this state
   */
- state& operator/=(value_type x) { return operator*=(1 / x); }
+ state& operator/=(value_type x) { return operator*=(value_type(1) / x); }
 
  /// Calculate scalar product of two states
  /**
@@ -173,7 +173,7 @@ class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace
    @return Value of the scalar product
   */
  friend value_type dot_product(state const& s1, state const& s2) {
-  value_type res = 0.0;
+  value_type res(0);
   for (auto const& a : s1.ampli) {
    using triqs::utility::conj;
    if (s2.ampli.count(a.first) == 1) res += conj(a.second) * s2.ampli.at(a.first);
