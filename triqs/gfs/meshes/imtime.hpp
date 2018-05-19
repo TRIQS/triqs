@@ -58,9 +58,9 @@ namespace gfs {
   bool is_within_boundary(double x) const { return true;}
  
   /// evaluation
-  template <typename F> auto evaluate(interpol_t::Linear1d, F const &f, double x) const {
-   auto id = this->get_interpolation_data(default_interpol_policy{}, x);
-   return id.w0 * f[id.i0] + id.w1 * f[id.i1];
+  template <typename F> auto evaluate(F const &f, double x) const {
+   auto id = this->get_interpolation_data(x);
+   return id.w[0] * f[id.idx[0]] + id.w[1] * f[id.idx[1]];
   }
 
   // -------------------- print -------------------

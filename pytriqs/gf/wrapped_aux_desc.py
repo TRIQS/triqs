@@ -53,6 +53,7 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'brillouin_zone' : 'BrillouinZone',
                    'cyclic_lattice' : 'CyclicLattice', 
                    'cartesian_product<brillouin_zone,imfreq>': 'BrillouinZone_x_ImFreq',
+                   'cartesian_product<brillouin_zone,imtime>': 'BrillouinZone_x_ImTime',
                    }
  
 m.add_preamble("""

@@ -58,7 +58,6 @@ namespace triqs::gfs {
     using index_t = _long;
     ///type of the linear index
     using linear_index_t          = long;
-    using default_interpol_policy = interpol_t::None;
     ///type of the domain point
     using domain_pt_t = typename domain_t::point_t;
     using var_t       = imfreq;
@@ -190,10 +189,13 @@ namespace triqs::gfs {
     bool is_within_boundary(long n) const { return ((n >= first_index()) && (n <= last_index())); }
     bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n); }
 
-    long get_interpolation_data(interpol_t::None, long n) const { return n; }
-    long get_interpolation_data(interpol_t::None, matsubara_freq n) const { return n.n; }
-    template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const { return f[n]; }
-    template <typename F> auto evaluate(interpol_t::None, F const &f, matsubara_freq n) const { return f[n.n]; }
+    // For multivar evaluation 
+    interpol_data_0d_t<index_t> get_interpolation_data(long n) const { return {n}; }
+    interpol_data_0d_t<index_t> get_interpolation_data(matsubara_freq n) const { return {n.n}; }
+
+    // For one var evaluation 
+    template <typename F> auto evaluate(F const &f, long n) const { return f[n]; }
+    template <typename F> auto evaluate(F const &f, matsubara_freq n) const { return f[n.n]; }
 
     friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
       return sout << "Matsubara Freq Mesh of size " << m.size() <<", Domain: " << m.domain() <<", positive_only : " << m.positive_only();
