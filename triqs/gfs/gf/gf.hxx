@@ -334,38 +334,38 @@ namespace triqs {
 
       // ------------- All the call operators without lazy arguments -----------------------------
 
-      // First, a simple () returns a view, like for an array...
-      /// Makes a const view of *this
-      const_view_type operator()() const { return *this; }
-      /// Makes a view of *this if it is non const
-      view_type operator()() { return *this; }
-
-      // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
-      // there is at least one lazy argument ...
-      template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
-      typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
-         (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value
-            || ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
-         ,
-         std::result_of<evaluator_t(gf, Args...)> // what is the result type of call
-         >::type                                  // end of lazy_disable_if
-      operator()(Args &&... args) const {
-        return evaluator_t()(*this, std::forward<Args>(args)...);
+      template <typename... Args> decltype(auto) operator()(Args &&... args) const & {
+        if constexpr (sizeof...(Args) == 0)
+          return const_view_type{*this};
+        else {
+          static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+          if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+            return clef::make_expr_call(*this, std::forward<Args>(args)...);
+          else
+            return evaluator_t()(*this, std::forward<Args>(args)...);
+        }
       }
-
-      // ------------- Call with lazy arguments -----------------------------
-
-      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-      template <typename... Args> clef::make_expr_call_t<gf &, Args...> operator()(Args &&... args) & {
-        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      template <typename... Args> decltype(auto) operator()(Args &&... args) & {
+        if constexpr (sizeof...(Args) == 0)
+          return view_type{*this};
+        else {
+          static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+          if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+            return clef::make_expr_call(*this, std::forward<Args>(args)...);
+          else
+            return evaluator_t()(*this, std::forward<Args>(args)...);
+        }
       }
-
-      template <typename... Args> clef::make_expr_call_t<gf const &, Args...> operator()(Args &&... args) const & {
-        return clef::make_expr_call(*this, std::forward<Args>(args)...);
-      }
-
-      template <typename... Args> clef::make_expr_call_t<gf, Args...> operator()(Args &&... args) && {
-        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      template <typename... Args> decltype(auto) operator()(Args &&... args) && {
+        if constexpr (sizeof...(Args) == 0)
+          return view_type{std::move(*this)};
+        else {
+          static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+          if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+            return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+          else
+            return evaluator_t()(std::move(*this), std::forward<Args>(args)...);
+        }
       }
 
       // ------------- All the [] operators without lazy arguments -----------------------------
@@ -930,38 +930,38 @@ namespace triqs {
 
       // ------------- All the call operators without lazy arguments -----------------------------
 
-      // First, a simple () returns a view, like for an array...
-      /// Makes a const view of *this
-      const_view_type operator()() const { return *this; }
-      /// Makes a view of *this if it is non const
-      view_type operator()() { return *this; }
-
-      // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
-      // there is at least one lazy argument ...
-      template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
-      typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
-         (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value
-            || ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
-         ,
-         std::result_of<evaluator_t(gf_view, Args...)> // what is the result type of call
-         >::type                                       // end of lazy_disable_if
-      operator()(Args &&... args) const {
-        return evaluator_t()(*this, std::forward<Args>(args)...);
+      template <typename... Args> decltype(auto) operator()(Args &&... args) const & {
+        if constexpr (sizeof...(Args) == 0)
+          return const_view_type{*this};
+        else {
+          static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+          if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+            return clef::make_expr_call(*this, std::forward<Args>(args)...);
+          else
+            return evaluator_t()(*this, std::forward<Args>(args)...);
+        }
       }
-
-      // ------------- Call with lazy arguments -----------------------------
-
-      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-      template <typename... Args> clef::make_expr_call_t<gf_view &, Args...> operator()(Args &&... args) & {
-        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      template <typename... Args> decltype(auto) operator()(Args &&... args) & {
+        if constexpr (sizeof...(Args) == 0)
+          return view_type{*this};
+        else {
+          static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+          if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+            return clef::make_expr_call(*this, std::forward<Args>(args)...);
+          else
+            return evaluator_t()(*this, std::forward<Args>(args)...);
+        }
       }
-
-      template <typename... Args> clef::make_expr_call_t<gf_view const &, Args...> operator()(Args &&... args) const & {
-        return clef::make_expr_call(*this, std::forward<Args>(args)...);
-      }
-
-      template <typename... Args> clef::make_expr_call_t<gf_view, Args...> operator()(Args &&... args) && {
-        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      template <typename... Args> decltype(auto) operator()(Args &&... args) && {
+        if constexpr (sizeof...(Args) == 0)
+          return view_type{std::move(*this)};
+        else {
+          static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+          if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+            return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+          else
+            return evaluator_t()(std::move(*this), std::forward<Args>(args)...);
+        }
       }
 
       // ------------- All the [] operators without lazy arguments -----------------------------
@@ -1514,38 +1514,38 @@ namespace triqs {
 
       // ------------- All the call operators without lazy arguments -----------------------------
 
-      // First, a simple () returns a view, like for an array...
-      /// Makes a const view of *this
-      const_view_type operator()() const { return *this; }
-      /// Makes a view of *this if it is non const
-      view_type operator()() { return *this; }
-
-      // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
-      // there is at least one lazy argument ...
-      template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
-      typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
-         (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value
-            || ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
-         ,
-         std::result_of<evaluator_t(gf_const_view, Args...)> // what is the result type of call
-         >::type                                             // end of lazy_disable_if
-      operator()(Args &&... args) const {
-        return evaluator_t()(*this, std::forward<Args>(args)...);
+      template <typename... Args> decltype(auto) operator()(Args &&... args) const & {
+        if constexpr (sizeof...(Args) == 0)
+          return const_view_type{*this};
+        else {
+          static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+          if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+            return clef::make_expr_call(*this, std::forward<Args>(args)...);
+          else
+            return evaluator_t()(*this, std::forward<Args>(args)...);
+        }
       }
-
-      // ------------- Call with lazy arguments -----------------------------
-
-      // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-      template <typename... Args> clef::make_expr_call_t<gf_const_view &, Args...> operator()(Args &&... args) & {
-        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+      template <typename... Args> decltype(auto) operator()(Args &&... args) & {
+        if constexpr (sizeof...(Args) == 0)
+          return view_type{*this};
+        else {
+          static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+          if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+            return clef::make_expr_call(*this, std::forward<Args>(args)...);
+          else
+            return evaluator_t()(*this, std::forward<Args>(args)...);
+        }
       }
-
-      template <typename... Args> clef::make_expr_call_t<gf_const_view const &, Args...> operator()(Args &&... args) const & {
-        return clef::make_expr_call(*this, std::forward<Args>(args)...);
-      }
-
-      template <typename... Args> clef::make_expr_call_t<gf_const_view, Args...> operator()(Args &&... args) && {
-        return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+      template <typename... Args> decltype(auto) operator()(Args &&... args) && {
+        if constexpr (sizeof...(Args) == 0)
+          return view_type{std::move(*this)};
+        else {
+          static_assert((sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+          if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+            return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+          else
+            return evaluator_t()(std::move(*this), std::forward<Args>(args)...);
+        }
       }
 
       // ------------- All the [] operators without lazy arguments -----------------------------
