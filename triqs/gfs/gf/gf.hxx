@@ -332,7 +332,7 @@ namespace triqs {
         return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
       }
 
-      // ------------- All the call operators without lazy arguments -----------------------------
+      // ------------- All the call operators arguments -----------------------------
 
       template <typename... Args> decltype(auto) operator()(Args &&... args) const & {
         if constexpr (sizeof...(Args) == 0)
@@ -398,44 +398,38 @@ namespace triqs {
       }
 
       // -------------- operator [] with _tuple. Distinguich the lazy and non lazy case
-      private:
-      // FIXME : if constexpr !!!
-
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) {
-        auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-        return triqs::tuple::apply(l, tu._t);
-      }
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) const {
-        auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-        return triqs::tuple::apply(l, tu._t);
-      }
-
-      // -------------
-
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) const & {
-        return clef::make_expr_subscript(*this, tu);
-      }
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) & {
-        return clef::make_expr_subscript(*this, tu);
-      }
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) && {
-        return clef::make_expr_subscript(std::move(*this), tu);
-      }
-
       public:
       template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) & {
-        static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-        return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+        static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+        if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+          return clef::make_expr_subscript(*this, tu);
+        else {
+          static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+          auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+          return triqs::tuple::apply(l, tu._t);
+        }
       }
 
       template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) const & {
-        static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-        return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+        static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+        if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+          return clef::make_expr_subscript(*this, tu);
+        else {
+          static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+          auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+          return triqs::tuple::apply(l, tu._t);
+        }
       }
 
       template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) && {
-        static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-        return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+        static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+        if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+          return clef::make_expr_subscript(std::move(*this), tu);
+        else {
+          static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+          auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+          return triqs::tuple::apply(l, tu._t);
+        }
       }
 
       // ------------- [] with lazy arguments -----------------------------
@@ -469,61 +463,6 @@ namespace triqs {
       template <typename... Args> decltype(auto) on_mesh(Args &&... args) const {
         return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
       }
-
-      // --------------------- on mesh (g) : the call before [] -------------------------
-      // This is a workaround the the lack of multi argument [] in C++
-      // mesh points should be treated slighly differently : take their index....
-      /*  template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
-   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
-
-   // The on_mesh little adaptor ....
-   private:
-   template <typename G> struct _on_mesh_wrapper {
-    G &f;
-    template <typename... Args>
-    auto operator()(Args &&... args) const
-        -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
-     return f.on_mesh(std::forward<Args>(args)...);
-    }
-    TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
-   };
-
-   public:
-   // TRIQS_DEPRECATED("Use [][][] instead")
-   _on_mesh_wrapper<gf const> friend on_mesh(gf const &f) { return {f}; }
-   _on_mesh_wrapper<gf> friend on_mesh(gf &f) { return {f}; }
-*/
-      public:
-      // --------------------- [][][][] ------------------------
-      // This is a workaround the the lack of multi argument [] in C++
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) const {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) const {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
 
       //----------------------------- HDF5 -----------------------------
 
@@ -928,7 +867,7 @@ namespace triqs {
         return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
       }
 
-      // ------------- All the call operators without lazy arguments -----------------------------
+      // ------------- All the call operators arguments -----------------------------
 
       template <typename... Args> decltype(auto) operator()(Args &&... args) const & {
         if constexpr (sizeof...(Args) == 0)
@@ -994,44 +933,38 @@ namespace triqs {
       }
 
       // -------------- operator [] with _tuple. Distinguich the lazy and non lazy case
-      private:
-      // FIXME : if constexpr !!!
-
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) {
-        auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-        return triqs::tuple::apply(l, tu._t);
-      }
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) const {
-        auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-        return triqs::tuple::apply(l, tu._t);
-      }
-
-      // -------------
-
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) const & {
-        return clef::make_expr_subscript(*this, tu);
-      }
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) & {
-        return clef::make_expr_subscript(*this, tu);
-      }
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) && {
-        return clef::make_expr_subscript(std::move(*this), tu);
-      }
-
       public:
       template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) & {
-        static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-        return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+        static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+        if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+          return clef::make_expr_subscript(*this, tu);
+        else {
+          static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+          auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+          return triqs::tuple::apply(l, tu._t);
+        }
       }
 
       template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) const & {
-        static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-        return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+        static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+        if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+          return clef::make_expr_subscript(*this, tu);
+        else {
+          static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+          auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+          return triqs::tuple::apply(l, tu._t);
+        }
       }
 
       template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) && {
-        static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-        return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+        static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+        if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+          return clef::make_expr_subscript(std::move(*this), tu);
+        else {
+          static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+          auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+          return triqs::tuple::apply(l, tu._t);
+        }
       }
 
       // ------------- [] with lazy arguments -----------------------------
@@ -1065,61 +998,6 @@ namespace triqs {
       template <typename... Args> decltype(auto) on_mesh(Args &&... args) const {
         return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
       }
-
-      // --------------------- on mesh (g) : the call before [] -------------------------
-      // This is a workaround the the lack of multi argument [] in C++
-      // mesh points should be treated slighly differently : take their index....
-      /*  template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
-   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
-
-   // The on_mesh little adaptor ....
-   private:
-   template <typename G> struct _on_mesh_wrapper {
-    G &f;
-    template <typename... Args>
-    auto operator()(Args &&... args) const
-        -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
-     return f.on_mesh(std::forward<Args>(args)...);
-    }
-    TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
-   };
-
-   public:
-   // TRIQS_DEPRECATED("Use [][][] instead")
-   _on_mesh_wrapper<gf_view const> friend on_mesh(gf_view const &f) { return {f}; }
-   _on_mesh_wrapper<gf_view> friend on_mesh(gf_view &f) { return {f}; }
-*/
-      public:
-      // --------------------- [][][][] ------------------------
-      // This is a workaround the the lack of multi argument [] in C++
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) const {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) const {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
 
       //----------------------------- HDF5 -----------------------------
 
@@ -1512,7 +1390,7 @@ namespace triqs {
         return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
       }
 
-      // ------------- All the call operators without lazy arguments -----------------------------
+      // ------------- All the call operators arguments -----------------------------
 
       template <typename... Args> decltype(auto) operator()(Args &&... args) const & {
         if constexpr (sizeof...(Args) == 0)
@@ -1578,44 +1456,38 @@ namespace triqs {
       }
 
       // -------------- operator [] with _tuple. Distinguich the lazy and non lazy case
-      private:
-      // FIXME : if constexpr !!!
-
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) {
-        auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-        return triqs::tuple::apply(l, tu._t);
-      }
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) const {
-        auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-        return triqs::tuple::apply(l, tu._t);
-      }
-
-      // -------------
-
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) const & {
-        return clef::make_expr_subscript(*this, tu);
-      }
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) & {
-        return clef::make_expr_subscript(*this, tu);
-      }
-      template <typename... U> FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) && {
-        return clef::make_expr_subscript(std::move(*this), tu);
-      }
-
       public:
       template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) & {
-        static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-        return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+        static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+        if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+          return clef::make_expr_subscript(*this, tu);
+        else {
+          static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+          auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+          return triqs::tuple::apply(l, tu._t);
+        }
       }
 
       template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) const & {
-        static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-        return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+        static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+        if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+          return clef::make_expr_subscript(*this, tu);
+        else {
+          static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+          auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+          return triqs::tuple::apply(l, tu._t);
+        }
       }
 
       template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) && {
-        static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-        return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+        static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+        if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+          return clef::make_expr_subscript(std::move(*this), tu);
+        else {
+          static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+          auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+          return triqs::tuple::apply(l, tu._t);
+        }
       }
 
       // ------------- [] with lazy arguments -----------------------------
@@ -1649,61 +1521,6 @@ namespace triqs {
       template <typename... Args> decltype(auto) on_mesh(Args &&... args) const {
         return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
       }
-
-      // --------------------- on mesh (g) : the call before [] -------------------------
-      // This is a workaround the the lack of multi argument [] in C++
-      // mesh points should be treated slighly differently : take their index....
-      /*  template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
-   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
-
-   // The on_mesh little adaptor ....
-   private:
-   template <typename G> struct _on_mesh_wrapper {
-    G &f;
-    template <typename... Args>
-    auto operator()(Args &&... args) const
-        -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
-     return f.on_mesh(std::forward<Args>(args)...);
-    }
-    TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
-   };
-
-   public:
-   // TRIQS_DEPRECATED("Use [][][] instead")
-   _on_mesh_wrapper<gf_const_view const> friend on_mesh(gf_const_view const &f) { return {f}; }
-   _on_mesh_wrapper<gf_const_view> friend on_mesh(gf_const_view &f) { return {f}; }
-*/
-      public:
-      // --------------------- [][][][] ------------------------
-      // This is a workaround the the lack of multi argument [] in C++
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) const {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
-
-      /**
-    *
-    */
-      //template <typename T> decltype(auto) operator[](T const &x) const {
-      //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-      //}
 
       //----------------------------- HDF5 -----------------------------
 
