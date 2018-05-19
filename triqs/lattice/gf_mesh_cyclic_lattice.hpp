@@ -52,6 +52,19 @@ namespace gfs {
 
   using domain_t = bravais_lattice;
   domain_t const& domain() const { return bl; }
+ 
+  // -------------- Evaluation of a function on the grid --------------------------
+
+  /// Reduce index modulo to the lattice.
+  index_t index_modulo(index_t const& r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
+
+  interpol_data_0d_t<index_t> get_interpolation_data(index_t const& x) const { return {index_modulo(x)}; }
+  
+  template <typename F>
+  auto evaluate(F const& f, index_t const& x) const {
+   auto id = get_interpolation_data(x);
+   return f[id.idx[0]];
+  }
 
   // -------------------- print -------------------
 

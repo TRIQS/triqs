@@ -11,6 +11,7 @@ m.add_include("<triqs/gfs.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")
 
 m.add_include("<cpp2py/converters/vector.hpp>")
+m.add_include("<cpp2py/converters/std_array.hpp>")
 m.add_include("<triqs/cpp2py_converters.hpp>")
 
 m.add_include("<triqs/gfs/legacy_for_python_api.hpp>")
@@ -36,14 +37,20 @@ def all_calls():
         for R in [3,4]:
             yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'double'
     
-    for M in ['brillouin_zone', 'cyclic_lattice']:
+    for M in ['brillouin_zone']:
+        yield M, "dcomplex", 0, 'scalar_valued', 'std::array<double, 3> ' # R =1
+        yield M,"matrix<dcomplex>", 2, 'matrix_valued', 'std::array<double,3>' # R =2
+        for R in [3,4]:
+            yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'std::array<double, 3>' 
+
+    for M in ['cyclic_lattice']:
         yield M, "dcomplex", 0, 'scalar_valued', 'triqs::utility::mini_vector<int, 3>' # R =1
         yield M,"matrix<dcomplex>", 2, 'matrix_valued', 'triqs::utility::mini_vector<int, 3>' # R =2
         for R in [3,4]:
             yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'triqs::utility::mini_vector<int, 3>' 
 
     for M1, M2 in [('brillouin_zone', 'imfreq')]:
-        yield 'cartesian_product<%s,%s>'%(M1,M2), "dcomplex", 0, 'scalar_valued', ('triqs::utility::mini_vector<int, 3>', 'double')
+        yield 'cartesian_product<%s,%s>'%(M1,M2), "dcomplex", 0, 'scalar_valued', ('std::array<double, 3>', 'long')
 
 # Fixme
 C_py_transcript = {'imfreq' : 'ImFreq', 
@@ -53,6 +60,7 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'brillouin_zone' : 'BrillouinZone',
                    'cyclic_lattice' : 'CyclicLattice', 
                    'cartesian_product<brillouin_zone,imfreq>': 'BrillouinZone_x_ImFreq',
+                   'cartesian_product<brillouin_zone,imtime>': 'BrillouinZone_x_ImTime',
                    }
  
 m.add_preamble("""

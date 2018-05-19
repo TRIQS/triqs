@@ -2,6 +2,7 @@
 #include <triqs/test_tools/gfs.hpp>
 
 using index_t = utility::mini_vector<int, 3>;
+using K_t     = std::array<double, 3>;
 
 TEST(Gfs, cyclic_lattice) {
   double beta = 1;
@@ -19,20 +20,87 @@ TEST(Gfs, cyclic_lattice) {
   Gr(r_) << exp(-r_(0));
 }
 
+// FIXME : Test matrix case with same code ?
 TEST(Gfs, brillouin_zone) {
   double beta = 1;
   triqs::clef::placeholder<0> k_;
 
-  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto m_k = gf_mesh<brillouin_zone>{bz, 4};
-  ASSERT_EQ(m_k.size(), 16);
+  int n_k = 100;
 
-  auto Gk = gf<brillouin_zone>{m_k, {2, 2}};
+  auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto m_k = gf_mesh<brillouin_zone>{bz, n_k};
+  ASSERT_EQ(m_k.size(), n_k * n_k);
 
-  // Clef Assignment
-  Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
+  auto Gk = gf<brillouin_zone, scalar_valued>{m_k}; //, {2, 2}};
+
+  //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
+  for (auto &&k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
+
   ASSERT_EQ(Gk.mesh().locate_neighbours(arrays::vector<double>{0, 0, 0}), (utility::mini_vector<long, 3>({0, 0, 0})));
-  auto a = Gk(index_t{0, 0, 0});
+  EXPECT_COMPLEX_NEAR(Gk(K_t{0, 0, 0}), -4);
+  EXPECT_COMPLEX_NEAR(Gk(K_t{M_PI, M_PI, M_PI}), 4);
+  EXPECT_COMPLEX_NEAR(Gk(K_t{2*M_PI, 2*M_PI, 2*M_PI}), -4);
+  
+
+  // reevaluate on the mesh itself.
+  for (auto &&k : Gk.mesh()) {
+    EXPECT_NEAR(k(0), k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k(1), k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
+    double res = -2 * (cos(k(0)) + cos(k(1)));
+    EXPECT_COMPLEX_NEAR(Gk(K_t{k(0), k(1), 0}), res, 1.e-14);
+  }
+
+  // evaluate on a larger grid
+  int n_k2 = 5 * n_k;
+  for (int nkx = 0; nkx < n_k2; ++nkx)
+    for (int nky = 0; nky < n_k2; ++nky) {
+      double kx  = nkx / double(n_k2) * 2 * M_PI;
+      double ky  = nky / double(n_k2) * 2 * M_PI;
+      double res = -2 * (cos(kx) + cos(ky));
+      EXPECT_COMPLEX_NEAR(Gk(K_t{kx, ky, 0}), res, 0.01);
+    }
+}
+
+// ----------------------------------------------------
+
+TEST(Gfs, brillouin_zoneMatrix) {
+  double beta = 1;
+  triqs::clef::placeholder<0> k_;
+
+  int n_k = 100;
+
+  auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto m_k = gf_mesh<brillouin_zone>{bz, n_k};
+  ASSERT_EQ(m_k.size(), n_k * n_k);
+
+  auto Gk = gf<brillouin_zone, matrix_valued>{m_k, {2, 2}};
+
+  //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
+  for (auto &&k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
+
+  ASSERT_EQ(Gk.mesh().locate_neighbours(arrays::vector<double>{0, 0, 0}), (utility::mini_vector<long, 3>({0, 0, 0})));
+  //auto a = Gk(index_t{0, 0, 0});
+  auto a = Gk(K_t{0, 0, 0});
+
+  TRIQS_PRINT(a);
   EXPECT_COMPLEX_NEAR(a(0, 0), -4);
+
+  // reevaluate on the mesh itself.
+  for (auto &&k : Gk.mesh()) {
+    EXPECT_NEAR(k(0), k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
+    EXPECT_NEAR(k(1), k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
+    double res = -2 * (cos(k(0)) + cos(k(1)));
+    EXPECT_COMPLEX_NEAR(Gk(K_t{k(0), k(1), 0})(0,0), res, 1.e-14);
+  }
+
+  // evaluate on a larger grid
+  int n_k2 = 5 * n_k;
+  for (int nkx = 0; nkx < n_k2; ++nkx)
+    for (int nky = 0; nky < n_k2; ++nky) {
+      double kx  = nkx / double(n_k2) * 2 * M_PI;
+      double ky  = nky / double(n_k2) * 2 * M_PI;
+      double res = -2 * (cos(kx) + cos(ky));
+      EXPECT_COMPLEX_NEAR(Gk(K_t{kx, ky, 0})(0,0), res, 0.01);
+    }
 }
 MAKE_MAIN;

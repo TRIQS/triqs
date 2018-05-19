@@ -36,6 +36,8 @@
 #include "../mpi/vector.hpp"
 
 
+#include "./meshes/multivar_eval.hpp"
+
 #include "./meshes/imtime.hpp"
 #include "./meshes/imfreq.hpp"
 #include "./meshes/retime.hpp"

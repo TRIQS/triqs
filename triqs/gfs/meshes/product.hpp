@@ -24,7 +24,7 @@
 #include <triqs/utility/tuple_tools.hpp>
 #include <triqs/utility/mini_vector.hpp>
 #include <triqs/utility/c14.hpp>
-#include "./multivar_eval.hxx"
+#include "./multivar_eval.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -58,7 +58,6 @@ namespace gfs {
   using m_pt_tuple_t = std::tuple<typename gf_mesh<Vs>::mesh_point_t...>;
   using domain_pt_t = typename domain_t::point_t;
   using linear_index_t = std::tuple<typename gf_mesh<Vs>::linear_index_t...>;
-  using default_interpol_policy = interpol_t::Product;
   using var_t = cartesian_product<Vs...>;
   static constexpr int dim = sizeof...(Vs);
 
@@ -168,12 +167,17 @@ namespace gfs {
                              std::tie(args...), true);
   }
 
-  // not implemented
-  long get_interpolation_data(interpol_t::None, long n) = delete;
+  // not implemented, makes no sense
+  long get_interpolation_data(long n) = delete;
 
-  template <typename F, typename... Args> auto evaluate(interpol_t::Product, F const &f, Args &&... args) const {
-   multivar_eval<typename gf_mesh<Vs>::default_interpol_policy...> ev;
-   return ev(f, std::forward<Args>(args)...);
+  private:
+  template <typename F, size_t ... Is, typename... Args> auto _impl_evaluate(std::index_sequence<Is...>, F const &f, Args &&... args) const {
+   return multivar_eval(f, std::get<Is>(f.mesh().components()).get_interpolation_data(std::forward<Args>(args))...);
+  }
+
+  public:
+  template <typename F, typename... Args> auto evaluate(F const &f, Args &&... args) const {
+   return _impl_evaluate(std::index_sequence_for<Args...>{}, f, std::forward<Args>(args)...);
   }
 
   // -------------------- HDF5 -------------------

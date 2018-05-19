@@ -33,7 +33,7 @@ namespace gfs {
   static constexpr int arity = 1;
 
   template <typename G, typename X> auto operator()(G const &g, X x) const {
-   return (g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, x));
+   return (g.mesh().evaluate(g, x));
   }
  };
 
@@ -95,9 +95,9 @@ namespace gfs {
   template <typename G, typename... Args> const auto operator()(G const &g, Args &&... args) const {
    static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
    if (g.mesh().is_within_boundary(args...))
-    return make_const_view(g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, std::forward<Args>(args)...));
+    return make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...));
    using rt = std14::decay_t<decltype(
-       make_const_view(g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, std::forward<Args>(args)...)))>;
+       make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
    return rt{g.get_zero()};
   }
  };

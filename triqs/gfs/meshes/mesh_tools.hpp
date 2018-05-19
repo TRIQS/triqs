@@ -50,14 +50,7 @@ namespace gfs {
  //statistic_enum operator* (statistic_enum i, statistic_enum j) { return ( i==j ? statistic_enum::_Boson : statistic_enum::_Fermion); }
  //std::ostream &operator<<(std::ostream &sout, statistic_enum x) { return sout << (x==statistic_enum::_Boson ? "Boson" : "Fermion"); }
  
- // Interpolation policies
- namespace interpol_t {
-  struct None {};
-  struct Product {};
-  struct Linear1d {};
-  struct Linear2d {};
- }
-
+ 
  // The mesh for each Var
  template <typename Var> struct gf_mesh;
 
