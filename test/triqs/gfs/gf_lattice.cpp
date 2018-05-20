@@ -82,6 +82,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
   //auto a = Gk(index_t{0, 0, 0});
   auto a = Gk(K_t{0, 0, 0});
 
+  TRIQS_PRINT(a);
   EXPECT_COMPLEX_NEAR(a(0, 0), -4);
 
   // reevaluate on the mesh itself.

@@ -35,6 +35,9 @@ namespace triqs::gfs {
   // 1 in a completely neutral type for the compiler, which can not optimize 1.0 * x a priori.
   struct _universal_unit_t {};
   template <typename T> auto operator*(_universal_unit_t, T &&x) { return std::forward<T>(x); }
+  template <typename T> auto operator*(T &&x, _universal_unit_t) { return std::forward<T>(x); }
+  inline _universal_unit_t operator*(_universal_unit_t, _universal_unit_t) { return {};} // avoid ambiguity
+  
 
   // FIXME : DOC 
   template <typename IndexType> struct interpol_data_0d_t {
