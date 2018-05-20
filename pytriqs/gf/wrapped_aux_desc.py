@@ -50,7 +50,7 @@ def all_calls():
             yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'triqs::utility::mini_vector<int, 3>' 
 
     for M1, M2 in [('brillouin_zone', 'imfreq')]:
-        yield 'cartesian_product<%s,%s>'%(M1,M2), "dcomplex", 0, 'scalar_valued', ('triqs::utility::mini_vector<int, 3>', 'double')
+        yield 'cartesian_product<%s,%s>'%(M1,M2), "dcomplex", 0, 'scalar_valued', ('std::array<double, 3>', 'long')
 
 # Fixme
 C_py_transcript = {'imfreq' : 'ImFreq', 
