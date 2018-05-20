@@ -208,9 +208,9 @@ def write_gf_to_txt(g):
         The real/imaginary frequency Green's function to be written out.
     """
     if isinstance(g.mesh, MeshReFreq):
-        mesh = np.array(list(g.mesh)).real.reshape(-1,1)
+        mesh = np.array([w.real for w in g.mesh]).reshape(-1,1)
     elif isinstance(g.mesh, MeshImFreq):
-        mesh = np.array(list(g.mesh)).imag.reshape(-1,1)
+        mesh = np.array([w.imag for w in g.mesh]).reshape(-1,1)
     else:
         raise ValueError, 'write_gf_to_txt: Only GfReFreq and GfImFreq quantities are supported.'
     for i,j in product(range(g.target_shape[0]),range(g.target_shape[1])):
