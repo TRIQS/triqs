@@ -58,12 +58,21 @@ m.add_function("dcomplex density(gf_view<imfreq, scalar_valued> g)",   doc = "De
 m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from a Matsubara sum")
 m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a complex, computed from a Matsubara sum")
 
-# set_from_fourier with known moments
-m.add_function("void set_from_fourier(gf_view<imfreq, matrix_valued> gw, gf_view<imtime, matrix_valued> gt, array_const_view<dcomplex, 3> moments = {})",
-               calling_pattern = "gw = fourier(gt, moments)",
-               doc = """Fills self with the Fourier transform of gt""")
-
 for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
+
+
+    for Meshes in [["imtime", "imfreq"], ["retime", "refreq"]]: # Fourier with known moments
+
+            # set_from_fourier with known moments
+            m.add_function("void set_from_fourier(gf_view<%s, %s> g_out, gf_view<%s, %s> g_in, array_const_view<dcomplex, 1+%s::rank> moments)"%(Meshes[1], Target, Meshes[0], Target, Target),
+                           calling_pattern = "g_out = fourier(g_in, moments)",
+                           doc = """Fills self with the Fourier transform of g_in with possible known moments""")
+
+            # set_from_fourier with known moments
+            m.add_function("void set_from_inverse_fourier(gf_view<%s, %s> g_out, gf_view<%s, %s> g_in, array_const_view<dcomplex, 1+%s::rank> moments)"%(Meshes[0], Target, Meshes[1], Target, Target),
+                           calling_pattern = "g_out = fourier(g_in, moments)",
+                           doc = """Fills self with the Fourier transform of g_in with possible known moments""")
+
 
     for Meshes in [["imtime", "imfreq"], ["retime", "refreq"], ["cyclic_lattice", "brillouin_zone"]]:
 
