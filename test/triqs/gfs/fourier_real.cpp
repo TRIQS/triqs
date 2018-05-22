@@ -7,7 +7,7 @@ template <int TARGET_RANK> void test_fourier() {
   double omega_max = 100;
   int L            = 1001;
   double t_max     = 10;
-  int L_t          = 10001;
+  int L_t          = 1001;
   double E         = -1;
 
   mini_vector<size_t, TARGET_RANK> shape{};
@@ -23,16 +23,17 @@ template <int TARGET_RANK> void test_fourier() {
 
   // === Test a Green function with a Single Pole ===
 
-  auto Gw1 = gf<refreq, target_t>{{-omega_max, omega_max, L}, shape};
-  Gw1(w_) << 1 / (w_ - E) + 1 / (w_ + 2 * E) - 4.5 / (w_ - 1.25 * E);
 
-  //auto Gt1 = gf<retime, target_t>{{-t_max, t_max, L_t}, shape};
-  //Gt1()    = fourier(Gw1);
+  auto w_mesh = gf_mesh<refreq>{-omega_max, omega_max, L};
+  auto Gw1 = gf<refreq, target_t>{w_mesh, shape};
+  Gw1(w_) << 1 / (w_ * w_ + E * E) + 1 / (w_ * w_ + 4 * E * E) - 4.5 / (w_ * w_ + 2 * E * E);
 
-  ///verification that TF(TF^-1)=Id
-  //auto Gw1b = gf<refreq, target_t>{{beta, statistic, N_iw}, shape};
-  //Gw1b()    = fourier(Gt1);
-  //EXPECT_GF_NEAR(Gw1, Gw1b, precision);
+  auto Gt1 = make_gf_from_fourier(Gw1); 
+
+  //verification that TF(TF^-1)=Id
+  auto [tail, err] = fit_tail(Gw1);
+  auto Gw1b = make_gf_from_fourier(Gt1, w_mesh, make_const_view(tail)); // FIXME const_view
+  EXPECT_GF_NEAR(Gw1, Gw1b, precision);
 
   // Check against the exact result
   //auto Gt1_exact = Gt1;
