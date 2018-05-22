@@ -67,17 +67,17 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
 
     for Meshes in [["imtime", "imfreq"], ["retime", "refreq"], ["cyclic_lattice", "brillouin_zone"]]:
 
-        # Setter direct
-        m.add_function("void set_from_fourier(gf_view<%s, %s> g_out, gf_view<%s, %s> g_in)"%(Meshes[1], Target, Meshes[0], Target),
-                calling_pattern = "g_out = fourier(g_in)",
-                doc = """Fills self with the Fourier transform of g_in""")
-
-        # Setter inverse
-        m.add_function("void set_from_inverse_fourier(gf_view<%s, %s> g_out, gf_view<%s, %s> g_in)"%(Meshes[0], Target, Meshes[1], Target),
-                calling_pattern = "g_out = fourier(g_in)",
-                doc = """Fills self with the inverse Fourier transform of g_in""")
-
         for gf_type in ["gf_view", "block_gf_view", "block2_gf_view"]:
+
+            # Setter direct
+            m.add_function("void set_from_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_type, Meshes[1], Target, gf_type, Meshes[0], Target),
+                    calling_pattern = "g_out = fourier(g_in)",
+                    doc = """Fills self with the Fourier transform of g_in""")
+
+            # Setter inverse
+            m.add_function("void set_from_inverse_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_type, Meshes[1], Target),
+                    calling_pattern = "g_out = fourier(g_in)",
+                    doc = """Fills self with the inverse Fourier transform of g_in""")
 
             # Factory function direct fourier
             m.add_function(name = "make_gf_from_fourier",

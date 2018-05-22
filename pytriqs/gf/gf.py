@@ -406,16 +406,16 @@ class Gf(object):
     def __iadd__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) + arg
         if isinstance(arg, Gf):
-           assert type(self.mesh) == type(arg.mesh), "Can not add two Gf with meshes of different type"
-           assert self.mesh == arg.mesh, "Can not add two Gf with different mesh"
-           self._data += arg._data 
+            assert type(self.mesh) == type(arg.mesh), "Can not add two Gf with meshes of different type"
+            assert self.mesh == arg.mesh, "Can not add two Gf with different mesh"
+            self._data += arg._data 
         else:
             if self._target_rank != 2 and not isinstance(arg, np.ndarray):
-               g.data[:] += arg
-           elif self._target_rank == 2:
-               wrapped_aux._iadd_g_matrix_scalar(self, arg) 
-           else:
-               raise NotImplemented
+                 g.data[:] += arg
+            elif self._target_rank == 2:
+                 wrapped_aux._iadd_g_matrix_scalar(self, arg) 
+            else:
+                 raise NotImplemented
         return self
 
     def __add__(self,y):
@@ -436,9 +436,9 @@ class Gf(object):
        else:
             if self._target_rank != 2 and not isinstance(arg, np.ndarray):
                g.data[:] -= arg
-            else:
+            elif self._target_rank == 2:
                wrapped_aux._isub_g_matrix_scalar(self, arg) 
-           else:
+            else:
                raise NotImplemented
        return self
 
