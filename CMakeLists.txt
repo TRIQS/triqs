@@ -79,6 +79,7 @@ if(NOT CMAKE_BUILD_TYPE)
  mark_as_advanced(CMAKE_BUILD_TYPE)
 endif()
 
+add_compile_options(-Wno-register $<$<CONFIG:Debug>:-Og>)
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 #---------------------------------------------------------------------
