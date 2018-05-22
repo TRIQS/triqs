@@ -42,31 +42,18 @@ namespace gfs {
  }
 
 
- inline gf<imfreq> operator+(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-  gf_view<imfreq> r = g;
-  r += m;
-  return r;
+
+ // Same for scalar valued 
+ // THIS MUST be kept for python operations
+ // specific operations (for legacy python code).
+ inline void operator+=(gf_view<imfreq, scalar_valued> g, std::complex<double> a) {
+   g.data() +=a;
  }
 
- inline gf<imfreq> operator+(gf_view<imfreq> g, std::complex<double> const &m) {
-  gf_view<imfreq> r = g;
-  r += m; 
-  return r;
+ inline void operator-=(gf_view<imfreq, scalar_valued> g, std::complex<double> a) {
+   g.data() -=a;
  }
-
- inline gf<imfreq> operator-(gf_view<imfreq> g, arrays::matrix<std::complex<double>> const &m) {
-  gf_view<imfreq> r = g;
-  r -= m;
-  return r;
- }
-
- inline gf<imfreq> operator-(gf_view<imfreq> g, std::complex<double> const &m) {
-  gf_view<imfreq> r = g;
-  r -= m;
-  return r;
- }
-
-
+ 
 
  // - same with refreq
  inline void operator+=(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
@@ -85,30 +72,19 @@ namespace gfs {
  }
 
 
- inline gf<refreq> operator+(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-  gf_view<refreq> r = g;
-  r += m;
-  return r;
+
+ // Same for scalar valued 
+ // THIS MUST be kept for python operations
+ // specific operations (for legacy python code).
+ inline void operator+=(gf_view<refreq, scalar_valued> g, std::complex<double> a) {
+   g.data() +=a;
  }
 
- inline gf<refreq> operator+(gf_view<refreq> g, std::complex<double> const &m) {
-  gf_view<refreq> r = g;
-  r += m; 
-  return r;
+ inline void operator-=(gf_view<refreq, scalar_valued> g, std::complex<double> a) {
+   g.data() -=a;
  }
-
- inline gf<refreq> operator-(gf_view<refreq> g, arrays::matrix<std::complex<double>> const &m) {
-  gf_view<refreq> r = g;
-  r -= m;
-  return r;
- }
-
- inline gf<refreq> operator-(gf_view<refreq> g, std::complex<double> const &m) {
-  gf_view<refreq> r = g;
-  r -= m;
-  return r;
- }
-
+ 
+ 
 
 
  //inline gf<imfreq> operator+(std::complex<double> const &m, gf_view<imfreq> g) { return g + m; }
