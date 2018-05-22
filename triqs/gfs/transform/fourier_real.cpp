@@ -37,7 +37,7 @@ namespace triqs::gfs {
 
   gf_vec_t<refreq> _fourier_impl(gf_mesh<refreq> const &w_mesh, gf_vec_cvt<retime> gt, arrays::array_const_view<dcomplex, 2> mom_12) {
 
-    if (mom_12.is_empty()) TRIQS_RUNTIME_ERROR << " Tail fit not IMPLEMENTED";
+    if (mom_12.is_empty()) mom_12.rebind(triqs::arrays::zeros<dcomplex>(make_shape(2, gt.target_shape()[0])));
 
     size_t L = gt.mesh().size();
     if (w_mesh.size() != L) TRIQS_RUNTIME_ERROR << "Meshes are different";
@@ -75,19 +75,19 @@ namespace triqs::gfs {
 
   gf_vec_t<retime> _fourier_impl(gf_mesh<retime> const &t_mesh, gf_vec_cvt<refreq> gw, arrays::array_const_view<dcomplex, 2> mom_12) {
 
-    if (mom_12.is_empty()){
-      auto[tail, error] = fit_tail(gw);
+    if (mom_12.is_empty()) {
+      auto [tail, error] = fit_tail(gw);
       TRIQS_ASSERT2((error < 1e-3), "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error));
       if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
       TRIQS_ASSERT2((first_dim(tail) > 3), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
       double _abs_tail0 = max_element(abs(tail(0, range())));
       TRIQS_ASSERT2((_abs_tail0 < 1e-10),
-                   "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+                    "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
       mom_12.rebind(tail(range(1, 3), range()));
     }
 
     size_t L = gw.mesh().size();
-    if (L != t_mesh.size()) TRIQS_RUNTIME_ERROR << "Meshes are different";
+    if (L != t_mesh.size()) TRIQS_RUNTIME_ERROR << "Meshes are of different size: " << L << " vs " << t_mesh.size();
     double test = std::abs(t_mesh.delta() * gw.mesh().delta() * L / (2 * M_PI) - 1);
     if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
 
