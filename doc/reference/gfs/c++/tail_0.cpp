@@ -1,5 +1,4 @@
 #include <triqs/gfs.hpp>
-#include <triqs/gfs/singularity/fit_tail.hpp>
 using namespace triqs::gfs;
 
 int main() {
