@@ -79,7 +79,7 @@ namespace triqs {
 for var, return_t, R, target_t, point_t in all_calls():
     c_type = "gf_proxy<gf_view<%s,%s>>"%(var, target_t)
     c_py_trans = C_py_transcript[var]
-    print " Proxy : ", c_type, " : Py : ", "CallProxy%s_%s"%(c_py_trans,R)
+    # print " Proxy : ", c_type, " : Py : ", "CallProxy%s_%s"%(c_py_trans,R)
     c = class_( 
             py_type = "CallProxy%s_%s"%(c_py_trans,R),
             c_type = c_type,
