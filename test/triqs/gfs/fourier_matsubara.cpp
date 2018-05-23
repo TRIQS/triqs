@@ -9,14 +9,21 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   int N_tau   = 10000;
   double E    = -1;
 
+  array<dcomplex, 1+TARGET_RANK> known_moments;
   mini_vector<size_t, TARGET_RANK> shape{};
 
-  if constexpr (TARGET_RANK == 2) // Matrix_valued
+  if constexpr (TARGET_RANK == 0) {
+    known_moments = array<dcomplex, 1+TARGET_RANK>(1);
+  } else if constexpr (TARGET_RANK == 2) {// Matrix_valued
     shape = make_shape(2, 2);
-  else if constexpr (TARGET_RANK == 3) // Tensor_valued<3>
+    known_moments = array<dcomplex, 1+TARGET_RANK>(1, 2, 2);
+  } else if constexpr (TARGET_RANK == 3) { // Tensor_valued<3>
     shape = make_shape(2, 2, 2);
-  else if constexpr (TARGET_RANK == 4) // Tensor_valued<4>
+    known_moments = array<dcomplex, 1+TARGET_RANK>(1, 2, 2, 2);
+  } else if constexpr (TARGET_RANK == 4) { // Tensor_valued<4>
     shape = make_shape(2, 2, 2, 2);
+    known_moments = array<dcomplex, 1+TARGET_RANK>(1, 2, 2, 2, 2);
+  }
 
   using target_t = typename _target_from_type_rank<dcomplex, TARGET_RANK>::type;
 
@@ -46,6 +53,31 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   for (auto const &t : Gt1.mesh()) { Gt1_exact[t] = one_pole(E, t) + one_pole(-2*E, t) - 4.5*one_pole(1.25*E,t); }
   EXPECT_GF_NEAR(Gt1, Gt1_exact, precision);
 
+  // test the external fit_tail function
+  auto [tail, err] = fit_tail(Gw1);
+  auto Gt1_tail = gf<imtime, target_t>{{beta, statistic, N_tau}, shape};
+  Gt1_tail()    = fourier(Gw1, array_const_view<dcomplex, 1+TARGET_RANK>(tail(range(1, 10), ellipsis())));
+  EXPECT_GF_NEAR(Gt1_tail, Gt1_exact, precision);
+
+  // fix one moment
+  if constexpr (TARGET_RANK == 0)
+    known_moments(ellipsis()) = -2.5;
+  else if constexpr (TARGET_RANK == 2)
+    known_moments(0, ellipsis()) = -2.5 * make_unit_matrix<dcomplex>(2);
+  else
+    known_moments(0, ellipsis()) = -2.5;
+  
+  std::cout << "tail(0, :, :) =\n";
+  std::cout << tail(0, ellipsis()) << "\n";
+  std::cout << "tail(1, :, :) =\n";
+  std::cout << tail(1, ellipsis()) << "\n";
+  std::cout << "known_moments(0, :, :) =\n";
+  std::cout << known_moments(0, ellipsis()) << "\n";
+  
+  auto Gt1_known_moments = gf<imtime, target_t>{{beta, statistic, N_tau}, shape};
+  Gt1_known_moments()    = fourier(Gw1, array_const_view<dcomplex, 1+TARGET_RANK>(known_moments));
+  EXPECT_GF_NEAR(Gt1_known_moments, Gt1_exact, precision);
+
   // Test the factory function
   auto Gt2  = make_gf_from_fourier(Gw1, N_tau);
   auto Gw2b = make_gf_from_fourier(Gt2, N_iw);
@@ -67,6 +99,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
     Gt1()  = fourier(Gw1b);
     Gw1b() = fourier(Gt1);
   }
+
   EXPECT_GF_NEAR(Gw1, Gw1b, precision);
 }
 
