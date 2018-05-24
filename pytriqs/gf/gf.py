@@ -435,7 +435,7 @@ class Gf(object):
            self._data -= arg._data 
        else:
             if self._target_rank != 2 and not isinstance(arg, np.ndarray):
-               g.data[:] -= arg
+               self._data[:] -= arg
             elif self._target_rank == 2:
                wrapped_aux._isub_g_matrix_scalar(self, arg) 
             else:
