@@ -47,10 +47,19 @@ namespace triqs::gfs {
     interpol_data_0d_t(IndexType n) : idx{std::move(n)}, w{} {}
   };
 
+  // FIXME CHANGE the order fo the template, it looks strange to accesss W
   template <typename IndexType, int Npts> struct interpol_data_lin_t { // dim R = 1-> 2, R = 2 -> 4, R = 3 -> 8
     static constexpr int n_pts = Npts;
     std::array<IndexType, n_pts> idx;
     std::array<double, n_pts> w;
+  };
+
+  
+  // FIXME : DOC 
+  struct interpol_data_all_t {
+    static constexpr int n_pts = 1;
+    std::array<all_t, n_pts> idx;
+    std::array<_universal_unit_t, n_pts> w;
   };
 
   /** 

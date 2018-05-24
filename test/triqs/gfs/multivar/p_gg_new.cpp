@@ -4,7 +4,7 @@ using namespace triqs::lattice;
 using namespace triqs::gfs;
 
 using gf_bz_imfreq_mat = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued>;
-auto _ = var_t{};
+auto _ = all_t{};
 
 // --------------------------------------------------------------------------------
 

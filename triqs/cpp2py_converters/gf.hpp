@@ -27,6 +27,31 @@ namespace cpp2py {
   template <bool B> struct py_converter<triqs::gfs::matsubara_domain<B>> : py_converter_from_reductor<triqs::gfs::matsubara_domain<B>> {};
   template <> struct py_converter<triqs::gfs::R_domain> : py_converter_from_reductor<triqs::gfs::R_domain> {};
 
+
+
+  // -----------------------------------
+  // all_t mapped to all
+  // -----------------------------------
+
+  template<> struct py_converter<triqs::gfs::all_t> { 
+
+   static PyObject *c2py(triqs::gfs::all_t m) {
+      static pyref all = pyref::get_class("__builtin__", "all", true);
+      if (all.is_null()) return NULL;
+      return all.new_ref();
+    }
+
+    static bool is_convertible(PyObject *ob, bool raise_exception) {
+      static pyref all = pyref::get_class("__builtin__", "all", true);
+      return  (all == ob);
+    }
+
+    static triqs::gfs::all_t py2c(PyObject *ob) {
+      return {};
+    }
+  };
+
+
   // -----------------------------------
   //     Mesh Product
   // -----------------------------------

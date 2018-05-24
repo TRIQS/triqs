@@ -146,7 +146,6 @@ namespace gfs {
   }
  };
 
- 
  // -------------------------------------------------------------------
  // a special case : the unary operator !
  template <typename L> struct gf_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
@@ -165,6 +164,10 @@ namespace gfs {
   template <typename... Args> auto operator()(Args &&... args) const { return -l(std::forward<Args>(args)...); }
   friend std::ostream &operator<<(std::ostream &sout, gf_unary_m_expr const &expr) { return sout << '-' << expr.l; }
  };
+
+ template<typename T> struct is_gf_expr : std::false_type{};
+ template <typename Tag, typename L, typename R>  struct is_gf_expr<gf_expr<Tag, L, R>> : std::true_type{};
+ template <typename L> struct is_gf_expr<gf_unary_m_expr<L> > : std::true_type{};
 
 
 // -------------------------------------------------------------------

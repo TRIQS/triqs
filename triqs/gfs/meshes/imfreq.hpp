@@ -186,10 +186,12 @@ namespace triqs::gfs {
     // -------------- Evaluation of a function on the grid --------------------------
 
     /// Is the point in mesh ?
+    constexpr bool is_within_boundary(all_t) const { return true;}
     bool is_within_boundary(long n) const { return ((n >= first_index()) && (n <= last_index())); }
     bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n); }
 
     // For multivar evaluation 
+    interpol_data_all_t  get_interpolation_data(all_t) const { return {}; }
     interpol_data_0d_t<index_t> get_interpolation_data(long n) const { return {n}; }
     interpol_data_0d_t<index_t> get_interpolation_data(matsubara_freq n) const { return {n.n}; }
 

@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./comma.hpp"
 
 namespace triqs::gfs {
 
@@ -32,11 +31,11 @@ namespace triqs::gfs {
   namespace details {
 
     // "Lambda" : X = argument, M = mesh, Tu = tuple of results
-    // Action : accumulate the m in tu iif X is a var_t
+    // Action : accumulate the m in tu iif X is a all_t
     // To be used in partial_eval in a fold to filter the tuple of meshes
     struct fw_mesh {
       template <typename X, typename M, typename Tu> auto operator()(X const &x, M const &m, Tu &&tu) const { return std::forward<Tu>(tu); }
-      template <typename M, typename Tu> auto operator()(var_t, M const &m, Tu &&tu) const {
+      template <typename M, typename Tu> auto operator()(all_t, M const &m, Tu &&tu) const {
         return std::tuple_cat(std::forward<Tu>(tu), std::tie(m));
       }
     };
@@ -69,14 +68,14 @@ namespace triqs::gfs {
       template <typename M, typename Tu> auto operator()(M const &m, typename M::index_t const &x, Tu &&tu) const {
         return std::tuple_cat(std::forward<Tu>(tu), std::make_tuple(m.index_to_linear(x)));
       }
-      template <typename M, typename Tu> auto operator()(M &&, var_t, Tu &&tu) const {
+      template <typename M, typename Tu> auto operator()(M &&, all_t, Tu &&tu) const {
         return std::tuple_cat(std::forward<Tu>(tu), std::make_tuple(range{}));
       }
     };
 
     // a simple test for the argument of G[...] to have an early error and short error message.
     template <typename Mesh, typename A> constexpr bool is_ok1() {
-      return std::is_same<typename Mesh::mesh_point_t, A>::value || std::is_constructible<long, A>::value || std::is_same<A, var_t>::value
+      return std::is_same<typename Mesh::mesh_point_t, A>::value || std::is_constructible<long, A>::value ||std::is_constructible<_long, A>::value ||  std::is_same<A, all_t>::value
          || std::is_same<mini_vector<long, 3>, A>::value || std::is_same<matsubara_freq, A>::value;
       // FIXME : all std::array. with NDA clean 
     }
@@ -90,11 +89,11 @@ namespace triqs::gfs {
 
       static_assert(is_ok<typename G::mesh_t, std::decay_t<Args>...>::value, "Argument type incorrect");
 
-      if constexpr (not(... or std::is_same_v<var_t, Args>))
+      if constexpr (not(... or std::is_same_v<all_t, Args>))
         return g->on_mesh(args...);
       else {
 
-        // Filter the mesh of g into m to keep only the meshes corresponding to var_t arguments
+        // Filter the mesh of g into m to keep only the meshes corresponding to all_t arguments
         auto m_tuple = triqs::tuple::fold(details::fw_mesh{}, std::make_tuple(args...), g->mesh().components(), std::make_tuple());
 
         // if m_tuple is of size 1, remove the tuple.
@@ -107,7 +106,7 @@ namespace triqs::gfs {
         using r_t      = std14::conditional_t<G::is_const or std::is_const<G>::value, gf_const_view<var_t, target_t>, gf_view<var_t, target_t>>;
 
         // compute the sliced view of the data array
-        // xs : filter the arguments which are not var_t and compute their linear_index with the corresponding mesh
+        // xs : filter the arguments which are not all_t and compute their linear_index with the corresponding mesh
         // then in arr2, we unfold the xs tuple into the slice of the data
         auto xs   = triqs::tuple::fold(details::fw_mesh_x{}, g->mesh().components(), std::make_tuple(args...), std::make_tuple());
         auto arr2 = triqs::tuple::apply([&g](auto const &... args) { return g->data()(args..., triqs::arrays::ellipsis()); }, xs);

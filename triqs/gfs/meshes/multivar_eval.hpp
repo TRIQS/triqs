@@ -19,6 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
+#include "./comma.hpp"
 namespace triqs::gfs {
 
   namespace details {
@@ -32,7 +33,7 @@ namespace triqs::gfs {
     }
 
     template <int I0, int I1, typename G, typename A0, typename A1> FORCEINLINE auto __add(G const &g, A0 const &a0, A1 const &a1) {
-#define TRIQS_TERM_EVAL a0.w[I0] * a1.w[I1] * g[{a0.idx[I0], a1.idx[I1]}]
+#define TRIQS_TERM_EVAL a0.w[I0] * a1.w[I1] * g[make_tuple_com(a0.idx[I0], a1.idx[I1])]
       if constexpr (I0 < A0::n_pts - 1) {
         return TRIQS_TERM_EVAL + __add<I0 + 1, I1>(g, a0, a1);
       } else { // I0==0
@@ -46,7 +47,7 @@ namespace triqs::gfs {
 
     template <int I0, int I1, int I2, typename G, typename A0, typename A1, typename A2>
     FORCEINLINE auto __add(G const &g, A0 const &a0, A1 const &a1, A2 const &a2) {
-#define TRIQS_TERM_EVAL a0.w[I0] * a1.w[I1] * a1.w[I2] * g[{a0.idx[I0], a1.idx[I1], a2.idx[I2]}]
+#define TRIQS_TERM_EVAL a0.w[I0] * a1.w[I1] * a1.w[I2] * g[make_tuple_com(a0.idx[I0], a1.idx[I1], a2.idx[I2])]
       if constexpr (I0 < A0::n_pts - 1) {
         return TRIQS_TERM_EVAL + __add<I0 + 1, I1, I2>(g, a0, a1, a2);
       } else {
@@ -64,7 +65,7 @@ namespace triqs::gfs {
 
     template <int I0, int I1, int I2, int I3, typename G, typename A0, typename A1, typename A2, typename A3>
     FORCEINLINE auto __add(G const &g, A0 const &a0, A1 const &a1, A2 const &a2, A3 const &a3) {
-#define TRIQS_TERM_EVAL a0.w[I0] * a1.w[I1] * a2.w[I2] * a3.w[I3] * g[{a0.idx[I0], a1.idx[I1], a2.idx[I2], a3.idx[I3]}]
+#define TRIQS_TERM_EVAL a0.w[I0] * a1.w[I1] * a2.w[I2] * a3.w[I3] * g[make_tuple_com(a0.idx[I0], a1.idx[I1], a2.idx[I2], a3.idx[I3])]
       if constexpr (I0 < A0::n_pts - 1) {
         return TRIQS_TERM_EVAL + __add<I0 + 1, I1, I2, I3>(g, a0, a1, a2, a3);
       } else {

@@ -25,7 +25,6 @@
 //#include <triqs/utility/lazy_bracket.hpp>
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
-#include "./comma.hpp"
 #include "./data_proxy.hpp"
 
 namespace triqs {
@@ -397,38 +396,38 @@ namespace triqs {
         return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
       }
 
-      // -------------- operator [] with _tuple. Distinguich the lazy and non lazy case
+      // -------------- operator [] with std::tuple. Distinguich the lazy and non lazy case
       public:
-      template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) & {
+      template <typename... U> decltype(auto) operator[](std::tuple<U...> const &tu) & {
         static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
         if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
           return clef::make_expr_subscript(*this, tu);
         else {
           static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
           auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-          return triqs::tuple::apply(l, tu._t);
+          return triqs::tuple::apply(l, tu);
         }
       }
 
-      template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) const & {
+      template <typename... U> decltype(auto) operator[](std::tuple<U...> const &tu) const & {
         static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
         if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
           return clef::make_expr_subscript(*this, tu);
         else {
           static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
           auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-          return triqs::tuple::apply(l, tu._t);
+          return triqs::tuple::apply(l, tu);
         }
       }
 
-      template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) && {
+      template <typename... U> decltype(auto) operator[](std::tuple<U...> const &tu) && {
         static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
         if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
           return clef::make_expr_subscript(std::move(*this), tu);
         else {
           static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
           auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-          return triqs::tuple::apply(l, tu._t);
+          return triqs::tuple::apply(l, tu);
         }
       }
 
@@ -932,38 +931,38 @@ namespace triqs {
         return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
       }
 
-      // -------------- operator [] with _tuple. Distinguich the lazy and non lazy case
+      // -------------- operator [] with std::tuple. Distinguich the lazy and non lazy case
       public:
-      template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) & {
+      template <typename... U> decltype(auto) operator[](std::tuple<U...> const &tu) & {
         static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
         if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
           return clef::make_expr_subscript(*this, tu);
         else {
           static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
           auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-          return triqs::tuple::apply(l, tu._t);
+          return triqs::tuple::apply(l, tu);
         }
       }
 
-      template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) const & {
+      template <typename... U> decltype(auto) operator[](std::tuple<U...> const &tu) const & {
         static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
         if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
           return clef::make_expr_subscript(*this, tu);
         else {
           static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
           auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-          return triqs::tuple::apply(l, tu._t);
+          return triqs::tuple::apply(l, tu);
         }
       }
 
-      template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) && {
+      template <typename... U> decltype(auto) operator[](std::tuple<U...> const &tu) && {
         static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
         if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
           return clef::make_expr_subscript(std::move(*this), tu);
         else {
           static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
           auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-          return triqs::tuple::apply(l, tu._t);
+          return triqs::tuple::apply(l, tu);
         }
       }
 
@@ -1455,38 +1454,38 @@ namespace triqs {
         return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
       }
 
-      // -------------- operator [] with _tuple. Distinguich the lazy and non lazy case
+      // -------------- operator [] with std::tuple. Distinguich the lazy and non lazy case
       public:
-      template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) & {
+      template <typename... U> decltype(auto) operator[](std::tuple<U...> const &tu) & {
         static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
         if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
           return clef::make_expr_subscript(*this, tu);
         else {
           static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
           auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-          return triqs::tuple::apply(l, tu._t);
+          return triqs::tuple::apply(l, tu);
         }
       }
 
-      template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) const & {
+      template <typename... U> decltype(auto) operator[](std::tuple<U...> const &tu) const & {
         static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
         if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
           return clef::make_expr_subscript(*this, tu);
         else {
           static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
           auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-          return triqs::tuple::apply(l, tu._t);
+          return triqs::tuple::apply(l, tu);
         }
       }
 
-      template <typename... U> decltype(auto) operator[](_tuple<U...> const &tu) && {
+      template <typename... U> decltype(auto) operator[](std::tuple<U...> const &tu) && {
         static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
         if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
           return clef::make_expr_subscript(std::move(*this), tu);
         else {
           static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
           auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
-          return triqs::tuple::apply(l, tu._t);
+          return triqs::tuple::apply(l, tu);
         }
       }
 

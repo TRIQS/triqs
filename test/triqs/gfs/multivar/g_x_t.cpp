@@ -10,7 +10,7 @@ double t_min = -10, t_max = 10;
 int n_times   = n_freq * 2 + 1;
 int L         = 16;
 int n_bz      = L;
-auto _        = var_t{};
+auto _        = all_t{};
 auto bz       = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 using index_t = utility::mini_vector<int, 3>;
 

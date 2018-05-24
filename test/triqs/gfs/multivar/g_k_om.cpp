@@ -22,7 +22,7 @@ placeholder_prime<0> wp_;
 using gf_bz_imfreq_mat = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued>;
 using gf_bz_imtime_mat = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>;
 
-auto _ = var_t{};
+auto _ = all_t{};
 
 // ------------------------------------------------------------
 
@@ -65,8 +65,8 @@ using K_t = std::array<double, 3>;
 TEST(Gkom, Eval) {
   double beta = 5;
 
-  int n_k              = 100;
-  int n_w              = 5;
+  int n_k = 100;
+  int n_w = 5;
 
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
   auto g  = gf<cartesian_product<brillouin_zone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
@@ -90,8 +90,31 @@ TEST(Gkom, Eval) {
         double kx    = nkx / double(n_k2) * 2 * M_PI;
         double ky    = nky / double(n_k2) * 2 * M_PI;
         dcomplex res = 1 / (w + 3 + 2 * (cos(kx) + cos(ky)));
-        EXPECT_COMPLEX_NEAR(g(K_t{kx, ky, 0}, w), res, 0.05*std::abs(res));
+        EXPECT_COMPLEX_NEAR(g(K_t{kx, ky, 0}, w), res, 0.05 * std::abs(res));
       }
+}
+
+// -------------------------------------------------------------
+
+// test g(k, all_t)
+TEST(Gkom, EvalSlice) {
+  double beta = 5;
+
+  int n_k = 100;
+  int n_w = 5;
+
+  auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
+  auto g  = gf<cartesian_product<brillouin_zone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
+
+  //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
+  for (auto [k, w] : g.mesh()) g[k, w] = 1 / (w + 3 + 2 * (cos(k(0)) + cos(k(1))));
+
+  auto pi_pi = K_t{M_PI, M_PI, 0};
+
+  auto gw = g(pi_pi, all_t{});
+
+  EXPECT_TRUE(std::get<1>(g.mesh()) == gw.mesh());
+  for (auto const &w : gw.mesh()) EXPECT_COMPLEX_NEAR(gw[w], g(pi_pi, w), 1.e-12);
 }
 
 MAKE_MAIN;

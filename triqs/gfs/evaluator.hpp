@@ -94,11 +94,18 @@ namespace gfs {
 
   template <typename G, typename... Args> const auto operator()(G const &g, Args &&... args) const {
    static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
-   if (g.mesh().is_within_boundary(args...))
-    return make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...));
-   using rt = std14::decay_t<decltype(
-       make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
-   return rt{g.get_zero()};
+  
+  using r1_t = decltype(g.mesh().evaluate(g, std::forward<Args>(args)...)); 
+   
+  if constexpr (is_gf_expr<r1_t>::value or is_gf<r1_t>::value) { 
+   return g.mesh().evaluate(g, std::forward<Args>(args)...);
+  }
+  else { 
+     if (g.mesh().is_within_boundary(args...))
+     return make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...));
+    using rt = std14::decay_t<decltype( make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
+    return rt{g.get_zero()};
+   }
   }
  };
 

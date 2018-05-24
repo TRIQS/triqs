@@ -17,7 +17,7 @@ TEST(GfM, CurryFourier) {
  auto gkw    = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
  auto gkt    = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
- auto _ = var_t{};
+ auto _ = all_t{};
 
  rw_h5(gkw, "ess_g_k_om.h5", "g");
  rw_h5(gkt, "ess_g_k_t.h5", "g");

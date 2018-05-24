@@ -22,10 +22,29 @@
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 #include <triqs/utility/iterator_facade.hpp>
 
+#include <triqs/arrays.hpp>
+
 namespace triqs {
 namespace gfs {
 
+ using arrays::make_shape;
+ using arrays::range;
+ using arrays::array;
+ using arrays::array_view;
+ using arrays::matrix;
+ using arrays::matrix_view;
+ using arrays::matrix_const_view;
+ using triqs::make_clone;
  using dcomplex = std::complex<double>;
+ using arrays::make_shape;
+ using arrays::range;
+ using arrays::ellipsis;
+ using arrays::mini_vector;
+
+ using dcomplex = std::complex<double>;
+
+ // the dummy variable
+ struct all_t {};
 
  namespace tag {
   struct composite {};
