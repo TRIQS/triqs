@@ -1,3 +1,4 @@
+find_package(Test)
 
 # Build C extension module
 add_cpp2py_module(my_module)

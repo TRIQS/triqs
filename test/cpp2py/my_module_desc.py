@@ -3,7 +3,7 @@ from cpp2py.wrap_generator import *
 # The module
 module = module_(full_name = "my_module", doc = " Doc of my_module ")
 
-module.add_include("<triqs/../test/pytriqs/wrap_test/a.hpp>")
+module.add_include("<triqs/../test/cpp2py/a.hpp>")
 module.add_include("<triqs/arrays.hpp>")
 
 module.add_include("<cpp2py/converters/vector.hpp>")
@@ -70,7 +70,7 @@ g.add_getitem(signature = "double(int i)", doc = " doc [] ")
 g.add_setitem(signature = "void(int i, double v)", doc = " doc [] set ")
 
 # We can also add the call to a pure python function !
-g.add_pure_python_method("pytriqs.wrap_test.aux.pure_py1")
+g.add_pure_python_method("cpp2py.aux.pure_py1")
 
 def ffg2(self, *args, **kw) : 
     """ my doc of the function ffg2 """

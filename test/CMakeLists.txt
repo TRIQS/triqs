@@ -26,5 +26,5 @@ add_subdirectory(triqs)
 
 if (PythonSupport)
  add_subdirectory(pytriqs)
+ add_subdirectory(cpp2py)
 endif()
-

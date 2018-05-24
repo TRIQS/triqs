@@ -3,7 +3,7 @@ from cpp2py.wrap_generator import *
 import pytriqs.gf
 
 # The module
-module = module_(full_name = "pytriqs.wrap_test.test_multivar", doc = "Doc of multivar GF")
+module = module_(full_name = "cpp2py.test_multivar", doc = "Doc of multivar GF")
 
 module.add_include("multivar.hpp")
 

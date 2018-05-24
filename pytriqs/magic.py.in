@@ -24,7 +24,7 @@ generator_path = triqs_path + "/share/triqs/cpp2py"
 cpp2py_bin = triqs_path + "/bin/c++2py.py"
 
 cmakelist = """
-list(APPEND CMAKE_MODULE_PATH %s/share/triqs/cmake)
+list(APPEND CMAKE_MODULE_PATH %s/share/cmake)
 cmake_minimum_required(VERSION 2.8)
 project(triqs_magic CXX)
 set(CMAKE_BUILD_TYPE Release)

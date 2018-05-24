@@ -3,8 +3,8 @@ from cpp2py.wrap_generator import *
 import pytriqs.gf
 
 # The module
-module = module_(full_name = "pytriqs.wrap_test.test_g", doc = " Doc of my_module ")
-module.add_include("<triqs/../test/pytriqs/wrap_test/g.hpp>") 
+module = module_(full_name = "cpp2py.test_g", doc = " Doc of my_module ")
+module.add_include("<triqs/../test/cpp2py/g.hpp>") 
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
 module.add_include("<cpp2py/converters/variant.hpp>")
