@@ -40,14 +40,14 @@ namespace triqs::gfs {
   //-------------------------------------
 
   array<dcomplex, 2> fit_derivatives(gf_const_view<imtime, tensor_valued<1>> gt) {
-    using matrix_t = arrays::matrix<dcomplex>;
-    int fit_order  = 8;
-    auto _         = range();
-    auto d_vec_left = matrix_t(fit_order, gt.target_shape()[0]);
+    using matrix_t   = arrays::matrix<dcomplex>;
+    int fit_order    = 8;
+    auto _           = range();
+    auto d_vec_left  = matrix_t(fit_order, gt.target_shape()[0]);
     auto d_vec_right = d_vec_left;
-    int n_tau = gt.mesh().size();
-    for (int m : range(1, fit_order + 1)){
-      d_vec_left(m - 1, _) = (gt[m] - gt[0]) / gt.mesh()[m]; // Values around 0
+    int n_tau        = gt.mesh().size();
+    for (int m : range(1, fit_order + 1)) {
+      d_vec_left(m - 1, _)  = (gt[m] - gt[0]) / gt.mesh()[m];                     // Values around 0
       d_vec_right(m - 1, _) = (gt[n_tau - 1] - gt[n_tau - 1 - m]) / gt.mesh()[m]; // Values around beta
     }
 
@@ -85,21 +85,32 @@ namespace triqs::gfs {
    */
 
     // Calculate the 2nd
-    matrix_t g_vec_left = V_inv * d_vec_left;
+    matrix_t g_vec_left  = V_inv * d_vec_left;
     matrix_t g_vec_right = V_inv * d_vec_right;
-    double sign = (gt.mesh().domain().statistic == Fermion) ? -1 : 1;
-    array<dcomplex, 2> m23(2, second_dim(g_vec_left));
-    m23(0, _) = g_vec_left(0, _) - sign * g_vec_right(0, _);
-    m23(1, _) = -(g_vec_left(1, _) + sign * g_vec_right(1, _)) * 2 / gt.mesh().delta();
+    double sign          = (gt.mesh().domain().statistic == Fermion) ? -1 : 1;
+    array<dcomplex, 2> m123(3, second_dim(g_vec_left));
+    m123(0, _) = -(gt[0] - sign * gt[n_tau - 1]);                                        // 1st order moment
+    m123(1, _) = g_vec_left(0, _) - sign * g_vec_right(0, _);                            // 2nd order moment
+    m123(2, _) = -(g_vec_left(1, _) + sign * g_vec_right(1, _)) * 2 / gt.mesh().delta(); // 3rd order moment
     //TRIQS_PRINT(m23(0,_));
     //TRIQS_PRINT(m23(1,_));
-    return m23;
+    return m123;
   }
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
-  gf_vec_t<imfreq> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf_vec_cvt<imtime> gt, arrays::array_const_view<dcomplex, 2> mom_23) {
-    if (mom_23.is_empty()) mom_23.rebind(fit_derivatives(gt));
+  gf_vec_t<imfreq> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf_vec_cvt<imtime> gt, arrays::array_const_view<dcomplex, 2> known_moments) {
+
+    arrays::array_const_view<dcomplex, 2> mom_123;
+    if (known_moments.is_empty())
+      mom_123.rebind(fit_derivatives(gt));
+    else {
+      TRIQS_ASSERT2(known_moments.shape()[0] >= 4, " Direct Matsubara Fourier transform requires known moments up to order 3.")
+      double _abs_tail0 = max_element(abs(known_moments(0, range())));
+      TRIQS_ASSERT2((_abs_tail0 < 1e-8),
+                    "ERROR: Direct Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+      mom_123.rebind(known_moments(range(1, 4), range()));
+    }
 
     double beta = gt.mesh().domain().beta;
     auto L      = gt.mesh().size() - 1;
@@ -117,13 +128,13 @@ namespace triqs::gfs {
     dcomplex iomega = M_PI * 1_j / beta;
 
     double b1, b2, b3;
-    array<dcomplex, 1> m1, a1, a2, a3;
+    array<dcomplex, 1> a1, a2, a3;
     auto _  = range();
-    auto m2 = mom_23(0, _);
-    auto m3 = mom_23(1, _);
+    auto m1 = mom_123(0, _);
+    auto m2 = mom_123(1, _);
+    auto m3 = mom_123(2, _);
 
     if (is_fermion) {
-      m1 = -(gt[0] + gt[L]);
       b1 = 0;
       b2 = 1;
       b3 = -1;
@@ -136,7 +147,6 @@ namespace triqs::gfs {
            fact * exp(iomega * t) * (gt[t] - (oneFermion(a1, b1, t, beta) + oneFermion(a2, b2, t, beta) + oneFermion(a3, b3, t, beta)));
 
     } else {
-      m1 = -(gt[0] - gt[L]);
       b1 = -0.5;
       b2 = -1;
       b3 = 1;
@@ -161,20 +171,22 @@ namespace triqs::gfs {
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<imtime> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf_vec_cvt<imfreq> gw, arrays::array_const_view<dcomplex, 2> mom_123) {
+  gf_vec_t<imtime> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf_vec_cvt<imfreq> gw, arrays::array_const_view<dcomplex, 2> known_moments) {
 
     TRIQS_ASSERT2(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
-    if (mom_123.is_empty()) {
-      auto[tail, error] = fit_tail(gw);
+    arrays::array_const_view<dcomplex, 2> mom_123;
+    if (known_moments.shape()[0] < 4) {
+      auto [tail, error] = fit_tail(gw, known_moments);
       TRIQS_ASSERT2((error < 1e-3), "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error));
       if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
       TRIQS_ASSERT2((first_dim(tail) > 4), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
       double _abs_tail0 = max_element(abs(tail(0, range())));
-      TRIQS_ASSERT2((_abs_tail0 < 1e-10),
-                   "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+      TRIQS_ASSERT2((_abs_tail0 < 1e-8),
+                    "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
       mom_123.rebind(tail(range(1, 4), range()));
-    }
+    } else
+      mom_123.rebind(known_moments(range(1, 4), range()));
 
     double beta = tau_mesh.domain().beta;
     long L      = tau_mesh.size() - 1;

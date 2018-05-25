@@ -61,6 +61,14 @@ namespace triqs::gfs {
     return g.mesh().get_tail_fitter()(g.mesh(), make_const_view(g.data()), 0, false, array_const_view<dcomplex, G<V, T>::data_rank>{});
   }
 
+  // Create a tail object for a given Green function
+  template<int N=0, template <typename, typename> typename G, typename V, typename T>
+  auto make_zero_tail(G<V, T> const &g, int n_moments = 10) {
+    auto sh = rotate_index_view(make_const_view(g.data()),N).shape();
+    sh[0] = n_moments;
+    return arrays::zeros<dcomplex>(sh);
+  }
+
   // FIXME : merge the slice_target_to_scalar
   /*------------------------------------------------------------------------------------------------------
  *                      Slicing the matrix_valued/matrix_real_valued into a matrix

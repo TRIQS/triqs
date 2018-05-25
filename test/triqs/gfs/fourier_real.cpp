@@ -1,14 +1,17 @@
 #include <triqs/test_tools/gfs.hpp>
 
+double lorentzian(double w, double E) { return 2 * E / (w * w + E * E); };
+std::complex<double> lorentzian_inverse(double t, double E) { return std::exp(-E * std::abs(t)); };
+double theta(double x) { return x > 0 ? 1.0 : (x < 0 ? 0.0 : 0.5); };
+
 // Generic Fourier test function for different ranks
 template <int TARGET_RANK> void test_fourier() {
-  double precision = 1e-8;
+  double precision = 1e-4;
   triqs::clef::placeholder<0> w_;
-  double omega_max = 100;
-  int L            = 1001;
-  double t_max     = 10;
-  int L_t          = 1001;
-  double E         = -1;
+  triqs::clef::placeholder<1> t_;
+  double w_max = 40;
+  int Nw       = 1001;
+  double E     = 1;
 
   mini_vector<size_t, TARGET_RANK> shape{};
 
@@ -21,56 +24,49 @@ template <int TARGET_RANK> void test_fourier() {
 
   using target_t = typename _target_from_type_rank<dcomplex, TARGET_RANK>::type;
 
-  // === Test a Green function with a Single Pole ===
+  auto w_mesh = gf_mesh<refreq>{-w_max, w_max, Nw};
+  auto Gw1    = gf<refreq, target_t>{w_mesh, shape};
 
+  // === Fourier of a simple Lorentzian ===
 
-  auto w_mesh = gf_mesh<refreq>{-omega_max, omega_max, L};
-  auto Gw1 = gf<refreq, target_t>{w_mesh, shape};
-  Gw1(w_) << 1 / (w_ * w_ + E * E) + 1 / (w_ * w_ + 4 * E * E) - 4.5 / (w_ * w_ + 2 * E * E);
+  for (auto const &w : w_mesh) Gw1[w] = lorentzian(w, E);
 
-  auto Gt1 = make_gf_from_fourier(Gw1); 
+  auto Gt1           = make_gf_from_fourier(Gw1);
+  auto const &t_mesh = Gt1.mesh();
 
-  //verification that TF(TF^-1)=Id
+  // verification that TF(TF^-1)=Id
   auto [tail, err] = fit_tail(Gw1);
-  auto Gw1b = make_gf_from_fourier(Gt1, w_mesh, make_const_view(tail)); // FIXME const_view
+  auto Gw1b        = make_gf_from_fourier(Gt1, w_mesh, make_const_view(tail(range(0, 3), ellipsis()))); // FIXME const_view
   EXPECT_GF_NEAR(Gw1, Gw1b, precision);
 
-  // Check against the exact result
-  //auto Gt1_exact = Gt1;
-  //Gt1_exact()    = 0.0;
-  //double s       = (statistic == Fermion ? -1 : 1);
-  //auto one_pole  = [&](double E, auto &&t) {
-  //if(E>0)
-  //return - exp(-E * t) / (1 - s * exp(-E * beta));
-  //else
-  //return s* exp(E * (beta - t)) / (1 - s * exp(E * beta));
-  //};
-  //for (auto const &t : Gt1.mesh()) { Gt1_exact[t] = one_pole(E, t) + one_pole(-2*E, t) - 4.5*one_pole(1.25*E,t); }
-  //EXPECT_GF_NEAR(Gt1, Gt1_exact, precision);
+  // Comparision against exact result
+  auto Gt1_exact = Gt1;
+  for (auto const &t : t_mesh) Gt1_exact[t] = lorentzian_inverse(t, E);
+  EXPECT_GF_NEAR(Gt1, Gt1_exact, precision);
 
-  // Test the factory function
-  //auto Gt2  = make_gf_from_fourier(Gw1, N_tau);
-  //auto Gw2b = make_gf_from_fourier(Gt2, N_iw);
-  //EXPECT_GF_NEAR(Gt2, Gt1, precision);
-  //EXPECT_GF_NEAR(Gw2b, Gw1, precision);
+  // === Fourier of a Product of theta function and exponential ===
 
-  //// === Test Green function with a self-energy ===
+  for (auto const &t : t_mesh) Gt1[t] = 0.5_j * (lorentzian_inverse(-t, E) * theta(-t) - lorentzian_inverse(t, E) * theta(t));
 
-  //auto Sigma = Gw1;
-  //Sigma(w_) << 1 / (w_ - 2) + 3 / (w_ + 3);
-  //Gw1(w_) << 1 / (w_ - E - Sigma[w_]);
+  auto known_moments = make_zero_tail(Gt1);
 
-  //Gt1()  = fourier(Gw1);
-  //Gw1b() = fourier(Gt1);
-  //EXPECT_GF_NEAR(Gw1, Gw1b, precision);
+  if constexpr (TARGET_RANK == 2) { // Matrix valued case needs special treatment
+    known_moments(1, 0, 0) = 1.;
+    known_moments(1, 1, 1) = 1.;
+  } else
+    known_moments(1, ellipsis()) = 1.;
 
-  //// Now lets do multiple fourier transforms
-  //for(int i : range(10)){
-  //Gt1()  = fourier(Gw1b);
-  //Gw1b() = fourier(Gt1);
-  //}
-  //EXPECT_GF_NEAR(Gw1, Gw1b, precision);
-}
+  Gw1() = fourier(Gt1, make_const_view(known_moments));
+
+  // verification that TF(TF^-1)=Id
+  auto Gt1b = make_gf_from_fourier(Gw1, t_mesh, make_const_view(known_moments)); // FIXME const view
+  EXPECT_GF_NEAR(Gt1, Gt1b, precision);
+
+  // Comparision against exact result
+  auto Gw1_exact = Gw1;
+  for (auto const &w : w_mesh) Gw1_exact[w] = 0.5 / (w + E * 1_j) + 0.5 / (w - E * 1_j);
+  EXPECT_GF_NEAR(Gw1, Gw1_exact, precision);
+} 
 
 TEST(FourierReal, Scalar) { test_fourier<0>(); }
 TEST(FourierReal, Matrix) { test_fourier<2>(); }
