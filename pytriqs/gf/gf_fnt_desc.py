@@ -134,6 +134,9 @@ m.add_function("void set_from_imfreq(gf_view<legendre, matrix_valued> gl, gf_vie
 m.add_function("void set_from_pade (gf_view<refreq, matrix_valued> gw, gf_view<imfreq, matrix_valued> giw, int n_points = 100, double freq_offset = 0.0)",
              calling_pattern = "pade(gw, giw, n_points, freq_offset)",
              doc = """""")
+m.add_function("void set_from_pade (gf_view<refreq, scalar_valued> gw, gf_view<imfreq, scalar_valued> giw, int n_points = 100, double freq_offset = 0.0)",
+             calling_pattern = "pade(gw, giw, n_points, freq_offset)",
+             doc = """""")
 
 # make_gf_from_inverse_fourier
 m.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<retime, matrix_valued> make_gf_from_fourier(gf_view<refreq, matrix_valued> gw)", doc ="")
