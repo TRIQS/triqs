@@ -18,8 +18,8 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ###################################################################################
-# version number of the library
-set (TRIQS_VERSION "1.5")
+# Get the version number from the latest annotated git tag
+execute_process(COMMAND git describe --abbrev=0 OUTPUT_VARIABLE TRIQS_VERSION)
 
 #---------------------------------------------------------------------
 # Preliminary : path, policy
