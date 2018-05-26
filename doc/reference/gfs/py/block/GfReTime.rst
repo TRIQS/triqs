@@ -10,7 +10,7 @@
 Reference
 ---------------
 
-.. autoclass:: pytriqs.gf.local.GfReTime
+.. autoclass:: pytriqs.gf.GfReTime
   :members: set_from_inverse_fourier, fourier, transpose, conjugate
 
 .. warning::

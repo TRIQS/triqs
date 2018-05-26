@@ -1,3 +1,56 @@
+Version 1.5
+-----------
+
+* Changes in installation and cmake files
+...........................................
+
+- To port an application's cmakelists:
+
+ - The best is to look at a complete example, ctint tutorial or cthyb.
+ - Import TRIQS AND Cpp2Py which are 2 separate packages now. 
+ - We now use modern cmake techniques, i.e. imported targets
+ - Simply link your target to triqs (imported target). Remove TRIQS_CXX_DEFINITIONS TRIQS_INCLUDE_ALL and co.
+ - Obsolete : TRIQSTest are deprecated. Cf cthyb and ctint tutorial for examples.
+ - build_pytriqs is also removed. Cf test/python in cthyb to set up the environment variable properly
+
+
+
+* New Python interface for Gf.
+
+EXPLAIN
+
+API changes
+~~~~~~~~~~~~
+
+* Remove the gf.local module, simply use gf
+
+   from pytriqs.gf.local import ... --> from pytriqs.gf import ...
+
+* g.indices -> g.indices[0]
+
+* Change gf_struct_t in fundamental_operator_set.hpp from
+	```
+	std::map<std::string,std::vector<std::variant<int, std::string>>>
+	```
+  to
+	```
+	std::vector<std::pair<std::string,std::vector<std::variant<int, std::string>>>>
+	```
+
+  to properly maintain the order of blocks.
+  In any Python script, replace e.g.
+	```
+	gf_struct = { "up" : [0, 1], "dn" : [0, 1] }
+	```
+  by
+	```
+	gf_struct = [ ["up", [0, 1]], ["dn" : [0, 1]] ]
+	```
+
+Deprecation
+
+
+
 
 Version 1.4
 -----------

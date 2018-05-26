@@ -23,42 +23,72 @@
 #include "../../utility/mini_vector.hpp"
 #include "../../utility/typeid_name.hpp"
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-#include "../../python_tools/pyref.hpp"
 #include "./numpy_extractor.hpp"
 
-
 namespace triqs { namespace arrays { namespace numpy_interface  {
-
-  PyObject *numpy_extractor_impl(PyObject *X, bool enforce_copy, std::string type_name, 
-                                 int elementsType, int rank, size_t *lengths, std::ptrdiff_t *strides, size_t size_of_ValueType) {
-
-  PyObject * numpy_obj;
-
-  if (X==NULL) TRIQS_RUNTIME_ERROR<<"numpy interface : the python object is NULL !";
-  if (_import_array()!=0) TRIQS_RUNTIME_ERROR <<"Internal Error in importing numpy";
-
+  
   static const char * error_msg = "   Error from the Python to C++ converter of array/matrix/vector.\n   I am asked to take a *view* of Python numpy array.\n   However, it is impossible (a deep copy would be necessary) for the following reason : \n";
+ 
+  // --------------------------------------------------------------------
+  
+  bool numpy_convertible_to_view_impl(PyObject *X, std::string const& type_name, int elementsType, int rank) {
 
-  if (!enforce_copy) {
-   if (!PyArray_Check(X)) throw copy_exception () << error_msg<<"   Indeed the object was not even an array !\n";
-   if (elementsType != PyArray_TYPE((PyArrayObject *)X)) {
-    py_tools::pyref p = PyObject_GetAttrString(X, "dtype");
+    bool err = (X==NULL) or (_import_array()!=0) or (!PyArray_Check(X));
+    if (err) return false;
+    // now I am sure X is an array
+    PyArrayObject *arr = (PyArrayObject *)X;
+    err = err or (elementsType != PyArray_TYPE(arr));
+#ifdef PYTHON_NUMPY_VERSION_LT_17
+    err = err or (arr->nd != rank);
+#else
+    err = err or (PyArray_NDIM(arr) != rank);
+#endif
+    return !err;
+  }
+
+  // --------------------------------------------------------------------
+  // In case numpy_convertible_to_view return false, build the error message. Separated for speed reason (in Python convertion, we need the convertible function for overload
+  // but we want the string just in case there is actually an error)
+
+  static std::string numpy_view_convertion_get_error_impl(PyObject *X, std::string const& type_name, int elementsType, int rank) {
+
+  if (!PyArray_Check(X)) return std::string{error_msg} + "   Indeed the object was not even an array !\n";
+
+  if (elementsType != PyArray_TYPE((PyArrayObject *)X)) {
+    PyObject* p = PyObject_GetAttrString(X, "dtype");
     std::string actual_type = "";
     if (p) {
-     py_tools::pyref q = PyObject_GetAttrString(p, "name");
+     PyObject* q = PyObject_GetAttrString(p, "name");
      if (q && PyString_Check(q)) actual_type = PyString_AsString(q);
+     Py_XDECREF(q);
     }
-    throw copy_exception() << error_msg << "   Type mismatch of the elements.\n   The expected type by C+ is "
-                           << utility::demangle(type_name) << " while I receive an array of type " << actual_type << "\n";
-   }
-   PyArrayObject *arr = (PyArrayObject *)X;
-#ifdef TRIQS_NUMPY_VERSION_LT_17
-   if ( arr->nd != rank) throw copy_exception () << error_msg<<"   Rank mismatch . numpy array is of rank "<< arr->nd << "while you ask for rank "<< rank<<". \n";
-#else
-   if ( PyArray_NDIM(arr) != rank) throw copy_exception () << error_msg<<"   Rank mismatch . numpy array is of rank "<<  PyArray_NDIM(arr) << "while you ask for rank "<< rank<<". \n";
-#endif
-   numpy_obj = X; Py_INCREF(X);
+    Py_XDECREF(p);
+    return std::string{error_msg} + "   Type mismatch of the elements.\n   The expected type by C+ is " + utility::demangle(type_name) + " while I receive an array of type " + actual_type + "\n";
   }
+  PyArrayObject *arr = (PyArrayObject *)X;
+#ifdef PYTHON_NUMPY_VERSION_LT_17
+  if ( arr->nd != rank) return std::string{error_msg} + "   Rank mismatch . numpy array is of rank " + std::to_string(arr->nd) +  "while you ask for rank "+ std::to_string(rank) + ". \n";
+#else
+  if ( PyArray_NDIM(arr) != rank) return std::string{error_msg} + "   Rank mismatch . numpy array is of rank " + std::to_string(PyArray_NDIM(arr)) + "while you ask for rank " + std::to_string(rank) + ". \n";
+#endif
+  return "Internal Error : unknown error in numpy view convertion";
+ }
+
+ // --------------------------------------------------------------------
+
+  std::pair<cpp2py::pyref, std::string> numpy_extractor_impl(PyObject *X, bool enforce_copy, std::string const &type_name, 
+                                     int elementsType, int rank, size_t *lengths, std::ptrdiff_t *strides, size_t size_of_ValueType) {
+
+  cpp2py::pyref numpy_obj;
+
+  if (X==NULL) return {NULL, "numpy interface : the python object is NULL !\n"};
+  if (_import_array()!=0) return {NULL, "Internal Error in importing numpy\n"};
+
+  if (!enforce_copy) {
+    if (!numpy_convertible_to_view_impl(X, type_name, elementsType, rank)) 
+      return {NULL, numpy_view_convertion_get_error_impl(X, type_name, elementsType, rank)};
+   numpy_obj = cpp2py::borrowed(X); 
+  } 
   else {
    // From X, we ask the numpy library to make a numpy, and of the correct type.
    // This handles automatically the cases where :
@@ -75,45 +105,42 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    int flags = 0; //(ForceCast ? NPY_FORCECAST : 0) ;// do NOT force a copy | (make_copy ?  NPY_ENSURECOPY : 0);
    //if (!(PyArray_Check(X) ))
     //flags |= ( IndexMapType::traversal_order == indexmaps::mem_layout::c_order(rank) ? NPY_C_CONTIGUOUS : NPY_F_CONTIGUOUS); //impose mem order
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+#ifdef PYTHON_NUMPY_VERSION_LT_17
    flags |= (NPY_C_CONTIGUOUS); //impose mem order
    flags |= (NPY_ENSURECOPY);
 #else
    flags |= (NPY_ARRAY_C_CONTIGUOUS); // impose mem order
    flags |= (NPY_ARRAY_ENSURECOPY);
 #endif
-   numpy_obj= PyArray_FromAny(X,PyArray_DescrFromType(elementsType), rank,rank, flags , NULL );
+   numpy_obj= PyArray_FromAny(X,PyArray_DescrFromType(elementsType), rank,rank, flags , NULL ); // new ref
 
    // do several checks
-   if (!numpy_obj) {// The convertion of X to a numpy has failed !
+   if (!bool(numpy_obj)) {// The convertion of X to a numpy has failed !
     if (PyErr_Occurred()) {
      //PyErr_Print();
      PyErr_Clear();
     }
-    TRIQS_RUNTIME_ERROR<<"numpy interface : the python object  is not convertible to a numpy. ";
+    return {NULL, "numpy interface : the python object  is not convertible to a numpy. "};
    }
-   assert (PyArray_Check(numpy_obj)); assert((numpy_obj->ob_refcnt==1) || ((numpy_obj ==X)));
+   //assert (PyArray_Check(( PyObject *)numpy_obj)); assert((numpy_obj->ob_refcnt==1) || ((numpy_obj ==X)));
 
    PyArrayObject *arr_obj;
-   arr_obj = (PyArrayObject *)numpy_obj;
-   try {
-#ifdef TRIQS_NUMPY_VERSION_LT_17
-    if (arr_obj->nd!=rank)  TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : dimensions do not match";
-    if (arr_obj->descr->type_num != elementsType)
-     TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : incorrect type of element :" <<arr_obj->descr->type_num <<" vs "<<elementsType;
+   arr_obj = (PyArrayObject *)( ( PyObject *)numpy_obj);
+#ifdef PYTHON_NUMPY_VERSION_LT_17
+   if (arr_obj->nd!=rank)  return {NULL, "numpy interface : internal error : dimensions do not match"};
+   if (arr_obj->descr->type_num != elementsType)
+    return {NULL, "numpy interface : internal error : incorrect type of element :" + std::to_string(arr_obj->descr->type_num) + " vs " +  std::to_string(elementsType)};
 #else
-    if ( PyArray_NDIM(arr_obj) !=rank)  TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : dimensions do not match";
-    if ( PyArray_DESCR(arr_obj)->type_num != elementsType)
-     TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : incorrect type of element :" <<PyArray_DESCR(arr_obj)->type_num <<" vs "<<elementsType;
+   if ( PyArray_NDIM(arr_obj) !=rank)  return {NULL, "numpy interface : internal error : dimensions do not match"};
+   if ( PyArray_DESCR(arr_obj)->type_num != elementsType)
+    return {NULL, "numpy interface : internal error : incorrect type of element :" + std::to_string(PyArray_DESCR(arr_obj)->type_num) + " vs " +  std::to_string(elementsType)};
 #endif
-   }
-   catch(...) { Py_DECREF(numpy_obj); throw;} // make sure that in case of problem, the reference counting of python is still ok...
   }
 
   // extract strides and lengths
   PyArrayObject *arr_obj;
-  arr_obj = (PyArrayObject *)numpy_obj;
-#ifdef TRIQS_NUMPY_VERSION_LT_17
+  arr_obj = (PyArrayObject *)( ( PyObject *)numpy_obj);
+#ifdef PYTHON_NUMPY_VERSION_LT_17
   const size_t dim =arr_obj->nd; // we know that dim == rank
   for (size_t i=0; i< dim ; ++i) {
    lengths[i] = size_t(arr_obj-> dimensions[i]);
@@ -127,7 +154,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
   }
 #endif
 
-  return numpy_obj;
+  return {numpy_obj, ""};
  }
 }}}
 #endif

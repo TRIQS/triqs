@@ -20,11 +20,7 @@
  ******************************************************************************/
 #pragma once
 
-// general debug macro
-#ifdef TRIQS_DEBUG
-#define TRIQS_EXCEPTION_SHOW_CPP_TRACE
-#define TRIQS_ARRAYS_DEBUG
-#endif
+#include <cpp2py.hpp>
 
 #if defined __GNUC__  ||  defined  __clang__
 #define restrict __restrict__
@@ -51,11 +47,14 @@ typedef long double max_align_t;
 
 // FOR DEBUG ONLY : detection of the version of numpy is automatic.
 // Uncomment to use the old API ANYWAY
-//#define TRIQS_NUMPY_VERSION_LT_17
+//#define PYTHON_NUMPY_VERSION_LT_17
 
-#ifndef TRIQS_NUMPY_VERSION_LT_17
+#ifndef PYTHON_NUMPY_VERSION_LT_17
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #endif
+
+// disable std::auto_ptr (disabled in c++17) usage in boost
+#define BOOST_NO_AUTO_PTR
 
 // including python first remove some warning
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
@@ -75,14 +74,11 @@ namespace boost { namespace serialization { class access; }} //forward
 // MACRO USED only in automatic Python wrapper generator desc.
 // Only on clang, other compilers : not needed, 
 #if defined(__clang__)
-#define TRIQS_WRAP_ARG_AS_DICT  __attribute__((annotate("use_parameter_class")))
-#define TRIQS_WRAP_IGNORE  __attribute__((annotate("ignore_in_python")))
-#define TRIQS_CPP2PY_IGNORE  __attribute__((annotate("ignore_in_python")))
+#define TRIQS_WRAP_ARG_AS_DICT  CPP2PY_ARG_AS_DICT
+#define TRIQS_WRAP_IGNORE  CPP2PY_IGNORE
+#define TRIQS_CPP2PY_IGNORE  CPP2PY_IGNORE
 #else
 #define TRIQS_WRAP_ARG_AS_DICT
 #define TRIQS_WRAP_IGNORE
 #define TRIQS_CPP2PY_IGNORE
 #endif
-
-#define CPP2PY_ARG_AS_DICT TRIQS_WRAP_ARG_AS_DICT
-#define CPP2PY_IGNORE      TRIQS_CPP2PY_IGNORE

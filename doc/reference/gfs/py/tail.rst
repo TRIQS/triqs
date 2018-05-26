@@ -25,8 +25,6 @@ It has the following members:
 +=====================================+===================================================================================================================================================================================================================+
 | ``data``                            | numpy array representing :math:`\mathbf{a}_{i}` : ``data[i,m,n]`` :math:`= (\mathbf{a}_i)_{m,n}`\ .                                                                                                               |
 +-------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``mask``                            | :math:`N_1\times N_2` numpy array of the maximal index :math:`i_{nm}` of the known coefficients (``order_max`` may be larger than ``mask``, but all coefficients of indices greater than ``mask`` are irrelevant) |
-+-------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``N1`` and ``N2``                   | size of each tail coefficient :math:`\mathbf{a}_{i}`: :math:`N_1\times N_2`                                                                                                                                       |
 +-------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``size``                            | number of coefficients of the tail.                                                                                                                                                                               |
@@ -43,14 +41,13 @@ The following code snippet illustrates how to instantiate a TailGf object.
 
 .. runblock:: python
 
-    from pytriqs.gf.local import *
+    from pytriqs.gf import *
 
     t = TailGf(N1=1, N2=1)
     print "t = ",t
     print "t.data.shape = ",t.data.shape
     print "t.order_min = ",t.order_min
     print "t.order_max = ",t.order_max
-    print "t.mask = ",t.mask
     print "t[1] = ",t[1]
     print "t(100) = ",t(100)
 
@@ -62,7 +59,7 @@ The following code snippet show how to access the tail of a Green's function
 
 .. runblock:: python
 
-    from pytriqs.gf.local import *
+    from pytriqs.gf import *
     
     # Create the Matsubara-frequency Green's function and initialize it
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
@@ -95,7 +92,7 @@ coefficients :math:`(\mathbf{a}_{-1})_{00} = 0`\ ,
 
 .. runblock:: python
 
-    from pytriqs.gf.local import *
+    from pytriqs.gf import *
     from numpy import array
 
     g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")

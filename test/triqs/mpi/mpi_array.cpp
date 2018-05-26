@@ -107,5 +107,39 @@ TEST(Arrays, MPIReduceMAX) {
  EXPECT_ARRAY_EQ(r1, b1);
  EXPECT_ARRAY_EQ(r2, b2);
 }
+
+// test transposed matrix broadcast
+TEST(Arrays, matrix_transpose_bcast) {
+
+ mpi::communicator world;
+
+ matrix<dcomplex> A = {{1, 2, 3},
+                       {4, 5, 6}};
+ matrix<dcomplex> At = A.transpose();
+
+ matrix<dcomplex> B;
+ if(world.rank() == 0) B = At;
+
+ mpi_broadcast(B, world, 0);
+
+ EXPECT_ARRAY_EQ(At, B);
+}
+
+// test transposed array broadcast
+TEST(Arrays, array_transpose_bcast) {
+
+ mpi::communicator world;
+
+ array<dcomplex, 2> A = {{1, 2, 3}, {4, 5, 6}};
+ array<dcomplex, 2> At = transposed_view(A, 0, 1);
+
+ array<dcomplex, 2> B(2, 3);
+ if(world.rank() == 0) B = At;
+
+ mpi_broadcast(B, world, 0);
+
+ EXPECT_ARRAY_EQ(At, B);
+}
+
 MAKE_MAIN;
 

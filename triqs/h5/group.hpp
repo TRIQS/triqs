@@ -29,7 +29,6 @@ namespace h5 {
   *  Rationale : use ADL for h5_read/h5_write, catch and rethrow exception, add some policy for opening/creating
   */
  class group : public h5_object {
-  void _write_triqs_hdf5_data_scheme(const char *a); // impl.
 
   public:
   group() = default; // for python converter only
@@ -54,13 +53,24 @@ namespace h5 {
   /// Name of the group
   std::string name() const;
 
-  ///  Write the triqs tag of the group if it is an object.
-  template <typename T> void write_triqs_hdf5_data_scheme(T const &obj) {
-   _write_triqs_hdf5_data_scheme(get_triqs_hdf5_data_scheme(obj).c_str());
+  /// Write the triqs tag
+  void write_hdf5_scheme_as_string(const char *a); 
+  	
+  /// Write the triqs tag of the group if it is an object.
+  template <typename T> void write_hdf5_scheme(T const &obj) {
+   write_hdf5_scheme_as_string(get_hdf5_scheme<T>().c_str());
   }
 
-  /// Read the triqs tag of the group if it is an object. Returns"" if attribute is not present
-  std::string read_triqs_hdf5_data_scheme() const;
+  /// Read the triqs tag of the group if it is an object. Returns the empty string "" if attribute is not present
+  std::string read_hdf5_scheme() const;
+  
+  /// Asserts that the tag of the group is the same as for T. Throws TRIQS_RUNTIME_ERROR if
+  void assert_hdf5_scheme_as_string(const char * tag_expected, bool ignore_if_absent= false) const;
+
+  /// Asserts that the tag of the group is the same as for T. Throws TRIQS_RUNTIME_ERROR if
+  template<typename T> void assert_hdf5_scheme(T const &x, bool ignore_if_absent= false) const {
+   assert_hdf5_scheme_as_string(get_hdf5_scheme<T>().c_str(), ignore_if_absent);
+  }
 
   ///
   bool has_key(std::string const &key) const;
@@ -68,7 +78,12 @@ namespace h5 {
   ///
   void unlink_key_if_exists(std::string const &key) const;
 
-  /// Open a subgroup. Throw if it does not exist.
+ /**
+   * \brief Open a subgroup.
+   * \param key  The name of the subgroup. If empty, return this group.
+   * 
+   * Throws if it does not exist.
+   */
   group open_group(std::string const &key) const;
 
   /// Open an existing DataSet. Throw if it does not exist.
@@ -76,8 +91,8 @@ namespace h5 {
 
   /**
    * \brief Create a subgroup.
-   * \param key  The name of the subgroup
-   * \param delete_if_exists  Unlink the group if it exists.
+   * \param key  The name of the subgroup. If empty, return this group.
+   * \param delete_if_exists  Unlink the group if it exists
    */
   group create_group(std::string const &key, bool delete_if_exists = true) const;
 
@@ -94,6 +109,10 @@ namespace h5 {
 
   /// Returns all names of dataset of G
   std::vector<std::string> get_all_dataset_names() const;
+  
+  /// Returns all names of dataset of G
+  std::vector<std::string> get_all_subgroup_dataset_names() const;
  };
+
 }
 }

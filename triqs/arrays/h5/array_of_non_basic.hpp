@@ -66,7 +66,7 @@ namespace arrays {
  h5_write(h5::group gr, std::string name, ArrayType const& a) {
   if (a.is_empty()) TRIQS_RUNTIME_ERROR << " Cannot save an empty array into hdf5";
   auto gr2 = gr.create_group(name);
-  gr2.write_triqs_hdf5_data_scheme(a);
+  gr2.write_hdf5_scheme(a);
   // save the shape
   array<int, 1> sha(ArrayType::rank);
   for (int u = 0; u < ArrayType::rank; ++u) sha(u) = a.shape()[u];

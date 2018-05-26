@@ -20,53 +20,67 @@
 #
 ################################################################################
 
-from pytriqs.archive import *
+import unittest
 from numpy import *
+
+from pytriqs.archive import *
 from pytriqs.utility.comparison_tests import *
 
-d = {'a' : 1.0, 'b' : [1,2,3]}
+class TestHdf5Io(unittest.TestCase):
 
-with HDFArchive('hdf5_io.out.h5','w', init = d.items()) as h:
-    h['c'] = 100
-    h['d'] = array([[1,2,3],[4,5,6]])
-    h['e'] = (1,2,3)
-    h['f'] = { 'a':10, 'b': 20}
-    h.create_group('g')
-    g = h['g']
-    g['a'] = 98
-    g['b'] = (1,2,3)
-    g['c'] = 200
+    def test_hdf5_io(self):
+        d = {'dbl' : 1.0, 'lst' : [1,[1],'a']}
+        
+        # === Write to archive
+        with HDFArchive('hdf5_io.out.h5','w', init = d.items()) as arch:
+        
+            arch['int'] = 100
+            arch['arr'] = array([[1,2,3],[4,5,6]])
+            arch['tpl'] = (2,[2],'b')
+            arch['dct'] = { 'a':[10], 'b':20 }
+        
+            arch.create_group('grp')
+            grp = arch['grp']
+            grp['int'] = 98
+            grp['tpl'] = (3,[3],'c')
+            grp['dct'] = { 'a':[30], 'b':40 }
+        
+        # === Read access
+        with HDFArchive('hdf5_io.out.h5','r') as arch:  
+            dct = arch['dct']
+            grp = arch['grp']
+        
+        # === Read/Write access
+        with HDFArchive('hdf5_io.out.h5','a') as arch:
+        
+            dct = arch['dct']
+            dct['c'] = 'triqs'
+            arch['dct'] = dct
+        
+            grp = arch['grp']
+            dct = grp['dct']
+            dct['c'] = 'qmc'
+        
+            grp['dct'] = dct
+            grp['d'] = 700
+            grp['x'] = 1.5
+            grp['y'] = 'zzz'
+        
+        
+        # === Final check
+        arch = HDFArchive('hdf5_io.out.h5','r')
+        self.assertEqual( arch['dbl'] , 1.0 )
+        self.assertEqual( arch['lst'] , [1,[1],'a'] )
+        self.assertEqual( arch['int'] , 100 )
+        assert_arrays_are_close( arch['arr'] , array([[1, 2, 3], [4, 5, 6]]) )
+        self.assertEqual( arch['tpl'] , (2,[2],'b') )
+        self.assertEqual( arch['dct'] , {'a':[10], 'b':20, 'c':'triqs'} )
+        self.assertEqual( arch['grp']['int'] , 98 )
+        self.assertEqual( arch['grp']['tpl'] , (3,[3],'c') )
+        self.assertEqual( arch['grp']['dct'] , { 'a':[30], 'b':40, 'c':'qmc'} )
+        self.assertEqual( arch['grp']['d'] , 700 )
+        self.assertEqual( arch['grp']['x'] , 1.5 )
+        self.assertEqual( arch['grp']['y'] , 'zzz' )
 
-h2 = HDFArchive('hdf5_io.out.h5','r')
-dd = h2['f']
-gg = h2['g']
-del h2, gg
-
-h3 = HDFArchive('hdf5_io.out.h5','a')
-dd = h3['f']
-dd['c'] = 18
-h3['f'] = dd
-gg = h3['g']
-gg['d'] = 700
-del h3, gg
-
-gg = HDFArchive('hdf5_io.out.h5','a')['g']
-gg['x'] = 1.5
-
-with HDFArchive('hdf5_io.out.h5','a')['g'] as g:
-    g['y'] = 'zzz'
-
-# Final check
-A = HDFArchive('hdf5_io.out.h5','r')
-assert A['a'] == 1.0
-assert A['b'] == [1,2,3]
-assert A['c'] == 100
-assert_arrays_are_close(A['d'], array([[1, 2, 3], [4, 5, 6]]))
-assert A['e'] == (1,2,3)
-assert A['f'] == {'a': 10, 'c': 18, 'b': 20}
-assert A['g']['a'] == 98
-assert A['g']['b'] == (1, 2, 3)
-assert A['g']['c'] == 200
-assert A['g']['d'] == 700
-assert A['g']['x'] == 1.5
-assert A['g']['y'] == 'zzz'
+if __name__ == '__main__':
+    unittest.main()

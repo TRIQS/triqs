@@ -1,5 +1,4 @@
 #include <triqs/test_tools/gfs.hpp>
-#include <triqs/gfs/functions/functions.hpp>
 
 TEST(Gf, Base) {
 

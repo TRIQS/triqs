@@ -1,4 +1,4 @@
-from pytriqs.gf.local import GfReFreq, Omega, Wilson, inverse
+from pytriqs.gf import GfReFreq, Omega, Wilson, inverse
 import numpy
 
 eps_d,t  = 0.3, 0.2

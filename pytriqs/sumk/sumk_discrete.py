@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 import pytriqs.utility.mpi as mpi
 from itertools import *
 import inspect
@@ -127,9 +127,9 @@ class SumkDiscrete:
 
         # check input
         assert self.orthogonal_basis, "Local_G: must be orthogonal. non ortho cases not checked."
-        assert len(list(set([g.N1 for i,g in G]))) == 1
+        assert len(list(set([g.target_shape[0] for i,g in G]))) == 1
         assert self.bz_weights.shape[0] == self.n_kpts(), "Internal Error"
-        no = list(set([g.N1 for i,g in G]))[0]
+        no = list(set([g.target_shape[0] for i,g in G]))[0]
 
         # Initialize
         G.zero()

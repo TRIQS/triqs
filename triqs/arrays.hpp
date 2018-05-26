@@ -21,7 +21,7 @@
 #pragma once
 
 // for python code generator, we need to know what to include...
-#define TRIQS_ARRAYS_INCLUDED
+#define TRIQS_INCLUDED_ARRAYS
 
 // The basic classes
 #include <triqs/arrays/array.hpp>
@@ -38,11 +38,18 @@
 #include <triqs/arrays/h5/simple_read_write.hpp>
 #include <triqs/arrays/h5/array_of_non_basic.hpp>
 
+// proxy
+#include <triqs/arrays/proxy.hxx>
+
 // Regrouping indices
 #include <triqs/arrays/group_indices.hpp>
+
+// Reinterpretation of nx1x1 array and co
+#include <triqs/arrays/reinterpret.hpp>
 
 // Linear algebra ?? Keep here ?
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 
 #include <triqs/arrays/mpi.hpp>
+
 

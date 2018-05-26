@@ -24,8 +24,7 @@
 #include <vector>
 #include <algorithm>
 #include <triqs/utility/is_complex.hpp>
-#include <triqs/mpi/vector.hpp>
-#include <triqs/arrays/matrix.hpp>
+#include <triqs/arrays.hpp>
 #include <triqs/arrays/h5.hpp>
 #include <boost/serialization/access.hpp>
 
@@ -151,8 +150,7 @@ namespace triqs { namespace arrays {
    ar & matrix_vec;
   }
 
-  // HDF5
-  friend std::string get_triqs_hdf5_data_scheme(block_matrix const&) {
+  static std::string hdf5_scheme() { 
    return is_complex<T>::value ? "BlockMatrixComplex" : "BlockMatrix";
   }
 
@@ -161,7 +159,7 @@ namespace triqs { namespace arrays {
   h5::group gr = fg.create_group(subgroup_name);
   h5_write(gr,"block_names",c.block_names);
   h5_write(gr,"matrix_vec",c.matrix_vec);
-  h5_write_attribute(gr, "TRIQS_HDF5_data_scheme", get_triqs_hdf5_data_scheme(c));
+  h5_write_attribute(gr, "TRIQS_HDF5_data_scheme", block_matrix::hdf5_scheme());
  }
  /// Read from HDF5
  friend void h5_read(h5::group fg, std::string subgroup_name, block_matrix & c){

@@ -20,14 +20,37 @@
 #
 ################################################################################
 
-__all__ = ['archive', 'dos', 'fit', 'gf', 'lattice', 'operators', 'plot',
-           'random_generator', 'sumk', 'utility', 'cpp2py']
+from cpp2py import Cpp2pyInfoBase
 
-import sys
-if 'additional_builtin_modules' in dir(sys) :
+class Cpp2pyInfo(Cpp2pyInfoBase):
 
-    from version import greeting
-    import utility.mpi as mpi
-    if (mpi.world.rank == 0) :  sys.stderr.write(greeting)
+    table_imports = {
+        'triqs::gfs::' : 'pytriqs.gf',
+        'triqs::operators::many_body_operator' : 'pytriqs.operators',
+        'triqs::lattice' : 'pytriqs.lattice',
+        'triqs::statistics::histogram' : 'pytriqs.statistics.histograms',
+        'triqs::atom_diag::' : 'pytriqs.atom_diag'
+        }
+
+    _table_converters = {
+        'triqs::arrays::array' : 'arrays',
+        'triqs::arrays::matrix' : 'arrays',
+        'triqs::arrays::vector' : 'arrays',
+        'triqs::gfs::gf*' : 'gf',
+        'triqs::gfs::block_gf*' : 'gf',
+        'triqs::gfs::block2_gf*' : 'gf',
+        'triqs::operators::many_body_operator*' : 'operators_real_complex',
+        'triqs::hilbert_space::fundamental_operator_set' : 'fundamental_operator_set',
+        'triqs::utility::real_or_complex' : 'real_or_complex',
+        'triqs::h5::group' : 'h5'
+        }
+
+    table_converters = dict ( (k, "triqs/cpp2py_converters/%s.hpp"%v) for (k,v) in _table_converters.items())
+
+def _get_cpp2py_wrapped_class_enums():
+    return {'module_name' : 'UNUSED', 'includes' : "['<triqs/cpp2py_converters.hpp>']"}
+
+__all__ = ['Cpp2pyInfo', 'archive', 'dos', 'fit', 'gf', 'lattice', 'operators', 'plot',
+           'random_generator', 'sumk', 'utility']
 
 

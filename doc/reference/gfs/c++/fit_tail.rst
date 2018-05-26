@@ -13,12 +13,12 @@ The tail of a given ``gf<imfreq>/gf<block_index, gf<imfreq>> gw`` can be fitted 
 .. toctree::
    :maxdepth: 1
    
-   /cpp2doc_generated/triqs/gfs/fit_tail
+   /cpp2rst_generated/triqs/gfs/fit_tail
 
 
 
 Example
 ~~~~~~~~
 
-.. triqs_example:: ./fit_tail_0.cpp
+.. triqs_example:: ./tail_1.cpp
 

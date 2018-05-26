@@ -34,9 +34,7 @@ histogram make_hd2() {
 
 // ----- TESTS ------------------
 
-TEST(Statistics, histo) {
-
- using std::abs;
+TEST(histogram, basic) {
 
  auto hi1 = make_hi1();
  auto hd1 = make_hd1();
@@ -47,19 +45,88 @@ TEST(Statistics, histo) {
  arrays::vector<double> true_hd1 = {0, 0, 1, 0, 2, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1};
  arrays::vector<double> true_h2 = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
 
- EXPECT_ARRAY_NEAR(hi1.data(), true_hi1);
- EXPECT_EQ(hi1.n_lost_pts(), 2);
- EXPECT_EQ(hi1.n_data_pts(), 10);
+ // hi1
 
+ EXPECT_EQ(11, hi1.size());
+ EXPECT_EQ(0, hi1.mesh_point(0));
+ EXPECT_EQ(1, hi1.mesh_point(1));
+ EXPECT_EQ(std::make_pair(.0, 10.), hi1.limits());
+ EXPECT_ARRAY_NEAR(true_hi1, hi1.data());
+ EXPECT_EQ(10, hi1.n_data_pts());
+ EXPECT_EQ(2, hi1.n_lost_pts());
+
+ // hd1
+
+ EXPECT_EQ(21, hd1.size());
+ EXPECT_EQ(0, hd1.mesh_point(0));
+ EXPECT_EQ(0.5, hd1.mesh_point(1));
+ EXPECT_EQ(std::make_pair(.0, 10.), hd1.limits());
+ EXPECT_ARRAY_NEAR(true_hd1, hd1.data());
+ EXPECT_EQ(8, hd1.n_data_pts());
+ EXPECT_EQ(5, hd1.n_lost_pts());
+
+ // hi2
+
+ EXPECT_EQ(11, hi2.size());
+ EXPECT_EQ(0, hi2.mesh_point(0));
+ EXPECT_EQ(1, hi2.mesh_point(1));
+ EXPECT_EQ(std::make_pair(.0, 10.), hi2.limits());
+ EXPECT_ARRAY_NEAR(true_h2, hi2.data());
+ EXPECT_EQ(8, hi2.n_data_pts());
+ EXPECT_EQ(3, hi2.n_lost_pts());
+ EXPECT_ARRAY_NEAR(hd2.data(), hi2.data());
+}
+
+TEST(histogram, sum) {
+
+ auto hi1 = make_hi1();
+ auto hd1 = make_hd1();
+ auto hd2 = make_hd2();
+
+ arrays::vector<double> true_hsum = {3, 2, 5, 3, 0, 2, 0, 0, 0, 2, 1};
+
+ EXPECT_THROW(hi1 + hd1, triqs::runtime_error);
+
+ auto hsum = hi1 + hd2;
+
+ EXPECT_EQ(11, hsum.size());
+ EXPECT_EQ(0, hsum.mesh_point(0));
+ EXPECT_EQ(1, hsum.mesh_point(1));
+ EXPECT_EQ(std::make_pair(.0, 10.), hsum.limits());
+ EXPECT_ARRAY_NEAR(true_hsum, hsum.data());
+ EXPECT_EQ(18, hsum.n_data_pts());
+ EXPECT_EQ(5, hsum.n_lost_pts());
+}
+
+TEST(histogram, hdf5) {
+
+ auto hd1 = make_hd1();
+
+ auto hd1_r = rw_h5(hd1, "ess_histograms2", "hd1");
+ EXPECT_EQ(hd1.limits(), hd1_r.limits());
+ EXPECT_EQ(hd1.n_data_pts(), hd1_r.n_data_pts());
+ EXPECT_EQ(hd1.n_lost_pts(), hd1_r.n_lost_pts());
+ EXPECT_ARRAY_NEAR(hd1.data(), hd1_r.data());
+}
+
+TEST(histogram, pdf) {
+
+ auto hi1 = make_hi1();
+
+ arrays::vector<double> true_pdf_hi1 = {.3, .1, .3, .1, .0, .1, .0, .0, .0, .1, .0};
+ auto pdf_hi1 = pdf(hi1);
+
+ EXPECT_ARRAY_NEAR(true_pdf_hi1, pdf_hi1.data());
+}
+
+TEST(histogram, cdf) {
+
+ auto hi1 = make_hi1();
+
+ arrays::vector<double> true_cdf_hi1 = {.3, .4, .7, .8, .8, .9, .9, .9, .9, 1.0, 1.0};
  auto cdf_hi1 = cdf(hi1);
- EXPECT_EQ(cdf_hi1.data()[cdf_hi1.size() - 1], 1.0);
 
- EXPECT_ARRAY_NEAR(hd1.data(), true_hd1);
- EXPECT_EQ(hd1.n_lost_pts(), 5);
-
- EXPECT_ARRAY_NEAR(hi2.data(), true_h2);
- EXPECT_EQ(hi2.n_lost_pts(), 3);
- EXPECT_ARRAY_NEAR(hi2.data(), hd2.data());
+ EXPECT_ARRAY_NEAR(true_cdf_hi1, cdf_hi1.data());
 }
 
 // ------------------------

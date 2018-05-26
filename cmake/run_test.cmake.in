@@ -12,26 +12,15 @@ if(ENV{DYLD_LIBRARY_PATH})
     set(ENV{DYLD_LIBRARY_PATH} ${replace_output})
 endif()
 
-if(input)
- execute_process(
-  COMMAND ${cmd}
-   RESULT_VARIABLE not_successful
-   INPUT_FILE ${input}
-   OUTPUT_FILE ${name}.out
-   ERROR_FILE ${name}.err
-   ERROR_VARIABLE err
-   TIMEOUT 600
- )
-else()
- execute_process(
-  COMMAND ${cmd}
-   RESULT_VARIABLE not_successful
-   OUTPUT_FILE ${name}.out
-   ERROR_FILE ${name}.err
-   ERROR_VARIABLE err
-   TIMEOUT 600
- )
-endif()
+separate_arguments(cmd UNIX_COMMAND "${cmd} ${input}")
+execute_process(
+ COMMAND ${cmd}
+  RESULT_VARIABLE not_successful
+  OUTPUT_FILE ${name}.out
+  ERROR_FILE ${name}.err
+  ERROR_VARIABLE err
+  TIMEOUT 600
+)
 
 if(not_successful)
  message(SEND_ERROR "Error runing test '${name}': ${err}; command: ${cmd}; shell output: ${not_successful}!")

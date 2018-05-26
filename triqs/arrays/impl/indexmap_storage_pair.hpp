@@ -33,7 +33,17 @@
 #include "../python/array_view_to_python.hpp"
 #endif
 
+#include "triqs/h5/base_public.hpp"
+
 namespace triqs { namespace arrays {
+
+ template<int Rank, class T, class = std17::void_t<>> struct get_memory_layout {
+   static auto invoke( T const & ){ return memory_layout_t<Rank>{}; }
+ };
+
+ template<int Rank, class T> struct get_memory_layout<Rank, T, std17::void_t<decltype(std::declval<T>().memory_layout())>> {
+   static auto invoke( T const & x ){ return x.memory_layout(); }
+ };
 
  template<typename A> AUTO_DECL get_shape  (A const & x) RETURN(x.domain().lengths());
 
@@ -59,12 +69,16 @@ namespace triqs { namespace arrays {
  template <typename ArrayType, typename Function> struct array_auto_assign_worker {
   ArrayType &A;
   Function const &f;
-  template <typename T, typename RHS> void assign(T &x, RHS &&rhs) { x = std::forward<RHS>(rhs); }
-  template <typename Expr, int... Is, typename T> void assign(T &x, clef::make_fun_impl<Expr, Is...> &&rhs) {
+  template <typename T, typename RHS> void FORCEINLINE assign(T &x, RHS &&rhs) { x = std::forward<RHS>(rhs); }
+  template <typename Expr, int... Is, typename T> FORCEINLINE void assign(T &x, clef::make_fun_impl<Expr, Is...> &&rhs) {
    triqs_clef_auto_assign(x, std::forward<clef::make_fun_impl<Expr, Is...>>(rhs));
   }
-  template <typename... Args> void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
+  template <typename... Args> FORCEINLINE void operator()(Args const &... args) { this->assign(A(args...), f(args...)); }
  };
+
+ namespace tags {
+ struct _with_lambda_init {};
+ }
 
  //---------------
 
@@ -73,7 +87,7 @@ namespace triqs { namespace arrays {
 
    public :
     using value_type=typename StorageType::value_type ;
-    static_assert(std::is_constructible<value_type>::value, "array/array_view and const operate only on values");
+    //static_assert(std::is_constructible<value_type>::value, "array/array_view and const operate only on values");
     static_assert(!std::is_const<value_type>::value,         "no const type");
     using storage_type=StorageType ;
     using indexmap_type=IndexMapType ;
@@ -81,6 +95,10 @@ namespace triqs { namespace arrays {
     using traversal_order_arg = TraversalOrder;
     static constexpr int rank = IndexMapType::domain_type::rank;
     static constexpr bool is_const = IsConst;
+
+    static std::string hdf5_scheme() {
+       return "array<" + triqs::h5::get_hdf5_scheme<value_type>() + "," + std::to_string(rank) + ">";
+    }
 
    protected:
 
@@ -98,6 +116,13 @@ namespace triqs { namespace arrays {
       storage_ = StorageType(indexmap_.domain().number_of_elements());
      }
 
+
+   template<typename InitLambda>
+    explicit indexmap_storage_pair(tags::_with_lambda_init, indexmap_type IM, InitLambda && lambda): indexmap_(std::move(IM)), storage_() {
+      storage_ = StorageType(indexmap_.domain().number_of_elements(), storages::tags::_allocate_only{}); // DO NOT construct the element of the array
+       _foreach_on_indexmap (indexmap_, [&](auto const & ...x) { storage_._init_raw(indexmap_(x...), lambda(x...));});
+      }
+
      public:
     // Shallow copy
     indexmap_storage_pair(indexmap_storage_pair const &X) = default;
@@ -106,20 +131,18 @@ namespace triqs { namespace arrays {
     protected:
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     indexmap_storage_pair (PyObject * X, bool enforce_copy, const char * name ) {
-     try {
-      numpy_interface::numpy_extractor<indexmap_type,value_type> E(X, enforce_copy);
-      this->indexmap_ = E.indexmap(); this->storage_  = E.storage();
-     }
-     catch(numpy_interface::copy_exception s){// intercept only this one...
-      TRIQS_RUNTIME_ERROR<< " construction of a "<< name <<" from a numpy  "
+     numpy_interface::numpy_extractor<value_type, indexmap_type::rank> E;
+     bool ok = E.extract(X, enforce_copy);
+     if (!ok) TRIQS_RUNTIME_ERROR<< " construction of a "<< name <<" from a numpy  "
        <<"\n   T = "<< triqs::utility::typeid_name(value_type())
        // lead to a nasty link pb ???
        // linker search for IndexMapType::domain_type::rank in triqs.so
        // and cannot resolve it ???
        //<<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
        <<"\nfrom the python object \n"<< numpy_interface::object_to_string(X)
-       <<"\nThe error was :\n "<<s.what();
-     }
+       <<"\nThe error was :\n "<<E.error;
+     indexmap_ = indexmap_type {E.lengths,E.strides,0};
+     storage_ = storages::shared_block<value_type> (E.numpy_obj, true);
     }
 #endif
     // ------------------------------- swap --------------------------------------------
@@ -145,6 +168,7 @@ namespace triqs { namespace arrays {
    public:
     // ------------------------------- data access --------------------------------------------
 
+    auto const & memory_layout() const { return indexmap_.memory_layout(); }
     indexmap_type const & indexmap() const {return indexmap_;}
     storage_type const & storage() const {return storage_;}
     storage_type & storage() {return storage_;}
@@ -193,17 +217,17 @@ namespace triqs { namespace arrays {
      , value_type const &>
      operator()(Args const & ... args) const & { return storage_[indexmap_(args...)]; }
 
-    // && : return a & iif it is a non const view 
+    // && : return a & iif it is a non const view
     template<typename... Args>
      std14::enable_if_t<
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0) && (!IsConst&&IsView)
      , value_type &>
      operator()(Args const & ... args) && {
-      // add here a security check in case it is a view, unique. For a regular type, move the result... 
+      // add here a security check in case it is a view, unique. For a regular type, move the result...
 #ifdef TRIQS_ARRAYS_DEBUG
       if (!storage_type::is_weak && storage_.is_unique()) TRIQS_RUNTIME_ERROR <<"triqs::array. Attempting to call an rvalue unique view ...";
 #endif
-      return storage_[indexmap_(args...)]; 
+      return storage_[indexmap_(args...)];
      }
 
     // && return a value if this is not a view (regular class) or it is a const_view
@@ -246,7 +270,7 @@ namespace triqs { namespace arrays {
      >::type // enable_if
      operator()(Args const & ... args) && {
       //std::cerr  << "slicing a temporary"<< this->storage().is_weak<< result_of_call_as_view<true,true,Args...>::type::storage_type::is_weak << std::endl;
-      return typename result_of_call_as_view<false,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), std::move(storage())); 
+      return typename result_of_call_as_view<false,false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), std::move(storage()));
      }
 
     /// Equivalent to make_view
@@ -311,8 +335,15 @@ namespace triqs { namespace arrays {
     // ------------------------------- resize --------------------------------------------
     //
     void resize (domain_type const & d) {
-     indexmap_ = IndexMapType(d,indexmap_.get_memory_layout());
+     indexmap_ = IndexMapType(d,indexmap_.memory_layout());
      // build a new one with the lengths of IND BUT THE SAME layout !
+     // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
+     if (storage_.size() != indexmap_.domain().number_of_elements())
+      storage_ = StorageType(indexmap_.domain().number_of_elements());
+    }
+
+    void resize (domain_type const & d, memory_layout_t<rank> const & ml) {
+     indexmap_ = IndexMapType(d, ml);
      // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
      if (storage_.size() != indexmap_.domain().number_of_elements())
       storage_ = StorageType(indexmap_.domain().number_of_elements());

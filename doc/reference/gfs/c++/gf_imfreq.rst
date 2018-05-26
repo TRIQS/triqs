@@ -90,5 +90,5 @@ Free functions
 .. toctree::
   :maxdepth: 1
 
-  /cpp2doc_generated/triqs/gfs/is_gf_real
-  /cpp2doc_generated/triqs/gfs/is_gf_real_in_tau
+  /cpp2rst_generated/triqs/gfs/is_gf_real
+  /cpp2rst_generated/triqs/gfs/is_gf_real_in_tau

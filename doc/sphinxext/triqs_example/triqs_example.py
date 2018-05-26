@@ -9,7 +9,7 @@ import codecs
 from os import path
 from subprocess import Popen,PIPE
 from docutils import nodes
-from sphinx.util.compat import Directive
+from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
 from sphinx.errors import SphinxError
 
@@ -74,8 +74,8 @@ class TriqsExample(Directive):
         config = TriqsExampleRun.config
 
         # Get configuration values for the language
-        input_encoding = 'ascii' #config.get(language+'_input_encoding','ascii')
-        output_encoding = 'ascii' #config.get(language+'_output_encoding','ascii')
+        input_encoding = 'utf8' #config.get(language+'_input_encoding','ascii')
+        output_encoding = 'utf8' #config.get(language+'_output_encoding','ascii')
         show_source = True 
 
         # Build the code text
@@ -83,11 +83,13 @@ class TriqsExample(Directive):
         filename_clean = filename.rsplit('.',1)[0]
         if filename_clean.startswith('./') : filename_clean = filename_clean[2:]
         #print "Running the example ....",filename_clean
-        
+        #print "Root ?", env.doc2path(env.docname, base=None)
+
         import subprocess as S
         error = True
         try : 
             stdout =''
+            #resout = S.check_output("./example_bin/doc_%s"%(filename_clean) ,stderr=S.STDOUT,shell=True)
             resout = S.check_output("./%s/doc_%s"%(docdir,filename_clean) ,stderr=S.STDOUT,shell=True)
             if resout : 
                stdout = '---------- Result is -------\n' + resout.strip()

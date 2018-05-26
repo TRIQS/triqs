@@ -1,4 +1,4 @@
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.plot.mpl_interface import oplot
 
 # A Green's function on the Matsubara axis set to a semicircular

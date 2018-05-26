@@ -15,6 +15,10 @@ TEST(Gf, PlaceHolder) {
  G1(om_) << om_ + 0.1_j;
  G2(om_) << om_ + 0.1_j;
 
+ auto g1 = G1;
+ g1(om_) << g1(om_);
+ EXPECT_GF_NEAR(G1,g1);
+ 
  // the placeholder is evaluated -> mesh_point_t -> domain::point_t -> evaluated ...
  G1(om_) << om_ + 0.1_j - G2(om_);
  EXPECT_ARRAY_ZERO(G1.data());

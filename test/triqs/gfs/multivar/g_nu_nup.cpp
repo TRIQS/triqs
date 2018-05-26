@@ -8,8 +8,8 @@ TEST(Gf, G_nu_nup) {
  auto G = gf<cartesian_product<imfreq, imfreq>, tensor_valued<4>>{{{beta, Fermion, 100}, {beta, Fermion, 100}}, {2, 2, 2, 2},
                                                                   make_memory_layout(0, 2, 3, 1, 4, 5)};
 
- auto sh = triqs::arrays::memory_layout<6>{triqs::utility::mini_vector<int, 6>{0, 2, 3, 1, 4, 5}};
- EXPECT_EQ(G.data().indexmap().get_memory_layout(), sh);
+ auto sh = triqs::arrays::memory_layout_t<6>{triqs::utility::mini_vector<int, 6>{0, 2, 3, 1, 4, 5}};
+ EXPECT_EQ(G.data().indexmap().memory_layout(), sh);
  
  placeholder<0> nu_;
  placeholder<1> nup_;
@@ -73,21 +73,6 @@ TEST(BlockGfCartesian, OutOfBounds){
   auto x = g_2w(om, W0)(0,0,0) ;
  }
 
- //g_2w.singularity().toto(); //tail_zero
- auto G_2w = make_block_gf({"0"}, {g_2w});
- //G_2w[0].singularity().toto();//tail_zero
- //G_2w.singularity().toto();//nothing
- std::cout << evaluate(G_2w[0].singularity(), 5) << std::endl;
-
- tail_zero<array<dcomplex,3>> t(G_2w[0].singularity());
- std::cout << evaluate(t, 5) << std::endl;
-
- auto t2 = t;
- std::cout << evaluate(t2, 5) << std::endl;
- auto G3 =G_2w;
- std::cout << evaluate(G3[0].singularity(), 5) << std::endl;
- block_gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>> G4(G3);
- std::cout << evaluate(G4[0].singularity(), 5) << std::endl;
 }
 TEST(BlockGfCartesian, VectorConstruction){
  double beta=1;
@@ -98,7 +83,7 @@ TEST(BlockGfCartesian, VectorConstruction){
  auto w0 = matsubara_freq(1000, beta, Fermion);
  auto W0 = matsubara_freq(1000, beta, Boson);
  auto x = L[0](w0, W0);
- x(0,0,0); //crashes if no proper equal op in tail_zero
+ x(0,0,0); 
 }
 
 TEST(BlockGf, H5_RW_Evaluator){

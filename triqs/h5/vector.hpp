@@ -24,20 +24,15 @@
 #include <vector>
 #include <complex>
 
-namespace std { // to be found by ADL
 
- template <typename T> std::string get_triqs_hdf5_data_scheme(std::vector<T> const&) {
-  using triqs::get_triqs_hdf5_data_scheme; // for the basic types, not found by ADL
-  return "std::vector<" + get_triqs_hdf5_data_scheme(T()) + ">";
- }
+namespace triqs::h5 {
 
-}
+ TRIQS_SPECIALIZE_HDF5_SCHEME2(std::vector<std::string>, vector<string>);
 
-namespace triqs {
-
- inline std::string get_triqs_hdf5_data_scheme(std::vector<std::string> const & ) { return "vector<string>";}
-
- namespace h5 {
+ template <typename T> struct hdf5_scheme_impl<std::vector<T>> {
+    static std::string invoke() { return "PythonListWrap";}//std::vector<" + hdf5_scheme_impl<T>::invoke() + ">"; }
+    //static std::string invoke() { return "std::vector<" + hdf5_scheme_impl<T>::invoke() + ">"; }
+  };
 
   void h5_write (group f, std::string const & name, std::vector<std::string> const & V);
   void h5_read (group f, std::string const & name, std::vector<std::string> & V);
@@ -65,22 +60,21 @@ namespace triqs {
  /**
    * Vector of T as a subgroup with numbers
    */
- template <typename T> void h5_write(h5::group gr, std::string name, std::vector<T> const& v) {
-  auto gr2 = gr.create_group(name);
-  gr2.write_triqs_hdf5_data_scheme(v);
-  for (int i = 0; i < v.size(); ++i) h5_write(gr2, std::to_string(i), v[i]);
+ template <typename T> void h5_write(group f, std::string name, std::vector<T> const& v) {
+  auto gr = f.create_group(name);
+  gr.write_hdf5_scheme(v);
+  for (int i = 0; i < v.size(); ++i) h5_write(gr, std::to_string(i), v[i]);
  }
 
  /**
    * Vector of T
    */
- template <typename T> void h5_read(h5::group gr, std::string name, std::vector<T>& v) {
-  auto gr2 = gr.open_group(name);
-  v.resize(gr2.get_all_dataset_names().size() + gr2.get_all_subgroup_names().size());
+ template <typename T> void h5_read(group f, std::string name, std::vector<T>& v) {
+  auto gr = f.open_group(name);
+  v.resize(gr.get_all_dataset_names().size() + gr.get_all_subgroup_names().size());
   for (int i = 0; i < v.size(); ++i) {
-   h5_read(gr2, std::to_string(i), v[i]);
+   h5_read(gr, std::to_string(i), v[i]);
   }
- }
  }
 }
 

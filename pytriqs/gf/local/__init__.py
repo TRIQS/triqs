@@ -20,32 +20,21 @@
 ################################################################################
 
 r"""
-This is the base module for all common operations with Green's functions.
-It is imported with the command::
-
-  >>> from pytriqs.gf.local import *
+Deprecated module
+from pytriqs.gf import XXX
 """
 
-from gf import *
-from block_gf import BlockGf
-from block2_gf import Block2Gf
-from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Flat, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
-from tools import *
+import warnings
+warnings.warn("""
+***************************************************
 
-# import all ?
-#from multivar import *
-import multivar
+from pytriqs.gf.local import XXX
 
-__all__ = ['Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
-           'lazy_expressions','TailGf',
-           'GfImFreq', 'MeshImFreq', 'GfImFreqTv3','GfImFreqTv4',
-           'GfImTime', 'MeshImTime', 'GfImTimeTv3', 'GfImTimeTv4',
-           'GfReFreq', 'MeshReFreq', 'GfReFreqTv3', 'GfReFreqTv4',
-           'GfReTime', 'MeshReTime',
-           'GfBrillouinZone', 'MeshBrillouinZone',
-           'GfLegendre', 'GfLegendreTv3', 'GfLegendreTv4', 'MeshLegendre',
-           'make_gf_from_inverse_fourier',
-           'BlockGf','Block2Gf','inverse','is_gf_real_in_tau',
-           'delta','dyson','tail_fit',
-           'rebinning_tau',
-           'multivar']
+is deprecated. Replace it by
+
+from pytriqs.gf import XXX")
+
+****************************************************""")
+
+from pytriqs.gf import *
+#__all__ = []

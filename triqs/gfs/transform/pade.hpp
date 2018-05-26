@@ -18,16 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_PADE_H
-#define TRIQS_GF_LOCAL_PADE_H
+#pragma once
 
-#include "../gf_classes.hpp"
-#include "../imfreq.hpp"
-#include "../refreq.hpp"
+namespace triqs {
+namespace gfs {
 
-namespace triqs { namespace gfs {
-
-  void pade (gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_points, double freq_offset);
-
-}}
-#endif
+ void pade(gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_points, double freq_offset);
+}
+}

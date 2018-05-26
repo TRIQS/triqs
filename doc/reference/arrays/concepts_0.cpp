@@ -14,7 +14,7 @@ namespace arrays { // better to put it in this namespace for ADL...
   typedef indexmaps::cuboid::domain_t<2> domain_type;
   domain_type domain() const {
    auto s = data.shape()[0];
-   return {s, s};
+   return domain_type{s, s};
   }
   typedef T value_type;
   T operator()(size_t i, size_t j) const { return (i == j ? data(i) : 0); } // just kronecker...

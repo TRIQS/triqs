@@ -9,8 +9,15 @@
 # 
 
 SET(TRIAL_PATHS
+ $ENV{FFTW3_ROOT}/include
  $ENV{FFTW_ROOT}/include
+ ${FFTW3_ROOT}/include
  ${FFTW_ROOT}/include
+ ENV CPATH
+ ENV C_INCLUDE_PATH
+ ENV CPLUS_INCLUDE_PATH
+ ENV OBJC_INCLUDE_PATH
+ ENV OBJCPLUS_INCLUDE_PATH
  /usr/include
  /usr/local/include
  /opt/local/include
@@ -19,12 +26,17 @@ SET(TRIAL_PATHS
 FIND_PATH(FFTW_INCLUDE_DIR fftw3.h ${TRIAL_PATHS} DOC "Include for FFTW")
 
 SET(TRIAL_LIBRARY_PATHS
+ $ENV{FFTW3_ROOT}/lib
+ $ENV{FFTW_ROOT}/lib
+ ${FFTW3_ROOT}/lib
+ ${FFTW_ROOT}/lib
+ ${FFTW_INCLUDE_DIR}/../lib
+ ENV LIBRARY_PATH
+ ENV LD_LIBRARY_PATH
  /usr/lib 
  /usr/local/lib
  /opt/local/lib
  /sw/lib
- $ENV{FFTW_ROOT}/lib
- ${FFTW_ROOT}/lib
  )
 
 SET(FFTW_LIBRARIES "FFTW_LIBRARIES-NOTFOUND" CACHE STRING "FFTW library")

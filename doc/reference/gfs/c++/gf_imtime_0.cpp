@@ -7,13 +7,12 @@ int main() {
  // --- first a matrix_valued function ------------
 
  // First give information to build the mesh, second to build the target
- auto g1 = gf<imtime, matrix_valued, no_tail>{{beta, Fermion, n_times}, {1, 1}};
+ auto g1 = gf<imtime, matrix_valued>{{beta, Fermion, n_times}, {1, 1}};
 
  // or a more verbose/explicit form ...
  auto g2 = gf<imtime>{gf_mesh<imtime>{beta, Fermion, n_times}, make_shape(1, 1)};
 
- // Filling the gf with something... COMMENT HERE : ok only because of no_tail
- triqs::clef::placeholder<0> tau_;
+ triqs::clef::placeholder_prime<0> tau_;
  g1(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 
  // evaluation at tau=3.2
@@ -22,7 +21,7 @@ int main() {
  // --- a scalar_valued function ------------
 
  // same a before, but without the same of the target space ...
- auto g3 = gf<imtime, scalar_valued, no_tail>{{beta, Fermion, n_times}};
+ auto g3 = gf<imtime, scalar_valued>{{beta, Fermion, n_times}};
 
  g3(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 

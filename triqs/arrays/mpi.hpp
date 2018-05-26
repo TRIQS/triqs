@@ -25,7 +25,7 @@ namespace triqs {
 namespace arrays {
 
  //--------------------------------------------------------------------------------------------------------
- // The lazy ref made by scatter and co. 
+ // The lazy ref made by scatter and co.
  // Differs from the generic one in that it can make a domain of the (target) array
  template <typename Tag, typename A> struct mpi_lazy_array {
   using value_type = typename A::value_type; // needed to construct array from this object (to pass requires on convertibility of types)
@@ -42,7 +42,7 @@ namespace arrays {
   domain_type domain() const {
    auto dims = ref.shape();
    long slow_size = first_dim(ref);
- 
+
    if (std::is_same<Tag, mpi::tag::scatter>::value) {
     mpi::mpi_broadcast(slow_size, c, root);
     dims[0] = mpi::slice_length(slow_size - 1, c.size(), c.rank());
@@ -52,7 +52,7 @@ namespace arrays {
     if (!all) {
      dims[0] = mpi::mpi_reduce(slow_size, c, root); // valid only on root
      if (c.rank() != root) dims[0] = 1;        // valid only on root
-    } 
+    }
     else
      dims[0] = mpi::mpi_all_reduce(slow_size, c, root); // in this case, it is valid on all nodes
    }
@@ -70,8 +70,12 @@ namespace arrays {
   template <typename A> REQUIRES_IS_ARRAY mpi_broadcast(A &a, mpi::communicator c = {}, int root = 0) {
    if (!has_contiguous_data(a)) TRIQS_RUNTIME_ERROR << "Non contiguous view in mpi_broadcast";
    auto sh = a.shape();
+   auto m_pos = a.indexmap().memory_layout().get_memory_positions();
    MPI_Bcast(&sh[0], sh.size(), mpi::mpi_datatype<typename decltype(sh)::value_type>(), root, c.get());
-   if (c.rank() != root) resize_or_check_if_view(a, sh);
+   MPI_Bcast(&m_pos[0], m_pos.size(), mpi::mpi_datatype<typename decltype(m_pos)::value_type>(), root, c.get());
+   if (c.rank() != root) {
+     resize_or_check_if_view(a, sh, memory_layout_t<A::rank>(m_pos));
+   }
    MPI_Bcast(a.data_start(), a.domain().number_of_elements(), mpi::mpi_datatype<typename A::value_type>(), root, c.get());
   }
 
@@ -91,8 +95,8 @@ namespace arrays {
    return {a, c, root, all, nullptr};
   }
 
-#undef REQUIRES_IS_ARRAY  
-#undef REQUIRES_IS_ARRAY2 
+#undef REQUIRES_IS_ARRAY
+#undef REQUIRES_IS_ARRAY2
 
 //------------------------------- Delegation of the assign operator of the array class -------------
 

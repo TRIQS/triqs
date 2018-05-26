@@ -27,15 +27,17 @@ their codes, and are happy to use an older but perhaps more stable version.
 
 To this end, we propose two options to the user:
 
-#. You follow the latest master commits for all applications, and be certain to
-have all the bug fixes and latest functionality, while perhaps having to change
-some API occasionally. Note that we use Continous Integration (jenkins) to ensure 
-that the master always compiles and passes all tests, both
-for the library and for several public (and private) applications.
+#. You follow the master branch in the git repository of TRIQS and all applications.
+   This will guarantee that you are using the latest stable release including essential
+   bug-fixes. Note that new releases might occasionally include changes of the API, which
+   we summarize in a set of release notes.
+   We use continuous integration (`travis <https://travis-ci.org/TRIQS/triqs/branches>`_ and `jenkins <https://triqs.ipht.cnrs.fr/jenkins/view/TRIQS>`_) 
+   to ensure that the master branch always compiles and passes all tests. This is checked
+   for both the TRIQS library and several public (and private) applications.
 
-#. You use a version tag, e.g. version 1.3, for all applications, and have a
-stable version of the code, while not having the latest bug fixes and
-functionality.
+#. You use a version tag, e.g. version 1.4, for TRIQS and all applications.
+   This guarantees complete reproducibility, while you might be missing out on the latest
+   features and bug-fixes.
 
 Prerequisites
 -------------
@@ -43,7 +45,7 @@ Prerequisites
 The TRIQS library relies on a certain number of standard libraries and tools
 described in the :ref:`list of requirements <requirements>`. Please pay
 particular attention to the :ref:`C++ compilers<require_cxx_compilers>` and to
-:ref:`Python and the scientific python tools<python_install>`.  Here are instructions to
+:ref:`Python virtual environments<python_virtualenv>`.  Here are instructions to
 install these necessary libraries on two standard systems:
 
 .. toctree::
@@ -57,49 +59,30 @@ install these necessary libraries on two standard systems:
 Installation steps
 ------------------
 
-#. Download the sources of TRIQS from github into a ``triqs.src`` directory::
+You need to install first Cpp2Py and then TRIQS.
 
-     $ git clone https://github.com/TRIQS/triqs.git triqs.src
+We provide hereafter the build instructions in the form of a documented bash script.
+You can adapt INSTALL_PREFIX, NCORES for your local settings.
+Note that, contrary to previous versions of TRIQS,  
+the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake configuration.
 
-   If you wish to follow Option 2 as described under Philosophy, you should
-   instead download the latest tagged version from the `GitHub releases page 
-   <https://github.com/TRIQS/triqs/releases>`_.
 
-#. Create an empty ``triqs.build`` directory where you will compile the code::
+.. literalinclude:: install.sh
+   :language: bash
 
-     $ mkdir triqs.build && cd triqs.build
 
-#. In the build directory call ``cmake`` specifying where the TRIQS library should be installed::
+Environment setup
+^^^^^^^^^^^^^^^^^^^
 
-     $ cmake -DCMAKE_INSTALL_PREFIX=path_to_install_directory ../triqs.src
+Cpp2Py and TRIQS both provide a small script (`cpp2pyvars.sh` and `triqsvars.sh`)
+to load their respective installation into your :ref:`environment variables <environment_vars>`.
+Please source them with the proper replacement of INSTALL_PREFIX::
 
-   If you omit ``CMAKE_INSTALL_PREFIX``, the default
-   ``path_to_install_directory`` is the subdirectory *INSTALL_DIR* in your build
-   directory. More configuration options are described in the
-   :ref:`cmake options <install_options>`.
+        source INSTALL_PREFIX/share/cpp2pyvars.sh
+        source INSTALL_PREFIX/share/triqsvars.sh
 
-#. Compile the code, run the tests and install the library::
-
-     $ make
-     $ make test
-     $ make install
-
-   .. note:: 
-
-      On multicore machine, the make option -jN (where N is the number of cores)
-      greatly speeds up the compilation, e.g. make -j8 on an 8 core machine.
-
-#. After the installation TRIQS has been installed using the standard UNIX
-   scheme:
-
-   * executables in ``path_to_install_directory/bin``.
-
-   * c++ and python libraries in ``path_to_install_directory/lib``.
-
-   * c++ headers in ``path_to_install_directory/include/triqs``.
- 
-   * shared items (e.g. the documentation) in ``path_to_install_directory/share/triqs``.
-
+To automate this process, please add these two lines to your `~/.bash_profile <https://en.wikipedia.org/wiki/Bash_(Unix_shell)#Startup_scripts>`_
+(or `~/.zprofile <http://zsh.sourceforge.net/FAQ/zshfaq03.html#l19>`_) 
 
 Further reading
 ------------------
@@ -107,5 +90,6 @@ Further reading
    :maxdepth: 1
 
    installation/install_options
+   installation/environment_vars
    installation/python
    installation/clang

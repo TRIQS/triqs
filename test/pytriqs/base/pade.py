@@ -23,8 +23,8 @@
 from numpy import array, arange
 from math import pi
 from cmath import sqrt, log
-from pytriqs.gf.local import GfImFreq, GfReFreq
-from pytriqs.gf.local.descriptors import Function
+from pytriqs.gf import *
+from pytriqs.gf.descriptors import Function
 from pytriqs.utility.comparison_tests import *
 
 beta = 100  # Inverse temperature
@@ -48,7 +48,7 @@ def G(z):
 # Matsubara GF
 gm = GfImFreq(indices = [0], beta = beta, name = "gm")
 gm << Function(G)
-gm.tail.zero()
+gm.tail.reset(1)
 gm.tail[1] = array([[1.0]])
 
 # Analytic continuation of gm

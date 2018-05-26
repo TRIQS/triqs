@@ -3,6 +3,6 @@
 
 #define TRIQS_VERSION "@TRIQS_VERSION@"
 #define TRIQS_RELEASE "@TRIQS_RELEASE@"
-#define TRIQS_GIT_HASH "@GIT_HASH@"
+#define TRIQS_GIT_HASH "@TRIQS_GIT_HASH@"
 
 #endif

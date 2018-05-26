@@ -71,10 +71,10 @@ namespace triqs { namespace utility {
   inline friend time_pt operator+(time_pt const & a, time_pt const & b) {
     bool wrapped = ((Nmax-std::max(a.n,b.n)) < std::min(a.n,b.n));
     if (!wrapped) return time_pt((a.n+b.n)%Nmax, a.beta, true);
-    else return time_pt((a.n+b.n)+1, a.beta, true);
+    else return time_pt(((a.n+b.n)+1)%Nmax, a.beta, true);
   }
   inline friend time_pt operator-(time_pt const & a, time_pt const & b) {
-    uint64_t n = (a.n>=b.n ? a.n-b.n : Nmax-(b.n-a.n));
+    uint64_t n = (a.n>=b.n ? (a.n-b.n)%Nmax : Nmax-(b.n-a.n));
     return time_pt(n, a.beta, true);
   }
 

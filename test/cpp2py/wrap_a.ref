@@ -1,0 +1,27 @@
+ calling m1 1 2
+11.0
+my a is 3
+[0, 1, 2] [0, 2, 4]
+[2, 4, 6, 8]
+[2, 4, 6]
+ I am an A with x= 6
+use_fnt ii 
+5
+use_fnt ii 
+41
+use_fnt iid 
+9
+use_fnt iid 
+45
+{'a': [1, 3, 5], 'b': [2, 3, 5], 'sjkdf': [5, 3, 5]}
+set([1, 3, 4])
+()
+(18,)
+(18, 0.4)
+(18, 0.4, '*hi*')
+27
+6
+7
+ rereading from hdf5   I am an A with x= 6.9
+'cmy_module\n__reduce_reconstructor__Ac\np0\n(I1\nF3.0\ntp1\nRp2\n.'
+ I am an A with x= 3

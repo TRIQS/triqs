@@ -2,6 +2,10 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
 )
 
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/arrays)
+add_cpp2py_module(block_matrix)
 
-triqs_python_extension(block_matrix arrays)
+# 
+install(FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/arrays)
+install(TARGETS block_matrix DESTINATION ${TRIQS_PYTHON_LIB_DEST}/arrays)
+
+

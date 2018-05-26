@@ -62,10 +62,10 @@ namespace arrays {
   /// Copy construction
   vector_view(vector_view const& X) : IMPL_TYPE(X.indexmap(), X.storage()) {}
 
-  vector_view() = delete;
+  vector_view() = default;
 
   // Move
-  vector_view(vector_view&& X) { this->swap_me(X); }
+  vector_view(vector_view&& X) noexcept { this->swap_me(X); }
 
   /// Swap
   friend void swap(vector_view& A, vector_view& B) { A.swap_me(B); }
@@ -131,7 +131,7 @@ namespace arrays {
   vector() {}
 
   // Move
-  explicit vector(vector&& X) { this->swap_me(X); }
+  explicit vector(vector&& X) noexcept { this->swap_me(X); }
 
   ///
   vector(size_t dim) : IMPL_TYPE(indexmap_type(mini_vector<size_t, 1>(dim))) {}
@@ -154,7 +154,7 @@ namespace arrays {
   template <typename T>
   vector(const T& X,
          std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value,
-                            memory_layout<1>> ml = memory_layout<1> {})
+                            memory_layout_t<1>> ml = memory_layout_t<1> {})
      : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
    triqs_arrays_assign_delegation(*this, X);
   }
@@ -167,7 +167,7 @@ namespace arrays {
   // build from a init_list
   template <typename T>
   vector(std::initializer_list<T> const& l)
-     : IMPL_TYPE(indexmap_type(mini_vector<size_t, 1>(l.size()), memory_layout<1>{})) {
+     : IMPL_TYPE(indexmap_type(mini_vector<size_t, 1>(l.size()), memory_layout_t<1>{})) {
    size_t i = 0;
    for (auto const& x : l) (*this)(i++) = x;
   }
@@ -190,6 +190,15 @@ namespace arrays {
    return *this;
   }
 
+  /**
+   * Resizes the vector. Needed for generic code only. NB : all references to the storage is invalidated.
+   * Does not initialize the vector by default: to resize and init, do resize(IND).init()
+   */
+  vector& resize(const indexmaps::cuboid::domain_t<IMPL_TYPE::rank>& l, const memory_layout_t<1>&) {
+   this->resize(l);
+   return *this;
+  }
+
   /// Assignement resizes the vector.  All references to the storage are therefore invalidated.
   vector& operator=(const vector& X) {
    IMPL_TYPE::resize_and_clone_data(X);
@@ -208,7 +217,7 @@ namespace arrays {
   }
 
   /// Move assignment
-  vector& operator=(vector&& X) {
+  vector& operator=(vector&& X) noexcept{
    this->swap_me(X);
    return *this;
   }

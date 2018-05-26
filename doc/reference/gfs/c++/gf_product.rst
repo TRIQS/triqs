@@ -5,16 +5,35 @@
 **[gf<cartesian_product<X,Y,...>>]** Multiple variables 
 ========================================================
 
-.. warning::
-
-   This part of the library is still in alpha, in development.
- 
 Domain & mesh
 ----------------
 
 The domain is a cartesian product of domains.
 
 The mesh is a cartesian product of the corresponding meshes.
+
+Subscript operator
+------------------
+
+In addition to the general :ref:`subscript functionality <gf_subscript>` of
+the Green function, the cartesian product provides the functionality to write
+expressions such as ::
+
+        g[x1, x2, ..]
+
+where the xi are mesh points of the respective mesh-component of the cartesian product.
+
+
+Clef expressions
+----------------
+
+The subscript operator in clef expression assignment has also been extended to
+allow for assignments of the kind ::
+
+        g[_x1, _x2, ..] << g1[y1, _x1] * g2[_x2, y2] * ...
+
+where the _xi are clef placeholders, and yi denote mesh points of the respective meshes
+of the gi.
 
 
 Singularity

@@ -1,4 +1,4 @@
-#  Copyright Olivier Parcollet 2010.
+#  Copyright Olivier Parcollet 2017.
 #  Distributed under the Boost Software License, Version 1.0.
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
@@ -6,32 +6,32 @@
 # This module looks for sphinx documentation tool 
 # and define a function that prepares the Makefile for sphinx-build
 
-FIND_PROGRAM(SPHINXBUILD_EXECUTABLE
- NAMES sphinx-build sphinx-build-2.6
- PATHS $ENV{HOME}/bin /usr/bin /opt/local/bin 
+find_program(SPHINXBUILD_EXECUTABLE
+ NAMES sphinx-build 
+ PATHS /usr/bin /opt/local/bin /usr/local/bin #opt/sphinx-doc/bin
  PATH_SUFFIXES  bin
  )
 
 if (NOT SPHINXBUILD_EXECUTABLE)
- MESSAGE(FATAL_ERROR "I cannot find sphinx to build the triqs documentation")
-else (NOT SPHINXBUILD_EXECUTABLE)
- MESSAGE(STATUS "sphinx-build program found at ${SPHINXBUILD_EXECUTABLE} ")
-endif (NOT SPHINXBUILD_EXECUTABLE)
+ message(FATAL_ERROR "I cannot find sphinx to build the triqs documentation")
+endif()
 
-# a little hack to make the doc being compiled by pytriqs itself !
-# so that autodoc loading works...
-if (TRIQS_BUILD_STATIC)
-  SET(SPHINXBUILD_EXECUTABLE PYTHONPATH=${CMAKE_BINARY_DIR}  ${CMAKE_BINARY_DIR}/bin/pytriqs ${SPHINXBUILD_EXECUTABLE})
-else (TRIQS_BUILD_STATIC)
-  SET(SPHINXBUILD_EXECUTABLE ${CMAKE_BINARY_DIR}/build_pytriqs ${SPHINXBUILD_EXECUTABLE})
-endif (TRIQS_BUILD_STATIC)
+execute_process(
+      COMMAND "${SPHINXBUILD_EXECUTABLE}" --version
+      OUTPUT_VARIABLE SPHINXBUILD_VERSION
+      ERROR_VARIABLE  SPHINXBUILD_VERSION
+    )
+if (SPHINXBUILD_VERSION MATCHES "[Ss]phinx.* ([0-9]+\\.[0-9]+(\\.|b)[0-9]+)")
+  set (SPHINXBUILD_VERSION "${CMAKE_MATCH_1}")
+endif()
 
-# handle the QUIETLY and REQUIRED arguments and set SPHINXBUILD_FOUND to TRUE if 
-# all listed variables are TRUE
+if (SPHINXBUILD_VERSION VERSION_EQUAL 1.6.3)
+ message(FATAL_ERROR "sphinx-build found at ${SPHINXBUILD_EXECUTABLE} but version 1.6.3 has a bug. Upgrade sphinx.")
+else()
+ message(STATUS "sphinx-build program found at ${SPHINXBUILD_EXECUTABLE} with version ${SPHINXBUILD_VERSION}")
+endif ()
 
-INCLUDE(FindPackageHandleStandardArgs)
+include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(SPHINX DEFAULT_MSG SPHINXBUILD_EXECUTABLE)
 
-MARK_AS_ADVANCED( SPHINXBUILD_EXECUTABLE )
-
-
+mark_as_advanced( SPHINXBUILD_EXECUTABLE )

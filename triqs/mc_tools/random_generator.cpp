@@ -20,13 +20,12 @@
  ******************************************************************************/
 #include "random_generator.hpp"
 #include "./MersenneRNG.hpp"
-#include <boost/random.hpp>
 //#include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_real.hpp>
-//#include <boost/random/variate_generator.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/lagged_fibonacci.hpp>
 #include <boost/random/ranlux.hpp>
+#include <boost/random/variate_generator.hpp>
 #include <sstream>
 #include <boost/preprocessor/seq.hpp>
 #include <boost/preprocessor/control/if.hpp>

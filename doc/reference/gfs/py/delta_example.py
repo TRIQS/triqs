@@ -1,6 +1,6 @@
 #FIXME PS: find appropriate place for this!
 
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.plot.mpl_interface import *
 
 g = GfImFreq(beta=100.0, indices=[0])

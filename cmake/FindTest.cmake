@@ -1,4 +1,4 @@
-SET(PythonBuildExecutable ${CMAKE_BINARY_DIR}/build_pytriqs)
+SET(PythonBuildExecutable python)
 
 # runs a c++ test
 # if there is a .ref file a comparison test is done
@@ -13,15 +13,13 @@ macro(add_cpp_test testname)
  # run this test via mpirun if TEST_MPI_NUMPROC is set
  if(TEST_MPI_NUMPROC)
   set(testname_ ${testname}_np${TEST_MPI_NUMPROC})
-  set(testcmd ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${TEST_MPI_NUMPROC} ${testcmd})
+  set(testcmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${TEST_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${testcmd} ${MPIEXEC_POSTFLAGS})
  else(TEST_MPI_NUMPROC)
   set(testname_ ${testname})
  endif(TEST_MPI_NUMPROC)
 
- if (EXISTS ${testref})
-
+ if(EXISTS ${testref})
   file(COPY ${testref} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
   add_test(${testname_}
    ${CMAKE_COMMAND}
    -Dname=${testname_}${ARGN}
@@ -29,12 +27,9 @@ macro(add_cpp_test testname)
    -Dreference=${testref}
    -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
   )
-
- else (EXISTS ${testref})
-
+ else()
   add_test(${testname_}${ARGN} ${testcmd})
-
- endif (EXISTS ${testref})
+ endif()
 
  if(TEST_MPI_NUMPROC)
   set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
@@ -55,15 +50,13 @@ macro(add_python_test testname)
  # run this test via mpirun if TEST_MPI_NUMPROC is set
  if(TEST_MPI_NUMPROC)
   set(testname_ ${testname}_np${TEST_MPI_NUMPROC})
-  set(testcmd ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${TEST_MPI_NUMPROC} ${testcmd})
+  set(testcmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${TEST_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${testcmd} ${MPIEXEC_POSTFLAGS})
  else(TEST_MPI_NUMPROC)
   set(testname_ ${testname})
  endif(TEST_MPI_NUMPROC)
 
- if (EXISTS ${testref})
-
+ if(EXISTS ${testref})
   file(COPY ${testref} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
   add_test(${testname_}
    ${CMAKE_COMMAND}
    -Dname=${testname_}
@@ -72,9 +65,7 @@ macro(add_python_test testname)
    -Dreference=${testref}
    -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
   )
-
- else (EXISTS ${testref})
-
+ else()
   add_test(${testname_}
    ${CMAKE_COMMAND}
    -Dname=${testname_}
@@ -82,8 +73,9 @@ macro(add_python_test testname)
    -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
    -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
   )
+ endif()
 
- endif (EXISTS ${testref})
+ set_property(TEST ${testname_} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:./:$ENV{PYTHONPATH} )
 
  if(TEST_MPI_NUMPROC)
   set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})

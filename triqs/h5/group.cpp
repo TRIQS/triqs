@@ -16,12 +16,20 @@ namespace h5 {
 
  group::group(hid_t id_) : group(h5_object(id_)){}
 
- void group::_write_triqs_hdf5_data_scheme(const char *a) { h5_write_attribute(id, "TRIQS_HDF5_data_scheme", a); }
+ void group::write_hdf5_scheme_as_string(const char *a) { h5_write_attribute(id, "TRIQS_HDF5_data_scheme", a); }
 
- std::string group::read_triqs_hdf5_data_scheme() const {
+ std::string group::read_hdf5_scheme() const {
   std::string s;
   h5_read_attribute(id, "TRIQS_HDF5_data_scheme", s);
   return s;
+ }
+
+ void group::assert_hdf5_scheme_as_string(const char * tag_expected, bool ignore_if_absent) const {
+   auto tag_file     = read_hdf5_scheme();
+   if (ignore_if_absent and tag_file.empty()) return;
+   if (tag_file != tag_expected)
+    TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
+                        << " while I expected " << tag_expected;
  }
 
  std::string group::name() const {
@@ -44,6 +52,7 @@ namespace h5 {
  }
 
  group group::open_group(std::string const &key) const {
+  if (key.empty()) return group{h5_object::from_borrowed(id)}; 
   if (!has_key(key)) TRIQS_RUNTIME_ERROR << "no subgroup " << key << " in the group";
   hid_t sg = H5Gopen2(id, key.c_str(), H5P_DEFAULT);
   if (sg < 0) TRIQS_RUNTIME_ERROR << "Error in opening the subgroup " << key;
@@ -58,12 +67,9 @@ namespace h5 {
   return ds;
  }
 
- /**
-  * \brief Create a subgroup.
-  * \param key  The name of the subgroup
-  * \param delete_if_exists  Unlink the group if it exists
-  */
+ 
  group group::create_group(std::string const &key, bool delete_if_exists) const {
+  if (key.empty()) return group{h5_object::from_borrowed(id)}; 
   unlink_key_if_exists(key);
   hid_t id_g = H5Gcreate2(id, key.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
   if (id_g < 0) TRIQS_RUNTIME_ERROR << "Cannot create the subgroup " << key << " of the group" << name();
@@ -109,6 +115,13 @@ namespace h5 {
   if (object_info.type == H5O_TYPE_GROUP) static_cast<std::vector<std::string> *>(opdata)->push_back(name);
   return 0;
  }
+ herr_t get_group_elements_name_ds_grp(hid_t loc_id, const char *name, const H5L_info_t *info, void *opdata) {
+  H5O_info_t object_info;
+  herr_t err = H5Oget_info_by_name(loc_id, name, &object_info, H5P_DEFAULT);
+  if (err < 0) TRIQS_RUNTIME_ERROR << "get_group_elements_name_grp internal";
+  if ((object_info.type == H5O_TYPE_GROUP) or (object_info.type == H5O_TYPE_DATASET) ) static_cast<std::vector<std::string> *>(opdata)->push_back(name);
+  return 0;
+ }
  }
  //-----------------------------------------------------------------------
 
@@ -125,6 +138,15 @@ namespace h5 {
   if (r != 0) TRIQS_RUNTIME_ERROR << "Iteration over datasets of group " << name() << "failed";
   return ds_name;
  }
+
+ std::vector<std::string> group::get_all_subgroup_dataset_names() const {
+  std::vector<std::string> ds_name;
+  int r = H5Literate(id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, get_group_elements_name_ds_grp, static_cast<void *>(&ds_name));
+  if (r != 0) TRIQS_RUNTIME_ERROR << "Iteration over datasets of group " << name() << "failed";
+  return ds_name;
+ }
+
+
 }
 }
 

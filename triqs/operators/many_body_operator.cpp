@@ -31,15 +31,21 @@ namespace operators {
 // maximum order of the monomial (here quartic operators)
 #define MAX_MONOMIAL_SIZE 4
 
+ struct print_visitor { // TODO C17 use generic lambda + if constexpr
+  std::ostream& os;
+  void operator()(std::string const & x) { os << '\'' << x << '\'';}
+  void operator()(int i) { os << i;}
+ };
+
  std::ostream& operator<<(std::ostream& os, canonical_ops_t const& op) {
-  if (op.dagger) os << "^+";
-  os << "(";
+  print_visitor pr{os};
+  os << 'c' << (op.dagger ? "_dag" : "") << '(';
   int u = 0;
   for (auto const& i : op.indices) {
    if (u++) os << ",";
-   os << i;
+   visit(pr, i);
   }
-  return os << ")";
+  return os << ')';
  }
 
  bool operator<(monomial_t const& m1, monomial_t const& m2) {
@@ -48,7 +54,7 @@ namespace operators {
  }
 
  std::ostream& operator<<(std::ostream& os, monomial_t const& m) {
-  for (auto const& c : m) { os << "C" << c; }
+  for (auto const& c : m) { os << '*' << c; }
   return os;
  }
 
@@ -81,12 +87,6 @@ namespace operators {
  }
 
  // ---------------------------  WRITE -----------------------------------------
-
- void h5_write(h5::group g, std::string const &name, many_body_operator const &op) {
-  h5_write(g, name, op, op.make_fundamental_operator_set());
- }
-
- // ---------------
 
  void h5_write(h5::group g, std::string const &name, many_body_operator const &op, fundamental_operator_set const &fops) {
 
@@ -129,18 +129,11 @@ namespace operators {
 
   // Store fundamental_operator_set as an attribute of the dataset
   h5_write_attribute(dataset, "fundamental_operator_set", fops);
-  h5::h5_write_attribute(dataset, "TRIQS_HDF5_data_scheme", get_triqs_hdf5_data_scheme(op));
+  h5::h5_write_attribute(dataset, "TRIQS_HDF5_data_scheme", get_hdf5_scheme<many_body_operator>());
 
  }
 
  // ---------------------------  READ -----------------------------------------
-
- void h5_read(h5::group g, std::string const &name, many_body_operator &op) {
-  fundamental_operator_set fops;
-  h5_read(g, name, op, fops);
- }
-
- //-----
 
  void h5_read(h5::group g, std::string const &name, many_body_operator &op, fundamental_operator_set &fops) {
 

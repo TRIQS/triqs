@@ -29,39 +29,52 @@ If you wish to use the ipython/jupyter notebook with triqs, you need to install 
 
 
 C++ compiler
----------------------------------
+------------
 
-The default compiler on  Ubuntu 14.04LTS is gcc 4.8.2, which cannot compile TRIQS.
+The default compiler on e.g. Ubuntu 14.04 LTS is gcc 4.8.5, which is too old to compile the latest version of TRIQS.
 
 There are two options:
 
-* Upgrade the gcc to 7.2.0 in Ubuntu 14.04, using the official package, which can be easily done with the commands::
+* Upgrade gcc to version 7 using the Ubuntu Toolchain test builds with the following commands::
 
     sudo apt-get install software-properties-common
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
     sudo apt-get update
     sudo apt-get upgrade
     sudo apt-get install g++-7
+  
+  In a next step, set the C/C++ compiler for your :ref:`environment <environment_vars>`::
 
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
+    export CC=gcc-7
+    export CXX=g++-7
 
-  This procedure installs gcc 7.2.0, and (in the last lines) sets up the default compiler (g++, gcc) to point
-  to the 7.2.0 version. The TRIQS developers uses this routinely on several machines, it does not affect the rest of the distribution.
+  To make this choice permanent, add these two lines to your ``$HOME/.bash_profile``.
 
-* Install clang 3.8, as packaged in Ubuntu. In order to use it for the TRIQS installation you should::
+.. _clang_ubuntu :
+* When developing applications with TRIQS, we recommend to use the clang compiler instead. 
+  As a first step you will need to install the g++-7 package as described in the first set of commands above.
+  In a next step we install version 5.0 of clang and libclang. 
+  For Ubuntu versions newer than 14.04 LTS, please replace `trusty` by the proper 
+  `code-name <https://wiki.ubuntu.com/DevelopmentCodeNames>`_ of your distribution::
+  
+    sudo add-apt-repository 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main' -y
+    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+    sudo apt-get update
+    sudo apt-get install clang-5.0 libclang-5.0-dev python-clang-5.0
     
-    export CC=clang-3.8
-    export CXX=clang++-3.8
+  Finally, we set the C/C++ compiler::
 
-  before installing.
+    export CC=clang-5.0
+    export CXX=clang++-5.0
+
+  To make this choice permanent, add these two lines to your ``$HOME/.bash_profile``.
+
+.. note:: The usage of clang-5.0 to compile TRIQS on Ubuntu 14.04 currently fails due to an imcompatibility with the g++-7 package. This issue is resolved in later Ubuntu versions.
 
 
 Building the documentation
 -------------------------------
 
-* To build the complete documentation, you need to run c++2doc.py, which needs clang, libclang, sphinx and mathjax::
+* To build the TRIQS documentation locally, Cpp2Py requires clang, libclang, Sphinx and MathJax. Please install clang and libclang as described above. To install Sphinx and MathJax run::
 
-    sudo apt-get install clang-3.8 clang-format-3.8 libclang-3.8-dev libclang-common-3.8-dev libclang1-3.8:amd64 python-clang-3.8 python-sphinx libjs-mathjax
-
-
+    sudo apt-get install python-sphinx libjs-mathjax

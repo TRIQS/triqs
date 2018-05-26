@@ -15,12 +15,12 @@ under action of a given operator.
 .. toctree::
    :maxdepth: 2
 
-   [fundamental_operator_set] Fundamental operator set </cpp2doc_generated/triqs/hilbert_space/fundamental_operator_set>
-   [hilbert_space] Full Hilbert space </cpp2doc_generated/triqs/hilbert_space/hilbert_space>
-   [sub_hilbert_space] Hilbert subspace </cpp2doc_generated/triqs/hilbert_space/sub_hilbert_space>
-   [state] Many-body state </cpp2doc_generated/triqs/hilbert_space/state>
-   [imperative_operator] Imperative operator </cpp2doc_generated/triqs/hilbert_space/imperative_operator>
-   [autopartition] Automatic partitioning algorithm </cpp2doc_generated/triqs/hilbert_space/space_partition>
+   [fundamental_operator_set] Fundamental operator set </cpp2rst_generated/triqs/hilbert_space/fundamental_operator_set>
+   [hilbert_space] Full Hilbert space </cpp2rst_generated/triqs/hilbert_space/hilbert_space>
+   [sub_hilbert_space] Hilbert subspace </cpp2rst_generated/triqs/hilbert_space/sub_hilbert_space>
+   [state] Many-body state </cpp2rst_generated/triqs/hilbert_space/state>
+   [imperative_operator] Imperative operator </cpp2rst_generated/triqs/hilbert_space/imperative_operator>
+   [autopartition] Automatic partitioning algorithm </cpp2rst_generated/triqs/hilbert_space/space_partition>
 
 Example of use
 --------------

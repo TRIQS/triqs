@@ -11,6 +11,11 @@
 SET(TRIAL_PATHS
  $ENV{GSL_ROOT}/include
  ${GSL_ROOT}/include
+ ENV CPATH
+ ENV C_INCLUDE_PATH
+ ENV CPLUS_INCLUDE_PATH
+ ENV OBJC_INCLUDE_PATH
+ ENV OBJCPLUS_INCLUDE_PATH
  /usr/include
  /usr/local/include
  /opt/local/include
@@ -19,12 +24,15 @@ SET(TRIAL_PATHS
 FIND_PATH(GSL_INCLUDE_DIR gsl/gsl_math.h ${TRIAL_PATHS} DOC "Include for GSL")
 
 SET(TRIAL_LIBRARY_PATHS
+ $ENV{GSL_ROOT}/lib
+ ${GSL_ROOT}/lib
+ ${GSL_INCLUDE_DIR}/../lib
+ ENV LIBRARY_PATH
+ ENV LD_LIBRARY_PATH
  /usr/lib 
  /usr/local/lib
  /opt/local/lib
  /sw/lib
- $ENV{GSL_ROOT}/lib
- ${GSL_ROOT}/lib
  )
 
 SET(GSL_LIBRARIES "GSL_LIBRARIES-NOTFOUND" CACHE STRING "GSL library")

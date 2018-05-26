@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../impl/tools.hpp"
 
 namespace triqs {
 namespace gfs {
@@ -56,7 +55,7 @@ namespace gfs {
    h5::group gr = fg.open_group(subgroup_name);
    long n;
    double beta;
-   std::string statistic;
+   std::string statistic = " ";
    h5_read(gr, "n_max", n);
    h5_read(gr, "beta", beta);
    h5_read(gr, "statistic", statistic);

@@ -1,5 +1,5 @@
 from math import pi
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 
 gw = GfReFreq(indices = [1], window = (-5, 5), n_points = 101, name = "egBlock")
 gw << SemiCircular(2.0)

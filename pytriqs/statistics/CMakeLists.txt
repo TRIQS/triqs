@@ -3,6 +3,9 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/histogram.py
 )
 
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/statistics)
+#
+add_cpp2py_module(histograms)
 
-triqs_python_extension(histograms statistics)
+install(FILES ${PYTHON_SOURCES}  DESTINATION ${TRIQS_PYTHON_LIB_DEST}/statistics)
+install(TARGETS histograms       DESTINATION ${TRIQS_PYTHON_LIB_DEST}/statistics)
+

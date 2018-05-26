@@ -61,7 +61,9 @@ namespace arrays {
                           << Rank;
      lengths_ = n_uple(l);
     }
-    template <typename... T> domain_t(size_t i0, T... t) : lengths_(i0, t...) {}
+   template <typename... T> explicit domain_t(size_t i0, T... t) : lengths_(i0, t...) {}
+    //template <typename... T> domain_t(size_t i0, size_t i1, T... t) : lengths_(i0, i1, t...) {}
+    //template <int R= Rank> explicit domain_t(std::enable_if_t<R==1, size_t> i0) : lengths_(i0) {}
 
     size_t number_of_elements() const { return lengths_.product_of_elements(); }
     bool operator==(domain_t const &X) const { return this->lengths_ == X.lengths_; }
@@ -145,5 +147,6 @@ namespace arrays {
 
  using matrix_shape_t = indexmaps::cuboid::domain_t<2>;
  using vector_shape_t = indexmaps::cuboid::domain_t<1>;
+ template <int Rank> using array_shape_t = indexmaps::cuboid::domain_t<Rank>;
 }
 }

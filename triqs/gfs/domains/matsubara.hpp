@@ -19,12 +19,19 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../impl/tools.hpp"
-#include <triqs/utility/arithmetic_ops_by_cast.hpp>
-#include <triqs/utility/kronecker.hpp>
+#include "../../utility/arithmetic_ops_by_cast.hpp"
+#include "../../utility/kronecker.hpp"
 
 namespace triqs {
 namespace gfs {
+
+ // a long with no cast, no operation
+ struct _long { 
+  long value;
+  _long(int i):value{i}{}
+  _long(long i):value{i}{}
+ };
+
 
  /** 
   * A matsubara frequency, i.e. 
@@ -38,15 +45,17 @@ namespace gfs {
   *   and work on the index
   **/
  struct matsubara_freq : public utility::arithmetic_ops_by_cast_disable_same_type<matsubara_freq, std::complex<double>> {
-  int n;
+  long n;
   double beta;
   statistic_enum statistic;
   matsubara_freq() : n(0), beta(1), statistic(Fermion) {}
-  matsubara_freq(int n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
+  matsubara_freq(long n_, double beta_, statistic_enum stat_) : n(n_), beta(beta_), statistic(stat_) {}
+  matsubara_freq(_long n_, double beta_, statistic_enum stat_) : n(n_.value), beta(beta_), statistic(stat_) {}
   using cast_t = std::complex<double>;
   operator cast_t() const {
    return {0, M_PI * (2 * n + statistic) / beta};
   }
+  operator _long() const { return {n};}
  };
 
  inline std::ostream &operator<<(std::ostream &out, matsubara_freq const &y) { return out << std::complex<double>(y); }
@@ -63,13 +72,17 @@ namespace gfs {
   return {-(mp.n + (mp.statistic == Fermion ? 1 : 0)), mp.beta, mp.statistic};
  }
 
- template<typename T> bool operator<(matsubara_freq const &x, T const &y) { return (x.n <y);}
- template<typename T> bool operator<(T const &x, matsubara_freq const &y) { return (x <y.n);}
- inline bool operator<(matsubara_freq const &x, matsubara_freq const &y) { return (x.n<y.n);}
+ inline std::complex<double> operator*(matsubara_freq const &x, matsubara_freq const &y) {
+   return std::complex<double>{x} * std::complex<double>{y}; 
+ }
+
+ //template<typename T> bool operator<(matsubara_freq const &x, T const &y) { return (x.n <y);}
+ //template<typename T> bool operator<(T const &x, matsubara_freq const &y) { return (x <y.n);}
+ //inline bool operator<(matsubara_freq const &x, matsubara_freq const &y) { return (x.n<y.n);}
  
- template<typename T> bool operator>(matsubara_freq const &x, T const &y) { return (x.n>y);}
- template<typename T> bool operator>(T const &x, matsubara_freq const &y) { return (x>y.n);}
- inline bool operator>(matsubara_freq const &x, matsubara_freq const &y) { return (x.n>y.n);}
+ //template<typename T> bool operator>(matsubara_freq const &x, T const &y) { return (x.n>y);}
+ //template<typename T> bool operator>(T const &x, matsubara_freq const &y) { return (x>y.n);}
+ //inline bool operator>(matsubara_freq const &x, matsubara_freq const &y) { return (x.n>y.n);}
 
  //---------------------------------------------------------------------------------------------------------
  /// The domain
@@ -97,7 +110,7 @@ namespace gfs {
   friend void h5_read(h5::group fg, std::string subgroup_name, matsubara_domain &d) {
    h5::group gr = fg.open_group(subgroup_name);
    double beta;
-   std::string statistic;
+   std::string statistic = " ";
    h5_read(gr, "beta", beta);
    h5_read(gr, "statistic", statistic);
    d = matsubara_domain(beta, (statistic == "F" ? Fermion : Boson));

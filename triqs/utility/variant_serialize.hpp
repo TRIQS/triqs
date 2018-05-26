@@ -19,8 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "variant.hpp"
-
+#include <triqs/utility/variant.hpp>
 #include <boost/serialization/split_free.hpp>
 
 namespace boost {
@@ -48,13 +47,13 @@ inline void serialize(Archive & ar, triqs::utility::variant<Types...> & v, const
 }
 
 template<typename Archive, typename... Types>
-void save(Archive & ar, triqs::utility::variant<Types...> const& v, const unsigned int version) {
+void save(Archive & ar, std::variant<Types...> const& v, const unsigned int version) {
   ar << v.type_id;
   visit(variant_serialize_saver<Archive>(ar),v);
 }
 
 template<typename Archive, typename... Types>
-void load(Archive & ar, triqs::utility::variant<Types...> & v, const unsigned int version) {
+void load(Archive & ar, std::variant<Types...> & v, const unsigned int version) {
   int new_type_id; ar >> new_type_id;
   if(v.type_id != new_type_id) {
     v.destroy();

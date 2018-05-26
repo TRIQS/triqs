@@ -9,9 +9,9 @@ TEST(Gf, RebinTau) {
  auto gt1 = gf<imtime>{{beta, Fermion, 9}, {1, 1}};
  auto gt2 = gf<imtime>{{beta, Fermion, 10}, {1, 1}};
 
- triqs::clef::placeholder<0> tau_;
- make_gf_view_without_tail(gt1)(tau_) << -0.25 - 0.5 * tau_;
- make_gf_view_without_tail(gt2)(tau_) << -0.25 - 0.5 * (beta - tau_);
+ triqs::clef::placeholder_prime<0> tau_;
+ gt1(tau_) << -0.25 - 0.5 * tau_;
+ gt2(tau_) << -0.25 - 0.5 * (beta - tau_);
 
  auto gt1_new = rebinning_tau(gt1, 3);
  auto gt2_new = rebinning_tau(gt2, 3);
@@ -27,7 +27,7 @@ TEST(Gf, RebinTau) {
  auto rebin = [](gf_const_view<imtime> const& g) { return rebinning_tau(g, 3); };
  auto res = map(rebin, bgf);
 
- EXPECT_EQ(get_block_names(res), (std::vector<std::string>{"up", "dn"}));
+ EXPECT_EQ(res.block_names(), (std::vector<std::string>{"up", "dn"}));
  EXPECT_GF_NEAR(gt1_new, res[0]);
  EXPECT_GF_NEAR(gt2_new, res[1]);
 

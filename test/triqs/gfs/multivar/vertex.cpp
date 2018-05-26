@@ -4,14 +4,14 @@ using namespace triqs::lattice;
 
 using triqs::clef::placeholder;
 // scalar valued gf_vertex
-using gf_vertex_t = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued>;
+using gf_vertex_t        = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued>;
 using gf_vertex_tensor_t = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<3>>;
 
 // -----------------------------------------------------
 
 TEST(Gf, VertexScalar) {
 
- double beta = 10.0;
+ double beta   = 10.0;
  int n_im_freq = 10;
 
  auto m = gf_mesh<imfreq>{beta, Fermion, n_im_freq};
@@ -26,14 +26,10 @@ TEST(Gf, VertexScalar) {
 
  vertex[{0, 0, 0}] = 10;
 
- //vertex(0,0,0) = 20;
- //EXPECT_CLOSE(vertex(0,0,0), 20);
-
  EXPECT_CLOSE((vertex[{1, 6, 3}]),
               (M_PI * (2 * 1 + 1) / 10.0 + 2.3 * M_PI * (2 * 6 + 1) / 10.0 + 3.1 * M_PI * (2 * 3 + 1) / 10.0) * 1_j);
 
- auto v = on_mesh(vertex);
- v(0, 0, 0) *= 2;
+ vertex[{0, 0, 0}] *= 2;
 
  EXPECT_CLOSE(vertex(0, 0, 0), 20);
 
@@ -44,7 +40,7 @@ TEST(Gf, VertexScalar) {
 
 TEST(Gf, VertexTensor) {
 
- double beta = 10.0;
+ double beta   = 10.0;
  int n_im_freq = 10;
 
  auto m = gf_mesh<imfreq>{beta, Fermion, n_im_freq};
@@ -58,4 +54,3 @@ TEST(Gf, VertexTensor) {
  rw_h5(vertex, "vertexT", "v");
 }
 MAKE_MAIN;
-

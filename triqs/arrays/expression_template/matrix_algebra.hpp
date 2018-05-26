@@ -160,15 +160,10 @@ namespace triqs { namespace arrays {
   struct _a_div_matrix {
     template<typename A, typename M> auto operator() (A && a, M && m) DECL_AND_RETURN ( std::forward<A>(a) * inverse(std::forward<M>(m)));
   };
-   //typedef decltype ( std::declval<typename std::remove_reference<A>::type>() * inverse(std::declval<typename std::remove_reference<M>::type>() )) type;
 
+ // FIXME : like array inverse, give explicit name of return type with matrix_expr
  template<typename A, typename M> // anything / matrix ---> anything * inverse(matrix)
- //typename boost::lazy_enable_if< ImmutableMatrix<M>, std::result_of<_a_div_matrix(A,M)__type_of_mult_expr_matrix<A,M> >::type
- //typename std::result_of<_a_div_matrix(A,M)>::type
- //operator/ (A && a, M && m) {return  _a_div_matrix<M>()( std::forward<A>(a), std::forward<M>(m));}
  auto operator/ (A && a, M && m) DECL_AND_RETURN( _a_div_matrix<M>()( std::forward<A>(a), std::forward<M>(m)));
- // -> typename std::enable_if< ImmutableMatrix<M>::value, decltype(std::forward<A>(a) * inverse(std::forward<M>(m)))>::type 
-  //{ return std::forward<A>(a) * inverse(std::forward<M>(m));}
 
 }}//namespace triqs::arrays
 #endif

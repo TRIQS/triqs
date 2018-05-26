@@ -27,6 +27,8 @@ namespace arrays {
 #define C_LAYOUT (triqs::arrays::__mem_layout_c_order())
 #define FORTRAN_LAYOUT (triqs::arrays::__mem_layout_fortran_order())
 
+ using utility::mini_vector;
+
  enum class memory_order_type {
   C,
   Fortran,
@@ -41,7 +43,7 @@ namespace arrays {
   *   012 : C the last index is the fastest
   *   120 : storage (i,j,k) is : index j is slowest, then k, then i
   */
- template <int Rank> class memory_layout {
+ template <int Rank> class memory_layout_t {
 
   memory_order_type order = memory_order_type::C;
   mini_vector<int, Rank> p = utility::no_init_tag{};
@@ -49,28 +51,28 @@ namespace arrays {
   public:
   static const int rank = Rank;
 
-  explicit memory_layout() {
+  explicit memory_layout_t() {
    for (int u = 0; u < Rank; ++u) p[u] = u;
   }
 
-  memory_layout(__mem_layout_fortran_order) {
+  memory_layout_t(__mem_layout_fortran_order) {
    order = memory_order_type::Fortran;
    for (int u = 0; u < Rank; ++u) p[u] = Rank - u - 1;
   }
 
   // Does not compile on gcc 4.8, probably a bug ?
-  //memory_layout(__mem_layout_c_order) : memory_layout() {}
-  memory_layout(__mem_layout_c_order) {
+  //memory_layout_t(__mem_layout_c_order) : memory_layout_t() {}
+  memory_layout_t(__mem_layout_c_order) {
    for (int u = 0; u < Rank; ++u) p[u] = u;
   }
 
   // internal use only : no check , we KNOW the order is not C or Fortran
-  template <typename T> explicit memory_layout(mini_vector<T, Rank> v, bool) : p(std::move(v)) {
+  template <typename T> explicit memory_layout_t(mini_vector<T, Rank> v, bool) : p(std::move(v)) {
    order = memory_order_type::Custom;
   }
 
   // For the user : we find out whether it is C or Fortran
-  template <typename T> explicit memory_layout(mini_vector<T, Rank> v) : p(std::move(v)) {
+  template <typename T> explicit memory_layout_t(mini_vector<T, Rank> v) : p(std::move(v)) {
    bool c = true, f = true;
    for (int u = 0; u < Rank; ++u) {
     c = c && (v[u] == u);
@@ -81,11 +83,11 @@ namespace arrays {
   }
 
   template <typename... INT>
-  explicit memory_layout(int i0, INT... in)
-     : memory_layout(mini_vector<int, sizeof...(INT) + 1>{i0, in...}) {}
+  explicit memory_layout_t(int i0, INT... in)
+     : memory_layout_t(mini_vector<int, sizeof...(INT) + 1>{i0, in...}) {}
 
-  bool operator==(memory_layout const &ml) const { return p == ml.p; }
-  bool operator!=(memory_layout const &ml) const { return !operator==(ml); }
+  bool operator==(memory_layout_t const &ml) const { return p == ml.p; }
+  bool operator!=(memory_layout_t const &ml) const { return !operator==(ml); }
 
   int operator[](int u) const { return p[u]; }
 
@@ -100,32 +102,35 @@ namespace arrays {
 
   mini_vector<int, Rank> get_indices_in_order() const { return p; }
 
-  friend std::ostream &operator<<(std::ostream &out, memory_layout const &s) { return out << s.p; }
+  friend std::ostream &operator<<(std::ostream &out, memory_layout_t const &s) { return out << s.p; }
  };
 
  // ------------------------- functions -------------------------------------
 
- /// Make a memory_layout from the indices
- template <typename... T> memory_layout<sizeof...(T)> make_memory_layout(T... x) { return memory_layout<sizeof...(T)>(x...); }
+ /// Make a memory_layout_t from the indices
+ template <typename... T> memory_layout_t<sizeof...(T)> make_memory_layout(T... x) { return memory_layout_t<sizeof...(T)>(x...); }
 
- /// Make a memory_layout from the strides
- template <int Rank> memory_layout<Rank> memory_layout_from_strides(mini_vector<std::ptrdiff_t, Rank> const &strides) {
+ /// Make a memory_layout_t from the strides
+ template <int Rank> memory_layout_t<Rank> memory_layout_from_strides(mini_vector<std::ptrdiff_t, Rank> const &strides) {
   mini_vector<int, Rank> c; // rely on init to 0 by default of mini_vector
+
   for (int i = 0; i < Rank; ++i)
    for (int j = i + 1; j < Rank; ++j)
-    if (strides[i] > strides[j])
+    if (strides[i] < strides[j])
      c[i]++;
     else
      c[j]++;
   // we computed the map : index -> memory_rank, which is the inverse map, cf mem_layout
-  return memory_layout<Rank>{c};
+
+  //std::cout << " memory_layout_from_strides\n"<< "    strides = "<< strides << "\n    memlayout"<< c <<std::endl;
+  return memory_layout_t<Rank>{c};
  }
 
  /// Apply a permutation to the indices
- template <int R> memory_layout<R> transpose(memory_layout<R> const &ml, mini_vector<int, R> const &perm) {
+ template <int R> memory_layout_t<R> transpose(memory_layout_t<R> const &ml, mini_vector<int, R> const &perm) {
   mini_vector<int, R> res;
   for (int u = 0; u < R; ++u) res[u] = perm[ml[u]];
-  return memory_layout<R>{res};
+  return memory_layout_t<R>{res};
  }
 }
 } // namespace triqs::arrays

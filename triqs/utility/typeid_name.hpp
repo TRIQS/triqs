@@ -33,6 +33,7 @@ std::string get_name(std::type_info const &info);
   std::string typeid_name(T const & A) { return get_name(typeid(A));}
 
  template<typename T>
-  std::string typeid_name() { return get_name(typeid(std::declval<T>()));}
+  std::string typeid_name() { return get_name(typeid(T));}
+  //std::string typeid_name() { return get_name(typeid(std::declval<T>()));}
 
 }}

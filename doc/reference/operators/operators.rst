@@ -80,10 +80,10 @@ Three factory functions can be used to construct nontrivial operators: ::
 
 ``IndexTypes`` is an arbitrarily long sequence of index types, each being ``int`` or ``std::string``.
 
-Creation and annihilation operators obey the canonical anticommutation relation 
+Creation and annihilation operators obey the canonical anticommutation relation
 
 .. math::
-    \hat c^\dagger_{\mathrm{ind}_1} \hat c_{\mathrm{ind}_2} + 
+    \hat c^\dagger_{\mathrm{ind}_1} \hat c_{\mathrm{ind}_2} +
     \hat c_{\mathrm{ind}_2} \hat c^\dagger_{\mathrm{ind}_1} = \delta_{{\mathrm{ind}_1},{\mathrm{ind}_2}},
 
 and the number of particle is defined as
@@ -119,7 +119,7 @@ instance of ``ScalarType``, then the following expressions are valid: ::
 
 The result of any of the defined operations is guaranteed to preserve its normally ordered form.
 
-``many_body_operator_generic`` can be copy-constructed and assigned from another ``many_body_operator_generic`` instantiation 
+``many_body_operator_generic`` can be copy-constructed and assigned from another ``many_body_operator_generic`` instantiation
 with a compatible scalar type. For example, it is possible to copy-construct ``many_body_operator_complex`` from
 ``many_body_operator_real``, but not vice versa.
 
@@ -159,8 +159,27 @@ Free functions
 --------------
 ::
 
-    many_body_operator<ScalarType> dagger(many_body_operator_generic<ScalarType> const& op);
+    many_body_operator_generic<ScalarType> dagger(many_body_operator_generic<ScalarType> const& op);
 Returns the Hermitian conjugate of ``op``.
+
+::
+
+    many_body_operator_generic<ScalarType> real(many_body_operator_generic<ScalarType> const& op);
+Returns a copy of ``op`` with the imaginary parts of all monomial coefficients set to zero.
+
+::
+
+    many_body_operator_generic<ScalarType> imag(many_body_operator_generic<ScalarType> const& op);
+Returns a copy of ``op`` with the real parts of all monomial coefficients set to zero.
+
+::
+
+    template<typename L>
+    many_body_operator_generic<ScalarType> transform(many_body_operator_generic<ScalarType> const& op, Lambda&& L);
+Transforms ``op`` by applying a given functor ``L`` to each monomial.
+The functor must take two arguments convertible from ``monomial_t`` (see next paragraph) and ``ScalarType``
+respectively, and return a new coefficient of the monomial.
+
 
 Iteration over monomials
 ------------------------
@@ -177,7 +196,7 @@ For this purpose ``many_body_operator_generic`` exposes the following part of it
     This structure represents an elementary operator (basis element of the algebra).
     ::
 
-        struct canonical_ops_t { 
+        struct canonical_ops_t {
             bool dagger;       // true = creation, false = annihilation
             indices_t indices; // values of indices
             ...
@@ -217,14 +236,14 @@ Here is an example of use: ::
 The output should be ::
 
     Coefficient: -0.5
-    Monomial: 
-    dagger: 1 index: 0 dagger: 0 index: 0 
+    Monomial:
+    dagger: 1 index: 0 dagger: 0 index: 0
     Coefficient: -0.5
-    Monomial: 
-    dagger: 1 index: 1 dagger: 0 index: 1 
+    Monomial:
+    dagger: 1 index: 1 dagger: 0 index: 1
     Coefficient: 1
-    Monomial: 
-    dagger: 1 index: 0 dagger: 1 index: 1 dagger: 0 index: 1 dagger: 0 index: 0 
+    Monomial:
+    dagger: 1 index: 0 dagger: 1 index: 1 dagger: 0 index: 1 dagger: 0 index: 0
 
 Serialization & HDF5
 --------------------

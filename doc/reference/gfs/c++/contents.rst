@@ -21,6 +21,7 @@ such as Fourier transforms.
 .. toctree::
    :maxdepth: 2
 
+   auto_ref
    gf_and_view
    gf_special
    clef

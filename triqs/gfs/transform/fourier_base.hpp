@@ -20,7 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays/vector.hpp>
-#include "../gf_classes.hpp"
 
 namespace triqs { namespace gfs {
 
@@ -35,31 +34,74 @@ namespace triqs { namespace gfs {
 
  namespace tags { struct fourier{}; }
 
+ /*------------------------------------------------------------------------------------------------------
+  *                                  For lazy transformation
+  *-----------------------------------------------------------------------------------------------------*/
+
+ template <typename Tag, typename G> struct tagged_cview { typename G::const_view_type g; };
+
+ /// FIXME : remove this 
+ template <typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper { gf_const_view<D, Target> g; };
+
+
+
  // -------------------------------------------------------------------
 
  // TO BE REPLACED BY A DIRECT CALL to many_fft in fftw, like for lattice case.
  // The implementation of the Fourier transformation
  // Reduce Matrix case to the scalar case.
- template <typename X, typename Y, typename S>
- void _fourier_impl(gf_view<X, matrix_valued, S> gw, gf_const_view<Y, matrix_valued, S> gt) {
-  if (gt.data().shape().front_pop() != gw.data().shape().front_pop())
+ template <typename X, typename Y>
+ void _fourier_impl(gf_view<X, matrix_valued> gw, gf_const_view<Y, matrix_valued> gt) {
+  if (gt.target_shape() != gw.target_shape())
    TRIQS_RUNTIME_ERROR << "Fourier : matrix size of target mismatch";
-  for (size_t n1 = 0; n1 < gt.data().shape()[1]; n1++)
-   for (size_t n2 = 0; n2 < gt.data().shape()[2]; n2++) {
+  for (size_t n1 = 0; n1 < gt.target_shape()[0]; n1++)
+   for (size_t n2 = 0; n2 < gt.target_shape()[1]; n2++) {
     auto gw_sl = slice_target_to_scalar(gw, n1, n2);
     auto gt_sl = slice_target_to_scalar(gt, n1, n2);
     _fourier_impl(gw_sl, gt_sl);
    }
  }
 
+ // tensor_valued.
+ template <typename X, typename Y> void _fourier_impl(gf_view<X, tensor_valued<3>> gw, gf_const_view<Y, tensor_valued<3>> gt) {
+  if (gt.target_shape() != gw.target_shape())
+   TRIQS_RUNTIME_ERROR << "Fourier : tensor size of target mismatch";
+  for (size_t n1 = 0; n1 < gt.target_shape()[0]; n1++)
+   for (size_t n2 = 0; n2 < gt.target_shape()[1]; n2++) {
+    for (size_t n3 = 0; n3 < gt.target_shape()[2]; n3++) {
+     auto gw_sl = slice_target_to_scalar(gw, n1, n2, n3);
+     auto gt_sl = slice_target_to_scalar(gt, n1, n2, n3);
+     _fourier_impl(gw_sl, gt_sl);
+    }
+   }
+ }
+
+ // tensor_valued.
+ template <typename X, typename Y>
+ void _fourier_impl(gf_view<X, tensor_valued<4>> gw, gf_const_view<Y, tensor_valued<4>> gt) {
+  if (gt.target_shape() != gw.target_shape())
+   TRIQS_RUNTIME_ERROR << "Fourier : tensor size of target mismatch";
+  for (size_t n1 = 0; n1 < gt.target_shape()[0]; n1++)
+   for (size_t n2 = 0; n2 < gt.target_shape()[1]; n2++) {
+    for (size_t n3 = 0; n3 < gt.target_shape()[2]; n3++) {
+     for (size_t n4 = 0; n4 < gt.target_shape()[3]; n4++) {
+      auto gw_sl = slice_target_to_scalar(gw, n1, n2, n3, n4);
+      auto gt_sl = slice_target_to_scalar(gt, n1, n2, n3, n4);
+      _fourier_impl(gw_sl, gt_sl);
+     }
+    }
+   }
+ }
+
+
  // second part of the implementation
- template <typename X, typename Y, typename T, typename S>
- void triqs_gf_view_assign_delegation(gf_view<X, T, S> g, gf_keeper<tags::fourier, Y, T, S> const &L) {
+ template <typename X, typename Y, typename T>
+ void triqs_gf_view_assign_delegation(gf_view<X, T> g, gf_keeper<tags::fourier, Y, T> const &L) {
   _fourier_impl(g, L.g);
   }
 
- template <typename X, typename G, typename T, typename S>
- void triqs_gf_view_assign_delegation(gf_view<X, T, S> g, tagged_cview<tags::fourier, G> const &L) {
+ template <typename X, typename G, typename T>
+ void triqs_gf_view_assign_delegation(gf_view<X, T> g, tagged_cview<tags::fourier, G> const &L) {
   _fourier_impl(g, L.g);
   }
 }}

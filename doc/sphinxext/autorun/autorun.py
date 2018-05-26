@@ -11,7 +11,7 @@ import os
 from subprocess import Popen,PIPE
 
 from docutils import nodes
-from sphinx.util.compat import Directive
+from docutils.parsers.rst import Directive
 from docutils.parsers.rst import directives
 from sphinx.errors import SphinxError
 from pygments import highlight
@@ -58,8 +58,8 @@ class RunBlock(Directive):
         # Get configuration values for the language
         args = config[language].split()
         #input_encoding = config.get(language+'_input_encoding','ascii')
-        input_encoding = 'ascii' 
-        output_encoding = 'ascii' 
+        input_encoding = 'utf8'
+        output_encoding = 'utf8'
         #output_encoding = config.get(language+'_output_encoding','ascii')
         prefix_chars = config.get(language+'_prefix_chars',0)
         show_source = config.get(language+'_show_source',True)

@@ -77,10 +77,10 @@ namespace arrays {
   /// Copy construction
   matrix_view(matrix_view const& X) : IMPL_TYPE(X.indexmap(), X.storage()) {}
 
-  matrix_view() = delete;
+  matrix_view() = default;
 
   // Move
-  matrix_view(matrix_view&& X) { this->swap_me(X); }
+  matrix_view(matrix_view&& X) noexcept { this->swap_me(X); }
 
   /// Swap
   friend void swap(matrix_view& A, matrix_view& B) { A.swap_me(B); }
@@ -141,27 +141,45 @@ namespace arrays {
   using weak_view_type = matrix_view<ValueType, TraversalOrder, true>;
 
   /// Empty matrix.
-  matrix(memory_layout<2> ml = memory_layout<2>{}) : IMPL_TYPE(indexmap_type(ml)) {}
+  matrix(memory_layout_t<2> ml = memory_layout_t<2>{}) : IMPL_TYPE(indexmap_type(ml)) {}
 
   /// Move
-  explicit matrix(matrix&& X) { this->swap_me(X); }
+  explicit matrix(matrix&& X) noexcept { this->swap_me(X); }
 
   ///
-  matrix(size_t dim1, size_t dim2, memory_layout<2> ml = memory_layout<2>{})
+  matrix(size_t dim1, size_t dim2, memory_layout_t<2> ml = memory_layout_t<2>{})
      : IMPL_TYPE(indexmap_type(mini_vector<size_t, 2>(dim1, dim2), ml)) {}
 
   ///
-  matrix(mini_vector<size_t, 2> const& sha, memory_layout<2> ml = memory_layout<2>{}) : IMPL_TYPE(indexmap_type(sha, ml)) {}
+  matrix(mini_vector<size_t, 2> const& sha, memory_layout_t<2> ml = memory_layout_t<2>{}) : IMPL_TYPE(indexmap_type(sha, ml)) {}
 
   /** Makes a true (deep) copy of the data. */
   matrix(const matrix& X) : IMPL_TYPE(X.indexmap(), X.storage().clone()) {}
 
-  /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be :
+  /**
+   * Build a new matrix from X.domain() and fill it with by evaluating X. X can be :
+   *  - another type of matrix, matrix_view, matrix,.... (any <IndexMap, Storage> pair)
+   *  - the memory layout will be as given (ml)
+   *  - a expression : e.g. matrix<int> A = B+ 2*C;
+   */
   template <typename T>
   matrix(const T& X,
-         std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value,
-                            memory_layout<2>> ml = memory_layout<2> {})
+        std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value,
+                           memory_layout_t<2>> ml)
      : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
+   triqs_arrays_assign_delegation(*this, X);
+  }
+
+  /**
+   * Build a new matrix from X.domain() and fill it with by evaluating X. X can be :
+   *  - another type of matrix, matrix_view, matrix,.... (any <IndexMap, Storage> pair)
+   *  - the memory layout will be deduced from X if possible, or default constructed
+   *  - a expression : e.g. matrix<int> A = B+ 2*C;
+   */
+  template <typename T>
+  matrix(const T& X,
+        std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, void*> _unused = nullptr )
+     : IMPL_TYPE(indexmap_type(X.domain(), get_memory_layout<2, T>::invoke(X))) {
    triqs_arrays_assign_delegation(*this, X);
   }
 
@@ -171,7 +189,7 @@ namespace arrays {
 #endif
 
   // build from a init_list
-  template <typename T> matrix(std::initializer_list<std::initializer_list<T>> const& l) : IMPL_TYPE(memory_layout<2>()) {
+  template <typename T> matrix(std::initializer_list<std::initializer_list<T>> const& l) : IMPL_TYPE(memory_layout_t<2>()) {
    size_t i = 0, j = 0;
    int s = -1;
    for (auto const& l1 : l) {
@@ -208,6 +226,15 @@ namespace arrays {
    return *this;
   }
 
+  /**
+   * Resizes the matrix and changes its memory layout. NB : all references to the storage is invalidated.
+   * Does not initialize the matrix by default
+   */
+  matrix& resize(const indexmaps::cuboid::domain_t<IMPL_TYPE::rank>& l, const memory_layout_t<2>& ml) {
+   IMPL_TYPE::resize(l, ml);
+   return *this;
+  }
+
   /// Assignement resizes the matrix.  All references to the storage are therefore invalidated.
   matrix& operator=(const matrix& X) {
    IMPL_TYPE::resize_and_clone_data(X);
@@ -215,7 +242,7 @@ namespace arrays {
   }
 
   /// Move assignment
-  matrix& operator=(matrix&& X) {
+  matrix& operator=(matrix&& X) noexcept {
    this->swap_me(X);
    return *this;
   }

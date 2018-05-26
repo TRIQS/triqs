@@ -27,21 +27,45 @@
 #include<H5Ppublic.h>
 #include<complex>
 
-namespace triqs {
+namespace triqs::h5 {
 
-inline std::string get_triqs_hdf5_data_scheme(bool) { return "bool"; }
-inline std::string get_triqs_hdf5_data_scheme(int) { return "int"; }
-inline std::string get_triqs_hdf5_data_scheme(long) { return "long"; }
-inline std::string get_triqs_hdf5_data_scheme(long long) { return "long long"; }
-inline std::string get_triqs_hdf5_data_scheme(unsigned int) { return "int"; }
-inline std::string get_triqs_hdf5_data_scheme(unsigned long) { return "unsigned long"; }
-inline std::string get_triqs_hdf5_data_scheme(unsigned long long) { return "unsigned long long"; }
-inline std::string get_triqs_hdf5_data_scheme(float) { return "float"; }
-inline std::string get_triqs_hdf5_data_scheme(double) { return "double"; }
-inline std::string get_triqs_hdf5_data_scheme(long double) { return "long double"; }
-inline std::string get_triqs_hdf5_data_scheme(std::complex<double>) { return "complex"; }
+  // a class T has either : 
+  //  1- a static member hdf5_scheme -> std::string (or a constexpr char * ?)
+  //  2- specializes hdf5_scheme_impl
+  // user function is get_hdf5_scheme <T>() in all cases.
+  // A claass which is not default constructible : 
+  //  -- 1 : implement static T h5_read_construct(gr, name) : rebuilt  a new T
+  //  -- 2 : NOT IMPLEMENTED : if we want to make it non intrusive, 
+  //  specialize with a struct similarly to hdf5_scheme_impl
+  // to be implemented if needed.
 
-namespace h5 {
+template<typename T> struct hdf5_scheme_impl {
+  static std::string invoke() { return T::hdf5_scheme(); }
+};
+
+#define AS_STRING(X) AS_STRING2(X)
+#define AS_STRING2(X) #X
+
+#define TRIQS_SPECIALIZE_HDF5_SCHEME2(X,Y) \
+template<> struct hdf5_scheme_impl<X> {   \
+  static std::string invoke() { return AS_STRING(Y);}\
+};
+
+#define TRIQS_SPECIALIZE_HDF5_SCHEME(X) TRIQS_SPECIALIZE_HDF5_SCHEME2(X,X)
+
+TRIQS_SPECIALIZE_HDF5_SCHEME(bool);
+TRIQS_SPECIALIZE_HDF5_SCHEME(int);
+TRIQS_SPECIALIZE_HDF5_SCHEME(long);
+TRIQS_SPECIALIZE_HDF5_SCHEME(long long);
+TRIQS_SPECIALIZE_HDF5_SCHEME(unsigned int);
+TRIQS_SPECIALIZE_HDF5_SCHEME(unsigned long);
+TRIQS_SPECIALIZE_HDF5_SCHEME(unsigned long long);
+TRIQS_SPECIALIZE_HDF5_SCHEME(float);
+TRIQS_SPECIALIZE_HDF5_SCHEME(double);
+TRIQS_SPECIALIZE_HDF5_SCHEME(long double);
+TRIQS_SPECIALIZE_HDF5_SCHEME2(std::complex<double>, complex);
+
+template<typename T> std::string get_hdf5_scheme() { return hdf5_scheme_impl<T>::invoke();}
 
  using utility::mini_vector;
 
@@ -78,11 +102,11 @@ namespace h5 {
 
   h5_object(h5_object const& x) : id(x.id) { xincref(id); } // a new copy, a new ref.
 
-  h5_object(h5_object&& x) : id(x.id) { x.id = 0; } // steal the ref.
+  h5_object(h5_object&& x) noexcept : id(x.id) { x.id = 0; } // steal the ref.
 
   h5_object& operator=(h5_object const& x) { return operator=(h5_object(x)); } //rewriting with the next overload
 
-  h5_object& operator=(h5_object&& x) { //steals the ref, after properly decref its own.
+  h5_object& operator=(h5_object&& x) noexcept { //steals the ref, after properly decref its own.
    xdecref(id);
    id = x.id;
    x.id = 0;
@@ -135,6 +159,5 @@ namespace h5 {
  /// Returns the attribute name of obj, and "" if the attribute does not exist.
  void h5_read_attribute(hid_t id, std::string const& name, std::string&);
 
-}
 }
 

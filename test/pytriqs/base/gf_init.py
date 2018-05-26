@@ -19,7 +19,7 @@
 #
 ################################################################################
 from pytriqs.archive import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 import numpy
 
@@ -44,4 +44,6 @@ g['eg2','eg2'] << iOmega_n + 1.0
 
 assert_gfs_are_close(g, h['g3'])
 
-del h
+print h['g1'], type(h['g1'])
+print g, type(g)
+

@@ -55,17 +55,17 @@ def set_operator_structure(spin_names,orb_names,off_diag):
 
     Returns
     -------
-    op_struct : dict
-                The structure of the operators {block:[inner]}.
+    op_struct : list
+                The structure of the operators [block:[inner], ... ].
 
     """
 
-    op_struct = {}
+    op_struct = []
     if off_diag: # outer blocks are spin blocks
         for sn in spin_names:
-            op_struct[sn] = [on for on in orb_names]
+            op_struct.append([sn, [on for on in orb_names]])
     else: # outer blocks are spin-orbital blocks
         for sn, on in product(spin_names,orb_names):
-            op_struct[sn+'_%s'%on] = [0]
+            op_struct.append([sn+'_%s'%on, [0]])
 
     return op_struct

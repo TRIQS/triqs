@@ -37,11 +37,11 @@ template <typename ML1, typename ML2, typename... Args> void test(ML1 ml1, ML2 m
  cuboid::map<ML2::rank> m(ml2);
  slicer<cuboid::map<ML2::rank>, Args...> S;
  auto m2 = S.invoke(m, x...);
- std::cout << m.get_memory_layout() << std::endl;
- std::cout << m2.get_memory_layout() << std::endl;
+ std::cout << m.memory_layout() << std::endl;
+ std::cout << m2.memory_layout() << std::endl;
 
- if (m2.get_memory_layout() != ml1) {
-  std::cout << "error " << m2.get_memory_layout() << "  " << ml1 << std::endl;
+ if (m2.memory_layout() != ml1) {
+  std::cout << "error " << m2.memory_layout() << "  " << ml1 << std::endl;
   exit(1);
  }
  std::cout << "----------------------" << std::endl;

@@ -21,12 +21,5 @@ TEST(Gf, G_om_nu_nup) {
  EXPECT_CLOSE(res1, res);
  rw_h5(G, "ess_g_om_nu_nup.h5", "g");
 
- // Curry
- // auto g_cur = curry<0>(G);
-
- auto g0 = partial_eval<0>(G, 0);
-
- // No, it is a view...
- //rw_h5(g0);
 }
 MAKE_MAIN;

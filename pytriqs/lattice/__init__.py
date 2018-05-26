@@ -20,4 +20,4 @@
 #
 ################################################################################
 from lattice_tools import *
-__all__ = ['tight_binding','bz_patch','super_lattice', "BrillouinZone"]
+__all__ = ['tight_binding','bz_patch','super_lattice', "BrillouinZone", "BravaisLattice"]

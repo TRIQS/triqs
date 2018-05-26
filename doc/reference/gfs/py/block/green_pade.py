@@ -1,8 +1,8 @@
 import numpy
 from math import pi
 from cmath import sqrt, log
-from pytriqs.gf.local import *
-from pytriqs.gf.local.descriptors import Function
+from pytriqs.gf import *
+from pytriqs.gf.descriptors import Function
 
 beta = 100  # Inverse temperature
 L = 101     # Number of Matsubara frequencies used in the Pade approximation

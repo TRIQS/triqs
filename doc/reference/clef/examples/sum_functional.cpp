@@ -1,0 +1,1 @@
+../../../../test/triqs/clef_examples/sum_functional.cpp

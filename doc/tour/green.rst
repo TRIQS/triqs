@@ -12,7 +12,7 @@ To construct and plot the corresponding 2x2 Green's function:
 
 we first create the corresponding energy
 mesh on the real axis in the energy interval :math:`\omega \in [-2,2]`.
-The Green's function is generated using classes of the ``gf.local`` module by setting up
+The Green's function is generated using classes of the ``gf`` module by setting up
 :math:`\left[\hat{G}^\mathrm{s+d}\right]^{-1}` and inverting it.
 Finally, the obtained bath and impurity densities of states are plotted using the TRIQS function ``oplot``: 
 

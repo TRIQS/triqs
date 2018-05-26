@@ -1,3 +1,6 @@
+branches:
+  except:
+    - jenkins
 
 language: cpp
 sudo: required
@@ -5,19 +8,31 @@ dist: trusty
 
 compiler:
   - gcc
-  - clang
+  - clang # Currently failing due to incompatibility with old-abi instructed gcc-7 stdlibc++
 
 before_install:
+  - sudo add-apt-repository 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main' -y
+  - wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update
-  - sudo apt-get install -y --allow-unauthenticated g++-6 clang-3.9
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
-  - sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-3.9 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-3.9
-  - sudo apt-get install -y libboost-all-dev cmake git libgfortran3 gfortran openmpi-bin openmpi-common openmpi-doc libopenmpi-dev libblas-dev liblapack-dev libfftw3-dev libgmp-dev hdf5-tools libhdf5-serial-dev python-h5py python-dev python-numpy python-scipy python-jinja2 python-virtualenv python-matplotlib python-tornado python-zmq python-mpi4py python-mako clang-format-3.9 libclang-3.9-dev python-clang-3.9 python-sphinx libjs-mathjax valgrind
+  - sudo apt-get install -y --allow-unauthenticated g++-7 clang-5.0
+  - export LIBRARY_PATH=/usr/lib/llvm-5.0/lib:$LIBRARY_PATH
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
+  - sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-5.0 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-5.0
+  - sudo apt-get install -y --allow-unauthenticated libboost-all-dev cmake git libgfortran3 gfortran openmpi-bin openmpi-common openmpi-doc libopenmpi-dev libblas-dev liblapack-dev libfftw3-dev libgmp-dev hdf5-tools libhdf5-serial-dev python-h5py python-dev python-numpy python-scipy python-jinja2 python-virtualenv python-matplotlib python-tornado python-zmq python-mpi4py python-mako clang-format-5.0 libclang-5.0-dev python-clang-5.0 python-sphinx libjs-mathjax valgrind
 
 install: true
 
 script:
-  - mkdir build && cd build && cmake .. -DCMAKE_CXX_COMPILER=/usr/bin/${CXX} -DPYTHON_INTERPRETER=/usr/bin/python && make && make test
-  # Failing with -DBuild_Documentation=ON -DTESTS_C_WITH_VALGRIND=ON
+  # ===== Set up Cpp2Py
+  - git clone https://github.com/triqs/cpp2py
+  - mkdir cpp2py/build && cd cpp2py/build
+  - git checkout master
+  - cmake .. -DCMAKE_CXX_COMPILER=/usr/bin/${CXX} -DPYTHON_INTERPRETER=/usr/bin/python -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/root_install
+  - make -j8 install
+  - cd $TRAVIS_BUILD_DIR
+  - source root_install/share/cpp2pyvars.sh
+  # ===== Set up TRIQS
+  - mkdir build && cd build
+  - cmake .. -DCMAKE_CXX_COMPILER=/usr/bin/${CXX} -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/root_install
+  - make -j8 && make test

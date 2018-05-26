@@ -9,14 +9,18 @@ add_python_test(test_example)
 add_python_test(operator_python_test)
 add_python_test(operator_python2)
 
-# Some basic HDF IO stuff
+# Some basic HDF5 Stuff
+add_python_test(hdf5_bool)
 add_python_test(hdf5_io)
 
 # Greens functions
+add_python_test(gf_imfreq)
+add_python_test(gf_block)
 add_python_test(gf_init)
 add_python_test(gf_base_op)
 add_python_test(gf_fourier)
 add_python_test(gf_slicing)
+add_python_test(g_tau_mul_py)
 
 # a simple dos on square lattice
 add_python_test(dos)
@@ -30,6 +34,9 @@ add_python_test(gf_inplace_112)
 # Bug fix #134
 add_python_test(gf_transpose)
 
+add_python_test(issue460)
+add_python_test(issue437)
+
 # Add evaluator for g
 add_python_test(gf_eval)
 
@@ -41,4 +48,7 @@ add_python_test(block_matrix)
 
 add_python_test(gf_tensor_valued)
 
+# Histograms
 add_python_test(histograms)
+add_python_test(histogram_bcast)
+add_python_test(brillouin_zone)

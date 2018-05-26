@@ -1,15 +1,30 @@
-include_directories( ${CMAKE_SOURCE_DIR} )
 
-SET( link_libs ${LAPACK_LIBS}  ${BOOST_LIBRARY} )
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- list (REMOVE_DUPLICATES link_libs)
-ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-link_libraries( ${link_libs} triqs)
+# TEMPORARY placed here 
+# FIXME : TO BE REMOVED
+# add_all_subdirectories_with_cmakelist : include all subdirectory to current path
+# which contains a CMakeLists.txt file...
+# rationale : automatize inclusion when projects are splitted & merged ....
 
-if (NOT compiler_is_obsolete_gcc)
+macro (add_all_subdirectories_with_cmakelist)
+  SET( print_decal_sub_dir "${print_decal_sub_dir}  ")
+   FILE(GLOB ALLSUBS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} */CMakeLists.txt)
+    foreach ( f ${ALLSUBS})
+       get_filename_component(d ${f} PATH)
+         #MESSAGE(STATUS "${print_decal_sub_dir}## Including subdirectory :  ${d}")    
+	   add_subdirectory(${d})
+	    endforeach ( f ${ALLSUBS}) 
+	   endmacro (add_all_subdirectories_with_cmakelist)
+
+# ---------------------------------------------
+
+# all targets below link to triqs
+link_libraries(triqs)
+
+# ---------------------------------------------
+
 add_subdirectory(triqs)
-endif()
+
 if (PythonSupport)
  add_subdirectory(pytriqs)
+ add_subdirectory(cpp2py)
 endif()
-

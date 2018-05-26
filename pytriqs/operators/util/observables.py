@@ -28,8 +28,8 @@ def N_op(spin_names, orb_names, off_diag = None, map_operator_structure = None):
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'),
                otherwise by ('spin_orbital',0).
-    map_operator_structure : dict 
-                             Mapping of names of GF blocks names from one convention to another, 
+    map_operator_structure : dict
+                             Mapping of names of GF blocks names from one convention to another,
                              e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
                              If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
 
@@ -144,7 +144,7 @@ def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
                              If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
     basis : string, optional
             The basis in which the interaction matrix should be computed.
-            Takes the values 
+            Takes the values
 
             - 'spherical': spherical harmonics,
             - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd sizes of orb_names),
@@ -174,7 +174,7 @@ def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
     if basis == "cubic":
         if not np.isclose(np.mod(l,1),0):
             raise ValueError("L_op: cubic basis is only defined for the integer orbital momenta.")
-        T = spherical_to_cubic(l)
+        T = spherical_to_cubic(int(l))
     if basis == "other" and T is None: raise ValueError("L_op: provide T for other bases.")
     if T is not None: L_matrix = np.einsum("ij,jk,kl",np.conj(T),L_matrix,np.transpose(T))
 
@@ -207,7 +207,7 @@ def L2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
                              If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
     basis : string, optional
             The basis in which the interaction matrix should be computed.
-            Takes the values 
+            Takes the values
 
             - 'spherical': spherical harmonics,
             - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd sizes of orb_names),
@@ -247,7 +247,7 @@ def LS_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
                              If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
     basis : string, optional
             The basis in which the interaction matrix should be computed.
-            Takes the values 
+            Takes the values
 
             - 'spherical': spherical harmonics,
             - 'cubic': cubic harmonics (valid only for the integer orbital momenta, i.e. for odd sizes of orb_names),

@@ -33,7 +33,6 @@ TEST(Gfs, MPI_multivar) {
  g4 = mpi_gather(g2);
  // Test the result ?
 
-
  auto G = make_block_gf({g});
  auto g0 = gf<imfreq, scalar_valued>{{beta, Boson, nbw}};
  auto G2 = make_block_gf({g0});

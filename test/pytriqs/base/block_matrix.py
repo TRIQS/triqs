@@ -34,6 +34,7 @@ assert (A2["up"] == m0*m0).all() and (A2["dn"] == m1*m1).all(), "Multiplication 
 A2 *= A
 assert (A2["up"] == m0*m0*m0).all() and (A2["dn"] == m1*m1*m1).all(), "In-place multiplication failed"
 A2 = 2*A
+print "A ", A
 assert (A2["up"] == 2*m0).all() and (A2["dn"] == 2*m1).all(), "Multiplication by constant failed"
 A2 = A*2
 assert (A2["up"] == 2*m0).all() and (A2["dn"] == 2*m1).all(), "Multiplication by constant failed"

@@ -44,12 +44,10 @@ namespace triqs { namespace det_manip {
   private:
   using f_tr = utility::function_arg_ret_type<FunctionType>;
   static_assert(f_tr::arity == 2, "det_manip : the function must take two arguments !");
-  // Do we REALLY need this ?
-  static_assert(std::is_same<typename f_tr::template decay_arg<0>::type, typename f_tr::template decay_arg<1>::type>::value,
-                "det_manip : the two arguments must of the function must have the same type");
 
   public:
-  using xy_type = typename f_tr::template decay_arg<0>::type;
+  using x_type = typename f_tr::template decay_arg<0>::type;
+  using y_type = typename f_tr::template decay_arg<1>::type;
   using value_type = typename f_tr::result_type;
   // options the det could be kept in a long double to minimize overflow
   //using det_type = std14::conditional_t<std::is_same<value_type, double>::value, long double, std::complex<long double>>;
@@ -60,6 +58,7 @@ namespace triqs { namespace det_manip {
   using vector_type = arrays::vector<value_type>;
   using matrix_type = arrays::matrix<value_type>;
   using matrix_view_type = arrays::matrix_view<value_type>;
+  using matrix_const_view_type = arrays::matrix_const_view<value_type>;
 
   protected: // the data
   using int_type = std::ptrdiff_t;
@@ -73,7 +72,8 @@ namespace triqs { namespace det_manip {
     enum {NoTry, Insert, Remove, ChangeCol, ChangeRow, Insert2 = 10, Remove2 = 11, Refill = 20}
     last_try = NoTry; // keep in memory the last operation not completed
     std::vector<size_t> row_num, col_num;
-    std::vector<xy_type> x_values, y_values;
+    std::vector<x_type> x_values; 
+    std::vector<y_type> y_values;
     int sign = 1;
     matrix_type mat_inv;
     uint64_t n_opts =0; // count the number of operation
@@ -137,7 +137,8 @@ namespace triqs { namespace det_manip {
    private:
     // temporary work data, not saved, serialized, etc....
     struct work_data_type1 {
-     xy_type x, y;
+     x_type x;
+     y_type y;
      // MB = A^(-1)*B,
      // MC = C*A^(-1)
      vector_type MB, MC, B, C;
@@ -148,7 +149,8 @@ namespace triqs { namespace det_manip {
     };
 
     struct work_data_type2 {
-     xy_type x[2], y[2];
+     x_type x[2];
+     y_type y[2];
      // MB = A^(-1)*B,
      // MC = C*A^(-1)
      matrix_type MB, MC, B, C, ksi;
@@ -158,7 +160,8 @@ namespace triqs { namespace det_manip {
     };
 
     struct work_data_type_refill {
-     std::vector<xy_type> x_values, y_values;
+     std::vector<x_type> x_values;
+     std::vector<y_type> y_values;
      matrix_type M;
      void reserve(size_t s) {
       x_values.reserve(s);
@@ -277,10 +280,40 @@ namespace triqs { namespace det_manip {
     size_t size() const { return N;}
 
     /// Returns the i-th values of x
-    xy_type const & get_x(size_t i) const { return x_values[row_num[i]];}
+    x_type const & get_x(size_t i) const { return x_values[row_num[i]];}
 
     /// Returns the j-th values of y
-    xy_type const & get_y(size_t j) const { return y_values[col_num[j]];}
+    y_type const & get_y(size_t j) const { return y_values[col_num[j]];}
+
+    /// Returns a vector with all x_values. Warning : this is slow, since it creates a new copy, and reorders the lines
+    std::vector<x_type> get_x() const {
+      std::vector<x_type> res;
+      res.reserve(N);
+      for(int i : range(N)) res.emplace_back(x_values[row_num[i]]);
+      return res;
+    }
+
+    /// Returns a vector with all y_values. Warning : this is slow, since it creates a new copy, and reorders the cols
+    std::vector<y_type> get_y() const {
+      std::vector<y_type> res;
+      res.reserve(N);
+      for(int i : range(N)) res.emplace_back(y_values[col_num[i]]);
+      return res;
+    }
+
+    /**
+     * Advanced: Returns the vector of x_values using the INTERNAL STORAGE ORDER,
+     * which differs by some permutation from the one given by the user.
+     * Useful for some performance-critical loops. 
+     * To be used together with other *_internal_order functions. 
+     */ 
+    std::vector<x_type> const & get_x_internal_order() const { return x_values; }
+
+    /**
+     * Advanced: Returns the vector of y_values using the INTERNAL STORAGE ORDER. 
+     * See doc of get_x_internal_order. 
+     */ 
+    std::vector<y_type> const & get_y_internal_order() const { return y_values; }
 
     /// Returns the function f
     FunctionType const & get_function() const { return f;}
@@ -290,10 +323,10 @@ namespace triqs { namespace det_manip {
 
     /** Returns M^{-1}(i,j) */
     // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
-    value_type inverse_matrix(size_t i,size_t j) const { return mat_inv(col_num[i],row_num[j]);}
+    value_type inverse_matrix(int i, int j) const { return mat_inv(col_num[i],row_num[j]);}
 
     /// Returns the inverse matrix. Warning : this is slow, since it create a new copy, and reorder the lines/cols
-    matrix_view_type inverse_matrix() const {
+    matrix_type inverse_matrix() const {
      matrix_type res(N,N);
      for (size_t i=0; i<N;i++)
       for (size_t j=0; j<N;j++)
@@ -301,8 +334,22 @@ namespace triqs { namespace det_manip {
      return res;
     }
 
+    /**
+     * Advanced: Returns the inverse matrix using the INTERNAL STORAGE ORDER. 
+     * See doc of get_x_internal_order. 
+     */ 
+    value_type inverse_matrix_internal_order(int i, int j) const { return mat_inv(i,j); }
+
+    /**
+     * Advanced: Returns the inverse matrix using the INTERNAL STORAGE ORDER. 
+     * See doc of get_x_internal_order.
+     */ 
+    matrix_const_view_type inverse_matrix_internal_order() const {
+       return mat_inv(range(N),range(N)); 
+    }
+
     /// Rebuild the matrix. Warning : this is slow, since it create a new matrix and re-evaluate the function.
-    matrix_view_type matrix() const {
+    matrix_type matrix() const {
      matrix_type res(N,N);
      for (size_t i=0; i<N;i++)
       for (size_t j=0; j<N;j++)
@@ -341,10 +388,10 @@ namespace triqs { namespace det_manip {
      *
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-    value_type try_insert(size_t i, size_t j, xy_type const & x, xy_type const & y) {
+    value_type try_insert(size_t i, size_t j, x_type const & x, y_type const & y) {
 
      // check input and store it for complete_operation
-     TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
      if (N==Nmax) reserve(2*Nmax);
      last_try = Insert;
      w1.i=i; w1.j=j; w1.x=x; w1.y = y;
@@ -376,7 +423,7 @@ namespace triqs { namespace det_manip {
     value_type try_insert_from_function(size_t i, size_t j, Fx fx, Fy fy, value_type const ksi) {
 
      // check input and store it for complete_operation
-     TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(i<=N);  TRIQS_ASSERT(j<=N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
      if (N==Nmax) reserve(2*Nmax);
      last_try = Insert;
      w1.i=i; w1.j=j;
@@ -455,18 +502,18 @@ namespace triqs { namespace det_manip {
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
 
-    value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, xy_type const & x0_, xy_type const & x1_, xy_type const & y0_, xy_type const & y1_) {
+    value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, x_type const & x0_, x_type const & x1_, y_type const & y0_, y_type const & y1_) {
 
      // first make sure i0<i1 and j0<j1
-     xy_type const& x0((i0 < i1) ? x0_ : x1_);
-     xy_type const& x1((i0 < i1) ? x1_ : x0_);
-     xy_type const& y0((j0 < j1) ? y0_ : y1_);
-     xy_type const& y1((j0 < j1) ? y1_ : y0_);
+     x_type const& x0((i0 < i1) ? x0_ : x1_);
+     x_type const& x1((i0 < i1) ? x1_ : x0_);
+     y_type const& y0((j0 < j1) ? y0_ : y1_);
+     y_type const& y1((j0 < j1) ? y1_ : y0_);
      if (i0 > i1) std::swap(i0, i1);
      if (j0 > j1) std::swap(j0, j1);
 
      // check input and store it for complete_operation
-     TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);TRIQS_ASSERT(i0<=N);  TRIQS_ASSERT(j0<=N); TRIQS_ASSERT(i0>=0); TRIQS_ASSERT(j0>=0);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);TRIQS_ASSERT(i0<=N);  TRIQS_ASSERT(j0<=N); TRIQS_ASSERT(i0>=0); TRIQS_ASSERT(j0>=0);
      TRIQS_ASSERT(i1<=N+1);  TRIQS_ASSERT(j1<=N+1); TRIQS_ASSERT(i1>=0); TRIQS_ASSERT(j1>=0);
 
      if (N >= Nmax-1) reserve(2*Nmax);
@@ -569,7 +616,7 @@ namespace triqs { namespace det_manip {
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
     value_type try_remove(size_t i, size_t j){
-     TRIQS_ASSERT(i<N);  TRIQS_ASSERT(j<N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(i<N);  TRIQS_ASSERT(j<N); TRIQS_ASSERT(i>=0); TRIQS_ASSERT(j>=0);
      w1.i = i; w1.j = j; last_try = Remove;
      w1.jreal = col_num[w1.j];
      w1.ireal = row_num[w1.i];
@@ -639,7 +686,7 @@ namespace triqs { namespace det_manip {
      if (i0 > i1) std::swap(i0, i1);
      if (j0 > j1) std::swap(j0, j1);
 
-     TRIQS_ASSERT(N>=2); TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(N>=2); TRIQS_ASSERT(i0!=i1); TRIQS_ASSERT(j0!=j1);
      TRIQS_ASSERT(i0<N);  TRIQS_ASSERT(j0<N); TRIQS_ASSERT(i0>=0); TRIQS_ASSERT(j0>=0);
      TRIQS_ASSERT(i1<N+1);  TRIQS_ASSERT(j1<N+1);TRIQS_ASSERT(i1>=0); TRIQS_ASSERT(j1>=0);
 
@@ -734,8 +781,8 @@ namespace triqs { namespace det_manip {
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-    value_type try_change_col(size_t j, xy_type const & y) {
-     TRIQS_ASSERT(j<N); TRIQS_ASSERT(j>=0);
+    value_type try_change_col(size_t j, y_type const & y) {
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(j<N); TRIQS_ASSERT(j>=0);
      w1.j=j;
      last_try = ChangeCol;
      w1.jreal = col_num[j];
@@ -780,8 +827,8 @@ namespace triqs { namespace det_manip {
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-    value_type try_change_row(size_t i, xy_type const & x) {
-     TRIQS_ASSERT(i<N); TRIQS_ASSERT(i>=0);
+    value_type try_change_row(size_t i, x_type const & x) {
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(i<N); TRIQS_ASSERT(i>=0);
      w1.i=i;
      last_try = ChangeRow;
      w1.ireal = row_num[i];
@@ -829,7 +876,7 @@ namespace triqs { namespace det_manip {
      */
     template<typename ArgumentContainer1, typename ArgumentContainer2>
     value_type try_refill(ArgumentContainer1 const& X, ArgumentContainer2 const& Y) {
-     TRIQS_ASSERT(X.size() == Y.size());
+     TRIQS_ASSERT(last_try == NoTry); TRIQS_ASSERT(X.size() == Y.size());
 
      last_try = Refill;
 
@@ -965,11 +1012,8 @@ namespace triqs { namespace det_manip {
       case (Insert2): complete_insert2(); break;
       case (Remove2): complete_remove2(); break;
       case (Refill): complete_refill(); break;
-      case (NoTry):
-       last_try = NoTry;
-       return;
-       break; // double call of complete_operation...
-      default: TRIQS_RUNTIME_ERROR << "Misuing det_manip";
+      case (NoTry): return; break; 
+      default: TRIQS_RUNTIME_ERROR << "Misuing det_manip"; // Never used?
      }
      if (is_sing) { regenerate(); } else {
       det = newdet;
@@ -980,32 +1024,38 @@ namespace triqs { namespace det_manip {
      last_try = NoTry;
     }
 
+    /**
+     *  Reject the previous try_xxx called.
+     *  All try_xxx have to be either accepted (complete_operation) or rejected.
+     */
+    void reject_last_try() { last_try = NoTry; }
+
     // ----------------- A few short cuts   -----------------
 
     public:
 
     /// Insert (try_insert + complete)
-    value_type insert(size_t i, size_t j, xy_type const& x, xy_type const& y) {
+    value_type insert(size_t i, size_t j, x_type const& x, y_type const& y) {
      auto r = try_insert(i, j, x, y);
      complete_operation();
      return r;
     }
 
     /// Insert_at_end (try_insert + complete)
-    value_type insert_at_end(xy_type const& x, xy_type const& y) {
+    value_type insert_at_end(x_type const& x, y_type const& y) {
      return insert(N, N, x, y);
     }
 
     /// Insert2 (try_insert2 + complete)
     value_type insert2(size_t i0, size_t i1, size_t j0, size_t j1,
-                       xy_type const& x0, xy_type const& x1, xy_type const& y0, xy_type const& y1) {
+                       x_type const& x0, x_type const& x1, y_type const& y0, y_type const& y1) {
      auto r = try_insert2(i0, i1, j0, j1, x0, x1, y0, y1);
      complete_operation();
      return r;
     }
 
     /// Insert2_at_end (try_insert2 + complete)
-    value_type insert2_at_end(xy_type const& x0, xy_type const& x1, xy_type const& y0, xy_type const& y1) {
+    value_type insert2_at_end(x_type const& x0, x_type const& x1, y_type const& y0, y_type const& y1) {
      return insert2(N, N+1, N, N+1, x0, x1, y0, y1);
     }
 
@@ -1034,14 +1084,14 @@ namespace triqs { namespace det_manip {
     }
 
     /// change_col (try_change_col + complete)
-    value_type change_col(size_t j, xy_type const& y) {
+    value_type change_col(size_t j, y_type const& y) {
      auto r = try_change_col(j, y);
      complete_operation();
      return r;
     }
 
     /// change_row (try_change_row + complete)
-    value_type change_row(size_t i, xy_type const& x) {
+    value_type change_row(size_t i, x_type const& x) {
      auto r = try_change_row(i, x);
      complete_operation();
      return r;
@@ -1050,7 +1100,7 @@ namespace triqs { namespace det_manip {
     /// Change one row and one col
     // other way of doing change_one_line_and_one_col.
     // Should be faster.
-    void change_one_row_and_one_col(size_t i, size_t j, xy_type const& x, xy_type const& y) {
+    void change_one_row_and_one_col(size_t i, size_t j, x_type const& x, y_type const& y) {
       TRIQS_ASSERT(j<N); TRIQS_ASSERT(j>=0);
       TRIQS_ASSERT(i<N); TRIQS_ASSERT(i>=0);
 

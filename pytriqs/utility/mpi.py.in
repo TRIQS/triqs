@@ -19,7 +19,4 @@
 #
 ################################################################################
 
-if @TRIQS_PYTHON_MPI_USE_MPI4PY@ : 
-    from mpi_mpi4py import *
-else:
-    from mpi_boost import *
+from mpi_mpi4py import *

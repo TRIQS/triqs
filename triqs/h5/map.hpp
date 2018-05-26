@@ -19,38 +19,36 @@
  *
  ******************************************************************************/
 #pragma once
-
 #include "group.hpp"
 #include "string.hpp"
 #include <map>
 
-namespace triqs {
+namespace triqs::h5 {
 
- template <typename T>
- std::string get_triqs_hdf5_data_scheme(std::map<std::string,T> const&) {
-  using triqs::get_triqs_hdf5_data_scheme;
-  return "std::map<string," + get_triqs_hdf5_data_scheme(T()) + ">";
- }
+  template <typename T> struct hdf5_scheme_impl<std::map<std::string, T>> {
+    static std::string invoke() { return "PythonDictWrap"; } //"std::map<string," + hdf5_scheme_impl<T>::invoke() + ">"; }
+  };
 
- namespace h5 {
-
-  template<typename T>
-  void h5_write (group f, std::string const & name, std::map<std::string,T> const & M) {
+ /**
+   * Map of string and T as a subgroup with key_names
+   */
+  template <typename T> void h5_write(group f, std::string const &name, std::map<std::string, T> const &M) {
     auto gr = f.create_group(name);
-    for (auto& pvp : M) h5_write(gr, pvp.first, pvp.second);
+    gr.write_hdf5_scheme(M);
+    for (auto &pvp : M) h5_write(gr, pvp.first, pvp.second);
   }
 
-  template<typename T>
-  void h5_read (group f, std::string const & name, std::map<std::string,T> & M) {
+ /**
+   * Map of string and T
+   */
+  template <typename T> void h5_read(group f, std::string const &name, std::map<std::string, T> &M) {
     auto gr = f.open_group(name);
     M.clear();
-    for (auto const & x: gr.get_all_dataset_names()) {
+    for (auto const &x : gr.get_all_subgroup_dataset_names()) {
       T value;
       h5_read(gr, x, value);
       M.emplace(x, std::move(value));
     }
   }
 
- }
-}
-
+} // namespace triqs::h5

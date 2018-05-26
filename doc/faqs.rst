@@ -17,7 +17,7 @@ For example, to simply save the imaginary part of the self-energy::
 
 A more complicated example where the mesh information is also stored is::
 
-    from pytriqs.gf.local import *
+    from pytriqs.gf import *
     import numpy as np
 
     g = GfImFreq(beta=10, indices = [0,1])

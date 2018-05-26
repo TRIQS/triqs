@@ -98,6 +98,12 @@ namespace utility {
    cyclicArray[1] = x;
   }
  };
-}
-};
+
+ // Modified spherical Bessel function of the first kind i(n,x)
+ inline double mod_cyl_bessel_i(int n, double x) {
+  if(x==0) return (n==0 ? 1.0 : 0);
+  return std::sqrt(M_PI/(2*x)) * boost::math::cyl_bessel_i(n+0.5,x);
+ }
+
+}}
 

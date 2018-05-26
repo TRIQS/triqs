@@ -1,5 +1,5 @@
-from pytriqs.gf.local import *
-from pytriqs.gf.local.descriptors import Omega
+from pytriqs.gf import *
+from pytriqs.gf.descriptors import Omega
 g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "g")
 g << inverse( Omega + 0.5 )
 

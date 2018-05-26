@@ -105,7 +105,7 @@ TEST(hilbert_space, imperative_operator) {
  using triqs::operators::c_dag;
 
  auto H = 3 * c_dag("up",1) * c("up",1) + 2 * c_dag("up",2) * c("up",2) + c("up",1) * c("up",2);
- EXPECT_PRINT("3*C^+(up,1)C(up,1) + 2*C^+(up,2)C(up,2) + -1*C(up,2)C(up,1)", H);
+ EXPECT_PRINT("3*c_dag('up',1)*c('up',1) + 2*c_dag('up',2)*c('up',2) + -1*c('up',2)*c('up',1)", H);
 
  auto opH = imperative_operator<hilbert_space>(H, fop);
 
@@ -120,7 +120,7 @@ TEST(hilbert_space, imperative_operator) {
 TEST(hilbert_space, sub_hilbert_space) {
  using triqs::operators::c_dag;
  auto Cdag = c_dag("up",2);
- EXPECT_PRINT("1*C^+(up,2)", Cdag);
+ EXPECT_PRINT("1*c_dag('up',2)", Cdag);
 
  fundamental_operator_set fop1;
  for (int i=0; i<5; ++i) fop1.insert("up",i);
@@ -186,7 +186,7 @@ TEST(hilbert_space, QuarticOperators) {
  state<hilbert_space,double, false> st1(hs);
  st1(9) = 1.0; // 0110
  check_state(st1, {{9,1.0}}); // old state
- EXPECT_PRINT("1*C^+(down,1)C^+(up,0)C(up,1)C(down,0)", quartic_op); // quartic operator
+ EXPECT_PRINT("1*c_dag('down',1)*c_dag('up',0)*c('up',1)*c('down',0)", quartic_op); // quartic operator
  check_state(imperative_operator<hilbert_space>(quartic_op,fops)(st1), {{6,1.0}}); // new state
 }
 

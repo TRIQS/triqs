@@ -19,7 +19,7 @@
 #
 ################################################################################
 from pytriqs.archive import *
-from pytriqs.gf.local import *
+from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 import numpy as np, copy
 from math import pi
@@ -41,6 +41,12 @@ gb = GfImFreq(indices = [1,2], beta = beta, n_points = 100, name = "b1Block")
 G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
 G << iOmega_n + 2.0
 
+# Arithmetic operations
+G2 = G.copy()
+G2 << G * G + 1.5 * G
+
+#print G['a'].tail.data 
+
 for ii, g in G : 
     N = g.data.shape[0]
     for n in range(N/2) : 
@@ -48,7 +54,7 @@ for ii, g in G :
 
     assert_array_close_to_scalar(g.tail[-1],1)
     assert_array_close_to_scalar(g.tail[0],2)
-    assert max_abs(g.tail.data[2:]) < precision, "oops"
+    assert max_abs(g.tail.data[-g.tail.order_min + 1:]) < precision, "oops"
 
 # inverse:
 G << inverse(G)
@@ -135,4 +141,3 @@ def check_pickle(g):
 
 check_pickle(G)
 check_pickle(gt)
-
