@@ -36,13 +36,13 @@ using value_type = std::complex<double>;
 TEST(blas_lapack, svd) {
 
   auto A = matrix<value_type>{{{1, 1, 1}, {2, 3, 4}, {3, 5, 2}, {4, 2, 5}, {5, 4, 3}}};
-  int M = first_dim(A);
-  int N = second_dim(A);
+  int M  = first_dim(A);
+  int N  = second_dim(A);
 
   auto U  = matrix<value_type>(M, M);
   auto VT = matrix<value_type>(N, N);
 
-  auto S  = vector<double>(std::min(M, N));
+  auto S = vector<double>(std::min(M, N));
 
   lapack::gesvd(A, S, U, VT);
 
@@ -58,14 +58,14 @@ TEST(blas_lapack, gelss) {
   // Cf. http://www.netlib.org/lapack/explore-html/d3/d77/example___d_g_e_l_s__colmajor_8c_source.html
   auto A = matrix<value_type>{{{1, 1, 1}, {2, 3, 4}, {3, 5, 2}, {4, 2, 5}, {5, 4, 3}}};
   auto B = matrix<value_type>{{{-10, -3}, {12, 14}, {14, 12}, {16, 16}, {18, 16}}};
-  
+
   int M    = first_dim(A);
   int N    = second_dim(A);
   int NRHS = second_dim(B);
 
   auto S = vector<double>(std::min(M, N));
 
-  auto gelss_new = gelss_cache<value_type>{A};
+  auto gelss_new    = gelss_cache<value_type>{A};
   auto [x_1, eps_1] = gelss_new(B);
 
   int i;

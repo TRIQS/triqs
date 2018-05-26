@@ -23,16 +23,16 @@
 
 TEST(Array, AssignVectorArray) {
 
- vector<double> V;
- array<double, 1> Va(5);
- for (int i = 0; i < 5; ++i) Va(i) = i + 2;
+  vector<double> V;
+  array<double, 1> Va(5);
+  for (int i = 0; i < 5; ++i) Va(i) = i + 2;
 
- V = Va / 2.0;
- EXPECT_ARRAY_NEAR(V, array<double, 1>{1.0, 1.5, 2.0, 2.5, 3.0});
- EXPECT_ARRAY_NEAR(Va, array<double, 1>{2, 3, 4, 5, 6});
+  V = Va / 2.0;
+  EXPECT_ARRAY_NEAR(V, array<double, 1>{1.0, 1.5, 2.0, 2.5, 3.0});
+  EXPECT_ARRAY_NEAR(Va, array<double, 1>{2, 3, 4, 5, 6});
 
- V = Va;
- EXPECT_ARRAY_NEAR(V, array<double, 1>{2, 3, 4, 5, 6});
- EXPECT_ARRAY_NEAR(Va, array<double, 1>{2, 3, 4, 5, 6});
+  V = Va;
+  EXPECT_ARRAY_NEAR(V, array<double, 1>{2, 3, 4, 5, 6});
+  EXPECT_ARRAY_NEAR(Va, array<double, 1>{2, 3, 4, 5, 6});
 }
 MAKE_MAIN;

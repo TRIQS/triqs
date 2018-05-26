@@ -22,64 +22,59 @@
 #include <triqs/arrays/array.hpp>
 #include <iostream>
 
-using std::cout; using std::endl;
+using std::cout;
+using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
- 
 
- array<long,2> A (2,3);
+  array<long, 2> A(2, 3);
 
- // first print the index generator
- for (array<long,2>::indexmap_type::domain_type::generator it = A.indexmap().domain().begin(); it; ++it)
-  std::cout<<"  "<<*it<<std::endl;
+  // first print the index generator
+  for (array<long, 2>::indexmap_type::domain_type::generator it = A.indexmap().domain().begin(); it; ++it) std::cout << "  " << *it << std::endl;
 
- std::cout<<std::endl;
+  std::cout << std::endl;
 
- for (array<long,2>::indexmap_type::domain_type::gal_generator <permutations::permutation(0,1) >
-   it(A.indexmap().domain()); it; ++it)
-  std::cout<<"  "<<*it<<std::endl;
+  for (array<long, 2>::indexmap_type::domain_type::gal_generator<permutations::permutation(0, 1)> it(A.indexmap().domain()); it; ++it)
+    std::cout << "  " << *it << std::endl;
 
- std::cout<<std::endl;
+  std::cout << std::endl;
 
- for (array<long,2>::indexmap_type::domain_type::gal_generator < permutations::permutation(1,0) >
-   it(A.indexmap().domain()); it; ++it)
-  std::cout<<"  "<<*it<<std::endl;
+  for (array<long, 2>::indexmap_type::domain_type::gal_generator<permutations::permutation(1, 0)> it(A.indexmap().domain()); it; ++it)
+    std::cout << "  " << *it << std::endl;
 
- std::cout<<std::endl;
+  std::cout << std::endl;
 
- std::cout<<" C order : traversal"<<std::endl;
+  std::cout << " C order : traversal" << std::endl;
 
- for (array<long,2>::iterator it = A.begin(); it; ++it) { 
-  *it =it.indices()[0] + 10 *it.indices()[1] ;
-  std::cout<<" i,j = "<<it.indices()<<std::endl;
- }
- std::cout <<"A = i + 10*j"<<A<<std::endl;
+  for (array<long, 2>::iterator it = A.begin(); it; ++it) {
+    *it = it.indices()[0] + 10 * it.indices()[1];
+    std::cout << " i,j = " << it.indices() << std::endl;
+  }
+  std::cout << "A = i + 10*j" << A << std::endl;
 
- int u=0;
- for (array<long,2>::iterator it = A.begin(); it; ++it,++u) { 
-  *it =u;
-  std::cout<<" i,j = "<<it.indices()<<std::endl;
- }
- std::cout <<"A = order of visit "<<A<<std::endl;
+  int u = 0;
+  for (array<long, 2>::iterator it = A.begin(); it; ++it, ++u) {
+    *it = u;
+    std::cout << " i,j = " << it.indices() << std::endl;
+  }
+  std::cout << "A = order of visit " << A << std::endl;
 
+  std::cout << " F order : traversal" << std::endl;
+  array<long, 2, _traversal_fortran> Af(2, 3, FORTRAN_LAYOUT);
 
- std::cout<<" F order : traversal"<<std::endl; 
- array<long,2,_traversal_fortran> Af (2,3, FORTRAN_LAYOUT);
+  for (auto it = Af.begin(); it; ++it) {
+    *it = it.indices()[0] + 10 * it.indices()[1];
+    std::cout << " i,j = " << it.indices() << std::endl;
+  }
+  std::cout << "A = i + 10*j" << Af << std::endl;
 
- for (auto it = Af.begin(); it; ++it) { 
-  *it =it.indices()[0] + 10 *it.indices()[1] ;
-  std::cout<<" i,j = "<<it.indices()<<std::endl;
- }
- std::cout <<"A = i + 10*j"<<Af<<std::endl;
+  u = 0;
+  for (auto it = Af.begin(); it; ++it, ++u) {
+    *it = -u;
+    std::cout << " i,j = " << it.indices() << std::endl;
+  }
+  std::cout << "Af = order of visit " << Af << std::endl;
 
- u=0;
- for (auto it = Af.begin(); it; ++it,++u) { 
-  *it = -u;
-  std::cout<<" i,j = "<<it.indices()<<std::endl;
- }
- std::cout <<"Af = order of visit "<<Af<<std::endl;
-
- return 0;
+  return 0;
 }
-

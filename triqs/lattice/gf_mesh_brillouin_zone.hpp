@@ -23,131 +23,126 @@
 #include "./cluster_mesh.hpp"
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- using lattice::brillouin_zone;
+    using lattice::brillouin_zone;
 
- ///Mesh on Brillouin zone 
- template <> struct gf_mesh<brillouin_zone> : public cluster_mesh { 
+    ///Mesh on Brillouin zone
+    template <> struct gf_mesh<brillouin_zone> : public cluster_mesh {
 
-  brillouin_zone bz;  
+      brillouin_zone bz;
 
-  public:
-  using var_t = brillouin_zone;
+      public:
+      using var_t = brillouin_zone;
 
-  gf_mesh() = default;
+      gf_mesh() = default;
 
-  ///full constructor
-  /**
+      ///full constructor
+      /**
     @param bz_ brillouin zone
     @param periodization_matrix such that $\tilde{a}_i = \sum_j N_{ij} a_j$
 
     Constructs $$\tilde{b}_i = \sum_j N^{-1}_{ji} b_j$$ where $b_j$ reciprocal vectors
    */
-  gf_mesh(brillouin_zone const& bz_, matrix<int> const & periodization_matrix_)
-     : bz(bz_), cluster_mesh(make_unit_matrix<double>(3), periodization_matrix_.transpose()) {
-      matrix<double> N_as_double = periodization_matrix_;
-         matrix<double> Nt_inv = inverse(N_as_double.transpose());
-         units = Nt_inv * bz_.units();
-     }
+      gf_mesh(brillouin_zone const &bz_, matrix<int> const &periodization_matrix_)
+         : bz(bz_), cluster_mesh(make_unit_matrix<double>(3), periodization_matrix_.transpose()) {
+        matrix<double> N_as_double = periodization_matrix_;
+        matrix<double> Nt_inv      = inverse(N_as_double.transpose());
+        units                      = Nt_inv * bz_.units();
+      }
 
-  ///backward compatibility
-  /** constructs simple bz mesh on square lattice with simple boundary conditions
+      ///backward compatibility
+      /** constructs simple bz mesh on square lattice with simple boundary conditions
     */
-  gf_mesh(brillouin_zone const& bz_, int n_l)
-     : bz(bz_), cluster_mesh(matrix<double>{{{2*M_PI/n_l, 0., 0.},{0., bz_.lattice().dim()>=2 ? 2*M_PI/n_l : 2*M_PI, 0.}, {0. ,0., bz_.lattice().dim()>=3 ? 2*M_PI/n_l : 2*M_PI}}}, matrix<int>{{{n_l, 0, 0},{0, bz_.lattice().dim()>=2 ? n_l : 1, 0}, {0 ,0, bz_.lattice().dim()>=3 ? n_l : 1}}}) { }
+      gf_mesh(brillouin_zone const &bz_, int n_l)
+         : bz(bz_),
+           cluster_mesh(matrix<double>{{{2 * M_PI / n_l, 0., 0.},
+                                        {0., bz_.lattice().dim() >= 2 ? 2 * M_PI / n_l : 2 * M_PI, 0.},
+                                        {0., 0., bz_.lattice().dim() >= 3 ? 2 * M_PI / n_l : 2 * M_PI}}},
+                        matrix<int>{{{n_l, 0, 0}, {0, bz_.lattice().dim() >= 2 ? n_l : 1, 0}, {0, 0, bz_.lattice().dim() >= 3 ? n_l : 1}}}) {}
 
+      /// ----------- Model the mesh concept  ----------------------
+      using domain_t    = brillouin_zone;
+      using domain_pt_t = typename domain_t::point_t;
 
-  /// ----------- Model the mesh concept  ----------------------
-  using domain_t = brillouin_zone;
-  using domain_pt_t = typename domain_t::point_t;
+      domain_t const &domain() const { return bz; }
 
-  domain_t const& domain() const { return bz; }
+      // -------------- Evaluation of a function on the grid --------------------------
 
-  // -------------- Evaluation of a function on the grid --------------------------
+      static constexpr int n_pts_in_linear_interpolation = (1 << 3);
 
-  static constexpr int n_pts_in_linear_interpolation = (1<<3);
-  
-  // FIXME : INCORRECT
-  interpol_data_lin_t<index_t, n_pts_in_linear_interpolation> get_interpolation_data(std::array<double,3> const& x) const { 
-   
-    // FIXME pass in the units of the reciprocal lattice
-    // ONLY VALID for SQUARE LATTICE
+      // FIXME : INCORRECT
+      interpol_data_lin_t<index_t, n_pts_in_linear_interpolation> get_interpolation_data(std::array<double, 3> const &x) const {
 
-      // 0----1----2----3----4----5 : dim = 5, point 6 is 2 Pi     
-    std::array<std::array<long, 3>, 2> ia; // compute the neighbouring points ia, ja in all dimensions
-    std::array<std::array<double, 3>, 2> wa; // compute the weight in all dimensions
-    for (int u = 0; u < 3; ++u) {
-      double delta_k = 2*M_PI/this->dims[u];
-      //double a = (x[u] + M_PI)/delta_k; // if the grid would be centered on 0
-      double a = (x[u])/delta_k; // centered at pi
-      long i = std::floor(a); 
-      assert(i>=0); 
-      assert(i<=this->dims[u]);
-      double w = a - i;
-      ia[0][u] = i;
-      ia[1][u] = _modulo(ia[0][u]+1,u);
-      wa[0][u] = 1 - w;
-      wa[1][u] = w;
-      //std::cout  << "-----------"<< std::endl;
-      //TRIQS_PRINT(dims[u]);
-      //TRIQS_PRINT(x[u]);
-      //TRIQS_PRINT(i);
-      //TRIQS_PRINT(a);
-      //TRIQS_PRINT(w);
-    }
-   //    TRIQS_PRINT( wa);
-    interpol_data_lin_t<index_t,n_pts_in_linear_interpolation > result;  
-    int c=0;
-    for (int i=0; i < 2; ++i)
-    for (int j=0; j < 2; ++j)
-    for (int k=0; k < 2; ++k){
-      result.idx[c] = index_t{ia[i][0], ia[j][1], ia[k][2]};
-      result.w[c] = wa[i][0]*wa[j][1]*wa[k][2];
-      c++;
-    }
-   //  TRIQS_PRINT(result.idx);
-   // TRIQS_PRINT(result.w);
-    return result;
-  }
+        // FIXME pass in the units of the reciprocal lattice
+        // ONLY VALID for SQUARE LATTICE
 
-  template <typename F>
-  auto evaluate(F const& f, std::array<double,3> const& x) const {
-   return multivar_eval(f, get_interpolation_data(x));
-  }
+        // 0----1----2----3----4----5 : dim = 5, point 6 is 2 Pi
+        std::array<std::array<long, 3>, 2> ia;   // compute the neighbouring points ia, ja in all dimensions
+        std::array<std::array<double, 3>, 2> wa; // compute the weight in all dimensions
+        for (int u = 0; u < 3; ++u) {
+          double delta_k = 2 * M_PI / this->dims[u];
+          //double a = (x[u] + M_PI)/delta_k; // if the grid would be centered on 0
+          double a = (x[u]) / delta_k; // centered at pi
+          long i   = std::floor(a);
+          assert(i >= 0);
+          assert(i <= this->dims[u]);
+          double w = a - i;
+          ia[0][u] = i;
+          ia[1][u] = _modulo(ia[0][u] + 1, u);
+          wa[0][u] = 1 - w;
+          wa[1][u] = w;
+          //std::cout  << "-----------"<< std::endl;
+          //TRIQS_PRINT(dims[u]);
+          //TRIQS_PRINT(x[u]);
+          //TRIQS_PRINT(i);
+          //TRIQS_PRINT(a);
+          //TRIQS_PRINT(w);
+        }
+        //    TRIQS_PRINT( wa);
+        interpol_data_lin_t<index_t, n_pts_in_linear_interpolation> result;
+        int c = 0;
+        for (int i = 0; i < 2; ++i)
+          for (int j = 0; j < 2; ++j)
+            for (int k = 0; k < 2; ++k) {
+              result.idx[c] = index_t{ia[i][0], ia[j][1], ia[k][2]};
+              result.w[c]   = wa[i][0] * wa[j][1] * wa[k][2];
+              c++;
+            }
+        //  TRIQS_PRINT(result.idx);
+        // TRIQS_PRINT(result.w);
+        return result;
+      }
 
-  // -------------- Evaluation of a function on the grid --------------------------
+      template <typename F> auto evaluate(F const &f, std::array<double, 3> const &x) const { return multivar_eval(f, get_interpolation_data(x)); }
 
-  /// Reduce index modulo to the lattice.
-  index_t index_modulo(index_t const& r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
+      // -------------- Evaluation of a function on the grid --------------------------
 
-  interpol_data_0d_t<index_t> get_interpolation_data(index_t const& x) const { return {index_modulo(x)}; }
+      /// Reduce index modulo to the lattice.
+      index_t index_modulo(index_t const &r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
 
-  template <typename F>
-  auto evaluate(F const& f, index_t const& x) const {
-   auto id = get_interpolation_data(x);
-   return f[id.idx[0]];
-  }
+      interpol_data_0d_t<index_t> get_interpolation_data(index_t const &x) const { return {index_modulo(x)}; }
 
-  // -------------------- print -------------------
+      template <typename F> auto evaluate(F const &f, index_t const &x) const {
+        auto id = get_interpolation_data(x);
+        return f[id.idx[0]];
+      }
 
-  friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-   return sout << "Brillouin Zone Mesh  with linear dimensions " << m.dims <<", Domain: " << m.domain();
-  }
+      // -------------------- print -------------------
 
-  // -------------- HDF5  --------------------------
+      friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
+        return sout << "Brillouin Zone Mesh  with linear dimensions " << m.dims << ", Domain: " << m.domain();
+      }
 
-  static std::string hdf5_scheme() { return "MeshBrillouinZone";}
- 
-  friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
-   h5_write_impl(fg, subgroup_name, m, "MeshBrillouinZone");
-  }
-  
-  friend void h5_read(h5::group fg, std::string const & subgroup_name, gf_mesh &m) {
-   h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
-  }   
+      // -------------- HDF5  --------------------------
 
- };
-}
-}
+      static std::string hdf5_scheme() { return "MeshBrillouinZone"; }
 
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
+        h5_write_impl(fg, subgroup_name, m, "MeshBrillouinZone");
+      }
+
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone"); }
+    };
+  } // namespace gfs
+} // namespace triqs

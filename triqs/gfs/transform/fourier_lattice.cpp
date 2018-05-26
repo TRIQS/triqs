@@ -24,7 +24,7 @@
  *
  * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
  * Copyright (C) 2018- by Simons Foundation
- *               authors : O. Parcollet, N. Wentzell 
+ *               authors : O. Parcollet, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -66,7 +66,7 @@ namespace triqs::gfs {
     long n_others = second_dim(g_in.data());
 
     auto dims = g_in.mesh().get_dimensions();
-    _fourier_base(g_in.data(), g_out.data(), dims.size(), dims.ptr(), n_others,  fftw_backward_forward);
+    _fourier_base(g_in.data(), g_out.data(), dims.size(), dims.ptr(), n_others, fftw_backward_forward);
 
     return std::move(g_out);
   }
@@ -74,13 +74,15 @@ namespace triqs::gfs {
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
   gf_vec_t<cyclic_lattice> _fourier_impl(gf_mesh<cyclic_lattice> const &r_mesh, gf_vec_cvt<brillouin_zone> gk) {
-    auto gr = __impl(FFTW_FORWARD, r_mesh,  gk);
+    auto gr = __impl(FFTW_FORWARD, r_mesh, gk);
     gr.data() /= gk.mesh().size();
     return std::move(gr);
   }
 
   // ------------------------ INVERSE TRANSFORM --------------------------------------------
 
-  gf_vec_t<brillouin_zone> _fourier_impl(gf_mesh<brillouin_zone> const &k_mesh, gf_vec_cvt<cyclic_lattice> gr) { return __impl(FFTW_BACKWARD, k_mesh, gr); }
+  gf_vec_t<brillouin_zone> _fourier_impl(gf_mesh<brillouin_zone> const &k_mesh, gf_vec_cvt<cyclic_lattice> gr) {
+    return __impl(FFTW_BACKWARD, k_mesh, gr);
+  }
 
 } // namespace triqs::gfs

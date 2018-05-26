@@ -23,19 +23,16 @@
 #include <boost/mpi.hpp>
 
 namespace triqs {
-namespace mpi {
+  namespace mpi {
 
- // implement the communicator cast
- inline communicator::operator boost::mpi::communicator() const {
-  return boost::mpi::communicator(_com, boost::mpi::comm_duplicate); 
-  // duplicate policy : cf http://www.boost.org/doc/libs/1_56_0/doc/html/boost/mpi/comm_create_kind.html
- }
+    // implement the communicator cast
+    inline communicator::operator boost::mpi::communicator() const {
+      return boost::mpi::communicator(_com, boost::mpi::comm_duplicate);
+      // duplicate policy : cf http://www.boost.org/doc/libs/1_56_0/doc/html/boost/mpi/comm_create_kind.html
+    }
 
- // reverse : construct (implicit) the communicator from the boost one.
- inline communicator::communicator(boost::mpi::communicator c) :_com(c) {}
+    // reverse : construct (implicit) the communicator from the boost one.
+    inline communicator::communicator(boost::mpi::communicator c) : _com(c) {}
 
- }}//namespace
-
-
-
-
+  } // namespace mpi
+} // namespace triqs

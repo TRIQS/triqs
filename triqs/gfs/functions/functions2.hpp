@@ -53,7 +53,7 @@ namespace triqs::gfs {
   template <template <typename, typename> typename G, typename V, typename T, typename A>
   auto fit_tail(G<V, T> const &g, A const &known_moments, double tail_fraction, int n_tail_max = 30, int expansion_order = -1) {
     return g.mesh().get_tail_fitter(tail_fraction, n_tail_max, expansion_order)(g.mesh(), make_const_view(g.data()), 0, true,
-                                                                                                    make_const_view(known_moments));
+                                                                                make_const_view(known_moments));
   }
 
   // No normalization is a special need.
@@ -62,10 +62,9 @@ namespace triqs::gfs {
   }
 
   // Create a tail object for a given Green function
-  template<int N=0, template <typename, typename> typename G, typename V, typename T>
-  auto make_zero_tail(G<V, T> const &g, int n_moments = 10) {
-    auto sh = rotate_index_view(make_const_view(g.data()),N).shape();
-    sh[0] = n_moments;
+  template <int N = 0, template <typename, typename> typename G, typename V, typename T> auto make_zero_tail(G<V, T> const &g, int n_moments = 10) {
+    auto sh = rotate_index_view(make_const_view(g.data()), N).shape();
+    sh[0]   = n_moments;
     return arrays::zeros<dcomplex>(sh);
   }
 

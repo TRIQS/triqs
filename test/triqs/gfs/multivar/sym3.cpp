@@ -55,4 +55,3 @@ TEST(Gf, EvaluatorWithSymmetry) {
 }
 */
 MAKE_MAIN;
-

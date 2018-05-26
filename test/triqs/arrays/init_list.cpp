@@ -29,19 +29,15 @@ using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
- array<double,1> A = {1,2,3,4};
- std::cout  << A<< A.shape()<<std::endl ;
+  array<double, 1> A = {1, 2, 3, 4};
+  std::cout << A << A.shape() << std::endl;
 
- array<double,2> B = {{1,2},{3,4}, {5,6}};
- std::cout  << B<< B.shape()<<std::endl ;
+  array<double, 2> B = {{1, 2}, {3, 4}, {5, 6}};
+  std::cout << B << B.shape() << std::endl;
 
- triqs::arrays::vector<double> V = {1.1,2.0,3.2,4.0};
- std::cout  << V<< V.shape()<<std::endl ;
+  triqs::arrays::vector<double> V = {1.1, 2.0, 3.2, 4.0};
+  std::cout << V << V.shape() << std::endl;
 
- matrix<double> M = {{1,2},{3,4}, {5,6}};
- std::cout  << M<< M.shape()<<std::endl ;
-
+  matrix<double> M = {{1, 2}, {3, 4}, {5, 6}};
+  std::cout << M << M.shape() << std::endl;
 }
-
-
-

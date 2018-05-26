@@ -44,8 +44,7 @@ namespace triqs::h5 {
    */
   template <typename T1, typename T2> void h5_read(group f, std::string const &name, std::pair<T1, T2> &p) {
     auto gr = f.open_group(name);
-    if (gr.get_all_subgroup_dataset_names().size() != 2)
-      TRIQS_RUNTIME_ERROR << "ERROR in std::pair h5_read: Incompatible number of group elements";
+    if (gr.get_all_subgroup_dataset_names().size() != 2) TRIQS_RUNTIME_ERROR << "ERROR in std::pair h5_read: Incompatible number of group elements";
     h5_read(gr, "0", p.first);
     h5_read(gr, "1", p.second);
   }

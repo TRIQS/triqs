@@ -23,35 +23,38 @@
 #include <sstream>
 
 #ifdef __GNUC__
-#include <cxxabi.h> 
+#include <cxxabi.h>
 #endif
 
 #include <boost/algorithm/string/erase.hpp>
 
-namespace triqs { namespace utility { 
+namespace triqs {
+  namespace utility {
 
- std::string demangle(const char * name) { 
-  std::stringstream fs;
+    std::string demangle(const char *name) {
+      std::stringstream fs;
 #ifdef __GNUC__
-  int status;
-  char * demangled = abi::__cxa_demangle(name, NULL, NULL, &status);
-  if (!status) { 
-   std::string res(demangled);
-   boost::erase_all(res,", boost::tuples::null_type");   
-   boost::erase_all(res,", -1");   
-   boost::erase_all(res,", void");   
-   fs<< res; 
-   free(demangled); 
-  } else fs<< name; 
-  //fs<<abi::__cxa_demangle(typeid(A).name(), 0, 0, &status);
-#else 
-  fs<<name;
+      int status;
+      char *demangled = abi::__cxa_demangle(name, NULL, NULL, &status);
+      if (!status) {
+        std::string res(demangled);
+        boost::erase_all(res, ", boost::tuples::null_type");
+        boost::erase_all(res, ", -1");
+        boost::erase_all(res, ", void");
+        fs << res;
+        free(demangled);
+      } else
+        fs << name;
+        //fs<<abi::__cxa_demangle(typeid(A).name(), 0, 0, &status);
+#else
+      fs << name;
 #endif
-  return fs.str();
- }
+      return fs.str();
+    }
 
- std::string demangle(std::string const & name) { return demangle (name.c_str());}
+    std::string demangle(std::string const &name) { return demangle(name.c_str()); }
 
- std::string get_name(std::type_info const &info) { return demangle(info.name());}
+    std::string get_name(std::type_info const &info) { return demangle(info.name()); }
 
-}}
+  } // namespace utility
+} // namespace triqs

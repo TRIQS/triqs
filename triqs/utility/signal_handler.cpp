@@ -24,48 +24,47 @@
 #include <vector>
 #include <iostream>
 namespace triqs {
-namespace signal_handler {
+  namespace signal_handler {
 
- namespace {
+    namespace {
 
-  std::vector<int> signals_list;
-  bool initialized = false;
+      std::vector<int> signals_list;
+      bool initialized = false;
 
-  void slot(int signal) {
-   std::cerr << "TRIQS : Received signal " << signal << std::endl;
-   signals_list.push_back(signal);
-  }
- }
+      void slot(int signal) {
+        std::cerr << "TRIQS : Received signal " << signal << std::endl;
+        signals_list.push_back(signal);
+      }
+    } // namespace
 
- void start() {
-  if (initialized) return;
-  static struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = slot;
-  sigaction(SIGINT, &action, NULL);
-  sigaction(SIGTERM, &action, NULL);
-  sigaction(SIGXCPU, &action, NULL);
-  sigaction(SIGQUIT, &action, NULL);
-  sigaction(SIGUSR1, &action, NULL);
-  sigaction(SIGUSR2, &action, NULL);
-  sigaction(SIGSTOP, &action, NULL);
-  initialized = true;
- }
+    void start() {
+      if (initialized) return;
+      static struct sigaction action;
+      memset(&action, 0, sizeof(action));
+      action.sa_handler = slot;
+      sigaction(SIGINT, &action, NULL);
+      sigaction(SIGTERM, &action, NULL);
+      sigaction(SIGXCPU, &action, NULL);
+      sigaction(SIGQUIT, &action, NULL);
+      sigaction(SIGUSR1, &action, NULL);
+      sigaction(SIGUSR2, &action, NULL);
+      sigaction(SIGSTOP, &action, NULL);
+      initialized = true;
+    }
 
- void stop() {
-  signals_list.clear();
-  initialized = false;
- }
+    void stop() {
+      signals_list.clear();
+      initialized = false;
+    }
 
- bool received(bool pop_) {
-  //if (!initialized) start();
-  bool r = signals_list.size() != 0;
-  if (r && pop_) pop();
-  return r;
- }
+    bool received(bool pop_) {
+      //if (!initialized) start();
+      bool r = signals_list.size() != 0;
+      if (r && pop_) pop();
+      return r;
+    }
 
- int last() { return signals_list.back(); }
- void pop() { return signals_list.pop_back(); }
-}
-}
-
+    int last() { return signals_list.back(); }
+    void pop() { return signals_list.pop_back(); }
+  } // namespace signal_handler
+} // namespace triqs

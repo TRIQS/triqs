@@ -22,30 +22,30 @@
 #include <triqs/arrays/blas_lapack/dot.hpp>
 
 TEST(Array, Dot) {
- vector<double> a(2), aa(2), c(2);
- a() = 2.0;
- c() = 1;
- vector<int> b(2);
- b() = 3;
- aa = 2 * a;
+  vector<double> a(2), aa(2), c(2);
+  a() = 2.0;
+  c() = 1;
+  vector<int> b(2);
+  b() = 3;
+  aa  = 2 * a;
 
- EXPECT_DOUBLE_EQ(dot(a, b), 12);
- EXPECT_DOUBLE_EQ(dot(aa, a), 16);
- EXPECT_DOUBLE_EQ(dot(aa, b), 24);
- EXPECT_DOUBLE_EQ(dot(aa - a, b), 12);
+  EXPECT_DOUBLE_EQ(dot(a, b), 12);
+  EXPECT_DOUBLE_EQ(dot(aa, a), 16);
+  EXPECT_DOUBLE_EQ(dot(aa, b), 24);
+  EXPECT_DOUBLE_EQ(dot(aa - a, b), 12);
 }
 
 TEST(Array, Dot2) {
 
- /// Added by I. Krivenko, #122
- /// test the complex version, specially with the zdotu workaround on Os X.
- vector<std::complex<double>> v(2);
- v(0) = 0;
- v(1) = {0, 1};
+  /// Added by I. Krivenko, #122
+  /// test the complex version, specially with the zdotu workaround on Os X.
+  vector<std::complex<double>> v(2);
+  v(0) = 0;
+  v(1) = {0, 1};
 
- EXPECT_COMPLEX_NEAR(blas::dot<false>(v, v), -1);
- EXPECT_COMPLEX_NEAR(blas::dot<true>(v, v), 1);
- EXPECT_COMPLEX_NEAR(dot(v, v), -1);
- EXPECT_COMPLEX_NEAR(dotc(v, v), 1);
+  EXPECT_COMPLEX_NEAR(blas::dot<false>(v, v), -1);
+  EXPECT_COMPLEX_NEAR(blas::dot<true>(v, v), 1);
+  EXPECT_COMPLEX_NEAR(dot(v, v), -1);
+  EXPECT_COMPLEX_NEAR(dotc(v, v), 1);
 }
 MAKE_MAIN

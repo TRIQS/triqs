@@ -23,12 +23,12 @@
 #include <sstream>
 
 namespace triqs {
-namespace utility {
+  namespace utility {
 
- /**
+    /**
   * \brief Output stream with a condition
   *
-  * This class behaves pretty much like a standard ostream 
+  * This class behaves pretty much like a standard ostream
   * except that the printing is "under" condition
   *
   * Example:
@@ -36,35 +36,35 @@ namespace utility {
   * debug_stream rep( std::cerr, [&mc](){ return mc.config_id() %100 == 0;}
   *
   */
- class debug_stream {
-  std::ostream* out;
-  std::function<bool()> condition;
+    class debug_stream {
+      std::ostream *out;
+      std::function<bool()> condition;
 
-  public:
-  debug_stream(std::ostream* out_, std::function<bool()> condition) : out(out_), condition(condition) {}
-  debug_stream(std::ostream* out_) : out(out_) {}
+      public:
+      debug_stream(std::ostream *out_, std::function<bool()> condition) : out(out_), condition(condition) {}
+      debug_stream(std::ostream *out_) : out(out_) {}
 
-  template <class T> debug_stream& operator<<(T const& x) {
+      template <class T> debug_stream &operator<<(T const &x) {
 #ifdef TRIQS_DEBUG
-   if (condition && condition()) (*out) << x;
+        if (condition && condition()) (*out) << x;
 #endif
-   return *this;
-  }
+        return *this;
+      }
 
-  // this is the type of std::cout
-  typedef std::basic_ostream<char, std::char_traits<char>> CoutType;
+      // this is the type of std::cout
+      typedef std::basic_ostream<char, std::char_traits<char>> CoutType;
 
-  // this is the function signature of std::endl
-  typedef CoutType& (*StandardEndLine)(CoutType&);
+      // this is the function signature of std::endl
+      typedef CoutType &(*StandardEndLine)(CoutType &);
 
-  // define an operator<< to take in std::endl
-  debug_stream& operator<<(StandardEndLine manip) {
-   // call the function, but we cannot return it's value
+      // define an operator<< to take in std::endl
+      debug_stream &operator<<(StandardEndLine manip) {
+        // call the function, but we cannot return it's value
 #ifdef TRIQS_DEBUG
-   if (condition && condition()) manip(*out);
+        if (condition && condition()) manip(*out);
 #endif
-   return *this;
-  }
- };
-}
-}
+        return *this;
+      }
+    };
+  } // namespace utility
+} // namespace triqs

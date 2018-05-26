@@ -25,30 +25,24 @@
 #include <tuple>
 
 namespace boost {
-namespace serialization {
+  namespace serialization {
 
-template<int pos>
-struct tuple_serialize_impl {
-    template<typename Archive, typename T>
-    void operator()(Archive & ar, T & t) {
-        ar & std::get<std::tuple_size<T>::value-1-pos>(t);
-        tuple_serialize_impl<pos-1>()(ar, t);
+    template <int pos> struct tuple_serialize_impl {
+      template <typename Archive, typename T> void operator()(Archive &ar, T &t) {
+        ar &std::get<std::tuple_size<T>::value - 1 - pos>(t);
+        tuple_serialize_impl<pos - 1>()(ar, t);
+      }
+    };
+
+    template <> struct tuple_serialize_impl<0> {
+      template <typename Archive, typename T> void operator()(Archive &ar, T &t) { ar &std::get<std::tuple_size<T>::value - 1>(t); }
+    };
+
+    template <typename Archive, typename... ElementTypes> void serialize(Archive &ar, std::tuple<ElementTypes...> &t, const unsigned int version) {
+      tuple_serialize_impl<sizeof...(ElementTypes) - 1>()(ar, t);
     }
-};
 
-template<>
-struct tuple_serialize_impl<0> {
-   template<typename Archive, typename T>
-   void operator() (Archive & ar, T & t) { ar & std::get<std::tuple_size<T>::value-1>(t); }
-};
-    
-template<typename Archive, typename... ElementTypes>
-void serialize(Archive & ar, std::tuple<ElementTypes...> & t, const unsigned int version)
-{
-    tuple_serialize_impl<sizeof...(ElementTypes)-1>()(ar, t);
-}
-
-} // namespace serialization
+  } // namespace serialization
 } // namespace boost
 
 #endif

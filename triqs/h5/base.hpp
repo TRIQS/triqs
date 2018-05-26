@@ -29,79 +29,75 @@
 /// not in general code.
 
 namespace triqs {
-namespace h5 {
+  namespace h5 {
 
- using utility::mini_vector;
+    using utility::mini_vector;
 
- // conversion of C type to HDF5 native
- inline hid_t native_type_from_C(char) { return H5T_NATIVE_CHAR; }
- inline hid_t native_type_from_C(signed char) { return H5T_NATIVE_SCHAR; }
- inline hid_t native_type_from_C(unsigned char) { return H5T_NATIVE_UCHAR; }
- inline hid_t native_type_from_C(short) { return H5T_NATIVE_SHORT; }
- inline hid_t native_type_from_C(unsigned short) { return H5T_NATIVE_USHORT; }
- inline hid_t native_type_from_C(int) { return H5T_NATIVE_INT; }
- inline hid_t native_type_from_C(unsigned) { return H5T_NATIVE_UINT; }
- inline hid_t native_type_from_C(long) { return H5T_NATIVE_LONG; }
- inline hid_t native_type_from_C(unsigned long) { return H5T_NATIVE_ULONG; }
- inline hid_t native_type_from_C(long long) { return H5T_NATIVE_LLONG; }
- inline hid_t native_type_from_C(unsigned long long) { return H5T_NATIVE_ULLONG; }
- inline hid_t native_type_from_C(float) { return H5T_NATIVE_FLOAT; }
- inline hid_t native_type_from_C(double) { return H5T_NATIVE_DOUBLE; }
- inline hid_t native_type_from_C(long double) { return H5T_NATIVE_LDOUBLE; }
- inline hid_t native_type_from_C(bool) { return H5T_NATIVE_SCHAR; }
- inline hid_t native_type_from_C(std::string) { return H5T_C_S1; }
- inline hid_t native_type_from_C(std::complex<double>) { return native_type_from_C(double());}
+    // conversion of C type to HDF5 native
+    inline hid_t native_type_from_C(char) { return H5T_NATIVE_CHAR; }
+    inline hid_t native_type_from_C(signed char) { return H5T_NATIVE_SCHAR; }
+    inline hid_t native_type_from_C(unsigned char) { return H5T_NATIVE_UCHAR; }
+    inline hid_t native_type_from_C(short) { return H5T_NATIVE_SHORT; }
+    inline hid_t native_type_from_C(unsigned short) { return H5T_NATIVE_USHORT; }
+    inline hid_t native_type_from_C(int) { return H5T_NATIVE_INT; }
+    inline hid_t native_type_from_C(unsigned) { return H5T_NATIVE_UINT; }
+    inline hid_t native_type_from_C(long) { return H5T_NATIVE_LONG; }
+    inline hid_t native_type_from_C(unsigned long) { return H5T_NATIVE_ULONG; }
+    inline hid_t native_type_from_C(long long) { return H5T_NATIVE_LLONG; }
+    inline hid_t native_type_from_C(unsigned long long) { return H5T_NATIVE_ULLONG; }
+    inline hid_t native_type_from_C(float) { return H5T_NATIVE_FLOAT; }
+    inline hid_t native_type_from_C(double) { return H5T_NATIVE_DOUBLE; }
+    inline hid_t native_type_from_C(long double) { return H5T_NATIVE_LDOUBLE; }
+    inline hid_t native_type_from_C(bool) { return H5T_NATIVE_SCHAR; }
+    inline hid_t native_type_from_C(std::string) { return H5T_C_S1; }
+    inline hid_t native_type_from_C(std::complex<double>) { return native_type_from_C(double()); }
 
- // conversion of C type to HDF5 native
- // We need to discuss which type we use in the file
- // NATIVE is only one possibility, like IEEE, etc...
- inline hid_t h5_type_from_C(char) { return H5T_NATIVE_CHAR; }
- inline hid_t h5_type_from_C(signed char) { return H5T_NATIVE_SCHAR; }
- inline hid_t h5_type_from_C(unsigned char) { return H5T_NATIVE_UCHAR; }
- inline hid_t h5_type_from_C(short) { return H5T_NATIVE_SHORT; }
- inline hid_t h5_type_from_C(unsigned short) { return H5T_NATIVE_USHORT; }
- inline hid_t h5_type_from_C(int) { return H5T_NATIVE_INT; }
- inline hid_t h5_type_from_C(unsigned) { return H5T_NATIVE_UINT; }
- inline hid_t h5_type_from_C(long) { return H5T_NATIVE_LONG; }
- inline hid_t h5_type_from_C(unsigned long) { return H5T_NATIVE_ULONG; }
- inline hid_t h5_type_from_C(long long) { return H5T_NATIVE_LLONG; }
- inline hid_t h5_type_from_C(unsigned long long) { return H5T_NATIVE_ULLONG; }
- inline hid_t h5_type_from_C(float) { return H5T_NATIVE_FLOAT; }
- inline hid_t h5_type_from_C(double) { return H5T_NATIVE_DOUBLE; }
- inline hid_t h5_type_from_C(long double) { return H5T_NATIVE_LDOUBLE; }
- inline hid_t h5_type_from_C(bool) { return H5T_NATIVE_SCHAR; }
- inline hid_t h5_type_from_C(std::string) { return H5T_C_S1; }
- inline hid_t h5_type_from_C(std::complex<double>) { return h5_type_from_C(double());}
+    // conversion of C type to HDF5 native
+    // We need to discuss which type we use in the file
+    // NATIVE is only one possibility, like IEEE, etc...
+    inline hid_t h5_type_from_C(char) { return H5T_NATIVE_CHAR; }
+    inline hid_t h5_type_from_C(signed char) { return H5T_NATIVE_SCHAR; }
+    inline hid_t h5_type_from_C(unsigned char) { return H5T_NATIVE_UCHAR; }
+    inline hid_t h5_type_from_C(short) { return H5T_NATIVE_SHORT; }
+    inline hid_t h5_type_from_C(unsigned short) { return H5T_NATIVE_USHORT; }
+    inline hid_t h5_type_from_C(int) { return H5T_NATIVE_INT; }
+    inline hid_t h5_type_from_C(unsigned) { return H5T_NATIVE_UINT; }
+    inline hid_t h5_type_from_C(long) { return H5T_NATIVE_LONG; }
+    inline hid_t h5_type_from_C(unsigned long) { return H5T_NATIVE_ULONG; }
+    inline hid_t h5_type_from_C(long long) { return H5T_NATIVE_LLONG; }
+    inline hid_t h5_type_from_C(unsigned long long) { return H5T_NATIVE_ULLONG; }
+    inline hid_t h5_type_from_C(float) { return H5T_NATIVE_FLOAT; }
+    inline hid_t h5_type_from_C(double) { return H5T_NATIVE_DOUBLE; }
+    inline hid_t h5_type_from_C(long double) { return H5T_NATIVE_LDOUBLE; }
+    inline hid_t h5_type_from_C(bool) { return H5T_NATIVE_SCHAR; }
+    inline hid_t h5_type_from_C(std::string) { return H5T_C_S1; }
+    inline hid_t h5_type_from_C(std::complex<double>) { return h5_type_from_C(double()); }
 
- //------------- compute the data type (removing complex) ----------------------------------
+    //------------- compute the data type (removing complex) ----------------------------------
 
- // in memory
- template <typename T> hid_t data_type_memory() { return native_type_from_C(T{});}
+    // in memory
+    template <typename T> hid_t data_type_memory() { return native_type_from_C(T{}); }
 
- // the type of data to put in the file_or_group
- template <typename T> hid_t data_type_file() { return h5_type_from_C(T{});}
+    // the type of data to put in the file_or_group
+    template <typename T> hid_t data_type_file() { return h5_type_from_C(T{}); }
 
- //------------- compute void * pointer to the data ----------------------------------
- // 2 cases : complex or not. Complex are reinterpreted according to doc, as N+1 dim double array
- template <typename S>
- std14::enable_if_t<triqs::is_complex<S>::value, std14::conditional_t<std::is_const<S>::value, const void *, void *>>
- get_data_ptr(S *p) {
-  using T = std14::conditional_t<std::is_const<S>::value, const typename S::value_type, typename S::value_type>;
-  return reinterpret_cast<T *>(p);
- }
+    //------------- compute void * pointer to the data ----------------------------------
+    // 2 cases : complex or not. Complex are reinterpreted according to doc, as N+1 dim double array
+    template <typename S>
+    std14::enable_if_t<triqs::is_complex<S>::value, std14::conditional_t<std::is_const<S>::value, const void *, void *>> get_data_ptr(S *p) {
+      using T = std14::conditional_t<std::is_const<S>::value, const typename S::value_type, typename S::value_type>;
+      return reinterpret_cast<T *>(p);
+    }
 
- template <typename S>
- std14::enable_if_t<!triqs::is_complex<S>::value, std14::conditional_t<std::is_const<S>::value, const void *, void *>>
- get_data_ptr(S *p) {
-  return p;
- }
+    template <typename S>
+    std14::enable_if_t<!triqs::is_complex<S>::value, std14::conditional_t<std::is_const<S>::value, const void *, void *>> get_data_ptr(S *p) {
+      return p;
+    }
 
- // dataspace from lengths and strides. Correct for the complex. strides must be >0
- // used in array and vectors
- // implemented in base.cpp
- dataspace dataspace_from_LS(int R, bool is_complex, hsize_t const *Ltot, hsize_t const *L, hsize_t const *S,
-                             hsize_t const *offset = NULL);
+    // dataspace from lengths and strides. Correct for the complex. strides must be >0
+    // used in array and vectors
+    // implemented in base.cpp
+    dataspace dataspace_from_LS(int R, bool is_complex, hsize_t const *Ltot, hsize_t const *L, hsize_t const *S, hsize_t const *offset = NULL);
 
-}
-}
-
+  } // namespace h5
+} // namespace triqs

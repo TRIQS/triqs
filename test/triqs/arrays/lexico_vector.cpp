@@ -31,25 +31,22 @@ using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
- {
-  vector<double> a = { 1,3,2}, b= {2,3,1};
-  assert_is_true  (std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
-  assert_is_false (std::lexicographical_compare(b.begin(), b.end(), a.begin(), a.end()));
-  assert_is_true  (a<b); 
-  assert_is_false (b<a);
- }
- {
-  vector<double> a = {1,3,2}, b= {1,2,10};
-  assert_is_false (std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
-  assert_is_true  (std::lexicographical_compare(b.begin(), b.end(), a.begin(), a.end()));
-  assert_is_true  (b<a); 
-  assert_is_false (a<b);
- }
- {
-  vector<int> a = {1,3,2}, b=a;
-  assert_is_false (a<b); 
- }
+  {
+    vector<double> a = {1, 3, 2}, b = {2, 3, 1};
+    assert_is_true(std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
+    assert_is_false(std::lexicographical_compare(b.begin(), b.end(), a.begin(), a.end()));
+    assert_is_true(a < b);
+    assert_is_false(b < a);
+  }
+  {
+    vector<double> a = {1, 3, 2}, b = {1, 2, 10};
+    assert_is_false(std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
+    assert_is_true(std::lexicographical_compare(b.begin(), b.end(), a.begin(), a.end()));
+    assert_is_true(b < a);
+    assert_is_false(a < b);
+  }
+  {
+    vector<int> a = {1, 3, 2}, b = a;
+    assert_is_false(a < b);
+  }
 }
-
-
-

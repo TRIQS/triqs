@@ -21,36 +21,32 @@
 #include "start.hpp"
 
 // a little non copyable object
-struct A { 
- int i =2;
- A (A const &) = delete;
- A (A &&) = default;
- A & operator=(A const & ) = delete;
- A & operator=(A && ) = default;
- 
- A(int j): i(j) { std::cout << " constructing A : " << i << std::endl;}
-};
+struct A {
+  int i        = 2;
+  A(A const &) = delete;
+  A(A &&)      = default;
+  A &operator=(A const &) = delete;
+  A &operator=(A &&) = default;
 
+  A(int j) : i(j) { std::cout << " constructing A : " << i << std::endl; }
+};
 
 TEST(Array, NonDefaultConstructible) {
 
- array<A,2> a( make_shape(2,2), [](int i, int j) { return i+ 10*j;});
- // array<A,2> a( {2,2}, [](int i, int j) { return i+ 10*j;});
-  array<A,1> a1( make_shape(2), [](int i) { return i;});
+  array<A, 2> a(make_shape(2, 2), [](int i, int j) { return i + 10 * j; });
+  // array<A,2> a( {2,2}, [](int i, int j) { return i+ 10*j;});
+  array<A, 1> a1(make_shape(2), [](int i) { return i; });
 
- for (int i = 0; i < 2; ++i)
-  for (int j = 0; j < 2; ++j) {
-    EXPECT_EQ(a(i,j).i, i+ 10*j);
-  }
+  for (int i = 0; i < 2; ++i)
+    for (int j = 0; j < 2; ++j) { EXPECT_EQ(a(i, j).i, i + 10 * j); }
 
- // copy fails to compile
- //auto b= a;
- 
- // view is ok
- auto b= a();
+  // copy fails to compile
+  //auto b= a;
 
-  //a.resize(3,3); // does not compile 
+  // view is ok
+  auto b = a();
+
+  //a.resize(3,3); // does not compile
 }
 
 MAKE_MAIN;
-

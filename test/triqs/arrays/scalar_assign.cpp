@@ -24,15 +24,15 @@ using namespace triqs::arrays;
 
 TEST(Array, ScalarAssign) {
 
- int N = 5;
- matrix<int> A(N, N, FORTRAN_LAYOUT);
- A() = 2;
- for (int i = 0; i < N; ++i)
-  for (int j = 0; j < N; ++j) EXPECT_EQ(A(i, j), (i == j ? 2 : 0));
+  int N = 5;
+  matrix<int> A(N, N, FORTRAN_LAYOUT);
+  A() = 2;
+  for (int i = 0; i < N; ++i)
+    for (int j = 0; j < N; ++j) EXPECT_EQ(A(i, j), (i == j ? 2 : 0));
 
- array_view<int, 2> AA(A);
- AA = 2;
- for (int i = 0; i < N; ++i)
-  for (int j = 0; j < N; ++j) EXPECT_EQ(A(i, j), 2);
+  array_view<int, 2> AA(A);
+  AA = 2;
+  for (int i = 0; i < N; ++i)
+    for (int j = 0; j < N; ++j) EXPECT_EQ(A(i, j), 2);
 }
 MAKE_MAIN;

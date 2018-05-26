@@ -1,9 +1,9 @@
 #include <triqs/det_manip/det_manip.hpp>
 
 struct fun {
- typedef double result_type;
- typedef double argument_type;
- double operator()(double x, double y) const { return (exp(x) - y * y); }
+  typedef double result_type;
+  typedef double argument_type;
+  double operator()(double x, double y) const { return (exp(x) - y * y); }
 };
 
 int main() {

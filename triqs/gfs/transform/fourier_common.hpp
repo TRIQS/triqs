@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
  * Copyright (C) 2018- by Simons Foundation
- *               authors : O. Parcollet, N. Wentzell 
+ *               authors : O. Parcollet, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -25,11 +25,10 @@
 // include only in cpp implementation
 #include <fftw3.h>
 
-
-namespace triqs::gfs { 
+namespace triqs::gfs {
 
   using namespace triqs::arrays;
- // call to fftw
- void _fourier_base(array_const_view<dcomplex, 2> in, array_view<dcomplex, 2> out, int rank, int* dims, int fftw_count, int fftw_backward_forward);
+  // call to fftw
+  void _fourier_base(array_const_view<dcomplex, 2> in, array_view<dcomplex, 2> out, int rank, int *dims, int fftw_count, int fftw_backward_forward);
 
-}
+} // namespace triqs::gfs

@@ -27,62 +27,81 @@
 #include <triqs/utility/is_complex.hpp>
 
 namespace triqs {
-namespace utility {
+  namespace utility {
 
-// Useful numeric operations which have to be implemented separately for different categories of builtin types.
+    // Useful numeric operations which have to be implemented separately for different categories of builtin types.
 
-//
-// Zero value tests
-//
-template<typename T> // Integral types
-std14::enable_if_t<std::is_integral<T>::value,bool> is_zero(T const& x) {
- return x==0;
-}
+    //
+    // Zero value tests
+    //
+    template <typename T> // Integral types
+    std14::enable_if_t<std::is_integral<T>::value, bool> is_zero(T const &x) {
+      return x == 0;
+    }
 
-template<typename T> // Floating-point types
-std14::enable_if_t<std::is_floating_point<T>::value,bool> is_zero(T const& x, T tolerance = 100*std::numeric_limits<T>::epsilon()) {
- return std::abs(x) < tolerance;
-}
+    template <typename T> // Floating-point types
+    std14::enable_if_t<std::is_floating_point<T>::value, bool> is_zero(T const &x, T tolerance = 100 * std::numeric_limits<T>::epsilon()) {
+      return std::abs(x) < tolerance;
+    }
 
-template<typename value_t> // std::complex
-bool is_zero(std::complex<value_t> const& x, value_t tolerance = 100*std::numeric_limits<value_t>::epsilon()) {
- return is_zero(std::real(x), tolerance) && is_zero(std::imag(x), tolerance);
-}
+    template <typename value_t> // std::complex
+    bool is_zero(std::complex<value_t> const &x, value_t tolerance = 100 * std::numeric_limits<value_t>::epsilon()) {
+      return is_zero(std::real(x), tolerance) && is_zero(std::imag(x), tolerance);
+    }
 
-//
-// Complex conjugate
-//
-template<typename T> // Integral types
-std14::enable_if_t<std::is_integral<T>::value,T> conj(T const& x) { return x; }
+    //
+    // Complex conjugate
+    //
+    template <typename T> // Integral types
+    std14::enable_if_t<std::is_integral<T>::value, T> conj(T const &x) {
+      return x;
+    }
 
-template<typename T> // Floating-point types
-std14::enable_if_t<std::is_floating_point<T>::value,T> conj(T const& x) { return x; }
+    template <typename T> // Floating-point types
+    std14::enable_if_t<std::is_floating_point<T>::value, T> conj(T const &x) {
+      return x;
+    }
 
-template<typename T> // std::complex
-std14::enable_if_t<triqs::is_complex<T>::value,T> conj(T const& x) { return std::conj(x); }
+    template <typename T> // std::complex
+    std14::enable_if_t<triqs::is_complex<T>::value, T> conj(T const &x) {
+      return std::conj(x);
+    }
 
-//
-// Real part
-//
-template<typename T> // Integral types
-std14::enable_if_t<std::is_integral<T>::value,T> real(T const& x) { return x; }
+    //
+    // Real part
+    //
+    template <typename T> // Integral types
+    std14::enable_if_t<std::is_integral<T>::value, T> real(T const &x) {
+      return x;
+    }
 
-template<typename T> // Floating-point types
-std14::enable_if_t<std::is_floating_point<T>::value,T> real(T const& x) { return x; }
+    template <typename T> // Floating-point types
+    std14::enable_if_t<std::is_floating_point<T>::value, T> real(T const &x) {
+      return x;
+    }
 
-template<typename T> // std::complex
-std14::enable_if_t<triqs::is_complex<T>::value,T> real(T const& x) { return std::real(x); }
+    template <typename T> // std::complex
+    std14::enable_if_t<triqs::is_complex<T>::value, T> real(T const &x) {
+      return std::real(x);
+    }
 
-//
-// Imaginary part
-//
-template<typename T> // Integral types
-std14::enable_if_t<std::is_integral<T>::value,T> imag(T const& x) { return T{}; }
+    //
+    // Imaginary part
+    //
+    template <typename T> // Integral types
+    std14::enable_if_t<std::is_integral<T>::value, T> imag(T const &x) {
+      return T{};
+    }
 
-template<typename T> // Floating-point types
-std14::enable_if_t<std::is_floating_point<T>::value,T> imag(T const& x) { return T{}; }
+    template <typename T> // Floating-point types
+    std14::enable_if_t<std::is_floating_point<T>::value, T> imag(T const &x) {
+      return T{};
+    }
 
-template<typename T> // std::complex
-std14::enable_if_t<triqs::is_complex<T>::value,T> imag(T const& x) { return std::imag(x); }
+    template <typename T> // std::complex
+    std14::enable_if_t<triqs::is_complex<T>::value, T> imag(T const &x) {
+      return std::imag(x);
+    }
 
-}}
+  } // namespace utility
+} // namespace triqs

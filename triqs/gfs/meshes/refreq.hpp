@@ -24,39 +24,34 @@
 
 namespace triqs::gfs {
 
- struct refreq {};
+  struct refreq {};
 
- template <> struct gf_mesh<refreq> : segment_mesh, tail_fitter_handle {
-  using var_t = refreq;
-  template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
-  // using segment_mesh::segment_mesh;
-  
-  /// Is the mesh only for positive omega
-  static constexpr bool positive_only() { return false; }
+  template <> struct gf_mesh<refreq> : segment_mesh, tail_fitter_handle {
+    using var_t = refreq;
+    template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
+    // using segment_mesh::segment_mesh;
 
-  // -------------------- tail -------------------
+    /// Is the mesh only for positive omega
+    static constexpr bool positive_only() { return false; }
 
-  // First index of the mesh
-  static constexpr long first_index() { return 0; }
+    // -------------------- tail -------------------
 
-  // Last index of the mesh
-  long last_index() const { return size() - 1; }
+    // First index of the mesh
+    static constexpr long first_index() { return 0; }
 
-  // Largest frequency in the mesh
-  dcomplex omega_max() const { return index_to_point(last_index()); }
+    // Last index of the mesh
+    long last_index() const { return size() - 1; }
 
-  // -------------------- HDF5 -------------------
+    // Largest frequency in the mesh
+    dcomplex omega_max() const { return index_to_point(last_index()); }
 
-  static std::string hdf5_scheme() {return  "MeshReFreq";}
- 
-  friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
-   h5_write_impl(fg, subgroup_name, m,"MeshReFreq");
-  }
-  
-  friend void h5_read(h5::group fg, std::string const & subgroup_name, gf_mesh &m) {
-   h5_read_impl(fg, subgroup_name, m,"MeshReFreq");
-  }   
+    // -------------------- HDF5 -------------------
 
- };
+    static std::string hdf5_scheme() { return "MeshReFreq"; }
 
-}
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReFreq"); }
+
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshReFreq"); }
+  };
+
+} // namespace triqs::gfs

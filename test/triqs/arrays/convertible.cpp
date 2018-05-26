@@ -25,19 +25,17 @@ namespace h5 = triqs::h5;
 
 TEST(Array, ConvertibleCR) {
 
- array<double, 2> A(2,2);
- array<dcomplex, 2> B(2,2);
+  array<double, 2> A(2, 2);
+  array<dcomplex, 2> B(2, 2);
 
- //A = B; // should not compile
- B = A;
+  //A = B; // should not compile
+  B = A;
 
- // can convert an array of double to an array of complex
- static_assert(std::is_convertible<array<double, 2>, array<dcomplex, 2>>::value, "oops");
+  // can convert an array of double to an array of complex
+  static_assert(std::is_convertible<array<double, 2>, array<dcomplex, 2>>::value, "oops");
 
- // can not do the reverse !
- static_assert(!std::is_convertible<array<dcomplex, 2>,array<double, 2>>::value, "oops");
-
+  // can not do the reverse !
+  static_assert(!std::is_convertible<array<dcomplex, 2>, array<double, 2>>::value, "oops");
 }
 
 MAKE_MAIN;
-

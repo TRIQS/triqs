@@ -24,22 +24,22 @@ void f2(array_const_view<long, 2> const &a) { std::cout << a << std::endl; }
 
 TEST(Array, compound_ops) {
 
- array<long, 2> A(2, 3);
- A() = 98;
- f2(A());
+  array<long, 2> A(2, 3);
+  A() = 98;
+  f2(A());
 
- array_const_view<long, 2> Vc = A();
+  array_const_view<long, 2> Vc = A();
 
 //#define SHOULD_NOT_COMPILE
 #ifdef SHOULD_NOT_COMPILE
- {
-  const array<long, 1> A = {1, 2, 3, 4};
+  {
+    const array<long, 1> A = {1, 2, 3, 4};
 
-  // None of this should compile
-  A(0) = 2;
-  A()(0) = 2;
-  A(range(0, 2))(0) = 10;
- }
+    // None of this should compile
+    A(0)              = 2;
+    A()(0)            = 2;
+    A(range(0, 2))(0) = 10;
+  }
 #endif
 }
 MAKE_MAIN

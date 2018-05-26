@@ -1,5 +1,5 @@
 V = 14 2 3
-(tql::eval(make_expr(V) [i_], i_=0)) ---> 14
+(tql::eval(make_expr(V)[i_], i_ = 0)) ---> 14
 V = 2 3 4
 W = 2 4 6
 11

@@ -26,51 +26,44 @@
 #include <iostream>
 #include <triqs/arrays/asserts.hpp>
 
-
 using namespace triqs::arrays;
-   
-template<typename ArrayType>
-array_view<typename ArrayType::value_type, ArrayType::rank-1> sum0 (ArrayType const & A) {
- array<typename ArrayType::value_type, ArrayType::rank-1> res = A(0,ellipsis());
- for (size_t u =1; u< A.shape()[0]; ++u) res += A(u,ellipsis());
- return res;
+
+template <typename ArrayType> array_view<typename ArrayType::value_type, ArrayType::rank - 1> sum0(ArrayType const &A) {
+  array<typename ArrayType::value_type, ArrayType::rank - 1> res = A(0, ellipsis());
+  for (size_t u = 1; u < A.shape()[0]; ++u) res += A(u, ellipsis());
+  return res;
 }
 
 int main(int argc, char **argv) {
 
- 
+  {
+    array<long, 3> A(2, 3, 4);
+    A() = 7;
 
- {
- array<long,3> A(2,3,4) ;
- A() = 7;
+    std::cerr << A(0, ellipsis()) << std::endl;
 
- std::cerr<< A(0, ellipsis() ) <<std::endl;
+    array<long, 4> B(2, 3, 4, 5);
+    B() = 8;
 
- array<long,4> B(2,3,4,5) ;
- B() = 8;
+    std::cerr << B(0, ellipsis(), 3) << std::endl;
+    std::cerr << B(0, ellipsis(), 2, 3) << std::endl;
+    std::cerr << B(ellipsis(), 2, 3) << std::endl;
 
- std::cerr<< B(0, ellipsis(), 3 ) <<std::endl;
- std::cerr<< B(0, ellipsis(), 2, 3 ) <<std::endl;
- std::cerr<< B( ellipsis(), 2, 3 ) <<std::endl;
+    assert_all_close(B(0, ellipsis(), 3), B(0, range(), range(), 3), 1.e-15);
+    assert_all_close(B(0, ellipsis(), 2, 3), B(0, range(), 2, 3), 1.e-15);
+    assert_all_close(B(ellipsis(), 2, 3), B(range(), range(), 2, 3), 1.e-15);
 
- assert_all_close (B(0, ellipsis(), 3 ) , B(0, range(),range(), 3 ) , 1.e-15);
- assert_all_close (B(0, ellipsis(),2, 3 ) , B(0, range(), 2, 3 ) , 1.e-15);
- assert_all_close (B( ellipsis(),2, 3 ) , B( range(),range(),  2, 3 ) , 1.e-15);
+    std::cerr << B.shape() << std::endl;
+  }
+  ///.....
 
- std::cerr << B.shape() <<std::endl;
+  {
+    array<double, 2> A(5, 2);
+    A() = 2;
+    array<double, 3> B(5, 2, 3);
+    B() = 3;
+    std::cerr << sum0(A) << sum0(B) << std::endl;
+  }
 
-
- }
- ///.....
-
- {
- array<double,2> A(5,2); A() =2; 
- array<double,3> B(5,2,3); B() = 3;
- std::cerr<< sum0(A) << sum0(B) <<std::endl;
- }
-
-
- return 0;
+  return 0;
 }
-
-

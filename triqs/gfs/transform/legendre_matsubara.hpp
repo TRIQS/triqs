@@ -21,21 +21,21 @@
 #pragma once
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- namespace tags {
-  struct legendre {};
- }
- template <typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper { gf_const_view<D, Target> g; };
+    namespace tags {
+      struct legendre {};
+    } // namespace tags
+    template <typename Tag, typename D, typename Target = matrix_valued> struct gf_keeper { gf_const_view<D, Target> g; };
 
- inline gf_keeper<tags::legendre, legendre> legendre_to_imfreq(gf_const_view<legendre> gl) { return {gl}; }
- inline gf_keeper<tags::legendre, legendre> legendre_to_imtime(gf_const_view<legendre> gl) { return {gl}; }
- inline gf_keeper<tags::legendre, imfreq> imfreq_to_legendre(gf_const_view<imfreq> gw) { return {gw}; }
- inline gf_keeper<tags::legendre, imtime> imtime_to_legendre(gf_const_view<imtime> gt) { return {gt}; }
+    inline gf_keeper<tags::legendre, legendre> legendre_to_imfreq(gf_const_view<legendre> gl) { return {gl}; }
+    inline gf_keeper<tags::legendre, legendre> legendre_to_imtime(gf_const_view<legendre> gl) { return {gl}; }
+    inline gf_keeper<tags::legendre, imfreq> imfreq_to_legendre(gf_const_view<imfreq> gw) { return {gw}; }
+    inline gf_keeper<tags::legendre, imtime> imtime_to_legendre(gf_const_view<imtime> gt) { return {gt}; }
 
- void triqs_gf_view_assign_delegation(gf_view<imfreq> gw, gf_keeper<tags::legendre, legendre> const &L);
- void triqs_gf_view_assign_delegation(gf_view<imtime> gt, gf_keeper<tags::legendre, legendre> const &L);
- void triqs_gf_view_assign_delegation(gf_view<legendre> gl, gf_keeper<tags::legendre, imfreq> const &L);
- void triqs_gf_view_assign_delegation(gf_view<legendre> gl, gf_keeper<tags::legendre, imtime> const &L);
-}
-}
+    void triqs_gf_view_assign_delegation(gf_view<imfreq> gw, gf_keeper<tags::legendre, legendre> const &L);
+    void triqs_gf_view_assign_delegation(gf_view<imtime> gt, gf_keeper<tags::legendre, legendre> const &L);
+    void triqs_gf_view_assign_delegation(gf_view<legendre> gl, gf_keeper<tags::legendre, imfreq> const &L);
+    void triqs_gf_view_assign_delegation(gf_view<legendre> gl, gf_keeper<tags::legendre, imtime> const &L);
+  } // namespace gfs
+} // namespace triqs

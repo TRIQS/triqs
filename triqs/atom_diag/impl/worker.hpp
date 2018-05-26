@@ -26,32 +26,31 @@
 using namespace triqs::hilbert_space;
 
 namespace triqs {
-namespace atom_diag {
+  namespace atom_diag {
 
-// Division of Hilbert Space into Hilbert subspaces, using either autopartitioning or quantum numbers.
-template<bool Complex> struct atom_diag_worker {
+    // Division of Hilbert Space into Hilbert subspaces, using either autopartitioning or quantum numbers.
+    template <bool Complex> struct atom_diag_worker {
 
- //using atom_diag = atom_diag<Complex>;
- using scalar_t = typename atom_diag<Complex>::scalar_t;
- using matrix_t = typename atom_diag<Complex>::matrix_t;
- using many_body_op_t = typename atom_diag<Complex>::many_body_op_t;
+      //using atom_diag = atom_diag<Complex>;
+      using scalar_t       = typename atom_diag<Complex>::scalar_t;
+      using matrix_t       = typename atom_diag<Complex>::matrix_t;
+      using many_body_op_t = typename atom_diag<Complex>::many_body_op_t;
 
- atom_diag_worker(atom_diag<Complex> * hdiag, int n_min = 0, int n_max = INT_MAX) :
-  hdiag(hdiag), n_min(n_min), n_max(n_max) {}
+      atom_diag_worker(atom_diag<Complex> *hdiag, int n_min = 0, int n_max = INT_MAX) : hdiag(hdiag), n_min(n_min), n_max(n_max) {}
 
- void autopartition();
- void partition_with_qn(std::vector<many_body_op_t> const& qn_vector);
+      void autopartition();
+      void partition_with_qn(std::vector<many_body_op_t> const &qn_vector);
 
- private:
+      private:
+      atom_diag<Complex> *hdiag;
+      int n_min, n_max;
 
- atom_diag<Complex> * hdiag;
- int n_min, n_max;
+      // Create matrix of an operator acting from one subspace to another
+      matrix_t make_op_matrix(many_body_op_t const &op, int from_sp, int to_sp) const;
 
- // Create matrix of an operator acting from one subspace to another
- matrix_t make_op_matrix(many_body_op_t const& op, int from_sp, int to_sp) const;
+      void complete();
+      bool fock_state_filter(fock_state_t s);
+    };
 
- void complete();
- bool fock_state_filter(fock_state_t s);
-};
-
-}}
+  } // namespace atom_diag
+} // namespace triqs

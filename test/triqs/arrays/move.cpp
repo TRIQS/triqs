@@ -27,21 +27,20 @@ using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
- 
+  {
+    array<double, 1> A(3);
+    A() = 9;
+    array<double, 1> B(std::move(A));
+    std::cout << " A = " << A << " B = " << B << std::endl;
+  }
 
- {
-  array<double, 1> A (3); A() = 9;
-  array<double,1> B( std::move(A));
-  std::cout  << " A = "<< A << " B = "<< B << std::endl ; 
- }
+  {
+    array<double, 1> A(3);
+    A() = 9;
+    array<double, 1> B;
+    B = std::move(A);
+    std::cout << " A = " << A << " B = " << B << std::endl;
+  }
 
- {
-  array<double, 1> A (3); A() = 9;
-  array<double,1> B;
-  B = std::move(A);
-  std::cout  << " A = "<< A << " B = "<< B << std::endl ; 
- }
-
- return 0;
+  return 0;
 }
-

@@ -48,7 +48,7 @@ TEST(Block2, Base) {
 
   // View Access
   V1(0, 0)[0] = 5.0;
-  EXPECT_CLOSE(G1[0](0,0), 5.0);
+  EXPECT_CLOSE(G1[0](0, 0), 5.0);
 
   // Loops
   for (auto &g : B1) { g[0] = 20; }

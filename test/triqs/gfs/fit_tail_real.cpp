@@ -96,7 +96,7 @@ TEST(FitTailReal, Multivar) { // NOLINT
   g(k_, w_) << 1 / (w_ - cos(k_[0]) * cos(k_[1]) - ieta);
 
   // Fix both the 0th and 1st moment
-  auto known_moments                       = array<dcomplex, 4>(2, N_k * N_k, 1, 1);
+  auto known_moments              = array<dcomplex, 4>(2, N_k * N_k, 1, 1);
   known_moments(0, range(), 0, 0) = 0.0;
   known_moments(1, range(), 0, 0) = 1.0;
 
@@ -105,10 +105,9 @@ TEST(FitTailReal, Multivar) { // NOLINT
 
   // Calculate the exact tail
   auto tail_exact = array<dcomplex, 2>(5, N_k * N_k);
-  for (auto const & k : k_mesh) {
-    dcomplex pole = cos(k[0]) * cos(k[1]) + ieta;
-    tail_exact(range(), k.linear_index()) =
-       array<dcomplex, 1>{dcomplex(0.0, 0.0), dcomplex(1.0, 0.0), pole, std::pow(pole, 2), std::pow(pole, 3)};
+  for (auto const &k : k_mesh) {
+    dcomplex pole                         = cos(k[0]) * cos(k[1]) + ieta;
+    tail_exact(range(), k.linear_index()) = array<dcomplex, 1>{dcomplex(0.0, 0.0), dcomplex(1.0, 0.0), pole, std::pow(pole, 2), std::pow(pole, 3)};
   }
 
   EXPECT_ARRAY_NEAR(tail_exact, tail(range(5), range(), 0, 0), 1e-7);

@@ -20,30 +20,29 @@
  ******************************************************************************/
 #include "start.hpp"
 TEST(Array, CrossConstruct1) {
- vector<int> Vi(3);
- Vi() = 3;
- vector<double> Vd(Vi);
- EXPECT_ARRAY_NEAR(Vd, Vi);
+  vector<int> Vi(3);
+  Vi() = 3;
+  vector<double> Vd(Vi);
+  EXPECT_ARRAY_NEAR(Vd, Vi);
 }
 
 // ------------------
 TEST(Array, CrossConstruct2) {
 
- array<long, 2> A(2, 3);
+  array<long, 2> A(2, 3);
 
- for (int i = 0; i < 2; ++i)
-  for (int j = 0; j < 3; ++j) A(i, j) = 10 * i + j;
+  for (int i = 0; i < 2; ++i)
+    for (int j = 0; j < 3; ++j) A(i, j) = 10 * i + j;
 
- std::vector<array<long, 2>> V(3, A);
+  std::vector<array<long, 2>> V(3, A);
 
- std::vector<array_view<long, 2>> W;
- for (auto& x : V) W.push_back(x);
+  std::vector<array_view<long, 2>> W;
+  for (auto &x : V) W.push_back(x);
 
- std::vector<array_view<long, 2>> W2(W);
+  std::vector<array_view<long, 2>> W2(W);
 
- for (int i = 1; i < 3; ++i) V[i] *= i;
+  for (int i = 1; i < 3; ++i) V[i] *= i;
 
- for (int i = 1; i < 3; ++i) EXPECT_ARRAY_NEAR(W2[i], i * A);
+  for (int i = 1; i < 3; ++i) EXPECT_ARRAY_NEAR(W2[i], i * A);
 }
 MAKE_MAIN
-

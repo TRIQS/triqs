@@ -29,7 +29,7 @@ namespace triqs::h5 {
     static std::string invoke() { return "PythonDictWrap"; } //"std::map<string," + hdf5_scheme_impl<T>::invoke() + ">"; }
   };
 
- /**
+  /**
    * Map of string and T as a subgroup with key_names
    */
   template <typename T> void h5_write(group f, std::string const &name, std::map<std::string, T> const &M) {
@@ -38,7 +38,7 @@ namespace triqs::h5 {
     for (auto &pvp : M) h5_write(gr, pvp.first, pvp.second);
   }
 
- /**
+  /**
    * Map of string and T
    */
   template <typename T> void h5_read(group f, std::string const &name, std::map<std::string, T> &M) {

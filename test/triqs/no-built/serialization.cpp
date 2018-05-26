@@ -26,7 +26,8 @@
 #include <iostream>
 #include <fstream>
 
-using std::cout; using std::endl;
+using std::cout;
+using std::endl;
 using namespace triqs::arrays;
 
 #include <boost/archive/text_oarchive.hpp>
@@ -34,51 +35,45 @@ using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
- 
+  array<long, 2> A(2, 3);
 
- array<long,2> A (2,3);
- 
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-   A(i,j) = 10*i+ j;
+  for (int i = 0; i < 2; ++i)
+    for (int j = 0; j < 3; ++j) A(i, j) = 10 * i + j;
 
- array_view<long,1>  SL( A(0,range(0,3)));
- std::cout<<"A = "<<A<<std::endl;
- std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
+  array_view<long, 1> SL(A(0, range(0, 3)));
+  std::cout << "A = " << A << std::endl;
+  std::cout << "SLICE : A(0,range(0,3))  " << SL << std::endl;
 
- // create and open a character archive for output
- std::ofstream ofs("arch1");
- {
-  boost::archive::text_oarchive oa(ofs);
-  // write class instance to archive
-  oa << A ;
-  oa << SL;
-  // archive and stream closed when destructors are called
- }
+  // create and open a character archive for output
+  std::ofstream ofs("arch1");
+  {
+    boost::archive::text_oarchive oa(ofs);
+    // write class instance to archive
+    oa << A;
+    oa << SL;
+    // archive and stream closed when destructors are called
+  }
 
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-   A(i,j)=0;
- std::cout<<"A = "<<A<<std::endl;
- std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
+  for (int i = 0; i < 2; ++i)
+    for (int j = 0; j < 3; ++j) A(i, j) = 0;
+  std::cout << "A = " << A << std::endl;
+  std::cout << "SLICE : A(0,range(0,3))  " << SL << std::endl;
 
- {
-  // create and open an archive for input
-  std::ifstream ifs("arch1");
-  boost::archive::text_iarchive ia(ifs);
-  // read class state from archive
-  ia >> A>> SL;
-  // archive and stream closed when destructors are called
- }
- 
- std::cout<<"A is "<<A<<std::endl;
- 
- std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
+  {
+    // create and open an archive for input
+    std::ifstream ifs("arch1");
+    boost::archive::text_iarchive ia(ifs);
+    // read class state from archive
+    ia >> A >> SL;
+    // archive and stream closed when destructors are called
+  }
 
- std::cout<<"Setting A(0,0) =56 "<<std::endl;
- SL(0) = 56;
- std::cout<<"A is "<<A<<std::endl;
- std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
+  std::cout << "A is " << A << std::endl;
 
+  std::cout << "SLICE : A(0,range(0,3))  " << SL << std::endl;
+
+  std::cout << "Setting A(0,0) =56 " << std::endl;
+  SL(0) = 56;
+  std::cout << "A is " << A << std::endl;
+  std::cout << "SLICE : A(0,range(0,3))  " << SL << std::endl;
 }
-

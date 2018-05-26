@@ -23,38 +23,38 @@
 #include <triqs/arrays/asserts.hpp>
 #include <triqs/h5.hpp>
 
-using std::cout; using std::endl;
+using std::cout;
+using std::endl;
 namespace tqa = triqs::arrays;
-namespace h5 = triqs::h5;
+namespace h5  = triqs::h5;
 using tqa::range;
 using namespace tqa;
 
 int main(int argc, char **argv) {
 
- try { 
+  try {
 
-  std::vector <double> v {1.1,2.2,3.3,4.5};
-  std::vector <std::complex<double>> vc {1.1,2.2,3.3,4.5};
+    std::vector<double> v{1.1, 2.2, 3.3, 4.5};
+    std::vector<std::complex<double>> vc{1.1, 2.2, 3.3, 4.5};
 
-  std::vector <double> v2;
-  std::vector <std::complex<double>> vc2;
+    std::vector<double> v2;
+    std::vector<std::complex<double>> vc2;
 
-  {
-   h5::file file1( "test_std_vector.h5", H5F_ACC_TRUNC );
-   h5::group top(file1);
-   h5_write(top,"vdouble",v);
-   h5_write(top,"vcomplex",vc);
+    {
+      h5::file file1("test_std_vector.h5", H5F_ACC_TRUNC);
+      h5::group top(file1);
+      h5_write(top, "vdouble", v);
+      h5_write(top, "vcomplex", vc);
+    }
+
+    h5::file file2("test_std_vector.h5", H5F_ACC_RDONLY);
+    h5::group top2(file2);
+
+    h5_read(top2, "vdouble", v2);
+    h5_read(top2, "vcomplex", vc2);
+
+    for (size_t i = 0; i < v.size(); ++i) assert_close(v[i], v2[i]);
+    for (size_t i = 0; i < vc.size(); ++i) assert_close(vc[i], vc2[i]);
   }
-
-  h5::file file2( "test_std_vector.h5", H5F_ACC_RDONLY );
-  h5::group top2(file2);
-
-  h5_read(top2,"vdouble",v2);
-  h5_read(top2,"vcomplex",vc2);
-
-  for (size_t i = 0; i <v.size(); ++i) assert_close(v[i],v2[i]); 
-  for (size_t i = 0; i <vc.size(); ++i) assert_close(vc[i],vc2[i]); 
- }
- TRIQS_CATCH_AND_ABORT;
+  TRIQS_CATCH_AND_ABORT;
 }
-

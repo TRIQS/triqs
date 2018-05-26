@@ -33,7 +33,7 @@ namespace triqs {
       private:
       clock_t::time_point start_time;
       clock_t::duration total_time = clock_t::duration(0);
-      bool running = false;
+      bool running                 = false;
 
       public:
       void start() {
@@ -51,5 +51,5 @@ namespace triqs {
         return total_time_seconds.count();
       }
     };
-  }
-}
+  } // namespace utility
+} // namespace triqs

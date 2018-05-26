@@ -25,24 +25,24 @@ using triqs::utility::real_or_complex;
 
 TEST(RealOrComplex, All) {
 
- auto x= real_or_complex(1);
- auto y= real_or_complex(3);
+  auto x = real_or_complex(1);
+  auto y = real_or_complex(3);
 
- {
-  auto z = x + y;
-  EXPECT_EQ(double(z), 4);
-  EXPECT_EQ(z.is_real(), true);
- }
+  {
+    auto z = x + y;
+    EXPECT_EQ(double(z), 4);
+    EXPECT_EQ(z.is_real(), true);
+  }
 
- { 
-  auto z = x + 1_j;
-  EXPECT_EQ(z.is_real(), false);
-  EXPECT_THROW(double y = double(z), std::exception);
- }
+  {
+    auto z = x + 1_j;
+    EXPECT_EQ(z.is_real(), false);
+    EXPECT_THROW(double y = double(z), std::exception);
+  }
 
- {
-  auto z = 2 + x;
-  EXPECT_EQ(double(z), 3);
- }
+  {
+    auto z = 2 + x;
+    EXPECT_EQ(double(z), 3);
+  }
 }
 MAKE_MAIN;

@@ -28,42 +28,37 @@ using namespace storages;
 
 int main(int argc, char **argv) {
 
- {
-  array<double,1> A(3),B(3);
-  for (int i =0; i<3; ++i) {
-   A(i) = 2.6*i;
-   B(i) = 0;
+  {
+    array<double, 1> A(3), B(3);
+    for (int i = 0; i < 3; ++i) {
+      A(i) = 2.6 * i;
+      B(i) = 0;
+    }
+
+    B = -A;
+    if (max_element(abs(A + B)) > 1.e-15) TRIQS_RUNTIME_ERROR << " array: A+B";
   }
 
-  B = -A;
-  if ( max_element( abs( A+B)) > 1.e-15) TRIQS_RUNTIME_ERROR <<" array: A+B";
+  {
+    matrix<double> A(3, 3), B(3, 3);
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j) A(i, j) = 2.6 * i + 9 * j;
+    B() = 0;
 
- } 
-
- {
-  matrix<double> A(3,3),B(3,3);
-  for (int i =0; i<3; ++i) 
-   for (int j =0; j<3; ++j) 
-    A(i,j) = 2.6*i + 9*j;
-  B() = 0;
-
-  B = -A;
-  std::cerr  << A << std::endl ;
-  std::cerr  << B << std::endl;
-  if ( max_element( abs( A+B)) > 1.e-15) TRIQS_RUNTIME_ERROR <<" matrix : A+B";
- }
-
- {
-  triqs::arrays::vector<double> A(3),B(3);
-  for (int i =0; i<3; ++i) {
-   A(i) = 2.6*i;
-   B(i) = 0;
+    B = -A;
+    std::cerr << A << std::endl;
+    std::cerr << B << std::endl;
+    if (max_element(abs(A + B)) > 1.e-15) TRIQS_RUNTIME_ERROR << " matrix : A+B";
   }
 
-  B = -A;
-  if ( max_element( abs( A+B)) > 1.e-15) TRIQS_RUNTIME_ERROR <<" vector :  A+B";
+  {
+    triqs::arrays::vector<double> A(3), B(3);
+    for (int i = 0; i < 3; ++i) {
+      A(i) = 2.6 * i;
+      B(i) = 0;
+    }
 
- } 
-
+    B = -A;
+    if (max_element(abs(A + B)) > 1.e-15) TRIQS_RUNTIME_ERROR << " vector :  A+B";
+  }
 }
-

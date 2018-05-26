@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
  * Copyright (C) 2018- by Simons Foundation
- *               authors : O. Parcollet, N. Wentzell 
+ *               authors : O. Parcollet, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software

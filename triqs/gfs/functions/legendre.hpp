@@ -21,14 +21,14 @@
 #pragma once
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- //-------------------------------------------------------
- // For Legendre functions
- // ------------------------------------------------------
+    //-------------------------------------------------------
+    // For Legendre functions
+    // ------------------------------------------------------
 
- array<dcomplex, 3> get_tail(gf_const_view<legendre> gl);
+    array<dcomplex, 3> get_tail(gf_const_view<legendre> gl);
 
- void enforce_discontinuity(gf_view<legendre>& gl, triqs::arrays::array_view<double, 2> disc);
-}
-}
+    void enforce_discontinuity(gf_view<legendre> &gl, triqs::arrays::array_view<double, 2> disc);
+  } // namespace gfs
+} // namespace triqs

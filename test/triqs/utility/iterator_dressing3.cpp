@@ -24,46 +24,48 @@
 #include <map>
 using namespace triqs::utility;
 
-struct S { 
+struct S {
 
- typedef std::map<double, int> m_t;
- typedef m_t::const_iterator mcit_t;
- typedef m_t::iterator mit_t;
- m_t m;
+  typedef std::map<double, int> m_t;
+  typedef m_t::const_iterator mcit_t;
+  typedef m_t::iterator mit_t;
+  m_t m;
 
- struct _cdress {double const & tau; int const & a; m_t const * m; _cdress( mcit_t const & it, m_t const * mm): tau(it->first), a(it->second),m(mm){} };
+  struct _cdress {
+    double const &tau;
+    int const &a;
+    m_t const *m;
+    _cdress(mcit_t const &it, m_t const *mm) : tau(it->first), a(it->second), m(mm) {}
+  };
 
- // const iterator with cyclic condition
- struct const_iterator : public dressed_iterator< mcit_t,_cdress, m_t const> {
-  const_iterator (mcit_t it, m_t const * m): dressed_iterator<mcit_t,_cdress, m_t const>(it,m) {}
-  friend const_iterator next_cyclic(const_iterator it) { 
-   ++it; 
-   if (it.get() == it.get_aux()->end()) return const_iterator(it.get_aux()->begin(),it.get_aux());
-   else return it;
-  }
- };
- const_iterator begin() const { return const_iterator(m.begin(),&m);}
- const_iterator end()   const { return const_iterator(m.end(),&m);}
-
+  // const iterator with cyclic condition
+  struct const_iterator : public dressed_iterator<mcit_t, _cdress, m_t const> {
+    const_iterator(mcit_t it, m_t const *m) : dressed_iterator<mcit_t, _cdress, m_t const>(it, m) {}
+    friend const_iterator next_cyclic(const_iterator it) {
+      ++it;
+      if (it.get() == it.get_aux()->end())
+        return const_iterator(it.get_aux()->begin(), it.get_aux());
+      else
+        return it;
+    }
+  };
+  const_iterator begin() const { return const_iterator(m.begin(), &m); }
+  const_iterator end() const { return const_iterator(m.end(), &m); }
 };
-
-
 
 int main() {
 
- S s;
- s.m.insert(std::make_pair(8.4,2));
- s.m.insert(std::make_pair(1.3,1));
+  S s;
+  s.m.insert(std::make_pair(8.4, 2));
+  s.m.insert(std::make_pair(1.3, 1));
 
- for (auto const & p : s) std::cout << p.tau << " -- "<< p.a << std::endl;
- //for (auto const & p : s.m) std::cout << p.first << " -- "<< p.second << std::endl;
+  for (auto const &p : s) std::cout << p.tau << " -- " << p.a << std::endl;
+  //for (auto const & p : s.m) std::cout << p.first << " -- "<< p.second << std::endl;
 
- auto it = s.begin();
- std::cout  << it->tau << std::endl ;
- ++it;
- std::cout  << it->tau << std::endl ;
- it = next_cyclic(it);
- std::cout  << it->tau << std::endl ;
-
-
+  auto it = s.begin();
+  std::cout << it->tau << std::endl;
+  ++it;
+  std::cout << it->tau << std::endl;
+  it = next_cyclic(it);
+  std::cout << it->tau << std::endl;
 }

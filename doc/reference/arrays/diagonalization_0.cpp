@@ -6,12 +6,12 @@ using triqs::arrays::matrix;
 using triqs::arrays::linalg::eigenvalues;
 using triqs::clef::placeholder;
 int main() {
- placeholder<0> i_;
- placeholder<1> j_;
- matrix<double> A(2, 2);
- A(i_, j_) << i_ + j_;
+  placeholder<0> i_;
+  placeholder<1> j_;
+  matrix<double> A(2, 2);
+  A(i_, j_) << i_ + j_;
 
- auto v = eigenvalues(A);
+  auto v = eigenvalues(A);
 
- std::cout << "v = " << v << std::endl;
-} 
+  std::cout << "v = " << v << std::endl;
+}

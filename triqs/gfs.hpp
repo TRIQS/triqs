@@ -23,7 +23,7 @@
 // for python code generator, we need to know what has to been included.
 #define TRIQS_INCLUDED_GF
 
-// the meshes 
+// the meshes
 #include "./gfs/meshes.hpp"
 
 // debug
@@ -37,7 +37,7 @@
 #include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
 
-// multivar 
+// multivar
 #include "./gfs/meshes/product.hpp"
 #include "./gfs/gf/partial_eval.hpp"
 
@@ -55,7 +55,7 @@
 #include "./gfs/block/map.hpp"
 #include "./gfs/block/mapped_functions.hxx"
 
-// hdf5 
+// hdf5
 #include "./gfs/h5.hpp"
 
 // functions
@@ -70,5 +70,3 @@
 // fourier
 #include "./gfs/transform/fourier.hpp"
 #include "./gfs/transform/legendre_matsubara.hpp"
-
-

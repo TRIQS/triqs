@@ -18,21 +18,19 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#pragma once 
+#pragma once
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- /// The domain
- struct R_domain {
-  using point_t = double;
-  bool operator==(R_domain const& D) const { return true; }
-  friend void h5_write(h5::group fg, std::string subgroup_name, R_domain const& d) {}
-  friend void h5_read(h5::group fg, std::string subgroup_name, R_domain& d) {}
-  friend class boost::serialization::access;
-  template <class Archive> void serialize(Archive& ar, const unsigned int version) {}
- };
-}
-}
-
-
+    /// The domain
+    struct R_domain {
+      using point_t = double;
+      bool operator==(R_domain const &D) const { return true; }
+      friend void h5_write(h5::group fg, std::string subgroup_name, R_domain const &d) {}
+      friend void h5_read(h5::group fg, std::string subgroup_name, R_domain &d) {}
+      friend class boost::serialization::access;
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {}
+    };
+  } // namespace gfs
+} // namespace triqs

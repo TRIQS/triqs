@@ -37,23 +37,23 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   auto Gt1_exact = Gt1;
   Gt1_exact()    = 0.0;
   double s       = (statistic == Fermion ? -1 : 1);
-  auto one_pole  = [&](double E, auto &&t) { 
-    if(E>0)
-      return - exp(-E * t) / (1 - s * exp(-E * beta));
+  auto one_pole  = [&](double E, auto &&t) {
+    if (E > 0)
+      return -exp(-E * t) / (1 - s * exp(-E * beta));
     else
-      return s* exp(E * (beta - t)) / (1 - s * exp(E * beta)); 
+      return s * exp(E * (beta - t)) / (1 - s * exp(E * beta));
   };
-  for (auto const &t : Gt1.mesh()) { Gt1_exact[t] = one_pole(E, t) + one_pole(-2*E, t) - 4.5*one_pole(1.25*E,t); }
+  for (auto const &t : Gt1.mesh()) { Gt1_exact[t] = one_pole(E, t) + one_pole(-2 * E, t) - 4.5 * one_pole(1.25 * E, t); }
   EXPECT_GF_NEAR(Gt1, Gt1_exact, precision);
 
   // Fix the tail for the fourier transform
   auto [tail, err] = fit_tail(Gw1);
-  auto Gt1_tail = gf<imtime, target_t>{{beta, statistic, N_tau}, shape};
-  Gt1_tail()    = fourier(Gw1, make_const_view(tail));
+  auto Gt1_tail    = gf<imtime, target_t>{{beta, statistic, N_tau}, shape};
+  Gt1_tail()       = fourier(Gw1, make_const_view(tail));
   EXPECT_GF_NEAR(Gt1_tail, Gt1_exact, precision);
 
   // Pass only one 0th and first moment to the fourier
-  auto known_moments = make_zero_tail(Gt1, 2);  // Get a tail array with 2 moments
+  auto known_moments = make_zero_tail(Gt1, 2); // Get a tail array with 2 moments
   if constexpr (TARGET_RANK == 2)
     matrix_view<dcomplex>{known_moments(1, ellipsis())} = -2.5;
   else
@@ -80,7 +80,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   EXPECT_GF_NEAR(Gw1, Gw1b, precision);
 
   // Now lets do multiple fourier transforms
-  for(int i : range(10)){
+  for (int i : range(10)) {
     Gt1()  = fourier(Gw1b);
     Gw1b() = fourier(Gt1);
   }

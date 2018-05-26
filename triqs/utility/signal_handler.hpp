@@ -21,21 +21,21 @@
  ******************************************************************************/
 #pragma once
 namespace triqs {
-namespace signal_handler {
+  namespace signal_handler {
 
- /// Start the signal handler
- void start();
+    /// Start the signal handler
+    void start();
 
- /// Stop it. ?
- void stop();
- 
- /// A signal has been received. If pop, and there is a signal, pop it.
- bool received(bool pop = false);
+    /// Stop it. ?
+    void stop();
 
- /// Last received.
- int last();
+    /// A signal has been received. If pop, and there is a signal, pop it.
+    bool received(bool pop = false);
 
- /// pop the last signal
- void pop();
-}
-}
+    /// Last received.
+    int last();
+
+    /// pop the last signal
+    void pop();
+  } // namespace signal_handler
+} // namespace triqs

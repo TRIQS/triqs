@@ -26,9 +26,9 @@ namespace triqs::gfs {
     template <int I0, typename G, typename A0> FORCEINLINE auto __add(G const &g, A0 const &a0) {
 #define TRIQS_TERM_EVAL a0.w[I0] * g[a0.idx[I0]]
       if constexpr (I0 < A0::n_pts - 1) {
-	return TRIQS_TERM_EVAL + __add<I0 + 1>(g, a0);
+        return TRIQS_TERM_EVAL + __add<I0 + 1>(g, a0);
       } else
-	return TRIQS_TERM_EVAL;
+        return TRIQS_TERM_EVAL;
 #undef TRIQS_TERM_EVAL
     }
 
@@ -90,8 +90,8 @@ namespace triqs::gfs {
     FORCEINLINE auto _multivar_eval_impl(std::index_sequence<Is...>, G const &g, InterPolDataType const &... a) {
       return __add<0 * Is...>(g, a...);
     }
-   } // namespace details
- 
+  } // namespace details
+
   //
   template <typename G, typename... InterPolDataType> FORCEINLINE auto multivar_eval(G const &g, InterPolDataType const &... a) {
     return details::_multivar_eval_impl(std::index_sequence_for<InterPolDataType...>{}, g, a...);

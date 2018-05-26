@@ -23,14 +23,13 @@
 
 TEST(Scope, All) {
 
- int a= 0;
+  int a = 0;
 
- { 
-  //auto __unused1 = triqs::utility::exec_at_scope_exit([&a]() { a=2;});
-  SCOPE_EXIT{a = 2;};
- }
+  {
+    //auto __unused1 = triqs::utility::exec_at_scope_exit([&a]() { a=2;});
+    SCOPE_EXIT { a = 2; };
+  }
 
- EXPECT_EQ(a,2);
-
+  EXPECT_EQ(a, 2);
 }
 MAKE_MAIN;

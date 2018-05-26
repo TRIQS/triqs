@@ -22,25 +22,24 @@
 #include "./base_public.hpp"
 
 namespace triqs {
-namespace h5 {
+  namespace h5 {
 
- /**
+    /**
   *  \brief A little handler for the file
   */
- class file: public h5_object {
+    class file : public h5_object {
 
-  public:
-
-  /**
+      public:
+      /**
    * Open the file name.
    * Flag char can be :
    *   - 'a' H5F_ACC_RDWR
    *   - 'r' H5F_ACC_RDONLY
    *   - 'w' H5F_ACC_TRUNC
    */
-  file(const char * name, char flags);
+      file(const char *name, char flags);
 
-  /**
+      /**
    * Open the file name.
    * Flags can be :
    *   - H5F_ACC_RDWR
@@ -48,20 +47,20 @@ namespace h5 {
    *   - H5F_ACC_TRUNC
    *   - H5F_ACC_EXCL
    */
-  file(const char * name, unsigned flags);
+      file(const char *name, unsigned flags);
 
-  /// Cf previous constructor
-  file(std::string const &name, unsigned flags) : file(name.c_str(), flags) {}
+      /// Cf previous constructor
+      file(std::string const &name, unsigned flags) : file(name.c_str(), flags) {}
 
-  ///
-  file(std::string const &name, char flags) : file(name.c_str(), flags) {}
+      ///
+      file(std::string const &name, char flags) : file(name.c_str(), flags) {}
 
-  /// Internal : from an hdf5 id.
-  file (hid_t id);
-  file(h5_object obj);
+      /// Internal : from an hdf5 id.
+      file(hid_t id);
+      file(h5_object obj);
 
-  /// Name of the file
-  std::string name() const;
- };
-}
-}
+      /// Name of the file
+      std::string name() const;
+    };
+  } // namespace h5
+} // namespace triqs

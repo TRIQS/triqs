@@ -41,8 +41,7 @@ TEST(Gfs, brillouin_zone) {
   ASSERT_EQ(Gk.mesh().locate_neighbours(arrays::vector<double>{0, 0, 0}), (utility::mini_vector<long, 3>({0, 0, 0})));
   EXPECT_COMPLEX_NEAR(Gk(K_t{0, 0, 0}), -4);
   EXPECT_COMPLEX_NEAR(Gk(K_t{M_PI, M_PI, M_PI}), 4);
-  EXPECT_COMPLEX_NEAR(Gk(K_t{2*M_PI, 2*M_PI, 2*M_PI}), -4);
-  
+  EXPECT_COMPLEX_NEAR(Gk(K_t{2 * M_PI, 2 * M_PI, 2 * M_PI}), -4);
 
   // reevaluate on the mesh itself.
   for (auto &&k : Gk.mesh()) {
@@ -92,7 +91,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
     EXPECT_NEAR(k(0), k.index()[0] / double(n_k) * 2 * M_PI, 1.e-14);
     EXPECT_NEAR(k(1), k.index()[1] / double(n_k) * 2 * M_PI, 1.e-14);
     double res = -2 * (cos(k(0)) + cos(k(1)));
-    EXPECT_COMPLEX_NEAR(Gk(K_t{k(0), k(1), 0})(0,0), res, 1.e-14);
+    EXPECT_COMPLEX_NEAR(Gk(K_t{k(0), k(1), 0})(0, 0), res, 1.e-14);
   }
 
   // evaluate on a larger grid
@@ -102,7 +101,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
       double kx  = nkx / double(n_k2) * 2 * M_PI;
       double ky  = nky / double(n_k2) * 2 * M_PI;
       double res = -2 * (cos(kx) + cos(ky));
-      EXPECT_COMPLEX_NEAR(Gk(K_t{kx, ky, 0})(0,0), res, 0.01);
+      EXPECT_COMPLEX_NEAR(Gk(K_t{kx, ky, 0})(0, 0), res, 0.01);
     }
 
   std::cout << Gk.mesh() << "\n";

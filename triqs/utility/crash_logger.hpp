@@ -31,9 +31,9 @@
 #include "../h5.hpp"
 
 namespace triqs {
-namespace utility {
+  namespace utility {
 
- /**
+    /**
   * Usage :
   *
   * Suppose we have objects a,b,c ... which are all H5_Serializable
@@ -52,50 +52,49 @@ namespace utility {
   * "some work" can be as complex as needed...
   *
   */
- class crash_logger {
-  std::string filename_;
-  std::vector<scope_guard<std::function<void()>>> guards;
-  std::vector<std::string> names;
+    class crash_logger {
+      std::string filename_;
+      std::vector<scope_guard<std::function<void()>>> guards;
+      std::vector<std::string> names;
 
-  public:
-  ///
-  crash_logger(std::string filename) : filename_(filename) {}
-  crash_logger(const crash_logger&) = delete;
-  crash_logger(crash_logger&&) = default;
-  crash_logger& operator=(const crash_logger&) = delete;
-  crash_logger& operator=(crash_logger&& x) {
-   using std::swap;
-   swap(guards, x.guards);
-   swap(names, x.names);
-   return *this;
-  }
-  ///
-  template <typename Obj> crash_logger& operator()(Obj const& obj, std::string name) {
-   names.push_back(name);
-   guards.emplace_back([&obj, this, name]() {
-    using triqs::h5::h5_write; // to have the proper overload for scalar type !!
-    try {
-     h5_write(h5::group(h5::file(this->filename_.c_str(), H5F_ACC_RDWR)), name, obj);
-    } catch (...) {
-     std::cerr << "An exception has occurred in crash_logger for an object of type " << typeid_name(obj) << " named " << name
-               << std::endl;
-    }
-   }); // end lambda
-   return *this;
-  }
-  ///
-  ~crash_logger() noexcept() {
-   if ((guards.size() > 0) && (guards.front().active())) {
-    std::cerr << "crash_logger : I am destroyed without being dismissed. Dumping the objects : ";
-    for (auto& x : names) std::cerr << "\"" << x << "\" ";
-    std::cerr << std::endl;
-    h5::file(this->filename_.c_str(), H5F_ACC_TRUNC); // create the file
-   }
-  }
-  ///
-  void dismiss() {
-   for (auto& g : guards) g.dismiss();
-  }
- };
-}
-}
+      public:
+      ///
+      crash_logger(std::string filename) : filename_(filename) {}
+      crash_logger(const crash_logger &) = delete;
+      crash_logger(crash_logger &&)      = default;
+      crash_logger &operator=(const crash_logger &) = delete;
+      crash_logger &operator                        =(crash_logger &&x) {
+        using std::swap;
+        swap(guards, x.guards);
+        swap(names, x.names);
+        return *this;
+      }
+      ///
+      template <typename Obj> crash_logger &operator()(Obj const &obj, std::string name) {
+        names.push_back(name);
+        guards.emplace_back([&obj, this, name]() {
+          using triqs::h5::h5_write; // to have the proper overload for scalar type !!
+          try {
+            h5_write(h5::group(h5::file(this->filename_.c_str(), H5F_ACC_RDWR)), name, obj);
+          } catch (...) {
+            std::cerr << "An exception has occurred in crash_logger for an object of type " << typeid_name(obj) << " named " << name << std::endl;
+          }
+        }); // end lambda
+        return *this;
+      }
+      ///
+      ~crash_logger() noexcept() {
+        if ((guards.size() > 0) && (guards.front().active())) {
+          std::cerr << "crash_logger : I am destroyed without being dismissed. Dumping the objects : ";
+          for (auto &x : names) std::cerr << "\"" << x << "\" ";
+          std::cerr << std::endl;
+          h5::file(this->filename_.c_str(), H5F_ACC_TRUNC); // create the file
+        }
+      }
+      ///
+      void dismiss() {
+        for (auto &g : guards) g.dismiss();
+      }
+    };
+  } // namespace utility
+} // namespace triqs

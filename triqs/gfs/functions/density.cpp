@@ -49,14 +49,18 @@ namespace triqs::gfs {
 
     auto S = g.mesh().domain().statistic;
     double b1, b2, b3; // pole location for tail model
-    double xi; // +1, -1 for boson/fermion
+    double xi;         // +1, -1 for boson/fermion
 
-    if( S == Fermion ) {
+    if (S == Fermion) {
       xi = -1.;
-      b1 = 0; b2 = 1; b3 = -1;
-    } else if( S == Boson ) {
+      b1 = 0;
+      b2 = 1;
+      b3 = -1;
+    } else if (S == Boson) {
       xi = 1.;
-      b1 = -1.; b2 = 1.; b3 = 1./2.;
+      b1 = -1.;
+      b2 = 1.;
+      b3 = 1. / 2.;
     } else
       TRIQS_RUNTIME_ERROR << "ERROR: Unknown statistic in density\n";
 
@@ -68,30 +72,32 @@ namespace triqs::gfs {
       for (int n2 = n1; n2 < N2; n2++) {
         dcomplex m1 = tail(1, n1, n2), m2 = tail(2, n1, n2), m3 = tail(3, n1, n2);
 
-	// inverse of the Vandermonte matrix
-	//
-	// V =
-	// [ 1,    1,    1    ]
-	// [ b1,   b2,   b3   ]
-	// [ b1^2, b2^2, b3^2 ]
-	//
-	// V * a = m => a = V^{-1} * m
+        // inverse of the Vandermonte matrix
+        //
+        // V =
+        // [ 1,    1,    1    ]
+        // [ b1,   b2,   b3   ]
+        // [ b1^2, b2^2, b3^2 ]
+        //
+        // V * a = m => a = V^{-1} * m
 
-	dcomplex a1, a2, a3; // amplitudes for each pole in tail model
-	
-	if( S == Fermion ) {
-	  a1 = m1 - m3; a2 = (m2 + m3) / 2; a3 = (m3 - m2) / 2;
-	} else if ( S == Boson ) {
-	  a1 = m1/6. - m2/2. + m3/3.;
-	  a2 = -m1/2. + m2/2. + m3;
-	  a3 = 4.*m1/3. - 4.*m3/3.;
-	} else
-	  TRIQS_RUNTIME_ERROR << "ERROR: Unknown statistic in density\n";
+        dcomplex a1, a2, a3; // amplitudes for each pole in tail model
 
-	dcomplex r = 0;
+        if (S == Fermion) {
+          a1 = m1 - m3;
+          a2 = (m2 + m3) / 2;
+          a3 = (m3 - m2) / 2;
+        } else if (S == Boson) {
+          a1 = m1 / 6. - m2 / 2. + m3 / 3.;
+          a2 = -m1 / 2. + m2 / 2. + m3;
+          a3 = 4. * m1 / 3. - 4. * m3 / 3.;
+        } else
+          TRIQS_RUNTIME_ERROR << "ERROR: Unknown statistic in density\n";
+
+        dcomplex r = 0;
         for (auto const &w : g.mesh()) r += g[w](n1, n2) - (a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3));
         res(n1, n2) = r / beta + m1 + F(a1, b1) + F(a2, b2) + F(a3, b3);
-	res(n1, n2) *= -xi;
+        res(n1, n2) *= -xi;
 
         if (n2 > n1) res(n2, n1) = conj(res(n1, n2));
       }
@@ -112,8 +118,6 @@ namespace triqs::gfs {
   }
 
   //-------------------------------------------------------
-  dcomplex density(gf_const_view<legendre, scalar_valued> g) {
-   return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0);
-  }
+  dcomplex density(gf_const_view<legendre, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
 
 } // namespace triqs::gfs

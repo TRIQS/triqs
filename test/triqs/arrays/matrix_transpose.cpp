@@ -20,32 +20,31 @@
  ******************************************************************************/
 #include "start.hpp"
 TEST(Matrix, TransposeDagger) {
- 
- const int N = 5;
 
- triqs::arrays::matrix<double> A(N, N, FORTRAN_LAYOUT);
- triqs::arrays::matrix<std::complex<double>> B(N, N);
+  const int N = 5;
 
- // A *=A;; should be rejected by compiler
+  triqs::arrays::matrix<double> A(N, N, FORTRAN_LAYOUT);
+  triqs::arrays::matrix<std::complex<double>> B(N, N);
 
- for (int i = 0; i < N; ++i)
-  for (int j = 0; j < N; ++j) {
-   A(i, j) = i + 2 * j + 1;
-   B(i, j) = i + 2.5 * j + (i - 0.8 * j) * 1_j;
-  }
+  // A *=A;; should be rejected by compiler
 
- auto at = A.transpose();
- auto ad = dagger(A);
- auto bt = B.transpose();
- auto bd = dagger(B);
+  for (int i = 0; i < N; ++i)
+    for (int j = 0; j < N; ++j) {
+      A(i, j) = i + 2 * j + 1;
+      B(i, j) = i + 2.5 * j + (i - 0.8 * j) * 1_j;
+    }
 
- for (int i = 0; i < N; ++i)
-  for (int j = 0; j < N; ++j) {
-   EXPECT_COMPLEX_NEAR(at(i, j), A(j, i));
-   EXPECT_COMPLEX_NEAR(ad(i, j), A(j, i));
-   EXPECT_COMPLEX_NEAR(bd(i, j), std::conj(B(j, i)));
-   EXPECT_COMPLEX_NEAR(bt(i, j), B(j, i));
-  }
+  auto at = A.transpose();
+  auto ad = dagger(A);
+  auto bt = B.transpose();
+  auto bd = dagger(B);
+
+  for (int i = 0; i < N; ++i)
+    for (int j = 0; j < N; ++j) {
+      EXPECT_COMPLEX_NEAR(at(i, j), A(j, i));
+      EXPECT_COMPLEX_NEAR(ad(i, j), A(j, i));
+      EXPECT_COMPLEX_NEAR(bd(i, j), std::conj(B(j, i)));
+      EXPECT_COMPLEX_NEAR(bt(i, j), B(j, i));
+    }
 }
 MAKE_MAIN;
-

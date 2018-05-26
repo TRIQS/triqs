@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
  * Copyright (C) 2018- by Simons Foundation
- *               authors : O. Parcollet, N. Wentzell 
+ *               authors : O. Parcollet, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -24,10 +24,10 @@
 #include <triqs/arrays/vector.hpp>
 #include "./../gf/flatten.hpp"
 
-namespace triqs::gfs { 
+namespace triqs::gfs {
 
   using namespace triqs::arrays;
-  
- void _fourier_base(array_const_view<dcomplex, 2> in, array_view<dcomplex, 2> out, int rank, int* dims, int fftw_count, fftw_direction_t d);
 
-}
+  void _fourier_base(array_const_view<dcomplex, 2> in, array_view<dcomplex, 2> out, int rank, int *dims, int fftw_count, fftw_direction_t d);
+
+} // namespace triqs::gfs

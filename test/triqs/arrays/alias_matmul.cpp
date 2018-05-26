@@ -22,18 +22,18 @@
 
 TEST(Array, AliasMatmul) {
 
- auto _ =range{};
+  auto _ = range{};
 
- array<dcomplex, 3> A(10, 2, 2);
- A() = -1;
+  array<dcomplex, 3> A(10, 2, 2);
+  A() = -1;
 
-  A(4,_,_) = 1;
-  A(5,_,_) = 2;
+  A(4, _, _) = 1;
+  A(5, _, _) = 2;
 
-  matrix_view<dcomplex> M1 = A(4,_,_);
-  matrix_view<dcomplex> M2 = A(5,_,_);
+  matrix_view<dcomplex> M1 = A(4, _, _);
+  matrix_view<dcomplex> M2 = A(5, _, _);
 
-  M1 = M1*M2;
+  M1 = M1 * M2;
 
   EXPECT_ARRAY_NEAR(M1, matrix<dcomplex>{{4, 4}, {4, 4}});
   EXPECT_ARRAY_NEAR(M2, matrix<dcomplex>{{2, 2}, {2, 2}});

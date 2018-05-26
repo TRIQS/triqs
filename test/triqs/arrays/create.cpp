@@ -24,18 +24,18 @@ static_assert(!std::is_pod<triqs::arrays::array<long, 2>>::value, "POD pb");
 
 TEST(Array, Create) {
 
- array<long, 2> A;
- A.resize(make_shape(3, 3));
- EXPECT_EQ(A.shape(), (mini_vector<size_t, 2>{3, 3}));
+  array<long, 2> A;
+  A.resize(make_shape(3, 3));
+  EXPECT_EQ(A.shape(), (mini_vector<size_t, 2>{3, 3}));
 
- matrix<double> M;
- M.resize(3, 3);
+  matrix<double> M;
+  M.resize(3, 3);
 
- EXPECT_EQ(M.shape(), (mini_vector<size_t, 2>{3, 3}));
+  EXPECT_EQ(M.shape(), (mini_vector<size_t, 2>{3, 3}));
 
- vector<double> V;
- V.resize(10);
+  vector<double> V;
+  V.resize(10);
 
- EXPECT_EQ(V.shape(), (mini_vector<size_t, 1>{10}));
+  EXPECT_EQ(V.shape(), (mini_vector<size_t, 1>{10}));
 }
 MAKE_MAIN;

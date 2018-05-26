@@ -20,17 +20,16 @@
  *
  ******************************************************************************/
 
-#ifndef TRIQS_UTILITY_TRACE_H 
+#ifndef TRIQS_UTILITY_TRACE_H
 #define TRIQS_UTILITY_TRACE_H
 #include <triqs/utility/first_include.hpp>
 #include <string>
 #include <sstream>
 
-namespace triqs { namespace utility {  
+namespace triqs {
+  namespace utility {
 
- std::string stack_trace();
-
-}}
+    std::string stack_trace();
+  }
+} // namespace triqs
 #endif
-
-

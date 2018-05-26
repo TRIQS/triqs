@@ -21,18 +21,18 @@
 #include "./common.hpp"
 #include <triqs/arrays/array.hpp>
 #include <iostream>
-namespace tqa=triqs::arrays; namespace tql=triqs::clef;
+namespace tqa = triqs::arrays;
+namespace tql = triqs::clef;
 
 int main(int argc, char **argv) {
 
- 
- tql::placeholder<0> i_;   tql::placeholder<1> j_;
- tqa::array<double,2> A(2,2);
- A(i_,j_) << i_ + 2*j_ ;
-  std::cout << "A = "<<A << std::endl;
+  tql::placeholder<0> i_;
+  tql::placeholder<1> j_;
+  tqa::array<double, 2> A(2, 2);
+  A(i_, j_) << i_ + 2 * j_;
+  std::cout << "A = " << A << std::endl;
 
- tqa::array<double,2> B(2,2);
- B(i_,j_) << i_ + 2*j_ ;
-  std::cout << "B = "<<B << std::endl;
+  tqa::array<double, 2> B(2, 2);
+  B(i_, j_) << i_ + 2 * j_;
+  std::cout << "B = " << B << std::endl;
 }
-

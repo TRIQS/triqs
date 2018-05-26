@@ -21,42 +21,41 @@
 #include "start.hpp"
 
 namespace triqs {
-namespace arrays {
+  namespace arrays {
 
- template <typename T> class immutable_diagonal_matrix_view : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) {
-  array_view<T, 1> data;
+    template <typename T> class immutable_diagonal_matrix_view : TRIQS_CONCEPT_TAG_NAME(ImmutableMatrix) {
+      array_view<T, 1> data;
 
-  public:
-  immutable_diagonal_matrix_view(array_view<T, 1> v) : data(v) {}
+      public:
+      immutable_diagonal_matrix_view(array_view<T, 1> v) : data(v) {}
 
-  // the ImmutableMatrix concept
-  using value_type = T;
-  T operator()(size_t i, size_t j) const { return (i == j ? data(i) : 0); }
+      // the ImmutableMatrix concept
+      using value_type = T;
+      T operator()(size_t i, size_t j) const { return (i == j ? data(i) : 0); }
 
-  using domain_type = indexmaps::cuboid::domain_t<2>;
-  domain_type domain() const {
-   auto s = data.shape()[0];
-   return mini_vector<size_t, 2>(s, s);
-  }
+      using domain_type = indexmaps::cuboid::domain_t<2>;
+      domain_type domain() const {
+        auto s = data.shape()[0];
+        return mini_vector<size_t, 2>(s, s);
+      }
 
-  //
-  friend std::ostream &operator<<(std::ostream &out, immutable_diagonal_matrix_view const &d) {
-   return out << "diagonal_matrix " << d.data;
-  }
- };
-}
-}
+      //
+      friend std::ostream &operator<<(std::ostream &out, immutable_diagonal_matrix_view const &d) { return out << "diagonal_matrix " << d.data; }
+    };
+  } // namespace arrays
+} // namespace triqs
 
 TEST(Array, DiagonalMatrix) {
 
- auto a = array<int, 1>{1, 2, 3, 4};
- auto d = immutable_diagonal_matrix_view<int>(a);
+  auto a = array<int, 1>{1, 2, 3, 4};
+  auto d = immutable_diagonal_matrix_view<int>(a);
 
- EXPECT_ARRAY_NEAR(matrix<int>(2 * d), matrix<double>{{2, 0, 0, 0}, {0, 4, 0, 0}, {0, 0, 6, 0}, {0, 0, 0, 8}});
- EXPECT_ARRAY_NEAR(matrix<int>(d * d), matrix<double>{{1, 0, 0, 0}, {0, 4, 0, 0}, {0, 0, 9, 0}, {0, 0, 0, 16}});
+  EXPECT_ARRAY_NEAR(matrix<int>(2 * d), matrix<double>{{2, 0, 0, 0}, {0, 4, 0, 0}, {0, 0, 6, 0}, {0, 0, 0, 8}});
+  EXPECT_ARRAY_NEAR(matrix<int>(d * d), matrix<double>{{1, 0, 0, 0}, {0, 4, 0, 0}, {0, 0, 9, 0}, {0, 0, 0, 16}});
 
- int sum = 0;
- foreach (d, [&](int i, int j) { sum += d(i, j); });
- EXPECT_EQ(sum,10);
+  int sum = 0;
+  foreach (d, [&](int i, int j) { sum += d(i, j); })
+    ;
+  EXPECT_EQ(sum, 10);
 }
 MAKE_MAIN

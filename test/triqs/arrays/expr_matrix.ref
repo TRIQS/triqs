@@ -38,28 +38,28 @@ Cuboid of rank 2 and dimensions (2 2)
 (A) ---> 
 [[0,1]
  [10,11]]
-(make_matrix( 2*A )) ---> 
+(make_matrix(2 * A)) ---> 
 [[0,2]
  [20,22]]
-(A+ 2) ---> (
+(A + 2) ---> (
 [[0,1]
  [10,11]] + 2)
-(make_matrix(A+2 )) ---> 
+(make_matrix(A + 2)) ---> 
 [[2,1]
  [10,13]]
-(make_matrix(1 + A )) ---> 
+(make_matrix(1 + A)) ---> 
 [[1,1]
  [10,12]]
-(make_vector( V2 + 2.0 *V)) ---> [12,24,36]
+(make_vector(V2 + 2.0 * V)) ---> [12,24,36]
 (Af) ---> 
 [[0,1]
  [10,11]]
-(1/Af) ---> (1 * inverse(
+(1 / Af) ---> (1 * inverse(
 [[0,1]
  [10,11]]))
-(make_matrix(2/Af)) ---> 
+(make_matrix(2 / Af)) ---> 
 [[-2.2,0.2]
  [2,0]]
-(make_matrix(Af/2)) ---> 
+(make_matrix(Af / 2)) ---> 
 [[0,0.5]
  [5,5.5]]

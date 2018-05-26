@@ -191,7 +191,7 @@ namespace std {
                             << type_id << " vs " << id << ")";
       return *reinterpret_cast<T *>(&data);
     }
-    
+
     template <typename T, std::size_t id = find_first_id<equal<std14::decay_t<T>>>::id, typename = std14::enable_if_t<id != n_bounded_types>>
     operator T() const {
       if (type_id != id)
@@ -238,20 +238,17 @@ namespace std {
 
     // Comparisons
     bool operator==(variant const &other) const {
-      if (type_id != other.type_id)
-	return false;
+      if (type_id != other.type_id) return false;
       return visit([&other](auto const &x) { return x == *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
     }
     bool operator!=(variant const &other) const { return !(operator==(other)); }
 
     bool operator<(variant const &other) const {
-      if (type_id != other.type_id)
-	return type_id < other.type_id;
+      if (type_id != other.type_id) return type_id < other.type_id;
       return visit([&other](auto const &x) { return x < *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
     }
     bool operator>(variant const &other) const {
-      if (type_id != other.type_id)
-	return type_id > other.type_id;
+      if (type_id != other.type_id) return type_id > other.type_id;
       return visit([&other](auto const &x) { return x > *reinterpret_cast<decltype(&x)>(&other.data); }, *this);
     }
 

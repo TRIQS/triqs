@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_CLEF_ADAPTER_MATH_H 
+#ifndef TRIQS_CLEF_ADAPTER_MATH_H
 #define TRIQS_CLEF_ADAPTER_MATH_H
 #include "../clef.hpp"
 #include <math.h>
@@ -27,15 +27,18 @@
 
 #define TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY (cos)(sin)(tan)(cosh)(sinh)(tanh)(acos)(asin)(atan)(exp)(log)(sqrt)(abs)(floor)(pow)(conj)
 
-namespace triqs { namespace clef { 
+namespace triqs {
+  namespace clef {
 
-#define TRIQS_CLEF_MAKE_STD_FNT_LAZY(name) using std::name; TRIQS_CLEF_MAKE_FNT_LAZY(name) 
+#define TRIQS_CLEF_MAKE_STD_FNT_LAZY(name)                                                                                                           \
+  using std::name;                                                                                                                                   \
+  TRIQS_CLEF_MAKE_FNT_LAZY(name)
 #define AUX(r, data, elem) TRIQS_CLEF_MAKE_STD_FNT_LAZY(elem)
- BOOST_PP_SEQ_FOR_EACH(AUX , nil , TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY);
-#undef AUX  
-//#undef TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY
- 
-}}
+    BOOST_PP_SEQ_FOR_EACH(AUX, nil, TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY);
+#undef AUX
+    //#undef TRIQS_CLEF_STD_MATH_FNT_TO_MAKE_LAZY
+
+  } // namespace clef
+} // namespace triqs
 
 #endif
-

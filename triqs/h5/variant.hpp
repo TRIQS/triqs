@@ -28,9 +28,7 @@
 
 namespace triqs::h5 {
 
-  template <typename... T> struct hdf5_scheme_impl<std::variant<T...>> {
-    static std::string invoke() = delete;
-  };
+  template <typename... T> struct hdf5_scheme_impl<std::variant<T...>> { static std::string invoke() = delete; };
 
   /**
    */
@@ -39,8 +37,11 @@ namespace triqs::h5 {
   }
 
   template <typename T> bool h5_is(datatype dt) {
-    if constexpr (std::is_same<T, std::string>::value) { return H5Tget_class(dt) == H5T_STRING; } // H5T_INTEGER, H5T_FLOAT
-    else return H5Tequal(dt, h5_type_from_C(T{}));
+    if constexpr (std::is_same<T, std::string>::value) {
+      return H5Tget_class(dt) == H5T_STRING;
+    } // H5T_INTEGER, H5T_FLOAT
+    else
+      return H5Tequal(dt, h5_type_from_C(T{}));
   }
 
   template <typename VT, typename U, typename... T> void h5_read_variant_helper(VT &v, datatype dt, h5::group gr, std::string const &name) {
@@ -48,8 +49,10 @@ namespace triqs::h5 {
       v = VT{triqs::h5::h5_read<U>(gr, name)};
       return;
     }
-    if constexpr (sizeof...(T) > 0) h5_read_variant_helper<VT, T...>(v, dt, gr, name);
-    else TRIQS_RUNTIME_ERROR << " Error in h5_read: std::variant<...> not compatible with TRIQS_HDF5_data_scheme \n";
+    if constexpr (sizeof...(T) > 0)
+      h5_read_variant_helper<VT, T...>(v, dt, gr, name);
+    else
+      TRIQS_RUNTIME_ERROR << " Error in h5_read: std::variant<...> not compatible with TRIQS_HDF5_data_scheme \n";
   }
 
   /**

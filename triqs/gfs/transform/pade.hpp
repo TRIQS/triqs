@@ -21,9 +21,9 @@
 #pragma once
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- void pade(gf_view<refreq> gr, gf_const_view<imfreq> gw, int n_points, double freq_offset);
- void pade (gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset); 
-}
-}
+    void pade(gf_view<refreq> gr, gf_const_view<imfreq> gw, int n_points, double freq_offset);
+    void pade(gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset);
+  } // namespace gfs
+} // namespace triqs

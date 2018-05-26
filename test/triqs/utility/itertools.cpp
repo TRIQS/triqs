@@ -32,11 +32,11 @@ using namespace triqs::utility;
 struct _int {
   int i;
   _int(int u) : i(u){};
-  _int(_int const&) = delete;
-  _int(_int&&)      = default;
+  _int(_int const &) = delete;
+  _int(_int &&)      = default;
 
   operator int() const { return i; }
-  friend std::ostream& operator<<(std::ostream& out, _int const& x) { return out << x.i; }
+  friend std::ostream &operator<<(std::ostream &out, _int const &x) { return out << x.i; }
 };
 
 TEST(Itertools, Zip) {
@@ -45,14 +45,10 @@ TEST(Itertools, Zip) {
   std::vector<int> V2{1, 2, 3, 4, 5, 6};
 
   // Zip both vectors and sum
-  for (auto[x, y] : zip(V1, V2)) {
-    EXPECT_TRUE(7 - y == x);
-  }
+  for (auto [x, y] : zip(V1, V2)) { EXPECT_TRUE(7 - y == x); }
 
   // Change the values of the second vector to the first
-  for (auto[x, y] : zip(V1, V2)) {
-    y = x.i;
-  }
+  for (auto [x, y] : zip(V1, V2)) { y = x.i; }
   EXPECT_TRUE(std::equal(V2.begin(), V2.end(), V1.begin()));
 }
 
@@ -61,22 +57,20 @@ TEST(Itertools, Enumerate) {
   std::vector<int> V{6, 5, 4, 3, 2, 1};
 
   // Enumerate the elements of the vector
-  for (auto[j, x] : enumerate(V)) {
+  for (auto [j, x] : enumerate(V)) {
     EXPECT_TRUE(j + x == 6);
     EXPECT_TRUE(x == V[j]);
   }
 
   // Enumerate and change values
   std::vector<int> V_compare{0, 1, 2, 3, 4, 5};
-  for (auto[j, x] : enumerate(V)) {
-    x = j;
-  }
+  for (auto [j, x] : enumerate(V)) { x = j; }
   EXPECT_TRUE(std::equal(V.begin(), V.end(), V_compare.begin()));
 
   std::array<_int, 6> W{6, 5, 4, 3, 2, 1};
 
   // Enumerate the elements of the array
-  for (auto[j, x] : enumerate(W)) {
+  for (auto [j, x] : enumerate(W)) {
     EXPECT_TRUE(6 - j == x);
     EXPECT_TRUE(W[j] == x);
   }
@@ -110,9 +104,7 @@ TEST(Itertools, Product) {
   std::vector<int> V1{0, 1, 2, 3, 4};
   std::array<_int, 5> V2{0, 1, 2, 3, 4};
 
-  for (auto[x, y] : product(V1, V2)) {
-    std::cout << "[" << x << "," << y << "]\n";
-  }
+  for (auto [x, y] : product(V1, V2)) { std::cout << "[" << x << "," << y << "]\n"; }
 }
 
 TEST(Itertools, Make_Product) {
@@ -121,12 +113,11 @@ TEST(Itertools, Make_Product) {
 
   std::array<range, N> range_arr{range(1), range(2), range(3), range(4)};
 
-  array<int, 4> arr(1,2,3,4), arr_ref(1,2,3,4);
+  array<int, 4> arr(1, 2, 3, 4), arr_ref(1, 2, 3, 4);
   arr_ref() = 1;
 
   arr() = 0; // Visit each element exactly once
-  for (auto [i,j,k,l] : make_product(range_arr))
-    ++arr(i,j,k,l);
+  for (auto [i, j, k, l] : make_product(range_arr)) ++arr(i, j, k, l);
 
   EXPECT_EQ(arr, arr_ref);
 }
@@ -138,18 +129,11 @@ TEST(Itertools, Multi) {
   // Build enumerate from transform and compare
   auto l = [n = 0](auto x) mutable { return std::tuple<int, decltype(x)>{n++, x}; };
 
-  for (auto[x1, x2] : zip(transform(V, l), enumerate(V))) {
-    EXPECT_TRUE(x1 == x2);
-  }
+  for (auto [x1, x2] : zip(transform(V, l), enumerate(V))) { EXPECT_TRUE(x1 == x2); }
 
   // Chain enumerate and transform
-  for (auto[i, x] : enumerate(transform(V, l))) {
-    std::cout << i << " " << x << "\n";
-  }
+  for (auto [i, x] : enumerate(transform(V, l))) { std::cout << i << " " << x << "\n"; }
 }
 #endif
 
 MAKE_MAIN;
-
-
-

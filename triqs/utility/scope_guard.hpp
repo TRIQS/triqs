@@ -21,43 +21,51 @@
 #pragma once
 #include <utility>
 
-namespace triqs { namespace utility {
+namespace triqs {
+  namespace utility {
 
-// adapted from A. Alexandrescu talk, C++ & beyond 2013.
-template <class Fun>
-class scope_guard {
- Fun f_;
- bool active_;
- public:
- scope_guard(Fun f) : f_(std::move(f)) , active_(true) {}
- ~scope_guard() { if (active_) f_(); }
- void dismiss() { active_ = false; }
- bool active() const { return active_;}
- scope_guard() = delete;
- scope_guard(const scope_guard&) = delete;
- scope_guard(scope_guard&& rhs) : f_(std::move(rhs.f_)) , active_(rhs.active_) { rhs.dismiss(); }
- scope_guard& operator=(const scope_guard&) = delete;
- scope_guard& operator=(scope_guard&& rhs) { using std::swap; swap(f_,rhs.f_); swap(active_, rhs.active_); return *this;}
-};
+    // adapted from A. Alexandrescu talk, C++ & beyond 2013.
+    template <class Fun> class scope_guard {
+      Fun f_;
+      bool active_;
 
-/// The function f will be called at the end of the scope, whatever happens.
-template <class Fun> scope_guard<Fun> exec_at_scope_exit(Fun f) { return {std::move(f)}; }
+      public:
+      scope_guard(Fun f) : f_(std::move(f)), active_(true) {}
+      ~scope_guard() {
+        if (active_) f_();
+      }
+      void dismiss() { active_ = false; }
+      bool active() const { return active_; }
+      scope_guard()                    = delete;
+      scope_guard(const scope_guard &) = delete;
+      scope_guard(scope_guard &&rhs) : f_(std::move(rhs.f_)), active_(rhs.active_) { rhs.dismiss(); }
+      scope_guard &operator=(const scope_guard &) = delete;
+      scope_guard &operator                       =(scope_guard &&rhs) {
+        using std::swap;
+        swap(f_, rhs.f_);
+        swap(active_, rhs.active_);
+        return *this;
+      }
+    };
 
-template <class Fun> scope_guard<Fun> make_scope_guard(Fun f) { return {std::move(f)}; }
+    /// The function f will be called at the end of the scope, whatever happens.
+    template <class Fun> scope_guard<Fun> exec_at_scope_exit(Fun f) { return {std::move(f)}; }
 
-// SCOPE_EXIT macro
-namespace detail {
+    template <class Fun> scope_guard<Fun> make_scope_guard(Fun f) { return {std::move(f)}; }
 
- enum class _scope_guard_on_exit {};
- template <typename F> scope_guard<F> operator+(_scope_guard_on_exit, F&& f) { return {std::forward<F>(f)}; }
+    // SCOPE_EXIT macro
+    namespace detail {
+
+      enum class _scope_guard_on_exit {};
+      template <typename F> scope_guard<F> operator+(_scope_guard_on_exit, F &&f) { return {std::forward<F>(f)}; }
 
 #define TRIQS_CONCAT2(X1, X2) X1##X2
 #define TRIQS_CONCAT(X1, X2) TRIQS_CONCAT2(X1, X2)
 #ifdef __COUNTER__
-#define SCOPE_EXIT                                                                                                               \
- auto TRIQS_CONCAT(SCOPE_EXIT_ANONYMOUS_VARIABLE, __COUNTER__) = triqs::utility::detail::_scope_guard_on_exit{} + [&]()
+#define SCOPE_EXIT auto TRIQS_CONCAT(SCOPE_EXIT_ANONYMOUS_VARIABLE, __COUNTER__) = triqs::utility::detail::_scope_guard_on_exit{} + [&]()
 #else
 #error "__COUNTER__ not defined for this compiler"
 #endif
-}
-}}
+    } // namespace detail
+  }   // namespace utility
+} // namespace triqs

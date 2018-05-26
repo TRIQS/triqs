@@ -1,5 +1,5 @@
 /*******************************************************************************
- * 
+ *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2011 by M. Ferrero, O. Parcollet

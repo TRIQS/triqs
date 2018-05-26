@@ -27,22 +27,21 @@ using namespace triqs::arrays;
 using namespace triqs::utility;
 
 template <typename T> struct check {
- static_assert(std::is_same<typename T::view_type, typename view_type_if_exists_else_type<T>::type >::value, "err");
- static_assert(std::is_same<typename T::regular_type, typename regular_type_if_exists_else_type<T>::type >::value, "err");
+  static_assert(std::is_same<typename T::view_type, typename view_type_if_exists_else_type<T>::type>::value, "err");
+  static_assert(std::is_same<typename T::regular_type, typename regular_type_if_exists_else_type<T>::type>::value, "err");
 };
 
 int main(int argc, char **argv) {
 
- static_assert(has_view< array<int,2> > ::value, " err");
- static_assert(has_view< array_view<int,1> > ::value, " err");
- static_assert(has_view< matrix<double> > ::value, " err");
- static_assert(!has_view< double > ::value, " err");
- 
- check<array<int,1>> ();
- check<array_view<int,1>>();
- check<matrix<int>>();
- check<matrix_view<int>>();
+  static_assert(has_view<array<int, 2>>::value, " err");
+  static_assert(has_view<array_view<int, 1>>::value, " err");
+  static_assert(has_view<matrix<double>>::value, " err");
+  static_assert(!has_view<double>::value, " err");
 
- return 0;
+  check<array<int, 1>>();
+  check<array_view<int, 1>>();
+  check<matrix<int>>();
+  check<matrix_view<int>>();
+
+  return 0;
 }
-

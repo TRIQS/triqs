@@ -9,8 +9,8 @@ int main() {
   auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
   gw(iom_) << 1 / (iom_ - 1);
 
-  size_t n_min   = 50; // linear index on mesh to start the fit
-  size_t n_max   = 90; // final linear index for fit (included)
+  size_t n_min = 50; // linear index on mesh to start the fit
+  size_t n_max = 90; // final linear index for fit (included)
 
   std::cout << fit_tail(gw) << std::endl;
 }

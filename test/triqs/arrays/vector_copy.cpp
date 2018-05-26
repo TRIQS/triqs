@@ -25,40 +25,38 @@
 #include <triqs/arrays/vector.hpp>
 #include <iostream>
 
-using std::cout; using std::endl;
+using std::cout;
+using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
- 
+  triqs::arrays::vector<double> V(5), W;
 
- triqs::arrays::vector<double> V(5), W;
+  for (int i = 0; i < 5; ++i) V(i) = i + 1;
 
- for (int i =0; i<5; ++i) 
- V(i) = i+1;
+  std::cout << V << std::endl;
+  W = V;
+  std::cout << W << std::endl;
+  std::cout << V << std::endl;
 
- std::cout<< V<<std::endl; 
- W = V;
- std::cout<< W <<std::endl; 
- std::cout<< V<<std::endl; 
+  triqs::arrays::vector<double> A(3);
+  A()               = 10;
+  W(range(0, 6, 2)) = A;
+  std::cout << W << std::endl;
 
- triqs::arrays::vector<double> A(3);
- A() = 10; 
- W(range(0,6,2)) = A;
- std::cout<< W <<std::endl; 
+  W += V;
+  std::cout << W << std::endl;
 
- W +=V;
- std::cout<< W <<std::endl; 
+  W -= V;
+  std::cout << W << std::endl;
 
- W -=V;
- std::cout<< W <<std::endl; 
+  V *= 2;
+  std::cout << "W = " << W << std::endl;
+  std::cout << "V = " << V << std::endl;
+  triqs::arrays::deep_swap(W, V);
+  std::cout << "W = " << W << std::endl;
+  std::cout << "V = " << V << std::endl;
 
- V *=2;
- std::cout<< "W = "<<W <<std::endl; 
- std::cout<< "V = "<<V <<std::endl; 
- triqs::arrays::deep_swap(W,V);
- std::cout<< "W = "<<W <<std::endl; 
- std::cout<< "V = "<<V <<std::endl; 
-
- return 0;
+  return 0;
 }

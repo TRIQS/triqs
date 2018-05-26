@@ -1,4 +1,4 @@
-(make_immutable_array( i_ + j_, i_= range(0,2), j_=range(0,2))) --->  immutable_array on domain : Cuboid of rank 2 and dimensions (2 2)
-((tqa::array<int,2>(tqa::make_immutable_array( i_ + j_, i_= range(0,2), j_=range(0,2))))) ---> 
+(make_immutable_array(i_ + j_, i_ = range(0, 2), j_ = range(0, 2))) --->  immutable_array on domain : Cuboid of rank 2 and dimensions (2 2)
+((tqa::array<int, 2>(tqa::make_immutable_array(i_ + j_, i_ = range(0, 2), j_ = range(0, 2))))) ---> 
 [[0,1]
  [1,2]]

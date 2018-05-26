@@ -22,20 +22,19 @@
 
 #include "MersenneRNG.hpp"
 
-namespace triqs { 
-namespace mc_tools { 
- namespace RandomGenerators{
+namespace triqs {
+  namespace mc_tools {
+    namespace RandomGenerators {
 
-  double  RandMT::eval() {
+      double RandMT::eval() {
 #ifdef DEBUG
-   double r = (double)(randomMT())/0xFFFFFFFFU;
-   std::cout<<"RANDOM "<<r<<std::endl;
-   return r;
+        double r = (double)(randomMT()) / 0xFFFFFFFFU;
+        std::cout << "RANDOM " << r << std::endl;
+        return r;
 #else
-   return ((double)(randomMT())/0xFFFFFFFFU);
+        return ((double)(randomMT()) / 0xFFFFFFFFU);
 #endif
-
-  }
- }
-}
-}
+      }
+    } // namespace RandomGenerators
+  }   // namespace mc_tools
+} // namespace triqs

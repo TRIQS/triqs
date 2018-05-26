@@ -31,5 +31,3 @@
 #ifdef TRIQS_INCLUDED_GF
 #include "./cpp2py_converters/gf.hpp"
 #endif
-
-

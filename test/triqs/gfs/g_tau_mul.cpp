@@ -10,7 +10,7 @@ TEST(GfMul, Statistic) {
   auto b = gf<imtime>{{beta, Boson, 100}, {1, 1}};
 
   EXPECT_THROW(gf<imtime>{f + b}, triqs::runtime_error);
-  
+
   {
     gf<imtime> p = f * f;
     EXPECT_TRUE(p.mesh().domain().statistic == Boson);
@@ -67,10 +67,10 @@ TEST(GfMul, Statistic2Imtime) {
 TEST(GfMul, Statistic_k_tau) {
   using g_t = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>;
 
-  double beta            = 10.0;
+  double beta = 10.0;
   int n_bz    = 20;
-  auto bz    = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
-  auto g_eps = gf<brillouin_zone>{{bz, n_bz}, {1, 1}};
+  auto bz     = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
+  auto g_eps  = gf<brillouin_zone>{{bz, n_bz}, {1, 1}};
 
   auto f = g_t{{{bz, n_bz}, {beta, Fermion, 100}}, {1, 1}};
   auto b = g_t{{{bz, n_bz}, {beta, Boson, 100}}, {1, 1}};
@@ -82,11 +82,11 @@ TEST(GfMul, Statistic_k_tau) {
     g_t p = f + f;
     EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Fermion);
   }
-{
+  {
     g_t p = b + b;
     EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Boson);
   }
-{
+  {
     g_t p = f * f;
     EXPECT_TRUE(std::get<1>(p.mesh()).domain().statistic == Boson);
   }

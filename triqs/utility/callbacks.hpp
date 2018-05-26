@@ -25,10 +25,10 @@
 #include <triqs/utility/first_include.hpp>
 #include <functional>
 
-namespace triqs { namespace utility { 
- 
- std::function<bool ()> clock_callback(int time_in_seconds);
+namespace triqs {
+  namespace utility {
 
-}}
+    std::function<bool()> clock_callback(int time_in_seconds);
+  }
+} // namespace triqs
 #endif
-

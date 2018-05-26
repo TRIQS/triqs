@@ -16,47 +16,44 @@ using index_t = utility::mini_vector<int, 3>;
 
 TEST(Gf, x_t) {
 
- auto gkt = gf<cartesian_product<brillouin_zone, retime>, matrix_valued>{{{bz, n_bz}, {t_min, t_max, n_times}}, {1, 1}};
+  auto gkt = gf<cartesian_product<brillouin_zone, retime>, matrix_valued>{{{bz, n_bz}, {t_min, t_max, n_times}}, {1, 1}};
 
- placeholder<0> k_;
- placeholder<1> t_;
+  placeholder<0> k_;
+  placeholder<1> t_;
 
- auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
- gkt(k_, t_) << exp(-1_j * eps_k * t_);
+  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
+  gkt(k_, t_) << exp(-1_j * eps_k * t_);
 
- auto gxt = gf<cartesian_product<cyclic_lattice, retime>, matrix_valued>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
+  auto gxt = gf<cartesian_product<cyclic_lattice, retime>, matrix_valued>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
 
- for (auto const &t : std::get<1>(gxt.mesh()))
-  gxt[_, t] = fourier(gkt[_, t]);
+  for (auto const &t : std::get<1>(gxt.mesh())) gxt[_, t] = fourier(gkt[_, t]);
 
- EXPECT_GF_NEAR(gxt, rw_h5(gxt, "ess_g_x_t.h5", "g"));
+  EXPECT_GF_NEAR(gxt, rw_h5(gxt, "ess_g_x_t.h5", "g"));
 
- EXPECT_ARRAY_NEAR(matrix<dcomplex>{{1}}, gxt(index_t{0, 0, 0}, 0.0));
- EXPECT_ARRAY_NEAR(matrix<dcomplex>{gxt(index_t{2, 0, 0}, 0.0)}, gxt(index_t{1, 0, 0} + index_t{1, 0, 0}, 0.0));
- EXPECT_ARRAY_NEAR(matrix<dcomplex>{gxt(index_t{0, 0, 0}, 0.0)}, gxt(index_t{1, 0, 0} - index_t{1, 0, 0}, 0.0));
+  EXPECT_ARRAY_NEAR(matrix<dcomplex>{{1}}, gxt(index_t{0, 0, 0}, 0.0));
+  EXPECT_ARRAY_NEAR(matrix<dcomplex>{gxt(index_t{2, 0, 0}, 0.0)}, gxt(index_t{1, 0, 0} + index_t{1, 0, 0}, 0.0));
+  EXPECT_ARRAY_NEAR(matrix<dcomplex>{gxt(index_t{0, 0, 0}, 0.0)}, gxt(index_t{1, 0, 0} - index_t{1, 0, 0}, 0.0));
 }
 
 // ------------------------------------------------------------------------------------------------------
 
 TEST(Gf, x_tau) {
 
- auto gkt = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
+  auto gkt = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
- placeholder<0> k_;
- placeholder_prime<1> tau_;
+  placeholder<0> k_;
+  placeholder_prime<1> tau_;
 
- auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
- gkt(k_, tau_) << exp(-eps_k * tau_);
+  auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
+  gkt(k_, tau_) << exp(-eps_k * tau_);
 
- auto gxt = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{{L, L}, {beta, Fermion, n_times}}, {1, 1}};
+  auto gxt = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{{L, L}, {beta, Fermion, n_times}}, {1, 1}};
 
- for (auto const &t : std::get<1>(gxt.mesh()))
-  gxt[_, t] = fourier(gkt[_, t]);
+  for (auto const &t : std::get<1>(gxt.mesh())) gxt[_, t] = fourier(gkt[_, t]);
 
- auto gg = rw_h5(gxt, "ess_g_x_tau.h5", "g");
+  auto gg = rw_h5(gxt, "ess_g_x_tau.h5", "g");
 
- EXPECT_EQ(gxt.mesh(), gg.mesh());
- EXPECT_GF_NEAR(gxt, gg);
-
+  EXPECT_EQ(gxt.mesh(), gg.mesh());
+  EXPECT_GF_NEAR(gxt, gg);
 }
 MAKE_MAIN;

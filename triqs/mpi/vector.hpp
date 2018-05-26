@@ -24,144 +24,134 @@
 #include <vector>
 
 namespace triqs {
-namespace mpi {
+  namespace mpi {
 
- // ---------------- broadcast ---------------------
+    // ---------------- broadcast ---------------------
 
- template <typename T> void mpi_broadcast(std::vector<T> &a, communicator c={}, int root=0) {
-  mpi_broadcast(a, c, root, is_basic<T>{});
- }
+    template <typename T> void mpi_broadcast(std::vector<T> &a, communicator c = {}, int root = 0) { mpi_broadcast(a, c, root, is_basic<T>{}); }
 
- template <typename T> void mpi_broadcast(std::vector<T> &a, communicator c, int root, std::true_type) {
-  size_t s = a.size();
-  mpi_broadcast(s, c, root);
-  if (c.rank() != root) a.resize(s);
-  MPI_Bcast(a.data(), a.size(), mpi_datatype<T>(), root, c.get());
- }
+    template <typename T> void mpi_broadcast(std::vector<T> &a, communicator c, int root, std::true_type) {
+      size_t s = a.size();
+      mpi_broadcast(s, c, root);
+      if (c.rank() != root) a.resize(s);
+      MPI_Bcast(a.data(), a.size(), mpi_datatype<T>(), root, c.get());
+    }
 
- template <typename T> void mpi_broadcast(std::vector<T> &v, communicator c, int root, std::false_type) {
-  size_t s = v.size();
-  mpi_broadcast(s, c, root);
-  if (c.rank() != root) v.resize(s);
-  for (auto &x : v) mpi_broadcast(x, c, root);
- }
+    template <typename T> void mpi_broadcast(std::vector<T> &v, communicator c, int root, std::false_type) {
+      size_t s = v.size();
+      mpi_broadcast(s, c, root);
+      if (c.rank() != root) v.resize(s);
+      for (auto &x : v) mpi_broadcast(x, c, root);
+    }
 
- // ---------------- reduce in place  ---------------------
+    // ---------------- reduce in place  ---------------------
 
- template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
-  mpi_reduce_in_place(a, c, root, op, is_basic<T>{});
- }
+    template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
+      mpi_reduce_in_place(a, c, root, op, is_basic<T>{});
+    }
 
- template <typename T>
- void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, MPI_Op op, std::true_type) {
-  if (!all)
-   MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : a.data()), a.data(), a.size(), mpi_datatype<T>(), op, root, c.get());
-  else
-   MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), mpi_datatype<T>(), op, c.get());
- }
+    template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, MPI_Op op, std::true_type) {
+      if (!all)
+        MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : a.data()), a.data(), a.size(), mpi_datatype<T>(), op, root, c.get());
+      else
+        MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), mpi_datatype<T>(), op, c.get());
+    }
 
- template <typename T>
- void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, MPI_Op op, std::false_type) {
-  for (auto &x : a) mpi_reduce_in_place(a, c, root, all);
- }
+    template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, MPI_Op op, std::false_type) {
+      for (auto &x : a) mpi_reduce_in_place(a, c, root, all);
+    }
 
- // ---------------- reduce   ---------------------
+    // ---------------- reduce   ---------------------
 
- template <typename T>
- std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false,
-                                    MPI_Op op = MPI_SUM) {
-  return mpi_reduce(a, c, root, all, op, is_basic<T>{});
- }
+    template <typename T>
+    std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+      return mpi_reduce(a, c, root, all, op, is_basic<T>{});
+    }
 
- template <typename T>
- std::vector<T> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, MPI_Op op, std::true_type) {
-  std::vector<T> b(a.size());
-  if (!all)
-   MPI_Reduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), op, root, c.get());
-  else
-   MPI_Allreduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), op, c.get());
-  return b;
- }
+    template <typename T> std::vector<T> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, MPI_Op op, std::true_type) {
+      std::vector<T> b(a.size());
+      if (!all)
+        MPI_Reduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), op, root, c.get());
+      else
+        MPI_Allreduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), op, c.get());
+      return b;
+    }
 
- template <typename T>
- std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, MPI_Op op, std::false_type) {
-  int s = a.size();
-  std::vector<Regular<T>> lhs;
-  lhs.reserve(s);
-  for (auto i = 0; i < s; ++i) lhs.push_back(mpi_reduce(a[i], c, root, all, op));
-  return lhs;
- }
+    template <typename T>
+    std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, MPI_Op op, std::false_type) {
+      int s = a.size();
+      std::vector<Regular<T>> lhs;
+      lhs.reserve(s);
+      for (auto i = 0; i < s; ++i) lhs.push_back(mpi_reduce(a[i], c, root, all, op));
+      return lhs;
+    }
 
- // ---------------- scatter  ---------------------
+    // ---------------- scatter  ---------------------
 
- template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c={}, int root=0) {
-  return mpi_scatter(a, c, root, is_basic<T>{});
- }
+    template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c = {}, int root = 0) {
+      return mpi_scatter(a, c, root, is_basic<T>{});
+    }
 
- template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c, int root, std::true_type) {
-  auto slow_size = a.size();
-  auto sendcounts = std::vector<int>(c.size());
-  auto displs = std::vector<int>(c.size() + 1, 0);
-  int recvcount = slice_length(slow_size - 1, c.size(), c.rank());
-  std::vector<T> b(recvcount);
+    template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c, int root, std::true_type) {
+      auto slow_size  = a.size();
+      auto sendcounts = std::vector<int>(c.size());
+      auto displs     = std::vector<int>(c.size() + 1, 0);
+      int recvcount   = slice_length(slow_size - 1, c.size(), c.rank());
+      std::vector<T> b(recvcount);
 
-  for (int r = 0; r < c.size(); ++r) {
-   sendcounts[r] = slice_length(slow_size - 1, c.size(), r);
-   displs[r + 1] = sendcounts[r] + displs[r];
-  }
+      for (int r = 0; r < c.size(); ++r) {
+        sendcounts[r] = slice_length(slow_size - 1, c.size(), r);
+        displs[r + 1] = sendcounts[r] + displs[r];
+      }
 
-  MPI_Scatterv((void *)a.data(), &sendcounts[0], &displs[0], mpi_datatype<T>(), (void *)b.data(), recvcount, mpi_datatype<T>(),
-               root, c.get());
-  return b;
- }
+      MPI_Scatterv((void *)a.data(), &sendcounts[0], &displs[0], mpi_datatype<T>(), (void *)b.data(), recvcount, mpi_datatype<T>(), root, c.get());
+      return b;
+    }
 
- template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c, int root, std::false_type) {
-  int s = a.size();
-  std::vector<T> lhs;
-  lhs.reserve(s);
-  for (auto i = 0; i < s; ++i) lhs.push_back(mpi_scatter(a[i], c, root));
-  return lhs;
- }
+    template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c, int root, std::false_type) {
+      int s = a.size();
+      std::vector<T> lhs;
+      lhs.reserve(s);
+      for (auto i = 0; i < s; ++i) lhs.push_back(mpi_scatter(a[i], c, root));
+      return lhs;
+    }
 
- // ---------------- gather  ---------------------
+    // ---------------- gather  ---------------------
 
- template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false) {
-  return mpi_gather(a, c, root, all, is_basic<T>{});
- }
+    template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false) {
+      return mpi_gather(a, c, root, all, is_basic<T>{});
+    }
 
- template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c, int root, bool all, std::true_type) {
-  long size = mpi_reduce(a.size(), c, root, all);
-  std::vector<T> b((all || (c.rank() == root) ? size : 0));
+    template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c, int root, bool all, std::true_type) {
+      long size = mpi_reduce(a.size(), c, root, all);
+      std::vector<T> b((all || (c.rank() == root) ? size : 0));
 
-  auto recvcounts = std::vector<int>(c.size());
-  auto displs = std::vector<int>(c.size() + 1, 0);
-  int sendcount = a.size();
-  auto mpi_ty = mpi::mpi_datatype<int>();
-  if (!all)
-   MPI_Gather(&sendcount, 1, mpi_ty, &recvcounts[0], 1, mpi_ty, root, c.get());
-  else
-   MPI_Allgather(&sendcount, 1, mpi_ty, &recvcounts[0], 1, mpi_ty, c.get());
+      auto recvcounts = std::vector<int>(c.size());
+      auto displs     = std::vector<int>(c.size() + 1, 0);
+      int sendcount   = a.size();
+      auto mpi_ty     = mpi::mpi_datatype<int>();
+      if (!all)
+        MPI_Gather(&sendcount, 1, mpi_ty, &recvcounts[0], 1, mpi_ty, root, c.get());
+      else
+        MPI_Allgather(&sendcount, 1, mpi_ty, &recvcounts[0], 1, mpi_ty, c.get());
 
-  for (int r = 0; r < c.size(); ++r) displs[r + 1] = recvcounts[r] + displs[r];
+      for (int r = 0; r < c.size(); ++r) displs[r + 1] = recvcounts[r] + displs[r];
 
-  if (!all)
-   MPI_Gatherv((void *)a.data(), sendcount, mpi_datatype<T>(), (void *)b.data(), &recvcounts[0], &displs[0], mpi_datatype<T>(),
-               root, c.get());
-  else
-   MPI_Allgatherv((void *)a.data(), sendcount, mpi_datatype<T>(), (void *)b.data(), &recvcounts[0], &displs[0], mpi_datatype<T>(),
-                  c.get());
+      if (!all)
+        MPI_Gatherv((void *)a.data(), sendcount, mpi_datatype<T>(), (void *)b.data(), &recvcounts[0], &displs[0], mpi_datatype<T>(), root, c.get());
+      else
+        MPI_Allgatherv((void *)a.data(), sendcount, mpi_datatype<T>(), (void *)b.data(), &recvcounts[0], &displs[0], mpi_datatype<T>(), c.get());
 
-  return b;
- }
+      return b;
+    }
 
- template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c, int root, bool all, std::false_type) {
-  int s = a.size();
-  std::vector<T> lhs;
-  lhs.reserve(s);
-  for (auto i = 0; i < s; ++i) lhs.push_back(mpi_gather(a[i], c, root, all));
-  return lhs;
- }
+    template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c, int root, bool all, std::false_type) {
+      int s = a.size();
+      std::vector<T> lhs;
+      lhs.reserve(s);
+      for (auto i = 0; i < s; ++i) lhs.push_back(mpi_gather(a[i], c, root, all));
+      return lhs;
+    }
 
-}
-} // namespace
-
+  } // namespace mpi
+} // namespace triqs

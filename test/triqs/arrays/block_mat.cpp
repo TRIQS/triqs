@@ -22,12 +22,12 @@
 
 TEST(BlockMatrixH5, S1) {
 
- array<matrix<double>,1> V{matrix<double>{{1, 2}, {3, 4}}, matrix<double>{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}}};
- 
- auto W = rw_h5(V, "block_mat");
- 
- EXPECT_EQ(first_dim(V),first_dim(W));
- for (int i = 0; i < first_dim(V); ++i) EXPECT_ARRAY_NEAR(V(i), W(i));
+  array<matrix<double>, 1> V{matrix<double>{{1, 2}, {3, 4}}, matrix<double>{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}}};
+
+  auto W = rw_h5(V, "block_mat");
+
+  EXPECT_EQ(first_dim(V), first_dim(W));
+  for (int i = 0; i < first_dim(V); ++i) EXPECT_ARRAY_NEAR(V(i), W(i));
 }
 
 MAKE_MAIN;

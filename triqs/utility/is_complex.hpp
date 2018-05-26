@@ -22,9 +22,7 @@
 #include <complex>
 #include <type_traits>
 
-namespace triqs { 
- template<typename T> struct is_complex : std::false_type{};
- template<typename T> struct is_complex<std::complex<T>> : std::true_type{};
-}
-
-
+namespace triqs {
+  template <typename T> struct is_complex : std::false_type {};
+  template <typename T> struct is_complex<std::complex<T>> : std::true_type {};
+} // namespace triqs

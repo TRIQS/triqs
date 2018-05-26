@@ -22,32 +22,34 @@
 #include <triqs/utility/legendre.hpp>
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- using arrays::array;
+    using arrays::array;
 
- //-------------------------------------------------------
- // For Imaginary Time functions
- // ------------------------------------------------------
- gf<imtime> rebinning_tau(gf_const_view<imtime> const& g, int new_n_tau) {
+    //-------------------------------------------------------
+    // For Imaginary Time functions
+    // ------------------------------------------------------
+    gf<imtime> rebinning_tau(gf_const_view<imtime> const &g, int new_n_tau) {
 
-  auto const& old_m = g.mesh();
-  gf<imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau}, g.target_shape()};
-  auto const& new_m = new_gf.mesh();
-  new_gf.data()() = 0;
-  long prev_index = 0;
-  long norm = 0;
-  for (auto const& tau : old_m) {
-   long index = std::round((double(tau) - new_m.x_min()) / new_m.delta());
-   if (index == prev_index) { norm++; } else {
-    new_gf[index - 1] /= double(norm);
-    prev_index = index;
-    norm = 1;
-   }
-   new_gf[index] += g[tau];
-  }
-  if (norm != 1) new_gf[new_m.size() - 1] /= norm;
-  return new_gf;
- }
-}
-}
+      auto const &old_m = g.mesh();
+      gf<imtime> new_gf{{old_m.domain().beta, old_m.domain().statistic, new_n_tau}, g.target_shape()};
+      auto const &new_m = new_gf.mesh();
+      new_gf.data()()   = 0;
+      long prev_index   = 0;
+      long norm         = 0;
+      for (auto const &tau : old_m) {
+        long index = std::round((double(tau) - new_m.x_min()) / new_m.delta());
+        if (index == prev_index) {
+          norm++;
+        } else {
+          new_gf[index - 1] /= double(norm);
+          prev_index = index;
+          norm       = 1;
+        }
+        new_gf[index] += g[tau];
+      }
+      if (norm != 1) new_gf[new_m.size() - 1] /= norm;
+      return new_gf;
+    }
+  } // namespace gfs
+} // namespace triqs

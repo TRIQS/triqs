@@ -1,42 +1,42 @@
 (expr) ---> (5 * _1)
-(eval( expr, x_=5)) ---> 25
+(eval(expr, x_ = 5)) ---> 25
 -------------
  ------ start  test2  -----------------
 (expr) ---> (_1 + (2 * _2))
-(eval(expr,x_ =1, y_ =2)) ---> 5
-(eval(expr,x_ =1)) ---> (1 + (2 * _2))
-(eval(expr,x_ =x_ + y_)) ---> ((_1 + _2) + (2 * _2))
-(eval( eval ( expr,x_ =x_ + y_), x_ = 1, y_ = 2)) ---> 7
+(eval(expr, x_ = 1, y_ = 2)) ---> 5
+(eval(expr, x_ = 1)) ---> (1 + (2 * _2))
+(eval(expr, x_ = x_ + y_)) ---> ((_1 + _2) + (2 * _2))
+(eval(eval(expr, x_ = x_ + y_), x_ = 1, y_ = 2)) ---> 7
  ------ start  test2  -----------------
 (expr) ---> ((_1 + (2 * _2)) + _1)
-(eval(expr,x_ =1, y_ =2)) ---> 6
-(eval(expr,x_ =1)) ---> ((1 + (2 * _2)) + 1)
-(eval(expr,x_ =x_ + y_)) ---> (((_1 + _2) + (2 * _2)) + (_1 + _2))
-(eval( eval ( expr,x_ =x_ + y_), x_ = 1, y_ = 2)) ---> 10
+(eval(expr, x_ = 1, y_ = 2)) ---> 6
+(eval(expr, x_ = 1)) ---> ((1 + (2 * _2)) + 1)
+(eval(expr, x_ = x_ + y_)) ---> (((_1 + _2) + (2 * _2)) + (_1 + _2))
+(eval(eval(expr, x_ = x_ + y_), x_ = 1, y_ = 2)) ---> 10
  ------ start  test2  -----------------
 (expr) ---> ((_1 / 2) + (2 * _2))
-(eval(expr,x_ =1, y_ =2)) ---> 4.5
-(eval(expr,x_ =1)) ---> (0.5 + (2 * _2))
-(eval(expr,x_ =x_ + y_)) ---> (((_1 + _2) / 2) + (2 * _2))
-(eval( eval ( expr,x_ =x_ + y_), x_ = 1, y_ = 2)) ---> 5.5
+(eval(expr, x_ = 1, y_ = 2)) ---> 4.5
+(eval(expr, x_ = 1)) ---> (0.5 + (2 * _2))
+(eval(expr, x_ = x_ + y_)) ---> (((_1 + _2) / 2) + (2 * _2))
+(eval(eval(expr, x_ = x_ + y_), x_ = 1, y_ = 2)) ---> 5.5
  ------ start  test2  -----------------
 (expr) ---> F1(_1)
-(eval(expr,x_ =1, y_ =2)) ---> 10
-(eval(expr,x_ =1)) ---> 10
-(eval(expr,x_ =x_ + y_)) ---> F1((_1 + _2))
-(eval( eval ( expr,x_ =x_ + y_), x_ = 1, y_ = 2)) ---> 30
+(eval(expr, x_ = 1, y_ = 2)) ---> 10
+(eval(expr, x_ = 1)) ---> 10
+(eval(expr, x_ = x_ + y_)) ---> F1((_1 + _2))
+(eval(eval(expr, x_ = x_ + y_), x_ = 1, y_ = 2)) ---> 30
  ------ start  test2  -----------------
 (expr) ---> (F1(_1) + (2 * _2))
-(eval(expr,x_ =1, y_ =2)) ---> 14
-(eval(expr,x_ =1)) ---> (10 + (2 * _2))
-(eval(expr,x_ =x_ + y_)) ---> (F1((_1 + _2)) + (2 * _2))
-(eval( eval ( expr,x_ =x_ + y_), x_ = 1, y_ = 2)) ---> 34
+(eval(expr, x_ = 1, y_ = 2)) ---> 14
+(eval(expr, x_ = 1)) ---> (10 + (2 * _2))
+(eval(expr, x_ = x_ + y_)) ---> (F1((_1 + _2)) + (2 * _2))
+(eval(eval(expr, x_ = x_ + y_), x_ = 1, y_ = 2)) ---> 34
  ------ start  test2  -----------------
 (expr) ---> ((1 / F1(_1)) + (2 * _2))
-(eval(expr,x_ =1, y_ =2)) ---> 4.1
-(eval(expr,x_ =1)) ---> (0.1 + (2 * _2))
-(eval(expr,x_ =x_ + y_)) ---> ((1 / F1((_1 + _2))) + (2 * _2))
-(eval( eval ( expr,x_ =x_ + y_), x_ = 1, y_ = 2)) ---> 4.03333
+(eval(expr, x_ = 1, y_ = 2)) ---> 4.1
+(eval(expr, x_ = 1)) ---> (0.1 + (2 * _2))
+(eval(expr, x_ = x_ + y_)) ---> ((1 / F1((_1 + _2))) + (2 * _2))
+(eval(eval(expr, x_ = x_ + y_), x_ = 1, y_ = 2)) ---> 4.03333
 4 = 4
 12 = 12
 9 = 9
@@ -52,7 +52,7 @@ eval(expr,x_ =1, y_ =2) =  16 and it should be 16
 another  =  F2(2, _2)
 another  =  12
 -------------
-(eval( if_else( true , 2*x_ , y_) , x_=1, y_=3)) ---> 2
-(eval( if_else( false , 2*x_ , y_) ,x_=1, y_=3)) ---> 3
-(eval( if_else( x_>y_ , 2*x_ , y_) ,x_=1, y_=3)) ---> 3
+(eval(if_else(true, 2 * x_, y_), x_ = 1, y_ = 3)) ---> 2
+(eval(if_else(false, 2 * x_, y_), x_ = 1, y_ = 3)) ---> 3
+(eval(if_else(x_ > y_, 2 * x_, y_), x_ = 1, y_ = 3)) ---> 3
 (_1 < _2)

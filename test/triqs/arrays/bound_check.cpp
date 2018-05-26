@@ -21,12 +21,12 @@
 #include "start.hpp"
 TEST(Array, BoundCheck) {
 
- array<long, 2> A(2, 3);
+  array<long, 2> A(2, 3);
 
- EXPECT_THROW(A(0, 3), key_error);
- EXPECT_THROW(A(range(0, 4), 2), key_error);
- EXPECT_THROW(A(range(10, 14), 2), key_error);
- EXPECT_THROW(A(range(), 5), key_error);
- EXPECT_THROW(A(0, 3), key_error);
+  EXPECT_THROW(A(0, 3), key_error);
+  EXPECT_THROW(A(range(0, 4), 2), key_error);
+  EXPECT_THROW(A(range(10, 14), 2), key_error);
+  EXPECT_THROW(A(range(), 5), key_error);
+  EXPECT_THROW(A(0, 3), key_error);
 }
 MAKE_MAIN;

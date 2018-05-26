@@ -25,23 +25,21 @@ using namespace triqs::mpi;
 
 TEST(Comm, split) {
 
- communicator world;
- int rank = world.rank();
+  communicator world;
+  int rank = world.rank();
 
- ASSERT_EQ(4, world.size());
+  ASSERT_EQ(4, world.size());
 
- int colors[] = {0, 1, 1, 2};
- int keys[] = {5, 13, 18, 7};
+  int colors[] = {0, 1, 1, 2};
+  int keys[]   = {5, 13, 18, 7};
 
- auto comm = world.split(colors[rank], keys[rank]);
+  auto comm = world.split(colors[rank], keys[rank]);
 
- int comm_sizes[] = {1, 2, 2, 1};
- int comm_ranks[] = {0, 0, 1, 0};
+  int comm_sizes[] = {1, 2, 2, 1};
+  int comm_ranks[] = {0, 0, 1, 0};
 
- EXPECT_EQ(comm_sizes[rank], comm.size());
- EXPECT_EQ(comm_ranks[rank], comm.rank());
+  EXPECT_EQ(comm_sizes[rank], comm.size());
+  EXPECT_EQ(comm_ranks[rank], comm.rank());
 }
 
 MAKE_MAIN;
-
-

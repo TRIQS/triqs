@@ -22,33 +22,33 @@
 
 TEST(Array, Algebra) {
 
- array<int, 1> A(3), B(3), C;
- array<double, 1> D;
- B() = 2;
- A() = 3;
+  array<int, 1> A(3), B(3), C;
+  array<double, 1> D;
+  B() = 2;
+  A() = 3;
 
- C = A + B;
- EXPECT_ARRAY_NEAR(C, array<int, 1>{5, 5, 5});
+  C = A + B;
+  EXPECT_ARRAY_NEAR(C, array<int, 1>{5, 5, 5});
 
- C = A * B;
- EXPECT_ARRAY_NEAR(C, array<int, 1>{6, 6, 6});
+  C = A * B;
+  EXPECT_ARRAY_NEAR(C, array<int, 1>{6, 6, 6});
 
- C = 2 * B;
- EXPECT_ARRAY_NEAR(C, array<int, 1>{4, 4, 4});
+  C = 2 * B;
+  EXPECT_ARRAY_NEAR(C, array<int, 1>{4, 4, 4});
 
- C = 2 * B;
- EXPECT_ARRAY_NEAR(C, array<int, 1>{4, 4, 4});
+  C = 2 * B;
+  EXPECT_ARRAY_NEAR(C, array<int, 1>{4, 4, 4});
 
- D = 2.3 * B;
- EXPECT_ARRAY_NEAR(D, array<double, 1>{4.6, 4.6, 4.6});
+  D = 2.3 * B;
+  EXPECT_ARRAY_NEAR(D, array<double, 1>{4.6, 4.6, 4.6});
 
- D = A + B / 1.2;
- EXPECT_ARRAY_NEAR(D, array<double, 1>{4.66666666666667, 4.66666666666667, 4.66666666666667});
+  D = A + B / 1.2;
+  EXPECT_ARRAY_NEAR(D, array<double, 1>{4.66666666666667, 4.66666666666667, 4.66666666666667});
 
- auto x = A + B + 2 * A;
- EXPECT_PRINT("(([3,3,3] + [2,2,2]) + (2 * [3,3,3]))", x);
+  auto x = A + B + 2 * A;
+  EXPECT_PRINT("(([3,3,3] + [2,2,2]) + (2 * [3,3,3]))", x);
 
- C = A + 2 * A + 3 * A - 2 * A + A - A + A + A * 3 + A + A + A + A + A + A + A + A + A + A + A + A + A;
- EXPECT_ARRAY_NEAR(C, array<int, 1>{63, 63, 63});
+  C = A + 2 * A + 3 * A - 2 * A + A - A + A + A * 3 + A + A + A + A + A + A + A + A + A + A + A + A + A;
+  EXPECT_ARRAY_NEAR(C, array<int, 1>{63, 63, 63});
 }
 MAKE_MAIN;

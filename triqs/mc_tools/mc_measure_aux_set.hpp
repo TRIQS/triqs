@@ -24,29 +24,28 @@
 #include <map>
 
 namespace triqs {
-namespace mc_tools {
+  namespace mc_tools {
 
- // mini concept checking : does T have void operator()() ?
- template <typename T, typename Enable = void> struct is_callable : std::false_type {};
- template <typename T> struct is_callable<T, decltype(std::declval<T>()())> : std::true_type {};
+    // mini concept checking : does T have void operator()() ?
+    template <typename T, typename Enable = void> struct is_callable : std::false_type {};
+    template <typename T> struct is_callable<T, decltype(std::declval<T>()())> : std::true_type {};
 
- //--------------------------------------------------------------------
+    //--------------------------------------------------------------------
 
- class measure_aux {
+    class measure_aux {
 
-  std::shared_ptr<void> impl_;
-  std::function<void()> call_;
+      std::shared_ptr<void> impl_;
+      std::function<void()> call_;
 
-  public:
-  template <typename MeasureAuxType> measure_aux(std::shared_ptr<MeasureAuxType> p) {
-   static_assert(is_callable<MeasureAuxType>::value, "This measure_aux is not callable");
-   impl_ = p;
-   call_ = [p]() mutable { (*p)(); }; // without the mutable, the operator () of the lambda is const, hence p ...
-  }
+      public:
+      template <typename MeasureAuxType> measure_aux(std::shared_ptr<MeasureAuxType> p) {
+        static_assert(is_callable<MeasureAuxType>::value, "This measure_aux is not callable");
+        impl_ = p;
+        call_ = [p]() mutable { (*p)(); }; // without the mutable, the operator () of the lambda is const, hence p ...
+      }
 
-  void operator()() { call_(); }
- };
+      void operator()() { call_(); }
+    };
 
- }
-} // end namespace
-
+  } // namespace mc_tools
+} // namespace triqs

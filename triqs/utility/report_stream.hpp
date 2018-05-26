@@ -23,9 +23,10 @@
 #include <ostream>
 #include <sstream>
 
-namespace triqs { namespace utility {
+namespace triqs {
+  namespace utility {
 
- /**
+    /**
   * \brief Output stream with flexible verbosity level.
   *
   * This class behaves pretty much like a standard ostream but you can also
@@ -39,39 +40,35 @@ namespace triqs { namespace utility {
   * rep(3) << "Hello3" << endl;   // this doesn't print anything because the verbosity < 3
   *
   */
- class report_stream {
+    class report_stream {
 
-  std::ostream * out;
-  int verbosity;
+      std::ostream *out;
+      int verbosity;
 
-  public:
+      public:
+      report_stream(std::ostream *out_, int verbosity_ = 1) : out(out_), verbosity(verbosity_) {}
 
-  report_stream(std::ostream * out_, int verbosity_ = 1): out(out_), verbosity(verbosity_) {}
+      report_stream operator()(int n) { return report_stream(out, verbosity - n + 1); }
 
-  report_stream operator () (int n) {
-   return report_stream(out, verbosity-n+1);
-  }
+      template <class T> report_stream &operator<<(T const &x) {
+        if (verbosity > 0) (*out) << x;
+        return *this;
+      }
 
-  template<class T>
-   report_stream & operator << (T const & x) {
-    if (verbosity > 0) (*out)<<x;
-    return *this;
-   }
+      // this is the type of std::cout
+      typedef std::basic_ostream<char, std::char_traits<char>> CoutType;
 
-  // this is the type of std::cout
-  typedef std::basic_ostream<char, std::char_traits<char> > CoutType;
+      // this is the function signature of std::endl
+      typedef CoutType &(*StandardEndLine)(CoutType &);
 
-  // this is the function signature of std::endl
-  typedef CoutType& (*StandardEndLine)(CoutType&);
+      // define an operator<< to take in std::endl
+      report_stream &operator<<(StandardEndLine manip) {
+        // call the function, but we cannot return it's value
+        if (verbosity > 0) manip(*out);
+        return *this;
+      }
+    };
 
-  // define an operator<< to take in std::endl
-  report_stream & operator << (StandardEndLine manip) {
-   // call the function, but we cannot return it's value
-   if (verbosity > 0) manip(*out);
-   return *this;
-  }
-
- };
-
-}}
+  } // namespace utility
+} // namespace triqs
 #endif

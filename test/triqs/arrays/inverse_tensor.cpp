@@ -1,17 +1,16 @@
 #include <triqs/test_tools/arrays.hpp>
 
-TEST(Array, InverseTensor){
+TEST(Array, InverseTensor) {
 
- array<dcomplex,3> a(2,2,2);
- a() = a() + 2;
+  array<dcomplex, 3> a(2, 2, 2);
+  a() = a() + 2;
 
- a() = inverse(a);
+  a() = inverse(a);
 
- array<dcomplex,3> r(2,2,2);
- r() = 0.5;
+  array<dcomplex, 3> r(2, 2, 2);
+  r() = 0.5;
 
- EXPECT_ARRAY_NEAR(r,a);
+  EXPECT_ARRAY_NEAR(r, a);
 }
 
 MAKE_MAIN;
-

@@ -24,27 +24,26 @@
 
 namespace triqs::h5 {
 
- TRIQS_SPECIALIZE_HDF5_SCHEME2(std::string, string);
+  TRIQS_SPECIALIZE_HDF5_SCHEME2(std::string, string);
 
- /**
+  /**
   * \brief Write a string  into an hdf5 file
   * \param f The h5 file or group
   * \param name The name of the hdf5 array in the file/group where the stack will be stored
   * \param value The string
   */
- void h5_write (group g, std::string const & name, std::string const & value);
+  void h5_write(group g, std::string const &name, std::string const &value);
 
- inline void h5_write (group g, std::string const & name, const char * s) { h5_write(g,name,std::string{s});}
+  inline void h5_write(group g, std::string const &name, const char *s) { h5_write(g, name, std::string{s}); }
 
- /**
+  /**
   * \brief Read a string from an hdf5 file
   * \param f The h5 file or group
   * \param name The name of the hdf5 array in the file/group where the stack will be stored
   * \param value The string to fill
   */
- void h5_read (group g, std::string const & name, std::string & value);
+  void h5_read(group g, std::string const &name, std::string &value);
 
- inline void h5_read (group g, std::string const & name, char * s) = delete;
+  inline void h5_read(group g, std::string const &name, char *s) = delete;
 
-}
-
+} // namespace triqs::h5

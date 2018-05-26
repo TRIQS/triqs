@@ -1,5 +1,2 @@
 #include <cstddef>
-int main() { 
-::max_align_t x;
-}
-
+int main() { ::max_align_t x; }

@@ -23,62 +23,58 @@
 #pragma once
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- 
- //-------------------------------------------------------
- // closest mesh point on the grid
- // ------------------------------------------------------
+    //-------------------------------------------------------
+    // closest mesh point on the grid
+    // ------------------------------------------------------
 
- template <typename Target> struct gf_closest_point<imtime, Target> {
-  // index_t is int
-  template <typename M, typename T> static int invoke(M const &mesh, closest_pt_wrap<T> const &p) {
-   double x = double(p.value) + 0.5 * mesh.delta();
-   int n = std::floor(x / mesh.delta());
-   return n;
-  }
- };
+    template <typename Target> struct gf_closest_point<imtime, Target> {
+      // index_t is int
+      template <typename M, typename T> static int invoke(M const &mesh, closest_pt_wrap<T> const &p) {
+        double x = double(p.value) + 0.5 * mesh.delta();
+        int n    = std::floor(x / mesh.delta());
+        return n;
+      }
+    };
 
- //-------------------------------------------------------
- // closest mesh point on the grid
- // ------------------------------------------------------
+    //-------------------------------------------------------
+    // closest mesh point on the grid
+    // ------------------------------------------------------
 
-  struct gf_closest_point_linear_mesh{
-  // index_t is int
-  template <typename M, typename T> static int invoke(M const &mesh, closest_pt_wrap<T> const &p) {
-   double x = double(p.value) - mesh.x_min() + 0.5 * mesh.delta();
-   int n = std::floor(x / mesh.delta());
-   return n;
-  }
- };
+    struct gf_closest_point_linear_mesh {
+      // index_t is int
+      template <typename M, typename T> static int invoke(M const &mesh, closest_pt_wrap<T> const &p) {
+        double x = double(p.value) - mesh.x_min() + 0.5 * mesh.delta();
+        int n    = std::floor(x / mesh.delta());
+        return n;
+      }
+    };
 
- //-------------------------------------------------------
- // closest mesh point on the grid
- // ------------------------------------------------------
+    //-------------------------------------------------------
+    // closest mesh point on the grid
+    // ------------------------------------------------------
 
- template <typename Target> struct gf_closest_point<brillouin_zone, Target> {
-  
-   template <typename T> static gf_mesh<brillouin_zone>::index_t invoke(gf_mesh<brillouin_zone> const &m, closest_pt_wrap<T> const &p) {
- 
-   gf_mesh<brillouin_zone>::index_t result; // array<Int, 3> 
-   // FIXME : works only on square lattice 
-   auto id = m.get_interpolation_data(p.value);
-   for (int u = 0; u<3; ++u) { 
-     int i = (id.wa[0][u] > id.wa[1][u] ? 0 : 1);
-     result[u] = id.ia[i][u];
-   } 
-   return result;
-  }
- };
- //-------------------------------------------------------
- // For all meshes represented by a linear grid, the code is the same
+    template <typename Target> struct gf_closest_point<brillouin_zone, Target> {
 
- //template <typename Target> struct gf_closest_point<imtime, Target> : gf_closest_point_linear_mesh{};
- template <typename Target> struct gf_closest_point<retime, Target> : gf_closest_point_linear_mesh{};
- template <typename Target> struct gf_closest_point<refreq, Target> : gf_closest_point_linear_mesh{};
+      template <typename T> static gf_mesh<brillouin_zone>::index_t invoke(gf_mesh<brillouin_zone> const &m, closest_pt_wrap<T> const &p) {
 
+        gf_mesh<brillouin_zone>::index_t result; // array<Int, 3>
+        // FIXME : works only on square lattice
+        auto id = m.get_interpolation_data(p.value);
+        for (int u = 0; u < 3; ++u) {
+          int i     = (id.wa[0][u] > id.wa[1][u] ? 0 : 1);
+          result[u] = id.ia[i][u];
+        }
+        return result;
+      }
+    };
+    //-------------------------------------------------------
+    // For all meshes represented by a linear grid, the code is the same
 
-}
-}
+    //template <typename Target> struct gf_closest_point<imtime, Target> : gf_closest_point_linear_mesh{};
+    template <typename Target> struct gf_closest_point<retime, Target> : gf_closest_point_linear_mesh {};
+    template <typename Target> struct gf_closest_point<refreq, Target> : gf_closest_point_linear_mesh {};
 
-
+  } // namespace gfs
+} // namespace triqs

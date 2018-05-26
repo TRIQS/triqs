@@ -22,24 +22,20 @@
 #include "./segment.hpp"
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- struct retime {};
+    struct retime {};
 
- template <> struct gf_mesh<retime> : segment_mesh {
-  using var_t = retime;
-  using segment_mesh::segment_mesh;
-  // template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
+    template <> struct gf_mesh<retime> : segment_mesh {
+      using var_t = retime;
+      using segment_mesh::segment_mesh;
+      // template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
 
-  static std::string hdf5_scheme() {return  "MeshReTime";}
- 
-  friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
-   h5_write_impl(fg, subgroup_name, m, "MeshReTime");
-  }
-  
-  friend void h5_read(h5::group fg, std::string const & subgroup_name, gf_mesh &m) {
-   h5_read_impl(fg, subgroup_name, m, "MeshReTime");
-  }   
- };
-}
-}
+      static std::string hdf5_scheme() { return "MeshReTime"; }
+
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
+
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
+    };
+  } // namespace gfs
+} // namespace triqs

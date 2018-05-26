@@ -21,13 +21,14 @@
 #ifndef TRIQS_UTILITY_ITERATOR_DRESSING_H
 #define TRIQS_UTILITY_ITERATOR_DRESSING_H
 #include "./first_include.hpp"
-#include<iterator>
+#include <iterator>
 #include <boost/iterator/iterator_facade.hpp>
 #include "./macros.hpp"
 
-namespace triqs { namespace utility {
+namespace triqs {
+  namespace utility {
 
- /**
+    /**
   * Usage :
   *
   * Suppose we have :
@@ -49,65 +50,80 @@ namespace triqs { namespace utility {
   * which may be useful in some cases (e.g. writing cyclic iterators)
   * See iterator_dressing3 for an example
   */
- template< typename IteratorType, typename Dressing, typename DressingAuxiliaryArgumentPtrType = void> struct dressed_iterator;
+    template <typename IteratorType, typename Dressing, typename DressingAuxiliaryArgumentPtrType = void> struct dressed_iterator;
 
- namespace details {
-  template< typename IteratorType> struct is_bidir: std::is_same<typename IteratorType::iterator_category,std::bidirectional_iterator_tag>{};
- }
+    namespace details {
+      template <typename IteratorType> struct is_bidir : std::is_same<typename IteratorType::iterator_category, std::bidirectional_iterator_tag> {};
+    } // namespace details
 
- // specialization when a aux data is present
- template< typename IteratorType, typename Dressing, typename DressingAuxiliaryArgumentPtrType>
-  struct dressed_iterator : public boost::iterator_facade<dressed_iterator<IteratorType,Dressing,DressingAuxiliaryArgumentPtrType>, Dressing,
-  typename std::conditional<details::is_bidir<IteratorType>::value, boost::bidirectional_traversal_tag,  boost::forward_traversal_tag>::type, Dressing > {
-   public :
-    dressed_iterator () {}
-    template<typename T> dressed_iterator (T const & it, DressingAuxiliaryArgumentPtrType * aux): _it(it), _aux(aux) {}
-    dressed_iterator (dressed_iterator const & it) = default;
-    dressed_iterator (dressed_iterator && it) = default;
-    dressed_iterator & operator = (dressed_iterator const & it) =default;
-    dressed_iterator & operator = (dressed_iterator && it) noexcept { using std::swap; swap(it._it, this->_it); swap(this->_aux, it._aux); return *this;} 
-    //dressed_iterator (IteratorType const & it, DressingAuxiliaryArgumentPtrType * aux): _it(it), _aux(aux) {}
-    IteratorType const & get() const { return _it;}
-    IteratorType       & get()       { return _it;}
-    operator IteratorType() const { return _it;}
-    DressingAuxiliaryArgumentPtrType * get_aux() { return _aux;}
-    const DressingAuxiliaryArgumentPtrType * get_aux() const { return _aux;}
-   private:
-    friend class boost::iterator_core_access;
-    void increment(){ ++_it;}
-    template<bool BiDir = details::is_bidir<IteratorType>::value>
-     ENABLE_IFC(BiDir) decrement(){ --_it;}
-    bool equal(dressed_iterator const & other) const { return(other._it==_it);}
-    Dressing dereference() const { return Dressing(_it,_aux); }
-    IteratorType _it;
-    DressingAuxiliaryArgumentPtrType * _aux;// keep a pointer to maintain assignment of iterator !
-  };
+    // specialization when a aux data is present
+    template <typename IteratorType, typename Dressing, typename DressingAuxiliaryArgumentPtrType>
+    struct dressed_iterator
+       : public boost::iterator_facade<
+            dressed_iterator<IteratorType, Dressing, DressingAuxiliaryArgumentPtrType>, Dressing,
+            typename std::conditional<details::is_bidir<IteratorType>::value, boost::bidirectional_traversal_tag, boost::forward_traversal_tag>::type,
+            Dressing> {
+      public:
+      dressed_iterator() {}
+      template <typename T> dressed_iterator(T const &it, DressingAuxiliaryArgumentPtrType *aux) : _it(it), _aux(aux) {}
+      dressed_iterator(dressed_iterator const &it) = default;
+      dressed_iterator(dressed_iterator &&it)      = default;
+      dressed_iterator &operator=(dressed_iterator const &it) = default;
+      dressed_iterator &operator                              =(dressed_iterator &&it) noexcept {
+        using std::swap;
+        swap(it._it, this->_it);
+        swap(this->_aux, it._aux);
+        return *this;
+      }
+      //dressed_iterator (IteratorType const & it, DressingAuxiliaryArgumentPtrType * aux): _it(it), _aux(aux) {}
+      IteratorType const &get() const { return _it; }
+      IteratorType &get() { return _it; }
+      operator IteratorType() const { return _it; }
+      DressingAuxiliaryArgumentPtrType *get_aux() { return _aux; }
+      const DressingAuxiliaryArgumentPtrType *get_aux() const { return _aux; }
 
+      private:
+      friend class boost::iterator_core_access;
+      void increment() { ++_it; }
+      template <bool BiDir = details::is_bidir<IteratorType>::value> ENABLE_IFC(BiDir) decrement() { --_it; }
+      bool equal(dressed_iterator const &other) const { return (other._it == _it); }
+      Dressing dereference() const { return Dressing(_it, _aux); }
+      IteratorType _it;
+      DressingAuxiliaryArgumentPtrType *_aux; // keep a pointer to maintain assignment of iterator !
+    };
 
- // specialisation when no auxiliary data is present
- template< typename IteratorType, typename Dressing>
-  struct dressed_iterator<IteratorType, Dressing,void> : public boost::iterator_facade<dressed_iterator<IteratorType,Dressing>,
-  Dressing, typename std::conditional<details::is_bidir<IteratorType>::value, boost::bidirectional_traversal_tag,  boost::forward_traversal_tag>::type, Dressing > {
-   public :
-    dressed_iterator () {}
-    template<typename T> dressed_iterator (T const & it): _it(it) {}
-    dressed_iterator (dressed_iterator const & it) = default;
-    dressed_iterator (dressed_iterator && it) = default;
-    dressed_iterator & operator = (dressed_iterator const & it) =default;
-    dressed_iterator & operator = (dressed_iterator && it) noexcept { using std::swap; swap(it._it, this->_it); return *this;} 
-    //dressed_iterator (IteratorType const & it): _it(it) {}
-    IteratorType const & get() const { return _it;}
-    IteratorType       & get()       { return _it;}
-    operator IteratorType() const { return _it;}
-   private:
-    friend class boost::iterator_core_access;
-    void increment(){ ++_it;}
-    template<bool BiDir = details::is_bidir<IteratorType>::value>
-     ENABLE_IFC(BiDir) decrement(){ --_it;}
-    bool equal(dressed_iterator const & other) const { return(other._it==_it);}
-    Dressing dereference() const { return Dressing(_it); }
-    IteratorType _it;
-  };
+    // specialisation when no auxiliary data is present
+    template <typename IteratorType, typename Dressing>
+    struct dressed_iterator<IteratorType, Dressing, void>
+       : public boost::iterator_facade<
+            dressed_iterator<IteratorType, Dressing>, Dressing,
+            typename std::conditional<details::is_bidir<IteratorType>::value, boost::bidirectional_traversal_tag, boost::forward_traversal_tag>::type,
+            Dressing> {
+      public:
+      dressed_iterator() {}
+      template <typename T> dressed_iterator(T const &it) : _it(it) {}
+      dressed_iterator(dressed_iterator const &it) = default;
+      dressed_iterator(dressed_iterator &&it)      = default;
+      dressed_iterator &operator=(dressed_iterator const &it) = default;
+      dressed_iterator &operator                              =(dressed_iterator &&it) noexcept {
+        using std::swap;
+        swap(it._it, this->_it);
+        return *this;
+      }
+      //dressed_iterator (IteratorType const & it): _it(it) {}
+      IteratorType const &get() const { return _it; }
+      IteratorType &get() { return _it; }
+      operator IteratorType() const { return _it; }
 
-}}
+      private:
+      friend class boost::iterator_core_access;
+      void increment() { ++_it; }
+      template <bool BiDir = details::is_bidir<IteratorType>::value> ENABLE_IFC(BiDir) decrement() { --_it; }
+      bool equal(dressed_iterator const &other) const { return (other._it == _it); }
+      Dressing dereference() const { return Dressing(_it); }
+      IteratorType _it;
+    };
+
+  } // namespace utility
+} // namespace triqs
 #endif

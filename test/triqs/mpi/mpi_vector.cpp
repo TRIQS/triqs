@@ -30,29 +30,26 @@ using namespace triqs::mpi;
 
 TEST(MPI, vector) {
 
- mpi::communicator world;
+  mpi::communicator world;
 
- using VEC = std::vector<std::complex<double>>;
+  using VEC = std::vector<std::complex<double>>;
 
- VEC A(7), B(7), AA(7);
+  VEC A(7), B(7), AA(7);
 
- clef::placeholder<0> i_;
+  clef::placeholder<0> i_;
 
- triqs::clef::make_expr(A)[i_] << i_ + 1;
+  triqs::clef::make_expr(A)[i_] << i_ + 1;
 
- B = mpi_scatter(A, world);
+  B = mpi_scatter(A, world);
 
- VEC C = mpi_scatter(A, world);
+  VEC C = mpi_scatter(A, world);
 
- for (auto &x : B) x *= -1;
- for (auto &x : AA) x = 0;
- for (auto &x : A) x *= -1;
+  for (auto &x : B) x *= -1;
+  for (auto &x : AA) x = 0;
+  for (auto &x : A) x *= -1;
 
- AA = mpi_all_gather(B, world);
+  AA = mpi_all_gather(B, world);
 
- EXPECT_EQ(A,AA);
-
+  EXPECT_EQ(A, AA);
 }
 MAKE_MAIN;
-
-

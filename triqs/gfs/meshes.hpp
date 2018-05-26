@@ -35,7 +35,6 @@
 #include "../arrays.hpp"
 #include "../mpi/vector.hpp"
 
-
 #include "./meshes/multivar_eval.hpp"
 
 #include "./meshes/imtime.hpp"
@@ -46,4 +45,3 @@
 #include "./domains/R.hpp"
 #include "../lattice/gf_mesh_brillouin_zone.hpp"
 #include "../lattice/gf_mesh_cyclic_lattice.hpp"
-

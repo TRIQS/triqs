@@ -48,14 +48,13 @@ namespace cpp2py {
       // FIXME C++17 Add if constexpr
       if (is_view<ArrayType>::value and not raise_exception) { // quick decision, no need to build all the error strings
         return E.is_convertible_to_view(ob);
-      }
-      else { // is a regular type or we want the error message
-  	bool ok = E.extract(ob, !is_view<ArrayType>::value); // if not a view, enforce_copy
-	if (!ok and raise_exception) {
-	  std::string mess = "Cannot convert to array/matrix/vector : the error was : \n" + E.error;
+      } else {                                               // is a regular type or we want the error message
+        bool ok = E.extract(ob, !is_view<ArrayType>::value); // if not a view, enforce_copy
+        if (!ok and raise_exception) {
+          std::string mess = "Cannot convert to array/matrix/vector : the error was : \n" + E.error;
           PyErr_SetString(PyExc_TypeError, mess.c_str());
         }
-      return ok;
+        return ok;
       }
     }
   };

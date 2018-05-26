@@ -24,4 +24,3 @@
 #include <triqs/det_manip/det_manip.hpp>
 
 #endif
-

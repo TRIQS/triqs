@@ -19,58 +19,53 @@
  *
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_EXPRESSION_FOLD_H
-#define TRIQS_ARRAYS_EXPRESSION_FOLD_H 
+#define TRIQS_ARRAYS_EXPRESSION_FOLD_H
 #include "../array.hpp"
 
 namespace triqs {
-namespace arrays {
+  namespace arrays {
 
 #ifndef TRIQS_ARRAY_USE_NEw_FOLD
- template <class F> struct fold_worker {
-  F f;
+    template <class F> struct fold_worker {
+      F f;
 
-  template <class A, class R> struct fold_func_adaptor {
-   F const& f;
-   A const& a;
-   R& r;
-   template <typename... Args> void operator()(Args const&... args) { r = f(r, a(args...)); }
-  };
+      template <class A, class R> struct fold_func_adaptor {
+        F const &f;
+        A const &a;
+        R &r;
+        template <typename... Args> void operator()(Args const &... args) { r = f(r, a(args...)); }
+      };
 
-  template <class A, class R>
-  auto operator()(A const& a,
-                  R init) const -> typename std::decay<typename std::result_of<F(R, typename A::value_type)>::type>::type {
-   // to take into account that f may be double,double -> double, while one passes 0 (an int...)
-   // R = int, R2= double in such case, and the result will be a double, or narrowing will occur
-   using R2 = typename std::decay<typename std::result_of<F(R, typename A::value_type)>::type>::type;
-   R2 r2 = init;
-   foreach(a, fold_func_adaptor<A, R2>{f, a, r2});
-   return r2;
-  }
+      template <class A, class R>
+      auto operator()(A const &a, R init) const -> typename std::decay<typename std::result_of<F(R, typename A::value_type)>::type>::type {
+        // to take into account that f may be double,double -> double, while one passes 0 (an int...)
+        // R = int, R2= double in such case, and the result will be a double, or narrowing will occur
+        using R2 = typename std::decay<typename std::result_of<F(R, typename A::value_type)>::type>::type;
+        R2 r2    = init;
+        foreach (a, fold_func_adaptor<A, R2>{f, a, r2})
+          ;
+        return r2;
+      }
 
-  template <class A> typename A::value_type operator()(A const& a) const {
-   return (*this)(a, typename A::value_type{});
-  }
- };
+      template <class A> typename A::value_type operator()(A const &a) const { return (*this)(a, typename A::value_type{}); }
+    };
 
- template <class F> fold_worker<F> fold(F f) {
-  return {std::move(f)};
- }
+    template <class F> fold_worker<F> fold(F f) { return {std::move(f)}; }
 
 #else
- template <typename A, typename F, typename R> auto fold(F f, A&& a, R r) {
-  decltype(f(r, typename A::value_type{})) r2 = r;
-  // to take into account that f may be double,double -> double, while one passes 0 (an int...)
-  // R = int, R2= double in such case, and the result will be a double, or narrowing will occur
-  arrays::foreach (a, [&](auto&&... args) { r2 = f(r2, a(args...)); });
-  return r2;
- }
+    template <typename A, typename F, typename R> auto fold(F f, A &&a, R r) {
+      decltype(f(r, typename A::value_type{})) r2 = r;
+      // to take into account that f may be double,double -> double, while one passes 0 (an int...)
+      // R = int, R2= double in such case, and the result will be a double, or narrowing will occur
+      arrays::foreach (a, [&](auto &&... args) { r2 = f(r2, a(args...)); });
+      return r2;
+    }
 
- template <typename A, typename F> R fold(F f, A&& a) { return fold(std::move(f), std::forward<A>(a), typename A::value_type{}); }
-
-#endif
-
-}
-} // namespace triqs::arrays
+    template <typename A, typename F> R fold(F f, A &&a) { return fold(std::move(f), std::forward<A>(a), typename A::value_type{}); }
 
 #endif
 
+  } // namespace arrays
+} // namespace triqs
+
+#endif

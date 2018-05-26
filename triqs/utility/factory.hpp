@@ -24,41 +24,41 @@
 #include "./macros.hpp"
 
 namespace triqs {
-namespace utility {
+  namespace utility {
 
- template <typename T> struct factories {
-  template <typename U> static T invoke(U&& x) { return T(std::forward<U>(x)); }
- };
+    template <typename T> struct factories {
+      template <typename U> static T invoke(U &&x) { return T(std::forward<U>(x)); }
+    };
 
- template <typename T> struct factories<std::vector<T>> {
-  using R = std::vector<T>;
+    template <typename T> struct factories<std::vector<T>> {
+      using R = std::vector<T>;
 
-  static R invoke(R&& x) { return R(std::move(x)); }
-  static R invoke(R const& x) { return R(x); }
-  static R invoke(R& x) { return R(x); }
+      static R invoke(R &&x) { return R(std::move(x)); }
+      static R invoke(R const &x) { return R(x); }
+      static R invoke(R &x) { return R(x); }
 
-  template <typename U> static R invoke(std::vector<U>&& v) {
-   R r;
-   r.reserve(v.size());
-   for (auto& x : v) r.push_back(factories<T>::invoke(std::move(x)));
-   return r;
-  }
+      template <typename U> static R invoke(std::vector<U> &&v) {
+        R r;
+        r.reserve(v.size());
+        for (auto &x : v) r.push_back(factories<T>::invoke(std::move(x)));
+        return r;
+      }
 
-  template <typename U> static R invoke(std::vector<U>& v) {
-   R r;
-   r.reserve(v.size());
-   for (auto& x : v) r.push_back(factories<T>::invoke(x));
-   return r;
-  }
+      template <typename U> static R invoke(std::vector<U> &v) {
+        R r;
+        r.reserve(v.size());
+        for (auto &x : v) r.push_back(factories<T>::invoke(x));
+        return r;
+      }
 
-  template <typename U> static R invoke(std::vector<U> const& v) {
-   R r;
-   r.reserve(v.size());
-   for (auto& x : v) r.push_back(factories<T>::invoke(x));
-   return r;
-  }
- };
+      template <typename U> static R invoke(std::vector<U> const &v) {
+        R r;
+        r.reserve(v.size());
+        for (auto &x : v) r.push_back(factories<T>::invoke(x));
+        return r;
+      }
+    };
 
- template <typename T, typename... U> T factory(U&&... x) { return factories<T>::invoke(std::forward<U>(x)...); }
-}
+    template <typename T, typename... U> T factory(U &&... x) { return factories<T>::invoke(std::forward<U>(x)...); }
+  } // namespace utility
 } // namespace triqs

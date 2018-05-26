@@ -29,10 +29,10 @@
 #include "hilbert_space.hpp"
 
 namespace triqs {
-namespace hilbert_space {
+  namespace hilbert_space {
 
-/// Many-body state as a list of amplitudes in a *basis of Fock states*
-/**
+    /// Many-body state as a list of amplitudes in a *basis of Fock states*
+    /**
   The amplitudes can either be stored using a map (only non-vanishing elements are stored)
   or in a `triqs::arrays::vector`. In order to make this class model [[statevector_concept]]
   free function [[make_zero_state]] is defined. Specializations on `BasedOnMap` provide
@@ -48,24 +48,23 @@ namespace hilbert_space {
   @tparam BasedOnMap Use the implementation based on a map
   @include triqs/hilbert_space/state.hpp
  */
-template <typename HilbertSpace, typename ScalarType, bool BasedOnMap> class state {};
+    template <typename HilbertSpace, typename ScalarType, bool BasedOnMap> class state {};
 
-/// Make a copy of a given state with all amplitudes set to 0
-/**
+    /// Make a copy of a given state with all amplitudes set to 0
+    /**
   @param st State object to copy
   @tparam HilbertSpace Hilbert space type, one of [[hilbert_space]] and [[sub_hilbert_space]]
   @tparam ScalarType Amplitude type, normally `double` or `std::complex<double>`
   @tparam BasedOnMap Use the implementation based on a map
   @include triqs/hilbert_space/state.hpp
  */
-template <typename HilbertSpace, typename ScalarType, bool BasedOnMap>
-state<HilbertSpace, ScalarType, BasedOnMap> make_zero_state(state<HilbertSpace, ScalarType, BasedOnMap> const& st) {
- return {st.get_hilbert()};
-}
+    template <typename HilbertSpace, typename ScalarType, bool BasedOnMap>
+    state<HilbertSpace, ScalarType, BasedOnMap> make_zero_state(state<HilbertSpace, ScalarType, BasedOnMap> const &st) {
+      return {st.get_hilbert()};
+    }
 
-
-/// State: implementation based on a map
-/**
+    /// State: implementation based on a map
+    /**
   This specialization can work well on huge Hilbert spaces, as long as there are not
   too many non-vanishing amplitudes  in the state.
 
@@ -73,382 +72,377 @@ state<HilbertSpace, ScalarType, BasedOnMap> make_zero_state(state<HilbertSpace, 
   @tparam ScalarType Amplitude type, normally `double` or `std::complex<double>`
   @include triqs/hilbert_space/state.hpp
  */
-template <typename HilbertSpace, typename ScalarType>
-class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace, ScalarType, true>>,
-                                              boost::multiplicative<state<HilbertSpace, ScalarType, true>, ScalarType> {
- // derivations implement the vector space operations over ScalarType from the compounds operators +=, *=, ....
- const HilbertSpace* hs_p;
- using amplitude_t = std::unordered_map<std::size_t, ScalarType>;
- amplitude_t ampli;
+    template <typename HilbertSpace, typename ScalarType>
+    class state<HilbertSpace, ScalarType, true> : boost::additive<state<HilbertSpace, ScalarType, true>>,
+                                                  boost::multiplicative<state<HilbertSpace, ScalarType, true>, ScalarType> {
+      // derivations implement the vector space operations over ScalarType from the compounds operators +=, *=, ....
+      const HilbertSpace *hs_p;
+      using amplitude_t = std::unordered_map<std::size_t, ScalarType>;
+      amplitude_t ampli;
 
- public:
+      public:
+      /// Accessor to `ScalarType` template parameter
+      using value_type = ScalarType;
+      /// Accessor to `HilbertSpace` template parameter
+      using hilbert_space_t = HilbertSpace;
 
- /// Accessor to `ScalarType` template parameter
- using value_type = ScalarType;
- /// Accessor to `HilbertSpace` template parameter
- using hilbert_space_t = HilbertSpace;
-
- /// Construct a new state object
- /**
+      /// Construct a new state object
+      /**
    The constructed state is dummy state not belonging to any Hilbert space. **It should not be used in expressions!**
   */
- state() : hs_p(nullptr) {}
- /// Construct a new state object
- /**
+      state() : hs_p(nullptr) {}
+      /// Construct a new state object
+      /**
    @param hs Hilbert space the new state belongs to
   */
- state(HilbertSpace const& hs) : hs_p(&hs) {}
+      state(HilbertSpace const &hs) : hs_p(&hs) {}
 
- /// Return the dimension of the associated Hilbert space
- /**
+      /// Return the dimension of the associated Hilbert space
+      /**
    @return Dimension of the associated Hilbert space
   */
- int size() const { return hs_p->size(); }
+      int size() const { return hs_p->size(); }
 
- /// Access to individual amplitudes
- /**
+      /// Access to individual amplitudes
+      /**
    @param i index of the requested amplitude
    @return Reference to the requested amplitude
   */
- value_type& operator()(int i) { return ampli[i]; }
- /// Access to individual amplitudes
- /**
+      value_type &operator()(int i) { return ampli[i]; }
+      /// Access to individual amplitudes
+      /**
    @param i index of the requested amplitude
    @return Constant reference to the requested amplitude
   */
- value_type const& operator()(int i) const { return ampli[i]; }
+      value_type const &operator()(int i) const { return ampli[i]; }
 
- /// In-place addition of another state
- /**
+      /// In-place addition of another state
+      /**
    @param s2 Another [[state]] object to add
    @return Reference to this state
   */
- state& operator+=(state const& s2) {
-  for (auto const& aa : s2.ampli) {
-   auto r = ampli.insert(aa);
-   if (!r.second) r.first->second += aa.second;
-  }
-  prune();
-  return *this;
- }
+      state &operator+=(state const &s2) {
+        for (auto const &aa : s2.ampli) {
+          auto r = ampli.insert(aa);
+          if (!r.second) r.first->second += aa.second;
+        }
+        prune();
+        return *this;
+      }
 
- /// In-place subtraction of another state
- /**
+      /// In-place subtraction of another state
+      /**
    @param s2 Another [[state]] object to add
    @return Reference to this state
   */
- state& operator-=(state const& s2) {
-  for (auto const& aa : s2.ampli) {
-   auto r = ampli.insert({aa.first, -aa.second});
-   if (!r.second) r.first->second -= aa.second;
-  }
-  prune();
-  return *this;
- }
+      state &operator-=(state const &s2) {
+        for (auto const &aa : s2.ampli) {
+          auto r = ampli.insert({aa.first, -aa.second});
+          if (!r.second) r.first->second -= aa.second;
+        }
+        prune();
+        return *this;
+      }
 
- /// In-place multiplication by a scalar
- /**
+      /// In-place multiplication by a scalar
+      /**
    @param x Multiplier
    @return Reference to this state
   */
- state& operator*=(value_type x) {
-  for (auto& a : ampli) {
-   a.second *= x;
-  }
-  prune();
-  return *this;
- }
+      state &operator*=(value_type x) {
+        for (auto &a : ampli) { a.second *= x; }
+        prune();
+        return *this;
+      }
 
- /// In-place division by a scalar
- /**
+      /// In-place division by a scalar
+      /**
    @param x Divisor
    @return Reference to this state
   */
- state& operator/=(value_type x) { return operator*=(value_type(1) / x); }
+      state &operator/=(value_type x) { return operator*=(value_type(1) / x); }
 
- /// Calculate scalar product of two states
- /**
+      /// Calculate scalar product of two states
+      /**
    @param s1 First state to multiply
    @param s2 Second state to multiply
    @return Value of the scalar product
   */
- friend value_type dot_product(state const& s1, state const& s2) {
-  value_type res(0);
-  for (auto const& a : s1.ampli) {
-   using triqs::utility::conj;
-   if (s2.ampli.count(a.first) == 1) res += conj(a.second) * s2.ampli.at(a.first);
-  }
-  return res;
- }
+      friend value_type dot_product(state const &s1, state const &s2) {
+        value_type res(0);
+        for (auto const &a : s1.ampli) {
+          using triqs::utility::conj;
+          if (s2.ampli.count(a.first) == 1) res += conj(a.second) * s2.ampli.at(a.first);
+        }
+        return res;
+      }
 
- /// Apply a callable object to **non-vanishing** amplitudes of a state
- /**
+      /// Apply a callable object to **non-vanishing** amplitudes of a state
+      /**
   The callable must take two arguments, 1) index of the basis Fock state in the associated Hilbert space, and 2) the corresponding amplitude.
 
   @tparam Lambda Type of the callable object
   @param st State object
   @param l Callable object
   */
- template<typename Lambda>
- friend void foreach(state const& st, Lambda l) {
-  const_cast<state&>(st).prune();
-  for (auto const& p : st.ampli) l(p.first, p.second);
- }
+      template <typename Lambda> friend void foreach (state const &st, Lambda l) {
+        const_cast<state &>(st).prune();
+        for (auto const &p : st.ampli) l(p.first, p.second);
+      }
 
- //
- // Additions to StateVector concept
- //
+      //
+      // Additions to StateVector concept
+      //
 
- /// Return a constant reference to the associated Hilbert space
- /**
+      /// Return a constant reference to the associated Hilbert space
+      /**
    @return Constant reference to the Hilbert space
   */
- HilbertSpace const& get_hilbert() const { return *hs_p; }
- /// Reset the associated Hilbert space
- /**
+      HilbertSpace const &get_hilbert() const { return *hs_p; }
+      /// Reset the associated Hilbert space
+      /**
    @param new_hs Constant reference to the new Hilbert space
   */
- void set_hilbert(HilbertSpace const& new_hs) { hs_p = &new_hs; }
+      void set_hilbert(HilbertSpace const &new_hs) { hs_p = &new_hs; }
 
- private:
- void prune() {
-  for(auto it=ampli.begin(); it!=ampli.end();)
-  {
-   using triqs::utility::is_zero;
-   if (is_zero(it->second))
-    it = ampli.erase(it);
-   else
-    ++it;
-  }
- }
-};
+      private:
+      void prune() {
+        for (auto it = ampli.begin(); it != ampli.end();) {
+          using triqs::utility::is_zero;
+          if (is_zero(it->second))
+            it = ampli.erase(it);
+          else
+            ++it;
+        }
+      }
+    };
 
-/// State: implementation based on `triqs::arrays::vector`
-template <typename HilbertSpace, typename ScalarType>
-class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpace, ScalarType, false>>,
-                                               boost::multiplicative<state<HilbertSpace, ScalarType, false>, ScalarType> {
+    /// State: implementation based on `triqs::arrays::vector`
+    template <typename HilbertSpace, typename ScalarType>
+    class state<HilbertSpace, ScalarType, false> : boost::additive<state<HilbertSpace, ScalarType, false>>,
+                                                   boost::multiplicative<state<HilbertSpace, ScalarType, false>, ScalarType> {
 
- const HilbertSpace* hs_p;
- using amplitude_t = triqs::arrays::vector<ScalarType>;
- amplitude_t ampli;
+      const HilbertSpace *hs_p;
+      using amplitude_t = triqs::arrays::vector<ScalarType>;
+      amplitude_t ampli;
 
- public:
- /// Accessor to `ScalarType` template parameter
- using value_type = ScalarType;
- /// Accessor to `HilbertSpace` template parameter
- using hilbert_space_t = HilbertSpace;
+      public:
+      /// Accessor to `ScalarType` template parameter
+      using value_type = ScalarType;
+      /// Accessor to `HilbertSpace` template parameter
+      using hilbert_space_t = HilbertSpace;
 
- /// Construct a new state object
- /**
+      /// Construct a new state object
+      /**
    The constructed state is dummy state not belonging to any Hilbert space. **It should not be used in expressions!**
   */
- state() : hs_p(nullptr) {}
- /// Construct a new state object
- /**
+      state() : hs_p(nullptr) {}
+      /// Construct a new state object
+      /**
    @param hs Hilbert space the new state belongs to
   */
- state(HilbertSpace const& hs) : hs_p(&hs), ampli(hs.size(), 0.0) {}
+      state(HilbertSpace const &hs) : hs_p(&hs), ampli(hs.size(), 0.0) {}
 
- /// Return the dimension of the associated Hilbert space
- /**
+      /// Return the dimension of the associated Hilbert space
+      /**
    @return Dimension of the associated Hilbert space
   */
- int size() const { return hs_p->size(); }
+      int size() const { return hs_p->size(); }
 
- /// Access to individual amplitudes
- /**
+      /// Access to individual amplitudes
+      /**
    @param i index of the requested amplitude
    @return Reference to the requested amplitude
   */
- value_type& operator()(int i) { return ampli[i]; }
- /// Access to individual amplitudes
- /**
+      value_type &operator()(int i) { return ampli[i]; }
+      /// Access to individual amplitudes
+      /**
    @param i index of the requested amplitude
    @return Constant reference to the requested amplitude
   */
- value_type const& operator()(int i) const { return ampli[i]; }
+      value_type const &operator()(int i) const { return ampli[i]; }
 
- /// In-place addition of another state
- /**
+      /// In-place addition of another state
+      /**
    @param s2 Another [[state]] object to add
    @return Reference to this state
   */
- state& operator+=(state const& s2) {
-  ampli += s2.ampli;
-  return *this;
- }
+      state &operator+=(state const &s2) {
+        ampli += s2.ampli;
+        return *this;
+      }
 
- /// In-place subtraction of another state
- /**
+      /// In-place subtraction of another state
+      /**
    @param s2 Another [[state]] object to add
    @return Reference to this state
   */
- state& operator-=(state const& s2) {
-  ampli -= s2.ampli;
-  return *this;
- }
+      state &operator-=(state const &s2) {
+        ampli -= s2.ampli;
+        return *this;
+      }
 
- /// In-place multiplication by a scalar
- /**
+      /// In-place multiplication by a scalar
+      /**
    @param x Multiplier
    @return Reference to this state
   */
- state& operator*=(value_type x) {
-  ampli *= x;
-  return *this;
- }
+      state &operator*=(value_type x) {
+        ampli *= x;
+        return *this;
+      }
 
- /// In-place division by a scalar
- /**
+      /// In-place division by a scalar
+      /**
    @param x Divisor
    @return Reference to this state
   */
- state& operator/=(value_type x) {
-  ampli /= x;
-  return *this;
- }
+      state &operator/=(value_type x) {
+        ampli /= x;
+        return *this;
+      }
 
- /// Calculate scalar product of two states
- /**
+      /// Calculate scalar product of two states
+      /**
    @param s1 First state to multiply
    @param s2 Second state to multiply
    @return Value of the scalar product
   */
- friend value_type dot_product(state const& s1, state const& s2) { return dotc(s1.ampli, s2.ampli); }
+      friend value_type dot_product(state const &s1, state const &s2) { return dotc(s1.ampli, s2.ampli); }
 
- /// Apply a callable object to all amplitudes of a state
- /**
+      /// Apply a callable object to all amplitudes of a state
+      /**
   The callable must take two arguments, 1) index of the basis Fock state in the associated Hilbert space, and 2) the corresponding amplitude.
 
   @tparam Lambda Type of the callable object
   @param st State object
   @param l Callable object
   */
- template<typename Lambda>
- friend void foreach(state const& st, Lambda l) {
-  const auto L = st.size();
-  for (size_t i = 0; i < L; ++i) l(i, st(i));
- }
+      template <typename Lambda> friend void foreach (state const &st, Lambda l) {
+        const auto L = st.size();
+        for (size_t i = 0; i < L; ++i) l(i, st(i));
+      }
 
- //
- // Additions to StateVector concept
- //
+      //
+      // Additions to StateVector concept
+      //
 
- /// Direct access to the storage container (`triqs::arrays::vector`)
- /**
+      /// Direct access to the storage container (`triqs::arrays::vector`)
+      /**
    @return Constant reference to the storage container
   */
- amplitude_t const& amplitudes() const { return ampli; }
- /// Direct access to the storage container (`triqs::arrays::vector`)
- /**
+      amplitude_t const &amplitudes() const { return ampli; }
+      /// Direct access to the storage container (`triqs::arrays::vector`)
+      /**
    @return Reference to the storage container
   */
- amplitude_t& amplitudes() { return ampli; }
+      amplitude_t &amplitudes() { return ampli; }
 
- /// Return a constant reference to the associated Hilbert space
- /**
+      /// Return a constant reference to the associated Hilbert space
+      /**
    @return Constant reference to the Hilbert space
   */
- HilbertSpace const& get_hilbert() const { return *hs_p; }
- /// Reset the associated Hilbert space
- /**
+      HilbertSpace const &get_hilbert() const { return *hs_p; }
+      /// Reset the associated Hilbert space
+      /**
    @param new_hs Constant reference to the new Hilbert space
   */
- void set_hilbert(HilbertSpace const& new_hs) { hs_p = &new_hs; }
+      void set_hilbert(HilbertSpace const &new_hs) { hs_p = &new_hs; }
+    };
 
-};
+    // Print state
+    template <typename HilbertSpace, typename ScalarType, bool BasedOnMap>
+    std::ostream &operator<<(std::ostream &os, state<HilbertSpace, ScalarType, BasedOnMap> const &s) {
+      bool something_written = false;
+      auto const &hs         = s.get_hilbert();
 
-// Print state
-template <typename HilbertSpace, typename ScalarType, bool BasedOnMap>
-std::ostream& operator<<(std::ostream& os, state<HilbertSpace, ScalarType, BasedOnMap> const& s) {
- bool something_written = false;
- auto const& hs = s.get_hilbert();
+      using value_type = typename state<HilbertSpace, ScalarType, BasedOnMap>::value_type;
+      foreach (s, [&os, hs, &something_written](int i, value_type ampl) {
+        using triqs::utility::is_zero;
+        if (!is_zero(ampl)) {
+          os << " +(" << ampl << ")"
+             << "|" << hs.get_fock_state(i) << ">";
+          something_written = true;
+        }
+      })
+        ;
 
- using value_type = typename state<HilbertSpace, ScalarType, BasedOnMap>::value_type;
- foreach(s, [&os,hs,&something_written](int i, value_type ampl){
-  using triqs::utility::is_zero;
-  if (!is_zero(ampl)){
-   os << " +(" << ampl << ")" << "|" << hs.get_fock_state(i) << ">";
-   something_written = true;
-  }
- });
-
- if (!something_written) os << 0;
- return os;
-}
+      if (!something_written) os << 0;
+      return os;
+    }
 
 #define TRIQS_WORKAROUND_CLANG34_BUG
 #ifndef TRIQS_WORKAROUND_CLANG34_BUG
-template<typename TargetState, typename OriginalState>
-TargetState project(OriginalState const& psi, hilbert_space const& proj_hs) {
- TargetState proj_psi(proj_hs);
- auto const& hs = psi.get_hilbert();
- foreach(psi,[&](int i, typename OriginalState::value_type v){
-  proj_psi(hs.get_fock_state(i)) = v;
- });
- return proj_psi;
-}
+    template <typename TargetState, typename OriginalState> TargetState project(OriginalState const &psi, hilbert_space const &proj_hs) {
+      TargetState proj_psi(proj_hs);
+      auto const &hs = psi.get_hilbert();
+      foreach (psi, [&](int i, typename OriginalState::value_type v) { proj_psi(hs.get_fock_state(i)) = v; })
+        ;
+      return proj_psi;
+    }
 
-template<typename TargetState, typename OriginalState>
-TargetState project(OriginalState const& psi, sub_hilbert_space const& proj_hs) {
- TargetState proj_psi(proj_hs);
- auto const& hs = psi.get_hilbert();
- foreach(psi,[&](int i, typename OriginalState::value_type v){
-  auto f = hs.get_fock_state(i);
-  if(proj_hs.has_state(f)) proj_psi(proj_hs.get_state_index(f)) = v;
- });
- return proj_psi;
-}
+    template <typename TargetState, typename OriginalState> TargetState project(OriginalState const &psi, sub_hilbert_space const &proj_hs) {
+      TargetState proj_psi(proj_hs);
+      auto const &hs = psi.get_hilbert();
+      foreach (psi, [&](int i, typename OriginalState::value_type v) {
+        auto f = hs.get_fock_state(i);
+        if (proj_hs.has_state(f)) proj_psi(proj_hs.get_state_index(f)) = v;
+      })
+        ;
+      return proj_psi;
+    }
 #else
-// workaround for clang 3.4. Bug
-// Not needed for clang 3.5
-template<typename A, typename B> struct __lambda1 {
- A& proj_psi; B const & hs;
- template<typename VT> void operator()(int i, VT const & v) {
- proj_psi(hs.get_fock_state(i)) = v;
- }
-};
-template<typename A, typename B, typename C> struct __lambda2 {
- A& proj_psi; B const & proj_hs; C const & hs;
- template<typename VT> void operator()(int i, VT const & v) {
-  auto f = hs.get_fock_state(i);
-  if (proj_hs.has_state(f)) proj_psi(proj_hs.get_state_index(f)) = v;
- }
-};
+    // workaround for clang 3.4. Bug
+    // Not needed for clang 3.5
+    template <typename A, typename B> struct __lambda1 {
+      A &proj_psi;
+      B const &hs;
+      template <typename VT> void operator()(int i, VT const &v) { proj_psi(hs.get_fock_state(i)) = v; }
+    };
+    template <typename A, typename B, typename C> struct __lambda2 {
+      A &proj_psi;
+      B const &proj_hs;
+      C const &hs;
+      template <typename VT> void operator()(int i, VT const &v) {
+        auto f = hs.get_fock_state(i);
+        if (proj_hs.has_state(f)) proj_psi(proj_hs.get_state_index(f)) = v;
+      }
+    };
 
-/// Construct a projection of a state to a Hilbert space
-/**
+    /// Construct a projection of a state to a Hilbert space
+    /**
   @tparam TargetState Type of the result
   @tparam OriginalState Type of the state being projected
   @param psi State to be projected
   @param proj_hs Target Hilbert space
   @include triqs/hilbert_space/state.hpp
  */
-template<typename TargetState, typename OriginalState>
-TargetState project(OriginalState const& psi, hilbert_space const& proj_hs) {
- TargetState proj_psi(proj_hs);
- auto const& hs = psi.get_hilbert();
- auto f = __lambda1<TargetState,decltype(hs)> {proj_psi, hs};
- foreach(psi, f);
- return proj_psi;
-}
+    template <typename TargetState, typename OriginalState> TargetState project(OriginalState const &psi, hilbert_space const &proj_hs) {
+      TargetState proj_psi(proj_hs);
+      auto const &hs = psi.get_hilbert();
+      auto f         = __lambda1<TargetState, decltype(hs)>{proj_psi, hs};
+      foreach (psi, f)
+        ;
+      return proj_psi;
+    }
 
-/// Construct a projection of a state to a Hilbert subspace
-/**
+    /// Construct a projection of a state to a Hilbert subspace
+    /**
   @tparam TargetState Type of the result
   @tparam OriginalState Type of the state being projected
   @param psi State to be projected
   @param proj_hs Target Hilbert subspace
   @include triqs/hilbert_space/state.hpp
  */
-template<typename TargetState, typename OriginalState>
-TargetState project(OriginalState const& psi, sub_hilbert_space const& proj_hs) {
- TargetState proj_psi(proj_hs);
- auto const& hs = psi.get_hilbert();
- auto f = __lambda2<TargetState,sub_hilbert_space,decltype(hs)> {proj_psi, proj_hs, hs};
- foreach(psi,f);
- return proj_psi;
-}
+    template <typename TargetState, typename OriginalState> TargetState project(OriginalState const &psi, sub_hilbert_space const &proj_hs) {
+      TargetState proj_psi(proj_hs);
+      auto const &hs = psi.get_hilbert();
+      auto f         = __lambda2<TargetState, sub_hilbert_space, decltype(hs)>{proj_psi, proj_hs, hs};
+      foreach (psi, f)
+        ;
+      return proj_psi;
+    }
 
 #endif
-}}
+  } // namespace hilbert_space
+} // namespace triqs

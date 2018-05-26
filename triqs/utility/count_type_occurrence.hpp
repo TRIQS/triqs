@@ -20,23 +20,24 @@
  ******************************************************************************/
 #ifndef TRIQS_UTILITY_COUNT_OCCUR_H
 #define TRIQS_UTILITY_COUNT_OCCUR_H
-namespace triqs { 
+namespace triqs {
 
- // count_type_occurrence<T, Args...>::value is the number of Args deriving or equal to T
- 
- template<typename T, typename ... A > struct count_type_occurrence;
+  // count_type_occurrence<T, Args...>::value is the number of Args deriving or equal to T
 
- template<typename T, typename A0, typename... A > struct count_type_occurrence<T,A0,A...> : 
-  std::integral_constant < int, std::is_base_of<T,A0>::value + count_type_occurrence<T, A...>::value>{};
+  template <typename T, typename... A> struct count_type_occurrence;
 
- template<typename T> struct count_type_occurrence<T> : std::integral_constant<int, 0>{};
+  template <typename T, typename A0, typename... A>
+  struct count_type_occurrence<T, A0, A...> : std::integral_constant<int, std::is_base_of<T, A0>::value + count_type_occurrence<T, A...>::value> {};
 
- template<typename T, typename ... A > struct count_type_occurrence_not;
+  template <typename T> struct count_type_occurrence<T> : std::integral_constant<int, 0> {};
 
- template<typename T, typename A0, typename... A > struct count_type_occurrence_not<T,A0,A...> : 
-  std::integral_constant < int, !(std::is_base_of<T,A0>::value) + count_type_occurrence_not<T, A...>::value>{};
+  template <typename T, typename... A> struct count_type_occurrence_not;
 
- template<typename T> struct count_type_occurrence_not<T> : std::integral_constant<int, 0>{};
+  template <typename T, typename A0, typename... A>
+  struct count_type_occurrence_not<T, A0, A...>
+     : std::integral_constant<int, !(std::is_base_of<T, A0>::value) + count_type_occurrence_not<T, A...>::value> {};
 
-}
+  template <typename T> struct count_type_occurrence_not<T> : std::integral_constant<int, 0> {};
+
+} // namespace triqs
 #endif

@@ -42,9 +42,8 @@ namespace triqs {
       auto m = std::chrono::duration_cast<std::chrono::minutes>(s -= h);
       s -= m;
       std::ostringstream os;
-      os << std::setfill('0') << std::setw(2) << h.count() << ":"
-	 << std::setfill('0') << std::setw(2) << m.count() << ":"
-	 << std::setfill('0') << std::setw(2) << s.count();
+      os << std::setfill('0') << std::setw(2) << h.count() << ":" << std::setfill('0') << std::setw(2) << m.count() << ":" << std::setfill('0')
+         << std::setw(2) << s.count();
       return os.str();
     }
 

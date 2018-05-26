@@ -22,54 +22,56 @@
 #pragma once
 #include <iterator>
 
-namespace triqs { namespace arrays { 
- /** 
+namespace triqs {
+  namespace arrays {
+    /**
   * Iterator on a couple (IndexMap, StorageType).
   * It transforms the mini-iterator on the IndexMap into a STL-compliant iterator.
   * Template parameters are :
-  *    - Const : true -> const_iterator, false -> non const version. 
+  *    - Const : true -> const_iterator, false -> non const version.
   *    - IndexMapIterator : an IndexMapIterator
   *    - StorageType : the storage.
   */
 
- template <bool Const, typename IndexMapIterator, typename StorageType>
- class iterator_adapter
-     : public std::iterator<std::forward_iterator_tag, std14::conditional_t<Const, const typename StorageType::value_type,
-                                                                            typename StorageType::value_type>> {
+    template <bool Const, typename IndexMapIterator, typename StorageType>
+    class iterator_adapter
+       : public std::iterator<std::forward_iterator_tag,
+                              std14::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>> {
 
-  StorageType storage_;
-  IndexMapIterator it;
+      StorageType storage_;
+      IndexMapIterator it;
 
-  public:
-  using value_type = std14::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>;
-  using indexmap_iterator_type = IndexMapIterator;
+      public:
+      using value_type             = std14::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>;
+      using indexmap_iterator_type = IndexMapIterator;
 
-  iterator_adapter() = default;
-  iterator_adapter(iterator_adapter const &) = default;
-  iterator_adapter(const typename IndexMapIterator::indexmap_type &Ind, const StorageType &ST, bool atEnd = false)
-     : storage_(ST), it(Ind, atEnd) {}
+      iterator_adapter()                         = default;
+      iterator_adapter(iterator_adapter const &) = default;
+      iterator_adapter(const typename IndexMapIterator::indexmap_type &Ind, const StorageType &ST, bool atEnd = false)
+         : storage_(ST), it(Ind, atEnd) {}
 
-  value_type &operator*() { return storage_[*it]; }
-  value_type &operator->() { return storage_[*it]; }
+      value_type &operator*() { return storage_[*it]; }
+      value_type &operator->() { return storage_[*it]; }
 
-  iterator_adapter &operator++() {
-   ++it;
-   return *this;
-  }
+      iterator_adapter &operator++() {
+        ++it;
+        return *this;
+      }
 
-  iterator_adapter operator++(int) {
-   auto c = *this;
-   ++it;
-   return c;
-  }
+      iterator_adapter operator++(int) {
+        auto c = *this;
+        ++it;
+        return c;
+      }
 
-  bool operator==(iterator_adapter const &other) const { return (other.it == it); }
-  bool operator!=(iterator_adapter const &other) const { return (!operator==(other)); }
-  
-  // not in forward iterator concept
-  operator bool() const { return bool(it); }
+      bool operator==(iterator_adapter const &other) const { return (other.it == it); }
+      bool operator!=(iterator_adapter const &other) const { return (!operator==(other)); }
 
-  AUTO_DECL indices() const RETURN(it.indices());
-  IndexMapIterator const &indexmap_iterator() const { return it; }
- };
-}}//namespace triqs::arrays
+      // not in forward iterator concept
+      operator bool() const { return bool(it); }
+
+      AUTO_DECL indices() const RETURN(it.indices());
+      IndexMapIterator const &indexmap_iterator() const { return it; }
+    };
+  } // namespace arrays
+} // namespace triqs

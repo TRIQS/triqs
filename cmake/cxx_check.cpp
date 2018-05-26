@@ -4,8 +4,7 @@
 //#endif
 
 //#include <cstddef>
-int main() { 
- int i=2;
- auto f = [j =i]( auto x) { return x+j;};
+int main() {
+  int i  = 2;
+  auto f = [j = i](auto x) { return x + j; };
 }
-

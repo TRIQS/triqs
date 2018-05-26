@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
  * Copyright (C) 2018- by Simons Foundation
- *               authors : O. Parcollet, N. Wentzell 
+ *               authors : O. Parcollet, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -73,8 +73,8 @@ namespace triqs::gfs {
             Implementation
   *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename V> using gf_vec_t = gf<V, tensor_valued<1>>;
-  template <typename V> using gf_vec_vt = gf_view<V, tensor_valued<1>>;
+  template <typename V> using gf_vec_t   = gf<V, tensor_valued<1>>;
+  template <typename V> using gf_vec_vt  = gf_view<V, tensor_valued<1>>;
   template <typename V> using gf_vec_cvt = gf_const_view<V, tensor_valued<1>>;
 
   // matsubara
@@ -94,8 +94,8 @@ namespace triqs::gfs {
    * The general Fourier function
    * gin : input
    * gout : output
-   * opt_args : e.g. moments. Must be flatten_2d 
-   *   
+   * opt_args : e.g. moments. Must be flatten_2d
+   *
    *-----------------------------------------------------------------------------------------------------*/
 
   // this function just regroups the function, and calls the vector_valued gf core implementation
@@ -116,7 +116,7 @@ namespace triqs::gfs {
       for (auto const &mp : out_mesh) {
         auto g_rot_sl = g_rot(mp.linear_index(), _); // if the array is long, it is faster to precompute the view ...
         auto gout_col = gout_flatten.data()(mp.linear_index(), _);
-        assign_foreach(g_rot_sl, [&gout_col, c = 0ll ](auto &&... i) mutable { return gout_col(c++); });
+        assign_foreach(g_rot_sl, [&gout_col, c = 0ll](auto &&... i) mutable { return gout_col(c++); });
       }
     }
   }
@@ -194,11 +194,9 @@ namespace triqs::gfs {
     return make_gf_from_fourier<N>(gin, make_adjoint_mesh(std::get<N>(gin.mesh())));
   }
 
-  template <int... Ns, typename V, typename T> auto make_gf_from_multi_fourier(gf_const_view<V, T> gin) {
-    return (gin()  & ... & _fou_wk<Ns>{});
-  }
+  template <int... Ns, typename V, typename T> auto make_gf_from_multi_fourier(gf_const_view<V, T> gin) { return (gin() & ... & _fou_wk<Ns>{}); }
 
- template <int N1, int N2, int... Ns, typename V, typename T> auto make_gf_from_fourier(gf_const_view<V, T> gin) {
+  template <int N1, int N2, int... Ns, typename V, typename T> auto make_gf_from_fourier(gf_const_view<V, T> gin) {
     //int rank = get_n_variables<V>::value;
     //static_assert(N1 < rank && N2 < rank , "Mesh position out of bounds");
 
@@ -218,13 +216,15 @@ namespace triqs::gfs {
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
-  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(block_gf_const_view<V, T> gin, Args &&... args) {
-    auto l = [&](gf_const_view<V,T> g_bl){ return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), std::forward<Args>(args)...); };
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args>
+  auto make_gf_from_fourier(block_gf_const_view<V, T> gin, Args &&... args) {
+    auto l = [&](gf_const_view<V, T> g_bl) { return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), std::forward<Args>(args)...); };
     return map_block_gf(l, gin);
   }
 
-  template <int N = 0, int... Ns, typename V, typename T, typename... Args> auto make_gf_from_fourier(block2_gf_const_view<V, T> gin, Args &&... args) {
-    auto l = [&](gf_const_view<V,T> g_bl){ return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), std::forward<Args>(args)...); };
+  template <int N = 0, int... Ns, typename V, typename T, typename... Args>
+  auto make_gf_from_fourier(block2_gf_const_view<V, T> gin, Args &&... args) {
+    auto l = [&](gf_const_view<V, T> g_bl) { return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), std::forward<Args>(args)...); };
     return map_block_gf(l, gin);
   }
 
@@ -272,7 +272,7 @@ namespace triqs::gfs {
     return {g(), {std::forward<Args>(args)...}};
   }
 
-  // FIXME: add gx = fourier(gy) for gx a gf (not a view), adding a triqs_gf_assign_delegation and using make_gf_from_fourier 
+  // FIXME: add gx = fourier(gy) for gx a gf (not a view), adding a triqs_gf_assign_delegation and using make_gf_from_fourier
 
   // realize the call for gx = fourier(gy);
   template <int N, typename V1, typename T1, typename V2, typename T2, typename... Args>

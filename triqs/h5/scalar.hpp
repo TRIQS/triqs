@@ -21,44 +21,44 @@
 #pragma once
 #include "./group.hpp"
 #include <complex>
-namespace triqs { namespace h5 {
+namespace triqs {
+  namespace h5 {
 
- // Issue several types are *implicitly* convertible to bool
- // it could be confusing. Better to use int in hdf5 files.
- void h5_write(group g, std::string const &name, int const &x);
- void h5_write(group g, std::string const &name, long const &x);
- void h5_write(group g, std::string const &name, long long const &x);
- void h5_write(group g, std::string const &name, unsigned long long const &x);
- void h5_write(group g, std::string const &name, size_t const &x);
- void h5_write(group g, std::string const &name, bool const &x);
- void h5_write(group g, std::string const &name, char const &x);
- void h5_write(group g, std::string const &name, double const &x);
- void h5_write(group g, std::string const &name, std::complex<double> const &x);
+    // Issue several types are *implicitly* convertible to bool
+    // it could be confusing. Better to use int in hdf5 files.
+    void h5_write(group g, std::string const &name, int const &x);
+    void h5_write(group g, std::string const &name, long const &x);
+    void h5_write(group g, std::string const &name, long long const &x);
+    void h5_write(group g, std::string const &name, unsigned long long const &x);
+    void h5_write(group g, std::string const &name, size_t const &x);
+    void h5_write(group g, std::string const &name, bool const &x);
+    void h5_write(group g, std::string const &name, char const &x);
+    void h5_write(group g, std::string const &name, double const &x);
+    void h5_write(group g, std::string const &name, std::complex<double> const &x);
 
- void h5_read(group g, std::string const &name, int &x);
- void h5_read(group g, std::string const &name, long &x);
- void h5_read(group g, std::string const &name, long long &x);
- void h5_read(group g, std::string const &name, unsigned long long &x);
- void h5_read(group g, std::string const &name, size_t &x);
- void h5_read(group g, std::string const &name, bool &x);
- void h5_read(group g, std::string const &name, char &x);
- void h5_read(group g, std::string const &name, double &x);
- void h5_read(group g, std::string const &name, std::complex<double> &x);
+    void h5_read(group g, std::string const &name, int &x);
+    void h5_read(group g, std::string const &name, long &x);
+    void h5_read(group g, std::string const &name, long long &x);
+    void h5_read(group g, std::string const &name, unsigned long long &x);
+    void h5_read(group g, std::string const &name, size_t &x);
+    void h5_read(group g, std::string const &name, bool &x);
+    void h5_read(group g, std::string const &name, char &x);
+    void h5_read(group g, std::string const &name, double &x);
+    void h5_read(group g, std::string const &name, std::complex<double> &x);
 
- // attribute
- void h5_write_attribute(hid_t id, std::string const &name, int x);
- void h5_write_attribute(hid_t id, std::string const &name, long x);
- void h5_write_attribute(hid_t id, std::string const &name, unsigned long x);
- void h5_write_attribute(hid_t id, std::string const &name, long long const x);
- void h5_write_attribute(hid_t id, std::string const &name, unsigned long long x);
- void h5_write_attribute(hid_t id, std::string const &name, double x);
+    // attribute
+    void h5_write_attribute(hid_t id, std::string const &name, int x);
+    void h5_write_attribute(hid_t id, std::string const &name, long x);
+    void h5_write_attribute(hid_t id, std::string const &name, unsigned long x);
+    void h5_write_attribute(hid_t id, std::string const &name, long long const x);
+    void h5_write_attribute(hid_t id, std::string const &name, unsigned long long x);
+    void h5_write_attribute(hid_t id, std::string const &name, double x);
 
- void h5_read_attribute(hid_t id, std::string const &name, int &x);
- void h5_read_attribute(hid_t id, std::string const &name, long &x);
- void h5_read_attribute(hid_t id, std::string const &name, unsigned long &x);
- void h5_read_attribute(hid_t id, std::string const &name, long long &x);
- void h5_read_attribute(hid_t id, std::string const &name, unsigned long long &x);
- void h5_read_attribute(hid_t id, std::string const &name, double &x);
-}
-}
-
+    void h5_read_attribute(hid_t id, std::string const &name, int &x);
+    void h5_read_attribute(hid_t id, std::string const &name, long &x);
+    void h5_read_attribute(hid_t id, std::string const &name, unsigned long &x);
+    void h5_read_attribute(hid_t id, std::string const &name, long long &x);
+    void h5_read_attribute(hid_t id, std::string const &name, unsigned long long &x);
+    void h5_read_attribute(hid_t id, std::string const &name, double &x);
+  } // namespace h5
+} // namespace triqs

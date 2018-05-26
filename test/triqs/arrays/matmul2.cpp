@@ -25,22 +25,20 @@ using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
- matrix<double> C, A= {{ 1.0,2.3}, {3.1,4.3}}; 
- matrix<int> B= {{ 1,2}, {3,4}}; 
- matrix<double> Bd= {{ 1,2}, {3,4}}; 
- 
- C = A*B;
- std::cout  << C<< std::endl ;
+  matrix<double> C, A = {{1.0, 2.3}, {3.1, 4.3}};
+  matrix<int> B     = {{1, 2}, {3, 4}};
+  matrix<double> Bd = {{1, 2}, {3, 4}};
 
- C = A*Bd;
- std::cout  << C<< std::endl ;
+  C = A * B;
+  std::cout << C << std::endl;
 
- // check A*B is indeed in double...
- //static_assert( std::is_same<decltype(A*B), matrix<double>>::value, "oops");
+  C = A * Bd;
+  std::cout << C << std::endl;
 
- assert_all_close(A*B, A*Bd, 1.e-13);
+  // check A*B is indeed in double...
+  //static_assert( std::is_same<decltype(A*B), matrix<double>>::value, "oops");
 
- return 0;
+  assert_all_close(A * B, A * Bd, 1.e-13);
+
+  return 0;
 }
-
-

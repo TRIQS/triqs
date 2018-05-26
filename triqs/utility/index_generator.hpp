@@ -22,42 +22,41 @@
 #include "./mini_vector.hpp"
 
 namespace triqs {
-namespace utility {
+  namespace utility {
 
- class index3_generator {
-  mini_vector<long, 3> d, i; // rely on mini_vector initialization
-  long i_flat =0;
-  bool _at_end = false;
+    class index3_generator {
+      mini_vector<long, 3> d, i; // rely on mini_vector initialization
+      long i_flat  = 0;
+      bool _at_end = false;
 
-  public:
-  index3_generator() = default;
-  index3_generator(mini_vector<long, 3> const& dims, mini_vector<long, 3> const &i) : d(dims),i(i) {
-   i_flat = i[2] + (i[1] + i[0] * d[1]) * d[2];
-  }
-  void advance() {
-   ++i_flat;
-   ++i[2];
-   if (i[2] < d[2]) return;
-   i[2] = 0;
-   ++i[1];
-   if (i[1] < d[1]) return;
-   i[1] = 0;
-   ++i[0];
-   if (i[0] < d[0]) return;
-   // i[0]=0;
-   _at_end = true;
-  }
-  mini_vector<long, 3> const& index() const { return i; }
-  long linear_index() const { return i_flat;}
-  bool at_end() const { return _at_end; }
-  void reset() {
-   _at_end = false;
-   i_flat =0;
-   i[0] = 0;
-   i[1] = 0;
-   i[2] = 0;
-  }
- };
-}
-}
-
+      public:
+      index3_generator() = default;
+      index3_generator(mini_vector<long, 3> const &dims, mini_vector<long, 3> const &i) : d(dims), i(i) {
+        i_flat = i[2] + (i[1] + i[0] * d[1]) * d[2];
+      }
+      void advance() {
+        ++i_flat;
+        ++i[2];
+        if (i[2] < d[2]) return;
+        i[2] = 0;
+        ++i[1];
+        if (i[1] < d[1]) return;
+        i[1] = 0;
+        ++i[0];
+        if (i[0] < d[0]) return;
+        // i[0]=0;
+        _at_end = true;
+      }
+      mini_vector<long, 3> const &index() const { return i; }
+      long linear_index() const { return i_flat; }
+      bool at_end() const { return _at_end; }
+      void reset() {
+        _at_end = false;
+        i_flat  = 0;
+        i[0]    = 0;
+        i[1]    = 0;
+        i[2]    = 0;
+      }
+    };
+  } // namespace utility
+} // namespace triqs

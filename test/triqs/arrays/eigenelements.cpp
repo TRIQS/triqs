@@ -29,74 +29,73 @@ using namespace triqs::arrays::linalg;
 using dcomplex = std::complex<double>;
 
 template <typename T> void check_eig(matrix<T> M, matrix<T> vectors, array<double, 1> values) {
- auto _ = range();
- for (auto i : range(0, first_dim(M))) {
-  std::cerr << "check " << i << std::endl;
-  std::cerr << (M - values(i)) * vectors(i, _) << std::endl;
-  assert_all_close(M * vectors(i, _), values(i) * vectors(i, _), 1.e-14);
- }
+  auto _ = range();
+  for (auto i : range(0, first_dim(M))) {
+    std::cerr << "check " << i << std::endl;
+    std::cerr << (M - values(i)) * vectors(i, _) << std::endl;
+    assert_all_close(M * vectors(i, _), values(i) * vectors(i, _), 1.e-14);
+  }
 }
 
 template <typename M> void test(M A) {
- auto w = eigenelements(make_clone(A));
- std::cerr << "A = " << A << std::endl;
- std::cerr << " values = " << w.first << std::endl;
- std::cerr << " vectors = " << w.second << std::endl;
- check_eig(A, w.second, w.first);
+  auto w = eigenelements(make_clone(A));
+  std::cerr << "A = " << A << std::endl;
+  std::cerr << " values = " << w.first << std::endl;
+  std::cerr << " vectors = " << w.second << std::endl;
+  check_eig(A, w.second, w.first);
 }
 
 int main(int argc, char **argv) {
 
- {
-  matrix<double> A(3, 3);
+  {
+    matrix<double> A(3, 3);
 
-  for (int i = 0; i < 3; ++i)
-   for (int j = 0; j <= i; ++j) {
-    A(i, j) = (i > j ? i + 2 * j : i - j);
-    A(j, i) = A(i, j);
-   }
-  test(A);
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j <= i; ++j) {
+        A(i, j) = (i > j ? i + 2 * j : i - j);
+        A(j, i) = A(i, j);
+      }
+    test(A);
 
-  A() = 0;
-  A(0, 1) = 1;
-  A(1, 0) = 1;
-  A(2, 2) = 8;
-  A(0, 2) = 2;
-  A(2, 0) = 2;
+    A()     = 0;
+    A(0, 1) = 1;
+    A(1, 0) = 1;
+    A(2, 2) = 8;
+    A(0, 2) = 2;
+    A(2, 0) = 2;
 
-  test(A);
+    test(A);
 
-  A() = 0;
-  A(0, 1) = 1;
-  A(1, 0) = 1;
-  A(2, 2) = 8;
+    A()     = 0;
+    A(0, 1) = 1;
+    A(1, 0) = 1;
+    A(2, 2) = 8;
 
-  test(A);
- }
- { // the complex case
+    test(A);
+  }
+  { // the complex case
 
-  matrix<dcomplex> M(2, 2);
+    matrix<dcomplex> M(2, 2);
 
-  M(0, 0) = 1;
-  M(0, 1) = 1.0_j;
-  M(1, 0) = -1.0_j;
-  M(1, 1) = 2;
+    M(0, 0) = 1;
+    M(0, 1) = 1.0_j;
+    M(1, 0) = -1.0_j;
+    M(1, 1) = 2;
 
-  test(M);
- }
+    test(M);
+  }
 
- { // the complex case
+  { // the complex case
 
-  matrix<dcomplex> M(2, 2, FORTRAN_LAYOUT);
+    matrix<dcomplex> M(2, 2, FORTRAN_LAYOUT);
 
-  M(0, 0) = 1;
-  M(0, 1) = 1.0_j;
-  M(1, 0) = -1.0_j;
-  M(1, 1) = 2;
+    M(0, 0) = 1;
+    M(0, 1) = 1.0_j;
+    M(1, 0) = -1.0_j;
+    M(1, 1) = 2;
 
-  test(M);
- }
+    test(M);
+  }
 
- return 0;
+  return 0;
 }
-

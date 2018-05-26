@@ -24,7 +24,7 @@
 inline bool kronecker(int i, int j) { return i == j; }
 
 namespace triqs {
-namespace clef {
- TRIQS_CLEF_MAKE_FNT_LAZY(kronecker);
-}
-}
+  namespace clef {
+    TRIQS_CLEF_MAKE_FNT_LAZY(kronecker);
+  }
+} // namespace triqs

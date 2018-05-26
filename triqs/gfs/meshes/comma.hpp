@@ -31,18 +31,19 @@ namespace triqs {
     using clef::_ph; // placeholder
 
     /* ---------------------------------------------------------------------------------------------------
-  * Tuple of placeholder 
+  * Tuple of placeholder
   *  --------------------------------------------------------------------------------------------------- */
 
-    template <typename... T> struct tuple_com : std::tuple<T...> { using  std::tuple<T...>::tuple;};
-    
+    template <typename... T> struct tuple_com : std::tuple<T...> { using std::tuple<T...>::tuple; };
+
     // deduction rule. broken on clang ?
-  //    template <typename... T> tuple_com(T&& ...x) -> tuple_com<std::decay_t<T>...>;
-   
-   template<typename ...T> 
-      tuple_com<std::decay_t<T>...>  make_tuple_com(T&&...x) { return {std::forward<T>(x)...}; }
-    
-    template <typename... T> tuple_com<T...> make_tuple_com_form_tuple(std::tuple<T...> &&x) { return std::move(*static_cast<tuple_com<T...>*>(&x));}
+    //    template <typename... T> tuple_com(T&& ...x) -> tuple_com<std::decay_t<T>...>;
+
+    template <typename... T> tuple_com<std::decay_t<T>...> make_tuple_com(T &&... x) { return {std::forward<T>(x)...}; }
+
+    template <typename... T> tuple_com<T...> make_tuple_com_form_tuple(std::tuple<T...> &&x) {
+      return std::move(*static_cast<tuple_com<T...> *>(&x));
+    }
 
     // FIXME USE a function  + enable if
 
@@ -58,12 +59,12 @@ namespace triqs {
     template <typename M, typename X> tuple_com<mesh_point<M>, std::decay_t<X>> operator,(mesh_point<M> m, X &&x) {
       return {std::move(m), std::forward<X>(x)};
     }
-    
+
     template <int N, typename X> tuple_com<long, _ph<N>> operator,(long i, _ph<N> p) { return {i, p}; }
     template <typename M> tuple_com<long, mesh_point<M>> operator,(long i, mesh_point<M> m) { return {i, std::move(m)}; }
 
-    template <typename T, int n, typename X> tuple_com<mini_vector<T,n>, X> operator,(mini_vector<T,n> const & v, X const &x) { return {v,x}; } 
-    template <typename X> tuple_com<matsubara_freq, X> operator,(matsubara_freq const & m, X const &x) { return {m,x}; } 
+    template <typename T, int n, typename X> tuple_com<mini_vector<T, n>, X> operator,(mini_vector<T, n> const &v, X const &x) { return {v, x}; }
+    template <typename X> tuple_com<matsubara_freq, X> operator,(matsubara_freq const &m, X const &x) { return {m, x}; }
 
     // tuple_com absorbs anything
     template <typename X, typename... T, size_t... Is>
@@ -92,13 +93,10 @@ namespace triqs {
       static constexpr bool is_lazy = false;
       FORCEINLINE decltype(auto) operator()(gfs::tuple_com<T...> const &tu, Contexts const &... contexts) const {
         auto l  = [&contexts...](auto &&y) -> decltype(auto) { return eval(y, contexts...); };
-        auto _t = triqs::tuple::map(l, static_cast<std::tuple<T...>>( tu));
+        auto _t = triqs::tuple::map(l, static_cast<std::tuple<T...>>(tu));
         return triqs::gfs::make_tuple_com_form_tuple(std::move(_t));
       }
     };
 
   } // namespace clef
 } // namespace triqs
-
-
-

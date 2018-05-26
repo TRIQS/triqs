@@ -21,22 +21,21 @@
 #pragma once
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- /// Density
- /**
+    /// Density
+    /**
    Computes the density of the Gf g, i.e $g(\tau=0^-)$
    Uses tail moments n=1, 2, and 3
    */
- arrays::matrix<dcomplex> density(gf_const_view<imfreq> g);
- dcomplex density(gf_const_view<imfreq, scalar_valued> g);
+    arrays::matrix<dcomplex> density(gf_const_view<imfreq> g);
+    dcomplex density(gf_const_view<imfreq, scalar_valued> g);
 
- arrays::matrix<dcomplex> density(gf_const_view<legendre> g);
- dcomplex density(gf_const_view<legendre, scalar_valued> g);
-}
+    arrays::matrix<dcomplex> density(gf_const_view<legendre> g);
+    dcomplex density(gf_const_view<legendre, scalar_valued> g);
+  } // namespace gfs
 
-namespace clef {
- TRIQS_CLEF_MAKE_FNT_LAZY(density);
-}
-}
-
+  namespace clef {
+    TRIQS_CLEF_MAKE_FNT_LAZY(density);
+  }
+} // namespace triqs

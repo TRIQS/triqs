@@ -23,25 +23,23 @@
 
 TEST(Array, SwapIndex) {
 
- array<double, 4> A(1,2,3,4);
+  array<double, 4> A(1, 2, 3, 4);
 
- triqs::clef::placeholder<0> i_;
- triqs::clef::placeholder<1> j_;
- triqs::clef::placeholder<2> k_;
- triqs::clef::placeholder<3> l_;
+  triqs::clef::placeholder<0> i_;
+  triqs::clef::placeholder<1> j_;
+  triqs::clef::placeholder<2> k_;
+  triqs::clef::placeholder<3> l_;
 
- A(i_,j_,k_,l_) << i_ + 10* j_ + 100* k_ + 1000*l_;
+  A(i_, j_, k_, l_) << i_ + 10 * j_ + 100 * k_ + 1000 * l_;
 
- auto S = swap_index_view(A, 0, 2);
+  auto S = swap_index_view(A, 0, 2);
 
- array<double, 4> B(3,2,1,4);
- B(k_,j_,i_,l_) << i_ + 10* j_ + 100* k_ + 1000*l_;
- 
- EXPECT_EQ(S, B());
- EXPECT_EQ(first_dim(A), third_dim(S));
- EXPECT_EQ(first_dim(S), third_dim(A));
- 
+  array<double, 4> B(3, 2, 1, 4);
+  B(k_, j_, i_, l_) << i_ + 10 * j_ + 100 * k_ + 1000 * l_;
+
+  EXPECT_EQ(S, B());
+  EXPECT_EQ(first_dim(A), third_dim(S));
+  EXPECT_EQ(first_dim(S), third_dim(A));
 }
 
 MAKE_MAIN;
-

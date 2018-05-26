@@ -24,11 +24,14 @@
 #include <array>
 #include "./mesh_tools.hpp"
 
-namespace std { 
-  template<typename T, size_t R>
-std::ostream &operator <<(std::ostream &sout, std::array<T,R> const &a){ sout <<'('; for (int u = 0; u < R;  ++u) sout << (u ? ", " : "") <<  a[u]; return sout <<')';  }
+namespace std {
+  template <typename T, size_t R> std::ostream &operator<<(std::ostream &sout, std::array<T, R> const &a) {
+    sout << '(';
+    for (int u = 0; u < R; ++u) sout << (u ? ", " : "") << a[u];
+    return sout << ')';
+  }
 
-}
+} // namespace std
 
 namespace triqs::gfs {
 
@@ -36,10 +39,9 @@ namespace triqs::gfs {
   struct _universal_unit_t {};
   template <typename T> auto operator*(_universal_unit_t, T &&x) { return std::forward<T>(x); }
   template <typename T> auto operator*(T &&x, _universal_unit_t) { return std::forward<T>(x); }
-  inline _universal_unit_t operator*(_universal_unit_t, _universal_unit_t) { return {};} // avoid ambiguity
-  
+  inline _universal_unit_t operator*(_universal_unit_t, _universal_unit_t) { return {}; } // avoid ambiguity
 
-  // FIXME : DOC 
+  // FIXME : DOC
   template <typename IndexType> struct interpol_data_0d_t {
     static constexpr int n_pts = 1;
     std::array<IndexType, n_pts> idx;
@@ -54,20 +56,19 @@ namespace triqs::gfs {
     std::array<double, n_pts> w;
   };
 
-  
-  // FIXME : DOC 
+  // FIXME : DOC
   struct interpol_data_all_t {
     static constexpr int n_pts = 1;
     std::array<all_t, n_pts> idx;
     std::array<_universal_unit_t, n_pts> w;
   };
 
-  /** 
+  /**
    * Fit the two closest points for x on [x_min, x_max], with a linear weight w
    * @param x : the point
    * @param i_max : maximum index
    * @param x_min : the window starts. It ends at x_min + i_max* delta_x
-   * @param delta_x 
+   * @param delta_x
    *
    * Throws if x is not in the window
    * */

@@ -24,48 +24,50 @@
 #include "./tools.hpp"
 #include "./qcache.hpp"
 
-namespace triqs { namespace arrays { namespace lapack { 
+namespace triqs {
+  namespace arrays {
+    namespace lapack {
 
- using namespace blas_lapack_tools;
- namespace f77 { // overload
+      using namespace blas_lapack_tools;
+      namespace f77 { // overload
 
-  extern "C" { 
-  void TRIQS_FORTRAN_MANGLING(dgetri) (const int & , double *, const int & ,int *,double *,const int & ,int & );
-  void TRIQS_FORTRAN_MANGLING(zgetri) (const int & , std::complex<double> *, const int & ,int *,std::complex<double> *,const int & ,int & );
-   }
+        extern "C" {
+        void TRIQS_FORTRAN_MANGLING(dgetri)(const int &, double *, const int &, int *, double *, const int &, int &);
+        void TRIQS_FORTRAN_MANGLING(zgetri)(const int &, std::complex<double> *, const int &, int *, std::complex<double> *, const int &, int &);
+        }
 
-  inline void getri (const int & N, double* A, const int & LDA, int * ipiv, double * work, const int & lwork, int & info) { 
-   TRIQS_FORTRAN_MANGLING(dgetri)(N,A,LDA,ipiv,work, lwork, info);
-  }
-  inline void getri (const int & N, std::complex<double>* A, const int & LDA, int * ipiv, std::complex<double> * work, const int & lwork, int & info) { 
-   TRIQS_FORTRAN_MANGLING(zgetri)(N,A,LDA,ipiv,work, lwork, info);
-  }
- }
+        inline void getri(const int &N, double *A, const int &LDA, int *ipiv, double *work, const int &lwork, int &info) {
+          TRIQS_FORTRAN_MANGLING(dgetri)(N, A, LDA, ipiv, work, lwork, info);
+        }
+        inline void getri(const int &N, std::complex<double> *A, const int &LDA, int *ipiv, std::complex<double> *work, const int &lwork, int &info) {
+          TRIQS_FORTRAN_MANGLING(zgetri)(N, A, LDA, ipiv, work, lwork, info);
+        }
+      } // namespace f77
 
- inline size_t r_round(double x) { return std::round(x) + 1;}
- inline size_t r_round(std::complex<double> x) { return std::round(std::real(x)) + 1;}
- /**
+      inline size_t r_round(double x) { return std::round(x) + 1; }
+      inline size_t r_round(std::complex<double> x) { return std::round(std::real(x)) + 1; }
+      /**
   * Calls getri on a matrix or view
   * Takes care of making temporary copies if necessary
   */
- template<typename MT> 
-  typename std::enable_if< is_blas_lapack_type<typename MT::value_type>::value, int >::type 
-  getri (MT & A, arrays::vector<int> & ipiv) { 
-   //getri (MT & A, arrays::vector<int> & ipiv, arrays::vector<typename MT::value_type> & work ) { 
-   reflexive_qcache<MT> Ca(A);
-   auto dm = std::min(first_dim(Ca()), second_dim(Ca()));
-   if (ipiv.size() < dm) TRIQS_RUNTIME_ERROR << "getri : error in ipiv size : found "<<ipiv.size()<< " while it should be at least" << dm; 
-   int info;
-   typename MT::value_type work1[2];
-   // first call to get the optimal lwork
-   f77::getri ( get_n_rows(Ca()), Ca().data_start(), get_ld(Ca()), ipiv.data_start(), work1, -1, info); 
-   int lwork = r_round(work1[0]);
-   //std::cerr << " Optimisation lwork "<< lwork<< std::endl;
-   arrays::vector<typename MT::value_type> work(lwork); 
-   f77::getri ( get_n_rows(Ca()), Ca().data_start(), get_ld(Ca()), ipiv.data_start(), work.data_start(), lwork, info); 
-   return info;
-  }
-  }}}// namespace
+      template <typename MT>
+      typename std::enable_if<is_blas_lapack_type<typename MT::value_type>::value, int>::type getri(MT &A, arrays::vector<int> &ipiv) {
+        //getri (MT & A, arrays::vector<int> & ipiv, arrays::vector<typename MT::value_type> & work ) {
+        reflexive_qcache<MT> Ca(A);
+        auto dm = std::min(first_dim(Ca()), second_dim(Ca()));
+        if (ipiv.size() < dm) TRIQS_RUNTIME_ERROR << "getri : error in ipiv size : found " << ipiv.size() << " while it should be at least" << dm;
+        int info;
+        typename MT::value_type work1[2];
+        // first call to get the optimal lwork
+        f77::getri(get_n_rows(Ca()), Ca().data_start(), get_ld(Ca()), ipiv.data_start(), work1, -1, info);
+        int lwork = r_round(work1[0]);
+        //std::cerr << " Optimisation lwork "<< lwork<< std::endl;
+        arrays::vector<typename MT::value_type> work(lwork);
+        f77::getri(get_n_rows(Ca()), Ca().data_start(), get_ld(Ca()), ipiv.data_start(), work.data_start(), lwork, info);
+        return info;
+      }
+    } // namespace lapack
+  }   // namespace arrays
+} // namespace triqs
 
 #endif
-

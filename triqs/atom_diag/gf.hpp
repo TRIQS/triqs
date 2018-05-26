@@ -25,23 +25,21 @@
 #include "./atom_diag.hpp"
 
 namespace triqs {
-namespace atom_diag {
+  namespace atom_diag {
 
-using namespace triqs::gfs;
+    using namespace triqs::gfs;
 
-/// Lehmann representation of one matrix element of a GF: list of (pole, residue) pairs
-template<bool Complex>
-using gf_scalar_lehmann_t = std::vector<std::pair<double, typename atom_diag<Complex>::scalar_t>>;
+    /// Lehmann representation of one matrix element of a GF: list of (pole, residue) pairs
+    template <bool Complex> using gf_scalar_lehmann_t = std::vector<std::pair<double, typename atom_diag<Complex>::scalar_t>>;
 
-/// Lehmann representation of a matrix-valued GF
-template<bool Complex>
-using gf_lehmann_t = std::vector<matrix<gf_scalar_lehmann_t<Complex>>>;
+    /// Lehmann representation of a matrix-valued GF
+    template <bool Complex> using gf_lehmann_t = std::vector<matrix<gf_scalar_lehmann_t<Complex>>>;
 
-/// List of excluded eigenstates, (subspace index, inner index) pairs
-using excluded_states_t = std::vector<std::pair<int, int>>;
+    /// List of excluded eigenstates, (subspace index, inner index) pairs
+    using excluded_states_t = std::vector<std::pair<int, int>>;
 
-/// The atomic Green's function, Lehmann representation
-/**
+    /// The atomic Green's function, Lehmann representation
+    /**
  * @tparam Complex Do we have a diagonalization problem with a complex-valued Hamiltonian?
  * @param atom Solved diagonalization problem.
  * @param beta Inverse temperature.
@@ -50,14 +48,12 @@ using excluded_states_t = std::vector<std::pair<int, int>>;
  * @return Atomic Green's function in the Lehmann representation
  * @include triqs/atom_diag/gf.hpp
  */
-template<bool Complex>
-gf_lehmann_t<Complex> atomic_g_lehmann(atom_diag<Complex> const& atom,
-                                       double beta,
-                                       gf_struct_t const& gf_struct,
-                                       excluded_states_t excluded_states = {});
+    template <bool Complex>
+    gf_lehmann_t<Complex> atomic_g_lehmann(atom_diag<Complex> const &atom, double beta, gf_struct_t const &gf_struct,
+                                           excluded_states_t excluded_states = {});
 
-/// The atomic imaginary time Green's function, constructed from precomputed Lehmann representation
-/**
+    /// The atomic imaginary time Green's function, constructed from precomputed Lehmann representation
+    /**
  * @tparam Complex Do we have a diagonalization problem with a complex-valued Hamiltonian?
  * @param lehmann Lehmann representation.
  * @param gf_struct Block structure of the Green's function, block name -> list of inner indices.
@@ -65,13 +61,11 @@ gf_lehmann_t<Complex> atomic_g_lehmann(atom_diag<Complex> const& atom,
  * @return Atomic Green's function :math:`G_{at}(\tau)`
  * @include triqs/atom_diag/gf.hpp
  */
-template<bool Complex>
-block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const& lehmann,
-                              gf_struct_t const& gf_struct,
-                              gf_mesh<imtime> const& mesh);
+    template <bool Complex>
+    block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<imtime> const &mesh);
 
-/// The atomic imaginary time Green's function, possibly with excluded states (none by default)
-/**
+    /// The atomic imaginary time Green's function, possibly with excluded states (none by default)
+    /**
  * @tparam Complex Are we using Lehmann representation with complex matrix elements?
  * @param atom Solved diagonalization problem.
  * @param beta Inverse temperature.
@@ -81,15 +75,12 @@ block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const& lehmann,
  * @return Atomic Green's function :math:`G_{at}(\tau)`
  * @include triqs/atom_diag/gf.hpp
  */
-template<bool Complex>
-block_gf<imtime> atomic_g_tau(atom_diag<Complex> const& atom,
-                              double beta,
-                              gf_struct_t const& gf_struct,
-                              int n_tau,
-                              excluded_states_t const& excluded_states = {});
+    template <bool Complex>
+    block_gf<imtime> atomic_g_tau(atom_diag<Complex> const &atom, double beta, gf_struct_t const &gf_struct, int n_tau,
+                                  excluded_states_t const &excluded_states = {});
 
-/// The atomic Matsubara Green's function, constructed from precomputed Lehmann representation
-/**
+    /// The atomic Matsubara Green's function, constructed from precomputed Lehmann representation
+    /**
  * @tparam Complex Are we using Lehmann representation with complex matrix elements?
  * @param lehmann Lehmann representation.
  * @param gf_struct Block structure of the Green's function, block name -> list of inner indices.
@@ -97,13 +88,11 @@ block_gf<imtime> atomic_g_tau(atom_diag<Complex> const& atom,
  * @return Atomic Green's function :math:`G_{at}(i\omega)`.
  * @include triqs/atom_diag/gf.hpp
  */
-template<bool Complex>
-block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const& lehmann,
-                             gf_struct_t const& gf_struct,
-                             gf_mesh<imfreq> const& mesh);
+    template <bool Complex>
+    block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<imfreq> const &mesh);
 
-/// The atomic Matsubara Green's function, possibly with excluded states (none by default)
-/**
+    /// The atomic Matsubara Green's function, possibly with excluded states (none by default)
+    /**
  * @tparam Complex Do we have a diagonalization problem with a complex-valued Hamiltonian?
  * @param atom Solved diagonalization problem.
  * @param beta Inverse temperature.
@@ -113,15 +102,12 @@ block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const& lehmann,
  * @return Atomic Green's function :math:`G_{at}(i\omega)`.
  * @include triqs/atom_diag/gf.hpp
  */
-template<bool Complex>
-block_gf<imfreq> atomic_g_iw(atom_diag<Complex> const& atom,
-                             double beta,
-                             gf_struct_t const& gf_struct,
-                             int n_iw,
-                             excluded_states_t const& excluded_states = {});
+    template <bool Complex>
+    block_gf<imfreq> atomic_g_iw(atom_diag<Complex> const &atom, double beta, gf_struct_t const &gf_struct, int n_iw,
+                                 excluded_states_t const &excluded_states = {});
 
-/// The atomic Green's function in Legendre basis, constructed from precomputed Lehmann representation
-/**
+    /// The atomic Green's function in Legendre basis, constructed from precomputed Lehmann representation
+    /**
  * @tparam Complex Are we using Lehmann representation with complex matrix elements?
  * @param lehmann Lehmann representation.
  * @param gf_struct Block structure of the Green's function, block name -> list of inner indices.
@@ -129,13 +115,11 @@ block_gf<imfreq> atomic_g_iw(atom_diag<Complex> const& atom,
  * @return Atomic Green's function :math:`G_{at}(\ell)`.
  * @include triqs/atom_diag/gf.hpp
  */
-template<bool Complex>
-block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const& lehmann,
-                              gf_struct_t const& gf_struct,
-                              gf_mesh<legendre> const& mesh);
+    template <bool Complex>
+    block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<legendre> const &mesh);
 
-/// The atomic Green's function in Legendre basis, possibly with excluded states (none by default)
-/**
+    /// The atomic Green's function in Legendre basis, possibly with excluded states (none by default)
+    /**
  * @tparam Complex Do we have a diagonalization problem with a complex-valued Hamiltonian?
  * @param atom Solved diagonalization problem.
  * @param beta Inverse temperature.
@@ -145,15 +129,12 @@ block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const& lehmann,
  * @return Atomic Green's function :math:`G_{at}(\ell)`.
  * @include triqs/atom_diag/gf.hpp
  */
-template<bool Complex>
-block_gf<legendre> atomic_g_l(atom_diag<Complex> const& atom,
-                              double beta,
-                              gf_struct_t const& gf_struct,
-                              int n_l,
-                              excluded_states_t const& excluded_states = {});
+    template <bool Complex>
+    block_gf<legendre> atomic_g_l(atom_diag<Complex> const &atom, double beta, gf_struct_t const &gf_struct, int n_l,
+                                  excluded_states_t const &excluded_states = {});
 
-/// The atomic retarded Green's function, constructed from precomputed Lehmann representation
-/**
+    /// The atomic retarded Green's function, constructed from precomputed Lehmann representation
+    /**
  * @tparam Complex Do we have a diagonalization problem with a complex-valued Hamiltonian?
  * @param lehmann Lehmann representation.
  * @param gf_struct Block structure of the Green's function, block name -> list of inner indices.
@@ -162,14 +143,12 @@ block_gf<legendre> atomic_g_l(atom_diag<Complex> const& atom,
  * @return Atomic Green's function :math:`G_{at}(\omega)`.
  * @include triqs/atom_diag/gf.hpp
  */
-template<bool Complex>
-block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const& lehmann,
-                              gf_struct_t const& gf_struct,
-                              gf_mesh<refreq> const& mesh,
-                              double broadening = 0);
+    template <bool Complex>
+    block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<refreq> const &mesh,
+                                double broadening = 0);
 
-/// The atomic retarded Green's function, possibly with excluded states (none by default)
-/**
+    /// The atomic retarded Green's function, possibly with excluded states (none by default)
+    /**
  * @tparam Complex Do we have a diagonalization problem with a complex-valued Hamiltonian?
  * @param atom Solved diagonalization problem.
  * @param beta Inverse temperature.
@@ -181,12 +160,10 @@ block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const& lehmann,
  * @return Atomic Green's function :math:`G_{at}(\omega)`.
  * @include triqs/atom_diag/gf.hpp
  */
-template<bool Complex>
-block_gf<refreq> atomic_g_w(atom_diag<Complex> const& atom,
-                            double beta, gf_struct_t const& gf_struct,
-                            std::pair<double, double> const& energy_window,
-                            int n_w,
-                            double broadening = 0,
-                            excluded_states_t const& excluded_states = {});
+    template <bool Complex>
+    block_gf<refreq> atomic_g_w(atom_diag<Complex> const &atom, double beta, gf_struct_t const &gf_struct,
+                                std::pair<double, double> const &energy_window, int n_w, double broadening = 0,
+                                excluded_states_t const &excluded_states = {});
 
-}}
+  } // namespace atom_diag
+} // namespace triqs

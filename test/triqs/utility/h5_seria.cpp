@@ -26,22 +26,21 @@ int main() {}
 #else
 
 #include <triqs/h5/serialization.hpp>
-using triqs::h5::serialize;
 using triqs::h5::deserialize;
+using triqs::h5::serialize;
 using namespace triqs::arrays;
 
 TEST(H5Serialize, All) {
 
- auto a = array<double, 1>{1, 2, 3, 4, 5};
- auto s = serialize(a);
- auto b = deserialize<array<double, 1>>(s);
- EXPECT_ARRAY_NEAR(a, b);
+  auto a = array<double, 1>{1, 2, 3, 4, 5};
+  auto s = serialize(a);
+  auto b = deserialize<array<double, 1>>(s);
+  EXPECT_ARRAY_NEAR(a, b);
 
- auto s2 = serialize(array<double, 1>(10000));
- auto s3 = serialize(array<double, 1>(20000));
- EXPECT_TRUE(first_dim(s3) < first_dim(s2) * 2); // Test scaling in size with overhead
+  auto s2 = serialize(array<double, 1>(10000));
+  auto s3 = serialize(array<double, 1>(20000));
+  EXPECT_TRUE(first_dim(s3) < first_dim(s2) * 2); // Test scaling in size with overhead
 }
 MAKE_MAIN;
 
 #endif
-

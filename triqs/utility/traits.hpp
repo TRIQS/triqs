@@ -20,19 +20,18 @@
  ******************************************************************************/
 #pragma once
 
-namespace triqs { 
+namespace triqs {
 
- // MPL traits
- template<typename ... T> struct _or; 
- template<typename T0, typename ... T> struct _or<T0,T...> : std::integral_constant<bool,T0::value || _or<T...>::value>{}; 
- template<> struct _or<> : std::false_type{};
+  // MPL traits
+  template <typename... T> struct _or;
+  template <typename T0, typename... T> struct _or<T0, T...> : std::integral_constant<bool, T0::value || _or<T...>::value> {};
+  template <> struct _or<> : std::false_type {};
 
- template<typename ... T> struct _and; 
- template<typename T0, typename ... T> struct _and<T0,T...> : std::integral_constant<bool,T0::value && _and<T...>::value>{}; 
- template<> struct _and<> : std::true_type{};
+  template <typename... T> struct _and;
+  template <typename T0, typename... T> struct _and<T0, T...> : std::integral_constant<bool, T0::value && _and<T...>::value> {};
+  template <> struct _and<> : std::true_type {};
 
- // helpers
- template<bool B> using bool_constant = std::integral_constant<bool,B>;
+  // helpers
+  template <bool B> using bool_constant = std::integral_constant<bool, B>;
 
-}
-
+} // namespace triqs

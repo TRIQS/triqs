@@ -22,20 +22,19 @@
 #include <triqs/gfs/block/map.hpp>
 
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- //mako %for FntToMap in ['inverse', 'reinterpret_scalar_valued_gf_as_matrix_valued', 'make_gf_from_fourier', 'make_gf_from_inverse_fourier'] :
+    //mako %for FntToMap in ['inverse', 'reinterpret_scalar_valued_gf_as_matrix_valued', 'make_gf_from_fourier', 'make_gf_from_inverse_fourier'] :
 
- //mako %for BGF in ['block_gf<M,T> &' , 'block_gf<M,T> const &' , 'block_gf_view<M,T>', 'block_gf_const_view<M,T>', 'block2_gf<M,T> &' , 'block2_gf<M,T> const &' , 'block2_gf_view<M,T>', 'block2_gf_const_view<M,T>'] :
- template <typename M, typename T> auto MAKO_FntToMap(MAKO_BGF g) {
-   auto l= [](auto&&x) { return MAKO_FntToMap(x);};
-   return map_block_gf(l, g);
- }
+    //mako %for BGF in ['block_gf<M,T> &' , 'block_gf<M,T> const &' , 'block_gf_view<M,T>', 'block_gf_const_view<M,T>', 'block2_gf<M,T> &' , 'block2_gf<M,T> const &' , 'block2_gf_view<M,T>', 'block2_gf_const_view<M,T>'] :
+    template <typename M, typename T> auto MAKO_FntToMap(MAKO_BGF g) {
+      auto l = [](auto &&x) { return MAKO_FntToMap(x); };
+      return map_block_gf(l, g);
+    }
 
- //mako %endfor
+    //mako %endfor
 
- //mako %endfor
+    //mako %endfor
 
-}
-}
-
+  } // namespace gfs
+} // namespace triqs

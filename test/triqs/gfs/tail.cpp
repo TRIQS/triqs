@@ -7,8 +7,7 @@ using namespace triqs::arrays;
 using namespace triqs::utility;
 using namespace triqs::clef;
 
-namespace std {
-} // namespace std
+namespace std {} // namespace std
 
 TEST(Gf, Fourier) { // NOLINT
 
@@ -31,7 +30,7 @@ TEST(Gf, Fourier) { // NOLINT
 TEST(Gf, Tail) { // NOLINT
 
   double beta = 500;
-  int n_iw = 3000;
+  int n_iw    = 3000;
 
   auto g = gf<imfreq, scalar_valued>{{beta, Fermion, n_iw}};
 

@@ -23,18 +23,16 @@
 #include <algorithm>
 
 namespace triqs {
-namespace arrays {
+  namespace arrays {
 
-
- // FIXME  generalize
- template <typename A>
- std14::conditional_t<A::is_const, array_const_view<typename A::value_type, A::rank + 2>,
-                      array_view<typename A::value_type, A::rank + 2>>
- reinterpret_array_add_1x1(A const &d) {
-  auto &imap = d.indexmap();
-  typename array_view<typename A::value_type, A::rank + 2>::indexmap_type index_map(
-      join(imap.lengths(), make_shape(1, 1)), join(imap.strides(), make_shape(1, 1)), imap.start_shift());
-  return {index_map, d.storage()};
- };
-}
-}
+    // FIXME  generalize
+    template <typename A>
+    std14::conditional_t<A::is_const, array_const_view<typename A::value_type, A::rank + 2>, array_view<typename A::value_type, A::rank + 2>>
+    reinterpret_array_add_1x1(A const &d) {
+      auto &imap = d.indexmap();
+      typename array_view<typename A::value_type, A::rank + 2>::indexmap_type index_map(join(imap.lengths(), make_shape(1, 1)),
+                                                                                        join(imap.strides(), make_shape(1, 1)), imap.start_shift());
+      return {index_map, d.storage()};
+    };
+  } // namespace arrays
+} // namespace triqs

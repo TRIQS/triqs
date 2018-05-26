@@ -22,18 +22,21 @@
 #define COMMON_TEST_ARRAY_H
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/asserts.hpp>
-#include<sstream>
+#include <sstream>
 #include <iostream>
 
-#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl;
-#define TEST_ERR(X) std::cerr << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl;
+#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl;
+#define TEST_ERR(X) std::cerr << BOOST_PP_STRINGIZE((X)) << " ---> " << (X) << std::endl;
 
-#define TEST_ASSERT(X)  if(!bool(X)) { std::stringstream fs; fs<< "Failed Assertion line "<< __LINE__<< " of file "<< __FILE__<<" :\n"<<BOOST_PP_STRINGIZE((X)); std::cout << fs.str()<< std::endl ; TRIQS_RUNTIME_ERROR<< fs.str();}
+#define TEST_ASSERT(X)                                                                                                                               \
+  if (!bool(X)) {                                                                                                                                    \
+    std::stringstream fs;                                                                                                                            \
+    fs << "Failed Assertion line " << __LINE__ << " of file " << __FILE__ << " :\n" << BOOST_PP_STRINGIZE((X));                                      \
+    std::cout << fs.str() << std::endl;                                                                                                              \
+    TRIQS_RUNTIME_ERROR << fs.str();                                                                                                                 \
+  }
 
 #define AS_STRING(X) AS_STRING2(X)
 #define AS_STRING2(X) #X
 
 #endif
-
-
-

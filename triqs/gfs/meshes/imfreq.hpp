@@ -57,7 +57,7 @@ namespace triqs::gfs {
     //using index_t = long;
     using index_t = _long;
     ///type of the linear index
-    using linear_index_t          = long;
+    using linear_index_t = long;
     ///type of the domain point
     using domain_pt_t = typename domain_t::point_t;
     using var_t       = imfreq;
@@ -186,21 +186,21 @@ namespace triqs::gfs {
     // -------------- Evaluation of a function on the grid --------------------------
 
     /// Is the point in mesh ?
-    constexpr bool is_within_boundary(all_t) const { return true;}
+    constexpr bool is_within_boundary(all_t) const { return true; }
     bool is_within_boundary(long n) const { return ((n >= first_index()) && (n <= last_index())); }
     bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n); }
 
-    // For multivar evaluation 
-    interpol_data_all_t  get_interpolation_data(all_t) const { return {}; }
+    // For multivar evaluation
+    interpol_data_all_t get_interpolation_data(all_t) const { return {}; }
     interpol_data_0d_t<index_t> get_interpolation_data(long n) const { return {n}; }
     interpol_data_0d_t<index_t> get_interpolation_data(matsubara_freq n) const { return {n.n}; }
 
-    // For one var evaluation 
+    // For one var evaluation
     template <typename F> auto evaluate(F const &f, long n) const { return f[n]; }
     template <typename F> auto evaluate(F const &f, matsubara_freq n) const { return f[n.n]; }
 
     friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-      return sout << "Matsubara Freq Mesh of size " << m.size() <<", Domain: " << m.domain() <<", positive_only : " << m.positive_only();
+      return sout << "Matsubara Freq Mesh of size " << m.size() << ", Domain: " << m.domain() << ", positive_only : " << m.positive_only();
     }
     // -------------------- HDF5 -------------------
 
@@ -261,10 +261,7 @@ namespace triqs::gfs {
     using index_t = typename gf_mesh<imfreq>::index_t;
     mesh_point()  = default;
     mesh_point(gf_mesh<imfreq> const &m, index_t const &index_)
-       : matsubara_freq(index_, m.domain().beta, m.domain().statistic),
-         first_index(m.first_index()),
-         last_index(m.last_index()),
-         _mesh(&m) {}
+       : matsubara_freq(index_, m.domain().beta, m.domain().statistic), first_index(m.first_index()), last_index(m.last_index()), _mesh(&m) {}
     mesh_point(gf_mesh<imfreq> const &m) : mesh_point(m, m.first_index()) {}
     void advance() { ++n; }
     long linear_index() const { return n - first_index; }

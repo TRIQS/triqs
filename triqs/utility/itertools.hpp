@@ -38,25 +38,25 @@ namespace triqs::utility {
     /********************* Some helpers  ********************/
 
     // By default, get mutable iterators
-    template <typename T> auto _begin(T& range) { return std::begin(range); }
-    template <typename T> auto _end(T& range) { return std::end(range); }
+    template <typename T> auto _begin(T &range) { return std::begin(range); }
+    template <typename T> auto _end(T &range) { return std::end(range); }
 
     // Always return iterator to const for cbegin/cend
-    template <typename T> auto _cbegin(T const& range) { return std::cbegin(range); }
-    template <typename T> auto _cend(T const& range) { return std::cend(range); }
+    template <typename T> auto _cbegin(T const &range) { return std::cbegin(range); }
+    template <typename T> auto _cend(T const &range) { return std::cend(range); }
 
     // Sentinel_t, used to denote the end of a range for e.g. product
     template <typename It> struct sentinel_t { It it; };
-    template <typename It> sentinel_t<It> make_sentinel(It&& it) { return {it}; }
+    template <typename It> sentinel_t<It> make_sentinel(It &&it) { return {it}; }
 
     /********************* Iterator Facade  ********************/
 
     template <typename Iter> struct iterator_facade {
 
-      Iter& self() { return static_cast<Iter&>(*this); }
-      Iter const& self() const { return static_cast<const Iter&>(*this); }
+      Iter &self() { return static_cast<Iter &>(*this); }
+      Iter const &self() const { return static_cast<const Iter &>(*this); }
 
-      Iter& operator++() {
+      Iter &operator++() {
         self().next();
         return self();
       }
@@ -67,8 +67,8 @@ namespace triqs::utility {
         return c;
       }
 
-      template <typename U> bool operator==(U const& other) const { return self().equal(other); }
-      template <typename U> bool operator!=(U const& other) const { return (!operator==(other)); }
+      template <typename U> bool operator==(U const &other) const { return self().equal(other); }
+      template <typename U> bool operator!=(U const &other) const { return (!operator==(other)); }
 
       decltype(auto) operator*() { return self().dereference(); }
       decltype(auto) operator*() const { return self().dereference(); }
@@ -86,23 +86,22 @@ namespace triqs::utility {
       // All usings required by std::iterator_traits<..>
       using difference_type   = std::ptrdiff_t;
       using value_type        = decltype(lambda(*it));
-      using pointer           = value_type*;
-      using reference         = value_type&;
+      using pointer           = value_type *;
+      using reference         = value_type &;
       using iterator_category = std::forward_iterator_tag;
 
       transform_iter(Iter it, L lambda) : it(std::move(it)), lambda(std::move(lambda)) {}
 
       void next() { ++it; }
 
-      bool equal(transform_iter const& other) const { return (it == other.it); }
+      bool equal(transform_iter const &other) const { return (it == other.it); }
 
       decltype(auto) dereference() const { return lambda(*it); }
     };
 
     // ---------------------------------------------
 
-    template <typename Iter, typename L>
-    transform_iter<std::decay_t<Iter>, std::decay_t<L>> make_transform_iter(Iter&& x, L&& lambda) {
+    template <typename Iter, typename L> transform_iter<std::decay_t<Iter>, std::decay_t<L>> make_transform_iter(Iter &&x, L &&lambda) {
       return {std::forward<Iter>(x), std::forward<L>(lambda)};
     }
 
@@ -124,8 +123,8 @@ namespace triqs::utility {
 
       using difference_type   = std::ptrdiff_t;
       using value_type        = std::pair<long, typename std::iterator_traits<Iter>::value_type>;
-      using pointer           = value_type*;
-      using reference         = value_type&;
+      using pointer           = value_type *;
+      using reference         = value_type &;
       using iterator_category = std::forward_iterator_tag;
 
       enum_iter(Iter it) : it(std::move(it)) {}
@@ -135,7 +134,7 @@ namespace triqs::utility {
         ++i;
       }
 
-      bool equal(enum_iter const& other) const { return (it == other.it); }
+      bool equal(enum_iter const &other) const { return (it == other.it); }
 
       decltype(auto) dereference() const { return std::tuple<long, decltype(*it)>{i, *it}; }
       decltype(auto) dereference() { return std::tuple<long, decltype(*it)>{i, *it}; }
@@ -143,7 +142,7 @@ namespace triqs::utility {
 
     // ---------------------------------------------
 
-    template <typename Iter> enum_iter<std::decay_t<Iter>> make_enum_iter(Iter&& x) { return {std::forward<Iter>(x)}; }
+    template <typename Iter> enum_iter<std::decay_t<Iter>> make_enum_iter(Iter &&x) { return {std::forward<Iter>(x)}; }
 
     template <typename T> struct enumerated {
 
@@ -165,50 +164,50 @@ namespace triqs::utility {
 
       using difference_type   = std::ptrdiff_t;
       using value_type        = std::tuple<typename std::iterator_traits<It>::value_type...>;
-      using pointer           = value_type*;
-      using reference         = value_type&;
+      using pointer           = value_type *;
+      using reference         = value_type &;
       using iterator_category = std::forward_iterator_tag;
 
-      template <typename... U> void nop(U&&... u) {} // do nothing...
+      template <typename... U> void nop(U &&... u) {} // do nothing...
       template <size_t... Is> void increment_all(std::index_sequence<Is...>) { nop(++std::get<Is>(its)...); }
       void next() { increment_all(std::index_sequence_for<It...>{}); }
 
-      bool equal(zip_iter const& other) const { return (its == other.its); }
+      bool equal(zip_iter const &other) const { return (its == other.its); }
 
       template <size_t... Is> auto tuple_map_impl(std::index_sequence<Is...>) {
         return std::tuple<decltype(*std::get<Is>(its))...>(*std::get<Is>(its)...);
-	// return std::forward_as_tuple(*std::get<Is>(its)...); // ?
+        // return std::forward_as_tuple(*std::get<Is>(its)...); // ?
       }
       decltype(auto) dereference() { return tuple_map_impl(std::index_sequence_for<It...>{}); }
     };
 
     // ---------------------------------------------
 
-    template <typename... It> zip_iter<std::decay_t<It>...> make_zip_iter(std::tuple<It...>&& x) { return {std::move(x)}; }
+    template <typename... It> zip_iter<std::decay_t<It>...> make_zip_iter(std::tuple<It...> &&x) { return {std::move(x)}; }
 
     template <typename... T> struct zipped {
 
       std::tuple<T...> tu; // T can be a ref.
       using seq_t = std::index_sequence_for<T...>;
 
-      template <typename... U> zipped(U&&... ranges) : tu{std::forward<U>(ranges)...} {}
+      template <typename... U> zipped(U &&... ranges) : tu{std::forward<U>(ranges)...} {}
 
       // Apply function to tuple
-      template <typename F, size_t... Is> auto tuple_map(F&& f, std::index_sequence<Is...>) {
+      template <typename F, size_t... Is> auto tuple_map(F &&f, std::index_sequence<Is...>) {
         return make_zip_iter(std::make_tuple(f(std::get<Is>(tu))...));
       }
 
       auto begin() {
-        return tuple_map([](auto&& x) { return _begin(x); }, seq_t{});
+        return tuple_map([](auto &&x) { return _begin(x); }, seq_t{});
       }
       auto end() {
-        return tuple_map([](auto&& x) { return _end(x); }, seq_t{});
+        return tuple_map([](auto &&x) { return _end(x); }, seq_t{});
       }
       auto begin() const {
-        return tuple_map([](auto&& x) { return _cbegin(x); }, seq_t{});
+        return tuple_map([](auto &&x) { return _cbegin(x); }, seq_t{});
       }
       auto end() const {
-        return tuple_map([](auto&& x) { return _cend(x); }, seq_t{});
+        return tuple_map([](auto &&x) { return _cend(x); }, seq_t{});
       }
       auto cbegin() const { return begin(); }
       auto cend() const { return end(); }
@@ -224,24 +223,23 @@ namespace triqs::utility {
 
       using difference_type   = std::ptrdiff_t;
       using value_type        = std::tuple<typename std::iterator_traits<It>::value_type...>;
-      using pointer           = value_type*;
-      using reference         = value_type&;
+      using pointer           = value_type *;
+      using reference         = value_type &;
       using iterator_category = std::forward_iterator_tag;
 
       template <int N> void _next() {
         ++std::get<N>(its);
-        if
-          constexpr(N < sizeof...(It) - 1) {
-            if (std::get<N>(its) == std::get<N>(its_end)) {
-              std::get<N>(its) = std::get<N>(its_begin);
-              _next<N + 1>();
-            }
+        if constexpr (N < sizeof...(It) - 1) {
+          if (std::get<N>(its) == std::get<N>(its_end)) {
+            std::get<N>(its) = std::get<N>(its_begin);
+            _next<N + 1>();
           }
+        }
       }
       void next() { _next<0>(); }
 
-      bool equal(prod_iter const& other) const { return (its == other.its); }
-      template <typename U> bool equal(sentinel_t<U> const& s) const { return (s.it == std::get<sizeof...(It) - 1>(its)); }
+      bool equal(prod_iter const &other) const { return (its == other.its); }
+      template <typename U> bool equal(sentinel_t<U> const &s) const { return (s.it == std::get<sizeof...(It) - 1>(its)); }
 
       template <size_t... Is> auto tuple_map_impl(std::index_sequence<Is...>) const {
         return std::tuple<decltype(*std::get<Is>(its))...>(*std::get<Is>(its)...);
@@ -251,15 +249,14 @@ namespace triqs::utility {
 
     // ---------------------------------------------
 
-    template <typename... It>
-    prod_iter<std::decay_t<It>...> make_prod_iter(std::tuple<It...>&& its, std::tuple<It...>&& its_end) {
+    template <typename... It> prod_iter<std::decay_t<It>...> make_prod_iter(std::tuple<It...> &&its, std::tuple<It...> &&its_end) {
       return {std::move(its), std::move(its_end)};
     }
 
     template <typename... T> struct multiplied {
       std::tuple<T...> tu; // T can be a ref.
 
-      template <typename... U> multiplied(U&&... ranges) : tu{std::forward<U>(ranges)...} {}
+      template <typename... U> multiplied(U &&... ranges) : tu{std::forward<U>(ranges)...} {}
 
       template <size_t... Is> auto _begin(std::index_sequence<Is...>) const {
         return make_prod_iter(std::make_tuple(std::cbegin(std::get<Is>(tu))...), std::make_tuple(std::cend(std::get<Is>(tu))...));
@@ -271,7 +268,7 @@ namespace triqs::utility {
       auto cend() const { return make_sentinel(std::cend(std::get<sizeof...(T) - 1>(tu))); }
     };
 
-    template <typename... T> multiplied(T &&...) -> multiplied<std::decay_t<T>...>;
+    template <typename... T> multiplied(T &&...)->multiplied<std::decay_t<T>...>;
 
   } // namespace details
 
@@ -284,7 +281,7 @@ namespace triqs::utility {
    * @param range The range that the lambda is applied to
    * @param range The lambda to apply to the range
    */
-  template <typename T, typename L> auto transform(T&& range, L&& lambda) {
+  template <typename T, typename L> auto transform(T &&range, L &&lambda) {
     return details::transformed<T, L>{std::forward<T>(range), std::forward<L>(lambda)};
   }
 
@@ -294,7 +291,7 @@ namespace triqs::utility {
    *
    * @param range The range to enumerate
    */
-  template <typename T> auto enumerate(T&& range) { return details::enumerated<T>{std::forward<T>(range)}; }
+  template <typename T> auto enumerate(T &&range) { return details::enumerated<T>{std::forward<T>(range)}; }
 
   /**
    * Lazy-zip a range.
@@ -302,10 +299,9 @@ namespace triqs::utility {
    *
    * @param ranges The ranges to zip. Note: They have to be of equal length!
    */
-  template <typename... T> auto zip(T&&... ranges) { return details::zipped<T...>{std::forward<T>(ranges)...}; }
-  template <typename... T, typename L> auto zip_with(T&&... ranges, L&& lambda) {
-    return transform(
-        zip(std::forward<T>(ranges)...), [lambda](std::tuple<T...> t) { return std::apply(lambda, t); });  // FIXME Check
+  template <typename... T> auto zip(T &&... ranges) { return details::zipped<T...>{std::forward<T>(ranges)...}; }
+  template <typename... T, typename L> auto zip_with(T &&... ranges, L &&lambda) {
+    return transform(zip(std::forward<T>(ranges)...), [lambda](std::tuple<T...> t) { return std::apply(lambda, t); }); // FIXME Check
   }
 
   /**
@@ -318,7 +314,7 @@ namespace triqs::utility {
    */
   template <typename... T> auto product(T &&... ranges) { return details::multiplied<T...>{std::forward<T>(ranges)...}; }
 
-  template <typename T, size_t N, size_t... Is> auto _make_product_impl(std::array<T, N> & arr, std::index_sequence<Is...>) {
+  template <typename T, size_t N, size_t... Is> auto _make_product_impl(std::array<T, N> &arr, std::index_sequence<Is...>) {
     static_assert(N == sizeof...(Is));
     return product(arr[Is]...);
   }

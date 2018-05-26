@@ -25,29 +25,26 @@
 #include <triqs/arrays/vector.hpp>
 #include <iostream>
 
-using std::cout; using std::endl;
+using std::cout;
+using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
- 
+  triqs::arrays::vector<double> V(5);
 
- 
- triqs::arrays::vector<double> V(5);
+  for (int i = 0; i < 5; ++i) V(i) = i + 1;
 
- for (int i =0; i<5; ++i) 
- V(i) = i+1;
+  V *= 2;
 
- V *=2;
+  std::cout << V << std::endl;
 
- std::cout<< V<<std::endl; 
+  V(range(2, 4)) /= 2.0;
 
- V(range( 2,4)) /=2.0;
- 
- std::cout<< V<<std::endl; 
+  std::cout << V << std::endl;
 
- V(range (0,5,2)) *= 10;
- std::cout<< V<<std::endl; 
+  V(range(0, 5, 2)) *= 10;
+  std::cout << V << std::endl;
 
- return 0;
+  return 0;
 }

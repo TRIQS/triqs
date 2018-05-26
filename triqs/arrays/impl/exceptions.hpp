@@ -20,7 +20,7 @@
  *
  ******************************************************************************/
 
-#ifndef TRIQS_ARRAYS_EXCEPTIONS_H 
+#ifndef TRIQS_ARRAYS_EXCEPTIONS_H
 #define TRIQS_ARRAYS_EXCEPTIONS_H
 
 #include <triqs/utility/stack_trace.hpp>
@@ -28,21 +28,29 @@
 #include <string>
 #include <sstream>
 
-namespace triqs { namespace arrays {  
+namespace triqs {
+  namespace arrays {
 
- class key_error : public std::exception {
-  std::string acc;
-  public:
-  key_error() throw() :std::exception() {}
-  virtual ~key_error() throw() {}
-  template<typename T> key_error & operator  <<( T const & x) { std::stringstream f; f<<acc<<x; acc = f.str(); return *this;}
-  virtual const char* what() const throw() { return acc.c_str();}
- };
+    class key_error : public std::exception {
+      std::string acc;
 
-}}
+      public:
+      key_error() throw() : std::exception() {}
+      virtual ~key_error() throw() {}
+      template <typename T> key_error &operator<<(T const &x) {
+        std::stringstream f;
+        f << acc << x;
+        acc = f.str();
+        return *this;
+      }
+      virtual const char *what() const throw() { return acc.c_str(); }
+    };
 
-#define TRIQS_ARRAYS_KEY_ERROR throw triqs::arrays::key_error()<<"triqs::arrays key_error at "<<__FILE__<< " : "<<__LINE__<<"\n\n Trace is :\n\n"<<triqs::utility::stack_trace()<<"\n"
+  } // namespace arrays
+} // namespace triqs
+
+#define TRIQS_ARRAYS_KEY_ERROR                                                                                                                       \
+  throw triqs::arrays::key_error() << "triqs::arrays key_error at " << __FILE__ << " : " << __LINE__ << "\n\n Trace is :\n\n"                        \
+                                   << triqs::utility::stack_trace() << "\n"
 
 #endif
-
-

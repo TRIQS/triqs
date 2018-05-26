@@ -75,9 +75,9 @@ namespace triqs::gfs {
 
     // a simple test for the argument of G[...] to have an early error and short error message.
     template <typename Mesh, typename A> constexpr bool is_ok1() {
-      return std::is_same<typename Mesh::mesh_point_t, A>::value || std::is_constructible<long, A>::value ||std::is_constructible<_long, A>::value ||  std::is_same<A, all_t>::value
-         || std::is_same<mini_vector<long, 3>, A>::value || std::is_same<matsubara_freq, A>::value;
-      // FIXME : all std::array. with NDA clean 
+      return std::is_same<typename Mesh::mesh_point_t, A>::value || std::is_constructible<long, A>::value || std::is_constructible<_long, A>::value
+         || std::is_same<A, all_t>::value || std::is_same<mini_vector<long, 3>, A>::value || std::is_same<matsubara_freq, A>::value;
+      // FIXME : all std::array. with NDA clean
     }
     template <typename Mesh, typename... A> struct is_ok { static constexpr bool value = is_ok1<Mesh, std::decay_t<A>...>(); };
     template <typename... T, typename... A> struct is_ok<gf_mesh<cartesian_product<T...>>, A...> {

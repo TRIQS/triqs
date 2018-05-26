@@ -13,20 +13,17 @@ int foo(int x) { return x * 2; }
 // T bar (T const & x) { return x+1;}
 
 // C++11 workaround
-template <typename T> typename std::enable_if<!triqs::clef::is_clef_expression<T>::value, T>::type bar(T const& x) {
- return x + 1;
-}
+template <typename T> typename std::enable_if<!triqs::clef::is_clef_expression<T>::value, T>::type bar(T const &x) { return x + 1; }
 
 namespace triqs {
-namespace clef {
- TRIQS_CLEF_MAKE_FNT_LAZY(foo);
- TRIQS_CLEF_MAKE_FNT_LAZY(bar);
-}
-}
+  namespace clef {
+    TRIQS_CLEF_MAKE_FNT_LAZY(foo);
+    TRIQS_CLEF_MAKE_FNT_LAZY(bar);
+  } // namespace clef
+} // namespace triqs
 
 int main() {
- triqs::clef::placeholder<3> x_;
- std::cout << foo(2.0) << " " << eval(x_ + foo(x_), x_ = 3) << " " << eval(x_ + foo(x_), x_ = 3.5) << std::endl;
- std::cout << bar(2.0) << " " << eval(x_ + bar(x_), x_ = 3) << " " << eval(x_ + bar(x_), x_ = 3.5) << std::endl;
+  triqs::clef::placeholder<3> x_;
+  std::cout << foo(2.0) << " " << eval(x_ + foo(x_), x_ = 3) << " " << eval(x_ + foo(x_), x_ = 3.5) << std::endl;
+  std::cout << bar(2.0) << " " << eval(x_ + bar(x_), x_ = 3) << " " << eval(x_ + bar(x_), x_ = 3.5) << std::endl;
 }
-

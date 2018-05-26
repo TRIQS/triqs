@@ -66,7 +66,7 @@ template <int TARGET_RANK> void test_fourier() {
   auto Gw1_exact = Gw1;
   for (auto const &w : w_mesh) Gw1_exact[w] = 0.5 / (w + E * 1_j) + 0.5 / (w - E * 1_j);
   EXPECT_GF_NEAR(Gw1, Gw1_exact, precision);
-} 
+}
 
 TEST(FourierReal, Scalar) { test_fourier<0>(); }
 TEST(FourierReal, Matrix) { test_fourier<2>(); }

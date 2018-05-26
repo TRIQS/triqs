@@ -24,50 +24,49 @@
 #include <tuple>
 #include <type_traits>
 
-namespace triqs { namespace utility {
+namespace triqs {
+  namespace utility {
 
- namespace details {
+    namespace details {
 
-  template <typename Fun> struct function_arg_ret_type1;
+      template <typename Fun> struct function_arg_ret_type1;
 
-  template <typename ClassType, typename ReturnType, typename... Args>
-  struct function_arg_ret_type1<ReturnType (ClassType::*)(Args...) const> {
-   static constexpr int arity = sizeof...(Args);
-   using result_type = ReturnType;
-   template <size_t i> struct arg : std::tuple_element<i, std::tuple<Args...>> {};
-   template <size_t i> struct decay_arg : std::tuple_element<i, std::tuple<typename std::decay<Args>::type...>> {};
-  };
+      template <typename ClassType, typename ReturnType, typename... Args> struct function_arg_ret_type1<ReturnType (ClassType::*)(Args...) const> {
+        static constexpr int arity = sizeof...(Args);
+        using result_type          = ReturnType;
+        template <size_t i> struct arg : std::tuple_element<i, std::tuple<Args...>> {};
+        template <size_t i> struct decay_arg : std::tuple_element<i, std::tuple<typename std::decay<Args>::type...>> {};
+      };
 
-  template <typename ClassType, typename ReturnType, typename... Args>
-  struct function_arg_ret_type1<ReturnType (ClassType::*)(Args...)>
-      : function_arg_ret_type1<ReturnType (ClassType::*)(Args...) const> {};
- }
+      template <typename ClassType, typename ReturnType, typename... Args>
+      struct function_arg_ret_type1<ReturnType (ClassType::*)(Args...)> : function_arg_ret_type1<ReturnType (ClassType::*)(Args...) const> {};
+    } // namespace details
 
- /*
-  * Detect argument and return type of a callable object, 
+    /*
+  * Detect argument and return type of a callable object,
   * as long as its operator () is not overloaded
   *
   * \tparam Fun The callable object (object, lambda, etc...)
   *
-  * \return 
+  * \return
   *   * arg<i>::type is the type of the i th argument
   *   * decay_arg<i>::type is the std::decay<> of the type of the i-th argument
   *   * result_type is the return type of the function
   *   * constexpr int arity is the arity
   *
-  *   Example : 
-  *   Object with such a call  : 
+  *   Example :
+  *   Object with such a call  :
   *
   *   R operator()( int const &, double )
-  *    
+  *
   *    result_type = R
   *    arg<0> = int const &
   *    arg<1> = double
   *    decay_arg<0> = int
   *    decay_arg<1> = double
-  */ 
- template <typename Fun>
-  struct function_arg_ret_type : public details::function_arg_ret_type1<decltype(&Fun::operator())> {};
+  */
+    template <typename Fun> struct function_arg_ret_type : public details::function_arg_ret_type1<decltype(&Fun::operator())> {};
 
- }}
+  } // namespace utility
+} // namespace triqs
 #endif

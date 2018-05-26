@@ -23,17 +23,17 @@
 #include <string>
 #include <typeinfo>
 
-namespace triqs { namespace utility { 
+namespace triqs {
+  namespace utility {
 
-std::string demangle(const char * name);
-std::string demangle(std::string const & name);
-std::string get_name(std::type_info const &info);
+    std::string demangle(const char *name);
+    std::string demangle(std::string const &name);
+    std::string get_name(std::type_info const &info);
 
- template<typename T>
-  std::string typeid_name(T const & A) { return get_name(typeid(A));}
+    template <typename T> std::string typeid_name(T const &A) { return get_name(typeid(A)); }
 
- template<typename T>
-  std::string typeid_name() { return get_name(typeid(T));}
-  //std::string typeid_name() { return get_name(typeid(std::declval<T>()));}
+    template <typename T> std::string typeid_name() { return get_name(typeid(T)); }
+    //std::string typeid_name() { return get_name(typeid(std::declval<T>()));}
 
-}}
+  } // namespace utility
+} // namespace triqs

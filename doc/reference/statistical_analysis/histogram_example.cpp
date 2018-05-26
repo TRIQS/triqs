@@ -12,11 +12,10 @@ int main() {
   std::cout << "Histogram range [" << limits.first << ";" << limits.second << "]" << std::endl;
 
   // Accumulate some value
-  for(double x : {-10.0, -0.05, 1.1, 2.0, 2.2, 2.9, 3.4, 5.0, 9.0, 10.0, 10.5, 12.1, 32.2})
-   hist << x;
+  for (double x : {-10.0, -0.05, 1.1, 2.0, 2.2, 2.9, 3.4, 5.0, 9.0, 10.0, 10.5, 12.1, 32.2}) hist << x;
 
   // Print accumulated histogram
-  std::cout << "Histogram:\n" << hist<< std::endl;
+  std::cout << "Histogram:\n" << hist << std::endl;
 
   // Accumulated and lost samples
   std::cout << "Accumulated data points: " << hist.n_data_pts() << std::endl;

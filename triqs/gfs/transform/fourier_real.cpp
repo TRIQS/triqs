@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
  * Copyright (C) 2018- by Simons Foundation
- *               authors : O. Parcollet, N. Wentzell 
+ *               authors : O. Parcollet, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -38,8 +38,9 @@ namespace triqs::gfs {
   gf_vec_t<refreq> _fourier_impl(gf_mesh<refreq> const &w_mesh, gf_vec_cvt<retime> gt, arrays::array_const_view<dcomplex, 2> known_moments) {
 
     arrays::array_const_view<dcomplex, 2> mom_12;
-    if (known_moments.is_empty()) mom_12.rebind(triqs::arrays::zeros<dcomplex>(make_shape(2, gt.target_shape()[0])));
-    else{
+    if (known_moments.is_empty())
+      mom_12.rebind(triqs::arrays::zeros<dcomplex>(make_shape(2, gt.target_shape()[0])));
+    else {
       TRIQS_ASSERT2(known_moments.shape()[0] >= 3, " Direct RealTime Fourier transform requires known moments up to order 3.")
       double _abs_tail0 = max_element(abs(known_moments(0, range())));
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
@@ -93,8 +94,7 @@ namespace triqs::gfs {
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
                     "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
       mom_12.rebind(tail(range(1, 3), range()));
-    }
-    else {
+    } else {
       mom_12.rebind(known_moments(range(1, 3), range()));
       double _abs_tail0 = max_element(abs(known_moments(0, range())));
       TRIQS_ASSERT2((_abs_tail0 < 1e-6),

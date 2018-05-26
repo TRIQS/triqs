@@ -34,41 +34,40 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
 
-namespace triqs { 
+namespace triqs {
 
- // serialize obj into an std::string
- template <typename T> std::string serialize (T const & obj) { 
-  std::string serial_str;
-  boost::iostreams::back_insert_device<std::string> inserter(serial_str);
-  boost::iostreams::stream<boost::iostreams::back_insert_device<std::string> > s(inserter);
-  //boost::archive::binary_oarchive oa(s);
-  boost::archive::text_oarchive oa(s);
-  oa << obj;
-  s.flush();
-  return serial_str;
- }
+  // serialize obj into an std::string
+  template <typename T> std::string serialize(T const &obj) {
+    std::string serial_str;
+    boost::iostreams::back_insert_device<std::string> inserter(serial_str);
+    boost::iostreams::stream<boost::iostreams::back_insert_device<std::string>> s(inserter);
+    //boost::archive::binary_oarchive oa(s);
+    boost::archive::text_oarchive oa(s);
+    oa << obj;
+    s.flush();
+    return serial_str;
+  }
 
- template <typename T> T deserialize (std::string const & serial_str) { 
-  T obj;
-  // wrap buffer inside a stream and deserialize serial_str into obj
-  boost::iostreams::basic_array_source<char> device(serial_str.data(), serial_str.size());
-  boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s(device);
-  //boost::archive::binary_iarchive ia(s);
-  boost::archive::text_iarchive ia(s);
-  ia >> obj;
-  return obj;
- }
+  template <typename T> T deserialize(std::string const &serial_str) {
+    T obj;
+    // wrap buffer inside a stream and deserialize serial_str into obj
+    boost::iostreams::basic_array_source<char> device(serial_str.data(), serial_str.size());
+    boost::iostreams::stream<boost::iostreams::basic_array_source<char>> s(device);
+    //boost::archive::binary_iarchive ia(s);
+    boost::archive::text_iarchive ia(s);
+    ia >> obj;
+    return obj;
+  }
 
- template <typename T> void deserialize_into_view (std::string const & serial_str, T & x) { 
-  typename regular_type_if_exists_else_type<T>::type obj;
-  // wrap buffer inside a stream and deserialize serial_str into obj
-  boost::iostreams::basic_array_source<char> device(serial_str.data(), serial_str.size());
-  boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s(device);
-  boost::archive::text_iarchive ia(s);
-  //boost::archive::binary_iarchive ia(s);
-  ia >> obj;
-  x= typename view_type_if_exists_else_type<T>::type (obj);
- }
-}
+  template <typename T> void deserialize_into_view(std::string const &serial_str, T &x) {
+    typename regular_type_if_exists_else_type<T>::type obj;
+    // wrap buffer inside a stream and deserialize serial_str into obj
+    boost::iostreams::basic_array_source<char> device(serial_str.data(), serial_str.size());
+    boost::iostreams::stream<boost::iostreams::basic_array_source<char>> s(device);
+    boost::archive::text_iarchive ia(s);
+    //boost::archive::binary_iarchive ia(s);
+    ia >> obj;
+    x = typename view_type_if_exists_else_type<T>::type(obj);
+  }
+} // namespace triqs
 #endif
-

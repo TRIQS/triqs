@@ -23,43 +23,42 @@
 #include <triqs/arrays.hpp>
 #include <triqs/utility/pade_approximants.hpp>
 
-namespace triqs { namespace gfs {
+namespace triqs {
+  namespace gfs {
 
- typedef std::complex<double> dcomplex;
+    typedef std::complex<double> dcomplex;
 
+    void pade(gf_view<refreq> gr, gf_const_view<imfreq> gw, int n_points, double freq_offset) {
 
- void pade (gf_view<refreq> gr, gf_const_view<imfreq> gw, int n_points, double freq_offset) {
+      // make sure the GFs have the same structure
+      //assert(gw.shape() == gr.shape());
 
-  // make sure the GFs have the same structure
-  //assert(gw.shape() == gr.shape());
+      gr() = 0.0;
 
-  gr() = 0.0;
+      auto sh = gw.data().shape().front_pop();
+      int N1 = sh[0], N2 = sh[1];
+      for (int n1 = 0; n1 < N1; n1++) {
+        for (int n2 = 0; n2 < N2; n2++) {
 
-  auto sh = gw.data().shape().front_pop();
-  int N1 = sh[0], N2 = sh[1];
-  for (int n1=0; n1<N1; n1++) {
-    for (int n2=0; n2<N2; n2++) {
+          arrays::vector<dcomplex> z_in(n_points); // complex points
+          arrays::vector<dcomplex> u_in(n_points); // values at these points
 
-      arrays::vector<dcomplex> z_in(n_points); // complex points
-      arrays::vector<dcomplex> u_in(n_points); // values at these points
+          for (int i = 0; i < n_points; ++i) z_in(i) = gw.mesh()[i];
+          for (int i = 0; i < n_points; ++i) u_in(i) = gw.on_mesh(i)(n1, n2);
 
-      for (int i=0; i < n_points; ++i) z_in(i) = gw.mesh()[i];
-      for (int i=0; i < n_points; ++i) u_in(i) = gw.on_mesh(i)(n1,n2);
+          triqs::utility::pade_approximant PA(z_in, u_in);
 
-      triqs::utility::pade_approximant PA(z_in,u_in);
-
-      for (auto om : gr.mesh()) {
-        dcomplex e = om + dcomplex(0.0,1.0)*freq_offset;
-        gr[om](n1,n2) = PA(e);
+          for (auto om : gr.mesh()) {
+            dcomplex e     = om + dcomplex(0.0, 1.0) * freq_offset;
+            gr[om](n1, n2) = PA(e);
+          }
+        }
       }
-
     }
-  }
 
- }
+    void pade(gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset) {
+      pade(reinterpret_scalar_valued_gf_as_matrix_valued(gr), reinterpret_scalar_valued_gf_as_matrix_valued(gw), n_points, freq_offset);
+    }
 
-  void pade (gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset) {
-   pade(reinterpret_scalar_valued_gf_as_matrix_valued(gr), reinterpret_scalar_valued_gf_as_matrix_valued(gw), n_points, freq_offset);
- }
-
-}}
+  } // namespace gfs
+} // namespace triqs

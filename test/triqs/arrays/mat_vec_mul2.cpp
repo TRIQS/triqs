@@ -28,27 +28,24 @@
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <iostream>
 
-using std::cout; using std::endl;
+using std::cout;
+using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
- 
- matrix<int>  Ai= {{ 1,2}, {3,4}}; 
- matrix<double>  A= {{ 1,2}, {3,4}}; 
- vector<int> Ci, B= {1,1}; 
- vector<double> Cd, Bd= {1,1}; 
- 
- Cd = A*B;
- std::cout  << Cd<< std::endl ;
 
- Ci = Ai*B;
- std::cout  << Ci<< std::endl ;
+  matrix<int> Ai   = {{1, 2}, {3, 4}};
+  matrix<double> A = {{1, 2}, {3, 4}};
+  vector<int> Ci, B     = {1, 1};
+  vector<double> Cd, Bd = {1, 1};
 
- assert_all_close(A*B, A*Bd, 1.e-13);
+  Cd = A * B;
+  std::cout << Cd << std::endl;
 
- return 0;
+  Ci = Ai * B;
+  std::cout << Ci << std::endl;
 
+  assert_all_close(A * B, A * Bd, 1.e-13);
+
+  return 0;
 }
-
-
-

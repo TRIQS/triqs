@@ -21,40 +21,38 @@
 #pragma once
 #include <map>
 namespace triqs {
-namespace gfs {
+  namespace gfs {
 
- class discrete_domain {
-  int Nmax;
-  std::vector<std::string> _names; // optional name of the points (e.g. for block)
-  std::map<std::string, int> _inv_names; // table inverting the previous vector
-  void init_inv() {
-   int i = 0;
-   for (auto const& x : _names) _inv_names[x] = i++;
-  }
+    class discrete_domain {
+      int Nmax;
+      std::vector<std::string> _names;       // optional name of the points (e.g. for block)
+      std::map<std::string, int> _inv_names; // table inverting the previous vector
+      void init_inv() {
+        int i = 0;
+        for (auto const &x : _names) _inv_names[x] = i++;
+      }
 
-  public:
-  using point_t = int;
-  int size() const {
-   return Nmax;
-  };
-  discrete_domain(int Nmax_ = 1) : Nmax(Nmax_) {
-   for (int i = 0; i < Nmax; ++i) {
-    std::stringstream fs;
-    fs << i;
-    _names.push_back(fs.str());
-   }
-   init_inv();
-  }
+      public:
+      using point_t = int;
+      int size() const { return Nmax; };
+      discrete_domain(int Nmax_ = 1) : Nmax(Nmax_) {
+        for (int i = 0; i < Nmax; ++i) {
+          std::stringstream fs;
+          fs << i;
+          _names.push_back(fs.str());
+        }
+        init_inv();
+      }
 
-  discrete_domain(std::vector<std::string> Names) : Nmax(Names.size()), _names(std::move(Names)) { init_inv(); }
-  discrete_domain(std::initializer_list<std::string> const& Names) : Nmax(Names.size()), _names(Names) { init_inv(); }
+      discrete_domain(std::vector<std::string> Names) : Nmax(Names.size()), _names(std::move(Names)) { init_inv(); }
+      discrete_domain(std::initializer_list<std::string> const &Names) : Nmax(Names.size()), _names(Names) { init_inv(); }
 
-  std::vector<std::string> const& names() const { return _names; }
-  int index_from_name(std::string const& s) const { return _inv_names.at(s); }
+      std::vector<std::string> const &names() const { return _names; }
+      int index_from_name(std::string const &s) const { return _inv_names.at(s); }
 
-  bool operator==(discrete_domain const& D) const { return (Nmax == D.Nmax); }
+      bool operator==(discrete_domain const &D) const { return (Nmax == D.Nmax); }
 
-  /*
+      /*
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, discrete_domain const& d) {
    h5::group gr = fg.create_group(subgroup_name);
@@ -72,14 +70,13 @@ namespace gfs {
   }
   */
 
-  //  BOOST Serialization
-  friend class boost::serialization::access;
-  template <class Archive> void serialize(Archive& ar, const unsigned int version) {
-   ar& TRIQS_MAKE_NVP("n_max", Nmax);
-   ar& TRIQS_MAKE_NVP("names", _names);
-   ar& TRIQS_MAKE_NVP("names_inv", _inv_names);
-  }
- };
-}
-}
-
+      //  BOOST Serialization
+      friend class boost::serialization::access;
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &TRIQS_MAKE_NVP("n_max", Nmax);
+        ar &TRIQS_MAKE_NVP("names", _names);
+        ar &TRIQS_MAKE_NVP("names_inv", _inv_names);
+      }
+    };
+  } // namespace gfs
+} // namespace triqs

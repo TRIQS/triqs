@@ -22,12 +22,12 @@
 #include <triqs/test_tools/arrays.hpp>
 
 TEST(BufferedFunction, All) {
- auto f = [x = 0]() mutable {
-  auto res = x * x;
-  x++;
-  return res;
- };
- auto gen = triqs::utility::buffered_function<double>(f, 5);
- for (int u = 0; u < 22; ++u) EXPECT_EQ(gen(), u * u);
+  auto f = [x = 0]() mutable {
+    auto res = x * x;
+    x++;
+    return res;
+  };
+  auto gen = triqs::utility::buffered_function<double>(f, 5);
+  for (int u = 0; u < 22; ++u) EXPECT_EQ(gen(), u * u);
 }
 MAKE_MAIN;

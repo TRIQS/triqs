@@ -24,58 +24,55 @@
 #include <triqs/utility/traits.hpp>
 
 namespace triqs {
-namespace arrays {
+  namespace arrays {
 
- // The ImmutableCuboidArray concept
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableCuboidArray);
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableCuboidArray, (ImmutableCuboidArray));
+    // The ImmutableCuboidArray concept
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableCuboidArray);
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableCuboidArray, (ImmutableCuboidArray));
 
- // The ImmutableArray concept
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableArray, (ImmutableCuboidArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableArray, (ImmutableArray)(MutableCuboidArray));
+    // The ImmutableArray concept
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableArray, (ImmutableCuboidArray));
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableArray, (ImmutableArray)(MutableCuboidArray));
 
- // The ImmutableMatrix concept
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableMatrix, (ImmutableCuboidArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableMatrix, (ImmutableMatrix)(MutableCuboidArray));
+    // The ImmutableMatrix concept
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableMatrix, (ImmutableCuboidArray));
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableMatrix, (ImmutableMatrix)(MutableCuboidArray));
 
- // The ImmutableVector concept
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableVector, (ImmutableCuboidArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableVector, (ImmutableVector)(MutableCuboidArray));
+    // The ImmutableVector concept
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableVector, (ImmutableCuboidArray));
+    TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableVector, (ImmutableVector)(MutableCuboidArray));
 
- namespace Tag {
-  struct array {};
-  struct array_view : is_view_tag {};
-  struct vector {};
-  struct vector_view: is_view_tag {};
-  struct matrix_view: is_view_tag {};
-  struct matrix {};
- }
- template <typename T> struct is_array : std::is_base_of<Tag::array, T> {};
- template <typename T> struct is_array_view : std::is_base_of<Tag::array_view, T> {};
- template <typename T> struct is_array_or_view : _or<is_array<T>, is_array_view<T>> {};
+    namespace Tag {
+      struct array {};
+      struct array_view : is_view_tag {};
+      struct vector {};
+      struct vector_view : is_view_tag {};
+      struct matrix_view : is_view_tag {};
+      struct matrix {};
+    } // namespace Tag
+    template <typename T> struct is_array : std::is_base_of<Tag::array, T> {};
+    template <typename T> struct is_array_view : std::is_base_of<Tag::array_view, T> {};
+    template <typename T> struct is_array_or_view : _or<is_array<T>, is_array_view<T>> {};
 
- template <typename T> struct is_vector : std::is_base_of<Tag::vector, T> {};
- template <typename T> struct is_vector_view : std::is_base_of<Tag::vector_view, T> {};
- template <typename T> struct is_vector_or_view : _or<is_vector<T>, is_vector_view<T>> {};
+    template <typename T> struct is_vector : std::is_base_of<Tag::vector, T> {};
+    template <typename T> struct is_vector_view : std::is_base_of<Tag::vector_view, T> {};
+    template <typename T> struct is_vector_or_view : _or<is_vector<T>, is_vector_view<T>> {};
 
- template <typename T> struct is_matrix : std::is_base_of<Tag::matrix, T> {};
- template <typename T> struct is_matrix_view : std::is_base_of<Tag::matrix_view, T> {};
- template <typename T> struct is_matrix_or_view : _or<is_matrix<T>, is_matrix_view<T>> {};
+    template <typename T> struct is_matrix : std::is_base_of<Tag::matrix, T> {};
+    template <typename T> struct is_matrix_view : std::is_base_of<Tag::matrix_view, T> {};
+    template <typename T> struct is_matrix_or_view : _or<is_matrix<T>, is_matrix_view<T>> {};
 
- template <class T> struct is_amv_value_class : _or<is_array<T>, is_matrix<T>, is_vector<T>> {};
- template <class T> struct is_amv_view_class : _or<is_array_view<T>, is_matrix_view<T>, is_vector_view<T>> {};
- template <class T> struct is_amv_value_or_view_class : _or<is_amv_value_class<T>, is_amv_view_class<T>> {};
+    template <class T> struct is_amv_value_class : _or<is_array<T>, is_matrix<T>, is_vector<T>> {};
+    template <class T> struct is_amv_view_class : _or<is_array_view<T>, is_matrix_view<T>, is_vector_view<T>> {};
+    template <class T> struct is_amv_value_or_view_class : _or<is_amv_value_class<T>, is_amv_view_class<T>> {};
 
- template <class S> struct is_scalar : _or<std::is_arithmetic<S>, triqs::is_complex<S>> {};
- template <class S>
- struct is_scalar_or_convertible
-     : std::integral_constant<bool, is_scalar<S>::value || std::is_constructible<std::complex<double>, S>::value> {};
+    template <class S> struct is_scalar : _or<std::is_arithmetic<S>, triqs::is_complex<S>> {};
+    template <class S>
+    struct is_scalar_or_convertible : std::integral_constant<bool, is_scalar<S>::value || std::is_constructible<std::complex<double>, S>::value> {};
 
- template <class S, class A>
- struct is_scalar_for
-     : std::conditional<is_scalar<typename A::value_type>::value, is_scalar_or_convertible<S>, std::is_same<S, typename A::value_type>>::type {
- };
-}
-} // namespace triqs::arrays
+    template <class S, class A>
+    struct is_scalar_for
+       : std::conditional<is_scalar<typename A::value_type>::value, is_scalar_or_convertible<S>, std::is_same<S, typename A::value_type>>::type {};
+  } // namespace arrays
+} // namespace triqs
 #endif
-

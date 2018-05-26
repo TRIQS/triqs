@@ -23,55 +23,54 @@
 #include <algorithm>
 
 namespace triqs {
-namespace arrays {
+  namespace arrays {
 
- /** 
+    /**
   * Regroup indices for a C array
   * Usage : group_indices_view(A, {0,1}, {2,3})
-  * Precondition : 
+  * Precondition :
   *   - every indices is listed in the {...} exactly once.
   *   - the indices in one group are consecutive in memory.
   * Routine is not extra-fast, since it does check the preconditions
-  */ 
- template <typename A, typename ...U>
- array_view<typename A::value_type, sizeof...(U)> group_indices_view(A const& a, std::initializer_list<U>... args) {
+  */
+    template <typename A, typename... U>
+    array_view<typename A::value_type, sizeof...(U)> group_indices_view(A const &a, std::initializer_list<U>... args) {
 
-  auto indices_groups = std::vector<std::vector<int>>{std::vector<int>(args)...};
-  
-  static const int Rf = sizeof...(U);
-  if (Rf != indices_groups.size())
-   TRIQS_RUNTIME_ERROR << "Return rank is " << Rf << " but " << indices_groups.size() << " indices are given";
-  
-  /// First check indices are contiguous in memory
-  auto mem_pos = a.indexmap().memory_layout().get_memory_positions();
-  for (auto const& gr : indices_groups) {
-   auto gr2 = std::vector<int>(gr.size());
-   for (int i = 0; i < int(gr.size()); ++i) gr2[i] = mem_pos[gr[i]];
-   if (*std::max_element(begin(gr2), end(gr2)) - *std::min_element(begin(gr2), end(gr2)) + 1 != gr2.size())
-    TRIQS_RUNTIME_ERROR << "Indices not contiguous in memory";
-  }
+      auto indices_groups = std::vector<std::vector<int>>{std::vector<int>(args)...};
 
-  /// Now compute the new lengths and strides.
-  mini_vector<size_t, Rf> l;
-  mini_vector<std::ptrdiff_t, Rf> s;
-  auto la = a.indexmap().lengths();
-  l = 1;
-  s = a.num_elements(); // init : superior to all strides, so a good start for the min ...
-  for (int i = 0; i < Rf; ++i) {
-   for (auto ind : indices_groups[i]) {
-    if (la[ind] == -1) TRIQS_RUNTIME_ERROR << "Index "<< ind << "given multiple times";
-    l[i] *= la [ind];
-    la[ind] = -1;
-    s[i] = std::min(s[i], a.indexmap().strides()[ind]);
-   }
-  }
-  
-  /// Check all indices have been used 
-  for (int i = 0; i < la.size(); ++i)
-   if (la[i] != -1) TRIQS_RUNTIME_ERROR << "Grouping incomplete : index " << i << " is to taken into account";
-  
-  /// Return the new view (indexmap, storage)
-  return {{l, s, 0}, a.storage()};
- }
-}
-}
+      static const int Rf = sizeof...(U);
+      if (Rf != indices_groups.size()) TRIQS_RUNTIME_ERROR << "Return rank is " << Rf << " but " << indices_groups.size() << " indices are given";
+
+      /// First check indices are contiguous in memory
+      auto mem_pos = a.indexmap().memory_layout().get_memory_positions();
+      for (auto const &gr : indices_groups) {
+        auto gr2 = std::vector<int>(gr.size());
+        for (int i = 0; i < int(gr.size()); ++i) gr2[i] = mem_pos[gr[i]];
+        if (*std::max_element(begin(gr2), end(gr2)) - *std::min_element(begin(gr2), end(gr2)) + 1 != gr2.size())
+          TRIQS_RUNTIME_ERROR << "Indices not contiguous in memory";
+      }
+
+      /// Now compute the new lengths and strides.
+      mini_vector<size_t, Rf> l;
+      mini_vector<std::ptrdiff_t, Rf> s;
+      auto la = a.indexmap().lengths();
+      l       = 1;
+      s       = a.num_elements(); // init : superior to all strides, so a good start for the min ...
+      for (int i = 0; i < Rf; ++i) {
+        for (auto ind : indices_groups[i]) {
+          if (la[ind] == -1) TRIQS_RUNTIME_ERROR << "Index " << ind << "given multiple times";
+          l[i] *= la[ind];
+          la[ind] = -1;
+          s[i]    = std::min(s[i], a.indexmap().strides()[ind]);
+        }
+      }
+
+      /// Check all indices have been used
+      for (int i = 0; i < la.size(); ++i)
+        if (la[i] != -1) TRIQS_RUNTIME_ERROR << "Grouping incomplete : index " << i << " is to taken into account";
+
+      /// Return the new view (indexmap, storage)
+      return {{l, s, 0}, a.storage()};
+    }
+  } // namespace arrays
+} // namespace triqs

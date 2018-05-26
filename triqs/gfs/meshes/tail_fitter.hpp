@@ -66,7 +66,6 @@ namespace triqs::gfs {
 
   class tail_fitter {
 
-
     const double _tail_fraction;
     const int _n_tail_max;
     const bool _adjust_order;
@@ -88,7 +87,7 @@ namespace triqs::gfs {
     template <typename M> int n_pts_in_tail(M const &m) const { return std::min(int(std::round(_tail_fraction * m.size() / 2)), _n_tail_max); }
 
     // FIXME : replace 0.2 everywhere by this, need for the second replace_by_tail function
-    static constexpr double default_tail_fraction() { return 0.2;}
+    static constexpr double default_tail_fraction() { return 0.2; }
 
     //----------------------------------------------------------------------------------------------
 
@@ -160,7 +159,7 @@ namespace triqs::gfs {
 
     /**
      * @param m mesh
-     * @param data 
+     * @param data
      * @param n position of the omega in the data array
      * @param normalize Finish the normalization of the tail coefficient (normally true)
      * @param known_moments  Array of the known_moments
