@@ -46,6 +46,23 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   for (auto const &t : Gt1.mesh()) { Gt1_exact[t] = one_pole(E, t) + one_pole(-2*E, t) - 4.5*one_pole(1.25*E,t); }
   EXPECT_GF_NEAR(Gt1, Gt1_exact, precision);
 
+  // Fix the tail for the fourier transform
+  auto [tail, err] = fit_tail(Gw1);
+  auto Gt1_tail = gf<imtime, target_t>{{beta, statistic, N_tau}, shape};
+  Gt1_tail()    = fourier(Gw1, make_const_view(tail));
+  EXPECT_GF_NEAR(Gt1_tail, Gt1_exact, precision);
+
+  // Pass only one 0th and first moment to the fourier
+  auto known_moments = make_zero_tail(Gt1, 2);  // Get a tail array with 2 moments
+  if constexpr (TARGET_RANK == 2)
+    matrix_view<dcomplex>{known_moments(1, ellipsis())} = -2.5;
+  else
+    known_moments(1, ellipsis()) = -2.5;
+
+  auto Gt1_known_moments = gf<imtime, target_t>{{beta, statistic, N_tau}, shape};
+  Gt1_known_moments()    = fourier(Gw1, make_const_view(known_moments));
+  EXPECT_GF_NEAR(Gt1_known_moments, Gt1_exact, precision);
+
   // Test the factory function
   auto Gt2  = make_gf_from_fourier(Gw1, N_tau);
   auto Gw2b = make_gf_from_fourier(Gt2, N_iw);
