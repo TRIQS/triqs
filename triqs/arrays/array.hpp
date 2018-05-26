@@ -221,6 +221,32 @@ namespace triqs { namespace arrays {
        }
       }
 
+
+    template<typename T>
+     array (std::initializer_list<std::initializer_list<std::initializer_list<T>>> const & l, memory_layout_t<3> ml = memory_layout_t<3>{}, std14::enable_if_t<std::is_constructible<value_type, T>::value > * dummy =0):
+      IMPL_TYPE(memory_layout_t<3>{std::move(ml)}) {
+       size_t i=0,j=0,k=0;
+
+       // FIXME Enforce this check at compile time
+       if (!std::all_of(l.begin(), l.end(), [s = l.begin()->size()](auto const & x){ return x.size() == s; }))
+	 TRIQS_RUNTIME_ERROR << "initializer list not rectangular !";
+
+       for (auto const & l1 : l)
+         if (!std::all_of(l1.begin(), l1.end(), [s = l1.begin()->size()](auto const & x){ return x.size() == s; }))
+	   TRIQS_RUNTIME_ERROR << "initializer list not rectangular !";
+
+       IMPL_TYPE::resize(typename IMPL_TYPE::domain_type (mini_vector<size_t,3>(l.size(), l.begin()->size(), l.begin()->begin()->size())));
+       for (auto const & l1 : l) {
+        for (auto const & l2 : l1) {
+	 for (auto const & x : l2)
+	  (*this)(i,j,k++) = x;
+	 k=0; ++j;
+        }
+        j=0; ++i;
+       }
+      }
+
+
     /**
      * Resizes the array. NB : all references to the storage is invalidated.
      * Does not initialize the array by default: to resize and init, do resize(IND).init()
