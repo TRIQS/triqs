@@ -156,22 +156,29 @@ namespace triqs { namespace arrays {
     // ------------------------------- ==  --------------------------------------------
     // at your own risk with floating value, but it is useful for int, string, etc....
     // in particular for tests
-    friend bool operator==( indexmap_storage_pair const & A, indexmap_storage_pair const & B) {
+    template <typename RHS>
+    friend bool operator==(indexmap_storage_pair const & A, RHS const & B) {
+     static_assert(is_amv_value_or_view_class<RHS>::value, "Can only compare against array,matrix or vector"); 
      if (A.shape() != B.shape()) return false;
      auto ita = A.begin(); auto itb = B.begin();
      for (;ita != A.end();++ita, ++itb) {if (!(*ita == *itb)) return false;}
      return true;
     }
 
-    friend bool operator!=( indexmap_storage_pair const & A, indexmap_storage_pair const & B) { return (!(A==B));}
+    template <typename RHS>
+    friend bool operator!=( indexmap_storage_pair const & A, RHS const & B) { 
+      static_assert(is_amv_value_or_view_class<RHS>::value, "Can only compare against array,matrix or vector"); 
+      return (!(A==B));
+    }
 
    public:
     // ------------------------------- data access --------------------------------------------
 
     auto const & memory_layout() const { return indexmap_.memory_layout(); }
     indexmap_type const & indexmap() const {return indexmap_;}
-    storage_type const & storage() const {return storage_;}
-    storage_type & storage() {return storage_;}
+    storage_type storage() && {return std::move(storage_);}
+    storage_type const & storage() const &{return storage_;}
+    storage_type & storage() &{return storage_;}
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
   PyObject *to_python() const {
@@ -194,7 +201,9 @@ namespace triqs { namespace arrays {
 
     size_t shape(size_t i) const { return domain().lengths()[i];}
 
+    // deprecate this strange name
     size_t num_elements() const { return domain().number_of_elements();}
+    size_t size() const { return domain().number_of_elements();}
 
     //bool is_empty() const { return this->num_elements()==0;}
     bool is_empty() const { return this->storage_.empty();}

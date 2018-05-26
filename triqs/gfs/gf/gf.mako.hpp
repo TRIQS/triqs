@@ -22,9 +22,6 @@
 //#include <triqs/utility/lazy_bracket.hpp>
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
-#include "./comma.hpp"
-#include "../singularity/tail.hxx"
-#include "../singularity/nothing.hpp"
 #include "./data_proxy.hpp"
 
 namespace triqs {
@@ -127,6 +124,7 @@ namespace triqs {
    using mesh_t               = gf_mesh<Var>;
    using domain_t             = typename mesh_t::domain_t;
    static constexpr int arity = get_n_variables<Var>::value;
+   static constexpr int data_rank = arity + Target::rank;
 
    using mesh_point_t        = typename mesh_t::mesh_point_t;
    using mesh_index_t        = typename mesh_t::index_t;
@@ -136,24 +134,20 @@ namespace triqs {
 
    using scalar_t = typename Target::scalar_t;
 
-   using data_regular_t    = arrays::array<scalar_t, arity + Target::rank>;
+   using data_regular_t    = arrays::array<scalar_t, data_rank>;
    using data_view_t       = typename data_regular_t::view_type;
    using data_const_view_t = typename data_regular_t::const_view_type;
    using data_t            = data_MAKO_RVC_t;
-
-   using data_memory_layout_t   = memory_layout_t<arity + Target::rank>;
+   
+   using data_memory_layout_t   = memory_layout_t<data_rank>;
 
    using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
    using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
    using zero_view_t       = zero_const_view_t;
    using zero_t            = zero_MAKO_RVC_t;
 
-   using _singularity_regular_t    = gf_singularity_t<Var, Target>;
-   using _singularity_view_t       = typename _singularity_regular_t::view_type;
-   using _singularity_const_view_t = typename _singularity_regular_t::const_view_type;
-   using singularity_t             = _singularity_MAKO_RVC_t;
-
-   using target_shape_t = arrays::mini_vector<int, Target::rank - is_tail_valued<Target>::value>;
+   // FIXME : std::array with NDA
+   using target_shape_t = arrays::mini_vector<int, Target::rank>;
 
    struct target_and_shape_t{
      target_shape_t _shape; 
@@ -179,7 +173,7 @@ namespace triqs {
    /// Shape of the target
    //auto target_shape() const { return _data.shape().template front_mpop<arity>(); } // drop arity dims
    target_and_shape_t target() const { 
-     return target_and_shape_t{ _data.shape().template front_mpop<arity + is_tail_valued<Target>::value>() }; } // drop arity dims
+     return target_and_shape_t{ _data.shape().template front_mpop<arity>() }; } // drop arity dims
 
    auto target_shape() const { return target().shape(); } // drop arity dims
 
@@ -192,19 +186,12 @@ namespace triqs {
    ///
    zero_t const &get_zero() const { return _zero; }
 
-   /// Access to the singularity
-   singularity_t &singularity() { return _singularity; }
-
-   /// Const version
-   singularity_t const &singularity() const { return _singularity; }
-
    indices_t const &indices() const { return _indices; }
 
    private:
    mesh_t _mesh;
    data_t _data;
    zero_t _zero;
-   singularity_t _singularity;
    indices_t _indices;
 
    private:
@@ -231,17 +218,15 @@ namespace triqs {
       : _mesh(x.mesh())
       , _data(x.data())
       , _zero(_make_zero(_data))
-      , _singularity(x.singularity())
       , _indices(x.indices()) {}
 
-   template <typename M, typename D, typename S>
-   MAKO_GF(impl_tag, M &&m, D &&dat, S &&sing, indices_t ind)
+   template <typename M, typename D>
+   MAKO_GF(impl_tag, M &&m, D &&dat, indices_t ind)
       : _mesh(std::forward<M>(m))
       , _data(std::forward<D>(dat))
       , _zero(_make_zero(_data))
-      , _singularity(std::forward<S>(sing))
       , _indices(std::move(ind)) {
-    if (!(_indices.empty() or (is_tail_valued<Target>::value) or _indices.has_shape(target_shape())))
+    if (!(_indices.empty() or _indices.has_shape(target_shape())))
      TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
    }
 
@@ -263,43 +248,37 @@ namespace triqs {
     swap(this->_mesh, b._mesh);
     swap(this->_data, b._data);
     swap(this->_zero, b._zero);
-    swap(this->_singularity, b._singularity);
     swap(this->_indices, b._indices);
    }
-
-   using singularity_factory = gf_singularity_factory<_singularity_regular_t>;
 
    // mako ## ------------------------------------------------  regular class ---------------------------------
    // mako %if RVC == 'regular' :
 
    private:
 
+   // FIXME : simplify
    template <typename U> static auto make_data_shape(U, mesh_t const &m, target_shape_t const &shap) {
     return join(m.size_of_components(), shap);
    }
 
-   template <typename U> static auto make_data_shape(tail_valued<U>, mesh_t const &m, target_shape_t const &shap) {
-    return join(mini_vector<int, 2>{int(m.size()), __tail<matrix_valued>::_size()}, shap); // shap.front_append(m.size());
-   }
-
    public:
    // Construct from the data. Using the "pass by value" pattern + move
-   gf(mesh_t m, data_t dat, singularity_t si, indices_t ind)
-      : gf(impl_tag{}, std::move(m), std::move(dat), std::move(si), std::move(ind)) {}
+   gf(mesh_t m, data_t dat, indices_t ind)
+      : gf(impl_tag{}, std::move(m), std::move(dat), std::move(ind)) {}
 
    // Construct from the data. Using the "pass by value" pattern + move
-   gf(mesh_t m, data_t dat, arrays::memory_layout_t<arity + Target::rank> const &ml, singularity_t si, indices_t ind)
-      : gf(impl_tag{}, std::move(m), data_t(dat, ml), std::move(si), std::move(ind)) {}
+   gf(mesh_t m, data_t dat, arrays::memory_layout_t<arity + Target::rank> const &ml, indices_t ind)
+      : gf(impl_tag{}, std::move(m), data_t(dat, ml), std::move(ind)) {}
 
    // Construct from mesh, target_shape, memory order
    gf(mesh_t m, target_shape_t shape, arrays::memory_layout_t<arity + Target::rank> const &ml, indices_t const &ind = indices_t{})
-      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape), ml), singularity_factory::make(m, shape), ind) {
+      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape), ml), ind) {
     if (this->_indices.empty()) this->_indices = indices_t(shape);
    }
 
    // Construct from mesh, target_shape, memory order
    gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const &ind = indices_t{})
-      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), singularity_factory::make(m, shape), ind) {
+      : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), ind) {
     if (this->_indices.empty()) this->_indices = indices_t(shape);
    }
 
@@ -352,7 +331,6 @@ namespace triqs {
     _data.resize(rhs.data_shape());
     _remake_zero();
     for (auto const &w : _mesh) (*this)[w] = rhs[w];
-    _singularity                           = rhs.singularity();
     _indices = rhs.indices();
     if (_indices.empty()) _indices = indices_t(target_shape());
     //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
@@ -384,13 +362,13 @@ namespace triqs {
 
    // Construct from mesh, data, ....
    template <typename D>
-   gf_const_view(mesh_t m, D const &dat, singularity_t const &t, indices_t const &ind)
-      : gf_const_view(impl_tag{}, std::move(m), dat, t, ind) {}
+   gf_const_view(mesh_t m, D const &dat, indices_t const &ind)
+      : gf_const_view(impl_tag{}, std::move(m), dat, ind) {}
 
    // Construct from mesh, data. 
    template <typename D>
    gf_const_view(mesh_t m, D const &dat)
-      : gf_const_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+      : gf_const_view(impl_tag{}, std::move(m), dat, {}) {}
 
    // ---------------  swap --------------------
 
@@ -403,7 +381,6 @@ namespace triqs {
     this->_mesh = X._mesh;
     this->_data.rebind(X._data);
     details::_rebind_helper(_zero, X._zero);
-    this->_singularity.rebind(X._singularity);
     this->_indices = X._indices;
    }
 
@@ -437,13 +414,13 @@ namespace triqs {
 
    /// Construct from mesh, data, ....
    template <typename D>
-   gf_view(mesh_t m, D &&dat, singularity_t const &t, indices_t const &ind = indices_t{})
-      : gf_view(impl_tag{}, std::move(m), std::forward<D>(dat), t, ind) {}
+   gf_view(mesh_t m, D &&dat, indices_t const &ind = indices_t{})
+      : gf_view(impl_tag{}, std::move(m), std::forward<D>(dat), ind) {}
 
    // Construct from mesh, data. Only for partial_eval 
    template <typename D>
    gf_view(mesh_t m, D const &dat)
-      : gf_view(impl_tag{}, std::move(m), dat, singularity_factory::make(m, dat.shape().template front_mpop<arity>()), {}) {}
+      : gf_view(impl_tag{}, std::move(m), dat, {}) {}
 
    // ---------------  swap --------------------
    /// Swap
@@ -455,7 +432,6 @@ namespace triqs {
     this->_mesh = X._mesh;
     this->_data.rebind(X._data);
     details::_rebind_helper(_zero, X._zero);
-    this->_singularity.rebind(X._singularity);
     this->_indices = X._indices;
    }
 
@@ -484,53 +460,52 @@ namespace triqs {
 
    // mako %for C in ['', 'const'] :
    // mako <% GFVIEW = 'gf_const_view' if (C or RVC == 'const_view') else 'gf_view' %>
-   template <typename Fdata, typename Fsing, typename Find> auto apply_on_data(Fdata &&fd, Fsing &&fs, Find &&fi) MAKO_C {
+   template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) MAKO_C {
     auto d2  = fd(_data);
-    using t2 = std14::conditional_t<is_tail_valued<Target>::value, tail_valued<target_from_array<decltype(d2), arity + 1>>,
-                                    target_from_array<decltype(d2), arity>>;
+    using t2 = target_from_array<decltype(d2), arity>;
     using gv_t = MAKO_GFVIEW<Var, t2>;
-    return gv_t{_mesh, d2, typename gv_t::singularity_t{fs(_singularity)}, fi(_indices)};
+    return gv_t{_mesh, d2, fi(_indices)};
    }
 
-   template <typename Fdata, typename Fsing> auto apply_on_data(Fdata &&fd, Fsing &&fs) MAKO_C {
-    return apply_on_data(std::forward<Fdata>(fd), std::forward<Fsing>(fs), [](auto &) { return indices_t{}; });
+   template <typename Fdata> auto apply_on_data(Fdata &&fd) MAKO_C {
+    return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
    }
    // mako %endfor
 
-   // ------------- All the call operators without lazy arguments -----------------------------
-
-   // First, a simple () returns a view, like for an array...
-   /// Makes a const view of *this
-   const_view_type operator()() const { return *this; }
-   /// Makes a view of *this if it is non const
-   view_type operator()() { return *this; }
-
-   // Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
-   // there is at least one lazy argument ...
-   template <typename... Args>        // match any argument list, picking out the first type : () is not permitted
-   typename boost::lazy_disable_if_c< // disable the template if one the following conditions it true
-       (sizeof...(Args) == 0) || clef::is_any_lazy<Args...>::value ||
-           ((sizeof...(Args) != evaluator_t::arity) && (evaluator_t::arity != -1)) // if -1 : no check
-       ,
-       std::result_of<evaluator_t(MAKO_GF, Args...)> // what is the result type of call
-       >::type                                       // end of lazy_disable_if
-   operator()(Args &&... args) const {
-    return evaluator_t()(*this, std::forward<Args>(args)...);
+   // ------------- All the call operators arguments -----------------------------
+ 
+   template <typename... Args> decltype(auto) operator()(Args &&... args) const & {
+     if constexpr(sizeof...(Args) == 0)
+       return const_view_type{*this};
+     else { 
+       static_assert( (sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+       if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+        return clef::make_expr_call(*this, std::forward<Args>(args)...);
+       else 
+        return evaluator_t()(*this, std::forward<Args>(args)...);
+     }
    }
-
-   // ------------- Call with lazy arguments -----------------------------
-
-   // Calls with at least one lazy argument : we make a clef expression, cf clef documentation
-   template <typename... Args> clef::make_expr_call_t<MAKO_GF &, Args...> operator()(Args &&... args) & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
+   template <typename... Args> decltype(auto) operator()(Args &&... args)  & {
+     if constexpr(sizeof...(Args) == 0)
+       return view_type{*this};
+     else { 
+       static_assert( (sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+       if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+         return clef::make_expr_call(*this, std::forward<Args>(args)...);
+        else
+          return evaluator_t()(*this, std::forward<Args>(args)...);
+     }
    }
-
-   template <typename... Args> clef::make_expr_call_t<MAKO_GF const &, Args...> operator()(Args &&... args) const & {
-    return clef::make_expr_call(*this, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> clef::make_expr_call_t<MAKO_GF, Args...> operator()(Args &&... args) && {
-    return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+   template <typename... Args> decltype(auto) operator()(Args &&... args) && {
+     if constexpr(sizeof...(Args) == 0)
+       return view_type{std::move(*this)};
+     else { 
+       static_assert( (sizeof...(Args) == evaluator_t::arity) or (evaluator_t::arity == -1), "Incorrect number of arguments");
+       if constexpr ((... or clef::is_any_lazy<Args>::value)) // any argument is lazy ?
+         return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
+       else 
+        return evaluator_t()(std::move(*this), std::forward<Args>(args)...);
+     }
    }
 
    // ------------- All the [] operators without lazy arguments -----------------------------
@@ -566,60 +541,46 @@ namespace triqs {
     return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
    }
 
-   // G[ tail] = G[infty] in evaluation ... 
-   singularity_t const & operator[](infty) const { return _singularity;}
-
-
-   // -------------- operator [] with _tuple. Distinguich the lazy and non lazy case
-   private:
-   // FIXME : if constexpr !!!
-   
-   template<typename ... U>
-   FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) {
-     auto l = [this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...);};
-     return triqs::tuple::apply(l, tu._t);
-   }
-   template<typename ... U>
-   FORCEINLINE decltype(auto) _call_subscript_tu(std::false_type, _tuple<U...> const &tu) const {
-     auto l = [this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...);};
-     return triqs::tuple::apply(l, tu._t);
-   }
-
-   // ------------- 
-
-   template<typename ... U>
-   FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) const &{
-    return clef::make_expr_subscript(*this, tu);
-   }
-   template<typename ... U>
-   FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) &{
-    return clef::make_expr_subscript(*this, tu);
-   }
-   template<typename ... U>
-   FORCEINLINE decltype(auto) _call_subscript_tu(std::true_type, _tuple<U...> const &tu) && {
-    return clef::make_expr_subscript(std::move(*this), tu);
-   }
-
+   // -------------- operator [] with std::tuple. Distinguich the lazy and non lazy case
    public:
+
    template<typename ... U>
-   decltype(auto) operator[](_tuple<U...> const &tu) &{ 
-    static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
+   decltype(auto) operator[](std::tuple<U...> const &tu) &{ 
+     static_assert(sizeof...(U) ==get_n_variables<Var>::value, "Incorrect number of argument in [] operator"); 
+     if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+       return clef::make_expr_subscript(*this, tu);
+     else { 
+      static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+      auto l = [this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...);};
+      return triqs::tuple::apply(l, tu);
+     }
+   }
+
+   template<typename ... U>
+   decltype(auto) operator[](std::tuple<U...> const &tu) const &{ 
+     static_assert(sizeof...(U) ==get_n_variables<Var>::value, "Incorrect number of argument in [] operator"); 
+     if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+       return clef::make_expr_subscript(*this, tu);
+     else { 
+      static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+      auto l = [this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...);};
+      return triqs::tuple::apply(l, tu);
+     }
+   }
+ 
+   template<typename ... U>
+   decltype(auto) operator[](std::tuple<U...> const &tu) &&{ 
+     static_assert(sizeof...(U) ==get_n_variables<Var>::value, "Incorrect number of argument in [] operator"); 
+     if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
+       return clef::make_expr_subscript(std::move(*this), tu);
+     else { 
+       static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
+       auto l = [this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...);};
+       return triqs::tuple::apply(l, tu);
+     }
    }
    
-   template<typename ... U>
-   decltype(auto) operator[](_tuple<U...> const &tu) const & { 
-    static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
-   }
-
-   template<typename ... U>
-   decltype(auto) operator[](_tuple<U...> const &tu) && { 
-    static_assert(clef::is_any_lazy<U...>::value || details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    return _call_subscript_tu(clef::is_any_lazy<U...>{}, tu);
-   }
-
-     // ------------- [] with lazy arguments -----------------------------
+  // ------------- [] with lazy arguments -----------------------------
 
    template <typename Arg> clef::make_expr_subscript_t<MAKO_GF const &, Arg> operator[](Arg &&arg) const & {
     return clef::make_expr_subscript(*this, std::forward<Arg>(arg));
@@ -651,63 +612,6 @@ namespace triqs {
     return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
    }
 
-   // --------------------- on mesh (g) : the call before [] -------------------------
-   // This is a workaround the the lack of multi argument [] in C++
-   // mesh points should be treated slighly differently : take their index....
- /*  template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) { return on_mesh(args.index()...); }
-   template <typename... T> decltype(auto) on_mesh(mesh_point<T> const &... args) const { return on_mesh(args.index()...); }
-
-   // The on_mesh little adaptor ....
-   private:
-   template <typename G> struct _on_mesh_wrapper {
-    G &f;
-    template <typename... Args>
-    auto operator()(Args &&... args) const
-        -> std14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, decltype(f.on_mesh(std::forward<Args>(args)...))> {
-     return f.on_mesh(std::forward<Args>(args)...);
-    }
-    TRIQS_CLEF_IMPLEMENT_LAZY_CALL();
-   };
-
-   public:
-   // TRIQS_DEPRECATED("Use [][][] instead")
-   _on_mesh_wrapper<MAKO_GF const> friend on_mesh(MAKO_GF const &f) { return {f}; }
-   _on_mesh_wrapper<MAKO_GF> friend on_mesh(MAKO_GF &f) { return {f}; }
-*/
-   public:
-   // --------------------- [][][][] ------------------------
-   // This is a workaround the the lack of multi argument [] in C++
-
-   /**
-    *
-    */
-   //template <typename T> decltype(auto) operator[](T const &x) {
-    //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-   //}
-
-   /**
-    *
-    */
-   //template <typename T> decltype(auto) operator[](T const &x) const {
-    //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-   //}
-
-   /**
-    *
-    */
-   //template <typename T> decltype(auto) operator[](T const &x) {
-    //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-   //}
-
-   /**
-    *
-    */
-   //template <typename T> decltype(auto) operator[](T const &x) const {
-    //return triqs::utility::make_lazy_bracket<arity>([this](auto &&... y) ->decltype(auto){ return details::partial_eval(this, y...); }, x);
-   //}
-
-
-
    //----------------------------- HDF5 -----------------------------
 
    /// HDF5 name
@@ -738,7 +642,6 @@ namespace triqs {
    /// The serialization as required by Boost
    template <class Archive> void serialize(Archive &ar, const unsigned int version) {
     ar &_data;
-    ar &_singularity;
     ar &_mesh;
     ar &_indices;
    }
@@ -770,7 +673,6 @@ namespace triqs {
    friend void mpi_broadcast(MAKO_GF &g, mpi::communicator c = {}, int root = 0) {
     // Shall we bcast mesh ?
     mpi_broadcast(g.data(), c, root);
-    mpi_broadcast(g.singularity(), c, root);
    }
 
    // mako ${mpidoc("Reduce")}
@@ -815,7 +717,6 @@ namespace triqs {
     // mako %if GRV == "regular" :
     _remake_zero();
     // mako %endif
-    _singularity = mpi_reduce(l.rhs.singularity(), l.c, l.root, l.all, l.op);
    }
 
    /**
@@ -828,8 +729,6 @@ namespace triqs {
     // mako %if GRV == "regular" :
     _remake_zero();
     // mako %endif
-    if (l.c.rank() == l.root) _singularity = l.rhs.singularity();
-    mpi_broadcast(_singularity, l.c, l.root);
    }
 
    /**
@@ -842,7 +741,6 @@ namespace triqs {
     // mako %if GRV == "regular" :
     _remake_zero();
     // mako %endif
-    if (l.all || (l.c.rank() == l.root)) _singularity = l.rhs.singularity();
    }
    // mako %endif
   };
@@ -853,34 +751,15 @@ namespace triqs {
  *                                     View  assignment
  *-----------------------------------------------------------------------------------------------------*/
 
-#ifdef __cpp_if_constexpr
-  template <typename M, typename T, typename RHS> void triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
+ template <typename M, typename T, typename RHS> void triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
    if constexpr (arrays::is_scalar<RHS>::value) {
     for (auto const &w : g.mesh()) g[w] = rhs;
-    g.singularity()                     = rhs;
    } else {
     if (!(g.mesh() == rhs.mesh()))
      TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh \n" << g.mesh() << "\n vs \n" << rhs.mesh();
     for (auto const &w : g.mesh()) g[w] = rhs[w];
-    g.singularity()                     = rhs.singularity();
    }
   }
-#else
-  // delegate = so that I can overload it for specific RHS...
-  template <typename M, typename T, typename RHS>
-  std14::enable_if_t<!arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
-   if (!(g.mesh() == rhs.mesh()))
-    TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible mesh \n" << g.mesh() << "\n vs \n" << rhs.mesh();
-   for (auto const &w : g.mesh()) g[w] = rhs[w];
-   g.singularity()                     = rhs.singularity();
-  }
-
-  template <typename M, typename T, typename RHS>
-  std14::enable_if_t<arrays::is_scalar<RHS>::value> triqs_gf_view_assign_delegation(gf_view<M, T> g, RHS const &rhs) {
-   for (auto const &w : g.mesh()) g[w] = rhs;
-   g.singularity()                     = rhs;
-  }
-#endif
  }
 }
 /*------------------------------------------------------------------------------------------------------

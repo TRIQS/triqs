@@ -19,8 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-namespace triqs {
-namespace gfs {
+namespace triqs::gfs {
+
  using triqs::arrays::conj; // not found on gcc 5
 
  /// ---------------------------  A few specific functions ---------------------------------
@@ -44,7 +44,7 @@ namespace gfs {
    new_data(L1 + u, _) = dat(u, _);
    new_data(L - 1 - u, _) = conj(dat(u, _));
   }
-  return {gf_mesh<imfreq>{g.mesh().domain(), L}, std::move(new_data), g.singularity(), g.indices()};
+  return {gf_mesh<imfreq>{g.mesh().domain(), L}, std::move(new_data), g.indices()};
  }
 
  /// Test if gf is real in tau
@@ -74,7 +74,7 @@ namespace gfs {
   long L = g.mesh().size();
   long L1 = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
   int is_boson = (g.mesh().domain().statistic == Boson);
-  return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), triqs::arrays::ellipsis()), g.singularity(), g.indices()};
+  return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), triqs::arrays::ellipsis()), g.indices()};
  }
 
  /// Make_real_in_tau symmetrize the function in freq, to ensure its FT is real.
@@ -86,5 +86,43 @@ namespace gfs {
  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, typename G::regular_type> make_real_in_tau(G const &g) {
   return map_block_gf(make_real_in_tau<typename G::g_t>, g);
  }
+
+ // ------------------------------------------------------------------------------------------------------
+
+ template<template<typename, typename> typename G, typename T>
+ auto restricted_view(G<imfreq, T> const & g, int n_max){
+   auto iw_mesh = gf_mesh<imfreq>{g.mesh().domain().beta, Fermion, n_max};
+
+   auto const & old_mesh = g.mesh();
+   int idx_min = old_mesh.index_to_linear(iw_mesh.first_index()); 
+   int idx_max = old_mesh.index_to_linear(iw_mesh.last_index()); 
+   auto data_view = g.data()(range(idx_min, idx_max + 1), ellipsis()); 
+
+   return typename G<imfreq, T>::const_view_type{iw_mesh, data_view};
+ }
+
+ template<typename T>
+ void replace_by_tail(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min){
+   for( auto const & iw : g.mesh())
+     if(abs(iw.index()) >= n_min) g[iw] = tail_eval(tail, iw);
+ }
+
+ template<typename T>
+ void replace_by_tail_in_fit_window(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail){
+   int n_pts_in_fit_range = int(std::round(tail_fitter::default_tail_fraction() * g.mesh().size() / 2));
+   int n_min = g.mesh().last_index() - n_pts_in_fit_range;
+   replace_by_tail(g, tail, n_min); 
+ }
+
+ // FIXME For backward compatibility only
+ // Fit_tail on a window
+ template<template<typename, typename> typename G, typename T>
+ auto fit_tail_on_window(G<imfreq, T> const & g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max, int expansion_order){
+   if(n_max == -1) n_max = g.mesh().last_index();
+   auto g_rview = restricted_view(g, n_max);
+   double tail_fraction = double(n_max - n_min) / n_max;
+   g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
+   return fit_tail(g_rview, known_moments); 
+ }
 }
-}
+

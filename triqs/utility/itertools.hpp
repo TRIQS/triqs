@@ -27,10 +27,9 @@
 
 namespace triqs::utility {
 
-  template <typename R> auto make_vector_from_range(R&& r) {
+  template <typename R> auto make_vector_from_range(R &&r) {
     std::vector<std::decay_t<decltype(*(std::begin(r)))>> vec;
-    for (auto const& x : r)
-      vec.push_back(x);
+    for (auto const &x : r) vec.push_back(x);
     return vec;
   }
 
@@ -272,6 +271,8 @@ namespace triqs::utility {
       auto cend() const { return make_sentinel(std::cend(std::get<sizeof...(T) - 1>(tu))); }
     };
 
+    template <typename... T> multiplied(T &&...) -> multiplied<std::decay_t<T>...>;
+
   } // namespace details
 
   /***************************************************/
@@ -315,6 +316,12 @@ namespace triqs::utility {
    * @tparam T The types of the different ranges
    * @param ranges The ranges to zip. Note: They have to be of equal length!
    */
-  template <typename... T> auto prod(T&&... ranges) { return details::multiplied<T...>{std::forward<T>(ranges)...}; }
+  template <typename... T> auto product(T &&... ranges) { return details::multiplied<T...>{std::forward<T>(ranges)...}; }
+
+  template <typename T, size_t N, size_t... Is> auto _make_product_impl(std::array<T, N> & arr, std::index_sequence<Is...>) {
+    static_assert(N == sizeof...(Is));
+    return product(arr[Is]...);
+  }
+  template <typename T, size_t N> auto make_product(std::array<T, N> &arr) { return _make_product_impl(arr, std::make_index_sequence<N>{}); }
 
 } // namespace triqs::utility

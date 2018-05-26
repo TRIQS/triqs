@@ -48,8 +48,6 @@ def G(z):
 # Matsubara GF
 gm = GfImFreq(indices = [0], beta = beta, name = "gm")
 gm << Function(G)
-gm.tail.reset(1)
-gm.tail[1] = array([[1.0]])
 
 # Analytic continuation of gm
 g_pade = GfReFreq(indices = [0], window = (-5.995, 5.995), n_points = 1200, name = "g_pade")

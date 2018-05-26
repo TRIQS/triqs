@@ -28,10 +28,9 @@ TEST(Gf, PartialEval) {
  double tau = std::get<1>(G_w_tau.mesh().components())[index];
 
  G_w(w_) << exp(-2 * tau) / (w_ * w_ + 1);
- G_w.singularity().data()() = 0;
 
- auto G_w_wn_sl0_a = G_w_wn[8, var_t()];
- auto G_w_wn_sl0_b = G_w_wn[var_t(), 3];
+ auto G_w_wn_sl0_a = G_w_wn[8, all_t()];
+ auto G_w_wn_sl0_b = G_w_wn[all_t(), 3];
  
  static_assert(std::is_same<std14::remove_reference_t<decltype(G_w_wn_sl0_a.mesh())>, const gf_mesh<imfreq>>::value, "oops");
 

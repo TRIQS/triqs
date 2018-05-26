@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./mesh_tools.hpp"
+#include "./linear_interpolation.hpp"
 namespace triqs {
 namespace gfs {
 
@@ -28,7 +29,6 @@ namespace gfs {
   using domain_t = Domain;
   using index_t = long;
   using linear_index_t = long;
-  using default_interpol_policy = interpol_t::Linear1d;
   using domain_pt_t = typename domain_t::point_t;
 
   static_assert(!std::is_base_of<std::complex<double>, domain_pt_t>::value,
@@ -38,8 +38,6 @@ namespace gfs {
 
   explicit linear_mesh(domain_t dom, double a, double b, long n_pts)
      : _dom(std::move(dom)), L(n_pts), xmin(a), xmax(b), del((b - a) / (L - 1)) {
-   //_first_index_window = 0;
-   //_last_index_window = L - 1;
   }
 
   linear_mesh() : linear_mesh(domain_t{}, 0, 1, 2) {}
@@ -79,12 +77,6 @@ namespace gfs {
   /// Max of the mesh
   double x_max() const { return xmax; }
 
-  /// Min of the window of the mesh
-  //double x_min_window() const { return xmin + _first_index_window *del; }
-
-  /// Max of the window of the mesh
-  //double x_max_window() const { return xmin + _last_index_window * del; }
-
   // -------------------- mesh_point -------------------
 
   /// Type of the mesh point
@@ -102,69 +94,23 @@ namespace gfs {
   const_iterator cbegin() const { return const_iterator(this); }
   const_iterator cend() const { return const_iterator(this, true); }
 
-  // -------------- Evaluation of a function on the grid --------------------------
-
-  /// Approximation of a point of the domain by a mesh point
-  std::tuple<bool, long, double> windowing(double x) const {
-   double a = (x - x_min()) / delta();
-   long i = std::floor(a), imax = long(size()) - 1;
-   bool in = (i >= 0) && (i < imax);
-   double w = a - i;
-   if (i == imax) {
-    --i;
-    in = (std::abs(w) < 1.e-12);
-    w = 1.0;
-   }
-   if (i == -1) {
-    i = 0;
-    in = (std::abs(1 - w) < 1.e-12);
-    w = 1.0;
-   }
-   return std::make_tuple(in, i, w);
-  }
-
+  // ----------------------------------------
+  
   /// Is the point in mesh ?
   bool is_within_boundary(double x) const { return ((x >= x_min()) && (x <= x_max())); }
   //bool is_within_boundary(double x) const { return ((x >= x_min_window()) && (x <= x_max_window())); }
+  
+  // -------------- Evaluation of a function on the grid --------------------------
 
-  struct interpol_data_t {
-   double w0, w1;
-   long i0, i1;
-  };
-
-  interpol_data_t get_interpolation_data(interpol_t::Linear1d, double x) const {
-   double w;
-   long i;
-   bool in;
-   std::tie(in, i, w) = windowing(x);
-   if (!in) TRIQS_RUNTIME_ERROR <<"out of window x= " << x << " xmin = "<< x_min() << " xmax = "<<x_max();
-   return {1- w, w, i, i + 1};
+  interpol_data_lin_t<index_t, 2> get_interpolation_data(double x) const {
+    return interpolate_on_segment(x, x_min(), delta(), long(size())-1);
   }
 
-  template <typename F> auto evaluate(interpol_t::Linear1d, F const &f, double x) const {
-   auto id = get_interpolation_data(default_interpol_policy{}, x);
-   return id.w0 * f[id.i0] + id.w1 * f[id.i1];
+  template <typename F> auto evaluate(F const &f, double x) const {
+   auto id = get_interpolation_data(x);
+   return id.w[0] * f[id.idx[0]] + id.w[1] * f[id.idx[1]];
   }
 
-  // -------------------- MPI -------------------
-
-  /*
-   * FIX DOC
-   return  gf_mesh ? or linear_mesh ?
-  /// Scatter a mesh over the communicator c
-  //In practice, the same mesh, with a different window.
-  //the window can only be set by these 2 operations
-  friend gf_mesh mpi_scatter(gf_mesh m, mpi::communicator c, int root) {
-   auto m2 = gf_mesh{m.domain(), m.x_min(), m.x_max(), m.size()};
-   std::tie(m2._first_index_window, m2._last_index_window) = mpi::slice_range(0, m2.size() - 1, c.size(), c.rank());
-   return m2;
-  }
-
-  /// Opposite of scatter
-  friend gf_mesh mpi_gather(gf_mesh m, mpi::communicator c, int root) {
-   return gf_mesh{m.domain(), m.x_min(), m.x_max(), m.size()};
-  }
-*/
   // -------------- HDF5  --------------------------
   /// Write into HDF5
   friend void h5_write_impl(h5::group fg, std::string const &subgroup_name, linear_mesh const &m,  const char * _type) {

@@ -10,7 +10,7 @@ int main() {
  // a scalar valued function
  auto g = g_t_tau_s{{{tmin, tmax, n_re_time}, {beta, Fermion, n_im_time}}};
 
- auto _ = var_t{}; // a dedicated placeholder for partial evaluation
+ auto _ = all_t{}; // a dedicated placeholder for partial evaluation
 
  auto g_sliced = g[3, _]; // 3 is the index of the point
  

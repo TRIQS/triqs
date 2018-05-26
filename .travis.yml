@@ -1,6 +1,7 @@
 branches:
   except:
     - jenkins
+    - new_tail
 
 language: cpp
 sudo: required
@@ -8,7 +9,7 @@ dist: trusty
 
 compiler:
   - gcc
-  - clang # Currently failing due to incompatibility with old-abi instructed gcc-7 stdlibc++
+    # - clang # Currently failing due to incompatibility with stdlibc++ :  Error in `python': free(): invalid pointer
 
 before_install:
   - sudo add-apt-repository 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main' -y

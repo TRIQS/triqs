@@ -36,7 +36,7 @@ module.add_enum(c_name = "statistic_enum",
 
 module.add_enum(c_name = "matsubara_mesh_opt",
                 c_namespace = "triqs::gfs",
-                values = ["all_frequencies","positive_frequencies_only"])
+                values = ["matsubara_mesh_opt::all_frequencies","matsubara_mesh_opt::positive_frequencies_only"])
 
 ########################
 ##   Mesh generic
@@ -77,6 +77,7 @@ m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
 m.add_method("""int last_index()""")
 m.add_method("""int first_index()""")
 m.add_method("""bool positive_only()""")
+m.add_method("""void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-4)""")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                signature = "double()",
@@ -178,6 +179,12 @@ m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, int n_k)")
 m.add_constructor(signature = "(triqs::lattice::brillouin_zone b, matrix_view<int> periodization_matrix)")
 m.add_method(name="locate_neighbours", signature="triqs::utility::mini_vector<int,3> locate_neighbours(triqs::arrays::vector<double> x)")
 m.add_method(name="index_to_linear", signature="long index_to_linear(triqs::utility::mini_vector<int,3> x)")
+
+m.add_property(name = "linear_dims",
+               getter = cfunction(calling_pattern="triqs::utility::mini_vector<int,3> result = self_c.get_dimensions()",
+               signature = "triqs::utility::mini_vector<int,3>()",
+               doc = "Linear dimensions"))
+
 module.add_class(m)
 
 ########################
@@ -190,6 +197,12 @@ m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<i
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")
 m.add_method(name="locate_neighbours", signature="triqs::utility::mini_vector<int,3> locate_neighbours(triqs::arrays::vector<double> x)")
 m.add_method(name="index_to_linear", signature="long index_to_linear(triqs::utility::mini_vector<int,3> x)")
+
+m.add_property(name = "linear_dims",
+               getter = cfunction(calling_pattern="triqs::utility::mini_vector<int,3> result = self_c.get_dimensions()",
+               signature = "triqs::utility::mini_vector<int,3>()",
+               doc = "Linear dimensions"))
+
 module.add_class(m)
 
 

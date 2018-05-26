@@ -47,10 +47,10 @@ TEST(Extractors, extract_h_dict) {
 
  auto h_dict = extract_h_dict(h0);
  EXPECT_EQ(h_dict_ref,h_dict);
- EXPECT_CLOSE_ARRAY(h_matrix_ref,                   dict_to_matrix(h_dict,gf_struct));
- EXPECT_CLOSE_ARRAY(h_matrix_ref,                   dict_to_matrix<double>(h_dict,gf_struct));
- EXPECT_CLOSE_ARRAY((array<dcomplex,2>)h_matrix_ref,dict_to_matrix<dcomplex>(h_dict,gf_struct));
- EXPECT_CLOSE_ARRAY(h_matrix_ref,                   (std::get<array<double,2>>(dict_to_variant_matrix(h_dict,gf_struct))));
+ EXPECT_ARRAY_NEAR(h_matrix_ref,                   dict_to_matrix(h_dict,gf_struct));
+ EXPECT_ARRAY_NEAR(h_matrix_ref,                   dict_to_matrix<double>(h_dict,gf_struct));
+ EXPECT_ARRAY_NEAR((array<dcomplex,2>)h_matrix_ref,dict_to_matrix<dcomplex>(h_dict,gf_struct));
+ EXPECT_ARRAY_NEAR(h_matrix_ref,                   (std::get<array<double,2>>(dict_to_variant_matrix(h_dict,gf_struct))));
 
  auto nn = n("up",1)*n("dn",1);
  EXPECT_THROW(extract_h_dict(nn),triqs::exception);
@@ -90,10 +90,10 @@ TEST(Extractors, extract_U_dict2) {
 
  auto U_dict2 = extract_U_dict2(h_int);
  EXPECT_EQ(U_dict2_ref,U_dict2);
- EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   dict_to_matrix(U_dict2,gf_struct));
- EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   dict_to_matrix<double>(U_dict2,gf_struct));
- EXPECT_CLOSE_ARRAY((array<dcomplex,2>)U_matrix2_ref,dict_to_matrix<dcomplex>(U_dict2,gf_struct));
- EXPECT_CLOSE_ARRAY(U_matrix2_ref,                   (std::get<array<double,2>>(dict_to_variant_matrix(U_dict2,gf_struct))));
+ EXPECT_ARRAY_NEAR(U_matrix2_ref,                   dict_to_matrix(U_dict2,gf_struct));
+ EXPECT_ARRAY_NEAR(U_matrix2_ref,                   dict_to_matrix<double>(U_dict2,gf_struct));
+ EXPECT_ARRAY_NEAR((array<dcomplex,2>)U_matrix2_ref,dict_to_matrix<dcomplex>(U_dict2,gf_struct));
+ EXPECT_ARRAY_NEAR(U_matrix2_ref,                   (std::get<array<double,2>>(dict_to_variant_matrix(U_dict2,gf_struct))));
 
  auto quadratic = n("up",1) + n("dn",1);
  EXPECT_THROW(extract_U_dict2(quadratic),triqs::exception);
@@ -143,10 +143,10 @@ TEST(Extractors, extract_U_dict4) {
 
  auto U_dict4 = extract_U_dict4(h_int);
  EXPECT_EQ(U_dict4_ref,U_dict4);
- EXPECT_CLOSE_ARRAY(U_matrix4_ref,                   dict_to_matrix(U_dict4,gf_struct));
- EXPECT_CLOSE_ARRAY(U_matrix4_ref,                   dict_to_matrix<double>(U_dict4,gf_struct));
- EXPECT_CLOSE_ARRAY((array<dcomplex,4>)U_matrix4_ref,dict_to_matrix<dcomplex>(U_dict4,gf_struct));
- EXPECT_CLOSE_ARRAY(U_matrix4_ref,                  (std::get<array<double,4>>(dict_to_variant_matrix(U_dict4,gf_struct))));
+ EXPECT_ARRAY_NEAR(U_matrix4_ref,                   dict_to_matrix(U_dict4,gf_struct));
+ EXPECT_ARRAY_NEAR(U_matrix4_ref,                   dict_to_matrix<double>(U_dict4,gf_struct));
+ EXPECT_ARRAY_NEAR((array<dcomplex,4>)U_matrix4_ref,dict_to_matrix<dcomplex>(U_dict4,gf_struct));
+ EXPECT_ARRAY_NEAR(U_matrix4_ref,                  (std::get<array<double,4>>(dict_to_variant_matrix(U_dict4,gf_struct))));
 
  auto quadratic = n("up",1) + n("dn",1);
  EXPECT_THROW(extract_U_dict4(quadratic),triqs::exception);

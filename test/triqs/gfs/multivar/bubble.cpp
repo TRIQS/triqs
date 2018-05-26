@@ -25,7 +25,7 @@ placeholder<2> r_;
 placeholder<3> iw_;
 placeholder<4> inu_;
 
-auto _ = var_t{};
+auto _ = all_t{};
 
 auto bz     = brillouin_zone{bravais_lattice{{{1, 0}, {0, 1}}}};
 auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
@@ -48,7 +48,7 @@ TEST(Gf, Bubble) {
  chi0q(inu_, iw_, q_) << sum(Gk(inu_, k_) * Gk(inu_ + iw_, k_ + q_), k_ = k_mesh) / k_mesh.size();
 
  for (auto const &inu : std::get<0>(Gr.mesh()))
-  Gr[inu, _] = inverse_fourier(Gk[inu, _]);
+  Gr[inu, _] = fourier(Gk[inu, _]);
 
  chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_ + iw_, -r_);
 
@@ -61,7 +61,7 @@ TEST(Gf, Bubble) {
    chi0q_from_r[inu, iw, _] = fourier(chi0r[inu, iw, _]);
   }
  }
- EXPECT_CLOSE_ARRAY(chi0q_from_r.data(), chi0q.data());
+ EXPECT_ARRAY_NEAR(chi0q_from_r.data(), chi0q.data());
 
  // hdf5
  rw_h5(chi0q);
@@ -88,7 +88,7 @@ TEST(Gf, BubbleScalar) {
  chi0q(inu_, iw_, q_) << sum(Gk(inu_, k_) * Gk(inu_ + iw_, k_ + q_), k_ = Gmesh) / Gmesh.size();
 
  for (auto const &inu : std::get<0>(Gr.mesh()))
-  Gr[inu, _] = inverse_fourier(Gk[inu, _]);
+  Gr[inu, _] = fourier(Gk[inu, _]);
 
  chi0r(inu_, iw_, r_) << Gr(inu_, r_) * Gr(inu_ + iw_, -r_);
 
@@ -97,7 +97,7 @@ TEST(Gf, BubbleScalar) {
    chi0q_from_r[inu, iw, _] = fourier(chi0r[inu, iw, _]);
   }
  }
- EXPECT_CLOSE_ARRAY(chi0q_from_r.data(), chi0q.data());
+ EXPECT_ARRAY_NEAR(chi0q_from_r.data(), chi0q.data());
 
  rw_h5(chi0q);
  rw_h5(chi0r);
@@ -116,11 +116,11 @@ TEST(Gf, BubbleSimplif) {
  gk(k_) << 1. / (M_PI / beta * 1_j - eps_k_);
  ggq(q_) << sum(gk(k_) * gk(k_ + q_), k_ = gk.mesh()) / gk.mesh().size();
 
- gr() = inverse_fourier(gk);
+ gr() = fourier(gk);
  ggr(r_) << gr(r_) * gr(r_);
  ggq_from_r() = fourier(ggr);
 
- EXPECT_CLOSE_ARRAY(ggq_from_r.data(), ggq.data()); //<<"fourier pb";
+ EXPECT_ARRAY_NEAR(ggq_from_r.data(), ggq.data()); //<<"fourier pb";
 }
 
 
@@ -137,11 +137,11 @@ TEST(Gf, BubbleSimplifScalar) {
  gk(k_) << 1. / (M_PI / beta * 1_j - eps_k_);
  ggq(q_) << sum(gk(k_) * gk(k_ + q_), k_ = gk.mesh()) / gk.mesh().size();
 
- gr() = inverse_fourier(gk);
+ gr() = fourier(gk);
  ggr(r_) << gr(r_) * gr(r_);
  ggq_from_r() = fourier(ggr);
 
- EXPECT_CLOSE_ARRAY(ggq_from_r.data(), ggq.data()); //<<"fourier pb";
+ EXPECT_ARRAY_NEAR(ggq_from_r.data(), ggq.data()); //<<"fourier pb";
 }
 
 

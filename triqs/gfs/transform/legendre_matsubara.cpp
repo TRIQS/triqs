@@ -42,8 +42,6 @@ namespace gfs {
     gw[om] += legendre_T(om.index(), l.index()) * gl[l];
    }
   }
-
-  gw.singularity() = get_tail(gl);
  }
 
  // ----------------------------
@@ -60,7 +58,6 @@ namespace gfs {
    }
   }
 
-  gt.singularity() = get_tail(gl);
  }
 
  // ----------------------------
@@ -97,7 +94,7 @@ namespace gfs {
   auto gt = gf<imtime>{{gw.domain(), Nt}, gw.data().shape().front_pop()};
 
   // We first transform to imaginary time because it's been coded with the knowledge of the tails
-  gt() = inverse_fourier(gw);
+  gt() = fourier(gw);
   legendre_matsubara_inverse(gl, gt());
  }
 

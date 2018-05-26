@@ -33,28 +33,10 @@ TEST(Gf, Base) {
  G(om_) << (0.2 + om_ + 2.1);
  EXPECT_ARRAY_NEAR(G(0), matrix<dcomplex>{{2.3 + 3.1415926535897931_j, 0_j}, {0_j, 2.3 + 3.1415926535897931_j}});
 
- EXPECT_ARRAY_NEAR(G.singularity()(-1), matrix<double>{{1, 0}, {0, 1}});
- EXPECT_ARRAY_NEAR(G.singularity()(0), matrix<double>{{2.3, 0.0}, {0.0, 2.3}});
- EXPECT_ARRAY_ZERO(G.singularity()(1));
- EXPECT_ARRAY_ZERO(G.singularity()(2));
-
- auto t1 = G.singularity();
-
  Gv(om_) << 1/ (om_ + 2.3);
 
  dcomplex z = 1/( M_PI* 1_j + 2.3);
  EXPECT_ARRAY_NEAR(G(0), matrix<dcomplex>{{z, 0_j}, {0_j, z}});
- EXPECT_ARRAY_ZERO(G.singularity()(-1));
- EXPECT_ARRAY_ZERO(G.singularity()(0));
- EXPECT_ARRAY_NEAR(G.singularity()(1), matrix<double>{{1, 0}, {0, 1}});
- EXPECT_ARRAY_NEAR(G.singularity()(2), matrix<double>{{-2.3, 0.0}, {0.0, -2.3}});
- EXPECT_ARRAY_NEAR(G.singularity()(3), matrix<double>{{5.29, 0.0}, {0.0, 5.29}});
- EXPECT_ARRAY_NEAR(G.singularity()(7), matrix<double>{{148.03588899999994, 0.0}, {0.0, 148.03588899999994}});
-
- // tail
- auto t = G.singularity();
- EXPECT_ARRAY_NEAR(t1.data(), inverse(G.singularity()).data());
- EXPECT_ARRAY_NEAR(Gv2.singularity()(2), matrix<double>{{-2.3}});
 
  // copy
  Gc = G;
@@ -65,9 +47,6 @@ TEST(Gf, Base) {
 
  // test for density
  EXPECT_ARRAY_NEAR(density(G3), matrix<double>{{1.8177540779781256, 0.0}, {0.0, 1.8177540779781256}});
-
- auto tt = G.singularity() + G.singularity();
- EXPECT_ARRAY_NEAR(tt(2), 2 * matrix<double>{{-2.3, 0.0}, {0.0, -2.3}});
 
  rw_h5(G);
 
@@ -92,6 +71,36 @@ TEST(Gf, Base) {
 }
 
 // Test the technique to avoid the infinity
+TEST(Gf, EvaluatorMatrix) { 
+
+ double beta = 1;
+ auto g = gf<imfreq, matrix_valued>{{beta, Fermion, 100}, {2, 2}};
+
+ triqs::clef::placeholder_prime<0> om_;
+ g(om_) << 1/ (om_ + 2.3);
+
+ auto f = matsubara_freq{120, beta, Fermion};
+ auto exact = matrix<dcomplex>{{1/(f+2.3), 0_j}, {0_j, 1/(f+2.3)}};
+
+ EXPECT_ARRAY_NEAR(g(f), exact, 1e-14); 
+}
+
+// Test the technique to avoid the infinity
+TEST(Gf, EvaluatorScalar) { 
+
+ double beta = 1;
+ auto g = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};
+
+ triqs::clef::placeholder_prime<0> om_;
+ g(om_) << 1/ (om_ + 2.3);
+
+ auto f = matsubara_freq{120, beta, Fermion};
+ auto exact = 1/(f+2.3);
+
+ EXPECT_COMPLEX_NEAR(g(f), exact, 1e-14); 
+}
+
+// Test the technique to avoid the infinity
 TEST(Gf, PhNoInfinity) { 
 
  double beta = 1;
@@ -100,7 +109,6 @@ TEST(Gf, PhNoInfinity) {
  triqs::clef::placeholder_prime<0> om_;
  g(om_) << 1/ (om_ + 2.3);
 
- EXPECT_TRUE(g.singularity().empty());
 }
 
 // Test the technique to avoid the infinity
@@ -113,7 +121,6 @@ TEST(Gf, PhNoInfinity_tau) {
  triqs::clef::placeholder_prime <0> tau_;
  g(tau_) << exp(-a * tau_) / (1 + exp(-beta * a));
 
- EXPECT_TRUE(g.singularity().empty());
 }
 
 TEST(Gf, ZeroM) {
@@ -126,7 +133,7 @@ TEST(Gf, ZeroS) {
 
  double beta = 1;
  auto g = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
- EXPECT_NEAR_COMPLEX(g.get_zero(), 0);
+ EXPECT_COMPLEX_NEAR(g.get_zero(), 0);
 }
 
 TEST (Gf, SliceTargetScalar) { 

@@ -21,7 +21,6 @@
 import warnings, numpy as np
 from pytriqs.gf.gf import Gf
 from pytriqs.gf.meshes import MeshImFreq
-from tool_gfloc import *
 
 class GfImFreq(Gf) : 
     """
@@ -46,10 +45,6 @@ class GfImFreq(Gf) :
              If true, and target_shape is set, the data will be real.
              No effect with the parameter data.
 
-    singularity or tail : TailGfXXX, optional
-                 One of the singularity of the module 'singularities'
-                 If not present singularity is None.
-
     indices: GfIndices or list of str or list of list of str, Optional
              Optional string indices for the target space, to allow e.g g['eg', 'eg']
              list of list of str: the list of indices for each dimension.
@@ -63,7 +58,7 @@ class GfImFreq(Gf) :
         """
           Same as Gf, but can rebuild the  mesh for backward compatibility
         """
-        def delegate(self, mesh=None, data = None, target_shape=None, singularity = None, tail = None, indices = None, name='', n_points = 1025, beta = None, statistic = 'Fermion'):
+        def delegate(self, mesh=None, data = None, target_shape=None, indices = None, name='', n_points = 1025, beta = None, statistic = 'Fermion'):
             if mesh is None:
                 assert isinstance(beta, (int, long, float)), "If the Mesh is not given, beta is mandatory and must be float"
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
@@ -73,84 +68,7 @@ class GfImFreq(Gf) :
                       mesh = mesh, 
                       data = data, 
                       target_shape = target_shape,
-                      singularity = tail or singularity,
-                      _singularity_maker = make_singularity_maker(tail, singularity),
                       indices = indices, 
                       name = name) 
 
         delegate(self, **kw)
-
-    #-------------- Old Tail operations. Deprecated -----------------------------------------------------
-
-    def replace_by_tail_depr(self, start):
-        d = self.data
-        t = self.tail
-        for n, om in enumerate(self.mesh):
-            if n >= start: d[n,:,:] = t(om)
-
-    def fit_tail_depr(self, fixed_coef, order_max, fit_start, fit_stop, replace_tail=True):
-       """
-       Fit the tail of the Green's function
-       Input:
-         - fixed_coef: a 3-dim array of known coefficients for the fit starting from the order -1
-         - order_max: highest order in the fit
-         - fit_start, fit_stop: fit the data between fit_start and fit_stop
-       Output:
-         On output all the data above fit_start is replaced by the fitted tail
-         and the new moments are included in the Green's function
-       """
-
-       from scipy.optimize import leastsq
-       # Turn known_coefs into a numpy array if ever it is not already the case
-       known_coef = fixed_coef
-
-       # Change the order_max
-       # It is assumed that any known_coef will start at order -1
-       self.tail.zero()
-       self.tail.mask.fill(order_max)
-
-       # Fill up two arrays with the frequencies and values over the range of interest
-       ninit, nstop = 0, -1
-       x = []
-       for om in self.mesh:
-         if (om.imag < fit_start): ninit = ninit+1
-         if (om.imag <= fit_stop): nstop = nstop+1
-         if (om.imag <= fit_stop and om.imag >= fit_start): x += [om]
-       omegas = numpy.array(x)
-       values = self.data[ninit:nstop+1,:,:]
-
-       # Loop over the indices of the Green's function
-       for n1,indR in enumerate(self.indicesR):
-         for n2,indL in enumerate(self.indicesL):
-
-           # Construct the part of the fitting functions which is known
-           f_known = numpy.zeros((len(omegas)),numpy.complex)
-           for order in range(len(known_coef[n1][n2])):
-             f_known += known_coef[n1][n2][order]*omegas**(1-order)
-
-           # Compute how many free parameters we have and give an initial guess
-           len_param = order_max-len(known_coef[n1][n2])+2
-           p0 = len_param*[1.0]
-
-           # This is the function to be minimized, the diff between the original
-           # data in values and the fitting function
-           def fct(p):
-             y_fct = 1.0*f_known
-             for order in range(len_param):
-               y_fct += p[order]*omegas**(1-len(known_coef[n1][n2])-order)
-             y_fct -= values[:,n1,n2]
-             return abs(y_fct)
-
-           # Now call the minimizing function
-           sol = leastsq(fct, p0, maxfev=1000*len_param)
-
-           # Put the known and the new found moments in the tail
-           for order in range(len(known_coef[n1][n2])):
-             self.tail[order-1][n1,n2] = numpy.array([[ known_coef[n1][n2][order] ]])
-           for order, moment in enumerate(sol[0]):
-             self.tail[len(known_coef[n1][n2])+order-1][n1,n2] = numpy.array([[ moment ]])
-       self.tail.mask.fill(order_max)
-       # Replace then end of the Green's function by the tail
-       if replace_tail: self.replace_by_tail_depr(ninit);
-       
-

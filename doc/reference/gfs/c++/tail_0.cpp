@@ -1,15 +1,16 @@
 #include <triqs/gfs.hpp>
-#include <iostream>
 using namespace triqs::gfs;
 
 int main() {
-  int N1 = 1, N2 = 1;
+  triqs::clef::placeholder<0> iom_;
+  double beta = 10;
+  int N       = 100;
 
-  // Create a tail with moments -2 .. 8 (intialized to 0) and a given shape
-  triqs::gfs::tail t(make_shape(N1, N2));
+  auto gw = gf<imfreq>{{beta, Fermion, N}, {1, 1}};
+  gw(iom_) << 1 / (iom_ - 1);
 
-  t.reset(6); // Set moments >= 6 to unknown (NaN)
-  std::cout << t(0) << std::endl;
-  t(2) = .5; // Set the 2nd moment
-  std::cout << t << std::endl;
+  size_t n_min   = 50; // linear index on mesh to start the fit
+  size_t n_max   = 90; // final linear index for fit (included)
+
+  std::cout << fit_tail(gw) << std::endl;
 }

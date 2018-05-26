@@ -14,16 +14,10 @@ TEST(Gf, ProdGfTail) {
 
   auto GG = G; 
 
-  std::cout << " Tail of G \n " << GG.singularity() << "\n"; 
-
   GG *= G; 
-
-  std::cout << " Tail of product G*G \n " << GG.singularity() << "\n"; 
 
   auto GG_res = G; 
   GG_res(iw_) << ( 1.0 / iw_ + 0.25 / ( iw_ * iw_ * iw_ ) ) * ( 1.0 / iw_ + 0.25 / ( iw_ * iw_ * iw_ ) );
-
-  std::cout << " Expected Tail \n " << GG_res.singularity() << "\n"; 
 
   EXPECT_GF_NEAR( GG, GG_res ); 
 }

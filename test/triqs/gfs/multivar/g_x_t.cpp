@@ -10,7 +10,7 @@ double t_min = -10, t_max = 10;
 int n_times   = n_freq * 2 + 1;
 int L         = 16;
 int n_bz      = L;
-auto _        = var_t{};
+auto _        = all_t{};
 auto bz       = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
 using index_t = utility::mini_vector<int, 3>;
 
@@ -27,7 +27,7 @@ TEST(Gf, x_t) {
  auto gxt = gf<cartesian_product<cyclic_lattice, retime>, matrix_valued>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
 
  for (auto const &t : std::get<1>(gxt.mesh()))
-  gxt[_, t] = inverse_fourier(gkt[_, t]);
+  gxt[_, t] = fourier(gkt[_, t]);
 
  EXPECT_GF_NEAR(gxt, rw_h5(gxt, "ess_g_x_t.h5", "g"));
 
@@ -51,13 +51,11 @@ TEST(Gf, x_tau) {
  auto gxt = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{{L, L}, {beta, Fermion, n_times}}, {1, 1}};
 
  for (auto const &t : std::get<1>(gxt.mesh()))
-  gxt[_, t] = inverse_fourier(gkt[_, t]);
+  gxt[_, t] = fourier(gkt[_, t]);
 
  auto gg = rw_h5(gxt, "ess_g_x_tau.h5", "g");
 
  EXPECT_EQ(gxt.mesh(), gg.mesh());
- EXPECT_EQ(gxt.singularity().mesh(), std::get<0>(gxt.mesh()));
- EXPECT_EQ(gg.singularity().mesh(), std::get<0>(gg.mesh()));
  EXPECT_GF_NEAR(gxt, gg);
 
 }

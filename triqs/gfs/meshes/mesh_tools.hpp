@@ -22,31 +22,54 @@
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 #include <triqs/utility/iterator_facade.hpp>
 
+#include <triqs/arrays.hpp>
+
 namespace triqs {
 namespace gfs {
 
+ using arrays::make_shape;
+ using arrays::range;
+ using arrays::array;
+ using arrays::array_view;
+ using arrays::matrix;
+ using arrays::matrix_view;
+ using arrays::matrix_const_view;
+ using triqs::make_clone;
  using dcomplex = std::complex<double>;
+ using arrays::make_shape;
+ using arrays::range;
+ using arrays::ellipsis;
+ using arrays::mini_vector;
+
+ using dcomplex = std::complex<double>;
+
+ // the dummy variable
+ struct all_t {};
 
  namespace tag {
   struct composite {};
   struct mesh_point {};
  }
 
- /** The statistics : Boson or Fermion
-  */
- enum statistic_enum {
-  Boson,
-  Fermion
- };
+ /** The statistics : Boson or Fermion */
+ enum statistic_enum {Boson=0, Fermion = 1};
 
- // Interpolation policies
- namespace interpol_t {
-  struct None {};
-  struct Product {};
-  struct Linear1d {};
-  struct Linear2d {};
- }
+// 1 for Boson, -1 for Fermion 
+ inline int sign(statistic_enum s) { return (s==Boson ? 1 : -1);}
 
+ // Boson*Fermion -> Fermion, others -> Boson 
+ inline statistic_enum operator* (statistic_enum i, statistic_enum j) { return ( i==j ? Boson : Fermion); }
+
+ // pretty print 
+ inline std::ostream &operator<<(std::ostream &sout, statistic_enum x) { return sout << (x==Boson ? "Boson" : "Fermion"); }
+
+ //enum class statistic_enum {_Boson=0, _Fermion = 1};
+ //inline statistic_enum Fermion = statistic_enum::_Fermion;
+ //inline statistic_enum Boson = statistic_enum::_Boson;
+ //statistic_enum operator* (statistic_enum i, statistic_enum j) { return ( i==j ? statistic_enum::_Boson : statistic_enum::_Fermion); }
+ //std::ostream &operator<<(std::ostream &sout, statistic_enum x) { return sout << (x==statistic_enum::_Boson ? "Boson" : "Fermion"); }
+ 
+ 
  // The mesh for each Var
  template <typename Var> struct gf_mesh;
 

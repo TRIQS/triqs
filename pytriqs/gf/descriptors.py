@@ -35,15 +35,10 @@ class OneFermionInTime(Base):
         if G.mesh.TypeGF not in [GF_Type.Imaginary_Time]: 
             raise TypeError, "This initializer is only correct in frequency"
 
-        Id = numpy.identity(G.target_shape[0])
-        G.singularity.reset(4)
-        G.singularity[1][:,:] = 1*Id
-        G.singularity[2][:,:] = L*Id
-        G.singularity[3][:,:] = L*L*Id
-        #G.singularity.mask.fill(3)
-        
+        Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
+
         fact = -1/(1+exp(-L*G.beta))
-        Function(lambda t: fact* exp(-L*t) *Id, None)(G)
+        Function(lambda t: fact* exp(-L*t) *Id)(G)
         return G
 
 ##################################################
@@ -85,7 +80,7 @@ semicircular density of states"""
 
     def __call__(self,G):
         D = self.half_bandwidth
-        Id = numpy.identity(G.target_shape[0],numpy.complex_)
+        Id = complex(1,0) if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0],numpy.complex_)
         if type(G.mesh) == MeshImFreq:
             f = lambda om: (om  - 1j*copysign(1,om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
         elif type(G.mesh) == MeshReFreq:
@@ -98,15 +93,9 @@ semicircular density of states"""
         else:
             raise TypeError, "This initializer is only correct in frequency"
 
-        # Let's create a new tail
-        Id = numpy.identity(G.target_shape[0])
-        G.singularity.reset(7)
-        G.singularity[1][:,:] = 1.0*Id
-        G.singularity[3][:,:] = D**2/4.0*Id
-        G.singularity[5][:,:] = D**4/8.0*Id
-        #G.singularity.mask.fill(6)
- 
-        Function(f,None)(G)
+        Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
+        Function(f)(G)
+
         return G
 
 ##################################################
@@ -143,18 +132,12 @@ class Flat (Base):
         else:
             raise TypeError, "This initializer is only correct in frequency"
 
-        # Let's create a new tail
-        Id = numpy.identity(G.target_shape[0])
-        G.singularity.reset(7)
-        G.singularity[1][:,:] = 1.0*Id
-        G.singularity[3][:,:] = D**2/3.0*Id
-        G.singularity[5][:,:] = D**4/5.0*Id
-        #G.singularity.mask.fill(6)
+        Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
 
         # Silence "RuntimeWarning: divide by zero encountered in divide"
         old_err = numpy.seterr(divide='ignore')
 
-        Function(f,None)(G)
+        Function(f)(G)
         numpy.seterr(**old_err)
         return G
 
@@ -167,28 +150,29 @@ class Fourier (Base):
     r"""
     The Fourier transform as a lazy expression
     """
-    def __init__ (self, G):
+    def __init__ (self, G, *args, **kw):
         """:param G: :math:`G`, the function to be transformed. Must in the time domain"""
         Base.__init__(self, G = G)
-
+        self.args, self.kw = args, kw
     def __str__(self): return "Fourier of gf"
 
     def __call__(self,G2):
-        G2.set_from_fourier(self.G)
+        G2.set_from_fourier(self.G, *self.args, **self.kw)
         return G2
 
 class InverseFourier (Base):
     r"""
     The Inverse Fourier transform as a lazy expression
     """
-    def __init__ (self, G):
+    def __init__ (self, G, *args, **kw):
         """:param G: :math:`G`, the function to be transformed. Must in the frequency domain"""
         Base.__init__(self, G = G)
+        self.args, self.kw = args, kw
 
     def __str__(self): return "InverseFourier of gf"
 
     def __call__(self,G2):
-        G2.set_from_inverse_fourier(self.G)
+        G2.set_from_inverse_fourier(self.G, *self.args, **self.kw)
         return G2
 
 class LegendreToMatsubara (Base):

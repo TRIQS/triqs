@@ -29,10 +29,9 @@ from types import IntType, SliceType, StringType
 from mesh_product import MeshProduct
 from pytriqs.plot.protocol import clip_array
 import meshes
-import singularities
 import plot 
 import gf_fnt, wrapped_aux
-from singularities import GfIndices
+from gf_fnt import GfIndices
 from mesh_point import MeshPoint
 from operator import mul
 
@@ -97,10 +96,6 @@ class Gf(object):
              If true, and target_shape is set, the data will be real.
              Incompatible with data
 
-    singularity: TailGfXXX, optional
-                 One of the singularity of the module 'singularities'
-                 If not present singularity is None.
-
     indices: GfIndices or list of str or list of list of str, Optional
              Optional string indices for the target space, to allow e.g g['eg', 'eg']
              list of list of str: the list of indices for each dimension.
@@ -118,7 +113,7 @@ class Gf(object):
         
         #print "Gf construct args", kw
 
-        def delegate(self, mesh, data=None, target_shape=None, singularity = None, indices = None, name = '', is_real = False, _singularity_maker = None, tail_valued = False):
+        def delegate(self, mesh, data=None, target_shape=None, indices = None, name = '', is_real = False):
             """
             target_shape and data  : must provide exactly one of them
             """
@@ -134,12 +129,6 @@ class Gf(object):
                 for i in target_shape : 
                     assert i>0, "Target shape elements must be >0"
      
-            # Is the gf tail_valued ?
-            self.tail_valued = tail_valued
-            tail_valued_shift = (1 if tail_valued else 0)
-            if tail_valued:
-                assert data is not None and singularity is None and _singularity_maker is None
-
             # mesh
             assert isinstance(mesh, all_meshes), "Mesh is unknown. Possible type of meshes are %s" % ', '.join(map(lambda m: m.__name__,all_meshes))
             self._mesh = mesh
@@ -166,7 +155,7 @@ class Gf(object):
                 data = np.zeros(list(l) + list(target_shape), dtype = np.float64 if is_real else np.complex128)
             # Now we have the data at correct size. Set up a few short cuts
             self._data = data
-            len_data_shape = len(self._data.shape) - tail_valued_shift
+            len_data_shape = len(self._data.shape) 
             self._target_rank = len_data_shape - (self._mesh.rank if isinstance(mesh, MeshProduct) else 1)  
             self._rank = len_data_shape - self._target_rank 
             assert self._rank >= 0
@@ -181,25 +170,17 @@ class Gf(object):
 
             # Check that indices  have the right size
             if self._indices is not None: 
-                d,i =  self._data.shape[self._rank + tail_valued_shift:], tuple(len(x) for x in self._indices.data)
+                d,i =  self._data.shape[self._rank:], tuple(len(x) for x in self._indices.data)
                 assert (d == i), "Indices are of incorrect size. Data size is %s while indices size is %s"%(d,i)
             # Now indices are set, and are always a GfIndices object, with the
             # correct size
            
-            # singularity : given, or a maker is given (using the data, ...)
-            assert (singularity is None) or (_singularity_maker is None), "Internal error"
-            self.singularity = singularity or (_singularity_maker(self) if _singularity_maker else None)
-            # Overrule in this case, add an empty tail
-            if self._singularity is None and self._target_rank ==2 and isinstance(self._mesh, (meshes.MeshImFreq, meshes.MeshReFreq, meshes.MeshImTime, meshes.MeshReTime)):
-                self._singularity = singularities.TailGf(*self._target_shape)
-                self._singularity.reset(-2)
-
             # NB : at this stage, enough checks should have been made in Python in order for the C++ view 
             # to be constructed without any INTERNAL exceptions.
             # Set up the C proxy for call operator for speed. The name has to
             # agree with the wrapped_aux module, it is of only internal use
             s = '_x_'.join( m.__class__.__name__[4:] for m in self.mesh._mlist) if isinstance(mesh, MeshProduct) else self._mesh.__class__.__name__[4:]
-            proxyname = 'CallProxy%s_%s%s'%(s, self.target_rank,'_R' if data.dtype == np.float64 else '') if not tail_valued else None
+            proxyname = 'CallProxy%s_%s%s'%(s, self.target_rank,'_R' if data.dtype == np.float64 else '') 
             try:
                 self._c_proxy = all_call_proxies.get(proxyname, CallProxyNone)(self)
             except:
@@ -210,21 +191,12 @@ class Gf(object):
 
         delegate(self, **kw)
 
-    def __check_invariants_tail(self):
-        """Check invariant for singularity. Mainly for debug"""
-        if self._singularity: 
-            # The target size
-            if self._target_rank >0 : 
-                assert self._singularity.data.shape[-self._target_rank:] == self.data.shape[-self._target_rank:],\
-                        "Invariant broken for tail %s, %s"%(self._singularity.data.shape[-self._target_rank:], self.data.shape[-self._target_rank:])
- 
     def __check_invariants(self):
         """Check various invariant. Mainly for debug"""
         # rank
         assert self.rank == self._mesh.rank if isinstance (self._mesh, MeshProduct) else 1
         # The mesh size must correspond to the size of the data
         assert self._data.shape[:self._rank] == tuple(len(m) for m in self._mesh.components) if isinstance (self._mesh, MeshProduct) else (len(self._mesh),)
-        self.__check_invariants_tail()
  
     @property
     def rank(self):
@@ -257,31 +229,6 @@ class Gf(object):
         return self._data
 
     @property
-    def singularity(self) : 
-        """
-        The singularity 
-        Possible types : (TailGf, None)
-        """
-        return self._singularity
- 
-    @singularity.setter
-    def singularity(self, value): 
-        self._singularity = value
-        self.__check_invariants_tail()
-
-    @property
-    def tail(self) : 
-        """
-        Same as singularity
-        """
-        return self._singularity
-   
-    @tail.setter
-    def tail(self, value):
-        self._singularity = value
-        self.__check_invariants_tail()
-
-    @property
     def indices(self):
         """
         Access to the indices
@@ -294,7 +241,6 @@ class Gf(object):
         """
         return Gf (mesh = self._mesh.copy(), 
                    data = self._data.copy(), 
-                   singularity = self._singularity.copy() if self._singularity else None,
                    indices = self._indices.copy(), 
                    name = self.name)
 
@@ -305,13 +251,10 @@ class Gf(object):
         self._mesh.copy_from(another.mesh)
         assert self._data.shape == another._data.shape, "Shapes are incompatible"
         self._data[:] = another._data[:]
-        if self._singularity : self._singularity.copy_from(another._singularity)
         self._indices = another._indices.copy()
         self.__check_invariants()
 
     def __repr__(self):
-        if self.tail_valued :
-            return "Tail valued function with mesh %s and target_rank %s: \n"%(self.mesh, self.target_rank)
         return "Green Function %s with mesh %s and target_rank %s: \n"%(self.name, self.mesh, self.target_rank)
  
     def __str__ (self): 
@@ -352,28 +295,39 @@ class Gf(object):
             mlist = [m for i,m in itertools.ifilter(lambda tup_im : not isinstance(tup_im[0], (MeshPoint, Idx)), itertools.izip(key, mlist))]
             assert len(mlist) > 0, "Internal error" 
             mesh = MeshProduct(*mlist) if len(mlist)>1 else mlist[0]
-            sing = None # FIXME : slice the singularity, in one case
-            r = Gf(mesh = mesh, data = dat, singularity = sing)
+            sing = None 
+            r = Gf(mesh = mesh, data = dat)
             r.__check_invariants()
             return r
 
         # In all other cases, we are slicing the target space
         else : 
             assert self.target_rank == len(key), "wrong number of arguments. Expected %s, got %s"%(self.target_rank, len(key))
-            # transform the key in a list of slices
+
+            # Assume empty indices (scalar_valued)
+            ind = GfIndices([])
+
+            # String access: transform the key into a list integers
             if all(isinstance(x, str) for x in key):
                 assert self._indices, "Got string indices, but I have no indices to convert them !"
-                key_s = [self._indices.convert_index (s,i) for i,s in enumerate(key)] # convert returns a slice of len 1
-                key = [x.start for x in key_s]
-            if all(isinstance(x, slice) for x in key) : 
-                key_s, key = list(key), [ x.start for x in key]
+                key_lst = [self._indices.convert_index(s,i) for i,s in enumerate(key)] # convert returns a slice of len 1
+
+            # Slicing with ranges -> Adjust indices
+            elif all(isinstance(x, slice) for x in key): 
+                key_lst = list(key)
+                ind = GfIndices([ v[k]  for k,v in zip(key_lst, self._indices.data)])
+
+            # Integer access
+            elif all(isinstance(x, int) for x in key):
+                key_lst = list(key)
+
+            # Invalid Access
             else:
-                key_s = map(lambda r: slice(r,r+1,1), key) # transform int into slice 
-            # now the key is a list of slices
-            dat = self._data[ self._rank * [slice(0,None)] + key_s ] 
-            ind = GfIndices([ v[k]  for k,v in zip(key_s, self._indices.data)])
-            sing = singularities._make_tail_view_from_data(self._singularity.data[[slice(0,None)] + key_s]) if self._singularity else None # Build a new view of the singularity
-            r = Gf(mesh = self._mesh, data = dat, singularity = sing, indices = ind)
+                raise NotImplementedError, "Partial slice of the target space not implemented"
+
+            dat = self._data[ self._rank * [slice(0,None)] + key_lst ] 
+            r = Gf(mesh = self._mesh, data = dat, indices = ind)
+
             r.__check_invariants()
             return r
 
@@ -396,13 +350,13 @@ class Gf(object):
     
     @property
     def real(self): 
-        """A Gf with only the real part of data. NB : it has no tail, since it does not make sense any more"""
-        return Gf(mesh = self._mesh, data = self._data.real, singularity = None,name = ("Re " + self.name) if self.name else '') # Singularity is None for G(tau) ?
+        """A Gf with only the real part of data."""
+        return Gf(mesh = self._mesh, data = self._data.real, name = ("Re " + self.name) if self.name else '') 
 
     @property
     def imag(self): 
-        """A Gf with only the imag part of data. NB : it has no tail, since it does not make sense any more"""
-        return Gf(mesh = self._mesh, data = self._data.imag, singularity = None, name = ("Im " + self.name) if self.name else '') # Singularity is None for G(tau) ?
+        """A Gf with only the imag part of data."""
+        return Gf(mesh = self._mesh, data = self._data.imag, name = ("Im " + self.name) if self.name else '') 
  
     # --------------  Lazy system -------------------------------------
 
@@ -434,9 +388,9 @@ class Gf(object):
 
     # -------------- call -------------------------------------
     
-    def __call__(self, args) : 
+    def __call__(self, *args) : 
         assert self._c_proxy, " no proxy"
-        return self._c_proxy(args) 
+        return self._c_proxy(*args) 
 
     # -------------- Various operations -------------------------------------
  
@@ -452,14 +406,16 @@ class Gf(object):
     def __iadd__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) + arg
         if isinstance(arg, Gf):
-           assert type(self.mesh) == type(arg.mesh), "Can not add two Gf with meshes of different type"
-           assert self.mesh == arg.mesh, "Can not add two Gf with different mesh"
-           self._data += arg._data 
-           if self._singularity and arg._singularity : self._singularity += arg._singularity
-           if not self._singularity and arg._singularity : self._singularity = arg._singularity.copy()
-           if self._singularity and not arg._singularity : self._singularity = None
+            assert type(self.mesh) == type(arg.mesh), "Can not add two Gf with meshes of different type"
+            assert self.mesh == arg.mesh, "Can not add two Gf with different mesh"
+            self._data += arg._data 
         else:
-           wrapped_aux._iadd_g_matrix_scalar(self, arg) 
+            if self._target_rank != 2 and not isinstance(arg, np.ndarray):
+                 self._data[:] += arg
+            elif self._target_rank == 2:
+                 wrapped_aux._iadd_g_matrix_scalar(self, arg) 
+            else:
+                 raise NotImplemented
         return self
 
     def __add__(self,y):
@@ -477,11 +433,13 @@ class Gf(object):
            assert type(self.mesh) == type(arg.mesh), "Can not subtract two Gf with meshes of different type"
            assert self.mesh == arg.mesh, "Can not subtract two Gf with different mesh"
            self._data -= arg._data 
-           if self._singularity and arg._singularity : self._singularity -= arg._singularity
-           if not self._singularity and arg._singularity : self._singularity = - arg._singularity.copy()
-           if self._singularity and not arg._singularity : self._singularity = None
        else:
-           wrapped_aux._isub_g_matrix_scalar(self, arg) 
+            if self._target_rank != 2 and not isinstance(arg, np.ndarray):
+               self._data[:] -= arg
+            elif self._target_rank == 2:
+               wrapped_aux._isub_g_matrix_scalar(self, arg) 
+            else:
+               raise NotImplemented
        return self
 
     def __sub__(self,y):
@@ -508,13 +466,6 @@ class Gf(object):
         else:
             d_self *= d_args # put to C if too slow.
 
-        if isinstance(self.mesh, (meshes.MeshImFreq, meshes.MeshReFreq)):
-            if self._singularity and arg._singularity : self._singularity *= arg._singularity
-            if not self._singularity and arg._singularity : self._singularity = arg._singularity.copy()
-            if self._singularity and not arg._singularity : self._singularity = None
-        else:
-            if self.tail : self.tail.reset(-2) # Can not compute the tail, so it is undefined.
-    
     def __imul__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) * arg
         # If arg is a Gf
@@ -524,7 +475,6 @@ class Gf(object):
             self.__imul__impl(arg)
         elif isinstance(arg, numbers.Number):
             self._data[:] *= arg
-            if self._singularity : self._singularity *= arg
         else:
             assert False, "Invalid operand type for Gf in-place multiplication"
         return self
@@ -549,7 +499,6 @@ class Gf(object):
             # make a copy, but special treatment of the mesh in the Imtime case.
             c = Gf(mesh = Gf._combine_mesh_mul(self._mesh, y.mesh),
                    data = self._data.copy(), 
-                   singularity = self._singularity.copy() if self._singularity else None,
                    indices = self._indices.copy(), 
                    name = self.name)
             c.__imul__impl(y)
@@ -566,7 +515,6 @@ class Gf(object):
     def __idiv__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) /arg
         self._data[:] /= arg
-        if self._singularity : self._singularity /= arg
         return self
 
     def __div__(self,y):
@@ -583,12 +531,15 @@ class Gf(object):
    #----------------------------- other operations -----------------------------------
 
     def invert(self):
+        if self.target_rank==0:
+            self.data[:] = 1. / self.data
+            return
+
         """Inverts this Gf in place, in a matrix sense"""
-        assert self.target_rank==2, "Inversion only makes sense for matrix valued Gf"
+        assert self.target_rank==2, "Inversion only makes sense for matrix or scalar_valued Gf"
         d = self.data.view() # Cf https://docs.scipy.org/doc/numpy/reference/generated/numpy.reshape.html
         d.shape = (np.prod(d.shape[:-2]),) + d.shape[-2:] # reshaped view, guarantee no copy
         wrapped_aux._gf_invert_data_in_place(d)   
-        if self._singularity : self._singularity.invert()
 
     def inverse(self): 
         """Returns a new Gf, inverse of self."""
@@ -601,29 +552,23 @@ class Gf(object):
         # FIXME Why this assert ?
         #assert any( (isinstance(self.mesh, x) for x in [meshes.MeshImFreq, meshes.MeshReFreq])), "Method invalid for this Gf" 
         d = np.transpose(self.data.copy(), (0, 2, 1))
-        t = self.singularity.transpose()
-        return Gf(mesh = self.mesh, data= d, singularity = t, indices = self.indices.transpose())
+        return Gf(mesh = self.mesh, data= d, indices = self.indices.transpose())
 
     def conjugate(self):
         """
         Returns a new functions, with the conjugate.
         """
-        #assert any( (isinstance(self.mesh, x) for x in [meshes.MeshImFreq, meshes.MeshReFreq])), "Method invalid for this Gf" 
-        t = self.singularity.conjugate(isinstance(self.mesh,meshes.MeshImFreq)) if self.singularity else None
-        d = np.conj(self.data)
-        return Gf(mesh = self.mesh, data= d, singularity = t, indices = self.indices)
+        return Gf(mesh = self.mesh, data= np.conj(self.data), indices = self.indices)
 
     def zero(self):
         """Put self to 0"""
         self._data[:] = 0
-        if self.singularity: self.singularity.zero()
 
     def from_L_G_R(self, L, G, R):
         """self[:] =  l * g * r"""
         assert self.target_rank==2, "Function only makes sense for matrix valued Gf"
         assert self.rank==1, "Not implemented for more than one var" # A little generalization needed in C++ ?
         wrapped_aux.set_from_gf_data_mul_LR(self.data, L, G.data, R)
-        if self.singularity : self.singularity.from_L_G_R(L, G.singularity, R) 
 
     def total_density(self):
         """Total density"""
@@ -636,12 +581,15 @@ class Gf(object):
 
     def __reduce_to_dict__(self):
         d = {'mesh' : self._mesh, 'data' : self._data}
-        if self.singularity : d['singularity'] = self.singularity 
         if self.indices : d['indices'] = self.indices 
         return d
 
     @classmethod
     def __factory_from_dict__(cls, name, d):
+        # Backward compatibility layer
+        # Drop singularity from the element and ignore it
+        d.pop('singularity', None)
+        #
         r = cls(name = name, **d)
         # Backward compatibility layer
         # In the case of an ImFreq function, old archives did store only the >0
@@ -723,7 +671,7 @@ def bckwd(hdf_scheme):
         if m.endswith(suffix) :
             m, t = m[:-len(suffix)], suffix
             break
-    return {'singularity': 'TailGf'+t, 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
+    return { 'mesh': 'Mesh'+m, 'indices': 'GfIndices'}
 
 register_backward_compatibility_method("Gf", "Gf", bckwd)
 

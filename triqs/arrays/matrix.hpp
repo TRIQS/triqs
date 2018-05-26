@@ -189,7 +189,7 @@ namespace arrays {
 #endif
 
   // build from a init_list
-  template <typename T> matrix(std::initializer_list<std::initializer_list<T>> const& l) : IMPL_TYPE(memory_layout_t<2>()) {
+  template <typename T> matrix(std::initializer_list<std::initializer_list<T>> const& l, memory_layout_t<2> ml = memory_layout_t<2>{}) : IMPL_TYPE(memory_layout_t<2>{std::move(ml)}) {
    size_t i = 0, j = 0;
    int s = -1;
    for (auto const& l1 : l) {

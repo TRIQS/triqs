@@ -41,10 +41,10 @@ TEST(Matrix, TransposeDagger) {
 
  for (int i = 0; i < N; ++i)
   for (int j = 0; j < N; ++j) {
-   EXPECT_NEAR_COMPLEX(at(i, j), A(j, i));
-   EXPECT_NEAR_COMPLEX(ad(i, j), A(j, i));
-   EXPECT_NEAR_COMPLEX(bd(i, j), std::conj(B(j, i)));
-   EXPECT_NEAR_COMPLEX(bt(i, j), B(j, i));
+   EXPECT_COMPLEX_NEAR(at(i, j), A(j, i));
+   EXPECT_COMPLEX_NEAR(ad(i, j), A(j, i));
+   EXPECT_COMPLEX_NEAR(bd(i, j), std::conj(B(j, i)));
+   EXPECT_COMPLEX_NEAR(bt(i, j), B(j, i));
   }
 }
 MAKE_MAIN;

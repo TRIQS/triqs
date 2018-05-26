@@ -5,21 +5,14 @@ import re
 m = module_(full_name = "pytriqs.gf.wrapped_aux", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
 
 import meshes
-import singularities
+import gf_fnt
 
 m.add_include("<triqs/gfs.hpp>")
-m.add_include("<triqs/gfs/singularity/fit_tail.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")
 
 m.add_include("<cpp2py/converters/vector.hpp>")
+m.add_include("<cpp2py/converters/std_array.hpp>")
 m.add_include("<triqs/cpp2py_converters.hpp>")
-
-#m.add_include("<triqs/python_tools/converters/string.hpp>")
-#m.add_include("<triqs/python_tools/converters/arrays.hpp>")
-#m.add_include("<triqs/python_tools/converters/h5.hpp>")
-#m.add_include("<triqs/python_tools/converters/vector.hpp>")
-#m.add_include("<triqs/python_tools/converters/function.hpp>")
-#m.add_include("<triqs/python_tools/converters/gf.hpp>")
 
 m.add_include("<triqs/gfs/legacy_for_python_api.hpp>")
 m.add_using("namespace triqs::arrays")
@@ -33,28 +26,49 @@ m.add_preamble("""
 #------------------------------------------------------------
 def all_calls():
     for M in ['imfreq']:
-        yield M, "matrix<dcomplex>", 2, 'matrix_valued', 'int' # R =2
+        yield M, ["dcomplex"], 0, 'scalar_valued', ['int'] # R =2
+        yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['int'] # R =2
         for R in [3,4]:
-            yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'int'
+            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['int']
     
     for M in ['imtime', 'refreq', 'retime']:
-        yield M, "matrix<dcomplex>", 2, 'matrix_valued', 'double' # R =2
+        yield M, ["dcomplex"], 0, 'scalar_valued', ['double'] # R =1
+        yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['double'] # R =2
         for R in [3,4]:
-            yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'double'
+            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['double']
     
-    for M in ['brillouin_zone', 'cyclic_lattice']:
-        yield M,"matrix<dcomplex>", 2, 'matrix_valued', 'triqs::utility::mini_vector<int, 3>' # R =2
+    for M in ['brillouin_zone']:
+        yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<double, 3>'] # R =1
+        yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<double,3>'] # R =2
         for R in [3,4]:
-            yield M, "array<dcomplex,%s>"%R, R, 'tensor_valued<%s>'%R, 'triqs::utility::mini_vector<int, 3>' 
- 
+            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['std::array<double, 3>'] 
+
+    for M in ['cyclic_lattice']:
+        yield M, ["dcomplex"], 0, 'scalar_valued', ['triqs::utility::mini_vector<int, 3>'] # R =1
+        yield M,["matrix<dcomplex>"], 2, 'matrix_valued', ['triqs::utility::mini_vector<int, 3>'] # R =2
+        for R in [3,4]:
+            yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['triqs::utility::mini_vector<int, 3>'] 
+
+    for M1 in ['brillouin_zone']:
+      for M2 in ['imfreq']:
+        yield 'cartesian_product<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ ('std::array<double, 3>', 'long'), ('std::array<double, 3>', 'all_t')]
+
+      #for M2 in ['imtime', 'refreq', 'retime']:
+      #  yield 'cartesian_product<%s,%s>'%(M1,M2), "dcomplex", 0, 'scalar_valued', ('std::array<double, 3>', 'double')
+
+# Fixme
 C_py_transcript = {'imfreq' : 'ImFreq', 
                    'refreq' : 'ReFreq', 
                    'imtime' : 'ImTime', 
                    'retime' : 'ReTime',
                    'brillouin_zone' : 'BrillouinZone',
-                   'cyclic_lattice' : 'CyclicLattice'
+                   'cyclic_lattice' : 'CyclicLattice', 
+                   'cartesian_product<brillouin_zone,imfreq>': 'BrillouinZone_x_ImFreq',
+                   'cartesian_product<brillouin_zone,imtime>': 'BrillouinZone_x_ImTime',
+                   'cartesian_product<brillouin_zone,refreq>': 'BrillouinZone_x_ReFreq',
+                   'cartesian_product<brillouin_zone,retime>': 'BrillouinZone_x_ReTime',
                    }
-
+ 
 m.add_preamble("""
 namespace triqs {
  namespace gfs {
@@ -62,7 +76,7 @@ namespace triqs {
   struct gf_proxy { 
    Gv gv;
    gf_proxy(Gv gv) : gv(gv){}
-   template<typename U> auto call(U&& x) { return gv(std::forward<U>(x));}
+   template<typename ... U> auto call(U&& ... x) { return gv(std::forward<U>(x)...);}
   };
  }
 }
@@ -70,14 +84,22 @@ namespace triqs {
 
 for var, return_t, R, target_t, point_t in all_calls():
     c_type = "gf_proxy<gf_view<%s,%s>>"%(var, target_t)
+    c_py_trans = C_py_transcript[var]
+    # print " Proxy : ", c_type, " : Py : ", "CallProxy%s_%s"%(c_py_trans,R)
     c = class_( 
-            py_type = "CallProxy%s_%s"%(C_py_transcript[var],R),
+            py_type = "CallProxy%s_%s"%(c_py_trans,R),
             c_type = c_type,
             c_type_absolute = "triqs::gfs::" + c_type,
             export = False
             )
     c.add_constructor("(gf_view<%s,%s> g)"%(var, target_t), doc = "")
-    c.add_call(signature = "%s call(%s x)"%(return_t, point_t), doc = "")
+    for P, Ret in zip(point_t, return_t) : 
+        if not isinstance(P, tuple) : 
+          c.add_call(signature = "%s call(%s x)"%(Ret,P), doc = "")
+        else: 
+            xs = ['%s x_%s'%(t,n) for (n,t) in enumerate(P)]
+            sig =  "%s call(%s)"%(Ret, ','.join(xs))
+            c.add_call(signature =sig,  doc = "")
     m.add_class (c)
 
     # FIX FIRST THE call and wrap of real_valued
@@ -114,11 +136,13 @@ m.add_function("void _gf_invert_data_in_place(array_view <dcomplex, 3> a)", doc 
 
 # For legacy Python code : authorize g + Matrix
 for M in ['imfreq', 'refreq'] : 
-    m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x = x + y")
-    m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x = x + y")
+    m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x += y")
+    m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x += y")
+    #m.add_function("void _iadd_g_matrix_scalar (gf_view<%s, scalar_valued> x, std::complex<double> y)"%M, calling_pattern = "x += y")
     
-    m.add_function("void _isub_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x = x - y")
-    m.add_function("void _isub_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x = x - y")
+    m.add_function("void _isub_g_matrix_scalar (gf_view<%s, matrix_valued> x, matrix<std::complex<double>> y)"%M, calling_pattern = "x -= y")
+    m.add_function("void _isub_g_matrix_scalar (gf_view<%s, matrix_valued> x, std::complex<double> y)"%M, calling_pattern = "x -= y")
+    #m.add_function("void _isub_g_matrix_scalar (gf_view<%s, scalar_valued> x, std::complex<double> y)"%M, calling_pattern = "x -= y")
 
     # is it useful ?
     #m.add_function("gf<imfreq> _imul_R_g_matrix (gf_view<{M}, matrix_valued> x, matrix<std::complex<double>> y)", calling_pattern = "x = x * y")

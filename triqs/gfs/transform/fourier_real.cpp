@@ -1,8 +1,10 @@
 /*******************************************************************************
- * 
+ *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2018- by Simons Foundation
+ *               authors : O. Parcollet, N. Wentzell 
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,118 +21,117 @@
  *
  ******************************************************************************/
 #include "../../gfs.hpp"
-//#include "fourier_real.hpp"
-#include <fftw3.h>
+#include "./fourier_common.hpp"
 
-namespace triqs { namespace gfs { 
- 
- gf_mesh<refreq> make_mesh_fourier_compatible(gf_mesh<retime> const& m) {
-  int L = m.size();
-  double pi = std::acos(-1);
-  double wmin = -pi * (L - 1) / (L * m.delta());
-  double wmax = pi * (L - 1) / (L * m.delta());
-  return {wmin, wmax, L};
- }
+namespace triqs::gfs {
 
- gf_mesh<retime> make_mesh_fourier_compatible(gf_mesh<refreq> const& m) {
-  double pi = std::acos(-1);
-  int L = m.size();
-  double tmin = -pi * (L-1) / (L*m.delta());
-  double tmax =  pi * (L-1) / (L*m.delta());
-  return {tmin, tmax, L};
- }
+  namespace {
+    dcomplex I(0, 1);
+    inline dcomplex th_expo(double t, double a) { return (t > 0 ? -I * exp(-a * t) : (t < 0 ? 0 : -0.5 * I * exp(-a * t))); }
+    inline dcomplex th_expo_neg(double t, double a) { return (t < 0 ? I * exp(a * t) : (t > 0 ? 0 : 0.5 * I * exp(a * t))); }
+    inline dcomplex th_expo_inv(double w, double a) { return 1. / (w + I * a); }
+    inline dcomplex th_expo_neg_inv(double w, double a) { return 1. / (w - I * a); }
+  } // namespace
 
- namespace {
-  double pi = std::acos(-1);
-  dcomplex I(0,1);
-  inline dcomplex th_expo(double t, double a )     { return (t > 0 ? -I * exp(-a*t) : ( t < 0 ? 0 : -0.5 * I * exp(-a*t) ) ) ; }
-  inline dcomplex th_expo_neg(double t, double a ) { return (t < 0 ?  I * exp( a*t) : ( t > 0 ? 0 :  0.5 * I * exp( a*t) ) ) ; }
-  inline dcomplex th_expo_inv(double w, double a )     { return 1./(w+I*a) ; }
-  inline dcomplex th_expo_neg_inv(double w, double a ) { return 1./(w-I*a) ; }
- }
- 
- struct impl_worker {
-  
-  arrays::vector<dcomplex> g_in, g_out;
-  
-  void direct (gf_view<refreq,scalar_valued> gw, gf_const_view<retime,scalar_valued> gt){
-   
-   size_t L = gt.mesh().size();
-   if (gw.mesh().size() != L) TRIQS_RUNTIME_ERROR << "Meshes are different";
-   double test = std::abs(gt.mesh().delta() * gw.mesh().delta() * L / (2*pi) -1);
-   if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
-   
-   const double tmin = gt.mesh().x_min();
-   const double wmin = gw.mesh().x_min(); 
-   //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
-   const double a = gw.mesh().delta() * sqrt( double(L) );
-   
-   auto ta = gt.singularity();
-   g_in.resize(L);
-   g_in() = 0;
-   g_out.resize(L);
-   
-   dcomplex t1 = ta(1), t2= ta.get_or_zero(2);
-   dcomplex a1 = (t1 + I * t2/a )/2., a2 = (t1 - I * t2/a )/2.;
-   
-   for (auto const & t : gt.mesh())
-    g_in[t.index()] = (gt[t] - (a1*th_expo(t,a) + a2*th_expo_neg(t,a))) * std::exp(I*t*wmin);
-   
-   details::fourier_base(g_in, g_out, L, true);
-   
-   for (auto const & w : gw.mesh())
-    gw[w] = gt.mesh().delta() * std::exp(I*(w-wmin)*tmin) * g_out(w.index())
-    + a1*th_expo_inv(w,a) + a2*th_expo_neg_inv(w,a);
-   
-   gw.singularity() = gt.singularity();// set tail
-   
+  // ------------------------ DIRECT TRANSFORM --------------------------------------------
+
+  gf_vec_t<refreq> _fourier_impl(gf_mesh<refreq> const &w_mesh, gf_vec_cvt<retime> gt, arrays::array_const_view<dcomplex, 2> known_moments) {
+
+    arrays::array_const_view<dcomplex, 2> mom_12;
+    if (known_moments.is_empty()) mom_12.rebind(triqs::arrays::zeros<dcomplex>(make_shape(2, gt.target_shape()[0])));
+    else{
+      TRIQS_ASSERT2(known_moments.shape()[0] >= 3, " Direct RealTime Fourier transform requires known moments up to order 3.")
+      double _abs_tail0 = max_element(abs(known_moments(0, range())));
+      TRIQS_ASSERT2((_abs_tail0 < 1e-8),
+                    "ERROR: Direct Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+      mom_12.rebind(known_moments(range(1, 3), range()));
+    }
+
+    size_t L = gt.mesh().size();
+    if (w_mesh.size() != L) TRIQS_RUNTIME_ERROR << "Meshes are different";
+    double test = std::abs(gt.mesh().delta() * w_mesh.delta() * L / (2 * M_PI) - 1);
+    if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
+
+    long n_others = second_dim(gt.data());
+    array<dcomplex, 2> _gout(L, n_others);
+    array<dcomplex, 2> _gin(L, n_others);
+
+    const double tmin = gt.mesh().x_min();
+    const double wmin = w_mesh.x_min();
+    //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
+    const double a = w_mesh.delta() * sqrt(double(L));
+
+    auto _  = range();
+    auto m1 = mom_12(0, _);
+    auto m2 = mom_12(1, _);
+
+    array<dcomplex, 1> a1 = (m1 + I * m2 / a) / 2., a2 = (m1 - I * m2 / a) / 2.;
+
+    for (auto const &t : gt.mesh()) _gin(t.index(), _) = (gt[t] - (a1 * th_expo(t, a) + a2 * th_expo_neg(t, a))) * std::exp(I * t * wmin);
+
+    int dims[] = {int(L)};
+    _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_BACKWARD);
+
+    auto gw = gf_vec_t<refreq>{w_mesh, {int(n_others)}};
+    for (auto const &w : w_mesh)
+      gw[w] = gt.mesh().delta() * std::exp(I * (w - wmin) * tmin) * _gout(w.index(), _) + a1 * th_expo_inv(w, a) + a2 * th_expo_neg_inv(w, a);
+
+    return std::move(gw);
   }
-  
-  void inverse(gf_view<retime,scalar_valued> gt, gf_const_view<refreq,scalar_valued> gw){
-   
-   size_t L = gw.mesh().size();
-   if ( L != gt.mesh().size()) TRIQS_RUNTIME_ERROR << "Meshes are different";
-   double test = std::abs(gt.mesh().delta() * gw.mesh().delta() * L / (2*pi) -1);
-   if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
-   
-   const double tmin = gt.mesh().x_min();
-   const double wmin = gw.mesh().x_min();
-   //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
-   const double a = gw.mesh().delta() * sqrt( double(L) );
-   
-   auto ta = gw.singularity();
-   arrays::vector<dcomplex> g_in(L), g_out(L);
-   
-   dcomplex t1 = ta(1), t2 = ta.get_or_zero(2);
-   dcomplex a1 = (t1 + I * t2/a )/2., a2 = (t1 - I * t2/a )/2.;
-   g_in() = 0;
-   
-   for (auto const & w: gw.mesh())
-    g_in(w.index()) = (gw[w] - a1*th_expo_inv(w,a) - a2*th_expo_neg_inv(w,a)  ) * std::exp(-I*w*tmin);
-   
-   details::fourier_base(g_in, g_out, L, false);
-   
-   const double corr = 1.0/(gt.mesh().delta()*L);
-   for (auto const & t : gt.mesh())
-    gt[t] = corr * std::exp(I*wmin*(tmin-t)) *
-    g_out[ t.index() ] + a1 * th_expo(t,a) + a2 * th_expo_neg(t,a) ;
- 
-   // set tail
-   gt.singularity() = gw.singularity();
+
+  // ------------------------ INVERSE TRANSFORM --------------------------------------------
+
+  gf_vec_t<retime> _fourier_impl(gf_mesh<retime> const &t_mesh, gf_vec_cvt<refreq> gw, arrays::array_const_view<dcomplex, 2> known_moments) {
+
+    arrays::array_const_view<dcomplex, 2> mom_12;
+    if (known_moments.shape()[0] < 3) {
+      auto [tail, error] = fit_tail(gw, known_moments);
+      TRIQS_ASSERT2((error < 1e-3), "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error));
+      if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
+      TRIQS_ASSERT2((first_dim(tail) > 3), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
+      double _abs_tail0 = max_element(abs(tail(0, range())));
+      TRIQS_ASSERT2((_abs_tail0 < 1e-8),
+                    "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+      mom_12.rebind(tail(range(1, 3), range()));
+    }
+    else {
+      mom_12.rebind(known_moments(range(1, 3), range()));
+      double _abs_tail0 = max_element(abs(known_moments(0, range())));
+      TRIQS_ASSERT2((_abs_tail0 < 1e-6),
+                    "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+    }
+
+    size_t L = gw.mesh().size();
+    if (L != t_mesh.size()) TRIQS_RUNTIME_ERROR << "Meshes are of different size: " << L << " vs " << t_mesh.size();
+    double test = std::abs(t_mesh.delta() * gw.mesh().delta() * L / (2 * M_PI) - 1);
+    if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
+
+    const double tmin = t_mesh.x_min();
+    const double wmin = gw.mesh().x_min();
+    //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
+    const double a = gw.mesh().delta() * sqrt(double(L));
+
+    long n_others = second_dim(gw.data());
+
+    array<dcomplex, 2> _gin(L, n_others);
+    array<dcomplex, 2> _gout(L, n_others);
+
+    auto _  = range();
+    auto m1 = mom_12(0, _);
+    auto m2 = mom_12(1, _);
+
+    array<dcomplex, 1> a1 = (m1 + I * m2 / a) / 2., a2 = (m1 - I * m2 / a) / 2.;
+
+    for (auto const &w : gw.mesh()) _gin(w.index(), _) = (gw[w] - a1 * th_expo_inv(w, a) - a2 * th_expo_neg_inv(w, a)) * std::exp(-I * w * tmin);
+
+    int dims[] = {int(L)};
+    _fourier_base(_gin, _gout, 1, dims, n_others, FFTW_FORWARD);
+
+    auto gt           = gf_vec_t<retime>{t_mesh, {int(n_others)}};
+    const double corr = 1.0 / (t_mesh.delta() * L);
+    for (auto const &t : t_mesh) gt[t] = corr * std::exp(I * wmin * (tmin - t)) * _gout(t.index(), _) + a1 * th_expo(t, a) + a2 * th_expo_neg(t, a);
+
+    return std::move(gt);
   }
-  
- };
 
- //--------------------------------------------------------------------------------------
-
- void _fourier_impl(gf_view<refreq, scalar_valued> gw, gf_const_view<retime, scalar_valued> gt) {
-  impl_worker w;
-  w.direct(gw, gt);
- }
-
- void _fourier_impl(gf_view<retime, scalar_valued> gt, gf_const_view<refreq, scalar_valued> gw) {
-  impl_worker w;
-  w.inverse(gt, gw);
- }
-}
-}
+} // namespace triqs::gfs

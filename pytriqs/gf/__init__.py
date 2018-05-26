@@ -28,9 +28,9 @@ It is imported with the command::
 
 from mesh_point import MeshPoint, MeshValueGenerator
 from gf import *
-from singularities import *
 from block_gf import BlockGf
 from block2_gf import Block2Gf
+from map_block import map_block
 from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Flat, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 from tools import *
 
@@ -42,10 +42,10 @@ from backwd_compat.gf_legendre import *
 
 from meshes import MeshBrillouinZone, MeshCyclicLattice
 
-from gf_fnt import is_gf_real_in_tau
+from gf_fnt import is_gf_real_in_tau, make_gf_from_fourier, make_gf_from_inverse_fourier
 
 __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
-            'lazy_expressions','TailGf',
+            'lazy_expressions',
             'MeshPoint','MeshValueGenerator',
             'Idx', 'Gf', 'MeshProduct', 'GfIndices',
             'GfImFreq', 'MeshImFreq', 
@@ -59,7 +59,9 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Invers
             'Block2Gf',
             'inverse', 'conjugate', 'transpose',
             'is_gf_real_in_tau',
-            'delta','dyson','tail_fit',
-            # 'make_gf_from_inverse_fourier',
+            'make_gf_from_fourier',
+            'make_gf_from_inverse_fourier',
+            'delta','dyson',
+            'map_block'
             # 'rebinning_tau',
           ]

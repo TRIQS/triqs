@@ -31,18 +31,19 @@ namespace triqs { namespace gfs {
 
  // compute a tail from the Legendre GF
  // this is Eq. 8 of our paper
- __tail_view<matrix_valued> get_tail(gf_const_view<legendre> gl) {
+ array<dcomplex, 3> get_tail(gf_const_view<legendre> gl, int order) {
 
-   auto sh = gl.data().shape().front_pop();
-   __tail<matrix_valued> t(sh);
-   t.data()() = 0.0;
+   auto _ = ellipsis{};
+   auto sh = gl.data().shape();
+   sh[0] = order;
+   array<dcomplex, 3> t{sh};
+   t() = 0.0;
 
-   for (int p=1; p<=t.order_max(); p++)
+   for (int p=0; p< order; p++)
      for (auto l : gl.mesh())
-       t(p) += (triqs::utility::legendre_t(l.index(),p)/std::pow(gl.domain().beta,p)) * gl[l];
+       t(p, _) += (triqs::utility::legendre_t(l.index(),p)/std::pow(gl.domain().beta,p)) * gl[l];
 
    return t;
-
  }
 
  // Impose a discontinuity G(\tau=0)-G(\tau=\beta)

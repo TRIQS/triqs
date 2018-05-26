@@ -33,21 +33,7 @@ namespace gfs {
   static constexpr int arity = 1;
 
   template <typename G, typename X> auto operator()(G const &g, X x) const {
-   return (g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, x));
-  }
-
-  // template <typename G, typename T> std14::enable_if_t<is_tail_v<T>, typename G::singularity_t> operator()(G const &g, T&& t)
-  // const {
-  // return compose(g.singularity(), t);
-  //}
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail_view<T> t) const {
-   return compose(g.singularity(), t);
-  }
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail_const_view<T> t) const {
-   return compose(g.singularity(), t);
-  }
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail<T> const &t) const {
-   return compose(g.singularity(), t);
+   return (g.mesh().evaluate(g, x));
   }
  };
 
@@ -72,30 +58,25 @@ namespace gfs {
    if (g.mesh().positive_only()) {
     int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
     if (g.mesh().is_within_boundary(-f.n - sh)) return r_t{conj(g[-f.n - sh])};
+    TRIQS_RUNTIME_ERROR << " ERROR: Cannot evaluate Green function with positive only mesh outside grid ";
    }
-   // return _evaluate_sing(Target{}, g.singularity(), f);
-   return evaluate(g.singularity(), f);
+
+   auto [tail, err] = fit_tail_no_normalize(g);
+
+   dcomplex x = g.mesh().omega_max() / f;
+   typename G::zero_regular_t res = g.get_zero();
+
+   dcomplex z = 1.0; 
+   for( int n : range(first_dim(tail))){
+     res += tail(n,ellipsis()) * z;
+     z = z * x;
+   }
+   return res; 
   }
 
   // int -> replace by matsubara_freq
   template <typename G> decltype(auto) operator()(G const &g, int n) const {
    return g(matsubara_freq(n, g.mesh().domain().beta, g.mesh().domain().statistic));
-  }
-
-  /*template <typename G, typename T> std14::enable_if_t<is_tail_v<T>, typename G::singularity_t> operator()(G const &g, T&& t)
-  const {
-   return compose(g.singularity(), t);
-  }
-  */
-  // Evaluate on the tail : compose the tails
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail_view<T> t) const {
-   return compose(g.singularity(), t);
-  }
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail_const_view<T> t) const {
-   return compose(g.singularity(), t);
-  }
-  template <typename G, typename T> typename G::singularity_t operator()(G const &g, __tail<T> const &t) const {
-   return compose(g.singularity(), t);
   }
  };
 
@@ -113,11 +94,18 @@ namespace gfs {
 
   template <typename G, typename... Args> const auto operator()(G const &g, Args &&... args) const {
    static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
-   if (g.mesh().is_within_boundary(args...))
-    return make_const_view(g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, std::forward<Args>(args)...));
-   using rt = std14::decay_t<decltype(
-       make_const_view(g.mesh().evaluate(typename G::mesh_t::default_interpol_policy{}, g, std::forward<Args>(args)...)))>;
-   return rt{g.get_zero()};
+  
+  using r1_t = decltype(g.mesh().evaluate(g, std::forward<Args>(args)...)); 
+   
+  if constexpr (is_gf_expr<r1_t>::value or is_gf<r1_t>::value) { 
+   return g.mesh().evaluate(g, std::forward<Args>(args)...);
+  }
+  else { 
+     if (g.mesh().is_within_boundary(args...))
+     return make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...));
+    using rt = std14::decay_t<decltype( make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
+    return rt{g.get_zero()};
+   }
   }
  };
 

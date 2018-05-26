@@ -18,77 +18,155 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_BLAS_LAPACK_GELSS_H
-#define TRIQS_ARRAYS_BLAS_LAPACK_GELSS_H
+#pragma once
+
 #include <complex>
 #include "./tools.hpp"
 #include "./qcache.hpp"
+#include "./gesvd.hpp"
 
-namespace triqs { namespace arrays { namespace lapack { 
- 
- using namespace blas_lapack_tools;
- namespace f77 { // overload
+namespace triqs::arrays::lapack {
 
-  extern "C" { 
-   void TRIQS_FORTRAN_MANGLING(dgelss) (const int &, const int &, const int &, double[], const int &, double[], const int &,
-                                        double[], const double &, int &, double[], const int &, int &);
-   void TRIQS_FORTRAN_MANGLING(zgelss) (const int &, const int &, const int &, std::complex<double>[], const int &, std::complex<double>[], const int &,
-                                        double[], const double &, int &, std::complex<double>[], const int &, double[], int &);
-  }
+  using namespace blas_lapack_tools;
+  namespace f77 { // overload
 
-  inline void gelss (const int & M, const int & N, const int & NRHS, double* A, const int & LDA, double* B, const int & LDB,
-                     double* S, const double & RCOND, int & RANK, double* WORK, const int & LWORK, int & INFO) {
-    TRIQS_FORTRAN_MANGLING(dgelss)(M,N,NRHS,A,LDA,B,LDB,S,RCOND,RANK,WORK,LWORK,INFO);
-  }
+    extern "C" {
+    void TRIQS_FORTRAN_MANGLING(dgelss)(const int &, const int &, const int &, double[], const int &, double[], const int &, double[], const double &,
+                                        int &, double[], const int &, int &);
+    void TRIQS_FORTRAN_MANGLING(zgelss)(const int &, const int &, const int &, std::complex<double>[], const int &, std::complex<double>[],
+                                        const int &, double[], const double &, int &, std::complex<double>[], const int &, double[], int &);
+    }
 
-  inline void gelss (const int & M, const int & N, const int & NRHS, std::complex<double>* A, const int & LDA, std::complex<double>* B, const int & LDB,
-                     double* S, const double & RCOND, int & RANK, std::complex<double>* WORK, const int & LWORK, double* RWORK, int & INFO) {
-    TRIQS_FORTRAN_MANGLING(zgelss)(M,N,NRHS,A,LDA,B,LDB,S,RCOND,RANK,WORK,LWORK,RWORK,INFO);
-  }
+    inline void gelss(const int &M, const int &N, const int &NRHS, double *A, const int &LDA, double *B, const int &LDB, double *S,
+                      const double &RCOND, int &RANK, double *WORK, const int &LWORK, int &INFO) {
+      TRIQS_FORTRAN_MANGLING(dgelss)(M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO);
+    }
 
- }//namespace
+    inline void gelss(const int &M, const int &N, const int &NRHS, std::complex<double> *A, const int &LDA, std::complex<double> *B, const int &LDB,
+                      double *S, const double &RCOND, int &RANK, std::complex<double> *WORK, const int &LWORK, double *RWORK, int &INFO) {
+      TRIQS_FORTRAN_MANGLING(zgelss)(M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, RWORK, INFO);
+    }
 
- /**
+  } // namespace f77
+
+  /**
   * Calls gelss on a matrix or view
   * Takes care of making temporary copies if necessary
   */
- template<typename MTA, typename MTB, typename VCS> 
-  typename std::enable_if< 
-             is_blas_lapack_type<typename MTA::value_type>::value &&
-             is_blas_lapack_type<typename MTB::value_type>::value &&
-             is_blas_lapack_type<typename VCS::value_type>::value &&
-	     std::is_same<typename MTA::value_type, double>::value, int >::type //for double; driver for std::complex<double> needs to be added
-  gelss (MTA & A, MTB & B, VCS & S, double rcond, int & rank, bool assert_fortran_order = true ) {
-   if (assert_fortran_order && (A.memory_layout_is_c()|| B.memory_layout_is_c() )) TRIQS_RUNTIME_ERROR<< "matrix passed to getrf is not in Fortran order";
+  template <typename MTA, typename MTB, typename VCS>
+  typename std::enable_if_t<is_blas_lapack_type<typename MTA::value_type>::value && is_blas_lapack_type<typename MTB::value_type>::value
+                               && is_blas_lapack_type<typename VCS::value_type>::value,
+                            int>
+  gelss(MTA const &A, MTB &B, VCS &S, double rcond, int &rank) {
 
-   reflexive_qcache<MTA> Ca(A);
-   reflexive_qcache<MTB> Cb(B);
+    int info;
 
-   auto dm = std::min(first_dim(Ca()), second_dim(Ca()));
-   if (S.size() < dm) S.resize(dm); 
+    if (A.memory_layout_is_c() || B.memory_layout_is_c()) {
+      auto A_FL = typename MTA::regular_type{A, FORTRAN_LAYOUT};
+      auto B_FL = typename MTB::regular_type{B, FORTRAN_LAYOUT};
+      info      = gelss(A_FL, B_FL, S, rcond, rank);
+      B()       = B_FL();
+      return info;
+    }
 
-   reflexive_qcache<VCS> Cs(S);
+    // Copy A, since it is altered by gelss
+    typename MTA::regular_type _A{A, FORTRAN_LAYOUT};
 
-   int info;
-   int nrhs=get_n_cols(Cb());
+    reflexive_qcache<MTA> Ca(_A);
+    reflexive_qcache<MTB> Cb(B);
 
-   typename MTA::value_type work1[1];
-   // first call to get the optimal lwork
-   f77::gelss ( get_n_rows(Ca()), get_n_cols(Ca()), nrhs , Ca().data_start(), get_ld(Ca()),
-                Cb().data_start(), get_ld(Cb()), Cs().data_start(), rcond, rank, work1, -1, info); 
+    auto dm = std::min(get_n_rows(Ca()), get_n_cols(Ca()));
+    if (S.size() < dm) S.resize(dm);
 
-   int lwork = r_round(work1[0]);
-   arrays::vector<typename MTA::value_type> work(lwork); 
+    reflexive_qcache<VCS> Cs(S);
 
-   f77::gelss ( get_n_rows(Ca()), get_n_cols(Ca()), nrhs , Ca().data_start(), get_ld(Ca()),
-                Cb().data_start(), get_ld(Cb()), Cs().data_start(), rcond, rank, work.data_start(), lwork, info); 
-   
-   if (info) TRIQS_RUNTIME_ERROR << "Error in gelss : info = "<< info;
-   return info;
+    int nrhs = get_n_cols(Cb());
+
+    if constexpr (std::is_same<typename MTA::value_type, double>::value) {
+
+      // first call to get the optimal lwork
+      typename MTA::value_type work1[1];
+      f77::gelss(get_n_rows(Ca()), get_n_cols(Ca()), nrhs, Ca().data_start(), get_ld(Ca()), Cb().data_start(), get_ld(Cb()), Cs().data_start(), rcond,
+                 rank, work1, -1, info);
+
+      int lwork = r_round(work1[0]);
+      arrays::vector<typename MTA::value_type> work(lwork);
+
+      f77::gelss(get_n_rows(Ca()), get_n_cols(Ca()), nrhs, Ca().data_start(), get_ld(Ca()), Cb().data_start(), get_ld(Cb()), Cs().data_start(), rcond,
+                 rank, work.data_start(), lwork, info);
+
+    } else if constexpr (std::is_same<typename MTA::value_type, std::complex<double>>::value) {
+
+      auto rwork = array<double, 1>(5 * dm);
+
+      // first call to get the optimal lwork
+      typename MTA::value_type work1[1];
+      f77::gelss(get_n_rows(Ca()), get_n_cols(Ca()), nrhs, Ca().data_start(), get_ld(Ca()), Cb().data_start(), get_ld(Cb()), Cs().data_start(), rcond,
+                 rank, work1, -1, rwork.data_start(), info);
+
+      int lwork = r_round(work1[0]);
+      arrays::vector<typename MTA::value_type> work(lwork);
+
+      f77::gelss(get_n_rows(Ca()), get_n_cols(Ca()), nrhs, Ca().data_start(), get_ld(Ca()), Cb().data_start(), get_ld(Cb()), Cs().data_start(), rcond,
+                 rank, work.data_start(), lwork, rwork.data_start(), info);
+    } else {
+      TRIQS_RUNTIME_ERROR << "Error in gelss : only implemented for value_type double and std::complex<double>";
+    }
+
+    if (info) TRIQS_RUNTIME_ERROR << "Error in gesvd : info = " << info;
+    return info;
   }
 
-}}}// namespace
+  template <typename value_type> struct gelss_cache {
 
+    // cf. Notation in https://math.stackexchange.com/questions/772039/how-does-the-svd-solve-the-least-squares-problem
 
-#endif
+    private:
+    // Number of rows (M) and columns (N) of the Matrix A
+    size_t M, N;
 
+    // The matrix to be decomposed by SVD
+    matrix<value_type> A;
+
+    // The (pseudo) inverse of A, i.e. V * Diag(S_vec)^{-1} * UT, for the least square procedure
+    matrix<value_type> V_x_InvS_x_UT;
+
+    // The part of UT fixing the error of the LLS
+    matrix<value_type> UT_NULL;
+
+    // Vector containing the singular values
+    vector<double> _S_vec;
+
+    public:
+    int n_var() const { return second_dim(A); }
+    matrix<value_type> const &A_mat() const { return A; }
+    vector<double> const &S_vec() const { return _S_vec; }
+
+    gelss_cache(matrix_const_view<value_type> _A) : M(first_dim(_A)), N(second_dim(_A)), A(_A), _S_vec(std::min(M, N)) {
+
+      if (N > M) TRIQS_RUNTIME_ERROR << "ERROR: Matrix A for linear least square procedure cannot have more columns than rows";
+
+      matrix<value_type> A_FL{_A, FORTRAN_LAYOUT};
+      matrix<value_type> U{M, M, FORTRAN_LAYOUT};
+      matrix<value_type> VT{N, N, FORTRAN_LAYOUT};
+
+      // Calculate the SVD A = U * Diag(S_vec) * VT
+      lapack::gesvd(A_FL, _S_vec, U, VT);
+
+      // Calculate the matrix V * Diag(S_vec)^{-1} * UT for the least square procedure
+      matrix<double> S_inv{N, M, FORTRAN_LAYOUT};
+      S_inv() = 0.;
+      for (int i : range(std::min(M, N))) S_inv(i, i) = 1.0 / _S_vec(i);
+      V_x_InvS_x_UT = dagger(VT) * S_inv * dagger(U);
+
+      // Read off U_Null for defining the error of the least square procedure
+      if (N < M) UT_NULL = dagger(U)(range(N, M), range(M));
+    }
+
+    // Solve the least-square problem that minimizes || A * x - B ||_2 given A and B
+    std::pair<matrix<value_type>, double> operator()(matrix_const_view<value_type> B) const {
+      return std::make_pair(V_x_InvS_x_UT * B, (M == N) ? 0.0 : frobenius_norm(UT_NULL * B));
+    }
+  };
+
+} // namespace triqs::arrays::lapack

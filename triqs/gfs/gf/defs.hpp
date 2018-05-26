@@ -39,10 +39,6 @@ namespace gfs {
  using arrays::ellipsis;
  using arrays::mini_vector;
 
- template <typename Var, typename Target> struct gf_singularity;
- template <typename M, typename T> using gf_singularity_t = typename gf_singularity<M, T>::type;
- template <typename S> struct gf_singularity_factory;
-
  /*----------------------------------------------------------
   *   Useful metafunctions, traits
   *--------------------------------------------------------*/

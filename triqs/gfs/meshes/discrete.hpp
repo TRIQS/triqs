@@ -30,7 +30,6 @@ namespace gfs {
   using domain_t = Domain;
   using index_t = long;
   using linear_index_t = long;
-  using default_interpol_policy = interpol_t::None;
   using mesh_point_t = mesh_point<discrete_mesh<Domain>>;
 
   // -------------------- Constructors -------------------
@@ -74,8 +73,8 @@ namespace gfs {
   bool is_within_boundary(index_t const &p) const { return ((p >= 0) && (p < size())); }
   //bool is_within_boundary(index_t const &p) const { return ((p >= first_index_window()) && (p <= last_index_window())); }
 
-  long get_interpolation_data(interpol_t::None, long n) const { return n;}
-  template <typename F> auto evaluate(interpol_t::None, F const &f, long n) const { return f[n]; }
+  long get_interpolation_data(long n) const { return n;}
+  template <typename F> auto evaluate(F const &f, long n) const { return f[n]; }
   // -------------------- MPI -------------------
 
   // -------------------- HDF5 -------------------

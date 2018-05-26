@@ -63,6 +63,8 @@ namespace gfs {
   // one var
   template <typename S> static decltype(auto) invoke(S& data, long i) { return data(i); }
 
+
+  // FIXME : WHY is this necessary in this case ? can we simplify ?
   // multi var
   // using the standard technique from tuple::apply with a sequence
   template <typename S, typename Tu, size_t... Is>
@@ -71,15 +73,6 @@ namespace gfs {
   }
   template <typename S, typename... Int> static decltype(auto) invoke(S& data, std::tuple<Int...> const& tu) {
    return _impl(data, tu, std14::index_sequence_for<Int...>{});
-  }
- };
-
- //---------------------------- tail valued ---------------------------------
- template <typename Target> struct _data_proxy<tail_valued<Target>> {
-
-  // one var only here
-  template <typename S> static auto invoke(S& data, long i) {
-   return make_tail_view_from_data(data(i, triqs::arrays::ellipsis()));
   }
  };
 

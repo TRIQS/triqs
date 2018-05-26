@@ -18,8 +18,8 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ###################################################################################
-# version number of the library
-set (TRIQS_VERSION "1.5")
+# Get the version number from the latest annotated git tag
+execute_process(COMMAND git describe --abbrev=0 OUTPUT_VARIABLE TRIQS_VERSION)
 
 #---------------------------------------------------------------------
 # Preliminary : path, policy
@@ -79,6 +79,7 @@ if(NOT CMAKE_BUILD_TYPE)
  mark_as_advanced(CMAKE_BUILD_TYPE)
 endif()
 
+add_compile_options(-Wno-register $<$<CONFIG:Debug>:-Og>)
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 #---------------------------------------------------------------------

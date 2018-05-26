@@ -38,7 +38,7 @@
 #include "./gfs/gf/auto_assign.hpp"
 
 // multivar 
-#include "./gfs/gf/product.hpp"
+#include "./gfs/meshes/product.hpp"
 #include "./gfs/gf/partial_eval.hpp"
 
 // expression template
@@ -46,10 +46,6 @@
 
 // evaluator
 #include "./gfs/evaluator.hpp"
-
-// singularity 
-#include "./gfs/singularity/gf_singularity.hpp"
-#include "./gfs/singularity/m_tail.hpp"
 
 // block gf
 #include "./gfs/block/block_gf.hxx"
@@ -72,9 +68,7 @@
 #include "./gfs/functions/density.hpp"
 
 // fourier
-#include "./gfs/transform/fourier_matsubara.hpp"
-#include "./gfs/transform/fourier_real.hpp"
-#include "./gfs/transform/fourier_lattice.hpp"
+#include "./gfs/transform/fourier.hpp"
 #include "./gfs/transform/legendre_matsubara.hpp"
 
 

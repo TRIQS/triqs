@@ -20,7 +20,7 @@ TEST(Gf, r_k) {
 
  auto gr = gf<cyclic_lattice>{{N, N}, {S, S}};
 
- gr() = inverse_fourier(gk); // ADD Security if gf =
+ gr() = fourier(gk); // ADD Security if gf =
 
  for (auto r : gr.mesh())
   if (max_element(abs(gr[r])) > 1.e-10) std::cerr << r << gr[r] << std::endl;

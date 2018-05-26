@@ -28,9 +28,9 @@ TEST(Gfs, MPI_multivar) {
  gf3_s g3 = mpi_all_reduce(g, world);
  EXPECT_ARRAY_NEAR(g3.data(), g.data() * world.size());
 
- gf3_s g4 = mpi_scatter(g);
- g2(iw_, inu_, inup_) << g2(iw_, inu_, inup_) * (1 + world.rank());
- g4 = mpi_gather(g2);
+ //gf3_s g4 = mpi_scatter(g);
+ //g2(iw_, inu_, inup_) << g2(iw_, inu_, inup_) * (1 + world.rank());
+ //g4 = mpi_gather(g2);
  // Test the result ?
 
  auto G = make_block_gf({g});

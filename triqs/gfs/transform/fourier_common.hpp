@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2013 by O. Parcollet
+ * Copyright (C) 2011-2017 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2018- by Simons Foundation
+ *               authors : O. Parcollet, N. Wentzell 
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,17 +21,15 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../meshes/product.hpp"
+#include <triqs/arrays.hpp>
+// include only in cpp implementation
+#include <fftw3.h>
 
-namespace triqs {
-namespace gfs {
 
- // forward declaration, Cf m_tail
- template <typename Var, typename... Args>
- auto evaluate(gf_const_view<Var, tail_valued<matrix_valued>> const &g, Args const &... args);
- template <typename Var, typename... Args> auto evaluate(gf<Var, tail_valued<matrix_valued>> const &g, Args const &... args);
- template <typename Var, typename... Args> auto evaluate(gf_view<Var, tail_valued<matrix_valued>> const &g, Args const &... args);
+namespace triqs::gfs { 
+
+  using namespace triqs::arrays;
+ // call to fftw
+ void _fourier_base(array_const_view<dcomplex, 2> in, array_view<dcomplex, 2> out, int rank, int* dims, int fftw_count, int fftw_backward_forward);
 
 }
-}
-

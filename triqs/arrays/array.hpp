@@ -80,8 +80,8 @@ namespace triqs { namespace arrays {
 
    // rebind the other view, iif this is const, and the other is not.
    template <typename To, bool C = IsConst> ENABLE_IFC(C) rebind(array_view<ValueType, Rank, To, Borrowed, !IsConst> const& X) {
-    this->indexmap_ = X.indexmap_;
-    this->storage_ = X.storage_;
+    this->indexmap_ = X.indexmap();
+    this->storage_ = X.storage();
    }
 
    /// Assignment. The size of the array MUST match exactly, except in the empty case
@@ -202,25 +202,28 @@ namespace triqs { namespace arrays {
 #endif
 
     // build from a init_list
-    template<typename T, int R=Rank>
-     array(std::initializer_list<T> const & l, std14::enable_if_t<(R==1) && std::is_constructible<value_type, T>::value> * dummy =0):
-      IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(l.size()),memory_layout_t<Rank>())) {
+    template<typename T>
+     array(std::initializer_list<T> const & l, memory_layout_t<1> ml = memory_layout_t<1>{}, std14::enable_if_t<std::is_constructible<value_type, T>::value> * dummy =0):
+      IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(l.size()),memory_layout_t<1>{std::move(ml)})) {
        size_t i=0;
        for (auto const & x : l) (*this)(i++) = x;
       }
 
-    template<typename T, int R=Rank>
-     array (std::initializer_list<std::initializer_list<T>> const & l, std14::enable_if_t<(R==2) && std::is_constructible<value_type, T>::value > * dummy =0):
-      IMPL_TYPE(memory_layout_t<Rank>()) {
-       size_t i=0,j=0; int s=-1;
-       for (auto const & l1 : l) { if (s==-1) s= l1.size(); else if (s != l1.size()) TRIQS_RUNTIME_ERROR << "initializer list not rectangular !";}
-       IMPL_TYPE::resize(typename IMPL_TYPE::domain_type (mini_vector<size_t,2>(l.size(),s)));
+    template<typename T>
+     array (std::initializer_list<std::initializer_list<T>> const & l, memory_layout_t<2> ml = memory_layout_t<2>{}, std14::enable_if_t<std::is_constructible<value_type, T>::value > * dummy =0):
+      IMPL_TYPE(memory_layout_t<2>{std::move(ml)}) {
+       size_t i=0,j=0;
+
+       // FIXME Enforce this check at compile time
+       if (!std::all_of(l.begin(), l.end(), [s = l.begin()->size()](auto const & x){ return x.size() == s; }))
+	 TRIQS_RUNTIME_ERROR << "initializer list not rectangular !";
+
+       IMPL_TYPE::resize(typename IMPL_TYPE::domain_type (mini_vector<size_t,2>(l.size(), l.begin()->size())));
        for (auto const & l1 : l) {
 	for (auto const & x : l1) { (*this)(i,j++) = x;}
 	j=0; ++i;
        }
       }
-
 
     template<typename T>
      array (std::initializer_list<std::initializer_list<std::initializer_list<T>>> const & l, memory_layout_t<3> ml = memory_layout_t<3>{}, std14::enable_if_t<std::is_constructible<value_type, T>::value > * dummy =0):
@@ -245,7 +248,6 @@ namespace triqs { namespace arrays {
         j=0; ++i;
        }
       }
-
 
     /**
      * Resizes the array. NB : all references to the storage is invalidated.
@@ -303,6 +305,46 @@ namespace triqs { namespace arrays {
   };//array class
 
 #undef IMPL_TYPE
+
+  /// Make a array of zeros with the given dimensions.
+  /// FIXME : add variadic form
+  /// FIXME : add eyes
+  template<typename T, typename INT, int R> array<T, R> zeros(mini_vector<INT, R> const & len) {
+    array<T, R> r (typename array<T, R>::indexmap_type::domain_type{len});
+    r() = 0;
+    return r;
+  }
+
+  // swap two indices i,j
+  template<typename A>
+    std::enable_if_t<is_amv_value_or_view_class<std::decay_t<A>>::value, typename std::decay_t<A>::view_type>
+  swap_index_view(A && a, int i, int j) {
+   auto imp = a.indexmap();
+   auto l= imp.lengths();
+   auto s = imp.strides();
+   std::swap(l[i], l[j]);
+   std::swap(s[i], s[j]);
+   using r_t = typename std::decay_t<A>::view_type;
+   // FIXME : long only
+   auto imp2 = typename r_t::indexmap_type { l, s, static_cast<ptrdiff_t>(imp.start_shift())};
+   return r_t{imp2, a.storage()};
+  }
+
+ // Rotate the index n to 0, preserving the relative order of the other indices
+  template<typename T, int R>
+  array_const_view<T,R> rotate_index_view(array_const_view<T,R> a, int n) {
+    for (int i = n; i > 0; --i) a.rebind(swap_index_view(a, i - 1, i));
+   return a;
+  }
+
+ // FIXME : regroup
+  // Rotate the index n to 0, preserving the relative order of the other indices
+  template<typename T, int R>
+  array_view<T,R> rotate_index_view(array_view<T,R> a, int n) {
+    for (int i = n; i > 0; --i) a.rebind(swap_index_view(a, i - 1, i));
+   return a;
+  }
+
 
  //----------------------------------------------------------------------------------
 

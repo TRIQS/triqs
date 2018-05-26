@@ -27,13 +27,12 @@ namespace triqs { namespace gfs {
 
  typedef std::complex<double> dcomplex;
 
- void pade (gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_points, double freq_offset) {
+
+ void pade (gf_view<refreq> gr, gf_const_view<imfreq> gw, int n_points, double freq_offset) {
 
   // make sure the GFs have the same structure
   //assert(gw.shape() == gr.shape());
 
-  // copy the tail. it doesn't need to conform to the pade approximant
-  gr.singularity() = gw.singularity();
   gr() = 0.0;
 
   auto sh = gw.data().shape().front_pop();
@@ -57,6 +56,10 @@ namespace triqs { namespace gfs {
     }
   }
 
+ }
+
+  void pade (gf_view<refreq, scalar_valued> gr, gf_const_view<imfreq, scalar_valued> gw, int n_points, double freq_offset) {
+   pade(reinterpret_scalar_valued_gf_as_matrix_valued(gr), reinterpret_scalar_valued_gf_as_matrix_valued(gw), n_points, freq_offset);
  }
 
 }}

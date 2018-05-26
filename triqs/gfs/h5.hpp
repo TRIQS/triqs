@@ -20,8 +20,7 @@
  ******************************************************************************/
 #pragma once
 
-namespace triqs {
-namespace gfs {
+namespace triqs::gfs {
 
  /*------------------------------------------------------------------------------------------------------
   *                              HDF5
@@ -82,34 +81,17 @@ namespace gfs {
    // h5_write(gr, "data", array<double, G::data_t::rank>(real(g.data())));
    //else
    h5_write(gr, "data", g.data());
-   h5_write(gr, "singularity", g._singularity);
    h5_write(gr, "mesh", g._mesh);
    h5_write(gr, "indices", g._indices);
   }
 
   template <typename G> static void read(h5::group gr, G &g) {
    h5_read(gr, "data", g._data);
-   h5_read(gr, "singularity", g._singularity);
    h5_read(gr, "mesh", g._mesh);
    h5_read(gr, "indices", g._indices);
    gf_h5_after_read<V, T>::invoke(gr, g);
   }
  };
 
- /// ---------------------------
-
- // FIXME The mesh info is duplicated with the function it reads ... Need to pass a ref to the parent function ?
- template <typename Var> struct gf_h5_rw<Var, tail_valued<matrix_valued>> {
-  template <typename G> static void write(h5::group gr, G const &g) {
-   h5_write(gr, "data", g._data);
-   h5_write(gr, "mesh", g._mesh);
-  }
-  template <typename G> static void read(h5::group gr, G &g) {
-   h5_read(gr, "data", g._data);
-   h5_read(gr, "mesh", g._mesh);
-  }
- };
-
 } // triqs::gfs
-}
 

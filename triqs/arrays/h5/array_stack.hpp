@@ -78,6 +78,7 @@ namespace arrays {
    h5::dataspace mspace1 = H5Screate_simple(RANK, dims.ptr(), maxdims.ptr());
    h5::proplist cparms = H5Pcreate(H5P_DATASET_CREATE);
    //auto err = H5Pset_chunk(cparms, RANK, dim_chunk.ptr());
+   H5Pset_deflate(cparms, 8);
    H5Pset_chunk(cparms, RANK, dim_chunk.ptr());
    d_set = g.create_dataset(name, h5::native_type_from_C(T()), mspace1, cparms);
    if (triqs::is_complex<T>::value) h5_write_attribute(d_set, "__complex__", "1");

@@ -36,7 +36,6 @@ namespace gfs {
    using target_t = void;
    S s;
    template <typename T> scalar_wrap(T &&x) : s(std::forward<T>(x)) {}
-   S singularity() const { return s; }
    no_mesh_t mesh() const { return {};} // Fake for combine_mesh
    template <typename KeyType> S operator[](KeyType &&key) const { return s; }
    template <typename... Args> inline S operator()(Args &&... args) const { return s; }
@@ -133,7 +132,6 @@ namespace gfs {
   template <typename LL, typename RR> gf_expr(LL &&l_, RR &&r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
 
   decltype(auto) mesh() const { return gfs_expr_tools::combine_mesh<Tag>(l.mesh(), r.mesh()); }
-  decltype(auto) singularity() const { return utility::operation<Tag>()(l.singularity(), r.singularity()); }
   auto data_shape() const { return gfs_expr_tools::combine_shape()(l, r); }
   decltype(auto) indices() const { return gfs_expr_tools::combine_indices()(l, r); }
 
@@ -148,7 +146,6 @@ namespace gfs {
   }
  };
 
- 
  // -------------------------------------------------------------------
  // a special case : the unary operator !
  template <typename L> struct gf_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
@@ -160,7 +157,6 @@ namespace gfs {
   template <typename LL> gf_unary_m_expr(LL &&l_) : l(std::forward<LL>(l_)) {}
 
   decltype(auto) mesh() const { return l.mesh(); }
-  decltype(auto) singularity() const { return l.singularity(); }
   auto data_shape() const { return l.data_shape(); }
   decltype(auto) indices() const { return l.indices(); }
 
@@ -168,6 +164,10 @@ namespace gfs {
   template <typename... Args> auto operator()(Args &&... args) const { return -l(std::forward<Args>(args)...); }
   friend std::ostream &operator<<(std::ostream &sout, gf_unary_m_expr const &expr) { return sout << '-' << expr.l; }
  };
+
+ template<typename T> struct is_gf_expr : std::false_type{};
+ template <typename Tag, typename L, typename R>  struct is_gf_expr<gf_expr<Tag, L, R>> : std::true_type{};
+ template <typename L> struct is_gf_expr<gf_unary_m_expr<L> > : std::true_type{};
 
 
 // -------------------------------------------------------------------

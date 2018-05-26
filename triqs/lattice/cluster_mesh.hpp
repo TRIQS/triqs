@@ -22,6 +22,7 @@
 #include <triqs/utility/index_generator.hpp>
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 #include <triqs/gfs/meshes/mesh_tools.hpp>
+#include <triqs/gfs/meshes/linear_interpolation.hpp>
 #include <triqs/h5/vector.hpp>
 #include <triqs/arrays.hpp>
 
@@ -117,7 +118,6 @@ namespace gfs {
 
   using index_t = utility::mini_vector<long, 3>;
   using linear_index_t = long;
-  using default_interpol_policy = interpol_t::None;
 
   size_t size() const { return _size; }
 
@@ -182,19 +182,6 @@ namespace gfs {
     x_n[i] = std::lrint(s);
    }
    return x_n;
-  }
-
-  // -------------- Evaluation of a function on the grid --------------------------
-
-  /// Reduce index modulo to the lattice.
-  index_t index_modulo(index_t const& r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
-
-  using interpol_data_t = index_t;
-  interpol_data_t get_interpolation_data(default_interpol_policy, index_t const& x) const { return index_modulo(x); }
-  template <typename F>
-  auto evaluate(default_interpol_policy, F const& f, index_t const& x) const {
-   auto id = get_interpolation_data(default_interpol_policy{}, x);
-   return f[id];
   }
 
   // -------------- HDF5  --------------------------

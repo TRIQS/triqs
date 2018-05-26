@@ -23,32 +23,6 @@
 namespace triqs {
 namespace gfs {
 
- /// check tails are close (does nothing)
- /**
-   * @tparam TailType a tail type (incl. nothing)
-   */
- template<typename T1, typename T2>
- void assert_tails_are_close(T1 const &x, T2 const &y, double precision) {
-  static_assert(std::is_same<typename T1::const_view_type, typename T2::const_view_type>::value, "Tails are of different types");
-  if (x.n_valid_orders() != y.n_valid_orders())
-   TRIQS_RUNTIME_ERROR << "Tails have different n_valid_orders: "<<x.n_valid_orders() << " and " << y.n_valid_orders() ;
-  auto n = x.n_valid_orders();
-  if (n <= 0) return;
-  auto _ = range(0, n);
-  if (max_element(abs(x.data()(_,ellipsis()) - y.data()(_,ellipsis()))) > precision) TRIQS_RUNTIME_ERROR << "Tails have different data"<< x.data() << y.data();
- }
-
- inline void assert_tails_are_close(nothing, nothing, double) {}
-
- // for m_tail which are a tail for g(k,om) and also a g(k) -> tail_valued.
- template <typename M, typename Ta>
- void assert_tails_are_close(gf_const_view<M, Ta> const &x, gf_const_view<M, Ta> const &y, double precision) {
-  assert_gfs_are_close(x, y, precision);
- }
- template <typename M, typename Ta> void assert_tails_are_close(gf<M, Ta> const &x, gf<M, Ta> const &y, double precision) {
-  assert_gfs_are_close(x, y, precision);
- }
-
  // check gfs are close
  template<typename X, typename Y>
  void assert_gfs_are_close(X const &x, Y const &y, double precision) {
@@ -56,10 +30,6 @@ namespace gfs {
   // meshes must be identical and data close
   if (x.mesh() != y.mesh()) TRIQS_RUNTIME_ERROR << "GFs have different meshes";
   if (max_element(abs(x.data() - y.data())) > precision) TRIQS_RUNTIME_ERROR << "Gfs have different data. max(abs(x-y)) = " << max_element(abs(x.data() - y.data())) ;
-
-  // tails must be close
-  assert_tails_are_close(x.singularity(), y.singularity(), precision);
-
  }
 
  // check block gfs are close
