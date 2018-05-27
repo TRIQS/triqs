@@ -18,14 +18,6 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ###################################################################################
-# Get the version number from the latest annotated git tag
-execute_process(COMMAND ${GIT_EXECUTABLE} describe --abbrev=0
- WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
- OUTPUT_VARIABLE   TRIQS_VERSION
- OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-MESSAGE(STATUS "TRIQS_VERSION = ${TRIQS_VERSION}")
 
 #---------------------------------------------------------------------
 # Preliminary : path, policy
@@ -99,15 +91,24 @@ if (PythonSupport)
  message( STATUS "-------- Cpp2Py detection -------------")
  find_package(Cpp2Py 1.5 EXACT REQUIRED)
 endif (PythonSupport)
- 
+
 #---------------------------------------------------------------------
 # log info
 #---------------------------------------------------------------------
 
-message( STATUS "-------- git and hash detection -------------")
+message( STATUS "-------- triqs version and git hash detection -------------")
 
 # Find the TRIQS_GIT_HASH
-find_package(Git) 
+find_package(Git)
+
+# Get the version number from the latest annotated git tag
+execute_process(COMMAND bash "-c" "${GIT_EXECUTABLE} describe | sed \"s/-\\([0-9]*\\)-.*/.\\1/g\""
+ WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+ OUTPUT_VARIABLE   TRIQS_VERSION
+ OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the Git Hash
 execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
  OUTPUT_VARIABLE   TRIQS_GIT_HASH
@@ -126,6 +127,7 @@ execute_process(COMMAND id -un
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+MESSAGE(STATUS "Triqs version : ${TRIQS_VERSION}")
 message(STATUS "Git hash : ${TRIQS_GIT_HASH}")
 message(STATUS "Hostname : ${TRIQS_HOSTNAME}")
 message(STATUS "Compiled by : ${TRIQS_COMPILEDBY}")
