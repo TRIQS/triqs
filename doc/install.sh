@@ -8,7 +8,7 @@ NCORES=4
 
 # Clone the git repositories for cpp2py and triqs
 git clone https://github.com/TRIQS/cpp2py cpp2py.src
-git clone https://github.com/TRIQS/triqs --branch unstable triqs.src
+git clone https://github.com/TRIQS/triqs triqs.src
 
 # Configure the cpp2py build process
 mkdir -p cpp2py.build && cd cpp2py.build
