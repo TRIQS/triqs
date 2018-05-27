@@ -31,8 +31,8 @@ TEST(FitTailMatsubara, Basic) { // NOLINT
     auto [tail, err]     = fit_tail(gw, known_moments);
     auto [tail_s, err_s] = fit_tail(gw_s, known_moments_s);
 
-    EXPECT_ARRAY_NEAR(c, tail(range(0, 4), 0, 0), 1e-9);
-    EXPECT_ARRAY_NEAR(c, tail_s(range(0, 4)), 1e-9);
+    EXPECT_ARRAY_NEAR(c, tail(range(0, 4), 0, 0), 1e-8);
+    EXPECT_ARRAY_NEAR(c, tail_s(range(0, 4)), 1e-8);
   }
 
   // ==== Now fix both the 0th and 1st moment
@@ -44,8 +44,8 @@ TEST(FitTailMatsubara, Basic) { // NOLINT
     auto [tail, err]     = fit_tail(gw, known_moments);
     auto [tail_s, err_s] = fit_tail(gw_s, known_moments_s);
 
-    EXPECT_ARRAY_NEAR(c, tail(range(4), 0, 0), 1e-9);
-    EXPECT_ARRAY_NEAR(c, tail_s(range(4)), 1e-9);
+    EXPECT_ARRAY_NEAR(c, tail(range(4), 0, 0), 1e-8);
+    EXPECT_ARRAY_NEAR(c, tail_s(range(4)), 1e-8);
   }
 }
 
