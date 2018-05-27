@@ -34,42 +34,42 @@ namespace triqs {
   * Tuple of placeholder
   *  --------------------------------------------------------------------------------------------------- */
 
-    template <typename... T> struct tuple_com : std::tuple<T...> { using std::tuple<T...>::tuple; };
+    template <typename... T> struct tuple_com { std::tuple<T...> _t; };
 
     // deduction rule. broken on clang ?
     //    template <typename... T> tuple_com(T&& ...x) -> tuple_com<std::decay_t<T>...>;
 
-    template <typename... T> tuple_com<std::decay_t<T>...> make_tuple_com(T &&... x) { return {std::forward<T>(x)...}; }
+    template <typename... T> tuple_com<std::decay_t<T>...> make_tuple_com(T &&... x) { return {std::make_tuple(std::forward<T>(x)...)}; }
 
-    template <typename... T> tuple_com<T...> make_tuple_com_form_tuple(std::tuple<T...> &&x) {
-      return std::move(*static_cast<tuple_com<T...> *>(&x));
-    }
+    template <typename... T> tuple_com<T...> make_tuple_com_from_tuple(std::tuple<T...> &&x) { return {std::move(x)}; }
 
     // FIXME USE a function  + enable if
 
     // placeholder, mesh_point a:sorbs argument in a tuple_com
-    template <int N, typename X> tuple_com<_ph<N>, std::decay_t<X>> operator,(_ph<N> p, X &&x) { return {p, std::forward<X>(x)}; }
+    template <int N, typename X> tuple_com<_ph<N>, std::decay_t<X>> operator,(_ph<N> p, X &&x) { return {std::make_tuple(p, std::forward<X>(x))}; }
 
     // all_t
-    template <typename X> tuple_com<all_t, std::decay_t<X>> operator,(all_t, X &&x) { return {all_t{}, std::forward<X>(x)}; }
-    inline tuple_com<long, all_t> operator,(long i, all_t p) { return {i, p}; }
-    //template <typename X> tuple_com<std::decay_t<X>, all_t> operator,(X &&x, all_t) { return {std::forward<X>(x), all_t{}}; }
+    template <typename X> tuple_com<all_t, std::decay_t<X>> operator,(all_t, X &&x) { return {std::make_tuple(all_t{}, std::forward<X>(x))}; }
+    inline tuple_com<long, all_t> operator,(long i, all_t p) { return {std::make_tuple(i, p)}; }
+    //template <typename X> tuple_com<std::decay_t<X>, all_t> operator,(X &&x, all_t) { return {std::make_tuple(std::forward<X>(x), all_t{})}; }
     //template <typename X> inline tuple_com<all_t, all_t> operator,(all_t, all_t) { return {};}
 
     template <typename M, typename X> tuple_com<mesh_point<M>, std::decay_t<X>> operator,(mesh_point<M> m, X &&x) {
-      return {std::move(m), std::forward<X>(x)};
+      return {std::make_tuple(std::move(m), std::forward<X>(x))};
     }
 
-    template <int N, typename X> tuple_com<long, _ph<N>> operator,(long i, _ph<N> p) { return {i, p}; }
-    template <typename M> tuple_com<long, mesh_point<M>> operator,(long i, mesh_point<M> m) { return {i, std::move(m)}; }
+    template <int N, typename X> tuple_com<long, _ph<N>> operator,(long i, _ph<N> p) { return {std::make_tuple(i, p)}; }
+    template <typename M> tuple_com<long, mesh_point<M>> operator,(long i, mesh_point<M> m) { return {std::make_tuple(i, std::move(m))}; }
 
-    template <typename T, int n, typename X> tuple_com<mini_vector<T, n>, X> operator,(mini_vector<T, n> const &v, X const &x) { return {v, x}; }
-    template <typename X> tuple_com<matsubara_freq, X> operator,(matsubara_freq const &m, X const &x) { return {m, x}; }
+    template <typename T, int n, typename X> tuple_com<mini_vector<T, n>, X> operator,(mini_vector<T, n> const &v, X const &x) {
+      return {std::make_tuple(v, x)};
+    }
+    template <typename X> tuple_com<matsubara_freq, X> operator,(matsubara_freq const &m, X const &x) { return {std::make_tuple(m, x)}; }
 
     // tuple_com absorbs anything
     template <typename X, typename... T, size_t... Is>
     FORCEINLINE tuple_com<T..., std::decay_t<X>> __comma_impl(tuple_com<T...> &&tu, X &&x, std14::index_sequence<Is...>) {
-      return {std::get<Is>(std::move(tu))..., std::forward<X>(x)};
+      return {std::make_tuple(std::get<Is>(std::move(tu._t))..., std::forward<X>(x))};
     }
 
     template <typename X, typename... T> FORCEINLINE tuple_com<T..., std::decay_t<X>> operator,(tuple_com<T...> &&t, X &&x) {
@@ -93,8 +93,8 @@ namespace triqs {
       static constexpr bool is_lazy = false;
       FORCEINLINE decltype(auto) operator()(gfs::tuple_com<T...> const &tu, Contexts const &... contexts) const {
         auto l  = [&contexts...](auto &&y) -> decltype(auto) { return eval(y, contexts...); };
-        auto _t = triqs::tuple::map(l, static_cast<std::tuple<T...>>(tu));
-        return triqs::gfs::make_tuple_com_form_tuple(std::move(_t));
+        auto _t = triqs::tuple::map(l, tu._t);
+        return triqs::gfs::make_tuple_com_from_tuple(std::move(_t));
       }
     };
 
