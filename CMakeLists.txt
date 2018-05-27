@@ -19,7 +19,13 @@
 #
 ###################################################################################
 # Get the version number from the latest annotated git tag
-execute_process(COMMAND git describe --abbrev=0 OUTPUT_VARIABLE TRIQS_VERSION)
+execute_process(COMMAND ${GIT_EXECUTABLE} describe --abbrev=0
+ WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+ OUTPUT_VARIABLE   TRIQS_VERSION
+ OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+MESSAGE(STATUS "TRIQS_VERSION = ${TRIQS_VERSION}")
 
 #---------------------------------------------------------------------
 # Preliminary : path, policy
