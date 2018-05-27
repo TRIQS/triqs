@@ -38,11 +38,7 @@ namespace triqs {
       template <typename T> auto get_index(mesh_point<T> &x) { return x.index(); }
     } // namespace detail
 
-    template <typename... Vs> struct cartesian_product {
-      using type                   = std::tuple<Vs...>;
-      static constexpr size_t size = sizeof...(Vs);
-      static_assert(size > 1, "Cartesian_product meshes require at least two components");
-    };
+    template <typename... Vs> struct cartesian_product { using type = std::tuple<Vs...>; };
 
     // template <typename... Vs>  constexpr int get_n_variables(cartesian_product<Vs...>) { return sizeof...(Vs);}
     template <typename... Vs> struct get_n_variables<cartesian_product<Vs...>> { static const int value = sizeof...(Vs); };
