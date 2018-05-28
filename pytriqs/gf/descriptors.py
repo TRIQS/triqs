@@ -119,7 +119,7 @@ class Flat (Base):
     def __call__(self,G):
 
         D = self.half_bandwidth
-        Id = numpy.identity(G.target_shape[0],numpy.complex_)
+        Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0], numpy.complex_)
 
         if type(G.mesh) == MeshImFreq:
             f = lambda om: (-1/(2.0*D)) * numpy.log(numpy.divide(om-D,om+D)) * Id
@@ -131,8 +131,6 @@ class Flat (Base):
                 return -numpy.log(numpy.divide(abs(om-D),abs(om+D)))*Id/(2*D)
         else:
             raise TypeError, "This initializer is only correct in frequency"
-
-        Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
 
         # Silence "RuntimeWarning: divide by zero encountered in divide"
         old_err = numpy.seterr(divide='ignore')
