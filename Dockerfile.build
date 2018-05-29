@@ -10,7 +10,7 @@ ENV SRC=/src \
     CMAKE_PREFIX_PATH=/usr/local/share/cmake:${CMAKE_PREFIX_PATH}
 
 # cpp2py: use a fixed revision to ensure we have the right one (alternatively could make this a submodule or upstream project)
-RUN git clone https://github.com/TRIQS/cpp2py $SRC/cpp2py && cd $SRC/cpp2py && git checkout 8555cf65041bed0eb09d1d612bb2422c3cdce0ef
+RUN git clone https://github.com/TRIQS/cpp2py $SRC/cpp2py && cd $SRC/cpp2py && git checkout aae3f5449670b92bee6bff5580db758dadc7acc1
 WORKDIR ${BUILD}/cpp2py
 RUN cmake $SRC/cpp2py -DCMAKE_INSTALL_PREFIX=$INSTALL -DCLANG_OPT="$CXXFLAGS" && make
 RUN make install
