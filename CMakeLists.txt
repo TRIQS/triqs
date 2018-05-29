@@ -101,14 +101,12 @@ message( STATUS "-------- triqs version and git hash detection -------------")
 # Find the TRIQS_GIT_HASH
 find_package(Git)
 
-set(TRIQS_VERSION "2.0")
-### DISABLE VERSION AUTODECTION Since Jenkins CI is building in Non-Git folder
 # Get the version number from the latest annotated git tag
-#execute_process(COMMAND bash "-c" "${GIT_EXECUTABLE} describe | sed \"s/-\\([0-9]*\\)-.*/.\\1/g\""
- #WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
- #OUTPUT_VARIABLE   TRIQS_VERSION
- #OUTPUT_STRIP_TRAILING_WHITESPACE
-#)
+execute_process(COMMAND bash "-c" "${GIT_EXECUTABLE} describe | sed \"s/-\\([0-9]*\\)-.*/.\\1/g\""
+ WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+ OUTPUT_VARIABLE   TRIQS_VERSION
+ OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 # Get the Git Hash
 execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
