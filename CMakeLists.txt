@@ -107,6 +107,9 @@ execute_process(COMMAND bash "-c" "${GIT_EXECUTABLE} describe | sed \"s/-\\([0-9
  OUTPUT_VARIABLE   TRIQS_VERSION
  OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+if(NOT TRIQS_VERSION)
+  set(TRIQS_VERSION 2.0)
+endif()
 
 # Get the Git Hash
 execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
