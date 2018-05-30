@@ -10,7 +10,7 @@ int main() {
   //generate Green's functions with random noise
   triqs::mc_tools::random_generator RND;
   placeholder<0> w_;
-  auto gw = gf<imfreq, scalar_valued>{{10, Fermion, 20}};
+  auto gw = gf<imfreq, scalar_valued>{{10, Fermion, 200}};
   gw(w_) << 1 / (w_ - 2.0);
   int n_tau = 41;
   auto gt   = gf<imtime, scalar_valued>{{10, Fermion, n_tau}};
