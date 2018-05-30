@@ -16,7 +16,7 @@ of a quantum impurity embedded in a conduction bath. It is based on a quantum
 Monte Carlo algorithm that stochastically samples the diagrams of a
 hybridization expansion of the partition function.
 
-*Homepage:* `<https://triqs.ipht.cnrs.fr/1.5/applications/cthyb/>`_
+*Homepage:* `<https://triqs.github.io/cthyb/unstable/>`_
 
 DFT tools
 ---------
@@ -26,17 +26,16 @@ calculation. It allows you to turn band-structure calculations obtained from
 the Wien2k package to inputs to full-fledged LDA+DMFT calculations in a few
 lines!
 
-*Homepage:* `<https://triqs.ipht.cnrs.fr/1.5/applications/dft_tools/>`_
+*Homepage:* `<https://triqs.github.io/dft_tools/unstable/>`_
 
 Hubbard I solver
 ----------------
 .. warning::
 
-   DOC IS BEING WRITTEN!
-
+   THIS APPLICATION CURRENTLY ONLY COMPATIBLE WITH TRIQS 1.4
 
 This solver gives the Hubbard I solution of a quantum impurity problem,
-i.e. it solves the atomic limit. This simple approximation allows for 
+i.e. it solves the atomic limit. This simple approximation allows for
 very quick answers even for large multiband systems.
 
-*Homepage:* `<https://triqs.ipht.cnrs.fr/1.5/applications/hubbardI/>`_
+*Homepage:* `<https://triqs.ipht.cnrs.fr/1.4/applications/hubbardI/>`_

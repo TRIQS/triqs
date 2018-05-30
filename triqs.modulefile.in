@@ -7,7 +7,7 @@ set     version     @TRIQS_VERSION@
 set     root        @CMAKE_INSTALL_PREFIX@
 set     git_hash    @TRIQS_GIT_HASH@
 
-set     url         "https://triqs.ipht.cnrs.fr/$version/index.html"
+set     url         "http://triqs.github.io/dft_tools"
 set     description "Toolbox for Research on Interacting Quantum Systems"
 
 module-whatis   "$description"

@@ -1,6 +1,6 @@
 class Triqs < Formula
   desc "Applications and Libraries for Physics Simulations"
-  homepage "https://triqs.ipht.cnrs.fr/"
+  homepage "https://triqs.github.io/triqs"
 
   head "https://github.com/TRIQS/triqs.git"
 

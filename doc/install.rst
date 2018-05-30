@@ -4,7 +4,7 @@
 
 .. _installation:
 
-Installation 
+Installation
 ============
 
 TRIQS and its applications are provided *a la carte*:
@@ -23,7 +23,7 @@ The TRIQS project is in perpetual dynamic evolution such that we can get our
 developments directly to users straight out of the oven.
 
 However, we also understand that some users may not wish to constantly update
-their codes, and are happy to use an older but perhaps more stable version. 
+their codes, and are happy to use an older but perhaps more stable version.
 
 To this end, we propose two options to the user:
 
@@ -31,13 +31,55 @@ To this end, we propose two options to the user:
    This will guarantee that you are using the latest stable release including essential
    bug-fixes. Note that new releases might occasionally include changes of the API, which
    we summarize in a set of release notes.
-   We use continuous integration (`travis <https://travis-ci.org/TRIQS/triqs/branches>`_ and `jenkins <https://triqs.ipht.cnrs.fr/jenkins/view/TRIQS>`_) 
-   to ensure that the master branch always compiles and passes all tests. This is checked
-   for both the TRIQS library and several public (and private) applications.
+   We use continuous integration to ensure that the master branch always compiles and 
+   passes all tests. This is checked for both the TRIQS library and several public 
+   (and private) applications.
 
-#. You use a version tag, e.g. version 1.4, for TRIQS and all applications.
+#. You use a version tag, e.g. version 2.0, for TRIQS and all applications.
    This guarantees complete reproducibility, while you might be missing out on the latest
    features and bug-fixes.
+
+Packaged Versions of TRIQS
+==========================
+
+Docker
+------
+
+The virtualization software `docker <https://docs.docker.com/install>`_  can be used to
+run a triqs environment for both Jupyter Notebook and shell access on a variety of operating
+systems. Once docker is installed, just pull the latest image with::
+
+        docker pull flatironinstitute/triqs
+ 
+and follow the commands on the `image-website <https://hub.docker.com/r/flatironinstitute/triqs>`_.
+
+.. note:: Docker images allows for an easy set-up on cluster machines that provide the virtualization software `singularity <https://singularity.lbl.gov>`_.
+          For more information please refer to the `singularity documentation <https://singularity.lbl.gov/docs-docker>`_.
+
+Binder
+------
+
+`Binder <https://mybinder.org>`_ is a web-service running Jupyter notebooks for direct access.
+A TRIQS Jupyter notebook environment can be accessed directly at `binder <https://mybinder.org/v2/gh/TRIQS/docker/master>`_.
+
+.. note:: Once your binder session is closed, your work will be lost.
+
+Ubuntu Debian packages (experimental)
+-------------------------------------
+
+We provide Debian packages for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 (bionic).::
+
+        sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https curl
+        source /etc/lsb-release
+        curl -L https://users.flatironinstitute.org/~ccq/triqs/unstable/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
+        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs/unstable/$DISTRIB_CODENAME/ /"
+        sudo apt-get update && sudo apt-get install -y triqs
+
+This will install the minimal runtime packages and triqs into the system tree at /usr.
+If you aim to compile applications based on triqs, additional :ref:`development libraries <ubuntu>` have to be installed.
+
+Compiling TRIQS from source (Advanced)
+======================================
 
 Prerequisites
 -------------
@@ -63,7 +105,7 @@ You need to install first Cpp2Py and then TRIQS.
 
 We provide hereafter the build instructions in the form of a documented bash script.
 You can adapt INSTALL_PREFIX, NCORES for your local settings.
-Note that, contrary to previous versions of TRIQS,  
+Note that, contrary to previous versions of TRIQS,
 the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake configuration.
 
 
@@ -82,7 +124,7 @@ Please source them with the proper replacement of INSTALL_PREFIX::
         source INSTALL_PREFIX/share/triqsvars.sh
 
 To automate this process, please add these two lines to your `~/.bash_profile <https://en.wikipedia.org/wiki/Bash_(Unix_shell)#Startup_scripts>`_
-(or `~/.zprofile <http://zsh.sourceforge.net/FAQ/zshfaq03.html#l19>`_) 
+(or `~/.zprofile <http://zsh.sourceforge.net/FAQ/zshfaq03.html#l19>`_)
 
 Further reading
 ------------------

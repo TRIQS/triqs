@@ -4,8 +4,8 @@
 
 .. _install_osx:
 
-Installing required libraries on Mac OS X [EXPERIMENTAL]
-==============================================================
+Installing required libraries on Mac OS X
+=========================================
 
 Disclaimer
 -------------
@@ -41,10 +41,15 @@ modifications) for earlier versions of OS X.
 
 1. Install `homebrew <http://mxcl.github.io/homebrew/>`_.
 
-  Run ``brew doctor`` and resolve potential conflicts before continuing.
+  Run ``brew doctor`` to resolve potential conflicts before continuing.
+  Consider further to remove old versions your packages with the command ``brew cleanup``.
 
 2. We recommend using the clang compiler. When using it the first time, you will be prompted to
    install the clang command line tools. After this is done, proceed to step 3.
+   The following two commands will install the most recent clang compiler and load it into your environment: ::
+     
+     brew install llvm
+     brew link llvm
 
 3. Install several packages which are needed: ::
 
@@ -71,45 +76,3 @@ modifications) for earlier versions of OS X.
     pip install jinja2
     pip install ipython
     pip install mako
-
-6. If you wish to compile the documentation locally, install sphinx, its dependencies, libclang Python bindings, and MathJax: ::
-
-     pip install sphinx
-     pip install pyparsing
-     pip install clang
-     git clone https://github.com/mathjax/MathJax.git MathJax
-
-Possible issues
----------------
-
-* If you experience ImportErrors in Python, make sure that ::
-
-    /usr/local/bin
-
-  occurs before /usr/bin in your :ref:`path <environment_vars>`_. Otherwise you may be using the system's default version of Python.
-  As a result, some packages, although previously installed with ``pip install``, may not be found.
-
-* If you encounter the following error: ::
-
-    /usr/local/include/ft2build.h:56:38: error: freetype/config/ftheader.h: No such file or directory
-
-  in the installation of matplotlib, you need to pass the proper include path. Locate the freetype directory
-  with the header file and pass the include path through ``CPPFLAGS``: ::
-
-    CXXFLAGS=-I/usr/X11/include/freetype2/ pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
-
-* When building the doc, you may experience the following sphinx error: ::
-
-    ValueError: unknown locale: UTF-8
-
-  In this case, make sure to add the following lines to your ``.bash_profile``: ::
-
-    export lc_all=en_us.utf-8
-    export lang=en_us.utf-8
-
-
-
-
-
-
-
