@@ -3,19 +3,19 @@
    :keywords: triqs quantum interacting systems toolbox research
 
 .. _welcome:
-  
+
 Welcome
 =======
 
-.. sidebar:: TRIQS 1.5-dev
+.. sidebar:: TRIQS 2.0
 
-   This is the homepage of the TRIQS release 1.5 (in development). 
-   For the changes in 1.5, Cf :ref:`changelog page <changelog>`
+   This is the homepage TRIQS Version 2.0
+   For the changes in 2.0, Cf :ref:`changelog page <changelog>`
 
 
 TRIQS (**T**\oolbox for **R**\esearch on **I**\nteracting **Q**\uantum **S**\ystems)
 is a scientific project providing a set of C++ and Python libraries to develop new tools
-for the study of interacting quantum systems. 
+for the study of interacting quantum systems.
 
 The goal of this toolkit is to provide high level, efficient and simple to use
 libraries in C++ and Python, and to promote the use of modern programming
@@ -26,18 +26,18 @@ TRIQS is free software distributed under the GPL license.
 TRIQS applications
 -----------------------
 
-Based on the TRIQS toolkit, several :ref:`full-fledged applications<applications>` 
+Based on the TRIQS toolkit, several :ref:`full-fledged applications<applications>`
 are also available. They allow for example to solve a generic quantum impurity
 model or to run a complete LDA+DMFT calculation.
 
-Developed in a collaboration between IPhT Saclay and Ecole Polytechnique since 2005, 
+Developed in a collaboration between IPhT Saclay and Ecole Polytechnique since 2005,
 the TRIQS library and applications have allowed us to address questions as diverse as:
 
 * Momentum-selective aspects on cuprate superconductors (with various cluster DMFT methods)
 * Degree of correlation in iron-based superconductors (within an LDA+DMFT approach)
 * Fermionic Mott transition and exploration of Sarma phase in cold-atoms
 
- 
+
 Python & C++
 -----------------------------
 

@@ -8,7 +8,7 @@ Using the clang compiler
 ========================
 
 **clang/llvm** alongside gcc is one of most modern C++ compilers. 
-It is open source with contributers such as Apple and Google, and is currently the default compiler on and Mac OS.
+It is open source with contributers such as Apple and Google, and is currently the default compiler on Mac OS.
 
 We *highly recommend* the **clang** compiler for anyone developing C++ since:
 
@@ -17,7 +17,7 @@ We *highly recommend* the **clang** compiler for anyone developing C++ since:
 * It is a developed as a drop-in replacement for the more wide-spread gcc (i.e. almost identical usage)
 
 Note, however, that for *production* compilations, gcc, especially recent versions, still produces in general
-a slighly more optimal code for TRIQS applications, even if the differences are small.
+a slightly more optimal code for TRIQS applications, even if the differences are small.
 
 It is highly recommended to use the latest stable version on Linux and the default compiler on Mac OS.
 
