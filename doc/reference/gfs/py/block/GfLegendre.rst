@@ -26,7 +26,6 @@ The GfLegendre (TRIQS_HDF5_data_scheme= "GfLegendre") is decomposed in the follo
 Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
 Mesh                        MeshGf                       The mesh
-Tail                        TailGf                       The tail
 Data                        3d numpy of complex          Data[n,i1,i2] is the element of the Green function where:
                                                           * n is the Legendre coefficient index 
                                                           * i1, i2 are the indices

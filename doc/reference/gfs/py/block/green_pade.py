@@ -23,16 +23,12 @@ def G(z):
     return 0.5*GLorentz(z) + 0.5*GSC(z)
 
 # Matsubara GF
-gm = GfImFreq(indices = [0], beta = beta, name = "gm")
+gm = GfImFreq(indices = [0], beta = beta, name = "gm", n_points=2000)
 gm << Function(G)
-gm.tail.zero()
-gm.tail[1] = numpy.array([[1.0]])
 
 # Real frequency BlockGf(reference)
 gr = GfReFreq(indices = [0], window = (-5.995, 5.995), n_points = 1200, name = "gr")
 gr << Function(G)
-gr.tail.zero()
-gr.tail[1] = numpy.array([[1.0]])
 
 # Analytic continuation of gm
 g_pade = GfReFreq(indices = [0], window = (-5.995, 5.995), n_points = 1200, name = "g_pade")
