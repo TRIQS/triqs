@@ -15,5 +15,4 @@ Python documentation
   block
   full
   transforms
-  tail
   tools
