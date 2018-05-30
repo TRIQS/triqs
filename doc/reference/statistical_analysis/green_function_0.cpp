@@ -12,7 +12,7 @@ int main() {
   placeholder<0> w_;
   auto gw = gf<imfreq, scalar_valued>{{10, Fermion, 200}};
   gw(w_) << 1 / (w_ - 2.0);
-  int n_tau = 41;
+  int n_tau = 401;
   auto gt   = gf<imtime, scalar_valued>{{10, Fermion, n_tau}};
   gt()      = fourier(gw);
 
