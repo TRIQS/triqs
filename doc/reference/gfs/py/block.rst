@@ -88,8 +88,6 @@ the values of the Green function using
         for iw in g_iw.mesh():
             g[iw] = 1.0 / iw
 
-Note however that this will not set a proper singularity of the Green function.
-
 
 Assignment: << or = operator
 --------------------------------------------
@@ -183,68 +181,12 @@ depending on the type of Green's function under consideration, one or more of th
 calculating the spectral function of an imaginary-time Green's function is not useful.
 
 
-Direct access to data points and tails [not for the Legendre version]
+Direct access to data points
 -----------------------------------------------------------------------------
 
-Data points can be accessed via the properties ``data`` and ``tail`` respectively.
-``data`` returns an array object and so does ``tail[i]``::
+Data points can be accessed via the property ``data`` which returns an array object::
 
   g.data
 
-.. warning::
-  
-  Be careful when manipulating data directly to keep consistency between
-  the function and the tail. 
-  Basic operations do this automatically, so use them as much as possible.
 
-
-.. _greentails:
-
-Direct access to the tails
---------------------------
-
-All block Green's function come together with a **Tail** object that describes its
-large-frequency behavior. In other words, for large :math:`|z|`, the Green's function
-behaves like
-
-.. math::
-
-  g(z) \sim ... + M_{-1} z + M_0 + \frac{M_1}{z} + \frac{M_2}{z^2} + ...
-
-where :math:`M_i` are matrices with the same dimensions as :math:`g`. 
-
-* Tails can be accessed with the ``tail`` property. Moreover, in order
-  to have access to :math:`M_i`, one uses the bracket. For example::
-
-   >>> g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
-   >>> g << 2.0
-   gf_view
-
-   >>> print g.tail[0]
-   [[ 2.+0.j  0.+0.j]
-    [ 0.+0.j  2.+0.j]]
-
-  Here ``g.tail[0]`` is a diagonal matrix with 2 on the diagonal, corresponding to :math:`M_0`.
-
-* Some operations (sum over frequencies, Fourier) uses these tails to regulate the sum, 
-  so it is necessary to always keep the consistency between the array of data and the tail expansion.
-
-* Fortunately, in all basic operations on the blocks, these tails are computed automatically.
-  For example, when adding two Green functions, the tails are added, and so on.
-
-* However, if you modify the ``data`` or the ``tail`` manually, you lose this guarantee.
-  So you have to set the tail properly yourself (or be sure that you will not need it later).
-  For example::
-
-   g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
-   g << Function(lambda x: 3/x)
-   g.tail.zero()
-   g.tail[1] = numpy.array( [[3.0,0.0], [0.0,3.0]] )
-
-  The third line sets all the :math:`M_i` to zero, while the fourth puts :math:`M_1 = diag(3)`. With
-  the tail set correctly, this Green's function can be used safely. 
-  
-.. warning::
-  The library will not be able detect tails that are incorrectly set.
-  Calculations *may* be wrong in this case.
 
