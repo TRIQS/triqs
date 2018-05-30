@@ -22,7 +22,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR
 # and filters the relevant extension
 # ------------------------------------------------------------------------------------------------
 
-set(EXT_FOR_DOC "rst png txt cpp css_t conf css js gif jpg py html bib sh")
+set(EXT_FOR_DOC "rst png txt cpp css_t conf css js gif jpg py html bib sh md")
 execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${EXT_FOR_DOC})
 
 # ---------------------------------

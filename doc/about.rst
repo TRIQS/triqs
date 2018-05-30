@@ -17,7 +17,7 @@ Citation
 
 TRIQS is a part of our scientific work and we kindly request that
 projects using it include a citation to the following paper. In
-order to help you, we provide a BibTeX entry.
+order to help you, we provide a BibTeX entry [#triqs]_.
 
 .. [#triqs] `O. Parcollet, M. Ferrero, T. Ayral, H. Hafermann, I. Krivenko, L. Messio, and P. Seth, Comp. Phys. Comm. 196, 398-415 (2015) <http://dx.doi.org/10.1016/j.cpc.2015.04.023>`_ (:download:`bibtex file <triqs.bib>`)
 
