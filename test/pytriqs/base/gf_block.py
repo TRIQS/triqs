@@ -43,6 +43,31 @@ class test_Gf_Block(unittest.TestCase):
         B5 = map_block(lambda x: 2*x, B3)
         assert_block_gfs_are_close(B5, 2*B3)
 
+    def test_real_imag(self):
+
+        G1 = Gf(mesh=self.iw_mesh, target_shape=(2,2))
+        G2 = G1.copy()
+
+        G1 << inverse(2 + iOmega_n)
+        G2 << inverse(2 - iOmega_n)
+
+        B1 = BlockGf(name_list=['0', '1'], block_list=[G1, G2])
+        B2 = BlockGf(name_list=['0', '1'], block_list=[G2, G1])
+
+        assert_block_gfs_are_close(-B1.imag, B2.imag)
+
+    def test_block2_real_imag(self):
+
+        G1 = Gf(mesh=self.iw_mesh, target_shape=(2,2))
+        G2 = G1.copy()
+
+        G1 << inverse(2 + iOmega_n)
+        G2 << inverse(2 - iOmega_n)
+
+        B1 = Block2Gf(name_list1=['0', '1'], name_list2=['0', '1'], block_list=[[G1, G2], [G2, G1]])
+        B2 = Block2Gf(name_list1=['0', '1'], name_list2=['0', '1'], block_list=[[G2, G1], [G1, G2]])
+
+        assert_block2_gfs_are_close(-B1.imag, B2.imag)
 
 if __name__ == '__main__':
     unittest.main()
