@@ -71,21 +71,29 @@ class SemiCircular (Base):
       
     (Only works in combination with frequency Green's functions.)
     """
-    def __init__ (self, half_bandwidth):
+    def __init__ (self, half_bandwidth, chem_potential=0.):
         """:param half_bandwidth: :math:`D`, the half bandwidth of the
-semicircular density of states"""
-        Base.__init__(self, half_bandwidth=half_bandwidth)
+semicircular density of states
+        :param chem_potential: :math:`\mu`, the chemical potential of the    |
+semicircular density of states, corresponds to minus the center of the
+semicircle
+"""
+        Base.__init__(self, half_bandwidth=half_bandwidth, chem_potential=chem_potential)
 
-    def __str__(self): return "SemiCircular(%s)"%self.half_bandwidth 
+    def __str__(self): return "SemiCircular(%s, %s)"%self.half_bandwidth, chem_potential 
 
     def __call__(self,G):
         D = self.half_bandwidth
+        mu = self.chem_potential
         Id = complex(1,0) if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0],numpy.complex_)
+        from cmath import sqrt
         if type(G.mesh) == MeshImFreq:
-            f = lambda om: (om  - 1j*copysign(1,om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
+            def f(om_):
+                om = om_ + mu
+                return (om - 1j*copysign(1,om.imag)*sqrt(D*D - om**2))/D/D*2*Id
         elif type(G.mesh) == MeshReFreq:
             def f(om_):
-              om = om_.real
+              om = om_.real + mu
               if (om > -D) and (om < D):
                 return (2.0/D**2) * (om - 1j* sqrt(D**2 - om**2))
               else:
