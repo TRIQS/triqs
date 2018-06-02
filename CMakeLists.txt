@@ -130,7 +130,7 @@ execute_process(COMMAND id -un
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-MESSAGE(STATUS "Triqs version : ${TRIQS_VERSION}")
+message(STATUS "Triqs version : ${TRIQS_VERSION}")
 message(STATUS "Git hash : ${TRIQS_GIT_HASH}")
 message(STATUS "Hostname : ${TRIQS_HOSTNAME}")
 message(STATUS "Compiled by : ${TRIQS_COMPILEDBY}")
