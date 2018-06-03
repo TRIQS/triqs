@@ -91,7 +91,7 @@ option(PythonSupport "Build with Python support" ON)
 if (PythonSupport)
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
  message( STATUS "-------- Cpp2Py detection -------------")
- find_package(Cpp2Py 1.5 EXACT REQUIRED)
+ find_package(Cpp2Py 1.5 REQUIRED)
 endif (PythonSupport)
  
 #---------------------------------------------------------------------
