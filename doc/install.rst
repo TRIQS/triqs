@@ -42,6 +42,7 @@ To this end, we propose two options to the user:
 Packaged Versions of TRIQS
 ==========================
 
+.. _triqs_docker:
 Docker
 ------
 
@@ -64,6 +65,7 @@ A TRIQS Jupyter notebook environment can be accessed directly at `binder <https:
 
 .. note:: Once your binder session is closed, your work will be lost.
 
+.. _triqs_debian:
 Ubuntu Debian packages (experimental)
 -------------------------------------
 
