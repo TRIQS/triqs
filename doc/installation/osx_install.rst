@@ -51,9 +51,15 @@ modifications) for earlier versions of OS X.
      brew install llvm
      brew link llvm
 
+   As a next step we make sure the C/C++ compiler is set for your current :ref:`environment <environment_vars>`::
+
+     export CC=clang
+     export CXX=clang++
+
+  To make this choice permanent, add these two lines to your ``$HOME/.bash_profile``.
+
 3. Install several packages which are needed: ::
 
-     brew tap homebrew/science
      brew install cmake
      brew install --with-mpi --with-python --without-single boost
      brew install hdf5
@@ -64,7 +70,7 @@ modifications) for earlier versions of OS X.
      brew install zmq
      brew install python
 
-5. Install the required python packages: ::
+4. Install the required python packages: ::
 
     pip install numpy
     pip install --no-binary=h5py h5py
@@ -74,5 +80,8 @@ modifications) for earlier versions of OS X.
     pip install tornado
     pip install pyzmq
     pip install jinja2
-    pip install ipython
     pip install mako
+
+4. If desired, install the `Jupyter <https://jupyter.org/>`_ Notebook using::
+
+    pip install jupyter

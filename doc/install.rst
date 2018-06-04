@@ -65,7 +65,7 @@ A TRIQS Jupyter notebook environment can be accessed directly at `binder <https:
 
 .. note:: Once your binder session is closed, your work will be lost.
 
-.. _triqs_debian:
+.. _ubuntu_debian:
 Ubuntu Debian packages (experimental)
 -------------------------------------
 
@@ -78,7 +78,14 @@ We provide Debian packages for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 
         sudo apt-get update && sudo apt-get install -y triqs
 
 This will install the minimal runtime packages and triqs into the system tree at /usr.
-If you aim to compile applications based on triqs, additional :ref:`development libraries <ubuntu>` have to be installed.
+
+If you aim to compile applications against the triqs library, additional :ref:`development libraries <ubuntu>` have to be installed. You should further set the following :ref:`environment variables <environment_vars>` permanently::
+
+        export CPATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPATH
+        source /usr/share/cpp2pyvars.sh
+        source /usr/share/triqsvars.sh
+
+For full c++2py functionality, please read the corresponding :ref:`section <ubuntu_cpp2py>` for the Ubuntu set-up.
 
 Compiling TRIQS from source (Advanced)
 ======================================
