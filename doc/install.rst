@@ -73,8 +73,8 @@ We provide Debian packages for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 
 
         sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https curl
         source /etc/lsb-release
-        curl -L https://users.flatironinstitute.org/~ccq/triqs/unstable/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
-        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs/unstable/$DISTRIB_CODENAME/ /"
+        curl -L https://users.flatironinstitute.org/~ccq/triqs/master/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
+        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs/master/$DISTRIB_CODENAME/ /"
         sudo apt-get update && sudo apt-get install -y triqs
 
 This will install the minimal runtime packages and triqs into the system tree at /usr.
