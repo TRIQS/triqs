@@ -182,6 +182,17 @@ class BlockGf(object):
         """ Number of blocks"""
         return len(self.__GFlist)
 
+    @property
+    def real(self):
+        """A Gf with only the real part of data."""
+        return BlockGf(name_list = self.__indices, block_list = [g.real for g in self.__GFlist], name = ("Re " + self.name) if self.name else '')
+
+    @property
+    def imag(self):
+        """A Gf with only the imag part of data."""
+        return BlockGf(name_list = self.__indices, block_list = [g.imag for g in self.__GFlist], name = ("Im " + self.name) if self.name else '')
+
+
     #----------------------   IO    -------------------------------------
 
     def __mymakestring(self,x):

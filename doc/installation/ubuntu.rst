@@ -53,16 +53,16 @@ There are two options:
 .. _clang_ubuntu :
 * When developing applications with TRIQS, we recommend to use the clang compiler instead.
   As a first step you will need to install the g++-7 package as described in the first set of commands above.
-  In a next step we install version 5.0 of clang and libclang.::
+  In a next step we install version 6.0 of clang and libclang.::
   
     source /etc/lsb-release
-    sudo add-apt-repository 'deb http://apt.llvm.org/$DISTRIB_CODENAME/ llvm-toolchain-$DISTRIB_CODENAME-5.0 main' -y
+    sudo add-apt-repository 'deb http://apt.llvm.org/$DISTRIB_CODENAME/ llvm-toolchain-$DISTRIB_CODENAME-6.0 main' -y
     curl -L https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-    sudo apt-get update && sudo apt-get install clang-5.0 libclang-5.0-dev python-clang-5.0
+    sudo apt-get update && sudo apt-get install clang-6.0 libclang-6.0-dev python-clang-6.0
     
   Finally, we set the C/C++ compiler::
 
-    export CC=clang-5.0
-    export CXX=clang++-5.0
+    export CC=clang-6.0
+    export CXX=clang++-6.0
 
   To make this choice permanent, add these two lines to your ``$HOME/.bash_profile``.

@@ -9,6 +9,9 @@ set(TRIQS_GIT_HASH @TRIQS_GIT_HASH@)
 # The compiler used for triqs
 set(TRIQS_CXX_COMPILER @CMAKE_CXX_COMPILER@)
 
+# Git executable
+set(TRIQS_GIT_EXECUTABLE @GIT_EXECUTABLE@)
+
 # Root of the installation
 set(TRIQS_ROOT  @CMAKE_INSTALL_PREFIX@)
 

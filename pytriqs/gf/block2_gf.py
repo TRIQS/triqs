@@ -166,6 +166,17 @@ class Block2Gf(object):
         """ Number of blocks"""
         return len(self)
 
+    @property
+    def real(self):
+        """A Gf with only the real part of data."""
+        return Block2Gf(name_list1 = self.__indices1, name_list2 = self.__indices2, block_list = [[g.real for g in g_row] for g_row in self.__GFlist], name = ("Re " + self.name) if self.name else '')
+
+    @property
+    def imag(self):
+        """A Gf with only the imag part of data."""
+        return Block2Gf(name_list1 = self.__indices1, name_list2 = self.__indices2, block_list = [[g.imag for g in g_row] for g_row in self.__GFlist], name = ("Im " + self.name) if self.name else '')
+
+
     #----------------------   IO    -------------------------------------
 
     def __reduce__(self):
