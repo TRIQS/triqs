@@ -179,11 +179,11 @@ namespace triqs::gfs {
     if (known_moments.shape()[0] < 4) {
       auto [tail, error] = fit_tail(gw, known_moments);
       TRIQS_ASSERT2((error < 1e-3), "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error));
-      if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error;
+      if (error > 1e-6) std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error << "\n";
       TRIQS_ASSERT2((first_dim(tail) > 4), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
       double _abs_tail0 = max_element(abs(tail(0, range())));
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
-                    "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
+                    "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0) + "\n");
       mom_123.rebind(tail(range(1, 4), range()));
     } else
       mom_123.rebind(known_moments(range(1, 4), range()));
@@ -192,7 +192,7 @@ namespace triqs::gfs {
     long L      = tau_mesh.size() - 1;
     if (L < 2 * (gw.mesh().last_index() + 1))
       TRIQS_RUNTIME_ERROR << "Inverse Fourier: The time mesh mush be at least twice as long as the freq mesh :\n gt.mesh().size() =  "
-                          << tau_mesh.size() << " gw.mesh().last_index()" << gw.mesh().last_index();
+                          << tau_mesh.size() << " gw.mesh().last_index()" << gw.mesh().last_index() << "\n";
 
     long n_others = second_dim(gw.data());
 
