@@ -49,7 +49,7 @@ modifications) for earlier versions of OS X.
    The following two commands will install the most recent clang compiler and load it into your environment: ::
      
      brew install llvm
-     brew link llvm
+     brew link --force llvm
 
    As a next step we make sure the C/C++ compiler is set for your current :ref:`environment <environment_vars>`::
 
