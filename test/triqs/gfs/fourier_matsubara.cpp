@@ -49,7 +49,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
   // Fix the tail for the fourier transform
   auto [tail, err] = fit_tail(Gw1);
   auto Gt1_tail    = gf<imtime, target_t>{{beta, statistic, N_tau}, shape};
-  Gt1_tail()       = fourier(Gw1, make_const_view(tail));
+  Gt1_tail()       = fourier(Gw1, tail);
   EXPECT_GF_NEAR(Gt1_tail, Gt1_exact, precision);
 
   // Pass only one 0th and first moment to the fourier
@@ -60,7 +60,7 @@ template <int TARGET_RANK> void test_fourier(statistic_enum statistic) {
     known_moments(1, ellipsis()) = -2.5;
 
   auto Gt1_known_moments = gf<imtime, target_t>{{beta, statistic, N_tau}, shape};
-  Gt1_known_moments()    = fourier(Gw1, make_const_view(known_moments));
+  Gt1_known_moments()    = fourier(Gw1, known_moments);
   EXPECT_GF_NEAR(Gt1_known_moments, Gt1_exact, precision);
 
   // Test the factory function

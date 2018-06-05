@@ -36,7 +36,7 @@ template <int TARGET_RANK> void test_fourier() {
 
   // verification that TF(TF^-1)=Id
   auto [tail, err] = fit_tail(Gw1);
-  auto Gw1b        = make_gf_from_fourier(Gt1, w_mesh, make_const_view(tail(range(0, 3), ellipsis()))); // FIXME const_view
+  auto Gw1b        = make_gf_from_fourier(Gt1, w_mesh, tail(range(0, 3), ellipsis()));
   EXPECT_GF_NEAR(Gw1, Gw1b, precision);
 
   // Comparision against exact result
@@ -56,10 +56,10 @@ template <int TARGET_RANK> void test_fourier() {
   } else
     known_moments(1, ellipsis()) = 1.;
 
-  Gw1() = fourier(Gt1, make_const_view(known_moments));
+  Gw1() = fourier(Gt1, known_moments);
 
   // verification that TF(TF^-1)=Id
-  auto Gt1b = make_gf_from_fourier(Gw1, t_mesh, make_const_view(known_moments)); // FIXME const view
+  auto Gt1b = make_gf_from_fourier(Gw1, t_mesh, known_moments);
   EXPECT_GF_NEAR(Gt1, Gt1b, precision);
 
   // Comparision against exact result

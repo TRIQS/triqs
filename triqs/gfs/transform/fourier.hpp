@@ -105,7 +105,7 @@ namespace triqs::gfs {
     //gf_mesh<V2> out_mesh = std::get<N>(gout.mesh());
     auto const &out_mesh = std::get<N>(gout.mesh()); // FIXME singlevar??
 
-    auto gout_flatten = _fourier_impl(out_mesh, flatten_gf_2d<N>(gin), flatten_2d(opt_args, N)...);
+    auto gout_flatten = _fourier_impl(out_mesh, flatten_gf_2d<N>(gin), flatten_2d(make_const_view(opt_args), N)...);
     auto _            = ellipsis();
     if constexpr (gin.data_rank == 1)
       gout.data() = gout_flatten.data()(_, 0); // gout is scalar, gout_flatten vectorial
@@ -131,6 +131,7 @@ namespace triqs::gfs {
   // split : No N for 1 mesh ...
   template <int N = 0, typename V1, typename V2, typename T, typename... OptArgs>
   auto make_gf_from_fourier(gf_const_view<V1, T> gin, gf_mesh<V2> const &mesh, OptArgs const &... opt_args) {
+    static_assert(N >= 0 && N < get_n_variables<V1>::value, "Mesh index exceeds Gf Mesh Rank");
     static_assert(get_n_variables<V2>::value == 1, "Cannot fourier transform on cartesian product mesh");
 
     if constexpr (get_n_variables<V1>::value == 1) { // === single mesh
@@ -196,9 +197,9 @@ namespace triqs::gfs {
 
   template <int... Ns, typename V, typename T> auto make_gf_from_multi_fourier(gf_const_view<V, T> gin) { return (gin() & ... & _fou_wk<Ns>{}); }
 
-  template <int N1, int N2, int... Ns, typename V, typename T> auto make_gf_from_fourier(gf_const_view<V, T> gin) {
-    //int rank = get_n_variables<V>::value;
-    //static_assert(N1 < rank && N2 < rank , "Mesh position out of bounds");
+  template <int N1, int N2, int... Ns, typename... Vs, typename T> auto make_gf_from_fourier(gf_const_view<cartesian_product<Vs...>, T> gin) {
+    static_assert(sizeof...(Vs) >= 2 + sizeof...(Ns), "Green function mesh rank incompatible with mesh indices");
+    static_assert(sizeof...(Ns) < 2, "Multivariable fourier implemented only for up to 3 dimensions");
 
     auto g1 = make_gf_from_fourier<N1>(gin(), make_adjoint_mesh(std::get<N1>(gin.mesh())));
     auto g2 = make_gf_from_fourier<N2>(g1(), make_adjoint_mesh(std::get<N2>(g1.mesh())));

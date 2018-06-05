@@ -28,8 +28,6 @@ namespace triqs::gfs {
     return std::move(mat);
   }
 
-  //template <typename T, int R> matrix<T> flatten_2d(array<T, R> const &a, int n) { return flatten_2d(a(), n); }
-
   //-------------------------------------
 
   template <int N, typename... Ms, typename Target> auto flatten_gf_2d(gf_const_view<cartesian_product<Ms...>, Target> g) {
