@@ -72,7 +72,6 @@ class Idx:
         self.idx = x[0] if len(x)==1 else x
 
 class Gf(object):
-    __metaclass__ = AddMethod
     """
     Green function class
 
@@ -106,6 +105,7 @@ class Gf(object):
 
     NB : One of target_shape, data and indices must be set, and the other must be None.
     """
+    __metaclass__ = AddMethod
     
     _hdf5_data_scheme_ = 'Gf'
 
