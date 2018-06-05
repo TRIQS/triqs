@@ -129,8 +129,8 @@ Cpp2Py and TRIQS both provide a small script (`cpp2pyvars.sh` and `triqsvars.sh`
 to load their respective installation into your :ref:`environment variables <environment_vars>`.
 Please source them with the proper replacement of INSTALL_PREFIX::
 
-        source INSTALL_PREFIX/share/cpp2pyvars.sh
-        source INSTALL_PREFIX/share/triqsvars.sh
+        source $INSTALL_PREFIX/share/cpp2pyvars.sh
+        source $INSTALL_PREFIX/share/triqsvars.sh
 
 To automate this process, please add these two lines to your `~/.bash_profile <https://en.wikipedia.org/wiki/Bash_(Unix_shell)#Startup_scripts>`_
 (or `~/.zprofile <http://zsh.sourceforge.net/FAQ/zshfaq03.html#l19>`_)
