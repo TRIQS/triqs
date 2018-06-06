@@ -164,8 +164,7 @@ namespace triqs {
 
       /// Mesh comparison
       bool operator==(cluster_mesh const &M) const {
-	return ( (dims == M.dims) && (units == M.units) &&
-		 (periodization_matrix == M.periodization_matrix) );
+        return ((dims == M.dims) && (units == M.units) && (periodization_matrix == M.periodization_matrix));
       }
       bool operator!=(cluster_mesh const &M) const { return !(operator==(M)); }
 
@@ -214,7 +213,10 @@ namespace triqs {
         ar &s1;
       }
 
-      friend std::ostream &operator<<(std::ostream &sout, cluster_mesh const &m) { return sout << "cluster_mesh of size " << m.dims << "\n units = " << m.units << "\n periodization_matrix = " << m.periodization_matrix << "\n"; }
+      friend std::ostream &operator<<(std::ostream &sout, cluster_mesh const &m) {
+        return sout << "cluster_mesh of size " << m.dims << "\n units = " << m.units << "\n periodization_matrix = " << m.periodization_matrix
+                    << "\n";
+      }
     };
 
     // ---------------------------------------------------------------------------

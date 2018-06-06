@@ -29,7 +29,7 @@ namespace triqs {
 
     ///Mesh on Brillouin zone
     template <> struct gf_mesh<brillouin_zone> : public cluster_mesh {
-
+      private:
       brillouin_zone bz;
 
       public:
@@ -128,10 +128,18 @@ namespace triqs {
         return f[id.idx[0]];
       }
 
+      // ------------------- Comparison -------------------
+
+      bool operator==(gf_mesh<brillouin_zone> const &M) const {
+	return bz == M.domain() && cluster_mesh::operator==(M);
+      }
+
+      bool operator!=(gf_mesh<brillouin_zone> const &M) const { return !(operator==(M)); }
+
       // -------------------- print -------------------
 
       friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-        return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims << ", Domain: " << m.domain();
+        return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
       }
 
       // -------------- HDF5  --------------------------
@@ -144,7 +152,8 @@ namespace triqs {
         h5_write(gr, "bz", m.bz);
       }
 
-      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) {
+        h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
         h5::group gr = fg.open_group(subgroup_name);
         h5_read(gr, "bz", m.bz);
       }

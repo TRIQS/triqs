@@ -27,7 +27,7 @@ namespace triqs {
     template <typename X, typename Y> void assert_gfs_are_close(X const &x, Y const &y, double precision) {
 
       // meshes must be identical and data close
-      if (x.mesh() != y.mesh()) TRIQS_RUNTIME_ERROR << "GFs have different meshes";
+      if (x.mesh() != y.mesh()) TRIQS_RUNTIME_ERROR << "GFs have different meshes\n -- 1st Mesh \n" << x.mesh() << "\n -- 2nd Mesh \n" << y.mesh();
       if (max_element(abs(x.data() - y.data())) > precision)
         TRIQS_RUNTIME_ERROR << "Gfs have different data. max(abs(x-y)) = " << max_element(abs(x.data() - y.data()));
     }

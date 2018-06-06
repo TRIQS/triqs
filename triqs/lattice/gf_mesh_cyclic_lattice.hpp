@@ -30,6 +30,7 @@ namespace triqs {
 
     ///Mesh on real-space lattice
     template <> struct gf_mesh<cyclic_lattice> : cluster_mesh {
+      private:
       bravais_lattice bl;
 
       public:
@@ -44,7 +45,7 @@ namespace triqs {
 
       ///Construct gf_mesh<cyclic_lattice> from three linear sizes assuming a cubic lattice (backward compatibility)
       gf_mesh(int L1 = 1, int L2 = 1, int L3 = 1)
-         : bl{make_unit_matrix<double>(3)}, cluster_mesh{make_unit_matrix<double>(3), matrix<int>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
+	 : bl{make_unit_matrix<double>(3)}, cluster_mesh{make_unit_matrix<double>(3), matrix<int>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
 
       ///Construct gf_mesh<cyclic_lattice> from domain (bravais_lattice) and int L (linear size of Cluster mesh)
       gf_mesh(bravais_lattice const &bl_, int L)
@@ -65,10 +66,18 @@ namespace triqs {
         return f[id.idx[0]];
       }
 
+      // ------------------- Comparison -------------------
+
+      bool operator==(gf_mesh<cyclic_lattice> const &M) const {
+	return bl == M.domain() && cluster_mesh::operator==(M);
+      }
+
+      bool operator!=(gf_mesh<cyclic_lattice> const &M) const { return !(operator==(M)); }
+
       // -------------------- print -------------------
 
       friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-        return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims << ", Domain: " << m.domain();
+        return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
       }
 
       // -------------- HDF5  --------------------------

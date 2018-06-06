@@ -58,10 +58,16 @@ namespace triqs {
         return res;
       }
 
+      // ------------------- Comparison -------------------
+
+      bool operator==(bravais_lattice const &bl) const { return units_ == bl.units() && dim_ == bl.dim() && n_orbitals() == bl.n_orbitals(); }
+
+      bool operator!=(bravais_lattice const &bl) const { return !(operator==(bl)); }
+
       // -------------------- print -------------------
 
       friend std::ostream &operator<<(std::ostream &sout, bravais_lattice const &bl) {
-        return sout << "Bravais Lattice with unit vectors " << bl.units();
+        return sout << "Bravais Lattice with dimension " << bl.dim_ << ", units " << bl.units_ << ", n_orbitals " << bl.n_orbitals();
       }
 
       /// Write into HDF5
