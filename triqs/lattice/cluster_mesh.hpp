@@ -163,7 +163,10 @@ namespace triqs {
       }
 
       /// Mesh comparison
-      bool operator==(cluster_mesh const &M) const { return ((dims == M.dims)); }
+      bool operator==(cluster_mesh const &M) const {
+	return ( (dims == M.dims) && (units == M.units) &&
+		 (periodization_matrix == M.periodization_matrix) );
+      }
       bool operator!=(cluster_mesh const &M) const { return !(operator==(M)); }
 
       /// Reduce point modulo to the lattice.
@@ -196,7 +199,7 @@ namespace triqs {
         h5::group gr = fg.open_group(subgroup_name);
         gr.assert_hdf5_scheme_as_string(_type, true);
         auto units                = h5::h5_read<matrix<double>>(gr, "units");
-        auto periodization_matrix = h5::h5_read<matrix<double>>(gr, "periodization_matrix");
+        auto periodization_matrix = h5::h5_read<matrix<int>>(gr, "periodization_matrix");
         m                         = cluster_mesh(units, periodization_matrix);
       }
 
@@ -211,7 +214,7 @@ namespace triqs {
         ar &s1;
       }
 
-      friend std::ostream &operator<<(std::ostream &sout, cluster_mesh const &m) { return sout << "cluster_mesh of size " << m.dims; }
+      friend std::ostream &operator<<(std::ostream &sout, cluster_mesh const &m) { return sout << "cluster_mesh of size " << m.dims << "\n units = " << m.units << "\n periodization_matrix = " << m.periodization_matrix << "\n"; }
     };
 
     // ---------------------------------------------------------------------------

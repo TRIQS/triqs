@@ -131,7 +131,7 @@ namespace triqs {
       // -------------------- print -------------------
 
       friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-        return sout << "Brillouin Zone Mesh  with linear dimensions " << m.dims << ", Domain: " << m.domain();
+        return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims << ", Domain: " << m.domain();
       }
 
       // -------------- HDF5  --------------------------
@@ -140,9 +140,14 @@ namespace triqs {
 
       friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
         h5_write_impl(fg, subgroup_name, m, "MeshBrillouinZone");
+        h5::group gr = fg.open_group(subgroup_name);
+        h5_write(gr, "bz", m.bz);
       }
 
-      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone"); }
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
+        h5::group gr = fg.open_group(subgroup_name);
+        h5_read(gr, "bz", m.bz);
+      }
     };
   } // namespace gfs
 } // namespace triqs
