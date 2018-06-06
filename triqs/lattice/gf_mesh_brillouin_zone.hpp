@@ -147,6 +147,7 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
         h5::group gr = fg.open_group(subgroup_name);
         h5_read(gr, "bz", m.bz);
+      }
     };
   } // namespace gfs
 } // namespace triqs
