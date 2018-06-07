@@ -183,7 +183,7 @@ namespace triqs::gfs {
       TRIQS_ASSERT2((first_dim(tail) > 4), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
       double _abs_tail0 = max_element(abs(tail(0, range())));
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
-                    "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0) << "\n");
+                    "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0) + "\n");
       mom_123.rebind(tail(range(1, 4), range()));
     } else
       mom_123.rebind(known_moments(range(1, 4), range()));
