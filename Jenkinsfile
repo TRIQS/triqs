@@ -32,7 +32,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
 
 def osxPlatforms = [
   ["gcc", ['CC=gcc-7', 'CXX=g++-7']],
-  ["clang", ['CC=/usr/local/opt/llvm/bin/clang', 'CXX=/usr/local/opt/llvm/bin/clang++', 'CXXFLAGS=-I/usr/local/opt/llvm/include', 'LDFLAGS=-L/usr/local/opt/llvm/lib']]
+  ["clang", ['CC=$BREW/opt/llvm/bin/clang', 'CXX=$BREW/opt/llvm/bin/clang++', 'CXXFLAGS=-I$BREW/opt/llvm/include', 'LDFLAGS=-L$BREW/opt/llvm/lib']]
 ]
 for (int i = 0; i < osxPlatforms.size(); i++) {
   def platformEnv = osxPlatforms[i]
@@ -52,10 +52,10 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         git(url: 'https://github.com/TRIQS/cpp2py', branch: 'master')
       }
 
-      dir(buildDir) { withEnv(platformEnv[1]+[
-          "PATH=$installDir/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin",
-          "CPATH=$installDir/include",
-          "LIBRARY_PATH=$installDir/lib",
+      dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
+          "PATH=$installDir/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
+          "CPATH=$installDir/include:${env.BREW}/include",
+          "LIBRARY_PATH=$installDir/lib:${env.BREW}/lib",
           "CMAKE_PREFIX_PATH=$installDir/share/cmake"]) {
         deleteDir()
         sh """#!/bin/bash -ex
