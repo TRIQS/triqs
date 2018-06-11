@@ -68,7 +68,7 @@ modifications) for earlier versions of OS X.
      brew install fftw
      brew install open-mpi
      brew install zmq
-     brew install python
+     brew install python@2
 
 4. Install the required python packages: ::
 
