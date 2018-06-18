@@ -35,7 +35,7 @@ Usage
 
 In order to use clang for building TRIQS and its applications, one should::
 
-   export C=clang
+   export CC=clang
    export CXX=clang++
 
 before the cmake configuration step in the install instructions.
