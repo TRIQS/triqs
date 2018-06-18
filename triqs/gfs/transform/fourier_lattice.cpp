@@ -22,6 +22,7 @@
  ******************************************************************************/
 #include "../../gfs.hpp"
 #include "./fourier_common.hpp"
+#include <itertools/itertools.hpp>
 
 #define ASSERT_EQUAL(X, Y, MESS)                                                                                                                     \
   if (X != Y) TRIQS_RUNTIME_ERROR << MESS;
@@ -38,9 +39,13 @@ namespace triqs::gfs {
     //ASSERT_EQUAL(g_in.data().indexmap().strides()[2], 1, "Unexpected strides in fourier implementation");
 
     //check periodization_matrix is diagonal
-    for (int i = 0; i < g_in.mesh().periodization_matrix.shape()[0]; i++)
-      for (int j = 0; j < g_in.mesh().periodization_matrix.shape()[1]; j++)
-        if (i != j and g_in.mesh().periodization_matrix(i, j) != 0) TRIQS_RUNTIME_ERROR << "Periodization matrix must be diagonal for FFTW to work";
+    auto &period_mat = g_in.mesh().periodization_matrix;
+    for (auto [i, j] : itertools::product_range(period_mat.shape()[0], period_mat.shape()[1]))
+      if (i != j and period_mat(i, j) != 0) {
+        std::cerr
+           << "WARNING: Fourier Transform of k-mesh with non-diagonal periodization matrix. Please make sure that the order of real and reciprocal space vectors is compatible for FFTW to work. (Cf. discussion doi:10.3929/ethz-a-010657714, p.26)";
+        break;
+      }
 
     auto g_out    = gf_vec_t<V1>{out_mesh, g_in.target_shape()[0]};
     long n_others = second_dim(g_in.data());

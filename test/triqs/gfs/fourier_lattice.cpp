@@ -38,13 +38,6 @@ template <int TARGET_RANK> void test_fourier() {
   auto Gr2b = make_gf_from_fourier(Gk2);
   EXPECT_GF_NEAR(Gk1, Gk2, precision);
   EXPECT_GF_NEAR(Grb, Gr2b, precision);
-
-  // Test EXCEPTION for non-diagonal periodization matrix
-  auto per_mat = matrix<int>{{{2, 1, 0}, {-1, 2, 0}, {0, 0, 1}}};
-  Gr           = gf<cyclic_lattice, target_t>{{bl, per_mat}, shape};
-  Gr(r_) << exp(-r_(0));
-  Gk1 = gf<brillouin_zone, target_t>{{bz, per_mat}, shape};
-  EXPECT_THROW(Gk1() = fourier(Gr), triqs::runtime_error);
 }
 
 TEST(FourierLattice, Scalar) { test_fourier<0>(); }
