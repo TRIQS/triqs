@@ -199,18 +199,28 @@ namespace triqs::gfs {
 
   template <int... Ns, typename V, typename T> auto make_gf_from_multi_fourier(gf_const_view<V, T> gin) { return (gin() & ... & _fou_wk<Ns>{}); }
 
-  template <int N1, int N2, int... Ns, typename... Vs, typename T> auto make_gf_from_fourier(gf_const_view<cartesian_product<Vs...>, T> gin) {
-    static_assert(sizeof...(Vs) >= 2 + sizeof...(Ns), "Green function mesh rank incompatible with mesh indices");
-    static_assert(sizeof...(Ns) < 2, "Multivariable fourier implemented only for up to 3 dimensions");
+  template <int N1, int N2, typename M1, typename M2, typename... Vs, typename T>
+  auto make_gf_from_fourier(gf_const_view<cartesian_product<Vs...>, T> gin, M1 &&m1, M2 &&m2) {
+    static_assert(sizeof...(Vs) >= 2, "Green function mesh rank incompatible with mesh indices");
 
-    auto g1 = make_gf_from_fourier<N1>(gin(), make_adjoint_mesh(std::get<N1>(gin.mesh())));
-    auto g2 = make_gf_from_fourier<N2>(g1(), make_adjoint_mesh(std::get<N2>(g1.mesh())));
+    auto g1 = make_gf_from_fourier<N1>(gin(), std::forward<M1>(m1));
+    auto g2 = make_gf_from_fourier<N2>(g1(), std::forward<M2>(m2));
 
-    if constexpr (sizeof...(Ns) == 1) {
-      auto gres = make_gf_from_fourier<Ns...>(g2, make_adjoint_mesh(std::get<Ns...>(g2.mesh())));
-      return std::move(gres);
-    } else
-      return std::move(g2);
+    return std::move(g2);
+  }
+
+  template <int N1, int N2, int N3, typename M1, typename M2, typename M3, typename... Vs, typename T>
+  auto make_gf_from_fourier(gf_const_view<cartesian_product<Vs...>, T> gin, M1 &&m1, M2 &&m2, M3 &&m3) {
+    static_assert(sizeof...(Vs) >= 3, "Green function mesh rank incompatible with mesh indices");
+
+    auto g1 = make_gf_from_fourier<N1, N2>(gin(), std::forward<M1>(m1), std::forward<M2>(m2));
+    auto g2 = make_gf_from_fourier<N3>(g1(), std::forward<M3>(m3));
+
+    return std::move(g2);
+  }
+
+  template <int... Ns, typename... Vs, typename T> auto make_gf_from_fourier(gf_const_view<cartesian_product<Vs...>, T> gin) {
+    return std::move(make_gf_from_fourier<Ns...>(gin(), make_adjoint_mesh(std::get<Ns>(gin.mesh()))...));
   }
 
   /* *-----------------------------------------------------------------------------------------------------

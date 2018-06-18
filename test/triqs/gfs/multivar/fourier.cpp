@@ -39,27 +39,42 @@ template <int TARGET_RANK> void test_fourier() {
   g(k_, iOm_, iom_) << 1 / (iom_ + iOm_ - cos(k_[0]) * cos(k_[1]));
 
   // Fourier Transform 1st mesh and back
-  auto r_mesh    = gf_mesh<cyclic_lattice>(BL, N_k);
-  auto g_r_iW_iw = make_gf_from_fourier<0>(g, r_mesh);
-  auto gb        = make_gf_from_fourier<0>(g_r_iW_iw, k_mesh);
-  EXPECT_GF_NEAR(g, gb, precision);
-  gb() = fourier<0>(g_r_iW_iw);
-  EXPECT_GF_NEAR(g, gb, precision);
+  auto r_mesh = gf_mesh<cyclic_lattice>(BL, N_k);
+  {
+    auto g_r_iW_iw = make_gf_from_fourier<0>(g, r_mesh);
+    auto gb        = make_gf_from_fourier<0>(g_r_iW_iw, k_mesh);
+    EXPECT_GF_NEAR(g, gb, precision);
+    gb() = fourier<0>(g_r_iW_iw);
+    EXPECT_GF_NEAR(g, gb, precision);
+  }
 
   // Fourier Transform 3rd mesh and back
-  auto tau_mesh   = gf_mesh<imtime>{beta, Fermion, 2 * N_iw + 1};
-  auto g_k_iW_tau = make_gf_from_fourier<2>(g, tau_mesh);
-  gb              = make_gf_from_fourier<2>(g_k_iW_tau, iw_mesh);
-  EXPECT_GF_NEAR(g, gb, precision);
-  gb() = fourier<2>(g_k_iW_tau);
-  EXPECT_GF_NEAR(g, gb, precision);
+  auto tau_mesh = gf_mesh<imtime>{beta, Fermion, 2 * N_iw + 1};
+  {
+    auto g_k_iW_tau = make_gf_from_fourier<2>(g, tau_mesh);
+    auto gb         = make_gf_from_fourier<2>(g_k_iW_tau, iw_mesh);
+    EXPECT_GF_NEAR(g, gb, precision);
+
+    // Test without maker
+    gb() = fourier<2>(g_k_iW_tau);
+    EXPECT_GF_NEAR(g, gb, precision);
+  }
 
   // Fourier Transform 1st and 3rd mesh and back
-  auto g_r_iW_tau = make_gf_from_fourier<0, 2>(g);
-  gb              = make_gf_from_fourier<0, 2>(g_r_iW_tau);
-  EXPECT_GF_NEAR(g, gb, precision);
-  //gb = fourier<0,2>(g_r_iW_tau);
-  //EXPECT_GF_NEAR(g, gb, precision);
+  {
+    auto g_r_iW_tau = make_gf_from_fourier<0, 2>(g);
+
+    auto gb = make_gf_from_fourier<0, 2>(g_r_iW_tau);
+    EXPECT_GF_NEAR(g, gb, precision);
+
+    ////Test without maker // FIXME Not Implemented
+    //gb() = fourier<0, 2>(g_r_iW_tau);
+    //EXPECT_GF_NEAR(g, gb, precision);
+
+    // Specify the meshes for the maker
+    auto gb1 = make_gf_from_fourier<0, 2>(g_r_iW_tau, k_mesh, iw_mesh);
+    EXPECT_GF_NEAR(g, gb1, precision);
+  }
 }
 
 TEST(FourierMultivar, Scalar) { test_fourier<0>(); }  // NOLINT
