@@ -26,54 +26,69 @@
 namespace triqs {
   namespace gfs {
 
+    template <int R> struct tensor_valued;
     template <int R> struct tensor_real_valued {
       static_assert(R > 0, "tensor_real_valued : R must be > 0");
       static constexpr int rank       = R;
+      static constexpr int is_real    = true;
       static constexpr bool is_matrix = false;
       using scalar_t                  = double;
       using slice_t                   = arrays::array<scalar_t, rank>;
       using real_t                    = tensor_real_valued;
+      using complex_t                 = tensor_valued<R>;
     };
 
     template <int R> struct tensor_valued {
       static_assert(R > 0, "tensor_valued : R must be > 0");
       static constexpr int rank       = R;
+      static constexpr int is_real    = false;
       static constexpr bool is_matrix = false;
       using scalar_t                  = dcomplex;
       using slice_t                   = arrays::array<scalar_t, rank>;
       using real_t                    = tensor_real_valued<R>;
+      using complex_t                 = tensor_valued;
     };
 
+    struct matrix_valued;
     struct matrix_real_valued {
       static constexpr int rank       = 2;
+      static constexpr int is_real    = true;
       static constexpr bool is_matrix = true;
       using scalar_t                  = double;
       using slice_t                   = arrays::matrix<scalar_t>;
       using real_t                    = matrix_real_valued;
+      using complex_t                 = matrix_valued;
     };
 
     struct matrix_valued {
       static constexpr int rank       = 2;
+      static constexpr int is_real    = false;
       static constexpr bool is_matrix = true;
       using scalar_t                  = dcomplex;
       using slice_t                   = arrays::matrix<scalar_t>;
       using real_t                    = matrix_real_valued;
+      using complex_t                 = matrix_valued;
     };
 
+    struct scalar_valued;
     struct scalar_real_valued {
       static constexpr int rank       = 0;
+      static constexpr int is_real    = true;
       static constexpr bool is_matrix = false;
       using scalar_t                  = double;
       using slice_t                   = scalar_t;
       using real_t                    = scalar_real_valued;
+      using complex_t                 = scalar_valued;
     };
 
     struct scalar_valued {
       static constexpr int rank       = 0;
+      static constexpr int is_real    = false;
       static constexpr bool is_matrix = false;
       using scalar_t                  = dcomplex;
       using slice_t                   = scalar_t;
       using real_t                    = scalar_real_valued;
+      using complex_t                 = scalar_valued;
     };
 
     /// invert the relation:  type, rank -> target.

@@ -101,11 +101,12 @@ namespace triqs::gfs {
    *-----------------------------------------------------------------------------------------------------*/
 
   // this function just regroups the function, and calls the vector_valued gf core implementation
-  template <int N, typename V1, typename V2, typename T, typename... OptArgs>
-  void _fourier(gf_const_view<V1, T> gin, gf_view<V2, T> gout, OptArgs const &... opt_args) {
+  template <int N, typename V1, typename V2, typename T1, typename T2, typename... OptArgs>
+  void _fourier(gf_const_view<V1, T1> gin, gf_view<V2, T2> gout, OptArgs const &... opt_args) {
 
-    //gf_mesh<V2> out_mesh = std::get<N>(gout.mesh());
-    auto const &out_mesh = std::get<N>(gout.mesh()); // FIXME singlevar??
+    static_assert(std::is_same<typename T1::complex_t, T2>::value, "Incompatible target types for fourier transform");
+
+    auto const &out_mesh = std::get<N>(gout.mesh());
 
     auto gout_flatten = _fourier_impl(out_mesh, flatten_gf_2d<N>(gin), flatten_2d(make_const_view(opt_args), 0)...);
     auto _            = ellipsis();
@@ -229,6 +230,37 @@ namespace triqs::gfs {
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
+  template <int N = 0, typename V, typename T, typename M, int R>
+  auto make_gf_from_fourier(block_gf_const_view<V, T> gin, M && m, std::vector<array<dcomplex, R>> & known_moments) {
+
+    using r_t = decltype(make_gf_from_fourier<N>(gin[0], std::forward<M>(m), known_moments[0]));
+    std::vector<r_t> g_vec;
+
+    TRIQS_ASSERT2(gin.size() == known_moments.size(), "Fourier: Require equal number of blocks in block_gf and known_moments vector");
+
+    for (auto [gin_bl, km_bl] : triqs::utility::zip(gin, known_moments)) g_vec.push_back(make_gf_from_fourier<N>(gin_bl, std::forward<M>(m), km_bl));
+    return make_block_gf(gin.block_names(), g_vec);
+  }
+
+  template <int N = 0, typename V, typename T, typename M, int R>
+  auto make_gf_from_fourier(block2_gf_const_view<V, T> gin, M && m, std::vector<std::vector<array<dcomplex, R>>> & known_moments) {
+
+    using r_t = decltype(make_gf_from_fourier<N>(gin(0,0), std::forward<M>(m), known_moments[0][0]));
+    std::vector<std::vector<r_t>> g_vecvec;
+
+    TRIQS_ASSERT2(gin.size1() == known_moments.size(), "Fourier: Require matching block structore between and known_moments");
+
+    for (int i : range(gin.size1())) {
+      TRIQS_ASSERT2(gin.size2() == known_moments[i].size(), "Fourier: Require matching block structore between and known_moments");
+
+      std::vector<r_t> g_vec;
+      for (int j : range(gin.size2())) g_vec.push_back(make_gf_from_fourier<N>(gin(i,j), std::forward<M>(m), known_moments[i][j]));
+
+      g_vecvec.emplace_back(std::move(g_vec));
+    }
+    return block2_gf{gin.block_names(), std::move(g_vecvec)};
+  }
+
   template <int N = 0, int... Ns, typename V, typename T, typename... Args>
   auto make_gf_from_fourier(block_gf_const_view<V, T> gin, Args &&... args) {
     auto l = [&](gf_const_view<V, T> g_bl) { return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), std::forward<Args>(args)...); };
@@ -290,7 +322,7 @@ namespace triqs::gfs {
   // realize the call for gx = fourier(gy);
   template <int N, typename V1, typename T1, typename V2, typename T2, typename... Args>
   void triqs_gf_view_assign_delegation(gf_view<V1, T1> lhs_g, _fourier_lazy<N, gf_const_view<V2, T2>, Args...> const &rhs) {
-    static_assert(std::is_same_v<T1, T2>, "Error : in gx = fourier(gy), gx and gy must have the same target");
+    static_assert(std::is_same_v<typename T1::real_t, typename T2::real_t>, "Error : in gx = fourier(gy), gx and gy must have the same target");
 
     if constexpr (get_n_variables<V1>::value == 1) // === single mesh
       static_assert(std::is_same_v<V2, _mesh_fourier_image<V1>>, "There is no Fourier transform between these two meshes");
