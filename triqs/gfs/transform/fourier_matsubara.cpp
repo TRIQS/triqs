@@ -163,8 +163,10 @@ namespace triqs::gfs {
 
     auto gw = gf_vec_t<imfreq>{iw_mesh, {int(n_others)}};
 
+    // Correction term to account for proper Trapezoidal integration
     // FIXME Avoid copy, by doing proper in-place operation
-    for (auto const &w : iw_mesh) gw[w] = _gout((w.index() + L) % L, _) + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
+    auto corr = -0.5 * fact * (gt[0] + m1 + (is_fermion ? 1 : -1) * gt[L]);
+    for (auto const &w : iw_mesh) gw[w] = _gout((w.index() + L) % L, _) + corr + a1 / (w - b1) + a2 / (w - b2) + a3 / (w - b3);
 
     return std::move(gw);
   }
