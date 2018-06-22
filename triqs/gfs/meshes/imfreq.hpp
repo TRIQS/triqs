@@ -186,7 +186,7 @@ namespace triqs::gfs {
     // -------------- Evaluation of a function on the grid --------------------------
 
     /// Is the point in mesh ?
-    constexpr bool is_within_boundary(all_t) const { return true; }
+    bool is_within_boundary(all_t) const { return true; }
     bool is_within_boundary(long n) const { return ((n >= first_index()) && (n <= last_index())); }
     bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n); }
 
