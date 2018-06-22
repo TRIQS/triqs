@@ -48,15 +48,17 @@ namespace triqs::gfs {
   }
 
   // FIXME : DOC
-  inline gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> const &m) {
+  inline gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> const &m, bool shift_half_bin = false) {
     int L       = m.size();
     double wmax = M_PI * (L - 1) / (L * m.delta());
+    if(shift_half_bin) return {-wmax + M_PI / L / m.delta(), wmax + M_PI / L / m.delta(), L};
     return {-wmax, wmax, L};
   }
 
-  inline gf_mesh<retime> make_adjoint_mesh(gf_mesh<refreq> const &m) {
+  inline gf_mesh<retime> make_adjoint_mesh(gf_mesh<refreq> const &m, bool shift_half_bin = false) {
     int L       = m.size();
     double tmax = M_PI * (L - 1) / (L * m.delta());
+    if(shift_half_bin) return {-tmax + M_PI / L / m.delta(), tmax + M_PI / L / m.delta(), L};
     return {-tmax, tmax, L};
   }
 
@@ -167,20 +169,20 @@ namespace triqs::gfs {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 
-  template <int N = 0, typename T> gf<imtime, T> make_gf_from_fourier(gf_const_view<imfreq, T> gin, int n_iw = -1) {
-    return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), n_iw));
-  }
-
-  template <int N = 0, typename T> gf<imfreq, T> make_gf_from_fourier(gf_const_view<imtime, T> gin, int n_tau = -1) {
+  template <int N = 0, typename T> gf<imtime, T> make_gf_from_fourier(gf_const_view<imfreq, T> gin, int n_tau = -1) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), n_tau));
   }
 
-  template <int N = 0, typename T> gf<retime, T> make_gf_from_fourier(gf_const_view<refreq, T> gin) {
-    return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
+  template <int N = 0, typename T> gf<imfreq, T> make_gf_from_fourier(gf_const_view<imtime, T> gin, int n_iw = -1) {
+    return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), n_iw));
   }
 
-  template <int N = 0, typename T> gf<refreq, T> make_gf_from_fourier(gf_const_view<retime, T> gin) {
-    return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
+  template <int N = 0, typename T> gf<retime, T> make_gf_from_fourier(gf_const_view<refreq, T> gin, bool shift_half_bin = false) {
+    return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), shift_half_bin));
+  }
+
+  template <int N = 0, typename T> gf<refreq, T> make_gf_from_fourier(gf_const_view<retime, T> gin, bool shift_half_bin = false) {
+    return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh(), shift_half_bin));
   }
 
   /* *-----------------------------------------------------------------------------------------------------

@@ -87,6 +87,9 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
             m.add_function("void set_from_inverse_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_type, Meshes[1], Target),
                     calling_pattern = "g_out = fourier(g_in)",
                     doc = """Fills self with the inverse Fourier transform of g_in""")
+            m.add_function("void set_from_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_type, Meshes[1], Target),
+                    calling_pattern = "g_out = fourier(g_in)",
+                    doc = """Fills self with the Fourier transform of g_in""")
 
             # Factory function direct fourier
             m.add_function(name = "make_gf_from_fourier",
@@ -97,6 +100,25 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
             m.add_function(name = "make_gf_from_inverse_fourier",
                     signature="%s<%s, %s> make_gf_from_fourier(%s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_type, Meshes[1], Target),
                     doc ="""Create Green function from the inverse Fourier transform of g_in""")
+
+            m.add_function(name = "make_gf_from_fourier",
+                    signature="%s<%s, %s> make_gf_from_fourier(%s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_type, Meshes[1], Target),
+                    doc ="""Create Green function from the Fourier transform of g_in""")
+
+    # === Specific overloads for make_gf_from_fourier
+    m.add_function(name = "make_gf_from_fourier",
+                   signature="gf_view<imfreq, %s> make_gf_from_fourier(gf_view<imtime, %s> g_in, int n_iw)"%(Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_tau""")
+    m.add_function(name = "make_gf_from_fourier",
+                   signature="gf_view<imtime, %s> make_gf_from_fourier(gf_view<imfreq, %s> g_in, int n_tau)"%(Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_iw""")
+
+    m.add_function(name = "make_gf_from_fourier",
+                   signature="gf_view<refreq, %s> make_gf_from_fourier(gf_view<retime, %s> g_in, bool shift_half_bin)"%(Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_t""")
+    m.add_function(name = "make_gf_from_fourier",
+                   signature="gf_view<retime, %s> make_gf_from_fourier(gf_view<refreq, %s> g_in, bool shift_half_bin)"%(Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_w""")
 
     # make_real_in_tau
     m.add_function("gf_view<imfreq, %s> make_real_in_tau(gf_view<imfreq, %s> g)"%(Target, Target),
@@ -137,9 +159,6 @@ m.add_function("void set_from_pade (gf_view<refreq, matrix_valued> gw, gf_view<i
 m.add_function("void set_from_pade (gf_view<refreq, scalar_valued> gw, gf_view<imfreq, scalar_valued> giw, int n_points = 100, double freq_offset = 0.0)",
              calling_pattern = "pade(gw, giw, n_points, freq_offset)",
              doc = """""")
-
-# make_gf_from_inverse_fourier
-m.add_function(name = "make_gf_from_inverse_fourier", signature="gf_view<retime, matrix_valued> make_gf_from_fourier(gf_view<refreq, matrix_valued> gw)", doc ="")
 
 # make_real_in_tau
 m.add_function("gf_view<imfreq, matrix_valued> make_real_in_tau(gf_view<imfreq, matrix_valued> g)",
