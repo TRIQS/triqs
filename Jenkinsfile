@@ -90,18 +90,18 @@ try {
 	def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
         def workDir = pwd()
         dir("$workDir/gh-pages") {
-          def subdir = env.BRANCH_NAME
-          git(url: "ssh://git@github.com/TRIQS/${projectName}.git", branch: "gh-pages", credentialsId: "ssh", changelog: false)
+        def subdir = "${projectName}/${env.BRANCH_NAME}"
+        git(url: "ssh://git@github.com/TRIQS/TRIQS.github.io.git", branch: "master", credentialsId: "ssh", changelog: false)
           sh "rm -rf ${subdir}"
           docker.image("flatironinstitute/${projectName}:${env.BRANCH_NAME}-${documentationPlatform}").inside() {
             sh "cp -rp \$INSTALL/share/doc/${projectName} ${subdir}"
           }
           sh "git add -A ${subdir}"
           sh """
-            git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Generated documentation for ${env.BRANCH_NAME}' -m '${env.BUILD_TAG} ${commit}'
+            git commit --author='Flatiron Jenkins <jenkins@flatironinstitute.org>' --allow-empty -m 'Generated documentation for ${subdir}' -m '${env.BUILD_TAG} ${commit}'
           """
           // note: credentials used above don't work (need JENKINS-28335)
-          sh "git push origin gh-pages"
+          sh "git push origin master"
         }
         dir("$workDir/docker") { try {
 	  git(url: "ssh://git@github.com/TRIQS/docker.git", branch: env.BRANCH_NAME, credentialsId: "ssh", changelog: false)
