@@ -21,7 +21,7 @@
 ################################################################################
 
 # h5py
-import numpy,string,h5py
+import numpy,string,h5py,h5py.highlevel
 class HDFArchiveGroupBasicLayer :
     _class_version = 1
 
