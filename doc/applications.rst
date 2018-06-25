@@ -38,4 +38,4 @@ This solver gives the Hubbard I solution of a quantum impurity problem,
 i.e. it solves the atomic limit. This simple approximation allows for
 very quick answers even for large multiband systems.
 
-*Homepage:* `<https://triqs.ipht.cnrs.fr/1.4/applications/hubbardI/>`_
+*Homepage:* `<https://triqs.github.io/triqs/1.4/applications/hubbardI/>`_

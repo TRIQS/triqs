@@ -100,7 +100,7 @@ Installation
 
   8) replace everywhere ``pytriqs.applications.*`` with ``*``
 
-  A more detailed documentation can be found here: https://triqs.ipht.cnrs.fr/1.x/reference/using_the_lib/application_structure.html
+  A more detailed documentation can be found here: https://triqs.github.io/triqs/1.x/tutorials/using_the_lib/application_structure.html
 
 
 Many-body operators
