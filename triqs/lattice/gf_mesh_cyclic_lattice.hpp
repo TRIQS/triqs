@@ -77,7 +77,8 @@ namespace triqs {
       // -------------------- print -------------------
 
       friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-        return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
+        return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units
+                    << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
       }
 
       // -------------- HDF5  --------------------------
@@ -93,7 +94,13 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) {
         h5_read_impl(fg, subgroup_name, m, "MeshCyclicLattice");
         h5::group gr = fg.open_group(subgroup_name);
-        h5_read(gr, "bl", m.bl);
+        try { // Care for Backward Compatibility
+          h5_read(gr, "bl", m.bl);
+	  return;
+        } catch (triqs::runtime_error const &re) {}
+        try {
+          h5_read(gr, "bravais_lattice", m.bl);
+        } catch (triqs::runtime_error const &re) {}
       }
     };
   } // namespace gfs

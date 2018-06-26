@@ -155,7 +155,12 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) {
         h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
         h5::group gr = fg.open_group(subgroup_name);
-        h5_read(gr, "bz", m.bz);
+        try{ // Care for Backward Compatibility
+          h5_read(gr, "bz", m.bz);
+	} catch(triqs::runtime_error const & re){}
+        try{
+          h5_read(gr, "brillouin_zone", m.bz);
+	} catch(triqs::runtime_error const & re){}
       }
     };
   } // namespace gfs
