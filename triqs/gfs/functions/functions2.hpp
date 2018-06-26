@@ -63,9 +63,13 @@ namespace triqs::gfs {
 
   // Create a tail object for a given Green function
   template <int N = 0, template <typename, typename> typename G, typename V, typename T> auto make_zero_tail(G<V, T> const &g, int n_moments = 10) {
-    auto sh = rotate_index_view(make_const_view(g.data()), N).shape();
-    sh[0]   = n_moments;
-    return arrays::zeros<dcomplex>(sh);
+    if constexpr (is_gf<G<V, T>>::value) // gf[_const][_view]<V, T>
+    {
+      auto sh = rotate_index_view(make_const_view(g.data()), N).shape();
+      sh[0]   = n_moments;
+      return arrays::zeros<dcomplex>(sh);
+    } else // block[2]_gf[_const][_view]<V, T>
+      return map_block_gf([&](auto const & g_bl){ return make_zero_tail<N>(g_bl, n_moments); }, g);
   }
 
   // FIXME : merge the slice_target_to_scalar
