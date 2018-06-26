@@ -95,8 +95,7 @@ namespace triqs::gfs {
 
     if (known_moments.shape()[0] < 3) {
       auto [tail, error] = fit_tail(gw, known_moments);
-      TRIQS_ASSERT2((error < 1e-3), "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error))
-         + "\n Please make sure you treat the constant offset analytically!";
+      TRIQS_ASSERT2((error < 1e-3), "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error) + "\n Please make sure you treat the constant offset analytically!");
       if (error > 1e-6)
         std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error
                   << "\n Please make sure you treat the constant offset analytically!";
