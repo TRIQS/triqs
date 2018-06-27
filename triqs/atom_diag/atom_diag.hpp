@@ -113,6 +113,8 @@ namespace triqs {
   */
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops);
 
+      atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, int n_min, int n_max);
+      
       /// Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
       /**
   * This constructor uses quantum number operators to partition the Hilbert space into
