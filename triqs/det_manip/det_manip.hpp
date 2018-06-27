@@ -1049,10 +1049,6 @@ namespace triqs {
           double r2           = max_element(abs(res + mat_inv(R, R)));
           bool err            = !(r < (relative ? precision_error * r2 : precision_error));
           bool war            = !(r < (relative ? precision_warning * r2 : precision_warning));
-          if (err || war) {
-            std::cerr << "matrix  = " << matrix() << std::endl;
-            std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
-          }
           if (war)
             std::cerr << "Warning : det_manip deviation above warning threshold "
                       << "check "
@@ -1060,7 +1056,11 @@ namespace triqs {
                       << "\n   max(abs(M^-1 - M^-1_true)) = " << r
                       << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? precision_warning * r2 : precision_warning) << " "
                       << std::endl;
-          if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
+          if (err) {
+            std::cerr << "matrix  = " << matrix() << std::endl;
+            std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
+            TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
+          }
         }
 
         // since we have the proper inverse, replace the matrix and the det
