@@ -54,8 +54,8 @@ m.add_function("std::pair<array<dcomplex,1>, double> fit_tail(gf_view<imfreq, sc
 m.add_function("std::pair<array<dcomplex,1>, double> fit_tail(gf_view<imfreq, scalar_valued> g, array_view<dcomplex,1> known_moments)", doc = "tail")
 
 # density
-m.add_function("matrix<dcomplex> density(gf_view<imfreq, matrix_valued> g)",   doc = "Density, as a matrix, computed from a Matsubara sum")
-m.add_function("dcomplex density(gf_view<imfreq, scalar_valued> g)",   doc = "Density, as a complex, computed from a Matsubara sum")
+m.add_function("matrix<dcomplex> density(gf_view<imfreq, matrix_valued> g, array_view<dcomplex, 3> known_moments = {})",   doc = "Density, as a matrix, computed from a Matsubara sum")
+m.add_function("dcomplex density(gf_view<imfreq, scalar_valued> g, array_view<dcomplex, 1> known_moments = {})",   doc = "Density, as a complex, computed from a Matsubara sum")
 
 m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from a Matsubara sum")
 m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a complex, computed from a Matsubara sum")
