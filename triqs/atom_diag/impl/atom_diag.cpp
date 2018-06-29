@@ -86,6 +86,57 @@ namespace triqs {
       return R;
     }
 
+    // -----------------------------------------------------------------
+    // Given a monomial (ccccc), and a subspace B, returns
+    //   - the subspace connected by ccccc from B
+    //   - the corresponding matrix (not necessarily square)
+
+    template <bool Complex>
+    auto atom_diag<Complex>::get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const
+      -> std::pair<int, matrix_t> {
+
+      auto m = triqs::arrays::make_unit_matrix<scalar_t>(get_subspace_dim(B));
+
+      auto const &fops = get_fops();
+      for (int i = op_vec.size() - 1; i >= 0; --i) {
+        int ind = fops[op_vec[i].indices];
+        int Bp  = (op_vec[i].dagger ? cdag_connection(ind, B) : c_connection(ind, B));
+        if (Bp == -1) return {-1, std::move(m)};
+        m = (op_vec[i].dagger ? cdag_matrix(ind, B) : c_matrix(ind, B)) * m;
+        B = Bp;
+      }
+      return {B, std::move(m)};
+    }
+
+    // -----------------------------------------------------------------
+
+    ATOM_DIAG_METHOD(op_block_mat_t, get_op_mat(many_body_op_t const &op) const) {
+      op_block_mat_t op_mat(n_subspaces());
+
+      for(int b : range(n_subspaces()) ) {
+	for( auto const &term : op ) {
+	  auto b_mat = get_matrix_element_of_monomial(term.monomial, b);
+	  if(b_mat.first == -1) continue;
+	  
+	  if( op_mat.connection(b) == -1 ) {
+	    op_mat.connection(b) = b_mat.first;
+	    op_mat.block_mat[b] = term.coef * b_mat.second;
+	  } else if ( op_mat.connection(b) != b_mat.first ) {
+	    TRIQS_RUNTIME_ERROR << "ERROR: <atom_diag::get_op_mat> Monomials in operator does not connect the same subspaces.";
+	  } else {
+	    op_mat.block_mat[b] += term.coef * b_mat.second;
+	  }
+	}
+	// Transform to Hamiltonian eigen basis
+	if( op_mat.connection(b) != -1 ) {
+	  auto U_left = dagger(eigensystems[op_mat.connection(b)].unitary_matrix);
+	  auto U_right = eigensystems[b].unitary_matrix;
+	  op_mat.block_mat[b] = U_left * op_mat.block_mat[b] * U_right;
+	}
+      }
+      return std::move(op_mat);
+    }
+
 #undef ATOM_DIAG_METHOD
 
     // -----------------------------------------------------------------
