@@ -21,6 +21,7 @@
 #pragma once
 #include "brillouin_zone.hpp"
 #include <triqs/utility/complex_ops.hpp>
+#include <triqs/h5.hpp>
 
 namespace triqs {
   namespace lattice {
@@ -32,12 +33,12 @@ namespace triqs {
     class tight_binding {
 
       bravais_lattice bl_;
-      std::vector<std::vector<long>> all_disp;
-      std::vector<matrix<dcomplex>> all_matrices;
+      std::vector<std::vector<long>> displ_vec_;
+      std::vector<matrix<dcomplex>> overlap_mat_vec_;
 
       public:
       ///
-      tight_binding(bravais_lattice const &bl, std::vector<std::vector<long>> all_disp, std::vector<matrix<dcomplex>> all_matrices);
+      tight_binding(bravais_lattice const &bl, std::vector<std::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec);
 
       /// Underlying lattice
       bravais_lattice const &lattice() const { return bl_; }
@@ -47,8 +48,8 @@ namespace triqs {
 
       // calls F(R, t(R)) for all R
       template <typename F> friend void foreach (tight_binding const &tb, F f) {
-        int n = tb.all_disp.size();
-        for (int i = 0; i < n; ++i) f(tb.all_disp[i], tb.all_matrices[i]);
+        int n = tb.displ_vec_.size();
+        for (int i = 0; i < n; ++i) f(tb.displ_vec_[i], tb.overlap_mat_vec_[i]);
       }
 
       // a simple function on the domain brillouin_zone
@@ -77,6 +78,28 @@ namespace triqs {
       };
 
       fourier_impl friend fourier(tight_binding const &tb) { return {tb, tb.n_bands()}; }
+
+      // HDF5 Read / Write
+      static std::string hdf5_scheme() { return "tight_binding"; }
+
+      // Function that writes the solver_core to hdf5 file
+      friend void h5_write(triqs::h5::group g, std::string subgroup_name, tight_binding const &tb) {
+        auto grp = g.create_group(subgroup_name);
+        h5_write_attribute(grp, "TRIQS_HDF5_data_scheme", tight_binding::hdf5_scheme());
+        h5_write(grp, "bravais_lattice", tb.bl_);
+        h5_write(grp, "displ_vec", tb.displ_vec_);
+        h5_write(grp, "overlap_mat_vec", tb.overlap_mat_vec_);
+      }
+
+      // Function to read tight_binding object from hdf5 file
+      CPP2PY_IGNORE
+      static tight_binding h5_read_construct(triqs::h5::group g, std::string subgroup_name) {
+        auto grp = g.open_group(subgroup_name);
+        auto bl              = triqs::h5::h5_read<bravais_lattice>(grp, "bravais_lattice");
+        auto displ_vec       = triqs::h5::h5_read<std::vector<std::vector<long>>>(grp, "displ_vec");
+        auto overlap_mat_vec = triqs::h5::h5_read<std::vector<matrix<dcomplex>>>(grp, "overlap_mat_vec");
+        return tight_binding(bl, displ_vec, overlap_mat_vec);
+      }
 
     }; // tight_binding
 

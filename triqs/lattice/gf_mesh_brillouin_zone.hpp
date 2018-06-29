@@ -149,18 +149,19 @@ namespace triqs {
       friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
         h5_write_impl(fg, subgroup_name, m, "MeshBrillouinZone");
         h5::group gr = fg.open_group(subgroup_name);
-        h5_write(gr, "bz", m.bz);
+        h5_write(gr, "brillouin_zone", m.bz);
       }
 
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) {
         h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
         h5::group gr = fg.open_group(subgroup_name);
-        try{ // Care for Backward Compatibility
+        try { // Care for Backward Compatibility
           h5_read(gr, "bz", m.bz);
-	} catch(triqs::runtime_error const & re){}
-        try{
+	  return;
+	} catch (triqs::runtime_error const & re){}
+        try {
           h5_read(gr, "brillouin_zone", m.bz);
-	} catch(triqs::runtime_error const & re){}
+	} catch (triqs::runtime_error const & re){}
       }
     };
   } // namespace gfs

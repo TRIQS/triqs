@@ -69,7 +69,7 @@ module.add_class(c)
 tb = class_(py_type = "TightBinding",
         c_type = "tight_binding",
         c_type_absolute = "triqs::lattice::tight_binding",
-        #serializable= "tuple",
+        hdf5 = True
        )
 
 tb.add_constructor(signature = "(bravais_lattice latt, PyObject* hopping)",

@@ -88,7 +88,7 @@ namespace triqs {
       friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
         h5_write_impl(fg, subgroup_name, m, "MeshCyclicLattice");
         h5::group gr = fg.open_group(subgroup_name);
-        h5_write(gr, "bl", m.bl);
+        h5_write(gr, "bravais_lattice", m.bl);
       }
 
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) {

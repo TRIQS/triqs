@@ -27,18 +27,18 @@ namespace triqs {
 
     using namespace arrays;
 
-    tight_binding::tight_binding(bravais_lattice const &bl, std::vector<std::vector<long>> all_disp, std::vector<matrix<dcomplex>> all_matrices)
-       : bl_(bl), all_disp(std::move(all_disp)), all_matrices(std::move(all_matrices)) {
+    tight_binding::tight_binding(bravais_lattice const &bl, std::vector<std::vector<long>> displ_vec, std::vector<matrix<dcomplex>> overlap_mat_vec)
+       : bl_(bl), displ_vec_(std::move(displ_vec)), overlap_mat_vec_(std::move(overlap_mat_vec)) {
 
       // checking inputs
-      if (all_disp.size() != all_matrices.size()) TRIQS_RUNTIME_ERROR << " Number of displacements != Number of matrices";
-      for (int i = 0; i < all_disp.size(); ++i) {
-        if (all_disp[i].size() != bl_.dim())
-          TRIQS_RUNTIME_ERROR << "displacement of incorrect size : got " << all_disp[i].size() << "instead of " << bl_.dim();
-        if (first_dim(all_matrices[i]) != n_bands())
-          TRIQS_RUNTIME_ERROR << "the first dim matrix is of size " << first_dim(all_matrices[i]) << " instead of " << n_bands();
-        if (second_dim(all_matrices[i]) != n_bands())
-          TRIQS_RUNTIME_ERROR << "the second dim matrix is of size " << second_dim(all_matrices[i]) << " instead of " << n_bands();
+      if (displ_vec_.size() != overlap_mat_vec_.size()) TRIQS_RUNTIME_ERROR << " Number of displacements != Number of matrices";
+      for (int i = 0; i < displ_vec_.size(); ++i) {
+        if (displ_vec_[i].size() != bl_.dim())
+          TRIQS_RUNTIME_ERROR << "displacement of incorrect size : got " << displ_vec_[i].size() << "instead of " << bl_.dim();
+        if (first_dim(overlap_mat_vec_[i]) != n_bands())
+          TRIQS_RUNTIME_ERROR << "the first dim matrix is of size " << first_dim(overlap_mat_vec_[i]) << " instead of " << n_bands();
+        if (second_dim(overlap_mat_vec_[i]) != n_bands())
+          TRIQS_RUNTIME_ERROR << "the second dim matrix is of size " << second_dim(overlap_mat_vec_[i]) << " instead of " << n_bands();
       }
     }
 
