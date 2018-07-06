@@ -35,7 +35,7 @@ TEST(tight_binding, h5_read_write) {
   double t             = 1.0;
   auto bl              = bravais_lattice{{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
   auto displ_vec       = std::vector<std::vector<long>>{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
-  auto overlap_mat_vec = std::vector<matrix<dcomplex>>{{{t}}, {{t}}, {{t}}, {{t}}, {{ t}}, { { t }} };
+  auto overlap_mat_vec = std::vector<matrix<dcomplex>>{{{t}}, {{t}}, {{t}}, {{t}}, {{t}}, {{t}}};
 
   auto tb = tight_binding{bl, displ_vec, overlap_mat_vec};
 

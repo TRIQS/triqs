@@ -79,7 +79,16 @@ namespace triqs {
 
       fourier_impl friend fourier(tight_binding const &tb) { return {tb, tb.n_bands()}; }
 
-      // HDF5 Read / Write
+      // ------------------- Comparison -------------------
+
+      bool operator==(tight_binding const &tb) const {
+        return bl_ == tb.bl_ && overlap_mat_vec_ == tb.overlap_mat_vec_ && displ_vec_ == tb.displ_vec_;
+      }
+
+      bool operator!=(tight_binding const &tb) const { return !(operator==(tb)); }
+
+      // ------------------- HDF5 Read / Write -------------------
+
       static std::string hdf5_scheme() { return "tight_binding"; }
 
       // Function that writes the solver_core to hdf5 file
