@@ -74,9 +74,16 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                            doc = """Fills self with the Fourier transform of g_in with possible known moments""")
 
 
-    for Meshes in [["imtime", "imfreq"], ["retime", "refreq"], ["cyclic_lattice", "brillouin_zone"]]:
+    for gf_type in ["gf_view", "block_gf_view", "block2_gf_view"]:
 
-        for gf_type in ["gf_view", "block_gf_view", "block2_gf_view"]:
+        # make_real_in_tau
+        m.add_function("%s<imfreq, %s> make_real_in_tau(%s<imfreq, %s> g)"%(gf_type, Target, gf_type, Target),
+                    doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
+
+        # is_gf_real_in_tau
+        m.add_function("bool is_gf_real_in_tau(%s<imfreq, %s> g, double tolerance = 1.e-13)"%(gf_type, Target))
+
+        for Meshes in [["imtime", "imfreq"], ["retime", "refreq"], ["cyclic_lattice", "brillouin_zone"]]:
 
             # Setter direct
             m.add_function("void set_from_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_type, Meshes[1], Target, gf_type, Meshes[0], Target),
@@ -120,12 +127,17 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                    signature="gf_view<retime, %s> make_gf_from_fourier(gf_view<refreq, %s> g_in, bool shift_half_bin)"%(Target, Target),
                    doc ="""Create Green function from the Fourier transform of g_w""")
 
-    # make_real_in_tau
-    m.add_function("gf_view<imfreq, %s> make_real_in_tau(gf_view<imfreq, %s> g)"%(Target, Target),
-                doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
 
-    # is_gf_real_in_tau
-    m.add_function("bool is_gf_real_in_tau(gf_view<imfreq, %s> g, double tolerance = 1.e-13)"%Target)
+for gf_type in ["gf_view", "block_gf_view", "block2_gf_view"]:
+    # make_hermitian
+    m.add_function("%s<imfreq, scalar_valued> make_hermitian(%s<imfreq, scalar_valued> g)"%(gf_type, gf_type),
+                doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)")
+    m.add_function("%s<imfreq, matrix_valued> make_hermitian(%s<imfreq, matrix_valued> g)"%(gf_type, gf_type),
+                doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)")
+
+    # is_gf_hermitian
+    m.add_function("bool is_gf_hermitian(%s<imfreq, scalar_valued> g, double tolerance = 1.e-13)"%gf_type)
+    m.add_function("bool is_gf_hermitian(%s<imfreq, matrix_valued> g, double tolerance = 1.e-13)"%gf_type)
 
 
 # set_from_legendre
