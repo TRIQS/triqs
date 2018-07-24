@@ -107,7 +107,7 @@ namespace triqs::gfs {
     //gf_mesh<V2> out_mesh = std::get<N>(gout.mesh());
     auto const &out_mesh = std::get<N>(gout.mesh()); // FIXME singlevar??
 
-    auto gout_flatten = _fourier_impl(out_mesh, flatten_gf_2d<N>(gin), flatten_2d(make_const_view(opt_args), N)...);
+    auto gout_flatten = _fourier_impl(out_mesh, flatten_gf_2d<N>(gin), flatten_2d(make_const_view(opt_args), 0)...);
     auto _            = ellipsis();
     if constexpr (gin.data_rank == 1)
       gout.data() = gout_flatten.data()(_, 0); // gout is scalar, gout_flatten vectorial
