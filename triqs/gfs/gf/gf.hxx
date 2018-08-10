@@ -293,14 +293,18 @@ namespace triqs {
     *
     */
       template <typename RHS> gf &operator=(RHS &&rhs) {
-        _mesh = rhs.mesh();
-        _data.resize(rhs.data_shape());
-        _remake_zero();
-        for (auto const &w : _mesh) (*this)[w] = rhs[w];
-        _indices = rhs.indices();
-        if (_indices.empty()) _indices = indices_t(target_shape());
-        //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
-        // to be implemented : there is none in the gf_expr in particular....
+        if constexpr (arrays::is_scalar<RHS>::value) {
+          for (auto const &w : _mesh) (*this)[w] = rhs;
+        } else {
+          _mesh = rhs.mesh();
+          _data.resize(rhs.data_shape());
+          _remake_zero();
+          for (auto const &w : _mesh) (*this)[w] = rhs[w];
+          _indices = rhs.indices();
+          if (_indices.empty()) _indices = indices_t(target_shape());
+          //if (not _indices.has_shape(target_shape())) _indices = indices_t(target_shape());
+          // to be implemented : there is none in the gf_expr in particular....
+        }
         return *this;
       }
 
