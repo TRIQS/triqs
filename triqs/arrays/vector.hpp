@@ -205,8 +205,7 @@ namespace triqs {
    * NB : to avoid that, do make_view(A) = X instead of A = X
    */
       template <typename RHS> vector &operator=(const RHS &X) {
-        static_assert(ImmutableCuboidArray<RHS>::value, "Assignment : RHS not supported");
-        IMPL_TYPE::resize(X.domain());
+        if constexpr(ImmutableCuboidArray<RHS>::value) IMPL_TYPE::resize(X.domain());
         triqs_arrays_assign_delegation(*this, X);
         return *this;
       }
