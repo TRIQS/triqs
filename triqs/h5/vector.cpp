@@ -238,12 +238,14 @@ namespace triqs {
       }
     } // namespace
 
+    void h5_write(group f, std::string const &name, std::vector<long> const &V) { h5_write_vector_impl(f, name, V); }
     void h5_write(group f, std::string const &name, std::vector<int> const &V) { h5_write_vector_impl(f, name, V); }
     void h5_write(group f, std::string const &name, std::vector<double> const &V) { h5_write_vector_impl(f, name, V); }
     void h5_write(group f, std::string const &name, std::vector<std::complex<double>> const &V) { h5_write_vector_impl(f, name, V); }
     void h5_write(group f, std::string const &name, std::vector<unsigned long> const &V) { h5_write_vector_impl(f, name, V); }
     void h5_write(group f, std::string const &name, std::vector<unsigned long long> const &V) { h5_write_vector_impl(f, name, V); }
 
+    void h5_read(group f, std::string const &name, std::vector<long> &V) { h5_read_impl(f, name, V); }
     void h5_read(group f, std::string const &name, std::vector<int> &V) { h5_read_impl(f, name, V); }
     void h5_read(group f, std::string const &name, std::vector<double> &V) { h5_read_impl(f, name, V); }
     void h5_read(group f, std::string const &name, std::vector<std::complex<double>> &V) { h5_read_impl(f, name, V); }
