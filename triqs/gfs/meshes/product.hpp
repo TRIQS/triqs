@@ -330,3 +330,14 @@ namespace std {
      : public tuple_element<N, std::tuple<typename triqs::gfs::gf_mesh<Vs>::mesh_point_t...>> {};
 
 } // namespace std
+
+// ----- product of mesh ---------------
+namespace triqs::gfs {
+  template <typename A, typename B, size_t... Is, size_t... Js>
+  auto _prod_impl(std::index_sequence<Is...>, std::index_sequence<Js...>, gf_mesh<A> const &a, gf_mesh<B> const &b) {
+    return gf_mesh{std::get<Is>(a)..., std::get<Js>(b)...};
+  }
+  template <typename A, typename B> auto operator*(gf_mesh<A> const &a, gf_mesh<B> const &b) {
+    return _prod_impl(std::make_index_sequence<get_n_variables<A>::value>{}, std::make_index_sequence<get_n_variables<B>::value>{}, a, b);
+  }
+} // namespace triqs::gfs

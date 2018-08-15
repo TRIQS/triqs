@@ -28,8 +28,8 @@ namespace triqs {
     struct legendre {};
 
     // mesh type and its factories
-    template <> struct gf_mesh<legendre> : discrete_mesh<legendre_domain> {
-      using B     = discrete_mesh<legendre_domain>;
+    template <> struct gf_mesh<legendre> : gf_mesh<discrete<legendre_domain>> {
+      using B     = gf_mesh<discrete<legendre_domain>>;
       using var_t = legendre;
 
       gf_mesh() = default;
