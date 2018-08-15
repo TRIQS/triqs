@@ -94,6 +94,30 @@ namespace triqs {
     // An index sequence of elements of [0,N-1] which are NOT Is
     template <int N, int... Is> using complement_sequence = typename complement_sequence_impl<N, all_indices<Is...>>::type;
 
+    /*   // FIXME : TEST for select, select_view 
+    // select_view
+    template <size_t Imin, size_t... Is, typename Tuple> FORCEINLINE auto select_view_impl(std::index_sequence<Is...>, Tuple &&tu) {
+      return std::tie(std::get<Imin + Is>(tu));
+    }
+
+    // select<Imin, Imax> (tu) --> tuple of ref to tu[Imin] ... tu[Imax -1 ]
+    // Returns : a tuple of ref, like std::tie
+    template <size_t Imin, size_t Imax, typename Tuple> auto select_view(Tuple &&tu) {
+      return select_view_impl<Imin>(std::make_index_sequence<Imax - Imin>(), std::forward<Tu>(tu));
+    }
+
+    // select
+    template <size_t Imin, size_t... Is, typename Tuple> FORCEINLINE auto select_impl(std::index_sequence<Is...>, Tuple &&tu) {
+      return std::make_tuple(std::get<Imin + Is>(tu));
+    }
+
+     // select<Imin, Imax> (tu) --> tuple of ref to tu[Imin] ... tu[Imax -1 ]
+    // Returns : a tuple of ref, like std::tie
+    template <size_t Imin, size_t Imax, typename Tuple> auto select(Tuple &&tu) {
+      return select_impl<Imin>(std::make_index_sequence<Imax - Imin>(), std::forward<Tu>(tu));
+    }
+*/
+
     /**
   * make_tuple_repeat<N>(x)
   * N : a non-negative integer
@@ -320,6 +344,12 @@ namespace triqs {
     template <typename T, typename X> auto push_front(T &&t, X &&x) {
       return std::tuple_cat(std::make_tuple(std::forward<X>(x)), std::forward<T>(t));
     }
+
+    /*
+  * t : a tuple
+  * pop_front (t) -> returns new tuple with the first element removed.
+  */
+    template <typename Tuple> auto pop_front(Tuple &&tu) { return filter_out<0>(std::forward<Tuple>(tu)); }
 
     /*
  * print a tuple
