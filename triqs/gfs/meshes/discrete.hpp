@@ -25,20 +25,23 @@
 namespace triqs {
   namespace gfs {
 
-    template <typename Domain> struct discrete_mesh {
+   template <typename Domain> struct discrete{};
+
+  template <typename Domain> struct gf_mesh<discrete<Domain>> {
 
       using domain_t       = Domain;
       using index_t        = long;
       using linear_index_t = long;
-      using mesh_point_t   = mesh_point<discrete_mesh<Domain>>;
+      using mesh_point_t   = mesh_point<gf_mesh<discrete<Domain>>>;
+      using var_t = discrete<Domain>;
 
       // -------------------- Constructors -------------------
 
-      discrete_mesh(domain_t dom) : _dom(std::move(dom)) {}
-      discrete_mesh() = default;
+      gf_mesh(domain_t dom) : _dom(std::move(dom)) {}
+      gf_mesh() = default;
 
-      bool operator==(discrete_mesh const &M) const { return (_dom == M._dom); }
-      bool operator!=(discrete_mesh const &M) const { return !(operator==(M)); }
+      bool operator==(gf_mesh const &M) const { return (_dom == M._dom); }
+      bool operator!=(gf_mesh const &M) const { return !(operator==(M)); }
 
       // -------------------- Accessors (from concept) -------------------
 
@@ -59,7 +62,7 @@ namespace triqs {
       mesh_point_t operator[](std::string const &s) const { return mesh_point_t(*this, _dom.index_from_name(s)); }
 
       /// Iterating on all the points...
-      using const_iterator = mesh_pt_generator<discrete_mesh>;
+      using const_iterator = mesh_pt_generator<gf_mesh>;
       const_iterator begin() const { return const_iterator(this); }
       const_iterator end() const { return const_iterator(this, true); }
       const_iterator cbegin() const { return const_iterator(this); }
@@ -77,22 +80,27 @@ namespace triqs {
 
       // -------------------- HDF5 -------------------
 
+      // FIXME : CLEAN THIS MESS
       /// Write into HDF5
-      friend void h5_write_impl(h5::group fg, std::string subgroup_name, discrete_mesh const &m, const char *_type) {
+      friend void h5_write_impl(h5::group fg, std::string subgroup_name, gf_mesh const &m, const char *_type) {
         h5::group gr = fg.create_group(subgroup_name);
         gr.write_hdf5_scheme_as_string(_type);
         h5_write(gr, "domain", m.domain());
       }
 
       /// Read from HDF5
-      friend void h5_read_impl(h5::group fg, std::string subgroup_name, discrete_mesh &m, const char *tag_expected) {
+      friend void h5_read_impl(h5::group fg, std::string subgroup_name, gf_mesh &m, const char *tag_expected) {
         h5::group gr = fg.open_group(subgroup_name);
         gr.assert_hdf5_scheme_as_string(tag_expected, true);
-        typename discrete_mesh::domain_t dom;
+        typename gf_mesh::domain_t dom;
         h5_read(gr, "domain", dom);
-        m = discrete_mesh(std::move(dom));
+        m = gf_mesh(std::move(dom));
       }
 
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshDiscrete");}
+
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshDiscrete"); }
+ 
       // -------------------- boost serialization -------------------
 
       friend class boost::serialization::access;
@@ -100,7 +108,7 @@ namespace triqs {
 
       // -------------------- print  -------------------
 
-      friend std::ostream &operator<<(std::ostream &sout, discrete_mesh const &m) { return sout << "Discrete Mesh"; }
+      friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) { return sout << "Discrete Mesh"; }
 
       // ------------------------------------------------
       private:
@@ -108,8 +116,8 @@ namespace triqs {
     };
 
     template <typename Domain>
-    struct mesh_point<discrete_mesh<Domain>> : tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point<discrete_mesh<Domain>>, long> {
-      using discrete_mesh_t = discrete_mesh<Domain>;
+    struct mesh_point<gf_mesh<discrete<Domain>>> : tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point<gf_mesh<discrete<Domain>>>, long> {
+      using discrete_mesh_t = gf_mesh<discrete<Domain>>;
       using index_t         = typename discrete_mesh_t::index_t;
       discrete_mesh_t const *m;
       index_t _index;
