@@ -1,58 +1,126 @@
-#include <triqs/arrays.hpp>
-#include <triqs/statistics.hpp>
-#include <iostream>
+#include <triqs/test_tools/arrays.hpp>
+#include <triqs/statistics/accumulator.hpp>
+#include <triqs/gfs.hpp>
+using namespace triqs::stat;
+using namespace triqs::gfs;
+using namespace triqs;
 
-using triqs::statistics::observable;
-using namespace triqs::arrays;
+triqs::mpi::communicator world;
 
-template <typename T> std::ostream &operator<<(std::ostream &out, std::vector<T> const &v) {
-  for (auto const &x : v) out << x << " ";
-  return out;
-}
+// ----- TESTS ------------------
 
-int main() {
+TEST(Observable, ConstructDouble) {
+  using obs_t = mc_value<double>;
+  using acc_t = accumulator<double>;
 
-  try {
-    {
-      auto A = observable<double>{};
+  accumulator_cargs p{false, true, 10, 100};
+  acc_t a{p};
 
-      for (int i = 0; i < 1000; ++i) A << 6;
-      std::cout << average_and_error(A) << std::endl;
-    }
+  for (int i = 0; i <= 10; ++i) a << i;
 
-    {
-      auto A = observable<array<double, 2>>{};
+  auto obs = mpi_reduce(a, world);
+  EXPECT_NEAR(obs.value.value(), 5, 1.e-15);
 
-      for (int i = 0; i < 1000; ++i) A << array<double, 2>{{i, 2 * i}, {3 * i, 4 * i}};
-
-      for (int i = 0; i < 1000; ++i) A << 2 * array<double, 2>{{i, 2 * i}, {3 * i, 4 * i}};
-
-      std::cout << average(A) << std::endl;
-      std::cout << average_and_error(A) << std::endl;
-    }
-
-    {
-      observable<double> A, B;
-
-      for (int i = 0; i < 1000; ++i) {
-        A << i;
-        B << 5;
-      }
-
-      // operations
-      auto ab = A / B;
-      //auto ab_j = make_jackknife(A) / make_jackknife(B);
-      double r = eval(ab, 1);
-      std::cout << "eval A/B in 1 " << r << std::endl;
-
-      r = eval(cos(A), 1);
-      std::cout << r << " == " << std::cos(1) << std::endl;
-
-      std::cout << "<A/B> = " << average(A / B) << std::endl;
-      std::cout << average_and_error(A / B) << std::endl;
-      std::cout << average_and_error(cos(A)) << std::endl;
-      std::cout << average_and_error(cos(A) / B) << std::endl;
-    }
+  {
+    auto f = h5::file("obs_d.h5", 'w');
+    h5_write(f, "acc", a);
+    h5_write(f, "obs", obs);
   }
-  TRIQS_CATCH_AND_ABORT;
+
+  auto a_b   = acc_t{};
+  auto obs_b = obs_t{};
+  {
+    auto f = h5::file("obs_d.h5", 'r');
+    h5_read(f, "acc", a_b);
+    h5_read(f, "obs", obs_b);
+  }
+
+  {
+    auto f = h5::file("obs_db.h5", 'w');
+    h5_write(f, "acc", a_b);
+    h5_write(f, "obs", obs_b);
+  }
 }
+//----------------------------------------
+
+TEST(Observable, hdf5Array) {
+
+  using A = array<double, 2>;
+  A a0{{1, 2}, {2, 1}};
+  auto zero = a0;
+  zero()    = 0;
+
+  using obs_t = mc_value<A>;
+  using acc_t = accumulator<A>;
+
+  accumulator_cargs p{false, true, 10, 100};
+  acc_t a{zero, p};
+
+  for (int i = 0; i <= 10; ++i) a << i;
+
+  auto obs = mpi_reduce(a, world);
+
+  auto f = h5::file("obs_array.h5", 'w');
+  h5_write(f, "obs", a);
+  h5_write(f, "obs", obs);
+
+  {
+    auto f = h5::file("obs_a.h5", 'w');
+    h5_write(f, "acc", a);
+    h5_write(f, "obs", obs);
+  }
+
+  auto a_b   = acc_t{};
+  auto obs_b = obs_t{};
+  {
+    auto f = h5::file("obs_a.h5", 'r');
+    h5_read(f, "acc", a_b);
+    h5_read(f, "obs", obs_b);
+  }
+  {
+    auto f = h5::file("obs_ab.h5", 'w');
+    h5_write(f, "acc", a_b);
+    h5_write(f, "obs", obs_b);
+  }
+}
+
+//----------------------------------------
+
+TEST(Observable, Gf) {
+
+  using obs_t = mc_value<gf<imfreq>>;
+  using acc_t = accumulator<gf<imfreq>>;
+
+  auto zero = gf<imfreq>{{1, Fermion, 10}, {2, 2}};
+  zero      = 0;
+  auto g    = zero;
+
+  accumulator_cargs p{false, true, 10, 100};
+  acc_t a{zero, p};
+
+  for (int i = 0; i <= 10; ++i)
+    for (int j = 0; j <= 10; ++j) a << g;
+
+  auto obs = mpi_reduce(a, world);
+
+  {
+    auto f = h5::file("obs_gf.h5", 'w');
+    h5_write(f, "acc", a);
+    h5_write(f, "obs", obs);
+  }
+
+  auto a_b   = acc_t{};
+  auto obs_b = obs_t{};
+  {
+    auto f = h5::file("obs_gf.h5", 'r');
+    h5_read(f, "acc", a_b);
+    h5_read(f, "obs", obs_b);
+  }
+  {
+    auto f = h5::file("obs_gfb.h5", 'w');
+    h5_write(f, "acc", a_b);
+    h5_write(f, "obs", obs_b);
+  }
+}
+
+MAKE_MAIN;
