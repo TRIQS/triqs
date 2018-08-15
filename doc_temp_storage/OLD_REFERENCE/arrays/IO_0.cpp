@@ -1,4 +1,5 @@
 #include <triqs/arrays.hpp>
+#include <mpi/mpi.hpp>
 using triqs::arrays::array;
 using triqs::clef::placeholder;
 
