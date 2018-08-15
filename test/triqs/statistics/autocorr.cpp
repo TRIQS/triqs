@@ -1,7 +1,7 @@
 #include <cmath>
 
 #include <triqs/test_tools/arrays.hpp>
-#include <triqs/statistics/observable.hpp>
+#include <triqs/statistics/accumulator.hpp>
 #include <boost/version.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/mersenne_twister.hpp>
