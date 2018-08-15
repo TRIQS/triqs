@@ -23,6 +23,8 @@
 namespace triqs {
   namespace gfs {
 
+    // NEVER USED : merge with discrete mesh and clean Legendre to make independant.
+    // FIXME : clean this : no name
     class discrete_domain {
       int Nmax;
       std::vector<std::string> _names;       // optional name of the points (e.g. for block)
@@ -52,7 +54,6 @@ namespace triqs {
 
       bool operator==(discrete_domain const &D) const { return (Nmax == D.Nmax); }
 
-      /*
   /// Write into HDF5
   friend void h5_write(h5::group fg, std::string subgroup_name, discrete_domain const& d) {
    h5::group gr = fg.create_group(subgroup_name);
@@ -68,7 +69,6 @@ namespace triqs {
    d = discrete_domain(n);
    // NAME ARE MISSING
   }
-  */
 
       //  BOOST Serialization
       friend class boost::serialization::access;
