@@ -129,7 +129,8 @@ namespace triqs::stat::accumulators {
     public:
     friend vec_t<T> reduce(auto_correlation const &x) { return auto_correlation::_make_vecT(x._sum, x._sum2, x.sum_count); }
 
-    friend vec_t<T> mpi_reduce(auto_correlation const &x, mpi::communicator c, int root = 0, bool all = false) {
+    friend vec_t<T> mpi_reduce(auto_correlation const &x, mpi::communicator c, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+      TRIQS_ASSERT((op==MPI_SUM));
       return auto_correlation::_make_vecT(mpi_reduce(x._sum, c, root, all), mpi_reduce(x._sum2, c, root, all), mpi_reduce(x.sum_count, c));
     }
   };

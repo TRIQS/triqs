@@ -121,6 +121,7 @@ namespace triqs {
 
     template <typename T>
     auto mpi_all_reduce(T &x, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) DECL_AND_RETURN(mpi_reduce(x, c, root, true, op));
+    
     template <typename T> auto mpi_all_gather(T &x, communicator c = {}, int root = 0) DECL_AND_RETURN(mpi_gather(x, c, root, true));
 
     // backward compatibility. Do not document.

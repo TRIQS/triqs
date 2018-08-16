@@ -67,10 +67,13 @@ namespace triqs::stat::accumulators {
       sum /= count;
       return std::move(sum);
     }
-    public : 
 
+    public:
     friend T reduce(average const &x) { return average::_make_T(x._sum, x._count); }
 
-    friend T mpi_reduce(average const &x, mpi::communicator c, int root=0, bool all=false ) { return average::_make_T(T{mpi_reduce(x._sum, c, root, all)}, mpi_reduce(x._count, c, root, all)); }
+    friend T mpi_reduce(average const &x, mpi::communicator c, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+      TRIQS_ASSERT((op == MPI_SUM));
+      return average::_make_T(T{mpi_reduce(x._sum, c, root, all)}, mpi_reduce(x._count, c, root, all));
+    }
   };
 } // namespace triqs::stat::accumulators

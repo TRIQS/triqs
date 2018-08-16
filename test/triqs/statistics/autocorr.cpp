@@ -242,7 +242,7 @@ TEST(Binned, array) {
     b << i * a0;
   }
 
-  for (auto [x1, x2, a] : triqs::utility::zip(collect_results(world, b1), collect_results(world, b2), collect_results(world, b))) {
+  for (auto [x1, x2, a] : triqs::utility::zip(reduce(b1), reduce(b2), reduce(b))) {
     if (!std::isfinite(x1)) continue;
     EXPECT_NEAR(x1, a(0, 0), 1.e-15);
     EXPECT_NEAR(x2, a(0, 1), 1.e-15);

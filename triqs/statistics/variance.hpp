@@ -45,8 +45,7 @@ namespace triqs::stat::accumulators {
     static std::string hdf5_scheme() { return "accumulator<variance>"; }
 
     variance() = default;
-    variance(T zero) : _sum{std::move(zero)},
-		       _sum2{_sum*_sum} {} // nb, _sum*_sum req. for fermi/bose stat
+    variance(T zero) : _sum{std::move(zero)}, _sum2{_sum * _sum} {} // nb, _sum*_sum req. for fermi/bose stat
 
     /// add a new u in the binned series
     template <typename U> void operator<<(U const &u) {
@@ -74,7 +73,8 @@ namespace triqs::stat::accumulators {
     public:
     friend std::pair<T, T> reduce(variance const &x) { return variance::_make_TT(x._sum, x._sum2, x._count); }
 
-    friend std::pair<T, T> mpi_reduce(variance const &x, mpi::communicator c, int root = 0, bool all = false) {
+    friend std::pair<T, T> mpi_reduce(variance const &x, mpi::communicator c, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+      TRIQS_ASSERT((op == MPI_SUM));
       return _make_TT(T{mpi_reduce(x._sum, c, root, all)}, T{mpi_reduce(x._sum2, c, root, all)}, mpi_reduce(x._count, c));
     }
   };
