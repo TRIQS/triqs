@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2011-2017 by O. Parcollet, T. Ayral.
  * Copyright (C) 2018 by Simons Foundation
- *   author : O. Parcollet, H. Strand, P. Dumitrescu
+ *   author : O. Parcollet, H. U.R. Strand, P. Dumitrescu
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -72,7 +72,8 @@ namespace triqs::stat::accumulators {
     static std::string hdf5_scheme() { return "accumulator<variance>"; }
 
     variance() = default;
-    variance(T zero) : _sum{std::move(zero)}, _sum2{_sum} {}
+    variance(T zero) : _sum{std::move(zero)},
+		       _sum2{_sum*_sum} {} // nb, _sum*_sum req. for fermi/bose stat
 
     /// add a new u in the binned series
     template <typename U> void operator<<(U const &u) {

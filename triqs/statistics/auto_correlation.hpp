@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2011-2017 by O. Parcollet, T. Ayral.
  * Copyright (C) 2018 by Simons Foundation
- *   author : O. Parcollet, H. Strand, P. Dumitrescu
+ *   author : O. Parcollet, H. U.R. Strand, P. Dumitrescu
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -25,7 +25,7 @@
 namespace triqs::stat {
 
   template <typename T> vec_t<T> _make_vecT(vec_t<T> sum, vec_t<T> const &sum2, std::vector<long> const &count) {
-    vec_t<T> r(sum);
+    vec_t<T> r(sum2); 
     for (int n = 0; n < sum.size(); ++n) {
       if (count[n] == 0) break;
       sum[n] /= count[n];
@@ -90,7 +90,8 @@ namespace triqs::stat::accumulators {
      * Precondition : n_bins > 0
      */
     auto_correlation(T const &zero, int n_bins)
-       : _sum(n_bins, zero), _sum2(n_bins, zero), acc(n_bins, zero), sum_count(n_bins, 0), acc_count(n_bins, 0) {}
+      : _sum(n_bins, zero), _sum2(n_bins, T{zero*zero}), // nb zero*zero required
+	 acc(n_bins, zero), sum_count(n_bins, 0), acc_count(n_bins, 0) {}
 
     /**
      */
