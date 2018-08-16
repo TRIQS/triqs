@@ -47,6 +47,8 @@ namespace triqs {
       //typedef typename std::result_of<utility::operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_type;
       typedef typename std::remove_reference<typename std::result_of<combine_domain(L_t, R_t)>::type>::type domain_type;
 
+      using regular_type = array<value_type, domain_type::rank>; // NB Crucial to make_regular work
+
       L l;
       R r;
       template <typename LL, typename RR> array_expr(LL &&l_, RR &&r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
@@ -67,7 +69,7 @@ namespace triqs {
       }
 
       friend array<value_type, domain_type::rank> make_array(array_expr const &e) { return e; }
-      friend array<value_type, domain_type::rank> make_regular(array_expr const &x) { return make_array(x); }
+      //friend array<value_type, domain_type::rank> make_regular(array_expr const &x) { return make_array(x); }
       //friend inline array_const_view<value_type, domain_type::rank> make_const_view(array_expr const &x) { return make_array(x); } // Moved to end of file, ICC Compatibility
 
       // just for better error messages
@@ -81,6 +83,8 @@ namespace triqs {
       typedef typename std::remove_reference<L>::type L_t;
       typedef typename L_t::value_type value_type;
       typedef typename L_t::domain_type domain_type;
+
+      using regular_type = array<value_type, domain_type::rank>; // NB Crucial to make_regular work
 
       L l;
       template <typename LL> array_unary_m_expr(LL &&l_) : l(std::forward<LL>(l_)) {}
