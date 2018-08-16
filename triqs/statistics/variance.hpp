@@ -92,11 +92,11 @@ namespace triqs::stat::accumulators {
     friend std::pair<T, T> reduce(variance const &x) { return _make_TT<T>(x._sum, x._sum2, x._count); }
 
     friend std::pair<T, T> mpi_reduce(variance const &x, mpi::communicator c) {
-      return _make_TT(T{mpi_reduce( x._sum,c)}, T{mpi_reduce( x._sum2,c)}, mpi_reduce(x._count, c));
+      return _make_TT(T{mpi_reduce(x._sum, c)}, T{mpi_reduce(x._sum2, c)}, mpi_reduce(x._count, c));
     }
 
     friend std::pair<T, T> mpi_all_reduce(variance const &x, mpi::communicator c) {
-      return _make_TT(T{mpi_all_reduce( x._sum,c)}, T{mpi_all_reduce( x._sum2,c)}, mpi_all_reduce(x._count, c));
+      return _make_TT(T{mpi_all_reduce(x._sum, c)}, T{mpi_all_reduce(x._sum2, c)}, mpi_all_reduce(x._count, c));
     }
   };
 

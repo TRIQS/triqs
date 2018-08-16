@@ -41,9 +41,8 @@ namespace triqs::stat::accumulators {
          f("max_n_bins", max_n_bins, h5::as_attribute);
     }
     friend class h5::access;
-    
-    public:
 
+    public:
     static std::string hdf5_scheme() { return "binned_series"; }
 
     binned() = default;
@@ -121,4 +120,4 @@ namespace triqs::stat::accumulators {
     }
   };
 
-} // namespace triqs::stat
+} // namespace triqs::stat::accumulators

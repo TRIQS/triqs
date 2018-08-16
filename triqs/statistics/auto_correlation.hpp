@@ -25,9 +25,9 @@
 namespace triqs::stat {
 
   template <typename T> vec_t<T> _make_vecT(vec_t<T> sum, vec_t<T> const &sum2, std::vector<long> const &count) {
-    vec_t<T> r(sum); 
+    vec_t<T> r(sum);
     for (int n = 0; n < sum.size(); ++n) {
-      if (count[n] ==0) break;
+      if (count[n] == 0) break;
       sum[n] /= count[n];
       r[n] = sum2[n] / count[n] - sum[n] * sum[n];
     }
@@ -127,11 +127,11 @@ namespace triqs::stat::accumulators {
     friend vec_t<T> reduce(auto_correlation const &x) { return _make_vecT<T>(x._sum, x._sum2, x.sum_count); }
 
     friend vec_t<T> mpi_reduce(auto_correlation const &x, mpi::communicator c) {
-      return _make_vecT<T>(mpi_reduce( x._sum,c), mpi_reduce( x._sum2,c), mpi_reduce(x.sum_count, c));
+      return _make_vecT<T>(mpi_reduce(x._sum, c), mpi_reduce(x._sum2, c), mpi_reduce(x.sum_count, c));
     }
 
     friend vec_t<T> mpi_all_reduce(auto_correlation const &x, mpi::communicator c) {
-      return _make_vecT<T>(mpi_all_reduce( x._sum,c), mpi_all_reduce( x._sum2,c), mpi_all_reduce(x.sum_count, c));
+      return _make_vecT<T>(mpi_all_reduce(x._sum, c), mpi_all_reduce(x._sum2, c), mpi_all_reduce(x.sum_count, c));
     }
   };
 
