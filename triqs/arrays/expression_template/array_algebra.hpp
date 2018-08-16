@@ -47,6 +47,8 @@ namespace triqs {
       //typedef typename std::result_of<utility::operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_type;
       typedef typename std::remove_reference<typename std::result_of<combine_domain(L_t, R_t)>::type>::type domain_type;
 
+      using regular_type = array<value_type, domain_type::rank>; // NB Crucial to make_regular work
+
       L l;
       R r;
       template <typename LL, typename RR> array_expr(LL &&l_, RR &&r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
@@ -66,6 +68,8 @@ namespace triqs {
         return sout << "(" << expr.l << " " << utility::operation<Tag>::name << " " << expr.r << ")";
       }
 
+      friend array<value_type, domain_type::rank> make_array(array_expr const &e) { return e; }
+      
       // just for better error messages
       template <typename T> void operator=(T &&x)  = delete; // can not assign to an expression template !
       template <typename T> void operator+=(T &&x) = delete; // can not += into an expression template !
@@ -77,6 +81,8 @@ namespace triqs {
       typedef typename std::remove_reference<L>::type L_t;
       typedef typename L_t::value_type value_type;
       typedef typename L_t::domain_type domain_type;
+
+      using regular_type = array<value_type, domain_type::rank>; // NB Crucial to make_regular work
 
       L l;
       template <typename LL> array_unary_m_expr(LL &&l_) : l(std::forward<LL>(l_)) {}
