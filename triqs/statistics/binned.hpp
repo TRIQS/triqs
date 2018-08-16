@@ -26,19 +26,30 @@
 #include <vector>
 #include "./common.hpp"
 
+namespace triqs::stat {
+
+  template <typename T> class bin_set : public vec_t<T> {
+    public:
+    using B = vec_t<T>;
+    using B::B;
+    bin_set(B &&x) : B(std::move(x)) {}
+  };
+} // namespace triqs::stat
+
 namespace triqs::stat::accumulators {
 
   template <typename T> class binned {
 
     vec_t<T> data;
     std::vector<long> counts;
-    int bid        = 0;
-    long bin_size  = 1;
-    int max_n_bins = 0;
+    long bid        = 0;
+    long bin_size   = 1;
+    long max_n_bins = 0;
+    bool need_to_advance = false;
 
     template <typename F> void h5_serialize(F &&f) {
       f("data", data), f("counts", counts), f("bid", bid, h5::as_attribute), f("bin_size", bin_size, h5::as_attribute),
-         f("max_n_bins", max_n_bins, h5::as_attribute);
+         f("max_n_bins", max_n_bins, h5::as_attribute), f("need_to_advance", need_to_advance, h5::as_attribute);
     }
     friend class h5::access;
 
@@ -58,31 +69,33 @@ namespace triqs::stat::accumulators {
 
     /// THIS << x : add a new x in the binned series
     template <typename U> void operator<<(U const &u) {
+      if (need_to_advance) advance();
       data[bid] += u;
-
-      // Advance the counters.
-      //for (int i = 0; i < data.size(); ++i)  std::cout  << " ++ "<< i << "   " << data[i] << "  "<< counts[i] << std::endl;
       counts[bid]++;
-      if (counts[bid] == bin_size) {
-        if (bid < data.size() - 1)
-          bid++;
-        else {
-          if ((max_n_bins == 0) or (data.size() < max_n_bins)) {
-            for (int i = 0; i < 2; ++i) { // add 2 bins
-              data.push_back(data[0]);
-              data[data.size() - 1] = 0;
-              counts.push_back(0);
-            }
-            ++bid;
-          } else {
-            compress();
-            bid = data.size() / 2;
-            bin_size *= 2;
+      need_to_advance =  (counts[bid] == bin_size);
+    }
+
+    private:
+    inline void advance() {
+      if (bid < data.size() - 1)
+        bid++;
+      else {
+        if ((max_n_bins == 0) or (data.size() < max_n_bins)) {
+          for (int i = 0; i < 2; ++i) { // add 2 bins
+            data.push_back(data[0]);
+            data[data.size() - 1] = 0;
+            counts.push_back(0);
           }
+          ++bid;
+        } else {
+          compress();
+          bid = data.size() / 2;
+          bin_size *= 2;
         }
       }
     }
 
+    public:
     // Make a new zero
     T zero() const {
       T r = data[0];
@@ -91,7 +104,7 @@ namespace triqs::stat::accumulators {
     }
 
     // Result is a vector of variance
-    friend vec_t<T> reduce(binned const &x) {
+    friend bin_set<T> reduce(binned const &x) {
       vec_t<T> r(x.data);                                                                   // FIXME : avoid copy
       for (int n = 0; n < x.data.size(); ++n) r[n] = x.data[n] / std::max(1l, x.counts[n]); // if counts[n] ==0, data is 0, then it stays 0.
       return r;

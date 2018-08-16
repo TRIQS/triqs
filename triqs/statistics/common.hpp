@@ -43,11 +43,6 @@ namespace triqs::stat {
 
   template <typename T> class accumulator;
 
-  template <typename V> auto sum_of_vector(V const &v) {
-    auto r = v[0];
-    for (int i = 1; i < v.size(); ++i) r += v[i];
-    return r;
-  }
 } // namespace triqs::stat
 
 
