@@ -24,16 +24,6 @@
 #include "./common.hpp"
 namespace triqs::stat {
 
-  template <typename T> vec_t<T> _make_vecT(vec_t<T> sum, vec_t<T> const &sum2, std::vector<long> const &count) {
-    vec_t<T> r(sum2); 
-    for (int n = 0; n < sum.size(); ++n) {
-      if (count[n] == 0) break;
-      sum[n] /= count[n];
-      r[n] = sum2[n] / count[n] - sum[n] * sum[n];
-    }
-    return r;
-  }
-
   /**
    *
    * Analyze the auto-correlation time using 2^n bins technique
@@ -118,21 +108,29 @@ namespace triqs::stat::accumulators {
       for (; n >= 0; n--) store(n);
     }
 
-    // Make a new zero 
+    // Make a new zero
     T zero() const {
       T r = _sum[0];
       r   = 0;
       return r;
     }
 
-    friend vec_t<T> reduce(auto_correlation const &x) { return _make_vecT<T>(x._sum, x._sum2, x.sum_count); }
-
-    friend vec_t<T> mpi_reduce(auto_correlation const &x, mpi::communicator c) {
-      return _make_vecT<T>(mpi_reduce(x._sum, c), mpi_reduce(x._sum2, c), mpi_reduce(x.sum_count, c));
+    private:
+    inline static vec_t<T> _make_vecT(vec_t<T> sum, vec_t<T> const &sum2, std::vector<long> const &count) {
+      vec_t<T> r(sum2);
+      for (int n = 0; n < sum.size(); ++n) {
+        if (count[n] == 0) break;
+        sum[n] /= count[n];
+        r[n] = sum2[n] / count[n] - sum[n] * sum[n];
+      }
+      return r;
     }
 
-    friend vec_t<T> mpi_all_reduce(auto_correlation const &x, mpi::communicator c) {
-      return _make_vecT<T>(mpi_all_reduce(x._sum, c), mpi_all_reduce(x._sum2, c), mpi_all_reduce(x.sum_count, c));
+    public:
+    friend vec_t<T> reduce(auto_correlation const &x) { return auto_correlation::_make_vecT(x._sum, x._sum2, x.sum_count); }
+
+    friend vec_t<T> mpi_reduce(auto_correlation const &x, mpi::communicator c, int root = 0, bool all = false) {
+      return auto_correlation::_make_vecT(mpi_reduce(x._sum, c, root, all), mpi_reduce(x._sum2, c, root, all), mpi_reduce(x.sum_count, c));
     }
   };
 

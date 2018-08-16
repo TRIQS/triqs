@@ -29,33 +29,6 @@
 namespace triqs::stat::accumulators {
 
   /**
-   * value and error. A simple pair with names
-   *
-   */
-  template <typename T> struct value_error { T value, error; };
-
-  template <typename T> std::ostream &operator<<(std::ostream &out, value_error<T> const &ve) { return out << ve.value << " +/- " << ve.error; }
-
-  template <typename T> std::pair<T, T> _make_TT(T sum, T sum2, long count) {
-    sum /= count;
-    sum2 /= count;
-    sum2 -= sum * sum;
-    return {std::move(sum), std::move(sum2)};
-  }
-
-  // ------- h5  ------
-
-  template <typename T> void h5_write(h5::group g, std::string const &name, value_error<T> const &x) {
-    h5_write(g, name, x.value);
-    h5_write(g, name + ".error", x.error);
-  }
-
-  template <typename T> void h5_read(h5::group g, std::string const &name, value_error<T> &x) {
-    h5_read(g, name, x.value);
-    h5_read(g, name + ".error", x.error);
-  }
-
-  /**
    * Sum and variance
    *
    * T : any regular type
@@ -90,14 +63,19 @@ namespace triqs::stat::accumulators {
       return r;
     }
 
-    friend std::pair<T, T> reduce(variance const &x) { return _make_TT<T>(x._sum, x._sum2, x._count); }
-
-    friend std::pair<T, T> mpi_reduce(variance const &x, mpi::communicator c) {
-      return _make_TT(T{mpi_reduce(x._sum, c)}, T{mpi_reduce(x._sum2, c)}, mpi_reduce(x._count, c));
+    private:
+    inline static std::pair<T, T> _make_TT(T sum, T sum2, long count) {
+      sum /= count;
+      sum2 /= count;
+      sum2 -= sum * sum;
+      return {std::move(sum), std::move(sum2)};
     }
 
-    friend std::pair<T, T> mpi_all_reduce(variance const &x, mpi::communicator c) {
-      return _make_TT(T{mpi_all_reduce(x._sum, c)}, T{mpi_all_reduce(x._sum2, c)}, mpi_all_reduce(x._count, c));
+    public:
+    friend std::pair<T, T> reduce(variance const &x) { return variance::_make_TT(x._sum, x._sum2, x._count); }
+
+    friend std::pair<T, T> mpi_reduce(variance const &x, mpi::communicator c, int root = 0, bool all = false) {
+      return _make_TT(T{mpi_reduce(x._sum, c, root, all)}, T{mpi_reduce(x._sum2, c, root, all)}, mpi_reduce(x._count, c));
     }
   };
 

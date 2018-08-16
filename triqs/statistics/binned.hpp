@@ -91,7 +91,7 @@ namespace triqs::stat::accumulators {
     }
 
     // Result is a vector of variance
-    friend vec_t<T> collect_results(mpi::communicator c, binned const &x) {
+    friend vec_t<T> reduce(binned const &x) {
       vec_t<T> r(x.data);                                                                   // FIXME : avoid copy
       for (int n = 0; n < x.data.size(); ++n) r[n] = x.data[n] / std::max(1l, x.counts[n]); // if counts[n] ==0, data is 0, then it stays 0.
       return r;

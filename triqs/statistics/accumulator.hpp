@@ -111,7 +111,7 @@ namespace triqs::stat {
       if (_variance) return _variance->zero();
       if (_auto_correlation) return  _auto_correlation->zero();
       if (_bins) return  _bins->zero();
-      throw std::logic_error("_find_T for null object;");
+      throw std::logic_error("zero can not work for an empty accumulator");
     }
 
     accumulators::average<T> const &average() const {
