@@ -22,67 +22,121 @@
  ******************************************************************************/
 #pragma once
 #include <type_traits>
-
-#include "./binned.hpp"
+#include <triqs/arrays.hpp>
+#include <triqs/arrays/math_functions.hpp>
 
 namespace triqs::stat {
 
-  template <typename T> struct jackknifed_t {
-    binned<T> const *_b;
-    T s;
-    jackknifed_t(mpi::communicator c, T const &zero, binned<T> const &b)
-       : _b(&b), s(mpi_all_reduce(c, b->sum(zero)) / mpi_all_reduce(c, b->bins().size())) {}
-    auto operator[](int i) const { return s - b->bins()[i]; }
-  };
+  namespace details {
 
-  struct _make_jacknife_tag {
-    mpi::communicator c;
-  };
+    template <typename V> struct jackknifed_t {
+      V const *_b;
+      using T = std::decay_t<decltype(std::declval<V>()[0])>;
+      T s;
+      long si_minus_one;
 
-  // eval for the jacknife technique
-  template <typename T> jackknifed_t<T> eval(observable<T> const &obs, _make_jacknife_tag x) { return {x.c, obs.zero(), obs.bins()}; }
+      jackknifed_t(V const &b) : _b(&b) {
+        si_minus_one = b.size() - 1;
+        // compute the sum of B into a new T.
+        T sum = b[0];
+        for (long i = 1; i < b.size(); ++i) sum += b[i];
+        s = sum / si_minus_one;
+      }
 
-  template <typename T> auto eval(jackknifed_t<T> const &j, long i) { return j[i]; }
+      jackknifed_t(V const &b, mpi::communicator c) : _b(&b) {
+        si_minus_one = mpi_reduce(b.size(), c) - 1;
+        // compute the sum of B into a new T.
+        T sum = b[0];
+        for (long i = 1; i < b.size(); ++i) sum += b[i];
 
-  struct _get_size_visitor {
-    long res = 0;
-    template <typename T> void operator()(T const &) {}
-    template <typename T> operator()(observable<T> const &obs) {
-      long i = obs.size();
-      if ((res) and (res != i)) TRIQS_RUNTIME_ERROR << "Expression of time series with time mismatch";
-      res = i; // keep the result
+        s = T{mpi_reduce(sum, c)} / si_minus_one;
+        mpi_broadcast(s, c);
+        mpi_broadcast(si_minus_one, c);
+      }
+      T operator[](long i) const { return s - (*_b)[i] / si_minus_one; }
+    };
+
+    template <typename F, typename Tu, size_t... Is, typename... A> FORCEINLINE auto jack_impl(std::index_sequence<Is...>, long n, F &&f, Tu &&tu) {
+      return make_regular(f(std::get<Is>(std::forward<Tu>(tu))[n]...));
     }
-  };
 
-  template <typename ObservableExpr> auto jackknife(ObservableExpr const &expr, mpi::communicator c) {
+    // implementation of jackknife : A are vector like  : [i], size
+    template <typename F, typename... A> auto jackknife_impl1(std::tuple<jackknifed_t<A>...> const &jac, F &&f, A const &... a) {
 
-    // compute the size of the series with the visitor
-    auto l = _get_size_visitor{0};
-    clef::apply_on_each_leaf(l, x);
-    long size = l.res;
+      std::array<long, sizeof...(A)> dims{long(a.size())...};
+      if (std::any_of(begin(dims), end(dims), [d0 = dims[0]](auto i) { return i != d0; })) TRIQS_RUNTIME_ERROR << " Jackknife : size mismatch";
 
-    // build a new expression with the observable replaced by the lazy jackknifed.
-    auto expr_with_jacknifed_series = eval(expr, _make_jacknife_tag{c});
+      long N = dims[0];
+      if (N == 0) TRIQS_RUNTIME_ERROR << "No data !";
 
-    if (si == 0) TRIQS_RUNTIME_ERROR << "No data !";
+      auto Xj = [&jac, &f, _seq = std::index_sequence_for<A...>()](long i) { return details::jack_impl(_seq, i, f, jac); };
 
-    auto sum  = eval(expr_with_jacknifed_series, 0);
-    auto sum2 = sum;
-    sum2 *= sum;
-    for (int i = 1; i < si; ++i) {
-      auto tmp = eval(expr_with_jacknifed_series, i);
-      sum += tmp;
-      sum2 += tmp * tmp;
+      using triqs::arrays::conj_r;
+      // FIXME : use the better sum technique
+      auto sum = make_regular(f(a[0]...));
+      using T  = decltype(sum);
+      T M      = Xj(0);
+      auto Q   = make_regular(0 * conj_r(M) * M); // have a zero with the right dimensions
+
+      for (long i = 1; i < N; ++i) {
+        sum += make_regular(f(a[i]...));
+        auto x_M = T{Xj(i) - M}; // FIXME we can optimize the T, if we implement sqrt for gf_expr ...
+        long k   = i + 1;
+        Q += conj_r(x_M) * x_M * (k - 1) / k;
+        M += x_M / k;
+      }
+      sum /= N;
+      using std::sqrt;
+      auto std_err = make_regular(std::sqrt((N - 1) / double(N)) * sqrt(Q));
+      return std::make_tuple(make_regular(N * (sum - M) + M), std_err, M, sum);
     }
-    return std::make_pair(sum / size, sum2 / size - (sum * sum) / (size * size));
+
+    template <typename F, typename... A> auto jackknife_impl_mpi(mpi::communicator c, F &&f, A const &... a) {
+      std::tuple<jackknifed_t<A>...> jac{{a, c}...};
+      return details::jackknife_impl1(jac, std::forward<F>(f), a...);
+    }
+
+    template <typename F, typename... A> auto jackknife_impl(F &&f, A const &... a) {
+      std::tuple<jackknifed_t<A>...> jac{{a}...};
+      return details::jackknife_impl1(jac, std::forward<F>(f), a...);
+    }
+
+    template <typename T> auto const &_filter(T const &x) { return x; }
+    template <typename T> auto const &_filter(accumulator<T> const &x) { return x.linear_bins(); }
+
+  } // namespace details
+
+  // Given a function (a1,a2,a3,...) -> f(a1,a2,a3...),
+  // and a list of bins for a1,a2,a3 ... (parameters a...)
+  // it returns (average corrected with jackknife bias, naive average, jackknife error)
+  // for this quantity
+  template <typename F, typename... A> auto jackknife(mpi::communicator c, F &&f, A const &... a) {
+    return details::jackknife_impl_mpi(c, std::forward<F>(f), details::_filter(a)...);
+    // Do the second reduction of Q and M
+    // FIXME : to
+  }
+
+  // Given a function (a1,a2,a3,...) -> f(a1,a2,a3...),
+  // and a list of bins for a1,a2,a3 ... (parameters a...)
+  // it returns (average corrected with jackknife bias, naive average, jackknife error)
+  // for this quantity
+
+  // TODO: Static assert equality of arguments
+
+  template <typename F, typename... A> auto jackknife(F &&f, A const &... a) {
+    return details::jackknife_impl(std::forward<F>(f), details::_filter(a)...);
+  }
+
+  // Simple variance and average
+  template <typename A> auto mean_and_stderr(mpi::communicator c, A const &a) {
+    auto [av,  stddev, avJ, avA] = jackknife(c, [](auto &&x) { return x; }, a);
+    return std::make_pair(av, stddev);
+  }
+
+  // Simple variance and average
+  template <typename A> auto mean_and_stderr(A const &a) {
+    auto [av, stddev, avJ, avA] = jackknife([](auto &&x) { return x; }, a);
+    return std::make_pair(av, stddev);
   }
 
 } // namespace triqs::stat
-
-namespace triqs::clef {
-
-  // observable and jackknifed_t are nodes of lazy expressions
-  template <typename T> struct is_any_lazy<observable<T>>::std::true_type {};
-  template <typename T> struct is_any_lazy<jackknifed_t<T>>::std::true_type {};
-
-} // namespace triqs::clef

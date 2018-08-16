@@ -28,17 +28,25 @@ namespace triqs::gfs {
 
   template <typename G> struct stacked_gf {
 
-    static auto make_mesh(int n, typename G::mesh_t const &m) { return gf_mesh<discrete<discrete_domain>>{n} * m; }
+    using mesh_disc_t = gf_mesh<discrete<discrete_domain>>;
+    using var_t       = typename decltype(mesh_disc_t{0} * std::declval<gf_mesh<typename G::variable_t>>())::var_t;
+    using g_t         = gf<var_t, typename G::target_t>;
+    using base_mesh_t = typename G::mesh_t;
 
-    using var_t = typename decltype(make_mesh(0, std::declval<G>().mesh()))::var_t;
-    using g_t   = gf<var_t, typename G::target_t>;
+    base_mesh_t base_mesh;
     g_t _g;
+    
+    auto _extract_base_mesh(typename g_t::mesh_t const & m) { 
+     if constexpr (get_n_variables<typename G::variable_t>::value == 1) // === single mesh 
+       return std::get<1>(m); 
+     else return triqs::tuple::pop_front(m.components());
+    }
 
     stacked_gf() = default;
 
-    stacked_gf(g_t && g) : _g(std::move(g)) { }
+    stacked_gf(g_t &&g) :  base_mesh(_extract_base_mesh(g.mesh())), _g(std::move(g)) {}
 
-    stacked_gf(long n, G const &g) : _g(make_mesh(n, g.mesh()), g.target_shape()) {}
+    stacked_gf(long n, G const &g) : base_mesh(g.mesh()), _g(mesh_disc_t{n} * base_mesh, g.target_shape()) {}
 
     typename G::view_type operator[](long i) { return _g[i, all_t{}]; }
     typename G::const_view_type operator[](long i) const { return _g[i, all_t{}]; }
@@ -46,7 +54,7 @@ namespace triqs::gfs {
     long size() const { return std::get<0>(_g.mesh()).size(); }
 
     // costly
-    void push_back(typename G::const_view_type x) { _g = g_t{_g.mesh(), copy_and_push_back(_g.data(), x.data()), {}}; }
+    void push_back(typename G::const_view_type x) { _g = g_t{mesh_disc_t{size() + 1} * base_mesh, copy_and_push_back(_g.data(), x.data()), {}}; }
 
     private:
     auto _make_iter(range::const_iterator it) const {
@@ -59,16 +67,15 @@ namespace triqs::gfs {
     auto end() const { return _make_iter(std::cend(range(0, size()))); }
     auto cbegin() const { return begin(); }
     auto cend() const { return end(); }
- 
-    friend stacked_gf mpi_reduce(stacked_gf const &g, mpi::communicator c, int root=0, bool all=false, MPI_Op op = MPI_SUM) {
+
+    friend stacked_gf mpi_reduce(stacked_gf const &g, mpi::communicator c, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
       return {mpi_reduce(g._g, c, root, all, op)};
     }
 
     // FIXME redondant ...
     //friend stacked_gf mpi_all_reduce(mpi::communicator c, stacked_gf const &x) {
-      //return {mpi_all_reduce(c, x._g)};
+    //return {mpi_all_reduce(c, x._g)};
     //}
-
   };
 
   template <typename G> void h5_write(h5::group g, std::string const &name, stacked_gf<G> const &x) { h5_write(g, name, x._g); }
