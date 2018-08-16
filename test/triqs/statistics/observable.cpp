@@ -58,6 +58,10 @@ TEST(Observable, hdf5Array) {
 
   for (int i = 0; i <= 10; ++i) a << i;
 
+  auto & aa = a.get_work_var();
+  aa = a0;
+  for (int i = 0; i <= 10; ++i) a << aa;
+
   auto obs = mpi_reduce(a, world);
 
   auto f = h5::file("obs_array.h5", 'w');

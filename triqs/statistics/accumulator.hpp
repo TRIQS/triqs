@@ -87,15 +87,6 @@ namespace triqs::stat {
     }
     friend class h5::access;
 
-    private:
-    T const &_find_T() const {
-      if (_average) return _average._sum;
-      if (_variance) return _variance._sum;
-      if (_auto_correlation) return _auto_correlation._sum_xi[0];
-      if (_bins) return _bins.data[0];
-      throw std::logic_error("_find_T for null object;");
-    }
-
     public:
     accumulator() : accumulator(accumulator_cargs{}) {}
 
@@ -116,9 +107,11 @@ namespace triqs::stat {
     }
 
     T zero() const {
-      auto x = _find_T();
-      x      = 0;
-      return x;
+      if (_average) return _average->zero();
+      if (_variance) return _variance->zero();
+      if (_auto_correlation) return  _auto_correlation->zero();
+      if (_bins) return  _bins->zero();
+      throw std::logic_error("_find_T for null object;");
     }
 
     accumulators::average<T> const &average() const {

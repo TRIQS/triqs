@@ -63,6 +63,13 @@ namespace triqs::stat::accumulators {
       _count++;
     }
 
+    // Make a new zero
+    T zero() const {
+      T r = _sum;
+      r   = 0;
+      return r;
+    }
+
     friend T reduce(average const &x) { return _make_T<T>(x._sum, x._count); }
 
     friend T mpi_reduce(average const &x, mpi::communicator c) { return _make_T(T{mpi_reduce(x._sum, c)}, mpi_reduce(x._count, c)); }

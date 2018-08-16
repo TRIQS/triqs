@@ -84,6 +84,13 @@ namespace triqs::stat::accumulators {
       }
     }
 
+    // Make a new zero
+    T zero() const {
+      T r = data[0];
+      r   = 0;
+      return r;
+    }
+
     // Result is a vector of variance
     friend vec_t<T> collect_results(mpi::communicator c, binned const &x) {
       vec_t<T> r(x.data);                                                                   // FIXME : avoid copy

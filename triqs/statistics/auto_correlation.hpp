@@ -87,6 +87,7 @@ namespace triqs::stat::accumulators {
     auto_correlation() = default;
 
     /**
+     * Precondition : n_bins > 0
      */
     auto_correlation(T const &zero, int n_bins)
        : _sum(n_bins, zero), _sum2(n_bins, zero), acc(n_bins, zero), sum_count(n_bins, 0), acc_count(n_bins, 0) {}
@@ -114,6 +115,13 @@ namespace triqs::stat::accumulators {
       }
       --n;
       for (; n >= 0; n--) store(n);
+    }
+
+    // Make a new zero 
+    T zero() const {
+      T r = _sum[0];
+      r   = 0;
+      return r;
     }
 
     friend vec_t<T> reduce(auto_correlation const &x) { return _make_vecT<T>(x._sum, x._sum2, x.sum_count); }

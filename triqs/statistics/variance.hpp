@@ -82,6 +82,13 @@ namespace triqs::stat::accumulators {
       _count++;
     }
 
+    // Make a new zero
+    T zero() const {
+      T r = _sum;
+      r   = 0;
+      return r;
+    }
+
     friend std::pair<T, T> reduce(variance const &x) { return _make_TT<T>(x._sum, x._sum2, x._count); }
 
     friend std::pair<T, T> mpi_reduce(variance const &x, mpi::communicator c) {
