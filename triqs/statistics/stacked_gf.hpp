@@ -3,7 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2018 by Simons Foundation
- *   author : O. Parcollet
+ *   author : O. Parcollet, H. Strand, P. Dumitrescu
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
