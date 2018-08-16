@@ -27,19 +27,18 @@
 
 namespace triqs::stat {
 
-  template <typename V> auto sum_of_vector(V const &v) {
-    auto r = v[0];
-    for (long i = 1; i < v.size(); ++i) r += v[i];
-    return r;
-  }
-
   template <typename T> struct jackknifed_t {
     bin_set<T> const *_b;
     T s;
     long si_minus_one;
+
     jackknifed_t(bin_set<T> const &b, mpi::communicator c) : _b(&b) {
       si_minus_one = mpi_reduce(b.size(), c) - 1;
-      s = mpi_reduce(sum_of_vector(b), c)/si_minus_one;
+      // compute the sum of B into a new T.
+      T sum = b[0];
+      for (long i = 1; i < b.size(); ++i) sum += b[i];
+
+      s = T{mpi_reduce(sum, c)}/ si_minus_one;
       mpi_broadcast(s, c);
       mpi_broadcast(si_minus_one, c);
     }
@@ -77,15 +76,15 @@ namespace triqs::stat {
 
     if (si == 0) TRIQS_RUNTIME_ERROR << "No data !";
 
-    double sum = eval(expr_with_jackknifed_series, 0l);
-    auto sum2  = sum;
-    sum2 *= sum;
+    auto sum = make_regular(eval(expr_with_jackknifed_series, 0l));
+    auto sum2 = make_regular(sum * sum);
+
     for (long i = 1; i < si; ++i) {
       auto tmp = eval(expr_with_jackknifed_series, i);
       sum += tmp;
       sum2 += tmp * tmp;
     }
-    return std::make_pair(sum / si, sum2 / si - (sum * sum) / (si * si));
+    return std::make_pair(make_regular(sum / si), make_regular(sum2 / si - (sum * sum) / (si * si)));
   }
 
   // trait to find out if T models the concept TimeSeries
