@@ -124,8 +124,8 @@ namespace triqs {
     template <typename T> auto mpi_all_gather(T &x, communicator c = {}, int root = 0) DECL_AND_RETURN(mpi_gather(x, c, root, true));
 
     // backward compatibility. Do not document.
-    template <typename... T> void broadcast(T &&... x) { mpi_broadcast(std::forward<T>(x)...); }
-    template <typename... T> auto reduce(T &&... x) { return mpi_reduce(std::forward<T>(x)...); }
+    //template <typename... T> void broadcast(T &&... x) { mpi_broadcast(std::forward<T>(x)...); }
+    //template <typename... T> auto reduce(T &&... x) { return mpi_reduce(std::forward<T>(x)...); }
 
     /* -----------------------------------------------------------
   *   transformation type -> mpi types

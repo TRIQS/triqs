@@ -254,7 +254,7 @@ namespace triqs {
       void collect_results(mpi::communicator const &c) {
         AllMeasures.collect_results(c);
         AllMoves.collect_statistics(c);
-        uint64_t nmeasures_tot = mpi::reduce(nmeasures, c);
+        uint64_t nmeasures_tot = mpi_reduce(nmeasures, c);
 
         report(3) << "[Rank " << c.rank() << "] Timings for all measures:\n" << AllMeasures.get_timings();
         report(3) << "[Rank " << c.rank() << "] Acceptance rate for all moves:\n" << AllMoves.get_statistics();
