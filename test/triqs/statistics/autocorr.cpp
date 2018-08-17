@@ -1,40 +1,13 @@
+
 #include <cmath>
+#include <random>
 
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/statistics/accumulator.hpp>
-#include <boost/version.hpp>
-#include <boost/random/variate_generator.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
-using namespace triqs::stat;
+
 using namespace triqs;
-using namespace boost;
+using namespace triqs::stat;
 using namespace triqs::utility;
-
-// Some Correlated gaussian
-template <typename TimeSeries> void boost_independent_gaussian_vector(TimeSeries &t, int seed) {
-  boost::variate_generator<boost::mt19937, boost::normal_distribution<>> generator((boost::mt19937(seed)), (boost::normal_distribution<>()));
-  for (size_t i = 0; i < t.size(); ++i) t[i] = generator();
-}
-
-template <typename TimeSeries> void correlated_gaussian_vector(TimeSeries &t, int seed, size_t correlation_length) {
-  boost_independent_gaussian_vector(t, seed);
-  TimeSeries B(t.size());
-  B[0]     = t[0];
-  double f = exp(-1. / correlation_length);
-  for (size_t i = 1; i < t.size(); i++) B[i] = f * B[i - 1] + sqrt(1 - f * f) * t[i];
-  t = B;
-}
-
-template <typename TimeSeries> void correlated_gaussian_vector(TimeSeries &t, int seed, size_t correlation_length, double avg) {
-  boost_independent_gaussian_vector(t, seed);
-  TimeSeries B(t.size());
-  B[0]     = t[0];
-  double f = exp(-1. / correlation_length);
-  for (size_t i = 1; i < t.size(); i++) B[i] = f * B[i - 1] + sqrt(1 - f * f) * t[i];
-  t = B;
-  for (size_t i = 1; i < t.size(); i++) t[i] = t[i] + avg;
-}
 
 int seed = 1567;
 triqs::mpi::communicator world;
@@ -50,13 +23,15 @@ TEST(Stat, AutoCorrMechanics) {
   int n_bins = 10;
   accumulators::auto_correlation<double> AA(n_bins);
 
+  
   std::vector<double> bins(n_bins);
-  int N = 1000;
+  int N = 100000;
 
   {
-    boost::variate_generator<boost::mt19937, boost::normal_distribution<>> generator((boost::mt19937(seed)), (boost::normal_distribution<>()));
+    std::mt19937 gen(seed);
+    std::normal_distribution<double> distr;
     for (long i = 1; i <= N; ++i) {
-      auto x = generator();
+      auto x = distr(gen);
       AA << x;
     }
   }
@@ -66,9 +41,10 @@ TEST(Stat, AutoCorrMechanics) {
     double acc    = 0;
     int n         = 0;
     double sum_xi = 0, sum_xi2 = 0;
-    boost::variate_generator<boost::mt19937, boost::normal_distribution<>> generator((boost::mt19937(seed)), (boost::normal_distribution<>()));
+    std::mt19937 gen(seed);
+    std::normal_distribution<double> distr;
     for (long i = 1; i <= N; ++i) {
-      auto x = generator();
+      auto x = distr(gen);
       acc += x;
       if (i % B == 0) {
         acc /= B;
@@ -81,11 +57,14 @@ TEST(Stat, AutoCorrMechanics) {
     sum_xi /= n;
     sum_xi2 /= n;
     bins[b] = sum_xi2 - sum_xi * sum_xi;
+    bins[b] /= n - 1;
   }
 
   auto variances = mpi_reduce(AA, world);
 
-  for (auto [n, b] : enumerate(variances)) { EXPECT_NEAR(bins[n], b, 1.e-15); }
+  for (auto [n, b] : enumerate(variances)) {
+    EXPECT_NEAR(bins[n], b, 1.e-15);
+  }
 }
 
 // ------------------------
@@ -98,21 +77,25 @@ triqs::arrays::array<double, 1> f(int N, int seed) {
 
   // the number series
   double correlation_length = 100;
-  boost::variate_generator<boost::mt19937, boost::normal_distribution<>> generator((boost::mt19937(seed)), (boost::normal_distribution<>()));
   double f = exp(-1. / correlation_length);
+  std::mt19937 gen(seed);
+  std::normal_distribution<double> distr;
 
   // produce the number and fill AA
-  double B = generator();
+  double B = distr(gen);
   AA << B;
   for (size_t i = 1; i < N; i++) {
-    B = f * B + sqrt(1 - f * f) * generator();
+    B = f * B + sqrt(1 - f * f) * distr(gen);
     AA << B;
   }
 
   // estimates of tau in an array
   triqs::arrays::array<double, 1> R(n_bins);
   auto variances = mpi_reduce(AA, world);
-  for (auto n : range(n_bins)) R(n) = tau_estimates(variances, n);
+  for (auto n : range(n_bins)) {
+    R(n) = tau_estimates(variances, n);
+    std::cout << std::setprecision(16) << R(n) << ",\n";
+  }
   return R;
 }
 
@@ -121,25 +104,25 @@ triqs::arrays::array<double, 1> f(int N, int seed) {
 TEST(Statistics, Autocorrelation1) {
 
   array<double, 1> ref{0.0,
-                       0.4950876953783262,
-                       1.4756091996287506,
-                       3.3987263640872767,
-                       7.0981428852990414,
-                       13.946373448354995,
-                       25.745329467881898,
-                       43.300286069894909,
-                       63.316766187196883,
-                       82.667762720744449,
-                       96.266732250253796,
-                       95.905703723387447,
-                       95.701569095843197,
-                       91.459465310338089,
-                       97.070597387268876,
-                       86.248202610154976,
-                       92.957897165303081,
-                       108.83889189238811,
-                       85.814470300949424,
-                       -0.24081441247234747};
+0.4950005239857558,
+1.475123545342739,
+3.396281611622532,
+7.088413844139182,
+13.90722680534667,
+25.57423684228299,
+42.98716259789485,
+63.42456878696709,
+80.62025970970781,
+95.28358485415579,
+98.49664895527435,
+97.13672378798729,
+88.42310405734598,
+93.43126509720925,
+109.0993086536505,
+134.0631425516443,
+179.0800626286223,
+355.2173638000497,
+231.6692554974257};
 
   EXPECT_ARRAY_NEAR(ref, f((1 << 20), 100), 1.e-10);
 }
@@ -155,7 +138,6 @@ TEST(Stat, Binned) {
   std::vector<double> bins(N / bin_size + 1, 0);
 
   {
-    boost::variate_generator<boost::mt19937, boost::normal_distribution<>> generator((boost::mt19937(seed)), (boost::normal_distribution<>()));
     for (long i = 0; i < N; ++i) {
       auto x = 1; // i; //generator();
       AA << x;
@@ -163,8 +145,6 @@ TEST(Stat, Binned) {
   }
 
   {
-    boost::variate_generator<boost::mt19937, boost::normal_distribution<>> generator((boost::mt19937(seed)), (boost::normal_distribution<>()));
-
     for (int i = 0; i < N; ++i)
       bins[i / 100] += 1; // i; //generator();
                           //bins[b] /= (N / n_bins);

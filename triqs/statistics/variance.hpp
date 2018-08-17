@@ -63,15 +63,23 @@ namespace triqs::stat::accumulators {
     }
 
     private:
-    inline static std::pair<T, T> _make_TT(T sum, T sum2, long count) {
+    /**
+     * Inplace calculation of the sample average and
+     * variance of the sample average
+     *
+     * mean = sum / count
+     * var = 1/(count - 1) * [ sum2/count - (sum/count)^2 ]
+     */
+    inline static std::pair<T, T> _make_mean_variance(T sum, T sum2, long count) {
       sum /= count;
       sum2 /= count;
       sum2 -= sum * sum;
+      sum2 /= count - 1;
       return {std::move(sum), std::move(sum2)};
     }
 
     public:
-    friend std::pair<T, T> reduce(variance const &x) { return variance::_make_TT(x._sum, x._sum2, x._count); }
+    friend std::pair<T, T> reduce(variance const &x) { return variance::_make_mean_variance(x._sum, x._sum2, x._count); }
 
     friend std::pair<T, T> mpi_reduce(variance const &x, mpi::communicator c, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
       TRIQS_ASSERT((op == MPI_SUM));

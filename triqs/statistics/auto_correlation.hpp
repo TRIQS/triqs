@@ -34,9 +34,10 @@ namespace triqs::stat {
    *
    */
   // FIXME : add conjugate ?
+  // FIXME : Division not (well) defined for gf<M, matrix_valued>
 
-  // Given any vector, compute the estimagte
-  template <typename V> auto tau_estimates(V const &v, long n) { return 0.5 * (v[n] / v[0] * (1ul << n) - 1); }
+  // Given any vector, compute the estimate
+  template <typename V> auto tau_estimates(V const &v, long n) { return 0.5 * (v[n] / v[0] - 1); }
 } // namespace triqs::stat
 namespace triqs::stat::accumulators {
   /**
@@ -61,9 +62,19 @@ namespace triqs::stat::accumulators {
     }
     friend class h5::access;
 
-    // The accumulator is full. Store its value and increase counters.
+    //
+    /**
+     * The accumulator is full. Store its value and increase counters.
+     *
+     * Take the average of the accumulator and store it and its square
+     *
+     * avg = acc / bin_size
+     * avg_square = avg * avg = [acc / bin_size]^2
+     *
+     */
     void store(int n) {
-      acc[n] /= (1ul << n); // bin_size = 2^n
+      auto bin_size = 1ul << n;
+      acc[n] /= bin_size;
       _sum[n] += acc[n];
       _sum2[n] += acc[n] * acc[n];
       sum_count[n]++;
@@ -80,8 +91,11 @@ namespace triqs::stat::accumulators {
      * Precondition : n_bins > 0
      */
     auto_correlation(T const &zero, int n_bins)
-      : _sum(n_bins, zero), _sum2(n_bins, T{zero*zero}), // nb zero*zero required
-	 acc(n_bins, zero), sum_count(n_bins, 0), acc_count(n_bins, 0) {}
+       : _sum(n_bins, zero),
+         _sum2(n_bins, T{zero * zero}), // nb zero*zero required
+         acc(n_bins, zero),
+         sum_count(n_bins, 0),
+         acc_count(n_bins, 0) {}
 
     /**
      */
@@ -116,21 +130,28 @@ namespace triqs::stat::accumulators {
     }
 
     private:
+    /**
+     * Vector of sample variances for each set of bins
+     *
+     * var = 1/(count - 1) * [ sum2/count - (sum/count)^2 ]
+     *
+     */
     inline static vec_t<T> _make_vecT(vec_t<T> sum, vec_t<T> const &sum2, std::vector<long> const &count) {
-      vec_t<T> r(sum2);
+      vec_t<T> var(sum2);
       for (int n = 0; n < sum.size(); ++n) {
         if (count[n] == 0) break;
         sum[n] /= count[n];
-        r[n] = sum2[n] / count[n] - sum[n] * sum[n];
+        var[n] = sum2[n] / count[n] - sum[n] * sum[n];
+        var[n] /= count[n] - 1;
       }
-      return r;
+      return var;
     }
 
     public:
     friend vec_t<T> reduce(auto_correlation const &x) { return auto_correlation::_make_vecT(x._sum, x._sum2, x.sum_count); }
 
     friend vec_t<T> mpi_reduce(auto_correlation const &x, mpi::communicator c, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-      TRIQS_ASSERT((op==MPI_SUM));
+      TRIQS_ASSERT((op == MPI_SUM));
       return auto_correlation::_make_vecT(mpi_reduce(x._sum, c, root, all), mpi_reduce(x._sum2, c, root, all), mpi_reduce(x.sum_count, c));
     }
   };
