@@ -83,7 +83,7 @@ namespace triqs::stat::accumulators {
 
     friend std::pair<T, T> mpi_reduce(variance const &x, mpi::communicator c, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
       TRIQS_ASSERT((op == MPI_SUM));
-      return _make_TT(T{mpi_reduce(x._sum, c, root, all)}, T{mpi_reduce(x._sum2, c, root, all)}, mpi_reduce(x._count, c));
+      return _make_mean_variance(T{mpi_reduce(x._sum, c, root, all)}, T{mpi_reduce(x._sum2, c, root, all)}, mpi_reduce(x._count, c));
     }
   };
 

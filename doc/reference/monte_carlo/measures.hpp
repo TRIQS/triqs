@@ -17,8 +17,8 @@ struct compute_m {
 
   // get final answer M / (Z*N)
   void collect_results(triqs::mpi::communicator c) {
-    double sum_Z = triqs::mpi::reduce(Z, c);
-    double sum_M = triqs::mpi::reduce(M, c);
+    double sum_Z = triqs::mpi::mpi_reduce(Z, c);
+    double sum_M = triqs::mpi::mpi_reduce(M, c);
     if (c.rank() == 0) std::cout << "Magnetization: " << sum_M / sum_Z << std::endl;
   }
 };
