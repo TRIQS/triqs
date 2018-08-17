@@ -49,7 +49,7 @@ namespace triqs::stat::accumulators {
 
     template <typename F> void h5_serialize(F &&f) {
       f("data", data), f("counts", counts), f("bid", bid, h5::as_attribute), f("bin_size", bin_size, h5::as_attribute),
-         f("max_n_bins", max_n_bins, h5::as_attribute), f("need_to_advance", need_to_advance, h5::as_attribute);
+         f("max_n_bins", max_n_bins, h5::as_attribute), f("need_to_advance", need_to_advance); // FIXME, h5::as_attribute);
     }
     friend class h5::access;
 
