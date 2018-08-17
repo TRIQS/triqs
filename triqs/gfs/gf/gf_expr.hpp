@@ -125,6 +125,7 @@ namespace triqs {
       using target_t   = typename gfs_expr_tools::_or_<typename L_t::target_t, typename R_t::target_t>::type;
       static_assert(!std::is_same<variable_t, void>::value, "Cannot combine two gf expressions with different variables");
       static_assert(!std::is_same<target_t, void>::value, "Cannot combine two gf expressions with different target");
+      using regular_type = gf<variable_t, target_t>;
 
       L l;
       R r;
@@ -151,6 +152,7 @@ namespace triqs {
       using L_t        = typename std::remove_reference<L>::type;
       using variable_t = typename L_t::variable_t;
       using target_t   = typename L_t::target_t;
+      using regular_type = gf<variable_t, target_t>;
 
       L l;
       template <typename LL> gf_unary_m_expr(LL &&l_) : l(std::forward<LL>(l_)) {}

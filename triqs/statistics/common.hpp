@@ -43,6 +43,43 @@ namespace triqs::stat {
 
   template <typename T> class accumulator;
 
+  // operations
+
+  // default
+  template <typename T> struct operations {
+    using prod_result_t = T;
+    static T product(T const &x, T const &y) {
+      using triqs::arrays::conj;
+      //return triqs::arrays::conj(x) * y;
+      return x * y;
+    }
+    //static T divide(T const &x, T const &y) { return x / y; }
+    static T sqrt(T const &x) {
+      using std::sqrt;
+      return sqrt(x);
+    }
+    //static T conj(T const & x) { using std:conj; return conj(x);}
+  };
+
+  template <typename V, typename Ta> struct operations<gfs::gf<V, Ta>> {
+    using T             = gfs::gf<V, Ta>;
+    using prod_result_t = T; // gfs::gf<V, typename Ta::real_t>;
+
+    static auto product(T const &x, T const &y) {
+      if constexpr (Ta::is_matrix) {
+        using v_t = gfs::gf_view<V, gfs::tensor_valued<2>>;
+        return T{v_t{x} * v_t{x}}; // FIXME the gf_expr is too strict to combine tensor_valued<2> and matrix_valued
+      } else {
+        return x * y;
+      }
+      //      return conj(x) * y;
+    }
+    //static auto divide(T const &x, T const &y) { return x / y; } // FIXME : array like
+    static T sqrt(T const &x) { return {x.mesh(), make_regular(triqs::arrays::sqrt(x.data())), {}}; }
+    //static T conj(T const & x) {  return {g.mesh(), make_regular(conj(x.data()))};}
+  };
+
+  template <typename V, typename Ta> struct operations<gfs::gf_view<V, Ta>> {};       // unused
+  template <typename V, typename Ta> struct operations<gfs::gf_const_view<V, Ta>> {}; // unused
+
 } // namespace triqs::stat
-
-

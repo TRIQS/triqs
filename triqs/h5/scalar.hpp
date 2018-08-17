@@ -47,6 +47,7 @@ namespace triqs {
     void h5_read(group g, std::string const &name, std::complex<double> &x);
 
     // attribute
+    void h5_write_attribute(hid_t id, std::string const &name, bool x);
     void h5_write_attribute(hid_t id, std::string const &name, int x);
     void h5_write_attribute(hid_t id, std::string const &name, long x);
     void h5_write_attribute(hid_t id, std::string const &name, unsigned long x);
@@ -54,6 +55,7 @@ namespace triqs {
     void h5_write_attribute(hid_t id, std::string const &name, unsigned long long x);
     void h5_write_attribute(hid_t id, std::string const &name, double x);
 
+    void h5_read_attribute(hid_t id, std::string const &name, bool &x);
     void h5_read_attribute(hid_t id, std::string const &name, int &x);
     void h5_read_attribute(hid_t id, std::string const &name, long &x);
     void h5_read_attribute(hid_t id, std::string const &name, unsigned long &x);

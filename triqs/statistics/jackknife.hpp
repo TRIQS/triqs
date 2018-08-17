@@ -38,7 +38,7 @@ namespace triqs::stat {
       T sum = b[0];
       for (long i = 1; i < b.size(); ++i) sum += b[i];
 
-      s = T{mpi_reduce(sum, c)}/ si_minus_one;
+      s = T{mpi_reduce(sum, c)} / si_minus_one;
       mpi_broadcast(s, c);
       mpi_broadcast(si_minus_one, c);
     }
@@ -53,6 +53,7 @@ namespace triqs::stat {
   template <typename T> jackknifed_t<T> eval(bin_set<T> const &obs, _make_jackknife_tag x) { return {obs, x.c}; }
 
   template <typename T> auto eval(jackknifed_t<T> const &j, long i) { return j[i]; }
+  template <typename T> auto eval(bin_set<T> const &b, long i) { return b[i]; }
 
   struct _get_size_visitor {
     long res = 0;
@@ -64,37 +65,43 @@ namespace triqs::stat {
     }
   };
 
+  // Given an expression e.g. A*B, A/B made of binned<U>,
+  // returns (average corrected with jackknife bias, naive average, jackknife error)
   template <typename ObservableExpr> auto jackknife(ObservableExpr const &expr, mpi::communicator c) {
 
     // compute the size of the series with the visitor
     auto l = _get_size_visitor{0};
     clef::apply_on_each_leaf(l, expr);
-    long si = l.res;
+    long N = l.res;
 
     // build a new expression with the observable replaced by the lazy jackknifed.
     auto expr_with_jackknifed_series = eval(expr, _make_jackknife_tag{c});
 
-    if (si == 0) TRIQS_RUNTIME_ERROR << "No data !";
+    if (N == 0) TRIQS_RUNTIME_ERROR << "No data !";
 
-    auto sum = make_regular(eval(expr_with_jackknifed_series, 0l));
-    auto sum2 = make_regular(sum * sum);
+    auto sum   = make_regular(eval(expr, 0l));
+    auto sum_j = make_regular(eval(expr_with_jackknifed_series, 0l));
 
-    for (long i = 1; i < si; ++i) {
+    using op_t = operations<decltype(sum)>;
+
+    typename op_t::prod_result_t sum_j2 = make_regular(op_t::product(sum_j, sum_j));
+
+    for (long i = 1; i < N; ++i) {
+      sum += make_regular(eval(expr, i));
       auto tmp = eval(expr_with_jackknifed_series, i);
-      sum += tmp;
-      sum2 += tmp * tmp;
+      sum_j += tmp;
+      sum_j2 += op_t::product(tmp, tmp);
     }
-    return std::make_pair(make_regular(sum / si), make_regular(sum2 / si - (sum * sum) / (si * si)));
+    sum /= N;
+    sum_j /= N;
+    sum_j2 /= N;
+    auto j_variance = make_regular((N - 1) * (sum_j2 - (op_t::product(sum_j , sum_j))));
+    return std::make_tuple(make_regular(N * sum - (N - 1) * sum_j), sum, op_t::sqrt(j_variance));
   }
 
   // trait to find out if T models the concept TimeSeries
   template <typename T> struct is_time_series : std::false_type {};
-  template <typename T> struct is_time_series<T &> : is_time_series<T> {};
-  template <typename T> struct is_time_series<T &&> : is_time_series<T> {};
-  template <typename T> struct is_time_series<T const> : is_time_series<T> {};
   template <typename T> struct is_time_series<std::vector<T>> : std::true_type {};
-
-  // observable and jackknifed_t are nodes of lazy expressions
   template <typename T> struct is_time_series<bin_set<T>> : std::true_type {};
   template <typename T> struct is_time_series<jackknifed_t<T>> : std::true_type {};
 
@@ -117,12 +124,3 @@ namespace triqs::stat {
 #undef TRIQS_TS_OPERATION
 
 } // namespace triqs::stat
-
-/*namespace triqs::clef {
-
-  // observable and jackknifed_t are nodes of lazy expressions
-  template <typename T> struct is_any_lazy<bin_set<T>>::std::true_type {};
-  template <typename T> struct is_any_lazy<jackknifed_t<T>>::std::true_type {};
-
-} // namespace triqs::clef
-*/
