@@ -68,7 +68,7 @@ TEST(det_manip, det_manip_refill_4) {
                     dm.matrix());
   EXPECT_CLOSE(1.0 / 26460000, dm.determinant());
   EXPECT_ARRAY_NEAR(_matrix{{100, -600, 1050, -560}, {-600, 4050, -7560, 4200}, {1050, -7560, 14700, -8400}, {-560, 4200, -8400, 4900}},
-                    dm.inverse_matrix(), 1e-8);
+                    dm.inverse_matrix(), 1e-7);
 }
 
 TEST(det_manip, det_manip_refill_empty) {
