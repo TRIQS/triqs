@@ -4,22 +4,11 @@
 Getting started
 ===============
 
-TRIQS provides a set of Python libraries that allows to easily write scripts
-for the study of quantum interaction systems. The executable ``ipytriqs`` which
-is installed in the :file:`path_to_install_directory/bin` directory is a normal
-ipython interpreter (see below for details about ipython) which has access to
-the TRIQS modules. You can either start an interactive session with::
+TRIQS provides a set of Python libraries that allow to easily write scripts
+for the study of quantum interaction systems. After successful :ref:`installation <installation>`
+be sure to load TRIQS into your environment::
 
-    $ ipytriqs
-
-or run scripts with::
-
-    $ ipytriqs my_script.py
-
-There is also an executable which allows to start an ipython notebook
-in your browser, just type::
-
-   $ ipytriqs_notebook
+    source path_to_triqs/share/triqsvars.sh
 
 Now you can try to run some scripts to get familiar with TRIQS. Why don't you
 :ref:`go to our Python tour <tour>` and run some of the examples there?
@@ -28,9 +17,8 @@ Now you can try to run some scripts to get familiar with TRIQS. Why don't you
 Learn more about Python, ipython and the notebook
 -------------------------------------------------
 
-The ``ipytriqs`` executable calls an `ipython interpreter
-<http://ipython.org>`_.  This is basically a more user-friendly version of the
-standard Python interpreter with an enhanced interactive shell that makes it
+The `ipython interpreter <http://ipython.org>`_ is basically a more user-friendly
+version of the standard Python interpreter with an enhanced interactive shell that makes it
 easy to visualize data.  It also provides the `ipython notebook
 <http://ipython.org/notebook.html>`_, a browser-based notebook with support for
 text, mathematical expressions, inline plots and inline Python scripts. We
