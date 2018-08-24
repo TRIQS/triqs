@@ -475,6 +475,10 @@ class Gf(object):
             self.__imul__impl(arg)
         elif isinstance(arg, numbers.Number):
             self._data[:] *= arg
+        elif isinstance(arg, np.ndarray):
+	    assert len(arg.shape) == 2, "Multiplication only supported for matrices"
+	    assert len(self.target_shape) == 2, "Multiplication only supported for matrix_valued Gfs"
+	    self.data[:] = np.dot(self.data, arg)
         else:
             assert False, "Invalid operand type for Gf in-place multiplication"
         return self
@@ -502,15 +506,24 @@ class Gf(object):
                    indices = self._indices.copy(), 
                    name = self.name)
             c.__imul__impl(y)
-        elif isinstance(y, numbers.Number):
+        elif isinstance(y, (numbers.Number, np.ndarray)):
             c = self.copy()
-            c*= y
+            c *= y
         else:
             assert False, "Invalid operand type for Gf multiplication"
         return c
 
-    def __rmul__(self,x): return self.__mul__(x)
-
+    def __rmul__(self,y):
+	c = self.copy()
+        if isinstance(y, np.ndarray):
+	    assert len(y.shape) == 2, "Multiplication only supported for matrices"
+	    assert len(self.target_shape) == 2, "Multiplication only supported for matrix_valued Gfs"
+	    c.data[:] = np.tensordot(y, self.data, axes=([-1], [-2]))
+	elif isinstance(y, numbers.Number):
+            c *= y
+        else:
+            assert False, "Invalid operand type for Gf multiplication"
+        return c
     # ---------- Division
     def __idiv__(self,arg):
         if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) /arg

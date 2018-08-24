@@ -3,6 +3,8 @@
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
 # Copyright (C) 2011-2014 by M. Ferrero, O. Parcollet
+# Copyright (C) 2018 by Simons Foundation
+#   author : N. Wentzell
 #
 # TRIQS is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -21,117 +23,162 @@
 from pytriqs.archive import *
 from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
+
 import numpy as np, copy
 from math import pi
+import unittest
 
-beta = 50
-precision = 1.e-6
+def max_abs(a) :
+    return np.amax(np.abs(a))
 
-def matsu(n) : 
-   return (2*n+1)*pi/beta * 1j
+class test_Gf_Base_Op(unittest.TestCase):
 
-def max_abs(a) : 
-    return np.amax(np.abs(a)) 
+    def setUp(self):
 
-# --- start test
+        self.precision = 1.e-6
+        self.beta = 50.0
 
-ga = GfImFreq(indices = [1,2], beta = beta, n_points = 1000, name = "a1Block")
-gb = GfImFreq(indices = [1,2], beta = beta, n_points = 1000, name = "b1Block")
+    def test_Base_Op(self):
 
-G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
-G << iOmega_n + 2.0
+        iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_max = 1000)
 
-# Arithmetic operations
-G2 = G.copy()
-G2 << G * G + 1.5 * G
+        ga = GfImFreq(mesh=iw_mesh, target_shape=(2,2), name = "a1Block")
+        gb = GfImFreq(mesh=iw_mesh, target_shape=(2,2), name = "b1Block")
 
-for ii, g in G : 
-    N = g.data.shape[0]
-    for n in range(N/2) : 
-        assert_array_close_to_scalar( g.data[n+N/2],  matsu(n) + 2.0)
+        G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
+        G << iOmega_n + 2.0
 
-# inverse:
-G << inverse(G)
+        def matsu(n) :
+            return (2*n+1)*pi/self.beta * 1j
 
-#  Density:
-dens = G.total_density()
-assert abs(dens - 4.000001283004012) < precision, "oops dens =  %s"%dens
+        for ii, g in G :
+            N = g.data.shape[0]
+            for n in range(N/2) :
+                assert_array_close_to_scalar( g.data[n+N/2],  matsu(n) + 2.0)
 
-# FT:
-f = lambda g,L : GfImTime(indices = g.indices, beta = g.mesh.beta, n_points =L )
-gt = BlockGf(name_block_generator = [ (n,f(g,2001) ) for n,g in G], make_copies=False, name='gt')
-for (i,gtt) in gt : gtt.set_from_inverse_fourier(G[i])
+        # Arithmetic operations
+        G2 = G.copy()
+        G2 << G * G + 1.5 * G
 
-res = np.array([[[  3.14815470e-04,   0.00000000e+00],
-        [  0.00000000e+00,   3.14815470e-04]],
+        # inverse:
+        G << inverse(G)
 
-       [[ -1.48721028e-04,   0.00000000e+00],
-        [  0.00000000e+00,  -1.48721028e-04]],
+        #  Density:
+        dens = G.total_density()
+        assert abs(dens - 4.000001283004012) < self.precision, "oops dens =  %s"%dens
 
-       [[  7.46732524e-05,   0.00000000e+00],
-        [  0.00000000e+00,   7.46732524e-05]]])
+        # FT:
+        f = lambda g,L : GfImTime(indices = g.indices, beta = self.beta, n_points = L )
+        gt = BlockGf(name_block_generator = [ (n,f(g,2001) ) for n,g in G], make_copies=False, name='gt')
+        for (i,gtt) in gt : gtt.set_from_inverse_fourier(G[i])
 
-assert_arrays_are_close(gt['a'].data[:3], res, 1.e-3) 
+        res = np.array([[[  3.14815470e-04,   0.00000000e+00],
+                [  0.00000000e+00,   3.14815470e-04]],
 
-# Matrix operations:
-ga2 = GfImFreq(indices = [1,2,3], beta = beta, n_points = 1000, name = "a1Block")
-mat = np.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], np.complex)
+               [[ -1.48721028e-04,   0.00000000e+00],
+                [  0.00000000e+00,  -1.48721028e-04]],
 
-ga2.from_L_G_R(mat.transpose(),ga,mat)
+               [[  7.46732524e-05,   0.00000000e+00],
+                [  0.00000000e+00,   7.46732524e-05]]])
 
-res = np.array([[[ 0.99901401-0.03138495j, -0.49950701+0.01569248j,
-          0.49950701-0.01569248j],
-        [-0.49950701+0.01569248j,  0.49950701-0.01569248j,  0.00000000+0.j        ],
-        [ 0.49950701-0.01569248j,  0.00000000+0.j        ,
-          0.49950701-0.01569248j]],
+        assert_arrays_are_close(gt['a'].data[:3], res, 1.e-3)
 
-       [[ 0.99119556-0.09341798j, -0.49559778+0.04670899j,
-          0.49559778-0.04670899j],
-        [-0.49559778+0.04670899j,  0.49559778-0.04670899j,  0.00000000+0.j        ],
-        [ 0.49559778-0.04670899j,  0.00000000+0.j        ,
-          0.49559778-0.04670899j]],
+        # Matrix operations:
+        ga2 = GfImFreq(indices = [1,2,3], beta = self.beta, n_points = 1000, name = "a1Block")
+        mat = np.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], np.complex)
 
-       [[ 0.97592014-0.15329718j, -0.48796007+0.07664859j,
-          0.48796007-0.07664859j],
-        [-0.48796007+0.07664859j,  0.48796007-0.07664859j,  0.00000000+0.j        ],
-        [ 0.48796007-0.07664859j,  0.00000000+0.j        ,
-          0.48796007-0.07664859j]]])
-shift = ga2.data.shape[0]/2
-assert_arrays_are_close(ga2.data[shift:shift+3], res) 
+        ga2.from_L_G_R(mat.transpose(),ga,mat)
 
-# conjugate:
-Gc = G.conjugate()
+        res = np.array([[[ 0.99901401-0.03138495j, -0.49950701+0.01569248j,
+                  0.49950701-0.01569248j],
+                [-0.49950701+0.01569248j,  0.49950701-0.01569248j,  0.00000000+0.j        ],
+                [ 0.49950701-0.01569248j,  0.00000000+0.j        ,
+                  0.49950701-0.01569248j]],
 
-res = np.array([[[ 0.49950701+0.01569248j,  0.00000000-0.j        ],
-        [-0.00000000-0.j        ,  0.49950701+0.01569248j]],
+               [[ 0.99119556-0.09341798j, -0.49559778+0.04670899j,
+                  0.49559778-0.04670899j],
+                [-0.49559778+0.04670899j,  0.49559778-0.04670899j,  0.00000000+0.j        ],
+                [ 0.49559778-0.04670899j,  0.00000000+0.j        ,
+                  0.49559778-0.04670899j]],
 
-       [[ 0.49559778+0.04670899j,  0.00000000-0.j        ],
-        [-0.00000000-0.j        ,  0.49559778+0.04670899j]],
+               [[ 0.97592014-0.15329718j, -0.48796007+0.07664859j,
+                  0.48796007-0.07664859j],
+                [-0.48796007+0.07664859j,  0.48796007-0.07664859j,  0.00000000+0.j        ],
+                [ 0.48796007-0.07664859j,  0.00000000+0.j        ,
+                  0.48796007-0.07664859j]]])
+        shift = ga2.data.shape[0]/2
+        assert_arrays_are_close(ga2.data[shift:shift+3], res)
 
-       [[ 0.48796007+0.07664859j,  0.00000000-0.j        ],
-        [-0.00000000-0.j        ,  0.48796007+0.07664859j]]])
-shift = Gc['a'].data.shape[0]/2
-assert_arrays_are_close(Gc['a'].data[shift:shift+3], res) 
+        # conjugate:
+        Gc = G.conjugate()
 
-# to be continued
-# tranpose
+        res = np.array([[[ 0.49950701+0.01569248j,  0.00000000-0.j        ],
+                [-0.00000000-0.j        ,  0.49950701+0.01569248j]],
 
-with HDFArchive('gf_base_op_test.h5','w') as h : 
-   h['g'] = G
-   h['gt'] = gt
+               [[ 0.49559778+0.04670899j,  0.00000000-0.j        ],
+                [-0.00000000-0.j        ,  0.49559778+0.04670899j]],
 
-# Check reading out of archive
-with HDFArchive('gf_base_op_test.h5','r') as h : 
-   assert_block_gfs_are_close(h['g'], G)
-   assert_block_gfs_are_close(h['gt'], gt)
- 
-# Pickle (also use in mpi, etc...)
-import pickle
+               [[ 0.48796007+0.07664859j,  0.00000000-0.j        ],
+                [-0.00000000-0.j        ,  0.48796007+0.07664859j]]])
+        shift = Gc['a'].data.shape[0]/2
+        assert_arrays_are_close(Gc['a'].data[shift:shift+3], res)
 
-def check_pickle(g): 
-  s = pickle.dumps(g)
-  g2 = pickle.loads(s)
-  assert_block_gfs_are_close(g,g2)
+        # to be continued
+        # tranpose
 
-check_pickle(G)
-check_pickle(gt)
+        with HDFArchive('gf_base_op_test.h5','w') as h :
+            h['g'] = G
+            h['gt'] = gt
+
+        # Check reading out of archive
+        with HDFArchive('gf_base_op_test.h5','r') as h :
+            assert_block_gfs_are_close(h['g'], G)
+            assert_block_gfs_are_close(h['gt'], gt)
+
+        # Pickle (also use in mpi, etc...)
+        import pickle
+
+        def check_pickle(g):
+            s = pickle.dumps(g)
+            g2 = pickle.loads(s)
+            assert_block_gfs_are_close(g,g2)
+
+        check_pickle(G)
+        check_pickle(gt)
+
+    def test_Mat_Prod(self):
+
+        iw_mesh = MeshImFreq(beta=self.beta, S = "Fermion", n_max = 50)
+
+        Mat = np.array([[1, 2], [3, 4]])
+
+        G = Gf(mesh=iw_mesh, target_shape=(2,2), name = "G_iw")
+	G << iOmega_n * Mat
+
+	G_exact = G.copy()
+	G_exact[0, 0] << Mat[0, 0] * iOmega_n
+	G_exact[1, 0] << Mat[1, 0] * iOmega_n
+	G_exact[0, 1] << Mat[0, 1] * iOmega_n
+	G_exact[1, 1] << Mat[1, 1] * iOmega_n
+
+        assert_gfs_are_close(G, G_exact)
+
+        # ======
+
+        G = Gf(mesh=MeshProduct(iw_mesh, iw_mesh), target_shape=(2,2), name = "G_iw_iw")
+	for iw1, iw2 in G.mesh:
+	    G[iw1, iw2] = np.identity(2) / (iw1 + 2.0 * iw2 + 4.0)
+
+	G_exact = G.copy()
+	for iw1, iw2 in G.mesh:
+	    G_exact[iw1, iw2][0, 0] = Mat[0, 0] / (iw1 + 2.0 * iw2 + 4.0)
+	    G_exact[iw1, iw2][1, 0] = Mat[1, 0] / (iw1 + 2.0 * iw2 + 4.0)
+	    G_exact[iw1, iw2][0, 1] = Mat[0, 1] / (iw1 + 2.0 * iw2 + 4.0)
+	    G_exact[iw1, iw2][1, 1] = Mat[1, 1] / (iw1 + 2.0 * iw2 + 4.0)
+
+        assert_gfs_are_close(G * Mat, G_exact)
+        G *= Mat
+        assert_gfs_are_close(G, G_exact)
+
+if __name__ == '__main__':
+    unittest.main()

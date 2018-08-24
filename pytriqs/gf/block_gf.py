@@ -279,9 +279,7 @@ class BlockGf(object):
         if isinstance(A, self.__class__):
             for (i,g) in self: g.copy_from(A[i])
         else:
-            try:
-                for i,g in self: g << A
-            except: return NotImplemented
+            for i,g in self: g << A
         return self
 
     def __ilshift__(self, A):
@@ -337,9 +335,6 @@ class BlockGf(object):
     def __imul__(self,arg):
         if isinstance(arg, BlockGf):
             for (n,g) in self: self[n] *= arg[n]
-        elif operator.isSequenceType(arg):
-            assert len(arg) == len(self.__GFlist) , "list of incorrect length"
-            for l,g in izip(arg,self.__GFlist): g*=l
         else:
             for i,g in self: g *= arg
         return self

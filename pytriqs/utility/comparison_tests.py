@@ -2,7 +2,7 @@ import numpy as np
 
 def assert_arrays_are_close(a, b, precision = 1.e-6):
     d = np.amax(np.abs(a - b))
-    assert  d< precision, "Arrays are different. Difference is %s.\n %s %s"%(d,a,b)
+    assert  d< precision, "Arrays are different. Difference is %s.\n %s \n\n --------- \n\n %s"%(d,a,b)
 
 def assert_array_close_to_scalar(a, x, precision = 1.e-6):
     assert_arrays_are_close(a, np.identity(a.shape[0])*(x), precision)
