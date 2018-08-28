@@ -213,7 +213,7 @@ endif()
 
 #
 target_include_directories(triqs SYSTEM PUBLIC ${HDF5_INCLUDE_DIRS})
-target_link_libraries (triqs ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+target_link_libraries (triqs ${HDF5_LIBRARIES})
 target_compile_options(triqs PUBLIC ${HDF5_DEFINITIONS})
 
 # ---------------------------------

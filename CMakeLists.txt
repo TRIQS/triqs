@@ -150,6 +150,19 @@ else()
  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 endif()
 
+# ---------------------------------
+# Resolve Clang Linktime Problems
+# CMake will adjust any linker flags from '-L path_to/mylib.so' to -lmylib
+# if the proper mylib.so is automatically found by the linker, i.e.
+# the directory comes first in LIBRARY_PATH.
+# The clang linker however ignores LIBRARY_PATH. By unsetting LIBRARY_PATH
+# we enforce absolute paths in the linker flags
+# ---------------------------------
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  message(STATUS "Unsetting LIBRARY_PATH to avoid cmake+clang linktime problems")
+  unset(ENV{LIBRARY_PATH})
+endif()
+
 # -----------------------------------------------------------------------------
 # C++ standard
 # Common for all targets below (triqs lib, test, pytriqs, doc examples)
