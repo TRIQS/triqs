@@ -25,22 +25,8 @@ using namespace triqs::utility;
 
 TEST(Array, empty_iteration) {
 
-  /*
-  std::vector<size_t> sizes = {1, 2, 3};
-  array<double, 2> arr2(sizes);
-  */
-
   int size = 0;
-  std::cout << "size = " << size << "\n";
   array<double, 1> arr(size);
-  std::cout << "lengths = " << arr.domain().lengths() << "\n"; 
-  std::cout << "nel = " << arr.domain().number_of_elements() << "\n";
-
-  auto it = arr.begin();
-  auto it_end = arr.end();
-  
-  std::cout << "it = " << it << "\n";
-  std::cout << "it_end = " << it_end << "\n";
 
   for( auto i : arr ) std::cout << i << "\n";
   
