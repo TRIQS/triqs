@@ -194,7 +194,7 @@ namespace triqs {
             using indices_type  = typename domain_type::index_value_type;
             using return_type   = const std::ptrdiff_t;
             iterator() : im(NULL), pos(0), atend(true) {}
-            iterator(const map &P, bool atEnd = false, ull_t iteration_order = 0) : im(&P), pos(im->start_shift()), atend((P.size()==0) ? true : atEnd) {}
+            iterator(const map &P, bool atEnd = false, ull_t iteration_order = 0) : im(&P), pos(im->start_shift()), atend(P.size()==0 or atEnd) {}
             indices_type const &indices() const { return indices_tuple; }
             operator bool() const { return !atend; }
 

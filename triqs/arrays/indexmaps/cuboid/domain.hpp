@@ -76,7 +76,7 @@ namespace triqs {
             bool atend;
 
             public:
-            gal_generator(const domain_t &P, bool atEnd = false) : dom(&P), atend((P.number_of_elements()==0) ? true : atEnd) {}
+            gal_generator(const domain_t &P, bool atEnd = false) : dom(&P), atend(P.number_of_elements()==0 or atEnd) {}
             bool operator==(const gal_generator &IT2) const {
               assert((IT2.dom == dom));
               return ((IT2.atend == atend));
