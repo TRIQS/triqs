@@ -88,6 +88,8 @@ namespace triqs {
       uint64_t n_opts                  = 0;   // count the number of operation
       uint64_t n_opts_max_before_check = 100; // max number of ops before the test of deviation of the det, M^-1 is performed.
       double singular_threshold = -1; // the test to see if the matrix is singular is abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
+      double precision_warning = 1.e-8; // bound for warning message in check for singular matrix
+      double precision_error = 1.e-5; // bound for throwing error in check for singular matrix
 
       private:
       //  ------------     BOOST Serialization ------------
@@ -223,7 +225,7 @@ namespace triqs {
       /**
      * Like for std::vector, reserve memory for a bigger size.
      * Preserves only the matrix, not the temporary working vectors/matrices, so do NOT use it
-     * between a try_XXX and acomplete_operation
+     * between a try_XXX and a complete_operation
      */
       void reserve(size_t new_size) {
         if (new_size <= Nmax) return;
@@ -252,6 +254,18 @@ namespace triqs {
       /// Sets the number of operations done before a check in the dets.
       void set_n_operations_before_check(uint64_t n) { n_opts_max_before_check = n; }
 
+      /// Get the bound for warning messages in the singular tests
+      double get_precision_warning() const { return precision_warning; }
+
+      /// Set the bound for warning messages in the singular tests
+      void set_precision_warning(double threshold) { precision_warning = threshold; }
+
+      /// Get the bound for throwing error in the singular tests
+      double get_precision_error() const { return precision_error; }
+
+      /// Set the bound for throwing error in the singular tests
+      void set_precision_error(double threshold) { precision_error = threshold; }
+      
       /**
      * \brief Constructor.
      *
@@ -1049,10 +1063,6 @@ namespace triqs {
           double r2           = max_element(abs(res + mat_inv(R, R)));
           bool err            = !(r < (relative ? precision_error * r2 : precision_error));
           bool war            = !(r < (relative ? precision_warning * r2 : precision_warning));
-          if (err || war) {
-            std::cerr << "matrix  = " << matrix() << std::endl;
-            std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
-          }
           if (war)
             std::cerr << "Warning : det_manip deviation above warning threshold "
                       << "check "
@@ -1060,7 +1070,11 @@ namespace triqs {
                       << "\n   max(abs(M^-1 - M^-1_true)) = " << r
                       << "\n   precision*max(abs(M^-1 + M^-1_true)) = " << (relative ? precision_warning * r2 : precision_warning) << " "
                       << std::endl;
-          if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
+          if (err) {
+            std::cerr << "matrix  = " << matrix() << std::endl;
+            std::cerr << "inverse_matrix = " << inverse_matrix() << std::endl;
+            TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! ";
+          }
         }
 
         // since we have the proper inverse, replace the matrix and the det
@@ -1114,7 +1128,7 @@ namespace triqs {
           det  = newdet;
           sign = newsign;
           ++n_opts;
-          if (n_opts > n_opts_max_before_check) check_mat_inv();
+          if (n_opts > n_opts_max_before_check) check_mat_inv(precision_warning, precision_error);
         }
         last_try = NoTry;
       }
