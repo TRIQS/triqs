@@ -125,10 +125,20 @@ namespace triqs {
       }
 
       /// Write into HDF5
-      //friend void h5_write (h5::group fg, std::string name, time_pt const & g) = delete; // not implemented
-
+      friend void h5_write (h5::group fg, std::string subgroup_name, time_pt const & g) {
+        auto gr = fg.create_group(subgroup_name);
+        h5_write(gr, "beta", g.beta);
+        h5_write(gr, "val", g.val);
+        h5_write(gr, "n", g.n);
+      }
+      
       /// Read from HDF5
-      //friend void h5_read(h5::group fg, std::string name, time_pt &g) = delete; // not implemented
+      friend void h5_read(h5::group fg, std::string subgroup_name, time_pt &g) {
+        auto gr = fg.open_group(subgroup_name);
+        h5_read(gr, "beta", g.beta);
+        h5_read(gr, "val", g.val);
+        h5_read(gr, "n", g.n);	
+      }
     };
 
     /// all operations below decay to double
