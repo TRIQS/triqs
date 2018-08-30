@@ -43,14 +43,16 @@ namespace triqs {
       };
 
       // a function that computes the mesh of  lhs X rhs, where X is +,-,*,/
-      template <typename Tag, typename M> M const &combine_mesh(M const &m, no_mesh_t) { return m; }
-      template <typename Tag, typename M> M const &combine_mesh(no_mesh_t, M const &m) { return m; }
-      template <typename Tag, typename T> gf_mesh<T> const &combine_mesh(gf_mesh<T> const &l, gf_mesh<T> const &r) {
+      template <typename Tag, typename M> M combine_mesh(M const &m, no_mesh_t) { return m; }
+      template <typename Tag, typename M> M combine_mesh(no_mesh_t, M const &m) { return m; }
+
+      template <typename Tag, typename T> gf_mesh<T> combine_mesh(gf_mesh<T> const &l, gf_mesh<T> const &r) {
         if (!(l == r))
           TRIQS_RUNTIME_ERROR << "Mesh mismatch: In Green Function Expression, the meshes of the 2 operands should be equal" << l << " vs " << r;
         return l;
       }
       // special case for imtime
+
       template <typename Tag> gf_mesh<imtime> combine_mesh(gf_mesh<imtime> const &l, gf_mesh<imtime> const &r) {
 
         // FIXME C++17 constexpr
