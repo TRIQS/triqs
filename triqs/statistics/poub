@@ -1,4 +1,55 @@
- /**
+
+namespace triqs::stat::details {
+
+  template <typename T> struct log_binning {
+
+    std::vector<T> sum_sq;      // sum xi, sum xi^2
+    std::vector<T> acc;         // partial accumulators at size 2^(n+1)
+    std::vector<int> acc_count; // number of elements for partial accumulators at size 2^(n+1)
+    long count    = 0;          // Number of elements summed in is sum_sq[0]
+    int n_bin_max = 1;
+
+    template <typename F> void h5_serialize(F &&f) {
+      f("sum_sq", sum_sq), f("acc", acc), f("count", count, h5::attribute), f("acc_count", acc_count);
+    }
+
+    log_binning() = default;
+
+    // Precondition : n_bins >= 0
+    log_binning(T const &model, int n_bin_max) : sum_sq(n_bins, T{model * model}), acc(n_bins, model), acc_count(n_bins, 0), n_bin_max(n_bin_max) {}
+
+    long n_bins() const { return acc.size(); }
+
+    void advance {
+      ++count;
+      if (n_bins_max == 0) return;
+      // go up in n as long as the acc_count becomes full and add the acc in the
+      // then go down, and store the acc
+      if (++(acc_count[0]) < 2) return;
+      int n = 1;
+      for (; n < n_bins_max; ++n) {
+        if (n == acc.size()) {
+          acc.push_back(acc[0]);
+          acc.back() = 0;
+          sum.push_back(sum[0]);
+          sum.back() = 0;
+          acc_count.push_back(0)
+        }
+        acc[n] += acc[n - 1];
+        if (++(acc_count[n]) < 2) break;
+      }
+      --n;
+      for (; n >= 0; n--) {
+        auto bin_size = (1ul << (n + 1)); // 2^(n+1)
+        acc[n] /= bin_size;
+        sum_sq[n + 1] += conj_r(acc[n]) * acc[n];
+        acc_count[n] = 0;
+        acc[n]       = 0;
+      }
+    }
+  };
+
+} // namespace triqs::stat::details n_bin_max/**
    * value and error. A simple pair with names
    *
    */

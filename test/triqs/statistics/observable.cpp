@@ -13,32 +13,28 @@ TEST(Observable, ConstructDouble) {
   using obs_t = mc_value<double>;
   using acc_t = accumulator<double>;
 
-  accumulator_cargs p{false, true, 10, 100};
-  acc_t a{p};
+  int n_log_bins = 10, bin_size = 100, n_lin_bins = -1;
+  acc_t a{0, n_log_bins, n_lin_bins, bin_size};
 
   for (int i = 0; i <= 10; ++i) a << i;
 
-  auto obs = mpi_reduce(a, world);
-  EXPECT_NEAR(obs.value.value(), 5, 1.e-15);
+  auto av = a.empirical_average(world);
+  EXPECT_NEAR(av, 5, 1.e-15);
 
   {
-    auto f = h5::file("obs_d.h5", 'w');
+    auto f = h5::file("acc_d.h5", 'w');
     h5_write(f, "acc", a);
-    h5_write(f, "obs", obs);
   }
 
   auto a_b   = acc_t{};
-  auto obs_b = obs_t{};
   {
-    auto f = h5::file("obs_d.h5", 'r');
+    auto f = h5::file("acc_d.h5", 'r');
     h5_read(f, "acc", a_b);
-    h5_read(f, "obs", obs_b);
   }
 
   {
-    auto f = h5::file("obs_db.h5", 'w');
+    auto f = h5::file("acc_db.h5", 'w');
     h5_write(f, "acc", a_b);
-    h5_write(f, "obs", obs_b);
   }
 }
 //----------------------------------------
@@ -50,41 +46,25 @@ TEST(Observable, hdf5Array) {
   auto zero = a0;
   zero()    = 0;
 
-  using obs_t = mc_value<A>;
   using acc_t = accumulator<A>;
 
-  accumulator_cargs p{false, true, 10, 100};
-  acc_t a{zero, p};
+  int n_log_bins = 10, bin_size = 100, n_lin_bins = -1;
+  acc_t a{zero, n_log_bins, n_lin_bins, bin_size};
 
-  for (int i = 0; i <= 10; ++i) a << i;
-
-  auto & aa = a.get_work_var();
-  aa = a0;
-  for (int i = 0; i <= 10; ++i) a << aa;
-
-  auto obs = mpi_reduce(a, world);
-
-  auto f = h5::file("obs_array.h5", 'w');
-  h5_write(f, "obs", a);
-  h5_write(f, "obs", obs);
-
+  for (int i = 0; i <= 10; ++i) a << a0;
   {
     auto f = h5::file("obs_a.h5", 'w');
     h5_write(f, "acc", a);
-    h5_write(f, "obs", obs);
   }
 
   auto a_b   = acc_t{};
-  auto obs_b = obs_t{};
   {
     auto f = h5::file("obs_a.h5", 'r');
     h5_read(f, "acc", a_b);
-    h5_read(f, "obs", obs_b);
   }
   {
     auto f = h5::file("obs_ab.h5", 'w');
     h5_write(f, "acc", a_b);
-    h5_write(f, "obs", obs_b);
   }
 }
 
@@ -99,31 +79,27 @@ TEST(Observable, Gf) {
   zero      = 0;
   auto g    = zero;
 
-  accumulator_cargs p{false, true, 10, 100};
-  acc_t a{zero, p};
+  int n_log_bins = 10, bin_size = 100, n_lin_bins = -1;
+  acc_t a{zero, n_log_bins, n_lin_bins, bin_size};
 
   for (int i = 0; i <= 10; ++i)
     for (int j = 0; j <= 10; ++j) a << g;
 
-  auto obs = mpi_reduce(a, world);
+  auto av = a.empirical_average(world);
 
   {
     auto f = h5::file("obs_gf.h5", 'w');
     h5_write(f, "acc", a);
-    h5_write(f, "obs", obs);
   }
 
   auto a_b   = acc_t{};
-  auto obs_b = obs_t{};
   {
     auto f = h5::file("obs_gf.h5", 'r');
     h5_read(f, "acc", a_b);
-    h5_read(f, "obs", obs_b);
   }
   {
     auto f = h5::file("obs_gfb.h5", 'w');
     h5_write(f, "acc", a_b);
-    h5_write(f, "obs", obs_b);
   }
 }
 
