@@ -250,6 +250,20 @@ namespace triqs::gfs {
     return {g.mesh(), conj(g.data()), g.indices()};
   }
 
+  // conj_r returns a real for real valued gf, like for array. while conj returns always a complex.
+  // FIXME : need a map of a function to the data ?
+  template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type> conj_r(G const &g) {
+    using M = typename G::variable_t;
+    return {g.mesh(), conj_r(g.data()), g.indices()};
+  }
+
+  /*------------------------------------------------------------------------------------------------------
+  *                      sqrt
+  *-----------------------------------------------------------------------------------------------------*/
+  template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type> sqrt(G const &g) {
+      return {g.mesh(), make_regular(triqs::arrays::sqrt(g.data())), {}}; 
+  }
+
   /*------------------------------------------------------------------------------------------------------
   *                      Multiply by matrices left or right
   *-----------------------------------------------------------------------------------------------------*/
