@@ -71,6 +71,15 @@ namespace triqs {
 
     template <typename G, typename M> inline constexpr bool is_gf_v = is_gf<G, M>::value;
 
+  } // namespace gfs
+    /// --------- A trait that checks if the multiplication is element wise to forbid some usage in stat
+  template <typename T> struct has_element_wise_multiply; // defined in stat : default is true
+
+  template <typename Var> struct has_element_wise_multiply<gfs::gf<Var, gfs::matrix_valued>> : std::false_type {};
+  template <typename Var> struct has_element_wise_multiply<gfs::gf_view<Var, gfs::matrix_valued>> : std::false_type {};
+  template <typename Var> struct has_element_wise_multiply<gfs::gf_const_view<Var, gfs::matrix_valued>> : std::false_type {};
+
+  namespace gfs {
     /// ---------------------------  implementation  ---------------------------------
 
     namespace details {

@@ -60,7 +60,7 @@ namespace triqs::gfs {
     const double tmin = gt.mesh().x_min();
     const double wmin = w_mesh.x_min();
     //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
-    const double a = w_mesh.delta() * sqrt(double(L));
+    const double a = w_mesh.delta() * std::sqrt(double(L));
 
     auto _  = range();
     auto m1 = mom_12(0, _);
@@ -112,7 +112,7 @@ namespace triqs::gfs {
     const double tmin = t_mesh.x_min();
     const double wmin = gw.mesh().x_min();
     //a is a number very larger than delta_w and very smaller than wmax-wmin, used in the tail computation
-    const double a = gw.mesh().delta() * sqrt(double(L));
+    const double a = gw.mesh().delta() * std::sqrt(double(L));
 
     long n_others = second_dim(gw.data());
 
