@@ -51,7 +51,7 @@ namespace triqs {
 
       for (auto t : gt.mesh()) {
         L.reset(2 * t / gt.domain().beta - 1);
-        for (auto l : gl.mesh()) { gt[t] += sqrt(2 * l.index() + 1) / gt.domain().beta * gl[l] * L.next(); }
+        for (auto l : gl.mesh()) { gt[t] += std::sqrt(2 * l.index() + 1) / gt.domain().beta * gl[l] * L.next(); }
       }
     }
 
@@ -71,7 +71,7 @@ namespace triqs {
         else
           coef = 1.0;
         L.reset(2 * t / gt.domain().beta - 1);
-        for (auto l : gl.mesh()) { gl[l] += coef * sqrt(2 * l.index() + 1) * L.next() * gt[t]; }
+        for (auto l : gl.mesh()) { gl[l] += coef * std::sqrt(2 * l.index() + 1) * L.next() * gt[t]; }
       }
       gl.data() *= gt.mesh().delta();
     }
