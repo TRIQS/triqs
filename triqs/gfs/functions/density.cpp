@@ -201,7 +201,7 @@ namespace triqs::gfs {
   arrays::matrix<dcomplex> density(gf_const_view<legendre> gl) {
     arrays::matrix<dcomplex> res(gl.target_shape());
     res() = 0.0;
-    for (auto const &l : gl.mesh()) res -= sqrt(2 * l.index() + 1) * gl[l];
+    for (auto const &l : gl.mesh()) res -= std::sqrt(2 * l.index() + 1) * gl[l];
     res /= gl.domain().beta;
     return res;
   }
