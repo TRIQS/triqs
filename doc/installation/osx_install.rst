@@ -61,7 +61,7 @@ modifications) for earlier versions of OS X.
 3. Install several packages which are needed: ::
 
      brew install cmake
-     brew install --with-mpi --with-python --without-single boost
+     brew install --without-single boost
      brew install hdf5
      brew install gsl
      brew install gmp
