@@ -69,11 +69,11 @@ TEST(Observable, hdf5Array) {
 }
 
 //----------------------------------------
-
+/*
 TEST(Observable, Gf) {
 
   using obs_t = mc_value<gf<imfreq>>;
-  using acc_t = accumulator<gf<imfreq>>;
+  using acc_t = accumulator<gf<imfreq, tensor_valued<2>>>;
 
   auto zero = gf<imfreq>{{1, Fermion, 10}, {2, 2}};
   zero      = 0;
@@ -102,5 +102,5 @@ TEST(Observable, Gf) {
     h5_write(f, "acc", a_b);
   }
 }
-
+*/
 MAKE_MAIN;

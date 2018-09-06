@@ -77,7 +77,7 @@ TEST(accumulator, g_tau_binning_mean_stddev) {
       EXPECT_NEAR(tau, 0., 5e-2); // Uncorrelated samples
     }
 
-    auto [gf_mean, gf_stddev] = average_and_stddev(world, acc);
+    auto [gf_mean, gf_stddev] = mean_and_stderr(world, acc);
     auto meas_mean   = gf_mean[0](0, 0).real();
     auto meas_var    = gf_stddev[0](0, 0).real();
     auto meas_stddev = meas_var; //sqrt(meas_var);
