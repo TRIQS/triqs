@@ -129,7 +129,7 @@ namespace triqs::gfs {
       if (_vander.is_empty()) {
         std::vector<dcomplex> C;
         C.reserve(_fit_idx_lst.size());
-        auto om_max = m.omega_max();
+        double om_max = m.omega_max();
         for (long n : _fit_idx_lst) C.push_back(om_max / m.index_to_point(n));
         _vander = vander(C, _expansion_order);
       }
@@ -210,8 +210,8 @@ namespace triqs::gfs {
         arrays::matrix<dcomplex> km_mat(n_fixed_moments, ncols);
 
         // We have to scale the known_moments by 1/Omega_max^n
-        dcomplex z      = 1;
-        dcomplex om_max = m.omega_max();
+        double z      = 1;
+        double om_max = m.omega_max();
 
         for (int order : range(n_fixed_moments)) {
           if constexpr (R == 1)
@@ -231,11 +231,12 @@ namespace triqs::gfs {
       // === The result a_mat contains the fitted moments divided by omega_max()^n
       // Here we extract the real moments
       if (normalize) {
-        dcomplex Z = 1.0, om_max = m.omega_max();
-        for (int i : range(n_fixed_moments)) Z *= om_max;
+        double z      = 1.0;
+        double om_max = m.omega_max();
+        for (int i : range(n_fixed_moments)) z *= om_max;
         for (int i : range(first_dim(a_mat))) {
-          a_mat(i, range()) *= Z;
-          Z *= om_max;
+          a_mat(i, range()) *= z;
+          z *= om_max;
         }
       }
 
