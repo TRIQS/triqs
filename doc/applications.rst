@@ -16,7 +16,7 @@ of a quantum impurity embedded in a conduction bath. It is based on a quantum
 Monte Carlo algorithm that stochastically samples the diagrams of a
 hybridization expansion of the partition function.
 
-*Homepage:* `<https://triqs.github.io/cthyb/unstable/>`_
+*Homepage:* `<https://triqs.github.io/cthyb/>`_
 
 DFT tools
 ---------
@@ -26,7 +26,24 @@ calculation. It allows you to turn band-structure calculations obtained from
 the Wien2k package to inputs to full-fledged LDA+DMFT calculations in a few
 lines!
 
-*Homepage:* `<https://triqs.github.io/dft_tools/unstable/>`_
+*Homepage:* `<https://triqs.github.io/dft_tools/>`_
+
+Maxent
+------
+
+This TRIQS application is to provides a modular Maximum Entropy
+program to perform analytic continuation.
+
+*Homepage:* `<https://triqs.github.io/maxent/>`_
+
+SOM
+---
+
+This TRIQS application is an optimized implementation of an analytic
+continuation method proposed by Andrey S. Mishchenko.
+A detailed description of the method can be found `here <http://www.cond-mat.de/events/correl12/manuscripts/mishchenko.pdf>`_.
+
+*Homepage:* `<http://krivenko.github.io/som/>`_
 
 Hubbard I solver
 ----------------
