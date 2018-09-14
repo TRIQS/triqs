@@ -73,17 +73,31 @@ namespace triqs {
       }
 
       // Fill subspaces
-      hdiag->sub_hilbert_spaces.reserve(SP.n_subspaces());
-      for (int sp = 0; sp < SP.n_subspaces(); ++sp) hdiag->sub_hilbert_spaces.emplace_back(sp);
+      auto & h_spaces = hdiag->sub_hilbert_spaces;
+
+      h_spaces.reserve(SP.n_subspaces());
+      for (int sp = 0; sp < SP.n_subspaces(); ++sp) h_spaces.emplace_back(sp);
 
       foreach (SP, [&](fock_state_t s, int spn) {
-        if (fock_state_filter(s)) hdiag->sub_hilbert_spaces[spn].add_fock_state(s);
+        if (fock_state_filter(s)) h_spaces[spn].add_fock_state(s);
       })
         ;
 
+      // Discard empty subspaces
+      h_spaces.erase(
+        std::remove_if(h_spaces.begin(), h_spaces.end(),
+                       [](sub_hilbert_space const& sp) { return sp.size() == 0; }
+        ),
+        h_spaces.end()
+      );
+
+      // Correspondence between subspace indices before and after filtering
+      std::map<int, int> remap;
+      for(auto const& sp : h_spaces) remap.emplace(sp.get_index(), remap.size());
+
       // Fill connections
-      hdiag->creation_connection.resize(fops.size(), SP.n_subspaces());
-      hdiag->annihilation_connection.resize(fops.size(), SP.n_subspaces());
+      hdiag->creation_connection.resize(fops.size(), h_spaces.size());
+      hdiag->annihilation_connection.resize(fops.size(), h_spaces.size());
       hdiag->creation_connection.as_array_view()     = -1;
       hdiag->annihilation_connection.as_array_view() = -1;
 
@@ -91,15 +105,19 @@ namespace triqs {
         int n = o.linear_index;
         for (auto const &e : creation_melem[n]) {
           fock_state_t i, f;
-          std::tie(i, f)                                          = e.first;
-          hdiag->creation_connection(n, SP.lookup_basis_state(i)) = SP.lookup_basis_state(f);
+          std::tie(i, f)                                                  = e.first;
+          hdiag->creation_connection(n, remap[SP.lookup_basis_state(i)])  = remap[SP.lookup_basis_state(f)];
         }
         for (auto const &e : annihilation_melem[n]) {
           fock_state_t i, f;
-          std::tie(i, f)                                              = e.first;
-          hdiag->annihilation_connection(n, SP.lookup_basis_state(i)) = SP.lookup_basis_state(f);
+          std::tie(i, f)                                                      = e.first;
+          hdiag->annihilation_connection(n, remap[SP.lookup_basis_state(i)])  = remap[SP.lookup_basis_state(f)];
         }
       }
+
+      // Reindex subspaces
+      for(int i = 0; i < h_spaces.size(); ++i) h_spaces[i].set_index(i);
+
       complete();
     }
 
