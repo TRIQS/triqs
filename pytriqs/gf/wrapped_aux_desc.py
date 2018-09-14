@@ -49,12 +49,14 @@ def all_calls():
         for R in [3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['triqs::utility::mini_vector<int, 3>'] 
 
-    for M1 in ['brillouin_zone']:
-      for M2 in ['imfreq']:
-        yield 'cartesian_product<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ ('std::array<double, 3>', 'long'), ('std::array<double, 3>', 'all_t')]
+    for M1 in ['brillouin_zone', 'cyclic_lattice']:
+      k_x = {'brillouin_zone' : 'std::array<double, 3>', 'cyclic_lattice' : 'triqs::utility::mini_vector<int, 3>'}[M1]
 
-      #for M2 in ['imtime', 'refreq', 'retime']:
-      #  yield 'cartesian_product<%s,%s>'%(M1,M2), "dcomplex", 0, 'scalar_valued', ('std::array<double, 3>', 'double')
+      for M2 in ['imfreq']:
+        yield 'cartesian_product<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ (k_x, 'long'), (k_x, 'all_t')]
+
+      for M2 in ['imtime', 'refreq', 'retime']:
+        yield 'cartesian_product<%s,%s>'%(M1,M2),["dcomplex"], 0, 'scalar_valued', [(k_x, 'double')]
 
 # Fixme
 C_py_transcript = {'imfreq' : 'ImFreq', 
@@ -67,6 +69,10 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'cartesian_product<brillouin_zone,imtime>': 'BrillouinZone_x_ImTime',
                    'cartesian_product<brillouin_zone,refreq>': 'BrillouinZone_x_ReFreq',
                    'cartesian_product<brillouin_zone,retime>': 'BrillouinZone_x_ReTime',
+                   'cartesian_product<cyclic_lattice,imfreq>': 'CyclicLattice_x_ImFreq',
+                   'cartesian_product<cyclic_lattice,imtime>': 'CyclicLattice_x_ImTime',
+                   'cartesian_product<cyclic_lattice,refreq>': 'CyclicLattice_x_ReFreq',
+                   'cartesian_product<cyclic_lattice,retime>': 'CyclicLattice_x_ReTime',
                    }
  
 m.add_preamble("""
