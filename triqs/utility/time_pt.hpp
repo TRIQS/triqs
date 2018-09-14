@@ -125,7 +125,7 @@ namespace triqs {
       }
 
       /// Write into HDF5
-      friend void h5_write (h5::group fg, std::string subgroup_name, time_pt const & g) {
+      friend void h5_write (h5::group fg, std::string const &subgroup_name, time_pt const & g) {
         auto gr = fg.create_group(subgroup_name);
         h5_write(gr, "beta", g.beta);
         h5_write(gr, "val", g.val);
@@ -133,7 +133,7 @@ namespace triqs {
       }
       
       /// Read from HDF5
-      friend void h5_read(h5::group fg, std::string subgroup_name, time_pt &g) {
+      friend void h5_read(h5::group fg, std::string const &subgroup_name, time_pt &g) {
         auto gr = fg.open_group(subgroup_name);
         h5_read(gr, "beta", g.beta);
         h5_read(gr, "val", g.val);
