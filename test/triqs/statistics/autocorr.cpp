@@ -59,6 +59,8 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
     sum_xi2 /= n;
     bins[b] = sum_xi2 - sum_xi * sum_xi;
     bins[b] /= n - 1;
+    bins[b] = std::sqrt(bins[b]);
+
     if (n == 1) bins[b] = 0; //corner case
   }
 

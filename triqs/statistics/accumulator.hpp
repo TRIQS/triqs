@@ -60,11 +60,11 @@ namespace triqs::stat {
     // ************************************************************************************************
     template <typename T> struct lin_binning {
 
-      T acc;               // accumulator
-      long bin_size   = 1; // size of all the completed bins
-      long max_n_bins = 0; // maximum number of bins before compression. 0 : no bins, -1 : unlimited.
-      std::vector<T> bins; // completed bins
-      long count = 0;      // counter associated to the accumulator
+      T acc;               //<! Accumulator: adds input data until flushing average to bin 
+      long count = 0;      //<! Number of data points currently in accumulator
+      long bin_size   = 1; //<! Size of a bin
+      long max_n_bins = 0; //<! Max number of bins before compression. If < 0 : unlimited.
+      std::vector<T> bins; //<! Completed bins, which stores the data
 
       template <typename F> void h5_serialize(F &&f) {
         f("bins", bins), f("acc", acc);
@@ -74,30 +74,27 @@ namespace triqs::stat {
 
       lin_binning() = default;
 
-      // Precondition : n_bins >= 0
-      lin_binning(T model, long bin_size, long max_n_bins) : acc(std::move(model)), bin_size(bin_size), max_n_bins(max_n_bins) { acc = 0; }
+      lin_binning(T data_instance, long bin_size, long max_n_bins, bool init_zero) :
+            bin_size(bin_size), max_n_bins(max_n_bins) { 
+             if(max_n_bins != 0){
+                if ((max_n_bins > 1) && (max_n_bins % 2 != 0)) throw std::invalid_argument("max_n_bins must be even");
+                acc = std::move(data_instance);
+                if(init_zero == true){ acc = 0; }
+             }
+           }
 
       void advance() {
-        ++count;
         if (max_n_bins == 0) return;
+        ++count;
+        if (static_cast<long>(bins.size()) == max_n_bins) compress();
         if (count == bin_size) {
-          if (long(bins.size()) == max_n_bins) compress();
           bins.push_back(acc / count);
           acc   = 0;
           count = 0;
         }
       }
 
-      T sum_all() const {
-        T r = acc;
-        r   = 0;
-        for (auto const &x : bins) { r += x; }
-        r = bin_size * r + acc;
-        return r;
-      }
-
-      private:
-      // simple compression.
+      //! Halves the number of bins by pairwise averaging of data
       void compress() {
         const int L = bins.size() / 2;
         bins[0] /= 2;
@@ -109,14 +106,13 @@ namespace triqs::stat {
     };
 
     // ************************************************************************************************
-
-    // Formula
-    // FIXME : add the ref.
+    // Updating Formulae
     // Mk \equiv \frac{1}{k} \sum_{i=1}^k x_i
     // Qk \equiv \sum_{i=1}^k (x_i - M_k)^2
     // Update formula
     // M_{k} = M_{k-1} + \frac{x- M_{k-1}}{k}
     // Q_{k} = Q_{k-1} + \frac{(k-1)(x- M_{k-1})^2}{k}
+    // Ref: see e.g. Chan, Golub, LeVeque. Am. Stat. 37, 242 (1983) and therein
 
     template <typename T> struct log_binning {
 
@@ -133,12 +129,14 @@ namespace triqs::stat {
       log_binning() = default;
 
       // Precondition : n_bins >= 0
-      log_binning(T model, int n_bins) {
-        model = 0;
-        Qk.resize(n_bins, T{model * model});
-        Mk.resize(n_bins, model);
-        acc.resize(n_bins, model);
-        acc_count.resize(n_bins, 0);
+      log_binning(T data_instance, int n_bins) {
+        if(n_bins != 0){
+          data_instance = 0;
+          Qk.resize(n_bins, T{data_instance * data_instance});
+          Mk.resize(n_bins, data_instance);
+          acc.resize(n_bins, data_instance);
+          acc_count.resize(n_bins, 0);
+        }
       }
 
       long n_bins() const { return Qk.size(); }
@@ -152,14 +150,15 @@ namespace triqs::stat {
       }
 
       void advance() {
-        if (acc.size() == 0) return;
+        if (n_bins() == 0) return;
         ++count;
         // go up in n as long as the acc_count becomes full and add the acc in the
         // then go down, and store the acc
         int n = 1;
         for (; n < acc.size(); ++n) {
           acc[n] += acc[n - 1];
-          if (++(acc_count[n]) < 2) break;
+          ++(acc_count[n]);
+          if (acc_count[n] < 2) break;
         }
         --n;
         for (; n >= 0; n--) {
@@ -199,10 +198,10 @@ namespace triqs::stat {
     public:
     accumulator() = default;
 
-    accumulator(T model, int n_log_bins = 0, int n_lin_bins_max = 0, int lin_bin_size = 1)
-       : log_bins{model, n_log_bins}, //
-         lin_bins{std::move(model), lin_bin_size, n_lin_bins_max} {
-      if ((n_lin_bins_max != -1) && (n_lin_bins_max % 2 != 0)) throw std::invalid_argument("max_n_bins must be even");
+    accumulator(T data_instance, int n_log_bins = 0, int n_lin_bins_max = 0,
+                int lin_bin_size = 1, bool init_zero = true)
+       : log_bins{data_instance, n_log_bins}, //
+         lin_bins{std::move(data_instance), lin_bin_size, n_lin_bins_max, init_zero} {
     }
 
     void advance() {
@@ -210,15 +209,17 @@ namespace triqs::stat {
       lin_bins.advance();
     }
 
+    int n_log_bins()     const { return log_bins.n_bins(); }
+
+    int n_lin_bins_max() const { return lin_bins.max_n_bins; }
+
     template <typename U> void operator<<(U const &x) {
       (*this) += x;
       advance();
     }
 
-    int n_log_bins() const { return log_bins.n_bins(); }
-
     template <typename U> FORCEINLINE void operator+=(U const &u) {
-      lin_bins.acc += u;
+      if (n_lin_bins_max() != 0) lin_bins.acc += u;
       if (n_log_bins() > 0) log_bins.acc[0] += u;
     }
 
@@ -241,11 +242,12 @@ namespace triqs::stat {
       }
 
       template <typename U> FORCEINLINE void operator+=(U const &u) {
-        eval<0>() += u;
+        if (n_lin_bins_max() != 0) eval<0>() += u;
         if (n_log_bins() > 0) eval<1>() += u;
       }
 
       FORCEINLINE int n_log_bins() { return lhs.n_log_bins(); }
+      FORCEINLINE int n_lin_bins_max() const { return lhs.n_lin_bins_max(); }
 
     }; //--- end  struct lazy_expr
 
@@ -263,8 +265,9 @@ namespace triqs::stat {
     /// @return HDF5 scheme name
     static std::string hdf5_scheme() { return "accumulator"; }
 
-    //
+    //! Returns the standard errors for different power-of-two bin sizes
     std::vector<T> auto_corr_variances(mpi::communicator c) const {
+      if( n_log_bins() == 0 ){return std::vector<T>(); } // FIXME: Stops MPI Crashing on reducing empty
       std::vector<T> res1 = log_bins.Qk;
       for (int n = 0; n < res1.size(); ++n) {
         long count_n = (log_bins.count >> n); // /2^n
@@ -274,22 +277,25 @@ namespace triqs::stat {
           res1[n] /= count_n * (count_n - 1);
       }
       std::vector<T> res = mpi_reduce(res1, c);
-      for (auto &x : res) x /= c.size();
+      using std::sqrt;
+      for (auto &x : res) {
+        x /= c.size();
+        x = sqrt(x);
+      }
       return res;
     }
 
-    ///Empirical average
-    T empirical_average(mpi::communicator c) const {
-      auto total_sum1 = lin_bins.sum_all();
-      auto total_sum  = T{mpi_reduce(total_sum1, c)}; // FIXME : defect of mpi_reduce ... take
-      return total_sum / lin_bins.count;
+    //! Returns the bins from the linear binning
+    std::vector<T> const &linear_bins() const { 
+      return lin_bins.bins;
     }
-
-    /// The linear bins on the node
-    std::vector<T> const &linear_bins() const { return lin_bins.bins; }
   }; // namespace triqs::stat
 
-  // Given any vector, compute the estimate
-  template <typename V> auto tau_estimates(V const &v, long n) { return 0.5 * (v[n] / v[0] - 1); }
+  //! Helper function to computse auto-correlation time estimate from vector of 
+  //! standard errors.
+  template <typename V> auto tau_estimates(V const &v, long n) { 
+    return 0.5 * ((v[n] * v[n]) / (v[0] * v[0]) - 1); 
+    }
 
 } // namespace triqs::stat
+
