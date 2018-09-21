@@ -85,7 +85,7 @@ namespace triqs::stat {
       sum /= N;
       using std::sqrt;
       auto std_err = make_regular(std::sqrt((N - 1) / double(N)) * sqrt(Q));
-      return std::make_tuple(make_regular(N * sum - (N - 1) * M), sum, std_err);
+      return std::make_tuple(make_regular(N * (sum - M) + M), std_err, M, sum);
     }
 
     template <typename F, typename... A> auto jackknife_impl_mpi(mpi::communicator c, F &&f, A const &... a) {
@@ -117,19 +117,22 @@ namespace triqs::stat {
   // and a list of bins for a1,a2,a3 ... (parameters a...)
   // it returns (average corrected with jackknife bias, naive average, jackknife error)
   // for this quantity
+
+  // TODO: Static assert equality of arguments
+
   template <typename F, typename... A> auto jackknife(F &&f, A const &... a) {
     return details::jackknife_impl(std::forward<F>(f), details::_filter(a)...);
   }
 
   // Simple variance and average
   template <typename A> auto mean_and_stderr(mpi::communicator c, A const &a) {
-    auto [av, av1, stddev] = jackknife(c, [](auto &&x) { return x; }, a);
+    auto [av,  stddev, avJ, avA] = jackknife(c, [](auto &&x) { return x; }, a);
     return std::make_pair(av, stddev);
   }
 
   // Simple variance and average
   template <typename A> auto mean_and_stderr(A const &a) {
-    auto [av, av1, stddev] = jackknife([](auto &&x) { return x; }, a);
+    auto [av, stddev, avJ, avA] = jackknife([](auto &&x) { return x; }, a);
     return std::make_pair(av, stddev);
   }
 
