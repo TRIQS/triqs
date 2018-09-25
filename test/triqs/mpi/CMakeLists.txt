@@ -21,3 +21,6 @@
  add_executable(comm_split comm_split.cpp)
  set(TEST_MPI_NUMPROC 4)
  add_cpp_test(comm_split)
+ 
+ add_executable(vector_zero_length vector_zero_length.cpp)
+ add_cpp_test(vector_zero_length)
