@@ -23,76 +23,62 @@
 #include "../utility/view_tools.hpp"
 #include <vector>
 
-namespace triqs {
-  namespace mpi {
+namespace triqs::mpi {
 
-    // ---------------- broadcast ---------------------
+  // ---------------- broadcast ---------------------
 
-    template <typename T> void mpi_broadcast(std::vector<T> &a, communicator c = {}, int root = 0) { mpi_broadcast(a, c, root, is_basic<T>{}); }
-
-    template <typename T> void mpi_broadcast(std::vector<T> &a, communicator c, int root, std::true_type) {
-      size_t s = a.size();
-      mpi_broadcast(s, c, root);
-      if (c.rank() != root) a.resize(s);
-      MPI_Bcast(a.data(), a.size(), mpi_datatype<T>(), root, c.get());
-    }
-
-    template <typename T> void mpi_broadcast(std::vector<T> &v, communicator c, int root, std::false_type) {
-      size_t s = v.size();
-      mpi_broadcast(s, c, root);
-      if (c.rank() != root) v.resize(s);
+  template <typename T> void mpi_broadcast(std::vector<T> &v, communicator c = {}, int root = 0) {
+    size_t s = v.size();
+    mpi_broadcast(s, c, root);
+    if (c.rank() != root) v.resize(s);
+    if constexpr (is_basic<T>::value) {
+      if (s != 0) MPI_Bcast(v.data(), v.size(), mpi_datatype<T>(), root, c.get());
+    } else {
       for (auto &x : v) mpi_broadcast(x, c, root);
     }
+  }
+  // ---------------- reduce in place  ---------------------
 
-    // ---------------- reduce in place  ---------------------
-
-    template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
-      mpi_reduce_in_place(a, c, root, op, is_basic<T>{});
-    }
-
-    template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, MPI_Op op, std::true_type) {
+  template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+    if (a.size() == 0) return; // mpi behaviour not checked in that case.
+    if constexpr (is_basic<T>::value) {
       if (!all)
         MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : a.data()), a.data(), a.size(), mpi_datatype<T>(), op, root, c.get());
       else
         MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), mpi_datatype<T>(), op, c.get());
-    }
-
-    template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c, int root, bool all, MPI_Op op, std::false_type) {
+    } else {
       for (auto &x : a) mpi_reduce_in_place(a, c, root, all);
     }
+  }
 
-    // ---------------- reduce   ---------------------
+  // ---------------- reduce   ---------------------
 
-    template <typename T>
-    std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
-      return mpi_reduce(a, c, root, all, op, is_basic<T>{});
-    }
-
-    template <typename T> std::vector<T> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, MPI_Op op, std::true_type) {
-      std::vector<T> b(a.size());
+  template <typename T>
+  std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+    size_t s = a.size();
+    if (s == 0) return {}; // nothing to do, and MPI does not like size 0
+    if constexpr (is_basic<T>::value) {
+      static_assert(std::is_same_v<Regular<T>, T>, "Internal error");
+      std::vector<T> r(s);
       if (!all)
-        MPI_Reduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), op, root, c.get());
+        MPI_Reduce((void *)a.data(), r.data(), s, mpi_datatype<T>(), op, root, c.get());
       else
-        MPI_Allreduce((void *)a.data(), b.data(), a.size(), mpi_datatype<T>(), op, c.get());
-      return b;
+        MPI_Allreduce((void *)a.data(), r.data(), s, mpi_datatype<T>(), op, c.get());
+      return r;
+    } else {
+      std::vector<Regular<T>> r;
+      r.reserve(s);
+      for (size_t i = 0; i < s; ++i) r.push_back(mpi_reduce(a[i], c, root, all, op));
+      return r;
     }
+  }
 
-    template <typename T>
-    std::vector<Regular<T>> mpi_reduce(std::vector<T> const &a, communicator c, int root, bool all, MPI_Op op, std::false_type) {
-      int s = a.size();
-      std::vector<Regular<T>> lhs;
-      lhs.reserve(s);
-      for (auto i = 0; i < s; ++i) lhs.push_back(mpi_reduce(a[i], c, root, all, op));
-      return lhs;
-    }
+  // ---------------- scatter  ---------------------
 
-    // ---------------- scatter  ---------------------
+  // FIXME : not checked for 0 size ?
+  template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c = {}, int root = 0) {
 
-    template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c = {}, int root = 0) {
-      return mpi_scatter(a, c, root, is_basic<T>{});
-    }
-
-    template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c, int root, std::true_type) {
+    if constexpr (is_basic<T>::value) {
       auto slow_size  = a.size();
       auto sendcounts = std::vector<int>(c.size());
       auto displs     = std::vector<int>(c.size() + 1, 0);
@@ -108,21 +94,20 @@ namespace triqs {
       return b;
     }
 
-    template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c, int root, std::false_type) {
+    // FIXME SHOULD WE KEEP THIS ? It is not a clear API. Probably a static assert would be better
+    else {
       int s = a.size();
       std::vector<T> lhs;
       lhs.reserve(s);
       for (auto i = 0; i < s; ++i) lhs.push_back(mpi_scatter(a[i], c, root));
       return lhs;
     }
+  }
+  // ---------------- gather  ---------------------
 
-    // ---------------- gather  ---------------------
+  template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false) {
 
-    template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false) {
-      return mpi_gather(a, c, root, all, is_basic<T>{});
-    }
-
-    template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c, int root, bool all, std::true_type) {
+    if constexpr (is_basic<T>::value) {
       long size = mpi_reduce(a.size(), c, root, all);
       std::vector<T> b((all || (c.rank() == root) ? size : 0));
 
@@ -145,13 +130,13 @@ namespace triqs {
       return b;
     }
 
-    template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c, int root, bool all, std::false_type) {
+    // FIXME SHOULD WE KEEP THIS ? It is not a clear API. Probably a static assert would be better
+    else {
       int s = a.size();
       std::vector<T> lhs;
       lhs.reserve(s);
       for (auto i = 0; i < s; ++i) lhs.push_back(mpi_gather(a[i], c, root, all));
       return lhs;
     }
-
-  } // namespace mpi
-} // namespace triqs
+  }
+} // namespace triqs::mpi

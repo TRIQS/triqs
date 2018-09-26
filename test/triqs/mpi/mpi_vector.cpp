@@ -28,7 +28,28 @@ using namespace triqs;
 using namespace triqs::arrays;
 using namespace triqs::mpi;
 
-TEST(MPI, vector) {
+TEST(MPI, vector_reduce) {
+
+  mpi::communicator world;
+
+  const int N = 7;
+  using VEC   = std::vector<std::complex<double>>;
+
+  VEC A(N), B;
+
+  for (int i = 0; i < N; ++i) A[i] = i; //+ world.rank();
+
+  B = mpi_all_reduce(A, world);
+
+  VEC res(N);
+  for (int i = 0; i < N; ++i) res[i] = world.size() * i; // +  world.size()*(world.size() - 1)/2;
+
+  EXPECT_EQ(B, res);
+}
+
+// -----------------------------------
+
+TEST(MPI, vector_gather_scatter) {
 
   mpi::communicator world;
 
