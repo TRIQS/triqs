@@ -16,7 +16,7 @@ FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
 add_library(triqs ${ALLSOURCES})
 
 # first options
-target_link_libraries (triqs python_and_numpy)
+target_link_libraries (triqs cpp2py python_and_numpy)
 
 # ---------------------------------
 # C++ standard and compiler details
@@ -253,6 +253,9 @@ endif()
 # ---------------------------------
 # Install 
 # ---------------------------------
+
+# Add directory to installed headers to public interface of triqs triqs target
+target_include_directories(triqs SYSTEM INTERFACE ${CMAKE_INSTALL_PREFIX}/include)
 
 # Install the library in lib and prepare an exported cmake file to reimport it
 install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
