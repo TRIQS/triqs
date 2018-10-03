@@ -149,6 +149,11 @@ m.add_property(name = "omega_max",
                signature = "double()",
                doc = "Inverse temperature"))
 
+m.add_property(name = "delta",
+               getter = cfunction(calling_pattern="double result = self_c.delta()",
+               signature = "double()",
+               doc = "The mesh-spacing"))
+
 module.add_class(m)
 
 ########################
@@ -167,6 +172,11 @@ m.add_property(name = "t_max",
                getter = cfunction(calling_pattern="double result = self_c.x_max()",
                signature = "double()",
                doc = "Inverse temperature"))
+
+m.add_property(name = "delta",
+               getter = cfunction(calling_pattern="double result = self_c.delta()",
+               signature = "double()",
+               doc = "The mesh-spacing"))
 
 module.add_class(m)
 
