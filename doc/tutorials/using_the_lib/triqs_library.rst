@@ -48,23 +48,19 @@ the location of the TRIQS libraries. Here is what your simple
 
 .. code-block :: cmake
 
-    # Append triqs installed files to the cmake load path
-    list(APPEND CMAKE_MODULE_PATH ${TRIQS_PATH}/share/cmake)
-
     # Start configuration 
-    cmake_minimum_required(VERSION 2.8)
+    cmake_minimum_required(VERSION 2.8.12)
     project(myproj CXX)
     set(CMAKE_BUILD_TYPE Release)
 
     # Load TRIQS, including all predefined variables from TRIQS installation
     find_package(TRIQS REQUIRED)
 
-    # Linking and include info
-    link_libraries(${TRIQS_LIBRARY_ALL})
-    include_directories(${TRIQS_INCLUDE_ALL})
-
     # Create executable
     add_executable(example main.cpp)
+
+    # Linking and include info
+    target_link_libraries(example triqs)
     triqs_set_rpath_for_target(example)
 
 We're all set! Everything is ready to compile our project. If we want to build

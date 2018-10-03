@@ -16,7 +16,7 @@ FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
 add_library(triqs ${ALLSOURCES})
 
 # first options
-target_link_libraries (triqs cpp2py python_and_numpy)
+target_link_libraries(triqs PUBLIC cpp2py python_and_numpy)
 
 # ---------------------------------
 # C++ standard and compiler details
@@ -60,7 +60,7 @@ endif()
 # ---------------------------------
 
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- target_link_libraries (triqs -lrt)
+ target_link_libraries (triqs PUBLIC -lrt)
 endif()
 
 # ---------------------------------
@@ -85,7 +85,7 @@ message(STATUS "MPI_CXX_LIBRARIES : ${MPI_CXX_LIBRARIES}")
 separate_arguments(MPI_C_COMPILE_FLAGS) # Convert to list
 target_compile_options(triqs PUBLIC ${MPI_C_COMPILE_FLAGS})
 target_include_directories(triqs SYSTEM PUBLIC ${MPI_C_INCLUDE_PATH})
-target_link_libraries(triqs ${MPI_C_LIBRARIES}  ${MPI_CXX_LIBRARIES})
+target_link_libraries(triqs PUBLIC ${MPI_C_LIBRARIES} ${MPI_CXX_LIBRARIES})
 if(NOT MPIEXEC_EXECUTABLE) # Backward compatibility for older FindMPI.cmake
   set(MPIEXEC_EXECUTABLE ${MPIEXEC} CACHE FILENAME "MPI Executable")
 endif()
@@ -151,7 +151,7 @@ if (NOT MKLROOT)
 
  set(TRIQS_LIBRARY_LAPACK ${LAPACK_LIBS})
  if(MAC_VECLIB)
- target_link_libraries(triqs "-framework Accelerate") # ${TRIQS_LIBRARY_LAPACK}")
+   target_link_libraries(triqs PUBLIC "-framework Accelerate") # ${TRIQS_LIBRARY_LAPACK}")
  endif()
 
 else(NOT MKLROOT)
@@ -159,18 +159,15 @@ else(NOT MKLROOT)
  # we use the LP64 mode, not IL64 mode which probably require porting the blas wrappers for MKL_INT and co
  message (STATUS "Using MKL with root : ${MKLROOT}")
  set(TRIQS_LIBRARY_LAPACK "-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm")
- if(CMAKE_COMPILER_IS_ICC)
-  target_compile_options(triqs  " -I${MKLROOT}/include")
- else()
-  # must be GNU
-  target_compile_options(triqs " -m64 -I${MKLROOT}/include")
+ target_include_directories(triqs SYSTEM PUBLIC ${MKLROOT}/include)
+ if(NOT CMAKE_COMPILER_IS_ICC) # must be GNU
+   target_compile_options(triqs PUBLIC "-m64")
  endif()
 endif(NOT MKLROOT)
 
 message(STATUS "Lapack libraries : ${TRIQS_LIBRARY_LAPACK}")
 
-#
-target_link_libraries (triqs ${TRIQS_LIBRARY_LAPACK})
+target_link_libraries (triqs PUBLIC ${TRIQS_LIBRARY_LAPACK})
 
 # ---------------------------------
 # HDF5
@@ -213,7 +210,7 @@ endif()
 
 #
 target_include_directories(triqs SYSTEM PUBLIC ${HDF5_INCLUDE_DIRS})
-target_link_libraries (triqs ${HDF5_LIBRARIES})
+target_link_libraries (triqs PUBLIC ${HDF5_LIBRARIES})
 target_compile_options(triqs PUBLIC ${HDF5_DEFINITIONS})
 
 # ---------------------------------
@@ -225,7 +222,7 @@ find_package(GMP)
 
 #
 target_include_directories(triqs SYSTEM PUBLIC ${GMP_INCLUDE_DIR})
-target_link_libraries (triqs ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
+target_link_libraries (triqs PUBLIC ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
 
 # ---------------------------------
 # FFTW
@@ -236,7 +233,7 @@ find_package(FFTW)
 
 #
 target_include_directories(triqs SYSTEM PUBLIC ${FFTW_INCLUDE_DIR})
-target_link_libraries (triqs ${FFTW_LIBRARIES})
+target_link_libraries (triqs PUBLIC ${FFTW_LIBRARIES})
 
 # ---------------------------------
 # pthread
@@ -247,7 +244,7 @@ target_link_libraries (triqs ${FFTW_LIBRARIES})
 # check for clang compiler ?? on gcc, os X snow leopard, it MUST be set
 # since _REENTRANT is mysteriously set and this leads to random stalling of the code....
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- target_compile_options(triqs PUBLIC -pthread )
+ target_compile_options(triqs PUBLIC -pthread)
 endif()
 
 # ---------------------------------
