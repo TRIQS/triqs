@@ -110,12 +110,13 @@ The :math:`\omega_n`'s are :math:`\frac{(2n+1)\pi}{\beta}` for fermions, :math:`
 High-frequency tail
 ===========================
 
-The high-frequency behavior (or **tail**) of a Green's function is of paramount importance in the context of Fourier transformations: since fermionic Green's functions are slowly decaying functions of frequency, special care has to be taken when Fourier-transforming them to time.
+The high-frequency behavior (or **tail**) of a Green's function is of paramount importance in the context of Fourier transformations: since fermionic Green's functions are slowly decaying functions of frequency,
+special care has to be taken when Fourier-transforming them to time.
 
 The "tail" of a Green's function encodes the behavior of the Green's
 function :math:`G` at large Matsubara frequencies, namely
 
-.. math::  \mathbf{G}(i\omega_n) \stackrel {=}{\infty} \mathbf{a}_{-1}\cdot i\omega_n + \mathbf{a}_{0} +\mathbf{a}_{1}\cdot \frac{1}{ i\omega_n} +\mathbf{a}_{2}\cdot \frac{1}{ (i\omega_n)^2} +\dots  
+.. math::  \mathbf{G}(i\omega_n) \stackrel {=}{\infty} \mathbf{a}_{0} +\mathbf{a}_{1}\cdot \frac{1}{ i\omega_n} +\mathbf{a}_{2}\cdot \frac{1}{ (i\omega_n)^2} +\dots
 
 
 Generically, the tail is parametrized by matrix-valued coefficients
