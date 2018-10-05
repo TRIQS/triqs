@@ -51,14 +51,14 @@ namespace triqs::gfs {
   inline gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> const &m, bool shift_half_bin = false) {
     int L       = m.size();
     double wmax = M_PI * (L - 1) / (L * m.delta());
-    if(shift_half_bin) return {-wmax + M_PI / L / m.delta(), wmax + M_PI / L / m.delta(), L};
+    if (shift_half_bin) return {-wmax + M_PI / L / m.delta(), wmax + M_PI / L / m.delta(), L};
     return {-wmax, wmax, L};
   }
 
   inline gf_mesh<retime> make_adjoint_mesh(gf_mesh<refreq> const &m, bool shift_half_bin = false) {
     int L       = m.size();
     double tmax = M_PI * (L - 1) / (L * m.delta());
-    if(shift_half_bin) return {-tmax + M_PI / L / m.delta(), tmax + M_PI / L / m.delta(), L};
+    if (shift_half_bin) return {-tmax + M_PI / L / m.delta(), tmax + M_PI / L / m.delta(), L};
     return {-tmax, tmax, L};
   }
 

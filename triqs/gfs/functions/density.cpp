@@ -45,12 +45,12 @@ namespace triqs::gfs {
 
     if (known_moments.shape()[0] < 4) {
       auto [tail, error] = fit_tail(g, known_moments);
-      TRIQS_ASSERT2((error < 1e-3),
-                    "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error)
-                       + "\n Please make sure you treat the constant offset analytically!");
-      if (error > 1e-6)
-        std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error
-                  << "\n Please make sure you treat the constant offset analytically!";
+      TRIQS_ASSERT2((error < 1e-2),
+                    "ERROR: High frequency moments have an error greater than 1e-2.\n  Error = " + std::to_string(error)
+                       + "\n Please make sure you treat the constant offset analytically!\n");
+      if (error > 1e-4)
+        std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
+                  << "\n Please make sure you treat the constant offset analytically!\n";
       TRIQS_ASSERT2((first_dim(tail) > 3), "ERROR: Density implementation requires at least a proper 3rd high-frequency moment\n");
       mom_123.rebind(tail(range(1, 4), range(), range()));
     } else
@@ -122,7 +122,7 @@ namespace triqs::gfs {
   //-------------------------------------------------------
   dcomplex density(gf_const_view<imfreq, scalar_valued> g, array_view<dcomplex, 1> known_moments) {
     auto km = array<dcomplex, 3>(make_shape(known_moments.shape()[0], 1, 1));
-    if(!known_moments.is_empty()) km(range(), 0, 0) = known_moments();
+    if (!known_moments.is_empty()) km(range(), 0, 0) = known_moments();
     auto res = density(reinterpret_scalar_valued_gf_as_matrix_valued(g), km)(0, 0);
     return res;
   }

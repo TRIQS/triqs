@@ -51,7 +51,7 @@ namespace triqs::gfs {
 
   // Full functionality
   template <template <typename, typename> typename G, typename V, typename T, typename A>
-  auto fit_tail(G<V, T> const &g, A const &known_moments, double tail_fraction, int n_tail_max = 30, int expansion_order = -1) {
+  auto fit_tail(G<V, T> const &g, A const &known_moments, double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {}) {
     return g.mesh().get_tail_fitter(tail_fraction, n_tail_max, expansion_order)(g.mesh(), make_const_view(g.data()), 0, true,
                                                                                 make_const_view(known_moments));
   }

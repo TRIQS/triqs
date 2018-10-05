@@ -76,11 +76,11 @@ namespace triqs::gfs {
     std::vector<long> _fit_idx_lst;
 
     public:
-    tail_fitter(double tail_fraction, int n_tail_max, int expansion_order)
+    tail_fitter(double tail_fraction, int n_tail_max, std::optional<int> expansion_order = {})
        : _tail_fraction(tail_fraction),
          _n_tail_max(n_tail_max),
-         _adjust_order(expansion_order == -1),
-         _expansion_order(_adjust_order ? 9 : expansion_order) {}
+         _adjust_order(not expansion_order.has_value()),
+         _expansion_order(_adjust_order ? 9 : expansion_order.value()) {}
     //----------------------------------------------------------------------------------------------
 
     // number of the points in the tail for positive omega.
@@ -174,6 +174,8 @@ namespace triqs::gfs {
 
       // If not set, build least square solver for for given number of known moments
       int n_fixed_moments = first_dim(known_moments);
+      if (n_fixed_moments > _expansion_order) return {known_moments, 0.0};
+
       if (!bool(_lss[n_fixed_moments])) setup_lss(m, n_fixed_moments);
 
       // Total number of moments
@@ -262,18 +264,18 @@ namespace triqs::gfs {
   struct tail_fitter_handle {
 
     // FIXME : backward only ?
-    void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, int expansion_order = -1) const {
+    void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {}) const {
       _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, expansion_order});
     }
 
     // the tail fitter is mutable, even if the mesh is immutable to cache some data
     tail_fitter &get_tail_fitter() const {
-      if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>(0.2, 30, -1);
+      if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>(0.2, 30);
       return *_tail_fitter;
     }
 
     // FIXME .. Clean interface with rcond vs adjust_order vs expansion_order
-    tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = 30, int expansion_order = -1) const {
+    tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {}) const {
       set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
       return *_tail_fitter;
     }

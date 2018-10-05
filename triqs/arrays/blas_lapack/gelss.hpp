@@ -170,7 +170,13 @@ namespace triqs::arrays::lapack {
 
     // Solve the least-square problem that minimizes || A * x - B ||_2 given A and B
     std::pair<matrix<value_type>, double> operator()(matrix_const_view<value_type> B) const {
-      return std::make_pair(V_x_InvS_x_UT * B, (M == N) ? 0.0 : frobenius_norm(UT_NULL * B));
+      double err = 0.0;
+      if (M != N) {
+        std::vector<double> err_vec;
+        for (int i : range(B.shape()[1])) err_vec.push_back(frobenius_norm(UT_NULL * B(range(), range(i, i + 1))) / sqrt(B.shape()[0]));
+        err = *std::max_element(err_vec.begin(), err_vec.end());
+      }
+      return std::make_pair(V_x_InvS_x_UT * B, err);
     }
   };
 
