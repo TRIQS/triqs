@@ -61,10 +61,15 @@ namespace triqs::arrays::lapack {
 
     int info;
 
-    if (A.memory_layout_is_c() || B.memory_layout_is_c()) {
+    if (!A.memory_layout_is_fortran()){
       auto A_FL = typename MTA::regular_type{A, FORTRAN_LAYOUT};
+      info      = gelss(A_FL, B, S, rcond, rank);
+      return info;
+    }
+
+    if (!B.memory_layout_is_fortran()) {
       auto B_FL = typename MTB::regular_type{B, FORTRAN_LAYOUT};
-      info      = gelss(A_FL, B_FL, S, rcond, rank);
+      info      = gelss(A, B_FL, S, rcond, rank);
       B()       = B_FL();
       return info;
     }
