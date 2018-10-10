@@ -278,8 +278,10 @@ class BlockGf(object):
           """
         if isinstance(A, self.__class__):
             for (i,g) in self: g.copy_from(A[i])
+        elif hasattr(A, "is_block_descriptor") and A.is_block_descriptor():
+            for g,a in zip(self.__GFlist, A): g << a
         else:
-            for i,g in self: g << A
+            for g in self.__GFlist: g << A
         return self
 
     def __ilshift__(self, A):

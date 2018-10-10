@@ -65,6 +65,19 @@ def convert_scalar_to_const(expr):
 class Base (LazyExprTerminal):
     def __init__(self,**kargs):
         self.__dict__.update(kargs)
+
+# The Base for any descriptor taking a BlockGf
+class BaseBlock(Base):
+    def __init__ (self, G, *args, **kw):
+        Base.__init__(self, G = G)
+        if self.is_block_descriptor():
+            self.descriptor_iter = (self.__class__(g, *args, **kw) for i,g in G)
+
+    def is_block_descriptor(self):
+        return self.G.__class__.__name__ == 'BlockGf'
+
+    def __iter__ (self):
+        return self.descriptor_iter
                 
 #########################################################################
 
