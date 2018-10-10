@@ -287,20 +287,15 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/run_test.cmake DESTINATION shar
 
 # Configure and install the file to source to setup the environment variables 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqsvars.sh.in ${CMAKE_CURRENT_BINARY_DIR}/triqsvars.sh @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqsvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqs.modulefile.in ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile @ONLY)
 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqsvars.sh DESTINATION  ${CMAKE_INSTALL_PREFIX}/share)
 MESSAGE(STATUS "***************************************************************")
 MESSAGE(STATUS "* Use :                                                        ")
 MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/triqsvars.sh          ")
 MESSAGE(STATUS "*                                                              ") 
 MESSAGE(STATUS "*   to set up the environment variables                        ") 
 MESSAGE(STATUS "***************************************************************")
-
-#--------------------------------------------------------
-# Process and install modulefile
-#--------------------------------------------------------
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/triqs.modulefile.in ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile DESTINATION ${CMAKE_INSTALL_PREFIX}/share)
 
 #--------------------------------------------------------
 # Packaging
