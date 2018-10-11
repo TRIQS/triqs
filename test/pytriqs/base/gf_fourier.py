@@ -50,24 +50,24 @@ assert abs(gw.data[0].real) < 1e-7
 
 # # ==== Block Green functions
 
-# FIXME THIS IS CURRENTLY SEGFAULTING
-# blgt = BlockGf(name_list=[0,1], block_list=[gt, gt])
-# blgw = BlockGf(name_list=[0,1], block_list=[gw, gw])
-# blgw2 = blgw.copy()
+blgt = BlockGf(block_list=[gt, 2 * gt])
+blgw = BlockGf(block_list=[gw, 2 * gw])
+blgw2 = blgw.copy()
 
-# blgw << inverse(iOmega_n - SemiCircular(2.0)) + inverse(iOmega_n)
-# # blgt << InverseFourier(blgw) # FIXME Not implemented yet
-# set_from_inverse_fourier(blgt, blgw)
-# blgt << make_gf_from_inverse_fourier(blgw)
+blgw << inverse(iOmega_n - SemiCircular(2.0)) + inverse(iOmega_n)
+blgt << InverseFourier(blgw)
+set_from_inverse_fourier(blgt, blgw)
+blgt << make_gf_from_inverse_fourier(blgw)
 
-# # Check that we are PH symmetric
-# assert abs(blgt[0].data[0] - blgt[0].data[-1]) < 1e-7
+# Check that we are PH symmetric
+assert abs(blgt['0'].data[0] - blgt['0'].data[-1]) < 1e-7
 
-# #blgw2 << Fourier(blgt) # FIXME Not implemented
-# set_from_fourier(blgw2, blgt)
-# blgw3 = make_gf_from_fourier(blgt)
+blgw2 << Fourier(blgt)
+set_from_fourier(blgw2, blgt)
+blgw3 = make_gf_from_fourier(blgt)
 
-# # Check that forward and backward transform gives Identity
-# assert abs(blgw2.data[0].real) < 1e-7
-# assert max(abs(blgw.data[:] - blgw2.data[:])) < 1e-7
-# assert max(abs(blgw.data[:] - blgw3.data[:])) < 1e-7
+# Check that forward and backward transform gives Identity
+for bl in ['0', '1']:
+    assert abs(blgw2[bl].data[0].real) < 1e-7
+    assert max(abs(blgw[bl].data[:] - blgw2[bl].data[:])) < 1e-7
+    assert max(abs(blgw[bl].data[:] - blgw3[bl].data[:])) < 1e-7
