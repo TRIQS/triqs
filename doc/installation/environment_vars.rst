@@ -66,7 +66,9 @@ Environment variables for software developement
 +-------------------------------+---------------------------------------------------------------------------------------+
 | LD_LIBRARY_PATH               | List of directories searched for dynamic libraries                                    |
 +-------------------------------+---------------------------------------------------------------------------------------+
-| CPATH                         | List of directories searched for C/C++ header files                                   |
+| CPATH                         | List of directories searched for C/C++ header files (treated like -I includes)        |
++-------------------------------+---------------------------------------------------------------------------------------+
+| CPLUS_INCLUDE_PATH            | List of directories searched for C/C++ header files (treated like -isystem includes)  |
 +-------------------------------+---------------------------------------------------------------------------------------+
 | PYTHONPATH                    | List of directories searched for python modules/packages                              |
 +-------------------------------+---------------------------------------------------------------------------------------+

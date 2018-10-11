@@ -81,7 +81,7 @@ This will install the minimal runtime packages and triqs into the system tree at
 
 If you aim to compile applications against the triqs library, additional :ref:`development libraries <ubuntu>` have to be installed. You should further set the following :ref:`environment variables <environment_vars>` permanently::
 
-        export CPATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPATH
+        export CPLUS_INCLUDE_PATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPATH
         source /usr/share/cpp2pyvars.sh
         source /usr/share/triqsvars.sh
 
