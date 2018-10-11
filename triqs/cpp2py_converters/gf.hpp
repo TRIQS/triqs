@@ -274,9 +274,10 @@ namespace cpp2py {
       }
       if ((i == 0) && (raise_exception)) PyErr_SetString(PyExc_TypeError, "The object is not a BlockGf");
 
-      pyref x   = borrowed(ob);
-      pyref gfs = x.attr("_BlockGf__GFlist");
-      return (i && py_converter<std::vector<gf_view_type>>::is_convertible(gfs, raise_exception));
+      pyref x     = borrowed(ob);
+      pyref names = x.attr("_BlockGf__indices");
+      pyref gfs   = x.attr("_BlockGf__GFlist");
+      return (i && py_converter<std::vector<gf_view_type>>::is_convertible(gfs, raise_exception) && py_converter<std::vector<std::string>>::is_convertible(names, raise_exception));
     }
 
     // ----------------------------------------------
