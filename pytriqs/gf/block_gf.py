@@ -60,13 +60,16 @@ class BlockGf(object):
         self._rename_gf = kwargs.pop('rename_gf',True)
 
         # Default arguments
-        if set(kwargs.keys()) == set(['name_list','block_list']):
-            kwargs['make_copies'] = False
         if set(kwargs.keys()) == set(['mesh','gf_struct']):
             kwargs['target_rank'] = 2
+        if 'block_list' in kwargs.keys() and 'make_copies' not in kwargs.keys():
+            kwargs['make_copies'] = False
+        if set(kwargs.keys()) == set(['block_list','make_copies']):
+            kwargs['name_list'] = [str(i) for i in range(len(kwargs['block_list']))]
 
         if set(kwargs.keys()) == set(['name_list','block_list','make_copies']):
             BlockNameList, GFlist = kwargs['name_list'],kwargs['block_list']
+            assert all([isinstance(name,str) for name in BlockNameList]), "Error in BlockGf Construction: Block-Names must be Strings"
         elif set(kwargs.keys()) == set(['mesh','gf_struct','target_rank']):
             BlockNameList = []
             GFlist = []
