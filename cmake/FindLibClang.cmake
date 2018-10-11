@@ -20,6 +20,8 @@ if( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 else()
 
 SET(TRIAL_LIBRARY_PATHS
+ ENV LIBRARY_PATH
+ ENV LD_LIBRARY_PATH
  /usr/lib 
  /usr/lib/x86_64-linux-gnu
  /usr/lib/llvm-4.0/lib
