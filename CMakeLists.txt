@@ -19,7 +19,7 @@
 #
 ###################################################################################
 # Get the version number from the latest annotated git tag
-execute_process(COMMAND git describe --abbrev=0 OUTPUT_VARIABLE TRIQS_VERSION)
+execute_process(COMMAND git describe --abbrev=0 OUTPUT_VARIABLE TRIQS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 #---------------------------------------------------------------------
 # Preliminary : path, policy
