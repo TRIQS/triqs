@@ -90,6 +90,9 @@ if (PythonSupport)
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
  message( STATUS "-------- Cpp2Py detection -------------")
  find_package(Cpp2Py 1.5 REQUIRED)
+ if (NOT CMAKE_CXX_COMPILER STREQUAL CPP2PY_CXX_COMPILER)
+   message(FATAL_ERROR "For your own safety, you should use the same compiler as the one used to compile Cpp2Py !")
+ endif()
 endif (PythonSupport)
 
 #---------------------------------------------------------------------
