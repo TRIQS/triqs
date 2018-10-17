@@ -34,6 +34,9 @@ add_python_test(gf_inplace_112)
 # Bug fix #134
 add_python_test(gf_transpose)
 
+# Issue #517
+add_python_test(hdf5_meshBZ)
+
 add_python_test(issue460)
 add_python_test(issue437)
 
