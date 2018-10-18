@@ -3,6 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2011 by O. Parcollet
+ * Authors: O. Parcollet, H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,6 +19,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+
+#include <atomic>
+
 #ifndef TRIQS_MEM_BLOCK_H
 #define TRIQS_MEM_BLOCK_H
 #include "../impl/common.hpp"
@@ -149,8 +153,8 @@ namespace triqs {
         size_t size_; // size of the block
         char *raw_ptr = nullptr;
         ValueType *restrict p; // the memory block. Owned by this, except when py_numpy is not null
-        size_t ref_count;      // number of refs. :  >=1
-        size_t weak_ref_count; // number of refs. :  >=1
+	std::atomic<size_t> ref_count;      // number of refs. :  >=1
+	std::atomic<size_t> weak_ref_count; // number of refs. :  >=1
         PyObject *py_numpy;    // if not null, an owned reference to a numpy which is the data of this block
         PyObject *py_guard;    // if not null, a BORROWED reference to the guard. If null, the guard does not exist
         static_assert(!std::is_const<ValueType>::value, "internal error");
