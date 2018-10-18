@@ -42,6 +42,7 @@ struct test {
 
   test() : f(), D(f, 100) {}
 
+//#define PRINT_ALL
   void check() {
 #ifndef PRINT_ALL
     std::cerr << "det = " << D.determinant() << " == " << double(determinant(D.matrix())) << std::endl;
@@ -57,7 +58,7 @@ struct test {
 
   void run() {
     triqs::mc_tools::random_generator RNG("mt19937", 23432);
-    for (size_t i = 0; i < 100; ++i) {
+    for (size_t i = 0; i < 5000; ++i) {
       std::cerr << " ------------------------------------------------" << std::endl;
       std::cerr << " i = " << i << " size = " << D.size() << std::endl;
       // choose a move
@@ -68,7 +69,7 @@ struct test {
       double x, y, x1, y1;
       bool do_something = true;
 
-      switch (RNG((i > 10 ? 4 : 1))) {
+      switch (RNG((s > 10 ? 7 : 1))) {
         case 0:
           x = RNG(10.0), y = RNG(10.0);
           std::cerr << " x,y = " << x << "  " << y << std::endl;
@@ -105,11 +106,41 @@ struct test {
               do_something = false;
           }
           break;
+        case 4:
+          if (D.size()==0) break;
+	  y        = RNG(10.0);
+          i0       = RNG(s);
+          std::cerr << " try_change_col" << i0 << std::endl;
+          detratio = D.try_change_col(i0, y);
+          break;
+        case 5:
+          if (D.size()==0) break;
+          y        = RNG(10.0);
+          i0       = RNG(s);
+          std::cerr << " try_change_row" << i0 <<std::endl;
+          detratio = D.try_change_row(i0, y);
+          break;
+        case 6:
+          if (D.size()==0) break;
+          x        = RNG(10.0);
+          y        = RNG(10.0);
+          i0       = RNG(s);
+          j0       = RNG(s);
+
+          std::cerr << " try_change_col_row" << i0 << "  "<< j0 << std::endl;
+         
+	  //D.try_change_col(j0,y);
+	  //D.try_change_row(i0,x);
+          //D.reject_last_try();
+
+
+          detratio = D.try_change_col_row(i0, j0, x, y);
+          break;
         default: TRIQS_RUNTIME_ERROR << " TEST INTERNAL ERROR";
       };
 
       if (do_something) {
-        if (std::abs(detratio * det_old) > PRECISION) {
+        if (std::abs(detratio * det_old) > 1.e-3) {
           D.complete_operation();
           if (D.size() > 0) check();
         } else {

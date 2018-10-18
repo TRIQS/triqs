@@ -76,6 +76,7 @@ namespace triqs {
         Remove,
         ChangeCol,
         ChangeRow,
+        ChangeRowCol,
         Insert2 = 10,
         Remove2 = 11,
         Refill  = 20
@@ -891,6 +892,7 @@ namespace triqs {
         auto ksi = w1.ksi;
         newdet   = det * ksi;
         newsign  = sign;
+
         return ksi; // newsign/sign is unity
       }
       //------------------------------------------------------------------------------------------
@@ -954,6 +956,86 @@ namespace triqs {
         //mat_inv(R,R) += w1.ksi * mat_inv(R,w1.ireal) * w1.MC(R);
         blas::ger(w1.ksi, mat_inv(R, w1.ireal), w1.MC(R), mat_inv(R, R));
         mat_inv(R, w1.ireal) *= -w1.ksi;
+      }
+
+      //------------------------------------------------------------------------------------------
+      public:
+      /**
+     * Consider the change the row i and column j and the corresponding x and y
+     *
+     * Returns the ratio of det Minv_new / det Minv.
+     * This routine does NOT make any modification. It has to be completed with complete_operation().
+     */
+      value_type try_change_col_row(size_t i, size_t j, x_type const &x, y_type const &y) {
+        TRIQS_ASSERT(last_try == NoTry);
+        TRIQS_ASSERT(j < N);
+        TRIQS_ASSERT(j >= 0);
+        TRIQS_ASSERT(i < N);
+        TRIQS_ASSERT(i >= 0);
+
+        last_try = ChangeRowCol;
+        w1.i     = i;
+        w1.j     = j;
+        w1.ireal = row_num[i];
+        w1.jreal = col_num[j];
+        w1.x     = x;
+        w1.y     = y;
+
+        // Compute the col B.
+        for (size_t i = 0; i < N; i++) { // MC :  delta_x, MB : delta_y
+          w1.MC(i) = f(x_values[i], y) - f(x_values[i], y_values[w1.jreal]);
+          w1.MB(i) = f(x, y_values[i]) - f(x_values[w1.ireal], y_values[i]);
+        }
+        w1.MC(w1.ireal) = f(x, y) - f(x_values[w1.ireal], y_values[w1.jreal]);
+        w1.MB(w1.jreal) = 0;
+
+        range R(0, N);
+        // C : X, B : Y
+        //w1.C(R) = mat_inv(R,R) * w1.MC(R);// OPTIMIZE BELOW
+        blas::gemv(1.0, mat_inv(R, R), w1.MC(R), 0.0, w1.C(R));
+        //w1.B(R) = mat_inv(R,R).transpose() * w1.MB(R); // OPTIMIZE BELOW
+        blas::gemv(1.0, mat_inv(R, R).transpose(), w1.MB(R), 0.0, w1.B(R));
+
+        // compute the det_ratio
+        auto Xn        = w1.C(w1.jreal);
+        auto Yn        = w1.B(w1.ireal);
+        auto Z         = arrays::dot(w1.MB(R), w1.C(R));
+        auto Mnn       = mat_inv(w1.jreal, w1.ireal);
+        auto det_ratio = (1 + Xn) * (1 + Yn) - Mnn * Z;
+        w1.ksi         = det_ratio;
+        newdet         = det * det_ratio;
+        newsign        = sign;
+        return det_ratio; // newsign/sign is unity
+      }
+      //------------------------------------------------------------------------------------------
+      private:
+      void complete_change_col_row() {
+        range R(0, N);
+        x_values[w1.ireal] = w1.x;
+        y_values[w1.jreal] = w1.y;
+
+        // FIXME : Use blas for this ? Is it better
+        auto Xn  = w1.C(w1.jreal);
+        auto Yn  = w1.B(w1.ireal);
+        auto Mnn = mat_inv(w1.jreal, w1.ireal);
+
+        auto D   = w1.ksi;        // get back
+        auto a   = -(1 + Yn) / D; // D in the notes
+        auto b   = -(1 + Xn) / D;
+        auto Z   = arrays::dot(w1.MB(R), w1.C(R)); // FIXME : store this ?
+        Z        = Z / D;
+        Mnn      = Mnn / D;
+        w1.MB(R) = mat_inv(w1.jreal, R); // Mnj
+        w1.MC(R) = mat_inv(R, w1.ireal); // Min
+
+        for (long i = 0; i < N; ++i)
+          for (long j = 0; j < N; ++j) {
+            auto Xi  = w1.C(i);
+            auto Yj  = w1.B(j);
+            auto Mnj = w1.MB(j);
+            auto Min = w1.MC(i);
+            mat_inv(i, j) += a * Xi * Mnj + b * Min * Yj + Mnn * Xi * Yj + Z * Min * Mnj;
+          }
       }
 
       //------------------------------------------------------------------------------------------
@@ -1102,6 +1184,7 @@ namespace triqs {
           case (Remove): complete_remove(); break;
           case (ChangeCol): complete_change_col(); break;
           case (ChangeRow): complete_change_row(); break;
+          case (ChangeRowCol): complete_change_col_row(); break;
           case (Insert2): complete_insert2(); break;
           case (Remove2): complete_remove2(); break;
           case (Refill): complete_refill(); break;
@@ -1184,89 +1267,10 @@ namespace triqs {
         return r;
       }
 
-      /// Change one row and one col
-      // other way of doing change_one_line_and_one_col.
-      // Should be faster.
-      void change_one_row_and_one_col(size_t i, size_t j, x_type const &x, y_type const &y) {
-        TRIQS_ASSERT(j < N);
-        TRIQS_ASSERT(j >= 0);
-        TRIQS_ASSERT(i < N);
-        TRIQS_ASSERT(i >= 0);
-
-        //we treat the case N=1 separately
-        if (N == 1) {
-          x_values[0] = x;
-          y_values[0] = y;
-          regenerate();
-        }
-
-        //N>1
-        w1.i     = i;
-        w1.j     = j;
-        w1.x     = x;
-        w1.y     = y;
-        w1.ireal = row_num[i];
-        w1.jreal = col_num[j];
-        // swap the rows w1.ireal and N, w1.jreal and N in inv_mat
-        {
-          range R(0, N);
-          if (w1.jreal != N - 1) {
-            arrays::deep_swap(mat_inv(w1.jreal, R), mat_inv(N - 1, R));
-            y_values[w1.jreal] = y_values[N - 1];
-          }
-          y_values[N - 1] = y;
-          if (w1.ireal != N - 1) {
-            arrays::deep_swap(mat_inv(R, w1.ireal), mat_inv(R, N - 1));
-            x_values[w1.ireal] = x_values[N - 1];
-          }
-          x_values[N - 1] = x;
-        }
-        for (size_t k = 0; k < N; k++) {
-          if (col_num[k] == N - 1) col_num[k] = w1.jreal;
-          if (row_num[k] == N - 1) row_num[k] = w1.ireal;
-        }
-        row_num[i] = N - 1;
-        col_num[j] = N - 1;
-        if ((w1.ireal + w1.jreal) % 2 == 1) {
-          det *= -1;
-          sign *= -1;
-        }
-
-        // Compute the new row and col
-        for (size_t k = 0; k < N - 1; k++) {
-          w1.B(k) = f(x_values[k], w1.y);
-          w1.C(k) = f(w1.x, y_values[k]);
-        }
-        w1.ksi = f(x, y);
-
-        // B' and C'
-        range R(0, N - 1);
-        //w1.MC(R) = w1.C(R) * mat_inv(R,R);// OPTIMIZE BELOW
-        blas::gemv(1.0, mat_inv(R, R).transpose(), w1.C(R), 0.0, w1.MC(R));
-        //w1.MB(R) = mat_inv(R,R) * w1.B(R);// OPTIMIZE BELOW
-        blas::gemv(1.0, mat_inv(R, R), w1.B(R), 0.0, w1.MB(R));
-
-        // some scalar values, new det.
-        auto h = arrays::dot(mat_inv(N - 1, R), w1.B(R));
-        auto g = arrays::dot(w1.C(R), mat_inv(R, N - 1));
-        auto f = arrays::dot(w1.MC(R), w1.B(R)) - w1.ksi;
-        w1.ksi = g * h - mat_inv(N - 1, N - 1) * f;
-        det *= w1.ksi;
-        w1.ksi = 1. / w1.ksi;
-
-        //new B and C
-        w1.B(R) = (w1.ksi * mat_inv(N - 1, N - 1)) * w1.MB(R) - (w1.ksi * h) * mat_inv(R, N - 1); //(IB'-hG)/ksi
-        w1.C(R) = -(w1.ksi * g) * w1.MB(R) + (w1.ksi * f) * mat_inv(R, N - 1);                    //(fG -gB')/ksi
-
-        // we update mat_inv
-        mat_inv(N - 1, N - 1) *= w1.ksi;
-        // mat_inv(R,R) +=  w1.ksi * w1.B(R) * w1.MC(R)
-        //                - w1.ksi * w1.C(R) * mat_inv(N-1,R);// OPTIMIZE BELOW ?
-        // can still be optimised ??
-        blas::ger(1, w1.B(R), w1.MC(R), mat_inv(R, R));
-        blas::ger(1, w1.C(R), mat_inv(N - 1, R), mat_inv(R, R));
-        mat_inv(R, N - 1) = (w1.ksi * h) * mat_inv(R, N - 1) - mat_inv(N - 1, N - 1) * w1.MB(R); //G'=ksi^-1*(hG-IB')
-        mat_inv(N - 1, R) = (w1.ksi * g) * mat_inv(N - 1, R) - mat_inv(N - 1, N - 1) * w1.MC(R); //H'=ksi^-1*(gH-IC')
+      value_type change_one_row_and_one_col(size_t i, size_t j, x_type const &x, y_type const &y) {
+        auto r = try_change_col_row(i, j, x, y);
+        complete_operation();
+        return r;
       }
 
       ///
