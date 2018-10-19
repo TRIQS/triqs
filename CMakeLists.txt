@@ -296,8 +296,12 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqsvars.sh DESTINATION  ${CMAKE_INST
 MESSAGE(STATUS "***************************************************************")
 MESSAGE(STATUS "* Use :                                                        ")
 MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/triqsvars.sh          ")
-MESSAGE(STATUS "*                                                              ") 
 MESSAGE(STATUS "*   to set up the environment variables                        ") 
+if(DEFINED ENV{MODULEPATH})
+  MESSAGE(STATUS "*                                                              ")
+  MESSAGE(STATUS "* Consider adding ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile ")
+  MESSAGE(STATUS "*   to your environment modules                                ")
+endif()
 MESSAGE(STATUS "***************************************************************")
 
 #--------------------------------------------------------
