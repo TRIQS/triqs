@@ -66,12 +66,13 @@ namespace triqs::gfs {
 
   class tail_fitter {
 
+    static constexpr int max_order = 9;
     const double _tail_fraction;
     const int _n_tail_max;
     const bool _adjust_order;
     const int _expansion_order;
     const double _rcond = 1e-8;
-    std::array<std::unique_ptr<const arrays::lapack::gelss_cache<dcomplex>>, 4> _lss;
+    std::array<std::unique_ptr<const arrays::lapack::gelss_cache<dcomplex>>, max_order + 1> _lss;
     arrays::matrix<dcomplex> _vander;
     std::vector<long> _fit_idx_lst;
 
@@ -126,10 +127,10 @@ namespace triqs::gfs {
       if (_fit_idx_lst.empty()) _fit_idx_lst = get_tail_fit_indices(m);
 
       // Set Up full Vandermonde matrix up to order expansion_order if not set
+      double om_max = m.omega_max();
       if (_vander.is_empty()) {
         std::vector<dcomplex> C;
         C.reserve(_fit_idx_lst.size());
-        double om_max = m.omega_max();
         for (long n : _fit_idx_lst) C.push_back(om_max / m.index_to_point(n));
         _vander = vander(C, _expansion_order);
       }
@@ -142,7 +143,10 @@ namespace triqs::gfs {
         _lss[n_fixed_moments] = l(_expansion_order);
       else { // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
         _lss[n_fixed_moments].reset();
-        int n_max = std::min(size_t{9}, first_dim(_vander) / 2);
+        // Ensure that om_max^(1-N) > 10^{-16}
+        int n_max = std::min<int>(size_t{max_order}, 1. + 16. / std::log10(om_max));
+        // We use at least two times as many data-points as we have moments to fit
+        n_max = std::min(size_t(n_max), first_dim(_vander) / 2);
         for (int n = n_max; n >= n_fixed_moments; --n) {
           auto ptr = l(n);
           if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond) {

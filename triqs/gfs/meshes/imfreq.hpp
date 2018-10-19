@@ -249,7 +249,6 @@ namespace triqs::gfs {
     int _n_pts;
     matsubara_mesh_opt _opt;
     long _first_index, _last_index;
-    mutable std::shared_ptr<tail_fitter> _tail_fitter;
   };
 
   // ---------------------------------------------------------------------------
