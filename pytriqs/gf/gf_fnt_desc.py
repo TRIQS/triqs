@@ -46,10 +46,13 @@ m.add_class (c)
 
 ########################
 
-# FIXME
-# New tail
+# Extract the tail
 m.add_function("std::pair<array<dcomplex,3>, double> fit_tail(gf_view<imfreq, matrix_valued> g, array_view<dcomplex,3> known_moments = {})", doc = "tail")
 m.add_function("std::pair<array<dcomplex,1>, double> fit_tail(gf_view<imfreq, scalar_valued> g, array_view<dcomplex,1> known_moments = {})", doc = "tail")
+
+# Extract the tail imposing hermiticity on the moment matrices
+m.add_function("std::pair<array<dcomplex,3>, double> fit_hermitian_tail(gf_view<imfreq, matrix_valued> g, array_view<dcomplex,3> known_moments = {})", doc = "tail")
+m.add_function("std::pair<array<dcomplex,1>, double> fit_hermitian_tail(gf_view<imfreq, scalar_valued> g, array_view<dcomplex,1> known_moments = {})", doc = "tail")
 
 # density
 m.add_function("matrix<dcomplex> density(gf_view<imfreq, matrix_valued> g, array_view<dcomplex, 3> known_moments = {})",   doc = "Density, as a matrix, computed from a Matsubara sum")
@@ -119,6 +122,13 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
     m.add_function(name = "make_gf_from_fourier",
                    signature="gf_view<imtime, %s> make_gf_from_fourier(gf_view<imfreq, %s> g_in, int n_tau)"%(Target, Target),
                    doc ="""Create Green function from the Fourier transform of g_iw""")
+
+    m.add_function(name = "make_gf_from_fourier",
+                   signature="gf_view<imfreq, %s> make_gf_from_fourier(gf_view<imtime, %s> g_in, gf_mesh<imfreq> mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(Target, Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_tau using the known tail moments""")
+    m.add_function(name = "make_gf_from_fourier",
+                   signature="gf_view<imtime, %s> make_gf_from_fourier(gf_view<imfreq, %s> g_in, gf_mesh<imtime> mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(Target, Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_iw using the known tail moments""")
 
     m.add_function(name = "make_gf_from_fourier",
                    signature="gf_view<refreq, %s> make_gf_from_fourier(gf_view<retime, %s> g_in, bool shift_half_bin)"%(Target, Target),

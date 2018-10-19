@@ -43,7 +43,7 @@ namespace triqs::gfs {
     long last_index() const { return size() - 1; }
 
     // Largest frequency in the mesh
-    double omega_max() const { return std::abs(index_to_point(last_index())); }
+    double omega_max() const { return index_to_point(last_index()); }
 
     // -------------------- HDF5 -------------------
 

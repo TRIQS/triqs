@@ -92,8 +92,6 @@ namespace triqs::gfs {
     m123(0, _) = -(gt[0] - sign * gt[n_tau - 1]);                                        // 1st order moment
     m123(1, _) = g_vec_left(0, _) - sign * g_vec_right(0, _);                            // 2nd order moment
     m123(2, _) = -(g_vec_left(1, _) + sign * g_vec_right(1, _)) * 2 / gt.mesh().delta(); // 3rd order moment
-    //TRIQS_PRINT(m23(0,_));
-    //TRIQS_PRINT(m23(1,_));
     return m123;
   }
 
@@ -189,7 +187,9 @@ namespace triqs::gfs {
 
     if (known_moments.shape()[0] < 4) {
       auto [tail, error] = fit_tail(gw, known_moments);
-      TRIQS_ASSERT2((error < 1e-2), "ERROR: High frequency moments have an error greater than 1e-2.\n  Error = " + std::to_string(error) + "\n Please make sure you treat the constant offset analytically!");
+      TRIQS_ASSERT2((error < 1e-2),
+                    "ERROR: High frequency moments have an error greater than 1e-2.\n  Error = " + std::to_string(error)
+                       + "\n Please make sure you treat the constant offset analytically!");
       if (error > 1e-4)
         std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
                   << "\n Please make sure you treat the constant offset analytically!";

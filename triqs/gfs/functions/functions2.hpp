@@ -28,37 +28,57 @@ namespace triqs::gfs {
  *                 Fitting the tail
  *-----------------------------------------------------------------------------------------------------*/
 
+  // Product Green Functions
   template <int N, template <typename, typename> typename G, typename T, typename... M> auto fit_tail(G<cartesian_product<M...>, T> const &g) {
     auto const &m = std::get<N>(g.mesh());
-    return m.get_tail_fitter()(m, make_const_view(g.data()), N, true, array_const_view<dcomplex, G<cartesian_product<M...>, T>::data_rank>{});
+    return m.get_tail_fitter.fit(m, make_const_view(g.data()), N, true, array_const_view<dcomplex, G<cartesian_product<M...>, T>::data_rank>{});
   }
 
+  // Product Green Functions with known_moments
   template <int N, template <typename, typename> typename G, typename T, typename A, typename... M>
   auto fit_tail(G<cartesian_product<M...>, T> const &g, A const &known_moments) {
     auto const &m = std::get<N>(g.mesh());
-    return m.get_tail_fitter()(m, make_const_view(g.data()), N, true, make_const_view(known_moments));
+    return m.get_tail_fitter().fit(m, make_const_view(g.data()), N, true, make_const_view(known_moments));
   }
 
-  // FIXME : DOC
-  template <template <typename, typename> typename G, typename V, typename T, typename A> auto fit_tail(G<V, T> const &g, A const &known_moments) {
-    return g.mesh().get_tail_fitter()(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
-  }
-
-  // FIXME : DOC
+  // G(iw) || G(w)
   template <template <typename, typename> typename G, typename V, typename T> auto fit_tail(G<V, T> const &g) {
-    return g.mesh().get_tail_fitter()(g.mesh(), make_const_view(g.data()), 0, true, array_const_view<dcomplex, G<V, T>::data_rank>{});
+    return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, true, array_const_view<dcomplex, G<V, T>::data_rank>{});
   }
 
-  // Full functionality
+  // G(iw) || G(w) + known_moments
+  template <template <typename, typename> typename G, typename V, typename T, typename A> auto fit_tail(G<V, T> const &g, A const &known_moments) {
+    return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
+  }
+
+  // Impose hermiticity on the tail coefficients
+  template <template <typename, typename> typename G, typename T> auto fit_hermitian_tail(G<imfreq, T> const &g) {
+    std::optional<long> inner_matrix_dim;
+    if (T::rank == 2 && g.target_shape()[0] == g.target_shape()[1]) { inner_matrix_dim = g.target_shape()[0]; }
+    if (T::rank == 1) inner_matrix_dim = 1;
+    return g.mesh().get_tail_fitter().fit_hermitian(g.mesh(), make_const_view(g.data()), 0, true,
+                                                    array_const_view<dcomplex, G<imfreq, T>::data_rank>{}, inner_matrix_dim);
+  }
+
+  // Impose hermiticity on the tail coefficients and use known_moments
+  template <template <typename, typename> typename G, typename T, typename A> auto fit_hermitian_tail(G<imfreq, T> const &g, A const &known_moments) {
+    std::optional<long> inner_matrix_dim;
+    if (T::rank == 2 && g.target_shape()[0] == g.target_shape()[1]) { inner_matrix_dim = g.target_shape()[0]; }
+    if (T::rank == 1) inner_matrix_dim = 1;
+    return g.mesh().get_tail_fitter().fit_hermitian(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments), inner_matrix_dim);
+  }
+
+  // Adjust configuration of tail-fitting
   template <template <typename, typename> typename G, typename V, typename T, typename A>
-  auto fit_tail(G<V, T> const &g, A const &known_moments, double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {}) {
-    return g.mesh().get_tail_fitter(tail_fraction, n_tail_max, expansion_order)(g.mesh(), make_const_view(g.data()), 0, true,
-                                                                                make_const_view(known_moments));
+  auto fit_tail(G<V, T> const &g, A const &known_moments, double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max, std::optional<int> expansion_order = {}) {
+    return g.mesh()
+       .get_tail_fitter(tail_fraction, n_tail_max, expansion_order)
+       .fit(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
   }
 
-  // No normalization is a special need.
+  // Tail-fit without normalization, returns moments rescaled by maximum frequency:  a_n * omega_max^n
   template <template <typename, typename> typename G, typename V, typename T> auto fit_tail_no_normalize(G<V, T> const &g) {
-    return g.mesh().get_tail_fitter()(g.mesh(), make_const_view(g.data()), 0, false, array_const_view<dcomplex, G<V, T>::data_rank>{});
+    return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, false, array_const_view<dcomplex, G<V, T>::data_rank>{});
   }
 
   // Create a tail object for a given Green function
@@ -69,7 +89,7 @@ namespace triqs::gfs {
       sh[0]   = n_moments;
       return arrays::zeros<dcomplex>(sh);
     } else // block[2]_gf[_const][_view]<V, T>
-      return map_block_gf([&](auto const & g_bl){ return make_zero_tail<N>(g_bl, n_moments); }, g);
+      return map_block_gf([&](auto const &g_bl) { return make_zero_tail<N>(g_bl, n_moments); }, g);
   }
 
   // FIXME : merge the slice_target_to_scalar

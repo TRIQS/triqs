@@ -23,6 +23,7 @@
 #pragma once
 
 #include <complex>
+#include <triqs/utility/itertools.hpp>
 #include "f77/cxx_interface.hpp"
 #include "tools.hpp"
 #include "qcache.hpp"
@@ -152,7 +153,7 @@ namespace triqs::arrays::lapack {
     }
 
     // Solve the least-square problem that minimizes || A * x - B ||_2 given A and B
-    std::pair<matrix<value_type>, double> operator()(matrix_const_view<value_type> B) const {
+    std::pair<matrix<value_type>, double> operator()(matrix_const_view<value_type> B, std::optional<long> inner_matrix_dim = {} /*unused*/) const {
       double err = 0.0;
       if (M != N) {
         std::vector<double> err_vec;
@@ -160,6 +161,66 @@ namespace triqs::arrays::lapack {
         err = *std::max_element(err_vec.begin(), err_vec.end());
       }
       return std::make_pair(V_x_InvS_x_UT * B, err);
+    }
+  };
+
+  // Least square solver version specific for hermitian tail-fitting.
+  // Restrict the resulting vector of moment matrices to one of hermitian matrices
+  struct gelss_cache_hermitian {
+
+    using dcomplex = std::complex<double>;
+
+    private:
+    // The matrix to be decomposed by SVD
+    matrix<dcomplex> A;
+
+    // Solver for the associated real-valued least-squares problem
+    gelss_cache<dcomplex> _lss;
+
+    // Solver for the associated real-valued least-squares problem imposing hermiticity
+    gelss_cache<dcomplex> _lss_matrix;
+
+    public:
+    int n_var() const { return second_dim(A); }
+    matrix<dcomplex> const &A_mat() const { return A; }
+    vector<double> const &S_vec() const { return _lss.S_vec(); }
+
+    gelss_cache_hermitian(matrix_const_view<dcomplex> _A) : A(_A), _lss(A), _lss_matrix(vstack(A, conj(A))) {}
+
+    // Solve the least-square problem that minimizes || A * x - B ||_2 given A and B with a real-valued vector x
+    std::pair<matrix<dcomplex>, double> operator()(matrix_const_view<dcomplex> B, std::optional<long> inner_matrix_dim = {}) const {
+
+      if (not inner_matrix_dim.has_value()) TRIQS_RUNTIME_ERROR << "Inner matrix dimension required for hermitian least square fitting\n";
+
+      unsigned d = inner_matrix_dim.value();
+      // Construction of an inner 'adjoint' matrix by performing the following steps
+      // * reshape B from (M, M1) to (M, N, d, d)
+      // * for each M and N take the adjoint matrix (d, d)
+      // * reshape to (M, M)
+      auto inner_adjoint = [&d](matrix_view<dcomplex> M) {
+        auto idx_map = M.indexmap();
+        auto l       = idx_map.lengths();
+        auto s       = idx_map.strides();
+
+        TRIQS_ASSERT2(l[1] % (d * d) == 0, "ERROR in hermitian least square fitting: Data shape incompatible with given dimension");
+        size_t N = l[1] / (d * d);
+
+        // We reshape the Matrix into a dim=4 array and swap the two innermost indices
+	// FIXME We would like to write: tranpose(reshape(idx_map, {l[0], N, d, d}), {0, 1, 3, 2})
+	auto idx_map_inner_transpose = array_view<dcomplex, 4>::indexmap_type{
+	   {l[0], N, d, d}, {s[0], d * d * s[1], s[1], d * s[1]}, static_cast<ptrdiff_t>(idx_map.start_shift())};
+
+        // Deep copy
+        array<dcomplex, 4> arr_dag = conj(array_view<dcomplex, 4>{idx_map_inner_transpose, M.storage()});
+        return matrix_view<dcomplex>{array_view<dcomplex, 2>{idx_map, std::move(arr_dag).storage()}};
+      };
+
+      // Solve the enlarged system vstack(A, A*) * x = vstack(B, B_dag)
+      matrix<dcomplex> B_dag = inner_adjoint(B);
+      auto [x, err]          = _lss_matrix(vstack(B, B_dag));
+
+      // Resymmetrize results to cure small hermiticity violations
+      return {0.5 * (x + inner_adjoint(x)), err};
     }
   };
 

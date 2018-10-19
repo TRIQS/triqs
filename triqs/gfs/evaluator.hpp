@@ -61,7 +61,7 @@ namespace triqs {
 
         auto [tail, err] = fit_tail_no_normalize(g);
 
-        dcomplex x                     = g.mesh().omega_max() / f;
+        dcomplex x                     = std::abs(g.mesh().omega_max()) / f;
         typename G::zero_regular_t res = g.get_zero();
 
         dcomplex z = 1.0;

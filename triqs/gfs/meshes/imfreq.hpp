@@ -161,7 +161,7 @@ namespace triqs::gfs {
     // -------------------- tail -------------------
 
     // maximum freq of the mesh
-    double omega_max() const { return std::abs(index_to_point(_last_index)); }
+    dcomplex omega_max() const { return index_to_point(_last_index); }
 
     dcomplex index_to_point(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
 

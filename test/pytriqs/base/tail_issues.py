@@ -40,8 +40,15 @@ class test_tail_issues(unittest.TestCase):
         H = np.array([[1.0, 0.1j],[-0.1j, 2.0]])
         g << inverse(iOmega_n - H)
 
-        # Check error on exact tail moments
+        # Check error of tail coefficients
         tail, err = g.fit_tail()
+        for n, tail_mom in enumerate(tail[1:4]):
+            exact_mom = np.linalg.matrix_power(H, n)
+            err = np.max(np.abs(exact_mom-tail_mom))
+            self.assertTrue(err < 1e-8)
+
+        # Check error of hermitian tail coefficients
+        tail, err = g.fit_hermitian_tail()
         for n, tail_mom in enumerate(tail[1:4]):
             exact_mom = np.linalg.matrix_power(H, n)
             err = np.max(np.abs(exact_mom-tail_mom))
@@ -57,28 +64,30 @@ class test_tail_issues(unittest.TestCase):
         max_imag_Gtau = np.max(np.abs(gt.data.imag))
         self.assertTrue(max_imag_Gtau < 1e-11)
 
-    # def test_delta_infty(self):
-        # # Init G given H
-        # g =  GfImFreq(indices = [0,1], beta = 1, n_points = 1000)
-        # H = np.array([[0.0, 0.5],[0.5, 1.0]])
-        # g << iOmega_n - H + inverse(iOmega_n + 2)
-        # g.invert()
+    def test_delta_infty(self):
+        # Init G given H
+        g =  GfImFreq(indices = [0,1], beta = 1, n_points = 1000)
+        H = np.array([[0.0, 0.5],[0.5, 1.0]])
+        g << iOmega_n - H + inverse(iOmega_n + 2)
+        g.invert()
 
-        # # Extract H through tail-fit
-        # C = g.copy()
-        # C << inverse(g) - iOmega_n
-        # tail, err = fit_tail(C)
-        # error_H = np.max(np.abs(tail[0] + H))
-        # # print error_H
-        # self.assertTrue(error_H < 1e-10)
+        # Extract H through tail-fit
+        C = g.copy()
+        C << inverse(g) - iOmega_n
+        tail, err = fit_hermitian_tail(C)
+        error_H = np.max(np.abs(tail[0] + H))
+        # print error_H
+        self.assertTrue(error_H < 1e-10)
 
-        # # Extract Delta(tau) and check imaginary part
-        # d = C.copy()
-        # d << C - tail[0]
-        # dt = make_gf_from_fourier(d)
-        # max_im = np.max(np.abs(dt.data.imag))
-        # # print "Imag Delta", max_im
-        # self.assertTrue(max_im < 1e-8)
+        # Extract Delta(tau) and check imaginary part
+        d = C.copy()
+        d << C - tail[0]
+        tail[0] = 0.
+        tau_mesh = MeshImTime(beta = 1, S = "Fermion", n_max = 2001)
+        dt = make_gf_from_fourier(d, tau_mesh, tail)
+        max_im = np.max(np.abs(dt.data.imag))
+        # print "Imag Delta", max_im
+        self.assertTrue(max_im < 1e-14)
 
     # def test_noisy_gf(self):
         # # Init Gf using Flat Descriptor

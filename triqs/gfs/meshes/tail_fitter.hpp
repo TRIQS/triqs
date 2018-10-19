@@ -24,6 +24,8 @@
 
 namespace triqs::gfs {
 
+  struct imfreq;
+
   using arrays::array_const_view;
   using arrays::range;
 
@@ -73,6 +75,7 @@ namespace triqs::gfs {
     const int _expansion_order;
     const double _rcond = 1e-8;
     std::array<std::unique_ptr<const arrays::lapack::gelss_cache<dcomplex>>, max_order + 1> _lss;
+    std::array<std::unique_ptr<const arrays::lapack::gelss_cache_hermitian>, max_order + 1> _lss_hermitian;
     arrays::matrix<dcomplex> _vander;
     std::vector<long> _fit_idx_lst;
 
@@ -81,14 +84,17 @@ namespace triqs::gfs {
        : _tail_fraction(tail_fraction),
          _n_tail_max(n_tail_max),
          _adjust_order(not expansion_order.has_value()),
-         _expansion_order(_adjust_order ? 9 : expansion_order.value()) {}
+         _expansion_order(_adjust_order ? max_order : expansion_order.value()) {}
     //----------------------------------------------------------------------------------------------
 
     // number of the points in the tail for positive omega.
     template <typename M> int n_pts_in_tail(M const &m) const { return std::min(int(std::round(_tail_fraction * m.size() / 2)), _n_tail_max); }
 
-    // FIXME : replace 0.2 everywhere by this, need for the second replace_by_tail function
-    static constexpr double default_tail_fraction() { return 0.2; }
+    // The default fraction of frequency points to consider for the tail fit
+    static constexpr double default_tail_fraction = 0.2;
+
+    // The default upper limit for the number of frequencies to consider in the tail fit
+    static constexpr int default_n_tail_max = 30;
 
     //----------------------------------------------------------------------------------------------
 
@@ -120,14 +126,24 @@ namespace triqs::gfs {
 
     //----------------------------------------------------------------------------------------------
 
+    template <bool enforce_hermiticity = false> auto &get_lss() {
+      if constexpr (enforce_hermiticity)
+        return _lss_hermitian;
+      else
+        return _lss;
+    }
+
     // Set up the least-squares solver for a given number of known moments.
-    template <typename M> void setup_lss(M const &m, int n_fixed_moments) {
+    template <bool enforce_hermiticity = false, typename M> void setup_lss(M const &m, int n_fixed_moments) {
+
+      using namespace arrays::lapack;
+      using cache_t = std::conditional_t<enforce_hermiticity, gelss_cache_hermitian, gelss_cache<dcomplex>>;
 
       // Calculate the indices to fit on
       if (_fit_idx_lst.empty()) _fit_idx_lst = get_tail_fit_indices(m);
 
       // Set Up full Vandermonde matrix up to order expansion_order if not set
-      double om_max = m.omega_max();
+      double om_max = std::abs(m.omega_max());
       if (_vander.is_empty()) {
         std::vector<dcomplex> C;
         C.reserve(_fit_idx_lst.size());
@@ -137,26 +153,28 @@ namespace triqs::gfs {
 
       if (n_fixed_moments + 1 > first_dim(_vander) / 2) TRIQS_RUNTIME_ERROR << "Insufficient data points for least square procedure";
 
-      auto l = [&](int n) { return std::make_unique<const arrays::lapack::gelss_cache<dcomplex>>(_vander(range(), range(n_fixed_moments, n + 1))); };
+      auto l = [&](int n) { return std::make_unique<const cache_t>(_vander(range(), range(n_fixed_moments, n + 1))); };
+
+      auto &lss = get_lss<enforce_hermiticity>();
 
       if (!_adjust_order)
-        _lss[n_fixed_moments] = l(_expansion_order);
+        lss[n_fixed_moments] = l(_expansion_order);
       else { // Use biggest submatrix of Vandermonde for fitting such that condition boundary fulfilled
-        _lss[n_fixed_moments].reset();
-        // Ensure that om_max^(1-N) > 10^{-16}
-        int n_max = std::min<int>(size_t{max_order}, 1. + 16. / std::log10(om_max));
+        lss[n_fixed_moments].reset();
+        // Ensure that |m.omega_max()|^(1-N) > 10^{-16}
+	int n_max = std::min<int>(size_t{max_order}, 1. + 16. / std::log10(1 + std::abs(m.omega_max())));
         // We use at least two times as many data-points as we have moments to fit
         n_max = std::min(size_t(n_max), first_dim(_vander) / 2);
         for (int n = n_max; n >= n_fixed_moments; --n) {
           auto ptr = l(n);
           if (ptr->S_vec()[ptr->S_vec().size() - 1] > _rcond) {
-            _lss[n_fixed_moments] = std::move(ptr);
+            lss[n_fixed_moments] = std::move(ptr);
             break;
           }
         }
       }
 
-      if (!_lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
+      if (!lss[n_fixed_moments]) TRIQS_RUNTIME_ERROR << "Conditioning of tail-fit violates boundary";
     }
 
     //----------------------------------------------------------------------------------------------
@@ -169,21 +187,26 @@ namespace triqs::gfs {
      * @param known_moments  Array of the known_moments
      * */
     // FIXME : nda : use dynamic Rank here.
-    template <typename M, int R, int R2 = R>
-    std::pair<arrays::array<dcomplex, R>, double> operator()(M const &m, array_const_view<dcomplex, R> g_data, int n, bool normalize,
-                                                             array_const_view<dcomplex, R2> known_moments) {
+    template <bool enforce_hermiticity = false, typename M, int R, int R2 = R>
+    std::pair<arrays::array<dcomplex, R>, double> fit(M const &m, array_const_view<dcomplex, R> g_data, int n, bool normalize,
+                                                      array_const_view<dcomplex, R2> known_moments, std::optional<long> inner_matrix_dim = {}) {
 
+      if (enforce_hermiticity and not inner_matrix_dim.has_value())
+        TRIQS_RUNTIME_ERROR << "Enforcing the hermiticity in tail_fit requires inner matrix dimension";
+      if constexpr (enforce_hermiticity)
+        static_assert(std::is_same_v<typename M::var_t, imfreq>, "Enforcing the hermiticity in tail_fit requires Matsubara mesh");
       static_assert((R == R2), "The rank of the moment array is not equal to the data to fit !!!");
-      if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Can not fit on an positive_only mesh";
+      if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Can not fit on a positive_only mesh";
 
       // If not set, build least square solver for for given number of known moments
       int n_fixed_moments = first_dim(known_moments);
       if (n_fixed_moments > _expansion_order) return {known_moments, 0.0};
 
-      if (!bool(_lss[n_fixed_moments])) setup_lss(m, n_fixed_moments);
+      auto &lss = get_lss<enforce_hermiticity>();
+      if (!bool(lss[n_fixed_moments])) setup_lss<enforce_hermiticity>(m, n_fixed_moments);
 
       // Total number of moments
-      int n_moments = _lss[n_fixed_moments]->n_var() + n_fixed_moments;
+      int n_moments = lss[n_fixed_moments]->n_var() + n_fixed_moments;
 
       using triqs::arrays::ellipsis;
       using triqs::utility::enumerate;
@@ -194,7 +217,7 @@ namespace triqs::gfs {
       long ncols           = imp.size() / imp.lengths()[0];
 
       // We flatten the data in the target space and remaining meshes into the second dim
-      arrays::matrix<dcomplex> g_mat(2 * n_pts_in_tail(m), ncols);
+      arrays::matrix<dcomplex> g_mat(first_dim(_vander), ncols);
 
       // Copy g_data into new matrix (necessary because g_data might have fancy strides/lengths)
       for (auto [i, n] : enumerate(_fit_idx_lst)) {
@@ -214,8 +237,8 @@ namespace triqs::gfs {
         arrays::matrix<dcomplex> km_mat(n_fixed_moments, ncols);
 
         // We have to scale the known_moments by 1/Omega_max^n
-        double z      = 1;
-        double om_max = m.omega_max();
+        double z = 1.0;
+	double om_max = std::abs(m.omega_max());
 
         for (int order : range(n_fixed_moments)) {
           if constexpr (R == 1)
@@ -230,13 +253,13 @@ namespace triqs::gfs {
       }
 
       // Call least square solver
-      auto [a_mat, epsilon] = (*_lss[n_fixed_moments])(g_mat); // coef + error
+      auto [a_mat, epsilon] = (*lss[n_fixed_moments])(g_mat, inner_matrix_dim); // coef + error
 
       // === The result a_mat contains the fitted moments divided by omega_max()^n
       // Here we extract the real moments
       if (normalize) {
-        double z      = 1.0;
-        double om_max = m.omega_max();
+        double z = 1.0;
+	double om_max = std::abs(m.omega_max());
         for (int i : range(n_fixed_moments)) z *= om_max;
         for (int i : range(first_dim(a_mat))) {
           a_mat(i, range()) *= z;
@@ -262,25 +285,34 @@ namespace triqs::gfs {
 
       return {std::move(res), epsilon};
     }
+
+    template <typename M, int R, int R2 = R>
+    std::pair<arrays::array<dcomplex, R>, double> fit_hermitian(M const &m, array_const_view<dcomplex, R> g_data, int n, bool normalize,
+                                                                array_const_view<dcomplex, R2> known_moments,
+                                                                std::optional<long> inner_matrix_dim = {}) {
+      return fit<true, M, R, R2>(m, g_data, n, normalize, known_moments, inner_matrix_dim);
+    }
   };
 
   //----------------------------------------------------------------------------------------------
 
   struct tail_fitter_handle {
 
-    // FIXME : backward only ?
-    void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {}) const {
+    // Adjust the parameters for the tail-fitting
+    void set_tail_fit_parameters(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
+                                 std::optional<int> expansion_order = {}) const {
       _tail_fitter = std::make_shared<tail_fitter>(tail_fitter{tail_fraction, n_tail_max, expansion_order});
     }
 
-    // the tail fitter is mutable, even if the mesh is immutable to cache some data
+    // The tail fitter is mutable, even if the mesh is immutable to cache some data
     tail_fitter &get_tail_fitter() const {
-      if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>(0.2, 30);
+      if (!_tail_fitter) _tail_fitter = std::make_shared<tail_fitter>(tail_fitter::default_tail_fraction, tail_fitter::default_n_tail_max);
       return *_tail_fitter;
     }
 
-    // FIXME .. Clean interface with rcond vs adjust_order vs expansion_order
-    tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {}) const {
+    // Adjust the parameters for the tail-fitting and return the fitter
+    tail_fitter &get_tail_fitter(double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
+                                 std::optional<int> expansion_order = {}) const {
       set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
       return *_tail_fitter;
     }
