@@ -54,7 +54,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 
       dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
           "PATH=$installDir/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
-          "CPATH=$installDir/include:${env.BREW}/include",
+          "C_INCLUDE_PATH=${env.BREW}/include",
           "CPLUS_INCLUDE_PATH=$installDir/include:${env.BREW}/include",
           "LIBRARY_PATH=$installDir/lib:${env.BREW}/lib",
           "CMAKE_PREFIX_PATH=$installDir/share/cmake"]) {
