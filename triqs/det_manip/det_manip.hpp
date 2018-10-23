@@ -1093,7 +1093,7 @@ namespace triqs {
         sign = (s > 0 ? 1 : -1);
       }
 
-      void check_mat_inv(double precision_warning = 1.e-8, double precision_error = 1.e-5) {
+      void check_mat_inv() {
         _regenerate_with_check(true, precision_warning, precision_error);
       }
 
@@ -1128,7 +1128,7 @@ namespace triqs {
           det  = newdet;
           sign = newsign;
           ++n_opts;
-          if (n_opts > n_opts_max_before_check) check_mat_inv(precision_warning, precision_error);
+          if (n_opts > n_opts_max_before_check) check_mat_inv();
         }
         last_try = NoTry;
       }
