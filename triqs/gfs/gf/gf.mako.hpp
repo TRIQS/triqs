@@ -66,6 +66,8 @@ namespace triqs {
     template <typename G, typename M> struct is_gf<G const &, M> : is_gf<G, M> {};
     template <typename G, typename M> struct is_gf<G &&, M> : is_gf<G, M> {};
 
+    template <typename G, typename M> inline constexpr bool  is_gf_v = is_gf<G, M>::value;
+
     /// ---------------------------  implementation  ---------------------------------
 
     namespace details {

@@ -69,6 +69,8 @@ namespace triqs {
     template <typename G, typename M> struct is_gf<G const &, M> : is_gf<G, M> {};
     template <typename G, typename M> struct is_gf<G &&, M> : is_gf<G, M> {};
 
+    template <typename G, typename M> inline constexpr bool  is_gf_v = is_gf<G, M>::value;
+
     /// ---------------------------  implementation  ---------------------------------
 
     namespace details {
@@ -80,11 +82,17 @@ namespace triqs {
     struct impl_tag {};
     struct impl_tag2 {};
 
+    
+   
+  
+
     // ----------------------  gf -----------------------------------------
     /**
    * gf : the main class
    */
-    template <typename Var, typename Target> class gf : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+    template <typename Var, typename Target>
+    class gf :
+       TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
 
       public:
       static constexpr bool is_view  = false;
@@ -208,8 +216,10 @@ namespace triqs {
       }
 
       public:
+
       /// Construct an empty Green function (with empty array).
       gf() {} // all arrays of zero size (empty)
+
 
       /// Copy constructor
       gf(gf const &x) = default;
@@ -223,6 +233,7 @@ namespace triqs {
         swap(this->_zero, b._zero);
         swap(this->_indices, b._indices);
       }
+
 
       private:
       // FIXME : simplify
@@ -306,20 +317,22 @@ namespace triqs {
 
       // other = late, cf MPI
 
+
       public:
       // ------------- apply_on_data -----------------------------
 
-      template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) {
+      
+      template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi)  {
         auto d2    = fd(_data);
         using t2   = target_from_array<decltype(d2), arity>;
         using gv_t = gf_view<Var, t2>;
         return gv_t{_mesh, d2, fi(_indices)};
       }
 
-      template <typename Fdata> auto apply_on_data(Fdata &&fd) {
+      template <typename Fdata> auto apply_on_data(Fdata &&fd)  {
         return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
       }
-
+      
       template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) const {
         auto d2    = fd(_data);
         using t2   = target_from_array<decltype(d2), arity>;
@@ -504,6 +517,9 @@ namespace triqs {
 
       //----------------------------- MPI  -----------------------------
 
+      
+
+      
       /**
      * Initiate (lazy) MPI Bcast
      *
@@ -517,12 +533,13 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend void mpi_broadcast(gf &g, mpi::communicator c = {}, int root = 0) {
         // Shall we bcast mesh ?
         mpi_broadcast(g.data(), c, root);
       }
 
+      
       /**
      * Initiate (lazy) MPI Reduce
      *
@@ -536,12 +553,13 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf const &a, mpi::communicator c = {}, int root = 0, bool all = false,
                                                                     MPI_Op op = MPI_SUM) {
         return {a(), c, root, all, op};
       }
 
+      
       /**
      * Initiate (lazy) MPI AllReduce
      *
@@ -555,11 +573,13 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
-      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf const &a, mpi::communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
+      
+      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf const &a, mpi::communicator c = {}, int root = 0,
+                                                                        MPI_Op op = MPI_SUM) {
         return {a(), c, root, true, op};
       }
 
+      
       /**
      * Initiate (lazy) MPI Scatter
      *
@@ -573,11 +593,12 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf const &a, mpi::communicator c = {}, int root = 0) {
         return {a(), c, root, true};
       }
 
+      
       /**
      * Initiate (lazy) MPI Gather
      *
@@ -591,11 +612,12 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
         return {a(), c, root, all};
       }
 
+      
       /**
      * Initiate (lazy) MPI AllGather
      *
@@ -609,10 +631,11 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf const &a, mpi::communicator c = {}, int root = 0) {
         return {a(), c, root, true};
       }
+
 
       //-------------  corresponding operator = overload
 
@@ -643,12 +666,17 @@ namespace triqs {
         _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
       }
     };
+   
+  
 
     // ----------------------  gf_view -----------------------------------------
     /**
    * gf_view : the main class
    */
-    template <typename Var, typename Target> class gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+    template <typename Var, typename Target>
+    class gf_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -772,6 +800,7 @@ namespace triqs {
       }
 
       public:
+
       /// Copy constructor
       gf_view(gf_view const &x) = default;
       /// Move constructor
@@ -784,6 +813,7 @@ namespace triqs {
         swap(this->_zero, b._zero);
         swap(this->_indices, b._indices);
       }
+
 
       public:
       // ---------------  Constructors --------------------
@@ -841,20 +871,22 @@ namespace triqs {
         return *this;
       }
 
+
       public:
       // ------------- apply_on_data -----------------------------
 
-      template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) {
+      
+      template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi)  {
         auto d2    = fd(_data);
         using t2   = target_from_array<decltype(d2), arity>;
         using gv_t = gf_view<Var, t2>;
         return gv_t{_mesh, d2, fi(_indices)};
       }
 
-      template <typename Fdata> auto apply_on_data(Fdata &&fd) {
+      template <typename Fdata> auto apply_on_data(Fdata &&fd)  {
         return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
       }
-
+      
       template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) const {
         auto d2    = fd(_data);
         using t2   = target_from_array<decltype(d2), arity>;
@@ -1039,6 +1071,9 @@ namespace triqs {
 
       //----------------------------- MPI  -----------------------------
 
+      
+
+      
       /**
      * Initiate (lazy) MPI Bcast
      *
@@ -1052,12 +1087,13 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend void mpi_broadcast(gf_view &g, mpi::communicator c = {}, int root = 0) {
         // Shall we bcast mesh ?
         mpi_broadcast(g.data(), c, root);
       }
 
+      
       /**
      * Initiate (lazy) MPI Reduce
      *
@@ -1071,12 +1107,13 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_view const &a, mpi::communicator c = {}, int root = 0, bool all = false,
                                                                     MPI_Op op = MPI_SUM) {
         return {a(), c, root, all, op};
       }
 
+      
       /**
      * Initiate (lazy) MPI AllReduce
      *
@@ -1090,12 +1127,13 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_view const &a, mpi::communicator c = {}, int root = 0,
                                                                         MPI_Op op = MPI_SUM) {
         return {a(), c, root, true, op};
       }
 
+      
       /**
      * Initiate (lazy) MPI Scatter
      *
@@ -1109,11 +1147,12 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf_view const &a, mpi::communicator c = {}, int root = 0) {
         return {a(), c, root, true};
       }
 
+      
       /**
      * Initiate (lazy) MPI Gather
      *
@@ -1127,11 +1166,12 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf_view const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
         return {a(), c, root, all};
       }
 
+      
       /**
      * Initiate (lazy) MPI AllGather
      *
@@ -1145,10 +1185,11 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf_view const &a, mpi::communicator c = {}, int root = 0) {
         return {a(), c, root, true};
       }
+
 
       //-------------  corresponding operator = overload
 
@@ -1179,12 +1220,17 @@ namespace triqs {
         _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
       }
     };
+   
+  
 
     // ----------------------  gf_const_view -----------------------------------------
     /**
    * gf_const_view : the main class
    */
-    template <typename Var, typename Target> class gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+    template <typename Var, typename Target>
+    class gf_const_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1308,6 +1354,7 @@ namespace triqs {
       }
 
       public:
+
       /// Copy constructor
       gf_const_view(gf_const_view const &x) = default;
       /// Move constructor
@@ -1320,6 +1367,7 @@ namespace triqs {
         swap(this->_zero, b._zero);
         swap(this->_indices, b._indices);
       }
+
 
       // ---------------  Constructors --------------------
 
@@ -1364,20 +1412,22 @@ namespace triqs {
       // ---------------  No = since it is const ... --------------------
       gf_const_view &operator=(gf_const_view const &) = delete; // a const view can not be assigned to
 
+
       public:
       // ------------- apply_on_data -----------------------------
 
-      template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) {
+      
+      template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi)  {
         auto d2    = fd(_data);
         using t2   = target_from_array<decltype(d2), arity>;
         using gv_t = gf_const_view<Var, t2>;
         return gv_t{_mesh, d2, fi(_indices)};
       }
 
-      template <typename Fdata> auto apply_on_data(Fdata &&fd) {
+      template <typename Fdata> auto apply_on_data(Fdata &&fd)  {
         return apply_on_data(std::forward<Fdata>(fd), [](auto &) { return indices_t{}; });
       }
-
+      
       template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) const {
         auto d2    = fd(_data);
         using t2   = target_from_array<decltype(d2), arity>;
@@ -1562,6 +1612,9 @@ namespace triqs {
 
       //----------------------------- MPI  -----------------------------
 
+      
+
+      
       /**
      * Initiate (lazy) MPI Bcast
      *
@@ -1575,12 +1628,13 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend void mpi_broadcast(gf_const_view &g, mpi::communicator c = {}, int root = 0) {
         // Shall we bcast mesh ?
         mpi_broadcast(g.data(), c, root);
       }
 
+      
       /**
      * Initiate (lazy) MPI Reduce
      *
@@ -1594,12 +1648,13 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0, bool all = false,
                                                                     MPI_Op op = MPI_SUM) {
         return {a(), c, root, all, op};
       }
 
+      
       /**
      * Initiate (lazy) MPI AllReduce
      *
@@ -1613,12 +1668,13 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0,
                                                                         MPI_Op op = MPI_SUM) {
         return {a(), c, root, true, op};
       }
 
+      
       /**
      * Initiate (lazy) MPI Scatter
      *
@@ -1632,11 +1688,12 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(gf_const_view const &a, mpi::communicator c = {}, int root = 0) {
         return {a(), c, root, true};
       }
 
+      
       /**
      * Initiate (lazy) MPI Gather
      *
@@ -1650,12 +1707,12 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
-      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf_const_view const &a, mpi::communicator c = {}, int root = 0,
-                                                                    bool all = false) {
+      
+      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf_const_view const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
         return {a(), c, root, all};
       }
 
+      
       /**
      * Initiate (lazy) MPI AllGather
      *
@@ -1669,10 +1726,11 @@ namespace triqs {
      * @return Returns a lazy object describing the object and the MPI operation to be performed.
      *
      */
-
+      
       friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf_const_view const &a, mpi::communicator c = {}, int root = 0) {
         return {a(), c, root, true};
       }
+
     };
 
     /*------------------------------------------------------------------------------------------------------

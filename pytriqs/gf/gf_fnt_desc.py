@@ -137,6 +137,25 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                    signature="gf_view<retime, %s> make_gf_from_fourier(gf_view<refreq, %s> g_in, bool shift_half_bin)"%(Target, Target),
                    doc ="""Create Green function from the Fourier transform of g_w""")
 
+    # set_from_legendre
+    m.add_function("void set_from_legendre(gf_view<imfreq, %s> gw, gf_view<legendre, %s> gl)"%(Target, Target),
+                calling_pattern = "gw = legendre_to_imfreq(gl)",
+                doc = """Fills self with the legendre transform of gl""")
+
+    m.add_function("void set_from_legendre(gf_view<imtime, %s> gt, gf_view<legendre, %s> gl)"%(Target, Target),
+                calling_pattern = "gt = legendre_to_imtime(gl)",
+                doc = """Fills self with the legendre transform of gl""")
+
+    # set_from_imfreq
+    m.add_function("void set_from_imfreq(gf_view<legendre, %s> gl, gf_view<imfreq, %s> gw)"%(Target, Target),
+                calling_pattern = "gl = imfreq_to_legendre(gw)",
+                doc = """Fills self with the legendre transform of gw""")
+
+    # set_from_imtime
+    m.add_function("void set_from_imtime(gf_view<legendre, %s> gl, gf_view<imtime, %s> gt)"%(Target, Target),
+                calling_pattern = "gl = imtime_to_legendre(gt)",
+                doc = """Fills self with the legendre transform of gt""")
+
 
 for gf_type in ["gf_view", "block_gf_view", "block2_gf_view"]:
     # make_hermitian
@@ -149,25 +168,6 @@ for gf_type in ["gf_view", "block_gf_view", "block2_gf_view"]:
     m.add_function("bool is_gf_hermitian(%s<imfreq, scalar_valued> g, double tolerance = 1.e-13)"%gf_type)
     m.add_function("bool is_gf_hermitian(%s<imfreq, matrix_valued> g, double tolerance = 1.e-13)"%gf_type)
 
-
-# set_from_legendre
-m.add_function("void set_from_legendre(gf_view<imfreq, matrix_valued> gw, gf_view<legendre, matrix_valued> gl)",
-            calling_pattern = "gw = legendre_to_imfreq(gl)",
-            doc = """Fills self with the legendre transform of gl""")
-
-m.add_function("void set_from_legendre(gf_view<imtime, matrix_valued> gt, gf_view<legendre, matrix_valued> gl)",
-            calling_pattern = "gt = legendre_to_imtime(gl)",
-            doc = """Fills self with the legendre transform of gl""")
-
-# set_from_imfreq
-m.add_function("void set_from_imfreq(gf_view<legendre, matrix_valued> gl, gf_view<imfreq, matrix_valued> gw)",
-            calling_pattern = "gl = imfreq_to_legendre(gw)",
-            doc = """Fills self with the legendre transform of gw""")
-
-# set_from_imtime
-m.add_function("void set_from_imtime(gf_view<legendre, matrix_valued> gl, gf_view<imtime, matrix_valued> gt)",
-            calling_pattern = "gl = imtime_to_legendre(gt)",
-            doc = """Fills self with the legendre transform of gt""")
 
 # set_from_imfreq
 m.add_function("void set_from_imfreq(gf_view<legendre, matrix_valued> gl, gf_view<imfreq, matrix_valued> gw)",
