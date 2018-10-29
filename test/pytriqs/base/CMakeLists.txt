@@ -40,6 +40,9 @@ add_python_test(hdf5_meshBZ)
 add_python_test(issue460)
 add_python_test(issue437)
 
+# Issues with the high frequency moments
+add_python_test(tail_issues)
+
 # Add evaluator for g
 add_python_test(gf_eval)
 
