@@ -36,7 +36,7 @@ class test_tail_issues(unittest.TestCase):
 
     def test_exact_moments(self):
         # Init G with Hermitian Hamiltonian
-        g =  GfImFreq(indices = [0,1], beta = 50, n_points = 2000)
+        g =  GfImFreq(indices = [0,1], beta = 10, n_points = 1000)
         H = np.array([[1.0, 0.1j],[-0.1j, 2.0]])
         g << inverse(iOmega_n - H)
 
