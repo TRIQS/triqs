@@ -138,36 +138,13 @@ endif()
 
 message( STATUS "-------- Lapack detection -------------")
 
-if (NOT MKLROOT)
- if (NOT LAPACK_FOUND)
-  find_package(Lapack)
- endif (NOT LAPACK_FOUND)
- if (REQUIRE_PTHREAD)
-  set(LAPACK_LIBRARY "${LAPACK_LIBRARY};${PTHREAD_LIBRARY}")
-  set(LAPACK_LIBRARIES "${LAPACK_LIBRARIES};${PTHREAD_LIBRARY}")
- endif (REQUIRE_PTHREAD)
+find_package(LAPACK REQUIRED)
 
- set(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE STRING "Flags to link Lapack and Blas")
+message(STATUS "Lapack libraries : ${LAPACK_LIBRARIES}")
+message(STATUS "Lapack vendor : ${BLA_VENDOR}")
 
- set(TRIQS_LIBRARY_LAPACK ${LAPACK_LIBS})
- if(MAC_VECLIB)
-   target_link_libraries(triqs PUBLIC "-framework Accelerate") # ${TRIQS_LIBRARY_LAPACK}")
- endif()
-
-else(NOT MKLROOT)
- # MKL
- # we use the LP64 mode, not IL64 mode which probably require porting the blas wrappers for MKL_INT and co
- message (STATUS "Using MKL with root : ${MKLROOT}")
- set(TRIQS_LIBRARY_LAPACK "-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm")
- target_include_directories(triqs SYSTEM PUBLIC ${MKLROOT}/include)
- if(NOT CMAKE_COMPILER_IS_ICC) # must be GNU
-   target_compile_options(triqs PUBLIC "-m64")
- endif()
-endif(NOT MKLROOT)
-
-message(STATUS "Lapack libraries : ${TRIQS_LIBRARY_LAPACK}")
-
-target_link_libraries (triqs PUBLIC ${TRIQS_LIBRARY_LAPACK})
+target_link_libraries (triqs PUBLIC ${LAPACK_LIBRARIES})
+target_compile_options (triqs PUBLIC ${LAPACK_LINKER_FLAGS})
 
 # ---------------------------------
 # HDF5
