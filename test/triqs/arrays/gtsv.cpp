@@ -48,21 +48,21 @@ TEST(gtsv, dgtsv) {
     auto dl(DL);
     auto d(D);
     auto du(DU);
-    blas::gtsv(dl, d, du, B1);
+    lapack::gtsv(dl, d, du, B1);
     EXPECT_ARRAY_NEAR(B1, ref_sol_1);
   }
   {
     auto dl(DL);
     auto d(D);
     auto du(DU);
-    blas::gtsv(dl, d, du, B2);
+    lapack::gtsv(dl, d, du, B2);
     EXPECT_ARRAY_NEAR(B2, ref_sol_2);
   }
   {
     auto dl(DL);
     auto d(D);
     auto du(DU);
-    blas::gtsv(dl, d, du, B);
+    lapack::gtsv(dl, d, du, B);
     EXPECT_ARRAY_NEAR(B, ref_sol);
   }
 }
@@ -91,21 +91,21 @@ TEST(gtsv, cgtsv) {
     auto dl(DL);
     auto d(D);
     auto du(DU);
-    blas::gtsv(dl, d, du, B1);
+    lapack::gtsv(dl, d, du, B1);
     EXPECT_ARRAY_NEAR(B1, ref_sol_1);
   }
   {
     auto dl(DL);
     auto d(D);
     auto du(DU);
-    blas::gtsv(dl, d, du, B2);
+    lapack::gtsv(dl, d, du, B2);
     EXPECT_ARRAY_NEAR(B2, ref_sol_2);
   }
   {
     auto dl(DL);
     auto d(D);
     auto du(DU);
-    blas::gtsv(dl, d, du, B);
+    lapack::gtsv(dl, d, du, B);
     EXPECT_ARRAY_NEAR(B, ref_sol);
   }
 }

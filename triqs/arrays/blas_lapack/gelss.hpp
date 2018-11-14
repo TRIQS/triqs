@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by O. Parcollet
+ * Copyright (C) 2012-2017 by O. Parcollet
+ * Copyright (C) 2018 by Simons Foundation
+ *   author : O. Parcollet, P. Dumitrescu, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -21,33 +23,15 @@
 #pragma once
 
 #include <complex>
-#include "./tools.hpp"
-#include "./qcache.hpp"
-#include "./gesvd.hpp"
+#include "f77/cxx_interface.hpp"
+#include "tools.hpp"
+#include "qcache.hpp"
+#include "gesvd.hpp"
 
 namespace triqs::arrays::lapack {
 
   using namespace blas_lapack_tools;
-  namespace f77 { // overload
 
-    extern "C" {
-    void TRIQS_FORTRAN_MANGLING(dgelss)(const int &, const int &, const int &, double[], const int &, double[], const int &, double[], const double &,
-                                        int &, double[], const int &, int &);
-    void TRIQS_FORTRAN_MANGLING(zgelss)(const int &, const int &, const int &, std::complex<double>[], const int &, std::complex<double>[],
-                                        const int &, double[], const double &, int &, std::complex<double>[], const int &, double[], int &);
-    }
-
-    inline void gelss(const int &M, const int &N, const int &NRHS, double *A, const int &LDA, double *B, const int &LDB, double *S,
-                      const double &RCOND, int &RANK, double *WORK, const int &LWORK, int &INFO) {
-      TRIQS_FORTRAN_MANGLING(dgelss)(M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO);
-    }
-
-    inline void gelss(const int &M, const int &N, const int &NRHS, std::complex<double> *A, const int &LDA, std::complex<double> *B, const int &LDB,
-                      double *S, const double &RCOND, int &RANK, std::complex<double> *WORK, const int &LWORK, double *RWORK, int &INFO) {
-      TRIQS_FORTRAN_MANGLING(zgelss)(M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, RWORK, INFO);
-    }
-
-  } // namespace f77
 
   /**
   * Calls gelss on a matrix or view
@@ -151,7 +135,7 @@ namespace triqs::arrays::lapack {
       matrix<value_type> VT{N, N, FORTRAN_LAYOUT};
 
       // Calculate the SVD A = U * Diag(S_vec) * VT
-      lapack::gesvd(A_FL, _S_vec, U, VT);
+      gesvd(A_FL, _S_vec, U, VT);
 
       // Calculate the matrix V * Diag(S_vec)^{-1} * UT for the least square procedure
       matrix<double> S_inv{N, M, FORTRAN_LAYOUT};
