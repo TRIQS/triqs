@@ -41,7 +41,7 @@ template <typename Md, typename Me> void test(Md d, Me e) {
 
   int size = first_dim(d);
   for (int init_size : {0, size, 2 * size}) {
-    blas::tridiag_worker<triqs::is_complex<value_t>::value> w(init_size);
+    lapack::tridiag_worker<triqs::is_complex<value_t>::value> w(init_size);
     w(d, e);
     check_eig(A, w.vectors(), w.values());
   }

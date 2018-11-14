@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by O. Parcollet
+ * Copyright (C) 2012-2017 by O. Parcollet
+ * Copyright (C) 2018 by Simons Foundation
+ *   author : O. Parcollet, P. Dumitrescu, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,8 +20,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_IS_BLAS_LAPACK_TYPE_H
-#define TRIQS_ARRAYS_IS_BLAS_LAPACK_TYPE_H
+#pragma once
+
+#include <complex>
 #include <type_traits>
 #include <triqs/utility/fortran_mangling.hpp>
 
@@ -60,5 +63,3 @@ namespace triqs {
     } // namespace blas_lapack_tools
   }   // namespace arrays
 } // namespace triqs
-
-#endif
