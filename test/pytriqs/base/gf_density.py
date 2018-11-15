@@ -5,7 +5,6 @@ def fermi(eps, beta):
     return 1./(1. + np.exp(beta * eps))
 
 beta = 50.0
-#beta = 1.0
 
 # -- Test Matsubara frequency density for free Gf
 
@@ -36,36 +35,35 @@ def get_g(g_w):
     function and off diagonal elements. """
     
     delta_w = g_w.copy()
-    sigma_w = g_w[0,0].copy()
-
-    sigma_w << inverse(iOmega_n)
-
-    #delta_w[0,0] << -1.25 + 1.*SemiCircular(5.) + sigma_w
-    #delta_w[1,1] << +1.00 + 1.*SemiCircular(5.) + sigma_w
 
     delta_w[0,0] << -1.25 + 1.*SemiCircular(5.)
     delta_w[1,1] << +1.00 + 1.*SemiCircular(5.)
-    
-    #delta_w[0,1] << 0.1*(0.05 + 0.05j) * SemiCircular(1.)
-    #delta_w[1,0] << 0.1*(0.05 - 0.05j) * SemiCircular(1.)
     
     delta_w[0,1] << 2.1*(0.05 + 0.05j) * SemiCircular(1.)
     delta_w[1,0] << 2.1*(0.05 - 0.05j) * SemiCircular(1.)
 
     g_w << inverse(Omega - delta_w)
+    
     return g_w
 
 g_iw = get_g(g_iw)
 g_w_even = get_g(g_w_even)
 g_w_odd = get_g(g_w_odd)
 
+N_iw = g_iw.total_density()
 n_iw = g_iw.density()
 
-n_w_even = g_w_even.density(beta=beta)
+N_w_even = g_w_even.total_density(beta)
+N_w_odd = g_w_odd.total_density(beta)
+
+n_w_even = g_w_even.density(beta)
 n_w0_even = g_w_even.density()
 
-n_w_odd = g_w_odd.density(beta=beta)
+n_w_odd = g_w_odd.density(beta)
 n_w0_odd = g_w_odd.density()
+
+np.testing.assert_almost_equal(N_iw, N_w_even, decimal=5)
+np.testing.assert_almost_equal(N_iw, N_w_odd, decimal=5)
 
 np.testing.assert_almost_equal(n_iw, n_w_even, decimal=5)
 np.testing.assert_almost_equal(n_iw, n_w_odd, decimal=5)
@@ -74,3 +72,16 @@ np.testing.assert_almost_equal(n_iw, n_w_odd, decimal=5)
 np.testing.assert_almost_equal(n_iw, n_w0_even, decimal=3)
 np.testing.assert_almost_equal(n_iw, n_w0_odd, decimal=3)
 
+# -- Block gf total density
+
+G1 = Gf(mesh=g_w_even.mesh, target_shape=(2,2))
+G2 = G1.copy()
+
+G1 << SemiCircular(2.)
+G2 << SemiCircular(4.)
+
+BG = BlockGf(name_list=['0', '1'], block_list=[G1, G2])
+
+np.testing.assert_almost_equal(
+    G1.total_density(beta=beta) + G2.total_density(beta=beta),
+    BG.total_density(beta=beta))
