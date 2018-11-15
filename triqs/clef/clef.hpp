@@ -428,14 +428,29 @@ namespace triqs {
       ex << rhs;
     }
 
+    template <typename... INT> constexpr bool _all_different(INT... i) {
+      constexpr int N = sizeof...(INT);
+      int ind[N]      = {i...};
+      for (int a = 0; a < N; ++a)
+        for (int b = a + 1; b < N; ++b)
+          if (ind[a] == ind[b]) return false;
+      return true;
+    }
+
     // The case A(x_,y_) = RHS : we form the function (make_function) and call auto_assign (by ADL)
     template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::function, F, _ph<Is>...> &&ex, RHS &&rhs) {
+      static_assert(_all_different(Is...),
+                    "Illegal expression : two of the placeholders on the LHS are the same. This expression is only valid for loops on the full mesh");
       triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
     }
     template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::function, F, _ph<Is>...> const &ex, RHS &&rhs) {
+      static_assert(_all_different(Is...),
+                    "Illegal expression : two of the placeholders on the LHS are the same. This expression is only valid for loops on the full mesh");
       triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
     }
     template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::function, F, _ph<Is>...> &ex, RHS &&rhs) {
+      static_assert(_all_different(Is...),
+                    "Illegal expression : two of the placeholders on the LHS are the same. This expression is only valid for loops on the full mesh");
       triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
     }
 
@@ -484,9 +499,19 @@ namespace triqs {
 
     // Same thing for the  [ ]
     template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::subscript, F, _ph<Is>...> const &ex, RHS &&rhs) {
+      static_assert(_all_different(Is...),
+                    "Illegal expression : two of the placeholdes on the LHS are the same. This expression is only valid for loops on the full mesh");
       triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
     }
     template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::subscript, F, _ph<Is>...> &&ex, RHS &&rhs) {
+      static_assert(_all_different(Is...),
+                    "Illegal expression : two of the placeholdes on the LHS are the same. This expression is only valid for loops on the full mesh");
+      triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
+    }
+
+    template <typename F, typename RHS, int... Is> FORCEINLINE void operator<<(expr<tags::subscript, F, _ph<Is>...> &ex, RHS &&rhs) {
+      static_assert(_all_different(Is...),
+                    "Illegal expression : two of the placeholdes on the LHS are the same. This expression is only valid for loops on the full mesh");
       triqs_clef_auto_assign_subscript(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), _ph<Is>()...));
     }
 
