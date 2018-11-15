@@ -28,62 +28,57 @@
 namespace triqs::arrays::blas::f77 {
   // typedef std::complex<double> dcomplex;
 
-  void axpy(const int &N, const double &alpha, const double *x, const int &incx, double *Y, const int &incy);
-  void axpy(const int &N, const std::complex<double> &alpha, const std::complex<double> *x, const int &incx, std::complex<double> *Y,
-            const int &incy);
+  void axpy(int N, double alpha, const double *x, int incx, double *Y, int incy);
+  void axpy(int N, std::complex<double> alpha, const std::complex<double> *x, int incx, std::complex<double> *Y, int incy);
 
-  void copy(const int &N, const double *x, const int &incx, double *Y, const int &incy);
-  void copy(const int &N, const std::complex<double> *x, const int &incx, std::complex<double> *Y, const int &incy);
+  void copy(int N, const double *x, int incx, double *Y, int incy);
+  void copy(int N, const std::complex<double> *x, int incx, std::complex<double> *Y, int incy);
 
-  double dot(const int &M, const double *x, const int &incx, const double *Y, const int &incy);
-  //std::complex<double> dot (const int & M, const std::complex<double>* x, const int & incx, const std::complex<double>* Y, const int & incy) ;
+  double dot(int M, const double *x, int incx, const double *Y, int incy);
+  //std::complex<double> dot (int  M, const std::complex<double>* x, int  incx, const std::complex<double>* Y, int  incy) ;
 
-  void gemm(char trans_a, char trans_b, const int &M, const int &N, const int &K, const double &alpha, const double *A, const int &LDA,
-            const double *B, const int &LDB, const double &beta, double *C, const int &LDC);
-  void gemm(char trans_a, char trans_b, const int &M, const int &N, const int &K, const std::complex<double> &alpha, const std::complex<double> *A,
-            const int &LDA, const std::complex<double> *B, const int &LDB, const std::complex<double> &beta, std::complex<double> *C, const int &LDC);
+  void gemm(char trans_a, char trans_b, int M, int N, int K, double alpha, const double *A, int LDA, const double *B, int LDB, double beta, double *C,
+            int LDC);
+  void gemm(char trans_a, char trans_b, int M, int N, int K, std::complex<double> alpha, const std::complex<double> *A, int LDA,
+            const std::complex<double> *B, int LDB, std::complex<double> beta, std::complex<double> *C, int LDC);
 
-  void gemv(char *trans, const int &M, const int &N, double &alpha, const double *A, int &LDA, const double *x, const int &incx, double &beta,
-            double *Y, const int &incy);
-  void gemv(char *trans, const int &M, const int &N, std::complex<double> &alpha, const std::complex<double> *A, int &LDA,
-            const std::complex<double> *x, const int &incx, std::complex<double> &beta, std::complex<double> *Y, const int &incy);
+  void gemv(char *trans, int M, int N, double &alpha, const double *A, int &LDA, const double *x, int incx, double &beta, double *Y, int incy);
+  void gemv(char *trans, int M, int N, std::complex<double> &alpha, const std::complex<double> *A, int &LDA, const std::complex<double> *x, int incx,
+            std::complex<double> &beta, std::complex<double> *Y, int incy);
 
-  void ger(const int &M, const int &N, const double &alpha, const double *x, const int &incx, const double *Y, const int &incy, double *A,
-           const int &LDA);
-  void ger(const int &M, const int &N, const std::complex<double> &alpha, const std::complex<double> *x, const int &incx,
-           const std::complex<double> *Y, const int &incy, std::complex<double> *A, const int &LDA);
+  void ger(int M, int N, double alpha, const double *x, int incx, const double *Y, int incy, double *A, int LDA);
+  void ger(int M, int N, std::complex<double> alpha, const std::complex<double> *x, int incx, const std::complex<double> *Y, int incy,
+           std::complex<double> *A, int LDA);
 
-  void scal(const int &M, const double &alpha, double *x, const int &incx);
-  void scal(const int &M, const std::complex<double> &alpha, std::complex<double> *x, const int &incx);
+  void scal(int M, double alpha, double *x, int incx);
+  void scal(int M, std::complex<double> alpha, std::complex<double> *x, int incx);
 
-  void swap(const int &N, double *x, const int &incx, double *Y, const int &incy);
-  void swap(const int &N, std::complex<double> *x, const int &incx, std::complex<double> *Y, const int &incy);
+  void swap(int N, double *x, int incx, double *Y, int incy);
+  void swap(int N, std::complex<double> *x, int incx, std::complex<double> *Y, int incy);
 
 } // namespace triqs::arrays::blas::f77
 
 namespace triqs::arrays::lapack::f77 {
 
-  void gelss(const int &M, const int &N, const int &NRHS, double *A, const int &LDA, double *B, const int &LDB, double *S, const double &RCOND,
-             int &RANK, double *WORK, const int &LWORK, int &INFO);
-  void gelss(const int &M, const int &N, const int &NRHS, std::complex<double> *A, const int &LDA, std::complex<double> *B, const int &LDB, double *S,
-             const double &RCOND, int &RANK, std::complex<double> *WORK, const int &LWORK, double *RWORK, int &INFO);
+  void gelss(int M, int N, int NRHS, double *A, int LDA, double *B, int LDB, double *S, double RCOND, int &RANK, double *WORK, int LWORK, int &INFO);
+  void gelss(int M, int N, int NRHS, std::complex<double> *A, int LDA, std::complex<double> *B, int LDB, double *S, double RCOND, int &RANK,
+             std::complex<double> *WORK, int LWORK, double *RWORK, int &INFO);
 
-  void gesvd(const char &JOBU, const char &JOBVT, const int &M, const int &N, double *A, const int &LDA, double *S, double *U, const int &LDU,
-             double *VT, const int &LDVT, double *WORK, const int &LWORK, int &INFO);
-  void gesvd(const char &JOBU, const char &JOBVT, const int &M, const int &N, std::complex<double> *A, const int &LDA, double *S,
-             std::complex<double> *U, const int &LDU, std::complex<double> *VT, const int &LDVT, std::complex<double> *WORK, const int &LWORK,
-             double *RWORK, int &INFO);
+  void gesvd(const char &JOBU, const char &JOBVT, int M, int N, double *A, int LDA, double *S, double *U, int LDU, double *VT, int LDVT, double *WORK,
+             int LWORK, int &INFO);
+  void gesvd(const char &JOBU, const char &JOBVT, int M, int N, std::complex<double> *A, int LDA, double *S, std::complex<double> *U, int LDU,
+             std::complex<double> *VT, int LDVT, std::complex<double> *WORK, int LWORK, double *RWORK, int &INFO);
 
-  void getrf(const int &M, const int &N, double *A, const int &LDA, int *ipiv, int &info);
-  void getrf(const int &M, const int &N, std::complex<double> *A, const int &LDA, int *ipiv, int &info);
+  void getrf(int M, int N, double *A, int LDA, int *ipiv, int &info);
+  void getrf(int M, int N, std::complex<double> *A, int LDA, int *ipiv, int &info);
 
-  void getri(const int &N, double *A, const int &LDA, int *ipiv, double *work, const int &lwork, int &info);
-  void getri(const int &N, std::complex<double> *A, const int &LDA, int *ipiv, std::complex<double> *work, const int &lwork, int &info);
+  void getri(int N, double *A, int LDA, int *ipiv, double *work, int lwork, int &info);
+  void getri(int N, std::complex<double> *A, int LDA, int *ipiv, std::complex<double> *work, int lwork, int &info);
 
-  void gtsv(const int &N, const int &NRHS, double *DL, double *D, double *DU, double *B, const int &LDB, int &info);
-  void gtsv(const int &N, const int &NRHS, std::complex<double> *DL, std::complex<double> *D, std::complex<double> *DU, std::complex<double> *B,
-            const int &LDB, int &info);
+  void gtsv(int N, int NRHS, double *DL, double *D, double *DU, double *B, int LDB, int &info);
+  void gtsv(int N, int NRHS, std::complex<double> *DL, std::complex<double> *D, std::complex<double> *DU, std::complex<double> *B, int LDB,
+            int &info);
 
-  void stev(char J, const int &N, double *D, double *E, double *Z, int ldz, double *work, int &info);
+  void stev(char J, int N, double *D, double *E, double *Z, int ldz, double *work, int &info);
 
 } // namespace triqs::arrays::lapack::f77

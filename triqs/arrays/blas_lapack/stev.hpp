@@ -103,4 +103,4 @@ namespace triqs::arrays::lapack {
     matrix_view<std::complex<double>> vectors() const { return V(range(0, s), range(0, s)); }
   };
 
-} // namespace triqs::arrays::blas
+} // namespace triqs::arrays::lapack

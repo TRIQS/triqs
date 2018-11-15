@@ -28,7 +28,6 @@
 #include "tools.hpp"
 #include "qcache.hpp"
 
-// TODO: MOVE THIS TO ::LAPACK
 namespace triqs::arrays::lapack {
 
   using namespace blas_lapack_tools;
@@ -36,7 +35,7 @@ namespace triqs::arrays::lapack {
   // RHS as a matrix/matrix_view
   template <typename MT, typename VT>
   std::enable_if_t<is_blas_lapack_type<typename MT::value_type>::value && is_blas_lapack_type<typename VT::value_type>::value
-                     && have_same_value_type<MT, VT>::value>
+                   && have_same_value_type<MT, VT>::value>
   gtsv(VT &DL, VT &D, VT &DU, MT &B) {
     reflexive_qcache<VT> Cdl(DL);
     reflexive_qcache<VT> Cd(D);
@@ -78,4 +77,4 @@ namespace triqs::arrays::lapack {
     if (info) TRIQS_RUNTIME_ERROR << "Error in gtsv : info = " << info;
   }
 
-} // namespace triqs::arrays::blas
+} // namespace triqs::arrays::lapack

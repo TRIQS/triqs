@@ -42,16 +42,16 @@ namespace triqs::arrays::lapack {
 
     int info;
 
-    if (!A.memory_layout_is_fortran()){
-      auto A_FL  = typename MTA::regular_type{A, FORTRAN_LAYOUT};
-      info       = gesvd(A_FL, S, U, VT);
+    if (!A.memory_layout_is_fortran()) {
+      auto A_FL = typename MTA::regular_type{A, FORTRAN_LAYOUT};
+      info      = gesvd(A_FL, S, U, VT);
       return info;
     }
-    
-    if (!U.memory_layout_is_fortran()){
-      auto U_FL  = typename MTU::regular_type{U, FORTRAN_LAYOUT};
-      info       = gesvd(A, S, U_FL, VT);
-      U()        = U_FL();
+
+    if (!U.memory_layout_is_fortran()) {
+      auto U_FL = typename MTU::regular_type{U, FORTRAN_LAYOUT};
+      info      = gesvd(A, S, U_FL, VT);
+      U()       = U_FL();
       return info;
     }
 

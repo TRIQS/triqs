@@ -32,7 +32,6 @@ namespace triqs::arrays::lapack {
 
   using namespace blas_lapack_tools;
 
-
   /**
   * Calls gelss on a matrix or view
   * Takes care of making temporary copies if necessary
@@ -45,7 +44,7 @@ namespace triqs::arrays::lapack {
 
     int info;
 
-    if (!A.memory_layout_is_fortran()){
+    if (!A.memory_layout_is_fortran()) {
       auto A_FL = typename MTA::regular_type{A, FORTRAN_LAYOUT};
       info      = gelss(A_FL, B, S, rcond, rank);
       return info;
