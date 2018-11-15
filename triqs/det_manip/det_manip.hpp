@@ -90,8 +90,8 @@ namespace triqs {
       uint64_t n_opts                  = 0;   // count the number of operation
       uint64_t n_opts_max_before_check = 100; // max number of ops before the test of deviation of the det, M^-1 is performed.
       double singular_threshold = -1; // the test to see if the matrix is singular is abs(det) > singular_threshold. If <0, it is !isnormal(abs(det))
-      double precision_warning = 1.e-8; // bound for warning message in check for singular matrix
-      double precision_error = 1.e-5; // bound for throwing error in check for singular matrix
+      double precision_warning  = 1.e-8; // bound for warning message in check for singular matrix
+      double precision_error    = 1.e-5; // bound for throwing error in check for singular matrix
 
       private:
       //  ------------     BOOST Serialization ------------
@@ -269,7 +269,7 @@ namespace triqs {
 
       /// Set the bound for throwing error in the singular tests
       void set_precision_error(double threshold) { precision_error = threshold; }
-      
+
       /**
      * @brief Constructor.
      *
@@ -382,7 +382,10 @@ namespace triqs {
       FunctionType const &get_function() const { return f; }
 
       /** det M of the current state of the matrix.  */
-      det_type determinant() const { return sign * det; }
+      det_type determinant() {
+        if (is_singular()) regenerate();
+        return sign * det;
+      }
 
       /** Returns M^{-1}(i,j) */
       // warning : need to invert the 2 permutations: (AP)^-1= P^-1 A^-1.
@@ -1142,11 +1145,9 @@ namespace triqs {
         for (int i = 0; i < N; i++)
           for (int j = 0; j < N; j++) res(i, j) = f(x_values[i], y_values[j]);
         det = arrays::determinant(res);
-        if (is_singular()) {
-          res()    = std::numeric_limits<double>::quiet_NaN();
-          do_check = false;
-        } else
-          res = inverse(res);
+
+        if (is_singular()) TRIQS_RUNTIME_ERROR << "ERROR in det_manip regenerate: Determinant is singular";
+        res = inverse(res);
 
         if (do_check) { // check that mat_inv is close to res
           const bool relative = true;
@@ -1184,9 +1185,7 @@ namespace triqs {
         sign = (s > 0 ? 1 : -1);
       }
 
-      void check_mat_inv() {
-        _regenerate_with_check(true, precision_warning, precision_error);
-      }
+      void check_mat_inv() { _regenerate_with_check(true, precision_warning, precision_error); }
 
       /// it the det 0 ? I.e. (singular_threshold <0 ? not std::isnormal(std::abs(det)) : (std::abs(det)<singular_threshold))
       bool is_singular() const { return (singular_threshold < 0 ? not std::isnormal(std::abs(det)) : (std::abs(det) < singular_threshold)); }
@@ -1201,7 +1200,6 @@ namespace triqs {
      *  Throws if no try_xxx has been done or if the last operation was complete_operation.
      */
       void complete_operation() {
-        bool is_sing = is_singular();
         switch (last_try) {
           case (Insert): complete_insert(); break;
           case (Remove): complete_remove(); break;
@@ -1214,14 +1212,11 @@ namespace triqs {
           case (NoTry): return; break;
           default: TRIQS_RUNTIME_ERROR << "Misuing det_manip"; // Never used?
         }
-        if (is_sing) {
-          regenerate();
-        } else {
-          det  = newdet;
-          sign = newsign;
-          ++n_opts;
-          if (n_opts > n_opts_max_before_check) check_mat_inv();
-        }
+
+        det  = newdet;
+        sign = newsign;
+        ++n_opts;
+        if (n_opts > n_opts_max_before_check) check_mat_inv();
         last_try = NoTry;
       }
 
