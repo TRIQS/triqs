@@ -25,7 +25,7 @@ set(TRIQS_MPIEXEC_POSTFLAGS @MPIEXEC_POSTFLAGS@)
 set(TRIQS_ROOT  @CMAKE_INSTALL_PREFIX@)
 
 # Make all cmake modules installed with TRIQS available
-list(APPEND CMAKE_MODULE_PATH ${TRIQS_ROOT}/share/cmake)
+list(APPEND CMAKE_MODULE_PATH ${TRIQS_ROOT}/share/cmake/Modules)
 
 # True iif triqs was compiled with Python support
 set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)

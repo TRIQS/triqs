@@ -1,6 +1,7 @@
 Version 2.1
 -----------
 
+* [cmake] Adjust cmake-related install dirs to more standard directories
 * [cmake] Replace Alps Find Lapack by System FindLAPACK.cmake
 * Parse commit messages into changelog. TODO: Add formating/grouping
 * [clef] Fix #475
