@@ -38,8 +38,8 @@ namespace triqs {
       using matrices_t = std::vector<matrix<dcomplex>>;
       
       bravais_lattice bl_;
-      displs_t all_disp;
-      matrices_t all_matrices;
+      displs_t displ_vec_;
+      matrices_t overlap_mat_vec_;
 
       public:
       ///
@@ -57,8 +57,8 @@ namespace triqs {
         for (int i = 0; i < n; ++i) f(tb.displ_vec_[i], tb.overlap_mat_vec_[i]);
       }
 
-      const displs_t & displacements() const { return all_disp; }
-      const matrices_t & matrices() const { return all_matrices; }
+      const displs_t & displacements() const { return displ_vec_; }
+      const matrices_t & matrices() const { return overlap_mat_vec_; }
 
       // a simple function on the domain brillouin_zone
       struct fourier_impl {
@@ -91,7 +91,7 @@ namespace triqs {
   initializer(omp_priv = triqs::arrays::matrix<dcomplex>(omp_orig.shape()))
 
 #pragma omp parallel for reduction(+:res)
-	  for(int idx = 0; idx < tb.all_disp.size(); idx++) {
+	  for(int idx = 0; idx < tb.displacements().size(); idx++) {
 
 	    auto const & displ = tb.displacements()[idx];
 	    auto const & m = tb.matrices()[idx];
