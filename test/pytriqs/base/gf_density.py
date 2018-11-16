@@ -82,6 +82,14 @@ G2 << SemiCircular(4.)
 
 BG = BlockGf(name_list=['0', '1'], block_list=[G1, G2])
 
+for block, g in [('0', G1), ('1', G2)]:
+    np.testing.assert_array_almost_equal(BG.density()[block], g.density())
+    np.testing.assert_array_almost_equal(BG.density(beta)[block], g.density(beta))
+
 np.testing.assert_almost_equal(
-    G1.total_density(beta=beta) + G2.total_density(beta=beta),
-    BG.total_density(beta=beta))
+    G1.total_density() + G2.total_density(),
+    BG.total_density())
+
+np.testing.assert_almost_equal(
+    G1.total_density(beta) + G2.total_density(beta),
+    BG.total_density(beta))

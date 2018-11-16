@@ -389,9 +389,9 @@ class BlockGf(object):
     def zero(self):
         for i,g in self: g.zero()
 
-    def density(self):
+    def density(self, *args, **kwargs):
         """Returns the density as a dict of density of the blocks"""
-        return dict( (s,g.density()) for s,g in self )
+        return dict( (s,g.density(*args, **kwargs)) for s,g in self )
 
     def total_density(self, *args, **kwargs):
         """ Total density of G  """
