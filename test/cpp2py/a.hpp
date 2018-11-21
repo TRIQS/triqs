@@ -26,7 +26,7 @@ struct A {
 
   A()          = default;
   A(A &&)      = default;
-  A(A const &) = delete; // to prevent using copy
+  A(A const &) = default; //delete; // to prevent using copy
   A &operator=(A &&) = default;
   A &operator=(A const &) = default;
 
