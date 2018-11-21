@@ -205,7 +205,7 @@ namespace triqs {
       //  BOOST Serialization
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        ar &units;
+	ar &units;
         ar &periodization_matrix;
         ar &dims;
         ar &_size;
