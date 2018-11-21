@@ -20,10 +20,10 @@ TEST(Gf, Real) {
   auto Giw2 = gf<imfreq, scalar_valued>{{beta, Fermion, N}};
   auto Git2 = gf<imtime, scalar_valued>{{beta, Fermion, N}};
 
-  rw_h5(Gw);
-  rw_h5(Gt);
-  rw_h5(Git);
-  rw_h5(Giw);
+  rw_h5(Gw, "Gw");
+  rw_h5(Gt, "Gt");
+  rw_h5(Git, "Git");
+  rw_h5(Giw, "Giw");
 
   for (auto &t : Gt.mesh()) Gt[t] = 1.0 * t;
   for (auto &w : Gw.mesh()) Gw[w] = 1.0 * w;

@@ -48,7 +48,7 @@ TEST(Gf, Base) {
   // test for density
   EXPECT_ARRAY_NEAR(density(G3), matrix<double>{{1.8177540779781256, 0.0}, {0.0, 1.8177540779781256}});
 
-  rw_h5(G);
+  rw_h5(G, "G");
 
   {
     auto G0w     = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};

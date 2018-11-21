@@ -26,6 +26,6 @@ TEST(Gf, SimpleAssign) {
   auto g4 = gf<imfreq, tensor_valued<3>>{};
   auto g5 = gf<imfreq, tensor_valued<3>>{{10, Fermion}, {3, 3, 3}};
 
-  rw_h5(g5);
+  rw_h5(g5, "g5");
 }
 MAKE_MAIN;
