@@ -39,6 +39,7 @@ add_python_test(hdf5_meshBZ)
 
 add_python_test(issue460)
 add_python_test(issue437)
+add_python_test(issue649)
 add_python_test(bug_tight_binding)
 
 # Issues with the high frequency moments
