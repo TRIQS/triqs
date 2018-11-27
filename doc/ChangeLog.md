@@ -1,6 +1,8 @@
 Version 2.1
 -----------
 
+* [cmake] Replace Alps Find Lapack by System FindLAPACK.cmake
+* Parse commit messages into changelog. TODO: Add formating/grouping
 * [clef] Fix #475
 * [clef] Test for products of matsubara frequencies
 * [lapack] For basic types change const T & arguments to T, formatting
