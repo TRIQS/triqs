@@ -115,7 +115,7 @@ class HilbertTransform:
 
         # Check result
         if result:
-            assert result.N1 == N1 and result.N2 == N2, "Size of result and Sigma mismatch"
+            assert result.target_shape == (N1, N2), "Size of result and Sigma mismatch"
         else:
             result = model.copy()
 
