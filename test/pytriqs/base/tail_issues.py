@@ -87,7 +87,7 @@ class test_tail_issues(unittest.TestCase):
         dt = make_gf_from_fourier(d, tau_mesh, tail)
         max_im = np.max(np.abs(dt.data.imag))
         # print "Imag Delta", max_im
-        self.assertTrue(max_im < 1e-14)
+        self.assertTrue(max_im < 1e-12)
 
     # def test_noisy_gf(self):
         # # Init Gf using Flat Descriptor
