@@ -1,3 +1,216 @@
+Version 2.1
+-----------
+
+* [clef] Fix #475
+* [clef] Test for products of matsubara frequencies
+* [lapack] For basic types change const T & arguments to T, formatting
+* [lapack] replaces fortran wrappers
+* [lattice] tb class dimension check test
+* [det_manip] check_mat_inv() op feedback
+* [det_manip] expose precision warning and error bounds
+* [array] make ref_counters std::atomic
+* [util] time_pt h5 serializ string const &
+* [util] time_pt h5 serialization
+* Slight adjustments in tail_issue test
+* [tail] Add test summarizing issues with high frequency moments
+* [tail] Adjust maximum fitting order based on omega_max
+* [tail] Change type of omega_max in tail fitting routines to double
+* [arrays] Add functionality to substack matrices + test
+* [gf] Fix tail ERROR: properly normalize, Small bugfixes
+* Add try_change_col_row and complete
+* [Jenkins] Keep OSX Brew Includes in both C_INCLUDE_PATH and CPLUS_INCLUDE_PATH
+* [jenkins] Add brew includes to OSX CPATH
+* [cmake] Print message about modulefile if MODULEPATH is set
+* Add test for issue #517
+* [BlockGf] Enfore string block-names in BlockGf python constructor
+* [BlockGf] FIX BlockGf converter to check that names are convertible to std::string
+* [Fourier] Updated Python Fourier test for BlockGf
+* [pytriqs] Adjust descriptors for BlockGf Functionality FIX #106
+* [cmake,doc] Use CPLUS_INCLUDE_PATH over CPATH to favor -isystem includes
+* [cmake] Check that cpp2py and triqs compiler match
+* [jenkins] Update llvm to 6.0.1
+* [cmake] Only generate but do not install the triqs modulefile
+* [lapack] Avoid unnecessary copies in gesvd gelss
+* [cmake] Consistently specify PUBLIC/PRIVATE/INTERFACE for target-options and libraries
+* Update website in README
+* [cmake] Add header install directory to exported triqs target
+* [pytriqs] Add property delta (mesh-spacing) to MeshReFreq and Time
+* [doc] Minor correction in tail doc
+* Fix #638 and refactor code
+* [test] mpi zero length vector
+* DockerFile Change
+* [pytriqs] Add more evaluator for some multivar Gf
+* [deb] Add libopenmpi-dev dependence for debian package
+* [Jenkins] Update cpp2py to latest version
+* [doc] Update logos and add both Maxent and SOM to applications
+* [doc] Update mac install instructions after boost option change
+* Fix #624
+* [gfs] Add functions is_gf_hermitian and make_hermitian + tests
+* Add comparison of tight_binding object for c++ and python
+* [lattice] Make tight_binding object h5 read and writeable + test
+* Add known moments to density calulculation
+* [fourier] Allow known_moment fitting for block_gf and block2_gf
+* [fourier] Allow fourier transform real -> complex with additional data copy
+* Add make_gf_from_fourier<n1,n2>(Gf_multivar, mesh1, mesh2)
+* [meshes] Add backward compat for read of bz and lattice meshes
+* [fit_tail] Fix assymetry bug in replace_by_tail
+* Add wrapping of fit_tail for scalar_valued gf's
+* Minor Correction in Fourier Warnings
+* [tail] IMPORTANT BUGFIX in known_moment fitting
+* Minor correction to 96eb8995
+* Clean test
+* [array] zero length iterator bugfix
+* [cmake] Cleaning, Store TRIQS_MPI information in Config.cmake
+* [cmake] Fix cmake+clang linktime problems related to LIBRARY_PATH
+* [pytriqs/gf] Fix gf matrix product and add test, Fix #608
+* [doc] Remove remaining appearences of ipytriqs executables
+* [det_manip] Adjust test requirements, Minor violation for certain lapack versions
+* [lattice] Fix h5 read/write for cyclic_lattice mesh
+* Merge branch 'master' into unstable
+* [doc] Update some old links to corresponding github
+* [fourier] Assume vanishing 0th moment in tail-fit, improved error msgs
+* [fourier] Allow for mesh shift in real-frequency fourier
+* [jenkins] move docs to separate gh-pages repo
+* [imfreq] Fix: Remove constexpr for gcc 7.0 / 7.1 compatibility
+* [fourier] BUGFIX Fix trapezoidal integration correction in direct fourier
+* [c++] Minor cleanings
+* [doc] Format and reduce ubuntu package dependencies
+* [doc] Change brew install instructions to use python@2
+* [jenkins] Support brew installed in other places
+* [pytriqs] Add explicit import of h5py.highlevel
+* Move methaclass of `pytriqs.gf.Gf` after docstring
+* [fourier] fix Error and Warning prints
+* [meshes] Comparison operators for lattice/bz domains/meshes, cleaning
+* [lattice] storing bz for bzmesh to h5
+* [fourier] Add additional static asserts, remove requirement on known_moments to be const_view
+* [doc] install guide fixes jouvence
+* [doc] Update install instructions
+* [doc] Change debian package instructions to master branch
+* [doc] Add tags to install.rst
+* Update cpp2py
+* Update cpp2py
+* [doc] Update clang installation instructions to version 6.0
+* [cmake] Adjust cpp2py version requirement
+* [cmake] Adjust cpp2py version requirement
+* Update cpp2py
+* Update cpp2py version
+* Assume vanishing 0th moment in fit_tail for density calculation
+* Add real / imag for block[2] gf and test
+* [cmake] Export GIT_EXECUTABLE into TRIQSConfig
+* [doc] Update install instructions, Cleaning
+* [doc] removing Tail in hdf5 doc and fix tail errors in examples
+* [doc] removing more mentionings of the tail
+* [doc] changelog + rst fixes
+* [doc] remove tail
+* [doc] statistics analysis gf tail warning fix (#582)
+* Dev lattice wrap (#581)
+* Merge branch 'master' into unstable
+* [cmake] Fall back TRIQS_VERSION to 2.0
+* [cpack] Switch to autogenerated shlib and deps
+* Include .git directory in docker build and restore git versioning
+* [jenkins] Update cpp2py
+* [pytriqs] Fix Flat descriptor for scalar_valued gf
+* Update cpp2py requirement in packaging
+* [doc] Minor Update install script for master branch
+* Remove the requirement that cartesian_product rank > 1
+* [cmake] Disable triqs-version detection via git as Jenkins builds in non-git folder
+* [cmake] Get full triqs version number
+* Adjust precision in fit_tail_matsub
+* Fix TRIQS_VERSION
+* Fix for gcc
+
+Version 2.0
+-----------
+
+* grab the version number from the latest annotated git tag
+* [fourier] Add checkfor known moments to fourier
+* Move out ipython notebooks to github.com/OParcollet/tail_studies
+* Update Dockerfile.build
+* add back Jenkinsfile
+* Adjust fourier known moments interface, all tests passing
+* [gf] Add Pade for scalar_valued function
+* [gf] Add evaluator with slice
+* [gf] density for bosonic Gf
+* [test] gf_density boson test fails! n = infty...
+* [pytriqs/gf] fix typo in new add scalar code
+* Fourier real, WIP. Dont fit moments for retime
+* Add known moments to set_from_fourier functions
+* [pytriqs] Small fix in add of gf
+* [doc] wip
+* [fourier] Adjustments in gf_fourier.py for block_gf and precision
+* [cmake] Add -Og flag for debug mode
+* [pytriqs] Add map_block function to pytriqs.gf, maps function to every element of Block[2]Gf
+* [pytriqs] adding fourier factory functions to python interface + tests
+* [pytriqs/gf] Adding functionality for scalar_valued gf in python + tests
+* [hdf5] enable compression in c++ h5write of array / array_stack
+* More verbose mesh print functionality
+* [gf/py] Add g + 1, 1+g for scalar_valued gf. Clean implementation
+* [py] Add wrapper for density for scalar_valued
+* [gf] Evaluator on BZ.
+* [gf] Add Evaluator for g(k,om) : experimental
+* [test] tail fit sigma cancellation test
+* [tail] Add replace_by_tail without n_min
+* Adjust interface of tail_fitter and tail_fit_on_window
+* Exposet n_tail_max to user. Change fit_tail API.
+* Fix ambiguity in fit_tail for imfreq. Add wrapper in python
+* Add fit_and_replace function for backward compatiblity, Add restricted_view(Gf,N), Tests
+* Putting tail_fitter into refreq, further cleaning
+* disabling gf mpi_gather / scatter functionality in tests
+* [tail] Rename get_tail -> fit_tail, further cleaning after creation of tail_fitter class
+* [tail] pulling out tail_fitter
+* [gf] Add * and sign for statistic_enum
+* [doc] remove tail doc for C++
+* [gf] Add linear_dims in Python interface
+* Bugfix in flatten2d for empty array, cleaning and test
+* Fixing fourier imtime and test
+*  Fix array comparison of borrow and nonborrowed view
+* Add fourier block test
+* Add points around beta to Fit Derivative function
+* [fourier] add overloads for block/block2, some tests and cleaning
+* [fourier] Additional fourier tests and test cleaning
+* [tail,fourier] Refactoring fourier matsubara and fourier lattice tests
+* [fourier] Adding factory functions for lattice fourier + tests
+* Move to order 8
+* [fourier,tail] Allowing known moments in direct fourier to python interface
+* Descriptor Fourier updaate
+* add back density test
+* Add working notebook for gtau tail
+* [tail] Remove old tail in Python : port tests
+* Implement evaluator, adding tests, refactoring/checking failing tests
+* BUGFIX in multivariable get_tail call, refactoring and cleaning
+* [tail] Remove Old Singularity, further cleaning and fixes
+* Moving prod mesh deduction rule and std::pair print functionality
+* Add get_tail functions for multivariable Green functions + test
+* BUGFIX in imfreq.hpp index map for results
+* Add initializier list constructor for rank=3 arrays
+* Minor refactoring in density.cpp
+* Adjust direct fourier and refactor
+* update notebook
+* Adjust set_tail_parameters and wrap, reenable direct fourier
+* Making the vector with the fitting indeces shared, minor refactoring
+* Switch to a vector of indices for the fitting procedure
+* Automatically determine number of points in tail and step
+* push notebook
+* Fix R =1, simplify code.
+* [tail] Add wrapper for get_tail with known moments
+* Add testing nb : temporary
+* [tail] Replacing tail in fourier / density, smaller bugfixes
+* Build only Vandermonde on first get_tail call and reuse
+* Bugfix, fixed moment fitting working
+* [tail] Adjust n_moments automatically
+* Adding implementation of  known moments fitting
+* [tail] Add tests
+* [arrays] Add swap_index_view
+* update itertools test for make_product, cleaning
+* clean gelss_cache, return lls error, introduce make_product(array<range,N>)
+* add gesvd header include to gelss
+* Rename lapack test, move gelss_cache into gelss.hpp
+* Add gelss_cache object, test and gesvd lapack interface
+* tail notebook
+* Revert "draft complex_Freq"
+* draft complex_Freq
+* [travis] Disable clang
+
 Version 1.5
 -----------
 
