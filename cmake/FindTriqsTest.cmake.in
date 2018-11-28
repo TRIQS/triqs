@@ -25,7 +25,7 @@ macro(triqs_add_cpp_test testname)
    -Dname=${testname_}${ARGN}
    -Dcmd=${testcmd}
    -Dreference=${testref}
-   -P @CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/run_test.cmake
+   -P @CMAKE_INSTALL_PREFIX@/share/cmake/Modules/run_test.cmake
   )
  else()
   add_test(${testname_}${ARGN} ${testcmd})
@@ -63,7 +63,7 @@ macro(triqs_add_python_test testname)
    -Dcmd=${testcmd}
    -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
    -Dreference=${testref}
-   -P @CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/run_test.cmake
+   -P @CMAKE_INSTALL_PREFIX@/share/cmake/Modules/run_test.cmake
   )
  else()
   add_test(${testname_}
@@ -71,7 +71,7 @@ macro(triqs_add_python_test testname)
    -Dname=${testname_}
    -Dcmd=${testcmd}
    -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
-   -P @CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/run_test.cmake
+   -P @CMAKE_INSTALL_PREFIX@/share/cmake/Modules/run_test.cmake
   )
  endif()
 
