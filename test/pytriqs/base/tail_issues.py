@@ -20,39 +20,59 @@ class test_tail_issues(unittest.TestCase):
         self.assertTrue(err > 1e-2)
 
     def test_multi_fft(self):
+        for eps in [0.001, 0.01, 0.1, 1, 10, 100]: #, 1000]:
+            print " eps", eps
+            self.multi_fft(eps)
+
+    def multi_fft(self, eps):
+        # We have to adjust the number of frequencies
+        # depending on beta * eps where eps is the largest energy-scale
+        Nw = max(25, eps * 60)
+
+        # We choose Ntau six times larger than Nw
+        # to avoid boundrary effects
+        Ntau = 6 * Nw + 1
+
         # Init Gf with Single Pole
-        g = GfImFreq(indices = [0,1], beta = 10, n_points = 1000)
-        g << inverse(iOmega_n + 2.0)
+        g = GfImFreq(indices = [0,1], beta = 1., n_points = Nw)
+        g << inverse(iOmega_n + eps)
+        g_ref = g.copy()
         
         # Iterate FFT and check violation of G_ij(iw) = G*_ji(-iw)
         it = 100
-        gt = make_gf_from_fourier(g, 10000)
+        gt = make_gf_from_fourier(g, Ntau)
         err = np.zeros(it)
+        err_herm = np.zeros(it)
         for i in range(it):
             gt << InverseFourier(g)
             g << Fourier(gt)
-            err[i] = np.linalg.norm(g.data[0,:,:] - np.transpose(np.conj(g.data[-1,:,:])))
-        self.assertTrue(np.max(err) < 1e-12)
+            err[i] = np.max(np.abs(g.data - g_ref.data))
+            err_herm[i] = np.linalg.norm(g.data[0,:,:] - np.transpose(np.conj(g.data[-1,:,:])))
+
+        # print "err, err_herm : ", np.max(err), np.max(err_herm)
+        self.assertTrue(np.max(err) < 1e-9)
+        self.assertTrue(np.max(err_herm) < 1e-9)
 
     def test_exact_moments(self):
+        for eps in [0.001, 0.01, 0.1, 1, 10, 100, 1000]:
+            print "eps ", eps
+            self.exact_moments(eps)
+
+    def exact_moments(self, eps):
+        Nw = max(25, eps * 60)
         # Init G with Hermitian Hamiltonian
-        g =  GfImFreq(indices = [0,1], beta = 10, n_points = 1000)
-        H = np.array([[1.0, 0.1j],[-0.1j, 2.0]])
+        g =  GfImFreq(indices = [0,1], beta = 1., n_points = Nw)
+        H = eps * np.array([[1.0, 0.1j],[-0.1j, 2.0]])
         g << inverse(iOmega_n - H)
 
+        max_norm = lambda x: np.max(np.abs(x))
         # Check error of tail coefficients
-        tail, err = g.fit_tail()
+        tail, tail_err = g.fit_hermitian_tail()
         for n, tail_mom in enumerate(tail[1:4]):
             exact_mom = np.linalg.matrix_power(H, n)
-            err = np.max(np.abs(exact_mom-tail_mom))
-            self.assertTrue(err < 1e-8)
-
-        # Check error of hermitian tail coefficients
-        tail, err = g.fit_hermitian_tail()
-        for n, tail_mom in enumerate(tail[1:4]):
-            exact_mom = np.linalg.matrix_power(H, n)
-            err = np.max(np.abs(exact_mom-tail_mom))
-            self.assertTrue(err < 1e-8)
+            rel_err = max_norm(exact_mom-tail_mom) / max_norm(exact_mom)
+            # print "rel err ", rel_err
+            self.assertTrue(rel_err < 1e-4)
 
     def test_imag_gt(self):
         # Init Gf with SemiCircular DOS

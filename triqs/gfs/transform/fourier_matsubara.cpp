@@ -117,6 +117,10 @@ namespace triqs::gfs {
       TRIQS_RUNTIME_ERROR << "Fourier: The time mesh mush be at least twice as long as the number of positive frequencies :\n gt.mesh().size() =  "
                           << gt.mesh().size() << " gw.mesh().last_index()" << iw_mesh.last_index();
 
+    if (L < 6 * (iw_mesh.last_index() + 1))
+      std::cerr << "[Direct Fourier] WARNING: The imaginary time mesh is less than six times as long as the number of positive frequencies.\n"
+	        << "This can lead to substantial numerical inaccuracies at the boundary of the frequency mesh.\n";
+
     long n_others = second_dim(gt.data());
 
     array<dcomplex, 2> _gout(L, n_others); // FIXME Why do we need this dimension to be one less than gt.mesh().size() ?
