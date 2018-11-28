@@ -31,7 +31,7 @@ list(APPEND CMAKE_MODULE_PATH ${TRIQS_ROOT}/share/cmake/Modules)
 set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
 
 # include the exported targets of this project 
-include(@CMAKE_INSTALL_PREFIX@/share/cmake/triqs-targets.cmake)
+include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)
 
 MESSAGE(STATUS "Found TRIQSConfig.cmake with version ${TRIQS_VERSION}, hash = ${TRIQS_GIT_HASH}")
 

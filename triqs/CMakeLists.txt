@@ -233,7 +233,7 @@ target_include_directories(triqs SYSTEM INTERFACE ${CMAKE_INSTALL_PREFIX}/includ
 
 # Install the library in lib and prepare an exported cmake file to reimport it
 install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
-install(EXPORT triqs-targets DESTINATION share/cmake)
+install(EXPORT triqs-targets DESTINATION lib/cmake/triqs)
 
 # Install headers 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h" PATTERN "*.hxx" PATTERN "*.mako.*" EXCLUDE)

@@ -36,4 +36,4 @@ prepend-path    CPLUS_INCLUDE_PATH  $root/include
 prepend-path    LIBRARY_PATH        $root/lib
 prepend-path    LD_LIBRARY_PATH     $root/lib
 prepend-path    PYTHONPATH          $root/@CPP2PY_PYTHON_LIB_DEST_ROOT@
-prepend-path    CMAKE_PREFIX_PATH   $root/share/cmake
+prepend-path    CMAKE_PREFIX_PATH   $root/lib/cmake/triqs
