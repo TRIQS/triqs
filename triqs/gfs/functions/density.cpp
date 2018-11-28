@@ -141,7 +141,7 @@ namespace triqs::gfs {
 
     assert(wmin < 0.);
 
-    int N0     = floor(-wmin / dw) + 1; // frequency index at or above w=0
+    int N0     = std::floor(-wmin / dw) + 1; // frequency index at or above w=0
     double dw0 = -wmin - (N0 - 1) * dw; // last interval width to w=0
 
     arrays::matrix<dcomplex> res(get_target_shape(g));
@@ -157,6 +157,7 @@ namespace triqs::gfs {
 
     // Filter out divergent real parts of g that are inf
     // e.g. flat dos at dos edge (but keep complex matrix structure)
+    // FIXME : Use diagonal iteration when implemented.
     for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
 
     res *= dcomplex(0., 1.) * dw / M_PI; // scale to density
@@ -177,6 +178,7 @@ namespace triqs::gfs {
 
     // -- Required to filter out divergent real parts of g that are inf
     // -- eg flat dos at dos edge
+    // FIXME : Use diagonal iteration when implemented.
     for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
 
     res *= dcomplex(0., 1.) * g.mesh().delta() / M_PI; // scale to density
