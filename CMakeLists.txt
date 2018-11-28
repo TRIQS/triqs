@@ -233,7 +233,7 @@ endif (Build_Documentation)
 #-----------------------------------------------
 # Install the FindXXX that should be exported
 #-----------------------------------------------
-install (FILES cmake/FindNFFT.cmake cmake/FindTest.cmake DESTINATION lib/cmake/triqs)
+install (FILES cmake/FindNFFT.cmake cmake/FindTest.cmake DESTINATION share/cmake/Modules)
 
 #---------------------------------------
 # triqs_config.h
