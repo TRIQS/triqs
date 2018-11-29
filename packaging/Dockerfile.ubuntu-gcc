@@ -1,7 +1,7 @@
-FROM ubuntu:xenial
-ARG RELEASE=xenial
+FROM ubuntu:bionic
+ARG RELEASE=bionic
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       cmake \
       g++ \
       gfortran \
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
       libfftw3-dev \
       libgfortran3 \
       libgmp-dev \
-      libhdf5-serial-dev \
+      libhdf5-dev \
       liblapack-dev \
       libopenmpi-dev \
       openmpi-bin \
@@ -27,11 +27,6 @@ RUN apt-get update && apt-get install -y \
       python-numpy \
       python-scipy \
       python-tornado \
-      python-virtualenv \
-      python-zmq \
-      software-properties-common
+      python-zmq
 
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
-RUN apt-get update && apt-get install -y \
-  g++-7
-ENV CC=gcc-7 CXX=g++-7
+ENV CC=gcc CXX=g++

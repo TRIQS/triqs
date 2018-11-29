@@ -20,6 +20,6 @@ WORKDIR ${BUILD}/triqs
 RUN chown build .
 USER build
 ARG BUILD_DOC=0
-RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Documentation=$BUILD_DOC -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" && make -j2 && make test
+RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DBuild_Documentation=$BUILD_DOC -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" && make -j2 && make test CTEST_OUTPUT_ON_FAILURE=1
 USER root
 RUN make install

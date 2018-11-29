@@ -72,7 +72,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         sh "cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir"
         sh "make -j3"
         try {
-          sh "make test"
+          sh "make test CTEST_OUTPUT_ON_FAILURE=1"
         } catch (exc) {
           archiveArtifacts(artifacts: 'Testing/Temporary/LastTest.log')
           throw exc
