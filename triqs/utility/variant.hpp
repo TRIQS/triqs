@@ -19,6 +19,11 @@
  *
  ******************************************************************************/
 #pragma once
+
+#ifdef TRIQS_USE_STD_VARIANT
+#include <variant>
+#else 
+
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/c14.hpp>
 #include <utility>
@@ -288,3 +293,6 @@ namespace std {
   template <typename T, typename... U> decltype(auto) get(variant<U...> &&var) { return T(var); }
   template <typename T, typename... U> decltype(auto) get(variant<U...> const &var) { return T(var); }
 } // namespace std
+
+#endif
+
