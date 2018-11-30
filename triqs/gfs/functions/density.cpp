@@ -3,7 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2012 by M. Ferrero, O. Parcollet
- * Copyright (C) 2018 The Simons Foundation, Author: H. UR Strand
+ * Copyright (C) 2018 The Simons Foundation, Authors: H. UR Strand, M. Zingl
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -29,6 +29,7 @@ namespace triqs::gfs {
   //-------------------------------------------------------
   // For Imaginary Matsubara Frequency functions
   // ------------------------------------------------------
+
   arrays::matrix<dcomplex> density(gf_const_view<imfreq> g, array_view<dcomplex, 3> known_moments) {
 
     if (g.mesh().positive_only())
@@ -128,6 +129,75 @@ namespace triqs::gfs {
   }
 
   //-------------------------------------------------------
+  // For Real Frequency functions
+  // ------------------------------------------------------
+
+  /// Zero temperature density from integration on the real frequency axis
+  arrays::matrix<dcomplex> density(gf_const_view<refreq> g) {
+
+    int N       = g.mesh().size(); // no mesh points
+    double wmin = g.mesh().x_min();
+    double dw   = g.mesh().delta();
+
+    assert(wmin < 0.);
+
+    int N0     = std::floor(-wmin / dw) + 1; // frequency index at or above w=0
+    double dw0 = -wmin - (N0 - 1) * dw; // last interval width to w=0
+
+    arrays::matrix<dcomplex> res(get_target_shape(g));
+
+    // Trapetzoidal integration, with partial right interval
+    res = 0.5 * g[0];
+    for (int widx : range(1, N0)) res += g[widx];
+    if (abs(dw0) > 1e-9) {
+      double a = dw0 / dw;
+      res += 0.5 * ((a * a - 1.) * g[N0 - 1] + a * (2. - a) * g[N0]);
+    } else
+      res -= 0.5 * g[N0 - 1];
+
+    // Filter out divergent real parts of g that are inf
+    // e.g. flat dos at dos edge (but keep complex matrix structure)
+    // FIXME : Use diagonal iteration when implemented.
+    for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
+
+    res *= dcomplex(0., 1.) * dw / M_PI; // scale to density
+    res = 0.5 * (res + dagger(res));     // A = i( g - g^+ )
+
+    return res;
+  }
+
+  /// Finite temperature density from integration on the real frequency axis
+  arrays::matrix<dcomplex> density(gf_const_view<refreq> g, double beta) {
+
+    assert(beta > 0.);
+
+    arrays::matrix<dcomplex> res(get_target_shape(g));
+    res() = 0;
+
+    for (auto const &w : g.mesh()) res += g[w] / (1. + exp(beta * w));
+
+    // -- Required to filter out divergent real parts of g that are inf
+    // -- eg flat dos at dos edge
+    // FIXME : Use diagonal iteration when implemented.
+    for (int idx : range(0, res.shape()[0])) res(idx, idx) = dcomplex(0., imag(res(idx, idx)));
+
+    res *= dcomplex(0., 1.) * g.mesh().delta() / M_PI; // scale to density
+    res = 0.5 * (res + dagger(res));                   // A = i( g - g^+ )
+
+    return res;
+  }
+
+  //-------------------------------------------------------
+  dcomplex density(gf_const_view<refreq, scalar_valued> g, double beta) {
+    return density(reinterpret_scalar_valued_gf_as_matrix_valued(g), beta)(0, 0);
+  }
+
+  dcomplex density(gf_const_view<refreq, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
+
+  //-------------------------------------------------------
+  // For Legendre functions
+  // ------------------------------------------------------
+
   arrays::matrix<dcomplex> density(gf_const_view<legendre> gl) {
     arrays::matrix<dcomplex> res(gl.target_shape());
     res() = 0.0;
@@ -136,7 +206,6 @@ namespace triqs::gfs {
     return res;
   }
 
-  //-------------------------------------------------------
   dcomplex density(gf_const_view<legendre, scalar_valued> g) { return density(reinterpret_scalar_valued_gf_as_matrix_valued(g))(0, 0); }
 
 } // namespace triqs::gfs

@@ -583,9 +583,9 @@ class Gf(object):
         assert self.rank==1, "Not implemented for more than one var" # A little generalization needed in C++ ?
         wrapped_aux.set_from_gf_data_mul_LR(self.data, L, G.data, R)
 
-    def total_density(self):
+    def total_density(self, *args, **kwargs):
         """Total density"""
-        return np.trace(gf_fnt.density(self))
+        return np.trace(gf_fnt.density(self, *args, **kwargs))
 
     #-----------------------------  IO  -----------------------------------
     

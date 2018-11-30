@@ -58,8 +58,14 @@ m.add_function("std::pair<array<dcomplex,1>, double> fit_hermitian_tail(gf_view<
 m.add_function("matrix<dcomplex> density(gf_view<imfreq, matrix_valued> g, array_view<dcomplex, 3> known_moments = {})",   doc = "Density, as a matrix, computed from a Matsubara sum")
 m.add_function("dcomplex density(gf_view<imfreq, scalar_valued> g, array_view<dcomplex, 1> known_moments = {})",   doc = "Density, as a complex, computed from a Matsubara sum")
 
-m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from a Matsubara sum")
-m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a complex, computed from a Matsubara sum")
+m.add_function("matrix<dcomplex> density(gf_view<refreq, matrix_valued> g)", doc = "Density, as a matrix, computed from a frequency integral at zero temperature")
+m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g)", doc = "Density, as a complex, computed from a  frequency integral at zero temperature")
+
+m.add_function("matrix<dcomplex> density(gf_view<refreq, matrix_valued> g, double beta)", doc = "Density, as a matrix, computed from a frequency integral at finite temperature")
+m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g, double beta)", doc = "Density, as a complex, computed from a  frequency integral at finite temperature")
+
+m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
+m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
 for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 

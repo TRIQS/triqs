@@ -3,6 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2012-2016 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2018 The Simons Foundation, Authors: H. UR Strand, M. Zingl
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,16 +24,31 @@
 namespace triqs {
   namespace gfs {
 
+    //-------------------------------------------------------
+    // For Imaginary Matsubara Frequency functions
+    // ------------------------------------------------------
+
     /// Density
     /**
-   Computes the density of the Gf g, i.e $g(\tau=0^-)$
-   Uses tail moments n=1, 2, and 3
-   */
+     * Computes the density of the Gf g, i.e $g(\tau=0^-)$
+     * Uses tail moments n=1, 2, and 3
+     */
     arrays::matrix<dcomplex> density(gf_const_view<imfreq> g, array_view<dcomplex, 3> = {});
     dcomplex density(gf_const_view<imfreq, scalar_valued> g, array_view<dcomplex, 1> = {});
 
     arrays::matrix<dcomplex> density(gf_const_view<legendre> g);
     dcomplex density(gf_const_view<legendre, scalar_valued> g);
+
+    //-------------------------------------------------------
+    // For Real Frequency functions
+    // ------------------------------------------------------
+
+    arrays::matrix<dcomplex> density(gf_const_view<refreq> g, double beta);
+    dcomplex density(gf_const_view<refreq, scalar_valued> g, double beta);
+
+    arrays::matrix<dcomplex> density(gf_const_view<refreq> g);
+    dcomplex density(gf_const_view<refreq, scalar_valued> g);
+
   } // namespace gfs
 
   namespace clef {
