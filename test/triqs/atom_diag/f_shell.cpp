@@ -70,16 +70,13 @@ TEST(atom_diag_real, f_shell_kanamori) {
   
   auto H = make_hamiltonian<many_body_operator_real>(n_orb, mu, U, J);
 
-  //int n_min = 0, n_max = 2 * n_orb; // works
-  int n_min = 0, n_max = 3*2; // breaks
+  int n_min = 0, n_max = 3*2;
 
   auto ad = triqs::atom_diag::atom_diag<false>(H, fops, n_min, n_max);
 
   std::cout << "Found " << ad.n_subspaces() << " subspaces." << std::endl;
-
-  int op_linear_index = 0;
-  int sidx = 1000; // subspace index
-  std::cout << ad.c_matrix(op_linear_index, sidx) << "\n";
+  EXPECT_EQ(ad.n_subspaces(), 1040);
+  
 }
 
 MAKE_MAIN;
