@@ -249,7 +249,7 @@ class Gf(object):
         Copy the data of another into self.
         """
         self._mesh.copy_from(another.mesh)
-        assert self._data.shape == another._data.shape, "Shapes are incompatible"
+        assert self._data.shape == another._data.shape, "Shapes are incompatible: " + str(self._data.shape) + " vs " + str(another._data.shape)
         self._data[:] = another._data[:]
         self._indices = another._indices.copy()
         self.__check_invariants()
