@@ -8,6 +8,7 @@ from pytriqs.gf import *
 from pytriqs.gf.tools import *
 from pytriqs.gf.gf_fnt import *
 import numpy as np
+from numpy.random import randn
 
 class test_tail_issues(unittest.TestCase):
 
@@ -118,29 +119,51 @@ class test_tail_issues(unittest.TestCase):
         # print "Imag Delta", max_im
         self.assertTrue(max_im < 1e-12)
 
-    # def test_noisy_gf(self):
-        # # Init Gf using Flat Descriptor
-        # g = GfImFreq(indices = [0,1], beta = 10, n_points = 1000)
-        # g[1, 1] << (4.0 * Flat(0.4) - 2.0 * Flat(0.2)) / 2.0
-        # g[0, 0] << (8.0 * Flat(0.8) - 2.0 * Flat(0.2)) / 6.0
+    def test_noisy_gf(self):
+        for noise in [1e-4, 1e-3, 1e-2]:
+            self.noisy_gf(noise)
 
-        # # Generate gt and add noise
-        # gt = make_gf_from_fourier(g, 10000)
-        # np.random.seed(666)
-        # noise = 1e-6
-        # gt.data[:] = gt.data + noise * np.random.randn(*np.shape(gt.data))
+    def noisy_gf(self, noise):
+        # Init Gf using Flat Descriptor
+        g = GfImFreq(indices = [0,1], beta = 1., n_points = 60)
+        H = np.array([[1.0, 0.1j],[-0.1j, 2.0]])
+        g << inverse(iOmega_n - H)
 
-        # # Resymmetrize gt
-        # gt.data[:,0,1] = gt.data[:,1,0].conjugate()
+        # Generate gt and add noise
+        gt = make_gf_from_fourier(g, 10000)
+        np.random.seed(666)
+        gt.data[:] = gt.data + noise * ( randn(*np.shape(gt.data)) + 1j * randn(*np.shape(gt.data)) )
 
-        # # FFT and InverseFFT
-        # g << Fourier(gt)
-        # gt2 = make_gf_from_fourier(g, 10000)
+        # Resymmetrize gt
+        gt.data[:,0,1] = gt.data[:,1,0].conjugate()
 
-        # # Check magnitude of error
-        # err = np.max(np.abs(gt.data - gt2.data))
-        # # print "noise %.3e  err %.3e"%(noise, err)
-        # self.assertTrue(err < 10 * noise)
+        # We should not be allowed to call a fourier transform on the noisy imaginary Green function
+        self.assertRaises(Exception, make_gf_from_fourier, gt)
+
+        # Instead we will go through a legendre basis to filter the noise
+        gl = fit_legendre(gt)
+
+        gt_fit = gt.copy()
+        gt_fit << LegendreToMatsubara(gl)
+
+        g_fit = g.copy()
+        g_fit << LegendreToMatsubara(gl)
+
+        # from pytriqs.plot.mpl_interface import *
+        # plt.subplot(2,1,1)
+        # oplot(gt[0,1], name='gt')
+        # oplot(gt_fit[0,1], name='gt_fit')
+        # plt.subplot(2,1,2)
+        # oplot(g[0,1], x_window=(-100,100), name='gw')
+        # oplot(g_fit[0,1], x_window=(-100,100), name='gw_fit')
+        # plt.show()
+
+        gt2 = make_gf_from_fourier(g, 10000)
+
+        # Check magnitude of error
+        err = np.max(np.abs(gt.data - gt2.data))
+        # print "noise %.3e  err %.3e"%(noise, err)
+        self.assertTrue(err < 10 * noise)
 
 if __name__ == '__main__':
     unittest.main()

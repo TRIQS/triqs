@@ -19,7 +19,7 @@
 #
 ################################################################################
 import lazy_expressions, descriptors
-from meshes import MeshImFreq, MeshReFreq, MeshImTime
+from meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshLegendre
 from block_gf import BlockGf
 from gf import Gf
 from descriptor_base import A_Omega_Plus_B
@@ -186,3 +186,61 @@ def make_zero_tail(g, n_moments=10):
         return map_block(lambda g_bl: make_zero_tail(g_bl, max_order), g)
     else:
         raise RuntimeError, "Error: make_zero_tail has to be called on a Frequency Green function object"
+
+
+def fit_legendre(g_t, order=10):
+    """ General fit of a noisy imaginary time response function
+    to a low order Legendre expansion in imaginary time.
+
+    Only Hermiticity is imposed on the fit, so discontinuities has
+    to be fixed separately (see the method enforce_discontinuity)
+
+    Author: Hugo U.R. Strand """
+
+    import numpy.polynomial.legendre as leg
+
+    if isinstance(g_t, BlockGf):
+        return map_block(lambda g_bl: fit_legendre(g_bl, order), g_t)
+
+    assert isinstance(g_t, Gf) and isinstance(g_t.mesh, MeshImTime), "fit_legendre expects imaginary-time Green function objects"
+    assert len(g_t.target_shape) == 2, "fit_legendre currently only implemented for matrix_valued Green functions"
+
+    # -- flatten the data to 2D N_tau x (N_orb * N_orb)
+
+    shape = g_t.data.shape
+    fshape = [shape[0], np.prod(shape[1:])]
+
+    # -- extend data accounting for hermiticity
+
+    mesh = g_t.mesh
+    tau = np.array([ t.value for t in mesh ])
+    # Rescale to the interval (-1,1)
+    x = 2. * tau / mesh.beta - 1.
+
+    data = g_t.data.reshape(fshape)
+    data_herm = np.transpose(g_t.data, axes=(0, 2, 1)).conjugate().reshape(fshape)
+
+    # -- Separated real valued linear system, with twice the number of RHS terms
+
+    data_re = 0.5 * (data + data_herm).real
+    data_im = 0.5 * (data + data_herm).imag
+    data_ext = np.hstack((data_re, data_im))
+
+    c_l_ext = leg.legfit(x, data_ext, order - 1)
+    c_l_re, c_l_im = np.split(c_l_ext, 2, axis=-1)
+    c_l = c_l_re + 1.j * c_l_im
+
+    # -- make Legendre Green's function of the fitted coeffs
+
+    lmesh = MeshLegendre(mesh.beta, mesh.statistic, order)
+
+    # Nb! We have to scale the actual Legendre coeffs to the Triqs "scaled" Legendre coeffs
+    # see Boehnke et al. PRB (2011)
+    l = np.arange(len(lmesh))
+    scale = np.sqrt(2.*l + 1) / mesh.beta
+    scale = scale.reshape([len(lmesh)] + [1]*len(g_t.target_shape))
+    
+    g_l = Gf(mesh=lmesh, target_shape=g_t.target_shape)
+    g_l.data[:] = c_l.reshape(g_l.data.shape) / scale
+
+    return g_l
