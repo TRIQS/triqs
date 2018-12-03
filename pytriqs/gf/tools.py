@@ -19,12 +19,14 @@
 #
 ################################################################################
 import lazy_expressions, descriptors
-from meshes import MeshImFreq, MeshReFreq
+from meshes import MeshImFreq, MeshReFreq, MeshImTime
 from block_gf import BlockGf
+from gf import Gf
 from descriptor_base import A_Omega_Plus_B
 import numpy as np
 from itertools import product
 from backwd_compat.gf_refreq import GfReFreq 
+from map_block import map_block
 
 def inverse(x):
     """
@@ -164,3 +166,23 @@ def write_gf_to_txt(g):
         imdata = g.data[:,i,j].imag.reshape((g.data.shape[0],-1))
         mesh_and_data = np.hstack((mesh,redata,imdata))
         np.savetxt(txtfile,mesh_and_data)
+
+
+def make_zero_tail(g, n_moments=10):
+    """
+    Return a container for the high-frequency coefficients of a given Green function initialized to zero.
+    
+    Parameters
+    ----------
+    g: GfReFreq or GfImFreq
+        The real/imaginary frequency Green's function to be written out.
+
+    n_moments [default=10]: The number of high-frequency moments in the tail (starting from order 0).
+    """
+    if isinstance(g, Gf) and isinstance(g.mesh, (MeshImFreq, MeshReFreq)):
+        n_moments = max(1, n_moments)
+        return np.zeros((n_moments,) + g.target_shape, dtype = g.data.dtype)
+    elif isinstance(g, BlockGf):
+        return map_block(lambda g_bl: make_zero_tail(g_bl, max_order), g)
+    else:
+        raise RuntimeError, "Error: make_zero_tail has to be called on a Frequency Green function object"

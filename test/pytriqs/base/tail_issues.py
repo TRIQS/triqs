@@ -5,6 +5,7 @@ import os
 import sys
 
 from pytriqs.gf import *
+from pytriqs.gf.tools import *
 from pytriqs.gf.gf_fnt import *
 import numpy as np
 
@@ -21,7 +22,6 @@ class test_tail_issues(unittest.TestCase):
 
     def test_multi_fft(self):
         for eps in [0.001, 0.01, 0.1, 1, 10, 100]: #, 1000]:
-            print " eps", eps
             self.multi_fft(eps)
 
     def multi_fft(self, eps):
@@ -55,7 +55,6 @@ class test_tail_issues(unittest.TestCase):
 
     def test_exact_moments(self):
         for eps in [0.001, 0.01, 0.1, 1, 10, 100, 1000]:
-            print "eps ", eps
             self.exact_moments(eps)
 
     def exact_moments(self, eps):
@@ -68,6 +67,16 @@ class test_tail_issues(unittest.TestCase):
         max_norm = lambda x: np.max(np.abs(x))
         # Check error of tail coefficients
         tail, tail_err = g.fit_hermitian_tail()
+        for n, tail_mom in enumerate(tail[1:4]):
+            exact_mom = np.linalg.matrix_power(H, n)
+            rel_err = max_norm(exact_mom-tail_mom) / max_norm(exact_mom)
+            # print "rel err ", rel_err
+            self.assertTrue(rel_err < 1e-4)
+
+        # Check error of tail coefficients imposing known moments
+        km = make_zero_tail(g, 2)
+        km[1] = np.eye(g.target_shape[0])
+        tail, tail_err = g.fit_hermitian_tail(km)
         for n, tail_mom in enumerate(tail[1:4]):
             exact_mom = np.linalg.matrix_power(H, n)
             rel_err = max_norm(exact_mom-tail_mom) / max_norm(exact_mom)
