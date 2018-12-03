@@ -7,7 +7,7 @@ template <int TARGET_RANK> void test_fourier() {
   triqs::clef::placeholder<0> iw_;
   double beta               = 1;
   int N_iw                  = 1000;
-  int N_tau                 = 2 * N_iw + 1;
+  int N_tau                 = 6 * N_iw + 1;
   std::vector<double> E_vec = {1.0, 2.0, -4.0}; // Poles
 
   mini_vector<size_t, TARGET_RANK> shape{};

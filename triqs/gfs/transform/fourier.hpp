@@ -37,13 +37,13 @@ namespace triqs::gfs {
 
   // FIXME : DOC
   inline gf_mesh<imfreq> make_adjoint_mesh(gf_mesh<imtime> const &m, int n_iw = -1) {
-    if (n_iw == -1) n_iw = (m.size() - 1) / 2;
+    if (n_iw == -1) n_iw = (m.size() - 1) / 6;
     return {m.domain(), n_iw};
   }
 
   // FIXME : DOC
   inline gf_mesh<imtime> make_adjoint_mesh(gf_mesh<imfreq> const &m, int n_tau = -1) {
-    if (n_tau == -1) n_tau = 2 * (m.last_index() + 1) + 1;
+    if (n_tau == -1) n_tau = 6 * (m.last_index() + 1) + 1;
     return {m.domain(), n_tau};
   }
 
