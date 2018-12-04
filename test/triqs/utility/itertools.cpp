@@ -134,6 +134,14 @@ TEST(Itertools, Multi) {
   // Chain enumerate and transform
   for (auto [i, x] : enumerate(transform(V, l))) { std::cout << i << " " << x << "\n"; }
 }
+
+TEST(Itertools, Product_Range) {
+
+  long res = 0;
+  for (auto [i, j, k] : product_range(5, 5, 5)) res += i * j * k;
+  EXPECT_EQ(res, 1000);
+}
+
 #endif
 
 MAKE_MAIN;
