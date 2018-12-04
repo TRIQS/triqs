@@ -179,6 +179,8 @@ namespace triqs {
 
       auto target_shape() const { return target().shape(); } // drop arity dims
 
+      auto target_indices() const { return product_range(target().shape()); }
+
       /// Shape of the data
       auto const &data_shape() const { return _data.shape(); }
 

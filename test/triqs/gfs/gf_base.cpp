@@ -140,4 +140,20 @@ TEST(Gf, SliceTargetScalar) {
 
   auto gs = slice_target_to_scalar(g, 0, 0);
 }
+
+TEST(Gf, TargetSpaceLoop) {
+  double beta = 1;
+  auto g1     = gf<imfreq>{{beta, Fermion}, {2, 2}};
+  auto g2     = gf{g1};
+
+  triqs::clef::placeholder<0> iw_;
+  triqs::clef::placeholder<1> i_;
+  triqs::clef::placeholder<2> j_;
+  g1[iw_](i_, j_) << 1. / (iw_ + i_ + j_ * 0.1);
+
+  for (auto iw : g2.mesh())
+    for (auto [i, j] : g2.target_indices()) g2[iw](i, j) = 1. / (iw + i + j * 0.1);
+
+  EXPECT_GF_NEAR(g1, g2);
+}
 MAKE_MAIN;

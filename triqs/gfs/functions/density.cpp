@@ -144,7 +144,7 @@ namespace triqs::gfs {
     int N0     = std::floor(-wmin / dw) + 1; // frequency index at or above w=0
     double dw0 = -wmin - (N0 - 1) * dw; // last interval width to w=0
 
-    arrays::matrix<dcomplex> res(get_target_shape(g));
+    arrays::matrix<dcomplex> res(g.target_shape());
 
     // Trapetzoidal integration, with partial right interval
     res = 0.5 * g[0];
@@ -171,7 +171,7 @@ namespace triqs::gfs {
 
     assert(beta > 0.);
 
-    arrays::matrix<dcomplex> res(get_target_shape(g));
+    arrays::matrix<dcomplex> res(g.target_shape());
     res() = 0;
 
     for (auto const &w : g.mesh()) res += g[w] / (1. + exp(beta * w));
