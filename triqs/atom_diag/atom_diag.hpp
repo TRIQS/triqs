@@ -3,6 +3,8 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2016, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ * Copyright (C) 2018, The Simons Foundation
+ * Author: H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -271,6 +273,8 @@ namespace triqs {
       /**
        * @param op Many body operator
        * @return The block matrix representation of the operator (in the Hamiltonian eigen basis)
+       *
+       * Throws, in case the provided operator does not respect the block symmetries used in the diagonalization.
        */
       op_block_mat_t get_op_mat(many_body_op_t const &op) const;
       
