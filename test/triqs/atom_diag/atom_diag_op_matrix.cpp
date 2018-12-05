@@ -62,17 +62,33 @@ TEST(atom_diag, op_matrix) {
   auto ad = triqs::atom_diag::atom_diag<false>(H, fops);
   std::cout << "Found " << ad.n_subspaces() << " subspaces." << std::endl;
 
+  EXPECT_EQ(ad.n_subspaces(), 4);
+
   // -----------------------------------------------------------------------------
 
-  std::cout << "n(up,0) = \n" << ad.get_op_mat( n("up", 0) ) << "\n";
-  std::cout << "n(up,0) = \n" << ad.get_op_mat( n("dn", 0) ) << "\n";
-  
-  std::cout << "S_z = \n" << ad.get_op_mat( 0.5 * (n("up", 0) - n("dn", 0)) ) << "\n";
-  std::cout << "docc = \n" << ad.get_op_mat( n("up", 0) * n("dn", 0) ) << "\n";
+  {
+    auto op = ad.get_op_mat(n("up", 0));
 
-  std::cout << "c(up,0) = \n" << ad.get_op_mat( c("up", 0) ) << "\n";
-  std::cout << "cdag(up,0) = \n" << ad.get_op_mat( c_dag("up", 0) ) << "\n";
-  
+    std::cout << "op =\n" << op << "\n";
+
+    EXPECT_EQ(op.n_blocks(), 4);
+    for (auto b : range(op.n_blocks())) {
+      if (op.connection(b) != -1) EXPECT_EQ(op.block_mat[b], matrix<double>({{1.}}));
+    }
+  }
+
+  // -----------------------------------------------------------------------------
+
+  {
+    auto op = ad.get_op_mat(n("dn", 0));
+
+    std::cout << "op =\n" << op << "\n";
+
+    EXPECT_EQ(op.n_blocks(), 4);
+    for (auto b : range(op.n_blocks())) {
+      if (op.connection(b) != -1) EXPECT_EQ(op.block_mat[b], matrix<double>({{1.}}));
+    }
+  }
 }
 
 MAKE_MAIN;

@@ -3,6 +3,8 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2016, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ * Copyright (C) 2018, The Simons Foundation
+ * Author: H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -108,16 +110,16 @@ namespace triqs {
 
       for(int b : range(n_subspaces()) ) {
 	for( auto const &term : op ) {
-	  auto b_mat = get_matrix_element_of_monomial(term.monomial, b);
-	  if(b_mat.first == -1) continue;
+	  auto [bb, mat] = get_matrix_element_of_monomial(term.monomial, b);
+	  if(bb == -1) continue;
 	  
 	  if( op_mat.connection(b) == -1 ) {
-	    op_mat.connection(b) = b_mat.first;
-	    op_mat.block_mat[b] = term.coef * b_mat.second;
-	  } else if ( op_mat.connection(b) != b_mat.first ) {
+	    op_mat.connection(b) = bb;
+	    op_mat.block_mat[b] = term.coef * mat;
+	  } else if ( op_mat.connection(b) != bb ) {
 	    TRIQS_RUNTIME_ERROR << "ERROR: <atom_diag::get_op_mat> Monomials in operator does not connect the same subspaces.";
 	  } else {
-	    op_mat.block_mat[b] += term.coef * b_mat.second;
+	    op_mat.block_mat[b] += term.coef * mat;
 	  }
 	}
 	// Transform to Hamiltonian eigen basis
