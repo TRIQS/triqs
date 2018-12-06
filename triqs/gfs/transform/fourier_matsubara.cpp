@@ -202,10 +202,10 @@ namespace triqs::gfs {
       auto [tail, error] = fit_tail(gw, known_moments);
       TRIQS_ASSERT2((error < 1e-2),
                     "ERROR: High frequency moments have an error greater than 1e-2.\n  Error = " + std::to_string(error)
-                       + "\n Please make sure you treat the constant offset analytically!");
+                       + "\n Please make sure you treat the constant offset analytically!\n");
       if (error > 1e-4)
         std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
-                  << "\n Please make sure you treat the constant offset analytically!";
+                  << "\n Please make sure you treat the constant offset analytically!\n";
       TRIQS_ASSERT2((first_dim(tail) > 3), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
       mom_123.rebind(tail(range(1, 4), range()));
     } else
