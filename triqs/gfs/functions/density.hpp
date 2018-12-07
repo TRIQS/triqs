@@ -49,6 +49,25 @@ namespace triqs {
     arrays::matrix<dcomplex> density(gf_const_view<refreq> g);
     dcomplex density(gf_const_view<refreq, scalar_valued> g);
 
+    //-------------------------------------------------------
+    // General Version for Block Gf
+    // ------------------------------------------------------
+
+    template <typename BGf, int R, typename ENABLE_IF = std::enable_if_t<is_block_gf_or_view<BGf>::value, int>>
+    auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments) {
+
+      using var_t = typename BGf::variable_t;
+      static_assert(std::is_same_v<var_t, imfreq> or std::is_same_v<var_t, refreq>, "Density Function must be called with either an imfreq or a refreq Green Function");
+
+      using r_t = decltype(density(gin[0], known_moments[0]));
+      std::vector<r_t> dens_vec;
+
+      TRIQS_ASSERT2(gin.size() == known_moments.size(), "Density: Require equal number of blocks in block_gf and known_moments vector");
+
+      for (auto [gin_bl, km_bl] : triqs::utility::zip(gin, known_moments)) dens_vec.push_back(density(gin_bl, km_bl));
+      return dens_vec;
+    }
+
   } // namespace gfs
 
   namespace clef {

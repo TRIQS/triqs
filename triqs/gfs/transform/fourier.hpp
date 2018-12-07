@@ -248,10 +248,10 @@ namespace triqs::gfs {
     using r_t = decltype(make_gf_from_fourier<N>(gin(0,0), m, known_moments[0][0]));
     std::vector<std::vector<r_t>> g_vecvec;
 
-    TRIQS_ASSERT2(gin.size1() == known_moments.size(), "Fourier: Require matching block structore between and known_moments");
+    TRIQS_ASSERT2(gin.size1() == known_moments.size(), "Fourier: Require matching block structure between gin and known_moments");
 
     for (int i : range(gin.size1())) {
-      TRIQS_ASSERT2(gin.size2() == known_moments[i].size(), "Fourier: Require matching block structore between and known_moments");
+      TRIQS_ASSERT2(gin.size2() == known_moments[i].size(), "Fourier: Require matching block structure between gin and known_moments");
 
       std::vector<r_t> g_vec;
       for (int j : range(gin.size2())) g_vec.push_back(make_gf_from_fourier<N>(gin(i,j), m, known_moments[i][j]));
