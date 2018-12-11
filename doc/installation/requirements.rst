@@ -20,7 +20,7 @@ A recent compiler is therefore mandatory.
 
 * Standard compliant C++ compilers (C++17).
 
-  * g++ 7.0.0 and higher.
+  * g++ 7.x  **CAUTION**: Due to an on-going `issue <https://github.com/TRIQS/triqs/issues/570>`_ triqs can currently not be compiled with g++ 8.x
 
   * :ref:`clang 5.0<install_clang>` and higher.
 
