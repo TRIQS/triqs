@@ -2,15 +2,19 @@
 Authors & contributors
 ======================
 
-The TRIQS library has been developed and is currently maintained by:
+The TRIQS library has been orginally authored by:
 
  O. Parcollet (IPhT, CEA-Saclay) and M. Ferrero (CPHT, Ecole Polytechique).
+
+It is currently maintained by:
+
+ O. Parcollet (Flatiron Institute, CCQ) and N. Wentzell (Flatiron Institute, CCQ).
 
 It is supported by ERC under Grant Number 278472.
 
 Other developers include:
 
- T. Ayral, H. Hafermann, I. Krivenko, L. Messio, P. Seth.
+ I. Krivenko, T. Ayral, H. Strand, D. Simons, H. Hafermann, L. Messio, P. Seth.
 
 Citation
 =========

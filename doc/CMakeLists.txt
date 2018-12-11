@@ -22,7 +22,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR
 # and filters the relevant extension
 # ------------------------------------------------------------------------------------------------
 
-set(EXT_FOR_DOC "rst png txt cpp css_t conf css js gif jpg py html bib sh md")
+set(EXT_FOR_DOC "bib rst png txt cpp css_t conf css js gif jpg py html bib sh md")
 execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${EXT_FOR_DOC})
 
 # ---------------------------------
@@ -97,11 +97,9 @@ FILE(GLOB_RECURSE ExampleList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 # ---------------------------------
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs
  FILES_MATCHING
- REGEX "\\.(html|pdf|png|gif|jpg|js|xsl|css|py|txt|inv)$"
+ REGEX "\\.(bib|html|pdf|png|gif|jpg|js|xsl|css|py|txt|inv)$"
  PATTERN "_*"
- )
-
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ COMPONENT documentation DESTINATION share/doc/triqs  FILES_MATCHING PATTERN "*.bib")
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/agogo DESTINATION share/triqs/themes)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/triqs DESTINATION share/triqs/themes)
