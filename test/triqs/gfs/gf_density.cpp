@@ -15,7 +15,7 @@ TEST(Gf, DensityFermion) {
 
   EXPECT_COMPLEX_NEAR(n, 1 / (1 + std::exp(-beta * 2.3)), 1.e-9);
 
-  rw_h5(G);
+  rw_h5(G, "G");
 }
 
 TEST(Gf, DensityBoson) {
@@ -33,7 +33,7 @@ TEST(Gf, DensityBoson) {
 
   EXPECT_COMPLEX_NEAR(n, 1 / (-1 + std::exp(beta * 2.3)), 1.e-9);
 
-  rw_h5(G);
+  rw_h5(G, "G");
 }
 
 TEST(Gf, Density_with_not_all_moments) {

@@ -48,7 +48,7 @@ TEST(Gf, Base) {
   // test for density
   EXPECT_ARRAY_NEAR(density(G3), matrix<double>{{1.8177540779781256, 0.0}, {0.0, 1.8177540779781256}});
 
-  rw_h5(G);
+  rw_h5(G, "G");
 
   {
     auto G0w     = gf<imfreq, scalar_valued>{{beta, Fermion, 100}};
@@ -139,5 +139,21 @@ TEST(Gf, SliceTargetScalar) {
   auto g      = gf<imfreq>{{beta, Fermion}, {2, 2}};
 
   auto gs = slice_target_to_scalar(g, 0, 0);
+}
+
+TEST(Gf, TargetSpaceLoop) {
+  double beta = 1;
+  auto g1     = gf<imfreq>{{beta, Fermion}, {2, 2}};
+  auto g2     = gf{g1};
+
+  triqs::clef::placeholder<0> iw_;
+  triqs::clef::placeholder<1> i_;
+  triqs::clef::placeholder<2> j_;
+  g1[iw_](i_, j_) << 1. / (iw_ + i_ + j_ * 0.1);
+
+  for (auto iw : g2.mesh())
+    for (auto [i, j] : g2.target_indices()) g2[iw](i, j) = 1. / (iw + i + j * 0.1);
+
+  EXPECT_GF_NEAR(g1, g2);
 }
 MAKE_MAIN;

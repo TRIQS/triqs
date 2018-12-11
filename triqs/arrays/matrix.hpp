@@ -292,15 +292,25 @@ namespace triqs {
     }
 
     template <typename M>
-    std14::enable_if_t<ImmutableMatrix<M>::value and triqs::is_complex<typename M::value_type>::value, matrix<typename M::value_type>>
+    std::enable_if_t<ImmutableMatrix<M>::value and triqs::is_complex<typename M::value_type>::value, matrix<typename M::value_type>>
     dagger(M const &m) {
       return conj(m.transpose());
     }
 
     template <typename M>
-    std14::enable_if_t<ImmutableMatrix<M>::value and !triqs::is_complex<typename M::value_type>::value, matrix<typename M::value_type>>
+    std::enable_if_t<ImmutableMatrix<M>::value and !triqs::is_complex<typename M::value_type>::value, matrix<typename M::value_type>>
     dagger(M const &m) {
       return m.transpose();
+    }
+
+    template <typename M1, typename M2> std::enable_if_t<ImmutableMatrix<M1>::value && ImmutableMatrix<M2>::value, matrix<typename M1::value_type>> vstack(M1 const &A, M2 const &B) {
+      TRIQS_ASSERT2(second_dim(A) == second_dim(B), "ERROR in vstack(A,B): Matrices have incompatible shape!");
+      static_assert(std::is_same_v<typename M1::value_type, typename M2::value_type>, "ERROR in vstack(A,B): Matrices have incompatible value_type!");
+
+      matrix<typename M1::value_type> res(first_dim(A) + first_dim(B), second_dim(A));
+      res(range(first_dim(A)), range())                              = A;
+      res(range(first_dim(A), first_dim(A) + first_dim(B)), range()) = B;
+      return std::move(res);
     }
 
     template <typename M> TYPE_ENABLE_IF(typename M::view_type, ImmutableMatrix<M>) transpose(M const &m) { return m.transpose(); }

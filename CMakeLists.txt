@@ -233,7 +233,7 @@ endif (Build_Documentation)
 #-----------------------------------------------
 # Install the FindXXX that should be exported
 #-----------------------------------------------
-install (FILES cmake/FindNFFT.cmake cmake/FindTest.cmake DESTINATION share/cmake)
+install (FILES cmake/FindNFFT.cmake DESTINATION share/cmake/Modules)
 
 #---------------------------------------
 # triqs_config.h
@@ -270,8 +270,8 @@ else()
 endif()
 
 configure_file(./cmake/TRIQSConfig-version.cmake.in Config/TRIQSConfig-version.cmake @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/cmake)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION share/cmake)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION lib/cmake/triqs)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION lib/cmake/triqs)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/triqs_config.h DESTINATION include/triqs)
 
 #------------------------
@@ -281,8 +281,8 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/triqs_config.h DESTINATION incl
 configure_file(./cmake/FindTriqsTest.cmake.in Config//FindTriqsTest.cmake @ONLY)
 configure_file(./cmake/run_test.cmake.in Config/run_test.cmake @ONLY)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/FindTriqsTest.cmake DESTINATION share/cmake)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/run_test.cmake DESTINATION share/cmake)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/FindTriqsTest.cmake DESTINATION share/cmake/Modules)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/run_test.cmake DESTINATION share/cmake/Modules)
 
 #--------------------------------------------------------
 #   Remind the user how to set up his/her variables
@@ -299,8 +299,8 @@ MESSAGE(STATUS "*   source ${CMAKE_INSTALL_PREFIX}/share/triqsvars.sh          "
 MESSAGE(STATUS "*   to set up the environment variables                        ") 
 if(DEFINED ENV{MODULEPATH})
   MESSAGE(STATUS "*                                                              ")
-  MESSAGE(STATUS "* Consider adding ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile ")
-  MESSAGE(STATUS "*   to your environment modules                                ")
+  MESSAGE(STATUS "* Consider copying ${CMAKE_CURRENT_BINARY_DIR}/triqs.modulefile")
+  MESSAGE(STATUS "*   into your environment module directories                   ")
 endif()
 MESSAGE(STATUS "***************************************************************")
 

@@ -42,7 +42,7 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
 
   for (auto const &tau : std::get<1>(chi0_q_tau.mesh())) chi0_q_tau[_, tau] = fourier(chi0_R_tau[_, tau]);
 
-  for (auto const &k : std::get<0>(chi0_q_nu.mesh())) chi0_q_nu[k, _] = fourier(chi0_q_tau[k, _]);
+  for (auto const &k : std::get<0>(chi0_q_nu.mesh())) chi0_q_nu[k, _] = fourier(chi0_q_tau[k, _], make_zero_tail(chi0_R_tau[_, 0]));
 
   return chi0_q_nu;
 }

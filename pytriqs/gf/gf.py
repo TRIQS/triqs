@@ -249,7 +249,7 @@ class Gf(object):
         Copy the data of another into self.
         """
         self._mesh.copy_from(another.mesh)
-        assert self._data.shape == another._data.shape, "Shapes are incompatible"
+        assert self._data.shape == another._data.shape, "Shapes are incompatible: " + str(self._data.shape) + " vs " + str(another._data.shape)
         self._data[:] = another._data[:]
         self._indices = another._indices.copy()
         self.__check_invariants()
@@ -583,9 +583,9 @@ class Gf(object):
         assert self.rank==1, "Not implemented for more than one var" # A little generalization needed in C++ ?
         wrapped_aux.set_from_gf_data_mul_LR(self.data, L, G.data, R)
 
-    def total_density(self):
+    def total_density(self, *args, **kwargs):
         """Total density"""
-        return np.trace(gf_fnt.density(self))
+        return np.trace(gf_fnt.density(self, *args, **kwargs))
 
     #-----------------------------  IO  -----------------------------------
     

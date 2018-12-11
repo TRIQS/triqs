@@ -46,17 +46,26 @@ m.add_class (c)
 
 ########################
 
-# FIXME
-# New tail
+# Extract the tail
 m.add_function("std::pair<array<dcomplex,3>, double> fit_tail(gf_view<imfreq, matrix_valued> g, array_view<dcomplex,3> known_moments = {})", doc = "tail")
 m.add_function("std::pair<array<dcomplex,1>, double> fit_tail(gf_view<imfreq, scalar_valued> g, array_view<dcomplex,1> known_moments = {})", doc = "tail")
+
+# Extract the tail imposing hermiticity on the moment matrices
+m.add_function("std::pair<array<dcomplex,3>, double> fit_hermitian_tail(gf_view<imfreq, matrix_valued> g, array_view<dcomplex,3> known_moments = {})", doc = "tail")
+m.add_function("std::pair<array<dcomplex,1>, double> fit_hermitian_tail(gf_view<imfreq, scalar_valued> g, array_view<dcomplex,1> known_moments = {})", doc = "tail")
 
 # density
 m.add_function("matrix<dcomplex> density(gf_view<imfreq, matrix_valued> g, array_view<dcomplex, 3> known_moments = {})",   doc = "Density, as a matrix, computed from a Matsubara sum")
 m.add_function("dcomplex density(gf_view<imfreq, scalar_valued> g, array_view<dcomplex, 1> known_moments = {})",   doc = "Density, as a complex, computed from a Matsubara sum")
 
-m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from a Matsubara sum")
-m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a complex, computed from a Matsubara sum")
+m.add_function("matrix<dcomplex> density(gf_view<refreq, matrix_valued> g)", doc = "Density, as a matrix, computed from a frequency integral at zero temperature")
+m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g)", doc = "Density, as a complex, computed from a  frequency integral at zero temperature")
+
+m.add_function("matrix<dcomplex> density(gf_view<refreq, matrix_valued> g, double beta)", doc = "Density, as a matrix, computed from a frequency integral at finite temperature")
+m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g, double beta)", doc = "Density, as a complex, computed from a  frequency integral at finite temperature")
+
+m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
+m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
 for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
@@ -121,11 +130,37 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                    doc ="""Create Green function from the Fourier transform of g_iw""")
 
     m.add_function(name = "make_gf_from_fourier",
+                   signature="gf_view<imfreq, %s> make_gf_from_fourier(gf_view<imtime, %s> g_in, gf_mesh<imfreq> mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(Target, Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_tau using the known tail moments""")
+    m.add_function(name = "make_gf_from_fourier",
+                   signature="gf_view<imtime, %s> make_gf_from_fourier(gf_view<imfreq, %s> g_in, gf_mesh<imtime> mesh, array_const_view<dcomplex, %s::rank + 1> known_moments)"%(Target, Target, Target),
+                   doc ="""Create Green function from the Fourier transform of g_iw using the known tail moments""")
+
+    m.add_function(name = "make_gf_from_fourier",
                    signature="gf_view<refreq, %s> make_gf_from_fourier(gf_view<retime, %s> g_in, bool shift_half_bin)"%(Target, Target),
                    doc ="""Create Green function from the Fourier transform of g_t""")
     m.add_function(name = "make_gf_from_fourier",
                    signature="gf_view<retime, %s> make_gf_from_fourier(gf_view<refreq, %s> g_in, bool shift_half_bin)"%(Target, Target),
                    doc ="""Create Green function from the Fourier transform of g_w""")
+
+    # set_from_legendre
+    m.add_function("void set_from_legendre(gf_view<imfreq, %s> gw, gf_view<legendre, %s> gl)"%(Target, Target),
+                calling_pattern = "gw = legendre_to_imfreq(gl)",
+                doc = """Fills self with the legendre transform of gl""")
+
+    m.add_function("void set_from_legendre(gf_view<imtime, %s> gt, gf_view<legendre, %s> gl)"%(Target, Target),
+                calling_pattern = "gt = legendre_to_imtime(gl)",
+                doc = """Fills self with the legendre transform of gl""")
+
+    # set_from_imfreq
+    m.add_function("void set_from_imfreq(gf_view<legendre, %s> gl, gf_view<imfreq, %s> gw)"%(Target, Target),
+                calling_pattern = "gl = imfreq_to_legendre(gw)",
+                doc = """Fills self with the legendre transform of gw""")
+
+    # set_from_imtime
+    m.add_function("void set_from_imtime(gf_view<legendre, %s> gl, gf_view<imtime, %s> gt)"%(Target, Target),
+                calling_pattern = "gl = imtime_to_legendre(gt)",
+                doc = """Fills self with the legendre transform of gt""")
 
 
 for gf_type in ["gf_view", "block_gf_view", "block2_gf_view"]:
@@ -139,25 +174,6 @@ for gf_type in ["gf_view", "block_gf_view", "block2_gf_view"]:
     m.add_function("bool is_gf_hermitian(%s<imfreq, scalar_valued> g, double tolerance = 1.e-13)"%gf_type)
     m.add_function("bool is_gf_hermitian(%s<imfreq, matrix_valued> g, double tolerance = 1.e-13)"%gf_type)
 
-
-# set_from_legendre
-m.add_function("void set_from_legendre(gf_view<imfreq, matrix_valued> gw, gf_view<legendre, matrix_valued> gl)",
-            calling_pattern = "gw = legendre_to_imfreq(gl)",
-            doc = """Fills self with the legendre transform of gl""")
-
-m.add_function("void set_from_legendre(gf_view<imtime, matrix_valued> gt, gf_view<legendre, matrix_valued> gl)",
-            calling_pattern = "gt = legendre_to_imtime(gl)",
-            doc = """Fills self with the legendre transform of gl""")
-
-# set_from_imfreq
-m.add_function("void set_from_imfreq(gf_view<legendre, matrix_valued> gl, gf_view<imfreq, matrix_valued> gw)",
-            calling_pattern = "gl = imfreq_to_legendre(gw)",
-            doc = """Fills self with the legendre transform of gw""")
-
-# set_from_imtime
-m.add_function("void set_from_imtime(gf_view<legendre, matrix_valued> gl, gf_view<imtime, matrix_valued> gt)",
-            calling_pattern = "gl = imtime_to_legendre(gt)",
-            doc = """Fills self with the legendre transform of gt""")
 
 # set_from_imfreq
 m.add_function("void set_from_imfreq(gf_view<legendre, matrix_valued> gl, gf_view<imfreq, matrix_valued> gw)",
@@ -179,6 +195,8 @@ m.add_function("gf_view<imfreq, matrix_valued> make_real_in_tau(gf_view<imfreq, 
 # fit_tail
 m.add_function("std::pair<array<dcomplex,3>, double> fit_tail_on_window(gf_const_view<imfreq, matrix_valued> g,  int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max, int expansion_order)", 
                 doc = """Fits the tail on the [n_min, n_max] window  + negative counter part""")
+m.add_function("std::pair<array<dcomplex,3>, double> fit_hermitian_tail_on_window(gf_const_view<imfreq, matrix_valued> g,  int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max, int expansion_order)",
+                doc = """Fits the tail on the [n_min, n_max] window  + negative counter part with the contraint of hermitian moment matrices""")
 
 m.add_function("void replace_by_tail(gf_view<imfreq, matrix_valued> g, array_const_view<dcomplex, 3> tail, int n_min)", 
                 doc = """Replace the function by the evaluation of the tail for |n| > n_min""")

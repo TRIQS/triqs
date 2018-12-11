@@ -320,4 +320,29 @@ namespace triqs::utility {
   }
   template <typename T, size_t N> auto make_product(std::array<T, N> &arr) { return _make_product_impl(arr, std::make_index_sequence<N>{}); }
 
+  /**
+   * Generates a product of an arbitrary number of integer ranges from a given
+   * set of integers or an integer tuple
+   *
+   * @tparam Integers The integer types
+   */
+  template <typename... Integers, typename EnableIf = std::enable_if_t<(std::is_integral_v<Integers>and...), int>>
+  auto product_range(Integers... Is) {
+    return product(triqs::arrays::range(Is)...);
+  }
+
+  template <typename Tuple, size_t... Is> auto _product_range_impl(Tuple const &idx_tpl, std::index_sequence<Is...>) {
+    return product_range(std::get<Is>(idx_tpl)...);
+  }
+  template <int N> auto product_range(mini_vector<int, N> const &idx_tpl) {
+    return _product_range_impl(idx_tpl, std::make_index_sequence<N>{});
+  }
+
+  //template <typename... Integers, typename EnableIf = std::enable_if_t<(std::is_integral_v<Integers>and...), int>> auto product_range(std::tuple<Integers...> const &idx_tpl) {
+    //return _product_range_impl(idx_tpl, std::make_index_sequence<sizeof...(Integers)>{});
+  //}
+  //template <typename Int, int N, typename EnableIf = std::enable_if_t<std::is_integral_v<Int>, int>> auto product_range(mini_vector<Int, N> const &idx_tpl) {
+    //return _product_range_impl(idx_tpl, std::make_index_sequence<N>{});
+  //}
+
 } // namespace triqs::utility

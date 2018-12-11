@@ -66,6 +66,8 @@ namespace triqs {
     template <typename G, typename M> struct is_gf<G const &, M> : is_gf<G, M> {};
     template <typename G, typename M> struct is_gf<G &&, M> : is_gf<G, M> {};
 
+    template <typename G, typename M> inline constexpr bool  is_gf_v = is_gf<G, M>::value;
+
     /// ---------------------------  implementation  ---------------------------------
 
     namespace details {
@@ -176,6 +178,8 @@ namespace triqs {
       target_and_shape_t target() const { return target_and_shape_t{_data.shape().template front_mpop<arity>()}; } // drop arity dims
 
       auto target_shape() const { return target().shape(); } // drop arity dims
+
+      auto target_indices() const { return product_range(target().shape()); }
 
       /// Shape of the data
       auto const &data_shape() const { return _data.shape(); }

@@ -37,13 +37,13 @@ namespace triqs::gfs {
 
   // FIXME : DOC
   inline gf_mesh<imfreq> make_adjoint_mesh(gf_mesh<imtime> const &m, int n_iw = -1) {
-    if (n_iw == -1) n_iw = (m.size() - 1) / 2;
+    if (n_iw == -1) n_iw = (m.size() - 1) / 6;
     return {m.domain(), n_iw};
   }
 
   // FIXME : DOC
   inline gf_mesh<imtime> make_adjoint_mesh(gf_mesh<imfreq> const &m, int n_tau = -1) {
-    if (n_tau == -1) n_tau = 2 * (m.last_index() + 1) + 1;
+    if (n_tau == -1) n_tau = 6 * (m.last_index() + 1) + 1;
     return {m.domain(), n_tau};
   }
 
@@ -51,14 +51,14 @@ namespace triqs::gfs {
   inline gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> const &m, bool shift_half_bin = false) {
     int L       = m.size();
     double wmax = M_PI * (L - 1) / (L * m.delta());
-    if(shift_half_bin) return {-wmax + M_PI / L / m.delta(), wmax + M_PI / L / m.delta(), L};
+    if (shift_half_bin) return {-wmax + M_PI / L / m.delta(), wmax + M_PI / L / m.delta(), L};
     return {-wmax, wmax, L};
   }
 
   inline gf_mesh<retime> make_adjoint_mesh(gf_mesh<refreq> const &m, bool shift_half_bin = false) {
     int L       = m.size();
     double tmax = M_PI * (L - 1) / (L * m.delta());
-    if(shift_half_bin) return {-tmax + M_PI / L / m.delta(), tmax + M_PI / L / m.delta(), L};
+    if (shift_half_bin) return {-tmax + M_PI / L / m.delta(), tmax + M_PI / L / m.delta(), L};
     return {-tmax, tmax, L};
   }
 
@@ -248,10 +248,10 @@ namespace triqs::gfs {
     using r_t = decltype(make_gf_from_fourier<N>(gin(0,0), m, known_moments[0][0]));
     std::vector<std::vector<r_t>> g_vecvec;
 
-    TRIQS_ASSERT2(gin.size1() == known_moments.size(), "Fourier: Require matching block structore between and known_moments");
+    TRIQS_ASSERT2(gin.size1() == known_moments.size(), "Fourier: Require matching block structure between gin and known_moments");
 
     for (int i : range(gin.size1())) {
-      TRIQS_ASSERT2(gin.size2() == known_moments[i].size(), "Fourier: Require matching block structore between and known_moments");
+      TRIQS_ASSERT2(gin.size2() == known_moments[i].size(), "Fourier: Require matching block structure between gin and known_moments");
 
       std::vector<r_t> g_vec;
       for (int j : range(gin.size2())) g_vec.push_back(make_gf_from_fourier<N>(gin(i,j), m, known_moments[i][j]));

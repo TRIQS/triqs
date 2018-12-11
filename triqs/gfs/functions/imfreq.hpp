@@ -151,7 +151,7 @@ namespace triqs::gfs {
   }
 
   template <typename T> void replace_by_tail_in_fit_window(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail) {
-    int n_pts_in_fit_range = int(std::round(tail_fitter::default_tail_fraction() * g.mesh().size() / 2));
+    int n_pts_in_fit_range = int(std::round(tail_fitter::default_tail_fraction * g.mesh().size() / 2));
     int n_min              = g.mesh().last_index() - n_pts_in_fit_range;
     replace_by_tail(g, tail, n_min);
   }
@@ -166,5 +166,16 @@ namespace triqs::gfs {
     double tail_fraction = double(n_max - n_min) / n_max;
     g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
     return fit_tail(g_rview, known_moments);
+  }
+
+  // Fit_tail on a window with the constraint of hermitian moment matrices
+  template <template <typename, typename> typename G, typename T>
+  auto fit_hermitian_tail_on_window(G<imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
+                          int expansion_order) {
+    if (n_max == -1) n_max = g.mesh().last_index();
+    auto g_rview         = restricted_view(g, n_max);
+    double tail_fraction = double(n_max - n_min) / n_max;
+    g_rview.mesh().set_tail_fit_parameters(tail_fraction, n_tail_max, expansion_order);
+    return fit_hermitian_tail(g_rview, known_moments);
   }
 } // namespace triqs::gfs

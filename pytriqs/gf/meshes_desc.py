@@ -10,6 +10,7 @@ module.add_include("<triqs/gfs.hpp>")
 module.add_include("<cpp2py/converters/string.hpp>")
 module.add_include("<cpp2py/converters/vector.hpp>")
 module.add_include("<cpp2py/converters/function.hpp>")
+module.add_include("<cpp2py/converters/optional.hpp>")
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
 
@@ -77,7 +78,7 @@ m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
 m.add_method("""int last_index()""")
 m.add_method("""int first_index()""")
 m.add_method("""bool positive_only()""")
-m.add_method("""void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, double rcond = 1e-4)""")
+m.add_method("""void set_tail_fit_parameters(double tail_fraction, int n_tail_max = 30, std::optional<int> expansion_order = {})""")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",
                signature = "double()",

@@ -43,7 +43,7 @@ namespace triqs {
       // note: cyl_bessel_j(l,x) give the Bessel functions of the first kind J_l (x)
       // one then gets the spherical Bessel with j_l (x) = \sqrt{\pi / (2x)} J_{l+0.5} (x)
       std::complex<double> res =
-         (sqrt(2 * l + 1) / sqrt(2 * n + 1)) * exp(i_c * (n + 0.5) * pi) * pow(i_c, l) * boost::math::cyl_bessel_j(l + 0.5, (n + 0.5) * pi);
+         (sqrt(2 * l + 1) / sqrt(2 * n + 1)) * exp(i_c * (n + 0.5) * pi) * std::pow(i_c, l) * boost::math::cyl_bessel_j(l + 0.5, (n + 0.5) * pi);
       // T_{-nl} = T_{nl}^*
       return neg_n ? std::conj(res) : res;
     }
@@ -62,7 +62,7 @@ namespace triqs {
       for (int i = l + p - 1; (i > l - p + 1) && (i > 1); i--) f *= i;
       for (int i = p - 1; i > 1; i--) f /= i;
 
-      return pow(double(-1), double(p)) * 2 * sqrt(2 * l + 1) * f;
+      return std::pow(double(-1), double(p)) * 2 * sqrt(2 * l + 1) * f;
     }
 
     /*

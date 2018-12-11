@@ -4,7 +4,7 @@ from pytriqs.gf.gf_fnt import set_from_fourier, set_from_inverse_fourier
 # ==== Matrix-valued Green functions
 
 n_iw = 100
-n_tau = 2 * n_iw + 1
+n_tau = 6 * n_iw + 1
 
 gt = GfImTime(beta=20.0, n_points = n_tau, indices=[0])
 gw = GfImFreq(beta=20.0, n_points = n_iw,  indices=[0])

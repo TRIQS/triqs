@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2012 by O. Parcollet
+ * Copyright (C) 2012-2017 by O. Parcollet
+ * Copyright (C) 2018 by Simons Foundation
+ *   author : O. Parcollet, P. Dumitrescu, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -21,35 +23,12 @@
 #pragma once
 
 #include <complex>
-#include "./tools.hpp"
-#include "./qcache.hpp"
+#include "f77/cxx_interface.hpp"
+#include "tools.hpp"
+#include "qcache.hpp"
 
 namespace triqs::arrays::lapack {
-
   using namespace blas_lapack_tools;
-
-  namespace f77 { // overload
-
-    extern "C" {
-    void TRIQS_FORTRAN_MANGLING(dgesvd)(const char &, const char &, const int &, const int &, double[], const int &, double[], double[], const int &,
-                                        double[], const int &, double[], const int &, int &);
-    void TRIQS_FORTRAN_MANGLING(zgesvd)(const char &, const char &, const int &, const int &, std::complex<double>[], const int &, double[],
-                                        std::complex<double>[], const int &, std::complex<double>[], const int &, std::complex<double>[], const int &,
-                                        double[], int &);
-    }
-
-    inline void gesvd(const char &JOBU, const char &JOBVT, const int &M, const int &N, double *A, const int &LDA, double *S, double *U,
-                      const int &LDU, double *VT, const int &LDVT, double *WORK, const int &LWORK, int &INFO) {
-      TRIQS_FORTRAN_MANGLING(dgesvd)(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, INFO);
-    }
-
-    inline void gesvd(const char &JOBU, const char &JOBVT, const int &M, const int &N, std::complex<double> *A, const int &LDA, double *S,
-                      std::complex<double> *U, const int &LDU, std::complex<double> *VT, const int &LDVT, std::complex<double> *WORK,
-                      const int &LWORK, double *RWORK, int &INFO) {
-      TRIQS_FORTRAN_MANGLING(zgesvd)(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, RWORK, INFO);
-    }
-
-  } // namespace f77
 
   /**
   * Calls gesvd on a matrix or view
@@ -63,16 +42,16 @@ namespace triqs::arrays::lapack {
 
     int info;
 
-    if (!A.memory_layout_is_fortran()){
-      auto A_FL  = typename MTA::regular_type{A, FORTRAN_LAYOUT};
-      info       = gesvd(A_FL, S, U, VT);
+    if (!A.memory_layout_is_fortran()) {
+      auto A_FL = typename MTA::regular_type{A, FORTRAN_LAYOUT};
+      info      = gesvd(A_FL, S, U, VT);
       return info;
     }
-    
-    if (!U.memory_layout_is_fortran()){
-      auto U_FL  = typename MTU::regular_type{U, FORTRAN_LAYOUT};
-      info       = gesvd(A, S, U_FL, VT);
-      U()        = U_FL();
+
+    if (!U.memory_layout_is_fortran()) {
+      auto U_FL = typename MTU::regular_type{U, FORTRAN_LAYOUT};
+      info      = gesvd(A, S, U_FL, VT);
+      U()       = U_FL();
       return info;
     }
 

@@ -142,6 +142,18 @@ namespace triqs {
         return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
       }
 
+     friend class boost::serialization::access;
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+	std::cout  << "Calling serialize:"<< std::endl;
+	ar &units;
+       ar &periodization_matrix;
+       ar &dims;
+       ar &_size;
+       ar &s2;
+       ar &s1;
+	ar & bz;
+      }
+
       // -------------- HDF5  --------------------------
 
       static std::string hdf5_scheme() { return "MeshBrillouinZone"; }

@@ -34,6 +34,11 @@ namespace triqs {
         K_reciprocal_inv = K_reciprocal;
       }
 
+      brillouin_zone( brillouin_zone &&) = default;
+      brillouin_zone( brillouin_zone const&) = default;
+      brillouin_zone& operator =( brillouin_zone const&) = default;
+      brillouin_zone& operator =( brillouin_zone &&) = default;
+
       /// Construct from a bravais_lattice
       brillouin_zone(bravais_lattice const &bl_);
 
@@ -78,7 +83,11 @@ namespace triqs {
 
       //  BOOST Serialization
       friend class boost::serialization::access;
-      template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &lattice_ &K_reciprocal &K_reciprocal_inv; }
+      template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+	ar &lattice_ ;
+	ar &K_reciprocal;
+       ar &K_reciprocal_inv;
+      }
 
       private:
       bravais_lattice lattice_;

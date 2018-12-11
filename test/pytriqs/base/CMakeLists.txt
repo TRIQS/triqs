@@ -17,6 +17,7 @@ add_python_test(hdf5_io)
 add_python_test(gf_imfreq)
 add_python_test(gf_block)
 add_python_test(gf_init)
+add_python_test(gf_density)
 add_python_test(gf_base_op)
 add_python_test(gf_fourier)
 add_python_test(gf_slicing)
@@ -39,6 +40,11 @@ add_python_test(hdf5_meshBZ)
 
 add_python_test(issue460)
 add_python_test(issue437)
+add_python_test(issue649)
+add_python_test(bug_tight_binding)
+
+# Issues with the high frequency moments
+add_python_test(tail_issues)
 
 # Add evaluator for g
 add_python_test(gf_eval)

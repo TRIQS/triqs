@@ -37,9 +37,9 @@ TEST(Gf, PartialEval) {
   EXPECT_CLOSE(G_w_wn.on_mesh(8, 3), G_w_wn_sl0_a[3]);
   EXPECT_CLOSE(G_w_wn.on_mesh(8, 3), G_w_wn_sl0_b[8]);
 
-  rw_h5(G_t_tau);
-  rw_h5(G_w_wn);
-  rw_h5(G_w_tau);
+  rw_h5(G_t_tau, "G_t_tau");
+  rw_h5(G_w_wn, "G_w_wn");
+  rw_h5(G_w_tau, "G_w_tau");
 }
 
 MAKE_MAIN;

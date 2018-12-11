@@ -3,6 +3,8 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2016, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ * Copyright (C) 2018, The Simons Foundation
+ * Author: H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -48,6 +50,13 @@ namespace triqs {
       compute_vacuum();
     }
 
+    ATOM_DIAG_CONSTRUCTOR((many_body_op_t const &h, fundamental_operator_set const &fops, int n_min, int n_max))
+       : h_atomic(h), fops(fops), full_hs(fops), vacuum(full_hs.size()) {
+      atom_diag_worker<Complex>{this, n_min, n_max}.autopartition();
+      fill_first_eigenstate_of_subspace();
+      compute_vacuum();
+    }
+    
     // -----------------------------------------------------------------
 
     ATOM_DIAG_METHOD(void, fill_first_eigenstate_of_subspace()) {
@@ -77,6 +86,57 @@ namespace triqs {
       std::vector<std::vector<double>> R;
       for (auto const &es : eigensystems) R.emplace_back(es.eigenvalues.begin(), es.eigenvalues.end());
       return R;
+    }
+
+    // -----------------------------------------------------------------
+    // Given a monomial (ccccc), and a subspace B, returns
+    //   - the subspace connected by ccccc from B
+    //   - the corresponding matrix (not necessarily square)
+
+    template <bool Complex>
+    auto atom_diag<Complex>::get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const
+      -> std::pair<int, matrix_t> {
+
+      auto m = triqs::arrays::make_unit_matrix<scalar_t>(get_subspace_dim(B));
+
+      auto const &fops = get_fops();
+      for (int i = op_vec.size() - 1; i >= 0; --i) {
+        int ind = fops[op_vec[i].indices];
+        int Bp  = (op_vec[i].dagger ? cdag_connection(ind, B) : c_connection(ind, B));
+        if (Bp == -1) return {-1, std::move(m)};
+        m = (op_vec[i].dagger ? cdag_matrix(ind, B) : c_matrix(ind, B)) * m;
+        B = Bp;
+      }
+      return {B, std::move(m)};
+    }
+
+    // -----------------------------------------------------------------
+
+    ATOM_DIAG_METHOD(op_block_mat_t, get_op_mat(many_body_op_t const &op) const) {
+      op_block_mat_t op_mat(n_subspaces());
+
+      for(int b : range(n_subspaces()) ) {
+	for( auto const &term : op ) {
+	  auto [bb, mat] = get_matrix_element_of_monomial(term.monomial, b);
+	  if(bb == -1) continue;
+	  
+	  if( op_mat.connection(b) == -1 ) {
+	    op_mat.connection(b) = bb;
+	    op_mat.block_mat[b] = term.coef * mat;
+	  } else if ( op_mat.connection(b) != bb ) {
+	    TRIQS_RUNTIME_ERROR << "ERROR: <atom_diag::get_op_mat> Monomials in operator does not connect the same subspaces.";
+	  } else {
+	    op_mat.block_mat[b] += term.coef * mat;
+	  }
+	}
+	// Transform to Hamiltonian eigen basis
+	if( op_mat.connection(b) != -1 ) {
+	  auto U_left = dagger(eigensystems[op_mat.connection(b)].unitary_matrix);
+	  auto U_right = eigensystems[b].unitary_matrix;
+	  op_mat.block_mat[b] = U_left * op_mat.block_mat[b] * U_right;
+	}
+      }
+      return std::move(op_mat);
     }
 
 #undef ATOM_DIAG_METHOD

@@ -92,8 +92,6 @@ namespace triqs::gfs {
     m123(0, _) = -(gt[0] - sign * gt[n_tau - 1]);                                        // 1st order moment
     m123(1, _) = g_vec_left(0, _) - sign * g_vec_right(0, _);                            // 2nd order moment
     m123(2, _) = -(g_vec_left(1, _) + sign * g_vec_right(1, _)) * 2 / gt.mesh().delta(); // 3rd order moment
-    //TRIQS_PRINT(m23(0,_));
-    //TRIQS_PRINT(m23(1,_));
     return m123;
   }
 
@@ -103,9 +101,18 @@ namespace triqs::gfs {
 
     arrays::array_const_view<dcomplex, 2> mom_123;
 
-    if (known_moments.is_empty())
+    if (known_moments.is_empty()) {
+      // A simple check on whether or not we are dealing with noisy data
+      auto dat   = gt.data();
+      int n_tau  = gt.mesh().size();
+      auto der_1 = max_element(abs(dat(1, range()) - dat(0, range())) + abs(dat(n_tau - 2, range()) - dat(n_tau - 1, range()))) / gt.mesh().delta();
+      auto der_2 =
+         0.5 * max_element(abs(dat(2, range()) - dat(0, range())) + abs(dat(n_tau - 3, range()) - dat(n_tau - 1, range()))) / gt.mesh().delta();
+      if (der_1 < 0.95 * der_2 or der_1 > 1.05 * der_2)
+        TRIQS_RUNTIME_ERROR << "ERROR: You seem to be Fourier Transforming an imaginary time Green function with noise (rapidly varying first derivative). Please specify the high-frequency moments as they cannot be deduced.";
+
       mom_123.rebind(fit_derivatives(gt));
-    else {
+    } else {
       TRIQS_ASSERT2(known_moments.shape()[0] >= 4, " Direct Matsubara Fourier transform requires known moments up to order 3.")
       double _abs_tail0 = max_element(abs(known_moments(0, range())));
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
@@ -118,6 +125,10 @@ namespace triqs::gfs {
     if (L < 2 * (iw_mesh.last_index() + 1))
       TRIQS_RUNTIME_ERROR << "Fourier: The time mesh mush be at least twice as long as the number of positive frequencies :\n gt.mesh().size() =  "
                           << gt.mesh().size() << " gw.mesh().last_index()" << iw_mesh.last_index();
+
+    if (L < 6 * (iw_mesh.last_index() + 1))
+      std::cerr << "[Direct Fourier] WARNING: The imaginary time mesh is less than six times as long as the number of positive frequencies.\n"
+                << "This can lead to substantial numerical inaccuracies at the boundary of the frequency mesh.\n";
 
     long n_others = second_dim(gt.data());
 
@@ -189,10 +200,12 @@ namespace triqs::gfs {
 
     if (known_moments.shape()[0] < 4) {
       auto [tail, error] = fit_tail(gw, known_moments);
-      TRIQS_ASSERT2((error < 1e-3), "ERROR: High frequency moments have an error greater than 1e-3.\n  Error = " + std::to_string(error) + "\n Please make sure you treat the constant offset analytically!");
-      if (error > 1e-6)
-        std::cerr << "WARNING: High frequency moments have an error greater than 1e-6.\n Error = " << error
-                  << "\n Please make sure you treat the constant offset analytically!";
+      TRIQS_ASSERT2((error < 1e-2),
+                    "ERROR: High frequency moments have an error greater than 1e-2.\n  Error = " + std::to_string(error)
+                       + "\n Please make sure you treat the constant offset analytically!\n");
+      if (error > 1e-4)
+        std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
+                  << "\n Please make sure you treat the constant offset analytically!\n";
       TRIQS_ASSERT2((first_dim(tail) > 3), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
       mom_123.rebind(tail(range(1, 4), range()));
     } else

@@ -3,6 +3,8 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2016, P. Seth, I. Krivenko, M. Ferrero and O. Parcollet
+ * Copyright (C) 2018, The Simons Foundation
+ * Author: H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -51,12 +53,12 @@ namespace triqs {
 
     /// Lightweight exact diagonalization solver
     /**
- * This class is provided as a simple tool to diagonalize Hamiltonians of
- * finite fermionic systems of a moderate size.
- *
- * @tparam Complex Allow the Hamiltonian to be complex.
- * @include triqs/atom_diag/atom_diag.hpp
- */
+     * This class is provided as a simple tool to diagonalize Hamiltonians of
+     * finite fermionic systems of a moderate size.
+     *
+     * @tparam Complex Allow the Hamiltonian to be complex.
+     * @include triqs/atom_diag/atom_diag.hpp
+     */
     template <bool Complex> class atom_diag {
 
       friend struct atom_diag_worker<Complex>;
@@ -97,33 +99,56 @@ namespace triqs {
         }
       };
 
+      /// Block matrix representation for operators
+      struct op_block_mat_t {
+	op_block_mat_t(int n_blocks) : connection(n_blocks), block_mat(n_blocks) { connection(range()) = -1; };
+	array<long, 1> connection;
+	std::vector<matrix_t> block_mat;
+	int n_blocks() const { return block_mat.size(); }
+	friend std::ostream &operator<<(std::ostream &out, op_block_mat_t const & op_mat) {
+	  out << "Operator block matrix:\n"
+	      << " n_blocks = " << op_mat.n_blocks() << "\n";
+	  for( int bidx : range(op_mat.n_blocks()) ) {
+	    auto &m = op_mat.block_mat[bidx];
+	    auto b2 = op_mat.connection(bidx);
+	    out << "Block: "
+		<< "blocks (" << bidx << ", " << b2 << ") "
+		<< "size (" << first_dim(m) << ", " << second_dim(m) << ") "
+	        << op_mat.block_mat[bidx] << "\n";
+	  }
+	  return out;
+	};
+      };
+
       /// Construct in an uninitialized state.
       TRIQS_CPP2PY_IGNORE atom_diag() = default;
 
       /// Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
       /**
-  * This constructor calls the auto-partition procedure, and the QR algorithm
-  * to diagonalize the blocks. The invariant subspaces of the Hamiltonian are
-  * chosen such that all creation and annihilation operators from the provided
-  * fundamental operator set map one subspace to one subspace.
-  *
-  * @param h Hamiltonian operator to be diagonalized.
-  * @param fops Fundamental operator set; Must at least contain all fundamental operators met in `h`.
-  * @note See :ref:`space_partition` for more details on the auto-partition scheme.
-  */
+       * This constructor calls the auto-partition procedure, and the QR algorithm
+       * to diagonalize the blocks. The invariant subspaces of the Hamiltonian are
+       * chosen such that all creation and annihilation operators from the provided
+       * fundamental operator set map one subspace to one subspace.
+       *
+       * @param h Hamiltonian operator to be diagonalized.
+       * @param fops Fundamental operator set; Must at least contain all fundamental operators met in `h`.
+       * @note See :ref:`space_partition` for more details on the auto-partition scheme.
+       */
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops);
 
+      atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, int n_min, int n_max);
+      
       /// Reduce a given Hamiltonian to a block-diagonal form and diagonalize it
       /**
-  * This constructor uses quantum number operators to partition the Hilbert space into
-  * invariant subspaces, and the QR algorithm to diagonalize the blocks of the Hamiltonian.
-  * The quantum numbers must be chosen such that all creation and annihilation operators from
-  * the provided fundamental operator set map one subspace to one subspace.
-  *
-  * @param h Hamiltonian operator to be diagonalized.
-  * @param fops Fundamental operator set; Must at least contain all fundamental operators met in `h`.
-  * @param qn_vector Vector of quantum number operators.
-  */
+       * This constructor uses quantum number operators to partition the Hilbert space into
+       * invariant subspaces, and the QR algorithm to diagonalize the blocks of the Hamiltonian.
+       * The quantum numbers must be chosen such that all creation and annihilation operators from
+       * the provided fundamental operator set map one subspace to one subspace.
+       *
+       * @param h Hamiltonian operator to be diagonalized.
+       * @param fops Fundamental operator set; Must at least contain all fundamental operators met in `h`.
+       * @param qn_vector Vector of quantum number operators.
+       */
       atom_diag(many_body_op_t const &h, fundamental_operator_set const &fops, std::vector<many_body_op_t> const &qn_vector);
 
       /// The Hamiltonian used at construction
@@ -143,8 +168,8 @@ namespace triqs {
 
       /// The dimension of a subspace
       /**
-  * @param sp_index Index of the invariant subspace.
-  */
+       * @param sp_index Index of the invariant subspace.
+       */
       int get_subspace_dim(int sp_index) const { return eigensystems[sp_index].eigenvalues.size(); }
 
       /// The list of Fock states for each subspace
@@ -163,15 +188,15 @@ namespace triqs {
 
       /// Returns the state index in the full Hilbert space given a subspace index and an inner index
       /**
-  * @param sp_index Index of the invariant subspace.
-  * @param i State index within the subspace.
-  */
+       * @param sp_index Index of the invariant subspace.
+       * @param i State index within the subspace.
+       */
       int flatten_subspace_index(int sp_index, int i) const { return first_eigenstate_of_subspace[sp_index] + i; }
 
       /// Return the range of indices of subspace sp_index
       /**
-  * @param sp_index Index of the invariant subspace.
-  */
+       * @param sp_index Index of the invariant subspace.
+       */
       TRIQS_CPP2PY_IGNORE range index_range_of_subspace(int sp_index) const {
         return range{first_eigenstate_of_subspace[sp_index], first_eigenstate_of_subspace[sp_index] + get_subspace_dim(sp_index)};
       }
@@ -181,21 +206,21 @@ namespace triqs {
 
       /// Get the i-th eigenvalue of subspace sp_index
       /**
-  * @param sp_index Index of the invariant subspace.
-  * @param i State index within the subspace.
-  */
+       * @param sp_index Index of the invariant subspace.
+       * @param i State index within the subspace.
+       */
       double get_eigenvalue(int sp_index, int i) const { return eigensystems[sp_index].eigenvalues[i]; }
 
       /// A vector of all the energies, grouped by subspace
       /**
-  * @return result[sp_index][i] is the energy.
-  */
+       * @return result[sp_index][i] is the energy.
+       */
       std::vector<std::vector<double>> get_energies() const;
 
       /// A vector of all the quantum numbers, grouped by subspace
       /**
-  * @return result[sp_index][qn_index] is the qunatum number value.
-  */
+       * @return result[sp_index][qn_index] is the qunatum number value.
+       */
       std::vector<std::vector<quantum_number_t>> const &get_quantum_numbers() const { return quantum_numbers; }
 
       /// Ground state energy (i.e. min of all subspaces)
@@ -206,42 +231,53 @@ namespace triqs {
 
       /// Returns the vacuum state as a vector in the full Hilbert space
       /**
-  * This vector is written in the eigenbasis of the Hamiltonian.
- */
+       * This vector is written in the eigenbasis of the Hamiltonian.
+       */
       full_hilbert_space_state_t const &get_vacuum_state() const { return vacuum; }
 
       /// Subspace-to-subspace connections for fundamental operator :math:`C`
       /**
-  * @param op_linear_index The linear index (i.e. number) of the annihilation operator, as defined by the fundamental operator set.
-  * @param sp_index The index of the initial subspace.
-  * @return The index of the final subspace.
-  */
+       * @param op_linear_index The linear index (i.e. number) of the annihilation operator, as defined by the fundamental operator set.
+       * @param sp_index The index of the initial subspace.
+       * @return The index of the final subspace.
+       */
       long c_connection(int op_linear_index, int sp_index) const { return annihilation_connection(op_linear_index, sp_index); }
 
       /// Subspace-to-subspace connections for fundamental operator :math:`C^\dagger`
       /** *
-  * @param op_linear_index The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
-  * @param sp_index The index of the initial subspace.
-  * @return The index of the final subspace.
-  */
+       * @param op_linear_index The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
+       * @param sp_index The index of the initial subspace.
+       * @return The index of the final subspace.
+       */
       long cdag_connection(int op_linear_index, int sp_index) const { return creation_connection(op_linear_index, sp_index); }
 
       /// Matrix block for fundamental operator :math:`C`
       /**
-  * @param op_linear_index The linear index (i.e. number) of the annihilation operator, as defined by the fundamental operator set.
-  * @param sp_index The index of the initial subspace.
-  * @return The index of the final subspace.
-  */
+       * @param op_linear_index The linear index (i.e. number) of the annihilation operator, as defined by the fundamental operator set.
+       * @param sp_index The index of the initial subspace.
+       * @return The index of the final subspace.
+       */
       matrix_t const &c_matrix(int op_linear_index, int sp_index) const { return c_matrices[op_linear_index][sp_index]; }
 
       /// Matrix block for fundamental operator :math:`C^\dagger`
       /**
-  *
-  * @param op_linear_index The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
-  * @param sp_index The index of the initial subspace.
-  * @return The index of the final subspace.
-  */
+       *
+       * @param op_linear_index The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
+       * @param sp_index The index of the initial subspace.
+       * @return The index of the final subspace.
+       */
       matrix_t const &cdag_matrix(int op_linear_index, int sp_index) const { return cdag_matrices[op_linear_index][sp_index]; }
+
+
+      /// Get block matrix representation for general operator
+      /**
+       * @param op Many body operator
+       * @return The block matrix representation of the operator (in the Hamiltonian eigen basis)
+       *
+       * Throws, in case the provided operator does not respect the block symmetries used in the diagonalization.
+       */
+      op_block_mat_t get_op_mat(many_body_op_t const &op) const;
+      
 
       private:
       /// ------------------  DATA  -----------------
@@ -264,6 +300,7 @@ namespace triqs {
       std::vector<int> first_eigenstate_of_subspace; // Index of the first eigenstate of each subspace
       void fill_first_eigenstate_of_subspace();
       void compute_vacuum();
+      std::pair<int, matrix_t> get_matrix_element_of_monomial(operators::monomial_t const &op_vec, int B) const;
 
       /* Friend declarations of a template class are a bit ugly */
       friend std::ostream &operator<<<Complex>(std::ostream &os, atom_diag const &ss);

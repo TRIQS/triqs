@@ -39,7 +39,7 @@ TEST(Gf, r_k) {
 
   EXPECT_ARRAY_NEAR(gr.data(), gr_test.data());
 
-  rw_h5(gk);
-  rw_h5(gr);
+  rw_h5(gk, "gk");
+  rw_h5(gr, "gr");
 }
 MAKE_MAIN;
