@@ -183,7 +183,7 @@ def make_zero_tail(g, n_moments=10):
         n_moments = max(1, n_moments)
         return np.zeros((n_moments,) + g.target_shape, dtype = g.data.dtype)
     elif isinstance(g, BlockGf):
-        return map_block(lambda g_bl: make_zero_tail(g_bl, max_order), g)
+        return map_block(lambda g_bl: make_zero_tail(g_bl, n_moments), g)
     else:
         raise RuntimeError, "Error: make_zero_tail has to be called on a Frequency Green function object"
 
