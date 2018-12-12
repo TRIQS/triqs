@@ -142,6 +142,15 @@ TEST(Itertools, Product_Range) {
   EXPECT_EQ(res, 1000);
 }
 
+TEST(Itertools, Product_Range_Shape) {
+
+  array<double, 3> arr(5, 5, 5);
+  arr() = 1.;
+  long res = 0;
+  for (auto [i, j, k] : product_range(arr.shape())) res += arr(i,j,k);
+  EXPECT_EQ(res, 5*5*5);
+}
+
 #endif
 
 MAKE_MAIN;
