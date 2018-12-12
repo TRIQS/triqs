@@ -1,6 +1,43 @@
 Version 2.1
 -----------
 
+* [tail] Fix in BlockGf functionality of make_zero_tail
+* [doc] Add gcc-8 warning to requirement list
+* [mc_generic] collect_results: Inform user that we are waiting for other mpi-threads
+* [doc] Make sure that triqs.bib file is properly installed
+* Merge branch 'unstable'
+* Generalize the density(G, tail) function to block Gfs
+* Introduce fit_hermitian_tail_on_window function
+* Minor formatting adjustment in fourier warning messages
+* [atom_diag] code rev from op
+* [atom_diag] block matrix repr for operators
+* [gf] Introduce g.target_space() to generate an idx range + test
+* Add range generating function product_range(i,j,k,..) + test
+* [pytriqs] Add fit_legendre(gt,order) function + test
+* Add python function make_zero_tail in accordance with cpp implementation
+* Adjustments in make_adjoint_mesh, Checks for noise in direct Mats.Fourier
+* Fix test for last change of cpp2py
+* Revert "Add key-word argument for center of SemiCircular"
+* Add key-word argument for center of SemiCircular
+* [pytriqs] More verbose error message in gf shape mismatch
+* Add key-word argument for center of SemiCircular
+* [atomdiag] f_shell test update
+* [atom_diag] Krivenko patch for empty subspaces
+* [atom_diag] expose n_min, n_max and f_shell test
+* Merge pull request #534 from HugoStrand/dev_gfrefreq_density
+* [variant] Add TRIQS_USE_STD_VARIANT
+* [jenkins] update ubuntu build to bionic; CTEST_OUTPUT_ON_FAILURE=1
+* [cmake] Do not install FindTest.cmake as it is a triqs-internal Module
+* Update density.cpp
+* [cmake] run_test.cmake should live with its Module FindTriqsTest.cmake
+* Generalizing legendre to arbitrary target types
+* Extend coverage of tail_issues test and add additional warning to direct Fourier
+* [cmake] FindNFFT.cmake and FindTest.cmake should live in share/cmake/Modules
+* Correction to 4c9541f9, update cpp2py
+* Adjust slightly imag accuracy check in tail_issues test
+* Adjust hilbert-transform to use G.target_shape over G.N1
+* [doc] Minor reformatting of application website, add omegamaxent interface
+* [tail] Add lss variant that enforces hermiticity, add fit_hermitian_tail
 * [cmake] Adjust cmake-related install dirs to more standard directories
 * [cmake] Replace Alps Find Lapack by System FindLAPACK.cmake
 * Parse commit messages into changelog. TODO: Add formating/grouping
