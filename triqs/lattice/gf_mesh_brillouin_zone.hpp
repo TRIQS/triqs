@@ -167,13 +167,13 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) {
         h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
         h5::group gr = fg.open_group(subgroup_name);
-        try { // Care for Backward Compatibility
-          h5_read(gr, "bz", m.bz);
-	  return;
-	} catch (triqs::runtime_error const & re){}
-        try {
-          h5_read(gr, "brillouin_zone", m.bz);
-	} catch (triqs::runtime_error const & re){}
+       if (gr.has_key("bz")) {
+         h5_read(gr, "bz", m.bz);
+       } else if (gr.has_key("brillouin_zone")) {
+         h5_read(gr, "brillouin_zone", m.bz);
+       } else {
+         std::cout << "WARNING: Reading old MeshBrillouinZone without BrillouinZone\n";
+       }
       }
     };
   } // namespace gfs
