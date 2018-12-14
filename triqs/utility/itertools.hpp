@@ -21,6 +21,7 @@
  ******************************************************************************/
 #pragma once
 #include "./first_include.hpp"
+#include "./../arrays.hpp"
 #include <tuple>
 #include <vector>
 #include <iterator>
