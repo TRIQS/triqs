@@ -130,28 +130,27 @@ namespace triqs {
 
       // ------------------- Comparison -------------------
 
-      bool operator==(gf_mesh<brillouin_zone> const &M) const {
-	return bz == M.domain() && cluster_mesh::operator==(M);
-      }
+      bool operator==(gf_mesh<brillouin_zone> const &M) const { return bz == M.domain() && cluster_mesh::operator==(M); }
 
       bool operator!=(gf_mesh<brillouin_zone> const &M) const { return !(operator==(M)); }
 
       // -------------------- print -------------------
 
       friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-        return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
+        return sout << "Brillouin Zone Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units
+                    << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
       }
 
-     friend class boost::serialization::access;
+      friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-	std::cout  << "Calling serialize:"<< std::endl;
-	ar &units;
-       ar &periodization_matrix;
-       ar &dims;
-       ar &_size;
-       ar &s2;
-       ar &s1;
-	ar & bz;
+        std::cout << "Calling serialize:" << std::endl;
+        ar &units;
+        ar &periodization_matrix;
+        ar &dims;
+        ar &_size;
+        ar &s2;
+        ar &s1;
+        ar &bz;
       }
 
       // -------------- HDF5  --------------------------
@@ -167,13 +166,13 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) {
         h5_read_impl(fg, subgroup_name, m, "MeshBrillouinZone");
         h5::group gr = fg.open_group(subgroup_name);
-       if (gr.has_key("bz")) {
-         h5_read(gr, "bz", m.bz);
-       } else if (gr.has_key("brillouin_zone")) {
-         h5_read(gr, "brillouin_zone", m.bz);
-       } else {
-         std::cout << "WARNING: Reading old MeshBrillouinZone without BrillouinZone\n";
-       }
+        if (gr.has_key("bz")) {
+          h5_read(gr, "bz", m.bz);
+        } else if (gr.has_key("brillouin_zone")) {
+          h5_read(gr, "brillouin_zone", m.bz);
+        } else {
+          std::cout << "WARNING: Reading old MeshBrillouinZone without BrillouinZone\n";
+        }
       }
     };
   } // namespace gfs
