@@ -171,6 +171,7 @@ namespace triqs {
    */
       double attempt() {
         assert(Proba_Moves_Acc_Sum.size() > 0);
+        if (move_vec.size() == 0) TRIQS_RUNTIME_ERROR << "ERROR in attempting Monte-Carlo Move: No move was registered!";
         // Choice of move with its probability
         double proba = (*RNG)();
         assert(proba >= 0);
