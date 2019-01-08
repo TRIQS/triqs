@@ -33,29 +33,32 @@ class MeshPoint :
         #print "Args", linear_index, value
         self.linear_index, self.value = linear_index, value
 
+    def _get_val(self, x):
+        return (x.value if hasattr(x, 'value') else x)
+
     def __add__(self, x):
-        return self.value + x
+        return self.value + self._get_val(x)
 
     def __radd__(self, x):
-        return x + self.value
+        return self._get_val(x) + self.value
 
     def __sub__(self, x):
-        return self.value - x
+        return self.value - self._get_val(x)
 
     def __rsub__(self, x):
-        return x - self.value
+        return self._get_val(x) - self.value
 
     def __mul__(self, x):
-        return self.value * x
+        return self.value * self._get_val(x)
 
     def __rmul__(self, x):
-        return x * self.value
+        return self._get_val(x) * self.value
 
     def __div__(self, x):
-        return self.value / x
+        return self.value / self._get_val(x)
 
     def __rdiv__(self, x):
-        return x / self.value
+        return self._get_val(x) / self.value
 
     def __call__(self, *args, **kw):
         return self.value(*args, **kw)
