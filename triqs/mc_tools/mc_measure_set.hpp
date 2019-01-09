@@ -3,6 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2011-2013 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2018- The Simons Foundation, Author: H. UR Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -38,10 +39,11 @@ namespace triqs {
       std::function<void(h5::group, std::string const &)> h5_r, h5_w;
 
       uint64_t count_;
+      bool enable_timer;
       utility::timer Timer;
 
       public:
-      template <typename MeasureType> measure(bool, MeasureType &&m) {
+      template <typename MeasureType> measure(bool, MeasureType &&m, bool enable_timer) : enable_timer(enable_timer) {
         static_assert(std::is_move_constructible<MeasureType>::value, "This measure is not MoveConstructible");
         static_assert(has_accumulate<MCSignType, MeasureType>::value, " This measure has no accumulate method !");
         static_assert(has_collect_result<MeasureType>::value, " This measure has no collect_results method !");
@@ -64,14 +66,14 @@ namespace triqs {
       void accumulate(MCSignType signe) {
         assert(impl_);
         count_++;
-        Timer.start();
+        if(enable_timer) Timer.start();
         accumulate_(signe);
-        Timer.stop();
+        if(enable_timer) Timer.stop();
       }
       void collect_results(mpi::communicator const &c) {
-        Timer.start();
+        if(enable_timer) Timer.start();
         collect_results_(c);
-        Timer.stop();
+        if(enable_timer) Timer.stop();
       }
 
       uint64_t count() const { return count_; }
@@ -105,11 +107,11 @@ namespace triqs {
       /**
     * Register the Measure M with a name
     */
-      template <typename MeasureType> measure_ptr_t insert(MeasureType &&M, std::string const &name) {
+      template <typename MeasureType> measure_ptr_t insert(MeasureType &&M, std::string const &name, bool enable_timer) {
         if (has(name)) TRIQS_RUNTIME_ERROR << "measure_set : insert : measure '" << name << "' already inserted";
         // workaround for all gcc
         // m_map.insert(std::make_pair(name, measure_type(true, std::forward<MeasureType>(M))));
-        auto iter_b = m_map.emplace(name, measure_type(true, std::forward<MeasureType>(M)));
+        auto iter_b = m_map.emplace(name, measure_type(true, std::forward<MeasureType>(M), enable_timer));
         return iter_b.first;
       }
 

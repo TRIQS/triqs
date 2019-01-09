@@ -119,9 +119,9 @@ namespace triqs {
    * @param name                     Name of the measure
    *
    */
-      template <typename MeasureType> typename measure_set<MCSignType>::measure_ptr_t add_measure(MeasureType &&m, std::string name) {
+      template <typename MeasureType> typename measure_set<MCSignType>::measure_ptr_t add_measure(MeasureType &&m, std::string name, bool enable_timer = true) {
         static_assert(!std::is_pointer<MeasureType>::value, "add_measure in mc_generic takes ONLY values !");
-        return AllMeasures.insert(std::forward<MeasureType>(m), name);
+        return AllMeasures.insert(std::forward<MeasureType>(m), name, enable_timer);
       }
 
       /**
