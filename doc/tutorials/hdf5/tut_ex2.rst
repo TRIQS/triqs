@@ -47,12 +47,6 @@ This time, the structure of the HDF file is ::
  /g1/Mesh/array           Dataset {1000}
  /g1/Name                 Dataset {SCALAR}
  /g1/Note                 Dataset {SCALAR}
- /g1/Tail                 Group
- /g1/Tail/Indices         Dataset {2}
- /g1/Tail/OrderMax        Dataset {SCALAR}
- /g1/Tail/OrderMaxMAX     Dataset {SCALAR}
- /g1/Tail/OrderMinMIN     Dataset {SCALAR}
- /g1/Tail/array           Dataset {13, 2, 2}
  /mu                      Dataset {SCALAR}
  
 
@@ -60,6 +54,6 @@ This time, the structure of the HDF file is ::
  
  The Green function implements (as detailed in :ref:`HDF_Protocol`)
  
- * a method :func:`__reduce_to_dict__` that  reduces to the Green function to a dictionary containing a mesh (Mesh), a tail (Tail), the data (Data), the indices (Indices) and so on. 
+ * a method :func:`__reduce_to_dict__` that  reduces to the Green function to a dictionary containing a mesh (Mesh), the data (Data), the indices (Indices) and so on.
  * a classmethod :func:`__factory_from_dict__` that reconstructs  the Green function from this dictionary.
 

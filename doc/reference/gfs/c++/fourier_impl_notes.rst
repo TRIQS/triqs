@@ -94,17 +94,16 @@ The inverse TF formulas are in this case
     .. math:: G(t_k) = \tilde f_k e^{-i \omega_{min}(\tau_k-\tau_{min})},
 
 
-Effect of a TF on the tail
-------------------------------------------
+Usage of the tail in the TF
+---------------------------
 
-The tail is unchanged during a TF, but its value is used to limit the errors. 
-
-The components 1 and 2 of the tail (:math:`t_1` and :math:`t_2`) are used to improve the computation of the GF in the following way:
-in the large :math:`\omega` limit, 
+The first and second order high-frequency moments (:math:`t_1` and :math:`t_2`) are used to improve the computation of the GF in the following way:
+In the large :math:`\omega` limit,
     .. math:: G(\omega)\simeq \frac{t_1}{\omega}+\frac{t_2}{\omega^2}\simeq \frac{a_1}{\omega+i}+\frac{a_2}{\omega-i}
 with :math:`a_1=\frac{t_1+it_2}{2}` and :math:`a_2=\frac{t_1-it_2}{2}`. 
 
 As these large w terms are badly taken into account if we naively Fourier transform the function described by its values on the mesh in w, we substract them, do the Fourier transform and add their Fourier transform to the result. 
+The required high-frequency moments are determined from the data through a least-square fitting procedure unless provided.
 
 We use the following Fourier tranforms:
 

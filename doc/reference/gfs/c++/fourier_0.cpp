@@ -1,17 +1,29 @@
 #include <triqs/gfs.hpp>
 using namespace triqs::gfs;
 int main() {
-  double beta = 1, a = 1;
-  int N   = 10000;
-  auto gw = gf<imfreq>{{beta, Fermion, N / 2}, {1, 1}};
-  auto gt = gf<imtime>{{beta, Fermion, N + 1}, {1, 1}};
 
+  // Set the parameters
+  double beta = 1, a = 1;
+  int n_iw   = 1000;
+  int n_tau  = 6 * n_iw + 1;
+
+  // Construct the meshes
+  auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, n_iw};
+  auto tau_mesh = make_adjoint_mesh(iw_mesh);
+
+  // Construct the Green functions
+  auto gw = gf<imfreq, scalar_valued>{iw_mesh, {}};
+  auto gt = gf<imtime, scalar_valued>{tau_mesh, {}};
+
+  // Initialization
   triqs::clef::placeholder<0> om_;
   gw(om_) << 1 / (om_ - a);
 
-  // fills a full *view* of gt with the contents of the FFT
-  gt() = fourier(gw);
+  // Fill gt with the fourier transform of gw and provide the first two
+  // orders of the high-frequency expansion of gw
+  auto known_moments = array<dcomplex, 1>{0.0, 1.0};
+  gt() = fourier(gw, known_moments);
 
-  // make a new fresh gf from the FFT of gt with a mesh of size N/2
-  auto gw2 = make_gf_from_fourier(gt, N / 2);
+  // Construct a new Green function gw2 from the Fourier transform of gt
+  auto gw2 = make_gf_from_fourier(gt, iw_mesh);
 }

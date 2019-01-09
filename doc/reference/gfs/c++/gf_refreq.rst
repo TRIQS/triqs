@@ -30,12 +30,6 @@ Domain & mesh
 
 
 
-Singularity
--------------
-
-The singularity is a high frequency expansion,  :ref:`gf_tail`.
-
-
 Evaluation method
 ---------------------
 
@@ -48,8 +42,7 @@ Evaluation method
 
 * When the point is outside of the mesh, the evaluation of the gf returns: 
 
-  * the evaluation of the high frequency tail if no_tail is not set.
-  * 0 otherwise
+  * the evaluation of the high frequency tail
 
 
 Data storage

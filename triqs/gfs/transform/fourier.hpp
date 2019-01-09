@@ -80,7 +80,7 @@ namespace triqs::gfs {
   template <typename V> using gf_vec_cvt = gf_const_view<V, tensor_valued<1>>;
 
   // matsubara
-  gf_vec_t<imfreq> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf_vec_cvt<imtime> gt, array_const_view<dcomplex, 2> mom_23 = {});
+  gf_vec_t<imfreq> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf_vec_cvt<imtime> gt, array_const_view<dcomplex, 2> mom_123 = {});
   gf_vec_t<imtime> _fourier_impl(gf_mesh<imtime> const &tau_mesh, gf_vec_cvt<imfreq> gw, array_const_view<dcomplex, 2> mom_123 = {});
 
   // real
@@ -100,7 +100,7 @@ namespace triqs::gfs {
    *
    *-----------------------------------------------------------------------------------------------------*/
 
-  // this function just regroups the function, and calls the vector_valued gf core implementation
+  // this function just regroups the green function data, and calls the vector_valued gf core implementation
   template <int N, typename V1, typename V2, typename T1, typename T2, typename... OptArgs>
   void _fourier(gf_const_view<V1, T1> gin, gf_view<V2, T2> gout, OptArgs const &... opt_args) {
 

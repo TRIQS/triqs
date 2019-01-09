@@ -34,12 +34,6 @@ The Matsubara frequencies are :math:`\omega_n=\frac{(2n+1)\pi}{\beta}` for fermi
 The mesh is :ref:`gf_mesh_imfreq`. 
 
 
-Singularity
--------------
-
-The singularity is a high frequency expansion,  :ref:`gf_tail`.
-
-
 Evaluation method
 ---------------------
 
@@ -50,10 +44,9 @@ Evaluation method
   * If Target==scalar_valued: a complex 
   * If Target==matrix_valued: an object modeling ImmutableMatrix concept.
 
-* When the point is outside of the mesh, the evaluation of the gf returns: 
-
-  * the evaluation of the high frequency tail if no_tail is not set.
-  * 0 otherwise
+* When the point is outside of the mesh, the high-frequency moments of the
+  Green function are automatically determined using a least-square fitting procedure.
+  They are then used to calculate the value of the Green function at the point.
 
 
 Data storage
