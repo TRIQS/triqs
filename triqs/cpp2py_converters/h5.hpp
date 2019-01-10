@@ -30,7 +30,7 @@ namespace cpp2py {
   }
 
     static bool is_convertible(PyObject *ob, bool raise_exception) {
-      static pyref group_type = pyref::module("h5py").attr("highlevel").attr("Group");
+      static pyref group_type = pyref::module("h5py").attr("Group");
 
       if (group_type.is_null()) { // really needed ? or attr does it ? use lambda ?
         if (PyErr_Occurred()) CPP2PY_RUNTIME_ERROR << "Cannot load h5py module and find the group in it";
