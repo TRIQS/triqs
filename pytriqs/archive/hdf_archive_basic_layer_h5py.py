@@ -21,7 +21,7 @@
 ################################################################################
 
 # h5py
-import numpy,string,h5py,h5py.highlevel
+import numpy,string,h5py
 class HDFArchiveGroupBasicLayer :
     _class_version = 1
 
@@ -29,7 +29,7 @@ class HDFArchiveGroupBasicLayer :
         """  """
         self.options = parent.options
         self._group = parent._group[subpath] if subpath else parent._group
-        assert type(self._group) in [h5py.highlevel.Group,h5py.highlevel.File], "Internal error"
+        assert type(self._group) in [h5py.Group,h5py.File], "Internal error"
         self.ignored_keys = [] 
         self.cached_keys = self._group.keys()
 
@@ -54,12 +54,12 @@ class HDFArchiveGroupBasicLayer :
     def is_group(self,p) :
         """Is p a subgroup ?"""
         assert len(p)>0 and p[0]!='/'
-        return p in self.cached_keys and type(self._group[p]) == h5py.highlevel.Group
+        return p in self.cached_keys and type(self._group[p]) == h5py.Group
 
     def is_data(self,p) :
         """Is p a leaf ?"""
         assert len(p)>0 and p[0]!='/'
-        return p in self.cached_keys and type(self._group[p]) == h5py.highlevel.Dataset
+        return p in self.cached_keys and type(self._group[p]) == h5py.Dataset
 
     def write_attr (self, key, val) :
         self._group.attrs.create(key, val)
