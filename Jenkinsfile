@@ -61,7 +61,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         deleteDir()
         sh """#!/bin/bash -ex
           virtualenv $installDir
-          pip install --no-binary=h5py,mpi4py -r $workDir/packaging/requirements.txt
+          pip install --no-binary=h5py,mpi4py -U -r $workDir/packaging/requirements.txt
 
           cmake $cpp2pyDir -DCMAKE_INSTALL_PREFIX=$installDir
           make -j3
