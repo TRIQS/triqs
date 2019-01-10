@@ -55,7 +55,7 @@ class test_tail_issues(unittest.TestCase):
         self.assertTrue(np.max(err_herm) < 1e-9)
 
     def test_exact_moments(self):
-        for eps in [0.001, 0.01, 0.1, 1, 10, 100, 1000]:
+        for eps in [0.001, 0.01, 0.1, 1, 10, 100]: #, 1000]:
             self.exact_moments(eps)
 
     def exact_moments(self, eps):
@@ -125,12 +125,12 @@ class test_tail_issues(unittest.TestCase):
 
     def noisy_gf(self, noise):
         # Init Gf using Flat Descriptor
-        g = GfImFreq(indices = [0,1], beta = 1., n_points = 60)
+        g = GfImFreq(indices = [0,1], beta = 1., n_points = 1000)
         H = np.array([[1.0, 0.1j],[-0.1j, 2.0]])
         g << inverse(iOmega_n - H)
 
         # Generate gt and add noise
-        gt = make_gf_from_fourier(g, 10000)
+        gt = make_gf_from_fourier(g)
         np.random.seed(666)
         gt.data[:] = gt.data + noise * ( randn(*np.shape(gt.data)) + 1j * randn(*np.shape(gt.data)) )
 
@@ -140,30 +140,35 @@ class test_tail_issues(unittest.TestCase):
         # We should not be allowed to call a fourier transform on the noisy imaginary Green function
         self.assertRaises(Exception, make_gf_from_fourier, gt)
 
-        # Instead we will go through a legendre basis to filter the noise
+        # Fourier transform to Matsubara and back given the high-frequency information
+        tail, err = g.fit_tail()
+        gw = make_gf_from_fourier(gt, g.mesh, tail)
+        gt2 = make_gf_from_fourier(gw, gt.mesh, tail)
+
+        # Check that magnitude of error is of order noise
+        err = np.max(np.abs(gt.data - gt2.data))
+        # print "noise %.3e  err %.3e"%(noise, err)
+        self.assertTrue(err < 10 * noise)
+
+        # We can also go through a legendre basis to filter the noise
         gl = fit_legendre(gt)
-
-        gt_fit = gt.copy()
-        gt_fit << LegendreToMatsubara(gl)
-
-        g_fit = g.copy()
-        g_fit << LegendreToMatsubara(gl)
+        gw_from_leg = g.copy()
+        gw_from_leg << LegendreToMatsubara(gl)
+        gt3 = make_gf_from_fourier(gw_from_leg, len(gt.mesh))
+        err = np.max(np.abs(gt.data - gt3.data))
+        # print "noise %.3e  err %.3e"%(noise, err)
+        self.assertTrue(err < 10 * noise)
 
         # from pytriqs.plot.mpl_interface import *
         # plt.subplot(2,1,1)
         # oplot(gt[0,1], name='gt')
+        # gt_fit = gt.copy()
+        # gt_fit << LegendreToMatsubara(gl)
         # oplot(gt_fit[0,1], name='gt_fit')
         # plt.subplot(2,1,2)
         # oplot(g[0,1], x_window=(-100,100), name='gw')
         # oplot(g_fit[0,1], x_window=(-100,100), name='gw_fit')
         # plt.show()
-
-        gt2 = make_gf_from_fourier(g, 10000)
-
-        # Check magnitude of error
-        err = np.max(np.abs(gt.data - gt2.data))
-        # print "noise %.3e  err %.3e"%(noise, err)
-        self.assertTrue(err < 10 * noise)
 
 if __name__ == '__main__':
     unittest.main()
