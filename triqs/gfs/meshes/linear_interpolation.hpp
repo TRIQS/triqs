@@ -78,7 +78,7 @@ namespace triqs::gfs {
     bool in  = (i >= 0) && (i < imax);
     double w = a - i;
     // We include both x_min and x_max and account
-    // for a small rounding error margin of 1e-10 for w
+    // for a small rounding error margin of 1e-8 for w
     if (i == imax) {
       --i;
       in = (std::abs(w) < 1.e-8);
