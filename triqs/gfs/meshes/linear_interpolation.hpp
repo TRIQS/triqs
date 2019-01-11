@@ -77,15 +77,17 @@ namespace triqs::gfs {
     long i   = std::floor(a);
     bool in  = (i >= 0) && (i < imax);
     double w = a - i;
+    // We include both x_min and x_max and account
+    // for a small rounding error margin of 1e-10 for w
     if (i == imax) {
       --i;
-      in = (std::abs(w) < 1.e-12);
+      in = (std::abs(w) < 1.e-8);
       w  = 1.0;
     }
     if (i == -1) {
       i  = 0;
-      in = (std::abs(1 - w) < 1.e-12);
-      w  = 1.0;
+      in = (std::abs(1 - w) < 1.e-8);
+      w  = 0.0;
     }
     if (!in) TRIQS_RUNTIME_ERROR << "out of window x= " << x << " xmin = " << x_min << " xmax = " << x_min + imax * delta_x;
     return {{i, i + 1}, {1 - w, w}};
