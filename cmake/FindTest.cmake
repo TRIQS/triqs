@@ -75,7 +75,7 @@ macro(add_python_test testname)
   )
  endif()
 
- set_property(TEST ${testname_} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:./:$ENV{PYTHONPATH} )
+ set_property(TEST ${testname_} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:./:$ENV{PYTHONPATH} )
 
  if(TEST_MPI_NUMPROC)
   set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})

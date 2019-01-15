@@ -20,11 +20,10 @@
 ################################################################################
 
 version  = "@TRIQS_VERSION@"
-release  = "@TRIQS_RELEASE@"
 git_hash = "@TRIQS_GIT_HASH@"
 
 def show_version():
-  print "\nYou are using the TRIQS library version %s, release %s\n"%(version, release)
+  print "\nYou are using the TRIQS library version %s\n"%(version)
 
 def show_git_hash():
   print "\nYou are using the git hash %s\n"%(git_hash)

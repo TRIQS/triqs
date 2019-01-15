@@ -23,7 +23,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR
 # ------------------------------------------------------------------------------------------------
 
 set(EXT_FOR_DOC "bib rst png txt cpp css_t conf css js gif jpg py html bib sh md")
-execute_process(COMMAND cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${EXT_FOR_DOC})
+execute_process(COMMAND ${CPP2PY_BINARY_DIR}/bin/cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${EXT_FOR_DOC})
 
 # ---------------------------------
 # Generate C++ doc with c++2rst
@@ -43,13 +43,13 @@ foreach(I ${TRIQS_INCLUDE_DIRS})
 endforeach()
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs
-		   COMMAND c++2rst ${NS}
+		   COMMAND PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${CPP2PY_BINARY_DIR}/bin/c++2rst ${NS}
 		   ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp
 		   --output_directory ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
+		   --cxxflags "-std=c++17 -DTRIQS_BUILDING_LIBRARY -I${CMAKE_SOURCE_DIR}"
 		   ${CPP2RST_INCLUDE_DIRS}
-		   --includes ${CMAKE_SOURCE_DIR}/
+		   --includes ${CMAKE_SOURCE_DIR}/cpp2py/include
 		   --includes ${CMAKE_BINARY_DIR}/Config
-		   --cxxflags "-std=c++17 -DTRIQS_BUILDING_LIBRARY" 
 		   2>&1 > cpp2rst.log
 		   VERBATIM)
 add_custom_target(docs_cpp2rst DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log)
@@ -65,7 +65,7 @@ FILE(GLOB_RECURSE SOURCES *.rst)
 
 SET(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/contents.html)
 add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES} docs_cpp2rst
-  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_BINARY_DIR} html)
+  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_BINARY_DIR} html)
 add_custom_target(docs_sphinx ALL DEPENDS ${sphinx_top} ${CMAKE_CURRENT_BINARY_DIR})
 
 # depends on generated doc

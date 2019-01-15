@@ -88,11 +88,7 @@ message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 option(PythonSupport "Build with Python support" ON)
 if (PythonSupport)
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
- message( STATUS "-------- Cpp2Py detection -------------")
- find_package(Cpp2Py 1.5 REQUIRED)
- if (NOT CMAKE_CXX_COMPILER STREQUAL CPP2PY_CXX_COMPILER)
-   message(FATAL_ERROR "For your own safety, you should use the same compiler as the one used to compile Cpp2Py !")
- endif()
+ add_subdirectory(cpp2py)
 endif (PythonSupport)
 
 #---------------------------------------------------------------------
@@ -104,15 +100,12 @@ message( STATUS "-------- triqs version and git hash detection -------------")
 # Find the TRIQS_GIT_HASH
 find_package(Git)
 
-# Get the version number from the latest annotated git tag
-execute_process(COMMAND bash "-c" "${GIT_EXECUTABLE} describe | sed \"s/-\\([0-9]*\\)-.*/.\\1/g\""
- WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
- OUTPUT_VARIABLE   TRIQS_VERSION
- OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-if(NOT TRIQS_VERSION)
-  set(TRIQS_VERSION 2.0)
-endif()
+# Define the TRIQS Version Numbers
+set(TRIQS_VERSION_MAJOR 2)
+set(TRIQS_VERSION_MINOR 1)
+set(TRIQS_VERSION_PATCH 0)
+set(TRIQS_VERSION ${TRIQS_VERSION_MAJOR}.${TRIQS_VERSION_MINOR}.${TRIQS_VERSION_PATCH})
+
 
 # Get the Git Hash
 execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
@@ -240,9 +233,6 @@ install (FILES cmake/FindNFFT.cmake DESTINATION share/cmake/Modules)
 #---------------------------------------
 message(STATUS "-------- Making triqs_config.h  -------------")
 
-# Prepare some variable
-SET(PYTHON_NUMPY_VERSION_LT_17 ${CPP2PY_PYTHON_NUMPY_VERSION_LT_17})
-
 # Fortran bindings
 # FIXME : should be remove from config, and PRIVATE to triqs
 # fortran interface should not be exposed
@@ -316,7 +306,8 @@ if(BUILD_DEBIAN_PACKAGE)
   SET(CPACK_PACKAGE_VERSION ${TRIQS_VERSION})
   SET(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/triqs")
   EXECUTE_PROCESS(COMMAND dpkg --print-architecture OUTPUT_VARIABLE CMAKE_DEBIAN_PACKAGE_ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
-  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "python, python-numpy, python-h5py, python-jinja2, python-mako, python-mpi4py, python-matplotlib, python-scipy, libopenmpi-dev, cpp2py (>= 1.5)")
+  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "python, python-numpy, python-h5py, python-jinja2, python-mako, python-mpi4py, python-matplotlib, python-scipy, libopenmpi-dev")
+  SET(CPACK_DEBIAN_PACKAGE_CONFLICTS "cpp2py")
   SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
   SET(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
   INCLUDE(CPack)
