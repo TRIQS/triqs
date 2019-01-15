@@ -73,16 +73,15 @@ We provide Debian packages for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 
 
         sudo apt-get update && sudo apt-get install -y software-properties-common apt-transport-https curl
         source /etc/lsb-release
-        curl -L https://users.flatironinstitute.org/~ccq/triqs/master/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
-        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs/master/$DISTRIB_CODENAME/ /"
+        curl -L https://users.flatironinstitute.org/~ccq/triqs/$DISTRIB_CODENAME/public.gpg | sudo apt-key add -
+        sudo add-apt-repository "deb https://users.flatironinstitute.org/~ccq/triqs/$DISTRIB_CODENAME/ /"
         sudo apt-get update && sudo apt-get install -y triqs
 
 This will install the minimal runtime packages and triqs into the system tree at /usr.
 
 If you aim to compile applications against the triqs library, additional :ref:`development libraries <ubuntu>` have to be installed. You should further set the following :ref:`environment variables <environment_vars>` permanently::
 
-        export CPLUS_INCLUDE_PATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPATH
-        source /usr/share/cpp2pyvars.sh
+        export CPLUS_INCLUDE_PATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPLUS_INCLUDE_PATH
         source /usr/share/triqsvars.sh
 
 For full c++2py functionality, please read the corresponding :ref:`section <ubuntu_cpp2py>` for the Ubuntu set-up.
@@ -110,8 +109,6 @@ install these necessary libraries on two standard systems:
 Installation steps
 ------------------
 
-You need to install first Cpp2Py and then TRIQS.
-
 We provide hereafter the build instructions in the form of a documented bash script.
 You can adapt INSTALL_PREFIX, NCORES for your local settings.
 Note that, contrary to previous versions of TRIQS,
@@ -125,14 +122,13 @@ the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake co
 Environment setup
 ^^^^^^^^^^^^^^^^^^^
 
-Cpp2Py and TRIQS both provide a small script (`cpp2pyvars.sh` and `triqsvars.sh`)
-to load their respective installation into your :ref:`environment variables <environment_vars>`.
-Please source them with the proper replacement of INSTALL_PREFIX::
+TRIQS provides a small script (`triqsvars.sh`)
+to load its installation into your :ref:`environment variables <environment_vars>`.
+Please source it with the proper replacement of INSTALL_PREFIX::
 
-        source $INSTALL_PREFIX/share/cpp2pyvars.sh
         source $INSTALL_PREFIX/share/triqsvars.sh
 
-To automate this process, please add these two lines to your `~/.bash_profile <https://en.wikipedia.org/wiki/Bash_(Unix_shell)#Startup_scripts>`_
+To automate this process, please add this line to your `~/.bash_profile <https://en.wikipedia.org/wiki/Bash_(Unix_shell)#Startup_scripts>`_
 (or `~/.zprofile <http://zsh.sourceforge.net/FAQ/zshfaq03.html#l19>`_)
 
 Further reading

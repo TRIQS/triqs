@@ -41,16 +41,11 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
     stage("osx-$platform") { timeout(time: 1, unit: 'HOURS') {
       def workDir = pwd()
       def tmpDir = pwd(tmp:true)
-      def cpp2pyDir = "$tmpDir/cpp2py"
       def buildDir = "$tmpDir/build"
       /* install real branches in a fixed predictable place so apps can find them */
       def installDir = keepInstall ? "${env.HOME}/install/${projectName}/${env.BRANCH_NAME}/${platform}" : "$tmpDir/install"
 
       checkout scm
-      dir(cpp2pyDir) {
-        /* should we make this a proper submodule? */
-        git(url: 'https://github.com/TRIQS/cpp2py', branch: 'master')
-      }
 
       dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
           "PATH=$installDir/bin:${env.BREW}/bin:/usr/bin:/bin:/usr/sbin",
@@ -62,11 +57,6 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         sh """#!/bin/bash -ex
           virtualenv $installDir
           pip install --no-binary=h5py,mpi4py -U -r $workDir/packaging/requirements.txt
-
-          cmake $cpp2pyDir -DCMAKE_INSTALL_PREFIX=$installDir
-          make -j3
-          make install
-          rm -rf *
         """
 
         sh "cmake $workDir -DCMAKE_INSTALL_PREFIX=$installDir"
