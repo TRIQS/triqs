@@ -20,5 +20,5 @@
 #
 ################################################################################
 
-from hdf_archive import HDFArchive,HDFArchiveGroup
-__all__ = ['HDFArchive', 'HDFArchiveGroup']
+from hdf_archive import HDFArchive, HDFArchiveGroup, HDFArchiveInert
+__all__ = ['HDFArchive', 'HDFArchiveGroup', 'HDFArchiveInert']
