@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+import os, sys, argparse
+from cpp2rst import Cpp2Rst
+import cpp2py.libclang_config as config
+
+print "Welcome to the C++ doc generator !"
+
+# --- Parsing the arguments of the script and options
+parser = argparse.ArgumentParser(description=""" Generate the rst doc file from C++ header code """)
+
+parser.add_argument('filename', help = "Name of the file")
+parser.add_argument('--output_directory', '-o',  help="Where to put the files [default './']", default = './')
+parser.add_argument('--libclang_location', help='Location of the libclang', default = config.LIBCLANG_LOCATION)
+parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
+parser.add_argument('--namespace', '-N', action='append',  help='namespaces to document', default= []) #specify which namespaces to document, e.g. -N triqs -N applications
+parser.add_argument('--parse-all-comments',  action='store_true', help="Grab all comments, including non doxygen like [FALSE]")
+parser.add_argument('--cxxflags', default = '', help='Options to pass to clang')
+
+args = parser.parse_args()
+args.includes = (args.includes or []) #+  config.TRIQS_INCLUDE_DEPS.split(';')
+#args.includes.append(config.TRIQS_INCLUDE) 
+
+# Add the environment variables
+cxx_env = os.getenv('CXXFLAGS').split() if os.getenv('CXXFLAGS') else []
+
+# FIXME cmake puts some '\ ' in the argument ???
+args.cxxflags = args.cxxflags.replace('\\ ',' ')
+
+# ---------------------------------------------------------
+# Create the worker. It parses the file       
+W= Cpp2Rst(filename = args.filename, 
+            namespaces= args.namespace, 
+            includes = args.includes or (), 
+            compiler_options = args.cxxflags.split(' ') + cxx_env,
+            parse_all_comments = args.parse_all_comments,
+            libclang_location = args.libclang_location
+            )
+
+# profile for testing
+if 1 : 
+    W.run(args.output_directory)
+else:
+    import cProfile
+    cProfile.run('W.run(args.output_directory)')
