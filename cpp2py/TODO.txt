@@ -1,0 +1,23 @@
+
+- doc:
+
+  - make doc dir
+  - structure : ?
+     - ref doc with autodoc
+     - tutorial
+           - desc generation 
+           - from slide : desc separation
+           - cmake macro
+
+- check that one does not return a const_view
+- MAGIC : test
+- TESTS
+- upgrade skeleton
+
+- gf : regular converters
+
+- pip -r pip-requirements.txt for cpp2py or TRIQS ??
+
+- triqs_set_rpath_of_all_targets(PATH)
+
+

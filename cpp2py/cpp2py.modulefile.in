@@ -1,0 +1,34 @@
+#%Module1.0
+#
+# To be installed as ${MODULEPATH}/cpp2py/@CPP2PY_VERSION@
+
+set     name        cpp2py
+set     version     @CPP2PY_VERSION@
+set     root        @CMAKE_INSTALL_PREFIX@
+set     git_hash    @CPP2PY_GIT_HASH@
+
+set     url         "https://github.com/TRIQS/cpp2py"
+set     description "Cpp2Py is the Python/C++ interfacing tool of the TRIQS project"
+
+module-whatis   "$description"
+
+proc ModulesHelp { } {
+    global description url version git_hash
+    puts stderr "Description: $description"
+    puts stderr "URL:         $url"
+    puts stderr "Version:     $version"
+    puts stderr "Git hash:    $git_hash"
+}
+
+# Only one version of cpp2py can be loaded at a time
+conflict $name
+
+setenv          CPP2PY_ROOT         $root
+setenv          CPP2PY_VERSION      $version
+setenv          CPP2PY_GIT_HASH     $git_hash
+
+prepend-path    PATH                $root/bin
+prepend-path    CPLUS_INCLUDE_PATH  $root/include
+prepend-path    LIBRARY_PATH        $root/lib
+prepend-path    PYTHONPATH          $root/@PYTHON_LIB_DEST_ROOT@
+prepend-path    CMAKE_PREFIX_PATH   $root/lib/cmake/cpp2py
