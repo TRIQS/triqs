@@ -230,8 +230,8 @@ namespace triqs::gfs {
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
-  template <int N = 0, typename V, typename T, typename M, int R>
-  auto make_gf_from_fourier(block_gf_const_view<V, T> gin, M const &m, std::vector<array<dcomplex, R>> const &known_moments) {
+  template <int N = 0, typename G, typename M, int R>
+  auto make_gf_from_fourier(G const &gin, M const &m, std::vector<array<dcomplex, R>> const &known_moments) REQUIRES(is_block_gf_or_view<G>::value) {
 
     using r_t = decltype(make_gf_from_fourier<N>(gin[0], m, known_moments[0]));
     std::vector<r_t> g_vec;
@@ -242,10 +242,11 @@ namespace triqs::gfs {
     return make_block_gf(gin.block_names(), std::move(g_vec));
   }
 
-  template <int N = 0, typename V, typename T, typename M, int R>
-  auto make_gf_from_fourier(block2_gf_const_view<V, T> gin, M const &m, std::vector<std::vector<array<dcomplex, R>>> const &known_moments) {
+  template <int N = 0, typename G, typename M, int R>
+  auto make_gf_from_fourier(G const &gin, M const &m, std::vector<std::vector<array<dcomplex, R>>> const &known_moments)
+     REQUIRES(is_block_gf_or_view<G>::value) {
 
-    using r_t = decltype(make_gf_from_fourier<N>(gin(0,0), m, known_moments[0][0]));
+    using r_t = decltype(make_gf_from_fourier<N>(gin(0, 0), m, known_moments[0][0]));
     std::vector<std::vector<r_t>> g_vecvec;
 
     TRIQS_ASSERT2(gin.size1() == known_moments.size(), "Fourier: Require matching block structure between gin and known_moments");
@@ -254,22 +255,16 @@ namespace triqs::gfs {
       TRIQS_ASSERT2(gin.size2() == known_moments[i].size(), "Fourier: Require matching block structure between gin and known_moments");
 
       std::vector<r_t> g_vec;
-      for (int j : range(gin.size2())) g_vec.push_back(make_gf_from_fourier<N>(gin(i,j), m, known_moments[i][j]));
+      for (int j : range(gin.size2())) g_vec.push_back(make_gf_from_fourier<N>(gin(i, j), m, known_moments[i][j]));
 
       g_vecvec.push_back(std::move(g_vec));
     }
     return block2_gf{gin.block_names(), std::move(g_vecvec)};
   }
 
-  template <int N = 0, int... Ns, typename V, typename T, typename... Args>
-  auto make_gf_from_fourier(block_gf_const_view<V, T> gin, Args const &... args) {
-    auto l = [&](gf_const_view<V, T> g_bl) { return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), args...); };
-    return map_block_gf(l, gin);
-  }
-
-  template <int N = 0, int... Ns, typename V, typename T, typename... Args>
-  auto make_gf_from_fourier(block2_gf_const_view<V, T> gin, Args const &... args) {
-    auto l = [&](gf_const_view<V, T> g_bl) { return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), args...); };
+  template <int N = 0, int... Ns, typename G, typename... Args>
+  auto make_gf_from_fourier(G const &gin, Args const &... args) REQUIRES(is_block_gf_or_view<G>::value) {
+    auto l = [&](typename G::const_view_type g_bl) { return make_gf_from_fourier<N, Ns...>(make_const_view(g_bl), args...); };
     return map_block_gf(l, gin);
   }
 

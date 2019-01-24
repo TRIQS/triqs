@@ -20,6 +20,8 @@
  ******************************************************************************/
 #pragma once
 #include "../meshes/product.hpp"
+#include "../../utility/itertools.hpp"
+
 namespace triqs::gfs {
 
   using triqs::arrays::array_const_view;
@@ -43,34 +45,82 @@ namespace triqs::gfs {
 
   // G(iw) || G(w)
   template <template <typename, typename> typename G, typename V, typename T> auto fit_tail(G<V, T> const &g) {
-    return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, true, array_const_view<dcomplex, G<V, T>::data_rank>{});
+    if constexpr (is_block_gf_or_view<G<V, T>>::value) { // -- Block-Gf
+      double max_err = 0.0;
+      std::vector<array<dcomplex, T::rank + 1>> tail_vec;
+      for (auto const &g_bl : g) {
+        auto [tail, err] = fit_tail(g_bl);
+        max_err          = std::max(err, max_err);
+        tail_vec.emplace_back(std::move(tail));
+      }
+      return std::make_pair(tail_vec, max_err);
+    } else { // -- Gf
+      static_assert(is_gf<G<V, T>>::value);
+      return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, true, array_const_view<dcomplex, G<V, T>::data_rank>{});
+    }
   }
 
   // G(iw) || G(w) + known_moments
   template <template <typename, typename> typename G, typename V, typename T, typename A> auto fit_tail(G<V, T> const &g, A const &known_moments) {
-    return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
+    if constexpr (is_block_gf_or_view<G<V, T>>::value) { // -- Block-Gf
+      double max_err = 0.0;
+      std::vector<array<dcomplex, T::rank + 1>> tail_vec;
+      for (auto [g_bl, km_bl] : triqs::utility::zip(g, known_moments)) {
+        auto [tail, err] = fit_hermitian_tail(g_bl, km_bl);
+        max_err          = std::max(err, max_err);
+      }
+      return std::make_pair(tail_vec, max_err);
+    } else { // -- Gf
+      static_assert(is_gf<G<V, T>>::value);
+      return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
+    }
   }
 
   // Impose hermiticity on the tail coefficients
   template <template <typename, typename> typename G, typename T> auto fit_hermitian_tail(G<imfreq, T> const &g) {
-    std::optional<long> inner_matrix_dim;
-    if (T::rank == 2 && g.target_shape()[0] == g.target_shape()[1]) { inner_matrix_dim = g.target_shape()[0]; }
-    if (T::rank == 1) inner_matrix_dim = 1;
-    return g.mesh().get_tail_fitter().fit_hermitian(g.mesh(), make_const_view(g.data()), 0, true,
-                                                    array_const_view<dcomplex, G<imfreq, T>::data_rank>{}, inner_matrix_dim);
+    if constexpr (is_block_gf_or_view<G<imfreq, T>>::value) { // -- Block-Gf
+      double max_err = 0.0;
+      std::vector<array<dcomplex, T::rank + 1>> tail_vec;
+      for (auto const &g_bl : g) {
+        auto [tail, err] = fit_hermitian_tail(g_bl);
+        max_err          = std::max(err, max_err);
+        tail_vec.emplace_back(std::move(tail));
+      }
+      return std::make_pair(tail_vec, max_err);
+    } else { // -- Gf
+      static_assert(is_gf<G<imfreq, T>>::value);
+      std::optional<long> inner_matrix_dim;
+      if (T::rank == 2 && g.target_shape()[0] == g.target_shape()[1]) { inner_matrix_dim = g.target_shape()[0]; }
+      if (T::rank == 0) inner_matrix_dim = 1;
+      return g.mesh().get_tail_fitter().fit_hermitian(g.mesh(), make_const_view(g.data()), 0, true,
+                                                      array_const_view<dcomplex, G<imfreq, T>::data_rank>{}, inner_matrix_dim);
+    }
   }
 
   // Impose hermiticity on the tail coefficients and use known_moments
   template <template <typename, typename> typename G, typename T, typename A> auto fit_hermitian_tail(G<imfreq, T> const &g, A const &known_moments) {
-    std::optional<long> inner_matrix_dim;
-    if (T::rank == 2 && g.target_shape()[0] == g.target_shape()[1]) { inner_matrix_dim = g.target_shape()[0]; }
-    if (T::rank == 1) inner_matrix_dim = 1;
-    return g.mesh().get_tail_fitter().fit_hermitian(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments), inner_matrix_dim);
+    if constexpr (is_block_gf_or_view<G<imfreq, T>>::value) { // -- Block-Gf
+      double max_err = 0.0;
+      std::vector<array<dcomplex, T::rank + 1>> tail_vec;
+      for (auto [g_bl, km_bl] : triqs::utility::zip(g, known_moments)) {
+        auto [tail, err] = fit_hermitian_tail(g_bl, km_bl);
+        max_err          = std::max(err, max_err);
+        tail_vec.emplace_back(std::move(tail));
+      }
+      return std::make_pair(tail_vec, max_err);
+    } else { // -- Gf
+      static_assert(is_gf<G<imfreq, T>>::value);
+      std::optional<long> inner_matrix_dim;
+      if (T::rank == 2 && g.target_shape()[0] == g.target_shape()[1]) { inner_matrix_dim = g.target_shape()[0]; }
+      if (T::rank == 0) inner_matrix_dim = 1;
+      return g.mesh().get_tail_fitter().fit_hermitian(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments), inner_matrix_dim);
+    }
   }
 
   // Adjust configuration of tail-fitting
   template <template <typename, typename> typename G, typename V, typename T, typename A>
-  auto fit_tail(G<V, T> const &g, A const &known_moments, double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max, std::optional<int> expansion_order = {}) {
+  auto fit_tail(G<V, T> const &g, A const &known_moments, double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
+                std::optional<int> expansion_order = {}) {
     return g.mesh()
        .get_tail_fitter(tail_fraction, n_tail_max, expansion_order)
        .fit(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
