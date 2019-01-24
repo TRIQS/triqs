@@ -33,6 +33,12 @@
 #define TYPE_DISABLE_IF(Type, ...) typename boost::disable_if<__VA_ARGS__, Type>::type
 #define TYPE_DISABLE_IFC(Type, ...) typename boost::disable_if_c<__VA_ARGS__, Type>::type
 
+#ifdef __clang__
+  #define REQUIRES(X) __attribute__((enable_if(X, AS_STRING(X))))
+#elif __GNUC__
+  #define REQUIRES(X) requires(X)
+#endif
+
 #define ENABLE_IF(...) typename boost::enable_if<__VA_ARGS__, void>::type
 #define ENABLE_IFC(...) typename boost::enable_if_c<__VA_ARGS__, void>::type
 #define DISABLE_IF(...) typename boost::disable_if<__VA_ARGS__, void>::type
