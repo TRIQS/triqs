@@ -79,6 +79,11 @@ We provide Debian packages for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 
 
 This will install the minimal runtime packages and triqs into the system tree at /usr.
 
+.. note:: Since TRIQS version 2.1 we include cpp2py in the TRIQS debian package.
+          If you have previously installed triqs (or cpp2py) through apt prior to 2.1 be sure to
+          remove it before updating to TRIQS 2.1 to avoid package conflicts.
+          `sudo apt-get remove triqs cpp2py && sudo apt-get install triqs`
+
 If you aim to compile applications against the triqs library, additional :ref:`development libraries <ubuntu>` have to be installed. You should further set the following :ref:`environment variables <environment_vars>` permanently::
 
         export CPLUS_INCLUDE_PATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPLUS_INCLUDE_PATH
