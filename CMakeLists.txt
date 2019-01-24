@@ -54,9 +54,20 @@ include(CheckIncludeFileCXX)
 
 message( STATUS "-------- Checking compiler C++ status-------------")
 
-try_compile(_cxx_ok ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/cxx_check.cpp COMPILE_DEFINITIONS  -std=c++17)
-if (NOT _cxx_ok)
- MESSAGE(FATAL_ERROR "The compiler does not support C++17")
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  if(${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 5.0.0)
+    message(FATAL_ERROR "The Clang compiler version is ${CMAKE_CXX_COMPILER_VERSION}, but TRIQS requires 5.0.0 or later")
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+  if(${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 7.0.0 OR ${CMAKE_CXX_COMPILER_VERSION} VERSION_EQUAL 8.0.0 OR ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER 8.0.0)
+    message(FATAL_ERROR "The GCC compiler version is ${CMAKE_CXX_COMPILER_VERSION}, but TRIQS requires version 7.x")
+  endif()
+else()
+  message(FATAL_ERROR "TRIQS Has to be compiled with g++ (7.x) or clang (>= 5.0.0)")
+endif()
+try_compile(_CXX_OK ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/cxx_check.cpp COMPILE_DEFINITIONS -std=c++17)
+if (NOT _CXX_OK)
+ message(FATAL_ERROR "The compiler does not support C++17")
 endif()
 
 #---------------------------------------------------------------------

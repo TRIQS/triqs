@@ -14,18 +14,14 @@ All the dependencies of TRIQS are listed below with a brief description.
 C++ compilers
 -------------
 
-TRIQS is written in modern C++, i.e. using the latest **C++** standard as defined by the ISO standardization committee.
-In particular, the latest TRIQS version uses language features from the C++17 standard. 
-A recent compiler is therefore mandatory.
+TRIQS is written in modern C++, i.e. using the latest `**C++** standard <https://isocpp.org/std/status>`_ as defined by the ISO standardization committee.
+It is our philsophy to follow the C++ language evolution closely in order to keep the TRIQS code-base as simple and
+maintainable as possible. For this reason we have decided to limit the compilation of TRIQS to the rapidly evolving gcc and clang compilers.
+We support the following compiler versions:
 
-* Standard compliant C++ compilers (C++17).
+* g++ 7.x  **CAUTION**: Due to an on-going `issue <https://github.com/TRIQS/triqs/issues/570>`_ triqs can currently not be compiled with g++ 8.x
 
-  * g++ 7.x  **CAUTION**: Due to an on-going `issue <https://github.com/TRIQS/triqs/issues/570>`_ triqs can currently not be compiled with g++ 8.x
-
-  * :ref:`clang 5.0<install_clang>` and higher.
-
-  .. note:: Intel's compiler icc has **not** yet fully implemented the C++17 standard.
-            It can therefore not be used to compile TRIQS.
+* :ref:`clang 5.0<install_clang>` and higher.
 
 Tools and Libraries
 -------------------

@@ -26,9 +26,6 @@ if((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND ("${CMAKE_CXX_COMPILER_ID}" MATCH
  target_compile_options(triqs PUBLIC -stdlib=libc++)
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
- target_compile_definitions(triqs PUBLIC TRIQS_WORKAROUND_INTEL_COMPILER_BUGS BOOST_MATH_DISABLE_STD_FPCLASSIFY)
-endif() 
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
  target_compile_definitions(triqs PRIVATE TRIQS_DEBUG)
