@@ -1,0 +1,102 @@
+# Multiple inclusion guard
+if (NOT CPP2PY_FOUND) 
+set(CPP2PY_FOUND True)
+
+# Version
+set(CPP2PY_VERSION                      @CPP2PY_VERSION@)
+set(CPP2PY_GIT_HASH                     @CPP2PY_GIT_HASH@)
+
+# The compiler used for cpp2py
+set(CPP2PY_CXX_COMPILER                 @CMAKE_CXX_COMPILER@)
+
+# Python Interpreter
+set(CPP2PY_PYTHON_INTERPRETER           @PYTHON_INTERPRETER@)
+set(CPP2PY_PYTHON_LIB_DEST_ROOT         @PYTHON_LIB_DEST_ROOT@)
+set(CPP2PY_PYTHON_H5PY_HDF5VERSION      @PYTHON_H5PY_HDF5VERSION@)
+set(CPP2PY_PYTHON_NUMPY_VERSION_LT_17   @PYTHON_NUMPY_VERSION_LT_17@)
+
+# Root of the Cpp2Py installation
+set(CPP2PY_ROOT  @CMAKE_INSTALL_PREFIX@)
+
+MESSAGE(STATUS "Found Cpp2pyConfig.cmake with version ${CPP2PY_VERSION}, hash = ${CPP2PY_GIT_HASH}")
+
+# Mac specific
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ set(CMAKE_INSTALL_NAME_DIR "@CMAKE_INSTALL_PREFIX@/lib")
+ set(CMAKE_MACOSX_RPATH 1) # new for cmake 3.x
+endif()
+
+###################################################################################
+#
+#            Imported targets
+#
+###################################################################################
+# Python
+add_library(python_and_numpy SHARED IMPORTED)
+set_property(TARGET python_and_numpy PROPERTY IMPORTED_LOCATION @PYTHON_LIBRARY@)
+set_property(TARGET python_and_numpy PROPERTY INTERFACE_INCLUDE_DIRECTORIES @PYTHON_INCLUDE_DIRS@ @PYTHON_NUMPY_INCLUDE_DIR@)
+set_property(TARGET python_and_numpy PROPERTY PROPERTY INTERFACE_LINK_LIBRARIES "@PYTHON_EXTRA_LIBS@")
+
+# tools
+add_executable(c++2py IMPORTED GLOBAL)
+set_property(TARGET c++2py PROPERTY IMPORTED_LOCATION "@CMAKE_INSTALL_PREFIX@/bin/c++2py")
+
+add_executable(c++2rst IMPORTED GLOBAL)
+set_property(TARGET c++2rst PROPERTY IMPORTED_LOCATION "@CMAKE_INSTALL_PREFIX@/bin/c++2rst")
+
+add_executable(c++2cxx IMPORTED GLOBAL)
+set_property(TARGET c++2cxx PROPERTY IMPORTED_LOCATION "@CMAKE_INSTALL_PREFIX@/bin/c++2cxx")
+
+add_executable(cp_rs IMPORTED GLOBAL)
+set_property(TARGET cp_rs PROPERTY IMPORTED_LOCATION "@CMAKE_INSTALL_PREFIX@/bin/cp_rs")
+
+# include the exported targets of this project 
+include(@CMAKE_INSTALL_PREFIX@/lib/cmake/cpp2py/cpp2py-targets.cmake)
+
+###################################################################################
+#
+#            add_cpp2py_module
+#
+#   Set up the compilation of the cpp2py python module
+# 
+#   Argument : ModuleName : name of the module
+#   Usage    : 
+#              add_cpp2py_module (MyModule)
+#               - expects a file MyModule_desc.py in the CURRENT_SOURCE_DIR
+#               - add a target MyModule which : 
+#                    - DEPENDS on MyModule_desc.py 
+#                    - build the wrapper MyModule_wrap.cxx in CURRENT_BINARY_DIR
+#                    - compiles it into the MyModule.so
+#
+###################################################################################
+macro (add_cpp2py_module ModuleName)
+ message(STATUS "Adding cpp2py Python module ${ModuleName}")
+
+ SET(desc_name  ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}_desc.py)    # the desc file
+ SET(wrap_name  ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}_wrap.cxx)   # path to the wrapping code
+ SET(target_name ${ModuleName})
+
+ add_custom_command(OUTPUT ${wrap_name} DEPENDS ${desc_name}
+  COMMAND PYTHONPATH=@PYTHON_PATH_ADD@${PROJECT_BINARY_DIR}:@PYTHON_PATH_ADD@${PROJECT_BINARY_DIR}/python:${CPP2PY_ADD_MODULE_ADDITIONAL_PYTHONPATH}:$ENV{PYTHONPATH} ${CPP2PY_PYTHON_INTERPRETER} ${desc_name} ${wrap_name}) 
+ 
+ add_library(${target_name} MODULE ${wrap_name}) 
+ target_link_libraries(${target_name} python_and_numpy cpp2py)
+
+ set_target_properties(${target_name}
+   PROPERTIES
+   PREFIX ""  #eliminate the lib in front of the module name
+   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} 
+ )
+
+ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  target_link_libraries(${target_name} "-undefined dynamic_lookup")
+ endif()
+
+ # Keep a list of every module target.
+ # Usage : e.g.  Documentation top target depends on them being built first 
+ set_property(GLOBAL APPEND PROPERTY CPP2PY_MODULES_LIST ${target_name})
+
+endmacro (add_cpp2py_module)
+
+endif (NOT CPP2PY_FOUND) 
+
