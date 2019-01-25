@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
   h5_write(file, "Length_Cycle", Length_Cycle);
 
   // construct a Monte Carlo loop
-  triqs::mc_tools::mc_generic<double> IntMC(Random_Name, Random_Seed, 1.0, Verbosity);
+  triqs::mc_tools::mc_generic<double> IntMC(Random_Name, Random_Seed, Verbosity);
 
   // construct configuration
   configuration config;

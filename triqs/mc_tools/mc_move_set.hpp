@@ -50,6 +50,12 @@ namespace triqs {
       double acceptance_rate_;
       bool is_move_set_; // need to remember if the move was a move_set for printing details later.
 
+#ifdef TRIQS_MCTOOLS_DEBUG
+      static constexpr bool debug = true;
+#else
+      static constexpr bool debug = false;
+#endif
+
       public:
       /// Construct from any m modeling MoveType. bool is here to disambiguate with basic copy/move construction.
       template <typename MoveType> move(bool, MoveType &&m) {
@@ -122,11 +128,16 @@ namespace triqs {
       std::vector<double> Proba_Moves, Proba_Moves_Acc_Sum;
       MCSignType try_sign_ratio;
       uint64_t debug_counter;
-      bool debug;
+
+#ifdef TRIQS_MCTOOLS_DEBUG
+      static constexpr bool debug = true;
+#else
+      static constexpr bool debug = false;
+#endif
 
       public:
       /// Need a random_generator for attempt, see below...
-      move_set(random_generator &R, bool debug = false) : RNG(&R), debug(debug) {
+      move_set(random_generator &R) : RNG(&R) {
         Proba_Moves.push_back(0);
         debug_counter = 0;
       }
