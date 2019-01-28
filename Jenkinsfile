@@ -1,4 +1,5 @@
 def projectName = "triqs"
+/* which platform to build documentation on */
 def documentationPlatform = "ubuntu-clang"
 def keepInstall = !env.BRANCH_NAME.startsWith("PR-")
 
@@ -10,6 +11,8 @@ properties([
 /* map of all builds to run, populated below */
 def platforms = [:]
 
+/****************** linux builds (in docker) */
+/* Each platform must have a cooresponding Dockerfile.PLATFORM in triqs/packaging */
 def dockerPlatforms = ["ubuntu-clang", "ubuntu-gcc", "centos-gcc"]
 /* .each is currently broken in jenkins */
 for (int i = 0; i < dockerPlatforms.size(); i++) {
@@ -30,6 +33,7 @@ for (int i = 0; i < dockerPlatforms.size(); i++) {
   } }
 }
 
+/****************** osx builds (on host) */
 def osxPlatforms = [
   ["gcc", ['CC=gcc-7', 'CXX=g++-7']],
   ["clang", ['CC=$BREW/opt/llvm/bin/clang', 'CXX=$BREW/opt/llvm/bin/clang++', 'CXXFLAGS=-I$BREW/opt/llvm/include', 'LDFLAGS=-L$BREW/opt/llvm/lib']]
@@ -73,6 +77,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
   } }
 }
 
+/****************** wrap-up */
 try {
   parallel platforms
   if (keepInstall) {
@@ -110,6 +115,7 @@ try {
     }
   }
 } catch (err) {
+  /* send email on build failure (declarative pipeline's post section would work better) */
   if (env.BRANCH_NAME != "jenkins") emailext(
     subject: "\$PROJECT_NAME - Build # \$BUILD_NUMBER - FAILED",
     body: """\$PROJECT_NAME - Build # \$BUILD_NUMBER - FAILED
@@ -121,7 +127,7 @@ Check console output at \$BUILD_URL to view full results.
 Building \$BRANCH_NAME for \$CAUSE
 \$JOB_DESCRIPTION
 
-Chages:
+Changes:
 \$CHANGES
 
 End of build log:
