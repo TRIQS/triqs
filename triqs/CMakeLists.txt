@@ -51,7 +51,7 @@ endif()
 # ---------------------------------
 
 option(CHECK_MEMORY "Turn on memory check" OFF)
-if (CHECK_MEMORY)
+if(CHECK_MEMORY)
 target_compile_definitions(triqs PUBLIC TRIQS_ARRAYS_DEBUG_COUNT_MEMORY TRIQS_ARRAYS_CHECK_WEAK_REFS)
 endif()
 
@@ -59,7 +59,7 @@ endif()
 # RT on linux only
 # ---------------------------------
 
-if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  target_link_libraries (triqs PUBLIC -lrt)
 endif()
 
@@ -67,11 +67,11 @@ endif()
 # MPI
 # ---------------------------------
 
-message( STATUS "-------- MPI detection -------------")
+message(STATUS "-------- MPI detection -------------")
 # We use MPI in C only, not the C++ bindings.
 find_package(MPI)
 
-if (NOT MPI_C_FOUND)
+if(NOT MPI_C_FOUND)
  message(FATAL_ERROR "TRIQS requires MPI")
 endif()
 message(STATUS "MPI C compiler : ${MPI_C_COMPILER}")
@@ -83,9 +83,15 @@ message(STATUS "MPI_CXX_LIBRARIES : ${MPI_CXX_LIBRARIES}")
 # FIXME : we should not link to CXX lib, but openmpi uses them by default apparently on Linux
 
 separate_arguments(MPI_C_COMPILE_FLAGS) # Convert to list
-target_compile_options(triqs PUBLIC ${MPI_C_COMPILE_FLAGS})
-target_include_directories(triqs SYSTEM PUBLIC ${MPI_C_INCLUDE_PATH})
-target_link_libraries(triqs PUBLIC ${MPI_C_LIBRARIES} ${MPI_CXX_LIBRARIES})
+
+add_library(mpi INTERFACE)
+target_include_directories(mpi SYSTEM INTERFACE ${MPI_C_INCLUDE_PATH})
+target_link_libraries(mpi INTERFACE ${MPI_C_LIBRARIES} ${MPI_CXX_LIBRARIES})
+target_compile_options(mpi INTERFACE ${MPI_C_COMPILE_FLAGS})
+
+target_link_libraries(triqs PUBLIC mpi)
+install(TARGETS mpi EXPORT triqs-dependencies)
+
 if(NOT MPIEXEC_EXECUTABLE) # Backward compatibility for older FindMPI.cmake
   set(MPIEXEC_EXECUTABLE ${MPIEXEC} CACHE FILENAME "MPI Executable")
 endif()
@@ -100,7 +106,7 @@ endif()
 # Boost
 # ---------------------------------
 
-message( STATUS "-------- Boost detection -------------")
+message(STATUS "-------- Boost detection -------------")
 
 if(TRIQS_BUILD_STATIC)
  set(Boost_USE_STATIC_LIBS ON)
@@ -109,23 +115,29 @@ else()
 endif()
 
 find_package(Boost 1.53 REQUIRED COMPONENTS) # mpi serialization system
-if (NOT Boost_FOUND)
+if(NOT Boost_FOUND)
  message(FATAL_ERROR "Boost not found")
 endif()
 mark_as_advanced(Boost_DIR)
 message(STATUS  "Boost include dir: ${Boost_INCLUDE_DIRS}")
 message(STATUS  "Boost libraries: ${Boost_LIBRARIES}")
 
-target_include_directories(triqs SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
+add_library(boost INTERFACE)
+target_include_directories(boost SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
+target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
+
+target_link_libraries(triqs PUBLIC boost)
+install(TARGETS boost EXPORT triqs-dependencies)
 
 # ---------------------------------
 # max_align_t bug detection
 # ---------------------------------
-message( STATUS "-------- Misc -------------")
+
+message(STATUS "-------- Misc -------------")
 
 # should be move to config.h ?
 try_compile(_max_align_t_is_correct ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/max_align_t_test.cpp COMPILE_DEFINITIONS -std=c++11)
-if (NOT _max_align_t_is_correct)
+if(NOT _max_align_t_is_correct)
  MESSAGE(STATUS "Adding workaround for max_align_t bug (in clang normally)")
  target_compile_definitions(triqs PUBLIC TRIQS_ADD_MAX_ALIGN_T_WORKAROUND)
 else ()
@@ -136,25 +148,30 @@ endif()
 # Lapack
 # ---------------------------------
 
-message( STATUS "-------- Lapack detection -------------")
+message(STATUS "-------- Lapack detection -------------")
 
 find_package(LAPACK REQUIRED)
 
 message(STATUS "Lapack libraries : ${LAPACK_LIBRARIES}")
 message(STATUS "Lapack vendor : ${BLA_VENDOR}")
 
-target_link_libraries (triqs PUBLIC ${LAPACK_LIBRARIES})
-target_compile_options (triqs PUBLIC ${LAPACK_LINKER_FLAGS})
+list(REMOVE_DUPLICATES LAPACK_LIBRARIES)
+add_library(blas_lapack INTERFACE)
+target_link_libraries(blas_lapack INTERFACE ${LAPACK_LIBRARIES})
+target_compile_options(blas_lapack INTERFACE ${LAPACK_LINKER_FLAGS})
+
+target_link_libraries(triqs PUBLIC blas_lapack)
+install(TARGETS blas_lapack EXPORT triqs-dependencies)
 
 # ---------------------------------
 # HDF5
 # ---------------------------------
 
-message( STATUS "-------- HDF5 detection -------------")
+message(STATUS "-------- HDF5 detection -------------")
 
 # on weiss, it is 2.8.2 and we should not put HL, on 12.04 we need to put it...
-if ( ${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
- find_package(HDF5 REQUIRED C )
+if(${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
+ find_package(HDF5 REQUIRED C)
 else(${CMAKE_VERSION} VERSION_LESS "2.8.6")
  find_package(HDF5 REQUIRED C HL)
 endif(${CMAKE_VERSION} VERSION_LESS "2.8.6")
@@ -172,32 +189,33 @@ if(HDF5_HL_LIBRARIES)    # CMake 3.6.0 and later puts libhdf5_hl into a separate
  list(REMOVE_DUPLICATES HDF5_LIBRARIES)
 endif(HDF5_HL_LIBRARIES)
 
-message(STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES}")
-mark_as_advanced(HDF5_DIR) # defined somewhere else ? what is it ?
+message(STATUS "HDF5_LIBRARIES = ${HDF5_LIBRARIES}")
 
 # Get hdf5 version and add a definition HDF5_LT_189 if version < 1.8.9
 execute_process(COMMAND ${HDF5_DIFF_EXECUTABLE} --version OUTPUT_VARIABLE diff_output)
 string(REGEX MATCHALL "[0-9]+.[0-9]+.[0-9]+" HDF5_VERSION "${diff_output}")
 message(STATUS "hdf5 version: ${HDF5_VERSION}")
-if (PythonSupport)
- if (NOT "${PYTHON_H5PY_HDF5VERSION}" STREQUAL "${HDF5_VERSION}")
+if(PythonSupport)
+ if(NOT "${PYTHON_H5PY_HDF5VERSION}" STREQUAL "${HDF5_VERSION}")
  message(FATAL_ERROR "The HDF5 version of the h5py (${PYTHON_H5PY_HDF5VERSION}) is different from the hdf5 library found for C++ (${HDF5_VERSION}). You MUST have the same version.")
  endif()
 endif()
 
-#
-target_include_directories(triqs SYSTEM PUBLIC ${HDF5_INCLUDE_DIRS})
-target_link_libraries (triqs PUBLIC ${HDF5_LIBRARIES})
-target_compile_options(triqs PUBLIC ${HDF5_DEFINITIONS})
+add_library(hdf5 INTERFACE)
+target_include_directories(hdf5 SYSTEM INTERFACE ${HDF5_INCLUDE_DIRS})
+target_link_libraries(hdf5 INTERFACE ${HDF5_LIBRARIES})
+target_compile_options(hdf5 INTERFACE ${HDF5_DEFINITIONS})
+
+target_link_libraries(triqs PUBLIC hdf5)
+install(TARGETS hdf5 EXPORT triqs-dependencies)
 
 # ---------------------------------
 # GMP
 # ---------------------------------
 
-message( STATUS "-------- GMP detection -------------")
+message(STATUS "-------- GMP detection -------------")
 find_package(GMP)
 
-#
 target_include_directories(triqs SYSTEM PUBLIC ${GMP_INCLUDE_DIR})
 target_link_libraries (triqs PUBLIC ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
 
@@ -205,12 +223,14 @@ target_link_libraries (triqs PUBLIC ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
 # FFTW
 # ---------------------------------
 
-message( STATUS "-------- FFTW detection -------------")
+message(STATUS "-------- FFTW detection -------------")
 find_package(FFTW)
 
-#
-target_include_directories(triqs SYSTEM PUBLIC ${FFTW_INCLUDE_DIR})
-target_link_libraries (triqs PUBLIC ${FFTW_LIBRARIES})
+set(TRIQS_FFTW_LIBRARIES ${FFTW_LIBRARIES} CACHE FILEPATH "FFTW Library used for the compilation of triqs.")
+set(TRIQS_FFTW_INCLUDE_DIR ${FFTW_INCLUDE_DIR} CACHE FILEPATH "FFTW Library used for the compilation of triqs.")
+
+target_link_libraries(triqs PUBLIC fftw)
+install(TARGETS fftw EXPORT triqs-dependencies)
 
 # ---------------------------------
 # pthread
@@ -233,6 +253,7 @@ target_include_directories(triqs SYSTEM INTERFACE ${CMAKE_INSTALL_PREFIX}/includ
 
 # Install the library in lib and prepare an exported cmake file to reimport it
 install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
+install(EXPORT triqs-dependencies NAMESPACE triqs:: DESTINATION lib/cmake/triqs)
 install(EXPORT triqs-targets DESTINATION lib/cmake/triqs)
 
 # Install headers 

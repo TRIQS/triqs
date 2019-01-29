@@ -48,3 +48,8 @@ mark_as_advanced(FFTW_LIBRARIES)
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(FFTW DEFAULT_MSG FFTW_LIBRARIES FFTW_INCLUDE_DIR)
 
+# Interface target
+# We refrain from creating an imported target since those cannot be exported
+add_library(fftw INTERFACE)
+target_link_libraries(fftw INTERFACE ${FFTW_LIBRARIES})
+target_include_directories(fftw INTERFACE ${FFTW_INCLUDE_DIR})

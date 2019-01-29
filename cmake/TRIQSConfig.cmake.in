@@ -1,5 +1,5 @@
 # Multiple inclusion guard
-if (NOT TRIQS_FOUND) 
+if(NOT TRIQS_FOUND)
 set(TRIQS_FOUND True)
 
 # Version
@@ -31,6 +31,9 @@ list(APPEND CMAKE_MODULE_PATH ${TRIQS_ROOT}/share/cmake/Modules)
 
 # True iif triqs was compiled with Python support
 set(TRIQS_WITH_PYTHON_SUPPORT @TRIQS_WITH_PYTHON_SUPPORT@)
+
+# include the exported dependencies of the triqs project
+include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-dependencies.cmake)
 
 # include the exported targets of this project 
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/cpp2py/cpp2py-targets.cmake)
