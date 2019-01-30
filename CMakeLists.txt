@@ -167,7 +167,7 @@ endif()
 # FIXME For future cmake versions we should populate the
 # INTERFACE_LINK_DIRECTORIES of the triqs target
 # ---------------------------------
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND DEFINED ENV{LIBRARY_PATH})
   string(REPLACE ":" ";" LINK_DIRS $ENV{LIBRARY_PATH})
   foreach(dir ${LINK_DIRS})
     string(APPEND CMAKE_SHARED_LINKER_FLAGS " -L${dir}")
