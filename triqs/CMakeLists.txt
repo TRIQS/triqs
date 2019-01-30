@@ -90,6 +90,7 @@ target_link_libraries(mpi INTERFACE ${MPI_C_LIBRARIES} ${MPI_CXX_LIBRARIES})
 target_compile_options(mpi INTERFACE ${MPI_C_COMPILE_FLAGS})
 
 target_link_libraries(triqs PUBLIC mpi)
+target_include_directories(triqs SYSTEM PUBLIC ${MPI_C_INCLUDE_PATH})
 install(TARGETS mpi EXPORT triqs-dependencies)
 
 if(NOT MPIEXEC_EXECUTABLE) # Backward compatibility for older FindMPI.cmake
@@ -127,6 +128,7 @@ target_include_directories(boost SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
 
 target_link_libraries(triqs PUBLIC boost)
+target_include_directories(triqs SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 install(TARGETS boost EXPORT triqs-dependencies)
 
 # ---------------------------------
@@ -207,6 +209,7 @@ target_link_libraries(hdf5 INTERFACE ${HDF5_LIBRARIES})
 target_compile_options(hdf5 INTERFACE ${HDF5_DEFINITIONS})
 
 target_link_libraries(triqs PUBLIC hdf5)
+target_include_directories(triqs SYSTEM PUBLIC ${HDF5_INCLUDE_DIRS})
 install(TARGETS hdf5 EXPORT triqs-dependencies)
 
 # ---------------------------------
@@ -230,6 +233,7 @@ set(TRIQS_FFTW_LIBRARIES ${FFTW_LIBRARIES} CACHE FILEPATH "FFTW Library used for
 set(TRIQS_FFTW_INCLUDE_DIR ${FFTW_INCLUDE_DIR} CACHE FILEPATH "FFTW Library used for the compilation of triqs.")
 
 target_link_libraries(triqs PUBLIC fftw)
+target_include_directories(triqs SYSTEM PUBLIC ${FFTW_INCLUDE_DIR})
 install(TARGETS fftw EXPORT triqs-dependencies)
 
 # ---------------------------------
