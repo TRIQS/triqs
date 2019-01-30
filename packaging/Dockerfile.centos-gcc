@@ -4,7 +4,7 @@ RUN yum -y install centos-release-scl epel-release && yum -y update
 RUN yum -y install \
       blas-devel \
       boost-devel \
-      cmake \
+      cmake3 \
       devtoolset-7-gcc-c++ \
       fftw-devel \
       gcc-c++ \
