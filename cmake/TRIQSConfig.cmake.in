@@ -39,6 +39,10 @@ include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-dependencies.cmake)
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/cpp2py/cpp2py-targets.cmake)
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)
 
+# Keep the gtest target for backward compatibility
+add_library(gtest INTERFACE)
+target_link_libraries(gtest INTERFACE triqs::gtest)
+
 MESSAGE(STATUS "Found TRIQSConfig.cmake with version ${TRIQS_VERSION}, hash = ${TRIQS_GIT_HASH}")
 
 # Check compiler
