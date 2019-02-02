@@ -141,4 +141,44 @@ TEST(H5Io, Vector) {
   EXPECT_EQ(mv, mmv);
 }
 
+TEST(H5Io, Attribute) {
+  // write
+  std::vector<std::vector<std::string>> vvs  = {{"a", "b"}, {"c", "d"}, {"e", "f"}};
+  std::vector<std::vector<std::string>> evvs = {};
+  std::vector<std::vector<std::string>> vevs = {{}, {}, {}};
+  std::vector<std::vector<std::string>> vves = {{"", ""}, {"", ""}, {"", ""}};
+
+  {
+    h5::file file{"test_attribute.h5", H5F_ACC_TRUNC};
+    h5::group grp{file};
+    h5_write(grp, "vec", 0);
+
+    auto id = grp.open_dataset("vec");
+    h5_write_attribute(id, "attr_vvs", vvs);
+    h5_write_attribute(id, "attr_evvs", evvs);
+    h5_write_attribute(id, "attr_vevs", vevs);
+    h5_write_attribute(id, "attr_vves", vves);
+  }
+
+  // read
+  std::vector<std::vector<std::string>> rvvs, revvs, rvevs, rvves;
+
+  {
+    h5::file file{"test_attribute.h5", H5F_ACC_RDONLY};
+    h5::group grp{file};
+
+    auto id = grp.open_dataset("vec");
+    h5_read_attribute(id, "attr_vvs", rvvs);
+    h5_read_attribute(id, "attr_evvs", revvs);
+    h5_read_attribute(id, "attr_vevs", rvevs);
+    h5_read_attribute(id, "attr_vves", rvves);
+  }
+
+  // compare
+  EXPECT_EQ(vvs, rvvs);
+  EXPECT_EQ(evvs, revvs);
+  EXPECT_EQ(vevs, rvevs);
+  EXPECT_EQ(vves, rvves);
+}
+
 MAKE_MAIN;
