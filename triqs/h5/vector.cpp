@@ -65,6 +65,13 @@ namespace triqs {
           // auto status = H5Tset_size (strdatatype, s);
           // auto status = H5Tset_size (strdatatype, H5T_VARIABLE);
 
+          if(V.empty() || lv == 0) {
+            buf.resize(1);
+            hsize_t totdimsf[] = {V.size(), 0};
+            d_space = H5Screate_simple(2, totdimsf, NULL);
+            return;
+          }
+
           buf.resize(V.size() * lv * (s + 1), 0x00);
           for (int i = 0, k = 0; i < V.size(); i++)
             for (int j = 0; j < lv; j++, k++) {
@@ -174,6 +181,7 @@ namespace triqs {
       // buffer
       size_t size = H5Aget_storage_size(attr);
       std::vector<char> buf(size, 0x00);
+      if(buf.empty()) return;
 
       auto err = H5Aread(attr, datatype, (void *)(&buf[0]));
       if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot read the attribute " << name;
@@ -187,7 +195,7 @@ namespace triqs {
         for (int j = 0; j < dims_out[1]; ++j, ++k) {
           std::string x = "";
           x.append(&buf[k * (s_size)]);
-          if (!x.empty()) v.push_back(x);
+          v.push_back(x);
         }
         V.push_back(v);
       }
