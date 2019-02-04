@@ -126,42 +126,85 @@ namespace triqs::mc_tools {
    */
     void set_after_cycle_duty(std::function<void()> f) { after_cycle_duty = f; }
 
-    TRIQS_DEPRECATED("start method is deprecated. Use run, cf docs. Will be removed in future releases.")
-    int start(MCSignType sign_init, std::function<bool()> stop_callback) {
-      sign = sign_init;
-      return warmup_and_accumulate(n_warmup_cycles_bckwd, ncycles_bckwd, length_cycle_bckwd, stop_callback);
+    int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback) {
+      report << "\nWarming up ..." << std::endl;
+      return run(n_warmup_cycles, length_cycle, stop_callback, false);
     }
 
     /**
-   * Warmup and accumulate
-   *
-   * @param n_warmup_cycles         Number of QMC cycles in the warmup
-   * @param n_accumulation_cycles   Number of QMC cycles in the accumulation (measures are done after each cycle).
-   * @param length_cycle            Number of QMC move attempts in one cycle
-   * @param stop_callback           A callback function () -> bool. It is called after each cycle
-   *                                to and the computation stops when it returns true.
-   *                                Typically used to set up the time limit, cf doc.
-   * @return
-   *    =  =============================================
-   *    0  if the computation has run until the end
-   *    1  if it has been stopped by stop_callback
-   *    2  if it has been stopped by receiving a signal
-   *    =  =============================================
-   *
-  */
-    int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback,
-                              MCSignType sign_init = 1) {
-      sign = sign_init; // init the sign
-      report << "\nWarming up ..." << std::endl;
-      int status = run(n_warmup_cycles, length_cycle, stop_callback, false);
+     * Warmup the Monte-Carlo configuration
+     *
+     * @param n_warmup_cycles         Number of QMC cycles in the warmup
+     * @param length_cycle            Number of QMC move attempts in one cycle
+     * @param stop_callback           A callback function () -> bool. It is called after each cycle
+     *                                to and the computation stops when it returns true.
+     *                                Typically used to set up the time limit, cf doc.
+     * @param sign_init               The sign of the initial configuration's weight [optional]
+     *
+     * @return
+     *    =  =============================================
+     *    0  if the computation has run until the end
+     *    1  if it has been stopped by stop_callback
+     *    2  if it has been stopped by receiving a signal
+     *    =  =============================================
+     *
+     */
+    int warmup(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback, MCSignType sign_init) {
+      sign = sign_init;
+      return warmup(n_warmup_cycles, length_cycle, stop_callback);
+    }
 
+    /**
+     * Accumulate/Measure
+     *
+     * @param n_accumulation_cycles   Number of QMC cycles in the accumulation (measures are done after each cycle).
+     * @param length_cycle            Number of QMC move attempts in one cycle
+     * @param stop_callback           A callback function () -> bool. It is called after each cycle
+     *                                to and the computation stops when it returns true.
+     *                                Typically used to set up the time limit, cf doc.
+     *
+     * @return
+     *    =  =============================================
+     *    0  if the computation has run until the end
+     *    1  if it has been stopped by stop_callback
+     *    2  if it has been stopped by receiving a signal
+     *    =  =============================================
+     *
+     */
+    int accumulate(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback) {
       report << "\nAccumulating ..." << std::endl;
-      if (status == 0) status = run(n_accumulation_cycles, length_cycle, stop_callback, true);
-      // final reporting
-      if (status == 1) report << "mc_generic stops because of stop_callback";
-      if (status == 2) report << "mc_generic stops because of a signal";
-      report << "\n\n" << std::flush;
+      return run(n_accumulation_cycles, length_cycle, stop_callback, true);
+    }
+
+    int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback) {
+      int status = warmup(n_warmup_cycles, length_cycle, stop_callback);
+      if (status == 0) status = accumulate(n_accumulation_cycles, length_cycle, stop_callback);
       return status;
+    }
+
+    /**
+     * Warmup the Monte-Carlo configuration and accumulate/measure
+     *
+     * @param n_warmup_cycles         Number of QMC cycles in the warmup
+     * @param n_accumulation_cycles   Number of QMC cycles in the accumulation (measures are done after each cycle).
+     * @param length_cycle            Number of QMC move attempts in one cycle
+     * @param stop_callback           A callback function () -> bool. It is called after each cycle
+     *                                to and the computation stops when it returns true.
+     *                                Typically used to set up the time limit, cf doc.
+     * @param sign_init               The sign of the initial configuration's weight [optional]
+     *
+     * @return
+     *    =  =============================================
+     *    0  if the computation has run until the end
+     *    1  if it has been stopped by stop_callback
+     *    2  if it has been stopped by receiving a signal
+     *    =  =============================================
+     *
+     */
+    int warmup_and_accumulate(uint64_t n_warmup_cycles, uint64_t n_accumulation_cycles, uint64_t length_cycle, std::function<bool()> stop_callback,
+                              MCSignType sign_init) {
+      sign = sign_init; // init the sign
+      return warmup_and_accumulate(n_warmup_cycles, n_accumulation_cycles, length_cycle, stop_callback);
     }
 
     private:
@@ -219,6 +262,12 @@ namespace triqs::mc_tools {
       } else {
         timer_warmup = timer;
       }
+
+      // final reporting
+      if (status == 1) report << "mc_generic stops because of stop_callback";
+      if (status == 2) report << "mc_generic stops because of a signal";
+      report << "\n" << std::endl;
+
       return status;
     }
 
@@ -300,16 +349,6 @@ namespace triqs::mc_tools {
    */
     auto get_accumulation_time_HHMMSS() const { return hours_minutes_seconds_from_seconds(timer_accumulation); }
 
-    private:
-    /**
-   * Is the qmc thermalized, i.e. has it run more than n_warmup_cycles given at construction
-   */
-    TRIQS_DEPRECATED("This function WILL be removed in future releases.")
-    bool is_thermalized() const { return (current_cycle_number >= n_warmup_cycles_bckwd); }
-
-    bool is_converged() const { return false; }
-
-    public:
     /// HDF5 interface
     friend void h5_write(h5::group g, std::string const &name, mc_generic const &mc) {
       auto gr = g.create_group(name);
@@ -336,7 +375,6 @@ namespace triqs::mc_tools {
     measure_set<MCSignType> AllMeasures;
     std::vector<measure_aux> AllMeasuresAux;
     utility::report_stream report;
-    uint64_t length_cycle_bckwd = 0, n_warmup_cycles_bckwd = 0, ncycles_bckwd = 0; // backward compat only. Deprecated
     uint64_t nmeasures, current_cycle_number = 0;
     utility::timer timer_accumulation, timer_warmup;
     std::function<void()> after_cycle_duty;
