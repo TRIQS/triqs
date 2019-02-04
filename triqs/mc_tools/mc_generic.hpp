@@ -171,7 +171,7 @@ namespace triqs::mc_tools {
      *    =  =============================================
      *
      */
-    int accumulate(uint64_t n_warmup_cycles, int64_t length_cycle, std::function<bool()> stop_callback) {
+    int accumulate(uint64_t n_accumulation_cycles, int64_t length_cycle, std::function<bool()> stop_callback) {
       report << "\nAccumulating ..." << std::endl;
       return run(n_accumulation_cycles, length_cycle, stop_callback, true);
     }
@@ -250,7 +250,7 @@ namespace triqs::mc_tools {
                  << std::flush;
           next_info_time = 1.25 * timer + 2.0; // Increase time interval non-linearly
         }
-        finished = ((NC + 1 >= n_cycles) || is_converged());
+        finished = NC + 1 >= n_cycles;
         stop_it  = (stop_callback() || triqs::signal_handler::received() || finished);
       }
       int status = (finished ? 0 : (triqs::signal_handler::received() ? 2 : 1));
