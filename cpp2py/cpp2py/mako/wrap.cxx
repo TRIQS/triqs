@@ -1,3 +1,4 @@
+#include<array>
 #include<complex>
 #include<string>
 #include<iostream> //for std::cout...
@@ -7,12 +8,10 @@ using dcomplex = std::complex<double>;
 #include <cpp2py.hpp>
 #include <cpp2py/converters/string.hpp>
 
-// needed for h5 mechanism below
-#include <cpp2py/converters/function.hpp>
-
 // for converters
 #include <cpp2py/converters/vector.hpp>
 #include <cpp2py/converters/string.hpp>
+#include <cpp2py/converters/function.hpp>
 #include <algorithm>
 
 //------------------------------------------------------------------------------------------------------
@@ -32,6 +31,15 @@ using dcomplex = std::complex<double>;
 %endif
 %endfor
 
+%for ns in module.using:
+using ${ns};
+%endfor
+
+using namespace cpp2py;
+
+${module._preamble}
+
+
 //------------------------------------------------------------------------------------------------------
 // Second all the classes and enums wrapped by imported modules 
 // Most converters will be automatically included
@@ -40,18 +48,11 @@ using dcomplex = std::complex<double>;
 <%
   cpp2py_imported_modules = [m for n, m in sys_modules.items() if hasattr(m,'_get_cpp2py_wrapped_class_enums')]
   cpp2py_imported_modules = dict((m.__name__.split('.')[-1], m) for m in cpp2py_imported_modules).values()
-  #cpp2py_imported_modules = dict(((m.__file__, m.__name__), m) for m in cpp2py_imported_modules).values()
 %>  
-
-%for M in cpp2py_imported_modules:
- // Module ${M.__file__}  ${M.__name__}
-%endfor
 
 %for M in cpp2py_imported_modules:
  <% 
    d = M._get_cpp2py_wrapped_class_enums() 
-   module_name = d['module_name']
-   wrapped_cls = eval(d.get('classes',"()"))
    wrapped_ens = eval(d.get('enums',"()"))
    includes = eval(d['includes'])
  %>
@@ -68,67 +69,9 @@ using dcomplex = std::complex<double>;
 
 namespace cpp2py { 
 
-//--------------------- Converters of classes --------------------------
- 
-%for n,(c_type_absolute, implement_regular_type_converter) in enumerate(wrapped_cls) :
-
-template<> struct py_converter<${c_type_absolute}> { 
-
-  using is_wrapped_type = void;// to recognize
- 
-  static void ** wrapped_convert_fnt;
-
-  static void ** init() {
-   PyObject * mod =  PyImport_ImportModule("${module_name}");
-   if (mod ==NULL) return NULL;
-   pyref capsule =  PyObject_GetAttrString(mod,  "_exported_wrapper_convert_fnt");
-   if (capsule.is_null()) {
-     PyErr_SetString(PyExc_RuntimeError, "TRIQS: can not find _exported_wrapper_convert_fnt in the module ${module_name}");
-     return NULL;
-   }
-   void ** table = (void**) PyCapsule_GetPointer(capsule, "${module_name}._exported_wrapper_convert_fnt");
-   return table;
- }
-
-  // requires that the type is copy constructible or disable the function
-  template<typename U, typename = std::enable_if_t< std::is_copy_constructible_v<U>> >
-  static PyObject * c2py(U const & x){
-   if (wrapped_convert_fnt == NULL) return NULL;
-   return ((PyObject * (*)(${c_type_absolute} const &)) wrapped_convert_fnt[3*${n}])(${c_type_absolute}{x}); // use copy and move
- }
-
-  static PyObject * c2py(${c_type_absolute} && x){
-   if (wrapped_convert_fnt == NULL) return NULL;
-   return ((PyObject * (*)(${c_type_absolute} &&)) wrapped_convert_fnt[3*${n}])(std::move(x));
- }
- 
-  static ${c_type_absolute}& py2c(PyObject * ob){
-   if (wrapped_convert_fnt == NULL) std::terminate(); // It should never happen since py2c is called only is is_convertible is true (py_converter specs)
-   return ((${c_type_absolute}& (*)(PyObject *)) wrapped_convert_fnt[3*${n}+1])(ob);
- }
- 
-  static bool is_convertible(PyObject *ob, bool raise_exception) {
-   if (wrapped_convert_fnt == NULL) {
-    if (!raise_exception && PyErr_Occurred()) {PyErr_Print();PyErr_Clear();}
-    return false;
-   }
-   return ((bool (*)(PyObject *,bool)) wrapped_convert_fnt[3*${n}+2])(ob,raise_exception);
- }
-};
-
-void ** py_converter<${c_type_absolute}>::wrapped_convert_fnt = py_converter<${c_type_absolute}>::init();
-
-%if implement_regular_type_converter : 
- template<> struct py_converter<${c_type_absolute}::regular_type> : 
- 	py_converter_generic_cross_construction<${c_type_absolute}::regular_type, ${c_type_absolute}> {};
-%endif
-
-%endfor
-## end loop on classes
-
 //--------------------- Converters of enums --------------------------
 
-%for (c_name_absolute, c_namespace, values) in wrapped_ens:
+%for (c_name_absolute, c_namespace, values) in wrapped_ens: 
 
 template <> struct py_converter<${c_name_absolute}> {
  static PyObject * c2py(${c_name_absolute} x) {
@@ -170,36 +113,11 @@ template <> struct py_converter<${c_name_absolute}> {
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
 
-%for ns in module.using:
-using ${ns};
-%endfor
-
-<% include_serialization=0 %>
-%for c in module.classes.values() :
-%if c.serializable == "h5" :
-<% include_serialization=1 %>
-<% break %>
-%endif
-%endfor
-%if include_serialization==1 :
-#include <triqs/utility/serialization.hpp>
-%endif
-using namespace cpp2py;
-
-${module._preamble}
-
 //--------------------- Generated converters --------------------------
  
 %for conv in module.converters.values():
  ${conv.generate()}
 %endfor
-
-
-//--------------------- a dict of python function used in the module but not exposed to user (cf init function) ----------------
-
-%if len(module.python_functions) + len(module.hidden_python_functions) > 0 :
-static PyObject * _module_hidden_python_function = NULL;
-%endif
 
 // We use the order, in the following order (which is necessary for compilation : we need the converters in the implementations)
 // - function/method declaration
@@ -224,12 +142,6 @@ static PyObject * _module_hidden_python_function = NULL;
 // ----------------------------
 // start class : ${c.py_type}
 // ----------------------------
-//--------------------- all pure python methods  -----------------------------
-
-%for f_name, (f,ty,doc) in c.pure_python_methods.items():
-static PyObject* ${c.py_type}_${f_name} (PyObject *self, PyObject *args, PyObject *keywds);
-%endfor
-
 //--------------------- all members  -----------------------------
 
 %for m in c.members:
@@ -471,16 +383,7 @@ static PyMethodDef ${c.py_type}_methods[] = {
     %endif
    %endfor
     {"__reduce__", (PyCFunction)${c.py_type}___reduce__, METH_VARARGS, "Internal  " },
-##%if c.serializable == "tuple" :
-##    {"__reduce_reconstructor__", (PyCFunction)${c.py_type}___reduce_reconstructor__, METH_VARARGS|METH_STATIC, "Internal " },
-##%endif
-##%if c.hdf5:
     {"__write_hdf5__", (PyCFunction)${c.py_type}___write_hdf5__, METH_VARARGS, "Internal : hdf5 writing via C++ " },
-##%endif
- %for meth_name, (meth,ty,doc) in c.pure_python_methods.items():
-    {"${meth_name}", (PyCFunction)${c.py_type}_${meth_name}, METH_VARARGS| METH_KEYWORDS, "${doc}" },
- %endfor
-
 {NULL}  /* Sentinel */
 };
 
@@ -531,48 +434,6 @@ static PyTypeObject ${c.py_type}Type = {
  0,                          /* tp_new */
 %endif
 };
-
-//--------------------- converters for the class c -----------------------------
-
-namespace cpp2py { 
-
-template <> struct py_converter<${c.c_type}> {
-
- using is_wrapped_type = void;// to recognize
-
- template<typename U> static PyObject * c2py(U&& x){
-  ${c.py_type} *self;
-  self = (${c.py_type} *)${c.py_type}Type.tp_alloc(&${c.py_type}Type, 0);
-  if (self != NULL) {
-   self->_c = new ${c.c_type}{std::forward<U>(x)};
-  }
-  return (PyObject *)self;
- }
-
- static ${c.c_type} & py2c(PyObject * ob){
-  auto *_c = ((${c.py_type} *)ob)->_c;
-  if (_c == NULL) CPP2PY_RUNTIME_ERROR << "Severe internal error : _c is null in py2c for type ${c.c_type} !";
-  return *_c;
- }
-
- static bool is_convertible(PyObject *ob, bool raise_exception){
-  if (PyObject_TypeCheck(ob, & ${c.py_type}Type)) {
-   if (((${c.py_type} *)ob)->_c != NULL) return true;
-   if (raise_exception) PyErr_SetString(PyExc_TypeError, "Severe internal error : Python object of ${c.py_type} has a _c NULL pointer !!");
-   return false;
-  }
-  if (raise_exception) PyErr_SetString(PyExc_TypeError, "Python object is not a ${c.py_type}");
-  return false;
- }
-};
-
-// TO BE MOVED IN GENERAL HPP
-%if c.implement_regular_type_converter :
- // ${c.py_type} is wrapping a view, we are also implementing the converter of the associated regular type
- template<> struct py_converter<${c.c_type}::regular_type> : py_converter_generic_cross_construction<${c.c_type}::regular_type, ${c.c_type}> {};
-%endif
-
-} // namespace cpp2py
 
 // ----------------------------
 // stop class : ${c.py_type}
@@ -626,16 +487,11 @@ template <> struct py_converter<${en.c_name}> {
 
  static ${'PyObject*' if not py_meth.is_constructor else 'int'} ${module_or_class_name}_${py_meth.py_name}(PyObject *self, PyObject *args, PyObject *keywds) {
 
-  <%
-     n_overload = len(py_meth.overloads)
-     has_overloads = (n_overload>1)
-  %>
-  %if not py_meth.is_constructor :
-  PyObject * py_result; //final result
-  %endif
-  %if has_overloads :
-  PyObject * errors[${n_overload}] = {${",".join(n_overload*['NULL'])}}; //errors of the parsing attempts...
-  %endif
+  static constexpr int n_overloads = ${len(py_meth.overloads)};
+
+  [[maybe_unused]] PyObject * py_result; //final result, except for constructor
+
+  std::array<pyref,n_overloads> errors;
 
   // If no overload, we avoid the err_list and let the error go through (to save some code).
   %for n_overload, overload in enumerate(py_meth.overloads) :
@@ -660,8 +516,9 @@ template <> struct py_converter<${en.c_name}> {
        static_assert(std::is_reference<decltype(${n})>::value || std::is_pointer<decltype(${n})>::value, "internal error");
        %endfor
       %endif
-      
-      %if overload.is_method and not overload.is_constructor and not overload.no_self_c and not overload.is_static :
+     
+      // FIXME : calling_pattern ---> lambda -> auto , plus de self. 
+      %if overload.is_method and not overload.is_constructor and not overload.is_static :
       auto & self_c = convert_from_python<${self_c_type}>(self);
       %endif
       %if overload.is_static :
@@ -697,7 +554,7 @@ template <> struct py_converter<${en.c_name}> {
          py_result = Py_None;
          %endif
         %endif
-        goto post_treatment; // eject, computation is done
+        return ${'py_result' if not py_meth.is_constructor else '0'};
       }
       %if not py_meth.is_constructor:
       CATCH_AND_RETURN(".. calling C++ overload \n.. ${overload._get_c_signature()} \n.. in implementation of ${'method' if py_meth.is_method else 'function'} ${module_or_class_name}.${py_meth.py_name}", NULL);
@@ -705,36 +562,28 @@ template <> struct py_converter<${en.c_name}> {
       CATCH_AND_RETURN (".. in calling C++ overload of constructor :\n.. ${overload._get_c_signature()}",-1);
       %endif
      }
-  %if has_overloads :
      else { // the overload does not parse the arguments. Keep the error set by python, for later use, and clear it.
-      PyObject * ptype,  *ptraceback; // unused.
-      PyErr_Fetch(&ptype, &errors[${n_overload}], &ptraceback);
+      PyObject * ptype,  *ptraceback, *err; // unused.
+      PyErr_Fetch(&ptype, &err, &ptraceback);
+      errors[${n_overload}] = pyref{err};
       Py_XDECREF(ptype); Py_XDECREF(ptraceback);
      }
-  %endif
     } // end overload ${overload._get_c_signature()}
   %endfor # overload
 
-  %if has_overloads :
-   // finally, no overload was successful. Composing a detailed error message, with the reason of failure of all overload !
+   static const char * overloads_signatures[] = {${'"' + ','.join(ov._get_c_signature() for ov in py_meth.overloads) + '"'}};
+
+   // FIXME Factorize this
+   // finally, no overload was successful. Composing a detailed error message, with the reason of failure of each overload
    {
     std::string err_list = "Error: no suitable C++ overload found in implementation of ${'method' if py_meth.is_method else 'function'} ${module_or_class_name}.${py_meth.py_name}\n";
-    %for n_overload, overload in enumerate(py_meth.overloads) :
-      err_list += "\n ${overload._get_c_signature()} \n failed with the error : \n  ";
-      if (errors[${n_overload}])err_list += PyString_AsString(errors[${n_overload}]);
+    for (int i =0; i < errors.size(); ++i) { 
+      err_list = err_list + "\n" + overloads_signatures[i] + " \n failed with the error : \n  ";
+      if (errors[i]) err_list += PyString_AsString((PyObject*)errors[i]);
       err_list +="\n";
-      Py_XDECREF(errors[${n_overload}]);
-    %endfor
+    }
     PyErr_SetString(PyExc_TypeError,err_list.c_str());
    }
-  %endif
-   goto error_return;
-
-  post_treatment:
-
-   return ${'py_result' if not py_meth.is_constructor else '0'};
-
-  error_return :
    return ${'NULL' if not py_meth.is_constructor else '-1'};
  }
 %endfor
@@ -742,36 +591,6 @@ template <> struct py_converter<${en.c_name}> {
 // ------------------------------- Loop on all classes ----------------------------------------------------
 
 %for c in module.classes.values() :
-
-//--------------------- define all pure python methods  -----------------------------
-
-// The methods called from an external module
-%for f_name, (f,ty,doc) in c.pure_python_methods.items():
- %if ty=='module':
-static PyObject* ${c.py_type}_${f_name} (PyObject *self, PyObject *args, PyObject *keywds) {
-  static pyref module = pyref::module("${f.module}");
-  if (module.is_null()) {
-     PyErr_SetString(PyExc_ImportError,"Cannot import module ${f.module}");
-     return NULL;
-  }
-  static pyref py_fnt = module.attr("${f.py_name}");
-  if (py_fnt.is_null()) {
-     PyErr_SetString(PyExc_ImportError,"Cannot import function ${f.py_name} in module ${f.module}");
-     return NULL;
-  }
-  pyref args2 = PySequence_Concat(PyTuple_Pack(1,self),args);
-  PyObject * ret = PyObject_Call(py_fnt, args2,keywds);
-  return ret;
-}
- %else :
-  // The methods with inline code in the module
-static PyObject* ${c.py_type}_${f_name} (PyObject *self, PyObject *args, PyObject *keywds) {
-  pyref args2 = PySequence_Concat(PyTuple_Pack(1,self),args);
-  PyObject * ret = PyObject_Call(PyDict_GetItemString(PyModule_GetDict(_module_hidden_python_function),"${f}"), args2, keywds);
-  return ret;
-}
-%endif
-%endfor
 
 //--------------------- define all members  -----------------------------
 
@@ -867,41 +686,17 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) 
 }
 %endif
 
-//--------------------- reduce : default case -----------------------------
+//--------------------- reduce  -----------------------------
 
 %if c.serializable is None:
- static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds) {
+
+static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds) {
   PyErr_SetString(PyExc_NotImplementedError, "__reduce__ not implemented");
   return NULL;
 }
 %endif
-//--------------------- reduce  -----------------------------
 
-%if c.serializable == "h5" :
- static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds) {
-  auto & self_c = convert_from_python<${c.c_type}>(self);
-  pyref r = pyref::module("${module.full_name}").attr("__reduce_reconstructor__${c.py_type}");
-  if (r.is_null()) {
-   PyErr_SetString(PyExc_ImportError,
-                   "Cannot find the reconstruction function ${module.full_name}.__reduce_reconstructor__${c.py_type}");
-   return NULL;
-  }
-  return Py_BuildValue("(NN)", r.new_ref() , Py_BuildValue("(N)", convert_to_python(triqs::serialize(self_c))));
- }
-
- //
- static PyObject* ${c.py_type}___reduce_reconstructor__ (PyObject *self, PyObject *args, PyObject *keywds) {
-    PyObject* a1 = PyTuple_GetItem(args,0); // 
-    auto a = convert_from_python<triqs::arrays::array_const_view<triqs::h5::h5_serialization_char_t,1>>(a1);
-    try {
-      return convert_to_python( triqs::deserialize<${c.c_type}>(a));
-    }
-    CATCH_AND_RETURN("in unserialization of object ${c.py_type}",NULL);
-  }
-
-%endif
-
-//--------------------- reduce version 2 -----------------------------
+//--------------------- 
 
 %if c.serializable == "tuple" :
 
@@ -929,7 +724,7 @@ static int ${c.py_type}___setitem__(PyObject *self, PyObject *key, PyObject *v) 
  }
 %endif
 
-//--------------------- reduce version 3 -----------------------------
+//--------------------- 
 
 %if c.serializable == "repr" :
  static PyObject* ${c.py_type}___reduce__ (PyObject *self, PyObject *args, PyObject *keywds) {
@@ -1060,6 +855,8 @@ static PyObject* ${c.py_type}___write_hdf5__ (PyObject *self, PyObject *args) {
 
 %else:
 
+// FIXME pass by the ordinary calls....
+// FIXME Py_RETURN_NONE : in the usual call.
 static PyObject* ${c.py_type}___write_hdf5__ (PyObject *self, PyObject *args) {
   triqs::h5::group gr;
   const char * key;
@@ -1071,33 +868,6 @@ static PyObject* ${c.py_type}___write_hdf5__ (PyObject *self, PyObject *args) {
   CATCH_AND_RETURN("in h5 writing of object ${c.py_type}",NULL);
   Py_RETURN_NONE;
  }
-
-// Make the reader function for the type and register it in the hdf archive module
-// This function is called once in the module init function
-static void register_h5_reader_for_${c.py_type} () {
-
-  auto reader = [] (PyObject * h5_gr, std::string const & name) -> PyObject *{
-   auto gr = convert_from_python<triqs::h5::group>(h5_gr);
-   // declare the target C++ object, with special case if it is a view...
-   using c_type = triqs::regular_type_if_view_else_type_t<${c.c_type}>;
-   try { // now read
-     return convert_to_python(${c.c_type}( triqs::h5::h5_read<c_type> (gr, name))); // cover the view and value case
-   }
-   CATCH_AND_RETURN("in h5 reading of object ${c.py_type}", NULL);
-   return NULL; // unused
-  }; // end reader lambda
-
-  pyref h5_reader = convert_to_python(std::function<PyObject*(PyObject *, std::string)> (reader));
-  pyref module = pyref::module("pytriqs.archive.hdf_archive_schemes");
-  pyref register_class = module.attr("register_class");
-
-  using c_type = triqs::regular_type_if_view_else_type_t<${c.c_type}>;
-  std::string hdf5_scheme = triqs::h5::get_hdf5_scheme<c_type>();
-  pyref ds =convert_to_python(hdf5_scheme);
-
-  pyref res = PyObject_CallFunctionObjArgs(register_class, (PyObject*)(&${c.py_type}Type), Py_None, (PyObject*)h5_reader, (PyObject*)ds, NULL);
-  //pyref res = PyObject_CallFunction(register_class, "OOO", (PyObject*)(&${c.py_type}Type), Py_None, (PyObject*)h5_reader);
-}
 
 %endif
 
@@ -1190,6 +960,7 @@ PyObject* ${c.py_type}___iter__(PyObject *self) {
 %endfor  ## Big loop on classes c
 
 
+// FIXME : remove this
 //--------------------- function returning the list of classes, enum wrapped  -----------------------------
 
  static PyObject* _get_cpp2py_wrapped_class_enums(PyObject *self, PyObject *args, PyObject *keywds) {
@@ -1208,10 +979,6 @@ PyObject* ${c.py_type}___iter__(PyObject *self) {
   return d;
  }
  
-//------------------------------------------------------------------------
-//---------------------    MODULE  --------- -----------------------------
-//------------------------------------------------------------------------
-
 //--------------------- module function table  -----------------------------
 
 // the table of the function of the module...
@@ -1232,17 +999,6 @@ static PyMethodDef module_methods[] = {
 
 //--------------------- module init function -----------------------------
 
-// The code of all module python functions
-%for f in module.python_functions.values() :
- static const char * _module_python_function_code_${f.name} =
-${f.code};
-%endfor
-
-%for f in module.hidden_python_functions.values() :
- static const char * _module_hidden_python_function_code_${f.name} =
-${f.code};
-%endfor
-
 #ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
 #define PyMODINIT_FUNC void
 #endif
@@ -1257,7 +1013,6 @@ init${module.name}(void)
     PyObject* m;
 
 %for c in module.classes.values() :
-
     if (PyType_Ready(&${c.py_type}Type) < 0) return;
 
     %if c.iterator :
@@ -1276,59 +1031,24 @@ init${module.name}(void)
     PyModule_AddObject(m, "${c.py_type}", (PyObject *)&${c.py_type}Type);
 %endfor
 
+#ifdef TRIQS_INCLUDED_H5
     // hdf5 registration
+  pyref module = pyref::module("pytriqs.archive.hdf_archive_schemes");
+  pyref register_class = module.attr("register_class");
 %for c in [c for c in module.classes.values() if c.hdf5]:
-    register_h5_reader_for_${c.py_type}();
+  {   
+   pyref h5_reader = convert_to_python(cpp2py::make_py_h5_reader<${c.c_type}>("${c.py_type}"));
+   pyref ds =convert_to_python(triqs::h5::get_hdf5_scheme<${c.c_type}>());
+   pyref res = PyObject_CallFunctionObjArgs(register_class, (PyObject*)(&${c.py_type}Type), Py_None, (PyObject*)h5_reader, (PyObject*)ds, NULL);
+  }
+%endfor
+#endif
+
+    // register all the types
+    auto *table  = get_pytypeobject_table();
+%for c in module.classes.values() :
+    (*table)[std::type_index(typeid(${c.c_type})).name()] = &${c.py_type}Type;
 %endfor
 
-   // Import once all modules to register the class of imported modules.
-<%
-  cpp2py_imported_module_names = [n for n, m in sys_modules.items() if hasattr(m,'_get_cpp2py_wrapped_class_enums')]
-%>  
-%for m in cpp2py_imported_module_names:
-   PyImport_ImportModule ("${m}"); // loose the reference, it is ok here.
-%endfor
-
-   // write the export table for classes (enums) that have to be exported
-<% classes_to_export =  [c for c in module.classes.values() if c.export] %>
-%if len(classes_to_export) >0 :
-     // declare the exported wrapper functions
-     static void * _exported_wrapped_convert_fnt[3*${len(classes_to_export)}];
-
-     // init the array with the function pointers for classes to be exported
-     %for n,c in enumerate(classes_to_export):
-       _exported_wrapped_convert_fnt[3*${n}+0] = (void *)convert_to_python<${c.c_type_absolute}>;
-       _exported_wrapped_convert_fnt[3*${n}+1] = (void *)convert_from_python<${c.c_type_absolute}>;
-       _exported_wrapped_convert_fnt[3*${n}+2] = (void *)convertible_from_python<${c.c_type_absolute}>;
-     %endfor
-
-    /* Create a Capsule containing the API pointer array's address */
-    PyObject *c_api_object = PyCapsule_New((void *)_exported_wrapped_convert_fnt, "${module.full_name}._exported_wrapper_convert_fnt", NULL);
-    if (c_api_object != NULL) PyModule_AddObject(m, "_exported_wrapper_convert_fnt", c_api_object);
-%endif
-
-   // add eventually the python function 
-   %if len(module.python_functions) + len(module.hidden_python_functions) > 0 :
-
-    PyObject* main_module = PyImport_AddModule("__main__"); //borrowed
-    PyObject* global_dict = PyModule_GetDict(main_module); //borrowed
-
-    // load and compile the module function defined in pure python
-   %for f in module.python_functions.values() :
-    if (!PyRun_String( _module_python_function_code_${f.name},Py_file_input, global_dict, PyModule_GetDict(m) )) return;
-   %endfor
-
-    // now the hidden python function ...
-    _module_hidden_python_function = PyModule_New("hidden_functions");
-    // if we wish to still see the functions...
-    PyModule_AddObject(m, "__hidden_fnt", _module_hidden_python_function);
-
-    PyObject * d = PyModule_GetDict(_module_hidden_python_function); //borrowed
-    %for f in module.hidden_python_functions.values() :
-     if (!PyRun_String( _module_hidden_python_function_code_${f.name}, Py_file_input, global_dict ,d)) return;
-    %endfor
-   %endif
-   // END
 }
-
 

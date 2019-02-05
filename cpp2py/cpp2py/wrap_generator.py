@@ -194,41 +194,6 @@ class cfunction :
         if self._dict_call is not None : return doc
         return "Signature : %s\n%s"%( self._get_signature(),doc)
 
-class pure_pyfunction_from_module :
-    """
-       Representation of one python function defined in Python code in an external module.
-       Will be use to make a pure python method of an object, or or a module.
-       Data :
-        - name : name given in Python
-        - doc : the doc string.
-        - module : module path to the function [pure python only]
-    """
-    def __init__(self, name, module) :
-      """ """
-      self.py_name, self.module = name, module
-      try :
-          m = __import__(module.rsplit('.')[-1])
-          f = getattr(m,name)
-          self.doc = f.__doc__ # get the doc and check the function can be loaded.
-      except :
-          print " I cannot import the function %s from the module %s"%(name,module)
-          raise
-
-    def _generate_doc(self) :
-        return self.doc
-
-class python_function:
-    """
-    A python function, given as a function.
-    Its code gets analysed and will be put into the C++ wrapper, to avoid import.
-    """
-    def __init__(self, name, f) :
-        """ """
-        self.name, self.f = name,f
-        import inspect as ins
-        self.code = "\n".join(['"%s\\n"'%line.rstrip().replace('"', '\\"') for line in ins.getsourcelines(self.f)[0]])
-        self.doc = f.__doc__ # UNUSED AT THE MOMENT ??? REALLY ???
-
 class pyfunction :
     """
        Representation of one python function of the extension
@@ -251,8 +216,6 @@ class pyfunction :
       self.is_method = is_method  # can be a method, a function...
       self.is_static = is_static  #
       self.doc = doc
-      def analyse(f):
-          return python_function(f.__name__, f) if callable(f) else f
       self.overloads = [] # List of all C++ overloads
       self.do_implement = True # in some cases, we do not want to implement it automatically, (special methods).
       self.is_constructor = False
@@ -320,7 +283,6 @@ class class_ :
     """
        Representation of a wrapped type
     """
-    hidden_python_function = {} # global dict of the python function to add to the module, hidden for the user, for precompute and so on
     def __init__(self, py_type, c_type, c_type_absolute = None, hdf5 = False, arithmetic = None, serializable = None, 
             export = True, is_printable = False, doc = '', comparisons ='') :
       """
@@ -362,9 +324,6 @@ class class_ :
            Whether and how the object is to be serialized.  Possible values are :
            - "tuple" : reduce it to a tuple of smaller objects, using the
               boost serialization compatible template in C++, and the converters of the smaller objects.
-           - "h5" : serialize via a string, made by
-              triqs::serialize/triqs::deserialize.
-              Requires hdf5 >1.8.9.
            - "repr" : serialize via a string produced by python repr, reconstructed by eval.
 
         is_printable : boolean
@@ -382,19 +341,23 @@ class class_ :
       self.py_type = py_type
       c_to_py_type[self.c_type] = self.py_type # register the name translation for the doc generation
       self.hdf5 = hdf5
-      assert serializable in [None, "h5", "tuple", "repr"]
+      assert serializable in [None, "tuple", "repr"]
       self.serializable = serializable
       self.is_printable = is_printable
       self.comparisons = comparisons
       self.iterator = None
       self.doc = doc
       self.methods = {} #  a dict : string -> pyfunction for each method name
-      self.pure_python_methods= {}
       self.constructor = None # a pyfunction  for the constructors.
       self.members= [] # a list of _member
       self.properties= [] # a list of _property
       self.export = export 
 
+      # Init hdf5
+      # If hdf5 is True, wrap the C++, else set an error message 
+      cp = "h5_write(gr, key, self_c);" if hdf5 else 'PyErr_SetString(PyExc_NotImplementedError, "No hdf5 support for %s"); return NULL;'%self.py_type;
+      self.add_method("void __write_hdf5__(triqs::h5::group gr, std::string key)", calling_pattern = cp, doc = "hdf5 writing")
+    
       # Init arithmetic
       # expect a tuple : "algebra", "scalar1", "scalar2", etc...
       self.number_protocol = {}
@@ -609,33 +572,6 @@ class class_ :
         """
         self.iterator = self._iterator(c_type, c_cast_type, begin, end)
 
-    def add_pure_python_method(self, f, rename = None):
-        """
-        Add a method name (or an overload of method name).
-
-        Parameters
-        ----------
-        
-        f : string or function
-           - a string module1.module2.fnt_name
-           - a function in python
-        """
-        def process_doc(doc) :
-            return doc.replace('\n','\\n') if doc else ''
-        if type(f) ==type('') :
-           module, name = f.rsplit('.',1)
-           try :
-               m = __import__(module.rsplit('.')[-1])
-               doc = m.__dict__[name].__doc__
-           except :
-               raise
-           self.pure_python_methods[rename or name] = pure_pyfunction_from_module(name = name, module = module), 'module', process_doc(doc)
-        elif callable(f) :
-           assert rename == None
-           self.hidden_python_function[f.__name__] = f
-           self.pure_python_methods[f.__name__] = f.__name__, 'inline', process_doc(f.__doc__)
-        else : raise ValueError, "argument f must be callable or a string"
-
     class _member :
         def __init__(self, c_name, c_type, py_name, read_only, doc):
             """
@@ -764,8 +700,6 @@ class module_ :
         self.include_list = []
         self.enums = []
         self.using =[]
-        self.python_functions = {}
-        self.hidden_python_functions = {}
         self._preamble = ''
 
     def add_class(self, cls):
@@ -834,13 +768,6 @@ class module_ :
         if name not in self.functions :
             self.functions[name] = pyfunction(name = name, doc = doc)
         self.functions[name].overloads.append(f)
-
-    def add_python_function(self, f, name = None, hidden = False) :
-        assert callable(f)
-        if not hidden :
-            self.python_functions[name or f.__name__] = python_function(name or f.__name__, f)
-        else :
-            self.hidden_python_functions[name or f.__name__] = python_function(name or f.__name__, f)
 
     def add_include(self, *filenames) :
         """
@@ -911,12 +838,10 @@ class module_ :
  
         # prepare generation
         for c in self.classes.values() : c._prepare_for_generation()
-        for n,f in class_.hidden_python_function.items() : self.add_python_function(f,name = n, hidden=True)
            
         # call mako
         tpl = Template(filename=mako_template, strict_undefined=True)
         rendered = tpl.render(module=self, 
-                   python_function = python_function, 
                    sys_modules = sys.modules)
        
         with open(wrap_file,'w') as f:
