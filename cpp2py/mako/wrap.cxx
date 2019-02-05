@@ -562,12 +562,14 @@ template <> struct py_converter<${en.c_name}> {
       CATCH_AND_RETURN (".. in calling C++ overload of constructor :\n.. ${overload._get_c_signature()}",-1);
       %endif
      }
+     %if not overload._dict_call :
      else { // the overload does not parse the arguments. Keep the error set by python, for later use, and clear it.
       PyObject * ptype,  *ptraceback, *err; // unused.
       PyErr_Fetch(&ptype, &err, &ptraceback);
       errors[${n_overload}] = pyref{err};
       Py_XDECREF(ptype); Py_XDECREF(ptraceback);
      }
+     %endif
     } // end overload ${overload._get_c_signature()}
   %endfor # overload
 
@@ -584,6 +586,7 @@ template <> struct py_converter<${en.c_name}> {
     }
     PyErr_SetString(PyExc_TypeError,err_list.c_str());
    }
+   error_return :
    return ${'NULL' if not py_meth.is_constructor else '-1'};
  }
 %endfor
