@@ -3,6 +3,10 @@
 #include "structmember.h"
 #include <string>
 #include <complex>
+#include <map>
+#include <typeindex>
+#include <exception>
+#include <iostream>
 
 // silence warning on intel
 #ifndef __INTEL_COMPILER
@@ -10,56 +14,137 @@
 #endif
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
+//---------------------  Copied from TRIQS, basic utilities -----------------------------
+// to remove TRIQS dependence for this tool
+namespace __std17 {
+  template <typename... Ts> struct _make_void { typedef void type; };
+  template <typename... Ts> using void_t = typename _make_void<Ts...>::type;
+} // namespace __std17
+
 namespace cpp2py {
 
   // Should T be treated like a view, i.e. use rebind.
   // Must be specialized for each view type
   template <typename T> struct is_view : std::false_type {};
 
-  //---------------------  Copied from TRIQS, basic utilities -----------------------------
-  // to remove TRIQS dependence for this tool 
-  namespace std17 {
-    template <typename... Ts> struct _make_void { typedef void type; };
-    template <typename... Ts> using void_t = typename _make_void<Ts...>::type;
-  } // namespace std17
-
   // Makes a clone
-  template<typename T, typename = std17::void_t<>> struct _make_clone { static T invoke(T const &x) { return T{x};} };
-  template<typename T> struct _make_clone<T, std17::void_t<typename T::regular_type>> {
-    static auto invoke(T const &x) { return typename T::regular_type{x};}
+  template <typename T, typename = __std17::void_t<>> struct _make_clone {
+    static T invoke(T const &x) { return T{x}; }
   };
-  template<typename T> auto make_clone(T const & x) { return _make_clone<T>::invoke(x);}
+  template <typename T> struct _make_clone<T, __std17::void_t<typename T::regular_type>> {
+    static auto invoke(T const &x) { return typename T::regular_type{x}; }
+  };
+  template <typename T> auto make_clone(T const &x) { return _make_clone<T>::invoke(x); }
 
   // regular type traits
-  template<typename T> void _nop(T ...){};
-  template<typename T, typename Enable=void> struct has_regular : std::false_type {};
+  template <typename T> void _nop(T...){};
+  template <typename T, typename Enable = void> struct has_regular : std::false_type {};
   template <typename T> struct has_regular<T, decltype(_nop(std::declval<typename T::regular_type>()))> : std::true_type {};
-  template<typename T, bool HasRegular = has_regular<T>::value> struct _regular_type_if_view_else_type_t;
-  template<typename T> struct _regular_type_if_view_else_type_t<T,false> {using type=T;};
-  template<typename T> struct _regular_type_if_view_else_type_t<T,true > {using type=typename T::regular_type;};
-  template<typename A> using regular_type_if_view_else_type_t = typename _regular_type_if_view_else_type_t<std::decay_t<A>>::type;
+  template <typename T, bool HasRegular = has_regular<T>::value> struct _regular_type_if_view_else_type_t;
+  template <typename T> struct _regular_type_if_view_else_type_t<T, false> { using type = T; };
+  template <typename T> struct _regular_type_if_view_else_type_t<T, true> { using type = typename T::regular_type; };
+  template <typename A> using regular_type_if_view_else_type_t = typename _regular_type_if_view_else_type_t<std::decay_t<A>>::type;
 
   //---------------------  py_converters -----------------------------
 
-  // default version for a wrapped type. To be specialized later.
-  // py2c behaviour is undefined is is_convertible return false
-  // c2py should return NULL on failure
-  template <typename T> struct py_converter;
-  //{
-  //  static PyObject * c2py(T const & x);
-  //  static T & py2c(PyObject * ob);
-  //  static bool is_convertible(PyObject * ob, bool raise_exception);
-  //}
+  using pytypeobject_table_t = std::map<std::string, PyTypeObject *>;
+
+  // We share in the __main__.__cpp2py_table a Py Capsule with a table
+  // C++ type -> Python Type for wrapped type
+
+  // destructor used later in Capsule creation
+  inline void _table_destructor(PyObject *capsule) {
+    auto *p = static_cast<pytypeobject_table_t *>(PyCapsule_GetPointer(capsule, "__main__.__cpp2py_table"));
+    delete p;
+  }
+
+  // access the table of the wrapped types, and creates if it does not exists.
+  inline pytypeobject_table_t *get_pytypeobject_table() {
+    PyObject *mod = PyImport_ImportModule("__main__");
+    if (mod == NULL) {
+      PyErr_SetString(PyExc_RuntimeError, "Severe internal error : can not load __main__");
+      return nullptr;
+    }
+    if (PyObject_HasAttrString(mod, "__cpp2py_table")) {
+      pyref capsule = PyObject_GetAttrString(mod, "__cpp2py_table");
+      return static_cast<pytypeobject_table_t *>(PyCapsule_GetPointer(capsule, "__main__.__cpp2py_table"));
+    }
+    pytypeobject_table_t *t = new pytypeobject_table_t{};
+    // never destroyed. we could add a destructor, but useless, the table with leave in the interpreter
+    pyref c = PyCapsule_New((void *)t, "__main__.__cpp2py_table", (PyCapsule_Destructor)_table_destructor);
+    pyref s = PyString_FromString("__cpp2py_table");
+    int err = PyObject_SetAttr(mod, s, c);
+    if (err) {
+      PyErr_SetString(PyExc_RuntimeError, "Can not add the __cpp2py_table to main ???");
+      return nullptr;
+    }
+    return t;
+  }
+
+  // get the PyTypeObject from the table in __main__.
+  // if the type was not wrapped, return nullptr and set up a Python exception
+  inline PyTypeObject *get_type_ptr(std::type_index const &ind) {
+    pytypeobject_table_t *table = get_pytypeobject_table();
+    PyTypeObject *r             = nullptr;
+
+    auto it = table->find(ind.name());
+    if(it != table->end()) return it->second;
+
+    std::string s = std::string{"The type "} + ind.name() + " can not be converted";
+    PyErr_SetString(PyExc_RuntimeError, s.c_str());
+    return nullptr;
+  }
+
+  // default version is that the type is wrapped.
+  // Will be specialized for type which are just converted.
+  template <typename T> struct py_converter {
+
+    typedef struct {
+      PyObject_HEAD;
+      T *_c;
+    } py_type;
+
+    using is_wrapped_type = void; // to recognize
+
+    template <typename U> static PyObject *c2py(U &&x) {
+      PyTypeObject *p = get_type_ptr(typeid(T));
+      if (p == nullptr) return NULL;
+      py_type *self = (py_type *)p->tp_alloc(p, 0);
+      if (self != NULL) { self->_c = new T{std::forward<U>(x)}; }
+      return (PyObject *)self;
+    }
+
+    static T &py2c(PyObject *ob) {
+      auto *_c = ((py_type *)ob)->_c;
+      if (_c == NULL) {
+        std::cerr << "Severe internal error : _c is null in py2c\n";
+        std::terminate();
+      }
+      return *_c;
+    }
+
+    static bool is_convertible(PyObject *ob, bool raise_exception) {
+      PyTypeObject *p = get_type_ptr(typeid(T));
+      if (p == nullptr) return false;
+      if (PyObject_TypeCheck(ob, p)) {
+        if (((py_type *)ob)->_c != NULL) return true;
+        if (raise_exception) PyErr_SetString(PyExc_TypeError, "Severe internal error : Python object of ${c.py_type} has a _c NULL pointer !!");
+        return false;
+      }
+      if (raise_exception) PyErr_SetString(PyExc_TypeError, "Python object is not a ${c.py_type}");
+      return false;
+    }
+  };
 
   // helpers for better error message
   // some class (e.g. range !) only have ONE conversion, i.e. C -> Py, but not both
   // we need to distinguish
-  template <class, class = std17::void_t<>> struct does_have_a_converterPy2C : std::false_type {};
-  template <class T> struct does_have_a_converterPy2C<T, std17::void_t<decltype(py_converter<std::decay_t<T>>::py2c(nullptr))>> : std::true_type {};
+  template <class, class = __std17::void_t<>> struct does_have_a_converterPy2C : std::false_type {};
+  template <class T> struct does_have_a_converterPy2C<T, __std17::void_t<decltype(py_converter<std::decay_t<T>>::py2c(nullptr))>> : std::true_type {};
 
-  template <class, class = std17::void_t<>> struct does_have_a_converterC2Py : std::false_type {};
+  template <class, class = __std17::void_t<>> struct does_have_a_converterC2Py : std::false_type {};
   template <class T>
-  struct does_have_a_converterC2Py<T, std17::void_t<decltype(py_converter<std::decay_t<T>>::c2py(std::declval<T>()))>> : std::true_type {};
+  struct does_have_a_converterC2Py<T, __std17::void_t<decltype(py_converter<std::decay_t<T>>::c2py(std::declval<T>()))>> : std::true_type {};
 
   // We only use these functions in the code, not directly the converter
   template <typename T> static PyObject *convert_to_python(T &&x) {

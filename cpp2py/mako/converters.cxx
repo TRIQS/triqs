@@ -65,6 +65,7 @@ template <> struct py_converter<${c.c_type}> {
   }  
   std::stringstream fs, fs2; int err=0;
 
+  // FIXME : constexpr bool
 #ifndef TRIQS_ALLOW_UNUSED_PARAMETERS
   std::vector<std::string> ks, all_keys = {${','.join('"%s"'%m.c_name for m in c.members)}};
   pyref keys = PyDict_Keys(dic);
