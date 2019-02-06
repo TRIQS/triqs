@@ -251,6 +251,30 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif()
 
 # ---------------------------------
+# Dynamic Analyzer Checks
+# ---------------------------------
+
+# Address Sanitizer
+option(ASAN OFF "Compile library and executables with LLVM Address Sanitizer")
+if(ASAN)
+  #find_package(libasan_rt REQUIRED)
+  target_compile_options(triqs PUBLIC -fsanitize=address -fno-omit-frame-pointer)
+  target_link_libraries(triqs INTERFACE "-fsanitize=address -fno-omit-frame-pointer")
+endif()
+
+# Undefined Behavior Sanitizer
+option(UBSAN OFF "Compile library and executables with LLVM Undefined Behavior Sanitizer")
+if(UBSAN)
+  #find_package(libubsan_rt REQUIRED)
+  target_compile_options(triqs PUBLIC -fsanitize=undefined -fno-omit-frame-pointer -fno-sanitize=vptr)
+  target_link_libraries(triqs INTERFACE "-fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer")
+endif()
+
+if(ASAN OR UBSAN AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  target_link_libraries(triqs INTERFACE "-fuse-ld=gold")
+endif()
+
+# ---------------------------------
 # Install 
 # ---------------------------------
 

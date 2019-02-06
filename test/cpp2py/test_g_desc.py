@@ -1,7 +1,5 @@
 from cpp2py.wrap_generator import *
 
-import pytriqs.gf
-
 # The module
 module = module_(full_name = "cpp2py.test_g", doc = " Doc of my_module ")
 module.add_include("<triqs/../test/cpp2py/g.hpp>") 
