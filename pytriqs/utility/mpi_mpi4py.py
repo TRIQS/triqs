@@ -37,16 +37,16 @@ master =0
 
 All_Nodes_report = False
 
-def bcast(x) : 
-    return world.bcast(x, root=0)
+def bcast(x, root = 0):
+    return world.bcast(x, root = root)
 
-def send(val,node) : 
-    world.send(val, dest = node)
-    #print "node ", rank, " has sent ", val, " to node ", node
+def send(val, dest):
+    world.send(val, dest = dest)
+    #print "node ", rank, " has sent ", val, " to node ", dest
 
-def recv():
-    r = world.recv(source=0)
-    #print "node ", rank, " receives ", r, " from node ", node
+def recv(source = 0):
+    r = world.recv(source = source)
+    #print "node ", rank, " receives ", r, " from node ", source
     return r
 
 def barrier() : 
