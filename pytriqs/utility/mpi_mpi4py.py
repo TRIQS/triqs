@@ -35,25 +35,19 @@ if rank==0 :
 
 master =0
 
-All_Nodes_report = False #True
+All_Nodes_report = False
 
 def bcast(x) : 
     return world.bcast(x, root=0)
-    #return broadcast(world,x,0)
 
 def send(val,node) : 
     world.send(val, dest = node)
-    #world.send(node,0,val)
-    #print "node ", rank, "has sent ",val, " to node ", node
+    #print "node ", rank, " has sent ", val, " to node ", node
 
-def recv(node) : 
-    r =  world.recv(source=0)
-    #r =  world.recv(node,0)
-    #print "node", rank, "receives ", r , "from Node ",node
+def recv():
+    r = world.recv(source=0)
+    #print "node ", rank, " receives ", r, " from node ", node
     return r
-
-#def irecv(node) : 
-#    return world.irecv(node,0)
 
 def barrier() : 
     world.barrier()
