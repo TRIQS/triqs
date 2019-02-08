@@ -66,18 +66,25 @@ m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g, double beta)"
 m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
 m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
-for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
+# Adjoint Fourier Meshes
+m.add_function("gf_mesh<brillouin_zone> make_adjoint_mesh(gf_mesh<cyclic_lattice> m)", doc = "Create the adjoint k-mesh")
+m.add_function("gf_mesh<cyclic_lattice> make_adjoint_mesh(gf_mesh<brillouin_zone> m)", doc = "Create the adjoint r-mesh")
+m.add_function("gf_mesh<imfreq> make_adjoint_mesh(gf_mesh<imtime> m, int n_iw = -1)", doc = "Create the adjoint iw-mesh")
+m.add_function("gf_mesh<imtime> make_adjoint_mesh(gf_mesh<imfreq> m, int n_tau = -1)", doc = "Create the adjoint tau-mesh")
+m.add_function("gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> m, bool shift_half_bin = false)", doc = "Create the adjoint w-mesh")
+m.add_function("gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> m, bool shift_half_bin = false)", doc = "Create the adjoint t-mesh")
 
+for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
 
     for Meshes in [["imtime", "imfreq"], ["retime", "refreq"]]: # Fourier with known moments
 
             # set_from_fourier with known moments
-            m.add_function("void set_from_fourier(gf_view<%s, %s> g_out, gf_view<%s, %s> g_in, array_const_view<dcomplex, 1+%s::rank> moments)"%(Meshes[1], Target, Meshes[0], Target, Target),
+            m.add_function("void set_from_fourier(gf_view<%s, %s> g_out, gf_const_view<%s, %s> g_in, array_const_view<dcomplex, 1+%s::rank> moments)"%(Meshes[1], Target, Meshes[0], Target, Target),
                            calling_pattern = "g_out = fourier(g_in, moments)",
                            doc = """Fills self with the Fourier transform of g_in with possible known moments""")
 
             # set_from_fourier with known moments
-            m.add_function("void set_from_inverse_fourier(gf_view<%s, %s> g_out, gf_view<%s, %s> g_in, array_const_view<dcomplex, 1+%s::rank> moments)"%(Meshes[0], Target, Meshes[1], Target, Target),
+            m.add_function("void set_from_inverse_fourier(gf_view<%s, %s> g_out, gf_const_view<%s, %s> g_in, array_const_view<dcomplex, 1+%s::rank> moments)"%(Meshes[0], Target, Meshes[1], Target, Target),
                            calling_pattern = "g_out = fourier(g_in, moments)",
                            doc = """Fills self with the Fourier transform of g_in with possible known moments""")
 
