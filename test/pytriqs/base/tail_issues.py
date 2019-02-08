@@ -137,9 +137,6 @@ class test_tail_issues(unittest.TestCase):
         # Resymmetrize gt
         gt.data[:,0,1] = gt.data[:,1,0].conjugate()
 
-        # We should not be allowed to call a fourier transform on the noisy imaginary Green function
-        self.assertRaises(Exception, make_gf_from_fourier, gt)
-
         # Fourier transform to Matsubara and back given the high-frequency information
         tail, err = g.fit_tail()
         gw = make_gf_from_fourier(gt, g.mesh, tail)

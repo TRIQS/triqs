@@ -39,7 +39,7 @@ namespace triqs::gfs {
 
   //-------------------------------------
 
-  array<dcomplex, 2> fit_derivatives(gf_const_view<imtime, tensor_valued<1>> gt) {
+  array<dcomplex, 2> fit_tail(gf_const_view<imtime, tensor_valued<1>> gt) {
     using matrix_t   = arrays::matrix<dcomplex>;
     int fit_order    = 8;
     auto _           = range();
@@ -88,18 +88,18 @@ namespace triqs::gfs {
     matrix_t g_vec_left  = V_inv * d_vec_left;
     matrix_t g_vec_right = V_inv * d_vec_right;
     double sign          = (gt.mesh().domain().statistic == Fermion) ? -1 : 1;
-    array<dcomplex, 2> m123(3, second_dim(g_vec_left));
-    m123(0, _) = -(gt[0] - sign * gt[n_tau - 1]);                                        // 1st order moment
-    m123(1, _) = g_vec_left(0, _) - sign * g_vec_right(0, _);                            // 2nd order moment
-    m123(2, _) = -(g_vec_left(1, _) + sign * g_vec_right(1, _)) * 2 / gt.mesh().delta(); // 3rd order moment
-    return m123;
+    auto tail            = make_zero_tail(gt, 4);
+    tail(1, _)           = -(gt[0] - sign * gt[n_tau - 1]);                                        // 1st order moment
+    tail(2, _)           = g_vec_left(0, _) - sign * g_vec_right(0, _);                            // 2nd order moment
+    tail(3, _)           = -(g_vec_left(1, _) + sign * g_vec_right(1, _)) * 2 / gt.mesh().delta(); // 3rd order moment
+    return tail;
   }
 
   // ------------------------ DIRECT TRANSFORM --------------------------------------------
 
   gf_vec_t<imfreq> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf_vec_cvt<imtime> gt, arrays::array_const_view<dcomplex, 2> known_moments) {
 
-    arrays::array_const_view<dcomplex, 2> mom_123;
+    arrays::array_view<dcomplex, 2> tail;
 
     if (known_moments.is_empty()) {
       // A simple check on whether or not we are dealing with noisy data
@@ -108,16 +108,21 @@ namespace triqs::gfs {
       auto der_1 = max_element(abs(dat(1, range()) - dat(0, range())) + abs(dat(n_tau - 2, range()) - dat(n_tau - 1, range()))) / gt.mesh().delta();
       auto der_2 =
          0.5 * max_element(abs(dat(2, range()) - dat(0, range())) + abs(dat(n_tau - 3, range()) - dat(n_tau - 1, range()))) / gt.mesh().delta();
-      if (der_1 < 0.95 * der_2 or der_1 > 1.05 * der_2)
-        TRIQS_RUNTIME_ERROR << "ERROR: You seem to be Fourier Transforming an imaginary time Green function with noise (rapidly varying first derivative). Please specify the high-frequency moments as they cannot be deduced.";
-
-      mom_123.rebind(fit_derivatives(gt));
+      if (der_1 < 0.95 * der_2 or der_1 > 1.05 * der_2) {
+        std::cerr << "WARNING: Direct Fourier cannot deduce the high-frequency moments of G(tau) due to noise or a coarse tau-grid. \
+	  Please specify the high-frequency moments for higher accuracy.\n";
+        tail.rebind(make_zero_tail(gt, 4));
+      } else {
+        tail.rebind(fit_tail(gt));
+      }
     } else {
-      TRIQS_ASSERT2(known_moments.shape()[0] >= 4, " Direct Matsubara Fourier transform requires known moments up to order 3.")
       double _abs_tail0 = max_element(abs(known_moments(0, range())));
       TRIQS_ASSERT2((_abs_tail0 < 1e-8),
                     "ERROR: Direct Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
-      mom_123.rebind(known_moments(range(1, 4), range()));
+
+      int n_known_moments = std::min<size_t>(known_moments.shape()[0], 4);
+      tail.rebind(make_zero_tail(gt, 4));
+      tail(range(0, n_known_moments), range()) = known_moments(range(0, n_known_moments), range());
     }
 
     double beta = gt.mesh().domain().beta;
@@ -142,9 +147,9 @@ namespace triqs::gfs {
     double b1, b2, b3;
     array<dcomplex, 1> a1, a2, a3;
     auto _  = range();
-    auto m1 = mom_123(0, _);
-    auto m2 = mom_123(1, _);
-    auto m3 = mom_123(2, _);
+    auto m1 = tail(1, _);
+    auto m2 = tail(2, _);
+    auto m3 = tail(3, _);
 
     if (is_fermion) {
       b1 = 0;
@@ -189,7 +194,7 @@ namespace triqs::gfs {
 
     TRIQS_ASSERT2(!gw.mesh().positive_only(), "Fourier is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)");
 
-    arrays::array_const_view<dcomplex, 2> mom_123;
+    arrays::array_const_view<dcomplex, 2> tail;
 
     // Assume vanishing 0th moment in tail fit
     if (known_moments.is_empty()) known_moments.rebind(make_zero_tail(gw, 1));
@@ -199,17 +204,17 @@ namespace triqs::gfs {
                   "ERROR: Inverse Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0) + "\n");
 
     if (known_moments.shape()[0] < 4) {
-      auto [tail, error] = fit_tail(gw, known_moments);
-      TRIQS_ASSERT2((error < 1e-2),
-                    "ERROR: High frequency moments have an error greater than 1e-2.\n  Error = " + std::to_string(error)
+      auto [t, err] = fit_tail(gw, known_moments);
+      TRIQS_ASSERT2((err < 1e-2),
+                    "ERROR: High frequency moments have an error greater than 1e-2.\n  Error = " + std::to_string(err)
                        + "\n Please make sure you treat the constant offset analytically!\n");
-      if (error > 1e-4)
-        std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
+      if (err > 1e-4)
+        std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << err
                   << "\n Please make sure you treat the constant offset analytically!\n";
-      TRIQS_ASSERT2((first_dim(tail) > 3), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
-      mom_123.rebind(tail(range(1, 4), range()));
+      TRIQS_ASSERT2((first_dim(t) > 3), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
+      tail.rebind(t);
     } else
-      mom_123.rebind(known_moments(range(1, 4), range()));
+      tail.rebind(known_moments);
 
     double beta = tau_mesh.domain().beta;
     long L      = tau_mesh.size() - 1;
@@ -229,9 +234,9 @@ namespace triqs::gfs {
     double b1, b2, b3;
     array<dcomplex, 1> a1, a2, a3;
     auto _  = range();
-    auto m1 = mom_123(0, _);
-    auto m2 = mom_123(1, _);
-    auto m3 = mom_123(2, _);
+    auto m1 = tail(1, _);
+    auto m2 = tail(2, _);
+    auto m3 = tail(3, _);
 
     if (is_fermion) {
       b1 = 0;
