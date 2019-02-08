@@ -174,18 +174,18 @@ def make_zero_tail(g, n_moments=10):
     
     Parameters
     ----------
-    g: GfReFreq or GfImFreq
-        The real/imaginary frequency Green's function to be written out.
+    g: GfImFreq or GfReFreq or GfImTime or GfReTime
+        The real/imaginary frequency/time Green's function that we create the tail-array for.
 
     n_moments [default=10]: The number of high-frequency moments in the tail (starting from order 0).
     """
-    if isinstance(g, Gf) and isinstance(g.mesh, (MeshImFreq, MeshReFreq)):
+    if isinstance(g, Gf) and isinstance(g.mesh, (MeshImFreq, MeshReFreq, MeshImTime, MeshReTime)):
         n_moments = max(1, n_moments)
-        return np.zeros((n_moments,) + g.target_shape, dtype = g.data.dtype)
+        return np.zeros((n_moments,) + g.target_shape, dtype = np.complex128)
     elif isinstance(g, BlockGf):
         return map_block(lambda g_bl: make_zero_tail(g_bl, n_moments), g)
     else:
-        raise RuntimeError, "Error: make_zero_tail has to be called on a Frequency Green function object"
+        raise RuntimeError, "Error: make_zero_tail has to be called on a frequency or time Green function object"
 
 
 def fit_legendre(g_t, order=10):
