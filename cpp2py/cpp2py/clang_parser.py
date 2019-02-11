@@ -165,7 +165,9 @@ def get_member_initializer(node):
     tokens = get_tokens(node)
     if '=' in tokens:
         end_idx = tokens.index(';') if ';' in tokens else len(tokens)
-        return ''.join(tokens[tokens.index('=') + 1:end_idx]).strip()
+        initializer = ''.join(tokens[tokens.index('=') + 1:end_idx]).strip()
+        # Other members can be used in initialization with 'this->member_name'
+        return initializer.replace("this->", "res.")
     else:
         return ''
 

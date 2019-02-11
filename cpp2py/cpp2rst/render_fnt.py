@@ -47,7 +47,7 @@ def render_note(name, doc_elem) :
 
 def render_fig(doc_elem) : 
     figs = doc_elem['figure']
-    fig = figs.split(":") if figs else None, None
+    fig = figs.split(":") if figs else (None, None)
     if figs:
         return """
 .. figure:: {fig[0]}

@@ -97,7 +97,7 @@ def treat_member_list(member_list) :
 def doc_format_param(member_list):
    member_list2 = treat_member_list(member_list)
    h = ['Parameter Name','Type','Default', 'Documentation']
-   l = [(m.spelling,m.ctype, m.initializer, m.doc) for m in member_list2]
+   l = [(m.spelling,m.ctype, m.initializer.replace("res.",""), m.doc) for m in member_list2]
    return make_table(h, l)
 
 def make_doc(node):
@@ -121,7 +121,7 @@ def doc_param_dict_format(member_list) :
     header = form.format(*h)
     sep1 = '+' + '+'.join([ (x+2)*'=' for x in (n_lmax, type_lmax, opt_lmax, doc_lmax)]) + '+'
     sep2 = '+' + '+'.join([ (x+2)*'-' for x in (n_lmax, type_lmax, opt_lmax, doc_lmax)]) + '+'
-    lines = [form.format(m.spelling, m.ctype, m.initializer if m.initializer else '--', m.doc) + '\n' + sep2 for m in member_list2]
+    lines = [form.format(m.spelling, m.ctype, m.initializer.replace("res.","") if m.initializer else '--', m.doc) + '\n' + sep2 for m in member_list2]
     #for x in lines : 
     #    print x
     r = '\n'.join(lines)
