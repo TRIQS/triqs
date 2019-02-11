@@ -3,7 +3,7 @@
 # See accompanying file LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt
 #
 # This cmake find module looks for the LLVM Sanitizer Runtime Librariies
-# It sets up SANITIZER_RT_LIBRARIES and ${COMPONENT}_RT_LIBRARY for each
+# It sets up SANITIZER_RT_PRELOAD and ${COMPONENT}_RT_LIBRARY for each
 # requested component.
 #
 # Use this module by invoking find_package with the form::
@@ -12,7 +12,7 @@
 #
 # Results are reported in::
 #
-#    SANITIZER_RT_LIBRARIES 		All Sanitizer Runtime Libraries
+#    SANITIZER_RT_PRELOAD 		Environment setting to load all Sanitizer Runtime Libraries
 #    ${COMPONENT}_RT_LIBRARY 		Individual Sanitizer Runtime Library
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -36,8 +36,7 @@ else()
   message(FATAL_ERROR "Sanitizer is not available for your compiler")
 endif()
 
-set(SANITIZER_RT_LIBRARIES "")
-set(required_vars SANITIZER_RT_LIBRARIES)
+set(required_vars "")
 foreach(component ${${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS})
   string(TOUPPER ${component} COMPONENT)
   if((${component} STREQUAL "ubsan") AND (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang") AND ASAN_RT_LIBRARY)
@@ -56,11 +55,24 @@ foreach(component ${${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS})
   if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_${component})
     list(APPEND required_vars ${COMPONENT}_RT_LIBRARY)
   endif()
-  list(APPEND SANITIZER_RT_LIBRARIES ${${COMPONENT}_RT_LIBRARY})
+  if(DEFINED sanitizer_rt_libraries)
+    string(APPEND sanitizer_rt_libraries :${${COMPONENT}_RT_LIBRARY})
+  else()
+    set(sanitizer_rt_libraries ${${COMPONENT}_RT_LIBRARY})
+  endif()
 endforeach()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(preload_var DYLD_INSERT_LIBRARIES)
+else()
+  set(preload_var LD_PRELOAD)
+endif()
+
+set(SANITIZER_RT_PRELOAD ${preload_var}=${sanitizer_rt_libraries} CACHE INTERNAL "Runtime shared libraries needed to load the sanitizer")
+mark_as_advanced(SANITIZER_RT_PRELOAD)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("Sanitizer Runtime Libraries"
-  REQUIRED_VARS ${required_vars}
+  REQUIRED_VARS SANITIZER_RT_PRELOAD ${required_vars}
   FAIL_MESSAGE "Sanitizer Runtime Libraries not found! Consider installing for additional checks!"
 )
