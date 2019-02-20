@@ -70,7 +70,7 @@ class HDFArchiveGroupBasicLayer :
 
     def _read (self, key) :
         A = self._group[key]
-        val =  numpy.array(A) if A.shape!=() else A.value
+        val =  numpy.array(A) if A.shape!=() else A[()]
         if self.options["UseAlpsNotationForComplex"] and '__complex__' in self._group[key].attrs :
             assert type(val) == numpy.ndarray, 'complex tag is set, but I have not an array'
             assert not numpy.iscomplexobj(val), 'complex tag is set, but I have a complex !'
