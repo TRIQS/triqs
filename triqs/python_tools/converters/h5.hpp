@@ -37,7 +37,7 @@ template <> struct py_converter<triqs::h5::group> {
 
  static bool is_convertible(PyObject *ob, bool raise_exception) {
   if (group_type.is_null()) {
-   group_type = pyref::module("h5py").attr("highlevel").attr("Group");
+   group_type = pyref::module("h5py").attr("Group");
    if (PyErr_Occurred()) TRIQS_RUNTIME_ERROR << "Cannot load h5py module and find the group in it";
   }
   int cmp = PyObject_RichCompareBool((PyObject *)ob->ob_type, group_type, Py_EQ);
