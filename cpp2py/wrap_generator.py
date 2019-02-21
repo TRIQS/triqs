@@ -700,6 +700,7 @@ class module_ :
         self.include_list = []
         self.enums = []
         self.using =[]
+        self.imports =[]
         self._preamble = ''
 
     def add_class(self, cls):
@@ -780,6 +781,12 @@ class module_ :
         Add the using statement into the generated wrapper (and NOT the header).
         """
         self.using.append(ns)
+
+    def add_imports(self, *lst):
+        """
+          Add a dependent import to the module.
+        """
+        self.imports += lst
 
     def add_preamble(self, preamble) :
         """

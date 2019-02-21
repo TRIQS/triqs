@@ -2,11 +2,14 @@ namespace cpp2py {
 
 template <> struct py_converter<${c.c_type}> {
  static PyObject *c2py(${c.c_type} & x) {
-  PyObject * d = PyDict_New();
+  pyref d = PyDict_New();
+  PyObject * p;
   %for m in c.members :
-  PyDict_SetItemString( d, ${'"%s"'%m.c_name}, convert_to_python(x.${m.c_name}));
+  p = convert_to_python(x.${m.c_name});
+  if(p == nullptr) return nullptr;
+  PyDict_SetItemString((PyObject *)d, ${'"%s"'%m.c_name}, p);
   %endfor
-  return d;
+  return d.new_ref();
  }
 
  static PyObject *c2py(${c.c_type} && x) {
