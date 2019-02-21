@@ -109,8 +109,8 @@ namespace triqs::gfs {
       auto der_2 =
          0.5 * max_element(abs(dat(2, range()) - dat(0, range())) + abs(dat(n_tau - 3, range()) - dat(n_tau - 1, range()))) / gt.mesh().delta();
       if (der_1 < 0.95 * der_2 or der_1 > 1.05 * der_2) {
-        std::cerr << "WARNING: Fourier cannot deduce the high-frequency moments of G(tau) due to noise or a coarse tau-grid. \
-	  Please specify the high-frequency moments for higher accuracy.";
+        std::cerr << "WARNING: Direct Fourier cannot deduce the high-frequency moments of G(tau) due to noise or a coarse tau-grid. \
+	  Please specify the high-frequency moments for higher accuracy.\n";
         tail.rebind(make_zero_tail(gt, 4));
       } else {
         tail.rebind(fit_tail(gt));
