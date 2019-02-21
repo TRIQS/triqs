@@ -48,8 +48,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
 
       checkout scm
       dir(cpp2pyDir) {
-        /* should we make this a proper submodule? */
-        git(url: 'https://github.com/TRIQS/cpp2py', branch: 'master')
+        checkout([$class: 'GitSCM', branches: [[name: '8555cf65041bed0eb09d1d612bb2422c3cdce0ef']], userRemoteConfigs: [[url: 'https://github.com/TRIQS/cpp2py']]])
       }
 
       dir(buildDir) { withEnv(platformEnv[1].collect { it.replace('\$BREW', env.BREW) } + [
