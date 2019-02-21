@@ -1013,6 +1013,10 @@ init${module.name}(void)
     import_array();
 #endif
 
+%for c in module.imports :
+    PyImport_ImportModule("${c}");
+%endfor
+
     PyObject* m;
 
 %for c in module.classes.values() :

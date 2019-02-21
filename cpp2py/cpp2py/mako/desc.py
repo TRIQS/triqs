@@ -6,9 +6,7 @@ from cpp2py.wrap_generator import *
 module = module_(full_name = "${W.modulename}", doc = "${doc.replace_latex(W.moduledoc)}", app_name = "${W.appname}")
 
 # Imports
-%for mod in import_list :
-import ${mod}
-%endfor
+module.add_imports(*${import_list})
 
 # Add here all includes 
 module.add_include("${W.filename.split('c++/')[-1]}")
