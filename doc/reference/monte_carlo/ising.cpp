@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   int verbosity           = (world.rank() == 0 ? 2 : 0);
 
   // Construct a Monte Carlo loop
-  triqs::mc_tools::mc_generic<double> IsingMC(random_name, random_seed, 1.0, verbosity);
+  triqs::mc_tools::mc_generic<double> IsingMC(random_name, random_seed, verbosity);
 
   // parameters of the model
   int length   = 100;
