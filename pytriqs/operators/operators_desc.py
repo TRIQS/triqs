@@ -6,16 +6,14 @@ module = module_(full_name = "pytriqs.operators.operators", doc = "Doc to be wri
 module.add_include("<triqs/arrays.hpp>")
 module.add_include("<triqs/operators/many_body_operator.hpp>")
 
-module.add_include("<cpp2py/converters/variant.hpp>")
-module.add_include("<cpp2py/converters/pair.hpp>")
 module.add_include("<cpp2py/converters/vector.hpp>")
 module.add_include("<cpp2py/converters/map.hpp>")
+module.add_include("<cpp2py/converters/variant.hpp>")
+module.add_include("<cpp2py/converters/pair.hpp>")
+module.add_include("<cpp2py/converters/tuple.hpp>")
 
 module.add_include("<triqs/cpp2py_converters.hpp>")
 module.add_include("<triqs/cpp2py_converters/real_or_complex.hpp>")
-
-#module.add_include("<triqs/python_tools/converters/arrays.hpp>") # for h5 serialization.
-#odule.add_include("<triqs/python_tools/converters/real_or_complex.hpp>")
 
 module.add_using("namespace triqs::operators")
  
