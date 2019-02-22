@@ -20,4 +20,6 @@
 #
 ################################################################################
 
-__all__ = []
+from capture_stdout import capture_stdout
+
+__all__ = ['capture_stdout']
