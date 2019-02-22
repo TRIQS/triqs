@@ -2,9 +2,6 @@
 FILE(GLOB all_h5_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.h5)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${all_h5_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-# Test the test!
-add_python_test(test_example)
-
 # Some basic HDF5 Stuff
 add_python_test(hdf5_bool)
 add_python_test(hdf5_io)
