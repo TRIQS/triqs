@@ -3,6 +3,8 @@ import re
 
 module = module_(full_name = "pytriqs.gf.meshes", doc = "All the meshes", app_name="triqs")
 
+module.add_imports("pytriqs.lattice")
+
 module.add_include("<triqs/gfs.hpp>")
 
 module.add_include("<cpp2py/converters/string.hpp>")

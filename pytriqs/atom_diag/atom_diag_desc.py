@@ -24,6 +24,8 @@ module = module_(full_name = "pytriqs.atom_diag.atom_diag",
                  doc = "Lightweight exact diagonalization solver",
                  app_name = "triqs")
 
+module.add_imports("pytriqs.gf", "pytriqs.operators")
+
 module.add_preamble("""
 #include <cpp2py/converters/pair.hpp>
 #include <cpp2py/converters/vector.hpp>

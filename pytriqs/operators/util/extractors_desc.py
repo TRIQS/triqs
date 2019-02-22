@@ -5,6 +5,8 @@ module = module_(full_name = "pytriqs.operators.util.extractors",
                  doc = "Functions to extract coefficients from many-body operators",
                  app_name = "triqs")
 
+module.add_imports("pytriqs.operators")
+
 module.add_include("<triqs/operators/util/extractors.hpp>")
 
 module.add_include("<cpp2py/converters/variant.hpp>")

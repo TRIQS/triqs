@@ -4,6 +4,8 @@ import re
 # This modules contains functions that may be called directly by users
 m = module_(full_name = "pytriqs.gf.gf_fnt", doc = "C++ wrapping of functions on Green functions ...", app_name="triqs")
 
+m.add_imports("pytriqs.gf.meshes")
+
 m.add_include("<triqs/gfs.hpp>")
 m.add_include("<triqs/gfs/transform/pade.hpp>")
 m.add_include("<triqs/gfs/legacy_for_python_api.hpp>")
