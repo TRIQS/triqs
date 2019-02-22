@@ -5,10 +5,6 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${all_h5_files} DESTINATION ${CMAKE_CURREN
 # Test the test!
 add_python_test(test_example)
 
-# Many-body operators
-add_python_test(operator_python_test)
-add_python_test(operator_python2)
-
 # Some basic HDF5 Stuff
 add_python_test(hdf5_bool)
 add_python_test(hdf5_io)
