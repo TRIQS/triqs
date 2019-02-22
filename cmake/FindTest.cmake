@@ -38,47 +38,11 @@ macro(add_cpp_test testname)
 endmacro(add_cpp_test)
 
 # runs a python test
-# if there is a .ref file a comparison test is done
 # Example: add_python_test(my_script)
-#   where my_script.py is the script and my_script.ref is the expected output
+#   where my_script.py is the script
 macro(add_python_test testname)
- enable_testing()
 
- set(testcmd ${PythonBuildExecutable})
- set(testref ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.ref)
-
- # run this test via mpirun if TEST_MPI_NUMPROC is set
- if(TEST_MPI_NUMPROC)
-  set(testname_ ${testname}_np${TEST_MPI_NUMPROC})
-  set(testcmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${TEST_MPI_NUMPROC} ${MPIEXEC_PREFLAGS} ${testcmd} ${MPIEXEC_POSTFLAGS})
- else(TEST_MPI_NUMPROC)
-  set(testname_ ${testname})
- endif(TEST_MPI_NUMPROC)
-
- if(EXISTS ${testref})
-  file(COPY ${testref} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-  add_test(${testname_}
-   ${CMAKE_COMMAND}
-   -Dname=${testname_}
-   -Dcmd=${testcmd}
-   -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
-   -Dreference=${testref}
-   -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
-  )
- else()
-  add_test(${testname_}
-   ${CMAKE_COMMAND}
-   -Dname=${testname_}
-   -Dcmd=${testcmd}
-   -Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py
-   -P ${CMAKE_BINARY_DIR}/Config/run_test.cmake
-  )
- endif()
-
- set_property(TEST ${testname_} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:./:$ENV{PYTHONPATH} )
-
- if(TEST_MPI_NUMPROC)
-  set_tests_properties(${testname_} PROPERTIES PROCESSORS ${TEST_MPI_NUMPROC})
- endif(TEST_MPI_NUMPROC)
+ add_test(${testname} ${PythonBuildExecutable} ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py)
+ set_property(TEST ${testname} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:./:$ENV{PYTHONPATH})
 
 endmacro(add_python_test)
