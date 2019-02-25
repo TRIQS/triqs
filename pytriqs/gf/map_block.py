@@ -18,6 +18,8 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
+
+from gf import Gf
 from block_gf import BlockGf
 from block2_gf import Block2Gf
 
@@ -28,13 +30,19 @@ def map_block(fun, G):
 
     if isinstance(G, BlockGf):
         block_list = [fun(bl) for name, bl in G]
-        return BlockGf(name_list = list(G.indices), block_list = block_list)
+        if isinstance(block_list[0], Gf):
+            return BlockGf(name_list = list(G.indices), block_list = block_list)
+        else:
+            return block_list
 
     elif isinstance(G, Block2Gf):
         block_list = []
         for bn1 in G.indices1:
             block_list.append([fun(G[bn1,bn2]) for bn2 in G.indices2])
-        return Block2Gf(name_list1 = list(G.indices1), name_list2 = list(G.indices2), block_list = block_list)
+        if isinstance(block_list[0][0], Gf):
+            return Block2Gf(name_list1 = list(G.indices1), name_list2 = list(G.indices2), block_list = block_list)
+        else:
+            return block_list
 
     else:
         raise Exception('map_block only applicable for BlockGf and Block2Gf') 
