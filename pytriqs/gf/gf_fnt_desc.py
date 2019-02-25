@@ -50,10 +50,14 @@ m.add_class (c)
 # Extract the tail
 m.add_function("std::pair<array<dcomplex,3>, double> fit_tail(gf_view<imfreq, matrix_valued> g, array_view<dcomplex,3> known_moments = {})", doc = "tail")
 m.add_function("std::pair<array<dcomplex,1>, double> fit_tail(gf_view<imfreq, scalar_valued> g, array_view<dcomplex,1> known_moments = {})", doc = "tail")
+m.add_function("std::pair<std::vector<array<dcomplex,3>>, double> fit_tail(block_gf_view<imfreq, matrix_valued> g, std::vector<array_view<dcomplex,3>> known_moments = {})", doc = "tail")
+m.add_function("std::pair<std::vector<array<dcomplex,1>>, double> fit_tail(block_gf_view<imfreq, scalar_valued> g, std::vector<array_view<dcomplex,1>> known_moments = {})", doc = "tail")
 
 # Extract the tail imposing hermiticity on the moment matrices
 m.add_function("std::pair<array<dcomplex,3>, double> fit_hermitian_tail(gf_view<imfreq, matrix_valued> g, array_view<dcomplex,3> known_moments = {})", doc = "tail")
 m.add_function("std::pair<array<dcomplex,1>, double> fit_hermitian_tail(gf_view<imfreq, scalar_valued> g, array_view<dcomplex,1> known_moments = {})", doc = "tail")
+m.add_function("std::pair<std::vector<array<dcomplex,3>>, double> fit_hermitian_tail(block_gf_view<imfreq, matrix_valued> g, std::vector<array_view<dcomplex,3>> known_moments = {})", doc = "tail")
+m.add_function("std::pair<std::vector<array<dcomplex,1>>, double> fit_hermitian_tail(block_gf_view<imfreq, scalar_valued> g, std::vector<array_view<dcomplex,1>> known_moments = {})", doc = "tail")
 
 # density
 m.add_function("matrix<dcomplex> density(gf_view<imfreq, matrix_valued> g, array_view<dcomplex, 3> known_moments = {})",   doc = "Density, as a matrix, computed from a Matsubara sum")
