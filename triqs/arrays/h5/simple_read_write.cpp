@@ -56,7 +56,7 @@ namespace triqs {
         for (int i : range(info.R)) chunk_dims[i] = std::max(info.lengths[i], 1ul);
         if (is_complex) chunk_dims[n_dims - 1] = 2;
         H5Pset_chunk(cparms, n_dims, chunk_dims);
-        H5Pset_deflate(cparms, 8);
+        H5Pset_deflate(cparms, 1);
 
         h5::dataset ds = g.create_dataset(name, h5::data_type_file<T>(), d_space, cparms);
 
