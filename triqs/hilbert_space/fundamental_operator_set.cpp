@@ -63,8 +63,8 @@ namespace triqs {
     } // namespace
 
     // private constructor
-    fundamental_operator_set::fundamental_operator_set(std::vector<std::vector<std::string>> const &v) {
-      for (int n = 0; n < v.size(); ++n) { map_index_n.insert({to_indices(v[n]), n}); }
+    fundamental_operator_set::fundamental_operator_set(std::vector<std::vector<std::string>> const &vvs) {
+      for(auto const& vs: vvs) vec.push_back(to_indices(vs));
     }
 
     // --- h5
