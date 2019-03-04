@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <triqs/mpi/vector.hpp>
 #include <triqs/utility/is_complex.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/h5.hpp>
