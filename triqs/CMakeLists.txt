@@ -22,6 +22,8 @@ target_link_libraries(triqs PUBLIC cpp2py python_and_numpy)
 # C++ standard and compiler details
 # ---------------------------------
 
+target_compile_options(triqs PUBLIC -std=c++17)
+
 if((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
  target_compile_options(triqs PUBLIC -stdlib=libc++)
 endif()

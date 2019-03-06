@@ -176,15 +176,6 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND DEFINED ENV{LIBRARY_PATH})
   endforeach()
 endif()
 
-# -----------------------------------------------------------------------------
-# C++ standard
-# Common for all targets below (triqs lib, test, pytriqs, doc examples)
-# Here and not in triqs lib, since it is private.
-# It should not be exported or an application could not e.g. use a different c++ standard
-# -----------------------------------------------------------------------------
-
-add_compile_options(-std=c++17) 
-
 #------------------------
 # Build google test
 #------------------------
