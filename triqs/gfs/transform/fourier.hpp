@@ -141,7 +141,7 @@ namespace triqs::gfs {
       static_assert(get_n_variables<V2>::value == 1, "Incompatible mesh ranks");
       static_assert(N == 0, "Fourier transforming gf with mesh of rank 1 but fourier index N > 1");
       static_assert(std::is_same_v<V2, _mesh_fourier_image<V1>>, "There is no Fourier transform between these two meshes");
-      auto gout = gf<V2, T>{mesh, gin.target_shape()};
+      auto gout = gf<V2, typename T::complex_t>{mesh, gin.target_shape()};
       _fourier<N>(gin, gout(), opt_args...);
       return gout;
     } else { // === cartesian_product mesh
@@ -150,7 +150,7 @@ namespace triqs::gfs {
       auto mesh_tpl = triqs::tuple::replace<N>(gin.mesh().components(), mesh);
       auto out_mesh = gf_mesh{mesh_tpl};
       using var_t   = typename std::decay_t<decltype(out_mesh)>::var_t;
-      auto gout     = gf<var_t, T>{out_mesh, gin.target_shape()};
+      auto gout     = gf<var_t, typename T::complex_t>{out_mesh, gin.target_shape()};
       _fourier<N>(gin, gout(), opt_args...);
       return gout;
     }
