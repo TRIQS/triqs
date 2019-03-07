@@ -1,4 +1,4 @@
-SET(PythonBuildExecutable python)
+SET(PythonBuildExecutable ${PYTHON_INTERPRETER})
 
 # runs a c++ test
 # if there is a .ref file a comparison test is done
