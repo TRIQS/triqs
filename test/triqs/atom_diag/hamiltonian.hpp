@@ -9,10 +9,8 @@ using namespace triqs::operators;
 // Prepare funcdamental operator set
 fundamental_operator_set make_fops() {
   fundamental_operator_set fops;
-  for (int o : range(3)) {
-    fops.insert("up", o);
-    fops.insert("dn", o);
-  }
+  for (int o : range(3)) fops.insert("dn", o);
+  for (int o : range(3)) fops.insert("up", o);
   return fops;
 }
 

@@ -38,7 +38,7 @@ TEST(hilbert_space, fundamental_operator_set) {
   fundamental_operator_set fop4;
   for (int i = 0; i < 2; ++i) fop4.insert("up", i);
   for (int i = 0; i < 2; ++i) fop4.insert("down", i);
-  EXPECT_EQ(0, (fop4[{"down", 0}]));
+  EXPECT_EQ(2, (fop4[{"down", 0}]));
   EXPECT_EQ(4, fop4.size());
 }
 
@@ -170,10 +170,10 @@ TEST(hilbert_space, sub_hilbert_space) {
 
 TEST(hilbert_space, QuarticOperators) {
   fundamental_operator_set fops;
-  fops.insert("up", 0);
   fops.insert("down", 0);
-  fops.insert("up", 1);
   fops.insert("down", 1);
+  fops.insert("up", 0);
+  fops.insert("up", 1);
 
   using triqs::hilbert_space::hilbert_space;
   hilbert_space hs(fops);
