@@ -37,10 +37,8 @@ int main(int argc, char **argv) {
   triqs::mpi::environment env(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
 
-  for (int o = 0; o < 3; ++o) {
-    fops.insert("up", o);
-    fops.insert("dn", o);
-  }
+  for (int o = 0; o < 3; ++o) fops.insert("dn", o);
+  for (int o = 0; o < 3; ++o) fops.insert("up", o);
 
   for (int o = 0; o < 3; ++o) { H += -mu * (n("up", o) + n("dn", o)); }
   for (int o = 0; o < 3; ++o) { H += U * n("up", o) * n("dn", o); }
