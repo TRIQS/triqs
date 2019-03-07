@@ -233,7 +233,8 @@ TEST(Operator, RealOrComplex) {
   many_body_operator op3;
   h5_read(f, "OP_fs", op3, fs2);
   EXPECT_TRUE((op1 - op3).is_zero());
-  EXPECT_EQ(fundamental_operator_set::reduction_t(fs), fundamental_operator_set::reduction_t(fs2));
+  EXPECT_EQ(fundamental_operator_set::data_t(fs), fundamental_operator_set::data_t(fs2));
+  EXPECT_EQ(fs.data(), fs2.data());
 }
 
 MAKE_MAIN;

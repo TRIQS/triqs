@@ -161,7 +161,7 @@ namespace triqs {
 
       // ---- Now we must reverse the operations of write
 
-      auto r_fops = fops.reverse_map(); // a map int -> indices inverting fops[int] -> indices
+      auto r_fops = fops.data(); // the data vector v[int] -> indices inverting fops[indices] -> n
 
       for (auto const &mon : datavec) {
         monomial_t monomial;                                      // vector of canonical_ops_t
