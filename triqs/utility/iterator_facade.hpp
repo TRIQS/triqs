@@ -48,7 +48,7 @@ namespace triqs::utility {
     }
 
     Iter operator++(int) {
-      Iter c = *this;
+      Iter c = self();
       self().increment();
       return c;
     }
