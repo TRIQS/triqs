@@ -30,3 +30,4 @@ RUN yum -y install \
 
 RUN ln -s cmake3 /usr/bin/cmake
 ENV PATH=/opt/rh/devtoolset-7/root/usr/bin:${PATH}:/usr/lib64/openmpi/bin PYTHONPATH=/usr/lib64/python2.7/site-packages/openmpi
+ENV CC=/opt/rh/devtoolset-7/root/usr/bin/gcc CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
