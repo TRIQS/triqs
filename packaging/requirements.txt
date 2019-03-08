@@ -8,3 +8,4 @@ pyzmq
 jinja2
 ipython
 mako
+configobj
