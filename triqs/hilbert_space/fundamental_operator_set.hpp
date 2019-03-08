@@ -145,7 +145,7 @@ namespace triqs::hilbert_space {
     struct _cdress {
       indices_t const &index;
       int linear_index;
-      using base_const_iterator = decltype(triqs::utility::enumerate(vec).cbegin());
+      using base_const_iterator = triqs::utility::enum_iter<data_t::const_iterator>;
       _cdress(base_const_iterator _it) : linear_index(std::get<0>(*_it)), index(std::get<1>(*_it)) {}
     };
 
