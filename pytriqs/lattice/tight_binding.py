@@ -20,18 +20,18 @@
 #
 ################################################################################
 
-__all__ = ['BravaisLattice', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
+__all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
            'hopping_stack', 'TBLattice']
 
-from lattice_tools import BravaisLattice as BravaisLattice
-from lattice_tools import TightBinding as TightBinding
+from lattice_tools import BravaisLattice
+from lattice_tools import BrillouinZone
+from lattice_tools import TightBinding
 from lattice_tools import dos_patch as dos_patch_c
 from lattice_tools import dos as dos_c
 from lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stack, energy_matrix_on_bz_path
 from pytriqs.dos import DOS
 import numpy
 
-# MOVE THIS BACK INTO CYTHON !!!!
 
 def dos(tight_binding, n_kpts, n_eps, name) : 
     """
@@ -62,6 +62,7 @@ class TBLattice:
         self._hop = dict ( ( reg(k), numpy.array(v)) for k, v in hopping.items())
         orb = dict ( (str(i), orb) for (i, orb) in enumerate(orbital_positions ))
         self.bl = BravaisLattice(units, orbital_positions)
+        self.bz = BrillouinZone(self.bl)
         self.tb = TightBinding(self.bl, self._hop) #, orbital_positions )
         self.dim = self.bl.dim
         self.NOrbitalsInUnitCell = self.bl.n_orbitals
