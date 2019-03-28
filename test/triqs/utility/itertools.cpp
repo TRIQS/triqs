@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2017 by O. Parcollet, N. Wentzell
+ * Copyright (C) 2017-2018, N. Wentzell, O. Parcollet
+ * Copyright (C) 2019 The Simons Foundation
+ *    author : N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,12 +20,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-// Only in C++17 mode
 #include <triqs/test_tools/arrays.hpp>
-#if __cplusplus > 201402L
+#include <triqs/utility/itertools.hpp>
 
 #include <array>
-#include <triqs/utility/itertools.hpp>
 #include <vector>
 
 using namespace triqs::utility;
@@ -103,8 +103,13 @@ TEST(Itertools, Product) {
 
   std::vector<int> V1{0, 1, 2, 3, 4};
   std::array<_int, 5> V2{0, 1, 2, 3, 4};
-
   for (auto [x, y] : product(V1, V2)) { std::cout << "[" << x << "," << y << "]\n"; }
+
+  // Check that we can alter the values
+  std::vector<int> V3{1, 2, 3, 4};
+  std::vector<int> V4{1, 1, 1, 1};
+  for (auto [x, y] : product(V3, V4)) { y *= x; }
+  EXPECT_EQ(V4, std::vector(4, 1 * 2 * 3 * 4));
 }
 
 TEST(Itertools, Make_Product) {
@@ -145,12 +150,10 @@ TEST(Itertools, Product_Range) {
 TEST(Itertools, Product_Range_Shape) {
 
   array<double, 3> arr(5, 5, 5);
-  arr() = 1.;
+  arr()    = 1.;
   long res = 0;
-  for (auto [i, j, k] : product_range(arr.shape())) res += arr(i,j,k);
-  EXPECT_EQ(res, 5*5*5);
+  for (auto [i, j, k] : product_range(arr.shape())) res += arr(i, j, k);
+  EXPECT_EQ(res, 5 * 5 * 5);
 }
-
-#endif
 
 MAKE_MAIN;

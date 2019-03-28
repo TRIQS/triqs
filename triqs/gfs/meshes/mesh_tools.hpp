@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
-#include <triqs/utility/iterator_facade.hpp>
+#include <triqs/utility/itertools.hpp>
 
 #include <triqs/arrays.hpp>
 

@@ -25,19 +25,19 @@
 
 namespace tqa = triqs::arrays;
 namespace tql = triqs::clef;
-using tqa::range;
+using triqs::utility::range;
 
 int main(int argc, char **argv) {
 
   tql::placeholder<0> i_;
   tql::placeholder<1> j_;
 
-  TEST(make_immutable_array(i_ + j_, i_ = range(0, 2), j_ = range(0, 2)));
+  TEST(tqa::make_immutable_array(i_ + j_, i_ = range(0, 2), j_ = range(0, 2)));
 
   TEST((tqa::array<int, 2>(tqa::make_immutable_array(i_ + j_, i_ = range(0, 2), j_ = range(0, 2)))));
 
   // or if you prefer using a lambda...
-  auto b = make_immutable_array([](int i, int j) { return i - j; }, range(0, 2), range(0, 2));
+  auto b = tqa::make_immutable_array([](int i, int j) { return i - j; }, range(0, 2), range(0, 2));
 
   std::cerr << "b = " << b << std::endl;
   std::cerr << "b = " << tqa::array<double, 2>(b) << std::endl;

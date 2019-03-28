@@ -166,8 +166,7 @@ using triqs::arrays::range;
 using namespace triqs::arrays;
 
 inline void iter_on_range(range r) {
-  foreach (r, [](int i) { std::cout << i << std::endl; })
-    ;
+  triqs::utility::foreach(r, [](int i) { std::cout << i << std::endl; });
 }
 
 inline matrix<double> make_matrix(int size) { return make_unit_matrix<double>(size); }

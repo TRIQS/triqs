@@ -22,7 +22,7 @@
 #include "./domain.hpp"
 #include "./mem_layout.hpp"
 #include <vector>
-#include <triqs/utility/iterator_facade.hpp>
+#include <triqs/utility/itertools.hpp>
 
 namespace triqs {
   namespace arrays {

@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./brillouin_zone.hpp"
-#include <triqs/utility/iterator_facade.hpp>
+#include <triqs/utility/itertools.hpp>
 
 namespace triqs {
   namespace lattice {

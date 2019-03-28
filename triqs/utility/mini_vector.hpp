@@ -347,3 +347,13 @@ namespace std { // overload std::get to work with it
   template <typename T, int R> class tuple_size<triqs::utility::mini_vector<T, R>> : public std::integral_constant<size_t, R> {};
 
 } // namespace std
+
+// Extend the product_range functionality for mini_vector
+// FIXME This should go together with the removal of mini_vector!
+#include "./range.hpp"
+namespace triqs::utility{
+    template <typename Int, int N, typename EnableIf = std::enable_if_t<std::is_integral_v<Int>, int>>
+    auto product_range(mini_vector<Int, N> const &idx_tpl) {
+      return details::product_range_impl(idx_tpl, std::make_index_sequence<N>{});
+    }
+}
