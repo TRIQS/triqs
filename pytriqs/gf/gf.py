@@ -514,12 +514,14 @@ class Gf(object):
         return c
 
     def __rmul__(self,y):
-	c = self.copy()
+        c = self.copy()
         if isinstance(y, np.ndarray):
-	    assert len(y.shape) == 2, "Multiplication only supported for matrices"
-	    assert len(self.target_shape) == 2, "Multiplication only supported for matrix_valued Gfs"
-	    c.data[:] = np.moveaxis(np.tensordot(y, self.data, axes=([-1], [-2])), 0, -2)
-	elif isinstance(y, numbers.Number):
+            assert len(y.shape) == 2, "Multiplication only supported for matrices"
+            assert len(self.target_shape) == 2, "Multiplication only supported for matrix_valued Gfs"
+            # FIXME Use moveaxis with latest numpy versions
+            # c.data[:] = np.moveaxis(np.tensordot(y, self.data, axes=([-1], [-2])), 0, -2)
+            c.data[:] = np.rollaxis(np.tensordot(y, self.data, axes=([-1], [-2])), 0, -1)
+        elif isinstance(y, numbers.Number):
             c *= y
         else:
             assert False, "Invalid operand type for Gf multiplication"
