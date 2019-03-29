@@ -20,12 +20,14 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/variant.hpp>
-#include <string>
 #include <triqs/utility/dressed_iterator.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/variant_extensions.hpp>
 #include <triqs/utility/itertools.hpp>
 #include <triqs/h5/base_public.hpp>
+
+#include <utility>
+#include <string>
 #include <vector>
 #include <set>
 #include <map>
@@ -145,7 +147,7 @@ namespace triqs::hilbert_space {
     struct _cdress {
       indices_t const &index;
       int linear_index;
-      using base_const_iterator = triqs::utility::enum_iter<data_t::const_iterator>;
+      using base_const_iterator = decltype(triqs::utility::enumerate(std::declval<data_t>()).cbegin());
       _cdress(base_const_iterator _it) : linear_index(std::get<0>(*_it)), index(std::get<1>(*_it)) {}
     };
 
