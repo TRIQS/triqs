@@ -109,7 +109,7 @@ TEST(Itertools, Product) {
   std::vector<int> V3{1, 2, 3, 4};
   std::vector<int> V4{1, 1, 1, 1};
   for (auto [x, y] : product(V3, V4)) { y *= x; }
-  EXPECT_EQ(V4, std::vector(4, 1 * 2 * 3 * 4));
+  EXPECT_EQ(V4, std::vector<int>(4, 1 * 2 * 3 * 4));
 }
 
 TEST(Itertools, Make_Product) {
