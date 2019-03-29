@@ -20,13 +20,13 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/test_tools/arrays.hpp>
-#include <triqs/utility/itertools.hpp>
+#include "gtest.h"
+#include <itertools/itertools.hpp>
 
 #include <array>
 #include <vector>
 
-using namespace triqs::utility;
+using namespace itertools;
 
 // An uncopyable int
 struct _int {
@@ -118,13 +118,10 @@ TEST(Itertools, Make_Product) {
 
   std::array<range, N> range_arr{range(1), range(2), range(3), range(4)};
 
-  array<int, 4> arr(1, 2, 3, 4), arr_ref(1, 2, 3, 4);
-  arr_ref() = 1;
+  int count = 0;
+  for (auto [i, j, k, l] : make_product(range_arr)) ++count;
 
-  arr() = 0; // Visit each element exactly once
-  for (auto [i, j, k, l] : make_product(range_arr)) ++arr(i, j, k, l);
-
-  EXPECT_EQ(arr, arr_ref);
+  EXPECT_EQ(count, 1 * 2 * 3 * 4);
 }
 
 TEST(Itertools, Multi) {
@@ -132,12 +129,12 @@ TEST(Itertools, Multi) {
   std::vector<int> V{1, 2, 3, 4, 5, 6};
 
   // Build enumerate from transform and compare
-  auto l = [n = 0](auto x) mutable { return std::tuple<int, decltype(x)>{n++, x}; };
+  auto l = [n = 0](auto x) mutable { return std::make_tuple(n++, x); };
 
   for (auto [x1, x2] : zip(transform(V, l), enumerate(V))) { EXPECT_TRUE(x1 == x2); }
 
   // Chain enumerate and transform
-  for (auto [i, x] : enumerate(transform(V, l))) { std::cout << i << " " << x << "\n"; }
+  for (auto [i, x] : enumerate(transform(V, l))) { std::cout << i << "  [" << std::get<0>(x) << ", " << std::get<1>(x) << "]\n"; }
 }
 
 TEST(Itertools, Product_Range) {
@@ -147,13 +144,7 @@ TEST(Itertools, Product_Range) {
   EXPECT_EQ(res, 1000);
 }
 
-TEST(Itertools, Product_Range_Shape) {
-
-  array<double, 3> arr(5, 5, 5);
-  arr()    = 1.;
-  long res = 0;
-  for (auto [i, j, k] : product_range(arr.shape())) res += arr(i, j, k);
-  EXPECT_EQ(res, 5 * 5 * 5);
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+      return RUN_ALL_TESTS();
 }
-
-MAKE_MAIN;

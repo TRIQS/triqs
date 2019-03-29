@@ -25,7 +25,7 @@
 
 namespace tqa = triqs::arrays;
 namespace tql = triqs::clef;
-using triqs::utility::range;
+using itertools::range;
 
 int main(int argc, char **argv) {
 

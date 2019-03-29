@@ -1,7 +1,6 @@
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/make_immutable_array.hpp>
-using triqs::arrays::array;
-using triqs::arrays::range;
+using namespace triqs::arrays;
 using triqs::clef::placeholder;
 int main() {
   placeholder<0> i_;

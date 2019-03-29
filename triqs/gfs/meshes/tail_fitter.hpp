@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/itertools.hpp>
+#include <itertools/itertools.hpp>
 #include <triqs/arrays/blas_lapack/gelss.hpp>
 
 namespace triqs::gfs {
@@ -33,7 +33,7 @@ namespace triqs::gfs {
   // construct the Vandermonde matrix
   inline arrays::matrix<dcomplex> vander(std::vector<dcomplex> const &pts, int expansion_order) {
     arrays::matrix<dcomplex> V(pts.size(), expansion_order + 1);
-    for (auto [i, p] : triqs::utility::enumerate(pts)) {
+    for (auto [i, p] : itertools::enumerate(pts)) {
       dcomplex z = 1;
       for (int n = 0; n <= expansion_order; ++n) {
         V(i, n) = z;
@@ -209,7 +209,7 @@ namespace triqs::gfs {
       int n_moments = lss[n_fixed_moments]->n_var() + n_fixed_moments;
 
       using triqs::arrays::ellipsis;
-      using triqs::utility::enumerate;
+      using itertools::enumerate;
 
       // The values of the Green function. Swap relevant mesh to front
       auto g_data_swap_idx = rotate_index_view(g_data, n);

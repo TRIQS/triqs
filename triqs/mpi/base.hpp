@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2015 by O. Parcollet
+ * Copyright (C) 2015-2018, O. Parcollet
+ * Copyright (C) 2019, The Simons Foundation
+ *   author : N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,8 +21,9 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/c14.hpp>
-#include <triqs/utility/is_complex.hpp>
+#include "./../utility/c14.hpp"
+#include "./../utility/is_complex.hpp"
+#include <itertools/itertools.hpp>
 #include <mpi.h>
 
 // forward declare in case we do not include boost.
@@ -147,11 +150,11 @@ namespace triqs {
 
     //------------ Some helper function
 
-    // Given a range [start, end), slice it regularly for a node of rank 'rank' among n_nodes.
+    // Given an index range [start, end), slice it regularly for a node of rank 'rank' among n_nodes.
     // If the range is not dividable in n_nodes equal parts,
     // the first nodes have one more elements than the last ones.
     inline std::pair<long, long> slice_range(long start, long end, int n_nodes, int rank) {
-      long size = end - start;
+      long size          = end - start;
       long chunk         = size / n_nodes;
       long n_large_nodes = size - n_nodes * chunk;
       if (rank < n_large_nodes) // larger nodes have size chunk + 1
@@ -163,6 +166,21 @@ namespace triqs {
     inline long slice_length(long end, int n_nodes, int rank) {
       auto [node_begin, node_end] = slice_range(0, end, n_nodes, rank);
       return node_end - node_begin;
+    }
+
+    /**
+     * Function to chunk a range, distributing it uniformly over all MPI threads.
+     *
+     * @tparam T The type of the range
+     *
+     * @param range The range to slice
+     * @param comm The mpi communicator
+     */
+    template <typename T>
+    auto mpi_chunk(T &&range, triqs::mpi::communicator comm = {}) {
+      std::ptrdiff_t total_size = std::distance(std::cbegin(range), std::cend(range));
+      auto [start_idx, end_idx] = slice_range(0, total_size, comm.size(), comm.rank());
+      return itertools::slice(std::forward<T>(range), start_idx, end_idx);
     }
 
     /* -----------------------------------------------------------

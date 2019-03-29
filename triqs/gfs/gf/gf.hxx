@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 #pragma once
-//#include <triqs/utility/lazy_bracket.hpp>
+#include <itertools/itertools.hpp>
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
 #include "./data_proxy.hpp"
@@ -171,7 +171,7 @@ namespace triqs {
 
       auto target_shape() const { return target().shape(); } // drop arity dims
 
-      auto target_indices() const { return product_range(target().shape()); }
+      auto target_indices() const { return itertools::product_range(target().shape()); }
 
       /// Shape of the data
       auto const &data_shape() const { return _data.shape(); }

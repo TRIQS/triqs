@@ -19,13 +19,25 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./../../utility/itertools.hpp"
+#include <itertools/itertools.hpp>
 
 namespace triqs::arrays {
 
   // For backward-compatibility
-  using range    = triqs::utility::range;
-  using ellipsis = triqs::utility::ellipsis;
-  template <typename F> void foreach (range const &r, F const &f) { triqs::utility::foreach (r, f); }
+  using range    = itertools::range;
+  template <typename F> void foreach (range const &r, F const &f) { itertools::foreach (r, f); }
+
+  /**
+   * Ellipsis
+   *
+   * Ellipsis can be provided in place of [[range]], as in python.
+   * The type `ellipsis` is similar to [[range]] except that it is implicitly repeated as much as necessary.
+   */
+  struct ellipsis : range {
+    ellipsis() : range() {}
+  };
+  // for the case A(i, ellipsis) where A is of dim 1...
+  inline int operator*(ellipsis, int) { return 0; }
+  inline int operator*(int, ellipsis) { return 0; }
 
 } // namespace triqs::arrays
