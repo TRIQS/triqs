@@ -25,8 +25,8 @@
 #include <boost/utility/enable_if.hpp>
 #include <type_traits>
 
-#define AS_STRING(X) AS_STRING2(X)
-#define AS_STRING2(X) #X
+#define AS_STRING(...) AS_STRING2(__VA_ARGS__)
+#define AS_STRING2(...) #__VA_ARGS__
 
 #define TYPE_ENABLE_IF(Type, ...) typename boost::enable_if<__VA_ARGS__, Type>::type
 #define TYPE_ENABLE_IFC(Type, ...) typename boost::enable_if_c<__VA_ARGS__, Type>::type
@@ -34,9 +34,9 @@
 #define TYPE_DISABLE_IFC(Type, ...) typename boost::disable_if_c<__VA_ARGS__, Type>::type
 
 #ifdef __clang__
-  #define REQUIRES(X) __attribute__((enable_if(X, AS_STRING(X))))
+ #define REQUIRES(...) __attribute__((enable_if(__VA_ARGS__, AS_STRING(__VA_ARGS__))))
 #elif __GNUC__
-  #define REQUIRES(X) requires(X)
+  #define REQUIRES(...) requires(__VA_ARGS__)
 #endif
 
 #define ENABLE_IF(...) typename boost::enable_if<__VA_ARGS__, void>::type
