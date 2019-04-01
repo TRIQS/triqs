@@ -36,29 +36,34 @@ We are looking for a more robust solution to this OS X installation mess; **help
 Installation of the dependencies
 --------------------------------
 
-The following installation instructions are for Mac OS X 10.9 (Mavericks). They may work (possibly with some
-modifications) for earlier versions of OS X.
+The following installation instructions are for Mac OS X 10.14.3 (Mojave) and should be executed on the terminal.
+They may work (possibly with some modifications) for earlier versions of OS X.
 
-1. Install `homebrew <http://mxcl.github.io/homebrew/>`_.
+1. Install the XCode Command Line Tools: ::
 
-  Run ``brew doctor`` to resolve potential conflicts before continuing.
-  Consider further to remove old versions your packages with the command ``brew cleanup``.
+      xcode-select --install
 
-2. We recommend using the clang compiler. When using it the first time, you will be prompted to
-   install the clang command line tools. After this is done, proceed to step 3.
-   The following two commands will install the most recent clang compiler and load it into your environment: ::
+   and make sure the latest XCode SDK is set in your environment: ::
+
+      export SDKROOT=$(xcrun --show-sdk-path)
+
+2. Install `homebrew <http://brew.sh>`_.
+
+   If you already had homebrew installed consider running ``brew doctor`` to resolve potential
+   conflicts before continuing. It can further be useful to remove duplicate packages with the command ``brew cleanup``.
+
+3. We recommend using the clang compiler. The following two commands will install the most recent clang compiler ::
      
      brew install llvm
-     brew link --force llvm
 
-   As a next step we make sure the C/C++ compiler is set for your current :ref:`environment <environment_vars>`::
+   As a next step we make sure the clang compiler is added to your :ref:`environment <environment_vars>`::
 
-     export CC=clang
-     export CXX=clang++
+     export CC=/usr/local/opt/llvm/clang
+     export CXX=/usr/local/opt/llvm/clang++
 
   To make this choice permanent, add these two lines to your ``$HOME/.bash_profile``.
 
-3. Install several packages which are needed: ::
+4. Install the required dependencies using homebrew: ::
 
      brew install cmake
      brew install boost
@@ -70,7 +75,7 @@ modifications) for earlier versions of OS X.
      brew install zmq
      brew install python@2
 
-4. Install the required python packages: ::
+5. Install the required python packages: ::
 
     pip install numpy
     pip install --no-binary=h5py h5py
@@ -82,6 +87,6 @@ modifications) for earlier versions of OS X.
     pip install jinja2
     pip install mako
 
-4. If desired, install the `Jupyter <https://jupyter.org/>`_ Notebook using::
+6. If desired, install the `Jupyter <https://jupyter.org/>`_ Notebook using::
 
     pip install jupyter
