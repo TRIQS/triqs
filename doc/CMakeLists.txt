@@ -16,18 +16,9 @@ message(STATUS "Detected MathJax at ${MATHJAX_PATH}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py @ONLY)
 
-# ------------------------------------------------------------------------------------------------
-# Copy the directory substructure and link all files with relevant extensions
-# cp_rs is a script in cpp2py/bin, it mimics cp -rs on Linux
-# and filters the relevant extension
-# ------------------------------------------------------------------------------------------------
-
-set(EXT_FOR_DOC "bib rst png txt cpp css_t conf css js gif jpg py html bib sh md")
-execute_process(COMMAND ${CPP2PY_BINARY_DIR}/bin/cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${EXT_FOR_DOC})
-
-# ---------------------------------
-# Generate C++ doc with c++2rst
-# ---------------------------------
+# -----------------------------------------------------------------------------
+# Make an optional target that allows us to regenerate the C++ doc with c++2rst
+# -----------------------------------------------------------------------------
 # list of namespaces selected by c++2rst
 set(NS
     -N triqs::det_manip
@@ -42,10 +33,11 @@ foreach(I ${TRIQS_INCLUDE_DIRS})
  set (CPP2RST_INCLUDE_DIRS  ${CPP2RST_INCLUDE_DIRS} --includes ${I})
 endforeach()
 
+# Caution! This will alter the files in doc/cpp2rst_generated
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs
 		   COMMAND PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${CPP2PY_BINARY_DIR}/bin/c++2rst ${NS}
 		   ${CMAKE_CURRENT_SOURCE_DIR}/reference/doc_root.hpp
-		   --output_directory ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst_generated
+		   --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/cpp2rst_generated
 		   --cxxflags "-std=c++17 -DTRIQS_BUILDING_LIBRARY -I${CMAKE_SOURCE_DIR}"
 		   ${CPP2RST_INCLUDE_DIRS}
 		   --includes ${CMAKE_SOURCE_DIR}/cpp2py/include
@@ -54,6 +46,15 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs
 		   VERBATIM)
 add_custom_target(docs_cpp2rst DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log)
 add_dependencies(docs_cpp2rst triqs)
+
+# ------------------------------------------------------------------------------------------------
+# Copy the directory substructure and link all files with relevant extensions
+# cp_rs is a script in cpp2py/bin, it mimics cp -rs on Linux
+# and filters the relevant extension
+# ------------------------------------------------------------------------------------------------
+
+set(EXT_FOR_DOC "bib rst png txt cpp css_t conf css js gif jpg py html bib sh md")
+execute_process(COMMAND ${CPP2PY_BINARY_DIR}/bin/cp_rs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${EXT_FOR_DOC})
 
 #---------------------------------
 # Top Sphinx target
@@ -64,12 +65,9 @@ find_package(Sphinx)
 FILE(GLOB_RECURSE SOURCES *.rst)
 
 SET(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/contents.html)
-add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES} docs_cpp2rst
+add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES}
   COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_BINARY_DIR} html)
 add_custom_target(docs_sphinx ALL DEPENDS ${sphinx_top} ${CMAKE_CURRENT_BINARY_DIR})
-
-# depends on generated doc
-add_dependencies(docs_sphinx docs_cpp2rst)
 
 # doc depends on all python modules (because they  may be loaded in examples).
 GET_PROPERTY(CPP2PY_MODULES_LIST GLOBAL PROPERTY CPP2PY_MODULES_LIST)
