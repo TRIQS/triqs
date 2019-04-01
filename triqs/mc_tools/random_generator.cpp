@@ -20,6 +20,7 @@
  ******************************************************************************/
 #include "random_generator.hpp"
 #include "./MersenneRNG.hpp"
+#include "./../utility/macros.hpp"
 //#include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/mersenne_twister.hpp>
@@ -47,9 +48,6 @@ namespace triqs {
       }
 
       boost::uniform_real<> dis;
-
-#define AS_STRING(X) AS_STRING2(X)
-#define AS_STRING2(X) #X
 
 // now boost random number generators
 #define DRNG(r, data, XX)                                                                                                                            \

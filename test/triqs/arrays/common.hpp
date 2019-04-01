@@ -20,6 +20,7 @@
  ******************************************************************************/
 #ifndef COMMON_TEST_ARRAY_H
 #define COMMON_TEST_ARRAY_H
+#include <triqs/utility/macros.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/asserts.hpp>
 #include <sstream>
@@ -35,8 +36,5 @@
     std::cout << fs.str() << std::endl;                                                                                                              \
     TRIQS_RUNTIME_ERROR << fs.str();                                                                                                                 \
   }
-
-#define AS_STRING(X) AS_STRING2(X)
-#define AS_STRING2(X) #X
 
 #endif

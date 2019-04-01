@@ -19,7 +19,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/mini_vector.hpp>
+#include "./../utility/mini_vector.hpp"
+#include "./../utility/macros.hpp"
 #include <type_traits>
 #include <H5Ipublic.h>
 #include <H5Fpublic.h>
@@ -42,9 +43,6 @@ namespace triqs::h5 {
   template <typename T> struct hdf5_scheme_impl {
     static std::string invoke() { return T::hdf5_scheme(); }
   };
-
-#define AS_STRING(X) AS_STRING2(X)
-#define AS_STRING2(X) #X
 
 #define TRIQS_SPECIALIZE_HDF5_SCHEME2(X, Y)                                                                                                          \
   template <> struct hdf5_scheme_impl<X> {                                                                                                           \
