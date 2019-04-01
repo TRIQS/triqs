@@ -121,7 +121,7 @@ dom.add_constructor(signature = "(double beta, statistic_enum S, int n_max)")
 module.add_class(dom)
 
 # the mesh
-m = make_mesh( py_type = "MeshLegendre", c_tag = "legendre")
+m = make_mesh( py_type = "MeshLegendre", c_tag = "triqs::gfs::legendre")
 m.add_constructor(signature = "(double beta, statistic_enum S, int n_max=1025)")
 m.add_property(name = "beta",
                getter = cfunction(calling_pattern="double result = self_c.domain().beta",

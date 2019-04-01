@@ -69,8 +69,8 @@ m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g)", doc = "Dens
 m.add_function("matrix<dcomplex> density(gf_view<refreq, matrix_valued> g, double beta)", doc = "Density, as a matrix, computed from a frequency integral at finite temperature")
 m.add_function("dcomplex density(gf_view<refreq, scalar_valued> g, double beta)", doc = "Density, as a complex, computed from a  frequency integral at finite temperature")
 
-m.add_function("matrix<dcomplex> density(gf_view<legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
-m.add_function("dcomplex density(gf_view<legendre, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
+m.add_function("matrix<dcomplex> density(gf_view<triqs::gfs::legendre, matrix_valued> g)", doc = "Density, as a matrix, computed from evaluation in imaginary time")
+m.add_function("dcomplex density(gf_view<triqs::gfs::legendre, scalar_valued> g)", doc = "Density, as a complex, computed from evaluation in imaginary time")
 
 # Adjoint Fourier Meshes
 m.add_function("gf_mesh<brillouin_zone> make_adjoint_mesh(gf_mesh<cyclic_lattice> m)", doc = "Create the adjoint k-mesh")
@@ -156,21 +156,21 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
                    doc ="""Create Green function from the Fourier transform of g_w""")
 
     # set_from_legendre
-    m.add_function("void set_from_legendre(gf_view<imfreq, %s> gw, gf_view<legendre, %s> gl)"%(Target, Target),
+    m.add_function("void set_from_legendre(gf_view<imfreq, %s> gw, gf_view<triqs::gfs::legendre, %s> gl)"%(Target, Target),
                 calling_pattern = "gw = legendre_to_imfreq(gl)",
                 doc = """Fills self with the legendre transform of gl""")
 
-    m.add_function("void set_from_legendre(gf_view<imtime, %s> gt, gf_view<legendre, %s> gl)"%(Target, Target),
+    m.add_function("void set_from_legendre(gf_view<imtime, %s> gt, gf_view<triqs::gfs::legendre, %s> gl)"%(Target, Target),
                 calling_pattern = "gt = legendre_to_imtime(gl)",
                 doc = """Fills self with the legendre transform of gl""")
 
     # set_from_imfreq
-    m.add_function("void set_from_imfreq(gf_view<legendre, %s> gl, gf_view<imfreq, %s> gw)"%(Target, Target),
+    m.add_function("void set_from_imfreq(gf_view<triqs::gfs::legendre, %s> gl, gf_view<imfreq, %s> gw)"%(Target, Target),
                 calling_pattern = "gl = imfreq_to_legendre(gw)",
                 doc = """Fills self with the legendre transform of gw""")
 
     # set_from_imtime
-    m.add_function("void set_from_imtime(gf_view<legendre, %s> gl, gf_view<imtime, %s> gt)"%(Target, Target),
+    m.add_function("void set_from_imtime(gf_view<triqs::gfs::legendre, %s> gl, gf_view<imtime, %s> gt)"%(Target, Target),
                 calling_pattern = "gl = imtime_to_legendre(gt)",
                 doc = """Fills self with the legendre transform of gt""")
 
@@ -188,7 +188,7 @@ for gf_type in ["gf_view", "block_gf_view", "block2_gf_view"]:
 
 
 # set_from_imfreq
-m.add_function("void set_from_imfreq(gf_view<legendre, matrix_valued> gl, gf_view<imfreq, matrix_valued> gw)",
+m.add_function("void set_from_imfreq(gf_view<triqs::gfs::legendre, matrix_valued> gl, gf_view<imfreq, matrix_valued> gw)",
             calling_pattern = "gl = imfreq_to_legendre(gw)",
             doc = """Fills self with the legendre transform of gw""")
 
@@ -221,7 +221,7 @@ m.add_function("void replace_by_tail_in_fit_window(gf_view<imfreq, matrix_valued
 m.add_function("gf<imtime, matrix_valued> rebinning_tau(gf_view<imtime,matrix_valued> g, int new_n_tau)", doc = "Rebins the data of a GfImTime on a sparser mesh")
 
 # GfLegendre specific functions
-m.add_function("void enforce_discontinuity(gf_view<legendre, matrix_valued> gl, matrix_view<double> disc)", doc = """Modify the coefficient to adjust discontinuity""")
+m.add_function("void enforce_discontinuity(gf_view<triqs::gfs::legendre, matrix_valued> gl, matrix_view<double> disc)", doc = """Modify the coefficient to adjust discontinuity""")
 
 ########################
 ##   Code generation

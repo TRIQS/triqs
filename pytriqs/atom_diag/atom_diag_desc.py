@@ -171,7 +171,7 @@ for c_py, c_cpp, in (('Real','false'),('Complex','true')):
                          "std::vector<std::pair<int, int>> excluded_states = {})" % c_type,
                          doc = "The atomic Matsubara Green's function, possibly with excluded states (none by default)")
 
-    module.add_function ("block_gf<legendre> atomic_g_l(%s atom, double beta, gf_struct_t gf_struct, int n_l, "
+    module.add_function ("block_gf<triqs::gfs::legendre> atomic_g_l(%s atom, double beta, gf_struct_t gf_struct, int n_l, "
                          "std::vector<std::pair<int, int>> excluded_states = {})" % c_type,
                          doc = "The atomic Green's function in Legendre representation, possibly with excluded states (none by default)")
 
