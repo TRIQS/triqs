@@ -143,16 +143,18 @@ namespace triqs::hilbert_space {
      */
     data_t const &data() const { return vec; }
 
-    // Dereference type for const_iterator
+    private:
+    // Helper class for the creation of the const iterator
+    using _enum_iterator = decltype(triqs::utility::enumerate(std::declval<data_t>()).cbegin());
     struct _cdress {
       indices_t const &index;
       int linear_index;
-      using base_const_iterator = decltype(triqs::utility::enumerate(std::declval<data_t>()).cbegin());
-      _cdress(base_const_iterator _it) : linear_index(std::get<0>(*_it)), index(std::get<1>(*_it)) {}
+      _cdress(_enum_iterator _it) : linear_index(std::get<0>(*_it)), index(std::get<1>(*_it)) {}
     };
 
+    public:
     /// Constant bidirectional iterator over all stored index sequences. For an iterator `it`, `it->index` gives the `indices_t` object pointed by this iterator, and `it->linear_index` is its position in the set.
-    using const_iterator = triqs::utility::dressed_iterator<_cdress::base_const_iterator, _cdress>;
+    using const_iterator = triqs::utility::dressed_iterator<_enum_iterator, _cdress>;
 
     /// Return `const_iterator` to the first element of this set
     /**
