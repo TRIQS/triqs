@@ -20,12 +20,9 @@ RUN yum -y install \
       numpy \
       openmpi-devel \
       python-devel \
-      python-jinja2 \
       python-mako \
       python-matplotlib \
-      python-tornado \
       python-virtualenv \
-      python-zmq \
       scipy
 
 RUN ln -s cmake3 /usr/bin/cmake

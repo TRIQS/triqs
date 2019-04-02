@@ -3,9 +3,6 @@ h5py
 scipy
 mpi4py
 matplotlib
-tornado
-pyzmq
-jinja2
 ipython
 mako
 configobj
