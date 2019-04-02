@@ -68,24 +68,19 @@ They may work (possibly with some modifications) for earlier versions of OS X.
      brew install cmake
      brew install boost
      brew install hdf5
-     brew install gsl
      brew install gmp
      brew install fftw
      brew install open-mpi
-     brew install zmq
      brew install python@2
+     brew install scipy
+     brew install numpy
 
 5. Install the required python packages: ::
 
-    pip install numpy
-    pip install --no-binary=h5py h5py
-    pip install scipy
-    pip install --no-binary=mpi4py mpi4py
-    pip install matplotlib
-    pip install tornado
-    pip install pyzmq
-    pip install jinja2
-    pip install mako
+    pip install --user --upgrade --force-reinstall --no-binary=h5py h5py
+    pip install --user --upgrade --force-reinstall --no-binary=mpi4py mpi4py
+    pip install --user --upgrade matplotlib
+    pip install --user --upgrade mako
 
 6. If desired, install the `Jupyter <https://jupyter.org/>`_ Notebook using::
 
