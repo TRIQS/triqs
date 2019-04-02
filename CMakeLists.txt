@@ -235,6 +235,7 @@ endif (Build_Documentation)
 # Install the FindXXX that should be exported
 #-----------------------------------------------
 install (FILES cmake/FindNFFT.cmake DESTINATION share/cmake/Modules)
+install (FILES cmake/Findsanitizer.cmake DESTINATION share/cmake/Modules)
 
 #---------------------------------------
 # triqs_config.h
