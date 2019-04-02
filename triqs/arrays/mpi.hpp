@@ -45,7 +45,7 @@ namespace triqs {
 
         if (std::is_same<Tag, mpi::tag::scatter>::value) {
           mpi::mpi_broadcast(slow_size, c, root);
-          dims[0] = mpi::slice_length(slow_size - 1, c.size(), c.rank());
+          dims[0] = mpi::slice_length(slow_size, c.size(), c.rank());
         }
 
         if (std::is_same<Tag, mpi::tag::gather>::value) {
@@ -170,11 +170,11 @@ namespace triqs {
           auto slow_stride = laz.ref.indexmap().strides()[0];
           auto sendcounts  = std::vector<int>(c.size());
           auto displs      = std::vector<int>(c.size() + 1, 0);
-          int recvcount    = mpi::slice_length(slow_size - 1, c.size(), c.rank()) * slow_stride;
+          int recvcount    = mpi::slice_length(slow_size, c.size(), c.rank()) * slow_stride;
           auto D           = mpi::mpi_datatype<typename A::value_type>();
 
           for (int r = 0; r < c.size(); ++r) {
-            sendcounts[r] = mpi::slice_length(slow_size - 1, c.size(), r) * slow_stride;
+            sendcounts[r] = mpi::slice_length(slow_size, c.size(), r) * slow_stride;
             displs[r + 1] = sendcounts[r] + displs[r];
           }
 

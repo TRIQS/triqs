@@ -147,21 +147,22 @@ namespace triqs {
 
     //------------ Some helper function
 
-    // Given a range [first, last], slice it regularly for a node of rank 'rank' among n_nodes.
+    // Given a range [start, end), slice it regularly for a node of rank 'rank' among n_nodes.
     // If the range is not dividable in n_nodes equal parts,
     // the first nodes have one more elements than the last ones.
-    inline std::pair<long, long> slice_range(long first, long last, int n_nodes, int rank) {
-      long chunk         = (last - first + 1) / n_nodes;
-      long n_large_nodes = (last - first + 1) - n_nodes * chunk;
-      if (rank <= n_large_nodes - 1) // first, larger nodes, use chunk + 1
-        return {first + rank * (chunk + 1), first + (rank + 1) * (chunk + 1) - 1};
-      else // others nodes : shift the first by 1*n_large_nodes, used chunk
-        return {first + n_large_nodes + rank * chunk, first + n_large_nodes + (rank + 1) * chunk - 1};
+    inline std::pair<long, long> slice_range(long start, long end, int n_nodes, int rank) {
+      long size = end - start;
+      long chunk         = size / n_nodes;
+      long n_large_nodes = size - n_nodes * chunk;
+      if (rank < n_large_nodes) // larger nodes have size chunk + 1
+        return {start + rank * (chunk + 1), start + (rank + 1) * (chunk + 1)};
+      else // smaller nodes have size chunk + 1
+        return {start + n_large_nodes + rank * chunk, start + n_large_nodes + (rank + 1) * chunk};
     }
 
-    inline long slice_length(long imax, int n_nodes, int rank) {
-      auto r = slice_range(0, imax, n_nodes, rank);
-      return r.second - r.first + 1;
+    inline long slice_length(long end, int n_nodes, int rank) {
+      auto [node_begin, node_end] = slice_range(0, end, n_nodes, rank);
+      return node_end - node_begin;
     }
 
     /* -----------------------------------------------------------

@@ -38,7 +38,7 @@ TEST(Arrays, MPI) {
 
   arr_t A(7, 3), B, AA;
 
-  auto se = mpi::slice_range(0, 6, world.size(), world.rank());
+  auto se = mpi::slice_range(0, 7, world.size(), world.rank());
 
   clef::placeholder<0> i_;
   clef::placeholder<1> j_;
@@ -53,7 +53,7 @@ TEST(Arrays, MPI) {
   out << "  B = " << B << std::endl;
   out << "  C = " << C << std::endl;
 
-  EXPECT_ARRAY_EQ(B, A(range(se.first, se.second + 1), range()));
+  EXPECT_ARRAY_EQ(B, A(range(se.first, se.second), range()));
   EXPECT_ARRAY_NEAR(C, B);
 
   B *= -1;
