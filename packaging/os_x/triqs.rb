@@ -37,7 +37,6 @@ class Triqs < Formula
 
     mkdir "build" do
       system "cmake", *args
-      ENV.deparallelize { system "make" }
       system "make", "test"
       system "make", "install"
     end
