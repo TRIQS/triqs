@@ -193,19 +193,20 @@ namespace itertools {
       decltype(auto) dereference() const { return tuple_map_impl(std::index_sequence_for<It...>{}); }
     };
 
-    /**
-     * A forward iterator for a range scattered over multiple mpi threads
-     */
+    /********************* Stride Iterator ********************/
+
     template <typename Iter>
-    struct step_iter : iterator_facade<step_iter<Iter>, typename std::iterator_traits<Iter>::value_type> {
+    struct stride_iter : iterator_facade<stride_iter<Iter>, typename std::iterator_traits<Iter>::value_type> {
 
       Iter it;
-      std::ptrdiff_t step;
+      std::ptrdiff_t stride;
 
-      step_iter(Iter it, std::ptrdiff_t step) : it(it), step(step) {}
+      stride_iter(Iter it, std::ptrdiff_t stride) : it(it), stride(stride) {
+        if (stride <= 0) throw std::runtime_error("strided range requires a positive stride");
+      }
 
-      void increment() { std::advance(it, step); }
-      bool equal(step_iter const &other) const { return (it == other.it); }
+      void increment() { std::advance(it, stride); }
+      bool equal(stride_iter const &other) const { return (it == other.it); }
       decltype(auto) dereference() const { return *it; }
     };
 
@@ -327,22 +328,47 @@ namespace itertools {
     template <typename T>
     struct sliced {
       T x;
-      std::ptrdiff_t start_idx, end_idx, step;
+      std::ptrdiff_t start_idx, end_idx;
 
-      using iterator       = step_iter<decltype(std::begin(x))>;
-      using const_iterator = step_iter<decltype(std::cbegin(x))>;
+      using iterator       = decltype(std::begin(x));
+      using const_iterator = decltype(std::cbegin(x));
 
-      iterator begin() noexcept { return {std::next(std::begin(x), start_idx), step}; }
-      const_iterator cbegin() const noexcept { return {std::next(std::cbegin(x), start_idx), step}; }
+      iterator begin() noexcept { return std::next(std::begin(x), start_idx); }
+      const_iterator cbegin() const noexcept { return std::next(std::cbegin(x), start_idx); }
       const_iterator begin() const noexcept { return cbegin(); }
 
       iterator end() noexcept {
         std::ptrdiff_t total_size = std::distance(std::cbegin(x), std::cend(x));
-        return std::next(begin(), (std::min(total_size, end_idx) - start_idx) / step);
+        return std::next(begin(), std::min(total_size, end_idx) - start_idx);
       }
       const_iterator cend() const noexcept {
         std::ptrdiff_t total_size = std::distance(std::cbegin(x), std::cend(x));
-        return std::next(cbegin(), (std::min(total_size, end_idx) - start_idx) / step);
+        return std::next(cbegin(), std::min(total_size, end_idx) - start_idx);
+      }
+      const_iterator end() const noexcept { return cend(); }
+    };
+
+    // ---------------------------------------------
+
+    template <typename T>
+    struct strided {
+      T x;
+      std::ptrdiff_t stride;
+
+      using iterator       = stride_iter<decltype(std::begin(x))>;
+      using const_iterator = stride_iter<decltype(std::cbegin(x))>;
+
+      iterator begin() noexcept { return {std::begin(x), stride}; }
+      const_iterator cbegin() const noexcept { return {std::cbegin(x), stride}; }
+      const_iterator begin() const noexcept { return cbegin(); }
+
+      iterator end() noexcept {
+        std::ptrdiff_t end_idx = std::distance(std::cbegin(x), std::cend(x));
+        return std::next(std::end(x), stride - end_idx % stride);
+      }
+      const_iterator cend() const noexcept {
+        std::ptrdiff_t end_idx = std::distance(std::cbegin(x), std::cend(x));
+        return std::next(std::cend(x), stride - end_idx % stride);
       }
       const_iterator end() const noexcept { return cend(); }
     };
@@ -409,11 +435,23 @@ namespace itertools {
    * @param range The range to slice
    * @param start_idx The index to start the slice at
    * @param end_idx The index one past the end of the sliced range
-   * @param step [default=1] The stepping of the slice
    */
   template <typename T>
-  auto slice(T &&range, std::ptrdiff_t start_idx, std::ptrdiff_t end_idx, std::ptrdiff_t step = 1) {
-    return details::sliced<T>{std::forward<T>(range), start_idx, end_idx, step};
+  auto slice(T &&range, std::ptrdiff_t start_idx, std::ptrdiff_t end_idx) {
+    return details::sliced<T>{std::forward<T>(range), start_idx, std::max(start_idx, end_idx)};
+  }
+
+  /**
+   * Lazy-stride a range.
+   * This function returns itself a subrange of the initial range
+   * by considering only every N-th element
+   *
+   * @param range The range to take the subrange of
+   * @param stride The numer of elements to skip
+   */
+  template <typename T>
+  auto stride(T &&range, std::ptrdiff_t stride) {
+    return details::strided<T>{std::forward<T>(range), stride};
   }
 
   /********************* Some factory functions ********************/

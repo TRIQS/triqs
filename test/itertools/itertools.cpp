@@ -25,6 +25,7 @@
 
 #include <array>
 #include <vector>
+#include <numeric>
 
 using namespace itertools;
 
@@ -112,6 +113,20 @@ TEST(Itertools, Product) {
   EXPECT_EQ(V4, std::vector<int>(4, 1 * 2 * 3 * 4));
 }
 
+TEST(Itertools, Slice) {
+
+  for (long N : range(1, 6)) {
+    for (auto start_idx : range(N)) {
+      for (auto M : range(1, 6)) {
+        auto sliced  = slice(range(N), start_idx, M);
+        long sum     = std::accumulate(sliced.cbegin(), sliced.cend(), 0);
+        long end_idx = std::max(std::min(M, N), start_idx);
+        EXPECT_EQ(sum, end_idx * (end_idx - 1) / 2 - start_idx * (start_idx - 1) / 2);
+      }
+    }
+  }
+}
+
 TEST(Itertools, Make_Product) {
 
   constexpr int N = 4;
@@ -145,6 +160,6 @@ TEST(Itertools, Product_Range) {
 }
 
 int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-      return RUN_ALL_TESTS();
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
