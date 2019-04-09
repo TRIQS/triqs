@@ -38,7 +38,7 @@ class MpiGf : public ::testing::Test {
 
     d = make_clone(g1.data());
     for (int u = 0; u < world.size(); ++u) {
-      auto se = mpi::slice_range(0, 2 * Nfreq, world.size(), u);
+      auto se = mpi::chunk_range(0, 2 * Nfreq, world.size(), u);
       d(range(se.first, se.second), 0, 0) *= (1 + u);
     }
   }

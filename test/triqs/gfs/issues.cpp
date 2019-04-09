@@ -92,7 +92,7 @@ TEST(Gf, Issue319) {
   auto G4_w  = make_block_gf(1, g4_w);
   auto mesh  = G4_w[0].mesh();
   auto N     = mesh.size();
-  auto slice = mpi::slice_range(0, N, 1, 0); // world.size(), world.rank());
+  auto slice = mpi::chunk_range(0, N, 1, 0); // world.size(), world.rank());
   auto mpg   = triqs::gfs::mesh_pt_generator<gf_mesh<cartesian_product<imfreq, imfreq, imfreq>>>(&G4_w[0].mesh());
 
   mpg += slice.first;

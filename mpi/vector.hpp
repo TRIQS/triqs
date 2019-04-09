@@ -87,11 +87,11 @@ namespace mpi {
       auto slow_size  = a.size();
       auto sendcounts = std::vector<int>(c.size());
       auto displs     = std::vector<int>(c.size() + 1, 0);
-      int recvcount   = slice_length(slow_size, c.size(), c.rank());
+      int recvcount   = chunk_length(slow_size, c.size(), c.rank());
       std::vector<T> b(recvcount);
 
       for (int r = 0; r < c.size(); ++r) {
-        sendcounts[r] = slice_length(slow_size, c.size(), r);
+        sendcounts[r] = chunk_length(slow_size, c.size(), r);
         displs[r + 1] = sendcounts[r] + displs[r];
       }
 

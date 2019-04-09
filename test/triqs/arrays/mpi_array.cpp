@@ -38,7 +38,7 @@ TEST(Arrays, MPI) {
 
   arr_t A(7, 3), B, AA;
 
-  auto se = mpi::slice_range(0, 7, world.size(), world.rank());
+  auto se = mpi::chunk_range(0, 7, world.size(), world.rank());
 
   clef::placeholder<0> i_;
   clef::placeholder<1> j_;
