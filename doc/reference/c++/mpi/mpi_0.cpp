@@ -3,7 +3,7 @@
 
 using namespace triqs;
 using namespace triqs::arrays;
-using namespace triqs::mpi;
+using namespace mpi;
 
 int main(int argc, char *argv[]) {
 

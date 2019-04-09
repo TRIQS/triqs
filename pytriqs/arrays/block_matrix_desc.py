@@ -6,7 +6,7 @@ from cpp2py.wrap_generator import *
 module = module_(full_name = "pytriqs.arrays.block_matrix", doc = "Block-diagonal matrix containers")
 
 # Add here all includes beyond what is automatically included by the triqs modules
-module.add_include("<triqs/mpi/vector.hpp>")
+module.add_include("<mpi/vector.hpp>")
 module.add_include("<triqs/arrays/block_matrix.hpp>")
 
 module.add_include("<cpp2py/converters/pair.hpp>")

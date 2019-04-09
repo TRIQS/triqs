@@ -13,6 +13,7 @@ endmacro(add_all_subdirectories_with_cmakelist)
 
 add_subdirectory(triqs)
 add_subdirectory(itertools)
+add_subdirectory(mpi)
 
 if(PythonSupport)
  add_subdirectory(pytriqs)

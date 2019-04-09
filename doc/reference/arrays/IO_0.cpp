@@ -1,8 +1,6 @@
 #include <triqs/arrays.hpp>
-#include <boost/mpi.hpp>
 using triqs::arrays::array;
 using triqs::clef::placeholder;
-namespace mpi = triqs::mpi;
 
 int main(int argc, char **argv) {
   mpi::environment env(argc, argv);

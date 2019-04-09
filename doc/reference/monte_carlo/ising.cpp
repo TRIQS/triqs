@@ -9,8 +9,8 @@
 int main(int argc, char *argv[]) {
 
   // initialize mpi
-  triqs::mpi::environment env(argc, argv);
-  triqs::mpi::communicator world;
+  mpi::environment env(argc, argv);
+  mpi::communicator world;
 
   // greeting
   if (world.rank() == 0) std::cout << "Ising chain" << std::endl;

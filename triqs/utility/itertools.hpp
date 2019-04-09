@@ -2,7 +2,8 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2013 by O. Parcollet
+ * Copyright (C) 2019, The Simons Foundation
+ *   author : N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,29 +19,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#pragma once
 
-#include <triqs/test_tools/arrays.hpp>
-#include <triqs/arrays.hpp>
+#include <itertools/itertools.hpp>
 
-//#include <triqs/mpi.hpp>
-#include <triqs/mpi/vector.hpp>
-
-#include <triqs/utility/complex_ops.hpp>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-
-using namespace triqs;
-using namespace triqs::arrays;
-using namespace triqs::mpi;
-
-TEST(Vector, MPI) {
-
-  mpi::communicator world;
-
-  std::vector<double> v1{};
-  std::vector<double> v2 = triqs::mpi::mpi_reduce(v1, world);
-}
-
-MAKE_MAIN;
+// Expose itertools functionality in triqs::utility namespace for backward compatibility
+namespace triqs::utility {
+  using namespace ::itertools;
+} // namespace triqs::utility

@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2014 by O. Parcollet
+ * Copyright (C) 2016 by I. Krivenko
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,21 +18,28 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#pragma once
-#include "./base.hpp"
-#include <boost/mpi.hpp>
+#include <mpi/mpi.hpp>
+#include <gtest.h>
 
-namespace triqs {
-  namespace mpi {
+using namespace mpi;
 
-    // implement the communicator cast
-    inline communicator::operator boost::mpi::communicator() const {
-      return boost::mpi::communicator(_com, boost::mpi::comm_duplicate);
-      // duplicate policy : cf http://www.boost.org/doc/libs/1_56_0/doc/html/boost/mpi/comm_create_kind.html
-    }
+TEST(Comm, split) {
 
-    // reverse : construct (implicit) the communicator from the boost one.
-    inline communicator::communicator(boost::mpi::communicator c) : _com(c) {}
+  communicator world;
+  int rank = world.rank();
 
-  } // namespace mpi
-} // namespace triqs
+  ASSERT_EQ(4, world.size());
+
+  int colors[] = {0, 1, 1, 2};
+  int keys[]   = {5, 13, 18, 7};
+
+  auto comm = world.split(colors[rank], keys[rank]);
+
+  int comm_sizes[] = {1, 2, 2, 1};
+  int comm_ranks[] = {0, 0, 1, 0};
+
+  EXPECT_EQ(comm_sizes[rank], comm.size());
+  EXPECT_EQ(comm_ranks[rank], comm.rank());
+}
+
+MPI_TEST_MAIN;

@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #define TRIQS_DEBUG
-#include <triqs/mpi/base.hpp>
+#include <mpi/mpi.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/h5.hpp>
 #include <triqs/utility/typeid_name.hpp>
@@ -60,7 +60,7 @@ using triqs::clef::placeholder;
 
 #define MAKE_MAIN                                                                                                                                    \
   int main(int argc, char **argv) {                                                                                                                  \
-    triqs::mpi::environment env(argc, argv);                                                                                                         \
+    mpi::environment env(argc, argv);                                                                                                         \
     ::testing::InitGoogleTest(&argc, argv);                                                                                                          \
     return RUN_ALL_TESTS();                                                                                                                          \
   }

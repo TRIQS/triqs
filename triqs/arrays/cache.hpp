@@ -31,9 +31,7 @@ namespace triqs {
       protected:
       typedef memory_layout_t<DataType::domain_type::rank> ml_t;
       ml_t ml;
-      std::c14::conditional_t<IsConst, typename const_view_type_if_exists_else_type<DataType>::type,
-                              typename view_type_if_exists_else_type<DataType>::type>
-         keeper;
+      std::c14::conditional_t<IsConst, const_view_or_type_t<DataType>, view_or_type_t<DataType>> keeper;
       bool need_copy;
       using CacheType         = array<typename DataType::value_type, DataType::domain_type::rank>;
       using exposed_view_type = std::c14::conditional_t<IsConst, typename CacheType::const_view_type, typename CacheType::view_type>;

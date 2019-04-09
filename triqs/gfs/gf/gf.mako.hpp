@@ -179,7 +179,7 @@ namespace triqs {
 
       auto target_shape() const { return target().shape(); } // drop arity dims
 
-      auto target_indices() const { return product_range(target().shape()); }
+      auto target_indices() const { return itertools::product_range(target().shape()); }
 
       /// Shape of the data
       auto const &data_shape() const { return _data.shape(); }
@@ -284,7 +284,7 @@ namespace triqs {
       template <typename G> gf(G const &x, std14::enable_if_t<ImmutableGreenFunction<G>::value> *dummy = 0) : gf() { *this = x; }
 
       /// Construct from the mpi lazy class of the implementation class, cf mpi section
-      // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
+      // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
       template <typename Tag> gf(mpi_lazy<Tag, gf_const_view<Var, Target>> x) : gf() { operator=(x); }
 
       /// ---------------  swap --------------------
@@ -648,19 +648,13 @@ namespace triqs {
       // mako ${mpidoc("Bcast")}
       friend void mpi_broadcast(MAKO_GF &g, mpi::communicator c = {}, int root = 0) {
         // Shall we bcast mesh ?
-        mpi_broadcast(g.data(), c, root);
+	mpi::broadcast(g.data(), c, root);
       }
 
       // mako ${mpidoc("Reduce")}
       friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(MAKO_GF const &a, mpi::communicator c = {}, int root = 0, bool all = false,
                                                                     MPI_Op op = MPI_SUM) {
         return {a(), c, root, all, op};
-      }
-
-      // mako ${mpidoc("AllReduce")}
-      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(MAKO_GF const &a, mpi::communicator c = {}, int root = 0,
-                                                                        MPI_Op op = MPI_SUM) {
-        return {a(), c, root, true, op};
       }
 
       // mako ${mpidoc("Scatter")}
@@ -673,22 +667,17 @@ namespace triqs {
         return {a(), c, root, all};
       }
 
-      // mako ${mpidoc("AllGather")}
-      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(MAKO_GF const &a, mpi::communicator c = {}, int root = 0) {
-        return {a(), c, root, true};
-      }
-
       // mako %if RVC != "const_view":
 
       //-------------  corresponding operator = overload
 
       /**
     * Performs MPI reduce
-    * @param l The lazy object returned by mpi_reduce
+    * @param l The lazy object returned by mpi::reduce
     */
       void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
         _mesh = l.rhs.mesh();
-        _data = arrays::mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
+        _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
         // mako %if GRV == "regular" :
         _remake_zero();
         // mako %endif
@@ -696,11 +685,11 @@ namespace triqs {
 
       /**
      * Performs MPI scatter
-     * @param l The lazy object returned by mpi_reduce
+     * @param l The lazy object returned by reduce
      */
       void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
-        _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
-        _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
+        _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
+        _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
         // mako %if GRV == "regular" :
         _remake_zero();
         // mako %endif
@@ -708,11 +697,11 @@ namespace triqs {
 
       /**
      * Performs MPI gather
-     * @param l The lazy object returned by mpi_reduce
+     * @param l The lazy object returned by mpi::reduce
      */
       void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
-        _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
-        _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
+        _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
+        _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
         // mako %if GRV == "regular" :
         _remake_zero();
         // mako %endif

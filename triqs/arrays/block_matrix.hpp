@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <triqs/mpi/vector.hpp>
+#include <mpi/vector.hpp>
 #include <triqs/utility/is_complex.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/h5.hpp>
@@ -140,14 +140,14 @@ namespace triqs {
       }
 
       /// MPI
-      friend block_matrix mpi_all_reduce(block_matrix const &m, mpi::communicator c = {}, int root = 0) {
+      friend block_matrix mpi_reduce(block_matrix const &m, mpi::communicator c, int root, bool all, MPI_Op op) {
         block_matrix m_tot(m);
-        for (int i = 0; i < m.size(); ++i) m_tot[i] = mpi::mpi_all_reduce(m[i], c, root);
+        for (int i = 0; i < m.size(); ++i) m_tot[i] = mpi::reduce(m[i], c, root, all, op);
         return m_tot;
       }
-      friend void mpi_broadcast(block_matrix &m, mpi::communicator c = {}, int root = 0) {
-        mpi_broadcast(m.block_names, c, root);
-        mpi_broadcast(m.matrix_vec, c, root);
+      friend void mpi_broadcast(block_matrix &m, mpi::communicator c, int root) {
+	mpi::broadcast(m.block_names, c, root);
+	mpi::broadcast(m.matrix_vec, c, root);
       }
 
       // Boost.Serialization

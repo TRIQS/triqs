@@ -34,7 +34,7 @@ fundamental_operator_set fops;
 many_body_operator H;
 
 int main(int argc, char **argv) {
-  triqs::mpi::environment env(argc, argv);
+  mpi::environment env(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
 
   for (int o = 0; o < 3; ++o) fops.insert("dn", o);

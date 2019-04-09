@@ -24,6 +24,7 @@
 #include <tuple>
 #include <vector>
 #include <iterator>
+#include <iostream>
 #include <exception>
 
 namespace itertools {

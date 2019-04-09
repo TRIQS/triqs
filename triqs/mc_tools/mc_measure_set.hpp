@@ -20,7 +20,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/mpi/base.hpp>
+#include <mpi/mpi.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/timer.hpp>
 #include <functional>

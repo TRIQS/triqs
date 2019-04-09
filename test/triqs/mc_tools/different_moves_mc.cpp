@@ -12,7 +12,6 @@
 #include <triqs/arrays.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
 namespace h5  = triqs::h5;
-namespace mpi = triqs::mpi;
 triqs::arrays::array<std::complex<double>, 1> make_array(std::complex<double> c) { return {c}; };
 
 struct configuration {
@@ -69,7 +68,7 @@ struct compute_histo {
     }
     config->x = 0; // the walker returns to zero.
   }
-  void collect_results(triqs::mpi::communicator c) {
+  void collect_results(mpi::communicator c) {
     H /= tot;
     h5::file file("histo.h5", H5F_ACC_TRUNC);
     h5_write(file, "H", H);

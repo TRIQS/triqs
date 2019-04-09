@@ -53,7 +53,7 @@ namespace cpp2py {
     auto reader = [](PyObject *h5_gr, std::string const &name) -> PyObject * {
       auto gr = convert_from_python<triqs::h5::group>(h5_gr);
       // declare the target C++ object, with special case if it is a view...
-      using c_type = triqs::regular_type_if_view_else_type_t<T>;
+      using c_type = triqs::regular_t<T>;
       try {                                                                // now read
         return convert_to_python(T(triqs::h5::h5_read<c_type>(gr, name))); // cover the view and value case
       }

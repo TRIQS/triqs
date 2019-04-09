@@ -10,7 +10,6 @@
 // H = -J \sum_<ij> s_i s_j - h \sum_i s_i
 // theoretical T_c = 2/log(1+sqrt(2)) for J = 1.0
 using namespace triqs::statistics;
-namespace mpi = triqs::mpi;
 /**************
  * config
  **************/

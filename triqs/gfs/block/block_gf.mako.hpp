@@ -25,7 +25,6 @@
 namespace triqs {
   namespace gfs {
 
-    using triqs::mpi::mpi_reduce;
     using triqs::utility::factory;
 
     /*----------------------------------------------------------
@@ -231,7 +230,7 @@ namespace triqs {
       template <typename G> MAKO_GF(G const &x, std14::enable_if_t<BlockGreenFunction<G>::value> *dummy = 0) : MAKO_GF() { *this = x; }
 
       /// Construct from the mpi lazy class of the implementation class, cf mpi section
-      // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
+      // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
       template <typename Tag> MAKO_GF(mpi_lazy<Tag, MAKO_GF_const_view<Var, Target>> x) : MAKO_GF() { operator=(x); }
 
       // mako %if ARITY == 1 :
@@ -323,15 +322,15 @@ namespace triqs {
       MAKO_GF &operator=(MAKO_GF &&rhs) = default;
 
       /**
-    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
-    *
-    * @param l The lazy object returned by mpi_reduce
-    */
+       * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+       *
+       * @param l The lazy object returned by reduce
+       */
       MAKO_GF &operator=(mpi_lazy<mpi::tag::reduce, MAKO_GF::const_view_type> l) {
         _block_names = l.rhs.block_names();
-        _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+        _glist       = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
         return *this;
-        // mpi_reduce of vector produces a new vector of gf, so it is fine here
+        // reduce of vector produces a new vector of gf, so it is fine here
       }
 
       /**
@@ -382,19 +381,19 @@ namespace triqs {
       /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
-    * @param l The lazy object returned by mpi_reduce
+    * @param l The lazy object returned by reduce
     */
       void operator=(mpi_lazy<mpi::tag::reduce, MAKO_GF::const_view_type> l) {
         if (l.rhs.size() != this->size())
           TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
         _block_names = l.rhs.block_names();
         // mako %if ARITY == 1 :
-        for (int i = 0; i < size(); ++i) _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
+        for (int i = 0; i < size(); ++i) _glist[i] = mpi::reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
         // mako %else:
         for (int i = 0; i < size1(); ++i)
-          for (int j = 0; j < size2(); ++j) _glist[i][j] = mpi_reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
+          for (int j = 0; j < size2(); ++j) _glist[i][j] = mpi::reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
         // mako %endif
-        // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
+        // here we need to enumerate the vector, the mpi::reduce produce a vector<gf>, NOT a gf_view,
         // we can not overload the = of vector for better API.
       }
 
@@ -648,7 +647,7 @@ namespace triqs {
     // mako ${mpidoc("Bcast")}
     template <typename V, typename T> void mpi_broadcast(MAKO_GF<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
-      mpi_broadcast(g.data(), c, root);
+      mpi::broadcast(g.data(), c, root);
     }
 
     // mako ${mpidoc("Reduce")}
@@ -656,13 +655,6 @@ namespace triqs {
     mpi_lazy<mpi::tag::reduce, MAKO_ROOT_const_view<V, T>> mpi_reduce(MAKO_GF<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
-    }
-
-    // mako ${mpidoc("AllReduce")}
-    template <typename V, typename T>
-    mpi_lazy<mpi::tag::reduce, MAKO_ROOT_const_view<V, T>> mpi_all_reduce(MAKO_GF<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                          MPI_Op op = MPI_SUM) {
-      return {a(), c, root, true, op};
     }
 
     // mako %endfor

@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2016 by I. Krivenko
+ * Copyright (C) 2017-2018 by O. Parcollet, N. Wentzell
+ * Copyright (C) 2019 The Simons Foundation
+ *    author : N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,28 +20,38 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/test_tools/arrays.hpp>
-#include <triqs/mpi/base.hpp>
 
-using namespace triqs::mpi;
+#include <mpi/mpi.hpp>
+#include <gtest.h>
 
-TEST(Comm, split) {
+#include <numeric>
 
-  communicator world;
-  int rank = world.rank();
+using namespace itertools;
 
-  ASSERT_EQ(4, world.size());
+TEST(MpiChunk, Simple) {
 
-  int colors[] = {0, 1, 1, 2};
-  int keys[]   = {5, 13, 18, 7};
+  mpi::communicator comm{};
 
-  auto comm = world.split(colors[rank], keys[rank]);
-
-  int comm_sizes[] = {1, 2, 2, 1};
-  int comm_ranks[] = {0, 0, 1, 0};
-
-  EXPECT_EQ(comm_sizes[rank], comm.size());
-  EXPECT_EQ(comm_ranks[rank], comm.rank());
+  for (int N : range(10)) {
+    auto chunk_V = mpi::chunk(range(N), comm);
+    int sum      = std::accumulate(chunk_V.begin(), chunk_V.end(), 0);
+    sum          = mpi::all_reduce(sum, comm);
+    EXPECT_EQ(N * (N - 1) / 2, sum);
+  }
 }
 
-MAKE_MAIN;
+TEST(MpiChunk, Multi) {
+
+  mpi::communicator comm{};
+
+  for (int N : range(10)) {
+    auto V1 = range(0, N);
+    auto V2 = range(N, 2 * N);
+    int sum = 0;
+    for (auto [v1, v2] : mpi::chunk(zip(V1, V2), comm)) { sum += v1 + v2; }
+    sum = mpi::all_reduce(sum, comm);
+    EXPECT_EQ(N * (2 * N - 1), sum);
+  }
+}
+
+MPI_TEST_MAIN;

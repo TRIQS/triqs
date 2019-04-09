@@ -2,8 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2019, The Simons Foundation
- *   author : N. Wentzell
+ * Copyright (C) 2013 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,10 +18,15 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#pragma once
 
-#error The use of the triqs/mpi/vector.hpp header is no longer supported. \
-  The associated functionality has been moved into the mpi/vector.hpp header \
-  in order to make it usable also outside of the triqs project. \
-  The namespace was renamed from triqs::mpi to just mpi. \
-  Please adjust your application accordingly.
+#include <gtest.h>
+#include <mpi/vector.hpp>
+
+TEST(Vector, MPI) {
+
+  mpi::communicator world;
+  std::vector<double> v1{};
+  std::vector<double> v2 = mpi::reduce(v1, world);
+}
+
+MPI_TEST_MAIN;

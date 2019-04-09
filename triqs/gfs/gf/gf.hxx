@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <itertools/itertools.hpp>
+//#include <triqs/utility/lazy_bracket.hpp>
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
 #include "./data_proxy.hpp"
@@ -272,7 +272,7 @@ namespace triqs {
       template <typename G> gf(G const &x, std14::enable_if_t<ImmutableGreenFunction<G>::value> *dummy = 0) : gf() { *this = x; }
 
       /// Construct from the mpi lazy class of the implementation class, cf mpi section
-      // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
+      // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
       template <typename Tag> gf(mpi_lazy<Tag, gf_const_view<Var, Target>> x) : gf() { operator=(x); }
 
       /// ---------------  swap --------------------
@@ -538,7 +538,7 @@ namespace triqs {
       
       friend void mpi_broadcast(gf &g, mpi::communicator c = {}, int root = 0) {
         // Shall we bcast mesh ?
-        mpi_broadcast(g.data(), c, root);
+	mpi::broadcast(g.data(), c, root);
       }
 
       
@@ -559,26 +559,6 @@ namespace triqs {
       friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf const &a, mpi::communicator c = {}, int root = 0, bool all = false,
                                                                     MPI_Op op = MPI_SUM) {
         return {a(), c, root, all, op};
-      }
-
-      
-      /**
-     * Initiate (lazy) MPI AllReduce
-     *
-     * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-     * the MPI AllReduce operation is performed.
-     *
-     * @group MPI
-     * @param g The Green function
-     * @param c The MPI communicator (default is world)
-     * @param root The root of the broadcast communication in the MPI sense.
-     * @return Returns a lazy object describing the object and the MPI operation to be performed.
-     *
-     */
-      
-      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf const &a, mpi::communicator c = {}, int root = 0,
-                                                                        MPI_Op op = MPI_SUM) {
-        return {a(), c, root, true, op};
       }
 
       
@@ -619,53 +599,34 @@ namespace triqs {
         return {a(), c, root, all};
       }
 
-      
-      /**
-     * Initiate (lazy) MPI AllGather
-     *
-     * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-     * the MPI AllGather operation is performed.
-     *
-     * @group MPI
-     * @param g The Green function
-     * @param c The MPI communicator (default is world)
-     * @param root The root of the broadcast communication in the MPI sense.
-     * @return Returns a lazy object describing the object and the MPI operation to be performed.
-     *
-     */
-      
-      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf const &a, mpi::communicator c = {}, int root = 0) {
-        return {a(), c, root, true};
-      }
-
 
       //-------------  corresponding operator = overload
 
       /**
     * Performs MPI reduce
-    * @param l The lazy object returned by mpi_reduce
+    * @param l The lazy object returned by mpi::reduce
     */
       void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
         _mesh = l.rhs.mesh();
-        _data = arrays::mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
+        _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
       }
 
       /**
      * Performs MPI scatter
-     * @param l The lazy object returned by mpi_reduce
+     * @param l The lazy object returned by reduce
      */
       void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
-        _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
-        _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
+        _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
+        _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
       }
 
       /**
      * Performs MPI gather
-     * @param l The lazy object returned by mpi_reduce
+     * @param l The lazy object returned by mpi::reduce
      */
       void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
-        _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
-        _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
+        _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
+        _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
       }
     };
    
@@ -757,7 +718,7 @@ namespace triqs {
 
       auto target_shape() const { return target().shape(); } // drop arity dims
 
-      auto target_indices() const { return product_range(target().shape()); }
+      auto target_indices() const { return itertools::product_range(target().shape()); }
 
       /// Shape of the data
       auto const &data_shape() const { return _data.shape(); }
@@ -1094,7 +1055,7 @@ namespace triqs {
       
       friend void mpi_broadcast(gf_view &g, mpi::communicator c = {}, int root = 0) {
         // Shall we bcast mesh ?
-        mpi_broadcast(g.data(), c, root);
+	mpi::broadcast(g.data(), c, root);
       }
 
       
@@ -1115,26 +1076,6 @@ namespace triqs {
       friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_view const &a, mpi::communicator c = {}, int root = 0, bool all = false,
                                                                     MPI_Op op = MPI_SUM) {
         return {a(), c, root, all, op};
-      }
-
-      
-      /**
-     * Initiate (lazy) MPI AllReduce
-     *
-     * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-     * the MPI AllReduce operation is performed.
-     *
-     * @group MPI
-     * @param g The Green function
-     * @param c The MPI communicator (default is world)
-     * @param root The root of the broadcast communication in the MPI sense.
-     * @return Returns a lazy object describing the object and the MPI operation to be performed.
-     *
-     */
-      
-      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_view const &a, mpi::communicator c = {}, int root = 0,
-                                                                        MPI_Op op = MPI_SUM) {
-        return {a(), c, root, true, op};
       }
 
       
@@ -1175,53 +1116,34 @@ namespace triqs {
         return {a(), c, root, all};
       }
 
-      
-      /**
-     * Initiate (lazy) MPI AllGather
-     *
-     * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-     * the MPI AllGather operation is performed.
-     *
-     * @group MPI
-     * @param g The Green function
-     * @param c The MPI communicator (default is world)
-     * @param root The root of the broadcast communication in the MPI sense.
-     * @return Returns a lazy object describing the object and the MPI operation to be performed.
-     *
-     */
-      
-      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf_view const &a, mpi::communicator c = {}, int root = 0) {
-        return {a(), c, root, true};
-      }
-
 
       //-------------  corresponding operator = overload
 
       /**
     * Performs MPI reduce
-    * @param l The lazy object returned by mpi_reduce
+    * @param l The lazy object returned by mpi::reduce
     */
       void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
         _mesh = l.rhs.mesh();
-        _data = arrays::mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
+        _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
       }
 
       /**
      * Performs MPI scatter
-     * @param l The lazy object returned by mpi_reduce
+     * @param l The lazy object returned by reduce
      */
       void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
-        _mesh = mpi_scatter(l.rhs.mesh(), l.c, l.root);
-        _data = mpi_scatter(l.rhs.data(), l.c, l.root, true);
+        _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
+        _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
       }
 
       /**
      * Performs MPI gather
-     * @param l The lazy object returned by mpi_reduce
+     * @param l The lazy object returned by mpi::reduce
      */
       void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
-        _mesh = mpi_gather(l.rhs.mesh(), l.c, l.root);
-        _data = mpi_gather(l.rhs.data(), l.c, l.root, l.all);
+        _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
+        _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
       }
     };
    
@@ -1313,7 +1235,7 @@ namespace triqs {
 
       auto target_shape() const { return target().shape(); } // drop arity dims
 
-      auto target_indices() const { return product_range(target().shape()); }
+      auto target_indices() const { return itertools::product_range(target().shape()); }
 
       /// Shape of the data
       auto const &data_shape() const { return _data.shape(); }
@@ -1637,7 +1559,7 @@ namespace triqs {
       
       friend void mpi_broadcast(gf_const_view &g, mpi::communicator c = {}, int root = 0) {
         // Shall we bcast mesh ?
-        mpi_broadcast(g.data(), c, root);
+	mpi::broadcast(g.data(), c, root);
       }
 
       
@@ -1658,26 +1580,6 @@ namespace triqs {
       friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0, bool all = false,
                                                                     MPI_Op op = MPI_SUM) {
         return {a(), c, root, all, op};
-      }
-
-      
-      /**
-     * Initiate (lazy) MPI AllReduce
-     *
-     * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-     * the MPI AllReduce operation is performed.
-     *
-     * @group MPI
-     * @param g The Green function
-     * @param c The MPI communicator (default is world)
-     * @param root The root of the broadcast communication in the MPI sense.
-     * @return Returns a lazy object describing the object and the MPI operation to be performed.
-     *
-     */
-      
-      friend mpi_lazy<mpi::tag::reduce, const_view_type> mpi_all_reduce(gf_const_view const &a, mpi::communicator c = {}, int root = 0,
-                                                                        MPI_Op op = MPI_SUM) {
-        return {a(), c, root, true, op};
       }
 
       
@@ -1716,25 +1618,6 @@ namespace triqs {
       
       friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(gf_const_view const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
         return {a(), c, root, all};
-      }
-
-      
-      /**
-     * Initiate (lazy) MPI AllGather
-     *
-     * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-     * the MPI AllGather operation is performed.
-     *
-     * @group MPI
-     * @param g The Green function
-     * @param c The MPI communicator (default is world)
-     * @param root The root of the broadcast communication in the MPI sense.
-     * @return Returns a lazy object describing the object and the MPI operation to be performed.
-     *
-     */
-      
-      friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_all_gather(gf_const_view const &a, mpi::communicator c = {}, int root = 0) {
-        return {a(), c, root, true};
       }
 
     };
