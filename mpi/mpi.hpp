@@ -160,22 +160,8 @@ namespace mpi {
 #undef D
 
   //------------ Some helper function
-
-  // Given an index range [start, end), slice it regularly for a node of rank 'rank' among n_nodes.
-  // If the range is not dividable in n_nodes equal parts,
-  // the first nodes have one more elements than the last ones.
-  inline std::pair<long, long> chunk_range(long start, long end, int n_nodes, int rank) {
-    long size          = end - start;
-    long chunk         = size / n_nodes;
-    long n_large_nodes = size - n_nodes * chunk;
-    if (rank < n_large_nodes) // larger nodes have size chunk + 1
-      return {start + rank * (chunk + 1), start + (rank + 1) * (chunk + 1)};
-    else // smaller nodes have size chunk + 1
-      return {start + n_large_nodes + rank * chunk, start + n_large_nodes + (rank + 1) * chunk};
-  }
-
   inline long chunk_length(long end, int n_nodes, int rank) {
-    auto [node_begin, node_end] = chunk_range(0, end, n_nodes, rank);
+    auto [node_begin, node_end] = itertools::chunk_range(0, end, n_nodes, rank);
     return node_end - node_begin;
   }
 
@@ -184,12 +170,12 @@ namespace mpi {
     *
     * @tparam T The type of the range
     *
-    * @param range The range to slice
+    * @param range The range to chunk
     * @param comm The mpi communicator
     */
   template <typename T> auto chunk(T &&range, communicator comm = {}) {
     auto total_size           = std::distance(std::cbegin(range), std::cend(range));
-    auto [start_idx, end_idx] = chunk_range(0, total_size, comm.size(), comm.rank());
+    auto [start_idx, end_idx] = itertools::chunk_range(0, total_size, comm.size(), comm.rank());
     return itertools::slice(std::forward<T>(range), start_idx, end_idx);
   }
 

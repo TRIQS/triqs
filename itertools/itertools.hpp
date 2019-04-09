@@ -597,6 +597,21 @@ namespace itertools {
   }
 
   /**
+   * Given an integer range [start, end), chunk it as equally as possible into n_chunks.
+   * If the range is not dividable in n_chunks equal parts, the first chunks have
+   * one more element than the last ones.
+   */
+  inline std::pair<std::ptrdiff_t, std::ptrdiff_t> chunk_range(std::ptrdiff_t start, std::ptrdiff_t end, long n_chunks, long rank) {
+    auto total_size    = end - start;
+    auto chunk_size    = total_size / n_chunks;
+    auto n_large_nodes = total_size - n_chunks * chunk_size;
+    if (rank < n_large_nodes) // larger nodes have size chunk_size + 1
+      return {start + rank * (chunk_size + 1), start + (rank + 1) * (chunk_size + 1)};
+    else // smaller nodes have size chunk_size
+      return {start + n_large_nodes + rank * chunk_size, start + n_large_nodes + (rank + 1) * chunk_size};
+  }
+
+  /**
    * Apply a function f to every element of an integer range
    *
    * @param r

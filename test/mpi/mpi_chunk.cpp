@@ -22,8 +22,8 @@
  ******************************************************************************/
 
 #include <mpi/mpi.hpp>
-#include <gtest.h>
 
+#include <gtest.h>
 #include <numeric>
 
 using namespace itertools;
@@ -52,6 +52,29 @@ TEST(MpiChunk, Multi) {
     sum = mpi::all_reduce(sum, comm);
     EXPECT_EQ(N * (2 * N - 1), sum);
   }
+}
+
+
+#include <itertools/omp_chunk.hpp>
+
+TEST(MpiChunk, OMPHybrid) {
+
+  int const N = 10;
+
+  mpi::communicator comm{};
+  int sum = 0;
+#pragma omp parallel
+  {
+    for (auto i : mpi::chunk(omp_chunk(range(N)), comm)) {
+#pragma omp critical
+      {
+        std::cout << "mpi_rank " << comm.rank() << "  omp_rank " << omp_get_thread_num() << "  i " << i << std::endl;
+        sum += i;
+      }
+    }
+  }
+  sum = mpi::all_reduce(sum, comm);
+  EXPECT_EQ(N * (N - 1) / 2, sum);
 }
 
 MPI_TEST_MAIN;
