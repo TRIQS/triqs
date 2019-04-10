@@ -24,6 +24,7 @@
 #include <vector>
 #include <algorithm>
 #include <mpi/vector.hpp>
+#include <mpi/string.hpp>
 #include <triqs/utility/is_complex.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/h5.hpp>

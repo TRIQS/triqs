@@ -7,6 +7,7 @@ module = module_(full_name = "pytriqs.arrays.block_matrix", doc = "Block-diagona
 
 # Add here all includes beyond what is automatically included by the triqs modules
 module.add_include("<mpi/vector.hpp>")
+module.add_include("<mpi/string.hpp>")
 module.add_include("<triqs/arrays/block_matrix.hpp>")
 
 module.add_include("<cpp2py/converters/pair.hpp>")

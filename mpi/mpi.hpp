@@ -147,6 +147,7 @@ namespace mpi {
   template <class T> inline MPI_Datatype datatype();
 #define D(T, MPI_TY)                                                                                                                                 \
   template <> inline MPI_Datatype datatype<T>() { return MPI_TY; }
+  D(char, MPI_CHAR)
   D(int, MPI_INT)
   D(long, MPI_LONG)
   D(long long, MPI_LONG_LONG)

@@ -21,7 +21,6 @@
 #pragma once
 #include "./mpi.hpp"
 #include <vector>
-#include <type_traits>
 
 namespace mpi {
 
