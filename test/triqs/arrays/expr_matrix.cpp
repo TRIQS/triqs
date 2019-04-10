@@ -29,7 +29,6 @@
 using namespace triqs::arrays;
 namespace tqa = triqs::arrays;
 using namespace indexmaps;
-using namespace storages;
 #include "triqs/utility/typeid_name.hpp"
 
 int main(int argc, char **argv) {

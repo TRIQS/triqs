@@ -33,7 +33,7 @@ namespace triqs {
     // ---------------------- array_view  --------------------------------
 
 #define IMPL_TYPE                                                                                                                                    \
-  indexmap_storage_pair<indexmaps::cuboid::map<Rank, TraversalOrder>, storages::shared_block<ValueType, Borrowed>, TraversalOrder, IsConst, true,    \
+  indexmap_storage_pair<indexmaps::cuboid::map<Rank, TraversalOrder>, nda::mem::handle<ValueType, 'S'>, TraversalOrder, IsConst, true,               \
                         Tag::array_view>
 
     template <typename ValueType, int Rank, typename TraversalOrder, bool Borrowed, bool IsConst>
@@ -59,11 +59,6 @@ namespace triqs {
         // to be activated
         static_assert(IsConst || (!ISP::is_const), "Cannot construct a non const view from a const one !");
       }
-
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-      /// Build from a numpy.array (X is a borrowed reference) : throws if X is not a numpy.array
-      explicit array_view(PyObject *X) : IMPL_TYPE(X, false, "array_view ") {}
-#endif
 
       array_view() = default;
 
@@ -121,8 +116,7 @@ namespace triqs {
     //------------------------------- array ---------------------------------------------------
 
 #define IMPL_TYPE                                                                                                                                    \
-  indexmap_storage_pair<indexmaps::cuboid::map<Rank, TraversalOrder>, storages::shared_block<ValueType>, TraversalOrder, false, false,               \
-                        Tag::array_view>
+  indexmap_storage_pair<indexmaps::cuboid::map<Rank, TraversalOrder>, nda::mem::handle<ValueType, 'R'>, TraversalOrder, false, false, Tag::array_view>
 
     template <typename ValueType, int Rank, typename TraversalOrder>
     class array : Tag::array, TRIQS_CONCEPT_TAG_NAME(MutableArray), public IMPL_TYPE {
@@ -161,7 +155,7 @@ namespace triqs {
 #endif
 
       // Makes a true (deep) copy of the data.
-      array(const array &X) : IMPL_TYPE(X.indexmap(), X.storage().clone()) {}
+      array(const array &X) : IMPL_TYPE(X.indexmap(), nda::mem::handle<value_type, 'R'>{X.storage()}) {}
 
       // Move
       explicit array(array &&X) noexcept { this->swap_me(X); }
@@ -201,12 +195,7 @@ namespace triqs {
          : IMPL_TYPE(indexmap_type(X.domain(), get_memory_layout<Rank, T>::invoke(X))) {
         triqs_arrays_assign_delegation(*this, X);
       }
-
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-      ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-      explicit array(PyObject *X) : IMPL_TYPE(X, true, "array ") {}
-#endif
-
+      
       // build from a init_list
       template <typename T>
       array(std::initializer_list<T> const &l, memory_layout_t<1> ml = memory_layout_t<1>{},

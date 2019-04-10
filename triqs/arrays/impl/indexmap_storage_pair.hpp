@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./common.hpp"
-#include "../storages/shared_block.hpp"
+#include "../storages/handle.hpp"
 #include "./assignment.hpp"
 #include "./print.hpp"
 #include "../indexmaps/cuboid/foreach.hpp"
@@ -28,10 +28,6 @@
 #include "triqs/utility/typeid_name.hpp"
 #include "triqs/utility/view_tools.hpp"
 #include <type_traits>
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-#include "../python/numpy_extractor.hpp"
-#include "../python/array_view_to_python.hpp"
-#endif
 
 #include "triqs/h5/base_public.hpp"
 
@@ -115,8 +111,8 @@ namespace triqs {
       template <typename InitLambda>
       explicit indexmap_storage_pair(tags::_with_lambda_init, indexmap_type IM, InitLambda &&lambda) : indexmap_(std::move(IM)), storage_() {
         storage_ =
-           StorageType(indexmap_.domain().number_of_elements(), storages::tags::_allocate_only{}); // DO NOT construct the element of the array
-        _foreach_on_indexmap(indexmap_, [&](auto const &... x) { storage_._init_raw(indexmap_(x...), lambda(x...)); });
+           StorageType(indexmap_.domain().number_of_elements(), nda::mem::do_not_initialize); // DO NOT construct the element of the array
+        _foreach_on_indexmap(indexmap_, [&](auto const &... x) { storage_.init_raw(indexmap_(x...), lambda(x...)); });
       }
 
       public:
@@ -125,24 +121,7 @@ namespace triqs {
       indexmap_storage_pair(indexmap_storage_pair &&X)      = default;
 
       protected:
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-      indexmap_storage_pair(PyObject *X, bool enforce_copy, const char *name) {
-        numpy_interface::numpy_extractor<value_type, indexmap_type::rank> E;
-        bool ok = E.extract(X, enforce_copy);
-        if (!ok)
-          TRIQS_RUNTIME_ERROR << " construction of a " << name << " from a numpy  "
-                              << "\n   T = "
-                              << triqs::utility::typeid_name(value_type())
-                              // lead to a nasty link pb ???
-                              // linker search for IndexMapType::domain_type::rank in triqs.so
-                              // and cannot resolve it ???
-                              //<<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
-                              << "\nfrom the python object \n"
-                              << numpy_interface::object_to_string(X) << "\nThe error was :\n " << E.error;
-        indexmap_ = indexmap_type{E.lengths, E.strides, 0};
-        storage_  = storages::shared_block<value_type>(E.numpy_obj, true);
-      }
-#endif
+
       // ------------------------------- swap --------------------------------------------
 
       void swap_me(indexmap_storage_pair &X) {
@@ -180,13 +159,6 @@ namespace triqs {
       storage_type const &storage() const & { return storage_; }
       storage_type &storage() & { return storage_; }
 
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-      PyObject *to_python() const {
-        if (is_empty()) TRIQS_RUNTIME_ERROR << "Error : trying to return an empty array/matrix/vector to python";
-        return numpy_interface::array_view_to_python(*this);
-      }
-#endif
-
       /// data_start is the starting point of the data of the object
       /// this it NOT &storage()[0], which is the start of the underlying blokc
       /// they are not equal for a view in general
@@ -205,8 +177,8 @@ namespace triqs {
       size_t num_elements() const { return domain().number_of_elements(); }
       size_t size() const { return domain().number_of_elements(); }
 
-      //bool is_empty() const { return this->num_elements()==0;}
-      bool is_empty() const { return this->storage_.empty(); }
+      bool is_empty() const { return this->num_elements()==0;}
+      //bool is_empty() const { return this->storage_.empty(); }
 
       // ------------------------------- operator () --------------------------------------------
 
@@ -237,7 +209,8 @@ namespace triqs {
       operator()(Args const &... args) && {
         // add here a security check in case it is a view, unique. For a regular type, move the result...
 #ifdef TRIQS_ARRAYS_DEBUG
-        if (!storage_type::is_weak && storage_.is_unique()) TRIQS_RUNTIME_ERROR << "triqs::array. Attempting to call an rvalue unique view ...";
+	// weak is disabled.
+        //if (!storage_type::is_weak && storage_.is_unique()) TRIQS_RUNTIME_ERROR << "triqs::array. Attempting to call an rvalue unique view ...";
 #endif
         return storage_[indexmap_(args...)];
       }
@@ -257,7 +230,7 @@ namespace triqs {
         using V2 = value_type;
         static_assert(IM2::domain_type::rank != 0, "Internal error");
         typedef typename ISPViewType<V2, IM2::domain_type::rank, typename IM2::traversal_order_in_template, ViewTag,
-                                     ForceBorrowed || StorageType::is_weak, is_const>::type type;
+                                     ForceBorrowed , is_const>::type type;
       };
 
       template <typename... Args> // non const version
@@ -284,7 +257,6 @@ namespace triqs {
                                           && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank != 0),
                                        result_of_call_as_view<false, false, Args...>>::type // enable_if
       operator()(Args const &... args) && {
-        //std::cerr  << "slicing a temporary"<< this->storage().is_weak<< result_of_call_as_view<true,true,Args...>::type::storage_type::is_weak << std::endl;
         return typename result_of_call_as_view<false, false, Args...>::type(indexmaps::slicer<indexmap_type, Args...>::invoke(indexmap_, args...),
                                                                             std::move(storage()));
       }
@@ -294,7 +266,7 @@ namespace triqs {
 
       typename ISPViewType<value_type, domain_type::rank, TraversalOrder, ViewTag, true, IsConst>::type operator()() & { return *this; }
 
-      typename ISPViewType<value_type, domain_type::rank, TraversalOrder, ViewTag, StorageType::is_weak, IsConst>::type operator()() && {
+      typename ISPViewType<value_type, domain_type::rank, TraversalOrder, ViewTag, false, IsConst>::type operator()() && {
         return *this;
       }
 
@@ -349,18 +321,18 @@ namespace triqs {
         indexmap_ = IndexMapType(d, indexmap_.memory_layout());
         // build a new one with the lengths of IND BUT THE SAME layout !
         // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
-        if (storage_.size() != indexmap_.domain().number_of_elements()) storage_ = StorageType(indexmap_.domain().number_of_elements());
+        if (storage_.size != indexmap_.domain().number_of_elements()) storage_ = StorageType(indexmap_.domain().number_of_elements());
       }
 
       void resize(domain_type const &d, memory_layout_t<rank> const &ml) {
         indexmap_ = IndexMapType(d, ml);
         // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
-        if (storage_.size() != indexmap_.domain().number_of_elements()) storage_ = StorageType(indexmap_.domain().number_of_elements());
+        if (storage_.size != indexmap_.domain().number_of_elements()) storage_ = StorageType(indexmap_.domain().number_of_elements());
       }
 
       template <typename Xtype> void resize_and_clone_data(Xtype const &X) {
         indexmap_ = X.indexmap();
-        storage_  = X.storage().clone();
+        storage_  = nda::mem::handle<value_type, 'R'>{X.storage()}; // clone();
       }
 
       //  BOOST Serialization
@@ -372,7 +344,7 @@ namespace triqs {
 
       // pretty print of the array
       friend std::ostream &operator<<(std::ostream &out, const indexmap_storage_pair &A) {
-        if (A.storage().size() == 0)
+        if (A.storage().size == 0)
           out << "empty ";
         else
           pretty_print(out, A);

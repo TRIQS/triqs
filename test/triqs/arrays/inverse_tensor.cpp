@@ -3,6 +3,7 @@
 TEST(Array, InverseTensor) {
 
   array<dcomplex, 3> a(2, 2, 2);
+  a() = 0;
   a() = a() + 2;
 
   a() = inverse(a);

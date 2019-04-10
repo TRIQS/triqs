@@ -18,14 +18,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_TO_PYTHON_H
-#define TRIQS_ARRAYS_TO_PYTHON_H
-#ifndef TRIQS_WITH_PYTHON_SUPPORT
-#error "You must define the macro TRIQS_WITH_PYTHON_SUPPORT to use Python interface"
-#endif
+#pragma
 #include <complex>
 #include "../impl/indexmap_storage_pair.hpp"
-//#include "../array.hpp"
 
 namespace triqs {
   namespace arrays {
@@ -61,10 +56,10 @@ namespace triqs {
         PyArrayObject *arr = (PyArrayObject *)(res);
         //PyArray_SetBaseObject(arr,  A.storage().new_python_ref());
 #ifdef PYTHON_NUMPY_VERSION_LT_17
-        arr->base = A.storage().new_python_ref();
+        arr->base = make_pycapsule(A.storage());
         assert(arr->flags == (arr->flags & ~NPY_OWNDATA));
 #else
-        int r     = PyArray_SetBaseObject(arr, A.storage().new_python_ref());
+        int r     = PyArray_SetBaseObject(arr, make_pycapsule(A.storage()));
         if (r != 0) TRIQS_RUNTIME_ERROR << "Internal Error setting the guard in numpy !!!!";
         assert(PyArray_FLAGS(arr) == (PyArray_FLAGS(arr) & ~NPY_ARRAY_OWNDATA));
 #endif
@@ -81,4 +76,3 @@ namespace triqs {
     } // namespace numpy_interface
   }   // namespace arrays
 } // namespace triqs
-#endif

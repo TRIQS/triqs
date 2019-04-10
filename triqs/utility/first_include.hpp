@@ -20,8 +20,6 @@
  ******************************************************************************/
 #pragma once
 
-#include <cpp2py.hpp>
-
 #if defined __GNUC__ && !defined __clang__
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
@@ -39,23 +37,8 @@ typedef long double max_align_t;
 #include <triqs/triqs_config.h>
 #endif
 
-// FOR DEBUG ONLY : detection of the version of numpy is automatic.
-// Uncomment to use the old API ANYWAY
-//#define PYTHON_NUMPY_VERSION_LT_17
-
-#ifndef PYTHON_NUMPY_VERSION_LT_17
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#endif
-
 // disable std::auto_ptr (disabled in c++17) usage in boost
 #define BOOST_NO_AUTO_PTR
-
-// including python first remove some warning
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-#include "Python.h"
-#else
-#include <assert.h>
-#endif
 
 // boost serialization declaration...
 namespace boost {
@@ -67,6 +50,12 @@ namespace boost {
 
 // missing complex * int and in * complex
 #include <triqs/utility/complex_ops.hpp>
+
+
+// FIXME : INCLUDE
+#define CPP2PY_IGNORE  __attribute__((annotate("ignore_in_python")))
+#define CPP2PY_ARG_AS_DICT __attribute__((annotate("use_parameter_class")))
+
 
 // MACRO USED only in automatic Python wrapper generator desc.
 // Only on clang, other compilers : not needed,

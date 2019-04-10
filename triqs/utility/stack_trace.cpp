@@ -23,6 +23,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace triqs::utility {
 

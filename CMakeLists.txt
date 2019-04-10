@@ -100,6 +100,7 @@ option(PythonSupport "Build with Python support" ON)
 if (PythonSupport)
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
  add_subdirectory(cpp2py)
+ set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
 endif (PythonSupport)
 
 #---------------------------------------------------------------------

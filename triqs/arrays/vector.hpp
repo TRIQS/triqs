@@ -33,7 +33,7 @@ namespace triqs {
 
     // ---------------------- vector_view --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, storages::shared_block<ValueType, Borrowed>, void, IsConst, true, Tag::vector_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, nda::mem::handle<ValueType, 'S'>, void, IsConst, true, Tag::vector_view>
 
     /** */
     template <typename ValueType, bool Borrowed, bool IsConst>
@@ -51,11 +51,6 @@ namespace triqs {
 
       /// Build from anything that has an indexmap and a storage compatible with this class
       template <typename ISP> vector_view(const ISP &X) : IMPL_TYPE(X.indexmap(), X.storage()) {}
-
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-      /// Build from a numpy.array : throws if X is not a numpy.array
-      explicit vector_view(PyObject *X) : IMPL_TYPE(X, false, "vector_view ") {}
-#endif
 
       /// Copy construction
       vector_view(vector_view const &X) : IMPL_TYPE(X.indexmap(), X.storage()) {}
@@ -111,7 +106,7 @@ namespace triqs {
     template <typename ValueType, bool Borrowed = false> using vector_const_view = vector_view<ValueType, Borrowed, true>;
 
 // ---------------------- vector--------------------------------
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, storages::shared_block<ValueType>, void, false, false, Tag::vector_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, nda::mem::handle<ValueType, 'R'>, void, false, false, Tag::vector_view>
 
     template <typename ValueType> class vector : Tag::vector, TRIQS_CONCEPT_TAG_NAME(MutableVector), public IMPL_TYPE {
       public:
@@ -138,7 +133,7 @@ namespace triqs {
       }
 
       /** Makes a true (deep) copy of the data. */
-      vector(const vector &X) : IMPL_TYPE(X.indexmap(), X.storage().clone()) {}
+      vector(const vector &X) : IMPL_TYPE(X.indexmap(), nda::mem::handle<value_type, 'R'>{X.storage()}) {}
 
       /**
    * Build a new vector from X.domain() and fill it with by evaluating X. X can be :
@@ -154,11 +149,6 @@ namespace triqs {
          : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
         triqs_arrays_assign_delegation(*this, X);
       }
-
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-      /// Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-      explicit vector(PyObject *X) : IMPL_TYPE(X, true, "vector ") {}
-#endif
 
       // build from a init_list
       template <typename T>

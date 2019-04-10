@@ -20,11 +20,9 @@
  ******************************************************************************/
 #include "./common.hpp"
 #include <triqs/arrays.hpp>
-#include <iostream>
 
 using namespace triqs::arrays;
 using namespace indexmaps;
-using namespace storages;
 
 int main(int argc, char **argv) {
 

@@ -22,7 +22,6 @@
 #include "../impl/traits.hpp"
 #include "../../utility/mini_vector.hpp"
 #include "../../utility/typeid_name.hpp"
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "./numpy_extractor.hpp"
 
 namespace triqs {
@@ -170,4 +169,3 @@ namespace triqs {
     } // namespace numpy_interface
   }   // namespace arrays
 } // namespace triqs
-#endif

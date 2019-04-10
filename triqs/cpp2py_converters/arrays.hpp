@@ -3,6 +3,10 @@
 // in the generated wrapper, we only "import_array" if this macro is defined.
 #define TRIQS_IMPORTED_CONVERTERS_ARRAYS
 
+#include <triqs/arrays/storages/python.hpp>
+#include <triqs/arrays/python/numpy_extractor.hpp>
+#include <triqs/arrays/python/array_view_to_python.hpp>
+
 namespace cpp2py {
 
   // is_view
@@ -38,13 +42,35 @@ namespace cpp2py {
   }
 
   template <typename ArrayType> struct py_converter_array_impl {
+
+    using extractor_t = triqs::arrays::numpy_interface::numpy_extractor<typename ArrayType::value_type, ArrayType::indexmap_type::rank>;
+
     static ArrayType py2c(PyObject *ob) {
       import_numpy();
-      return ArrayType(ob);
+      extractor_t E;
+      bool enforce_copy = not is_view<ArrayType>::value; // force copy if not a view
+      bool ok           = E.extract(ob, enforce_copy);
+      if (!ok)
+        TRIQS_RUNTIME_ERROR << " construction of an array/array_view from a numpy  "
+                            << "\n   T = "
+                            << triqs::utility::typeid_name(typename ArrayType::value_type())
+                            // lead to a nasty link pb ???
+                            // linker search for IndexMapType::domain_type::rank in triqs.so
+                            // and cannot resolve it ???
+                            //<<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
+                            << "\nfrom the python object \n"
+                            << triqs::arrays::numpy_interface::object_to_string(ob) << "\nThe error was :\n " << E.error;
+      auto indexmap_ = typename ArrayType::indexmap_type{E.lengths, E.strides, 0};
+      auto storage_  = nda::mem::make_handle<typename ArrayType::value_type> (E.numpy_obj);
+
+      //return ArrayType(indexmap_, storage_);
+      return ArrayType(typename ArrayType::view_type{indexmap_, storage_}); // FIXME : simplify with a better constructor to avoid the view
     }
+
     static bool is_convertible(PyObject *ob, bool raise_exception) {
       import_numpy();
-      triqs::arrays::numpy_interface::numpy_extractor<typename ArrayType::value_type, ArrayType::indexmap_type::rank> E;
+      extractor_t E;
+
       // FIXME C++17 Add if constexpr
       if (is_view<ArrayType>::value and not raise_exception) { // quick decision, no need to build all the error strings
         return E.is_convertible_to_view(ob);
@@ -57,7 +83,7 @@ namespace cpp2py {
         return ok;
       }
     }
-  };
+  }; // namespace cpp2py
 
   template <typename ArrayType> struct py_converter_array_cvt : py_converter_array_impl<ArrayType> {
     static PyObject *c2py(ArrayType const &x) = delete; // Can not convert a C++ const_view into python, it violates const correctness
@@ -66,7 +92,8 @@ namespace cpp2py {
   template <typename ArrayType> struct py_converter_array : py_converter_array_impl<ArrayType> {
     static PyObject *c2py(ArrayType const &x) {
       import_numpy();
-      return x.to_python();
+      if (x.is_empty()) TRIQS_RUNTIME_ERROR << "Error : trying to return an empty array/matrix/vector to python";
+      return triqs::arrays::numpy_interface::array_view_to_python(x);
     }
   };
 

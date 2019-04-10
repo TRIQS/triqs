@@ -50,7 +50,7 @@ namespace triqs {
   bool memory_layout_is_fortran() const { return this->indexmap().strides()[0] < this->indexmap().strides()[1]; }
 
 #define IMPL_TYPE                                                                                                                                    \
-  indexmap_storage_pair<indexmaps::cuboid::map<2, TraversalOrder>, storages::shared_block<ValueType, Borrowed>, TraversalOrder, IsConst, true,       \
+  indexmap_storage_pair<indexmaps::cuboid::map<2, TraversalOrder>, nda::mem::handle<ValueType, 'S'>, TraversalOrder, IsConst, true,       \
                         Tag::matrix_view>
 
     template <typename ValueType, typename TraversalOrder, bool Borrowed, bool IsConst>
@@ -68,11 +68,6 @@ namespace triqs {
 
       /// Build from anything that has an indexmap and a storage compatible with this class
       template <typename ISP> matrix_view(const ISP &X) : IMPL_TYPE(X.indexmap(), X.storage()) {}
-
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-      /// Build from a numpy.array : throws if X is not a numpy.array
-      explicit matrix_view(PyObject *X) : IMPL_TYPE(X, false, "matrix_view ") {}
-#endif
 
       /// Copy construction
       matrix_view(matrix_view const &X) : IMPL_TYPE(X.indexmap(), X.storage()) {}
@@ -126,7 +121,7 @@ namespace triqs {
 
 // ---------------------- matrix --------------------------------
 #define IMPL_TYPE                                                                                                                                    \
-  indexmap_storage_pair<indexmaps::cuboid::map<2, TraversalOrder>, storages::shared_block<ValueType>, TraversalOrder, false, false, Tag::matrix_view>
+  indexmap_storage_pair<indexmaps::cuboid::map<2, TraversalOrder>, nda::mem::handle<ValueType, 'R'>, TraversalOrder, false, false, Tag::matrix_view>
 
     template <typename ValueType, typename TraversalOrder> class matrix : Tag::matrix, TRIQS_CONCEPT_TAG_NAME(MutableMatrix), public IMPL_TYPE {
       public:
@@ -152,7 +147,7 @@ namespace triqs {
       matrix(mini_vector<size_t, 2> const &sha, memory_layout_t<2> ml = memory_layout_t<2>{}) : IMPL_TYPE(indexmap_type(sha, ml)) {}
 
       /** Makes a true (deep) copy of the data. */
-      matrix(const matrix &X) : IMPL_TYPE(X.indexmap(), X.storage().clone()) {}
+      matrix(const matrix &X) : IMPL_TYPE(X.indexmap(), nda::mem::handle<value_type, 'R'>{X.storage()}) {}
 
       /**
    * Build a new matrix from X.domain() and fill it with by evaluating X. X can be :
@@ -181,11 +176,6 @@ namespace triqs {
          : IMPL_TYPE(indexmap_type(X.domain(), get_memory_layout<2, T>::invoke(X))) {
         triqs_arrays_assign_delegation(*this, X);
       }
-
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-      /// Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-      explicit matrix(PyObject *X) : IMPL_TYPE(X, true, "matrix ") {}
-#endif
 
       // build from a init_list
       template <typename T>
@@ -303,7 +293,8 @@ namespace triqs {
       return m.transpose();
     }
 
-    template <typename M1, typename M2> std::enable_if_t<ImmutableMatrix<M1>::value && ImmutableMatrix<M2>::value, matrix<typename M1::value_type>> vstack(M1 const &A, M2 const &B) {
+    template <typename M1, typename M2>
+    std::enable_if_t<ImmutableMatrix<M1>::value && ImmutableMatrix<M2>::value, matrix<typename M1::value_type>> vstack(M1 const &A, M2 const &B) {
       TRIQS_ASSERT2(second_dim(A) == second_dim(B), "ERROR in vstack(A,B): Matrices have incompatible shape!");
       static_assert(std::is_same_v<typename M1::value_type, typename M2::value_type>, "ERROR in vstack(A,B): Matrices have incompatible value_type!");
 
