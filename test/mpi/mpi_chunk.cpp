@@ -54,7 +54,6 @@ TEST(MpiChunk, Multi) {
   }
 }
 
-
 #include <itertools/omp_chunk.hpp>
 
 TEST(MpiChunk, OMPHybrid) {
@@ -63,16 +62,16 @@ TEST(MpiChunk, OMPHybrid) {
 
   mpi::communicator comm{};
   int sum = 0;
+
 #pragma omp parallel
-  {
-    for (auto i : mpi::chunk(omp_chunk(range(N)), comm)) {
+  for (auto i : omp_chunk(mpi::chunk(range(N)))) {
 #pragma omp critical
-      {
-        std::cout << "mpi_rank " << comm.rank() << "  omp_rank " << omp_get_thread_num() << "  i " << i << std::endl;
-        sum += i;
-      }
+    {
+      std::cout << "mpi_rank " << comm.rank() << "  omp_thread " << omp_get_thread_num() << "  i " << i << std::endl;
+      sum += i;
     }
   }
+
   sum = mpi::all_reduce(sum, comm);
   EXPECT_EQ(N * (N - 1) / 2, sum);
 }

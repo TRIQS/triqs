@@ -166,7 +166,7 @@ namespace mpi {
   }
 
   /**
-    * Function to chunk a range, distributing it uniformly over all MPI threads.
+    * Function to chunk a range, distributing it uniformly over all MPI ranks.
     *
     * @tparam T The type of the range
     *
