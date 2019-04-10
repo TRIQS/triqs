@@ -31,7 +31,7 @@ rank = world.Get_rank()
 size = world.Get_size()
 
 if rank==0 :
-    myprint_err ("Starting run with %s MPI threads at : %s"%(size,str(datetime.datetime.now())))
+    myprint_err ("Starting run with %s MPI rank(s) at : %s"%(size,str(datetime.datetime.now())))
 
 master =0
 
