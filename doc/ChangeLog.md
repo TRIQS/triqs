@@ -1,6 +1,29 @@
 Version 2.2
 ===========
 
+Make range and itertools functionality standalone
+-------------------------------------------------
+
+We have pulled the functionality for integer ranges
+and the range-adapting functionality (product, enumerate, ...)
+out of the triqs namespaces and made the headers standalone.
+This functionality now lives in the itertools namespace
+and resides in the top-level itertools folder.
+Tests can be found in test/itertools.
+
+
+Make mpi functionality standalone and change namespace
+------------------------------------------------------
+
+We have pulled the generic mpi functionality
+(communicator, gather(basic_type), reduce(basic_type), ...)
+out of the triqs::mpi namespace and made the headers standalone.
+This functionality now lives in the mpi namespace and resides
+in the top-level mpi folder. Tests can be found in test/mpi.
+In particular, includes of the header files triqs/mpi/base.hpp and
+triqs/mpi/vector.hpp should now be replaced with with includes to
+the according file in the mpi directory.
+
 
 Version 2.1
 ===========
