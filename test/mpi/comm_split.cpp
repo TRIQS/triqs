@@ -18,10 +18,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/test_tools/arrays.hpp>
-#include <triqs/mpi/base.hpp>
+#include <mpi/mpi.hpp>
+#include <gtest.h>
 
-using namespace triqs::mpi;
+using namespace mpi;
 
 TEST(Comm, split) {
 
@@ -42,4 +42,4 @@ TEST(Comm, split) {
   EXPECT_EQ(comm_ranks[rank], comm.rank());
 }
 
-MAKE_MAIN;
+MPI_TEST_MAIN;

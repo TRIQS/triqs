@@ -337,8 +337,25 @@ namespace triqs {
       return mini_vector<long, sizeof...(U)>(x...); // better error message than with { }
     }
 
+
   } // namespace utility
 } // namespace triqs
+
+namespace itertools{
+  // Extend the product_range functionality for mini_vector
+  // FIXME This should go together with the removal of mini_vector!
+  namespace details {
+    template <typename Int, size_t... Is>
+    [[gnu::always_inline]] auto product_range_impl(triqs::utility::mini_vector<Int, sizeof...(Is)> const &mini_vec, std::index_sequence<Is...>) {
+      return product_range(mini_vec[Is]...);
+    }
+  } // namespace details
+
+  template <typename Int, int N, typename EnableIf = std::enable_if_t<std::is_integral_v<Int>, int>>
+  auto product_range(triqs::utility::mini_vector<Int, N> const &idx_tpl) {
+    return details::product_range_impl(idx_tpl, std::make_index_sequence<N>{});
+  }
+}
 
 namespace std { // overload std::get to work with it
 

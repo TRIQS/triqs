@@ -199,6 +199,12 @@ add_compile_options(-DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config)
 
 add_subdirectory(triqs)
 
+#------------------------------
+# install the itertools and mpi headers
+#------------------------------
+
+install(DIRECTORY itertools mpi DESTINATION include FILES_MATCHING PATTERN "*.hpp")
+
 #---------------------------------------------------------------------
 # pytriqs modules 
 #---------------------------------------------------------------------

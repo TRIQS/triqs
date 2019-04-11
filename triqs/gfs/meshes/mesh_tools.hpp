@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
-#include <triqs/utility/iterator_facade.hpp>
+#include <itertools/itertools.hpp>
 
 #include <triqs/arrays.hpp>
 
@@ -77,9 +77,9 @@ namespace triqs {
 
     // FIXME : remove boost !
     template <typename MeshType>
-    class mesh_pt_generator : public triqs::utility::iterator_facade<mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t,
+    class mesh_pt_generator : public itertools::iterator_facade<mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t,
                                                                      std::forward_iterator_tag, typename MeshType::mesh_point_t const &> {
-      friend class triqs::utility::iterator_facade<mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t, std::forward_iterator_tag,
+      friend class itertools::iterator_facade<mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t, std::forward_iterator_tag,
                                                    typename MeshType::mesh_point_t const &>;
       MeshType const *mesh;
       size_t u;

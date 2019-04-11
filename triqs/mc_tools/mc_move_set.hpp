@@ -21,7 +21,7 @@
 #pragma once
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/exceptions.hpp>
-#include <triqs/mpi/base.hpp>
+#include <mpi/mpi.hpp>
 #include <functional>
 #include "./random_generator.hpp"
 #include "./impl_tools.hpp"

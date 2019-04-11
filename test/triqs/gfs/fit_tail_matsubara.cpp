@@ -140,7 +140,7 @@ TEST(FitTailMatsubara, Multivar) { // NOLINT
 
   // Calculate the exact tail
   auto tail_exact = array<dcomplex, 3>(5, N_k * N_k, 2 * N_iW - 1);
-  for (auto [k, iW] : triqs::utility::product(k_mesh, iW_mesh)) {
+  for (auto [k, iW] : itertools::product(k_mesh, iW_mesh)) {
     dcomplex pole = cos(k[0]) * cos(k[1]) - iW;
     tail_exact(range(), k.linear_index(), iW.linear_index()) =
        array<dcomplex, 1>{dcomplex(0.0, 0.0), dcomplex(1.0, 0.0), pole, std::pow(pole, 2), std::pow(pole, 3)};

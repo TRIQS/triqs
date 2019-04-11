@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "../meshes/product.hpp"
-#include "../../utility/itertools.hpp"
+#include <itertools/itertools.hpp>
 
 namespace triqs::gfs {
 
@@ -65,7 +65,7 @@ namespace triqs::gfs {
     if constexpr (is_block_gf_or_view<G<V, T>>::value) { // -- Block-Gf
       double max_err = 0.0;
       std::vector<array<dcomplex, T::rank + 1>> tail_vec;
-      for (auto [g_bl, km_bl] : triqs::utility::zip(g, known_moments)) {
+      for (auto [g_bl, km_bl] : itertools::zip(g, known_moments)) {
         auto [tail, err] = fit_hermitian_tail(g_bl, km_bl);
         max_err          = std::max(err, max_err);
       }
@@ -102,7 +102,7 @@ namespace triqs::gfs {
     if constexpr (is_block_gf_or_view<G<imfreq, T>>::value) { // -- Block-Gf
       double max_err = 0.0;
       std::vector<array<dcomplex, T::rank + 1>> tail_vec;
-      for (auto [g_bl, km_bl] : triqs::utility::zip(g, known_moments)) {
+      for (auto [g_bl, km_bl] : itertools::zip(g, known_moments)) {
         auto [tail, err] = fit_hermitian_tail(g_bl, km_bl);
         max_err          = std::max(err, max_err);
         tail_vec.emplace_back(std::move(tail));

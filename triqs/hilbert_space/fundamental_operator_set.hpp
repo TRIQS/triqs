@@ -23,7 +23,7 @@
 #include <triqs/utility/dressed_iterator.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/variant_extensions.hpp>
-#include <triqs/utility/itertools.hpp>
+#include <itertools/itertools.hpp>
 #include <triqs/h5/base_public.hpp>
 
 #include <utility>
@@ -145,7 +145,7 @@ namespace triqs::hilbert_space {
 
     private:
     // Helper class for the creation of the const iterator
-    using _enum_iterator = decltype(triqs::utility::enumerate(std::declval<data_t>()).cbegin());
+    using _enum_iterator = decltype(itertools::enumerate(std::declval<data_t>()).cbegin());
     struct _cdress {
       indices_t const &index;
       int linear_index;
@@ -160,25 +160,25 @@ namespace triqs::hilbert_space {
     /**
      * @return Iterator to the first index sequence
      */
-    const_iterator begin() const noexcept { return triqs::utility::enumerate(vec).begin(); }
+    const_iterator begin() const noexcept { return itertools::enumerate(vec).begin(); }
 
     /// Return `const_iterator` to the past-the-end element of this set
     /**
      * @return Iterator to the past-the-end element
      */
-    const_iterator end() const noexcept { return triqs::utility::enumerate(vec).end(); }
+    const_iterator end() const noexcept { return itertools::enumerate(vec).end(); }
 
     /// Equivalent to [[fundamental_operator_set_begin]]
     /**
      * @return Iterator to the first index sequence
      */
-    const_iterator cbegin() const noexcept { return triqs::utility::enumerate(vec).cbegin(); }
+    const_iterator cbegin() const noexcept { return itertools::enumerate(vec).cbegin(); }
 
     /// Equivalent to [[fundamental_operator_set_end]]
     /**
      * @return Iterator to the past-the-end element
      */
-    const_iterator cend() const noexcept { return triqs::utility::enumerate(vec).cend(); }
+    const_iterator cend() const noexcept { return itertools::enumerate(vec).cend(); }
 
     /// Write this set as an HDF5 attribute
     /**

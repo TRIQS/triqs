@@ -2,7 +2,8 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2014 by O. Parcollet
+ * Copyright (C) 2019, Simons Foundation
+ *   author: N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,21 +19,19 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#pragma once
-#include "./base.hpp"
-#include <boost/mpi.hpp>
+#include <mpi/string.hpp>
+#include <gtest.h>
 
-namespace triqs {
-  namespace mpi {
+TEST(MPI, string_broadcast) {
 
-    // implement the communicator cast
-    inline communicator::operator boost::mpi::communicator() const {
-      return boost::mpi::communicator(_com, boost::mpi::comm_duplicate);
-      // duplicate policy : cf http://www.boost.org/doc/libs/1_56_0/doc/html/boost/mpi/comm_create_kind.html
-    }
+  mpi::communicator world;
 
-    // reverse : construct (implicit) the communicator from the boost one.
-    inline communicator::communicator(boost::mpi::communicator c) : _com(c) {}
+  std::string s;
+  if(world.rank() == 0) s = "Hello World"; 
 
-  } // namespace mpi
-} // namespace triqs
+  mpi::broadcast(s);
+
+  EXPECT_EQ(s, std::string{"Hello World"});
+}
+
+MPI_TEST_MAIN;

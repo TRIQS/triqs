@@ -78,7 +78,7 @@ namespace triqs {
       CHECK_OR_THROW((f.is_valid()), "opened received file image file");
 
       auto gr = triqs::h5::group(f);
-      regular_type_if_view_else_type_t<T> res;
+      regular_t<T> res;
       h5_read(gr, "object", res);
 
       return res;

@@ -19,28 +19,14 @@
  *
  ******************************************************************************/
 
-#include <triqs/test_tools/arrays.hpp>
-#include <triqs/arrays.hpp>
-
-//#include <triqs/mpi.hpp>
-#include <triqs/mpi/vector.hpp>
-
-#include <triqs/utility/complex_ops.hpp>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-
-using namespace triqs;
-using namespace triqs::arrays;
-using namespace triqs::mpi;
+#include <gtest.h>
+#include <mpi/vector.hpp>
 
 TEST(Vector, MPI) {
 
   mpi::communicator world;
-
   std::vector<double> v1{};
-  std::vector<double> v2 = triqs::mpi::mpi_reduce(v1, world);
+  std::vector<double> v2 = mpi::reduce(v1, world);
 }
 
-MAKE_MAIN;
+MPI_TEST_MAIN;

@@ -23,7 +23,7 @@
 #pragma once
 
 #include <complex>
-#include <triqs/utility/itertools.hpp>
+#include <itertools/itertools.hpp>
 #include "f77/cxx_interface.hpp"
 #include "tools.hpp"
 #include "qcache.hpp"

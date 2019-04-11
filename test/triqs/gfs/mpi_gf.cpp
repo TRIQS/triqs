@@ -38,8 +38,8 @@ class MpiGf : public ::testing::Test {
 
     d = make_clone(g1.data());
     for (int u = 0; u < world.size(); ++u) {
-      auto se = mpi::slice_range(0, 2 * Nfreq - 1, world.size(), u);
-      d(range(se.first, se.second + 1), 0, 0) *= (1 + u);
+      auto se = itertools::chunk_range(0, 2 * Nfreq, world.size(), u);
+      d(range(se.first, se.second), 0, 0) *= (1 + u);
     }
   }
 
@@ -54,7 +54,7 @@ class MpiGf : public ::testing::Test {
 
 TEST_F(MpiGf, Reduce) {
   // reduction
-  gf<imfreq> g2 = mpi_reduce(g1, world);
+  gf<imfreq> g2 = mpi::reduce(g1, world);
   // out << g2.data()<<std::endl;
   if (world.rank() == 0) EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
 }
@@ -63,7 +63,7 @@ TEST_F(MpiGf, Reduce) {
 
 TEST_F(MpiGf, AllReduce) {
   // all reduction
-  gf<imfreq> g2 = mpi_all_reduce(g1, world);
+  gf<imfreq> g2 = mpi::all_reduce(g1, world);
   EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
 }
 
@@ -71,7 +71,7 @@ TEST_F(MpiGf, AllReduce) {
 
 TEST_F(MpiGf, ReduceView) { // all reduction of gf_view
   gf<imfreq> g2 = g1;
-  g2()          = mpi_all_reduce(g1(), world);
+  g2()          = mpi::all_reduce(g1(), world);
   EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
 }
 
@@ -82,9 +82,9 @@ TEST_F(MpiGf, ReduceView) { // all reduction of gf_view
 //auto g2     = g1;
 //g2.data()() = 0.0;
 //auto g2b    = g1;
-//g2          = mpi_scatter(g1);
+//g2          = mpi::scatter(g1);
 //g2(w_) << g2(w_) * (1 + world.rank());
-//g2b = mpi_gather(g2);
+//g2b = mpi::gather(g2);
 //if (world.rank() == 0) EXPECT_ARRAY_NEAR(d, g2b.data());
 //}
 
@@ -93,11 +93,11 @@ TEST_F(MpiGf, ReduceView) { // all reduction of gf_view
 //TEST_F(MpiGf, ScatterGatherWithConstruction) {
 //// scatter-allgather test with construction
 
-//gf<imfreq> g2 = mpi_scatter(g1);
+//gf<imfreq> g2 = mpi::scatter(g1);
 //g1.data()()   = 0;
 //g2(w_) << g2(w_) * (1 + world.rank());
 
-//g1 = mpi_all_gather(g2);
+//g1 = mpi::all_gather(g2);
 //EXPECT_EQ(g1.mesh().first_index_window(), -Nfreq);
 //EXPECT_EQ(g1.mesh().last_index_window(), Nfreq - 1);
 //EXPECT_ARRAY_NEAR(d, g1.data());
@@ -113,10 +113,10 @@ TEST_F(MpiGf, ReduceBlock) {
   block_gf<imfreq> bgf2;
   auto bgf3 = bgf;
 
-  bgf2 = mpi_reduce(bgf);
+  bgf2 = mpi::reduce(bgf);
   if (world.rank() == 0) EXPECT_ARRAY_NEAR(bgf2[0].data(), world.size() * g1.data());
 
-  bgf3 = mpi_all_reduce(bgf);
+  bgf3 = mpi::all_reduce(bgf);
   EXPECT_ARRAY_NEAR(bgf3[0].data(), world.size() * g1.data());
 }
 
@@ -127,10 +127,10 @@ TEST_F(MpiGf, ReduceBlockView) {
 
   auto bgf2 = bgf;
 
-  bgf2() = mpi_reduce(bgf);
+  bgf2() = mpi::reduce(bgf);
   if (world.rank() == 0) EXPECT_ARRAY_NEAR(bgf2[0].data(), world.size() * g1.data());
 
-  bgf2() = mpi_all_reduce(bgf);
+  bgf2() = mpi::all_reduce(bgf);
   EXPECT_ARRAY_NEAR(bgf2[0].data(), world.size() * g1.data());
 }
 
@@ -140,13 +140,13 @@ TEST_F(MpiGf, ReduceBlockView) {
 //auto g10 = gf<imfreq>{{beta, Fermion, Nfreq}, {1, 1}};
 //g10(w_) << 1 / (w_ + 1);
 
-//auto m  = mpi_scatter(gf_mesh<imfreq>{beta, Fermion, Nfreq}, world, 0);
+//auto m  = mpi::scatter(gf_mesh<imfreq>{beta, Fermion, Nfreq}, world, 0);
 //auto g3 = gf<imfreq>{m, {1, 1}};
 //auto g4 = gf<imfreq>{m, {1, 1}};
 //g3(w_) << 1 / (w_ + 1);
 //g1.data()() = -9;
 //g1(w_) << 1 / (w_ + 1);
-//g4 = mpi_all_gather(g3);
+//g4 = mpi::all_gather(g3);
 //EXPECT_ARRAY_NEAR(g4.data(), g10.data());
 //EXPECT_ARRAY_NEAR(g1.data(), g10.data());
 //}

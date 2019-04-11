@@ -42,7 +42,7 @@ namespace triqs {
 
     template <typename T, typename = void> struct has_collect_result : std::false_type {};
     template <typename T>
-    struct has_collect_result<T, decltype(std::declval<T>().collect_results(std::declval<triqs::mpi::communicator>()))> : std::true_type {};
+    struct has_collect_result<T, decltype(std::declval<T>().collect_results(std::declval<mpi::communicator>()))> : std::true_type {};
 
     // ----------------- h5 detection -----------------------
     using h5_rw_lambda_t = std::function<void(h5::group, std::string const &)>;
@@ -110,7 +110,7 @@ namespace triqs {
     template <typename T, typename = void> struct synth_collect_statistics {
       static std::function<void(mpi::communicator)> invoke(T *p) { return {}; }
     };
-    template <typename T> struct synth_collect_statistics<T, decltype(std::declval<T>().collect_statistics(triqs::mpi::communicator()))> {
+    template <typename T> struct synth_collect_statistics<T, decltype(std::declval<T>().collect_statistics(mpi::communicator()))> {
       static std::function<void(mpi::communicator)> invoke(T *p) {
         return [p](mpi::communicator c) { p->collect_statistics(c); };
       }

@@ -28,7 +28,6 @@
 namespace triqs {
   namespace gfs {
 
-    using triqs::mpi::mpi_reduce;
     using triqs::utility::factory;
 
     /*----------------------------------------------------------
@@ -100,11 +99,17 @@ namespace triqs {
 
     /// ---------------------------  implementation  ---------------------------------
 
+    
+   
+  
+
     // ----------------------  block_gf -----------------------------------------
     /**
    * block_gf
    */
-    template <typename Var, typename Target> class block_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block_gf :
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = false;
@@ -122,7 +127,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block_gf<Var, typename Target::real_t>;
 
-      using g_t           = gf<Var, Target>;
+      using g_t = gf<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -194,8 +199,9 @@ namespace triqs {
       template <typename G> block_gf(G const &x, std14::enable_if_t<BlockGreenFunction<G>::value> *dummy = 0) : block_gf() { *this = x; }
 
       /// Construct from the mpi lazy class of the implementation class, cf mpi section
-      // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
+      // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
       template <typename Tag> block_gf(mpi_lazy<Tag, block_gf_const_view<Var, Target>> x) : block_gf() { operator=(x); }
+
 
       /// Construct from a vector of gf
       block_gf(data_t V) : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
@@ -227,6 +233,8 @@ namespace triqs {
         }
       }
 
+
+
       /// ---------------  Operator = --------------------
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
@@ -244,15 +252,15 @@ namespace triqs {
       block_gf &operator=(block_gf &&rhs) = default;
 
       /**
-    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
-    *
-    * @param l The lazy object returned by mpi_reduce
-    */
+       * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+       *
+       * @param l The lazy object returned by reduce
+       */
       block_gf &operator=(mpi_lazy<mpi::tag::reduce, block_gf::const_view_type> l) {
         _block_names = l.rhs.block_names();
-        _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+        _glist       = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
         return *this;
-        // mpi_reduce of vector produces a new vector of gf, so it is fine here
+        // reduce of vector produces a new vector of gf, so it is fine here
       }
 
       /**
@@ -274,6 +282,7 @@ namespace triqs {
         _assign_impl(rhs);
         return *this;
       }
+
 
       // ---------------  Rebind --------------------
       /// Rebind
@@ -425,6 +434,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -438,12 +450,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block_gf<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
-      mpi_broadcast(g.data(), c, root);
+      mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -457,38 +470,24 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                     bool all = false, MPI_Op op = MPI_SUM) {
+                                                                      bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
-    /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
-
-    template <typename V, typename T>
-    mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                         MPI_Op op = MPI_SUM) {
-      return {a(), c, root, true, op};
-    }
+   
+  
 
     // ----------------------  block_gf_view -----------------------------------------
     /**
    * block_gf_view
    */
-    template <typename Var, typename Target> class block_gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block_gf_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -506,7 +505,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block_gf_view<Var, typename Target::real_t>;
 
-      using g_t           = gf_view<Var, Target>;
+      using g_t = gf_view<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -574,6 +573,7 @@ namespace triqs {
       /// Makes a view
       block_gf_view(regular_type &&g) noexcept : block_gf_view(impl_tag{}, std::move(g)) {}
 
+
       /// ---------------  Operator = --------------------
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
@@ -598,14 +598,14 @@ namespace triqs {
       /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
-    * @param l The lazy object returned by mpi_reduce
+    * @param l The lazy object returned by reduce
     */
       void operator=(mpi_lazy<mpi::tag::reduce, block_gf_view::const_view_type> l) {
         if (l.rhs.size() != this->size())
           TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
         _block_names = l.rhs.block_names();
-        for (int i = 0; i < size(); ++i) _glist[i] = mpi_reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
-        // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
+        for (int i = 0; i < size(); ++i) _glist[i] = mpi::reduce(l.rhs.data()[i], l.c, l.root, l.all, l.op);
+        // here we need to enumerate the vector, the mpi::reduce produce a vector<gf>, NOT a gf_view,
         // we can not overload the = of vector for better API.
       }
 
@@ -635,6 +635,7 @@ namespace triqs {
         _assign_impl(rhs);
         return *this;
       }
+
 
       // ---------------  Rebind --------------------
       /// Rebind
@@ -786,6 +787,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -799,12 +803,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block_gf_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
-      mpi_broadcast(g.data(), c, root);
+      mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -818,38 +823,24 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                     bool all = false, MPI_Op op = MPI_SUM) {
+                                                                      bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
-    /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
-
-    template <typename V, typename T>
-    mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                         MPI_Op op = MPI_SUM) {
-      return {a(), c, root, true, op};
-    }
+   
+  
 
     // ----------------------  block_gf_const_view -----------------------------------------
     /**
    * block_gf_const_view
    */
-    template <typename Var, typename Target> class block_gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block_gf_const_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -867,7 +858,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block_gf_const_view<Var, typename Target::real_t>;
 
-      using g_t           = gf_const_view<Var, Target>;
+      using g_t = gf_const_view<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -932,6 +923,7 @@ namespace triqs {
 
       /// Makes a const view
       block_gf_const_view(regular_type const &g) : block_gf_const_view(impl_tag{}, g) {}
+
 
       /// ---------------  Operator = --------------------
       private:
@@ -1097,6 +1089,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -1110,12 +1105,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block_gf_const_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
-      mpi_broadcast(g.data(), c, root);
+      mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -1129,38 +1125,23 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                     bool all = false, MPI_Op op = MPI_SUM) {
+                                                                      bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
-    /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
-
-    template <typename V, typename T>
-    mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_all_reduce(block_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                         MPI_Op op = MPI_SUM) {
-      return {a(), c, root, true, op};
-    }
+   
+  
 
     // ----------------------  block2_gf -----------------------------------------
     /**
    * block2_gf
    */
-    template <typename Var, typename Target> class block2_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block2_gf :
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = false;
@@ -1178,7 +1159,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block2_gf<Var, typename Target::real_t>;
 
-      using g_t           = gf<Var, Target>;
+      using g_t = gf<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1196,6 +1177,7 @@ namespace triqs {
       int size1() const { return _glist.size(); }
       int size2() const { return _glist[0].size(); } // FIXME PROTECT
       int size() const { return size1() * size2(); }
+
 
       std::string name;
 
@@ -1240,14 +1222,17 @@ namespace triqs {
       template <typename G> block2_gf(G const &x, std14::enable_if_t<BlockGreenFunction<G>::value> *dummy = 0) : block2_gf() { *this = x; }
 
       /// Construct from the mpi lazy class of the implementation class, cf mpi section
-      // NB : type must be the same, e.g. g2(mpi_reduce(g1)) will work only if mesh, Target, Singularity are the same...
+      // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
       template <typename Tag> block2_gf(mpi_lazy<Tag, block2_gf_const_view<Var, Target>> x) : block2_gf() { operator=(x); }
+
 
       /// Constructs a n blocks with copies of g.
       block2_gf(int n, int p, g_t const &g) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
 
       /// Construct from a vector of gf
       block2_gf(data_t V) : _block_names(details::_make_block_names2(V.size(), V[0].size())), _glist(std::move(V)) {}
+
+
 
       /// ---------------  Operator = --------------------
       private:
@@ -1267,15 +1252,15 @@ namespace triqs {
       block2_gf &operator=(block2_gf &&rhs) = default;
 
       /**
-    * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
-    *
-    * @param l The lazy object returned by mpi_reduce
-    */
+       * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
+       *
+       * @param l The lazy object returned by reduce
+       */
       block2_gf &operator=(mpi_lazy<mpi::tag::reduce, block2_gf::const_view_type> l) {
         _block_names = l.rhs.block_names();
-        _glist       = mpi_reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
+        _glist       = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op);
         return *this;
-        // mpi_reduce of vector produces a new vector of gf, so it is fine here
+        // reduce of vector produces a new vector of gf, so it is fine here
       }
 
       /**
@@ -1299,6 +1284,7 @@ namespace triqs {
         _assign_impl(rhs);
         return *this;
       }
+
 
       // ---------------  Rebind --------------------
       /// Rebind
@@ -1335,6 +1321,7 @@ namespace triqs {
         return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
       }
       // ------------- All the [] operators without lazy arguments -----------------------------
+
 
       // ------------- [] with lazy arguments -----------------------------
 
@@ -1456,6 +1443,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -1469,12 +1459,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block2_gf<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
-      mpi_broadcast(g.data(), c, root);
+      mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -1488,38 +1479,24 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
-    /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
-
-    template <typename V, typename T>
-    mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                          MPI_Op op = MPI_SUM) {
-      return {a(), c, root, true, op};
-    }
+   
+  
 
     // ----------------------  block2_gf_view -----------------------------------------
     /**
    * block2_gf_view
    */
-    template <typename Var, typename Target> class block2_gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block2_gf_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1537,7 +1514,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block2_gf_view<Var, typename Target::real_t>;
 
-      using g_t           = gf_view<Var, Target>;
+      using g_t = gf_view<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1555,6 +1532,7 @@ namespace triqs {
       int size1() const { return _glist.size(); }
       int size2() const { return _glist[0].size(); } // FIXME PROTECT
       int size() const { return size1() * size2(); }
+
 
       std::string name;
 
@@ -1595,6 +1573,7 @@ namespace triqs {
       /// Makes a view
       block2_gf_view(regular_type &&g) noexcept : block2_gf_view(impl_tag{}, std::move(g)) {}
 
+
       /// ---------------  Operator = --------------------
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
@@ -1621,15 +1600,15 @@ namespace triqs {
       /**
     * Assignment operator overload specific for mpi_lazy objects (keep before general assignment)
     *
-    * @param l The lazy object returned by mpi_reduce
+    * @param l The lazy object returned by reduce
     */
       void operator=(mpi_lazy<mpi::tag::reduce, block2_gf_view::const_view_type> l) {
         if (l.rhs.size() != this->size())
           TRIQS_RUNTIME_ERROR << "mpi reduction of block_gf : size of RHS is incompatible with the size of the view to be assigned to";
         _block_names = l.rhs.block_names();
         for (int i = 0; i < size1(); ++i)
-          for (int j = 0; j < size2(); ++j) _glist[i][j] = mpi_reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
-        // here we need to enumerate the vector, the mpi_reduce produce a vector<gf>, NOT a gf_view,
+          for (int j = 0; j < size2(); ++j) _glist[i][j] = mpi::reduce(l.rhs.data()[i][j], l.c, l.root, l.all, l.op);
+        // here we need to enumerate the vector, the mpi::reduce produce a vector<gf>, NOT a gf_view,
         // we can not overload the = of vector for better API.
       }
 
@@ -1660,6 +1639,7 @@ namespace triqs {
         _assign_impl(rhs);
         return *this;
       }
+
 
       // ---------------  Rebind --------------------
       /// Rebind
@@ -1696,6 +1676,7 @@ namespace triqs {
         return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
       }
       // ------------- All the [] operators without lazy arguments -----------------------------
+
 
       // ------------- [] with lazy arguments -----------------------------
 
@@ -1817,6 +1798,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -1830,12 +1814,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block2_gf_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
-      mpi_broadcast(g.data(), c, root);
+      mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -1849,38 +1834,24 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
-    /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
-
-    template <typename V, typename T>
-    mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                          MPI_Op op = MPI_SUM) {
-      return {a(), c, root, true, op};
-    }
+   
+  
 
     // ----------------------  block2_gf_const_view -----------------------------------------
     /**
    * block2_gf_const_view
    */
-    template <typename Var, typename Target> class block2_gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block2_gf_const_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1898,7 +1869,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block2_gf_const_view<Var, typename Target::real_t>;
 
-      using g_t           = gf_const_view<Var, Target>;
+      using g_t = gf_const_view<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1916,6 +1887,7 @@ namespace triqs {
       int size1() const { return _glist.size(); }
       int size2() const { return _glist[0].size(); } // FIXME PROTECT
       int size() const { return size1() * size2(); }
+
 
       std::string name;
 
@@ -1953,6 +1925,7 @@ namespace triqs {
 
       /// Makes a const view
       block2_gf_const_view(regular_type const &g) : block2_gf_const_view(impl_tag{}, g) {}
+
 
       /// ---------------  Operator = --------------------
       private:
@@ -2004,6 +1977,7 @@ namespace triqs {
         return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
       }
       // ------------- All the [] operators without lazy arguments -----------------------------
+
 
       // ------------- [] with lazy arguments -----------------------------
 
@@ -2125,6 +2099,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -2138,12 +2115,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block2_gf_const_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
-      mpi_broadcast(g.data(), c, root);
+      mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -2157,32 +2135,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
-    /**
-    * Initiate (lazy) MPI AllReduce
-    *
-    * When the returned object is used at the RHS of operator = or in a constructor of a gf,
-    * the MPI AllReduce operation is performed.
-    *
-    * @group MPI
-    * @param g The Green function
-    * @param c The MPI communicator (default is world)
-    * @param root The root of the broadcast communication in the MPI sense.
-    * @return Returns a lazy object describing the object and the MPI operation to be performed.
-    *
-    */
-
-    template <typename V, typename T>
-    mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_all_reduce(block2_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                          MPI_Op op = MPI_SUM) {
-      return {a(), c, root, true, op};
-    }
 
     // -------------------------------   Free Factories for regular type  --------------------------------------------------
 
@@ -2280,6 +2239,7 @@ namespace triqs {
 
     // -------------------------------   Free Factories for block2_gf_view and block2_gf_const_view  --------------------------------------------------
 
+
     // Create block2_gf_view from vector of views
     template <typename Gf> block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::vector<Gf>> &v) {
       static_assert(Gf::is_view);
@@ -2295,13 +2255,13 @@ namespace triqs {
     // Create block2_gf_view from block_names and vector of views
     template <typename Gf>
     block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                              std::vector<std::vector<Gf>> &v) {
+                                                        std::vector<std::vector<Gf>> &v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, v};
     }
     template <typename Gf>
     block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                              std::vector<std::vector<Gf>> &&v) {
+                                                        std::vector<std::vector<Gf>> &&v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
     }
@@ -2321,13 +2281,13 @@ namespace triqs {
     // Create block2_gf_const_view from block_names and vector of views
     template <typename Gf>
     block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                                          std::vector<std::vector<Gf>> &v) {
+                                                        std::vector<std::vector<Gf>> &v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, v};
     }
     template <typename Gf>
     block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                                          std::vector<std::vector<Gf>> &&v) {
+                                                        std::vector<std::vector<Gf>> &&v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
     }

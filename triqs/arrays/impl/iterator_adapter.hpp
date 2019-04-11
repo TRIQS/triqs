@@ -50,8 +50,8 @@ namespace triqs {
       iterator_adapter(const typename IndexMapIterator::indexmap_type &Ind, const StorageType &ST, bool atEnd = false)
          : storage_(ST), it(Ind, atEnd) {}
 
-      value_type &operator*() { return storage_[*it]; }
-      value_type &operator->() { return storage_[*it]; }
+      value_type &operator*() const { return storage_[*it]; }
+      value_type &operator->() const { return storage_[*it]; }
 
       iterator_adapter &operator++() {
         ++it;

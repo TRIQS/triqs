@@ -18,15 +18,12 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include <triqs/test_tools/arrays.hpp>
-#include <triqs/mpi/vector.hpp>
-#include <triqs/arrays.hpp>
-#include <iostream>
+#include <mpi/vector.hpp>
+#include <gtest.h>
 
-using namespace triqs;
-using namespace triqs::arrays;
-using namespace triqs::mpi;
+#include <complex>
+
+using namespace itertools;
 
 TEST(MPI, vector_reduce) {
 
@@ -39,7 +36,7 @@ TEST(MPI, vector_reduce) {
 
   for (int i = 0; i < N; ++i) A[i] = i; //+ world.rank();
 
-  B = mpi_all_reduce(A, world);
+  B = mpi::all_reduce(A, world);
 
   VEC res(N);
   for (int i = 0; i < N; ++i) res[i] = world.size() * i; // +  world.size()*(world.size() - 1)/2;
@@ -53,24 +50,20 @@ TEST(MPI, vector_gather_scatter) {
 
   mpi::communicator world;
 
-  using VEC = std::vector<std::complex<double>>;
+  std::vector<std::complex<double>> A(7), B(7), AA(7);
 
-  VEC A(7), B(7), AA(7);
+  for(auto [i, v_i]: enumerate(A)) v_i = i + 1; 
 
-  clef::placeholder<0> i_;
-
-  triqs::clef::make_expr(A)[i_] << i_ + 1;
-
-  B = mpi_scatter(A, world);
-
-  VEC C = mpi_scatter(A, world);
+  B = mpi::scatter(A, world);
+  auto C = mpi::scatter(A, world);
 
   for (auto &x : B) x *= -1;
   for (auto &x : AA) x = 0;
   for (auto &x : A) x *= -1;
 
-  AA = mpi_all_gather(B, world);
+  AA = mpi::all_gather(B, world);
 
   EXPECT_EQ(A, AA);
 }
-MAKE_MAIN;
+
+MPI_TEST_MAIN;

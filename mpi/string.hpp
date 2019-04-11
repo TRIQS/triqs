@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2014 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,25 +19,17 @@
  *
  ******************************************************************************/
 #pragma once
-#include <itertools/itertools.hpp>
+#include "./mpi.hpp"
+#include <string>
 
-namespace triqs::arrays {
+namespace mpi {
 
-  // For backward-compatibility
-  using range    = itertools::range;
-  template <typename F> void foreach (range const &r, F const &f) { itertools::foreach (r, f); }
+  // ---------------- broadcast ---------------------
+  inline void mpi_broadcast(std::string &s, communicator c, int root) {
+    size_t len = s.size();
+    broadcast(len, c, root);
+    if (c.rank() != root) s.resize(len);
+    if (len != 0) MPI_Bcast((void*)s.c_str(), s.size(), datatype<char>(), root, c.get());
+  }
 
-  /**
-   * Ellipsis
-   *
-   * Ellipsis can be provided in place of [[range]], as in python.
-   * The type `ellipsis` is similar to [[range]] except that it is implicitly repeated as much as necessary.
-   */
-  struct ellipsis : range {
-    ellipsis() : range() {}
-  };
-  // for the case A(i, ellipsis) where A is of dim 1...
-  inline int operator*(ellipsis, int) { return 0; }
-  inline int operator*(int, ellipsis) { return 0; }
-
-} // namespace triqs::arrays
+} // namespace mpi

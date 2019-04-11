@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../mpi/base.hpp"
+#include <mpi/mpi.hpp>
 
 namespace triqs {
   namespace arrays {
@@ -44,16 +44,16 @@ namespace triqs {
         long slow_size = first_dim(ref);
 
         if (std::is_same<Tag, mpi::tag::scatter>::value) {
-          mpi::mpi_broadcast(slow_size, c, root);
-          dims[0] = mpi::slice_length(slow_size - 1, c.size(), c.rank());
+          mpi::broadcast(slow_size, c, root);
+          dims[0] = mpi::chunk_length(slow_size, c.size(), c.rank());
         }
 
         if (std::is_same<Tag, mpi::tag::gather>::value) {
           if (!all) {
-            dims[0] = mpi::mpi_reduce(slow_size, c, root); // valid only on root
+            dims[0] = mpi::reduce(slow_size, c, root); // valid only on root
             if (c.rank() != root) dims[0] = 1;             // valid only on root
           } else
-            dims[0] = mpi::mpi_all_reduce(slow_size, c, root); // in this case, it is valid on all nodes
+            dims[0] = mpi::all_reduce(slow_size, c, root); // in this case, it is valid on all nodes
         }
         // mpi::tag::reduce :do nothing
 
@@ -70,10 +70,10 @@ namespace triqs {
       if (!has_contiguous_data(a)) TRIQS_RUNTIME_ERROR << "Non contiguous view in mpi_broadcast";
       auto sh    = a.shape();
       auto m_pos = a.indexmap().memory_layout().get_memory_positions();
-      MPI_Bcast(&sh[0], sh.size(), mpi::mpi_datatype<typename decltype(sh)::value_type>(), root, c.get());
-      MPI_Bcast(&m_pos[0], m_pos.size(), mpi::mpi_datatype<typename decltype(m_pos)::value_type>(), root, c.get());
+      MPI_Bcast(&sh[0], sh.size(), mpi::datatype<typename decltype(sh)::value_type>(), root, c.get());
+      MPI_Bcast(&m_pos[0], m_pos.size(), mpi::datatype<typename decltype(m_pos)::value_type>(), root, c.get());
       if (c.rank() != root) { resize_or_check_if_view(a, sh, memory_layout_t<A::rank>(m_pos)); }
-      MPI_Bcast(a.data_start(), a.domain().number_of_elements(), mpi::mpi_datatype<typename A::value_type>(), root, c.get());
+      MPI_Bcast(a.data_start(), a.domain().number_of_elements(), mpi::datatype<typename A::value_type>(), root, c.get());
     }
 
     template <typename A> REQUIRES_IS_ARRAY2(reduce) mpi_reduce(A &a, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
@@ -119,7 +119,7 @@ namespace triqs {
           auto rhs_n_elem = laz.ref.domain().number_of_elements();
           auto c          = laz.c;
           auto root       = laz.root;
-          auto D          = mpi::mpi_datatype<typename A::value_type>();
+          auto D          = mpi::datatype<typename A::value_type>();
 
           bool in_place = (lhs.data_start() == laz.ref.data_start());
 
@@ -170,11 +170,11 @@ namespace triqs {
           auto slow_stride = laz.ref.indexmap().strides()[0];
           auto sendcounts  = std::vector<int>(c.size());
           auto displs      = std::vector<int>(c.size() + 1, 0);
-          int recvcount    = mpi::slice_length(slow_size - 1, c.size(), c.rank()) * slow_stride;
-          auto D           = mpi::mpi_datatype<typename A::value_type>();
+          int recvcount    = mpi::chunk_length(slow_size, c.size(), c.rank()) * slow_stride;
+          auto D           = mpi::datatype<typename A::value_type>();
 
           for (int r = 0; r < c.size(); ++r) {
-            sendcounts[r] = mpi::slice_length(slow_size - 1, c.size(), r) * slow_stride;
+            sendcounts[r] = mpi::chunk_length(slow_size, c.size(), r) * slow_stride;
             displs[r + 1] = sendcounts[r] + displs[r];
           }
 
@@ -200,7 +200,7 @@ namespace triqs {
           auto recvcounts = std::vector<int>(c.size());
           auto displs     = std::vector<int>(c.size() + 1, 0);
           int sendcount   = laz.ref.domain().number_of_elements();
-          auto D          = mpi::mpi_datatype<typename A::value_type>();
+          auto D          = mpi::datatype<typename A::value_type>();
 
           auto d = laz.domain();
           if (laz.all || (laz.c.rank() == laz.root)) resize_or_check_if_view(lhs, d.lengths());
@@ -208,7 +208,7 @@ namespace triqs {
           void *lhs_p       = lhs.data_start();
           const void *rhs_p = laz.ref.data_start();
 
-          auto mpi_ty = mpi::mpi_datatype<int>();
+          auto mpi_ty = mpi::datatype<int>();
           if (!laz.all)
             MPI_Gather(&sendcount, 1, mpi_ty, &recvcounts[0], 1, mpi_ty, laz.root, c.get());
           else

@@ -19,16 +19,16 @@ TEST(Gfs, MPI_multivar) {
   g(iw_, inu_, inup_) << inu_ + 10 * inup_ + 100 * iw_;
 
   auto g2 = g;
-  g2      = mpi_reduce(g, world);
+  g2      = mpi::reduce(g, world);
   if (world.rank() == 0) EXPECT_ARRAY_NEAR(g2.data(), g.data() * world.size());
 
-  mpi_broadcast(g2, world);
+  mpi::broadcast(g2, world);
   if (world.rank() == 1) EXPECT_ARRAY_NEAR(g2.data(), g.data() * world.size());
 
-  gf3_s g3 = mpi_all_reduce(g, world);
+  gf3_s g3 = mpi::all_reduce(g, world);
   EXPECT_ARRAY_NEAR(g3.data(), g.data() * world.size());
 
-  //gf3_s g4 = mpi_scatter(g);
+  //gf3_s g4 = mpi::scatter(g);
   //g2(iw_, inu_, inup_) << g2(iw_, inu_, inup_) * (1 + world.rank());
   //g4 = mpi_gather(g2);
   // Test the result ?
@@ -37,7 +37,7 @@ TEST(Gfs, MPI_multivar) {
   auto g0 = gf<imfreq, scalar_valued>{{beta, Boson, nbw}};
   auto G2 = make_block_gf({g0});
 
-  mpi_broadcast(G, world);
-  mpi_broadcast(G2, world);
+  mpi::broadcast(G, world);
+  mpi::broadcast(G2, world);
 }
 MAKE_MAIN;

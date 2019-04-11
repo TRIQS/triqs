@@ -152,11 +152,11 @@ namespace triqs {
     @param root MPI root rank for broadcast operation
    */
       friend void mpi_broadcast(histogram &h, mpi::communicator c = {}, int root = 0) {
-        mpi_broadcast(h.a, c, root);
-        mpi_broadcast(h.b, c, root);
-        mpi_broadcast(h._data, c, root);
-        mpi_broadcast(h._n_data_pts, c, root);
-        mpi_broadcast(h._n_lost_pts, c, root);
+	 mpi::broadcast(h.a, c, root);
+        mpi::broadcast(h.b, c, root);
+        mpi::broadcast(h._data, c, root);
+        mpi::broadcast(h._n_data_pts, c, root);
+        mpi::broadcast(h._n_lost_pts, c, root);
         if (c.rank() != root) {
           h.n_bins = h._data.size();
           h._init();
@@ -177,9 +177,9 @@ namespace triqs {
       friend histogram mpi_reduce(histogram const &h, mpi::communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
         TRIQS_ASSERT(op == MPI_SUM);
         histogram h2(h.a, h.b, h.n_bins);
-        h2._data       = mpi_reduce(h._data, c, root, all, MPI_SUM);
-        h2._n_data_pts = mpi_reduce(h._n_data_pts, c, root, all, MPI_SUM);
-        h2._n_lost_pts = mpi_reduce(h._n_lost_pts, c, root, all, MPI_SUM);
+        h2._data       = mpi::reduce(h._data, c, root, all, MPI_SUM);
+        h2._n_data_pts = mpi::reduce(h._n_data_pts, c, root, all, MPI_SUM);
+        h2._n_lost_pts = mpi::reduce(h._n_lost_pts, c, root, all, MPI_SUM);
         return h2;
       }
 

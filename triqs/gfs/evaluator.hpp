@@ -48,7 +48,7 @@ namespace triqs {
 
       // technical details...
       using r_t  = typename Target::slice_t;
-      using rv_t = typename const_view_type_if_exists_else_type<typename Target::slice_t>::type;
+      using rv_t = const_view_or_type_t<typename Target::slice_t>;
 
       // gf_evaluator
       template <typename G> rv_t operator()(G const &g, matsubara_freq const &f) const {

@@ -285,11 +285,16 @@ if(sanitizers)
 endif()
 
 # ---------------------------------
-# Install 
+# Triqs header include directories
 # ---------------------------------
 
-# Add directory to installed headers to public interface of triqs triqs target
-target_include_directories(triqs SYSTEM INTERFACE ${CMAKE_INSTALL_PREFIX}/include)
+# Add the directories where the triqs headers are located to the triqs target interface
+target_include_directories(triqs INTERFACE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
+target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+
+# ---------------------------------
+# Install 
+# ---------------------------------
 
 # Install the library in lib and prepare an exported cmake file to reimport it
 install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)

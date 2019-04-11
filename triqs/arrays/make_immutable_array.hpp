@@ -63,8 +63,8 @@ namespace triqs {
 
       public:
       immutable_array_fun_impl(Function f, Ranges... r) : f_(std::move(f)), dom_(make_shape(r.size()...)){};
-      //typedef typename std::function<Function(typename Ranges::index_type...)>::result_type value_type;
-      typedef decltype(triqs::tuple::apply(std::declval<Function>(), std::make_tuple(typename Ranges::index_type()...))) value_type;
+      //typedef typename std::function<Function(typename Ranges::index_t...)>::result_type value_type;
+      typedef decltype(triqs::tuple::apply(std::declval<Function>(), std::make_tuple(typename Ranges::index_t()...))) value_type;
       typedef indexmaps::cuboid::domain_t<sizeof...(Ranges)> domain_type;
       domain_type domain() const { return dom_; }
       template <typename... Args> value_type operator()(Args const &... args) const { return f_(args...); }

@@ -108,7 +108,7 @@ namespace triqs {
     // used to exclude array<array<..>>
     template <typename A, typename Enable = void> struct has_scalar_or_string_value_type : std::false_type {};
     template <typename A>
-    struct has_scalar_or_string_value_type<A, decltype(nop(std::declval<typename A::value_type>()))>
+    struct has_scalar_or_string_value_type<A, std::void_t<typename A::value_type>>
        : std::integral_constant<bool, is_scalar<typename A::value_type>::value || std::is_base_of<std::string, typename A::value_type>::value> {};
 
     /*

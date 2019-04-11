@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2015-2018, O. Parcollet
+ * Copyright (C) 2019, The Simons Foundation
+ *   author : N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,25 +21,25 @@
  *
  ******************************************************************************/
 #pragma once
+
+#include <omp.h>
+
 #include <itertools/itertools.hpp>
 
-namespace triqs::arrays {
-
-  // For backward-compatibility
-  using range    = itertools::range;
-  template <typename F> void foreach (range const &r, F const &f) { itertools::foreach (r, f); }
+namespace itertools {
 
   /**
-   * Ellipsis
-   *
-   * Ellipsis can be provided in place of [[range]], as in python.
-   * The type `ellipsis` is similar to [[range]] except that it is implicitly repeated as much as necessary.
-   */
-  struct ellipsis : range {
-    ellipsis() : range() {}
-  };
-  // for the case A(i, ellipsis) where A is of dim 1...
-  inline int operator*(ellipsis, int) { return 0; }
-  inline int operator*(int, ellipsis) { return 0; }
-
-} // namespace triqs::arrays
+    * Function to chunk a range, distributing it uniformly over all OMP threads.
+    *
+    * This range-adapting function should be used inside an omp parallel region
+    *
+    * @tparam T The type of the range
+    *
+    * @param range The range to chunk
+    */
+  template <typename T> auto omp_chunk(T &&range) {
+    auto total_size           = std::distance(std::cbegin(range), std::cend(range));
+    auto [start_idx, end_idx] = chunk_range(0, total_size, omp_get_num_threads(), omp_get_thread_num());
+    return itertools::slice(std::forward<T>(range), start_idx, end_idx);
+  }
+} // namespace itertools

@@ -37,7 +37,7 @@ TEST(histogram, mpi_broadcast) {
   auto h = world.rank() ? histogram{0, 20} : make_hd();
 
   arrays::vector<double> true_h = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
-  mpi_broadcast(h, world, 0);
+  mpi::broadcast(h, world, 0);
 
   EXPECT_EQ(11, h.size());
   EXPECT_EQ(0, h.mesh_point(0));
@@ -55,9 +55,9 @@ TEST(histogram, mpi_reduce) {
   arrays::vector<double> true_h_rec = {0, 1, 2, 2, 0, 1, 0, 0, 0, 1, 1};
   true_h_rec *= world.size();
 
-  // mpi_reduce
+  // reduce
 
-  auto h2 = mpi_reduce(h, world, 0);
+  auto h2 = mpi::reduce(h, world, 0);
 
   if (world.rank() == 0) {
     EXPECT_EQ(11, h2.size());
@@ -69,9 +69,9 @@ TEST(histogram, mpi_reduce) {
     EXPECT_EQ(3 * world.size(), h2.n_lost_pts());
   }
 
-  // mpi_all_reduce
+  // all_reduce
 
-  auto h3 = mpi_all_reduce(h, world);
+  auto h3 = mpi::all_reduce(h, world);
 
   EXPECT_EQ(11, h3.size());
   EXPECT_EQ(0, h3.mesh_point(0));

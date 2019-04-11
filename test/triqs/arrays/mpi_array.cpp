@@ -27,7 +27,7 @@
 
 using namespace triqs;
 using namespace triqs::arrays;
-using namespace triqs::mpi;
+using namespace mpi;
 
 TEST(Arrays, MPI) {
 
@@ -38,22 +38,22 @@ TEST(Arrays, MPI) {
 
   arr_t A(7, 3), B, AA;
 
-  auto se = mpi::slice_range(0, 6, world.size(), world.rank());
+  auto se = itertools::chunk_range(0, 7, world.size(), world.rank());
 
   clef::placeholder<0> i_;
   clef::placeholder<1> j_;
 
   A(i_, j_) << i_ + 10 * j_;
 
-  B       = mpi_scatter(A, world);
-  arr_t C = mpi_scatter(A, world);
+  B       = mpi::scatter(A, world);
+  arr_t C = mpi::scatter(A, world);
 
   std::ofstream out("node" + std::to_string(world.rank()));
   out << "  A = " << A << std::endl;
   out << "  B = " << B << std::endl;
   out << "  C = " << C << std::endl;
 
-  EXPECT_ARRAY_EQ(B, A(range(se.first, se.second + 1), range()));
+  EXPECT_ARRAY_EQ(B, A(range(se.first, se.second), range()));
   EXPECT_ARRAY_NEAR(C, B);
 
   B *= -1;
@@ -62,17 +62,17 @@ TEST(Arrays, MPI) {
   AA = mpi_gather(B, world);
   if (world.rank() == 0) EXPECT_ARRAY_NEAR(AA, -A);
 
-  mpi_broadcast(AA, world);
+  mpi::broadcast(AA, world);
   EXPECT_ARRAY_NEAR(AA, -A);
 
   AA() = 0;
-  AA   = mpi_all_gather(B, world);
+  AA   = mpi::all_gather(B, world);
   EXPECT_ARRAY_NEAR(AA, -A);
 
-  arr_t r1 = mpi_reduce(A, world);
+  arr_t r1 = mpi::reduce(A, world);
   if (world.rank() == 0) EXPECT_ARRAY_NEAR(r1, world.size() * A);
 
-  arr_t r2 = mpi_all_reduce(A, world);
+  arr_t r2 = mpi::all_reduce(A, world);
   EXPECT_ARRAY_NEAR(r2, world.size() * A);
 }
 
@@ -97,8 +97,8 @@ TEST(Arrays, MPIReduceMAX) {
     b2(i) = max_element(c);
   }
 
-  arr_t r1 = mpi_reduce(a, world, 0, true, MPI_MIN);
-  arr_t r2 = mpi_reduce(a, world, 0, true, MPI_MAX);
+  arr_t r1 = mpi::reduce(a, world, 0, true, MPI_MIN);
+  arr_t r2 = mpi::reduce(a, world, 0, true, MPI_MAX);
 
   std::cerr << " a = " << r << a << std::endl;
   std::cerr << "r1 = " << r << r1 << std::endl;
@@ -119,7 +119,7 @@ TEST(Arrays, matrix_transpose_bcast) {
   matrix<dcomplex> B;
   if (world.rank() == 0) B = At;
 
-  mpi_broadcast(B, world, 0);
+  mpi::broadcast(B, world, 0);
 
   EXPECT_ARRAY_EQ(At, B);
 }
@@ -135,7 +135,7 @@ TEST(Arrays, array_transpose_bcast) {
   array<dcomplex, 2> B(2, 3);
   if (world.rank() == 0) B = At;
 
-  mpi_broadcast(B, world, 0);
+  mpi::broadcast(B, world, 0);
 
   EXPECT_ARRAY_EQ(At, B);
 }

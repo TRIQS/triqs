@@ -35,9 +35,9 @@ struct compute_m {
     M += sign * config->spin;
   }
 
-  void collect_results(triqs::mpi::communicator c) {
-    double sum_Z = triqs::mpi::reduce(Z, c);
-    double sum_M = triqs::mpi::reduce(M, c);
+  void collect_results(mpi::communicator c) {
+    double sum_Z = mpi::reduce(Z, c);
+    double sum_M = mpi::reduce(M, c);
     if (c.rank() == 0) std::cout << "Magnetization: " << sum_M / sum_Z << std::endl;
   }
 };
@@ -46,8 +46,8 @@ struct compute_m {
 int main(int argc, char *argv[]) {
 
   // initialize mpi
-  triqs::mpi::environment env(argc, argv);
-  triqs::mpi::communicator world;
+  mpi::environment env(argc, argv);
+  mpi::communicator world;
 
   // greeting
   if (world.rank() == 0) std::cout << "Isolated spin" << std::endl;

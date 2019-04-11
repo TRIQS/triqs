@@ -238,7 +238,7 @@ namespace triqs::gfs {
 
     TRIQS_ASSERT2(gin.size() == known_moments.size(), "Fourier: Require equal number of blocks in block_gf and known_moments vector");
 
-    for (auto [gin_bl, km_bl] : triqs::utility::zip(gin, known_moments)) g_vec.push_back(make_gf_from_fourier<N>(gin_bl, m, km_bl));
+    for (auto [gin_bl, km_bl] : itertools::zip(gin, known_moments)) g_vec.push_back(make_gf_from_fourier<N>(gin_bl, m, km_bl));
     return make_block_gf(gin.block_names(), std::move(g_vec));
   }
 
