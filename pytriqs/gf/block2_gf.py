@@ -21,6 +21,7 @@
 
 from itertools import izip, product, chain
 import operator
+import warnings
 import numpy as np
 
 class Block2Gf(object):
