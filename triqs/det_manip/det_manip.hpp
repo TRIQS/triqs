@@ -63,7 +63,7 @@ namespace triqs {
 
       protected: // the data
       using int_type = std::ptrdiff_t;
-      using range    = arrays::range;
+      using range    = itertools::range;
 
       FunctionType f;
 

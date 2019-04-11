@@ -31,7 +31,7 @@ namespace triqs {
        : units_(3, 3), atom_orb_pos(atom_orb_pos_), atom_orb_name(atom_orb_name_) {
       dim_ = first_dim(units__);
       if ((dim_ < 1) || (dim_ > 3)) TRIQS_RUNTIME_ERROR << " units matrix must be square matrix of size 1, 2 or 3";
-      using arrays::range;
+      using itertools::range;
       auto r       = range(0, dim_);
       units_()     = 0;
       units_(r, r) = units__(r, r);

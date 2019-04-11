@@ -28,7 +28,7 @@ namespace triqs {
     const double almost_zero = 1e-10;
 
     brillouin_zone::brillouin_zone(bravais_lattice const &bl_) : lattice_(bl_), K_reciprocal(3, 3) {
-      using arrays::range;
+      using itertools::range;
       auto _       = range{};
       auto Units   = lattice().units();
       double delta = dot(Units(0, _), cross_product(Units(1, _), Units(2, _)));

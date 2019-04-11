@@ -1,7 +1,7 @@
 #include <triqs/arrays.hpp>
 /// ---- test ------------
 
-using triqs::arrays::range;
+using itertools::range;
 
 int main() {
   triqs::clef::placeholder<0> a_;

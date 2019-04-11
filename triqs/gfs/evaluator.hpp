@@ -113,7 +113,7 @@ namespace triqs {
     template <> struct gf_evaluator<legendre, matrix_valued> {
       static constexpr int arity = 1;
       template <typename G> arrays::matrix_view<dcomplex> operator()(G const &g, long n) const {
-        return g.data()(n, arrays::range(), arrays::range());
+        return g.data()(n, itertools::range(), itertools::range());
       }
     };
   } // namespace gfs

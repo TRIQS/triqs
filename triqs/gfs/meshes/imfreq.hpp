@@ -25,7 +25,7 @@
 
 namespace triqs::gfs {
 
-  using arrays::range;
+  using itertools::range;
   using dcomplex = std::complex<double>;
 
   struct imfreq {};

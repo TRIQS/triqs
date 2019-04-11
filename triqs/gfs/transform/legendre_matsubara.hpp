@@ -40,7 +40,7 @@ namespace triqs::gfs {
                   "Arguments to legendre_matsubara_direct require same target_t");
 
     gw() = 0.0;
-    triqs::arrays::range R;
+    itertools::range R;
 
     // Use the transformation matrix
     for (auto om : gw.mesh()) {

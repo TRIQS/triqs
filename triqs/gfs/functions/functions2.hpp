@@ -180,7 +180,7 @@ namespace triqs::gfs {
   // auxiliary function : invert the data : one function for all matrix valued gf (save code).
   template <typename A3> void _gf_invert_data_in_place(A3 &&a) {
     auto dom = a(ellipsis(), 0, 0).indexmap().domain();
-    auto f   = [&a, _ = arrays::range()](auto... x) { return a(x..., _, _); };
+    auto f   = [&a, _ = itertools::range()](auto... x) { return a(x..., _, _); };
     for (auto ind : dom) {
       auto v = make_matrix_view(triqs::tuple::apply(f, ind));
       v      = triqs::arrays::inverse(v);
@@ -258,14 +258,14 @@ namespace triqs::gfs {
   //
   template <typename A3, typename T> void _gf_data_mul_R(A3 &&a, matrix<T> const &r) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-      matrix_view<T> v = a(i, arrays::range(), arrays::range());
+      matrix_view<T> v = a(i, itertools::range(), itertools::range());
       v                = v * r;
     }
   }
 
   template <typename A3, typename T> void _gf_data_mul_L(matrix<T> const &l, A3 &&a) {
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
-      matrix_view<T> v = a(i, arrays::range(), arrays::range());
+      matrix_view<T> v = a(i, itertools::range(), itertools::range());
       v                = l * v;
     }
   }
@@ -287,7 +287,7 @@ namespace triqs::gfs {
 
   template <typename A, typename B, typename M> void set_from_gf_data_mul_LR(A &a, M const &l, B const &b, M const &r) {
     auto tmp = matrix<typename M::value_type>(second_dim(b), second_dim(r));
-    auto _   = arrays::range{};
+    auto _   = itertools::range{};
     for (int i = 0; i < first_dim(a); ++i) { // Rely on the ordering
       auto rhs_v = make_matrix_view(b(i, _, _));
       auto lhs_v = make_matrix_view(a(i, _, _));

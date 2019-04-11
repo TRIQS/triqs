@@ -24,7 +24,7 @@
 namespace triqs::arrays {
 
   // For backward-compatibility
-  using range    = itertools::range;
+  using itertools::range;
   template <typename F> void foreach (range const &r, F const &f) { itertools::foreach (r, f); }
 
   /**

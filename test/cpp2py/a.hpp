@@ -162,7 +162,7 @@ inline std::vector<int> vector_x2(std::vector<int> const &v) {
 
 using triqs::arrays::array;
 using triqs::arrays::matrix;
-using triqs::arrays::range;
+using itertools::range;
 using namespace triqs::arrays;
 
 inline void iter_on_range(range r) {

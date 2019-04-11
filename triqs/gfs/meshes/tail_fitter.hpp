@@ -27,7 +27,7 @@ namespace triqs::gfs {
   struct imfreq;
 
   using arrays::array_const_view;
-  using arrays::range;
+  using itertools::range;
 
   //----------------------------------------------------------------------------------------------
   // construct the Vandermonde matrix

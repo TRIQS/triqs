@@ -31,7 +31,7 @@ namespace triqs {
     using dcomplex = std::complex<double>;
     using arrays::array;
     using arrays::matrix;
-    using arrays::range;
+    using itertools::range;
 
     // --------------------------------------------------------
 

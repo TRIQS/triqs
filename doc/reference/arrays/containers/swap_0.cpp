@@ -1,6 +1,6 @@
 #include <triqs/arrays.hpp>
 #include <iostream>
-using triqs::arrays::range;
+using itertools::range;
 using triqs::arrays::vector;
 int main() {
   triqs::arrays::vector<double> V(3), W(4);

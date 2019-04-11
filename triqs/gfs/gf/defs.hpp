@@ -30,14 +30,14 @@ namespace triqs {
     using arrays::matrix;
     using arrays::matrix_const_view;
     using arrays::matrix_view;
-    using arrays::range;
+    using itertools::range;
     using triqs::make_clone;
     using utility::factory;
     using dcomplex = std::complex<double>;
     using arrays::ellipsis;
     using arrays::make_shape;
     using arrays::mini_vector;
-    using arrays::range;
+    using itertools::range;
 
     /*----------------------------------------------------------
   *   Useful metafunctions, traits
