@@ -25,6 +25,45 @@ triqs/mpi/vector.hpp should now be replaced with with includes to
 the according file in the mpi directory.
 
 
+cmake
+-----
+* Add sanitizer functionality for asan and ubsan and install find module
+* C++ standard is now propagated through the triqs target
+* Create INTERFACE targets for triqs dependencies and export them
+  (i.e. triqs::mpi)
+
+doc
+---
+* Make the cpp2rst regeneration optional with target docs_cpp2rst
+* Update OSX install instructions
+
+mpi
+---
+* Add range-adapting function mpi::chunk(Range) that distributes over all mpi ranks
+* Add std::string broadcasting
+* Adjust slice_range/length to match the API of range(N,M,1) where M is excluded
+
+itertools
+---------
+* Add striding and slicing functionality for generic ranges
+
+pytriqs
+-------
+* Important Bugfix in Gf * Mat and Mat * Gf
+* Wrap fit_tail and fit_hermitian_tail for BlockGf
+* Extend make_zero_tail functionality to work on (im/re)time Green functions
+* Move missing functions from gf.gf_fnt gf.tools to gf.__all__
+
+mc_generic
+----------
+* We added separate functions warmup/accumulate
+
+General
+-------
+* Reduce hdf5 compression level from 8->1 for higher performance
+  (negligible change in file sizes, substantial change in write/read times)
+
+
 Version 2.1
 ===========
 
