@@ -42,13 +42,23 @@ from backwd_compat.gf_legendre import *
 
 from meshes import MeshBrillouinZone, MeshCyclicLattice
 
-from gf_fnt import fit_tail, fit_hermitian_tail, density, make_adjoint_mesh, set_from_fourier, set_from_inverse_fourier, make_real_in_tau, is_gf_real_in_tau, set_from_fourier, make_gf_from_fourier, make_gf_from_inverse_fourier, set_from_legendre, set_from_imfreq, set_from_imtime, make_hermitian, is_gf_hermitian, fit_tail_on_window, fit_hermitian_tail_on_window, replace_by_tail, replace_by_tail_in_fit_window, rebinning_tau, enforce_discontinuity, GfIndices
+from gf_fnt import fit_tail, fit_hermitian_tail, density, make_adjoint_mesh, set_from_fourier, make_real_in_tau, is_gf_real_in_tau, make_gf_from_fourier, set_from_legendre, set_from_imfreq, set_from_imtime, make_hermitian, is_gf_hermitian, fit_tail_on_window, fit_hermitian_tail_on_window, replace_by_tail, replace_by_tail_in_fit_window, rebinning_tau, enforce_discontinuity, GfIndices
+
+import warnings
+def make_gf_from_inverse_fourier(*args):
+    warnings.warn("make_gf_from_inverse_fourier is deprecated and should be replaced with make_gf_from_fourier")
+    return make_gf_from_fourier(*args)
+
+def set_from_inverse_fourier(*args):
+    warnings.warn("set_from_inverse_fourier is deprecated and should be replaced with set_from_fourier")
+    set_from_inverse_fourier(*args)
+
 
 __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre',
             'lazy_expressions',
             'MeshPoint','MeshValueGenerator',
             'Idx', 'Gf', 'MeshProduct', 'GfIndices',
-            'GfImFreq', 'MeshImFreq', 
+            'GfImFreq', 'MeshImFreq',
             'GfImTime', 'MeshImTime',
             'GfReFreq', 'MeshReFreq',
             'GfReTime', 'MeshReTime',
@@ -59,8 +69,6 @@ __all__ = [ 'Omega','iOmega_n','SemiCircular','Flat', 'Wilson','Fourier','Invers
             'Block2Gf',
             'inverse', 'conjugate', 'transpose',
             'is_gf_real_in_tau',
-            'make_gf_from_fourier',
-            'make_gf_from_inverse_fourier',
             'delta','dyson',
             'map_block',
             'make_real_in_tau', 'is_gf_real_in_tau',

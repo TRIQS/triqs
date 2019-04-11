@@ -31,7 +31,7 @@ gw << SemiCircular(half_bandwidth = 1)
 
 # Create an imaginary-time Green's function and plot it
 gt = GfImTime(indices = [1], beta = 50)
-gt << InverseFourier(gw)
+gt << Fourier(gw)
 
 mpi.bcast(gt)
 

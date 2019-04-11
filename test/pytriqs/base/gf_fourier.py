@@ -1,5 +1,4 @@
 from pytriqs.gf import *
-from pytriqs.gf.gf_fnt import set_from_fourier, set_from_inverse_fourier
 
 # ==== Matrix-valued Green functions
 
@@ -11,7 +10,7 @@ gw = GfImFreq(beta=20.0, n_points = n_iw,  indices=[0])
 gw2 = gw.copy()
 
 gw << inverse(iOmega_n - SemiCircular(2.0)) + inverse(iOmega_n)
-gt << InverseFourier(gw)
+gt << Fourier(gw)
 
 # Check that we are PH symmetric
 assert abs(gt.data[0,0,0] - gt.data[-1,0,0]) < 1e-7
@@ -33,7 +32,7 @@ gw = gw[0,0]
 gw2 = gw2[0,0]
 
 gw << inverse(iOmega_n - SemiCircular(2.0)) + inverse(iOmega_n)
-gt << InverseFourier(gw)
+gt << Fourier(gw)
 
 # Check that we are PH symmetric
 assert abs(gt.data[0] - gt.data[-1]) < 1e-7
@@ -55,9 +54,9 @@ blgw = BlockGf(block_list=[gw, 2 * gw])
 blgw2 = blgw.copy()
 
 blgw << inverse(iOmega_n - SemiCircular(2.0)) + inverse(iOmega_n)
-blgt << InverseFourier(blgw)
-set_from_inverse_fourier(blgt, blgw)
-blgt << make_gf_from_inverse_fourier(blgw)
+blgt << Fourier(blgw)
+set_from_fourier(blgt, blgw)
+blgt << make_gf_from_fourier(blgw)
 
 # Check that we are PH symmetric
 assert abs(blgt['0'].data[0] - blgt['0'].data[-1]) < 1e-7

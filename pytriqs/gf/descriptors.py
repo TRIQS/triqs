@@ -166,20 +166,9 @@ class Fourier(BaseBlock):
         G2.set_from_fourier(self.G, *self.args, **self.kw)
         return G2
 
-class InverseFourier (BaseBlock):
-    r"""
-    The Inverse Fourier transform as a lazy expression
-    """
-    def __init__ (self, G, *args, **kw):
-        """:param G: :math:`G`, the function to be transformed. Must in the frequency domain"""
-        BaseBlock.__init__(self, G, *args, **kw)
-        self.args, self.kw = args, kw
-
-    def __str__(self): return "InverseFourier of gf"
-
-    def __call__(self,G2):
-        G2.set_from_inverse_fourier(self.G, *self.args, **self.kw)
-        return G2
+def InverseFourier(*args):
+    warnings.warn("InverseFourier is deprecated and should be replaced with Fourier")
+    return Fourier(*args)
 
 class LegendreToMatsubara (BaseBlock):
     r"""

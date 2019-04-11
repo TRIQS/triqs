@@ -71,7 +71,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         # FT:
         f = lambda g,L : GfImTime(indices = g.indices, beta = self.beta, n_points = L )
         gt = BlockGf(name_block_generator = [ (n,f(g,2001) ) for n,g in G], make_copies=False, name='gt')
-        for (i,gtt) in gt : gtt.set_from_inverse_fourier(G[i])
+        for (i,gtt) in gt : gtt.set_from_fourier(G[i])
 
         res = np.array([[[  3.14815470e-04,   0.00000000e+00],
                 [  0.00000000e+00,   3.14815470e-04]],

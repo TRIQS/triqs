@@ -38,14 +38,14 @@ class test_tail_issues(unittest.TestCase):
         g = GfImFreq(indices = [0,1], beta = 1., n_points = Nw)
         g << inverse(iOmega_n + eps)
         g_ref = g.copy()
-        
+
         # Iterate FFT and check violation of G_ij(iw) = G*_ji(-iw)
         it = 100
         gt = make_gf_from_fourier(g, Ntau)
         err = np.zeros(it)
         err_herm = np.zeros(it)
         for i in range(it):
-            gt << InverseFourier(g)
+            gt << Fourier(g)
             g << Fourier(gt)
             err[i] = np.max(np.abs(g.data - g_ref.data))
             err_herm[i] = np.linalg.norm(g.data[0,:,:] - np.transpose(np.conj(g.data[-1,:,:])))

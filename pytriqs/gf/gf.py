@@ -673,6 +673,12 @@ class Gf(object):
         warnings.warn("g.indicesR is deprecated. Use g.indices[1] instead")
         return self.indices.data[1]
 
+    #-------------- Fourier Backward Compatibility. ---------------------------
+
+    def set_from_inverse_fourier(self, *args) :
+        warnings.warn("set_from_inverse_fourier is deprecated and should be replaced with set_from_fourier")
+        self.set_from_fourier(*args)
+
 #---------------------------------------------------------
 
 from pytriqs.archive.hdf_archive_schemes import register_class, register_backward_compatibility_method
