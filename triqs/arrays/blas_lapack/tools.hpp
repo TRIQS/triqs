@@ -37,6 +37,11 @@ namespace triqs {
     template <> struct is_blas_lapack_type<std::complex<double>> : std::true_type {};
     template <typename T> struct is_blas_lapack_type<const T> : is_blas_lapack_type<T> {};
 
+    // FIXME : replace by one TRAIT 
+    template<typename ...T> constexpr bool have_same_value_type_and_is_RC() { 
+          return (std::is_same_v<T, double> and ...) or (std::is_same_v<T, std::complex<double>> and ...);
+    }	  
+
     // true iif all T::value_type are the same
     template <typename... T> struct have_same_value_type;
     template <typename T0> struct have_same_value_type<T0> : std::true_type {};
