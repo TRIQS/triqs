@@ -32,6 +32,7 @@ namespace triqs::arrays::blas {
 
   using namespace blas_lapack_tools;
 
+  // FIXME : use constexpr function above
   template <typename MT1, typename MT2, typename MTOut> struct use_blas_gemm {
     static_assert(is_amv_value_or_view_class<MTOut>::value, "output of matrix product must be a matrix or matrix_view");
     //static constexpr bool are_both_value_view = is_amv_value_or_view_class<MT1>::value && is_amv_value_or_view_class<MT2>::value;
@@ -56,6 +57,7 @@ namespace triqs::arrays::blas {
     // change the condition in the qcache construction....
     reflexive_qcache<MTOut> Cc(C);
 
+    // FIXME REGROUP !
     if (C.memory_layout_is_c()) {
       // then tC = tB tA !
       const_qcache<MT1> Cb(A); // note the inversion  A <-> B

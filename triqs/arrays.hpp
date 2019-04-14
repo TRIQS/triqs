@@ -51,3 +51,6 @@
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 
 #include <triqs/arrays/mpi.hpp>
+
+// immutable_array
+#include <triqs/arrays/make_immutable_array.hpp>
