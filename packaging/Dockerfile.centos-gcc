@@ -14,7 +14,6 @@ RUN yum -y install \
       h5py \
       hdf5-devel \
       lapack-devel \
-      lapack-devel \
       make \
       mpi4py-openmpi \
       numpy \

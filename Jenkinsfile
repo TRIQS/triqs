@@ -84,7 +84,7 @@ try {
     node("docker") {
       stage("publish") { timeout(time: 10, unit: 'MINUTES') {
         def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
-        def release = sh(returnStdout: true, script: "git describe --exact-match HEAD || true").trim()
+        def release = env.BRANCH_NAME.toCharacter().isLetter() || sh(returnStdout: true, script: "git describe --exact-match HEAD || true").trim()
         def workDir = pwd()
         dir("$workDir/gh-pages") {
           def subdir = "${projectName}/${env.BRANCH_NAME}"
