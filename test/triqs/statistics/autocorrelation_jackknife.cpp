@@ -4,7 +4,6 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
-using uint = unsigned int;
 using namespace triqs::statistics;
 using namespace boost;
 

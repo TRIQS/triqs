@@ -74,13 +74,13 @@ namespace triqs {
     class legendre_generator {
 
       double _x;
-      uint n;
+      unsigned int n;
       double cyclicArray[2];
 
       public:
       double next() {
         if (n > 1) {
-          uint eo         = (n) % 2;
+          unsigned int eo = (n) % 2;
           cyclicArray[eo] = ((2 * n - 1) * _x * cyclicArray[1 - eo] - (n - 1) * cyclicArray[eo]) / n;
           n++;
           return cyclicArray[eo];
