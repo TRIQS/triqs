@@ -325,7 +325,7 @@ def get_namespace(node):
     
 #--------------------  PARSE
 
-def parse(filename, compiler_options, includes, libclang_location, parse_all_comments, skip_function_bodies = True):
+def parse(filename, compiler_options, includes, system_includes, libclang_location, parse_all_comments, skip_function_bodies = True):
     """
     filename           : name of the file to parse
     compiler_options   : options to pass to clang to compile the file 
@@ -337,8 +337,12 @@ def parse(filename, compiler_options, includes, libclang_location, parse_all_com
     if platform.system() == 'Darwin': compiler_options.append("-stdlib=libc++") 
     if parse_all_comments : compiler_options.append("-fparse-all-comments")
     includes = set(includes)
-    if "/usr/include" in includes: includes.remove("/usr/include") # /usr/include is implicitly included
-    compiler_options += ['-isystem%s'%x for x in includes] + libclang_config.LIBCLANG_CXX_FLAGS
+    system_includes = set(system_includes)
+    # /usr/include is implicitly included, explicit inclusion leads to problems
+    if "/usr/include" in includes: includes.remove("/usr/include")
+    if "/usr/include" in system_includes: system_includes.remove("/usr/include")
+    compiler_options += ['-I%s'%x for x in includes]
+    compiler_options += ['-isystem%s'%x for x in system_includes] + libclang_config.LIBCLANG_CXX_FLAGS
 
     # print compiler_options
     # Initialising libclang

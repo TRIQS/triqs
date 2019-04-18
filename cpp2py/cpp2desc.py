@@ -8,7 +8,7 @@ class Cpp2Desc:
     """ """
     def __init__(self, filename, namespaces=(), classes= (), namespace_to_factor= (), appname= '', 
                  modulename = '', moduledoc ='', use_properties = False, members_read_only = True,  converters = (),
-                 compiler_options=None, includes= None, libclang_location = None, shell_command = '', parse_all_comments = True):
+                 compiler_options=None, includes= None, system_includes= None, libclang_location = None, shell_command = '', parse_all_comments = True):
         """
            Parse the file at construction
            
@@ -42,8 +42,11 @@ class Cpp2Desc:
            members_read_only : Boolean
                                The members are wrapped "read only"
 
-           includes         : string, optional
+           includes : string, optional
                       Additional includes to add (-I xxx) for clang
+
+           system_includes : string, optional
+                      Additional System includes to add (-isystem xxx) for clang
            
            compiler_options : string, optional 
                       Additional option for clang compiler
@@ -56,7 +59,7 @@ class Cpp2Desc:
             setattr(self, x, locals()[x])
         self.DE = dependency_analyzer.DependencyAnalyzer(converters)
         # parse the file
-        self.root = CL.parse(filename, compiler_options, includes, libclang_location, parse_all_comments)
+        self.root = CL.parse(filename, compiler_options, includes, system_includes, libclang_location, parse_all_comments)
 
     # ---------- Generate the AST nodes for every classes, functions, functions and methods
    
