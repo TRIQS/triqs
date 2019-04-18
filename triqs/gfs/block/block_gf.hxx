@@ -271,7 +271,6 @@ namespace triqs {
    *             RHS can be anything modeling the gf concept TBW
    *             In particular lazy expression with Green functions
    * @param rhs
-   * @example
    *
    * The assignment resizes the mesh and the data, invalidating all pointers on them.
    *
@@ -1271,7 +1270,6 @@ namespace triqs {
    *             RHS can be anything modeling the gf concept TBW
    *             In particular lazy expression with Green functions
    * @param rhs
-   * @example
    *
    * The assignment resizes the mesh and the data, invalidating all pointers on them.
    *

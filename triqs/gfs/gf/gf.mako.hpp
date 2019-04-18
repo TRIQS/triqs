@@ -94,6 +94,11 @@ namespace triqs {
     // ----------------------  MAKO_GF -----------------------------------------
     /**
    * MAKO_GF : the main class
+   *
+   * @tparam Var The domain of definition
+   * @tparam Target The target domain
+   *
+   * @include triqs/gfs.hpp
    */
     template <typename Var, typename Target>
     class MAKO_GF :
@@ -614,7 +619,9 @@ namespace triqs {
       }
 
       //-----------------------------  BOOST Serialization -----------------------------
+      private:
       friend class boost::serialization::access;
+      public:
       /// The serialization as required by Boost
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
         ar &_data;

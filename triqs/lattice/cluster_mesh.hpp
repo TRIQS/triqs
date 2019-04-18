@@ -47,8 +47,7 @@ namespace triqs {
    The algorithm used is the following:
    let $C={(0,0,0)}$
    for each dimension $d=1\dots 3$ :
-     - Find the lowest nonzero integer $k_d$ such that there exists $mathbf{x}$ in C such for all $d_p$ in $1\dots 3$, $k_d
-   mathbf{a}_d - mathbf{x}$ belongs to the superlattice.
+     - Find the lowest nonzero integer $k_d$ such that there exists $mathbf{x}$ in C such for all $d_p$ in $1\dots 3$, $k_d mathbf{a}_d - mathbf{x}$ belongs to the superlattice.
      - Update $C = {mathbf{x} + q mathbf{a}_d, mathbf{x}\in C, q=0\dots k_d-1}$
    return {k_d}_{k=1\dots d}
    */
