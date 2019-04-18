@@ -73,7 +73,7 @@ def get_method_qualification(node):
     It is just after a ) if it exists (a type can not end with a ) )
     """
     s = ' '.join(get_tokens(node))
-    for pat in ["const &*","&+", "noexcept"] :
+    for pat in ["const\s*&*","&+", "noexcept"] :
         m = re.search(r"\) (%s)"%pat, s)
         if m: return m.group(1).strip()
     return ''
@@ -129,7 +129,7 @@ def get_name_with_template_specialization(node):
     node is a class
     returns the name, possibly added with the <..> of the specialisation
     """
-    assert node.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL, CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION)
+    if not node.kind in (CursorKind.CLASS_DECL, CursorKind.STRUCT_DECL, CursorKind.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION) : return None
     tokens = get_tokens(node)
     name = node.spelling
     if tokens and tokens[0] == 'template':
@@ -199,9 +199,10 @@ def get_methods(node, with_inherited = True, keep = keep_all):
 def get_constructors(cls, keep = keep_all, with_copy_and_move_constructors = False): 
     """
     cls is a class
-    yields the clss to the constructors 
+    yields the clss to the public constructors
     """
     for c in cls.get_children():
+        if not is_public(c) : continue
         if keep(c) and c.kind == CursorKind.CONSTRUCTOR or \
                 (c.kind == CursorKind.FUNCTION_TEMPLATE and is_constructor(cls, c)):
             if with_copy_and_move_constructors or not(is_copy_or_move_constructor(cls, c)):
@@ -312,6 +313,9 @@ def fully_qualified(c):
         if res != '':
             return res + '::' + c.spelling
     return c.spelling
+
+def fully_qualified_name(c) :
+    return fully_qualified(c.referenced)
 
 def get_namespace_list(node):
     return fully_qualified(node.referenced).split('::')[:-1]
