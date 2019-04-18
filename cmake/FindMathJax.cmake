@@ -9,19 +9,21 @@
 # 
 
 if(NOT DEFINED MATHJAX_PATH)
-
-  SET(TRIAL_PATHS
+  set(TRIAL_PATHS
    $ENV{MATHJAX_ROOT}
    ${MATHJAX_ROOT}
    $ENV{HOME}/MathJax
    /usr/share/javascript/mathjax
    /opt/local/share/javascript/mathjax
    )
-  FIND_PATH(MATHJAX_PATH MathJax.js ${TRIAL_PATHS} DOC "Root Path of MathJax")
+  find_path(MATHJAX_PATH MathJax.js ${TRIAL_PATHS} DOC "Root Path of MathJax")
+endif()
 
+if(MATHJAX_PATH STREQUAL MATHJAX_PATH-NOTFOUND)
+  message(STATUS "No local Mathjax found! Falling back to URL")
+  set(MATHJAX_PATH "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5")
 endif()
 
 mark_as_advanced(MATHJAX_PATH)
 
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(MATHJAX DEFAULT_MSG MATHJAX_PATH)
-
+find_package_handle_standard_args(MATHJAX DEFAULT_MSG MATHJAX_PATH)
