@@ -29,10 +29,18 @@ body {
     max-width: 1080px;
 }
 
+
 .red{
  color: red
 }
 .blue{
+ color: blue
+}
+.green{
+ color: green
+}
+
+.param{
  color: blue
 }
 
@@ -416,3 +424,26 @@ div.viewcode-block:target {
     border-top: 1px solid #ac9;
     border-bottom: 1px solid #ac9;
 }
+
+
+.my-code-block.std-ref {
+ color : red;
+}
+
+.cppbrief {
+ color: #C6792C;
+ font-style: oblique;
+}
+
+.cppsynopsis {
+ background-color: #E7EDF9;
+ /*font-family: 'Open Sans', 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;*/
+ /*font-family: monospace; */
+ font-family: Verdana, Arial, Lucida Console;
+ font-size=80%;
+ /*font-style: oblique;*/
+ /* white-space: pre;*/
+}
+
+
+
