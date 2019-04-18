@@ -4,7 +4,7 @@ import cpp2py.clang_parser as CL
 
 class Cpp2Cxx: 
     """ """
-    def __init__(self, filename, namespaces=(), compiler_options=None, includes = (), parse_all_comments = False, libclang_location = None):
+    def __init__(self, filename, namespaces=(), compiler_options=None, includes = None, system_includes = None, parse_all_comments = False, libclang_location = None):
         """
            Parse the file at construction
            
@@ -17,8 +17,11 @@ class Cpp2Cxx:
            namespaces : list of string 
                       Restrict the generation to the given namespaces.
            
-           includes         : string, optional
+           includes : string, optional
                       Additional includes to add (-I xxx) for clang
+
+           system_includes : string, optional
+                      Additional System includes to add (-isystem xxx) for clang
            
            compiler_options : string, optional 
                       Additional option for clang compiler
@@ -27,7 +30,7 @@ class Cpp2Cxx:
                       Absolute path to libclang. By default, the detected one.
         """
         self.filename, self.namespaces = filename, namespaces
-        self.root = CL.parse(filename, compiler_options, includes, libclang_location, parse_all_comments, skip_function_bodies = False)
+        self.root = CL.parse(filename, compiler_options, includes, system_includes, libclang_location, parse_all_comments, skip_function_bodies = False)
 
     # FIXME : pass the 3 functions to run functions ?? 
     # default : namespace, filelocation, ?
