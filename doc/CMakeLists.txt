@@ -28,9 +28,13 @@ set(NS
     -N triqs::statistics)
 
 get_property(TRIQS_INCLUDE_DIRS TARGET triqs PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-
+get_property(TRIQS_SYSTEM_INCLUDE_DIRS TARGET triqs PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
+list(REMOVE_ITEM TRIQS_INCLUDE_DIRS ${TRIQS_SYSTEM_INCLUDE_DIRS})
 foreach(I ${TRIQS_INCLUDE_DIRS})
  set (CPP2RST_INCLUDE_DIRS  ${CPP2RST_INCLUDE_DIRS} --includes ${I})
+endforeach()
+foreach(I ${TRIQS_SYSTEM_INCLUDE_DIRS})
+  set (CPP2RST_SYSTEM_INCLUDE_DIRS  ${CPP2RST_SYSTEM_INCLUDE_DIRS} --system_includes ${I})
 endforeach()
 
 # Caution! This will alter the files in doc/cpp2rst_generated
@@ -40,6 +44,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp2rst.log DEPENDS triqs
 		   --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/cpp2rst_generated
 		   --cxxflags "-std=c++17 -DTRIQS_BUILDING_LIBRARY -I${CMAKE_SOURCE_DIR}"
 		   ${CPP2RST_INCLUDE_DIRS}
+		   ${CPP2RST_SYSTEM_INCLUDE_DIRS}
 		   --includes ${CMAKE_SOURCE_DIR}/cpp2py/include
 		   --includes ${CMAKE_BINARY_DIR}/Config
 		   2>&1 > cpp2rst.log
