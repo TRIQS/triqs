@@ -14,6 +14,8 @@ if( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
   SET(TRIAL_LIBRARY_PATHS
    ENV LIBRARY_PATH
+   /usr/local/opt/llvm/lib/
+   /usr/local/Cellar/llvm/8.0.0/lib/
    /usr/local/Cellar/llvm/7.0.0/lib/
    /usr/local/Cellar/llvm/6.0.0/lib/
    /usr/local/Cellar/llvm/5.0.1/lib/
