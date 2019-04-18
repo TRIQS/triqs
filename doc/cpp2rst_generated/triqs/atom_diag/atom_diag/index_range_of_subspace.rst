@@ -13,7 +13,7 @@ index_range_of_subspace
 
 .. code-block:: c
 
-    triqs::arrays::range index_range_of_subspace (int sp_index)
+    itertools::range index_range_of_subspace (int sp_index)
 
 Return the range of indices of subspace sp_index
 

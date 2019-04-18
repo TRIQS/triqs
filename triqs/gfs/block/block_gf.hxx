@@ -157,7 +157,7 @@ namespace triqs {
       TRIQS_DEPRECATED(
          "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
          "x<g.size(); ++x)")
-      arrays::range mesh() const { return arrays::range{0, size()}; }
+      itertools::range mesh() const { return itertools::range{0, size()}; }
 
       std::string name;
 
@@ -535,7 +535,7 @@ namespace triqs {
       TRIQS_DEPRECATED(
          "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
          "x<g.size(); ++x)")
-      arrays::range mesh() const { return arrays::range{0, size()}; }
+      itertools::range mesh() const { return itertools::range{0, size()}; }
 
       std::string name;
 
@@ -888,7 +888,7 @@ namespace triqs {
       TRIQS_DEPRECATED(
          "g.mesh() is deprecated. Replace for (auto & x : g.mesh()) by \n for (auto &x : range(g.size()) or \n for (int x=0; "
          "x<g.size(); ++x)")
-      arrays::range mesh() const { return arrays::range{0, size()}; }
+      itertools::range mesh() const { return itertools::range{0, size()}; }
 
       std::string name;
 
