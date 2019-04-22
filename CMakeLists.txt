@@ -98,7 +98,6 @@ message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 option(PythonSupport "Build with Python support" ON)
 if (PythonSupport)
- set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
  add_subdirectory(cpp2py)
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # To export the TRIQSConfig file
 endif (PythonSupport)
@@ -135,6 +134,9 @@ message(STATUS "Triqs version : ${TRIQS_VERSION}")
 message(STATUS "Git hash : ${TRIQS_GIT_HASH}")
 message(STATUS "Hostname : ${TRIQS_HOSTNAME}")
 message(STATUS "Compiled by : ${TRIQS_COMPILEDBY}")
+
+# Compile a small file with the hash
+configure_file(./cmake/git_hash.cpp.in triqs/git_hash.cpp @ONLY)
 
 # ---------------------------------
 # RPATH setting
@@ -181,11 +183,6 @@ add_subdirectory(google_test)
 # -----------------------------------------------------------------------------
  
 include_directories (${CMAKE_SOURCE_DIR})  # to have <triqs/....>
-
-# Because of triqs_config.h
-# FIXME : suppress this triqs_config to have the same installed/build header
-# options should be given my -DXXX to the triqs targets, they will be exported.
-add_compile_options(-DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config)
 
 #------------------------
 # triqs library
@@ -238,14 +235,9 @@ install (FILES cmake/FindNFFT.cmake DESTINATION share/cmake/Modules)
 install (FILES cmake/Findsanitizer.cmake DESTINATION share/cmake/Modules)
 
 #---------------------------------------
-# triqs_config.h
-#---------------------------------------
-message(STATUS "-------- Making triqs_config.h  -------------")
-
 # Fortran bindings
-# FIXME : should be remove from config, and PRIVATE to triqs
-# fortran interface should not be exposed
-# MAKE also LAPACK PRIVATE
+#---------------------------------------
+
 option(BIND_FORTRAN_LOWERCASE "FORTRAN functions are compiled WITHOUT a trailing underscore" OFF)
 mark_as_advanced(BIND_FORTRAN_LOWERCASE)
 if (BIND_FORTRAN_LOWERCASE)
@@ -253,7 +245,6 @@ if (BIND_FORTRAN_LOWERCASE)
 endif (BIND_FORTRAN_LOWERCASE)
 
 # 
-configure_file(./cmake/triqs_config.h.in Config/triqs_config.h @ONLY)
 
 #---------------------------------------
 # TRIQSConfig
@@ -271,7 +262,6 @@ endif()
 configure_file(./cmake/TRIQSConfig-version.cmake.in Config/TRIQSConfig-version.cmake @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION lib/cmake/triqs)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig-version.cmake DESTINATION lib/cmake/triqs)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/triqs_config.h DESTINATION include/triqs)
 
 #------------------------
 # Test macros

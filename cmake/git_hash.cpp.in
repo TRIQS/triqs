@@ -1,0 +1,9 @@
+
+namespace triqs {
+
+  const char *git_hash() { return "@TRIQS_GIT_HASH@"; }
+
+  //@TRIQS_HOSTNAME@
+  //@TRIQS_COMPILEDBY@
+
+} // namespace triqs

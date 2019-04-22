@@ -13,7 +13,7 @@ FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
 #  Define triqs target 
 # ---------------------------------
 
-add_library(triqs ${ALLSOURCES})
+add_library(triqs ${ALLSOURCES} ${CMAKE_CURRENT_BINARY_DIR}/git_hash.cpp)
 
 # first options
 target_link_libraries(triqs PUBLIC cpp2py python_and_numpy)

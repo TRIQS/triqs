@@ -31,12 +31,6 @@
 typedef long double max_align_t;
 #endif
 
-#ifdef TRIQS_BUILDING_LIBRARY
-#include <triqs_config.h>
-#else
-#include <triqs/triqs_config.h>
-#endif
-
 // disable std::auto_ptr (disabled in c++17) usage in boost
 #define BOOST_NO_AUTO_PTR
 
