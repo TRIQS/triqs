@@ -16,6 +16,7 @@ parser.add_argument('--system_includes', '-isystem', action='append',  help='Sys
 parser.add_argument('--namespace', '-N', action='append',  help='namespaces to document', default= []) #specify which namespaces to document, e.g. -N triqs -N applications
 parser.add_argument('--parse-all-comments',  action='store_true', help="Grab all comments, including non doxygen like [FALSE]")
 parser.add_argument('--cxxflags', default = '', help='Options to pass to clang')
+parser.add_argument('--target_file_only', action='store_true', help='Disable recursion into included header files')
 
 args = parser.parse_args()
 args.includes = (args.includes or [])
@@ -35,7 +36,8 @@ W= Cpp2Rst(filename = args.filename,
             system_includes = args.system_includes or (),
             compiler_options = args.cxxflags.split(' ') + cxx_env,
             parse_all_comments = args.parse_all_comments,
-            libclang_location = args.libclang_location
+            libclang_location = args.libclang_location,
+            target_file_only = args.target_file_only
             )
 
 # profile for testing

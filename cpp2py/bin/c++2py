@@ -36,6 +36,7 @@ parser.add_argument('--libclang_location', help='Location of the libclang', defa
 parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
 parser.add_argument('--system_includes', '-isystem', action='append',  help='System includes to pass to clang')
 parser.add_argument('--cxxflags', default = '', help='Options to pass to clang')
+parser.add_argument('--target_file_only', action='store_true', help='Disable recursion into included header files')
 
 args = parser.parse_args()
 
@@ -75,7 +76,8 @@ W= Cpp2Desc(filename = args.filename,
             libclang_location = args.libclang_location,
             shell_command = shell_command,
             parse_all_comments = args.parse_all_comments,
-            namespace_to_factor= () # unused now  
+            namespace_to_factor= (), # unused now
+            target_file_only = args.target_file_only
             )
 
 # Make the desc file

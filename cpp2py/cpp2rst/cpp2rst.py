@@ -29,7 +29,7 @@ def mkchdir(*subdirs):
 
 class Cpp2Rst: 
     """ """
-    def __init__(self, filename, namespaces=(), compiler_options=None, includes=None, system_includes=None, parse_all_comments = False, libclang_location = None):
+    def __init__(self, filename, namespaces=(), compiler_options=None, includes=None, system_includes=None, libclang_location = None, parse_all_comments = False, target_file_only = False):
         """
            Parse the file at construction
            
@@ -53,8 +53,14 @@ class Cpp2Rst:
            
            libclang_location : string, optional
                       Absolute path to libclang. By default, the detected one.
+
+           parse_all_comments : bool
+                      Grab all comments, including non doxygen like [default = False]
+
+           target_file_only : bool
+                      Neglect any included files during desc generation [default = False]
         """
-        self.filename, self.namespaces = filename, namespaces
+        self.filename, self.namespaces, self.target_file_only = filename, namespaces, target_file_only
         self.root = CL.parse(filename, compiler_options, includes, system_includes, libclang_location, parse_all_comments)
 
     # ------------------------
@@ -72,14 +78,17 @@ class Cpp2Rst:
             return any((ns in x) for x in self.namespaces)
         
         def keep_cls(c):
-            """Keeps the class if its namespace is EXACTLY in self.namespaces
-               e.g. A::B::cls will be kept iif A::B is in self.namespaces, not it A is.
+            """
+               The filter to keep a class/struct or an enum :
+                 it must have a raw comment
+                 if we a namespace list, it must be in it.
+                 if target_file_only it has to be in the file given to c++2py
             """
             if not c.raw_comment : return False
-            if len(self.namespaces)>0 :
-                ns = CL.fully_qualified(c.referenced).rsplit('::',1)[0]
-                return ns in self.namespaces
-            return True
+            if self.namespaces:
+                qualified_ns = CL.get_namespace(c) 
+                if not any((x in qualified_ns) for x in self.namespaces) : return False
+            return (c.location.file.name == self.filename) if self.target_file_only else True
         
         def keep_fnt(f) :
             if not f.raw_comment : return False
@@ -87,7 +96,7 @@ class Cpp2Rst:
             return keep_cls(f)
 
         # A list of AST nodes for classes
-        classes =CL.get_classes(self.root, keep_cls, traverse_namespaces = True, keep_ns = keep_ns)
+        classes = CL.get_classes(self.root, keep_cls, traverse_namespaces = True, keep_ns = keep_ns)
         classes = list(classes) # to avoid exhaustion of the generator
    
         # A list of AST nodes for the methods and functions
