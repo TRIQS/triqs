@@ -8,7 +8,7 @@ class Cpp2Desc:
     """ """
     def __init__(self, filename, namespaces=(), classes= (), namespace_to_factor= (), appname= '', 
                  modulename = '', moduledoc ='', use_properties = False, members_read_only = True,  converters = (),
-                 compiler_options=None, includes= None, libclang_location = None, shell_command = '', parse_all_comments = True):
+                 compiler_options=None, includes= None, system_includes= None, libclang_location = None, shell_command = '', parse_all_comments = True, target_file_only = False):
         """
            Parse the file at construction
            
@@ -31,32 +31,41 @@ class Cpp2Desc:
                       Name of the module
            
            moduledoc : string
-                       Documentation of the module
+                      Documentation of the module
 
            shell_command : string
-                           script command that was called (to regenerate the desc file)
+                      script command that was called (to regenerate the desc file)
 
            use_properties : Boolean
-                            Transform method with no args into property
+                      Transform method with no args into property
 
            members_read_only : Boolean
-                               The members are wrapped "read only"
+                      The members are wrapped "read only"
 
-           includes         : string, optional
+           includes : string, optional
                       Additional includes to add (-I xxx) for clang
+
+           system_includes : string, optional
+                      Additional System includes to add (-isystem xxx) for clang
            
            compiler_options : string, optional 
                       Additional option for clang compiler
            
            libclang_location : string, optional
                       Absolute path to libclang. By default, the detected one.
+
+           parse_all_comments : bool
+                      Grab all comments, including non doxygen like [default = True]
+
+           target_file_only : bool
+                      Neglect any included files during desc generation [default = False]
         """
         for x in ['filename', 'namespaces', 'classes', 'namespace_to_factor', 'appname', 'modulename', 'moduledoc', 
-                  'use_properties', 'members_read_only', 'shell_command']:
+                  'use_properties', 'members_read_only', 'shell_command', 'target_file_only']:
             setattr(self, x, locals()[x])
         self.DE = dependency_analyzer.DependencyAnalyzer(converters)
         # parse the file
-        self.root = CL.parse(filename, compiler_options, includes, libclang_location, parse_all_comments)
+        self.root = CL.parse(filename, compiler_options, includes, system_includes, libclang_location, parse_all_comments)
 
     # ---------- Generate the AST nodes for every classes, functions, functions and methods
    
@@ -72,15 +81,15 @@ class Cpp2Desc:
            The filter to keep a class/struct or an enum : 
             if we a namespace list, it must be in it. 
             if we have an explicit self.classes : c must be into it
-            else it has to be in the file given to c++2py 
+            if target_file_only it has to be in the file given to c++2py
         """
         if CL.is_template(c) or ("ignore_in_python" in CL.get_annotations(c)): return False
         if self.namespaces:
-            ns = CL.get_namespace(c) 
-            if not any((x in ns) for x in self.namespaces) : return False
+            qualified_ns = CL.get_namespace(c)
+            if not any((x in qualified_ns) for x in self.namespaces) : return False
         if self.classes: 
             return c.spelling in self.classes or CL.fully_qualified(c) in self.classes
-        return c.location.file.name == self.filename
+        return (c.location.file.name == self.filename) if self.target_file_only else True
         
     def keep_fnt(self, f):
         # Same as class, but eliminate operator, begin, end.

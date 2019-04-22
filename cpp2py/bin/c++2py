@@ -34,12 +34,14 @@ parser.add_argument('--parse-all-comments',  action='store_true', help="Grab all
 
 parser.add_argument('--libclang_location', help='Location of the libclang', default = config.LIBCLANG_LOCATION)
 parser.add_argument('--includes', '-I', action='append',  help='Includes to pass to clang')
+parser.add_argument('--system_includes', '-isystem', action='append',  help='System includes to pass to clang')
 parser.add_argument('--cxxflags', default = '', help='Options to pass to clang')
+parser.add_argument('--target_file_only', action='store_true', help='Disable recursion into included header files')
 
 args = parser.parse_args()
 
 if args.regenerate : 
-    assert not (args.cxxflags or args.includes or args.converter or args.namespace or args.only or args.properties), "-r option must be alone"
+    assert not (args.cxxflags or args.includes or args.system_includes or args.converter or args.namespace or args.only or args.properties), "-r option must be alone"
     f= open(args.filename)
     f.readline()
     shell_command = f.readline()[2:].strip()
@@ -50,9 +52,8 @@ else:
     shell_command = 'c++2py ' + ' '.join(f(x) for x in sys.argv[1:]) 
 
 # A few variables    
-args.includes = (args.includes or []) # +  config.TRIQS_INCLUDE_DEPS.split(';')
-#args.includes.append(config.TRIQS_INCLUDE)
-
+args.includes = (args.includes or [])
+args.system_includes = (args.system_includes or [])
 filename_1 = os.path.split(args.filename)[1].split('.',1)[0]
 
 # Add the environment variables
@@ -70,11 +71,13 @@ W= Cpp2Desc(filename = args.filename,
             moduledoc = args.moduledoc,
             members_read_only = args.members_read_only,
             includes = args.includes or (), 
+            system_includes = args.system_includes or (),
             compiler_options = args.cxxflags.split(' ') + cxx_env,
             libclang_location = args.libclang_location,
             shell_command = shell_command,
             parse_all_comments = args.parse_all_comments,
-            namespace_to_factor= () # unused now  
+            namespace_to_factor= (), # unused now
+            target_file_only = args.target_file_only
             )
 
 # Make the desc file
