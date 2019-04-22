@@ -4,7 +4,7 @@ import cpp2py.clang_parser as CL
 
 class Cpp2Cxx: 
     """ """
-    def __init__(self, filename, namespaces=(), compiler_options=None, includes = None, system_includes = None, parse_all_comments = False, libclang_location = None):
+    def __init__(self, filename, namespaces=(), compiler_options=None, includes = None, system_includes = None, libclang_location = None, parse_all_comments = False, target_file_only = False):
         """
            Parse the file at construction
            
@@ -28,19 +28,25 @@ class Cpp2Cxx:
            
            libclang_location : string, optional
                       Absolute path to libclang. By default, the detected one.
+
+           parse_all_comments : bool
+                      Grab all comments, including non doxygen like [default = False]
+
+           target_file_only : bool
+                      Neglect any included files during desc generation [default = False]
         """
-        self.filename, self.namespaces = filename, namespaces
+        self.filename, self.namespaces, self.target_file_only = filename, namespaces, target_file_only
         self.root = CL.parse(filename, compiler_options, includes, system_includes, libclang_location, parse_all_comments, skip_function_bodies = False)
 
     # FIXME : pass the 3 functions to run functions ?? 
     # default : namespace, filelocation, ?
     # lambda ns : this_condition(ns) or ... easy to add...
     def keep_ns(self, n):
-        if n.location.file.name != self.filename: return False
+        if (target_file_only and n.location.file.name != self.filename): return False
         return len(self.namespaces) == 0 or n.spelling in self.namespaces
     
     def keep_cls(self, c):
-        if c.location.file.name != self.filename: return False
+        if (target_file_only and c.location.file.name != self.filename): return False
         return True
     
     def all_classes_gen(self):
