@@ -6,3 +6,4 @@ matplotlib
 ipython
 mako
 configobj
+nbsphinx
