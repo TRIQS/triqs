@@ -18,11 +18,10 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-import lazy_expressions, descriptors
+import lazy_expressions, descriptors, gf_fnt
 from meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshLegendre
 from block_gf import BlockGf
 from gf import Gf
-from descriptor_base import A_Omega_Plus_B
 import numpy as np
 from itertools import product
 from backwd_compat.gf_refreq import GfReFreq 
@@ -59,6 +58,9 @@ def transpose(x):
 def delta(g):
     """
     Compute Delta_iw from G0_iw.
+    CAUTION: This function assumes the following properties of g
+      * The diagonal components of g should decay as 1/iOmega
+      * g should fullfill the property g[iw][i,j] = conj(g[-iw][j,i])
 
     Parameters
     ----------
@@ -71,14 +73,16 @@ def delta(g):
                Hybridization function.
     """
 
-    raise RuntimeError, "OBSOLETE : TO BE REPLACED"
     if isinstance(g, BlockGf):
-    	return BlockGf(name_block_generator = [ (n, delta(g0)) for n,g0 in g], make_copies=False)
+        return BlockGf(name_block_generator = [ (n, delta(g0)) for n,g0 in g], make_copies=False)
     elif isinstance(g.mesh, MeshImFreq):
-    	g0_iw_inv = inverse(g)
-    	delta_iw = g0_iw_inv.copy()
-    	delta_iw << A_Omega_Plus_B(g0_iw_inv.tail[-1], g0_iw_inv.tail[0])
-    	delta_iw -= g0_iw_inv
+        assert len(g.target_shape) in [0,2], "delta(g) requires a matrix or scalar_valued Green function"
+        assert gf_fnt.is_gf_hermitian(g), "delta(g) requires a Green function with the property g[iw][i,j] = conj(g[-iw][j,i])"
+        delta_iw = g.copy()
+        delta_iw << descriptors.iOmega_n - inverse(g)
+        tail, err = gf_fnt.fit_hermitian_tail(delta_iw)
+        delta_iw << delta_iw - tail[0]
+        if err > 1e-5: print "WARNING: delta extraction encountered a sizeable tail-fit error: ", err
         return delta_iw
     else:
         raise TypeError, "No function delta for g0 object of type %s"%type(g) 

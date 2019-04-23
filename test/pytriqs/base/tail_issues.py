@@ -119,6 +119,15 @@ class test_tail_issues(unittest.TestCase):
         # print "Imag Delta", max_im
         self.assertTrue(max_im < 1e-12)
 
+        # Check Delta(iw) extracted through pytriqs.gf.tools.delta
+        D_exact = g.copy()
+        D_exact << -1.0 * inverse(iOmega_n + 2)
+        D = delta(g)
+        max_diff = np.max(np.abs(D.data - D_exact.data))
+        # print "Diff Delta Extraction", max_diff
+        self.assertTrue(max_diff < 1e-10)
+
+
     def test_noisy_gf(self):
         for noise in [1e-4, 1e-3, 1e-2]:
             self.noisy_gf(noise)
