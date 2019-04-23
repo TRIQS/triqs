@@ -80,9 +80,8 @@ We provide Debian packages for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 
 This will install the minimal runtime packages and triqs into the system tree at /usr.
 
 .. note:: Since TRIQS version 2.1 we include cpp2py in the TRIQS debian package.
-          If you have previously installed triqs (or cpp2py) through apt prior to 2.1 be sure to
-          remove it before updating to TRIQS 2.1 to avoid package conflicts.
-          `sudo apt-get remove triqs cpp2py && sudo apt-get install triqs`
+          If you have installed an earlier packaged version of triqs (or cpp2py)
+          be sure to remove it before updating TRIQS to avoid package conflicts.
 
 If you aim to compile applications against the triqs library, additional :ref:`development libraries <ubuntu>` have to be installed. You should further set the following :ref:`environment variables <environment_vars>` permanently::
 
@@ -123,6 +122,11 @@ the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake co
 .. literalinclude:: install.sh
    :language: bash
 
+.. note:: Caution: The compilation of TRIQS, even if run in serial mode, can temporarily
+          use up to 4 Gigabytes of RAM. The restrictions on the Login-Nodes of certain
+          HPC Machines might not provide sufficient memory for the compilation.
+          Please consider compiling within an interactive session on a Compute-Node
+          or contact the admins of your HPC Machine.
 
 Environment setup
 ^^^^^^^^^^^^^^^^^^^
