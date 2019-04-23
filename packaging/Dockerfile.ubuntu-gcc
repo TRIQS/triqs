@@ -24,7 +24,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python-matplotlib \
       python-mpi4py \
       python-numpy \
-      python-sphinx \
-      python-nbsphinx
+      python-scipy
 
 ENV CC=gcc CXX=g++
