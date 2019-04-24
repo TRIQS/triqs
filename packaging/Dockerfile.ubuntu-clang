@@ -24,15 +24,13 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python-clang-${LLVM} \
       python-dev \
       python-h5py \
-      python-jinja2 \
       python-mako \
       python-matplotlib \
       python-mpi4py \
       python-numpy \
       python-scipy \
-      python-tornado \
-      python-zmq \
-      python-sphinx
+      python-sphinx \
+      python-nbsphinx
 
 ENV CC=clang-${LLVM} CXX=clang++-${LLVM}
 
