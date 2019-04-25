@@ -226,7 +226,7 @@ General
 * time_pt h5 serialization
 * Restore old test for non copyable object in cpp2py
 * Include cpp2py@196c51bd as subtree in cpp2py dir
-* Generalize fit_[hermitian_]tail for BlockGf, Some cleanining in make_gf_from_fourier
+* Generalize fit [hermitian_]tail for BlockGf, Some cleanining in make_gf_from_fourier
 * Add REQUIRES macro for clang/gcc to start using concept-style template constraints
 * Update Cpp2py
 * Update cpp2py

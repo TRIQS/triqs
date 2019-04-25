@@ -2,10 +2,10 @@
 
 .. highlight:: bash
 
-.. _installation:
+.. _installation_%%__efe_wef___:
 
 Installation
-============
+############
 
 TRIQS and its applications are provided *a la carte*:
 after you have installed the TRIQS library, you will be able to easily install
@@ -43,6 +43,7 @@ Packaged Versions of TRIQS
 ==========================
 
 .. _triqs_docker:
+
 Docker
 ------
 
@@ -66,6 +67,7 @@ A TRIQS Jupyter notebook environment can be accessed directly at `binder <https:
 .. note:: Once your binder session is closed, your work will be lost.
 
 .. _ubuntu_debian:
+
 Ubuntu Debian packages (experimental)
 -------------------------------------
 
@@ -129,7 +131,7 @@ the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake co
           or contact the admins of your HPC Machine.
 
 Environment setup
-^^^^^^^^^^^^^^^^^^^
+-----------------
 
 TRIQS provides a small script (`triqsvars.sh`)
 to load its installation into your :ref:`environment variables <environment_vars>`.

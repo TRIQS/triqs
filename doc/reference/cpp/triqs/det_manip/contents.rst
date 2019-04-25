@@ -35,8 +35,9 @@ This class implements these general operations. It contains:
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   ../../generated/triqs/det_manip
    det_manip
    implementation_notes
    ./../../../tutorials/det_manip/det_manip_tutorial
