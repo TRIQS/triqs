@@ -36,7 +36,7 @@ perturbation theory for a symmetric single-band Anderson model.
 All Green's functions in the calculations have just one index because
 *up* and *down* components are the same.
 
-.. runblock:: python
+.. code-block:: python
 
    from pytriqs.gf import *
 

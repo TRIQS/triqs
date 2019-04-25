@@ -192,6 +192,8 @@ General
 -------
 * Fix the delta(g) function in pytriqs.gf.tools after tail adjustments
 * Generalize fit_[hermitian_]tail for BlockGf, Some cleanining in make_gf_from_fourier
+* time_pt h5 serialization
+* Add REQUIRES macro for clang/gcc to start using concept-style template constraints
 * Bugfix in linear interpolation, adjust rouding error margin, FIX #668
 * Add missing HDFArchiveInert import to pytriqs.archive FIX #671
 * Fix MeshPoint arithmetic in Python FIX #557

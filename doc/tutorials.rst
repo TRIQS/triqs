@@ -1,14 +1,11 @@
-.. _tutorials:
-
 Tutorials
 =========
 
 A quick tour in python
 ----------------------
 
-A little tour of some aspects of TRIQS and its applications, at the Python
-level.  We recommend that you download the ipython notebooks available in the
-`tutorials repository on GitHub <https://github.com/TRIQS/tutorials>`_.
+We here provide a little tour of some aspects of TRIQS and its applications, at the Python
+level.  
 
 .. toctree::
    :maxdepth: 1
@@ -23,6 +20,11 @@ level.  We recommend that you download the ipython notebooks available in the
 
 Tutorials in python
 --------------------
+
+We provide an extensive set of Jupyter Notebook tutorials on `GitHub <https://github.com/TRIQS/tutorials>`_.
+You can run the notebooks either in an interactive `Binder Session <https://triqs.github.io/notebook>`_ on the web
+or run them locally after setting up triqs on your computer.
+We provide additional tutorials below
 
 .. toctree::
    :maxdepth: 1

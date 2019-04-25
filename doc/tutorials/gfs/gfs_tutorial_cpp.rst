@@ -21,7 +21,7 @@ In this example, we show how to initialize the following Green's functions:
     G(i\omega) = \frac{1}{i\omega -3}
 
 
-.. triqs_example:: ./gfs_tut_matsub_1.cpp
+.. literalinclude:: ./gfs_tut_matsub_1.cpp
 
 Two-frequency Green's function :math:`G(i\omega,i\nu)`
 ........................................................
@@ -31,13 +31,13 @@ In this example, we show how to initialize the following Green's functions:
     G(i\omega, i\nu) = \frac{1}{i\omega + i\nu -4}
 
 
-.. triqs_example:: ./gfs_tut_matsub_2.cpp
+.. literalinclude:: ./gfs_tut_matsub_2.cpp
 
 
 Imaginary-time Green's functions :math:`G(\tau)`
 --------------------------------------------------
 
-.. triqs_example:: ./gfs_tutorial_3.cpp
+.. literalinclude:: ./gfs_tutorial_3.cpp
 
 Real-time Green's functions :math:`G(t)`
 ----------------------------------------------
@@ -45,32 +45,32 @@ Real-time Green's functions :math:`G(t)`
 Here we create a GF defined on the time interval from tmin to tmax.
 If we want the value of the GF at any time to be a scalar, we use:
 
-.. triqs_example:: ./gfs_tutorial_0.cpp
+.. literalinclude:: ./gfs_tutorial_0.cpp
 
 If we need a matrix of size n by m, we use:
 
-.. triqs_example:: ./gfs_tutorial_1.cpp
+.. literalinclude:: ./gfs_tutorial_1.cpp
 
 Or a tensor!
 
-.. triqs_example:: ./gfs_tutorial_2.cpp
+.. literalinclude:: ./gfs_tutorial_2.cpp
 
 Creation of a two real time GF :math:`G(t,t')`
 ................................................
 
-.. triqs_example:: ./gfs_tutorial_4.cpp
+.. literalinclude:: ./gfs_tutorial_4.cpp
 
 How to fill a GF with placeholders
 ...................................
 
-.. triqs_example:: ./gfs_tutorial_5.cpp
+.. literalinclude:: ./gfs_tutorial_5.cpp
 
 How to interpolate the GF value at a point of the domain 
 .............................................................................
 
 You simply have to call the GF with the coordinates of the point: 
 
-.. triqs_example:: ./gfs_tutorial_6.cpp
+.. literalinclude:: ./gfs_tutorial_6.cpp
 
 Learn more in the full reference, see :ref:`greenfunctions`
 

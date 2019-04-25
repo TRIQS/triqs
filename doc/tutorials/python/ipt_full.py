@@ -21,12 +21,12 @@ class IPTSolver:
 
     def solve(self):
 
-        self.g0t <<= InverseFourier(self.g0)
-        self.sigmat <<= (self.U**2) * self.g0t * self.g0t * self.g0t
-        self.sigma <<= Fourier(self.sigmat)
+        self.g0t << Fourier(self.g0)
+        self.sigmat << (self.U**2) * self.g0t * self.g0t * self.g0t
+        self.sigma << Fourier(self.sigmat)
 
         # Dyson equation to get G
-        self.g <<= inverse(inverse(self.g0) - self.sigma)
+        self.g << inverse(inverse(self.g0) - self.sigma)
 
 # Parameters
 t = 0.5
@@ -45,11 +45,11 @@ for U in arange(Umin, Umax, 0.51):
 
     # Construct the IPT solver and set initial G
     S = IPTSolver(U = U, beta = beta)
-    S.g <<= SemiCircular(2*t)
+    S.g << SemiCircular(2*t)
 
     # Do the DMFT loop
     for i in range(n_loops):
-        S.g0 <<= inverse( iOmega_n - t**2 * S.g )
+        S.g0 << inverse( iOmega_n - t**2 * S.g )
         S.solve()
 
     # Get the real-axis with Pade approximants

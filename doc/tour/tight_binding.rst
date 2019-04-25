@@ -9,7 +9,7 @@ neighbour hopping using the ``BravaisLattice`` class of TRIQS, compute its
 density of states (DOS) and then plot it by using again the ``oplot`` function.
 
 
-.. plot:: reference/lattice_tools/ex1.py
+.. plot:: documentation/manual/triqs/lattice_tools/ex1.py
     :include-source:
     :scale: 70
 

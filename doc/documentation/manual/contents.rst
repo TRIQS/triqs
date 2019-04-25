@@ -1,0 +1,23 @@
+.. _documentation/manual:
+
+.. toctree::
+   :maxdepth: 1
+ 
+   triqs/arrays/contents
+   triqs/atom_diag/contents
+   triqs/clef/contents
+   triqs/det_manip/contents
+   triqs/gfs/contents
+   triqs/hdf5/contents
+   triqs/hilbert_space/contents
+   triqs/lattice_tools/contents
+   triqs/mc_tools/contents
+   triqs/operators/contents
+   triqs/plotting_protocols/contents
+   triqs/provenance/contents
+   triqs/random_generator/contents
+   triqs/statistical_analysis/contents
+   triqs/utilities/contents
+   triqs/conventions
+
+   cpp2py/contents

@@ -38,7 +38,7 @@ calling the ``Solve`` method.  Finally, the resulting interacting Green's
 function as well as the average impurity occupancy is stored in the 
 :ref:`HDF5 format<hdf5_base>`.
 
-.. runblock:: python
+.. code-block:: python
 
    from pytriqs.gf import *
    from pytriqs.operators import *

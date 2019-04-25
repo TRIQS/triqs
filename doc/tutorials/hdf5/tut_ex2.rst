@@ -6,7 +6,7 @@ Example 2: Storing Green's functions
 
 What about more complex objects? The good news is that **hdf-compliant** objects, such as Green's functions, can be stored easily as well:
 
-.. runblock:: python
+.. code-block:: python
 
    from pytriqs.archive import HDFArchive
    from pytriqs.gf import GfImFreq
@@ -23,7 +23,7 @@ What about more complex objects? The good news is that **hdf-compliant** objects
 
 Of course, we can retrieve G as easily:
 
-.. runblock:: python
+.. code-block:: python
 
    from pytriqs.archive import HDFArchive
    from pytriqs.gf import GfImFreq
