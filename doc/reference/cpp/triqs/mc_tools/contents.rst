@@ -10,8 +10,9 @@ the implementation details of your specific algorithm.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   ../../generated/triqs/mc_tools
    loop
    tutorial
    concepts

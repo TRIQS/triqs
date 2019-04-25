@@ -3,12 +3,11 @@ Table of contents
 =================
 
 .. toctree::
-   :maxdepth: 5
-
+   :maxdepth: 2
+ 
    index
    install
-   reference
-   tutorials
+   reference/cpp/contents
    applications
    issues
    changelog

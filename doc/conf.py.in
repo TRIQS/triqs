@@ -32,7 +32,7 @@ sys.path = map(lambda e: "@CMAKE_BINARY_DIR@/doc/sphinxext/" + e ,local_sphinxex
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
-    #          'matplotlib.sphinxext.plot_directive',
+              'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.intersphinx',
               'sphinx.ext.doctest',
               'sphinx.ext.todo',
@@ -41,7 +41,7 @@ extensions = ['sphinx.ext.autodoc',
 
 extensions += [
         'autorun',
-      'plot_directive',
+    #    'plot_directive',
         'numpydoc',
         'ipython_console_highlighting',
 #       'inheritance_diagram',

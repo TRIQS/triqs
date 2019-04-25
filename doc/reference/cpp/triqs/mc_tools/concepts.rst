@@ -35,11 +35,12 @@ The Move concept
   ========================== =============================================================================================
   Elements                   Comment
   ========================== =============================================================================================
-  * mc_sign_type attempt()       - First part of the Move.
+  * mc_sign_type attempt()   - First part of the Move.
                              - Returns the probability to accept the move. If :
-                             - the move is :math:`x\rightarrow x'`, proposed with proba :math:`T_{x\rightarrow x'}` 
-                             - the probability of the :math:`x` config is denoted :math:`p_x`
-                             - then attempt should return the Metropolis ratio:
+                              
+                               - the move is :math:`x\rightarrow x'`, proposed with proba :math:`T_{x\rightarrow x'}` 
+                               - the probability of the :math:`x` config is denoted :math:`p_x`
+                               - then attempt should return the Metropolis ratio:
 
                                .. math::
                                    \frac{p_{x'} T_{x'\rightarrow x}}{p_x T_{x\rightarrow x'}} 

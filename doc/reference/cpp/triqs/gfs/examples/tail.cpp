@@ -14,7 +14,7 @@ int main() {
 
   // We provide both the zeroth and first order coefficient to the fit
   auto known_moments = array<dcomplex, 1>{0.0, 1.0};
-  auto [tail, err] = fit_tail(G, known_moments);
+  auto [tail, err]   = fit_tail(G, known_moments);
 
   std::cout << "tail: " << tail << "\nerror: " << err;
 }
