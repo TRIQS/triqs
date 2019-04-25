@@ -9,7 +9,7 @@ Table of contents
    documentation
    applications
    tutorials
-   issues
+   contributing
    versions
    changelog
    about

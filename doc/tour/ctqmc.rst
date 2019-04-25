@@ -64,7 +64,7 @@ function as well as the average impurity occupancy is stored in the
    params['measure_g_l'] = True                # Measure G in legendre
    
    # Run the solver. The result will be stored in S.G_tau.
-   S.solve(h_int = U * n('up',0) * n('down',0), \**params)
+   S.solve(h_int = U * n('up',0) * n('down',0), **params)
    
    # Save the results in an hdf5 file (only on the master node).
    from pytriqs.archive import HDFArchive

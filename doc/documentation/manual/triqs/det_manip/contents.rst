@@ -31,3 +31,13 @@ This class implements these general operations. It contains:
   * adds/removes a line and a column (i.e. adding or removing one x and one y)
   * adds/removes two lines and two columns (i.e. adding or removing two x and two y)
   * changes a line/colum, etc... 
+
+
+
+.. toctree::
+   :maxdepth: 1
+
+   ../../generated/triqs/det_manip
+   det_manip
+   implementation_notes
+   ./../../../tutorials/det_manip/det_manip_tutorial
