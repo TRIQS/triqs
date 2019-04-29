@@ -39,7 +39,7 @@ namespace triqs {
     namespace blas = arrays::blas;
 
     /**
-  * \brief Standard matrix/det manipulations used in several QMC.
+  * @brief Standard matrix/det manipulations used in several QMC.
   */
     template <typename FunctionType> class det_manip {
       private:
@@ -270,10 +270,10 @@ namespace triqs {
       void set_precision_error(double threshold) { precision_error = threshold; }
       
       /**
-     * \brief Constructor.
+     * @brief Constructor.
      *
-     * \param F         The function (NB : a copy is made of the F object in this class).
-     * \param init_size The maximum size of the matrix before a resize (like reserve in std::vector).
+     * @param F         The function (NB : a copy is made of the F object in this class).
+     * @param init_size The maximum size of the matrix before a resize (like reserve in std::vector).
      *                  Like std::vector, resize is automatic (by a factor 2) but can yield a performance penalty
      *                  if it happens too often.
      */
@@ -283,11 +283,11 @@ namespace triqs {
         det       = 1;
       }
 
-      /** \brief Constructor.
+      /** @brief Constructor.
      *
-     * \param F         The function (NB : a copy is made of the F object in this class).
-     * \tparam ArgumentContainer
-     * \param X, Y : container for X,Y.
+     * @param F         The function (NB : a copy is made of the F object in this class).
+     * @tparam ArgumentContainer
+     * @param X, Y : container for X,Y.
      */
       template <typename ArgumentContainer1, typename ArgumentContainer2>
       det_manip(FunctionType F, ArgumentContainer1 const &X, ArgumentContainer2 const &Y) : f(std::move(F)), Nmax(0) {
@@ -445,6 +445,10 @@ namespace triqs {
      * Returns the ratio of det Minv_new / det Minv.
      *
      * This routine does NOT make any modification. It has to be completed with complete_operation().
+     *
+     * @param i 
+     * @param j
+     * @category Operations
      */
       value_type try_insert(size_t i, size_t j, x_type const &x, y_type const &y) {
 
@@ -578,6 +582,7 @@ namespace triqs {
      * 0 <= i0,i1,j0,j1 <= N+1, where N is the current size of the matrix.
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
+     * @category Operations
      */
 
       value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, x_type const &x0_, x_type const &x1_, y_type const &y0_, y_type const &y1_) {

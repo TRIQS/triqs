@@ -172,10 +172,18 @@ namespace triqs {
 
       auto target_indices() const { return itertools::product_range(target().shape()); }
 
-      /// Shape of the data
+      /**
+        * Shape of the data
+        *
+        * @category Accessors
+      */
       auto const &data_shape() const { return _data.shape(); }
 
-      /// Memorylayout of the data
+      /** 
+       * Memorylayout of the data
+       *
+       * @category Accessors
+       */
       auto const &memory_layout() const { return _data.indexmap().memory_layout(); }
 
       ///
@@ -245,7 +253,11 @@ namespace triqs {
       gf(mesh_t m, data_t dat, arrays::memory_layout_t<arity + Target::rank> const &ml, indices_t ind)
          : gf(impl_tag{}, std::move(m), data_t(dat, ml), std::move(ind)) {}
 
-      // Construct from mesh, target_shape, memory order
+      /**
+       *  Construct from mesh, target_shape, memory order
+       *
+       *  @example triqs/gfs/examples/gf_constructors_0.cpp
+       */
       gf(mesh_t m, target_shape_t shape, arrays::memory_layout_t<arity + Target::rank> const &ml, indices_t const &ind = indices_t{})
          : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape), ml), ind) {
         if (this->_indices.empty()) this->_indices = indices_t(shape);
@@ -291,14 +303,15 @@ namespace triqs {
       /**
     * Assignment operator
     *
+    * The assignment resizes the mesh and the data, invalidating all pointers on them.
+    * 
     * @tparam RHS Type of the right hand side rhs
     *
     * 		 RHS can be anything modeling the gf concept TBW
     * 		 In particular lazy expression with Green functions
     * @param rhs
-    * @example    gf_assign_0
+    * @example    gfs/examples/gf_assign_0.cpp
     *
-    * The assignment resizes the mesh and the data, invalidating all pointers on them.
     *
     */
       template <typename RHS> gf &operator=(RHS &&rhs) {
@@ -710,10 +723,18 @@ namespace triqs {
 
       auto target_indices() const { return itertools::product_range(target().shape()); }
 
-      /// Shape of the data
+      /**
+        * Shape of the data
+        *
+        * @category Accessors
+      */
       auto const &data_shape() const { return _data.shape(); }
 
-      /// Memorylayout of the data
+      /** 
+       * Memorylayout of the data
+       *
+       * @category Accessors
+       */
       auto const &memory_layout() const { return _data.indexmap().memory_layout(); }
 
       ///
@@ -1219,10 +1240,18 @@ namespace triqs {
 
       auto target_indices() const { return itertools::product_range(target().shape()); }
 
-      /// Shape of the data
+      /**
+        * Shape of the data
+        *
+        * @category Accessors
+      */
       auto const &data_shape() const { return _data.shape(); }
 
-      /// Memorylayout of the data
+      /** 
+       * Memorylayout of the data
+       *
+       * @category Accessors
+       */
       auto const &memory_layout() const { return _data.indexmap().memory_layout(); }
 
       ///
