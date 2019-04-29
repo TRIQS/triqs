@@ -20,3 +20,21 @@ macro(all_tests)
 endmacro()
 
 add_all_subdirectories_with_cmakelist()
+
+
+# ---------------------------------
+# Build C++ examples of the doc
+# ---------------------------------
+
+FILE(GLOB_RECURSE ExampleList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/doc/*.cpp)
+
+# build all the examples in their respective directory
+ foreach(example ${ExampleList})
+  get_filename_component (f ${example} NAME_WE)
+  get_filename_component (d ${example} DIRECTORY)
+  add_executable(doc_${f} ${CMAKE_CURRENT_SOURCE_DIR}/${example})
+  target_link_libraries(doc_${f} triqs )
+  # set_target_properties(doc_${f} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${d})
+ endforeach()
+
+
