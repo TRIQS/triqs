@@ -16,7 +16,7 @@ FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.cxx)
 add_library(triqs ${ALLSOURCES} ${CMAKE_CURRENT_BINARY_DIR}/git_hash.cpp)
 
 # first options
-target_link_libraries(triqs PUBLIC cpp2py python_and_numpy)
+target_link_libraries(triqs PRIVATE cpp2py python_and_numpy)
 
 # ---------------------------------
 # C++ standard and compiler details
@@ -33,17 +33,12 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
- target_compile_definitions(triqs PRIVATE TRIQS_DEBUG)
+  target_compile_definitions(triqs PRIVATE TRIQS_DEBUG NDA_DEBUG)
 endif()
 
 # enforce color diagnostics ?
 # gcc : -fdiagnostics-color
 # clang :  -fcolor-diagnostics 
-
-# ?? still necessary ?
-#if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-# target_compile_options(triqs PRIVATE "-undefined dynamic_lookup")
-#endif()
 
 # ---------------------------------
 # Turn the memory check

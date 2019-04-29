@@ -25,6 +25,7 @@
 #include <triqs/utility/timer.hpp>
 #include <functional>
 #include <map>
+#include <cassert>
 #include "./impl_tools.hpp"
 
 namespace triqs {

@@ -2,9 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2017 by O. Parcollet
- * Copyright (C) 2018 by Simons Foundation
- *   author : O. Parcollet
+ * Copyright (C) 2011-2017, O. Parcollet
+ * Copyright (C) 2018-2019, The Simons Foundation
+ *   authors : O. Parcollet, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,14 +23,10 @@
 #pragma once
 #include <limits>
 #include <complex>
+#include <type_traits>
+#include <cstring>
 #include "./allocators.hpp"
 #include "./rtable.hpp"
-
-#define FORCEINLINE __inline__ __attribute__((always_inline))
-
-//#define FORCEINLINE inline [[gnu::always_inline]]
-
-#define restrict __restrict__
 
 namespace nda::mem {
 
@@ -39,254 +35,316 @@ namespace nda::mem {
   template <typename T> struct is_complex : std::false_type {};
   template <typename T> struct is_complex<std::complex<T>> : std::true_type {};
 
-  // -------------- Allocators ---------------------------
+  // -------------- Allocation Functions ---------------------------
 
-  // First the allocator of the memory block (data).
-  // FIXME CHANGE alloc at runtime ??
-  using allocator1_t = allocators::mallocator;
-  //using allocator1_t = allocators::stack_allocator<10000>; //mallocator;
-  //using allocator1_t = allocators::free_list<stack_allocator<10000>, 1, 200>; //mallocator;
-
-#ifndef NDA_DEBUG_MEMORY
-  using allocator_t = allocator1_t;
-#else
-  using allocator_t = allocators::stats<allocator1_t>;
-#endif
+  allocators::blk_t allocate(size_t size);
+  void deallocate(allocators::blk_t b);
 
   // -------------- Utilities ---------------------------
 
   // To have aligned objects, use aligner<T, alignment> instead of T in constructor and get
   template <typename T, int Al> struct alignas(Al) aligner {
     T x;
-    FORCEINLINE T &get() { return x; }
-    FORCEINLINE T const &get() const { return x; }
+    T &get() noexcept { return x; }
+    T const &get() const noexcept { return x; }
   };
 
   // -------------- Global table  ---------------------------
 
   struct globals {
-    static allocator_t alloc; // global allocator for arrays.
-    static rtable_t rtable;   // the table of the ref counter.
+    static constexpr bool init_dcmplx = true; // initialize dcomplex to 0 globally
+    static rtable_t rtable;                   // the table of the ref counter.
   };
 
   // -------------- Decide if type T will need to be constructed/destructed
 
   template <typename T>
-  //constexpr bool requires_construction_and_destruction = (not(std::is_arithmetic_v<T> || std::is_pod_v<T>));
-  constexpr bool requires_construction_and_destruction = (not(std::is_arithmetic_v<T> || is_complex<T>::value || std::is_pod_v<T>));
+  constexpr bool requires_construction_and_destruction =
+     !std::is_arithmetic_v<T> and !std::is_pod_v<T> and (!is_complex<T>::value or globals::init_dcmplx);
 
   // -------------- handle ---------------------------
 
   /*
    * The block of memory for the arrays
-   * R : Regular,  S : Share B : Borrowed (no ownership)
+   * R : Regular (owns the memory)
+   * S : Share (shared memory ownership)
+   * B : Borrowed (no memory ownership)
    */
   template <typename T, char rbs> struct handle;
 
-  // ------------------  Borrowed -------------------------------------
-
-  template <typename T> struct handle<T, 'B'> {
-
-    using value_type = T; // FIXME : TRIQS
-
-    T *restrict data = nullptr; // start of data
-    size_t size      = 0;       // size of the memory block. Invariant : >0 iif data !=0
-
-    handle() = default;
-    handle(T *p, size_t s) : data(p), size(s) {}
-    handle(handle<T, 'R'> const &x) : data(x.data), size(x.size) {}
-    handle(handle<T, 'S'> const &x) : data(x.data), size(x.size) {}
-
-    T &operator[](long i) const noexcept { return data[i]; }
-  };
-
-  // ------------------  Shared -------------------------------------
-
-  template <typename T> struct handle<T, 'S'> {
-
-    using value_type = T; // FIXME : TRIQS
-
-    T *restrict data = nullptr; // start of data
-    size_t size      = 0;       // size of the memory block. Invariant : >0 iif data !=0
-    long id          = 0;       // the id in the counter ref table : 0 means no counter allocated.
-
-    // Allows to take ownership of a shared pointer with another lib, e.g. numpy.
-    void *sptr        = nullptr; // A foreign library shared ptr
-    void *release_fnt = nullptr; // void (*)(void *) : release function of the foreign sptr
-
-    using release_fnt_t = void (*)(void *);
-
-    void decref() noexcept {
-      if (id == 0) return;                     // id=0 is the default constructed state. No cleaning there
-      if (!globals::rtable.decref(id)) return; // if the ref count is still > 0
-      if (sptr) {                              // the memory was a foreign lib, release it
-        (*(release_fnt_t)release_fnt)(sptr);
-        return;
-      }
-      // Now we need to clean memory. First We destroy object if needed
-      if constexpr (requires_construction_and_destruction<T>) {
-        for (size_t i = 0; i < size; ++i) data[i].~T();
-      }
-      // and now dellocate the memory block
-      globals::alloc.deallocate({(char *)data, size * sizeof(T)});
-    }
-
-    void incref() noexcept {
-      if (id) globals::rtable.incref(id);
-    }
-
-    private:
-    // basic part of copy, no ref handling here
-    FORCEINLINE void _copy(handle const &x) noexcept {
-      data        = x.data;
-      size        = x.size;
-      id          = x.id;
-      sptr        = x.sptr;
-      release_fnt = x.release_fnt;
-    }
-
-    public:
-    handle() = default;
-
-    handle(handle &&x) noexcept {
-      _copy(x);
-      x.id = 0; // x is trivially destructible now. we steal the ref from x.
-    }
-
-    handle(handle const &x) noexcept {
-      _copy(x);
-      incref();
-    }
-
-    ~handle() noexcept { decref(); }
-
-    //
-    handle &operator=(handle const &x) noexcept {
-      decref(); // Release my ref if I have one
-      _copy(x);
-      incref();
-      return *this;
-    }
-
-    //
-    handle &operator=(handle &&x) noexcept {
-      decref(); // Release my ref if I have one
-      _copy(x);
-      x.id = 0; // x is trivially destructible now. we steal the ref from x.
-      return *this;
-    }
-
-    // Cross construction from Regular. When constructing a shared_view from a regular type.
-    handle(handle<T, 'R'> const &x) noexcept : data(x.data), size(x.size) {
-      if (x.data == nullptr) return; //id =0 in this case.
-
-      if (!x.id) x.id = globals::rtable.get();
-      id = x.id;
-      incref(); // to count for this
-    }
-
-    long nref() const noexcept { return globals::rtable.nrefs()[id]; }
-    T &operator[](long i) const noexcept { return data[i]; }
-  };
-
-  // ------------------  Simple tag -------------------------------------
+  // ------------------  Regular -------------------------------------
 
   struct do_not_initialize_t {};
   inline static constexpr do_not_initialize_t do_not_initialize{};
 
-  // ------------------  Regular -------------------------------------
-
   template <typename T> struct handle<T, 'R'> {
-
-    using value_type = T; // FIXME : TRIQS
-
-    static constexpr bool _destructor_of_T_is_no_except = noexcept(std::declval<T>().~T());
-
-    T *restrict data = nullptr; // start of data
-    size_t size      = 0;       // size of the memory block. Invariant : >0 iif data !=0
-    mutable long id  = 0;       // the id in the counter ref table : 0 means no counter.
-                                // must be mutable for the cross construction of S. Cf S.
-
     private:
-    void decref() const noexcept(_destructor_of_T_is_no_except) {
-      if (data == nullptr) return; // nothing to do
-      // If id ==0 , we want to deallocate here
-      // if id !=0, we dellocate only if rtable decref is true
-      if (id and (!globals::rtable.decref(id))) return;         // do NOT dellocate
-      if constexpr (requires_construction_and_destruction<T>) { // if we need to call a destructor, call it.
-        for (size_t i = 0; i < size; ++i) data[i].~T();
+    T *_data     = nullptr; // Pointer to the start of the memory block
+    size_t _size = 0;       // Size of the memory block. Invariant: size > 0 iif data != 0
+
+    // The regular handle can share its memory with handle<T, 'S'>
+    mutable long _id = 0; // The id in the refcounts table.
+                          // id == 0 corresponds to the case of no memory sharing
+                          // This field must be mutable for the cross construction of 'S'. Cf 'S'.
+                          // Invariant: id == 0 if data == nullptr
+    friend handle<T, 'S'>;
+
+    void decref() noexcept {
+      static_assert(std::is_nothrow_destructible_v<T>, "nda::mem::handle requires the value_type to have a non-throwing constructor");
+      if (is_null()) return;
+
+      // Check if the memory is shared and still pointed to
+      if (has_shared_memory() and not globals::rtable.decref(_id)) return;
+
+      // If needed, call the T destructors
+      if constexpr (requires_construction_and_destruction<T>) {
+        for (size_t i = 0; i < _size; ++i) _data[i].~T();
       }
-      globals::alloc.deallocate({(char *)data, size * sizeof(T)}); // dellocate the memory block
+
+      // Deallocate the memory block
+      deallocate({(char *)_data, _size * sizeof(T)});
     }
 
     public:
-    // if the block was used by a shared block, we need to clean it like a shared block too.
-    ~handle() noexcept(_destructor_of_T_is_no_except) { // noexcept iif ~T is no except !
-      decref();
-    }
+    using value_type = T;
+
+    ~handle() noexcept { decref(); }
 
     handle() = default;
 
+    // Construct by making a clone of the data
+    handle(handle const &x) : handle(handle<T, 'B'>{x}) {}
+
     handle(handle &&x) noexcept {
-      data   = x.data;
-      size   = x.size;
-      id     = x.id;
-      x.data = nullptr; // x is destructible with no operation
-      x.id   = 0;
+      _data   = x._data;
+      _size   = x._size;
+      _id     = x._id;
+      x._data = nullptr;
+      x._size = 0;
+      x._id   = 0;
     }
 
-    handle &operator=(handle &&x) noexcept {
-      decref();
-      data   = x.data;
-      size   = x.size;
-      id     = x.id;
-      x.data = nullptr; // x is destructible with no operation
-      x.id   = 0;
-      return *this;
-    }
-
-    // Using copy and move
-    handle &operator=(handle const &x) noexcept {
+    handle &operator=(handle const &x) {
       *this = handle{x};
       return *this;
     }
 
-    // set up a memory block of the correct size. No init.
-    handle(long s, do_not_initialize_t) {
-      if (s == 0) return;                              // no size, nullptr
-      auto b = globals::alloc.allocate(s * sizeof(T)); //, alignof(T));
-      if (!b.ptr) throw std::bad_alloc();
-      data = (T *)b.ptr;
-      size = s;
+    handle &operator=(handle &&x) noexcept {
+      decref();
+      _data   = x._data;
+      _size   = x._size;
+      _id     = x._id;
+      x._data = nullptr;
+      x._size = 0;
+      x._id   = 0;
+      return *this;
     }
 
-    // For construction of array<T> when T is not default constructible
-    template <typename U> void init_raw(long i, U &&x) { new (data + i) T{std::forward<U>(x)}; }
+    // Set up a memory block of the correct size without initializing it
+    handle(long size, do_not_initialize_t) {
+      if (size == 0) return;               // no size -> null handle
+      auto b = allocate(size * sizeof(T)); //, alignof(T));
+      ASSERT(b.ptr != nullptr);
+      _data = (T *)b.ptr;
+      _size = size;
+    }
 
     // Construct a new block of memory of given size and init if needed.
     handle(long size) : handle(size, do_not_initialize) {
+      if (size == 0) return; // no size -> null handle
       if constexpr (requires_construction_and_destruction<T>) {
-        for (size_t i = 0; i < size; ++i) new (data + i) T();
+        for (size_t i = 0; i < size; ++i) new (_data + i) T();
       }
-      //if constexpr (is_complex<T>::value) {
-        //for (size_t i = 0; i < size; ++i) data[i] = std::numeric_limits<double>::quiet_NaN();
-      //}
-
     }
-
-    // NB : do not use template, or it will not be selected.
-    // Construct by making a clone of the data
-    handle(handle<T, 'R'> const &x) : handle(handle<T, 'B'>{x}) {}
 
     // Construct by making a clone of the data
     handle(handle<T, 'S'> const &x) : handle(handle<T, 'B'>{x}) {}
 
     // Construct by making a clone of the data
-    handle(handle<T, 'B'> const &x) : handle(x.size, do_not_initialize) {
-      for (size_t i = 0; i < size; ++i) new (data + i) T(x.data[i]); // placement new
+    handle(handle<T, 'B'> const &x) : handle(x.size(), do_not_initialize) {
+      if (is_null()) return; // nothing to do for null handle
+      if constexpr (std::is_trivially_copyable_v<T>) {
+        std::memcpy(_data, x.data(), x.size() * sizeof(T));
+      } else {
+        for (size_t i = 0; i < _size; ++i) new (_data + i) T(x[i]); // placement new
+      }
     }
 
-    T &operator[](long i) const noexcept { return data[i]; }
+    T &operator[](long i) const noexcept { return _data[i]; }
+
+    bool is_null() const noexcept {
+#ifdef NDA_DEBUG
+      // Check the Invariants in Debug Mode
+      EXPECTS(_data != nullptr or _id == 0);
+      EXPECTS((_data == nullptr) == (_size == 0));
+#endif
+      return _data == nullptr;
+    }
+    bool has_shared_memory() const noexcept { return _id != 0; }
+
+    // Helper function for construction of array<T> when T is not default constructible
+    template <typename U> void init_raw(long i, U &&x) { new (_data + i) T{std::forward<U>(x)}; }
+
+    // A const-handle does not entail T const data
+    T *data() const noexcept { return _data; }
+
+    long size() const noexcept { return _size; }
+  };
+
+  // ------------------  Shared -------------------------------------
+
+  template <typename T> struct handle<T, 'S'> {
+    static_assert(std::is_nothrow_destructible_v<T>, "nda::mem::handle requires the value_type to have a non-throwing constructor");
+
+    private:
+    T *_data     = nullptr; // Pointer to the start of the memory block
+    size_t _size = 0;       // Size of the memory block. Invariant: size > 0 iif data != 0
+
+    long _id = 0; // The id in the refcounts table. id == 0 corresponds to a null-handle
+                  // Invariant: id == 0 iif data == nullptr
+
+    // Allow to take ownership of a shared pointer from another lib, e.g. numpy.
+    void *_foreign_handle = nullptr; // Memory handle of the foreign library
+    void *_foreign_decref = nullptr; // Function pointer to decref of the foreign library (void (*)(void *))
+
+    public:
+    using value_type = T;
+
+    void decref() noexcept {
+      if (is_null()) return;
+
+      // Check if the memory is shared and still pointed to
+      if (!globals::rtable.decref(_id)) return;
+
+      // If the memory was allocated in a foreign foreign lib, release it there
+      if (_foreign_handle) {
+        ((void (*)(void *))_foreign_decref)(_foreign_handle);
+        return;
+      }
+
+      // If needed, call the T destructors
+      if constexpr (requires_construction_and_destruction<T>) {
+        for (size_t i = 0; i < _size; ++i) _data[i].~T();
+      }
+
+      // Deallocate the memory block
+      deallocate({(char *)_data, _size * sizeof(T)});
+    }
+
+    void incref() noexcept {
+#ifdef NDA_DEBUG
+      EXPECTS(!is_null());
+#endif
+      globals::rtable.incref(_id);
+    }
+
+    private:
+    // basic part of copy, no ref handling here
+    void _copy(handle const &x) noexcept {
+      _data           = x._data;
+      _size           = x._size;
+      _id             = x._id;
+      _foreign_handle = x._foreign_handle;
+      _foreign_decref = x._foreign_decref;
+    }
+
+    public:
+    ~handle() noexcept { decref(); }
+
+    handle() = default;
+
+    handle(handle const &x) noexcept {
+      _copy(x);
+      if (!is_null()) incref();
+    }
+
+    handle(handle &&x) noexcept {
+      _copy(x);
+
+      // Invalidate x so it destructs trivally
+      x._data = nullptr;
+      x._size = 0;
+      x._id   = 0;
+    }
+
+    handle &operator=(handle const &x) noexcept {
+      decref(); // Release my ref if I have one
+      _copy(x);
+      incref();
+      return *this;
+    }
+
+    handle &operator=(handle &&x) noexcept {
+      decref(); // Release my ref if I have one
+      _copy(x);
+
+      // Invalidate x so it destructs trivially
+      x._data = nullptr;
+      x._size = 0;
+      x._id   = 0;
+
+      return *this;
+    }
+
+    // Construct from foreign library shared object
+    handle(T *data, size_t size, void *foreign_handle, void *foreign_decref) noexcept
+       : _data(data), _size(size), _foreign_handle(foreign_handle), _foreign_decref(foreign_decref) {
+      _id = globals::rtable.get();
+    }
+
+    // Cross construction from a regular handle
+    handle(handle<T, 'R'> const &x) noexcept : _data(x.data()), _size(x.size()) {
+      if (x.is_null()) return;
+
+      // Get an id if necessary
+      if (x._id == 0) x._id = globals::rtable.get();
+      _id = x._id;
+
+      // Increase refcount
+      incref();
+    }
+
+    T &operator[](long i) const noexcept { return _data[i]; }
+
+    bool is_null() const noexcept {
+#ifdef NDA_DEBUG
+      // Check the Invariants in Debug Mode
+      EXPECTS((_data == nullptr) == (_size == 0));
+      EXPECTS((_data == nullptr) == (_id == 0));
+#endif
+      return _data == nullptr;
+    }
+
+    long refcount() const noexcept { return globals::rtable.refcounts()[_id]; }
+
+    // A constant handle does not entail T const data
+    T *data() const noexcept { return _data; }
+
+    long size() const noexcept { return _size; }
+  };
+
+  // ------------------  Borrowed -------------------------------------
+
+  template <typename T> struct handle<T, 'B'> {
+    private:
+    T *_data     = nullptr; // Pointer to the start of the memory block
+    size_t _size = 0;       // Size of the memory block. Invariant: size > 0 iif data != 0
+
+    public:
+    using value_type = T;
+
+    handle(T *ptr, size_t s) noexcept : _data(ptr), _size(s) {}
+    handle(handle<T, 'R'> const &x) noexcept : _data(x.data()), _size(x.size()) {}
+    handle(handle<T, 'S'> const &x) noexcept : _data(x.data()), _size(x.size()) {}
+
+    T &operator[](long i) const noexcept { return _data[i]; }
+
+    bool is_null() const noexcept { return _data == nullptr; }
+
+    // A const-handle does not entail T const data
+    T *data() const noexcept { return _data; }
+
+    long size() const noexcept { return _size; }
   };
 
 } // namespace nda::mem

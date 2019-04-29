@@ -321,13 +321,13 @@ namespace triqs {
         indexmap_ = IndexMapType(d, indexmap_.memory_layout());
         // build a new one with the lengths of IND BUT THE SAME layout !
         // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
-        if (storage_.size != indexmap_.domain().number_of_elements()) storage_ = StorageType(indexmap_.domain().number_of_elements());
+        if (storage_.size() != indexmap_.domain().number_of_elements()) storage_ = StorageType(indexmap_.domain().number_of_elements());
       }
 
       void resize(domain_type const &d, memory_layout_t<rank> const &ml) {
         indexmap_ = IndexMapType(d, ml);
         // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
-        if (storage_.size != indexmap_.domain().number_of_elements()) storage_ = StorageType(indexmap_.domain().number_of_elements());
+        if (storage_.size() != indexmap_.domain().number_of_elements()) storage_ = StorageType(indexmap_.domain().number_of_elements());
       }
 
       template <typename Xtype> void resize_and_clone_data(Xtype const &X) {
@@ -344,7 +344,7 @@ namespace triqs {
 
       // pretty print of the array
       friend std::ostream &operator<<(std::ostream &out, const indexmap_storage_pair &A) {
-        if (A.storage().size == 0)
+        if (A.storage().size() == 0)
           out << "empty ";
         else
           pretty_print(out, A);

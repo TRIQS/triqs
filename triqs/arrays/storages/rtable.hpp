@@ -2,9 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2017 by O. Parcollet
- * Copyright (C) 2018 by Simons Foundation
- *   author : O. Parcollet
+ * Copyright (C) 2011-2017, O. Parcollet
+ * Copyright (C) 2018-2019, The Simons Foundation
+ *   authors : O. Parcollet, N. Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -22,9 +22,10 @@
  ******************************************************************************/
 #pragma once
 #include <vector>
-
-#define NDA_DEBUG_MEMORY
-//#define NDA_DEBUG_MEMORY2
+#include <algorithm>
+#include <mutex>
+#include <limits>
+#include "./../../utility/macros.hpp"
 
 namespace nda::mem {
 
@@ -33,83 +34,72 @@ namespace nda::mem {
   // A simple table of counters to count the references to a memory block (handle, cf below).
   // The counters are allocated and freed along the principle of a freelist allocator.
   class rtable_t {
-    public:
-    using int_t = int32_t;
-    std::vector<int_t> ta; // table of the counters
-                           // We dont use 0. (id =0 will mean "no counter" in the handle)
+    private:
+    // The integer-type for the reference counters
+    using int_t = uint16_t;
 
-    void release(int_t p) { // the counter p in not in use
-      ta[p] = 0;
-    }
+    // The mutex
+    std::mutex mtx = {};
+
+    // A table of reference counters. The position in the vector will be the counter-id
+    // We dont use the first element of the vector (id=0 signifies a null memory handle)
+    std::vector<int_t> _refcounts;
 
     public:
-    rtable_t(long size = 10) : ta(size, 0) {}
+    rtable_t(long size = 10) : _refcounts(size, uint16_t{0}) {}
 
     ~rtable_t() {
-#ifdef NDA_DEBUG_MEMORY
-      if (!empty()) {
-        std::cerr << "Error detected in reference counting ! \n";
-        for (long i = 0; i < ta.size(); ++i) { std::cerr << " i = " << i << " ta = " << ta[i] << "\n"; }
-        std::abort(); // fail the test
-      }
+#ifdef NDA_DEBUG
+      EXPECTS(std::all_of(_refcounts.begin(), _refcounts.end(), [](int_t c) { return c == 0; }));
 #endif
     }
 
-    // Separated from the destructor for testing purpose only.
-    bool empty() const {
-      for (auto x : ta) {
-        if (x) return false;
-      }
-      return true;
-    }
+    // Initialize the next empty counter (to 1) and return the id
+    long get() noexcept {
+      // This function needs to be executed serially
+      std::lock_guard<std::mutex> lock(mtx);
 
-    // yield the number of a new counter >0, and set the counter to 1.
-    long get() {
-      for (long i = 1; i < ta.size(); ++i) { // NEVER yield 0, it is not used
-        if (ta[i] == 0) {
-          ta[i] = 1;
+      // NEVER yield 0, id=0 is associated with the null-handle
+      for (long i = 1; i < _refcounts.size(); ++i) {
+        if (_refcounts[i] == 0) {
+          _refcounts[i] = 1;
           return i;
         }
       }
-      auto l = ta.size();
-      ta.resize(l + 10, 0);
-      ta[l] = 1;
+
+      // If no empty slot was found we have to resize
+      auto l = _refcounts.size();
+      _refcounts.resize(l + 10, 0);
+      _refcounts[l] = 1;
       return l;
     }
 
     // access to the refs
-    std::vector<int_t> const &nrefs() const noexcept { return ta; }
+    std::vector<int_t> const &refcounts() const noexcept { return _refcounts; }
 
     // increase the counter number p
-    void incref(long p) noexcept {
-#ifdef NDA_DEBUG_MEMORY2
-      std::cerr << "ta.size() " << ta.size() <<"\n";
-      std::cerr << "inccref " << p << " nref : " << ta[p] << std::endl;
+    void incref(long id) noexcept {
+#ifdef NDA_DEBUG
+      EXPECTS(_refcounts[id] < std::numeric_limits<int_t>::max());
 #endif
-      ++ta[p];
+      // This function needs to be executed serially
+      std::lock_guard<std::mutex> lock(mtx);
+
+      ++_refcounts[id];
     }
 
     // decrease the counter number p. Return true iif it has reached 0.
     // If it has reached 0, it also releases the counter.
-    bool decref(long p) noexcept {
-#ifdef NDA_DEBUG_MEMORY2
-      if (p ==0 ) {
-	std::cerr << "error 1 " << p <<"\n";
-	throw std::runtime_error("AIE ");
-      }
-      if (ta[p] ==0 ) {
-	std::cerr << "error " << p <<"\n";
-	throw std::runtime_error("NONO");
-      }
-      if (p >= ta.size()) throw std::runtime_error("NONO");
+    bool decref(long id) noexcept {
+#ifdef NDA_DEBUG
+      EXPECTS(id != 0); EXPECTS(_refcounts[id] > 0); EXPECTS(id < _refcounts.size());
 #endif
-      --ta[p];
-#ifdef NDA_DEBUG_MEMORY2
-      std::cerr << "decref " << p << " nref : " << ta[p] << std::endl;
-#endif
-      bool reached0 = (ta[p] == 0);
-      if (reached0) release(p);
-      return reached0;
+
+      // This function needs to be executed serially
+      std::lock_guard<std::mutex> lock(mtx);
+
+      --_refcounts[id];
+      return _refcounts[id] == 0;
     }
   };
 } // namespace nda::mem

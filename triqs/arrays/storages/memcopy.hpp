@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 namespace nda::mem {
 
   template <class S> constexpr bool is_scalar_or_pod() {
@@ -14,7 +16,7 @@ namespace nda::mem {
 
     if constexpr (use_memcpy) {
       if (std::abs(p2 - p1) > size) { // guard against aliasing of data
-        memcpy(p1, p2, size * sizeof(T1));
+	 std::memcpy(p1, p2, size * sizeof(T1));
         return;
       }
       for (size_t i = 0; i < size; ++i) p1[i] = p2[i];

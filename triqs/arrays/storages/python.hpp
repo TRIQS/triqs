@@ -30,7 +30,6 @@
 #include <numpy/arrayobject.h>
 #include <cpp2py/pyref.hpp>
 
-
 namespace nda::mem {
 
   // -------------  make_handle ------------
@@ -45,29 +44,35 @@ namespace nda::mem {
 
     if (obj == NULL) throw std::runtime_error(" Can not build an mem_blk_handle from a NULL PyObject *");
     if (!PyArray_Check(obj)) throw std::runtime_error("Internal error : ref_counter construct from pyo : obj is not an array");
-    Py_INCREF(obj); // assume borrowed
+
+    // We create a new shared handle -> increase refcount
+    Py_INCREF(obj);
+
     PyArrayObject *arr = (PyArrayObject *)(obj);
 
-    handle<T, 'S'> r; // empty
-    r.data        = (T *)PyArray_DATA(arr);
-    r.size        = size_t(PyArray_SIZE(arr));
-    r.id          = globals::rtable.get();
-    r.sptr        = obj;
-    r.release_fnt = (void*)&py_decref;
+    handle<T, 'S'> r{
+       (T *)PyArray_DATA(arr),    // r._data
+       size_t(PyArray_SIZE(arr)), // r._size
+       obj,                       // r._foreign_handle
+       (void *)&py_decref         // r._foreign_decref
+    };
     return r;
   }
 
-  // ------------------  make_pycapsule  ----------------------------------------------------
-  // make a pycapsule out of the shared handle to return to Python
+  // ------------------  delete_pycapsule  ----------------------------------------------------
 
+  // Properly delete the handle<T, 'S'> in a PyCapsule
   template <typename T> static void delete_pycapsule(PyObject *capsule) {
     handle<T, 'S'> *handle = static_cast<nda::mem::handle<T, 'S'> *>(PyCapsule_GetPointer(capsule, "guard"));
     //std::cerr << "decapsulate : "<< handle->id << "  "<< handle->data << "  nrefs" << handle->nref() << "\n";
     delete handle;
   }
 
+  // ------------------  make_pycapsule,   ----------------------------------------------------
+
+  // Make a pycapsule out of the shared handle to return to Python
   template <typename T> PyObject *make_pycapsule(handle<T, 'S'> h) {
-    //std::cerr << "capsulate : "<< h.id << "  "<<h.data <<  "nrefs" << h.nref() << "\n";
+    //std::cerr << "capsulate : " << h.data() <<  "nrefs" << h.refcount() << "\n";
     void *keep = new handle<T, 'S'>{std::move(h)}; // a new reference
     return PyCapsule_New(keep, "guard", &delete_pycapsule<T>);
   }
