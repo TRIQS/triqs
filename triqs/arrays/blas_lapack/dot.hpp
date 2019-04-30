@@ -74,8 +74,8 @@ namespace triqs::arrays {
       size_t N = X.size(), incx = X.stride(), incy = Y.stride();
       decltype(X(0) * Y(0)) res = 0;
       // This only works for object with data (ISP), not only from the concept...
-      auto *restrict X_ = X.data_start();
-      auto *restrict Y_ = Y.data_start();
+      auto *X_ = X.data_start();
+      auto *Y_ = Y.data_start();
       if ((incx == 1) && (incy == 1)) {
         for (size_t i = 0; i < N; ++i) res += _conj<Star>(X_[i]) * Y_[i];
       } else { // code for unequal increments or equal increments  not equal to 1

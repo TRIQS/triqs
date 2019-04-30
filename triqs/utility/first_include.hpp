@@ -22,10 +22,6 @@
 
 #include <cpp2py.hpp>
 
-#if defined __GNUC__ || defined __clang__
-#define restrict __restrict__
-#endif
-
 #if defined __GNUC__ && !defined __clang__
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif

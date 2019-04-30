@@ -194,7 +194,7 @@ namespace triqs {
           // here directly since reloadMT() will always munge them first, so maybe
           // none of all of this matters.  In fact, the seed values made here could
           // even be extra-special desirable if the Mersenne Twister theory says
-          // so-- that's why the only change I made is to restrict to odd seeds.
+          // so-- that's why the only change I made is to to odd seeds.
           //
           initseed = seed;
 

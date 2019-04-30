@@ -36,7 +36,7 @@ namespace triqs {
         static_assert(!std::is_const<ValueType>::value, "oops : internal error : shared_block should never be instanciated with a const");
 
         mem_block<ValueType> *sptr;
-        ValueType *restrict data_; // for optimization on some compilers. ?? obsolete : to be removed ?
+        ValueType *data_; // for optimization on some compilers. ?? obsolete : to be removed ?
         size_t s;
 
         void construct_delegate(size_t size) {

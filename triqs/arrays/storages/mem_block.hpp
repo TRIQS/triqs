@@ -152,7 +152,7 @@ namespace triqs {
 
         size_t size_; // size of the block
         char *raw_ptr = nullptr;
-        ValueType *restrict p; // the memory block. Owned by this, except when py_numpy is not null
+        ValueType *p; // the memory block. Owned by this, except when py_numpy is not null
 	std::atomic<size_t> ref_count;      // number of refs. :  >=1
 	std::atomic<size_t> weak_ref_count; // number of refs. :  >=1
         PyObject *py_numpy;    // if not null, an owned reference to a numpy which is the data of this block
