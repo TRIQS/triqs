@@ -34,9 +34,9 @@
 #define TYPE_DISABLE_IFC(Type, ...) typename boost::disable_if_c<__VA_ARGS__, Type>::type
 
 #ifdef __clang__
- #define REQUIRES(...) __attribute__((enable_if(__VA_ARGS__, AS_STRING(__VA_ARGS__))))
+#define REQUIRES(...) __attribute__((enable_if(__VA_ARGS__, AS_STRING(__VA_ARGS__))))
 #elif __GNUC__
-  #define REQUIRES(...) requires(__VA_ARGS__)
+#define REQUIRES(...) requires(__VA_ARGS__)
 #endif
 
 #define ENABLE_IF(...) typename boost::enable_if<__VA_ARGS__, void>::type
@@ -62,6 +62,7 @@ namespace triqs {
     return 1;                                                                                                                                        \
   }
 
+#define TRIQS_DEPRECATED(Message) __attribute__((deprecated(AS_STRING(Message))))
 #define TRIQS_PRINT(X) std::cerr << AS_STRING(X) << " = " << X << "      at " << __FILE__ << ":" << __LINE__ << '\n'
 
 #endif

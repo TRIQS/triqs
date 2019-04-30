@@ -23,8 +23,6 @@
 #include <triqs/utility/first_include.hpp>
 #include <triqs/clef.hpp>
 
-#include <triqs/utility/c17.hpp>
-
 /// Maximum dimension of the arrays
 #define ARRAY_NRANK_MAX 10
 
@@ -39,8 +37,6 @@ template <char C> using char_ = std::integral_constant<char, C>;
 #include <triqs/utility/is_complex.hpp>
 #include <triqs/utility/macros.hpp>
 #include <triqs/arrays/indexmaps/cuboid/mem_layout.hpp>
-// LEADS to an error on OS X???
-//#include <triqs/utility/c14.hpp>
 #include "./traits.hpp"
 
 namespace boost {
@@ -63,8 +59,8 @@ namespace triqs {
   template <typename A> typename A::const_view_type make_const_view(A const &x) { return typename A::const_view_type(x); }
 
   //
-  //template<class, class = std17::void_t<>> struct has_regular_type: std::false_type {};
-  //template<class T> struct has_regular_type<T, std17::void_t<typename T::regular_type>> : std::true_type {};
+  //template<class, class = std::void_t<>> struct has_regular_type: std::false_type {};
+  //template<class T> struct has_regular_type<T, std::void_t<typename T::regular_type>> : std::true_type {};
 
   /// Makes a clone
   //template<typename A> auto make_clone(A const & x) {
@@ -76,10 +72,10 @@ namespace triqs {
   //}
 
   /// Makes a clone
-  template <typename T, typename = std17::void_t<>> struct _make_clone {
+  template <typename T, typename = std::void_t<>> struct _make_clone {
     static T invoke(T const &x) { return T{x}; }
   };
-  template <typename T> struct _make_clone<T, std17::void_t<typename T::regular_type>> {
+  template <typename T> struct _make_clone<T, std::void_t<typename T::regular_type>> {
     static auto invoke(T const &x) { return typename T::regular_type{x}; }
   };
   template <typename T> auto make_clone(T const &x) { return _make_clone<T>::invoke(x); }

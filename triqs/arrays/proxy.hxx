@@ -36,28 +36,28 @@ namespace triqs {
 
       template <size_t I> using _long = long;
       template <typename IM, typename T> struct _sli;
-      template <typename IM, size_t... Is> struct _sli<IM, std14::index_sequence<Is...>> {
+      template <typename IM, size_t... Is> struct _sli<IM, std::index_sequence<Is...>> {
         using type = indexmaps::slicer<IM, _long<Is>..., ellipsis>;
       };
 
       // implementation class
       template <typename A, typename FrozenArgs, bool IsConst> struct _proxy_impl {
 
-        using A_t        = std14::decay_t<A>;
+        using A_t        = std::decay_t<A>;
         using value_type = typename A_t::value_type;
         A a;
         FrozenArgs frozen_args;
         static constexpr size_t n_args = std::tuple_size<FrozenArgs>::value;
-        using _seq                     = std14::make_index_sequence<n_args>;
+        using _seq                     = std::make_index_sequence<n_args>;
 
-        using call_rt                  = std14::conditional_t<IsConst, value_type const &, value_type &>;
+        using call_rt                  = std::conditional_t<IsConst, value_type const &, value_type &>;
         static constexpr bool is_const = IsConst;
 
         using slicer_t      = typename _sli<typename A_t::indexmap_type, _seq>::type;
         using indexmap_type = typename slicer_t::r_type;
 
         private:
-        template <size_t... Is> auto _indexmap_impl(std14::index_sequence<Is...>) const {
+        template <size_t... Is> auto _indexmap_impl(std::index_sequence<Is...>) const {
           return slicer_t::invoke(a.indexmap(), std::get<Is>(frozen_args)..., ellipsis());
         }
 
@@ -65,33 +65,33 @@ namespace triqs {
         auto indexmap() const { return _indexmap_impl(_seq{}); }
 
         private: // FIXME use if constexpr
-        template <size_t... Is, typename... Args> FORCEINLINE call_rt _call(std14::index_sequence<Is...>, Args &&... args) const {
+        template <size_t... Is, typename... Args> FORCEINLINE call_rt _call(std::index_sequence<Is...>, Args &&... args) const {
           return a(std::get<Is>(frozen_args)..., std::forward<Args>(args)...);
         }
 
         public:
-        template <typename... Args> std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
-          return _call(std14::make_index_sequence<n_args>(), std::forward<Args>(args)...);
+        template <typename... Args> std::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
+          return _call(std::make_index_sequence<n_args>(), std::forward<Args>(args)...);
         }
       };
 
       // specialize for simple case
       template <typename A, bool IsConst> struct _proxy_impl<A, long, IsConst> {
 
-        using A_t        = std14::decay_t<A>;
+        using A_t        = std::decay_t<A>;
         using value_type = typename A_t::value_type;
         A a;
         long frozen_args;
         static constexpr size_t n_args = 1;
 
-        using call_rt                  = std14::conditional_t<IsConst, value_type const &, value_type &>;
+        using call_rt                  = std::conditional_t<IsConst, value_type const &, value_type &>;
         static constexpr bool is_const = IsConst;
 
         using slicer_t      = indexmaps::slicer<typename A_t::indexmap_type, long, ellipsis>;
         using indexmap_type = typename slicer_t::r_type;
         indexmap_type indexmap() const { return slicer_t::invoke(a.indexmap(), frozen_args, ellipsis()); }
 
-        template <typename... Args> std::c14::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
+        template <typename... Args> std::enable_if_t<!triqs::clef::is_any_lazy<Args...>::value, call_rt> operator()(Args &&... args) const {
           return a(frozen_args, std::forward<Args>(args)...);
         }
       };
@@ -103,7 +103,7 @@ namespace triqs {
       using B                   = details_proxy::_proxy_impl<A, Tuple, true>;
       using value_type          = typename B::value_type;
       using indexmap_type       = typename B::indexmap_type;
-      using A_t                 = std14::decay_t<A>;
+      using A_t                 = std::decay_t<A>;
       static constexpr int rank = A_t::rank;
 
       using traversal_order_t = typename A_t::traversal_order_t;
@@ -141,7 +141,7 @@ namespace triqs {
       using B                   = details_proxy::_proxy_impl<A, Tuple, false>;
       using value_type          = typename B::value_type;
       using indexmap_type       = typename B::indexmap_type;
-      using A_t                 = std14::decay_t<A>;
+      using A_t                 = std::decay_t<A>;
       static constexpr int rank = A_t::rank;
 
       using traversal_order_t = typename A_t::traversal_order_t;
@@ -190,7 +190,7 @@ namespace triqs {
 
     // if A is a const_view or A is passed by const &, then the proxy is const, otherwise it is not.
     template <typename A, typename... T>
-    std14::conditional_t<std14::decay_t<A>::is_const || std::is_const<std14::remove_reference_t<A>>::value,
+    std::conditional_t<std::decay_t<A>::is_const || std::is_const<std::remove_reference_t<A>>::value,
                          array_const_proxy<details_proxy::_rm_rvalue<A>, std::tuple<T...>>,
                          array_proxy<details_proxy::_rm_rvalue<A>, std::tuple<T...>>>
     make_array_proxy(A &&a, std::tuple<T...> const &n) {
@@ -199,7 +199,7 @@ namespace triqs {
 
     // if A is a const_view or A is passed by const &, then the proxy is const, otherwise it is not.
     template <typename A>
-    std14::conditional_t<std14::decay_t<A>::is_const || std::is_const<std14::remove_reference_t<A>>::value,
+    std::conditional_t<std::decay_t<A>::is_const || std::is_const<std::remove_reference_t<A>>::value,
                          array_const_proxy<details_proxy::_rm_rvalue<A>, long>, array_proxy<details_proxy::_rm_rvalue<A>, long>>
     make_array_proxy(A &&a, long n) {
       return {std::forward<A>(a), n};
@@ -211,7 +211,7 @@ namespace triqs {
       using B                   = details_proxy::_proxy_impl<A, Tuple, true>;
       using value_type          = typename B::value_type;
       using indexmap_type       = typename B::indexmap_type;
-      using A_t                 = std14::decay_t<A>;
+      using A_t                 = std::decay_t<A>;
       static constexpr int rank = A_t::rank;
 
       using traversal_order_t = typename A_t::traversal_order_t;
@@ -249,7 +249,7 @@ namespace triqs {
       using B                   = details_proxy::_proxy_impl<A, Tuple, false>;
       using value_type          = typename B::value_type;
       using indexmap_type       = typename B::indexmap_type;
-      using A_t                 = std14::decay_t<A>;
+      using A_t                 = std::decay_t<A>;
       static constexpr int rank = A_t::rank;
 
       using traversal_order_t = typename A_t::traversal_order_t;
@@ -298,7 +298,7 @@ namespace triqs {
 
     // if A is a const_view or A is passed by const &, then the proxy is const, otherwise it is not.
     template <typename A, typename... T>
-    std14::conditional_t<std14::decay_t<A>::is_const || std::is_const<std14::remove_reference_t<A>>::value,
+    std::conditional_t<std::decay_t<A>::is_const || std::is_const<std::remove_reference_t<A>>::value,
                          matrix_const_proxy<details_proxy::_rm_rvalue<A>, std::tuple<T...>>,
                          matrix_proxy<details_proxy::_rm_rvalue<A>, std::tuple<T...>>>
     make_matrix_proxy(A &&a, std::tuple<T...> const &n) {
@@ -307,7 +307,7 @@ namespace triqs {
 
     // if A is a const_view or A is passed by const &, then the proxy is const, otherwise it is not.
     template <typename A>
-    std14::conditional_t<std14::decay_t<A>::is_const || std::is_const<std14::remove_reference_t<A>>::value,
+    std::conditional_t<std::decay_t<A>::is_const || std::is_const<std::remove_reference_t<A>>::value,
                          matrix_const_proxy<details_proxy::_rm_rvalue<A>, long>, matrix_proxy<details_proxy::_rm_rvalue<A>, long>>
     make_matrix_proxy(A &&a, long n) {
       return {std::forward<A>(a), n};

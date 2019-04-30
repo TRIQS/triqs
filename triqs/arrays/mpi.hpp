@@ -33,7 +33,7 @@ namespace triqs {
       mpi::communicator c;
       int root;
       bool all;
-      std14::conditional_t<std::is_same<Tag, mpi::tag::reduce>::value, MPI_Op, void *> op; // some version of mpi do not use pointer.
+      std::conditional_t<std::is_same<Tag, mpi::tag::reduce>::value, MPI_Op, void *> op; // some version of mpi do not use pointer.
       // take void* to avoid specializing in the reduce case.
 
       using domain_type = typename A::domain_type;
@@ -63,8 +63,8 @@ namespace triqs {
 
     //--------------------------------------------------------------------------------------------------------
 
-#define REQUIRES_IS_ARRAY std14::enable_if_t<is_amv_value_or_view_class<A>::value>
-#define REQUIRES_IS_ARRAY2(TAG) std14::enable_if_t<is_amv_value_or_view_class<A>::value, mpi_lazy_array<mpi::tag::TAG, A>>
+#define REQUIRES_IS_ARRAY std::enable_if_t<is_amv_value_or_view_class<A>::value>
+#define REQUIRES_IS_ARRAY2(TAG) std::enable_if_t<is_amv_value_or_view_class<A>::value, mpi_lazy_array<mpi::tag::TAG, A>>
 
     template <typename A> REQUIRES_IS_ARRAY mpi_broadcast(A &a, mpi::communicator c = {}, int root = 0) {
       if (!has_contiguous_data(a)) TRIQS_RUNTIME_ERROR << "Non contiguous view in mpi_broadcast";

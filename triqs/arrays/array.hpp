@@ -182,7 +182,7 @@ namespace triqs {
       template <typename T>
       array(
          const T &X,
-         std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, memory_layout_t<Rank>>
+         std::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, memory_layout_t<Rank>>
             ml)
          : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
         triqs_arrays_assign_delegation(*this, X);
@@ -196,7 +196,7 @@ namespace triqs {
      */
       template <typename T>
       array(const T &X,
-            std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, void *> _unused =
+            std::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, void *> _unused =
                nullptr)
          : IMPL_TYPE(indexmap_type(X.domain(), get_memory_layout<Rank, T>::invoke(X))) {
         triqs_arrays_assign_delegation(*this, X);
@@ -210,7 +210,7 @@ namespace triqs {
       // build from a init_list
       template <typename T>
       array(std::initializer_list<T> const &l, memory_layout_t<1> ml = memory_layout_t<1>{},
-            std14::enable_if_t<std::is_constructible<value_type, T>::value> *dummy = 0)
+            std::enable_if_t<std::is_constructible<value_type, T>::value> *dummy = 0)
          : IMPL_TYPE(indexmap_type(mini_vector<size_t, 1>(l.size()), memory_layout_t<1>{std::move(ml)})) {
         size_t i = 0;
         for (auto const &x : l) (*this)(i++) = x;
@@ -218,7 +218,7 @@ namespace triqs {
 
       template <typename T>
       array(std::initializer_list<std::initializer_list<T>> const &l, memory_layout_t<2> ml = memory_layout_t<2>{},
-            std14::enable_if_t<std::is_constructible<value_type, T>::value> *dummy = 0)
+            std::enable_if_t<std::is_constructible<value_type, T>::value> *dummy = 0)
          : IMPL_TYPE(memory_layout_t<2>{std::move(ml)}) {
         size_t i = 0, j = 0;
 
@@ -236,7 +236,7 @@ namespace triqs {
 
       template <typename T>
       array(std::initializer_list<std::initializer_list<std::initializer_list<T>>> const &l, memory_layout_t<3> ml = memory_layout_t<3>{},
-            std14::enable_if_t<std::is_constructible<value_type, T>::value> *dummy = 0)
+            std::enable_if_t<std::is_constructible<value_type, T>::value> *dummy = 0)
          : IMPL_TYPE(memory_layout_t<3>{std::move(ml)}) {
         size_t i = 0, j = 0, k = 0;
 

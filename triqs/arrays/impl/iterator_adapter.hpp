@@ -36,13 +36,13 @@ namespace triqs {
     template <bool Const, typename IndexMapIterator, typename StorageType>
     class iterator_adapter
        : public std::iterator<std::forward_iterator_tag,
-                              std14::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>> {
+                              std::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>> {
 
       StorageType storage_;
       IndexMapIterator it;
 
       public:
-      using value_type             = std14::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>;
+      using value_type             = std::conditional_t<Const, const typename StorageType::value_type, typename StorageType::value_type>;
       using indexmap_iterator_type = IndexMapIterator;
 
       iterator_adapter()                         = default;
@@ -70,7 +70,7 @@ namespace triqs {
       // not in forward iterator concept
       operator bool() const { return bool(it); }
 
-      AUTO_DECL indices() const RETURN(it.indices());
+      decltype(auto) indices() const { return it.indices(); }
       IndexMapIterator const &indexmap_iterator() const { return it; }
     };
   } // namespace arrays

@@ -80,7 +80,7 @@ namespace triqs {
 
       template <typename... Args>
       // require(!clef::is_any_lazy<Args...>)
-      std14::enable_if_t<!clef::is_any_lazy<Args...>::value, value_type> operator()(Args &&... args) const {
+      std::enable_if_t<!clef::is_any_lazy<Args...>::value, value_type> operator()(Args &&... args) const {
         return utility::operation<Tag>()(l(std::forward<Args>(args)...), r(std::forward<Args>(args)...));
       }
 

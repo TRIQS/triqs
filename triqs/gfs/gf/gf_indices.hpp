@@ -117,7 +117,7 @@ namespace triqs {
       // do nothing
       int slice_one_vec(vv_t &v_out, v_t const &v_in, long r) const { return 0; }
 
-      template <typename Tu, size_t... Is> vv_t slice_impl(std14::index_sequence<Is...>, Tu const &tu) const {
+      template <typename Tu, size_t... Is> vv_t slice_impl(std::index_sequence<Is...>, Tu const &tu) const {
         vv_t res;
         // rely on init order. gcc >=5.1 MANDATORY (bug in 4.9).
         std::vector<int>{slice_one_vec(res, _data[Is], std::get<Is>(tu))...};
@@ -129,7 +129,7 @@ namespace triqs {
       template <typename... R> friend gf_indices slice(gf_indices const &gi, R const &... r) {
         if (gi.empty()) return {};
         if (gi.rank() != sizeof...(R)) TRIQS_RUNTIME_ERROR << " Incorrect slicing of indices ";
-        return {gi.slice_impl(std14::index_sequence_for<R...>{}, std::make_tuple(r...))};
+        return {gi.slice_impl(std::index_sequence_for<R...>{}, std::make_tuple(r...))};
       }
     };
   } // namespace gfs

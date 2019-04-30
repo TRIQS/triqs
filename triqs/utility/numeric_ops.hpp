@@ -23,7 +23,6 @@
 #include <complex>
 #include <limits>
 #include <type_traits>
-#include <triqs/utility/c14.hpp>
 #include <triqs/utility/is_complex.hpp>
 
 namespace triqs {
@@ -35,12 +34,12 @@ namespace triqs {
     // Zero value tests
     //
     template <typename T> // Integral types
-    std14::enable_if_t<std::is_integral<T>::value, bool> is_zero(T const &x) {
+    std::enable_if_t<std::is_integral<T>::value, bool> is_zero(T const &x) {
       return x == 0;
     }
 
     template <typename T> // Floating-point types
-    std14::enable_if_t<std::is_floating_point<T>::value, bool> is_zero(T const &x, T tolerance = 100 * std::numeric_limits<T>::epsilon()) {
+    std::enable_if_t<std::is_floating_point<T>::value, bool> is_zero(T const &x, T tolerance = 100 * std::numeric_limits<T>::epsilon()) {
       return std::abs(x) < tolerance;
     }
 
@@ -53,17 +52,17 @@ namespace triqs {
     // Complex conjugate
     //
     template <typename T> // Integral types
-    std14::enable_if_t<std::is_integral<T>::value, T> conj(T const &x) {
+    std::enable_if_t<std::is_integral<T>::value, T> conj(T const &x) {
       return x;
     }
 
     template <typename T> // Floating-point types
-    std14::enable_if_t<std::is_floating_point<T>::value, T> conj(T const &x) {
+    std::enable_if_t<std::is_floating_point<T>::value, T> conj(T const &x) {
       return x;
     }
 
     template <typename T> // std::complex
-    std14::enable_if_t<triqs::is_complex<T>::value, T> conj(T const &x) {
+    std::enable_if_t<triqs::is_complex<T>::value, T> conj(T const &x) {
       return std::conj(x);
     }
 
@@ -71,17 +70,17 @@ namespace triqs {
     // Real part
     //
     template <typename T> // Integral types
-    std14::enable_if_t<std::is_integral<T>::value, T> real(T const &x) {
+    std::enable_if_t<std::is_integral<T>::value, T> real(T const &x) {
       return x;
     }
 
     template <typename T> // Floating-point types
-    std14::enable_if_t<std::is_floating_point<T>::value, T> real(T const &x) {
+    std::enable_if_t<std::is_floating_point<T>::value, T> real(T const &x) {
       return x;
     }
 
     template <typename T> // std::complex
-    std14::enable_if_t<triqs::is_complex<T>::value, T> real(T const &x) {
+    std::enable_if_t<triqs::is_complex<T>::value, T> real(T const &x) {
       return std::real(x);
     }
 
@@ -89,17 +88,17 @@ namespace triqs {
     // Imaginary part
     //
     template <typename T> // Integral types
-    std14::enable_if_t<std::is_integral<T>::value, T> imag(T const &x) {
+    std::enable_if_t<std::is_integral<T>::value, T> imag(T const &x) {
       return T{};
     }
 
     template <typename T> // Floating-point types
-    std14::enable_if_t<std::is_floating_point<T>::value, T> imag(T const &x) {
+    std::enable_if_t<std::is_floating_point<T>::value, T> imag(T const &x) {
       return T{};
     }
 
     template <typename T> // std::complex
-    std14::enable_if_t<triqs::is_complex<T>::value, T> imag(T const &x) {
+    std::enable_if_t<triqs::is_complex<T>::value, T> imag(T const &x) {
       return std::imag(x);
     }
 

@@ -68,12 +68,12 @@ namespace triqs {
 
     // tuple_com absorbs anything
     template <typename X, typename... T, size_t... Is>
-    FORCEINLINE tuple_com<T..., std::decay_t<X>> __comma_impl(tuple_com<T...> &&tu, X &&x, std14::index_sequence<Is...>) {
+    FORCEINLINE tuple_com<T..., std::decay_t<X>> __comma_impl(tuple_com<T...> &&tu, X &&x, std::index_sequence<Is...>) {
       return {std::make_tuple(std::get<Is>(std::move(tu._t))..., std::forward<X>(x))};
     }
 
     template <typename X, typename... T> FORCEINLINE tuple_com<T..., std::decay_t<X>> operator,(tuple_com<T...> &&t, X &&x) {
-      return __comma_impl(std::move(t), std::forward<X>(x), std14::make_index_sequence<sizeof...(T)>());
+      return __comma_impl(std::move(t), std::forward<X>(x), std::make_index_sequence<sizeof...(T)>());
     }
 
   } // namespace gfs

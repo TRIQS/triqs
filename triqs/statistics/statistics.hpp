@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/c14.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/tuple_tools.hpp>
 #include <type_traits>
@@ -206,7 +205,7 @@ namespace triqs {
     template <typename T>
     auto eval(observable<T> const &obs, bin_and_repl_by_jack info) DECL_AND_RETURN(make_jackknife(make_binned_series(obs), info.bin_size));
 
-    template <typename TS> auto eval(TS const &obs, int i) -> std::c14::enable_if_t<is_time_series<TS>::value, decltype(obs[i])> { return obs[i]; }
+    template <typename TS> auto eval(TS const &obs, int i) -> std::enable_if_t<is_time_series<TS>::value, decltype(obs[i])> { return obs[i]; }
 
 // --------- Operations --------------------------
 
@@ -216,7 +215,7 @@ namespace triqs {
 // hence this avoid ambiguity).
 #define TRIQS_TS_OPERATION(TAG, OP)                                                                                                                  \
   template <typename L, typename R>                                                                                                                  \
-  std::c14::enable_if_t<(is_time_series<L>::value || is_time_series<R>::value) && (!clef::is_any_lazy<L, R>::value),                                 \
+  std::enable_if_t<(is_time_series<L>::value || is_time_series<R>::value) && (!clef::is_any_lazy<L, R>::value),                                 \
                         clef::expr_node_t<clef::tags::TAG, L, R>>                                                                                    \
   operator OP(L &&l, R &&r) {                                                                                                                        \
     return {clef::tags::TAG(), std::forward<L>(l), std::forward<R>(r)};                                                                              \
@@ -250,10 +249,10 @@ namespace triqs {
     // make_immutable_time_series (x) returns :
     //  x if it is already a time_series
     //  _immutable_time_series(x) if it is an expression
-    template <typename T> std::c14::enable_if_t<clef::is_clef_expression<T>::value, _immutable_time_series<T>> make_immutable_time_series(T &&x) {
+    template <typename T> std::enable_if_t<clef::is_clef_expression<T>::value, _immutable_time_series<T>> make_immutable_time_series(T &&x) {
       return {std::forward<T>(x)};
     }
-    template <typename T> std::c14::enable_if_t<is_time_series<T>::value, T> make_immutable_time_series(T &&x) { return std::forward<T>(x); }
+    template <typename T> std::enable_if_t<is_time_series<T>::value, T> make_immutable_time_series(T &&x) { return std::forward<T>(x); }
 
     // -------------  Computation of the size --------------------------
 
@@ -262,8 +261,8 @@ namespace triqs {
     // otherwise do nothing
     struct _get_size_visitor {
       int res;
-      template <typename T> std::c14::enable_if_t<!is_time_series<T>::value> operator()(T const &) {}
-      template <typename T> std::c14::enable_if_t<is_time_series<T>::value> operator()(T const &obs) {
+      template <typename T> std::enable_if_t<!is_time_series<T>::value> operator()(T const &) {}
+      template <typename T> std::enable_if_t<is_time_series<T>::value> operator()(T const &obs) {
         int i = obs.size();
         if ((res * i != 0) && (res != i)) TRIQS_RUNTIME_ERROR << "Expression of time series with time mismatch";
         res = i; // keep the result
@@ -320,7 +319,7 @@ namespace triqs {
     template <typename T> T average(observable<T> const &obs) { return empirical_average(obs); }
 
     template <typename ObservableExpr>
-    std::c14::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, double> average(ObservableExpr const &obs) {
+    std::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, double> average(ObservableExpr const &obs) {
       return empirical_average(_immutable_time_series<ObservableExpr>{obs});
     }
 
@@ -342,14 +341,14 @@ namespace triqs {
     }
 
     template <typename ObservableExpr>
-    std::c14::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, value_and_error_bar<get_value_type<ObservableExpr>>>
+    std::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, value_and_error_bar<get_value_type<ObservableExpr>>>
     average_and_error(ObservableExpr const &obs) {
       auto expr_jack = eval(obs, repl_by_jack{}); // replace every TS leaf by a jacknifed version
       return empirical_average_and_error(make_immutable_time_series(expr_jack));
     }
 
     template <typename ObservableExpr>
-    std::c14::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, value_and_error_bar<get_value_type<ObservableExpr>>>
+    std::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, value_and_error_bar<get_value_type<ObservableExpr>>>
     average_and_error(ObservableExpr const &obs, int bin_size) {
       auto expr_bin_jack = eval(obs, bin_and_repl_by_jack{bin_size});
       return empirical_average_and_error(make_immutable_time_series(expr_bin_jack));

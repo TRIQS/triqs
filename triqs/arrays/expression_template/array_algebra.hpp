@@ -56,7 +56,7 @@ namespace triqs {
 
       template <typename... Args>
       //require(!clef::is_any_lazy<Args...>)
-      std14::enable_if_t<!clef::is_any_lazy<Args...>::value, value_type> operator()(Args &&... args) const {
+      std::enable_if_t<!clef::is_any_lazy<Args...>::value, value_type> operator()(Args &&... args) const {
         return utility::operation<Tag>()(l(std::forward<Args>(args)...), r(std::forward<Args>(args)...));
       }
 
@@ -133,7 +133,7 @@ namespace triqs {
     //template <class A> struct __inv_array_rtype { using type = array_expr<utility::tags::divides, typename node_t<int, false>::type, typename node_t<A, false>::type>;};
 
     template <class A>
-    std14::enable_if_t<ImmutableArray<std14::decay_t<A>>::value,
+    std::enable_if_t<ImmutableArray<std::decay_t<A>>::value,
                        array_expr<utility::tags::divides, _scalar_wrap<int, false>, utility::remove_rvalue_ref_t<A>>>
     inverse(A &&a) {
       return {1, std::forward<A>(a)};

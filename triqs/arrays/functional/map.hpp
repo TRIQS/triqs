@@ -50,7 +50,7 @@ namespace triqs {
       domain_type domain() const { return a.domain(); }
       template <typename... Args> value_type operator()(Args &&... args) const { return f(a(std::forward<Args>(args)...)); }
       friend std::ostream &operator<<(std::ostream &out, map_impl_result const &x) {
-        return out << array<value_type, std14::decay_t<A>::domain_type::rank>(x);
+        return out << array<value_type, std::decay_t<A>::domain_type::rank>(x);
       }
       // rest is only for vector
       template <bool vec = is_vec> TYPE_ENABLE_IFC(size_t, vec) size() const { return a.size(); }
@@ -71,7 +71,7 @@ namespace triqs {
         return f(a(std::forward<Args>(args)...), b(std::forward<Args>(args)...));
       }
       friend std::ostream &operator<<(std::ostream &out, map_impl_result const &x) {
-        return out << array<value_type, std14::decay_t<A>::domain_type::rank>(x);
+        return out << array<value_type, std::decay_t<A>::domain_type::rank>(x);
       }
       // rest is only for vector
       template <bool vec = is_vec> TYPE_ENABLE_IFC(size_t, vec) size() const { return a.size(); }

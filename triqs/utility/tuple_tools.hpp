@@ -20,7 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/macros.hpp>
-#include "./c14.hpp"
 #include <tuple>
 #include <ostream>
 #include "./mini_vector.hpp"
@@ -32,8 +31,8 @@ namespace triqs {
     std::tuple<T...> _tu;
     template <typename... U> _triqs_zipped_tuple(U &&... u) : _tu(std::forward<U>(u)...) {}
 
-    template <size_t I, size_t... Is> auto _get(std::c14::index_sequence<Is...>) { return std::tie(std::get<I>(std::get<Is>(_tu))...); }
-    template <size_t I, size_t... Is> auto _get(std::c14::index_sequence<Is...>) const { return std::tie(std::get<I>(std::get<Is>(_tu))...); }
+    template <size_t I, size_t... Is> auto _get(std::index_sequence<Is...>) { return std::tie(std::get<I>(std::get<Is>(_tu))...); }
+    template <size_t I, size_t... Is> auto _get(std::index_sequence<Is...>) const { return std::tie(std::get<I>(std::get<Is>(_tu))...); }
   };
 
   template <typename... T> _triqs_zipped_tuple<T...> zip_tuples(T &&... x) { return {std::forward<T>(x)...}; }
@@ -43,10 +42,10 @@ namespace triqs {
 // 2. Add to the std lib the reversed lazy tuple
 namespace std {
 
-  template <typename T0, typename... T> class tuple_size<triqs::_triqs_zipped_tuple<T0, T...>> : public std::tuple_size<std14::decay_t<T0>> {};
+  template <typename T0, typename... T> class tuple_size<triqs::_triqs_zipped_tuple<T0, T...>> : public std::tuple_size<std::decay_t<T0>> {};
 
-  template <size_t I, typename... T> AUTO_DECL get(triqs::_triqs_zipped_tuple<T...> const &tu) {
-    return tu.template _get<I>(std14::make_index_sequence<sizeof...(T)>());
+  template <size_t I, typename... T> decltype(auto) get(triqs::_triqs_zipped_tuple<T...> const &tu) {
+    return tu.template _get<I>(std::make_index_sequence<sizeof...(T)>());
   }
 
   // Reverse
@@ -56,29 +55,29 @@ namespace std {
   template <typename... T> _triqs_reversed_tuple<std::tuple<T...> &> reverse(std::tuple<T...> &x) { return {x}; }
   template <typename... T> _triqs_reversed_tuple<std::tuple<T...> const &> reverse(std::tuple<T...> const &x) { return {x}; }
 
-  template <int pos, typename TU> AUTO_DECL get(_triqs_reversed_tuple<TU> const &t) {
-    return std::get<std::tuple_size<std14::decay_t<TU>>::value - 1 - pos>(t._x);
+  template <int pos, typename TU> decltype(auto) get(_triqs_reversed_tuple<TU> const &t) {
+    return std::get<std::tuple_size<std::decay_t<TU>>::value - 1 - pos>(t._x);
   }
 
-  template <int pos, typename TU> AUTO_DECL get(_triqs_reversed_tuple<TU> &t) {
-    return std::get<std::tuple_size<std14::decay_t<TU>>::value - 1 - pos>(t._x);
+  template <int pos, typename TU> decltype(auto) get(_triqs_reversed_tuple<TU> &t) {
+    return std::get<std::tuple_size<std::decay_t<TU>>::value - 1 - pos>(t._x);
   }
 
-  template <int pos, typename TU> AUTO_DECL get(_triqs_reversed_tuple<TU> &&t) {
-    return std::get<std::tuple_size<std14::decay_t<TU>>::value - 1 - pos>(move(t)._x);
+  template <int pos, typename TU> decltype(auto) get(_triqs_reversed_tuple<TU> &&t) {
+    return std::get<std::tuple_size<std::decay_t<TU>>::value - 1 - pos>(move(t)._x);
   }
 
-  template <typename TU> class tuple_size<_triqs_reversed_tuple<TU>> : public tuple_size<std14::decay_t<TU>> {};
+  template <typename TU> class tuple_size<_triqs_reversed_tuple<TU>> : public tuple_size<std::decay_t<TU>> {};
 } // namespace std
 
 namespace triqs {
   namespace tuple {
 
     /// _get_seq<T>() : from a tuple T, return the index sequence of the tuple length
-    template <typename T> std14::make_index_sequence<std::tuple_size<std14::decay_t<T>>::value> _get_seq() { return {}; }
+    template <typename T> std::make_index_sequence<std::tuple_size<std::decay_t<T>>::value> _get_seq() { return {}; }
 
     // _get_seq_len<T> : constexpr : return the length of the tuple
-    template <typename Tu> constexpr int _get_seq_len() { return std::tuple_size<std14::decay_t<Tu>>::value; }
+    template <typename Tu> constexpr int _get_seq_len() { return std::tuple_size<std::decay_t<Tu>>::value; }
 
     // basic tools
     template <int N> struct _int {};
@@ -91,7 +90,7 @@ namespace triqs {
       using type = typename decltype(get(hole_seq()))::type;
     };
 
-    template <typename hole_seq, int... Is> struct complement_sequence_impl<-1, hole_seq, Is...> { using type = std14::index_sequence<Is...>; };
+    template <typename hole_seq, int... Is> struct complement_sequence_impl<-1, hole_seq, Is...> { using type = std::index_sequence<Is...>; };
 
     // An index sequence of elements of [0,N-1] which are NOT Is
     template <int N, int... Is> using complement_sequence = typename complement_sequence_impl<N, all_indices<Is...>>::type;
@@ -102,11 +101,11 @@ namespace triqs {
   * x : an object
   * Returns : a tuple with N elements, each equal x
   */
-    template <typename T, std::size_t... Is> auto make_tuple_repeat_impl(T const &x, std14::index_sequence<Is...>) {
+    template <typename T, std::size_t... Is> auto make_tuple_repeat_impl(T const &x, std::index_sequence<Is...>) {
       return std::make_tuple(((void)Is, x)...);
     }
 
-    template <int N, typename T> auto make_tuple_repeat(T const &x) { return make_tuple_repeat_impl(x, std14::make_index_sequence<N>()); }
+    template <int N, typename T> auto make_tuple_repeat(T const &x) { return make_tuple_repeat_impl(x, std::make_index_sequence<N>()); }
 
     /**
   * apply(f, t)
@@ -116,11 +115,11 @@ namespace triqs {
   * Cf : http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3915.pdf
   * for the idea of using the sequence, which is used several times below.
   */
-    template <typename F, typename T, size_t... Is> AUTO_DECL apply_impl(F &&f, T &&t, std14::index_sequence<Is...>) {
+    template <typename F, typename T, size_t... Is> decltype(auto) apply_impl(F &&f, T &&t, std::index_sequence<Is...>) {
       return f(std::get<Is>(std::forward<T>(t))...);
     }
 
-    template <typename F, typename T> AUTO_DECL apply(F &&f, T &&t) { return apply_impl(std::forward<F>(f), std::forward<T>(t), _get_seq<T>()); }
+    template <typename F, typename T> decltype(auto) apply(F &&f, T &&t) { return apply_impl(std::forward<F>(f), std::forward<T>(t), _get_seq<T>()); }
 
     /*
   * apply_construct<C>(t)
@@ -128,11 +127,11 @@ namespace triqs {
   * t a tuple
   * Returns : C{t0, t1, ....}
   */
-    template <typename C, typename T, size_t... Is> AUTO_DECL apply_construct_impl(T &&t, std14::index_sequence<Is...>) {
+    template <typename C, typename T, size_t... Is> decltype(auto) apply_construct_impl(T &&t, std::index_sequence<Is...>) {
       return C{std::get<Is>(std::forward<T>(t))...};
     }
 
-    template <typename C, typename T> AUTO_DECL apply_construct(T &&t) { return apply_construct_impl<C>(std::forward<T>(t), _get_seq<T>()); }
+    template <typename C, typename T> decltype(auto) apply_construct(T &&t) { return apply_construct_impl<C>(std::forward<T>(t), _get_seq<T>()); }
 
     /*
   * apply_construct_parenthesis<C>(t)
@@ -140,11 +139,11 @@ namespace triqs {
   * t a tuple
   * Returns : C(t0, t1, ....)
   */
-    template <typename C, typename T, size_t... Is> AUTO_DECL apply_construct_parenthesis_impl(T &&t, std14::index_sequence<Is...>) {
+    template <typename C, typename T, size_t... Is> decltype(auto) apply_construct_parenthesis_impl(T &&t, std::index_sequence<Is...>) {
       return C(std::get<Is>(std::forward<T>(t))...);
     }
 
-    template <typename C, typename T> AUTO_DECL apply_construct_parenthesis(T &&t) {
+    template <typename C, typename T> decltype(auto) apply_construct_parenthesis(T &&t) {
       return apply_construct_parenthesis_impl<C>(std::forward<T>(t), _get_seq<T>());
     }
 
@@ -156,7 +155,7 @@ namespace triqs {
   */
     template <typename F> struct _called_on_tuple {
       F _f;
-      template <typename Tu> AUTO_DECL operator()(Tu &&tu) { return triqs::tuple::apply(_f, std::forward<Tu>(tu)); }
+      template <typename Tu> decltype(auto) operator()(Tu &&tu) { return triqs::tuple::apply(_f, std::forward<Tu>(tu)); }
     };
 
     template <typename F> _called_on_tuple<F> called_on_tuple(F &&f) { return {std::forward<F>(f)}; }
@@ -184,7 +183,7 @@ namespace triqs {
   * f: a callable object
   * calls f on all tuple elements in the order of the tuple: f(x) for all x in t
   */
-    template <typename F, typename T, size_t... Is> void for_each_impl(F &&f, T &&t, std14::index_sequence<Is...>) {
+    template <typename F, typename T, size_t... Is> void for_each_impl(F &&f, T &&t, std::index_sequence<Is...>) {
       _for_each_impl(f, std::get<Is>(t)...);
     }
 
@@ -197,7 +196,7 @@ namespace triqs {
   *  Python equivalent :
   *    for n,x in enumrate(t): f(n,x)
   */
-    template <typename F, typename T, size_t... Is> void _for_each_enum_impl(F &&f, T &&t, std14::index_sequence<Is...>) {
+    template <typename F, typename T, size_t... Is> void _for_each_enum_impl(F &&f, T &&t, std::index_sequence<Is...>) {
       _for_each_apply_impl(f, std::tuple<int, decltype(std::get<Is>(t))>(Is, std::get<Is>(t))...);
       // not make_tuple here, we keep the ref given by the get
     }
@@ -221,11 +220,11 @@ namespace triqs {
   * t tuple
   * Returns : [f(i) for i in t]
   */
-    template <typename F, typename T, size_t... Is> AUTO_DECL _map_impl(F &&f, T &&t, std14::index_sequence<Is...>) {
+    template <typename F, typename T, size_t... Is> decltype(auto) _map_impl(F &&f, T &&t, std::index_sequence<Is...>) {
       return std::make_tuple(std::forward<F>(f)(std::get<Is>(t))...);
     }
 
-    template <typename F, typename T> AUTO_DECL map(F &&f, T &&t) { return _map_impl(std::forward<F>(f), std::forward<T>(t), _get_seq<T>()); }
+    template <typename F, typename T> decltype(auto) map(F &&f, T &&t) { return _map_impl(std::forward<F>(f), std::forward<T>(t), _get_seq<T>()); }
 
     /*
   * map_on_zip(f, t...)
@@ -279,7 +278,7 @@ namespace triqs {
     template <int I, typename T, typename R> T _get_rpl(T &&x, R &&r, ...) { return std::forward<T>(x); }
 
     template <size_t... Is, typename Tu, typename R, typename AllIndices>
-    auto _replace_impl(Tu &&tu, R &&r, AllIndices _, std14::index_sequence<Is...>) {
+    auto _replace_impl(Tu &&tu, R &&r, AllIndices _, std::index_sequence<Is...>) {
       return std::make_tuple(_get_rpl<Is>(std::get<Is>(tu), r, _)...);
     }
 
@@ -289,11 +288,11 @@ namespace triqs {
   * filter<int ... I>(t) :
   *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are kept.
   */
-    template <typename Tu, size_t... I> using filter_t = std::tuple<typename std::tuple_element<I, std14::decay_t<Tu>>::type...>;
+    template <typename Tu, size_t... I> using filter_t = std::tuple<typename std::tuple_element<I, std::decay_t<Tu>>::type...>;
 
     template <size_t... I, typename Tu> filter_t<Tu, I...> filter(Tu &&tu) { return filter_t<Tu, I...>(std::get<I>(std::forward<Tu>(tu))...); }
 
-    template <size_t... I, typename Tu> filter_t<Tu, I...> filter(Tu &&tu, std14::index_sequence<I...>) {
+    template <size_t... I, typename Tu> filter_t<Tu, I...> filter(Tu &&tu, std::index_sequence<I...>) {
       return filter_t<Tu, I...>(std::get<I>(std::forward<Tu>(tu))...);
     }
 
@@ -301,11 +300,11 @@ namespace triqs {
   * filter_out<int ... I>(t) :
   *  Given a tuple t, and integers, returns the tuple where the elements at initial position I are dropped.
   */
-    template <int... I, typename Tu> AUTO_DECL filter_out(Tu &&tu) {
-      return filter(tu, complement_sequence<std::tuple_size<std14::decay_t<Tu>>::value - 1, I...>());
+    template <int... I, typename Tu> decltype(auto) filter_out(Tu &&tu) {
+      return filter(tu, complement_sequence<std::tuple_size<std::decay_t<Tu>>::value - 1, I...>());
     }
 
-    template <typename Tu, int... I> using filter_out_t = std14::decay_t<decltype(filter_out<I...>(std::declval<Tu>()))>;
+    template <typename Tu, int... I> using filter_out_t = std::decay_t<decltype(filter_out<I...>(std::declval<Tu>()))>;
 
     /*
   * t : a tuple
@@ -334,7 +333,7 @@ namespace triqs {
  }
 
  template <size_t... Is, typename... T>
- void _triqs_print_tuple(std::ostream &os, std::tuple<T...> const &t, std14::index_sequence<Is...>) {
+ void _triqs_print_tuple(std::ostream &os, std::tuple<T...> const &t, std::index_sequence<Is...>) {
   _triqs_print_tuple_impl(os, std::get<Is>(t)...);
  }
 */
@@ -350,7 +349,7 @@ namespace std {
       if (c++) os << ',';
       os << x;
     });
-    //triqs::tuple::_triqs_print_tuple(os, t, std14::make_index_sequence<sizeof...(T)>());
+    //triqs::tuple::_triqs_print_tuple(os, t, std::make_index_sequence<sizeof...(T)>());
     return os << ")";
   }
 
@@ -358,18 +357,4 @@ namespace std {
     return os << '(' << x.first << ", " << x.second << ')';
   }
 
-  // do not move this up....
-  namespace c14 {
-
-    // a little helper class to wait for the correction that tuple construct is NOT explicit
-    template <typename... Args> class tuple : public std::tuple<Args...> {
-      public:
-      template <typename... Args2> tuple(Args2 &&... args2) : std::tuple<Args...>(std::forward<Args2>(args2)...) {}
-    };
-  } // namespace c14
-
-  // minimal hack to get the metaprogramming work with this tuple too....
-  template <int i, typename... Args> auto get(c14::tuple<Args...> const &t) DECL_AND_RETURN(std::get<i>(static_cast<std::tuple<Args...>>(t)));
-
-  template <typename... Args> class tuple_size<c14::tuple<Args...>> : public tuple_size<std::tuple<Args...>> {};
 } // namespace std

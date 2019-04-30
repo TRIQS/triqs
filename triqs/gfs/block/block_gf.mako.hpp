@@ -47,7 +47,7 @@ namespace triqs {
     //
     template <typename G, int n> struct _is_block_gf_or_view : std::false_type {};
 
-    template <typename G, int n = 0> using is_block_gf_or_view = _is_block_gf_or_view<std14::decay_t<G>, n>;
+    template <typename G, int n = 0> using is_block_gf_or_view = _is_block_gf_or_view<std::decay_t<G>, n>;
 
     template <typename G>
     struct _is_block_gf_or_view<G, 0> : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value || is_block_gf_or_view<G, 2>::value> {};
@@ -227,7 +227,7 @@ namespace triqs {
 
       /// Construct from anything which models BlockGreenFunction.
       // TODO: We would like to refine this, G should have the same mesh, target, at least ...
-      template <typename G> MAKO_GF(G const &x, std14::enable_if_t<BlockGreenFunction<G>::value> *dummy = 0) : MAKO_GF() { *this = x; }
+      template <typename G> MAKO_GF(G const &x, std::enable_if_t<BlockGreenFunction<G>::value> *dummy = 0) : MAKO_GF() { *this = x; }
 
       /// Construct from the mpi lazy class of the implementation class, cf mpi section
       // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
@@ -406,13 +406,13 @@ namespace triqs {
    * @example
    *
    */
-      template <typename RHS> std14::enable_if_t<!arrays::is_scalar<RHS>::value, MAKO_GF &> operator=(RHS const &rhs) {
+      template <typename RHS> std::enable_if_t<!arrays::is_scalar<RHS>::value, MAKO_GF &> operator=(RHS const &rhs) {
         if (!(size() == rhs.size())) TRIQS_RUNTIME_ERROR << "Gf Assignment in View : incompatible size" << size() << " vs " << rhs.size();
         _assign_impl(rhs);
         return *this;
       }
 
-      template <typename RHS> std14::enable_if_t<arrays::is_scalar<RHS>::value, MAKO_GF &> operator=(RHS &&rhs) {
+      template <typename RHS> std::enable_if_t<arrays::is_scalar<RHS>::value, MAKO_GF &> operator=(RHS &&rhs) {
         // mako %if ARITY == 1 :
         for (auto &y : _glist) y = rhs;
         // mako %else:

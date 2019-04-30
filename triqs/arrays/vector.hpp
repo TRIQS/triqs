@@ -149,7 +149,7 @@ namespace triqs {
    */
       template <typename T>
       vector(const T &X,
-             std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, memory_layout_t<1>>
+             std::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, memory_layout_t<1>>
                 ml = memory_layout_t<1>{})
          : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
         triqs_arrays_assign_delegation(*this, X);
@@ -242,7 +242,7 @@ namespace triqs {
   namespace arrays {
 
     // norm2 squared
-    template <typename V> std14::enable_if_t<ImmutableVector<V>::value, typename V::value_type> norm2_sqr(V const &a) {
+    template <typename V> std::enable_if_t<ImmutableVector<V>::value, typename V::value_type> norm2_sqr(V const &a) {
       int dim = a.size();
       auto r  = typename V::value_type{};
       for (int i = 0; i < dim; ++i) r += a(i) * a(i);
@@ -250,77 +250,77 @@ namespace triqs {
     }
 
     // norm2
-    template <typename V> std14::enable_if_t<ImmutableVector<V>::value, typename V::value_type> norm2(V const &a) {
+    template <typename V> std::enable_if_t<ImmutableVector<V>::value, typename V::value_type> norm2(V const &a) {
       using std::sqrt;
       return sqrt(norm2_sqr(a));
     }
 
     // lexicographical comparison operators
     template <typename V1, typename V2>
-    std14::enable_if_t<ImmutableVector<V1>::value && ImmutableVector<V2>::value, bool> operator<(V1 const &a, V2 const &b) {
+    std::enable_if_t<ImmutableVector<V1>::value && ImmutableVector<V2>::value, bool> operator<(V1 const &a, V2 const &b) {
       return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
     }
 
     template <typename V1, typename V2>
-    std14::enable_if_t<ImmutableVector<V1>::value && ImmutableVector<V2>::value, bool> operator>(V1 const &a, V2 const &b) {
+    std::enable_if_t<ImmutableVector<V1>::value && ImmutableVector<V2>::value, bool> operator>(V1 const &a, V2 const &b) {
       return (b < a);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_assign_delegation(vector<T> &lhs, RHS const &rhs) {
+    std::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_assign_delegation(vector<T> &lhs, RHS const &rhs) {
       blas::copy(rhs, lhs);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_compound_assign_delegation(vector<T> &lhs, RHS const &rhs, char_<'A'>) {
+    std::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_compound_assign_delegation(vector<T> &lhs, RHS const &rhs, char_<'A'>) {
       T a = 1.0;
       blas::axpy(a, rhs, lhs);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_compound_assign_delegation(vector<T> &lhs, RHS const &rhs, char_<'S'>) {
+    std::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_compound_assign_delegation(vector<T> &lhs, RHS const &rhs, char_<'S'>) {
       T a = -1.0;
       blas::axpy(a, rhs, lhs);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_scalar_for<RHS, vector<T>>::value> triqs_arrays_compound_assign_delegation(vector<T> &lhs, RHS const &rhs, char_<'M'>) {
+    std::enable_if_t<is_scalar_for<RHS, vector<T>>::value> triqs_arrays_compound_assign_delegation(vector<T> &lhs, RHS const &rhs, char_<'M'>) {
       T a = rhs;
       blas::scal(a, lhs);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_scalar_for<RHS, vector<T>>::value> triqs_arrays_compound_assign_delegation(vector<T> &lhs, RHS const &rhs, char_<'D'>) {
+    std::enable_if_t<is_scalar_for<RHS, vector<T>>::value> triqs_arrays_compound_assign_delegation(vector<T> &lhs, RHS const &rhs, char_<'D'>) {
       T a = 1 / rhs;
       blas::scal(a, lhs);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_assign_delegation(vector_view<T> &lhs, RHS const &rhs) {
+    std::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_assign_delegation(vector_view<T> &lhs, RHS const &rhs) {
       blas::copy(rhs, lhs);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_compound_assign_delegation(vector_view<T> &lhs, RHS const &rhs, char_<'A'>) {
+    std::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_compound_assign_delegation(vector_view<T> &lhs, RHS const &rhs, char_<'A'>) {
       T a = 1.0;
       blas::axpy(a, rhs, lhs);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_compound_assign_delegation(vector_view<T> &lhs, RHS const &rhs, char_<'S'>) {
+    std::enable_if_t<is_vector_or_view<RHS>::value> triqs_arrays_compound_assign_delegation(vector_view<T> &lhs, RHS const &rhs, char_<'S'>) {
       T a = -1.0;
       blas::axpy(a, rhs, lhs);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_scalar_for<RHS, vector_view<T>>::value> triqs_arrays_compound_assign_delegation(vector_view<T> &lhs, RHS const &rhs,
+    std::enable_if_t<is_scalar_for<RHS, vector_view<T>>::value> triqs_arrays_compound_assign_delegation(vector_view<T> &lhs, RHS const &rhs,
                                                                                                           char_<'M'>) {
       T a = rhs;
       blas::scal(a, lhs);
     }
 
     template <typename RHS, typename T>
-    std14::enable_if_t<is_scalar_for<RHS, vector_view<T>>::value> triqs_arrays_compound_assign_delegation(vector_view<T> &lhs, RHS const &rhs,
+    std::enable_if_t<is_scalar_for<RHS, vector_view<T>>::value> triqs_arrays_compound_assign_delegation(vector_view<T> &lhs, RHS const &rhs,
                                                                                                           char_<'D'>) {
       T a = 1 / rhs;
       blas::scal(a, lhs);

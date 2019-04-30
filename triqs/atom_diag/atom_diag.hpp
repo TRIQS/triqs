@@ -25,7 +25,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <triqs/utility/c14.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/arrays/vector.hpp>
 #include <triqs/arrays/matrix.hpp>
@@ -66,7 +65,7 @@ namespace triqs {
 
       public:
       /// Type of matrix elements (double/dcomplex)
-      using scalar_t = std14::conditional_t<Complex, std::complex<double>, double>;
+      using scalar_t = std::conditional_t<Complex, std::complex<double>, double>;
       /// Matrix type
       using matrix_t = matrix<scalar_t>;
       /// Block-diagonal matrix type

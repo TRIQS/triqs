@@ -47,7 +47,7 @@ namespace triqs {
         static_assert(std::is_move_constructible<MeasureType>::value, "This measure is not MoveConstructible");
         static_assert(has_accumulate<MCSignType, MeasureType>::value, " This measure has no accumulate method !");
         static_assert(has_collect_result<MeasureType>::value, " This measure has no collect_results method !");
-        using m_t        = std14::decay_t<MeasureType>;
+        using m_t        = std::decay_t<MeasureType>;
         m_t *p           = new m_t(std::forward<MeasureType>(m));
         impl_            = std::shared_ptr<m_t>(p);
         accumulate_      = [p](MCSignType const &x) { p->accumulate(x); };

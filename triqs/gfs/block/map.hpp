@@ -34,35 +34,35 @@ namespace triqs {
     namespace impl {
 
       template <typename F, typename T> auto _map(F &&f, std::vector<T> const &V) {
-        std::vector<std14::result_of_t<F(T)>> res;
+        std::vector<std::result_of_t<F(T)>> res;
         res.reserve(V.size());
         for (auto &x : V) res.emplace_back(f(x));
         return res;
       }
 
       template <typename F, typename T> auto _map(F &&f, std::vector<T> &V) {
-        std::vector<std14::result_of_t<F(T)>> res;
+        std::vector<std::result_of_t<F(T)>> res;
         res.reserve(V.size());
         for (auto &x : V) res.emplace_back(f(x));
         return res;
       }
 
       template <typename F, typename T> auto _map(F &&f, std::vector<std::vector<T>> const &V) {
-        std::vector<std::vector<std14::result_of_t<F(T)>>> res;
+        std::vector<std::vector<std::result_of_t<F(T)>>> res;
         res.reserve(V.size());
         for (auto &x : V) res.push_back(_map(f, x));
         return res;
       }
 
       template <typename F, typename T> auto _map(F &&f, std::vector<std::vector<T>> &V) {
-        std::vector<std::vector<std14::result_of_t<F(T)>>> res;
+        std::vector<std::vector<std::result_of_t<F(T)>>> res;
         res.reserve(V.size());
         for (auto &x : V) res.push_back(_map(f, x));
         return res;
       }
 
       // implementation is dispatched according to R
-      template <typename F, typename G, typename R = std14::decay_t<std14::result_of_t<F(typename std14::decay_t<G>::g_t)>>> struct map;
+      template <typename F, typename G, typename R = std::decay_t<std::result_of_t<F(typename std::decay_t<G>::g_t)>>> struct map;
 
       // general case
       template <typename F, typename G, typename R> struct map {
@@ -106,7 +106,7 @@ namespace triqs {
     // the map function itself...
     template <typename F, typename G>
     auto map(F &&f, G &&g)
-       -> std14::enable_if_t<is_block_gf_or_view<G>::value, decltype(impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g)))> {
+       -> std::enable_if_t<is_block_gf_or_view<G>::value, decltype(impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g)))> {
       return impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g));
     }
   } // namespace gfs

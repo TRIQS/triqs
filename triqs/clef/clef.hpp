@@ -22,7 +22,6 @@
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/macros.hpp>
 #include <triqs/utility/tuple_tools.hpp>
-#include <triqs/utility/c14.hpp>
 #include <tuple>
 #include <type_traits>
 #include <functional>
@@ -101,7 +100,7 @@ namespace triqs {
     template <int N, typename U> struct pair {
       U rhs;
       static constexpr int p = N;
-      using value_type       = std14::decay_t<U>;
+      using value_type       = std::decay_t<U>;
     };
 
     // ph_set is a trait that given a pack of type, returns the set of _phs they contain
@@ -202,7 +201,7 @@ namespace triqs {
     };                                                                                                                                               \
   }                                                                                                                                                  \
   template <typename L, typename R>                                                                                                                  \
-  FORCEINLINE std14::enable_if_t<is_any_lazy<L, R>::value, expr<tags::TAG, expr_storage_t<L>, expr_storage_t<R>>> operator OP(L &&l, R &&r) {        \
+  FORCEINLINE std::enable_if_t<is_any_lazy<L, R>::value, expr<tags::TAG, expr_storage_t<L>, expr_storage_t<R>>> operator OP(L &&l, R &&r) {        \
     return {tags::TAG(), std::forward<L>(l), std::forward<R>(r)};                                                                                    \
   }                                                                                                                                                  \
   template <> struct operation<tags::TAG> {                                                                                                          \
@@ -229,7 +228,7 @@ namespace triqs {
       static const char *name() { return BOOST_PP_STRINGIZE(OP); }                                                                                   \
     };                                                                                                                                               \
   }                                                                                                                                                  \
-  template <typename L> FORCEINLINE std14::enable_if_t<is_any_lazy<L>::value, expr<tags::TAG, expr_storage_t<L>>> operator OP(L &&l) {               \
+  template <typename L> FORCEINLINE std::enable_if_t<is_any_lazy<L>::value, expr<tags::TAG, expr_storage_t<L>>> operator OP(L &&l) {               \
     return {tags::TAG(), std::forward<L>(l)};                                                                                                        \
   }                                                                                                                                                  \
   template <> struct operation<tags::TAG> {                                                                                                          \
@@ -308,12 +307,12 @@ namespace triqs {
       static constexpr bool is_lazy = __or(evaluator<Childs, Pairs...>::is_lazy...);
 
       template <size_t... Is>
-      FORCEINLINE decltype(auto) eval_impl(std14::index_sequence<Is...>, expr<Tag, Childs...> const &ex, Pairs const &... pairs) const {
+      FORCEINLINE decltype(auto) eval_impl(std::index_sequence<Is...>, expr<Tag, Childs...> const &ex, Pairs const &... pairs) const {
         return op_dispatch<Tag>(std::integral_constant<bool, is_lazy>{}, eval(std::get<Is>(ex.childs), pairs...)...);
       }
 
       FORCEINLINE decltype(auto) operator()(expr<Tag, Childs...> const &ex, Pairs const &... pairs) const {
-        return eval_impl(std14::make_index_sequence<sizeof...(Childs)>(), ex, pairs...);
+        return eval_impl(std::make_index_sequence<sizeof...(Childs)>(), ex, pairs...);
       }
     };
 
@@ -328,11 +327,11 @@ namespace triqs {
 
     template <typename F> struct apply_on_each_leaf_impl {
       F f;
-      template <typename T> FORCEINLINE std::c14::enable_if_t<is_clef_expression<T>::value> operator()(T const &ex) {
+      template <typename T> FORCEINLINE std::enable_if_t<is_clef_expression<T>::value> operator()(T const &ex) {
         tuple::for_each(ex.childs, *this);
       }
-      template <typename T> FORCEINLINE std::c14::enable_if_t<!is_clef_expression<T>::value> operator()(T const &x) { f(x); }
-      template <typename T> FORCEINLINE std::c14::enable_if_t<!is_clef_expression<T>::value> operator()(std::reference_wrapper<T> const &x) {
+      template <typename T> FORCEINLINE std::enable_if_t<!is_clef_expression<T>::value> operator()(T const &x) { f(x); }
+      template <typename T> FORCEINLINE std::enable_if_t<!is_clef_expression<T>::value> operator()(std::reference_wrapper<T> const &x) {
         f(x.get());
       }
     };
@@ -607,7 +606,7 @@ namespace triqs {
   template <typename... A> auto name(A &&... a) DECL_AND_RETURN(make_expr_call(name##_lazy_impl(), std::forward<A>(a)...));
 
 #define TRIQS_CLEF_EXTEND_FNT_LAZY(FUN, TRAIT)                                                                                                       \
-  template <typename A> std::c14::enable_if_t<TRAIT<A>::value, clef::expr_node_t<clef::tags::function, clef::FUN##_lazy_impl, A>> FUN(A &&a) {       \
+  template <typename A> std::enable_if_t<TRAIT<A>::value, clef::expr_node_t<clef::tags::function, clef::FUN##_lazy_impl, A>> FUN(A &&a) {       \
     return {clef::tags::function{}, clef::FUN##_lazy_impl{}, std::forward<A>(a)};                                                                    \
   }
 

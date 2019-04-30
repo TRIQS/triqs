@@ -27,7 +27,7 @@ namespace triqs {
 
     // FIXME  generalize
     template <typename A>
-    std14::conditional_t<A::is_const, array_const_view<typename A::value_type, A::rank + 2>, array_view<typename A::value_type, A::rank + 2>>
+    std::conditional_t<A::is_const, array_const_view<typename A::value_type, A::rank + 2>, array_view<typename A::value_type, A::rank + 2>>
     reinterpret_array_add_1x1(A const &d) {
       auto &imap = d.indexmap();
       typename array_view<typename A::value_type, A::rank + 2>::indexmap_type index_map(join(imap.lengths(), make_shape(1, 1)),

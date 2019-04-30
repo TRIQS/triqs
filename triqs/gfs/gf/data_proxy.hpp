@@ -66,11 +66,11 @@ namespace triqs {
         // FIXME : WHY is this necessary in this case ? can we simplify ?
         // multi var
         // using the standard technique from tuple::apply with a sequence
-        template <typename S, typename Tu, size_t... Is> static decltype(auto) _impl(S &data, Tu const &tu, std14::index_sequence<Is...>) {
+        template <typename S, typename Tu, size_t... Is> static decltype(auto) _impl(S &data, Tu const &tu, std::index_sequence<Is...>) {
           return data(std::get<Is>(tu)...);
         }
         template <typename S, typename... Int> static decltype(auto) invoke(S &data, std::tuple<Int...> const &tu) {
-          return _impl(data, tu, std14::index_sequence_for<Int...>{});
+          return _impl(data, tu, std::index_sequence_for<Int...>{});
         }
       };
 

@@ -51,7 +51,7 @@ namespace triqs {
       using y_type     = typename f_tr::template decay_arg<1>::type;
       using value_type = typename f_tr::result_type;
       // options the det could be kept in a long double to minimize overflow
-      //using det_type = std14::conditional_t<std::is_same<value_type, double>::value, long double, std::complex<long double>>;
+      //using det_type = std::conditional_t<std::is_same<value_type, double>::value, long double, std::complex<long double>>;
       using det_type = value_type;
       static_assert(std::is_floating_point<value_type>::value || triqs::is_complex<value_type>::value,
                     "det_manip : the function must return a floating number or a complex number");

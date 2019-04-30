@@ -38,15 +38,15 @@
 namespace triqs {
   namespace arrays {
 
-    template <int Rank, class T, class = std17::void_t<>> struct get_memory_layout {
+    template <int Rank, class T, class = std::void_t<>> struct get_memory_layout {
       static auto invoke(T const &) { return memory_layout_t<Rank>{}; }
     };
 
-    template <int Rank, class T> struct get_memory_layout<Rank, T, std17::void_t<decltype(std::declval<T>().memory_layout())>> {
+    template <int Rank, class T> struct get_memory_layout<Rank, T, std::void_t<decltype(std::declval<T>().memory_layout())>> {
       static auto invoke(T const &x) { return x.memory_layout(); }
     };
 
-    template <typename A> AUTO_DECL get_shape(A const &x) RETURN(x.domain().lengths());
+    template <typename A> decltype(auto) get_shape(A const &x) { return x.domain().lengths(); }
 
     template <typename A> size_t first_dim(A const &x) { return x.domain().lengths()[0]; }
     template <typename A> size_t second_dim(A const &x) { return x.domain().lengths()[1]; }
@@ -215,7 +215,7 @@ namespace triqs {
 
       // Evaluation and slices
       template <typename... Args>
-      std14::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0)
+      std::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0)
                             && (!IsConst),
                          value_type &>
       operator()(Args const &... args) & {
@@ -223,7 +223,7 @@ namespace triqs {
       }
 
       template <typename... Args>
-      std14::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0),
+      std::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0),
                          value_type const &>
       operator()(Args const &... args) const & {
         return storage_[indexmap_(args...)];
@@ -231,7 +231,7 @@ namespace triqs {
 
       // && : return a & iif it is a non const view
       template <typename... Args>
-      std14::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0)
+      std::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0)
                             && (!IsConst && IsView),
                          value_type &>
       operator()(Args const &... args) && {
@@ -244,7 +244,7 @@ namespace triqs {
 
       // && return a value if this is not a view (regular class) or it is a const_view
       template <typename... Args>
-      std14::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0)
+      std::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0)
                             && (!(!IsConst && IsView)),
                          value_type>
       operator()(Args const &... args) && {

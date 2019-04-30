@@ -42,19 +42,19 @@ namespace triqs {
     inline double max_element(double x) { return x; }
     inline std::complex<double> max_element(std::complex<double> x) { return x; }
 
-    template <class A> std::c14::enable_if_t<ImmutableCuboidArray<A>::value, typename A::value_type> max_element(A const &a) {
+    template <class A> std::enable_if_t<ImmutableCuboidArray<A>::value, typename A::value_type> max_element(A const &a) {
       return fold([](auto const &a, auto const &b) { return std::max(a, b); })(a, get_first_element(a));
     }
 
-    template <class A> std::c14::enable_if_t<ImmutableCuboidArray<A>::value, typename A::value_type> min_element(A const &a) {
+    template <class A> std::enable_if_t<ImmutableCuboidArray<A>::value, typename A::value_type> min_element(A const &a) {
       return fold([](auto const &a, auto const &b) { return std::min(a, b); })(a, get_first_element(a));
     }
 
-    template <class A> std::c14::enable_if_t<ImmutableCuboidArray<A>::value, typename A::value_type> sum(A const &a) {
+    template <class A> std::enable_if_t<ImmutableCuboidArray<A>::value, typename A::value_type> sum(A const &a) {
       return fold(std::plus<typename A::value_type>())(a);
     }
 
-    template <class A> std::c14::enable_if_t<ImmutableCuboidArray<A>::value, typename A::value_type> prod(A const &a) {
+    template <class A> std::enable_if_t<ImmutableCuboidArray<A>::value, typename A::value_type> prod(A const &a) {
       return fold(std::multiplies<typename A::value_type>())(a, 1);
     }
   } // namespace arrays

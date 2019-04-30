@@ -22,7 +22,6 @@
 #define TRIQS_ARRAYS_CACHE_H
 #include "./array.hpp"
 #include <triqs/utility/view_tools.hpp>
-#include <triqs/utility/c14.hpp>
 namespace triqs {
   namespace arrays {
 
@@ -31,10 +30,10 @@ namespace triqs {
       protected:
       typedef memory_layout_t<DataType::domain_type::rank> ml_t;
       ml_t ml;
-      std::c14::conditional_t<IsConst, const_view_or_type_t<DataType>, view_or_type_t<DataType>> keeper;
+      std::conditional_t<IsConst, const_view_or_type_t<DataType>, view_or_type_t<DataType>> keeper;
       bool need_copy;
       using CacheType         = array<typename DataType::value_type, DataType::domain_type::rank>;
-      using exposed_view_type = std::c14::conditional_t<IsConst, typename CacheType::const_view_type, typename CacheType::view_type>;
+      using exposed_view_type = std::conditional_t<IsConst, typename CacheType::const_view_type, typename CacheType::view_type>;
       struct internal_data {
         CacheType copy;
         exposed_view_type view;

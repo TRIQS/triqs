@@ -163,7 +163,7 @@ namespace triqs {
       template <typename T>
       matrix(
          const T &X,
-         std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, memory_layout_t<2>> ml)
+         std::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, memory_layout_t<2>> ml)
          : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
         triqs_arrays_assign_delegation(*this, X);
       }
@@ -176,7 +176,7 @@ namespace triqs {
    */
       template <typename T>
       matrix(const T &X,
-             std14::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, void *> _unused =
+             std::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, void *> _unused =
                 nullptr)
          : IMPL_TYPE(indexmap_type(X.domain(), get_memory_layout<2, T>::invoke(X))) {
         triqs_arrays_assign_delegation(*this, X);

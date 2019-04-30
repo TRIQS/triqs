@@ -21,7 +21,6 @@
 #pragma once
 #include "./first_include.hpp"
 #include "./macros.hpp"
-#include "./c14.hpp"
 #include "./exceptions.hpp"
 #include <boost/serialization/utility.hpp>
 #include <vector>
@@ -359,8 +358,8 @@ namespace itertools{
 
 namespace std { // overload std::get to work with it
 
-  template <int i, typename T, int R> AUTO_DECL get(triqs::utility::mini_vector<T, R> &v) RETURN(v[i]);
-  template <int i, typename T, int R> AUTO_DECL get(triqs::utility::mini_vector<T, R> const &v) RETURN(v[i]);
+  template <int i, typename T, int R> auto get(triqs::utility::mini_vector<T, R> &v) DECL_AND_RETURN(v[i]);
+  template <int i, typename T, int R> auto get(triqs::utility::mini_vector<T, R> const &v) DECL_AND_RETURN(v[i]);
   template <typename T, int R> class tuple_size<triqs::utility::mini_vector<T, R>> : public std::integral_constant<size_t, R> {};
 
 } // namespace std

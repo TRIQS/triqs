@@ -104,7 +104,7 @@ namespace triqs {
     // it is a general algo, nothing to do with arrays
 
     /// --------------- FOREACH ------------------------
-    template <typename T, typename Function> FORCEINLINE std14::enable_if_t<ImmutableCuboidArray<T>::value> foreach (T const &x, Function const &F) {
+    template <typename T, typename Function> FORCEINLINE std::enable_if_t<ImmutableCuboidArray<T>::value> foreach (T const &x, Function const &F) {
       using S = _get_traversal_order<T>;
 #ifndef TRIQS_ARRAYS_FOREACH_C_OR_DYNAMICAL
       indexmaps::cuboid::foreach_impl(typename S::traversal_order_t{}, x.domain(), S::invoke(x), F);
@@ -118,7 +118,7 @@ namespace triqs {
     }
 
     /// --------------- ASSIGN FOREACH ------------------------
-    template <typename T, typename Function> std14::enable_if_t<MutableCuboidArray<T>::value> assign_foreach(T &x, Function &&f) {
+    template <typename T, typename Function> std::enable_if_t<MutableCuboidArray<T>::value> assign_foreach(T &x, Function &&f) {
       using S = _get_traversal_order<T>;
       indexmaps::cuboid::foreach_impl(typename S::traversal_order_t{}, x.domain(), S::invoke(x),
                                       [&x, &f](auto const &... args) { x(args...) = f(args...); });

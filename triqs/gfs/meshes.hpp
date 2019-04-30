@@ -27,7 +27,6 @@
 
 #include "../utility/factory.hpp"
 #include "../utility/tuple_tools.hpp"
-#include "../utility/c17.hpp"
 #include "../utility/macros.hpp"
 #include "../utility/complex_ops.hpp"
 #include "../utility/view_tools.hpp"

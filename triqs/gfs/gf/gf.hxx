@@ -135,8 +135,8 @@ namespace triqs {
 
       using data_memory_layout_t = memory_layout_t<data_rank>;
 
-      using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
-      using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
+      using zero_regular_t    = std::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
+      using zero_const_view_t = std::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
       using zero_view_t       = zero_const_view_t;
       using zero_t            = zero_regular_t;
 
@@ -265,7 +265,7 @@ namespace triqs {
 
       /// Construct from anything which models ImmutableGreenFunction.
       // TODO: We would like to refine this, G should have the same mesh, target, at least ...
-      template <typename G> gf(G const &x, std14::enable_if_t<ImmutableGreenFunction<G>::value> *dummy = 0) : gf() { *this = x; }
+      template <typename G> gf(G const &x, std::enable_if_t<ImmutableGreenFunction<G>::value> *dummy = 0) : gf() { *this = x; }
 
       /// Construct from the mpi lazy class of the implementation class, cf mpi section
       // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
@@ -673,8 +673,8 @@ namespace triqs {
 
       using data_memory_layout_t = memory_layout_t<data_rank>;
 
-      using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
-      using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
+      using zero_regular_t    = std::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
+      using zero_const_view_t = std::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
       using zero_view_t       = zero_const_view_t;
       using zero_t            = zero_view_t;
 
@@ -1182,8 +1182,8 @@ namespace triqs {
 
       using data_memory_layout_t = memory_layout_t<data_rank>;
 
-      using zero_regular_t    = std14::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
-      using zero_const_view_t = std14::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
+      using zero_regular_t    = std::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
+      using zero_const_view_t = std::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
       using zero_view_t       = zero_const_view_t;
       using zero_t            = zero_const_view_t;
 

@@ -31,12 +31,12 @@ namespace triqs {
       using index_t = typename gf_mesh<cartesian_product<Ms...>>::index_t;
 
       template <typename M, typename... T, size_t... Is>
-      static index_t _impl(M const &m, closest_pt_wrap<T...> const &p, std14::index_sequence<Is...>) {
+      static index_t _impl(M const &m, closest_pt_wrap<T...> const &p, std::index_sequence<Is...>) {
         return index_t(gf_closest_point<Ms, Target>::invoke(std::get<Is>(m), closest_pt_wrap<T>{std::get<Is>(p.value_tuple)})...);
       }
 
       template <typename M, typename... T> static index_t invoke(M const &m, closest_pt_wrap<T...> const &p) {
-        return _impl(m, p, std14::index_sequence_for<T...>{});
+        return _impl(m, p, std::index_sequence_for<T...>{});
       }
     };
   } // namespace gfs

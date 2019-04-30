@@ -25,7 +25,6 @@
 #else 
 
 #include <triqs/utility/exceptions.hpp>
-#include <triqs/utility/c14.hpp>
 #include <utility>
 #include <type_traits>
 #include <tuple>
@@ -39,7 +38,7 @@ namespace std {
 
     constexpr static std::size_t n_bounded_types = sizeof...(Types);
     using bounded_types                          = std::tuple<Types...>;
-    template <std::size_t N> using bounded_type  = std14::tuple_element_t<N, bounded_types>;
+    template <std::size_t N> using bounded_type  = std::tuple_element_t<N, bounded_types>;
 
     static_assert(n_bounded_types > 0, "triqs::utility::variant: list of bounded types must not be empty");
 #if GCC_VERSION > 50100
@@ -50,14 +49,14 @@ namespace std {
     // WORKAROUND FOR OLD VERSION OF GCC which do not have aligned_union
     struct aligned_union {
       template <typename T0, typename... Tail> struct max_size_t {
-        using type = std14::conditional_t<(sizeof(T0) > sizeof(typename max_size_t<Tail...>::type)), T0, typename max_size_t<Tail...>::type>;
+        using type = std::conditional_t<(sizeof(T0) > sizeof(typename max_size_t<Tail...>::type)), T0, typename max_size_t<Tail...>::type>;
       };
       template <typename T0> struct max_size_t<T0> { using type = T0; };
 
       // Find a type of the maximum alignment value
       template <typename T0, typename... Tail> struct max_alignment_t {
         using type =
-           std14::conditional_t<(alignof(T0) > alignof(typename max_alignment_t<Tail...>::type)), T0, typename max_alignment_t<Tail...>::type>;
+           std::conditional_t<(alignof(T0) > alignof(typename max_alignment_t<Tail...>::type)), T0, typename max_alignment_t<Tail...>::type>;
       };
       template <typename T0> struct max_alignment_t<T0> { using type = T0; };
 
@@ -82,10 +81,10 @@ namespace std {
     // Find the id of the first type T for which Predicate::apply<T>::value is
     // true, n_bounded_types if not found
     template <typename Predicate> struct find_first_id {
-      template <std::size_t... Is> static constexpr std::size_t invoke(std14::index_sequence<Is...>) {
+      template <std::size_t... Is> static constexpr std::size_t invoke(std::index_sequence<Is...>) {
         return std::min({(Predicate::template apply<bounded_type<Is>>::value ? std::size_t(Is) : n_bounded_types)...});
       }
-      static constexpr std::size_t id = invoke(std14::make_index_sequence<n_bounded_types>{});
+      static constexpr std::size_t id = invoke(std::make_index_sequence<n_bounded_types>{});
     };
 #else
     template <typename Predicate, typename T0, typename... Tail> struct find_first_id_impl {
@@ -148,15 +147,15 @@ namespace std {
     }
 
     // Implementation: visitation
-    template <typename T, typename F> std14::result_of_t<F(T &)> apply(F f) { return f(*reinterpret_cast<T *>(&data)); }
-    template <typename T, typename F> std14::result_of_t<F(T const &)> apply_c(F f) const { return f(*reinterpret_cast<T const *>(&data)); }
+    template <typename T, typename F> std::result_of_t<F(T &)> apply(F f) { return f(*reinterpret_cast<T *>(&data)); }
+    template <typename T, typename F> std::result_of_t<F(T const &)> apply_c(F f) const { return f(*reinterpret_cast<T const *>(&data)); }
 
     public:
-    template <typename = std14::enable_if_t<std::is_default_constructible<bounded_type<0>>::value>> variant() : type_id(0) {
+    template <typename = std::enable_if_t<std::is_default_constructible<bounded_type<0>>::value>> variant() : type_id(0) {
       ::new (&data) bounded_type<0>();
     }
 
-    template <typename T, std::size_t id = find_first_id<convertible_from<T>>::id, typename = std14::enable_if_t<id != n_bounded_types>>
+    template <typename T, std::size_t id = find_first_id<convertible_from<T>>::id, typename = std::enable_if_t<id != n_bounded_types>>
     variant(T const &v) : type_id(id) {
       ::new (&data) bounded_type<id>(v);
     }
@@ -188,7 +187,7 @@ namespace std {
 
     // Casts. Only into one of the Types, and with runtime check that the variant
     // really contains a type T.
-    template <typename T, std::size_t id = find_first_id<equal<std14::decay_t<T>>>::id, typename = std14::enable_if_t<id != n_bounded_types>>
+    template <typename T, std::size_t id = find_first_id<equal<std::decay_t<T>>>::id, typename = std::enable_if_t<id != n_bounded_types>>
     operator T() {
       if (type_id != id)
         TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot cast stored "
@@ -197,7 +196,7 @@ namespace std {
       return *reinterpret_cast<T *>(&data);
     }
 
-    template <typename T, std::size_t id = find_first_id<equal<std14::decay_t<T>>>::id, typename = std14::enable_if_t<id != n_bounded_types>>
+    template <typename T, std::size_t id = find_first_id<equal<std::decay_t<T>>>::id, typename = std::enable_if_t<id != n_bounded_types>>
     operator T() const {
       if (type_id != id)
         TRIQS_RUNTIME_ERROR << "triqs::utility::variant: cannot cast stored "
@@ -214,13 +213,13 @@ namespace std {
 // first type.
 #if not defined(__INTEL_COMPILER) and GCC_VERSION >= 50200
     template <typename F> friend auto visit(F &&f, variant &v) {
-      using RType                                                               = std14::result_of_t<F(bounded_type<0> &)>;
+      using RType                                                               = std::result_of_t<F(bounded_type<0> &)>;
       constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
       return (v.*table[v.type_id])(std::forward<F>(f));
     }
 
     template <typename F> friend auto visit(F &&f, variant const &v) {
-      using RType                                                                     = std14::result_of_t<F(bounded_type<0> const &)>;
+      using RType                                                                     = std::result_of_t<F(bounded_type<0> const &)>;
       constexpr static std::array<RType (variant::*)(F) const, n_bounded_types> table = {&variant::apply_c<Types, F>...};
       return (v.*table[v.type_id])(std::forward<F>(f));
     }
@@ -229,12 +228,12 @@ namespace std {
     // Implementation for gcc 4.9 only.
     // A bug in gcc 4.9 (59766) forbids to use the friend auto which is clearer
     // than this. For icc, I can not leave it here, need to put it outside the class, which is ok for gcc 5.x and clang !
-    template <typename F, typename RType = std14::result_of_t<F(bounded_type<0> &)>> friend RType visit(F &&f, variant &v) {
+    template <typename F, typename RType = std::result_of_t<F(bounded_type<0> &)>> friend RType visit(F &&f, variant &v) {
       constexpr static std::array<RType (variant::*)(F), n_bounded_types> table = {&variant::apply<Types, F>...};
       return (v.*table[v.type_id])(std::forward<F>(f));
     }
 
-    template <typename F, typename RType = std14::result_of_t<F(bounded_type<0> const &)>>
+    template <typename F, typename RType = std::result_of_t<F(bounded_type<0> const &)>>
     friend RType visit(F &&f, variant const &v) { // const version
       constexpr static std::array<RType (variant::*)(F) const, n_bounded_types> table = {&variant::apply_c<Types, F>...};
       return (v.*table[v.type_id])(std::forward<F>(f));
@@ -275,14 +274,14 @@ namespace std {
   template <typename T0, typename... T> struct _first_type { using type = T0; };
 
   template <typename F, typename... T> auto visit(F &&f, variant<T...> &v) {
-    using RType = std14::result_of_t<F(typename _first_type<T...>::type &)>;
+    using RType = std::result_of_t<F(typename _first_type<T...>::type &)>;
     using v_t   = variant<T...>; // workaround a bug in icc. Can not simply replace in next line !!
     constexpr static std::array<RType (v_t::*)(F), sizeof...(T)> table = {&v_t::template apply<T, F>...};
     return (v.*table[v.type_id])(std::forward<F>(f));
   }
 
   template <typename F, typename... T> auto visit(F &&f, variant<T...> const &v) {
-    using RType                                                              = std14::result_of_t<F(typename _first_type<T...>::type const &)>;
+    using RType                                                              = std::result_of_t<F(typename _first_type<T...>::type const &)>;
     using v_t                                                                = variant<T...>;
     constexpr static std::array<RType (v_t::*)(F) const, sizeof...(T)> table = {&v_t::template apply_c<T, F>...};
     return (v.*table[v.type_id])(std::forward<F>(f));

@@ -108,7 +108,7 @@ namespace triqs {
         template <typename S, typename L> decltype(auto) operator()(L &&l, scalar_wrap<S> const &) const { return std::forward<L>(l).indices(); }
       };
 
-      template <typename T> using node_t = std14::conditional_t<utility::is_in_ZRC<T>::value, scalar_wrap<T>, typename remove_rvalue_ref<T>::type>;
+      template <typename T> using node_t = std::conditional_t<utility::is_in_ZRC<T>::value, scalar_wrap<T>, typename remove_rvalue_ref<T>::type>;
 
       template <typename A, typename B> struct _or_ { using type = void; };
       template <typename A> struct _or_<A, A> { using type = A; };
@@ -172,7 +172,7 @@ namespace triqs {
 // Now we can define all the C++ operators ...
 #define DEFINE_OPERATOR(TAG, OP, TRAIT1, TRAIT2)                                                                                                     \
   template <typename A1, typename A2>                                                                                                                \
-  std14::enable_if_t<TRAIT1<A1>::value && TRAIT2<A2>::value, gf_expr<utility::tags::TAG, gfs_expr_tools::node_t<A1>, gfs_expr_tools::node_t<A2>>>    \
+  std::enable_if_t<TRAIT1<A1>::value && TRAIT2<A2>::value, gf_expr<utility::tags::TAG, gfs_expr_tools::node_t<A1>, gfs_expr_tools::node_t<A2>>>    \
   operator OP(A1 &&a1, A2 &&a2) {                                                                                                                    \
     return {std::forward<A1>(a1), std::forward<A2>(a2)};                                                                                             \
   }
@@ -188,7 +188,7 @@ namespace triqs {
 #undef DEFINE_OPERATOR
 
     // the unary is special
-    template <typename A1> std14::enable_if_t<ImmutableGreenFunction<A1>::value, gf_unary_m_expr<gfs_expr_tools::node_t<A1>>> operator-(A1 &&a1) {
+    template <typename A1> std::enable_if_t<ImmutableGreenFunction<A1>::value, gf_unary_m_expr<gfs_expr_tools::node_t<A1>>> operator-(A1 &&a1) {
       return {std::forward<A1>(a1)};
     }
 

@@ -42,7 +42,7 @@ namespace triqs {
         friend std::ostream &operator<<(std::ostream &sout, scalar_wrap const &expr) { return sout << expr.s; }
       };
 
-      template <typename T> using node_t = std14::conditional_t<utility::is_in_ZRC<T>::value, scalar_wrap<T>, remove_rvalue_ref_t<T>>;
+      template <typename T> using node_t = std::conditional_t<utility::is_in_ZRC<T>::value, scalar_wrap<T>, remove_rvalue_ref_t<T>>;
 
       template <typename A, typename B> struct same_or_void { using type = void; };
       template <typename A> struct same_or_void<A, A> { using type = A; };
@@ -55,8 +55,8 @@ namespace triqs {
     template <typename Tag, typename L, typename R> struct bgf_expr : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       // just checking consistency
-      using L_t        = std14::decay_t<L>;
-      using R_t        = std14::decay_t<R>;
+      using L_t        = std::decay_t<L>;
+      using R_t        = std::decay_t<R>;
       using variable_t = typename details_bgfs_expr::same_or_void<typename L_t::variable_t, typename R_t::variable_t>::type;
       using target_t   = typename details_bgfs_expr::same_or_void<typename L_t::target_t, typename R_t::target_t>::type;
       static_assert(!std::is_same<variable_t, void>::value, "Cannot combine two gf expressions with different variables");
@@ -86,7 +86,7 @@ namespace triqs {
     // -------------------------------------------------------------------
     // a special case : the unary operator !
     template <typename L> struct bgf_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
-      using L_t        = std14::decay_t<L>;
+      using L_t        = std::decay_t<L>;
       using variable_t = typename L_t::variable_t;
       using target_t   = typename L_t::target_t;
 
@@ -106,7 +106,7 @@ namespace triqs {
 // Now we can define all the C++ operators ...
 #define DEFINE_OPERATOR(TAG, OP, TRAIT1, TRAIT2)                                                                                                     \
   template <typename A1, typename A2>                                                                                                                \
-  std14::enable_if_t<TRAIT1<A1>::value && TRAIT2<A2>::value,                                                                                         \
+  std::enable_if_t<TRAIT1<A1>::value && TRAIT2<A2>::value,                                                                                         \
                      bgf_expr<utility::tags::TAG, details_bgfs_expr::node_t<A1>, details_bgfs_expr::node_t<A2>>>                                     \
   operator OP(A1 &&a1, A2 &&a2) {                                                                                                                    \
     return {std::forward<A1>(a1), std::forward<A2>(a2)};                                                                                             \
@@ -123,7 +123,7 @@ namespace triqs {
 #undef DEFINE_OPERATOR
 
     // the unary is special
-    template <typename A1> std14::enable_if_t<BlockGreenFunction<A1>::value, bgf_unary_m_expr<details_bgfs_expr::node_t<A1>>> operator-(A1 &&a1) {
+    template <typename A1> std::enable_if_t<BlockGreenFunction<A1>::value, bgf_unary_m_expr<details_bgfs_expr::node_t<A1>>> operator-(A1 &&a1) {
       return {std::forward<A1>(a1)};
     }
 

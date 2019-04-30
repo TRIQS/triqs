@@ -104,12 +104,12 @@ namespace triqs {
     // --------------- Check if is finite ------------------------
 
     /// Returns true iif at least one element of the array is true
-    template <typename A> std14::enable_if_t<ImmutableCuboidArray<A>::value, bool> any(A const &a) {
+    template <typename A> std::enable_if_t<ImmutableCuboidArray<A>::value, bool> any(A const &a) {
       return fold([](bool r, auto const &x) -> bool { return r or bool(x); })(a, false);
     }
 
     /// Returns true iif all elements of the array are true
-    template <typename A> std14::enable_if_t<ImmutableCuboidArray<A>::value, bool> all(A const &a) {
+    template <typename A> std::enable_if_t<ImmutableCuboidArray<A>::value, bool> all(A const &a) {
       return fold([](bool r, auto const &x) -> bool { return r and bool(x); })(a, true);
     }
   } // namespace arrays

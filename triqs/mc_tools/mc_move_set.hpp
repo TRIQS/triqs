@@ -63,7 +63,7 @@ namespace triqs {
         static_assert(has_attempt<MCSignType, MoveType>::value, "This move has no attempt method (or is has an incorrect signature) !");
         static_assert(has_accept<MCSignType, MoveType>::value, "This move has no accept method (or is has an incorrect signature) !");
         static_assert(has_reject<MoveType>::value, "This move has no reject method (or is has an incorrect signature) !");
-        using m_t           = std14::decay_t<MoveType>;
+        using m_t           = std::decay_t<MoveType>;
         m_t *p              = new m_t(std::forward<MoveType>(m)); // moving or copying
         impl_               = std::shared_ptr<m_t>(p);
         attempt_            = [p]() { return p->attempt(); };

@@ -33,7 +33,7 @@ namespace triqs {
         size_t const *lengths;
         std::ptrdiff_t const *strides;
         template <typename A> explicit array_stride_info(A &&a) {
-          R       = std::c14::decay_t<A>::rank;
+          R       = std::decay_t<A>::rank;
           lengths = a.indexmap().domain().lengths().ptr();
           strides = a.indexmap().strides().ptr();
         }
