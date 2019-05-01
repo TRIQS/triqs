@@ -24,6 +24,7 @@
 #include <triqs/utility/first_include.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <type_traits>
+#include <iostream>
 
 #define AS_STRING(...) AS_STRING2(__VA_ARGS__)
 #define AS_STRING2(...) #__VA_ARGS__
@@ -64,5 +65,17 @@ namespace triqs {
 
 #define TRIQS_DEPRECATED(Message) __attribute__((deprecated(AS_STRING(Message))))
 #define TRIQS_PRINT(X) std::cerr << AS_STRING(X) << " = " << X << "      at " << __FILE__ << ":" << __LINE__ << '\n'
+
+#define FORCEINLINE __inline__ __attribute__((always_inline))
+
+#define TERMINATE(X) std::cerr << "Terminating at " << __FILE__ << ":" << __LINE__ << "\n"; std::cerr << X; std::terminate(); }
+
+// Macros mimicing the c++20 contracts behavior
+// FIXME c++20 : replace by [[ expects : X ]]
+#define EXPECTS(X) if(!(X)){ std::cerr << "Precondition " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n"; std::terminate(); }
+// FIXME c++20 : replace by [[ assert : X ]]
+#define ASSERT(X) if(!(X)){ std::cerr << "Assertion " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n"; std::terminate(); }
+// FIXME c++20 : replace by [[ ensures : X ]]
+#define ENSURES(X) if(!(X)){ std::cerr << "Postcondition " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n"; std::terminate(); }
 
 #endif
