@@ -27,7 +27,7 @@ TEST(Gfs, brillouin_zone) {
   double beta = 1;
   triqs::clef::placeholder<0> k_;
 
-  int n_k = 100;
+  int n_k = 50;
 
   auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
   auto m_k = gf_mesh<brillouin_zone>{bz, n_k};
@@ -52,7 +52,7 @@ TEST(Gfs, brillouin_zone) {
   }
 
   // evaluate on a larger grid
-  int n_k2 = 5 * n_k;
+  int n_k2 = 3 * n_k;
   for (int nkx = 0; nkx < n_k2; ++nkx)
     for (int nky = 0; nky < n_k2; ++nky) {
       double kx  = nkx / double(n_k2) * 2 * M_PI;
@@ -68,7 +68,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
   double beta = 1;
   triqs::clef::placeholder<0> k_;
 
-  int n_k = 100;
+  int n_k = 50;
 
   auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
   auto m_k = gf_mesh<brillouin_zone>{bz, n_k};
@@ -95,7 +95,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
   }
 
   // evaluate on a larger grid
-  int n_k2 = 5 * n_k;
+  int n_k2 = 3 * n_k;
   for (int nkx = 0; nkx < n_k2; ++nkx)
     for (int nky = 0; nky < n_k2; ++nky) {
       double kx  = nkx / double(n_k2) * 2 * M_PI;

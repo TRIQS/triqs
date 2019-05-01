@@ -65,7 +65,7 @@ using K_t = std::array<double, 3>;
 TEST(Gkom, Eval) {
   double beta = 5;
 
-  int n_k = 100;
+  int n_k = 40;
   int n_w = 5;
 
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
@@ -83,7 +83,7 @@ TEST(Gkom, Eval) {
   }
 
   //// evaluate on a larger grid
-  int n_k2 = 5 * n_k;
+  int n_k2 = 3 * n_k;
   for (int nkx = 0; nkx < n_k2; ++nkx)
     for (int nky = 0; nky < n_k2; ++nky)
       for (auto w : std::get<1>(g.mesh())) {
@@ -100,7 +100,7 @@ TEST(Gkom, Eval) {
 TEST(Gkom, EvalSlice) {
   double beta = 5;
 
-  int n_k = 100;
+  int n_k = 40;
   int n_w = 5;
 
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
