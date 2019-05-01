@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/first_include.hpp>
-#include <math.h>
+#include <cmath>
 #include <triqs/utility/timer.hpp>
 #include <triqs/utility/timestamp.hpp>
 #include <triqs/utility/report_stream.hpp>

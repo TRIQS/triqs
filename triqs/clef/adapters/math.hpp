@@ -21,7 +21,7 @@
 #ifndef TRIQS_CLEF_ADAPTER_MATH_H
 #define TRIQS_CLEF_ADAPTER_MATH_H
 #include "../clef.hpp"
-#include <math.h>
+#include <cmath>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <complex>
 

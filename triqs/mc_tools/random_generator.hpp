@@ -22,7 +22,7 @@
 #include <triqs/utility/first_include.hpp>
 #include "../utility/exceptions.hpp"
 #include "../utility/buffered_function.hpp"
-#include "math.h"
+#include <cmath>
 #include <string>
 #include <assert.h>
 #include <type_traits>
