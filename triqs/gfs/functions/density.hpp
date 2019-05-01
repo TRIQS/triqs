@@ -53,8 +53,8 @@ namespace triqs {
     // General Version for Block Gf
     // ------------------------------------------------------
 
-    template <typename BGf, int R, typename ENABLE_IF = std::enable_if_t<is_block_gf_or_view<BGf>::value, int>>
-    auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments) {
+    template <typename BGf, int R>
+    auto density(BGf const &gin, std::vector<array<dcomplex, R>> const &known_moments) REQUIRES(is_block_gf_or_view<BGf>::value) {
 
       using var_t = typename BGf::variable_t;
       static_assert(std::is_same_v<var_t, imfreq> or std::is_same_v<var_t, refreq>, "Density Function must be called with either an imfreq or a refreq Green Function");
