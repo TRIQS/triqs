@@ -17,16 +17,10 @@ Meaning of the @option in the doc:
  * @include     For a class, a function, the top level file to include [default: the definition file]
  * @example filename  File name of the example. Path should start from doc/reference/c++
 
- * @manual_methods  Comma separated list of methods which are referenced in the table,
-                    but the page of doc is not generated. It will be written manually.
- * @manual_friends  Comma separated list of non member functions which are referenced in the table,
-                    but the page of doc is not generated. It will be written manually.
-
-The @ MUST BE THE LAST FIELDS
 """
 
 # --------------------------------- 
-# Should be internal ??
+
 def replace_latex(s, escape_slash=False):
     """replace 
        $XX X$  by :math:`XX X`
@@ -34,23 +28,15 @@ def replace_latex(s, escape_slash=False):
        [[ XXX]]  by :ref:` XXX`
      
     """
-    if not s : return s
-    any_math_char = 'A-Za-z0-9{}\[\],;|\(\)=./\/+-_^\'' #any math character
-    #matches all expressions starting and ending with any math char, with possibly whitespaces in between
-    pattern_1 = '\$(['+any_math_char+']['+any_math_char+' ]*['+any_math_char+']+)\$'
-    #matches any single math char
-    pattern_2 = '\$(['+any_math_char+'])\$'
-    #out of line formula
-    text=re.sub('\$'+pattern_1+'\$', r'\n\n.. math::\n\t\t\1\n\n..\n', s)
-    text=re.sub('\$'+pattern_2+'\$', r'\n\n.. math::\n\t\t\1\n\n..\n', text)
-    #inline formula
-    text=re.sub(pattern_1, r':math:`\1`', text)
-    text=re.sub(pattern_2, r':math:`\1`', text)
-    #to create a hyperlink
-    text=re.sub('\[\[([A-Za-z0-9{}\(,\)=./\/+-_]+)\]\]', r':ref:`\1`', text)
-
+    assert not escape_slash # useless
+    
+    text=re.sub('\$\$([^\$]+)\$\$', r'\n\n.. math::\n\t\t\1\n\n..\n', s, flags= re.DOTALL) # multiline math
+    text=re.sub('\$([^\$]+)\$', r':math:`\1`', text)
+ 
     if escape_slash: text=text.encode('string_escape')
     return text
+
+# --------------------------------- 
 
 def clean_doc_string(s):
     for p in [r"/\*",r"\*/",r"^\s*\*", r'\*\s*\n', r'\*/\s*$',r"///", r"//", r"\\brief"] : 
@@ -61,7 +47,7 @@ def clean_doc_string(s):
 
 class ProcessedDoc: 
     
-    fields_allowed_in_docs = ['include', 'return', 'synopsis', 'warning','figure', 'note', 'example', 'param', 'tparam', 'group'] 
+    fields_allowed_in_docs = ['include', 'return', 'synopsis', 'warning','figure', 'note', 'example', 'param', 'tparam', 'group', 'head', 'tail', 'category'] 
     fields_with_multiple_entry = ['param', 'tparam']
 
     """

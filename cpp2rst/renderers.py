@@ -1,7 +1,9 @@
-import os, re
+import os, re, itertools
 import cpp2py.clang_parser as CL
-from synopsis import make_synopsis_list, make_synopsis_template_decl
+from synopsis import make_synopsis_list, make_synopsis_template_decl, make_label, replace_ltgt, escape_lg
 from processed_doc import replace_latex, clean_doc_string
+from collections import OrderedDict
+import global_vars
 
 # common tools for both rendering functions
 
@@ -24,23 +26,11 @@ toctree_hidden ="""
       
 """
 
-def make_header(s):
+def make_header(s, char = '-'):
     """ Make a rst header from the string s """
-    return '\n\n' + s + '\n' + '-'*len(s)  + '\n\n'
+    return '\n\n' + s + '\n' + char*len(s)  + '\n\n'
 
-def escape_lg(s):
-    """Escape the > and < in the string, which are special in rst"""
-    return s.replace('>','\>').replace('<','\<')
-
-def render_list(item_list, header):
-    """ 
-       Make rst code for a list of items with  a header
-       It splits the first word in a separate column
-    """
-    if not item_list: return ''
-    head = make_header(header) if header else ''
-    l = [ (x+'   ').split(' ',1) for x in item_list]
-    return head + '\n'.join(" * **%s**: %s\n"%(k.strip(),v) for (k,v) in l)
+#------------------------------------
 
 def render_note(s) :
     """ Make rst code for a note. Nothing if empty  """
@@ -53,6 +43,18 @@ def render_warning(s) :
     return """
 .. warning::
     %s"""%(s) if s else ''
+
+#-------------------------------------
+
+def render_list(item_list, header, char):
+    """ 
+       Make rst code for a list of items with  a header
+       It splits the first word in a separate column
+    """
+    if not item_list: return ''
+    head = make_header(header, char) if header else ''
+    l = [ (x+'   ').split(' ',1) for x in item_list]
+    return head + '\n'.join(" * **%s**: %s\n"%(k.strip(),v) for (k,v) in l)
    
 #-------------------------------------
 
@@ -82,42 +84,27 @@ def render_fig(figs):
 #-------------------------------------
 
 def render_example(filename):
-    """From the filename, prepare the doc1, doc2, before and after the code
-       and compute the lineno of the code for inclusion"""
-    decal = 4
-    # Hard error ?
+    """Read the example file and prepare the rst"""
+    if not filename : return ''
+    filename = os.path.join(global_vars.examples_root, filename) 
     if not os.path.exists(filename):
-        #print "example file %s (in %s) does not exist"%(filename,os.getcwd())
-        return ''
-    ls = open(filename).read().strip().split('\n')
-    # What is this ??
-    r = [i for i, l in enumerate(ls) if not (re.match(r"^\s*/?\*",l) or re.match("^\s*//",l))]
-    s, e = r[0],r[-1]+1
-    assert r == range(s,e)
-    def cls(w) :
-        w = re.sub(r"^\s*/?\*\s?/?",'',w)
-        w = re.sub(r"^\s*//\s?",'',w)
-        return w
-    doc1 = '\n'.join(cls(x) for x in ls[0:s])
-    code = '\n'.join(decal*' ' + x.strip() for x in ls[s:e])
-    doc2 = '\n'.join(cls(x) for x in ls[e:])
-   
-    if not code : return ''
-    # TODO : Change triqs example ? Include ? code block ...
+        return """
+.. error:: File not found 
+
+    Example file %s not found"""%(filename)
+    # Here we could eliminate the headers
+    code = open(filename).read()
+    sep = 4*' '
+    code = '\n'.join(sep + x for x in code.strip().split('\n'))
     return """
 Example
 ---------
 
-{d1}
-
-.. triqs_example::
-
-    linenos:{s},{e}
+.. code-block:: cpp
 
 {code}
 
-{d2}
-        """.format(d1 = doc1, d2 = doc2,s = s, e = e, code = code)
+        """.format(code = code)
  
 #------------------------------------
 
@@ -135,48 +122,88 @@ def render_fnt(parent_class, f_name, f_overloads):
     
     # tag and name of the class
     parent_cls_name_fully_qualified = (CL.fully_qualified_name(parent_class) + "::") if parent_class else ""
-    parent_cls_spelling = (parent_class.spelling + '_') if parent_class else '' 
+    parent_cls_name = (parent_class.name + '_') if parent_class else '' 
     f_name_full = parent_cls_name_fully_qualified + f_name
     
     R += """
 .. _{class_rst_ref}:
 
 {f_name_full}
-""".format(f_name_full = f_name_full, class_rst_ref = parent_cls_spelling + f_name)
+""".format(f_name_full = f_name_full, class_rst_ref = make_label(parent_cls_name + f_name))
 
     R += '=' * (len(f_name_full)+0) + '\n' + """
 
 """
     # Synopsis
     R += make_synopsis_list(f_overloads) + '\n\n'
+     
+    # We regroup the overload as in cppreference
+   
+    def make_unique(topic) :
+        rets = set(f.processed_doc.elements.pop(topic, '').strip() for f in f_overloads)
+        rets = list(x for x in rets if x)
+        if len(rets)> 1: print "Warning : Multiple documentation of %s across overloads. Picking first one"%topic
+        return rets[0] if rets else ''
+   
+    def make_unique_list(topic) : 
+        D = OrderedDict()
+        for n, f in enumerate(f_overloads):
+           plist = f.processed_doc.elements.pop(topic) # p is a string "NAME REST"
+           for p in plist : 
+               name, desc = (p + '   ').split(' ',1)
+               if name not in D:
+                   D[name] = desc.strip()
+               else:
+                   if D[name] != desc.strip() : 
+                       print "Warning : multiple definition of parameter %s at overload %s"%(name, n)
+        return D
+
+    def render_dict(d, header, char):
+        """ 
+           Make rst code for a list of items with  a header
+           It splits the first word in a separate column
+        """
+        if not d: return ''
+        head = make_header(header, char) if header else ''
+        return head + '\n'.join(" * **%s**: %s\n"%(k.strip(),v) for (k,v) in d.items())
+
+    has_overload = len(f_overloads)> 1
+
+    # Head doc 
+    head = make_unique('head') or ("Documentation" if has_overload else '')
+    R += '%s\n\n'%head 
+
+    # The piece of doc which is overload dependent
+    for num, f in enumerate(f_overloads):
+        pd =  f.processed_doc
+        num_s =  '**%s)**  '%(num+1) if has_overload else '' 
+        if pd.doc : R +=  '\n\n %s %s\n '%(num_s,  pd.doc)+ '\n'
+
+    # Tail doc 
+    R += '%s\n\n' %make_unique('tail') 
+
+    # tparam and param
+    tparam_dict = make_unique_list('tparam')
+    param_dict = make_unique_list('param')
     
-    # HOW DO WE GROUP THE OVERLOAD
-    # Enumerate all overloads
-    for n, f in enumerate(f_overloads):
-        doc = f.processed_doc
-        doc_elem = doc.elements
+    R += render_dict(tparam_dict, 'Template parameters', '^')
+    R += render_dict(param_dict, 'Parameters','^')
+ 
+    # Returns 
+    rets = make_unique("return")
+    if rets : R += make_header('Returns', '^') + " * %s"%rets
 
-        num = '%s.'%(n+1) if len(f_overloads)>1 else ''
-        R += '\n' + num + ' ' + doc.brief_doc + '\n'
-        R += doc.doc
+    # Examples 
+    example_file_name = make_unique("example")
+    R += render_example(example_file_name.strip())
 
-        # TODO which order ?
-        if 'note' in doc_elem :     R += render_note(doc_elem.pop('note'))
-        if 'warning' in doc_elem:   R += render_warning(doc_elem.pop('warning'))
-        if 'figure' in doc_elem:    R += render_fig(doc_elem.pop('figure'))
-        if 'tparam' in doc_elem:    R += render_list(doc_elem.pop('tparam'), 'Template parameters')
-        if 'param' in doc_elem:     R += render_list(doc_elem.pop('param'), 'Parameters')
-        if 'return' in doc_elem:    R += make_header('Return value')        + doc_elem.pop('return')
-
-    # any example from the overloads
-    # Should we TAKE ONLY ONE ????? Error ??
-    example_file_name = reduce(lambda x,y : x or y, [ f.processed_doc.elements.pop('example', '') for f in f_overloads], '')  
-    R += render_example(example_file_name)
+    # Warning 
+    w = make_unique("warning")
+    R += render_warning(w)
 
     return R
 
 #------------------------------------
-
 # Why is all_methods, functoni passed but not members ???
 # Why not do the work here ?
 
@@ -196,45 +223,40 @@ def render_cls(cls, all_methods, all_friend_functions):
     incl = doc_elem.pop('include', '')
 
     # class header
-    cls_name_fully_qualified = CL.fully_qualified_name(cls)
+    fully_qualified_name = CL.fully_qualified_name(cls)
     R +="""
-.. _{cls.spelling}:
+.. _{cls.name_for_label}:
 
-{cls_name_fully_qualified}
+{cls.fully_qualified_name}
 {separator}
 
 Defined in header <*{incl}*>
 
 .. code-block:: c
 
-    {templ_synop}class {cls.spelling};
+    {templ_synop} class {cls.spelling}
 
 {cls_doc.brief_doc}
 
 {cls_doc.doc}
-    """.format(cls = cls, incl = incl.strip(), separator = '=' * (len(cls_name_fully_qualified)), templ_synop = make_synopsis_template_decl(cls), cls_doc = cls_doc, cls_name_fully_qualified = cls_name_fully_qualified)
+    """.format(cls = cls, incl = incl.strip(), separator = '=' * (len(cls.fully_qualified_name)), templ_synop = make_synopsis_template_decl(cls), cls_doc = cls_doc)
 
     # 
     R += cls_doc.doc
-    if 'tparam' in doc_elem:    R += render_list(doc_elem.pop('tparam'), 'Template parameters')
+    if 'tparam' in doc_elem:    R += render_list(doc_elem.pop('tparam'), 'Template parameters', '-')
     if 'note' in doc_elem :     R += render_note(doc_elem.pop('note'))
     if 'warning' in doc_elem:   R += render_warning(doc_elem.pop('warning'))
     if 'figure' in doc_elem:    R += render_fig(doc_elem.pop('figure'))
 
     # Members
-    c_members = list(CL.get_members(cls, True)) 
-    if len(c_members) > 0:
+    if len(cls.members) > 0:
         R += make_header('Public members') 
-        R += render_table([(t.spelling,t.type.spelling, replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in c_members])
+        R += render_table([(t.spelling,t.type.spelling, replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in cls.members])
 
-    # Using : TODO : KEEP THIS ?
-    c_usings = list(CL.get_usings(cls)) 
-    for t in c_usings: 
-        t.my_tag = t.spelling
-
-    if len(c_usings) > 0:
+    # Usings 
+    if len(cls.usings) > 0:
         R += make_header('Member types') 
-        R += render_table([(t.spelling, replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in c_usings])
+        R += render_table([(t.spelling, t.underlying_typedef_type.spelling, replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in cls.usings])
 
     # A table for all member functions and all friend functions
     def group_of_overload(f_list): 
@@ -243,13 +265,24 @@ Defined in header <*{incl}*>
         return s.pop if s else ''
    
     def make_func_list(all_f, header_name):
-        R = ''
-        if len(all_f) > 0:
-            R += make_header(header_name)
-            R += render_table([(":ref:`%s <%s_%s>`"%(name,escape_lg(cls.spelling), escape_lg(name)), f_list[0].processed_doc.brief_doc) for (name, f_list) in all_f.items() ])
-            R += toctree_hidden
-            for f_name in all_f:
-               R += "    {cls.spelling}/{f_name}\n".format(cls = cls, f_name = f_name)
+        if not all_f : return ''
+        R = make_header(header_name)
+        
+        # Regroup the function by sub category
+        D = OrderedDict()
+        for name, flist in all_f.items():
+            cat =flist[0].processed_doc.elements.get('category', None) 
+            D.setdefault(cat, list()).append((":ref:`%s <%s>`"%(escape_lg(name),make_label(cls.name + '_' + name)), flist[0].processed_doc.brief_doc))
+        
+        # Make the sub lists
+        for cat, list_table_args in D.items() : 
+            if cat : R += make_header(cat, '~')
+            R += render_table(list_table_args)
+        
+        # the hidden toctree is not regrouped
+        R += toctree_hidden
+        for f_name in all_f:
+           R += "    {cls_name}/{f_name}\n".format(cls_name = replace_ltgt(cls.name), f_name = f_name)
         return R
 
     R += make_func_list(all_methods, 'Member functions')
@@ -259,3 +292,36 @@ Defined in header <*{incl}*>
     if 'example' in doc_elem: R += render_example(doc_elem.pop('example'))
     
     return R
+
+#-------------------------------------
+
+def render_ns(ns, all_functions, all_classes, all_usings): 
+ 
+    R = make_header('Reference C++ API for %s'%ns, '#') 
+    ns = ns.split('::',1)[1]
+
+    if len(all_usings) > 0:
+        R += make_header('Type aliases')
+        R += render_table([(t.spelling, t.underlying_typedef_type.spelling, replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in all_usings])
+
+    if all_classes:
+        R += make_header('Classes')
+        R += ".. table::\n   :width: 50% 50%\n\n"
+        #R += render_table([(":ref:`%s <_%s_%s>`"%(cls.spelling,escape_lg(ns), escape_lg(cls.spelling)), cls.processed_doc.brief_doc) for cls in all_classes ])
+        R += render_table([(":ref:`%s <%s>`"%(escape_lg(cls.name), cls.name_for_label), cls.processed_doc.brief_doc) for cls in all_classes ])
+        R += toctree_hidden
+        for cls in all_classes:
+            R += "    {ns}/{filename}\n".format(ns = ns, filename = replace_ltgt(cls.name))
+
+
+    if all_functions:
+        R += make_header('Functions')
+        R += render_table([(":ref:`%s <%s>`"%(name, escape_lg(name)), f_list[0].processed_doc.brief_doc) for (name, f_list) in all_functions.items() ])
+        #R += render_table([(":ref:`%s <%s_%s>`"%(name,escape_lg(ns), escape_lg(name)), f_list[0].processed_doc.brief_doc) for (name, f_list) in all_functions.items() ])
+        R += toctree_hidden
+        for f_name in all_functions:
+           R += "    {ns}/{f_name}\n".format(ns = ns, f_name = f_name)
+   
+    return R
+
+
