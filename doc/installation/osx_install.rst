@@ -55,6 +55,7 @@ They may work (possibly with some modifications) for earlier versions of OS X.
 3. We recommend using the clang compiler. The following two commands will install the most recent clang compiler ::
      
      brew install llvm
+     brew install libomp
 
    As a next step we make sure the clang compiler is added to your :ref:`environment <environment_vars>`::
 
