@@ -38,14 +38,14 @@ namespace nda::mem {
     // The integer-type for the reference counters
     using int_t = uint16_t;
 
-    // The mutex
-    std::mutex mtx = {};
-
     // A table of reference counters. The position in the vector will be the counter-id
     // We dont use the first element of the vector (id=0 signifies a null memory handle)
     std::vector<int_t> _refcounts;
 
     public:
+    // The mutex
+    std::mutex mtx = {};
+
     rtable_t(long size = 10) : _refcounts(size, uint16_t{0}) {}
 
     ~rtable_t() {
@@ -56,8 +56,6 @@ namespace nda::mem {
 
     // Initialize the next empty counter (to 1) and return the id
     long get() noexcept {
-      // This function needs to be executed serially
-      std::lock_guard<std::mutex> lock(mtx);
 
       // NEVER yield 0, id=0 is associated with the null-handle
       for (long i = 1; i < _refcounts.size(); ++i) {
@@ -92,7 +90,9 @@ namespace nda::mem {
     // If it has reached 0, it also releases the counter.
     bool decref(long id) noexcept {
 #ifdef NDA_DEBUG
-      EXPECTS(id != 0); EXPECTS(_refcounts[id] > 0); EXPECTS(id < _refcounts.size());
+      EXPECTS(id != 0);
+      EXPECTS(_refcounts[id] > 0);
+      EXPECTS(id < _refcounts.size());
 #endif
 
       // This function needs to be executed serially

@@ -289,6 +289,7 @@ namespace nda::mem {
     // Construct from foreign library shared object
     handle(T *data, size_t size, void *foreign_handle, void *foreign_decref) noexcept
        : _data(data), _size(size), _foreign_handle(foreign_handle), _foreign_decref(foreign_decref) {
+      std::lock_guard<std::mutex> lock(globals::rtable.mtx);
       _id = globals::rtable.get();
     }
 
@@ -297,9 +298,11 @@ namespace nda::mem {
       if (x.is_null()) return;
 
       // Get an id if necessary
-      if (x._id == 0) x._id = globals::rtable.get();
+      {
+        std::lock_guard<std::mutex> lock(globals::rtable.mtx);
+        if (x._id == 0) x._id = globals::rtable.get();
+      }
       _id = x._id;
-
       // Increase refcount
       incref();
     }
