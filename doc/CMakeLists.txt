@@ -81,21 +81,6 @@ foreach (mod ${CPP2PY_MODULES_LIST})
 endforeach()
 
 # ---------------------------------
-# Build C++ examples ...
-# ---------------------------------
-link_libraries(triqs)
-FILE(GLOB_RECURSE ExampleList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
-
-# build all the examples in their respective directory
- foreach(example ${ExampleList})
-  get_filename_component (f ${example} NAME_WE)
-  get_filename_component (d ${example} DIRECTORY)
-  add_executable(doc_${f} ${CMAKE_CURRENT_SOURCE_DIR}/${example})
-  set_target_properties(doc_${f} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${d})
-  add_dependencies(docs_sphinx doc_${f}) ## so that all code examples are compiled before the doc
- endforeach()
-
-# ---------------------------------
 # Install
 # ---------------------------------
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs
