@@ -50,11 +50,11 @@ def is_public(node):
 
 def jump_to_declaration(node):
     """
-    Precondition : node is a parameter of a function/method, or a base class
+    Precondition : node is a type of a parameter of a function/method, or a base class
     Return : a cursor on its declaration
     """
-    tt = node.type.get_declaration()  # guess it is not a ref
-    if not tt.location.file : tt = node.type.get_pointee().get_declaration() # it is a T &
+    tt = node.get_declaration()  # guess it is not a ref
+    if not tt.location.file : tt = node.get_pointee().get_declaration() # it is a T &
     return tt
 
 def keep_all(x) : return is_public(x) #True
@@ -144,7 +144,7 @@ def get_base_classes(node, keep = keep_all):
     """
     for c in node.get_children():
         if c.kind == CursorKind.CXX_BASE_SPECIFIER and keep(c): 
-                yield jump_to_declaration(c)
+                yield jump_to_declaration(c.type)
 
 def get_members(node, with_inherited, keep = keep_all): 
     """
@@ -207,15 +207,6 @@ def get_constructors(cls, keep = keep_all, with_copy_and_move_constructors = Fal
                 (c.kind == CursorKind.FUNCTION_TEMPLATE and is_constructor(cls, c)):
             if with_copy_and_move_constructors or not(is_copy_or_move_constructor(cls, c)):
                     yield c
-
-def get_usings(node, keep = keep_all): 
-    """
-    node is a class
-    yields the nodes to the usings 
-    """
-    for c in node.get_children():
-        if c.kind == CursorKind.TYPE_ALIAS_DECL and keep(c): 
-            yield c
 
 def get_friend_functions(node, keep = keep_all): 
     """
@@ -301,6 +292,19 @@ def get_functions(node, keep = keep_all, traverse_namespaces = False, keep_ns = 
               yield x
         else :
           if c and c.kind in _fnt_types and keep(c):
+            yield c
+
+def get_usings(node, keep = keep_all, traverse_namespaces = False, keep_ns = keep_all): 
+    """
+    node is a class, or a namespace or root
+    yields the nodes to the usings 
+    """
+    for c in node.get_children():
+        if traverse_namespaces and c.kind is CursorKind.NAMESPACE and keep_ns(c):
+            for x in get_usings(c, keep, traverse_namespaces, keep_ns) :
+                yield x
+        else :
+          if c and c.kind  == CursorKind.TYPE_ALIAS_DECL and keep(c):
             yield c
 
 def fully_qualified(c):

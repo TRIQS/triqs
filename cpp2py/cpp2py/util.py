@@ -16,7 +16,7 @@ def get_decl_param_class(f):
         return None
     p = list(CL.get_params(f))
     assert len(p) == 1, "A function/method with PARAM technique must have exacly one parameter"
-    return CL.jump_to_declaration(p[0])
+    return CL.jump_to_declaration(p[0].type)
 
 def use_parameter_class(m): 
     return 'use_parameter_class' in CL.get_annotations(m) 
