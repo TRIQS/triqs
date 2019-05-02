@@ -42,11 +42,12 @@ endmacro(add_cpp_test)
 #   where my_script.py is the script
 macro(add_python_test testname)
 
- add_test(${testname} ${PythonBuildExecutable} ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py)
- set_property(TEST ${testname} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:./:$ENV{PYTHONPATH})
+ set(testname ${testname})
+ add_test(py_${testname} ${PythonBuildExecutable} ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.py)
+ set_property(TEST py_${testname} PROPERTY ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:./:$ENV{PYTHONPATH})
 
  if(SANITIZER_RT_PRELOAD)
-   set_property(TEST ${testname} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
+   set_property(TEST py_${testname} APPEND PROPERTY ENVIRONMENT ${SANITIZER_RT_PRELOAD})
  endif()
 
 endmacro(add_python_test)

@@ -14,7 +14,7 @@ add_python_test(gf_density)
 add_python_test(gf_base_op)
 add_python_test(gf_fourier)
 add_python_test(gf_slicing)
-add_python_test(g_tau_mul_py)
+add_python_test(g_tau_mul)
 
 # a simple dos on square lattice
 add_python_test(dos)
