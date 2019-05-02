@@ -336,6 +336,7 @@ namespace nda::mem {
     public:
     using value_type = T;
 
+    handle() = default;
     handle(T *ptr, size_t s) noexcept : _data(ptr), _size(s) {}
     handle(handle<T, 'R'> const &x) noexcept : _data(x.data()), _size(x.size()) {}
     handle(handle<T, 'S'> const &x) noexcept : _data(x.data()), _size(x.size()) {}
