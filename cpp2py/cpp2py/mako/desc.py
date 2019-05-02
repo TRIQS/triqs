@@ -3,10 +3,12 @@
 from cpp2py.wrap_generator import *
 
 # The module
-module = module_(full_name = "${W.modulename}", doc = "${doc.replace_latex(W.moduledoc)}", app_name = "${W.appname}")
+module = module_(full_name = "${W.modulename}", doc = r"${doc.replace_latex(W.moduledoc)}", app_name = "${W.appname}")
 
 # Imports
+%if import_list:
 module.add_imports(*${import_list})
+%endif
 
 # Add here all includes 
 module.add_include("${W.filename.split('c++/')[-1]}")
@@ -24,7 +26,7 @@ using namespace ${ns};
 ##
 
 %for e in W.all_enums:
-module.add_enum("${e.spelling}", ${["%s::%s"%(e.spelling, x.spelling) for x in e.get_children()]}, "${CL.get_namespace(e)}", """${doc.make_doc(e)}""")
+module.add_enum("${e.spelling}", ${["%s::%s"%(e.spelling, x.spelling) for x in e.get_children()]}, "${CL.get_namespace(e)}", doc = r"""${doc.make_doc(e)}""")
 %endfor
 
 ##
@@ -33,7 +35,7 @@ module.add_enum("${e.spelling}", ${["%s::%s"%(e.spelling, x.spelling) for x in e
 c = class_(
         py_type = "${util.deduce_normalized_python_class_name(c.spelling)}",  # name of the python class
         c_type = "${c.type.get_canonical().spelling}",   # name of the C++ class
-        doc = """${doc.make_doc(c)}""",   # doc of the C++ class
+        doc = r"""${doc.make_doc_class(c)}""",   # doc of the C++ class
         hdf5 = ${'True' if W.has_hdf5_scheme(c) else 'False'},
 )
 <%
@@ -43,12 +45,12 @@ c = class_(
 c.add_member(c_name = "${m.spelling}",
              c_type = "${m.type.spelling}",
              read_only= ${W.members_read_only},
-             doc = """${doc.make_doc(m)}""")
+             doc = r"""${doc.make_doc(m)}""")
 
 %endfor
 ##
 %for m in CL.get_constructors(c, W.keep_fnt):
-c.add_constructor("""${W.make_signature_for_desc(m, True)}""", doc = """${doc.make_doc(m)}""")
+c.add_constructor("""${W.make_signature_for_desc(m, True)}""", doc = r"""${doc.make_doc_function(m)}""")
 
 %endfor
 ##
@@ -57,7 +59,7 @@ c.add_method("""${W.make_signature_for_desc(m)}""",
              %if m.is_static_method() :
              is_static = True,
              %endif
-             doc = """${doc.make_doc(m)}""")
+             doc = r"""${doc.make_doc_function(m)}""")
 
 %endfor
 ##
@@ -67,7 +69,7 @@ c.add_property(name = "${p.name}",
                %if p.setter :
                setter = cfunction("${W.make_signature_for_desc(p.setter)}"),
                %endif
-               doc = """${p.doc}""")
+               doc = r"""${doc.clean_doc_string(p.doc)}""")
 
 %endfor
 ##
@@ -76,7 +78,7 @@ module.add_class(c)
 %endfor
 ##
 %for f in W.all_functions:
-module.add_function ("${W.make_signature_for_desc(f, is_free_function = True)}", doc = """${doc.make_doc(f)}""")
+module.add_function ("${W.make_signature_for_desc(f, is_free_function = True)}", doc = r"""${doc.make_doc_function(f)}""")
 
 %endfor
 
@@ -85,13 +87,13 @@ module.add_function ("${W.make_signature_for_desc(f, is_free_function = True)}",
 # Converter for ${c.spelling}
 c = converter_(    
         c_type = "${c.type.spelling}", 
-        doc = """${doc.make_doc(c)}""",  
+        doc = r"""${doc.make_doc(c)}""",  
 )
 %for m in CL.get_members(c, True):
 c.add_member(c_name = "${m.spelling}",
              c_type = "${m.type.spelling}",
              initializer = """ ${CL.get_member_initializer(m)} """,
-             doc = """${doc.make_doc(m)}""")
+             doc = r"""${doc.make_doc(m)}""")
 
 %endfor
 module.add_converter(c)
