@@ -1,5 +1,7 @@
 #include <triqs/test_tools/gfs.hpp>
 
+using namespace std::complex_literals;
+
 TEST(Gf, PartialEval) {
 
   double beta   = 1.;
@@ -21,7 +23,7 @@ TEST(Gf, PartialEval) {
   auto G_w_wn  = gf<cartesian_product<refreq, imfreq>, scalar_valued>{{{wmin, wmax, n_re_freq}, {beta, Fermion, n_im_freq}}};
   auto G_w_tau = gf<cartesian_product<refreq, imtime>, scalar_valued>{{{wmin, wmax, n_re_freq}, {beta, Fermion, n_im_time}}};
 
-  G_w_wn(w_, wn_) << 1 / (wn_ - 1) / (w_ * w_ * w_);
+  G_w_wn(w_, wn_) << 1 / (wn_ - 1) / (w_ * w_ * w_ + 1i);
   G_w_tau(w_, tau_) << exp(-2 * tau_) / (w_ * w_ + 1);
 
   int index  = n_re_freq / 3;

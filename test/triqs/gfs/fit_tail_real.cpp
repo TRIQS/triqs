@@ -19,8 +19,8 @@ TEST(FitTailReal, Basic) { // NOLINT
 
   // Initialize the Green functions
   array<dcomplex, 1> c{0, 1, 3, 5};
-  gw(w_) << c(0) + c(1) / w_ + c(2) / w_ / w_ + c(3) / w_ / w_ / w_;
-  gw_s(w_) << c(0) + c(1) / w_ + c(2) / w_ / w_ + c(3) / w_ / w_ / w_;
+  gw(w_) << c(0) + c(1) / (w_ + 1e-14) + c(2) / (w_ * w_ + 1e-14) + c(3) / (w_ * w_ * w_ + 1e-14);
+  gw_s(w_) << c(0) + c(1) / (w_ + 1e-14) + c(2) / (w_ * w_ + 1e-14) + c(3) / (w_ * w_ * w_ + 1e-14);
 
   // ==== Fix only the 0th moment to 0
   {

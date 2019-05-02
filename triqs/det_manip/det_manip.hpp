@@ -24,6 +24,7 @@
 #include <vector>
 #include <iterator>
 #include <numeric>
+#include <cmath>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/algorithms.hpp>
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
@@ -754,6 +755,7 @@ namespace triqs {
 
         // M <- a - d^-1 b c with BLAS
         w1.ksi = -1 / mat_inv(N, N);
+        ASSERT(std::isfinite(std::abs(w1.ksi)));
         range R(0, N);
 
         //mat_inv(R,R) += w1.ksi, * mat_inv(R,N) * mat_inv(N,R);

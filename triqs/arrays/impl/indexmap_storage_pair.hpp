@@ -162,8 +162,8 @@ namespace triqs {
       /// data_start is the starting point of the data of the object
       /// this it NOT &storage()[0], which is the start of the underlying blokc
       /// they are not equal for a view in general
-      value_type const *data_start() const { return &storage_[indexmap_.start_shift()]; }
-      value_type *data_start() { return &storage_[indexmap_.start_shift()]; }
+      value_type const * data_start() const { return storage_.data() + indexmap_.start_shift(); }
+      value_type * data_start() { return storage_.data() + indexmap_.start_shift(); }
 
       using domain_type = typename indexmap_type::domain_type;
       domain_type const &domain() const { return indexmap_.domain(); }

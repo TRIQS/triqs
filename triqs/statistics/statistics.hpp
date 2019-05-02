@@ -264,7 +264,7 @@ namespace triqs {
       template <typename T> std::enable_if_t<!is_time_series<T>::value> operator()(T const &) {}
       template <typename T> std::enable_if_t<is_time_series<T>::value> operator()(T const &obs) {
         int i = obs.size();
-        if ((res * i != 0) && (res != i)) TRIQS_RUNTIME_ERROR << "Expression of time series with time mismatch";
+        if ((res != 0) && (i != 0) && (res != i)) TRIQS_RUNTIME_ERROR << "Expression of time series with time mismatch";
         res = i; // keep the result
       }
     };

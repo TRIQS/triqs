@@ -7,10 +7,7 @@ using triqs::det_manip::det_manip;
 struct func {
   // gives the coefficients of the matrix (function F of the documentation)
   double operator()(int x, int y) const {
-    if ((x < 0) and (y < 0))
-      return 0;
-    else
-      return x + y;
+    return x + y;
   }
 };
 
@@ -54,19 +51,19 @@ TEST(det_manip, det_manip_zero_mat) {
   auto dm2                        = make_zero(dm1);
   auto dm3                        = insert_nonzero(dm2);
   auto dm4                        = make_empty_from_zero(dm2);
-  arrays::matrix<double> true_dm1 = {{0, 1}, {-3, 5}};
-  arrays::matrix<double> true_dm2 = {{0}};
-  arrays::matrix<double> true_dm3 = {{0, 2}, {1, 10}};
+  arrays::matrix<double> true_dm1 = {{-7, 1}, {-3, 5}};
+  arrays::matrix<double> true_dm2 = {{-7}};
+  arrays::matrix<double> true_dm3 = {{-7, 2}, {1, 10}};
   arrays::matrix<double> true_dm4 = {};
 
   EXPECT_ARRAY_NEAR(dm1.matrix(), true_dm1);
-  EXPECT_EQ(dm1.determinant(), 3);
+  EXPECT_EQ(dm1.determinant(), -32);
 
   EXPECT_ARRAY_NEAR(dm2.matrix(), true_dm2);
-  EXPECT_EQ(dm2.determinant(), 0);
+  EXPECT_EQ(dm2.determinant(), -7);
 
   EXPECT_ARRAY_NEAR(dm3.matrix(), true_dm3);
-  EXPECT_EQ(dm3.determinant(), -2);
+  EXPECT_EQ(dm3.determinant(), -72);
 
   EXPECT_ARRAY_NEAR(dm4.matrix(), true_dm4);
   EXPECT_EQ(dm4.determinant(), 1);
