@@ -166,7 +166,7 @@ namespace triqs {
     // Returns lambda-function compatible with atomic_g_lehmann_impl
     // The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
     template <bool Complex> auto make_term_proc(double beta, block_gf_view<imtime> gf) {
-      return [&gf, beta](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) {
+      return [gf, beta](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) mutable {
         gf_view<imtime, scalar_valued> g = slice_target_to_scalar(gf[bl], n1, n2);
 
         auto w = -residue / (pole > 0 ? (1 + std::exp(-beta * pole)) : (std::exp(beta * pole) + 1));
@@ -211,7 +211,7 @@ namespace triqs {
     // Returns lambda-function compatible with atomic_g_lehmann_impl
     // The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
     template <bool Complex> auto make_term_proc(block_gf_view<imfreq> gf) {
-      return [&gf](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) {
+      return [gf](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) mutable {
         gf_view<imfreq, scalar_valued> g = slice_target_to_scalar(gf[bl], n1, n2);
 
         // Set data points
@@ -253,7 +253,7 @@ namespace triqs {
     // Returns lambda-function compatible with atomic_g_lehmann_impl
     // The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
     template <bool Complex> auto make_term_proc(double beta, block_gf_view<legendre> gf) {
-      return [&gf, beta](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) {
+      return [gf, beta](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) mutable {
         gf_view<legendre, scalar_valued> g = slice_target_to_scalar(gf[bl], n1, n2);
 
         // Set data points
@@ -301,7 +301,7 @@ namespace triqs {
     // Returns lambda-function compatible with atomic_g_lehmann_impl
     // The lambda-function captures 'gf' and fills it when passed to atomic_g_lehmann_impl
     template <bool Complex> auto make_term_proc(block_gf_view<refreq> gf, double broadening) {
-      return [&gf, broadening](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) {
+      return [gf, broadening](int bl, int n1, int n2, double pole, ATOM_DIAG_T::scalar_t residue) mutable {
         gf_view<refreq, scalar_valued> g = slice_target_to_scalar(gf[bl], n1, n2);
 
         // Set data points
