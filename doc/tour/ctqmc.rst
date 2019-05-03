@@ -50,7 +50,7 @@ function as well as the average impurity occupancy is stored in the
    
    # Construct the impurity solver with the inverse temperature
    # and the structure of the Green's functions
-   S = Solver(beta = beta, gf_struct = {'up':[0], 'down':[0]})
+   S = Solver(beta = beta, gf_struct = [('up',[0]), ('down',[0])]
    
    # Initialize the non-interacting Green's function S.G0_iw
    for spin, g0 in S.G0_iw:

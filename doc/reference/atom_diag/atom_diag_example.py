@@ -54,22 +54,12 @@ print trace_rho_op(dm, n('up',0) * n('dn',0), ad)
 print trace_rho_op(dm, n('up',1) * n('dn',1), ad)
 print trace_rho_op(dm, n('up',2) * n('dn',2), ad)
 
-# Atomic Matsubara Green's function
-gf_struct = {'dn' : orb_names, 'up' : orb_names }
-AGF = atomic_gf(ad, beta, gf_struct)
-
-# We can now use the same AGF object to fill block GFs
-# in different representations and on different meshes
-G_tau = BlockGf(name_block_generator =
-                [(bn,GfImTime(beta=beta,indices=gf_struct[bn],n_points=400)) for bn in gf_struct])
-G_iw = BlockGf(name_block_generator =
-               [(bn,GfImFreq(beta=beta,indices=gf_struct[bn],n_points=100)) for bn in gf_struct])
-G_l = BlockGf(name_block_generator =
-              [(bn,GfLegendre(beta=beta,indices=gf_struct[bn],n_points=20)) for bn in gf_struct])
-
-G_tau << AGF
-G_iw << AGF
-G_l << AGF
+# Atomic Green's functions
+gf_struct = [['dn',orb_names],['up',orb_names]]
+G_w = atomic_g_w(ad, beta, gf_struct, (-2, 2), 400, 0.01)
+G_tau = atomic_g_tau(ad, beta, gf_struct, 400)
+G_iw = atomic_g_iw(ad, beta, gf_struct, 100)
+G_l = atomic_g_l(ad, beta, gf_struct, 20)
 
 # Finally, we save our AtomDiag object for later use
 with HDFArchive('atom_diag_example.h5') as ar:
