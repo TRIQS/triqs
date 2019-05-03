@@ -76,10 +76,12 @@ def render_table(list_of_list):
 def render_fig(figs): 
     fig = figs.split(":", 1)
     return """
+
 .. figure:: {fig[0]}
    :alt: {fig[1]}
    :align: center
-        """.format(fig = fig) + fig[1].lstrip(' \t\n\r') + '\n'
+
+""".format(fig = fig) + fig[1].lstrip(' \t\n\r') + '\n'
 
 #-------------------------------------
 
@@ -182,6 +184,10 @@ def render_fnt(parent_class, f_name, f_overloads):
     # Tail doc 
     R += '%s\n\n' %make_unique('tail') 
 
+    # Figure
+    figure = make_unique('figure')
+    if figure : R += render_fig(figure)
+
     # tparam and param
     tparam_dict = make_unique_list('tparam')
     param_dict = make_unique_list('param')
@@ -234,7 +240,7 @@ Defined in header <*{incl}*>
 
 .. code-block:: c
 
-    {templ_synop} class {cls.spelling}
+    {templ_synop} class {cls.name}
 
 {cls_doc.brief_doc}
 
@@ -256,7 +262,8 @@ Defined in header <*{incl}*>
     # Usings 
     if len(cls.usings) > 0:
         R += make_header('Member types') 
-        R += render_table([(t.spelling, t.underlying_typedef_type.spelling, replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in cls.usings])
+        R += render_table([(t.spelling, re.sub(cls.namespace + '::','',t.underlying_typedef_type.spelling), 
+                            replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in cls.usings])
 
     # A table for all member functions and all friend functions
     def group_of_overload(f_list): 
@@ -302,7 +309,8 @@ def render_ns(ns, all_functions, all_classes, all_usings):
 
     if len(all_usings) > 0:
         R += make_header('Type aliases')
-        R += render_table([(t.spelling, t.underlying_typedef_type.spelling, replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in all_usings])
+        R += render_table([(t.spelling, re.sub(ns+'::','',t.underlying_typedef_type.spelling), 
+                            replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in all_usings])
 
     if all_classes:
         R += make_header('Classes')

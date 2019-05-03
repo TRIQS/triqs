@@ -32,7 +32,7 @@ namespace triqs {
     /**
   Mesh for the imaginary-time axis from $0$ to $\beta$.
   The time points are defined as follows, for $n=0{\dots}N-1$: $$\tau_n=\frac{n}{N-1}\beta$$ where $N$ is the size of the mesh.
-  @figure matsubara_imtime.png: Pictorial representation of ``gf_mesh<imtime>{beta, Fermion/Boson, 4}``.
+  @figure ../../../triqs/gfs/matsubara_imtime.png: Pictorial representation of ``gf_mesh<imtime>{beta, Fermion/Boson, 4}``.
   */
     template <> struct gf_mesh<imtime> : linear_mesh<matsubara_time_domain> {
       using B     = linear_mesh<matsubara_time_domain>;
