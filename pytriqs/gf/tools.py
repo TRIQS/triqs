@@ -3,6 +3,8 @@
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
 # Copyright (C) 2011 by M. Ferrero, O. Parcollet
+# Copyright (C) 2019 The Simons Foundation
+# Authors: H. U.R. Strand
 #
 # TRIQS is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -193,13 +195,29 @@ def make_zero_tail(g, n_moments=10):
 
 
 def fit_legendre(g_t, order=10):
-    """ General fit of a noisy imaginary time response function
+    """ General fit of a noisy imaginary time Green's function
     to a low order Legendre expansion in imaginary time.
 
     Only Hermiticity is imposed on the fit, so discontinuities has
     to be fixed separately (see the method enforce_discontinuity)
 
-    Author: Hugo U.R. Strand """
+    Author: Hugo U.R. Strand 
+
+    Parameters
+    ----------
+
+    g_t : TRIQS imaginary time Green's function (matrix valued)
+          Imaginary time Green's function to fit (possibly noisy binned data)
+
+    order : int
+            Maximal order of the fitted Legendre expansion
+
+    Returns
+    -------
+
+    g_l : TRIQS Legendre polynomial Green's function (matrix valued)
+          Fitted Legendre Green's function with order `order`
+    """
 
     import numpy.polynomial.legendre as leg
 
