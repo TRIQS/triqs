@@ -35,6 +35,7 @@ add_python_test(issue460)
 add_python_test(issue437)
 add_python_test(issue649)
 add_python_test(bug_tight_binding)
+add_python_test(bug_bcast_mesh)
 
 # Issues with the high frequency moments
 add_python_test(tail_issues)
