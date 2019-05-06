@@ -3,6 +3,8 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2011-2014 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2019 The Simons Foundation
+ * Author: H. U.R. Strand
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -79,6 +81,7 @@ namespace triqs {
       //  BOOST Serialization
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
+        ar &TRIQS_MAKE_NVP("dim", dim_);
         ar &TRIQS_MAKE_NVP("units", units_);
         ar &TRIQS_MAKE_NVP("atom_orb_pos", atom_orb_pos);
         ar &TRIQS_MAKE_NVP("atom_orb_name", atom_orb_name);
