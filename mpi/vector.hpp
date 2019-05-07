@@ -30,7 +30,7 @@ namespace mpi {
     size_t s = v.size();
     broadcast(s, c, root);
     if (c.rank() != root) v.resize(s);
-    if constexpr (is_basic<T>::value) {
+    if constexpr (has_mpi_type<T>) {
       if (s != 0) MPI_Bcast(v.data(), v.size(), datatype<T>(), root, c.get());
     } else {
       for (auto &x : v) broadcast(x, c, root);
@@ -40,7 +40,7 @@ namespace mpi {
 
   template <typename T> void mpi_reduce_in_place(std::vector<T> &a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
     if (a.size() == 0) return; // mpi behaviour not checked in that case.
-    if constexpr (is_basic<T>::value) {
+    if constexpr (has_mpi_type<T>) {
       if (!all)
         MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : a.data()), a.data(), a.size(), datatype<T>(), op, root, c.get());
       else
@@ -62,7 +62,7 @@ namespace mpi {
   std::vector<regular_t<T>> mpi_reduce(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
     size_t s = a.size();
     if (s == 0) return {}; // nothing to do, and MPI does not like size 0
-    if constexpr (is_basic<T>::value) {
+    if constexpr (has_mpi_type<T>) {
       static_assert(std::is_same_v<regular_t<T>, T>, "Internal error");
       std::vector<T> r(s);
       if (!all)
@@ -83,7 +83,7 @@ namespace mpi {
   // FIXME : not checked for 0 size ?
   template <typename T> std::vector<T> mpi_scatter(std::vector<T> const &a, communicator c = {}, int root = 0) {
 
-    if constexpr (is_basic<T>::value) {
+    if constexpr (has_mpi_type<T>) {
       auto slow_size  = a.size();
       auto sendcounts = std::vector<int>(c.size());
       auto displs     = std::vector<int>(c.size() + 1, 0);
@@ -112,7 +112,7 @@ namespace mpi {
 
   template <typename T> std::vector<T> mpi_gather(std::vector<T> const &a, communicator c = {}, int root = 0, bool all = false) {
 
-    if constexpr (is_basic<T>::value) {
+    if constexpr (has_mpi_type<T>) {
       long size = mpi_reduce(a.size(), c, root, all);
       std::vector<T> b((all || (c.rank() == root) ? size : 0));
 

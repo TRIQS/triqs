@@ -145,9 +145,20 @@ namespace mpi {
   *   transformation type -> mpi types
   * ---------------------------------------------------------- */
 
-  template <class T> inline MPI_Datatype datatype();
+  // Struct to specialize for any type to compute its MPI type
+  // ::value field is false by default, and true for type that have an MPI mapping
+  template <typename T> struct mpi_type : std::false_type {};
+
+  // Has an mpi type (custom or native in MPI)
+  template <typename T> constexpr bool has_mpi_type = mpi_type<T>::value;
+
+  // helper function
+  template <class T> inline MPI_Datatype datatype() { return mpi_type<T>::invoke(); }
+
 #define D(T, MPI_TY)                                                                                                                                 \
-  template <> inline MPI_Datatype datatype<T>() { return MPI_TY; }
+  template <> struct mpi_type<T> : std::true_type {                                                                                                  \
+    static MPI_Datatype invoke() { return MPI_TY; }                                                                                                  \
+  };
   D(char, MPI_CHAR)
   D(int, MPI_INT)
   D(long, MPI_LONG)
@@ -160,7 +171,83 @@ namespace mpi {
   D(unsigned long long, MPI_UNSIGNED_LONG_LONG);
 #undef D
 
-  //------------ Some helper function
+  namespace details {
+
+    template <typename... T, size_t... Is> void make_ctype_from_tie_impl(std::index_sequence<Is...>, std::tuple<T &...> _tie, MPI_Aint *disp) {
+      ((void)(disp[Is] = {&std::get<Is>(_tie) - &std::get<0>(_tie)}), ...);
+    }
+
+    template <typename... T> MPI_Datatype make_ctype_from_tie(std::tuple<T &...> _tie) {
+      static constexpr int N = sizeof...(T);
+      MPI_Datatype types[N]  = {mpi_type<T>::invoke()...};
+
+      int blocklen[N];
+      for (int i = 0; i < N; ++i) { blocklen[i] = 1; }
+      MPI_Aint disp[N];
+      make_ctype_from_tie_impl(std::index_sequence_for<T...>{}, _tie, disp);
+
+      MPI_Datatype cty;
+      MPI_Type_create_struct(N, blocklen, disp, types, &cty);
+      MPI_Type_commit(&cty);
+      return cty;
+    }
+
+  } // namespace details
+
+  // A generic implementation for a struct
+  // the struct should have as_tie
+  template <typename T> struct mpi_type_from_tie : std::true_type {
+    static MPI_Datatype invoke() {
+      T x;
+      return details::make_ctype_from_tie(tie_data(x));
+    }
+  };
+
+  /* -----------------------------------------------------------
+  *   Custom mpi operator
+  * ---------------------------------------------------------- */
+
+  // variable template that maps the function
+  // for the meaning of +[](...) , cf
+  // https://stackoverflow.com/questions/17822131/resolving-ambiguous-overload-on-function-pointer-and-stdfunction-for-a-lambda
+  template <typename T>
+  MPI_User_function *_map_add = +[](void *in, void *inout, int *len, MPI_Datatype *) {
+    auto *inT    = static_cast<T *>(in);
+    auto *inoutT = static_cast<T *>(inout);
+    for (int i = 0; i < *len; ++i, ++inT, ++inoutT) { *inoutT = *inoutT + *inT; }
+  };
+
+  // Maps a C function
+  template <typename T, T (*F)(T const &, T const &)>
+  MPI_User_function *_map_function = +[](void *in, void *inout, int *len, MPI_Datatype *) {
+    auto *inT    = static_cast<T *>(in);
+    auto *inoutT = static_cast<T *>(inout);
+    for (int i = 0; i < *len; ++i, ++inT, ++inoutT) { *inoutT = F(*inoutT, *inT); }
+  };
+
+  /**
+   * @tparam T  Type on which the addition will operate
+   */
+  template <typename T> MPI_Op map_add() {
+    MPI_Op myOp;
+    MPI_Op_create(_map_add<T>, true, &myOp);
+    return myOp;
+  }
+
+  /**
+   * @tparam T  Type on which the addition will operate
+   * @tparam F  The C function to be mapped
+   */
+  template <typename T, T (*F)(T const &, T const &)> MPI_Op map_C_function() {
+    MPI_Op myOp;
+    MPI_Op_create(_map_function<T, F>, true, &myOp);
+    return myOp;
+  }
+
+  /* -----------------------------------------------------------
+  *   Some helper function
+  * ---------------------------------------------------------- */
+
   inline long chunk_length(long end, int n_nodes, int rank) {
     auto [node_begin, node_end] = itertools::chunk_range(0, end, n_nodes, rank);
     return node_end - node_begin;
@@ -184,20 +271,17 @@ namespace mpi {
   *  basic types
   * ---------------------------------------------------------- */
 
-  template <typename T> struct is_complex : std::false_type {};
-  template <typename T> struct is_complex<std::complex<T>> : std::true_type {};
-  template <typename T> struct is_basic : std::integral_constant<bool, std::is_arithmetic<T>::value || is_complex<T>::value> {};
-
 #define REQUIRES_IS_BASIC(T, U) std::enable_if_t<is_basic<T>::value, U>
 
   // NOTE: We keep the naming mpi_XXX for the actual implementation functions
   // so they can be defined in other namespaces and the mpi::reduce(T,...) function
   // can find them via ADL
-  template <typename T> REQUIRES_IS_BASIC(T, void) mpi_broadcast(T &a, communicator c = {}, int root = 0) {
+  template <typename T> std::enable_if_t<mpi_type<T>::value> mpi_broadcast(T &a, communicator c = {}, int root = 0) {
     MPI_Bcast(&a, 1, datatype<T>(), root, c.get());
   }
 
-  template <typename T> REQUIRES_IS_BASIC(T, T) mpi_reduce(T a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+  template <typename T>
+  std::enable_if_t<mpi_type<T>::value, T> mpi_reduce(T a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
     T b;
     auto d = datatype<T>();
     if (!all)
