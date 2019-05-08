@@ -1,14 +1,15 @@
-#include <typeinfo>
-#include <triqs/test_tools/arrays.hpp>
-#include <triqs/statistics/accumulator.hpp>
+#include <itertools/itertools.hpp>
 #include <triqs/gfs.hpp>
+#include <triqs/statistics/accumulator.hpp>
 #include <triqs/statistics/jackknife.hpp>
+#include <triqs/test_tools/arrays.hpp>
+#include <typeinfo>
 
 using namespace triqs::stat;
 using namespace triqs::gfs;
 using namespace triqs;
 
-triqs::mpi::communicator world;
+mpi::communicator world;
 
 // *****************************************************************************
 // Linear Binning:

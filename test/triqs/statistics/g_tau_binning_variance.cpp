@@ -10,7 +10,7 @@ using namespace triqs::utility;
 using namespace triqs::gfs;
 using namespace triqs;
 
-triqs::mpi::communicator world;
+mpi::communicator world;
 
 /**
  * Use uncorrelated samples from a normal distribution
@@ -38,7 +38,7 @@ TEST(accumulator, g_tau_binning_mean_stddev) {
   std::normal_distribution<double> distr(mean, stddev);
 
   auto g_markow = zero;
-  triqs::mpi::communicator world;
+  // mpi::communicator world;
 
   for (auto N_exp : range(10, 13)) {
 
@@ -65,7 +65,7 @@ TEST(accumulator, g_tau_binning_mean_stddev) {
     std::cout << "autocorrelation analysis\n"
               << "n, bin_size=1<<n, var, var*N, tau\n";
 
-    for (auto [n, gf_meas_var] : enumerate(auto_corr)) {
+    for (auto [n, gf_meas_var] : itertools::enumerate(auto_corr)) {
 
       auto meas_var = gf_meas_var[0](0, 0).real();
 

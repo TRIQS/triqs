@@ -21,13 +21,12 @@
  *
  ******************************************************************************/
 #pragma once
-#include <type_traits>
+#include <mpi/vector.hpp>
 #include <optional>
-#include <vector>
 #include <triqs/clef/clef.hpp>
 #include <triqs/h5/h5_serialize.hpp>
-// #include <triqs/utility/itertools.hpp>
-#include <triqs/mpi/vector.hpp>
+#include <type_traits>
+#include <vector>
 
 namespace triqs {
   template <typename T> struct has_element_wise_multiply : std::true_type {};

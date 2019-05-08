@@ -8,13 +8,14 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
+#include <itertools/itertools.hpp>
 using namespace triqs::stat;
 using namespace triqs::gfs;
 using namespace triqs::arrays;
 using namespace triqs::utility;
 
 int seed = 1567;
-triqs::mpi::communicator world;
+mpi::communicator world;
 
 // FIXME : remove boost generator for std:: ones
 
@@ -139,7 +140,7 @@ TEST(Binned, array) {
     }
   }
   // checks the bins are ok.
-  for (auto [x1, x2, a] : triqs::utility::zip(b1.linear_bins(), b2.linear_bins(), b.linear_bins())) {
+  for (auto [x1, x2, a] : itertools::zip(b1.linear_bins(), b2.linear_bins(), b.linear_bins())) {
     EXPECT_NEAR(x1, a(0, 0), 1.e-15);
     EXPECT_NEAR(x2, a(0, 1), 1.e-15);
     EXPECT_NEAR(x1, a(1, 1), 1.e-15);
@@ -204,7 +205,7 @@ TEST(Binned, Gf) {
   auto bb = b.linear_bins();
 
   // checks the bins are ok.
-  for (auto [x, y] : triqs::utility::zip(b.linear_bins(), g.linear_bins())) { EXPECT_COMPLEX_NEAR(x, y[0](0, 0), 1.e-15); }
+  for (auto [x, y] : itertools::zip(b.linear_bins(), g.linear_bins())) { EXPECT_COMPLEX_NEAR(x, y[0](0, 0), 1.e-15); }
 
   auto a_b = [](auto &&a, auto &&b) { return a / b; };
   //

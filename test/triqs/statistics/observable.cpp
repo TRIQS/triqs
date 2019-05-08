@@ -5,7 +5,7 @@ using namespace triqs::stat;
 using namespace triqs::gfs;
 using namespace triqs;
 
-triqs::mpi::communicator world;
+mpi::communicator world;
 
 // ----- TESTS ------------------
 

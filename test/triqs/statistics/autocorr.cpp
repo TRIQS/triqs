@@ -11,7 +11,7 @@ using namespace triqs::stat;
 using namespace triqs::utility;
 
 int seed = 1567;
-triqs::mpi::communicator world;
+mpi::communicator world;
 
 // ----- TESTS ------------------
 
@@ -66,7 +66,7 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
 
   auto variances = AA.auto_corr_variances(world);
 
-  for (auto [n, b] : enumerate(variances)) {
+  for (auto [n, b] : itertools::enumerate(variances)) {
     EXPECT_NEAR(bins[n], b, 1.e-15);
   }
 }
@@ -187,14 +187,14 @@ TEST(Stat, LogBinArray) {
     bb.advance();
   }
 
-  for (auto [x1, x2, a] : triqs::utility::zip(b1.auto_corr_variances(world), b2.auto_corr_variances(world), b.auto_corr_variances(world))) {
+  for (auto [x1, x2, a] : itertools::zip(b1.auto_corr_variances(world), b2.auto_corr_variances(world), b.auto_corr_variances(world))) {
     EXPECT_NEAR(x1, a(0, 0), 1.e-15);
     EXPECT_NEAR(x2, a(0, 1), 1.e-15);
     EXPECT_NEAR(x1, a(1, 1), 1.e-15);
     EXPECT_NEAR(x2, a(1, 0), 1.e-15);
   }
   
-  for (auto [x, y ] : triqs::utility::zip(bb.auto_corr_variances(world), b.auto_corr_variances(world))) {
+  for (auto [x, y] : itertools::zip(bb.auto_corr_variances(world), b.auto_corr_variances(world))) {
     EXPECT_ARRAY_NEAR(x, y, 1.e-15);
   }
 
@@ -223,7 +223,7 @@ TEST(Stat, LinBinArray) {
     b << i * a0;
   }
 
-  for (auto [x1, x2, a] : triqs::utility::zip(b1.linear_bins(), b2.linear_bins(), b.linear_bins())) {
+  for (auto [x1, x2, a] : itertools::zip(b1.linear_bins(), b2.linear_bins(), b.linear_bins())) {
     EXPECT_NEAR(x1, a(0, 0), 1.e-15);
     EXPECT_NEAR(x2, a(0, 1), 1.e-15);
     EXPECT_NEAR(x1, a(1, 1), 1.e-15);
