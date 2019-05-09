@@ -31,6 +31,7 @@ set(NAMESPACES
     -N triqs::statistics
     -N mpi
     -N itertools
+    -N triqs::stat
 )
 
 get_property(TRIQS_INCLUDE_DIRS TARGET triqs PROPERTY INTERFACE_INCLUDE_DIRECTORIES)

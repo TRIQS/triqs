@@ -10,7 +10,7 @@ mpi::communicator world;
 // ----- TESTS ------------------
 
 TEST(Observable, ConstructDouble) {
-  using obs_t = mc_value<double>;
+  // using obs_t = mc_value<double>;
   using acc_t = accumulator<double>;
 
   int n_log_bins = 10, bin_size = 100, n_lin_bins = -1;

@@ -21,88 +21,137 @@
  *
  ******************************************************************************/
 #pragma once
+
 #include <mpi/vector.hpp>
 #include <optional>
+#include <triqs/arrays.hpp>
 #include <triqs/clef/clef.hpp>
 #include <triqs/h5/h5_serialize.hpp>
 #include <type_traits>
 #include <vector>
 
-namespace triqs {
-  template <typename T> struct has_element_wise_multiply : std::true_type {};
-
-} // namespace triqs
-
 namespace triqs::stat {
 
-  /**
-   * mc_value<T> contains various analysis for T, with a dynamical choice.
-   *
-   * T : any regular type
-   *
-   */
-  template <typename T> struct mc_value {
+  template <typename V> auto mean(V const &data) {
+    // ENSURE(data.size() > 0);
+    auto mean_calc = data[0];
+    mean_calc      = 0;
+    for (auto const &[n, x] : itertools::enumerate(data)) { mean_calc += (x - mean_calc) / (n + 1); }
+    return mean_calc;
+  }
 
-    using V = std::vector<T>;
+  template <typename V> auto mean_mpi(mpi::communicator c, V const &data) {
+    // ENSURE(data.size() > 0);
+    auto M = make_regular(mean(data));
+    long N = mpi::all_reduce(data.size(), c);
+    M *= double(data.size()) / N;
+    mpi::mpi_reduce_in_place(M, c, 0, true); // FIXME == mpi_all_reduce_in_place
+    return M;
+  }
 
-    T value;
-    std::optional<T> variance;
-    std::optional<V> auto_correlation;
+  template <typename V> auto mean_and_err(V const &data) {
+    // ENSURE(data.size() > 0);
+    using std::real;
+    using std::sqrt;
+    using triqs::arrays::conj_r;
+    long length    = data.size();
+    auto mean_calc = mean(data);
+    auto err_calc  = make_regular(real(mean_calc));
+    err_calc       = 0;
+    for (auto const &x : data) { err_calc += conj_r(x - mean_calc) * (x - mean_calc) / (length * (length - 1)); }
+    err_calc = sqrt(err_calc);
+    return std::make_pair(mean_calc, err_calc);
+  }
 
-    template <typename F> void h5_serialize(F &&f) { f("value", value), f("variance", variance), f("auto_correlation", auto_correlation); }
-
-    /**
-     *     @return HDF5 scheme name
-     */
-    static std::string hdf5_scheme() { return "mc_value"; }
-  }; // namespace triqs::stat
+  template <typename V> auto mean_and_err_mpi(mpi::communicator c, V const &data) {
+    // ENSURE(data.size() > 0);
+    using std::real;
+    using std::sqrt;
+    using triqs::arrays::conj_r;
+    long length    = mpi::all_reduce(data.size(), c);
+    auto mean_calc = mean_mpi(data);
+    auto err_calc  = make_regular(real(mean_calc));
+    err_calc       = 0;
+    for (auto const &x : data) { err_calc += conj_r(x - mean_calc) * (x - mean_calc) / (length * (length - 1)); }
+    mpi::mpi_reduce_in_place(err_calc, c);
+    err_calc = sqrt(err_calc);
+    return std::make_pair(mean_calc, err_calc);
+  }
 
   namespace details {
     // ************************************************************************************************
     template <typename T> struct lin_binning {
 
-      T acc;               //<! Accumulator: adds input data until flushing average to bin 
-      long count = 0;      //<! Number of data points currently in accumulator
-      long bin_size   = 1; //<! Size of a bin
-      long max_n_bins = 0; //<! Max number of bins before compression. If < 0 : unlimited.
-      std::vector<T> bins; //<! Completed bins, which stores the data
+      long max_n_bins     = 0; // Maximum number of bins before compression
+      long bin_capacity   = 1; // Target size of a bin (must be >= 1)
+      long last_bin_count = 0; // Number of data points the last active bin [bins.back()]
+      std::vector<T> bins;     // Bins storing accumulated data (stores means)
 
       template <typename F> void h5_serialize(F &&f) {
-        f("bins", bins), f("acc", acc);
-        f("count", count, h5::as_attribute), f("bin_size", bin_size, h5::as_attribute), f("max_n_bins", max_n_bins, h5::as_attribute);
+        f("bins", bins), f("last_bin_count", last_bin_count, h5::as_attribute), f("bin_capacity", bin_capacity, h5::as_attribute),
+           f("max_n_bins", max_n_bins, h5::as_attribute);
       }
       static std::string hdf5_scheme() { return "lin_binning"; }
 
       lin_binning() = default;
 
-      lin_binning(T data_instance, long bin_size, long max_n_bins, bool init_zero) :
-            bin_size(bin_size), max_n_bins(max_n_bins) { 
-             if(max_n_bins != 0){
-                if ((max_n_bins > 1) && (max_n_bins % 2 != 0)) throw std::invalid_argument("max_n_bins must be even");
-                acc = std::move(data_instance);
-                if(init_zero == true){ acc = 0; }
-             }
-           }
-
-      void advance() {
+      lin_binning(T const &data_instance, long max_n_bins, long bin_capacity) : bin_capacity(bin_capacity), max_n_bins(max_n_bins) {
         if (max_n_bins == 0) return;
-        ++count;
-        if (static_cast<long>(bins.size()) == max_n_bins) compress();
-        if (count == bin_size) {
-          bins.push_back(acc / count);
-          acc   = 0;
-          count = 0;
+        T data_instance_local = data_instance;
+        data_instance_local   = 0;
+        if (max_n_bins > 0) { bins.reserve(max_n_bins); }
+        bins.emplace_back(std::move(data_instance_local));
+      }
+
+      long n_bins() const { return bins.size(); }
+
+      template <typename U> void operator<<(U &&x) {
+        if (max_n_bins == 0) return;
+        // Check if all bins full
+        if (max_n_bins > 1 && n_bins() == max_n_bins && last_bin_count == bin_capacity) {
+          compress(2); // Adjusts last_bin_count internally
+        }
+        // Check if current bin full: push new vs add to current
+        if (last_bin_count == bin_capacity && max_n_bins != 1) {
+          bins.emplace_back(std::forward<U>(x));
+          last_bin_count = 1;
+        } else {
+          last_bin_count++;
+          bins.back() += (x - bins.back()) / last_bin_count;
         }
       }
 
-      //! Halves the number of bins by pairwise averaging of data
-      void compress() {
-        const int L = bins.size() / 2;
-        bins[0] /= 2;
-        bins[0] += bins[1] / 2;
-        for (int i = 1; i < L; ++i) { bins[i] = (bins[2 * i] + bins[2 * i + 1]) / 2; }
-        bins.resize(L); // drop empty bins but capacity is intact
-        bin_size *= 2;
+      // Compresses bins by scaling up bin_capacity by compression_factor (>= 2).
+      void compress(int compression_factor) {
+        if (max_n_bins == 0 || compression_factor < 2) return;
+        const int bins_left    = n_bins() % compression_factor;
+        int n_bins_new         = n_bins() / compression_factor;
+        int n_bins_last_chunck = compression_factor;
+        if (bins_left != 0) {
+          n_bins_new++;
+          n_bins_last_chunck = bins_left;
+        }
+        // Compress all except last bin
+        for (int i = 0; i < n_bins_new - 1; ++i) {
+          bins[i] = std::move(bins[compression_factor * i]); // TODO: i = 0 case
+          for (int j = 1; j < compression_factor; j++) { bins[i] += bins[compression_factor * i + j]; }
+          bins[i] /= compression_factor;
+        }
+        // Weight of new final bin: could be partially full
+        int new_last_bin_count = last_bin_count + (n_bins_last_chunck - 1) * bin_capacity;
+        auto &new_last_bin     = bins[n_bins_new - 1];
+        new_last_bin           = std::move(bins[compression_factor * (n_bins_new - 1)]);
+        // If n_bins_last_chunck == 1, we have already copied its value
+        if (n_bins_last_chunck > 1) {
+          for (int j = 1; j < n_bins_last_chunck - 1; j++) { new_last_bin += bins[compression_factor * (n_bins_new - 1) + j]; }
+          new_last_bin *= bin_capacity; // full bins in last chunk
+          new_last_bin += bins[compression_factor * (n_bins_new - 1) + (n_bins_last_chunck - 1)] * last_bin_count;
+          new_last_bin /= new_last_bin_count;
+        }
+        // Adjust final Parameters
+        bins.resize(n_bins_new);
+        last_bin_count = new_last_bin_count;
+        bin_capacity *= compression_factor;
       }
     };
 
@@ -116,8 +165,10 @@ namespace triqs::stat {
     // Ref: see e.g. Chan, Golub, LeVeque. Am. Stat. 37, 242 (1983) and therein
 
     template <typename T> struct log_binning {
-
-      std::vector<T> Qk, Mk;      // Cf comments
+      std::vector<T> Mk; // Cf comments
+      using Q_t = decltype(make_regular(triqs::arrays::real(Mk[0])));
+      std::vector<Q_t> Qk; // Cf comments
+      int max_n_bins = 0;
       std::vector<T> acc;         // partial accumulators at size 2^(n+1). WARNING : acc[n] correspond to sum[n+1] to save acc[0] which is unused.
       std::vector<int> acc_count; // number of elements for partial accumulators at size 2^(n+1)
       long count = 0;             // Number of elements summed in is Qk[0]
@@ -129,46 +180,60 @@ namespace triqs::stat {
 
       log_binning() = default;
 
-      // Precondition : n_bins >= 0
-      log_binning(T data_instance, int n_bins) {
-        if(n_bins != 0){
-          data_instance = 0;
-          Qk.resize(n_bins, T{data_instance * data_instance});
-          Mk.resize(n_bins, data_instance);
-          acc.resize(n_bins, data_instance);
-          acc_count.resize(n_bins, 0);
+      log_binning(T const &data_instance, int max_n_bins) : max_n_bins(max_n_bins) {
+        if (max_n_bins == 0) return;
+        T data_instance_local = data_instance;
+        data_instance_local   = 0;
+        if (max_n_bins > 0) {
+          Qk.reserve(max_n_bins);
+          Mk.reserve(max_n_bins);
+          acc.reserve(max_n_bins);
+          acc_count.reserve(max_n_bins);
         }
+        Qk.emplace_back(T{data_instance_local * data_instance_local});
+        Mk.emplace_back(data_instance_local);
+        acc.emplace_back(std::move(data_instance_local));
+        acc_count.push_back(0);
       }
 
       long n_bins() const { return Qk.size(); }
 
-      void print() const {
-        std::cout << "count = " << count << std::endl;
-        for (int n = 0; n < Qk.size(); ++n) {
-          std::cout << " n = " << n << " sq " << Qk[n];
-          std::cout << " acc " << acc[n] << "  acc_count " << acc_count[n] << std::endl;
-        }
+      template <typename U> void operator<<(U const &x) {
+        if (max_n_bins == 0) return;
+        acc[0] += x;
+        acc_count[0]++;
+        advance();
       }
 
       void advance() {
         using triqs::arrays::conj_r;
-
-        if (n_bins() == 0) return;
         ++count;
+
+        // Add space if last element full; stop if max_n_bins reached
+        if (count == (1 << (acc.size() - 1)) && acc.size() < max_n_bins) {
+          T data_instance = acc[0];
+          data_instance   = 0;
+          Qk.push_back(T{data_instance * data_instance});
+          Mk.push_back(data_instance);
+          acc.emplace_back(data_instance);
+          acc_count.push_back(0);
+        }
+
         // go up in n as long as the acc_count becomes full and add the acc in the
         // then go down, and store the acc
         int n = 1;
         for (; n < acc.size(); ++n) {
           acc[n] += acc[n - 1];
-          ++(acc_count[n]);
+          acc_count[n]++;
           if (acc_count[n] < 2) break;
         }
+
         --n;
         for (; n >= 0; n--) {
-          auto bin_size = (1ul << n);                  // 2^(n)
-          T x_m         = (acc[n] / bin_size - Mk[n]); // Force T if expression template.
-          auto k        = count / bin_size;
-          Qk[n] += ((k - 1) / double(k)) * conj_r(x_m) * x_m; 
+          auto bin_capacity = (1ul << n);                      // 2^(n)
+          T x_m             = (acc[n] / bin_capacity - Mk[n]); // Force T if expression template.
+          auto k            = count / bin_capacity;
+          Qk[n] += ((k - 1) / double(k)) * conj_r(x_m) * x_m;
           Mk[n] += x_m / k;
           acc_count[n] = 0;
           acc[n]       = 0;
@@ -180,15 +245,15 @@ namespace triqs::stat {
 
   // ************************************************************************************************
 
+  /// accumulator class with bins and stores data from Monte Carlo measurements
   /**
-   *
-   * T : any regular type with additional constraint 
-   *   T x; x=0;  
-   *
+   * This class takes in measurements during the simulation and serves a dual 
+   * purpose of (a) estimating the auto-correlation time of the data and 
+   * (b) binning the indvidual measurements and holding the final data.
+   * 
+   * @include triqs/stat/accumulator.hpp
    */
   template <typename T> class accumulator {
-    static_assert(has_element_wise_multiply<T>::value,
-                  "accumulator only works with type which are multiplied elementwise : no matrix, no matrix_valued gf here.");
     details::log_binning<T> log_bins;
     details::lin_binning<T> lin_bins;
 
@@ -201,83 +266,69 @@ namespace triqs::stat {
     public:
     accumulator() = default;
 
-    accumulator(T data_instance, int n_log_bins = 0, int n_lin_bins_max = 0,
-                int lin_bin_size = 1, bool init_zero = true)
-       : log_bins{data_instance, n_log_bins}, //
-         lin_bins{std::move(data_instance), lin_bin_size, n_lin_bins_max, init_zero} {
-    }
+    /**
+     @tparam T Type of object to be accumulated. This can be any regular type
+     provided that it can be set to zero (T x; x=0) and has multiplication defined in an element-wise manner
+     @param data_instance An instance of the data type T that will be accumulated.
+     @param n_log_bins_max 
+     @param n_lin_bins_max 
+     @param lin_bin_capacity 
+   */
+    accumulator(T const &data_instance, int n_log_bins_max = 0, int n_lin_bins_max = 0, int lin_bin_capacity = 1)
+       : log_bins{data_instance, n_log_bins_max}, //
+         lin_bins{data_instance, n_lin_bins_max, lin_bin_capacity} {}
 
-    void advance() {
-      log_bins.advance();
-      lin_bins.advance();
-    }
+    // @return Maximum number of bins in the logarithmic accumulator
+    int n_log_bins_max() const { return log_bins.max_n_bins; }
 
-    int n_log_bins()     const { return log_bins.n_bins(); }
+    // @return Current number of bins in the linear accumulator
+    int n_log_bins() const { return log_bins.n_bins(); }
 
+    // @return Maximum number of bins in the linear accumulator
     int n_lin_bins_max() const { return lin_bins.max_n_bins; }
 
+    // @return Current number of bins in the linear accumulator
+    int n_lin_bins() const { return lin_bins.n_bins(); }
+
+    /// Input a measurement into the accumulator
     template <typename U> void operator<<(U const &x) {
-      (*this) += x;
-      advance();
+      log_bins << x;
+      lin_bins << x;
     }
 
-    template <typename U> FORCEINLINE void operator+=(U const &u) {
-      if (n_lin_bins_max() != 0) lin_bins.acc += u;
-      if (n_log_bins() > 0) log_bins.acc[0] += u;
-    }
-
-    private:
-    // ---------------- lazy expressions. delays [] and () ----------------------
-    // As a result, for e.g. accumulator<array<T, 2>>, one can write :  a(i,j) += x;
-    // for accumulator<gf<imfreq>> :   a[tau](i,j) +=x;
-    // A mini expression template technique with 2 nodes, and an evaluation
-    // the context (0,1) corresponds the arrays to be modified.
-    template <char B, typename LHS, typename... RHS> struct lazy_expr {
-      LHS lhs;
-      std::tuple<RHS...> rhs;
-
-      template <typename... U> FORCEINLINE lazy_expr<'P', lazy_expr, U...> operator()(U &&... u) { return {*this, {std::forward<U>(u)...}}; }
-      template <typename U> FORCEINLINE lazy_expr<'B', lazy_expr, U> operator[](U &&u) { return {*this, {std::forward<U>(u)}}; }
-
-      template <int Context> FORCEINLINE decltype(auto) eval() {
-        if constexpr (B == 'P') { return std::apply(lhs.template eval<Context>(), rhs); }
-        if constexpr (B == 'B') { return lhs.template eval<Context>()[std::get<0>(rhs)]; }
-      }
-
-      template <typename U> FORCEINLINE void operator+=(U const &u) {
-        if (n_lin_bins_max() != 0) eval<0>() += u;
-        if (n_log_bins() > 0) eval<1>() += u;
-      }
-
-      FORCEINLINE int n_log_bins() { return lhs.n_log_bins(); }
-      FORCEINLINE int n_lin_bins_max() const { return lhs.n_lin_bins_max(); }
-
-    }; //--- end  struct lazy_expr
-
-    template <int Context> FORCEINLINE auto &eval() {
-      if constexpr (Context == 0) { return lin_bins.acc; }
-      if constexpr (Context == 1) { return log_bins.acc[0]; }
-    }
-
-    public:
-    template <typename... U> FORCEINLINE lazy_expr<'P', accumulator &, U...> operator()(U &&... u) { return {*this, {std::forward<U>(u)...}}; }
-    template <typename U> FORCEINLINE lazy_expr<'B', accumulator &, U> operator[](U &&u) { return {*this, {std::forward<U>(u)}}; }
-
-    // -------- END lazy expressions. delays [] and () ---------
-
+    // FIXME: Where to put this?
+    // private:
     /// @return HDF5 scheme name
     static std::string hdf5_scheme() { return "accumulator"; }
 
-    //! Returns the standard errors for different power-of-two bin sizes
-    std::vector<T> auto_corr_variances(mpi::communicator c) const {
-      if( n_log_bins() == 0 ){return std::vector<T>(); } // FIXME: Stops MPI Crashing on reducing empty
+    // Returns the standard errors for different power-of-two bin sizes
+    auto auto_corr_variances() const {
+      auto res1 = log_bins.Qk;
+      if (res1.size() == 0) return res1;
+      for (int n = 0; n < res1.size(); ++n) {
+        long count_n = (log_bins.count >> n); // /2^n
+        if (count_n <= 1) {
+          res1[n] = 0;
+        } else {
+          res1[n] = sqrt(res1[n] / (count_n * (count_n - 1)));
+        }
+      }
+      return res1;
+    }
+
+    // Returns the standard errors for different power-of-two bin sizes
+    std::vector<T> auto_corr_variances_mpi(mpi::communicator c) const {
+      // FIXME WITH NEW MACHINARY
+      if (n_log_bins() == 0) { return std::vector<T>(); } // FIXME: Stops MPI Crashing on reducing empty
       std::vector<T> res1 = log_bins.Qk;
       for (int n = 0; n < res1.size(); ++n) {
         long count_n = (log_bins.count >> n); // /2^n
-        if (count_n <= 1)
+        if (count_n <= 1) {
           res1[n] = 0;
-        else
-          res1[n] /= count_n * (count_n - 1);
+        } else {
+          using std::sqrt;
+          res1[n] = sqrt(res1[n] / (count_n * (count_n - 1)));
+        }
       }
       std::vector<T> res = mpi_reduce(res1, c);
       using std::sqrt;
@@ -288,17 +339,18 @@ namespace triqs::stat {
       return res;
     }
 
-    //! Returns the bins from the linear binning
-    std::vector<T> const &linear_bins() const { 
-      return lin_bins.bins;
-    }
+    // @return Vector with the data from linear binning
+    std::vector<T> const &linear_bins() const { return lin_bins.bins; }
+
+    /// Manually increase the size of each linear bin and compress the stored data
+    /**
+     @param compression_factor Factor by which to scale lin_bin_capacity; if < 2 nothing is done
+   */
+    void compress_linear_bins(int compression_factor) { lin_bins.compress(compression_factor); }
   }; // namespace triqs::stat
 
-  //! Helper function to computse auto-correlation time estimate from vector of 
+  //! Helper function to computse auto-correlation time estimate from vector of
   //! standard errors.
-  template <typename V> auto tau_estimates(V const &v, long n) { 
-    return 0.5 * ((v[n] * v[n]) / (v[0] * v[0]) - 1); 
-    }
+  template <typename V> auto tau_estimates(V const &v, long n) { return 0.5 * ((v[n] * v[n]) / (v[0] * v[0]) - 1); }
 
 } // namespace triqs::stat
-

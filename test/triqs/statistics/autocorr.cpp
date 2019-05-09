@@ -43,7 +43,7 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
     double sum_xi = 0, sum_xi2 = 0;
     std::mt19937 gen(seed);
     std::normal_distribution<double> distr;
-    c =0;
+    c = 0;
     for (long i = 1; i <= N; ++i) {
       auto x = distr(gen);
       acc += x;
@@ -57,18 +57,18 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
     }
     sum_xi /= n;
     sum_xi2 /= n;
-    bins[b] = sum_xi2 - sum_xi * sum_xi;
-    bins[b] /= n - 1;
-    bins[b] = std::sqrt(bins[b]);
-
-    if (n == 1) bins[b] = 0; //corner case
+    if (n == 1)
+      bins[b] = 0; //corner case
+    else {
+      bins[b] = sum_xi2 - sum_xi * sum_xi;
+      bins[b] /= n - 1;
+      bins[b] = std::sqrt(bins[b]);
+    }
   }
 
-  auto variances = AA.auto_corr_variances(world);
+  auto variances = AA.auto_corr_variances();
 
-  for (auto [n, b] : itertools::enumerate(variances)) {
-    EXPECT_NEAR(bins[n], b, 1.e-15);
-  }
+  for (auto [n, b] : itertools::enumerate(variances)) { EXPECT_NEAR(bins[n], b, 1.e-15); }
 }
 
 // ------------------------
@@ -95,11 +95,11 @@ triqs::arrays::array<double, 1> f(int N, int seed) {
 
   // estimates of tau in an array
   triqs::arrays::array<double, 1> R(n_log_bins);
-  auto variances = AA.auto_corr_variances(world);
+  auto variances = AA.auto_corr_variances();
 
   for (auto n : range(n_log_bins)) {
     R(n) = tau_estimates(variances, n);
-   // std::cout << std::setprecision(16) << R(n) << ",\n";
+    // std::cout << std::setprecision(16) << R(n) << ",\n";
   }
   return R;
 }
@@ -180,23 +180,18 @@ TEST(Stat, LogBinArray) {
     b2 << 2 * i;
     b << i * a0;
 
-    bb(0, 0) += i * 1;
-    bb(0, 1) += i * 2;
-    bb(1, 0) += i * 2;
-    bb(1, 1) += i * 1;
-    bb.advance();
+    A atemp{{i, 2 * i}, {2 * i, i}};
+    bb << atemp;
   }
 
-  for (auto [x1, x2, a] : itertools::zip(b1.auto_corr_variances(world), b2.auto_corr_variances(world), b.auto_corr_variances(world))) {
+  for (auto [x1, x2, a] : itertools::zip(b1.auto_corr_variances(), b2.auto_corr_variances(), b.auto_corr_variances())) {
     EXPECT_NEAR(x1, a(0, 0), 1.e-15);
     EXPECT_NEAR(x2, a(0, 1), 1.e-15);
     EXPECT_NEAR(x1, a(1, 1), 1.e-15);
     EXPECT_NEAR(x2, a(1, 0), 1.e-15);
   }
-  
-  for (auto [x, y] : itertools::zip(bb.auto_corr_variances(world), b.auto_corr_variances(world))) {
-    EXPECT_ARRAY_NEAR(x, y, 1.e-15);
-  }
+
+  for (auto [x, y] : itertools::zip(bb.auto_corr_variances(), b.auto_corr_variances())) { EXPECT_ARRAY_NEAR(x, y, 1.e-15); }
 
   auto f = h5::file("auto_corr_array.h5", 'w');
   h5_write(f, "scalar", b1);
