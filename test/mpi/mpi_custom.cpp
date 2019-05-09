@@ -29,7 +29,7 @@ Complex fff(Complex const &x, Complex const &y) {
 
 //---------------------------------------
 
-TEST(MPI, custom_type_op) {
+TEST(MPI_CUSTOM, custom_type_op) {
 
   communicator world;
   int rank = world.rank();
@@ -54,7 +54,7 @@ TEST(MPI, custom_type_op) {
 
 //---------------------------------------
 
-TEST(MPI, custom_type_op2) {
+TEST(MPI_CUSTOM, custom_type_op2) {
 
   communicator world;
   int rank = world.rank();
@@ -76,5 +76,9 @@ TEST(MPI, custom_type_op2) {
   if (rank == root)
     for (int u = 0; u < 10; ++u) { ASSERT_NEAR(answer[u].real, size * (size + 1) / 2, 1.e-14); }
 }
+
+
+
+
 
 MPI_TEST_MAIN;

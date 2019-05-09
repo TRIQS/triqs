@@ -173,33 +173,32 @@ namespace mpi {
 
   namespace details {
 
-    template <typename... T, size_t... Is> void make_ctype_from_tie_impl(std::index_sequence<Is...>, std::tuple<T &...> _tie, MPI_Aint *disp) {
+    template <typename... T, size_t... Is> void make_datatype_from_tie_impl(std::index_sequence<Is...>, std::tuple<T &...> _tie, MPI_Aint *disp) {
       ((void)(disp[Is] = {&std::get<Is>(_tie) - &std::get<0>(_tie)}), ...);
     }
-
-    template <typename... T> MPI_Datatype make_ctype_from_tie(std::tuple<T &...> _tie) {
-      static constexpr int N = sizeof...(T);
-      MPI_Datatype types[N]  = {mpi_type<T>::invoke()...};
-
-      int blocklen[N];
-      for (int i = 0; i < N; ++i) { blocklen[i] = 1; }
-      MPI_Aint disp[N];
-      make_ctype_from_tie_impl(std::index_sequence_for<T...>{}, _tie, disp);
-
-      MPI_Datatype cty;
-      MPI_Type_create_struct(N, blocklen, disp, types, &cty);
-      MPI_Type_commit(&cty);
-      return cty;
-    }
-
   } // namespace details
+
+  template <typename... T> MPI_Datatype make_datatype_from_tie(std::tuple<T &...> _tie) {
+    static constexpr int N = sizeof...(T);
+    MPI_Datatype types[N]  = {mpi_type<T>::invoke()...};
+
+    int blocklen[N];
+    for (int i = 0; i < N; ++i) { blocklen[i] = 1; }
+    MPI_Aint disp[N];
+    details::make_datatype_from_tie_impl(std::index_sequence_for<T...>{}, _tie, disp);
+
+    MPI_Datatype cty;
+    MPI_Type_create_struct(N, blocklen, disp, types, &cty);
+    MPI_Type_commit(&cty);
+    return cty;
+  }
 
   // A generic implementation for a struct
   // the struct should have as_tie
   template <typename T> struct mpi_type_from_tie : std::true_type {
     static MPI_Datatype invoke() {
       T x;
-      return details::make_ctype_from_tie(tie_data(x));
+      return make_datatype_from_tie(tie_data(x));
     }
   };
 
