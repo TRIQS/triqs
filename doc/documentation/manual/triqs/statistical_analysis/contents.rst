@@ -78,12 +78,13 @@ Example
 .. literalinclude:: ./contents_0.cpp
 
 .. toctree::
-   binning
-   jackknife
-   autocorrelation_time
-   autocorrelation_function
-   green_function
-   ising2d
+    accumulator
+    binning
+    jackknife
+    autocorrelation_time
+    autocorrelation_function
+    green_function
+    ising2d
 
 Histogram
 ---------

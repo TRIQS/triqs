@@ -1,9 +1,9 @@
 #include <random>
 
-#include <triqs/test_tools/arrays.hpp>
+#include <triqs/gfs.hpp>
 #include <triqs/statistics/accumulator.hpp>
 #include <triqs/statistics/jackknife.hpp>
-#include <triqs/gfs.hpp>
+#include <triqs/test_tools/arrays.hpp>
 
 using namespace triqs::stat;
 using namespace triqs::utility;
@@ -20,12 +20,10 @@ mpi::communicator world;
  */
 
 /*
-
 TEST(accumulator, g_tau_binning_mean_stddev) {
 
-
-  using g_t   = gf<imtime, tensor_valued <2>>;
-  using obs_t = mc_value<g_t>;
+  using g_t   = gf<imtime, tensor_valued<2>>;
+  // using obs_t = mc_value<g_t>;
   using acc_t = accumulator<g_t>;
 
   auto zero  = g_t{{1, Fermion, 2}, {1, 1}};
@@ -54,21 +52,24 @@ TEST(accumulator, g_tau_binning_mean_stddev) {
     std::cout << "number of samples N = " << N << "\n";
 
     for (auto iter : range(N)) {
-      for (auto t : tmesh) acc[t] += distr(gen);
-      acc.advance();
+      auto zero_tmp = g_t{{1, Fermion, 2}, {1, 1}};
+      for (auto t : tmesh) zero_tmp[t] += distr(gen);
+      acc << zero_tmp;
     }
 
     // auto correlation
     auto auto_corr = acc.auto_corr_variances(world);
 
-    auto total_meas_var = auto_corr[auto_corr.size()-1][0](0, 0).real();
+    auto total_meas_std = auto_corr[auto_corr.size() - 1][0](0, 0).real();
+    auto total_meas_var = total_meas_std * total_meas_std;
 
     std::cout << "autocorrelation analysis\n"
               << "n, bin_size=1<<n, var, var*N, tau\n";
 
     for (auto [n, gf_meas_var] : itertools::enumerate(auto_corr)) {
 
-      auto meas_var = gf_meas_var[0](0, 0).real();
+      auto meas_sterr = gf_meas_var[0](0, 0).real();
+      auto meas_var = meas_sterr * meas_sterr;
 
       auto tau = 0.5 * (meas_var / total_meas_var - 1.);
 
@@ -79,9 +80,9 @@ TEST(accumulator, g_tau_binning_mean_stddev) {
     }
 
     auto [gf_mean, gf_stddev] = mean_and_stderr(world, acc);
-    auto meas_mean   = gf_mean[0](0, 0).real();
-    auto meas_var    = gf_stddev[0](0, 0).real();
-    auto meas_stddev = meas_var; //sqrt(meas_var);
+    auto meas_mean            = gf_mean[0](0, 0).real();
+    auto meas_stddev          = gf_stddev[0](0, 0).real();
+    auto meas_var             = meas_stddev * meas_stddev;
 
     std::cout << "mean = " << mean << "\n";
     std::cout << "meas_mean = " << meas_mean << "\n";

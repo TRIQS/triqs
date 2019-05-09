@@ -38,7 +38,7 @@ TEST(Stat, Jack1) {
     }
   }
 
-  auto [x, d, xj, xn] = jackknife(world, [](auto &&a, auto &&b) { return a / b; }, a, b);
+  auto [x, d, xj, xn] = jackknife_mpi(world, [](auto &&a, auto &&b) { return a / b; }, a, b);
 
   // redo the manual computation
   std::vector<double> A(Nsample, 0), B(Nsample, 0);
@@ -92,7 +92,7 @@ TEST(Stat, Jack1) {
 
   // for a linear function, the two average must be the same
 
-  auto [av1, avv, av3, av2] = jackknife(world, [](auto &&x) { return x; }, a);
+  auto [av1, avv, av3, av2] = jackknife_mpi(world, [](auto &&x) { return x; }, a);
   EXPECT_NEAR(av1, av2, precision);
 
 }
@@ -147,12 +147,12 @@ TEST(Binned, array) {
     EXPECT_NEAR(x2, a(1, 0), 1.e-15);
   }
 
-  auto a_b = [](auto &&a, auto &&b) { return a / b; };
+  auto a_b = [](auto const & a, auto const &b) { return a/b; };
   //
-  auto [x1, d1, xj1, xn1] = jackknife(world, a_b, b1, c1);
-  auto [x2, d2, xj2, xn2] = jackknife(world, a_b, b2, c2);
+  auto [x1, d1, xj1, xn1] = jackknife_mpi(world, a_b, b1, c1);
+  auto [x2, d2, xj2, xn2] = jackknife_mpi(world, a_b, b2, c2);
 
-  auto [x, xd, xj, xn] = jackknife(world, a_b, b, c);
+  auto [x, xd, xj, xn] = jackknife_mpi(world, a_b, b, c);
 
   //std::cerr << x1 << std::endl;
   //std::cerr << xn1 << std::endl;
@@ -211,8 +211,8 @@ TEST(Binned, Gf) {
 
   auto a_b = [](auto &&a, auto &&b) { return a / b; };
   //
-  auto [x1, d1, xj1, xn1]  = jackknife(world, a_b, b, Z); // FIXME: Please Check
-  auto [g1, gd1, gj1, gn1] = jackknife(world, a_b, g, Z);
+  auto [x1, d1, xj1, xn1]  = jackknife_mpi(world, a_b, b, Z); // FIXME: Please Check
+  auto [g1, gd1, gj1, gn1] = jackknife_mpi(world, a_b, g, Z);
 
   EXPECT_COMPLEX_NEAR(x1, g1[0](0, 0), 1.e-15);
   EXPECT_COMPLEX_NEAR(xn1, gn1[0](0, 0), 1.e-15);

@@ -26,6 +26,7 @@
 #include <type_traits>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/math_functions.hpp>
+#include <mpi/vector.hpp>
 
 namespace triqs::stat {
 
@@ -43,6 +44,7 @@ namespace triqs::stat {
       long si_minus_one;
 
       jackknifed_t(V const &bins) : original_series(bins) {
+        // ENSURE(bins.size()>0)
         si_minus_one = original_series.size() - 1;
         // compute the sum of B into a new T.
         T sum = original_series[0];
@@ -51,6 +53,7 @@ namespace triqs::stat {
       }
 
       jackknifed_t(V const &bins, mpi::communicator c) : original_series(bins) {
+        // ENSURE(bins.size()>0)
         si_minus_one = mpi::all_reduce(original_series.size(), c) - 1;
         // compute the sum of B into a new T.
         T sum = original_series[0];
@@ -58,67 +61,83 @@ namespace triqs::stat {
         s = T{mpi::all_reduce(sum, c)} / si_minus_one;
       }
 
-      T operator[](long i) const { return s - original_series[i] / si_minus_one; }
+      // Call. NB : if T is an array, returns an expression template to retard the evaluation
+      auto operator[](long i) const { return s - original_series[i] / si_minus_one; }
     };
 
-    //template <class B> jackknifed_t(B b)->jackknifed_t<B>;
+    //----------------------------------------------------------------
 
-    //------------------------------------------------------
+    // implementation of jacknife.
+    // mpi iif the c pointer is not null. If null the computation is on this node only.
+    template <typename F, typename... Jacknifed> auto jackknife_impl(mpi::communicator *c, F &&f, Jacknifed const &... ja) {
 
-    // implementation of jackknife : A are vector like  : [i], size
-    // @param f the function
-    // @return (M, Q, N, sum) for X = f(a...)
-    //         M : average of f(jackknifed(a))
-    //         Q : variance of f(jackknifed(a))
-    //         N : number of samples
-    //         sum : sum of f(a...);
-    // compute on ONE node. no MPI here.
-    template <typename F, typename... Jacknifed> auto jackknife_impl1(F &&f, Jacknifed const &... ja) {
-
-      // Check that the size of the series are equal
+      // N is the size of the series, it should be all equal and !=0
       std::array<long, sizeof...(Jacknifed)> dims{long(ja.original_series.size())...};
       long N = dims[0];
       if (N == 0) TRIQS_RUNTIME_ERROR << "No data !";
-      if (!std::all_of(dims.begin(), dims.end(), [N](long i) { return i == N; })) TRIQS_RUNTIME_ERROR << " Jackknife : size mismatch";
+      if (not((ja.original_series.size() == N) and ...)) TRIQS_RUNTIME_ERROR << " Jackknife : size mismatch";
 
+      using std::real;
+      using std::sqrt;
+      using triqs::arrays::abs2;
+
+      // WARNING NB : In this function, we must be very careful never to store an expression template using f. 
+      // f is provided by the user. It will be provided with ja[i] which 
+      // might be an expression template itself (hence a temporary). 
+      // The user is likely be careless with rvalue references
+      // e.g. f = [](auto const & x, auto const y){ return x/y;};
+      // in such cases, the ja[0] will be dangling unless we use the expression template
+      // containing f immediately. 
+      // Cf below, M, sum and Q computation.
+      // Check by ASAN sanitizer on tests 
       auto M   = make_regular(f(ja[0]...));
       auto sum = make_regular(f(ja.original_series[0]...));
-      auto Q   = M;
-      auto x_M = M; // temporary with same size as M
-      Q        = 0;
 
       for (long i = 1; i < N; ++i) {
-        sum += make_regular(f(ja.original_series[i]...));
-        x_M = f(ja[i]...) - M;
-        long k = i + 1;
-        Q += conj_r(x_M) * x_M * (k - 1) / k;
-        M += x_M / k;
+        sum += (f(ja.original_series[i]...) - sum) / (i + 1); // Cf NB
+        M += (f(ja[i]...) - M) / (i + 1); // cf NB
       }
-      return std::make_tuple(M, Q, N, sum);
+
+      // Now the reduction over the nodes.
+      long Ntot = N;
+      if (c) { // MPI version
+
+        Ntot = mpi::reduce(N, *c);
+
+        // sum
+        sum *= double(N) / Ntot;                    // remove the 1/N
+        sum = mpi::reduce(sum, *c, 0, true); // FIXME : mpi API All reduce
+
+        //
+        M *= double(N) / Ntot;                    // remove the 1/N
+        M= mpi::reduce(M, *c, 0, true); // FIXME == mpi_all_reduce_in_place
+      }
+
+      // Compute the variance
+      auto Q = make_regular(real(M));
+      Q      = 0;
+      for (long i = 0; i < N; ++i) {
+        Q += abs2(f(ja[i]...) - M); // Cf NB
+      }
+
+      // reduce Q
+      if (c) Q = mpi::reduce(Q, *c, 0, true); // FIXME : mpi API All reduce
+
+      auto std_err = make_regular(std::sqrt((Ntot - 1) / double(Ntot)) * sqrt(Q));
+      auto average = make_regular(N * (sum - M) + M);
+      return std::make_tuple(average, std_err, M, sum);
     }
 
-    // a small struct with 3 real or complexes, with the addition for the MPI reduction
-    template <typename RC> // real or complex
-    struct MQN_t {
-      RC M, Q, n;
-
-      friend MQN_t operator+(MQN_t const &x, MQN_t const &y) {
-        RC n  = x.n + y.n;
-        RC M  = (x.n * x.M + y.n * y.M) / n;
-        RC dM = x.M - y.M;
-        RC Q  = x.Q + y.Q + (x.n * y.n) / n * conj_r(dM) * dM;
-        return {M, Q, n};
-      }
-    };
-
   } // namespace details
+
+  // ------------------------------------------------------------------------------
 
   /**
    * Compute the average and error with jackknife method
    *
    * @param c (TRIQS) MPI communicator
    * @tparam F type of g
-   * @param a list of series 
+   * @param a list of series
    * @param f a function (a1,a2,a3,...) -> f(a1,a2,a3...)
    * @return  (average corrected with jackknife bias, jackknife error, average of jacknife series, naive average)
    *       FIXME : Write the math formula
@@ -127,74 +146,27 @@ namespace triqs::stat {
    * Each node compute the average and variance, which are then reduced (not all-reduced) to the node 0.
    * Precondition : a series all have the same size
    */
-  template <typename F, typename... A> auto jackknife(mpi::communicator c, F &&f, A const &... a) {
-
-    auto [M, Q, N, sum] = details::jackknife_impl1(std::forward<F>(f), details::jackknifed_t(a, c)...);
-
-    // Now the reduction over the nodes.
-    sum = mpi::reduce(sum, c);
-    N   = mpi::reduce(N, c);
-    sum /= N;
-
-    int root  = 0;
-    using M_t = decltype(M);
-    // first case : M, Q are an array
-    if constexpr (triqs::arrays::is_amv_value_or_view_class<M_t>::value) {
-
-      using T     = typename M_t::value_type;
-      using MQN_t = details::MQN_t<T>;
-
-      arrays::array<T, M_t::rank + 1> MQ(M.shape().append(3));
-      arrays::ellipsis ___;
-      MQ(___, 0) = M;
-      MQ(___, 1) = Q;
-      MQ(___, 2) = N; // constant... it is a waste of space.
-
-      auto MQ_final = MQ;
-
-      // reinterpret for mpi reduction
-      auto *p         = MQ.data_start();
-      MPI_Datatype dt = mpi::make_datatype_from_tie(std::tie(*(p), *(p + 1), *(p + 2))); // tie the first M, Q, N
-
-      MPI_Reduce(MQ.data_start(), MQ_final.data_start(), M.size(), dt, mpi::map_add<MQN_t>(), root, c.get());
-
-      auto M       = MQ(___, 0);
-      auto Q       = MQ(___, 1);
-      auto std_err = make_regular(std::sqrt((N - 1) / double(N)) * sqrt(Q));
-      auto average = make_regular(N * (sum - M) + M);
-      return std::make_tuple(average, std_err, M, sum);
-
-    } else { //M, Q are scalar, not arrays
-
-      // invert condition : REAL OR COMPLEX, else array
-      using T     = M_t;
-      using MQN_t = details::MQN_t<T>;
-
-      MQN_t s{M, Q, T(N)};
-      MQN_t s_final;
-      MPI_Datatype dt = mpi::make_datatype_from_tie(std::tie(s.M, s.Q, s.n));
-      MPI_Reduce(&s, &s_final, 1, dt, mpi::map_add<MQN_t>(), root, c.get());
-
-      auto std_err = std::sqrt((N - 1) / double(N)) * std::sqrt(s.Q);
-      auto M       = s.M;
-      auto average = N * (sum - M) + M;
-      return std::make_tuple(average, std_err, M, sum);
-    }
+  template <typename F, typename... A> auto jackknife_mpi(mpi::communicator c, F &&f, A const &... a) {
+    return details::jackknife_impl(&c, std::forward<F>(f), details::jackknifed_t{a}...);
   }
+
+  // ------------------------------------------------------------------------------
 
   /**
-   * Same 
-   * @tparam T 
+   * Same
+   * @tparam T
    */
-  template <typename F, typename... T> auto jackknife(mpi::communicator c, F &&f, accumulator<T> const &... a) {
-    return jackknife(c, std::forward<F>(f), a.linear_bins()...);
+  template <typename F, typename... T> auto jackknife_mpi(mpi::communicator c, F &&f, accumulator<T> const &... a) {
+    return jackknife_mpi(c, std::forward<F>(f), a.linear_bins()...);
   }
+
+  // ------------------------------------------------------------------------------
 
   /**
    * Compute the average and error with jackknife method
    *
    * @tparam F type of g
-   * @param a list of series 
+   * @param a list of series
    * @param f a function (a1,a2,a3,...) -> f(a1,a2,a3...)
    * @return  (average corrected with jackknife bias, jackknife error, average of jacknife series, naive average)
    *       FIXME : Write the math formula
@@ -203,33 +175,21 @@ namespace triqs::stat {
    * Each node compute the average and variance, which are then reduced (not all-reduced) to the node 0.
    * Precondition : a series all have the same size
    */
-  template <typename F, typename... A> auto jackknife_serial(F &&f, A const &... a) {
-    auto [M, Q, N, sum] = details::jackknife_impl1(std::forward<F>(f), details::jackknifed_t(a)...);
-    sum /= N;
-    auto std_err = make_regular(std::sqrt((N - 1) / double(N)) * sqrt(Q));
-    auto average = make_regular(N * (sum - M) + M);
-    return std::make_tuple(average, std_err, M, sum);
+  template <typename F, typename... A> auto jackknife(F &&f, A const &... a) {
+    static_assert(not std::is_same_v<std::decay_t<F>, mpi::communicator>, "I see that you pass a mpi:::communicator, you probably want to use jackknife_mpi");
+    return details::jackknife_impl(nullptr, std::forward<F>(f), details::jackknifed_t{a}...);
   }
+
+  // ------------------------------------------------------------------------------
 
   /**
-   * Same 
-   * @tparam T 
+   * Same
+   * @tparam T
    */
-  template <typename F, typename... T> auto jackknife_serial(F &&f, accumulator<T> const &... a) {
-    return jackknife_serial(std::forward<F>(f), a.linear_bins()...);
+  template <typename F, typename... T> auto jackknife(F &&f, accumulator<T> const &... a) {
+    static_assert(not std::is_same_v<std::decay_t<F>, mpi::communicator>, "I see that you pass a mpi:::communicator, you probably want to use jackknife_mpi");
+    return jackknife(std::forward<F>(f), a.linear_bins()...);
   }
 
-  // FIXME Simple variance and average
-  template <typename A> auto mean_and_stderr(mpi::communicator c, A const &a) {
-    auto [av, stddev, avJ, avA] = jackknife(
-       c, [](auto &&x) { return x; }, a);
-    return std::make_pair(av, stddev);
-  }
-
-  // FIXME Simple variance and average
-  template <typename A> auto mean_and_stderr(A const &a) {
-    auto [av, stddev, avJ, avA] = jackknife_serial([](auto &&x) { return x; }, a);
-    return std::make_pair(av, stddev);
-  }
 
 } // namespace triqs::stat

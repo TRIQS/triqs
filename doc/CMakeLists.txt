@@ -29,6 +29,7 @@ set(NAMESPACES
     -N triqs::statistics
     -N mpi
     -N itertools
+    -N triqs::stat
 )
 
 # Caution! This target will generate documentation into the sourcetree at doc/documentation/cpp_api
