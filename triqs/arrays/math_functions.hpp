@@ -27,6 +27,9 @@ namespace triqs {
     inline double conj_r(double x) { return x;}
     inline std::complex<double> conj_r(std::complex<double> x) { return std::conj(x); }
 
+    inline double abs2(double x) { return x*x;}
+    inline std::complex<double> abs2(std::complex<double> x) { return std::conj(x)*x; }
+
     // not for libc++ (already defined)
 #if !defined(_LIBCPP_VERSION)
     // complex conjugation for integers
@@ -74,6 +77,7 @@ namespace triqs {
   }
 
 MAP_IT_NO_STD(conj_r)
+MAP_IT_NO_STD(abs2)
 
 #define TRIQS_ARRAYS_MATH_FNT (abs)(real)(imag)(floor)(conj)(isnan)
 
