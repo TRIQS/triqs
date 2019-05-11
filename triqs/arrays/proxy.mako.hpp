@@ -127,9 +127,9 @@ namespace triqs {
 
       domain_type domain() const { return this->indexmap().domain(); }
 
-      auto storage() const { return this->a.storage(); }
-      value_type const *data_start() const { return &storage()[this->indexmap().start_shift()]; }
-      value_type *data_start() { return &storage()[this->indexmap().start_shift()]; }
+      auto & storage() const { return this->a.storage(); }
+      value_type const *data_start() const { return storage().data() + this->indexmap().start_shift(); }
+      value_type *data_start() { return storage().data() + this->indexmap().start_shift(); }
 
       view_type operator()() const { return *this; }
 
