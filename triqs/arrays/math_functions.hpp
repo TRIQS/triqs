@@ -24,6 +24,12 @@
 namespace triqs {
   namespace arrays {
 
+    inline double conj_r(double x) { return x;}
+    inline std::complex<double> conj_r(std::complex<double> x) { return std::conj(x); }
+
+    inline double abs2(double x) { return x*x;}
+    inline double abs2(std::complex<double> x) { return (std::conj(x)*x).real(); }
+
     // not for libc++ (already defined)
 #if !defined(_LIBCPP_VERSION)
     // complex conjugation for integers
@@ -60,6 +66,18 @@ namespace triqs {
   typename boost::lazy_enable_if_c<ImmutableCuboidArray<A>::value, std::result_of<map_impl<__triqs_##FNT##_wrap, 1>(A)>>::type FNT(A &&a) {          \
     return map(__triqs_##FNT##_wrap{})(std::forward<A>(a));                                                                                          \
   }
+
+#define MAP_IT_NO_STD(FNT)                                                                                                                                  \
+  struct __triqs_##FNT##_wrap {                                                                                                                      \
+    template <typename A> auto operator()(A const &a) const DECL_AND_RETURN(FNT(a));                                                                 \
+  };                                                                                                                                                 \
+  template <typename A>                                                                                                                              \
+  typename boost::lazy_enable_if_c<ImmutableCuboidArray<A>::value, std::result_of<map_impl<__triqs_##FNT##_wrap, 1>(A)>>::type FNT(A &&a) {          \
+    return map(__triqs_##FNT##_wrap{})(std::forward<A>(a));                                                                                          \
+  }
+
+MAP_IT_NO_STD(conj_r)
+MAP_IT_NO_STD(abs2)
 
 #define TRIQS_ARRAYS_MATH_FNT (abs)(real)(imag)(floor)(conj)(isnan)
 
