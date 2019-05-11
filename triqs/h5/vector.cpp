@@ -65,7 +65,7 @@ namespace triqs {
           // auto status = H5Tset_size (strdatatype, s);
           // auto status = H5Tset_size (strdatatype, H5T_VARIABLE);
 
-          if(V.empty() || lv == 0) buf.resize(1);
+          if (V.empty() || lv == 0) buf.resize(1);
 
           buf.resize(V.size() * lv * (s + 1), 0x00);
           for (int i = 0, k = 0; i < V.size(); i++)
@@ -74,7 +74,7 @@ namespace triqs {
             }
 
           hsize_t totdimsf[2] = {V.size(), lv};
-          d_space = H5Screate_simple(2, totdimsf, NULL);
+          d_space             = H5Screate_simple(2, totdimsf, NULL);
         }
       };
     } // namespace
@@ -172,7 +172,7 @@ namespace triqs {
 
       // buffer
       size_t size = H5Aget_storage_size(attr);
-      if(size == 0) return;
+      if (size == 0) return;
       std::vector<char> buf(size, 0x00);
 
       auto err = H5Aread(attr, datatype, (void *)(&buf[0]));
@@ -210,13 +210,16 @@ namespace triqs {
 
       template <typename T> inline void h5_write_vector_impl(group g, std::string const &name, std::vector<T> const &V) {
 
-        dataset ds = g.create_dataset(name, h5::data_type_file<T>(), data_space_for_vector(V));
+        dataspace d_space = data_space_for_vector(V);
+        dataset dset      = g.create_dataset(name, h5::data_type_file<T>(), d_space);
 
-        auto err = H5Dwrite(ds, h5::data_type_memory<T>(), data_space_for_vector(V), H5S_ALL, H5P_DEFAULT, &V[0]);
-        if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the vector<....> " << name << " in the group" << g.name();
-
+        // control the case of size 0
+        if (H5Sget_simple_extent_npoints(d_space) > 0) {
+          auto err = H5Dwrite(dset, h5::data_type_memory<T>(), data_space_for_vector(V), H5S_ALL, H5P_DEFAULT, &V[0]);
+          if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the vector<....> " << name << " in the group" << g.name();
+        }
         // if complex, to be python compatible, we add the __complex__ attribute
-        if (triqs::is_complex<T>::value) h5_write_attribute(ds, "__complex__", "1");
+        if (triqs::is_complex<T>::value) h5_write_attribute(dset, "__complex__", "1");
       }
 
       //------------------------------------
