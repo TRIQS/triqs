@@ -143,7 +143,6 @@ namespace triqs {
 
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-        std::cout << "Calling serialize:" << std::endl;
         ar &units;
         ar &periodization_matrix;
         ar &dims;
