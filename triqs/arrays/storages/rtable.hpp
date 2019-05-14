@@ -94,7 +94,6 @@ namespace nda::mem {
       EXPECTS(_refcounts[id] > 0);
       EXPECTS(id < _refcounts.size());
 #endif
-
       // This function needs to be executed serially
       std::lock_guard<std::mutex> lock(mtx);
 
