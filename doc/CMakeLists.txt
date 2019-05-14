@@ -52,7 +52,7 @@ add_custom_command(
   ${CMAKE_CURRENT_SOURCE_DIR}/reference/cpp/doc_root.hpp
   ${NAMESPACES}
   --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/reference/cpp/generated
-  --cxxflags="${CPP2RST_CXXFLAGS}"
+  --cxxflags "-std=c++17 -DTRIQS_BUILDING_LIBRARY -I${CMAKE_SOURCE_DIR}"
   ${CPP2RST_INCLUDE_FLAGS}
   -I${CMAKE_BINARY_DIR}/Config
   -isystem=${CMAKE_SOURCE_DIR}/cpp2py/include

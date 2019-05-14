@@ -277,7 +277,7 @@ namespace triqs {
       /**
        *  Construct from mesh, target_shape, memory order
        *
-       *  @example triqs/gfs/examples/gf_constructors_0.cpp
+       *  @example triqs/gfs/gf_constructors_0.cpp
        */
       gf(mesh_t m, target_shape_t shape, arrays::memory_layout_t<arity + Target::rank> const &ml, indices_t const &ind = indices_t{})
          : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape), ml), ind) {
@@ -331,7 +331,7 @@ namespace triqs {
     * 		 RHS can be anything modeling the gf concept TBW
     * 		 In particular lazy expression with Green functions
     * @param rhs
-    * @example    gfs/examples/gf_assign_0.cpp
+    * @example    triqs/gfs/gf_assign_0.cpp
     *
     *
     */
