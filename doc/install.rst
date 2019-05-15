@@ -2,7 +2,7 @@
 
 .. highlight:: bash
 
-.. _installation_%%__efe_wef___:
+.. _installation:
 
 Installation
 ############
