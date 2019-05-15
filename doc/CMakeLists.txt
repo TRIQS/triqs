@@ -49,12 +49,13 @@ get_property(CPP2RST_CXXFLAGS TARGET triqs PROPERTY INTERFACE_COMPILE_OPTIONS)
 add_custom_target(docs_cpp2rst)
 add_custom_command(
   TARGET docs_cpp2rst
-  COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/reference/cpp/generated
+  COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
   COMMAND PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${CPP2PY_BINARY_DIR}/bin/c++2rst
-  ${CMAKE_CURRENT_SOURCE_DIR}/reference/cpp/doc_root.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
   ${NAMESPACES}
-  --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/reference/cpp/generated
-  --cxxflags "-std=c++17 -DTRIQS_BUILDING_LIBRARY -I${CMAKE_SOURCE_DIR}"
+  --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
+  --cxxflags="-DTRIQS_BUILDING_LIBRARY ${CPP2RST_CXXFLAGS}"
+  --parse-all-comments
   ${CPP2RST_INCLUDE_FLAGS}
   -I${CMAKE_BINARY_DIR}/Config
   -isystem=${CMAKE_SOURCE_DIR}/cpp2py/include

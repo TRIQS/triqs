@@ -1,4 +1,3 @@
-
 Table of contents
 =================
 
@@ -7,9 +6,11 @@ Table of contents
  
    index
    install
-   reference/cpp/contents
+   documentation
    applications
+   tutorials
    issues
+   versions
    changelog
    about
-
+   faqs

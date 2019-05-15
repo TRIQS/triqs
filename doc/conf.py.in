@@ -132,7 +132,7 @@ html_show_sphinx = False
 html_context = {'header_title': 'triqs',
                 'header_subtitle': 'a Toolbox for Research on Interacting Quantum Systems',
                 'header_links': [['Install', 'install'],
-                                 ['Reference', 'reference'],
+                                 ['Documentation', 'documentation'],
                                  ['Tutorials', 'tutorials'],
                                  ['Applications', 'applications'],
                                  ['Issues', 'issues'],
