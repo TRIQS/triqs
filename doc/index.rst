@@ -28,13 +28,13 @@ TRIQS applications
 
 Based on the TRIQS toolkit, several :ref:`full-fledged applications<applications>`
 are also available. They allow for example to solve a generic quantum impurity
-model or to run a complete LDA+DMFT calculation.
+model or to run a complete DFT+DMFT calculation.
 
 Developed in a collaboration between IPhT Saclay and Ecole Polytechnique since 2005,
 the TRIQS library and applications have allowed us to address questions as diverse as:
 
 * Momentum-selective aspects on cuprate superconductors (with various cluster DMFT methods)
-* Degree of correlation in iron-based superconductors (within an LDA+DMFT approach)
+* Degree of correlation in iron-based superconductors (within an DFT+DMFT approach)
 * Fermionic Mott transition and exploration of Sarma phase in cold-atoms
 
 
