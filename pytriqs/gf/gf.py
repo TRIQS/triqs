@@ -703,16 +703,28 @@ class Gf(object):
         return plot.dispatcher(self)(self, opt_dict)
 
     def x_data_view(self, x_window=None, flatten_y=False):
+        """Helper method for getting a view of the data
+
+        Parameters
+        ----------
+
+        x_window : optional
+            the window of x variable (omega/omega_n/t/tau) for which data is requested
+        flatten_y: bool, optional
+            If the Green function is of size (1, 1) flatten the array as a 1d array
+
+        Returns
+        -------
+
+        X, data : tuple
+            X is a 1d numpy of the x variable inside the window requested
+            data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data
+            If flatten_y is True and dim is (1, 1, *), returns a 1d numpy
         """
-        :param x_window: the window of x variable (omega/omega_n/t/tau) for which data is requested
-                          if None, take the full window
-        :param flatten_y: If the Green function is of size (1, 1) flatten the array as a 1d array
-        :rtype: a tuple (X, data) where
-                 * X is a 1d numpy of the x variable inside the window requested
-                 * data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data
-                   If flatten_y is True and dim is (1, 1, *), returns a 1d numpy
-        """
-        X = [x.imag for x in self.mesh] if isinstance(self.mesh, meshes.MeshImFreq) else [x for x in self.mesh]
+        
+        X = [x.imag for x in self.mesh] if isinstance(self.mesh, meshes.MeshImFreq) \
+            else [x for x in self.mesh]
+        
         X, data = np.array(X), self.data
         if x_window:
             # the slice due to clip option x_window
