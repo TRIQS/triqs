@@ -110,6 +110,7 @@ class ProcessedDoc:
             else:
                 d[key] = val
         self.elements = d
+        if 'brief' not in d : d['brief']=''
 
         # if 'return' in d : print d['return']
     
