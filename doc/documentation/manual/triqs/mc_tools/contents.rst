@@ -7,8 +7,6 @@ The TRIQS library provide simple tools for Monte Carlo codes, like a class calle
 Monte Carlo algorithms in a simple framework. The class takes care of the basic
 mechanics which is common to any Monte Carlo method so that you can focus on
 the implementation details of your specific algorithm.
-<<<<<<< HEAD:doc/documentation/manual/triqs/mc_tools/contents.rst
-=======
 
 
 .. toctree::
@@ -22,4 +20,3 @@ the implementation details of your specific algorithm.
    random
    ising
     
->>>>>>> [doc] Start reorganization of the doc:doc/reference/cpp/triqs/mc_tools/contents.rst

@@ -31,8 +31,6 @@ This class implements these general operations. It contains:
   * adds/removes a line and a column (i.e. adding or removing one x and one y)
   * adds/removes two lines and two columns (i.e. adding or removing two x and two y)
   * changes a line/colum, etc... 
-<<<<<<< HEAD:doc/documentation/manual/triqs/det_manip/contents.rst
-=======
 
 
 
@@ -43,4 +41,3 @@ This class implements these general operations. It contains:
    det_manip
    implementation_notes
    ./../../../tutorials/det_manip/det_manip_tutorial
->>>>>>> [doc] Start reorganization of the doc:doc/reference/cpp/triqs/det_manip/contents.rst
