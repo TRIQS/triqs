@@ -18,13 +18,12 @@ hybridization expansion of the partition function.
 
 *Homepage:* `<https://triqs.github.io/cthyb/>`_
 
-**DFT tools**
+**DFTTools**
 -------------
 
-DFT tools provides an interface to DFT packages such as Wien2k for LDA+DMFT
-calculation. It allows you to turn band-structure calculations obtained from
-the Wien2k package to inputs to full-fledged LDA+DMFT calculations in a few
-lines!
+DFTTools provides an interface to DFT packages such as Wien2k and VASP for
+DFT+DMFT calculation. It allows you to turn band-structure calculations
+obtained to inputs to full-fledged DFT+DMFT calculations in a few lines.
 
 *Homepage:* `<https://triqs.github.io/dft_tools/>`_
 
