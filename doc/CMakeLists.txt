@@ -26,9 +26,11 @@ set(NAMESPACES
     -N triqs::gfs
     -N triqs::det_manip
     -N triqs::mc_tools
-     -N triqs::hilbert_space
+    -N triqs::hilbert_space
     -N triqs::atom_diag
     -N triqs::statistics
+    -N mpi
+    -N itertools
 )
 
 get_property(TRIQS_INCLUDE_DIRS TARGET triqs PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
