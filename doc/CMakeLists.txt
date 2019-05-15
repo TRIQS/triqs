@@ -72,7 +72,7 @@ add_custom_command(TARGET docs_sphinx
 
 # Autodoc usage requires the python modules to be built first
 GET_PROPERTY(CPP2PY_MODULES_LIST GLOBAL PROPERTY CPP2PY_MODULES_LIST)
-add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
+#add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
 
 # ---------------------------------
 # Install
