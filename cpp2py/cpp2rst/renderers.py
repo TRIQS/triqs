@@ -305,7 +305,7 @@ Defined in header <*{incl}*>
 def render_ns(ns, all_functions, all_classes, all_usings): 
  
     R = make_header('Reference C++ API for %s'%ns, '#') 
-    ns = ns.split('::',1)[1]
+    ns = ns.split('::',1)[-1]
 
     if len(all_usings) > 0:
         R += make_header('Type aliases')

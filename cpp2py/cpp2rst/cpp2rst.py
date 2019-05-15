@@ -277,7 +277,7 @@ class Cpp2Rst:
         mkchdir(*namespace.split('::')[:-1])
 
         r = renderers.render_ns(namespace, functions_by_name, classes, usings)
-        ns = namespace.split('::',1)[1]
+        ns = namespace.split('::',1)[-1]
         safe_write(ns, r)
 
         os.chdir(cur_dir)
