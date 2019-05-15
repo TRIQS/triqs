@@ -15,7 +15,6 @@ rst_start = """
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 """
 
@@ -242,13 +241,10 @@ Defined in header <*{incl}*>
 
     {templ_synop} class {cls.name}
 
-{cls_doc.brief_doc}
-
 {cls_doc.doc}
     """.format(cls = cls, incl = incl.strip(), separator = '=' * (len(cls.fully_qualified_name)), templ_synop = make_synopsis_template_decl(cls), cls_doc = cls_doc)
 
     # 
-    R += cls_doc.doc
     if 'tparam' in doc_elem:    R += render_list(doc_elem.pop('tparam'), 'Template parameters', '-')
     if 'note' in doc_elem :     R += render_note(doc_elem.pop('note'))
     if 'warning' in doc_elem:   R += render_warning(doc_elem.pop('warning'))
@@ -279,7 +275,7 @@ Defined in header <*{incl}*>
         D = OrderedDict()
         for name, flist in all_f.items():
             cat =flist[0].processed_doc.elements.get('category', None) 
-            D.setdefault(cat, list()).append((":ref:`%s <%s>`"%(escape_lg(name),make_label(cls.name + '_' + name)), flist[0].processed_doc.brief_doc))
+            D.setdefault(cat, list()).append((":ref:`%s <%s>`"%(escape_lg(name),make_label(cls.name + '_' + name)), flist[0].processed_doc.elements['brief']))
         
         # Make the sub lists
         for cat, list_table_args in D.items() : 
@@ -315,8 +311,8 @@ def render_ns(ns, all_functions, all_classes, all_usings):
     if all_classes:
         R += make_header('Classes')
         R += ".. table::\n   :width: 50% 50%\n\n"
-        #R += render_table([(":ref:`%s <_%s_%s>`"%(cls.spelling,escape_lg(ns), escape_lg(cls.spelling)), cls.processed_doc.brief_doc) for cls in all_classes ])
-        R += render_table([(":ref:`%s <%s>`"%(escape_lg(cls.name), cls.name_for_label), cls.processed_doc.brief_doc) for cls in all_classes ])
+        #R += render_table([(":ref:`%s <_%s_%s>`"%(cls.spelling,escape_lg(ns), escape_lg(cls.spelling)), cls.processed_doc.elements['brief']) for cls in all_classes ])
+        R += render_table([(":ref:`%s <%s>`"%(escape_lg(cls.name), cls.name_for_label), cls.processed_doc.elements['brief']) for cls in all_classes ])
         R += toctree_hidden
         for cls in all_classes:
             R += "    {ns}/{filename}\n".format(ns = ns, filename = replace_ltgt(cls.name))
@@ -324,8 +320,8 @@ def render_ns(ns, all_functions, all_classes, all_usings):
 
     if all_functions:
         R += make_header('Functions')
-        R += render_table([(":ref:`%s <%s>`"%(name, escape_lg(name)), f_list[0].processed_doc.brief_doc) for (name, f_list) in all_functions.items() ])
-        #R += render_table([(":ref:`%s <%s_%s>`"%(name,escape_lg(ns), escape_lg(name)), f_list[0].processed_doc.brief_doc) for (name, f_list) in all_functions.items() ])
+        R += render_table([(":ref:`%s <%s>`"%(name, escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
+        #R += render_table([(":ref:`%s <%s_%s>`"%(name,escape_lg(ns), escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
         R += toctree_hidden
         for f_name in all_functions:
            R += "    {ns}/{f_name}\n".format(ns = ns, f_name = f_name)
