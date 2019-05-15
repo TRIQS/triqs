@@ -3,6 +3,8 @@
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
 # Copyright (C) 2017 by M. Ferrero, O. Parcollet
+# Copyright (C) 2019 The Simons Foundation
+# Author(s): H. U.R. Strand
 #
 # TRIQS is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -73,11 +75,11 @@ class Idx:
         self.idx = x[0] if len(x)==1 else x
 
 class Gf(object):
-    """
-    Green function class
+    r""" TRIQS Greens function container class
 
     Parameters
     ----------
+
     mesh: MeshXXX
           One of the meshes of the module 'meshes'
           The mesh of the Green function
@@ -104,8 +106,13 @@ class Gf(object):
     name: str 
           The name of the Green function. For plotting.
 
-    NB : One of target_shape, data and indices must be set, and the other must be None.
+    Notes
+    -----
+
+    One of target_shape, data and indices must be set, and the other must be `None`.
+
     """
+    
     __metaclass__ = AddMethod
     
     _hdf5_data_scheme_ = 'Gf'
@@ -201,44 +208,46 @@ class Gf(object):
  
     @property
     def rank(self):
-        """Number of variable"""
+        r"""int : The mesh rank (number of meshes)"""
         return self._rank
 
     @property
     def target_rank(self): 
-        """Dimension of the target shape"""
+        """int : The rank the target space"""
         return self._target_rank
 
     @property
     def target_shape(self): 
-        """Shape of the target_space"""
+        """(int, ...) : The shape of the target space"""
         return self._target_shape
 
     @property
     def mesh(self):
-        """The mesh"""
+        """gf_mesh : the mesh of the Greens function"""
         return self._mesh
 
     @property
     def data(self):
-        """
-           The data array, as a numpy array.
-           Storage convention is self.data[x,y,z, ..., n0,n1,n2] 
-           where x,y,z correspond to the variables (the mesh) and 
-           n0, n1, n2 to the target_space
+        """ndarray : raw data of the Greens function
+
+           Storage convention is ``self.data[x,y,z, ..., n0,n1,n2]``
+           where ``x,y,z`` correspond to the mesh variables (the mesh) and 
+           ``n0, n1, n2`` to the ``target_space``.
         """
         return self._data
 
     @property
     def indices(self):
-        """
-        Access to the indices
-        """
+        """GfIndices : The index object of the taret space"""
         return self._indices
 
     def copy(self) : 
-        """
-        Deep copy of the Green function
+        """Deep copy of the Greens function
+
+        Returns
+        -------
+        G : Gf
+            Copy of self
         """
         return Gf (mesh = self._mesh.copy(), 
                    data = self._data.copy(), 
@@ -246,9 +255,7 @@ class Gf(object):
                    name = self.name)
 
     def copy_from(self, another):
-        """
-        Copy the data of another into self.
-        """
+        """Copy the data of another Greens function into self."""
         self._mesh.copy_from(another.mesh)
         assert self._data.shape == another._data.shape, "Shapes are incompatible: " + str(self._data.shape) + " vs " + str(another._data.shape)
         self._data[:] = another._data[:]
@@ -351,12 +358,12 @@ class Gf(object):
     
     @property
     def real(self): 
-        """A Gf with only the real part of data."""
+        """Gf : A Greens function with a view of the real part."""
         return Gf(mesh = self._mesh, data = self._data.real, name = ("Re " + self.name) if self.name else '') 
 
     @property
     def imag(self): 
-        """A Gf with only the imag part of data."""
+        """Gf : A Greens function with a view of the imaginary part."""
         return Gf(mesh = self._mesh, data = self._data.imag, name = ("Im " + self.name) if self.name else '') 
  
     # --------------  Lazy system -------------------------------------
@@ -547,47 +554,122 @@ class Gf(object):
    #----------------------------- other operations -----------------------------------
 
     def invert(self):
-        if self.target_rank==0:
-            self.data[:] = 1. / self.data
-            return
+        """Inverts the Greens function (in place)"""
 
-        """Inverts this Gf in place, in a matrix sense"""
-        assert self.target_rank==2, "Inversion only makes sense for matrix or scalar_valued Gf"
-        d = self.data.view() # Cf https://docs.scipy.org/doc/numpy/reference/generated/numpy.reshape.html
-        d.shape = (np.prod(d.shape[:-2]),) + d.shape[-2:] # reshaped view, guarantee no copy
-        wrapped_aux._gf_invert_data_in_place(d)   
+        if self.target_rank == 0: # Scalar target space
+            self.data[:] = 1. / self.data
+        elif self.target_rank == 2: # Matrix target space
+            # TODO: Replace by np.linag.inv, since v1.8
+            # Cf https://docs.scipy.org/doc/numpy/reference/generated/numpy.reshape.html
+            d = self.data.view()
+            d.shape = (np.prod(d.shape[:-2]),) + d.shape[-2:] # reshaped view, guarantee no copy
+            wrapped_aux._gf_invert_data_in_place(d)
+        else:
+            raise TypeError(
+                "Inversion only makes sense for matrix or scalar_valued Greens functions")
 
     def inverse(self): 
-        """Returns a new Gf, inverse of self."""
+        """Computes the inverse of the Greens function
+
+        Returns
+        -------
+        G : Gf (copy)
+            The matrix/scalar inverse of the Greens function
+        """
         r = self.copy()
         r.invert()
         return r
 
     def transpose(self): 
-        """ Returns a NEW gf, with transposed data, i.e. it is NOT a transposed view."""
+        """Take the transpose of a matrix valued Greens function 
+
+        Returns
+        -------
+
+        G : Gf (copy)
+            The transpose of the Greens function 
+
+        Notes
+        -----
+
+        Only implemented for single mesh matrix valued Greens functions.
+
+        """
+
         # FIXME Why this assert ?
-        #assert any( (isinstance(self.mesh, x) for x in [meshes.MeshImFreq, meshes.MeshReFreq])), "Method invalid for this Gf" 
+        #assert any( (isinstance(self.mesh, x) for x in [meshes.MeshImFreq, meshes.MeshReFreq])), "Method invalid for this Gf"
+
+        assert self.rank == 1, "Transpose only implemented for single mesh Greens functions"
+        assert self.target_rank == 2, "Transpose only implemented for matrix valued Greens functions"
+
         d = np.transpose(self.data.copy(), (0, 2, 1))
         return Gf(mesh = self.mesh, data= d, indices = self.indices.transpose())
 
     def conjugate(self):
-        """
-        Returns a new functions, with the conjugate.
+        """Conjugate of the Greens function
+
+        Returns
+        -------
+        G : Gf (copy)
+            Conjugate of the Greens function
         """
         return Gf(mesh = self.mesh, data= np.conj(self.data), indices = self.indices)
 
     def zero(self):
-        """Put self to 0"""
+        """Set all values to zero"""
         self._data[:] = 0
 
     def from_L_G_R(self, L, G, R):
-        """self[:] =  l * g * r"""
-        assert self.target_rank==2, "Function only makes sense for matrix valued Gf"
-        assert self.rank==1, "Not implemented for more than one var" # A little generalization needed in C++ ?
+        r"""Matrix transform of the target space of a matrix valued Greens function
+
+        Sets the current Greens function :math:`g_{ab}` to the matrix transform of :math:`G_{cd}`
+        using the left and right transform matrices :math:`L_{ac}` and :math:`R_{db}`
+
+        .. math::
+            g_{ab} = \sum_{cd} L_{ac} G_{cd} R_{db}
+
+        Parameters
+        ----------
+
+        L : (a, c) ndarray
+            Left side transform matrix
+        G : Gf matrix valued target_shape == (c, d)
+            Greens function to trasform
+        R : (d, b) ndarray
+            Right side transform matrix
+
+        Notes
+        -----
+
+        Only implemented for Greens functions with a single mesh.
+        """
+
+        assert self.rank == 1, "Only implemented for Greens functions with one mesh"
+        assert self.target_rank == 2, "Matrix transform only valid for matrix valued Greens functions"
+
+        assert len(L.shape) == 2, "L needs to be two dimensional"
+        assert len(R.shape) == 2, "R needs to be two dimensional"
+
+        assert L.shape[1] == G.target_shape[0], "Dimension mismatch between L and G"
+        assert R.shape[0] == G.target_shape[1], "Dimension mismatch between G and R"
+
+        assert L.shape[0] == self.target_shape[0], "Dimension mismatch between L and self"
+        assert R.shape[1] == self.target_shape[1], "Dimension mismatch between R and self"
+
         wrapped_aux.set_from_gf_data_mul_LR(self.data, L, G.data, R)
 
     def total_density(self, *args, **kwargs):
-        """Total density"""
+        """Compute total density 
+
+        Returns
+        -------
+        density : float
+            Total density of the Greens function
+
+        Notes
+        -----
+        Uses third order tail corrections for Matsubara Greens functions
+        """
         return np.trace(gf_fnt.density(self, *args, **kwargs))
 
     #-----------------------------  IO  -----------------------------------
