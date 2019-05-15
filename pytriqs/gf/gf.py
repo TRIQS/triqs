@@ -205,7 +205,62 @@ class Gf(object):
         assert self.rank == self._mesh.rank if isinstance (self._mesh, MeshProduct) else 1
         # The mesh size must correspond to the size of the data
         assert self._data.shape[:self._rank] == tuple(len(m) for m in self._mesh.components) if isinstance (self._mesh, MeshProduct) else (len(self._mesh),)
- 
+
+    def density(self, *args, **kwargs):
+        r"""Compute the density matrix of the Greens function
+
+        Parameters
+        ----------
+
+        beta : float, optional
+            Used for finite temperature density calculation on the real-frequency mesh.
+
+        Returns
+        -------
+
+        density_matrix : ndarray (target_shape)
+            Single particle density matrix
+
+        Notes
+        -----
+
+        Only works for single mesh Greens functions with a, Matsubara,
+        real-frequency, or Legendre mesh.
+        """
+
+        return gf_fnt.density(self, *args, **kwargs)
+
+    def make_gf_from_fourier(self, g_in, *args, **kwargs):
+        r"""Set current Greens function from the Fourier transform of ``g_in``
+
+        Parameters
+        ----------
+
+        g_in : Gf
+            Input Greens function to Fourier transform
+
+        known_moments : ndarray, optional
+            Known high frequency moments in Matsubara space
+
+        shift_half_bin : bool, optional
+            UNKNOWN parameter for real-time and frequency meshes
+
+        n_tau : int, optional
+            Set number of imaginary time points
+
+        Returns
+        -------
+
+        g_out : Gf
+            Reference to ``self``
+
+        Notes
+        -----
+        Only implemented for single mesh Greens functions.
+        """
+
+        return gf_fnt.make_gf_from_fourier(g_in, *args, **kwargs)
+        
     @property
     def rank(self):
         r"""int : The mesh rank (number of meshes)"""
@@ -668,7 +723,9 @@ class Gf(object):
 
         Notes
         -----
-        Uses third order tail corrections for Matsubara Greens functions
+        Only implemented for single mesh Greens function with a,
+        Matsubara, real-frequency, or Legendre mesh.
+
         """
         return np.trace(gf_fnt.density(self, *args, **kwargs))
 
