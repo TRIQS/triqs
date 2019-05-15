@@ -65,7 +65,8 @@ class AddMethod(type):
     def __init__(cls, name, bases, dct):
         super(AddMethod, cls).__init__(name, bases, dct)
         for a in [f for f in gf_fnt.__dict__.values() if callable(f)]:
-            setattr(cls, a.__name__, add_method_helper(a,cls)) 
+            if not hasattr(cls, a.__name__):
+                setattr(cls, a.__name__, add_method_helper(a,cls))
 
 class Idx:
     def __init__(self, *x):
