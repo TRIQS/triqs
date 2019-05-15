@@ -5,3 +5,4 @@
 
    pytriqs
    pytriqs/gf/Gf
+   pytriqs/utility/dichotomy
