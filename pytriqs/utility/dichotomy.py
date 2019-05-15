@@ -21,29 +21,43 @@
 ################################################################################
 
 import pytriqs.utility.mpi as mpi
+import numpy as np
 
 def dichotomy(function, x_init, y_value, precision_on_y, delta_x, max_loops = 1000, x_name="", y_name="", verbosity=1):
-    """
-    Solver function(x) = y_value.
+    r""" Finds :math:`x` that solves :math:`y = f(x)`.
     
-    Arguments :
-      - function : function (real valued) to be solved by dichotomy
-      - x_init : Init value for x. On success, returns the new value of x
-      - y_value : 
-      - precision_on_y : calculation stops for abs(f(x) - y_value)<precision
-      - max_loops : maximum number of loops before failure. Default is 1000
-      - x_name, y_name : name of the variable x, y for the report
-      - verbosity : verbosity level.
+    Starting at ``x_init``, which is used as the lower upper/bound, dichotomy finds first the upper/lower
+    bound by adding/subtracting ``delta_x``. Then bisection is used to refine :math:`x` until
+    ``abs(f(x) - y_value) < precision_on_y`` or ``max_loops`` is reached.
+   
+    Parameters
+    ----------
 
-    Returns :
-       - A tuple (x,y). x is the value found, y is f(x).
-       - (None,None) if the calculation failed.
+    function : function, real valued 
+        Function :math:`f(x)`. It must take only one real parameter.
+    x_init : double
+        Initial guess for x. On success, returns the new value of x.
+    y_value : double
+        Target value for y.
+    precision_on_y : double
+        Stops if ``abs(f(x) - y_value) < precision_on_y``.
+    delta_x : double
+        :math:`\Delta x` added/subtracted from ``x_init`` until the second bound is found.
+    max_loops : integer, optional
+        Maximum number of loops (default is 1000).
+    x_name : string, optional
+        Name of variable x used for printing.
+    y_name : string, optional
+        Name of variable y used for printing.
+    verbosity : integer, optional
+        Verbosity level. 
 
+    Returns
+    -------
+
+    (x,y) : tuple of doubles
+        :math:`x` and :math:`y=f(x)`. Returns (None, None) if dichotomy failed.
     """
-    def sign(x):
-        if x>0.0 : return 1
-        if x<0.0 : return -1
-        return 0
     
     mpi.report("Dichotomy adjustment of %(x_name)s to obtain %(y_name)s = %(y_value)f +/- %(precision_on_y)f"%locals() )
     PR = "    "
@@ -52,7 +66,7 @@ def dichotomy(function, x_init, y_value, precision_on_y, delta_x, max_loops = 10
 
     # First find the bounds
     y1 = function(x)
-    eps = sign(y1-y_value)
+    eps = np.sign(y1-y_value)
     x1=x;y2=y1;x2=x1
     nbre_loop=0
     while (nbre_loop<= max_loops) and (y2-y_value)*eps>0 and abs(y2-y_value)>precision_on_y :
@@ -61,21 +75,26 @@ def dichotomy(function, x_init, y_value, precision_on_y, delta_x, max_loops = 10
         y2 = function(x2)
         if x_name!="" and verbosity>2:
             mpi.report("%(PR)s%(x_name)s = %(x2)f  \n%(PR)s%(y_name)s = %(y2)f"%locals())
-
+    
+    # Make sure that x2 > x1
+    if x1 > x2:
+        x1,x2 = x2,x1
+        y1,y2 = y2,y1
+    
     mpi.report("%(PR)s%(x1)f < %(x_name)s < %(x2)f"%locals())
     mpi.report("%(PR)s%(y1)f < %(y_name)s < %(y2)f"%locals())
 
-    # Now mu is between mu1 and mu2
-    yfound = y2
-    # We found bounds. What if the next loop is never run ?
-    # i.e. x1 or x2 are close to the solution
-    # we have to know which one is the best .... 
-    if abs(y1-y_value)< abs(y2-y_value) :
-        x=x1
+    # We found bounds.
+    # If one of the two bounds is already close to the solution
+    # the bisection will not run. For this case we set x and yfound.
+    if abs(y1-y_value) < abs(y2-y_value) :
+        yfound = y1
+        x = x1
     else:
-        x=x2
+        yfound = y2
+        x = x2
         
-    #Now let's refine our mu....
+    #Now let's refine between the bounds
     while (nbre_loop<= max_loops) and (abs(yfound-y_value)>precision_on_y) :
         nbre_loop +=1
         x = x1  + (x2 - x1) * (y_value - y1)/(y2-y1)
@@ -96,4 +115,3 @@ def dichotomy(function, x_init, y_value, precision_on_y, delta_x, max_loops = 10
         if verbosity>0:
             mpi.report("%(PR)sFAILURE to adjust %(x_name)s  to the value %(y_value)f after %(nbre_loop)d iterations."%locals())
         return (None,None)
-    
