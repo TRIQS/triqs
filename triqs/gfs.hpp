@@ -33,7 +33,9 @@
 #include "./gfs/gf/targets.hpp"
 
 // gf class and its mechanisms
-#include "./gfs/gf/gf.hxx"
+#include "./gfs/gf/gf.hpp"
+#include "./gfs/gf/gf_view.hpp"
+#include "./gfs/gf/gf_const_view.hpp"
 #include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
 
