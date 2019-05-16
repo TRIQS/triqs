@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _stateLTHilbertSpace_ScalarType_trueGT_get_hilbert:
+.. _triqs__hilbert_space__stateLTHilbertSpace_ScalarType_trueGT__get_hilbert:
 
-triqs::hilbert_space::state::get_hilbert
-========================================
+triqs::hilbert_space::state<HilbertSpace,ScalarType,true>::get_hilbert
+======================================================================
+
+*#include <triqs/hilbert_space/state.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Return a constant reference to the associated Hilbert space`
        | HilbertSpace const & :red:`get_hilbert` () const
 
 
+
+
+
+Return a constant reference to the associated Hilbert space
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::state::get_hilbert
 Returns
 ^^^^^^^
 
- * Constant reference to the Hilbert space
+Constant reference to the Hilbert space

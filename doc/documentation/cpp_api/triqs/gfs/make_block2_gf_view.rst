@@ -5,27 +5,35 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _make_block2_gf_view:
+.. _triqs__gfs__make_block2_gf_view:
 
-make_block2_gf_view
-===================
+triqs::gfs::make_block2_gf_view
+===============================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Create block2_gf_view from vector of views`
-       | :green:`template<typename Gf>`
+    1. | :green:`template<typename Gf>`
        | block2_gf_view_of<Gf> :red:`make_block2_gf_view` (std::vector<std::vector<Gf> > & :param:`v`)
 
-    2. | :cppbrief:`Create block2_gf_view from block_names and vector of views`
-       | :green:`template<typename Gf>`
+    2. | :green:`template<typename Gf>`
        | block2_gf_view_of<Gf> :red:`make_block2_gf_view` (std::vector<std::string> :param:`block_names1`,
-       |   std::vector<std::string> :param:`block_names2`,
-       |   std::vector<std::vector<Gf> > & :param:`v`)
+       |                      std::vector<std::string> :param:`block_names2`,
+       |                      std::vector<std::vector<Gf> > & :param:`v`)
 
 Documentation
+
+
+
+ **1)**   Create block2_gf_view from vector of views
+
+
+
+ **2)**   Create block2_gf_view from block_names and vector of views

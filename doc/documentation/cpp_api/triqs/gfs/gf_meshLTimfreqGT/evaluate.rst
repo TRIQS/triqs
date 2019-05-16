@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_evaluate:
+.. _triqs__gfs__gf_meshLTimfreqGT__evaluate:
 
-triqs::gfs::gf_mesh::evaluate
-=============================
+triqs::gfs::gf_mesh<imfreq>::evaluate
+=====================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`For one var evaluation`
        | :green:`template<typename F>`
        | auto :red:`evaluate` (F const & :param:`f`, long :param:`n`) const
 
-    2. | :green:`template<typename F>`
-       | auto :red:`evaluate` (F const & :param:`f`, :ref:`matsubara_freq <triqs__gfs__matsubara_freq>` :param:`n`) const
 
-Documentation
+
+
+
+For one var evaluation

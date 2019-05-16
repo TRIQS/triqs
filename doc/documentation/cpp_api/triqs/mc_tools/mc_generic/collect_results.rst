@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mc_generic_collect_results:
+.. _triqs__mc_tools__mc_generic__collect_results:
 
 triqs::mc_tools::mc_generic::collect_results
 ============================================
+
+*#include <triqs/mc_tools/mc_generic.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Reduce the results of the measures, and reports some statistics`
        | void :red:`collect_results` (:ref:`communicator <mpi__communicator>` const & :param:`c`)
+
+
+
+
+
+Reduce the results of the measures, and reports some statistics

@@ -5,25 +5,30 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _atomic_density_matrix:
+.. _triqs__atom_diag__atomic_density_matrix:
 
-atomic_density_matrix
-=====================
+triqs::atom_diag::atomic_density_matrix
+=======================================
+
+*#include <triqs/atom_diag/functions.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The atomic density matrix`
        | :green:`template<bool Complex>`
        | typename atom_diag<Complex>::block_matrix_t :red:`atomic_density_matrix` (:ref:`atom_diag\<Complex\> <triqs__atom_diag__atom_diag>` const & :param:`atom`,
-       |   double :param:`beta`)
+       |                        double :param:`beta`)
 
 
+
+
+
+The atomic density matrix
 
 
 
@@ -32,18 +37,18 @@ atomic_density_matrix
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **Complex**: Do we have a diagonalization problem with a complex-valued Hamiltonian?
+ * :param:`Complex` Do we have a diagonalization problem with a complex-valued Hamiltonian?
 
 
 Parameters
 ^^^^^^^^^^
 
- * **atom**: Solved diagonalization problem.
+ * :param:`atom` Solved diagonalization problem.
 
- * **beta**: Inverse temperature.
+ * :param:`beta` Inverse temperature.
 
 
 Returns
 ^^^^^^^
 
- * Gibbs' density matrix of the system.
+Gibbs' density matrix of the system.

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTbrillouin_zoneGT_hdf5_scheme:
+.. _triqs__gfs__gf_meshLTbrillouin_zoneGT__hdf5_scheme:
 
-triqs::gfs::gf_mesh::hdf5_scheme
-================================
+triqs::gfs::gf_mesh<brillouin_zone>::hdf5_scheme
+================================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`-------------- HDF5  --------------------------`
        | std::string :red:`hdf5_scheme` ()
+
+
+
+
+
+-------------- HDF5  --------------------------

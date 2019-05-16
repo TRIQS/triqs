@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _measure_set_has:
+.. _triqs__mc_tools__measure_set__has:
 
 triqs::mc_tools::measure_set::has
 =================================
+
+*#include <triqs/mc_tools/measure_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Does qmc have a measure named name`
        | bool :red:`has` (std::string const & :param:`name`) const
+
+
+
+
+
+Does qmc have a measure named name

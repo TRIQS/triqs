@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_mpi_broadcast:
+.. _triqs__statistics__histogram__mpi_broadcast:
 
 triqs::statistics::histogram::mpi_broadcast
 ===========================================
+
+*#include <triqs/statistics.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`MPI-broadcast histogram`
        | void :red:`mpi_broadcast` (:ref:`histogram <triqs__statistics__histogram>` & :param:`h`, :ref:`communicator <mpi__communicator>` :param:`c` = {}, int :param:`root` = 0)
 
 
+
+
+
+MPI-broadcast histogram
 
 
 
@@ -30,8 +35,8 @@ triqs::statistics::histogram::mpi_broadcast
 Parameters
 ^^^^^^^^^^
 
- * **h**: Histogram to be broadcast
+ * :param:`h` Histogram to be broadcast
 
- * **c**: MPI communicator object
+ * :param:`c` MPI communicator object
 
- * **root**: MPI root rank for broadcast operation
+ * :param:`root` MPI root rank for broadcast operation

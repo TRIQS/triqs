@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _hilbert_space_size:
+.. _triqs__hilbert_space__hilbert_space__size:
 
 triqs::hilbert_space::hilbert_space::size
 =========================================
+
+*#include <triqs/hilbert_space/hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Return the total number of the fermionic Fock states in this space`
        | int :red:`size` () const
 
 
+
+
+
+Return the total number of the fermionic Fock states in this space
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::hilbert_space::size
 Returns
 ^^^^^^^
 
- * Size of the Hilbert space
+Size of the Hilbert space

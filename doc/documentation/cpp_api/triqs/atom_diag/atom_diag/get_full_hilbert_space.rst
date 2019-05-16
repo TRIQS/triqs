@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _atom_diag_get_full_hilbert_space:
+.. _triqs__atom_diag__atom_diag__get_full_hilbert_space:
 
 triqs::atom_diag::atom_diag::get_full_hilbert_space
 ===================================================
+
+*#include <triqs/atom_diag/atom_diag.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The full Hilbert space`
        | :ref:`class hilbert_space <triqs__hilbert_space__hilbert_space>` const & :red:`get_full_hilbert_space` ()
+
+
+
+
+
+The full Hilbert space

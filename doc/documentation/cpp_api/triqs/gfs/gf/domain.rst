@@ -5,17 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_domain:
+.. _triqs__gfs__gf__domain:
 
 triqs::gfs::gf::domain
 ======================
+
+*#include <triqs/gfs/gf.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | gf::domain_t const & :red:`domain` () const
+       | gf::domain_t const & :red:`domain` () const
+
+
+
+
+
+Access the domain of the mesh

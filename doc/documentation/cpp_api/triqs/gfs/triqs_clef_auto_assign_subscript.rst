@@ -5,25 +5,33 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _triqs_clef_auto_assign_subscript:
+.. _triqs__gfs__triqs_clef_auto_assign_subscript:
 
-triqs_clef_auto_assign_subscript
-================================
+triqs::gfs::triqs_clef_auto_assign_subscript
+============================================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`enable the writing g[om_] << .... also`
-       | :green:`template<typename RHS, typename M, typename T>`
+    1. | :green:`template<typename RHS, typename M, typename T>`
        | void :red:`triqs_clef_auto_assign_subscript` (:ref:`gf_view\<M, T\> <triqs__gfs__gf_view>` :param:`g`, RHS const & :param:`rhs`)
 
-    2. | :cppbrief:`enable the writing g[om_] << .... also`
-       | :green:`template<typename RHS, typename M, typename T>`
+    2. | :green:`template<typename RHS, typename M, typename T>`
        | void :red:`triqs_clef_auto_assign_subscript` (:ref:`block_gf_view\<M, T\> <triqs__gfs__block_gf_view>` :param:`g`, RHS const & :param:`rhs`)
 
 Documentation
+
+
+
+ **1)**   enable the writing g[om_] << .... also
+
+
+
+ **2)**   enable the writing g[om_] << .... also

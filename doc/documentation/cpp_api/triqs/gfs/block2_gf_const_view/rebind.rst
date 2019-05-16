@@ -5,29 +5,32 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block2_gf_const_view_rebind:
+.. _triqs__gfs__block2_gf_const_view__rebind:
 
 triqs::gfs::block2_gf_const_view::rebind
 ========================================
+
+*#include <triqs/gfs/block2_gf_const_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`---------------  Rebind --------------------`
-       | void :red:`rebind` (block2_gf_const_view<Var, Target> :param:`x`) noexcept
+    1. | void :red:`rebind` (block2_gf_const_view<Var, Target> :param:`x`) noexcept
 
-    2. | :cppbrief:`Rebind on a non const view`
-       | void :red:`rebind` (block2_gf_const_view::mutable_view_type const & :param:`X`) noexcept
-
-    3. | void :red:`rebind` (block2_gf_const_view::regular_type const & :param:`X`) noexcept
+    2. | void :red:`rebind` (block2_gf_const_view::mutable_view_type const & :param:`X`) noexcept
 
 Documentation
 
 
 
- **1)**          Rebind
+ **1)**   ---------------  Rebind --------------------
+Rebind
+
+
+
+ **2)**   Rebind on a non const view

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _range_first:
+.. _itertools__range__first:
 
 itertools::range::first
 =======================
+
+*#include <itertools/range.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The first index of the range`
        | range::index_t :red:`first` () const
+
+
+
+
+
+The first index of the range

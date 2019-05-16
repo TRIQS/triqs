@@ -5,17 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_const_view_get_zero:
+.. _triqs__gfs__gf_const_view__get_zero:
 
 triqs::gfs::gf_const_view::get_zero
 ===================================
+
+*#include <triqs/gfs/gf_const_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | gf_const_view::zero_t const & :red:`get_zero` () const
+       | gf_const_view::zero_t const & :red:`get_zero` () const
+
+
+
+
+
+FIXME : REMOVE

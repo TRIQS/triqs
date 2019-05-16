@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _mpi__is_complex:
@@ -13,15 +12,12 @@
 mpi::is_complex
 ===============
 
-Defined in header <**>
+*#include <mpi.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename T> class is_complex
+     template<typename T> class  :red:`is_complex`
 
 -----------------------------------------------------------
-
-  basic types
- ----------------------------------------------------------
-      basic types
- ----------------------------------------------------------
+ basic types
+----------------------------------------------------------

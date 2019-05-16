@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_first_index:
+.. _triqs__gfs__gf_meshLTimfreqGT__first_index:
 
-triqs::gfs::gf_mesh::first_index
-================================
+triqs::gfs::gf_mesh<imfreq>::first_index
+========================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`first Matsubara index`
        | int :red:`first_index` () const
+
+
+
+
+
+first Matsubara index

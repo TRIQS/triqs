@@ -5,18 +5,20 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _measure_aux_constructor:
+.. _triqs__mc_tools__measure_aux__constructor:
 
 triqs::mc_tools::measure_aux::constructor
 =========================================
+
+*#include <triqs/mc_tools/measure_aux.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :green:`template<typename MeasureAuxType>`
+       | :green:`template<typename MeasureAuxType>`
        | :red:`measure_aux` (std::shared_ptr<MeasureAuxType> :param:`p`)

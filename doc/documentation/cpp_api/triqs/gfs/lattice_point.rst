@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__lattice_point:
@@ -13,15 +12,13 @@
 triqs::gfs::lattice_point
 =========================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class lattice_point
+      class  :red:`lattice_point`
 
 A lattice point
-
-
 
 
 Public members
@@ -45,24 +42,11 @@ Member types
 Member functions
 ----------------
 
-+------------------------------------------------+--+
-| :ref:`constructor <lattice_point_constructor>` |  |
-+------------------------------------------------+--+
++---------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__gfs__lattice_point__constructor>` |  |
++---------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
 
     lattice_point/constructor
-
-
-Non Member functions
---------------------
-
-+--------------------------------------------------+--+
-| :ref:`operator\<\< <lattice_point_operatorLTLT>` |  |
-+--------------------------------------------------+--+
-
-.. toctree::
-    :hidden:
-
-    lattice_point/operator<<

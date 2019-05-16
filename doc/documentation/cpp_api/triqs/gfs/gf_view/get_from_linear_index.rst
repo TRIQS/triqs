@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_view_get_from_linear_index:
+.. _triqs__gfs__gf_view__get_from_linear_index:
 
 triqs::gfs::gf_view::get_from_linear_index
 ==========================================
+
+*#include <triqs/gfs/gf_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`--------------------- A direct access to the grid point --------------------------`
        | :green:`template<typename Args>`
        | decltype(auto) :red:`get_from_linear_index` (Args &&... :param:`args`)
 
-    2. | :green:`template<typename Args>`
-       | decltype(auto) :red:`get_from_linear_index` (Args &&... :param:`args`) const
 
-Documentation
+
+
+
+--------------------- A direct access to the grid point --------------------------

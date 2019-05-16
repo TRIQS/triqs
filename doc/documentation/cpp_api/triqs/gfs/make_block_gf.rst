@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _make_block_gf:
+.. _triqs__gfs__make_block_gf:
 
-make_block_gf
-=============
+triqs::gfs::make_block_gf
+=========================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
@@ -29,14 +31,14 @@ make_block_gf
 
     4. | :green:`template<typename V, typename T>`
        | :ref:`block_gf\<V, T\> <triqs__gfs__block_gf>` :red:`make_block_gf` (std::vector<std::string> const & :param:`b`,
-       |   :ref:`gf\<V, T\> <triqs__gfs__gf>` const & :param:`g`)
+       |                :ref:`gf\<V, T\> <triqs__gfs__gf>` const & :param:`g`)
 
     5. | :green:`template<typename V, typename T>`
        | :ref:`block_gf\<V, T\> <triqs__gfs__block_gf>` :red:`make_block_gf` (std::vector<std::string> const & :param:`b`,
-       |   std::vector<gf<V, T> > :param:`v`)
+       |                std::vector<gf<V, T> > :param:`v`)
 
     6. | :green:`template<typename V, typename T>`
        | :ref:`block_gf\<V, T\> <triqs__gfs__block_gf>` :red:`make_block_gf` (std::vector<std::string> :param:`b`,
-       |   std::initializer_list<gf<V, T> > const & :param:`v`)
+       |                std::initializer_list<gf<V, T> > const & :param:`v`)
 
 Documentation

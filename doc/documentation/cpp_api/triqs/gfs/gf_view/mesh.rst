@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_view_mesh:
+.. _triqs__gfs__gf_view__mesh:
 
 triqs::gfs::gf_view::mesh
 =========================
+
+*#include <triqs/gfs/gf_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Access the  mesh`
        | gf_view::mesh_t const & :red:`mesh` () const
+
+
+
+
+
+Access the  mesh

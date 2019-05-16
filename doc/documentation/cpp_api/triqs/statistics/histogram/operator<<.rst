@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_operatorLTLT:
+.. _triqs__statistics__histogram__operatorLTLT:
 
 triqs::statistics::histogram::operator<<
 ========================================
+
+*#include <triqs/statistics.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Output stream insertion`
        | std::ostream & :red:`operator<<` (std::ostream & :param:`os`, :ref:`histogram <triqs__statistics__histogram>` const & :param:`h`)
 
 
+
+
+
+Output stream insertion
 
 
 
@@ -30,12 +35,12 @@ triqs::statistics::histogram::operator<<
 Parameters
 ^^^^^^^^^^
 
- * **os**: Reference to an output stream
+ * :param:`os` Reference to an output stream
 
- * **h**: Histogram to be inserted
+ * :param:`h` Histogram to be inserted
 
 
 Returns
 ^^^^^^^
 
- * Reference to the same output stream
+Reference to the same output stream

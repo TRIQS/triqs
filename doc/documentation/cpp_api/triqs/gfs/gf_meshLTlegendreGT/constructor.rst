@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTlegendreGT_constructor:
+.. _triqs__gfs__gf_meshLTlegendreGT__constructor:
 
-triqs::gfs::gf_mesh::constructor
-================================
+triqs::gfs::gf_mesh<legendre>::constructor
+==========================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**

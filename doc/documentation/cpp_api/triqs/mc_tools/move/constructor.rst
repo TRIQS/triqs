@@ -5,26 +5,34 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _move_constructor:
+.. _triqs__mc_tools__move__constructor:
 
 triqs::mc_tools::move::constructor
 ==================================
+
+*#include <triqs/mc_tools/move.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Construct from any m modeling MoveType. bool is here to disambiguate with basic copy/move construction.`
-       | :green:`template<typename MoveType>`
+    1. | :green:`template<typename MoveType>`
        | :red:`move` (bool , MoveType && :param:`m`)
 
-    2. | :cppbrief:`no default constructor.`
-       | :red:`move` (move<MCSignType> const & :param:`rhs`)
+    2. | :red:`move` (move<MCSignType> const & :param:`rhs`)
 
     3. | :red:`move` (move<MCSignType> && :param:`rhs`)
 
 Documentation
+
+
+
+ **1)**   Construct from any m modeling MoveType. bool is here to disambiguate with basic copy/move construction.
+
+
+
+ **2)**   no default constructor.

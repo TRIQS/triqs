@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mc_generic_get_current_cycle_number:
+.. _triqs__mc_tools__mc_generic__get_current_cycle_number:
 
 triqs::mc_tools::mc_generic::get_current_cycle_number
 =====================================================
+
+*#include <triqs/mc_tools/mc_generic.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The current cycle number`
        | int :red:`get_current_cycle_number` () const
+
+
+
+
+
+The current cycle number

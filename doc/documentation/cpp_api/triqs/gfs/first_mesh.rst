@@ -5,19 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _first_mesh:
+.. _triqs__gfs__first_mesh:
 
-first_mesh
-==========
+triqs::gfs::first_mesh
+======================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Short cuts. Experimental`
        | :green:`template<typename G>`
        | decltype(auto) :red:`first_mesh` (G && :param:`g`)
+
+
+
+
+
+Short cuts. Experimental

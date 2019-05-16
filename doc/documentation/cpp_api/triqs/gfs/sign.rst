@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _sign:
+.. _triqs__gfs__sign:
 
-sign
-====
+triqs::gfs::sign
+================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`1 for Boson, -1 for Fermion`
        | int :red:`sign` (statistic_enum :param:`s`)
+
+
+
+
+
+1 for Boson, -1 for Fermion

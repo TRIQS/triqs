@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _environment_constructor:
+.. _mpi__environment__constructor:
 
 mpi::environment::constructor
 =============================
+
+*#include <mpi/environment.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`MPICH does not allow Init without argc, argv, so we do not allow default constructors`
        | :red:`environment` (int :param:`argc`, char *[] :param:`argv`)
 
 
 
 
 
-       for portability, cf #133
+MPICH does not allow Init without argc, argv, so we do not allow default constructors
+   // for portability, cf #133

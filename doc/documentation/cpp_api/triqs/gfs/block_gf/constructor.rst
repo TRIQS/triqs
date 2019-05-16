@@ -5,69 +5,107 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block_gf_constructor:
+.. _triqs__gfs__block_gf__constructor:
 
 triqs::gfs::block_gf::constructor
 =================================
+
+*#include <triqs/gfs/block_gf.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Copy constructor`
-       | :red:`block_gf` (block_gf<Var, Target> const & :param:`x`)
+    1. | :red:`block_gf` (block_gf<Var, Target> const & :param:`x`)
 
-    2. | :cppbrief:`Move constructor`
-       | :red:`block_gf` (block_gf<Var, Target> && )
+    2. | :red:`block_gf` (block_gf<Var, Target> && )
 
-    3. | :cppbrief:`Construct from block_names and list of gf`
-       | :red:`block_gf` (block_gf::block_names_t :param:`b`, block_gf::data_t :param:`d`)
+    3. | :red:`block_gf` (block_gf::block_names_t :param:`b`, block_gf::data_t :param:`d`)
 
-    4. | :cppbrief:`Construct an empty Green function (with empty array).`
-       | :red:`block_gf` ()
+    4. | :red:`block_gf` ()
 
-    5. | :cppbrief:`From a block_gf_view of the same kind`
-       | :red:`block_gf` (block_gf::view_type const & :param:`g`)
+    5. | :red:`block_gf` (block_gf::view_type const & :param:`g`)
 
-    6. | :cppbrief:`From a const_gf_view of the same kind`
-       | :red:`block_gf` (block_gf::const_view_type const & :param:`g`)
+    6. | :red:`block_gf` (block_gf::const_view_type const & :param:`g`)
 
-    7. | :cppbrief:`Construct from anything which models BlockGreenFunction.`
-       | :green:`template<typename G>`
+    7. | :green:`template<typename G>`
        | :red:`block_gf` (G const & :param:`x`, std::enable_if_t<BlockGreenFunction<G>::value> * :param:`dummy` = 0)
 
-    8. | :cppbrief:`Construct from the mpi lazy class of the implementation class, cf mpi section`
-       | :green:`template<typename Tag>`
+    8. | :green:`template<typename Tag>`
        | :red:`block_gf` (:ref:`mpi_lazy\<Tag, block_gf_const_view\<Var, Target\> \> <triqs__gfs__mpi_lazy>` :param:`x`)
 
-    9. | :cppbrief:`Construct from a vector of gf`
-       | :red:`block_gf` (block_gf::data_t :param:`V`)
+    9. | :red:`block_gf` (block_gf::data_t :param:`V`)
 
-    10. | :cppbrief:`Constructs a n block`
-        | :red:`block_gf` (int :param:`n`)
+    10. | :red:`block_gf` (int :param:`n`)
 
-    11. | :cppbrief:`Constructs a n block with copies of g.`
-        | :red:`block_gf` (int :param:`n`, block_gf::g_t const & :param:`g`)
+    11. | :red:`block_gf` (int :param:`n`, block_gf::g_t const & :param:`g`)
 
-    12. | :cppbrief:`Construct from the vector of names and one gf to be copied`
-        | :red:`block_gf` (block_gf::block_names_t :param:`b`, block_gf::g_t const & :param:`g`)
+    12. | :red:`block_gf` (block_gf::block_names_t :param:`b`, block_gf::g_t const & :param:`g`)
 
-    13. | :cppbrief:`Construct from the vector of names`
-        | :red:`block_gf` (block_gf::block_names_t :param:`b`)
+    13. | :red:`block_gf` (block_gf::block_names_t :param:`b`)
 
-    14. | :cppbrief:`Create Block Green function from Mesh and gf_struct`
-        | :red:`block_gf` (:ref:`gf_mesh\<Var\> <triqs__gfs__gf_mesh>` const & :param:`m`, gf_struct_t const & :param:`gf_struct`)
+    14. | :red:`block_gf` (:ref:`gf_mesh\<Var\> <triqs__gfs__gf_mesh>` const & :param:`m`, gf_struct_t const & :param:`gf_struct`)
 
 Documentation
 
 
 
- **7)**          TODO: We would like to refine this, G should have the same mesh, target, at least ...
+ **1)**   Copy constructor
 
 
 
- **8)**          NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
+ **2)**   Move constructor
+
+
+
+ **3)**   Construct from block_names and list of gf
+
+
+
+ **4)**   Construct an empty Green function (with empty array).
+
+
+
+ **5)**   From a block_gf_view of the same kind
+
+
+
+ **6)**   From a const_gf_view of the same kind
+
+
+
+ **7)**   Construct from anything which models BlockGreenFunction.
+     // TODO: We would like to refine this, G should have the same mesh, target, at least ...
+
+
+
+ **8)**   Construct from the mpi lazy class of the implementation class, cf mpi section
+     // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
+
+
+
+ **9)**   Construct from a vector of gf
+
+
+
+ **10)**   Constructs a n block
+
+
+
+ **11)**   Constructs a n block with copies of g.
+
+
+
+ **12)**   Construct from the vector of names and one gf to be copied
+
+
+
+ **13)**   Construct from the vector of names
+
+
+
+ **14)**   Create Block Green function from Mesh and gf_struct

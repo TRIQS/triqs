@@ -5,23 +5,31 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block2_gf_data:
+.. _triqs__gfs__block2_gf__data:
 
 triqs::gfs::block2_gf::data
 ===========================
+
+*#include <triqs/gfs/block2_gf.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Direct access to the data array`
-       | block2_gf::data_t & :red:`data` ()
+    1. | block2_gf::data_t & :red:`data` ()
 
-    2. | :cppbrief:`Const version`
-       | block2_gf::data_t const & :red:`data` () const
+    2. | block2_gf::data_t const & :red:`data` () const
 
 Documentation
+
+
+
+ **1)**   Direct access to the data array
+
+
+
+ **2)**   Const version

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_operatorLTLT:
+.. _triqs__gfs__gf__operatorLTLT:
 
 triqs::gfs::gf::operator<<
 ==========================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`IO`
-       | std::ostream & :red:`operator<<` (std::ostream & :param:`out`, gf<Var, Target> const & :param:`x`)
+       | std::ostream & :red:`operator<<` (std::ostream & :param:`out`, gf::this_t const & :param:`x`)
+
+
+
+
+
+IO

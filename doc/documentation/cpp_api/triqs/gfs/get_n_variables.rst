@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__get_n_variables:
@@ -13,10 +12,10 @@
 triqs::gfs::get_n_variables
 ===========================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Var> class get_n_variables
+     template<typename Var> class  :red:`get_n_variables`
 
 Get the number of variables

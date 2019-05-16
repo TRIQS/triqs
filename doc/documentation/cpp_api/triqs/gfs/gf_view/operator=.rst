@@ -5,40 +5,51 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_view_operator=:
+.. _triqs__gfs__gf_view__operator=:
 
 triqs::gfs::gf_view::operator=
 ==============================
+
+*#include <triqs/gfs/gf_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`---------------  operator =  --------------------`
-       | gf_view<Var, Target> & :red:`operator=` (gf_view<Var, Target> const & :param:`rhs`)
+    1. | gf_view<Var, Target> & :red:`operator=` (gf_view<Var, Target> const & :param:`rhs`)
 
-    2. | :cppbrief:`Assignment`
-       | :green:`template<typename RHS>`
+    2. | :green:`template<typename RHS>`
        | gf_view<Var, Target> & :red:`operator=` (RHS const & :param:`rhs`)
 
-    3. | :cppbrief:`Performs MPI reduce`
-       | void :red:`operator=` (:ref:`mpi_lazy\<tag::reduce, gf_const_view\<Var, Target\> \> <triqs__gfs__mpi_lazy>` :param:`l`)
+    3. | void :red:`operator=` (:ref:`mpi_lazy\<tag::reduce, gf_const_view\<Var, Target\> \> <triqs__gfs__mpi_lazy>` :param:`l`)
 
-    4. | :cppbrief:`Performs MPI scatter`
-       | void :red:`operator=` (:ref:`mpi_lazy\<tag::scatter, gf_const_view\<Var, Target\> \> <triqs__gfs__mpi_lazy>` :param:`l`)
+    4. | void :red:`operator=` (:ref:`mpi_lazy\<tag::scatter, gf_const_view\<Var, Target\> \> <triqs__gfs__mpi_lazy>` :param:`l`)
 
-    5. | :cppbrief:`Performs MPI gather`
-       | void :red:`operator=` (:ref:`mpi_lazy\<tag::gather, gf_const_view\<Var, Target\> \> <triqs__gfs__mpi_lazy>` :param:`l`)
+    5. | void :red:`operator=` (:ref:`mpi_lazy\<tag::gather, gf_const_view\<Var, Target\> \> <triqs__gfs__mpi_lazy>` :param:`l`)
 
 Documentation
 
 
 
- **1)**          Copy the data, without resizing the view.
+ **1)**   ---------------  operator =  --------------------
+
+ Copy the data, without resizing the view.
+
+
+
+ **3)**   Performs MPI reduce
+
+
+
+ **4)**   Performs MPI scatter
+
+
+
+ **5)**   Performs MPI gather
 
 
 
@@ -47,10 +58,14 @@ Documentation
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **RHS**: WRITE A LIST OF POSSIBLES ...
+ * :param:`RHS` WHAT IS POSSIBLE THERE ?
 
 
 Parameters
 ^^^^^^^^^^
 
- * **l**: The lazy object returned by mpi::reduce
+ * :param:`l` The lazy object returned by mpi::reduce
+
+
+.. warning::
+    If the size of `this` is not the same as rhs, the behaviour is undefined.

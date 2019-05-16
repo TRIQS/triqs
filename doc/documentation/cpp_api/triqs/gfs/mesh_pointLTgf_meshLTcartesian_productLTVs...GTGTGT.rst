@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT:
@@ -13,16 +12,15 @@
 triqs::gfs::mesh_point<gf_mesh<cartesian_product<Vs...>>>
 =========================================================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Vs> class mesh_point<gf_mesh<cartesian_product<Vs...>>>
+     template<typename Vs> class  :red:`mesh_point<gf_mesh<cartesian_product<Vs...>>>`
 
 ------------------------------------------------
+The wrapper for the mesh point
 
-     The wrapper for the mesh point
-         The wrapper for the mesh point
 
 Public members
 --------------
@@ -57,35 +55,20 @@ Member types
 Member functions
 ----------------
 
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| :ref:`constructor <mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_constructor>`           |                                                                                                             |
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| :ref:`components_tuple <mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_components_tuple>` |                                                                                                             |
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| :ref:`linear_index <mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_linear_index>`         |                                                                                                             |
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| :ref:`index <mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_index>`                       |                                                                                                             |
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| :ref:`mesh <mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_mesh>`                         |                                                                                                             |
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| :ref:`advance <mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_advance>`                   | index[0] +=1; if index[0]==m.component[0].size() { index[0]=0; index[1] +=1; if  ....}  and so on until dim |
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| :ref:`at_end <mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_at_end>`                     | index_t index() const { return _index;}  not implemented yet                                                |
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| :ref:`reset <mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_reset>`                       |                                                                                                             |
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| :ref:`get <mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_get>`                           | std::get should work FIXME ? redondant                                                                      |
-+------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
++-----------------------------------------------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__gfs__mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT__constructor>` |  |
++-----------------------------------------------------------------------------------------------------+--+
+| :ref:`advance <triqs__gfs__mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT__advance>`           |  |
++-----------------------------------------------------------------------------------------------------+--+
+| :ref:`at_end <triqs__gfs__mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT__at_end>`             |  |
++-----------------------------------------------------------------------------------------------------+--+
+| :ref:`get <triqs__gfs__mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT__get>`                   |  |
++-----------------------------------------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
 
     mesh_pointLTgf_meshLTcartesian_productLTVs...GTGTGT/constructor
-    mesh_pointLTgf_meshLTcartesian_productLTVs...GTGTGT/components_tuple
-    mesh_pointLTgf_meshLTcartesian_productLTVs...GTGTGT/linear_index
-    mesh_pointLTgf_meshLTcartesian_productLTVs...GTGTGT/index
-    mesh_pointLTgf_meshLTcartesian_productLTVs...GTGTGT/mesh
     mesh_pointLTgf_meshLTcartesian_productLTVs...GTGTGT/advance
     mesh_pointLTgf_meshLTcartesian_productLTVs...GTGTGT/at_end
-    mesh_pointLTgf_meshLTcartesian_productLTVs...GTGTGT/reset
     mesh_pointLTgf_meshLTcartesian_productLTVs...GTGTGT/get

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _random_generator_preview:
+.. _triqs__mc_tools__random_generator__preview:
 
 triqs::mc_tools::random_generator::preview
 ==========================================
+
+*#include <triqs/mc_tools/random_generator.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Returns a double in [0,1[ with flat distribution`
        | double :red:`preview` ()
+
+
+
+
+
+Returns a double in [0,1[ with flat distribution

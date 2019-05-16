@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_matrix:
+.. _triqs__det_manip__det_manip__matrix:
 
 triqs::det_manip::det_manip::matrix
 ===================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Rebuild the matrix. Warning : this is slow, since it create a new matrix and re-evaluate the function.`
        | det_manip::matrix_type :red:`matrix` () const
+
+
+
+
+
+Rebuild the matrix. Warning : this is slow, since it create a new matrix and re-evaluate the function.

@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _stateLTHilbertSpace_ScalarType_falseGT_operator+=:
+.. _triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__operator+=:
 
-triqs::hilbert_space::state::operator+=
-=======================================
+triqs::hilbert_space::state<HilbertSpace,ScalarType,false>::operator+=
+======================================================================
+
+*#include <triqs/hilbert_space/state.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`In-place addition of another state`
        | :ref:`state\<type-parameter-0-0, type-parameter-0-1, false\> <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT>` & :red:`operator+=` (:ref:`state\<type-parameter-0-0, type-parameter-0-1, false\> <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT>` const & :param:`s2`)
 
 
+
+
+
+In-place addition of another state
 
 
 
@@ -30,10 +35,10 @@ triqs::hilbert_space::state::operator+=
 Parameters
 ^^^^^^^^^^
 
- * **s2**: Another [[state]] object to add
+ * :param:`s2` Another [[state]] object to add
 
 
 Returns
 ^^^^^^^
 
- * Reference to this state
+Reference to this state

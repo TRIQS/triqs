@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _real:
+.. _triqs__gfs__real:
 
-real
-====
+triqs::gfs::real
+================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Takes the real part of g without check, and returns a new gf with a real target`
        | :green:`template<typename G>`
        | std::enable_if_t<is_gf<G>::value, typename G::regular_type::real_t> :red:`real` (G const & :param:`g`)
 
@@ -26,7 +27,8 @@ real
 
 
 
-     real(g).
+Takes the real part of g without check, and returns a new gf with a real target
+real(g).
 
 
 
@@ -35,10 +37,10 @@ real
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **G**: any Gf, BlockGf or Block2Gf type
+ * :param:`G` any Gf, BlockGf or Block2Gf type
 
 
 Parameters
 ^^^^^^^^^^
 
- * **g**: a gf
+ * :param:`g` a gf

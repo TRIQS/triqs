@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_has_target:
+.. _triqs__gfs__gf_has_target:
 
-gf_has_target
-=============
+triqs::gfs::gf_has_target
+=========================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`------------------------------------------------------------------------------------------------------`
        | :green:`template<typename G, typename Target>`
        | bool :red:`gf_has_target` ()
 
@@ -26,5 +27,6 @@ gf_has_target
 
 
 
-                                HDF5
+------------------------------------------------------------------------------------------------------
+                              HDF5
 -----------------------------------------------------------------------------------------------------

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_hdf5_scheme:
+.. _triqs__gfs__gf__hdf5_scheme:
 
 triqs::gfs::gf::hdf5_scheme
 ===========================
+
+*#include <triqs/gfs/gf.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`HDF5 name`
        | std::string :red:`hdf5_scheme` ()
+
+
+
+
+
+HDF5 name

@@ -5,26 +5,34 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mc_generic_constructor:
+.. _triqs__mc_tools__mc_generic__constructor:
 
 triqs::mc_tools::mc_generic::constructor
 ========================================
+
+*#include <triqs/mc_tools/mc_generic.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Constructor`
-       | :red:`mc_generic` (std::string :param:`random_name`, int :param:`random_seed`, int :param:`verbosity`)
+    1. | :red:`mc_generic` (std::string :param:`random_name`, int :param:`random_seed`, int :param:`verbosity`)
 
-    2. | :cppbrief:`Constructor`
-       | :red:`mc_generic` (std::string :param:`random_name`, int :param:`random_seed`, MCSignType :param:`sign_init`, int :param:`verbosity`)
+    2. | :red:`mc_generic` (std::string :param:`random_name`, int :param:`random_seed`, MCSignType :param:`sign_init`, int :param:`verbosity`)
 
 Documentation
+
+
+
+ **1)**   Constructor
+
+
+
+ **2)**   Constructor
 
 
 
@@ -33,10 +41,10 @@ Documentation
 Parameters
 ^^^^^^^^^^
 
- * **random_name**: Name of the random generator (cf doc).
+ * :param:`random_name`     Name of the random generator (cf doc).
 
- * **random_seed**: Seed for the random generator
+ * :param:`random_seed`     Seed for the random generator
 
- * **verbosity**: Verbosity level. 0 : None, ... TBA
+ * :param:`verbosity`       Verbosity level. 0 : None, ... TBA
 
- * **sign_init**: The initial value of the sign (usually 1)
+ * :param:`sign_init`       The initial value of the sign (usually 1)

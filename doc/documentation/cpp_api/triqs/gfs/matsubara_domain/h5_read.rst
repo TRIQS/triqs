@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _matsubara_domain_h5_read:
+.. _triqs__gfs__matsubara_domain__h5_read:
 
 triqs::gfs::matsubara_domain::h5_read
 =====================================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Read from HDF5`
        | void :red:`h5_read` (h5::group :param:`fg`, std::string :param:`subgroup_name`, matsubara_domain<IsFreq> & :param:`d`)
+
+
+
+
+
+Read from HDF5

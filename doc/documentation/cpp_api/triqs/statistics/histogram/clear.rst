@@ -5,25 +5,27 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_clear:
+.. _triqs__statistics__histogram__clear:
 
 triqs::statistics::histogram::clear
 ===================================
+
+*#include <triqs/statistics/histogram.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Reset all histogram values to 0`
        | void :red:`clear` ()
 
 
 
 
 
+Reset all histogram values to 0
 
-    Resets all data values and the total counts of accumulated and discarded points.
+   Resets all data values and the total counts of accumulated and discarded points.

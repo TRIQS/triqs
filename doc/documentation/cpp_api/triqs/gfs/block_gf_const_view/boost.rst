@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block_gf_const_view_boost:
+.. _triqs__gfs__block_gf_const_view__boost:
 
 triqs::gfs::block_gf_const_view::boost
 ======================================
+
+*#include <.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. |  :red:`boost` ()
+       |  :red:`boost` ()

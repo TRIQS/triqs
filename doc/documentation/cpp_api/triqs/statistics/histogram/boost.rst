@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_boost:
+.. _triqs__statistics__histogram__boost:
 
 triqs::statistics::histogram::boost
 ===================================
+
+*#include <.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. |  :red:`boost` ()
+       |  :red:`boost` ()

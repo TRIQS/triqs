@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _sub_hilbert_space_add_fock_state:
+.. _triqs__hilbert_space__sub_hilbert_space__add_fock_state:
 
 triqs::hilbert_space::sub_hilbert_space::add_fock_state
 =======================================================
+
+*#include <triqs/hilbert_space/sub_hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Add a Fock state to the Hilbert space basis`
        | void :red:`add_fock_state` (fock_state_t :param:`f`)
 
 
+
+
+
+Add a Fock state to the Hilbert space basis
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::sub_hilbert_space::add_fock_state
 Parameters
 ^^^^^^^^^^
 
- * **f**: Fock state to add
+ * :param:`f` Fock state to add

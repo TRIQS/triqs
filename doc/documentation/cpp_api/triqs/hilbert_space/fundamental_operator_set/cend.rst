@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _fundamental_operator_set_cend:
+.. _triqs__hilbert_space__fundamental_operator_set__cend:
 
 triqs::hilbert_space::fundamental_operator_set::cend
 ====================================================
+
+*#include <triqs/hilbert_space/fundamental_operator_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Equivalent to [[fundamental_operator_set_end]]`
        | fundamental_operator_set::const_iterator :red:`cend` () const
 
 
+
+
+
+Equivalent to [[fundamental_operator_set_end]]
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::fundamental_operator_set::cend
 Returns
 ^^^^^^^
 
- * Iterator to the past-the-end element
+Iterator to the past-the-end element

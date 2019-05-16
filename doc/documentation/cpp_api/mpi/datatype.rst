@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _datatype:
+.. _mpi__datatype:
 
-datatype
-========
+mpi::datatype
+=============
+
+*#include <mpi.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`-----------------------------------------------------------`
        | :green:`template<typename T>`
        | MPI_Datatype :red:`datatype` ()
 
@@ -26,5 +27,6 @@ datatype
 
 
 
-     transformation type -> mpi types
- ----------------------------------------------------------
+-----------------------------------------------------------
+  transformation type -> mpi types
+----------------------------------------------------------

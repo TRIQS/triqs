@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__get_n_variablesLTcartesian_productLTVs___GTGT:
@@ -13,10 +12,10 @@
 triqs::gfs::get_n_variables<cartesian_product<Vs...>>
 =====================================================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Vs> class get_n_variables<cartesian_product<Vs...>>
+     template<typename Vs> class  :red:`get_n_variables<cartesian_product<Vs...>>`
 
 template <typename... Vs>  constexpr int get_n_variables(cartesian_product<Vs...>) { return sizeof...(Vs);}

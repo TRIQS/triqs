@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__gf_mesh:
@@ -13,10 +12,10 @@
 triqs::gfs::gf_mesh
 ===================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Var> class gf_mesh
+     template<typename Var> class  :red:`gf_mesh`
 
 The mesh for each Var

@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block2_gf_rebind:
+.. _triqs__gfs__block2_gf__rebind:
 
 triqs::gfs::block2_gf::rebind
 =============================
+
+*#include <triqs/gfs/block2_gf.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`---------------  Rebind --------------------`
        | void :red:`rebind` (block2_gf<Var, Target> :param:`x`) noexcept
 
 
 
 
 
-         Rebind
+---------------  Rebind --------------------
+Rebind

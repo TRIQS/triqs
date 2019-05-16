@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_h5_write:
+.. _triqs__statistics__histogram__h5_write:
 
 triqs::statistics::histogram::h5_write
 ======================================
+
+*#include <triqs/statistics.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Write histogram to HDF5`
        | void :red:`h5_write` (h5::group :param:`g`, std::string const & :param:`name`, :ref:`histogram <triqs__statistics__histogram>` const & :param:`h`)
 
 
+
+
+
+Write histogram to HDF5
 
 
 
@@ -30,8 +35,8 @@ triqs::statistics::histogram::h5_write
 Parameters
 ^^^^^^^^^^
 
- * **g**: Enclosing HDF5 group
+ * :param:`g` Enclosing HDF5 group
 
- * **name**: Dataset name for histogram data
+ * :param:`name` Dataset name for histogram data
 
- * **h**: Histogram to be written
+ * :param:`h` Histogram to be written

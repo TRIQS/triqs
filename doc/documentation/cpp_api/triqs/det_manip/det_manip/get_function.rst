@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_get_function:
+.. _triqs__det_manip__det_manip__get_function:
 
 triqs::det_manip::det_manip::get_function
 =========================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Returns the function f`
        | FunctionType const & :red:`get_function` () const
+
+
+
+
+
+Returns the function f

@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__interpol_data_0d_t:
@@ -13,15 +12,13 @@
 triqs::gfs::interpol_data_0d_t
 ==============================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename IndexType> class interpol_data_0d_t
+     template<typename IndexType> class  :red:`interpol_data_0d_t`
 
 FIXME : DOC
-
-
 
 
 Public members
@@ -37,9 +34,9 @@ Public members
 Member functions
 ----------------
 
-+-----------------------------------------------------+--+
-| :ref:`constructor <interpol_data_0d_t_constructor>` |  |
-+-----------------------------------------------------+--+
++--------------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__gfs__interpol_data_0d_t__constructor>` |  |
++--------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:

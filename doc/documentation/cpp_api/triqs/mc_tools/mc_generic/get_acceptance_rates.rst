@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mc_generic_get_acceptance_rates:
+.. _triqs__mc_tools__mc_generic__get_acceptance_rates:
 
 triqs::mc_tools::mc_generic::get_acceptance_rates
 =================================================
+
+*#include <triqs/mc_tools/mc_generic.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The acceptance rates of all move`
        | std::map<std::string, double> :red:`get_acceptance_rates` () const
 
 
+
+
+
+The acceptance rates of all move
 
 
 
@@ -30,4 +35,4 @@ triqs::mc_tools::mc_generic::get_acceptance_rates
 Returns
 ^^^^^^^
 
- * map : name_of_the_move -> acceptance rate of this move
+map : name_of_the_move -> acceptance rate of this move

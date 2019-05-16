@@ -5,31 +5,33 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_operator+:
+.. _triqs__statistics__histogram__operator+:
 
 triqs::statistics::histogram::operator+
 =======================================
+
+*#include <triqs/statistics.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Addition of histograms`
        | :ref:`histogram <triqs__statistics__histogram>` :red:`operator+` (:ref:`histogram <triqs__statistics__histogram>` :param:`h1`,
-       |   :ref:`histogram <triqs__statistics__histogram>` const & :param:`h2`)
+       |            :ref:`histogram <triqs__statistics__histogram>` const & :param:`h2`)
 
 
 
 
 
+Addition of histograms
 
-    Compute the sum of two histograms over the same range, and with equal numbers of bins.
-    This operator will throw if histograms to be added up are incompatible.
-    Summation is also performed on the numbers of accumulated and discarded points.
+   Compute the sum of two histograms over the same range, and with equal numbers of bins.
+   This operator will throw if histograms to be added up are incompatible.
+   Summation is also performed on the numbers of accumulated and discarded points.
 
 
 
@@ -38,12 +40,12 @@ triqs::statistics::histogram::operator+
 Parameters
 ^^^^^^^^^^
 
- * **h1**: First histogram to add up
+ * :param:`h1` First histogram to add up
 
- * **h2**: Second histogram to add up
+ * :param:`h2` Second histogram to add up
 
 
 Returns
 ^^^^^^^
 
- * Sum of histograms
+Sum of histograms

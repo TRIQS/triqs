@@ -5,28 +5,30 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _hilbert_space_operator!=:
+.. _triqs__hilbert_space__hilbert_space__operator!=:
 
 triqs::hilbert_space::hilbert_space::operator!=
 ===============================================
+
+*#include <triqs/hilbert_space/hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Check two Hilbert spaces for inequality`
        | bool :red:`operator!=` (:ref:`hilbert_space <triqs__hilbert_space__hilbert_space>` const & :param:`hs`) const
 
 
 
 
 
+Check two Hilbert spaces for inequality
 
-   For the full Hilbert spaces this check is equivalent to a dimension inequality check
+  For the full Hilbert spaces this check is equivalent to a dimension inequality check
 
 
 
@@ -35,10 +37,10 @@ triqs::hilbert_space::hilbert_space::operator!=
 Parameters
 ^^^^^^^^^^
 
- * **hs**: Another Hilbert space
+ * :param:`hs` Another Hilbert space
 
 
 Returns
 ^^^^^^^
 
- * `false` if the two spaces are equal, `true` otherwise
+`false` if the two spaces are equal, `true` otherwise

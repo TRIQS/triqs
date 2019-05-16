@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_size:
+.. _triqs__gfs__gf_meshLTimfreqGT__size:
 
-triqs::gfs::gf_mesh::size
-=========================
+triqs::gfs::gf_mesh<imfreq>::size
+=================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Size (linear) of the mesh`
        | long :red:`size` () const
+
+
+
+
+
+Size (linear) of the mesh

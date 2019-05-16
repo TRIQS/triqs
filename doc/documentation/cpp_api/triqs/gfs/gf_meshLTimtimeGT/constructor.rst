@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimtimeGT_constructor:
+.. _triqs__gfs__gf_meshLTimtimeGT__constructor:
 
-triqs::gfs::gf_mesh::constructor
-================================
+triqs::gfs::gf_mesh<imtime>::constructor
+========================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
@@ -20,13 +22,19 @@ triqs::gfs::gf_mesh::constructor
 
     1. | :red:`gf_mesh` ()
 
-    2. | :cppbrief:`constructor`
-       | :red:`gf_mesh` (matsubara_time_domain :param:`d`, long :param:`n_time_slices`)
+    2. | :red:`gf_mesh` (matsubara_time_domain :param:`d`, long :param:`n_time_slices`)
 
-    3. | :cppbrief:`constructor`
-       | :red:`gf_mesh` (double :param:`beta`, statistic_enum :param:`S`, long :param:`n_time_slices`)
+    3. | :red:`gf_mesh` (double :param:`beta`, statistic_enum :param:`S`, long :param:`n_time_slices`)
 
 Documentation
+
+
+
+ **2)**   constructor
+
+
+
+ **3)**   constructor
 
 
 
@@ -35,10 +43,10 @@ Documentation
 Parameters
 ^^^^^^^^^^
 
- * **d**: domain
+ * :param:`d` domain
 
- * **n_time_slices**: number of time slices
+ * :param:`n_time_slices` number of time slices
 
- * **beta**: inverse temperature
+ * :param:`beta` inverse temperature
 
- * **S**: statistic (Fermion/Boson)
+ * :param:`S` statistic (Fermion/Boson)

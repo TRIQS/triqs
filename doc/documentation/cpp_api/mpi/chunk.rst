@@ -5,24 +5,29 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _chunk:
+.. _mpi__chunk:
 
-chunk
-=====
+mpi::chunk
+==========
+
+*#include <mpi.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Function to chunk a range, distributing it uniformly over all MPI ranks.`
        | :green:`template<typename T>`
        | auto :red:`chunk` (T && :param:`range`, :ref:`communicator <mpi__communicator>` :param:`comm` = {})
 
 
+
+
+
+Function to chunk a range, distributing it uniformly over all MPI ranks.
 
 
 
@@ -31,12 +36,12 @@ chunk
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **T**: The type of the range
+ * :param:`T` The type of the range
 
 
 Parameters
 ^^^^^^^^^^
 
- * **range**: The range to chunk
+ * :param:`range` The range to chunk
 
- * **comm**: The mpi communicator
+ * :param:`comm` The mpi communicator

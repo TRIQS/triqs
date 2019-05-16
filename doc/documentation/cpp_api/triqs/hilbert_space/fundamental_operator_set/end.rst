@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _fundamental_operator_set_end:
+.. _triqs__hilbert_space__fundamental_operator_set__end:
 
 triqs::hilbert_space::fundamental_operator_set::end
 ===================================================
+
+*#include <triqs/hilbert_space/fundamental_operator_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Return `const_iterator` to the past-the-end element of this set`
        | fundamental_operator_set::const_iterator :red:`end` () const
 
 
+
+
+
+Return `const_iterator` to the past-the-end element of this set
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::fundamental_operator_set::end
 Returns
 ^^^^^^^
 
- * Iterator to the past-the-end element
+Iterator to the past-the-end element

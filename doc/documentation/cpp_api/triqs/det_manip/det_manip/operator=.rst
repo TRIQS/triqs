@@ -5,22 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_operator=:
+.. _triqs__det_manip__det_manip__operator=:
 
 triqs::det_manip::det_manip::operator=
 ======================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`det_manip& operator=(const det_manip&) = default;`
        | det_manip<FunctionType> & :red:`operator=` (det_manip<FunctionType> const & )
 
-    2. | det_manip<FunctionType> & :red:`operator=` (det_manip<FunctionType> && :param:`rhs`) noexcept
 
-Documentation
+
+
+
+det_manip& operator=(const det_manip&) = default;

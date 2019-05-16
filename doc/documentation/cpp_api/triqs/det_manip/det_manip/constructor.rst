@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_constructor:
+.. _triqs__det_manip__det_manip__constructor:
 
 triqs::det_manip::det_manip::constructor
 ========================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
@@ -36,16 +38,16 @@ Documentation
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **ArgumentContainer**:
+ * :param:`ArgumentContainer`
 
 
 Parameters
 ^^^^^^^^^^
 
- * **F**: The function (NB : a copy is made of the F object in this class).
+ * :param:`F`         The function (NB : a copy is made of the F object in this class).
 
- * **init_size**: The maximum size of the matrix before a resize (like reserve in std::vector).
+ * :param:`init_size` The maximum size of the matrix before a resize (like reserve in std::vector).
                   Like std::vector, resize is automatic (by a factor 2) but can yield a performance penalty
                   if it happens too often.
 
- * **X,**: Y : container for X,Y.
+ * :param:`X,` Y : container for X,Y.

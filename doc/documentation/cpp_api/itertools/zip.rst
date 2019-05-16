@@ -5,34 +5,81 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _zip:
+.. _itertools__zip:
 
-zip
-===
+itertools::zip
+==============
+
+*#include <itertools.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Lazy-zip a range.`
-       | :green:`template<typename T>`
-       | auto :red:`zip` (T &&... :param:`ranges`)
+       | :green:`template<typename R>`
+       | auto :red:`zip` (R &&... :param:`ranges`)
 
 
 
 
 
-   This function returns itself a range of tuple<T...>
+Generate a zip of the ranges (similar to Python zip).
+
+The function returns a iterable lazy object. When iterated upon,
+this object yields a tuple of the objects in the ranges.
 
 
 
+
+
+Template parameters
+^^^^^^^^^^^^^^^^^^^
+
+ * :param:`R` Type of the ranges
 
 
 Parameters
 ^^^^^^^^^^
 
- * **ranges**: The ranges to zip. Note: They have to be of equal length!
+ * :param:`ranges`
+     The ranges to zip.
+
+     .. warning::
+          The ranges have to be equal lengths or behaviour is undefined.
+
+
+Example
+^^^^^^^
+
+..
+   Included automatically from /mnt/home/wentzell/Dropbox/Coding/triqs/doc/documentation/examples/itertools/zip.cpp
+
+.. code-block:: cpp
+
+    #include <itertools/itertools.hpp>
+    #include <vector>
+    #include <iostream>
+
+    int main() {
+
+      std::vector<int> v1 {10,11,12,13,14};
+      std::vector<int> v2 {0,1,2,3,4};
+
+      for (auto [x,y] : itertools::zip(v1, v2))
+        std::cout << x << "  " << y << std::endl;
+    }
+
+
+*Output*
+
+.. code-block:: text
+
+    10  0
+    11  1
+    12  2
+    13  3
+    14  4

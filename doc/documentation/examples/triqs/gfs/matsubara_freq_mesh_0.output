@@ -1,0 +1,12 @@
+Mesh m with positive and negative Matsubara frequencies : 
+(0,-21.9911)
+(0,-15.708)
+(0,-9.42478)
+(0,-3.14159)
+(0,3.14159)
+(0,9.42478)
+(0,15.708)
+(0,21.9911)
+m.first_index() = -4
+m.last_index() = 3
+m.size() = 8

@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__interpol_data_all_t:
@@ -13,15 +12,13 @@
 triqs::gfs::interpol_data_all_t
 ===============================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class interpol_data_all_t
+      class  :red:`interpol_data_all_t`
 
 FIXME : DOC
-
-
 
 
 Public members

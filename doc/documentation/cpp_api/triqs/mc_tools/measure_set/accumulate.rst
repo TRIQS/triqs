@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _measure_set_accumulate:
+.. _triqs__mc_tools__measure_set__accumulate:
 
 triqs::mc_tools::measure_set::accumulate
 ========================================
+
+*#include <triqs/mc_tools/measure_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | void :red:`accumulate` (MCSignType const & :param:`signe`)
+       | void :red:`accumulate` (MCSignType const & :param:`signe`)

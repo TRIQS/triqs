@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mc_generic_get_duration:
+.. _triqs__mc_tools__mc_generic__get_duration:
 
 triqs::mc_tools::mc_generic::get_duration
 =========================================
+
+*#include <triqs/mc_tools/mc_generic.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The duration of the last run in seconds`
        | double :red:`get_duration` () const
+
+
+
+
+
+The duration of the last run in seconds

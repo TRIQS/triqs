@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT:
@@ -13,15 +12,13 @@
 triqs::hilbert_space::state<HilbertSpace,ScalarType,false>
 ==========================================================
 
-Defined in header <**>
+*#include <triqs/hilbert_space.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename HilbertSpace, typename ScalarType> class state<HilbertSpace,ScalarType,false>
+     template<typename HilbertSpace, typename ScalarType> class  :red:`state<HilbertSpace,ScalarType,false>`
 
 State: implementation based on `triqs::arrays::vector`
-
-
 
 
 Member types
@@ -37,27 +34,27 @@ Member types
 Member functions
 ----------------
 
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`constructor <stateLTHilbertSpace_ScalarType_falseGT_constructor>` | Construct a new state object                                     |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`size <stateLTHilbertSpace_ScalarType_falseGT_size>`               | Return the dimension of the associated Hilbert space             |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`operator() <stateLTHilbertSpace_ScalarType_falseGT_operator()>`   | Access to individual amplitudes                                  |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`operator+= <stateLTHilbertSpace_ScalarType_falseGT_operator+=>`   | In-place addition of another state                               |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`operator-= <stateLTHilbertSpace_ScalarType_falseGT_operator-=>`   | In-place subtraction of another state                            |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`operator*= <stateLTHilbertSpace_ScalarType_falseGT_operator*=>`   | In-place multiplication by a scalar                              |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`operator/= <stateLTHilbertSpace_ScalarType_falseGT_operator/=>`   | In-place division by a scalar                                    |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`amplitudes <stateLTHilbertSpace_ScalarType_falseGT_amplitudes>`   | Direct access to the storage container (`triqs::arrays::vector`) |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`get_hilbert <stateLTHilbertSpace_ScalarType_falseGT_get_hilbert>` | Return a constant reference to the associated Hilbert space      |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
-| :ref:`set_hilbert <stateLTHilbertSpace_ScalarType_falseGT_set_hilbert>` | Reset the associated Hilbert space                               |
-+-------------------------------------------------------------------------+------------------------------------------------------------------+
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__constructor>` |  |
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`size <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__size>`                 |  |
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`operator() <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__operator()>`     |  |
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`operator+= <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__operator+=>`     |  |
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`operator-= <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__operator-=>`     |  |
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`operator*= <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__operator*=>`     |  |
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`operator/= <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__operator/=>`     |  |
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`amplitudes <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__amplitudes>`     |  |
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`get_hilbert <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__get_hilbert>`   |  |
++--------------------------------------------------------------------------------------------------+--+
+| :ref:`set_hilbert <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__set_hilbert>`   |  |
++--------------------------------------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
@@ -77,11 +74,11 @@ Member functions
 Non Member functions
 --------------------
 
-+-------------------------------------------------------------------------+------------------------------------------------------+
-| :ref:`dot_product <stateLTHilbertSpace_ScalarType_falseGT_dot_product>` | Calculate scalar product of two states               |
-+-------------------------------------------------------------------------+------------------------------------------------------+
-| :ref:`foreach <stateLTHilbertSpace_ScalarType_falseGT_foreach>`         | Apply a callable object to all amplitudes of a state |
-+-------------------------------------------------------------------------+------------------------------------------------------+
++------------------------------------------------------------------------------------------------+--+
+| :ref:`dot_product <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__dot_product>` |  |
++------------------------------------------------------------------------------------------------+--+
+| :ref:`foreach <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__foreach>`         |  |
++------------------------------------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:

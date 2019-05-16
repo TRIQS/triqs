@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_get:
+.. _triqs__gfs__mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT__get:
 
-triqs::gfs::mesh_point::get
-===========================
+triqs::gfs::mesh_point<gf_mesh<cartesian_product<Vs...>>>::get
+==============================================================
+
+*#include <triqs/gfs/mesh_point.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`std::get should work FIXME ? redondant`
        | :green:`template<int N>`
        | decltype(auto) :red:`get` ()
 
-    2. | :green:`template<int N>`
-       | decltype(auto) :red:`get` () const
 
-Documentation
+
+
+
+std::get should work FIXME ? redondant

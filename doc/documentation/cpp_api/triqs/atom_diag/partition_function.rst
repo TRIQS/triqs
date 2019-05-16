@@ -5,24 +5,29 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _partition_function:
+.. _triqs__atom_diag__partition_function:
 
-partition_function
-==================
+triqs::atom_diag::partition_function
+====================================
+
+*#include <triqs/atom_diag/functions.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The atomic partition function`
        | :green:`template<bool Complex>`
        | double :red:`partition_function` (:ref:`atom_diag\<Complex\> <triqs__atom_diag__atom_diag>` const & :param:`atom`, double :param:`beta`)
 
 
+
+
+
+The atomic partition function
 
 
 
@@ -31,18 +36,18 @@ partition_function
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **Complex**: Do we have a diagonalization problem with a complex-valued Hamiltonian?
+ * :param:`Complex` Do we have a diagonalization problem with a complex-valued Hamiltonian?
 
 
 Parameters
 ^^^^^^^^^^
 
- * **atom**: Solved diagonalization problem.
+ * :param:`atom` Solved diagonalization problem.
 
- * **beta**: Inverse temperature.
+ * :param:`beta` Inverse temperature.
 
 
 Returns
 ^^^^^^^
 
- * Value of the partition function.
+Value of the partition function.

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mc_generic_get_percent:
+.. _triqs__mc_tools__mc_generic__get_percent:
 
 triqs::mc_tools::mc_generic::get_percent
 ========================================
+
+*#include <triqs/mc_tools/mc_generic.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The current percents done`
        | uint64_t :red:`get_percent` () const
+
+
+
+
+
+The current percents done

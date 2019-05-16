@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _measure_set_remove:
+.. _triqs__mc_tools__measure_set__remove:
 
 triqs::mc_tools::measure_set::remove
 ====================================
+
+*#include <triqs/mc_tools/measure_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Remove the measure m.`
        | void :red:`remove` (measure_set::measure_ptr_t const & :param:`m`)
+
+
+
+
+
+Remove the measure m.

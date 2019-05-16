@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _range_last:
+.. _itertools__range__last:
 
 itertools::range::last
 ======================
+
+*#include <itertools/range.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The first index past the end of the range`
        | range::index_t :red:`last` () const
+
+
+
+
+
+The first index past the end of the range

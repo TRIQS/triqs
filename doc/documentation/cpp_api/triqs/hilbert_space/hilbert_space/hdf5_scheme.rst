@@ -5,20 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _hilbert_space_hdf5_scheme:
+.. _triqs__hilbert_space__hilbert_space__hdf5_scheme:
 
 triqs::hilbert_space::hilbert_space::hdf5_scheme
 ================================================
+
+*#include <triqs/hilbert_space/hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | std::string :red:`hdf5_scheme` ()
+       | std::string :red:`hdf5_scheme` ()
+
+
+
+
 
 
 
@@ -29,4 +35,4 @@ triqs::hilbert_space::hilbert_space::hdf5_scheme
 Returns
 ^^^^^^^
 
- * Name of the scheme
+Name of the scheme

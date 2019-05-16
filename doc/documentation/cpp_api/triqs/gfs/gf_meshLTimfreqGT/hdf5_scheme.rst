@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_hdf5_scheme:
+.. _triqs__gfs__gf_meshLTimfreqGT__hdf5_scheme:
 
-triqs::gfs::gf_mesh::hdf5_scheme
-================================
+triqs::gfs::gf_mesh<imfreq>::hdf5_scheme
+========================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`-------------------- HDF5 -------------------`
        | std::string :red:`hdf5_scheme` ()
+
+
+
+
+
+-------------------- HDF5 -------------------

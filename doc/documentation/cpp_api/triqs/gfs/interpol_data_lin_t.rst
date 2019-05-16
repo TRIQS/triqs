@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__interpol_data_lin_t:
@@ -13,15 +12,13 @@
 triqs::gfs::interpol_data_lin_t
 ===============================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename IndexType, int Npts> class interpol_data_lin_t
+     template<typename IndexType, int Npts> class  :red:`interpol_data_lin_t`
 
 FIXME CHANGE the order fo the template, it looks strange to accesss W
-
-
 
 
 Public members

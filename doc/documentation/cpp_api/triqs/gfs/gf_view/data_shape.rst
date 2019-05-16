@@ -5,18 +5,27 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_view_data_shape:
+.. _triqs__gfs__gf_view__data_shape:
 
 triqs::gfs::gf_view::data_shape
 ===============================
+
+*#include <triqs/gfs/gf_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Shape of the data`
        | auto const & :red:`data_shape` () const
+
+
+
+
+
+Shape of the data
+
+NB : Needed for generic code. Expression of gf (e.g. g1 + g2) have a data_shape, but not data

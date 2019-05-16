@@ -5,24 +5,29 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_serialize:
+.. _triqs__statistics__histogram__serialize:
 
 triqs::statistics::histogram::serialize
 =======================================
+
+*#include <triqs/statistics/histogram.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Serialization`
        | :green:`template<typename Archive>`
        | void :red:`serialize` (Archive & :param:`ar`, const unsigned int :param:`version`)
 
 
+
+
+
+Serialization
 
 
 
@@ -31,12 +36,12 @@ triqs::statistics::histogram::serialize
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **Archive**: Archive type for serialization
+ * :param:`Archive` Archive type for serialization
 
 
 Parameters
 ^^^^^^^^^^
 
- * **ar**: Archive object to serialize to/deserialize from
+ * :param:`ar` Archive object to serialize to/deserialize from
 
- * **version**: Archive format version tag
+ * :param:`version` Archive format version tag

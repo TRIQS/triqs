@@ -5,19 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTcyclic_latticeGT_is_within_boundary:
+.. _triqs__gfs__gf_meshLTcyclic_latticeGT__is_within_boundary:
 
-triqs::gfs::gf_mesh::is_within_boundary
-=======================================
+triqs::gfs::gf_mesh<cyclic_lattice>::is_within_boundary
+=======================================================
+
+*#include <triqs/gfs/cluster_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Is the point in the mesh ? Always true`
        | :green:`template<typename T>`
        | bool :red:`is_within_boundary` (T const & ) const
+
+
+
+
+
+Is the point in the mesh ? Always true

@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _move_set_collect_statistics:
+.. _triqs__mc_tools__move_set__collect_statistics:
 
 triqs::mc_tools::move_set::collect_statistics
 =============================================
+
+*#include <triqs/mc_tools/move_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | void :red:`collect_statistics` (:ref:`communicator <mpi__communicator>` :param:`c`)
+       | void :red:`collect_statistics` (:ref:`communicator <mpi__communicator>` :param:`c`)

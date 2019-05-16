@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTcyclic_latticeGT_index_modulo:
+.. _triqs__gfs__gf_meshLTcyclic_latticeGT__index_modulo:
 
-triqs::gfs::gf_mesh::index_modulo
-=================================
+triqs::gfs::gf_mesh<cyclic_lattice>::index_modulo
+=================================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Reduce index modulo to the lattice.`
        | cluster_mesh::index_t :red:`index_modulo` (cluster_mesh::index_t const & :param:`r`) const
+
+
+
+
+
+Reduce index modulo to the lattice.

@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _vander:
+.. _triqs__gfs__vander:
 
-vander
-======
+triqs::gfs::vander
+==================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`----------------------------------------------------------------------------------------------`
        | arrays::matrix<dcomplex> :red:`vander` (std::vector<dcomplex> const & :param:`pts`, int :param:`expansion_order`)
 
 
 
 
 
-     construct the Vandermonde matrix
+----------------------------------------------------------------------------------------------
+  // construct the Vandermonde matrix

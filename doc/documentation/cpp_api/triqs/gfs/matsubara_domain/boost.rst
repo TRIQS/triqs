@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _matsubara_domain_boost:
+.. _triqs__gfs__matsubara_domain__boost:
 
 triqs::gfs::matsubara_domain::boost
 ===================================
+
+*#include <.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. |  :red:`boost` ()
+       |  :red:`boost` ()

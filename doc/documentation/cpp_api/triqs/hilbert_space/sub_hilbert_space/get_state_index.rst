@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _sub_hilbert_space_get_state_index:
+.. _triqs__hilbert_space__sub_hilbert_space__get_state_index:
 
 triqs::hilbert_space::sub_hilbert_space::get_state_index
 ========================================================
+
+*#include <triqs/hilbert_space/sub_hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Find the index of a given Fock state within this subspace`
        | int :red:`get_state_index` (fock_state_t :param:`f`) const
 
 
+
+
+
+Find the index of a given Fock state within this subspace
 
 
 
@@ -30,10 +35,10 @@ triqs::hilbert_space::sub_hilbert_space::get_state_index
 Parameters
 ^^^^^^^^^^
 
- * **f**: Fock state in question
+ * :param:`f` Fock state in question
 
 
 Returns
 ^^^^^^^
 
- * State index
+State index

@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _conj:
+.. _triqs__gfs__conj:
 
-conj
-====
+triqs::gfs::conj
+================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`------------------------------------------------------------------------------------------------------`
        | :green:`template<typename G>`
        | std::enable_if_t<is_gf<G>::value, typename G::regular_type> :red:`conj` (G const & :param:`g`)
 
@@ -26,5 +27,6 @@ conj
 
 
 
-                        Conjugate
+------------------------------------------------------------------------------------------------------
+                      Conjugate
 -----------------------------------------------------------------------------------------------------

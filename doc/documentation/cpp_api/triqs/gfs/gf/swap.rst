@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_swap:
+.. _triqs__gfs__gf__swap:
 
 triqs::gfs::gf::swap
 ====================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`implement the swap`
        | void :red:`swap` (gf<Var, Target> & :param:`a`, gf<Var, Target> & :param:`b`) noexcept
+
+
+
+
+
+FIXME : REMOVE THIS SWAP ?

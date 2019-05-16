@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _mpi__environment:
@@ -13,23 +12,21 @@
 mpi::environment
 ================
 
-Defined in header <**>
+*#include <mpi.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class environment
+      class  :red:`environment`
 
-------------------------------------------------------------
-
-
+Environment must be initialized in C++
 
 
 Member functions
 ----------------
 
-+----------------------------------------------+---------------------------------------------------------------------------------------+
-| :ref:`constructor <environment_constructor>` | MPICH does not allow Init without argc, argv, so we do not allow default constructors |
-+----------------------------------------------+---------------------------------------------------------------------------------------+
++------------------------------------------------------+--+
+| :ref:`(constructor) <mpi__environment__constructor>` |  |
++------------------------------------------------------+--+
 
 .. toctree::
     :hidden:

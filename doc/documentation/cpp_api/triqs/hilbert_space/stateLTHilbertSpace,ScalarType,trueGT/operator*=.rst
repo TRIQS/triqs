@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _stateLTHilbertSpace_ScalarType_trueGT_operator*=:
+.. _triqs__hilbert_space__stateLTHilbertSpace_ScalarType_trueGT__operator*=:
 
-triqs::hilbert_space::state::operator*=
-=======================================
+triqs::hilbert_space::state<HilbertSpace,ScalarType,true>::operator*=
+=====================================================================
+
+*#include <triqs/hilbert_space/state.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`In-place multiplication by a scalar`
        | :ref:`state\<type-parameter-0-0, type-parameter-0-1, true\> <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_trueGT>` & :red:`operator*=` (state<type-parameter-0-0, type-parameter-0-1, true>::value_type :param:`x`)
 
 
+
+
+
+In-place multiplication by a scalar
 
 
 
@@ -30,10 +35,10 @@ triqs::hilbert_space::state::operator*=
 Parameters
 ^^^^^^^^^^
 
- * **x**: Multiplier
+ * :param:`x` Multiplier
 
 
 Returns
 ^^^^^^^
 
- * Reference to this state
+Reference to this state

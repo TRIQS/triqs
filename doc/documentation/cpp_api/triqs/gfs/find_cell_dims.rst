@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _find_cell_dims:
+.. _triqs__gfs__find_cell_dims:
 
-find_cell_dims
-==============
+triqs::gfs::find_cell_dims
+==========================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Compute dimensions of a parallelepiped cluster cell using the inverse of the periodization matrix`
        | utility::mini_vector<int, 3> :red:`find_cell_dims` (arrays::matrix<double> const & :param:`inv_n`)
 
 
+
+
+
+Compute dimensions of a parallelepiped cluster cell using the inverse of the periodization matrix
 
 
 
@@ -30,13 +35,13 @@ find_cell_dims
 Parameters
 ^^^^^^^^^^
 
- * **inv_n**: inverse :math:`N^{-1}` of the periodization matrix
+ * :param:`inv_n` inverse :math:`N^{-1}` of the periodization matrix
 
 
 Returns
 ^^^^^^^
 
- * the dimensions of the parallelepiped unit cell
+the dimensions of the parallelepiped unit cell
 
    for a given Bravais lattice (defined by unit vectors :math:`{a_i}_{i=0\dots d-1}`), the periodic boundary conditions are uniquely
    defined by the matrix :math:`N` such that the super vectors :math:`\tilde{a}_i` are given by:

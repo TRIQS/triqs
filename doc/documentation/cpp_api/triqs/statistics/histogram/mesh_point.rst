@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_mesh_point:
+.. _triqs__statistics__histogram__mesh_point:
 
 triqs::statistics::histogram::mesh_point
 ========================================
+
+*#include <triqs/statistics/histogram.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Get position of bin's center`
        | double :red:`mesh_point` (int :param:`n`) const
 
 
+
+
+
+Get position of bin's center
 
 
 
@@ -30,10 +35,10 @@ triqs::statistics::histogram::mesh_point
 Parameters
 ^^^^^^^^^^
 
- * **n**: Bin index
+ * :param:`n` Bin index
 
 
 Returns
 ^^^^^^^
 
- * Position of the center, :math:`n (b - a) / (n_\mathrm{bins} - 1)`
+Position of the center, :math:`n (b - a) / (n_\mathrm{bins} - 1)`

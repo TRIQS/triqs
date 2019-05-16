@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__mpi_lazy:
@@ -13,15 +12,13 @@
 triqs::gfs::mpi_lazy
 ====================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Tag, typename T> class mpi_lazy
+     template<typename Tag, typename T> class  :red:`mpi_lazy`
 
 A small lazy tagged class
-
-
 
 
 Public members

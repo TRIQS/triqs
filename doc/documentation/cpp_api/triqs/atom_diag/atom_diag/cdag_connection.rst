@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _atom_diag_cdag_connection:
+.. _triqs__atom_diag__atom_diag__cdag_connection:
 
 triqs::atom_diag::atom_diag::cdag_connection
 ============================================
+
+*#include <triqs/atom_diag/atom_diag.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Subspace-to-subspace connections for fundamental operator :math:`C^\dagger``
        | long :red:`cdag_connection` (int :param:`op_linear_index`, int :param:`sp_index`) const
 
 
+
+
+
+Subspace-to-subspace connections for fundamental operator :math:`C^\dagger`
 
 
 
@@ -30,12 +35,12 @@ triqs::atom_diag::atom_diag::cdag_connection
 Parameters
 ^^^^^^^^^^
 
- * **op_linear_index**: The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
+ * :param:`op_linear_index` The linear index (i.e. number) of the creation operator, as defined by the fundamental operator set.
 
- * **sp_index**: The index of the initial subspace.
+ * :param:`sp_index` The index of the initial subspace.
 
 
 Returns
 ^^^^^^^
 
- * The index of the final subspace.
+The index of the final subspace.

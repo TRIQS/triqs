@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block_gf_view_rebind:
+.. _triqs__gfs__block_gf_view__rebind:
 
 triqs::gfs::block_gf_view::rebind
 =================================
+
+*#include <triqs/gfs/block_gf_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`---------------  Rebind --------------------`
        | void :red:`rebind` (block_gf_view<Var, Target> :param:`x`) noexcept
 
 
 
 
 
-         Rebind
+---------------  Rebind --------------------
+Rebind

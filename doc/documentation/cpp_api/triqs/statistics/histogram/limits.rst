@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_limits:
+.. _triqs__statistics__histogram__limits:
 
 triqs::statistics::histogram::limits
 ====================================
+
+*#include <triqs/statistics/histogram.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Return boundaries of the histogram`
        | std::pair<double, double> :red:`limits` () const
 
 
+
+
+
+Return boundaries of the histogram
 
 
 
@@ -30,4 +35,4 @@ triqs::statistics::histogram::limits
 Returns
 ^^^^^^^
 
- * Pair of histogram boundaries, `(a,b)`
+Pair of histogram boundaries, `(a,b)`

@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block2_gf_boost:
+.. _triqs__gfs__block2_gf__boost:
 
 triqs::gfs::block2_gf::boost
 ============================
+
+*#include <.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. |  :red:`boost` ()
+       |  :red:`boost` ()

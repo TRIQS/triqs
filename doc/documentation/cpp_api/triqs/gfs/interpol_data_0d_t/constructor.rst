@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _interpol_data_0d_t_constructor:
+.. _triqs__gfs__interpol_data_0d_t__constructor:
 
 triqs::gfs::interpol_data_0d_t::constructor
 ===========================================
+
+*#include <triqs/gfs/interpol_data_0d_t.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :red:`interpol_data_0d_t` (IndexType :param:`n`)
+       | :red:`interpol_data_0d_t` (IndexType :param:`n`)

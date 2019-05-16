@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _sub_hilbert_space_get_index:
+.. _triqs__hilbert_space__sub_hilbert_space__get_index:
 
 triqs::hilbert_space::sub_hilbert_space::get_index
 ==================================================
+
+*#include <triqs/hilbert_space/sub_hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Return the index of this subspace within the full Hilbert space`
        | int :red:`get_index` () const
 
 
+
+
+
+Return the index of this subspace within the full Hilbert space
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::sub_hilbert_space::get_index
 Returns
 ^^^^^^^
 
- * Index of the subspace
+Index of the subspace

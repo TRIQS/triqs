@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_operator==:
+.. _triqs__gfs__gf_meshLTimfreqGT__operator==:
 
-triqs::gfs::gf_mesh::operator==
-===============================
+triqs::gfs::gf_mesh<imfreq>::operator==
+=======================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`-------------------- Comparisons -------------------`
        | bool :red:`operator==` (:ref:`gf_mesh\<imfreq\> <triqs__gfs__gf_meshLTimfreqGT>` const & :param:`M`) const
+
+
+
+
+
+-------------------- Comparisons -------------------

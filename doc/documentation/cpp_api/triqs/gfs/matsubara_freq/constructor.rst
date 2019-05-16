@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _matsubara_freq_constructor:
+.. _triqs__gfs__matsubara_freq__constructor:
 
 triqs::gfs::matsubara_freq::constructor
 =======================================
+
+*#include <triqs/gfs/matsubara_freq.hpp>*
+
 
 
 **Synopsis**

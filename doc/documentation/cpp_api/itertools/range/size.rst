@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _range_size:
+.. _itertools__range__size:
 
 itertools::range::size
 ======================
+
+*#include <itertools/range.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Number of indices in the range`
        | size_t :red:`size` () const
+
+
+
+
+
+Number of indices in the range

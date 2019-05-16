@@ -5,20 +5,27 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _map:
+.. _triqs__gfs__map:
 
-map
-===
+triqs::gfs::map
+===============
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`the map function itself...`
        | :green:`template<typename F, typename G>`
        | std::enable_if_t<is_block_gf_or_view<G>::value, decltype(impl::map<F, G>::invoke(std::forward<F>(f), std::forward<G>(g)))> :red:`map` (F && :param:`f`,
-       |   G && :param:`g`)
+       |      G && :param:`g`)
+
+
+
+
+
+the map function itself...

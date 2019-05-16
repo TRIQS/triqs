@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _itertools__range:
@@ -13,15 +12,13 @@
 itertools::range
 ================
 
-Defined in header <**>
+*#include <itertools.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class range
+      class  :red:`range`
 
 A range of integer indices that mimics the Python `range`.
-
-
 
 
 Member types
@@ -35,27 +32,17 @@ Member types
 Member functions
 ----------------
 
-+----------------------------------------+-------------------------------------------+
-| :ref:`constructor <range_constructor>` | Default constructor                       |
-+----------------------------------------+-------------------------------------------+
-| :ref:`first <range_first>`             | The first index of the range              |
-+----------------------------------------+-------------------------------------------+
-| :ref:`last <range_last>`               | The first index past the end of the range |
-+----------------------------------------+-------------------------------------------+
-| :ref:`step <range_step>`               | The step between two indices              |
-+----------------------------------------+-------------------------------------------+
-| :ref:`size <range_size>`               | Number of indices in the range            |
-+----------------------------------------+-------------------------------------------+
-| :ref:`operator+ <range_operator+>`     |                                           |
-+----------------------------------------+-------------------------------------------+
-| :ref:`begin <range_begin>`             |                                           |
-+----------------------------------------+-------------------------------------------+
-| :ref:`cbegin <range_cbegin>`           |                                           |
-+----------------------------------------+-------------------------------------------+
-| :ref:`end <range_end>`                 |                                           |
-+----------------------------------------+-------------------------------------------+
-| :ref:`cend <range_cend>`               |                                           |
-+----------------------------------------+-------------------------------------------+
++------------------------------------------------------+--+
+| :ref:`(constructor) <itertools__range__constructor>` |  |
++------------------------------------------------------+--+
+| :ref:`first <itertools__range__first>`               |  |
++------------------------------------------------------+--+
+| :ref:`last <itertools__range__last>`                 |  |
++------------------------------------------------------+--+
+| :ref:`step <itertools__range__step>`                 |  |
++------------------------------------------------------+--+
+| :ref:`size <itertools__range__size>`                 |  |
++------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
@@ -65,21 +52,3 @@ Member functions
     range/last
     range/step
     range/size
-    range/operator+
-    range/begin
-    range/cbegin
-    range/end
-    range/cend
-
-
-Non Member functions
---------------------
-
-+------------------------------------------+--+
-| :ref:`operator\<\< <range_operatorLTLT>` |  |
-+------------------------------------------+--+
-
-.. toctree::
-    :hidden:
-
-    range/operator<<

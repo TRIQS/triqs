@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimtimeGT_hdf5_scheme:
+.. _triqs__gfs__gf_meshLTimtimeGT__hdf5_scheme:
 
-triqs::gfs::gf_mesh::hdf5_scheme
-================================
+triqs::gfs::gf_mesh<imtime>::hdf5_scheme
+========================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`-------------------- hdf5 -------------------`
        | std::string :red:`hdf5_scheme` ()
+
+
+
+
+
+-------------------- hdf5 -------------------

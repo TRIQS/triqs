@@ -5,28 +5,30 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_reserve:
+.. _triqs__det_manip__det_manip__reserve:
 
 triqs::det_manip::det_manip::reserve
 ====================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Like for std::vector, reserve memory for a bigger size.`
        | void :red:`reserve` (size_t :param:`new_size`)
 
 
 
 
 
-   Preserves only the matrix, not the temporary working vectors/matrices, so do NOT use it
- between a try_XXX and a complete_operation
+Like for std::vector, reserve memory for a bigger size.
+Preserves only the matrix, not the temporary working vectors/matrices, so do NOT use it
+between a try_XXX and a complete_operation
 
 
 
@@ -35,4 +37,4 @@ triqs::det_manip::det_manip::reserve
 Parameters
 ^^^^^^^^^^
 
- * **new_size**: The new size of the reserved memory
+ * :param:`new_size` The new size of the reserved memory

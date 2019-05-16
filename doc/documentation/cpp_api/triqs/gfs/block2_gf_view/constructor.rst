@@ -5,39 +5,59 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block2_gf_view_constructor:
+.. _triqs__gfs__block2_gf_view__constructor:
 
 triqs::gfs::block2_gf_view::constructor
 =======================================
+
+*#include <triqs/gfs/block2_gf_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Copy constructor`
-       | :red:`block2_gf_view` (block2_gf_view<Var, Target> const & :param:`x`)
+    1. | :red:`block2_gf_view` (block2_gf_view<Var, Target> const & :param:`x`)
 
-    2. | :cppbrief:`Move constructor`
-       | :red:`block2_gf_view` (block2_gf_view<Var, Target> && )
+    2. | :red:`block2_gf_view` (block2_gf_view<Var, Target> && )
 
-    3. | :cppbrief:`Construct from block_names and list of gf`
-       | :red:`block2_gf_view` (block2_gf_view::block_names_t :param:`b`, block2_gf_view::data_t :param:`d`)
+    3. | :red:`block2_gf_view` (block2_gf_view::block_names_t :param:`b`, block2_gf_view::data_t :param:`d`)
 
-    4. | :cppbrief:`---------------  Constructors --------------------`
-       | :red:`block2_gf_view` ()
+    4. | :red:`block2_gf_view` ()
 
     5. | :red:`block2_gf_view` (block2_gf_view::const_view_type const & :param:`g`)
 
     6. | :red:`block2_gf_view` (block2_gf_view::regular_type const & :param:`g`)
 
-    7. | :cppbrief:`Makes a view`
-       | :red:`block2_gf_view` (block2_gf_view::regular_type & :param:`g`)
+    7. | :red:`block2_gf_view` (block2_gf_view::regular_type & :param:`g`)
 
-    8. | :cppbrief:`Makes a view`
-       | :red:`block2_gf_view` (block2_gf_view::regular_type && :param:`g`) noexcept
+    8. | :red:`block2_gf_view` (block2_gf_view::regular_type && :param:`g`) noexcept
 
 Documentation
+
+
+
+ **1)**   Copy constructor
+
+
+
+ **2)**   Move constructor
+
+
+
+ **3)**   Construct from block_names and list of gf
+
+
+
+ **4)**   ---------------  Constructors --------------------
+
+
+
+ **7)**   Makes a view
+
+
+
+ **8)**   Makes a view

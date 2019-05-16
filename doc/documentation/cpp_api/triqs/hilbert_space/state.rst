@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__hilbert_space__state:
@@ -13,30 +12,24 @@
 triqs::hilbert_space::state
 ===========================
 
-Defined in header <*triqs/hilbert_space/state.hpp*>
+*#include <triqs/hilbert_space/state.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename HilbertSpace, typename ScalarType, bool BasedOnMap> class state
+     template<typename HilbertSpace, typename ScalarType, bool BasedOnMap> class  :red:`state`
 
-Many-body state as a list of amplitudes in a *basis of Fock states  The amplitudes can either be stored using a map (only non-vanishing elements are stored)
+Many-body state as a list of amplitudes in a *basis of Fock states*
 
-  or in a `triqs::arrays::vector`. In order to make this class model [[statevector_concept]]
-  free function [[make_zero_state]] is defined. Specializations on `BasedOnMap` provide
-  different extensions of the concept, and are documented separately:
+ The amplitudes can either be stored using a map (only non-vanishing elements are stored)
+ or in a `triqs::arrays::vector`. In order to make this class model [[statevector_concept]]
+ free function [[make_zero_state]] is defined. Specializations on `BasedOnMap` provide
+ different extensions of the concept, and are documented separately:
 
-  - :ref:`state, map-based storage <state\<HilbertSpace,ScalarType,true\>>`
-  - :ref:`state, vector-based storage <state\<HilbertSpace,ScalarType,false\>>`
+ - :ref:`state, map-based storage <state\<HilbertSpace,ScalarType,true\>>`
+ - :ref:`state, vector-based storage <state\<HilbertSpace,ScalarType,false\>>`
 
-  Function [[project]] can be used to project a state from one Hilbert space to another Hilbert space/subspace.
-      or in a `triqs::arrays::vector`. In order to make this class model [[statevector_concept]]
-  free function [[make_zero_state]] is defined. Specializations on `BasedOnMap` provide
-  different extensions of the concept, and are documented separately:
+ Function [[project]] can be used to project a state from one Hilbert space to another Hilbert space/subspace.
 
-  - :ref:`state, map-based storage <state\<HilbertSpace,ScalarType,true\>>`
-  - :ref:`state, vector-based storage <state\<HilbertSpace,ScalarType,false\>>`
-
-  Function [[project]] can be used to project a state from one Hilbert space to another Hilbert space/subspace.
 
 Template parameters
 -------------------

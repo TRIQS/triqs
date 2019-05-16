@@ -5,19 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block_gf_view_serialize:
+.. _triqs__gfs__block_gf_view__serialize:
 
 triqs::gfs::block_gf_view::serialize
 ====================================
+
+*#include <triqs/gfs/block_gf_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The serialization as required by Boost`
        | :green:`template<typename Archive>`
        | void :red:`serialize` (Archive & :param:`ar`, const unsigned int :param:`version`)
+
+
+
+
+
+The serialization as required by Boost

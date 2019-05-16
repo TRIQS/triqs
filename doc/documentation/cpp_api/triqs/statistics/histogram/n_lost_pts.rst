@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_n_lost_pts:
+.. _triqs__statistics__histogram__n_lost_pts:
 
 triqs::statistics::histogram::n_lost_pts
 ========================================
+
+*#include <triqs/statistics/histogram.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Get number of discarded samples`
        | unsigned long long :red:`n_lost_pts` () const
 
 
+
+
+
+Get number of discarded samples
 
 
 
@@ -30,4 +35,4 @@ triqs::statistics::histogram::n_lost_pts
 Returns
 ^^^^^^^
 
- * Number of discarded data points
+Number of discarded data points

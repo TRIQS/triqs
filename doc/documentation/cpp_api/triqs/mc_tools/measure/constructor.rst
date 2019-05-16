@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _measure_constructor:
+.. _triqs__mc_tools__measure__constructor:
 
 triqs::mc_tools::measure::constructor
 =====================================
+
+*#include <triqs/mc_tools/measure.hpp>*
+
 
 
 **Synopsis**

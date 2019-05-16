@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _space_partition_get_matrix_elements:
+.. _triqs__hilbert_space__space_partition__get_matrix_elements:
 
 triqs::hilbert_space::space_partition::get_matrix_elements
 ==========================================================
+
+*#include <triqs/hilbert_space/space_partition.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Access to matrix elements of the Hamiltonian`
        | space_partition::matrix_element_map_t const & :red:`get_matrix_elements` () const
 
 
+
+
+
+Access to matrix elements of the Hamiltonian
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::space_partition::get_matrix_elements
 Returns
 ^^^^^^^
 
- * Stored matrix elements of the Hamiltonian
+Stored matrix elements of the Hamiltonian

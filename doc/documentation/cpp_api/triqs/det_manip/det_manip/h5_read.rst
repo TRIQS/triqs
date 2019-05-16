@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_h5_read:
+.. _triqs__det_manip__det_manip__h5_read:
 
 triqs::det_manip::det_manip::h5_read
 ====================================
+
+*#include <triqs/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Read from HDF5`
        | void :red:`h5_read` (h5::group :param:`fg`, std::string :param:`subgroup_name`, det_manip<FunctionType> & :param:`g`)
+
+
+
+
+
+Read from HDF5

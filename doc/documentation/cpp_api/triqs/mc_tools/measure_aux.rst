@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__mc_tools__measure_aux:
@@ -13,28 +12,23 @@
 triqs::mc_tools::measure_aux
 ============================
 
-Defined in header <**>
+*#include <triqs/mc_tools.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class measure_aux
+      class  :red:`measure_aux`
 
 --------------------------------------------------------------------
-
-
 
 
 Member functions
 ----------------
 
-+----------------------------------------------+--+
-| :ref:`constructor <measure_aux_constructor>` |  |
-+----------------------------------------------+--+
-| :ref:`operator() <measure_aux_operator()>`   |  |
-+----------------------------------------------+--+
++------------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__mc_tools__measure_aux__constructor>` |  |
++------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
 
     measure_aux/constructor
-    measure_aux/operator()

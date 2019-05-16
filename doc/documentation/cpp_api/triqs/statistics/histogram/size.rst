@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_size:
+.. _triqs__statistics__histogram__size:
 
 triqs::statistics::histogram::size
 ==================================
+
+*#include <triqs/statistics/histogram.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Get number of histogram bins`
        | size_t :red:`size` () const
 
 
+
+
+
+Get number of histogram bins
 
 
 
@@ -30,4 +35,4 @@ triqs::statistics::histogram::size
 Returns
 ^^^^^^^
 
- * Number of bins
+Number of bins

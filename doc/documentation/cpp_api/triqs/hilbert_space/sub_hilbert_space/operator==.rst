@@ -5,29 +5,31 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _sub_hilbert_space_operator==:
+.. _triqs__hilbert_space__sub_hilbert_space__operator==:
 
 triqs::hilbert_space::sub_hilbert_space::operator==
 ===================================================
+
+*#include <triqs/hilbert_space/sub_hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Check two Hilbert subspaces for equality`
        | bool :red:`operator==` (:ref:`sub_hilbert_space <triqs__hilbert_space__sub_hilbert_space>` const & :param:`hs`) const
 
 
 
 
 
+Check two Hilbert subspaces for equality
 
-   Two subspaces are considered equal iff they have the same index and
-   equal sets of basis Fock states.
+  Two subspaces are considered equal iff they have the same index and
+  equal sets of basis Fock states.
 
 
 
@@ -36,10 +38,10 @@ triqs::hilbert_space::sub_hilbert_space::operator==
 Parameters
 ^^^^^^^^^^
 
- * **hs**: Another Hilbert subspace
+ * :param:`hs` Another Hilbert subspace
 
 
 Returns
 ^^^^^^^
 
- * `true` if the two subspaces are equal, `false` otherwise
+`true` if the two subspaces are equal, `false` otherwise

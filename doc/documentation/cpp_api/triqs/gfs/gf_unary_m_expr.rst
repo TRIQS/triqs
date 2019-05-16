@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__gf_unary_m_expr:
@@ -13,16 +12,15 @@
 triqs::gfs::gf_unary_m_expr
 ===========================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename L> class gf_unary_m_expr
+     template<typename L> class  :red:`gf_unary_m_expr`
 
 -------------------------------------------------------------------
+   // a special case : the unary operator !
 
-     a special case : the unary operator !
-         a special case : the unary operator !
 
 Public members
 --------------
@@ -47,39 +45,11 @@ Member types
 Member functions
 ----------------
 
-+--------------------------------------------------+--+
-| :ref:`constructor <gf_unary_m_expr_constructor>` |  |
-+--------------------------------------------------+--+
-| :ref:`mesh <gf_unary_m_expr_mesh>`               |  |
-+--------------------------------------------------+--+
-| :ref:`data_shape <gf_unary_m_expr_data_shape>`   |  |
-+--------------------------------------------------+--+
-| :ref:`indices <gf_unary_m_expr_indices>`         |  |
-+--------------------------------------------------+--+
-| :ref:`operator[] <gf_unary_m_expr_operator[]>`   |  |
-+--------------------------------------------------+--+
-| :ref:`operator() <gf_unary_m_expr_operator()>`   |  |
-+--------------------------------------------------+--+
++-----------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__gfs__gf_unary_m_expr__constructor>` |  |
++-----------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
 
     gf_unary_m_expr/constructor
-    gf_unary_m_expr/mesh
-    gf_unary_m_expr/data_shape
-    gf_unary_m_expr/indices
-    gf_unary_m_expr/operator[]
-    gf_unary_m_expr/operator()
-
-
-Non Member functions
---------------------
-
-+----------------------------------------------------+--+
-| :ref:`operator\<\< <gf_unary_m_expr_operatorLTLT>` |  |
-+----------------------------------------------------+--+
-
-.. toctree::
-    :hidden:
-
-    gf_unary_m_expr/operator<<

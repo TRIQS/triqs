@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_omega_max:
+.. _triqs__gfs__gf_meshLTimfreqGT__omega_max:
 
-triqs::gfs::gf_mesh::omega_max
-==============================
+triqs::gfs::gf_mesh<imfreq>::omega_max
+======================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`maximum freq of the mesh`
        | dcomplex :red:`omega_max` () const
+
+
+
+
+
+maximum freq of the mesh

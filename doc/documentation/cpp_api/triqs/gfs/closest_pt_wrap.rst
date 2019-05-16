@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__closest_pt_wrap:
@@ -13,10 +12,10 @@
 triqs::gfs::closest_pt_wrap
 ===========================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename T> class closest_pt_wrap
+     template<typename T> class  :red:`closest_pt_wrap`
 
 implementation

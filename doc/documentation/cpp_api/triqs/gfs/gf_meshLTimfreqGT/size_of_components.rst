@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_size_of_components:
+.. _triqs__gfs__gf_meshLTimfreqGT__size_of_components:
 
-triqs::gfs::gf_mesh::size_of_components
-=======================================
+triqs::gfs::gf_mesh<imfreq>::size_of_components
+===============================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | utility::mini_vector<size_t, 1> :red:`size_of_components` () const
+       | utility::mini_vector<size_t, 1> :red:`size_of_components` () const

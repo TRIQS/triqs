@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _atom_diag_get_eigensystems:
+.. _triqs__atom_diag__atom_diag__get_eigensystems:
 
 triqs::atom_diag::atom_diag::get_eigensystems
 =============================================
+
+*#include <triqs/atom_diag/atom_diag.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Get the eigensystems for all subspaces`
        | std::vector<eigensystem_t> const & :red:`get_eigensystems` ()
+
+
+
+
+
+Get the eigensystems for all subspaces

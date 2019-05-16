@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _mpi__lazy:
@@ -13,15 +12,13 @@
 mpi::lazy
 =========
 
-Defined in header <**>
+*#include <mpi.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Tag, typename T> class lazy
+     template<typename Tag, typename T> class  :red:`lazy`
 
 A small lazy tagged class
-
-
 
 
 Public members

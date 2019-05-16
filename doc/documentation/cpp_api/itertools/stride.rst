@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _stride:
+.. _itertools__stride:
 
-stride
-======
+itertools::stride
+=================
+
+*#include <itertools.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Lazy-stride a range.`
        | :green:`template<typename T>`
        | auto :red:`stride` (T && :param:`range`, std::ptrdiff_t :param:`stride`)
 
@@ -26,8 +27,9 @@ stride
 
 
 
-   This function returns itself a subrange of the initial range
- by considering only every N-th element
+Lazy-stride a range.
+This function returns itself a subrange of the initial range
+by considering only every N-th element
 
 
 
@@ -36,6 +38,6 @@ stride
 Parameters
 ^^^^^^^^^^
 
- * **range**: The range to take the subrange of
+ * :param:`range` The range to take the subrange of
 
- * **stride**: The numer of elements to skip
+ * :param:`stride` The numer of elements to skip

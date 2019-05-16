@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_get_precision_warning:
+.. _triqs__det_manip__det_manip__get_precision_warning:
 
 triqs::det_manip::det_manip::get_precision_warning
 ==================================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Get the bound for warning messages in the singular tests`
        | double :red:`get_precision_warning` () const
+
+
+
+
+
+Get the bound for warning messages in the singular tests

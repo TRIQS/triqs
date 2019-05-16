@@ -5,23 +5,31 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_get_x:
+.. _triqs__det_manip__det_manip__get_x:
 
 triqs::det_manip::det_manip::get_x
 ==================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Returns the i-th values of x`
-       | det_manip::x_type const & :red:`get_x` (size_t :param:`i`) const
+    1. | det_manip::x_type const & :red:`get_x` (size_t :param:`i`) const
 
-    2. | :cppbrief:`Returns a vector with all x_values. Warning : this is slow, since it creates a new copy, and reorders the lines`
-       | std::vector<x_type> :red:`get_x` () const
+    2. | std::vector<x_type> :red:`get_x` () const
 
 Documentation
+
+
+
+ **1)**   Returns the i-th values of x
+
+
+
+ **2)**   Returns a vector with all x_values. Warning : this is slow, since it creates a new copy, and reorders the lines

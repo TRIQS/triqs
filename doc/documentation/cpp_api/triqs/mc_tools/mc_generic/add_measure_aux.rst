@@ -5,19 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mc_generic_add_measure_aux:
+.. _triqs__mc_tools__mc_generic__add_measure_aux:
 
 triqs::mc_tools::mc_generic::add_measure_aux
 ============================================
+
+*#include <triqs/mc_tools/mc_generic.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Register a common part for several measure [EXPERIMENTAL: API WILL CHANGE]`
        | :green:`template<typename MeasureAuxType>`
        | void :red:`add_measure_aux` (std::shared_ptr<MeasureAuxType> :param:`p`)
+
+
+
+
+
+Register a common part for several measure [EXPERIMENTAL: API WILL CHANGE]

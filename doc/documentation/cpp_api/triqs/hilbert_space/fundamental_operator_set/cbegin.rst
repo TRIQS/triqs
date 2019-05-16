@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _fundamental_operator_set_cbegin:
+.. _triqs__hilbert_space__fundamental_operator_set__cbegin:
 
 triqs::hilbert_space::fundamental_operator_set::cbegin
 ======================================================
+
+*#include <triqs/hilbert_space/fundamental_operator_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Equivalent to [[fundamental_operator_set_begin]]`
        | fundamental_operator_set::const_iterator :red:`cbegin` () const
 
 
+
+
+
+Equivalent to [[fundamental_operator_set_begin]]
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::fundamental_operator_set::cbegin
 Returns
 ^^^^^^^
 
- * Iterator to the first index sequence
+Iterator to the first index sequence

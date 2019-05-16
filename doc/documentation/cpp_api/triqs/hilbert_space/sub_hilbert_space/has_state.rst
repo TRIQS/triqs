@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _sub_hilbert_space_has_state:
+.. _triqs__hilbert_space__sub_hilbert_space__has_state:
 
 triqs::hilbert_space::sub_hilbert_space::has_state
 ==================================================
+
+*#include <triqs/hilbert_space/sub_hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Check if a given Fock state belongs to this subspace`
        | bool :red:`has_state` (fock_state_t :param:`f`) const
 
 
+
+
+
+Check if a given Fock state belongs to this subspace
 
 
 
@@ -30,10 +35,10 @@ triqs::hilbert_space::sub_hilbert_space::has_state
 Parameters
 ^^^^^^^^^^
 
- * **f**: Fock state in question
+ * :param:`f` Fock state in question
 
 
 Returns
 ^^^^^^^
 
- * `true` if `f` belongs to the subspace, `false` otherwise
+`true` if `f` belongs to the subspace, `false` otherwise

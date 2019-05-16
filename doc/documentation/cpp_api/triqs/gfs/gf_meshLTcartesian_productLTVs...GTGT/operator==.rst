@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTcartesian_productLTVs___GTGT_operator==:
+.. _triqs__gfs__gf_meshLTcartesian_productLTVs___GTGT__operator==:
 
-triqs::gfs::gf_mesh::operator==
-===============================
+triqs::gfs::gf_mesh<cartesian_product<Vs...>>::operator==
+=========================================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Mesh comparison`
        | bool :red:`operator==` (:ref:`gf_mesh\<cartesian_product\<type-parameter-0-0...\> \> <triqs__gfs__gf_meshLTcartesian_productLTVs___GTGT>` const & :param:`m`) const
+
+
+
+
+
+Mesh comparison

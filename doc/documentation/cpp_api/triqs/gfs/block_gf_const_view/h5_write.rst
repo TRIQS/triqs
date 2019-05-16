@@ -5,20 +5,27 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block_gf_const_view_h5_write:
+.. _triqs__gfs__block_gf_const_view__h5_write:
 
 triqs::gfs::block_gf_const_view::h5_write
 =========================================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Write into HDF5`
        | void :red:`h5_write` (h5::group :param:`fg`,
-       |   std::string const & :param:`subgroup_name`,
-       |   block_gf_const_view<Var, Target> const & :param:`g`)
+       |           std::string const & :param:`subgroup_name`,
+       |           block_gf_const_view<Var, Target> const & :param:`g`)
+
+
+
+
+
+Write into HDF5

@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _product_range:
+.. _itertools__product_range:
 
-product_range
-=============
+itertools::product_range
+========================
+
+*#include <itertools.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`A product of an arbitrary number of integer ranges`
        | :green:`template<typename Integers, typename EnableIf = std::enable_if_t<(std::is_integral_v<Integers>and...),int>`
        | auto :red:`product_range` (Integers... :param:`Is`)
 
@@ -26,7 +27,8 @@ product_range
 
 
 
-   given a set of integers or an integer tuple
+A product of an arbitrary number of integer ranges
+given a set of integers or an integer tuple
 
 
 
@@ -35,4 +37,4 @@ product_range
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **Integers**: The integer types
+ * :param:`Integers` The integer types

@@ -5,19 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _tail_fitter_get_lss:
+.. _triqs__gfs__tail_fitter__get_lss:
 
 triqs::gfs::tail_fitter::get_lss
 ================================
+
+*#include <triqs/gfs/tail_fitter.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`----------------------------------------------------------------------------------------------`
        | :green:`template<bool enforce_hermiticity>`
        | auto & :red:`get_lss` ()
+
+
+
+
+
+----------------------------------------------------------------------------------------------

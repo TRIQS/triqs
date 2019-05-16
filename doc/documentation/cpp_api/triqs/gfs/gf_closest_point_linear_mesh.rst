@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__gf_closest_point_linear_mesh:
@@ -13,25 +12,23 @@
 triqs::gfs::gf_closest_point_linear_mesh
 ========================================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class gf_closest_point_linear_mesh
+      class  :red:`gf_closest_point_linear_mesh`
 
 -------------------------------------------------------
+    // closest mesh point on the grid
+    // ------------------------------------------------------
 
-     closest mesh point on the grid
-     ------------------------------------------------------
-         closest mesh point on the grid
-     ------------------------------------------------------
 
 Member functions
 ----------------
 
-+-----------------------------------------------------+----------------+
-| :ref:`invoke <gf_closest_point_linear_mesh_invoke>` | index_t is int |
-+-----------------------------------------------------+----------------+
++------------------------------------------------------------------+--+
+| :ref:`invoke <triqs__gfs__gf_closest_point_linear_mesh__invoke>` |  |
++------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:

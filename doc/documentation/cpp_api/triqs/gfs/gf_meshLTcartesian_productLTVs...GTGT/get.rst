@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTcartesian_productLTVs___GTGT_get:
+.. _triqs__gfs__gf_meshLTcartesian_productLTVs___GTGT__get:
 
-triqs::gfs::gf_mesh::get
-========================
+triqs::gfs::gf_mesh<cartesian_product<Vs...>>::get
+==================================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`for structured binding`
        | :green:`template<size_t pos>`
        | decltype(auto) :red:`get` ()
 
-    2. | :green:`template<size_t pos>`
-       | decltype(auto) :red:`get` () const
 
-Documentation
+
+
+
+for structured binding

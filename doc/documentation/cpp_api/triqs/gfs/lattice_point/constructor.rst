@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _lattice_point_constructor:
+.. _triqs__gfs__lattice_point__constructor:
 
 triqs::gfs::lattice_point::constructor
 ======================================
+
+*#include <triqs/gfs/lattice_point.hpp>*
+
 
 
 **Synopsis**

@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _stateLTHilbertSpace_ScalarType_falseGT_foreach:
+.. _triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT__foreach:
 
-triqs::hilbert_space::state::foreach
-====================================
+triqs::hilbert_space::state<HilbertSpace,ScalarType,false>::foreach
+===================================================================
+
+*#include <triqs/hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Apply a callable object to all amplitudes of a state`
        | :green:`template<typename Lambda>`
        | void :red:`foreach` (:ref:`state\<type-parameter-0-0, type-parameter-0-1, false\> <triqs__hilbert_space__stateLTHilbertSpace_ScalarType_falseGT>` const & :param:`st`, Lambda :param:`l`)
 
@@ -26,8 +27,9 @@ triqs::hilbert_space::state::foreach
 
 
 
+Apply a callable object to all amplitudes of a state
 
-  The callable must take two arguments, 1) index of the basis Fock state in the associated Hilbert space, and 2) the corresponding amplitude.
+ The callable must take two arguments, 1) index of the basis Fock state in the associated Hilbert space, and 2) the corresponding amplitude.
 
 
 
@@ -36,12 +38,12 @@ triqs::hilbert_space::state::foreach
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **Lambda**: Type of the callable object
+ * :param:`Lambda` Type of the callable object
 
 
 Parameters
 ^^^^^^^^^^
 
- * **st**: State object
+ * :param:`st` State object
 
- * **l**: Callable object
+ * :param:`l` Callable object

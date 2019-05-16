@@ -5,20 +5,27 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_set_tail_fit_parameters:
+.. _triqs__gfs__gf_meshLTimfreqGT__set_tail_fit_parameters:
 
-triqs::gfs::gf_mesh::set_tail_fit_parameters
-============================================
+triqs::gfs::gf_mesh<imfreq>::set_tail_fit_parameters
+====================================================
+
+*#include <triqs/gfs/tail_fitter_handle.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Adjust the parameters for the tail-fitting`
        | void :red:`set_tail_fit_parameters` (double :param:`tail_fraction`,
-       |   int :param:`n_tail_max` = tail_fitter::default_n_tail_max,
-       |   std::optional<int> :param:`expansion_order` = {}) const
+       |                          int :param:`n_tail_max` = tail_fitter::default_n_tail_max,
+       |                          std::optional<int> :param:`expansion_order` = {}) const
+
+
+
+
+
+Adjust the parameters for the tail-fitting

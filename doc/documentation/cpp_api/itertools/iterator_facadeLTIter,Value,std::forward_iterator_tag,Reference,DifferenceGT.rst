@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _itertools__iterator_facadeLTIter_Value_std__forward_iterator_tag_Reference_DifferenceGT:
@@ -13,15 +12,13 @@
 itertools::iterator_facade<Iter,Value,std::forward_iterator_tag,Reference,Difference>
 =====================================================================================
 
-Defined in header <**>
+*#include <itertools.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Iter, typename Value, typename Reference, typename Difference> class iterator_facade<Iter,Value,std::forward_iterator_tag,Reference,Difference>
+     template<typename Iter, typename Value, typename Reference, typename Difference> class  :red:`iterator_facade<Iter,Value,std::forward_iterator_tag,Reference,Difference>`
 
 A helper for the implementation of forward iterators using CRTP
-
-
 
 
 Template parameters
@@ -48,28 +45,3 @@ Member types
 +-------------------+---------------------------+--+
 | iterator_category | std::forward_iterator_tag |  |
 +-------------------+---------------------------+--+
-
-
-Member functions
-----------------
-
-+---------------------------------------------------------------------------------------------------------------+--+
-| :ref:`operator++ <iterator_facadeLTIter_Value_std__forward_iterator_tag_Reference_DifferenceGT_operator++>`   |  |
-+---------------------------------------------------------------------------------------------------------------+--+
-| :ref:`operator== <iterator_facadeLTIter_Value_std__forward_iterator_tag_Reference_DifferenceGT_operator==>`   |  |
-+---------------------------------------------------------------------------------------------------------------+--+
-| :ref:`operator!= <iterator_facadeLTIter_Value_std__forward_iterator_tag_Reference_DifferenceGT_operator!=>`   |  |
-+---------------------------------------------------------------------------------------------------------------+--+
-| :ref:`operator* <iterator_facadeLTIter_Value_std__forward_iterator_tag_Reference_DifferenceGT_operator*>`     |  |
-+---------------------------------------------------------------------------------------------------------------+--+
-| :ref:`operator-\> <iterator_facadeLTIter_Value_std__forward_iterator_tag_Reference_DifferenceGT_operator-GT>` |  |
-+---------------------------------------------------------------------------------------------------------------+--+
-
-.. toctree::
-    :hidden:
-
-    iterator_facadeLTIter,Value,std::forward_iterator_tag,Reference,DifferenceGT/operator++
-    iterator_facadeLTIter,Value,std::forward_iterator_tag,Reference,DifferenceGT/operator==
-    iterator_facadeLTIter,Value,std::forward_iterator_tag,Reference,DifferenceGT/operator!=
-    iterator_facadeLTIter,Value,std::forward_iterator_tag,Reference,DifferenceGT/operator*
-    iterator_facadeLTIter,Value,std::forward_iterator_tag,Reference,DifferenceGT/operator->

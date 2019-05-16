@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__all_t:
@@ -13,10 +12,10 @@
 triqs::gfs::all_t
 =================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class all_t
+      class  :red:`all_t`
 
 the dummy variable

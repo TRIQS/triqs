@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_h5_write:
+.. _triqs__gfs__gf__h5_write:
 
 triqs::gfs::gf::h5_write
 ========================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Write into HDF5`
-       | void :red:`h5_write` (h5::group :param:`fg`, std::string const & :param:`subgroup_name`, gf<Var, Target> const & :param:`g`)
+       | void :red:`h5_write` (h5::group :param:`fg`, std::string const & :param:`subgroup_name`, gf::this_t const & :param:`g`)
+
+
+
+
+
+Write into HDF5

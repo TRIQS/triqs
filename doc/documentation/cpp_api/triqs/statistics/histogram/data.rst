@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_data:
+.. _triqs__statistics__histogram__data:
 
 triqs::statistics::histogram::data
 ==================================
+
+*#include <triqs/statistics/histogram.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Read-only access to the data storage`
        | arrays::vector<double> const & :red:`data` () const
 
 
+
+
+
+Read-only access to the data storage
 
 
 
@@ -30,4 +35,4 @@ triqs::statistics::histogram::data
 Returns
 ^^^^^^^
 
- * Constant reference to the histogram data array
+Constant reference to the histogram data array

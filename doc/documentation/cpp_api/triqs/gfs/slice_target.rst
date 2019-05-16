@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _slice_target:
+.. _triqs__gfs__slice_target:
 
-slice_target
-============
+triqs::gfs::slice_target
+========================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`FIXME : merge the slice_target_to_scalar`
        | :green:`template<typename G, typename Args>`
        | auto :red:`slice_target` (G && :param:`g`, Args &&... :param:`args`)
 
@@ -26,6 +27,7 @@ slice_target
 
 
 
-    ------------------------------------------------------------------------------------------------------
+ FIXME : merge the slice_target_to_scalar
+------------------------------------------------------------------------------------------------------
                       Slicing the matrix_valued/matrix_real_valued into a matrix
 -----------------------------------------------------------------------------------------------------

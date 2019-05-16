@@ -5,31 +5,36 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _stateLTHilbertSpace_ScalarType_trueGT_constructor:
+.. _triqs__hilbert_space__stateLTHilbertSpace_ScalarType_trueGT__constructor:
 
-triqs::hilbert_space::state::constructor
-========================================
+triqs::hilbert_space::state<HilbertSpace,ScalarType,true>::constructor
+======================================================================
+
+*#include <triqs/hilbert_space/state.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Construct a new state object`
-       | :red:`state` ()
+    1. | :red:`state` ()
 
-    2. | :cppbrief:`Construct a new state object`
-       | :red:`state` (HilbertSpace const & :param:`hs`)
+    2. | :red:`state` (HilbertSpace const & :param:`hs`)
 
 Documentation
 
 
 
- **1)**
-   The constructed state is dummy state not belonging to any Hilbert space. **It should not be used in expressions!*
+ **1)**   Construct a new state object
+
+  The constructed state is dummy state not belonging to any Hilbert space. **It should not be used in expressions!**
+
+
+
+ **2)**   Construct a new state object
 
 
 
@@ -38,4 +43,4 @@ Documentation
 Parameters
 ^^^^^^^^^^
 
- * **hs**: Hilbert space the new state belongs to
+ * :param:`hs` Hilbert space the new state belongs to

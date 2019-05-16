@@ -5,27 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_const_view_operator():
+.. _triqs__gfs__gf_const_view__operator():
 
 triqs::gfs::gf_const_view::operator()
 =====================================
+
+*#include <triqs/gfs/gf_const_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`------------- All the call operators arguments -----------------------------`
        | :green:`template<typename Args>`
        | decltype(auto) :red:`operator()` (Args &&... :param:`args`) const &
 
-    2. | :green:`template<typename Args>`
-       | decltype(auto) :red:`operator()` (Args &&... :param:`args`) &
 
-    3. | :green:`template<typename Args>`
-       | decltype(auto) :red:`operator()` (Args &&... :param:`args`) &&
 
-Documentation
+
+
+------------- All the call operators arguments -----------------------------

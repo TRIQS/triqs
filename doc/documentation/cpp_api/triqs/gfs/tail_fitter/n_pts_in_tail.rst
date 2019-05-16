@@ -5,19 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _tail_fitter_n_pts_in_tail:
+.. _triqs__gfs__tail_fitter__n_pts_in_tail:
 
 triqs::gfs::tail_fitter::n_pts_in_tail
 ======================================
+
+*#include <triqs/gfs/tail_fitter.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`number of the points in the tail for positive omega.`
        | :green:`template<typename M>`
        | int :red:`n_pts_in_tail` (M const & :param:`m`) const
+
+
+
+
+
+number of the points in the tail for positive omega.

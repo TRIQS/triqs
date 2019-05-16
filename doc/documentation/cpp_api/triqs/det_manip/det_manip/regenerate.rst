@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_regenerate:
+.. _triqs__det_manip__det_manip__regenerate:
 
 triqs::det_manip::det_manip::regenerate
 =======================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`------------------------------------------------------------------------------------------`
        | void :red:`regenerate` ()
+
+
+
+
+
+------------------------------------------------------------------------------------------

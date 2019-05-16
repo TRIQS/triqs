@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _imperative_operator_operator():
+.. _triqs__hilbert_space__imperative_operator__operator():
 
 triqs::hilbert_space::imperative_operator::operator()
 =====================================================
+
+*#include <triqs/hilbert_space/imperative_operator.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Act on a state and return a new state`
        | :green:`template<typename StateType, typename Args>`
        | StateType :red:`operator()` (StateType const & :param:`st`, Args &&... :param:`args`) const
 
@@ -26,13 +27,14 @@ triqs::hilbert_space::imperative_operator::operator()
 
 
 
+Act on a state and return a new state
 
-   The optional extra arguments `args...` are forwarded to the coefficients of the operator.
+  The optional extra arguments `args...` are forwarded to the coefficients of the operator.
 
-   `auto psi = op(phi,args...);`
+  `auto psi = op(phi,args...);`
 
-   We apply an operator obtained from `op` by replacing its monomial coefficients with values
-   returned by `coeff(args...)`. This feature makes sense only for ScalarType being a callable object.
+  We apply an operator obtained from `op` by replacing its monomial coefficients with values
+  returned by `coeff(args...)`. This feature makes sense only for ScalarType being a callable object.
 
 
 
@@ -41,14 +43,14 @@ triqs::hilbert_space::imperative_operator::operator()
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **StateType**: Type of the initial state
+ * :param:`StateType` Type of the initial state
 
- * **Args**: Types of the optional arguments
+ * :param:`Args` Types of the optional arguments
 
 
 Parameters
 ^^^^^^^^^^
 
- * **st**: Initial state
+ * :param:`st` Initial state
 
- * **args**: Optional argument pack passed to each coefficient of the operator
+ * :param:`args` Optional argument pack passed to each coefficient of the operator

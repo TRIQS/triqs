@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_clear:
+.. _triqs__det_manip__det_manip__clear:
 
 triqs::det_manip::det_manip::clear
 ==================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Put to size 0 : like a vector`
        | void :red:`clear` ()
+
+
+
+
+
+Put to size 0 : like a vector

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mc_generic_get_total_time:
+.. _triqs__mc_tools__mc_generic__get_total_time:
 
 triqs::mc_tools::mc_generic::get_total_time
 ===========================================
+
+*#include <triqs/mc_tools/mc_generic.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The total time of the last run in seconds`
        | double :red:`get_total_time` () const
+
+
+
+
+
+The total time of the last run in seconds

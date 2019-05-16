@@ -5,25 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _atom_diag_get_vacuum_state:
+.. _triqs__atom_diag__atom_diag__get_vacuum_state:
 
 triqs::atom_diag::atom_diag::get_vacuum_state
 =============================================
+
+*#include <triqs/atom_diag/atom_diag.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Returns the vacuum state as a vector in the full Hilbert space`
        | atom_diag::full_hilbert_space_state_t const & :red:`get_vacuum_state` () const
 
 
 
 
 
-
- This vector is written in the eigenbasis of the Hamiltonian.
+Returns the vacuum state as a vector in the full Hilbert space
+This vector is written in the eigenbasis of the Hamiltonian.

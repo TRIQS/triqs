@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_last_index:
+.. _triqs__gfs__gf_meshLTimfreqGT__last_index:
 
-triqs::gfs::gf_mesh::last_index
-===============================
+triqs::gfs::gf_mesh<imfreq>::last_index
+=======================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`last Matsubara index`
        | int :red:`last_index` () const
+
+
+
+
+
+last Matsubara index

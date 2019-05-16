@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__gf_evaluatorLTimfreq_TargetGT:
@@ -13,18 +12,16 @@
 triqs::gfs::gf_evaluator<imfreq,Target>
 =======================================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Target> class gf_evaluator<imfreq,Target>
+     template<typename Target> class  :red:`gf_evaluator<imfreq,Target>`
 
 ----------------------------------------------------------
-
   imfreq
 --------------------------------------------------------
-      imfreq
---------------------------------------------------------
+
 
 Member types
 ------------
@@ -39,9 +36,9 @@ Member types
 Member functions
 ----------------
 
-+--------------------------------------------------------------+--------------+
-| :ref:`operator() <gf_evaluatorLTimfreq_TargetGT_operator()>` | gf_evaluator |
-+--------------------------------------------------------------+--------------+
++---------------------------------------------------------------------------+--+
+| :ref:`operator() <triqs__gfs__gf_evaluatorLTimfreq_TargetGT__operator()>` |  |
++---------------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:

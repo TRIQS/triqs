@@ -5,24 +5,29 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _is_gf_hermitian:
+.. _triqs__gfs__is_gf_hermitian:
 
-is_gf_hermitian
-===============
+triqs::gfs::is_gf_hermitian
+===========================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Test if gf is hermitian`
        | :green:`template<typename G>`
        | std::enable_if_t<is_gf<G>::value, bool> :red:`is_gf_hermitian` (G const & :param:`g`, double :param:`tolerance` = 1.e-13)
 
 
+
+
+
+Test if gf is hermitian
 
 
 
@@ -31,15 +36,15 @@ is_gf_hermitian
 Parameters
 ^^^^^^^^^^
 
- * **g**: the gf
+ * :param:`g` the gf
 
- * **tolerance**: tolerance threshold :math:`\epsilon`
+ * :param:`tolerance` tolerance threshold :math:`\epsilon`
 
 
 Returns
 ^^^^^^^
 
- * true iif
+true iif
 
 .. math::
 		\forall n,\; \max_{ab}|g^*_{ba}(-i\omega_n)-g_{ab}(i\omega_n)|<\epsilon

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block2_gf_const_view_operatorLTLT:
+.. _triqs__gfs__block2_gf_const_view__operatorLTLT:
 
 triqs::gfs::block2_gf_const_view::operator<<
 ============================================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`IO`
        | std::ostream & :red:`operator<<` (std::ostream & :param:`out`, block2_gf_const_view<Var, Target> const & :param:`x`)
+
+
+
+
+
+IO

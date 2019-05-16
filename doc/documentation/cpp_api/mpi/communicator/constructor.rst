@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _communicator_constructor:
+.. _mpi__communicator__constructor:
 
 mpi::communicator::constructor
 ==============================
+
+*#include <mpi/communicator.hpp>*
+
 
 
 **Synopsis**

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT_advance:
+.. _triqs__gfs__mesh_pointLTgf_meshLTcartesian_productLTVs___GTGTGT__advance:
 
-triqs::gfs::mesh_point::advance
-===============================
+triqs::gfs::mesh_point<gf_mesh<cartesian_product<Vs...>>>::advance
+==================================================================
+
+*#include <triqs/gfs/mesh_point.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`index[0] +=1; if index[0]==m.component[0].size() { index[0]=0; index[1] +=1; if  ....}  and so on until dim`
        | void :red:`advance` ()
+
+
+
+
+
+index[0] +=1; if index[0]==m.component[0].size() { index[0]=0; index[1] +=1; if  ....}  and so on until dim

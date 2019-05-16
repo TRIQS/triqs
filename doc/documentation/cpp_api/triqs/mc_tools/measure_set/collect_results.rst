@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _measure_set_collect_results:
+.. _triqs__mc_tools__measure_set__collect_results:
 
 triqs::mc_tools::measure_set::collect_results
 =============================================
+
+*#include <triqs/mc_tools/measure_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`gather result for all measure, on communicator c`
        | void :red:`collect_results` (:ref:`communicator <mpi__communicator>` const & :param:`c`)
+
+
+
+
+
+gather result for all measure, on communicator c

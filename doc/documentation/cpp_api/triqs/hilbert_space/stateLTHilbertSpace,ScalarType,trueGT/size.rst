@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _stateLTHilbertSpace_ScalarType_trueGT_size:
+.. _triqs__hilbert_space__stateLTHilbertSpace_ScalarType_trueGT__size:
 
-triqs::hilbert_space::state::size
-=================================
+triqs::hilbert_space::state<HilbertSpace,ScalarType,true>::size
+===============================================================
+
+*#include <triqs/hilbert_space/state.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Return the dimension of the associated Hilbert space`
        | int :red:`size` () const
 
 
+
+
+
+Return the dimension of the associated Hilbert space
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::state::size
 Returns
 ^^^^^^^
 
- * Dimension of the associated Hilbert space
+Dimension of the associated Hilbert space

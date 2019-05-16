@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__matsubara_freq:
@@ -13,30 +12,22 @@
 triqs::gfs::matsubara_freq
 ==========================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class matsubara_freq
+      class  :red:`matsubara_freq`
 
 A matsubara frequency, i.e.
+  * n : int, the index
+  * beta : double, the temperature inverse
+  * statistic : Fermion or Boson
 
-   * n : int, the index
-   * beta : double, the temperature inverse
-   * statistic : Fermion or Boson
+* Can be casted into a complex.
 
- * Can be casted into a complex.
+* Every operations is done by casting to complex, except addition and substraction of matsubara_freq, which return matsubara_freq
+  and work on the index
 
- * Every operations is done by casting to complex, except addition and substraction of matsubara_freq, which return matsubara_freq
-   and work on the index
-       * n : int, the index
-   * beta : double, the temperature inverse
-   * statistic : Fermion or Boson
-
- * Can be casted into a complex.
-
- * Every operations is done by casting to complex, except addition and substraction of matsubara_freq, which return matsubara_freq
-   and work on the index
 
 Public members
 --------------
@@ -61,9 +52,9 @@ Member types
 Member functions
 ----------------
 
-+-------------------------------------------------+--+
-| :ref:`constructor <matsubara_freq_constructor>` |  |
-+-------------------------------------------------+--+
++----------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__gfs__matsubara_freq__constructor>` |  |
++----------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:

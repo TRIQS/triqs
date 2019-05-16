@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _atom_diag_get_unitary_matrices:
+.. _triqs__atom_diag__atom_diag__get_unitary_matrices:
 
 triqs::atom_diag::atom_diag::get_unitary_matrices
 =================================================
+
+*#include <triqs/atom_diag/atom_diag.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Unitary matrices that transform from Fock states to eigenstates`
        | std::vector<matrix<scalar_t> > :red:`get_unitary_matrices` () const
+
+
+
+
+
+Unitary matrices that transform from Fock states to eigenstates

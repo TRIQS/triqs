@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_boost:
+.. _triqs__gfs__gf_meshLTimfreqGT__boost:
 
-triqs::gfs::gf_mesh::boost
-==========================
+triqs::gfs::gf_mesh<imfreq>::boost
+==================================
+
+*#include <.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. |  :red:`boost` ()
+       |  :red:`boost` ()

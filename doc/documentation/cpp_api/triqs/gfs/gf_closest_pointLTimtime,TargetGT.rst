@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__gf_closest_pointLTimtime_TargetGT:
@@ -13,25 +12,23 @@
 triqs::gfs::gf_closest_point<imtime,Target>
 ===========================================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Target> class gf_closest_point<imtime,Target>
+     template<typename Target> class  :red:`gf_closest_point<imtime,Target>`
 
 -------------------------------------------------------
+    // closest mesh point on the grid
+    // ------------------------------------------------------
 
-     closest mesh point on the grid
-     ------------------------------------------------------
-         closest mesh point on the grid
-     ------------------------------------------------------
 
 Member functions
 ----------------
 
-+----------------------------------------------------------+----------------+
-| :ref:`invoke <gf_closest_pointLTimtime_TargetGT_invoke>` | index_t is int |
-+----------------------------------------------------------+----------------+
++-----------------------------------------------------------------------+--+
+| :ref:`invoke <triqs__gfs__gf_closest_pointLTimtime_TargetGT__invoke>` |  |
++-----------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:

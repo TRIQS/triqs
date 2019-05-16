@@ -5,24 +5,29 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _is_gf_real_in_tau:
+.. _triqs__gfs__is_gf_real_in_tau:
 
-is_gf_real_in_tau
-=================
+triqs::gfs::is_gf_real_in_tau
+=============================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Test if gf is real in tau`
        | :green:`template<typename G>`
        | std::enable_if_t<is_gf<G>::value, bool> :red:`is_gf_real_in_tau` (G const & :param:`g`, double :param:`tolerance` = 1.e-13)
 
 
+
+
+
+Test if gf is real in tau
 
 
 
@@ -31,15 +36,15 @@ is_gf_real_in_tau
 Parameters
 ^^^^^^^^^^
 
- * **g**: the gf
+ * :param:`g` the gf
 
- * **tolerance**: tolerance threshold :math:`\epsilon`
+ * :param:`tolerance` tolerance threshold :math:`\epsilon`
 
 
 Returns
 ^^^^^^^
 
- * true iif
+true iif
 
 .. math::
 		\forall n,\; \max_{ab}|g^*_{ab}(-i\omega_n)-g_{ab}(i\omega_n)|<\epsilon

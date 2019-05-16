@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _pdf:
+.. _triqs__statistics__pdf:
 
-pdf
-===
+triqs::statistics::pdf
+======================
+
+*#include <triqs/statistics.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Normalise histogram to get probability density function (PDF)`
        | :ref:`histogram <triqs__statistics__histogram>` :red:`pdf` (:ref:`histogram <triqs__statistics__histogram>` const & :param:`h`)
 
 
+
+
+
+Normalise histogram to get probability density function (PDF)
 
 
 
@@ -30,10 +35,10 @@ pdf
 Parameters
 ^^^^^^^^^^
 
- * **h**: Histogram to be normalised
+ * :param:`h` Histogram to be normalised
 
 
 Returns
 ^^^^^^^
 
- * Probability density function
+Probability density function

@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _space_partition_lookup_basis_state:
+.. _triqs__hilbert_space__space_partition__lookup_basis_state:
 
 triqs::hilbert_space::space_partition::lookup_basis_state
 =========================================================
+
+*#include <triqs/hilbert_space/space_partition.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Find what invariant subspace a given Fock state belongs to`
        | space_partition::index_t :red:`lookup_basis_state` (space_partition::index_t :param:`basis_state`)
 
 
+
+
+
+Find what invariant subspace a given Fock state belongs to
 
 
 
@@ -30,10 +35,10 @@ triqs::hilbert_space::space_partition::lookup_basis_state
 Parameters
 ^^^^^^^^^^
 
- * **basis_state**: Index of a basis Fock state
+ * :param:`basis_state` Index of a basis Fock state
 
 
 Returns
 ^^^^^^^
 
- * Index of the found invariant subspace
+Index of the found invariant subspace

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _move_set_reject:
+.. _triqs__mc_tools__move_set__reject:
 
 triqs::mc_tools::move_set::reject
 =================================
+
+*#include <triqs/mc_tools/move_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`reject the move :  Call the reject() method of the move previously selected`
        | void :red:`reject` ()
+
+
+
+
+
+reject the move :  Call the reject() method of the move previously selected

@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_reject_last_try:
+.. _triqs__det_manip__det_manip__reject_last_try:
 
 triqs::det_manip::det_manip::reject_last_try
 ============================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Reject the previous try_xxx called.`
        | void :red:`reject_last_try` ()
 
 
 
 
 
-    All try_xxx have to be either accepted (complete_operation) or rejected.
+Reject the previous try_xxx called.
+All try_xxx have to be either accepted (complete_operation) or rejected.

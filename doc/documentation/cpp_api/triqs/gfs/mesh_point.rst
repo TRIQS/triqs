@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__mesh_point:
@@ -13,10 +12,10 @@
 triqs::gfs::mesh_point
 ======================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename MeshType> class mesh_point
+     template<typename MeshType> class  :red:`mesh_point`
 
 The mesh point for each mesh

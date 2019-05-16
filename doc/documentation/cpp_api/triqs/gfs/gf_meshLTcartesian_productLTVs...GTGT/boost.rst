@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTcartesian_productLTVs___GTGT_boost:
+.. _triqs__gfs__gf_meshLTcartesian_productLTVs___GTGT__boost:
 
-triqs::gfs::gf_mesh::boost
-==========================
+triqs::gfs::gf_mesh<cartesian_product<Vs...>>::boost
+====================================================
+
+*#include <.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. |  :red:`boost` ()
+       |  :red:`boost` ()

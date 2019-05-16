@@ -5,17 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_view_indices:
+.. _triqs__gfs__gf_view__indices:
 
 triqs::gfs::gf_view::indices
 ============================
+
+*#include <triqs/gfs/gf_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | gf_view::indices_t const & :red:`indices` () const
+       | gf_view::indices_t const & :red:`indices` () const
+
+
+
+
+
+Indices of the Green function (for Python only)

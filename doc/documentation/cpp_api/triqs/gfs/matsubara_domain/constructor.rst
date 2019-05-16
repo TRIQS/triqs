@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _matsubara_domain_constructor:
+.. _triqs__gfs__matsubara_domain__constructor:
 
 triqs::gfs::matsubara_domain::constructor
 =========================================
+
+*#include <triqs/gfs/matsubara_domain.hpp>*
+
 
 
 **Synopsis**

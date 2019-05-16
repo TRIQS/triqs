@@ -5,25 +5,27 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _get_tail:
+.. _triqs__gfs__get_tail:
 
-get_tail
-========
+triqs::gfs::get_tail
+====================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`-------------------------------------------------------`
        | array<dcomplex, 3> :red:`get_tail` (gf_const_view<legendre> :param:`gl`)
 
 
 
 
 
-       For Legendre functions
-     ------------------------------------------------------
+-------------------------------------------------------
+    // For Legendre functions
+    // ------------------------------------------------------

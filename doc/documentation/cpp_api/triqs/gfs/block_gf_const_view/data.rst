@@ -5,23 +5,31 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block_gf_const_view_data:
+.. _triqs__gfs__block_gf_const_view__data:
 
 triqs::gfs::block_gf_const_view::data
 =====================================
+
+*#include <triqs/gfs/block_gf_const_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Direct access to the data array`
-       | block_gf_const_view::data_t & :red:`data` ()
+    1. | block_gf_const_view::data_t & :red:`data` ()
 
-    2. | :cppbrief:`Const version`
-       | block_gf_const_view::data_t const & :red:`data` () const
+    2. | block_gf_const_view::data_t const & :red:`data` () const
 
 Documentation
+
+
+
+ **1)**   Direct access to the data array
+
+
+
+ **2)**   Const version

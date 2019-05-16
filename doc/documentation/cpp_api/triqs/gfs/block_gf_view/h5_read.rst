@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block_gf_view_h5_read:
+.. _triqs__gfs__block_gf_view__h5_read:
 
 triqs::gfs::block_gf_view::h5_read
 ==================================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Read from HDF5`
        | void :red:`h5_read` (h5::group :param:`fg`, std::string const & :param:`subgroup_name`, block_gf_view<Var, Target> & :param:`g`)
+
+
+
+
+
+Read from HDF5

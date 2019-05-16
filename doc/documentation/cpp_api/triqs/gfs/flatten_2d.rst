@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _flatten_2d:
+.. _triqs__gfs__flatten_2d:
 
-flatten_2d
-==========
+triqs::gfs::flatten_2d
+======================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Makes a copy of the array in matrix, whose first dimension is the n-th dimension of a`
        | :green:`template<typename T, int R>`
        | array<T, 2> :red:`flatten_2d` (array_const_view<T, R> :param:`a`, int :param:`n`)
 
@@ -26,7 +27,8 @@ flatten_2d
 
 
 
-   and the second dimension are the flattening of the other dimensions, in the original order
+Makes a copy of the array in matrix, whose first dimension is the n-th dimension of a
+and the second dimension are the flattening of the other dimensions, in the original order
 
 
 
@@ -35,12 +37,12 @@ flatten_2d
 Parameters
 ^^^^^^^^^^
 
- * **a**: : array
+ * :param:`a` : array
 
- * **n**: : the dimension to preserve.
+ * :param:`n` : the dimension to preserve.
 
 
 Returns
 ^^^^^^^
 
- * : a matrix, copy of the data
+: a matrix, copy of the data

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _random_generator_names:
+.. _triqs__mc_tools__random_generator_names:
 
-random_generator_names
-======================
+triqs::mc_tools::random_generator_names
+=======================================
+
+*#include <triqs/mc_tools.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Return a list of the names of available generators, with separator sep`
        | std::string :red:`random_generator_names` (std::string const & :param:`sep` = " ")
+
+
+
+
+
+Return a list of the names of available generators, with separator sep

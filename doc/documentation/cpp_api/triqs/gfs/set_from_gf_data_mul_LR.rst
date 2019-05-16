@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _set_from_gf_data_mul_LR:
+.. _triqs__gfs__set_from_gf_data_mul_LR:
 
-set_from_gf_data_mul_LR
-=======================
+triqs::gfs::set_from_gf_data_mul_LR
+===================================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`------------------------------------------------------------------------------------------------------`
        | :green:`template<typename A, typename B, typename M>`
        | void :red:`set_from_gf_data_mul_LR` (A & :param:`a`, M const & :param:`l`, B const & :param:`b`, M const & :param:`r`)
 
@@ -26,6 +27,7 @@ set_from_gf_data_mul_LR
 
 
 
-                        Multiply by matrices left and right, in place.
+------------------------------------------------------------------------------------------------------
+                      Multiply by matrices left and right, in place.
                       Optimized for speed.
 -----------------------------------------------------------------------------------------------------

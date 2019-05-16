@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__mesh_pointLTcluster_meshGT:
@@ -13,18 +12,16 @@
 triqs::gfs::mesh_point<cluster_mesh>
 ====================================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class mesh_point<cluster_mesh>
+      class  :red:`mesh_point<cluster_mesh>`
 
 ---------------------------------------------------------------------------
+   //                     The mesh point
+   // ---------------------------------------------------------------------------
 
-                         The mesh point
-     ---------------------------------------------------------------------------
-                             The mesh point
-     ---------------------------------------------------------------------------
 
 Member types
 ------------
@@ -45,51 +42,14 @@ Member types
 Member functions
 ----------------
 
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`constructor <mesh_pointLTcluster_meshGT_constructor>`   |                                      |
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`advance <mesh_pointLTcluster_meshGT_advance>`           |                                      |
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`index <mesh_pointLTcluster_meshGT_index>`               |                                      |
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`linear_index <mesh_pointLTcluster_meshGT_linear_index>` |                                      |
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`at_end <mesh_pointLTcluster_meshGT_at_end>`             |                                      |
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`reset <mesh_pointLTcluster_meshGT_reset>`               |                                      |
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`operator() <mesh_pointLTcluster_meshGT_operator()>`     | The mesh point behaves like a vector |
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`operator[] <mesh_pointLTcluster_meshGT_operator[]>`     |                                      |
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`operator- <mesh_pointLTcluster_meshGT_operator->`       |                                      |
-+---------------------------------------------------------------+--------------------------------------+
-| :ref:`mesh <mesh_pointLTcluster_meshGT_mesh>`                 |                                      |
-+---------------------------------------------------------------+--------------------------------------+
++----------------------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__gfs__mesh_pointLTcluster_meshGT__constructor>` |  |
++----------------------------------------------------------------------------+--+
+| :ref:`operator() <triqs__gfs__mesh_pointLTcluster_meshGT__operator()>`     |  |
++----------------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
 
     mesh_pointLTcluster_meshGT/constructor
-    mesh_pointLTcluster_meshGT/advance
-    mesh_pointLTcluster_meshGT/index
-    mesh_pointLTcluster_meshGT/linear_index
-    mesh_pointLTcluster_meshGT/at_end
-    mesh_pointLTcluster_meshGT/reset
     mesh_pointLTcluster_meshGT/operator()
-    mesh_pointLTcluster_meshGT/operator[]
-    mesh_pointLTcluster_meshGT/operator-
-    mesh_pointLTcluster_meshGT/mesh
-
-
-Non Member functions
---------------------
-
-+---------------------------------------------------------------+--+
-| :ref:`operator\<\< <mesh_pointLTcluster_meshGT_operatorLTLT>` |  |
-+---------------------------------------------------------------+--+
-
-.. toctree::
-    :hidden:
-
-    mesh_pointLTcluster_meshGT/operator<<

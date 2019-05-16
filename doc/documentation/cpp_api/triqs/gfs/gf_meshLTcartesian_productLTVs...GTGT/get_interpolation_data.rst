@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTcartesian_productLTVs___GTGT_get_interpolation_data:
+.. _triqs__gfs__gf_meshLTcartesian_productLTVs___GTGT__get_interpolation_data:
 
-triqs::gfs::gf_mesh::get_interpolation_data
-===========================================
+triqs::gfs::gf_mesh<cartesian_product<Vs...>>::get_interpolation_data
+=====================================================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`not implemented, makes no sense`
        | long :red:`get_interpolation_data` (long :param:`n`)
+
+
+
+
+
+not implemented, makes no sense

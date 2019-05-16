@@ -5,24 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_view_swap:
+.. _triqs__gfs__gf_view__swap:
 
 triqs::gfs::gf_view::swap
 =========================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`---------------  swap --------------------`
        | void :red:`swap` (gf_view<Var, Target> & :param:`a`, gf_view<Var, Target> & :param:`b`) noexcept
 
 
 
 
 
-         Swap
+---------------  swap --------------------

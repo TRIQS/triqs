@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _get_gf_data_shape:
+.. _triqs__gfs__get_gf_data_shape:
 
-get_gf_data_shape
-=================
+triqs::gfs::get_gf_data_shape
+=============================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`----------------------------------------------------------`
        | :green:`template<typename G>`
        | auto :red:`get_gf_data_shape` (G const & :param:`g`)
 
@@ -26,5 +27,6 @@ get_gf_data_shape
 
 
 
-    Get shape of the data or of the target
+----------------------------------------------------------
+  Get shape of the data or of the target
 --------------------------------------------------------

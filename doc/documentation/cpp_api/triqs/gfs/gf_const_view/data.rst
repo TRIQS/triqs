@@ -5,26 +5,37 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_const_view_data:
+.. _triqs__gfs__gf_const_view__data:
 
 triqs::gfs::gf_const_view::data
 ===============================
+
+*#include <triqs/gfs/gf_const_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Direct access to the data array`
-       | gf_const_view::data_t & :red:`data` () &
+    1. | gf_const_view::data_t & :red:`data` () &
 
-    2. | :cppbrief:`Const version`
-       | gf_const_view::data_t const & :red:`data` () const &
+    2. | gf_const_view::data_t const & :red:`data` () const &
 
-    3. | :cppbrief:`Move data in case of rvalue gf`
-       | gf_const_view::data_t :red:`data` () &&
+    3. | gf_const_view::data_t :red:`data` () &&
 
 Documentation
+
+
+
+ **1)**   Data array
+
+
+
+ **2)**   Data array (const)
+
+
+
+ **3)**   Data array : move data in case of rvalue

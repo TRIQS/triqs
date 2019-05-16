@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _atom_diag_get_vacuum_subspace_index:
+.. _triqs__atom_diag__atom_diag__get_vacuum_subspace_index:
 
 triqs::atom_diag::atom_diag::get_vacuum_subspace_index
 ======================================================
+
+*#include <triqs/atom_diag/atom_diag.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Returns invariant subspace containing the vacuum state`
        | long :red:`get_vacuum_subspace_index` () const
+
+
+
+
+
+Returns invariant subspace containing the vacuum state

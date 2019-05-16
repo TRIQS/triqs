@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_size:
+.. _triqs__det_manip__det_manip__size:
 
 triqs::det_manip::det_manip::size
 =================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Current size of the matrix`
        | size_t :red:`size` () const
+
+
+
+
+
+Current size of the matrix

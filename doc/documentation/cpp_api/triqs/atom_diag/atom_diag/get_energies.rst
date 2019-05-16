@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _atom_diag_get_energies:
+.. _triqs__atom_diag__atom_diag__get_energies:
 
 triqs::atom_diag::atom_diag::get_energies
 =========================================
+
+*#include <triqs/atom_diag/atom_diag.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`A vector of all the energies, grouped by subspace`
        | std::vector<std::vector<double> > :red:`get_energies` () const
 
 
+
+
+
+A vector of all the energies, grouped by subspace
 
 
 
@@ -30,4 +35,4 @@ triqs::atom_diag::atom_diag::get_energies
 Returns
 ^^^^^^^
 
- * result[sp_index][i] is the energy.
+result[sp_index][i] is the energy.

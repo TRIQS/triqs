@@ -5,19 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimtimeGT_evaluate:
+.. _triqs__gfs__gf_meshLTimtimeGT__evaluate:
 
-triqs::gfs::gf_mesh::evaluate
-=============================
+triqs::gfs::gf_mesh<imtime>::evaluate
+=====================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`evaluation`
        | :green:`template<typename F>`
        | auto :red:`evaluate` (F const & :param:`f`, double :param:`x`) const
+
+
+
+
+
+evaluation

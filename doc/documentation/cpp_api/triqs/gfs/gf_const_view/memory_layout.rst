@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_const_view_memory_layout:
+.. _triqs__gfs__gf_const_view__memory_layout:
 
 triqs::gfs::gf_const_view::memory_layout
 ========================================
+
+*#include <triqs/gfs/gf_const_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Memorylayout of the data`
-       | auto const & :red:`memory_layout` () const
+       | memory_layout_t<data_rank> const & :red:`memory_layout` () const
+
+
+
+
+
+Memorylayout of the data

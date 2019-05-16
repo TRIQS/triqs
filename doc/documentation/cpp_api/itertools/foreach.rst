@@ -5,24 +5,29 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _foreach:
+.. _itertools__foreach:
 
-foreach
-=======
+itertools::foreach
+==================
+
+*#include <itertools.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Apply a function f to every element of an integer range`
        | :green:`template<typename F>`
        | void :red:`foreach` (:ref:`range <itertools__range>` const & :param:`r`, F && :param:`f`)
 
 
+
+
+
+Apply a function f to every element of an integer range
 
 
 
@@ -31,6 +36,6 @@ foreach
 Parameters
 ^^^^^^^^^^
 
- * **r**: The range to apply the function to
+ * :param:`r` The range to apply the function to
 
- * **f**: The function to apply
+ * :param:`f` The function to apply

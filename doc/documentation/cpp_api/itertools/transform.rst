@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _transform:
+.. _itertools__transform:
 
-transform
-=========
+itertools::transform
+====================
+
+*#include <itertools.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Transform (lazy)applies a unary lambda function to every`
        | :green:`template<typename T, typename L>`
        | auto :red:`transform` (T && :param:`range`, L :param:`lambda`)
 
@@ -26,7 +27,8 @@ transform
 
 
 
-   element of a range. It returns itself a range.
+Transform (lazy)applies a unary lambda function to every
+element of a range. It returns itself a range.
 
 
 
@@ -35,4 +37,4 @@ transform
 Parameters
 ^^^^^^^^^^
 
- * **range**: The range that the lambda is applied to
+ * :param:`range` The range that the lambda is applied to

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_positive_only:
+.. _triqs__gfs__gf_meshLTimfreqGT__positive_only:
 
-triqs::gfs::gf_mesh::positive_only
-==================================
+triqs::gfs::gf_mesh<imfreq>::positive_only
+==========================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Is the mesh only for positive omega_n (G(tau) real))`
        | bool :red:`positive_only` () const
+
+
+
+
+
+Is the mesh only for positive omega_n (G(tau) real))

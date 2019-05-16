@@ -5,19 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _fundamental_operator_set_insert:
+.. _triqs__hilbert_space__fundamental_operator_set__insert:
 
 triqs::hilbert_space::fundamental_operator_set::insert
 ======================================================
+
+*#include <triqs/hilbert_space/fundamental_operator_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Insert a new index sequence given as multiple `int`/`std::string` arguments`
        | :green:`template<typename IndexType>`
        | void :red:`insert` (IndexType const &... :param:`ind`)
+
+
+
+
+
+Insert a new index sequence given as multiple `int`/`std::string` arguments

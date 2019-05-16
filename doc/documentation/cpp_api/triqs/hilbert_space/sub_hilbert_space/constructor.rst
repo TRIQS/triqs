@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _sub_hilbert_space_constructor:
+.. _triqs__hilbert_space__sub_hilbert_space__constructor:
 
 triqs::hilbert_space::sub_hilbert_space::constructor
 ====================================================
+
+*#include <triqs/hilbert_space/sub_hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Construct an empty Hilbert subspace`
        | :red:`sub_hilbert_space` (int :param:`index` = -1)
 
 
+
+
+
+Construct an empty Hilbert subspace
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::sub_hilbert_space::constructor
 Parameters
 ^^^^^^^^^^
 
- * **index**: Index of this subspace within the full Hilbert space
+ * :param:`index` Index of this subspace within the full Hilbert space

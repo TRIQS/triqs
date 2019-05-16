@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _fundamental_operator_set_begin:
+.. _triqs__hilbert_space__fundamental_operator_set__begin:
 
 triqs::hilbert_space::fundamental_operator_set::begin
 =====================================================
+
+*#include <triqs/hilbert_space/fundamental_operator_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Return `const_iterator` to the first element of this set`
        | fundamental_operator_set::const_iterator :red:`begin` () const
 
 
+
+
+
+Return `const_iterator` to the first element of this set
 
 
 
@@ -30,4 +35,4 @@ triqs::hilbert_space::fundamental_operator_set::begin
 Returns
 ^^^^^^^
 
- * Iterator to the first index sequence
+Iterator to the first index sequence

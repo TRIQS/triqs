@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _histogram_n_data_pts:
+.. _triqs__statistics__histogram__n_data_pts:
 
 triqs::statistics::histogram::n_data_pts
 ========================================
+
+*#include <triqs/statistics/histogram.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Get number of accumulated samples`
        | unsigned long long :red:`n_data_pts` () const
 
 
+
+
+
+Get number of accumulated samples
 
 
 
@@ -30,4 +35,4 @@ triqs::statistics::histogram::n_data_pts
 Returns
 ^^^^^^^
 
- * Number of accumulated data points
+Number of accumulated data points

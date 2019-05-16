@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTbrillouin_zoneGT_constructor:
+.. _triqs__gfs__gf_meshLTbrillouin_zoneGT__constructor:
 
-triqs::gfs::gf_mesh::constructor
-================================
+triqs::gfs::gf_mesh<brillouin_zone>::constructor
+================================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
@@ -20,17 +22,20 @@ triqs::gfs::gf_mesh::constructor
 
     1. | :red:`gf_mesh` ()
 
-    2. | :cppbrief:`full constructor`
-       | :red:`gf_mesh` (triqs::lattice::brillouin_zone const & :param:`bz_`, matrix<int> const & :param:`periodization_matrix_`)
+    2. | :red:`gf_mesh` (triqs::lattice::brillouin_zone const & :param:`bz_`, matrix<int> const & :param:`periodization_matrix_`)
 
-    3. | :cppbrief:`backward compatibility`
-       | :red:`gf_mesh` (triqs::lattice::brillouin_zone const & :param:`bz_`, int :param:`n_l`)
+    3. | :red:`gf_mesh` (triqs::lattice::brillouin_zone const & :param:`bz_`, int :param:`n_l`)
 
 Documentation
 
 
 
- **3)**    constructs simple bz mesh on square lattice with simple boundary conditions
+ **2)**   full constructor
+
+
+
+ **3)**   backward compatibility
+ constructs simple bz mesh on square lattice with simple boundary conditions
 
 
 
@@ -39,9 +44,9 @@ Documentation
 Parameters
 ^^^^^^^^^^
 
- * **bz_**: brillouin zone
+ * :param:`bz_` brillouin zone
 
- * **periodization_matrix**: such that :math:`\tilde{a}_i = \sum_j N_{ij} a_j`
+ * :param:`periodization_matrix` such that :math:`\tilde{a}_i = \sum_j N_{ij} a_j`
 
     Constructs
 

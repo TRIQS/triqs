@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mc_generic_set_after_cycle_duty:
+.. _triqs__mc_tools__mc_generic__set_after_cycle_duty:
 
 triqs::mc_tools::mc_generic::set_after_cycle_duty
 =================================================
+
+*#include <triqs/mc_tools/mc_generic.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Sets a function called after each cycle`
        | void :red:`set_after_cycle_duty` (std::function<void ()> :param:`f`)
 
 
+
+
+
+Sets a function called after each cycle
 
 
 
@@ -30,4 +35,4 @@ triqs::mc_tools::mc_generic::set_after_cycle_duty
 Parameters
 ^^^^^^^^^^
 
- * **f**: The function be called.
+ * :param:`f` The function be called.

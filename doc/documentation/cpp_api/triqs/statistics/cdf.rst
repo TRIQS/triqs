@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _cdf:
+.. _triqs__statistics__cdf:
 
-cdf
-===
+triqs::statistics::cdf
+======================
+
+*#include <triqs/statistics.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Integrate and normalise histogram to get cumulative distribution function (CDF)`
        | :ref:`histogram <triqs__statistics__histogram>` :red:`cdf` (:ref:`histogram <triqs__statistics__histogram>` const & :param:`h`)
 
 
+
+
+
+Integrate and normalise histogram to get cumulative distribution function (CDF)
 
 
 
@@ -30,10 +35,10 @@ cdf
 Parameters
 ^^^^^^^^^^
 
- * **h**: Histogram to be integrated and normalised
+ * :param:`h` Histogram to be integrated and normalised
 
 
 Returns
 ^^^^^^^
 
- * Cumulative distribution function
+Cumulative distribution function

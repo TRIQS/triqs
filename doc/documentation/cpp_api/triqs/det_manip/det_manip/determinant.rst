@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_determinant:
+.. _triqs__det_manip__det_manip__determinant:
 
 triqs::det_manip::det_manip::determinant
 ========================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`det M of the current state of the matrix.`
        | det_manip::det_type :red:`determinant` () const
+
+
+
+
+
+det M of the current state of the matrix.

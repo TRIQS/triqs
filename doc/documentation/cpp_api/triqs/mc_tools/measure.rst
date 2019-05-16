@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__mc_tools__measure:
@@ -13,56 +12,23 @@
 triqs::mc_tools::measure
 ========================
 
-Defined in header <**>
+*#include <triqs/mc_tools.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename MCSignType> class measure
+     template<typename MCSignType> class  :red:`measure`
 
 similar technique as move, cf move_set.
-
-
 
 
 Member functions
 ----------------
 
-+--------------------------------------------------+--+
-| :ref:`constructor <measure_constructor>`         |  |
-+--------------------------------------------------+--+
-| :ref:`operator= <measure_operator=>`             |  |
-+--------------------------------------------------+--+
-| :ref:`accumulate <measure_accumulate>`           |  |
-+--------------------------------------------------+--+
-| :ref:`collect_results <measure_collect_results>` |  |
-+--------------------------------------------------+--+
-| :ref:`count <measure_count>`                     |  |
-+--------------------------------------------------+--+
-| :ref:`duration <measure_duration>`               |  |
-+--------------------------------------------------+--+
++--------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__mc_tools__measure__constructor>` |  |
++--------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
 
     measure/constructor
-    measure/operator=
-    measure/accumulate
-    measure/collect_results
-    measure/count
-    measure/duration
-
-
-Non Member functions
---------------------
-
-+------------------------------------+--+
-| :ref:`h5_write <measure_h5_write>` |  |
-+------------------------------------+--+
-| :ref:`h5_read <measure_h5_read>`   |  |
-+------------------------------------+--+
-
-.. toctree::
-    :hidden:
-
-    measure/h5_write
-    measure/h5_read

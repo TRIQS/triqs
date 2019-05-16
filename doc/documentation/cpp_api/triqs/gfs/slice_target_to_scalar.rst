@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _slice_target_to_scalar:
+.. _triqs__gfs__slice_target_to_scalar:
 
-slice_target_to_scalar
-======================
+triqs::gfs::slice_target_to_scalar
+==================================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`------------------------------------------------------------------------------------------------------`
        | :green:`template<typename G, typename Args>`
        | auto :red:`slice_target_to_scalar` (G && :param:`g`, Args &&... :param:`args`)
 
@@ -26,5 +27,6 @@ slice_target_to_scalar
 
 
 
-                        Slicing the matrix valued into a scalar
+------------------------------------------------------------------------------------------------------
+                      Slicing the matrix valued into a scalar
 -----------------------------------------------------------------------------------------------------

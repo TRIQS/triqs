@@ -5,19 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mpi_scatter:
+.. _mpi__mpi_scatter:
 
-mpi_scatter
-===========
+mpi::mpi_scatter
+================
+
+*#include <mpi.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`FIXME : not checked for 0 size ?`
        | :green:`template<typename T>`
        | std::vector<T> :red:`mpi_scatter` (std::vector<T> const & :param:`a`, :ref:`communicator <mpi__communicator>` :param:`c` = {}, int :param:`root` = 0)
+
+
+
+
+
+FIXME : not checked for 0 size ?

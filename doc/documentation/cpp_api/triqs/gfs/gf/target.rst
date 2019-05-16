@@ -5,24 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_target:
+.. _triqs__gfs__gf__target:
 
 triqs::gfs::gf::target
 ======================
+
+*#include <triqs/gfs/gf.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Shape of the target`
        | gf::target_and_shape_t :red:`target` () const
 
 
 
 
 
-        auto target_shape() const { return _data.shape().template front_mpop<arity>(); }  drop arity dims
+FIXME : No doc : internal only ? for make_gf

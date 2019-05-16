@@ -5,20 +5,27 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_h5_write:
+.. _triqs__gfs__gf_meshLTimfreqGT__h5_write:
 
-triqs::gfs::gf_mesh::h5_write
-=============================
+triqs::gfs::gf_mesh<imfreq>::h5_write
+=====================================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Write into HDF5`
        | void :red:`h5_write` (h5::group :param:`fg`,
-       |   std::string :param:`subgroup_name`,
-       |   :ref:`gf_mesh\<imfreq\> <triqs__gfs__gf_meshLTimfreqGT>` const & :param:`m`)
+       |           std::string :param:`subgroup_name`,
+       |           :ref:`gf_mesh\<imfreq\> <triqs__gfs__gf_meshLTimfreqGT>` const & :param:`m`)
+
+
+
+
+
+Write into HDF5

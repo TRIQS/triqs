@@ -5,13 +5,15 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _segment_mesh_constructor:
+.. _triqs__gfs__segment_mesh__constructor:
 
 triqs::gfs::segment_mesh::constructor
 =====================================
+
+*#include <triqs/gfs/segment_mesh.hpp>*
+
 
 
 **Synopsis**

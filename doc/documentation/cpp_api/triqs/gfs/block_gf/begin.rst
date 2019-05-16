@@ -5,22 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block_gf_begin:
+.. _triqs__gfs__block_gf__begin:
 
 triqs::gfs::block_gf::begin
 ===========================
+
+*#include <triqs/gfs/block_gf.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`------------`
        | block_gf::iterator :red:`begin` ()
 
-    2. | block_gf::const_iterator :red:`begin` () const
 
-Documentation
+
+
+
+------------

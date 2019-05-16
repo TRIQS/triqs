@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _det_manip_remove:
+.. _triqs__det_manip__det_manip__remove:
 
 triqs::det_manip::det_manip::remove
 ===================================
+
+*#include <triqs/det_manip/det_manip.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Remove (try_remove + complete)`
        | det_manip::value_type :red:`remove` (size_t :param:`i`, size_t :param:`j`)
+
+
+
+
+
+Remove (try_remove + complete)

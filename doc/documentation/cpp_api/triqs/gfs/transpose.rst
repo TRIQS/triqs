@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _transpose:
+.. _triqs__gfs__transpose:
 
-transpose
-=========
+triqs::gfs::transpose
+=====================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`------------------------------------------------------------------------------------------------------`
        | :green:`template<typename M>`
        | :ref:`gf\<M, matrix_valued\> <triqs__gfs__gf>` :red:`transpose` (:ref:`gf_view\<M, matrix_valued\> <triqs__gfs__gf_view>` :param:`g`)
 
@@ -26,5 +27,6 @@ transpose
 
 
 
-                        Transpose. Create a NEW gf
+------------------------------------------------------------------------------------------------------
+                      Transpose. Create a NEW gf
 -----------------------------------------------------------------------------------------------------

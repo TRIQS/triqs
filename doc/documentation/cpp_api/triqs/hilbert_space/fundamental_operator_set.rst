@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__hilbert_space__fundamental_operator_set:
@@ -13,20 +12,16 @@
 triqs::hilbert_space::fundamental_operator_set
 ==============================================
 
-Defined in header <*triqs/hilbert_space/fundamental_operator_set.hpp*>
+*#include <triqs/hilbert_space/fundamental_operator_set.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class fundamental_operator_set
+      class  :red:`fundamental_operator_set`
 
 This class represents an ordered set of **indices** of the canonical operators (see [[many_body_operator]]) used to build the Fock states.
+Every element of the set is an arbitrarily long sequence of integers/strings (types can be mixed within one sequence).
+The elements maintain the order they are inserted in
 
-
- Every element of the set is an arbitrarily long sequence of integers/strings (types can be mixed within one sequence).
- The elements maintain the order they are inserted in
-
- Every element of the set is an arbitrarily long sequence of integers/strings (types can be mixed within one sequence).
- The elements maintain the order they are inserted in
 
 Member types
 ------------
@@ -43,31 +38,31 @@ Member types
 Member functions
 ----------------
 
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`constructor <fundamental_operator_set_constructor>`                     | Construct an empty set                                                      |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`insert_from_indices_t <fundamental_operator_set_insert_from_indices_t>` | Insert a new index sequence given as `indices_t`                            |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`insert <fundamental_operator_set_insert>`                               | Insert a new index sequence given as multiple `int`/`std::string` arguments |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`size <fundamental_operator_set_size>`                                   | Number of elements in this set                                              |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`has_indices <fundamental_operator_set_has_indices>`                     | Check if a given index sequence is in this set                              |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`operator[] <fundamental_operator_set_operator[]>`                       | Request position of a given index sequence                                  |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`operator== <fundamental_operator_set_operator==>`                       | Comparison with another fundamental operator set                            |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`data <fundamental_operator_set_data>`                                   | Return the data vector: `v[int]` -> `indices_t`                             |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`begin <fundamental_operator_set_begin>`                                 | Return `const_iterator` to the first element of this set                    |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`end <fundamental_operator_set_end>`                                     | Return `const_iterator` to the past-the-end element of this set             |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`cbegin <fundamental_operator_set_cbegin>`                               | Equivalent to [[fundamental_operator_set_begin]]                            |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
-| :ref:`cend <fundamental_operator_set_cend>`                                   | Equivalent to [[fundamental_operator_set_end]]                              |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__hilbert_space__fundamental_operator_set__constructor>`                   |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`insert_from_indices_t <triqs__hilbert_space__fundamental_operator_set__insert_from_indices_t>` |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`insert <triqs__hilbert_space__fundamental_operator_set__insert>`                               |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`size <triqs__hilbert_space__fundamental_operator_set__size>`                                   |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`has_indices <triqs__hilbert_space__fundamental_operator_set__has_indices>`                     |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`operator[] <triqs__hilbert_space__fundamental_operator_set__operator[]>`                       |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`operator== <triqs__hilbert_space__fundamental_operator_set__operator==>`                       |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`data <triqs__hilbert_space__fundamental_operator_set__data>`                                   |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`begin <triqs__hilbert_space__fundamental_operator_set__begin>`                                 |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`end <triqs__hilbert_space__fundamental_operator_set__end>`                                     |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`cbegin <triqs__hilbert_space__fundamental_operator_set__cbegin>`                               |  |
++------------------------------------------------------------------------------------------------------+--+
+| :ref:`cend <triqs__hilbert_space__fundamental_operator_set__cend>`                                   |  |
++------------------------------------------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
@@ -89,11 +84,11 @@ Member functions
 Non Member functions
 --------------------
 
-+-------------------------------------------------------------------------+-------------------------------------+
-| :ref:`h5_write_attribute <fundamental_operator_set_h5_write_attribute>` | Write this set as an HDF5 attribute |
-+-------------------------------------------------------------------------+-------------------------------------+
-| :ref:`h5_read_attribute <fundamental_operator_set_h5_read_attribute>`   | Read a set from an HDF5 attribute   |
-+-------------------------------------------------------------------------+-------------------------------------+
++------------------------------------------------------------------------------------------------+--+
+| :ref:`h5_write_attribute <triqs__hilbert_space__fundamental_operator_set__h5_write_attribute>` |  |
++------------------------------------------------------------------------------------------------+--+
+| :ref:`h5_read_attribute <triqs__hilbert_space__fundamental_operator_set__h5_read_attribute>`   |  |
++------------------------------------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:

@@ -5,33 +5,38 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _space_partition_constructor:
+.. _triqs__hilbert_space__space_partition__constructor:
 
 triqs::hilbert_space::space_partition::constructor
 ==================================================
+
+*#include <triqs/hilbert_space/space_partition.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Perform Phase I of the automatic partition algorithm`
-       | :red:`space_partition` (space_partition::state_t const & :param:`st`,
-       |   space_partition::operator_t const & :param:`H`,
-       |   bool :param:`store_matrix_elements` = true)
+    1. | :red:`space_partition` (space_partition::state_t const & :param:`st`,
+       |                space_partition::operator_t const & :param:`H`,
+       |                bool :param:`store_matrix_elements` = true)
 
-    2. | :cppbrief:`Copy-constructor`
-       | :red:`space_partition` (space_partition<StateType, OperatorType> const & )
+    2. | :red:`space_partition` (space_partition<StateType, OperatorType> const & )
 
 Documentation
 
 
 
- **1)**
-   Partitions a Hilbert space into invariant subspaces of the Hamiltonian.
+ **1)**   Perform Phase I of the automatic partition algorithm
+
+  Partitions a Hilbert space into invariant subspaces of the Hamiltonian.
+
+
+
+ **2)**   Copy-constructor
 
 
 
@@ -40,8 +45,8 @@ Documentation
 Parameters
 ^^^^^^^^^^
 
- * **st**: Sample many-body state to be used internally by the algorithm
+ * :param:`st` Sample many-body state to be used internally by the algorithm
 
- * **H**: Hamiltonian as an imperative operator
+ * :param:`H` Hamiltonian as an imperative operator
 
- * **store_matrix_elements**: Should we store the non-vanishing matrix elements of the Hamiltonian?
+ * :param:`store_matrix_elements` Should we store the non-vanishing matrix elements of the Hamiltonian?

@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__matsubara_domain:
@@ -13,16 +12,15 @@
 triqs::gfs::matsubara_domain
 ============================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<bool IsFreq> class matsubara_domain
+     template<bool IsFreq> class  :red:`matsubara_domain`
 
 ---------------------------------------------------------------------------------------------------------
+ The domain
 
-     The domain
-         The domain
 
 Public members
 --------------
@@ -45,37 +43,26 @@ Member types
 Member functions
 ----------------
 
-+---------------------------------------------------+--+
-| :ref:`constructor <matsubara_domain_constructor>` |  |
-+---------------------------------------------------+--+
-| :ref:`operator== <matsubara_domain_operator==>`   |  |
-+---------------------------------------------------+--+
-| :ref:`operator!= <matsubara_domain_operator!=>`   |  |
-+---------------------------------------------------+--+
-| :ref:`serialize <matsubara_domain_serialize>`     |  |
-+---------------------------------------------------+--+
++------------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__gfs__matsubara_domain__constructor>` |  |
++------------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
 
     matsubara_domain/constructor
-    matsubara_domain/operator==
-    matsubara_domain/operator!=
-    matsubara_domain/serialize
 
 
 Non Member functions
 --------------------
 
-+-----------------------------------------------------+-----------------+
-| :ref:`h5_write <matsubara_domain_h5_write>`         | Write into HDF5 |
-+-----------------------------------------------------+-----------------+
-| :ref:`h5_read <matsubara_domain_h5_read>`           | Read from HDF5  |
-+-----------------------------------------------------+-----------------+
-| :ref:`boost <matsubara_domain_boost>`               |                 |
-+-----------------------------------------------------+-----------------+
-| :ref:`operator\<\< <matsubara_domain_operatorLTLT>` |                 |
-+-----------------------------------------------------+-----------------+
++----------------------------------------------------------+--+
+| :ref:`h5_write <triqs__gfs__matsubara_domain__h5_write>` |  |
++----------------------------------------------------------+--+
+| :ref:`h5_read <triqs__gfs__matsubara_domain__h5_read>`   |  |
++----------------------------------------------------------+--+
+| :ref:`boost <triqs__gfs__matsubara_domain__boost>`       |  |
++----------------------------------------------------------+--+
 
 .. toctree::
     :hidden:
@@ -83,4 +70,3 @@ Non Member functions
     matsubara_domain/h5_write
     matsubara_domain/h5_read
     matsubara_domain/boost
-    matsubara_domain/operator<<

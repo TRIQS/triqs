@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__tuple_com:
@@ -13,18 +12,16 @@
 triqs::gfs::tuple_com
 =====================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename T> class tuple_com
+     template<typename T> class  :red:`tuple_com`
 
 ---------------------------------------------------------------------------------------------------
+Tuple of placeholder
+ ---------------------------------------------------------------------------------------------------
 
- Tuple of placeholder
-  ---------------------------------------------------------------------------------------------------
-     Tuple of placeholder
-  ---------------------------------------------------------------------------------------------------
 
 Public members
 --------------

@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTimfreqGT_domain:
+.. _triqs__gfs__gf_meshLTimfreqGT__domain:
 
-triqs::gfs::gf_mesh::domain
-===========================
+triqs::gfs::gf_mesh<imfreq>::domain
+===================================
+
+*#include <triqs/gfs/gf_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The corresponding domain`
        | gf_mesh<imfreq>::domain_t const & :red:`domain` () const
+
+
+
+
+
+The corresponding domain

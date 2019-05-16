@@ -5,17 +5,19 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _block_gf_const_view_block_names:
+.. _triqs__gfs__block_gf_const_view__block_names:
 
 triqs::gfs::block_gf_const_view::block_names
 ============================================
+
+*#include <triqs/gfs/block_gf_const_view.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | block_gf_const_view::block_names_t const & :red:`block_names` () const
+       | block_gf_const_view::block_names_t const & :red:`block_names` () const

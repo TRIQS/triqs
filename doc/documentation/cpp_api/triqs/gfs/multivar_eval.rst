@@ -5,18 +5,20 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _multivar_eval:
+.. _triqs__gfs__multivar_eval:
 
-multivar_eval
-=============
+triqs::gfs::multivar_eval
+=========================
+
+*#include <triqs/gfs.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :green:`template<typename G, typename InterPolDataType>`
+       | :green:`template<typename G, typename InterPolDataType>`
        | auto :red:`multivar_eval` (G const & :param:`g`, InterPolDataType const &... :param:`a`)

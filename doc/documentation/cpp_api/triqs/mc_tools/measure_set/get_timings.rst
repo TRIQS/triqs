@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _measure_set_get_timings:
+.. _triqs__mc_tools__measure_set__get_timings:
 
 triqs::mc_tools::measure_set::get_timings
 =========================================
+
+*#include <triqs/mc_tools/measure_set.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Pretty print the timings of all measures`
        | std::string :red:`get_timings` () const
+
+
+
+
+
+Pretty print the timings of all measures

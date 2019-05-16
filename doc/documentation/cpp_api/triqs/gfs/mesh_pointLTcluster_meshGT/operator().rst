@@ -5,24 +5,26 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _mesh_pointLTcluster_meshGT_operator():
+.. _triqs__gfs__mesh_pointLTcluster_meshGT__operator():
 
-triqs::gfs::mesh_point::operator()
-==================================
+triqs::gfs::mesh_point<cluster_mesh>::operator()
+================================================
+
+*#include <triqs/gfs/mesh_point.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`The mesh point behaves like a vector`
        | double :red:`operator()` (int :param:`d`) const
 
 
 
 
 
-         d: component (0, 1 or 2)
+The mesh point behaves like a vector
+d: component (0, 1 or 2)

@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__segment_mesh:
@@ -13,15 +12,13 @@
 triqs::gfs::segment_mesh
 ========================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-     class segment_mesh
+      class  :red:`segment_mesh`
 
 A linear mesh on a segment on R
-
-
 
 
 Member types
@@ -35,9 +32,9 @@ Member types
 Member functions
 ----------------
 
-+-----------------------------------------------+--+
-| :ref:`constructor <segment_mesh_constructor>` |  |
-+-----------------------------------------------+--+
++--------------------------------------------------------------+--+
+| :ref:`(constructor) <triqs__gfs__segment_mesh__constructor>` |  |
++--------------------------------------------------------------+--+
 
 .. toctree::
     :hidden:

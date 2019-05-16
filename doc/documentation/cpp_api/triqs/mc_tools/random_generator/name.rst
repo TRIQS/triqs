@@ -5,18 +5,25 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _random_generator_name:
+.. _triqs__mc_tools__random_generator__name:
 
 triqs::mc_tools::random_generator::name
 =======================================
+
+*#include <triqs/mc_tools/random_generator.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Name of the random generator`
        | std::string :red:`name` () const
+
+
+
+
+
+Name of the random generator

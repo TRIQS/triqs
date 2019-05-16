@@ -5,27 +5,29 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _gf_meshLTcyclic_latticeGT_index_to_point:
+.. _triqs__gfs__gf_meshLTcyclic_latticeGT__index_to_point:
 
-triqs::gfs::gf_mesh::index_to_point
-===================================
+triqs::gfs::gf_mesh<cyclic_lattice>::index_to_point
+===================================================
+
+*#include <triqs/gfs/cluster_mesh.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`from the index (n_i) to the cartesian coordinates`
        | cluster_mesh::point_t :red:`index_to_point` (cluster_mesh::index_t const & :param:`n`) const
 
 
 
 
 
-   for a point M of coordinates n_i in the {a_i} basis, the cartesian coordinates are
+ from the index (n_i) to the cartesian coordinates
+ for a point M of coordinates n_i in the {a_i} basis, the cartesian coordinates are
 
 
 .. math::
@@ -40,7 +42,8 @@ triqs::gfs::gf_mesh::index_to_point
 Parameters
 ^^^^^^^^^^
 
- * **index_t**: the (integer) coordinates of the point (in basis a_i)
+ * :param:`index_t` the (integer) coordinates of the point (in basis a_i)
+
 
 .. warning::
     can be made faster by writing this a matrix-vector multiplication

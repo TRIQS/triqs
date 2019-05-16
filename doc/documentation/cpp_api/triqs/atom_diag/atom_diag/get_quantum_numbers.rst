@@ -5,23 +5,28 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _atom_diag_get_quantum_numbers:
+.. _triqs__atom_diag__atom_diag__get_quantum_numbers:
 
 triqs::atom_diag::atom_diag::get_quantum_numbers
 ================================================
+
+*#include <triqs/atom_diag/atom_diag.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`A vector of all the quantum numbers, grouped by subspace`
        | std::vector<std::vector<quantum_number_t> > const & :red:`get_quantum_numbers` () const
 
 
+
+
+
+A vector of all the quantum numbers, grouped by subspace
 
 
 
@@ -30,4 +35,4 @@ triqs::atom_diag::atom_diag::get_quantum_numbers
 Returns
 ^^^^^^^
 
- * result[sp_index][qn_index] is the qunatum number value.
+result[sp_index][qn_index] is the qunatum number value.

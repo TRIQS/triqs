@@ -5,20 +5,21 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _space_partition_foreach:
+.. _triqs__hilbert_space__space_partition__foreach:
 
 triqs::hilbert_space::space_partition::foreach
 ==============================================
+
+*#include <triqs/hilbert_space.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :cppbrief:`Apply a callable object to all basis Fock states in a given space partition`
        | :green:`template<typename Lambda>`
        | void :red:`foreach` (space_partition<StateType, OperatorType> & :param:`SP`, Lambda :param:`L`)
 
@@ -26,9 +27,10 @@ triqs::hilbert_space::space_partition::foreach
 
 
 
+Apply a callable object to all basis Fock states in a given space partition
 
-  The callable must take two arguments, 1) index of the basis Fock state in the considered full Hilbert space,
-  and 2) index of the subspace this basis state belongs to.
+ The callable must take two arguments, 1) index of the basis Fock state in the considered full Hilbert space,
+ and 2) index of the subspace this basis state belongs to.
 
 
 
@@ -37,12 +39,12 @@ triqs::hilbert_space::space_partition::foreach
 Template parameters
 ^^^^^^^^^^^^^^^^^^^
 
- * **Lambda**: Type of the callable object
+ * :param:`Lambda` Type of the callable object
 
 
 Parameters
 ^^^^^^^^^^
 
- * **SP**: Subject space partition
+ * :param:`SP` Subject space partition
 
- * **L**: Callable object
+ * :param:`L` Callable object

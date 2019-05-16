@@ -5,18 +5,20 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
-.. _bgf_unary_m_expr_constructor:
+.. _triqs__gfs__bgf_unary_m_expr__constructor:
 
 triqs::gfs::bgf_unary_m_expr::constructor
 =========================================
+
+*#include <triqs/gfs/bgf_unary_m_expr.hpp>*
+
 
 
 **Synopsis**
 
  .. rst-class:: cppsynopsis
 
-    1. | :green:`template<typename LL>`
+       | :green:`template<typename LL>`
        | :red:`bgf_unary_m_expr` (LL && :param:`l_`)

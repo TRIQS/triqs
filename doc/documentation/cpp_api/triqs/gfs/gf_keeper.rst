@@ -5,7 +5,6 @@
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 
 .. _triqs__gfs__gf_keeper:
@@ -13,15 +12,13 @@
 triqs::gfs::gf_keeper
 =====================
 
-Defined in header <**>
+*#include <triqs/gfs.hpp>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    template<typename Tag, typename D, typename Target> class gf_keeper
+     template<typename Tag, typename D, typename Target> class  :red:`gf_keeper`
 
 ----------------------------
-
-
 
 
 Public members
