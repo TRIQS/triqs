@@ -171,7 +171,7 @@ namespace triqs {
     template <typename Tag> struct operation;
 
     // a little function to clean the reference_wrapper
-    template <typename U> FORCEINLINE U _cl(U &&x) { return std::forward<U>(x); }
+    template <typename U> FORCEINLINE U&& _cl(U &&x) { return std::forward<U>(x); }
     template <typename U> FORCEINLINE decltype(auto) _cl(std::reference_wrapper<U> x) { return x.get(); }
 
     // Terminal

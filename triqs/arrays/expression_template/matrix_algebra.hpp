@@ -90,8 +90,8 @@ namespace triqs {
         return sout << "(" << expr.l << " " << utility::operation<Tag>::name << " " << expr.r << ")";
       }
 
-      friend matrix<value_type> make_regular(matrix_expr const &x) { return make_matrix(x); }
-      friend matrix_const_view<value_type> make_const_view(matrix_expr const &x) { return make_matrix(x); }
+      //friend matrix<value_type> make_regular(matrix_expr const &x) { return make_matrix(x); }
+      //friend matrix_const_view<value_type> make_const_view(matrix_expr const &x) { return make_matrix(x); }
 
       // just for better error messages
       template <typename T> void operator=(T &&x)  = delete; // can not assign to an expression template !
@@ -112,8 +112,8 @@ namespace triqs {
       template <typename... Args> value_type operator()(Args &&... args) const { return -l(std::forward<Args>(args)...); }
       friend std::ostream &operator<<(std::ostream &sout, matrix_unary_m_expr const &expr) { return sout << '-' << expr.l; }
 
-      friend matrix<value_type> make_regular(matrix_unary_m_expr const &x) { return make_matrix(x); }
-      friend matrix_const_view<value_type> make_const_view(matrix_unary_m_expr const &x) { return make_matrix(x); }
+      //friend matrix<value_type> make_regular(matrix_unary_m_expr const &x) { return make_matrix(x); }
+      //friend matrix_const_view<value_type> make_const_view(matrix_unary_m_expr const &x) { return make_matrix(x); }
 
       // just for better error messages
       template <typename T> void operator=(T &&x)  = delete; // can not assign to an expression template !
@@ -167,5 +167,14 @@ namespace triqs {
     auto operator/(A &&a, M &&m) DECL_AND_RETURN(_a_div_matrix<M>()(std::forward<A>(a), std::forward<M>(m)));
 
   } // namespace arrays
+
+  namespace details {
+    template <typename Tag, typename L, typename R> struct _regular<arrays::matrix_expr<Tag, L, R>, void> {
+      using type = arrays::matrix<typename arrays::matrix_expr<Tag, L, R>::value_type>;
+    };
+    template <typename L> struct _regular<arrays::matrix_unary_m_expr<L>, void> {
+      using type = arrays::matrix<typename arrays::matrix_unary_m_expr<L>::value_type>;
+    };
+  } // namespace details
 } // namespace triqs
 #endif

@@ -71,14 +71,15 @@ namespace nda::mem {
   // ------------------  make_pycapsule,   ----------------------------------------------------
 
   // Make a pycapsule out of the shared handle to return to Python
-  template <typename T> PyObject *make_pycapsule(handle<T, 'S'> h) {
-    //std::cerr << "capsulate : " << h.data() <<  "nrefs" << h.refcount() << "\n";
-    void *keep = new handle<T, 'S'>{std::move(h)}; // a new reference
+  template <typename T> PyObject *make_pycapsule(handle<T, 'R'>  const &h) {
+    void *keep = new handle<T, 'S'>{h}; // a new reference
     return PyCapsule_New(keep, "guard", &delete_pycapsule<T>);
   }
 
-  template <typename T> PyObject *make_pycapsule(handle<T, 'R'> const &h) { return make_pycapsule(handle<T, 'S'>{h}); }
-
-  template <typename T> PyObject *make_pycapsule(handle<T, 'B'> const &h) = delete; // Can not return a borrowed view to Python
+  template <typename T> PyObject *make_pycapsule(handle<T, 'B'> const &h) {
+    if (h.parent() == nullptr) throw std::runtime_error("Can not return to python a view on something else than an nda::array");
+    void *keep = new handle<T, 'S'>{*h.parent()}; // a new reference
+    return PyCapsule_New(keep, "guard", &delete_pycapsule<T>);
+  }
 
 } // namespace nda::mem

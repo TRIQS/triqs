@@ -25,13 +25,13 @@
 namespace triqs {
   namespace arrays {
 
-    template <typename V, int R, typename To, typename... I> array_view<V, sizeof...(I)> reinterpret(array<V, R, To> const &a, I... index) {
+    template <typename V, int R, typename... I> array_view<V, sizeof...(I)> reinterpret(array<V, R> const &a, I... index) {
       return {{make_shape(index...)}, a.storage()};
     }
 
     // wrong for views
-    template <typename V, int R, bool B, typename To, typename... I>
-    array_view<V, sizeof...(I)> reinterpret_array_view(array_view<V, R, To, B> const &a, I... index) {
+    template <typename V, int R, bool B, typename... I>
+    array_view<V, sizeof...(I)> reinterpret_array_view(array_view<V, R, B> const &a, I... index) {
       if (!has_contiguous_data(a)) TRIQS_RUNTIME_ERROR << "reinterpretation failure : data of the view are not contiguous";
       return {{make_shape(index...)}, a.storage()};
     }

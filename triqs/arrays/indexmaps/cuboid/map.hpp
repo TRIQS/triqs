@@ -53,8 +53,6 @@ namespace triqs {
           using lengths_type                = mini_vector<size_t, rank>;
           using strides_type                = mini_vector<std::ptrdiff_t, rank>;
           using domain_type                 = domain_t<Rank>;
-          using traversal_order_in_template = TraversalOrder;
-          using has_traversal_order_tag     = void;
           domain_type const &domain() const { return mydomain; }
 
           // semi-regular type

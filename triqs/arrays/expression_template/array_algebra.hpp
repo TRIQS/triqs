@@ -66,10 +66,6 @@ namespace triqs {
         return sout << "(" << expr.l << " " << utility::operation<Tag>::name << " " << expr.r << ")";
       }
 
-      friend array<value_type, domain_type::rank> make_array(array_expr const &e) { return e; }
-      friend array<value_type, domain_type::rank> make_regular(array_expr const &x) { return make_array(x); }
-      //friend inline array_const_view<value_type, domain_type::rank> make_const_view(array_expr const &x) { return make_array(x); } // Moved to end of file, ICC Compatibility
-
       // just for better error messages
       template <typename T> void operator=(T &&x)  = delete; // can not assign to an expression template !
       template <typename T> void operator+=(T &&x) = delete; // can not += into an expression template !
@@ -134,18 +130,22 @@ namespace triqs {
 
     template <class A>
     std::enable_if_t<ImmutableArray<std::decay_t<A>>::value,
-                       array_expr<utility::tags::divides, _scalar_wrap<int, false>, utility::remove_rvalue_ref_t<A>>>
+                     array_expr<utility::tags::divides, _scalar_wrap<int, false>, utility::remove_rvalue_ref_t<A>>>
     inverse(A &&a) {
       return {1, std::forward<A>(a)};
     }
 
-    // Fix for compatibility with Intel Compiler (17)
-    template <typename Tag, typename L, typename R>
-    inline array_const_view<typename array_expr<Tag, L, R>::value_type, array_expr<Tag, L, R>::domain_type::rank>
-    make_const_view(array_expr<Tag, L, R> const &x) {
-      return make_array(x);
-    }
-
   } // namespace arrays
+
+  namespace details {
+    template <typename Tag, typename L, typename R> struct _regular<arrays::array_expr<Tag, L, R>, void> {
+      using _C   = arrays::array_expr<Tag, L, R>;
+      using type = arrays::array<typename _C::value_type, _C::domain_type::rank>;
+    };
+    template <typename L> struct _regular<arrays::array_unary_m_expr<L>, void> {
+      using _C   = arrays::array_unary_m_expr<L>;
+      using type = arrays::array<typename _C::value_type, _C::domain_type::rank>;
+    };
+  } // namespace details
 } // namespace triqs
 #endif

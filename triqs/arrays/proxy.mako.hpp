@@ -112,13 +112,14 @@ namespace triqs {
       using A_t                 = std::decay_t<A>;
       static constexpr int rank = A_t::rank;
 
-      using traversal_order_t = typename A_t::traversal_order_t;
       using domain_type       = typename indexmap_type::domain_type;
 
       // mako %if AM == 'matrix' :
+      using regular_type    = matrix<value_type>;
       using view_type       = matrixMAKO_CV_view<value_type>;
       using const_view_type = matrix_const_view<value_type>;
       // mako %else :
+      using regular_type    = array<value_type, domain_type::rank>;
       using view_type       = arrayMAKO_CV_view<value_type, domain_type::rank>;
       using const_view_type = array_const_view<value_type, domain_type::rank>;
       // mako %endif

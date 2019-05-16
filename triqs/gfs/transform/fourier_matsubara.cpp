@@ -99,7 +99,7 @@ namespace triqs::gfs {
 
   gf_vec_t<imfreq> _fourier_impl(gf_mesh<imfreq> const &iw_mesh, gf_vec_cvt<imtime> gt, arrays::array_const_view<dcomplex, 2> known_moments) {
 
-    arrays::array_view<dcomplex, 2> tail;
+    arrays::array<dcomplex, 2> tail;
 
     if (known_moments.is_empty()) {
       // A simple check on whether or not we are dealing with noisy data
@@ -111,9 +111,9 @@ namespace triqs::gfs {
       if (der_1 < 0.95 * der_2 or der_1 > 1.05 * der_2) {
         std::cerr << "WARNING: Direct Fourier cannot deduce the high-frequency moments of G(tau) due to noise or a coarse tau-grid. \
 	  Please specify the high-frequency moments for higher accuracy.\n";
-        tail.rebind(make_zero_tail(gt, 4));
+        return _fourier_impl(iw_mesh, gt, make_zero_tail(gt, 4));
       } else {
-        tail.rebind(fit_tail(gt));
+	return _fourier_impl(iw_mesh, gt, fit_tail(gt));
       }
     } else {
       double _abs_tail0 = max_element(abs(known_moments(0, range())));
@@ -121,7 +121,7 @@ namespace triqs::gfs {
                     "ERROR: Direct Fourier implementation requires vanishing 0th moment\n  error is :" + std::to_string(_abs_tail0));
 
       int n_known_moments = std::min<size_t>(known_moments.shape()[0], 4);
-      tail.rebind(make_zero_tail(gt, 4));
+      tail = make_zero_tail(gt, 4);
       tail(range(0, n_known_moments), range()) = known_moments(range(0, n_known_moments), range());
     }
 
@@ -197,7 +197,7 @@ namespace triqs::gfs {
     arrays::array_const_view<dcomplex, 2> tail;
 
     // Assume vanishing 0th moment in tail fit
-    if (known_moments.is_empty()) known_moments.rebind(make_zero_tail(gw, 1));
+    if (known_moments.is_empty()) return _fourier_impl(tau_mesh, gw, make_zero_tail(gw, 1));
 
     double _abs_tail0 = max_element(abs(known_moments(0, range())));
     TRIQS_ASSERT2((_abs_tail0 < 1e-8),
@@ -212,9 +212,9 @@ namespace triqs::gfs {
         std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << err
                   << "\n Please make sure you treat the constant offset analytically!\n";
       TRIQS_ASSERT2((first_dim(t) > 3), "ERROR: Inverse Fourier implementation requires at least a proper 3rd high-frequency moment\n");
-      tail.rebind(t);
+      return _fourier_impl(tau_mesh, gw, t);
     } else
-      tail.rebind(known_moments);
+      tail.rebind(known_moments); // known_moments is fine
 
     double beta = tau_mesh.domain().beta;
     long L      = tau_mesh.size() - 1;

@@ -57,7 +57,8 @@ namespace triqs {
 
       template <typename A> void write_array(h5::group g, std::string const &name, A const &a, bool C_reorder = true) {
         if (C_reorder) {
-          auto b = make_const_cache(a).view();
+          auto c = make_const_cache(a);
+          auto b = c.view();
           write_array_impl(g, name, b.data_start(), array_stride_info{b});
         } else
           write_array_impl(g, name, a.data_start(), array_stride_info{a});

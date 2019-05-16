@@ -2,8 +2,6 @@
 
 #include "./handle.hpp"
 
-#define NDA_LEAK_CHECK
-
 namespace nda::mem {
 
   // The global table of reference counters

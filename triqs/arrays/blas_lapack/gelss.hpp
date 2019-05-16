@@ -212,7 +212,7 @@ namespace triqs::arrays::lapack {
 
         // Deep copy
         array<dcomplex, 4> arr_dag = conj(array_view<dcomplex, 4>{idx_map_inner_transpose, M.storage()});
-        return matrix_view<dcomplex>{array_view<dcomplex, 2>{idx_map, std::move(arr_dag).storage()}};
+        return matrix<dcomplex>{idx_map, std::move(arr_dag).storage()};
       };
 
       // Solve the enlarged system vstack(A, A*) * x = vstack(B, B_dag)

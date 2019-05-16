@@ -102,5 +102,14 @@ namespace triqs {
     }
 
   } // namespace arrays
+
+  namespace details {
+    template <typename Tag, typename L, typename R> struct _regular<arrays::vector_expr<Tag, L, R>, void> {
+      using type = arrays::vector<typename arrays::vector_expr<Tag, L, R>::value_type>;
+    };
+    template <typename L> struct _regular<arrays::vector_unary_m_expr<L>, void> {
+      using type = arrays::vector<typename arrays::vector_unary_m_expr<L>::value_type>;
+    };
+  } // namespace details
 } // namespace triqs
 #endif

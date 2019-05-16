@@ -115,8 +115,8 @@ namespace triqs::arrays::blas {
   // to allow gemm (alpha, a, b, beta, M(..., ...)) i.e. a temporary view, which is not matched by previos templates
   // which require an lvalue. This is the only version which takes an && as last argument
   // indeed, in the routine, c is a *lvalue*, since it has a name, and hence we call *other* overload of the function
-  template <typename A, typename MT1, typename MT2, typename B, typename V, typename To, bool W>
-  void gemm(A alpha, MT1 const &a, MT2 const &b, B beta, matrix_view<V, To, W> &&c) {
+  template <typename A, typename MT1, typename MT2, typename B, typename V, char B_S>
+  void gemm(A alpha, MT1 const &a, MT2 const &b, B beta, matrix_view<V, B_S> &&c) {
     gemm(alpha, a, b, beta, c);
   }
 

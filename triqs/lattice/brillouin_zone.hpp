@@ -43,7 +43,7 @@ namespace triqs {
       brillouin_zone(bravais_lattice const &bl_);
 
       /// Access to the underlying bravais lattice
-      bravais_lattice lattice() const { return lattice_; }
+      bravais_lattice const & lattice() const { return lattice_; }
 
       /// Allow cast to bravais lattice
       operator bravais_lattice() const { return lattice_; }

@@ -58,23 +58,7 @@ int main(int argc, char **argv) {
     *it = u;
     std::cout << " i,j = " << it.indices() << std::endl;
   }
-  std::cout << "A = order of visit " << A << std::endl;
-
-  std::cout << " F order : traversal" << std::endl;
-  array<long, 2, _traversal_fortran> Af(2, 3, FORTRAN_LAYOUT);
-
-  for (auto it = Af.begin(); it; ++it) {
-    *it = it.indices()[0] + 10 * it.indices()[1];
-    std::cout << " i,j = " << it.indices() << std::endl;
-  }
-  std::cout << "A = i + 10*j" << Af << std::endl;
-
-  u = 0;
-  for (auto it = Af.begin(); it; ++it, ++u) {
-    *it = -u;
-    std::cout << " i,j = " << it.indices() << std::endl;
-  }
-  std::cout << "Af = order of visit " << Af << std::endl;
+  std::cout << "A = order of visit" << A << std::endl;
 
   return 0;
 }

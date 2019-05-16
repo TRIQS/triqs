@@ -332,20 +332,23 @@ namespace nda::mem {
 
   template <typename T> struct handle<T, 'B'> {
     private:
-    T *_data     = nullptr; // Pointer to the start of the memory block
-    size_t _size = 0;       // Size of the memory block. Invariant: size > 0 iif data != 0
+    handle<T, 'R'> const *_parent = nullptr; // Parent, Required for regular->shared promotion in Python Converter
+    T *_data                      = nullptr; // Pointer to the start of the memory block
+    size_t _size                  = 0;       // Size of the memory block. Invariant: size > 0 iif data != 0
 
     public:
     using value_type = T;
 
     handle() = default;
     handle(T *ptr, size_t s) noexcept : _data(ptr), _size(s) {}
-    handle(handle<T, 'R'> const &x) noexcept : _data(x.data()), _size(x.size()) {}
+    handle(handle<T, 'R'> const &x) noexcept : _parent(&x), _data(x.data()), _size(x.size()) {}
     handle(handle<T, 'S'> const &x) noexcept : _data(x.data()), _size(x.size()) {}
 
     T &operator[](long i) const noexcept { return _data[i]; }
 
     bool is_null() const noexcept { return _data == nullptr; }
+
+    handle<T, 'R'> const *parent() const { return _parent; }
 
     // A const-handle does not entail T const data
     T *data() const noexcept { return _data; }

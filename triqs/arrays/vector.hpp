@@ -28,21 +28,22 @@
 namespace triqs {
   namespace arrays {
 
-    template <typename ValueType, bool Borrowed = false, bool IsConst = false> class vector_view;
+    template <typename ValueType, char B_S = 'B', bool IsConst = false> class vector_view;
     template <typename ValueType> class vector;
 
     // ---------------------- vector_view --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, nda::mem::handle<ValueType, 'S'>, void, IsConst, true, Tag::vector_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, nda::mem::handle<ValueType, B_S>, IsConst, true, B_S, Tag::vector_view>
 
     /** */
-    template <typename ValueType, bool Borrowed, bool IsConst>
+    template <typename ValueType, char B_S, bool IsConst>
     class vector_view : Tag::vector_view, TRIQS_CONCEPT_TAG_NAME(MutableVector), public IMPL_TYPE {
+      static_assert(B_S=='B' or B_S=='S', "Internal error"); // REPLACE BY STRONG ENUM
       public:
       using regular_type    = vector<ValueType>;
-      using view_type       = vector_view<ValueType, false>;
-      using const_view_type = vector_view<ValueType, false, true>;
-      using weak_view_type  = vector_view<ValueType, true>;
+      using view_type       = vector_view<ValueType, B_S, false>;
+      using const_view_type = vector_view<ValueType, B_S, true>;
+      //using weak_view_type  = vector_view<ValueType, B_S, true>;
       using indexmap_type   = typename IMPL_TYPE::indexmap_type;
       using storage_type    = typename IMPL_TYPE::storage_type;
 
@@ -70,7 +71,7 @@ namespace triqs {
       }
 
       // rebind the other view, iif this is const, and the other is not.
-      template <bool C = IsConst> ENABLE_IFC(C) rebind(vector_view<ValueType, Borrowed, !IsConst> const &X) {
+      template <bool C = IsConst> ENABLE_IFC(C) rebind(vector_view<ValueType, B_S, !IsConst> const &X) {
         this->indexmap_ = X.indexmap_;
         this->storage_  = X.storage_;
       }
@@ -99,14 +100,14 @@ namespace triqs {
     };
 #undef IMPL_TYPE
 
-    template <class V, int R, bool Borrowed, bool IsConst> struct ISPViewType<V, R, void, Tag::vector_view, Borrowed, IsConst> {
-      using type = vector_view<V, Borrowed, IsConst>;
+    template <class V, int R, char B_S, bool IsConst> struct ISPViewType<V, R, Tag::vector_view, B_S, IsConst> {
+      using type = vector_view<V, B_S, IsConst>;
     };
 
-    template <typename ValueType, bool Borrowed = false> using vector_const_view = vector_view<ValueType, Borrowed, true>;
+    template <typename ValueType> using vector_const_view = vector_view<ValueType,'B', true>;
 
 // ---------------------- vector--------------------------------
-#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, nda::mem::handle<ValueType, 'R'>, void, false, false, Tag::vector_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<1>, nda::mem::handle<ValueType, 'R'>, false, false, 'B', Tag::vector_view>
 
     template <typename ValueType> class vector : Tag::vector, TRIQS_CONCEPT_TAG_NAME(MutableVector), public IMPL_TYPE {
       public:
@@ -115,8 +116,8 @@ namespace triqs {
       using indexmap_type   = typename IMPL_TYPE::indexmap_type;
       using regular_type    = vector<ValueType>;
       using view_type       = vector_view<ValueType>;
-      using const_view_type = vector_view<ValueType, false, true>;
-      using weak_view_type  = vector_view<ValueType, true>;
+      using const_view_type = vector_const_view<ValueType>;
+      //using weak_view_type  = vector_view<ValueType, true>;
 
       /// Empty vector.
       vector() {}
@@ -316,13 +317,13 @@ namespace triqs {
       blas::scal(a, lhs);
     }
 
-    template <typename T, bool Borrowed> void triqs_arrays_assign_delegation(vector_view<T, Borrowed> &av, std::vector<T> const &vec) {
+    template <typename T, char B_S> void triqs_arrays_assign_delegation(vector_view<T, B_S> &av, std::vector<T> const &vec) {
       std::size_t size = vec.size();
       for (std::size_t n = 0; n < size; ++n) av(n) = vec[n];
     }
 
     // swapping 2 vector
-    template <typename V, bool B1, bool B2, bool B3, bool B4> void deep_swap(vector_view<V, B1, B2> x, vector_view<V, B3, B4> y) { blas::swap(x, y); }
+    template <typename V, char B1, bool C1, char B2, bool C2> void deep_swap(vector_view<V, B1, C1> x, vector_view<V, B2, C2> y) { blas::swap(x, y); }
 
     template <typename V> void deep_swap(vector<V> &x, vector<V> &y) { blas::swap(x, y); }
   } // namespace arrays
@@ -331,7 +332,7 @@ namespace triqs {
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
 namespace std {
-  template <typename V, bool B1, bool B2, bool C1, bool C2>
+  template <typename V, char B1, char B2, bool C1, bool C2>
   void swap(triqs::arrays::vector_view<V, B1, C1> &a, triqs::arrays::vector_view<V, B2, C2> &b) = delete;
 }
 

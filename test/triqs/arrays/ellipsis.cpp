@@ -28,7 +28,7 @@
 
 using namespace triqs::arrays;
 
-template <typename ArrayType> array_view<typename ArrayType::value_type, ArrayType::rank - 1> sum0(ArrayType const &A) {
+template <typename ArrayType> auto sum0(ArrayType const &A) {
   array<typename ArrayType::value_type, ArrayType::rank - 1> res = A(0, ellipsis());
   for (size_t u = 1; u < A.shape()[0]; ++u) res += A(u, ellipsis());
   return res;

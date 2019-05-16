@@ -79,8 +79,8 @@ namespace triqs::arrays::blas {
 
   // to allow gem (alpha, a, b, beta, M(..., ...)) i.e. a temporary view, which is not matched by previos templates
   // which require an lvalue.
-  template <typename A, typename MT, typename VT, typename B, typename V, bool W>
-  void gemv(A alpha, MT const &a, VT const &b, B beta, vector_view<V, W> &&c) {
+  template <typename A, typename MT, typename VT, typename B, typename V, char B_S>
+  void gemv(A alpha, MT const &a, VT const &b, B beta, vector_view<V, B_S> &&c) {
     gemv(alpha, a, b, beta, c);
   }
 

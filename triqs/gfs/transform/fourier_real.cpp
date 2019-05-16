@@ -39,7 +39,7 @@ namespace triqs::gfs {
 
     arrays::array_const_view<dcomplex, 2> mom_12;
     if (known_moments.is_empty())
-      mom_12.rebind(make_zero_tail(gt, 2));
+      return _fourier_impl(w_mesh, gt, make_zero_tail(gt, 2));
     else {
       TRIQS_ASSERT2(known_moments.shape()[0] >= 3, " Direct RealTime Fourier transform requires known moments up to order 3.")
       double _abs_tail0 = max_element(abs(known_moments(0, range())));
@@ -87,7 +87,7 @@ namespace triqs::gfs {
     arrays::array_const_view<dcomplex, 2> mom_12;
 
     // Assume vanishing 0th moment in tail fit
-    if (known_moments.is_empty()) known_moments.rebind(make_zero_tail(gw, 1));
+    if (known_moments.is_empty()) return _fourier_impl(t_mesh, gw, make_zero_tail(gw, 1));
 
     double _abs_tail0 = max_element(abs(known_moments(0, range())));
     TRIQS_ASSERT2((_abs_tail0 < 1e-8),
@@ -100,7 +100,7 @@ namespace triqs::gfs {
         std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
                   << "\n Please make sure you treat the constant offset analytically!\n";
       TRIQS_ASSERT2((first_dim(tail) > 2), "ERROR: Inverse Fourier implementation requires at least a proper 2nd high-frequency moment\n");
-      mom_12.rebind(tail(range(1, 3), range()));
+      return _fourier_impl(t_mesh, gw, tail); //(range(1, 3), range()));
     } else
       mom_12.rebind(known_moments(range(1, 3), range()));
 

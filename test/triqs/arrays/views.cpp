@@ -23,15 +23,15 @@
 using namespace triqs::arrays;
 
 TEST(Array, View) {
-  {
-    array<int, 2> *p = new array<int, 2>(2, 3); // create an array p
-    for (int i = 0; i < 2; ++i)
-      for (int j = 0; j < 3; ++j) (*p)(i, j) = 10 * i + j;
-    array_view<int, 2> B(*p); // making a view
-    delete p;                 // p is gone...
-    B(0, 0) = 314;
-    EXPECT_EQ(B(0, 0), 314); // ok, but B (and the data) is still alive
-  }
+  //{
+    //array<int, 2> *p = new array<int, 2>(2, 3); // create an array p
+    //for (int i = 0; i < 2; ++i)
+      //for (int j = 0; j < 3; ++j) (*p)(i, j) = 10 * i + j;
+    //array_view<int, 2> B(*p); // making a view
+    //delete p;                 // p is gone...
+    //B(0, 0) = 314;
+    //EXPECT_EQ(B(0, 0), 314); // ok, but B (and the data) is still alive
+  //}
 
   array<long, 2> A(2, 3);
   for (int i = 0; i < 2; ++i)

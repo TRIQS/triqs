@@ -30,7 +30,7 @@ namespace triqs::gfs {
   // For Imaginary Matsubara Frequency functions
   // ------------------------------------------------------
 
-  arrays::matrix<dcomplex> density(gf_const_view<imfreq> g, array_view<dcomplex, 3> known_moments) {
+  arrays::matrix<dcomplex> density(gf_const_view<imfreq> g, array_const_view<dcomplex, 3> known_moments) {
 
     if (g.mesh().positive_only())
       TRIQS_RUNTIME_ERROR << "density is only implemented for g(i omega_n) with full mesh (positive and negative frequencies)";
@@ -38,7 +38,7 @@ namespace triqs::gfs {
     arrays::array_const_view<dcomplex, 3> mom_123;
 
     // Assume vanishing 0th moment in tail fit
-    if (known_moments.is_empty()) known_moments.rebind(make_zero_tail(g, 1));
+    if (known_moments.is_empty()) return density(g, make_zero_tail(g, 1));
 
     double _abs_tail0 = max_element(abs(known_moments(0, range(), range())));
     TRIQS_ASSERT2((_abs_tail0 < 1e-8),
@@ -53,7 +53,7 @@ namespace triqs::gfs {
         std::cerr << "WARNING: High frequency moments have an error greater than 1e-4.\n Error = " << error
                   << "\n Please make sure you treat the constant offset analytically!\n";
       TRIQS_ASSERT2((first_dim(tail) > 3), "ERROR: Density implementation requires at least a proper 3rd high-frequency moment\n");
-      mom_123.rebind(tail(range(1, 4), range(), range()));
+      return density(g, tail); //(range(1, 4), range(), range()));
     } else
       mom_123.rebind(known_moments(range(1, 4), range(), range()));
 
@@ -121,7 +121,7 @@ namespace triqs::gfs {
   }
 
   //-------------------------------------------------------
-  dcomplex density(gf_const_view<imfreq, scalar_valued> g, array_view<dcomplex, 1> known_moments) {
+  dcomplex density(gf_const_view<imfreq, scalar_valued> g, array_const_view<dcomplex, 1> known_moments) {
     auto km = array<dcomplex, 3>(make_shape(known_moments.shape()[0], 1, 1));
     if (!known_moments.is_empty()) km(range(), 0, 0) = known_moments();
     auto res = density(reinterpret_scalar_valued_gf_as_matrix_valued(g), km)(0, 0);

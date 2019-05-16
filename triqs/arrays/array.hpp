@@ -27,26 +27,25 @@
 namespace triqs {
   namespace arrays {
 
-    template <typename ValueType, int Rank, typename TraversalOrder = void, bool Borrowed = false, bool IsConst = false> class array_view;
-    template <typename ValueType, int Rank, typename TraversalOrder = void> class array;
+    template <typename ValueType, int Rank, char B_S = 'B', bool IsConst = false> class array_view;
+    template <typename ValueType, int Rank> class array;
 
     // ---------------------- array_view  --------------------------------
 
-#define IMPL_TYPE                                                                                                                                    \
-  indexmap_storage_pair<indexmaps::cuboid::map<Rank, TraversalOrder>, nda::mem::handle<ValueType, 'S'>, TraversalOrder, IsConst, true,               \
-                        Tag::array_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<Rank, void>, nda::mem::handle<ValueType, B_S>, IsConst, true, B_S, Tag::array_view>
 
-    template <typename ValueType, int Rank, typename TraversalOrder, bool Borrowed, bool IsConst>
+    template <typename ValueType, int Rank, char B_S, bool IsConst>
     class array_view : Tag::array_view, TRIQS_CONCEPT_TAG_NAME(MutableArray), public IMPL_TYPE {
       static_assert(Rank > 0, " Rank must be >0");
+      static_assert(B_S=='B', "Internal error"); // REPLACE BY STRONG ENUM
 
       public:
       using indexmap_type   = typename IMPL_TYPE::indexmap_type;
       using storage_type    = typename IMPL_TYPE::storage_type;
-      using regular_type    = array<ValueType, Rank, TraversalOrder>;
-      using view_type       = array_view<ValueType, Rank, TraversalOrder>;
-      using const_view_type = array_view<ValueType, Rank, TraversalOrder, false, true>;
-      using weak_view_type  = array_view<ValueType, Rank, TraversalOrder, true>;
+      using regular_type    = array<ValueType, Rank>;
+      using view_type       = array_view<ValueType, Rank, B_S, false>;
+      using const_view_type = array_view<ValueType, Rank, B_S, true>;
+      //using weak_view_type  = array_view<ValueType, Rank, true>;
 
       /// Build from an IndexMap and a storage
       template <typename S> array_view(indexmap_type const &Ind, S const &Mem) : IMPL_TYPE(Ind, Mem) {}
@@ -74,8 +73,10 @@ namespace triqs {
         this->storage_  = X.storage_;
       }
 
+      //void rebind(regular_type &&) = delete;
+
       // rebind the other view, iif this is const, and the other is not.
-      template <typename To, bool C = IsConst> ENABLE_IFC(C) rebind(array_view<ValueType, Rank, To, Borrowed, !IsConst> const &X) {
+      template < bool C = IsConst> ENABLE_IFC(C) rebind(array_view<ValueType, Rank, B_S, !IsConst> const &X) {
         this->indexmap_ = X.indexmap();
         this->storage_  = X.storage();
       }
@@ -110,24 +111,21 @@ namespace triqs {
     };
 #undef IMPL_TYPE
 
-    template <typename ValueType, int Rank, typename TraversalOrder = void, bool Borrowed = false>
-    using array_const_view = array_view<ValueType, Rank, TraversalOrder, Borrowed, true>;
+    template <typename ValueType, int Rank> using array_const_view = array_view<ValueType, Rank, 'B', true>;
 
     //------------------------------- array ---------------------------------------------------
 
-#define IMPL_TYPE                                                                                                                                    \
-  indexmap_storage_pair<indexmaps::cuboid::map<Rank, TraversalOrder>, nda::mem::handle<ValueType, 'R'>, TraversalOrder, false, false, Tag::array_view>
+#define IMPL_TYPE indexmap_storage_pair<indexmaps::cuboid::map<Rank>, nda::mem::handle<ValueType, 'R'>, false, false, 'B', Tag::array_view>
 
-    template <typename ValueType, int Rank, typename TraversalOrder>
-    class array : Tag::array, TRIQS_CONCEPT_TAG_NAME(MutableArray), public IMPL_TYPE {
+    template <typename ValueType, int Rank> class array : Tag::array, TRIQS_CONCEPT_TAG_NAME(MutableArray), public IMPL_TYPE {
       public:
       using value_type      = typename IMPL_TYPE::value_type;
       using storage_type    = typename IMPL_TYPE::storage_type;
       using indexmap_type   = typename IMPL_TYPE::indexmap_type;
-      using regular_type    = array<ValueType, Rank, TraversalOrder>;
-      using view_type       = array_view<ValueType, Rank, TraversalOrder>;
-      using const_view_type = array_view<ValueType, Rank, TraversalOrder, false, true>;
-      using weak_view_type  = array_view<ValueType, Rank, TraversalOrder, true>;
+      using regular_type    = array<ValueType, Rank>;
+      using view_type       = array_view<ValueType, Rank>;
+      using const_view_type = array_const_view<ValueType, Rank>;
+      //using weak_view_type  = array_view<ValueType, Rank, true>;
 
       /// Empty array.
       explicit array(memory_layout_t<Rank> ml = memory_layout_t<Rank>{}) : IMPL_TYPE(ml) {}
@@ -167,6 +165,10 @@ namespace triqs {
       explicit array(typename indexmap_type::domain_type const &dom, storage_type &&sto, memory_layout_t<Rank> ml = memory_layout_t<Rank>{})
          : IMPL_TYPE(indexmap_type(dom, ml), std::move(sto)) {}
 
+      // from a temporary storage and an indexmap. Used for reshaping a temporary array
+      explicit array(indexmap_type const &idx_map, storage_type &&sto)
+         : IMPL_TYPE(idx_map, std::move(sto)) {}
+
       /**
      * Build a new array from X.domain() and fill it with by evaluating X. X can be :
      *  - another type of array, array_view, matrix,.... (any <IndexMap, Storage> pair)
@@ -176,8 +178,7 @@ namespace triqs {
       template <typename T>
       array(
          const T &X,
-         std::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, memory_layout_t<Rank>>
-            ml)
+         std::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, memory_layout_t<Rank>> ml)
          : IMPL_TYPE(indexmap_type(X.domain(), ml)) {
         triqs_arrays_assign_delegation(*this, X);
       }
@@ -189,13 +190,13 @@ namespace triqs {
      *  - a expression : e.g. array<int> A = B+ 2*C;
      */
       template <typename T>
-      array(const T &X,
-            std::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, void *> _unused =
-               nullptr)
+      array(
+         const T &X,
+         std::enable_if_t<ImmutableCuboidArray<T>::value && std::is_convertible<typename T::value_type, value_type>::value, void *> _unused = nullptr)
          : IMPL_TYPE(indexmap_type(X.domain(), get_memory_layout<Rank, T>::invoke(X))) {
         triqs_arrays_assign_delegation(*this, X);
       }
-      
+
       // build from a init_list
       template <typename T>
       array(std::initializer_list<T> const &l, memory_layout_t<1> ml = memory_layout_t<1>{},
@@ -346,9 +347,8 @@ namespace triqs {
     //----------------------------------------------------------------------------------
 
     // how to build the view type ....
-    template <class V, int R, typename TraversalOrder, bool Borrowed, bool IsConst>
-    struct ISPViewType<V, R, TraversalOrder, Tag::array_view, Borrowed, IsConst> {
-      using type = array_view<V, R, TraversalOrder, Borrowed, IsConst>;
+    template <class V, int R, char B_S, bool IsConst> struct ISPViewType<V, R, Tag::array_view, B_S, IsConst> {
+      using type = array_view<V, R, B_S, IsConst>;
     };
   } // namespace arrays
 } // namespace triqs
@@ -356,8 +356,8 @@ namespace triqs {
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
 namespace std {
-  template <typename V, typename To1, typename To2, int R, bool B1, bool B2, bool C1, bool C2>
-  void swap(triqs::arrays::array_view<V, R, To1, B1, C1> &a, triqs::arrays::array_view<V, R, To2, B2, C2> &b) = delete;
+  template <typename V, int R, char B1, char B2, bool C1, bool C2>
+  void swap(triqs::arrays::array_view<V, R, B1, C1> &a, triqs::arrays::array_view<V, R,  B2, C2> &b) = delete;
 }
 
 #include "./expression_template/array_algebra.hpp"

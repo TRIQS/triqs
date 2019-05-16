@@ -48,10 +48,11 @@ namespace triqs {
 
       // technical details...
       using r_t  = typename Target::slice_t;
-      using rv_t = const_view_or_type_t<typename Target::slice_t>;
 
       // gf_evaluator
-      template <typename G> rv_t operator()(G const &g, matsubara_freq const &f) const {
+      // FIXME We can instead return a view and write the result of the tail calculation
+      // to a member
+      template <typename G> r_t operator()(G const &g, matsubara_freq const &f) const {
         if (g.mesh().is_within_boundary(f.n)) return g[f.n];
         if (g.mesh().positive_only()) {
           int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
@@ -90,7 +91,7 @@ namespace triqs {
 
       static constexpr int arity = sizeof...(Ms); // METTRE ARITY DANS LA MESH !
 
-      template <typename G, typename... Args> const auto operator()(G const &g, Args &&... args) const {
+      template <typename G, typename... Args> auto operator()(G const &g, Args &&... args) const {
         static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
 
         using r1_t = decltype(g.mesh().evaluate(g, std::forward<Args>(args)...));
@@ -98,8 +99,8 @@ namespace triqs {
         if constexpr (is_gf_expr<r1_t>::value or is_gf<r1_t>::value) {
           return g.mesh().evaluate(g, std::forward<Args>(args)...);
         } else {
-          if (g.mesh().is_within_boundary(args...)) return make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...));
-          using rt = std::decay_t<decltype(make_const_view(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
+          if (g.mesh().is_within_boundary(args...)) return make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...));
+          using rt = std::decay_t<decltype(make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
           return rt{g.get_zero()};
         }
       }

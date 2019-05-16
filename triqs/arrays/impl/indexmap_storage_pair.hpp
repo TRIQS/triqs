@@ -56,7 +56,7 @@ namespace triqs {
 
     template <bool Const, typename IndexMapIterator, typename StorageType> class iterator_adapter;
 
-    template <class V, int R, typename TraversalOrder, class ViewTag, bool Borrowed, bool IsConst> struct ISPViewType;
+    template <class V, int R, class ViewTag, char B_S, bool IsConst> struct ISPViewType;
 
     // Auxiliary class for the auto_assign of indexmap_storage_pair, proxies.
     // When implementing triqs_clef_auto_assign (A, f), if the result of f is itself a
@@ -79,7 +79,7 @@ namespace triqs {
 
     //---------------
 
-    template <typename IndexMapType, typename StorageType, typename TraversalOrder, bool IsConst, bool IsView, typename ViewTag>
+    template <typename IndexMapType, typename StorageType, bool IsConst, bool IsView, char B_S, typename ViewTag>
     class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_CONCEPT_TAG_NAME(MutableCuboidArray) {
 
       public:
@@ -88,8 +88,6 @@ namespace triqs {
       static_assert(!std::is_const<value_type>::value, "no const type");
       using storage_type             = StorageType;
       using indexmap_type            = IndexMapType;
-      using traversal_order_t        = typename _get_traversal_order_t<TraversalOrder>::type;
-      using traversal_order_arg      = TraversalOrder;
       static constexpr int rank      = IndexMapType::domain_type::rank;
       static constexpr bool is_const = IsConst;
 
@@ -110,8 +108,7 @@ namespace triqs {
 
       template <typename InitLambda>
       explicit indexmap_storage_pair(tags::_with_lambda_init, indexmap_type IM, InitLambda &&lambda) : indexmap_(std::move(IM)), storage_() {
-        storage_ =
-           StorageType(indexmap_.domain().number_of_elements(), nda::mem::do_not_initialize); // DO NOT construct the element of the array
+        storage_ = StorageType(indexmap_.domain().number_of_elements(), nda::mem::do_not_initialize); // DO NOT construct the element of the array
         _foreach_on_indexmap(indexmap_, [&](auto const &... x) { storage_.init_raw(indexmap_(x...), lambda(x...)); });
       }
 
@@ -121,7 +118,6 @@ namespace triqs {
       indexmap_storage_pair(indexmap_storage_pair &&X)      = default;
 
       protected:
-
       // ------------------------------- swap --------------------------------------------
 
       void swap_me(indexmap_storage_pair &X) {
@@ -162,8 +158,8 @@ namespace triqs {
       /// data_start is the starting point of the data of the object
       /// this it NOT &storage()[0], which is the start of the underlying blokc
       /// they are not equal for a view in general
-      value_type const * data_start() const { return storage_.data() + indexmap_.start_shift(); }
-      value_type * data_start() { return storage_.data() + indexmap_.start_shift(); }
+      value_type const *data_start() const { return storage_.data() + indexmap_.start_shift(); }
+      value_type *data_start() { return storage_.data() + indexmap_.start_shift(); }
 
       using domain_type = typename indexmap_type::domain_type;
       domain_type const &domain() const { return indexmap_.domain(); }
@@ -177,26 +173,26 @@ namespace triqs {
       size_t num_elements() const { return domain().number_of_elements(); }
       size_t size() const { return domain().number_of_elements(); }
 
-      bool is_empty() const { return this->num_elements()==0;}
+      bool is_empty() const { return this->num_elements() == 0; }
       //bool is_empty() const { return this->storage_.empty(); }
 
       // ------------------------------- operator () --------------------------------------------
 
-      using view_type      = typename ISPViewType<value_type, domain_type::rank, TraversalOrder, ViewTag, false, IsConst>::type;
-      using weak_view_type = typename ISPViewType<value_type, domain_type::rank, TraversalOrder, ViewTag, true, IsConst>::type;
+      using view_type      = typename ISPViewType<value_type, domain_type::rank, ViewTag, false, IsConst>::type;
+      using weak_view_type = typename ISPViewType<value_type, domain_type::rank, ViewTag, true, IsConst>::type;
 
       // Evaluation and slices
       template <typename... Args>
       std::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0)
-                            && (!IsConst),
-                         value_type &>
+                          && (!IsConst),
+                       value_type &>
       operator()(Args const &... args) & {
         return storage_[indexmap_(args...)];
       }
 
       template <typename... Args>
       std::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0),
-                         value_type const &>
+                       value_type const &>
       operator()(Args const &... args) const & {
         return storage_[indexmap_(args...)];
       }
@@ -204,12 +200,12 @@ namespace triqs {
       // && : return a & iif it is a non const view
       template <typename... Args>
       std::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0)
-                            && (!IsConst && IsView),
-                         value_type &>
+                          && (!IsConst && IsView),
+                       value_type &>
       operator()(Args const &... args) && {
         // add here a security check in case it is a view, unique. For a regular type, move the result...
 #ifdef TRIQS_ARRAYS_DEBUG
-	// weak is disabled.
+        // weak is disabled.
         //if (!storage_type::is_weak && storage_.is_unique()) TRIQS_RUNTIME_ERROR << "triqs::array. Attempting to call an rvalue unique view ...";
 #endif
         return storage_[indexmap_(args...)];
@@ -218,8 +214,8 @@ namespace triqs {
       // && return a value if this is not a view (regular class) or it is a const_view
       template <typename... Args>
       std::enable_if_t<(!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type, Args...>::r_type::domain_type::rank == 0)
-                            && (!(!IsConst && IsView)),
-                         value_type>
+                          && (!(!IsConst && IsView)),
+                       value_type>
       operator()(Args const &... args) && {
         return storage_[indexmap_(args...)];
       }
@@ -229,8 +225,8 @@ namespace triqs {
         //using V2=typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type ;
         using V2 = value_type;
         static_assert(IM2::domain_type::rank != 0, "Internal error");
-        typedef typename ISPViewType<V2, IM2::domain_type::rank, typename IM2::traversal_order_in_template, ViewTag,
-                                     ForceBorrowed , is_const>::type type;
+	// ForceBorrowed ignored : Always the same as the current object
+        typedef typename ISPViewType<V2, IM2::domain_type::rank, ViewTag, B_S, is_const>::type type;
       };
 
       template <typename... Args> // non const version
@@ -262,13 +258,11 @@ namespace triqs {
       }
 
       /// Equivalent to make_view
-      typename ISPViewType<value_type, domain_type::rank, TraversalOrder, ViewTag, true, true>::type operator()() const & { return *this; }
+      typename ISPViewType<value_type, domain_type::rank, ViewTag, B_S, true>::type operator()() const & { return *this; }
 
-      typename ISPViewType<value_type, domain_type::rank, TraversalOrder, ViewTag, true, IsConst>::type operator()() & { return *this; }
+      typename ISPViewType<value_type, domain_type::rank, ViewTag, B_S, IsConst>::type operator()() & { return *this; }
 
-      typename ISPViewType<value_type, domain_type::rank, TraversalOrder, ViewTag, false, IsConst>::type operator()() && {
-        return *this;
-      }
+      typename ISPViewType<value_type, domain_type::rank, ViewTag, B_S, IsConst>::type operator()() && { return *this; }
 
       // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
       // NB : this is ok because indexmap_storage_pair has a shallow copy constructor ...
