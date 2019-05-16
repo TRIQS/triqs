@@ -1,6 +1,9 @@
 .. _manual:
 
+
+
 .. toctree::
+   :caption: Manual
    :maxdepth: 1
  
    triqs/gfs/contents

@@ -56,7 +56,7 @@ add_custom_command(
   ${NAMESPACES}
   --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
   --cxxflags="-DTRIQS_BUILDING_LIBRARY ${CPP2RST_CXXFLAGS}"
-  --parse-all-comments
+  # --parse-all-comments
   ${CPP2RST_INCLUDE_FLAGS}
   -I${CMAKE_BINARY_DIR}/Config
   -isystem=${CMAKE_SOURCE_DIR}/cpp2py/include

@@ -12,7 +12,9 @@
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
 
+#include <triqs/statistics/mean_error.hpp>
 #include <triqs/statistics/accumulator.hpp>
+#include <triqs/statistics/jackknife.hpp>
 #include <triqs/statistics/histograms.hpp>
 
 #include <mpi/mpi.hpp>
