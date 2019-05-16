@@ -1,6 +1,9 @@
 .. _documentation/manual:
 
+
+
 .. toctree::
+   :caption: Manual
    :maxdepth: 1
  
    triqs/arrays/contents

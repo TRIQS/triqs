@@ -1,27 +1,42 @@
-**[triqs/statistics]** Tools for statistical analysis: binning, autocorrelation time, and jackknife
-====================================================================================================
+Statistical Analysis: Jackknife
+==============================+
+
+
 
 Introduction
 ------------
 
-This library provides tools to analyze statistical samples that are generated during a simulation. In particular, it provides routines for accumulating and binning observables which are directly sampled during the simulation as well as for calculating averages and errors of quantities derived from that data.
+This library provides statistical tools to analyze samples that are generated during a simulation. In particular, it provides routines for (a) accumulating and binning observables which are directly sampled a Monte Carlo simulation (b) caclualte average and errors for data and functions of data using jackknife resampling, (c) constructs histograms.
 
-In general, the output samples produced in a Monte Carlo type simulation are *not* independent of one another, but correlated over a characteristic time :math:`\tau` dependent on the simulation and observable.  In order to proceed with conventional statistical analysis, we have to obtain independent samples from the data by binning [LINK]. The central object in the code for this is the so-called accumulator [LINK]. [[It takes data during the simulation and serves a dual purpose of both estimating the auto-correlation time and actually binning and holding the final data.]]
+Processing Correlated Data 
+---------------------------
 
-For independent samples :math:`\lbrace x_i\rbrace _{i=0\dots N-1}` of the elementary observable :math:`X`, the estimates of the mean and standard error are 
+In general, the output samples produced in Monte Carlo type simulations are *not* independent of one another, but correlated over a characteristic number of steps -- the correlation time :math:`\tau`. This depends on the simulation and observable.  In order to proceed with conventional statistical analysis, we have to obtain independent samples from the correlated data by binning [LINK]. The central object in the code for this is the :ref:`accumulator class <triqs__stat__accumulator>`. This provides functions to both to estimate :math:`\tau` and to actually bin and store data.
 
-.. math:: \langle X \rangle \approx \frac{1}{N} \sum_{i=0}^{N-1} x_{i},  (\Delta \langle X \rangle)^2 \approx \frac{N-1}{N} \frac{ \sigma^2(x)}{N}
+Averages and Standard Errors 
+-----------------------------
 
+For independent samples :math:`\lbrace x_i\rbrace _{i=0\dots N-1}` of the elementary observable :math:`X`, estimates of the mean and standard error are:
 
-However, one may wish to compute estimates of the average and error for derived quantities, including ones that depend on several observables :math:`X,Y,\ldots`:
+.. math:: \bar{X} \approx \frac{1}{N} \sum_{i=0}^{N-1} x_{i} \\  (\Delta \bar{X})^2 \approx \frac{N-1}{N} \frac{ \sigma^2(x)}{N}
 
-.. math:: f(\langle X \rangle , \langle Y \rangle, \dots)
+Functions to do these calculations (including mpi versions), are :ref:`implemented in the library <triqs__stat>`.
 
-where :math:`f` is a general function. Unless :math:`f` is linear, estimating the error :math:`\Delta f(\langle X \rangle , \langle Y \rangle, \dots)` is often a difficult problem, which can be addressed using resampling methods. The REF[jackknife] implements the simplest resampling method to give generally reliable averages and estimates of error for arbitrary user-specified functions :math:`f`.
+Generally we want to computing the mean and error for quantities, derived fromn our measured and binned data. Consider a general funciton :math:`f` that depend on several observables :math:`X,Y,\ldots`:
+
+.. math:: f(\bar{X}, \bar{Y}, \dots)
+
+Unless :math:`f` is linear, calculating a reliable estimate the error :math:`\Delta f` is a difficult problem, which can be addressed using resampling methods. The simplest of these methods is the jackknife [LINK]. We implement the :ref:`jacknife method <jackknife>` (and a :ref:`MPI version <jackknife_mpi>`), which allows for general user-specified functions :math:`f` and input data :math:`X,Y,\ldots`.
 
 TODO: toc of sub modules
 
 TODO: Note that X, Y are generally cross correlated since they come from the same Markov chain
+
+
+
+Note: Numerical Stability 
+-----------------------------
+
 
 Accumulator
 ------------
