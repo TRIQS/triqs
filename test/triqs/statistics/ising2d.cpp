@@ -2,7 +2,7 @@
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/arrays.hpp>
-#include <triqs/statistics.hpp>
+#include <triqs/statistics/statistics.hpp>
 #include <vector>
 #include <iostream>
 #include <fstream>

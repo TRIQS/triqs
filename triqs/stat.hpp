@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2013 by O. Parcollet
+ * Copyright (C) 2011-2017 by O. Parcollet, T. Ayral.
+ * Copyright (C) 2018-2019 by Simons Foundation
+ *   author : O. Parcollet, H. Strand, P. Dumitrescu
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,7 +20,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+
 #pragma once
-#include "./clef.hpp"
-#include "./statistics/statistics.hpp"
-#include "./statistics/histograms.hpp"
+
+#include <triqs/statistics/mean_error.hpp>
+#include <triqs/statistics/accumulator.hpp>
+#include <triqs/statistics/jackknife.hpp>
+#include <triqs/statistics/histograms.hpp>
