@@ -26,10 +26,9 @@ set(NAMESPACES
     -N triqs::mc_tools
     -N triqs::hilbert_space
     -N triqs::atom_diag
-    -N triqs::statistics
+    -N triqs::stat
     -N mpi
     -N itertools
-    -N triqs::stat
 )
 
 # Caution! This target will generate documentation into the sourcetree at doc/documentation/cpp_api

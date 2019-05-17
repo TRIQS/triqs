@@ -24,7 +24,7 @@ class Cpp2pyInfo:
         'triqs::gfs::' : 'triqs.gf',
         'triqs::operators::many_body_operator' : 'triqs.operators',
         'triqs::lattice' : 'triqs.lattice',
-        'triqs::statistics::histogram' : 'triqs.statistics.histograms',
+        'triqs::stat::histogram' : 'triqs.stat.histograms',
         'triqs::atom_diag::' : 'triqs.atom_diag',
         'mpi::' : 'triqs.utility.mpi',
         'h5::' : 'h5._h5py'

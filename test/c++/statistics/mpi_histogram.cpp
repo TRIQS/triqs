@@ -18,7 +18,7 @@
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/statistics/histograms.hpp>
 
-using namespace triqs::statistics;
+using namespace triqs::stat;
 using namespace triqs;
 
 histogram make_hd() {

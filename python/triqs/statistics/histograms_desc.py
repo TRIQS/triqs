@@ -16,14 +16,14 @@ module.add_include("<triqs/cpp2py_converters.hpp>")
 # Add here anything to add in the C++ code at the start, e.g. namespace using
 module.add_preamble("""
 using namespace triqs;
-using namespace statistics;
+using namespace triqs::stat;
 """)
 
 # The class histogram
 c = class_(
         py_type = "Histogram",  # name of the python class
         c_type = "histogram",   # name of the C++ class
-        c_type_absolute = "triqs::statistics::histogram",
+        c_type_absolute = "triqs::stat::histogram",
         is_printable = True,
         hdf5 = True,
         comparisons = "==",
@@ -112,14 +112,14 @@ c.add_method("""void clear ()""",
     Resets all data values and the total counts of accumulated and discarded points.""")
 
 f = pyfunction(name = '__lshift__', arity = 2)
-f.add_overload(calling_pattern = '<<', signature = 'self_t& (triqs::statistics::histogram h, double x)')
+f.add_overload(calling_pattern = '<<', signature = 'self_t& (triqs::stat::histogram h, double x)')
 f.treat_as_inplace = True
 c.number_protocol['lshift'] = f
 
 
 module.add_class(c)
 
-module.add_function("triqs::statistics::histogram triqs::statistics::pdf (triqs::statistics::histogram h)",
+module.add_function ("triqs::stat::histogram pdf (triqs::stat::histogram h)",
                     doc = r"""Normalise histogram to get probability density function (PDF)
 
 Parameters
@@ -132,7 +132,7 @@ Returns
 out
      Probability density function""")
 
-module.add_function("triqs::statistics::histogram cdf (triqs::statistics::histogram h)",
+module.add_function ("triqs::stat::histogram cdf (triqs::stat::histogram h)",
                      doc = r"""Integrate and normalise histogram to get cumulative distribution function (CDF)
 
 Parameters

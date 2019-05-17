@@ -19,8 +19,7 @@
 
 #include "./histograms.hpp"
 
-namespace triqs {
-  namespace statistics {
+namespace triqs::stat {
 
     void histogram::_init() {
       if (a >= b) TRIQS_RUNTIME_ERROR << "histogram construction: one must have a<b";
@@ -90,5 +89,4 @@ namespace triqs {
       return os;
     }
 
-  } // namespace statistics
-} // namespace triqs
+} // namespace triqs::stat
