@@ -23,8 +23,7 @@
 #include <triqs/arrays.hpp>
 #include <ostream>
 
-namespace triqs {
-  namespace statistics {
+namespace triqs::stat {
 
     /// Statistical histogram
     /**
@@ -257,5 +256,4 @@ namespace triqs {
       return cdf;
     }
 
-  } // namespace statistics
-} // namespace triqs
+} // namespace triqs::stat

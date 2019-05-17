@@ -28,7 +28,7 @@ class Cpp2pyInfo(Cpp2pyInfoBase):
         'triqs::gfs::' : 'pytriqs.gf',
         'triqs::operators::many_body_operator' : 'pytriqs.operators',
         'triqs::lattice' : 'pytriqs.lattice',
-        'triqs::statistics::histogram' : 'pytriqs.statistics.histograms',
+        'triqs::stat::histogram' : 'pytriqs.stat.histograms',
         'triqs::atom_diag::' : 'pytriqs.atom_diag'
         }
 
