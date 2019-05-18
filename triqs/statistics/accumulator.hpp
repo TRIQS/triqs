@@ -194,35 +194,33 @@ namespace triqs::stat {
 
   } // namespace details
 
-  /** 
-   * The class takes in measurements during a Monte Carlo simulation and serves a dual purpose:
-   *  
-   * (a) It can estimate the auto-correlation time of the data (so-called "logarithmic binning").
-   * (b) It can averge groups of consequtive measurements and store the final data (so-called "linear binning").
-   *  
-   * The accumulators can be configured to perform either or both of these purposes, as needed. The design is purposefully flexible -- it is useful both where the auto-correlation time $\tau$ of the data is known as well as when it has to be estimated during the simulation. 
-   *  
-   * Logarithmic (Log) Binning
-   * -------------------------
-   *  
-   * This part of the accumulator is used to estimate the autocorrelation time of the data, by calculating the standard error of the data binned with different bin sizes. For correlated data, the error should grow as the bin size increases up to the autocorrelation time, where it saturates [LINK].
-   *  
-   * The log binning uses bin sizes that are powers of two $2, 4, 8, 16, \ldots$ up to a user-defined maximum. Note that binning is performed only once there is at one full bin of data at a given size -- any partial accumulation is not considered. In the the end, one can obtain the list of standard errors for the different levels of binning; this should be analyzed to see if saturation with size has occurred. 
-   *  
-   * .. note:: Underestimating the auto-correlation time and a lack of ergodicity are common sources of systematic errors in Monte Carlo simulations. Provided the computational and memory costs are acceptable, it is advisable to always turn on logarithmic binning to check that $\tau$ was estimated correctly and acts as expected.
-   * 
-   * Linear (Lin) Binning
-   * --------------------
-   *  
-   * This part of the accumulator is responsible for partially averaging (binning) and storing the data. It takes in data and accumulates it in a bin up to a user-defined bin-size. At every point, a bin stores the mean value of the data within it bin. If the bin size is larger then the auto-correlation time $\tau$ of the measurement, the bins are independent statistical samples, which can be used for further analysis. 
-   * 
-   * 
-   * TODO: EXAMPLE!
-   * TODO: Tutorial
-   * 
-   * @brief class for binning and analyzing correlated data
-   * @include triqs/stat/accumulator.hpp
-   */
+  /// The class takes in measurements during a Monte Carlo simulation and serves a dual purpose:
+  ///
+  /// (a) It can estimate the auto-correlation time of the data (so-called "logarithmic binning").
+  /// (b) It can averge groups of consequtive measurements and store the final data (so-called "linear binning").
+  ///
+  /// The accumulators can be configured to perform either or both of these purposes, as needed. The design is purposefully flexible -- it is useful both where the auto-correlation time $\tau$ of the data is known as well as when it has to be estimated during the simulation.
+  ///
+  /// Logarithmic (Log) Binning
+  /// -------------------------
+  ///
+  /// This part of the accumulator is used to estimate the autocorrelation time of the data, by calculating the standard error of the data binned with different bin sizes. For correlated data, the error should grow as the bin size increases up to the autocorrelation time, where it saturates [LINK].
+  ///
+  /// The log binning uses bin sizes that are powers of two $2, 4, 8, 16, \ldots$ up to a user-defined maximum. Note that binning is performed only once there is at one full bin of data at a given size -- any partial accumulation is not considered. In the the end, one can obtain the list of standard errors for the different levels of binning; this should be analyzed to see if saturation with size has occurred.
+  ///
+  /// .. note:: Underestimating the auto-correlation time and a lack of ergodicity are common sources of systematic errors in Monte Carlo simulations. Provided the computational and memory costs are acceptable, it is advisable to always turn on logarithmic binning to check that $\tau$ was estimated correctly and acts as expected.
+  ///
+  /// Linear (Lin) Binning
+  /// --------------------
+  ///
+  /// This part of the accumulator is responsible for partially averaging (binning) and storing the data. It takes in data and accumulates it in a bin up to a user-defined bin-size. At every point, a bin stores the mean value of the data within it bin. If the bin size is larger then the auto-correlation time $\tau$ of the measurement, the bins are independent statistical samples, which can be used for further analysis.
+  ///
+  ///
+  /// TODO: EXAMPLE!
+  /// TODO: Tutorial
+  ///
+  /// @brief Bins and analyzes correlated data
+  /// @include triqs/stat/accumulator.hpp
   template <typename T> class accumulator {
     private:
     details::log_binning<T> log_bins;
@@ -240,84 +238,68 @@ namespace triqs::stat {
 
     accumulator() = default;
 
-    /**
-     * @tparam T Type of object to be accumulated. 
-     *    This can be any regular type provided that it can be set to zero (T x=0) and has multiplication operator (x * x) defined in an element-wise manner.
-     * @param data_instance An instance of the data type T that will be accumulated. 
-     *                      This will be copied to initialize the linear and logarithmic parts.
-     * @param n_log_bins_max The maximum number of bins to be kept in the logarithmic binning. Possible values are:
-     *                          (a) n_log_bins_max == 0: turns off logarithmic binning.
-     *                          (b) n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is $2^{\texttt{n_log_bins_max}}$. 
-     *                          (c) n_log_bins_max < 0: unbounded number of bins. A new bin of capacity $2^m$ get created as soon as there are $2^m$ measurements available.
-     * @param n_lin_bins_max The maximum number of data points to be kept by the linear bin. Possible values are:
-     *                          (a) n_lin_bins_max == 0: turns off linear binning.
-     *                          (b) n_lin_bins_max == 1: when there is only a single linear bin, the accumulator ignores lin_bin_capacity. This is so that all no data which is passed to the accumulator is ignored.
-     *                          (c) n_lin_bins_max > 1: imposes a finite maximum bin number, causes automatic compression[REF] of the data when all bins are filled and additional data is being passed to the accumulator
-     *                          (d) n_lin_bins_max < 0: unbounded number of bins. A new bin is created when all current bins have reached capacity.
-     * @param lin_bin_capacity The number of measurements the linear part will average together in a single bin, before starting a new bin.
-     */
+    /// @tparam T Type of object to be accumulated.
+    ///    This can be any regular type provided that it can be set to zero (T x=0) and has multiplication operator (x * x) defined in an element-wise manner.
+    /// @param data_instance An instance of the data type T that will be accumulated.
+    ///                      This will be copied to initialize the linear and logarithmic parts.
+    /// @param n_log_bins_max The maximum number of bins to be kept in the logarithmic binning. Possible values are:
+    ///                          (a) n_log_bins_max == 0: turns off logarithmic binning.
+    ///                          (b) n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is $2^{\texttt{n_log_bins_max}}$.
+    ///                          (c) n_log_bins_max < 0: unbounded number of bins. A new bin of capacity $2^m$ get created as soon as there are $2^m$ measurements available.
+    /// @param n_lin_bins_max The maximum number of data points to be kept by the linear bin. Possible values are:
+    ///                          (a) n_lin_bins_max == 0: turns off linear binning.
+    ///                          (b) n_lin_bins_max == 1: when there is only a single linear bin, the accumulator ignores lin_bin_capacity. This is so that all no data which is passed to the accumulator is ignored.
+    ///                          (c) n_lin_bins_max > 1: imposes a finite maximum bin number, causes automatic compression[REF] of the data when all bins are filled and additional data is being passed to the accumulator
+    ///                          (d) n_lin_bins_max < 0: unbounded number of bins. A new bin is created when all current bins have reached capacity.
+    /// @param lin_bin_capacity The number of measurements the linear part will average together in a single bin, before starting a new bin.
     accumulator(T const &data_instance, int n_log_bins_max = 0, int n_lin_bins_max = 0, int lin_bin_capacity = 1)
        : log_bins{data_instance, n_log_bins_max}, //
          lin_bins{data_instance, n_lin_bins_max, lin_bin_capacity} {}
 
-    /**
-     * Returns the maximum number of bins the logarithmic part of the accumulator can hold.
-     * @brief Max. number of bins in the logarithmic accumulator
-     * @return Maximum number of bins
-     */
+    /// Returns the maximum number of bins the logarithmic part of the accumulator can hold.
+    /// @brief Max. number of bins in the logarithmic accumulator
+    /// @return Maximum number of bins
     int n_log_bins_max() const { return log_bins.max_n_bins; }
 
-    /**
-     * Returns the number of bins currently in the logarithmic part of the accumulator
-     * @brief Number of bins in the logarithmic accumulator
-     * @return Number of bins
-     */
+    /// Returns the number of bins currently in the logarithmic part of the accumulator
+    /// @brief Number of bins in the logarithmic accumulator
+    /// @return Number of bins
     int n_log_bins() const { return log_bins.n_bins(); }
 
-    /**
-      * Returns the maximum number of bins the linear part of the accumulator can hold.
-      * @brief Max. number of bins in the linear accumulator
-      * @return Maximum number of bins
-      */
+    /// Returns the maximum number of bins the linear part of the accumulator can hold.
+    /// @brief Max. number of bins in the linear accumulator
+    /// @return Maximum number of bins
     int n_lin_bins_max() const { return lin_bins.max_n_bins; }
 
-    /**
-     * Returns the number of bins currently in the linear part of the accumulator
-     * @brief Number of bins in the linear accumulator
-     * @return Number of bins
-     */
+    /// Returns the number of bins currently in the linear part of the accumulator
+    /// @brief Number of bins in the linear accumulator
+    /// @return Number of bins
     int n_lin_bins() const { return lin_bins.n_bins(); }
 
-    /**
-     * Returns the current cpacaity of a linear bin. This is number of measurements that will be averaged in a single linear bin, until the next bin is started. The capacity increases when the linear bins are compressed, either :ref:`manually <accumulator_compress_linear_bins>` or automatically when reaching the maximum number of bins [REF?].
-     * 
-     * When there is only a single bin [:ref:`n_lin_bins() <accumulator_n_lin_bins>` == 1], this parameter is ignored in order to avoid data loss.
-     * 
-     * @brief Capacity of a linear bin
-     * @return Bin capacity
-     */
+    /// Returns the current cpacaity of a linear bin. This is number of measurements that will be averaged in a single linear bin, until the next bin is started. The capacity increases when the linear bins are compressed, either :ref:`manually <accumulator_compress_linear_bins>` or automatically when reaching the maximum number of bins [REF?].
+    ///
+    /// When there is only a single bin [:ref:`n_lin_bins() <accumulator_n_lin_bins>` == 1], this parameter is ignored in order to avoid data loss.
+    ///
+    /// @brief Capacity of a linear bin
+    /// @return Bin capacity
     int lin_bin_capacity() const { return lin_bins.bin_capacity; }
 
-    /**
-     * Input a measurement into the accumulator. This measurement is then added to the linear and logarithmic binning parts, unless a part as been turned off (lin_bin_size = 0 or log_bin_size = 0).
-     * 
-     * @brief Input a measurement into the accumulator
-     * @tparam U type of the object to be added to the the accumulator.
-     *           This is often the same as type **T** as was used to define the accumulator, but might be more general. The user should ensure that the object passed can be added to the accumulator, else a runtime error will occur. 
-     * @param x object to added to the accumulator
-     * @example triqs/stat/acc_data_entry.cpp
-     */
+    /// Input a measurement into the accumulator. This measurement is then added to the linear and logarithmic binning parts, unless a part as been turned off (lin_bin_size = 0 or log_bin_size = 0).
+    ///
+    /// @brief Input a measurement into the accumulator
+    /// @tparam U type of the object to be added to the the accumulator.
+    ///           This is often the same as type **T** as was used to define the accumulator, but might be more general. The user should ensure that the object passed can be added to the accumulator, else a runtime error will occur.
+    /// @param x object to added to the accumulator
+    /// @example triqs/stat/acc_data_entry.cpp
     template <typename U> void operator<<(U const &x) {
       log_bins << x;
       lin_bins << x;
     }
 
-     /**
-      * Returns the standard errors for different power-of-two bin sizes
-      * @return Vector of type real(T); element v[n] contains standard error of data computed with bin size $2^n$
-      * @brief 
-      */    
-     auto auto_corr_variances() const {
+    /// Returns the standard errors for different power-of-two bin sizes
+    /// @return Vector of type real(T); element v[n] contains standard error of data computed with bin size $2^n$
+    /// @brief
+    auto auto_corr_variances() const {
       auto res1 = log_bins.Qk;
       if (res1.size() == 0) return res1;
       for (int n = 0; n < res1.size(); ++n) {
@@ -354,28 +336,22 @@ namespace triqs::stat {
       return res;
     }
 
-    /** 
-     * Returns vector with data stored from linear binning
-     * @brief Returns data stored from linear binning
-     * @return Vector with the data
-     */
+    /// Returns vector with data stored from linear binning
+    /// @brief Returns data stored from linear binning
+    /// @return Vector with the data
     std::vector<T> const &linear_bins() const { return lin_bins.bins; }
 
-    /** 
-     * Increases the size of each linear bin by a integer scaling factor and compresses all the data into the smallest number of bins with the new bin size.
-     * @brief Increases linear bin size and compresses data within
-     * @param compression_factor Scaling factor by which to increase lin_bin_capacity; if < 2 nothing is done
-     */
+    /// Increases the size of each linear bin by a integer scaling factor and compresses all the data into the smallest number of bins with the new bin size.
+    /// @brief Increases linear bin size and compresses data within
+    /// @param compression_factor Scaling factor by which to increase lin_bin_capacity; if < 2 nothing is done
     void compress_linear_bins(int compression_factor) { lin_bins.compress(compression_factor); }
   };
 
-  /** 
-   * Compute estimates for the auto-correlation times $\tau$ log-binned standard errors. 
-   * @tparam V iterable type; elements must be addable to each other
-   * @param data Container with data
-   * @return Mean of data; type is deduced from first element of **data**
-   * @brief Convert log bin errors in auto-correlation times
-   */
+  /// Compute estimates for the auto-correlation times $\tau$ log-binned standard errors.
+  /// @tparam V iterable type; elements must be addable to each other
+  /// @param data Container with data
+  /// @return Mean of data; type is deduced from first element of **data**
+  /// @brief Convert log bin errors in auto-correlation times
   template <typename V> auto tau_estimates(V const &v, long n) { return 0.5 * ((v[n] * v[n]) / (v[0] * v[0]) - 1); }
   // FIXME: CHANGE FUNCITON IMPLEMENTATION / API
 
