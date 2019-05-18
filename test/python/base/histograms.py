@@ -18,7 +18,7 @@
 #
 # Authors: Igor Krivenko, Priyanka Seth, Nils Wentzell
 
-from triqs.statistics import *
+from triqs.stat import *
 from h5 import HDFArchive
 from triqs.utility.comparison_tests import *
 import numpy as np

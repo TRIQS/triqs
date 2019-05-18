@@ -1,9 +1,9 @@
 #include <itertools/itertools.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/gfs.hpp>
-#include <triqs/statistics/mean_error.hpp>
-#include <triqs/statistics/accumulator.hpp>
-#include <triqs/statistics/jackknife.hpp>
+#include <triqs/stat/mean_error.hpp>
+#include <triqs/stat/accumulator.hpp>
+#include <triqs/stat/jackknife.hpp>
 #include <triqs/test_tools/arrays.hpp>
 #include <typeinfo>
 

@@ -17,7 +17,7 @@
 // Authors: Igor Krivenko, Olivier Parcollet
 
 #include <triqs/test_tools/arrays.hpp>
-#include <triqs/statistics/histograms.hpp>
+#include <triqs/stat/histograms.hpp>
 #include <triqs/arrays.hpp>
 using namespace triqs::stat;
 namespace arrays = triqs::arrays;

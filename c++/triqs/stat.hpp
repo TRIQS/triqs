@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <triqs/statistics/mean_error.hpp>
-#include <triqs/statistics/accumulator.hpp>
-#include <triqs/statistics/jackknife.hpp>
-#include <triqs/statistics/histograms.hpp>
+#include <triqs/stat/mean_error.hpp>
+#include <triqs/stat/accumulator.hpp>
+#include <triqs/stat/jackknife.hpp>
+#include <triqs/stat/histograms.hpp>

@@ -23,7 +23,7 @@ the broadcasted result with a reference. """
 
 import numpy as np
 import triqs.utility.mpi as mpi
-from triqs.statistics.histograms import Histogram
+from triqs.stat.histograms import Histogram
 
 def py_histogram(int_vec):
     
