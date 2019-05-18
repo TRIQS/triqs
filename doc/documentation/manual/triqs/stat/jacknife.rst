@@ -154,5 +154,5 @@ Concepts
 element wise multiplication
 
 .. toctree::
-   /cpp2rst_generated/triqs/statistics/accumulator
+   /cpp2rst_generated/triqs/stat/accumulator
 

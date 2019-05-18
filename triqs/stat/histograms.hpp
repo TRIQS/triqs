@@ -31,7 +31,7 @@ namespace triqs::stat {
   /// The histogram keeps track of the total number of the sampled values, as well
   /// as of the lost samples that lie outside the chosen range.
   ///
-  /// @include triqs/statistics/histograms.hpp
+  /// @include triqs/stat/histograms.hpp
   /// @brief Statistical histogram
   class histogram {
 

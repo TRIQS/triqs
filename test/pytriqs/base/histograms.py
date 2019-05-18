@@ -1,4 +1,4 @@
-from pytriqs.statistics import *
+from pytriqs.stat import *
 from pytriqs.archive import HDFArchive
 from pytriqs.utility.comparison_tests import *
 import numpy as np

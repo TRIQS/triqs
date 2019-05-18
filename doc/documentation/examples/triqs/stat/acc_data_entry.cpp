@@ -1,4 +1,4 @@
-#include <triqs/statistics/accumulator.hpp>
+#include <triqs/stat/accumulator.hpp>
 #include <triqs/arrays.hpp>
 
 using namespace triqs::stat;

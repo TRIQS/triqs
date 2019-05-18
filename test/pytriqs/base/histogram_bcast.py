@@ -4,7 +4,7 @@ the broadcasted result with a reference. """
 
 import numpy as np
 import pytriqs.utility.mpi as mpi
-from pytriqs.statistics.histograms import Histogram
+from pytriqs.stat.histograms import Histogram
 
 def py_histogram(int_vec):
     

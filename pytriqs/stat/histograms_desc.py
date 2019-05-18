@@ -1,14 +1,14 @@
 # Generated automatically using the command :
-# c++2py.py ../../triqs/statistics/histograms.hpp -p
+# c++2py.py ../../triqs/stat/histograms.hpp -p
 from cpp2py.wrap_generator import *
 
 # The module
-module = module_(full_name = "pytriqs.statistics.histograms", doc = "")
+module = module_(full_name = "pytriqs.stat.histograms", doc = "")
 
 # All the triqs C++/Python modules
 
 # Add here all includes beyond what is automatically included by the triqs modules
-module.add_include("<triqs/statistics/histograms.hpp>")
+module.add_include("<triqs/stat/histograms.hpp>")
 
 module.add_include("<cpp2py/converters/pair.hpp>")
 module.add_include("<triqs/cpp2py_converters.hpp>")

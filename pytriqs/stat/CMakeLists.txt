@@ -6,6 +6,6 @@ SET(PYTHON_SOURCES
 #
 add_cpp2py_module(histograms)
 
-install(FILES ${PYTHON_SOURCES}  DESTINATION ${TRIQS_PYTHON_LIB_DEST}/statistics)
-install(TARGETS histograms       DESTINATION ${TRIQS_PYTHON_LIB_DEST}/statistics)
+install(FILES ${PYTHON_SOURCES}  DESTINATION ${TRIQS_PYTHON_LIB_DEST}/stat)
+install(TARGETS histograms       DESTINATION ${TRIQS_PYTHON_LIB_DEST}/stat)
 

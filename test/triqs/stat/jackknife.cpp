@@ -2,8 +2,8 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/gfs.hpp>
 #include <triqs/test_tools/arrays.hpp>
-#include <triqs/statistics/accumulator.hpp>
-#include <triqs/statistics/jackknife.hpp>
+#include <triqs/stat/accumulator.hpp>
+#include <triqs/stat/jackknife.hpp>
 #include <boost/version.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/mersenne_twister.hpp>

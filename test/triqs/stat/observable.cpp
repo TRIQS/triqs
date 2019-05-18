@@ -1,5 +1,5 @@
 #include <triqs/test_tools/arrays.hpp>
-#include <triqs/statistics/accumulator.hpp>
+#include <triqs/stat/accumulator.hpp>
 #include <triqs/gfs.hpp>
 using namespace triqs::stat;
 using namespace triqs::gfs;

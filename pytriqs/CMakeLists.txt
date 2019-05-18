@@ -44,7 +44,7 @@ add_subdirectory(lattice)
 add_subdirectory(operators)
 add_subdirectory(plot)
 add_subdirectory(random_generator)
-add_subdirectory(statistics)
+add_subdirectory(stat)
 add_subdirectory(sumk)
 add_subdirectory(utility)
 
