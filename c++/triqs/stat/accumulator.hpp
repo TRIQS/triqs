@@ -238,19 +238,19 @@ namespace triqs::stat {
 
     accumulator() = default;
 
-    /// @tparam T Type of object to be accumulated.
-    ///    This can be any regular type provided that it can be set to zero (T x=0) and has multiplication operator (x * x) defined in an element-wise manner.
+    /// @tparam T Type of object to be accumulated. 
+    ///             Pre-requisites: T is a regular type provided that can be set to zero (T x=0) and has multiplication operator (x * x) defined in an element-wise manner.
     /// @param data_instance An instance of the data type T that will be accumulated.
     ///                      This will be copied to initialize the linear and logarithmic parts.
     /// @param n_log_bins_max The maximum number of bins to be kept in the logarithmic binning. Possible values are:
-    ///                          (a) n_log_bins_max == 0: turns off logarithmic binning.
-    ///                          (b) n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is $2^{\texttt{n_log_bins_max}}$.
-    ///                          (c) n_log_bins_max < 0: unbounded number of bins. A new bin of capacity $2^m$ get created as soon as there are $2^m$ measurements available.
+    ///                          * n_log_bins_max == 0: turns off logarithmic binning.
+    ///                          * n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is $2^{\texttt{n_log_bins_max}}$.
+    ///                          * n_log_bins_max < 0: unbounded number of bins. A new bin of capacity $2^m$ get created as soon as there are $2^m$ measurements available.
     /// @param n_lin_bins_max The maximum number of data points to be kept by the linear bin. Possible values are:
-    ///                          (a) n_lin_bins_max == 0: turns off linear binning.
-    ///                          (b) n_lin_bins_max == 1: when there is only a single linear bin, the accumulator ignores lin_bin_capacity. This is so that all no data which is passed to the accumulator is ignored.
-    ///                          (c) n_lin_bins_max > 1: imposes a finite maximum bin number, causes automatic compression[REF] of the data when all bins are filled and additional data is being passed to the accumulator
-    ///                          (d) n_lin_bins_max < 0: unbounded number of bins. A new bin is created when all current bins have reached capacity.
+    ///                          * n_lin_bins_max == 0: turns off linear binning.
+    ///                          * n_lin_bins_max == 1: when there is only a single linear bin, the accumulator ignores lin_bin_capacity. This is so that all no data which is passed to the accumulator is ignored.
+    ///                          * n_lin_bins_max > 1: imposes a finite maximum bin number, causes automatic compression[REF] of the data when all bins are filled and additional data is being passed to the accumulator
+    ///                          * n_lin_bins_max < 0: unbounded number of bins. A new bin is created when all current bins have reached capacity.
     /// @param lin_bin_capacity The number of measurements the linear part will average together in a single bin, before starting a new bin.
     accumulator(T const &data_instance, int n_log_bins_max = 0, int n_lin_bins_max = 0, int lin_bin_capacity = 1)
        : log_bins{data_instance, n_log_bins_max}, //
@@ -296,10 +296,10 @@ namespace triqs::stat {
       lin_bins << x;
     }
 
-    /// Returns the standard errors for different power-of-two bin sizes
+    /// Returns the standard errors for data with different power-of-two capacity.
     /// @return Vector of type real(T); element v[n] contains standard error of data computed with bin size $2^n$
-    /// @brief
-    auto auto_corr_variances() const {
+    /// @brief Get standard errors of log binned data
+    auto log_bin_errors() const {
       auto res1 = log_bins.Qk;
       if (res1.size() == 0) return res1;
       for (int n = 0; n < res1.size(); ++n) {
@@ -307,17 +307,18 @@ namespace triqs::stat {
         if (count_n <= 1) {
           res1[n] = 0;
         } else {
+          using std::sqrt;
           res1[n] = sqrt(res1[n] / (count_n * (count_n - 1)));
         }
       }
       return res1;
     }
 
-    // Returns the standard errors for different power-of-two bin sizes
-    std::vector<T> auto_corr_variances_mpi(mpi::communicator c) const {
+    /// @brief Get standard errors of log binned data (MPI Version)
+    auto log_bin_errors_mpi(mpi::communicator c) const {
       // FIXME WITH NEW MACHINARY
       if (n_log_bins() == 0) { return std::vector<T>(); } // FIXME: Stops MPI Crashing on reducing empty
-      std::vector<T> res1 = log_bins.Qk;
+      auto res1 = log_bins.Qk;
       for (int n = 0; n < res1.size(); ++n) {
         long count_n = (log_bins.count >> n); // /2^n
         if (count_n <= 1) {
