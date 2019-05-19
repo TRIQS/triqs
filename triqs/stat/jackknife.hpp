@@ -131,43 +131,20 @@ namespace triqs::stat {
 
   } // namespace details
 
-  // ------------------------------------------------------------------------------
-
-  /// Compute the average and error with jackknife method
-  ///
-  /// @param c (TRIQS) MPI communicator
-  /// @tparam F type of g
-  /// @param a list of series
-  /// @param f a function (a1,a2,a3,...) -> f(a1,a2,a3...)
-  /// @return  (average corrected with jackknife bias, jackknife error, average of jacknife series, naive average)
-  ///       FIXME : Write the math formula
-  ///
-  /// The calculation is performed over the nodes.
-  /// Each node compute the average and variance, which are then reduced (not all-reduced) to the node 0.
-  /// Precondition : a series all have the same size
-  template <typename F, typename... A> auto jackknife_mpi(mpi::communicator c, F &&f, A const &... a) {
-    return details::jackknife_impl(&c, std::forward<F>(f), details::jackknifed_t{a}...);
-  }
-
-  /// Same
-  /// @tparam T
-  template <typename F, typename... T> auto jackknife_mpi(mpi::communicator c, F &&f, accumulator<T> const &... a) {
-    return jackknife_mpi(c, std::forward<F>(f), a.linear_bins()...);
-  }
 
   // ------------------------------------------------------------------------------
 
-  /// Compute the average and error with jackknife method
+  /// This function can apply a general mathematical function on a series of data or a list of series of data.
+  /// It then computes the average and standard error using jackknife resampling.
+  // 
+  /// FIXME : Write the math formula
   ///
   /// @tparam F type of g
-  /// @param a list of series
-  /// @param f a function (a1,a2,a3,...) -> f(a1,a2,a3...)
+  /// @param a list of series with data
+  /// Precondition: the series all have the same size
+  /// @param f a function which will act element wise on the series passed in a **a** (a1,a2,a3,...) -> f(a1,a2,a3...)
   /// @return  (average corrected with jackknife bias, jackknife error, average of jacknife series, naive average)
-  ///       FIXME : Write the math formula
-  ///
-  /// The calculation is performed on the current node only
-  /// Each node compute the average and variance, which are then reduced (not all-reduced) to the node 0.
-  /// Precondition : a series all have the same size
+  /// @brief Calculate mean and error of derived data using jackknife resampling
   template <typename F, typename... A> auto jackknife(F &&f, A const &... a) {
     static_assert(not std::is_same_v<std::decay_t<F>, mpi::communicator>,
                   "I see that you pass a mpi:::communicator, you probably want to use jackknife_mpi");
@@ -180,6 +157,28 @@ namespace triqs::stat {
     static_assert(not std::is_same_v<std::decay_t<F>, mpi::communicator>,
                   "I see that you pass a mpi:::communicator, you probably want to use jackknife_mpi");
     return jackknife(std::forward<F>(f), a.linear_bins()...);
+  }
+
+  // ------------------------------------------------------------------------------
+
+  /// Compute the average and error with jackknife method
+  /// The calculation is performed over the nodes.
+  /// Each node compute the average and variance, which are then reduced (not all-reduced) to the node 0.
+  /// Precondition : a series all have the same size
+  /// @param c (TRIQS) MPI communicator
+  /// @tparam F type of g
+  /// @param a list of series
+  /// @param f a function (a1,a2,a3,...) -> f(a1,a2,a3...)
+  /// @return  (average corrected with jackknife bias, jackknife error, average of jacknife series, naive average)
+  /// @brief Calculate mean and error of derived data using jackknife resampling (MPI Version)
+  template <typename F, typename... A> auto jackknife_mpi(mpi::communicator c, F &&f, A const &... a) {
+    return details::jackknife_impl(&c, std::forward<F>(f), details::jackknifed_t{a}...);
+  }
+
+  /// Same
+  /// @tparam T
+  template <typename F, typename... T> auto jackknife_mpi(mpi::communicator c, F &&f, accumulator<T> const &... a) {
+    return jackknife_mpi(c, std::forward<F>(f), a.linear_bins()...);
   }
 
 } // namespace triqs::stat

@@ -1,6 +1,6 @@
-#include <itertools/itertools.hpp>
-#include <triqs/arrays.hpp>
 #include <triqs/stat/mean_error.hpp>
+#include <triqs/arrays.hpp>
+#include <itertools/itertools.hpp>
 #include <triqs/test_tools/arrays.hpp>
 #include <typeinfo>
 

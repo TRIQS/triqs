@@ -66,7 +66,7 @@ TEST(Stat, AutoCorrDoubleManualCheck) {
     }
   }
 
-  auto variances = AA.auto_corr_variances();
+  auto variances = AA.log_bin_errors();
 
   for (auto [n, b] : itertools::enumerate(variances)) { EXPECT_NEAR(bins[n], b, 1.e-15); }
 }
@@ -95,7 +95,7 @@ triqs::arrays::array<double, 1> f(int N, int seed) {
 
   // estimates of tau in an array
   triqs::arrays::array<double, 1> R(n_log_bins);
-  auto variances = AA.auto_corr_variances();
+  auto variances = AA.log_bin_errors();
 
   for (auto n : range(n_log_bins)) {
     R(n) = tau_estimates(variances, n);
@@ -184,14 +184,14 @@ TEST(Stat, LogBinArray) {
     bb << atemp;
   }
 
-  for (auto [x1, x2, a] : itertools::zip(b1.auto_corr_variances(), b2.auto_corr_variances(), b.auto_corr_variances())) {
+  for (auto [x1, x2, a] : itertools::zip(b1.log_bin_errors(), b2.log_bin_errors(), b.log_bin_errors())) {
     EXPECT_NEAR(x1, a(0, 0), 1.e-15);
     EXPECT_NEAR(x2, a(0, 1), 1.e-15);
     EXPECT_NEAR(x1, a(1, 1), 1.e-15);
     EXPECT_NEAR(x2, a(1, 0), 1.e-15);
   }
 
-  for (auto [x, y] : itertools::zip(bb.auto_corr_variances(), b.auto_corr_variances())) { EXPECT_ARRAY_NEAR(x, y, 1.e-15); }
+  for (auto [x, y] : itertools::zip(bb.log_bin_errors(), b.log_bin_errors())) { EXPECT_ARRAY_NEAR(x, y, 1.e-15); }
 
   auto f = h5::file("auto_corr_array.h5", 'w');
   h5_write(f, "scalar", b1);

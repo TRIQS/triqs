@@ -211,7 +211,7 @@ TEST(Stat, Accumulator_LinBinOnly) {
   for (auto x : data) { my_acc << x; }
   // Nothing in the log bins
   EXPECT_EQ(my_acc.n_log_bins(), 0);
-  EXPECT_EQ(my_acc.auto_corr_variances(), std::vector<double>());
+  EXPECT_EQ(my_acc.log_bin_errors(), std::vector<double>());
   // Lin Bins Filled
   EXPECT_EQ(my_acc.n_lin_bins(), 4);
   EXPECT_EQ(my_acc.n_lin_bins_max(), -1);
@@ -240,7 +240,7 @@ TEST(Stat, Accumulator_Off) {
   EXPECT_EQ(my_acc.n_lin_bins_max(), 0);
   EXPECT_EQ(my_acc.linear_bins(), std::vector<double>());
   EXPECT_EQ(my_acc.n_log_bins(), 0);
-  EXPECT_EQ(my_acc.auto_corr_variances(), std::vector<double>());
+  EXPECT_EQ(my_acc.log_bin_errors(), std::vector<double>());
 }
 
 // *****************************************************************************
