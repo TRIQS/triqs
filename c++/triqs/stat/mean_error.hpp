@@ -28,13 +28,11 @@
 #include <triqs/arrays.hpp>
 
 namespace triqs::stat {
-  /** 
-   * Calculate the arithmetic mean[REF] of data in an iterable container. 
-   * @tparam V iterable type; elements must be addable to each other
-   * @param data Container with data
-   * @return Mean of data; type is deduced from first element of **data**
-   * @brief Calculate mean
-   */
+  /// Calculate the arithmetic mean [REF] of data in an iterable container.
+  /// @tparam V iterable type. Pre-conditions: elements must be addable to each other
+  /// @param data Container with data
+  /// @return Mean of data; type is deduced from first element of **data**
+  /// @brief Calculate mean
   template <typename V> auto mean(V const &data) {
     // ENSURE(data.size() > 0);
     auto mean_calc = data[0];
@@ -43,13 +41,11 @@ namespace triqs::stat {
     return mean_calc;
   }
 
-  /** 
-   * Calculate the arithmetic mean[REF] of data spread over multiple MPI threads. Reduces the answer to all threads.
-   * @tparam V Iterable type; elements must be addable to each other and must be MPI reducible
-   * @param data Container with data
-   * @return Mean of data on all threads reduced to all threads; type is deduced from first element of **data**
-   * @brief Calculate mean (MPI Version)
-   */
+  /// Calculate the arithmetic mean [REF] of data spread over multiple MPI threads. Reduces the answer to all threads.
+  /// @tparam V Iterable type. Pre-conditions: elements must be addable to each other and must be MPI reducible
+  /// @param data Container with data
+  /// @return Mean of data on all threads reduced to all threads; type is deduced from first element of **data**
+  /// @brief Calculate mean (MPI Version)
   template <typename V> auto mean_mpi(mpi::communicator c, V const &data) {
     // ENSURE(data.size() > 0);
     auto M = make_regular(mean(data));
@@ -59,13 +55,11 @@ namespace triqs::stat {
     return M;
   }
 
-  /** 
-   * Calculate arithmetic mean and standard error of data in an iterable container. 
-   * @tparam V Iterable type; elements must TODO
-   * @param data Container with data
-   * @return std::pair with [mean, standard error] of data; types are deduced from first element of **data**
-   * @brief Calculate mean and standard error
-   */
+  /// Calculate arithmetic mean and standard error [REF] of data in an iterable containe.
+  /// @tparam V Iterable type. Pre-conditions: elements must be: addable to each other, have element-wise multiplication, have complex conjugation defined via conj_r [REF] .
+  /// @param data Container with data
+  /// @return std::pair with [mean, standard error]; types are deduced from first element of **data** [REF]
+  /// @brief Calculate mean and standard error
   template <typename V> auto mean_and_err(V const &data) {
     // ENSURE(data.size() > 0);
     using std::real;
@@ -80,13 +74,11 @@ namespace triqs::stat {
     return std::make_pair(mean_calc, err_calc);
   }
 
-  /** 
-   * Calculate arithmetic mean and standard error of data spread over multiple MPI threads. Reduces the answer to all threads.
-   * @tparam V Iterable type; elements must be TODO and must be MPI reducible
-   * @param data Container with data
-   * @return std::pair with [mean, standard error] of data; types are deduced from first element of **data**
-   * @brief Calculate mean and standard error (MPI Version)
-   */
+  /// Calculate arithmetic mean and standard error [REF] of data spread over multiple MPI threads. Reduces the answer to all threads.
+  /// @tparam V Iterable type. Pre-conditions: elements must be: addable to each other, have element-wise multiplication, have complex conjugation defined via conj_r [REF], be MPI reducable. 
+  /// @param data Container with data
+  /// @return std::pair with [mean, standard error]; types are deduced from first element of **data**
+  /// @brief Calculate mean and standard error (MPI Version)
   template <typename V> auto mean_and_err_mpi(mpi::communicator c, V const &data) {
     // ENSURE(data.size() > 0);
     using std::real;

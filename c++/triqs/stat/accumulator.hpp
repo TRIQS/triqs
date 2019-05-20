@@ -238,19 +238,22 @@ namespace triqs::stat {
 
     accumulator() = default;
 
-    /// @tparam T Type of object to be accumulated. 
-    ///             Pre-requisites: T is a regular type provided that can be set to zero (T x=0) and has multiplication operator (x * x) defined in an element-wise manner.
+    /// @tparam T Type of object to be accumulated. Pre-requisites: 
+    ///   * T is a regular type
+    ///   * T can be set to zero with: T x=0
+    ///   * T has a multiplication operator (x * x) defined in an element-wise manner
+    ///   * T can be made real using: triqs::arrays::real(T)
     /// @param data_instance An instance of the data type T that will be accumulated.
-    ///                      This will be copied to initialize the linear and logarithmic parts.
+    ///   This will be copied and zeroed to initialize the linear and logarithmic parts. Should be set-up so that further data can be correctly added to it (e.g. have the right dimensions and size for an array).
     /// @param n_log_bins_max The maximum number of bins to be kept in the logarithmic binning. Possible values are:
-    ///                          * n_log_bins_max == 0: turns off logarithmic binning.
-    ///                          * n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is $2^{\texttt{n_log_bins_max}}$.
-    ///                          * n_log_bins_max < 0: unbounded number of bins. A new bin of capacity $2^m$ get created as soon as there are $2^m$ measurements available.
+    ///   * n_log_bins_max == 0: turns off logarithmic binning.
+    ///   * n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is $2^{\texttt{n_log_bins_max}}$.
+    ///   * n_log_bins_max < 0: unbounded number of bins. A new bin of capacity $2^m$ get created as soon as there are $2^m$ measurements available.
     /// @param n_lin_bins_max The maximum number of data points to be kept by the linear bin. Possible values are:
-    ///                          * n_lin_bins_max == 0: turns off linear binning.
-    ///                          * n_lin_bins_max == 1: when there is only a single linear bin, the accumulator ignores lin_bin_capacity. This is so that all no data which is passed to the accumulator is ignored.
-    ///                          * n_lin_bins_max > 1: imposes a finite maximum bin number, causes automatic compression[REF] of the data when all bins are filled and additional data is being passed to the accumulator
-    ///                          * n_lin_bins_max < 0: unbounded number of bins. A new bin is created when all current bins have reached capacity.
+    ///   * n_lin_bins_max == 0: turns off linear binning.
+    ///   * n_lin_bins_max == 1: when there is only a single linear bin, the accumulator ignores lin_bin_capacity. This is so that all no data which is passed to the accumulator is ignored.
+    ///   * n_lin_bins_max > 1: imposes a finite maximum bin number, causes automatic compression[REF] of the data when all bins are filled and additional data is being passed to the accumulator
+    ///   * n_lin_bins_max < 0: unbounded number of bins. A new bin is created when all current bins have reached capacity.
     /// @param lin_bin_capacity The number of measurements the linear part will average together in a single bin, before starting a new bin.
     accumulator(T const &data_instance, int n_log_bins_max = 0, int n_lin_bins_max = 0, int lin_bin_capacity = 1)
        : log_bins{data_instance, n_log_bins_max}, //
@@ -289,7 +292,7 @@ namespace triqs::stat {
     /// @brief Input a measurement into the accumulator
     /// @tparam U type of the object to be added to the the accumulator.
     ///           This is often the same as type **T** as was used to define the accumulator, but might be more general. The user should ensure that the object passed can be added to the accumulator, else a runtime error will occur.
-    /// @param x object to added to the accumulator
+    /// @param x object to be added to the accumulator
     /// @example triqs/stat/acc_data_entry.cpp
     template <typename U> void operator<<(U const &x) {
       log_bins << x;
@@ -297,7 +300,7 @@ namespace triqs::stat {
     }
 
     /// Returns the standard errors for data with different power-of-two capacity.
-    /// @return Vector of type real(T); element v[n] contains standard error of data computed with bin size $2^n$
+    /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from triqs::arrays::real(T), where T is the type defining the accumulator.
     /// @brief Get standard errors of log binned data
     auto log_bin_errors() const {
       auto res1 = log_bins.Qk;
@@ -314,9 +317,14 @@ namespace triqs::stat {
       return res1;
     }
 
+    /// Returns the standard errors for data with different power-of-two capacity, reduced from data over all MPI threads. The final answer is reduced only to the zero MPI thread (not all reduce).
+    /// @param c TRIQS MPI communicator
+    /// @return std::vector, where element v[n] contains the standard error of data bined with a bin capacity of $2^n$. The return type is deduced from triqs::arrays::real(T), where T is the type defining the accumulator. Reduced only to zero MPI thread.
     /// @brief Get standard errors of log binned data (MPI Version)
     auto log_bin_errors_mpi(mpi::communicator c) const {
       // FIXME WITH NEW MACHINARY
+      // FIXME: MQ can be different lenghts onb different accumualtors...
+      // FIXME: Don't create new bins from data
       if (n_log_bins() == 0) { return std::vector<T>(); } // FIXME: Stops MPI Crashing on reducing empty
       auto res1 = log_bins.Qk;
       for (int n = 0; n < res1.size(); ++n) {
@@ -339,12 +347,12 @@ namespace triqs::stat {
 
     /// Returns vector with data stored from linear binning
     /// @brief Returns data stored from linear binning
-    /// @return Vector with the data
+    /// @return Vector with the data of type T, which defines the accumulator
     std::vector<T> const &linear_bins() const { return lin_bins.bins; }
 
-    /// Increases the size of each linear bin by a integer scaling factor and compresses all the data into the smallest number of bins with the new bin size.
-    /// @brief Increases linear bin size and compresses data within
-    /// @param compression_factor Scaling factor by which to increase lin_bin_capacity; if < 2 nothing is done
+    /// Increases the capacity of each linear bin by a integer scaling factor and compresses all the data into the smallest number of bins with the new capacity.
+    /// @brief Increases linear bin capacity and compresses data within
+    /// @param compression_factor Scaling factor by which to increase capacity; if < 2 nothing is done
     void compress_linear_bins(int compression_factor) { lin_bins.compress(compression_factor); }
   };
 
