@@ -131,19 +131,28 @@ namespace triqs::stat {
 
   } // namespace details
 
-
   // ------------------------------------------------------------------------------
 
-  /// This function can apply a general mathematical function on a series of data or a list of series of data.
-  /// It then computes the average and standard error using jackknife resampling.
-  // 
-  /// FIXME : Write the math formula
+  /// Directly pass data-series in vector like objects
+  /// @head Calculate the value and error of a general function $f$ of the average of sampled observables $f\left(\langle \mathbf{a} \rangle\right)$, using jackknife resampling.  
+  /// @tparam F return type of function **f** which acts on data
+  /// @tparam A vector-like object, defining size() and []
+  /// @param a one or multiple series with data: $\mathbf{a} = \{a_1, a_2, a_3, \ldots\}$ 
+  ///   Pre-condition: if more than one series is passed, the series have to be equal in size
+  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in **a**: 
+  /// $$\left(a_1[i], a_2[i],a_3[i],\ldots\right) \to f\left(a_1[i],a_2[i],a_3[i],\ldots\right)$$
+  /// @return std::tuple with four statistical estimators $\left(f_\mathrm{J}^{*}, \Delta{f}_\mathrm{J}, f_\mathrm{J}, f_\mathrm{direct}\right)$, defined below.
   ///
-  /// @tparam F type of g
-  /// @param a list of series with data
-  /// Precondition: the series all have the same size
-  /// @param f a function which will act element wise on the series passed in a **a** (a1,a2,a3,...) -> f(a1,a2,a3...)
-  /// @return  (average corrected with jackknife bias, jackknife error, average of jacknife series, naive average)
+  /// Jackknife resampling takes $N$ data points $\mathbf{a}[i]$ and creates $N$ samples ("jackknifed data"), which we denote $\tilde{\mathbf{a}}[i]$. We calculate three statistical estimators for $f\left(\langle \mathbf{a} \rangle\right)$:
+  ///   * The function $f$ applied to observed mean of the data
+  ///     $$f_\mathrm{direct} = f\left(\bar{\mathbf{a}}\right),\quad \bar{\mathbf{a}} = \frac{1}{N}\sum_{i=0}^{N}\mathbf{a}[i]$$
+  ///   * The jacknife estimate defined as
+  ///     $$f_\mathrm{J} = \frac{1}{N}\sum_{i=0}^N f(\tilde{\mathbf{a}}[i])$$
+  ///   * The jacknife estimate, with bias correction to remove $O(1/N)$ effects
+  ///     $$f_\mathrm{J}^{*} = N f_\mathrm{direct} - (N - 1) f_\mathrm{J}$$
+  /// Additionally, an estimate in the errror of $f\left(\langle \mathbf{a} \rangle\right)$ is given by the jacknife as
+  ///     $$\Delta{f}_J = \sqrt{N-1} \cdot \sigma_f$$
+  /// where $\sigma_f$ is the standard deviation of $\left\{f(\tilde{\mathbf{a}}[0]), f(\tilde{\mathbf{a}}[1]), \ldots, f(\tilde{\mathbf{a}}[N])\right\}$.
   /// @brief Calculate mean and error of derived data using jackknife resampling
   template <typename F, typename... A> auto jackknife(F &&f, A const &... a) {
     static_assert(not std::is_same_v<std::decay_t<F>, mpi::communicator>,
@@ -151,8 +160,8 @@ namespace triqs::stat {
     return details::jackknife_impl(nullptr, std::forward<F>(f), details::jackknifed_t{a}...);
   }
 
-  /// Same
-  /// @tparam T
+  /// Pass :ref:`accumulators <triqs__stat__accumulator>`, where the jacknife acts on the :ref:`linear binned data <accumulator_linear_bins>` 
+  /// @tparam T type of data stored in the accumulators
   template <typename F, typename... T> auto jackknife(F &&f, accumulator<T> const &... a) {
     static_assert(not std::is_same_v<std::decay_t<F>, mpi::communicator>,
                   "I see that you pass a mpi:::communicator, you probably want to use jackknife_mpi");
@@ -161,22 +170,37 @@ namespace triqs::stat {
 
   // ------------------------------------------------------------------------------
 
-  /// Compute the average and error with jackknife method
-  /// The calculation is performed over the nodes.
-  /// Each node compute the average and variance, which are then reduced (not all-reduced) to the node 0.
-  /// Precondition : a series all have the same size
-  /// @param c (TRIQS) MPI communicator
-  /// @tparam F type of g
-  /// @param a list of series
-  /// @param f a function (a1,a2,a3,...) -> f(a1,a2,a3...)
-  /// @return  (average corrected with jackknife bias, jackknife error, average of jacknife series, naive average)
+  /// Directly pass data-series in vector like objects
+  /// @head Calculate the value and error of a general function $f$ of the average of sampled observables $f\left(\langle \mathbf{a} \rangle\right)$, using jackknife resampling.  
+  /// @tail The calculation is performed over the nodes; the answers which are then reduced (not all-reduced) to the node 0.
+  /// @tparam F return type of function **f** which acts on data
+  /// @tparam A vector-like object, defining size() and []
+  /// @param c TRIQS MPI communicator
+  /// @param a one or multiple series with data: $\mathbf{a} = \{a_1, a_2, a_3, \ldots\}$ 
+  ///   Pre-condition: if more than one series is passed, the series have to be equal in size
+  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in **a**: 
+  /// $$\left(a_1[i], a_2[i],a_3[i],\ldots\right) \to f\left(a_1[i],a_2[i],a_3[i],\ldots\right)$$
+  /// @return std::tuple with four statistical estimators $\left(f_\mathrm{J}^{*}, \Delta{f}_\mathrm{J}, f_\mathrm{J}, f_\mathrm{direct}\right)$, defined below. The MPI reduction occurs *only* to node 0.
+  ///
+  /// Jackknife resampling takes $N$ data points $\mathbf{a}[i]$ and creates $N$ samples ("jackknifed data"), which we denote $\tilde{\mathbf{a}}[i]$. We calculate three statistical estimators for $f\left(\langle \mathbf{a} \rangle\right)$:
+  ///   * The function $f$ applied to observed mean of the data
+  ///     $$f_\mathrm{direct} = f\left(\bar{\mathbf{a}}\right),\quad \bar{\mathbf{a}} = \frac{1}{N}\sum_{i=0}^{N}\mathbf{a}[i]$$
+  ///   * The jacknife estimate defined as
+  ///     $$f_\mathrm{J} = \frac{1}{N}\sum_{i=0}^N f(\tilde{\mathbf{a}}[i])$$
+  ///   * The jacknife estimate, with bias correction to remove $O(1/N)$ effects
+  ///     $$f_\mathrm{J}^{*} = N f_\mathrm{direct} - (N - 1) f_\mathrm{J}$$
+  /// Additionally, an estimate in the errror of $f\left(\langle \mathbf{a} \rangle\right)$ is given by the jacknife as
+  ///     $$\Delta{f}_J = \sqrt{N-1} \cdot \sigma_f$$
+  /// where $\sigma_f$ is the standard deviation of $\left\{f(\tilde{\mathbf{a}}[0]), f(\tilde{\mathbf{a}}[1]), \ldots, f(\tilde{\mathbf{a}}[N])\right\}$.
+  /// @brief Calculate mean and error of derived data using jackknife resampling
   /// @brief Calculate mean and error of derived data using jackknife resampling (MPI Version)
   template <typename F, typename... A> auto jackknife_mpi(mpi::communicator c, F &&f, A const &... a) {
     return details::jackknife_impl(&c, std::forward<F>(f), details::jackknifed_t{a}...);
   }
 
-  /// Same
-  /// @tparam T
+
+  /// Pass :ref:`accumulators <triqs__stat__accumulator>`, where the jacknife acts on the :ref:`linear binned data <accumulator_linear_bins>` 
+  /// @tparam T type of data stored in the accumulators
   template <typename F, typename... T> auto jackknife_mpi(mpi::communicator c, F &&f, accumulator<T> const &... a) {
     return jackknife_mpi(c, std::forward<F>(f), a.linear_bins()...);
   }
