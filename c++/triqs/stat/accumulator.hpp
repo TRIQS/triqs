@@ -265,8 +265,10 @@ namespace triqs::stat {
     int n_log_bins_max() const { return log_bins.max_n_bins; }
 
     /// Returns the number of bins currently in the logarithmic part of the accumulator
+    /// When the accumulator is active (n_log_bins_max != 0), there is always at least one zeroed bin even if data has been passed to the accumulator.
     /// @brief Number of bins in the logarithmic accumulator
     /// @return Number of bins
+    /// @example triqs/stat/acc_nlogbin.cpp
     int n_log_bins() const { return log_bins.n_bins(); }
 
     /// Returns the maximum number of bins the linear part of the accumulator can hold.
@@ -274,9 +276,11 @@ namespace triqs::stat {
     /// @return Maximum number of bins
     int n_lin_bins_max() const { return lin_bins.max_n_bins; }
 
-    /// Returns the number of bins currently in the linear part of the accumulator
+    /// Returns the number of bins currently in the linear part of the accumulator.
+    /// When the accumulator is active (n_lin_bins_max != 0), there is always at least one zeroed bin even if data has been passed to the accumulator.
     /// @brief Number of bins in the linear accumulator
     /// @return Number of bins
+    /// @example triqs/stat/acc_nlinbin.cpp
     int n_lin_bins() const { return lin_bins.n_bins(); }
 
     /// Returns the current cpacaity of a linear bin. This is number of measurements that will be averaged in a single linear bin, until the next bin is started. The capacity increases when the linear bins are compressed, either :ref:`manually <accumulator_compress_linear_bins>` or automatically when reaching the maximum number of bins [REF?].
@@ -291,7 +295,7 @@ namespace triqs::stat {
     ///
     /// @brief Input a measurement into the accumulator
     /// @tparam U type of the object to be added to the the accumulator.
-    ///           This is often the same as type **T** as was used to define the accumulator, but might be more general. The user should ensure that the object passed can be added to the accumulator, else a runtime error will occur.
+    ///           This is often the same as type **T** as was used to define the accumulator, but might be more general. The user should ensure that the object passed can be added to the accumulator, else an error will occur.
     /// @param x object to be added to the accumulator
     /// @example triqs/stat/acc_data_entry.cpp
     template <typename U> void operator<<(U const &x) {
@@ -348,20 +352,27 @@ namespace triqs::stat {
     /// Returns vector with data stored from linear binning
     /// @brief Returns data stored from linear binning
     /// @return Vector with the data of type T, which defines the accumulator
+    /// @example triqs/stat/acc_linear_bins.cpp
     std::vector<T> const &linear_bins() const { return lin_bins.bins; }
 
     /// Increases the capacity of each linear bin by a integer scaling factor and compresses all the data into the smallest number of bins with the new capacity.
     /// @brief Increases linear bin capacity and compresses data within
-    /// @param compression_factor Scaling factor by which to increase capacity; if < 2 nothing is done
+    /// @param compression_factor Scaling factor by which to increase capacity; if < 2 nothing is done.
+    /// @example triqs/stat/acc_compress_manual.cpp
     void compress_linear_bins(int compression_factor) { lin_bins.compress(compression_factor); }
   };
 
   /// Compute estimates for the auto-correlation times $\tau$ log-binned standard errors.
-  /// @tparam V iterable type; elements must be addable to each other
-  /// @param data Container with data
-  /// @return Mean of data; type is deduced from first element of **data**
+  /// @tparam T regular type which devines element-wise multiplication and division.
+  /// @param error_with_binning standard error of measurement with binning $\Delta_n$
+  /// @param error_no_binning standard error of measurement with without binning $\Delta_0$
+  /// @return Estimate of the auto-correlation time $\tau$, using
+  /// $$\tau = \frac{1}{2}\left[\left(\frac{\Delta_n}{\Delta_0}\right)^2 - 1\right]$$
   /// @brief Convert log bin errors in auto-correlation times
-  template <typename V> auto tau_estimates(V const &v, long n) { return 0.5 * ((v[n] * v[n]) / (v[0] * v[0]) - 1); }
-  // FIXME: CHANGE FUNCITON IMPLEMENTATION / API
+  template <typename T> 
+  auto tau_estimate_from_errors(T const &error_with_binning, T const &error_no_binning) { 
+    // Last part is simply 1.0, but could be an array
+    return 0.5 * ((error_with_binning * error_with_binning) / (error_no_binning * error_no_binning) - error_no_binning / error_no_binning); 
+    }
 
 } // namespace triqs::stat
