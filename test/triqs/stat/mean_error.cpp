@@ -40,7 +40,7 @@ TEST(Stat, mean_only_mpi) {
   int size = world.size();
   auto ave_mpi = mean_mpi(world, data);
   EXPECT_EQ(typeid(ave_mpi), typeid(static_cast<double>(0.0)));
-  EXPECT_EQ(ave_mpi, size * (1.0 + 4.0 * size) / 2.0);
+  EXPECT_EQ(ave_mpi, (1.0 + 4.0 * size) / 2.0);
 }
 
 TEST(Stat, mean_and_err_mpi) {
