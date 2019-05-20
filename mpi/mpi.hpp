@@ -298,8 +298,8 @@ namespace mpi {
     return b;
   }
 
-  template <typename T>
-  std::enable_if_t<mpi_type<T>::value, T> mpi_reduce_in_place(T a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+  template <typename T, std::enable_if_t<has_mpi_type<T>, int> = 0 >
+  void mpi_reduce_in_place(T a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
     if (!all)
       MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : &a), &a, 1, datatype<T>(), op, root, c.get());
     else
