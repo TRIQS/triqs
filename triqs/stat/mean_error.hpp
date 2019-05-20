@@ -85,7 +85,7 @@ namespace triqs::stat {
     using std::sqrt;
     using triqs::arrays::conj_r;
     long length    = mpi::all_reduce(data.size(), c);
-    auto mean_calc = mean_mpi(data);
+    auto mean_calc = mean_mpi(c, data);
     auto err_calc  = make_regular(real(mean_calc));
     err_calc       = 0;
     for (auto const &x : data) { err_calc += conj_r(x - mean_calc) * (x - mean_calc) / (length * (length - 1)); }
