@@ -75,9 +75,13 @@ TEST(Stat, Jack1) {
   //
   double X = 0, Xn = 0, D = 0;
   for (long i = 0; i < N; ++i) { X += jack_a[i] / jack_b[i]; }
-  for (long i = 0; i < N; ++i) { Xn += A[i] / B[i]; }
+  double A_av = 0, B_av = 0;
+  for (long i = 0; i < N; ++i) {
+    A_av += A[i];
+    B_av += B[i];
+  }
   X /= N;
-  Xn /= N;
+  Xn = A_av / B_av;
   for (long i = 0; i < N; ++i) {
     double tmp = (X - jack_a[i] / jack_b[i]);
     D += tmp * tmp;
@@ -94,7 +98,6 @@ TEST(Stat, Jack1) {
 
   auto [av1, avv, av3, av2] = jackknife_mpi(world, [](auto &&x) { return x; }, a);
   EXPECT_NEAR(av1, av2, precision);
-
 }
 
 //------------------------------------------------------

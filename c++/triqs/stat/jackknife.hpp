@@ -41,29 +41,30 @@ namespace triqs::stat {
     template <typename V> struct jackknifed_t {
       V const &original_series;
       using T = std::decay_t<decltype(original_series[0])>;
-      T s;
-      long si_minus_one;
+      T sum;
+      long n_tot;
 
+      // On each node independently
       jackknifed_t(V const &bins) : original_series(bins) {
         // ENSURE(bins.size()>0)
-        si_minus_one = original_series.size() - 1;
+        n_tot = original_series.size();
         // compute the sum of B into a new T.
-        T sum = original_series[0];
+        sum = original_series[0];
         for (long i = 1; i < original_series.size(); ++i) sum += original_series[i];
-        s = sum / si_minus_one;
       }
 
-      jackknifed_t(V const &bins, mpi::communicator c) : original_series(bins) {
-        // ENSURE(bins.size()>0)
-        si_minus_one = mpi::all_reduce(original_series.size(), c) - 1;
-        // compute the sum of B into a new T.
-        T sum = original_series[0];
-        for (long i = 1; i < original_series.size(); ++i) sum += original_series[i];
-        s = T{mpi::all_reduce(sum, c)} / si_minus_one;
+      // Averages are taken over the whole communicator
+      jackknifed_t(V const &bins, mpi::communicator c) : jackknifed_t(bins) {
+	// first sum on each node (delegated constructor) and then reduce
+        n_tot = mpi::all_reduce(n_tot, c);
+        sum = mpi::all_reduce(sum, c);
       }
+
+      // average of the series (over the communicator given at construction)
+      auto average() const { return sum / n_tot; }
 
       // Call. NB : if T is an array, returns an expression template to retard the evaluation
-      auto operator[](long i) const { return s - original_series[i] / si_minus_one; }
+      auto operator[](long i) const { return (sum - original_series[i]) / (n_tot - 1); }
     };
 
     //----------------------------------------------------------------
@@ -91,8 +92,7 @@ namespace triqs::stat {
       // containing f immediately.
       // Cf below, M, sum and Q computation.
       // Check by ASAN sanitizer on tests
-      auto M   = make_regular(f(ja[0]...));
-      auto sum = make_regular(f(ja.original_series[0]...));
+      auto M = make_regular(f(ja[0]...));
 
       for (long i = 1; i < N; ++i) {
         sum += (f(ja.original_series[i]...) - sum) / (i + 1); // Cf NB
@@ -105,13 +105,8 @@ namespace triqs::stat {
 
         Ntot = mpi::reduce(N, *c);
 
-        // sum
-        sum *= double(N) / Ntot;             // remove the 1/N
-        sum = mpi::reduce(sum, *c, 0, true); // FIXME : mpi API All reduce
-
-        //
-        M *= double(N) / Ntot;           // remove the 1/N
-        M = mpi::reduce(M, *c, 0, true); // FIXME == mpi_all_reduce_in_place
+        M *= double(N) / Ntot; // remove the 1/N
+        M = mpi::all_reduce(M, *c);
       }
 
       // Compute the variance
@@ -122,11 +117,12 @@ namespace triqs::stat {
       }
 
       // reduce Q
-      if (c) Q = mpi::reduce(Q, *c, 0, true); // FIXME : mpi API All reduce
+      if (c) Q = mpi::all_reduce(Q, *c);
 
-      auto std_err = make_regular(std::sqrt((Ntot - 1) / double(Ntot)) * sqrt(Q));
-      auto average = make_regular(N * (sum - M) + M);
-      return std::make_tuple(average, std_err, M, sum);
+      auto f_on_averages = make_regular(f(ja.average()...));
+      auto std_err       = make_regular(std::sqrt((Ntot - 1) / double(Ntot)) * sqrt(Q));
+      auto average       = make_regular(N * (f_on_averages - M) + M);
+      return std::make_tuple(average, std_err, M, f_on_averages);
     }
 
   } // namespace details
