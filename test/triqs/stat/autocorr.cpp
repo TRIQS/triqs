@@ -98,7 +98,7 @@ triqs::arrays::array<double, 1> f(int N, int seed) {
   auto variances = AA.log_bin_errors();
 
   for (auto n : range(n_log_bins)) {
-    R(n) = tau_estimates_from_errors(variances[n], variances[0]);
+    R(n) = tau_estimate_from_errors(variances[n], variances[0]);
     // std::cout << std::setprecision(16) << R(n) << ",\n";
   }
   return R;
