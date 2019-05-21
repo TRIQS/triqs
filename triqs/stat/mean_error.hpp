@@ -53,7 +53,7 @@ namespace triqs::stat {
     auto M = make_regular(mean(data));
     long N = mpi::all_reduce(data.size(), c);
     M *= double(data.size()) / N;
-    mpi::mpi_reduce_in_place(M, c, 0, true); // FIXME == mpi_all_reduce_in_place
+    mpi::all_reduce_in_place(M, c); //M = mpi::all_reduce(M, c, 0);
     return M;
   }
 
@@ -93,7 +93,7 @@ namespace triqs::stat {
     auto err_calc  = make_regular(real(mean_calc));
     err_calc       = 0;
     for (auto const &x : data) { err_calc += conj_r(x - mean_calc) * (x - mean_calc) / (length * (length - 1)); }
-    mpi::mpi_reduce_in_place(err_calc, c);
+    mpi::all_reduce_in_place(err_calc, c);
     err_calc = sqrt(err_calc);
     return std::make_pair(mean_calc, err_calc);
   }
