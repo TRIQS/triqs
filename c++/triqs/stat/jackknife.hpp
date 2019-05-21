@@ -55,9 +55,9 @@ namespace triqs::stat {
 
       // Averages are taken over the whole communicator
       jackknifed_t(V const &bins, mpi::communicator c) : jackknifed_t(bins) {
-	// first sum on each node (delegated constructor) and then reduce
+        // first sum on each node (delegated constructor) and then reduce
         n_tot = mpi::all_reduce(n_tot, c);
-        sum = mpi::all_reduce(sum, c);
+        sum   = mpi::all_reduce(sum, c);
       }
 
       // average of the series (over the communicator given at construction)
@@ -90,19 +90,17 @@ namespace triqs::stat {
       // e.g. f = [](auto const & x, auto const y){ return x/y;};
       // in such cases, the ja[0] will be dangling unless we use the expression template
       // containing f immediately.
-      // Cf below, M, sum and Q computation.
+      // Cf below, M and Q computation.
       // Check by ASAN sanitizer on tests
       auto M = make_regular(f(ja[0]...));
 
       for (long i = 1; i < N; ++i) {
-        sum += (f(ja.original_series[i]...) - sum) / (i + 1); // Cf NB
-        M += (f(ja[i]...) - M) / (i + 1);                     // cf NB
+        M += (f(ja[i]...) - M) / (i + 1); // cf NB
       }
 
       // Now the reduction over the nodes.
       long Ntot = N;
       if (c) { // MPI version
-
         Ntot = mpi::reduce(N, *c);
 
         M *= double(N) / Ntot; // remove the 1/N
@@ -130,12 +128,12 @@ namespace triqs::stat {
   // ------------------------------------------------------------------------------
 
   /// Directly pass data-series in vector like objects
-  /// @head Calculate the value and error of a general function $f$ of the average of sampled observables $f\left(\langle \mathbf{a} \rangle\right)$, using jackknife resampling.  
+  /// @head Calculate the value and error of a general function $f$ of the average of sampled observables $f\left(\langle \mathbf{a} \rangle\right)$, using jackknife resampling.
   /// @tparam F return type of function **f** which acts on data
   /// @tparam A vector-like object, defining size() and []
-  /// @param a one or multiple series with data: $\mathbf{a} = \{a_1, a_2, a_3, \ldots\}$ 
+  /// @param a one or multiple series with data: $\mathbf{a} = \{a_1, a_2, a_3, \ldots\}$
   ///   Pre-condition: if more than one series is passed, the series have to be equal in size
-  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in **a**: 
+  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in **a**:
   /// $$\left(a_1[i], a_2[i],a_3[i],\ldots\right) \to f\left(a_1[i],a_2[i],a_3[i],\ldots\right)$$
   /// @return std::tuple with four statistical estimators $\left(f_\mathrm{J}^{*}, \Delta{f}_\mathrm{J}, f_\mathrm{J}, f_\mathrm{direct}\right)$, defined below.
   ///
@@ -156,7 +154,7 @@ namespace triqs::stat {
     return details::jackknife_impl(nullptr, std::forward<F>(f), details::jackknifed_t{a}...);
   }
 
-  /// Pass :ref:`accumulators <triqs__stat__accumulator>`, where the jacknife acts on the :ref:`linear binned data <accumulator_linear_bins>` 
+  /// Pass :ref:`accumulators <triqs__stat__accumulator>`, where the jacknife acts on the :ref:`linear binned data <accumulator_linear_bins>`
   /// @tparam T type of data stored in the accumulators
   template <typename F, typename... T> auto jackknife(F &&f, accumulator<T> const &... a) {
     static_assert(not std::is_same_v<std::decay_t<F>, mpi::communicator>,
@@ -167,14 +165,14 @@ namespace triqs::stat {
   // ------------------------------------------------------------------------------
 
   /// Directly pass data-series in vector like objects
-  /// @head Calculate the value and error of a general function $f$ of the average of sampled observables $f\left(\langle \mathbf{a} \rangle\right)$, using jackknife resampling.  
+  /// @head Calculate the value and error of a general function $f$ of the average of sampled observables $f\left(\langle \mathbf{a} \rangle\right)$, using jackknife resampling.
   /// @tail The calculation is performed over the nodes; the answers which are then reduced (not all-reduced) to the node 0.
   /// @tparam F return type of function **f** which acts on data
   /// @tparam A vector-like object, defining size() and []
   /// @param c TRIQS MPI communicator
-  /// @param a one or multiple series with data: $\mathbf{a} = \{a_1, a_2, a_3, \ldots\}$ 
+  /// @param a one or multiple series with data: $\mathbf{a} = \{a_1, a_2, a_3, \ldots\}$
   ///   Pre-condition: if more than one series is passed, the series have to be equal in size
-  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in **a**: 
+  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in **a**:
   /// $$\left(a_1[i], a_2[i],a_3[i],\ldots\right) \to f\left(a_1[i],a_2[i],a_3[i],\ldots\right)$$
   /// @return std::tuple with four statistical estimators $\left(f_\mathrm{J}^{*}, \Delta{f}_\mathrm{J}, f_\mathrm{J}, f_\mathrm{direct}\right)$, defined below. The MPI reduction occurs *only* to node 0.
   ///
@@ -188,14 +186,12 @@ namespace triqs::stat {
   /// Additionally, an estimate in the errror of $f\left(\langle \mathbf{a} \rangle\right)$ is given by the jacknife as
   ///     $$\Delta{f}_J = \sqrt{N-1} \cdot \sigma_f$$
   /// where $\sigma_f$ is the standard deviation of $\left\{f(\tilde{\mathbf{a}}[0]), f(\tilde{\mathbf{a}}[1]), \ldots, f(\tilde{\mathbf{a}}[N])\right\}$.
-  /// @brief Calculate mean and error of derived data using jackknife resampling
   /// @brief Calculate mean and error of derived data using jackknife resampling (MPI Version)
   template <typename F, typename... A> auto jackknife_mpi(mpi::communicator c, F &&f, A const &... a) {
-    return details::jackknife_impl(&c, std::forward<F>(f), details::jackknifed_t{a}...);
+    return details::jackknife_impl(&c, std::forward<F>(f), details::jackknifed_t{a, c}...);
   }
 
-
-  /// Pass :ref:`accumulators <triqs__stat__accumulator>`, where the jacknife acts on the :ref:`linear binned data <accumulator_linear_bins>` 
+  /// Pass :ref:`accumulators <triqs__stat__accumulator>`, where the jacknife acts on the :ref:`linear binned data <accumulator_linear_bins>`
   /// @tparam T type of data stored in the accumulators
   template <typename F, typename... T> auto jackknife_mpi(mpi::communicator c, F &&f, accumulator<T> const &... a) {
     return jackknife_mpi(c, std::forward<F>(f), a.linear_bins()...);

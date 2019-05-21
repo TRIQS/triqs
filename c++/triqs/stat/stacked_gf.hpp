@@ -35,16 +35,17 @@ namespace triqs::gfs {
 
     base_mesh_t base_mesh;
     g_t _g;
-    
-    auto _extract_base_mesh(typename g_t::mesh_t const & m) { 
-     if constexpr (get_n_variables<typename G::variable_t>::value == 1) // === single mesh 
-       return std::get<1>(m); 
-     else return triqs::tuple::pop_front(m.components());
+
+    auto _extract_base_mesh(typename g_t::mesh_t const &m) {
+      if constexpr (get_n_variables<typename G::variable_t>::value == 1) // === single mesh
+        return std::get<1>(m);
+      else
+        return triqs::tuple::pop_front(m.components());
     }
 
     stacked_gf() = default;
 
-    stacked_gf(g_t &&g) :  base_mesh(_extract_base_mesh(g.mesh())), _g(std::move(g)) {}
+    stacked_gf(g_t &&g) : base_mesh(_extract_base_mesh(g.mesh())), _g(std::move(g)) {}
 
     stacked_gf(long n, G const &g) : base_mesh(g.mesh()), _g(mesh_disc_t{n} * base_mesh, g.target_shape()) {}
 

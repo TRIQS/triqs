@@ -150,7 +150,7 @@ TEST(Binned, array) {
     EXPECT_NEAR(x2, a(1, 0), 1.e-15);
   }
 
-  auto a_b = [](auto const & a, auto const &b) { return a/b; };
+  auto a_b = [](auto const &a, auto const &b) { return a / b; };
   //
   auto [x1, d1, xj1, xn1] = jackknife_mpi(world, a_b, b1, c1);
   auto [x2, d2, xj2, xn2] = jackknife_mpi(world, a_b, b2, c2);
@@ -172,7 +172,6 @@ TEST(Binned, array) {
   EXPECT_NEAR(d1, xd(0, 0), 1.e-15);
   EXPECT_NEAR(d2, xd(1, 0), 1.e-15);
 }
-
 
 /*
 //------------------------------------------------------

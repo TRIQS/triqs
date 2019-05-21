@@ -238,7 +238,7 @@ namespace triqs::stat {
 
     accumulator() = default;
 
-    /// @tparam T Type of object to be accumulated. Pre-requisites: 
+    /// @tparam T Type of object to be accumulated. Pre-requisites:
     ///   * T is a regular type
     ///   * T can be set to zero with: T x=0
     ///   * T has a multiplication operator (x * x) defined in an element-wise manner
@@ -369,10 +369,9 @@ namespace triqs::stat {
   /// @return Estimate of the auto-correlation time $\tau$, using
   /// $$\tau = \frac{1}{2}\left[\left(\frac{\Delta_n}{\Delta_0}\right)^2 - 1\right]$$
   /// @brief Convert log bin errors in auto-correlation times
-  template <typename T> 
-  auto tau_estimate_from_errors(T const &error_with_binning, T const &error_no_binning) { 
+  template <typename T> auto tau_estimate_from_errors(T const &error_with_binning, T const &error_no_binning) {
     // Last part is simply 1.0, but could be an array
-    return 0.5 * ((error_with_binning * error_with_binning) / (error_no_binning * error_no_binning) - error_no_binning / error_no_binning); 
-    }
+    return 0.5 * ((error_with_binning * error_with_binning) / (error_no_binning * error_no_binning) - error_no_binning / error_no_binning);
+  }
 
 } // namespace triqs::stat
