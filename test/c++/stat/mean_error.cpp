@@ -50,6 +50,9 @@ TEST(Stat, mean_and_err_mpi) {
 
   auto [ave_serial, err_serial] = mean_and_err(data);
 
+  // FIXME the typeid are static_assert
+  static_assert(std::is_same_v<decltype(ave_serial), double>, "EE");
+
   EXPECT_EQ(typeid(ave_serial), typeid(static_cast<double>(0.0)));
   EXPECT_EQ(typeid(err_serial), typeid(static_cast<double>(0.0)));
   EXPECT_EQ(ave_serial, 2.5 + 4 * rank);             // =
@@ -60,7 +63,7 @@ TEST(Stat, mean_and_err_mpi) {
 
   EXPECT_EQ(typeid(ave_mpi), typeid(static_cast<double>(0.0)));
   EXPECT_EQ(typeid(err_mpi), typeid(static_cast<double>(0.0)));
-  EXPECT_EQ(ave_mpi, size * (1.0 + 4.0 * size) / 2.0);
+  EXPECT_EQ(ave_mpi,  (1.0 + 4.0 * size) / 2.0);
   EXPECT_DOUBLE_EQ(err_mpi, std::sqrt((4.0 * size + 1.0) / 12));
 }
 
