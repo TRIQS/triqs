@@ -55,7 +55,7 @@ namespace triqs::stat {
     histogram(int a, int b) : a(a), b(b), n_bins(b - a + 1), _data(n_bins, 0) { _init(); }
 
     /// Constructs a histogram over :math:`[a; b]` range with a given number of bins.
-    /// 
+    ///
     /// @param a Left end of the sampling range
     /// @param b Right end of the sampling range
     /// @param n_bins Number of bins
@@ -69,7 +69,7 @@ namespace triqs::stat {
     /// where :math:`h` is the bin length, :math:`h = (b - a) / (n_\mathrm{bins} - 1)`.
     /// This convention implies that the first (:math:`n = 0`) and the last (:math:`n = n_\mathrm{bins} - 1`)
     /// bins are effectively two times shorter that others. Sample is discarded if :math:`x\notin[a; b]`.
-    /// 
+    ///
     /// @param x Sampled value
     /// @return Reference to `*this`, so that it is possible to chain `operator<<` calls
     /// @brief Bin a real value into the histogram
@@ -109,7 +109,7 @@ namespace triqs::stat {
     /// Compute the sum of two histograms over the same range, and with equal numbers of bins.
     /// This operator will throw if histograms to be added up are incompatible.
     /// Summation is also performed on the numbers of accumulated and discarded points.
-    /// 
+    ///
     /// @param h1 First histogram to add up
     /// @param h2 Second histogram to add up
     /// @return Sum of histograms
@@ -179,7 +179,6 @@ namespace triqs::stat {
     /// @param h Histogram to read data into
     /// @brief Read histogram form HDF5
     friend void h5_read(h5::group g, std::string const &name, histogram &h);
-
 
     /// Output stream insertion
     /// @param os Reference to an output stream

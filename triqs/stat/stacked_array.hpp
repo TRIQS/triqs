@@ -42,21 +42,17 @@ namespace triqs::arrays {
 
     stacked_array() = default;
 
-    stacked_array(array<T, N + 1> && d) : _data(std::move(d)) {}
+    stacked_array(array<T, N + 1> &&d) : _data(std::move(d)) {}
 
-    template <typename ArrayType> stacked_array(long n, ArrayType const &a) : _data(join(make_shape(n), a.shape())) {
-      _data = 0;
-    }
+    template <typename ArrayType> stacked_array(long n, ArrayType const &a) : _data(join(make_shape(n), a.shape())) { _data = 0; }
 
     array_view<T, N> operator[](long i) { return _data(i, ellipsis{}); }
-    array_const_view<T, N> operator[](long i) const {  return  _data(i, ellipsis{}); }
+    array_const_view<T, N> operator[](long i) const { return _data(i, ellipsis{}); }
 
     long size() const { return first_dim(_data); }
 
     // costly
-    void push_back(array_const_view<T, N> x) {
-      _data = copy_and_push_back(_data, x);
-    }
+    void push_back(array_const_view<T, N> x) { _data = copy_and_push_back(_data, x); }
 
     private:
     auto _make_iter(range::const_iterator it) const {
@@ -64,14 +60,13 @@ namespace triqs::arrays {
     }
 
     public:
-
     // make it iterable
     auto begin() const { return _make_iter(std::cbegin(range(0, first_dim(_data)))); }
     auto end() const { return _make_iter(std::cend(range(0, first_dim(_data)))); }
     auto cbegin() const { return begin(); }
     auto cend() const { return end(); }
 
-    friend stacked_array mpi_reduce(stacked_array const &a, mpi::communicator c, int root=0, bool all=false, MPI_Op op = MPI_SUM) {
+    friend stacked_array mpi_reduce(stacked_array const &a, mpi::communicator c, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
       return {mpi_reduce(a._data, c, root, all, op)};
     }
 

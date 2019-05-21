@@ -215,8 +215,8 @@ namespace triqs {
 // hence this avoid ambiguity).
 #define TRIQS_TS_OPERATION(TAG, OP)                                                                                                                  \
   template <typename L, typename R>                                                                                                                  \
-  std::enable_if_t<(is_time_series<L>::value || is_time_series<R>::value) && (!clef::is_any_lazy<L, R>::value),                                 \
-                        clef::expr_node_t<clef::tags::TAG, L, R>>                                                                                    \
+  std::enable_if_t<(is_time_series<L>::value || is_time_series<R>::value) && (!clef::is_any_lazy<L, R>::value),                                      \
+                   clef::expr_node_t<clef::tags::TAG, L, R>>                                                                                         \
   operator OP(L &&l, R &&r) {                                                                                                                        \
     return {clef::tags::TAG(), std::forward<L>(l), std::forward<R>(r)};                                                                              \
   }
@@ -318,8 +318,7 @@ namespace triqs {
 
     template <typename T> T average(observable<T> const &obs) { return empirical_average(obs); }
 
-    template <typename ObservableExpr>
-    std::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, double> average(ObservableExpr const &obs) {
+    template <typename ObservableExpr> std::enable_if_t<clef::is_clef_expression<ObservableExpr>::value, double> average(ObservableExpr const &obs) {
       return empirical_average(_immutable_time_series<ObservableExpr>{obs});
     }
 

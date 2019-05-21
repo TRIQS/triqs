@@ -78,7 +78,7 @@ namespace triqs::stat {
   }
 
   /// Calculate arithmetic mean and standard error [REF] of data spread over multiple MPI threads. Reduces the answer to all threads.
-  /// @tparam V Iterable type. Pre-conditions: elements must be: addable to each other, have element-wise multiplication, have complex conjugation defined via conj_r [REF], be MPI reducable. 
+  /// @tparam V Iterable type. Pre-conditions: elements must be: addable to each other, have element-wise multiplication, have complex conjugation defined via conj_r [REF], be MPI reducable.
   /// @param data Container with data
   /// @return std::pair with [mean, standard error]; types are deduced from first element of **data**
   /// @example triqs/stat/mean_err_2.cpp
