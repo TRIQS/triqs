@@ -17,7 +17,7 @@ namespace nda::mem {
 #ifndef NDA_LEAK_CHECK
   using allocator_t = allocator_base_t;
 #else
-  using allocator_t = allocators::stats<allocator_base_t>;
+  using allocator_t = allocators::leak_check<allocator_base_t>;
 #endif
 
   allocator_t alloc;

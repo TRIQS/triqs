@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <vector>
 #include <memory>
+#include <numeric>
 #include "./../../utility/macros.hpp"
 #include "./blk.hpp"
 
@@ -304,22 +305,19 @@ namespace nda::allocators {
     bool owns(blk_t b) const noexcept { return A::owns(b) or F::owns(b); }
   };
 
-  // -------------------------   allocator with statistics ----------------------------
-  //
-  // stats
-  //
-  template <typename A> class stats : A {
+  // -------------------------  dress allocator with leak_checking ----------------------------
+  template <typename A> class leak_check : A {
 
     long memory_used = 0;
 
     public:
-    stats()              = default;
-    stats(stats const &) = delete;
-    stats(stats &&)      = default;
-    stats &operator=(stats const &) = delete;
-    stats &operator=(stats &&) = default;
+    leak_check()                   = default;
+    leak_check(leak_check const &) = delete;
+    leak_check(leak_check &&)      = default;
+    leak_check &operator=(leak_check const &) = delete;
+    leak_check &operator=(leak_check &&) = default;
 
-    ~stats() {
+    ~leak_check() {
       if (!empty()) {
         std::cerr << "Allocator : MEMORY LEAK of " << memory_used << " bytes\n";
         std::abort();
@@ -349,6 +347,36 @@ namespace nda::allocators {
     bool owns(blk_t b) const noexcept { return A::owns(b); }
 
     long get_memory_used() const noexcept { return memory_used; }
+  };
+
+  // ------------------------- gather statistics for a generic allocator ----------------------------
+  template <typename A> class stats : A {
+
+    std::vector<uint64_t> hist = std::vector<uint64_t>(65, 0);
+
+    public:
+    ~stats() {
+      std::cerr << "Allocation size histogram :\n";
+      //auto weight = 1.0 / std::accumulate(hist.begin(), hist.end(), 0);
+      double lz = 65;
+      for(auto c: hist){ std:: cerr << "[2^" << lz << ", 2^" << lz - 1 << "]: " << c << "\n"; --lz; }
+    }
+    stats()              = default;
+    stats(stats const &) = delete;
+    stats(stats &&)      = default;
+    stats &operator=(stats const &) = delete;
+    stats &operator=(stats &&) = default;
+
+    blk_t allocate(uint64_t s) {
+      ++hist[__builtin_clzl(s)];
+      return A::allocate(s);
+    }
+
+    void deallocate(blk_t b) noexcept { A::deallocate(b); }
+
+    bool owns(blk_t b) const noexcept { return A::owns(b); }
+
+    auto const &histogram() const noexcept { return hist; }
   };
 
 } // namespace nda::allocators
