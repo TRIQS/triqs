@@ -40,7 +40,15 @@ You can get this information from copy and pasting the output of
 python -c "from pytriqs.version import *; show_version(); show_git_hash();"
 ```
 from the command line.
-Also, please include the OS and what version of the OS you're running.
+
+Please include the OS and what version of the OS you're running.
+
+Further provide the output of the `cmake` and `make` command as well as the `CMakeCache.txt` file from the build directory using [gist](http://gist.github.com).
+
+### Formatting
+
+Please use markdown in your issue message. In order to show code correctly formatted, use a line with three backticks \`\`\` before and after source code.
+For more markdown commands look at this useful [summary](https://guides.github.com/pdfs/markdown-cheatsheet-online.pdf).
 
 ### Additional Information
 
