@@ -1,14 +1,14 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: Bug report
+title: Description
 labels: bug
 
 ---
 
 <!--
-NOTE: The issue list is not the place for general questions.
-Please consider using the mailing list instead:
+NOTE: The issue list is not the place for general questions regarding the usage of the code.
+Please consider subscribing to the mailing list instead:
 https://groups.google.com/a/flatironinstitute.org/forum/#!forum/triqs
 -->
 
@@ -27,11 +27,11 @@ https://groups.google.com/a/flatironinstitute.org/forum/#!forum/triqs
 2. [Second Step]
 3. [and so on...]
 
+or paste a minimal code example reproduce the issue.
+
 **Expected behavior:** [What you expect to happen]
 
 **Actual behavior:** [What actually happens]
-
-**Reproduces how often:** [What percentage of the time does it reproduce?]
 
 ### Versions
 
