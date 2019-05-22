@@ -99,7 +99,7 @@ namespace triqs::gfs {
     using zero_regular_t    = std::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
     using zero_const_view_t = std::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
     using zero_view_t       = zero_const_view_t;
-    using zero_t            = zero_view_t;
+    using zero_t            = zero_regular_t;
 
     // FIXME : std::array with NDA
     using target_shape_t = arrays::mini_vector<int, Target::rank>;
@@ -274,7 +274,7 @@ namespace triqs::gfs {
     void rebind(gf_view<Var, Target> const &g) noexcept {
       this->_mesh = g._mesh;
       this->_data.rebind(g._data);
-      details::_rebind_helper(_zero, g._zero);
+      this->_zero = g._zero;
       this->_indices = g._indices;
     }
 
