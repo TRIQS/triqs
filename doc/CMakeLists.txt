@@ -61,6 +61,25 @@ add_custom_command(
   -isystem=${CMAKE_SOURCE_DIR}/cpp2py/include
 )
 
+# --------------------------------------------------------
+# Build & Run the C++ doc examples and capture the output
+# --------------------------------------------------------
+
+add_custom_target(docs_example_output)
+file(GLOB_RECURSE ExampleList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+foreach(example ${ExampleList})
+  get_filename_component(f ${example} NAME_WE)
+  get_filename_component(d ${example} DIRECTORY)
+  add_executable(doc_${f} EXCLUDE_FROM_ALL ${example})
+  set_property(TARGET doc_${f} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${d})
+  target_link_libraries(doc_${f} triqs)
+  add_dependencies(docs_example_output doc_${f})
+  add_custom_command(TARGET docs_example_output
+   COMMAND doc_${f} > ${CMAKE_CURRENT_SOURCE_DIR}/${d}/${f}.output 2>/dev/null
+   WORKING_DIRECTORY ${d}
+  )
+endforeach()
+
 #---------------------------------
 # Top Sphinx target
 # ---------------------------------
