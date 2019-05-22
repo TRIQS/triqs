@@ -3,7 +3,8 @@
 
 using namespace triqs::stat;
 
-int main() {
+int main(int argc, char *argv[]) {
+  mpi::environment env(argc, argv);
   mpi::communicator world;
   int rank = world.rank();
   // Define linear data spread over the different mpi threads:
