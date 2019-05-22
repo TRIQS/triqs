@@ -33,7 +33,6 @@ namespace triqs::stat {
   /// The histogram keeps track of the total number of the sampled values, as well
   /// as of the lost samples that lie outside the chosen range.
   ///
-  /// @include triqs/stat/histograms.hpp
   /// @brief Statistical histogram
   class histogram {
 
@@ -199,7 +198,7 @@ namespace triqs::stat {
     /// @brief Output stream insertion
     friend std::ostream &operator<<(std::ostream &os, histogram const &h);
 
-    /// BOOST Serialization
+    // BOOST Serialization
     friend class boost::serialization::access;
 
     /// Serialize Histogram
