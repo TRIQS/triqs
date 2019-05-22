@@ -37,6 +37,7 @@ namespace mpi {
 
   // ------------------------------------------------------------
 
+  /// Environment must be initialized in C++
   struct environment {
 
     // MPICH does not allow Init without argc, argv, so we do not allow default constructors
