@@ -3,24 +3,24 @@
 Documentation
 =============
 
-:ref:`Manual <manual>`
-----------------------
+Manual
+------
 .. toctree::
    :maxdepth: 1
 
    documentation/manual/contents
 
 
-:ref:`C++ API <cppapi>`
------------------------
+C++ API
+-------
 
 .. toctree::
    :maxdepth: 1
 
    documentation/cpp_api/contents
 
-:ref:`Python API <pythonapi>`
------------------------------
+Python API
+----------
 
 .. toctree::
    :maxdepth: 1
