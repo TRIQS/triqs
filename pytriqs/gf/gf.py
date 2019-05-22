@@ -80,36 +80,34 @@ class Gf(object):
     Parameters
     ----------
 
-    mesh: MeshXXX
-          One of the meshes of the module 'meshes'
-          The mesh of the Green function
+    mesh: TRIQS Greens function mesh
+          One of the meshes of the module 'meshes'.
 
     data: numpy.array, optional
-          The data of the Gf.
-          Must be of dimension mesh.rank + target_rank.
-          Incompatible with target_shape
+          The data of the Greens function.
+          Must be of dimension ``mesh.rank + target_rank``.
 
     target_shape: list of int, optional
                   Shape of the target space.
-                  Incompatible with data
 
     is_real: bool
-             Is the Green function real valued ?
+             Is the Greens function real valued?
              If true, and target_shape is set, the data will be real.
-             Incompatible with data
+             Mutually exclusive with argument ``data``.
 
-    indices: GfIndices or list of str or list of list of str, Optional
-             Optional string indices for the target space, to allow e.g g['eg', 'eg']
+    indices: GfIndices or list of str or list of list of str, optional
+             Optional string indices for the target space, to allow e.g. ``['eg', 'eg']``.
              list of list of str: the list of indices for each dimension.
              list of str: all indices are assumed to be the same for all dimensions.
    
     name: str 
-          The name of the Green function. For plotting.
+          The name of the Greens function for plotting.
 
     Notes
     -----
 
-    One of target_shape, data and indices must be set, and the other must be `None`.
+    One of ``target_shape`` or ``data`` must be set, and the other must be `None`. If passing ``data``
+    and ``indices`` the ``data.shape`` needs to be compatible with the shape of ``indices``.
 
     """
     
@@ -132,7 +130,7 @@ class Gf(object):
 
             # input check
             assert (target_shape is None) or (data is None), "data and target_shape : one must be None"
-            assert (data is None) or (is_real is False), "is_real can not be True is data is not None"
+            assert (data is None) or (is_real is False), "is_real can not be True if data is not None"
             if target_shape : 
                 for i in target_shape : 
                     assert i>0, "Target shape elements must be >0"
@@ -213,13 +211,13 @@ class Gf(object):
         ----------
 
         beta : float, optional
-            Used for finite temperature density calculation on the real-frequency mesh.
+            Used for finite temperature density calculation with ``MeshReFreq``.
 
         Returns
         -------
 
-        density_matrix : ndarray (target_shape)
-            Single particle density matrix
+        density_matrix : ndarray
+            Single particle density matrix with shape ``target_shape``.
 
         Notes
         -----
@@ -230,60 +228,29 @@ class Gf(object):
 
         return gf_fnt.density(self, *args, **kwargs)
 
-    def make_gf_from_fourier(self, g_in, *args, **kwargs):
-        r"""Set current Greens function from the Fourier transform of ``g_in``
-
-        Parameters
-        ----------
-
-        g_in : Gf
-            Input Greens function to Fourier transform
-
-        known_moments : ndarray, optional
-            Known high frequency moments in Matsubara space
-
-        shift_half_bin : bool, optional
-            UNKNOWN parameter for real-time and frequency meshes
-
-        n_tau : int, optional
-            Set number of imaginary time points
-
-        Returns
-        -------
-
-        g_out : Gf
-            Reference to ``self``
-
-        Notes
-        -----
-        Only implemented for single mesh Greens functions.
-        """
-
-        return gf_fnt.make_gf_from_fourier(g_in, *args, **kwargs)
-        
     @property
     def rank(self):
-        r"""int : The mesh rank (number of meshes)"""
+        r"""int : The mesh rank (number of meshes)."""
         return self._rank
 
     @property
     def target_rank(self): 
-        """int : The rank the target space"""
+        """int : The rank of the target space."""
         return self._target_rank
 
     @property
     def target_shape(self): 
-        """(int, ...) : The shape of the target space"""
+        """(int, ...) : The shape of the target space."""
         return self._target_shape
 
     @property
     def mesh(self):
-        """gf_mesh : the mesh of the Greens function"""
+        """gf_mesh : The mesh of the Greens function."""
         return self._mesh
 
     @property
     def data(self):
-        """ndarray : raw data of the Greens function
+        """ndarray : Raw data of the Greens function.
 
            Storage convention is ``self.data[x,y,z, ..., n0,n1,n2]``
            where ``x,y,z`` correspond to the mesh variables (the mesh) and 
@@ -293,16 +260,16 @@ class Gf(object):
 
     @property
     def indices(self):
-        """GfIndices : The index object of the taret space"""
+        """GfIndices : The index object of the taret space."""
         return self._indices
 
     def copy(self) : 
-        """Deep copy of the Greens function
+        """Deep copy of the Greens function.
 
         Returns
         -------
         G : Gf
-            Copy of self
+            Copy of self.
         """
         return Gf (mesh = self._mesh.copy(), 
                    data = self._data.copy(), 
@@ -318,7 +285,7 @@ class Gf(object):
         self.__check_invariants()
 
     def __repr__(self):
-        return "Green Function %s with mesh %s and target_rank %s: \n"%(self.name, self.mesh, self.target_rank)
+        return "Greens Function %s with mesh %s and target_rank %s: \n"%(self.name, self.mesh, self.target_rank)
  
     def __str__ (self): 
         return self.name if self.name else repr(self)
@@ -346,7 +313,7 @@ class Gf(object):
         # If any argument is a MeshPoint, we are slicing the mesh or evaluating
         elif any(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [[ ]]. Expected %s, got %s"%(self.rank, len(key))
-            assert all(isinstance(x, (MeshPoint, Idx, slice)) for x in key), "Invalid accessor of Green function, please combine only MeshPoints, Idx and slice"
+            assert all(isinstance(x, (MeshPoint, Idx, slice)) for x in key), "Invalid accessor of Greens function, please combine only MeshPoints, Idx and slice"
             assert self.rank > 1, "Internal error : impossible case" # here all == any for one argument
             mlist = self._mesh._mlist 
             for x in key:
@@ -609,7 +576,7 @@ class Gf(object):
    #----------------------------- other operations -----------------------------------
 
     def invert(self):
-        """Inverts the Greens function (in place)"""
+        """Inverts the Greens function (in place)."""
 
         if self.target_rank == 0: # Scalar target space
             self.data[:] = 1. / self.data
@@ -624,25 +591,25 @@ class Gf(object):
                 "Inversion only makes sense for matrix or scalar_valued Greens functions")
 
     def inverse(self): 
-        """Computes the inverse of the Greens function
+        """Computes the inverse of the Greens function.
 
         Returns
         -------
         G : Gf (copy)
-            The matrix/scalar inverse of the Greens function
+            The matrix/scalar inverse of the Greens function.
         """
         r = self.copy()
         r.invert()
         return r
 
     def transpose(self): 
-        """Take the transpose of a matrix valued Greens function 
+        """Take the transpose of a matrix valued Greens function.
 
         Returns
         -------
 
         G : Gf (copy)
-            The transpose of the Greens function 
+            The transpose of the Greens function.
 
         Notes
         -----
@@ -661,24 +628,24 @@ class Gf(object):
         return Gf(mesh = self.mesh, data= d, indices = self.indices.transpose())
 
     def conjugate(self):
-        """Conjugate of the Greens function
+        """Conjugate of the Greens function.
 
         Returns
         -------
         G : Gf (copy)
-            Conjugate of the Greens function
+            Conjugate of the Greens function.
         """
         return Gf(mesh = self.mesh, data= np.conj(self.data), indices = self.indices)
 
     def zero(self):
-        """Set all values to zero"""
+        """Set all values to zero."""
         self._data[:] = 0
 
     def from_L_G_R(self, L, G, R):
-        r"""Matrix transform of the target space of a matrix valued Greens function
+        r"""Matrix transform of the target space of a matrix valued Greens function.
 
         Sets the current Greens function :math:`g_{ab}` to the matrix transform of :math:`G_{cd}`
-        using the left and right transform matrices :math:`L_{ac}` and :math:`R_{db}`
+        using the left and right transform matrices :math:`L_{ac}` and :math:`R_{db}`.
 
         .. math::
             g_{ab} = \sum_{cd} L_{ac} G_{cd} R_{db}
@@ -687,11 +654,11 @@ class Gf(object):
         ----------
 
         L : (a, c) ndarray
-            Left side transform matrix
+            Left side transform matrix.
         G : Gf matrix valued target_shape == (c, d)
-            Greens function to trasform
+            Greens function to transform.
         R : (d, b) ndarray
-            Right side transform matrix
+            Right side transform matrix.
 
         Notes
         -----
@@ -714,12 +681,12 @@ class Gf(object):
         wrapped_aux.set_from_gf_data_mul_LR(self.data, L, G.data, R)
 
     def total_density(self, *args, **kwargs):
-        """Compute total density 
+        """Compute total density.
 
         Returns
         -------
         density : float
-            Total density of the Greens function
+            Total density of the Greens function.
 
         Notes
         -----
@@ -760,23 +727,23 @@ class Gf(object):
         return plot.dispatcher(self)(self, opt_dict)
 
     def x_data_view(self, x_window=None, flatten_y=False):
-        """Helper method for getting a view of the data
+        """Helper method for getting a view of the data.
 
         Parameters
         ----------
 
         x_window : optional
-            the window of x variable (omega/omega_n/t/tau) for which data is requested
+            The window of x variable (omega/omega_n/t/tau) for which data is requested.
         flatten_y: bool, optional
-            If the Green function is of size (1, 1) flatten the array as a 1d array
+            If the Greens function is of size (1, 1) flatten the array as a 1d array.
 
         Returns
         -------
 
-        X, data : tuple
-            X is a 1d numpy of the x variable inside the window requested
-            data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data
-            If flatten_y is True and dim is (1, 1, *), returns a 1d numpy
+        (X, data) : tuple
+            X is a 1d numpy array of the x variable inside the window requested.
+            data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data.
+            If flatten_y is True and dim is (1, 1, *) it returns a 1d numpy array.
         """
         
         X = [x.imag for x in self.mesh] if isinstance(self.mesh, meshes.MeshImFreq) \
