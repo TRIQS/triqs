@@ -238,23 +238,36 @@ namespace triqs::stat {
 
     accumulator() = default;
 
-    /// @tparam T Type of object to be accumulated. Pre-requisites:
-    ///   * T is a regular type
-    ///   * T can be set to zero with: T x=0
-    ///   * T has a multiplication operator (x * x) defined in an element-wise manner
-    ///   * T can be made real using: triqs::arrays::real(T)
-    /// @param data_instance An instance of the data type T that will be accumulated.
-    ///   This will be copied and zeroed to initialize the linear and logarithmic parts. Should be set-up so that further data can be correctly added to it (e.g. have the right dimensions and size for an array).
-    /// @param n_log_bins_max The maximum number of bins to be kept in the logarithmic binning. Possible values are:
-    ///   * n_log_bins_max == 0: turns off logarithmic binning.
-    ///   * n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is $2^{\texttt{n_log_bins_max}}$.
-    ///   * n_log_bins_max < 0: unbounded number of bins. A new bin of capacity $2^m$ get created as soon as there are $2^m$ measurements available.
-    /// @param n_lin_bins_max The maximum number of data points to be kept by the linear bin. Possible values are:
-    ///   * n_lin_bins_max == 0: turns off linear binning.
-    ///   * n_lin_bins_max == 1: when there is only a single linear bin, the accumulator ignores lin_bin_capacity. This is so that all no data which is passed to the accumulator is ignored.
-    ///   * n_lin_bins_max > 1: imposes a finite maximum bin number, causes automatic compression[REF] of the data when all bins are filled and additional data is being passed to the accumulator
-    ///   * n_lin_bins_max < 0: unbounded number of bins. A new bin is created when all current bins have reached capacity.
-    /// @param lin_bin_capacity The number of measurements the linear part will average together in a single bin, before starting a new bin.
+    /**
+     * @tparam T 
+     *
+     *   Type of object to be accumulated. Pre-requisites:
+     *    * T is a regular type
+     *    * T can be set to zero with: T x=0
+     *
+     *    * T has a multiplication operator (x * x) defined in an element-wise manner
+     *    * T can be made real using: triqs::arrays::real(T)
+     * 
+     * @param data_instance 
+     *
+     *   An instance of the data type T that will be accumulated.
+     *   This will be copied and zeroed to initialize the linear and logarithmic parts. Should be set-up so that further data can be correctly added to it (e.g. have the right dimensions and size for an array).
+     * 
+     * @param n_log_bins_max The maximum number of bins to be kept in the logarithmic binning. Possible values are:
+     *
+     *   * n_log_bins_max == 0: turns off logarithmic binning.
+     *   * n_log_bins_max > 0: finite number of bins; the capacity of the largest bin is $2^{\texttt{n_log_bins_max}}$.
+     *   * n_log_bins_max < 0: unbounded number of bins. A new bin of capacity $2^m$ get created as soon as there are $2^m$ measurements available.
+     * 
+     * @param n_lin_bins_max The maximum number of data points to be kept by the linear bin. Possible values are:
+     *
+     *   * n_lin_bins_max == 0: turns off linear binning.
+     *   * n_lin_bins_max == 1: when there is only a single linear bin, the accumulator ignores lin_bin_capacity. This is so that all no data which is passed to the accumulator is ignored.
+     *   * n_lin_bins_max > 1: imposes a finite maximum bin number, causes automatic compression[REF] of the data when all bins are filled and additional data is being passed to the accumulator
+     *   * n_lin_bins_max < 0: unbounded number of bins. A new bin is created when all current bins have reached capacity.
+     * 
+     * @param lin_bin_capacity The number of measurements the linear part will average together in a single bin, before starting a new bin.
+     */
     accumulator(T const &data_instance, int n_log_bins_max = 0, int n_lin_bins_max = 0, int lin_bin_capacity = 1)
        : log_bins{data_instance, n_log_bins_max}, //
          lin_bins{data_instance, n_lin_bins_max, lin_bin_capacity} {}
