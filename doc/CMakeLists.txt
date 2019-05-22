@@ -49,7 +49,7 @@ get_property(CPP2RST_CXXFLAGS TARGET triqs PROPERTY INTERFACE_COMPILE_OPTIONS)
 add_custom_target(docs_cpp2rst)
 add_custom_command(
   TARGET docs_cpp2rst
-  COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
+  #COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
   COMMAND PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${CPP2PY_BINARY_DIR}/bin/c++2rst
   ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
   ${NAMESPACES}
