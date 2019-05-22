@@ -135,7 +135,7 @@ html_context = {'header_title': 'triqs',
                                  ['Documentation', 'documentation'],
                                  ['Tutorials', 'tutorials'],
                                  ['Applications', 'applications'],
-                                 ['Contributing/Contact', 'contact'],
+                                 ['Contributing', 'contributing'],
                                  ['About TRIQS', 'about']
                                                        ]}
 
