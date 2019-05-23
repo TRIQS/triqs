@@ -20,8 +20,7 @@ TEST(Stat, Details_LinearBins_InitTest_Float) {
   EXPECT_EQ(linbins.bin_capacity, 2);
   EXPECT_EQ(linbins.n_bins(), 1);
   EXPECT_EQ(linbins.bins.at(0), 0.0);
-  EXPECT_NE(typeid(linbins.bins.at(0)), typeid(static_cast<double>(0.0)));
-  EXPECT_EQ(typeid(linbins.bins.at(0)), typeid(static_cast<float>(0.0)));
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(linbins.bins.at(0))>, float>, "EE");
 }
 
 TEST(Stat, Details_LinearBins_InitTest_Double) {
@@ -39,6 +38,18 @@ TEST(Stat, Details_LinearBins_InitTestArray) {
   for (auto const &data : linbins.bins.at(0)) { EXPECT_EQ(data, 0.0); }
   
 }
+
+TEST(Stat, Details_LinearBins_InitTestArrayComplex) {
+  typedef triqs::arrays::array<std::complex<double>, 2> cdouble_array_2d;
+
+  auto a = cdouble_array_2d{{0., 0., 0.}, {0., 0., 0.}};
+  triqs::stat::details::lin_binning<cdouble_array_2d> bins{a, -1, 1};
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.bins.at(0))>, cdouble_array_2d>, "EE");
+
+  EXPECT_EQ(bins.n_bins(), 1);
+  EXPECT_ARRAY_EQ(bins.bins.at(0), a);
+}
+
 
 // ********
 
@@ -201,6 +212,56 @@ TEST(Stat, Details_LinearBins_AdvanceAndCompress_OddNrBins) {
   EXPECT_EQ(linbins.bins.at(1), 4.0);
   EXPECT_EQ(linbins.last_bin_count, 3);
 }
+// *****************************************************************************
+// Logbin Tests
+
+using logbin_d = triqs::stat::details::log_binning<double>;
+
+TEST(Stat, Details_LogBins_InitTest_Float) {
+  triqs::stat::details::log_binning<float> bins{0.0, -1};
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Mk.at(0))>, float>, "EE");
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Qk.at(0))>, float>, "EE");
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc.at(0))>, float>, "EE");
+  EXPECT_EQ(bins.max_n_bins, -1);
+  EXPECT_EQ(bins.n_bins(), 1);
+  EXPECT_EQ(bins.Mk.at(0), 0.0);
+  EXPECT_EQ(bins.Qk.at(0), 0.0);
+  EXPECT_EQ(bins.acc.at(0), 0.0);
+  EXPECT_EQ(bins.acc_count.at(0), 0);
+}
+
+TEST(Stat, Details_LogBins_InitTest_FloatComplex) {
+  triqs::stat::details::log_binning<std::complex<float>> bins{0.0, -1};
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Mk.at(0))>, std::complex<float>>, "EE");
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Qk.at(0))>, float>, "EE");
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc.at(0))>, std::complex<float>>, "EE");
+  EXPECT_EQ(bins.max_n_bins, -1);
+  EXPECT_EQ(bins.n_bins(), 1);
+  EXPECT_EQ(bins.Mk.at(0), std::complex<float>(0.0, 0.0));
+  EXPECT_EQ(bins.Qk.at(0), 0.0);
+  EXPECT_EQ(bins.acc.at(0), std::complex<float>(0.0, 0.0));
+  EXPECT_EQ(bins.acc_count.at(0), 0);
+}
+
+TEST(Stat, Details_LogBins_InitTestArray) {
+  typedef triqs::arrays::array<std::complex<double>, 2> cdouble_array_2d;
+  auto a = cdouble_array_2d{{0., 0., 0.}, {0., 0., 0.}};
+  triqs::stat::details::log_binning<cdouble_array_2d> bins{a, -1};
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Mk.at(0))>, cdouble_array_2d>, "EE");
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.Qk.at(0))>, triqs::arrays::array<double, 2>>, "EE");
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc.at(0))>, cdouble_array_2d>, "EE");
+  static_assert(std::is_same_v<std::remove_reference_t<decltype(bins.acc_count.at(0))>, int>, "EE");
+  EXPECT_EQ(bins.n_bins(), 1);
+  EXPECT_ARRAY_EQ(bins.Mk.at(0), a);
+  EXPECT_ARRAY_EQ(bins.Qk.at(0), triqs::arrays::real(a));
+  EXPECT_ARRAY_EQ(bins.acc.at(0), a);
+}
+
+TEST(Stat, Details_LogBins_AddData) {
+  // TODO
+}
+
+
 
 // *****************************************************************************
 
@@ -243,8 +304,18 @@ TEST(Stat, Accumulator_Off) {
   EXPECT_EQ(my_acc.log_bin_errors(), std::vector<double>());
 }
 
+TEST(Stat, Accumulator_Chaining) {
+  int n_log_bins_max = -1, lin_bin_capacity = 1, n_lin_bins_max = -1;
+  accumulator<double> my_acc{0.0, n_log_bins_max, n_lin_bins_max, lin_bin_capacity};
+  my_acc << 0.0 << 1.0 << 2.0 << 3.0;
+  EXPECT_EQ(my_acc.linear_bins(), std::vector<double>({0.0, 1.0, 2.0, 3.0}));
+  EXPECT_EQ(my_acc.n_log_bins(), 3);
+}
+
+
+
 // *****************************************************************************
-// tau_estimates test
+// tau_estimate_from_errors
 // *****************************************************************************
 
 MAKE_MAIN;

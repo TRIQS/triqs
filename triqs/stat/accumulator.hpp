@@ -141,7 +141,7 @@ namespace triqs::stat {
           acc.reserve(max_n_bins);
           acc_count.reserve(max_n_bins);
         }
-        Qk.emplace_back(T{data_instance_local * data_instance_local});
+        Qk.emplace_back(triqs::arrays::real(data_instance_local * data_instance_local));
         Mk.emplace_back(data_instance_local);
         acc.emplace_back(std::move(data_instance_local));
         acc_count.push_back(0);
@@ -164,9 +164,9 @@ namespace triqs::stat {
         if (count == (1 << (acc.size() - 1)) && acc.size() < max_n_bins) {
           T data_instance = acc[0];
           data_instance   = 0;
-          Qk.push_back(T{data_instance * data_instance});
-          Mk.push_back(data_instance);
-          acc.emplace_back(data_instance);
+          Qk.emplace_back(triqs::arrays::real(data_instance));
+          Mk.emplace_back(data_instance);
+          acc.emplace_back(std::move(data_instance));
           acc_count.push_back(0);
         }
 
