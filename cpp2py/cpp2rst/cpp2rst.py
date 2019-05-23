@@ -163,6 +163,7 @@ class Cpp2Rst:
             cls.namespace = CL.get_namespace(cls)
             cls.name = CL.get_name_with_template_specialization(cls) or cls.spelling 
             cls.fully_qualified_name = '::'.join([cls.namespace, cls.name])
+            cls.fully_qualified_name_no_template = CL.fully_qualified_name(cls)
             cls.name_for_label = synopsis.make_label(cls.fully_qualified_name)
             D[cls.fully_qualified_name] = cls
        

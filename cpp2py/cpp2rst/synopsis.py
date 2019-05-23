@@ -54,7 +54,12 @@ def process_type_name(type_node):
  
     # try to see if decl is in the known list 
     class_list = global_vars.synopsis_class_list
+    #d = CL.fully_qualified_name(decl)
+    #l = [ cls for cls in class_list if cls.fully_qualified_name_no_template == d]
+    #print "DECL",[cls.fully_qualified_name_no_template for cls in l]
+    #print "DECL",  d, [l.fully_qualified_name_no_template]decl.spelling, CL.fully_qualified_name(decl) #, [CL.fully_qualified_name(x) for x in class_list]
     if decl in class_list:
+    #if l:
         cls_idx = class_list.index(decl)
         cls = class_list[cls_idx]
         part_to_labelize = clean_ns(decay(t_name))

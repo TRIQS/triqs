@@ -121,7 +121,7 @@ Example
             R += """
 *Output*
 
-.. code-block:: txt
+.. code-block:: text
 
 {output}
 """.format(output = shift(output))
@@ -146,10 +146,12 @@ def render_fnt(parent_class, f_name, f_overloads):
     incl = f_overloads[0].processed_doc.elements.pop('include', '')
 
     # tag and name of the class
-    parent_cls_name_fully_qualified = (CL.fully_qualified_name(parent_class) + "::") if parent_class else ""
-    parent_cls_name = (parent_class.name + '_') if parent_class else '' 
-    f_name_full = parent_cls_name_fully_qualified + f_name
-    
+    if parent_class:
+        f_name_full = parent_class.fully_qualified_name + "::" + f_name
+    else : 
+        f_name_full = CL.fully_qualified_name(f_overloads[0]) # full name of the function
+
+
     R += """
 .. _{class_rst_ref}:
 
@@ -158,7 +160,8 @@ def render_fnt(parent_class, f_name, f_overloads):
 
 *#include <{incl}>*
 
-""".format(f_name_full = f_name_full, incl = incl, class_rst_ref = make_label(parent_cls_name + f_name), separator =  '=' * (len(f_name_full)+0) )
+""".format(f_name_full = f_name_full, incl = incl, class_rst_ref = make_label(f_name_full), separator =  '=' * (len(f_name_full)+0) )
+#""".format(f_name_full = f_name_full, incl = incl, class_rst_ref = make_label(parent_cls_name + f_name), separator =  '=' * (len(f_name_full)+0) )
 
     R += """
 
@@ -169,7 +172,7 @@ def render_fnt(parent_class, f_name, f_overloads):
     # We regroup the overload as in cppreference
    
     def make_unique(topic) :
-        rets = set(f.processed_doc.elements.pop(topic, '').strip() for f in f_overloads)
+        rets = set(f.processed_doc.elements.pop(topic, '').rstrip() for f in f_overloads)
         rets = list(x for x in rets if x)
         if len(rets)> 1: print "Warning : Multiple documentation of %s across overloads. Picking first one"%topic
         return rets[0] if rets else ''
@@ -222,12 +225,13 @@ def render_fnt(parent_class, f_name, f_overloads):
     tparam_dict = make_unique_list('tparam')
     param_dict = make_unique_list('param')
     
+
     R += render_dict(tparam_dict, 'Template parameters', '^', role = 'param')
     R += render_dict(param_dict, 'Parameters','^', role = 'param')
  
     # Returns 
     rets = make_unique("return")
-    if rets : R += make_header('Returns', '^') + " * %s"%rets
+    if rets : R += make_header('Returns', '^') + "%s"%rets
 
     # Examples 
     example_file_name = make_unique("example")
@@ -308,7 +312,7 @@ def render_cls(cls, all_methods, all_friend_functions):
             cat =flist[0].processed_doc.elements.get('category', None) 
             name_for_user = escape_lg(name)
             if name_for_user in ['constructor', 'destructor'] : name_for_user = '(%s)'%name_for_user
-            D.setdefault(cat, list()).append((":ref:`%s <%s>`"%(name_for_user,make_label(cls.name + '_' + name)), flist[0].processed_doc.elements['brief']))
+            D.setdefault(cat, list()).append((":ref:`%s <%s>`"%(name_for_user,make_label(cls.fully_qualified_name + '__' + name)), flist[0].processed_doc.elements['brief']))
         
         # Make the sub lists
         for cat, list_table_args in D.items() : 
@@ -353,7 +357,9 @@ def render_ns(ns, all_functions, all_classes, all_usings):
 
     if all_functions:
         R += make_header('Functions')
-        R += render_table([(":ref:`%s <%s>`"%(name, escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
+        R += render_table([(":ref:`%s <%s>`"%(name, make_label(CL.fully_qualified_name(f_list[0]))), 
+                            f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
+        #R += render_table([(":ref:`%s <%s>`"%(name, escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
         #R += render_table([(":ref:`%s <%s_%s>`"%(name,escape_lg(ns), escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
         R += toctree_hidden
         for f_name in all_functions:

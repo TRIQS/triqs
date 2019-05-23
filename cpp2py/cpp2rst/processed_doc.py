@@ -1,6 +1,8 @@
-import re, itertools
+import re, itertools, os
 from collections import OrderedDict
 import cpp2py.clang_parser as CL
+import global_vars
+
  
 """
 Meaning of the @option in the doc:
@@ -42,6 +44,9 @@ def replace_latex(s, escape_slash=False):
 # --------------------------------- 
 
 def clean_doc_string(s):
+    if '\t'  in s:
+        print "WARNING : TABS ", s.replace('\t','TAB')
+
     for p in [r"^\s*/\*\*?",r"\*/",r"^\s*\*",  r'^\s*\*/\s*$',r"^\s*///", r"^s*//"]: 
         s = re.sub(p,"",s, flags = re.MULTILINE)
     return s
@@ -95,7 +100,7 @@ class ProcessedDoc:
     
         # Extract the @XXXX elements with a regex @XXXX YYYY (YYYY can be multiline).
         d = dict( (key, []) for key in self.fields_with_multiple_entry)
-        regex = r'@(\w+)\s*([^@]*)'
+        regex = r'@(\w+)\s(\s*[^@]*)'
         for m in re.finditer(regex, doc, re.DOTALL):
             key, val = m.group(1), replace_latex(m.group(2)).rstrip()
             if key not in self.fields_allowed_in_docs:
@@ -106,10 +111,21 @@ class ProcessedDoc:
                 d[key] = val
         self.elements = d
 
+        # if 'return' in d : print d['return']
+    
+        # print doc
+        # print raw_doc
+        # print d['param']
+
         # Final adjustement
         if 'brief' not in d : d['brief']=''
 
-        # If no include, provide a default one
+        if 'example' not in d : # take the default
+            filename=  "%s.cpp"%(CL.fully_qualified_name(node).replace("::",'/'))
+            filename = os.path.join(global_vars.examples_root, filename) 
+            if os.path.exists(filename):
+                d['example'] =  filename
+        
         if 'include' not in d : 
            ns = CL.get_namespace_list(node)
            d['include'] = '/'.join(ns) + '.hpp'
