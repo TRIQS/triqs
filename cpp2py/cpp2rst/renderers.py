@@ -15,7 +15,6 @@ rst_start = """
 .. role:: red
 .. role:: green
 .. role:: param
-.. role:: cppbrief
 
 """
 
@@ -76,10 +75,12 @@ def render_table(list_of_list):
 def render_fig(figs): 
     fig = figs.split(":", 1)
     return """
+
 .. figure:: {fig[0]}
    :alt: {fig[1]}
    :align: center
-        """.format(fig = fig) + fig[1].lstrip(' \t\n\r') + '\n'
+
+""".format(fig = fig) + fig[1].lstrip(' \t\n\r') + '\n'
 
 #-------------------------------------
 
@@ -182,6 +183,10 @@ def render_fnt(parent_class, f_name, f_overloads):
     # Tail doc 
     R += '%s\n\n' %make_unique('tail') 
 
+    # Figure
+    figure = make_unique('figure')
+    if figure : R += render_fig(figure)
+
     # tparam and param
     tparam_dict = make_unique_list('tparam')
     param_dict = make_unique_list('param')
@@ -234,15 +239,12 @@ Defined in header <*{incl}*>
 
 .. code-block:: c
 
-    {templ_synop} class {cls.spelling}
-
-{cls_doc.brief_doc}
+    {templ_synop} class {cls.name}
 
 {cls_doc.doc}
     """.format(cls = cls, incl = incl.strip(), separator = '=' * (len(cls.fully_qualified_name)), templ_synop = make_synopsis_template_decl(cls), cls_doc = cls_doc)
 
     # 
-    R += cls_doc.doc
     if 'tparam' in doc_elem:    R += render_list(doc_elem.pop('tparam'), 'Template parameters', '-')
     if 'note' in doc_elem :     R += render_note(doc_elem.pop('note'))
     if 'warning' in doc_elem:   R += render_warning(doc_elem.pop('warning'))
@@ -256,7 +258,8 @@ Defined in header <*{incl}*>
     # Usings 
     if len(cls.usings) > 0:
         R += make_header('Member types') 
-        R += render_table([(t.spelling, t.underlying_typedef_type.spelling, replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in cls.usings])
+        R += render_table([(t.spelling, re.sub(cls.namespace + '::','',t.underlying_typedef_type.spelling), 
+                            replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in cls.usings])
 
     # A table for all member functions and all friend functions
     def group_of_overload(f_list): 
@@ -272,7 +275,7 @@ Defined in header <*{incl}*>
         D = OrderedDict()
         for name, flist in all_f.items():
             cat =flist[0].processed_doc.elements.get('category', None) 
-            D.setdefault(cat, list()).append((":ref:`%s <%s>`"%(escape_lg(name),make_label(cls.name + '_' + name)), flist[0].processed_doc.brief_doc))
+            D.setdefault(cat, list()).append((":ref:`%s <%s>`"%(escape_lg(name),make_label(cls.name + '_' + name)), flist[0].processed_doc.elements['brief']))
         
         # Make the sub lists
         for cat, list_table_args in D.items() : 
@@ -298,17 +301,18 @@ Defined in header <*{incl}*>
 def render_ns(ns, all_functions, all_classes, all_usings): 
  
     R = make_header('Reference C++ API for %s'%ns, '#') 
-    ns = ns.split('::',1)[1]
+    ns = ns.split('::',1)[-1]
 
     if len(all_usings) > 0:
         R += make_header('Type aliases')
-        R += render_table([(t.spelling, t.underlying_typedef_type.spelling, replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in all_usings])
+        R += render_table([(t.spelling, re.sub(ns+'::','',t.underlying_typedef_type.spelling), 
+                            replace_latex(clean_doc_string(t.raw_comment)) if t.raw_comment else '') for t in all_usings])
 
     if all_classes:
         R += make_header('Classes')
         R += ".. table::\n   :width: 50% 50%\n\n"
-        #R += render_table([(":ref:`%s <_%s_%s>`"%(cls.spelling,escape_lg(ns), escape_lg(cls.spelling)), cls.processed_doc.brief_doc) for cls in all_classes ])
-        R += render_table([(":ref:`%s <%s>`"%(escape_lg(cls.name), cls.name_for_label), cls.processed_doc.brief_doc) for cls in all_classes ])
+        #R += render_table([(":ref:`%s <_%s_%s>`"%(cls.spelling,escape_lg(ns), escape_lg(cls.spelling)), cls.processed_doc.elements['brief']) for cls in all_classes ])
+        R += render_table([(":ref:`%s <%s>`"%(escape_lg(cls.name), cls.name_for_label), cls.processed_doc.elements['brief']) for cls in all_classes ])
         R += toctree_hidden
         for cls in all_classes:
             R += "    {ns}/{filename}\n".format(ns = ns, filename = replace_ltgt(cls.name))
@@ -316,8 +320,8 @@ def render_ns(ns, all_functions, all_classes, all_usings):
 
     if all_functions:
         R += make_header('Functions')
-        R += render_table([(":ref:`%s <%s>`"%(name, escape_lg(name)), f_list[0].processed_doc.brief_doc) for (name, f_list) in all_functions.items() ])
-        #R += render_table([(":ref:`%s <%s_%s>`"%(name,escape_lg(ns), escape_lg(name)), f_list[0].processed_doc.brief_doc) for (name, f_list) in all_functions.items() ])
+        R += render_table([(":ref:`%s <%s>`"%(name, escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
+        #R += render_table([(":ref:`%s <%s_%s>`"%(name,escape_lg(ns), escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
         R += toctree_hidden
         for f_name in all_functions:
            R += "    {ns}/{f_name}\n".format(ns = ns, f_name = f_name)

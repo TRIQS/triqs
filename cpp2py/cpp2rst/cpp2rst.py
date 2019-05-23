@@ -59,7 +59,7 @@ class Cpp2Rst:
         self.filename, self.namespaces, self.target_file_only = filename, namespaces, target_file_only
         self.root = CL.parse(filename, compiler_options, includes, system_includes, libclang_location, parse_all_comments)
         # Root of examples
-        global_vars.examples_root = os.path.dirname(filename) 
+        global_vars.examples_root = os.path.dirname(filename) + '/examples' 
 
     # ------------------------
     
@@ -277,7 +277,7 @@ class Cpp2Rst:
         mkchdir(*namespace.split('::')[:-1])
 
         r = renderers.render_ns(namespace, functions_by_name, classes, usings)
-        ns = namespace.split('::',1)[1]
+        ns = namespace.split('::',1)[-1]
         safe_write(ns, r)
 
         os.chdir(cur_dir)

@@ -30,7 +30,7 @@ args.cxxflags = args.cxxflags.replace('\\ ',' ')
 
 # ---------------------------------------------------------
 # Create the worker. It parses the file       
-W= Cpp2Rst(filename = args.filename, 
+W = Cpp2Rst(filename = args.filename,
             namespaces= args.namespace, 
             includes = args.includes or (), 
             system_includes = args.system_includes or (),
@@ -41,8 +41,4 @@ W= Cpp2Rst(filename = args.filename,
             )
 
 # profile for testing
-if 1 : 
-    W.run(args.output_directory)
-else:
-    import cProfile
-    cProfile.run('W.run(args.output_directory)')
+W.run(args.output_directory)

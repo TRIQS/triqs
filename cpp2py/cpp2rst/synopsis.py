@@ -98,8 +98,9 @@ def make_synopsis_one_function(f, number):
     else: 
         res  = res1 +  ', '.join(x for x in params)
 
-    brief = f.processed_doc.brief_doc
-    r = ('%s:cppbrief:`%s`\n'%(sep,brief) if brief else '') + ('%s:green:`%s`\n'%(sep,template) if template else '')  + res + ') ' + qualif
+    # brief = f.processed_doc.brief_doc
+    #r = ('%s:cppbrief:`%s`\n'%(sep,brief) if brief else '') + ('%s:green:`%s`\n'%(sep,template) if template else '')  + res + ') ' + qualif
+    r =  ('%s:green:`%s`\n'%(sep,template) if template else '')  + res + ') ' + qualif
     
     return r.strip()
 
