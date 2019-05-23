@@ -311,9 +311,10 @@ namespace triqs::stat {
     ///           This is often the same as type **T** as was used to define the accumulator, but might be more general. The user should ensure that the object passed can be added to the accumulator, else an error will occur.
     /// @param x object to be added to the accumulator
     /// @example triqs/stat/acc_data_entry.cpp
-    template <typename U> void operator<<(U const &x) {
+    template <typename U> accumulator & operator<<(U const &x) {
       log_bins << x;
       lin_bins << x;
+      return *this;
     }
 
     /// Returns the standard errors for data with different power-of-two capacity.

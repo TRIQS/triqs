@@ -142,6 +142,7 @@ namespace triqs::mc_tools {
      * @param sign_init               The sign of the initial configuration's weight [optional]
      *
      * @return
+     *    
      *    =  =============================================
      *    0  if the computation has run until the end
      *    1  if it has been stopped by stop_callback
@@ -159,11 +160,14 @@ namespace triqs::mc_tools {
      *
      * @param n_accumulation_cycles   Number of QMC cycles in the accumulation (measures are done after each cycle).
      * @param length_cycle            Number of QMC move attempts in one cycle
-     * @param stop_callback           A callback function () -> bool. It is called after each cycle
-     *                                to and the computation stops when it returns true.
-     *                                Typically used to set up the time limit, cf doc.
+     * @param stop_callback 
+     * 
+     *        Callback function () -> bool. It is called after each cycle
+     *        to and the computation stops when it returns true.
+     *        Typically used to set up the time limit, cf doc.
      *
      * @return
+     *     
      *    =  =============================================
      *    0  if the computation has run until the end
      *    1  if it has been stopped by stop_callback
