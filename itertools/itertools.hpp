@@ -398,6 +398,7 @@ namespace itertools {
    *
    * @tparam R Type of the ranges
    * @param range The range to enumerate
+   * @example itertools/enumerate.cpp
    */
   template <typename R>
   auto enumerate(R &&range) {
