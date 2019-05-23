@@ -30,7 +30,7 @@ namespace itertools {
   template <class Iter, class Value, class Tag = std::forward_iterator_tag, class Reference = Value &, class Difference = std::ptrdiff_t>
   struct iterator_facade;
 
-  /**
+  /*
    * A helper for the implementation of forward iterators using CRTP
    *
    * @tparam Iter
@@ -389,27 +389,49 @@ namespace itertools {
   }
 
   /**
-   * Lazy-enumerate a range.
-   * This function returns itself a range of tuple<int, T>
+   * Lazy-enumerate a range (similar to Python enumerate)
+   * 
+   * The function returns a iterable lazy object. When iterated upon, 
+   * this object yields a pair (n,x) where :
+   *   * n is the index (starting at 0)
+   *   * x is in the object in the range
    *
+   * @tparam R Type of the ranges
    * @param range The range to enumerate
-   * @example itertools/enumerate.cpp
    */
-  template <typename T>
-  auto enumerate(T &&range) {
-    return details::enumerated<T>{std::forward<T>(range)};
+  template <typename R>
+  auto enumerate(R &&range) {
+    return details::enumerated<R>{std::forward<R>(range)};
   }
 
   /**
-   * Lazy-zip a range.
-   * This function returns itself a range of tuple<T...>
+   * Generate a zip of the ranges (similar to Python zip).
    *
-   * @param ranges The ranges to zip. Note: They have to be of equal length!
+   * The function returns a iterable lazy object. When iterated upon, 
+   * this object yields a tuple of the objects in the ranges. 
+   *
+   * @tparam R Type of the ranges
+   * @param ranges 
+   *     The ranges to zip. 
+   *
+   *     .. warning::
+   *          The ranges have to be equal lengths or behaviour is undefined.
    */
-  template <typename... T>
-  auto zip(T &&... ranges) {
-    return details::zipped<T...>{std::forward<T>(ranges)...};
+  template <typename... R>
+  auto zip(R &&... ranges) {
+    return details::zipped<R...>{std::forward<R>(ranges)...};
   }
+
+  /**
+   * Generate a zip of the ranges (similar to Python zip).
+   *
+   *  DOC TO BE WRITTEN.
+   *
+   * @param ranges 
+   * @param lambda 
+   * @tparam R Type of the ranges
+   * @tparam L Type of the Lambda
+   */
   template <typename... T, typename L>
   auto zip_with(T &&... ranges, L &&lambda) {
     return transform(zip(std::forward<T>(ranges)...), [lambda](std::tuple<T...> t) { return std::apply(lambda, t); });
