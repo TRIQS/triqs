@@ -5,17 +5,20 @@ import cpp2py.clang_parser as CL
 """
 Meaning of the @option in the doc:
 
- * @param   X   Documentation of parameter X for a function
- * @return      Doc of the return of a function
- * @tparam  T   Documentation of a template parameter of a function or a class
+ @tparam  T   Documentation of a template parameter of a function or a class
+ @param   X   Documentation of parameter X for a function
+ @return      Doc of the return of a function
 
- * @synopsis  An explicit synopsis for the automatically generated one, for a function.
- * @value     Overrules the type of a using/typedef.
- * @warning     Warning
- * @figure     An illustration
- * @note        Note
- * @include     For a class, a function, the top level file to include [default: the definition file]
- * @example filename  File name of the example. Path should start from doc/reference/c++
+ @warning    Warning
+ @note       Note
+ @figure     An illustration
+ 
+ @include   For a class, a function, the top level file to include [default: the definition file]
+ @example filename  File name of the example. Path should start from doc/documentation/examples
+
+ @head  head and tail are the two parts in common for all overload.
+ @tail   Cf  
+ @brief Short description used in tables
 
 """
 
@@ -47,7 +50,7 @@ def clean_doc_string(s):
 
 class ProcessedDoc: 
     
-    fields_allowed_in_docs = ['include', 'return', 'synopsis', 'warning','figure', 'note', 'example', 'param', 'tparam', 'group', 'head', 'tail', 'category'] 
+    fields_allowed_in_docs = ['include', 'return', 'warning','figure', 'note', 'brief', 'example', 'param', 'tparam', 'group', 'head', 'tail', 'category'] 
     fields_with_multiple_entry = ['param', 'tparam']
 
     """
@@ -73,8 +76,9 @@ class ProcessedDoc:
             print "FAILED to process the latex for node %s"%CL.fully_qualified(node)
             print doc
         doc2 = doc.strip().split('@',1)[0] # Get rid of everything after the first @
-        spl = doc2.strip().split('\n',1) 
-        self.brief_doc, self.doc = spl[0], (spl[1] if len(spl)>1 else '') 
+        self.doc = doc2
+        #spl = doc2.strip().split('\n',1) 
+        #self.brief_doc, self.doc = spl[0], (spl[1] if len(spl)>1 else '') 
         assert '@' not in self.doc, "ouch!"
 
         # Extract the @XXXX elements with a regex @XXXX YYYY (YYYY can be multiline).
@@ -89,4 +93,5 @@ class ProcessedDoc:
             else:
                 d[key] = val
         self.elements = d
+        if 'brief' not in d : d['brief']=''
 
