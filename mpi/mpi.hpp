@@ -118,6 +118,10 @@ namespace mpi {
   [[gnu::always_inline]] inline decltype(auto) reduce(T &&x, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
     return mpi_reduce(std::forward<T>(x), c, root, all, op);
   }
+  template <typename T>
+  [[gnu::always_inline]] inline void reduce_in_place(T &&x, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+    return mpi_reduce_in_place(std::forward<T>(x), c, root, all, op);
+  }
   template <typename T>[[gnu::always_inline]] inline decltype(auto) scatter(T &&x, mpi::communicator c = {}, int root = 0) {
     return mpi_scatter(std::forward<T>(x), c, root);
   }
@@ -126,6 +130,9 @@ namespace mpi {
   }
   template <typename T>[[gnu::always_inline]] inline decltype(auto) all_reduce(T &&x, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
     return reduce(std::forward<T>(x), c, root, true, op);
+  }
+  template <typename T>[[gnu::always_inline]] inline void all_reduce_in_place(T &&x, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
+    return reduce_in_place(std::forward<T>(x), c, root, true, op);
   }
   template <typename T>[[gnu::always_inline]] inline decltype(auto) all_gather(T &&x, communicator c = {}, int root = 0) {
     return gather(std::forward<T>(x), c, root, true);
@@ -270,8 +277,6 @@ namespace mpi {
   *  basic types
   * ---------------------------------------------------------- */
 
-#define REQUIRES_IS_BASIC(T, U) std::enable_if_t<is_basic<T>::value, U>
-
   // NOTE: We keep the naming mpi_XXX for the actual implementation functions
   // so they can be defined in other namespaces and the mpi::reduce(T,...) function
   // can find them via ADL
@@ -290,7 +295,13 @@ namespace mpi {
     return b;
   }
 
-#undef REQUIRES_IS_BASIC
+  template <typename T>
+  std::enable_if_t<mpi_type<T>::value, T> mpi_reduce_in_place(T a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+    if (!all)
+      MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : &a), &a, 1, datatype<T>(), op, root, c.get());
+    else
+      MPI_Allreduce(MPI_IN_PLACE, &a, 1, datatype<T>(), op, c.get());
+  }
 
 #define MPI_TEST_MAIN                                                                                                                                \
   int main(int argc, char **argv) {                                                                                                                  \
