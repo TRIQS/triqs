@@ -38,6 +38,12 @@ TODO: toc of sub modules
 
 TODO: Note that X, Y are generally cross correlated since they come from the same Markov chain
 
+.. toctree::
+   :hidden:
+
+    jacknife
+    stability_algorithm
+
 C++ API Reference
 ------------------------
 
