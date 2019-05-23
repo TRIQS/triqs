@@ -37,6 +37,6 @@ Main program
 
 The Monte-Carlo itself can now be written:
 
-.. triqs_example:: ./ising.cpp
+.. literalinclude:: ./ising.cpp
   
 

@@ -59,7 +59,8 @@ def call_factory_from_dict(cl,name, dic):
 def add_method_helper(a,cls): 
     def _(self, *args, **kw):
        return a(self, *args, **kw)
-    _.__doc__ = 50*'-' + '\n' + a.__doc__
+    _.__doc__ =  a.__doc__
+    #_.__doc__ = 50*'-' + '\n' + a.__doc__
     _.__name__ = a.__name__
     return _
 
