@@ -27,7 +27,7 @@ Let's see how we can get this result from a Monte Carlo simulation. Here is
 a code that would do the job. Note that we put everything in one file here,
 but obviously you would usually want to cut this into pieces for clarity:
 
-.. triqs_example:: ./overview_ex.cpp
+.. literalinclude:: ./overview_ex.cpp
 
 Let's go through the different parts of this code. First we look
 at ``main()``.

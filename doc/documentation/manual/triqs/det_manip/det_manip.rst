@@ -161,4 +161,4 @@ Full reference
 Example  
 ---------
 
-.. triqs_example:: ./det_manip_0.cpp
+.. literalinclude:: ./det_manip_0.cpp
