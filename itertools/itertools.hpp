@@ -393,6 +393,7 @@ namespace itertools {
    * This function returns itself a range of tuple<int, T>
    *
    * @param range The range to enumerate
+   * @example itertools/enumerate.cpp
    */
   template <typename T>
   auto enumerate(T &&range) {
