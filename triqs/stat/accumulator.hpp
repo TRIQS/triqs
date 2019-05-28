@@ -120,9 +120,9 @@ namespace triqs::stat {
       using Q_t = decltype(make_regular(triqs::arrays::real(Mk[0])));
       std::vector<Q_t> Qk; // Cf comments
       int max_n_bins = 0;
-      std::vector<T> acc;         // partial accumulators at size 2^(n+1). WARNING : acc[n] correspond to sum[n+1] to save acc[0] which is unused.
+      std::vector<T> acc;         // partial accumulators at size 2^(n+1). WARNING: acc[n] correspond to sum[n+1] to save unesscesary temporaries
       std::vector<int> acc_count; // number of elements for partial accumulators at size 2^(n+1)
-      long count = 0;             // Number of elements summed in is Qk[0]
+      long count = 0;             // Number of elements added to accumulator
 
       template <typename F> void h5_serialize(F &&f) {
         f("Qk", Qk), f("Mk", Mk), f("acc", acc), f("count", count, h5::as_attribute), f("acc_count", acc_count);
@@ -138,57 +138,76 @@ namespace triqs::stat {
         if (max_n_bins > 0) {
           Qk.reserve(max_n_bins);
           Mk.reserve(max_n_bins);
-          acc.reserve(max_n_bins);
-          acc_count.reserve(max_n_bins);
+          acc.reserve(max_n_bins - 1);
+          acc_count.reserve(max_n_bins - 1);
         }
-        Qk.emplace_back(triqs::arrays::real(data_instance_local * data_instance_local));
-        Mk.emplace_back(data_instance_local);
-        acc.emplace_back(std::move(data_instance_local));
-        acc_count.push_back(0);
+        // If max_n_bins == 1, we don't need acc / acc_count, otherwise we initialize the first element
+        if (max_n_bins != 1) {
+          acc.emplace_back(data_instance_local);
+          acc_count.push_back(0);
+        }
+        Qk.emplace_back(triqs::arrays::real(data_instance_local * data_instance_local)); // FIXME: Why multiply?
+        Mk.emplace_back(std::move(data_instance_local));
       }
 
       long n_bins() const { return Qk.size(); }
 
       template <typename U> void operator<<(U const &x) {
         if (max_n_bins == 0) return;
-        acc[0] += x;
-        acc_count[0]++;
-        advance();
-      }
 
-      void advance() {
         using triqs::arrays::conj_r;
+        using triqs::arrays::real; // FIXME:
         ++count;
 
-        // Add space if last element full; stop if max_n_bins reached
-        if (count == (1 << (acc.size() - 1)) && acc.size() < max_n_bins) {
-          T data_instance = acc[0];
-          data_instance   = 0;
-          Qk.emplace_back(triqs::arrays::real(data_instance));
-          Mk.emplace_back(data_instance);
-          acc.emplace_back(std::move(data_instance));
-          acc_count.push_back(0);
+        // If max_n_bins == 1, there is only one (Mk, Qk) and we skip direclty to updating that below
+        if (max_n_bins != 1) {
+          // go up in n as long as the acc_count becomes full and add the acc in the
+          // then go down, and store the acc
+
+          int n = 0;
+          for (; n < acc.size(); ++n) {
+            if (n == 0) {
+              acc[n] += x; // n = 0 case is special, as it involves new data input
+            } else {
+              acc[n] += acc[n - 1];
+            }
+            acc_count[n]++;
+            if (acc_count[n] < 2) break;
+          }
+
+          // When reaching power of 2 nr data points, add a new pair of (Mk, Qk) = (acc.back(), 0)
+          // and add an extra space in acc, acc_count
+          if (count == (1 << acc.size()) && (max_n_bins < 0 || n_bins() < max_n_bins)) {
+            T last_acc = acc.back(); // Force copy
+
+            if (max_n_bins < 0 || n_bins() < (max_n_bins - 1)) {
+              acc.emplace_back(last_acc);
+              acc_count.push_back(1);
+            }
+
+            Mk.emplace_back(std::move(last_acc));
+            auto data_instance_q = Qk[0];
+            data_instance_q      = 0;
+            Qk.emplace_back(std::move(data_instance_q));
+          }
+
+          n--;
+          for (; n >= 0; n--) {
+            auto bin_capacity = (1ul << (n + 1));                    // 2^(n+1)
+            T x_m             = (acc[n] / bin_capacity - Mk[n + 1]); // Force T if expression template.
+            auto k            = count / bin_capacity;
+            Qk[n + 1] += ((k - 1) / double(k)) * real(conj_r(x_m) * x_m);
+            Mk[n + 1] += x_m / k;
+            acc_count[n] = 0;
+            acc[n]       = 0;
+          }
         }
 
-        // go up in n as long as the acc_count becomes full and add the acc in the
-        // then go down, and store the acc
-        int n = 1;
-        for (; n < acc.size(); ++n) {
-          acc[n] += acc[n - 1];
-          acc_count[n]++;
-          if (acc_count[n] < 2) break;
-        }
-
-        --n;
-        for (; n >= 0; n--) {
-          auto bin_capacity = (1ul << n);                      // 2^(n)
-          T x_m             = (acc[n] / bin_capacity - Mk[n]); // Force T if expression template.
-          auto k            = count / bin_capacity;
-          Qk[n] += ((k - 1) / double(k)) * conj_r(x_m) * x_m;
-          Mk[n] += x_m / k;
-          acc_count[n] = 0;
-          acc[n]       = 0;
-        }
+        // Update the (Mk, Qk) pair with no binning (bin capacity: 2^0)
+        auto k = count;
+        T x_m  = (x - Mk[0]);
+        Qk[0] += ((k - 1) / double(k)) * real(conj_r(x_m) * x_m);
+        Mk[0] += x_m / k;
       }
     };
 
