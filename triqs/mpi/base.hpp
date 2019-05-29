@@ -21,8 +21,16 @@
  ******************************************************************************/
 #pragma once
 
-#error The use of the triqs/mpi/base.hpp header is no longer supported. \
+#warning The use of the triqs/mpi/base.hpp header deprecated. \
   The mpi functionality has been moved into the mpi/mpi.hpp header \
   in order to make it usable also outside of the triqs project. \
   The namespace was renamed from triqs::mpi to just mpi. \
   Please adjust your application accordingly.
+
+#include <mpi/mpi.hpp>
+#include <mpi/vector.hpp>
+#include <mpi/string.hpp>
+
+namespace triqs::mpi {
+  using namespace ::mpi;
+}
