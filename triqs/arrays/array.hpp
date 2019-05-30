@@ -73,7 +73,8 @@ namespace triqs {
         this->storage_  = X.storage_;
       }
 
-      //void rebind(regular_type &&) = delete;
+      // Protect against rebinding to rvalues
+      void rebind(regular_type &&) = delete;
 
       // rebind the other view, iif this is const, and the other is not.
       template < bool C = IsConst> ENABLE_IFC(C) rebind(array_view<ValueType, Rank, B_S, !IsConst> const &X) {
