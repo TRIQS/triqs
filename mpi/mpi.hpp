@@ -77,6 +77,12 @@ namespace mpi {
       return c;
     }
 
+#ifdef BOOST_MPI_HPP
+    // Conversion to and from boost communicator, Keep for backward compatibility
+    inline operator boost::mpi::communicator() const { return boost::mpi::communicator(_com, boost::mpi::comm_duplicate); }
+    inline communicator(boost::mpi::communicator c) : _com(c) {}
+#endif
+
     void barrier() const { MPI_Barrier(_com); }
   };
 
