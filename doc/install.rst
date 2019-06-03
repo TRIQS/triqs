@@ -42,32 +42,9 @@ To this end, we propose two options to the user:
 Packaged Versions of TRIQS
 ==========================
 
-.. _triqs_docker:
-Docker
-------
-
-The virtualization software `docker <https://docs.docker.com/install>`_  can be used to
-run a triqs environment for both Jupyter Notebook and shell access on a variety of operating
-systems. Once docker is installed, just pull the latest image with::
-
-        docker pull flatironinstitute/triqs
- 
-and follow the commands on the `image-website <https://hub.docker.com/r/flatironinstitute/triqs>`_.
-
-.. note:: Docker images allows for an easy set-up on cluster machines that provide the virtualization software `singularity <https://singularity.lbl.gov>`_.
-          For more information please refer to the `singularity documentation <https://singularity.lbl.gov/docs-docker>`_.
-
-Binder
-------
-
-`Binder <https://mybinder.org>`_ is a web-service running Jupyter notebooks for direct access.
-A TRIQS Jupyter notebook environment can be accessed directly at `triqs.github.io/notebook <https://triqs.github.io/notebook>`_.
-
-.. note:: Once your binder session is closed, your work will be lost.
-
 .. _ubuntu_debian:
-Ubuntu Debian packages (experimental)
--------------------------------------
+Ubuntu Debian packages
+----------------------
 
 We provide Debian packages for the Ubuntu LTS Versions 16.04 (xenial) and 18.04 (bionic).::
 
@@ -89,6 +66,30 @@ If you aim to compile applications against the triqs library, additional :ref:`d
         source /usr/share/triqsvars.sh
 
 For full c++2py functionality, please read the corresponding :ref:`section <ubuntu_cpp2py>` for the Ubuntu set-up.
+
+.. _triqs_docker:
+Docker
+------
+
+The virtualization software `docker <https://docs.docker.com/install>`_  can be used to
+run a triqs environment for both Jupyter Notebook and shell access on a variety of operating
+systems. Once docker is installed, just pull the latest image with::
+
+        docker pull flatironinstitute/triqs
+
+and follow the commands on the `image-website <https://hub.docker.com/r/flatironinstitute/triqs>`_.
+
+.. note:: Docker images allow for an easy set-up on cluster machines that provide the virtualization software `singularity <https://www.sylabs.io/guides/latest/user-guide/>`_.
+          For more information on the use of singularity in conjunction with docker images please refer to the `documentation <https://www.sylabs.io/guides/latest/user-guide/singularity_and_docker.html>`_.
+
+Binder
+------
+
+`Binder <https://mybinder.org>`_ is a web-service running Jupyter notebooks for direct access.
+A TRIQS Jupyter notebook environment can be accessed directly at `triqs.github.io/notebook <https://triqs.github.io/notebook>`_.
+
+.. note:: Once your binder session is closed, your work will be lost.
+
 
 Compiling TRIQS from source (Advanced)
 ======================================
