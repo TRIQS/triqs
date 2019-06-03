@@ -61,7 +61,7 @@ Binder
 ------
 
 `Binder <https://mybinder.org>`_ is a web-service running Jupyter notebooks for direct access.
-A TRIQS Jupyter notebook environment can be accessed directly at `binder <https://mybinder.org/v2/gh/TRIQS/docker/master>`_.
+A TRIQS Jupyter notebook environment can be accessed directly at `triqs.github.io/notebook <https://triqs.github.io/notebook>`_.
 
 .. note:: Once your binder session is closed, your work will be lost.
 
