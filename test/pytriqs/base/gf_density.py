@@ -17,7 +17,9 @@ np.random.seed(1337) # reproducible random values
 
 for eps in np.random.random(10):
     g_iw << inverse(iOmega_n - eps)
-    n = np.squeeze(g_iw.density())
+    km = make_zero_tail(g_iw, 2)
+    km[1] = np.eye(g_iw.target_shape[0])
+    n = np.squeeze(g_iw.density(km))
     n_ref = fermi(eps, beta)
     np.testing.assert_almost_equal(n, n_ref)
 
