@@ -60,7 +60,7 @@ using triqs::clef::placeholder;
 
 #define MAKE_MAIN                                                                                                                                    \
   int main(int argc, char **argv) {                                                                                                                  \
-    mpi::environment env(argc, argv);                                                                                                         \
+    ::mpi::environment env(argc, argv);                                                                                                              \
     ::testing::InitGoogleTest(&argc, argv);                                                                                                          \
     return RUN_ALL_TESTS();                                                                                                                          \
   }
