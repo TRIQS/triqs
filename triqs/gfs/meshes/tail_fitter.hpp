@@ -98,6 +98,11 @@ namespace triqs::gfs {
 
     //----------------------------------------------------------------------------------------------
 
+    // Return the tail_fraction
+    double get_tail_fraction() const { return _tail_fraction; }
+
+    //----------------------------------------------------------------------------------------------
+
     // Return the vector of all indices that are used fit the fitting procedure
     template <typename M> std::vector<long> get_tail_fit_indices(M const &m) {
 
