@@ -70,8 +70,8 @@ set(TRIQS_SPHINX_INVENTORY_DIR   @CMAKE_INSTALL_PREFIX@/share/doc/triqs)
 # FIXME For future cmake versions we should populate the
 # INTERFACE_LINK_DIRECTORIES of the triqs target
 # ---------------------------------
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  string(REPLACE ":" ";" LINK_DIRS $ENV{LIBRARY_PATH} AND DEFINED ENV{LIBRARY_PATH})
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND DEFINED ENV{LIBRARY_PATH})
+  string(REPLACE ":" ";" LINK_DIRS $ENV{LIBRARY_PATH})
   foreach(dir ${LINK_DIRS})
     string(APPEND CMAKE_SHARED_LINKER_FLAGS " -L${dir}")
     string(APPEND CMAKE_MODULE_LINKER_FLAGS " -L${dir}")
