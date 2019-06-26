@@ -7,7 +7,7 @@ class DependencyAnalyzer:
     and deduces the list of python modules to import and converters to include
     """
   
-    basic_types = "void bool int long double".split()
+    basic_types = ["void", "bool", "int", "long", "long long", "unsigned int", "unsigned long", "unsigned long long", "double"]
   
     def __init__(self, modules_with_converter_list):
         """

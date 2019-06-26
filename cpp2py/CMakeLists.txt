@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 2.8.12)
-project(cpp2py C CXX)
+# Start configuration
+cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
+project(CPP2PY VERSION 1.6.0 LANGUAGES C CXX)
 include(CheckIncludeFile)
 include(CheckIncludeFileCXX)
 
@@ -7,7 +8,7 @@ include(CheckIncludeFileCXX)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Type of build" FORCE)
 endif()
-message( STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} -------------")
+message(STATUS "-------- BUILD-TYPE: ${CMAKE_BUILD_TYPE} -------------")
 
 # Build static library
 set(BUILD_SHARED_LIBS OFF)
@@ -26,12 +27,6 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 message( STATUS "-------- cpp2py version and git hash detection -------------")
 
 find_package(Git) 
-
-# Define the Cpp2Py Version Numbers
-set(CPP2PY_VERSION_MAJOR 1)
-set(CPP2PY_VERSION_MINOR 6)
-set(CPP2PY_VERSION_PATCH 0)
-set(CPP2PY_VERSION ${CPP2PY_VERSION_MAJOR}.${CPP2PY_VERSION_MINOR}.${CPP2PY_VERSION_PATCH})
 
 # Get the Git Hash
 execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
@@ -112,6 +107,7 @@ if(BUILD_DEBIAN_PACKAGE)
   if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr")
     message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /usr for packaging")
   endif()
+  set(CPACK_PACKAGE_NAME cpp2py)
   set(CPACK_GENERATOR "DEB")
   set(CPACK_PACKAGE_VERSION ${CPP2PY_VERSION})
   set(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/cpp2py")
