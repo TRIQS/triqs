@@ -42,7 +42,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #---------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
-project (triqs C CXX)
+project(TRIQS VERSION 2.2.0 LANGUAGES C CXX)
 
 ## C & C++ Headers
 include(CheckIncludeFile)
@@ -110,13 +110,6 @@ message( STATUS "-------- triqs version and git hash detection -------------")
 
 # Find the TRIQS_GIT_HASH
 find_package(Git)
-
-# Define the TRIQS Version Numbers
-set(TRIQS_VERSION_MAJOR 2)
-set(TRIQS_VERSION_MINOR 2)
-set(TRIQS_VERSION_PATCH 0)
-set(TRIQS_VERSION ${TRIQS_VERSION_MAJOR}.${TRIQS_VERSION_MINOR}.${TRIQS_VERSION_PATCH})
-
 
 # Get the Git Hash
 execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
@@ -317,6 +310,7 @@ if(BUILD_DEBIAN_PACKAGE)
   if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr")
     message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be /usr for packaging")
   endif()
+  set(CPACK_PACKAGE_NAME triqs)
   SET(CPACK_GENERATOR "DEB")
   SET(CPACK_PACKAGE_VERSION ${TRIQS_VERSION})
   SET(CPACK_PACKAGE_CONTACT "https://github.com/TRIQS/triqs")
