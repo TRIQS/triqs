@@ -23,9 +23,7 @@
 #pragma once
 
 // SHOULD ONLY BE INCLUDED in a python module.
-#ifndef PYTHON_NUMPY_VERSION_LT_17
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#endif
+
 #include "Python.h"
 #include <numpy/arrayobject.h>
 #include <cpp2py/pyref.hpp>
