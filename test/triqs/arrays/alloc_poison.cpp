@@ -22,28 +22,26 @@
 #include <type_traits>
 static_assert(!std::is_pod<triqs::arrays::array<long, 2>>::value, "POD pb");
 
-TEST(Array, Create) {
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#include <sanitizer/asan_interface.h>
+#endif
+#endif
 
-  array<long, 2> A(3,3);
-  EXPECT_EQ(A.shape(), (mini_vector<size_t, 2>{3, 3}));
+TEST(Array, Poison) {
 
+  long *p;
+  {
+    array<long, 2> A(3, 3);
+    A() = 3;
+    p   = &(A(0, 0));
+  }
+
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+  EXPECT_EQ(__asan_address_is_poisoned(p), 1);
+#endif
+#endif
 }
 
-
-TEST(Array, CreateResize) {
-
-  array<long, 2> A;
-  A.resize(make_shape(3, 3));
-  EXPECT_EQ(A.shape(), (mini_vector<size_t, 2>{3, 3}));
-
-  matrix<double> M;
-  M.resize(3, 3);
-
-  EXPECT_EQ(M.shape(), (mini_vector<size_t, 2>{3, 3}));
-
-  vector<double> V;
-  V.resize(10);
-
-  EXPECT_EQ(V.shape(), (mini_vector<size_t, 1>{10}));
-}
 MAKE_MAIN;

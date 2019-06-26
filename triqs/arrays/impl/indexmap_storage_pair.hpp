@@ -104,7 +104,7 @@ namespace triqs {
       indexmap_storage_pair(indexmap_type IM, storage_type ST) : indexmap_(std::move(IM)), storage_(std::move(ST)) {}
 
       /// The storage is allocated from the size of IM.
-      indexmap_storage_pair(const indexmap_type &IM) : indexmap_(IM), storage_() { storage_ = StorageType(indexmap_.domain().number_of_elements()); }
+      indexmap_storage_pair(const indexmap_type &IM) : indexmap_(IM), storage_(indexmap_.domain().number_of_elements()){ }
 
       template <typename InitLambda>
       explicit indexmap_storage_pair(tags::_with_lambda_init, indexmap_type IM, InitLambda &&lambda) : indexmap_(std::move(IM)), storage_() {

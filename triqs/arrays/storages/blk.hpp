@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2011-2017 by O. Parcollet
+ * Copyright (C) 2018 by Simons Foundation
+ *   author : O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,32 +20,13 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "start.hpp"
-#include <type_traits>
-static_assert(!std::is_pod<triqs::arrays::array<long, 2>>::value, "POD pb");
+#pragma once
 
-TEST(Array, Create) {
+namespace nda::allocators {
 
-  array<long, 2> A(3,3);
-  EXPECT_EQ(A.shape(), (mini_vector<size_t, 2>{3, 3}));
-
-}
-
-
-TEST(Array, CreateResize) {
-
-  array<long, 2> A;
-  A.resize(make_shape(3, 3));
-  EXPECT_EQ(A.shape(), (mini_vector<size_t, 2>{3, 3}));
-
-  matrix<double> M;
-  M.resize(3, 3);
-
-  EXPECT_EQ(M.shape(), (mini_vector<size_t, 2>{3, 3}));
-
-  vector<double> V;
-  V.resize(10);
-
-  EXPECT_EQ(V.shape(), (mini_vector<size_t, 1>{10}));
-}
-MAKE_MAIN;
+  // ------------------------ The memory block with its size  -------------
+  struct blk_t {
+    char *ptr = nullptr;
+    size_t s  = 0;
+  };
+} // namespace nda::allocators

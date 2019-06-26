@@ -23,14 +23,20 @@
 #pragma once
 
 #include <iostream>
+#include <algorithm>
+#include <vector>
+#include <memory>
+#include "./../../utility/macros.hpp"
+#include "./blk.hpp"
+
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#include <sanitizer/asan_interface.h>
+#define NDA_USE_ASAN
+#endif
+#endif
 
 namespace nda::allocators {
-
-  // ------------------------ The memory block with its size  -------------
-  struct blk_t {
-    char *ptr = nullptr;
-    size_t s  = 0;
-  };
 
   // ------------------------  Utility -------------
 
@@ -58,6 +64,122 @@ namespace nda::allocators {
     void deallocate(blk_t b) noexcept { free(b.ptr); }
   };
 
+  // -------------------------  Bucket allocator ----------------------------
+  //
+  //
+  template <int ChunkSize> class bucket {
+    static constexpr int TotalChunkSize = 64 * ChunkSize;
+    std::unique_ptr<char[]> _start      = std::make_unique<char[]>(TotalChunkSize);
+    char *p                             = _start.get();
+    uint64_t flags                      = uint64_t(-1);
+
+    public:
+    bucket() {
+#ifdef NDA_USE_ASAN
+      __asan_poison_memory_region(p, TotalChunkSize);
+#endif
+    }
+    ~bucket() {
+#ifdef NDA_USE_ASAN
+      __asan_unpoison_memory_region(p, TotalChunkSize);
+#endif
+    }
+    bucket(bucket const &) = delete;
+    bucket(bucket &&)      = default;
+    bucket &operator=(bucket const &) = delete;
+    bucket &operator=(bucket &&) = default;
+
+    blk_t allocate(size_t s) noexcept {
+      // FIXME not here ! in the handle
+      //auto n = round_to_align(s);
+      //if (n > ChunkSize) std::abort();
+      if (flags == 0) std::abort();
+      int pos = __builtin_ctzll(flags);
+      flags &= ~(1ull << pos);
+      blk_t b{p + pos * ChunkSize, s};
+#ifdef NDA_USE_ASAN
+      __asan_unpoison_memory_region(b.ptr, ChunkSize);
+#endif
+      return b;
+    }
+
+    void deallocate(blk_t b) noexcept {
+#ifdef NDA_USE_ASAN
+      __asan_poison_memory_region(b.ptr, ChunkSize);
+#endif
+      int pos = (b.ptr - p) / ChunkSize;
+      flags |= (1ull << pos);
+    }
+
+    bool is_full() const noexcept { return flags == 0; }
+    bool is_empty() const noexcept { return flags == uint64_t(-1); }
+
+    const char *data() const noexcept { return p; }
+
+    bool owns(blk_t b) const noexcept { return b.ptr >= p and b.ptr < p + TotalChunkSize; }
+  };
+
+  // -------------------------  Multiple bucket allocator ----------------------------
+  //
+  //
+  template <int ChunkSize> class multiple_bucket {
+
+    using b_t = bucket<ChunkSize>;
+    std::vector<b_t> bu_vec;                // an ordered vector of buckets
+    typename std::vector<b_t>::iterator bu; // current bucket in use
+
+    // find the next bucket with some space. Possibly allocating new ones.
+    [[gnu::noinline]] void find_non_full_bucket() {
+      bu = std::find_if(bu_vec.begin(), bu_vec.end(), [](auto const &b) { return !b.is_full(); });
+      if (bu != bu_vec.end()) return;
+
+      // insert a new bucket ordered. Position is defined by data (NB : which is NOT affected by the move)
+      b_t b;
+      auto insert_position = std::upper_bound(bu_vec.begin(), bu_vec.end(), b, [](auto const &B, auto const &B2) { return B.data() < B2.data(); });
+      bu                   = bu_vec.insert(insert_position, std::move(b));
+
+      //for (auto const &bb : bu_vec) TRIQS_PRINT((void *)bb.data());
+      //TRIQS_PRINT("---------------");
+    }
+
+    public:
+    multiple_bucket() : bu_vec(1), bu(bu_vec.begin()) {}
+    multiple_bucket(multiple_bucket const &) = delete;
+    multiple_bucket(multiple_bucket &&)      = delete;
+    multiple_bucket &operator=(multiple_bucket const &) = delete;
+    multiple_bucket &operator=(multiple_bucket &&) = delete;
+
+    blk_t allocate(size_t s) {
+      //[[unlikely]]
+      if ((bu == bu_vec.end()) or (bu->is_full())) find_non_full_bucket();
+      return bu->allocate(s);
+    }
+
+    void deallocate(blk_t b) noexcept {
+      //[[likely]]
+      if (bu != bu_vec.end() and bu->owns(b)) {
+        bu->deallocate(b);
+        return;
+      }
+      bu = std::lower_bound(bu_vec.begin(), bu_vec.end(), b.ptr, [](auto const &B, auto p) { return B.data() <= p; });
+      --bu;
+      if (bu == bu_vec.end()) {
+        std::cerr << "Fatal Logic Error in allocator. Not in bucket. \n";
+        std::abort();
+      }
+      if (!bu->owns(b)) {
+        std::cerr << "Fatal Logic Error in allocator\n";
+        std::abort();
+      }
+      bu->deallocate(b);
+      if (!bu->is_empty()) return;
+      if (bu_vec.size() <= 1) return;
+      bu_vec.erase(bu);
+      bu = bu_vec.end();
+    }
+
+    //bool owns(blk_t b) const noexcept { return b.ptr >= d and b.ptr < d + Size; }
+  }; // namespace nda::allocators
   // -------------------------  Stack allocator ----------------------------
   //
   // Allocates on a fixed size stack, FIFO style
