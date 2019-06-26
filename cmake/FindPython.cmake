@@ -147,13 +147,13 @@ ENDFUNCTION(EXEC_PYTHON_SCRIPT)
  add_library(python_and_numpy SHARED IMPORTED GLOBAL)
  set_property(TARGET python_and_numpy PROPERTY IMPORTED_LOCATION ${PYTHON_LIBRARY})
  set_property(TARGET python_and_numpy PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
- set_property(TARGET python_and_numpy PROPERTY PROPERTY INTERFACE_LINK_LIBRARIES "${PYTHON_EXTRA_LIBS}")
+ set_property(TARGET python_and_numpy PROPERTY INTERFACE_LINK_LIBRARIES "${PYTHON_EXTRA_LIBS}")
 
  # The C API of numpy has changed with 1.7.0, the macro is a version switch in a few files of the libs.
  if(PYTHON_NUMPY_VERSION VERSION_LESS "1.7.0")
-  target_compile_definitions(python_and_numpy INTERFACE PYTHON_NUMPY_VERSION_LT_17)
+   set_property(TARGET python_and_numpy PROPERTY INTERFACE_COMPILE_DEFINITIONS PYTHON_NUMPY_VERSION_LT_17)
  else()
-  target_compile_definitions(python_and_numpy INTERFACE NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION)
+   set_property(TARGET python_and_numpy PROPERTY INTERFACE_COMPILE_DEFINITIONS NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION)
  endif()
 
  # Installation : Final destination of the python modules
