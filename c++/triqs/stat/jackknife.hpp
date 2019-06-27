@@ -129,11 +129,11 @@ namespace triqs::stat {
 
   /// Directly pass data-series in vector like objects
   /// @head Calculate the value and error of a general function $f$ of the average of sampled observables $f\left(\langle \mathbf{a} \rangle\right)$, using jackknife resampling.
-  /// @tparam F return type of function **f** which acts on data
+  /// @tparam F return type of function :param:`f` which acts on data
   /// @tparam A vector-like object, defining size() and []
   /// @param a one or multiple series with data: $\mathbf{a} = \{a_1, a_2, a_3, \ldots\}$
   ///   Pre-condition: if more than one series is passed, the series have to be equal in size
-  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in **a**:
+  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in :param:`a`:
   /// $$\left(a_1[i], a_2[i],a_3[i],\ldots\right) \to f\left(a_1[i],a_2[i],a_3[i],\ldots\right)$$
   /// @return std::tuple with four statistical estimators $\left(f_\mathrm{J}^{*}, \Delta{f}_\mathrm{J}, f_\mathrm{J}, f_\mathrm{direct}\right)$, defined below.
   ///
@@ -167,12 +167,12 @@ namespace triqs::stat {
   /// Directly pass data-series in vector like objects
   /// @head Calculate the value and error of a general function $f$ of the average of sampled observables $f\left(\langle \mathbf{a} \rangle\right)$, using jackknife resampling.
   /// @tail The calculation is performed over the nodes; the answers which are then reduced (not all-reduced) to the node 0.
-  /// @tparam F return type of function **f** which acts on data
+  /// @tparam F return type of function :param:`f` which acts on data
   /// @tparam A vector-like object, defining size() and []
   /// @param c TRIQS MPI communicator
   /// @param a one or multiple series with data: $\mathbf{a} = \{a_1, a_2, a_3, \ldots\}$
   ///   Pre-condition: if more than one series is passed, the series have to be equal in size
-  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in **a**:
+  /// @param f a function which acts on the $i^\mathrm{th}$ elements of the series in :param:`a`:
   /// $$\left(a_1[i], a_2[i],a_3[i],\ldots\right) \to f\left(a_1[i],a_2[i],a_3[i],\ldots\right)$$
   /// @return std::tuple with four statistical estimators $\left(f_\mathrm{J}^{*}, \Delta{f}_\mathrm{J}, f_\mathrm{J}, f_\mathrm{direct}\right)$, defined below. The MPI reduction occurs *only* to node 0.
   ///

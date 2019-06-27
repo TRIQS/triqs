@@ -11,19 +11,12 @@ int main() {
   // Always at least one bin for an active accumulatotr
   std::cout << "A. Number of Bins: " << my_acc.n_log_bins() << std::endl;
   
-  my_acc << 0.0;
-  my_acc << 1.0;
-  my_acc << 2.0;
-  my_acc << 3.0;
-  my_acc << 4.0;
+  my_acc << 0.0 << 1.0 << 2.0 << 3.0 << 4.0;
 
   // Now there are three bins of binning capacity 2^0, 2^1, 2^2
   std::cout << "B. Number of Bins: " << my_acc.n_log_bins() << std::endl;
   
-  my_acc << 5.0;
-  my_acc << 6.0;
-  my_acc << 7.0;
-  my_acc << 8.0;
+  my_acc << 5.0 << 6.0 << 7.0 << 8.0;
 
   // Another bin was created since there is a full 2^3 number of samples
   std::cout << "C. Number of Bins: " << my_acc.n_log_bins() << std::endl;
