@@ -164,7 +164,7 @@ if(NOT HDF5_FOUND)
 endif()
 
 if(HDF5_IS_PARALLEL)
- message(FATAL_ERROR "parallel(MPI) hdf5 is detected. The standard version is preferred.")
+  message(WARNING "parallel(MPI) hdf5 is detected. The standard version is preferred.")
 endif(HDF5_IS_PARALLEL)
 
 if(HDF5_HL_LIBRARIES)    # CMake 3.6.0 and later puts libhdf5_hl into a separate variable
