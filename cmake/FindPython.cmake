@@ -152,7 +152,10 @@ ENDFUNCTION(EXEC_PYTHON_SCRIPT)
  # The C API of numpy has changed with 1.7.0, the macro is a version switch in a few files of the libs.
  if(PYTHON_NUMPY_VERSION VERSION_LESS "1.7.0")
    set_property(TARGET python_and_numpy PROPERTY INTERFACE_COMPILE_DEFINITIONS PYTHON_NUMPY_VERSION_LT_17)
- else()
+ endif()
+
+ # Disable the inclusion of the deprecated Numpy API headers starting from 1.8.0. This seems to be buggy for earlier versions.
+ if(PYTHON_NUMPY_VERSION VERSION_GREATER "1.8.0")
    set_property(TARGET python_and_numpy PROPERTY INTERFACE_COMPILE_DEFINITIONS NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION)
  endif()
 
