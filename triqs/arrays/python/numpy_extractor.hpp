@@ -2,8 +2,11 @@
 
 #include "triqs/utility/macros.hpp"
 #include "triqs/utility/exceptions.hpp"
-#include "numpy/arrayobject.h"
+
 #include <cpp2py/pyref.hpp>
+
+#include <Python.h>
+#include <numpy/arrayobject.h>
 
 namespace triqs {
   namespace arrays {

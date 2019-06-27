@@ -24,7 +24,7 @@
 
 // SHOULD ONLY BE INCLUDED in a python module.
 
-#include "Python.h"
+#include <Python.h>
 #include <numpy/arrayobject.h>
 #include <cpp2py/pyref.hpp>
 
