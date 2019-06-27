@@ -19,6 +19,8 @@
 #include <triqs/test_tools/arrays.hpp>
 #include <triqs/stat/histograms.hpp>
 #include <triqs/arrays.hpp>
+#include <triqs/stat/histograms.hpp>
+#include <triqs/test_tools/arrays.hpp>
 using namespace triqs::stat;
 namespace arrays = triqs::arrays;
 
@@ -93,6 +95,14 @@ TEST(histogram, basic) {
   EXPECT_EQ(8, hi2.n_data_pts());
   EXPECT_EQ(3, hi2.n_lost_pts());
   EXPECT_ARRAY_NEAR(hd2.data(), hi2.data());
+}
+
+TEST(histogram, clear) {
+  auto hi1 = make_hi1();
+  hi1.clear();
+  EXPECT_ARRAY_EQ(arrays::vector<double>({0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}), hi1.data());
+  EXPECT_EQ(0, hi1.n_data_pts());
+  EXPECT_EQ(0, hi1.n_lost_pts());
 }
 
 TEST(histogram, sum) {

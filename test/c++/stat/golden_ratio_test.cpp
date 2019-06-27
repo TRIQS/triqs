@@ -75,17 +75,17 @@ TEST(Stat, Accumulator_GoldenRatioTest) {
     // Pre-factor of 1 / 2000 is manually set
     float eps = std::numeric_limits<float>::epsilon();
     float coondition_nr = std::sqrt(1 + 1.0 / 12.0);
-    float tol_err_in_err = std::max(eps * gen.nr_samples[idx] * coondition_nr * 1.0f / 750, 2 * eps);
+    float tol_err_in_err = std::max(eps * gen.nr_samples[idx] * coondition_nr * 1.0f / 20, 2 * eps);
     float tol_err_in_ave = 4 * eps;
 
     // Test log binning 
-    EXPECT_NEAR(my_acc_f.log_bin_errors()[0] - gen.err_exact_f[idx], 0.0, 0.0); // tol_err_in_ave);
+    EXPECT_NEAR(my_acc_f.log_bin_errors()[0] - gen.err_exact_f[idx], 0.0, tol_err_in_ave);
     EXPECT_EQ(float(my_acc_d.log_bin_errors()[0]), gen.err_exact_f[idx]);
     
     // Test mean_and_err
     auto [ave_f, err_f] = mean_and_err(my_acc_f.linear_bins());
-    EXPECT_NEAR(ave_f - gen.ave_exact_f[idx], 0.0, 0.0); //tol_err_in_ave);
-    EXPECT_NEAR(err_f - gen.err_exact_f[idx], 0.0, 0.0); //tol_err_in_err);
+    EXPECT_NEAR(ave_f - gen.ave_exact_f[idx], 0.0, tol_err_in_ave);
+    EXPECT_NEAR(err_f - gen.err_exact_f[idx], 0.0, tol_err_in_err);
 
     auto [ave_d, err_d] = mean_and_err(my_acc_d.linear_bins());
     EXPECT_EQ(float(ave_d), gen.ave_exact_f[idx]);

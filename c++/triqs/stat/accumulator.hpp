@@ -57,8 +57,8 @@ namespace triqs::stat {
 
       long n_bins() const { return bins.size(); }
 
-      template <typename U> void operator<<(U &&x) {
-        if (max_n_bins == 0) return;
+      template <typename U> lin_binning<T> &operator<<(U &&x) {
+        if (max_n_bins == 0) return *this;
         // Check if all bins are full and compress if needed
         if (max_n_bins > 1 && n_bins() == max_n_bins && last_bin_count == bin_capacity) {
           compress(2); // Adjusts bin_capacity & last_bin_count
@@ -71,6 +71,7 @@ namespace triqs::stat {
           last_bin_count++;
           bins.back() += (x - bins.back()) / last_bin_count;
         }
+        return *this;
       }
 
       // Compresses bins by scaling up bin_capacity by compression_factor (>= 2).
@@ -152,8 +153,8 @@ namespace triqs::stat {
 
       long n_bins() const { return Qk.size(); }
 
-      template <typename U> void operator<<(U const &x) {
-        if (max_n_bins == 0) return;
+      template <typename U> log_binning<T> &operator<<(U const &x) {
+        if (max_n_bins == 0) return *this;
 
         using triqs::arrays::conj_r;
         using triqs::arrays::real; // FIXME:
@@ -208,6 +209,8 @@ namespace triqs::stat {
         T x_m  = (x - Mk[0]);
         Qk[0] += ((k - 1) / double(k)) * real(conj_r(x_m) * x_m);
         Mk[0] += x_m / k;
+
+        return *this;
       }
     };
 
@@ -239,7 +242,6 @@ namespace triqs::stat {
   /// TODO: Tutorial
   ///
   /// @brief Bins and analyzes correlated data
-  /// @include triqs/stat/accumulator.hpp
   template <typename T> class accumulator {
     private:
     details::log_binning<T> log_bins;
@@ -329,8 +331,9 @@ namespace triqs::stat {
     /// @tparam U type of the object to be added to the the accumulator.
     ///           This is often the same as type **T** as was used to define the accumulator, but might be more general. The user should ensure that the object passed can be added to the accumulator, else an error will occur.
     /// @param x object to be added to the accumulator
+    /// @returns Returns the current accumulator so that :code:`<<` operations can be chained together
     /// @example triqs/stat/acc_data_entry.cpp
-    template <typename U> accumulator & operator<<(U const &x) {
+    template <typename U> accumulator<T> &operator<<(U const &x) {
       log_bins << x;
       lin_bins << x;
       return *this;
