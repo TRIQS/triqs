@@ -216,8 +216,8 @@ install(TARGETS hdf5 EXPORT triqs-dependencies)
 message(STATUS "-------- GMP detection -------------")
 find_package(GMP)
 
-target_include_directories(triqs SYSTEM PUBLIC ${GMP_INCLUDE_DIR})
-target_link_libraries (triqs PUBLIC ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
+target_link_libraries(triqs PUBLIC gmp)
+install(TARGETS gmp EXPORT triqs-dependencies)
 
 # ---------------------------------
 # FFTW
@@ -226,11 +226,7 @@ target_link_libraries (triqs PUBLIC ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
 message(STATUS "-------- FFTW detection -------------")
 find_package(FFTW)
 
-set(TRIQS_FFTW_LIBRARIES ${FFTW_LIBRARIES} CACHE FILEPATH "FFTW Library used for the compilation of triqs.")
-set(TRIQS_FFTW_INCLUDE_DIR ${FFTW_INCLUDE_DIR} CACHE FILEPATH "FFTW Library used for the compilation of triqs.")
-
 target_link_libraries(triqs PUBLIC fftw)
-target_include_directories(triqs SYSTEM PUBLIC ${FFTW_INCLUDE_DIR})
 install(TARGETS fftw EXPORT triqs-dependencies)
 
 # ---------------------------------
