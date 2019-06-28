@@ -11,8 +11,8 @@ namespace nda::mem {
   // The allocator type for nda::mem::handle has to be fixed in the library
   // as combining different allocator types can lead to problems
 
-  using allocator_base_t = allocators::segregator<8*100, allocators::multiple_bucket<8*100>, allocators::mallocator>;
-  //using allocator_base_t = allocators::mallocator;
+  //using allocator_base_t = allocators::segregator<8*100, allocators::multiple_bucket<8*100>, allocators::mallocator>;
+  using allocator_base_t = allocators::mallocator;
 
 #ifndef NDA_LEAK_CHECK
   using allocator_t = allocator_base_t;
