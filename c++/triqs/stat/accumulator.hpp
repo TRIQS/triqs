@@ -26,7 +26,7 @@
 #include <optional>
 #include <triqs/arrays.hpp>
 #include <triqs/clef/clef.hpp>
-#include <triqs/h5/h5_serialize.hpp>
+#include <triqs/h5.hpp>
 #include <type_traits>
 #include <vector>
 
@@ -39,11 +39,7 @@ namespace triqs::stat {
       long last_bin_count = 0; // Number of data points the currently active bin [bins.back()]
       std::vector<T> bins;     // Bins with accumulated data (stores means)
 
-      template <typename F> void h5_serialize(F &&f) {
-        f("bins", bins), f("last_bin_count", last_bin_count, h5::as_attribute), f("bin_capacity", bin_capacity, h5::as_attribute),
-           f("max_n_bins", max_n_bins, h5::as_attribute);
-      }
-      static std::string hdf5_scheme() { return "lin_binning"; }
+      //static std::string hdf5_scheme() { return "linear_bins"; }
 
       lin_binning() = default;
 
@@ -108,6 +104,22 @@ namespace triqs::stat {
       }
     };
 
+    template <typename T> void h5_write(h5::group g, std::string const &name, lin_binning<T> const &l) {
+      auto gr = g.create_group(name);
+      h5_write(gr, "bins", l.bins);
+      h5_write(gr, "last_bin_count", l.last_bin_count);
+      h5_write(gr, "bin_capacity", l.bin_capacity);
+      h5_write(gr, "max_n_bins", l.max_n_bins);
+    }
+
+    template <typename T> void h5_read(h5::group g, std::string const &name, lin_binning<T> &l) {
+      auto gr = g.open_group(name);
+      h5_read(gr, "bins", l.bins);
+      h5_read(gr, "last_bin_count", l.last_bin_count);
+      h5_read(gr, "bin_capacity", l.bin_capacity);
+      h5_read(gr, "max_n_bins", l.max_n_bins);
+    }
+
     // ************************************************************************************************
     // Updating Formulae
     // Mk \equiv \frac{1}{k} \sum_{i=1}^k x_i
@@ -125,10 +137,7 @@ namespace triqs::stat {
       std::vector<int> acc_count; // number of elements for partial accumulators at size 2^(n+1)
       long count = 0;             // Number of elements added to accumulator
 
-      template <typename F> void h5_serialize(F &&f) {
-        f("Qk", Qk), f("Mk", Mk), f("acc", acc), f("count", count, h5::as_attribute), f("acc_count", acc_count);
-      }
-      static std::string hdf5_scheme() { return "log_binning"; }
+      //static std::string hdf5_scheme() { return "log_binning"; }
 
       log_binning() = default;
 
@@ -214,6 +223,25 @@ namespace triqs::stat {
       }
     };
 
+    // HDF5
+    template <typename T> void h5_write(h5::group g, std::string const &name, log_binning<T> const &l) {
+      auto gr = g.create_group(name);
+      h5_write(gr, "Qk", l.Qk);
+      h5_write(gr, "Mk", l.Mk);
+      h5_write(gr, "acc", l.acc);
+      h5_write(gr, "count", l.count);
+      h5_write(gr, "acc_count", l.acc_count);
+    }
+
+    template <typename T> void h5_read(h5::group g, std::string const &name, log_binning<T> &l) {
+      auto gr = g.open_group(name);
+      h5_read(gr, "Qk", l.Qk);
+      h5_read(gr, "Mk", l.Mk);
+      h5_read(gr, "acc", l.acc);
+      h5_read(gr, "count", l.count);
+      h5_read(gr, "acc_count", l.acc_count);
+    }
+
   } // namespace details
 
   /// The class takes in measurements during a Monte Carlo simulation and serves a dual purpose:
@@ -226,7 +254,8 @@ namespace triqs::stat {
   /// Logarithmic (Log) Binning
   /// -------------------------
   ///
-  /// This part of the accumulator is used to estimate the autocorrelation time of the data, by calculating the standard error of the data binned with different bin sizes. For correlated data, the error should grow as the bin size increases up to the autocorrelation time, where it saturates [LINK].
+  /// This part of the accumulator is used to estimate the autocorrelation time of the data, by calculating the standard error of the data binned with different bin sizes.
+  /// For correlated data, the error should grow as the bin size increases up to the autocorrelation time, where it saturates [LINK].
   ///
   /// The log binning uses bin sizes that are powers of two $2, 4, 8, 16, \ldots$ up to a user-defined maximum. Note that binning is performed only once there is at one full bin of data at a given size -- any partial accumulation is not considered. In the the end, one can obtain the list of standard errors for the different levels of binning; this should be analyzed to see if saturation with size has occurred.
   ///
@@ -247,11 +276,17 @@ namespace triqs::stat {
     details::log_binning<T> log_bins;
     details::lin_binning<T> lin_bins;
 
-    friend class triqs::h5::access;
+    // HDF5
+    friend void h5_write(h5::group g, std::string const &name, accumulator<T> const &l) {
+      auto gr = g.create_group(name);
+      h5_write(gr, "log_bins", l.log_bins);
+      h5_write(gr, "lin_bins", l.lin_bins);
+    }
 
-    template <typename F> void h5_serialize(F &&f) {
-      f("log_bins", log_bins);
-      f("lin_bins", lin_bins);
+    friend void h5_read(h5::group g, std::string const &name, accumulator<T> &l) {
+      auto gr = g.open_group(name);
+      h5_read(gr, "log_bins", l.log_bins);
+      h5_read(gr, "lin_bins", l.lin_bins);
     }
 
     public:
@@ -317,7 +352,8 @@ namespace triqs::stat {
     /// @example triqs/stat/acc_nlinbin.cpp
     int n_lin_bins() const { return lin_bins.n_bins(); }
 
-    /// Returns the current cpacaity of a linear bin. This is number of measurements that will be averaged in a single linear bin, until the next bin is started. The capacity increases when the linear bins are compressed, either :ref:`manually <accumulator_compress_linear_bins>` or automatically when reaching the maximum number of bins [REF?].
+    /// Returns the current cpacaity of a linear bin. This is number of measurements that will be averaged in a single linear bin, until the next bin is started.
+    /// The capacity increases when the linear bins are compressed, either :ref:`manually <accumulator_compress_linear_bins>` or automatically when reaching the maximum number of bins [REF?].
     ///
     /// When there is only a single bin [:ref:`n_lin_bins() <accumulator_n_lin_bins>` == 1], this parameter is ignored in order to avoid data loss.
     ///
