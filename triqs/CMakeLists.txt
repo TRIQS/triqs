@@ -265,6 +265,13 @@ if(UBSAN)
   endif()
 endif()
 
+# Memory Sanitizer
+option(MSAN OFF "Compile library and executables with LLVM Memory Sanitizer")
+if(MSAN)
+  target_compile_options(triqs PUBLIC -fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2 -O1 -ggdb3)
+  target_link_libraries(triqs PUBLIC "-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2")
+endif()
+
 if(sanitizers)
   find_package(sanitizer REQUIRED ${sanitizers})
   if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
