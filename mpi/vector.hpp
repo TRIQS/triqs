@@ -30,7 +30,7 @@ namespace mpi {
     broadcast(s, c, root);
     if (c.rank() != root) v.resize(s);
     if constexpr (has_mpi_type<T>) {
-      if (s != 0) MPI_Bcast(v.data(), v.size(), datatype<T>(), root, c.get());
+      if (s != 0) MPI_Bcast(v.data(), v.size(), mpi_type<T>::get(), root, c.get());
     } else {
       for (auto &x : v) broadcast(x, c, root);
     }
@@ -41,9 +41,9 @@ namespace mpi {
     if (a.size() == 0) return; // mpi behaviour not checked in that case.
     if constexpr (has_mpi_type<T>) {
       if (!all)
-        MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : a.data()), a.data(), a.size(), datatype<T>(), op, root, c.get());
+        MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : a.data()), a.data(), a.size(), mpi_type<T>::get(), op, root, c.get());
       else
-        MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), datatype<T>(), op, c.get());
+        MPI_Allreduce(MPI_IN_PLACE, a.data(), a.size(), mpi_type<T>::get(), op, c.get());
     } else {
       for (auto &x : a) mpi_reduce_in_place(a, c, root, all);
     }
@@ -65,9 +65,9 @@ namespace mpi {
       static_assert(std::is_same_v<regular_t<T>, T>, "Internal error");
       std::vector<T> r(s);
       if (!all)
-        MPI_Reduce((void *)a.data(), r.data(), s, datatype<T>(), op, root, c.get());
+        MPI_Reduce((void *)a.data(), r.data(), s, mpi_type<T>::get(), op, root, c.get());
       else
-        MPI_Allreduce((void *)a.data(), r.data(), s, datatype<T>(), op, c.get());
+        MPI_Allreduce((void *)a.data(), r.data(), s, mpi_type<T>::get(), op, c.get());
       return r;
     } else {
       std::vector<regular_t<T>> r;
@@ -94,7 +94,7 @@ namespace mpi {
         displs[r + 1] = sendcounts[r] + displs[r];
       }
 
-      MPI_Scatterv((void *)a.data(), &sendcounts[0], &displs[0], datatype<T>(), (void *)b.data(), recvcount, datatype<T>(), root, c.get());
+      MPI_Scatterv((void *)a.data(), &sendcounts[0], &displs[0], mpi_type<T>::get(), (void *)b.data(), recvcount, mpi_type<T>::get(), root, c.get());
       return b;
     }
 
@@ -118,7 +118,7 @@ namespace mpi {
       auto recvcounts = std::vector<int>(c.size());
       auto displs     = std::vector<int>(c.size() + 1, 0);
       int sendcount   = a.size();
-      auto mpi_ty     = datatype<int>();
+      auto mpi_ty     = mpi_type<int>::get();
       if (!all)
         MPI_Gather(&sendcount, 1, mpi_ty, &recvcounts[0], 1, mpi_ty, root, c.get());
       else
@@ -127,9 +127,9 @@ namespace mpi {
       for (int r = 0; r < c.size(); ++r) displs[r + 1] = recvcounts[r] + displs[r];
 
       if (!all)
-        MPI_Gatherv((void *)a.data(), sendcount, datatype<T>(), (void *)b.data(), &recvcounts[0], &displs[0], datatype<T>(), root, c.get());
+        MPI_Gatherv((void *)a.data(), sendcount, mpi_type<T>::get(), (void *)b.data(), &recvcounts[0], &displs[0], mpi_type<T>::get(), root, c.get());
       else
-        MPI_Allgatherv((void *)a.data(), sendcount, datatype<T>(), (void *)b.data(), &recvcounts[0], &displs[0], datatype<T>(), c.get());
+        MPI_Allgatherv((void *)a.data(), sendcount, mpi_type<T>::get(), (void *)b.data(), &recvcounts[0], &displs[0], mpi_type<T>::get(), c.get());
 
       return b;
     }

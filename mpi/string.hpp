@@ -29,7 +29,7 @@ namespace mpi {
     size_t len = s.size();
     broadcast(len, c, root);
     if (c.rank() != root) s.resize(len);
-    if (len != 0) MPI_Bcast((void*)s.c_str(), s.size(), datatype<char>(), root, c.get());
+    if (len != 0) MPI_Bcast((void*)s.c_str(), s.size(), mpi_type<char>::get(), root, c.get());
   }
 
 } // namespace mpi
