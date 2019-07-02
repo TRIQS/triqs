@@ -39,7 +39,8 @@ namespace triqs::gfs {
 
     arrays::array_const_view<dcomplex, 2> mom_12;
     if (known_moments.is_empty())
-      return _fourier_impl(w_mesh, gt, make_zero_tail(gt, 2));
+      // If no known_moments are passed we do a fourier transform on the raw data
+      return _fourier_impl(w_mesh, gt, make_zero_tail(gt, 3));
     else {
       TRIQS_ASSERT2(known_moments.shape()[0] >= 3, " Direct RealTime Fourier transform requires known moments up to order 3.")
       double _abs_tail0 = max_element(abs(known_moments(0, range())));
