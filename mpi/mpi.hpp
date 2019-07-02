@@ -121,6 +121,10 @@ namespace mpi {
   [[gnu::always_inline]] inline decltype(auto) reduce(T &&x, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
     return mpi_reduce(std::forward<T>(x), c, root, all, op);
   }
+  template <typename T>
+  [[gnu::always_inline]] inline void reduce_in_place(T &&x, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+    return mpi_reduce_in_place(std::forward<T>(x), c, root, all, op);
+  }
   template <typename T>[[gnu::always_inline]] inline decltype(auto) scatter(T &&x, mpi::communicator c = {}, int root = 0) {
     return mpi_scatter(std::forward<T>(x), c, root);
   }
@@ -129,6 +133,9 @@ namespace mpi {
   }
   template <typename T>[[gnu::always_inline]] inline decltype(auto) all_reduce(T &&x, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
     return reduce(std::forward<T>(x), c, root, true, op);
+  }
+  template <typename T>[[gnu::always_inline]] inline void all_reduce_in_place(T &&x, communicator c = {}, int root = 0, MPI_Op op = MPI_SUM) {
+    return reduce_in_place(std::forward<T>(x), c, root, true, op);
   }
   template <typename T>[[gnu::always_inline]] inline decltype(auto) all_gather(T &&x, communicator c = {}, int root = 0) {
     return gather(std::forward<T>(x), c, root, true);
@@ -288,6 +295,14 @@ namespace mpi {
     else
       MPI_Allreduce(&a, &b, 1, d, op, c.get());
     return b;
+  }
+
+  template <typename T>
+  std::enable_if_t<has_mpi_type<T>> mpi_reduce_in_place(T a, communicator c = {}, int root = 0, bool all = false, MPI_Op op = MPI_SUM) {
+    if (!all)
+      MPI_Reduce((c.rank() == root ? MPI_IN_PLACE : &a), &a, 1, get_mpi_type<T>(), op, root, c.get());
+    else
+      MPI_Allreduce(MPI_IN_PLACE, &a, 1, get_mpi_type<T>(), op, c.get());
   }
 
 #define MPI_TEST_MAIN                                                                                                                                \
