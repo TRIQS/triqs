@@ -197,9 +197,8 @@ target_compile_options(triqs PUBLIC ${HDF5_DEFINITIONS})
 message( STATUS "-------- GMP detection -------------")
 find_package(GMP)
 
-#
-target_include_directories(triqs SYSTEM PUBLIC ${GMP_INCLUDE_DIR})
-target_link_libraries (triqs PUBLIC ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
+target_link_libraries(triqs PUBLIC gmp)
+install(TARGETS gmp EXPORT triqs-targets)
 
 # ---------------------------------
 # FFTW
@@ -208,9 +207,8 @@ target_link_libraries (triqs PUBLIC ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
 message( STATUS "-------- FFTW detection -------------")
 find_package(FFTW)
 
-#
-target_include_directories(triqs SYSTEM PUBLIC ${FFTW_INCLUDE_DIR})
-target_link_libraries (triqs PUBLIC ${FFTW_LIBRARIES})
+target_link_libraries(triqs PUBLIC fftw)
+install(TARGETS fftw EXPORT triqs-targets)
 
 # ---------------------------------
 # pthread
