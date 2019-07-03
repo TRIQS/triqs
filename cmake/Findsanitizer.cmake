@@ -45,7 +45,7 @@ foreach(component ${${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS})
 
   find_library(${COMPONENT}_RT_LIBRARY
     NAMES ${prefix}${component}${suffix} ${prefix}${component}_standalone${suffix}
-    PATHS ${search_path})
+    PATHS ${search_path} ${search_path}/../../../)
   mark_as_advanced(${COMPONENT}_RT_LIBRARY)
 
   # Imported target
