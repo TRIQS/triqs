@@ -1,0 +1,66 @@
+FROM ubuntu:disco
+ARG RELEASE=disco
+ARG LLVM=8
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      clang-${LLVM} \
+      cmake \
+      g++ \
+      gfortran \
+      git \
+      hdf5-tools \
+      libblas-dev \
+      libboost-all-dev \
+      libclang-${LLVM}-dev \
+      libfftw3-dev \
+      libgfortran3 \
+      libgmp-dev \
+      libhdf5-dev \
+      intel-mkl \
+      libopenmpi-dev \
+      openmpi-bin \
+      openmpi-common \
+      openmpi-doc \
+      python-clang-${LLVM} \
+      python-dev \
+      python-h5py \
+      python-mako \
+      python-matplotlib \
+      python-mpi4py \
+      python-numpy \
+      python-scipy \
+      python-sphinx \
+      python-nbsphinx
+
+ENV CC=clang-${LLVM} CXX=clang++-${LLVM} LLVM_VERSION=${LLVM}.0.0
+
+ADD http://releases.llvm.org/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz /tmp/
+ADD http://releases.llvm.org/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz /tmp/
+RUN mkdir /tmp/build && cd /tmp/build && \
+      tar -C /tmp -xf /tmp/libcxx-${LLVM_VERSION}.src.tar.xz && \
+      tar -C /tmp -xf /tmp/libcxxabi-${LLVM_VERSION}.src.tar.xz && \
+      cmake /tmp/libcxxabi-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXXABI_LIBCXX_PATH=/tmp/libcxx-${LLVM_VERSION}.src -DLLVM_USE_SANITIZER=Memory && make -j2 && make install && \
+      rm -rf * && \
+      cmake /tmp/libcxx-${LLVM_VERSION}.src -DLLVM_CONFIG_PATH=/usr/bin/llvm-config-${LLVM} -DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-${LLVM} -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=/tmp/libcxxabi-${LLVM_VERSION}.src/include -DLLVM_USE_SANITIZER=Memory && make -j2 install && \
+      rm -rf /tmp/libcxx* /tmp/build
+ENV CXXFLAGS="-stdlib=libc++ -fsanitize=memory" CFLAGS="-fsanitize=memory" LD_LIBRARY_PATH=/usr/lib/llvm-${LLVM}/lib LDFLAGS="-fsanitize=memory"
+
+RUN update-alternatives --set liblapack.so-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so && \
+    update-alternatives --set libblas.so-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so
+
+RUN useradd -m build
+
+ENV SRC=/src \
+    BUILD=/home/build \
+    INSTALL=/usr/local \
+    PYTHONPATH=/usr/local/lib/python2.7/site-packages:${PYTHONPATH} \
+    CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs:${CMAKE_PREFIX_PATH}
+
+COPY . ${SRC}/triqs
+WORKDIR ${BUILD}/triqs
+RUN chmod -R +rX ${SRC}/triqs && chown build .
+USER build
+RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DCLANG_OPT="$CXXFLAGS" -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" -DMSAN=1
+RUN make VERBOSE=1 -j8
+ENV MSAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer CTEST_OUTPUT_ON_FAILURE=1
+RUN make test || true
