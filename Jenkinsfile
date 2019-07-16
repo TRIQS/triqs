@@ -60,6 +60,8 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
         deleteDir()
         sh """#!/bin/bash -ex
           virtualenv $installDir
+          # install numpy first to deps (h5py) find it
+          pip install numpy
           pip install --no-binary=h5py,mpi4py -U -r $workDir/packaging/requirements.txt
         """
 
