@@ -17,7 +17,7 @@ toolchain = {'name': 'foss', 'version': '2018b'}
 toolchainopts = {'pic': True, 'usempi': True}
 
 sources = ['%(version)s.tar.gz']
-source_urls = ['https://github.com/TRIQS/triqs/releases/']
+source_urls = ['https://github.com/TRIQS/triqs/archive/']
 
 dependencies = [
   ('Python', '2.7.15'),
