@@ -1,3 +1,31 @@
+Version 2.1.1
+=============
+
+TRIQS Version 2.1.1 introduces minor adjustments
+to the cmake files and the documentation.
+It further provides a build script for the
+EasyBuild framework.
+
+jenkins
+-------
+* Manually pip install numpy first on osx
+* Rename docker repo to packaging
+
+doc
+---
+* Use short version of binder link in install page
+* Fix github logo
+
+cmake
+-----
+* Synchronize and clean find_package modules for FFTW GMP GSL and NFFT
+* Allow compilation also with the parallel version of hdf5
+
+General
+-------
+* Easyconfig Build Script for TRIQS release 2.1.1
+
+
 Version 2.1.0
 =============
 
