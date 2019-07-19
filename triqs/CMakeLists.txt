@@ -112,13 +112,10 @@ else()
  set(Boost_USE_STATIC_LIBS OFF)
 endif()
 
-find_package(Boost 1.53 REQUIRED COMPONENTS) # mpi serialization system
-if(NOT Boost_FOUND)
- message(FATAL_ERROR "Boost not found")
-endif()
-mark_as_advanced(Boost_DIR)
-message(STATUS  "Boost include dir: ${Boost_INCLUDE_DIRS}")
-message(STATUS  "Boost libraries: ${Boost_LIBRARIES}")
+set(Boost_NO_BOOST_CMAKE ON)
+find_package(Boost 1.53 REQUIRED COMPONENTS serialization)
+message(STATUS "Boost include dir: ${Boost_INCLUDE_DIRS}")
+message(STATUS "Boost libraries: ${Boost_LIBRARIES}")
 
 add_library(boost INTERFACE)
 target_include_directories(boost SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
