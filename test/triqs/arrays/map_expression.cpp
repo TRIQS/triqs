@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
       B(i, j) = i - j;
     }
 
-  auto Abs = map(std::function<double(double)>(static_cast<double (*)(double)>(std::abs)));
+  auto Abs = map(std::function<double(double)>(static_cast<double (*)(double)>(std::fabs)));
   auto Max = map2(std::function<double(double, double)>(mmax<double>));
 
   auto sqr = map([](double x) { return x * x; });

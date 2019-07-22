@@ -28,7 +28,7 @@
 
 using namespace triqs::arrays;
 
-auto Abs = map(std::function<double(double)>(static_cast<double (*)(double)>(std::abs)));
+auto Abs = map(std::function<double(double)>(static_cast<double (*)(double)>(std::fabs)));
 
 int main(int argc, char **argv) {
 
