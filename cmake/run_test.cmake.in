@@ -17,7 +17,6 @@ execute_process(
  COMMAND ${cmd}
   RESULT_VARIABLE not_successful
   OUTPUT_FILE ${name}.out
-  ERROR_FILE ${name}.err
   ERROR_VARIABLE err
   TIMEOUT 600
 )
