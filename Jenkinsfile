@@ -79,6 +79,15 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
   } }
 }
 
+/****************** sanitization builds (in docker) */
+platforms['sanitize'] = { -> node('docker') {
+  stage('sanitize') { timeout(time: 1, unit: 'HOURS') {
+    checkout scm
+    def img = docker.build("flatironinstitute/${projectName}:${env.BRANCH_NAME}-sanitize", "-f packaging/Dockerfile.sanitize .")
+    sh "docker rmi --no-prune ${img.imageName()}"
+  } }
+} }
+
 /****************** wrap-up */
 try {
   parallel platforms
