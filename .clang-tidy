@@ -1,0 +1,2 @@
+Checks: '-*,modernize-*,cppcoreguidelines-*'
+HeaderFilterRegex: 'triqs'
