@@ -275,7 +275,7 @@ namespace triqs {
        *
        * Throws, in case the provided operator does not respect the block symmetries used in the diagonalization.
        */
-      op_block_mat_t get_op_mat(many_body_op_t const &op) const;
+      op_block_mat_t get_op_mat(many_body_op_t const &op, bool fock_space = true) const;
       
 
       private:

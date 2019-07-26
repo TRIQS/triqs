@@ -112,7 +112,7 @@ namespace triqs {
 
     // -----------------------------------------------------------------
 
-    ATOM_DIAG_METHOD(op_block_mat_t, get_op_mat(many_body_op_t const &op) const) {
+    ATOM_DIAG_METHOD(op_block_mat_t, get_op_mat(many_body_op_t const &op, bool fock_space) const) {
       op_block_mat_t op_mat(n_subspaces());
 
       for(int b : range(n_subspaces()) ) {
@@ -129,8 +129,9 @@ namespace triqs {
 	    op_mat.block_mat[b] += term.coef * mat;
 	  }
 	}
-	// Transform to Hamiltonian eigen basis
-	if( op_mat.connection(b) != -1 ) {
+
+	// Transform to Fock space
+	if( fock_space && (op_mat.connection(b) != -1 )) {
 	  auto U_left = dagger(eigensystems[op_mat.connection(b)].unitary_matrix);
 	  auto U_right = eigensystems[b].unitary_matrix;
 	  op_mat.block_mat[b] = U_left * op_mat.block_mat[b] * U_right;
