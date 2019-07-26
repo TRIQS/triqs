@@ -294,9 +294,10 @@ namespace mpi {
     T b;
     auto d = mpi_type<T>::get();
     if (!all)
-      MPI_Reduce(&a, &b, 1, d, op, root, c.get());
+      // Old mpi implementations may require a non-const void *sendbuf
+      MPI_Reduce(const_cast<T *>(&a), &b, 1, d, op, root, c.get());
     else
-      MPI_Allreduce(&a, &b, 1, d, op, c.get());
+      MPI_Allreduce(const_cast<T *>(&a), &b, 1, d, op, c.get());
     return b;
   }
 
