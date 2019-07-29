@@ -83,14 +83,23 @@ namespace triqs {
       h5::group gr = fg.create_group(subgroup_name);
       auto _       = range(0, bl.dim());
       h5_write(gr, "units", bl.units_(_, _));
+      h5_write(gr, "atom_orb_pos", bl.atom_orb_pos);
+      h5_write(gr, "atom_orb_name", bl.atom_orb_name);
     }
 
     /// Read from HDF5
     void h5_read(h5::group fg, std::string subgroup_name, bravais_lattice &bl) {
       h5::group gr = fg.open_group(subgroup_name);
-      matrix<double> u;
-      h5_read(gr, "units", u);
-      bl = bravais_lattice{u}; // NOT COMPLETE
+      matrix<double> units__;
+      h5_read(gr, "units", units__);
+
+      auto atom_orb_pos = std::vector<r_t>{{0, 0, 0}};
+      h5_try_read(gr, "atom_orb_pos", atom_orb_pos);
+
+      auto atom_orb_name = std::vector<std::string>(atom_orb_pos.size(), "");
+      h5_try_read(gr, "atom_orb_name", atom_orb_name);
+
+      bl = bravais_lattice{units__, atom_orb_pos, atom_orb_name};
     }
 
     //------------------------------------------------------------------------------------
