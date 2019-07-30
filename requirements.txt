@@ -1,9 +1,7 @@
 numpy>=1.8.0,<1.17.0
-h5py
 scipy
-mpi4py
+h5py --no-binary=h5py
+mpi4py --no-binary=mpi4py
 matplotlib
-ipython
 mako
-configobj
 nbsphinx
