@@ -2,6 +2,7 @@ FROM ubuntu:bionic
 ARG RELEASE=bionic
 ARG LLVM=6.0
 
+# This platform includes dependencies for building docs
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       clang-${LLVM} \
       cmake \
@@ -30,6 +31,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python-matplotlib \
       python-mpi4py \
       python-numpy \
+      python-pip \
       python-scipy \
       python-sphinx \
       python-nbsphinx
