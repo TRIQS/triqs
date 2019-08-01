@@ -74,7 +74,7 @@ namespace triqs {
           out << double(x);
         else {
           out << '(' << x._x.real();
-          if (x._x.imag() > 0) out << '+';
+          if (not std::signbit(x._x.imag())) out << '+';
           out << x._x.imag() << "j)";
         }
         return out;
