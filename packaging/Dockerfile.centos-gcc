@@ -16,11 +16,9 @@ RUN yum -y install centos-release-scl epel-release && yum -y update && \
       make \
       mpi4py-openmpi \
       openmpi-devel \
-      python-dateutil \
       python-devel \
       python-mako \
       python-pip \
-      python-six \
       python-subprocess32 \
       python-virtualenv \
       pytz \
