@@ -5,7 +5,7 @@ Contributing
    Do not open an issue on github if you have questions regarding the usage of the code
    which are specific to your problem. Consolidate the :ref:`documentation` and the
    :ref:`tutorials` first. Should this not answer your questions, you can get in contact with
-   other users and developers via our `Google group <https://groups.google.com/a/flatironinstitute.org/d/forum/triqs>`_.
+   other users and developers via our `Google group <https://triqs.github.io/announcements>`_.
 
 Issues and feature requests
 ---------------------------
@@ -27,5 +27,5 @@ Google group / mailing list
 ---------------------------
 
 As a platform for discussions with other users and developers we have set up
-a `Google group <https://groups.google.com/a/flatironinstitute.org/d/forum/triqs>`_.
+a `Google group <https://triqs.github.io/announcements>`_.
 This channel is also used for the announcement of new releases and code updates.
