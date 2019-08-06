@@ -56,9 +56,9 @@ c.add_constructor("""${W.make_signature_for_desc(m, True)}""", doc = r"""${doc.m
 ##
 %for m in methods:
 c.add_method("""${W.make_signature_for_desc(m)}""",
-              %if m.spelling == "operator()" : 
-               name = "__call__",
-              %endif
+             %if m.spelling == "operator()" :
+             name = "__call__",
+             %endif
              %if m.is_static_method() :
              is_static = True,
              %endif

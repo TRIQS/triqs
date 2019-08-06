@@ -41,8 +41,11 @@ class Cpp2Rst:
            namespaces : list of string 
                       Restrict the generation to the given namespaces.
            
-           includes         : string, optional
+           includes : string, optional
                       Additional includes to add (-I xxx) for clang
+
+           system_includes : string, optional
+                      Additional System includes to add (-isystem xxx) for clang
            
            compiler_options : string, optional 
                       Additional option for clang compiler
@@ -82,6 +85,10 @@ class Cpp2Rst:
        
         for ns in self.namespaces:
             self.run_one_ns(ns, *d[ns])
+
+        # Top page
+        r=renderers.render_top_page(self.namespaces)
+        safe_write('contents', r)
 
     # ----------------------
 
@@ -128,7 +135,6 @@ class Cpp2Rst:
                  if target_file_only it has to be in the file given to c++2py
             """
             if c.spelling.startswith('_') : return False
-            # FIXME : Commented for debug
             if not c.raw_comment : return False
             if namespace:
                 qualified_ns = CL.get_namespace(c) 
@@ -136,17 +142,18 @@ class Cpp2Rst:
             return (c.location.file.name == self.filename) if self.target_file_only else True
         
         def keep_fnt(f):
-            #print "RAW", f.spelling, f.raw_comment
             if not f.raw_comment : return False
             if  f.spelling.startswith('operator') or f.spelling in ['begin','end'] : return False
             return keep_cls(f) 
 
         def keep_using(c):
-            #if not c.raw_comment : return False
             if namespace:
                 qualified_ns = CL.get_namespace(c) 
                 if qualified_ns != namespace : return False
             return (c.location.file.name == self.filename) if self.target_file_only else True
+
+        def keep_is_documented(c):
+            return True if c.raw_comment else False
 
         # ----------------------
 
@@ -159,12 +166,9 @@ class Cpp2Rst:
             cls.namespace = CL.get_namespace(cls)
             cls.name = CL.get_name_with_template_specialization(cls) or cls.spelling 
             cls.fully_qualified_name = '::'.join([cls.namespace, cls.name])
+            cls.fully_qualified_name_no_template = CL.fully_qualified_name(cls)
             cls.name_for_label = synopsis.make_label(cls.fully_qualified_name)
             D[cls.fully_qualified_name] = cls
-            # print "CLASS", cls.name
-            # print "CLASS", cls.fully_qualified_name 
-            # print "CLASS", cls.name_for_label
-            # print "CLASS", "----------------------"
        
             print " ... class :  %s"%cls.fully_qualified_name, cls.location
             #assert ',' not in cls.fully_qualified_name, "Not implemented"
@@ -178,12 +182,10 @@ class Cpp2Rst:
             for f in constructors : f.is_constructor = True # tag them for later use
             methods = OrderedDict()
             if constructors: methods['constructor'] = constructors
-            methods.update(self.regroup_func_by_names(CL.get_methods(cls, True))) # True : with inherited 
-            #methods.update(self.regroup_func_by_names(CL.get_methods(cls, True, keep = keep_fnt))) # True : with inherited 
+            methods.update(self.regroup_func_by_names(CL.get_methods(cls, True, keep = keep_is_documented))) # True : with inherited 
 
             # all non member functions
-            friend_functions = self.regroup_func_by_names(CL.get_friend_functions(cls))
-            #friend_functions = self.regroup_func_by_names(CL.get_friend_functions(cls, keep = keep_fnt))
+            friend_functions = self.regroup_func_by_names(CL.get_friend_functions(cls, keep = keep_is_documented))
 
             # Analyse the doc string for all methods and functions, and store the result in the node itself
             for (n,f_list) in (methods.items() + friend_functions.items()):

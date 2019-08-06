@@ -1,6 +1,8 @@
-import re
+import re, itertools, os
 from collections import OrderedDict
 import cpp2py.clang_parser as CL
+import global_vars
+
  
 """
 Meaning of the @option in the doc:
@@ -42,9 +44,21 @@ def replace_latex(s, escape_slash=False):
 # --------------------------------- 
 
 def clean_doc_string(s):
-    for p in [r"/\*",r"\*/",r"^\s*\*", r'\*\s*\n', r'\*/\s*$',r"///", r"//", r"\\brief"] : 
+    if '\t'  in s:
+        print "WARNING : TABS ", s.replace('\t','TAB')
+
+    for p in [r"^\s*/\*\*?",r"\*/",r"^\s*\*",  r'^\s*\*/\s*$',r"^\s*///", r"^s*//"]:
         s = re.sub(p,"",s, flags = re.MULTILINE)
     return s
+
+# ------------------------------------------------------------------------
+
+def strip_left_spaces(s):
+    """Remove the left spaces so that the minimal space for at least one line is 0"""
+    lines = s.rstrip().split('\n')
+    l2 = [l for l in lines if l.strip()] # non empty lines
+    min_space = min ( sum( 1 for _ in itertools.takewhile(str.isspace,a) ) for a in l2) if l2 else 0
+    return '\n'.join(l[min_space:] for l in lines)
 
 # ------------------------------------------------------------------------
 
@@ -65,27 +79,30 @@ class ProcessedDoc:
     """
     def __init__(self, node): 
         raw_doc = node.raw_comment
+
         if not raw_doc : raw_doc = "\n\n" # default value
-        
+
         # Clean *, &&, /// and co.
-        doc = clean_doc_string(raw_doc.strip())
+        doc = clean_doc_string(raw_doc).rstrip() # do NOT remove leading space
         
         # split : the first line is brief, and the rest
         doc = replace_latex(doc)
         if '$' in doc : 
             print "FAILED to process the latex for node %s"%CL.fully_qualified(node)
             print doc
-        doc2 = doc.strip().split('@',1)[0] # Get rid of everything after the first @
+        doc2 = doc.split('@',1)[0] # Get rid of everything after the first @
         self.doc = doc2
-        #spl = doc2.strip().split('\n',1) 
-        #self.brief_doc, self.doc = spl[0], (spl[1] if len(spl)>1 else '') 
-        assert '@' not in self.doc, "ouch!"
+
+        assert '@' not in self.doc, "Internal Error in doc processing !"
+
+        # Process the main part of the doc
+        self.doc = strip_left_spaces(self.doc)
 
         # Extract the @XXXX elements with a regex @XXXX YYYY (YYYY can be multiline).
         d = dict( (key, []) for key in self.fields_with_multiple_entry)
-        regex = r'@(\w+)\s*([^@]*)'
+        regex = r'@(\w+)\s(\s*[^@]*)'
         for m in re.finditer(regex, doc, re.DOTALL):
-            key, val = m.group(1), replace_latex(m.group(2)).strip()
+            key, val = m.group(1), replace_latex(m.group(2)).rstrip()
             if key not in self.fields_allowed_in_docs:
                 print "Field %s is not recognized"%key
             if key in self.fields_with_multiple_entry:
@@ -95,3 +112,21 @@ class ProcessedDoc:
         self.elements = d
         if 'brief' not in d : d['brief']=''
 
+        # if 'return' in d : print d['return']
+
+        # print doc
+        # print raw_doc
+        # print d['param']
+
+        # Final adjustement
+        if 'brief' not in d : d['brief']=''
+
+        if 'example' not in d : # take the default
+            filename=  "%s.cpp"%(CL.fully_qualified_name(node).replace("::",'/'))
+            filename = os.path.join(global_vars.examples_root, filename)
+            if os.path.exists(filename):
+                d['example'] =  filename
+
+        if 'include' not in d :
+           ns = CL.get_namespace_list(node)
+           d['include'] = '/'.join(ns) + '.hpp'

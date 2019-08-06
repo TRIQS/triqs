@@ -93,20 +93,41 @@ def render_example(filename):
 .. error:: File not found 
 
     Example file %s not found"""%(filename)
+
     # Here we could eliminate the headers
     code = open(filename).read()
-    sep = 4*' '
-    code = '\n'.join(sep + x for x in code.strip().split('\n'))
-    return """
+
+    def shift(s) :
+        sep = 4*' '
+        return  '\n'.join(sep + x for x in s.strip().split('\n'))
+
+    R = """
 Example
----------
+^^^^^^^
+
+..
+   Included automatically from {filename}
 
 .. code-block:: cpp
 
 {code}
 
-        """.format(code = code)
- 
+        """.format(code = shift(code), filename = filename)
+
+    output_file = os.path.splitext(filename)[0] + ".output"
+    if os.path.exists(output_file):
+        output = open(output_file).read().strip()
+        if output:
+            R += """
+*Output*
+
+.. code-block:: text
+
+{output}
+""".format(output = shift(output))
+
+    return R
+
 #------------------------------------
 
 def render_fnt(parent_class, f_name, f_overloads):
@@ -120,19 +141,29 @@ def render_fnt(parent_class, f_name, f_overloads):
     """
     # Start of the page
     R = rst_start
-    
+
+    # include
+    incl = f_overloads[0].processed_doc.elements.pop('include', '')
+
     # tag and name of the class
-    parent_cls_name_fully_qualified = (CL.fully_qualified_name(parent_class) + "::") if parent_class else ""
-    parent_cls_name = (parent_class.name + '_') if parent_class else '' 
-    f_name_full = parent_cls_name_fully_qualified + f_name
-    
+    if parent_class:
+        f_name_full = parent_class.fully_qualified_name + "::" + f_name
+    else :
+        f_name_full = CL.fully_qualified_name(f_overloads[0]) # full name of the function
+
+
     R += """
 .. _{class_rst_ref}:
 
 {f_name_full}
-""".format(f_name_full = f_name_full, class_rst_ref = make_label(parent_cls_name + f_name))
+{separator}
 
-    R += '=' * (len(f_name_full)+0) + '\n' + """
+*#include <{incl}>*
+
+""".format(f_name_full = f_name_full, incl = incl, class_rst_ref = make_label(f_name_full), separator =  '=' * (len(f_name_full)+0) )
+#""".format(f_name_full = f_name_full, incl = incl, class_rst_ref = make_label(parent_cls_name + f_name), separator =  '=' * (len(f_name_full)+0) )
+
+    R += """
 
 """
     # Synopsis
@@ -141,7 +172,7 @@ def render_fnt(parent_class, f_name, f_overloads):
     # We regroup the overload as in cppreference
    
     def make_unique(topic) :
-        rets = set(f.processed_doc.elements.pop(topic, '').strip() for f in f_overloads)
+        rets = set(f.processed_doc.elements.pop(topic, '').rstrip() for f in f_overloads)
         rets = list(x for x in rets if x)
         if len(rets)> 1: print "Warning : Multiple documentation of %s across overloads. Picking first one"%topic
         return rets[0] if rets else ''
@@ -153,20 +184,20 @@ def render_fnt(parent_class, f_name, f_overloads):
            for p in plist : 
                name, desc = (p + '   ').split(' ',1)
                if name not in D:
-                   D[name] = desc.strip()
+                   D[name] = desc.rstrip()
                else:
-                   if D[name] != desc.strip() : 
+                   if D[name] != desc.rstrip() :
                        print "Warning : multiple definition of parameter %s at overload %s"%(name, n)
         return D
 
-    def render_dict(d, header, char):
+    def render_dict(d, header, char, role):
         """ 
            Make rst code for a list of items with  a header
            It splits the first word in a separate column
         """
         if not d: return ''
         head = make_header(header, char) if header else ''
-        return head + '\n'.join(" * **%s**: %s\n"%(k.strip(),v) for (k,v) in d.items())
+        return head + '\n'.join(" * :%s:`%s` %s\n"%(role, k.strip(),v) for (k,v) in d.items())
 
     has_overload = len(f_overloads)> 1
 
@@ -175,10 +206,13 @@ def render_fnt(parent_class, f_name, f_overloads):
     R += '%s\n\n'%head 
 
     # The piece of doc which is overload dependent
-    for num, f in enumerate(f_overloads):
-        pd =  f.processed_doc
-        num_s =  '**%s)**  '%(num+1) if has_overload else '' 
-        if pd.doc : R +=  '\n\n %s %s\n '%(num_s,  pd.doc)+ '\n'
+    if has_overload :
+        for num, f in enumerate(f_overloads):
+            pd =  f.processed_doc
+            num_s =  '**%s)**  '%(num+1) if has_overload else ''
+            if pd.doc : R +=  '\n\n %s %s\n '%(num_s,  pd.doc)+ '\n'
+    else :
+        R+='\n\n%s\n\n'%(f_overloads[0].processed_doc.doc)
 
     # Tail doc 
     R += '%s\n\n' %make_unique('tail') 
@@ -191,16 +225,17 @@ def render_fnt(parent_class, f_name, f_overloads):
     tparam_dict = make_unique_list('tparam')
     param_dict = make_unique_list('param')
     
-    R += render_dict(tparam_dict, 'Template parameters', '^')
-    R += render_dict(param_dict, 'Parameters','^')
+
+    R += render_dict(tparam_dict, 'Template parameters', '^', role = 'param')
+    R += render_dict(param_dict, 'Parameters','^', role = 'param')
  
     # Returns 
     rets = make_unique("return")
-    if rets : R += make_header('Returns', '^') + " * %s"%rets
+    if rets : R += make_header('Returns', '^') + "%s"%rets
 
     # Examples 
     example_file_name = make_unique("example")
-    R += render_example(example_file_name.strip())
+    R += "\n" + render_example(example_file_name.strip())
 
     # Warning 
     w = make_unique("warning")
@@ -235,11 +270,11 @@ def render_cls(cls, all_methods, all_friend_functions):
 {cls.fully_qualified_name}
 {separator}
 
-Defined in header <*{incl}*>
+*#include <{incl}>*
 
-.. code-block:: c
+.. rst-class:: cppsynopsis
 
-    {templ_synop} class {cls.name}
+     {templ_synop} class  :red:`{cls.name}`
 
 {cls_doc.doc}
     """.format(cls = cls, incl = incl.strip(), separator = '=' * (len(cls.fully_qualified_name)), templ_synop = make_synopsis_template_decl(cls), cls_doc = cls_doc)
@@ -275,7 +310,9 @@ Defined in header <*{incl}*>
         D = OrderedDict()
         for name, flist in all_f.items():
             cat =flist[0].processed_doc.elements.get('category', None) 
-            D.setdefault(cat, list()).append((":ref:`%s <%s>`"%(escape_lg(name),make_label(cls.name + '_' + name)), flist[0].processed_doc.elements['brief']))
+            name_for_user = escape_lg(name)
+            if name_for_user in ['constructor', 'destructor'] : name_for_user = '(%s)'%name_for_user
+            D.setdefault(cat, list()).append((":ref:`%s <%s>`"%(name_for_user,make_label(cls.fully_qualified_name + '__' + name)), flist[0].processed_doc.elements['brief']))
         
         # Make the sub lists
         for cat, list_table_args in D.items() : 
@@ -300,7 +337,7 @@ Defined in header <*{incl}*>
 
 def render_ns(ns, all_functions, all_classes, all_usings): 
  
-    R = make_header('Reference C++ API for %s'%ns, '#') 
+    R = make_header(ns, '#')
     ns = ns.split('::',1)[-1]
 
     if len(all_usings) > 0:
@@ -320,7 +357,9 @@ def render_ns(ns, all_functions, all_classes, all_usings):
 
     if all_functions:
         R += make_header('Functions')
-        R += render_table([(":ref:`%s <%s>`"%(name, escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
+        R += render_table([(":ref:`%s <%s>`"%(name, make_label(CL.fully_qualified_name(f_list[0]))),
+                            f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
+        #R += render_table([(":ref:`%s <%s>`"%(name, escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
         #R += render_table([(":ref:`%s <%s_%s>`"%(name,escape_lg(ns), escape_lg(name)), f_list[0].processed_doc.elements['brief']) for (name, f_list) in all_functions.items() ])
         R += toctree_hidden
         for f_name in all_functions:
@@ -328,4 +367,18 @@ def render_ns(ns, all_functions, all_classes, all_usings):
    
     return R
 
+#-------------------------------------
 
+def render_top_page(ns_list):
+
+    sep = '    '
+
+    R ="""
+
+.. toctree::
+    :maxdepth: 2
+
+%s
+"""%('\n'.join(sep + ns.replace('::','/') for ns in ns_list))
+
+    return R
