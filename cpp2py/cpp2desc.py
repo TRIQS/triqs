@@ -92,8 +92,8 @@ class Cpp2Desc:
         return (c.location.file.name == self.filename) if self.target_file_only else True
         
     def keep_fnt(self, f):
-        # Same as class, but eliminate operator, begin, end.
-        if f.spelling.startswith('operator') or f.spelling in ['begin','end'] : return False
+        # Same as class, but eliminate operator (except operator()) , begin, end.
+        if (f.spelling.startswith('operator') and not f.spelling =="operator()")  or f.spelling in ['begin','end'] : return False
         return self.keep_cls(f)
     
     def all_functions_gen(self):
@@ -156,7 +156,7 @@ class Cpp2Desc:
         A list of cursors to the methods
         return : a tuple (proplist, methodlist) where proplist : a list of property_  and methodlist : the others methods
         """
-        keep = lambda m : CL.is_public(m) and not CL.is_template(m) and not ("ignore_in_python" in CL.get_annotations(m)) and not m.spelling.startswith('operator')
+        keep = lambda m : CL.is_public(m) and not CL.is_template(m) and not ("ignore_in_python" in CL.get_annotations(m)) and not (m.spelling.startswith('operator') and not m.spelling=="operator()")
         return CL.get_methods(c, True, keep)
 
     def has_hdf5_scheme(self, c):

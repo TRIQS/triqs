@@ -54,7 +54,12 @@ def process_type_name(type_node):
  
     # try to see if decl is in the known list 
     class_list = global_vars.synopsis_class_list
+    #d = CL.fully_qualified_name(decl)
+    #l = [ cls for cls in class_list if cls.fully_qualified_name_no_template == d]
+    #print "DECL",[cls.fully_qualified_name_no_template for cls in l]
+    #print "DECL",  d, [l.fully_qualified_name_no_template]decl.spelling, CL.fully_qualified_name(decl) #, [CL.fully_qualified_name(x) for x in class_list]
     if decl in class_list:
+    #if l:
         cls_idx = class_list.index(decl)
         cls = class_list[cls_idx]
         part_to_labelize = clean_ns(decay(t_name))
@@ -88,7 +93,7 @@ def make_synopsis_one_function(f, number):
     # first attempt : one line, else multiple line
     nspace = 8 if number>=10 else 7
     sep = nspace*' ' +  '| '
-    sep2 = ',\n'  + sep + '  '
+    sep2 = ',\n'  + sep + ' '*len(name)
     res1 = sep + result_type + ":red:`%s` "%name.strip() + '(' 
     
     # First compute the result without any rst decoroation to compute the lengths
@@ -106,9 +111,9 @@ def make_synopsis_one_function(f, number):
 
 
 def make_synopsis_list(f_list):
-    #if len(f_list) == 1 :
-    #     return ' **Synopsis**\n\n .. rst-class:: cppsynopsis\n\n    ' + '\n\n    %s'%make_synopsis_one_function(f_list[0], 0)
-    # overloads
-    return '**Synopsis**\n\n .. rst-class:: cppsynopsis\n\n    ' + '\n\n    '.join("%s. %s"%(n+1,make_synopsis_one_function(f, n+1)) for n, f in enumerate(f_list))
+    if len(f_list) == 1 : # use same instruction as !=1 but simplify
+        return '**Synopsis**\n\n .. rst-class:: cppsynopsis\n\n    ' + '\n\n    '.join("   %s"%(make_synopsis_one_function(f, n+1)) for n, f in enumerate(f_list))
+    else :
+        return '**Synopsis**\n\n .. rst-class:: cppsynopsis\n\n    ' + '\n\n    '.join("%s. %s"%(n+1,make_synopsis_one_function(f, n+1)) for n, f in enumerate(f_list))
 
 
