@@ -45,7 +45,7 @@ macro(add_cpp2py_module)
   set(wrap_name ${CMAKE_CURRENT_BINARY_DIR}/${module_name}_wrap.cxx)   # path to the wrapping code
 
   add_custom_command(OUTPUT ${wrap_name} DEPENDS ${desc_name} ${header_dependencies}
-   COMMAND PYTHONPATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/python:${CPP2PY_ADD_MODULE_ADDITIONAL_PYTHONPATH}:$ENV{PYTHONPATH} ${PYTHON_INTERPRETER} ${desc_name} ${wrap_name})
+   COMMAND PYTHONPATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/python:${CPP2PY_BINARY_DIR}:${CPP2PY_ADD_MODULE_ADDITIONAL_PYTHONPATH}:$ENV{PYTHONPATH} ${PYTHON_INTERPRETER} ${desc_name} ${wrap_name})
 
   add_library(${module_name} MODULE ${wrap_name})
   target_link_libraries(${module_name} python_and_numpy cpp2py)
