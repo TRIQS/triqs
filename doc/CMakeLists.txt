@@ -15,8 +15,7 @@ find_package(MathJax REQUIRED)
 message(STATUS "Detected MathJax at ${MATHJAX_PATH}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py @ONLY)
-
-file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/sphinxext DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/sphinxext DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # -----------------------------------------------------------------------------
 # Make an optional target that allows us to regenerate the C++ doc with c++2rst
@@ -45,7 +44,6 @@ endforeach()
 get_property(CPP2RST_CXXFLAGS TARGET triqs PROPERTY INTERFACE_COMPILE_OPTIONS)
 
 # Caution! This will alter the files in reference/cpp/generated
-# FIXME : clean after merging the nda_handle branch, we don't nee the BUILDING, or Python include
 add_custom_target(docs_cpp2rst)
 add_custom_command(
   TARGET docs_cpp2rst
@@ -53,12 +51,11 @@ add_custom_command(
   COMMAND PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${CPP2PY_BINARY_DIR}/bin/c++2rst
   ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
   ${NAMESPACES}
-  --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
-  --cxxflags="-DTRIQS_BUILDING_LIBRARY ${CPP2RST_CXXFLAGS}"
   --parse-all-comments
-  ${CPP2RST_INCLUDE_FLAGS}
-  -I${CMAKE_BINARY_DIR}/Config
+  --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
+  --cxxflags="${CPP2RST_CXXFLAGS}"
   -isystem=${CMAKE_SOURCE_DIR}/cpp2py/include
+  ${CPP2RST_INCLUDE_FLAGS}
 )
 
 # --------------------------------------------------------
@@ -73,11 +70,11 @@ foreach(example ${ExampleList})
   add_executable(doc_${f} EXCLUDE_FROM_ALL ${example})
   set_property(TARGET doc_${f} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${d})
   target_link_libraries(doc_${f} triqs)
-  add_dependencies(docs_example_output doc_${f})
-  add_custom_command(TARGET docs_example_output
+  add_custom_command(TARGET doc_${f}
    COMMAND doc_${f} > ${CMAKE_CURRENT_SOURCE_DIR}/${d}/${f}.output 2>/dev/null
    WORKING_DIRECTORY ${d}
   )
+  add_dependencies(docs_example_output doc_${f})
 endforeach()
 
 #---------------------------------
@@ -89,9 +86,15 @@ add_custom_target(docs_sphinx ALL)
 add_custom_command(TARGET docs_sphinx 
                    COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_SOURCE_DIR} html)
 
-# Autodoc usage requires the python modules to be built first
-GET_PROPERTY(CPP2PY_MODULES_LIST GLOBAL PROPERTY CPP2PY_MODULES_LIST)
-add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
+option(Sphinx_Only "When building the documentation, skip the Python Modules and the generation of C++ Api and example outputs" OFF)
+if(NOT Sphinx_Only)
+  # Autodoc usage requires the python modules to be built first
+  get_property(CPP2PY_MODULES_LIST GLOBAL PROPERTY CPP2PY_MODULES_LIST)
+  add_dependencies(docs_sphinx ${CPP2PY_MODULES_LIST})
+
+  # Generation of C++ Api and Example Outputs
+  add_dependencies(docs_sphinx docs_cpp2rst docs_example_output)
+endif()
 
 # ---------------------------------
 # Install
@@ -104,5 +107,3 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DEST
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/agogo DESTINATION share/triqs/themes)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/triqs DESTINATION share/triqs/themes)
-
-
