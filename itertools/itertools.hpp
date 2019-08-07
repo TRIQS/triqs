@@ -401,8 +401,8 @@ namespace itertools {
    * @example itertools/enumerate.cpp
    */
   template <typename R>
-  auto enumerate(R &&range) {
-    return details::enumerated<R>{std::forward<R>(range)};
+  details::enumerated<R> enumerate(R &&range) {
+    return {std::forward<R>(range)};
   }
 
   /**
@@ -419,8 +419,8 @@ namespace itertools {
    *          The ranges have to be equal lengths or behaviour is undefined.
    */
   template <typename... R>
-  auto zip(R &&... ranges) {
-    return details::zipped<R...>{std::forward<R>(ranges)...};
+  details::zipped<R...> zip(R &&... ranges) {
+    return {std::forward<R>(ranges)...};
   }
 
   /**
@@ -447,8 +447,8 @@ namespace itertools {
    * @param ranges The ranges to zip. Note: They have to be of equal length!
    */
   template <typename... T>
-  auto product(T &&... ranges) {
-    return details::multiplied<T...>{std::forward<T>(ranges)...};
+  details::multiplied<T...> product(T &&... ranges) {
+    return {std::forward<T>(ranges)...};
   }
 
   /**
@@ -460,8 +460,8 @@ namespace itertools {
    * @param end_idx The index one past the end of the sliced range
    */
   template <typename T>
-  auto slice(T &&range, std::ptrdiff_t start_idx, std::ptrdiff_t end_idx) {
-    return details::sliced<T>{std::forward<T>(range), start_idx, std::max(start_idx, end_idx)};
+  details::sliced<T> slice(T &&range, std::ptrdiff_t start_idx, std::ptrdiff_t end_idx) {
+    return {std::forward<T>(range), start_idx, std::max(start_idx, end_idx)};
   }
 
   /**
@@ -473,8 +473,8 @@ namespace itertools {
    * @param stride The numer of elements to skip
    */
   template <typename T>
-  auto stride(T &&range, std::ptrdiff_t stride) {
-    return details::strided<T>{std::forward<T>(range), stride};
+  details::strided<T> stride(T &&range, std::ptrdiff_t stride) {
+    return {std::forward<T>(range), stride};
   }
 
   /********************* Some factory functions ********************/
