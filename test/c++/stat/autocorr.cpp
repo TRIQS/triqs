@@ -129,7 +129,7 @@ TEST(Statistics, Autocorrelation1) {
                        355.2173638000497,
                        231.6692554974257};
 
-  EXPECT_ARRAY_NEAR(ref, f((1 << 20), 100), 1.e-10);
+  EXPECT_ARRAY_NEAR(ref, f((1 << 20), 100), 1.e-9);
 }
 
 // ----- TESTS ------------------
