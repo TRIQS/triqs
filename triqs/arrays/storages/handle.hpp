@@ -38,6 +38,7 @@ namespace nda::mem {
   // -------------- Allocation Functions ---------------------------
 
   allocators::blk_t allocate(size_t size);
+  allocators::blk_t allocate_zero(size_t size);
   void deallocate(allocators::blk_t b);
 
   // -------------- Utilities ---------------------------
@@ -55,12 +56,6 @@ namespace nda::mem {
     static constexpr bool init_dcmplx = true; // initialize dcomplex to 0 globally
     static rtable_t rtable;                   // the table of the ref counter.
   };
-
-  // -------------- Decide if type T will need to be constructed/destructed
-
-  template <typename T>
-  constexpr bool requires_construction_and_destruction =
-     !std::is_arithmetic_v<T> and !std::is_pod_v<T> and (!is_complex<T>::value or globals::init_dcmplx);
 
   // -------------- handle ---------------------------
 
@@ -97,7 +92,7 @@ namespace nda::mem {
       if (has_shared_memory() and not globals::rtable.decref(_id)) return;
 
       // If needed, call the T destructors
-      if constexpr (requires_construction_and_destruction<T>) {
+      if constexpr (!std::is_trivial_v<T>) {
         for (size_t i = 0; i < _size; ++i) _data[i].~T();
       }
 
@@ -150,10 +145,20 @@ namespace nda::mem {
     }
 
     // Construct a new block of memory of given size and init if needed.
-    handle(long size) : handle(size, do_not_initialize) {
+    handle(long size) {
       if (size == 0) return; // no size -> null handle
-      if constexpr (requires_construction_and_destruction<T>) {
-        for (size_t i = 0; i < size; ++i) new (_data + i) T();
+
+      if constexpr (is_complex<T>::value && globals::init_dcmplx) {
+        auto b = allocate_zero(size * sizeof(T));
+        ASSERT(b.ptr != nullptr);
+        _data = (T *)b.ptr;
+        _size = size;
+        return;
+      } else {
+        handle(size, do_not_initialize);
+        if constexpr (!std::is_trivial_v<T>) {
+          for (size_t i = 0; i < size; ++i) new (_data + i) T();
+        }
       }
     }
 
@@ -223,7 +228,7 @@ namespace nda::mem {
       }
 
       // If needed, call the T destructors
-      if constexpr (requires_construction_and_destruction<T>) {
+      if constexpr (!std::is_trivial_v<T>) {
         for (size_t i = 0; i < _size; ++i) _data[i].~T();
       }
 

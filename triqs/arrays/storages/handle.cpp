@@ -22,5 +22,6 @@ namespace nda::mem {
 
   allocator_t alloc;
   allocators::blk_t allocate(size_t size) { return alloc.allocate(size); }
+  allocators::blk_t allocate_zero(size_t size) { return alloc.allocate_zero(size); }
   void deallocate(allocators::blk_t b) { alloc.deallocate(b); }
 } // namespace nda::mem
