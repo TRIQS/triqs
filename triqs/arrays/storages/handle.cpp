@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <type_traits>
 
 #include "./handle.hpp"
 #include "./allocators.hpp"
@@ -22,5 +23,14 @@ namespace nda::mem {
 
   allocator_t alloc;
   allocators::blk_t allocate(size_t size) { return alloc.allocate(size); }
+  allocators::blk_t allocate_zero(size_t size) {
+    if constexpr (std::is_same_v<allocator_t, allocators::mallocator>) {
+      return alloc.allocate_zero(size);
+    } else {
+      auto blk = alloc.allocate(size);
+      std::memset(blk.ptr, 0, size);
+      return blk;
+    }
+  }
   void deallocate(allocators::blk_t b) { alloc.deallocate(b); }
 } // namespace nda::mem

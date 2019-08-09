@@ -61,6 +61,7 @@ namespace nda::allocators {
     mallocator &operator=(mallocator &&) = default;
 
     blk_t allocate(size_t s) { return {(char *)malloc(s), s}; } //NOLINT
+    blk_t allocate_zero(size_t s) { return {(char *)calloc(s, sizeof(char)), s}; } //NOLINT
 
     void deallocate(blk_t b) noexcept { free(b.ptr); }
   };
@@ -359,7 +360,10 @@ namespace nda::allocators {
       std::cerr << "Allocation size histogram :\n";
       //auto weight = 1.0 / std::accumulate(hist.begin(), hist.end(), 0);
       double lz = 65;
-      for(auto c: hist){ std:: cerr << "[2^" << lz << ", 2^" << lz - 1 << "]: " << c << "\n"; --lz; }
+      for (auto c : hist) {
+        std::cerr << "[2^" << lz << ", 2^" << lz - 1 << "]: " << c << "\n";
+        --lz;
+      }
     }
     stats()              = default;
     stats(stats const &) = delete;
