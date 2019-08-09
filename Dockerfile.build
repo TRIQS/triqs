@@ -14,6 +14,9 @@ ENV SRC=/src \
     PYTHONPATH=/usr/local/lib/python2.7/site-packages:${PYTHONPATH} \
     CMAKE_PREFIX_PATH=/usr/lib/cmake/triqs:${CMAKE_PREFIX_PATH}
 
+# Hacky patch for matplotlib sphinx bug (https://github.com/matplotlib/matplotlib/pull/12456?)
+RUN ln -s /src /home/src
+
 COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
 RUN chown -R build ${SRC}/triqs .
