@@ -318,9 +318,9 @@ namespace triqs::gfs {
     gf(gf_const_view<Var, Target> const &g) : gf(impl_tag2{}, g) {}
 
     /** 
-     *  From any object modeling the ImmutableGreenFunction concept.
+     *  From any object modeling the :ref:`concept_GreenFunction`.
      * 
-     *  @tparam G A type modeling ImmutableGreenFunction.
+     *  @tparam G A type modeling :ref:`concept_GreenFunction`.
      *  @param g 
      */
     template <typename G> gf(G const &g) REQUIRES(ImmutableGreenFunction<G>::value) : gf() { *this = g; }
@@ -359,14 +359,14 @@ namespace triqs::gfs {
 	*
 	* The assignment resizes the mesh and the data, invalidating all pointers on them.
 	* 
-	* @tparam RHS Type of the right hand side rhs
+	* @tparam RHS  Type of the right hand side rhs. Must model ImmutableGreenFunction concept.
 	*
 	* 		  RHS can be anything modeling the gf concept TBW
 	* 		  In particular lazy expression with Green functions
 	* @param rhs
 	* @example    triqs/gfs/gf_assign_0.cpp
 	*/
-    template <typename RHS> gf &operator=(RHS &&rhs) {
+    template <typename RHS> gf &operator=(RHS &&rhs) REQUIRES(ImmutableGreenFunction<RHS>::value) {
       _mesh = rhs.mesh();
       _data.resize(rhs.data_shape());
       for (auto const &w : _mesh) (*this)[w] = rhs[w];
