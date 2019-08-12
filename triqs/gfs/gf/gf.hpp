@@ -359,7 +359,7 @@ namespace triqs::gfs {
 	*
 	* The assignment resizes the mesh and the data, invalidating all pointers on them.
 	* 
-	* @tparam RHS  Type of the right hand side rhs. Must model ImmutableGreenFunction concept.
+	* @tparam RHS  Type of the right hand side rhs. Must model GreenFunction concept.
 	*
 	* 		  RHS can be anything modeling the gf concept TBW
 	* 		  In particular lazy expression with Green functions
