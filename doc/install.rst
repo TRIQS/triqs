@@ -72,15 +72,32 @@ Docker
 ------
 
 The virtualization software `docker <https://docs.docker.com/install>`_  can be used to
-run a triqs environment for both Jupyter Notebook and shell access on a variety of operating
+run a TRIQS environment for both Jupyter Notebook and shell access on a variety of operating
 systems. Once docker is installed, just pull the latest image with::
 
         docker pull flatironinstitute/triqs
 
 and follow the commands on the `image-website <https://hub.docker.com/r/flatironinstitute/triqs>`_.
 
-.. note:: Docker images allow for an easy set-up on cluster machines that provide the virtualization software `singularity <https://www.sylabs.io/guides/latest/user-guide/>`_.
-          For more information on the use of singularity in conjunction with docker images please refer to the `documentation <https://www.sylabs.io/guides/latest/user-guide/singularity_and_docker.html>`_.
+.. _triqs_singularity:
+Singularity
+-----------
+
+The virtualization software `singularity <https://www.sylabs.io/guides/latest/user-guide/>`_ allows for easy set-up on cluster machines.
+Ask your cluster administator to install the singularity software. The TRIQS setup is then as simple as::
+
+        singularity pull docker://flatironinstitute/triqs
+
+which will generate an image file `triqs_latest.sif`. You can then execute commands inside this image file, e.g.::
+
+        singularity exec triqs_latest.sif python -c "from pytriqs import *"
+
+In order to run your code in parallel you will need to use Open MPI version 2.1.1 to match the version of the singularity image.
+You can then run any command in parallel, e.g.::
+
+        mpirun -np 2 singularity exec triqs_latest.sif python -c "from pytriqs.utility import mpi; print mpi.rank"
+
+For more information on the use of singularity in conjunction with docker images please refer to the `documentation <https://www.sylabs.io/guides/latest/user-guide/singularity_and_docker.html>`_.
 
 Binder
 ------
@@ -130,7 +147,7 @@ the installation directory CMAKE_INSTALL_PREFIX is now mandatory in the cmake co
           or contact the admins of your HPC Machine.
 
 Environment setup
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 TRIQS provides a small script (`triqsvars.sh`)
 to load its installation into your :ref:`environment variables <environment_vars>`.
@@ -142,7 +159,7 @@ To automate this process, please add this line to your `~/.bash_profile <https:/
 (or `~/.zprofile <http://zsh.sourceforge.net/FAQ/zshfaq03.html#l19>`_)
 
 Further reading
-------------------
+---------------
 .. toctree::
    :maxdepth: 1
 

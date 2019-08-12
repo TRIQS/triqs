@@ -76,11 +76,11 @@ If you are using the Ubuntu 16.04 (xenial) :ref:`debian packages <ubuntu_debian>
 Issues
 ------
 
-* If you encounter compile-time error messages such as::
+If you encounter compile-time error messages such as::
 
         fatal error: mpi.h: No such file or directory
         fatal error: H5public.h: No such file or directory
         
-  make sure that the include directories of your openmpi and hdf5 installation are in the CPLUS_INCLUDE_PATH :ref:`environment variable <environment_vars>`::
+make sure that the include directories of your openmpi and hdf5 installation are in the CPLUS_INCLUDE_PATH :ref:`environment variable <environment_vars>`::
 
         export CPLUS_INCLUDE_PATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPLUS_INCLUDE_PATH
