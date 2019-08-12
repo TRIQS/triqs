@@ -51,7 +51,6 @@ add_custom_command(
   COMMAND PYTHONPATH=${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${CPP2PY_BINARY_DIR}/bin/c++2rst
   ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
   ${NAMESPACES}
-  --parse-all-comments
   --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
   --cxxflags="${CPP2RST_CXXFLAGS}"
   -isystem=${CMAKE_SOURCE_DIR}/cpp2py/include
