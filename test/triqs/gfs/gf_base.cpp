@@ -125,13 +125,13 @@ TEST(Gf, ZeroM) {
 
   double beta = 1;
   auto g      = gf<imfreq>{{beta, Fermion}, {2, 2}};
-  EXPECT_ARRAY_NEAR(g.get_zero(), matrix<double>{{0, 0}, {0, 0}});
+  EXPECT_ARRAY_NEAR(make_zero_return(g), matrix<double>{{0, 0}, {0, 0}});
 }
 TEST(Gf, ZeroS) {
 
   double beta = 1;
   auto g      = gf<imfreq, scalar_valued>{{beta, Fermion}, {}};
-  EXPECT_COMPLEX_NEAR(g.get_zero(), 0);
+  EXPECT_COMPLEX_NEAR(make_zero_return(g), 0);
 }
 
 TEST(Gf, SliceTargetScalar) {

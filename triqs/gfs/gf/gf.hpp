@@ -145,12 +145,6 @@ namespace triqs::gfs {
     /// Type of the memory layout
     using data_memory_layout_t = memory_layout_t<data_rank>;
 
-    // FIXME : ZERO should go ??
-    using zero_regular_t    = std::conditional_t<Target::rank != 0, arrays::array<scalar_t, Target::rank>, scalar_t>;
-    using zero_const_view_t = std::conditional_t<Target::rank != 0, arrays::array_const_view<scalar_t, Target::rank>, scalar_t>;
-    using zero_view_t       = zero_const_view_t;
-    using zero_t            = zero_regular_t;
-
     // FIXME : std::array with NDA
     using target_shape_t = arrays::mini_vector<int, Target::rank>;
 
@@ -222,17 +216,13 @@ namespace triqs::gfs {
        * @category Accessors
        */
     memory_layout_t<data_rank> const &memory_layout() const { return _data.indexmap().memory_layout(); }
-
-    // FIXME : REMOVE
-    zero_t const &get_zero() const { return _zero; }
-
+    
     /// Indices of the Green function (for Python only)
     indices_t const &indices() const { return _indices; }
 
     private:
     mesh_t _mesh;
     data_t _data;
-    zero_t _zero;
     indices_t _indices;
 
     using dproxy_t = details::_data_proxy<Target>;
@@ -240,23 +230,12 @@ namespace triqs::gfs {
     // -------------------------------- impl. details common to all classes -----------------------------------------------
 
     private:
-    // build a zero from a slice of data
-    // MUST be static since it is used in constructors... (otherwise bug in clang)
-    template <typename T> static zero_t __make_zero(T, data_t const &d) {
-      auto r = zero_regular_t{d.shape().template front_mpop<arity>()};
-      r()    = 0;
-      return r;
-    }
-    static zero_t __make_zero(scalar_valued, data_t const &d) { return 0; }      // special case
-    static zero_t __make_zero(scalar_real_valued, data_t const &d) { return 0; } // special case
-    static zero_t _make_zero(data_t const &d) { return __make_zero(Target{}, d); }
-    zero_t _remake_zero() { return _zero = _make_zero(_data); } // NOT in constructor...
 
-    template <typename G> gf(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _zero(_make_zero(_data)), _indices(x.indices()) {}
+    template <typename G> gf(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _indices(x.indices()) {}
 
     template <typename M, typename D>
     gf(impl_tag, M &&m, D &&dat, indices_t ind)
-       : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)), _zero(_make_zero(_data)), _indices(std::move(ind)) {
+       : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)),  _indices(std::move(ind)) {
       if (!(_indices.empty() or _indices.has_shape(target_shape()))) TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
     }
 
@@ -264,10 +243,10 @@ namespace triqs::gfs {
     /// Empty Green function (with empty array).
     gf() {}
 
-    /// Copy
+    /// 
     gf(gf const &x) = default;
 
-    /// Move
+    /// 
     gf(gf &&) = default;
 
     private:
@@ -275,7 +254,6 @@ namespace triqs::gfs {
       using std::swap;
       swap(this->_mesh, b._mesh);
       swap(this->_data, b._data);
-      swap(this->_zero, b._zero);
       swap(this->_indices, b._indices);
     }
 
@@ -391,7 +369,6 @@ namespace triqs::gfs {
     template <typename RHS> gf &operator=(RHS &&rhs) {
       _mesh = rhs.mesh();
       _data.resize(rhs.data_shape());
-      _remake_zero();
       for (auto const &w : _mesh) (*this)[w] = rhs[w];
       _indices = rhs.indices();
       if (_indices.empty()) _indices = indices_t(target_shape());
@@ -436,7 +413,6 @@ namespace triqs::gfs {
     void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
       _mesh = l.rhs.mesh();
       _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
-      _remake_zero();
     }
 
     /**
@@ -446,7 +422,6 @@ namespace triqs::gfs {
     void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
       _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
       _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
-      _remake_zero();
     }
 
     /**
@@ -456,7 +431,6 @@ namespace triqs::gfs {
     void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
       _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
       _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
-      _remake_zero();
     }
 
     // Common code for gf, gf_view, gf_const_view

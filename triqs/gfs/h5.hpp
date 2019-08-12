@@ -28,7 +28,7 @@ namespace triqs::gfs {
 
   template <typename G, typename Target> constexpr bool gf_has_target() { return std::is_same<typename G::target_t, Target>::value; }
   /*
- /// ---------------------------
+ // ---------------------------
 
  // Some work that may be necessary before writing (some compression, see imfreq)
  // Default : do nothing
@@ -44,7 +44,7 @@ namespace triqs::gfs {
   }
  };
 */
-  /// ---------------------------
+  // ---------------------------
 
   // FIXME : C17 : REMOVE THIS dispatch with a constexpr if
   // Some work that may be necessary after the read (for backward compatibility e.g.)
@@ -67,7 +67,7 @@ namespace triqs::gfs {
       return g;
   }
 
-  /// ---------------------------
+  // ---------------------------
 
   // the h5 write and read of gf members, so that we can specialize it e.g. for block gf
   template <typename V, typename T> struct gf_h5_rw {

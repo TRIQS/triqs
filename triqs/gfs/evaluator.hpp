@@ -63,7 +63,7 @@ namespace triqs {
         auto [tail, err] = fit_tail_no_normalize(g);
 
         dcomplex x                     = std::abs(g.mesh().omega_max()) / f;
-        typename G::zero_regular_t res = g.get_zero();
+        auto res = make_zero_return(g); // a new array
 
         dcomplex z = 1.0;
         for (int n : range(first_dim(tail))) {
@@ -101,7 +101,7 @@ namespace triqs {
         } else {
           if (g.mesh().is_within_boundary(args...)) return make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...));
           using rt = std::decay_t<decltype(make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
-          return rt{g.get_zero()};
+          return rt{make_zero_return(g)};
         }
       }
     };

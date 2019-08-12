@@ -91,6 +91,24 @@ namespace triqs {
 
     template <typename G> TRIQS_DEPRECATED("use X.target_shape() instead") auto get_target_shape(G const &g) { return g.target_shape(); }
 
+    /**----------------------------------------------------------
+  *  @return  - A new array of zeros of 0 if Gf is matrix/tensor valued.
+  *           - 0 if Gf is scalar valued.
+  *--------------------------------------------------------*/
+
+    template <typename G> auto make_zero_return(G const &g) {
+      if constexpr (G::target_t::rank == 0)
+        return typename G::scalar_t{0};
+      else {
+        // The return type of the Green function : array or scalar. Warning, the function will return a view of this type.
+        using return_t = arrays::array<typename G::scalar_t, G::target_t::rank>;
+        auto r         = return_t{g.data_shape().template front_mpop<G::arity>()};
+        // FIXME : REMOVE after CALLOC
+        r() = 0;
+        return r;
+      }
+    }
+
     /*------------------------------------------------------------------------------------------------------
  *                                  For mpi lazy
  *-----------------------------------------------------------------------------------------------------*/

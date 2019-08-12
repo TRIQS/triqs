@@ -155,7 +155,6 @@ friend void h5_read(h5::group fg, std::string const &subgroup_name, this_t &g) {
     TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
                         << " while I found " << tag_file;
   gf_h5_rw<Var, Target>::read(gr, g);
-  g._remake_zero();
 }
 
 //-----------------------------  BOOST Serialization -----------------------------
