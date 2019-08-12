@@ -1,3 +1,5 @@
+.. _conventions:
+
 C++11/14, notations and documentation conventions
 ====================================================
 

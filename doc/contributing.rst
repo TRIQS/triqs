@@ -15,13 +15,20 @@ Please report bugs and feature request directly on the github
 for us to treat your issue please use and fill one of the templates provided to you
 when opening a `new issue <https://github.com/TRIQS/triqs/issues/new>`_.
 
-Pull requests
--------------
+Contributing to code and documentation
+--------------------------------------
 
-We are happy to receive your improvements and extensions to the code as
+We are happy to receive your improvements and extensions to the code and documentation as
 `pull requests <https://github.com/TRIQS/triqs/pulls>`_ on github.
 Please coordinate the implementation of new features and major changes
 directly with the TRIQS developers.
+
+.. toctree::
+   :maxdepth: 1
+
+   contributing/pull_request
+   contributing/documentation
+
 
 Google group / mailing list
 ---------------------------
