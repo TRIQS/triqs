@@ -118,7 +118,7 @@ namespace triqs {
 
     } // namespace gfs_expr_tools
 
-    template <typename Tag, typename L, typename R> struct gf_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+    template <typename Tag, typename L, typename R> struct gf_expr : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
       using L_t        = typename std::remove_reference<L>::type;
       using R_t        = typename std::remove_reference<R>::type;
       using variable_t = typename gfs_expr_tools::_or_<typename L_t::variable_t, typename R_t::variable_t>::type;
@@ -147,7 +147,7 @@ namespace triqs {
 
     // -------------------------------------------------------------------
     // a special case : the unary operator !
-    template <typename L> struct gf_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+    template <typename L> struct gf_unary_m_expr : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
       using L_t        = typename std::remove_reference<L>::type;
       using variable_t = typename L_t::variable_t;
       using target_t   = typename L_t::target_t;
@@ -177,18 +177,18 @@ namespace triqs {
     return {std::forward<A1>(a1), std::forward<A2>(a2)};                                                                                             \
   }
 
-    DEFINE_OPERATOR(plus, +, ImmutableGreenFunction, ImmutableGreenFunction);
-    DEFINE_OPERATOR(minus, -, ImmutableGreenFunction, ImmutableGreenFunction);
-    DEFINE_OPERATOR(multiplies, *, ImmutableGreenFunction, ImmutableGreenFunction);
-    DEFINE_OPERATOR(multiplies, *, is_in_ZRC, ImmutableGreenFunction);
-    DEFINE_OPERATOR(multiplies, *, ImmutableGreenFunction, is_in_ZRC);
-    DEFINE_OPERATOR(divides, /, ImmutableGreenFunction, ImmutableGreenFunction);
-    DEFINE_OPERATOR(divides, /, is_in_ZRC, ImmutableGreenFunction);
-    DEFINE_OPERATOR(divides, /, ImmutableGreenFunction, is_in_ZRC);
+    DEFINE_OPERATOR(plus, +, GreenFunction, GreenFunction);
+    DEFINE_OPERATOR(minus, -, GreenFunction, GreenFunction);
+    DEFINE_OPERATOR(multiplies, *, GreenFunction, GreenFunction);
+    DEFINE_OPERATOR(multiplies, *, is_in_ZRC, GreenFunction);
+    DEFINE_OPERATOR(multiplies, *, GreenFunction, is_in_ZRC);
+    DEFINE_OPERATOR(divides, /, GreenFunction, GreenFunction);
+    DEFINE_OPERATOR(divides, /, is_in_ZRC, GreenFunction);
+    DEFINE_OPERATOR(divides, /, GreenFunction, is_in_ZRC);
 #undef DEFINE_OPERATOR
 
     // the unary is special
-    template <typename A1> std::enable_if_t<ImmutableGreenFunction<A1>::value, gf_unary_m_expr<gfs_expr_tools::node_t<A1>>> operator-(A1 &&a1) {
+    template <typename A1> std::enable_if_t<GreenFunction<A1>::value, gf_unary_m_expr<gfs_expr_tools::node_t<A1>>> operator-(A1 &&a1) {
       return {std::forward<A1>(a1)};
     }
 

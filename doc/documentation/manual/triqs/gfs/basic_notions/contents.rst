@@ -3,6 +3,8 @@
 
 .. _green:
 
+.. warning:: THIS IS BEING REWRITTEN. 
+
 
 Basic notions
 ##############

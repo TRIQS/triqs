@@ -31,7 +31,7 @@ namespace triqs::gfs {
      *
      * @include triqs/gfs.hpp
      */
-  template <typename Var, typename Target> class gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(ImmutableGreenFunction) {
+  template <typename Var, typename Target> class gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
     using this_t = gf_const_view<Var, Target>; // used in common code
     
