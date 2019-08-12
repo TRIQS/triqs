@@ -47,7 +47,7 @@ namespace triqs {
       // evaluate(s,f) --> retourne aussi un proxy !!!
 
       // technical details...
-      using r_t  = typename Target::slice_t;
+      using r_t = typename Target::slice_t;
 
       // gf_evaluator
       // FIXME We can instead return a view and write the result of the tail calculation
@@ -62,8 +62,8 @@ namespace triqs {
 
         auto [tail, err] = fit_tail_no_normalize(g);
 
-        dcomplex x                     = std::abs(g.mesh().omega_max()) / f;
-        typename G::zero_regular_t res = g.get_zero();
+        dcomplex x = std::abs(g.mesh().omega_max()) / f;
+        auto res   = zeros<dcomplex>(g.target_shape()); // a new array
 
         dcomplex z = 1.0;
         for (int n : range(first_dim(tail))) {
@@ -80,8 +80,8 @@ namespace triqs {
     };
 
     /*----------------------------------------------------------
-  *  cartesian product
-  *--------------------------------------------------------*/
+     *  cartesian product
+     *--------------------------------------------------------*/
 
     using triqs::make_const_view;
     inline dcomplex make_const_view(dcomplex z) { return z; }
@@ -101,14 +101,14 @@ namespace triqs {
         } else {
           if (g.mesh().is_within_boundary(args...)) return make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...));
           using rt = std::decay_t<decltype(make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
-          return rt{g.get_zero()};
+          return rt{zeros<dcomplex>(g.target_shape())};
         }
       }
     };
 
     /*----------------------------------------------------------
-  * Legendre
-  *--------------------------------------------------------*/
+     * Legendre
+     *--------------------------------------------------------*/
 
     // Not finished, not tested
     template <> struct gf_evaluator<legendre, matrix_valued> {

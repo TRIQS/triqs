@@ -37,7 +37,7 @@ namespace triqs {
     template <typename ValueType, int Rank, char B_S, bool IsConst>
     class array_view : Tag::array_view, TRIQS_CONCEPT_TAG_NAME(MutableArray), public IMPL_TYPE {
       static_assert(Rank > 0, " Rank must be >0");
-      static_assert(B_S=='B', "Internal error"); // REPLACE BY STRONG ENUM
+      static_assert(B_S == 'B', "Internal error"); // REPLACE BY STRONG ENUM
 
       public:
       using indexmap_type   = typename IMPL_TYPE::indexmap_type;
@@ -77,7 +77,7 @@ namespace triqs {
       void rebind(regular_type &&) = delete;
 
       // rebind the other view, iif this is const, and the other is not.
-      template < bool C = IsConst> ENABLE_IFC(C) rebind(array_view<ValueType, Rank, B_S, !IsConst> const &X) {
+      template <bool C = IsConst> ENABLE_IFC(C) rebind(array_view<ValueType, Rank, B_S, !IsConst> const &X) {
         this->indexmap_ = X.indexmap();
         this->storage_  = X.storage();
       }
@@ -167,8 +167,7 @@ namespace triqs {
          : IMPL_TYPE(indexmap_type(dom, ml), std::move(sto)) {}
 
       // from a temporary storage and an indexmap. Used for reshaping a temporary array
-      explicit array(indexmap_type const &idx_map, storage_type &&sto)
-         : IMPL_TYPE(idx_map, std::move(sto)) {}
+      explicit array(indexmap_type const &idx_map, storage_type &&sto) : IMPL_TYPE(idx_map, std::move(sto)) {}
 
       /**
      * Build a new array from X.domain() and fill it with by evaluating X. X can be :
@@ -294,7 +293,7 @@ namespace triqs {
      * NB : to avoid that, do make_view(A) = X instead of A = X
      */
       template <typename RHS> array &operator=(const RHS &X) {
-        if constexpr(ImmutableCuboidArray<RHS>::value) IMPL_TYPE::resize(X.domain());
+        if constexpr (ImmutableCuboidArray<RHS>::value) IMPL_TYPE::resize(X.domain());
         triqs_arrays_assign_delegation(*this, X);
         return *this;
       }
@@ -308,11 +307,17 @@ namespace triqs {
 
 #undef IMPL_TYPE
 
-    /// Make a array of zeros with the given dimensions.
     /// FIXME : add eyes
-    template <typename T, typename INT, int R> array<T, R> zeros(mini_vector<INT, R> const &len) {
+
+    /// Make a array of zeros with the given dimensions. Return a scalar for the case of rank zero.
+    template <typename T, typename INT, int R> auto zeros(mini_vector<INT, R> const &len) {
       static_assert(std::is_scalar_v<T> or is_complex<T>::value, "triqs::arrays::zeros requires a scalar type");
-      return array<T, R>(typename array<T, R>::indexmap_type::domain_type{len}, typename array<T, R>::storage_type(len.product_of_elements(), nda::mem::init_zero));
+      // For R == 0 we should return the underlying scalar_t
+      if constexpr (R == 0)
+        return T{0};
+      else
+        return array<T, R>(typename array<T, R>::indexmap_type::domain_type{len},
+                           typename array<T, R>::storage_type(len.product_of_elements(), nda::mem::init_zero));
     }
     /// Variadic version of triqs::arrays::zeros taking integer types
     template <typename T, typename INT, typename... INTS> auto zeros(INT i, INTS... js) {
@@ -361,7 +366,7 @@ namespace triqs {
 // Use swap instead (the correct one, found by ADL).
 namespace std {
   template <typename V, int R, char B1, char B2, bool C1, bool C2>
-  void swap(triqs::arrays::array_view<V, R, B1, C1> &a, triqs::arrays::array_view<V, R,  B2, C2> &b) = delete;
+  void swap(triqs::arrays::array_view<V, R, B1, C1> &a, triqs::arrays::array_view<V, R, B2, C2> &b) = delete;
 }
 
 #include "./expression_template/array_algebra.hpp"
