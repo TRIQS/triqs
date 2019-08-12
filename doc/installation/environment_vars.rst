@@ -4,7 +4,7 @@
 .. highlight:: bash
 
 Unix environment variables
---------------------------
+==========================
 
 Environment variables are local to each shell session and influence the way your system and
 the installed software behaves. The PATH variable, for example, contains a colon-separated
@@ -32,7 +32,7 @@ to add the corresponding ``export`` command to the file `~/.bash_profile <https:
 
 
 Common environment variables
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
 
 +-------------------------------+---------------------------------------------------------------+
 | Environment Variable          | Brief Description                                             |
@@ -47,7 +47,7 @@ Common environment variables
 +-------------------------------+---------------------------------------------------------------+
 
 Environment variables for software developement
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------------------
 
 +-------------------------------+---------------------------------------------------------------------------------------+
 | Environment Variable          | Brief Description                                                                     |
@@ -71,4 +71,24 @@ Environment variables for software developement
 | CPLUS_INCLUDE_PATH            | List of directories searched for C/C++ header files (treated like -isystem includes)  |
 +-------------------------------+---------------------------------------------------------------------------------------+
 | PYTHONPATH                    | List of directories searched for python modules/packages                              |
++-------------------------------+---------------------------------------------------------------------------------------+
+
+Environment variables affecting OpenMP
+--------------------------------------
+
+Certain environment variables will affect the behavior of OpenMP.
+In particular they allow you to set the number of OpenMP threads that will be spawned.
+
+.. warning:: This is of particular importance when using MPI, as each MPI rank will potentially spawn
+             an equal number of OpenMP threads. If you intend to use as many MPI ranks as cores are available
+             you should `export OMP_NUM_THREADS=1`
+
++-------------------------------+---------------------------------------------------------------------------------------+
+| Environment Variable          | Brief Description                                                                     |
++===============================+=======================================================================================+
+| OMP_NUM_THREADS               | Specifies globally the number of OpenMP threads to use                                |
++-------------------------------+---------------------------------------------------------------------------------------+
+| MKL_NUM_THREADS               | Specifies the number of OpenMP threads to use only within the Intel MKL library       |
++-------------------------------+---------------------------------------------------------------------------------------+
+| OPENBLAS_NUM_THREADS          | Specifies the number of OpenMP threads to use within the OpenBlas library             |
 +-------------------------------+---------------------------------------------------------------------------------------+
