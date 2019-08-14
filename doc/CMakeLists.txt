@@ -18,7 +18,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/sphinxext DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # -----------------------------------------------------------------------------
-# Make an optional target that allows us to regenerate the C++ doc with c++2rst
+# Create an optional target that allows us to regenerate the C++ doc with c++2rst
 # -----------------------------------------------------------------------------
 # list of namespaces selected by c++2rst
 set(NAMESPACES
@@ -77,14 +77,17 @@ foreach(example ${ExampleList})
   add_dependencies(docs_example_output doc_${f})
 endforeach()
 
-#---------------------------------
+# ---------------------------------
 # Top Sphinx target
 # ---------------------------------
 find_package(Sphinx)
 
+# Sphinx has internal caching, always run it
 add_custom_target(docs_sphinx ALL)
-add_custom_command(TARGET docs_sphinx 
-                   COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_SOURCE_DIR} html)
+add_custom_command(
+  TARGET docs_sphinx
+  COMMAND PYTHONPATH=${CMAKE_BINARY_DIR}:${CPP2PY_BINARY_DIR}:$ENV{PYTHONPATH} ${SPHINXBUILD_EXECUTABLE} -c . -j8 -b html ${CMAKE_CURRENT_SOURCE_DIR} html
+)
 
 option(Sphinx_Only "When building the documentation, skip the Python Modules and the generation of C++ Api and example outputs" OFF)
 if(NOT Sphinx_Only)
@@ -100,9 +103,9 @@ endif()
 # Install
 # ---------------------------------
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs
- FILES_MATCHING
- REGEX "\\.(bib|html|pdf|png|gif|jpg|js|xsl|css|py|txt|inv)$"
- PATTERN "_*"
+  FILES_MATCHING
+  REGEX "\\.(html|pdf|png|gif|jpg|svg|js|xsl|css|py|txt|inv|bib)$"
+  PATTERN "_*"
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/themes/agogo DESTINATION share/triqs/themes)
