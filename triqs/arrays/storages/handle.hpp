@@ -72,6 +72,9 @@ namespace nda::mem {
   struct do_not_initialize_t {};
   inline static constexpr do_not_initialize_t do_not_initialize{};
 
+  struct init_zero_t {};
+  inline static constexpr init_zero_t init_zero{};
+
   template <typename T> struct handle<T, 'R'> {
     private:
     T *_data     = nullptr; // Pointer to the start of the memory block
@@ -139,6 +142,16 @@ namespace nda::mem {
     handle(long size, do_not_initialize_t) {
       if (size == 0) return;               // no size -> null handle
       auto b = allocate(size * sizeof(T)); //, alignof(T));
+      ASSERT(b.ptr != nullptr);
+      _data = (T *)b.ptr;
+      _size = size;
+    }
+
+    // Set up a memory block of the correct size without initializing it
+    handle(long size, init_zero_t) {
+      static_assert(std::is_scalar_v<T> or is_complex<T>::value, "Internal Error");
+      if (size == 0) return;                    // no size -> null handle
+      auto b = allocate_zero(size * sizeof(T)); //, alignof(T));
       ASSERT(b.ptr != nullptr);
       _data = (T *)b.ptr;
       _size = size;

@@ -309,12 +309,16 @@ namespace triqs {
 #undef IMPL_TYPE
 
     /// Make a array of zeros with the given dimensions.
-    /// FIXME : add variadic form
     /// FIXME : add eyes
     template <typename T, typename INT, int R> array<T, R> zeros(mini_vector<INT, R> const &len) {
-      array<T, R> r(typename array<T, R>::indexmap_type::domain_type{len});
-      r() = 0;
-      return r;
+      static_assert(std::is_scalar_v<T> or is_complex<T>::value, "triqs::arrays::zeros requires a scalar type");
+      return array<T, R>(typename array<T, R>::indexmap_type::domain_type{len}, typename array<T, R>::storage_type(len.product_of_elements(), nda::mem::init_zero));
+    }
+    /// Variadic version of triqs::arrays::zeros taking integer types
+    template <typename T, typename INT, typename... INTS> auto zeros(INT i, INTS... js) {
+      static_assert(std::is_scalar_v<T> or is_complex<T>::value, "triqs::arrays::zeros requires a scalar type");
+      constexpr int R = 1 + sizeof...(INTS);
+      return zeros<T, INT, R>(mini_vector<INT, R>(i, js...));
     }
 
     // swap two indices i,j
