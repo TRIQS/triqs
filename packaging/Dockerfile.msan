@@ -58,7 +58,7 @@ ENV SRC=/src \
 
 COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
-RUN chmod -R +rX ${SRC}/triqs && chown build .
+RUN chown -R build ${SRC}/triqs .
 USER build
 RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DCLANG_OPT="$CXXFLAGS" -DMATHJAX_PATH="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2" -DMSAN=1
 RUN make VERBOSE=1 -j8
