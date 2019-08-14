@@ -43,7 +43,7 @@ foreach(DIR ${TRIQS_SYSTEM_INCLUDE_DIRS})
 endforeach()
 get_property(CPP2RST_CXXFLAGS TARGET triqs PROPERTY INTERFACE_COMPILE_OPTIONS)
 
-# Caution! This will alter the files in reference/cpp/generated
+# Caution! This target will generate documentation into the sourcetree at doc/documentation/cpp_api
 add_custom_target(docs_cpp2rst)
 add_custom_command(
   TARGET docs_cpp2rst
