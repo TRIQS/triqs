@@ -16,17 +16,17 @@ If you are willing to contribute to this project, we however ask you to take the
 - Check our `Tutorials on github <https://github.com/TRIQS/tutorials>`_
 - Respect our :ref:`documentation conventions <conventions>`
 
+As for code contribution, you are going to submit your changes as a pull request to the unstable branch 
+of the `triqs github <https://github.com/TRIQS/triqs>`_. If you are unsure on how to do it, you can follow instructions
+:ref:`here <pull_request>`.
+
 If you have any question, feel free to use our `Google group <https://triqs.github.io/announcements>`_.
 
 
-Building and editing the documentation
---------------------------------------
+Building the documentation
+--------------------------
 
-As for code contribution, you are going to submit your changes as a pull request from the unstable branch 
-of the `triqs github <https://github.com/TRIQS/triqs>`_. If you are unsure on how to do it, you can follow instructions here:
-:ref:`pull request <pull_request>`.
-
-First, you will need to install sphinx::
+You first need to install sphinx::
 
         pip install sphinx
 
@@ -42,11 +42,15 @@ Because of the -DSphinx_Only=ON flag, this only generates html pages from rst fi
 
         make docs_example_output
 
-and if you cant the rst from headers, run::
+and if you want the rst from headers, run::
 
         make docs_cpp2rst
 
-You can then modify rst files in::
+
+Editing the documentation
+-------------------------
+
+You can now modify rst files in::
 
         triqs.src/doc
 
@@ -54,9 +58,9 @@ and see the output in::
 
         triqs.build/doc/html
 
-In order not to rebuild the documentation by hand every time you make some changes, you can install sphinx_autobuild::
+In order not to rebuild the documentation by hand every time you make some changes, you can install sphinx-autobuild::
 
-         pip install sphinx_autobuild
+         pip install sphinx-autobuild
 
 and run::
 
