@@ -53,3 +53,22 @@ interface with other programs can be done at the very user-friendly python
 level.
 
 
+Where to start?
+---------------
+
+First, visit our :ref:`Install <install>` section to obtain the TRIQS library.
+
+We then strongly recommend first-time users to go through the extensive set of Jupyter Notebook tutorials provided on `GitHub <https://github.com/TRIQS/tutorials>`_.
+You can run the notebooks either in an interactive `Binder Session <https://triqs.github.io/notebook>`_ on the web
+or run them locally after setting up TRIQS on your computer.
+
+To get an overview of the main TRIQS classes and their organizations, you can browse through the ready-to-use code snippets of our
+:ref:`User guide <userguide>` section.
+
+After those steps, you will be familiar with the library and can use the complete :ref:`Documentation <documentation>` to answer your questions.
+
+If you experience any problem with the library, we have set up
+a platform for discussions with other users and developers as a `Google group <https://triqs.github.io/announcements>`_.
+You can also post an issue on the `TRIQS GitHub <https://github.com/TRIQS/triqs>`_.
+
+Finally, if you want to contribute to the project, please check our :ref:`Contributing <contributing>` section.

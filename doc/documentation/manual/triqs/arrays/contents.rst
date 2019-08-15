@@ -34,4 +34,4 @@
    multithreading
    FAQ
    implementation_notes/contents
-   ./../../tutorials/arrays/array_tutorial
+   ./../../userguide/arrays/array_tutorial

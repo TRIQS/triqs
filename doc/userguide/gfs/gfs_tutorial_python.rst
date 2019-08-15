@@ -18,7 +18,7 @@ As a first example, we construct and plot the following Matsubara Green's functi
 
 This is done with the code :
 
-.. plot:: tutorials/gfs/example.py
+.. plot:: userguide/gfs/example.py
    :include-source:
    :scale: 50
 
@@ -70,7 +70,7 @@ construct the corresponding 2x2 Green's function:
 
 This is done with the code: 
 
-.. plot:: tutorials/gfs/impinbath.py
+.. plot:: userguide/gfs/impinbath.py
    :include-source:
    :scale: 70
 

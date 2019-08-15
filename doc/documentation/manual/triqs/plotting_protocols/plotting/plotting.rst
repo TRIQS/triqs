@@ -21,7 +21,7 @@ but that can plot TRIQS objects (in fact *any* object, see below).
 
 We can reproduce the first example of the Green function tutorial:
 
-.. plot:: tutorials/gfs/example.py
+.. plot:: userguide/gfs/example.py
    :include-source:
    :scale: 70
 

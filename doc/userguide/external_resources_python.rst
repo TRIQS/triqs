@@ -1,21 +1,8 @@
 
 .. highlight:: bash
 
-Getting started
-===============
-
-TRIQS provides a set of Python libraries that allow to easily write scripts
-for the study of quantum interaction systems. After successful :ref:`installation <installation>`
-be sure to load TRIQS into your environment::
-
-    source path_to_triqs/share/triqsvars.sh
-
-Now you can try to run some scripts to get familiar with TRIQS. Why don't you
-:ref:`go to our Python tour <tour>` and run some of the examples there?
-
-
 Learn more about Python, ipython and the notebook
--------------------------------------------------
+=================================================
 
 The `ipython interpreter <http://ipython.org>`_ is basically a more user-friendly
 version of the standard Python interpreter with an enhanced interactive shell that makes it

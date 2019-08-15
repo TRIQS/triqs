@@ -41,7 +41,7 @@ This is a block function whose two blocks are defined on a product of
 two Matsubara frequency meshes, and are tensor-valued of rank 3: the
 blocks are encoded by objects of the type **``GfImFreq_x_ImFreqTv3``**.
 
-.. plot:: tutorials/gfs/multivar.py
+.. plot:: userguide/gfs/multivar.py
    :include-source:
    :scale: 70
 
