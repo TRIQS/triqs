@@ -55,6 +55,6 @@ We plot various slices of :math:`G(\mathbf{k},\omega)` corresponding to
 
 
 
-.. plot:: tutorials/gfs/lattice_gfs.py
+.. plot:: userguide/gfs/lattice_gfs.py
    :scale: 70
 

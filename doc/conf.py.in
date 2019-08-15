@@ -111,7 +111,7 @@ html_context = {'header_title': 'triqs',
                 'header_subtitle': 'a Toolbox for Research on Interacting Quantum Systems',
                 'header_links': [['Install', 'install'],
                                  ['Documentation', 'documentation'],
-                                 ['Tutorials', 'tutorials'],
+                                 ['User guide', 'userguide'],
                                  ['Applications', 'applications'],
                                  ['Contributing', 'contributing'],
                                  ['About TRIQS', 'about']

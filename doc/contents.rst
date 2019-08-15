@@ -8,7 +8,7 @@ Table of contents
    install
    documentation
    applications
-   tutorials
+   userguide
    contributing
    versions
    changelog
