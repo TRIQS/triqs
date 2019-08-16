@@ -27,103 +27,105 @@ namespace triqs::gfs {
   using triqs::arrays::array_const_view;
 
   /*------------------------------------------------------------------------------------------------------
- *                 Fitting the tail
- *-----------------------------------------------------------------------------------------------------*/
+   *                 Fitting the tail
+   *-----------------------------------------------------------------------------------------------------*/
 
-  // Product Green Functions
-  template <int N, template <typename, typename> typename G, typename T, typename... M> auto fit_tail(G<cartesian_product<M...>, T> const &g) {
-    auto const &m = std::get<N>(g.mesh());
-    return m.get_tail_fitter.fit(m, make_const_view(g.data()), N, true, array_const_view<dcomplex, G<cartesian_product<M...>, T>::data_rank>{});
-  }
-
-  // Product Green Functions with known_moments
-  template <int N, template <typename, typename> typename G, typename T, typename A, typename... M>
-  auto fit_tail(G<cartesian_product<M...>, T> const &g, A const &known_moments) {
-    auto const &m = std::get<N>(g.mesh());
-    return m.get_tail_fitter().fit(m, make_const_view(g.data()), N, true, make_const_view(known_moments));
-  }
-
-  // G(iw) || G(w)
-  template <template <typename, typename> typename G, typename V, typename T> auto fit_tail(G<V, T> const &g) {
-    if constexpr (is_block_gf_or_view<G<V, T>>::value) { // -- Block-Gf
-      double max_err = 0.0;
-      std::vector<array<dcomplex, T::rank + 1>> tail_vec;
-      for (auto const &g_bl : g) {
-        auto [tail, err] = fit_tail(g_bl);
-        max_err          = std::max(err, max_err);
-        tail_vec.emplace_back(std::move(tail));
-      }
-      return std::make_pair(tail_vec, max_err);
-    } else { // -- Gf
-      static_assert(is_gf<G<V, T>>::value);
-      return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, true, array_const_view<dcomplex, G<V, T>::data_rank>{});
-    }
-  }
-
-  // G(iw) || G(w) + known_moments
-  template <template <typename, typename> typename G, typename V, typename T, typename A> auto fit_tail(G<V, T> const &g, A const &known_moments) {
-    if constexpr (is_block_gf_or_view<G<V, T>>::value) { // -- Block-Gf
-      double max_err = 0.0;
-      std::vector<array<dcomplex, T::rank + 1>> tail_vec;
-      for (auto [g_bl, km_bl] : itertools::zip(g, known_moments)) {
-        auto [tail, err] = fit_hermitian_tail(g_bl, km_bl);
-        max_err          = std::max(err, max_err);
-      }
-      return std::make_pair(tail_vec, max_err);
-    } else { // -- Gf
-      static_assert(is_gf<G<V, T>>::value);
+  /**
+   * Fit the tail of a Green function using a least-squares fitting procedure
+   *
+   * @tparam N The position of the frequency mesh in case of a product mesh [default: 0]
+   * @tparam G The type of the Green function (gf, gf_view, gf_const_view)
+   * @tparam A The type of the high-frequency moment array (array, array_view, array_const_view)
+   *
+   * @param g The Green function object to fit the tail for 
+   * @param known_moments The object containing the known high-frequency moments
+   *
+   * @return A pair of the tail object and the fitting error
+   * @example triqs/gfs/fit_tail.cpp
+   */
+  template <int N = 0, typename G, typename A = typename G::data_t::const_view_type>
+  std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {}) REQUIRES(is_gf_v<G>) {
+    if constexpr (std::is_base_of<tag::composite, typename G::mesh_t>::value) { // product mesh
+      auto const &m = std::get<N>(g.mesh());
+      return m.get_tail_fitter().fit(m, make_const_view(g.data()), N, true, make_const_view(known_moments));
+    } else { // single mesh
       return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
     }
   }
 
-  // Impose hermiticity on the tail coefficients
-  template <template <typename, typename> typename G, typename T> auto fit_hermitian_tail(G<imfreq, T> const &g) {
-    if constexpr (is_block_gf_or_view<G<imfreq, T>>::value) { // -- Block-Gf
-      double max_err = 0.0;
-      std::vector<array<dcomplex, T::rank + 1>> tail_vec;
-      for (auto const &g_bl : g) {
-        auto [tail, err] = fit_hermitian_tail(g_bl);
-        max_err          = std::max(err, max_err);
-        tail_vec.emplace_back(std::move(tail));
-      }
-      return std::make_pair(tail_vec, max_err);
-    } else { // -- Gf
-      static_assert(is_gf<G<imfreq, T>>::value);
-      std::optional<long> inner_matrix_dim;
-      if (T::rank == 2 && g.target_shape()[0] == g.target_shape()[1]) { inner_matrix_dim = g.target_shape()[0]; }
-      if (T::rank == 0) inner_matrix_dim = 1;
-      return g.mesh().get_tail_fitter().fit_hermitian(g.mesh(), make_const_view(g.data()), 0, true,
-                                                      array_const_view<dcomplex, G<imfreq, T>::data_rank>{}, inner_matrix_dim);
+  /**
+   * Fit the tail of a Block Green function using a least-squares fitting procedure
+   *
+   * @tparam BG The type of the Block Green function (block_gf, block_gf_view, block_gf_const_view)
+   * @tparam AG The type of the high-frequecy moments for Block Green functions (e.g. std::vector<array>)
+   *
+   * @param bg The Block Green function object to fit the tail for 
+   */
+  template <int N = 0, typename BG, typename BA = std::vector<typename BG::g_t::data_t::regular_type>>
+  std::pair<std::vector<typename BG::g_t::data_t::regular_type>, double> fit_tail(BG const &bg, BA const &known_moments = {})
+     REQUIRES(is_block_gf_v<BG, 1>) {
+    double max_err = 0.0;
+    std::vector<typename BG::g_t::data_t::regular_type> tail_vec;
+    for (auto [i, g_bl] : itertools::enumerate(bg)) {
+      auto [tail, err] = known_moments.empty() ? fit_tail<N, typename BG::g_t>(g_bl) : fit_tail<N, typename BG::g_t>(g_bl, known_moments[i]);
+      tail_vec.emplace_back(std::move(tail));
+      max_err = std::max(err, max_err);
     }
+    return std::make_pair(tail_vec, max_err);
   }
 
-  // Impose hermiticity on the tail coefficients and use known_moments
-  template <template <typename, typename> typename G, typename T, typename A> auto fit_hermitian_tail(G<imfreq, T> const &g, A const &known_moments) {
-    if constexpr (is_block_gf_or_view<G<imfreq, T>>::value) { // -- Block-Gf
-      double max_err = 0.0;
-      std::vector<array<dcomplex, T::rank + 1>> tail_vec;
-      for (auto [g_bl, km_bl] : itertools::zip(g, known_moments)) {
-        auto [tail, err] = fit_hermitian_tail(g_bl, km_bl);
-        max_err          = std::max(err, max_err);
-        tail_vec.emplace_back(std::move(tail));
-      }
-      return std::make_pair(tail_vec, max_err);
-    } else { // -- Gf
-      static_assert(is_gf<G<imfreq, T>>::value);
-      std::optional<long> inner_matrix_dim;
-      if (T::rank == 2 && g.target_shape()[0] == g.target_shape()[1]) { inner_matrix_dim = g.target_shape()[0]; }
-      if (T::rank == 0) inner_matrix_dim = 1;
+  /**
+   * Fit the tail of a Green function using a least-squares fitting procedure
+   * imposing the symmetry :math:`G[i\omega](i,j) = G[-i\omega](j,i)^*`
+   *
+   * @param g The Green function object to fit the tail for 
+   * @param known_moments The object containing the known high-frequency moments
+   *
+   * @tparam N The position of the frequency mesh in case of a product mesh [default: 0]
+   * @tparam G The type of the Green function object
+   * @tparam A The type of the high-frequency moments
+   *
+   * @return A pair of the tail object and the fitting error
+   * @example triqs/gfs/fit_hermitian_tail.cpp
+   */
+  template <int N = 0, typename G, typename A = typename G::data_t::const_view_type>
+  std::pair<typename A::regular_type, double> fit_hermitian_tail(G const &g, A const &known_moments = {}) REQUIRES(is_gf_v<G>) {
+    std::optional<long> inner_matrix_dim;
+    constexpr int rank = G::target_t::rank;
+    if (rank == 0)
+      inner_matrix_dim = 1;
+    else if (rank == 2 && g.target_shape()[0] == g.target_shape()[1]) {
+      inner_matrix_dim = g.target_shape()[0];
+    } else
+      TRIQS_RUNTIME_ERROR << "Incompatible target_shape for fit_hermitian_tail\n";
+    if constexpr (std::is_base_of<tag::composite, typename G::mesh_t>::value) { // product mesh
+      auto const &m = std::get<N>(g.mesh());
+      return m.get_tail_fitter().fit_hermitian(m, make_const_view(g.data()), N, true, make_const_view(known_moments), inner_matrix_dim);
+    } else { // single mesh
       return g.mesh().get_tail_fitter().fit_hermitian(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments), inner_matrix_dim);
     }
   }
 
-  // Adjust configuration of tail-fitting
-  template <template <typename, typename> typename G, typename V, typename T, typename A>
-  auto fit_tail(G<V, T> const &g, A const &known_moments, double tail_fraction, int n_tail_max = tail_fitter::default_n_tail_max,
-                std::optional<int> expansion_order = {}) {
-    return g.mesh()
-       .get_tail_fitter(tail_fraction, n_tail_max, expansion_order)
-       .fit(g.mesh(), make_const_view(g.data()), 0, true, make_const_view(known_moments));
+  /**
+   * Fit the tail of a Block Green function using a least-squares fitting procedure
+   * imposing the symmetry :math:`G[i\omega](i,j) = G[-i\omega](j,i)^*` for each block
+   *
+   * @tparam BG The type of the Block Green function (block_gf, block_gf_view, block_gf_const_view)
+   * @tparam AG The type of the high-frequecy moments for Block Green functions (e.g. std::vector<array>)
+   *
+   * @param bg The Block Green function object to fit the tail for 
+   */
+  template <int N = 0, typename BG, typename A = std::vector<typename BG::g_t::data_t::regular_type>>
+  std::pair<std::vector<typename BG::g_t::data_t::regular_type>, double> fit_hermitian_tail(BG const &bg, A const &known_moments = {}) REQUIRES(is_block_gf_v<BG, 1>) {
+    double max_err = 0.0;
+    std::vector<typename BG::g_t::data_t::regular_type> tail_vec;
+    for (auto [i, g_bl] : itertools::enumerate(bg)) {
+      auto [tail, err] =
+         known_moments.empty() ? fit_hermitian_tail<N, typename BG::g_t>(g_bl) : fit_hermitian_tail<N, typename BG::g_t>(g_bl, known_moments[i]);
+      tail_vec.emplace_back(std::move(tail));
+      max_err = std::max(err, max_err);
+    }
+    return std::make_pair(tail_vec, max_err);
   }
 
   // Tail-fit without normalization, returns moments rescaled by maximum frequency:  a_n * omega_max^n
@@ -131,21 +133,30 @@ namespace triqs::gfs {
     return g.mesh().get_tail_fitter().fit(g.mesh(), make_const_view(g.data()), 0, false, array_const_view<dcomplex, G<V, T>::data_rank>{});
   }
 
-  // Create a tail object for a given Green function
-  template <int N = 0, template <typename, typename> typename G, typename V, typename T> auto make_zero_tail(G<V, T> const &g, int n_moments = 10) {
-    if constexpr (is_gf<G<V, T>>::value) // gf[_const][_view]<V, T>
-    {
+  /**
+   * Create a zero-initialized tail object for a given Green function object
+   *
+   * @param g The Green function object to create the tail object for
+   * @param n_moments The number of high-frequency moments to provide (including the zeroth moment)
+   *
+   * @tparam N The mesh position of the frequency or time mesh [default: 0]
+   * @tparam G The type of the Green function (gf, gf_view, block_gf, ...)
+   *
+   * @example triqs/gfs/make_zero_tail.cpp
+   */
+  template <int N = 0, typename G> auto make_zero_tail(G const &g, int n_moments = 10) {
+    if constexpr (is_gf_v<G>) { // gf[_const][_view]<V, T>
       auto sh = rotate_index_view(make_const_view(g.data()), N).shape();
       sh[0]   = n_moments;
       return arrays::zeros<dcomplex>(sh);
-    } else // block[2]_gf[_const][_view]<V, T>
+    } else if constexpr (is_block_gf<G>::value) { // block[2]_gf[_const][_view]<V, T>
       return map_block_gf([&](auto const &g_bl) { return make_zero_tail<N>(g_bl, n_moments); }, g);
+    }
   }
 
-  // FIXME : merge the slice_target_to_scalar
   /*------------------------------------------------------------------------------------------------------
- *                      Slicing the matrix_valued/matrix_real_valued into a matrix
- *-----------------------------------------------------------------------------------------------------*/
+   *                      Slicing the matrix_valued/matrix_real_valued into a matrix
+   *-----------------------------------------------------------------------------------------------------*/
 
   template <typename G, typename... Args> auto slice_target(G &&g, Args &&... args) {
     return g.apply_on_data([&args...](auto &&d) { return d(triqs::arrays::ellipsis(), args...); },
@@ -153,8 +164,8 @@ namespace triqs::gfs {
   }
 
   /*------------------------------------------------------------------------------------------------------
-  *                      Slicing the matrix valued into a scalar
-  *-----------------------------------------------------------------------------------------------------*/
+   *                      Slicing the matrix valued into a scalar
+   *-----------------------------------------------------------------------------------------------------*/
 
   template <typename G, typename... Args> auto slice_target_to_scalar(G &&g, Args &&... args) {
     auto r =
@@ -216,7 +227,7 @@ namespace triqs::gfs {
   template <typename G> std::enable_if_t<is_gf<G>::value, bool> is_gf_real(G const &g, double tolerance = 1.e-13) {
     return max_element(abs(imag(g.data()))) <= tolerance;
   }
-  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, bool> is_gf_real(G const &g, double tolerance = 1.e-13) {
+  template <typename G> std::enable_if_t<is_block_gf<G>::value, bool> is_gf_real(G const &g, double tolerance = 1.e-13) {
     return std::all_of(g.begin(), g.end(), [&](auto &g) { return is_gf_real(g, tolerance); });
   }
 
@@ -229,7 +240,7 @@ namespace triqs::gfs {
   template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type::real_t> real(G const &g) {
     return {g.mesh(), real(g.data()), g.indices()};
   }
-  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, typename G::regular_type::real_t> real(G const &g) {
+  template <typename G> std::enable_if_t<is_block_gf<G>::value, typename G::regular_type::real_t> real(G const &g) {
     return map_block_gf(real<typename G::g_t>, g);
   }
 

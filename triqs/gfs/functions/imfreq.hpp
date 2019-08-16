@@ -61,7 +61,7 @@ namespace triqs::gfs {
       if (max_element(abs(conj(g(-w)) - g(w))) > tolerance) return false;
     return true;
   }
-  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, bool> is_gf_real_in_tau(G const &g, double tolerance = 1.e-13) {
+  template <typename G> std::enable_if_t<is_block_gf<G>::value, bool> is_gf_real_in_tau(G const &g, double tolerance = 1.e-13) {
     return std::all_of(g.begin(), g.end(), [&](auto &g_bl) { return is_gf_real_in_tau(g_bl, tolerance); });
   }
 
@@ -88,7 +88,7 @@ namespace triqs::gfs {
 
     return true;
   }
-  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, bool> is_gf_hermitian(G const &g, double tolerance = 1.e-13) {
+  template <typename G> std::enable_if_t<is_block_gf<G>::value, bool> is_gf_hermitian(G const &g, double tolerance = 1.e-13) {
     return std::all_of(g.begin(), g.end(), [&](auto &g_bl) { return is_gf_hermitian(g_bl, tolerance); });
   }
 
@@ -115,7 +115,7 @@ namespace triqs::gfs {
 
     return g_sym;
   }
-  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, typename G::regular_type> make_hermitian(G const &g) {
+  template <typename G> std::enable_if_t<is_block_gf<G>::value, typename G::regular_type> make_hermitian(G const &g) {
     return map_block_gf(make_hermitian<typename G::g_t>, g);
   }
 
@@ -128,7 +128,7 @@ namespace triqs::gfs {
     for (auto const &w : g.mesh()) g_sym[w] = 0.5 * (g[w] + conj(g[-w]));
     return g_sym;
   }
-  template <typename G> std::enable_if_t<is_block_gf_or_view<G>::value, typename G::regular_type> make_real_in_tau(G const &g) {
+  template <typename G> std::enable_if_t<is_block_gf<G>::value, typename G::regular_type> make_real_in_tau(G const &g) {
     return map_block_gf(make_real_in_tau<typename G::g_t>, g);
   }
 

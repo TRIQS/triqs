@@ -2,7 +2,7 @@
 
 TEST(Gf, RebinTau) {
 
-  static_assert(is_block_gf_or_view<block_gf<imfreq>>::value, "oops");
+  static_assert(is_block_gf_v<block_gf<imfreq>>, "oops");
 
   double beta = 1;
 

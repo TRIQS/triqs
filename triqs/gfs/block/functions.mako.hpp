@@ -21,7 +21,7 @@ namespace triqs {
 
     // FIXME c++17
     //#define MAP_BGF_17(FUNC)                                                                                                         \
- //template <typename G> requires(is_block_gf_or_view<G>()) auto FUNC(G const& g) {                                                \
+ //template <typename G> requires(is_block_gf<G>()) auto FUNC(G const& g) {                                                \
   //lazy_transform_t{[](auto&& x) { return FUNC(x); }, g};                                                                         \
  //}
     // MAP_BGF(fourier);
