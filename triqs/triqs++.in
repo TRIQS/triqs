@@ -1,0 +1,28 @@
+#!@PYTHON_INTERPRETER@
+
+cxxflags = "@CMAKE_CXX_FLAGS@ @TRIQS_CXX_FLAGS@ @PYTHON_CXX_FLAGS@"
+ldflags = "@TRIQS_LD_FLAGS@ @PYTHON_LD_FLAGS@ -ltriqs -lcpp2py"
+
+import argparse, os
+parser = argparse.ArgumentParser(description="""
+A compiler-wrapper for the TRIQS library
+""")
+parser.add_argument('-show', action='store_true', help="Output the compiler and linktime flags")
+args, additional_args = parser.parse_known_args()
+parser.add_argument('-ldflags', action='store_true', help="Output the compiler flags")
+args, additional_args = parser.parse_known_args()
+parser.add_argument('-cxxflags', action='store_true', help="Output the linktime flags")
+args, additional_args = parser.parse_known_args()
+
+if args.show: 
+    assert not args.ldflags and not args.cxxflags, "Please choose either -show, -ldflags or -cxxflags"
+    print "CXXFLAGS=\"%s\""%(cxxflags)
+    print "LDFLAGS=\"%s\""%(ldflags)
+elif args.ldflags:
+    assert not args.cxxflags, "Please choose either -show, -ldflags or -cxxflags"
+    print args.ldflags,
+elif args.cxxflags:
+    print args.cxxflags,
+else:
+    compile_command = "@CMAKE_CXX_COMPILER@ -Wno-unused-command-line-argument %s %s %s"%(cxxflags, " ".join(additional_args), ldflags)
+    os.system(compile_command)
