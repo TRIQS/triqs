@@ -210,7 +210,7 @@ def render_fnt(parent_class, f_name, f_overloads):
         for num, f in enumerate(f_overloads):
             pd =  f.processed_doc
             num_s =  '**%s)**  '%(num+1) if has_overload else ''
-            if pd.doc : R +=  '\n\n %s %s\n '%(num_s,  pd.doc)+ '\n'
+            if pd.doc : R +=  '\n\n %s %s\n '%(num_s,  pd.doc.replace('\n', '\n        '))+ '\n'
     else :
         R+='\n\n%s\n\n'%(f_overloads[0].processed_doc.doc)
 
