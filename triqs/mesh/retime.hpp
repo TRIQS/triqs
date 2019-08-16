@@ -19,23 +19,18 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./segment.hpp"
+#include "./bases/segment.hpp"
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::mesh {
 
-    struct retime {};
+  struct retime : segment_mesh {
+    using segment_mesh::segment_mesh;
+    // template <typename... T> retime(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
 
-    template <> struct gf_mesh<retime> : segment_mesh {
-      using var_t = retime;
-      using segment_mesh::segment_mesh;
-      // template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
+    static std::string hdf5_scheme() { return "MeshReTime"; }
 
-      static std::string hdf5_scheme() { return "MeshReTime"; }
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, retime const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
 
-      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
-
-      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
-    };
-  } // namespace gfs
-} // namespace triqs
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, retime &m) { h5_read_impl(fg, subgroup_name, m, "MeshReTime"); }
+  };
+} // namespace triqs::mesh

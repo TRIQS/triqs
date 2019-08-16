@@ -19,27 +19,22 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../domains/legendre.hpp"
+#include "./domains/legendre.hpp"
 #include "./discrete.hpp"
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::mesh {
 
-    struct legendre {};
+  ///
+  struct legendre : discrete<legendre_domain> {
+    using B     = discrete<legendre_domain>;
 
-    // mesh type and its factories
-    template <> struct gf_mesh<legendre> : gf_mesh<discrete<legendre_domain>> {
-      using B     = gf_mesh<discrete<legendre_domain>>;
-      using var_t = legendre;
+    legendre() = default;
+    legendre(double beta, statistic_enum S, size_t n_leg) : B(typename B::domain_t(beta, S, n_leg)) {}
 
-      gf_mesh() = default;
-      gf_mesh(double beta, statistic_enum S, size_t n_leg) : B(typename B::domain_t(beta, S, n_leg)) {}
+    static std::string hdf5_scheme() { return "MeshLegendre"; }
 
-      static std::string hdf5_scheme() { return "MeshLegendre"; }
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, legendre const &m) { h5_write_impl(fg, subgroup_name, m, "MeshLegendre"); }
 
-      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshLegendre"); }
-
-      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshLegendre"); }
-    };
-  } // namespace gfs
-} // namespace triqs
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, legendre &m) { h5_read_impl(fg, subgroup_name, m, "MeshLegendre"); }
+  };
+} // namespace triqs::mesh

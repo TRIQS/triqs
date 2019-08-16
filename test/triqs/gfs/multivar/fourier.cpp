@@ -14,10 +14,10 @@ template <int TARGET_RANK> void test_fourier() {
   double E = 1;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
-  auto k_mesh    = gf_mesh<brillouin_zone>(BL, N_k);
+  auto k_mesh    = gf_mesh<b_zone>(BL, N_k);
   auto iw_mesh   = gf_mesh<imfreq>{beta, Fermion, N_iw};
   auto iW_mesh   = gf_mesh<imfreq>{beta, Boson, N_iW};
-  auto prod_mesh = gf_mesh{k_mesh, iW_mesh, iw_mesh};
+  auto prod_mesh = k_mesh * iW_mesh * iw_mesh;
 
   mini_vector<size_t, TARGET_RANK> shape{};
 
@@ -28,7 +28,7 @@ template <int TARGET_RANK> void test_fourier() {
   else if constexpr (TARGET_RANK == 4) // Tensor_valued<4>
     shape = make_shape(2, 2, 2, 2);
 
-  using var_t    = cartesian_product<brillouin_zone, imfreq, imfreq>;
+  using var_t    = cartesian_product<b_zone, imfreq, imfreq>;
   using target_t = typename _target_from_type_rank<dcomplex, TARGET_RANK>::type;
 
   // === Test a Green function with a given dispersion relation ===

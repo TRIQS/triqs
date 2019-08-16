@@ -1,6 +1,7 @@
 #include <triqs/test_tools/gfs.hpp>
+#include <triqs/mesh/bases/cluster_mesh.hpp>
 
-#include <triqs/lattice/cluster_mesh.hpp>
+using namespace triqs::mesh;
 
 TEST(ClusterMesh, FindCellDims) {
 

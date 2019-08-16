@@ -35,9 +35,9 @@ namespace triqs::gfs {
    *   Forward Declaration of the main types : gf, gf_view, gf_const_view
    *-----------------------------------------------------------------------*/
 
-  template <typename Var, typename Target = matrix_valued> class gf;
-  template <typename Var, typename Target = matrix_valued> class gf_view;
-  template <typename Var, typename Target = matrix_valued> class gf_const_view;
+  template <typename Mesh, typename Target = matrix_valued> class gf;
+  template <typename Mesh, typename Target = matrix_valued> class gf_view;
+  template <typename Mesh, typename Target = matrix_valued> class gf_const_view;
 
   /*----------------------------------------------------------
    *   Traits
@@ -59,7 +59,7 @@ namespace triqs::gfs {
     is_instantiation_of_v<gf, G> or
     is_instantiation_of_v<gf_view, G> or
     is_instantiation_of_v<gf_const_view, G>;
-  template <typename G> inline constexpr bool is_gf_v<G, typename std::decay_t<G>::variable_t> = is_gf_v<G, void>;
+  template <typename G> inline constexpr bool is_gf_v<G, typename std::decay_t<G>::mesh_t> = is_gf_v<G, void>;
 
   /// ---------------------------  implementation  ---------------------------------
 
@@ -76,41 +76,40 @@ namespace triqs::gfs {
   /**
    * The Green function container. 
    *
-   * @tparam Var      The domain of definition
+   * @tparam Mesh      The domain of definition
    * @tparam Target   The target domain
    *
    * @include triqs/gfs.hpp
    */
-  template <typename Var, typename Target> class gf : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
+  template <typename Mesh, typename Target> class gf : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
-    using this_t = gf<Var, Target>; // used in common code
+    static_assert(not std::is_same_v<Mesh, triqs::lattice::brillouin_zone>, "Since TRIQS 2.3, brillouin_zone is replaced by mesh::b_zone as a mesh name. Cf Doc, changelog");
+
+    using this_t = gf<Mesh, Target>; // used in common code
 
     public:
     static constexpr bool is_view  = false;
     static constexpr bool is_const = false;
 
-    using mutable_view_type = gf_view<Var, Target>;
+    using mutable_view_type = gf_view<Mesh, Target>;
 
     /// Associated const view type
-    using const_view_type = gf_const_view<Var, Target>;
+    using const_view_type = gf_const_view<Mesh, Target>;
 
     /// Associated (non const) view type
-    using view_type = gf_view<Var, Target>;
+    using view_type = gf_view<Mesh, Target>;
 
     /// Associated regular type (gf<....>)
-    using regular_type = gf<Var, Target>;
+    using regular_type = gf<Mesh, Target>;
 
     /// The associated real type
-    using real_t = gf<Var, typename Target::real_t>;
-
-    /// Template type
-    using variable_t = Var;
+    using real_t = gf<Mesh, typename Target::real_t>;
 
     /// Template type
     using target_t = Target;
 
     /// Mesh type
-    using mesh_t = gf_mesh<Var>;
+    using mesh_t = Mesh;
 
     /// Domain type
     using domain_t = typename mesh_t::domain_t;
@@ -123,13 +122,13 @@ namespace triqs::gfs {
     using linear_mesh_index_t = typename mesh_t::linear_index_t;
 
     using indices_t   = gf_indices;
-    using evaluator_t = gf_evaluator<Var, Target>;
+    using evaluator_t = gf_evaluator<Mesh, Target>;
 
     /// Real or Complex
     using scalar_t = typename Target::scalar_t;
 
     /// Arity of the function (number of variables)
-    static constexpr int arity = get_n_variables<Var>::value;
+    static constexpr int arity = get_n_variables<Mesh>::value;
 
     /// Rank of the data array representing the function
     static constexpr int data_rank = arity + Target::rank;
@@ -305,12 +304,12 @@ namespace triqs::gfs {
     /**
      *  Makes a deep copy of the data
      */
-    gf(gf_view<Var, Target> const &g) : gf(impl_tag2{}, g) {}
+    gf(gf_view<Mesh, Target> const &g) : gf(impl_tag2{}, g) {}
 
     /**
      *  Makes a deep copy of the data
      */
-    gf(gf_const_view<Var, Target> const &g) : gf(impl_tag2{}, g) {}
+    gf(gf_const_view<Mesh, Target> const &g) : gf(impl_tag2{}, g) {}
 
     /** 
      *  From any object modeling the :ref:`concept_GreenFunction`.
@@ -329,7 +328,7 @@ namespace triqs::gfs {
      *  
      *  NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
      */
-    template <typename Tag> gf(mpi_lazy<Tag, gf_const_view<Var, Target>> l) : gf() { operator=(l); }
+    template <typename Tag> gf(mpi_lazy<Tag, gf_const_view<Mesh, Target>> l) : gf() { operator=(l); }
 
     /// ---------------  swap --------------------
 
@@ -380,7 +379,7 @@ namespace triqs::gfs {
     template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) {
       auto d2    = fd(_data);
       using t2   = target_from_array<decltype(d2), arity>;
-      using gv_t = gf_view<Var, t2>;
+      using gv_t = gf_view<Mesh, t2>;
       return gv_t{_mesh, d2, fi(_indices)};
     }
 
@@ -391,7 +390,7 @@ namespace triqs::gfs {
     template <typename Fdata, typename Find> auto apply_on_data(Fdata &&fd, Find &&fi) const {
       auto d2    = fd(_data);
       using t2   = target_from_array<decltype(d2), arity>;
-      using gv_t = gf_const_view<Var, t2>;
+      using gv_t = gf_const_view<Mesh, t2>;
       return gv_t{_mesh, d2, fi(_indices)};
     }
 
@@ -405,7 +404,7 @@ namespace triqs::gfs {
     * Performs MPI reduce
     * @param l The lazy object returned by mpi::reduce
     */
-    void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
+    void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
       _mesh = l.rhs.mesh();
       _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
     }
@@ -414,7 +413,7 @@ namespace triqs::gfs {
      * Performs MPI scatter
      * @param l The lazy object returned by mpi::scatter
      */
-    void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
+    void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Mesh, Target>> l) {
       _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
       _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
     }
@@ -423,7 +422,7 @@ namespace triqs::gfs {
      * Performs MPI gather
      * @param l The lazy object returned by mpi::gather
      */
-    void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
+    void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Mesh, Target>> l) {
       _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
       _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
     }

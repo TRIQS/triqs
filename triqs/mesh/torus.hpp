@@ -19,84 +19,79 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./cluster_mesh.hpp"
-#include "./bravais_lattice.hpp"
+#include <triqs/lattice/bravais_lattice.hpp>
+#include "./bases/cluster_mesh.hpp"
 
-namespace triqs {
-  namespace gfs {
-    using lattice::bravais_lattice;
-    using triqs::arrays::make_unit_matrix;
-    struct cyclic_lattice {};
+namespace triqs::mesh {
 
-    ///Mesh on real-space lattice
-    template <> struct gf_mesh<cyclic_lattice> : cluster_mesh {
-      private:
-      bravais_lattice bl;
+  using lattice::bravais_lattice;
+  using triqs::arrays::make_unit_matrix;
 
-      public:
-      using var_t = cyclic_lattice;
+  ///
+  struct torus : cluster_mesh {
+    private:
+    bravais_lattice bl;
 
-      ///full constructor
-      /**
+    public:
+    /**
     @param bl_ bravais lattice
     @param periodization_matrix such that $\tilde{a}_i = \sum_j N_{ij} a_j$
    */
-      gf_mesh(bravais_lattice const &bl_, matrix<int> const &periodization_matrix_) : bl(bl_), cluster_mesh{bl_.units(), periodization_matrix_} {}
+    torus(bravais_lattice const &bl_, matrix<int> const &periodization_matrix_) : bl(bl_), cluster_mesh{bl_.units(), periodization_matrix_} {}
 
-      ///Construct gf_mesh<cyclic_lattice> from three linear sizes assuming a cubic lattice (backward compatibility)
-      gf_mesh(int L1 = 1, int L2 = 1, int L3 = 1)
-         : bl{make_unit_matrix<double>(3)}, cluster_mesh{make_unit_matrix<double>(3), matrix<int>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
+    ///Construct  from three linear sizes assuming a cubic lattice (backward compatibility)
+    torus(int L1 = 1, int L2 = 1, int L3 = 1)
+       : bl{make_unit_matrix<double>(3)}, cluster_mesh{make_unit_matrix<double>(3), matrix<int>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
 
-      ///Construct gf_mesh<cyclic_lattice> from domain (bravais_lattice) and int L (linear size of Cluster mesh)
-      gf_mesh(bravais_lattice const &bl_, int L)
-         : bl(bl_), cluster_mesh{bl_.units(), matrix<int>{{{L, 0, 0}, {0, bl_.dim() >= 2 ? L : 1, 0}, {0, 0, bl_.dim() >= 3 ? L : 1}}}} {}
+    ///Construct from domain (bravais_lattice) and int L (linear size of Cluster mesh)
+    torus(bravais_lattice const &bl_, int L)
+       : bl(bl_), cluster_mesh{bl_.units(), matrix<int>{{{L, 0, 0}, {0, bl_.dim() >= 2 ? L : 1, 0}, {0, 0, bl_.dim() >= 3 ? L : 1}}}} {}
 
-      using domain_t = bravais_lattice;
-      domain_t const &domain() const { return bl; }
+    using domain_t = bravais_lattice;
+    domain_t const &domain() const { return bl; }
 
-      // -------------- Evaluation of a function on the grid --------------------------
+    // -------------- Evaluation of a function on the grid --------------------------
 
-      interpol_data_0d_t<index_t> get_interpolation_data(index_t const &x) const { return {index_modulo(x)}; }
+    interpol_data_0d_t<index_t> get_interpolation_data(index_t const &x) const { return {index_modulo(x)}; }
 
-      template <typename F> auto evaluate(F const &f, index_t const &x) const {
-        auto id = get_interpolation_data(x);
-        return f[id.idx[0]];
-      }
+    template <typename F> auto evaluate(F const &f, index_t const &x) const {
+      auto id = get_interpolation_data(x);
+      return f[id.idx[0]];
+    }
 
-      // ------------------- Comparison -------------------
+    // ------------------- Comparison -------------------
 
-      bool operator==(gf_mesh<cyclic_lattice> const &M) const { return bl == M.domain() && cluster_mesh::operator==(M); }
+    bool operator==(torus const &M) const { return bl == M.domain() && cluster_mesh::operator==(M); }
 
-      bool operator!=(gf_mesh<cyclic_lattice> const &M) const { return !(operator==(M)); }
+    bool operator!=(torus const &M) const { return !(operator==(M)); }
 
-      // -------------------- print -------------------
+    // -------------------- print -------------------
 
-      friend std::ostream &operator<<(std::ostream &sout, gf_mesh const &m) {
-        return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units
-                    << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
-      }
+    friend std::ostream &operator<<(std::ostream &sout, torus const &m) {
+      return sout << "Cyclic Lattice Mesh with linear dimensions " << m.dims << "\n -- units = " << m.units
+                  << "\n -- periodization_matrix = " << m.periodization_matrix << "\n -- Domain: " << m.domain();
+    }
 
-      // -------------- HDF5  --------------------------
+    // -------------- HDF5  --------------------------
 
-      static std::string hdf5_scheme() { return "MeshCyclicLattice"; }
+    static std::string hdf5_scheme() { return "MeshCyclicLattice"; }
 
-      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
-        h5_write_impl(fg, subgroup_name, m, "MeshCyclicLattice");
-        h5::group gr = fg.open_group(subgroup_name);
-        h5_write(gr, "bravais_lattice", m.bl);
-      }
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, torus const &m) {
+      h5_write_impl(fg, subgroup_name, m, "MeshCyclicLattice");
+      h5::group gr = fg.open_group(subgroup_name);
+      h5_write(gr, "bravais_lattice", m.bl);
+    }
 
-      friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) {
-        h5_read_impl(fg, subgroup_name, m, "MeshCyclicLattice");
-        h5::group gr = fg.open_group(subgroup_name);
-        try { // Care for Backward Compatibility
-          h5_read(gr, "bl", m.bl);
-          return;
-        } catch (triqs::runtime_error const &re) {}
-        try {
-          h5_read(gr, "bravais_lattice", m.bl);
-        } catch (triqs::runtime_error const &re) {}
-      }
-    };
-  } // namespace gfs
-} // namespace triqs
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, torus &m) {
+      h5_read_impl(fg, subgroup_name, m, "MeshCyclicLattice");
+      h5::group gr = fg.open_group(subgroup_name);
+      try { // Care for Backward Compatibility
+        h5_read(gr, "bl", m.bl);
+        return;
+      } catch (triqs::runtime_error const &re) {}
+      try {
+        h5_read(gr, "bravais_lattice", m.bl);
+      } catch (triqs::runtime_error const &re) {}
+    }
+  };
+} // namespace triqs::mesh

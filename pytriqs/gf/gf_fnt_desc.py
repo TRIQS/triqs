@@ -158,7 +158,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
         #        doc = """Fills self with the Fourier transform of g_in with known high-frequency moments""")
 
     # === Lattice Fourier
-    for Meshes in [["cyclic_lattice", "brillouin_zone"], ["brillouin_zone", "cyclic_lattice"]]:
+    for Meshes in [["cyclic_lattice", "b_zone"], ["b_zone", "cyclic_lattice"]]:
         for gf_type in ["gf", "block_gf", "block2_gf"]:
 	    gf_view_type = gf_type +  '_view'
             # set_from_fourier

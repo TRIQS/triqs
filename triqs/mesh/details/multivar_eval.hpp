@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./comma.hpp"
-namespace triqs::gfs {
+namespace triqs::mesh {
 
   namespace details {
     template <int I0, typename G, typename A0> FORCEINLINE auto __add(G const &g, A0 const &a0) {
@@ -96,4 +96,4 @@ namespace triqs::gfs {
   template <typename G, typename... InterPolDataType> FORCEINLINE auto multivar_eval(G const &g, InterPolDataType const &... a) {
     return details::_multivar_eval_impl(std::index_sequence_for<InterPolDataType...>{}, g, a...);
   }
-} // namespace triqs::gfs
+} // namespace triqs::mesh

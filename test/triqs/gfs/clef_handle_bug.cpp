@@ -1,6 +1,7 @@
 #include <triqs/gfs.hpp>
 
 using namespace triqs::gfs;
+using namespace triqs;
 
 triqs::clef::placeholder<0> iw_;
 triqs::clef::placeholder<1> inu_;
@@ -12,7 +13,7 @@ int main() {
 
   // Meshes
   auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, nw};
-  auto iw_inu_mesh = gf_mesh{iw_mesh, iw_mesh};
+  auto iw_inu_mesh = mesh::cartesian_product{iw_mesh, iw_mesh};
 
   // -- Product Gf
   auto Gp = gf{iw_inu_mesh, {1, 1}};

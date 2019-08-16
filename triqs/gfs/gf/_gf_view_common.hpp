@@ -63,16 +63,16 @@ decltype(auto) operator[](mesh_point_t const &x) const {
 
 // pass an abtract closest_point. We extract the value of the domain from p, call the gf_closest_point trait
 template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) {
-  return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
+  return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh::closest_point<Mesh, Target>::invoke(this->mesh(), p)));
 }
 template <typename... U> decltype(auto) operator[](closest_pt_wrap<U...> const &p) const {
-  return dproxy_t::invoke(_data, _mesh.index_to_linear(gf_closest_point<Var, Target>::invoke(this->mesh(), p)));
+  return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh::closest_point<Mesh, Target>::invoke(this->mesh(), p)));
 }
 
 // -------------- operator [] with tuple_com. Distinguich the lazy and non lazy case
 public:
 template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) & {
-  static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+  static_assert(sizeof...(U) == get_n_variables<Mesh>::value, "Incorrect number of argument in [] operator");
   if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
     return clef::make_expr_subscript(*this, tu);
   else {
@@ -83,7 +83,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) & 
 }
 
 template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) const & {
-  static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+  static_assert(sizeof...(U) == get_n_variables<Mesh>::value, "Incorrect number of argument in [] operator");
   if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
     return clef::make_expr_subscript(*this, tu);
   else {
@@ -94,7 +94,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) co
 }
 
 template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) && {
-  static_assert(sizeof...(U) == get_n_variables<Var>::value, "Incorrect number of argument in [] operator");
+  static_assert(sizeof...(U) == get_n_variables<Mesh>::value, "Incorrect number of argument in [] operator");
   if constexpr ((... or clef::is_any_lazy<U>::value)) // any argument is lazy ?
     return clef::make_expr_subscript(std::move(*this), tu);
   else {
@@ -141,13 +141,13 @@ template <typename... Args> decltype(auto) on_mesh(Args &&... args) const {
 /// HDF5 name
 static std::string hdf5_scheme() { return "Gf"; }
 
-friend struct gf_h5_rw<Var, Target>;
+friend struct gf_h5_rw<Mesh, Target>;
 
 /// Write into HDF5
 friend void h5_write(h5::group fg, std::string const &subgroup_name, this_t const &g) {
   auto gr = fg.create_group(subgroup_name);
   gr.write_hdf5_scheme(g);
-  gf_h5_rw<Var, Target>::write(gr, g);
+  gf_h5_rw<Mesh, Target>::write(gr, g);
 }
 
 /// Read from HDF5
@@ -157,7 +157,7 @@ friend void h5_read(h5::group fg, std::string const &subgroup_name, this_t &g) {
   if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
     TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
                         << " while I found " << tag_file;
-  gf_h5_rw<Var, Target>::read(gr, g);
+  gf_h5_rw<Mesh, Target>::read(gr, g);
 }
 
 //-----------------------------  BOOST Serialization -----------------------------

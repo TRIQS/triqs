@@ -30,10 +30,10 @@ TEST(Gfs, brillouin_zone) {
   int n_k = 50;
 
   auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto m_k = gf_mesh<brillouin_zone>{bz, n_k};
+  auto m_k = gf_mesh<b_zone>{bz, n_k};
   ASSERT_EQ(m_k.size(), n_k * n_k);
 
-  auto Gk = gf<brillouin_zone, scalar_valued>{m_k}; //, {2, 2}};
+  auto Gk = gf<b_zone, scalar_valued>{m_k}; //, {2, 2}};
 
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   for (auto &&k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));
@@ -71,10 +71,10 @@ TEST(Gfs, brillouin_zoneMatrix) {
   int n_k = 50;
 
   auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto m_k = gf_mesh<brillouin_zone>{bz, n_k};
+  auto m_k = gf_mesh<b_zone>{bz, n_k};
   ASSERT_EQ(m_k.size(), n_k * n_k);
 
-  auto Gk = gf<brillouin_zone, matrix_valued>{m_k, {2, 2}};
+  auto Gk = gf<b_zone, matrix_valued>{m_k, {2, 2}};
 
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   for (auto &&k : Gk.mesh()) Gk[k] = -2 * (cos(k(0)) + cos(k(1)));

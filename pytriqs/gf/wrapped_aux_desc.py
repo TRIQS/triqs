@@ -35,7 +35,7 @@ def all_calls():
         for R in [3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['double']
 
-    for M in ['brillouin_zone']:
+    for M in ['b_zone']:
         yield M, ["dcomplex"], 0, 'scalar_valued', ['std::array<double, 3>'] # R =1
         yield M, ["matrix<dcomplex>"], 2, 'matrix_valued', ['std::array<double,3>'] # R =2
         for R in [3,4]:
@@ -47,8 +47,8 @@ def all_calls():
         for R in [3,4]:
             yield M, ["array<dcomplex,%s>"%R], R, 'tensor_valued<%s>'%R, ['triqs::utility::mini_vector<int, 3>']
 
-    for M1 in ['brillouin_zone', 'cyclic_lattice']:
-      k_x = {'brillouin_zone' : 'std::array<double, 3>', 'cyclic_lattice' : 'triqs::utility::mini_vector<int, 3>'}[M1]
+    for M1 in ['b_zone', 'cyclic_lattice']:
+      k_x = {'b_zone' : 'std::array<double, 3>', 'cyclic_lattice' : 'triqs::utility::mini_vector<int, 3>'}[M1]
 
       for M2 in ['imfreq']:
         yield 'cartesian_product<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ (k_x, 'long'), (k_x, 'all_t')]
@@ -61,12 +61,12 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'refreq' : 'ReFreq',
                    'imtime' : 'ImTime',
                    'retime' : 'ReTime',
-                   'brillouin_zone' : 'BrillouinZone',
+                   'b_zone' : 'BrillouinZone',
                    'cyclic_lattice' : 'CyclicLattice',
-                   'cartesian_product<brillouin_zone,imfreq>': 'BrillouinZone_x_ImFreq',
-                   'cartesian_product<brillouin_zone,imtime>': 'BrillouinZone_x_ImTime',
-                   'cartesian_product<brillouin_zone,refreq>': 'BrillouinZone_x_ReFreq',
-                   'cartesian_product<brillouin_zone,retime>': 'BrillouinZone_x_ReTime',
+                   'cartesian_product<b_zone,imfreq>': 'BrillouinZone_x_ImFreq',
+                   'cartesian_product<b_zone,imtime>': 'BrillouinZone_x_ImTime',
+                   'cartesian_product<b_zone,refreq>': 'BrillouinZone_x_ReFreq',
+                   'cartesian_product<b_zone,retime>': 'BrillouinZone_x_ReTime',
                    'cartesian_product<cyclic_lattice,imfreq>': 'CyclicLattice_x_ImFreq',
                    'cartesian_product<cyclic_lattice,imtime>': 'CyclicLattice_x_ImTime',
                    'cartesian_product<cyclic_lattice,refreq>': 'CyclicLattice_x_ReFreq',

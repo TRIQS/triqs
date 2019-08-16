@@ -19,16 +19,14 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./segment.hpp"
-#include "./tail_fitter.hpp"
+#include "./bases/segment.hpp"
+#include "./details/tail_fitter.hpp"
 
-namespace triqs::gfs {
+namespace triqs::mesh {
 
-  struct refreq {};
-
-  template <> struct gf_mesh<refreq> : segment_mesh, tail_fitter_handle {
-    using var_t = refreq;
-    template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
+  struct refreq : segment_mesh, tail_fitter_handle {
+    
+    template <typename... T> refreq(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
     // using segment_mesh::segment_mesh;
 
     /// Is the mesh only for positive omega
@@ -49,9 +47,9 @@ namespace triqs::gfs {
 
     static std::string hdf5_scheme() { return "MeshReFreq"; }
 
-    friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReFreq"); }
+    friend void h5_write(h5::group fg, std::string const &subgroup_name, refreq const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReFreq"); }
 
-    friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshReFreq"); }
+    friend void h5_read(h5::group fg, std::string const &subgroup_name, refreq &m) { h5_read_impl(fg, subgroup_name, m, "MeshReFreq"); }
   };
 
-} // namespace triqs::gfs
+} // namespace triqs::mesh

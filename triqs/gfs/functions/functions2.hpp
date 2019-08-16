@@ -21,7 +21,6 @@
  *
  ******************************************************************************/
 #pragma once
-#include "../meshes/product.hpp"
 #include <itertools/itertools.hpp>
 
 namespace triqs::gfs {
@@ -47,7 +46,7 @@ namespace triqs::gfs {
    */
   template <int N = 0, typename G, typename A = typename G::data_t::const_view_type>
   std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {}) REQUIRES(is_gf_v<G>) {
-    if constexpr (std::is_base_of_v<tag::composite, typename G::mesh_t>) { // product mesh
+    if constexpr (mesh::is_product_v<typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().fit(m, make_const_view(g.data()), N, true, make_const_view(known_moments));
     } else { // single mesh
@@ -100,7 +99,7 @@ namespace triqs::gfs {
       inner_matrix_dim = g.target_shape()[0];
     } else
       TRIQS_RUNTIME_ERROR << "Incompatible target_shape for fit_hermitian_tail\n";
-    if constexpr (std::is_base_of_v<tag::composite, typename G::mesh_t>) { // product mesh
+    if constexpr (mesh::is_product_v<typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().fit_hermitian(m, make_const_view(g.data()), N, true, make_const_view(known_moments), inner_matrix_dim);
     } else { // single mesh
@@ -118,7 +117,8 @@ namespace triqs::gfs {
    * @param bg The Block Green function object to fit the tail for 
    */
   template <int N = 0, typename BG, typename A = std::vector<typename BG::g_t::data_t::regular_type>>
-  std::pair<std::vector<typename BG::g_t::data_t::regular_type>, double> fit_hermitian_tail(BG const &bg, A const &known_moments = {}) REQUIRES(is_block_gf_v<BG, 1>) {
+  std::pair<std::vector<typename BG::g_t::data_t::regular_type>, double> fit_hermitian_tail(BG const &bg, A const &known_moments = {})
+     REQUIRES(is_block_gf_v<BG, 1>) {
     double max_err = 0.0;
     std::vector<typename BG::g_t::data_t::regular_type> tail_vec;
     for (auto [i, g_bl] : itertools::enumerate(bg)) {
@@ -240,8 +240,10 @@ namespace triqs::gfs {
    @param g a gf
    */
   template <typename G> typename G::regular_type::real_t real(G const &g) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
-    if constexpr (is_gf_v<G>) return {g.mesh(), real(g.data()), g.indices()};
-    else return map_block_gf([](auto && g_bl){ return real(g_bl); }, g);
+    if constexpr (is_gf_v<G>)
+      return {g.mesh(), real(g.data()), g.indices()};
+    else
+      return map_block_gf([](auto &&g_bl) { return real(g_bl); }, g);
   }
 
   /*------------------------------------------------------------------------------------------------------
@@ -256,10 +258,7 @@ namespace triqs::gfs {
   *                      Conjugate
   *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename G> typename G::regular_type conj(G const &g) REQUIRES(is_gf_v<G>) {
-    using M = typename G::variable_t;
-    return {g.mesh(), conj(g.data()), g.indices()};
-  }
+  template <typename G> typename G::regular_type conj(G const &g) REQUIRES(is_gf_v<G>) { return {g.mesh(), conj(g.data()), g.indices()}; }
 
   /*------------------------------------------------------------------------------------------------------
   *                      Multiply by matrices left or right

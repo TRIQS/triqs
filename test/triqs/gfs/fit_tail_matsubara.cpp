@@ -120,10 +120,10 @@ TEST(FitTailMatsubara, Multivar) { // NOLINT
   int N_iw    = 100;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
-  auto k_mesh    = gf_mesh<brillouin_zone>(BL, N_k);
+  auto k_mesh    = gf_mesh<b_zone>(BL, N_k);
   auto iW_mesh   = gf_mesh<imfreq>{beta, Boson, N_iW};
   auto iw_mesh   = gf_mesh<imfreq>{beta, Fermion, N_iw};
-  auto prod_mesh = gf_mesh{k_mesh, iW_mesh, iw_mesh};
+  auto prod_mesh = k_mesh * iW_mesh * iw_mesh;
 
   auto g = gf{prod_mesh, {1, 1}};
 

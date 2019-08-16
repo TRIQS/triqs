@@ -24,12 +24,10 @@
 #define TRIQS_INCLUDED_GF
 
 // the meshes
-#include "./gfs/meshes.hpp"
-
-// debug
-#include "./gfs/debug.hpp"
+#include "./mesh.hpp"
 
 // the targets
+#include "./gfs/gf/defs.hpp"
 #include "./gfs/gf/targets.hpp"
 
 // gf class and its mechanisms
@@ -40,7 +38,7 @@
 #include "./gfs/gf/auto_assign.hpp"
 
 // multivar
-#include "./gfs/meshes/product.hpp"
+#include "./mesh/product.hpp"
 #include "./gfs/gf/partial_eval.hpp"
 
 // expression template
@@ -61,7 +59,6 @@
 #include "./gfs/h5.hpp"
 
 // functions
-#include "./gfs/functions/closest_mesh_pt.hpp"
 #include "./gfs/functions/functions2.hpp"
 #include "./gfs/functions/imfreq.hpp"
 #include "./gfs/functions/imtime.hpp"

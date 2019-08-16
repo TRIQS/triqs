@@ -19,90 +19,101 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/arithmetic_ops_by_cast.hpp>
 #include <itertools/itertools.hpp>
 
 #include <triqs/arrays.hpp>
+#include <triqs/utility/arithmetic_ops_by_cast.hpp>
+#include <triqs/utility/tuple_tools.hpp>
+#include <triqs/utility/mini_vector.hpp>
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::mesh {
 
-    using arrays::array;
-    using arrays::array_view;
-    using arrays::make_shape;
-    using arrays::matrix;
-    using arrays::matrix_const_view;
-    using arrays::matrix_view;
-    using itertools::range;
-    using triqs::make_clone;
-    using dcomplex = std::complex<double>;
-    using arrays::ellipsis;
-    using arrays::make_shape;
-    using arrays::mini_vector;
-    using itertools::range;
+  using dcomplex = std::complex<double>;
 
-    using dcomplex = std::complex<double>;
+  using arrays::array;
+  using arrays::array_view;
+  using arrays::ellipsis;
+  using arrays::make_shape;
+  using arrays::make_unit_matrix;
+  using arrays::matrix;
+  using arrays::matrix_const_view;
+  using arrays::matrix_view;
+  using arrays::mini_vector;
 
-    // the dummy variable
-    struct all_t {};
+  using itertools::range;
+  using triqs::make_clone;
 
-    namespace tag {
-      struct composite {};
-      struct mesh_point {};
-    } // namespace tag
+  namespace tag {
+    struct mesh {};
+    struct composite : mesh {};
+    struct mesh_point {};
+  } // namespace tag
 
-    /** The statistics : Boson or Fermion */
-    enum statistic_enum { Boson = 0, Fermion = 1 };
+  // A default implementation. Specialize for non-intrusive usage.
+  template <typename M> struct models_mesh_concept : std::is_base_of<tag::mesh, M> {};
 
-    // 1 for Boson, -1 for Fermion
-    inline int sign(statistic_enum s) { return (s == Boson ? 1 : -1); }
+  /// Check if M models the mesh concept FIXME 20 : use true concept here
+  template <typename M> constexpr bool models_mesh_concept_v = models_mesh_concept<M>::value;
 
-    // Boson*Fermion -> Fermion, others -> Boson
-    inline statistic_enum operator*(statistic_enum i, statistic_enum j) { return (i == j ? Boson : Fermion); }
+  //
+  template <typename Mesh> struct get_n_variables { static const int value = 1; };
 
-    // pretty print
-    inline std::ostream &operator<<(std::ostream &sout, statistic_enum x) { return sout << (x == Boson ? "Boson" : "Fermion"); }
+  /// A place holder for : or *all*
+  struct all_t {};
 
-    //enum class statistic_enum {_Boson=0, _Fermion = 1};
-    //inline statistic_enum Fermion = statistic_enum::_Fermion;
-    //inline statistic_enum Boson = statistic_enum::_Boson;
-    //statistic_enum operator* (statistic_enum i, statistic_enum j) { return ( i==j ? statistic_enum::_Boson : statistic_enum::_Fermion); }
-    //std::ostream &operator<<(std::ostream &sout, statistic_enum x) { return sout << (x==statistic_enum::_Boson ? "Boson" : "Fermion"); }
+  /** The statistics : Boson or Fermion */
+  enum statistic_enum { Boson = 0, Fermion = 1 };
 
-    // The mesh for each Var
-    template <typename Var> struct gf_mesh;
+  // 1 for Boson, -1 for Fermion
+  inline int sign(statistic_enum s) { return (s == Boson ? 1 : -1); }
 
-    // The mesh point for each mesh
-    template <typename MeshType> struct mesh_point;
+  /// Boson*Fermion -> Fermion, others -> Boson
+  inline statistic_enum operator*(statistic_enum i, statistic_enum j) { return (i == j ? Boson : Fermion); }
 
-    // FIXME : remove boost !
-    template <typename MeshType>
-    class mesh_pt_generator : public itertools::iterator_facade<mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t,
-                                                                     std::forward_iterator_tag, typename MeshType::mesh_point_t const &> {
-      friend class itertools::iterator_facade<mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t, std::forward_iterator_tag,
-                                                   typename MeshType::mesh_point_t const &>;
-      MeshType const *mesh;
-      size_t u;
-      typename MeshType::mesh_point_t pt;
-      typename MeshType::mesh_point_t const &dereference() const { return pt; }
-      bool equal(mesh_pt_generator const &other) const { return ((other.u == u)); }
-      // do NOT check = of mesh, otherwise e.g. block iterator does not work (infinite loop...)
-      //bool equal(mesh_pt_generator const & other) const { return ((mesh == other.mesh) && (other.u==u) );}
-      public:
-      mesh_pt_generator() : mesh(nullptr), u(0) {}
-      mesh_pt_generator(MeshType const *m, bool atEnd = false) : mesh(m), u(atEnd ? m->size() : 0), pt(*m) {}
-      void increment() {
-        ++u;
-        pt.advance();
-      }
-      bool at_end() const { return (u >= mesh->size()); }
-      typename MeshType::domain_t::point_t to_point() const { return pt; }
-      mesh_pt_generator &operator+=(int n) {
-        for (int i = 0; i < n; ++i) increment();
-        return *this;
-      }
-      friend mesh_pt_generator operator+(mesh_pt_generator lhs, int n) { return lhs += n; }
-    };
+  // forward : The mesh point for each mesh. To be specialize by each mesh.
+  template <typename Mesh> struct mesh_point;
 
-  } // namespace gfs
-} // namespace triqs
+  /*
+   *
+   * A generator for the mesh points of a mesh
+   */
+  // FIXME : remove ITERATOR FACADE
+  template <typename Mesh>
+  class mesh_pt_generator : public itertools::iterator_facade<mesh_pt_generator<Mesh>, typename Mesh::mesh_point_t, std::forward_iterator_tag,
+                                                              typename Mesh::mesh_point_t const &> {
+    friend class itertools::iterator_facade<mesh_pt_generator<Mesh>, typename Mesh::mesh_point_t, std::forward_iterator_tag,
+                                            typename Mesh::mesh_point_t const &>;
+
+    static_assert(models_mesh_concept_v<Mesh>, "Logic Error");
+
+    Mesh const *mesh = nullptr;
+    size_t u         = 0;
+    typename Mesh::mesh_point_t pt;
+    typename Mesh::mesh_point_t const &dereference() const { return pt; }
+
+    bool equal(mesh_pt_generator const &other) const { return ((other.u == u)); }
+    // do NOT check = of mesh, otherwise e.g. block iterator does not work (infinite loop...)
+    //bool equal(mesh_pt_generator const & other) const { return ((mesh == other.mesh) && (other.u==u) );}
+    public:
+    mesh_pt_generator() = default;
+
+    mesh_pt_generator(Mesh const *m, bool atEnd = false) : mesh(m), u(atEnd ? m->size() : 0), pt(*m) {}
+
+    void increment() {
+      ++u;
+      pt.advance();
+    }
+
+    bool at_end() const { return (u >= mesh->size()); }
+
+    typename Mesh::domain_t::point_t to_point() const { return pt; }
+
+    mesh_pt_generator &operator+=(int n) {
+      for (int i = 0; i < n; ++i) increment();
+      return *this;
+    }
+
+    friend mesh_pt_generator operator+(mesh_pt_generator lhs, int n) { return lhs += n; }
+  };
+
+ } // namespace triqs::mesh

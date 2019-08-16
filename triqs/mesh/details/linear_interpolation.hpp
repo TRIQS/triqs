@@ -3,7 +3,7 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2012  by M. Ferrero, O. Parcollet
- * Copyright (C) 2018  by Simons Foundation
+ * Copyright (C) 2018-2019  by Simons Foundation
  *               author : O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
@@ -24,6 +24,7 @@
 #include <array>
 #include "./mesh_tools.hpp"
 
+// FIXME : MOVE THIS IN std::array util
 namespace std {
   template <typename T, size_t R> std::ostream &operator<<(std::ostream &sout, std::array<T, R> const &a) {
     sout << '(';
@@ -33,7 +34,9 @@ namespace std {
 
 } // namespace std
 
-namespace triqs::gfs {
+// Techniques for linear interpolation
+
+namespace triqs::mesh {
 
   // 1 in a completely neutral type for the compiler, which can not optimize 1.0 * x a priori.
   struct _universal_unit_t {};
@@ -93,4 +96,4 @@ namespace triqs::gfs {
     return {{i, i + 1}, {1 - w, w}};
   }
 
-} // namespace triqs::gfs
+} // namespace triqs::mesh

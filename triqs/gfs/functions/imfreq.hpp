@@ -29,7 +29,7 @@ namespace triqs::gfs {
    * This function takes a g(i omega_n) on half mesh (positive omega_n) and returns a gf on the whole mesh
    * using G(-i omega_n) = G(i omega_n)^* for real G(tau) functions.
    */
-  template <typename T> gf<imfreq, T> make_gf_from_real_gf(gf_const_view<imfreq, T> g) {
+  template <typename T> gf<mesh::imfreq, T> make_gf_from_real_gf(gf_const_view<mesh::imfreq, T> g) {
     if (!g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "gf imfreq is not for omega_n >0, real_to_complex does not apply";
     auto const &dat = g.data();
     auto sh         = dat.shape();
@@ -44,12 +44,12 @@ namespace triqs::gfs {
       new_data(L1 + u, _)    = dat(u, _);
       new_data(L - 1 - u, _) = conj(dat(u, _));
     }
-    return {gf_mesh<imfreq>{g.mesh().domain(), L}, std::move(new_data), g.indices()};
+    return {mesh::imfreq{g.mesh().domain(), L}, std::move(new_data), g.indices()};
   }
 
   /// Make a const view of the positive frequency part of the function
   template <typename G> view_or_type_t<G> positive_freq_view(G &&g) {
-    static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value, "positive_freq_view only makes senses for imfreq gf");
+    static_assert(std::is_same<typename std::decay_t<G>::mesh_t, mesh::imfreq>::value, "positive_freq_view only makes senses for imfreq gf");
     if (g.mesh().positive_only()) return g;
     long L       = g.mesh().size();
     long L1      = (L + 1) / 2; // fermion : L is even. boson, L = 2p+1 --> p+1
@@ -178,23 +178,23 @@ namespace triqs::gfs {
 
   // ------------------------------------------------------------------------------------------------------
 
-  template <template <typename, typename> typename G, typename T> auto restricted_view(G<imfreq, T> const &g, int n_max) {
-    auto iw_mesh = gf_mesh<imfreq>{g.mesh().domain().beta, Fermion, n_max};
+  template <template <typename, typename> typename G, typename T> auto restricted_view(G<mesh::imfreq, T> const &g, int n_max) {
+    auto iw_mesh = mesh::imfreq{g.mesh().domain().beta, Fermion, n_max};
 
     auto const &old_mesh = g.mesh();
     int idx_min          = old_mesh.index_to_linear(iw_mesh.first_index());
     int idx_max          = old_mesh.index_to_linear(iw_mesh.last_index());
     auto data_view       = g.data()(range(idx_min, idx_max + 1), ellipsis());
 
-    return typename G<imfreq, T>::const_view_type{iw_mesh, data_view};
+    return typename G<mesh::imfreq, T>::const_view_type{iw_mesh, data_view};
   }
 
-  template <typename T> void replace_by_tail(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min) {
+  template <typename T> void replace_by_tail(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min) {
     for (auto const &iw : g.mesh())
       if (iw.index() >= n_min or iw.index() < -n_min) g[iw] = tail_eval(tail, iw);
   }
 
-  template <typename T> void replace_by_tail_in_fit_window(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail) {
+  template <typename T> void replace_by_tail_in_fit_window(gf_view<mesh::imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail) {
     int n_pts_in_fit_range = int(std::round(g.mesh().get_tail_fitter().get_tail_fraction() * g.mesh().size() / 2));
     int n_min              = g.mesh().last_index() - n_pts_in_fit_range;
     replace_by_tail(g, tail, n_min);
@@ -203,7 +203,7 @@ namespace triqs::gfs {
   // FIXME For backward compatibility only
   // Fit_tail on a window
   template <template <typename, typename> typename G, typename T>
-  auto fit_tail_on_window(G<imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
+  auto fit_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                           int expansion_order) {
     if (n_max == -1) n_max = g.mesh().last_index();
     auto g_rview         = restricted_view(g, n_max);
@@ -214,7 +214,7 @@ namespace triqs::gfs {
 
   // Fit_tail on a window with the constraint of hermitian moment matrices
   template <template <typename, typename> typename G, typename T>
-  auto fit_hermitian_tail_on_window(G<imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
+  auto fit_hermitian_tail_on_window(G<mesh::imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
                                     int expansion_order) {
     if (n_max == -1) n_max = g.mesh().last_index();
     auto g_rview         = restricted_view(g, n_max);

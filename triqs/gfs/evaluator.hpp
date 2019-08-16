@@ -36,10 +36,10 @@ namespace triqs {
     };
 
     /*----------------------------------------------------------
-  *  imfreq
+  *  mesh::imfreq
   *--------------------------------------------------------*/
 
-    template <typename Target> struct gf_evaluator<imfreq, Target> {
+    template <typename Target> struct gf_evaluator<mesh::imfreq, Target> {
 
       static constexpr int arity = 1;
 
@@ -63,7 +63,7 @@ namespace triqs {
         auto [tail, err] = fit_tail_no_normalize(g);
 
         dcomplex x = std::abs(g.mesh().omega_max()) / f;
-        auto res   = zeros<dcomplex>(g.target_shape()); // a new array
+        auto res   = arrays::zeros<dcomplex>(g.target_shape()); // a new array
 
         dcomplex z = 1.0;
         for (int n : range(first_dim(tail))) {
@@ -87,7 +87,7 @@ namespace triqs {
     inline dcomplex make_const_view(dcomplex z) { return z; }
 
     // now the multi d gf_evaluator itself.
-    template <typename Target, typename... Ms> struct gf_evaluator<cartesian_product<Ms...>, Target> {
+    template <typename Target, typename... Ms> struct gf_evaluator<mesh::cartesian_product<Ms...>, Target> {
 
       static constexpr int arity = sizeof...(Ms); // METTRE ARITY DANS LA MESH !
 
@@ -101,7 +101,7 @@ namespace triqs {
         } else {
           if (g.mesh().is_within_boundary(args...)) return make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...));
           using rt = std::decay_t<decltype(make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
-          return rt{zeros<dcomplex>(g.target_shape())};
+          return rt{arrays::zeros<dcomplex>(g.target_shape())};
         }
       }
     };
@@ -111,7 +111,7 @@ namespace triqs {
      *--------------------------------------------------------*/
 
     // Not finished, not tested
-    template <> struct gf_evaluator<legendre, matrix_valued> {
+    template <> struct gf_evaluator<mesh::legendre, matrix_valued> {
       static constexpr int arity = 1;
       template <typename G> arrays::matrix_view<dcomplex> operator()(G const &g, long n) const {
         return g.data()(n, itertools::range(), itertools::range());

@@ -19,31 +19,29 @@
  *
  ******************************************************************************/
 #pragma once
-#include "./mesh_tools.hpp"
+#include "../details/mesh_tools.hpp"
 #include "./linear.hpp"
 #include "../domains/R.hpp"
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::mesh {
 
-    /** A linear mesh on a segment on R */
-    struct segment_mesh : linear_mesh<R_domain> {
-      using B        = linear_mesh<R_domain>;
-      segment_mesh() = default;
-      segment_mesh(double x_min, double x_max, int n_freq) : B(typename B::domain_t(), x_min, x_max, n_freq) {}
-    };
+  /** A linear mesh on a segment on R */
+  struct segment_mesh : linear_mesh<R_domain> {
+    using B        = linear_mesh<R_domain>;
+    segment_mesh() = default;
+    segment_mesh(double x_min, double x_max, int n_freq) : B(typename B::domain_t(), x_min, x_max, n_freq) {}
+  };
 
-    //-------------------------------------------------------
+  //-------------------------------------------------------
 
-    /** \brief foreach for this mesh
+  /** \brief foreach for this mesh
   *
   *  @param m : a mesh
   *  @param F : a function of synopsis auto F (matsubara_time_mesh::mesh_point_t)
   *
   *  Calls F on each point of the mesh, in arbitrary order.
   **/
-    template <typename Lambda> void foreach (segment_mesh const &m, Lambda F) {
-      for (auto const &w : m) F(w);
-    }
-  } // namespace gfs
-} // namespace triqs
+  template <typename Lambda> void foreach (segment_mesh const &m, Lambda F) {
+    for (auto const &w : m) F(w);
+  }
+} // namespace triqs::mesh

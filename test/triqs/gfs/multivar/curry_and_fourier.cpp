@@ -14,8 +14,8 @@ TEST(GfM, CurryFourier) {
   int n_freq  = 100;
   int n_times = n_freq * 2 + 1;
   int n_bz    = 10;
-  auto gkw    = gf<cartesian_product<brillouin_zone, imfreq>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
-  auto gkt    = gf<cartesian_product<brillouin_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
+  auto gkw    = gf<cartesian_product<b_zone, imfreq>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
+  auto gkt    = gf<cartesian_product<b_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
   auto _ = all_t{};
 
@@ -33,7 +33,7 @@ TEST(GfM, CurryFourier) {
   for (auto const &k : mk) gkt[k, _] = fourier(gkw[k, _]);
 
   // works also, but uses the evaluator which return to the same point
-  for (auto k : mk) EXPECT_EQ(k.linear_index(), mk.index_to_linear(mk.locate_neighbours(arrays::vector<double>(lattice_point(k)))));
+  for (auto k : mk) EXPECT_EQ(k.linear_index(), mk.index_to_linear(mk.locate_neighbours(arrays::vector<double>(mesh::lattice_point(k)))));
 
   /// Testing the result
   auto gk_w_test = gf<imfreq>{{beta, Fermion, n_freq}, {1, 1}};
