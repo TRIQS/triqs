@@ -44,23 +44,22 @@ namespace triqs {
     /// ---------------------------  traits ---------------------------------
 
     // Is G a block_gf, block_gf_view, block_gf_const_view
-    // is_block_gf_or_view<G> is true iif G is a block_gf or block2_gf
-    // is_block_gf_or_view<G,1> is true iff G is a block_gf
-    // is_block_gf_or_view<G,2> is true iff G is a block2_gf
+    // is_block_gf<G> is true iif G is a block_gf or block2_gf
+    // is_block_gf<G,1> is true iff G is a block_gf
+    // is_block_gf<G,2> is true iff G is a block2_gf
     //
-    template <typename G, int n> struct _is_block_gf_or_view : std::false_type {};
+    template <typename G, int n> struct _is_block_gf : std::false_type {};
+    template <typename G, int n = 0> using is_block_gf                   = _is_block_gf<std::decay_t<G>, n>;
+    template <typename G, int n = 0> inline constexpr bool is_block_gf_v = is_block_gf<G, n>::value;
 
-    template <typename G, int n = 0> using is_block_gf_or_view = _is_block_gf_or_view<std::decay_t<G>, n>;
+    template <typename G> struct _is_block_gf<G, 0> : std::integral_constant<bool, is_block_gf_v<G, 1> || is_block_gf_v<G, 2>> {};
 
-    template <typename G>
-    struct _is_block_gf_or_view<G, 0> : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value || is_block_gf_or_view<G, 2>::value> {};
-
-    template <typename V, typename T> struct _is_block_gf_or_view<block_gf<V, T>, 1> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block_gf_view<V, T>, 1> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block_gf_const_view<V, T>, 1> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block2_gf<V, T>, 2> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block2_gf_view<V, T>, 2> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block2_gf_const_view<V, T>, 2> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block_gf<V, T>, 1> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block_gf_view<V, T>, 1> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block_gf_const_view<V, T>, 1> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block2_gf<V, T>, 2> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block2_gf_view<V, T>, 2> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block2_gf_const_view<V, T>, 2> : std::true_type {};
 
     // Given a gf G, the corresponding block
     template <typename G> using get_variable_t          = typename std::decay_t<G>::variable_t;
@@ -99,17 +98,11 @@ namespace triqs {
 
     /// ---------------------------  implementation  ---------------------------------
 
-    
-   
-  
-
     // ----------------------  block_gf -----------------------------------------
     /**
    * block_gf
    */
-    template <typename Var, typename Target>
-    class block_gf :
-       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = false;
@@ -127,7 +120,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block_gf<Var, typename Target::real_t>;
 
-      using g_t = gf<Var, Target>;
+      using g_t           = gf<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -202,7 +195,6 @@ namespace triqs {
       // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
       template <typename Tag> block_gf(mpi_lazy<Tag, block_gf_const_view<Var, Target>> x) : block_gf() { operator=(x); }
 
-
       /// Construct from a vector of gf
       block_gf(data_t V) : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
 
@@ -232,8 +224,6 @@ namespace triqs {
             _glist.emplace_back(m, make_shape(bl_size, bl_size), std::vector<std::vector<std::string>>(Target::rank, idx_str_lst));
         }
       }
-
-
 
       /// ---------------  Operator = --------------------
       private:
@@ -281,7 +271,6 @@ namespace triqs {
         _assign_impl(rhs);
         return *this;
       }
-
 
       // ---------------  Rebind --------------------
       /// Rebind
@@ -433,9 +422,6 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
-    
-
-    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -449,13 +435,12 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T> void mpi_broadcast(block_gf<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
-    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -469,24 +454,18 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                      bool all = false, MPI_Op op = MPI_SUM) {
+                                                                     bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
-
-   
-  
 
     // ----------------------  block_gf_view -----------------------------------------
     /**
    * block_gf_view
    */
-    template <typename Var, typename Target>
-    class block_gf_view :
-       is_view_tag,
-       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block_gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -504,7 +483,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block_gf_view<Var, typename Target::real_t>;
 
-      using g_t = gf_view<Var, Target>;
+      using g_t           = gf_view<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -572,7 +551,6 @@ namespace triqs {
       /// Makes a view
       block_gf_view(regular_type &&g) noexcept : block_gf_view(impl_tag{}, std::move(g)) {}
 
-
       /// ---------------  Operator = --------------------
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
@@ -634,7 +612,6 @@ namespace triqs {
         _assign_impl(rhs);
         return *this;
       }
-
 
       // ---------------  Rebind --------------------
       /// Rebind
@@ -786,9 +763,6 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
-    
-
-    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -802,13 +776,12 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T> void mpi_broadcast(block_gf_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
-    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -822,24 +795,18 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                      bool all = false, MPI_Op op = MPI_SUM) {
+                                                                     bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
-
-   
-  
 
     // ----------------------  block_gf_const_view -----------------------------------------
     /**
    * block_gf_const_view
    */
-    template <typename Var, typename Target>
-    class block_gf_const_view :
-       is_view_tag,
-       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block_gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -857,7 +824,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block_gf_const_view<Var, typename Target::real_t>;
 
-      using g_t = gf_const_view<Var, Target>;
+      using g_t           = gf_const_view<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -922,7 +889,6 @@ namespace triqs {
 
       /// Makes a const view
       block_gf_const_view(regular_type const &g) : block_gf_const_view(impl_tag{}, g) {}
-
 
       /// ---------------  Operator = --------------------
       private:
@@ -1088,9 +1054,6 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
-    
-
-    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -1104,13 +1067,12 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T> void mpi_broadcast(block_gf_const_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
-    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -1124,23 +1086,18 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                      bool all = false, MPI_Op op = MPI_SUM) {
+                                                                     bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
-
-   
-  
 
     // ----------------------  block2_gf -----------------------------------------
     /**
    * block2_gf
    */
-    template <typename Var, typename Target>
-    class block2_gf :
-       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block2_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = false;
@@ -1158,7 +1115,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block2_gf<Var, typename Target::real_t>;
 
-      using g_t = gf<Var, Target>;
+      using g_t           = gf<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1176,7 +1133,6 @@ namespace triqs {
       int size1() const { return _glist.size(); }
       int size2() const { return _glist[0].size(); } // FIXME PROTECT
       int size() const { return size1() * size2(); }
-
 
       std::string name;
 
@@ -1224,14 +1180,11 @@ namespace triqs {
       // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
       template <typename Tag> block2_gf(mpi_lazy<Tag, block2_gf_const_view<Var, Target>> x) : block2_gf() { operator=(x); }
 
-
       /// Constructs a n blocks with copies of g.
       block2_gf(int n, int p, g_t const &g) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
 
       /// Construct from a vector of gf
       block2_gf(data_t V) : _block_names(details::_make_block_names2(V.size(), V[0].size())), _glist(std::move(V)) {}
-
-
 
       /// ---------------  Operator = --------------------
       private:
@@ -1283,7 +1236,6 @@ namespace triqs {
         return *this;
       }
 
-
       // ---------------  Rebind --------------------
       /// Rebind
       void rebind(block2_gf x) noexcept {
@@ -1319,7 +1271,6 @@ namespace triqs {
         return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
       }
       // ------------- All the [] operators without lazy arguments -----------------------------
-
 
       // ------------- [] with lazy arguments -----------------------------
 
@@ -1441,9 +1392,6 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
-    
-
-    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -1457,13 +1405,12 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T> void mpi_broadcast(block2_gf<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
-    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -1477,24 +1424,18 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
-   
-  
-
     // ----------------------  block2_gf_view -----------------------------------------
     /**
    * block2_gf_view
    */
-    template <typename Var, typename Target>
-    class block2_gf_view :
-       is_view_tag,
-       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block2_gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1512,7 +1453,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block2_gf_view<Var, typename Target::real_t>;
 
-      using g_t = gf_view<Var, Target>;
+      using g_t           = gf_view<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1530,7 +1471,6 @@ namespace triqs {
       int size1() const { return _glist.size(); }
       int size2() const { return _glist[0].size(); } // FIXME PROTECT
       int size() const { return size1() * size2(); }
-
 
       std::string name;
 
@@ -1570,7 +1510,6 @@ namespace triqs {
 
       /// Makes a view
       block2_gf_view(regular_type &&g) noexcept : block2_gf_view(impl_tag{}, std::move(g)) {}
-
 
       /// ---------------  Operator = --------------------
       private:
@@ -1638,7 +1577,6 @@ namespace triqs {
         return *this;
       }
 
-
       // ---------------  Rebind --------------------
       /// Rebind
       void rebind(block2_gf_view x) noexcept {
@@ -1674,7 +1612,6 @@ namespace triqs {
         return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
       }
       // ------------- All the [] operators without lazy arguments -----------------------------
-
 
       // ------------- [] with lazy arguments -----------------------------
 
@@ -1796,9 +1733,6 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
-    
-
-    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -1812,13 +1746,12 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T> void mpi_broadcast(block2_gf_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
-    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -1832,24 +1765,18 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
-   
-  
-
     // ----------------------  block2_gf_const_view -----------------------------------------
     /**
    * block2_gf_const_view
    */
-    template <typename Var, typename Target>
-    class block2_gf_const_view :
-       is_view_tag,
-       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target> class block2_gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1867,7 +1794,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block2_gf_const_view<Var, typename Target::real_t>;
 
-      using g_t = gf_const_view<Var, Target>;
+      using g_t           = gf_const_view<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1885,7 +1812,6 @@ namespace triqs {
       int size1() const { return _glist.size(); }
       int size2() const { return _glist[0].size(); } // FIXME PROTECT
       int size() const { return size1() * size2(); }
-
 
       std::string name;
 
@@ -1923,7 +1849,6 @@ namespace triqs {
 
       /// Makes a const view
       block2_gf_const_view(regular_type const &g) : block2_gf_const_view(impl_tag{}, g) {}
-
 
       /// ---------------  Operator = --------------------
       private:
@@ -1975,7 +1900,6 @@ namespace triqs {
         return clef::make_expr_call(std::move(*this), std::forward<Args>(args)...);
       }
       // ------------- All the [] operators without lazy arguments -----------------------------
-
 
       // ------------- [] with lazy arguments -----------------------------
 
@@ -2097,9 +2021,6 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
-    
-
-    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -2113,13 +2034,12 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T> void mpi_broadcast(block2_gf_const_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
-    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -2133,13 +2053,12 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-    
+
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
-
 
     // -------------------------------   Free Factories for regular type  --------------------------------------------------
 
@@ -2237,7 +2156,6 @@ namespace triqs {
 
     // -------------------------------   Free Factories for block2_gf_view and block2_gf_const_view  --------------------------------------------------
 
-
     // Create block2_gf_view from vector of views
     template <typename Gf> block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::vector<Gf>> &v) {
       static_assert(Gf::is_view);
@@ -2253,13 +2171,13 @@ namespace triqs {
     // Create block2_gf_view from block_names and vector of views
     template <typename Gf>
     block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                                        std::vector<std::vector<Gf>> &v) {
+                                              std::vector<std::vector<Gf>> &v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, v};
     }
     template <typename Gf>
     block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                                        std::vector<std::vector<Gf>> &&v) {
+                                              std::vector<std::vector<Gf>> &&v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
     }
@@ -2279,13 +2197,13 @@ namespace triqs {
     // Create block2_gf_const_view from block_names and vector of views
     template <typename Gf>
     block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                                        std::vector<std::vector<Gf>> &v) {
+                                                          std::vector<std::vector<Gf>> &v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, v};
     }
     template <typename Gf>
     block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                                        std::vector<std::vector<Gf>> &&v) {
+                                                          std::vector<std::vector<Gf>> &&v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
     }

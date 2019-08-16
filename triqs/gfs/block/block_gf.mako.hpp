@@ -41,23 +41,23 @@ namespace triqs {
     /// ---------------------------  traits ---------------------------------
 
     // Is G a block_gf, block_gf_view, block_gf_const_view
-    // is_block_gf_or_view<G> is true iif G is a block_gf or block2_gf
-    // is_block_gf_or_view<G,1> is true iff G is a block_gf
-    // is_block_gf_or_view<G,2> is true iff G is a block2_gf
+    // is_block_gf<G> is true iif G is a block_gf or block2_gf
+    // is_block_gf<G,1> is true iff G is a block_gf
+    // is_block_gf<G,2> is true iff G is a block2_gf
     //
-    template <typename G, int n> struct _is_block_gf_or_view : std::false_type {};
-
-    template <typename G, int n = 0> using is_block_gf_or_view = _is_block_gf_or_view<std::decay_t<G>, n>;
+    template <typename G, int n> struct _is_block_gf : std::false_type {};
+    template <typename G, int n = 0> using is_block_gf = _is_block_gf<std::decay_t<G>, n>;
+    template <typename G, int n = 0> inline constexpr bool is_block_gf_v = is_block_gf<G, n>::value;
 
     template <typename G>
-    struct _is_block_gf_or_view<G, 0> : std::integral_constant<bool, is_block_gf_or_view<G, 1>::value || is_block_gf_or_view<G, 2>::value> {};
+    struct _is_block_gf<G, 0> : std::integral_constant<bool, is_block_gf_v<G, 1> || is_block_gf_v<G, 2>> {};
 
-    template <typename V, typename T> struct _is_block_gf_or_view<block_gf<V, T>, 1> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block_gf_view<V, T>, 1> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block_gf_const_view<V, T>, 1> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block2_gf<V, T>, 2> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block2_gf_view<V, T>, 2> : std::true_type {};
-    template <typename V, typename T> struct _is_block_gf_or_view<block2_gf_const_view<V, T>, 2> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block_gf<V, T>, 1> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block_gf_view<V, T>, 1> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block_gf_const_view<V, T>, 1> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block2_gf<V, T>, 2> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block2_gf_view<V, T>, 2> : std::true_type {};
+    template <typename V, typename T> struct _is_block_gf<block2_gf_const_view<V, T>, 2> : std::true_type {};
 
     // Given a gf G, the corresponding block
     template <typename G> using get_variable_t          = typename std::decay_t<G>::variable_t;

@@ -49,22 +49,18 @@ namespace triqs::gfs {
   // Is G a gf, gf_view, gf_const_view
   // is_gf<G> is true iif G is a gf or a view
   // is_gf<G,M0> is true iif  G is a gf or a view and its mesh is M0
-  template <typename G, typename M0 = void> struct is_gf : std::false_type {};
+  template <typename G, typename M> struct _is_gf : std::false_type {};
+  template <typename G, typename M = void> using is_gf = _is_gf<std::decay_t<G>, M>;
+  template <typename G, typename M = void> inline constexpr bool is_gf_v = is_gf<G, M>::value;
 
-  template <typename M, typename T> struct is_gf<gf<M, T>, void> : std::true_type {};
-  template <typename M, typename T> struct is_gf<gf<M, T>, M> : std::true_type {};
-  template <typename M, typename T> struct is_gf<gf_view<M, T>, void> : std::true_type {};
-  template <typename M, typename T> struct is_gf<gf_view<M, T>, M> : std::true_type {};
+  template <typename M, typename T> struct _is_gf<gf<M, T>, void> : std::true_type {};
+  template <typename M, typename T> struct _is_gf<gf<M, T>, M> : std::true_type {};
+  template <typename M, typename T> struct _is_gf<gf_view<M, T>, void> : std::true_type {};
+  template <typename M, typename T> struct _is_gf<gf_view<M, T>, M> : std::true_type {};
 
-  template <typename M, typename T> struct is_gf<gf_const_view<M, T>, void> : std::true_type {};
+  template <typename M, typename T> struct _is_gf<gf_const_view<M, T>, void> : std::true_type {};
 
-  template <typename M, typename T> struct is_gf<gf_const_view<M, T>, M> : std::true_type {};
-
-  template <typename G, typename M> struct is_gf<G &, M> : is_gf<G, M> {};
-  template <typename G, typename M> struct is_gf<G const &, M> : is_gf<G, M> {};
-  template <typename G, typename M> struct is_gf<G &&, M> : is_gf<G, M> {};
-
-  template <typename G, typename M> inline constexpr bool is_gf_v = is_gf<G, M>::value;
+  template <typename M, typename T> struct _is_gf<gf_const_view<M, T>, M> : std::true_type {};
 
   /// ---------------------------  implementation  ---------------------------------
 
