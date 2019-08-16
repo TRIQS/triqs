@@ -287,12 +287,58 @@ endif()
 target_include_directories(triqs INTERFACE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
 target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
+
+# ---------------------------------
+# Generate Compiler Wrapper
+# ---------------------------------
+
+macro(extract_flags NAME TARGET)
+  get_property(TARGET_COMPILE_OPTIONS TARGET ${TARGET} PROPERTY INTERFACE_COMPILE_OPTIONS)
+  get_property(TARGET_COMPILE_DEFINITIONS TARGET ${TARGET} PROPERTY INTERFACE_COMPILE_DEFINITIONS)
+  get_property(TARGET_INCLUDE_DIRS TARGET ${TARGET} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  get_property(TARGET_LINK_LIBRARIES TARGET ${TARGET} PROPERTY INTERFACE_LINK_LIBRARIES)
+
+  foreach(OPT ${TARGET_COMPILE_OPTIONS})
+    set(${NAME}_LD_FLAGS "${${NAME}_LD_FLAGS} ${OPT}")
+    set(${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS} ${OPT}")
+  endforeach()
+  foreach(DEF ${TARGET_COMPILE_DEFINITIONS})
+    set(${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS} -D${DEF}")
+  endforeach()
+  foreach(DIR ${TARGET_INCLUDE_DIRS})
+    if(NOT DIR STREQUAL "/usr/include")
+      set(${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS} -isystem${DIR}")
+    endif()
+  endforeach()
+  foreach(LIB ${TARGET_LINK_LIBRARIES})
+    if(TARGET ${LIB}) # Recure into target dependencies
+      extract_flags(${NAME} ${LIB})
+    else()
+      set(${NAME}_LD_FLAGS "${${NAME}_LD_FLAGS} ${LIB}")
+    endif()
+  endforeach()
+
+  # We have replace generator expressions explicitly
+  string(REGEX REPLACE " [^ ]*\\$<BUILD_INTERFACE:.*>" "" ${NAME}_LD_FLAGS "${${NAME}_LD_FLAGS}")
+  string(REGEX REPLACE " [^ ]*\\$<BUILD_INTERFACE:.*>" "" ${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS}")
+  string(REGEX REPLACE "\\$<INSTALL_INTERFACE:(.*)>" "\\1" ${NAME}_LD_FLAGS "${${NAME}_LD_FLAGS}")
+  string(REGEX REPLACE "\\$<INSTALL_INTERFACE:(.*)>" "\\1" ${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS}")
+endmacro()
+
+# Get the compiler and linktime flags of triqs and python_and_numpy
+extract_flags(TRIQS triqs)
+extract_flags(PYTHON python_and_numpy)
+
+# Generate compiler wrapper
+configure_file(triqs++.in triqs++ @ONLY)
+
 # ---------------------------------
 # Install 
 # ---------------------------------
 
 # Install the library in lib and prepare an exported cmake file to reimport it
 install(TARGETS triqs DESTINATION lib EXPORT triqs-targets)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/triqs++ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE DESTINATION bin)
 install(EXPORT triqs-dependencies NAMESPACE triqs:: DESTINATION lib/cmake/triqs)
 install(EXPORT triqs-targets DESTINATION lib/cmake/triqs)
 
