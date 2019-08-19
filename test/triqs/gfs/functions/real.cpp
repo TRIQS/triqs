@@ -8,11 +8,11 @@ TEST(Functions, RealGf) {
   double beta  = 1;
   int n_iw     = 100;
   auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, n_iw};
-  auto shape   = make_shape(1, 1, 1);
+  auto shape   = make_shape(1, 1);
 
   // -- Build Green functions
 
-  auto g_iw    = gf<imfreq, tensor_valued<3>>{iw_mesh, shape};
+  auto g_iw    = gf<imfreq, matrix_valued>{iw_mesh, shape};
   auto giw_vec = std::vector{g_iw, g_iw};
 
   placeholder<0> iw_;
@@ -26,7 +26,7 @@ TEST(Functions, RealGf) {
 
   // -- Build the real Block Green function
 
-  std::vector<gf<imfreq, tensor_real_valued<3>>> giw_real_vec;
+  std::vector<gf<imfreq, matrix_real_valued>> giw_real_vec;
   for (auto const &bl : block_giw) giw_real_vec.emplace_back(real(bl));
 
   auto block_giw_real = make_block_gf({"one", "two"}, giw_real_vec);
