@@ -69,7 +69,7 @@ namespace triqs::mesh {
     static constexpr int n_pts_in_linear_interpolation = (1 << 3);
 
     // FIXME : INCORRECT
-    interpol_data_lin_t<index_t, n_pts_in_linear_interpolation> get_interpolation_data(std::array<double, 3> const &x) const {
+    std::array<std::pair<index_t, double>, n_pts_in_linear_interpolation> get_interpolation_data(std::array<double, 3> const &x) const {
 
       // FIXME pass in the units of the reciprocal lattice
       // ONLY VALID for SQUARE LATTICE
@@ -90,13 +90,12 @@ namespace triqs::mesh {
         wa[0][u] = 1 - w;
         wa[1][u] = w;
       }
-      interpol_data_lin_t<index_t, n_pts_in_linear_interpolation> result;
+      std::array<std::pair<index_t, double>, n_pts_in_linear_interpolation> result;
       int c = 0;
       for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 2; ++j)
           for (int k = 0; k < 2; ++k) {
-            result.idx[c] = index_modulo(index_t{ia[i][0], ia[j][1], ia[k][2]});
-            result.w[c]   = wa[i][0] * wa[j][1] * wa[k][2];
+	    result[c] = std::make_pair(index_modulo(index_t{ia[i][0], ia[j][1], ia[k][2]}), wa[i][0] * wa[j][1] * wa[k][2]);
             c++;
           }
       return result;
@@ -107,7 +106,9 @@ namespace triqs::mesh {
     /// Reduce index modulo to the lattice.
     index_t index_modulo(index_t const &r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
 
-    interpol_data_0d_t<index_t> get_interpolation_data(index_t const &x) const { return {index_modulo(x)}; }
+    std::array<std::pair<index_t, one_t>, 1> get_interpolation_data(index_t const &x) const {
+      return {std::pair<index_t, one_t>{index_modulo(x), {}}};
+    }
 
     // ------------------- Comparison -------------------
 

@@ -202,10 +202,9 @@ namespace triqs::mesh {
 
     // -------------- Evaluation of a function on the grid --------------------------
 
-    // For multivar evaluation
-    interpol_data_all_t get_interpolation_data(all_t) const { return {}; }
-    interpol_data_0d_t<index_t> get_interpolation_data(long n) const { return {n}; }
-    interpol_data_0d_t<index_t> get_interpolation_data(matsubara_freq n) const { return {n.n}; }
+    std::array<std::pair<all_t, one_t>, 1> get_interpolation_data(all_t) const { return {std::make_pair(all_t{}, one_t{})}; }
+    std::array<std::pair<index_t, one_t>, 1> get_interpolation_data(long n) const { return {std::make_pair(index_t(n), one_t{})}; }
+    std::array<std::pair<index_t, one_t>, 1> get_interpolation_data(matsubara_freq n) const { return get_interpolation_data(n.n);}
 
     friend std::ostream &operator<<(std::ostream &sout, imfreq const &m) {
       return sout << "Matsubara Freq Mesh of size " << m.size() << ", Domain: " << m.domain() << ", positive_only : " << m.positive_only();

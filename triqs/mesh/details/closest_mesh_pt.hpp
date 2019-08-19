@@ -58,14 +58,15 @@ namespace triqs::mesh {
 
     template <typename T> static b_zone::index_t invoke(b_zone const &m, closest_pt_wrap<T> const &p) {
 
-      b_zone::index_t result; // array<Int, 3>
-      // FIXME : works only on square lattice
-      auto id = m.get_interpolation_data(p.value);
-      for (int u = 0; u < 3; ++u) {
-        int i     = (id.wa[0][u] > id.wa[1][u] ? 0 : 1);
-        result[u] = id.ia[i][u];
-      }
-      return result;
+      //// WRONG To be reimplemented
+      //b_zone::index_t result; // array<Int, 3>
+      //// FIXME : works only on square lattice
+      //auto id = m.get_interpolation_data(p.value);
+      //for (int u = 0; u < 3; ++u) {
+        //int i     = (id[0].second[u] > id[1].second[u] ? 0 : 1);
+        //result[u] = id.ia[i][u];
+      //}
+      //return result;
     }
   };
   //-------------------------------------------------------

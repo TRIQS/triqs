@@ -21,7 +21,7 @@
 #pragma once
 #include "../details/mesh_tools.hpp"
 namespace triqs::mesh {
- 
+
   /**
    * Fit the two closest points for x on [x_min, x_max], with a linear weight w
    * @param x : the point
@@ -31,7 +31,7 @@ namespace triqs::mesh {
    *
    * Throws if x is not in the window
    * */
-  inline interpol_data_lin_t<long, 2> interpolate_on_segment(double x, double x_min, double delta_x, long imax) {
+  inline std::array<std::pair<long, double>, 2> interpolate_on_segment(double x, double x_min, double delta_x, long imax) {
     double a = (x - x_min) / delta_x;
     long i   = std::floor(a);
     bool in  = (i >= 0) && (i < imax);
@@ -49,7 +49,7 @@ namespace triqs::mesh {
       w  = 0.0;
     }
     if (!in) TRIQS_RUNTIME_ERROR << "out of window x= " << x << " xmin = " << x_min << " xmax = " << x_min + imax * delta_x;
-    return {{i, i + 1}, {1 - w, w}};
+    return {std::pair<long, double>{i, 1 - w}, std::pair<long, double>{i + 1, w}};
   }
   //-----------------------------------------------------------------------
 
@@ -127,7 +127,9 @@ namespace triqs::mesh {
 
     // -------------- Evaluation of a function on the grid --------------------------
 
-    interpol_data_lin_t<index_t, 2> get_interpolation_data(double x) const { return interpolate_on_segment(x, x_min(), delta(), long(size()) - 1); }
+    std::array<std::pair<long, double>, 2> get_interpolation_data(double x) const {
+      return interpolate_on_segment(x, x_min(), delta(), long(size()) - 1);
+    }
 
     // -------------- HDF5  --------------------------
     /// Write into HDF5

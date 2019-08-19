@@ -42,8 +42,8 @@ namespace triqs::mesh {
 
   namespace details {
     template <int I0, typename G, typename A0> FORCEINLINE auto __add(G const &g, A0 const &a0) {
-#define TRIQS_TERM_EVAL a0.w[I0] * g[a0.idx[I0]]
-      if constexpr (I0 < A0::n_pts - 1) {
+#define TRIQS_TERM_EVAL a0[I0].second *g[a0[I0].first]
+      if constexpr (I0 < std::tuple_size<A0>::value - 1) {
         return TRIQS_TERM_EVAL + __add<I0 + 1>(g, a0);
       } else
         return TRIQS_TERM_EVAL;
@@ -51,11 +51,11 @@ namespace triqs::mesh {
     }
 
     template <int I0, int I1, typename G, typename A0, typename A1> FORCEINLINE auto __add(G const &g, A0 const &a0, A1 const &a1) {
-#define TRIQS_TERM_EVAL a0.w[I0] * a1.w[I1] * g[make_tuple_com(a0.idx[I0], a1.idx[I1])]
-      if constexpr (I0 < A0::n_pts - 1) {
+#define TRIQS_TERM_EVAL a0[I0].second *a1[I1].second *g[make_tuple_com(a0[I0].first, a1[I1].first)]
+      if constexpr (I0 < std::tuple_size<A0>::value - 1) {
         return TRIQS_TERM_EVAL + __add<I0 + 1, I1>(g, a0, a1);
       } else { // I0==0
-        if constexpr (I1 < A1::n_pts - 1)
+        if constexpr (I1 < std::tuple_size<A1>::value - 1)
           return TRIQS_TERM_EVAL + __add<0, I1 + 1>(g, a0, a1);
         else
           return TRIQS_TERM_EVAL;
@@ -65,14 +65,14 @@ namespace triqs::mesh {
 
     template <int I0, int I1, int I2, typename G, typename A0, typename A1, typename A2>
     FORCEINLINE auto __add(G const &g, A0 const &a0, A1 const &a1, A2 const &a2) {
-#define TRIQS_TERM_EVAL a0.w[I0] * a1.w[I1] * a1.w[I2] * g[make_tuple_com(a0.idx[I0], a1.idx[I1], a2.idx[I2])]
-      if constexpr (I0 < A0::n_pts - 1) {
+#define TRIQS_TERM_EVAL a0[I0].second *a1[I1].second *a1[I2].second *g[make_tuple_com(a0[I0].first, a1[I1].first, a2[I2].first)]
+      if constexpr (I0 < std::tuple_size<A0>::value - 1) {
         return TRIQS_TERM_EVAL + __add<I0 + 1, I1, I2>(g, a0, a1, a2);
       } else {
-        if constexpr (I1 < A1::n_pts - 1) {
+        if constexpr (I1 < std::tuple_size<A1>::value - 1) {
           return TRIQS_TERM_EVAL + __add<0, I1 + 1, I2>(g, a0, a1, a2);
         } else {
-          if constexpr (I2 < A2::n_pts - 1)
+          if constexpr (I2 < std::tuple_size<A2>::value - 1)
             return TRIQS_TERM_EVAL + __add<0, 0, I2 + 1>(g, a0, a1, a2);
           else
             return TRIQS_TERM_EVAL;
@@ -83,17 +83,18 @@ namespace triqs::mesh {
 
     template <int I0, int I1, int I2, int I3, typename G, typename A0, typename A1, typename A2, typename A3>
     FORCEINLINE auto __add(G const &g, A0 const &a0, A1 const &a1, A2 const &a2, A3 const &a3) {
-#define TRIQS_TERM_EVAL a0.w[I0] * a1.w[I1] * a2.w[I2] * a3.w[I3] * g[make_tuple_com(a0.idx[I0], a1.idx[I1], a2.idx[I2], a3.idx[I3])]
-      if constexpr (I0 < A0::n_pts - 1) {
+#define TRIQS_TERM_EVAL                                                                                                                              \
+  a0[I0].second *a1[I1].second *a2[I2].second *a3[I3].second *g[make_tuple_com(a0[I0].first, a1[I1].first, a2[I2].first, a3[I3].first)]
+      if constexpr (I0 < std::tuple_size<A0>::value - 1) {
         return TRIQS_TERM_EVAL + __add<I0 + 1, I1, I2, I3>(g, a0, a1, a2, a3);
       } else {
-        if constexpr (I1 < A1::n_pts - 1) {
+        if constexpr (I1 < std::tuple_size<A1>::value - 1) {
           return TRIQS_TERM_EVAL + __add<0, I1 + 1, I2, I3>(g, a0, a1, a2, a3);
         } else {
-          if constexpr (I2 < A2::n_pts - 1) {
+          if constexpr (I2 < std::tuple_size<A2>::value - 1) {
             return TRIQS_TERM_EVAL + __add<0, 0, I2 + 1, I3>(g, a0, a1, a2, a3);
           } else {
-            if constexpr (I3 < A3::n_pts - 1)
+            if constexpr (I3 < std::tuple_size<A3>::value - 1)
               return TRIQS_TERM_EVAL + __add<0, 0, 0, I3 + 1>(g, a0, a1, a2, a3);
             else
               return TRIQS_TERM_EVAL;
@@ -127,10 +128,10 @@ namespace triqs::mesh {
     if constexpr (not is_product_v<Mesh>) {
 
       auto id = m.get_interpolation_data(std::forward<Args...>(args...));
-      if constexpr (id.n_pts == 1) {
-        return id.w[0] * f[id.idx[0]];
-      } else if constexpr (id.n_pts == 2) {
-        return id.w[0] * f[id.idx[0]] + id.w[1] * f[id.idx[1]];
+      if constexpr (id.size() == 1) {
+        return id[0].second * f[id[0].first];
+      } else if constexpr (id.size() == 2) {
+        return id[0].second * f[id[0].first] + id[1].second * f[id[1].first];
       } else {
         return details::multivar_eval(f, id); // FIXME : should be the only case ...
       }
