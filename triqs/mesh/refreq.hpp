@@ -25,7 +25,7 @@
 namespace triqs::mesh {
 
   struct refreq : segment_mesh, tail_fitter_handle {
-    
+
     template <typename... T> refreq(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
     // using segment_mesh::segment_mesh;
 

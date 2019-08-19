@@ -116,4 +116,4 @@ namespace triqs::mesh {
     friend mesh_pt_generator operator+(mesh_pt_generator lhs, int n) { return lhs += n; }
   };
 
- } // namespace triqs::mesh
+} // namespace triqs::mesh

@@ -83,7 +83,8 @@ namespace triqs::gfs {
    */
   template <typename Mesh, typename Target> class gf : TRIQS_CONCEPT_TAG_NAME(GreenFunction) {
 
-    static_assert(not std::is_same_v<Mesh, triqs::lattice::brillouin_zone>, "Since TRIQS 2.3, brillouin_zone is replaced by mesh::b_zone as a mesh name. Cf Doc, changelog");
+    static_assert(not std::is_same_v<Mesh, triqs::lattice::brillouin_zone>,
+                  "Since TRIQS 2.3, brillouin_zone is replaced by mesh::b_zone as a mesh name. Cf Doc, changelog");
 
     using this_t = gf<Mesh, Target>; // used in common code
 

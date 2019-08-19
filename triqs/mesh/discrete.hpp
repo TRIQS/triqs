@@ -34,7 +34,10 @@ namespace triqs::mesh {
 
     // -------------------- Constructors -------------------
 
+    ///
     discrete(domain_t dom) : _dom(std::move(dom)) {}
+
+    ///
     discrete() = default;
 
     bool operator==(discrete const &M) const { return (_dom == M._dom); }

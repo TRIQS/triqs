@@ -198,8 +198,7 @@ namespace triqs::mesh {
 
       if (enforce_hermiticity and not inner_matrix_dim.has_value())
         TRIQS_RUNTIME_ERROR << "Enforcing the hermiticity in tail_fit requires inner matrix dimension";
-      if constexpr (enforce_hermiticity)
-        static_assert(std::is_same_v<M, imfreq>, "Enforcing the hermiticity in tail_fit requires Matsubara mesh");
+      if constexpr (enforce_hermiticity) static_assert(std::is_same_v<M, imfreq>, "Enforcing the hermiticity in tail_fit requires Matsubara mesh");
       static_assert((R == R2), "The rank of the moment array is not equal to the data to fit !!!");
       if (m.positive_only()) TRIQS_RUNTIME_ERROR << "Can not fit on a positive_only mesh";
 

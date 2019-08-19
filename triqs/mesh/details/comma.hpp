@@ -42,7 +42,7 @@ namespace triqs::mesh {
 
   // FIXME USE a function  + enable if
 
-   // all_t
+  // all_t
   template <typename X> tuple_com<all_t, std::decay_t<X>> operator,(all_t, X &&x) { return {std::make_tuple(all_t{}, std::forward<X>(x))}; }
   inline tuple_com<long, all_t> operator,(long i, all_t p) { return {std::make_tuple(i, p)}; }
   //template <typename X> tuple_com<std::decay_t<X>, all_t> operator,(X &&x, all_t) { return {std::make_tuple(std::forward<X>(x), all_t{})}; }
@@ -73,11 +73,12 @@ namespace triqs::mesh {
 
 namespace triqs::clef {
 
-   template <int N, typename X> mesh::tuple_com<long, _ph<N>> operator,(long i, _ph<N> p) { return {std::make_tuple(i, p)}; }
-  
-   // placeholder, mesh_point a:sorbs argument in a tuple_com
-  template <int N, typename X> mesh::tuple_com<_ph<N>, std::decay_t<X>> operator,(_ph<N> p, X &&x) { return {std::make_tuple(p, std::forward<X>(x))}; }
+  template <int N, typename X> mesh::tuple_com<long, _ph<N>> operator,(long i, _ph<N> p) { return {std::make_tuple(i, p)}; }
 
+  // placeholder, mesh_point a:sorbs argument in a tuple_com
+  template <int N, typename X> mesh::tuple_com<_ph<N>, std::decay_t<X>> operator,(_ph<N> p, X &&x) {
+    return {std::make_tuple(p, std::forward<X>(x))};
+  }
 
   // tuple_com is lazy if any of T is.
   template <typename... T> struct is_any_lazy<mesh::tuple_com<T...>> : is_any_lazy<T...> {};

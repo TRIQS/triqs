@@ -27,13 +27,13 @@ namespace triqs::mesh {
 
   enum class matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
 
+  // FIXME ?
   struct energy_t {
     double value = 0;
     explicit operator double() const { return value; }
   };
 
   class imfreq;
-
   template <> struct mesh_point<imfreq>; //forward
 
   /**

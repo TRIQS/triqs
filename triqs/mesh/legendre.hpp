@@ -26,7 +26,7 @@ namespace triqs::mesh {
 
   ///
   struct legendre : discrete<legendre_domain> {
-    using B     = discrete<legendre_domain>;
+    using B = discrete<legendre_domain>;
 
     legendre() = default;
     legendre(double beta, statistic_enum S, size_t n_leg) : B(typename B::domain_t(beta, S, n_leg)) {}
