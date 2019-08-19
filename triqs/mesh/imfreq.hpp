@@ -25,7 +25,7 @@
 
 namespace triqs::mesh {
 
-  // FIXME ?
+  /// A double with no implicit conversion.
   struct energy_t {
     double value = 0;
     explicit operator double() const { return value; }
@@ -206,10 +206,6 @@ namespace triqs::mesh {
     interpol_data_all_t get_interpolation_data(all_t) const { return {}; }
     interpol_data_0d_t<index_t> get_interpolation_data(long n) const { return {n}; }
     interpol_data_0d_t<index_t> get_interpolation_data(matsubara_freq n) const { return {n.n}; }
-
-    // For one var evaluation
-    template <typename F> auto evaluate(F const &f, long n) const { return f[n]; }
-    template <typename F> auto evaluate(F const &f, matsubara_freq n) const { return f[n.n]; }
 
     friend std::ostream &operator<<(std::ostream &sout, imfreq const &m) {
       return sout << "Matsubara Freq Mesh of size " << m.size() << ", Domain: " << m.domain() << ", positive_only : " << m.positive_only();

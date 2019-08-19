@@ -20,8 +20,38 @@
  ******************************************************************************/
 #pragma once
 #include "../details/mesh_tools.hpp"
-#include "../details/linear_interpolation.hpp"
 namespace triqs::mesh {
+ 
+  /**
+   * Fit the two closest points for x on [x_min, x_max], with a linear weight w
+   * @param x : the point
+   * @param i_max : maximum index
+   * @param x_min : the window starts. It ends at x_min + i_max* delta_x
+   * @param delta_x
+   *
+   * Throws if x is not in the window
+   * */
+  inline interpol_data_lin_t<long, 2> interpolate_on_segment(double x, double x_min, double delta_x, long imax) {
+    double a = (x - x_min) / delta_x;
+    long i   = std::floor(a);
+    bool in  = (i >= 0) && (i < imax);
+    double w = a - i;
+    // We include both x_min and x_max and account
+    // for a small rounding error margin of 1e-8 for w
+    if (i == imax) {
+      --i;
+      in = (std::abs(w) < 1.e-8);
+      w  = 1.0;
+    }
+    if (i == -1) {
+      i  = 0;
+      in = (std::abs(1 - w) < 1.e-8);
+      w  = 0.0;
+    }
+    if (!in) TRIQS_RUNTIME_ERROR << "out of window x= " << x << " xmin = " << x_min << " xmax = " << x_min + imax * delta_x;
+    return {{i, i + 1}, {1 - w, w}};
+  }
+  //-----------------------------------------------------------------------
 
   template <typename Domain> struct linear_mesh : triqs::mesh::tag::mesh {
 
@@ -98,11 +128,6 @@ namespace triqs::mesh {
     // -------------- Evaluation of a function on the grid --------------------------
 
     interpol_data_lin_t<index_t, 2> get_interpolation_data(double x) const { return interpolate_on_segment(x, x_min(), delta(), long(size()) - 1); }
-
-    template <typename F> auto evaluate(F const &f, double x) const {
-      auto id = get_interpolation_data(x);
-      return id.w[0] * f[id.idx[0]] + id.w[1] * f[id.idx[1]];
-    }
 
     // -------------- HDF5  --------------------------
     /// Write into HDF5

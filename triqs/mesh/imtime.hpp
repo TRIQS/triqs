@@ -57,12 +57,6 @@ namespace triqs::mesh {
     */
     imtime(double beta, statistic_enum S, long n_time_slices) : imtime({beta, S}, n_time_slices) {}
 
-    /// Evaluation
-    template <typename F> auto evaluate(F const &f, double x) const {
-      auto id = this->get_interpolation_data(x);
-      return id.w[0] * f[id.idx[0]] + id.w[1] * f[id.idx[1]];
-    }
-
     // -------------------- print -------------------
 
     friend std::ostream &operator<<(std::ostream &sout, imtime const &m) {

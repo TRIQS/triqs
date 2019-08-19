@@ -23,6 +23,7 @@
 #pragma once
 #include <array>
 #include "./mesh_tools.hpp"
+#include "./multivar_eval.hpp"
 
 // FIXME : MOVE THIS IN std::array util
 namespace std {
@@ -38,62 +39,30 @@ namespace std {
 
 namespace triqs::mesh {
 
-  // 1 in a completely neutral type for the compiler, which can not optimize 1.0 * x a priori.
-  struct _universal_unit_t {};
-  template <typename T> auto operator*(_universal_unit_t, T &&x) { return std::forward<T>(x); }
-  template <typename T> auto operator*(T &&x, _universal_unit_t) { return std::forward<T>(x); }
-  inline _universal_unit_t operator*(_universal_unit_t, _universal_unit_t) { return {}; } // avoid ambiguity
+   // ------------------- evaluate --------------------------------
 
-  // FIXME : DOC
-  template <typename IndexType> struct interpol_data_0d_t {
-    static constexpr int n_pts = 1;
-    std::array<IndexType, n_pts> idx;
-    std::array<_universal_unit_t, n_pts> w;
-    interpol_data_0d_t(IndexType n) : idx{std::move(n)}, w{} {}
-  };
-
-  // FIXME CHANGE the order fo the template, it looks strange to accesss W
-  template <typename IndexType, int Npts> struct interpol_data_lin_t { // dim R = 1-> 2, R = 2 -> 4, R = 3 -> 8
-    static constexpr int n_pts = Npts;
-    std::array<IndexType, n_pts> idx;
-    std::array<double, n_pts> w;
-  };
-
-  // FIXME : DOC
-  struct interpol_data_all_t {
-    static constexpr int n_pts = 1;
-    std::array<all_t, n_pts> idx;
-    std::array<_universal_unit_t, n_pts> w;
-  };
-
-  /**
-   * Fit the two closest points for x on [x_min, x_max], with a linear weight w
-   * @param x : the point
-   * @param i_max : maximum index
-   * @param x_min : the window starts. It ends at x_min + i_max* delta_x
-   * @param delta_x
-   *
-   * Throws if x is not in the window
-   * */
-  inline interpol_data_lin_t<long, 2> interpolate_on_segment(double x, double x_min, double delta_x, long imax) {
-    double a = (x - x_min) / delta_x;
-    long i   = std::floor(a);
-    bool in  = (i >= 0) && (i < imax);
-    double w = a - i;
-    // We include both x_min and x_max and account
-    // for a small rounding error margin of 1e-8 for w
-    if (i == imax) {
-      --i;
-      in = (std::abs(w) < 1.e-8);
-      w  = 1.0;
+  namespace details {
+    // FIXME20 : use a lambda
+    template <typename F, size_t... Is, typename... Args> auto evaluate_impl(std::index_sequence<Is...>, F const &f, Args &&... args) {
+      return multivar_eval(f, std::get<Is>(f.mesh().components()).get_interpolation_data(std::forward<Args>(args))...);
     }
-    if (i == -1) {
-      i  = 0;
-      in = (std::abs(1 - w) < 1.e-8);
-      w  = 0.0;
+  } // namespace details
+
+  // DOC ? Internal only ?
+  template <typename Mesh, typename F, typename... Args> auto evaluate(Mesh const &m, F const &f, Args &&... args) {
+    if constexpr (not is_product_v<Mesh>) {
+      auto id = m.get_interpolation_data(std::forward<Args...>(args...));
+      if constexpr (id.n_pts == 1) {
+        return id.w[0] * f[id.idx[0]];
+      } else if constexpr (id.n_pts == 2) {
+        return id.w[0] * f[id.idx[0]] + id.w[1] * f[id.idx[1]];
+      } else {
+        return multivar_eval(f, id); // FIXME : should be the only case ...
+      }
+
+    } else { // special case for the product mesh
+      return details::evaluate_impl(std::index_sequence_for<Args...>{}, f, std::forward<Args>(args)...);
     }
-    if (!in) TRIQS_RUNTIME_ERROR << "out of window x= " << x << " xmin = " << x_min << " xmax = " << x_min + imax * delta_x;
-    return {{i, i + 1}, {1 - w, w}};
   }
 
 } // namespace triqs::mesh

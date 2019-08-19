@@ -32,7 +32,7 @@ namespace triqs {
     template <typename Var, typename Target> struct gf_evaluator {
       static constexpr int arity = 1;
 
-      template <typename G, typename X> auto operator()(G const &g, X x) const { return (g.mesh().evaluate(g, x)); }
+      template <typename G, typename X> auto operator()(G const &g, X x) const { return mesh::evaluate(g.mesh(), g, x); }
     };
 
     /*----------------------------------------------------------
@@ -94,13 +94,13 @@ namespace triqs {
       template <typename G, typename... Args> auto operator()(G const &g, Args &&... args) const {
         static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
 
-        using r1_t = decltype(g.mesh().evaluate(g, std::forward<Args>(args)...));
+        using r1_t = decltype(mesh::evaluate(g.mesh(), g, std::forward<Args>(args)...));
 
         if constexpr (is_gf_expr<r1_t>::value or is_gf_v<r1_t>) {
-          return g.mesh().evaluate(g, std::forward<Args>(args)...);
+          return mesh::evaluate(g.mesh(), g, std::forward<Args>(args)...);
         } else {
-          if (g.mesh().is_within_boundary(args...)) return make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...));
-          using rt = std::decay_t<decltype(make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...)))>;
+          if (g.mesh().is_within_boundary(args...)) return make_regular(mesh::evaluate(g.mesh(), g, std::forward<Args>(args)...));
+          using rt = std::decay_t<decltype(make_regular(mesh::evaluate(g.mesh(), g, std::forward<Args>(args)...)))>;
           return rt{arrays::zeros<dcomplex>(g.target_shape())};
         }
       }

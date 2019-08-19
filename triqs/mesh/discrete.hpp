@@ -81,7 +81,6 @@ namespace triqs::mesh {
     // -------------- Evaluation of a function on the grid --------------------------
 
     long get_interpolation_data(long n) const { return n; }
-    template <typename F> auto evaluate(F const &f, long n) const { return f[n]; }
 
     // -------------------- MPI -------------------
 

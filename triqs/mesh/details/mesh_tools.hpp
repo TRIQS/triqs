@@ -49,6 +49,12 @@ namespace triqs::mesh {
     struct mesh_point {};
   } // namespace tag
 
+  /// Checks if the mesh M is a product
+  template <typename M> struct is_product : std::is_base_of<tag::product, M> {};
+
+  ///
+  template <typename M> constexpr bool is_product_v = is_product<M>::value;
+
   // A default implementation. Specialize for non-intrusive usage.
   template <typename M> struct models_mesh_concept : std::is_base_of<tag::mesh, M> {};
 
@@ -69,6 +75,34 @@ namespace triqs::mesh {
 
   /// Boson*Fermion -> Fermion, others -> Boson
   inline statistic_enum operator*(statistic_enum i, statistic_enum j) { return (i == j ? Boson : Fermion); }
+
+  // 1 in a completely neutral type for the compiler, which can not optimize 1.0 * x a priori.
+  struct _universal_unit_t {};
+  template <typename T> auto operator*(_universal_unit_t, T &&x) { return std::forward<T>(x); }
+  template <typename T> auto operator*(T &&x, _universal_unit_t) { return std::forward<T>(x); }
+  inline _universal_unit_t operator*(_universal_unit_t, _universal_unit_t) { return {}; } // avoid ambiguity
+
+  // FIXME : DOC
+  template <typename IndexType> struct interpol_data_0d_t {
+    static constexpr int n_pts = 1;
+    std::array<IndexType, n_pts> idx;
+    std::array<_universal_unit_t, n_pts> w;
+    interpol_data_0d_t(IndexType n) : idx{std::move(n)}, w{} {}
+  };
+
+  // FIXME CHANGE the order fo the template, it looks strange to accesss W
+  template <typename IndexType, int Npts> struct interpol_data_lin_t { // dim R = 1-> 2, R = 2 -> 4, R = 3 -> 8
+    static constexpr int n_pts = Npts;
+    std::array<IndexType, n_pts> idx;
+    std::array<double, n_pts> w;
+  };
+
+  // FIXME : DOC
+  struct interpol_data_all_t {
+    static constexpr int n_pts = 1;
+    std::array<all_t, n_pts> idx;
+    std::array<_universal_unit_t, n_pts> w;
+  };
 
   // forward : The mesh point for each mesh. To be specialize by each mesh.
   template <typename Mesh> struct mesh_point;

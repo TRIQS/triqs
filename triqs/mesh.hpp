@@ -45,6 +45,7 @@
 #include "./mesh/details/debug.hpp"
 #include "./mesh/details/closest_mesh_pt.hpp"
 #include "./mesh/details/comma.hpp"
+#include "./mesh/details/linear_interpolation.hpp"
 
 // Backward compat alias
 

@@ -38,12 +38,6 @@ namespace triqs::mesh {
   // template <typename... Vs>  constexpr int get_n_variables(cartesian_product<Ms...>) { return sizeof...(Ms);}
   template <typename... Ms> struct get_n_variables<cartesian_product<Ms...>> { static const int value = sizeof...(Ms); };
 
-  /// Checks if the mesh M is a product
-  template <typename M> struct is_product : std::is_base_of<tag::product, M> {};
-
-  ///
-  template <typename M> constexpr bool is_product_v = is_product<M>::value;
-
   /** Cartesian product of mesh */
   // the mesh is simply a cartesian product
   template <typename... Ms> class cartesian_product : tag::product {
@@ -172,16 +166,6 @@ namespace triqs::mesh {
 
     // not implemented, makes no sense
     long get_interpolation_data(long n) = delete;
-
-    private:
-    template <typename F, size_t... Is, typename... Args> auto _impl_evaluate(std::index_sequence<Is...>, F const &f, Args &&... args) const {
-      return multivar_eval(f, std::get<Is>(f.mesh().components()).get_interpolation_data(std::forward<Args>(args))...);
-    }
-
-    public:
-    template <typename F, typename... Args> auto evaluate(F const &f, Args &&... args) const {
-      return _impl_evaluate(std::index_sequence_for<Args...>{}, f, std::forward<Args>(args)...);
-    }
 
     // -------------------- HDF5 -------------------
 

@@ -25,7 +25,6 @@
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 
 #include "../details/mesh_tools.hpp"
-#include "../details/linear_interpolation.hpp"
 
 namespace triqs::mesh {
 

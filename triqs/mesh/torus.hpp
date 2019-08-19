@@ -54,11 +54,6 @@ namespace triqs::mesh {
 
     interpol_data_0d_t<index_t> get_interpolation_data(index_t const &x) const { return {index_modulo(x)}; }
 
-    template <typename F> auto evaluate(F const &f, index_t const &x) const {
-      auto id = get_interpolation_data(x);
-      return f[id.idx[0]];
-    }
-
     // ------------------- Comparison -------------------
 
     bool operator==(torus const &M) const { return bl == M.domain() && cluster_mesh::operator==(M); }
