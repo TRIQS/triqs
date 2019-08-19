@@ -132,9 +132,6 @@ namespace triqs::mesh {
     /// Size (linear) of the mesh
     long size() const { return _last_index - _first_index + 1; }
 
-    // FIXME ELIMINATE THIS !!!!
-    utility::mini_vector<size_t, 1> size_of_components() const { return {size_t(size())}; }
-
     /// Is the point in mesh ?
     static constexpr bool is_within_boundary(all_t) { return true; }
     bool is_within_boundary(long n) const { return ((n >= first_index()) && (n <= last_index())); }

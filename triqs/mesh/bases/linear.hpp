@@ -63,8 +63,6 @@ namespace triqs::mesh {
     /// Size (linear) of the mesh of the window
     long size() const { return L; }
 
-    utility::mini_vector<size_t, 1> size_of_components() const { return {size_t(size())}; }
-
     /// Is the point in mesh ?
     static constexpr bool is_within_boundary(all_t) { return true; }
     bool is_within_boundary(double x) const { return ((x >= x_min()) && (x <= x_max())); }

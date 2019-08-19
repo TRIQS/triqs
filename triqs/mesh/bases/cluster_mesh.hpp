@@ -122,8 +122,6 @@ namespace triqs::mesh {
 
     size_t size() const { return _size; }
 
-    utility::mini_vector<size_t, 1> size_of_components() const { return {size()}; }
-
     /// from the index (n_i) to the cartesian coordinates
     /** for a point M of coordinates n_i in the {a_i} basis, the cartesian coordinates are
     *     $$ OM_i = \sum_j n_j X_{ji} $$

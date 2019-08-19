@@ -45,7 +45,7 @@ namespace triqs::mesh {
 
   namespace tag {
     struct mesh {};
-    struct composite : mesh {};
+    struct product : mesh {};
     struct mesh_point {};
   } // namespace tag
 

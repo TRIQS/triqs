@@ -253,7 +253,12 @@ namespace triqs::gfs {
 
     private:
     // FIXME : simplify
-    template <typename U> static auto make_data_shape(U, mesh_t const &m, target_shape_t const &shap) { return join(m.size_of_components(), shap); }
+    template <typename U> static auto make_data_shape(U, mesh_t const &m, target_shape_t const &shap) {
+      if constexpr (mesh::is_product_v<mesh_t>)
+        return join(m.size_of_components(), shap);
+      else
+        return join(utility::mini_vector<size_t, 1>{size_t(m.size())}, shap);
+    }
 
     public:
     /**

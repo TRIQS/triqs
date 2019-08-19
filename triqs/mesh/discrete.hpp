@@ -40,45 +40,45 @@ namespace triqs::mesh {
     bool operator==(discrete const &M) const { return (_dom == M._dom); }
     bool operator!=(discrete const &M) const { return !(operator==(M)); }
 
-      // -------------------- Accessors (from concept) -------------------
+    // -------------------- Accessors (from concept) -------------------
 
-      domain_t const &domain() const { return _dom; }
-      size_t size() const { return _dom.size(); }
+    ///
+    domain_t const &domain() const { return _dom; }
 
-      ///
-      utility::mini_vector<size_t, 1> size_of_components() const { return {size()}; }
+    ///
+    size_t size() const { return _dom.size(); }
 
-      /// Is the point in the mesh ?
-      static constexpr bool is_within_boundary(all_t) { return true; }
-      bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < size())); }
+    /// Is the point in the mesh ?
+    static constexpr bool is_within_boundary(all_t) { return true; }
+    bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < size())); }
 
-      /// Conversions point <-> index <-> discrete_index
-      long index_to_point(index_t idx) const {
-        EXPECTS(is_within_boundary(idx));
-        return idx;
-      }
-      long index_to_linear(index_t idx) const {
-        EXPECTS(is_within_boundary(idx));
-        return idx;
-      }
+    /// Conversions point <-> index <-> discrete_index
+    long index_to_point(index_t idx) const {
+      EXPECTS(is_within_boundary(idx));
+      return idx;
+    }
+    long index_to_linear(index_t idx) const {
+      EXPECTS(is_within_boundary(idx));
+      return idx;
+    }
 
-      // -------------------- mesh_point -------------------
+    // -------------------- mesh_point -------------------
 
-      /// Accessing a point of the mesh
-      mesh_point_t operator[](index_t i) const { return mesh_point_t(*this, i); }
-      mesh_point_t operator[](std::string const &s) const { return mesh_point_t(*this, _dom.index_from_name(s)); }
+    /// Accessing a point of the mesh
+    mesh_point_t operator[](index_t i) const { return mesh_point_t(*this, i); }
+    mesh_point_t operator[](std::string const &s) const { return mesh_point_t(*this, _dom.index_from_name(s)); }
 
-      /// Iterating on all the points...
-      using const_iterator = mesh_pt_generator<discrete>;
-      const_iterator begin() const { return const_iterator(this); }
-      const_iterator end() const { return const_iterator(this, true); }
-      const_iterator cbegin() const { return const_iterator(this); }
-      const_iterator cend() const { return const_iterator(this, true); }
+    /// Iterating on all the points...
+    using const_iterator = mesh_pt_generator<discrete>;
+    const_iterator begin() const { return const_iterator(this); }
+    const_iterator end() const { return const_iterator(this, true); }
+    const_iterator cbegin() const { return const_iterator(this); }
+    const_iterator cend() const { return const_iterator(this, true); }
 
-      // -------------- Evaluation of a function on the grid --------------------------
+    // -------------- Evaluation of a function on the grid --------------------------
 
-      long get_interpolation_data(long n) const { return n; }
-      template <typename F> auto evaluate(F const &f, long n) const { return f[n]; }
+    long get_interpolation_data(long n) const { return n; }
+    template <typename F> auto evaluate(F const &f, long n) const { return f[n]; }
 
     // -------------------- MPI -------------------
 

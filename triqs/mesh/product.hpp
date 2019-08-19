@@ -39,14 +39,14 @@ namespace triqs::mesh {
   template <typename... Ms> struct get_n_variables<cartesian_product<Ms...>> { static const int value = sizeof...(Ms); };
 
   /// Checks if the mesh M is a product
-  template <typename M> struct is_product : std::is_base_of<tag::composite, M> {};
+  template <typename M> struct is_product : std::is_base_of<tag::product, M> {};
 
   ///
   template <typename M> constexpr bool is_product_v = is_product<M>::value;
 
   /** Cartesian product of mesh */
   // the mesh is simply a cartesian product
-  template <typename... Ms> class cartesian_product : tag::composite {
+  template <typename... Ms> class cartesian_product : tag::product {
 
     // Backward compat helper.
     static_assert(not(std::is_same_v<Ms, triqs::lattice::brillouin_zone> or ...),
