@@ -90,16 +90,6 @@ m.add_function("gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> m, bool shift_
 
 # ---------------------- miscellaneous --------------------
 for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_valued<4>"]:
-    for gf_type in ["gf", "block_gf", "block2_gf"]:
-        gf_view_type = gf_type +  '_view'
-
-        # make_real_in_tau
-        m.add_function("%s<imfreq, %s> make_real_in_tau(%s<imfreq, %s> g)"%(gf_type, Target, gf_view_type, Target),
-                    doc = "Ensures that the Fourier transform of the Gf, in tau, is real, hence G(-i \omega_n)* =G(i \omega_n)")
-
-        # is_gf_real_in_tau
-        m.add_function("bool is_gf_real_in_tau(%s<imfreq, %s> g, double tolerance = 1.e-13)"%(gf_view_type, Target))
-
 
     # set_from_legendre
     m.add_function("void set_from_legendre(gf_view<imfreq, %s> gw, gf_view<triqs::gfs::legendre, %s> gl)"%(Target, Target),
@@ -132,7 +122,7 @@ m.add_function("gf<imtime, matrix_valued> rebinning_tau(gf_view<imtime,matrix_va
 m.add_function("void enforce_discontinuity(gf_view<triqs::gfs::legendre, matrix_valued> gl, matrix_view<double> disc)", doc = """Modify the coefficient to adjust discontinuity""")
 
 
-# ---------------------- make_hermitian, is_gf_hermitian --------------------
+# ---------------------- make_hermitian, make_real_in_tau, is_gf_hermitian, is_real_in_tau --------------------
 for gf_type in ["gf", "block_gf", "block2_gf"]:
     gf_view_type = gf_type +  '_view'
     # make_hermitian
@@ -141,9 +131,19 @@ for gf_type in ["gf", "block_gf", "block2_gf"]:
     m.add_function("%s<imfreq, matrix_valued> make_hermitian(%s<imfreq, matrix_valued> g)"%(gf_type, gf_view_type),
                 doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)")
 
+    # make_real_in_tau
+    m.add_function("%s<imfreq, scalar_valued> make_real_in_tau(%s<imfreq, scalar_valued> g)"%(gf_type, gf_view_type),
+                doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)")
+    m.add_function("%s<imfreq, matrix_valued> make_real_in_tau(%s<imfreq, matrix_valued> g)"%(gf_type, gf_view_type),
+                doc = "Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)")
+
     # is_gf_hermitian
     m.add_function("bool is_gf_hermitian(%s<imfreq, scalar_valued> g, double tolerance = 1.e-13)"%gf_type)
     m.add_function("bool is_gf_hermitian(%s<imfreq, matrix_valued> g, double tolerance = 1.e-13)"%gf_type)
+
+    # is_gf_real_in_tau
+    m.add_function("bool is_gf_real_in_tau(%s<imfreq, scalar_valued> g, double tolerance = 1.e-13)"%gf_type)
+    m.add_function("bool is_gf_real_in_tau(%s<imfreq, matrix_valued> g, double tolerance = 1.e-13)"%gf_type)
 
 
 # ---------------------- Fourier functionality --------------------

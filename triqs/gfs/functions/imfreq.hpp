@@ -23,12 +23,12 @@ namespace triqs::gfs {
 
   using triqs::arrays::conj; // not found on gcc 5
 
-  /// ---------------------------  A few specific functions ---------------------------------
+  // ---------------------------  A few specific functions ---------------------------------
 
-  /// This function takes a g(i omega_n) on half mesh (positive omega_n) and returns a gf on the whole mesh
   /**
-   using G(-i omega_n) = G(i omega_n)^* for real G(tau) functions.
- */
+   * This function takes a g(i omega_n) on half mesh (positive omega_n) and returns a gf on the whole mesh
+   * using G(-i omega_n) = G(i omega_n)^* for real G(tau) functions.
+   */
   template <typename T> gf<imfreq, T> make_gf_from_real_gf(gf_const_view<imfreq, T> g) {
     if (!g.mesh().positive_only()) TRIQS_RUNTIME_ERROR << "gf imfreq is not for omega_n >0, real_to_complex does not apply";
     auto const &dat = g.data();
@@ -47,51 +47,6 @@ namespace triqs::gfs {
     return {gf_mesh<imfreq>{g.mesh().domain(), L}, std::move(new_data), g.indices()};
   }
 
-  /// Test if gf is real in tau
-  /**
-   @param g the gf
-   @param tolerance tolerance threshold $\epsilon$
-   @return true iif $$\forall n,\; \max_{ab}|g^*_{ab}(-i\omega_n)-g_{ab}(i\omega_n)|<\epsilon$$
-  */
-  template <typename G> std::enable_if_t<is_gf<G>::value, bool> is_gf_real_in_tau(G const &g, double tolerance = 1.e-13) {
-    static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value, "is_gf_real_in_tau only makes senses for imfreq gf");
-    if (g.mesh().positive_only()) return true;
-    using triqs::arrays::max_element; // the case real, complex is not found by ADL
-    for (auto const &w : g.mesh().get_positive_freq())
-      if (max_element(abs(conj(g(-w)) - g(w))) > tolerance) return false;
-    return true;
-  }
-  template <typename G> std::enable_if_t<is_block_gf<G>::value, bool> is_gf_real_in_tau(G const &g, double tolerance = 1.e-13) {
-    return std::all_of(g.begin(), g.end(), [&](auto &g_bl) { return is_gf_real_in_tau(g_bl, tolerance); });
-  }
-
-  /// Test if gf is hermitian
-  /**
-   @param g the gf
-   @param tolerance tolerance threshold $\epsilon$
-   @return true iif $$\forall n,\; \max_{ab}|g^*_{ba}(-i\omega_n)-g_{ab}(i\omega_n)|<\epsilon$$
-  */
-  template <typename G> std::enable_if_t<is_gf<G>::value, bool> is_gf_hermitian(G const &g, double tolerance = 1.e-13) {
-    using target_t = typename G::target_t;
-    static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value and (target_t::rank == 0 or target_t::rank == 2),
-                  "is_gf_hermitian makes senses only for imfreq gf matrix and scalar valued");
-
-    if (g.mesh().positive_only()) return true;
-    using triqs::arrays::max_element;    // the case real, complex is not found by ADL
-    if constexpr (target_t::rank == 0) { // scalar_valued
-      for (auto const &w : g.mesh().get_positive_freq())
-        if (max_element(abs(conj(g(-w)) - g(w))) > tolerance) return false;
-    } else { // matrix_valued
-      for (auto const &w : g.mesh().get_positive_freq())
-        if (max_element(abs(conj(transpose(g(-w))) - g(w))) > tolerance) return false;
-    }
-
-    return true;
-  }
-  template <typename G> std::enable_if_t<is_block_gf<G>::value, bool> is_gf_hermitian(G const &g, double tolerance = 1.e-13) {
-    return std::all_of(g.begin(), g.end(), [&](auto &g_bl) { return is_gf_hermitian(g_bl, tolerance); });
-  }
-
   /// Make a const view of the positive frequency part of the function
   template <typename G> view_or_type_t<G> positive_freq_view(G &&g) {
     static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value, "positive_freq_view only makes senses for imfreq gf");
@@ -102,35 +57,65 @@ namespace triqs::gfs {
     return {g.mesh().get_positive_freq(), g.data()(range(L1 - is_boson, L), triqs::arrays::ellipsis()), g.indices()};
   }
 
-  /// make_hermitian: Symmetrize the Green function in freq, to ensure its hermiticity (G_ij[iw] = G_ji[-iw]*)
-  template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type> make_hermitian(G const &g) {
-    using target_t = typename G::target_t;
-    static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value and (target_t::rank == 0 or target_t::rank == 2),
-                  "is_gf_hermitian makes senses only for imfreq gf matrix and scalar valued");
-    typename G::regular_type g_sym = g;
-    if constexpr (target_t::rank == 0) // scalar_valued
-      for (auto const &w : g.mesh()) g_sym[w] = 0.5 * (g(w) + conj(g(-w)));
-    else // matrix_valued
-      for (auto const &w : g.mesh()) g_sym[w] = 0.5 * (g(w) + conj(transpose(g(-w))));
+  /**
+   * Test if a Green function object fullfills the fundamental property G[iw](i,j) = conj(G[-iw](i,j))
+   * up to a tolerance $\epsilon$
+   *
+   * @param g The Green function object to check the symmetry for
+   * @param tolerance The tolerance $\epsilon$ for the check
+   *
+   * @tparam The Green function type
+   *
+   * @return true iif $$\forall n,\; \max_{ab}|g^*_{ba}(-i\omega_n)-g_{ab}(i\omega_n)|<\epsilon$$
+   */
+  template <typename G> bool is_gf_hermitian(G const &g, double tolerance = 1.e-13) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
+    if constexpr (is_gf_v<G>) {
+      using target_t = typename G::target_t;
+      static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value and (target_t::rank == 0 or target_t::rank == 2),
+                    "is_gf_hermitian makes senses only for imfreq gf matrix and scalar valued");
+      if (g.mesh().positive_only()) return true;
+      using triqs::arrays::max_element;    // the case real, complex is not found by ADL
+      if constexpr (target_t::rank == 0) { // scalar_valued
+        for (auto const &w : g.mesh().get_positive_freq())
+          if (max_element(abs(conj(g(-w)) - g(w))) > tolerance) return false;
+      } else { // matrix_valued
+        for (auto const &w : g.mesh().get_positive_freq())
+          if (max_element(abs(conj(transpose(g(-w))) - g(w))) > tolerance) return false;
+      }
+      return true;
+    } else { // Block Green function
+      return std::all_of(g.begin(), g.end(), [&](auto &g_bl) { return is_gf_hermitian<typename G::g_t>(g_bl, tolerance); });
+    }
+  }
+  /// This function is identical to is_gf_hermitian
+  template <typename G> bool is_gf_real_in_tau(G const &g, double tolerance = 1.e-13) { return is_gf_hermitian<G>(g, tolerance); }
 
-    return g_sym;
+  /**
+   * Symmetrize a Green function object $G[i\omega](i,j) \rightarrow \frac{1}{2} ( G[i\omega](i,j) + G[-iw](j,i)^* )$
+   *
+   * @param g The Green function object to symmetrize
+   *
+   * @tparam The Green function type
+   *
+   * @return The symmetrized Green function object
+   */
+  template <typename G> typename G::regular_type make_hermitian(G const &g) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
+    if constexpr (is_gf_v<G>) {
+      using target_t = typename G::target_t;
+      static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value and (target_t::rank == 0 or target_t::rank == 2),
+                    "is_gf_hermitian makes senses only for imfreq gf matrix and scalar valued");
+      typename G::regular_type g_sym = g;
+      if constexpr (target_t::rank == 0) // scalar_valued
+        for (auto const &w : g.mesh()) g_sym[w] = 0.5 * (g(w) + conj(g(-w)));
+      else // matrix_valued
+        for (auto const &w : g.mesh()) g_sym[w] = 0.5 * (g(w) + conj(transpose(g(-w))));
+      return g_sym;
+    } else if (is_block_gf_v<G>) { // Block Green function
+      return map_block_gf(make_hermitian<typename G::g_t>, g);
+    }
   }
-  template <typename G> std::enable_if_t<is_block_gf<G>::value, typename G::regular_type> make_hermitian(G const &g) {
-    return map_block_gf(make_hermitian<typename G::g_t>, g);
-  }
-
-  /// Make_real_in_tau symmetrize the function in freq, to ensure its FT is real.
-  template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type> make_real_in_tau(G const &g) {
-    static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value, "make_real_in_tau only makes senses for imfreq gf");
-    if (g.mesh().positive_only()) return make_gf_from_real_gf(make_const_view(g));
-
-    typename G::regular_type g_sym = g;
-    for (auto const &w : g.mesh()) g_sym[w] = 0.5 * (g[w] + conj(g[-w]));
-    return g_sym;
-  }
-  template <typename G> std::enable_if_t<is_block_gf<G>::value, typename G::regular_type> make_real_in_tau(G const &g) {
-    return map_block_gf(make_real_in_tau<typename G::g_t>, g);
-  }
+  /// This function is identical to make_hermitian
+  template <typename G> typename G::regular_type make_real_in_tau(G const &g) { return make_hermitian<G>(g); }
 
   // ------------------------------------------------------------------------------------------------------
 
@@ -171,7 +156,7 @@ namespace triqs::gfs {
   // Fit_tail on a window with the constraint of hermitian moment matrices
   template <template <typename, typename> typename G, typename T>
   auto fit_hermitian_tail_on_window(G<imfreq, T> const &g, int n_min, int n_max, array_const_view<dcomplex, 3> known_moments, int n_tail_max,
-                          int expansion_order) {
+                                    int expansion_order) {
     if (n_max == -1) n_max = g.mesh().last_index();
     auto g_rview         = restricted_view(g, n_max);
     double tail_fraction = double(n_max - n_min) / n_max;
