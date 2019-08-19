@@ -41,78 +41,47 @@ namespace std {
 namespace triqs::mesh {
 
   namespace details {
-    template <int I0, typename G, typename A0> FORCEINLINE auto __add(G const &g, A0 const &a0) {
-#define TRIQS_TERM_EVAL a0[I0].second *g[a0[I0].first]
-      if constexpr (I0 < std::tuple_size<A0>::value - 1) {
-        return TRIQS_TERM_EVAL + __add<I0 + 1>(g, a0);
-      } else
-        return TRIQS_TERM_EVAL;
-#undef TRIQS_TERM_EVAL
+  
+    // we need to form w_i w_j g[x_i, x_j],  0< i <= N1, 0 < j <= N2
+    // we take a compile time sequence I in [0, ..., N1 N2]
+    // and use i = I%N1, j = I/N1 to obtain all values of (i,j)
+    // same in higher dimension
+    // for w_i w_j w_k g[x_i, x_j, x_k],  0< i <= N1, 0 < j <= N2, 0 < k <= N3
+    // we use i = I%N1, j = (I% N1N2) /N1, k = (I%N1N2N3)/N1N2 to obtain all values of (i,j, k) (for k the % is useless...)
+
+    template <size_t... Is, typename G, typename A1>
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, G const &g, A1 const &a1) {
+      return ((a1[Is].second * g[make_tuple_com(a1[Is].first)]) + ...);
     }
 
-    template <int I0, int I1, typename G, typename A0, typename A1> FORCEINLINE auto __add(G const &g, A0 const &a0, A1 const &a1) {
-#define TRIQS_TERM_EVAL a0[I0].second *a1[I1].second *g[make_tuple_com(a0[I0].first, a1[I1].first)]
-      if constexpr (I0 < std::tuple_size<A0>::value - 1) {
-        return TRIQS_TERM_EVAL + __add<I0 + 1, I1>(g, a0, a1);
-      } else { // I0==0
-        if constexpr (I1 < std::tuple_size<A1>::value - 1)
-          return TRIQS_TERM_EVAL + __add<0, I1 + 1>(g, a0, a1);
-        else
-          return TRIQS_TERM_EVAL;
-#undef TRIQS_TERM_EVAL
-      }
+    template <size_t... Is, typename G, typename A1, typename A2>
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, G const &g, A1 const &a1, A2 const &a2) {
+      constexpr int N1 = std::tuple_size<A1>::value;
+      return ((a1[Is % N1].second * a2[Is / N1].second * g[make_tuple_com(a1[Is % N1].first, a2[Is / N1].first)]) + ...);
     }
 
-    template <int I0, int I1, int I2, typename G, typename A0, typename A1, typename A2>
-    FORCEINLINE auto __add(G const &g, A0 const &a0, A1 const &a1, A2 const &a2) {
-#define TRIQS_TERM_EVAL a0[I0].second *a1[I1].second *a1[I2].second *g[make_tuple_com(a0[I0].first, a1[I1].first, a2[I2].first)]
-      if constexpr (I0 < std::tuple_size<A0>::value - 1) {
-        return TRIQS_TERM_EVAL + __add<I0 + 1, I1, I2>(g, a0, a1, a2);
-      } else {
-        if constexpr (I1 < std::tuple_size<A1>::value - 1) {
-          return TRIQS_TERM_EVAL + __add<0, I1 + 1, I2>(g, a0, a1, a2);
-        } else {
-          if constexpr (I2 < std::tuple_size<A2>::value - 1)
-            return TRIQS_TERM_EVAL + __add<0, 0, I2 + 1>(g, a0, a1, a2);
-          else
-            return TRIQS_TERM_EVAL;
-#undef TRIQS_TERM_EVAL
-        }
-      }
+    template <size_t... Is, typename G, typename A1, typename A2, typename A3>
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, G const &g, A1 const &a1, A2 const &a2, A3 const &a3) {
+      constexpr int N1  = std::tuple_size<A1>::value;
+      constexpr int N12 = N1 * std::tuple_size<A2>::value;
+      return ((a1[Is % N1].second * a2[(Is % N12) / N1].second * a3[Is / N12].second * //
+               g[make_tuple_com(a1[Is % N1].first, a2[(Is % N12) / N1].first, a3[Is / N12].first)])
+              + ...);
     }
 
-    template <int I0, int I1, int I2, int I3, typename G, typename A0, typename A1, typename A2, typename A3>
-    FORCEINLINE auto __add(G const &g, A0 const &a0, A1 const &a1, A2 const &a2, A3 const &a3) {
-#define TRIQS_TERM_EVAL                                                                                                                              \
-  a0[I0].second *a1[I1].second *a2[I2].second *a3[I3].second *g[make_tuple_com(a0[I0].first, a1[I1].first, a2[I2].first, a3[I3].first)]
-      if constexpr (I0 < std::tuple_size<A0>::value - 1) {
-        return TRIQS_TERM_EVAL + __add<I0 + 1, I1, I2, I3>(g, a0, a1, a2, a3);
-      } else {
-        if constexpr (I1 < std::tuple_size<A1>::value - 1) {
-          return TRIQS_TERM_EVAL + __add<0, I1 + 1, I2, I3>(g, a0, a1, a2, a3);
-        } else {
-          if constexpr (I2 < std::tuple_size<A2>::value - 1) {
-            return TRIQS_TERM_EVAL + __add<0, 0, I2 + 1, I3>(g, a0, a1, a2, a3);
-          } else {
-            if constexpr (I3 < std::tuple_size<A3>::value - 1)
-              return TRIQS_TERM_EVAL + __add<0, 0, 0, I3 + 1>(g, a0, a1, a2, a3);
-            else
-              return TRIQS_TERM_EVAL;
-#undef TRIQS_TERM_EVAL
-          }
-        }
-      }
-    }
-
-    // multivar_eval
-    template <size_t... Is, typename G, typename... InterPolDataType>
-    FORCEINLINE auto _multivar_eval_impl(std::index_sequence<Is...>, G const &g, InterPolDataType const &... a) {
-      return __add<0 * Is...>(g, a...);
+    template <size_t... Is, typename G, typename A1, typename A2, typename A3, typename A4>
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, G const &g, A1 const &a1, A2 const &a2, A3 const &a3, A4 const &a4) {
+      constexpr int N1   = std::tuple_size<A1>::value;
+      constexpr int N12  = N1 * std::tuple_size<A2>::value;
+      constexpr int N123 = N12 * std::tuple_size<A3>::value;
+      return ((a1[Is % N1].second * a2[(Is % N12) / N1].second * a3[(Is % N123) / N12].second * a4[Is / N123].second * //
+               g[make_tuple_com(a1[Is % N1].first, a2[(Is % N12) / N1].first, a3[(Is % N123) / N12].first, a4[Is / N123].first)])
+              + ...);
     }
 
     //
     template <typename G, typename... InterPolDataType> FORCEINLINE auto multivar_eval(G const &g, InterPolDataType const &... a) {
-      return details::_multivar_eval_impl(std::index_sequence_for<InterPolDataType...>{}, g, a...);
+      return details::_multivar_eval_impl2(std::make_index_sequence<(std::tuple_size<InterPolDataType>::value * ...)>{}, g, a...);
     }
 
     // FIXME20 : use a lambda
