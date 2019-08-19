@@ -25,8 +25,6 @@
 
 namespace triqs::mesh {
 
-  enum class matsubara_mesh_opt { all_frequencies, positive_frequencies_only };
-
   // FIXME ?
   struct energy_t {
     double value = 0;
@@ -62,6 +60,9 @@ namespace triqs::mesh {
     ///type of the domain point
     using domain_pt_t = typename domain_t::point_t;
 
+    /// Option for the constructor. Restrict to positive frequency or not
+    enum class option { all_frequencies, positive_frequencies_only };
+
     // -------------------- Constructors -------------------
 
     ///
@@ -74,12 +75,11 @@ namespace triqs::mesh {
       * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
       * @param tail_fraction : percent of the function in the tail.
       * @param tail_order : order of computation of the tail
-      * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+      * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
     */
-    imfreq(domain_t dom, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-       : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt) {
+    imfreq(domain_t dom, long n_pts = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt) {
       _last_index = n_pts - 1; // total number of points
-      if (opt == matsubara_mesh_opt::positive_frequencies_only) {
+      if (opt == option::positive_frequencies_only) {
         _first_index = 0;
         _last_index  = n_pts - 1;
       } else {
@@ -93,28 +93,26 @@ namespace triqs::mesh {
      * @param beta inverse temperature
      * @param S statistic (Fermion or Boson)
      * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-     * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+     * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
      */
-    imfreq(double beta, statistic_enum S, long n_pts = 1025, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-       : imfreq({beta, S}, n_pts, opt) {}
+    imfreq(double beta, statistic_enum S, long n_pts = 1025, option opt = option::all_frequencies) : imfreq({beta, S}, n_pts, opt) {}
 
     /**
      * @param beta inverse temperature
      * @param S statistic (Fermion or Boson)
      * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-     * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+     * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
     */
-    imfreq(domain_t dom, energy_t omega_max, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
+    imfreq(domain_t dom, energy_t omega_max, option opt = option::all_frequencies)
        : imfreq(std::move(dom), ((omega_max.value * dom.beta / M_PI) - 1) / 2, opt) {}
 
     /**
       * @param beta inverse temperature
       * @param S statistic (Fermion or Boson)
       * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-      * @param matsubara_mesh_opt tells whether the mesh is defined for all frequencies or only for positive frequencies
+      * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
     */
-    imfreq(double beta, statistic_enum S, energy_t omega_max, matsubara_mesh_opt opt = matsubara_mesh_opt::all_frequencies)
-       : imfreq({beta, S}, omega_max, opt) {}
+    imfreq(double beta, statistic_enum S, energy_t omega_max, option opt = option::all_frequencies) : imfreq({beta, S}, omega_max, opt) {}
 
     // -------------------- Comparisons -------------------
 
@@ -162,11 +160,11 @@ namespace triqs::mesh {
     int last_index() const { return _last_index; }
 
     /// Is the mesh only for positive omega_n (G(tau) real))
-    bool positive_only() const { return _opt == matsubara_mesh_opt::positive_frequencies_only; }
+    bool positive_only() const { return _opt == option::positive_frequencies_only; }
 
     // -------------------- Get the grid for positive freq only -------------------
 
-    imfreq get_positive_freq() const { return {domain(), _n_pts, matsubara_mesh_opt::positive_frequencies_only}; }
+    imfreq get_positive_freq() const { return {domain(), _n_pts, option::positive_frequencies_only}; }
 
     // -------------------- tail -------------------
 
@@ -241,7 +239,7 @@ namespace triqs::mesh {
       if (gr.has_key("positive_freq_only")) h5_read(gr, "positive_freq_only", pos_freq);
       if (gr.has_key("start_at_0")) h5_read(gr, "start_at_0", pos_freq); // backward compatibility only
       int n_pts = (pos_freq ? L : (L + 1) / 2); // positive freq, size is correct, otherwise divide by 2 (euclidian, ok for bosons).
-      auto opt  = (pos_freq == 1 ? matsubara_mesh_opt::positive_frequencies_only : matsubara_mesh_opt::all_frequencies);
+      auto opt  = (pos_freq == 1 ? option::positive_frequencies_only : option::all_frequencies);
       m         = imfreq{std::move(dom), n_pts, opt};
     }
 
@@ -261,7 +259,7 @@ namespace triqs::mesh {
     private:
     domain_t _dom;
     int _n_pts;
-    matsubara_mesh_opt _opt;
+    option _opt;
     long _first_index, _last_index;
   };
 

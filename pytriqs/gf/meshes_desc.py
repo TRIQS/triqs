@@ -35,9 +35,9 @@ module.add_enum(c_name = "statistic_enum",
                 c_namespace = "triqs::mesh",
                 values = ["Fermion","Boson"])
 
-module.add_enum(c_name = "matsubara_mesh_opt",
-                c_namespace = "triqs::mesh",
-                values = ["matsubara_mesh_opt::all_frequencies","matsubara_mesh_opt::positive_frequencies_only"])
+module.add_enum(c_name = "triqs::mesh::imfreq::option",
+         c_namespace = "",
+         values = ["imfreq::option::all_frequencies","imfreq::option::positive_frequencies_only"])
 
 ########################
 ##   Mesh generic

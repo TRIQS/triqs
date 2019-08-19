@@ -65,7 +65,7 @@ TEST(BlockGfCartesian, OutOfBounds) {
   triqs::clef::placeholder<0> om_;
   triqs::clef::placeholder<1> nu_;
   auto g_2w = gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>>{
-     {{beta, Fermion, 5}, {beta, Boson, 5, mesh::matsubara_mesh_opt::positive_frequencies_only}}, {2, 2, 2}};
+     {{beta, Fermion, 5}, {beta, Boson, 5, mesh::imfreq::option::positive_frequencies_only}}, {2, 2, 2}};
   g_2w(om_, nu_) << 1 / (om_ + nu_) * 1 / om_;
   auto g_w = gf<imfreq, matrix_valued>{{beta, Fermion, 10}, {1, 1}}; //longer than g
   auto W0  = matsubara_freq(0, beta, Boson);
@@ -74,7 +74,7 @@ TEST(BlockGfCartesian, OutOfBounds) {
 TEST(BlockGfCartesian, VectorConstruction) {
   double beta = 1;
   auto g_2w   = gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>>{
-     {{beta, Fermion, 5}, {beta, Boson, 5, mesh::matsubara_mesh_opt::positive_frequencies_only}}, {2, 2, 2}};
+     {{beta, Fermion, 5}, {beta, Boson, 5, mesh::imfreq::option::positive_frequencies_only}}, {2, 2, 2}};
   block_gf<cartesian_product<imfreq, imfreq>, tensor_valued<3>> L(2);
   for (int i = 0; i < 2; i++) L[i] = g_2w;
 
