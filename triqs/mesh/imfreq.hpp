@@ -299,17 +299,4 @@ namespace triqs::mesh {
   inline imfreq::const_iterator imfreq::cbegin() const { return const_iterator(this); }
   inline imfreq::const_iterator imfreq::cend() const { return const_iterator(this, true); }
 
-  //-------------------------------------------------------
-
-  /** \brief foreach for this mesh
-  *
-  *  @param m : a mesh
-  *  @param F : a function of synopsis auto F (matsubara_freq_mesh::mesh_point_t)
-  *
-  *  Calls F on each point of the mesh, in arbitrary order.
-  **/
-  template <typename Lambda> void foreach (imfreq const &m, Lambda F) {
-    for (auto const &w : m) F(w);
-  }
-
 } // namespace triqs::mesh

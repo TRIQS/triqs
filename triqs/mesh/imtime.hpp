@@ -78,17 +78,4 @@ namespace triqs::mesh {
     friend void h5_read(h5::group fg, std::string const &subgroup_name, imtime &m) { h5_read_impl(fg, subgroup_name, m, "MeshImTime"); }
   };
 
-  //-------------------------------------------------------
-
-  /// foreach for this mesh
-  /**
-  *
-  *  @param m a mesh
-  *  @param F a function of synopsis auto F (matsubara_time_mesh::mesh_point_t)
-  *
-  *  Calls F on each point of the mesh, in arbitrary order.
-  **/
-  template <typename Lambda> void foreach (imtime const &m, Lambda F) {
-    for (auto const &w : m) F(w);
-  }
 } // namespace triqs::mesh

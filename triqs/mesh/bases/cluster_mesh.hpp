@@ -160,13 +160,6 @@ namespace triqs::mesh {
     inline const_iterator cbegin() const;
     inline const_iterator cend() const;
 
-    /// f (k) -> void where k is a point_t, a point in the BZ
-    template <typename F> friend void foreach (cluster_mesh const &m, F f) {
-      for (int i = 0; i < m.dims[0]; i++)
-        for (int j = 0; j < m.dims[1]; j++)
-          for (int k = 0; k < m.dims[2]; k++) f(m.index_to_point({i, j, k}));
-    }
-
     /// Mesh comparison
     bool operator==(cluster_mesh const &M) const {
       return ((dims == M.dims) && (units == M.units) && (periodization_matrix == M.periodization_matrix));

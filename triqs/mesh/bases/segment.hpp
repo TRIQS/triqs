@@ -32,16 +32,4 @@ namespace triqs::mesh {
     segment_mesh(double x_min, double x_max, int n_freq) : B(typename B::domain_t(), x_min, x_max, n_freq) {}
   };
 
-  //-------------------------------------------------------
-
-  /** \brief foreach for this mesh
-  *
-  *  @param m : a mesh
-  *  @param F : a function of synopsis auto F (matsubara_time_mesh::mesh_point_t)
-  *
-  *  Calls F on each point of the mesh, in arbitrary order.
-  **/
-  template <typename Lambda> void foreach (segment_mesh const &m, Lambda F) {
-    for (auto const &w : m) F(w);
-  }
 } // namespace triqs::mesh
