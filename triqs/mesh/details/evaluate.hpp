@@ -2,7 +2,9 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2015 by O. Parcollet
+ * Copyright (C) 2012-2018  by M. Ferrero, O. Parcollet
+ * Copyright (C) 2018-2019  by Simons Foundation
+ *               author : O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,7 +21,23 @@
  *
  ******************************************************************************/
 #pragma once
+#include <array>
+#include "./mesh_tools.hpp"
 #include "./comma.hpp"
+
+// ------------------------------------------
+// FIXME : MOVE THIS IN std::array util
+namespace std {
+  template <typename T, size_t R> std::ostream &operator<<(std::ostream &sout, std::array<T, R> const &a) {
+    sout << '(';
+    for (int u = 0; u < R; ++u) sout << (u ? ", " : "") << a[u];
+    return sout << ')';
+  }
+
+} // namespace std
+
+//---------------------------------
+
 namespace triqs::mesh {
 
   namespace details {
@@ -90,10 +108,37 @@ namespace triqs::mesh {
     FORCEINLINE auto _multivar_eval_impl(std::index_sequence<Is...>, G const &g, InterPolDataType const &... a) {
       return __add<0 * Is...>(g, a...);
     }
+
+    //
+    template <typename G, typename... InterPolDataType> FORCEINLINE auto multivar_eval(G const &g, InterPolDataType const &... a) {
+      return details::_multivar_eval_impl(std::index_sequence_for<InterPolDataType...>{}, g, a...);
+    }
+
+    // FIXME20 : use a lambda
+    template <typename F, size_t... Is, typename... Args> auto evaluate_impl(std::index_sequence<Is...>, F const &f, Args &&... args) {
+      return multivar_eval(f, std::get<Is>(f.mesh().components()).get_interpolation_data(std::forward<Args>(args))...);
+    }
   } // namespace details
 
-  //
-  template <typename G, typename... InterPolDataType> FORCEINLINE auto multivar_eval(G const &g, InterPolDataType const &... a) {
-    return details::_multivar_eval_impl(std::index_sequence_for<InterPolDataType...>{}, g, a...);
+  // ------------------- evaluate --------------------------------
+  // DOC ? Internal only ?
+  template <typename Mesh, typename F, typename... Args> auto evaluate(Mesh const &m, F const &f, Args &&... args) {
+
+    if constexpr (not is_product_v<Mesh>) {
+
+      auto id = m.get_interpolation_data(std::forward<Args...>(args...));
+      if constexpr (id.n_pts == 1) {
+        return id.w[0] * f[id.idx[0]];
+      } else if constexpr (id.n_pts == 2) {
+        return id.w[0] * f[id.idx[0]] + id.w[1] * f[id.idx[1]];
+      } else {
+        return details::multivar_eval(f, id); // FIXME : should be the only case ...
+      }
+
+    } else { // special case for the product mesh
+      return details::evaluate_impl(std::index_sequence_for<Args...>{}, f, std::forward<Args>(args)...);
+    }
   }
+
 } // namespace triqs::mesh
+
