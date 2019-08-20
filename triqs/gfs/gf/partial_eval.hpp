@@ -67,16 +67,16 @@ namespace triqs::gfs {
     };
 
     ///
-    template <typename G, typename... Args> decltype(auto) partial_eval(G *g, Args const &... args) {
+    template <typename G, typename... Args> decltype(auto) partial_eval(G &g, Args const &... args) {
 
       static_assert(is_ok<typename G::mesh_t, std::decay_t<Args>...>::value, "Argument type incorrect");
 
       if constexpr (not(... or std::is_same_v<all_t, Args>))
-        return g->on_mesh(args...);
+        return g.on_mesh(args...);
       else {
 
         // Filter the mesh of g into m to keep only the mesh corresponding to all_t arguments
-        auto m_tuple = triqs::tuple::fold(details::fw_mesh{}, std::make_tuple(args...), g->mesh().components(), std::make_tuple());
+        auto m_tuple = triqs::tuple::fold(details::fw_mesh{}, std::make_tuple(args...), g.mesh().components(), std::make_tuple());
 
         // computing the template parameters of the returned gf, i.e. r_t
         using target_t = typename G::target_t; // unchanged
@@ -84,8 +84,8 @@ namespace triqs::gfs {
         // compute the sliced view of the data array
         // xs : filter the arguments which are not all_t and compute their linear_index with the corresponding mesh
         // then in arr2, we unfold the xs tuple into the slice of the data
-        auto xs   = triqs::tuple::fold(details::fw_mesh_x{}, g->mesh().components(), std::make_tuple(args...), std::make_tuple());
-        auto arr2 = triqs::tuple::apply([&g](auto const &... args) { return g->data()(args..., triqs::arrays::ellipsis()); }, xs);
+        auto xs   = triqs::tuple::fold(details::fw_mesh_x{}, g.mesh().components(), std::make_tuple(args...), std::make_tuple());
+        auto arr2 = triqs::tuple::apply([&g](auto const &... args) { return g.data()(args..., triqs::arrays::ellipsis()); }, xs);
 
         constexpr bool is_const = G::is_const or std::is_const<G>::value;
 

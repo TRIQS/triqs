@@ -22,13 +22,14 @@
 #include "./defs.hpp"
 #include "./gf_indices.hpp"
 #include "./data_proxy.hpp"
+#include "./comma.hpp"
 
 namespace triqs::gfs {
 
   // forward
   namespace details {
     template <typename Mesh, typename... A> struct is_ok;
-    template <typename G, typename... Args> decltype(auto) partial_eval(G *g, Args const &... args);
+    template <typename G, typename... Args> decltype(auto) partial_eval(G &g, Args const &... args);
   } // namespace details
 
   /*------------------------------------------------------------------------

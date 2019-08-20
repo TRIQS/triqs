@@ -84,8 +84,8 @@ namespace triqs::mesh {
     }
 
     // FIXME20 : use a lambda
-    template <typename F, size_t... Is, typename... Args> auto evaluate_impl(std::index_sequence<Is...>, F const &f, Args &&... args) {
-      return multivar_eval(f, std::get<Is>(f.mesh().components()).get_interpolation_data(std::forward<Args>(args))...);
+    template <typename F, typename M, size_t... Is, typename... Args> auto evaluate_impl(std::index_sequence<Is...>, M const & m,  F const &f, Args &&... args) {
+      return multivar_eval(f, std::get<Is>(m.components()).get_interpolation_data(std::forward<Args>(args))...);
     }
   } // namespace details
 
@@ -103,15 +103,15 @@ namespace triqs::mesh {
 
       auto id = m.get_interpolation_data(std::forward<Args...>(args...));
       if constexpr (id.size() == 1) {
-        return id[0].second * f[id[0].first];
+        return id[0].second * f(id[0].first);
       } else if constexpr (id.size() == 2) {
-        return id[0].second * f[id[0].first] + id[1].second * f[id[1].first];
+        return id[0].second * f(id[0].first) + id[1].second * f(id[1].first);
       } else {
         return details::multivar_eval(f, id); // FIXME : should be the only case ...
       }
 
     } else { // special case for the product mesh
-      return details::evaluate_impl(std::index_sequence_for<Args...>{}, f, std::forward<Args>(args)...);
+      return details::evaluate_impl(std::index_sequence_for<Args...>{}, m, f, std::forward<Args>(args)...);
     }
   }
 

@@ -77,7 +77,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) & 
     return clef::make_expr_subscript(*this, tu);
   else {
     static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+    auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(*this, y...); };
     return triqs::tuple::apply(l, tu._t);
   }
 }
@@ -88,7 +88,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) co
     return clef::make_expr_subscript(*this, tu);
   else {
     static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+    auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(*this, y...); };
     return triqs::tuple::apply(l, tu._t);
   }
 }
@@ -99,7 +99,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) &&
     return clef::make_expr_subscript(std::move(*this), tu);
   else {
     static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(this, y...); };
+    auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(*this, y...); };
     return triqs::tuple::apply(l, tu._t);
   }
 }

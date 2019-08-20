@@ -20,97 +20,101 @@
  ******************************************************************************/
 #pragma once
 
-namespace triqs {
-  namespace gfs {
+namespace triqs::gfs {
 
-    /*----------------------------------------------------------
-  *  Default
-  *--------------------------------------------------------*/
+  /*----------------------------------------------------------
+   *  Default
+   *--------------------------------------------------------*/
 
-    // gf_evaluator regroup functions to evaluate the function.
-    // default : one variable. Will be specialized in more complex cases.
-    template <typename Var, typename Target> struct gf_evaluator {
-      static constexpr int arity = 1;
+  // gf_evaluator regroup functions to evaluate the function.
+  // default : one variable. Will be specialized in more complex cases.
+  template <typename Var, typename Target> struct gf_evaluator {
+    static constexpr int arity = 1;
 
-      template <typename G, typename X> auto operator()(G const &g, X x) const { return mesh::evaluate(g.mesh(), g, x); }
-    };
+    template <typename G, typename X> auto operator()(G const &g, X x) const {
+      auto g_on_mesh = [&g](auto &&... x) -> decltype(auto) { return details::partial_eval(g, x...); };
+      return mesh::evaluate(g.mesh(), g_on_mesh, x);
+    }
+  };
 
-    /*----------------------------------------------------------
-  *  mesh::imfreq
-  *--------------------------------------------------------*/
+  /*----------------------------------------------------------
+   *  mesh::imfreq
+   *--------------------------------------------------------*/
 
-    template <typename Target> struct gf_evaluator<mesh::imfreq, Target> {
+  template <typename Target> struct gf_evaluator<mesh::imfreq, Target> {
 
-      static constexpr int arity = 1;
+    static constexpr int arity = 1;
 
-      // FIXME : la tail est unique : tail -> valeur tensorielle
-      // evaluate(s,f) --> retourne aussi un proxy !!!
+    // FIXME : la tail est unique : tail -> valeur tensorielle
+    // evaluate(s,f) --> retourne aussi un proxy !!!
 
-      // technical details...
-      using r_t = typename Target::value_t;
+    // technical details...
+    using r_t = typename Target::value_t;
 
-      // gf_evaluator
-      // FIXME We can instead return a view and write the result of the tail calculation
-      // to a member
-      template <typename G> r_t operator()(G const &g, matsubara_freq const &f) const {
-        if (g.mesh().is_within_boundary(f.n)) return g[f.n];
-        if (g.mesh().positive_only()) {
-          int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
-          if (g.mesh().is_within_boundary(-f.n - sh)) return r_t{conj(g[-f.n - sh])};
-          TRIQS_RUNTIME_ERROR << " ERROR: Cannot evaluate Green function with positive only mesh outside grid ";
-        }
-
-        auto [tail, err] = fit_tail_no_normalize(g);
-
-        dcomplex x = std::abs(g.mesh().omega_max()) / f;
-        auto res   = arrays::zeros<dcomplex>(g.target_shape()); // a new array
-
-        dcomplex z = 1.0;
-        for (int n : range(first_dim(tail))) {
-          res += tail(n, ellipsis()) * z;
-          z = z * x;
-        }
-        return res;
+    // gf_evaluator
+    // FIXME We can instead return a view and write the result of the tail calculation
+    // to a member
+    template <typename G> r_t operator()(G const &g, matsubara_freq const &f) const {
+      if (g.mesh().is_within_boundary(f.n)) return g[f.n];
+      if (g.mesh().positive_only()) {
+        int sh = (g.mesh().domain().statistic == Fermion ? 1 : 0);
+        if (g.mesh().is_within_boundary(-f.n - sh)) return r_t{conj(g[-f.n - sh])};
+        TRIQS_RUNTIME_ERROR << " ERROR: Cannot evaluate Green function with positive only mesh outside grid ";
       }
 
-      // int -> replace by matsubara_freq
-      template <typename G> decltype(auto) operator()(G const &g, int n) const {
-        return g(matsubara_freq(n, g.mesh().domain().beta, g.mesh().domain().statistic));
+      auto [tail, err] = fit_tail_no_normalize(g);
+
+      dcomplex x = std::abs(g.mesh().omega_max()) / f;
+      auto res   = arrays::zeros<dcomplex>(g.target_shape()); // a new array
+
+      dcomplex z = 1.0;
+      for (int n : range(first_dim(tail))) {
+        res += tail(n, ellipsis()) * z;
+        z = z * x;
       }
-    };
+      return res;
+    }
 
-    /*----------------------------------------------------------
-     *  cartesian product
-     *--------------------------------------------------------*/
+    // int -> replace by matsubara_freq
+    template <typename G> decltype(auto) operator()(G const &g, int n) const {
+      return g(matsubara_freq(n, g.mesh().domain().beta, g.mesh().domain().statistic));
+    }
+  };
 
-    template <typename Target, typename... Ms> struct gf_evaluator<mesh::prod<Ms...>, Target> {
+  /*----------------------------------------------------------
+   *  cartesian product
+   *--------------------------------------------------------*/
 
-      static constexpr int arity = sizeof...(Ms);
+  template <typename Target, typename... Ms> struct gf_evaluator<mesh::prod<Ms...>, Target> {
 
-      template <typename G, typename... Args> auto operator()(G const &g, Args &&... args) const {
-        static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
+    static constexpr int arity = sizeof...(Ms);
 
-        using r1_t = decltype(mesh::evaluate(g.mesh(), g, std::forward<Args>(args)...));
+    template <typename G, typename... Args> auto operator()(G const &g, Args &&... args) const {
+      static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
 
-        if constexpr (is_gf_expr<r1_t>::value or is_gf_v<r1_t>) {
-          return mesh::evaluate(g.mesh(), g, std::forward<Args>(args)...);
-        } else {
-          if (g.mesh().is_within_boundary(args...)) return make_regular(mesh::evaluate(g.mesh(), g, std::forward<Args>(args)...));
-          using rt = std::decay_t<decltype(make_regular(mesh::evaluate(g.mesh(), g, std::forward<Args>(args)...)))>;
-          return rt{arrays::zeros<dcomplex>(g.target_shape())};
-        }
+      auto g_on_mesh = [&g](auto &&... x) -> decltype(auto) { return details::partial_eval(g, x...); };
+
+      using r1_t = decltype(mesh::evaluate(g.mesh(), g_on_mesh, std::forward<Args>(args)...));
+
+      if constexpr (is_gf_expr<r1_t>::value or is_gf_v<r1_t>) {
+        return mesh::evaluate(g.mesh(), g_on_mesh, std::forward<Args>(args)...);
+      } else {
+        if (g.mesh().is_within_boundary(args...)) return make_regular(mesh::evaluate(g.mesh(), g_on_mesh, std::forward<Args>(args)...));
+        using rt = std::decay_t<decltype(make_regular(mesh::evaluate(g.mesh(), g_on_mesh, std::forward<Args>(args)...)))>;
+        return rt{arrays::zeros<dcomplex>(g.target_shape())};
       }
-    };
+    }
+  };
 
-    /*----------------------------------------------------------
-     * Legendre
-     *--------------------------------------------------------*/
+  /*----------------------------------------------------------
+   * Legendre
+   *--------------------------------------------------------*/
 
-    // Not finished, not tested
-    template <> struct gf_evaluator<mesh::legendre, matrix_valued> {
-      static constexpr int arity = 1;
-      template <typename G> arrays::matrix_view<dcomplex> operator()(G const &g, long n) const {
-        return g.data()(n, itertools::range(), itertools::range());
-      }
-    };
-  } // namespace gfs
+  // Not finished, not tested
+  template <> struct gf_evaluator<mesh::legendre, matrix_valued> {
+    static constexpr int arity = 1;
+    template <typename G> arrays::matrix_view<dcomplex> operator()(G const &g, long n) const {
+      return g.data()(n, itertools::range(), itertools::range());
+    }
+  };
+} // namespace triqs::gfs

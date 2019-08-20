@@ -51,7 +51,6 @@ namespace triqs::gfs {
   using mesh::get_n_variables;
   using mesh::matsubara_freq;
   using mesh::statistic_enum;
-  using mesh::tuple_com;
 
   // BACKWARD COMPAT !
   template <typename M, typename Requires = std::enable_if_t<mesh::models_mesh_concept_v<M>>>
