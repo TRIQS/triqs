@@ -51,10 +51,10 @@ def all_calls():
       k_x = {'b_zone' : 'std::array<double, 3>', 'cyclic_lattice' : 'triqs::utility::mini_vector<int, 3>'}[M1]
 
       for M2 in ['imfreq']:
-        yield 'cartesian_product<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ (k_x, 'long'), (k_x, 'all_t')]
+        yield 'prod<%s,%s>'%(M1,M2), ["dcomplex", "gf<imfreq, scalar_valued>"], 0, 'scalar_valued',[ (k_x, 'long'), (k_x, 'all_t')]
 
       for M2 in ['imtime', 'refreq', 'retime']:
-        yield 'cartesian_product<%s,%s>'%(M1,M2),["dcomplex"], 0, 'scalar_valued', [(k_x, 'double')]
+        yield 'prod<%s,%s>'%(M1,M2),["dcomplex"], 0, 'scalar_valued', [(k_x, 'double')]
 
 # Fixme
 C_py_transcript = {'imfreq' : 'ImFreq',
@@ -63,14 +63,14 @@ C_py_transcript = {'imfreq' : 'ImFreq',
                    'retime' : 'ReTime',
                    'b_zone' : 'BrillouinZone',
                    'cyclic_lattice' : 'CyclicLattice',
-                   'cartesian_product<b_zone,imfreq>': 'BrillouinZone_x_ImFreq',
-                   'cartesian_product<b_zone,imtime>': 'BrillouinZone_x_ImTime',
-                   'cartesian_product<b_zone,refreq>': 'BrillouinZone_x_ReFreq',
-                   'cartesian_product<b_zone,retime>': 'BrillouinZone_x_ReTime',
-                   'cartesian_product<cyclic_lattice,imfreq>': 'CyclicLattice_x_ImFreq',
-                   'cartesian_product<cyclic_lattice,imtime>': 'CyclicLattice_x_ImTime',
-                   'cartesian_product<cyclic_lattice,refreq>': 'CyclicLattice_x_ReFreq',
-                   'cartesian_product<cyclic_lattice,retime>': 'CyclicLattice_x_ReTime',
+                   'prod<b_zone,imfreq>': 'BrillouinZone_x_ImFreq',
+                   'prod<b_zone,imtime>': 'BrillouinZone_x_ImTime',
+                   'prod<b_zone,refreq>': 'BrillouinZone_x_ReFreq',
+                   'prod<b_zone,retime>': 'BrillouinZone_x_ReTime',
+                   'prod<cyclic_lattice,imfreq>': 'CyclicLattice_x_ImFreq',
+                   'prod<cyclic_lattice,imtime>': 'CyclicLattice_x_ImTime',
+                   'prod<cyclic_lattice,refreq>': 'CyclicLattice_x_ReFreq',
+                   'prod<cyclic_lattice,retime>': 'CyclicLattice_x_ReTime',
                    }
 
 m.add_preamble("""

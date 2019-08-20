@@ -52,9 +52,9 @@ namespace cpp2py {
   //     Mesh Product
   // -----------------------------------
 
-  template <typename... Ms> struct py_converter<triqs::mesh::cartesian_product<Ms...>> {
+  template <typename... Ms> struct py_converter<triqs::mesh::prod<Ms...>> {
 
-    using c_type      = triqs::mesh::cartesian_product<Ms...>;
+    using c_type      = triqs::mesh::prod<Ms...>;
     using mtuple_conv = py_converter<typename c_type::m_tuple_t>; // the tuple of meshes
 
     static PyObject *c2py(c_type m) {

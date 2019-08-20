@@ -14,8 +14,8 @@ TEST(GfM, CurryFourier) {
   int n_freq  = 100;
   int n_times = n_freq * 2 + 1;
   int n_bz    = 10;
-  auto gkw    = gf<cartesian_product<b_zone, imfreq>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
-  auto gkt    = gf<cartesian_product<b_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
+  auto gkw    = gf<prod<b_zone, imfreq>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_freq}}, {1, 1}};
+  auto gkt    = gf<prod<b_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
   auto _ = all_t{};
 

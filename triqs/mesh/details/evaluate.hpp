@@ -23,7 +23,6 @@
 #pragma once
 #include <array>
 #include "./mesh_tools.hpp"
-#include "./comma.hpp"
 
 // ------------------------------------------
 // FIXME : MOVE THIS IN std::array util
@@ -49,39 +48,39 @@ namespace triqs::mesh {
     // for w_i w_j w_k g[x_i, x_j, x_k],  0< i <= N1, 0 < j <= N2, 0 < k <= N3
     // we use i = I%N1, j = (I% N1N2) /N1, k = (I%N1N2N3)/N1N2 to obtain all values of (i,j, k) (for k the % is useless...)
 
-    template <size_t... Is, typename G, typename A1>
-    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, G const &g, A1 const &a1) {
-      return ((a1[Is].second * g[make_tuple_com(a1[Is].first)]) + ...);
+    template <size_t... Is, typename F, typename A1>
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const & f, A1 const &a1) {
+      return ((a1[Is].second * f(a1[Is].first)) + ...);
     }
 
-    template <size_t... Is, typename G, typename A1, typename A2>
-    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, G const &g, A1 const &a1, A2 const &a2) {
+    template <size_t... Is, typename F, typename A1, typename A2>
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const & f, A1 const &a1, A2 const &a2) {
       constexpr int N1 = std::tuple_size<A1>::value;
-      return ((a1[Is % N1].second * a2[Is / N1].second * g[make_tuple_com(a1[Is % N1].first, a2[Is / N1].first)]) + ...);
+      return ((a1[Is % N1].second * a2[Is / N1].second * f(a1[Is % N1].first, a2[Is / N1].first)) + ...);
     }
 
-    template <size_t... Is, typename G, typename A1, typename A2, typename A3>
-    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, G const &g, A1 const &a1, A2 const &a2, A3 const &a3) {
+    template <size_t... Is, typename F, typename A1, typename A2, typename A3>
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const & f, A1 const &a1, A2 const &a2, A3 const &a3) {
       constexpr int N1  = std::tuple_size<A1>::value;
       constexpr int N12 = N1 * std::tuple_size<A2>::value;
       return ((a1[Is % N1].second * a2[(Is % N12) / N1].second * a3[Is / N12].second * //
-               g[make_tuple_com(a1[Is % N1].first, a2[(Is % N12) / N1].first, a3[Is / N12].first)])
+               f(a1[Is % N1].first, a2[(Is % N12) / N1].first, a3[Is / N12].first))
               + ...);
     }
 
-    template <size_t... Is, typename G, typename A1, typename A2, typename A3, typename A4>
-    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, G const &g, A1 const &a1, A2 const &a2, A3 const &a3, A4 const &a4) {
+    template <size_t... Is, typename F, typename A1, typename A2, typename A3, typename A4>
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const & f, A1 const &a1, A2 const &a2, A3 const &a3, A4 const &a4) {
       constexpr int N1   = std::tuple_size<A1>::value;
       constexpr int N12  = N1 * std::tuple_size<A2>::value;
       constexpr int N123 = N12 * std::tuple_size<A3>::value;
       return ((a1[Is % N1].second * a2[(Is % N12) / N1].second * a3[(Is % N123) / N12].second * a4[Is / N123].second * //
-               g[make_tuple_com(a1[Is % N1].first, a2[(Is % N12) / N1].first, a3[(Is % N123) / N12].first, a4[Is / N123].first)])
+               f(a1[Is % N1].first, a2[(Is % N12) / N1].first, a3[(Is % N123) / N12].first, a4[Is / N123].first))
               + ...);
     }
 
     //
-    template <typename G, typename... InterPolDataType> FORCEINLINE auto multivar_eval(G const &g, InterPolDataType const &... a) {
-      return details::_multivar_eval_impl2(std::make_index_sequence<(std::tuple_size<InterPolDataType>::value * ...)>{}, g, a...);
+    template <typename F, typename... InterPolDataType> FORCEINLINE auto multivar_eval(F const & f, InterPolDataType const &... a) {
+      return details::_multivar_eval_impl2(std::make_index_sequence<(std::tuple_size<InterPolDataType>::value * ...)>{}, f, a...);
     }
 
     // FIXME20 : use a lambda

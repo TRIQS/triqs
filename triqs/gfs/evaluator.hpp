@@ -87,7 +87,7 @@ namespace triqs {
     inline dcomplex make_const_view(dcomplex z) { return z; }
 
     // now the multi d gf_evaluator itself.
-    template <typename Target, typename... Ms> struct gf_evaluator<mesh::cartesian_product<Ms...>, Target> {
+    template <typename Target, typename... Ms> struct gf_evaluator<mesh::prod<Ms...>, Target> {
 
       static constexpr int arity = sizeof...(Ms); // METTRE ARITY DANS LA MESH !
 

@@ -4,8 +4,8 @@ using namespace triqs::lattice;
 
 using triqs::clef::placeholder;
 // scalar valued gf_vertex
-using gf_vertex_t        = gf<cartesian_product<imfreq, imfreq, imfreq>, scalar_valued>;
-using gf_vertex_tensor_t = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<3>>;
+using gf_vertex_t        = gf<prod<imfreq, imfreq, imfreq>, scalar_valued>;
+using gf_vertex_tensor_t = gf<prod<imfreq, imfreq, imfreq>, tensor_valued<3>>;
 
 // -----------------------------------------------------
 

@@ -62,7 +62,7 @@ namespace triqs::gfs {
       // FIXME : all std::array. with NDA clean
     }
     template <typename Mesh, typename... A> struct is_ok { static constexpr bool value = is_ok1<Mesh, std::decay_t<A>...>(); };
-    template <typename... T, typename... A> struct is_ok<mesh::cartesian_product<T...>, A...> {
+    template <typename... T, typename... A> struct is_ok<mesh::prod<T...>, A...> {
       static constexpr bool value = clef::__and(is_ok1 < T, std::decay_t<A>> ()...);
     };
 
@@ -94,7 +94,7 @@ namespace triqs::gfs {
           if constexpr (std::tuple_size_v<decltype(m_tuple)> == 1) {
             return std::get<0>(m_tuple);
           } else {
-            return mesh::cartesian_product{m_tuple};
+            return mesh::prod{m_tuple};
           }
         };
 

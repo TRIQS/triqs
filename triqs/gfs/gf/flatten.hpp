@@ -30,7 +30,7 @@ namespace triqs::gfs {
 
   //-------------------------------------
 
-  template <int N, typename... Ms, typename Target> auto flatten_gf_2d(gf_const_view<mesh::cartesian_product<Ms...>, Target> g) {
+  template <int N, typename... Ms, typename Target> auto flatten_gf_2d(gf_const_view<mesh::prod<Ms...>, Target> g) {
     auto const &m = std::get<N>(g.mesh());
     using gf_t = gf<std::decay_t<decltype(m)>, tensor_valued<1>>;
     if constexpr (Target::is_real) // FIXME Remove hard-copy once real fourier is implemented

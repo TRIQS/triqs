@@ -33,7 +33,7 @@ TEST(GfMul, Statistic) {
 
 TEST(GfMul, Statistic2Imtime) {
   double beta = 10.0;
-  using g_t   = gf<cartesian_product<imtime, imtime>>;
+  using g_t   = gf<prod<imtime, imtime>>;
 
   auto ff = g_t{{{beta, Fermion, 100}, {beta, Fermion, 100}}, {1, 1}};
   auto fb = g_t{{{beta, Fermion, 100}, {beta, Boson, 100}}, {1, 1}};
@@ -65,7 +65,7 @@ TEST(GfMul, Statistic2Imtime) {
 // -------------------------------------
 
 TEST(GfMul, Statistic_k_tau) {
-  using g_t = gf<cartesian_product<b_zone, imtime>, matrix_valued>;
+  using g_t = gf<prod<b_zone, imtime>, matrix_valued>;
 
   double beta = 10.0;
   int n_bz    = 20;

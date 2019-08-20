@@ -55,7 +55,7 @@ namespace triqs::gfs {
 
   // BACKWARD COMPAT !
   template <typename M, typename Requires = std::enable_if_t<mesh::models_mesh_concept_v<M>>>
-  using gf_mesh [[deprecated("gf_mesh<X> is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
+  using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
 
   /*----------------------------------------------------------
   *   Useful metafunctions, traits

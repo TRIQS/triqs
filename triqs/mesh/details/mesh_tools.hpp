@@ -20,7 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include <itertools/itertools.hpp>
-
 #include <triqs/arrays.hpp>
 #include <triqs/utility/arithmetic_ops_by_cast.hpp>
 #include <triqs/utility/tuple_tools.hpp>
@@ -43,6 +42,8 @@ namespace triqs::mesh {
   using itertools::range;
   using triqs::make_clone;
 
+  //-----------------------------------------------------------------------------------------------------------------------------
+
   namespace tag {
     struct mesh {};
     struct product : mesh {};
@@ -64,6 +65,8 @@ namespace triqs::mesh {
   //
   template <typename Mesh> struct get_n_variables { static const int value = 1; };
 
+  //-----------------------------------------------------------------------------------------------------------------------------
+
   /// A place holder for : or *all*
   struct all_t {};
 
@@ -76,15 +79,20 @@ namespace triqs::mesh {
   /// Boson*Fermion -> Fermion, others -> Boson
   inline statistic_enum operator*(statistic_enum i, statistic_enum j) { return (i == j ? Boson : Fermion); }
 
+  //-----------------------------------------------------------------------------------------------------------------------------
+
   // 1 in a completely neutral type for the compiler, which can not optimize 1.0 * x a priori.
   struct one_t {};
   template <typename T> auto operator*(one_t, T &&x) { return std::forward<T>(x); }
   template <typename T> auto operator*(T &&x, one_t) { return std::forward<T>(x); }
   inline one_t operator*(one_t, one_t) { return {}; } // avoid ambiguity
 
+  //-----------------------------------------------------------------------------------------------------------------------------
+
   // forward : The mesh point for each mesh. To be specialize by each mesh.
   template <typename Mesh> struct mesh_point;
 
+  //-----------------------------------------------------------------------------------------------------------------------------
   /*
    *
    * A generator for the mesh points of a mesh

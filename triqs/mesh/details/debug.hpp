@@ -12,10 +12,10 @@ namespace triqs::mesh {
 
   // special case for cartesian product, it must be checked for every component.
   template <typename MP, typename... M, size_t... Is>
-  bool mesh_point_compatible_to_mesh_impl(std::index_sequence<Is...>, MP const &mp, cartesian_product<M...> const &m) {
+  bool mesh_point_compatible_to_mesh_impl(std::index_sequence<Is...>, MP const &mp, prod<M...> const &m) {
     return (mesh_point_compatible_to_mesh(std::get<Is>(mp.components_tuple()), std::get<Is>(m.components())) and ...);
   }
-  template <typename... M> bool mesh_point_compatible_to_mesh(mesh_point<cartesian_product<M...>> const &mp, cartesian_product<M...> const &m) {
+  template <typename... M> bool mesh_point_compatible_to_mesh(mesh_point<prod<M...>> const &mp, prod<M...> const &m) {
     return mesh_point_compatible_to_mesh_impl(std::index_sequence_for<M...>{}, mp, m);
   }
 } // namespace triqs::mesh

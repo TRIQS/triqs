@@ -16,7 +16,7 @@ using index_t = utility::mini_vector<int, 3>;
 
 TEST(Gf, x_t) {
 
-  auto gkt = gf<cartesian_product<b_zone, retime>, matrix_valued>{{{bz, n_bz}, {t_min, t_max, n_times}}, {1, 1}};
+  auto gkt = gf<prod<b_zone, retime>, matrix_valued>{{{bz, n_bz}, {t_min, t_max, n_times}}, {1, 1}};
 
   placeholder<0> k_;
   placeholder<1> t_;
@@ -24,7 +24,7 @@ TEST(Gf, x_t) {
   auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
   gkt(k_, t_) << exp(-1_j * eps_k * t_);
 
-  auto gxt = gf<cartesian_product<cyclic_lattice, retime>, matrix_valued>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
+  auto gxt = gf<prod<cyclic_lattice, retime>, matrix_valued>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
 
   for (auto const &t : std::get<1>(gxt.mesh())) gxt[_, t] = fourier(gkt[_, t]);
 
@@ -39,7 +39,7 @@ TEST(Gf, x_t) {
 
 TEST(Gf, x_tau) {
 
-  auto gkt = gf<cartesian_product<b_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
+  auto gkt = gf<prod<b_zone, imtime>, matrix_valued>{{{bz, n_bz}, {beta, Fermion, n_times}}, {1, 1}};
 
   placeholder<0> k_;
   placeholder_prime<1> tau_;
@@ -47,7 +47,7 @@ TEST(Gf, x_tau) {
   auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
   gkt(k_, tau_) << exp(-eps_k * tau_);
 
-  auto gxt = gf<cartesian_product<cyclic_lattice, imtime>, matrix_valued>{{{L, L}, {beta, Fermion, n_times}}, {1, 1}};
+  auto gxt = gf<prod<cyclic_lattice, imtime>, matrix_valued>{{{L, L}, {beta, Fermion, n_times}}, {1, 1}};
 
   for (auto const &t : std::get<1>(gxt.mesh())) gxt[_, t] = fourier(gkt[_, t]);
 

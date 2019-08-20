@@ -53,6 +53,7 @@ namespace triqs::mesh {
 
   using cyclic_lattice = torus;
 
+  template<typename ...T> using cartesian_product = prod<T...>;
+
 }
 
-//#include "./domains/R.hpp"

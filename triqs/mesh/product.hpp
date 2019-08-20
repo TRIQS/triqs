@@ -33,13 +33,13 @@ namespace triqs::mesh {
     template <typename T> auto get_index(mesh_point<T> &x) { return x.index(); }
   } // namespace detail
 
-  template <typename... Ms> class cartesian_product;
-  // template <typename... Vs>  constexpr int get_n_variables(cartesian_product<Ms...>) { return sizeof...(Ms);}
-  template <typename... Ms> struct get_n_variables<cartesian_product<Ms...>> { static const int value = sizeof...(Ms); };
+  template <typename... Ms> class prod;
+  // template <typename... Vs>  constexpr int get_n_variables(prod<Ms...>) { return sizeof...(Ms);}
+  template <typename... Ms> struct get_n_variables<prod<Ms...>> { static const int value = sizeof...(Ms); };
 
   /** Cartesian product of mesh */
   // the mesh is simply a cartesian product
-  template <typename... Ms> class cartesian_product : tag::product {
+  template <typename... Ms> class prod : tag::product {
 
     // Backward compat helper.
     static_assert(not(std::is_same_v<Ms, triqs::lattice::brillouin_zone> or ...),
@@ -76,15 +76,15 @@ namespace triqs::mesh {
 
     // -------------------- Constructors -------------------
 
-    cartesian_product() = default;
-    cartesian_product(Ms const &... mesh) : m_tuple(mesh...), _dom(mesh.domain()...) {}
-    cartesian_product(std::tuple<Ms...> const &mesh_tpl)
+    prod() = default;
+    prod(Ms const &... mesh) : m_tuple(mesh...), _dom(mesh.domain()...) {}
+    prod(std::tuple<Ms...> const &mesh_tpl)
        : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)) {}
-    cartesian_product(cartesian_product const &) = default;
+    prod(prod const &) = default;
 
     /// Mesh comparison
-    bool operator==(cartesian_product const &m) const { return m_tuple == m.m_tuple; }
-    bool operator!=(cartesian_product const &m) const { return !(operator==(m)); }
+    bool operator==(prod const &m) const { return m_tuple == m.m_tuple; }
+    bool operator!=(prod const &m) const { return !(operator==(m)); }
 
     // -------------------- Accessors (from concept) -------------------
 
@@ -148,14 +148,14 @@ namespace triqs::mesh {
 
     // -------------------- mesh_point -------------------
 
-    using mesh_point_t = mesh_point<cartesian_product>;
+    using mesh_point_t = mesh_point<prod>;
 
     /// Accessing a point of the mesh
     mesh_point_t operator[](index_t const &i) const { return mesh_point_t(*this, i); }
     mesh_point_t operator()(typename Ms::index_t... i) const { return (*this)[index_t{i...}]; }
 
     /// Iterating on all the points...
-    using const_iterator = mesh_pt_generator<cartesian_product>;
+    using const_iterator = mesh_pt_generator<prod>;
     const_iterator begin() const { return const_iterator(this); }
     const_iterator end() const { return const_iterator(this, true); }
     const_iterator cbegin() const { return const_iterator(this); }
@@ -171,7 +171,7 @@ namespace triqs::mesh {
     static std::string hdf5_scheme() { return "MeshProduct"; }
 
     /// Write into HDF5
-    friend void h5_write(h5::group fg, std::string subgroup_name, cartesian_product const &m) {
+    friend void h5_write(h5::group fg, std::string subgroup_name, prod const &m) {
       h5::group gr = fg.create_group(subgroup_name);
       gr.write_hdf5_scheme(m);
       auto l = [gr](int N, auto const &m) { h5_write(gr, "MeshComponent" + std::to_string(N), m); };
@@ -179,7 +179,7 @@ namespace triqs::mesh {
     }
 
     /// Read from HDF5
-    friend void h5_read(h5::group fg, std::string subgroup_name, cartesian_product &m) {
+    friend void h5_read(h5::group fg, std::string subgroup_name, prod &m) {
       h5::group gr = fg.open_group(subgroup_name);
       gr.assert_hdf5_scheme(m, true);
       auto l = [gr](int N, auto &m) { h5_read(gr, "MeshComponent" + std::to_string(N), m); };
@@ -196,7 +196,7 @@ namespace triqs::mesh {
 
     // -------------------- print  -------------------
 
-    friend std::ostream &operator<<(std::ostream &sout, cartesian_product const &prod_mesh) {
+    friend std::ostream &operator<<(std::ostream &sout, prod const &prod_mesh) {
       sout << "Product Mesh";
       triqs::tuple::for_each(prod_mesh.m_tuple, [&sout](auto &m) { sout << "\n  -- " << m; });
       return sout;
@@ -209,15 +209,15 @@ namespace triqs::mesh {
   }; //end of class
 
   // ---------- Class template argument deduction rules -------------
-  template <typename M1, typename M2, typename... Ms> cartesian_product(M1, M2, Ms...)->cartesian_product<M1, M2, Ms...>;
+  template <typename M1, typename M2, typename... Ms> prod(M1, M2, Ms...)->prod<M1, M2, Ms...>;
 
-  template <typename M1, typename M2, typename... Ms> cartesian_product(std::tuple<M1, M2, Ms...>)->cartesian_product<M1, M2, Ms...>;
+  template <typename M1, typename M2, typename... Ms> prod(std::tuple<M1, M2, Ms...>)->prod<M1, M2, Ms...>;
 
   // ------------------------------------------------
   /// The wrapper for the mesh point
 
-  template <typename... Ms> struct mesh_point<cartesian_product<Ms...>> : tag::mesh_point {
-    using mesh_t         = cartesian_product<Ms...>;
+  template <typename... Ms> struct mesh_point<prod<Ms...>> : tag::mesh_point {
+    using mesh_t         = prod<Ms...>;
     using index_t        = typename mesh_t::index_t;
     using m_pt_tuple_t   = typename mesh_t::m_pt_tuple_t;
     using linear_index_t = typename mesh_t::linear_index_t;
@@ -277,14 +277,14 @@ namespace std {
 
   // mesh as tuple
   // redondant with .get<pos>, but seems necessary.
-  template <size_t pos, typename... Ms> decltype(auto) get(triqs::mesh::cartesian_product<Ms...> const &m) { return std::get<pos>(m.components()); }
+  template <size_t pos, typename... Ms> decltype(auto) get(triqs::mesh::prod<Ms...> const &m) { return std::get<pos>(m.components()); }
 
-  template <typename... Ms> class tuple_size<triqs::mesh::cartesian_product<Ms...>> {
+  template <typename... Ms> class tuple_size<triqs::mesh::prod<Ms...>> {
     public:
     static const int value = sizeof...(Ms);
   };
 
-  template <size_t N, typename... Ms> class tuple_element<N, triqs::mesh::cartesian_product<Ms...>> : public tuple_element<N, std::tuple<Ms...>> {};
+  template <size_t N, typename... Ms> class tuple_element<N, triqs::mesh::prod<Ms...>> : public tuple_element<N, std::tuple<Ms...>> {};
 
   /*
    * // NON PRODUCT mesh, for generic code std::get<0> should work
@@ -303,17 +303,17 @@ namespace std {
 */
 
   // mesh_point as tuple
-  template <int pos, typename... Ms> decltype(auto) get(triqs::mesh::mesh_point<triqs::mesh::cartesian_product<Ms...>> const &m) {
+  template <int pos, typename... Ms> decltype(auto) get(triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>> const &m) {
     return std::get<pos>(m.components_tuple());
   }
 
-  template <typename... Ms> class tuple_size<triqs::mesh::mesh_point<triqs::mesh::cartesian_product<Ms...>>> {
+  template <typename... Ms> class tuple_size<triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>> {
     public:
     static const int value = sizeof...(Ms);
   };
 
   template <size_t N, typename... Ms>
-  class tuple_element<N, triqs::mesh::mesh_point<triqs::mesh::cartesian_product<Ms...>>>
+  class tuple_element<N, triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>>
      : public tuple_element<N, std::tuple<typename Ms::mesh_point_t...>> {};
 
 } // namespace std
@@ -321,21 +321,21 @@ namespace std {
 // ----- product of mesh ---------------
 namespace triqs::mesh {
 
-  template <typename... M1, typename... M2> auto operator*(cartesian_product<M1...> const &m1, cartesian_product<M2...> const &m2) {
-    return cartesian_product<M1..., M2...>{std::tuple_cat(m1.components(), m2.components())};
+  template <typename... M1, typename... M2> auto operator*(prod<M1...> const &m1, prod<M2...> const &m2) {
+    return prod<M1..., M2...>{std::tuple_cat(m1.components(), m2.components())};
   }
 
-  template <typename M1, typename... M2> auto operator*(M1 const &m1, cartesian_product<M2...> const &m2) {
-    return cartesian_product<M1, M2...>{std::tuple_cat(std::make_tuple(m1), m2.components())};
+  template <typename M1, typename... M2> auto operator*(M1 const &m1, prod<M2...> const &m2) {
+    return prod<M1, M2...>{std::tuple_cat(std::make_tuple(m1), m2.components())};
   }
 
-  template <typename... M1, typename M2> auto operator*(cartesian_product<M1...> const &m1, M2 const &m2) {
-    return cartesian_product<M1..., M2>{std::tuple_cat(m1.components(), std::make_tuple(m2))};
+  template <typename... M1, typename M2> auto operator*(prod<M1...> const &m1, M2 const &m2) {
+    return prod<M1..., M2>{std::tuple_cat(m1.components(), std::make_tuple(m2))};
   }
 
   template <typename M1, typename M2>
   auto operator*(M1 const &m1, M2 const &m2) //
      REQUIRES(models_mesh_concept_v<M1> and models_mesh_concept_v<M2>) {
-    return cartesian_product<M1, M2>{m1, m2};
+    return prod<M1, M2>{m1, m2};
   }
 } // namespace triqs::mesh

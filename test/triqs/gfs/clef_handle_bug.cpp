@@ -13,7 +13,7 @@ int main() {
 
   // Meshes
   auto iw_mesh = mesh::imfreq{beta, Fermion, nw};
-  auto iw_inu_mesh = mesh::cartesian_product{iw_mesh, iw_mesh};
+  auto iw_inu_mesh = mesh::prod{iw_mesh, iw_mesh};
 
   // -- Product Gf
   auto Gp = gf{iw_inu_mesh, {1, 1}};

@@ -19,8 +19,8 @@ namespace triqs::clef {
 placeholder<0> k_;
 placeholder<1> w_;
 placeholder_prime<0> wp_;
-using gf_bz_imfreq_mat = gf<cartesian_product<b_zone, imfreq>, matrix_valued>;
-using gf_bz_imtime_mat = gf<cartesian_product<b_zone, imtime>, matrix_valued>;
+using gf_bz_imfreq_mat = gf<prod<b_zone, imfreq>, matrix_valued>;
+using gf_bz_imtime_mat = gf<prod<b_zone, imtime>, matrix_valued>;
 
 auto _ = all_t{};
 
@@ -69,7 +69,7 @@ TEST(Gkom, Eval) {
   int n_w = 5;
 
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto g  = gf<cartesian_product<b_zone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
+  auto g  = gf<prod<b_zone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
 
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   for (auto [k, w] : g.mesh()) g[k, w] = 1 / (w + 3 + 2 * (cos(k(0)) + cos(k(1))));
@@ -104,7 +104,7 @@ TEST(Gkom, EvalSlice) {
   int n_w = 5;
 
   auto bz = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto g  = gf<cartesian_product<b_zone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
+  auto g  = gf<prod<b_zone, imfreq>, scalar_valued>{{{bz, n_k}, {beta, Fermion, n_w}}};
 
   //Gk(k_) << -2 * (cos(k_(0)) + cos(k_(1)));
   for (auto [k, w] : g.mesh()) g[k, w] = 1 / (w + 3 + 2 * (cos(k(0)) + cos(k(1))));

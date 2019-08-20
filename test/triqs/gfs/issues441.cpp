@@ -12,7 +12,7 @@ placeholder<1> b;
 placeholder<2> c;
 placeholder<3> d;
 
-void disconnected_PP_G2(gf_view<imfreq, matrix_valued> g, gf_view<cartesian_product<imfreq, imfreq, imfreq>, tensor_valued<4>> g2,
+void disconnected_PP_G2(gf_view<imfreq, matrix_valued> g, gf_view<prod<imfreq, imfreq, imfreq>, tensor_valued<4>> g2,
                         bool diag_block = false) {
 
   g2() = 0.0;

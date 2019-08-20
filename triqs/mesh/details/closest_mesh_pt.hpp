@@ -25,7 +25,7 @@ namespace triqs::mesh {
   template <typename... T> closest_pt_wrap<T...> closest_mesh_pt(T &&... x) { return closest_pt_wrap<T...>{std::forward<T>(x)...}; }
 
   //-------------------------------------------------------
-  // closest mesh point on the grid
+  // imtime
   // ------------------------------------------------------
 
   template <typename Target> struct closest_point<imtime, Target> {
@@ -38,7 +38,7 @@ namespace triqs::mesh {
   };
 
   //-------------------------------------------------------
-  // closest mesh point on the grid
+  // linear mesh (refreq ...), cf below
   // ------------------------------------------------------
 
   struct closest_point_linear_mesh {
@@ -49,9 +49,13 @@ namespace triqs::mesh {
       return n;
     }
   };
+  
+  // For all mesh represented by a linear grid, the code is the same
+  template <typename Target> struct closest_point<retime, Target> : closest_point_linear_mesh {};
+  template <typename Target> struct closest_point<refreq, Target> : closest_point_linear_mesh {};
 
   //-------------------------------------------------------
-  // closest mesh point on the grid
+  // b_zone
   // ------------------------------------------------------
 
   template <typename Target> struct closest_point<b_zone, Target> {
@@ -69,19 +73,13 @@ namespace triqs::mesh {
       //return result;
     }
   };
-  //-------------------------------------------------------
-  // For all mesh represented by a linear grid, the code is the same
-
-  //template <typename Target> struct closest_point<imtime, Target> : closest_point_linear_mesh{};
-  template <typename Target> struct closest_point<retime, Target> : closest_point_linear_mesh {};
-  template <typename Target> struct closest_point<refreq, Target> : closest_point_linear_mesh {};
 
   //-------------------------------------------------------
   // closest mesh point on the grid
   // ------------------------------------------------------
 
-  template <typename... Ms, typename Target> struct closest_point<cartesian_product<Ms...>, Target> {
-    using index_t = typename cartesian_product<Ms...>::index_t;
+  template <typename... Ms, typename Target> struct closest_point<prod<Ms...>, Target> {
+    using index_t = typename prod<Ms...>::index_t;
 
     template <typename M, typename... T, size_t... Is> static index_t _impl(M const &m, closest_pt_wrap<T...> const &p, std::index_sequence<Is...>) {
       return index_t(closest_point<Ms, Target>::invoke(std::get<Is>(m), closest_pt_wrap<T>{std::get<Is>(p.value_tuple)})...);

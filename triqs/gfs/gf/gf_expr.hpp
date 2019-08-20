@@ -72,15 +72,15 @@ namespace triqs {
         }
       }
 
-      // special case of cartesian_product of mesh
+      // special case of prod of mesh
       namespace details {
         template <typename Tag, typename... M, size_t... Is>
-        mesh::cartesian_product<M...> combine_mesh_impl_cp(std::index_sequence<Is...>, mesh::cartesian_product<M...> const &l, mesh::cartesian_product<M...> const &r) {
+        mesh::prod<M...> combine_mesh_impl_cp(std::index_sequence<Is...>, mesh::prod<M...> const &l, mesh::prod<M...> const &r) {
           return {combine_mesh<Tag>(std::get<Is>(l), std::get<Is>(r))...};
         }
       } // namespace details
       template <typename Tag, typename... M>
-      mesh::cartesian_product<M...> combine_mesh(mesh::cartesian_product<M...> const &l, mesh::cartesian_product<M...> const &r) {
+      mesh::prod<M...> combine_mesh(mesh::prod<M...> const &l, mesh::prod<M...> const &r) {
         return details::combine_mesh_impl_cp<Tag>(std::index_sequence_for<M...>{}, l, r);
       }
 

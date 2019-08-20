@@ -28,7 +28,7 @@ template <int TARGET_RANK> void test_fourier() {
   else if constexpr (TARGET_RANK == 4) // Tensor_valued<4>
     shape = make_shape(2, 2, 2, 2);
 
-  using var_t    = cartesian_product<b_zone, imfreq, imfreq>;
+  using var_t    = prod<b_zone, imfreq, imfreq>;
   using target_t = typename _target_from_type_rank<dcomplex, TARGET_RANK>::type;
 
   // === Test a Green function with a given dispersion relation ===

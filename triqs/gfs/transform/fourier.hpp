@@ -28,7 +28,7 @@ namespace triqs::gfs {
 
   using namespace triqs::arrays;
   using mesh::b_zone;
-  using mesh::cartesian_product;
+  using mesh::prod;
   using mesh::cyclic_lattice;
   using mesh::imfreq;
   using mesh::imtime;
@@ -161,10 +161,10 @@ namespace triqs::gfs {
       auto gout = gf<M2, typename T::complex_t>{mesh, gin.target_shape()};
       _fourier<N>(gin, gout(), opt_args...);
       return gout;
-    } else { // === cartesian_product mesh
+    } else { // === prod mesh
       static_assert(std::is_same_v<M2, _mesh_fourier_image<std::tuple_element_t<N, M1>>>, "There is no Fourier transform between these two mesh");
       auto mesh_tpl = triqs::tuple::replace<N>(gin.mesh().components(), mesh);
-      auto out_mesh = mesh::cartesian_product{mesh_tpl};
+      auto out_mesh = mesh::prod{mesh_tpl};
       using mesh_t  = typename std::decay_t<decltype(out_mesh)>;
       auto gout     = gf<mesh_t, typename T::complex_t>{out_mesh, gin.target_shape()};
       _fourier<N>(gin, gout(), opt_args...);
@@ -217,7 +217,7 @@ namespace triqs::gfs {
   template <int... Ns, typename V, typename T> auto make_gf_from_multi_fourier(gf_const_view<V, T> gin) { return (gin() & ... & _fou_wk<Ns>{}); }
 
   template <int N1, int N2, typename M1, typename M2, typename... Vs, typename T>
-  auto make_gf_from_fourier(gf_const_view<cartesian_product<Vs...>, T> gin, M1 &&m1, M2 &&m2) {
+  auto make_gf_from_fourier(gf_const_view<prod<Vs...>, T> gin, M1 &&m1, M2 &&m2) {
     static_assert(sizeof...(Vs) >= 2, "Green function mesh rank incompatible with mesh indices");
 
     auto g1 = make_gf_from_fourier<N1>(gin(), std::forward<M1>(m1));
@@ -227,7 +227,7 @@ namespace triqs::gfs {
   }
 
   template <int N1, int N2, int N3, typename M1, typename M2, typename M3, typename... Vs, typename T>
-  auto make_gf_from_fourier(gf_const_view<cartesian_product<Vs...>, T> gin, M1 &&m1, M2 &&m2, M3 &&m3) {
+  auto make_gf_from_fourier(gf_const_view<prod<Vs...>, T> gin, M1 &&m1, M2 &&m2, M3 &&m3) {
     static_assert(sizeof...(Vs) >= 3, "Green function mesh rank incompatible with mesh indices");
 
     auto g1 = make_gf_from_fourier<N1, N2>(gin(), std::forward<M1>(m1), std::forward<M2>(m2));
@@ -236,7 +236,7 @@ namespace triqs::gfs {
     return std::move(g2);
   }
 
-  template <int... Ns, typename... Vs, typename T> auto make_gf_from_fourier(gf_const_view<cartesian_product<Vs...>, T> gin) {
+  template <int... Ns, typename... Vs, typename T> auto make_gf_from_fourier(gf_const_view<prod<Vs...>, T> gin) {
     return std::move(make_gf_from_fourier<Ns...>(gin(), make_adjoint_mesh(std::get<Ns>(gin.mesh()))...));
   }
 
@@ -321,7 +321,7 @@ namespace triqs::gfs {
 
     if constexpr (get_n_variables<M1>::value == 1) // === single mesh
       static_assert(std::is_same_v<M2, _mesh_fourier_image<M1>>, "There is no Fourier transform between these two mesh");
-    else { // === cartesian_product mesh
+    else { // === prod mesh
       using mesh_res_t = decltype(triqs::tuple::replace<N>(rhs.g.mesh().components(), make_adjoint_mesh(std::get<N>(rhs.g.mesh()))));
       static_assert(std::is_same_v<typename M1::m_tuple_t, mesh_res_t>, "Meshes in assignment don't match");
     }
