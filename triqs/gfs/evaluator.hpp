@@ -47,7 +47,7 @@ namespace triqs {
       // evaluate(s,f) --> retourne aussi un proxy !!!
 
       // technical details...
-      using r_t = typename Target::slice_t;
+      using r_t = typename Target::value_t;
 
       // gf_evaluator
       // FIXME We can instead return a view and write the result of the tail calculation
