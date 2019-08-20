@@ -90,7 +90,13 @@ namespace triqs::mesh {
   } // namespace details
 
   // ------------------- evaluate --------------------------------
-  // DOC ? Internal only ?
+ 
+  /** 
+   * Make the evaluation of a function by linear interpolation on the mesh
+   * @tparam M The mesh type
+   * @param m The mesh
+   * @param f The function 
+   */
   template <typename Mesh, typename F, typename... Args> auto evaluate(Mesh const &m, F const &f, Args &&... args) {
 
     if constexpr (not is_product_v<Mesh>) {

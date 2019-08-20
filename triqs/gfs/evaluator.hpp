@@ -83,13 +83,9 @@ namespace triqs {
      *  cartesian product
      *--------------------------------------------------------*/
 
-    using triqs::make_const_view;
-    inline dcomplex make_const_view(dcomplex z) { return z; }
-
-    // now the multi d gf_evaluator itself.
     template <typename Target, typename... Ms> struct gf_evaluator<mesh::prod<Ms...>, Target> {
 
-      static constexpr int arity = sizeof...(Ms); // METTRE ARITY DANS LA MESH !
+      static constexpr int arity = sizeof...(Ms);
 
       template <typename G, typename... Args> auto operator()(G const &g, Args &&... args) const {
         static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
@@ -118,4 +114,3 @@ namespace triqs {
       }
     };
   } // namespace gfs
-} // namespace triqs
