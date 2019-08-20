@@ -50,6 +50,7 @@
 
 namespace triqs::mesh {
 
+  using cyclat = torus;
   using cyclic_lattice = torus;
 
   template<typename ...T> using cartesian_product = prod<T...>;

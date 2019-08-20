@@ -39,7 +39,7 @@ template <int TARGET_RANK> void test_fourier() {
   g(k_, iOm_, iom_) << 1 / (iom_ + iOm_ - cos(k_[0]) * cos(k_[1]));
 
   // Fourier Transform 1st mesh and back
-  auto r_mesh = mesh::cyclic_lattice(BL, N_k);
+  auto r_mesh = mesh::cyclat(BL, N_k);
   {
     auto g_r_iW_iw = make_gf_from_fourier<0>(g, r_mesh);
     auto gb        = make_gf_from_fourier<0>(g_r_iW_iw, k_mesh);

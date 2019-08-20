@@ -34,12 +34,12 @@ auto eps_k_ = -2 * (cos(k_(0)) + cos(k_(1)));
 
 TEST(Gf, Bubble) {
   auto chi0q = gf<prod<imfreq, imfreq, b_zone>>{{{beta, Fermion, nw}, {beta, Boson, nw}, {bz, n_k}}, {1, 1}};
-  auto chi0r = gf<prod<imfreq, imfreq, cyclic_lattice>>{{{beta, Fermion, nw}, {beta, Boson, nw}, {n_k, n_k}}, {1, 1}};
+  auto chi0r = gf<prod<imfreq, imfreq, cyclat>>{{{beta, Fermion, nw}, {beta, Boson, nw}, {n_k, n_k}}, {1, 1}};
 
   auto chi0q_from_r = chi0q;
 
   auto Gk = gf<prod<imfreq, b_zone>, matrix_valued>{{{beta, Fermion, nw}, {bz, n_k}}, {1, 1}};
-  auto Gr = gf<prod<imfreq, cyclic_lattice>, matrix_valued>{{{beta, Fermion, nw}, {n_k, n_k}}, {1, 1}};
+  auto Gr = gf<prod<imfreq, cyclat>, matrix_valued>{{{beta, Fermion, nw}, {n_k, n_k}}, {1, 1}};
 
   Gk(inu_, k_) << 1 / (inu_ + mu - eps_k_);
 
@@ -72,12 +72,12 @@ TEST(Gf, Bubble) {
 TEST(Gf, BubbleScalar) {
 
   auto chi0q = gf<prod<imfreq, imfreq, b_zone>, scalar_valued>{{{beta, Fermion, nw}, {beta, Boson, nw}, {bz, n_k}}};
-  auto chi0r = gf<prod<imfreq, imfreq, cyclic_lattice>, scalar_valued>{{{beta, Fermion, nw}, {beta, Boson, nw}, {n_k, n_k}}};
+  auto chi0r = gf<prod<imfreq, imfreq, cyclat>, scalar_valued>{{{beta, Fermion, nw}, {beta, Boson, nw}, {n_k, n_k}}};
 
   auto chi0q_from_r = chi0q;
 
   auto Gk = gf<prod<imfreq, b_zone>, scalar_valued>{{{beta, Fermion, nw}, {bz, n_k}}};
-  auto Gr = gf<prod<imfreq, cyclic_lattice>, scalar_valued>{{{beta, Fermion, nw}, {n_k, n_k}}};
+  auto Gr = gf<prod<imfreq, cyclat>, scalar_valued>{{{beta, Fermion, nw}, {n_k, n_k}}};
 
   Gk(inu_, k_) << 1 / (inu_ + mu - eps_k_);
 
@@ -102,7 +102,7 @@ TEST(Gf, BubbleScalar) {
 TEST(Gf, BubbleSimplif) {
   // simplified, without frequency dependence
   auto gk         = gf<b_zone>{{bz, n_k}, {1, 1}};
-  auto gr         = gf<cyclic_lattice>{{n_k, n_k}, {1, 1}};
+  auto gr         = gf<cyclat>{{n_k, n_k}, {1, 1}};
   auto ggr        = gr;
   auto ggq        = gk;
   auto ggq_from_r = gk;
@@ -122,7 +122,7 @@ TEST(Gf, BubbleSimplif) {
 TEST(Gf, BubbleSimplifScalar) {
   // simplified, without frequency dependence
   auto gk         = gf<b_zone, scalar_valued>{{bz, n_k}};
-  auto gr         = gf<cyclic_lattice, scalar_valued>{{n_k, n_k}, {}};
+  auto gr         = gf<cyclat, scalar_valued>{{n_k, n_k}, {}};
   auto ggr        = gr;
   auto ggq        = gk;
   auto ggq_from_r = gk;

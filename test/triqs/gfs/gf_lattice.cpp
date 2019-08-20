@@ -4,15 +4,15 @@
 using index_t = utility::mini_vector<int, 3>;
 using K_t     = std::array<double, 3>;
 
-TEST(Gfs, cyclic_lattice) {
+TEST(Gfs, cyclat) {
   double beta = 1;
   triqs::clef::placeholder<0> r_;
 
   auto bl  = bravais_lattice{make_unit_matrix<double>(2)};
-  auto m_r = mesh::cyclic_lattice{bl, 2};
+  auto m_r = mesh::cyclat{bl, 2};
   ASSERT_EQ(m_r.size(), 4);
 
-  auto Gr = gf<cyclic_lattice>{m_r, {2, 2}};
+  auto Gr = gf<cyclat>{m_r, {2, 2}};
 
   // Clef Assignment
   Gr(r_) << 1. + r_(0) + r_(1);

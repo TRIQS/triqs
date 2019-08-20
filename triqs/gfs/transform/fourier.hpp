@@ -29,7 +29,7 @@ namespace triqs::gfs {
   using namespace triqs::arrays;
   using mesh::b_zone;
   using mesh::prod;
-  using mesh::cyclic_lattice;
+  using mesh::cyclat;
   using mesh::imfreq;
   using mesh::imtime;
   using mesh::legendre;
@@ -71,10 +71,10 @@ namespace triqs::gfs {
   }
 
   // FIXME : DOC
-  inline b_zone make_adjoint_mesh(cyclic_lattice const &m) { return {m.domain(), m.periodization_matrix}; }
+  inline b_zone make_adjoint_mesh(cyclat const &m) { return {m.domain(), m.periodization_matrix}; }
 
   // FIXME : DOC
-  inline cyclic_lattice make_adjoint_mesh(b_zone const &m) { return {m.domain(), m.periodization_matrix}; }
+  inline cyclat make_adjoint_mesh(b_zone const &m) { return {m.domain(), m.periodization_matrix}; }
 
   // trait for error messages later
   template <typename V> using _mesh_fourier_image = decltype(make_adjoint_mesh(V()));
@@ -96,8 +96,8 @@ namespace triqs::gfs {
   gf_vec_t<retime> _fourier_impl(retime const &t_mesh, gf_vec_cvt<refreq> gw, array_const_view<dcomplex, 2> known_moments = {});
 
   // lattice
-  gf_vec_t<cyclic_lattice> _fourier_impl(cyclic_lattice const &r_mesh, gf_vec_cvt<b_zone> gk);
-  gf_vec_t<b_zone> _fourier_impl(b_zone const &k_mesh, gf_vec_cvt<cyclic_lattice> gr);
+  gf_vec_t<cyclat> _fourier_impl(cyclat const &r_mesh, gf_vec_cvt<b_zone> gk);
+  gf_vec_t<b_zone> _fourier_impl(b_zone const &k_mesh, gf_vec_cvt<cyclat> gr);
 
   /*------------------------------------------------------------------------------------------------------
    *
@@ -182,7 +182,7 @@ namespace triqs::gfs {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 
-  template <int N = 0, typename T> auto make_gf_from_fourier(gf_const_view<cyclic_lattice, T> gin) {
+  template <int N = 0, typename T> auto make_gf_from_fourier(gf_const_view<cyclat, T> gin) {
     return make_gf_from_fourier(gin, make_adjoint_mesh(gin.mesh()));
   }
 

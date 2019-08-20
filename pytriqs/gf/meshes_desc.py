@@ -206,7 +206,7 @@ module.add_class(m)
 ##   MeshCyclicLattice
 ########################
 
-m = make_mesh( py_type = "MeshCyclicLattice", c_tag = "cyclic_lattice", index_type = 'triqs::utility::mini_vector<int,3>' )
+m = make_mesh( py_type = "MeshCyclicLattice", c_tag = "cyclat", index_type = 'triqs::utility::mini_vector<int,3>' )
 m.add_constructor(signature = "(int L1, int L2, int L3)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, matrix_view<int> periodization_matrix)")
 m.add_constructor(signature = "(triqs::lattice::bravais_lattice b, int L)")

@@ -24,9 +24,9 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
   auto chi0_q_nu = gf_bz_imfreq_mat{{k_mesh, {beta, Boson, nnu}}, {1, 1}};
 
   auto chi0_q_tau = gf<prod<b_zone, imtime>, matrix_valued>{{k_mesh, {beta, Boson, ntau}}, {1, 1}};
-  auto chi0_R_tau = gf<prod<cyclic_lattice, imtime>, matrix_valued>{{{nk, nk}, {beta, Boson, ntau}}, {1, 1}};
+  auto chi0_R_tau = gf<prod<cyclat, imtime>, matrix_valued>{{{nk, nk}, {beta, Boson, ntau}}, {1, 1}};
   auto G_k_tau    = gf<prod<b_zone, imtime>, matrix_valued>{{k_mesh, {beta, Fermion, ntau}}, {1, 1}};
-  auto G_R_tau    = gf<prod<cyclic_lattice, imtime>, matrix_valued>{{{nk, nk}, {beta, Fermion, ntau}}, {1, 1}};
+  auto G_R_tau    = gf<prod<cyclat, imtime>, matrix_valued>{{{nk, nk}, {beta, Fermion, ntau}}, {1, 1}};
 
   for (auto const &k : std::get<0>(G_k_tau.mesh())) G_k_tau[k, _] = fourier(G_k_w[k, _]);
 
