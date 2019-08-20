@@ -49,7 +49,7 @@ namespace triqs::mesh {
       return n;
     }
   };
-  
+
   // For all mesh represented by a linear grid, the code is the same
   template <typename Target> struct closest_point<retime, Target> : closest_point_linear_mesh {};
   template <typename Target> struct closest_point<refreq, Target> : closest_point_linear_mesh {};
@@ -67,8 +67,8 @@ namespace triqs::mesh {
       //// FIXME : works only on square lattice
       //auto id = m.get_interpolation_data(p.value);
       //for (int u = 0; u < 3; ++u) {
-        //int i     = (id[0].second[u] > id[1].second[u] ? 0 : 1);
-        //result[u] = id.ia[i][u];
+      //int i     = (id[0].second[u] > id[1].second[u] ? 0 : 1);
+      //result[u] = id.ia[i][u];
       //}
       //return result;
     }

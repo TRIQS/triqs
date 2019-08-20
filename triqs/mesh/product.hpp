@@ -78,8 +78,7 @@ namespace triqs::mesh {
 
     prod() = default;
     prod(Ms const &... mesh) : m_tuple(mesh...), _dom(mesh.domain()...) {}
-    prod(std::tuple<Ms...> const &mesh_tpl)
-       : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)) {}
+    prod(std::tuple<Ms...> const &mesh_tpl) : m_tuple(mesh_tpl), _dom(triqs::tuple::map([](auto &&m) { return m.domain(); }, mesh_tpl)) {}
     prod(prod const &) = default;
 
     /// Mesh comparison
@@ -313,8 +312,7 @@ namespace std {
   };
 
   template <size_t N, typename... Ms>
-  class tuple_element<N, triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>>
-     : public tuple_element<N, std::tuple<typename Ms::mesh_point_t...>> {};
+  class tuple_element<N, triqs::mesh::mesh_point<triqs::mesh::prod<Ms...>>> : public tuple_element<N, std::tuple<typename Ms::mesh_point_t...>> {};
 
 } // namespace std
 

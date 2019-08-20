@@ -52,7 +52,9 @@ namespace triqs::mesh {
 
     // -------------- Evaluation of a function on the grid --------------------------
 
-    std::array<std::pair<index_t, one_t>, 1> get_interpolation_data(index_t const &x) const { return { std::pair<index_t, one_t>{index_modulo(x), {}} }; }
+    std::array<std::pair<index_t, one_t>, 1> get_interpolation_data(index_t const &x) const {
+      return {std::pair<index_t, one_t>{index_modulo(x), {}}};
+    }
 
     // ------------------- Comparison -------------------
 

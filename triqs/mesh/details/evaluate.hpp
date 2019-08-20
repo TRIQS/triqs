@@ -40,7 +40,7 @@ namespace std {
 namespace triqs::mesh {
 
   namespace details {
-  
+
     // we need to form w_i w_j g[x_i, x_j],  0< i <= N1, 0 < j <= N2
     // we take a compile time sequence I in [0, ..., N1 N2]
     // and use i = I%N1, j = I/N1 to obtain all values of (i,j)
@@ -48,19 +48,18 @@ namespace triqs::mesh {
     // for w_i w_j w_k g[x_i, x_j, x_k],  0< i <= N1, 0 < j <= N2, 0 < k <= N3
     // we use i = I%N1, j = (I% N1N2) /N1, k = (I%N1N2N3)/N1N2 to obtain all values of (i,j, k) (for k the % is useless...)
 
-    template <size_t... Is, typename F, typename A1>
-    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const & f, A1 const &a1) {
+    template <size_t... Is, typename F, typename A1> FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const &f, A1 const &a1) {
       return ((a1[Is].second * f(a1[Is].first)) + ...);
     }
 
     template <size_t... Is, typename F, typename A1, typename A2>
-    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const & f, A1 const &a1, A2 const &a2) {
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const &f, A1 const &a1, A2 const &a2) {
       constexpr int N1 = std::tuple_size<A1>::value;
       return ((a1[Is % N1].second * a2[Is / N1].second * f(a1[Is % N1].first, a2[Is / N1].first)) + ...);
     }
 
     template <size_t... Is, typename F, typename A1, typename A2, typename A3>
-    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const & f, A1 const &a1, A2 const &a2, A3 const &a3) {
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const &f, A1 const &a1, A2 const &a2, A3 const &a3) {
       constexpr int N1  = std::tuple_size<A1>::value;
       constexpr int N12 = N1 * std::tuple_size<A2>::value;
       return ((a1[Is % N1].second * a2[(Is % N12) / N1].second * a3[Is / N12].second * //
@@ -69,7 +68,7 @@ namespace triqs::mesh {
     }
 
     template <size_t... Is, typename F, typename A1, typename A2, typename A3, typename A4>
-    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const & f, A1 const &a1, A2 const &a2, A3 const &a3, A4 const &a4) {
+    FORCEINLINE auto _multivar_eval_impl2(std::index_sequence<Is...>, F const &f, A1 const &a1, A2 const &a2, A3 const &a3, A4 const &a4) {
       constexpr int N1   = std::tuple_size<A1>::value;
       constexpr int N12  = N1 * std::tuple_size<A2>::value;
       constexpr int N123 = N12 * std::tuple_size<A3>::value;
@@ -79,18 +78,19 @@ namespace triqs::mesh {
     }
 
     //
-    template <typename F, typename... InterPolDataType> FORCEINLINE auto multivar_eval(F const & f, InterPolDataType const &... a) {
+    template <typename F, typename... InterPolDataType> FORCEINLINE auto multivar_eval(F const &f, InterPolDataType const &... a) {
       return details::_multivar_eval_impl2(std::make_index_sequence<(std::tuple_size<InterPolDataType>::value * ...)>{}, f, a...);
     }
 
     // FIXME20 : use a lambda
-    template <typename F, typename M, size_t... Is, typename... Args> auto evaluate_impl(std::index_sequence<Is...>, M const & m,  F const &f, Args &&... args) {
+    template <typename F, typename M, size_t... Is, typename... Args>
+    auto evaluate_impl(std::index_sequence<Is...>, M const &m, F const &f, Args &&... args) {
       return multivar_eval(f, std::get<Is>(m.components()).get_interpolation_data(std::forward<Args>(args))...);
     }
   } // namespace details
 
   // ------------------- evaluate --------------------------------
- 
+
   /** 
    * Make the evaluation of a function by linear interpolation on the mesh
    * @tparam M The mesh type
@@ -116,4 +116,3 @@ namespace triqs::mesh {
   }
 
 } // namespace triqs::mesh
-
