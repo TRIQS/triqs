@@ -9,7 +9,7 @@ TEST(Gfs, cyclic_lattice) {
   triqs::clef::placeholder<0> r_;
 
   auto bl  = bravais_lattice{make_unit_matrix<double>(2)};
-  auto m_r = gf_mesh<cyclic_lattice>{bl, 2};
+  auto m_r = mesh::cyclic_lattice{bl, 2};
   ASSERT_EQ(m_r.size(), 4);
 
   auto Gr = gf<cyclic_lattice>{m_r, {2, 2}};
@@ -30,7 +30,7 @@ TEST(Gfs, brillouin_zone) {
   int n_k = 50;
 
   auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto m_k = gf_mesh<b_zone>{bz, n_k};
+  auto m_k = mesh::b_zone{bz, n_k};
   ASSERT_EQ(m_k.size(), n_k * n_k);
 
   auto Gk = gf<b_zone, scalar_valued>{m_k}; //, {2, 2}};
@@ -71,7 +71,7 @@ TEST(Gfs, brillouin_zoneMatrix) {
   int n_k = 50;
 
   auto bz  = brillouin_zone{bravais_lattice{make_unit_matrix<double>(2)}};
-  auto m_k = gf_mesh<b_zone>{bz, n_k};
+  auto m_k = mesh::b_zone{bz, n_k};
   ASSERT_EQ(m_k.size(), n_k * n_k);
 
   auto Gk = gf<b_zone, matrix_valued>{m_k, {2, 2}};

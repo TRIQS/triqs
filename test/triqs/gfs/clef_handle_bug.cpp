@@ -12,7 +12,7 @@ double beta = 20;
 int main() {
 
   // Meshes
-  auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, nw};
+  auto iw_mesh = mesh::imfreq{beta, Fermion, nw};
   auto iw_inu_mesh = mesh::cartesian_product{iw_mesh, iw_mesh};
 
   // -- Product Gf

@@ -41,7 +41,7 @@ int n_im_freq = 10;
 std::vector<int> indices1 = {0, 1};
 std::vector<int> indices2 = {0, 1, 2};
 
-const auto m = gf_mesh<imfreq>{beta, Fermion, n_im_freq};
+const auto m = mesh::imfreq{beta, Fermion, n_im_freq};
 
 // -----------------------------------------------------
 

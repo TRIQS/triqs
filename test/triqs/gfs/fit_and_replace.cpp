@@ -27,14 +27,14 @@ TEST(Gf, RestrictedView) {
   double beta = 10;
   int N_iw    = 100;
 
-  auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, N_iw};
+  auto iw_mesh = mesh::imfreq{beta, Fermion, N_iw};
   auto G_iw    = gf<imfreq>{iw_mesh, {2, 2}};
   G_iw(iw_) << 1 / (iw_ - 1);
 
   int n_max    = 80;
   auto G_iw_rv = restricted_view(G_iw(), n_max);
 
-  auto iw_mesh_small = gf_mesh<imfreq>{beta, Fermion, n_max};
+  auto iw_mesh_small = mesh::imfreq{beta, Fermion, n_max};
   auto G_iw_exact    = gf<imfreq>{iw_mesh_small, {2, 2}};
   G_iw_exact(iw_) << 1 / (iw_ - 1);
 
@@ -47,7 +47,7 @@ TEST(Gf, FitAndReplace) {
   double beta = 10;
   int N_iw    = 100;
 
-  auto iw_mesh  = gf_mesh<imfreq>{beta, Fermion, N_iw};
+  auto iw_mesh  = mesh::imfreq{beta, Fermion, N_iw};
   auto G_iw     = gf<imfreq>{iw_mesh, {2, 2}};
   auto Sigma_iw = G_iw;
 

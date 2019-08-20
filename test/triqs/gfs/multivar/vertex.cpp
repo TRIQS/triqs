@@ -14,7 +14,7 @@ TEST(Gf, VertexScalar) {
   double beta   = 10.0;
   int n_im_freq = 10;
 
-  auto m = gf_mesh<imfreq>{beta, Fermion, n_im_freq};
+  auto m = mesh::imfreq{beta, Fermion, n_im_freq};
 
   auto vertex = gf_vertex_t{{m, m, m}};
 
@@ -42,7 +42,7 @@ TEST(Gf, VertexTensor) {
   double beta   = 10.0;
   int n_im_freq = 10;
 
-  auto m = gf_mesh<imfreq>{beta, Fermion, n_im_freq};
+  auto m = mesh::imfreq{beta, Fermion, n_im_freq};
 
   // now with indices
   auto vertex = gf_vertex_tensor_t{{m, m, m}, {2, 2, 2}};

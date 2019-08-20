@@ -8,7 +8,7 @@ TEST(FitTailMatsubara, Basic) { // NOLINT
   double beta = 10;
   int N       = 100;
 
-  auto iw_mesh = gf_mesh<imfreq>{beta, Fermion, N};
+  auto iw_mesh = mesh::imfreq{beta, Fermion, N};
 
   // Set the fraction of mesh points to use for the tail fit
   double tail_fraction = 0.3;
@@ -120,9 +120,9 @@ TEST(FitTailMatsubara, Multivar) { // NOLINT
   int N_iw    = 100;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
-  auto k_mesh    = gf_mesh<b_zone>(BL, N_k);
-  auto iW_mesh   = gf_mesh<imfreq>{beta, Boson, N_iW};
-  auto iw_mesh   = gf_mesh<imfreq>{beta, Fermion, N_iw};
+  auto k_mesh    = mesh::b_zone(BL, N_k);
+  auto iW_mesh   = mesh::imfreq{beta, Boson, N_iW};
+  auto iw_mesh   = mesh::imfreq{beta, Fermion, N_iw};
   auto prod_mesh = k_mesh * iW_mesh * iw_mesh;
 
   auto g = gf{prod_mesh, {1, 1}};

@@ -14,9 +14,9 @@ template <int TARGET_RANK> void test_fourier() {
   double E = 1;
 
   auto BL        = bravais_lattice{matrix<double>{{1, 0}, {0, 1}}};
-  auto k_mesh    = gf_mesh<b_zone>(BL, N_k);
-  auto iw_mesh   = gf_mesh<imfreq>{beta, Fermion, N_iw};
-  auto iW_mesh   = gf_mesh<imfreq>{beta, Boson, N_iW};
+  auto k_mesh    = mesh::b_zone(BL, N_k);
+  auto iw_mesh   = mesh::imfreq{beta, Fermion, N_iw};
+  auto iW_mesh   = mesh::imfreq{beta, Boson, N_iW};
   auto prod_mesh = k_mesh * iW_mesh * iw_mesh;
 
   mini_vector<size_t, TARGET_RANK> shape{};
@@ -39,7 +39,7 @@ template <int TARGET_RANK> void test_fourier() {
   g(k_, iOm_, iom_) << 1 / (iom_ + iOm_ - cos(k_[0]) * cos(k_[1]));
 
   // Fourier Transform 1st mesh and back
-  auto r_mesh = gf_mesh<cyclic_lattice>(BL, N_k);
+  auto r_mesh = mesh::cyclic_lattice(BL, N_k);
   {
     auto g_r_iW_iw = make_gf_from_fourier<0>(g, r_mesh);
     auto gb        = make_gf_from_fourier<0>(g_r_iW_iw, k_mesh);
@@ -49,7 +49,7 @@ template <int TARGET_RANK> void test_fourier() {
   }
 
   // Fourier Transform 3rd mesh and back
-  auto tau_mesh = gf_mesh<imtime>{beta, Fermion, 2 * N_iw + 1};
+  auto tau_mesh = mesh::imtime{beta, Fermion, 2 * N_iw + 1};
   {
     auto g_k_iW_tau = make_gf_from_fourier<2>(g, tau_mesh);
     auto gb         = make_gf_from_fourier<2>(g_k_iW_tau, iw_mesh);

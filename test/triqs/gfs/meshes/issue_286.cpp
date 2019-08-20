@@ -10,36 +10,36 @@ TEST(Gf, BosonicH5Read) {
 }
 
 TEST(MeshGf, BosonicH5Read) {
-  auto m = gf_mesh<imfreq>{1, Boson, 10, mesh::imfreq::option::positive_frequencies_only};
+  auto m = mesh::imfreq{1, Boson, 10, mesh::imfreq::option::positive_frequencies_only};
   h5::file file("bugTA2.h5", H5F_ACC_TRUNC);
   h5_write(file, "Gmesh", m);
-  auto m2 = gf_mesh<imfreq>{};
+  auto m2 = mesh::imfreq{};
   h5_read(file, "Gmesh", m2);
   //h5_read(file,"Gmesh", m2);
   EXPECT_EQ(m, m2);
 }
 
 TEST(MeshGf, BosonicH5ReadHalfOnly) {
-  auto m = gf_mesh<imfreq>{1, Boson, 3, mesh::imfreq::option::positive_frequencies_only};
+  auto m = mesh::imfreq{1, Boson, 3, mesh::imfreq::option::positive_frequencies_only};
   h5::file file("bugTA2.h5", H5F_ACC_TRUNC);
   h5_write(file, "Gmesh", m);
-  auto m2 = gf_mesh<imfreq>{};
+  auto m2 = mesh::imfreq{};
   h5_read(file, "Gmesh", m2);
   EXPECT_EQ(m, m2);
 }
 TEST(MeshGf, FermionicH5Read) {
-  auto m = gf_mesh<imfreq>{1, Fermion, 3};
+  auto m = mesh::imfreq{1, Fermion, 3};
   h5::file file("bugTA2.h5", H5F_ACC_TRUNC);
   h5_write(file, "Gmesh", m);
-  auto m2 = gf_mesh<imfreq>{};
+  auto m2 = mesh::imfreq{};
   h5_read(file, "Gmesh", m2);
   EXPECT_EQ(m, m2);
 }
 TEST(MeshGf, FermionicH5ReadHalfOnly) {
-  auto m = gf_mesh<imfreq>{1, Fermion, 3, mesh::imfreq::option::positive_frequencies_only};
+  auto m = mesh::imfreq{1, Fermion, 3, mesh::imfreq::option::positive_frequencies_only};
   h5::file file("bugTA2.h5", H5F_ACC_TRUNC);
   h5_write(file, "Gmesh", m);
-  auto m2 = gf_mesh<imfreq>{};
+  auto m2 = mesh::imfreq{};
   h5_read(file, "Gmesh", m2);
   EXPECT_EQ(m, m2);
 }
