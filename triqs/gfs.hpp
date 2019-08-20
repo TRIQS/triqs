@@ -38,7 +38,7 @@
 #include "./gfs/gf/auto_assign.hpp"
 
 // multivar
-#include "./mesh/product.hpp"
+#include "./mesh/prod.hpp"
 #include "./gfs/gf/partial_eval.hpp"
 
 // expression template

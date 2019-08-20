@@ -40,7 +40,7 @@
 #include "./mesh/legendre.hpp"
 #include "./mesh/b_zone.hpp"
 #include "./mesh/torus.hpp"
-#include "./mesh/product.hpp"
+#include "./mesh/prod.hpp"
 
 #include "./mesh/details/debug.hpp"
 #include "./mesh/details/closest_mesh_pt.hpp"
