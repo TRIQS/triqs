@@ -180,14 +180,14 @@ namespace triqs {
 
     /// G(\tau) from Lehmann representation
     template <bool Complex>
-    block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<imtime> const &mesh) {
+    block_gf<imtime> atomic_g_tau(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imtime const &mesh) {
       double beta = mesh.domain().beta;
       auto g      = block_gf{mesh, gf_struct};
       fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(beta, g()));
       return g;
     }
-    template block_gf<imtime> atomic_g_tau<false>(gf_lehmann_t<false> const &, gf_struct_t const &, gf_mesh<imtime> const &);
-    template block_gf<imtime> atomic_g_tau<true>(gf_lehmann_t<true> const &, gf_struct_t const &, gf_mesh<imtime> const &);
+    template block_gf<imtime> atomic_g_tau<false>(gf_lehmann_t<false> const &, gf_struct_t const &, mesh::imtime const &);
+    template block_gf<imtime> atomic_g_tau<true>(gf_lehmann_t<true> const &, gf_struct_t const &, mesh::imtime const &);
 
     // -----------------------------------------------------------------
 
@@ -223,13 +223,13 @@ namespace triqs {
 
     /// G(i\omega) from Lehmann representation
     template <bool Complex>
-    block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<imfreq> const &mesh) {
+    block_gf<imfreq> atomic_g_iw(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::imfreq const &mesh) {
       auto g = block_gf{mesh, gf_struct};
       fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(g()));
       return g;
     }
-    template block_gf<imfreq> atomic_g_iw<false>(gf_lehmann_t<false> const &, gf_struct_t const &, gf_mesh<imfreq> const &);
-    template block_gf<imfreq> atomic_g_iw<true>(gf_lehmann_t<true> const &, gf_struct_t const &, gf_mesh<imfreq> const &);
+    template block_gf<imfreq> atomic_g_iw<false>(gf_lehmann_t<false> const &, gf_struct_t const &, mesh::imfreq const &);
+    template block_gf<imfreq> atomic_g_iw<true>(gf_lehmann_t<true> const &, gf_struct_t const &, mesh::imfreq const &);
 
     // -----------------------------------------------------------------
 
@@ -270,14 +270,14 @@ namespace triqs {
 
     /// G_\ell from Lehmann representation
     template <bool Complex>
-    block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<legendre> const &mesh) {
+    block_gf<legendre> atomic_g_l(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::legendre const &mesh) {
       double beta = mesh.domain().beta;
       auto g      = block_gf{mesh, gf_struct};
       fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(beta, g()));
       return g;
     }
-    template block_gf<legendre> atomic_g_l<false>(gf_lehmann_t<false> const &, gf_struct_t const &, gf_mesh<legendre> const &);
-    template block_gf<legendre> atomic_g_l<true>(gf_lehmann_t<true> const &, gf_struct_t const &, gf_mesh<legendre> const &);
+    template block_gf<legendre> atomic_g_l<false>(gf_lehmann_t<false> const &, gf_struct_t const &, mesh::legendre const &);
+    template block_gf<legendre> atomic_g_l<true>(gf_lehmann_t<true> const &, gf_struct_t const &, mesh::legendre const &);
 
     // -----------------------------------------------------------------
 
@@ -313,13 +313,13 @@ namespace triqs {
 
     /// G(\omega) from Lehmann representation
     template <bool Complex>
-    block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, gf_mesh<refreq> const &mesh, double broadening) {
+    block_gf<refreq> atomic_g_w(gf_lehmann_t<Complex> const &lehmann, gf_struct_t const &gf_struct, mesh::refreq const &mesh, double broadening) {
       auto g = block_gf{mesh, gf_struct};
       fill_block_gf_from_lehmann<Complex>(g(), lehmann, make_term_proc<Complex>(g(), broadening));
       return g;
     }
-    template block_gf<refreq> atomic_g_w<false>(gf_lehmann_t<false> const &, gf_struct_t const &, gf_mesh<refreq> const &, double);
-    template block_gf<refreq> atomic_g_w<true>(gf_lehmann_t<true> const &, gf_struct_t const &, gf_mesh<refreq> const &, double);
+    template block_gf<refreq> atomic_g_w<false>(gf_lehmann_t<false> const &, gf_struct_t const &, mesh::refreq const &, double);
+    template block_gf<refreq> atomic_g_w<true>(gf_lehmann_t<true> const &, gf_struct_t const &, mesh::refreq const &, double);
 
     // -----------------------------------------------------------------
 
