@@ -52,14 +52,6 @@ namespace triqs::gfs {
   using mesh::matsubara_freq;
   using mesh::statistic_enum;
 
-  // BACKWARD COMPAT !
-  template <typename M, typename Requires = std::enable_if_t<mesh::models_mesh_concept_v<M>>>
-  using gf_mesh [[deprecated("mesh::X is deprecated since TRIQS 2.3. Replace simply by M. Cf documentation.")]] = M;
-
-  /*----------------------------------------------------------
-  *   Useful metafunctions, traits
-  *--------------------------------------------------------*/
-
   /*----------------------------------------------------------
   *  Evaluator
   *--------------------------------------------------------*/
@@ -74,14 +66,6 @@ namespace triqs::gfs {
   *--------------------------------------------------------*/
 
   template <typename Mesh, typename Target> struct gf_h5_rw;
-
-  /*----------------------------------------------------------
-  *  Get shape of the data or of the target
-  *--------------------------------------------------------*/
-
-  template <typename G> TRIQS_DEPRECATED("use X.data_shape() instead") auto get_gf_data_shape(G const &g) { return g.data_shape(); }
-
-  template <typename G> TRIQS_DEPRECATED("use X.target_shape() instead") auto get_target_shape(G const &g) { return g.target_shape(); }
 
   /*------------------------------------------------------------------------------------------------------
  *                                  For mpi lazy

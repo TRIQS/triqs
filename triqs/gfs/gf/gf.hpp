@@ -62,14 +62,8 @@ namespace triqs::gfs {
     is_instantiation_of_v<gf_const_view, G>;
   template <typename G> inline constexpr bool is_gf_v<G, typename std::decay_t<G>::mesh_t> = is_gf_v<G, void>;
 
-  /// ---------------------------  implementation  ---------------------------------
+  /// ---------------------------  tags for some implementation details  ---------------------------------
 
-  namespace details {
-    // FIXME : replace by if constexpr when possible
-    template <typename A> void _rebind_helper(A &x, A const &y) { x.rebind(y); }
-    inline void _rebind_helper(dcomplex &x, dcomplex const &y) { x = y; }
-    inline void _rebind_helper(double &x, double const &y) { x = y; }
-  } // namespace details
   struct impl_tag {};
   struct impl_tag2 {};
 
