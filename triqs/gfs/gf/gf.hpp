@@ -155,56 +155,56 @@ namespace triqs::gfs {
     // DOC : fix data type here array<scalar_t, data_rank> to avoid multiply type in visible part
 
     /**
-        * Data array
-        *
-        * @category Accessors
-      */
+     * Data array
+     *
+     * @category Accessors
+     */
     data_t &data() & { return _data; }
 
     /**
-        * Data array (const)
-        *
-        * @category Accessors
-      */
+     * Data array (const)
+     *
+     * @category Accessors
+     */
     data_t const &data() const & { return _data; }
 
     /**
-        * Data array : move data in case of rvalue
-        *
-        * @category Accessors
-      */
+     * Data array : move data in case of rvalue
+     *
+     * @category Accessors
+     */
     data_t data() && { return std::move(_data); }
 
     /**
-      * Shape of the data
-      *
-      * NB : Needed for generic code. Expression of gf (e.g. g1 + g2) have a data_shape, but not data
-      * @category Accessors
-      */
+     * Shape of the data
+     *
+     * NB : Needed for generic code. Expression of gf (e.g. g1 + g2) have a data_shape, but not data
+     * @category Accessors
+     */
     auto const &data_shape() const { return _data.shape(); }
 
     // FIXME : No doc : internal only ? for make_gf
     target_and_shape_t target() const { return target_and_shape_t{_data.shape().template front_mpop<arity>()}; } // drop arity dims
 
     /**
-        * Shape of the target
-        *
-        * @category Accessors
-      */
+     * Shape of the target
+     *
+     * @category Accessors
+     */
     arrays::mini_vector<int, Target::rank> target_shape() const { return target().shape(); } // drop arity dims
 
     /**
-        * Generator for the indices of the target space
-        *
-        * @category Accessors
-      */
+     * Generator for the indices of the target space
+     *
+     * @category Accessors
+     */
     auto target_indices() const { return itertools::product_range(target().shape()); }
 
     /** 
-       * Memorylayout of the data
-       *
-       * @category Accessors
-       */
+     * Memorylayout of the data
+     *
+     * @category Accessors
+     */
     memory_layout_t<data_rank> const &memory_layout() const { return _data.indexmap().memory_layout(); }
     
     /// Indices of the Green function (for Python only)
@@ -271,34 +271,34 @@ namespace triqs::gfs {
     }
 
     /**
-       *  @param m Mesh
-       *  @param dat data arrray 
-       *  @param ind Indices
-       * 
-       *  @note  Using the "pass by value" and move
-       *  @example triqs/gfs/gf_constructors_0.cpp
-       */
+     *  @param m Mesh
+     *  @param dat data arrray
+     *  @param ind Indices
+     *
+     *  @note  Using the "pass by value" and move
+     *  @example triqs/gfs/gf_constructors_0.cpp
+     */
     gf(mesh_t m, data_t dat, indices_t ind) : gf(impl_tag{}, std::move(m), std::move(dat), std::move(ind)) {}
 
     /**
-       *  @param m Mesh
-       *  @param shape Target shape
-       *  @param ind Indices
-       * 
-       */
+     *  @param m Mesh
+     *  @param shape Target shape
+     *  @param ind Indices
+     * 
+     */
     gf(mesh_t m, target_shape_t shape = target_shape_t{}, indices_t const &ind = indices_t{})
        : gf(impl_tag{}, std::move(m), data_t(make_data_shape(Target{}, m, shape)), ind) {
       if (this->_indices.empty()) this->_indices = indices_t(shape);
     }
 
     /**
-       *  @param m Mesh
-       *  @param dat data arrray 
-       *  @param ml Memory layout for the *whole* data array
-       *  @param ind Indices
-       * 
-       *  @note  Using the "pass by value" and move
-       */
+     *  @param m Mesh
+     *  @param dat data arrray
+     *  @param ml Memory layout for the *whole* data array
+     *  @param ind Indices
+     *
+     *  @note  Using the "pass by value" and move
+     */
     gf(mesh_t m, data_t dat, arrays::memory_layout_t<arity + Target::rank> const &ml, indices_t ind)
        : gf(impl_tag{}, std::move(m), data_t(dat, ml), std::move(ind)) {}
 
@@ -351,16 +351,16 @@ namespace triqs::gfs {
     }
 
     /**
-	*
-	* The assignment resizes the mesh and the data, invalidating all pointers on them.
-	* 
-	* @tparam RHS  Type of the right hand side rhs. Must model GreenFunction concept.
-	*
-	* 		  RHS can be anything modeling the gf concept TBW
-	* 		  In particular lazy expression with Green functions
-	* @param rhs
-	* @example    triqs/gfs/gf_assign_0.cpp
-	*/
+     *
+     * The assignment resizes the mesh and the data, invalidating all pointers on them.
+     *
+     * @tparam RHS  Type of the right hand side rhs. Must model GreenFunction concept.
+     *
+     * 		  RHS can be anything modeling the gf concept TBW
+     * 		  In particular lazy expression with Green functions
+     * @param rhs
+     * @example    triqs/gfs/gf_assign_0.cpp
+     */
     template <typename RHS> gf &operator=(RHS &&rhs) REQUIRES(GreenFunction<RHS>::value) {
       _mesh = rhs.mesh();
       _data.resize(rhs.data_shape());
@@ -402,9 +402,9 @@ namespace triqs::gfs {
     //-------------  MPI operation
 
     /**
-    * Performs MPI reduce
-    * @param l The lazy object returned by mpi::reduce
-    */
+     * Performs MPI reduce
+     * @param l The lazy object returned by mpi::reduce
+     */
     void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Mesh, Target>> l) {
       _mesh = l.rhs.mesh();
       _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??

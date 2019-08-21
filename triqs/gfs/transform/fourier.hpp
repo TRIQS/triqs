@@ -157,12 +157,12 @@ namespace triqs::gfs {
     if constexpr (get_n_variables<M1>::value == 1) { // === single mesh
       static_assert(get_n_variables<M2>::value == 1, "Incompatible mesh ranks");
       static_assert(N == 0, "Fourier transforming gf with mesh of rank 1 but fourier index N > 1");
-      static_assert(std::is_same_v<M2, _mesh_fourier_image<M1>>, "There is no Fourier transform between these two mesh");
+      static_assert(std::is_same_v<M2, _mesh_fourier_image<M1>>, "There is no Fourier transform between these two meshes");
       auto gout = gf<M2, typename T::complex_t>{mesh, gin.target_shape()};
       _fourier<N>(gin, gout(), opt_args...);
       return gout;
     } else { // === prod mesh
-      static_assert(std::is_same_v<M2, _mesh_fourier_image<std::tuple_element_t<N, M1>>>, "There is no Fourier transform between these two mesh");
+      static_assert(std::is_same_v<M2, _mesh_fourier_image<std::tuple_element_t<N, M1>>>, "There is no Fourier transform between these two meshes");
       auto mesh_tpl = triqs::tuple::replace<N>(gin.mesh().components(), mesh);
       auto out_mesh = mesh::prod{mesh_tpl};
       using mesh_t  = typename std::decay_t<decltype(out_mesh)>;
@@ -174,7 +174,7 @@ namespace triqs::gfs {
 
   /* *-----------------------------------------------------------------------------------------------------
    *
-   * make_gf_from_fourier : Specialized makers for different mesh
+   * make_gf_from_fourier : Specialized makers for different meshes
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
@@ -204,7 +204,7 @@ namespace triqs::gfs {
 
   /* *-----------------------------------------------------------------------------------------------------
    *
-   * make_gf_from_fourier : Fourier transform multiple mesh
+   * make_gf_from_fourier : Fourier transform multiple meshes
    *
    * *-----------------------------------------------------------------------------------------------------*/
 
@@ -320,7 +320,7 @@ namespace triqs::gfs {
     static_assert(std::is_same_v<typename T1::real_t, typename T2::real_t>, "Error : in gx = fourier(gy), gx and gy must have the same target");
 
     if constexpr (get_n_variables<M1>::value == 1) // === single mesh
-      static_assert(std::is_same_v<M2, _mesh_fourier_image<M1>>, "There is no Fourier transform between these two mesh");
+      static_assert(std::is_same_v<M2, _mesh_fourier_image<M1>>, "There is no Fourier transform between these two meshes");
     else { // === prod mesh
       using mesh_res_t = decltype(triqs::tuple::replace<N>(rhs.g.mesh().components(), make_adjoint_mesh(std::get<N>(rhs.g.mesh()))));
       static_assert(std::is_same_v<typename M1::m_tuple_t, mesh_res_t>, "Meshes in assignment don't match");

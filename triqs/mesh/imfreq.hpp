@@ -69,14 +69,14 @@ namespace triqs::mesh {
     imfreq() : imfreq(domain_t{}, 0) {}
 
     /**
-      * Full constructor
-   
-      * @param dom domain
-      * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-      * @param tail_fraction : percent of the function in the tail.
-      * @param tail_order : order of computation of the tail
-      * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
-    */
+     * Full constructor
+     *
+     * @param dom domain
+     * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
+     * @param tail_fraction : percent of the function in the tail.
+     * @param tail_order : order of computation of the tail
+     * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
+     */
     imfreq(domain_t dom, long n_pts = 1025, option opt = option::all_frequencies) : _dom(std::move(dom)), _n_pts(n_pts), _opt(opt) {
       _last_index = n_pts - 1; // total number of points
       if (opt == option::positive_frequencies_only) {
@@ -98,20 +98,14 @@ namespace triqs::mesh {
     imfreq(double beta, statistic_enum S, long n_pts = 1025, option opt = option::all_frequencies) : imfreq({beta, S}, n_pts, opt) {}
 
     /**
-     * @param beta inverse temperature
-     * @param S statistic (Fermion or Boson)
-     * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-     * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
-    */
+     * @param dom
+     * @param omega_max
+     */
     imfreq(domain_t dom, energy_t omega_max, option opt = option::all_frequencies)
        : imfreq(std::move(dom), ((omega_max.value * dom.beta / M_PI) - 1) / 2, opt) {}
 
     /**
-      * @param beta inverse temperature
-      * @param S statistic (Fermion or Boson)
-      * @param n_pts defined as n_pts = n_max + 1 (n_max: last matsubara index)
-      * @param option tells whether the mesh is defined for all frequencies or only for positive frequencies
-    */
+     */
     imfreq(double beta, statistic_enum S, energy_t omega_max, option opt = option::all_frequencies) : imfreq({beta, S}, omega_max, opt) {}
 
     // -------------------- Comparisons -------------------
@@ -180,9 +174,9 @@ namespace triqs::mesh {
     using mesh_point_t = mesh_point<imfreq>;
 
     /**
-      * Accessing a point of the mesh from its index
+     * Accessing a point of the mesh from its index
      * @param i Matsubara index
-    */
+     */
     inline mesh_point_t operator[](index_t i) const; //impl below
 
     /// Iterating on all the points...

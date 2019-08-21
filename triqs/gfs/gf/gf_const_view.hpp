@@ -111,56 +111,56 @@ namespace triqs::gfs {
     // DOC : fix data type here array<scalar_t, data_rank> to avoid multiply type in visible part
 
     /**
-        * Data array
-        *
-        * @category Accessors
-      */
+     * Data array
+     *
+     * @category Accessors
+     */
     data_t &data() & { return _data; }
 
     /**
-        * Data array (const)
-        *
-        * @category Accessors
-      */
+     * Data array (const)
+     *
+     * @category Accessors
+     */
     data_t const &data() const & { return _data; }
 
     /**
-        * Data array : move data in case of rvalue
-        *
-        * @category Accessors
-      */
+     * Data array : move data in case of rvalue
+     *
+     * @category Accessors
+     */
     data_t data() && { return std::move(_data); }
 
     /**
-      * Shape of the data
-      *
-      * NB : Needed for generic code. Expression of gf (e.g. g1 + g2) have a data_shape, but not data
-      * @category Accessors
-      */
+     * Shape of the data
+     *
+     * NB : Needed for generic code. Expression of gf (e.g. g1 + g2) have a data_shape, but not data
+     * @category Accessors
+     */
     auto const &data_shape() const { return _data.shape(); }
 
     // FIXME : No doc : internal only ? for make_gf
     target_and_shape_t target() const { return target_and_shape_t{_data.shape().template front_mpop<arity>()}; } // drop arity dims
 
     /**
-        * Shape of the target
-        *
-        * @category Accessors
-      */
+     * Shape of the target
+     *
+     * @category Accessors
+     */
     arrays::mini_vector<int, Target::rank> target_shape() const { return target().shape(); } // drop arity dims
 
     /**
-        * Generator for the indices of the target space
-        *
-        * @category Accessors
-      */
+     * Generator for the indices of the target space
+     *
+     * @category Accessors
+     */
     auto target_indices() const { return itertools::product_range(target().shape()); }
 
     /** 
-       * Memorylayout of the data
-       *
-       * @category Accessors
-       */
+     * Memorylayout of the data
+     *
+     * @category Accessors
+     */
     memory_layout_t<data_rank> const &memory_layout() const { return _data.indexmap().memory_layout(); }
 
     /// Indices of the Green function (for Python only)

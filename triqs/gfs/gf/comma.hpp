@@ -20,9 +20,6 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/clef.hpp>
-
-// FIXME  we don't really need all meshes here, just the basic tools (mesh_point)
-//#include <triqs/mesh.hpp>
 #include <triqs/mesh/details/mesh_tools.hpp>
 
 namespace triqs::gfs {
@@ -48,8 +45,6 @@ namespace triqs::gfs {
   // all_t
   template <typename X> tuple_com<all_t, std::decay_t<X>> operator,(all_t, X &&x) { return {std::make_tuple(all_t{}, std::forward<X>(x))}; }
   inline tuple_com<long, all_t> operator,(long i, all_t p) { return {std::make_tuple(i, p)}; }
-  //template <typename X> tuple_com<std::decay_t<X>, all_t> operator,(X &&x, all_t) { return {std::make_tuple(std::forward<X>(x), all_t{})}; }
-  //template <typename X> inline tuple_com<all_t, all_t> operator,(all_t, all_t) { return {};}
 
   template <typename M, typename X> tuple_com<mesh_point<M>, std::decay_t<X>> operator,(mesh_point<M> m, X &&x) {
     return {std::make_tuple(std::move(m), std::forward<X>(x))};

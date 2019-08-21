@@ -93,7 +93,7 @@ TEST(Gf, Issue319) {
   auto mesh  = G4_w[0].mesh();
   auto N     = mesh.size();
   auto slice = itertools::chunk_range(0, N, 1, 0); // world.size(), world.rank());
-  auto mpg   = triqs::mesh::mesh_pt_generator<mesh::prod<imfreq, imfreq, imfreq>>(&G4_w[0].mesh());
+  auto mpg   = triqs::mesh::mesh_pt_generator<prod<imfreq, imfreq, imfreq>>(&G4_w[0].mesh());
 
   mpg += slice.first;
   mpg.to_point();

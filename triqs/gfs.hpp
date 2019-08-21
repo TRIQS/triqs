@@ -62,7 +62,6 @@
 #include "./gfs/functions/functions2.hpp"
 #include "./gfs/functions/imfreq.hpp"
 #include "./gfs/functions/imtime.hpp"
-#include "./gfs/functions/product.hpp"
 #include "./gfs/functions/legendre.hpp"
 #include "./gfs/functions/density.hpp"
 

@@ -53,23 +53,23 @@ namespace triqs::gfs {
   using mesh::statistic_enum;
 
   /*----------------------------------------------------------
-  *  Evaluator
-  *--------------------------------------------------------*/
+   *  Evaluator
+   *--------------------------------------------------------*/
 
   // gf_evaluator regroup functions to evaluate the function.
   template <typename Mesh, typename Target> struct gf_evaluator;
 
   /*----------------------------------------------------------
-  *  HDF5
-  *  Traits to read/write in hdf5 files.
-  *  Can be specialized for some case (Cf block). Defined below
-  *--------------------------------------------------------*/
+   *  HDF5
+   *  Traits to read/write in hdf5 files.
+   *  Can be specialized for some case (Cf block). Defined below
+   *--------------------------------------------------------*/
 
   template <typename Mesh, typename Target> struct gf_h5_rw;
 
   /*------------------------------------------------------------------------------------------------------
- *                                  For mpi lazy
- *-----------------------------------------------------------------------------------------------------*/
+   *                                  For mpi lazy
+   *-----------------------------------------------------------------------------------------------------*/
 
   // A small lazy tagged class
   template <typename Tag, typename T> struct mpi_lazy {

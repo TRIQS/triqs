@@ -63,7 +63,7 @@ namespace triqs::gfs {
     }
     template <typename Mesh, typename... A> struct is_ok { static constexpr bool value = is_ok1<Mesh, std::decay_t<A>...>(); };
     template <typename... T, typename... A> struct is_ok<mesh::prod<T...>, A...> {
-      static constexpr bool value = clef::__and(is_ok1 < T, std::decay_t<A>> ()...);
+      static constexpr bool value = clef::__and(is_ok1<T, std::decay_t<A>>()...);
     };
 
     ///
@@ -75,7 +75,7 @@ namespace triqs::gfs {
         return g.on_mesh(args...);
       else {
 
-        // Filter the mesh of g into m to keep only the mesh corresponding to all_t arguments
+        // Filter the mesh of g into m to keep only the meshes corresponding to all_t arguments
         auto m_tuple = triqs::tuple::fold(details::fw_mesh{}, std::make_tuple(args...), g.mesh().components(), std::make_tuple());
 
         // computing the template parameters of the returned gf, i.e. r_t
@@ -87,20 +87,16 @@ namespace triqs::gfs {
         auto xs   = triqs::tuple::fold(details::fw_mesh_x{}, g.mesh().components(), std::make_tuple(args...), std::make_tuple());
         auto arr2 = triqs::tuple::apply([&g](auto const &... args) { return g.data()(args..., triqs::arrays::ellipsis()); }, xs);
 
-        constexpr bool is_const = G::is_const or std::is_const<G>::value;
-
 	// two cases : the tuple is of size 1 or not
-        auto extract_mesh = [&m_tuple]() {
+        auto mesh = [&m_tuple]() {
           if constexpr (std::tuple_size_v<decltype(m_tuple)> == 1) {
             return std::get<0>(m_tuple);
           } else {
             return mesh::prod{m_tuple};
           }
-        };
-
-        auto mesh = extract_mesh();
+        }();
 	using mesh_t = decltype(mesh);
-        if constexpr (is_const)
+        if constexpr (G::is_const or std::is_const<G>::value)
           return gf_const_view<mesh_t, target_t>{std::move(mesh), arr2, g->indices()};
         else
           return gf_view<mesh_t, target_t>{std::move(mesh), arr2, g->indices()};
