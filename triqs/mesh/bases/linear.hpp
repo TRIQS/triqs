@@ -29,6 +29,7 @@ namespace triqs::mesh {
    * @param x_min : the window starts. It ends at x_min + i_max* delta_x
    * @param delta_x
    *
+   * 
    * Throws if x is not in the window
    * */
   inline std::array<std::pair<long, double>, 2> interpolate_on_segment(double x, double x_min, double delta_x, long imax) {
@@ -53,6 +54,7 @@ namespace triqs::mesh {
   }
   //-----------------------------------------------------------------------
 
+  // NB linear_index and index are the same in this mesh
   template <typename Domain> struct linear_mesh : triqs::mesh::tag::mesh {
 
     using domain_t       = Domain;

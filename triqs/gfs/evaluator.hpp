@@ -22,19 +22,19 @@
 
 namespace triqs::gfs {
 
+  // evaluator by default forwards evarything to evaluate
+  // specialization for tail and out-of-mesh treatment
+
   /*----------------------------------------------------------
-   *  Default
-   *--------------------------------------------------------*/
+  *  Default
+  *--------------------------------------------------------*/
 
   // gf_evaluator regroup functions to evaluate the function.
   // default : one variable. Will be specialized in more complex cases.
   template <typename Var, typename Target> struct gf_evaluator {
     static constexpr int arity = 1;
 
-    template <typename G, typename X> auto operator()(G const &g, X x) const {
-      auto g_on_mesh = [&g](auto &&... x) -> decltype(auto) { return details::partial_eval(g, x...); };
-      return mesh::evaluate(g.mesh(), g_on_mesh, x);
-    }
+    template <typename G, typename X> auto operator()(G const &g, X x) const { return evaluate(g, x); }
   };
 
   /*----------------------------------------------------------
@@ -92,15 +92,13 @@ namespace triqs::gfs {
     template <typename G, typename... Args> auto operator()(G const &g, Args &&... args) const {
       static_assert(sizeof...(Args) == arity, "Wrong number of arguments in gf evaluation");
 
-      auto g_on_mesh = [&g](auto &&... x) -> decltype(auto) { return details::partial_eval(g, x...); };
-
-      using r1_t = decltype(mesh::evaluate(g.mesh(), g_on_mesh, std::forward<Args>(args)...));
+      using r1_t = decltype(evaluate(g, std::forward<Args>(args)...));
 
       if constexpr (is_gf_expr<r1_t>::value or is_gf_v<r1_t>) {
-        return mesh::evaluate(g.mesh(), g_on_mesh, std::forward<Args>(args)...);
+        return evaluate(g, std::forward<Args>(args)...);
       } else {
-        if (g.mesh().is_within_boundary(args...)) return make_regular(mesh::evaluate(g.mesh(), g_on_mesh, std::forward<Args>(args)...));
-        using rt = std::decay_t<decltype(make_regular(mesh::evaluate(g.mesh(), g_on_mesh, std::forward<Args>(args)...)))>;
+        if (g.mesh().is_within_boundary(args...)) return make_regular(evaluate(g, std::forward<Args>(args)...));
+        using rt = std::decay_t<decltype(make_regular(evaluate(g, std::forward<Args>(args)...)))>;
         return rt{arrays::zeros<dcomplex>(g.target_shape())};
       }
     }

@@ -44,7 +44,6 @@
 
 #include "./mesh/details/debug.hpp"
 #include "./mesh/details/closest_mesh_pt.hpp"
-#include "./mesh/details/evaluate.hpp"
 
 // Backward compat alias
 

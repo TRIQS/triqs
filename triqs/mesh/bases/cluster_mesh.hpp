@@ -136,6 +136,7 @@ namespace triqs::mesh {
       return M;
     }
 
+    // MODULO IS WRONG HERE !!!
     /// flatten the index
     linear_index_t index_to_linear(index_t const &i) const {
       EXPECTS(i == index_modulo(i));

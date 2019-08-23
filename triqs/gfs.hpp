@@ -36,10 +36,11 @@
 #include "./gfs/gf/gf_const_view.hpp"
 #include "./gfs/make_gf.hpp"
 #include "./gfs/gf/auto_assign.hpp"
+#include "./gfs/gf/slice_or_access.hpp"
+#include "./gfs/gf/evaluate.hpp"
 
 // multivar
 #include "./mesh/prod.hpp"
-#include "./gfs/gf/partial_eval.hpp"
 
 // expression template
 #include "./gfs/gf/gf_expr.hpp"

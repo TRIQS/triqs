@@ -29,7 +29,7 @@ namespace triqs::gfs {
   // forward
   namespace details {
     template <typename Mesh, typename... A> struct is_ok;
-    template <typename G, typename... Args> decltype(auto) partial_eval(G &g, Args const &... args);
+    template <typename G, typename... Args> decltype(auto) slice_or_access_general(G &g, Args const &... args);
   } // namespace details
 
   /*------------------------------------------------------------------------
@@ -206,7 +206,7 @@ namespace triqs::gfs {
      * @category Accessors
      */
     memory_layout_t<data_rank> const &memory_layout() const { return _data.indexmap().memory_layout(); }
-    
+
     /// Indices of the Green function (for Python only)
     indices_t const &indices() const { return _indices; }
 
@@ -220,12 +220,10 @@ namespace triqs::gfs {
     // -------------------------------- impl. details common to all classes -----------------------------------------------
 
     private:
-
     template <typename G> gf(impl_tag2, G &&x) : _mesh(x.mesh()), _data(x.data()), _indices(x.indices()) {}
 
     template <typename M, typename D>
-    gf(impl_tag, M &&m, D &&dat, indices_t ind)
-       : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)),  _indices(std::move(ind)) {
+    gf(impl_tag, M &&m, D &&dat, indices_t ind) : _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)), _indices(std::move(ind)) {
       if (!(_indices.empty() or _indices.has_shape(target_shape()))) TRIQS_RUNTIME_ERROR << "Size of indices mismatch with data size";
     }
 
@@ -233,10 +231,10 @@ namespace triqs::gfs {
     /// Empty Green function (with empty array).
     gf() {}
 
-    /// 
+    ///
     gf(gf const &x) = default;
 
-    /// 
+    ///
     gf(gf &&) = default;
 
     private:

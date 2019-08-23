@@ -77,7 +77,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) & 
     return clef::make_expr_subscript(*this, tu);
   else {
     static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(*this, y...); };
+    auto l = [this](auto &&... y) -> decltype(auto) { return details::slice_or_access_general(*this, y...); };
     return triqs::tuple::apply(l, tu._t);
   }
 }
@@ -88,7 +88,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) co
     return clef::make_expr_subscript(*this, tu);
   else {
     static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(*this, y...); };
+    auto l = [this](auto &&... y) -> decltype(auto) { return details::slice_or_access_general(*this, y...); };
     return triqs::tuple::apply(l, tu._t);
   }
 }
@@ -99,7 +99,7 @@ template <typename... U> decltype(auto) operator[](tuple_com<U...> const &tu) &&
     return clef::make_expr_subscript(std::move(*this), tu);
   else {
     static_assert(details::is_ok<mesh_t, U...>::value, "Argument type incorrect");
-    auto l = [this](auto &&... y) -> decltype(auto) { return details::partial_eval(*this, y...); };
+    auto l = [this](auto &&... y) -> decltype(auto) { return details::slice_or_access_general(*this, y...); };
     return triqs::tuple::apply(l, tu._t);
   }
 }
@@ -120,20 +120,29 @@ template <typename Arg> clef::make_expr_subscript_t<this_t, Arg> operator[](Arg 
 
 // --------------------- A direct access to the grid point --------------------------
 
-template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) {
-  return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-}
+//template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) {
+  //return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+//}
 
-template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) const {
-  return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
-}
+//template <typename... Args> decltype(auto) get_from_linear_index(Args &&... args) const {
+  //return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+//}
 
-template <typename... Args> decltype(auto) on_mesh(Args &&... args) {
+template <typename... Args> FORCEINLINE decltype(auto) on_mesh(Args &&... args) {
   return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
 }
 
-template <typename... Args> decltype(auto) on_mesh(Args &&... args) const {
+template <typename... Args> FORCEINLINE decltype(auto) on_mesh(Args &&... args) const {
   return dproxy_t::invoke(_data, _mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));
+}
+
+template <typename... Args> FORCEINLINE decltype(auto) on_mesh_from_linear_index(Args &&... args) {
+  return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+}
+
+template <typename... Args> FORCEINLINE decltype(auto) on_mesh_from_linear_index(Args &&... args) const {
+  return dproxy_t::invoke(_data, linear_mesh_index_t(std::forward<Args>(args)...));
+
 }
 
 //----------------------------- HDF5 -----------------------------
