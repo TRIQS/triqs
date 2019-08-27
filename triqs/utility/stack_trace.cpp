@@ -33,7 +33,6 @@ namespace triqs::utility {
     // On Os X, we use lldb, on linux gdb to decipher the call stack for us
     // We launch it with a pipe, and get back the output
 #ifdef __APPLE__
-
     std::string cmd             = "lldb -p " + std::to_string(getpid()) + " --batch -o \"bt\" 2>&1";
     const char *PYTHON_SENTINEL = "Python";
 #else
