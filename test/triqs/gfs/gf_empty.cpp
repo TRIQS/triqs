@@ -9,6 +9,6 @@ TEST(Gf, Exceptions) {
 
   auto g = gf<imtime, scalar_valued>{};
 
-  EXPECT_THROW(g[closest_mesh_pt(5.3)], triqs::arrays::key_error);
+  ASSERT_DEATH(g[closest_mesh_pt(5.3)], "");
 }
 MAKE_MAIN;
