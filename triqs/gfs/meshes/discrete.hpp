@@ -25,15 +25,15 @@
 namespace triqs {
   namespace gfs {
 
-   template <typename Domain> struct discrete{};
+    template <typename Domain> struct discrete {};
 
-  template <typename Domain> struct gf_mesh<discrete<Domain>> {
+    template <typename Domain> struct gf_mesh<discrete<Domain>> {
 
       using domain_t       = Domain;
       using index_t        = long;
       using linear_index_t = long;
       using mesh_point_t   = mesh_point<gf_mesh<discrete<Domain>>>;
-      using var_t = discrete<Domain>;
+      using var_t          = discrete<Domain>;
 
       // -------------------- Constructors -------------------
 
@@ -104,10 +104,10 @@ namespace triqs {
         m = gf_mesh(std::move(dom));
       }
 
-      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshDiscrete");}
+      friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshDiscrete"); }
 
       friend void h5_read(h5::group fg, std::string const &subgroup_name, gf_mesh &m) { h5_read_impl(fg, subgroup_name, m, "MeshDiscrete"); }
- 
+
       // -------------------- boost serialization -------------------
 
       friend class boost::serialization::access;
@@ -123,7 +123,8 @@ namespace triqs {
     };
 
     template <typename Domain>
-    struct mesh_point<gf_mesh<discrete<Domain>>> : tag::mesh_point, public utility::arithmetic_ops_by_cast<mesh_point<gf_mesh<discrete<Domain>>>, long> {
+    struct mesh_point<gf_mesh<discrete<Domain>>> : tag::mesh_point,
+                                                   public utility::arithmetic_ops_by_cast<mesh_point<gf_mesh<discrete<Domain>>>, long> {
       using discrete_mesh_t = gf_mesh<discrete<Domain>>;
       using index_t         = typename discrete_mesh_t::index_t;
       discrete_mesh_t const *m;

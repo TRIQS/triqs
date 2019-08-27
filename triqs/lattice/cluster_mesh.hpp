@@ -124,10 +124,10 @@ namespace triqs {
 
       /// from the index (n_i) to the cartesian coordinates
       /** for a point M of coordinates n_i in the {a_i} basis, the cartesian coordinates are
-    *     $$ OM_i = \sum_j n_j X_{ji} $$
-    * @param index_t the (integer) coordinates of the point (in basis a_i)
-    * @warning can be made faster by writing this a matrix-vector multiplication
-    */
+       *     $$ OM_i = \sum_j n_j X_{ji} $$
+       * @param index_t the (integer) coordinates of the point (in basis a_i)
+       * @warning can be made faster by writing this a matrix-vector multiplication
+       */
       point_t index_to_point(index_t const &n) const {
         point_t M(3);
         M() = 0.0;
@@ -204,7 +204,7 @@ namespace triqs {
       //  BOOST Serialization
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) {
-	ar &units;
+        ar &units;
         ar &periodization_matrix;
         ar &dims;
         ar &_size;
@@ -254,7 +254,7 @@ namespace triqs {
       mesh_t const &mesh() const { return *m; }
     };
 
-    // impl
+    // --- impl
     inline mesh_point<cluster_mesh> cluster_mesh::operator[](index_t i) const { return mesh_point<cluster_mesh>{*this, this->modulo_reduce(i)}; }
 
     inline cluster_mesh::const_iterator cluster_mesh::begin() const { return const_iterator(this); }

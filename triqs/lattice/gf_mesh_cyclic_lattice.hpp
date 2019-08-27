@@ -45,7 +45,7 @@ namespace triqs {
 
       ///Construct gf_mesh<cyclic_lattice> from three linear sizes assuming a cubic lattice (backward compatibility)
       gf_mesh(int L1 = 1, int L2 = 1, int L3 = 1)
-	 : bl{make_unit_matrix<double>(3)}, cluster_mesh{make_unit_matrix<double>(3), matrix<int>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
+         : bl{make_unit_matrix<double>(3)}, cluster_mesh{make_unit_matrix<double>(3), matrix<int>{{{L1, 0, 0}, {0, L2, 0}, {0, 0, L3}}}} {}
 
       ///Construct gf_mesh<cyclic_lattice> from domain (bravais_lattice) and int L (linear size of Cluster mesh)
       gf_mesh(bravais_lattice const &bl_, int L)
@@ -68,9 +68,7 @@ namespace triqs {
 
       // ------------------- Comparison -------------------
 
-      bool operator==(gf_mesh<cyclic_lattice> const &M) const {
-	return bl == M.domain() && cluster_mesh::operator==(M);
-      }
+      bool operator==(gf_mesh<cyclic_lattice> const &M) const { return bl == M.domain() && cluster_mesh::operator==(M); }
 
       bool operator!=(gf_mesh<cyclic_lattice> const &M) const { return !(operator==(M)); }
 
@@ -96,7 +94,7 @@ namespace triqs {
         h5::group gr = fg.open_group(subgroup_name);
         try { // Care for Backward Compatibility
           h5_read(gr, "bl", m.bl);
-	  return;
+          return;
         } catch (triqs::runtime_error const &re) {}
         try {
           h5_read(gr, "bravais_lattice", m.bl);
