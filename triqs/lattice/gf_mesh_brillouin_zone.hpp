@@ -105,7 +105,7 @@ namespace triqs {
         for (int i = 0; i < 2; ++i)
           for (int j = 0; j < 2; ++j)
             for (int k = 0; k < 2; ++k) {
-              result.idx[c] = index_t{ia[i][0], ia[j][1], ia[k][2]};
+              result.idx[c] = index_modulo(index_t{ia[i][0], ia[j][1], ia[k][2]});
               result.w[c]   = wa[i][0] * wa[j][1] * wa[k][2];
               c++;
             }

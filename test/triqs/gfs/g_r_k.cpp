@@ -31,11 +31,11 @@ TEST(Gf, r_k) {
   EXPECT_ARRAY_NEAR(gk.data(), gk2.data());
 
   // check gr
-  auto gr_test        = gf<cyclic_lattice>{{N, N}, {S, S}};
-  gr_test[{1, 0, 0}]  = -1;
-  gr_test[{-1, 0, 0}] = -1;
-  gr_test[{0, 1, 0}]  = -1;
-  gr_test[{0, -1, 0}] = -1;
+  auto gr_test           = gf<cyclic_lattice>{{N, N}, {S, S}};
+  gr_test[{1, 0, 0}]     = -1;
+  gr_test[{N - 1, 0, 0}] = -1;
+  gr_test[{0, 1, 0}]     = -1;
+  gr_test[{0, N - 1, 0}] = -1;
 
   EXPECT_ARRAY_NEAR(gr.data(), gr_test.data());
 

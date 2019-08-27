@@ -118,6 +118,9 @@ namespace triqs {
       using index_t        = utility::mini_vector<long, 3>;
       using linear_index_t = long;
 
+      /// Reduce index modulo to the lattice.
+      index_t index_modulo(index_t const &r) const { return index_t{_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}; }
+
       size_t size() const { return _size; }
 
       utility::mini_vector<size_t, 1> size_of_components() const { return {size()}; }
@@ -129,6 +132,7 @@ namespace triqs {
        * @warning can be made faster by writing this a matrix-vector multiplication
        */
       point_t index_to_point(index_t const &n) const {
+        EXPECTS(n == index_modulo(n));
         point_t M(3);
         M() = 0.0;
         for (int i = 0; i < 3; i++)
@@ -137,7 +141,10 @@ namespace triqs {
       }
 
       /// flatten the index
-      linear_index_t index_to_linear(index_t const &i) const { return _modulo(i[0], 0) * s2 + _modulo(i[1], 1) * s1 + _modulo(i[2], 2); }
+      linear_index_t index_to_linear(index_t const &i) const {
+        EXPECTS(i == index_modulo(i));
+        return i[0] * s2 + i[1] * s1 + i[2];
+      }
 
       /// Is the point in the mesh ? Always true
       template <typename T> static constexpr bool is_within_boundary(T const &) { return true; }
