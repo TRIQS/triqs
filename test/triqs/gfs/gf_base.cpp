@@ -156,4 +156,18 @@ TEST(Gf, TargetSpaceLoop) {
 
   EXPECT_GF_NEAR(g1, g2);
 }
+
+TEST(Gf, MeshCheck) {
+  double beta = 1;
+
+  auto iw_mesh     = gf_mesh<imfreq>{beta, Fermion, 5};
+  auto iw_mesh_big = gf_mesh<imfreq>{beta, Fermion, 10};
+
+  auto g1 = gf<imfreq>{iw_mesh, {1, 1}};
+  auto g2 = gf<imfreq>{iw_mesh_big, {1, 1}};
+
+  EXPECT_THROW(g1[*g2.mesh().begin()], triqs::runtime_error);
+  EXPECT_THROW(g2[*g1.mesh().begin()], triqs::runtime_error);
+}
+
 MAKE_MAIN;
