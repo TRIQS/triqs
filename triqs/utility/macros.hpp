@@ -18,10 +18,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_UTILITY_MACROS_H
-#define TRIQS_UTILITY_MACROS_H
+#pragma once
 
 #include <triqs/utility/first_include.hpp>
+#include <triqs/utility/stack_trace.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <type_traits>
 #include <iostream>
@@ -68,14 +68,31 @@ namespace triqs {
 
 #define FORCEINLINE __inline__ __attribute__((always_inline))
 
-#define TERMINATE(X) std::cerr << "Terminating at " << __FILE__ << ":" << __LINE__ << "\n"; std::cerr << X; std::terminate(); }
+#define TERMINATE(X)                                                                                                                                 \
+  std::cerr << "Terminating at " << __FILE__ << ":" << __LINE__ << "\n";                                                                             \
+  std::cerr << X;                                                                                                                                    \
+  std::terminate();                                                                                                                                  \
+  }
 
 // Macros mimicing the c++20 contracts behavior
-// FIXME c++20 : replace by [[ expects : X ]]
-#define EXPECTS(X) if(!(X)){ std::cerr << "Precondition " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n"; std::terminate(); }
-// FIXME c++20 : replace by [[ assert : X ]]
-#define ASSERT(X) if(!(X)){ std::cerr << "Assertion " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n"; std::terminate(); }
-// FIXME c++20 : replace by [[ ensures : X ]]
-#define ENSURES(X) if(!(X)){ std::cerr << "Postcondition " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n"; std::terminate(); }
-
+#ifdef TRIQS_DEBUG
+#define EXPECTS(X)                                                                                                                                   \
+  if (!(X)) {                                                                                                                                        \
+    std::cerr << "Precondition " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n" << triqs::utility::stack_trace();         \
+    std::terminate();                                                                                                                                \
+  }
+#define ASSERT(X)                                                                                                                                    \
+  if (!(X)) {                                                                                                                                        \
+    std::cerr << "Assertion " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n" << triqs::utility::stack_trace();            \
+    std::terminate();                                                                                                                                \
+  }
+#define ENSURES(X)                                                                                                                                   \
+  if (!(X)) {                                                                                                                                        \
+    std::cerr << "Postcondition " << AS_STRING(X) << " violated at " << __FILE__ << ":" << __LINE__ << "\n" << triqs::utility::stack_trace();        \
+    std::terminate();                                                                                                                                \
+  }
+#else
+#define EXPECTS(X)
+#define ASSERT(X)
+#define ENSURES(X)
 #endif
