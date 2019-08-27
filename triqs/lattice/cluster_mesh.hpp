@@ -140,7 +140,7 @@ namespace triqs {
       linear_index_t index_to_linear(index_t const &i) const { return _modulo(i[0], 0) * s2 + _modulo(i[1], 1) * s1 + _modulo(i[2], 2); }
 
       /// Is the point in the mesh ? Always true
-      template <typename T> bool is_within_boundary(T const &) const { return true; }
+      template <typename T> static constexpr bool is_within_boundary(T const &) { return true; }
 
       using mesh_point_t = mesh_point<cluster_mesh>;
 

@@ -40,7 +40,10 @@ template <typename... Args> decltype(auto) operator()(Args &&... args) && {
 // ------------- All the [] operators without lazy arguments -----------------------------
 
 // pass a index_t of the mesh
-decltype(auto) operator[](mesh_index_t const &arg) { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
+decltype(auto) operator[](mesh_index_t const &arg) {
+  EXPECTS(_mesh.is_within_boundary(arg));
+  return dproxy_t::invoke(_data, _mesh.index_to_linear(arg));
+}
 decltype(auto) operator[](mesh_index_t const &arg) const { return dproxy_t::invoke(_data, _mesh.index_to_linear(arg)); }
 
 // pass a mesh_point of the mesh
