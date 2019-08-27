@@ -45,22 +45,6 @@ namespace triqs {
       }
       bool operator!=(linear_mesh const &M) const { return !(operator==(M)); }
 
-      // -------------------- Accessors (from concept) -------------------
-
-      /// The corresponding domain
-      domain_t const &domain() const { return _dom; }
-
-      /// Size (linear) of the mesh of the window
-      long size() const { return L; }
-
-      utility::mini_vector<size_t, 1> size_of_components() const { return {size_t(size())}; }
-
-      /// From an index of a point in the mesh, returns the corresponding point in the domain
-      domain_pt_t index_to_point(index_t ind) const { return xmin + ind * del; }
-
-      /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-      long index_to_linear(index_t ind) const { return ind; }
-
       // -------------------- Accessors (other) -------------------
 
       /// Step of the mesh
@@ -71,6 +55,33 @@ namespace triqs {
 
       /// Max of the mesh
       double x_max() const { return xmax; }
+
+      // -------------------- Accessors (from concept) -------------------
+
+      /// The corresponding domain
+      domain_t const &domain() const { return _dom; }
+
+      /// Size (linear) of the mesh of the window
+      long size() const { return L; }
+
+      utility::mini_vector<size_t, 1> size_of_components() const { return {size_t(size())}; }
+
+      /// Is the point in mesh ?
+      bool is_within_boundary(all_t) const { return true; }
+      bool is_within_boundary(double x) const { return ((x >= x_min()) && (x <= x_max())); }
+      bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < L)); }
+
+      /// From an index of a point in the mesh, returns the corresponding point in the domain
+      domain_pt_t index_to_point(index_t idx) const {
+        EXPECTS(is_within_boundary(idx));
+        return xmin + idx * del;
+      }
+
+      /// Flatten the index in the positive linear index for memory storage (almost trivial here).
+      long index_to_linear(index_t idx) const {
+        EXPECTS(is_within_boundary(idx));
+        return idx;
+      }
 
       // -------------------- mesh_point -------------------
 
@@ -86,12 +97,6 @@ namespace triqs {
       const_iterator end() const { return const_iterator(this, true); }
       const_iterator cbegin() const { return const_iterator(this); }
       const_iterator cend() const { return const_iterator(this, true); }
-
-      // ----------------------------------------
-
-      /// Is the point in mesh ?
-      bool is_within_boundary(double x) const { return ((x >= x_min()) && (x <= x_max())); }
-      //bool is_within_boundary(double x) const { return ((x >= x_min_window()) && (x <= x_max_window())); }
 
       // -------------- Evaluation of a function on the grid --------------------------
 

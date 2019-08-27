@@ -103,18 +103,26 @@ namespace triqs {
         return res;
       }
 
+      /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
+      template <typename... Args> bool is_within_boundary(Args const &... args) const {
+        return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple, std::tie(args...), true);
+      }
+      template <typename... Args> bool is_within_boundary(index_t const &idx) const {
+        return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple, idx._i, true);
+      }
+
       /// Conversions point <-> index <-> linear_index
-      typename domain_t::point_t index_to_point(index_t const &ind) const {
-        domain_pt_t res;
-        auto l = [](auto &p, auto const &m, auto const &i) { p = m.index_to_point(i); };
-        triqs::tuple::map_on_zip(l, res, m_tuple, ind);
-        return res;
+      typename domain_t::point_t index_to_point(index_t const &idx) const {
+        EXPECTS(is_within_boundary(idx));
+        auto l = [](auto const &m, auto const &i) { return m.index_to_point(i); };
+        return triqs::tuple::map_on_zip(l, m_tuple, idx._i);
       }
 
       /// The linear_index is the tuple of the linear_index of the components
-      linear_index_t index_to_linear(index_t const &ind) const {
+      linear_index_t index_to_linear(index_t const &idx) const {
+        EXPECTS(is_within_boundary(idx));
         auto l = [](auto const &m, auto const &i) { return m.index_to_linear(i); };
-        return triqs::tuple::map_on_zip(l, m_tuple, ind._i);
+        return triqs::tuple::map_on_zip(l, m_tuple, idx._i);
       }
 
       // -------------------- Accessors (other) -------------------
@@ -154,11 +162,6 @@ namespace triqs {
       const_iterator cend() const { return const_iterator(this, true); }
 
       // -------------- Evaluation of a function on the grid --------------------------
-
-      /// Is the point of evaluation in the mesh. All components must be in the corresponding mesh.
-      template <typename... Args> bool is_within_boundary(Args const &... args) const {
-        return triqs::tuple::fold([](auto &m, auto &arg, bool r) { return r && (m.is_within_boundary(arg)); }, m_tuple, std::tie(args...), true);
-      }
 
       // not implemented, makes no sense
       long get_interpolation_data(long n) = delete;

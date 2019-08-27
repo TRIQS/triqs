@@ -55,7 +55,9 @@ namespace triqs {
       gf_mesh(double beta, statistic_enum S, long n_time_slices) : gf_mesh({beta, S}, n_time_slices) {}
 
       /// For imtime the point is always in the mesh, since we use anti-periodicity or periodicity. Needed for cartesian product.
-      bool is_within_boundary(double x) const { return true; }
+      static constexpr bool is_within_boundary(all_t) { return true; }
+      static constexpr bool is_within_boundary(double) { return true; }
+      static constexpr bool is_within_boundary(index_t) { return true; }
 
       /// evaluation
       template <typename F> auto evaluate(F const &f, double x) const {

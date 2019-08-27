@@ -51,9 +51,19 @@ namespace triqs {
       ///
       utility::mini_vector<size_t, 1> size_of_components() const { return {size()}; }
 
+      /// Is the point in the mesh ?
+      bool is_within_boundary(all_t) const { return true; }
+      bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < size())); }
+
       /// Conversions point <-> index <-> discrete_index
-      long index_to_point(index_t ind) const { return ind; }
-      long index_to_linear(index_t ind) const { return ind; }
+      long index_to_point(index_t idx) const {
+        EXPECTS(is_within_boundary(idx));
+        return idx;
+      }
+      long index_to_linear(index_t idx) const {
+        EXPECTS(is_within_boundary(idx));
+        return idx;
+      }
 
       // -------------------- mesh_point -------------------
 
@@ -70,12 +80,9 @@ namespace triqs {
 
       // -------------- Evaluation of a function on the grid --------------------------
 
-      /// Is the point in the mesh ?
-      bool is_within_boundary(index_t const &p) const { return ((p >= 0) && (p < size())); }
-      //bool is_within_boundary(index_t const &p) const { return ((p >= first_index_window()) && (p <= last_index_window())); }
-
       long get_interpolation_data(long n) const { return n; }
       template <typename F> auto evaluate(F const &f, long n) const { return f[n]; }
+
       // -------------------- MPI -------------------
 
       // -------------------- HDF5 -------------------

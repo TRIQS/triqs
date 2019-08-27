@@ -134,14 +134,26 @@ namespace triqs::gfs {
     ///
     utility::mini_vector<size_t, 1> size_of_components() const { return {size_t(size())}; }
 
+    /// Is the point in mesh ?
+    bool is_within_boundary(all_t) const { return true; }
+    bool is_within_boundary(long n) const { return ((n >= first_index()) && (n <= last_index())); }
+    bool is_within_boundary(index_t idx) const { return is_within_boundary(idx.value); }
+    bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n); }
+
     /// From an index of a point in the mesh, returns the corresponding point in the domain
-    domain_pt_t index_to_point(index_t ind) const { return 1_j * M_PI * (2 * ind.value + (_dom.statistic == Fermion)) / _dom.beta; }
+    domain_pt_t index_to_point(index_t idx) const {
+      EXPECTS(is_within_boundary(idx));
+      return 1_j * M_PI * (2 * idx.value + (_dom.statistic == Fermion)) / _dom.beta;
+    }
 
     /// Flatten the index in the positive linear index for memory storage (almost trivial here).
-    long index_to_linear(index_t ind) const { return ind.value - first_index(); }
+    long index_to_linear(index_t idx) const {
+      EXPECTS(is_within_boundary(idx));
+      return idx.value - first_index();
+    }
 
     /// Reverse of index_to_linear
-    index_t linear_to_index(long lind) const { return {lind + first_index()}; }
+    index_t linear_to_index(long lidx) const { return {lidx + first_index()}; }
 
     // -------------------- Accessors (other) -------------------
 
@@ -184,11 +196,6 @@ namespace triqs::gfs {
     inline const_iterator cend() const;
 
     // -------------- Evaluation of a function on the grid --------------------------
-
-    /// Is the point in mesh ?
-    bool is_within_boundary(all_t) const { return true; }
-    bool is_within_boundary(long n) const { return ((n >= first_index()) && (n <= last_index())); }
-    bool is_within_boundary(matsubara_freq const &f) const { return is_within_boundary(f.n); }
 
     // For multivar evaluation
     interpol_data_all_t get_interpolation_data(all_t) const { return {}; }
