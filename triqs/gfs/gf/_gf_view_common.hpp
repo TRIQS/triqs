@@ -1,5 +1,5 @@
 
-// common to many classes 
+// common to many classes
 
 // ------------- All the call operators arguments -----------------------------
 
@@ -216,5 +216,3 @@ friend mpi_lazy<mpi::tag::scatter, const_view_type> mpi_scatter(this_t const &a,
 friend mpi_lazy<mpi::tag::gather, const_view_type> mpi_gather(this_t const &a, mpi::communicator c = {}, int root = 0, bool all = false) {
   return {a(), c, root, all};
 }
-
-
