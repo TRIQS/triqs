@@ -99,8 +99,8 @@ namespace triqs {
       uint64_t n_accepted_config() const { return Naccepted; }
 
       void collect_statistics(mpi::communicator const &c) {
-        uint64_t nacc_tot  = mpi::reduce(Naccepted, c);
-        uint64_t nprop_tot = mpi::reduce(NProposed, c);
+        uint64_t nacc_tot  = mpi::all_reduce(Naccepted, c);
+        uint64_t nprop_tot = mpi::all_reduce(NProposed, c);
         acceptance_rate_   = nacc_tot / static_cast<double>(nprop_tot);
         if (collect_statistics_) collect_statistics_(c);
       }
