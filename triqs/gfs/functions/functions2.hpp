@@ -3,6 +3,8 @@
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
  * Copyright (C) 2012-2016 by O. Parcollet
+ * Copyright (C) 2019 Simons Foundation
+ *   author: Nils Wentzell
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -45,7 +47,7 @@ namespace triqs::gfs {
    */
   template <int N = 0, typename G, typename A = typename G::data_t::const_view_type>
   std::pair<typename A::regular_type, double> fit_tail(G const &g, A const &known_moments = {}) REQUIRES(is_gf_v<G>) {
-    if constexpr (std::is_base_of<tag::composite, typename G::mesh_t>::value) { // product mesh
+    if constexpr (std::is_base_of_v<tag::composite, typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().fit(m, make_const_view(g.data()), N, true, make_const_view(known_moments));
     } else { // single mesh
@@ -98,7 +100,7 @@ namespace triqs::gfs {
       inner_matrix_dim = g.target_shape()[0];
     } else
       TRIQS_RUNTIME_ERROR << "Incompatible target_shape for fit_hermitian_tail\n";
-    if constexpr (std::is_base_of<tag::composite, typename G::mesh_t>::value) { // product mesh
+    if constexpr (std::is_base_of_v<tag::composite, typename G::mesh_t>) { // product mesh
       auto const &m = std::get<N>(g.mesh());
       return m.get_tail_fitter().fit_hermitian(m, make_const_view(g.data()), N, true, make_const_view(known_moments), inner_matrix_dim);
     } else { // single mesh
@@ -149,7 +151,7 @@ namespace triqs::gfs {
       auto sh = rotate_index_view(make_const_view(g.data()), N).shape();
       sh[0]   = n_moments;
       return arrays::zeros<dcomplex>(sh);
-    } else if constexpr (is_block_gf<G>::value) { // block[2]_gf[_const][_view]<V, T>
+    } else if constexpr (is_block_gf_v<G>) { // block[2]_gf[_const][_view]<V, T>
       return map_block_gf([&](auto const &g_bl) { return make_zero_tail<N>(g_bl, n_moments); }, g);
     }
   }
@@ -179,7 +181,7 @@ namespace triqs::gfs {
   *-----------------------------------------------------------------------------------------------------*/
 
   template <typename G, typename... Args> auto reinterpret_scalar_valued_gf_as_matrix_valued(G &&g) {
-    static_assert(std::is_same<typename std::decay_t<G>::target_t, scalar_valued>::value,
+    static_assert(std::is_same_v<typename std::decay_t<G>::target_t, scalar_valued>,
                   "slice_target_to_scalar : the result is not a scalar valued function");
     return g.apply_on_data([](auto &&d) { return reinterpret_array_add_1x1(d); });
   }
@@ -224,10 +226,10 @@ namespace triqs::gfs {
    @param tolerance tolerance threshold
    @return true iif the function g is real up to tolerance
    */
-  template <typename G> std::enable_if_t<is_gf<G>::value, bool> is_gf_real(G const &g, double tolerance = 1.e-13) {
+  template <typename G> bool is_gf_real(G const &g, double tolerance = 1.e-13) REQUIRES(is_gf_v<G>) {
     return max_element(abs(imag(g.data()))) <= tolerance;
   }
-  template <typename G> std::enable_if_t<is_block_gf<G>::value, bool> is_gf_real(G const &g, double tolerance = 1.e-13) {
+  template <typename G> bool is_gf_real(G const &g, double tolerance = 1.e-13) REQUIRES(is_block_gf_v<G>) {
     return std::all_of(g.begin(), g.end(), [&](auto &g) { return is_gf_real(g, tolerance); });
   }
 
@@ -237,11 +239,9 @@ namespace triqs::gfs {
    @tparam G any Gf, BlockGf or Block2Gf type
    @param g a gf
    */
-  template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type::real_t> real(G const &g) {
-    return {g.mesh(), real(g.data()), g.indices()};
-  }
-  template <typename G> std::enable_if_t<is_block_gf<G>::value, typename G::regular_type::real_t> real(G const &g) {
-    return map_block_gf(real<typename G::g_t>, g);
+  template <typename G> typename G::regular_type::real_t real(G const &g) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
+    if constexpr (is_gf_v<G>) return {g.mesh(), real(g.data()), g.indices()};
+    else return map_block_gf([](auto && g_bl){ return real(g_bl); }, g);
   }
 
   /*------------------------------------------------------------------------------------------------------
@@ -256,7 +256,7 @@ namespace triqs::gfs {
   *                      Conjugate
   *-----------------------------------------------------------------------------------------------------*/
 
-  template <typename G> std::enable_if_t<is_gf<G>::value, typename G::regular_type> conj(G const &g) {
+  template <typename G> typename G::regular_type conj(G const &g) REQUIRES(is_gf_v<G>) {
     using M = typename G::variable_t;
     return {g.mesh(), conj(g.data()), g.indices()};
   }

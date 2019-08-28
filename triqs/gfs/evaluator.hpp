@@ -96,7 +96,7 @@ namespace triqs {
 
         using r1_t = decltype(g.mesh().evaluate(g, std::forward<Args>(args)...));
 
-        if constexpr (is_gf_expr<r1_t>::value or is_gf<r1_t>::value) {
+        if constexpr (is_gf_expr<r1_t>::value or is_gf_v<r1_t>) {
           return g.mesh().evaluate(g, std::forward<Args>(args)...);
         } else {
           if (g.mesh().is_within_boundary(args...)) return make_regular(g.mesh().evaluate(g, std::forward<Args>(args)...));
