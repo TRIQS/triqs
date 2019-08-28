@@ -16,7 +16,7 @@ int main() {
   auto g_sliced = g[3, _]; // 3 is the index of the point
 
   // or if we loop over the first component of the mesh of g
-  for (auto const &w : first_mesh(g)) {
+  for (auto const &w : std::get<0>(g.mesh())) {
     std::cout << g[w, _] << std::endl; // or do anything with it ...
   }
 }
