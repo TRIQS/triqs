@@ -31,9 +31,9 @@ namespace triqs::gfs {
     template <typename G, typename... Args> decltype(auto) partial_eval(G *g, Args const &... args);
   } // namespace details
 
-  /*----------------------------------------------------------
-   *   Declaration of main types : gf, gf_view, gf_const_view
-   *--------------------------------------------------------*/
+  /*------------------------------------------------------------------------
+   *   Forward Declaration of the main types : gf, gf_view, gf_const_view
+   *-----------------------------------------------------------------------*/
 
   template <typename Var, typename Target = matrix_valued> class gf;
   template <typename Var, typename Target = matrix_valued> class gf_view;
@@ -46,21 +46,20 @@ namespace triqs::gfs {
   // The trait that "marks" the Green function
   TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(GreenFunction);
 
-  // Is G a gf, gf_view, gf_const_view
-  // is_gf<G> is true iif G is a gf or a view
-  // is_gf<G,M0> is true iif  G is a gf or a view and its mesh is M0
-  template <typename G, typename M> struct _is_gf : std::false_type {};
-  template <typename G, typename M = void> using is_gf = _is_gf<std::decay_t<G>, M>;
-  template <typename G, typename M = void> inline constexpr bool is_gf_v = is_gf<G, M>::value;
+  template <template <typename...> class TMPLT, typename T> struct is_instantiation_of : std::false_type {};
+  template <template <typename...> class TMPLT, typename... U> struct is_instantiation_of<TMPLT, TMPLT<U...>> : std::true_type {};
+  template <template <typename...> class gf, typename T>
+  inline constexpr bool is_instantiation_of_v = is_instantiation_of<gf, std::decay_t<T>>::value;
 
-  template <typename M, typename T> struct _is_gf<gf<M, T>, void> : std::true_type {};
-  template <typename M, typename T> struct _is_gf<gf<M, T>, M> : std::true_type {};
-  template <typename M, typename T> struct _is_gf<gf_view<M, T>, void> : std::true_type {};
-  template <typename M, typename T> struct _is_gf<gf_view<M, T>, M> : std::true_type {};
+  //template <typename G> using mesh_t_of = std::decay_t<decltype(std::declval<G>().mesh())>;
 
-  template <typename M, typename T> struct _is_gf<gf_const_view<M, T>, void> : std::true_type {};
-
-  template <typename M, typename T> struct _is_gf<gf_const_view<M, T>, M> : std::true_type {};
+  // is_gf<G> Check if G fullfills the Green function concecpt
+  template <typename G, typename M = void> inline constexpr bool is_gf_v = false;
+  template <typename G> inline constexpr bool is_gf_v<G, void> =
+    is_instantiation_of_v<gf, G> or
+    is_instantiation_of_v<gf_view, G> or
+    is_instantiation_of_v<gf_const_view, G>;
+  template <typename G> inline constexpr bool is_gf_v<G, typename std::decay_t<G>::variable_t> = is_gf_v<G, void>;
 
   /// ---------------------------  implementation  ---------------------------------
 
