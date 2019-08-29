@@ -174,9 +174,6 @@ namespace triqs {
       }
       bool operator!=(cluster_mesh const &M) const { return !(operator==(M)); }
 
-      /// Reduce point modulo to the lattice.
-      inline mesh_point_t modulo_reduce(index_t const &r) const;
-
       /// locate the closest point
       inline index_t locate_neighbours(point_t const &x) const {
         auto inv_units = inverse(units);
@@ -257,21 +254,17 @@ namespace triqs {
       double operator()(int d) const { return m->index_to_point(index())[d]; }
       double operator[](int d) const { return operator()(d); }
       friend std::ostream &operator<<(std::ostream &out, mesh_point const &x) { return out << (lattice_point)x; }
-      mesh_point operator-() const { return mesh_point{*m, m->modulo_reduce({-index()[0], -index()[1], -index()[2]})}; }
+      mesh_point operator-() const { return mesh_point{*m, m->index_modulo({-index()[0], -index()[1], -index()[2]})}; }
       mesh_t const &mesh() const { return *m; }
     };
 
     // --- impl
-    inline mesh_point<cluster_mesh> cluster_mesh::operator[](index_t i) const { return mesh_point<cluster_mesh>{*this, this->modulo_reduce(i)}; }
+    inline mesh_point<cluster_mesh> cluster_mesh::operator[](index_t i) const { return mesh_point<cluster_mesh>{*this, this->index_modulo(i)}; }
 
     inline cluster_mesh::const_iterator cluster_mesh::begin() const { return const_iterator(this); }
     inline cluster_mesh::const_iterator cluster_mesh::end() const { return const_iterator(this, true); }
     inline cluster_mesh::const_iterator cluster_mesh::cbegin() const { return const_iterator(this); }
     inline cluster_mesh::const_iterator cluster_mesh::cend() const { return const_iterator(this, true); }
 
-    /// Reduce point modulo to the lattice.
-    inline cluster_mesh::mesh_point_t cluster_mesh::modulo_reduce(index_t const &r) const {
-      return mesh_point_t{*this, {_modulo(r[0], 0), _modulo(r[1], 1), _modulo(r[2], 2)}};
-    }
   } // namespace gfs
 } // namespace triqs
