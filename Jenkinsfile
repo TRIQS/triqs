@@ -101,6 +101,7 @@ try {
         def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
         def release = env.BRANCH_NAME == "master" || env.BRANCH_NAME == "unstable" || sh(returnStdout: true, script: "git describe --exact-match HEAD || true").trim()
         def workDir = pwd()
+        lock('triqs_publish') {
         dir("$workDir/gh-pages") {
           def subdir = "${projectName}/${env.BRANCH_NAME}"
           git(url: "ssh://git@github.com/TRIQS/TRIQS.github.io.git", branch: "master", credentialsId: "ssh", changelog: false)
@@ -126,6 +127,7 @@ try {
         } catch (err) {
           echo "Failed to update packaging repo"
         } } }
+        }
       } }
     }
   }
