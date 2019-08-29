@@ -52,7 +52,7 @@ namespace triqs {
       utility::mini_vector<size_t, 1> size_of_components() const { return {size()}; }
 
       /// Is the point in the mesh ?
-      bool is_within_boundary(all_t) const { return true; }
+      static constexpr bool is_within_boundary(all_t) { return true; }
       bool is_within_boundary(index_t idx) const { return ((idx >= 0) && (idx < size())); }
 
       /// Conversions point <-> index <-> discrete_index
