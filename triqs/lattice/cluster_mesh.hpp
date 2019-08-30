@@ -259,7 +259,10 @@ namespace triqs {
     };
 
     // --- impl
-    inline mesh_point<cluster_mesh> cluster_mesh::operator[](index_t i) const { return mesh_point<cluster_mesh>{*this, this->index_modulo(i)}; }
+    inline mesh_point<cluster_mesh> cluster_mesh::operator[](index_t i) const {
+      EXPECTS(i == index_modulo(i));
+      return mesh_point<cluster_mesh>{*this, i};
+    }
 
     inline cluster_mesh::const_iterator cluster_mesh::begin() const { return const_iterator(this); }
     inline cluster_mesh::const_iterator cluster_mesh::end() const { return const_iterator(this, true); }
