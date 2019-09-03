@@ -1,4 +1,5 @@
 #include "./nda_test_common.hpp"
+
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include "triqs/arrays/blas_lapack/gtsv.hpp"
 #include <triqs/arrays/blas_lapack/stev.hpp>
@@ -370,7 +371,7 @@ TEST(blas_lapack, gelss) {
 
 TEST(eigenelements, test1) {
 
-  auto test = [](auto && A) {
+  auto test = [](auto &&A) {
     auto w = linalg::eigenelements(make_clone(A));
     check_eig(A, w.second(), w.first());
   };
@@ -384,7 +385,7 @@ TEST(eigenelements, test1) {
         A(j, i) = A(i, j);
       }
     test(A);
-    
+
     A()     = 0;
     A(0, 1) = 1;
     A(1, 0) = 1;

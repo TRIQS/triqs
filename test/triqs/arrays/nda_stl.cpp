@@ -1,9 +1,5 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include <triqs/test_tools/arrays.hpp>
-#include <cmath>
-#include <limits>
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/asserts.hpp>
+#include "./nda_test_common.hpp"
+
 #include <vector>
 #include <map>
 #include <algorithm>

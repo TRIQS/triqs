@@ -14,5 +14,3 @@ template <int R> using myshape_t = mini_vector<size_t, R>;
 // variables for the test
 range _;
 ellipsis ___;
-
-

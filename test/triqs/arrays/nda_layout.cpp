@@ -1,6 +1,5 @@
 #include "./nda_test_common.hpp"
 
-
 // ==============================================================
 
 TEST(NDA, AssignFortranOrder) {
@@ -34,7 +33,6 @@ TEST(NDA, AssignFortranOrder) {
     for (int j = 0; j < 3; ++j) EXPECT_EQ(F(i, j), 10 * i + j);
 }
 
-
 // ===============================================================
 
 TEST(Array, ScalarAssign) {
@@ -50,6 +48,5 @@ TEST(Array, ScalarAssign) {
   for (int i = 0; i < N; ++i)
     for (int j = 0; j < N; ++j) EXPECT_EQ(A(i, j), 2);
 }
-
 
 MAKE_MAIN

@@ -18,15 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/test_tools/arrays.hpp>
-#include <triqs/arrays.hpp>
-#include <triqs/utility/complex_ops.hpp>
-#include <iostream>
+#include "./nda_test_common.hpp"
+
 #include <fstream>
-#include <sstream>
 
 using namespace triqs;
-using namespace triqs::arrays;
 using namespace mpi;
 
 TEST(Arrays, MPI) {

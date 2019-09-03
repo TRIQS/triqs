@@ -1,6 +1,5 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include <triqs/test_tools/arrays.hpp>
 #include "./nda_test_common.hpp"
+
 #include <triqs/arrays/functional/fold.hpp>
 #include <triqs/arrays/functional/map.hpp>
 #include <triqs/arrays/algorithms.hpp>

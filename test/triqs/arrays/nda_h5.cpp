@@ -1,9 +1,4 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include <triqs/test_tools/arrays.hpp>
-#include <cmath>
-#include <limits>
-#include <triqs/arrays.hpp>
-#include <triqs/arrays/asserts.hpp>
+#include "./nda_test_common.hpp"
 
 using namespace triqs::arrays;
 namespace h5 = triqs::h5;

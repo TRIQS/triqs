@@ -1,9 +1,4 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include <triqs/test_tools/arrays.hpp>
-#include <cmath>
-#include <limits>
-#include <triqs/arrays.hpp>
-#include <triqs/arrays/asserts.hpp>
+#include "./nda_test_common.hpp"
 
 using namespace triqs::arrays;
 
@@ -12,7 +7,7 @@ using namespace triqs::arrays;
 // a little non copyable object
 struct A {
   int i        = 2;
-  A() = default;
+  A()          = default;
   A(A const &) = delete;
   A(A &&)      = default;
   A &operator=(A const &) = delete;
@@ -48,7 +43,6 @@ TEST(NDA, array_of_non_copyable) {
   a.emplace_back(2);
 }
 
-
 // ==============================================================
 
 struct S {
@@ -78,11 +72,11 @@ TEST(NDA, non_numeric1) {
 TEST(NDA, array_of_array) {
 
   array<array<double, 1>, 2> a(2, 2);
-  array<double, 1> a0{1,2,3};
+  array<double, 1> a0{1, 2, 3};
 
   a() = a0;
 
-  EXPECT_EQ(a(1,0), a0);
+  EXPECT_EQ(a(1, 0), a0);
 }
 
 // ---------------------------------------
@@ -102,8 +96,5 @@ TEST(NDA, matrix_of_function) {
 }
 
 // ==============================================================
-
-
-
 
 MAKE_MAIN

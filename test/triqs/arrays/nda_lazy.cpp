@@ -1,11 +1,5 @@
-#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-#include <triqs/test_tools/arrays.hpp>
-#include <cmath>
-#include <limits>
-#include <triqs/arrays.hpp>
-#include <triqs/arrays/asserts.hpp>
+#include "./nda_test_common.hpp"
 
-using namespace triqs::arrays;
 using triqs::clef::placeholder;
 
 // ==============================================================
@@ -26,7 +20,7 @@ TEST(NDA, LazyFill) {
 
 TEST(NDA, MakeImmutable) {
 
-  auto A = make_immutable_array([](int i, int j) { return 2*i - j; }, range(0, 2), range(0, 2));
+  auto A = make_immutable_array([](int i, int j) { return 2 * i - j; }, range(0, 2), range(0, 2));
 
   array<int, 2> B = A;
 

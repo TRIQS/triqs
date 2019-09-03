@@ -14,8 +14,8 @@ TEST(NDA, ViewBasic) {
   EXPECT_EQ(v.shape(), (myshape_t<1>{3}));
 
   EXPECT_EQ(a(1, 1, 2), 1 + 10 * 1 + 100 * 2);
-  
-  a(1,1,2) = -28;
+
+  a(1, 1, 2) = -28;
   EXPECT_EQ(v(1), a(1, 1, 2));
 }
 // ----------------------------------
@@ -186,7 +186,6 @@ TEST(NDA, View3) {
   //EXPECT_EQ(print_in_indexmap_order(A4), "111 211 121 221 131 231 112 212 122 222 132 232 113 213 123 223 133 233 114 214 124 224 134 234 ");
 }
 
-
 // ==============================================================
 
 // old issue
@@ -209,7 +208,5 @@ TEST(NDA, IssueXXX) {
   EXPECT_ARRAY_NEAR(M1, matrix<double>{{2, 2}, {2, 2}});
   EXPECT_ARRAY_NEAR(M2, matrix<double>{{2, 2}, {2, 2}});
 }
-
-
 
 MAKE_MAIN
