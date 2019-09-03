@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+# This file will parse all the commit messages starting from the last tagged commit
+# and group them according to their [tag]'s
+#
+# Usage: parse_commits > out.md
+
+import sys, re
+from subprocess import Popen, PIPE
+
+mdict = { "General": [] }
+
+if __name__ == "__main__":
+
+    # Parse all commits starting from the last tag
+    start_commit = Popen(["git", "describe", "--tags", "--abbrev=0"], stdout=PIPE).communicate()[0].rstrip()
+
+    # Iterate through the git log items and group them
+    for line in Popen(["git", "log", "%s..HEAD"%start_commit, "--pretty=format:%s", "-i", "-E"], stdout=PIPE).stdout:
+
+        m = re.match('\[(.*?)\] (.*)', line)
+        if(m):
+            if m.group(1) in mdict.keys():
+                mdict[m.group(1)].append(m.group(2))
+            else:
+                mdict[m.group(1)] = [m.group(2)]
+        else:
+            mdict["General"].append(line)
+
+for group, mlist in mdict.iteritems():
+    sys.stdout.write("\n" + group + "\n")
+    sys.stdout.write('-' * len(group) + "\n")
+
+    for m in mlist:
+        sys.stdout.write("* " + m.rstrip() + "\n")
