@@ -26,7 +26,7 @@
 #include <triqs/utility/typeid_name.hpp>
 #include <iostream>
 #include <sstream>
-#include "gtest.h"
+#include <gtest/gtest.h>
 
 using namespace triqs::arrays;
 

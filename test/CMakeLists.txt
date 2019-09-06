@@ -1,3 +1,6 @@
+# Build gtest from git subtree
+add_subdirectory(gtest EXCLUDE_FROM_ALL)
+
 # FIXME : TO BE REMOVED
 # add_all_subdirectories_with_cmakelist : include all subdirectory to current path
 # which contains a CMakeLists.txt file...

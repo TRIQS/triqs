@@ -23,7 +23,7 @@
 
 #include <mpi/mpi.hpp>
 
-#include <gtest.h>
+#include <gtest/gtest.h>
 #include <numeric>
 
 using namespace itertools;

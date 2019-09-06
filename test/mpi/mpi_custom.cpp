@@ -1,5 +1,5 @@
 #include <mpi/mpi.hpp>
-#include <gtest.h>
+#include <gtest/gtest.h>
 
 using namespace mpi;
 

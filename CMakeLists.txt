@@ -171,12 +171,6 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND DEFINED ENV{LIBRARY_PATH})
   endforeach()
 endif()
 
-#------------------------
-# Build google test
-#------------------------
-
-add_subdirectory(google_test)
-
 # -----------------------------------------------------------------------------
 # Common option for all targets below (triqs lib, test, pytriqs, doc examples)
 # -----------------------------------------------------------------------------

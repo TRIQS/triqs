@@ -20,7 +20,7 @@
  *
  ******************************************************************************/
 #include <mpi/string.hpp>
-#include <gtest.h>
+#include <gtest/gtest.h>
 
 TEST(MPI, string_broadcast) {
 

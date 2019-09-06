@@ -20,7 +20,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "gtest.h"
+#include <gtest/gtest.h>
 #include <itertools/itertools.hpp>
 
 #include <array>

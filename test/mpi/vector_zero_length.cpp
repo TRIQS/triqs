@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 
-#include <gtest.h>
+#include <gtest/gtest.h>
 #include <mpi/vector.hpp>
 
 TEST(Vector, MPI) {

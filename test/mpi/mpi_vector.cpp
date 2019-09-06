@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #include <mpi/vector.hpp>
-#include <gtest.h>
+#include <gtest/gtest.h>
 
 #include <complex>
 
