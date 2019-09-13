@@ -58,31 +58,61 @@ namespace triqs::gfs {
   }
 
   /**
-   * Test if a Green function object fullfills the fundamental property G[iw](i,j) = conj(G[-iw](i,j))
-   * up to a tolerance $\epsilon$
+   * Test if a Green function object fullfills the fundamental property mentioned below up to a fixed tolerance $\epsilon$
+   * Depending on the mesh and target rank one of the following properties is checked
+   * $G[i\omega] == \frac{1}{2} ( G[i\omega] + conj(G[-i\omega]) )$
+   * $G[\tau] == \frac{1}{2} ( G[\tau] + conj(G[\tau]) )$
+   * $G[i\omega](i,j) == \frac{1}{2} ( G[i\omega](i,j) + conj(G[-i\omega](j,i)) )$
+   * $G[\tau](i,j) == \frac{1}{2} ( G[\tau](i,j) + conj(G[\tau](j,i)) )$
+   * $G[i\omega](i,j,k,l) == \frac{1}{2} ( G[i\omega](i,j,k,l) + conj(G[-i\omega](k,l,i,j)) )$
+   * $G[\tau](i,j,k,l) == \frac{1}{2} ( G[\tau](i,j,k,l) + conj(G[\tau](k,l,i,j)) )$
    *
    * @param g The Green function object to check the symmetry for
-   * @param tolerance The tolerance $\epsilon$ for the check
+   * @param tolerance The tolerance $\epsilon$ for the check [default=1e-13]
    *
    * @tparam The Green function type
    *
-   * @return true iif $$\forall n,\; \max_{ab}|g^*_{ba}(-i\omega_n)-g_{ab}(i\omega_n)|<\epsilon$$
+   * @return true iif the fundamental property holds for all points of the mesh
    */
   template <typename G> bool is_gf_hermitian(G const &g, double tolerance = 1.e-13) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
-      static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value and (target_t::rank == 0 or target_t::rank == 2),
-                    "is_gf_hermitian makes senses only for imfreq gf matrix and scalar valued");
-      if (g.mesh().positive_only()) return true;
-      using triqs::arrays::max_element;    // the case real, complex is not found by ADL
-      if constexpr (target_t::rank == 0) { // scalar_valued
-        for (auto const &w : g.mesh().get_positive_freq())
-          if (max_element(abs(conj(g(-w)) - g(w))) > tolerance) return false;
-      } else { // matrix_valued
-        for (auto const &w : g.mesh().get_positive_freq())
-          if (max_element(abs(conj(transpose(g(-w))) - g(w))) > tolerance) return false;
+      using var_t    = typename std::decay_t<G>::variable_t;
+      static_assert(std::is_same_v<var_t, imfreq> or std::is_same_v<var_t, imtime>, "is_gf_hermitian requires an imfreq or imtime Green function");
+      static_assert(target_t::rank == 0 or target_t::rank == 2 or target_t::rank == 4,
+                    "is_gf_hermitian requires a Green function with a target rank of 0, 2 or 4.");
+
+      if constexpr (std::is_same_v<var_t, imfreq>) { // === gf<imfreq>
+        if (g.mesh().positive_only()) return true;
+        using triqs::arrays::max_element;
+        //for (auto const &w : g.mesh().get_positive_freq()) {
+        for (auto const &w : g.mesh()) {
+          if constexpr (target_t::rank == 0) { // ------ scalar_valued
+            if (abs(conj(g[-w]) - g[w]) > tolerance) return false;
+          } else if constexpr (target_t::rank == 2) { // matrix_valued FIXME transpose(g[-w])
+            for (auto [i, j] : g.target_indices())
+              if (abs(conj(g[-w](j, i)) - g[w](i, j)) > tolerance) return false;
+          } else { // ---------------------------------- tensor_valued<4>
+            for (auto [i, j, k, l] : g.target_indices())
+              if (abs(conj(g[-w](k, l, i, j)) - g[w](i, j, k, l)) > tolerance) return false;
+          }
+        }
+        return true;
+      } else { // === gf<imtime>
+        using triqs::arrays::max_element;
+        for (auto const &t : g.mesh()) {
+          if constexpr (target_t::rank == 0) { // ------ scalar_valued
+            if (abs(conj(g[t]) - g[t]) > tolerance) return false;
+          } else if constexpr (target_t::rank == 2) { // matrix_valued
+            for (auto [i, j] : g.target_indices())
+              if (abs(conj(g[t](j, i)) - g[t](i, j)) > tolerance) return false;
+          } else { // ---------------------------------- tensor_valued<4>
+            for (auto [i, j, k, l] : g.target_indices())
+              if (abs(conj(g[t](k, l, i, j)) - g[t](i, j, k, l)) > tolerance) return false;
+          }
+        }
+        return true;
       }
-      return true;
     } else { // Block Green function
       return std::all_of(g.begin(), g.end(), [&](auto &g_bl) { return is_gf_hermitian<typename G::g_t>(g_bl, tolerance); });
     }
@@ -91,7 +121,14 @@ namespace triqs::gfs {
   template <typename G> bool is_gf_real_in_tau(G const &g, double tolerance = 1.e-13) { return is_gf_hermitian<G>(g, tolerance); }
 
   /**
-   * Symmetrize a Green function object $G[i\omega](i,j) \rightarrow \frac{1}{2} ( G[i\omega](i,j) + G[-iw](j,i)^* )$
+   * Symmetrize a Green function object to fullfill fundamental Green function properties.
+   * Depending on the mesh and target rank one of the following transformations is performed
+   * $G[i\omega] \rightarrow \frac{1}{2} ( G[i\omega] + conj(G[-i\omega]) )$
+   * $G[\tau] \rightarrow \frac{1}{2} ( G[\tau] + conj(G[\tau]) )$
+   * $G[i\omega](i,j) \rightarrow \frac{1}{2} ( G[i\omega](i,j) + conj(G[-i\omega](j,i)) )$
+   * $G[\tau](i,j) \rightarrow \frac{1}{2} ( G[\tau](i,j) + conj(G[\tau](j,i)) )$
+   * $G[i\omega](i,j,k,l) \rightarrow \frac{1}{2} ( G[i\omega](i,j,k,l) + conj(G[-i\omega](k,l,i,j)) )$
+   * $G[\tau](i,j,k,l) \rightarrow \frac{1}{2} ( G[\tau](i,j,k,l) + conj(G[\tau](k,l,i,j)) )$
    *
    * @param g The Green function object to symmetrize
    *
@@ -102,14 +139,36 @@ namespace triqs::gfs {
   template <typename G> typename G::regular_type make_hermitian(G const &g) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
-      static_assert(std::is_same<typename std::decay_t<G>::variable_t, imfreq>::value and (target_t::rank == 0 or target_t::rank == 2),
-                    "is_gf_hermitian makes senses only for imfreq gf matrix and scalar valued");
-      typename G::regular_type g_sym = g;
-      if constexpr (target_t::rank == 0) // scalar_valued
-        for (auto const &w : g.mesh()) g_sym[w] = 0.5 * (g(w) + conj(g(-w)));
-      else // matrix_valued
-        for (auto const &w : g.mesh()) g_sym[w] = 0.5 * (g(w) + conj(transpose(g(-w))));
-      return g_sym;
+      using var_t    = typename std::decay_t<G>::variable_t;
+      static_assert(std::is_same_v<var_t, imfreq> or std::is_same_v<var_t, imtime>, "make_hermitian requires an imfreq or imtime Green function");
+      static_assert(target_t::rank == 0 or target_t::rank == 2 or target_t::rank == 4,
+                    "make_hermitian requires a Green function with a target rank of 0, 2 or 4.");
+
+      if constexpr (std::is_same_v<var_t, imfreq>) { // === gf<imfreq>
+        if (g.mesh().positive_only()) return g;
+        typename G::regular_type g_sym = g;
+        for (auto const &w : g.mesh()) {
+          if constexpr (target_t::rank == 0) // ---- scalar_valued
+            g_sym[w] = 0.5 * (g[w] + conj(g[-w]));
+          else if constexpr (target_t::rank == 2) // matrix_valued FIXME transpose(g[-w])
+            for (auto [i, j] : g.target_indices()) g_sym[w](i, j) = 0.5 * (g[w](i, j) + conj(g[-w](j, i)));
+          else // ---------------------------------- tensor_valued<4>
+            for (auto [i, j, k, l] : g.target_indices()) g_sym[w](i, j, k, l) = 0.5 * (g[w](i, j, k, l) + conj(g[-w](k, l, i, j)));
+        }
+        return g_sym;
+
+      } else { // === gf<imtime>
+        typename G::regular_type g_sym = g;
+        for (auto const &t : g.mesh()) {
+          if constexpr (target_t::rank == 0) // ---- scalar_valued
+            g_sym[t] = 0.5 * (g[t] + conj(g[t]));
+          else if constexpr (target_t::rank == 2) // matrix_valued
+            for (auto [i, j] : g.target_indices()) g_sym[t](i, j) = 0.5 * (g[t](i, j) + conj(g[t](j, i)));
+          else // ---------------------------------- tensor_valued<4>
+            for (auto [i, j, k, l] : g.target_indices()) g_sym[t](i, j, k, l) = 0.5 * (g[t](i, j, k, l) + conj(g[t](k, l, i, j)));
+        }
+        return g_sym;
+      }
     } else if (is_block_gf_v<G>) { // Block Green function
       return map_block_gf(make_hermitian<typename G::g_t>, g);
     }
