@@ -243,41 +243,25 @@ endif()
 # Dynamic Analyzer Checks
 # ---------------------------------
 
-set(sanitizers "")
-# Address Sanitizer
+# Sanitizer options
 option(ASAN OFF "Compile library and executables with LLVM Address Sanitizer")
-if(ASAN)
-  list(APPEND sanitizers asan)
-  target_compile_options(triqs PUBLIC -fsanitize=address -fno-omit-frame-pointer -ggdb3)
-  target_link_libraries(triqs PUBLIC "-fsanitize=address -fno-omit-frame-pointer")
-  if(NOT DEFINED ENV{ASAN_OPTIONS})
-    message(WARNING "ASAN_OPTIONS is not set. Consider setting ASAN_OPTIONS=symbolize=1:detect_leaks=0 when running tests")
-  endif()
-endif()
-
-# Undefined Behavior Sanitizer
 option(UBSAN OFF "Compile library and executables with LLVM Undefined Behavior Sanitizer")
+option(MBSAN OFF "Compile library and executables with LLVM Memory Sanitizer")
+
+if(ASAN)
+  find_package(sanitizer REQUIRED "asan")
+  target_link_libraries(triqs PUBLIC asan)
+  install(TARGETS asan EXPORT triqs-dependencies)
+endif()
 if(UBSAN)
-  list(APPEND sanitizers ubsan)
-  target_compile_options(triqs PUBLIC -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer -ggdb3)
-  target_link_libraries(triqs PUBLIC "-fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer")
-  if(NOT DEFINED ENV{UBSAN_OPTIONS})
-    message(WARNING "UBSAN_OPTIONS is not set. Consider setting UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 when running tests")
-  endif()
+  find_package(sanitizer REQUIRED "ubsan")
+  target_link_libraries(triqs PUBLIC ubsan)
+  install(TARGETS ubsan EXPORT triqs-dependencies)
 endif()
 
-# Memory Sanitizer
-option(MSAN OFF "Compile library and executables with LLVM Memory Sanitizer")
 if(MSAN)
   target_compile_options(triqs PUBLIC -fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2 -O1 -ggdb3)
   target_link_libraries(triqs PUBLIC "-fsanitize=memory -fno-omit-frame-pointer -fsanitize-recover=all -fsanitize-memory-track-origins=2")
-endif()
-
-if(sanitizers)
-  find_package(sanitizer REQUIRED ${sanitizers})
-  if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-    target_link_libraries(triqs INTERFACE "-fuse-ld=gold")
-  endif()
 endif()
 
 # ---------------------------------

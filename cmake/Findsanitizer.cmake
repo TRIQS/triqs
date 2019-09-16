@@ -71,6 +71,25 @@ endif()
 set(SANITIZER_RT_PRELOAD ${preload_var}=${sanitizer_rt_libraries} CACHE INTERNAL "Runtime shared libraries needed to load the sanitizer")
 mark_as_advanced(SANITIZER_RT_PRELOAD)
 
+# ----- Create Interface Targets -----
+if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_asan)
+  add_library(asan INTERFACE)
+  target_compile_options(asan INTERFACE -fsanitize=address -fno-omit-frame-pointer -ggdb3)
+  target_link_libraries(asan INTERFACE "-fsanitize=address -fno-omit-frame-pointer$<$<CXX_COMPILER_ID:GNU>: -fuse-ld=gold>")
+  if(NOT DEFINED ENV{ASAN_OPTIONS})
+    message(WARNING "ASAN_OPTIONS is not set. Consider setting ASAN_OPTIONS=symbolize=1:detect_leaks=0 when running tests")
+  endif()
+endif()
+if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED_ubsan)
+  add_library(ubsan INTERFACE)
+  target_compile_options(ubsan INTERFACE -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer -ggdb3)
+  target_link_libraries(ubsan INTERFACE "-fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-omit-frame-pointer$<$<CXX_COMPILER_ID:GNU>: -fuse-ld=gold>")
+  if(NOT DEFINED ENV{UBSAN_OPTIONS})
+    message(WARNING "UBSAN_OPTIONS is not set. Consider setting UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 when running tests")
+  endif()
+endif()
+# ------------------------------------
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args("Sanitizer Runtime Libraries"
   REQUIRED_VARS SANITIZER_RT_PRELOAD ${required_vars}
