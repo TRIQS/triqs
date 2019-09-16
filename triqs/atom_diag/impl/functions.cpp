@@ -126,7 +126,7 @@ namespace triqs {
     auto quantum_number_eigenvalues(ATOM_DIAG_T::many_body_op_t const &op, ATOM_DIAG const &atom) -> std::vector<std::vector<quantum_number_t>> {
 
       auto commutator = op * atom.get_h_atomic() - atom.get_h_atomic() * op;
-      if (!commutator.is_zero()) TRIQS_RUNTIME_ERROR << "The operator is not a quantum number";
+      if (!commutator.is_almost_zero()) TRIQS_RUNTIME_ERROR << "The operator is not a quantum number";
 
       std::vector<std::vector<quantum_number_t>> result;
 
@@ -157,7 +157,7 @@ namespace triqs {
        -> std::vector<std::vector<quantum_number_t>> {
 
       auto commutator = op * atom.get_h_atomic() - atom.get_h_atomic() * op;
-      if (!commutator.is_zero()) TRIQS_RUNTIME_ERROR << "The operator is not a quantum number";
+      if (!commutator.is_almost_zero()) TRIQS_RUNTIME_ERROR << "The operator is not a quantum number";
 
       auto d = atom.get_full_hilbert_space_dim();
       matrix<quantum_number_t> M(d, d);

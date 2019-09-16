@@ -182,8 +182,14 @@ namespace triqs {
       const_iterator cbegin() const noexcept { return monomials.cbegin(); }
       const_iterator cend() const noexcept { return monomials.cend(); }
 
-      // Is zero operator ?
-      bool is_zero() const { return monomials.empty(); }
+      /// Check if the operator is close to zero
+      [[nodiscard]] bool is_almost_zero(double precision = 1e-10) const {
+        auto term_is_zero = [precision](auto const &term) { return triqs::utility::is_zero(abs(term.coef), precision); };
+        return std::all_of(this->begin(), this->end(), term_is_zero);
+      }
+
+      /// Check if the operator is identically zero
+      [[nodiscard]] bool is_zero() const { return monomials.empty(); }
 
       // Algebraic operations involving scalar_t constants
       many_body_operator_generic operator-() const {
@@ -405,14 +411,7 @@ namespace triqs {
     template <typename scalar1_t, typename scalar2_t>
     void assert_operators_are_close(many_body_operator_generic<scalar1_t> const &op1, many_body_operator_generic<scalar2_t> const &op2,
                                     double precision) {
-      auto terms_are_equal = [precision](auto const &t1, auto const &t2) {
-        using triqs::utility::is_zero;
-        return (t1.monomial == t2.monomial) && is_zero(t1.coef - t2.coef, precision);
-      };
-      if (op1.get_monomials().size() != op2.get_monomials().size())
-        TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different number of terms";
-      if (!std::equal(op1.begin(), op1.end(), op2.begin(), terms_are_equal))
-        TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different terms";
+      if (!(op1 - op2).is_almost_zero(precision)) TRIQS_RUNTIME_ERROR << " ASSERTION FAILED: Operators have different terms";
     }
 
     // ---- factories --------------
