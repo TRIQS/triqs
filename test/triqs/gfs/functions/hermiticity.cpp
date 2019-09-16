@@ -47,7 +47,7 @@ TEST(hermiticity, symmetrize_and_check) {
   // Check that the same for the imtime Gf
   auto G_tau = make_gf_from_fourier(G);
   EXPECT_TRUE(is_gf_hermitian(G_tau));
-  EXPECT_GF_NEAR(G_tau, make_hermitian(G_tau), 1e-14);
+  EXPECT_GF_NEAR(G_tau, make_hermitian(G_tau), 1e-13);
 
   // ============  Now Break hermiticity
   h = matrix<dcomplex>{{{1 + 0_j, 1_j}, {1_j, 2 + 0_j}}};
@@ -75,7 +75,7 @@ TEST(hermiticity, symmetrize_and_check) {
   // Check that the same for the imtime Gf
   auto Chi_tau = make_gf_from_fourier(Chi);
   EXPECT_TRUE(is_gf_hermitian(Chi_tau));
-  EXPECT_GF_NEAR(Chi_tau, make_hermitian(Chi_tau), 1e-14);
+  EXPECT_GF_NEAR(Chi_tau, make_hermitian(Chi_tau), 1e-13);
 }
 
 MAKE_MAIN;
