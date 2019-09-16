@@ -133,7 +133,7 @@ install(TARGETS boost EXPORT triqs-dependencies)
 message(STATUS "-------- Misc -------------")
 
 # should be move to config.h ?
-try_compile(_max_align_t_is_correct ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/max_align_t_test.cpp COMPILE_DEFINITIONS -std=c++11)
+try_compile(_max_align_t_is_correct ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/cmake/max_align_t_test.cpp COMPILE_DEFINITIONS -std=c++11)
 if(NOT _max_align_t_is_correct)
  MESSAGE(STATUS "Adding workaround for max_align_t bug (in clang normally)")
  target_compile_definitions(triqs PUBLIC TRIQS_ADD_MAX_ALIGN_T_WORKAROUND)
@@ -285,7 +285,7 @@ endif()
 # ---------------------------------
 
 # Add the directories where the triqs headers are located to the triqs target interface
-target_include_directories(triqs INTERFACE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
+target_include_directories(triqs INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
 target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
 

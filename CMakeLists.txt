@@ -35,14 +35,13 @@ cmake_policy(SET CMP0005 NEW)
 cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003
 cmake_policy(SET CMP0018 NEW) # Automatically add -fPIC when necessary
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake) 
-
 #---------------------------------------------------------------------
 # Start project
 #---------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 project(TRIQS VERSION 2.2.0 LANGUAGES C CXX)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 ## C & C++ Headers
 include(CheckIncludeFile)
@@ -65,7 +64,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 else()
   message(FATAL_ERROR "TRIQS Has to be compiled with g++ (7.x) or clang (>= 5.0.0)")
 endif()
-try_compile(_CXX_OK ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/cmake/cxx_check.cpp COMPILE_DEFINITIONS -std=c++17)
+try_compile(_CXX_OK ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/cmake/cxx_check.cpp COMPILE_DEFINITIONS -std=c++17)
 if (NOT _CXX_OK)
  message(FATAL_ERROR "The compiler does not support C++17")
 endif()
@@ -113,7 +112,7 @@ find_package(Git)
 
 # Get the Git Hash
 execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
- WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+ WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
  OUTPUT_VARIABLE   TRIQS_GIT_HASH
  OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -182,7 +181,7 @@ add_subdirectory(google_test)
 # Common option for all targets below (triqs lib, test, pytriqs, doc examples)
 # -----------------------------------------------------------------------------
  
-include_directories (${CMAKE_SOURCE_DIR})  # to have <triqs/....>
+include_directories (${PROJECT_SOURCE_DIR})  # to have <triqs/....>
 
 #------------------------
 # triqs library

@@ -13,7 +13,7 @@ macro(all_tests)
   target_link_libraries(${TestName} triqs gtest)
   add_cpp_test(${TestName})
   if (TESTS_C_WITH_VALGRIND)
-   add_test (${TestName}_valgrind valgrind --error-exitcode=1 --suppressions=${CMAKE_SOURCE_DIR}/test/triqs/valgrind.supp ${CMAKE_CURRENT_BINARY_DIR}/${TestName})
+   add_test (${TestName}_valgrind valgrind --error-exitcode=1 --suppressions=${PROJECT_SOURCE_DIR}/test/triqs/valgrind.supp ${CMAKE_CURRENT_BINARY_DIR}/${TestName})
   endif()
  endforeach(TestName1  ${TestList})
 

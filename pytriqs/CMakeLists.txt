@@ -2,7 +2,7 @@
 set(TRIQS_PYTHON_LIB_DEST ${PYTHON_LIB_DEST_ROOT}/pytriqs)
 
 # Create a temporary copy of the python modules so that we can run before installation with the test
-FILE(GLOB_RECURSE all_py_files RELATIVE ${CMAKE_SOURCE_DIR}/pytriqs *.py )
+FILE(GLOB_RECURSE all_py_files RELATIVE ${PROJECT_SOURCE_DIR}/pytriqs *.py )
 foreach(f ${all_py_files})
  configure_file(${f} ${f} COPYONLY)
 endforeach()
