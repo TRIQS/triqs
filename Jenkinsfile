@@ -56,7 +56,7 @@ for (int i = 0; i < osxPlatforms.size(); i++) {
           "C_INCLUDE_PATH=${env.BREW}/include",
           "CPLUS_INCLUDE_PATH=$installDir/include:${env.BREW}/include",
           "LIBRARY_PATH=$installDir/lib:${env.BREW}/lib",
-          "LD_LIBRARY_PATH=${env.BREW}/lib",
+          "DYLD_LIBRARY_PATH=${env.BREW}/lib",
           "CMAKE_PREFIX_PATH=$installDir/lib/cmake/triqs"]) {
         deleteDir()
         sh """#!/bin/bash -ex
