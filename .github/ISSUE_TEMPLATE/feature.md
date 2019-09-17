@@ -14,12 +14,12 @@ https://groups.google.com/a/flatironinstitute.org/forum/#!forum/triqs
 
 ### Summary
 
-[Explanation of the feature.]
+One paragraph explanation of the feature.
 
 ### Motivation
 
-[Why do you/we need this? What use cases does it support? What is the expected outcome?]
+Why is this feature of general interest?
 
-### Additional context
+### Implementation
 
-[Add any other context about the feature request here.]
+What user interface do you suggest?
