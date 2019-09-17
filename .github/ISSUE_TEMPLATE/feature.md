@@ -23,3 +23,7 @@ Why is this feature of general interest?
 ### Implementation
 
 What user interface do you suggest?
+
+### Formatting
+
+Please use markdown in your issue message. A useful summary of commands can be found [here](https://guides.github.com/pdfs/markdown-cheatsheet-online.pdf).
