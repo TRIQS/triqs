@@ -66,34 +66,26 @@ endif()
 # ---------------------------------
 
 message(STATUS "-------- MPI detection -------------")
-# We use MPI in C only, not the C++ bindings.
-find_package(MPI)
 
-if(NOT MPI_C_FOUND)
- message(FATAL_ERROR "TRIQS requires MPI")
-endif()
-message(STATUS "MPI C compiler : ${MPI_C_COMPILER}")
-message(STATUS "MPI_COMPILE_FLAGS : ${MPI_C_COMPILE_FLAGS} ")
-message(STATUS "MPI_C_INCLUDE_PATH : ${MPI_C_INCLUDE_PATH}")
-message(STATUS "MPI_C_LIBRARIES : ${MPI_C_LIBRARIES}")
-message(STATUS "MPI_CXX_LIBRARIES : ${MPI_CXX_LIBRARIES}")
+find_package(MPI REQUIRED)
 
-# FIXME : we should not link to CXX lib, but openmpi uses them by default apparently on Linux
-
-separate_arguments(MPI_C_COMPILE_FLAGS) # Convert to list
-
+# Create an interface target
 add_library(mpi INTERFACE)
 target_include_directories(mpi SYSTEM INTERFACE ${MPI_C_INCLUDE_PATH})
-target_link_libraries(mpi INTERFACE ${MPI_C_LIBRARIES} ${MPI_CXX_LIBRARIES})
+target_link_libraries(mpi INTERFACE ${MPI_C_LIBRARIES})
+separate_arguments(MPI_C_COMPILE_FLAGS) # Convert to list
 target_compile_options(mpi INTERFACE ${MPI_C_COMPILE_FLAGS})
 
+# Link against interface target and export
 target_link_libraries(triqs PUBLIC mpi)
 target_include_directories(triqs SYSTEM PUBLIC ${MPI_C_INCLUDE_PATH})
 install(TARGETS mpi EXPORT triqs-dependencies)
 
-if(NOT MPIEXEC_EXECUTABLE) # Backward compatibility for older FindMPI.cmake
+# Backward compatibility for older FindMPI.cmake
+if(NOT MPIEXEC_EXECUTABLE)
   set(MPIEXEC_EXECUTABLE ${MPIEXEC} CACHE FILENAME "MPI Executable")
 endif()
+
 # Compatibility to Open-MPI 3.0.0: check whether MPI executable has option --oversubscribe and add it 
 execute_process(COMMAND ${MPIEXEC_EXECUTABLE} --oversubscribe ${MPIEXEC_NUMPROC_FLAG} 4 ${MPIEXEC_PREFLAGS} ls ${MPIEXEC_POSTFLAGS} RESULT_VARIABLE HAS_NO_OVERSUBSCRIBE OUTPUT_QUIET ERROR_QUIET)
 if(NOT HAS_NO_OVERSUBSCRIBE)
@@ -166,45 +158,22 @@ install(TARGETS blas_lapack EXPORT triqs-dependencies)
 
 message(STATUS "-------- HDF5 detection -------------")
 
-# on weiss, it is 2.8.2 and we should not put HL, on 12.04 we need to put it...
-if(${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
- find_package(HDF5 REQUIRED C)
-else(${CMAKE_VERSION} VERSION_LESS "2.8.6")
- find_package(HDF5 REQUIRED C HL)
-endif(${CMAKE_VERSION} VERSION_LESS "2.8.6")
+find_package(HDF5 REQUIRED C HL)
 
-if(NOT HDF5_FOUND)
- message(FATAL_ERROR "Require hdf5 1.8.2 or higher. Set HDF5_HOME")
-endif()
-
-if(HDF5_IS_PARALLEL)
-  message(WARNING "parallel(MPI) hdf5 is detected. The standard version is preferred.")
-endif(HDF5_IS_PARALLEL)
-
-if(HDF5_HL_LIBRARIES)    # CMake 3.6.0 and later puts libhdf5_hl into a separate variable
- list(APPEND HDF5_LIBRARIES ${HDF5_HL_LIBRARIES})
- list(REMOVE_DUPLICATES HDF5_LIBRARIES)
-endif(HDF5_HL_LIBRARIES)
-
-message(STATUS "HDF5_LIBRARIES = ${HDF5_LIBRARIES}")
-
-# Get hdf5 version and add a definition HDF5_LT_189 if version < 1.8.9
-execute_process(COMMAND ${HDF5_DIFF_EXECUTABLE} --version OUTPUT_VARIABLE diff_output)
-string(REGEX MATCHALL "[0-9]+.[0-9]+.[0-9]+" HDF5_VERSION "${diff_output}")
-message(STATUS "hdf5 version: ${HDF5_VERSION}")
 if(PythonSupport)
  if(NOT "${PYTHON_H5PY_HDF5VERSION}" STREQUAL "${HDF5_VERSION}")
  message(FATAL_ERROR "The HDF5 version of the h5py (${PYTHON_H5PY_HDF5VERSION}) is different from the hdf5 library found for C++ (${HDF5_VERSION}). You MUST have the same version.")
  endif()
 endif()
 
+# Create an interface target
 add_library(hdf5 INTERFACE)
 target_include_directories(hdf5 SYSTEM INTERFACE ${HDF5_INCLUDE_DIRS})
-target_link_libraries(hdf5 INTERFACE ${HDF5_LIBRARIES})
+target_link_libraries(hdf5 INTERFACE "${HDF5_LIBRARIES}" ${HDF5_HL_LIBRARIES})
 target_compile_options(hdf5 INTERFACE ${HDF5_DEFINITIONS})
 
+# Link against interface target and export
 target_link_libraries(triqs PUBLIC hdf5)
-target_include_directories(triqs SYSTEM PUBLIC ${HDF5_INCLUDE_DIRS})
 install(TARGETS hdf5 EXPORT triqs-dependencies)
 
 # ---------------------------------
