@@ -160,10 +160,9 @@ message(STATUS "-------- HDF5 detection -------------")
 
 find_package(HDF5 REQUIRED C HL)
 
-if(PythonSupport)
- if(NOT "${PYTHON_H5PY_HDF5VERSION}" STREQUAL "${HDF5_VERSION}")
- message(FATAL_ERROR "The HDF5 version of the h5py (${PYTHON_H5PY_HDF5VERSION}) is different from the hdf5 library found for C++ (${HDF5_VERSION}). You MUST have the same version.")
- endif()
+string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+" HDF5_VERSION ${HDF5_VERSION})
+if(PythonSupport AND NOT PYTHON_H5PY_HDF5VERSION VERSION_EQUAL HDF5_VERSION)
+  message(FATAL_ERROR "The HDF5 version of the h5py (${PYTHON_H5PY_HDF5VERSION}) is different from the hdf5 library found for C++ (${HDF5_VERSION}). You MUST have the same version.")
 endif()
 
 # Create an interface target
