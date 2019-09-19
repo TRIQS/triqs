@@ -72,7 +72,7 @@ find_package(MPI REQUIRED)
 # Create an interface target
 add_library(mpi INTERFACE)
 target_include_directories(mpi SYSTEM INTERFACE ${MPI_C_INCLUDE_PATH})
-target_link_libraries(mpi INTERFACE ${MPI_C_LIBRARIES})
+target_link_libraries(mpi INTERFACE ${MPI_C_LIBRARIES} ${MPI_CXX_LIBRARIES})
 separate_arguments(MPI_C_COMPILE_FLAGS) # Convert to list
 target_compile_options(mpi INTERFACE ${MPI_C_COMPILE_FLAGS})
 
