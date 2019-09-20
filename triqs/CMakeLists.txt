@@ -269,8 +269,10 @@ macro(get_property_recursive)
     list(APPEND ${ARGV0} ${p})
   endforeach()
   # Clean duplicates and any occurance of '/usr/include' dirs
-  list(REMOVE_DUPLICATES ${ARGV0})
-  list(REMOVE_ITEM ${ARGV0} /usr/include)
+  if(${ARGV0})
+    list(REMOVE_DUPLICATES ${ARGV0})
+    list(REMOVE_ITEM ${ARGV0} /usr/include)
+  endif()
 endmacro()
 
 # Recursively fetch all compiler flags attached to the interface of a target
