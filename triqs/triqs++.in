@@ -1,7 +1,7 @@
 #!@PYTHON_INTERPRETER@
 
-cxxflags = "@CMAKE_CXX_FLAGS@ @TRIQS_CXX_FLAGS@ @PYTHON_CXX_FLAGS@"
-ldflags = "@TRIQS_LD_FLAGS@ @PYTHON_LD_FLAGS@ -ltriqs -lcpp2py"
+cxxflags = "@CMAKE_CXXFLAGS@ @triqs_CXXFLAGS@ @python_and_numpy_CXXFLAGS@"
+ldflags = "@triqs_LDFLAGS@ @pyhon_and_numpy_LDFLAGS@ -ltriqs -lcpp2py"
 
 import argparse, os
 parser = argparse.ArgumentParser(description="""

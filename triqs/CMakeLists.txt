@@ -241,46 +241,83 @@ target_include_directories(triqs INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DI
 target_include_directories(triqs SYSTEM INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
 
+# --------------------------------------------------------
+# Some helper functions for the extraction of target info
+# --------------------------------------------------------
+
+# Recursively fetch all targets that the interface of a target depends upon
+macro(get_all_interface_targets name target)
+  get_property(TARGET_LINK_LIBRARIES TARGET ${target} PROPERTY INTERFACE_LINK_LIBRARIES)
+  foreach(lib IN LISTS TARGET_LINK_LIBRARIES)
+    if(TARGET ${lib})
+      # Append to list
+      list(APPEND ${name}_INTERFACE_TARGETS ${lib})
+      # Recure into target dependencies
+      get_all_interface_targets(${name} ${lib})
+    endif()
+  endforeach()
+endmacro()
+
+# Extract the property from the target and recursively from all targets it depends upon
+macro(get_property_recursive)
+  cmake_parse_arguments(get_property_recursive "" "TARGET" "PROPERTY" ${ARGN})
+  set(target ${get_property_recursive_TARGET})
+  set(property ${get_property_recursive_PROPERTY})
+  get_all_interface_targets(${target} ${target})
+  foreach(t IN LISTS ${target}_INTERFACE_TARGETS ITEMS ${target})
+    get_property(p TARGET ${t} PROPERTY ${property})
+    list(APPEND ${ARGV0} ${p})
+  endforeach()
+  # Clean duplicates and any occurance of '/usr/include' dirs
+  list(REMOVE_DUPLICATES ${ARGV0})
+  list(REMOVE_ITEM ${ARGV0} /usr/include)
+endmacro()
+
+# Recursively fetch all compiler flags attached to the interface of a target
+macro(extract_flags target)
+
+  get_property_recursive(opts TARGET ${target} PROPERTY INTERFACE_COMPILE_OPTIONS)
+  foreach(opt ${opts})
+    set(${target}_LDFLAGS "${${target}_LDFLAGS} ${opt}")
+    set(${target}_CXXFLAGS "${${target}_CXXFLAGS} ${opt}")
+  endforeach()
+
+  get_property_recursive(defs TARGET ${target} PROPERTY INTERFACE_COMPILE_DEFINITIONS)
+  foreach(def ${defs})
+    set(${target}_CXXFLAGS "${${target}_CXXFLAGS} -D${def}")
+  endforeach()
+
+  get_property_recursive(inc_dirs TARGET ${target} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  get_property_recursive(sys_inc_dirs TARGET ${target} PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
+  list(REMOVE_ITEM inc_dirs ${sys_inc_dirs})
+  foreach(dir ${inc_dirs})
+    set(${target}_CXXFLAGS "${${target}_CXXFLAGS} -I${dir}")
+  endforeach()
+  foreach(dir ${sys_inc_dirs})
+    set(${target}_CXXFLAGS "${${target}_CXXFLAGS} -isystem${dir}")
+  endforeach()
+
+  get_property_recursive(libs TARGET ${target} PROPERTY INTERFACE_LINK_LIBRARIES)
+  foreach(lib ${libs})
+    if(NOT TARGET ${lib})
+      set(${target}_LDFLAGS "${${target}_LDFLAGS} ${lib}")
+    endif()
+  endforeach()
+
+  # We have to replace generator expressions explicitly
+  string(REGEX REPLACE " [^ ]*\\$<BUILD_INTERFACE:[^ ]*>" "" ${target}_LDFLAGS "${${target}_LDFLAGS}")
+  string(REGEX REPLACE " [^ ]*\\$<BUILD_INTERFACE:[^ ]*>" "" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+  string(REGEX REPLACE "\\$<INSTALL_INTERFACE:([^ ]*)>" "\\1" ${target}_LDFLAGS "${${target}_LDFLAGS}")
+  string(REGEX REPLACE "\\$<INSTALL_INTERFACE:([^ ]*)>" "\\1" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+endmacro()
+
 # ---------------------------------
 # Generate Compiler Wrapper
 # ---------------------------------
 
-macro(extract_flags NAME TARGET)
-  get_property(TARGET_COMPILE_OPTIONS TARGET ${TARGET} PROPERTY INTERFACE_COMPILE_OPTIONS)
-  get_property(TARGET_COMPILE_DEFINITIONS TARGET ${TARGET} PROPERTY INTERFACE_COMPILE_DEFINITIONS)
-  get_property(TARGET_INCLUDE_DIRS TARGET ${TARGET} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-  get_property(TARGET_LINK_LIBRARIES TARGET ${TARGET} PROPERTY INTERFACE_LINK_LIBRARIES)
-
-  foreach(OPT ${TARGET_COMPILE_OPTIONS})
-    set(${NAME}_LD_FLAGS "${${NAME}_LD_FLAGS} ${OPT}")
-    set(${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS} ${OPT}")
-  endforeach()
-  foreach(DEF ${TARGET_COMPILE_DEFINITIONS})
-    set(${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS} -D${DEF}")
-  endforeach()
-  foreach(DIR ${TARGET_INCLUDE_DIRS})
-    if(NOT DIR STREQUAL "/usr/include")
-      set(${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS} -isystem${DIR}")
-    endif()
-  endforeach()
-  foreach(LIB ${TARGET_LINK_LIBRARIES})
-    if(TARGET ${LIB}) # Recure into target dependencies
-      extract_flags(${NAME} ${LIB})
-    else()
-      set(${NAME}_LD_FLAGS "${${NAME}_LD_FLAGS} ${LIB}")
-    endif()
-  endforeach()
-
-  # We have replace generator expressions explicitly
-  string(REGEX REPLACE " [^ ]*\\$<BUILD_INTERFACE:.*>" "" ${NAME}_LD_FLAGS "${${NAME}_LD_FLAGS}")
-  string(REGEX REPLACE " [^ ]*\\$<BUILD_INTERFACE:.*>" "" ${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS}")
-  string(REGEX REPLACE "\\$<INSTALL_INTERFACE:(.*)>" "\\1" ${NAME}_LD_FLAGS "${${NAME}_LD_FLAGS}")
-  string(REGEX REPLACE "\\$<INSTALL_INTERFACE:(.*)>" "\\1" ${NAME}_CXX_FLAGS "${${NAME}_CXX_FLAGS}")
-endmacro()
-
 # Get the compiler and linktime flags of triqs and python_and_numpy
-extract_flags(TRIQS triqs)
-extract_flags(PYTHON python_and_numpy)
+extract_flags(triqs)
+extract_flags(python_and_numpy)
 
 # Generate compiler wrapper
 configure_file(triqs++.in triqs++ @ONLY)

@@ -32,19 +32,10 @@ set(NAMESPACES
     -N itertools
 )
 
-get_property(TRIQS_INCLUDE_DIRS TARGET triqs PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-get_property(TRIQS_SYSTEM_INCLUDE_DIRS TARGET triqs PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
-list(REMOVE_ITEM TRIQS_INCLUDE_DIRS ${TRIQS_SYSTEM_INCLUDE_DIRS})
-foreach(DIR ${TRIQS_INCLUDE_DIRS})
-  set(CPP2RST_INCLUDE_FLAGS ${CPP2RST_INCLUDE_FLAGS} -I${DIR})
-endforeach()
-foreach(DIR ${TRIQS_SYSTEM_INCLUDE_DIRS})
-  set(CPP2RST_INCLUDE_FLAGS ${CPP2RST_INCLUDE_FLAGS} -isystem=${DIR})
-endforeach()
-get_property(CPP2RST_CXXFLAGS TARGET triqs PROPERTY INTERFACE_COMPILE_OPTIONS)
-
 # Caution! This target will generate documentation into the sourcetree at doc/documentation/cpp_api
 add_custom_target(docs_cpp2rst)
+extract_flags(triqs)
+separate_arguments(triqs_CXXFLAGS)
 add_custom_command(
   TARGET docs_cpp2rst
   COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
@@ -52,9 +43,8 @@ add_custom_command(
   ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
   ${NAMESPACES}
   --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
-  --cxxflags="${CPP2RST_CXXFLAGS}"
+  --cxxflags="${triqs_CXXFLAGS}"
   -isystem=${PROJECT_SOURCE_DIR}/cpp2py/include
-  ${CPP2RST_INCLUDE_FLAGS}
 )
 
 # --------------------------------------------------------
