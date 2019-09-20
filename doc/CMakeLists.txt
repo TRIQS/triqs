@@ -43,8 +43,9 @@ add_custom_command(
   ${CMAKE_CURRENT_SOURCE_DIR}/documentation/api_root.hpp
   ${NAMESPACES}
   --output_directory ${CMAKE_CURRENT_SOURCE_DIR}/documentation/cpp_api
-  --cxxflags="${triqs_CXXFLAGS}"
+  -I${PROJECT_SOURCE_DIR}
   -isystem=${PROJECT_SOURCE_DIR}/cpp2py/include
+  --cxxflags="${triqs_CXXFLAGS}"
 )
 
 # --------------------------------------------------------
