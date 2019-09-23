@@ -179,6 +179,7 @@ gf
 * Remove unnecessary modulo operations from index_to_linear of cluster_mesh FIX #725
 * Rename slice_t to value_t for all gf target types
 * Adjust the the delta(g) function in pytriqs.gf.tools after tail adjustments
+* Fix gf_indices construction in partial evaluation of Green functions
 
 h5
 --

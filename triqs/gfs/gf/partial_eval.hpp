@@ -111,7 +111,7 @@ namespace triqs::gfs {
         auto xs   = triqs::tuple::fold(details::fw_mesh_x{}, g->mesh().components(), std::make_tuple(args...), std::make_tuple());
         auto arr2 = triqs::tuple::apply([&g](auto const &... args) { return g->data()(args..., triqs::arrays::ellipsis()); }, xs);
 
-        return r_t{std::move(m), arr2};
+        return r_t{std::move(m), arr2, g->indices()};
       }
     }
 
