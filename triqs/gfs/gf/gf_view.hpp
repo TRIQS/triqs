@@ -231,14 +231,6 @@ namespace triqs::gfs {
     template <typename ArrayType>
     gf_view(mesh_t m, ArrayType &&dat, indices_t const &ind = indices_t{}) : gf_view(impl_tag{}, std::move(m), std::forward<ArrayType>(dat), ind) {}
 
-    /**
-       * Builds a view on top of a mesh, a data array
-       * 
-       * @tparam ArrayType Type of the data array 
-       * @param dat Data array
-       */
-    template <typename ArrayType> gf_view(mesh_t m, ArrayType const &dat) : gf_view(impl_tag{}, std::move(m), dat, {}) {}
-
     // ---------------  swap --------------------
 
     friend void swap(gf_view &a, gf_view &b) noexcept { a.swap_impl(b); }
