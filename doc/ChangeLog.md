@@ -62,7 +62,7 @@ an `array<int, 1>`.
 array<int, 1> f() { return array<int, 1>{1, 2, 3}; }
 ```
 
-Example 1: Constructing a view from a temporary
+Example 2: Constructing a view from a temporary
 
 ```c++
 array_view<int, 1> av{ zeros<int>(10) };
@@ -100,6 +100,13 @@ lead to conflicts with system-provided packages. Applications should instead com
 their own version of googletest.
 This is done for example in the [app4triqs](https://github.com/TRIQS/app4triqs) application skeleton.
 
+app4triqs
+---------
+
+Starting with TRIQS Version 2.2.0 we will issue compatible releases of the [app4triqs](https://github.com/TRIQS/app4triqs) application skeleton.
+These will serve as a basis to the corresponding compatible releases of many of our official applications.
+Making adjustments to the project structure directly within [app4triqs](https://github.com/TRIQS/app4triqs)
+allows us to easily propagate these changes to all compatible applications.
 
 arrays
 ------
@@ -142,7 +149,7 @@ cmake
 
 doc
 ---
-* Major overhaul of documentation structure
+* Major overhaul of the documentation file structure
 * Add documentation for fit_legendre function
 * Include a markdown cheat sheet in the feature request issue template
 * Add issue_templates for bug report and feature request
