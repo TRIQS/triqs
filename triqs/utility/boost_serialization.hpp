@@ -60,14 +60,14 @@ namespace triqs {
   }
 
   template <typename T> void deserialize_into_view(std::string const &serial_str, T &x) {
-    typename regular_type_if_exists_else_type<T>::type obj;
+    typename regular_t<T>::type obj;
     // wrap buffer inside a stream and deserialize serial_str into obj
     boost::iostreams::basic_array_source<char> device(serial_str.data(), serial_str.size());
     boost::iostreams::stream<boost::iostreams::basic_array_source<char>> s(device);
     boost::archive::text_iarchive ia(s);
     //boost::archive::binary_iarchive ia(s);
     ia >> obj;
-    x = typename view_type_if_exists_else_type<T>::type(obj);
+    x = typename view_or_type_t<T>::type(obj);
   }
 } // namespace triqs
 #endif

@@ -91,7 +91,7 @@ namespace triqs {
     template <typename S, bool IsMatrix> struct get_rank<_scalar_wrap<S, IsMatrix>> { static constexpr int value = 0; };
 
     //
-    //template<typename T, bool IsMatrix=false> struct keeper_type : boost::mpl::if_<is_in_ZRC<T>, _scalar_wrap<T,IsMatrix>, typename view_type_if_exists_else_type<T>::type> {};
+    //template<typename T, bool IsMatrix=false> struct keeper_type : boost::mpl::if_<is_in_ZRC<T>, _scalar_wrap<T,IsMatrix>, typename view_or_type_t<T>::type> {};
 
     // Combine the two domains of LHS and RHS : need to specialize where there is a scalar
     struct combine_domain {
