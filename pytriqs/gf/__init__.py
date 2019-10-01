@@ -44,7 +44,10 @@ from meshes import MeshBrillouinZone, MeshCyclicLattice, make_adjoint_mesh
 
 from gf_fnt import fit_tail, fit_hermitian_tail, density, set_from_fourier, is_gf_real_in_tau, set_from_legendre, set_from_imfreq, set_from_imtime, is_gf_hermitian, fit_tail_on_window, fit_hermitian_tail_on_window, replace_by_tail, replace_by_tail_in_fit_window, rebinning_tau, enforce_discontinuity, GfIndices
 
-from gf_factories import make_real_in_tau, make_gf_from_fourier, make_hermitian
+from gf_factories import make_gf_from_fourier, make_hermitian
+
+# Create an alias for make_real_in_tau
+make_real_in_tau = make_hermitian
 
 import warnings
 def make_gf_from_inverse_fourier(*args):
