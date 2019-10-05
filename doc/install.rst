@@ -60,10 +60,9 @@ This will install the minimal runtime packages and triqs into the system tree at
           If you have installed an earlier packaged version of triqs (or cpp2py)
           be sure to remove it before updating TRIQS to avoid package conflicts.
 
-If you aim to compile applications against the triqs library, additional :ref:`development libraries <ubuntu>` have to be installed. You should further set the following :ref:`environment variables <environment_vars>` permanently::
+If you aim to compile applications against the triqs library, additional :ref:`development libraries <ubuntu>` have to be installed. You should further set the following :ref:`environment variable <environment_vars>` permanently::
 
         export CPLUS_INCLUDE_PATH=/usr/include/openmpi:/usr/include/hdf5/serial/:$CPLUS_INCLUDE_PATH
-        source /usr/share/triqsvars.sh
 
 For full c++2py functionality, please read the corresponding :ref:`section <ubuntu_cpp2py>` for the Ubuntu set-up.
 
