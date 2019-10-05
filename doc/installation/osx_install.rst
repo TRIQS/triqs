@@ -74,11 +74,11 @@ They may work (possibly with some modifications) for earlier versions of OS X.
      brew install fftw
      brew install open-mpi
      brew install python@2
-     brew install scipy
-     brew install numpy
 
 5. Install the required python packages: ::
 
+    pip install --user --upgrade scipy
+    pip install --user --upgrade numpy
     pip install --user --upgrade --force-reinstall --no-binary=h5py h5py
     pip install --user --upgrade --force-reinstall --no-binary=mpi4py mpi4py
     pip install --user --upgrade matplotlib
