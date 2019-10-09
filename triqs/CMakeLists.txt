@@ -301,16 +301,16 @@ macro(extract_flags target)
 
   get_property_recursive(libs TARGET ${target} PROPERTY INTERFACE_LINK_LIBRARIES)
   foreach(lib ${libs})
-    if(NOT TARGET ${lib})
+    if(NOT TARGET ${lib} AND NOT IS_DIRECTORY ${lib})
       set(${target}_LDFLAGS "${${target}_LDFLAGS} ${lib}")
     endif()
   endforeach()
 
   # We have to replace generator expressions explicitly
-  string(REGEX REPLACE " [^ ]*\\$<BUILD_INTERFACE:[^ ]*>" "" ${target}_LDFLAGS "${${target}_LDFLAGS}")
-  string(REGEX REPLACE " [^ ]*\\$<BUILD_INTERFACE:[^ ]*>" "" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
   string(REGEX REPLACE "\\$<INSTALL_INTERFACE:([^ ]*)>" "\\1" ${target}_LDFLAGS "${${target}_LDFLAGS}")
   string(REGEX REPLACE "\\$<INSTALL_INTERFACE:([^ ]*)>" "\\1" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
+  string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^>]*>" "" ${target}_LDFLAGS "${${target}_LDFLAGS}")
+  string(REGEX REPLACE " [^ ]*\\$<[^ ]*:[^>]*>" "" ${target}_CXXFLAGS "${${target}_CXXFLAGS}")
 endmacro()
 
 # ---------------------------------
