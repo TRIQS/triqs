@@ -84,7 +84,7 @@ namespace triqs::gfs {
        : _tail_fraction(tail_fraction),
          _n_tail_max(n_tail_max),
          _adjust_order(not expansion_order.has_value()),
-         _expansion_order(_adjust_order ? max_order : expansion_order.value()) {}
+         _expansion_order(_adjust_order ? max_order : *expansion_order) {}
     //----------------------------------------------------------------------------------------------
 
     // number of the points in the tail for positive omega.

@@ -191,8 +191,8 @@ namespace triqs::arrays::lapack {
     std::pair<matrix<dcomplex>, double> operator()(matrix_const_view<dcomplex> B, std::optional<long> inner_matrix_dim = {}) const {
 
       if (not inner_matrix_dim.has_value()) TRIQS_RUNTIME_ERROR << "Inner matrix dimension required for hermitian least square fitting\n";
+      unsigned d = *inner_matrix_dim;
 
-      unsigned d = inner_matrix_dim.value();
       // Construction of an inner 'adjoint' matrix by performing the following steps
       // * reshape B from (M, M1) to (M, N, d, d)
       // * for each M and N take the adjoint matrix (d, d)
