@@ -1,3 +1,28 @@
+Version 2.2.1
+=============
+
+TRIQS Version 2.2.1 introduces minor adjustments
+to the documentation. It further improves compatibility
+for older osx versions and fixes the triqs++ compiler wrapper.
+
+We provide a more detailed description of the changes below.
+
+doc
+---
+* On OSX Install scipy/numpy via pip rather than homebrew for Python2 compatibility
+* For debian packages do not source /usr/share/triqsvars.sh
+* Bump cmake version requirement to actual required version
+* Update link to install page in README to use latest stable version
+
+cmake
+-----
+* Fix issues in flag extraction for triqs++ compiler wrapper
+
+General
+-------
+* Avoid use of optional.value() for improved osx compatibility
+
+
 Version 2.2.0
 =============
 
