@@ -243,7 +243,7 @@ namespace triqs::mc_tools {
         }
       // recompute fraction done
       _final:
-        done_percent = uint64_t(floor((NC * 100.0) / (n_cycles - 1)));
+        done_percent = uint64_t(floor(((NC + 1) * 100.0) / n_cycles));
         if (timer > next_info_time) {
           report << utility::timestamp() << " " << std::setfill(' ') << std::setw(3) << done_percent << "%"
                  << " ETA " << estimate_time_left(n_cycles, NC, timer) << " cycle " << NC << " of " << n_cycles << "\n"
