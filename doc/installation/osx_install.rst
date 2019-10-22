@@ -60,8 +60,8 @@ They may work (possibly with some modifications) for earlier versions of OS X.
 
      export PATH=/usr/local/opt/llvm/bin:$PATH
      export LIBRARY_PATH=/usr/local/opt/llvm/lib:$LIBRARY_PATH
-     export CC=/usr/local/opt/llvm/clang
-     export CXX=/usr/local/opt/llvm/clang++
+     export CC=/usr/local/opt/llvm/bin/clang
+     export CXX=/usr/local/opt/llvm/bin/clang++
 
   To make this choice permanent, add these two lines to your ``$HOME/.bash_profile``.
 
