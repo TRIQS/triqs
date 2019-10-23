@@ -63,7 +63,7 @@ They may work (possibly with some modifications) for earlier versions of OS X.
      export CC=/usr/local/opt/llvm/bin/clang
      export CXX=/usr/local/opt/llvm/bin/clang++
 
-  To make this choice permanent, add these two lines to your ``$HOME/.bash_profile``.
+  To make this choice permanent, add these lines to your ``$HOME/.bash_profile``.
 
 4. Install the required dependencies using homebrew: ::
 
