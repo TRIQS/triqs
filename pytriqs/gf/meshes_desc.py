@@ -229,12 +229,12 @@ module.add_class(m)
 ############################
 
 # ---------------------- make_adjoint_mesh --------------------
-module.add_function("gf_mesh<brillouin_zone> make_adjoint_mesh(gf_mesh<cyclic_lattice> m)", doc = "Create the adjoint k-mesh")
-module.add_function("gf_mesh<cyclic_lattice> make_adjoint_mesh(gf_mesh<brillouin_zone> m)", doc = "Create the adjoint r-mesh")
-module.add_function("gf_mesh<imfreq> make_adjoint_mesh(gf_mesh<imtime> m, int n_iw = -1)", doc = "Create the adjoint iw-mesh")
-module.add_function("gf_mesh<imtime> make_adjoint_mesh(gf_mesh<imfreq> m, int n_tau = -1)", doc = "Create the adjoint tau-mesh")
-module.add_function("gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> m, bool shift_half_bin = false)", doc = "Create the adjoint w-mesh")
-module.add_function("gf_mesh<refreq> make_adjoint_mesh(gf_mesh<retime> m, bool shift_half_bin = false)", doc = "Create the adjoint t-mesh")
+module.add_function("b_zone triqs::gfs::make_adjoint_mesh(cyclat m)", doc = "Create the adjoint k-mesh")
+module.add_function("cyclat triqs::gfs::make_adjoint_mesh(b_zone m)", doc = "Create the adjoint r-mesh")
+module.add_function("imfreq triqs::gfs::make_adjoint_mesh(imtime m, int n_iw = -1)", doc = "Create the adjoint iw-mesh")
+module.add_function("imtime triqs::gfs::make_adjoint_mesh(imfreq m, int n_tau = -1)", doc = "Create the adjoint tau-mesh")
+module.add_function("refreq triqs::gfs::make_adjoint_mesh(retime m, bool shift_half_bin = false)", doc = "Create the adjoint w-mesh")
+module.add_function("refreq triqs::gfs::make_adjoint_mesh(retime m, bool shift_half_bin = false)", doc = "Create the adjoint t-mesh")
 
 ##   Code generation
 module.generate_code()

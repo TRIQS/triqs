@@ -77,12 +77,13 @@ namespace triqs::gfs {
   template <typename G> bool is_gf_hermitian(G const &g, double tolerance = 1.e-13) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
-      using var_t    = typename std::decay_t<G>::variable_t;
-      static_assert(std::is_same_v<var_t, imfreq> or std::is_same_v<var_t, imtime>, "is_gf_hermitian requires an imfreq or imtime Green function");
+      using mesh_t   = typename std::decay_t<G>::mesh_t;
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime>,
+                    "is_gf_hermitian requires an imfreq or imtime Green function");
       static_assert(target_t::rank == 0 or target_t::rank == 2 or target_t::rank == 4,
                     "is_gf_hermitian requires a Green function with a target rank of 0, 2 or 4.");
 
-      if constexpr (std::is_same_v<var_t, imfreq>) { // === gf<imfreq>
+      if constexpr (std::is_same_v<mesh_t, mesh::imfreq>) { // === gf<imfreq>
         if (g.mesh().positive_only()) return true;
         using triqs::arrays::max_element;
         //for (auto const &w : g.mesh().get_positive_freq()) {
@@ -139,12 +140,13 @@ namespace triqs::gfs {
   template <typename G> typename G::regular_type make_hermitian(G const &g) REQUIRES(is_gf_v<G> or is_block_gf_v<G>) {
     if constexpr (is_gf_v<G>) {
       using target_t = typename G::target_t;
-      using var_t    = typename std::decay_t<G>::variable_t;
-      static_assert(std::is_same_v<var_t, imfreq> or std::is_same_v<var_t, imtime>, "make_hermitian requires an imfreq or imtime Green function");
+      using mesh_t   = typename std::decay_t<G>::mesh_t;
+      static_assert(std::is_same_v<mesh_t, mesh::imfreq> or std::is_same_v<mesh_t, mesh::imtime>,
+                    "make_hermitian requires an imfreq or imtime Green function");
       static_assert(target_t::rank == 0 or target_t::rank == 2 or target_t::rank == 4,
                     "make_hermitian requires a Green function with a target rank of 0, 2 or 4.");
 
-      if constexpr (std::is_same_v<var_t, imfreq>) { // === gf<imfreq>
+      if constexpr (std::is_same_v<mesh_t, mesh::imfreq>) { // === gf<imfreq>
         if (g.mesh().positive_only()) return g;
         typename G::regular_type g_sym = g;
         for (auto const &w : g.mesh()) {

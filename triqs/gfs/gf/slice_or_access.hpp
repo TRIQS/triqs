@@ -78,9 +78,9 @@ namespace triqs::gfs::details {
       }();
       using mesh_t = decltype(mesh);
       if constexpr (G::is_const or std::is_const<G>::value)
-        return gf_const_view<mesh_t, typename G::target_t>{std::move(mesh), arr2, g->indices()};
+        return gf_const_view<mesh_t, typename G::target_t>{std::move(mesh), arr2, g.indices()};
       else
-        return gf_view<mesh_t, typename G::target_t>{std::move(mesh), arr2, g->indices()};
+        return gf_view<mesh_t, typename G::target_t>{std::move(mesh), arr2, g.indices()};
     }
   }
 
