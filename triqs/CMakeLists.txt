@@ -99,24 +99,15 @@ endif()
 
 message(STATUS "-------- Boost detection -------------")
 
-if(TRIQS_BUILD_STATIC)
- set(Boost_USE_STATIC_LIBS ON)
-else()
- set(Boost_USE_STATIC_LIBS OFF)
-endif()
-
 set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost 1.53 REQUIRED COMPONENTS serialization)
+find_package(Boost 1.53 REQUIRED COMPONENTS)
 message(STATUS "Boost include dir: ${Boost_INCLUDE_DIRS}")
-message(STATUS "Boost libraries: ${Boost_LIBRARIES}")
 
 add_library(boost INTERFACE)
 target_include_directories(boost SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
-target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
+install(TARGETS boost EXPORT triqs-dependencies)
 
 target_link_libraries(triqs PUBLIC boost)
-target_include_directories(triqs SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
-install(TARGETS boost EXPORT triqs-dependencies)
 
 # ---------------------------------
 # max_align_t bug detection
