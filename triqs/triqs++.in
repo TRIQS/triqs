@@ -8,9 +8,7 @@ parser = argparse.ArgumentParser(description="""
 A compiler-wrapper for the TRIQS library
 """)
 parser.add_argument('-show', action='store_true', help="Output the compiler and linktime flags")
-args, additional_args = parser.parse_known_args()
 parser.add_argument('-ldflags', action='store_true', help="Output the compiler flags")
-args, additional_args = parser.parse_known_args()
 parser.add_argument('-cxxflags', action='store_true', help="Output the linktime flags")
 args, additional_args = parser.parse_known_args()
 
