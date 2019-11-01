@@ -3,7 +3,7 @@
 # This file will update or generate the copyright header of a given source file
 # based on the history provided by the 'git blame -w -M --incremental' command
 #
-# Usage: gen_copyright file.hpp
+# Usage: gen_copyright file1 [file2 ...] [--appname AppName]
 #
 # Caution: This will edit the file!
 
@@ -11,6 +11,14 @@ from subprocess import *
 from sys import *
 from datetime import *
 import re
+
+import argparse
+parser = argparse.ArgumentParser(description="""
+A script to generate GPL Copyright headers for a list of files based on their git history
+""")
+parser.add_argument('-appname', nargs=None, default='TRIQS', help="The Name of the Project")
+parser.add_argument('-description', nargs=None, default="A Toolbox for Research in Interacting Quantum Systems", help="The Description of the Project")
+args, additional_args = parser.parse_known_args()
 
 def pretty_years(s):
 
@@ -64,9 +72,9 @@ def order_by_year(a, b):
         return 0
 
 
-for f in argv[1:]:
+for f in additional_args:
 
-    print "File: %s" % f
+    print "Generating header for file: %s"%f
 
     commits = []
     data = {}
@@ -123,43 +131,41 @@ for f in argv[1:]:
     simons_authors = set()
     header = """/*******************************************************************************
  *
- * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ * %s: %s
  *
-"""
+"""%(args.appname, args.description)
     for name, mail, years in copyright:
-        years_gt_2018 = [y for y in years if int(y) > 2017]
-        years_lt_2019 = [y for y in years if int(y) < 2018]
-        if len(years_gt_2018) > 0: simons_authors.add(name)
-        if len(years_lt_2019) > 0:
+        years_gt_2017 = [y for y in years if int(y) > 2017]
+        years_lt_2018 = [y for y in years if int(y) < 2018]
+        if len(years_gt_2017) > 0: simons_authors.add(name)
+        if len(years_lt_2018) > 0:
             header = header + " * Copyright (c) %s %s\n" % (
-                pretty_years(years_lt_2019), name)
+                pretty_years(years_lt_2018), name)
     if len(simons_authors) > 0:
         header = header + " * Copyright (c) %s The Simons foundation\n *   authors: %s" % (
             pretty_years(years), ", ".join(list(simons_authors)))
     header = header + """
  *
- * TRIQS is free software: you can redistribute it and/or modify it under the
+ * %s is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
  *
- * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * %s is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along with
- * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ * %s. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-"""
-    print header
-    with open(f, "r+") as fo:
-        dat = fo.read()
-        fo.seek(0)
-        expr = r"^/\*{10}.*\*{10}/\n"
-        if re.search(expr, dat, re.S):
-            dat = re.sub(expr, header, dat, 1, re.S)
-        else:
-            dat = header + dat
-        fo.write(dat)
+"""%(args.appname, args.appname, args.appname)
+    if f.endswith('.py'): header = re.sub(r"/? ?\*/*", "#", header)
+    with open(f, "r") as fin: dat = fin.read()
+    expr = r"^#{10}.*#{10}\n" if f.endswith('.py') else r"^/\*{10}.*\*{10}/\n"
+    if re.search(expr, dat, re.S):
+        dat = re.sub(expr, header, dat, 1, re.S)
+    else:
+        dat = header + dat
+    with open(f, "w") as fout: fout.write(dat)
