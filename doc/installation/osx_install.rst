@@ -52,20 +52,7 @@ They may work (possibly with some modifications) for earlier versions of OS X.
    If you already had homebrew installed consider running ``brew doctor`` to resolve potential
    conflicts before continuing. It can further be useful to remove duplicate packages with the command ``brew cleanup``.
 
-3. We recommend using the clang compiler. The following two commands will install the most recent clang compiler ::
-     
-     brew install llvm
-
-   As a next step we make sure the llvm installation is available in your :ref:`environment <environment_vars>`::
-
-     export PATH=/usr/local/opt/llvm/bin:$PATH
-     export LIBRARY_PATH=/usr/local/opt/llvm/lib:$LIBRARY_PATH
-     export CC=/usr/local/opt/llvm/bin/clang
-     export CXX=/usr/local/opt/llvm/bin/clang++
-
-  To make this choice permanent, add these lines to your ``$HOME/.bash_profile``.
-
-4. Install the required dependencies using homebrew: ::
+3. Install the required dependencies using homebrew: ::
 
      brew install cmake
      brew install boost
@@ -75,7 +62,7 @@ They may work (possibly with some modifications) for earlier versions of OS X.
      brew install open-mpi
      brew install python@2
 
-5. Install the required python packages: ::
+4. Install the required python packages: ::
 
     pip install --user --upgrade scipy
     pip install --user --upgrade numpy
@@ -84,6 +71,17 @@ They may work (possibly with some modifications) for earlier versions of OS X.
     pip install --user --upgrade matplotlib
     pip install --user --upgrade mako
 
-6. If desired, install the `Jupyter <https://jupyter.org/>`_ Notebook using::
+5. We recommend using the clang compiler by default. The following command will install llvm together with the most recent clang compiler ::
 
-    pip install jupyter
+     brew install llvm
+
+   As a next step we make sure the llvm installation is available in your :ref:`environment <environment_vars>` and we set clang as the default compiler ::
+
+     export PATH=/usr/local/opt/llvm/bin:$PATH
+     export LIBRARY_PATH=/usr/local/opt/llvm/lib:$LIBRARY_PATH
+     export CC=/usr/local/opt/llvm/bin/clang
+     export CXX=/usr/local/opt/llvm/bin/clang++
+
+  To make this choice permanent, add these lines to your ``$HOME/.bash_profile``.
+
+You should now be set to :ref:`compile TRIQS from source <compilation_from_source>`.

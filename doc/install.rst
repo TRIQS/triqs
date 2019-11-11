@@ -107,6 +107,7 @@ A TRIQS Jupyter notebook environment can be accessed directly at `triqs.github.i
 .. note:: Once your binder session is closed, your work will be lost.
 
 
+.. _compilation_from_source:
 Compiling TRIQS from source (Advanced)
 ======================================
 
