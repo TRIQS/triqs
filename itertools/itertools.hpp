@@ -18,7 +18,9 @@
  *
  ******************************************************************************/
 
-#pragma once
+#ifndef _ITERTOOLS_HPP
+#define _ITERTOOLS_HPP
+
 #include <tuple>
 #include <vector>
 #include <iterator>
@@ -649,3 +651,5 @@ namespace itertools {
   }
 
 } // namespace itertools
+
+#endif
