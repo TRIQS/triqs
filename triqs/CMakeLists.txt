@@ -23,14 +23,13 @@ target_link_libraries(triqs PRIVATE cpp2py python_and_numpy)
 # C++ standard and compiler details
 # ---------------------------------
 
-target_compile_options(triqs PUBLIC -std=c++17)
+target_compile_options(triqs PUBLIC
+  -std=c++17
+  $<$<CXX_COMPILER_ID:GNU>:-fconcepts>
+)
 
 if((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
  target_compile_options(triqs PUBLIC -stdlib=libc++)
-endif()
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  target_compile_options(triqs PUBLIC -fconcepts)
 endif()
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
