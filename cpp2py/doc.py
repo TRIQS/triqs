@@ -57,10 +57,10 @@ def doc_param_dict_format(member_list) :
     """
     member_list2 = treat_member_list(member_list)
     h= ['Parameter Name', 'Type', 'Default', 'Documentation']
-    n_lmax = max(len(h[0]), max(len(m.spelling) for m in member_list2))
-    type_lmax = max(len(h[1]), max(len(m.ctype) for m in member_list2))
-    opt_lmax = max(len(h[2]), max(len(m.initializer) for m in member_list2 if m.initializer))
-    doc_lmax = max(len(h[3]), max(len(m.doc) for m in member_list2))
+    n_lmax = max([len(h[0])] + [len(m.spelling) for m in member_list2])
+    type_lmax = max([len(h[1])] + [len(m.ctype) for m in member_list2])
+    opt_lmax = max([len(h[2])] + [len(m.initializer) for m in member_list2 if m.initializer])
+    doc_lmax = max([len(h[3])] + [len(m.doc) for m in member_list2])
     form =  "| {:<%s} | {:<%s} | {:<%s} | {:<%s} |"%(n_lmax, type_lmax, opt_lmax, doc_lmax)
     header = form.format(*h)
     sep1 = '+' + '+'.join([ (x+2)*'=' for x in (n_lmax, type_lmax, opt_lmax, doc_lmax)]) + '+'
