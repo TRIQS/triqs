@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!@PYTHON_INTERPRETER@
 
 # Acts as cp -rs on Linux
 # Workaround for the absence of this option on OS X
