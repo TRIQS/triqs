@@ -21,7 +21,7 @@
 #pragma once
 namespace triqs::gfs {
 
-  using triqs::arrays::conj; // not found on gcc 5
+  using triqs::arrays::conj_r; // not found on gcc 5
 
   // ---------------------------  A few specific functions ---------------------------------
 
@@ -42,7 +42,7 @@ namespace triqs::gfs {
     int L1 = (is_boson ? L - 1 : L);
     for (int u = is_boson; u < L; ++u) {
       new_data(L1 + u, _)    = dat(u, _);
-      new_data(L - 1 - u, _) = conj(dat(u, _));
+      new_data(L - 1 - u, _) = conj_r(dat(u, _));
     }
     return {gf_mesh<imfreq>{g.mesh().domain(), L}, std::move(new_data), g.indices()};
   }
@@ -88,13 +88,13 @@ namespace triqs::gfs {
         //for (auto const &w : g.mesh().get_positive_freq()) {
         for (auto const &w : g.mesh()) {
           if constexpr (target_t::rank == 0) { // ------ scalar_valued
-            if (abs(conj(g[-w]) - g[w]) > tolerance) return false;
+            if (abs(conj_r(g[-w]) - g[w]) > tolerance) return false;
           } else if constexpr (target_t::rank == 2) { // matrix_valued FIXME transpose(g[-w])
             for (auto [i, j] : g.target_indices())
-              if (abs(conj(g[-w](j, i)) - g[w](i, j)) > tolerance) return false;
+              if (abs(conj_r(g[-w](j, i)) - g[w](i, j)) > tolerance) return false;
           } else { // ---------------------------------- tensor_valued<4>
             for (auto [i, j, k, l] : g.target_indices())
-              if (abs(conj(g[-w](k, l, i, j)) - g[w](i, j, k, l)) > tolerance) return false;
+              if (abs(conj_r(g[-w](k, l, i, j)) - g[w](i, j, k, l)) > tolerance) return false;
           }
         }
         return true;
@@ -102,13 +102,13 @@ namespace triqs::gfs {
         using triqs::arrays::max_element;
         for (auto const &t : g.mesh()) {
           if constexpr (target_t::rank == 0) { // ------ scalar_valued
-            if (abs(conj(g[t]) - g[t]) > tolerance) return false;
+            if (abs(conj_r(g[t]) - g[t]) > tolerance) return false;
           } else if constexpr (target_t::rank == 2) { // matrix_valued
             for (auto [i, j] : g.target_indices())
-              if (abs(conj(g[t](j, i)) - g[t](i, j)) > tolerance) return false;
+              if (abs(conj_r(g[t](j, i)) - g[t](i, j)) > tolerance) return false;
           } else { // ---------------------------------- tensor_valued<4>
             for (auto [i, j, k, l] : g.target_indices())
-              if (abs(conj(g[t](k, l, i, j)) - g[t](i, j, k, l)) > tolerance) return false;
+              if (abs(conj_r(g[t](k, l, i, j)) - g[t](i, j, k, l)) > tolerance) return false;
           }
         }
         return true;
@@ -149,11 +149,11 @@ namespace triqs::gfs {
         typename G::regular_type g_sym = g;
         for (auto const &w : g.mesh()) {
           if constexpr (target_t::rank == 0) // ---- scalar_valued
-            g_sym[w] = 0.5 * (g[w] + conj(g[-w]));
+            g_sym[w] = 0.5 * (g[w] + conj_r(g[-w]));
           else if constexpr (target_t::rank == 2) // matrix_valued FIXME transpose(g[-w])
-            for (auto [i, j] : g.target_indices()) g_sym[w](i, j) = 0.5 * (g[w](i, j) + conj(g[-w](j, i)));
+            for (auto [i, j] : g.target_indices()) g_sym[w](i, j) = 0.5 * (g[w](i, j) + conj_r(g[-w](j, i)));
           else // ---------------------------------- tensor_valued<4>
-            for (auto [i, j, k, l] : g.target_indices()) g_sym[w](i, j, k, l) = 0.5 * (g[w](i, j, k, l) + conj(g[-w](k, l, i, j)));
+            for (auto [i, j, k, l] : g.target_indices()) g_sym[w](i, j, k, l) = 0.5 * (g[w](i, j, k, l) + conj_r(g[-w](k, l, i, j)));
         }
         return g_sym;
 
@@ -161,11 +161,11 @@ namespace triqs::gfs {
         typename G::regular_type g_sym = g;
         for (auto const &t : g.mesh()) {
           if constexpr (target_t::rank == 0) // ---- scalar_valued
-            g_sym[t] = 0.5 * (g[t] + conj(g[t]));
+            g_sym[t] = 0.5 * (g[t] + conj_r(g[t]));
           else if constexpr (target_t::rank == 2) // matrix_valued
-            for (auto [i, j] : g.target_indices()) g_sym[t](i, j) = 0.5 * (g[t](i, j) + conj(g[t](j, i)));
+            for (auto [i, j] : g.target_indices()) g_sym[t](i, j) = 0.5 * (g[t](i, j) + conj_r(g[t](j, i)));
           else // ---------------------------------- tensor_valued<4>
-            for (auto [i, j, k, l] : g.target_indices()) g_sym[t](i, j, k, l) = 0.5 * (g[t](i, j, k, l) + conj(g[t](k, l, i, j)));
+            for (auto [i, j, k, l] : g.target_indices()) g_sym[t](i, j, k, l) = 0.5 * (g[t](i, j, k, l) + conj_r(g[t](k, l, i, j)));
         }
         return g_sym;
       }
