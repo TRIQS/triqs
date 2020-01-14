@@ -100,7 +100,7 @@ try {
       stage("publish") { timeout(time: 10, unit: 'MINUTES') {
         def commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
         def release = env.BRANCH_NAME == "master" || env.BRANCH_NAME == "unstable" || sh(returnStdout: true, script: "git describe --exact-match HEAD || true").trim()
-        def workDir = pwd()
+        def workDir = pwd(tmp:true)
         lock('triqs_publish') {
         dir("$workDir/gh-pages") {
           def subdir = "${projectName}/${env.BRANCH_NAME}"
