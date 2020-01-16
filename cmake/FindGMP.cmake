@@ -67,8 +67,13 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(GMP DEFAULT_MSG GMP_LIBRARIES GMPXX_LIBRARIES 
 
 mark_as_advanced(GMP_INCLUDE_DIR GMP_LIBRARIES GMPXX_LIBRARIES)
 
-# Interface target
+# Add Interface targets for gmp and gmpxx
 # We refrain from creating an imported target since those cannot be exported
+
 add_library(gmp INTERFACE)
-target_link_libraries(gmp INTERFACE ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
+target_link_libraries(gmp INTERFACE ${GMP_LIBRARIES})
 target_include_directories(gmp SYSTEM INTERFACE ${GMP_INCLUDE_DIR})
+
+add_library(gmpxx INTERFACE)
+target_link_libraries(gmpxx INTERFACE ${GMPXX_LIBRARIES})
+target_include_directories(gmpxx SYSTEM INTERFACE ${GMP_INCLUDE_DIR})
