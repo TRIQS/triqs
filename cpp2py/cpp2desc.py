@@ -229,7 +229,6 @@ class Cpp2Desc:
         # first format the arguments
         def cls(t) :
             tname = util.decay(t)
-            tname = tname.replace(' ','')
             for ns in self.namespace_to_factor : 
                 tname = re.sub(ns + '::','',tname)
             return tname
