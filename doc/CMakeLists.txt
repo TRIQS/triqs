@@ -60,7 +60,7 @@ foreach(example ${ExampleList})
   set_property(TARGET doc_${f} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${d})
   target_link_libraries(doc_${f} triqs)
   add_custom_command(TARGET doc_${f}
-   COMMAND doc_${f} > ${CMAKE_CURRENT_SOURCE_DIR}/${d}/${f}.output 2>/dev/null
+   COMMAND doc_${f} > ${CMAKE_CURRENT_SOURCE_DIR}/${d}/${f}.output
    WORKING_DIRECTORY ${d}
   )
   add_dependencies(docs_example_output doc_${f})
