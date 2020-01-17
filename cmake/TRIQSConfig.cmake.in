@@ -85,10 +85,10 @@ endif()
 #
 ##########################################################################
 macro(triqs_get_git_hash_of_source_dir VAR)
- execute_process(COMMAND @GIT_EXECUTABLE@ rev-parse HEAD
-  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-  OUTPUT_VARIABLE   "${VAR}"
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND @GIT_EXECUTABLE@ rev-parse HEAD
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+    OUTPUT_VARIABLE   "${VAR}"
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
 endmacro()
 
 ##################################################################################
