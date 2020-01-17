@@ -12,7 +12,6 @@ set(TRIQS_SOURCE_DIR "${PROJECT_SOURCE_DIR}")
 
 # MathJax is mandatory
 find_package(MathJax REQUIRED)
-message(STATUS "Detected MathJax at ${MATHJAX_PATH}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py @ONLY)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/sphinxext DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
