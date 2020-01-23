@@ -1,6 +1,11 @@
 # This uses Dockerfile.ubuntu-clang
 FROM flatironinstitute/triqs:base
 
+COPY requirements.txt /src/triqs/requirements.txt
+# Install numpy first to prevent h5py from pulling in a newer version first
+RUN pip install `grep numpy /src/triqs/requirements.txt` && \
+    pip install -r /src/triqs/requirements.txt
+
 RUN useradd -m build
 
 ENV SRC=/src \
@@ -11,7 +16,9 @@ ENV SRC=/src \
 
 COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
-RUN chmod -R +rX ${SRC}/triqs && chown build .
+RUN chown -R build ${SRC}/triqs .
 USER build
 RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DCLANG_OPT="$CXXFLAGS" -DUBSAN=ON && make -j2
 RUN UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 make test CTEST_OUTPUT_ON_FAILURE=1
+USER root
+RUN make install
