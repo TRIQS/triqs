@@ -18,7 +18,7 @@ COPY . ${SRC}/triqs
 WORKDIR ${BUILD}/triqs
 RUN chown -R build ${SRC}/triqs .
 USER build
-RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DCLANG_OPT="$CXXFLAGS" -DUBSAN=ON && make -j2
-RUN UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 make test CTEST_OUTPUT_ON_FAILURE=1
+RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DCLANG_OPT="$CXXFLAGS" -DASAN=ON -DUBSAN=ON && make -j2
+RUN ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-6.0/bin/llvm-symbolizer ASAN_OPTIONS=symbolize=1:detect_leaks=0 UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 make test CTEST_OUTPUT_ON_FAILURE=1
 USER root
 RUN make install
