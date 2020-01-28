@@ -24,12 +24,13 @@ A class `cls` has to implement :
    
    :rtype:  a dictionary
 
-.. py:classmethod:: __factory_from_dict__(cls,D) :
+.. py:classmethod:: __factory_from_dict__(cls,name,D) :
 
    A **classmethod** which reconstructs a new object of type `cls`
    from the dictionary  returned by :func:`__reduce_to_dict__`.
 
-   :param cls: the class 
+   :param cls: the class
+   :param name: the attribute cls.name of the class
    :param D: the dictionary returned by __reduce_to_dict__.
    :rtype: a new object of type `cls`
  
@@ -47,7 +48,7 @@ A little example::
         return {'d': self.d, 't': self.t}
 
     @classmethod
-    def __factory_from_dict__(cls,D) :
+    def __factory_from_dict__(cls,name,D) :
         return cls(D['d'],D['t'])
  
  # registering my class
@@ -83,7 +84,7 @@ Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~
      
      * If it is found and it corresponds to a registered class `Cls` :
         
-       * Cls.__factory_from_dict__(D) is called and returns a new object Obj of type Cls, which is returned as `res`.
+       * Cls.__factory_from_dict__(name,D) is called and returns a new object Obj of type Cls, which is returned as `res`.
    
      * Otherwise, a new :py:class:`~pytriqs.archive.hdf_archive.HDFArchiveGroup` is constructed with `S` as root, and returned as `res`.
 
