@@ -1,6 +1,46 @@
-# This uses Dockerfile.ubuntu-clang
-FROM flatironinstitute/triqs:base
+#FROM flatironinstitute/triqs:base
+# Dockerfile.ubuntu-clang with LLVM=9
+FROM ubuntu:bionic
+ARG LLVM=9
 
+# This platform includes dependencies for building docs
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      clang-${LLVM} \
+      cmake \
+      g++ \
+      gfortran \
+      git \
+      hdf5-tools \
+      libblas-dev \
+      libboost-all-dev \
+      libclang-${LLVM}-dev \
+      libc++-${LLVM}-dev \
+      libc++abi-${LLVM}-dev \
+      libfftw3-dev \
+      libgfortran3 \
+      libgmp-dev \
+      libhdf5-dev \
+      liblapack-dev \
+      libopenmpi-dev \
+      openmpi-bin \
+      openmpi-common \
+      openmpi-doc \
+      python-clang-${LLVM} \
+      python-dev \
+      python-h5py \
+      python-mako \
+      python-matplotlib \
+      python-mpi4py \
+      python-numpy \
+      python-pip \
+      python-scipy \
+      python-sphinx \
+      python-nbsphinx
+
+ENV CC=clang-${LLVM} CXX=clang++-${LLVM} CXXFLAGS="-stdlib=libc++"
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM} 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM} --slave /usr/bin/clang-cpp clang-cpp /usr/bin/clang-cpp-${LLVM}
+
+# Dockerfile.build with sanitization enabled
 COPY requirements.txt /src/triqs/requirements.txt
 # Install numpy first to prevent h5py from pulling in a newer version first
 RUN pip install `grep numpy /src/triqs/requirements.txt` && \
@@ -19,6 +59,6 @@ WORKDIR ${BUILD}/triqs
 RUN chown -R build ${SRC}/triqs .
 USER build
 RUN cmake $SRC/triqs -DCMAKE_INSTALL_PREFIX=$INSTALL -DCLANG_OPT="$CXXFLAGS" -DASAN=ON -DUBSAN=ON && make -j2
-RUN ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-6.0/bin/llvm-symbolizer ASAN_OPTIONS=symbolize=1:detect_leaks=0 UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 make test CTEST_OUTPUT_ON_FAILURE=1
+RUN ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-${LLVM}/bin/llvm-symbolizer ASAN_OPTIONS=symbolize=1:detect_leaks=0 UBSAN_OPTIONS=symbolize=1:print_stacktrace=1:halt_on_error=1 make test CTEST_OUTPUT_ON_FAILURE=1
 USER root
 RUN make install
