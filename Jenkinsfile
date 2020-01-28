@@ -84,10 +84,7 @@ platforms['sanitize'] = { -> node('docker') {
   stage('sanitize') { timeout(time: 1, unit: 'HOURS') {
     checkout scm
     /* construct a Dockerfile for this base */
-    sh """
-      ( cat packaging/Dockerfile.ubuntu-clang ; sed '0,/^FROM /d' packaging/Dockerfile.sanitize ) > Dockerfile
-    """
-    def img = docker.build("flatironinstitute/${projectName}:${env.BRANCH_NAME}-sanitize", ".")
+    def img = docker.build("flatironinstitute/${projectName}:${env.BRANCH_NAME}-sanitize", "-f packaging/Dockerfile.sanitize .")
     sh "docker rmi --no-prune ${img.imageName()}"
   } }
 } }
