@@ -88,7 +88,7 @@ namespace cpp2py {
     PyTypeObject *r             = nullptr;
 
     auto it = table->find(ind.name());
-    if(it != table->end()) return it->second;
+    if (it != table->end()) return it->second;
 
     std::string s = std::string{"The type "} + ind.name() + " can not be converted";
     PyErr_SetString(PyExc_RuntimeError, s.c_str());
@@ -128,10 +128,12 @@ namespace cpp2py {
       if (p == nullptr) return false;
       if (PyObject_TypeCheck(ob, p)) {
         if (((py_type *)ob)->_c != NULL) return true;
-        if (raise_exception) PyErr_SetString(PyExc_TypeError, "Severe internal error : Python object of ${c.py_type} has a _c NULL pointer !!");
+	auto err = std::string{"Severe internal error : Python object of "} + p->tp_name + " has a _c NULL pointer !!";
+        if (raise_exception) PyErr_SetString(PyExc_TypeError, err.c_str());
         return false;
       }
-      if (raise_exception) PyErr_SetString(PyExc_TypeError, "Python object is not a ${c.py_type}");
+      auto err = std::string{"Python object is not a "} + p->tp_name + " but a " + Py_TYPE(ob)->tp_name;
+      if (raise_exception) PyErr_SetString(PyExc_TypeError, err.c_str());
       return false;
     }
   };

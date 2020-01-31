@@ -53,6 +53,7 @@ set(LIBCLANG_LOCATION "${LIBCLANG_LOCATION}" CACHE STRING "Location of the libcl
 
 # Detect Python
 find_package(Python)
+install(TARGETS python_and_numpy EXPORT cpp2py-targets)
 
 # subdirs
 add_subdirectory(bin)            # Executables
