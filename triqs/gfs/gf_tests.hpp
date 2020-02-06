@@ -28,6 +28,7 @@ namespace triqs {
 
       // meshes must be identical and data close
       if (x.mesh() != y.mesh()) TRIQS_RUNTIME_ERROR << "GFs have different meshes\n -- 1st Mesh \n" << x.mesh() << "\n -- 2nd Mesh \n" << y.mesh();
+      if (x.indices() != y.indices()) TRIQS_RUNTIME_ERROR << "GFs have different indices\n -- 1st Indices \n" << x.indices() << "\n -- 2nd Indices \n" << y.indices();
       if (max_element(abs(x.data() - y.data())) > precision)
         TRIQS_RUNTIME_ERROR << "Gfs have different data. max(abs(x-y)) = " << max_element(abs(x.data() - y.data()));
     }

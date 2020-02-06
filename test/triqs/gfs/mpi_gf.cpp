@@ -20,6 +20,7 @@
  ******************************************************************************/
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/arrays.hpp>
+#include <triqs/test_tools/gfs.hpp>
 #include <triqs/gfs.hpp>
 #include <iostream>
 
@@ -56,7 +57,7 @@ TEST_F(MpiGf, Reduce) {
   // reduction
   gf<imfreq> g2 = mpi::reduce(g1, world);
   // out << g2.data()<<std::endl;
-  if (world.rank() == 0) EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
+  if (world.rank() == 0) test_gfs_are_close(g2, gf{world.size() * g1});
 }
 
 //----------------------------------------------
@@ -64,7 +65,7 @@ TEST_F(MpiGf, Reduce) {
 TEST_F(MpiGf, AllReduce) {
   // all reduction
   gf<imfreq> g2 = mpi::all_reduce(g1, world);
-  EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
+  test_gfs_are_close(g2, gf{world.size() * g1});
 }
 
 //----------------------------------------------
@@ -72,7 +73,7 @@ TEST_F(MpiGf, AllReduce) {
 TEST_F(MpiGf, ReduceView) { // all reduction of gf_view
   gf<imfreq> g2 = g1;
   g2()          = mpi::all_reduce(g1(), world);
-  EXPECT_ARRAY_NEAR(g2.data(), world.size() * g1.data());
+  test_gfs_are_close(g2, gf{world.size() * g1});
 }
 
 //----------------------------------------------
@@ -108,16 +109,16 @@ TEST_F(MpiGf, ReduceView) { // all reduction of gf_view
 TEST_F(MpiGf, ReduceBlock) {
   // reduce with block Green's function
   block_gf<imfreq> bgf = make_block_gf({g1, g1, g1});
-  EXPECT_ARRAY_NEAR(bgf[0].data(), g1.data());
+  test_gfs_are_close(bgf[0], g1);
 
   block_gf<imfreq> bgf2;
   auto bgf3 = bgf;
 
   bgf2 = mpi::reduce(bgf);
-  if (world.rank() == 0) EXPECT_ARRAY_NEAR(bgf2[0].data(), world.size() * g1.data());
+  if (world.rank() == 0) test_gfs_are_close(bgf2[0], gf{world.size() * g1});
 
   bgf3 = mpi::all_reduce(bgf);
-  EXPECT_ARRAY_NEAR(bgf3[0].data(), world.size() * g1.data());
+  test_gfs_are_close(bgf3[0], gf{world.size() * g1});
 }
 
 //----------------------------------------------
@@ -128,10 +129,10 @@ TEST_F(MpiGf, ReduceBlockView) {
   auto bgf2 = bgf;
 
   bgf2() = mpi::reduce(bgf);
-  if (world.rank() == 0) EXPECT_ARRAY_NEAR(bgf2[0].data(), world.size() * g1.data());
+  if (world.rank() == 0) test_gfs_are_close(bgf2[0], gf{world.size() * g1});
 
   bgf2() = mpi::all_reduce(bgf);
-  EXPECT_ARRAY_NEAR(bgf2[0].data(), world.size() * g1.data());
+  test_gfs_are_close(bgf2[0], gf{world.size() * g1});
 }
 
 //----------------------------------------------
