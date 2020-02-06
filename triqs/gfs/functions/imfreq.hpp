@@ -186,7 +186,7 @@ namespace triqs::gfs {
     int idx_max          = old_mesh.index_to_linear(iw_mesh.last_index());
     auto data_view       = g.data()(range(idx_min, idx_max + 1), ellipsis());
 
-    return typename G<imfreq, T>::const_view_type{iw_mesh, data_view};
+    return typename G<imfreq, T>::const_view_type{iw_mesh, data_view, g.indices()};
   }
 
   template <typename T> void replace_by_tail(gf_view<imfreq, T> g, array_const_view<dcomplex, 1 + T::rank> tail, int n_min) {

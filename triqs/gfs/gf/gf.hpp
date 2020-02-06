@@ -408,6 +408,7 @@ namespace triqs::gfs {
     void operator=(mpi_lazy<mpi::tag::reduce, gf_const_view<Var, Target>> l) {
       _mesh = l.rhs.mesh();
       _data = mpi::reduce(l.rhs.data(), l.c, l.root, l.all, l.op); // arrays:: necessary on gcc 5. why ??
+      _indices = l.rhs.indices();
     }
 
     /**
@@ -417,6 +418,7 @@ namespace triqs::gfs {
     void operator=(mpi_lazy<mpi::tag::scatter, gf_const_view<Var, Target>> l) {
       _mesh = mpi::scatter(l.rhs.mesh(), l.c, l.root);
       _data = mpi::scatter(l.rhs.data(), l.c, l.root, true);
+      _indices = mpi::scatter(l.rhs.indices(), l.c, l.root);
     }
 
     /**
@@ -426,6 +428,7 @@ namespace triqs::gfs {
     void operator=(mpi_lazy<mpi::tag::gather, gf_const_view<Var, Target>> l) {
       _mesh = mpi::gather(l.rhs.mesh(), l.c, l.root);
       _data = mpi::gather(l.rhs.data(), l.c, l.root, l.all);
+      _indices = mpi::gather(l.rhs.indices(), l.c, l.root);
     }
 
     // Common code for gf, gf_view, gf_const_view
