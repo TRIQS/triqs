@@ -432,5 +432,18 @@ namespace triqs::gfs {
 #include "./_gf_view_common.hpp"
   };
 
+  /*------------------------------------------------------------------------
+   *   Deduction guides
+   *-----------------------------------------------------------------------*/
+
+  // Forward declare gf_expr
+  template <typename Tag, typename L, typename R> struct gf_expr;
+
+  template <typename Tag, typename L, typename R>
+  gf(gf_expr<Tag, L, R> &&) -> gf<typename gf_expr<Tag, L, R>::variable_t, typename gf_expr<Tag, L, R>::target_t>;
+
+  template <typename Tag, typename L, typename R>
+  gf(gf_expr<Tag, L, R> const &) -> gf<typename gf_expr<Tag, L, R>::variable_t, typename gf_expr<Tag, L, R>::target_t>;
+
 } // namespace triqs::gfs
 
