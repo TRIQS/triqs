@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays.hpp>
+#include <iostream>
 
 namespace triqs {
   namespace gfs {
@@ -57,6 +58,16 @@ namespace triqs {
         // protection because of Python exposition
         if ((i < 0) or (i >= _data.size())) TRIQS_RUNTIME_ERROR << "Index out of range : index " << i << " while max is " << _data.size();
         return _data[i];
+      }
+
+      /// Access to one of the index list
+      bool operator==(gf_indices const & other) const {
+	return _data == other.data();
+      }
+
+      /// Access to one of the index list
+      bool operator!=(gf_indices const & other) const {
+	return _data != other.data();
       }
 
       /// Data access
@@ -104,6 +115,16 @@ namespace triqs {
 
       friend class boost::serialization::access;
       template <class Archive> void serialize(Archive &ar, const unsigned int version) { ar &_data; }
+
+      friend std::ostream &operator<<(std::ostream &out, gf_indices const &x) {
+	for(auto const & v: x.data()){
+	  out << "[";
+	  for(auto const & i: v)
+	    out << i << " ";
+	  out << "]\n";
+	}
+	return out;
+      }
 
       // ------------------  implement slicing -------------------------
       private:
