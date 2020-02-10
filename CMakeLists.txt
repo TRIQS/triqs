@@ -34,6 +34,9 @@ message(STATUS "Installation directory will be ${CMAKE_INSTALL_PREFIX}")
 cmake_policy(SET CMP0005 NEW)
 cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003
 cmake_policy(SET CMP0018 NEW) # Automatically add -fPIC when necessary
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW) # Consider ROOT env variables in find_package
+endif()
 
 #---------------------------------------------------------------------
 # Start project
