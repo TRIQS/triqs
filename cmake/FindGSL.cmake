@@ -17,6 +17,7 @@ find_path(GSL_INCLUDE_DIR
   PATHS
     ${GSL_ROOT}/include
     $ENV{GSL_ROOT}/include
+    $ENV{GSL_BASE}/include
     ENV CPATH
     ENV C_INCLUDE_PATH
     ENV CPLUS_INCLUDE_PATH
@@ -35,6 +36,7 @@ find_library(GSL_LIBRARIES
     ${GSL_INCLUDE_DIR}/../lib
     ${GSL_ROOT}/lib
     $ENV{GSL_ROOT}/lib
+    $ENV{GSL_BASE}/lib
     ENV LIBRARY_PATH
     ENV LD_LIBRARY_PATH
     /usr/lib

@@ -20,6 +20,7 @@ find_path(GMP_INCLUDE_DIR
   PATHS
     ${GMP_ROOT}/include
     $ENV{GMP_ROOT}/include
+    $ENV{GMP_BASE}/include
     ENV CPATH
     ENV C_INCLUDE_PATH
     ENV CPLUS_INCLUDE_PATH
@@ -38,6 +39,7 @@ find_library(GMP_LIBRARIES
     ${GMP_INCLUDE_DIR}/../lib
     ${GMP_ROOT}/lib
     $ENV{GMP_ROOT}/lib
+    $ENV{GMP_BASE}/lib
     ENV LIBRARY_PATH
     ENV LD_LIBRARY_PATH
     /usr/lib
@@ -53,6 +55,7 @@ find_library(GMPXX_LIBRARIES
     ${GMP_INCLUDE_DIR}/../lib
     ${GMP_ROOT}/lib
     $ENV{GMP_ROOT}/lib
+    $ENV{GMP_BASE}/lib
     ENV LIBRARY_PATH
     ENV LD_LIBRARY_PATH
     /usr/lib

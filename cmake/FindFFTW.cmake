@@ -23,6 +23,8 @@ find_path(FFTW_INCLUDE_DIR
     ${FFTW_ROOT}/include
     $ENV{FFTW3_ROOT}/include
     $ENV{FFTW_ROOT}/include
+    $ENV{FFTW3_BASE}/include
+    $ENV{FFTW_BASE}/include
     ENV CPATH
     ENV C_INCLUDE_PATH
     ENV CPLUS_INCLUDE_PATH
@@ -43,6 +45,8 @@ find_library(FFTW_LIBRARIES
     ${FFTW_ROOT}/lib
     $ENV{FFTW3_ROOT}/lib
     $ENV{FFTW_ROOT}/lib
+    $ENV{FFTW3_BASE}/lib
+    $ENV{FFTW_BASE}/lib
     ENV LIBRARY_PATH
     ENV LD_LIBRARY_PATH
     /usr/lib

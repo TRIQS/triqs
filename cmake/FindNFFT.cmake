@@ -23,6 +23,8 @@ find_path(NFFT_INCLUDE_DIR
     ${NFFT_ROOT}/include
     $ENV{NFFT3_ROOT}/include
     $ENV{NFFT_ROOT}/include
+    $ENV{NFFT3_BASE}/include
+    $ENV{NFFT_BASE}/include
     ENV CPATH
     ENV C_INCLUDE_PATH
     ENV CPLUS_INCLUDE_PATH
@@ -43,6 +45,8 @@ find_library(NFFT_LIBRARIES
     ${NFFT_ROOT}/lib
     $ENV{NFFT3_ROOT}/lib
     $ENV{NFFT_ROOT}/lib
+    $ENV{NFFT3_BASE}/lib
+    $ENV{NFFT_BASE}/lib
     ENV LIBRARY_PATH
     ENV LD_LIBRARY_PATH
     /usr/lib
