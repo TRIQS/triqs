@@ -1,3 +1,4 @@
+from __future__ import print_function
 from pytriqs.gf import *
 from pytriqs.lattice import *
 from pytriqs.archive import *
@@ -17,7 +18,7 @@ mesh_k_iw = MeshProduct(mesh_k, mesh_iw) # not used (just demo)
 mesh_w = MeshReFreq(-5,5, 100)
 mesh_k_w = MeshProduct(mesh_k, mesh_w)
 
-for m in mesh_k: print m
+for m in mesh_k: print(m)
     
 # === Fill two G_k_w
 

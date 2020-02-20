@@ -1,3 +1,4 @@
+from __future__ import print_function
 from pytriqs.gf import *
 from pytriqs.archive import *
 from itertools import izip, product
@@ -90,9 +91,9 @@ check_value(G2,lambda bn1,bn2: 6.0 if (bn1,bn2)==('dn',3) else (bn2*(1.0 if bn1 
 with HDFArchive('block2.h5','w') as arch:
     arch['vertex'] = G2
 
-print " ok "
+print(" ok ")
 for n, g in G2:
-    print g.data.shape, g.mesh.components
+    print(g.data.shape, g.mesh.components)
 
 with HDFArchive('block2.h5','r') as arch:
   G6 = arch['vertex']

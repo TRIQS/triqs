@@ -1,3 +1,4 @@
+from __future__ import print_function
 from pytriqs.gf import *
 from pytriqs.gf.gf_fnt import call_vec, call_s
 
@@ -6,7 +7,7 @@ n = 2
 
 g= GfImFreq(beta=beta, indices=[0])
 
-print g.data.shape, g.indices.data
+print(g.data.shape, g.indices.data)
 
 def run() : 
     for i in range(10000):

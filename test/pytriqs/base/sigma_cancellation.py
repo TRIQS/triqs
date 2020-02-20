@@ -13,6 +13,7 @@ t_0 = 1/N \sum_k e_k
 Author: Hugo U.R. Strand 
 
 """
+from __future__ import print_function
 import matplotlib.pyplot as plt
 ##%matplotlib inline
 
@@ -54,17 +55,17 @@ def delta_inv(beta, nw, nk=100):
     ratio = tail[0] / sum_ek
     diff = np.abs(1 - ratio)
 
-    print '-' * 72
-    print 'beta =', beta
-    print 'nw =', nw
-    print 'wmax =', wmax
-    print 'tail_fit order =', len(tail)
-    print 'tail_fit err =', err
-    print tail[:3]
+    print('-' * 72)
+    print('beta =', beta)
+    print('nw =', nw)
+    print('wmax =', wmax)
+    print('tail_fit order =', len(tail))
+    print('tail_fit err =', err)
+    print(tail[:3])
     #print sum_ek
-    print 'trunc_err_anal =', trunc_err_anal
-    print 'ratio =', ratio
-    print 'diff =', diff
+    print('trunc_err_anal =', trunc_err_anal)
+    print('ratio =', ratio)
+    print('diff =', diff)
 
     return diff[0, 0]
 

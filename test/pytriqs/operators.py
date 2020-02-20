@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest, itertools
 
 from pytriqs.archive import *
@@ -83,53 +84,53 @@ class test_operators(unittest.TestCase):
             C_list = [c(1,0),c(2,0),c(3,0)]
             Cd_list = [c_dag(1,0), c_dag(2,0), c_dag(3,0)]
             
-            print "Anticommutators:"
+            print("Anticommutators:")
             for Cd,C in itertools.product(Cd_list,C_list):
-            	print "{", Cd, ",", C, "} =", Cd*C + C*Cd
+            	print("{", Cd, ",", C, "} =", Cd*C + C*Cd)
             
-            print "Commutators:"
+            print("Commutators:")
             for Cd,C in itertools.product(Cd_list,C_list):
-            	print "[", Cd, ",", C, "] =", Cd*C - C*Cd
+            	print("[", Cd, ",", C, "] =", Cd*C - C*Cd)
             
             x = c(0,0)
             y = c_dag(1,0)
             
-            print
-            print "Algebra:"
-            print "x =", x
-            print "y =", y
+            print()
+            print("Algebra:")
+            print("x =", x)
+            print("y =", y)
             
-            print "-x =", -x
-            print "x + 2.0 =", x + 2.0
-            print "2.0 + x =", 2.0 + x
-            print "x - 2.0 =", x - 2.0
-            print "2.0 - x =", 2.0 - x
-            print "3.0*y =", 3.0*y
-            print "y*3.0 =", y*3.0
-            print "x + y =", x + y
-            print "x - y =", x - y
-            print "(x + y)*(x - y) =", (x + y)*(x - y)
-            print "Operator(3.14) =", Operator(3.14)
+            print("-x =", -x)
+            print("x + 2.0 =", x + 2.0)
+            print("2.0 + x =", 2.0 + x)
+            print("x - 2.0 =", x - 2.0)
+            print("2.0 - x =", 2.0 - x)
+            print("3.0*y =", 3.0*y)
+            print("y*3.0 =", y*3.0)
+            print("x + y =", x + y)
+            print("x - y =", x - y)
+            print("(x + y)*(x - y) =", (x + y)*(x - y))
+            print("Operator(3.14) =", Operator(3.14))
             
             # N^3
-            print
-            print "N^3:"
+            print()
+            print("N^3:")
             N = n(0,'up') + n(0,'dn')
             N3 = N*N*N
-            print "N =", N
-            print "N^3 =", N3
+            print("N =", N)
+            print("N^3 =", N3)
             
-            print "Monomials of N^3:"
-            for monomial, coef in N3: print monomial, coef
+            print("Monomials of N^3:")
+            for monomial, coef in N3: print(monomial, coef)
             
             # Dagger, real & imag
             X = (1+2j)*c_dag('a',1)*c_dag('a',2)*c('a',3)*c('a',4);
             
-            print
-            print "X =", X
-            print "dagger(X) =", dagger(X)
-            print "X.real =", X.real
-            print "X.imag =", X.imag
+            print()
+            print("X =", X)
+            print("dagger(X) =", dagger(X))
+            print("X.real =", X.real)
+            print("X.imag =", X.imag)
 
         self.assertEqual(output, ref_output.splitlines())
         
@@ -146,8 +147,8 @@ class test_operators(unittest.TestCase):
                 V * (n('up',0) * n('dn',1) + n('up',1) * n('dn',0))
 
         U_dict2 = extract_U_dict2(h_int)
-        print U_dict2
-        print dict_to_matrix(U_dict2, gf_struct)
+        print(U_dict2)
+        print(dict_to_matrix(U_dict2, gf_struct))
 
 if __name__ == '__main__':
     unittest.main()

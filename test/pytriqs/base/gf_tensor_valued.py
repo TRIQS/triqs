@@ -1,3 +1,4 @@
+from __future__ import print_function
 from pytriqs.gf import *
 from pytriqs.archive import *
 
@@ -35,13 +36,13 @@ if not mpi.is_master_node():
 
 
 ##Tv4
-print "#############################"
+print("#############################")
 G5=GfImFreq(mesh=m, indices=[['a'],['b1','b2'],['c1', 'c2'], ['c']])
-print G5.data.shape
+print(G5.data.shape)
 
 assert G5.data.shape==(20,1,2,2,1),"not ok"
 assert G5['a','b1','c2', 'c'].data.shape==(20,), "not ok"
 
 #ImTime, 
-print "#############################"
+print("#############################")
 G6=GfImTime(beta=1.,statistic="Fermion",n_points=100, indices=[['a'],['b1','b2'],['c1', 'c2']])

@@ -2,6 +2,7 @@
 broadcasting it over mpi...
 
 Author: H. U.R. Strand (2019) """
+from __future__ import print_function
 
 import numpy as np
 
@@ -23,7 +24,7 @@ else:
 
 m = mpi.bcast(m)
 
-print mesh
-print m
+print(mesh)
+print(m)
 
 assert( mesh.domain.lattice.dim == m.domain.lattice.dim )

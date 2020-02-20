@@ -1,3 +1,4 @@
+from __future__ import print_function
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -44,6 +45,6 @@ g['eg2','eg2'] << iOmega_n + 1.0
 
 assert_gfs_are_close(g, h['g3'])
 
-print h['g1'], type(h['g1'])
-print g, type(g)
+print(h['g1'], type(h['g1']))
+print(g, type(g))
 

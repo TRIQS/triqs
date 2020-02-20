@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from pytriqs.gf import *
 
@@ -10,9 +11,9 @@ beta = 50.0
 
 g_iw = GfImFreq(beta=beta, indices=[0], n_points=1000)
 
-print "=============================================="
+print("==============================================")
 
-print g_iw.density()
+print(g_iw.density())
 
 for eps in np.random.random(10):
     g_iw << inverse(iOmega_n - eps)

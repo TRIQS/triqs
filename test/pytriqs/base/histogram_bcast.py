@@ -1,6 +1,7 @@
 
 """ Construct a random histogram, broadcast it and compare
 the broadcasted result with a reference. """
+from __future__ import print_function
 
 import numpy as np
 import pytriqs.utility.mpi as mpi
@@ -49,10 +50,10 @@ h_ref = mpi.bcast(h_ref)
 for rank in xrange(mpi.size):
     if rank == mpi.rank:
 
-        print '-'*72
-        print 'rank =', mpi.rank
-        print 'h =\n', h
-        print 'h_ref =\n', h_ref
+        print('-'*72)
+        print('rank =', mpi.rank)
+        print('h =\n', h)
+        print('h_ref =\n', h_ref)
 
         # -- Compare h and h_ref
         pts = np.array([ int(h.mesh_point(idx)) for idx in xrange(len(h))])
@@ -63,7 +64,7 @@ for rank in xrange(mpi.size):
             if val > 0:
                 assert( val == h_ref[pt] )
             else:
-                assert( not h_ref.has_key(pt) )
+                assert( pt not in h_ref )
         
     mpi.barrier()
 
