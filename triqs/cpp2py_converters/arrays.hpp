@@ -130,7 +130,11 @@ namespace cpp2py {
       return {i, i + 1, 1};
     }
     Py_ssize_t start, stop, step, slicelength;
+#if IS_PY3
+    if (!PySlice_Check(ob) || (PySlice_GetIndicesEx(ob, len, &start, &stop, &step, &slicelength) < 0))
+#else
     if (!PySlice_Check(ob) || (PySlice_GetIndicesEx((PySliceObject *)ob, len, &start, &stop, &step, &slicelength) < 0))
+#endif
       CPP2PY_RUNTIME_ERROR << "Can not converted the slice to C++";
     // std::cerr  << "range ( "<< start << " "<< stop << " " << step<<std::endl;
     return {start, stop, step};
