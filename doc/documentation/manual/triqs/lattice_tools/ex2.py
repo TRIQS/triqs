@@ -1,3 +1,4 @@
+from __future__ import print_function
 from numpy import array, zeros
 import math 
 from pytriqs.lattice.tight_binding import *
@@ -105,7 +106,7 @@ def energies_on_path(path, TB, n_pts, n_orb=1):
     for i in range(len(path)-1,0,-1):
         energies = energies_on_bz_path (TB, path[i-1], path[i], n_pts)
         for orb in range(n_orb):     E[orb,(i-1)*n_pts:(i)*n_pts]=energies[orb,:]
-        print "index of point #"+str(i-1)+" = "+str((i-1)*n_pts)
+        print("index of point #"+str(i-1)+" = "+str((i-1)*n_pts))
         
     return E
 E_1= energies_on_path(path_1,TB_1,n_pts,1)

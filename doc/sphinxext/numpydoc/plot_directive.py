@@ -464,15 +464,15 @@ def run_code(code, code_path, ns=None, function_name=None):
                 ns = {}
             if not ns:
                 if setup.config.plot_pre_code is None:
-                    exec "import numpy as np\nfrom matplotlib import pyplot as plt\n" in ns
+                    exec("import numpy as np\nfrom matplotlib import pyplot as plt\n", ns)
                 else:
-                    exec setup.config.plot_pre_code in ns
+                    exec(setup.config.plot_pre_code, ns)
             if "__main__" in code:
-                exec "__name__ = '__main__'" in ns
-            exec code in ns
+                exec("__name__ = '__main__'", ns)
+            exec(code, ns)
             if function_name is not None:
-                exec function_name + "()" in ns
-        except (Exception, SystemExit), err:
+                exec(function_name + "()", ns)
+        except (Exception, SystemExit) as err:
             raise PlotError(traceback.format_exc())
     finally:
         os.chdir(pwd)
@@ -581,7 +581,7 @@ def render_figures(code, code_path, output_dir, output_base, context,
             for format, dpi in formats:
                 try:
                     figman.canvas.figure.savefig(img.filename(format), dpi=dpi)
-                except Exception,err:
+                except Exception as err:
                     raise PlotError(traceback.format_exc())
                 img.formats.append(format)
 
@@ -599,10 +599,10 @@ def run(arguments, content, options, state_machine, state, lineno):
 
     document = state_machine.document
     config = document.settings.env.config
-    nofigs = options.has_key('nofigs')
+    nofigs = 'nofigs' in options
 
     options.setdefault('include-source', config.plot_include_source)
-    context = options.has_key('context')
+    context = 'context' in options
 
     rst_file = document.attributes['source']
     rst_dir = os.path.dirname(rst_file)
@@ -649,7 +649,7 @@ def run(arguments, content, options, state_machine, state, lineno):
 
     # is it in doctest format?
     is_doctest = contains_doctest(code)
-    if options.has_key('format'):
+    if 'format' in options:
         if options['format'] == 'python':
             is_doctest = False
         else:
@@ -690,7 +690,7 @@ def run(arguments, content, options, state_machine, state, lineno):
         results = render_figures(code, source_file_name, build_dir, output_base,
                                  context, function_name, config)
         errors = []
-    except PlotError, err:
+    except PlotError as err:
         reporter = state.memo.reporter
         sm = reporter.system_message(
             2, "Exception occurred in plotting %s\n from %s:\n%s" % (output_base,

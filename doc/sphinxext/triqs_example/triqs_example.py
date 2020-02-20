@@ -1,3 +1,4 @@
+from __future__ import print_function
 import tempfile
 # -*- coding: utf-8 -*-
 # seems to be executed at the level of the conf.py
@@ -109,8 +110,8 @@ class TriqsExample(Directive):
         code_out = u'\n'.join((code,out))
 
         if error : # report on console
-            print " Error in processing "
-            print code_out 
+            print(" Error in processing ")
+            print(code_out) 
 
         literal = nodes.literal_block(code_out,code_out)
         literal['language'] = 'c' 
