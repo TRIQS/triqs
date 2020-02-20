@@ -58,12 +58,12 @@ name : string
             self.eps = numpy.array( eps )
             assert  len(self.eps.shape) ==1
         except :
-            raise RuntimeError, "Argument eps mismatch"
+            raise RuntimeError("Argument eps mismatch")
         try :
             self.rho = numpy.array( rho )
             assert  len(self.rho.shape) ==1
         except :
-            raise RuntimeError, "Argument rho mismatch"
+            raise RuntimeError("Argument rho mismatch")
         assert self.eps.shape[0] == self.rho.shape[0], "Dimensions of eps and rho do not match"
         
         
@@ -168,7 +168,7 @@ class DOSFromFunction(DOS):
             e = function(0.001)
             len(numpy.array(e).shape) ==1
         except :
-            raise RuntimeError , "Value of the function must be a 1d-array"
+            raise RuntimeError("Value of the function must be a 1d-array")
         self.__f(n_pts) # compute arrays
         DOS.__init__(self,self.eps,self.rho,name) 
         

@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -20,14 +22,14 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-import lazy_expressions, descriptors, gf_fnt
-from meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime, MeshLegendre
-from block_gf import BlockGf
-from gf import Gf
+from . import lazy_expressions, descriptors, gf_fnt
+from .meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime, MeshLegendre
+from .block_gf import BlockGf
+from .gf import Gf
 import numpy as np
 from itertools import product
-from backwd_compat.gf_refreq import GfReFreq 
-from map_block import map_block
+from .backwd_compat.gf_refreq import GfReFreq 
+from .map_block import map_block
 
 def inverse(x):
     """
@@ -84,10 +86,10 @@ def delta(g):
         delta_iw << descriptors.iOmega_n - inverse(g)
         tail, err = gf_fnt.fit_hermitian_tail(delta_iw)
         delta_iw << delta_iw - tail[0]
-        if err > 1e-5: print "WARNING: delta extraction encountered a sizeable tail-fit error: ", err
+        if err > 1e-5: print("WARNING: delta extraction encountered a sizeable tail-fit error: ", err)
         return delta_iw
     else:
-        raise TypeError, "No function delta for g0 object of type %s"%type(g) 
+        raise TypeError("No function delta for g0 object of type %s"%type(g)) 
 
 
 # Determine one of G0_iw, G_iw and Sigma_iw from other two using Dyson's equation
@@ -105,7 +107,7 @@ def dyson(**kwargs):
                Self-energy.
     """
     if not (len(kwargs)==2 and set(kwargs.keys())<set(['G0_iw','G_iw', 'Sigma_iw'])):
-        raise ValueError, 'dyson: Two (and only two) of G0_iw, G_iw and Sigma_iw must be provided to determine the third.'
+        raise ValueError('dyson: Two (and only two) of G0_iw, G_iw and Sigma_iw must be provided to determine the third.')
     if 'G0_iw' not in kwargs:
         G0_iw = inverse(kwargs['Sigma_iw'] + inverse(kwargs['G_iw']))
         return G0_iw
@@ -165,7 +167,7 @@ def write_gf_to_txt(g):
     elif isinstance(g.mesh, MeshImFreq):
         mesh = np.array([w.imag for w in g.mesh]).reshape(-1,1)
     else:
-        raise ValueError, 'write_gf_to_txt: Only GfReFreq and GfImFreq quantities are supported.'
+        raise ValueError('write_gf_to_txt: Only GfReFreq and GfImFreq quantities are supported.')
     for i,j in product(range(g.target_shape[0]),range(g.target_shape[1])):
         txtfile = '%s_%s_%s.dat'%(g.name,i,j)
         redata = g.data[:,i,j].real.reshape((g.data.shape[0],-1))
@@ -191,7 +193,7 @@ def make_zero_tail(g, n_moments=10):
     elif isinstance(g, BlockGf):
         return map_block(lambda g_bl: make_zero_tail(g_bl, n_moments), g)
     else:
-        raise RuntimeError, "Error: make_zero_tail has to be called on a frequency or time Green function object"
+        raise RuntimeError("Error: make_zero_tail has to be called on a frequency or time Green function object")
 
 
 def fit_legendre(g_t, order=10):

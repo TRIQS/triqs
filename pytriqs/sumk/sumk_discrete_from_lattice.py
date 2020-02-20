@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -20,7 +21,7 @@
 #
 ################################################################################
 
-from sumk_discrete import SumkDiscrete
+from .sumk_discrete import SumkDiscrete
 from pytriqs.lattice.tight_binding import TBLattice
 
 class SumkDiscreteFromLattice (SumkDiscrete):
@@ -109,7 +110,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
 			self.bz_weights[k_index] = wa * wb * wc
 			k_index +=1
 	else:
-	    raise IndexError, "Summation method unknown"
+	    raise IndexError("Summation method unknown")
 
 	# A shift
 	if Q:
@@ -117,7 +118,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
                 Q = numpy.array(Q)
                 assert len(Q.shape) ==1
             except:
-                raise RuntimeError, "Q is not of correct type"
+                raise RuntimeError("Q is not of correct type")
 	    for k_index in range(self.N_kpts()):
 		self.bz_points[k_index,:] +=Q
 

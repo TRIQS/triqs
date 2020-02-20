@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -23,12 +24,12 @@
 __all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
            'hopping_stack', 'TBLattice']
 
-from lattice_tools import BravaisLattice
-from lattice_tools import BrillouinZone
-from lattice_tools import TightBinding
-from lattice_tools import dos_patch as dos_patch_c
-from lattice_tools import dos as dos_c
-from lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stack, energy_matrix_on_bz_path
+from .lattice_tools import BravaisLattice
+from .lattice_tools import BrillouinZone
+from .lattice_tools import TightBinding
+from .lattice_tools import dos_patch as dos_patch_c
+from .lattice_tools import dos as dos_c
+from .lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stack, energy_matrix_on_bz_path
 from pytriqs.dos import DOS
 import numpy
 

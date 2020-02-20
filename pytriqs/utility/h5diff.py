@@ -62,7 +62,7 @@ def compare(key, a, b, level, precision):
             assert a==b, "Strings '%s' and '%s' are different"%(a,b)
 
         else:
-            raise NotImplementedError, "The type %s for key '%s' is not comparable by h5diff"%(t, key)
+            raise NotImplementedError("The type %s for key '%s' is not comparable by h5diff"%(t, key))
 
     except (AssertionError, RuntimeError, ValueError) as e:
         #eliminate the lines starting with .., which are not the main error message
@@ -78,7 +78,7 @@ def h5diff(f1, f2, precision= 1.e-6):
         for x in failures:
             print (x, file=sys.stderr)
             print ('-'*50, file=sys.stderr)
-        raise RuntimeError, "FAILED"
+        raise RuntimeError("FAILED")
 
 if __name__== "__main__":
 

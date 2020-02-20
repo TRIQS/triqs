@@ -1,4 +1,5 @@
-import plot_base
+from __future__ import absolute_import
+from . import plot_base
 
 #---------------------------------------------------------------
 # A list of plot functions for 

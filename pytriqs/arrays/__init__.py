@@ -23,6 +23,7 @@ r"""
 DOC
 
 """
-from block_matrix import BlockMatrix, BlockMatrixComplex
+from __future__ import absolute_import
+from .block_matrix import BlockMatrix, BlockMatrixComplex
 
 __all__ = ['BlockMatrix', 'BlockMatrixComplex']

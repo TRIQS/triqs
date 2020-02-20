@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -20,11 +21,11 @@
 #
 ################################################################################
 
-from hamiltonians import *
-from observables import *
-from op_struct import *
-from U_matrix import *
-from extractors import *
+from .hamiltonians import *
+from .observables import *
+from .op_struct import *
+from .U_matrix import *
+from .extractors import *
 
 __all__ = ['h_int_slater','h_int_kanamori','h_int_density','diagonal_part',
            'get_mkind','set_operator_structure', 'U_J_to_radial_integrals',

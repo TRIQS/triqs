@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -25,7 +27,7 @@ myprint_err = lambda x : sys.stderr.write("%s\n"%x)
 myprint_out = lambda x : sys.stdout.write("%s\n"%x)
 
 if 'additional_builtin_modules' in dir(sys) and 'mpi' in sys.additional_builtin_modules: #link is static
-  from mpi import *
+  from .mpi import *
 else : 
   from boost.mpi import *
 
@@ -104,7 +106,7 @@ def master_gets_host_names():
     assert len(HostNames)==size," internal pb MPI module"
     
     if is_master_node() :
-      print "Hostnames : "
+      print("Hostnames : ")
       for u,host in HostNames.items() :
-        print "Node %d  on machine %s"%(u,host)
+        print("Node %d  on machine %s"%(u,host))
 

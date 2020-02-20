@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -20,6 +21,6 @@
 #
 ################################################################################
 
-from capture_stdout import capture_stdout
+from .capture_stdout import capture_stdout
 
 __all__ = ['capture_stdout']

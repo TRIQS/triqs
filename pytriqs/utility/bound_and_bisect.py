@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 ################################################################################
 #
@@ -59,11 +60,11 @@ def bound_and_bisect(f, x_0, y=0.0, dx=1.0, xtol=1e-3, x_name='x', y_name='y', m
     F = lambda x: f(x) - y
     a,b = determine_bounds(F,x_0,dx,maxiter)
     if verbosity > 0:
-        print 'Bounds are determined: %s <= %s <= %s'%(a,x_name,b)
+        print('Bounds are determined: %s <= %s <= %s'%(a,x_name,b))
     x = scipy.optimize.bisect(F, a, b, xtol=xtol, maxiter=maxiter)
     fx = f(x)
     if verbosity > 0:
-        print '%s(%s) = %s solved:'%(y_name,x_name,y)
-        print '%s = %s => %s = %s'%(x_name, x, y_name, fx)
+        print('%s(%s) = %s solved:'%(y_name,x_name,y))
+        print('%s = %s => %s = %s'%(x_name, x, y_name, fx))
 
     return x,fx

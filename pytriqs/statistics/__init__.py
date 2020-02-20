@@ -23,6 +23,7 @@ r"""
 DOC
 
 """
-from histograms import Histogram, cdf, pdf
+from __future__ import absolute_import
+from .histograms import Histogram, cdf, pdf
 
 __all__ = ['Histogram', 'cdf', 'pdf']

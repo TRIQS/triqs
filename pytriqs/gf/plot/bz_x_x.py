@@ -1,4 +1,5 @@
-from select_indices import *
+from __future__ import absolute_import
+from .select_indices import *
 #from gf import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime
 from scipy.interpolate import griddata
 import numpy as np

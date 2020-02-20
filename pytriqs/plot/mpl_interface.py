@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 ##########################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -24,14 +26,14 @@ __all__ = ['plt', 'oplot', 'oploti', 'oplotr', 'subplots']
 import numpy
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from protocol import plot_protocol_apply
+from .protocol import plot_protocol_apply
 from matplotlib import rc
 
 try:
     subplots = mpl.pyplot.subplots
 except:
     def subplots(nrows=1, ncols=1, sharex=False, sharey=False, squeeze=True, subplot_kw=None, **fig_kw):
-        print "subplots not supported"
+        print("subplots not supported")
         return plt.figure(1), [plt.subplot(nrows, ncols, x + 1) for x in range(nrows * ncols)]
 
 def oplot(obj, *opt_list, **opt_dict):
@@ -98,11 +100,11 @@ def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, xticks_fct,  titl
             plt_fct(X, Y, Z, *opt_list, **curve_dict)
          else:
             plt_fct(X, Y, *opt_list, **curve_dict)
-        except TypeError, e:
+        except TypeError as e:
             import re
             m = re.search('(?<=There is no line property )"(.*)"', str(e))
             if m:
-                raise RuntimeError, "Plot option %s not understood: it is neither an option of the object to be plotted, nor a matplotlib option." % m.group(0)
+                raise RuntimeError("Plot option %s not understood: it is neither an option of the object to be plotted, nor a matplotlib option." % m.group(0))
             else:
                 raise
 

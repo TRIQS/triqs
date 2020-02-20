@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import math
 def dist(x,y):
@@ -54,7 +55,7 @@ def closest_to(A,B, L, verbose=False):
 
   for i in range(Nmesh):
    current_point = A +(B-A)*(i*1.0/(Nmesh-1));
-   if verbose: print " current_point is ",current_point
+   if verbose: print(" current_point is ",current_point)
    closest = closest_point_in_line(current_point,L)[0];
 #print " closest point is ",closest
    if closest_indices.count(closest)==0: 

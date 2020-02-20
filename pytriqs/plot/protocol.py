@@ -35,12 +35,12 @@ def clip_array(x_array, x_min, x_max):
     assert x_max >= x_min, "Windowing error"
 
     try:
-        low = (i for i, x in enumerate(x_array) if not(x < x_min)).next()
+        low = next((i for i, x in enumerate(x_array) if not(x < x_min)))
     except StopIteration:
         return slice(0, 0)  # there is no x >= x_min
 
     try:
-        high = (i for i, x in enumerate(x_array) if x > x_max).next()
+        high = next((i for i, x in enumerate(x_array) if x > x_max))
         r = slice(low, high)
     except StopIteration:
         r = slice(low, len(x_array))  # there is no x > x_max
@@ -66,7 +66,7 @@ def plot_protocol_apply(ob, opt_dict, xlims):
         try: # generator x,y
             X, Y = izip(*ob)
         except:
-            raise RuntimeError, "Object cannot be plotted"
+            raise RuntimeError("Object cannot be plotted")
 
     name = opt_dict.pop('name', str(ob))
     if numpy.iscomplexobj(Y):

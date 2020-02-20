@@ -78,9 +78,9 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
         if allow_spectral_mode:
             res = mdic('', lambda x: -1 / numpy.pi * x.imag)
         else:
-            raise ValueError, "Cannot measure the spectral function for this type of Green's function."
+            raise ValueError("Cannot measure the spectral function for this type of Green's function.")
     else:
-        raise ValueError, "The 'mode' flag is meaningless. Expected 'R', 'I', or 'S' and I got %s." % mode
+        raise ValueError("The 'mode' flag is meaningless. Expected 'R', 'I', or 'S' and I got %s." % mode)
 
     res[0].update(opt_dict) # Add all other unused parameters to the dict
     return res

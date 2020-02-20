@@ -1,3 +1,4 @@
+from functools import reduce
 
 ################################################################################
 #
@@ -55,7 +56,7 @@ class LazyExpr (__aux):
             self.tag, self.childs = (a0.tag, a0.childs) if isinstance(a0, self.__class__) else ("T", [a0])
         elif len(args) >1:
             self.tag, self.childs = args[0], args[1:]
-        else: raise ValueError, "too few arguments"
+        else: raise ValueError("too few arguments")
 
     def copy(self):
         """ Deep copy"""
@@ -143,9 +144,9 @@ def eval_expr (expr):
     if not isinstance (expr, LazyExpr): return expr # do nothing
     # first take all terminals
     C = [ t.__lazy_expr_eval_context__() for t in all_terminals(expr) if hasattr(t, "__lazy_expr_eval_context__") ]
-    if C == []: raise ValueError, "Evaluation impossible: expression is purely abstract"
+    if C == []: raise ValueError("Evaluation impossible: expression is purely abstract")
     all_equal = reduce (lambda x, y: x and y , [ C[0] == x for x in C ])
-    if not all_equal: raise ValueError, "Evaluation impossible: various terminals lead to incompatible evaluation contexts: their type are not compatible for binary ops"
+    if not all_equal: raise ValueError("Evaluation impossible: various terminals lead to incompatible evaluation contexts: their type are not compatible for binary ops")
     C = C[0]
     return eval_expr_with_context(C, expr)
 

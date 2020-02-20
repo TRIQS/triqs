@@ -1,3 +1,4 @@
+from __future__ import print_function
 from math import sqrt
 from scipy.misc import factorial as fact
 from itertools import product
@@ -60,7 +61,7 @@ def U_matrix(l, radial_integrals=None, U_int=None, J_hund=None, basis='spherical
         if len(radial_integrals)-1 != l:
             raise ValueError("U_matrix: inconsistency in l and number of radial_integrals provided.")
         if (radial_integrals - U_J_to_radial_integrals(l, U_int, J_hund)).any() != 0.0:
-            print "Warning: U_matrix: radial_integrals provided do not match U_int and J_hund. Using radial_integrals to calculate U_matrix."
+            print("Warning: U_matrix: radial_integrals provided do not match U_int and J_hund. Using radial_integrals to calculate U_matrix.")
 
     # Full interaction matrix
     # Basis of spherical harmonics Y_{-2}, Y_{-1}, Y_{0}, Y_{1}, Y_{2}

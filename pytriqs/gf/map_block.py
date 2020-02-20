@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,9 +20,9 @@
 #
 ################################################################################
 
-from gf import Gf
-from block_gf import BlockGf
-from block2_gf import Block2Gf
+from .gf import Gf
+from .block_gf import BlockGf
+from .block2_gf import Block2Gf
 
 def map_block(fun, G):
     """

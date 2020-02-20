@@ -1,7 +1,9 @@
+from __future__ import absolute_import
 import operator
 from pytriqs.operators import *
-from op_struct import *
+from .op_struct import *
 from itertools import product
+from functools import reduce
 
 # Define commonly-used Hamiltonians here: Slater, Kanamori, density-density
 
@@ -249,7 +251,7 @@ def diagonal_part(H):
             (c_dag_ind if dag else c_ind).add(tuple(ind))
         if c_ind == c_dag_ind: # This monomial is of n-type
             n_part += coeff * reduce(operator.mul,
-                              map(lambda (dag,ind): c_dag(*ind) if dag else c(*ind),indices),
+                              map(lambda dag_ind: c_dag(*dag_ind[1]) if dag_ind[0] else c(*dag_ind[1]),indices),
                               Operator(1))
     return n_part
 

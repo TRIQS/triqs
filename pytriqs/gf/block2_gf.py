@@ -59,7 +59,7 @@ class Block2Gf(object):
                 try:
                     hash(bn)
                 except:
-                    raise RuntimeError, "%s: block name '%s' is not hashable" % (var_name,bn)
+                    raise RuntimeError("%s: block name '%s' is not hashable" % (var_name,bn))
             for bn in name_list:
                 assert not str(bn).startswith('__'), "%s: block names should not start with __" % var_name
             assert 'block_names' not in name_list, "%s: 'block_names' is a reserved keyword. It is not authorized as a block name" % var_name
@@ -82,11 +82,11 @@ class Block2Gf(object):
                         self.__GFlist[-1].append(g.copy() if make_copies else g)
             except TypeError: pass
         else:
-            raise RuntimeError, "block_list is not understood, see the documentation"
+            raise RuntimeError("block_list is not understood, see the documentation")
 
         # All blocks must have the same type
         if len(set([type(g) for g in chain.from_iterable(self.__GFlist)])) != 1:
-            raise RuntimeError, "Block2Gf: All block must have the same type"
+            raise RuntimeError("Block2Gf: All block must have the same type")
 
         # Add the name to the G
         if rename_gf:
@@ -217,14 +217,14 @@ class Block2Gf(object):
         try:
             g = self.__GFlist[self.__indices1.index(key[0])][self.__indices2.index(key[1])]
         except KeyError:
-            raise IndexError, "Block index '" + repr(key) + "' incorrect. Possible indices are: " + repr(list(product(self.__indices1,self.__indices2)))
+            raise IndexError("Block index '" + repr(key) + "' incorrect. Possible indices are: " + repr(list(product(self.__indices1,self.__indices2))))
         return g
 
     def __setitem__(self,key,val):
         try:
             g = self.__GFlist[self.__indices1.index(key[0])][self.__indices2.index(key[1])]
         except KeyError:
-            raise IndexError, "Block index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(list(product(self.__indices1,self.__indices2)))
+            raise IndexError("Block index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(list(product(self.__indices1,self.__indices2))))
         g << val
 
     # -------------- Various operations -------------------------------------
@@ -334,7 +334,7 @@ class Block2Gf(object):
 
     def __check_attr(self,attr):
         if not hasattr(self._first(), attr):
-           raise RuntimeError, "The blocks of this Green's Function do not possess the %s method" % attr
+           raise RuntimeError("The blocks of this Green's Function do not possess the %s method" % attr)
 
     #-------------- Fourier Backward Compatibility. ---------------------------
 

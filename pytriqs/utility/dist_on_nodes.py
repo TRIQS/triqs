@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 ################################################################################
 #
@@ -49,7 +50,7 @@ class DistributionOnNodes:
         mpi.barrier()
         if mpi.size==1 : # single machine. Avoid the fork
             while not(self.finished()):
-                n = self.next()
+                n = next(self)
                 if n!=None : 
                     self.treate(self.the_function(n),0)
             return
@@ -77,7 +78,7 @@ class DistributionOnNodes:
                   #open('tmp','a').write("master : comm to node %d %s\n"%(node,self.finished()))
                   mpi.send(self.finished(),node)
                   if not(self.finished()) :
-                      mpi.send(self.next(),node) # send the data for the computation
+                      mpi.send(next(self),node) # send the data for the computation
                       node_running[node] = True
                       RequestList.append(mpi.irecv(node)) #Post the receive
                   else :
@@ -90,7 +91,7 @@ class DistributionOnNodes:
                       if RR != None : self.treate(*RR)
                   if not(self.finished()) :
                       pid=os.fork();
-                      currently_calculated_by_master = self.next()
+                      currently_calculated_by_master = next(self)
                       if pid==0 :  # we are on the child
                           if currently_calculated_by_master :
                               res = self.the_function(currently_calculated_by_master)
@@ -151,4 +152,4 @@ if __name__ == '__main__' :
     d = DistributionOnNodesTest(range(21))
     d.run()
     if mpi.rank==0 :
-        print d.result()
+        print(d.result())

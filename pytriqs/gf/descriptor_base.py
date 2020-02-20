@@ -20,10 +20,12 @@
 ################################################################################
 
 r""" """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy
 from math import *
-from lazy_expressions import LazyExprTerminal, LazyExpr, transform
+from .lazy_expressions import LazyExprTerminal, LazyExpr, transform
 
 class LazyCTX:
     def __init__ (self, G): 
@@ -94,12 +96,12 @@ class Function (Base):
         Base.__init__(self, function=function)
         
     def __call__(self,G):
-        if not(callable(self.function)): raise RuntimeError, "GFInitializer.Function: f must be callable"
+        if not(callable(self.function)): raise RuntimeError("GFInitializer.Function: f must be callable")
         res = G.data[...]
         try:
             for n,om in enumerate(G.mesh): res[n,...] = self.function(om.value)
         except:
-            print "The given function has a problem..."
+            print("The given function has a problem...")
             raise
         return G
 
@@ -112,12 +114,12 @@ class Const(Base):
     def __call__(self,G):
         C = self.C
         if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
-            raise TypeError, "This initializer is only correct in frequency"
+            raise TypeError("This initializer is only correct in frequency")
 
         if not isinstance(C,numpy.ndarray) and G.target_rank > 0: 
             assert G.target_shape[0]==G.target_shape[1], "Const only applies to square G"
             C = C*numpy.identity(G.target_shape[0]) 
-        if G.target_rank > 0 and C.shape != (G.target_shape[0],G.target_shape[1]): raise RuntimeError, "Size of constant incorrect"
+        if G.target_rank > 0 and C.shape != (G.target_shape[0],G.target_shape[1]): raise RuntimeError("Size of constant incorrect")
         
         Function(lambda om: C)(G)
         return G
@@ -129,7 +131,7 @@ class Omega_(Base):
     def __str__(self): return "Omega" 
     def __call__(self,G):
         if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
-            raise TypeError, "This initializer is only correct in frequency"
+            raise TypeError("This initializer is only correct in frequency")
 
         Id = 1. if G.target_rank == 0 else numpy.identity(G.target_shape[0])
         
@@ -151,13 +153,13 @@ class A_Omega_Plus_B(Base):
     def __call__(self,G):
         A,B = self.A, self.B
         if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
-            raise TypeError, "This initializer is only correct in frequency"
+            raise TypeError("This initializer is only correct in frequency")
 
         if G.target_rank > 0:
             if not isinstance(A,numpy.ndarray): A = A*numpy.identity(G.target_shape[0]) 
             if not isinstance(B,numpy.ndarray): B = B*numpy.identity(G.target_shape[0]) 
-            if A.shape != G.target_shape: raise RuntimeError, "Size of A incorrect"
-            if B.shape != G.target_shape: raise RuntimeError, "Size of B incorrect"
+            if A.shape != G.target_shape: raise RuntimeError("Size of A incorrect")
+            if B.shape != G.target_shape: raise RuntimeError("Size of B incorrect")
         
         Function(lambda om: A*om + B, None)(G)
 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -20,7 +21,7 @@
 #
 ################################################################################
 
-from sumk_discrete import SumkDiscrete
-from sumk_discrete_from_lattice import SumkDiscreteFromLattice
+from .sumk_discrete import SumkDiscrete
+from .sumk_discrete_from_lattice import SumkDiscreteFromLattice
 
 __all__ = ['SumkDiscrete','SumkDiscreteFromLattice']

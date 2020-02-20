@@ -1,4 +1,5 @@
-import one_var
+from __future__ import absolute_import
+from . import one_var
 from pytriqs.gf.meshes import *
 from pytriqs.gf.mesh_product import MeshProduct
 

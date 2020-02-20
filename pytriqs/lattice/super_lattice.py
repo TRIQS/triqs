@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -21,7 +23,7 @@
 ################################################################################
 
 import numpy
-from tight_binding import TBLattice
+from .tight_binding import TBLattice
 
 __all__ = ['TBSuperLattice']
 
@@ -53,7 +55,7 @@ class TBSuperLattice(TBLattice):
          * remove_internal_hoppings: If true, the hopping terms are removed inside the cluster.
                    Useful to add Hartree Fock terms at the boundary of a cluster, e.g.
         """
-        if not isinstance(tb_lattice, TBLattice): raise ValueError, "tb_lattice should be an instance of TBLattice"
+        if not isinstance(tb_lattice, TBLattice): raise ValueError("tb_lattice should be an instance of TBLattice")
         self.__BaseLattice = tb_lattice
         dim = tb_lattice.dim
 
@@ -61,7 +63,7 @@ class TBSuperLattice(TBLattice):
             self.__super_lattice_units = numpy.array(super_lattice_units, copy=True)
             assert self.__super_lattice_units.shape == (dim, dim)
         except:
-            raise ValueError, "super_lattice_units is not correct. Cf Doc. value is %s, dim = %s "%(super_lattice_units,dim)
+            raise ValueError("super_lattice_units is not correct. Cf Doc. value is %s, dim = %s "%(super_lattice_units,dim))
 
         Ncluster_sites = int(numpy.rint(abs(numpy.linalg.det(self.__super_lattice_units ))))
         assert Ncluster_sites >0, "Superlattice vectors are not independant !"
@@ -88,7 +90,7 @@ class TBSuperLattice(TBLattice):
             if dim==1:  a=(max(M[0,:]), 0, 0 )
             elif dim==2:  a=(2*max(M[0,:]), 2*max(M[1,:]), 0 )
             elif dim==3: a= (3*max(M[0,:]), 3*max(M[1,:]), 3*max(M[2,:]))
-            else: raise ValueError, "dim is not between 1 and 3 !!"
+            else: raise ValueError("dim is not between 1 and 3 !!")
             r = lambda i:  range(-a[i] , a[i]+1)
             for nx in r(0):
                 for ny in r(1):
@@ -108,8 +110,8 @@ class TBSuperLattice(TBLattice):
         Hopping = self.fold(tb_lattice.hopping_dict(), remove_internal_hoppings)
         if 0:
             for k, v in Hopping.items():
-                print k
-                print v.real
+                print(k)
+                print(v.real)
 
         # Compute the new units of the lattice in real coordinates
         Units = numpy.dot(self.__super_lattice_units, tb_lattice.Units)

@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 ################################################################################
 #
@@ -37,7 +38,7 @@ class HDFArchiveGroupBasicLayer :
         try :
             fich = h5py.File(LocalFileName, open_flag)
         except :
-            print "Cannot open the HDF file %s"%LocalFileName
+            print("Cannot open the HDF file %s"%LocalFileName)
             raise
         # checking the version
         if open_flag not in ['r','r+','a'] :
@@ -48,7 +49,7 @@ class HDFArchiveGroupBasicLayer :
             except :
                 self._version = 1
             if self._version > self._class_version :
-                raise IOError, "File %s is too recent for this version of HDFArchive module"%Filename
+                raise IOError("File %s is too recent for this version of HDFArchive module"%Filename)
         self._group = fich
 
     def is_group(self,p) :
@@ -126,9 +127,9 @@ class HDFArchiveGroupBasicLayer :
 
     def _clean_key(self,key, report_error=False) :
         if report_error and key not in self.cached_keys :
-             raise KeyError, "Key %s is not in archive !!"%key
+             raise KeyError("Key %s is not in archive !!"%key)
         if key in self.cached_keys :
           del self._group[key]
           self.cached_keys.remove(key)
-        else: raise KeyError, "Key %s is not in archive !!"%key
+        else: raise KeyError("Key %s is not in archive !!"%key)
 

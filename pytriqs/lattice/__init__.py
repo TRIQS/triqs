@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -19,5 +20,5 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from lattice_tools import *
+from .lattice_tools import *
 __all__ = ['tight_binding','bz_patch','super_lattice', "BrillouinZone", "BravaisLattice"]

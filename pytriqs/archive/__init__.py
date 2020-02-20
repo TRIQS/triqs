@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -20,5 +21,5 @@
 #
 ################################################################################
 
-from hdf_archive import HDFArchive, HDFArchiveGroup, HDFArchiveInert
+from .hdf_archive import HDFArchive, HDFArchiveGroup, HDFArchiveInert
 __all__ = ['HDFArchive', 'HDFArchiveGroup', 'HDFArchiveInert']

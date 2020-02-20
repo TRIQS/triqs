@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 ##############################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -20,10 +21,10 @@
 ##############################################################################
 
 from pytriqs.operators import Operator
-from atom_diag import AtomDiagReal, AtomDiagComplex
-from atom_diag import partition_function, atomic_density_matrix, trace_rho_op, act
-from atom_diag import quantum_number_eigenvalues, quantum_number_eigenvalues_checked
-from atom_diag import atomic_g_tau, atomic_g_iw, atomic_g_l, atomic_g_w
+from .atom_diag import AtomDiagReal, AtomDiagComplex
+from .atom_diag import partition_function, atomic_density_matrix, trace_rho_op, act
+from .atom_diag import quantum_number_eigenvalues, quantum_number_eigenvalues_checked
+from .atom_diag import atomic_g_tau, atomic_g_iw, atomic_g_l, atomic_g_w
 
 # Construct real/complex AtomDiag
 def AtomDiag(*args, **kwargs):

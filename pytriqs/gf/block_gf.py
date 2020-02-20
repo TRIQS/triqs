@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +20,7 @@
 #
 ################################################################################
 from itertools import izip
-from gf import Gf
+from .gf import Gf
 import operator
 import warnings
 import numpy as np
@@ -83,7 +84,7 @@ class BlockGf(object):
         elif set(kwargs.keys()) == set(['name_block_generator','make_copies']):
             BlockNameList,GFlist = zip(* kwargs['name_block_generator'])
         else:
-            raise RuntimeError, "BlockGf construction: error in parameters, see the documentation"
+            raise RuntimeError("BlockGf construction: error in parameters, see the documentation")
 
         if kwargs.get('make_copies', False): GFlist = [g.copy() for g in GFlist]
 
@@ -99,14 +100,14 @@ class BlockGf(object):
         #if not reduce (operator.and_,[ GFlist[0]._is_compatible_for_ops(x) for x in GFlist[1:] ] , True):
         #    raise RuntimeError, "The blocks are not compatible for binary operations: not the same type, same temperature, etc..."
         if len(set([ type(g) for g in GFlist])) != 1:
-            raise RuntimeError, "BlockGf: All block must have the same type %s"%GFlist
+            raise RuntimeError("BlockGf: All block must have the same type %s"%GFlist)
 
         # init
         self.__indices,self.__GFlist = BlockNameList,GFlist
         try:
             self.__me_as_dict = dict(self)
         except TypeError:
-            raise TypeError, "indices are not of the correct type"
+            raise TypeError("indices are not of the correct type")
         self.__BlockIndexNumberTable = dict( (i,n) for n,i in enumerate(self.__indices) ) # a dict: index -> number of its order
 
         # Add the name to the G
@@ -136,7 +137,7 @@ class BlockGf(object):
         assert isinstance(G2, BlockGf)
         for (i,g),(i2,g2) in itertools.izip(self,G2): 
            if  (g.target_shape[0],g.target_shape[1]) != (g2.target_shape[0],g2.target_shape[1]): 
-               raise RuntimeError, "Blocks %s and %s of the Green Function do have the same dimension"%(i1,i2) 
+               raise RuntimeError("Blocks %s and %s of the Green Function do have the same dimension"%(i1,i2)) 
         for (i,g),(i2,g2) in itertools.izip(self,G2): g.copy_from(g2)
 
      #--------------  Iterators -------------------------
@@ -257,7 +258,7 @@ class BlockGf(object):
         try:
             g = self.__me_as_dict[key]
         except KeyError:
-            raise IndexError, "bloc index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(self.__indices)
+            raise IndexError("bloc index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(self.__indices))
         return g
 
     def __setitem__(self,key,val):
@@ -267,13 +268,13 @@ class BlockGf(object):
         try:
             g = self.__me_as_dict[key]
         except KeyError:
-            raise IndexError, "bloc index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(self.__indices)
+            raise IndexError("bloc index '" + repr(key) + "' incorrect. Possible indices are: "+ repr(self.__indices))
         g << val
 
     # -------------- Various operations -------------------------------------
 
     def __le__(self, other):
-        raise RuntimeError, " Operator <= not defined "
+        raise RuntimeError(" Operator <= not defined ")
 
     def __lshift__(self, A):
         """ A can be 2 things:
@@ -400,7 +401,7 @@ class BlockGf(object):
 
     def __check_attr(self,ATTR):
         if not hasattr(self._first(), ATTR ):
-           raise RuntimeError, "The blocks of this Green Function do not possess the %s method"%ATTR
+           raise RuntimeError("The blocks of this Green Function do not possess the %s method"%ATTR)
 
     def invert(self): 
        """Inverse all the blocks inplace"""

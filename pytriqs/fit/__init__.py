@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 ################################################################################
 #
@@ -20,6 +21,6 @@
 #
 ################################################################################
 
-from fit import Fit, linear, quadratic
+from .fit import Fit, linear, quadratic
 
 __all__ = ['Fit', 'linear', 'quadratic']

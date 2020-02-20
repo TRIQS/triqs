@@ -1,3 +1,4 @@
+from __future__ import print_function
 import threading, time, sys, os, fcntl
 
 __all__ = ['start_redirect', 'stop_redirect']
@@ -50,7 +51,7 @@ def start_redirect():
   global started
   global a
   if started:
-    print "Already redirected c++ output"
+    print("Already redirected c++ output")
   else:
     started = True
     # start a new redirection thread

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -24,17 +25,17 @@ import itertools, warnings, numbers
 from functools import reduce # Valid in Python 2.6+, required in Python 3
 import operator
 import numpy as np
-import mesh_product
-import lazy_expressions
-import descriptors, descriptor_base
+from . import mesh_product
+from . import lazy_expressions
+from . import descriptors, descriptor_base
 from types import IntType, SliceType, StringType
-from mesh_product import MeshProduct
+from .mesh_product import MeshProduct
 from pytriqs.plot.protocol import clip_array
-import meshes
-import plot 
-import gf_fnt, wrapped_aux
-from gf_fnt import GfIndices
-from mesh_point import MeshPoint
+from . import meshes
+from . import plot 
+from . import gf_fnt, wrapped_aux
+from .gf_fnt import GfIndices
+from .mesh_point import MeshPoint
 from operator import mul
 
 # list of all the meshes
@@ -318,7 +319,7 @@ class Gf(object):
             assert self.rank > 1, "Internal error : impossible case" # here all == any for one argument
             mlist = self._mesh._mlist 
             for x in key:
-                if isinstance(x, slice) and x != self._full_slice: raise NotImplementedError, "Partial slice of the mesh not implemented" 
+                if isinstance(x, slice) and x != self._full_slice: raise NotImplementedError("Partial slice of the mesh not implemented") 
             # slice the data 
             k = [x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) if isinstance(x, Idx) else x for x,m in itertools.izip(key,mlist)] + self._target_rank * [slice(0, None)]
             dat = self._data[k]
@@ -354,7 +355,7 @@ class Gf(object):
 
             # Invalid Access
             else:
-                raise NotImplementedError, "Partial slice of the target space not implemented"
+                raise NotImplementedError("Partial slice of the target space not implemented")
 
             dat = self._data[ self._rank * [slice(0,None)] + key_lst ] 
             r = Gf(mesh = self._mesh, data = dat, indices = ind)
@@ -426,7 +427,7 @@ class Gf(object):
     # -------------- Various operations -------------------------------------
  
     def __le__(self, other): 
-        raise RuntimeError, " Operator <= not defined "
+        raise RuntimeError(" Operator <= not defined ")
 
     def __ilshift__(self, A):
         warnings.warn("The operator <<= is deprecated : update your code to use << instead", UserWarning, stacklevel=2)

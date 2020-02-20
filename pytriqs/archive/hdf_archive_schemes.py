@@ -67,7 +67,7 @@ def hdf_scheme_access_for_write(hdf_scheme):
     # If present exactly, we return it
     if hdf_scheme in _hdf5_schemes_dict : 
         return _hdf5_schemes_dict[hdf_scheme]
-    raise KeyError, "HDF5 Data Scheme %s is not registered"%hdf_scheme
+    raise KeyError("HDF5 Data Scheme %s is not registered"%hdf_scheme)
 
 def hdf_scheme_access_for_read (hdf_scheme): 
     """
@@ -81,9 +81,9 @@ def hdf_scheme_access_for_read (hdf_scheme):
     # Enter compatibility mode.
     l = [(r,s,l) for (r,s,l) in _hdf5_schemes_bck_compat if re.match(r, hdf_scheme)]
     if len(l) ==0 : 
-        raise KeyError, "HDF5 Data Scheme %s is not registered and no backward compatibility found"%hdf_scheme
+        raise KeyError("HDF5 Data Scheme %s is not registered and no backward compatibility found"%hdf_scheme)
     if len(l) >1 : 
-        raise KeyError, "HDF5 Data Scheme %s : ambiguous backward compatibility layers : %s"%([r for (r,s,ll) in l])
+        raise KeyError("HDF5 Data Scheme %s : ambiguous backward compatibility layers : %s"%([r for (r,s,ll) in l]))
     r,s,l = l[0]
     return s, l(hdf_scheme)
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 ################################################################################
 #
@@ -107,7 +108,7 @@ def master_gets_host_names():
     assert len(HostNames)==size," internal pb MPI module"
     
     if is_master_node() :
-      print "Hostnames : "
+      print("Hostnames : ")
       for u,host in HostNames.items() :
-        print "Node %d  on machine %s"%(u,host)
+        print("Node %d  on machine %s"%(u,host))
 
