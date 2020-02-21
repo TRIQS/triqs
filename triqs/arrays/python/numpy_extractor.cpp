@@ -61,7 +61,7 @@ namespace triqs {
           std::string actual_type = "";
           if (p) {
             PyObject *q = PyObject_GetAttrString(p, "name");
-            if (q && PyString_Check(q)) actual_type = PyString_AsString(q);
+            if (q && PyUnicode_Check(q)) actual_type = PyUnicode_AsUTF8(q);
             Py_XDECREF(q);
           }
           Py_XDECREF(p);
