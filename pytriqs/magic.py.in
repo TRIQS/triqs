@@ -6,6 +6,11 @@ Triqs magic
 {TRIQS_DOC}
 
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from builtins import str
+from past.utils import old_div
 import imp,os,sys,subprocess, hashlib,re
 from IPython.core.error import UsageError
 from IPython.core.magic import Magics, magics_class, line_magic, cell_magic
@@ -102,7 +107,7 @@ class TriqsMagics(Magics):
         module_dirname = os.path.join(self._lib_dir, "_triqs_magic_" + hashlib.md5(str(key).encode('utf-8')).hexdigest())
 
         if args.verbosity > 0:
-            print "Workdir = ", module_dirname
+            print("Workdir = ", module_dirname)
 
         module_path = os.path.join(module_dirname, 'ext.so')
         try :
@@ -111,8 +116,8 @@ class TriqsMagics(Magics):
             pass
 
         def print_out (m, out) : 
-           l = (70 - len(m))/2
-           print l*'-' + m + l*'-' + '\n' + out 
+           l = old_div((70 - len(m)),2)
+           print(l*'-' + m + l*'-' + '\n' + out)
 
         old_cwd = os.getcwd()
         try:
@@ -133,7 +138,7 @@ class TriqsMagics(Magics):
                    out = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
                 except subprocess.CalledProcessError as E :
                    print_out ( message + " error ", E.output)
-                   raise RuntimeError, "Error"
+                   raise RuntimeError("Error")
                 if args.verbosity>0: 
                    print_out(message, out)
 
@@ -160,7 +165,7 @@ class TriqsMagics(Magics):
         module = imp.load_dynamic(module_name, module_path)
         # import all object and function in the main namespace
         imported = []
-        for k, v in module.__dict__.items():
+        for k, v in list(module.__dict__.items()):
             if not k.startswith('_'):
                 self.shell.push({k: v})
                 imported.append(k)

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from __future__ import print_function
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -23,11 +25,11 @@ version  = "@TRIQS_VERSION@"
 git_hash = "@TRIQS_GIT_HASH@"
 
 def show_version():
-  print "\nYou are using the TRIQS library version %s\n"%(version)
+  print("\nYou are using the TRIQS library version %s\n"%(version))
 
 def show_git_hash():
-  print "\nYou are using the git hash %s\n"%(git_hash)
+  print("\nYou are using the git hash %s\n"%(git_hash))
 
 def show_machine_info():
-  print "\nCode compiled on @myHostName@ under login @WhoAmI@\n"
+  print("\nCode compiled on @myHostName@ under login @WhoAmI@\n")
 
