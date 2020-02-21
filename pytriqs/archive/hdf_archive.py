@@ -28,6 +28,7 @@ standard_library.install_aliases()
 from builtins import str
 from builtins import object
 import sys,numpy
+from importlib import import_module
 from .hdf_archive_basic_layer_h5py import HDFArchiveGroupBasicLayer
 
 from pytriqs.archive.hdf_archive_schemes import hdf_scheme_access_for_write, hdf_scheme_access_for_read, register_class
@@ -266,9 +267,9 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         r_module_name = sch.modulename
         r_readfun = sch.read_fun
         if not (r_class_name and r_module_name) : return bare_return()
-        try :
-            exec(("from %s import %s as r_class" %(r_module_name,r_class_name)), globals(), locals())
-        except KeyError :
+        try:
+            r_class = getattr(import_module(r_module_name),r_class_name)
+        except KeyError:
             raise RuntimeError("I cannot find the class %s to reconstruct the object !"%r_class_name)
         if r_readfun :
             return r_readfun(self._group,str(key)) # str transforms unicode string to regular python string
