@@ -68,11 +68,11 @@ Verbosity_Level_Report_Max = 1
 def report(*x,**opt):
     """ print on the master, do nothing on the nodes """
     try : 
-	if opt['Verbosity_Level'] >  Verbosity_Level_Report_Max : return
+        if opt['Verbosity_Level'] >  Verbosity_Level_Report_Max : return
     except :
-	pass
+        pass
     if All_Nodes_report and rank!=0 :
-	  for y in x:
+          for y in x:
               open('report_node%s'%rank,'a').write(str(y) + '\n') #             print y
               
     if rank==0 :

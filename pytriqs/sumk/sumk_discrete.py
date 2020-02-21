@@ -39,22 +39,22 @@ class SumkDiscrete(object):
       It can also generate a grid (ComputeGrid) for a regular grid or a Gauss-Legendre sum.
     """
     def __init__ (self, dim, gf_struct, orthogonal_basis = True ):
-	"""
-	Just constructs the arrays, but without initializing them
-	- dim is the dimension
-	- gf_struct: Indices of the Green function
-	- orthogonal_basis: True by default
-	"""
+        """
+        Just constructs the arrays, but without initializing them
+        - dim is the dimension
+        - gf_struct: Indices of the Green function
+        - orthogonal_basis: True by default
+        """
         self.__GFBLOC_Structure = copy.deepcopy(gf_struct)
         self.orthogonal_basis,self.dim = orthogonal_basis,dim
 
    #-------------------------------------------------------------
 
     def resize_arrays (self, nk):
-	"""
-	Just constructs the arrays, but without initializing them
-	- nk: total number of k points
-	"""
+        """
+        Just constructs the arrays, but without initializing them
+        - nk: total number of k points
+        """
         # constructs the arrays.
         no = len(self.__GFBLOC_Structure)
         self.hopping    = numpy.zeros([nk,no,no],numpy.complex_)   # t(k_index,a,b)
@@ -75,31 +75,31 @@ class SumkDiscrete(object):
     #-------------------------------------------------------------
 
     def __call__ (self, Sigma, mu=0, eta=0, field=None, epsilon_hat=None, result=None, selected_blocks=()):
-	"""
-	- Computes:
-	   result <- \[ \sum_k (\omega + \mu - field - t(k) - Sigma(k,\omega)) \]
+        """
+        - Computes:
+           result <- \[ \sum_k (\omega + \mu - field - t(k) - Sigma(k,\omega)) \]
            if result is None, it returns a new GF with the results.
            otherwise, result must be a GF, in which the calculation is done, and which is then returned.
            (this allows chain calculation: SK(mu = mu,Sigma = Sigma, result = G).total_density()
            which computes the sumK into G,  and returns the density of G.
 
         - Sigma can be a X, or a function k-> X or a function k,eps ->X where:
-	    - k is expected to be a 1d-numpy array of size self.dim of float,
-	      containing the k vector in the basis of the RBZ  (i.e.  -0.5< k_i <0.5)
+            - k is expected to be a 1d-numpy array of size self.dim of float,
+              containing the k vector in the basis of the RBZ  (i.e.  -0.5< k_i <0.5)
             - eps is t(k)
-	    - X is anything such that X[BlockName] can be added/subtracted to a GFBloc for BlockName in selected_blocks.
-	      e.g. X can be a BlockGf(with at least the selected_blocks), or a dictionnary Blockname -> array
-	      if the array has the same dimension as the GF blocks (for example to add a static Sigma).
+            - X is anything such that X[BlockName] can be added/subtracted to a GFBloc for BlockName in selected_blocks.
+              e.g. X can be a BlockGf(with at least the selected_blocks), or a dictionnary Blockname -> array
+              if the array has the same dimension as the GF blocks (for example to add a static Sigma).
 
         - field: Any k independant object to be added to the GF
 
         - epsilon_hat: a function of eps_k returning a matrix, the dimensions of Sigma
 
         - selected_blocks: The calculation is done with the SAME t(k) for all blocks. If this list is not None
-	  only the blocks in this list are calculated.
-	  e.g. G and Sigma have block indices 'up' and 'down'.
-	       if selected_blocks ==None: 'up' and 'down' are calculated
-	       if selected_blocks == ['up']: only 'up' is calculated. 'down' is 0.
+          only the blocks in this list are calculated.
+          e.g. G and Sigma have block indices 'up' and 'down'.
+               if selected_blocks ==None: 'up' and 'down' are calculated
+               if selected_blocks == ['up']: only 'up' is calculated. 'down' is 0.
 
 
         """
@@ -165,5 +165,5 @@ class SumkDiscrete(object):
     #-------------------------------------------------------------
 
     def n_kpts(self):
-	""" Returns the number of k points"""
-	return self.bz_points.shape[0]
+        """ Returns the number of k points"""
+        return self.bz_points.shape[0]

@@ -13,7 +13,7 @@ def get_mkind(off_diag,map_operator_structure):
                Do we have (orbital) off-diagonal elements?
                If yes, the operators and blocks are denoted by ('spin', 'orbital'), otherwise by ('spin_orbital',0).
     map_operator_structure : dict 
-			     Mapping of names of GF blocks names from one convention to another, 
+                             Mapping of names of GF blocks names from one convention to another, 
                              e.g. {('up', 0): ('up_0', 0), ('down', 0): ('down_0',0)}.
                              If provided, the operators and blocks are denoted by the mapping of ``('spin', 'orbital')``.
 

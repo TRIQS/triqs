@@ -386,9 +386,9 @@ class BlockGf(object):
             initial_dict = opt_dict.copy()
             r += g._plot_(initial_dict)
         self.name, name_kept = self.name, opt_dict.pop('name', self.name)
-	first_g_name = self.__GFlist[0].name
-  	ylabel = r[0]['ylabel'].replace(first_g_name, self.name) if first_g_name else self.name
-	for dic in r:
+        first_g_name = self.__GFlist[0].name
+        ylabel = r[0]['ylabel'].replace(first_g_name, self.name) if first_g_name else self.name
+        for dic in r:
            dic['ylabel'] = ylabel # replace the ylabel of the elements to a single ylabel
         self.name = name_kept
         return r

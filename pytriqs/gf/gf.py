@@ -515,9 +515,9 @@ class Gf(with_metaclass(AddMethod, object)):
         elif isinstance(arg, numbers.Number):
             self._data[:] *= arg
         elif isinstance(arg, np.ndarray):
-	    assert len(arg.shape) == 2, "Multiplication only supported for matrices"
-	    assert len(self.target_shape) == 2, "Multiplication only supported for matrix_valued Gfs"
-	    self.data[:] = np.tensordot(self.data, arg, axes=([-1], [-2]))
+            assert len(arg.shape) == 2, "Multiplication only supported for matrices"
+            assert len(self.target_shape) == 2, "Multiplication only supported for matrix_valued Gfs"
+            self.data[:] = np.tensordot(self.data, arg, axes=([-1], [-2]))
         else:
             assert False, "Invalid operand type for Gf in-place multiplication"
         return self

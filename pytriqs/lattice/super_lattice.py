@@ -50,7 +50,7 @@ class TBSuperLattice(TBLattice):
 
          * super_lattice_units: The unit vectors of the superlattice in the tb_lattice (integer) coordinates
 
-	 * cluster_sites [None]: Coordinates of the cluster in tb_lattice coordinates.
+         * cluster_sites [None]: Coordinates of the cluster in tb_lattice coordinates.
                    If None, an automatic computation of cluster positions is made as follows:
                    it takes all points whose coordinates in the basis of the superlattice are in [0, 1[^dimension
 
@@ -178,9 +178,9 @@ class TBSuperLattice(TBLattice):
 
     def unpack_index_site_orbital (self, index):
         """Inverse of pack_index_site_orbital"""
-	n_orbital  =   (index)//self.Ncluster_sites
-	n_site =  index - n_orbital*self.Ncluster_sites
-	return n_site, n_orbital
+        n_orbital  =   (index)//self.Ncluster_sites
+        n_site =  index - n_orbital*self.Ncluster_sites
+        return n_site, n_orbital
 
     def cluster_sites(self):
         """
