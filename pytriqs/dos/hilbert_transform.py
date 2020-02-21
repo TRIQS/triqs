@@ -28,7 +28,6 @@ from builtins import object
 from past.utils import old_div
 from pytriqs.gf import *
 import types, string, inspect, itertools
-from operator import isSequenceType
 from pytriqs.dos import DOS, DOSFromFunction
 import pytriqs.utility.mpi as mpi
 import numpy
