@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Unit test utilities for Google C++ Mocking Framework."""
+from __future__ import unicode_literals
 
 import os
 import sys

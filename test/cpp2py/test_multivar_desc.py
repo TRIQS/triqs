@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from cpp2py.wrap_generator import *
 
 # The module

@@ -55,6 +55,7 @@ problems to googletestframework@googlegroups.com.  You can read
 https://github.com/google/googletest/blob/master/googletest/docs/advanced.md for
 more information.
 """
+from __future__ import unicode_literals
 
 __author__ = 'wan@google.com (Zhanyong Wan)'
 

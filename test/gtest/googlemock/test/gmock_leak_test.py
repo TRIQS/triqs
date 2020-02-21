@@ -30,6 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Tests that leaked mock objects can be caught be Google Mock."""
+from __future__ import unicode_literals
 
 import gmock_test_utils
 

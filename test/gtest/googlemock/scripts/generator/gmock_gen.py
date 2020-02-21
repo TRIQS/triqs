@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Driver for starting up Google Mock class generator."""
+from __future__ import unicode_literals
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 

@@ -60,7 +60,9 @@ EXAMPLE
        $ svn diff                     # verify the file contents
        $ svn commit -m "release wiki pages for v2.6"
 """
+from __future__ import unicode_literals
 
+from builtins import object
 __author__ = 'wan@google.com (Zhanyong Wan)'
 
 import os

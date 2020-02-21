@@ -37,6 +37,7 @@ output file.
 This script tests such functionality by invoking gtest_list_output_unittest_
  (a program written with Google Test) the command line flags.
 """
+from __future__ import unicode_literals
 
 import os
 import re

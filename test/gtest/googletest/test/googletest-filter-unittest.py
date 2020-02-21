@@ -39,7 +39,10 @@ environments and command line flags.
 Note that test sharding may also influence which tests are filtered. Therefore,
 we test that here also.
 """
+from __future__ import unicode_literals
 
+from builtins import str
+from builtins import range
 import os
 import re
 try:

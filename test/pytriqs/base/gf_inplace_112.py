@@ -1,5 +1,8 @@
 # Test from I. Krivenko.
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from past.utils import old_div
 from pytriqs.gf import *
 from pytriqs.gf.descriptors import *
 from pytriqs.utility import capture_stdout
@@ -31,7 +34,7 @@ with capture_stdout() as output:
     
     G = BlockGf(name_list=['up','dn'], block_list=[g_up,g_dn], make_copies=False)
     
-    N = len(G.mesh)/2
+    N = old_div(len(G.mesh),2)
     
     print("Before:")
     print("G['up'] = %.10E j"%G['up'].data[N,0,0].imag)

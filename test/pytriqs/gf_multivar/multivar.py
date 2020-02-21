@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from builtins import range
 from pytriqs.gf import *
 from pytriqs.archive import *
 from itertools import product
@@ -113,7 +115,7 @@ assert len(mprod) == len(m1)*len(m2)*len(m3)
 
 g = Gf(mesh = mprod, target_shape = [2,2,2,2])
 
-for iw,l,lp in product(range(len(m1)),range(len(m2)),range(len(m3))):
+for iw,l,lp in product(list(range(len(m1))),list(range(len(m2))),list(range(len(m3)))):
     g.data[iw,l,lp,...] = iw + l - lp
 
 # for iw in range(len(m1)):

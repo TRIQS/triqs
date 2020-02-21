@@ -1,4 +1,5 @@
 """Negative compilation tests for Google Mock macro MOCK_METHOD."""
+from __future__ import unicode_literals
 
 import os
 import sys

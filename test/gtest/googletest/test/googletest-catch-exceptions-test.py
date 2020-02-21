@@ -34,6 +34,7 @@ This script invokes googletest-catch-exceptions-test_ and
 googletest-catch-exceptions-ex-test_ (programs written with
 Google Test) and verifies their output.
 """
+from __future__ import unicode_literals
 
 import gtest_test_utils
 

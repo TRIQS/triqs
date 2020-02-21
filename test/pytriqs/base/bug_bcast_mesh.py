@@ -3,6 +3,7 @@ broadcasting it over mpi...
 
 Author: H. U.R. Strand (2019) """
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import numpy as np
 

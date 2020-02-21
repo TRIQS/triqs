@@ -16,7 +16,10 @@
 # limitations under the License.
 
 """C++ keywords and helper utilities for determining keywords."""
+from __future__ import unicode_literals
 
+from future import standard_library
+standard_library.install_aliases()
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -25,7 +28,7 @@ try:
     import builtins
 except ImportError:
     # Python 2.x
-    import __builtin__ as builtins
+    import builtins as builtins
 
 
 if not hasattr(builtins, 'set'):

@@ -1,3 +1,5 @@
+from __future__ import division
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -20,6 +22,7 @@
 #
 ################################################################################
 
+from past.utils import old_div
 from numpy import array, arange
 from math import pi
 from cmath import sqrt, log
@@ -39,7 +42,7 @@ def GLorentz(z):
 
 # Semicircle
 def GSC(z):
-    return 2.0*(z + sqrt(1-z**2)*(log(1-z) - log(-1+z))/pi)
+    return 2.0*(z + old_div(sqrt(1-z**2)*(log(1-z) - log(-1+z)),pi))
 
 # A superposition of GLorentz(z) and GSC(z) with equal weights
 def G(z):

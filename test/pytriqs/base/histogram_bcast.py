@@ -2,7 +2,10 @@
 """ Construct a random histogram, broadcast it and compare
 the broadcasted result with a reference. """
 from __future__ import print_function
+from __future__ import unicode_literals
 
+from builtins import zip
+from builtins import range
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.statistics.histograms import Histogram
@@ -47,7 +50,7 @@ else:
 h = mpi.bcast(h)
 h_ref = mpi.bcast(h_ref)
 
-for rank in xrange(mpi.size):
+for rank in range(mpi.size):
     if rank == mpi.rank:
 
         print('-'*72)
@@ -56,7 +59,7 @@ for rank in xrange(mpi.size):
         print('h_ref =\n', h_ref)
 
         # -- Compare h and h_ref
-        pts = np.array([ int(h.mesh_point(idx)) for idx in xrange(len(h))])
+        pts = np.array([ int(h.mesh_point(idx)) for idx in range(len(h))])
 
         for pt, val in zip(pts, h.data):
             val = int(val)

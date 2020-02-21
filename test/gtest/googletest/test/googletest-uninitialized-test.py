@@ -30,6 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Verifies that Google Test warns the user when not initialized properly."""
+from __future__ import unicode_literals
 
 import gtest_test_utils
 

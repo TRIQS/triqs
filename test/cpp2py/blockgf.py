@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from pytriqs.gf import *
 from test_bl import *
 

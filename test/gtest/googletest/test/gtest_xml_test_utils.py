@@ -28,7 +28,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Unit test utilities for gtest_xml_output"""
+from __future__ import unicode_literals
 
+from builtins import range
 import re
 from xml.dom import minidom, Node
 import gtest_test_utils
@@ -74,8 +76,8 @@ class GTestXMLTestCase(gtest_test_utils.TestCase):
     self.assertEquals(
         expected_attributes.length, actual_attributes.length,
         'attribute numbers differ in element %s:\nExpected: %r\nActual: %r' % (
-            actual_node.tagName, expected_attributes.keys(),
-            actual_attributes.keys()))
+            actual_node.tagName, list(expected_attributes.keys()),
+            list(actual_attributes.keys())))
     for i in range(expected_attributes.length):
       expected_attr = expected_attributes.item(i)
       actual_attr   = actual_attributes.get(expected_attr.name)
@@ -94,7 +96,7 @@ class GTestXMLTestCase(gtest_test_utils.TestCase):
     self.assertEquals(
         len(expected_children), len(actual_children),
         'number of child elements differ in element ' + actual_node.tagName)
-    for child_id, child in expected_children.items():
+    for child_id, child in list(expected_children.items()):
       self.assert_(child_id in actual_children,
                    '<%s> is not in <%s> (in element %s)' %
                    (child_id, actual_children, actual_node.tagName))

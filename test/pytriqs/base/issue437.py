@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from pytriqs.gf import *                                             
                                                                            
 G_iw = GfImFreq(beta=40,indices=[0,1])                                     

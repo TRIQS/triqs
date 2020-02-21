@@ -30,6 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Unit test for the gtest_xml_output module."""
+from __future__ import unicode_literals
 
 import os
 from xml.dom import minidom, Node

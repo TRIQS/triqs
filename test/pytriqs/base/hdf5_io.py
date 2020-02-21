@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -32,7 +33,7 @@ class TestHdf5Io(unittest.TestCase):
         d = {'dbl' : 1.0, 'lst' : [1,[1],'a']}
         
         # === Write to archive
-        with HDFArchive('hdf5_io.out.h5','w', init = d.items()) as arch:
+        with HDFArchive('hdf5_io.out.h5','w', init = list(d.items())) as arch:
         
             arch['int'] = 100
             arch['arr'] = array([[1,2,3],[4,5,6]])

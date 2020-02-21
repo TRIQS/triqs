@@ -1,7 +1,10 @@
 from __future__ import print_function
+from __future__ import unicode_literals
+from builtins import zip
+from builtins import map
 from pytriqs.gf import *
 from pytriqs.archive import *
-from itertools import izip, product
+from itertools import product
 
 beta = 3.0
 m_b = MeshImFreq(beta=beta, S = "Boson", n_max = 10)
@@ -25,15 +28,15 @@ G1 = Block2Gf(spin_blocks, atom_blocks, blocks_list, name = "G from list of list
 G2 = Block2Gf(spin_blocks, atom_blocks, make_vertex, name = "G from function")
 
 # Check iteration
-for ref_bn, (bn, g) in izip(indices, G1): assert ref_bn == bn
-for ref_bn, (bn, g) in izip(indices, G2): assert ref_bn == bn
+for ref_bn, (bn, g) in zip(indices, G1): assert ref_bn == bn
+for ref_bn, (bn, g) in zip(indices, G2): assert ref_bn == bn
 
 # Properties
 assert len(G1) == 6 and len(G2) == 6
 assert G1.n_blocks == 6 and G2.n_blocks == 6
 assert tuple(G1.indices) == indices and tuple(G2.indices) == indices
-assert tuple(G1.all_indices) == tuple(i for i in product(spin_blocks, atom_blocks, *map(range,block_shape)))
-assert tuple(G2.all_indices) == tuple(i for i in product(spin_blocks, atom_blocks, *map(range,block_shape)))
+assert tuple(G1.all_indices) == tuple(i for i in product(spin_blocks, atom_blocks, *list(map(range,block_shape))))
+assert tuple(G2.all_indices) == tuple(i for i in product(spin_blocks, atom_blocks, *list(map(range,block_shape))))
 
 def check_value(G,ref_func):
     for bn1, bn2 in G.indices:

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 import numpy as np

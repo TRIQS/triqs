@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from builtins import range
 from pytriqs.operators import *
 from pytriqs.gf import *
 from pytriqs.archive import *
@@ -8,11 +10,11 @@ from itertools import product
 
 save_h5 = False
 
-fops = [(s,o) for s,o in product(('up','dn'),range(3))]
+fops = [(s,o) for s,o in product(('up','dn'),list(range(3)))]
 
 def make_hamiltonian(mu, U, J, b, t):
     h = Operator()
-    orbs = range(3)
+    orbs = list(range(3))
     for o in orbs:
         h += sum(-mu * (n("up", o) + n("dn", o)) for o in orbs)
     for o in orbs:

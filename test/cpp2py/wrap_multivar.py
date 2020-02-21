@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from test_multivar import *
 from pytriqs.archive import HDFArchive
 from pytriqs.utility.comparison_tests import *

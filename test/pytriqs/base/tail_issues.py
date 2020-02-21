@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+from __future__ import division
+from __future__ import unicode_literals
+from builtins import range
+from past.utils import old_div
 import unittest
 import os
 import sys
@@ -70,7 +74,7 @@ class test_tail_issues(unittest.TestCase):
         tail, tail_err = g.fit_hermitian_tail()
         for n, tail_mom in enumerate(tail[1:4]):
             exact_mom = np.linalg.matrix_power(H, n)
-            rel_err = max_norm(exact_mom-tail_mom) / max_norm(exact_mom)
+            rel_err = old_div(max_norm(exact_mom-tail_mom), max_norm(exact_mom))
             # print "rel err ", rel_err
             self.assertTrue(rel_err < 1e-4)
 
@@ -80,7 +84,7 @@ class test_tail_issues(unittest.TestCase):
         tail, tail_err = g.fit_hermitian_tail(km)
         for n, tail_mom in enumerate(tail[1:4]):
             exact_mom = np.linalg.matrix_power(H, n)
-            rel_err = max_norm(exact_mom-tail_mom) / max_norm(exact_mom)
+            rel_err = old_div(max_norm(exact_mom-tail_mom), max_norm(exact_mom))
             # print "rel err ", rel_err
             self.assertTrue(rel_err < 1e-4)
 

@@ -1,5 +1,6 @@
 
 """ Test the hopping matrix size control in the tight binding class. """
+from __future__ import unicode_literals
 
 import numpy as np
 from pytriqs.lattice.tight_binding import TightBinding, BravaisLattice

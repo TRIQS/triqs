@@ -58,6 +58,7 @@ report any problems to googlemock@googlegroups.com.  You can read
 https://github.com/google/googletest/blob/master/googlemock/docs/cook_book.md for more
 information.
 """
+from __future__ import unicode_literals
 
 __author__ = 'wan@google.com (Zhanyong Wan)'
 

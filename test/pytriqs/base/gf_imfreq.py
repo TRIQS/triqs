@@ -1,3 +1,5 @@
+from __future__ import division
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -19,6 +21,8 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
+from builtins import range
+from past.utils import old_div
 from pytriqs.archive import *
 from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
@@ -28,7 +32,7 @@ from math import pi
 beta =10 
 
 def matsu(n) : 
-   return (2*n+1)*pi/beta * 1j
+   return old_div((2*n+1)*pi,beta * 1j)
 
 g = GfImFreq(indices = [1,2], beta = beta, n_points = 100)
 g << inverse(iOmega_n + 2.0) 
@@ -37,7 +41,7 @@ X = np.array([ g.mesh(n).imag  for n in range(3)])
 Y = np.array([ g(n)[0,0]            for n in range(3)])
 
 X_r = np.array([ matsu(n).imag   for n in range(3)])
-Y_r = np.array([ 1/(matsu(n) +2) for n in range(3)])
+Y_r = np.array([ old_div(1,(matsu(n) +2)) for n in range(3)])
 
 assert_arrays_are_close(X, X_r) 
 assert_arrays_are_close(Y, Y_r) 

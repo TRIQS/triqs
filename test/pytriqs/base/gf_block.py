@@ -1,8 +1,9 @@
+from __future__ import unicode_literals
 from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 from pytriqs.archive import *
 
-from itertools import izip, product
+from itertools import product
 import unittest
 
 class test_Gf_Block(unittest.TestCase):

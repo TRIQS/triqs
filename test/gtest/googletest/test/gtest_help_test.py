@@ -36,6 +36,7 @@ SYNOPSIS
          # where BUILD/DIR contains the built gtest_help_test_ file.
        gtest_help_test.py
 """
+from __future__ import unicode_literals
 
 import os
 import re

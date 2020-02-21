@@ -36,6 +36,7 @@ A user can ask Google Test to list all tests by specifying the
 by invoking googletest-list-tests-unittest_ (a program written with
 Google Test) the command line flags.
 """
+from __future__ import unicode_literals
 
 import re
 import gtest_test_utils
