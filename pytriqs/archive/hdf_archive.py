@@ -383,13 +383,16 @@ class HDFArchive(HDFArchiveGroup):
         assert open_flag in ['r','w','a'], "Invalid mode"
         assert isinstance(url_name,str), "url_name must be a string"
 
-        # If it is an url , retrieve if and check mode is read only
-        import urllib.request, urllib.parse, urllib.error
-        LocalFileName, http_message = urllib.request.urlretrieve (url_name) if open_flag == 'r' else (url_name, None)
-        if LocalFileName != url_name : # this was not a local file, so it must be read only
+        # If it is a url, retrieve it and check mode is read only
+        import urllib.request
+        try:
+            LocalFileName, http_message = urllib.request.urlretrieve(url_name)
+            # a url must be read only
             assert open_flag == 'r', "You retrieve a distant Url %s which is not local, so it must be read-only. Use 'r' option"%url_name
+        except ValueError: # Not a valid URL -> Local File
+            LocalFileName, http_message = url_name, None
 
-        if open_flag == 'w' :
+        if open_flag == 'w':
             # destroys the file, ignoring errors
             try: os.remove(os.path.abspath(LocalFileName))
             except OSError: pass
