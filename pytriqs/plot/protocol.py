@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 ##########################################################################
 #
@@ -20,6 +21,9 @@
 #
 ##########################################################################
 
+from builtins import next
+from builtins import str
+from builtins import zip
 import numpy
 
 
@@ -64,7 +68,7 @@ def plot_protocol_apply(ob, opt_dict, xlims):
         Y = numpy.array([ob(x) for x in X])
     else:
         try: # generator x,y
-            X, Y = izip(*ob)
+            X, Y = zip(*ob)
         except:
             raise RuntimeError("Object cannot be plotted")
 

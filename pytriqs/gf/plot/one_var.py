@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from . import plot_base
 
 #---------------------------------------------------------------
@@ -23,7 +24,7 @@ def imfreq(self, opt_dict):
                      name of the gf for the label and legend
     """
     return plot_base.plot_base( self, opt_dict,  r'$\omega_n$',
-            lambda x : r'%s$(i\omega_n)$'%x, [x.imag for x in self.mesh.values()] )
+            lambda x : r'%s$(i\omega_n)$'%x, [x.imag for x in list(self.mesh.values())] )
 
 #----------------------------------------------------------------
 

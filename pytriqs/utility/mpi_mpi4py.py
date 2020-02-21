@@ -1,4 +1,6 @@
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -21,6 +23,9 @@ from __future__ import print_function
 #
 ################################################################################
 
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import os,sys,datetime
 myprint_err = lambda x : sys.stderr.write("%s\n"%x)
 myprint_out = lambda x : sys.stdout.write("%s\n"%x)
@@ -77,12 +82,12 @@ def report(*x,**opt):
           myflush() # be sure to flush the buffer!  
         
 def slice_inf(imin,imax) : 
-  j=(imax - imin + 1)/size
+  j=old_div((imax - imin + 1),size)
   i= imax - imin + 1 - size*j
   return imin + rank*(j+1)  if  rank<=i-1 else imin + rank*j + i
 
 def slice_sup(imin,imax) :
-  j=(imax - imin + 1)/size
+  j=old_div((imax - imin + 1),size)
   i= imax - imin + 1 - size*j;
   return imin + (rank+1)*(j+1) -1  if  rank<=i-1  else imin + (rank+1)*j  + i - 1
 
@@ -109,6 +114,6 @@ def master_gets_host_names():
     
     if is_master_node() :
       print("Hostnames : ")
-      for u,host in HostNames.items() :
+      for u,host in list(HostNames.items()) :
         print("Node %d  on machine %s"%(u,host))
 

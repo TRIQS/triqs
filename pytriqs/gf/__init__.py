@@ -26,6 +26,7 @@ It is imported with the command::
   >>> from pytriqs.gf import *
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from .mesh_point import MeshPoint, MeshValueGenerator
 from .gf import *

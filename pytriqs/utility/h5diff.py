@@ -1,4 +1,7 @@
 from __future__ import print_function
+from __future__ import unicode_literals
+from builtins import zip
+from builtins import range
 from pytriqs.archive import *
 from pytriqs.utility.comparison_tests import *
 from pytriqs.gf import *
@@ -22,7 +25,7 @@ def compare(key, a, b, level, precision):
         if t == dict or isinstance(a, HDFArchiveGroup) :
             if list(a.keys()) != list(b.keys()):
                 failures.append("Two archive groups '%s' with different keys \n %s \n vs\n %s"%(key,list(a.keys()), list(b.keys())))
-            for k in set(a.keys()).intersection(b.keys()):
+            for k in set(a.keys()).intersection(list(b.keys())):
                 compare(key + '/'+ k, a[k], b[k], level + 1, precision)
 
         # The TRIQS object which are comparable starts here ....

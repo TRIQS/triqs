@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -21,6 +23,12 @@ from __future__ import absolute_import
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
+from builtins import filter
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import itertools, warnings, numbers
 from functools import reduce # Valid in Python 2.6+, required in Python 3
 import operator
@@ -37,13 +45,14 @@ from . import gf_fnt, wrapped_aux
 from .gf_fnt import GfIndices
 from .mesh_point import MeshPoint
 from operator import mul
+from future.utils import with_metaclass
 
 # list of all the meshes
-all_meshes = (MeshProduct,) + tuple(c for c in meshes.__dict__.values() if isinstance(c, type) and c.__name__.startswith('Mesh'))
+all_meshes = (MeshProduct,) + tuple(c for c in list(meshes.__dict__.values()) if isinstance(c, type) and c.__name__.startswith('Mesh'))
 # list of call_proxies
-all_call_proxies = dict( (c.__name__, c) for c in wrapped_aux.__dict__.values() if isinstance(c, type) and c.__name__.startswith('CallProxy'))
+all_call_proxies = dict( (c.__name__, c) for c in list(wrapped_aux.__dict__.values()) if isinstance(c, type) and c.__name__.startswith('CallProxy'))
 
-class CallProxyNone:
+class CallProxyNone(object):
     """Default do nothing value"""
     def __init__(self, a):
         pass
@@ -68,15 +77,15 @@ def add_method_helper(a,cls):
 class AddMethod(type): 
     def __init__(cls, name, bases, dct):
         super(AddMethod, cls).__init__(name, bases, dct)
-        for a in [f for f in gf_fnt.__dict__.values() if callable(f)]:
+        for a in [f for f in list(gf_fnt.__dict__.values()) if callable(f)]:
             if not hasattr(cls, a.__name__):
                 setattr(cls, a.__name__, add_method_helper(a,cls))
 
-class Idx:
+class Idx(object):
     def __init__(self, *x):
         self.idx = x[0] if len(x)==1 else x
 
-class Gf(object):
+class Gf(with_metaclass(AddMethod, object)):
     r""" TRIQS Greens function container class
 
     Parameters
@@ -113,8 +122,6 @@ class Gf(object):
 
     """
     
-    __metaclass__ = AddMethod
-    
     _hdf5_data_scheme_ = 'Gf'
 
     def __init__(self, **kw): # enforce keyword only policy 
@@ -138,7 +145,7 @@ class Gf(object):
                     assert i>0, "Target shape elements must be >0"
      
             # mesh
-            assert isinstance(mesh, all_meshes), "Mesh is unknown. Possible type of meshes are %s" % ', '.join(map(lambda m: m.__name__,all_meshes))
+            assert isinstance(mesh, all_meshes), "Mesh is unknown. Possible type of meshes are %s" % ', '.join([m.__name__ for m in all_meshes])
             self._mesh = mesh
 
             # indices
@@ -310,7 +317,7 @@ class Gf(object):
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
         if all(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
-            return self.data[tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) for x,m in itertools.izip(key,self._mesh._mlist))]
+            return self.data[tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) for x,m in zip(key,self._mesh._mlist))]
 
         # If any argument is a MeshPoint, we are slicing the mesh or evaluating
         elif any(isinstance(x, (MeshPoint, Idx)) for x in key):
@@ -321,10 +328,10 @@ class Gf(object):
             for x in key:
                 if isinstance(x, slice) and x != self._full_slice: raise NotImplementedError("Partial slice of the mesh not implemented") 
             # slice the data 
-            k = [x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) if isinstance(x, Idx) else x for x,m in itertools.izip(key,mlist)] + self._target_rank * [slice(0, None)]
+            k = [x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) if isinstance(x, Idx) else x for x,m in zip(key,mlist)] + self._target_rank * [slice(0, None)]
             dat = self._data[k]
             # list of the remaining lists
-            mlist = [m for i,m in itertools.ifilter(lambda tup_im : not isinstance(tup_im[0], (MeshPoint, Idx)), itertools.izip(key, mlist))]
+            mlist = [m for i,m in filter(lambda tup_im : not isinstance(tup_im[0], (MeshPoint, Idx)), zip(key, mlist))]
             assert len(mlist) > 0, "Internal error" 
             mesh = MeshProduct(*mlist) if len(mlist)>1 else mlist[0]
             sing = None 
@@ -373,7 +380,7 @@ class Gf(object):
         # If all arguments are MeshPoint, we are slicing the mesh or evaluating
         elif all(isinstance(x, (MeshPoint, Idx)) for x in key):
             assert len(key) == self.rank, "wrong number of arguments in [ ]. Expected %s, got %s"%(self.rank, len(key))
-            self.data[tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) for x,m in itertools.izip(key,self._mesh._mlist))] = val
+            self.data[tuple(x.linear_index if isinstance(x, MeshPoint) else m.index_to_linear(x.idx) for x,m in zip(key,self._mesh._mlist))] = val
 
         else:
             self[key] << val
@@ -560,7 +567,7 @@ class Gf(object):
         return c
     # ---------- Division
     def __idiv__(self,arg):
-        if descriptor_base.is_lazy(arg): return lazy_expressions.make_lazy(self) /arg
+        if descriptor_base.is_lazy(arg): return old_div(lazy_expressions.make_lazy(self),arg)
         self._data[:] /= arg
         return self
 

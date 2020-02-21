@@ -1,3 +1,8 @@
+from __future__ import division
+from __future__ import unicode_literals
+from builtins import str
+from builtins import range
+from past.utils import old_div
 from scipy.interpolate import griddata
 import numpy as np
 
@@ -38,8 +43,8 @@ def length(path):
 def generate_points(A,B, n_points):
         pts=[]
         for i in range(n_points):
-            x=A[0]+(B[0]-A[0])/(n_points-1)*i
-            y=A[1]+(B[1]-A[1])/(n_points-1)*i
+            x=A[0]+old_div((B[0]-A[0]),(n_points-1)*i)
+            y=A[1]+old_div((B[1]-A[1]),(n_points-1)*i)
             pts.append((x, y))
         return pts
 def generate_points_on_path(path, n_points):
@@ -49,7 +54,7 @@ def generate_points_on_path(path, n_points):
     #n_seg = n_points/n_segs
     high_sym=[0]
     for i in range(len(path)-1):
-        n_seg = int(n_points*dist(path[i],path[i+1])/l_path)
+        n_seg = int(old_div(n_points*dist(path[i],path[i+1]),l_path))
         pts=generate_points(path[i],path[i+1],n_seg)
         
         l_points=list(itertools.chain(l_points,pts))
@@ -116,7 +121,7 @@ def plot(self, opt_dict):
      L,Lpt, high_sym = slice_on_path(self, path=path, method=method)
      xticks_args=(high_sym, ["%1.3f,%1.3f"%(x,y) for x,y in path],)
 
-     default_dict = {'xdata': range(0,len(L)), 
+     default_dict = {'xdata': list(range(0,len(L))), 
                      'ydata': component(Lpt), 
                      'label': r'$G_\mathbf{%s}$'%X_label, 
                      'xlabel': r'$\mathbf{%s}$'%X_label, 

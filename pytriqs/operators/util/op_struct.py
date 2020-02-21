@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from itertools import product
 
 # Set function to make index for GF blocks given spin sn and orbital name on

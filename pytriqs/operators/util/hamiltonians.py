@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from builtins import str
 import operator
 from pytriqs.operators import *
 from .op_struct import *
@@ -251,7 +253,7 @@ def diagonal_part(H):
             (c_dag_ind if dag else c_ind).add(tuple(ind))
         if c_ind == c_dag_ind: # This monomial is of n-type
             n_part += coeff * reduce(operator.mul,
-                              map(lambda dag_ind: c_dag(*dag_ind[1]) if dag_ind[0] else c(*dag_ind[1]),indices),
+                              [c_dag(*dag_ind[1]) if dag_ind[0] else c(*dag_ind[1]) for dag_ind in indices],
                               Operator(1))
     return n_part
 

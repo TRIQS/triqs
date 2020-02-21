@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,10 +20,15 @@
 #
 ################################################################################
 
-from itertools import izip, product, chain
+from builtins import zip
+from builtins import str
+from builtins import map
+from builtins import object
+from itertools import product, chain
 import operator
 import warnings
 import numpy as np
+import collections
 
 class Block2Gf(object):
     """
@@ -72,7 +78,7 @@ class Block2Gf(object):
                 self.__GFlist.append([])
                 for bn2 in name_list2:
                     self.__GFlist[-1].append(block_list(bn1,bn2).copy() if make_copies else block_list(bn1,bn2))
-        elif operator.isSequenceType(block_list):
+        elif isinstance(block_list, collections.Sequence):
             try:
                 assert len(block_list) == len(name_list1), "incorrect outer size of block_list"
                 for g_row in block_list:
@@ -114,14 +120,14 @@ class Block2Gf(object):
     def copy_from(self, G2):
         """Copy the Green's function from G2: G2 MUST have the same structure!"""
         assert isinstance(G2, Block2Gf)
-        for (i,g), (i2,g2) in izip(self,G2):
+        for (i,g), (i2,g2) in zip(self,G2):
            assert g.data.shape == g2.data.shape, "Blocks %s and %s of the Green Function do have the same dimension"%(i1,i2)
-        for (i,g),(i2,g2) in izip(self,G2): g.copy_from(g2)
+        for (i,g),(i2,g2) in zip(self,G2): g.copy_from(g2)
 
      #--------------  Iterators -------------------------
 
     def __iter__(self):
-        return izip(product(self.__indices1, self.__indices2), chain.from_iterable(self.__GFlist))
+        return zip(product(self.__indices1, self.__indices2), chain.from_iterable(self.__GFlist))
 
     #---------------------------------------------------------------------------------
 
@@ -159,7 +165,7 @@ class Block2Gf(object):
             # A bit hacky...
             mesh_dim = len(g.mesh.components) if hasattr(g.mesh, 'components') else 1
             target_shape = g.data.shape[mesh_dim:]
-            for i in product(*map(range, target_shape)):
+            for i in product(*list(map(range, target_shape))):
                 yield (sig[0],sig[1]) + i
 
     @property
@@ -243,9 +249,9 @@ class Block2Gf(object):
     def __iadd__(self,arg):
         if isinstance(arg, self.__class__):
             for bn, g in self: self[bn] += arg[bn]
-        elif operator.isSequenceType(arg):
+        elif isinstance(arg, collections.Sequence):
             assert len(arg) == len(self.__GFlist), "list of incorrect length"
-            for l, (bn, g) in izip(arg,self.__GFlist): self[bn] += l
+            for l, (bn, g) in zip(arg,self.__GFlist): self[bn] += l
         else:
             for bn, g in self: self[bn] += arg
         return self
@@ -260,9 +266,9 @@ class Block2Gf(object):
     def __isub__(self,arg):
         if isinstance(arg, self.__class__):
            for bn, g in self: self[bn] -= arg[bn]
-        elif operator.isSequenceType(arg):
+        elif isinstance(arg, collections.Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
-            for l, (bn, g) in izip(arg,self.__GFlist): self[bn] -= l
+            for l, (bn, g) in zip(arg,self.__GFlist): self[bn] -= l
         else:
             for bn, g in self: self[bn] -= arg
         return self
@@ -280,9 +286,9 @@ class Block2Gf(object):
     def __imul__(self,arg):
         if isinstance(arg, self.__class__):
             for bn, g in self: self[bn] *= arg[bn]
-        elif operator.isSequenceType(arg):
+        elif isinstance(arg, collections.Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
-            for l, (bn, g) in izip(arg,self.__GFlist): self[bn] *= l
+            for l, (bn, g) in zip(arg,self.__GFlist): self[bn] *= l
         else:
             for bn, g in self: self[bn] *= arg
         return self
@@ -295,9 +301,9 @@ class Block2Gf(object):
     def __rmul__(self,x): return self.__mul__(x)
 
     def __idiv__(self,arg):
-        if operator.isSequenceType(arg):
+        if isinstance(arg, collections.Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
-            for l, (bn, g) in izip(arg,self.__GFlist): self[bn] /= l
+            for l, (bn, g) in zip(arg,self.__GFlist): self[bn] /= l
         else:
             for bn, g in self: self[bn] /= arg
         return self

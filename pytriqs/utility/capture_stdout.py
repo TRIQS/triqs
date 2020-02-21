@@ -1,4 +1,7 @@
-from cStringIO import StringIO
+from __future__ import unicode_literals
+from future import standard_library
+standard_library.install_aliases()
+from io import StringIO
 import sys
 
 # This class allows us to capture the stdout into a list of strings

@@ -1,4 +1,8 @@
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import math
 def dist(x,y):
@@ -54,7 +58,7 @@ def closest_to(A,B, L, verbose=False):
   closest_indices_final=[]
 
   for i in range(Nmesh):
-   current_point = A +(B-A)*(i*1.0/(Nmesh-1));
+   current_point = A +(B-A)*(old_div(i*1.0,(Nmesh-1)));
    if verbose: print(" current_point is ",current_point)
    closest = closest_point_in_line(current_point,L)[0];
 #print " closest point is ",closest
@@ -77,8 +81,8 @@ def select_path_indices(path,mesh,verbose=False):
    closest_indices = closest_to(start,end,mesh);
    if i==0:  
     high_sym_pts_indices.append((0,closest_indices[0]))
-    ratio = dist(start,end)/ len(closest_indices)
-   stride = int(round(len(closest_indices)/dist(start,end)*ratio ))
+    ratio = old_div(dist(start,end), len(closest_indices))
+   stride = int(round(old_div(len(closest_indices),dist(start,end)*ratio) ))
    #if verbose: print "stride = ",stride
    closest_indices = pick_selection_vec(closest_indices,stride )
    path_indices.extend( closest_indices)

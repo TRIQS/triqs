@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -21,6 +22,9 @@ from __future__ import absolute_import
 #
 ################################################################################
 
+from builtins import str
+from builtins import range
+from builtins import object
 __all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
            'hopping_stack', 'TBLattice']
 
@@ -54,13 +58,13 @@ def dos_patch(tight_binding, triangles, n_eps, n_div, name) :
     return DOS (eps, arr, name)
 
 # for backward compatibility. Not documented. 
-class TBLattice:
+class TBLattice(object):
 
     def __init__ (self, units, hopping, orbital_positions = [ (0, 0, 0) ], orbital_names = [""]):
 
         # the k are int32 which boost python does like to convert 
         def reg(k) : return tuple( int(x) for x in k) 
-        self._hop = dict ( ( reg(k), numpy.array(v)) for k, v in hopping.items())
+        self._hop = dict ( ( reg(k), numpy.array(v)) for k, v in list(hopping.items()))
         orb = dict ( (str(i), orb) for (i, orb) in enumerate(orbital_positions ))
         self.bl = BravaisLattice(units, orbital_positions)
         self.bz = BrillouinZone(self.bl)

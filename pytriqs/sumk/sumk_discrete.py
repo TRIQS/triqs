@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -20,13 +21,15 @@
 #
 ################################################################################
 
+from builtins import zip
+from builtins import object
 from pytriqs.gf import *
 import pytriqs.utility.mpi as mpi
 from itertools import *
 import inspect
 import copy,numpy
 
-class SumkDiscrete:
+class SumkDiscrete(object):
     """
       INTERNAL USE
       The function to compute \[ G \leftarrow \sum_k (\omega + \mu - eps_k - Sigma(k,\omega))^{-1} \]
@@ -140,7 +143,7 @@ class SumkDiscrete:
         if not Sigma_fnt: tmp -= Sigma  # substract Sigma once for all
 
         # Loop on k points...
-        for w, k, eps_k in izip(*[mpi.slice_array(A) for A in [self.bz_weights, self.bz_points, self.hopping]]):
+        for w, k, eps_k in zip(*[mpi.slice_array(A) for A in [self.bz_weights, self.bz_points, self.hopping]]):
 
             eps_hat = epsilon_hat(eps_k) if epsilon_hat else eps_k
             tmp2 << tmp

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from builtins import zip
 import numpy as np
 
 def assert_arrays_are_close(a, b, precision = 1.e-6):

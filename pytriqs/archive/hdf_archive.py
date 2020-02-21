@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -22,6 +23,10 @@ from __future__ import absolute_import
 #
 ################################################################################
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import sys,numpy
 from .hdf_archive_basic_layer_h5py import HDFArchiveGroupBasicLayer
 
@@ -32,32 +37,32 @@ from pytriqs.archive.hdf_archive_schemes import hdf_scheme_access_for_write, hdf
 #  Various wrappers for basic python types.
 #
 # --------------------------------------------
-class PythonListWrap:
+class PythonListWrap(object):
     def __init__(self,ob) :
         self.ob = ob
     def __reduce_to_dict__(self) :
         return {str(n):v for n,v in enumerate(self.ob)}
     @classmethod
     def __factory_from_dict__(cls, name, D) :
-        return [x for n,x in sorted([(int(n), x) for n,x in D.items()])]
+        return [x for n,x in sorted([(int(n), x) for n,x in list(D.items())])]
 
-class PythonTupleWrap:
+class PythonTupleWrap(object):
     def __init__(self,ob) :
         self.ob = ob
     def __reduce_to_dict__(self) :
         return {str(n):v for n,v in enumerate(self.ob)}
     @classmethod
     def __factory_from_dict__(cls, name, D) :
-        return tuple(x for n,x in sorted([(int(n), x) for n,x in D.items()]))
+        return tuple(x for n,x in sorted([(int(n), x) for n,x in list(D.items())]))
 
-class PythonDictWrap:
+class PythonDictWrap(object):
     def __init__(self,ob) :
         self.ob = ob
     def __reduce_to_dict__(self) :
-        return {str(n):v for n,v in self.ob.items()}
+        return {str(n):v for n,v in list(self.ob.items())}
     @classmethod
     def __factory_from_dict__(cls, name, D) :
-        return {n:x for n,x in D.items()}
+        return {n:x for n,x in list(D.items())}
 
 register_class (PythonListWrap)
 register_class (PythonTupleWrap)
@@ -91,7 +96,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         if key in self.ignored_keys :
             raise KeyError("key %s is reserved"%key)
         if self.key_as_string_only : # for bacward compatibility
-            if type(key) not in (str,unicode):
+            if type(key) not in (str,str):
                 raise KeyError("Key must be string only !")
             return key
         r = repr(key)
@@ -111,7 +116,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
     #-------------------------------------------------------------------------
     def __contains__(self,key) :
         key= self._key_cipher(key)
-        return key in self.keys()
+        return key in list(self.keys())
 
     #-------------------------------------------------------------------------
     def values(self) :
@@ -119,7 +124,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         Generator returning the values in the group
         """
         def res() :
-            for name in self.keys() :
+            for name in list(self.keys()) :
                 yield self[name]
         return res()
 
@@ -129,7 +134,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         Generator returning couples (key, values) in the group.
         """
         def res() :
-            for name in self.keys():
+            for name in list(self.keys()):
                 yield name, self[name]
         return res()
 
@@ -137,18 +142,18 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
     def __iter__(self) :
         """Returns the keys, like a dictionary"""
         def res() :
-            for name in self.keys() :
+            for name in list(self.keys()) :
                 yield name
         return res()
 
     #-------------------------------------------------------------------------
     def __len__(self) :
         """Returns the length of the keys list """
-        return  len(self.keys())
+        return  len(list(self.keys()))
 
     #-------------------------------------------------------------------------
     def update(self,object_with_dict_protocol):
-        for k,v in object_with_dict_protocol.items() : self[k] = v
+        for k,v in list(object_with_dict_protocol.items()) : self[k] = v
 
     #-------------------------------------------------------------------------
     def __delitem__(self,key) :
@@ -160,7 +165,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         assert '/' not in key, "/ can not be part of a key"
         key= self._key_cipher(key)# first look if key is a string or key
 
-        if key in self.keys() :
+        if key in list(self.keys()) :
             if self.options['do_not_overwrite_entries'] : raise KeyError("key %s already exist."%key)
             self._clean_key(key) # clean things
 
@@ -193,7 +198,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             d = val.__reduce_to_dict__()
             if not isinstance(d,dict) : raise ValueError(" __reduce_to_dict__ method does not return a dict. See the doc !")
             SUB = HDFArchiveGroup(self,key)
-            for n,v in d.items() : SUB[n] = v
+            for n,v in list(d.items()) : SUB[n] = v
             write_attributes(SUB)
         elif isinstance(val,numpy.ndarray) : # it is a numpy
             try :
@@ -204,7 +209,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         elif isinstance(val, HDFArchiveGroup) : # will copy the group recursively
             # we could add this for any object that has .items() in fact...
             SUB = HDFArchiveGroup(self, key)
-            for k,v in val.items() : SUB[k]=v
+            for k,v in list(val.items()) : SUB[k]=v
         else : # anything else... expected to be a scalar
             try :
                self._write_scalar( key, val)
@@ -286,7 +291,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
                 raise ValueError("oopps %s"%name)
 
         s= "HDFArchive%s with the following content:\n"%(" (partial view)" if self.is_top_level else '')
-        s+='\n'.join([ '  '+ pr(n) for n in self.keys() ])
+        s+='\n'.join([ '  '+ pr(n) for n in list(self.keys()) ])
         return s
 
     #-------------------------------------------------------------------------
@@ -378,8 +383,8 @@ class HDFArchive(HDFArchiveGroup):
         assert isinstance(url_name,str), "url_name must be a string"
 
         # If it is an url , retrieve if and check mode is read only
-        import urllib
-        LocalFileName, http_message = urllib.urlretrieve (url_name) if open_flag == 'r' else (url_name, None)
+        import urllib.request, urllib.parse, urllib.error
+        LocalFileName, http_message = urllib.request.urlretrieve (url_name) if open_flag == 'r' else (url_name, None)
         if LocalFileName != url_name : # this was not a local file, so it must be read only
             assert open_flag == 'r', "You retrieve a distant Url %s which is not local, so it must be read-only. Use 'r' option"%url_name
 
@@ -411,7 +416,7 @@ class HDFArchive(HDFArchiveGroup):
 
 #--------------------------------------------------------------------------------
 
-class HDFArchiveInert:
+class HDFArchiveInert(object):
     """
     A fake class for the node in MPI. It does nothing, but
     permits to write simply :

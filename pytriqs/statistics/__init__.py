@@ -24,6 +24,7 @@ DOC
 
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from .histograms import Histogram, cdf, pdf
 
 __all__ = ['Histogram', 'cdf', 'pdf']

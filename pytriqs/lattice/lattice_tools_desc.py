@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from cpp2py.wrap_generator import *
 
 module = module_(full_name = "pytriqs.lattice.lattice_tools", doc = "Lattice tools (to be improved)")

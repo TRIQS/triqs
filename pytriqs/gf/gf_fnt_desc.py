@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from cpp2py.wrap_generator import *
 
 # This modules contains functions that take a Green function as a first argument
@@ -134,7 +135,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
     # === Matsubara and ReTime/Freq Fourier
     for Meshes in [["imtime", "imfreq"], ["imfreq", "imtime"], ["retime", "refreq"], ["refreq", "retime"]]:
         for gf_type in ["gf", "block_gf", "block2_gf"]:
-	    gf_view_type = gf_type +  '_view'
+            gf_view_type = gf_type +  '_view'
 
             # set_from_fourier
             m.add_function("void set_from_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_view_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
@@ -160,7 +161,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
     # === Lattice Fourier
     for Meshes in [["cyclic_lattice", "brillouin_zone"], ["brillouin_zone", "cyclic_lattice"]]:
         for gf_type in ["gf", "block_gf", "block2_gf"]:
-	    gf_view_type = gf_type +  '_view'
+            gf_view_type = gf_type +  '_view'
             # set_from_fourier
             m.add_function("void set_from_fourier(%s<%s, %s> g_out, %s<%s, %s> g_in)"%(gf_view_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),
                     calling_pattern = "g_out = fourier(g_in)",

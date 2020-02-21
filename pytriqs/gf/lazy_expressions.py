@@ -1,3 +1,8 @@
+from __future__ import division
+from __future__ import unicode_literals
+from builtins import map
+from builtins import object
+from past.utils import old_div
 from functools import reduce
 
 ################################################################################
@@ -39,9 +44,9 @@ class __aux(object):
     def __iadd__(self, y): return self.set_from(self+y)
     def __isub__(self, y): return self.set_from(self-y)
     def __imul__(self, y): return self.set_from(self*y)
-    def __idiv__(self, y): return self.set_from(self/y)
+    def __idiv__(self, y): return self.set_from(old_div(self,y))
 
-    def __call__(self, *args): return LazyExpr("F", make_lazy(self), *map(make_lazy, args))
+    def __call__(self, *args): return LazyExpr("F", make_lazy(self), *list(map(make_lazy, args)))
 
 class LazyExprTerminal (__aux):
     pass
@@ -97,11 +102,11 @@ def eval_expr_with_context(eval_term, expr ):
 
     if expr.tag == "F":
         f = expr.childs[0].get_terminal()[1]
-        return f (*map(lambda e:eval_expr_with_context(eval_term, e) , expr.childs[1:]) )
+        return f (*[eval_expr_with_context(eval_term, e) for e in expr.childs[1:]] )
 
     # Binary operations:
-    ops = { "+": lambda x, y: x + y, "-": lambda x, y: x - y, "*": lambda x, y: x * y, "/": lambda x, y: x / y }
-    return ops[expr.tag] (*map(lambda e:eval_expr_with_context(eval_term, e) , expr.childs) )
+    ops = { "+": lambda x, y: x + y, "-": lambda x, y: x - y, "*": lambda x, y: x * y, "/": lambda x, y: old_div(x, y) }
+    return ops[expr.tag] (*[eval_expr_with_context(eval_term, e) for e in expr.childs] )
 
 #-----------------------------------------------------
 
@@ -121,8 +126,8 @@ def transform (expr, Fnode, Fterm = lambda x: x ):
            it transforms the expression recursively
     """
     if expr.tag == "T": return LazyExpr("T", Fterm(expr.childs[0]))
-    tag, ch = Fnode (expr.tag, map(lambda e: transform (e, Fnode), expr.childs))
-    ch = map(lambda x: LazyExpr(x), ch)
+    tag, ch = Fnode (expr.tag, [transform (e, Fnode) for e in expr.childs])
+    ch = [LazyExpr(x) for x in ch]
     return LazyExpr (tag, *ch)
 
 #-----------------------------------------------------

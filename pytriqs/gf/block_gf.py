@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +20,13 @@ from __future__ import absolute_import
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from itertools import izip
+from builtins import zip
+from builtins import map
+from builtins import str
+from builtins import range
+from builtins import object
+import collections
+
 from .gf import Gf
 import operator
 import warnings
@@ -64,7 +71,7 @@ class BlockGf(object):
         # Default arguments
         if set(kwargs.keys()) == set(['mesh','gf_struct']):
             kwargs['target_rank'] = 2
-        if 'block_list' in kwargs.keys() and 'make_copies' not in kwargs.keys():
+        if 'block_list' in list(kwargs.keys()) and 'make_copies' not in list(kwargs.keys()):
             kwargs['make_copies'] = False
         if set(kwargs.keys()) == set(['block_list','make_copies']):
             kwargs['name_list'] = [str(i) for i in range(len(kwargs['block_list']))]
@@ -82,7 +89,7 @@ class BlockGf(object):
                 else:
                     GFlist.append(Gf(mesh=kwargs['mesh'], target_shape=[], name='G_%s'%bl))
         elif set(kwargs.keys()) == set(['name_block_generator','make_copies']):
-            BlockNameList,GFlist = zip(* kwargs['name_block_generator'])
+            BlockNameList,GFlist = list(zip(* kwargs['name_block_generator']))
         else:
             raise RuntimeError("BlockGf construction: error in parameters, see the documentation")
 
@@ -135,15 +142,15 @@ class BlockGf(object):
     def copy_from(self, G2):
         """Copy the Green's function from G2: G2 MUST have the same structure!"""
         assert isinstance(G2, BlockGf)
-        for (i,g),(i2,g2) in itertools.izip(self,G2): 
+        for (i,g),(i2,g2) in zip(self,G2): 
            if  (g.target_shape[0],g.target_shape[1]) != (g2.target_shape[0],g2.target_shape[1]): 
                raise RuntimeError("Blocks %s and %s of the Green Function do have the same dimension"%(i1,i2)) 
-        for (i,g),(i2,g2) in itertools.izip(self,G2): g.copy_from(g2)
+        for (i,g),(i2,g2) in zip(self,G2): g.copy_from(g2)
 
      #--------------  Iterators -------------------------
 
     def __iter__(self):
-        return izip(self.__indices,self.__GFlist)
+        return zip(self.__indices,self.__GFlist)
 
     #---------------------------------------------------------------------------------
 
@@ -233,7 +240,7 @@ class BlockGf(object):
         # indices : for backward compatibility. indices is str repr of the
         # indices list and we need to  drop name and note ...
         # block_names in str-mapped just to make sure that the key are python str (they could be numpy.string_, see __reduce_to_dict__)
-        keys = map(str,d.pop('block_names')) if 'block_names' in d else eval(d.pop('indices'))
+        keys = list(map(str,d.pop('block_names'))) if 'block_names' in d else eval(d.pop('indices'))
         assert (sorted(keys) == sorted(d.keys())) or (sorted(keys + ['note',
             'name']) == sorted(d.keys())),  "Reload mismatch: the indices and the group names do not corresponds"
         res = cls(name_list = keys, block_list = [d[k] for k in keys], make_copies=False, name=name)
@@ -305,9 +312,9 @@ class BlockGf(object):
     def __iadd__(self,arg):
         if isinstance(arg, self.__class__):
             for (n,g) in self: self[n] += arg[n]
-        elif operator.isSequenceType(arg):
+        elif isinstance(arg, collections.Sequence):
             assert len(arg) == len(self.__GFlist), "list of incorrect length"
-            for l,g in izip(arg,self.__GFlist): g +=l
+            for l,g in zip(arg,self.__GFlist): g +=l
         else:
             for i,g in self: g += arg
         return self
@@ -322,9 +329,9 @@ class BlockGf(object):
     def __isub__(self,arg):
         if isinstance(arg, self.__class__):
            for (n,g) in self: self[n] -= arg[n]
-        elif operator.isSequenceType(arg):
+        elif isinstance(arg, collections.Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
-            for l,g in izip(arg,self.__GFlist): g -=l
+            for l,g in zip(arg,self.__GFlist): g -=l
         else:
             for i,g in self: g -= arg
         return self
@@ -354,9 +361,9 @@ class BlockGf(object):
     def __rmul__(self,x): return self.__mul__(x)
 
     def __idiv__(self,arg):
-        if operator.isSequenceType(arg):
+        if isinstance(arg, collections.Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
-            for l,g in izip(arg,self.__GFlist): g /=l
+            for l,g in zip(arg,self.__GFlist): g /=l
         else:
             for i,g in self: self[i] /= arg
         return self

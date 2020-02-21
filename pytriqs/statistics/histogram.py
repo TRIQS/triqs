@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import unicode_literals
+from past.utils import old_div
 import numpy as np
 
 # Only the plot function, everything else is wrrapped from c++
@@ -21,8 +24,8 @@ def plot(self, optional_dict):
 
     plot_type = optional_dict.pop('type','XY')
     bin_centres = np.linspace(self.limits[0],self.limits[1],len(self))
-    bin_width = optional_dict.pop('width', (self.limits[1] - self.limits[0])/(len(self) - 1))
-    bin_edges = bin_centres - ((bin_width/2) if plot_type=='bar' else 0)
+    bin_width = optional_dict.pop('width', old_div((self.limits[1] - self.limits[0]),(len(self) - 1)))
+    bin_edges = bin_centres - ((old_div(bin_width,2)) if plot_type=='bar' else 0)
 
     default_dict = {'xdata': bin_edges, 
                     'ydata': self.data, 

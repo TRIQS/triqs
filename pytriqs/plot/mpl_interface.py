@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 ##########################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -21,6 +22,8 @@ from __future__ import absolute_import
 #
 ##########################################################################
 
+from builtins import str
+from builtins import range
 __all__ = ['plt', 'oplot', 'oploti', 'oplotr', 'subplots']
 
 import numpy
@@ -95,7 +98,7 @@ def __oplot_impl(top, xlabel_fct, ylabel_fct, legend_fct, obj, xticks_fct,  titl
         is_legend = curve_dict.pop('legend',True)
 
         try:
-         if "zdata" in curve_dict.keys():
+         if "zdata" in list(curve_dict.keys()):
             Z = curve_dict.pop('zdata')
             plt_fct(X, Y, Z, *opt_list, **curve_dict)
          else:

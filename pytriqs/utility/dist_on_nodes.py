@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -21,10 +22,16 @@ from __future__ import print_function
 #
 ################################################################################
 
-import os,sys,time,cPickle
+from future import standard_library
+standard_library.install_aliases()
+from builtins import filter
+from builtins import next
+from builtins import range
+from builtins import object
+import os,sys,time,pickle
 import pytriqs.utility.mpi as mpi
 
-class DistributionOnNodes:
+class DistributionOnNodes(object):
     """
        Distribution of the calculation of a function over the nodes.
        Derive from it and reimplement :
@@ -72,7 +79,7 @@ class DistributionOnNodes:
                   if value !=None : self.treate(*value)
                   node_running[T[1].source] = False
                   return False
-              RequestList = filter(keep_request,RequestList)
+              RequestList = list(filter(keep_request,RequestList))
               # send new calculation to the nodes or "stop" them
               for node in [ n for n in range(1,mpi.size) if not(node_running[n] or node_stopped[n]) ] :
                   #open('tmp','a').write("master : comm to node %d %s\n"%(node,self.finished()))
@@ -87,7 +94,7 @@ class DistributionOnNodes:
               # Look if the child process on the master has self.finished.
               if not(pid) or os.waitpid(pid,os.WNOHANG) :
                   if pid :
-                      RR = cPickle.load(open("res_master",'r'))
+                      RR = pickle.load(open("res_master",'r'))
                       if RR != None : self.treate(*RR)
                   if not(self.finished()) :
                       pid=os.fork();
@@ -97,7 +104,7 @@ class DistributionOnNodes:
                               res = self.the_function(currently_calculated_by_master)
                           else:
                               res = None
-                          cPickle.dump((res,mpi.rank),open('res_master','w'))
+                          pickle.dump((res,mpi.rank),open('res_master','w'))
                           os._exit(0) # Cf python doc. Used for child only.
                   else : pid=0
               if (pid): time.sleep(self.SleepTime) # so that most of the time is for the actual calculation on the master
@@ -131,7 +138,7 @@ class DistributionOnNodesOneStack(DistributionOnNodes) :
     def finished(self):
         return self.__l==[]
     
-    def next(self):
+    def __next__(self):
         return self.__l.pop()
 
     def result(self) : return self.__result
@@ -149,7 +156,7 @@ class DistributionOnNodesTest(DistributionOnNodesOneStack) :
         return (x,x+1,x+2)
 
 if __name__ == '__main__' : 
-    d = DistributionOnNodesTest(range(21))
+    d = DistributionOnNodesTest(list(range(21)))
     d.run()
     if mpi.rank==0 :
         print(d.result())

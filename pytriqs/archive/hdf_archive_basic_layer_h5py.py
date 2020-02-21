@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -22,8 +23,11 @@ from __future__ import print_function
 ################################################################################
 
 # h5py
+from builtins import str
+from builtins import map
+from builtins import object
 import numpy,string,h5py
-class HDFArchiveGroupBasicLayer :
+class HDFArchiveGroupBasicLayer(object) :
     _class_version = 1
 
     def __init__(self, parent, subpath ):
@@ -32,7 +36,7 @@ class HDFArchiveGroupBasicLayer :
         self._group = parent._group[subpath] if subpath else parent._group
         assert type(self._group) in [h5py.Group,h5py.File], "Internal error"
         self.ignored_keys = [] 
-        self.cached_keys = self._group.keys()
+        self.cached_keys = list(self._group.keys())
 
     def _init_root(self, LocalFileName, open_flag) :
         try :
@@ -89,7 +93,7 @@ class HDFArchiveGroupBasicLayer :
             if type(v) in [n.bool_] : return bool(v)
             if type(v) in [n.str_, n.string_] : return str(v)
             # converts the array of numpy string into a list of normal python strings
-            if type(v) is n.ndarray and v.dtype.type is n.string_ : return map(str,v)
+            if type(v) is n.ndarray and v.dtype.type is n.string_ : return list(map(str,v))
             return v 
 
         return _numpy_scalar_to_python_scalar ( val)

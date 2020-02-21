@@ -1,3 +1,5 @@
+from __future__ import division
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -20,6 +22,7 @@
 #
 ################################################################################
 
+from past.utils import old_div
 import pytriqs.utility.mpi as mpi
 import numpy as np
 
@@ -100,7 +103,7 @@ def dichotomy(function, x_init, y_value, precision_on_y, delta_x,
     #Now let's refine between the bounds
     while (nbre_loop<= max_loops) and (abs(yfound-y_value)>precision_on_y) :
         nbre_loop +=1
-        x = x1  + (x2 - x1) * (y_value - y1)/(y2-y1)
+        x = x1  + old_div((x2 - x1) * (y_value - y1),(y2-y1))
         yfound = function(x)
         if (y1-y_value)*(yfound - y_value)>0 : 
             x1 = x; y1=yfound

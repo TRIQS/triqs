@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -21,6 +23,9 @@ from __future__ import absolute_import
 #
 ################################################################################
 
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 from .sumk_discrete import SumkDiscrete
 from pytriqs.lattice.tight_binding import TBLattice
 
@@ -89,7 +94,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
 	# compute the points where to evaluate the function in the BZ and with the weights
 	def pts1d(N):
 	    for n in range(N):
-		yield (n - N/2 +1.0) / N
+		yield old_div((n - old_div(N,2) +1.0), N)
 
 	if method=="Riemann":
 	    bz_weights=1.0/nk
@@ -106,7 +111,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
 	    for wa,ptsa in NR.Gauleg(-pi,pi,n_bz_A):
 		for wb,ptsb in NR.Gauleg(-pi,pi,n_bz_B):
 		    for wc,ptsc in NR.Gauleg(-pi,pi,n_bz_C):
-			self.bz_points[k_index,:] = (ptsa,ptsb,ptsc)[0:self.dim] /(2*pi)
+			self.bz_points[k_index,:] = old_div((ptsa,ptsb,ptsc)[0:self.dim],(2*pi))
 			self.bz_weights[k_index] = wa * wb * wc
 			k_index +=1
 	else:
@@ -143,7 +148,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
 	"""
 
         tritemp = numpy.array(patch._triangles)
-        ntri = len(tritemp)/3
+        ntri = old_div(len(tritemp),3)
         nk = n_bz*n_bz*ntri
         self.resize_arrays(nk)
 
@@ -154,7 +159,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
 	# Loop over all k-points in the triangles
         k_index = 0
         for (a,b,c),w in zip(triangles,patch._weights):
-          g = ((a+b+c)/3.0-a)/n_bz;
+          g = old_div(((a+b+c)/3.0-a),n_bz);
           for i in range(n_bz):
             s = i/float(n_bz)
             for j in range(n_bz-i):
@@ -163,7 +168,7 @@ class SumkDiscreteFromLattice (SumkDiscrete):
                 rv = a+s*(b-a)+t*(c-a)+(k+1)*g
                 if k == 0 or j < n_bz-i-1:
 	          self.bz_points[k_index]  = rv
-	          self.bz_weights[k_index] = w/(n_bz*n_bz)
+	          self.bz_weights[k_index] = old_div(w,(n_bz*n_bz))
                   total_weight += self.bz_weights[k_index]
                   k_index = k_index+1
 

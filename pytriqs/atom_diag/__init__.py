@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import unicode_literals
 ##############################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems

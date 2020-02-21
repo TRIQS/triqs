@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -20,11 +21,13 @@
 #
 ################################################################################
 
+from builtins import range
+from builtins import object
 import types,string,itertools
 from operator import isSequenceType
 import numpy
 
-class DOS :
+class DOS(object) :
     r"""
 * Stores a density of state of fermions  
 

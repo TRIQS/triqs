@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -20,10 +21,12 @@
 #
 ################################################################################
 
+from builtins import str
+from builtins import object
 from scipy.optimize import leastsq
 import numpy as np, inspect as ins
 
-class Fit:
+class Fit(object):
     """
     A simple general functional fit of a X,Y plot
 

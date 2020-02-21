@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -18,6 +19,10 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
 import itertools
 from functools import reduce # Valid in Python 2.6+, required in Python 3
 import operator
@@ -93,7 +98,7 @@ class MeshProduct(object):
     def index_to_linear(self, idx) :
         """
         """
-        return (x.index_to_linear(i) for x,i in itertools.izip(self._mlist, idx))
+        return (x.index_to_linear(i) for x,i in zip(self._mlist, idx))
 
     def __repr__(self):
         """ """

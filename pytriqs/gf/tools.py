@@ -1,5 +1,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -22,6 +24,8 @@ from __future__ import absolute_import
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
+from builtins import range
+from past.utils import old_div
 from . import lazy_expressions, descriptors, gf_fnt
 from .meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime, MeshLegendre
 from .block_gf import BlockGf
@@ -146,8 +150,8 @@ def read_gf_from_txt(block_txtfiles, block_name):
     block_txtfiles = np.array(block_txtfiles) # Must be an array to use certain functions
     N1,N2 = block_txtfiles.shape
     mesh = np.genfromtxt(block_txtfiles[0,0],usecols=[0]) # Mesh needs to be the same for all blocks
-    g = GfReFreq(indices=range(N1),window=(np.min(mesh),np.max(mesh)),n_points=len(mesh),name=block_name)
-    for i,j in product(range(N1),range(N2)):
+    g = GfReFreq(indices=list(range(N1)),window=(np.min(mesh),np.max(mesh)),n_points=len(mesh),name=block_name)
+    for i,j in product(list(range(N1)),list(range(N2))):
         data = np.genfromtxt(block_txtfiles[i,j],usecols=[1,2])
         g.data[:,i,j] = data[:,0] + 1j*data[:,1]
     return g
@@ -168,7 +172,7 @@ def write_gf_to_txt(g):
         mesh = np.array([w.imag for w in g.mesh]).reshape(-1,1)
     else:
         raise ValueError('write_gf_to_txt: Only GfReFreq and GfImFreq quantities are supported.')
-    for i,j in product(range(g.target_shape[0]),range(g.target_shape[1])):
+    for i,j in product(list(range(g.target_shape[0])),list(range(g.target_shape[1]))):
         txtfile = '%s_%s_%s.dat'%(g.name,i,j)
         redata = g.data[:,i,j].real.reshape((g.data.shape[0],-1))
         imdata = g.data[:,i,j].imag.reshape((g.data.shape[0],-1))
@@ -261,10 +265,10 @@ def fit_legendre(g_t, order=10):
     # Nb! We have to scale the actual Legendre coeffs to the Triqs "scaled" Legendre coeffs
     # see Boehnke et al. PRB (2011)
     l = np.arange(len(lmesh))
-    scale = np.sqrt(2.*l + 1) / mesh.beta
+    scale = old_div(np.sqrt(2.*l + 1), mesh.beta)
     scale = scale.reshape([len(lmesh)] + [1]*len(g_t.target_shape))
     
     g_l = Gf(mesh=lmesh, target_shape=g_t.target_shape)
-    g_l.data[:] = c_l.reshape(g_l.data.shape) / scale
+    g_l.data[:] = old_div(c_l.reshape(g_l.data.shape), scale)
 
     return g_l

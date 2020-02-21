@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -22,6 +23,7 @@ from __future__ import absolute_import
 #
 ################################################################################
 
+from builtins import range
 import numpy
 from .tight_binding import TBLattice
 
@@ -91,7 +93,7 @@ class TBSuperLattice(TBLattice):
             elif dim==2:  a=(2*max(M[0,:]), 2*max(M[1,:]), 0 )
             elif dim==3: a= (3*max(M[0,:]), 3*max(M[1,:]), 3*max(M[2,:]))
             else: raise ValueError("dim is not between 1 and 3 !!")
-            r = lambda i:  range(-a[i] , a[i]+1)
+            r = lambda i:  list(range(-a[i] , a[i]+1))
             for nx in r(0):
                 for ny in r(1):
                     for nz in r(2):
@@ -109,7 +111,7 @@ class TBSuperLattice(TBLattice):
         # Compute the new Hopping in the supercell
         Hopping = self.fold(tb_lattice.hopping_dict(), remove_internal_hoppings)
         if 0:
-            for k, v in Hopping.items():
+            for k, v in list(Hopping.items()):
                 print(k)
                 print(v.real)
 
@@ -121,7 +123,7 @@ class TBSuperLattice(TBLattice):
         Orbital_Positions = [POS + tb_lattice.latt_to_real_x(CS) for POS in tb_lattice.OrbitalPositions for CS in self.__cluster_sites]
 
         #Orbital_Names = [ '%s%s'%(n, s) for n in tb_lattice.OrbitalNames for s in range(Ncluster_sites)]
-        site_index_list, orbital_index_list = range(1, Ncluster_sites+1), tb_lattice.OrbitalNames
+        site_index_list, orbital_index_list = list(range(1, Ncluster_sites+1)), tb_lattice.OrbitalNames
         if len(orbital_index_list)==1:
             Orbital_Names= [ s for s in site_index_list ]
         elif len(site_index_list)==1 and len(orbital_index_list)>1:
@@ -147,10 +149,10 @@ class TBSuperLattice(TBLattice):
             Hence f(r) can be a numpy, a GFBloc, etc...
             """
         #Res , norb = {} , self.__BaseLattice.NOrbitalsInUnitCell
-        Res , norb = {} , len(D1.values()[0])
+        Res , norb = {} , len(list(D1.values())[0])
         pack = self.pack_index_site_orbital
         for nsite, CS in enumerate(self.__cluster_sites):
-            for disp, t in D1.items():
+            for disp, t in list(D1.items()):
                 R, alpha = self.change_coordinates_L_to_SL(numpy.array(CS)+numpy.array(disp))
                 if R not in Res: Res[R] = create_zero() if create_zero else numpy.zeros((self.Norb, self.Norb), dtype = type(t[0,0]))
                 if not(remove_internal) or R!= self.tb_lattice.dim*(0, ):

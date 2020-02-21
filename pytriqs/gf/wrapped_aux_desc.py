@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from builtins import zip
 from cpp2py.wrap_generator import *
 
 # This modules contains utilities that will only be called internally, not by users.

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from builtins import str
 import numpy as np
 #from gf import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime
 

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -60,7 +61,7 @@ class GfLegendre(Gf) :
         """
         def delegate(self, mesh=None, data = None, target_shape=None, indices = None, name='', n_points = 30, beta = None, statistic = 'Fermion'):
             if mesh is None:
-                assert isinstance(beta, (int, long, float)), "If the Mesh is not given, beta is mandatory and must be float"
+                assert isinstance(beta, (int, float)), "If the Mesh is not given, beta is mandatory and must be float"
                 assert isinstance(n_points, int) and n_points >0, "n_points is crazy"
                 mesh = MeshLegendre(beta, statistic, n_points)
         

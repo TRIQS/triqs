@@ -1,5 +1,7 @@
 """Operators for commonly used observables."""
+from __future__ import unicode_literals
 
+from builtins import range
 import numpy as np
 from pytriqs.operators.operators import Operator, n, c_dag, c
 from pytriqs.operators.util.op_struct import get_mkind
@@ -79,7 +81,7 @@ def S_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
     pm = pauli_matrix[component]
 
     S = Operator()
-    spin_range = range(len(spin_names))
+    spin_range = list(range(len(spin_names)))
     for n1, n2 in product(spin_range,spin_range):
         for on in orb_names:
             S += 0.5 * c_dag(*mkind(spin_names[n1],on)) * pm[n1,n2] * c(*mkind(spin_names[n2],on))
@@ -112,7 +114,7 @@ def S2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None)
         The square of the total spin operator.
 
     """
-    Sz, Sp, Sm = map(lambda k: S_op(k,spin_names,orb_names,off_diag,map_operator_structure), ('z','+','-'))
+    Sz, Sp, Sm = [S_op(k,spin_names,orb_names,off_diag,map_operator_structure) for k in ('z','+','-')]
     return Sz*Sz + 0.5*(Sp*Sm + Sm*Sp)
 
 def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structure = None, basis='spherical', T=None):
@@ -167,7 +169,7 @@ def L_op(component, spin_names, orb_names, off_diag = None, map_operator_structu
                     'x' : lambda m,mp: 0.5*(L_melem_dict['+'](m,mp) + L_melem_dict['-'](m,mp)),
                     'y' : lambda m,mp: -0.5j*(L_melem_dict['+'](m,mp) - L_melem_dict['-'](m,mp))}
     L_melem = L_melem_dict[component]
-    orb_range = range(int(2*l+1))
+    orb_range = list(range(int(2*l+1)))
     L_matrix = np.array([[L_melem(o1-l,o2-l) for o2 in orb_range] for o1 in orb_range])
 
     # Transform from spherical basis if needed
@@ -222,7 +224,7 @@ def L2_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
     L2 : Operator
         The square of the orbital momentum operator.
     """
-    Lz, Lp, Lm = map(lambda k: L_op(k,spin_names,orb_names,off_diag, map_operator_structure, basis, T),('z','+','-'))
+    Lz, Lp, Lm = [L_op(k,spin_names,orb_names,off_diag, map_operator_structure, basis, T) for k in ('z','+','-')]
     return Lz*Lz + 0.5*(Lp*Lm + Lm*Lp)
 
 def LS_op(spin_names, orb_names, off_diag = None, map_operator_structure = None, basis='spherical', T=None):
@@ -262,6 +264,6 @@ def LS_op(spin_names, orb_names, off_diag = None, map_operator_structure = None,
     LS : Operator
         The spin-orbital coupling operator.
     """
-    Sz, Sp, Sm = map(lambda k: S_op(k,spin_names,orb_names,off_diag,map_operator_structure), ('z','+','-'))
-    Lz, Lp, Lm = map(lambda k: L_op(k,spin_names,orb_names,off_diag,map_operator_structure, basis, T),('z','+','-'))
+    Sz, Sp, Sm = [S_op(k,spin_names,orb_names,off_diag,map_operator_structure) for k in ('z','+','-')]
+    Lz, Lp, Lm = [L_op(k,spin_names,orb_names,off_diag,map_operator_structure, basis, T) for k in ('z','+','-')]
     return Lz*Sz + 0.5*(Lp*Sm + Lm*Sp)

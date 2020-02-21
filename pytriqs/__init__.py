@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -45,7 +46,7 @@ class Cpp2pyInfo(Cpp2pyInfoBase):
         'triqs::h5::group' : 'h5'
         }
 
-    table_converters = dict ( (k, "triqs/cpp2py_converters/%s.hpp"%v) for (k,v) in _table_converters.items())
+    table_converters = dict ( (k, "triqs/cpp2py_converters/%s.hpp"%v) for (k,v) in list(_table_converters.items()))
 
 def _get_cpp2py_wrapped_class_enums():
     return {'module_name' : 'UNUSED', 'includes' : "['<triqs/cpp2py_converters.hpp>']"}

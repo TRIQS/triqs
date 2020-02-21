@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from cpp2py.wrap_generator import *
 
 # This modules contains factory functions that generate a Green function
@@ -40,7 +41,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
     # === Matsubara and ReTime/Freq Fourier
     for Meshes in [["imtime", "imfreq"], ["imfreq", "imtime"], ["retime", "refreq"], ["refreq", "retime"]]:
         for gf_type in ["gf", "block_gf", "block2_gf"]:
-	    gf_view_type = gf_type +  '_view'
+            gf_view_type = gf_type +  '_view'
 
             # make_gf_from_fourier
             m.add_function(name = "make_gf_from_fourier",
@@ -80,7 +81,7 @@ for Target in  ["scalar_valued", "matrix_valued", "tensor_valued<3>", "tensor_va
     # === Lattice Fourier
     for Meshes in [["cyclic_lattice", "brillouin_zone"], ["brillouin_zone", "cyclic_lattice"]]:
         for gf_type in ["gf", "block_gf", "block2_gf"]:
-	    gf_view_type = gf_type +  '_view'
+            gf_view_type = gf_type +  '_view'
             # make_gf_from_fourier
             m.add_function(name = "make_gf_from_fourier",
                     signature="%s<%s, %s> make_gf_from_fourier(%s<%s, %s> g_in)"%(gf_type, Meshes[0], Target, gf_view_type, Meshes[1], Target),

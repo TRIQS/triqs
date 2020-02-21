@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 # Generated automatically using the command :
 # c++2py.py ../../triqs/statistics/histograms.hpp -p
 from cpp2py.wrap_generator import *
