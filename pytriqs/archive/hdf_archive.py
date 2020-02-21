@@ -330,7 +330,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
 class HDFArchive(HDFArchiveGroup):
     """
     """
-    _class_version = "HDFArchive | 1.0"
+    _class_version = 1
 
     def __init__(self, url_name, open_flag = 'a', key_as_string_only = True,
             reconstruct_python_object = True, init = {}):
