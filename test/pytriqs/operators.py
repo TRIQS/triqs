@@ -87,11 +87,11 @@ class test_operators(unittest.TestCase):
             
             print("Anticommutators:")
             for Cd,C in itertools.product(Cd_list,C_list):
-            	print("{", Cd, ",", C, "} =", Cd*C + C*Cd)
+                    print("{", Cd, ",", C, "} =", Cd*C + C*Cd)
             
             print("Commutators:")
             for Cd,C in itertools.product(Cd_list,C_list):
-            	print("[", Cd, ",", C, "] =", Cd*C - C*Cd)
+                    print("[", Cd, ",", C, "] =", Cd*C - C*Cd)
             
             x = c(0,0)
             y = c_dag(1,0)

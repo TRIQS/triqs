@@ -158,13 +158,13 @@ class test_Gf_Base_Op(unittest.TestCase):
         Mat = np.matrix([[1, 2], [3, 4]])
 
         G = Gf(mesh=iw_mesh, target_shape=(2,2), name = "G_iw")
-	G << iOmega_n * Mat
+        G << iOmega_n * Mat
 
-	G_exact = G.copy()
-	G_exact[0, 0] << Mat[0, 0] * iOmega_n
-	G_exact[1, 0] << Mat[1, 0] * iOmega_n
-	G_exact[0, 1] << Mat[0, 1] * iOmega_n
-	G_exact[1, 1] << Mat[1, 1] * iOmega_n
+        G_exact = G.copy()
+        G_exact[0, 0] << Mat[0, 0] * iOmega_n
+        G_exact[1, 0] << Mat[1, 0] * iOmega_n
+        G_exact[0, 1] << Mat[0, 1] * iOmega_n
+        G_exact[1, 1] << Mat[1, 1] * iOmega_n
 
         assert_gfs_are_close(G, G_exact)
         assert_gfs_are_close(Mat * G * linalg.inv(Mat), G_exact)
@@ -172,15 +172,15 @@ class test_Gf_Base_Op(unittest.TestCase):
         # ======
 
         G = Gf(mesh=MeshProduct(iw_mesh, iw_mesh), target_shape=(2,2), name = "G_iw_iw")
-	for iw1, iw2 in G.mesh:
-	    G[iw1, iw2] = old_div(np.identity(2), (iw1 + 2.0 * iw2 + 4.0))
+        for iw1, iw2 in G.mesh:
+            G[iw1, iw2] = old_div(np.identity(2), (iw1 + 2.0 * iw2 + 4.0))
 
-	G_exact = G.copy()
-	for iw1, iw2 in G.mesh:
-	    G_exact[iw1, iw2][0, 0] = old_div(Mat[0, 0], (iw1 + 2.0 * iw2 + 4.0))
-	    G_exact[iw1, iw2][1, 0] = old_div(Mat[1, 0], (iw1 + 2.0 * iw2 + 4.0))
-	    G_exact[iw1, iw2][0, 1] = old_div(Mat[0, 1], (iw1 + 2.0 * iw2 + 4.0))
-	    G_exact[iw1, iw2][1, 1] = old_div(Mat[1, 1], (iw1 + 2.0 * iw2 + 4.0))
+        G_exact = G.copy()
+        for iw1, iw2 in G.mesh:
+            G_exact[iw1, iw2][0, 0] = old_div(Mat[0, 0], (iw1 + 2.0 * iw2 + 4.0))
+            G_exact[iw1, iw2][1, 0] = old_div(Mat[1, 0], (iw1 + 2.0 * iw2 + 4.0))
+            G_exact[iw1, iw2][0, 1] = old_div(Mat[0, 1], (iw1 + 2.0 * iw2 + 4.0))
+            G_exact[iw1, iw2][1, 1] = old_div(Mat[1, 1], (iw1 + 2.0 * iw2 + 4.0))
 
         assert_gfs_are_close(G * Mat, G_exact)
         assert_gfs_are_close(Mat * G, G_exact)
