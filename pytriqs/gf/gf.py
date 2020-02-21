@@ -36,7 +36,6 @@ import numpy as np
 from . import mesh_product
 from . import lazy_expressions
 from . import descriptors, descriptor_base
-from types import IntType, SliceType, StringType
 from .mesh_product import MeshProduct
 from pytriqs.plot.protocol import clip_array
 from . import meshes
