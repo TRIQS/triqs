@@ -32,7 +32,7 @@ from math import pi
 beta =10 
 
 def matsu(n) : 
-   return old_div((2*n+1)*pi,beta * 1j)
+   return old_div((2*n+1)*pi,beta) * 1j
 
 g = GfImFreq(indices = [1,2], beta = beta, n_points = 100)
 g << inverse(iOmega_n + 2.0) 

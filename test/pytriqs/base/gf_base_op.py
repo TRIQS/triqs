@@ -54,7 +54,7 @@ class test_Gf_Base_Op(unittest.TestCase):
         G << iOmega_n + 2.0
 
         def matsu(n) :
-            return old_div((2*n+1)*pi,self.beta * 1j)
+            return old_div((2*n+1)*pi,self.beta) * 1j
 
         for ii, g in G :
             N = g.data.shape[0]

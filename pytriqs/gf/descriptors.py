@@ -57,7 +57,7 @@ def _SemiCircularDOS(half_bandwidth):
     from math import sqrt,pi
     larg = half_bandwidth
     def semi(x):
-        if (abs(x)<larg): return old_div(sqrt( 1 - (old_div(x,larg))**2 )*2,pi/larg)
+        if (abs(x)<larg): return old_div(sqrt( 1 - (old_div(x,larg))**2 )*2,pi*larg)
         else: return 0.0
     return semi
 
@@ -95,7 +95,7 @@ semicircle
         if type(G.mesh) == MeshImFreq:
             def f(om_):
                 om = om_ + mu
-                return old_div((om - 1j*copysign(1,om.imag)*sqrt(D*D - om**2)),D/D*2*Id)
+                return old_div((om - 1j*copysign(1,om.imag)*sqrt(D*D - om**2)),D*D) * 2*Id
         elif type(G.mesh) == MeshReFreq:
             def f(om_):
               om = om_.real + mu
