@@ -1,23 +1,3 @@
-/*******************************************************************************
- *
- * TRIQS: a Toolbox for Research in Interacting Quantum Systems
- *
- * Copyright (C) 2011 by O. Parcollet
- *
- * TRIQS is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * TRIQS. If not, see <http://www.gnu.org/licenses/>.
- *
- ******************************************************************************/
 #pragma once
 #include "./group.hpp"
 #include <cstring>
@@ -27,23 +7,90 @@ namespace triqs::h5 {
   TRIQS_SPECIALIZE_HDF5_SCHEME2(std::string, string);
 
   /**
-  * \brief Write a string  into an hdf5 file
-  * \param f The h5 file or group
-  * \param name The name of the hdf5 array in the file/group where the stack will be stored
-  * \param value The string
-  */
-  void h5_write(group g, std::string const &name, std::string const &value);
+   * Write a string  into an hdf5 file
+   *
+   * Format : Fixed size string
+   *
+   * @tparam T
+   * @param g HDF5 group
+   * @param name Name of the object in the HDF5 file
+   * @param s String to be saved.
+   */
+  void h5_write(group g, std::string const &name, std::string const &s);
 
+  /**
+   * Write a string  into an hdf5 file
+   *
+   * Format : Fixed size string
+   *
+   * @tparam T
+   * @param g HDF5 group
+   * @param name Name of the object in the HDF5 file
+   * @param s String to be saved.
+   */
   inline void h5_write(group g, std::string const &name, const char *s) { h5_write(g, name, std::string{s}); }
 
   /**
-  * \brief Read a string from an hdf5 file
-  * \param f The h5 file or group
-  * \param name The name of the hdf5 array in the file/group where the stack will be stored
-  * \param value The string to fill
-  */
+   * Read a string from an hdf5 file
+   *
+   * @param f The h5 file or group
+   * @param name The name of the hdf5 array in the file/group where the stack will be stored
+   * @param value The string to read into
+   */
   void h5_read(group g, std::string const &name, std::string &value);
 
+  // Explicitly forbidden.
   inline void h5_read(group g, std::string const &name, char *s) = delete;
 
-} // namespace triqs::h5
+  /**
+   * Write a string attribute
+   *
+   * @param f The h5 file or group
+   * @param name The name of the hdf5 array in the file/group where the stack will be stored
+   * @param s The string.
+  */
+  void h5_write_attribute(hid_t id, std::string const &name, std::string const &s);
+
+  /**
+   * Write a string attribute
+   *
+   * @param f The h5 file or group
+   * @param name The name of the hdf5 array in the file/group where the stack will be stored
+   * @param s The string.
+  */
+  inline void h5_write_attribute(hid_t id, std::string const &name, const char *s) { h5_write_attribute(id, name, std::string{s}); }
+
+  /**
+  * Read a string attribute from id.
+  * 
+  * @param id  The object to which the attribute is attached
+  * @param name The name of the attribute
+  * @param value The string to fill
+  */
+  void h5_read_attribute(hid_t id, std::string const &name, std::string &s);
+
+  // forbidden
+  inline void h5_read_attribute(hid_t id, std::string const &name, char *s) = delete;
+
+  // ---------------------   char_buf -----------------------
+
+  // char_buf contains an n dimensional array of strings as fixed size strings, flatten in a 1d array of char.
+  // the last dimension is the max length of the strings + 1, because of the ending 0 in C !
+  struct char_buf {
+    std::vector<char> buffer;
+    std::vector<hsize_t> lengths;
+
+    // the string datatype
+    [[nodiscard]] datatype dtype() const;
+
+    // the dataspace (without last dim, which is the string).
+    [[nodiscard]] dataspace dspace() const;
+  };
+
+  // read/write for char_buf
+  void h5_write(group g, std::string const &name, char_buf const &cb);
+  void h5_write_attribute(hid_t id, std::string const &name, char_buf const &cb);
+  void h5_read(group g, std::string const &name, char_buf &_cb);
+  void h5_read_attribute(hid_t id, std::string const &name, char_buf &_cb);
+
+} // namespace h5

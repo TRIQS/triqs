@@ -20,6 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include "./base_public.hpp"
+#include "./string.hpp"
 #include <triqs/utility/mini_vector.hpp>
 #include <triqs/utility/is_complex.hpp>
 #include <type_traits>

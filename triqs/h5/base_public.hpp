@@ -147,14 +147,4 @@ namespace triqs::h5 {
 
   using attribute = h5_object;
 
-  /****************** Read/Write string attribute *********************************************/
-
-  /// Write an attribute named name, of type string, of value value to the object id
-  void h5_write_attribute(hid_t id, std::string const &name, std::string const &value);
-
-  inline void h5_write_attribute(hid_t id, std::string const &name, const char *value) { h5_write_attribute(id, name, std::string{value}); }
-
-  /// Returns the attribute name of obj, and "" if the attribute does not exist.
-  void h5_read_attribute(hid_t id, std::string const &name, std::string &);
-
 } // namespace triqs::h5

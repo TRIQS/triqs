@@ -50,49 +50,5 @@ namespace triqs {
 
       return ds;
     }
-
-    /****************** Write string attribute *********************************************/
-
-    void h5_write_attribute(hid_t id, std::string const &name, std::string const &value) {
-
-      datatype strdatatype = H5Tcopy(H5T_C_S1);
-      auto status          = H5Tset_size(strdatatype, value.size() + 1);
-      // auto status = H5Tset_size(strdatatype, H5T_VARIABLE);
-      if (status < 0) TRIQS_RUNTIME_ERROR << "Internal error in H5Tset_size";
-
-      dataspace space = H5Screate(H5S_SCALAR);
-
-      attribute attr = H5Acreate2(id, name.c_str(), strdatatype, space, H5P_DEFAULT, H5P_DEFAULT);
-      if (!attr.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot create the attribute " << name;
-
-      status = H5Awrite(attr, strdatatype, (void *)(value.c_str()));
-      if (status < 0) TRIQS_RUNTIME_ERROR << "Cannot write the attribute " << name;
-    }
-
-    /****************** Read string attribute *********************************************/
-
-    /// Return the attribute name of obj, and "" if the attribute does not exist.
-    void h5_read_attribute(hid_t id, std::string const &name, std::string &s) {
-      s = "";
-
-      // if the attribute is not present, return 0
-      if (H5LTfind_attribute(id, name.c_str()) == 0) return; // not present
-
-      attribute attr = H5Aopen(id, name.c_str(), H5P_DEFAULT);
-      if (!attr.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot open the attribute " << name;
-
-      dataspace space = H5Aget_space(attr);
-
-      int rank = H5Sget_simple_extent_ndims(space);
-      if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a string attribute and got rank !=0";
-
-      datatype strdatatype = H5Aget_type(attr);
-
-      std::vector<char> buf(H5Aget_storage_size(attr) + 1, 0x00);
-      auto err = H5Aread(attr, strdatatype, (void *)(&buf[0]));
-      if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot read the attribute " << name;
-
-      s.append(&(buf.front()));
-    }
   } // namespace h5
 } // namespace triqs
