@@ -97,7 +97,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         if key in self.ignored_keys :
             raise KeyError("key %s is reserved"%key)
         if self.key_as_string_only : # for bacward compatibility
-            if type(key) not in (str,str):
+            if type(key) is not str:
                 raise KeyError("Key must be string only !")
             return key
         r = repr(key)
@@ -254,7 +254,15 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
 
         # try to find the scheme
         try :
-            hdf_data_scheme = scheme if scheme else self._group[key].attrs["TRIQS_HDF5_data_scheme"]
+            if scheme:
+                hdf_data_scheme = scheme
+            elif isinstance(self._group[key].attrs["TRIQS_HDF5_data_scheme"], numpy.bytes_):
+                hdf_data_scheme = self._group[key].attrs["TRIQS_HDF5_data_scheme"].decode('UTF-8')
+            elif isinstance(self._group[key].attrs["TRIQS_HDF5_data_scheme"], str):
+                hdf_data_scheme = self._group[key].attrs["TRIQS_HDF5_data_scheme"]
+            else:
+                raise RuntimeError("Improper type detected for TRIQS_HDF5_data_scheme")
+
         except:
             return bare_return()
         try :
