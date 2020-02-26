@@ -232,7 +232,7 @@ class BlockGf(object):
 
     def __reduce_to_dict__(self):
         d = dict(self)
-        d['block_names'] = np.array(list(self.indices))
+        d['block_names'] = list(self.indices)
         return d
 
     @classmethod

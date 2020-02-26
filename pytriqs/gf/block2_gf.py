@@ -191,8 +191,8 @@ class Block2Gf(object):
 
     def __reduce_to_dict__(self):
         d = {"%s_%s"%bn : g for bn, g in self}
-        d['block_names1'] = np.array(list(self.__indices1))
-        d['block_names2'] = np.array(list(self.__indices2))
+        d['block_names1'] = list(self.__indices1)
+        d['block_names2'] = list(self.__indices2)
         d['note'] = self.note
         return d
 
