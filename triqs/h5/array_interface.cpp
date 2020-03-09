@@ -7,7 +7,7 @@
 #include <numeric>
 #include <iostream> // DEBUG
 
-namespace h5::array_interface {
+namespace triqs::h5::array_interface {
 
   //------------------------------------------------
   // the dataspace corresponding to the array. Contiguous data only...
@@ -61,8 +61,7 @@ namespace h5::array_interface {
       for (int i = 0; i < v.rank(); ++i) chunk_dims[i] = std::max(v.slab.count[i], hsize_t{1});
       cparms = H5Pcreate(H5P_DATASET_CREATE);
       H5Pset_chunk(cparms, n_dims, chunk_dims.data());
-      // FIXME : OLD COMMIT
-      H5Pset_deflate(cparms, 8);
+      H5Pset_deflate(cparms, 1);
     }
 
     // dataspace for the dataset in the file
@@ -167,4 +166,4 @@ namespace h5::array_interface {
     if (err < 0) throw std::runtime_error("Cannot read the attribute " + name);
   }
 
-} // namespace h5::array_interface
+} // namespace triqs::h5::array_interface

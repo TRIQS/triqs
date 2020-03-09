@@ -5,7 +5,7 @@
 #include <numeric>
 #include <algorithm>
 
-namespace h5 {
+namespace triqs::h5 {
 
   static datatype str_datatype(long size) {
     datatype dt = H5Tcopy(H5T_C_S1);
@@ -15,9 +15,7 @@ namespace h5 {
     return dt;
   }
 
-  static datatype str_datatype(std::string const &s) {
-    return str_datatype(s.size() + 1);
-  }
+  static datatype str_datatype(std::string const &s) { return str_datatype(s.size() + 1); }
 
   // ------------------------------------------------------------------
 
@@ -48,9 +46,9 @@ namespace h5 {
   // -------------------- Read ----------------------------------------------
 
   void h5_read(group g, std::string const &name, std::string &value) {
-    dataset ds            = g.open_dataset(name);
-    h5::dataspace d_space = H5Dget_space(ds);
-    int rank              = H5Sget_simple_extent_ndims(d_space);
+    dataset ds        = g.open_dataset(name);
+    dataspace d_space = H5Dget_space(ds);
+    int rank          = H5Sget_simple_extent_ndims(d_space);
     if (rank != 0) throw std::runtime_error("Reading a string and got rank !=0");
     size_t size = H5Dget_storage_size(ds);
 
@@ -94,9 +92,7 @@ namespace h5 {
 
   // -------------------------------------------------------------------
   // the string datatype
-  datatype char_buf::dtype() const {
-    return str_datatype(lengths.back());
-  }
+  datatype char_buf::dtype() const { return str_datatype(lengths.back()); }
 
   // the dataspace (without last dim, which is the string).
   dataspace char_buf::dspace() const {
@@ -111,7 +107,7 @@ namespace h5 {
     auto dt     = cb.dtype();
     auto dspace = cb.dspace();
 
-    h5::dataset ds = g.create_dataset(name, dt, dspace);
+    dataset ds = g.create_dataset(name, dt, dspace);
 
     auto err = H5Dwrite(ds, dt, dspace, H5S_ALL, H5P_DEFAULT, (void *)cb.buffer.data());
     if (err < 0) throw make_runtime_error("Error writing the vector<string> ", name, " in the group", g.name());
@@ -133,9 +129,9 @@ namespace h5 {
   // -----------  READ  ------------
 
   void h5_read(group g, std::string const &name, char_buf &_cb) {
-    dataset ds            = g.open_dataset(name);
-    h5::dataspace d_space = H5Dget_space(ds);
-    datatype ty           = H5Dget_type(ds);
+    dataset ds        = g.open_dataset(name);
+    dataspace d_space = H5Dget_space(ds);
+    datatype ty       = H5Dget_type(ds);
 
     char_buf cb_out;
 
@@ -144,19 +140,13 @@ namespace h5 {
     H5Sget_simple_extent_dims(d_space, cb_out.lengths.data(), nullptr);
 
     size_t size = H5Tget_size(ty);
+    cb_out.lengths.push_back(size);
 
-    cb_out.lengths.push_back(size); //  2 ?? last one is size of the string +1
     long ltot = std::accumulate(cb_out.lengths.begin(), cb_out.lengths.end(), 1, std::multiplies<>());
-    cb_out.buffer.resize(ltot, 0x00);
+    cb_out.buffer.resize(std::max(ltot, 1l), 0x00);
 
-    H5_PRINT(ltot);
-    H5_PRINT(cb_out.lengths.size());
-    H5_PRINT(cb_out.lengths[0]);
-    H5_PRINT(cb_out.lengths[1]);
-    H5_PRINT(cb_out.buffer.size());
-    H5_PRINT(size);
-
-    auto err = H5Dread(ds, cb_out.dtype(), cb_out.dspace(), H5S_ALL, H5P_DEFAULT, (void *)cb_out.buffer.data());
+    H5_ASSERT(hdf5_type_equal(ty, cb_out.dtype()));
+    auto err = H5Dread(ds, ty, cb_out.dspace(), H5S_ALL, H5P_DEFAULT, (void *)cb_out.buffer.data());
     if (err < 0) throw make_runtime_error("Error reading the vector<string> ", name, " in the group", g.name());
 
     _cb = std::move(cb_out);
@@ -165,11 +155,11 @@ namespace h5 {
   // ----- read attribute -----
 
   void h5_read_attribute(hid_t id, std::string const &name, char_buf &_cb) {
-
-    attribute attr = H5Aopen(id, name.c_str(), H5P_DEFAULT);
+    attribute attr    = H5Aopen(id, name.c_str(), H5P_DEFAULT);
     if (!attr.is_valid()) throw make_runtime_error("Cannot open the attribute ", name);
 
     dataspace d_space = H5Aget_space(attr);
+    datatype ty       = H5Aget_type(attr);
 
     char_buf cb_out;
 
@@ -177,11 +167,11 @@ namespace h5 {
     cb_out.lengths.resize(dim);
     H5Sget_simple_extent_dims(d_space, cb_out.lengths.data(), nullptr);
 
-    size_t size = H5Aget_storage_size(attr);
-    cb_out.lengths.push_back(size + 1); // last one is size of the string +1
+    size_t size = H5Tget_size(ty);
+    cb_out.lengths.push_back(size);
 
-    //long ltot = std::accumulate(cb_out.lengths.begin(), cb_out.lengths.end(), 1, std::multiplies<>());
-    cb_out.buffer.resize(0x00);
+    long ltot = std::accumulate(cb_out.lengths.begin(), cb_out.lengths.end(), 1, std::multiplies<>());
+    cb_out.buffer.resize(std::max(ltot, 1l), 0x00);
 
     auto err = H5Aread(attr, cb_out.dtype(), (void *)cb_out.buffer.data());
     if (err < 0) throw make_runtime_error("Cannot read the attribute ", name);
@@ -189,4 +179,4 @@ namespace h5 {
     _cb = std::move(cb_out);
   }
 
-} // namespace h5
+} // namespace triqs::h5

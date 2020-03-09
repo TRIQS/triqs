@@ -8,12 +8,9 @@ using namespace std::string_literals;
 #define CHECK_OR_THROW(Cond, Mess)                                                                                                                   \
   if (!(Cond)) throw std::runtime_error("Error in h5 interface : "s + Mess);
 
-namespace h5 {
+namespace triqs::h5 {
 
   file::file(const char *name, char mode) {
-
-    std::cerr << "OPENING file " << name << "in mode " << mode << std::endl;
-
     switch (mode) {
       case 'r': id = H5Fopen(name, H5F_ACC_RDONLY, H5P_DEFAULT); break;
       case 'w': id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT); break;
@@ -21,7 +18,6 @@ namespace h5 {
       case 'e': id = H5Fopen(name, H5F_ACC_EXCL, H5P_DEFAULT); break;
       default: throw std::runtime_error("HDF5 file opening : mode is not r, w, a, e. Cf documentation");
     }
-
     if (id < 0) throw std::runtime_error("HDF5 : cannot "s + (((mode == 'r') or (mode == 'a')) ? "open" : "create") + "file : "s + name);
   }
 
@@ -106,4 +102,4 @@ namespace h5 {
 
   // -----------------------------
 
-} // namespace h5
+} // namespace triqs::h5

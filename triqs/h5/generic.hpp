@@ -1,7 +1,7 @@
 #pragma once
 #include <type_traits>
 
-namespace h5 {
+namespace triqs::h5 {
 
   /**
    * A generic read
@@ -32,7 +32,6 @@ namespace h5 {
    */
   template <typename T>
   T h5_read_attribute(h5_object obj, std::string const &key) {
-    using h5::h5_read_attribute;
     T x;
     h5_read_attribute(obj, key, x);
     return x;
@@ -55,4 +54,4 @@ namespace h5 {
     return false;
   }
 
-} // namespace h5
+} // namespace triqs::h5

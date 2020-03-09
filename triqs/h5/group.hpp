@@ -2,20 +2,21 @@
 #include <utility>
 
 #include "./file.hpp"
-#include "./format.hpp"
 
-namespace h5 {
+namespace triqs::h5 {
 
   /**
    *  HDF5 group
    */
   class group : public h5_object {
 
-    h5::file parent_file;
+    file parent_file;
 
     public:
+    group() = default; // for python converter only
+
     /// Takes the "/" group at the top of the file
-    group(h5::file f);
+    group(file f);
 
     ///
     group(group const &) = default;
@@ -23,14 +24,14 @@ namespace h5 {
     private:
     // construct from the bare object and the parent
     // internal use only for open/create subgroup
-    group(h5_object obj, h5::file _parent_file) : h5_object{obj}, parent_file(std::move(_parent_file)) {}
+    group(h5_object obj, file _parent_file) : h5_object{obj}, parent_file(std::move(_parent_file)) {}
 
     public:
     /// Name of the group
     [[nodiscard]] std::string name() const;
 
     /// Access to the parent file
-    [[nodiscard]] h5::file get_file() const { return parent_file; }
+    [[nodiscard]] file get_file() const { return parent_file; }
 
     /**
      * True iff key is an object in the group
@@ -117,4 +118,4 @@ namespace h5 {
     [[nodiscard]] std::vector<std::string> get_all_subgroup_dataset_names() const;
   };
 
-} // namespace h5
+} // namespace triqs::h5

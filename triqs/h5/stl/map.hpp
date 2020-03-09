@@ -3,7 +3,7 @@
 #include "../group.hpp"
 #include "./string.hpp"
 
-namespace h5 {
+namespace triqs::h5 {
 
   template <typename T>
   struct hdf5_format_impl<std::map<std::string, T>> {
@@ -16,7 +16,7 @@ namespace h5 {
   template <typename T>
   void h5_write(group f, std::string const &name, std::map<std::string, T> const &M) {
     auto gr = f.create_group(name);
-    gr.write_hdf5_format(M);
+    write_hdf5_format(gr, M);
     for (auto &pvp : M) h5_write(gr, pvp.first, pvp.second);
   }
 
@@ -34,4 +34,4 @@ namespace h5 {
     }
   }
 
-} // namespace h5
+} // namespace triqs::h5

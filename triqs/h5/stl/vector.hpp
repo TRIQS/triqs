@@ -5,7 +5,7 @@
 #include "./string.hpp"
 #include "../scalar.hpp"
 
-namespace h5 {
+namespace triqs::h5 {
 
   namespace array_interface {
 
@@ -34,7 +34,10 @@ namespace h5 {
   // ----------------------------------------------------------------------------
   // details for string case
   char_buf to_char_buf(std::vector<std::string> const &v);
+  char_buf to_char_buf(std::vector<std::vector<std::string>> const &v);
+
   void from_char_buf(char_buf const &cb, std::vector<std::string> &v);
+  void from_char_buf(char_buf const &cb, std::vector<std::vector<std::string>> &v);
 
   // ----------------------------------------------------------------------------
 
@@ -58,7 +61,7 @@ namespace h5 {
 
       array_interface::write(g, name, array_interface::h5_array_view_from_vector(v), true);
 
-    } else if constexpr (std::is_same_v<T, std::string>) {
+    } else if constexpr (std::is_same_v<T, std::string> or std::is_same_v<T, std::vector<std::string>>) {
 
       h5_write(g, name, to_char_buf(v));
 
@@ -95,7 +98,7 @@ namespace h5 {
       v.resize(lt.lengths[0]);
       array_interface::read(g, name, array_interface::h5_array_view_from_vector(v), lt);
 
-    } else if constexpr (std::is_same_v<T, std::string>) {
+    } else if constexpr (std::is_same_v<T, std::string> or std::is_same_v<T, std::vector<std::string>>) {
 
       char_buf cb;
       h5_read(g, name, cb);
@@ -109,13 +112,10 @@ namespace h5 {
     }
   }
 
-  //void h5_write(group f, std::string const &name, std::vector<std::vector<std::string>> const &V);
-  //void h5_read(group f, std::string const &name, std::vector<std::vector<std::string>> &V);
+  void h5_write_attribute(hid_t ob, std::string const &name, std::vector<std::vector<std::string>> const &V);
+  void h5_read_attribute(hid_t ob, std::string const &name, std::vector<std::vector<std::string>> &V);
 
-  // void h5_write_attribute(hid_t ob, std::string const &name, std::vector<std::vector<std::string>> const &V);
-  // void h5_read_attribute(hid_t ob, std::string const &name, std::vector<std::vector<std::string>> &V);
+  void h5_write_attribute(hid_t ob, std::string const &name, std::vector<std::string> const &V);
+  void h5_read_attribute(hid_t ob, std::string const &name, std::vector<std::string> &V);
 
-  // void h5_write_attribute(hid_t ob, std::string const &name, std::vector<std::string> const &V);
-  // void h5_read_attribute(hid_t ob, std::string const &name, std::vector<std::string> &V);
-
-} // namespace h5
+} // namespace triqs::h5

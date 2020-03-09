@@ -2,7 +2,7 @@
 #include <vector>
 #include "./h5object.hpp"
 
-namespace h5 {
+namespace triqs::h5 {
 
   /**
    *  A little handler for the HDF5 file
@@ -12,6 +12,8 @@ namespace h5 {
   class file : public h5_object {
 
     public:
+    file() = default; // for python converter only
+
     /**
      * Open the file
      *
@@ -40,9 +42,6 @@ namespace h5 {
      * NB : invalidates all groups currently open on this file
      */
     void close();
-
-    protected:
-    file() = default;
   };
 
   /**
@@ -61,4 +60,4 @@ namespace h5 {
     [[nodiscard]] std::vector<unsigned char> as_buffer() const;
   };
 
-} // namespace h5
+} // namespace triqs::h5

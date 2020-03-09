@@ -9,11 +9,11 @@ static_assert(std::is_same<hid_t, int64_t>::value or std::is_same<hid_t, int>::v
 
 using namespace std::string_literals;
 
-namespace h5 {
+namespace triqs::h5 {
 
   //static_assert(std::is_same<::hid_t, hid_t>::value, "Internal error");
 
-  group::group(h5::file f) : h5_object(), parent_file(f) {
+  group::group(file f) : h5_object(), parent_file(f) {
     id = H5Gopen2(f, "/", H5P_DEFAULT);
     if (id < 0) throw std::runtime_error("Cannot open the root group / in the file " + f.name());
   }
@@ -77,7 +77,7 @@ namespace h5 {
     if (key.empty()) return *this;
     if (delete_if_exists) unlink(key);
     hid_t id_g = H5Gcreate2(id, key.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    if (id_g < 0) throw std::runtime_error("Cannot create the subgroup " + key + " of the group" + name());
+    if (id_g < 0) throw std::runtime_error("Cannot create the subgroup " + key + " of the group " + name());
     return group(h5_object{id_g}, parent_file);
   }
 
@@ -85,7 +85,7 @@ namespace h5 {
   dataset group::open_dataset(std::string const &key) const {
     if (!has_key(key)) throw std::runtime_error("no dataset " + key + " in the group");
     dataset ds = H5Dopen2(id, key.c_str(), H5P_DEFAULT);
-    if (!ds.is_valid()) throw std::runtime_error("Cannot open dataset " + key + " in the group" + name());
+    if (!ds.is_valid()) throw std::runtime_error("Cannot open dataset " + key + " in the group " + name());
     return ds;
   }
 
@@ -98,7 +98,7 @@ namespace h5 {
   dataset group::create_dataset(std::string const &key, datatype ty, dataspace sp, hid_t pl) const {
     unlink(key);
     dataset ds = H5Dcreate2(id, key.c_str(), ty, sp, H5P_DEFAULT, pl, H5P_DEFAULT);
-    if (!ds.is_valid()) throw std::runtime_error("Cannot create the dataset " + key + " in the group" + name());
+    if (!ds.is_valid()) throw std::runtime_error("Cannot create the dataset " + key + " in the group " + name());
     return ds;
   }
 
@@ -162,4 +162,4 @@ namespace h5 {
     return ds_name;
   }
 
-} // namespace h5
+} // namespace triqs::h5

@@ -6,7 +6,7 @@
 
 // This is the generic interface for the ndarray interface
 //
-namespace h5::array_interface {
+namespace triqs::h5::array_interface {
 
   // Stores the hdf5 type and the dims
   struct h5_lengths_type {
@@ -82,4 +82,4 @@ namespace h5::array_interface {
   // Read as attribute
   void read_attribute(hid_t id, std::string const &name, h5_array_view v);
 
-} // namespace h5::array_interface
+} // namespace triqs::h5::array_interface

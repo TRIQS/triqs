@@ -23,7 +23,7 @@
 #include "../group.hpp"
 #include "./string.hpp"
 
-namespace h5 {
+namespace triqs::h5 {
 
   template <typename T1, typename T2>
   struct hdf5_format_impl<std::pair<T1, T2>> {
@@ -36,7 +36,7 @@ namespace h5 {
   template <typename T1, typename T2>
   void h5_write(group f, std::string const &name, std::pair<T1, T2> const &p) {
     auto gr = f.create_group(name);
-    gr.write_hdf5_format(p);
+    write_hdf5_format(gr, p);
     h5_write(gr, "0", p.first);
     h5_write(gr, "1", p.second);
   }
@@ -52,4 +52,4 @@ namespace h5 {
     h5_read(gr, "0", p.first);
     h5_read(gr, "1", p.second);
   }
-} // namespace h5
+} // namespace triqs::h5

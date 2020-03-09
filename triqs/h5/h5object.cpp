@@ -11,8 +11,9 @@
 #include "./h5object.hpp"
 #include <vector>
 #include <algorithm>
+#include <string>
 
-namespace h5 {
+namespace triqs::h5 {
 
   //static_assert(std::is_same<::hid_t, hid_t>::value, "Internal error");
   static_assert(std::is_same<::hsize_t, hsize_t>::value, "Internal error");
@@ -37,9 +38,12 @@ namespace h5 {
   template <> hid_t hdf5_type<double>      (){return  H5T_NATIVE_DOUBLE;}
   template <> hid_t hdf5_type<long double> (){return  H5T_NATIVE_LDOUBLE;}
 
+  template <> hid_t hdf5_type<std::complex<float>>       (){return  H5T_NATIVE_FLOAT;}
   template <> hid_t hdf5_type<std::complex<double>>      (){return  H5T_NATIVE_DOUBLE;}
   template <> hid_t hdf5_type<std::complex<long double>> (){return  H5T_NATIVE_LDOUBLE;}
-  template <> hid_t hdf5_type<std::complex<float>>       (){return  H5T_NATIVE_FLOAT;}
+  
+  template <> hid_t hdf5_type<std::string>       (){return  H5T_C_S1;}
+
   // clang-format on
 
   // bool. Use a lambda to initialize it.
@@ -98,6 +102,22 @@ namespace h5 {
     return pos->name;
   }
 
+  hid_t get_hdf5_type(dataset ds){
+    return H5Dget_type(ds);
+  }
+
+  bool hdf5_type_equal(datatype dt1, datatype dt2){
+    // For string do not compare size, cset..
+    if(H5Tget_class(dt1) == H5T_STRING){
+      return H5Tget_class(dt2) == H5T_STRING; 
+    }
+    auto res = H5Tequal(dt1, dt2);
+    if (res < 0){
+      throw std::runtime_error("Failure it hdf5 type comparison");
+    }
+    return res > 0;
+  }
+
   // -----------------------   Reference counting ---------------------------
 
   // xdecref, xincref manipulate the the ref, but ignore invalid (incl. 0) id.
@@ -134,4 +154,4 @@ namespace h5 {
 
   bool h5_object::is_valid() const { return H5Iis_valid(id) == 1; }
 
-} // namespace h5
+} // namespace triqs::h5
