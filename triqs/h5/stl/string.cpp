@@ -5,7 +5,7 @@
 #include <numeric>
 #include <algorithm>
 
-namespace triqs::h5 {
+namespace h5 {
 
   static datatype str_datatype(long size) {
     datatype dt = H5Tcopy(H5T_C_S1);
@@ -55,7 +55,7 @@ namespace triqs::h5 {
     size_t size = H5Dget_storage_size(ds);
 
     datatype dt = H5Dget_type(ds);
-    TRIQS_ASSERT(H5Tget_class(dt) == H5T_STRING);
+    H5_ASSERT(H5Tget_class(dt) == H5T_STRING);
 
     std::vector<char> buf(size + 1, 0x00);
     auto err = H5Dread(ds, dt, H5S_ALL, H5S_ALL, H5P_DEFAULT, &buf[0]);
@@ -83,7 +83,7 @@ namespace triqs::h5 {
     if (rank != 0) throw std::runtime_error("Reading a string attribute and got rank !=0");
 
     datatype strdatatype = H5Aget_type(attr);
-    TRIQS_ASSERT(H5Tget_class(strdatatype) == H5T_STRING);
+    H5_ASSERT(H5Tget_class(strdatatype) == H5T_STRING);
 
     std::vector<char> buf(H5Aget_storage_size(attr) + 1, 0x00);
     auto err = H5Aread(attr, strdatatype, (void *)(&buf[0]));
@@ -101,7 +101,7 @@ namespace triqs::h5 {
   // the dataspace (without last dim, which is the string).
   dataspace char_buf::dspace() const {
     dataspace ds = H5Screate_simple(lengths.size() - 1, lengths.data(), nullptr); // rank is size of length - 1
-    if (!ds.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot create the dataset";
+    if (!ds.is_valid()) throw make_runtime_error("Cannot create the dataset");
     return ds;
   }
 
@@ -114,7 +114,7 @@ namespace triqs::h5 {
     h5::dataset ds = g.create_dataset(name, dt, dspace);
 
     auto err = H5Dwrite(ds, dt, dspace, H5S_ALL, H5P_DEFAULT, (void *)cb.buffer.data());
-    if (err < 0) TRIQS_RUNTIME_ERROR << "Error writing the vector<string> " << name << " in the group" << g.name();
+    if (err < 0) throw make_runtime_error("Error writing the vector<string> ", name, " in the group", g.name());
   }
 
   // -----------   WRITE  ATTRIBUTE ------------
@@ -124,10 +124,10 @@ namespace triqs::h5 {
     auto dspace = cb.dspace();
 
     attribute attr = H5Acreate2(id, name.c_str(), dt, dspace, H5P_DEFAULT, H5P_DEFAULT);
-    if (!attr.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot create the attribute " << name;
+    if (!attr.is_valid()) throw make_runtime_error("Cannot create the attribute ", name);
 
     herr_t status = H5Awrite(attr, dt, (void *)cb.buffer.data());
-    if (status < 0) TRIQS_RUNTIME_ERROR << "Cannot write the attribute " << name;
+    if (status < 0) throw make_runtime_error("Cannot write the attribute ", name);
   }
 
   // -----------  READ  ------------
@@ -149,15 +149,15 @@ namespace triqs::h5 {
     long ltot = std::accumulate(cb_out.lengths.begin(), cb_out.lengths.end(), 1, std::multiplies<>());
     cb_out.buffer.resize(ltot, 0x00);
 
-    TRIQS_PRINT(ltot);
-    TRIQS_PRINT(cb_out.lengths.size());
-    TRIQS_PRINT(cb_out.lengths[0]);
-    TRIQS_PRINT(cb_out.lengths[1]);
-    TRIQS_PRINT(cb_out.buffer.size());
-    TRIQS_PRINT(size);
+    H5_PRINT(ltot);
+    H5_PRINT(cb_out.lengths.size());
+    H5_PRINT(cb_out.lengths[0]);
+    H5_PRINT(cb_out.lengths[1]);
+    H5_PRINT(cb_out.buffer.size());
+    H5_PRINT(size);
 
     auto err = H5Dread(ds, cb_out.dtype(), cb_out.dspace(), H5S_ALL, H5P_DEFAULT, (void *)cb_out.buffer.data());
-    if (err < 0) TRIQS_RUNTIME_ERROR << "Error reading the vector<string> " << name << " in the group" << g.name();
+    if (err < 0) throw make_runtime_error("Error reading the vector<string> ", name, " in the group", g.name());
 
     _cb = std::move(cb_out);
   }
@@ -167,7 +167,7 @@ namespace triqs::h5 {
   void h5_read_attribute(hid_t id, std::string const &name, char_buf &_cb) {
 
     attribute attr = H5Aopen(id, name.c_str(), H5P_DEFAULT);
-    if (!attr.is_valid()) TRIQS_RUNTIME_ERROR << "Cannot open the attribute " << name;
+    if (!attr.is_valid()) throw make_runtime_error("Cannot open the attribute ", name);
 
     dataspace d_space = H5Aget_space(attr);
 
@@ -184,9 +184,9 @@ namespace triqs::h5 {
     cb_out.buffer.resize(0x00);
 
     auto err = H5Aread(attr, cb_out.dtype(), (void *)cb_out.buffer.data());
-    if (err < 0) TRIQS_RUNTIME_ERROR << "Cannot read the attribute " << name;
+    if (err < 0) throw make_runtime_error("Cannot read the attribute ", name);
 
     _cb = std::move(cb_out);
   }
 
-} // namespace triqs::h5
+} // namespace h5

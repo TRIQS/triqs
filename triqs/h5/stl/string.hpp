@@ -1,10 +1,10 @@
 #pragma once
-#include "./group.hpp"
-#include <cstring>
+#include "../group.hpp"
+#include <string>
 
-namespace triqs::h5 {
+namespace h5 {
 
-  TRIQS_SPECIALIZE_HDF5_SCHEME2(std::string, string);
+  H5_SPECIALIZE_FORMAT2(std::string, string);
 
   /**
    * Write a string  into an hdf5 file
@@ -78,7 +78,7 @@ namespace triqs::h5 {
   // the last dimension is the max length of the strings + 1, because of the ending 0 in C !
   struct char_buf {
     std::vector<char> buffer;
-    std::vector<hsize_t> lengths;
+    v_t lengths;
 
     // the string datatype
     [[nodiscard]] datatype dtype() const;
