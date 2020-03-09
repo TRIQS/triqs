@@ -18,7 +18,7 @@ int main() {
   hfile.close();
 
   //read from hdf5
-  triqs::h5::file hfile2("my_gf.h5", H5F_ACC_RDWR);
+  triqs::h5::file hfile2("my_gf.h5", 'r');
   gf<imfreq> g2;
   h5_read(hfile2, "g_w", g2);
   hfile2.close();

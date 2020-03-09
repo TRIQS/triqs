@@ -1,4 +1,3 @@
-from __future__ import print_function
 from pytriqs.plot.mpl_interface import oplot
 from pytriqs.fit.fit import Fit, linear, quadratic
 from pytriqs.gf import *

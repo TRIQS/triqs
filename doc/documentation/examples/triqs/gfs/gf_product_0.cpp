@@ -24,6 +24,6 @@ int main() {
   auto gt = g_t_tau_t{{{tmin, tmax, n_re_time}, {beta, Fermion, n_im_time}}, {2, 2, 2}};
 
   // a little save in an hdf5 file ?
-  triqs::h5::file file("test_product_gf.h5", H5F_ACC_TRUNC);
+  triqs::h5::file file("test_product_gf.h5", 'r');
   h5_write(file, "g", g);
 }

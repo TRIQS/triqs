@@ -26,6 +26,6 @@ int main() {
   for (auto &g : Bg2) g = g * i++;
 
   // a little save in an hdf5 file ?
-  triqs::h5::file file("test_block_gf.h5", H5F_ACC_TRUNC);
+  triqs::h5::file file("test_block_gf.h5", 'r');
   h5_write(file, "B4", Bg4);
 }
