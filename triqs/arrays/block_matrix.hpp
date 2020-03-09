@@ -158,14 +158,14 @@ namespace triqs {
         ar &matrix_vec;
       }
 
-      static std::string hdf5_scheme() { return is_complex<T>::value ? "BlockMatrixComplex" : "BlockMatrix"; }
+      static std::string hdf5_format() { return is_complex<T>::value ? "BlockMatrixComplex" : "BlockMatrix"; }
 
       /// Write to HDF5
       friend void h5_write(h5::group fg, std::string subgroup_name, block_matrix const &c) {
         h5::group gr = fg.create_group(subgroup_name);
         h5_write(gr, "block_names", c.block_names);
         h5_write(gr, "matrix_vec", c.matrix_vec);
-        h5_write_attribute(gr, "TRIQS_HDF5_data_scheme", block_matrix::hdf5_scheme());
+        h5_write_attribute(gr, "TRIQS_HDF5_data_scheme", block_matrix::hdf5_format());
       }
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string subgroup_name, block_matrix &c) {

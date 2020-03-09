@@ -23,6 +23,7 @@
 #pragma once
 
 #include <complex>
+#include <optional>
 #include <itertools/itertools.hpp>
 #include "f77/cxx_interface.hpp"
 #include "tools.hpp"

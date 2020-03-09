@@ -35,8 +35,7 @@
 #include <triqs/arrays/algorithms.hpp>
 
 // HDF5 interface
-#include <triqs/arrays/h5/simple_read_write.hpp>
-#include <triqs/arrays/h5/array_of_non_basic.hpp>
+#include <triqs/arrays/h5.hpp>
 
 // proxy
 #include <triqs/arrays/proxy.hxx>

@@ -54,21 +54,38 @@ namespace triqs {
     template <typename T> struct is_array_view : std::is_base_of<Tag::array_view, T> {};
     template <typename T> struct is_array_or_view : _or<is_array<T>, is_array_view<T>> {};
 
+    template <typename T> constexpr bool is_array_v = is_array<T>::value;
+    template <typename T> constexpr bool is_array_view_v = is_array_view<T>::value;
+    template <typename T> constexpr bool is_array_or_view_v = is_array_or_view<T>::value;
+
     template <typename T> struct is_vector : std::is_base_of<Tag::vector, T> {};
     template <typename T> struct is_vector_view : std::is_base_of<Tag::vector_view, T> {};
     template <typename T> struct is_vector_or_view : _or<is_vector<T>, is_vector_view<T>> {};
+
+    template <typename T> constexpr bool is_vector_v = is_vector<T>::value;
+    template <typename T> constexpr bool is_vector_view_v = is_vector_view<T>::value;
+    template <typename T> constexpr bool is_vector_or_view_v = is_vector_or_view<T>::value;
 
     template <typename T> struct is_matrix : std::is_base_of<Tag::matrix, T> {};
     template <typename T> struct is_matrix_view : std::is_base_of<Tag::matrix_view, T> {};
     template <typename T> struct is_matrix_or_view : _or<is_matrix<T>, is_matrix_view<T>> {};
 
-    template <class T> struct is_amv_value_class : _or<is_array<T>, is_matrix<T>, is_vector<T>> {};
-    template <class T> struct is_amv_view_class : _or<is_array_view<T>, is_matrix_view<T>, is_vector_view<T>> {};
-    template <class T> struct is_amv_value_or_view_class : _or<is_amv_value_class<T>, is_amv_view_class<T>> {};
+    template <typename T> constexpr bool is_matrix_v = is_matrix<T>::value;
+    template <typename T> constexpr bool is_matrix_view_v = is_matrix_view<T>::value;
+    template <typename T> constexpr bool is_matrix_or_view_v = is_matrix_or_view<T>::value;
+
+    template <typename T> struct is_amv_value_class : _or<is_array<T>, is_matrix<T>, is_vector<T>> {};
+    template <typename T> struct is_amv_view_class : _or<is_array_view<T>, is_matrix_view<T>, is_vector_view<T>> {};
+    template <typename T> struct is_amv_value_or_view_class : _or<is_amv_value_class<T>, is_amv_view_class<T>> {};
+
+    template <typename T> constexpr bool is_regular_v = is_amv_value_class<T>::value;
+    template <typename T> constexpr bool is_view_v = is_amv_view_class<T>::value;
+    template <typename T> constexpr bool is_regular_or_view_v = is_amv_value_or_view_class<T>::value;
 
     template <class S> struct is_scalar : _or<std::is_arithmetic<S>, triqs::is_complex<S>> {};
     template <class S>
     struct is_scalar_or_convertible : std::integral_constant<bool, is_scalar<S>::value || std::is_constructible<std::complex<double>, S>::value> {};
+    template <class S> constexpr bool is_scalar_v = is_scalar<S>::value;
 
     template <class S, class A>
     struct is_scalar_for
