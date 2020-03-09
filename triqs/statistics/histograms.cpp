@@ -55,7 +55,7 @@ namespace triqs {
     void h5_write(h5::group g, std::string const &name, histogram const &h) {
       h5_write(g, name, h._data);
       auto ds = g.open_dataset(name);
-      h5_write_attribute(ds, "TRIQS_HDF5_data_scheme", histogram::hdf5_scheme());
+      h5_write_attribute(ds, "TRIQS_HDF5_data_scheme", histogram::hdf5_format());
       h5_write_attribute(ds, "a", h.a);
       h5_write_attribute(ds, "b", h.b);
       h5_write_attribute(ds, "n_bins", h.n_bins);

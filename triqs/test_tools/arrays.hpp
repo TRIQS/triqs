@@ -139,12 +139,12 @@ template <typename T> T rw_h5(T const &x, std::string filename = "ess", std::str
   T y; // must be default constructible
 
   {
-    h5::file file(filename + ".h5", H5F_ACC_TRUNC);
+    h5::file file(filename + ".h5", 'w');
     h5_write(file, name, x);
   }
 
   {
-    h5::file file(filename + ".h5", H5F_ACC_RDONLY);
+    h5::file file(filename + ".h5", 'r');
     h5_read(file, name, y);
   }
 

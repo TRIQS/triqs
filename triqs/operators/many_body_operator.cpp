@@ -19,8 +19,9 @@
  *
  ******************************************************************************/
 #include "./many_body_operator.hpp"
+#include "./../utility/mini_vector.hpp"
 #include <triqs/h5.hpp>
-#include <triqs/h5/base.hpp>
+#include <hdf5.h>
 
 namespace triqs {
   namespace operators {
@@ -125,7 +126,7 @@ namespace triqs {
 
       // Store fundamental_operator_set as an attribute of the dataset
       h5_write_attribute(dataset, "fundamental_operator_set", fops);
-      h5::h5_write_attribute(dataset, "TRIQS_HDF5_data_scheme", get_hdf5_scheme<many_body_operator>());
+      h5::h5_write_attribute(dataset, "TRIQS_HDF5_data_scheme", get_hdf5_format<many_body_operator>());
     }
 
     // ---------------------------  READ -----------------------------------------
@@ -141,7 +142,7 @@ namespace triqs {
       h5::dataspace d_space = H5Dget_space(ds);
 
       // recover the dimension: must be of rank 1
-      mini_vector<hsize_t, 1> dims_out;
+      utility::mini_vector<hsize_t, 1> dims_out;
       int ndims = H5Sget_simple_extent_dims(d_space, dims_out.ptr(), NULL);
       if (ndims != 1)
         TRIQS_RUNTIME_ERROR << "triqs::h5 : Trying to read many_body_operator. Rank mismatch : the array stored in the hdf5 file has rank = "

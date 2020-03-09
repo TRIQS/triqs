@@ -25,6 +25,7 @@
 #include <triqs/utility/timestamp.hpp>
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/signal_handler.hpp>
+#include <triqs/utility/macros.hpp>
 #include <mpi/mpi.hpp>
 #include "./mc_measure_aux_set.hpp"
 #include "./mc_measure_set.hpp"

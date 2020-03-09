@@ -31,7 +31,7 @@ namespace triqs {
       using segment_mesh::segment_mesh;
       // template <typename... T> gf_mesh(T &&... x) : segment_mesh(std::forward<T>(x)...) {}
 
-      static std::string hdf5_scheme() { return "MeshReTime"; }
+      static std::string hdf5_format() { return "MeshReTime"; }
 
       friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReTime"); }
 

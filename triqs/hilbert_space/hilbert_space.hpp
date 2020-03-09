@@ -24,7 +24,6 @@
 #include <boost/container/flat_map.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/h5.hpp>
-#include <triqs/h5/vector.hpp>
 #include "fundamental_operator_set.hpp"
 
 namespace triqs {
@@ -115,7 +114,7 @@ namespace triqs {
       /**
    @return Name of the scheme
  */
-      static std::string hdf5_scheme() { return "hilbert_space"; }
+      static std::string hdf5_format() { return "hilbert_space"; }
 
       private:
       /// Write a Hilbert space to an HDF5 group
@@ -260,7 +259,7 @@ namespace triqs {
       /**
    @return Name of the scheme
  */
-      static std::string hdf5_scheme() { return "sub_hilbert_space"; }
+      static std::string hdf5_format() { return "sub_hilbert_space"; }
 
       /// Write a Hilbert subspace to an HDF5 group
       /**

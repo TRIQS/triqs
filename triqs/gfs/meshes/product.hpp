@@ -178,12 +178,12 @@ namespace triqs {
 
       // -------------------- HDF5 -------------------
 
-      static std::string hdf5_scheme() { return "MeshProduct"; }
+      static std::string hdf5_format() { return "MeshProduct"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string subgroup_name, gf_mesh const &m) {
         h5::group gr = fg.create_group(subgroup_name);
-        gr.write_hdf5_scheme(m);
+        write_hdf5_format(gr, m);
         auto l = [gr](int N, auto const &m) { h5_write(gr, "MeshComponent" + std::to_string(N), m); };
         triqs::tuple::for_each_enumerate(m.components(), l);
       }
@@ -191,7 +191,7 @@ namespace triqs {
       /// Read from HDF5
       friend void h5_read(h5::group fg, std::string subgroup_name, gf_mesh &m) {
         h5::group gr = fg.open_group(subgroup_name);
-        gr.assert_hdf5_scheme(m, true);
+        assert_hdf5_format(gr, m, true);
         auto l = [gr](int N, auto &m) { h5_read(gr, "MeshComponent" + std::to_string(N), m); };
         triqs::tuple::for_each_enumerate(m.components(), l);
       }

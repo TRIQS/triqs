@@ -68,7 +68,7 @@ namespace triqs {
 
       // -------------------- hdf5 -------------------
 
-      static std::string hdf5_scheme() { return "MeshImTime"; }
+      static std::string hdf5_format() { return "MeshImTime"; }
 
       friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshImTime"); }
 

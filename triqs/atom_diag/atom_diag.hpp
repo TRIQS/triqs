@@ -84,7 +84,7 @@ namespace triqs {
         matrix_t unitary_matrix;
 
         // HDF5
-        static std::string hdf5_scheme() { return "atom_diag::eigensystem_t"; }
+        static std::string hdf5_format() { return "atom_diag::eigensystem_t"; }
 
         friend void h5_write(h5::group fg, std::string const &name, eigensystem_t const &es) {
           auto gr = fg.create_group(name);
@@ -307,7 +307,7 @@ namespace triqs {
       friend void h5_read<Complex>(h5::group gr, std::string const &name, atom_diag &);
 
       public:
-      static std::string hdf5_scheme() { return Complex ? "AtomDiagComplex" : "AtomDiagReal"; }
+      static std::string hdf5_format() { return Complex ? "AtomDiagComplex" : "AtomDiagReal"; }
     };
 
   } // namespace atom_diag

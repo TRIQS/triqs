@@ -189,7 +189,7 @@ namespace triqs {
       /**
     @return HDF5 scheme name
    */
-      static std::string hdf5_scheme() { return "Histogram"; }
+      static std::string hdf5_format() { return "Histogram"; }
       /// Write histogram to HDF5
       /**
     @param g Enclosing HDF5 group

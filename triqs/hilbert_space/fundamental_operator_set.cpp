@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #include "./fundamental_operator_set.hpp"
-#include <triqs/h5/vector.hpp>
 
 namespace triqs {
   namespace hilbert_space {
@@ -68,12 +67,11 @@ namespace triqs {
     }
 
     // --- h5
-
-    void h5_write_attribute(hid_t id, std::string const &name, fundamental_operator_set const &f) {
+    void h5_write_attribute(triqs::h5::hid_t id, std::string const &name, fundamental_operator_set const &f) {
       h5::h5_write_attribute(id, name, to_vec_vec_string(f));
     }
 
-    void h5_read_attribute(hid_t id, std::string const &name, fundamental_operator_set &f) {
+    void h5_read_attribute(triqs::h5::hid_t id, std::string const &name, fundamental_operator_set &f) {
       std::vector<std::vector<std::string>> fops1;
       h5::h5_read_attribute(id, name, fops1);
       f = fundamental_operator_set(fops1);

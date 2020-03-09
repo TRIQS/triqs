@@ -112,7 +112,7 @@ namespace triqs {
       public:
       using scalar_t = ScalarType;
 
-      static std::string hdf5_scheme() { return "Operator"; }
+      static std::string hdf5_format() { return "Operator"; }
 
       many_body_operator_generic()                                   = default;
       many_body_operator_generic(many_body_operator_generic const &) = default;

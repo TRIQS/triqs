@@ -78,7 +78,7 @@ namespace triqs {
 
       // -------------- HDF5  --------------------------
 
-      static std::string hdf5_scheme() { return "MeshCyclicLattice"; }
+      static std::string hdf5_format() { return "MeshCyclicLattice"; }
 
       friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) {
         h5_write_impl(fg, subgroup_name, m, "MeshCyclicLattice");
@@ -92,10 +92,10 @@ namespace triqs {
         try { // Care for Backward Compatibility
           h5_read(gr, "bl", m.bl);
           return;
-        } catch (triqs::runtime_error const &re) {}
+        } catch (std::runtime_error const &re) {}
         try {
           h5_read(gr, "bravais_lattice", m.bl);
-        } catch (triqs::runtime_error const &re) {}
+        } catch (std::runtime_error const &re) {}
       }
     };
   } // namespace gfs

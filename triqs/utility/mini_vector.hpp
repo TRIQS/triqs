@@ -201,6 +201,8 @@ namespace triqs {
 
       T *ptr() { return _data; }
       const T *ptr() const { return _data; }
+      T *data() { return _data; }
+      const T *data() const { return _data; }
 
       std::string to_string() const {
         std::stringstream fs;
@@ -267,6 +269,8 @@ namespace triqs {
       const T &operator[](size_t i) const { return _data[i]; }
       T *ptr() { return _data; }
       const T *ptr() const { return _data; }
+      T *data() { return _data; }
+      const T *data() const { return _data; }
       friend std::ostream &operator<<(std::ostream &out, mini_vector const &v) { return out << "[]"; }
 
       ///prepend element to mini_vector (increases rank by 1)

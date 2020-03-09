@@ -24,7 +24,7 @@
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/variant_extensions.hpp>
 #include <itertools/itertools.hpp>
-#include <triqs/h5/base_public.hpp>
+#include <triqs/h5.hpp>
 
 #include <utility>
 #include <string>
@@ -186,7 +186,7 @@ namespace triqs::hilbert_space {
      * @param name Name of the attribute
      * @param f Fundamental set to write
      */
-    friend void h5_write_attribute(hid_t id, std::string const &name, fundamental_operator_set const &f);
+    friend void h5_write_attribute(triqs::h5::hid_t id, std::string const &name, fundamental_operator_set const &f);
 
     /// Read a set from an HDF5 attribute
     /**
@@ -194,6 +194,6 @@ namespace triqs::hilbert_space {
      * @param name Name of the attribute
      * @param f Reference to a fundamental set to be read
      */
-    friend void h5_read_attribute(hid_t id, std::string const &name, fundamental_operator_set &f);
+    friend void h5_read_attribute(triqs::h5::hid_t id, std::string const &name, fundamental_operator_set &f);
   };
 } // namespace triqs::hilbert_space

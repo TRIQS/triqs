@@ -8,7 +8,7 @@ namespace triqs {
     void h5_write(h5::group fg, std::string subgroup_name, gf_indices const &g) {
       if (g.empty()) return;
       auto gr = fg.create_group(subgroup_name);
-      gr.write_hdf5_scheme(g);
+      write_hdf5_format(gr, g);
       if (g.rank() == 2) { // special case for backward compat.
         h5_write(gr, "left", g._data[0]);
         h5_write(gr, "right", g._data[1]);
@@ -24,7 +24,7 @@ namespace triqs {
         return;
       }
       auto gr = fg.open_group(subgroup_name);
-      gr.assert_hdf5_scheme(g, true);
+      assert_hdf5_format(gr, g, true);
       g._data.clear();
       auto read = [&](std::string const &x) {
         auto v = h5::h5_read<std::vector<std::string>>(gr, x);

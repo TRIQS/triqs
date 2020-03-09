@@ -96,11 +96,17 @@ namespace triqs {
 
     /// ---------------------------  implementation  ---------------------------------
 
+    
+   
+  
+
     // ----------------------  block_gf -----------------------------------------
     /**
    * block_gf
    */
-    template <typename Var, typename Target> class block_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block_gf :
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = false;
@@ -118,7 +124,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block_gf<Var, typename Target::real_t>;
 
-      using g_t           = gf<Var, Target>;
+      using g_t = gf<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -193,6 +199,7 @@ namespace triqs {
       // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
       template <typename Tag> block_gf(mpi_lazy<Tag, block_gf_const_view<Var, Target>> x) : block_gf() { operator=(x); }
 
+
       /// Construct from a vector of gf
       block_gf(data_t V) : _block_names(details::_make_block_names1(V.size())), _glist(std::move(V)) {}
 
@@ -222,6 +229,8 @@ namespace triqs {
             _glist.emplace_back(m, make_shape(bl_size, bl_size), std::vector<std::vector<std::string>>(Target::rank, idx_str_lst));
         }
       }
+
+
 
       /// ---------------  Operator = --------------------
       private:
@@ -269,6 +278,7 @@ namespace triqs {
         _assign_impl(rhs);
         return *this;
       }
+
 
       // ---------------  Rebind --------------------
       /// Rebind
@@ -325,12 +335,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      static std::string hdf5_scheme() { return "BlockGf"; }
+      static std::string hdf5_format() { return "BlockGf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_hdf5_scheme(g);
+        write_hdf5_format(gr, g);
 
         h5_write(gr, "block_names", g.block_names());
         for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
@@ -340,8 +350,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block_gf &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_hdf5_scheme();
-        auto tag_expected = block_gf::hdf5_scheme();
+        auto tag_file     = read_hdf5_format(gr);
+        auto tag_expected = block_gf::hdf5_format();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -420,6 +430,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -433,12 +446,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block_gf<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -452,18 +466,24 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                     bool all = false, MPI_Op op = MPI_SUM) {
+                                                                      bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
+
+   
+  
 
     // ----------------------  block_gf_view -----------------------------------------
     /**
    * block_gf_view
    */
-    template <typename Var, typename Target> class block_gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block_gf_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -481,7 +501,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block_gf_view<Var, typename Target::real_t>;
 
-      using g_t           = gf_view<Var, Target>;
+      using g_t = gf_view<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -549,6 +569,7 @@ namespace triqs {
       /// Makes a view
       block_gf_view(regular_type &&g) noexcept : block_gf_view(impl_tag{}, std::move(g)) {}
 
+
       /// ---------------  Operator = --------------------
       private:
       template <typename RHS> void _assign_impl(RHS &&rhs) {
@@ -611,6 +632,7 @@ namespace triqs {
         return *this;
       }
 
+
       // ---------------  Rebind --------------------
       /// Rebind
       void rebind(block_gf_view x) noexcept {
@@ -666,12 +688,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      static std::string hdf5_scheme() { return "BlockGf"; }
+      static std::string hdf5_format() { return "BlockGf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_hdf5_scheme(g);
+        write_hdf5_format(gr, g);
 
         h5_write(gr, "block_names", g.block_names());
         for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
@@ -681,8 +703,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block_gf_view &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_hdf5_scheme();
-        auto tag_expected = block_gf_view::hdf5_scheme();
+        auto tag_file     = read_hdf5_format(gr);
+        auto tag_expected = block_gf_view::hdf5_format();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -761,6 +783,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -774,12 +799,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block_gf_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -793,18 +819,24 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                     bool all = false, MPI_Op op = MPI_SUM) {
+                                                                      bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
+
+   
+  
 
     // ----------------------  block_gf_const_view -----------------------------------------
     /**
    * block_gf_const_view
    */
-    template <typename Var, typename Target> class block_gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block_gf_const_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -822,7 +854,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block_gf_const_view<Var, typename Target::real_t>;
 
-      using g_t           = gf_const_view<Var, Target>;
+      using g_t = gf_const_view<Var, Target>;
       using data_t        = std::vector<g_t>;
       using block_names_t = std::vector<std::string>;
 
@@ -887,6 +919,7 @@ namespace triqs {
 
       /// Makes a const view
       block_gf_const_view(regular_type const &g) : block_gf_const_view(impl_tag{}, g) {}
+
 
       /// ---------------  Operator = --------------------
       private:
@@ -957,12 +990,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      static std::string hdf5_scheme() { return "BlockGf"; }
+      static std::string hdf5_format() { return "BlockGf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block_gf_const_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_hdf5_scheme(g);
+        write_hdf5_format(gr, g);
 
         h5_write(gr, "block_names", g.block_names());
         for (int i = 0; i < g.size(); ++i) h5_write(gr, g.block_names()[i], g.data()[i]);
@@ -972,8 +1005,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block_gf_const_view &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_hdf5_scheme();
-        auto tag_expected = block_gf_const_view::hdf5_scheme();
+        auto tag_file     = read_hdf5_format(gr);
+        auto tag_expected = block_gf_const_view::hdf5_format();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -1052,6 +1085,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -1065,12 +1101,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block_gf_const_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -1084,18 +1121,23 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block_gf_const_view<V, T>> mpi_reduce(block_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
-                                                                     bool all = false, MPI_Op op = MPI_SUM) {
+                                                                      bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
+
+   
+  
 
     // ----------------------  block2_gf -----------------------------------------
     /**
    * block2_gf
    */
-    template <typename Var, typename Target> class block2_gf : TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block2_gf :
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = false;
@@ -1113,7 +1155,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block2_gf<Var, typename Target::real_t>;
 
-      using g_t           = gf<Var, Target>;
+      using g_t = gf<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1131,6 +1173,7 @@ namespace triqs {
       int size1() const { return _glist.size(); }
       int size2() const { return _glist[0].size(); } // FIXME PROTECT
       int size() const { return size1() * size2(); }
+
 
       std::string name;
 
@@ -1178,11 +1221,14 @@ namespace triqs {
       // NB : type must be the same, e.g. g2(reduce(g1)) will work only if mesh, Target, Singularity are the same...
       template <typename Tag> block2_gf(mpi_lazy<Tag, block2_gf_const_view<Var, Target>> x) : block2_gf() { operator=(x); }
 
+
       /// Constructs a n blocks with copies of g.
       block2_gf(int n, int p, g_t const &g) : _block_names(details::_make_block_names2(n, p)), _glist(n, std::vector<g_t>(p, g)) {}
 
       /// Construct from a vector of gf
       block2_gf(data_t V) : _block_names(details::_make_block_names2(V.size(), V[0].size())), _glist(std::move(V)) {}
+
+
 
       /// ---------------  Operator = --------------------
       private:
@@ -1234,6 +1280,7 @@ namespace triqs {
         return *this;
       }
 
+
       // ---------------  Rebind --------------------
       /// Rebind
       void rebind(block2_gf x) noexcept {
@@ -1270,6 +1317,7 @@ namespace triqs {
       }
       // ------------- All the [] operators without lazy arguments -----------------------------
 
+
       // ------------- [] with lazy arguments -----------------------------
 
       template <typename Arg> clef::make_expr_subscript_t<block2_gf const &, Arg> operator[](Arg &&arg) const & {
@@ -1287,12 +1335,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      static std::string hdf5_scheme() { return "Block2Gf"; }
+      static std::string hdf5_format() { return "Block2Gf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_hdf5_scheme(g);
+        write_hdf5_format(gr, g);
 
         h5_write(gr, "block_names1", g.block_names()[0]);
         h5_write(gr, "block_names2", g.block_names()[1]);
@@ -1304,8 +1352,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block2_gf &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_hdf5_scheme();
-        auto tag_expected = block2_gf::hdf5_scheme();
+        auto tag_file     = read_hdf5_format(gr);
+        auto tag_expected = block2_gf::hdf5_format();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -1390,6 +1438,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -1403,12 +1454,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block2_gf<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -1422,18 +1474,24 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
+   
+  
+
     // ----------------------  block2_gf_view -----------------------------------------
     /**
    * block2_gf_view
    */
-    template <typename Var, typename Target> class block2_gf_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block2_gf_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1451,7 +1509,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block2_gf_view<Var, typename Target::real_t>;
 
-      using g_t           = gf_view<Var, Target>;
+      using g_t = gf_view<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1469,6 +1527,7 @@ namespace triqs {
       int size1() const { return _glist.size(); }
       int size2() const { return _glist[0].size(); } // FIXME PROTECT
       int size() const { return size1() * size2(); }
+
 
       std::string name;
 
@@ -1508,6 +1567,7 @@ namespace triqs {
 
       /// Makes a view
       block2_gf_view(regular_type &&g) noexcept : block2_gf_view(impl_tag{}, std::move(g)) {}
+
 
       /// ---------------  Operator = --------------------
       private:
@@ -1575,6 +1635,7 @@ namespace triqs {
         return *this;
       }
 
+
       // ---------------  Rebind --------------------
       /// Rebind
       void rebind(block2_gf_view x) noexcept {
@@ -1611,6 +1672,7 @@ namespace triqs {
       }
       // ------------- All the [] operators without lazy arguments -----------------------------
 
+
       // ------------- [] with lazy arguments -----------------------------
 
       template <typename Arg> clef::make_expr_subscript_t<block2_gf_view const &, Arg> operator[](Arg &&arg) const & {
@@ -1628,12 +1690,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      static std::string hdf5_scheme() { return "Block2Gf"; }
+      static std::string hdf5_format() { return "Block2Gf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_hdf5_scheme(g);
+        write_hdf5_format(gr, g);
 
         h5_write(gr, "block_names1", g.block_names()[0]);
         h5_write(gr, "block_names2", g.block_names()[1]);
@@ -1645,8 +1707,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block2_gf_view &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_hdf5_scheme();
-        auto tag_expected = block2_gf_view::hdf5_scheme();
+        auto tag_file     = read_hdf5_format(gr);
+        auto tag_expected = block2_gf_view::hdf5_format();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -1731,6 +1793,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -1744,12 +1809,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block2_gf_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -1763,18 +1829,24 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
 
+   
+  
+
     // ----------------------  block2_gf_const_view -----------------------------------------
     /**
    * block2_gf_const_view
    */
-    template <typename Var, typename Target> class block2_gf_const_view : is_view_tag, TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
+    template <typename Var, typename Target>
+    class block2_gf_const_view :
+       is_view_tag,
+       TRIQS_CONCEPT_TAG_NAME(BlockGreenFunction) {
 
       public:
       static constexpr bool is_view  = true;
@@ -1792,7 +1864,7 @@ namespace triqs {
       /// The associated real type
       using real_t = block2_gf_const_view<Var, typename Target::real_t>;
 
-      using g_t           = gf_const_view<Var, Target>;
+      using g_t = gf_const_view<Var, Target>;
       using data_t        = std::vector<std::vector<g_t>>;
       using block_names_t = std::vector<std::vector<std::string>>;
 
@@ -1810,6 +1882,7 @@ namespace triqs {
       int size1() const { return _glist.size(); }
       int size2() const { return _glist[0].size(); } // FIXME PROTECT
       int size() const { return size1() * size2(); }
+
 
       std::string name;
 
@@ -1847,6 +1920,7 @@ namespace triqs {
 
       /// Makes a const view
       block2_gf_const_view(regular_type const &g) : block2_gf_const_view(impl_tag{}, g) {}
+
 
       /// ---------------  Operator = --------------------
       private:
@@ -1899,6 +1973,7 @@ namespace triqs {
       }
       // ------------- All the [] operators without lazy arguments -----------------------------
 
+
       // ------------- [] with lazy arguments -----------------------------
 
       template <typename Arg> clef::make_expr_subscript_t<block2_gf_const_view const &, Arg> operator[](Arg &&arg) const & {
@@ -1916,12 +1991,12 @@ namespace triqs {
       //----------------------------- HDF5 -----------------------------
 
       /// HDF5 name
-      static std::string hdf5_scheme() { return "Block2Gf"; }
+      static std::string hdf5_format() { return "Block2Gf"; }
 
       /// Write into HDF5
       friend void h5_write(h5::group fg, std::string const &subgroup_name, block2_gf_const_view const &g) {
         auto gr = fg.create_group(subgroup_name);
-        gr.write_hdf5_scheme(g);
+        write_hdf5_format(gr, g);
 
         h5_write(gr, "block_names1", g.block_names()[0]);
         h5_write(gr, "block_names2", g.block_names()[1]);
@@ -1933,8 +2008,8 @@ namespace triqs {
       friend void h5_read(h5::group fg, std::string const &subgroup_name, block2_gf_const_view &g) {
         auto gr = fg.open_group(subgroup_name);
         // Check the attribute or throw
-        auto tag_file     = gr.read_hdf5_scheme();
-        auto tag_expected = block2_gf_const_view::hdf5_scheme();
+        auto tag_file     = read_hdf5_format(gr);
+        auto tag_expected = block2_gf_const_view::hdf5_format();
         if (tag_file != tag_expected)
           TRIQS_RUNTIME_ERROR << "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found " << tag_file
                               << " while I expected " << tag_expected;
@@ -2019,6 +2094,9 @@ namespace triqs {
 
     //----------------------------- MPI  -----------------------------
 
+    
+
+    
     /**
     * Initiate (lazy) MPI Bcast
     *
@@ -2032,12 +2110,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T> void mpi_broadcast(block2_gf_const_view<V, T> &g, mpi::communicator c = {}, int root = 0) {
       // Shall we bcast mesh ?
       mpi::broadcast(g.data(), c, root);
     }
 
+    
     /**
     * Initiate (lazy) MPI Reduce
     *
@@ -2051,12 +2130,13 @@ namespace triqs {
     * @return Returns a lazy object describing the object and the MPI operation to be performed.
     *
     */
-
+    
     template <typename V, typename T>
     mpi_lazy<mpi::tag::reduce, block2_gf_const_view<V, T>> mpi_reduce(block2_gf_const_view<V, T> const &a, mpi::communicator c = {}, int root = 0,
                                                                       bool all = false, MPI_Op op = MPI_SUM) {
       return {a(), c, root, all, op};
     }
+
 
     // -------------------------------   Free Factories for regular type  --------------------------------------------------
 
@@ -2154,6 +2234,7 @@ namespace triqs {
 
     // -------------------------------   Free Factories for block2_gf_view and block2_gf_const_view  --------------------------------------------------
 
+
     // Create block2_gf_view from vector of views
     template <typename Gf> block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::vector<Gf>> &v) {
       static_assert(Gf::is_view);
@@ -2169,13 +2250,13 @@ namespace triqs {
     // Create block2_gf_view from block_names and vector of views
     template <typename Gf>
     block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                              std::vector<std::vector<Gf>> &v) {
+                                                        std::vector<std::vector<Gf>> &v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, v};
     }
     template <typename Gf>
     block2_gf_view_of<Gf> make_block2_gf_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                              std::vector<std::vector<Gf>> &&v) {
+                                                        std::vector<std::vector<Gf>> &&v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
     }
@@ -2195,13 +2276,13 @@ namespace triqs {
     // Create block2_gf_const_view from block_names and vector of views
     template <typename Gf>
     block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                                          std::vector<std::vector<Gf>> &v) {
+                                                        std::vector<std::vector<Gf>> &v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, v};
     }
     template <typename Gf>
     block2_gf_const_view_of<Gf> make_block2_gf_const_view(std::vector<std::string> block_names1, std::vector<std::string> block_names2,
-                                                          std::vector<std::vector<Gf>> &&v) {
+                                                        std::vector<std::vector<Gf>> &&v) {
       static_assert(Gf::is_view);
       return {{std::move(block_names1), std::move(block_names2)}, std::move(v)};
     }

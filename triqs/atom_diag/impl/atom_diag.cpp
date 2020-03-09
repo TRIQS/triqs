@@ -148,7 +148,7 @@ namespace triqs {
     template <bool Complex> void h5_write(triqs::h5::group fg, std::string const &name, atom_diag<Complex> const &ad) {
       using matrix_t = typename atom_diag<Complex>::matrix_t;
       auto gr        = fg.create_group(name);
-      gr.write_hdf5_scheme(ad);
+      write_hdf5_format(gr, ad);
       h5_write(gr, "creation_connection", ad.creation_connection);
       h5_write(gr, "annihilation_connection", ad.annihilation_connection);
 

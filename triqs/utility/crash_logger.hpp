@@ -75,7 +75,7 @@ namespace triqs {
         guards.emplace_back([&obj, this, name]() {
           using triqs::h5::h5_write; // to have the proper overload for scalar type !!
           try {
-            h5_write(h5::group(h5::file(this->filename_.c_str(), H5F_ACC_RDWR)), name, obj);
+            h5_write(h5::group(h5::file(this->filename_.c_str(), 'a')), name, obj);
           } catch (...) {
             std::cerr << "An exception has occurred in crash_logger for an object of type " << typeid_name(obj) << " named " << name << std::endl;
           }
@@ -88,7 +88,7 @@ namespace triqs {
           std::cerr << "crash_logger : I am destroyed without being dismissed. Dumping the objects : ";
           for (auto &x : names) std::cerr << "\"" << x << "\" ";
           std::cerr << std::endl;
-          h5::file(this->filename_.c_str(), H5F_ACC_TRUNC); // create the file
+          h5::file(this->filename_.c_str(), 'w'); // create the file
         }
       }
       ///

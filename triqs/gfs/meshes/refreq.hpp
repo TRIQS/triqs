@@ -47,7 +47,7 @@ namespace triqs::gfs {
 
     // -------------------- HDF5 -------------------
 
-    static std::string hdf5_scheme() { return "MeshReFreq"; }
+    static std::string hdf5_format() { return "MeshReFreq"; }
 
     friend void h5_write(h5::group fg, std::string const &subgroup_name, gf_mesh const &m) { h5_write_impl(fg, subgroup_name, m, "MeshReFreq"); }
 

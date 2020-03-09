@@ -139,21 +139,21 @@ template <typename... Args> decltype(auto) on_mesh(Args &&... args) const {
 //----------------------------- HDF5 -----------------------------
 
 /// HDF5 name
-static std::string hdf5_scheme() { return "Gf"; }
+static std::string hdf5_format() { return "Gf"; }
 
 friend struct gf_h5_rw<Var, Target>;
 
 /// Write into HDF5
 friend void h5_write(h5::group fg, std::string const &subgroup_name, this_t const &g) {
   auto gr = fg.create_group(subgroup_name);
-  gr.write_hdf5_scheme(g);
+  write_hdf5_format(gr, g);
   gf_h5_rw<Var, Target>::write(gr, g);
 }
 
 /// Read from HDF5
 friend void h5_read(h5::group fg, std::string const &subgroup_name, this_t &g) {
   auto gr       = fg.open_group(subgroup_name);
-  auto tag_file = gr.read_hdf5_scheme();
+  auto tag_file = read_hdf5_format(gr);
   if (!(tag_file[0] == 'G' and tag_file[1] == 'f'))
     TRIQS_RUNTIME_ERROR << "h5_read : For a Green function, the type tag should be Gf (or Gfxxxx for old archive) "
                         << " while I found " << tag_file;
