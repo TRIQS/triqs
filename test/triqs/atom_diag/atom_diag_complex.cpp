@@ -14,9 +14,9 @@ using namespace triqs::atom_diag;
 
 //#define GENERATE_REF_H5
 #ifdef GENERATE_REF_H5
-triqs::h5::file out_file("atom_diag_complex.h5", H5F_ACC_TRUNC);
+triqs::h5::file out_file("atom_diag_complex.h5", 'w');
 #else
-triqs::h5::file ref_file("atom_diag_complex.ref.h5", H5F_ACC_RDONLY);
+triqs::h5::file ref_file("atom_diag_complex.ref.h5", 'r');
 #endif
 
 TEST(atom_diag_complex, QuantumNumbers) {

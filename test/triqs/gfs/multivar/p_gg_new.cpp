@@ -35,7 +35,7 @@ gf_bz_imfreq_mat compute_gg_fft(gf_bz_imfreq_mat const &G_k_w) {
   chi0_R_tau(r_, tau_) << -G_R_tau(r_, tau_) * G_R_tau(-r_, beta - tau_);
 
   /*
- h5::file file("bubble.h5", H5F_ACC_TRUNC );
+ h5::file file("bubble.h5", 'w' );
  h5_write(file, "G_R_tau", G_R_tau);
  h5_write(file, "chi0_R_tau", chi0_R_tau);
  */
@@ -84,7 +84,7 @@ TEST(Gf, Bubble) {
   auto chi_q_nu     = compute_gg(G_k_w);
 
   /*
-  h5::file file("bubble.h5", H5F_ACC_RDWR );
+  h5::file file("bubble.h5", 'a' );
   h5_write(file, "chi_fft", chi_q_nu_fft);
   h5_write(file, "chi", chi_q_w);
  */

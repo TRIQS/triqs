@@ -23,7 +23,7 @@ TEST(Array, H5) {
 
   // WRITE the file
   {
-    h5::file file("ess.h5", H5F_ACC_TRUNC);
+    h5::file file("ess.h5", 'w');
     h5::group top(file);
 
     h5_write(top, "A", A);
@@ -112,7 +112,7 @@ TEST(Array, H5ArrayString) {
   V1.push_back("de");
 
   // writing
-  h5::file file("test_array_string.h5", H5F_ACC_TRUNC);
+  h5::file file("test_array_string.h5", 'w');
   h5::group top(file);
 
   h5_write(top, "A", A);
@@ -144,7 +144,7 @@ TEST(Array, H5RealIntoComplex) {
 
   // WRITE the file
   {
-    h5::file file("ess_real_complex.h5", H5F_ACC_TRUNC);
+    h5::file file("ess_real_complex.h5", 'w');
     h5::group top(file);
     h5_write(top, "D", D);
   }
@@ -174,7 +174,7 @@ TEST(Array, H5StdVector) {
   std::vector<std::complex<double>> vc2;
 
   {
-    h5::file file1("test_std_vector.h5", H5F_ACC_TRUNC);
+    h5::file file1("test_std_vector.h5", 'w');
     // do we need this top ?
     h5::group top(file1);
     h5_write(top, "vdouble", v);
@@ -182,7 +182,7 @@ TEST(Array, H5StdVector) {
   }
 
   {
-    h5::file file2("test_std_vector.h5", H5F_ACC_RDONLY);
+    h5::file file2("test_std_vector.h5", 'r');
     h5::group top2(file2);
     h5_read(top2, "vdouble", v2);
     h5_read(top2, "vcomplex", vc2);

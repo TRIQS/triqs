@@ -27,7 +27,7 @@ TEST(GfCartesian, H5_RW_Evaluator) {
   auto g      = gf<cartesian_product<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}, {1, 1}};
   g()         = 2;
 
-  h5::file file("g_nu_nup.h5", H5F_ACC_TRUNC);
+  h5::file file("g_nu_nup.h5", 'w');
   h5_write(file, "g", g);
   gf<cartesian_product<imfreq, imfreq>, matrix_valued> g2{};
   h5_read(file, "g", g2);
@@ -47,7 +47,7 @@ TEST(BlockGfCartesian, H5_RW_Evaluator) {
   g()         = 2;
   auto G      = make_block_gf({"up"}, {g});
   //EXPECT_ARRAY_NEAR(get_target_shape(G[0]), mini_vector<size_t,2>{1,1});
-  h5::file file("g_nu_nup.h5", H5F_ACC_TRUNC);
+  h5::file file("g_nu_nup.h5", 'w');
   h5_write(file, "G", G);
 
   block_gf<cartesian_product<imfreq, imfreq>, matrix_valued> G2{};
@@ -91,7 +91,7 @@ TEST(BlockGf, H5_RW_Evaluator) {
   g()    = 2;
   auto G = make_block_gf({"up"}, {g});
 
-  h5::file file("g_nu_nup.h5", H5F_ACC_TRUNC);
+  h5::file file("g_nu_nup.h5", 'w');
   h5_write(file, "G", G);
   h5_write(file, "g", g);
 

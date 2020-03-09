@@ -41,14 +41,14 @@ TEST(tight_binding, h5_read_write) {
 
   // write
   {
-    auto file = triqs::h5::file{"test_tb.h5", H5F_ACC_TRUNC};
+    auto file = triqs::h5::file{"test_tb.h5", 'w'};
     auto grp  = triqs::h5::group{file};
     h5_write(grp, "cubic_lattice_nn_hop", tb);
   }
 
   // read
   {
-    auto file  = triqs::h5::file{"test_tb.h5", H5F_ACC_RDONLY};
+    auto file  = triqs::h5::file{"test_tb.h5", 'r'};
     auto grp   = triqs::h5::group{file};
     auto tb_in = triqs::h5::h5_read<tight_binding>(grp, "cubic_lattice_nn_hop");
     //EXPECT_EQ(tb, tb_in);

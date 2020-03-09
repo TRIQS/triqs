@@ -16,9 +16,9 @@ TEST(atom_diag, HDF5) {
   rw_h5(ad_complex, "ad_complex", "ad");
 
   // We should be able to read a real atom_diag into complex, but not the other way around
-  h5::file f_real("ad_real.h5", H5F_ACC_RDONLY);
+  h5::file f_real("ad_real.h5", 'r');
   EXPECT_NO_THROW(h5_read(f_real, "ad", ad_complex));
-  h5::file f_complex("ad_complex.h5", H5F_ACC_RDONLY);
+  h5::file f_complex("ad_complex.h5", 'r');
   EXPECT_THROW(h5_read(f_complex, "ad", ad_real), triqs::runtime_error);
 }
 

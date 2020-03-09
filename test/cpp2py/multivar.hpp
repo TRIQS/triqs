@@ -17,14 +17,14 @@ vertex_t make_vertex(double a) {
   auto gamma = vertex_t{{m_b, m_f, m_f}, {2, 2, 2, 2}};
   gamma()    = a;
 
-  h5::file file("make_vertex.h5", H5F_ACC_TRUNC);
+  h5::file file("make_vertex.h5", 'w');
   h5_write(file, "gamma", gamma);
 
   return gamma;
 }
 
 void pass_vertex(vertex_view_t gamma) {
-  h5::file file("pass_vertex.h5", H5F_ACC_TRUNC);
+  h5::file file("pass_vertex.h5", 'w');
   h5_write(file, "gamma", gamma);
 }
 
@@ -43,13 +43,13 @@ block_vertex_t make_block_vertex(double a) {
 
   auto block_gamma = make_block2_gf<mesh_t, target_t>({"up", "dn"}, {"up", "dn"}, {{gamma_uu, gamma_ud}, {gamma_du, gamma_dd}});
 
-  h5::file file("make_block_vertex.h5", H5F_ACC_TRUNC);
+  h5::file file("make_block_vertex.h5", 'w');
   h5_write(file, "gamma", block_gamma);
 
   return block_gamma;
 }
 
 void pass_block_vertex(block_vertex_view_t gamma) {
-  h5::file file("pass_block_vertex.h5", H5F_ACC_TRUNC);
+  h5::file file("pass_block_vertex.h5", 'w');
   h5_write(file, "gamma", gamma);
 }

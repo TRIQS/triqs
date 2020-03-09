@@ -32,7 +32,7 @@ TEST(H5Io, Pair) {
   std::pair<std::string, std::vector<double>> mv = {"a", {1.0, 2.0}};
 
   {
-    h5::file file{"test_pair.h5", H5F_ACC_TRUNC};
+    h5::file file{"test_pair.h5", 'w'};
     h5::group grp{file};
     h5_write(grp, "pair_int_str", m);
     h5_write(grp, "pair_str_vec", mv);
@@ -43,7 +43,7 @@ TEST(H5Io, Pair) {
   std::pair<std::string, std::vector<double>> mmv;
 
   {
-    h5::file file{"test_pair.h5", H5F_ACC_RDONLY};
+    h5::file file{"test_pair.h5", 'r'};
     h5::group grp{file};
     h5_read(grp, "pair_int_str", mm);
     h5_read(grp, "pair_str_vec", mmv);
@@ -61,7 +61,7 @@ TEST(H5Io, Tuple) {
   std::tuple<std::string, std::vector<double>> mv = {"a", {1.0, 2.0}};
 
   {
-    h5::file file{"test_tuple.h5", H5F_ACC_TRUNC};
+    h5::file file{"test_tuple.h5", 'w'};
     h5::group grp{file};
     h5_write(grp, "tpl_int_str", m);
     h5_write(grp, "tpl_str_vec", mv);
@@ -72,7 +72,7 @@ TEST(H5Io, Tuple) {
   std::tuple<std::string, std::vector<double>> mmv;
 
   {
-    h5::file file{"test_tuple.h5", H5F_ACC_RDONLY};
+    h5::file file{"test_tuple.h5", 'r'};
     h5::group grp{file};
     h5_read(grp, "tpl_int_str", mm);
     h5_read(grp, "tpl_str_vec", mmv);
@@ -90,7 +90,7 @@ TEST(H5Io, Map) {
   std::map<std::string, std::vector<double>> mv = {{"a", {1.0, 2.0}}, {"b", {2.0, 3.0, 4.0}}};
 
   {
-    h5::file file{"test_map.h5", H5F_ACC_TRUNC};
+    h5::file file{"test_map.h5", 'w'};
     h5::group grp{file};
     h5_write(grp, "map_int", m);
     h5_write(grp, "map_vec", mv);
@@ -101,7 +101,7 @@ TEST(H5Io, Map) {
   std::map<std::string, std::vector<double>> mmv;
 
   {
-    h5::file file{"test_map.h5", H5F_ACC_RDONLY};
+    h5::file file{"test_map.h5", 'r'};
     h5::group grp{file};
     h5_read(grp, "map_int", mm);
     h5_read(grp, "map_vec", mmv);
@@ -119,7 +119,7 @@ TEST(H5Io, Vector) {
   std::vector<double> mv     = {1.0, 2.0};
 
   {
-    h5::file file{"test_vec.h5", H5F_ACC_TRUNC};
+    h5::file file{"test_vec.h5", 'w'};
     h5::group grp{file};
     h5_write(grp, "vec_str", m);
     h5_write(grp, "vec_dbl", mv);
@@ -130,7 +130,7 @@ TEST(H5Io, Vector) {
   std::vector<double> mmv;
 
   {
-    h5::file file{"test_vec.h5", H5F_ACC_RDONLY};
+    h5::file file{"test_vec.h5", 'r'};
     h5::group grp{file};
     h5_read(grp, "vec_str", mm);
     h5_read(grp, "vec_dbl", mmv);
@@ -149,7 +149,7 @@ TEST(H5Io, Attribute) {
   std::vector<std::vector<std::string>> vves = {{"", ""}, {"", ""}, {"", ""}};
 
   {
-    h5::file file{"test_attribute.h5", H5F_ACC_TRUNC};
+    h5::file file{"test_attribute.h5", 'w'};
     h5::group grp{file};
     h5_write(grp, "vec", 0);
 
@@ -164,7 +164,7 @@ TEST(H5Io, Attribute) {
   std::vector<std::vector<std::string>> rvvs, revvs, rvevs, rvves;
 
   {
-    h5::file file{"test_attribute.h5", H5F_ACC_RDONLY};
+    h5::file file{"test_attribute.h5", 'r'};
     h5::group grp{file};
 
     auto id = grp.open_dataset("vec");

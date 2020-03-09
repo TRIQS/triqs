@@ -5,7 +5,7 @@ TEST(GfCartesian, H5_RW_EvaluatorS) {
   auto g      = gf<cartesian_product<imfreq, imfreq>, scalar_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}};
   g()         = 2;
 
-  h5::file file("g_nu_nuph5", H5F_ACC_TRUNC);
+  h5::file file("g_nu_nuph5", 'w');
   h5_write(file, "g", g);
   gf<cartesian_product<imfreq, imfreq>, scalar_valued> g2{};
   h5_read(file, "g", g2);
@@ -26,7 +26,7 @@ TEST(GfCartesian, H5_RW_EvaluatorM) {
   auto g      = gf<cartesian_product<imfreq, imfreq>, matrix_valued>{{{beta, Fermion, 5}, {beta, Boson, 5}}, {1, 1}};
   g()         = 2;
 
-  h5::file file("g_nu_nuph5", H5F_ACC_TRUNC);
+  h5::file file("g_nu_nuph5", 'w');
   h5_write(file, "g", g);
   gf<cartesian_product<imfreq, imfreq>, matrix_valued> g2{};
   h5_read(file, "g", g2);

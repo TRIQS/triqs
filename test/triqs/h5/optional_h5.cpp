@@ -1,4 +1,3 @@
-#include <triqs/h5/optional.hpp>
 #include <triqs/test_tools/arrays.hpp>
 
 using namespace triqs;

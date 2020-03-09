@@ -70,7 +70,7 @@ struct compute_histo {
   }
   void collect_results(mpi::communicator c) {
     H /= tot;
-    h5::file file("histo.h5", H5F_ACC_TRUNC);
+    h5::file file("histo.h5", 'w');
     h5_write(file, "H", H);
   }
 };
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
   int xmax                = floor(4 * sqrt(Length_Cycle)); // typical length of a walk
   double pl = 2.5, pr = 1;                                 //non normalized probabilities for proposing a left or right move
 
-  h5::file file("params.h5", H5F_ACC_TRUNC);
+  h5::file file("params.h5", 'w');
   h5_write(file, "pr", pr);
   h5_write(file, "pl", pl);
   h5_write(file, "xmax", xmax);

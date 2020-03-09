@@ -10,15 +10,15 @@ TEST(Gf, ArrayOf) {
 
   // test H5
   {
-    h5::file file("ess_array_gf.h5", H5F_ACC_TRUNC);
+    h5::file file("ess_array_gf.h5", 'w');
     h5_write(file, "Agf", agf);
   }
   {
-    h5::file file("ess_array_gf.h5", H5F_ACC_RDONLY);
+    h5::file file("ess_array_gf.h5", 'r');
     h5_read(file, "Agf", bgf);
   }
   {
-    h5::file file("ess_array_gf2.h5", H5F_ACC_TRUNC);
+    h5::file file("ess_array_gf2.h5", 'w');
     h5_write(file, "Agf", bgf);
   }
 
