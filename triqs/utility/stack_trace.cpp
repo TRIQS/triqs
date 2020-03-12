@@ -33,6 +33,9 @@ namespace triqs::utility {
     // On Os X, we use lldb, on linux gdb to decipher the call stack for us
     // We launch it with a pipe, and get back the output
 #ifdef __APPLE__
+    // The LLDB Solution implemented below is no longer working on Mac OS 10.15 (Catalina)
+    // TODO Replace by implementation of stacktrace standardization proposal (e.g. https://github.com/boostorg/stacktrace)
+    return {"Stack-trace currently not available on Mac OS"};
     std::string cmd             = "lldb -p " + std::to_string(getpid()) + " --batch -o \"bt\" 2>&1";
     const char *PYTHON_SENTINEL = "Python";
 #else
