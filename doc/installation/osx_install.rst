@@ -2,18 +2,18 @@
 
 .. highlight:: bash
 
-.. _install_osx:
+.. note:: The recommended way to install TRIQS on Mac OS X is through the :ref:`Anaconda package <anaconda>`
 
-Installing required libraries on Mac OS X
-=========================================
+.. _install_osx:
+Prerequisites for the TRIQS Compilation on Mac OS X
+===================================================
 
 Disclaimer
--------------
+----------
 
-Here we provide the installation instructions in order to use TRIQS on OS X.
+We here provide instructions on how to install the dependencies of TRIQS on Mac OS X in order to be able to :ref:`compile TRIQS from source <compilation_from_source>`.
 
-While the installation of TRIQS itself is as straightforward as on Linux systems,
-the installation of the standard scientific libraries used by TRIQS
+The installation of the scientific libraries that TRIQS depends upon
 (mpi, hdf5, boost, fftw, ipython, ....) is not as simple as in e.g. Debian/Ubuntu,
 where they are packaged with the distribution itself (i.e. "part of the system").
 

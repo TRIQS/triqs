@@ -66,6 +66,18 @@ If you aim to compile applications against the triqs library, additional :ref:`d
 
 For full c++2py functionality, please read the corresponding :ref:`section <ubuntu_cpp2py>` for the Ubuntu set-up.
 
+.. _anaconda:
+Anaconda (experimental)
+-----------------------
+
+We provide Linux and OSX packages for the `Anaconda <https://www.anaconda.com/>`_ distribution. The packages are provided through the `conda-forge <https://conda-forge.org/>`_ repositories. After `installing conda <https://docs.conda.io/en/latest/miniconda.html>`_ you can install TRIQS with::
+
+        conda install -c conda-forge triqs
+
+See also `github.com/conda-forge/triqs-feedstock <https://github.com/conda-forge/triqs-feedstock/>`_.
+We further provide packages for `triqs_cthyb <https://github.com/conda-forge/triqs_cthyb-feedstock/>`_, `triqs_dft_tools <https://github.com/conda-forge/triqs_dft_tools-feedstock/>`_
+and `triqs_tprf <https://github.com/conda-forge/triqs_tprf-feedstock/>`_.
+
 .. _triqs_docker:
 Docker
 ------
