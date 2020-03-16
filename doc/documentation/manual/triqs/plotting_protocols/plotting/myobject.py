@@ -1,6 +1,6 @@
 import numpy
 
-class myObject(object):
+class myObject:
   def _plot_(self, options):
     PI = numpy.pi
     xdata = numpy.arange(-PI,PI,0.1)

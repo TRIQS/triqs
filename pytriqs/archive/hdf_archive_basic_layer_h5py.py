@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -27,7 +25,7 @@ from builtins import str
 from builtins import map
 from builtins import object
 import numpy,string,h5py
-class HDFArchiveGroupBasicLayer(object) :
+class HDFArchiveGroupBasicLayer :
     _class_version = 1
 
     def __init__(self, parent, subpath ):

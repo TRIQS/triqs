@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -58,7 +56,7 @@ def dos_patch(tight_binding, triangles, n_eps, n_div, name) :
     return DOS (eps, arr, name)
 
 # for backward compatibility. Not documented. 
-class TBLattice(object):
+class TBLattice:
 
     def __init__ (self, units, hopping, orbital_positions = [ (0, 0, 0) ], orbital_names = [""]):
 

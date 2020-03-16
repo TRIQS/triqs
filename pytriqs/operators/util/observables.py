@@ -1,5 +1,4 @@
 """Operators for commonly used observables."""
-from __future__ import unicode_literals
 
 from builtins import range
 import numpy as np

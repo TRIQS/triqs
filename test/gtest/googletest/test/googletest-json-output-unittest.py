@@ -29,7 +29,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Unit test for the gtest_json_output module."""
-from __future__ import unicode_literals
 
 import datetime
 import errno

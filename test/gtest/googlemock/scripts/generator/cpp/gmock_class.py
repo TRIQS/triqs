@@ -25,10 +25,7 @@ Usage:
 
 Output is sent to stdout.
 """
-from __future__ import unicode_literals
 
-from builtins import map
-from builtins import range
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -148,7 +145,7 @@ def _GenerateMocks(filename, source, ast_list, desired_class_names):
         # so we have to make up names here.
         # TODO(paulchang): Handle non-type template arguments (e.g.
         # template<typename T, int N>).
-        template_arg_count = len(list(class_node.templated_types.keys()))
+        template_arg_count = len(class_node.templated_types.keys())
         template_args = ['T%d' % n for n in range(template_arg_count)]
         template_decls = ['typename ' + arg for arg in template_args]
         lines.append('template <' + ', '.join(template_decls) + '>')
@@ -215,7 +212,7 @@ def main(argv=sys.argv):
 
   builder = ast.BuilderFromSource(source, filename)
   try:
-    entire_ast = [_f for _f in builder.Generate() if _f]
+    entire_ast = filter(None, builder.Generate())
   except KeyboardInterrupt:
     return
   except:

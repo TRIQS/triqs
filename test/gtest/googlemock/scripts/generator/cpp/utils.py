@@ -16,7 +16,6 @@
 # limitations under the License.
 
 """Generic utilities for C++ parsing."""
-from __future__ import unicode_literals
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 

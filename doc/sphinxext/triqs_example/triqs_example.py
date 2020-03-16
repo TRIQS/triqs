@@ -17,7 +17,7 @@ from sphinx.errors import SphinxError
 class TriqsExampleError(SphinxError):
     category = 'triqs_example error'
 
-class TriqsExampleRun(object):
+class TriqsExampleRun:
     #here = os.path.abspath(__file__)
     #pycon = os.path.join(os.path.dirname(here),'pycon.py')
     config = dict(

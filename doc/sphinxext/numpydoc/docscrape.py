@@ -10,7 +10,7 @@ import pydoc
 from StringIO import StringIO
 from warnings import warn
 4
-class Reader(object):
+class Reader:
     """A line-based string reader.
 
     """
@@ -84,7 +84,7 @@ class Reader(object):
         return not ''.join(self._str).strip()
 
 
-class NumpyDocString(object):
+class NumpyDocString:
     def __init__(self,docstring):
         docstring = textwrap.dedent(docstring).split('\n')
 

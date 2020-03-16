@@ -27,7 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Shared utilities for writing scripts for Google Test/Mock."""
-from __future__ import unicode_literals
 
 __author__ = 'wan@google.com (Zhanyong Wan)'
 

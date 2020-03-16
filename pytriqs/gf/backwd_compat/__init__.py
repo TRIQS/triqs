@@ -25,6 +25,5 @@ It is imported with the command::
 
   >>> from pytriqs.gf import *
 """
-from __future__ import unicode_literals
 
 __all__ = []

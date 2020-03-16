@@ -29,7 +29,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Verifies that test shuffling works."""
-from __future__ import unicode_literals
 
 import os
 import gtest_test_utils

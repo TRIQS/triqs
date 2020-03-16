@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -38,7 +35,7 @@ from pytriqs.archive.hdf_archive_schemes import hdf_scheme_access_for_write, hdf
 #  Various wrappers for basic python types.
 #
 # --------------------------------------------
-class PythonListWrap(object):
+class PythonListWrap:
     def __init__(self,ob) :
         self.ob = ob
     def __reduce_to_dict__(self) :
@@ -47,7 +44,7 @@ class PythonListWrap(object):
     def __factory_from_dict__(cls, name, D) :
         return [x for n,x in sorted([(int(n), x) for n,x in list(D.items())])]
 
-class PythonTupleWrap(object):
+class PythonTupleWrap:
     def __init__(self,ob) :
         self.ob = ob
     def __reduce_to_dict__(self) :
@@ -56,7 +53,7 @@ class PythonTupleWrap(object):
     def __factory_from_dict__(cls, name, D) :
         return tuple(x for n,x in sorted([(int(n), x) for n,x in list(D.items())]))
 
-class PythonDictWrap(object):
+class PythonDictWrap:
     def __init__(self,ob) :
         self.ob = ob
     def __reduce_to_dict__(self) :
@@ -428,7 +425,7 @@ class HDFArchive(HDFArchiveGroup):
 
 #--------------------------------------------------------------------------------
 
-class HDFArchiveInert(object):
+class HDFArchiveInert:
     """
     A fake class for the node in MPI. It does nothing, but
     permits to write simply :

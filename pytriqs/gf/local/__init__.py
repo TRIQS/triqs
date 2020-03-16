@@ -23,7 +23,6 @@ r"""
 Deprecated module
 from pytriqs.gf import XXX
 """
-from __future__ import unicode_literals
 
 import warnings
 warnings.warn("""

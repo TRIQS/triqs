@@ -21,7 +21,7 @@ from pygments.formatters import HtmlFormatter
 class RunBlockError(SphinxError):
     category = 'runblock error'
 
-class AutoRun(object):
+class AutoRun:
     here = os.path.abspath(__file__)
     pycon = os.path.join(os.path.dirname(here),'pycon.py')
     config = dict(

@@ -32,7 +32,6 @@
 This script invokes gtest_skip_in_environment_setup_test_ and verifies its
 output.
 """
-from __future__ import unicode_literals
 
 import gtest_test_utils
 

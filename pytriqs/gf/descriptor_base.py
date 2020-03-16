@@ -20,16 +20,13 @@
 ################################################################################
 
 r""" """
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 from builtins import object
 import numpy
 from math import *
 from .lazy_expressions import LazyExprTerminal, LazyExpr, transform
 
-class LazyCTX(object):
+class LazyCTX:
     def __init__ (self, G): 
         self.G = G
     def _is_compatible_for_ops(self, g): 

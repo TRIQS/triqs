@@ -45,10 +45,7 @@ predicate assertions, and writes it to file gtest_pred_impl.h in the
 directory where the script is.  It also generates the accompanying
 unit test in file gtest_pred_impl_unittest.cc.
 """
-from __future__ import unicode_literals
 
-from builtins import str
-from builtins import range
 __author__ = 'wan@google.com (Zhanyong Wan)'
 
 import os
@@ -185,7 +182,7 @@ def Title(word):
 def OneTo(n):
   """Returns the list [1, 2, 3, ..., n]."""
 
-  return list(range(1, n + 1))
+  return range(1, n + 1)
 
 
 def Iter(n, format, sep=''):

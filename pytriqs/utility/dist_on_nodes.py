@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -31,7 +29,7 @@ from builtins import object
 import os,sys,time,pickle
 import pytriqs.utility.mpi as mpi
 
-class DistributionOnNodes(object):
+class DistributionOnNodes:
     """
        Distribution of the calculation of a function over the nodes.
        Derive from it and reimplement :

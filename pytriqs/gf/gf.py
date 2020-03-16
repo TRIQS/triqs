@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -51,7 +48,7 @@ all_meshes = (MeshProduct,) + tuple(c for c in list(meshes.__dict__.values()) if
 # list of call_proxies
 all_call_proxies = dict( (c.__name__, c) for c in list(wrapped_aux.__dict__.values()) if isinstance(c, type) and c.__name__.startswith('CallProxy'))
 
-class CallProxyNone(object):
+class CallProxyNone:
     """Default do nothing value"""
     def __init__(self, a):
         pass
@@ -80,7 +77,7 @@ class AddMethod(type):
             if not hasattr(cls, a.__name__):
                 setattr(cls, a.__name__, add_method_helper(a,cls))
 
-class Idx(object):
+class Idx:
     def __init__(self, *x):
         self.idx = x[0] if len(x)==1 else x
 

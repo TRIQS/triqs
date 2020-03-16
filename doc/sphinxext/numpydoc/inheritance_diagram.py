@@ -56,7 +56,7 @@ def my_import(name):
 class DotException(Exception):
     pass
 
-class InheritanceGraph(object):
+class InheritanceGraph:
     """
     Given a list of classes, determines the set of classes that
     they inherit from all the way to the root "object", and then

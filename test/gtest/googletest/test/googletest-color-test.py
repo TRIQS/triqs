@@ -30,7 +30,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Verifies that Google Test correctly determines whether to use colors."""
-from __future__ import unicode_literals
 
 import os
 import gtest_test_utils

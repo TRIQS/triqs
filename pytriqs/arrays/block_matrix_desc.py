@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 # Generated automatically using the command :
 # c++2py.py ../c++/block_matrix.hpp -p -m pytriqs.arrays.block_matrix -o block_matrix
 from cpp2py.wrap_generator import *

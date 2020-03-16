@@ -16,12 +16,7 @@
 # limitations under the License.
 
 """Tokenize C++ source code."""
-from __future__ import unicode_literals
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import range
-from builtins import object
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -30,7 +25,7 @@ try:
     import builtins
 except ImportError:
     # Python 2.x
-    import builtins as builtins
+    import __builtin__ as builtins
 
 
 import sys
@@ -63,7 +58,7 @@ PREPROCESSOR = 'PREPROCESSOR'
 
 # Where the token originated from.  This can be used for backtracking.
 # It is always set to WHENCE_STREAM in this code.
-WHENCE_STREAM, WHENCE_QUEUE = list(range(2))
+WHENCE_STREAM, WHENCE_QUEUE = range(2)
 
 
 class Token(object):

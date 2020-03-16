@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -30,7 +29,7 @@ import warnings
 import numpy as np
 import collections
 
-class Block2Gf(object):
+class Block2Gf:
     """
     Generic Green's Function by two-index Block.
     """

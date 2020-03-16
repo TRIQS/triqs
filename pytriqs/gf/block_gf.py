@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -36,7 +34,7 @@ def call_factory_from_dict(cl,name, dic):
     """Given a class cl and a dict dic, it calls cl.__factory_from_dict__(dic)"""
     return cl.__factory_from_dict__(name, dic)
 
-class BlockGf(object):
+class BlockGf:
     """
     Generic Green's Function by Block.
     """

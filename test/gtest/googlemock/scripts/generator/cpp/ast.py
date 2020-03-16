@@ -16,14 +16,7 @@
 # limitations under the License.
 
 """Generate an Abstract Syntax Tree (AST) for C++."""
-from __future__ import unicode_literals
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import next
-from builtins import str
-from builtins import range
-from builtins import object
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 
 
@@ -44,7 +37,7 @@ try:
     import builtins
 except ImportError:
     # Python 2.x
-    import builtins as builtins
+    import __builtin__ as builtins
 
 import sys
 import traceback
@@ -63,10 +56,10 @@ if not hasattr(builtins, 'reversed'):
 if not hasattr(builtins, 'next'):
     # Support Python 2.5 and earlier.
     def next(obj):
-        return obj.__next__()
+        return obj.next()
 
 
-VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = list(range(3))
+VISIBILITY_PUBLIC, VISIBILITY_PROTECTED, VISIBILITY_PRIVATE = range(3)
 
 FUNCTION_NONE = 0x00
 FUNCTION_CONST = 0x01
@@ -1727,7 +1720,7 @@ def main(argv):
         print('Processing %s' % filename)
         builder = BuilderFromSource(source, filename)
         try:
-            entire_ast = [_f for _f in builder.Generate() if _f]
+            entire_ast = filter(None, builder.Generate())
         except KeyboardInterrupt:
             return
         except:

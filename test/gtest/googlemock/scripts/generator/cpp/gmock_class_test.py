@@ -16,7 +16,6 @@
 # limitations under the License.
 
 """Tests for gmock.scripts.generator.cpp.gmock_class."""
-from __future__ import unicode_literals
 
 __author__ = 'nnorwitz@google.com (Neal Norwitz)'
 

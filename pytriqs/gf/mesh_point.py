@@ -1,5 +1,3 @@
-from __future__ import division
-from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -23,14 +21,14 @@ from __future__ import unicode_literals
 
 from past.utils import old_div
 from builtins import object
-class MeshValueGenerator(object):
+class MeshValueGenerator:
     def __init__(self, m):
         self.m = m
 
     def __iter__(self):
         return (x.value for x in self.m)
 
-class MeshPoint(object) :
+class MeshPoint :
 
     def __init__(self, linear_index, value = None):
         """ None : a mesh point just to use in the G[...] """

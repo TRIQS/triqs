@@ -37,7 +37,6 @@ where BUILD/DIR contains the built googletest-output-test_ file.
 googletest_output_test.py --gengolden
 googletest_output_test.py
 """
-from __future__ import unicode_literals
 
 import difflib
 import os

@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -31,7 +30,7 @@ import numpy as np
 def call_factory_from_dict(cl, name, l):
     return cl.__factory_from_dict__(name, l)
 
-class MeshProduct(object):
+class MeshProduct:
     """
     The cartesian Mesh product
     """

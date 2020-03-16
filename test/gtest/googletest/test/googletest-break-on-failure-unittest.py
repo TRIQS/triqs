@@ -37,7 +37,6 @@ either the GTEST_BREAK_ON_FAILURE environment variable or the
 by invoking googletest-break-on-failure-unittest_ (a program written with
 Google Test) with different environments and command line flags.
 """
-from __future__ import unicode_literals
 
 import os
 import gtest_test_utils

@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -27,7 +26,7 @@ import numpy
 from pytriqs.dos import DOS
 from pytriqs.lattice.tight_binding import dos_patch
 
-class BZPatch(object):
+class BZPatch:
     """Description of a Patch of the BZ"""
     def __init__(self, name, polygons):
         """ TO BE WRITTEN: MICHEL! """

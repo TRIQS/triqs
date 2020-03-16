@@ -38,7 +38,6 @@ gmock_output_test.py --gengolden
 gmock_output_test.py
 
 """
-from __future__ import unicode_literals
 
 from io import open    # pylint: disable=redefined-builtin, g-importing-member
 import os

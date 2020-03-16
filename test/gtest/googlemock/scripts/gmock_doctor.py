@@ -30,7 +30,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Converts compiler's errors in code using Google Mock to plain English."""
-from __future__ import unicode_literals
 
 __author__ = 'wan@google.com (Zhanyong Wan)'
 

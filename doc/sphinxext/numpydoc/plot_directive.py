@@ -408,7 +408,7 @@ Exception occurred rendering plot.
 # :context: option
 plot_context = dict()
 
-class ImageFile(object):
+class ImageFile:
     def __init__(self, basename, dirname):
         self.basename = basename
         self.dirname = dirname

@@ -28,11 +28,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Unit test utilities for Google C++ Testing and Mocking Framework."""
-from __future__ import unicode_literals
 # Suppresses the 'Import not at the top of the file' lint complaint.
 # pylint: disable-msg=C6204
 
-from builtins import object
 import os
 import sys
 
@@ -201,7 +199,7 @@ def GetExitStatus(exit_code):
       return -1
 
 
-class Subprocess(object):
+class Subprocess:
   def __init__(self, command, working_dir=None, capture_stderr=True, env=None):
     """Changes into a specified directory, if provided, and executes a command.
 
@@ -254,7 +252,7 @@ class Subprocess(object):
         # Changes made by os.environ.clear are not inheritable by child
         # processes until Python 2.6. To produce inheritable changes we have
         # to delete environment items with the del statement.
-        for key in list(dest.keys()):
+        for key in dest.keys():
           del dest[key]
         dest.update(src)
 

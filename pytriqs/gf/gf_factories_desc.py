@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from cpp2py.wrap_generator import *
 
 # This modules contains factory functions that generate a Green function

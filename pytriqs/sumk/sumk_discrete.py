@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -29,7 +28,7 @@ from itertools import *
 import inspect
 import copy,numpy
 
-class SumkDiscrete(object):
+class SumkDiscrete:
     """
       INTERNAL USE
       The function to compute \[ G \leftarrow \sum_k (\omega + \mu - eps_k - Sigma(k,\omega))^{-1} \]

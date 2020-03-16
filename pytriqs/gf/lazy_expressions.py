@@ -1,5 +1,3 @@
-from __future__ import division
-from __future__ import unicode_literals
 from builtins import map
 from builtins import object
 from past.utils import old_div
@@ -29,7 +27,7 @@ from functools import reduce
 #__all__ = ['LazyExpr', 'LazyExprTerminal', 'eval_expr_with_context', 'lazy', 'lazy_function', 'transform', 'eval_expr']
 __all__ = ['LazyExpr', 'LazyExprTerminal', 'eval_expr_with_context', 'lazy_function', 'transform', 'eval_expr']
 
-class __aux(object):
+class __aux:
 
     def __add__(self, y): return LazyExpr("+", LazyExpr(self), LazyExpr(y))
     def __sub__(self, y): return LazyExpr("-", LazyExpr(self), LazyExpr(y))

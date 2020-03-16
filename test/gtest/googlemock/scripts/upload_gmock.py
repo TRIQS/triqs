@@ -36,7 +36,6 @@ This simple wrapper passes all command line flags and
 
 USAGE: upload_gmock.py [options for upload.py]
 """
-from __future__ import unicode_literals
 
 __author__ = 'wan@google.com (Zhanyong Wan)'
 

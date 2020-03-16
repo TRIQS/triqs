@@ -61,10 +61,7 @@ GRAMMAR:
            | EMPTY
        EXPRESSION has Python syntax.
 """
-from __future__ import unicode_literals
 
-from builtins import range
-from builtins import object
 __author__ = 'wan@google.com (Zhanyong Wan)'
 
 import os
@@ -87,7 +84,7 @@ TOKEN_TABLE = [
     ]
 
 
-class Cursor(object):
+class Cursor:
   """Represents a position (line and column) in a text file."""
 
   def __init__(self, line=-1, column=-1):
@@ -137,7 +134,7 @@ def Eof():
   return Cursor(-1, -1)
 
 
-class Token(object):
+class Token:
   """Represents a token in a Pump source file."""
 
   def __init__(self, start=None, end=None, value=None, token_type=None):
@@ -390,54 +387,54 @@ def Tokenize(s):
       yield token
 
 
-class CodeNode(object):
+class CodeNode:
   def __init__(self, atomic_code_list=None):
     self.atomic_code = atomic_code_list
 
 
-class VarNode(object):
+class VarNode:
   def __init__(self, identifier=None, atomic_code=None):
     self.identifier = identifier
     self.atomic_code = atomic_code
 
 
-class RangeNode(object):
+class RangeNode:
   def __init__(self, identifier=None, exp1=None, exp2=None):
     self.identifier = identifier
     self.exp1 = exp1
     self.exp2 = exp2
 
 
-class ForNode(object):
+class ForNode:
   def __init__(self, identifier=None, sep=None, code=None):
     self.identifier = identifier
     self.sep = sep
     self.code = code
 
 
-class ElseNode(object):
+class ElseNode:
   def __init__(self, else_branch=None):
     self.else_branch = else_branch
 
 
-class IfNode(object):
+class IfNode:
   def __init__(self, exp=None, then_branch=None, else_branch=None):
     self.exp = exp
     self.then_branch = then_branch
     self.else_branch = else_branch
 
 
-class RawCodeNode(object):
+class RawCodeNode:
   def __init__(self, token=None):
     self.raw_code = token
 
 
-class LiteralDollarNode(object):
+class LiteralDollarNode:
   def __init__(self, token):
     self.token = token
 
 
-class ExpNode(object):
+class ExpNode:
   def __init__(self, token, python_exp):
     self.token = token
     self.python_exp = python_exp
@@ -584,7 +581,7 @@ def ParseToAST(pump_src_text):
   return code_node
 
 
-class Env(object):
+class Env:
   def __init__(self):
     self.variables = []
     self.ranges = []
@@ -641,7 +638,7 @@ class Env(object):
     sys.exit(1)
 
 
-class Output(object):
+class Output:
   def __init__(self):
     self.string = ''
 

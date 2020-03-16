@@ -1,5 +1,3 @@
-from __future__ import division
-from __future__ import unicode_literals
 
 ################################################################################
 #
@@ -32,7 +30,7 @@ from pytriqs.dos import DOS, DOSFromFunction
 import pytriqs.utility.mpi as mpi
 import numpy
 
-class HilbertTransform(object):
+class HilbertTransform:
     r"""
     Computes the Hilbert Transform from a DOS object
 

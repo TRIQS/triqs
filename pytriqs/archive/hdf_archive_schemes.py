@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -22,7 +21,7 @@ from __future__ import unicode_literals
 from builtins import object
 import re
 
-class HDF5Scheme(object) :
+class HDF5Scheme :
     def __init__(self, classname, modulename, doc, hdf_scheme, read_fun) : 
         self.classname, self.modulename, self.doc, self.read_fun = classname, modulename,doc, read_fun
         self.scheme_name = hdf_scheme
