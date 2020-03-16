@@ -19,10 +19,6 @@
 #
 ################################################################################
 
-from builtins import zip
-from builtins import str
-from builtins import map
-from builtins import object
 from itertools import product, chain
 import operator
 import warnings

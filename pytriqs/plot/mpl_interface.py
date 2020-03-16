@@ -19,8 +19,6 @@
 #
 ##########################################################################
 
-from builtins import str
-from builtins import range
 __all__ = ['plt', 'oplot', 'oploti', 'oplotr', 'subplots']
 
 import numpy

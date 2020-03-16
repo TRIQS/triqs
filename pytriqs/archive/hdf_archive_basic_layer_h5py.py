@@ -21,9 +21,6 @@
 ################################################################################
 
 # h5py
-from builtins import str
-from builtins import map
-from builtins import object
 import numpy,string,h5py
 class HDFArchiveGroupBasicLayer :
     _class_version = 1

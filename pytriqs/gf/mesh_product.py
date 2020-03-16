@@ -18,10 +18,6 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from builtins import str
-from builtins import zip
-from builtins import range
-from builtins import object
 import itertools
 from functools import reduce # Valid in Python 2.6+, required in Python 3
 import operator

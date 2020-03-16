@@ -20,8 +20,6 @@
 #
 ################################################################################
 
-from builtins import zip
-from builtins import range
 from past.utils import old_div
 from .sumk_discrete import SumkDiscrete
 from pytriqs.lattice.tight_binding import TBLattice

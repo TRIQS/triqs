@@ -18,11 +18,6 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from builtins import zip
-from builtins import map
-from builtins import str
-from builtins import range
-from builtins import object
 import collections
 
 from .gf import Gf

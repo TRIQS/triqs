@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from builtins import range
 from past.utils import old_div
 import unittest
 import os

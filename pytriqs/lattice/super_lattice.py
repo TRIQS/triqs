@@ -20,7 +20,6 @@
 #
 ################################################################################
 
-from builtins import range
 import numpy
 from .tight_binding import TBLattice
 

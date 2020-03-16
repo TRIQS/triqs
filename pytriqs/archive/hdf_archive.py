@@ -22,8 +22,6 @@
 
 from future import standard_library
 standard_library.install_aliases()
-from builtins import str
-from builtins import object
 import sys,numpy
 from importlib import import_module
 from .hdf_archive_basic_layer_h5py import HDFArchiveGroupBasicLayer

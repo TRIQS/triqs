@@ -20,8 +20,6 @@
 #
 ################################################################################
 
-from builtins import range
-from builtins import object
 import types,string,itertools
 import numpy
 

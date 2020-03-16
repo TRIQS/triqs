@@ -1,5 +1,3 @@
-from builtins import zip
-from builtins import map
 from pytriqs.gf import *
 from pytriqs.archive import *
 from itertools import product

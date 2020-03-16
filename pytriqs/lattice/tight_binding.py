@@ -20,9 +20,6 @@
 #
 ################################################################################
 
-from builtins import str
-from builtins import range
-from builtins import object
 __all__ = ['BravaisLattice', 'BrillouinZone', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path', 'energy_matrix_on_bz_path',
            'hopping_stack', 'TBLattice']
 

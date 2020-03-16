@@ -2,8 +2,6 @@
 """ Construct a random histogram, broadcast it and compare
 the broadcasted result with a reference. """
 
-from builtins import zip
-from builtins import range
 import numpy as np
 import pytriqs.utility.mpi as mpi
 from pytriqs.statistics.histograms import Histogram

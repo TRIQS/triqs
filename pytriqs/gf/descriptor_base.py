@@ -21,7 +21,6 @@
 
 r""" """
 
-from builtins import object
 import numpy
 from math import *
 from .lazy_expressions import LazyExprTerminal, LazyExpr, transform

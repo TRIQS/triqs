@@ -1,4 +1,3 @@
-from builtins import map
 from past.utils import old_div
 import numpy
 from warnings import warn

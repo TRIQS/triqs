@@ -1,4 +1,3 @@
-from builtins import range
 from pytriqs.gf import *
 from pytriqs.archive import *
 from itertools import product

@@ -20,9 +20,6 @@
 #
 ################################################################################
 
-from builtins import zip
-from builtins import range
-from builtins import object
 from past.utils import old_div
 from pytriqs.gf import *
 import types, string, inspect, itertools

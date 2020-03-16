@@ -1,6 +1,5 @@
 """Operators for commonly used observables."""
 
-from builtins import range
 import numpy as np
 from pytriqs.operators.operators import Operator, n, c_dag, c
 from pytriqs.operators.util.op_struct import get_mkind

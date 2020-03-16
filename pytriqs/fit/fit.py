@@ -20,8 +20,6 @@
 #
 ################################################################################
 
-from builtins import str
-from builtins import object
 from scipy.optimize import leastsq
 import numpy as np, inspect as ins
 

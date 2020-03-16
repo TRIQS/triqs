@@ -20,8 +20,6 @@
 #
 ################################################################################
 
-from builtins import zip
-from builtins import object
 from pytriqs.gf import *
 import pytriqs.utility.mpi as mpi
 from itertools import *

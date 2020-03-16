@@ -1,4 +1,3 @@
-from builtins import range
 from pytriqs.operators import *
 from pytriqs.gf import *
 from pytriqs.archive import *

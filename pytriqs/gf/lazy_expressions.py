@@ -1,5 +1,3 @@
-from builtins import map
-from builtins import object
 from past.utils import old_div
 from functools import reduce
 

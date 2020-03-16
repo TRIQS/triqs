@@ -1,4 +1,3 @@
-from builtins import range
 from pytriqs.gf import *
 from pytriqs.gf.gf_fnt import call_vec, call_s
 

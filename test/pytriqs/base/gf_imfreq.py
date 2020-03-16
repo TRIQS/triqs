@@ -19,7 +19,6 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from builtins import range
 from past.utils import old_div
 from pytriqs.archive import *
 from pytriqs.gf import *

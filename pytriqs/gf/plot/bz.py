@@ -1,5 +1,3 @@
-from builtins import str
-from builtins import range
 from past.utils import old_div
 from scipy.interpolate import griddata
 import numpy as np

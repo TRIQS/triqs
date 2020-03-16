@@ -20,7 +20,6 @@
 ################################################################################
 
 from past.utils import old_div
-from builtins import object
 class MeshValueGenerator:
     def __init__(self, m):
         self.m = m

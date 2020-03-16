@@ -21,7 +21,6 @@
 ################################################################################
 
 #from pytriqs import *
-from builtins import object
 import numpy
 from pytriqs.dos import DOS
 from pytriqs.lattice.tight_binding import dos_patch

@@ -1,5 +1,3 @@
-from builtins import zip
-from builtins import range
 from pytriqs.archive import *
 from pytriqs.utility.comparison_tests import *
 from pytriqs.gf import *

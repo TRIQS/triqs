@@ -1,4 +1,3 @@
-from builtins import range
 from cpp2py.wrap_generator import *
 
 # The module

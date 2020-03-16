@@ -20,8 +20,6 @@
 #
 ################################################################################
 
-from builtins import str
-from builtins import range
 from past.utils import old_div
 import os,sys,datetime
 myprint_err = lambda x : sys.stderr.write("%s\n"%x)

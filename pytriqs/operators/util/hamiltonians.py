@@ -1,4 +1,3 @@
-from builtins import str
 import operator
 from pytriqs.operators import *
 from .op_struct import *

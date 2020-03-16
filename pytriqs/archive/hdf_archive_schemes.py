@@ -18,7 +18,6 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from builtins import object
 import re
 
 class HDF5Scheme :

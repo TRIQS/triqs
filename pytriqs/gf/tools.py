@@ -20,7 +20,6 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from builtins import range
 from past.utils import old_div
 from . import lazy_expressions, descriptors, gf_fnt
 from .meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime, MeshLegendre

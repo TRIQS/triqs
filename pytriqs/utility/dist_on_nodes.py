@@ -22,10 +22,6 @@
 
 from future import standard_library
 standard_library.install_aliases()
-from builtins import filter
-from builtins import next
-from builtins import range
-from builtins import object
 import os,sys,time,pickle
 import pytriqs.utility.mpi as mpi
 
