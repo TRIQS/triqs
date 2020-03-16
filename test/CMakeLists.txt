@@ -1,4 +1,5 @@
 # Build gtest from git subtree
+set(PYTHON_EXECUTABLE ${PYTHON_INTERPRETER})
 add_subdirectory(gtest EXCLUDE_FROM_ALL)
 
 # FIXME : TO BE REMOVED
