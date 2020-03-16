@@ -36,7 +36,6 @@ from . import gf_fnt, wrapped_aux
 from .gf_fnt import GfIndices
 from .mesh_point import MeshPoint
 from operator import mul
-from future.utils import with_metaclass
 
 # list of all the meshes
 all_meshes = (MeshProduct,) + tuple(c for c in list(meshes.__dict__.values()) if isinstance(c, type) and c.__name__.startswith('Mesh'))
@@ -76,7 +75,7 @@ class Idx:
     def __init__(self, *x):
         self.idx = x[0] if len(x)==1 else x
 
-class Gf(with_metaclass(AddMethod, object)):
+class Gf(metaclass=AddMethod):
     r""" TRIQS Greens function container class
 
     Parameters
