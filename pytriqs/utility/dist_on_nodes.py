@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -20,8 +19,6 @@
 #
 ################################################################################
 
-from future import standard_library
-standard_library.install_aliases()
 import os,sys,time,pickle
 import pytriqs.utility.mpi as mpi
 

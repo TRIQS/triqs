@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -20,8 +19,6 @@
 #
 ################################################################################
 
-from future import standard_library
-standard_library.install_aliases()
 import sys,numpy
 from importlib import import_module
 from .hdf_archive_basic_layer_h5py import HDFArchiveGroupBasicLayer
