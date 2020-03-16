@@ -3,15 +3,15 @@ import sys
 import numpy
 
 if len(sys.argv) < 3:
-  print "Usage: python update_archive.py old_archive new_archive"
+  print("Usage: python update_archive.py old_archive new_archive")
   sys.exit()
 
-print """
+print("""
 This script is an attempt to update your archive to TRIQS 1.0.
 Please keep a copy of your old archive as this script is
 ** not guaranteed ** to work for your archive.
 If you encounter any problem please report it on github!
-"""
+""")
 
 # The dictionary of modifications to make
 modifications = {
@@ -165,7 +165,7 @@ def copy_and_correct(origin, dest):
   exclude = []
 
   # copy attributes in destination archive
-  for at in origin.attrs.keys():
+  for at in list(origin.attrs.keys()):
 
     # determine if the group is a TRIQS scheme
     if at == 'TRIQS_HDF5_data_scheme':
@@ -201,7 +201,7 @@ def copy_and_correct(origin, dest):
 
       # create dataset and copy data as well as attributes in destination archive
       dest.create_dataset(name=new_key, data=origin[key].value)
-      for at in origin[key].attrs.keys():
+      for at in list(origin[key].attrs.keys()):
         dest[key].attrs.create(at, origin[key].attrs[at])
 
     # key is a group
@@ -215,8 +215,8 @@ def copy_and_correct(origin, dest):
 A = h5py.File(sys.argv[1],'r')
 B = h5py.File(sys.argv[2],'w')
 
-print "Starting update..."
+print("Starting update...")
 copy_and_correct(A,B)
-print "Update done and written in", sys.argv[2]
+print("Update done and written in", sys.argv[2])
 
 

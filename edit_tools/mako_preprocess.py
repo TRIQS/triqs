@@ -32,9 +32,9 @@ def all_hcpp_files(dir) :
 def process_one_file(fi): 
     # if not check mode, write the file, otherwise just compare
     if args.check : 
-        print "Checking file : ", fi
+        print("Checking file : ", fi)
     else:  
-        print "Preprocessing file : ", fi
+        print("Preprocessing file : ", fi)
  
     code = open(fi, 'r').read()
 
@@ -73,4 +73,4 @@ for fi in all_hcpp_files(indir):
     process_one_file(fi)
 
 if args.check : 
-    print "Ok"
+    print("Ok")

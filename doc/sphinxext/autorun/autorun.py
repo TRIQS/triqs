@@ -68,7 +68,7 @@ class RunBlock(Directive):
         # Build the code text
         proc = Popen(args,bufsize=1,stdin=PIPE,stdout=PIPE,stderr=PIPE)
         codelines = (line[prefix_chars:] for line in self.content)
-        code = u'\n'.join(codelines).encode(input_encoding)
+        code = '\n'.join(codelines).encode(input_encoding)
         
         # Run the code
         stdout,stderr = proc.communicate(code)
@@ -82,11 +82,11 @@ class RunBlock(Directive):
         
         # Get the original code with prefixes
         if show_source:
-            code = u'\n'.join(self.content)
+            code = '\n'.join(self.content)
         else:
             code = ''
         #code_out = u'\n\n ---Output:---\n'.join((highlight(code, PythonLexer(), HtmlFormatter()),out))
-        code_out = u'\n\n ---Output:---\n'.join((code,out))
+        code_out = '\n\n ---Output:---\n'.join((code,out))
 
         literal = nodes.literal_block(code_out,code_out)
         #literal['language'] = language

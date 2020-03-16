@@ -17,7 +17,7 @@ print("ok ----------------------")
 from pytriqs.archive import HDFArchive
 R = HDFArchive('myfile.h5', 'r')
 
-for n, calculation in R.items() : 
+for n, calculation in list(R.items()): 
     #g = calculation['g']
     g << inverse( iOmega_n + 0.5 )
     

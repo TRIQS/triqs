@@ -107,7 +107,7 @@ The plot directive has the following configuration options:
 
 """
 
-import sys, os, glob, shutil, imp, warnings, cStringIO, re, textwrap, \
+import sys, os, glob, shutil, imp, warnings, io, re, textwrap, \
        traceback, exceptions
 
 from docutils.parsers.rst import directives
@@ -234,7 +234,7 @@ def mark_plot_labels(app, document):
     the "htmlonly" (or "latexonly") node to the actual figure node
     itself.
     """
-    for name, explicit in document.nametypes.iteritems():
+    for name, explicit in document.nametypes.items():
         if not explicit:
             continue
         labelid = document.nameids[name]
@@ -451,7 +451,7 @@ def run_code(code, code_path, ns=None, function_name=None):
 
     # Redirect stdout
     stdout = sys.stdout
-    sys.stdout = cStringIO.StringIO()
+    sys.stdout = io.StringIO()
 
     # Reset sys.argv
     old_sys_argv = sys.argv
@@ -499,7 +499,7 @@ def render_figures(code, code_path, output_dir, output_base, context,
     default_dpi = {'png': 80, 'hires.png': 200, 'pdf': 200}
     formats = []
     plot_formats = config.plot_formats
-    if isinstance(plot_formats, (str, unicode)):
+    if isinstance(plot_formats, str):
         plot_formats = eval(plot_formats)
     for fmt in plot_formats:
         if isinstance(fmt, str):
@@ -531,7 +531,7 @@ def render_figures(code, code_path, output_dir, output_base, context,
     all_exists = True
     for i, code_piece in enumerate(code_pieces):
         images = []
-        for j in xrange(1000):
+        for j in range(1000):
             if len(code_pieces) > 1:
                 img = ImageFile('%s_%02d_%02d' % (output_base, i, j), output_dir)
             else:
@@ -721,7 +721,7 @@ def run(arguments, content, options, state_machine, state, lineno):
         if nofigs:
             images = []
 
-        opts = [':%s: %s' % (key, val) for key, val in options.items()
+        opts = [':%s: %s' % (key, val) for key, val in list(options.items())
                 if key in ('alt', 'height', 'width', 'scale', 'align', 'class')]
 
         only_html = ".. only:: html"
