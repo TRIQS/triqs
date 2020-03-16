@@ -1,4 +1,3 @@
-from past.utils import old_div
 from pytriqs.arrays.block_matrix import *
 from pytriqs.archive import *
 import pytriqs.utility.mpi as mpi
@@ -39,7 +38,7 @@ print("A ", A)
 assert (A2["up"] == 2*m0).all() and (A2["dn"] == 2*m1).all(), "Multiplication by constant failed"
 A2 = A*2
 assert (A2["up"] == 2*m0).all() and (A2["dn"] == 2*m1).all(), "Multiplication by constant failed"
-A2 = old_div(A,2)
+A2 = A/2
 assert (A2["up"] == 0.5*m0).all() and (A2["dn"] == 0.5*m1).all(), "Division by constant failed"
 A2 = -A
 assert (A2["up"] == -m0).all() and (A2["dn"] == -m1).all(), "Unary minus failed"
@@ -88,13 +87,13 @@ A2 = 2*A
 assert (A2["up"] == 2*m0).all() and (A2["dn"] == 2*m1).all(), "Multiplication by constant failed"
 A2 = A*2
 assert (A2["up"] == 2*m0).all() and (A2["dn"] == 2*m1).all(), "Multiplication by constant failed"
-A2 = old_div(A,2)
+A2 = A/2
 assert (A2["up"] == 0.5*m0).all() and (A2["dn"] == 0.5*m1).all(), "Division by constant failed"
 A2 = 2j*A
 assert (A2["up"] == 2j*m0).all() and (A2["dn"] == 2j*m1).all(), "Multiplication by complex constant failed"
 A2 = A*2j
 assert (A2["up"] == 2j*m0).all() and (A2["dn"] == 2j*m1).all(), "Multiplication by complex constant failed"
-A2 = old_div(A,2j)
+A2 = A/2j
 assert (A2["up"] == -0.5j*m0).all() and (A2["dn"] == -0.5j*m1).all(), "Division by complex constant failed"
 A2 = -A
 assert (A2["up"] == -m0).all() and (A2["dn"] == -m1).all(), "Unary minus failed"

@@ -1,4 +1,3 @@
-from past.utils import old_div
 from pytriqs.gf import *
 from numpy import *
 
@@ -12,7 +11,7 @@ g_iw = GfImFreq(beta=beta, indices=[0])
 g_iw << iOmega_n
 
 
-assert are_close(old_div(1j*(2*n+1)*pi,beta), g_iw(n)[0,0])
+assert are_close(1j*(2*n+1)*pi/beta, g_iw(n)[0,0])
 
 g_iw.invert()
 g_tau = GfImTime(beta=beta, indices=[0])

@@ -20,7 +20,6 @@
 #
 ################################################################################
 
-from past.utils import old_div
 from pytriqs.gf import *
 import types, string, inspect, itertools
 from pytriqs.dos import DOS, DOSFromFunction
@@ -61,7 +60,7 @@ class HilbertTransform:
         R[0]  *= (eps[1] - eps[0])
         R[-1] *= (eps[-1] - eps[-2])
         for i in range(1, eps.shape[0] - 1):
-            R[i] *=  old_div((eps[i+1] - eps[i]),2)+old_div((eps[i] - eps[i-1]),2)
+            R[i] *=  (eps[i+1] - eps[i])/2+(eps[i] - eps[i-1])/2
         R /= numpy.sum(R)
 
     #-------------------------------------------------------------
@@ -144,7 +143,7 @@ class HilbertTransform:
             if field != None: tmp -= field
 
             # I slice all the arrays on the node. Cf reduce operation below.
-            for d, e_h, e in  zip (*[mpi.slice_array(A) for A in [self.rho_for_sum, eps_hat, self.dos.eps]]):
+            for d, e_h, e in zip(*[mpi.slice_array(A) for A in [self.rho_for_sum, eps_hat, self.dos.eps]]):
                 tmp2.copy_from(tmp)
                 tmp2 -= e_h
                 if Sigma_fnt: tmp2 -= Sigma(e)

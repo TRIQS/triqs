@@ -1,4 +1,3 @@
-from past.utils import old_div
 from math import sqrt
 from scipy.special import factorial as fact
 from itertools import product
@@ -267,33 +266,33 @@ def spherical_to_cubic(l, convention=''):
         cubic_names = ("s")
     elif l == 1:
         cubic_names = ("x","y","z")
-        T[0,0] = 1.0/sqrt(2);   T[0,2] = old_div(-1.0,sqrt(2))
-        T[1,0] = old_div(1j,sqrt(2));    T[1,2] = old_div(1j,sqrt(2))
+        T[0,0] = 1.0/sqrt(2);   T[0,2] = -1.0/sqrt(2)
+        T[1,0] = 1j/sqrt(2);    T[1,2] = 1j/sqrt(2)
         T[2,1] = 1.0
     elif l == 2:
         if convention == 'wien2k':
             cubic_names = ("z^2","x^2-y^2","xy","yz","xz")
             T[0,2] = 1.0
             T[1,0] = 1.0/sqrt(2);   T[1,4] = 1.0/sqrt(2)
-            T[2,0] =old_div(-1.0,sqrt(2));   T[2,4] = 1.0/sqrt(2)
-            T[3,1] = 1.0/sqrt(2);   T[3,3] =old_div(-1.0,sqrt(2))
+            T[2,0] =-1.0/sqrt(2);   T[2,4] = 1.0/sqrt(2)
+            T[3,1] = 1.0/sqrt(2);   T[3,3] =-1.0/sqrt(2)
             T[4,1] = 1.0/sqrt(2);   T[4,3] = 1.0/sqrt(2)
         else:
             cubic_names = ("xy","yz","z^2","xz","x^2-y^2")
-            T[0,0] = old_div(1j,sqrt(2));    T[0,4] = old_div(-1j,sqrt(2))
-            T[1,1] = old_div(1j,sqrt(2));    T[1,3] = old_div(1j,sqrt(2))
+            T[0,0] = 1j/sqrt(2);    T[0,4] = -1j/sqrt(2)
+            T[1,1] = 1j/sqrt(2);    T[1,3] = 1j/sqrt(2)
             T[2,2] = 1.0
-            T[3,1] = 1.0/sqrt(2);   T[3,3] = old_div(-1.0,sqrt(2))
+            T[3,1] = 1.0/sqrt(2);   T[3,3] = -1.0/sqrt(2)
             T[4,0] = 1.0/sqrt(2);   T[4,4] = 1.0/sqrt(2)
     elif l == 3:
         cubic_names = ("x(x^2-3y^2)","z(x^2-y^2)","xz^2","z^3","yz^2","xyz","y(3x^2-y^2)")
-        T[0,0] = 1.0/sqrt(2);    T[0,6] = old_div(-1.0,sqrt(2))
+        T[0,0] = 1.0/sqrt(2);    T[0,6] = -1.0/sqrt(2)
         T[1,1] = 1.0/sqrt(2);    T[1,5] = 1.0/sqrt(2)
-        T[2,2] = 1.0/sqrt(2);    T[2,4] = old_div(-1.0,sqrt(2))
+        T[2,2] = 1.0/sqrt(2);    T[2,4] = -1.0/sqrt(2)
         T[3,3] = 1.0
-        T[4,2] = old_div(1j,sqrt(2));   T[4,4] = old_div(1j,sqrt(2))
-        T[5,1] = old_div(1j,sqrt(2));   T[5,5] = old_div(-1j,sqrt(2))
-        T[6,0] = old_div(1j,sqrt(2));   T[6,6] = old_div(1j,sqrt(2))
+        T[4,2] = 1j/sqrt(2);   T[4,4] = 1j/sqrt(2)
+        T[5,1] = 1j/sqrt(2);   T[5,5] = -1j/sqrt(2)
+        T[6,0] = 1j/sqrt(2);   T[6,6] = 1j/sqrt(2)
     else: raise ValueError("spherical_to_cubic: implemented only for l=0,1,2,3")
 
     return np.matrix(T)
@@ -356,7 +355,7 @@ def U_J_to_radial_integrals(l, U_int, J_hund):
         F[1] = 5.0 * J_hund
     elif l == 2:
         F[0] = U_int
-        F[1] = old_div(J_hund * 14.0, (1.0 + 0.63))
+        F[1] = J_hund * 14.0 / (1.0 + 0.63)
         F[2] = 0.630 * F[1]
     elif l == 3:
         F[0] = U_int
@@ -483,7 +482,7 @@ def three_j_symbol(jm1, jm2, jm3):
         return .0
 
     three_j_sym = -1.0 if (j1-j2-m3) % 2 else 1.0
-    three_j_sym *= sqrt(old_div(fact(j1+j2-j3)*fact(j1-j2+j3)*fact(-j1+j2+j3),fact(j1+j2+j3+1)))
+    three_j_sym *= sqrt(fact(j1+j2-j3)*fact(j1-j2+j3)*fact(-j1+j2+j3)/fact(j1+j2+j3+1))
     three_j_sym *= sqrt(fact(j1-m1)*fact(j1+m1)*fact(j2-m2)*fact(j2+m2)*fact(j3-m3)*fact(j3+m3))
 
     t_min = max(j2-j3-m1,j1-j3+m2,0)
@@ -491,7 +490,7 @@ def three_j_symbol(jm1, jm2, jm3):
 
     t_sum = 0
     for t in range(t_min,t_max+1):
-        t_sum += old_div((-1.0 if t % 2 else 1.0),(fact(t)*fact(j3-j2+m1+t)*fact(j3-j1-m2+t)*fact(j1+j2-j3-t)*fact(j1-m1-t)*fact(j2+m2-t)))
+        t_sum += (-1.0 if t % 2 else 1.0)/(fact(t)*fact(j3-j2+m1+t)*fact(j3-j1-m2+t)*fact(j1+j2-j3-t)*fact(j1-m1-t)*fact(j2+m2-t))
 
     three_j_sym *= t_sum
     return three_j_sym

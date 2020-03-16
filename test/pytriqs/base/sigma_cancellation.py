@@ -13,7 +13,6 @@ t_0 = 1/N \sum_k e_k
 Author: Hugo U.R. Strand 
 
 """
-from past.utils import old_div
 import matplotlib.pyplot as plt
 ##%matplotlib inline
 
@@ -30,7 +29,7 @@ def delta_inv(beta, nw, nk=100):
     G = Gf(mesh=mesh, target_shape=[1, 1])
     Sig = G.copy()
     for w in Sig.mesh:
-        Sig[w][:] = Sigma0 + old_div(Sigma1,w)
+        Sig[w][:] = Sigma0 + Sigma1 /w
  
     for e in ek: G << G + inverse(iOmega_n - e - Sig)
 
@@ -39,7 +38,7 @@ def delta_inv(beta, nw, nk=100):
     Delta = G.copy()
     Delta << inverse(G) - iOmega_n + Sig
 
-    sum_ek = old_div(- np.sum(ek), nk)
+    sum_ek = - np.sum(ek) / nk
 
     Roo = np.abs(Sigma0) + 1.
 
@@ -50,9 +49,9 @@ def delta_inv(beta, nw, nk=100):
 
     order = len(tail)
 
-    trunc_err_anal = (old_div(Roo, (0.8 * wmax)))**order
+    trunc_err_anal = (Roo / (0.8 * wmax))**order
 
-    ratio = old_div(tail[0], sum_ek)
+    ratio = tail[0] / sum_ek
     diff = np.abs(1 - ratio)
 
     print('-' * 72)

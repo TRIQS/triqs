@@ -21,7 +21,6 @@
 
 r""" """
 
-from past.utils import old_div
 from .descriptor_base import *
 from .meshes import MeshImFreq, MeshReFreq
 import warnings
@@ -39,7 +38,7 @@ class OneFermionInTime(Base):
 
         Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0])
 
-        fact = old_div(-1,(1+exp(-L*G.beta)))
+        fact = -1/(1+exp(-L*G.beta))
         Function(lambda t: fact* exp(-L*t) *Id)(G)
         return G
 
@@ -54,7 +53,7 @@ def _SemiCircularDOS(half_bandwidth):
     from math import sqrt,pi
     larg = half_bandwidth
     def semi(x):
-        if (abs(x)<larg): return old_div(sqrt( 1 - (old_div(x,larg))**2 )*2,pi*larg)
+        if (abs(x)<larg): return sqrt( 1 - (x/larg)**2 )*2/pi/larg
         else: return 0.0
     return semi
 
@@ -92,7 +91,7 @@ semicircle
         if type(G.mesh) == MeshImFreq:
             def f(om_):
                 om = om_ + mu
-                return old_div((om - 1j*copysign(1,om.imag)*sqrt(D*D - om**2)),D*D) * 2*Id
+                return (om - 1j*copysign(1,om.imag)*sqrt(D*D - om**2))/D/D*2*Id
         elif type(G.mesh) == MeshReFreq:
             def f(om_):
               om = om_.real + mu
@@ -132,13 +131,13 @@ class Flat (Base):
         Id = 1. if len(G.target_shape) == 0 else numpy.identity(G.target_shape[0], numpy.complex_)
 
         if type(G.mesh) == MeshImFreq:
-            f = lambda om: (old_div(-1,(2.0*D))) * numpy.log(numpy.divide(om-D,om+D)) * Id
+            f = lambda om: (-1/(2.0*D)) * numpy.log(numpy.divide(om-D,om+D)) * Id
         elif type(G.mesh) == MeshReFreq:
             def f(om):
               if (om.real > -D) and (om.real < D):
-                return old_div(-numpy.log(numpy.divide(abs(om-D),abs(om+D)))*Id,(2*D)) - old_div(1j*pi*Id,(2*D))
+                return -numpy.log(numpy.divide(abs(om-D),abs(om+D)))*Id/(2*D) - 1j*pi*Id/(2*D)
               else:
-                return old_div(-numpy.log(numpy.divide(abs(om-D),abs(om+D)))*Id,(2*D))
+                return -numpy.log(numpy.divide(abs(om-D),abs(om+D)))*Id/(2*D)
         else:
             raise TypeError("This initializer is only correct in frequency")
 

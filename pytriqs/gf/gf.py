@@ -20,7 +20,6 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from past.utils import old_div
 import itertools, warnings, numbers
 from functools import reduce # Valid in Python 2.6+, required in Python 3
 import operator
@@ -557,7 +556,6 @@ class Gf(metaclass=AddMethod):
         return c
     # ---------- Division
     def __idiv__(self,arg):
-        if descriptor_base.is_lazy(arg): return old_div(lazy_expressions.make_lazy(self),arg)
         self._data[:] /= arg
         return self
 

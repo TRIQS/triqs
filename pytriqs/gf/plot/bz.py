@@ -1,4 +1,3 @@
-from past.utils import old_div
 from scipy.interpolate import griddata
 import numpy as np
 
@@ -39,8 +38,8 @@ def length(path):
 def generate_points(A,B, n_points):
         pts=[]
         for i in range(n_points):
-            x=A[0]+old_div((B[0]-A[0]),(n_points-1)*i)
-            y=A[1]+old_div((B[1]-A[1]),(n_points-1)*i)
+            x=A[0]+(B[0]-A[0])/(n_points-1)*i
+            y=A[1]+(B[1]-A[1])/(n_points-1)*i
             pts.append((x, y))
         return pts
 def generate_points_on_path(path, n_points):
@@ -50,7 +49,7 @@ def generate_points_on_path(path, n_points):
     #n_seg = n_points/n_segs
     high_sym=[0]
     for i in range(len(path)-1):
-        n_seg = int(old_div(n_points*dist(path[i],path[i+1]),l_path))
+        n_seg = int(n_points*dist(path[i],path[i+1])/l_path)
         pts=generate_points(path[i],path[i+1],n_seg)
         
         l_points=list(itertools.chain(l_points,pts))

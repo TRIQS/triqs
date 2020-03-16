@@ -113,7 +113,7 @@ class TriqsMagics(Magics):
             pass
 
         def print_out (m, out) : 
-           l = old_div((70 - len(m)),2)
+           l = (70 - len(m))/2
            print(l*'-' + m + l*'-' + '\n' + out)
 
         old_cwd = os.getcwd()

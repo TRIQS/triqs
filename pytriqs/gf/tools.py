@@ -20,7 +20,6 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from past.utils import old_div
 from . import lazy_expressions, descriptors, gf_fnt
 from .meshes import MeshImFreq, MeshReFreq, MeshImTime, MeshReTime, MeshLegendre
 from .block_gf import BlockGf
@@ -260,10 +259,10 @@ def fit_legendre(g_t, order=10):
     # Nb! We have to scale the actual Legendre coeffs to the Triqs "scaled" Legendre coeffs
     # see Boehnke et al. PRB (2011)
     l = np.arange(len(lmesh))
-    scale = old_div(np.sqrt(2.*l + 1), mesh.beta)
+    scale = np.sqrt(2.*l + 1) / mesh.beta
     scale = scale.reshape([len(lmesh)] + [1]*len(g_t.target_shape))
     
     g_l = Gf(mesh=lmesh, target_shape=g_t.target_shape)
-    g_l.data[:] = old_div(c_l.reshape(g_l.data.shape), scale)
+    g_l.data[:] = c_l.reshape(g_l.data.shape) / scale
 
     return g_l

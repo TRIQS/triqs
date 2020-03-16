@@ -19,7 +19,6 @@
 #
 ################################################################################
 
-from past.utils import old_div
 class MeshValueGenerator:
     def __init__(self, m):
         self.m = m
@@ -56,10 +55,10 @@ class MeshPoint :
         return self._get_val(x) * self.value
 
     def __div__(self, x):
-        return old_div(self.value, self._get_val(x))
+        return self.value / self._get_val(x)
 
     def __rdiv__(self, x):
-        return old_div(self._get_val(x), self.value)
+        return self._get_val(x) / self.value
 
     def __call__(self, *args, **kw):
         return self.value(*args, **kw)

@@ -1,4 +1,3 @@
-from past.utils import old_div
 from numpy import *
 from numpy.linalg import *
 from pytriqs.gf import *
@@ -11,8 +10,8 @@ per_mat = matrix([[16, 0, 0],[0, 16, 0],[0, 0, 1]], int32)
 bz=BrillouinZone(BravaisLattice(units))
 k_mesh = MeshBrillouinZone(bz, per_mat)
 
-assert k_mesh.locate_neighbours([old_div(pi,2),  pi, 0.0]) == [4, 8, 0]
-assert k_mesh.locate_neighbours([old_div(pi,8),2*pi, 0.0]) == [1, 16, 0]
+assert k_mesh.locate_neighbours([pi/2,  pi, 0.0]) == [4, 8, 0]
+assert k_mesh.locate_neighbours([pi/8,2*pi, 0.0]) == [1, 16, 0]
 
 # ---- triangular lattice : 6 x 6 x 1
 units = matrix([[1.,0.,0.],[0.5,sqrt(3)/2.,0.],[0.,0.,1.]], float)

@@ -1,5 +1,4 @@
 
-from past.utils import old_div
 def ffg( *args, **kw) : 
     """ my doc of ffg in module """
     print("calling ffg, with :")
@@ -17,6 +16,6 @@ def pure_py1(self, i) :
     """ 
       doc of pure_py1 : a nice funciton ,...
     """
-    i = old_div(i,2)
+    i = i/2
     print(" I am in pure python method pure_py1 %s "%i)
     return ["pure_py1 return list"]

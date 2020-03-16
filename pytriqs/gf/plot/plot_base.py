@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy
 from warnings import warn
 from pytriqs.plot.protocol import clip_array
@@ -77,7 +76,7 @@ def plot_base(self, opt_dict, xlabel, ylabel, X, allow_spectral_mode=False):
         res = mdic('Im ', lambda x: x.imag)
     elif mode == 'S':
         if allow_spectral_mode:
-            res = mdic('', lambda x: old_div(-1, numpy.pi * x.imag))
+            res = mdic('', lambda x: -1 / numpy.pi * x.imag)
         else:
             raise ValueError("Cannot measure the spectral function for this type of Green's function.")
     else:

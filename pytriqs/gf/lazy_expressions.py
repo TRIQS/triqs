@@ -1,4 +1,3 @@
-from past.utils import old_div
 from functools import reduce
 
 ################################################################################
@@ -40,7 +39,7 @@ class __aux:
     def __iadd__(self, y): return self.set_from(self+y)
     def __isub__(self, y): return self.set_from(self-y)
     def __imul__(self, y): return self.set_from(self*y)
-    def __idiv__(self, y): return self.set_from(old_div(self,y))
+    def __idiv__(self, y): return self.set_from(self/y)
 
     def __call__(self, *args): return LazyExpr("F", make_lazy(self), *list(map(make_lazy, args)))
 
@@ -101,7 +100,7 @@ def eval_expr_with_context(eval_term, expr ):
         return f (*[eval_expr_with_context(eval_term, e) for e in expr.childs[1:]] )
 
     # Binary operations:
-    ops = { "+": lambda x, y: x + y, "-": lambda x, y: x - y, "*": lambda x, y: x * y, "/": lambda x, y: old_div(x, y) }
+    ops = { "+": lambda x, y: x + y, "-": lambda x, y: x - y, "*": lambda x, y: x * y, "/": lambda x, y: x / y }
     return ops[expr.tag] (*[eval_expr_with_context(eval_term, e) for e in expr.childs] )
 
 #-----------------------------------------------------
