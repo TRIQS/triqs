@@ -122,19 +122,15 @@ namespace cpp2py {
   // range can not be directly converted from slice (slice is more complex)
   // convert from python slice and int (interpreted are slice(i,i+1,1))
   itertools::range range_from_slice(PyObject *ob, long len) {
-    if (PyInt_Check(ob)) {
-      long i = PyInt_AsLong(ob);
+    if (PyLong_Check(ob)) {
+      long i = PyLong_AsLong(ob);
       if ((i < -len) || (i >= len)) CPP2PY_RUNTIME_ERROR << "Integer index out of range : expected [0," << len << "], got " << i;
       if (i < 0) i += len;
       // std::cerr  << " range int "<< i << std::endl;
       return {i, i + 1, 1};
     }
     Py_ssize_t start, stop, step, slicelength;
-#if IS_PY3
     if (!PySlice_Check(ob) || (PySlice_GetIndicesEx(ob, len, &start, &stop, &step, &slicelength) < 0))
-#else
-    if (!PySlice_Check(ob) || (PySlice_GetIndicesEx((PySliceObject *)ob, len, &start, &stop, &step, &slicelength) < 0))
-#endif
       CPP2PY_RUNTIME_ERROR << "Can not converted the slice to C++";
     // std::cerr  << "range ( "<< start << " "<< stop << " " << step<<std::endl;
     return {start, stop, step};
