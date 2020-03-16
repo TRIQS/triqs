@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import unicode_literals
 from pytriqs.gf import *
 from pytriqs.utility import capture_stdout
 

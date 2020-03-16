@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from pytriqs.statistics import *
 from pytriqs.archive import HDFArchive
 from pytriqs.utility.comparison_tests import *

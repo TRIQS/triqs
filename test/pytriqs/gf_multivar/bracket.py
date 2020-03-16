@@ -19,7 +19,6 @@ for tau in g.mesh:
 g4_tau(t1, t2, t3)
 
 """
-from __future__ import unicode_literals
 
 import itertools
 import numpy as np

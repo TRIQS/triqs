@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from pytriqs.gf import *
 
 # A Green's function on the Matsubara axis set to a semicircular

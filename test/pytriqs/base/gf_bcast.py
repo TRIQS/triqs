@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 # Import the Green's functions
 from pytriqs.gf import GfImFreq, iOmega_n, inverse
 

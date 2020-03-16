@@ -1,4 +1,3 @@
-from __future__ import print_function
 import tempfile
 # -*- coding: utf-8 -*-
 # seems to be executed at the level of the conf.py

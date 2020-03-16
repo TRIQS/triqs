@@ -1,8 +1,6 @@
 
 """ Construct a random histogram, broadcast it and compare
 the broadcasted result with a reference. """
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from builtins import zip
 from builtins import range

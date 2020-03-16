@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import numpy as np
 from pytriqs.gf import *
 from pytriqs.archive import HDFArchive

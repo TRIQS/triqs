@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from test_g import *
 
 B = make_bgf(2.0)

@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from my_module import *
 import my_moduleB as B
 

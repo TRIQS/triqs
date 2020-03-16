@@ -13,9 +13,6 @@ t_0 = 1/N \sum_k e_k
 Author: Hugo U.R. Strand 
 
 """
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
 from past.utils import old_div
 import matplotlib.pyplot as plt
 ##%matplotlib inline
