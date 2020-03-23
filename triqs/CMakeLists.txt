@@ -165,6 +165,9 @@ add_library(hdf5 INTERFACE)
 target_include_directories(hdf5 SYSTEM INTERFACE ${HDF5_INCLUDE_DIRS})
 target_link_libraries(hdf5 INTERFACE "${HDF5_LIBRARIES}" ${HDF5_HL_LIBRARIES})
 target_compile_options(hdf5 INTERFACE ${HDF5_DEFINITIONS})
+if(HDF5_VERSION VERSION_GREATER 1.10)
+  target_compile_definitions(hdf5 INTERFACE H5_USE_110_API)
+endif()
 
 # Link against interface target and export
 target_link_libraries(triqs PUBLIC hdf5)
