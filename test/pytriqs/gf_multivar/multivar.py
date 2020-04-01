@@ -24,7 +24,7 @@ assert len(g.mesh)==len(mprod), "not ok"
 assert g.data.shape==(200,199)
 
 ## test h5
-with HDFArchive("g_multivar.h5",'a') as A:
+with HDFArchive("g_multivar.h5",'w') as A:
   A["IND"] = g.indices
   A["g"] = g
   A["mprod"] = mprod
@@ -37,7 +37,7 @@ assert len(g.mesh) == len(g2.mesh), "not ok"
 
 G=BlockGf(name_list = ["ch","sp"],block_list = [g,g])
 
-A=HDFArchive("g_multivar_2.h5",'a')
+A=HDFArchive("g_multivar_2.h5",'w')
 A["G"] = G
 del A
 
@@ -62,7 +62,7 @@ assert g.data.shape==(200,199, 1, 1,1)
 G=BlockGf(name_list = ["ch","sp"],block_list = [g,g])
 assert G['ch'].data.shape==(200,199,1,1,1)
 
-A=HDFArchive("g_multivar_3.h5",'a')
+A=HDFArchive("g_multivar_3.h5",'w')
 A["G"] = G
 del A
 
