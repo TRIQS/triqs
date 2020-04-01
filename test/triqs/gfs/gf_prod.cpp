@@ -39,8 +39,8 @@ TEST(Gf, AutoAssignMatrixGf2_product) {
     for (int j = 0; j < 2; ++j)
       for (int om = 0; om < 10; ++om)
         for (int nu = 0; nu < 10; ++nu) {
-          auto xom = ((2 * om + 1) * M_PI * 1_j / beta);
-          auto xnu = ((2 * nu + 1) * M_PI * 1_j / beta);
+          auto xom = ((2 * om + 1) * M_PI * 1i / beta);
+          auto xnu = ((2 * nu + 1) * M_PI * 1i / beta);
           EXPECT_CLOSE(g2.data()(10 + om, 10 + nu, i, j), i + j + xom * xnu);
         }
 }
@@ -62,8 +62,8 @@ TEST(Gf, AutoAssignMatrixGf2_sum_product) {
     for (int j = 0; j < 2; ++j)
       for (int om = 0; om < 10; ++om)
         for (int nu = 0; nu < 10; ++nu) {
-          auto xom = ((2 * om + 1) * M_PI * 1_j / beta);
-          auto xnu = ((2 * nu + 1) * M_PI * 1_j / beta);
+          auto xom = ((2 * om + 1) * M_PI * 1i / beta);
+          auto xnu = ((2 * nu + 1) * M_PI * 1i / beta);
           EXPECT_CLOSE(g2.data()(10 + om, 10 + nu, i, j), i + j + xom * (xnu + xom));
         }
 }

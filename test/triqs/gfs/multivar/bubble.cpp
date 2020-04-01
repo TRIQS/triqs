@@ -107,7 +107,7 @@ TEST(Gf, BubbleSimplif) {
   auto ggq        = gk;
   auto ggq_from_r = gk;
 
-  gk(k_) << 1. / (M_PI / beta * 1_j - eps_k_);
+  gk(k_) << 1. / (M_PI / beta * 1i - eps_k_);
   ggq(q_) << sum(gk(k_) * gk(k_ + q_), k_ = gk.mesh()) / gk.mesh().size();
 
   gr() = fourier(gk);
@@ -127,7 +127,7 @@ TEST(Gf, BubbleSimplifScalar) {
   auto ggq        = gk;
   auto ggq_from_r = gk;
 
-  gk(k_) << 1. / (M_PI / beta * 1_j - eps_k_);
+  gk(k_) << 1. / (M_PI / beta * 1i - eps_k_);
   ggq(q_) << sum(gk(k_) * gk(k_ + q_), k_ = gk.mesh()) / gk.mesh().size();
 
   gr() = fourier(gk);

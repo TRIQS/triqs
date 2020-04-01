@@ -15,7 +15,7 @@ TEST(Gf, AutoAssignMatrixGf1) {
   g[om_](u_, v_) << 1 / (om_ - 3) * sig(u_, v_);
 
   // CHECK
-  for (int om = -10; om < 10; ++om) EXPECT_ARRAY_NEAR(g[om](), sig / ((2 * om + 1) * M_PI * 1_j / beta - 3));
+  for (int om = -10; om < 10; ++om) EXPECT_ARRAY_NEAR(g[om](), sig / ((2 * om + 1) * M_PI * 1i / beta - 3));
 }
 
 // ---------------------------------
@@ -37,7 +37,7 @@ TEST(Gf, AutoAssignMatrixGf2) {
   // CHECK
   for (int u = 0; u < 2; ++u)
     for (int v = 0; v < 2; ++v)
-      for (int om = -10; om < 10; ++om) EXPECT_CLOSE(a(u, v)[om], sig(u, v) / ((2 * om + 1) * M_PI * 1_j / beta - 3));
+      for (int om = -10; om < 10; ++om) EXPECT_CLOSE(a(u, v)[om], sig(u, v) / ((2 * om + 1) * M_PI * 1i / beta - 3));
 }
 
 MAKE_MAIN;

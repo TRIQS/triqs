@@ -1,7 +1,6 @@
 #include "./nda_test_common.hpp"
 
 using namespace triqs::arrays;
-namespace h5 = triqs::h5;
 
 // ==============================================================
 
@@ -151,7 +150,7 @@ TEST(Array, H5RealIntoComplex) {
 
   // READ the file
   {
-    C() = 89 + 9_j; // put garbage in it
+    C() = 89 + 9i; // put garbage in it
     h5::file file("ess_real_complex.h5", 'r');
     h5::group top(file);
     h5_read(top, "D", C);

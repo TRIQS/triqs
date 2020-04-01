@@ -35,7 +35,7 @@ TEST(RealOrComplex, All) {
   }
 
   {
-    auto z = x + 1_j;
+    auto z = x + 1i;
     EXPECT_EQ(z.is_real(), false);
     EXPECT_THROW(double y = double(z), std::exception);
   }

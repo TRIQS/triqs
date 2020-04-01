@@ -279,19 +279,19 @@ TEST(blas_lapack, dgtsv) {
 TEST(blas_lapack, cgtsv) {
   using dcomplex = std::complex<double>;
 
-  vector<dcomplex> DL = {-4_j, -3_j, -2_j, -1_j}; // sub-diagonal elements
+  vector<dcomplex> DL = {-4i, -3i, -2i, -1i}; // sub-diagonal elements
   vector<dcomplex> D  = {1, 2, 3, 4, 5};          // diagonal elements
-  vector<dcomplex> DU = {1_j, 2_j, 3_j, 4_j};     // super-diagonal elements
+  vector<dcomplex> DU = {1i, 2i, 3i, 4i};     // super-diagonal elements
 
-  vector<dcomplex> B1 = {6 + 0_j, 2_j, 7 + 0_j, 4_j, 5 + 0_j}; // RHS column 1
-  vector<dcomplex> B2 = {1_j, 3 + 0_j, 8_j, 9 + 0_j, 10_j};    // RHS column 2
+  vector<dcomplex> B1 = {6 + 0i, 2i, 7 + 0i, 4i, 5 + 0i}; // RHS column 1
+  vector<dcomplex> B2 = {1i, 3 + 0i, 8i, 9 + 0i, 10i};    // RHS column 2
   matrix<dcomplex> B(5, 2, FORTRAN_LAYOUT);
   B(range(), 0) = B1;
   B(range(), 1) = B2;
 
   // reference solutions
-  vector<dcomplex> ref_sol_1 = {137.0 / 33.0 + 0_j, -61_j / 33.0, 368.0 / 33.0 + 0_j, 230_j / 33.0, -13.0 / 33.0 + 0_j};
-  vector<dcomplex> ref_sol_2 = {-35_j / 33.0, 68.0 / 33.0 + 0_j, -103_j / 66.0, 415.0 / 66.0 + 0_j, 215_j / 66.0};
+  vector<dcomplex> ref_sol_1 = {137.0 / 33.0 + 0i, -61i / 33.0, 368.0 / 33.0 + 0i, 230i / 33.0, -13.0 / 33.0 + 0i};
+  vector<dcomplex> ref_sol_2 = {-35i / 33.0, 68.0 / 33.0 + 0i, -103i / 66.0, 415.0 / 66.0 + 0i, 215i / 66.0};
   matrix<dcomplex> ref_sol(5, 2, FORTRAN_LAYOUT);
   ref_sol(range(), 0) = ref_sol_1;
   ref_sol(range(), 1) = ref_sol_2;
@@ -407,8 +407,8 @@ TEST(eigenelements, test1) {
     matrix<dcomplex> M(2, 2);
 
     M(0, 0) = 1;
-    M(0, 1) = 1.0_j;
-    M(1, 0) = -1.0_j;
+    M(0, 1) = 1.0i;
+    M(1, 0) = -1.0i;
     M(1, 1) = 2;
 
     test(M);
@@ -419,8 +419,8 @@ TEST(eigenelements, test1) {
     matrix<dcomplex> M(2, 2, FORTRAN_LAYOUT);
 
     M(0, 0) = 1;
-    M(0, 1) = 1.0_j;
-    M(1, 0) = -1.0_j;
+    M(0, 1) = 1.0i;
+    M(1, 0) = -1.0i;
     M(1, 1) = 2;
 
     test(M);

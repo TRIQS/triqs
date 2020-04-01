@@ -8,7 +8,7 @@
 TEST(atom_diag, HDF5) {
   auto fops       = make_fops();
   auto h_real     = make_hamiltonian<many_body_operator_real>(0.4, 1.0, 0.3, 0.03, 0.2);
-  auto h_complex  = make_hamiltonian<many_body_operator_complex>(0.4, 1.0, 0.3, 0.03, 0.2_j);
+  auto h_complex  = make_hamiltonian<many_body_operator_complex>(0.4, 1.0, 0.3, 0.03, 0.2i);
   auto ad_real    = triqs::atom_diag::atom_diag<false>(h_real, fops);
   auto ad_complex = triqs::atom_diag::atom_diag<true>(h_complex, fops);
 

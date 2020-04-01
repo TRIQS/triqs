@@ -52,7 +52,7 @@ TEST(Matrix, TransposeDagger) {
   for (int i = 0; i < N; ++i)
     for (int j = 0; j < N; ++j) {
       A(i, j) = i + 2 * j + 1;
-      B(i, j) = i + 2.5 * j + (i - 0.8 * j) * 1_j;
+      B(i, j) = i + 2.5 * j + (i - 0.8 * j) * 1i;
     }
 
   auto at = A.transpose();

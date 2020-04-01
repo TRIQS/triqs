@@ -26,7 +26,7 @@ TEST(Gf, VertexScalar) {
 
   vertex[{0, 0, 0}] = 10;
 
-  EXPECT_CLOSE((vertex[{1, 6, 3}]), (M_PI * (2 * 1 + 1) / 10.0 + 2.3 * M_PI * (2 * 6 + 1) / 10.0 + 3.1 * M_PI * (2 * 3 + 1) / 10.0) * 1_j);
+  EXPECT_CLOSE((vertex[{1, 6, 3}]), (M_PI * (2 * 1 + 1) / 10.0 + 2.3 * M_PI * (2 * 6 + 1) / 10.0 + 3.1 * M_PI * (2 * 3 + 1) / 10.0) * 1i);
 
   vertex[{0, 0, 0}] *= 2;
 

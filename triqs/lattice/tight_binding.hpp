@@ -70,7 +70,7 @@ namespace triqs {
             int imax        = displ.size();
             for (int i = 0; i < imax; ++i) dot_prod += k(i) * displ[i];
             //double dot_prod = k(0) * displ[0] + k(1) * displ[1];
-            res += m * exp(2_j * M_PI * dot_prod);
+            res += m * exp(2i * M_PI * dot_prod);
           })
             ;
           return res;

@@ -46,7 +46,7 @@ template <int TARGET_RANK> void test_fourier() {
 
   // === Fourier of a Product of theta function and exponential ===
 
-  for (auto const &t : t_mesh) Gt1[t] = 0.5_j * (lorentzian_inverse(-t, E) * theta(-t) - lorentzian_inverse(t, E) * theta(t));
+  for (auto const &t : t_mesh) Gt1[t] = 0.5i * (lorentzian_inverse(-t, E) * theta(-t) - lorentzian_inverse(t, E) * theta(t));
 
   auto known_moments = make_zero_tail(Gt1);
 
@@ -64,7 +64,7 @@ template <int TARGET_RANK> void test_fourier() {
 
   // Comparision against exact result
   auto Gw1_exact = Gw1;
-  for (auto const &w : w_mesh) Gw1_exact[w] = 0.5 / (w + E * 1_j) + 0.5 / (w - E * 1_j);
+  for (auto const &w : w_mesh) Gw1_exact[w] = 0.5 / (w + E * 1i) + 0.5 / (w - E * 1i);
   EXPECT_GF_NEAR(Gw1, Gw1_exact, precision);
 }
 

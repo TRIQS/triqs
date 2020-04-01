@@ -31,12 +31,12 @@ TEST(Gf, Base) {
 
   // Lazy assig
   G(om_) << (0.2 + om_ + 2.1);
-  EXPECT_ARRAY_NEAR(G(0), matrix<dcomplex>{{2.3 + 3.1415926535897931_j, 0_j}, {0_j, 2.3 + 3.1415926535897931_j}});
+  EXPECT_ARRAY_NEAR(G(0), matrix<dcomplex>{{2.3 + 3.1415926535897931i, 0i}, {0i, 2.3 + 3.1415926535897931i}});
 
   Gv(om_) << 1 / (om_ + 2.3);
 
-  dcomplex z = 1 / (M_PI * 1_j + 2.3);
-  EXPECT_ARRAY_NEAR(G(0), matrix<dcomplex>{{z, 0_j}, {0_j, z}});
+  dcomplex z = 1 / (M_PI * 1i + 2.3);
+  EXPECT_ARRAY_NEAR(G(0), matrix<dcomplex>{{z, 0i}, {0i, z}});
 
   // copy
   Gc = G;
@@ -80,7 +80,7 @@ TEST(Gf, EvaluatorMatrix) {
   g(om_) << 1 / (om_ + 2.3);
 
   auto f     = matsubara_freq{120, beta, Fermion};
-  auto exact = matrix<dcomplex>{{1 / (f + 2.3), 0_j}, {0_j, 1 / (f + 2.3)}};
+  auto exact = matrix<dcomplex>{{1 / (f + 2.3), 0i}, {0i, 1 / (f + 2.3)}};
 
   EXPECT_ARRAY_NEAR(g(f), exact, 1e-14);
 }

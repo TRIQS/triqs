@@ -35,7 +35,7 @@ using gf_vertex_tensor_t = gf<cartesian_product<imfreq, imfreq, imfreq>, tensor_
       for (int i3 = 0; i3 < n_im_freq; ++i3)
 
 double beta   = 10.0;
-auto iw_n     = [](int n) { return M_PI * (2 * n + 1) / beta * 1_j; };
+auto iw_n     = [](int n) { return M_PI * (2 * n + 1) / beta * 1i; };
 int n_im_freq = 10;
 
 std::vector<int> indices1 = {0, 1};

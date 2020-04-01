@@ -13,7 +13,7 @@ TEST(Gf, Base) {
   EXPECT_ARRAY_NEAR(D, gtr.data());
   EXPECT_TRUE(is_gf_real(Gt));
 
-  Gt(t_) << 8_j * t_;
+  Gt(t_) << 8i * t_;
   EXPECT_FALSE(is_gf_real(Gt));
 }
 MAKE_MAIN;

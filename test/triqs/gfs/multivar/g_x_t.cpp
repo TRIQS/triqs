@@ -22,7 +22,7 @@ TEST(Gf, x_t) {
   placeholder<1> t_;
 
   auto eps_k = -2 * (cos(k_(0)) + cos(k_(1)));
-  gkt(k_, t_) << exp(-1_j * eps_k * t_);
+  gkt(k_, t_) << exp(-1i * eps_k * t_);
 
   auto gxt = gf<cartesian_product<cyclic_lattice, retime>, matrix_valued>{{{L, L}, {t_min, t_max, n_times}}, {1, 1}};
 

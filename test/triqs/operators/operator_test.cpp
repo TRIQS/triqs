@@ -112,7 +112,7 @@ TEST(Operator, Complex) {
   EXPECT_PRINT("(1,0)*c_dag(3,15,'b',0,-5) + (1,0)*c(1,2,'a',1,-2)", op_with_many_indices);
 
   // Constant operator
-  many_body_operator_complex const_op(3.14 + 2_j);
+  many_body_operator_complex const_op(3.14 + 2i);
   EXPECT_PRINT("(3.14,2)", const_op);
 
   // Test anticommutators & commutators
@@ -127,16 +127,16 @@ TEST(Operator, Complex) {
   EXPECT_PRINT("(-1,-0)*c(0)", -x);
   EXPECT_PRINT("(2,0) + (1,0)*c(0)", x + 2.0);
   EXPECT_PRINT("(2,0) + (1,0)*c(0)", 2.0 + x);
-  EXPECT_PRINT("(0,2) + (1,0)*c(0)", x + 2.0_j);
-  EXPECT_PRINT("(0,2) + (1,0)*c(0)", 2.0_j + x);
+  EXPECT_PRINT("(0,2) + (1,0)*c(0)", x + 2.0i);
+  EXPECT_PRINT("(0,2) + (1,0)*c(0)", 2.0i + x);
   EXPECT_PRINT("(-2,-0) + (1,0)*c(0)", x - 2.0);
   EXPECT_PRINT("(2,0) + (-1,-0)*c(0)", 2.0 - x);
-  EXPECT_PRINT("(-0,-2) + (1,0)*c(0)", x - 2.0_j);
-  EXPECT_PRINT("(0,2) + (-1,-0)*c(0)", 2.0_j - x);
+  EXPECT_PRINT("(-0,-2) + (1,0)*c(0)", x - 2.0i);
+  EXPECT_PRINT("(0,2) + (-1,-0)*c(0)", 2.0i - x);
   EXPECT_PRINT("(3,0)*c_dag(1)", 3.0 * y);
   EXPECT_PRINT("(3,0)*c_dag(1)", y * 3.0);
-  EXPECT_PRINT("(0,3)*c_dag(1)", 3.0_j * y);
-  EXPECT_PRINT("(0,3)*c_dag(1)", y * 3.0_j);
+  EXPECT_PRINT("(0,3)*c_dag(1)", 3.0i * y);
+  EXPECT_PRINT("(0,3)*c_dag(1)", y * 3.0i);
   EXPECT_PRINT("(1,0)*c_dag(1) + (1,0)*c(0)", x + y);
   EXPECT_PRINT("(-1,-0)*c_dag(1) + (1,0)*c(0)", x - y);
   EXPECT_PRINT("(2,0)*c_dag(1)*c(0)", (x + y) * (x - y));
@@ -148,7 +148,7 @@ TEST(Operator, Complex) {
   EXPECT_PRINT("(1,0)*c_dag('dn')*c('dn') + (1,0)*c_dag('up')*c('up') + (6,0)*c_dag('dn')*c_dag('up')*c('up')*c('dn')", N3);
 
   // Dagger
-  auto X = (1 + 2_j) * c_dag<dcomplex>(1) * c_dag<dcomplex>(2) * c<dcomplex>(3) * c<dcomplex>(4);
+  auto X = (1 + 2i) * c_dag<dcomplex>(1) * c_dag<dcomplex>(2) * c<dcomplex>(3) * c<dcomplex>(4);
   EXPECT_PRINT("(-1,-2)*c_dag(1)*c_dag(2)*c(4)*c(3)", X);
   EXPECT_PRINT("(-1,2)*c_dag(3)*c_dag(4)*c(2)*c(1)", dagger(X));
 
@@ -159,15 +159,15 @@ TEST(Operator, Complex) {
 
 TEST(Operator, RealOrComplex) {
   // Operators without indices
-  auto op_with_no_indices = c() + 1_j * c_dag() - n();
+  auto op_with_no_indices = c() + 1i * c_dag() - n();
   EXPECT_PRINT("(0+1j)*c_dag() + 1*c() + -1*c_dag()*c()", op_with_no_indices);
 
   // Operators with many indices
-  auto op_with_many_indices = c(1, 2, "a", true, -2) + 1_j * c_dag(3, 15, "b", false, -5);
+  auto op_with_many_indices = c(1, 2, "a", true, -2) + 1i * c_dag(3, 15, "b", false, -5);
   EXPECT_PRINT("(0+1j)*c_dag(3,15,'b',0,-5) + 1*c(1,2,'a',1,-2)", op_with_many_indices);
 
   // Constant operator
-  many_body_operator_complex const_op(3.14 + 2_j);
+  many_body_operator_complex const_op(3.14 + 2i);
   EXPECT_PRINT("(3.14,2)", const_op);
 
   // Test anticommutators & commutators
@@ -182,16 +182,16 @@ TEST(Operator, RealOrComplex) {
   EXPECT_PRINT("-1*c(0)", -x);
   EXPECT_PRINT("2 + 1*c(0)", x + 2.0);
   EXPECT_PRINT("2 + 1*c(0)", 2.0 + x);
-  EXPECT_PRINT("(0+2j) + 1*c(0)", x + 2.0_j);
-  EXPECT_PRINT("(0+2j) + 1*c(0)", 2.0_j + x);
+  EXPECT_PRINT("(0+2j) + 1*c(0)", x + 2.0i);
+  EXPECT_PRINT("(0+2j) + 1*c(0)", 2.0i + x);
   EXPECT_PRINT("-2 + 1*c(0)", x - 2.0);
   EXPECT_PRINT("2 + -1*c(0)", 2.0 - x);
-  EXPECT_PRINT("(-0-2j) + 1*c(0)", x - 2.0_j);
-  EXPECT_PRINT("(0+2j) + -1*c(0)", 2.0_j - x);
+  EXPECT_PRINT("(-0-2j) + 1*c(0)", x - 2.0i);
+  EXPECT_PRINT("(0+2j) + -1*c(0)", 2.0i - x);
   EXPECT_PRINT("3*c_dag(1)", 3.0 * y);
   EXPECT_PRINT("3*c_dag(1)", y * 3.0);
-  EXPECT_PRINT("(0+3j)*c_dag(1)", 3.0_j * y);
-  EXPECT_PRINT("(0+3j)*c_dag(1)", y * 3.0_j);
+  EXPECT_PRINT("(0+3j)*c_dag(1)", 3.0i * y);
+  EXPECT_PRINT("(0+3j)*c_dag(1)", y * 3.0i);
   EXPECT_PRINT("1*c_dag(1) + 1*c(0)", x + y);
   EXPECT_PRINT("-1*c_dag(1) + 1*c(0)", x - y);
   EXPECT_PRINT("2*c_dag(1)*c(0)", (x + y) * (x - y));
@@ -203,7 +203,7 @@ TEST(Operator, RealOrComplex) {
   EXPECT_PRINT("1*c_dag('dn')*c('dn') + 1*c_dag('up')*c('up') + 6*c_dag('dn')*c_dag('up')*c('up')*c('dn')", N3);
 
   // Dagger
-  auto X = (1 + 2_j) * c_dag(1) * c_dag(2) * c(3) * c(4);
+  auto X = (1 + 2i) * c_dag(1) * c_dag(2) * c(3) * c(4);
   EXPECT_PRINT("(-1-2j)*c_dag(1)*c_dag(2)*c(4)*c(3)", X);
   EXPECT_PRINT("(-1+2j)*c_dag(3)*c_dag(4)*c(2)*c(1)", dagger(X));
 

@@ -143,7 +143,7 @@ namespace triqs::gfs {
     /// From an index of a point in the mesh, returns the corresponding point in the domain
     domain_pt_t index_to_point(index_t idx) const {
       EXPECTS(is_within_boundary(idx));
-      return 1_j * M_PI * (2 * idx.value + (_dom.statistic == Fermion)) / _dom.beta;
+      return 1i * M_PI * (2 * idx.value + (_dom.statistic == Fermion)) / _dom.beta;
     }
 
     /// Flatten the index in the positive linear index for memory storage (almost trivial here).
@@ -175,7 +175,7 @@ namespace triqs::gfs {
     // maximum freq of the mesh
     dcomplex omega_max() const { return index_to_point(_last_index); }
 
-    dcomplex index_to_point(int n) const { return 1_j * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
+    dcomplex index_to_point(int n) const { return 1i * M_PI * (2 * n + (_dom.statistic == Fermion)) / _dom.beta; }
 
     // -------------------- mesh_point -------------------
 

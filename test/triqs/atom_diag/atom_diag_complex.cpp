@@ -87,7 +87,7 @@ TEST(atom_diag_complex, QuantumNumbers) {
 TEST(atom_diag_complex, Vacuum) {
   auto h = 2.0 * (n("up") - 0.5) * (n("dn") - 0.5);
   h += 0.3 * (c_dag("up") * c("dn") + c_dag("dn") * c("up"));
-  h += 0.1_j * (c_dag("up") * c_dag("dn") + c("up") * c("dn"));
+  h += 0.1i * (c_dag("up") * c_dag("dn") + c("up") * c("dn"));
 
   fundamental_operator_set fops;
   fops.insert("up");
@@ -107,7 +107,7 @@ TEST(atom_diag_complex, Autopartition) {
   dcomplex U  = 1.0;
   dcomplex J  = 0.3;
   dcomplex b  = 0.03;
-  dcomplex t  = 0.2_j;
+  dcomplex t  = 0.2i;
   auto h      = make_hamiltonian<many_body_operator_complex>(mu, U, J, b, t);
 
   auto ad = triqs::atom_diag::atom_diag<true>(h, fops);
@@ -238,7 +238,7 @@ TEST(atom_diag_complex, Functions) {
   dcomplex U  = 1.0;
   dcomplex J  = 0.3;
   dcomplex b  = 0.03;
-  dcomplex t  = 0.2_j;
+  dcomplex t  = 0.2i;
   double beta = 10;
 
   auto N_up = n("up", 0) + n("up", 1) + n("up", 2);

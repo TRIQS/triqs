@@ -34,7 +34,7 @@ TEST(hermiticity, symmetrize_and_check) {
   double beta = 1;
 
   // ============ Test with hermitian Gf
-  auto h = matrix<dcomplex>{{{1 + 0_j, 1_j}, {-1_j, 2 + 0_j}}};
+  auto h = matrix<dcomplex>{{{1 + 0i, 1i}, {-1i, 2 + 0i}}};
   auto G = gf<imfreq>{{beta, Fermion}, {2, 2}};
   //G(iw_) << inverse(iw_ - h); // FIXME
   for (auto &iw : G.mesh()) G[iw] = inverse(iw - h);
@@ -50,7 +50,7 @@ TEST(hermiticity, symmetrize_and_check) {
   EXPECT_GF_NEAR(G_tau, make_hermitian(G_tau), 1e-13);
 
   // ============  Now Break hermiticity
-  h = matrix<dcomplex>{{{1 + 0_j, 1_j}, {1_j, 2 + 0_j}}};
+  h = matrix<dcomplex>{{{1 + 0i, 1i}, {1i, 2 + 0i}}};
   for (auto &iw : G.mesh()) G[iw] = inverse(iw - h);
 
   EXPECT_FALSE(is_gf_hermitian(G));

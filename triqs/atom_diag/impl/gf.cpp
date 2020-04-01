@@ -305,7 +305,7 @@ namespace triqs {
         gf_view<refreq, scalar_valued> g = slice_target_to_scalar(gf[bl], n1, n2);
 
         // Set data points
-        for (auto w : g.mesh()) g[w] += residue / (w + 1_j * broadening - pole);
+        for (auto w : g.mesh()) g[w] += residue / (w + 1i * broadening - pole);
       };
     }
 
