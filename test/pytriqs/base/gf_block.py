@@ -1,6 +1,6 @@
 from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
-from pytriqs.archive import *
+from h5 import *
 
 from itertools import product
 import unittest

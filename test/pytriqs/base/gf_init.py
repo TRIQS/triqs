@@ -18,7 +18,7 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 import numpy
@@ -46,4 +46,3 @@ assert_gfs_are_close(g, h['g3'])
 
 print(h['g1'], type(h['g1']))
 print(g, type(g))
-

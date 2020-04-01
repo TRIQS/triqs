@@ -22,7 +22,7 @@
 import unittest
 import numpy as np
 
-from pytriqs.archive import *
+from h5 import *
 
 class TestHdf5Bool(unittest.TestCase):
 

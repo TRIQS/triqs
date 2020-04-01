@@ -1,5 +1,5 @@
 from pytriqs.gf import *
-from pytriqs.archive import *
+from h5 import *
 
 #one constructor
 m=MeshImFreq(beta=1, S='Fermion', n_max=10)

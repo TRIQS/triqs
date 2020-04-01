@@ -1,6 +1,6 @@
 from pytriqs.gf import *
 from pytriqs.lattice import *
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.lattice.tight_binding import * 
 from pytriqs.utility.h5diff import h5diff
 from pytriqs.utility.comparison_tests import assert_gfs_are_close

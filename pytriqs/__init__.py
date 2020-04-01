@@ -42,7 +42,6 @@ class Cpp2pyInfo(Cpp2pyInfoBase):
         'triqs::operators::many_body_operator*' : 'operators_real_complex',
         'triqs::hilbert_space::fundamental_operator_set' : 'fundamental_operator_set',
         'triqs::utility::real_or_complex' : 'real_or_complex',
-        'triqs::h5::group' : 'h5'
         }
 
     table_converters = dict ( (k, "triqs/cpp2py_converters/%s.hpp"%v) for (k,v) in list(_table_converters.items()))

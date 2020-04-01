@@ -23,7 +23,7 @@
 import unittest
 from numpy import *
 
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.utility.comparison_tests import *
 
 class TestHdf5Io(unittest.TestCase):

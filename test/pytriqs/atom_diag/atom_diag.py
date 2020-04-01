@@ -1,6 +1,6 @@
 from pytriqs.operators import *
 from pytriqs.gf import *
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.atom_diag import *
 from pytriqs.utility.comparison_tests import *
 import numpy as np

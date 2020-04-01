@@ -18,7 +18,7 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.gf import *
 from pytriqs.utility.comparison_tests import *
 from pytriqs.lattice import *

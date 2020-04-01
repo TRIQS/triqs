@@ -1,5 +1,5 @@
 from pytriqs.gf import *
-from pytriqs.archive import *
+from h5 import *
 from itertools import product
 
 beta = 3.0

@@ -46,7 +46,7 @@ TB = TightBinding(BL, hop)
 # Compute the density of states
 d = dos(TB, n_kpts= 500, n_eps = 101, name = 'dos')[0]
 
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 R = HDFArchive('dos.ref.h5','r')
 assert_arrays_are_close(R['SquareLatt'].eps, d.eps)
 assert_arrays_are_close(R['SquareLatt'].rho, d.rho)

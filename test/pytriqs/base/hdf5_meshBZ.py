@@ -1,6 +1,6 @@
 import numpy as np
 from pytriqs.gf import *
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.lattice import BrillouinZone, BravaisLattice
 
 bz = BrillouinZone(BravaisLattice([[1,0],[0,1]]))

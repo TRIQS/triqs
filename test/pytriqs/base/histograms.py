@@ -1,5 +1,5 @@
 from pytriqs.statistics import *
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from pytriqs.utility.comparison_tests import *
 import numpy as np
 import pickle

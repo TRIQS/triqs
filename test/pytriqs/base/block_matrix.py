@@ -1,5 +1,5 @@
 from pytriqs.arrays.block_matrix import *
-from pytriqs.archive import *
+from h5 import *
 import pytriqs.utility.mpi as mpi
 from numpy import matrix
 

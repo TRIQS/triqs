@@ -19,7 +19,7 @@
 #
 ################################################################################
 
-from pytriqs.archive import *
+from h5 import *
 from pytriqs.operators.util import *
 from pytriqs.utility.comparison_tests import *
 import numpy

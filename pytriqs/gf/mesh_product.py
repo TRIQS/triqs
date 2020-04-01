@@ -122,6 +122,6 @@ class MeshProduct:
 
 #---------------------------------------------------------
 
-from pytriqs.archive.hdf_archive_schemes import register_class
+from h5.hdf_formats import register_class
 register_class (MeshProduct)
 
