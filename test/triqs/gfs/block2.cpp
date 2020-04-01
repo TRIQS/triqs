@@ -31,7 +31,7 @@ TEST(Block2, Base) {
   EXPECT_BLOCK2_GF_NEAR(B1, V1);
 
   // H5 read write
-  EXPECT_BLOCK2_GF_NEAR(B1, rw_h5(B1, "block", "B1"));
+  EXPECT_BLOCK2_GF_NEAR(B1, rw_h5(B1, "block2", "B1"));
 
   // Data write/read access
   B1(0, 0)[0] = 1.0;

@@ -18,8 +18,8 @@ TEST(GfM, CurryFourier) {
 
   auto _ = all_t{};
 
-  rw_h5(gkw, "ess_g_k_om.h5", "g");
-  rw_h5(gkt, "ess_g_k_t.h5", "g");
+  rw_h5(gkw, "curr_g_k_om.h5", "g");
+  rw_h5(gkt, "curr_g_k_t.h5", "g");
 
   placeholder<0> k_;
   placeholder<1> w_;
