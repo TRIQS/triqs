@@ -703,6 +703,8 @@ class Gf(metaclass=AddMethod):
         if self.indices : d['indices'] = self.indices 
         return d
 
+    _hdf5_format_ = 'Gf'
+
     @classmethod
     def __factory_from_dict__(cls, name, d):
         # Backward compatibility layer
