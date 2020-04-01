@@ -19,6 +19,8 @@
  *
  ******************************************************************************/
 
+#include <variant>
+
 namespace std {
 
   // == ostream operator<< for variant and vector of variant

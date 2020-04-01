@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/variant.hpp>
 #include <triqs/utility/dressed_iterator.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/variant_extensions.hpp>

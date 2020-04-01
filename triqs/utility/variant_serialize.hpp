@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/utility/variant.hpp>
+#include <variant>
 #include <boost/serialization/split_free.hpp>
 
 namespace boost {
