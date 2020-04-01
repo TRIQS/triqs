@@ -1,9 +1,10 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
 # Copyright (C) 2011 by M. Ferrero, O. Parcollet
+# Copyright (C) 2020 Simons Foundation
+#    authors: N. Wentzell
 #
 # TRIQS is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -20,5 +21,22 @@
 #
 ################################################################################
 
-from .hdf_archive import HDFArchive, HDFArchiveGroup, HDFArchiveInert
+r"""
+Deprecated module. Use
+from h5 import XXX
+"""
+
+import warnings
+warnings.warn("""
+***************************************************
+
+from pytriqs.archive import XXX
+
+is deprecated. Replace it by
+
+from h5 import XXX")
+
+****************************************************""")
+
+from h5 import HDFArchive, HDFArchiveGroup, HDFArchiveInert
 __all__ = ['HDFArchive', 'HDFArchiveGroup', 'HDFArchiveInert']
