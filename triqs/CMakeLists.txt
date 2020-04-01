@@ -68,34 +68,17 @@ endif()
 # ---------------------------------
 # MPI
 # ---------------------------------
+target_link_libraries(triqs PUBLIC mpi_interface)
 
-message(STATUS "-------- MPI detection -------------")
+# ---------------------------------
+# HDF5
+# ---------------------------------
+target_link_libraries(triqs PUBLIC h5_interface)
 
-find_package(MPI REQUIRED)
-
-# Create an interface target
-add_library(mpi INTERFACE)
-target_include_directories(mpi SYSTEM INTERFACE ${MPI_C_INCLUDE_PATH})
-target_link_libraries(mpi INTERFACE ${MPI_C_LIBRARIES} ${MPI_CXX_LIBRARIES})
-separate_arguments(MPI_C_COMPILE_FLAGS) # Convert to list
-target_compile_options(mpi INTERFACE ${MPI_C_COMPILE_FLAGS})
-
-# Link against interface target and export
-target_link_libraries(triqs PUBLIC mpi)
-target_include_directories(triqs SYSTEM PUBLIC ${MPI_C_INCLUDE_PATH})
-install(TARGETS mpi EXPORT triqs-dependencies)
-
-# Backward compatibility for older FindMPI.cmake
-if(NOT MPIEXEC_EXECUTABLE)
-  set(MPIEXEC_EXECUTABLE ${MPIEXEC} CACHE FILENAME "MPI Executable")
-endif()
-
-# Compatibility to Open-MPI 3.0.0: check whether MPI executable has option --oversubscribe and add it 
-execute_process(COMMAND ${MPIEXEC_EXECUTABLE} --oversubscribe ${MPIEXEC_NUMPROC_FLAG} 4 ${MPIEXEC_PREFLAGS} ls ${MPIEXEC_POSTFLAGS} RESULT_VARIABLE HAS_NO_OVERSUBSCRIBE OUTPUT_QUIET ERROR_QUIET)
-if(NOT HAS_NO_OVERSUBSCRIBE)
-  list(APPEND MPIEXEC_PREFLAGS --oversubscribe)
-  set(MPIEXEC_PREFLAGS ${MPIEXEC_PREFLAGS} CACHE STRING "These flags will be directly before the executable that is being run by mpiexec." FORCE)
-endif()
+# ---------------------------------
+# Itertools 
+# ---------------------------------
+target_link_libraries(triqs PUBLIC itertools_c)
 
 # ---------------------------------
 # Boost
@@ -109,9 +92,9 @@ message(STATUS "Boost include dir: ${Boost_INCLUDE_DIRS}")
 
 add_library(boost INTERFACE)
 target_include_directories(boost SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
-install(TARGETS boost EXPORT triqs-dependencies)
 
 target_link_libraries(triqs PUBLIC boost)
+install(TARGETS boost EXPORT triqs-dependencies)
 
 # ---------------------------------
 # max_align_t bug detection
@@ -131,44 +114,8 @@ endif()
 # ---------------------------------
 # Lapack
 # ---------------------------------
-
-message(STATUS "-------- Lapack detection -------------")
-
-find_package(LAPACK REQUIRED)
-
-message(STATUS "Lapack libraries : ${LAPACK_LIBRARIES}")
-message(STATUS "Lapack vendor : ${BLA_VENDOR}")
-
-list(REMOVE_DUPLICATES LAPACK_LIBRARIES)
-add_library(blas_lapack INTERFACE)
-target_link_libraries(blas_lapack INTERFACE ${LAPACK_LIBRARIES})
-target_compile_options(blas_lapack INTERFACE ${LAPACK_LINKER_FLAGS})
-
 target_link_libraries(triqs PUBLIC blas_lapack)
-install(TARGETS blas_lapack EXPORT triqs-dependencies)
-
-# ---------------------------------
-# HDF5
-# ---------------------------------
-
-message(STATUS "-------- HDF5 detection -------------")
-
-find_package(HDF5 REQUIRED C HL)
-
-string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+" HDF5_VERSION ${HDF5_VERSION})
-if(PythonSupport AND NOT PYTHON_H5PY_HDF5VERSION VERSION_EQUAL HDF5_VERSION)
-  message(FATAL_ERROR "The HDF5 version of the h5py (${PYTHON_H5PY_HDF5VERSION}) is different from the hdf5 library found for C++ (${HDF5_VERSION}). You MUST have the same version.")
-endif()
-
-# Create an interface target
-add_library(hdf5 INTERFACE)
-target_include_directories(hdf5 SYSTEM INTERFACE ${HDF5_INCLUDE_DIRS})
-target_link_libraries(hdf5 INTERFACE "${HDF5_LIBRARIES}" ${HDF5_HL_LIBRARIES})
-target_compile_options(hdf5 INTERFACE ${HDF5_DEFINITIONS})
-
-# Link against interface target and export
-target_link_libraries(triqs PUBLIC hdf5)
-install(TARGETS hdf5 EXPORT triqs-dependencies)
+#install(TARGETS blas_lapack EXPORT triqs-dependencies)
 
 # ---------------------------------
 # GMP
@@ -206,20 +153,13 @@ endif()
 # Dynamic Analyzer Checks
 # ---------------------------------
 
-# Sanitizer options
-option(ASAN OFF "Compile library and executables with LLVM Address Sanitizer")
-option(UBSAN OFF "Compile library and executables with LLVM Undefined Behavior Sanitizer")
-option(MBSAN OFF "Compile library and executables with LLVM Memory Sanitizer")
+# Sanitizer Options already defined in NDA
 
 if(ASAN)
-  find_package(sanitizer REQUIRED "asan")
   target_link_libraries(triqs PUBLIC asan)
-  install(TARGETS asan EXPORT triqs-dependencies)
 endif()
 if(UBSAN)
-  find_package(sanitizer REQUIRED "ubsan")
   target_link_libraries(triqs PUBLIC ubsan)
-  install(TARGETS ubsan EXPORT triqs-dependencies)
 endif()
 
 if(MSAN)
