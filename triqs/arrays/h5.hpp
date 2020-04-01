@@ -1,6 +1,6 @@
 #pragma once
-#include <triqs/h5.hpp>
-#include <triqs/h5/array_interface.hpp>
+#include <h5/h5.hpp>
+#include <h5/array_interface.hpp>
 
 #include <algorithm>
 
@@ -75,7 +75,7 @@ namespace triqs::arrays {
 
     } else if constexpr (is_scalar_v<typename A::value_type>) { // FIXME : register types as USER DEFINED hdf5 types
 
-      static constexpr bool is_complex = triqs::h5::is_complex_v<typename A::value_type>;
+      static constexpr bool is_complex = h5::is_complex_v<typename A::value_type>;
       h5_details::write(g, name, h5::hdf5_type<typename A::value_type>(), (void *)(a.data_start()), A::rank, is_complex,
                         a.indexmap().lengths().data(), a.indexmap().strides().data(), a.size());
 
@@ -120,7 +120,7 @@ namespace triqs::arrays {
 
     } else if constexpr (is_scalar_v<typename A::value_type>) { // FIXME : register types as USER DEFINED hdf5 types
 
-      static constexpr bool is_complex = triqs::h5::is_complex_v<typename A::value_type>;
+      static constexpr bool is_complex = h5::is_complex_v<typename A::value_type>;
 
       auto lt = h5::array_interface::get_h5_lengths_type(g, name);
 

@@ -20,10 +20,6 @@
  ******************************************************************************/
 #pragma once
 
-#ifdef TRIQS_INCLUDED_H5
-#include "./cpp2py_converters/h5.hpp"
-#endif
-
 #ifdef TRIQS_INCLUDED_ARRAYS
 #include "./cpp2py_converters/arrays.hpp"
 #endif

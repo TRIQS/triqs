@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #pragma once
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 #include <triqs/arrays.hpp>
 #include <ostream>
 

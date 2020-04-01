@@ -29,7 +29,7 @@
 #include "triqs/utility/view_tools.hpp"
 #include <type_traits>
 
-#include "triqs/h5.hpp"
+#include "h5/h5.hpp"
 
 namespace triqs {
   namespace arrays {
@@ -91,7 +91,7 @@ namespace triqs {
       static constexpr int rank      = IndexMapType::domain_type::rank;
       static constexpr bool is_const = IsConst;
 
-      static std::string hdf5_format() { return "array<" + triqs::h5::get_hdf5_format<value_type>() + "," + std::to_string(rank) + ">"; }
+      static std::string hdf5_format() { return "array<" + h5::get_hdf5_format<value_type>() + "," + std::to_string(rank) + ">"; }
 
       protected:
       indexmap_type indexmap_;

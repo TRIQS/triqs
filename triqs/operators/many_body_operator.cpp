@@ -20,13 +20,14 @@
  ******************************************************************************/
 #include "./many_body_operator.hpp"
 #include "./../utility/mini_vector.hpp"
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 #include <hdf5.h>
 
 namespace triqs {
   namespace operators {
 
-    using namespace triqs::h5;
+    using h5::h5_object;
+    using h5::dataset;
     using hilbert_space::fundamental_operator_set;
 
 // maximum order of the monomial (here quartic operators)
@@ -126,7 +127,7 @@ namespace triqs {
 
       // Store fundamental_operator_set as an attribute of the dataset
       h5_write_attribute(dataset, "fundamental_operator_set", fops);
-      h5::h5_write_attribute(dataset, "TRIQS_HDF5_data_scheme", get_hdf5_format<many_body_operator>());
+      write_hdf5_format(dataset, op);
     }
 
     // ---------------------------  READ -----------------------------------------
@@ -145,7 +146,7 @@ namespace triqs {
       utility::mini_vector<hsize_t, 1> dims_out;
       int ndims = H5Sget_simple_extent_dims(d_space, dims_out.ptr(), NULL);
       if (ndims != 1)
-        TRIQS_RUNTIME_ERROR << "triqs::h5 : Trying to read many_body_operator. Rank mismatch : the array stored in the hdf5 file has rank = "
+        TRIQS_RUNTIME_ERROR << "h5 : Trying to read many_body_operator. Rank mismatch : the array stored in the hdf5 file has rank = "
                             << ndims;
 
       // datatype

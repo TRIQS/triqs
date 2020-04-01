@@ -1,7 +1,6 @@
 #include <triqs/test_tools/gfs.hpp>
 using namespace triqs::gfs;
 using namespace triqs::arrays;
-namespace h5 = triqs::h5;
 
 TEST(Gf, PlaceHolder) {
 

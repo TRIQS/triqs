@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/arrays.hpp>
-#include "triqs/utility/complex_ops.hpp"
+#include "nda/std_addons/complex.hpp"
 #include <utility>
 
 namespace triqs {

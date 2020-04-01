@@ -4,7 +4,7 @@
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 
 using namespace triqs::arrays;
 using namespace triqs::hilbert_space;

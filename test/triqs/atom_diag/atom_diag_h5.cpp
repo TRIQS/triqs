@@ -1,7 +1,7 @@
 #include <triqs/test_tools/gfs.hpp>
 
 #include <triqs/atom_diag/atom_diag.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 
 #include "./hamiltonian.hpp"
 

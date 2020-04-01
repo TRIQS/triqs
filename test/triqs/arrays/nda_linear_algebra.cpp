@@ -7,7 +7,7 @@
 #include <triqs/arrays/blas_lapack/gesvd.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 #include <triqs/utility/numeric_ops.hpp>
-#include <triqs/utility/complex_ops.hpp>
+#include <nda/std_addons/complex.hpp>
 
 template <typename T, typename O1, typename O2, typename O3> void test_matmul(O1 o1, O2 o2, O3 o3, bool all = false) {
   matrix<T> M1(2, 3, o1);

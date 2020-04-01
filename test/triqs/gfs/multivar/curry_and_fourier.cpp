@@ -1,7 +1,6 @@
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 #include <triqs/test_tools/gfs.hpp>
 
-namespace h5 = triqs::h5;
 using namespace triqs::gfs;
 using namespace triqs::clef;
 using namespace triqs::arrays;

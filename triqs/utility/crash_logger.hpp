@@ -73,7 +73,7 @@ namespace triqs {
       template <typename Obj> crash_logger &operator()(Obj const &obj, std::string name) {
         names.push_back(name);
         guards.emplace_back([&obj, this, name]() {
-          using triqs::h5::h5_write; // to have the proper overload for scalar type !!
+          using h5::h5_write; // to have the proper overload for scalar type !!
           try {
             h5_write(h5::group(h5::file(this->filename_.c_str(), 'a')), name, obj);
           } catch (...) {

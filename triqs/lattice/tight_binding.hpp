@@ -20,8 +20,8 @@
  ******************************************************************************/
 #pragma once
 #include "brillouin_zone.hpp"
-#include <triqs/utility/complex_ops.hpp>
-#include <triqs/h5.hpp>
+#include <h5/std_addons/complex.hpp>
+#include <h5/h5.hpp>
 
 namespace triqs {
   namespace lattice {
@@ -92,7 +92,7 @@ namespace triqs {
       static std::string hdf5_format() { return "tight_binding"; }
 
       // Function that writes the solver_core to hdf5 file
-      friend void h5_write(triqs::h5::group g, std::string subgroup_name, tight_binding const &tb) {
+      friend void h5_write(h5::group g, std::string subgroup_name, tight_binding const &tb) {
         auto grp = g.create_group(subgroup_name);
         h5_write_attribute(grp, "TRIQS_HDF5_data_scheme", tight_binding::hdf5_format());
         h5_write(grp, "bravais_lattice", tb.bl_);
@@ -102,11 +102,11 @@ namespace triqs {
 
       // Function to read tight_binding object from hdf5 file
       CPP2PY_IGNORE
-      static tight_binding h5_read_construct(triqs::h5::group g, std::string subgroup_name) {
+      static tight_binding h5_read_construct(h5::group g, std::string subgroup_name) {
         auto grp = g.open_group(subgroup_name);
-        auto bl              = triqs::h5::h5_read<bravais_lattice>(grp, "bravais_lattice");
-        auto displ_vec       = triqs::h5::h5_read<std::vector<std::vector<long>>>(grp, "displ_vec");
-        auto overlap_mat_vec = triqs::h5::h5_read<std::vector<matrix<dcomplex>>>(grp, "overlap_mat_vec");
+        auto bl              = h5::h5_read<bravais_lattice>(grp, "bravais_lattice");
+        auto displ_vec       = h5::h5_read<std::vector<std::vector<long>>>(grp, "displ_vec");
+        auto overlap_mat_vec = h5::h5_read<std::vector<matrix<dcomplex>>>(grp, "overlap_mat_vec");
         return tight_binding(bl, displ_vec, overlap_mat_vec);
       }
 

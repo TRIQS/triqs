@@ -43,7 +43,7 @@ namespace boost {
 #define TRIQS_MAKE_NVP(NAME, X) X
 
 // missing complex * int and in * complex
-#include <triqs/utility/complex_ops.hpp>
+#include <h5/std_addons/complex.hpp>
 
 
 // FIXME : INCLUDE

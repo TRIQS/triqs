@@ -11,7 +11,6 @@
 #include <triqs/utility/callbacks.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
-namespace h5  = triqs::h5;
 triqs::arrays::array<std::complex<double>, 1> make_array(std::complex<double> c) { return {c}; };
 
 struct configuration {

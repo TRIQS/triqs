@@ -22,7 +22,7 @@
 #define TRIQS_DEBUG
 #include <mpi/mpi.hpp>
 #include <triqs/arrays.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 #include <triqs/utility/typeid_name.hpp>
 #include <iostream>
 #include <sstream>
@@ -31,7 +31,7 @@
 using namespace triqs::arrays;
 
 #if H5_VERSION_GE(1, 8, 9)
-#include <triqs/h5/serialization.hpp>
+#include <h5/serialization.hpp>
 #endif
 
 using dcomplex = std::complex<double>;
@@ -135,7 +135,7 @@ template <typename X, typename Y>::testing::AssertionResult generic_are_near(X c
 
 template <typename T> T rw_h5(T const &x, std::string filename = "ess", std::string name = "x") {
 
-  namespace h5 = triqs::h5;
+  namespace h5 = h5;
   T y; // must be default constructible
 
   {
@@ -154,9 +154,9 @@ template <typename T> T rw_h5(T const &x, std::string filename = "ess", std::str
 #ifdef TRIQS_TEST_USE_H5_SERIA
 
   std::cerr << "Checking H5 serialization/deserialization of \n " << triqs::utility::demangle(typeid(x).name()) << std::endl;
-  auto s  = triqs::h5::serialize(x);
-  T x2    = triqs::h5::deserialize<T>(s);
-  auto s2 = triqs::h5::serialize(x);
+  auto s  = h5::serialize(x);
+  T x2    = h5::deserialize<T>(s);
+  auto s2 = h5::serialize(x);
   std::cerr << "Length of serialization string " << first_dim(s) << std::endl;
   EXPECT_EQ_ARRAY(s, s2); // << "Test h5 save, load, save, compare has failed !";
 #endif

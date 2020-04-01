@@ -25,9 +25,9 @@ int main() {}
 
 #else
 
-#include <triqs/h5/serialization.hpp>
-using triqs::h5::deserialize;
-using triqs::h5::serialize;
+#include <h5/serialization.hpp>
+using h5::deserialize;
+using h5::serialize;
 using namespace triqs::arrays;
 
 TEST(H5Serialize, All) {

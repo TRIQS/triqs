@@ -20,10 +20,8 @@
  ******************************************************************************/
 #include <iostream>
 #include <tuple>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 #include <triqs/test_tools/arrays.hpp>
-
-namespace h5 = triqs::h5;
 
 TEST(H5Io, Pair) {
 

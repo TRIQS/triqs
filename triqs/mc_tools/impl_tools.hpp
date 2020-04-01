@@ -20,7 +20,7 @@
  ******************************************************************************/
 #pragma once
 #include <triqs/utility/first_include.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 #include <string>
 namespace triqs {
   namespace mc_tools {

@@ -145,7 +145,7 @@ namespace triqs {
 
     // Free functions
 
-    template <bool Complex> void h5_write(triqs::h5::group fg, std::string const &name, atom_diag<Complex> const &ad) {
+    template <bool Complex> void h5_write(h5::group fg, std::string const &name, atom_diag<Complex> const &ad) {
       using matrix_t = typename atom_diag<Complex>::matrix_t;
       auto gr        = fg.create_group(name);
       write_hdf5_format(gr, ad);
@@ -172,7 +172,7 @@ namespace triqs {
     }
 
     // -----------------------------------------------------------------
-    template <bool Complex> void h5_read(triqs::h5::group fg, std::string const &name, atom_diag<Complex> &ad) {
+    template <bool Complex> void h5_read(h5::group fg, std::string const &name, atom_diag<Complex> &ad) {
       using matrix_t = typename atom_diag<Complex>::matrix_t;
       auto gr        = fg.open_group(name);
 
@@ -225,10 +225,10 @@ namespace triqs {
     template class atom_diag<false>;
     template class atom_diag<true>;
 
-    template void h5_write(triqs::h5::group fg, std::string const &, atom_diag<false> const &);
-    template void h5_write(triqs::h5::group fg, std::string const &, atom_diag<true> const &);
-    template void h5_read(triqs::h5::group fg, std::string const &, atom_diag<false> &);
-    template void h5_read(triqs::h5::group fg, std::string const &, atom_diag<true> &);
+    template void h5_write(h5::group fg, std::string const &, atom_diag<false> const &);
+    template void h5_write(h5::group fg, std::string const &, atom_diag<true> const &);
+    template void h5_read(h5::group fg, std::string const &, atom_diag<false> &);
+    template void h5_read(h5::group fg, std::string const &, atom_diag<true> &);
 
     template std::ostream &operator<<(std::ostream &, atom_diag<true> const &);
     template std::ostream &operator<<(std::ostream &, atom_diag<false> const &);

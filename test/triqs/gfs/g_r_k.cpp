@@ -1,7 +1,6 @@
 #include <triqs/test_tools/gfs.hpp>
 #include <triqs/gfs.hpp>
 
-namespace h5 = triqs::h5;
 using namespace triqs::gfs;
 using namespace triqs::clef;
 using namespace triqs::arrays;

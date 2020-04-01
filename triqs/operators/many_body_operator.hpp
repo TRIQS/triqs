@@ -27,7 +27,7 @@
 #include <boost/operators.hpp>
 #include <triqs/utility/real_or_complex.hpp>
 #include <triqs/utility/numeric_ops.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 
 namespace triqs {
   namespace operators {

@@ -23,7 +23,7 @@
 #include <set>
 #include <boost/container/flat_map.hpp>
 #include <triqs/utility/exceptions.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 #include "fundamental_operator_set.hpp"
 
 namespace triqs {

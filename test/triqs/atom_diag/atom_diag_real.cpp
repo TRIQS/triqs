@@ -4,7 +4,7 @@
 #include <triqs/atom_diag/functions.hpp>
 #include <triqs/atom_diag/gf.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
-#include <triqs/h5.hpp>
+#include <h5/h5.hpp>
 
 #include "./hamiltonian.hpp"
 
@@ -14,9 +14,9 @@ using namespace triqs::atom_diag;
 
 //#define GENERATE_REF_H5
 #ifdef GENERATE_REF_H5
-triqs::h5::file out_file("atom_diag_real.h5", 'w');
+h5::file out_file("atom_diag_real.h5", 'w');
 #else
-triqs::h5::file ref_file("atom_diag_real.ref.h5", 'r');
+h5::file ref_file("atom_diag_real.ref.h5", 'r');
 #endif
 
 TEST(atom_diag_real, QuantumNumbers) {
