@@ -18,7 +18,8 @@ set(TRIQS_CXX_COMPILER_ID @CMAKE_CXX_COMPILER_ID@)
 set(TRIQS_GIT_EXECUTABLE @GIT_EXECUTABLE@)
 
 # Python Interpreter
-set(TRIQS_PYTHON_INTERPRETER @PYTHON_INTERPRETER@)
+set(TRIQS_PYTHON_EXECUTABLE @PYTHON_EXECUTABLE@)
+set(TRIQS_PYTHON_INTERPRETER @PYTHON_EXECUTABLE@) # Backward Compat
 set(TRIQS_PYTHON_LIB_DEST_ROOT @PYTHON_LIB_DEST_ROOT@)
 
 # MPI executable
@@ -162,7 +163,7 @@ macro (triqs_build_f2py_module target_name modulename module_pyf_name filelist1)
  # ... and a special target to build vertex.so, that depends on the sources files
  add_custom_command(OUTPUT  ${modulename}.so
   COMMAND echo See `pwd`/f2pyBuild.log for logs
-  COMMAND ${TRIQS_PYTHON_INTERPRETER} temp_script.py > f2pyBuild.log 2>&1
+  COMMAND ${TRIQS_PYTHON_EXECUTABLE} temp_script.py > f2pyBuild.log 2>&1
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${filelist} ${CMAKE_CURRENT_SOURCE_DIR}/${module_pyf_name}
   )
 
