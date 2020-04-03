@@ -42,6 +42,7 @@ include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-dependencies.cmake)
 
 # include the exported targets of this project 
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/cpp2py/cpp2py-targets.cmake)
+include(@CMAKE_INSTALL_PREFIX@/lib/cmake/nda/nda-targets.cmake)
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/triqs/triqs-targets.cmake)
 
 MESSAGE(STATUS "Found TRIQSConfig.cmake with version ${TRIQS_VERSION}, hash = ${TRIQS_GIT_HASH}")
