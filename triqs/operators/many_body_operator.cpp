@@ -26,7 +26,7 @@
 namespace triqs {
   namespace operators {
 
-    using h5::h5_object;
+    using h5::object;
     using h5::dataset;
     using hilbert_space::fundamental_operator_set;
 
@@ -73,15 +73,15 @@ namespace triqs {
       };
 
       // create the h5 type corresponding to h5_monomial
-      h5_object h5_monomial_dtype() {
-        h5_object mono_id = H5Tcreate(H5T_COMPOUND, sizeof(h5_monomial));
-        H5Tinsert(mono_id, "is_real", HOFFSET(h5_monomial, is_real), H5T_NATIVE_INT);
-        H5Tinsert(mono_id, "re", HOFFSET(h5_monomial, re), H5T_NATIVE_DOUBLE);
-        H5Tinsert(mono_id, "im", HOFFSET(h5_monomial, im), H5T_NATIVE_DOUBLE);
+      object h5_monomial_dtype() {
+        object mono_obj = H5Tcreate(H5T_COMPOUND, sizeof(h5_monomial));
+        H5Tinsert(mono_obj, "is_real", HOFFSET(h5_monomial, is_real), H5T_NATIVE_INT);
+        H5Tinsert(mono_obj, "re", HOFFSET(h5_monomial, re), H5T_NATIVE_DOUBLE);
+        H5Tinsert(mono_obj, "im", HOFFSET(h5_monomial, im), H5T_NATIVE_DOUBLE);
         hsize_t array_dim[] = {MAX_MONOMIAL_SIZE};
-        h5_object array_tid = H5Tarray_create(H5T_NATIVE_LONG, 1, array_dim);
-        H5Tinsert(mono_id, "op_indices", HOFFSET(h5_monomial, op_indices), array_tid);
-        return mono_id;
+        object array_tid = H5Tarray_create(H5T_NATIVE_LONG, 1, array_dim);
+        H5Tinsert(mono_obj, "op_indices", HOFFSET(h5_monomial, op_indices), array_tid);
+        return mono_obj;
       }
     } // namespace
 
@@ -112,22 +112,22 @@ namespace triqs {
       // ----- Store datavec into the h5 file.
 
       // datatype
-      h5_object datatype = h5_monomial_dtype();
+      object dtype = h5_monomial_dtype();
 
       // dataspace
-      hsize_t dim[]       = {datavec.size()};
-      h5_object dataspace = H5Screate_simple(1, dim, NULL);
+      hsize_t dim[] = {datavec.size()};
+      object dspace = H5Screate_simple(1, dim, NULL);
 
       // dataset
-      h5_object dataset = g.create_dataset(name.c_str(), datatype, dataspace);
+      object dset = g.create_dataset(name.c_str(), dtype, dspace);
 
       // write
-      herr_t status = H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, datavec.data());
+      herr_t status = H5Dwrite(dset, dtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, datavec.data());
       if (status < 0) TRIQS_RUNTIME_ERROR << "Error writing the many_body_operator " << op << " in the group" << g.name();
 
       // Store fundamental_operator_set as an attribute of the dataset
-      h5_write_attribute(dataset, "fundamental_operator_set", fops);
-      write_hdf5_format(dataset, op);
+      h5_write_attribute(dset, "fundamental_operator_set", fops);
+      write_hdf5_format(dset, op);
     }
 
     // ---------------------------  READ -----------------------------------------
@@ -150,7 +150,7 @@ namespace triqs {
                             << ndims;
 
       // datatype
-      h5_object datatype = h5_monomial_dtype();
+      object datatype = h5_monomial_dtype();
 
       // reading
       std::vector<h5_monomial> datavec(dims_out[0]);

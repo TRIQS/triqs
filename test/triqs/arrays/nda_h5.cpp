@@ -34,9 +34,9 @@ TEST(Array, H5) {
     h5_write(top, "empty", array<double, 2>(0, 10));
 
     // add some attribute to A
-    auto id = top.open_dataset("A");
-    h5_write_attribute(id, "AttrOfA1", 12);
-    h5_write_attribute(id, "AttrOfA2", 8.9);
+    auto ds = top.open_dataset("A");
+    h5_write_attribute(ds, "AttrOfA1", 12);
+    h5_write_attribute(ds, "AttrOfA2", 8.9);
 
     // scalar
     double x = 2.3;
@@ -63,9 +63,9 @@ TEST(Array, H5) {
     EXPECT_EQ_ARRAY(A, B);
 
     // read the attributes of A
-    auto id     = top.open_dataset("A");
-    int att1    = h5::h5_read_attribute<int>(id, "AttrOfA1");
-    double att2 = h5::h5_read_attribute<double>(id, "AttrOfA2");
+    auto ds = top.open_dataset("A");
+    int att1    = h5::h5_read_attribute<int>(ds, "AttrOfA1");
+    double att2 = h5::h5_read_attribute<double>(ds, "AttrOfA2");
     EXPECT_EQ(att1, 12);
     EXPECT_EQ(att2, 8.9);
 

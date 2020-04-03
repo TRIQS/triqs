@@ -151,11 +151,11 @@ TEST(H5Io, Attribute) {
     h5::group grp{file};
     h5_write(grp, "vec", 0);
 
-    auto id = grp.open_dataset("vec");
-    h5_write_attribute(id, "attr_vvs", vvs);
-    h5_write_attribute(id, "attr_evvs", evvs);
-    h5_write_attribute(id, "attr_vevs", vevs);
-    h5_write_attribute(id, "attr_vves", vves);
+    auto ds = grp.open_dataset("vec");
+    h5_write_attribute(ds, "attr_vvs", vvs);
+    h5_write_attribute(ds, "attr_evvs", evvs);
+    h5_write_attribute(ds, "attr_vevs", vevs);
+    h5_write_attribute(ds, "attr_vves", vves);
   }
 
   // read
@@ -165,11 +165,11 @@ TEST(H5Io, Attribute) {
     h5::file file{"test_attribute.h5", 'r'};
     h5::group grp{file};
 
-    auto id = grp.open_dataset("vec");
-    h5_read_attribute(id, "attr_vvs", rvvs);
-    h5_read_attribute(id, "attr_evvs", revvs);
-    h5_read_attribute(id, "attr_vevs", rvevs);
-    h5_read_attribute(id, "attr_vves", rvves);
+    auto ds = grp.open_dataset("vec");
+    h5_read_attribute(ds, "attr_vvs", rvvs);
+    h5_read_attribute(ds, "attr_evvs", revvs);
+    h5_read_attribute(ds, "attr_vevs", rvevs);
+    h5_read_attribute(ds, "attr_vves", rvves);
   }
 
   // compare
