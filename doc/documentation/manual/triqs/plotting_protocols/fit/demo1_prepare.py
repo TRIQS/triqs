@@ -4,7 +4,7 @@ from pytriqs.gf import *
 from pytriqs.gf.descriptors import iOmega_n
 g = GfImFreq(indices = [1], beta = 300, n_points = 1000, name = "g")
 
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 R = HDFArchive('myfile.h5', 'w')
 
 for n, Z0 in enumerate( np.arange (1,0, -0.1) ) :

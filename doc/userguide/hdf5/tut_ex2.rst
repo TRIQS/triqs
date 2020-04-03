@@ -8,7 +8,7 @@ What about more complex objects? The good news is that **hdf-compliant** objects
 
 .. code-block:: python
 
-   from pytriqs.archive import HDFArchive
+   from h5 import HDFArchive
    from pytriqs.gf import GfImFreq
 
    # Define a Green function 
@@ -25,7 +25,7 @@ Of course, we can retrieve G as easily:
 
 .. code-block:: python
 
-   from pytriqs.archive import HDFArchive
+   from h5 import HDFArchive
    from pytriqs.gf import GfImFreq
 
    R = HDFArchive('myfile.h5', 'r')  # Opens the file myfile.h5 in readonly mode 

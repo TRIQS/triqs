@@ -24,7 +24,7 @@ Here is a complete program doing this plain-vanilla DMFT on a half-filled one-ba
 
    from pytriqs.gf import *
    from pytriqs.operators import *
-   from pytriqs.archive import *
+   from h5 import *
    import pytriqs.utility.mpi as mpi
    from triqs_cthyb import Solver
 

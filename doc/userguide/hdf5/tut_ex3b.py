@@ -1,5 +1,5 @@
 from pytriqs.gf import GfReFreq
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 from math import pi
 
 R = HDFArchive('myfile.h5', 'r') 

@@ -1,6 +1,6 @@
 from pytriqs.gf import GfReFreq
 from pytriqs.gf.descriptors import SemiCircular
-from pytriqs.archive import HDFArchive
+from h5 import HDFArchive
 import numpy
 
 R = HDFArchive('myfile.h5', 'w') 

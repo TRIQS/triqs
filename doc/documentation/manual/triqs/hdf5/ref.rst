@@ -188,7 +188,7 @@ The class is registered using the module `hdf_archive_schemes` ::
  class myclass :
    pass #....
    
- from pytriqs.archive.hdf_archive_schemes import register_class
+ from h5.hdf_archive_schemes import register_class
  register_class (myclass)
 
 The function is 

@@ -13,12 +13,12 @@ int main() {
   std::cout << "g(0) = " << g[0] << std::endl;
 
   //print to hdf5
-  triqs::h5::file hfile("my_gf.h5", 'w');
+  h5::file hfile("my_gf.h5", 'w');
   h5_write(hfile, "g_w", g);
   hfile.close();
 
   //read from hdf5
-  triqs::h5::file hfile2("my_gf.h5", 'r');
+  h5::file hfile2("my_gf.h5", 'r');
   gf<imfreq> g2;
   h5_read(hfile2, "g_w", g2);
   hfile2.close();

@@ -52,7 +52,7 @@ A little example::
         return cls(D['d'],D['t'])
  
  # registering my class
- from pytriqs.archive.hdf_archive_schemes import register_class
+ from h5.hdf_archive_schemes import register_class
  register_class (myclass)
 
  # Testing it: 
