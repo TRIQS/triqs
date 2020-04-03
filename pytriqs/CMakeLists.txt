@@ -35,6 +35,7 @@ endif()
 
 # ---------------------------------------------
 
+add_subdirectory(archive)
 add_subdirectory(arrays)
 add_subdirectory(dos)
 add_subdirectory(fit)
