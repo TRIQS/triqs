@@ -181,18 +181,18 @@ namespace triqs::hilbert_space {
 
     /// Write this set as an HDF5 attribute
     /**
-     * @param id ID of an HDF5 object to attach the attribute to
+     * @param obj The HDF5 object to attach the attribute to
      * @param name Name of the attribute
      * @param f Fundamental set to write
      */
-    friend void h5_write_attribute(h5::hid_t id, std::string const &name, fundamental_operator_set const &f);
+    friend void h5_write_attribute(h5::object obj, std::string const &name, fundamental_operator_set const &f);
 
     /// Read a set from an HDF5 attribute
     /**
-     * @param id ID of an HDF5 object the attribute is attached to
+     * @param obj The HDF5 object the attribute is attached to
      * @param name Name of the attribute
      * @param f Reference to a fundamental set to be read
      */
-    friend void h5_read_attribute(h5::hid_t id, std::string const &name, fundamental_operator_set &f);
+    friend void h5_read_attribute(h5::object obj, std::string const &name, fundamental_operator_set &f);
   };
 } // namespace triqs::hilbert_space
