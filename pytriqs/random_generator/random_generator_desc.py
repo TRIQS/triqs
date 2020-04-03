@@ -4,7 +4,8 @@ module = module_(full_name = "pytriqs.random_generator", doc = "")
 module.add_include("<triqs/mc_tools/random_generator.hpp>")
 module.add_using("namespace triqs::mc_tools")
 
-module.add_include("<triqs/h5.hpp>")
+module.add_include("<h5/h5.hpp>")
+
 module.add_include("<triqs/arrays.hpp>")
 
 module.add_include("<cpp2py/converters/vector.hpp>")

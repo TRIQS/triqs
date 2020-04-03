@@ -345,6 +345,6 @@ class Block2Gf:
 
 #---------------------------------------------------------
 
-from h5.hdf_formats import register_class
+from h5.formats import register_class
 register_class(Block2Gf)
 

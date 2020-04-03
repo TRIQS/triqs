@@ -46,7 +46,7 @@ print(variant_to_variant("qwerty"))
 print(variant_to_variant(("name",7.65)))
 
 from h5 import *
-import h5.hdf_formats
+import h5.formats
 
 import numpy
 R = HDFArchive('ess.h5', 'w')    # Opens the file myfile.h5, in read/write mode

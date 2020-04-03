@@ -436,6 +436,6 @@ class BlockGf:
 
 #---------------------------------------------------------
 
-from h5.hdf_formats import register_class
+from h5.formats import register_class
 register_class (BlockGf)
 

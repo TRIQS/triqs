@@ -799,7 +799,7 @@ class Gf(metaclass=AddMethod):
 
 #---------------------------------------------------------
 
-from h5.hdf_formats import register_class, register_backward_compatibility_method
+from h5.formats import register_class, register_backward_compatibility_method
 register_class (Gf)
 
 # A backward compatility function
