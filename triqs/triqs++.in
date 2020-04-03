@@ -14,13 +14,13 @@ args, additional_args = parser.parse_known_args()
 
 if args.show: 
     assert not args.ldflags and not args.cxxflags, "Please choose either -show, -ldflags or -cxxflags"
-    print "CXXFLAGS=\"%s\""%(cxxflags)
-    print "LDFLAGS=\"%s\""%(ldflags)
+    print("CXXFLAGS=\"%s\""%(cxxflags))
+    print("LDFLAGS=\"%s\""%(ldflags))
 elif args.ldflags:
     assert not args.cxxflags, "Please choose either -show, -ldflags or -cxxflags"
-    print args.ldflags,
+    print(args.ldflags, end=' ')
 elif args.cxxflags:
-    print args.cxxflags,
+    print(args.cxxflags, end=' ')
 else:
     compile_command = "@CMAKE_CXX_COMPILER@ -Wno-unused-command-line-argument %s %s %s"%(cxxflags, " ".join(additional_args), ldflags)
     os.system(compile_command)
