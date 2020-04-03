@@ -54,11 +54,10 @@ For more information please refer to the official `user guide. <https://virtuale
 Compiling a package from source
 -------------------------------
 
-Some packages, such as mpi4py or h5py, should be compiled against the particular library that they depend on.
+Some packages, such as mpi4py should be compiled against the particular library that they depend on.
 In those cases you can instruct ``pip`` to build the package from source by using the ``--no-binary`` option.
 For example::
 
   pip install --upgrade --no-binary=mpi4py mpi4py  
-  pip install --upgrade --no-binary=h5py h5py
 
-would install or upgrade the mpi4py and h5py package to the latest version, by building the packages from source. On a cluster, be sure to load the proper library dependencies (e.g. openmpi or hdf5) into your environment before this step.
+would install or upgrade the mpi4py package to the latest version, by building the packages from source. On a cluster, be sure to load the proper library dependencies (e.g. openmpi) into your environment before this step.
