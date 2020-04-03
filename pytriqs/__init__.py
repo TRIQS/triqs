@@ -29,7 +29,8 @@ class Cpp2pyInfo(Cpp2pyInfoBase):
         'triqs::operators::many_body_operator' : 'pytriqs.operators',
         'triqs::lattice' : 'pytriqs.lattice',
         'triqs::statistics::histogram' : 'pytriqs.statistics.histograms',
-        'triqs::atom_diag::' : 'pytriqs.atom_diag'
+        'triqs::atom_diag::' : 'pytriqs.atom_diag',
+        'mpi::' : 'pytriqs.utility.mpi'
         }
 
     _table_converters = {
