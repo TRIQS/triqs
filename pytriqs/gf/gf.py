@@ -341,22 +341,22 @@ class Gf(object):
             # String access: transform the key into a list integers
             if all(isinstance(x, str) for x in key):
                 assert self._indices, "Got string indices, but I have no indices to convert them !"
-                key_lst = [self._indices.convert_index(s,i) for i,s in enumerate(key)] # convert returns a slice of len 1
+                key_tpl = tuple(self._indices.convert_index(s,i) for i,s in enumerate(key)) # convert returns a slice of len 1
 
             # Slicing with ranges -> Adjust indices
             elif all(isinstance(x, slice) for x in key): 
-                key_lst = list(key)
-                ind = GfIndices([ v[k]  for k,v in zip(key_lst, self._indices.data)])
+                key_tpl = tuple(key)
+                ind = GfIndices([ v[k]  for k,v in zip(key_tpl, self._indices.data)])
 
             # Integer access
             elif all(isinstance(x, int) for x in key):
-                key_lst = list(key)
+                key_tpl = tuple(key)
 
             # Invalid Access
             else:
                 raise NotImplementedError, "Partial slice of the target space not implemented"
 
-            dat = self._data[ self._rank * [slice(0,None)] + key_lst ] 
+            dat = self._data[ self._rank*(slice(0,None),) + key_tpl ]
             r = Gf(mesh = self._mesh, data = dat, indices = ind)
 
             r.__check_invariants()
