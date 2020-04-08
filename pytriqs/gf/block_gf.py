@@ -353,7 +353,7 @@ class BlockGf:
 
     def __rmul__(self,x): return self.__mul__(x)
 
-    def __idiv__(self,arg):
+    def __itruediv__(self,arg):
         if isinstance(arg, collections.Sequence):
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
             for l,g in zip(arg,self.__GFlist): g /=l
@@ -361,7 +361,7 @@ class BlockGf:
             for i,g in self: self[i] /= arg
         return self
 
-    def __div__(self,y):
+    def __truediv__(self,y):
         c = self.copy()
         c /= y
         return c

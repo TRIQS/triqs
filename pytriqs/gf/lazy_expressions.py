@@ -29,17 +29,17 @@ class __aux:
     def __add__(self, y): return LazyExpr("+", LazyExpr(self), LazyExpr(y))
     def __sub__(self, y): return LazyExpr("-", LazyExpr(self), LazyExpr(y))
     def __mul__(self, y): return LazyExpr("*", LazyExpr(self), LazyExpr(y))
-    def __div__(self, y): return LazyExpr("/", LazyExpr(self), LazyExpr(y))
+    def __truediv__(self, y): return LazyExpr("/", LazyExpr(self), LazyExpr(y))
 
     def __radd__(self, y): return LazyExpr("+", LazyExpr(y), LazyExpr(self))
     def __rsub__(self, y): return LazyExpr("-", LazyExpr(y), LazyExpr(self))
     def __rmul__(self, y): return LazyExpr("*", LazyExpr(y), LazyExpr(self))
-    def __rdiv__(self, y): return LazyExpr("/", LazyExpr(y), LazyExpr(self))
+    def __rtruediv__(self, y): return LazyExpr("/", LazyExpr(y), LazyExpr(self))
 
     def __iadd__(self, y): return self.set_from(self+y)
     def __isub__(self, y): return self.set_from(self-y)
     def __imul__(self, y): return self.set_from(self*y)
-    def __idiv__(self, y): return self.set_from(self/y)
+    def __itruediv__(self, y): return self.set_from(self/y)
 
     def __call__(self, *args): return LazyExpr("F", make_lazy(self), *list(map(make_lazy, args)))
 

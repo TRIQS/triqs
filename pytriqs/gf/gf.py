@@ -555,11 +555,11 @@ class Gf(metaclass=AddMethod):
             assert False, "Invalid operand type for Gf multiplication"
         return c
     # ---------- Division
-    def __idiv__(self,arg):
+    def __itruediv__(self,arg):
         self._data[:] /= arg
         return self
 
-    def __div__(self,y):
+    def __truediv__(self,y):
         c = self.copy()
         c /= y
         return c

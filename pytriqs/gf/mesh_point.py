@@ -54,10 +54,10 @@ class MeshPoint :
     def __rmul__(self, x):
         return self._get_val(x) * self.value
 
-    def __div__(self, x):
+    def __truediv__(self, x):
         return self.value / self._get_val(x)
 
-    def __rdiv__(self, x):
+    def __rtruediv__(self, x):
         return self._get_val(x) / self.value
 
     def __call__(self, *args, **kw):
