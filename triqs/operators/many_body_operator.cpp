@@ -112,22 +112,22 @@ namespace triqs {
       // ----- Store datavec into the h5 file.
 
       // datatype
-      object dtype = h5_monomial_dtype();
+      object dt = h5_monomial_dtype();
 
       // dataspace
       hsize_t dim[] = {datavec.size()};
       object dspace = H5Screate_simple(1, dim, NULL);
 
       // dataset
-      object dset = g.create_dataset(name.c_str(), dtype, dspace);
+      object ds = g.create_dataset(name.c_str(), dt, dspace);
 
       // write
-      herr_t status = H5Dwrite(dset, dtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, datavec.data());
+      herr_t status = H5Dwrite(ds, dt, H5S_ALL, H5S_ALL, H5P_DEFAULT, datavec.data());
       if (status < 0) TRIQS_RUNTIME_ERROR << "Error writing the many_body_operator " << op << " in the group" << g.name();
 
       // Store fundamental_operator_set as an attribute of the dataset
-      h5_write_attribute(dset, "fundamental_operator_set", fops);
-      write_hdf5_format(dset, op);
+      h5_write_attribute(ds, "fundamental_operator_set", fops);
+      write_hdf5_format(ds, op);
     }
 
     // ---------------------------  READ -----------------------------------------
@@ -140,22 +140,22 @@ namespace triqs {
       dataset ds = g.open_dataset(name);
 
       // dataspace
-      h5::dataspace d_space = H5Dget_space(ds);
+      h5::dataspace dspace = H5Dget_space(ds);
 
       // recover the dimension: must be of rank 1
       utility::mini_vector<hsize_t, 1> dims_out;
-      int ndims = H5Sget_simple_extent_dims(d_space, dims_out.ptr(), NULL);
+      int ndims = H5Sget_simple_extent_dims(dspace, dims_out.ptr(), NULL);
       if (ndims != 1)
         TRIQS_RUNTIME_ERROR << "h5 : Trying to read many_body_operator. Rank mismatch : the array stored in the hdf5 file has rank = "
                             << ndims;
 
       // datatype
-      object datatype = h5_monomial_dtype();
+      object dt = h5_monomial_dtype();
 
       // reading
       std::vector<h5_monomial> datavec(dims_out[0]);
 
-      herr_t status = H5Dread(ds, h5_monomial_dtype(), d_space, H5S_ALL, H5P_DEFAULT, datavec.data());
+      herr_t status = H5Dread(ds, h5_monomial_dtype(), dspace, H5S_ALL, H5P_DEFAULT, datavec.data());
       if (status < 0) TRIQS_RUNTIME_ERROR << "Error reading the many_body_operator " << op << " from the group" << g.name();
 
       // --- Read correspondance_table as an attribute
