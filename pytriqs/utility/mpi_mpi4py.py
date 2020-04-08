@@ -76,12 +76,12 @@ def report(*x,**opt):
           myflush() # be sure to flush the buffer!  
         
 def slice_inf(imin,imax) : 
-  j=(imax - imin + 1)/size
+  j=(imax - imin + 1)//size
   i= imax - imin + 1 - size*j
   return imin + rank*(j+1)  if  rank<=i-1 else imin + rank*j + i
 
 def slice_sup(imin,imax) :
-  j=(imax - imin + 1)/size
+  j=(imax - imin + 1)//size
   i= imax - imin + 1 - size*j;
   return imin + (rank+1)*(j+1) -1  if  rank<=i-1  else imin + (rank+1)*j  + i - 1
 
