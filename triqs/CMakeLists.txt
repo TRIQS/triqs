@@ -74,6 +74,7 @@ target_link_libraries(triqs PUBLIC mpi_interface)
 # HDF5
 # ---------------------------------
 target_link_libraries(triqs PUBLIC h5_interface)
+target_link_libraries(triqs PRIVATE hdf5)
 
 # ---------------------------------
 # Itertools 
